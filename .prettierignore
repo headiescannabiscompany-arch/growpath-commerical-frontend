@@ -1,0 +1,11 @@
+node_modules/
+dist/
+build/
+*.min.js
+coverage/
+.expo/
+.expo-shared/
+uploads/
+public/
+package-lock.json
+yarn.lock
