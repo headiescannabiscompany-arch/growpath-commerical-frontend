@@ -38,9 +38,7 @@ export default function ProfileCertificatesScreen({ navigation }) {
       {certs.length === 0 ? (
         <View style={styles.emptyContainer}>
           <Text style={styles.emptyText}>No certificates yet</Text>
-          <Text style={styles.emptySubtext}>
-            Complete courses to earn certificates
-          </Text>
+          <Text style={styles.emptySubtext}>Complete courses to earn certificates</Text>
         </View>
       ) : (
         <FlatList
@@ -64,18 +62,16 @@ export default function ProfileCertificatesScreen({ navigation }) {
               <View style={styles.actions}>
                 <TouchableOpacity
                   style={styles.btn}
-                  onPress={() =>
-                    navigation.navigate("CertificateViewer", { cert: item })
-                  }
+                  onPress={() => navigation.navigate("CertificateViewer", { cert: item })}
                 >
                   <Text style={styles.btnText}>📄 View Certificate</Text>
                 </TouchableOpacity>
-                
+
                 <TouchableOpacity
                   style={styles.verifyBtn}
                   onPress={() =>
-                    navigation.navigate("VerifyCertificate", { 
-                      certificateId: item.certificateId 
+                    navigation.navigate("VerifyCertificate", {
+                      certificateId: item.certificateId
                     })
                   }
                 >
@@ -95,90 +91,88 @@ const styles = StyleSheet.create({
     fontSize: 26,
     fontWeight: "700",
     marginBottom: 20,
-    color: "#2c3e50",
+    color: "#2c3e50"
   },
   emptyContainer: {
     alignItems: "center",
     justifyContent: "center",
-    paddingVertical: 40,
+    paddingVertical: 40
   },
   emptyText: {
     fontSize: 18,
     fontWeight: "600",
     color: "#555",
-    marginBottom: 8,
+    marginBottom: 8
   },
   emptySubtext: {
     fontSize: 14,
-    color: "#999",
+    color: "#999"
   },
   card: {
     backgroundColor: "#fff",
     padding: 16,
     marginBottom: 14,
     borderRadius: 10,
-    shadowColor: "#000",
-    shadowOpacity: 0.08,
-    shadowRadius: 3,
+    boxShadow: "0px 1px 3px rgba(0,0,0,0.08)",
     elevation: 2,
     borderLeftWidth: 4,
-    borderLeftColor: "#f39c12",
+    borderLeftColor: "#f39c12"
   },
   cardHeader: {
     flexDirection: "row",
     justifyContent: "space-between",
     alignItems: "flex-start",
-    marginBottom: 12,
+    marginBottom: 12
   },
   course: {
     fontSize: 16,
     fontWeight: "700",
     color: "#2c3e50",
-    marginBottom: 6,
+    marginBottom: 6
   },
   date: {
     fontSize: 13,
-    color: "#27ae60",
+    color: "#27ae60"
   },
   badge: {
     backgroundColor: "#d5f4e6",
     paddingHorizontal: 10,
     paddingVertical: 6,
-    borderRadius: 6,
+    borderRadius: 6
   },
   badgeText: {
     fontSize: 11,
     fontWeight: "700",
-    color: "#27ae60",
+    color: "#27ae60"
   },
   actions: {
     flexDirection: "row",
-    gap: 10,
+    gap: 10
   },
   btn: {
     flex: 1,
     backgroundColor: "#3498db",
     padding: 11,
     borderRadius: 8,
-    alignItems: "center",
+    alignItems: "center"
   },
   btnText: {
     color: "#fff",
     textAlign: "center",
     fontWeight: "700",
-    fontSize: 13,
+    fontSize: 13
   },
   verifyBtn: {
     flex: 1,
     backgroundColor: "#27ae60",
     padding: 11,
     borderRadius: 8,
-    alignItems: "center",
+    alignItems: "center"
   },
   verifyText: {
     color: "#fff",
     textAlign: "center",
     fontWeight: "700",
-    fontSize: 13,
-  },
+    fontSize: 13
+  }
 });

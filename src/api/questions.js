@@ -1,4 +1,4 @@
-import { api } from "./client";
+import { client as api } from "./client";
 
 export function getQuestions(courseId) {
   return api(`/courses/${courseId}/questions`);
@@ -7,14 +7,14 @@ export function getQuestions(courseId) {
 export function askQuestion(courseId, text) {
   return api(`/courses/${courseId}/questions`, {
     method: "POST",
-    body: JSON.stringify({ text }),
+    body: JSON.stringify({ text })
   });
 }
 
 export function answerQuestion(courseId, questionId, text) {
   return api(`/courses/${courseId}/questions/${questionId}/answer`, {
     method: "POST",
-    body: JSON.stringify({ text }),
+    body: JSON.stringify({ text })
   });
 }
 

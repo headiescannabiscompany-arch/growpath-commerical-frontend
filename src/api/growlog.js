@@ -1,4 +1,4 @@
-import { api } from "./client";
+import { client as api } from "./client";
 
 export function getEntries() {
   return api("/growlog");
@@ -30,4 +30,8 @@ export function autoTagEntry(id) {
   return api(`/growlog/${id}/auto-tag`, {
     method: "POST"
   });
+}
+
+export function getPlants() {
+  return api("/api/plants");
 }

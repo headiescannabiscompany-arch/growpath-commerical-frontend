@@ -1,4 +1,4 @@
-import client from "./client";
+import { client } from "./client";
 
 export function getFeed(page = 1, token) {
   return client.get(`/posts/feed?page=${page}`, token);

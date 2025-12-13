@@ -1,4 +1,10 @@
-import api from "./client";
+export function updateNotificationPreferences(prefs) {
+  return api("/users/preferences/notifications", {
+    method: "POST",
+    body: JSON.stringify(prefs)
+  });
+}
+import { client as api } from "./client";
 
 export function getProfile(id) {
   return api(`/users/profile/${id}`);

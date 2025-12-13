@@ -70,11 +70,11 @@ export const AuthProvider = ({ children }) => {
     // Update state immediately
     setToken(authToken);
     setUser(userData);
-    
+
     // Save to storage async (don't block on web)
     AsyncStorage.setItem("token", authToken).catch(() => {});
     AsyncStorage.setItem("user", JSON.stringify(userData)).catch(() => {});
-    
+
     // Load pro status in background
     loadProStatus(authToken).catch(() => {});
   };

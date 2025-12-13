@@ -1,0 +1,36 @@
+{
+  "version": "0.2.0",
+  "configurations": [
+    {
+      "name": "Backend: Debug server.js",
+      "type": "node",
+      "request": "launch",
+      "program": "${workspaceFolder}/backend/server.js",
+      "cwd": "${workspaceFolder}/backend",
+      "console": "integratedTerminal",
+      "envFile": "${workspaceFolder}/backend/.env",
+      "runtimeArgs": [
+        "--trace-warnings",
+        "--trace-uncaught",
+        "--unhandled-rejections=strict"
+      ],
+      "skipFiles": ["<node_internals>/**"]
+    },
+    {
+      "name": "Backend: Run Notification Worker",
+      "type": "node",
+      "request": "launch",
+      "program": "${workspaceFolder}/backend/workers/notificationWorker.js",
+      "cwd": "${workspaceFolder}/backend",
+      "console": "integratedTerminal",
+      "envFile": "${workspaceFolder}/backend/.env",
+      "skipFiles": ["<node_internals>/**"]
+    }
+  ],
+  "compounds": [
+    {
+      "name": "Dev: Backend + Frontend",
+      "configurations": ["Backend: Debug server.js"]
+    }
+  ]
+}

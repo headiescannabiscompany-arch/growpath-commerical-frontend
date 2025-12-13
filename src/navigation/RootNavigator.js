@@ -1,5 +1,7 @@
-import React from "react";
+import AppIntroScreen from "../screens/AppIntroScreen";
+import React, { useEffect } from "react";
 import { createNativeStackNavigator } from "@react-navigation/native-stack";
+import { useAuth } from "../context/AuthContext";
 import LoginScreen from "../screens/LoginScreen";
 import MainTabs from "./MainTabs";
 import GrowJournalScreen from "../screens/GrowJournalScreen";
@@ -21,15 +23,17 @@ import GrowLogCalendarScreen from "../screens/GrowLogCalendarScreen";
 import DiagnosisHistoryScreen from "../screens/DiagnosisHistoryScreen";
 import ForumPostDetailScreen from "../screens/ForumPostDetailScreen";
 import ForumNewPostScreen from "../screens/ForumNewPostScreen";
+import GuildCodeScreen from "../screens/GuildCodeScreen";
 import SubcategoryBrowserScreen from "../screens/SubcategoryBrowserScreen";
 import CategoryBrowserScreen from "../screens/CategoryBrowserScreen";
 import CategoryCoursesScreen from "../screens/CategoryCoursesScreen";
 
 const Stack = createNativeStackNavigator();
 
-import FeedScreen from '../screens/FeedScreen';
-import CreatePostScreen from '../screens/CreatePostScreen';
-import CommentsScreen from '../screens/CommentsScreen';
+import FeedScreen from "../screens/FeedScreen";
+import PrivacyPolicyScreen from "../screens/PrivacyPolicyScreen";
+import CreatePostScreen from "../screens/CreatePostScreen";
+import CommentsScreen from "../screens/CommentsScreen";
 import TemplatesMarketplaceScreen from "../screens/TemplatesMarketplaceScreen";
 import TemplateDetailScreen from "../screens/TemplateDetailScreen";
 import TasksTodayScreen from "../screens/TasksTodayScreen";
@@ -46,16 +50,63 @@ import PaywallScreen from "../screens/PaywallScreen";
 import SubscriptionStatusScreen from "../screens/SubscriptionStatusScreen";
 import PlantListScreen from "../screens/PlantListScreen";
 import PlantDetailScreen from "../screens/PlantDetailScreen";
+import SubscriptionScreen from "../screens/SubscriptionScreen";
+import TokenInfoScreen from "../screens/TokenInfoScreen";
+import EarningsScreen from "../screens/EarningsScreen";
+import AdminCoursesScreen from "../screens/AdminCoursesScreen";
+import CreatePlantScreen from "../screens/CreatePlantScreen";
+import LiveSessionScreen from "../screens/LiveSessionScreen";
+import LiveSessionsListScreen from "../screens/LiveSessionsListScreen";
+import AdminReportsScreen from "../screens/AdminReportsScreen";
 
 export default function RootNavigator() {
+  const { isPro } = useAuth();
+  const [showIntro, setShowIntro] = React.useState(!isPro);
+
+  useEffect(() => {
+    if (isPro) setShowIntro(false);
+  }, [isPro]);
+
   return (
-    <Stack.Navigator screenOptions={{ headerShown: false }}>
-      <Stack.Screen name="Login" component={LoginScreen} />
-      <Stack.Screen name="MainTabs" component={MainTabs} />
+    <Stack.Navigator
+      screenOptions={{
+        headerShown: true,
+        headerStyle: { backgroundColor: "#10B981" },
+        headerTintColor: "#fff",
+        headerTitleStyle: { fontWeight: "bold" }
+      }}
+    >
+      {!isPro && showIntro ? (
+        <Stack.Screen name="AppIntro" options={{ headerShown: false }}>
+          {(props) => <AppIntroScreen {...props} onDone={() => setShowIntro(false)} />}
+        </Stack.Screen>
+      ) : null}
+      <Stack.Screen
+        name="Login"
+        component={LoginScreen}
+        options={{ headerShown: false }}
+      />
+      <Stack.Screen
+        name="MainTabs"
+        component={MainTabs}
+        options={{ headerShown: false }}
+      />
       <Stack.Screen name="GrowJournal" component={GrowJournalScreen} />
       <Stack.Screen name="Subscribe" component={SubscribeScreen} />
       <Stack.Screen name="CourseDetail" component={CourseDetailScreen} />
+      <Stack.Screen
+        name="PrivacyPolicy"
+        component={PrivacyPolicyScreen}
+        options={{ title: "Privacy Policy" }}
+      />
+      <Stack.Screen
+        name="AdminReports"
+        component={AdminReportsScreen}
+        options={{ title: "Admin: Reports" }}
+      />
       <Stack.Screen name="CreateCourse" component={CreateCourseScreen} />
+      <Stack.Screen name="Earnings" component={EarningsScreen} />
+      <Stack.Screen name="AdminCourses" component={AdminCoursesScreen} />
       <Stack.Screen name="CreatorDashboard" component={CreatorDashboardScreen} />
       <Stack.Screen name="CreatorDashboardV2" component={CreatorDashboardV2} />
       <Stack.Screen name="CreatorPayouts" component={CreatorPayoutScreen} />
@@ -71,6 +122,7 @@ export default function RootNavigator() {
       <Stack.Screen name="DiagnosisHistory" component={DiagnosisHistoryScreen} />
       <Stack.Screen name="ForumPostDetail" component={ForumPostDetailScreen} />
       <Stack.Screen name="ForumNewPost" component={ForumNewPostScreen} />
+      <Stack.Screen name="GuildCode" component={GuildCodeScreen} />
       <Stack.Screen name="CategoryBrowser" component={CategoryBrowserScreen} />
       <Stack.Screen name="CategoryCourses" component={CategoryCoursesScreen} />
       <Stack.Screen name="SubcategoryBrowser" component={SubcategoryBrowserScreen} />
@@ -93,6 +145,11 @@ export default function RootNavigator() {
       <Stack.Screen name="SubscriptionStatus" component={SubscriptionStatusScreen} />
       <Stack.Screen name="PlantList" component={PlantListScreen} />
       <Stack.Screen name="PlantDetail" component={PlantDetailScreen} />
+      <Stack.Screen name="CreatePlant" component={CreatePlantScreen} />
+      <Stack.Screen name="Subscription" component={SubscriptionScreen} />
+      <Stack.Screen name="TokenInfo" component={TokenInfoScreen} />
+      <Stack.Screen name="LiveSession" component={LiveSessionScreen} />
+      <Stack.Screen name="LiveSessions" component={LiveSessionsListScreen} />
     </Stack.Navigator>
   );
 }

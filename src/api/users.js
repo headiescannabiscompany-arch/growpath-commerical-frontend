@@ -1,4 +1,4 @@
-import api from "./client";
+import { client as api } from "./client";
 
 export function followUser(id) {
   return api(`/users/follow/${id}`, { method: "POST" });

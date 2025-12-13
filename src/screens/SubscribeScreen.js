@@ -1,10 +1,5 @@
 import React, { useState, useEffect } from "react";
-import {
-  Text,
-  StyleSheet,
-  Alert,
-  Platform
-} from "react-native";
+import { Text, StyleSheet, Alert, Platform } from "react-native";
 import ScreenContainer from "../components/ScreenContainer";
 import Card from "../components/Card";
 import PrimaryButton from "../components/PrimaryButton";
@@ -81,23 +76,26 @@ export default function SubscribeScreen({ navigation }) {
       <Text style={styles.title}>Become a Pro Grower</Text>
 
       <Card>
-        <Text style={styles.desc}>
-          Unlock all premium features:
-        </Text>
+        <Text style={styles.desc}>Unlock all premium features:</Text>
 
-        <Text style={styles.item}>✔ Full AI Diagnose</Text>
-        <Text style={styles.item}>✔ Unlimited photo uploads</Text>
-        <Text style={styles.item}>✔ VIP premium forum</Text>
-        <Text style={styles.item}>✔ Priority AI analysis</Text>
-        <Text style={styles.item}>✔ Support creator tools</Text>
+        <Text style={styles.item}>✔ Full AI Diagnose with Vision</Text>
+        <Text style={styles.item}>✔ Unlimited plants & photo uploads</Text>
+        <Text style={styles.item}>✔ Growers Guild access & community</Text>
+        <Text style={styles.item}>✔ Create & sell courses (earn 85%)</Text>
+        <Text style={styles.item}>✔ Advanced grow analytics</Text>
+
+        <Text style={styles.note}>
+          * Courses are sold separately by creators. Subscription unlocks platform
+          features.
+        </Text>
 
         <Text style={styles.price}>$9.99 / month</Text>
 
         {status.subscriptionStatus === "active" ? (
           <Text style={styles.active}>You are already a Pro user 🎉</Text>
         ) : (
-          <PrimaryButton 
-            title={loading ? "Processing..." : "Unlock Premium"} 
+          <PrimaryButton
+            title={loading ? "Processing..." : "Unlock Premium"}
             onPress={handleUpgrade}
             disabled={loading}
           />
@@ -124,6 +122,13 @@ const styles = StyleSheet.create({
     fontSize: 15,
     color: colors.text
   },
+  note: {
+    marginTop: spacing(3),
+    fontSize: 12,
+    color: "#666",
+    fontStyle: "italic",
+    lineHeight: 16
+  },
   price: {
     marginVertical: spacing(4),
     fontSize: 24,
@@ -137,4 +142,3 @@ const styles = StyleSheet.create({
     color: colors.accent
   }
 });
-

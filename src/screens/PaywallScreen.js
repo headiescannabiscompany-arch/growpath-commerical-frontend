@@ -1,8 +1,15 @@
-import React, { useState } from 'react';
-import { View, Text, StyleSheet, TouchableOpacity, ActivityIndicator, Alert } from 'react-native';
-import { useAuth } from '../context/AuthContext';
-import { startSubscription } from '../api/subscribe';
-import ScreenContainer from '../components/ScreenContainer';
+import React, { useState } from "react";
+import {
+  View,
+  Text,
+  StyleSheet,
+  TouchableOpacity,
+  ActivityIndicator,
+  Alert
+} from "react-native";
+import { useAuth } from "../context/AuthContext";
+import { startSubscription } from "../api/subscribe";
+import ScreenContainer from "../components/ScreenContainer";
 
 export default function PaywallScreen({ navigation }) {
   const { token } = useAuth();
@@ -11,16 +18,16 @@ export default function PaywallScreen({ navigation }) {
   const handleStartTrial = async () => {
     setLoading(true);
     try {
-      const result = await startSubscription('trial', token);
+      const result = await startSubscription("trial", token);
       if (result.success) {
-        Alert.alert('Success', '7-day free trial started!', [
-          { text: 'OK', onPress: () => navigation.goBack() }
+        Alert.alert("Success", "7-day free trial started!", [
+          { text: "OK", onPress: () => navigation.goBack() }
         ]);
       } else {
-        Alert.alert('Error', result.message || 'Failed to start trial');
+        Alert.alert("Error", result.message || "Failed to start trial");
       }
     } catch (error) {
-      Alert.alert('Error', error.response?.data?.message || 'Failed to start trial');
+      Alert.alert("Error", error.response?.data?.message || "Failed to start trial");
     } finally {
       setLoading(false);
     }
@@ -29,16 +36,16 @@ export default function PaywallScreen({ navigation }) {
   const handleSubscribe = async () => {
     setLoading(true);
     try {
-      const result = await startSubscription('paid', token);
+      const result = await startSubscription("paid", token);
       if (result.success) {
-        Alert.alert('Success', 'PRO subscription activated!', [
-          { text: 'OK', onPress: () => navigation.goBack() }
+        Alert.alert("Success", "PRO subscription activated!", [
+          { text: "OK", onPress: () => navigation.goBack() }
         ]);
       } else {
-        Alert.alert('Error', result.message || 'Failed to subscribe');
+        Alert.alert("Error", result.message || "Failed to subscribe");
       }
     } catch (error) {
-      Alert.alert('Error', error.response?.data?.message || 'Failed to subscribe');
+      Alert.alert("Error", error.response?.data?.message || "Failed to subscribe");
     } finally {
       setLoading(false);
     }
@@ -48,7 +55,7 @@ export default function PaywallScreen({ navigation }) {
     <ScreenContainer style={styles.container}>
       <View style={styles.content}>
         <Text style={styles.title}>🚀 Upgrade to PRO</Text>
-        
+
         <View style={styles.benefitsSection}>
           <Text style={styles.subtitle}>Unlock Premium Features:</Text>
           <Text style={styles.benefit}>✅ Unlimited Plants & Grows</Text>
@@ -65,22 +72,22 @@ export default function PaywallScreen({ navigation }) {
           <ActivityIndicator size="large" color="#28A745" style={styles.loader} />
         ) : (
           <>
-            <TouchableOpacity 
-              style={[styles.button, styles.trialButton]} 
+            <TouchableOpacity
+              style={[styles.button, styles.trialButton]}
               onPress={handleStartTrial}
             >
               <Text style={styles.buttonText}>Start 7-Day Free Trial</Text>
             </TouchableOpacity>
 
-            <TouchableOpacity 
-              style={[styles.button, styles.subscribeButton]} 
+            <TouchableOpacity
+              style={[styles.button, styles.subscribeButton]}
               onPress={handleSubscribe}
             >
               <Text style={styles.buttonText}>Subscribe Now - $9.99/month</Text>
             </TouchableOpacity>
 
-            <TouchableOpacity 
-              style={styles.cancelButton} 
+            <TouchableOpacity
+              style={styles.cancelButton}
               onPress={() => navigation.goBack()}
             >
               <Text style={styles.cancelText}>Maybe Later</Text>
@@ -95,69 +102,66 @@ export default function PaywallScreen({ navigation }) {
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    backgroundColor: '#F5F5F5',
+    backgroundColor: "#F5F5F5"
   },
   content: {
     flex: 1,
     padding: 20,
-    justifyContent: 'center',
+    justifyContent: "center"
   },
   title: {
     fontSize: 32,
-    fontWeight: 'bold',
-    textAlign: 'center',
+    fontWeight: "bold",
+    textAlign: "center",
     marginBottom: 20,
-    color: '#333',
+    color: "#333"
   },
   benefitsSection: {
-    backgroundColor: '#FFF',
+    backgroundColor: "#FFF",
     padding: 20,
     borderRadius: 12,
     marginBottom: 30,
-    shadowColor: '#000',
-    shadowOffset: { width: 0, height: 2 },
-    shadowOpacity: 0.1,
-    shadowRadius: 4,
-    elevation: 3,
+    boxShadow: "0px 2px 4px rgba(0,0,0,0.1)",
+    elevation: 3
   },
   subtitle: {
     fontSize: 18,
-    fontWeight: '600',
+    fontWeight: "600",
     marginBottom: 15,
-    color: '#333',
+    color: "#333"
   },
   benefit: {
     fontSize: 16,
-    color: '#555',
+    color: "#555",
     marginBottom: 10,
-    lineHeight: 24,
+    lineHeight: 24
   },
   button: {
     paddingVertical: 16,
     borderRadius: 10,
     marginBottom: 15,
-    alignItems: 'center',
+    alignItems: "center"
   },
   trialButton: {
-    backgroundColor: '#28A745',
+    backgroundColor: "#28A745"
   },
   subscribeButton: {
-    backgroundColor: '#007BFF',
+    backgroundColor: "#007BFF"
   },
   buttonText: {
-    color: '#FFF',
+    color: "#FFF",
     fontSize: 18,
-    fontWeight: 'bold',
+    fontWeight: "bold"
   },
   cancelButton: {
     paddingVertical: 12,
-    alignItems: 'center',
+    alignItems: "center"
   },
   cancelText: {
-    color: '#888',
-    fontSize: 16,
+    color: "#888",
+    fontSize: 16
   },
   loader: {
-    marginTop: 30,
-  },
+    marginTop: 30
+  }
 });

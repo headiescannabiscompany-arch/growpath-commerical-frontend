@@ -1,4 +1,4 @@
-import client from "./client";
+import { client } from "./client";
 
 export function getTodayTasks(token) {
   return client.get("/tasks/today", token);
@@ -6,6 +6,10 @@ export function getTodayTasks(token) {
 
 export function getUpcomingTasks(token) {
   return client.get("/tasks/upcoming", token);
+}
+
+export function getTasks(token) {
+  return client.get("/tasks", token);
 }
 
 export function completeTask(id, token) {

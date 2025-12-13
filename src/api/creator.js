@@ -1,4 +1,4 @@
-import api from "./client";
+import { client as api } from "./client";
 import { API_URL } from "./client";
 
 export function getEarnings() {

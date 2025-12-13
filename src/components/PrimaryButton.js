@@ -6,7 +6,7 @@ export default function PrimaryButton({
   title,
   onPress,
   style,
-  textStyle,
+  textStyle = {},
   disabled,
   children
 }) {

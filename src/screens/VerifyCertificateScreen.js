@@ -41,7 +41,9 @@ export default function VerifyCertificateScreen({ route }) {
         <View style={styles.center}>
           <Text style={styles.errorIcon}>❌</Text>
           <Text style={styles.errorTitle}>Invalid Certificate</Text>
-          <Text style={styles.errorText}>{error || "This certificate could not be verified"}</Text>
+          <Text style={styles.errorText}>
+            {error || "This certificate could not be verified"}
+          </Text>
         </View>
       </ScreenContainer>
     );
@@ -96,63 +98,61 @@ const styles = StyleSheet.create({
   center: {
     flex: 1,
     justifyContent: "center",
-    alignItems: "center",
+    alignItems: "center"
   },
   loadingText: {
     fontSize: 16,
     color: "#666",
-    marginTop: 16,
+    marginTop: 16
   },
   errorIcon: {
     fontSize: 64,
-    marginBottom: 16,
+    marginBottom: 16
   },
   errorTitle: {
     fontSize: 22,
     fontWeight: "700",
     color: "#e74c3c",
-    marginBottom: 12,
+    marginBottom: 12
   },
   errorText: {
     fontSize: 14,
     color: "#999",
-    textAlign: "center",
+    textAlign: "center"
   },
   header: {
     alignItems: "center",
-    marginBottom: 24,
+    marginBottom: 24
   },
   icon: {
     fontSize: 48,
-    marginBottom: 12,
+    marginBottom: 12
   },
   title: {
     fontSize: 26,
     fontWeight: "700",
-    color: "#27ae60",
+    color: "#27ae60"
   },
   card: {
     backgroundColor: "#fff",
     borderRadius: 10,
     overflow: "hidden",
     marginBottom: 20,
-    shadowColor: "#000",
-    shadowOpacity: 0.1,
-    shadowRadius: 4,
-    elevation: 3,
+    boxShadow: "0px 2px 4px rgba(0,0,0,0.1)",
+    elevation: 3
   },
   row: {
     flexDirection: "row",
     justifyContent: "space-between",
     alignItems: "center",
     paddingHorizontal: 16,
-    paddingVertical: 14,
+    paddingVertical: 14
   },
   label: {
     fontSize: 13,
     color: "#999",
     fontWeight: "600",
-    textTransform: "uppercase",
+    textTransform: "uppercase"
   },
   value: {
     fontSize: 15,
@@ -160,15 +160,15 @@ const styles = StyleSheet.create({
     fontWeight: "600",
     flex: 1,
     textAlign: "right",
-    marginLeft: 12,
+    marginLeft: 12
   },
   mono: {
     fontFamily: "Courier New",
-    fontSize: 12,
+    fontSize: 12
   },
   divider: {
     height: 1,
-    backgroundColor: "#eee",
+    backgroundColor: "#eee"
   },
   validationBadge: {
     backgroundColor: "#d5f4e6",
@@ -177,15 +177,15 @@ const styles = StyleSheet.create({
     paddingHorizontal: 12,
     alignItems: "center",
     borderLeftWidth: 4,
-    borderLeftColor: "#27ae60",
+    borderLeftColor: "#27ae60"
   },
   validationIcon: {
     fontSize: 32,
-    marginBottom: 8,
+    marginBottom: 8
   },
   validationText: {
     fontSize: 14,
     fontWeight: "700",
-    color: "#27ae60",
-  },
+    color: "#27ae60"
+  }
 });

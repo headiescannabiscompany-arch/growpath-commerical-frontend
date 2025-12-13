@@ -32,6 +32,7 @@ export default function ForumPostDetailScreen({ route, navigation }) {
   const [comments, setComments] = useState([]);
   const [myComment, setMyComment] = useState("");
   const [loading, setLoading] = useState(false);
+  const [reportVisible, setReportVisible] = useState(false);
 
   async function load() {
     try {
@@ -48,7 +49,6 @@ export default function ForumPostDetailScreen({ route, navigation }) {
   useEffect(() => {
     load();
   }, []);
-
   // Like/unlike
   async function toggleLike() {
     if (!post) return;
@@ -124,11 +124,44 @@ export default function ForumPostDetailScreen({ route, navigation }) {
   }
 
   async function handleReport() {
+    Alert.alert(
+      "Report Post",
+      "Please select a reason for reporting this post:",
+      [
+        {
+          text: "Cancel",
+          style: "cancel"
+        },
+        {
+          text: "Spam",
+          onPress: () => submitReport("Spam")
+        },
+        {
+          text: "Illegal Content",
+          onPress: () => submitReport("Illegal content or activity")
+        },
+        {
+          text: "Harassment",
+          onPress: () => submitReport("Harassment or hate speech")
+        },
+        {
+          text: "Other",
+          onPress: () => submitReport("Other violation")
+        }
+      ],
+      { cancelable: true }
+    );
+  }
+
+  async function submitReport(reason) {
     try {
-      await reportPost(post._id);
-      Alert.alert("Reported", "Thanks for the report.");
+      await reportPost(post._id, reason);
+      Alert.alert(
+        "Report Submitted",
+        "Thank you. Our team will review this post shortly."
+      );
     } catch (err) {
-      Alert.alert("Error", "Failed to report post");
+      Alert.alert("Error", "Failed to submit report. Please try again.");
     }
   }
 
@@ -143,10 +176,20 @@ export default function ForumPostDetailScreen({ route, navigation }) {
   return (
     <ScreenContainer scroll>
       {/* POST HEADER */}
-      <View style={{ flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between' }}>
+      <View
+        style={{
+          flexDirection: "row",
+          alignItems: "center",
+          justifyContent: "space-between"
+        }}
+      >
         <View style={{ flex: 1 }}>
-          <Text style={styles.username}>{post.user?.username || post.user?.name || "Unknown User"}</Text>
-          <Text style={styles.timestamp}>{new Date(post.createdAt).toLocaleDateString()}</Text>
+          <Text style={styles.username}>
+            {post.user?.username || post.user?.name || "Unknown User"}
+          </Text>
+          <Text style={styles.timestamp}>
+            {new Date(post.createdAt).toLocaleDateString()}
+          </Text>
         </View>
         <FollowButton userId={post.user?._id} />
       </View>
@@ -155,9 +198,10 @@ export default function ForumPostDetailScreen({ route, navigation }) {
       <Text style={styles.content}>{post.content}</Text>
 
       {/* PHOTOS */}
-      {post.photos && post.photos.map((p, i) => (
-        <Image key={i} source={{ uri: p }} style={styles.photo} />
-      ))}
+      {post.photos &&
+        post.photos.map((p, i) => (
+          <Image key={i} source={{ uri: p }} style={styles.photo} />
+        ))}
 
       {/* TAGS & STRAIN */}
       {post.tags && post.tags.length > 0 && (
@@ -170,9 +214,7 @@ export default function ForumPostDetailScreen({ route, navigation }) {
         </View>
       )}
 
-      {post.strain && (
-        <Text style={styles.strain}>Strain: {post.strain}</Text>
-      )}
+      {post.strain && <Text style={styles.strain}>Strain: {post.strain}</Text>}
 
       {/* ACTION BUTTONS */}
       <View style={styles.actions}>
@@ -205,9 +247,7 @@ export default function ForumPostDetailScreen({ route, navigation }) {
         renderItem={({ item }) => (
           <View style={styles.commentRow}>
             <View style={styles.commentContent}>
-              <Text style={styles.commentUser}>
-                {item.user?.username || "Unknown"}:
-              </Text>
+              <Text style={styles.commentUser}>{item.user?.username || "Unknown"}:</Text>
               <Text style={styles.commentText}>{item.text}</Text>
             </View>
 

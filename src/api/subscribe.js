@@ -1,13 +1,13 @@
-import client from './client';
+import { client } from "./client";
 
 export const startSubscription = async (type, token) => {
   const response = await client.post(
-    '/subscribe/start',
+    "/subscribe/start",
     { type },
     {
       headers: {
-        Authorization: `Bearer ${token}`,
-      },
+        Authorization: `Bearer ${token}`
+      }
     }
   );
   return response.data;
@@ -15,22 +15,22 @@ export const startSubscription = async (type, token) => {
 
 export const cancelSubscription = async (token) => {
   const response = await client.post(
-    '/subscribe/cancel',
+    "/subscribe/cancel",
     {},
     {
       headers: {
-        Authorization: `Bearer ${token}`,
-      },
+        Authorization: `Bearer ${token}`
+      }
     }
   );
   return response.data;
 };
 
 export const getSubscriptionStatus = async (token) => {
-  const response = await client.get('/subscribe/status', {
+  const response = await client.get("/api/subscribe/status", {
     headers: {
-      Authorization: `Bearer ${token}`,
-    },
+      Authorization: `Bearer ${token}`
+    }
   });
   return response.data;
 };

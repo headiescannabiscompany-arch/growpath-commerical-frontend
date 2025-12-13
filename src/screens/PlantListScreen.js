@@ -120,9 +120,7 @@ export default function PlantListScreen({ navigation }) {
         <View style={styles.emptyState}>
           <Text style={styles.emptyText}>🌱</Text>
           <Text style={styles.emptyTitle}>No Plants Yet</Text>
-          <Text style={styles.emptySubtitle}>
-            Start tracking your first grow!
-          </Text>
+          <Text style={styles.emptySubtitle}>Start tracking your first grow!</Text>
         </View>
       ) : (
         <FlatList
@@ -137,9 +135,7 @@ export default function PlantListScreen({ navigation }) {
       <View style={styles.buttonContainer}>
         <PrimaryButton title="Add New Plant" onPress={handleAddPlant} />
         {!isPro && plants.length >= 1 && (
-          <Text style={styles.proHint}>
-            ⭐ Upgrade to PRO for unlimited plants
-          </Text>
+          <Text style={styles.proHint}>⭐ Upgrade to PRO for unlimited plants</Text>
         )}
       </View>
     </ScreenContainer>
@@ -177,10 +173,7 @@ const styles = StyleSheet.create({
     borderRadius: 12,
     padding: 16,
     marginBottom: 16,
-    shadowColor: "#000",
-    shadowOffset: { width: 0, height: 2 },
-    shadowOpacity: 0.1,
-    shadowRadius: 4,
+    boxShadow: "0px 2px 4px rgba(0,0,0,0.1)",
     elevation: 3
   },
   plantHeader: {

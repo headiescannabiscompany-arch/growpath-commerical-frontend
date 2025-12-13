@@ -26,7 +26,19 @@ export default function ForumNewPostScreen({ route, navigation }) {
   const [photos, setPhotos] = useState(photosFromLog);
   const [strain, setStrain] = useState(strainFromLog);
   const [tags, setTags] = useState(tagsFromLog);
+  const [category, setCategory] = useState("general");
   const [loading, setLoading] = useState(false);
+
+  const categoryOptions = [
+    { key: "general", label: "💬 General", desc: "General discussion" },
+    { key: "help", label: "🆘 Help/Advice", desc: "Ask for help" },
+    { key: "grow-log", label: "📔 Grow Log", desc: "Share your grow" },
+    { key: "harvest", label: "🌿 Harvest/Cure", desc: "Show off results" },
+    { key: "nutrients", label: "🧪 Nutrients", desc: "Feeding discussion" },
+    { key: "genetics", label: "🧬 Genetics", desc: "Strains & breeders" },
+    { key: "equipment", label: "⚡ Equipment", desc: "Lights, tents, etc." },
+    { key: "techniques", label: "🎓 Techniques", desc: "Training & methods" }
+  ];
 
   const tagOptions = [
     "yellowing",
@@ -38,7 +50,11 @@ export default function ForumNewPostScreen({ route, navigation }) {
     "stretch",
     "heatstress",
     "harvest",
-    "pest"
+    "pest",
+    "autoflower",
+    "photoperiod",
+    "organic",
+    "hydro"
   ];
 
   // ---------------------------------------
@@ -87,6 +103,7 @@ export default function ForumNewPostScreen({ route, navigation }) {
         photos,
         tags,
         strain,
+        category,
         growLogId
       };
 
@@ -103,7 +120,7 @@ export default function ForumNewPostScreen({ route, navigation }) {
 
   return (
     <ScreenContainer scroll>
-      <Text style={styles.header}>Create Post</Text>
+      <Text style={styles.header}>New Guild Post</Text>
 
       {/* TEXT INPUT */}
       <TextInput
@@ -114,11 +131,39 @@ export default function ForumNewPostScreen({ route, navigation }) {
         onChangeText={setContent}
       />
 
+      {/* CATEGORY */}
+      <Text style={styles.label}>Category</Text>
+      <ScrollView
+        horizontal
+        showsHorizontalScrollIndicator={false}
+        style={{ marginBottom: 16 }}
+      >
+        {categoryOptions.map((cat) => (
+          <TouchableOpacity
+            key={cat.key}
+            onPress={() => setCategory(cat.key)}
+            style={[
+              styles.categoryButton,
+              category === cat.key && styles.categoryButtonActive
+            ]}
+          >
+            <Text
+              style={
+                category === cat.key ? styles.categoryTextActive : styles.categoryText
+              }
+            >
+              {cat.label}
+            </Text>
+            <Text style={styles.categoryDesc}>{cat.desc}</Text>
+          </TouchableOpacity>
+        ))}
+      </ScrollView>
+
       {/* STRAIN INPUT */}
       <Text style={styles.label}>Strain (optional)</Text>
       <TextInput
         style={styles.input}
-        placeholder="Blueberry Muffin, Odo Wan Kenobi, etc."
+        placeholder="Blueberry Muffin, Gelato #33, etc."
         value={strain}
         onChangeText={setStrain}
       />
@@ -130,16 +175,9 @@ export default function ForumNewPostScreen({ route, navigation }) {
           <TouchableOpacity
             key={tag}
             onPress={() => toggleTag(tag)}
-            style={[
-              styles.tag,
-              tags.includes(tag) && styles.tagSelected
-            ]}
+            style={[styles.tag, tags.includes(tag) && styles.tagSelected]}
           >
-            <Text
-              style={
-                tags.includes(tag) ? styles.tagTextSelected : styles.tagText
-              }
-            >
+            <Text style={tags.includes(tag) ? styles.tagTextSelected : styles.tagText}>
               {tag}
             </Text>
           </TouchableOpacity>
@@ -148,7 +186,11 @@ export default function ForumNewPostScreen({ route, navigation }) {
 
       {/* PHOTO GRID */}
       <Text style={styles.label}>Photos</Text>
-      <ScrollView horizontal showsHorizontalScrollIndicator={false} style={{ marginBottom: 16 }}>
+      <ScrollView
+        horizontal
+        showsHorizontalScrollIndicator={false}
+        style={{ marginBottom: 16 }}
+      >
         {photos.map((uri, i) => (
           <Image key={i} source={{ uri }} style={styles.photo} />
         ))}
@@ -210,6 +252,36 @@ const styles = StyleSheet.create({
   },
   tagTextSelected: {
     color: "white"
+  },
+  categoryButton: {
+    backgroundColor: "#F3F4F6",
+    paddingHorizontal: 16,
+    paddingVertical: 12,
+    borderRadius: 12,
+    marginRight: 12,
+    minWidth: 140,
+    borderWidth: 2,
+    borderColor: "#E5E7EB"
+  },
+  categoryButtonActive: {
+    backgroundColor: "#10B981",
+    borderColor: "#10B981"
+  },
+  categoryText: {
+    fontSize: 14,
+    fontWeight: "600",
+    color: "#374151",
+    marginBottom: 2
+  },
+  categoryTextActive: {
+    fontSize: 14,
+    fontWeight: "600",
+    color: "#FFFFFF",
+    marginBottom: 2
+  },
+  categoryDesc: {
+    fontSize: 11,
+    color: "#9CA3AF"
   },
   photo: {
     width: 90,

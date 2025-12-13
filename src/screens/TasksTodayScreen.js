@@ -1,44 +1,169 @@
 import React, { useEffect, useState } from "react";
-import { Text, TouchableOpacity, FlatList, StyleSheet, View } from "react-native";
+import {
+  Text,
+  TouchableOpacity,
+  FlatList,
+  StyleSheet,
+  View,
+  Platform
+} from "react-native";
+import { useNavigation } from "@react-navigation/native";
 import ScreenContainer from "../components/ScreenContainer";
+import TaskCompleteModal from "../components/TaskCompleteModal";
 import { getTodayTasks, completeTask } from "../api/tasks";
+import {
+  requestNotificationPermission,
+  setupAndroidChannel,
+  scheduleTaskReminder,
+  canUseReminders
+} from "../utils/notifications";
+import { useAuth } from "../context/AuthContext";
 
 export default function TasksTodayScreen() {
   const [tasks, setTasks] = useState([]);
+  const [permissionGranted, setPermissionGranted] = useState(false);
+  const [showCompleteModal, setShowCompleteModal] = useState(false);
+  const { isPro } = useAuth();
+  const navigation = useNavigation();
+  // user initialization moved inside useCallback for correct dependency handling
 
-  async function load() {
+  // Removed duplicate load function; using useCallback version below
+  const load = React.useCallback(async () => {
+    const user = global.user || { role: "free" }; // Replace with your actual user context
     const res = await getTodayTasks();
     setTasks(res.data || []);
-  }
+
+    // Schedule reminders for all tasks if allowed (mobile only)
+    if (Platform.OS !== "web" && canUseReminders(user) && permissionGranted) {
+      for (const task of res.data || []) {
+        if (task.dueDate) {
+          await scheduleTaskReminder(task);
+        }
+      }
+    }
+  }, [permissionGranted]);
 
   useEffect(() => {
-    load();
-  }, []);
+    async function init() {
+      if (Platform.OS !== "web") {
+        await setupAndroidChannel();
+        const granted = await requestNotificationPermission();
+        setPermissionGranted(granted);
+      }
+      load();
+    }
+    init();
+  }, [load]);
 
   async function finish(id) {
     await completeTask(id);
+    setShowCompleteModal(true);
     load();
   }
 
   return (
     <ScreenContainer>
-      <Text style={styles.header}>Today's Tasks</Text>
+      <View
+        style={{
+          backgroundColor: "#F0FDF4",
+          borderRadius: 8,
+          padding: 12,
+          marginBottom: 12
+        }}
+      >
+        <Text
+          style={{ color: "#10B981", fontWeight: "600", fontSize: 15, marginBottom: 2 }}
+        >
+          🌱 Gentle Reminders
+        </Text>
+        <Text style={{ color: "#222", fontSize: 13 }}>
+          Reminders are here to support—not pressure—you. Use them as gentle nudges, not
+          demands. Your growth is unique: skip, snooze, or adjust reminders as needed.
+          Progress is personal, and every step counts.
+        </Text>
+      </View>
+      <Text style={styles.header}>Today&apos;s Tasks</Text>
 
-      <FlatList
-        data={tasks}
-        keyExtractor={(t) => t._id}
-        renderItem={({ item }) => (
-          <View style={styles.card}>
-            <Text style={styles.title}>{item.title}</Text>
-            {item.plant && <Text style={styles.plant}>Plant: {item.plant.name} ({item.plant.strain})</Text>}
-            <Text style={styles.desc}>{item.description}</Text>
-
-            <TouchableOpacity style={styles.doneBtn} onPress={() => finish(item._id)}>
-              <Text style={styles.doneText}>Complete</Text>
-            </TouchableOpacity>
-          </View>
-        )}
+      <TaskCompleteModal
+        visible={showCompleteModal}
+        onClose={() => setShowCompleteModal(false)}
       />
+
+      {tasks.length === 0 ? (
+        <View style={{ alignItems: "center", marginTop: 40 }}>
+          <Text style={{ fontSize: 20, fontWeight: "700", marginBottom: 10 }}>
+            No tasks yet.
+          </Text>
+          <Text
+            style={{ fontSize: 15, color: "#444", textAlign: "center", marginBottom: 18 }}
+          >
+            Add tasks when you want structure.{"\n"}
+            Skip them when observation matters more.{"\n\n"}
+            There’s no “right” schedule — only what fits your grow.
+          </Text>
+          <TouchableOpacity
+            style={[styles.doneBtn, { paddingHorizontal: 18, marginTop: 8 }]}
+          >
+            <Text style={styles.doneText}>Create your first task</Text>
+          </TouchableOpacity>
+        </View>
+      ) : (
+        <FlatList
+          data={tasks}
+          keyExtractor={(t) => t._id}
+          renderItem={({ item }) => (
+            <View style={styles.card}>
+              <Text style={styles.title}>{item.title}</Text>
+              {item.plant && (
+                <Text style={styles.plant}>
+                  Plant: {item.plant.name} ({item.plant.strain})
+                </Text>
+              )}
+              <Text style={styles.desc}>{item.description}</Text>
+
+              <TouchableOpacity
+                style={[styles.doneBtn, !isPro && { backgroundColor: "#ccc" }]}
+                onPress={isPro ? () => finish(item._id) : undefined}
+                disabled={!isPro}
+              >
+                <Text style={[styles.doneText, !isPro && { color: "#888" }]}>
+                  Complete
+                </Text>
+              </TouchableOpacity>
+              {!isPro && (
+                <View
+                  style={{
+                    marginTop: 8,
+                    backgroundColor: "#FEF3C7",
+                    borderRadius: 8,
+                    padding: 10
+                  }}
+                >
+                  <Text style={{ color: "#92400E", textAlign: "center", fontSize: 14 }}>
+                    Task completion is a Pro feature. Upgrade to Pro to track your
+                    progress and mark tasks complete.
+                  </Text>
+                  <TouchableOpacity
+                    style={{
+                      marginTop: 8,
+                      backgroundColor: "#10B981",
+                      padding: 8,
+                      borderRadius: 8
+                    }}
+                    onPress={() => navigation.navigate("Subscription")}
+                  >
+                    <Text
+                      style={{ color: "white", textAlign: "center", fontWeight: "700" }}
+                    >
+                      Upgrade to Pro
+                    </Text>
+                  </TouchableOpacity>
+                </View>
+              )}
+            </View>
+          )}
+        />
+      )}
     </ScreenContainer>
   );
 }
@@ -49,6 +174,11 @@ const styles = StyleSheet.create({
   title: { fontSize: 16, fontWeight: "700" },
   plant: { fontSize: 12, color: "#555", marginVertical: 4 },
   desc: { marginBottom: 8 },
-  doneBtn: { backgroundColor: "#2ecc71", padding: 8, borderRadius: 8, alignSelf: "flex-end" },
-  doneText: { color: "white" },
+  doneBtn: {
+    backgroundColor: "#2ecc71",
+    padding: 8,
+    borderRadius: 8,
+    alignSelf: "flex-end"
+  },
+  doneText: { color: "white" }
 });

@@ -1,4 +1,4 @@
-import api from "./client";
+import { client as api } from "./client";
 
 export function analyzeDiagnosis(payload) {
   return api("/diagnose/analyze", {
@@ -32,6 +32,6 @@ export function diagnoseImage(uri) {
 
   return api("/diagnose", {
     method: "POST",
-    body: form,
+    body: form
   });
 }

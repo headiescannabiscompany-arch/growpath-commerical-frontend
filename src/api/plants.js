@@ -1,7 +1,15 @@
-import client from "./client";
+// ...existing code...
+export async function exportPlantPdf(plantId) {
+  // This is a stub. Replace with real implementation if needed.
+  return api.get(`/exports/plants/${plantId}.pdf`, {
+    responseType: "blob"
+  });
+}
+import { client } from "./client";
 
-export async function createPlant(data, token) {
-  return client.post("/api/plants", data, token);
+// Accepts FormData for media upload
+export async function createPlant(formData, token) {
+  return client.postMultipart("/api/plants", formData, token);
 }
 
 export async function getPlants(token) {

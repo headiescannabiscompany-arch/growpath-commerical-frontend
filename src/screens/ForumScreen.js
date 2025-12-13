@@ -8,15 +8,17 @@ import {
   StyleSheet,
   RefreshControl
 } from "react-native";
+import { useNavigation } from "@react-navigation/native";
 
 import ScreenContainer from "../components/ScreenContainer";
 import FollowButton from "../components/FollowButton";
 import { getLatestPosts, getTrendingPosts, getFollowingPosts } from "../api/forum";
 
-export default function ForumScreen({ navigation }) {
+export default function ForumScreen() {
   const [mode, setMode] = useState("latest");
   const [posts, setPosts] = useState([]);
   const [refreshing, setRefreshing] = useState(false);
+  const navigation = useNavigation();
 
   useEffect(() => {
     load();
@@ -108,6 +110,42 @@ export default function ForumScreen({ navigation }) {
 
   return (
     <ScreenContainer>
+      <View
+        style={{
+          backgroundColor: "#F0FDF4",
+          borderRadius: 8,
+          padding: 12,
+          marginBottom: 12
+        }}
+      >
+        <Text
+          style={{ color: "#10B981", fontWeight: "600", fontSize: 15, marginBottom: 2 }}
+        >
+          🌱 Community & Shared Wisdom
+        </Text>
+        <Text style={{ color: "#222", fontSize: 13 }}>
+          The Growers Guild is a space for learning, sharing, and supporting each other.
+          There are no experts—only fellow growers on their own journeys. Ask questions,
+          offer insights, and remember: every experience helps the community grow
+          stronger.
+        </Text>
+      </View>
+      {/* Guild Header */}
+      <View style={styles.guildHeader}>
+        <View style={styles.guildTitleRow}>
+          <View style={styles.guildTitleContainer}>
+            <Text style={styles.guildTitle}>🌱 The Growers Guild</Text>
+            <Text style={styles.guildSubtitle}>Experience. Observation. Learning.</Text>
+          </View>
+          <TouchableOpacity
+            onPress={() => navigation.navigate("GuildCode")}
+            style={styles.codeButton}
+          >
+            <Text style={styles.codeButtonText}>📜 Guild Code</Text>
+          </TouchableOpacity>
+        </View>
+      </View>
+
       {/* Top tabs + Create Button */}
       <View style={styles.header}>
         <View style={styles.tabRow}>
@@ -165,6 +203,44 @@ export default function ForumScreen({ navigation }) {
 }
 
 const styles = StyleSheet.create({
+  guildHeader: {
+    paddingVertical: 16,
+    paddingHorizontal: 20,
+    backgroundColor: "#f8f9fa",
+    borderBottomWidth: 2,
+    borderBottomColor: "#27ae60",
+    marginBottom: 12
+  },
+  guildTitleRow: {
+    flexDirection: "row",
+    justifyContent: "space-between",
+    alignItems: "center"
+  },
+  guildTitleContainer: {
+    flex: 1
+  },
+  guildTitle: {
+    fontSize: 24,
+    fontWeight: "700",
+    color: "#2c3e50",
+    marginBottom: 4
+  },
+  guildSubtitle: {
+    fontSize: 14,
+    color: "#7f8c8d",
+    fontStyle: "italic"
+  },
+  codeButton: {
+    backgroundColor: "#27ae60",
+    paddingHorizontal: 12,
+    paddingVertical: 8,
+    borderRadius: 6
+  },
+  codeButtonText: {
+    color: "#fff",
+    fontSize: 12,
+    fontWeight: "600"
+  },
   header: {
     marginBottom: 12
   },
@@ -209,9 +285,7 @@ const styles = StyleSheet.create({
     borderRadius: 10,
     padding: 12,
     marginBottom: 12,
-    shadowColor: "#000",
-    shadowOpacity: 0.05,
-    shadowRadius: 2,
+    boxShadow: "0px 1px 2px rgba(0,0,0,0.05)",
     elevation: 1
   },
   userRow: {

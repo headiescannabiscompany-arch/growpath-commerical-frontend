@@ -74,8 +74,11 @@ export function unsavePost(id) {
   return api(`/forum/unsave/${id}`, { method: "POST" });
 }
 
-export function reportPost(id) {
-  return api(`/forum/report/${id}`, { method: "POST" });
+export function reportPost(id, reason = "No reason provided") {
+  return api(`/forum/report/${id}`, {
+    method: "POST",
+    body: JSON.stringify({ reason })
+  });
 }
 
 export function savePostToGrowLog(id) {

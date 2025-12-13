@@ -33,14 +33,10 @@ export default function GrowLogDetailScreen({ route, navigation }) {
   }
 
   function confirmDelete() {
-    Alert.alert(
-      "Delete Entry",
-      "Are you sure you want to delete this grow log entry?",
-      [
-        { text: "Cancel", style: "cancel" },
-        { text: "Delete", style: "destructive", onPress: handleDelete }
-      ]
-    );
+    Alert.alert("Delete Entry", "Are you sure you want to delete this grow log entry?", [
+      { text: "Cancel", style: "cancel" },
+      { text: "Delete", style: "destructive", onPress: handleDelete }
+    ]);
   }
 
   async function handleDelete() {
@@ -60,27 +56,21 @@ export default function GrowLogDetailScreen({ route, navigation }) {
     );
   }
 
-  const dateLabel = entry.date
-    ? new Date(entry.date).toLocaleString()
-    : "";
+  const dateLabel = entry.date ? new Date(entry.date).toLocaleString() : "";
 
   return (
     <ScreenContainer scroll>
       {/* Header row: Title + actions */}
       <View style={styles.headerRow}>
         <View style={{ flex: 1 }}>
-          <Text style={styles.title}>
-            {entry.title || "Untitled Entry"}
-          </Text>
+          <Text style={styles.title}>{entry.title || "Untitled Entry"}</Text>
           {!!dateLabel && <Text style={styles.date}>{dateLabel}</Text>}
         </View>
 
         <View style={styles.actions}>
           <TouchableOpacity
             style={styles.actionButton}
-            onPress={() =>
-              navigation.navigate("GrowLogEntry", { id: entry._id })
-            }
+            onPress={() => navigation.navigate("GrowLogEntry", { id: entry._id })}
           >
             <Text style={styles.actionText}>Edit</Text>
           </TouchableOpacity>
@@ -89,9 +79,7 @@ export default function GrowLogDetailScreen({ route, navigation }) {
             style={[styles.actionButton, { backgroundColor: "#e74c3c20" }]}
             onPress={confirmDelete}
           >
-            <Text style={[styles.actionText, { color: "#e74c3c" }]}>
-              Delete
-            </Text>
+            <Text style={[styles.actionText, { color: "#e74c3c" }]}>Delete</Text>
           </TouchableOpacity>
         </View>
       </View>
@@ -104,12 +92,7 @@ export default function GrowLogDetailScreen({ route, navigation }) {
           style={{ marginBottom: 16 }}
         >
           {entry.photos.map((uri, idx) => (
-            <Image
-              key={idx}
-              source={{ uri }}
-              style={styles.photo}
-              resizeMode="cover"
-            />
+            <Image key={idx} source={{ uri }} style={styles.photo} resizeMode="cover" />
           ))}
         </ScrollView>
       )}
@@ -136,16 +119,16 @@ export default function GrowLogDetailScreen({ route, navigation }) {
         <TouchableOpacity
           style={[styles.actionLargeButton, { backgroundColor: "#9b59b6" }]}
           onPress={() =>
-            navigation.navigate("GuideScreen", {
-              photos: entry.photos,
+            navigation.navigate("ForumNewPost", {
+              photos: entry.photos || [],
               content: entry.notes || "",
-              strain: entry.strain,
+              strain: entry.strain || "",
               tags: entry.tags || [],
-              fromGrowLogId: entry._id
+              growLogId: entry._id
             })
           }
         >
-          <Text style={styles.actionLargeText}>Share to Forum</Text>
+          <Text style={styles.actionLargeText}>Share to Guild</Text>
         </TouchableOpacity>
       </View>
 

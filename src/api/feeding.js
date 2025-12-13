@@ -1,4 +1,4 @@
-import client from "./client";
+import { client } from "./client";
 
 export function uploadLabel(uri, token) {
   const form = new FormData();

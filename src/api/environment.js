@@ -1,4 +1,4 @@
-import client from "./client";
+import { client } from "./client";
 
 export function analyzeEnvironment(data, token) {
   return client.post("/environment/analyze", data, token);

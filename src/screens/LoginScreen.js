@@ -7,7 +7,8 @@ import {
   StyleSheet,
   Alert,
   ActivityIndicator,
-  Image
+  Image,
+  ImageBackground
 } from "react-native";
 import ScreenContainer from "../components/ScreenContainer";
 import PrimaryButton from "../components/PrimaryButton";
@@ -41,10 +42,10 @@ export default function LoginScreen({ navigation }) {
 
     setLoading(true);
     console.log("Starting auth request...");
-    
+
     try {
       let user;
-      
+
       if (mode === "login") {
         console.log("Calling login API...");
         user = await apiLogin(email.trim(), password.trim());
@@ -60,13 +61,36 @@ export default function LoginScreen({ navigation }) {
       console.log("Auth token:", authToken);
       console.log("Calling contextLogin...");
       contextLogin(authToken, user); // Don't await - let it run async
-      
+
       console.log("Navigating to MainTabs...");
       navigation.replace("MainTabs");
       console.log("Navigation called");
     } catch (err) {
       console.error("Auth error:", err);
-      Alert.alert("Error", err.message || "Authentication failed. Please check your connection.");
+
+      // Better error messages
+      let title = "Error";
+      let message = err.message || "Authentication failed. Please check your connection.";
+
+      if (err.message === "User already exists") {
+        title = "Account Already Exists";
+        message = "This email is already registered. Would you like to login instead?";
+
+        Alert.alert(title, message, [
+          { text: "Cancel", style: "cancel" },
+          {
+            text: "Switch to Login",
+            onPress: () => setMode("login"),
+            style: "default"
+          }
+        ]);
+      } else if (err.message === "Invalid credentials") {
+        title = "Login Failed";
+        message = "Invalid email or password. Please try again.";
+        Alert.alert(title, message);
+      } else {
+        Alert.alert(title, message);
+      }
     } finally {
       setLoading(false);
       console.log("Loading set to false");
@@ -75,13 +99,25 @@ export default function LoginScreen({ navigation }) {
 
   return (
     <ScreenContainer>
-      <View style={styles.logoContainer}>
-        <View style={styles.logoCircle}>
-          <Text style={styles.logoEmoji}>🌱</Text>
+      <ImageBackground
+        source={require("../../assets/ChatGPT Image Dec 12, 2025, 02_01_36 PM.png")}
+        style={styles.headerBackground}
+        imageStyle={styles.headerImageStyle}
+      >
+        <View style={styles.overlay}>
+          <View style={styles.logoContainer}>
+            <View style={styles.logoCircle}>
+              <Image
+                source={require("../../assets/icon.png")}
+                style={styles.logoImage}
+                resizeMode="contain"
+              />
+            </View>
+            <Text style={styles.appName}>GrowPath AI</Text>
+            <Text style={styles.tagline}>Your cannabis cultivation companion</Text>
+          </View>
         </View>
-        <Text style={styles.appName}>GrowPath AI</Text>
-        <Text style={styles.tagline}>Your cannabis cultivation companion</Text>
-      </View>
+      </ImageBackground>
 
       <Text style={styles.title}>
         {mode === "login" ? "Welcome Back" : "Create Account"}
@@ -132,43 +168,70 @@ export default function LoginScreen({ navigation }) {
           {mode === "login" ? "Need an account? Sign up" : "Have an account? Log in"}
         </Text>
       </TouchableOpacity>
+      {/* Privacy Policy link for onboarding */}
+      <View style={{ alignItems: "center", marginTop: 30, marginBottom: 10 }}>
+        <TouchableOpacity onPress={() => navigation.navigate("PrivacyPolicy")}>
+          <Text
+            style={{ color: "#3498db", fontSize: 15, textDecorationLine: "underline" }}
+          >
+            Privacy Policy
+          </Text>
+        </TouchableOpacity>
+      </View>
     </ScreenContainer>
   );
 }
 
 const styles = StyleSheet.create({
+  headerBackground: {
+    width: "100%",
+    height: 280,
+    marginBottom: spacing(6)
+  },
+  headerImageStyle: {
+    opacity: 0.9
+  },
+  overlay: {
+    flex: 1,
+    backgroundColor: "rgba(0, 0, 0, 0.4)",
+    justifyContent: "center",
+    alignItems: "center",
+    position: "relative"
+  },
   logoContainer: {
     alignItems: "center",
-    marginTop: spacing(8),
-    marginBottom: spacing(8)
+    paddingVertical: spacing(6)
   },
   logoCircle: {
     width: 100,
     height: 100,
     borderRadius: 50,
-    backgroundColor: colors.accent,
+    backgroundColor: "rgba(16, 185, 129, 0.95)",
     justifyContent: "center",
     alignItems: "center",
     marginBottom: spacing(3),
-    shadowColor: "#000",
-    shadowOffset: { width: 0, height: 4 },
-    shadowOpacity: 0.2,
-    shadowRadius: 8,
-    elevation: 5
+    boxShadow: "0px 8px 16px rgba(0, 0, 0, 0.3)",
+    elevation: 8,
+    borderWidth: 3,
+    borderColor: "rgba(255, 255, 255, 0.9)"
   },
-  logoEmoji: {
-    fontSize: 50
+  logoImage: {
+    width: 70,
+    height: 70
   },
   appName: {
-    fontSize: 32,
+    fontSize: 36,
     fontWeight: "800",
-    color: colors.accent,
-    marginBottom: spacing(1)
+    color: "#ffffff",
+    marginBottom: spacing(1),
+    textShadow: "0px 2px 8px rgba(0,0,0,0.5)"
   },
   tagline: {
-    fontSize: 14,
-    color: colors.textSoft,
-    fontStyle: "italic"
+    fontSize: 15,
+    color: "#e5e7eb",
+    fontStyle: "italic",
+    fontWeight: "600",
+    textShadow: "0px 1px 4px rgba(0,0,0,0.6)"
   },
   title: {
     fontSize: 24,

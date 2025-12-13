@@ -1,4 +1,4 @@
-import client from "./client";
+import { client } from "./client";
 
 export function listTemplates(params = {}, token) {
   const qs = new URLSearchParams(params).toString();

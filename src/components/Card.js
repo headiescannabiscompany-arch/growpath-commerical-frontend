@@ -11,10 +11,7 @@ const styles = StyleSheet.create({
     backgroundColor: colors.card,
     borderRadius: radius.card,
     padding: spacing(4),
-    shadowColor: "#000",
-    shadowOpacity: 0.04,
-    shadowOffset: { width: 0, height: 6 },
-    shadowRadius: 20,
+    boxShadow: "0px 6px 20px rgba(0, 0, 0, 0.04)",
     elevation: 2
   }
 });

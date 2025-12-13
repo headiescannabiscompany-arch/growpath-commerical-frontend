@@ -1,4 +1,4 @@
-import { api } from "./client";
+import { client as api } from "./client";
 import * as Linking from "expo-linking";
 
 export function createCheckout(courseId, successUrl, cancelUrl) {
@@ -7,7 +7,7 @@ export function createCheckout(courseId, successUrl, cancelUrl) {
     body: JSON.stringify({
       userId: global.user._id,
       successUrl,
-      cancelUrl,
-    }),
+      cancelUrl
+    })
   });
 }

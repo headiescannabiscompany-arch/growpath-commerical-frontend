@@ -1,7 +1,10 @@
+import ScheduleScreen from "../screens/ScheduleScreen";
+// Removed duplicate import and stray JSX
 import React from "react";
 import { createBottomTabNavigator } from "@react-navigation/bottom-tabs";
 import DashboardScreen from "../screens/DashboardScreen";
 import GrowLogsScreen from "../screens/GrowLogsScreen";
+import GrowLogCalendarScreen from "../screens/GrowLogCalendarScreen";
 import DiagnoseScreen from "../screens/DiagnoseScreen";
 import ForumScreen from "../screens/ForumScreen";
 import SearchScreen from "../screens/SearchScreen";
@@ -12,12 +15,23 @@ import { colors, radius, spacing } from "../theme/theme";
 
 const Tab = createBottomTabNavigator();
 
+const TAB_ICONS = {
+  Home: "🏠",
+  Plants: "🌱",
+  Diagnose: "🔍",
+  Search: "🔎",
+  Forum: "💬",
+  Courses: "📚",
+  Profile: "👤",
+  Calendar: "📅",
+  Schedule: "🗓️"
+};
+
 function TabIcon({ label, focused }) {
   return (
     <View style={[styles.iconWrap, focused && styles.iconWrapActive]}>
-      <Text style={[styles.iconLabel, focused && styles.iconLabelActive]}>
-        {label}
-      </Text>
+      <Text style={styles.iconEmoji}>{TAB_ICONS[label]}</Text>
+      <Text style={[styles.iconLabel, focused && styles.iconLabelActive]}>{label}</Text>
     </View>
   );
 }
@@ -36,9 +50,7 @@ export default function MainTabs() {
         component={DashboardScreen}
         options={{
           title: "Home",
-          tabBarLabel: ({ focused }) => (
-            <TabIcon label="Home" focused={focused} />
-          )
+          tabBarLabel: ({ focused }) => <TabIcon label="Home" focused={focused} />
         }}
       />
 
@@ -47,9 +59,7 @@ export default function MainTabs() {
         component={GrowLogsScreen}
         options={{
           title: "Plants",
-          tabBarLabel: ({ focused }) => (
-            <TabIcon label="Plants" focused={focused} />
-          )
+          tabBarLabel: ({ focused }) => <TabIcon label="Plants" focused={focused} />
         }}
       />
 
@@ -58,9 +68,7 @@ export default function MainTabs() {
         component={DiagnoseScreen}
         options={{
           title: "Diagnose",
-          tabBarLabel: ({ focused }) => (
-            <TabIcon label="Diagnose" focused={focused} />
-          )
+          tabBarLabel: ({ focused }) => <TabIcon label="Diagnose" focused={focused} />
         }}
       />
 
@@ -69,9 +77,7 @@ export default function MainTabs() {
         component={SearchScreen}
         options={{
           title: "Search",
-          tabBarLabel: ({ focused }) => (
-            <TabIcon label="Search" focused={focused} />
-          )
+          tabBarLabel: ({ focused }) => <TabIcon label="Search" focused={focused} />
         }}
       />
 
@@ -79,10 +85,8 @@ export default function MainTabs() {
         name="ForumTab"
         component={ForumScreen}
         options={{
-          title: "Forum",
-          tabBarLabel: ({ focused }) => (
-            <TabIcon label="Forum" focused={focused} />
-          )
+          title: "Growers Guild",
+          tabBarLabel: ({ focused }) => <TabIcon label="Guild" focused={focused} />
         }}
       />
 
@@ -91,9 +95,7 @@ export default function MainTabs() {
         component={CoursesScreen}
         options={{
           title: "Courses",
-          tabBarLabel: ({ focused }) => (
-            <TabIcon label="Courses" focused={focused} />
-          )
+          tabBarLabel: ({ focused }) => <TabIcon label="Courses" focused={focused} />
         }}
       />
 
@@ -102,9 +104,23 @@ export default function MainTabs() {
         component={ProfileScreen}
         options={{
           title: "Profile",
-          tabBarLabel: ({ focused }) => (
-            <TabIcon label="Profile" focused={focused} />
-          )
+          tabBarLabel: ({ focused }) => <TabIcon label="Profile" focused={focused} />
+        }}
+      />
+      <Tab.Screen
+        name="CalendarTab"
+        component={GrowLogCalendarScreen}
+        options={{
+          title: "Calendar",
+          tabBarLabel: ({ focused }) => <TabIcon label="Calendar" focused={focused} />
+        }}
+      />
+      <Tab.Screen
+        name="ScheduleTab"
+        component={ScheduleScreen}
+        options={{
+          title: "Schedule",
+          tabBarLabel: ({ focused }) => <TabIcon label="Schedule" focused={focused} />
         }}
       />
     </Tab.Navigator>
@@ -117,37 +133,53 @@ const styles = StyleSheet.create({
     left: 16,
     right: 16,
     bottom: 24,
-    borderRadius: radius.card,
-    height: 70,
+    borderRadius: radius.card + 4,
+    height: 75,
     borderTopWidth: 0,
     elevation: 0,
-    backgroundColor: "transparent"
+    backgroundColor: "transparent",
+    paddingBottom: 8
   },
   tabBg: {
     flex: 1,
     backgroundColor: colors.tabBg,
-    borderRadius: radius.card,
+    borderRadius: radius.card + 4,
     shadowColor: "#000",
-    shadowOpacity: 0.08,
+    shadowOpacity: 0.12,
     shadowOffset: { width: 0, height: 8 },
-    shadowRadius: 24,
-    elevation: 4
+    shadowRadius: 32,
+    elevation: 8,
+    borderWidth: 1,
+    borderColor: "rgba(255, 255, 255, 0.1)"
   },
   iconWrap: {
-    paddingHorizontal: spacing(3),
-    paddingVertical: spacing(1.5),
+    paddingHorizontal: spacing(2),
+    paddingVertical: spacing(1),
     borderRadius: radius.pill,
-    backgroundColor: "transparent"
+    backgroundColor: "transparent",
+    alignItems: "center",
+    justifyContent: "center",
+    minWidth: 70
   },
   iconWrapActive: {
-    backgroundColor: colors.accent
+    backgroundColor: colors.accent,
+    shadowColor: colors.accent,
+    shadowOpacity: 0.3,
+    shadowOffset: { width: 0, height: 4 },
+    shadowRadius: 8,
+    elevation: 4
+  },
+  iconEmoji: {
+    fontSize: 22,
+    marginBottom: 2
   },
   iconLabel: {
-    fontSize: 11,
-    color: colors.tabIcon
+    fontSize: 10,
+    color: colors.tabIcon,
+    fontWeight: "500"
   },
   iconLabelActive: {
     color: "#FFFFFF",
-    fontWeight: "600"
+    fontWeight: "700"
   }
 });

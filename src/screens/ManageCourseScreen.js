@@ -6,11 +6,16 @@ import {
   TouchableOpacity,
   FlatList,
   StyleSheet,
-  Alert,
+  Alert
 } from "react-native";
 
 import ScreenContainer from "../components/ScreenContainer";
-import { getCourse, publishCourse, deleteLesson } from "../api/courses";
+import {
+  getCourse,
+  publishCourse,
+  deleteLesson,
+  submitCourseForReview
+} from "../api/courses";
 
 export default function ManageCourseScreen({ route, navigation }) {
   const { id } = route.params;
@@ -28,6 +33,39 @@ export default function ManageCourseScreen({ route, navigation }) {
     return unsubscribe;
   }, [navigation]);
 
+  async function handleSubmitForReview() {
+    if (lessons.length === 0) {
+      Alert.alert(
+        "No Lessons",
+        "Please add at least one lesson before submitting for review."
+      );
+      return;
+    }
+
+    Alert.alert(
+      "Submit for Review?",
+      "Your course will be reviewed by our team before going live. This usually takes 1-2 business days.",
+      [
+        { text: "Cancel", style: "cancel" },
+        {
+          text: "Submit",
+          onPress: async () => {
+            try {
+              await submitCourseForReview(id);
+              Alert.alert(
+                "Submitted!",
+                "Your course has been submitted for review. You'll receive an email when it's approved."
+              );
+              load();
+            } catch (err) {
+              Alert.alert("Error", err.message || "Failed to submit course");
+            }
+          }
+        }
+      ]
+    );
+  }
+
   async function handlePublish() {
     await publishCourse(id);
     Alert.alert("Published", "Your course is now live.");
@@ -43,14 +81,19 @@ export default function ManageCourseScreen({ route, navigation }) {
         onPress: async () => {
           await deleteLesson(lessonId);
           load();
-        },
-      },
+        }
+      }
     ]);
   }
 
   function renderLesson({ item }) {
-    const typeLabel =
-      item.videoUrl ? "Video" : item.pdfUrl ? "PDF" : item.content ? "Text" : "Empty";
+    const typeLabel = item.videoUrl
+      ? "Video"
+      : item.pdfUrl
+        ? "PDF"
+        : item.content
+          ? "Text"
+          : "Empty";
 
     return (
       <View style={styles.lessonRow}>
@@ -62,7 +105,9 @@ export default function ManageCourseScreen({ route, navigation }) {
         </View>
 
         <TouchableOpacity
-          onPress={() => navigation.navigate("EditLesson", { lessonId: item._id, lesson: item })}
+          onPress={() =>
+            navigation.navigate("EditLesson", { lessonId: item._id, lesson: item })
+          }
         >
           <Text style={styles.link}>Edit</Text>
         </TouchableOpacity>
@@ -74,7 +119,12 @@ export default function ManageCourseScreen({ route, navigation }) {
     );
   }
 
-  if (!course) return <ScreenContainer><Text>Loading…</Text></ScreenContainer>;
+  if (!course)
+    return (
+      <ScreenContainer>
+        <Text>Loading…</Text>
+      </ScreenContainer>
+    );
 
   return (
     <ScreenContainer scroll>
@@ -90,9 +140,7 @@ export default function ManageCourseScreen({ route, navigation }) {
         <Text style={styles.price}>
           {course.price > 0 ? `$${course.price.toFixed(2)}` : "Free"}
         </Text>
-        <Text style={styles.status}>
-          {course.isPublished ? "Published" : "Draft"}
-        </Text>
+        <Text style={styles.status}>{course.isPublished ? "Published" : "Draft"}</Text>
       </View>
 
       <View style={styles.actionsRow}>
@@ -103,20 +151,43 @@ export default function ManageCourseScreen({ route, navigation }) {
           <Text style={styles.secondaryText}>+ Add Lesson</Text>
         </TouchableOpacity>
 
-        {!course.isPublished && (
-          <TouchableOpacity style={styles.primaryBtn} onPress={handlePublish}>
-            <Text style={styles.primaryText}>Publish Course</Text>
+        {course.status === "draft" && (
+          <TouchableOpacity style={styles.reviewBtn} onPress={handleSubmitForReview}>
+            <Text style={styles.reviewText}>📝 Submit for Review</Text>
           </TouchableOpacity>
+        )}
+
+        {course.status === "pending" && (
+          <View style={styles.pendingBadge}>
+            <Text style={styles.pendingText}>⏳ Pending Review</Text>
+          </View>
+        )}
+
+        {course.status === "approved" && !course.isPublished && (
+          <TouchableOpacity style={styles.primaryBtn} onPress={handlePublish}>
+            <Text style={styles.primaryText}>✅ Publish Course</Text>
+          </TouchableOpacity>
+        )}
+
+        {course.status === "rejected" && (
+          <View style={styles.rejectedSection}>
+            <Text style={styles.rejectedText}>❌ Course Rejected</Text>
+            {course.rejectionReason && (
+              <Text style={styles.rejectionReason}>Reason: {course.rejectionReason}</Text>
+            )}
+            <TouchableOpacity
+              style={[styles.secondaryBtn, { marginTop: 8 }]}
+              onPress={handleSubmitForReview}
+            >
+              <Text style={styles.secondaryText}>Resubmit for Review</Text>
+            </TouchableOpacity>
+          </View>
         )}
       </View>
 
       <Text style={styles.sectionHeader}>Lessons</Text>
 
-      <FlatList
-        data={lessons}
-        keyExtractor={(l) => l._id}
-        renderItem={renderLesson}
-      />
+      <FlatList data={lessons} keyExtractor={(l) => l._id} renderItem={renderLesson} />
     </ScreenContainer>
   );
 }
@@ -131,7 +202,7 @@ const styles = StyleSheet.create({
   status: { color: "#27ae60", fontWeight: "600" },
   actionsRow: {
     flexDirection: "row",
-    marginBottom: 16,
+    marginBottom: 16
   },
   secondaryBtn: {
     flex: 1,
@@ -139,7 +210,7 @@ const styles = StyleSheet.create({
     padding: 10,
     borderRadius: 8,
     backgroundColor: "#eee",
-    alignItems: "center",
+    alignItems: "center"
   },
   secondaryText: { fontWeight: "600" },
   primaryBtn: {
@@ -148,27 +219,64 @@ const styles = StyleSheet.create({
     padding: 10,
     borderRadius: 8,
     backgroundColor: "#2ecc71",
-    alignItems: "center",
+    alignItems: "center"
   },
   primaryText: { color: "white", fontWeight: "700" },
+  reviewBtn: {
+    flex: 1,
+    marginLeft: 8,
+    padding: 10,
+    borderRadius: 8,
+    backgroundColor: "#007AFF",
+    alignItems: "center"
+  },
+  reviewText: { color: "white", fontWeight: "700" },
+  pendingBadge: {
+    flex: 1,
+    marginLeft: 8,
+    padding: 10,
+    borderRadius: 8,
+    backgroundColor: "#FFA500",
+    alignItems: "center"
+  },
+  pendingText: { color: "white", fontWeight: "600" },
+  rejectedSection: {
+    flex: 1,
+    marginLeft: 8,
+    padding: 10,
+    borderRadius: 8,
+    backgroundColor: "#FFE5E5",
+    alignItems: "center"
+  },
+  rejectedText: {
+    color: "#CC0000",
+    fontWeight: "700",
+    marginBottom: 4
+  },
+  rejectionReason: {
+    fontSize: 12,
+    color: "#666",
+    textAlign: "center",
+    marginTop: 4
+  },
   sectionHeader: {
     fontSize: 18,
     fontWeight: "700",
     marginBottom: 8,
-    marginTop: 4,
+    marginTop: 4
   },
   lessonRow: {
     flexDirection: "row",
     alignItems: "center",
     paddingVertical: 8,
     borderBottomColor: "#eee",
-    borderBottomWidth: 1,
+    borderBottomWidth: 1
   },
   lessonTitle: { fontWeight: "600" },
   lessonMeta: { color: "#777", fontSize: 12 },
   link: {
     marginLeft: 10,
     color: "#3498db",
-    fontWeight: "600",
-  },
+    fontWeight: "600"
+  }
 });

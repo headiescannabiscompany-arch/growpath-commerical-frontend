@@ -6,9 +6,15 @@ import {
   TouchableOpacity,
   FlatList,
   StyleSheet,
-  ScrollView,
+  ScrollView
 } from "react-native";
-import { searchCourses, filterCourses, listCourses, getTrendingTags, getRecommendedForYou } from "../api/courses";
+import {
+  searchCourses,
+  filterCourses,
+  listCourses,
+  getTrendingTags,
+  getRecommendedForYou
+} from "../api/courses";
 import ScreenContainer from "../components/ScreenContainer";
 
 export default function MarketplaceScreen({ navigation }) {
@@ -109,16 +115,12 @@ export default function MarketplaceScreen({ navigation }) {
           <Text style={styles.title} numberOfLines={2}>
             {item.title}
           </Text>
-          {item.category && (
-            <Text style={styles.category}>{item.category}</Text>
-          )}
+          {item.category && <Text style={styles.category}>{item.category}</Text>}
         </View>
         <Text style={styles.creator}>
           By {item.creator?.username || item.creator?.name || "Unknown"}
         </Text>
-        {item.difficulty && (
-          <Text style={styles.difficulty}>📚 {item.difficulty}</Text>
-        )}
+        {item.difficulty && <Text style={styles.difficulty}>📚 {item.difficulty}</Text>}
         <View style={styles.footer}>
           <Text style={styles.rating}>
             ⭐ {item.rating.toFixed(1)} ({item.ratingCount})
@@ -158,10 +160,7 @@ export default function MarketplaceScreen({ navigation }) {
         showsHorizontalScrollIndicator={false}
         style={styles.filtersContainer}
       >
-        <TouchableOpacity
-          style={styles.filterBtn}
-          onPress={() => handleFilter("rating")}
-        >
+        <TouchableOpacity style={styles.filterBtn} onPress={() => handleFilter("rating")}>
           <Text style={styles.filterBtnText}>⭐ Top Rated</Text>
         </TouchableOpacity>
 
@@ -172,17 +171,11 @@ export default function MarketplaceScreen({ navigation }) {
           <Text style={styles.filterBtnText}>👥 Most Popular</Text>
         </TouchableOpacity>
 
-        <TouchableOpacity
-          style={styles.filterBtn}
-          onPress={() => handleFilter("newest")}
-        >
+        <TouchableOpacity style={styles.filterBtn} onPress={() => handleFilter("newest")}>
           <Text style={styles.filterBtnText}>✨ Newest</Text>
         </TouchableOpacity>
 
-        <TouchableOpacity
-          style={styles.filterBtn}
-          onPress={() => load(1)}
-        >
+        <TouchableOpacity style={styles.filterBtn} onPress={() => load(1)}>
           <Text style={styles.filterBtnText}>🔄 Reset</Text>
         </TouchableOpacity>
       </ScrollView>
@@ -195,11 +188,7 @@ export default function MarketplaceScreen({ navigation }) {
           style={styles.filtersContainer}
         >
           {tags.map((t) => (
-            <TouchableOpacity
-              key={t}
-              style={styles.tag}
-              onPress={() => handleSearch(t)}
-            >
+            <TouchableOpacity key={t} style={styles.tag} onPress={() => handleSearch(t)}>
               <Text style={styles.tagText}>#{t}</Text>
             </TouchableOpacity>
           ))}
@@ -211,7 +200,11 @@ export default function MarketplaceScreen({ navigation }) {
       {recommended.length > 0 && (
         <>
           <Text style={styles.sectionHeader}>Recommended For You</Text>
-          <ScrollView horizontal showsHorizontalScrollIndicator={false} style={{ marginBottom: 12 }}>
+          <ScrollView
+            horizontal
+            showsHorizontalScrollIndicator={false}
+            style={{ marginBottom: 12 }}
+          >
             {recommended.map((item) => (
               <TouchableOpacity
                 key={item._id}
@@ -220,8 +213,12 @@ export default function MarketplaceScreen({ navigation }) {
               >
                 {/* thumbnail optional; fallback to category text */}
                 <View style={styles.recImage} />
-                <Text style={styles.recTitle} numberOfLines={1}>{item.title}</Text>
-                <Text style={styles.recRating}>⭐ {Number(item.rating || 0).toFixed(1)}</Text>
+                <Text style={styles.recTitle} numberOfLines={1}>
+                  {item.title}
+                </Text>
+                <Text style={styles.recRating}>
+                  ⭐ {Number(item.rating || 0).toFixed(1)}
+                </Text>
               </TouchableOpacity>
             ))}
           </ScrollView>
@@ -253,23 +250,23 @@ const styles = StyleSheet.create({
     flexDirection: "row",
     justifyContent: "space-between",
     alignItems: "center",
-    marginBottom: 15,
+    marginBottom: 15
   },
   header: {
     fontSize: 26,
     fontWeight: "700",
-    color: "#2c3e50",
+    color: "#2c3e50"
   },
   browseBtn: {
     paddingHorizontal: 12,
     paddingVertical: 8,
     backgroundColor: "#3498db",
-    borderRadius: 8,
+    borderRadius: 8
   },
   browseBtnText: {
     color: "#fff",
     fontWeight: "600",
-    fontSize: 12,
+    fontSize: 12
   },
   search: {
     padding: 12,
@@ -278,12 +275,12 @@ const styles = StyleSheet.create({
     marginBottom: 12,
     fontSize: 14,
     borderWidth: 1,
-    borderColor: "#ddd",
+    borderColor: "#ddd"
   },
   filtersContainer: {
     marginBottom: 15,
     marginHorizontal: -20,
-    paddingHorizontal: 20,
+    paddingHorizontal: 20
   },
   filterBtn: {
     paddingHorizontal: 14,
@@ -291,29 +288,29 @@ const styles = StyleSheet.create({
     backgroundColor: "#27ae60",
     borderRadius: 20,
     marginRight: 10,
-    justifyContent: "center",
+    justifyContent: "center"
   },
   filterBtnText: {
     color: "#fff",
     fontWeight: "600",
-    fontSize: 12,
+    fontSize: 12
   },
   tag: {
     paddingHorizontal: 14,
     paddingVertical: 6,
     backgroundColor: "#eee",
     borderRadius: 20,
-    marginRight: 8,
+    marginRight: 8
   },
   tagText: { fontWeight: "600", color: "#444" },
   listContent: {
-    paddingBottom: 80,
+    paddingBottom: 80
   },
   sectionHeader: {
     fontSize: 22,
     fontWeight: "700",
     marginTop: 20,
-    marginBottom: 10,
+    marginBottom: 10
   },
   recCard: {
     width: 160,
@@ -322,21 +319,21 @@ const styles = StyleSheet.create({
     borderRadius: 10,
     padding: 8,
     borderWidth: 1,
-    borderColor: "#eee",
+    borderColor: "#eee"
   },
   recImage: {
     width: "100%",
     height: 90,
     borderRadius: 8,
-    backgroundColor: "#f0f0f0",
+    backgroundColor: "#f0f0f0"
   },
   recTitle: {
     fontWeight: "700",
-    marginTop: 6,
+    marginTop: 6
   },
   recRating: {
     color: "#777",
-    marginTop: 3,
+    marginTop: 3
   },
   card: {
     padding: 14,
@@ -345,24 +342,21 @@ const styles = StyleSheet.create({
     marginBottom: 12,
     borderWidth: 1,
     borderColor: "#e0e0e0",
-    shadowColor: "#000",
-    shadowOffset: { width: 0, height: 2 },
-    shadowOpacity: 0.1,
-    shadowRadius: 4,
-    elevation: 3,
+    boxShadow: "0px 2px 4px rgba(0,0,0,0.1)",
+    elevation: 3
   },
   cardHeader: {
     flexDirection: "row",
     justifyContent: "space-between",
     alignItems: "flex-start",
-    marginBottom: 8,
+    marginBottom: 8
   },
   title: {
     fontSize: 16,
     fontWeight: "700",
     color: "#2c3e50",
     flex: 1,
-    marginRight: 8,
+    marginRight: 8
   },
   category: {
     fontSize: 11,
@@ -371,43 +365,43 @@ const styles = StyleSheet.create({
     paddingVertical: 4,
     borderRadius: 6,
     color: "#555",
-    fontWeight: "600",
+    fontWeight: "600"
   },
   creator: {
     fontSize: 12,
     color: "#777",
-    marginBottom: 6,
+    marginBottom: 6
   },
   difficulty: {
     fontSize: 12,
     color: "#27ae60",
     marginBottom: 8,
-    fontWeight: "600",
+    fontWeight: "600"
   },
   footer: {
     flexDirection: "row",
     justifyContent: "space-between",
-    alignItems: "center",
+    alignItems: "center"
   },
   rating: {
     fontSize: 12,
     color: "#f39c12",
-    fontWeight: "600",
+    fontWeight: "600"
   },
   price: {
     fontWeight: "700",
     fontSize: 16,
-    color: "#27ae60",
+    color: "#27ae60"
   },
   emptyState: {
     flex: 1,
     justifyContent: "center",
     alignItems: "center",
-    minHeight: 200,
+    minHeight: 200
   },
   emptyText: {
     fontSize: 16,
     color: "#999",
-    fontWeight: "600",
-  },
+    fontWeight: "600"
+  }
 });

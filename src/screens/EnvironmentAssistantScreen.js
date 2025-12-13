@@ -29,7 +29,7 @@ export default function EnvironmentAssistantScreen() {
       co2: co2 ? Number(co2) : null,
       lightHours: lightHours ? Number(lightHours) : null,
       strainType: "",
-      medium: "",
+      medium: ""
     });
     setResult(res.data.env);
     setLoading(false);
@@ -37,38 +37,102 @@ export default function EnvironmentAssistantScreen() {
 
   return (
     <ScreenContainer scroll>
+      <View
+        style={{
+          backgroundColor: "#F0FDF4",
+          borderRadius: 8,
+          padding: 12,
+          marginBottom: 12
+        }}
+      >
+        <Text
+          style={{ color: "#10B981", fontWeight: "600", fontSize: 15, marginBottom: 2 }}
+        >
+          🌱 Interpreting Your Environment
+        </Text>
+        <Text style={{ color: "#222", fontSize: 13 }}>
+          VPD and environment numbers are tools to help you understand your plant’s
+          world—not rules to stress over. Use these insights to guide your adjustments,
+          but always observe how your plants respond. Trust your senses and intuition; AI
+          and data are here to support your growth journey, not replace it.
+        </Text>
+      </View>
       <Text style={styles.header}>AI Environment Optimizer</Text>
       <Text style={styles.sub}>Enter your current grow room values.</Text>
 
-      <Text style={styles.label}>Stage (Seedling / Veg / Early Flower / Mid Flower / Late Flower / Dry)</Text>
+      <Text style={styles.label}>
+        Stage (Seedling / Veg / Early Flower / Mid Flower / Late Flower / Dry)
+      </Text>
       <TextInput style={styles.input} value={stage} onChangeText={setStage} />
 
       <Text style={styles.label}>Day Temp (°C)</Text>
-      <TextInput style={styles.input} keyboardType="numeric" value={tempDayC} onChangeText={setTempDayC} />
+      <TextInput
+        style={styles.input}
+        keyboardType="numeric"
+        value={tempDayC}
+        onChangeText={setTempDayC}
+      />
 
       <Text style={styles.label}>Night Temp (°C)</Text>
-      <TextInput style={styles.input} keyboardType="numeric" value={tempNightC} onChangeText={setTempNightC} />
+      <TextInput
+        style={styles.input}
+        keyboardType="numeric"
+        value={tempNightC}
+        onChangeText={setTempNightC}
+      />
 
       <Text style={styles.label}>Humidity (%)</Text>
-      <TextInput style={styles.input} keyboardType="numeric" value={humidity} onChangeText={setHumidity} />
+      <TextInput
+        style={styles.input}
+        keyboardType="numeric"
+        value={humidity}
+        onChangeText={setHumidity}
+      />
 
       <Text style={styles.label}>VPD (kPa, optional)</Text>
-      <TextInput style={styles.input} keyboardType="numeric" value={vpd} onChangeText={setVpd} />
+      <TextInput
+        style={styles.input}
+        keyboardType="numeric"
+        value={vpd}
+        onChangeText={setVpd}
+      />
 
       <Text style={styles.label}>PPFD (µmol/m²/s, optional)</Text>
-      <TextInput style={styles.input} keyboardType="numeric" value={ppfd} onChangeText={setPpfd} />
+      <TextInput
+        style={styles.input}
+        keyboardType="numeric"
+        value={ppfd}
+        onChangeText={setPpfd}
+      />
 
       <Text style={styles.label}>DLI (mol/m²/day, optional)</Text>
-      <TextInput style={styles.input} keyboardType="numeric" value={dli} onChangeText={setDli} />
+      <TextInput
+        style={styles.input}
+        keyboardType="numeric"
+        value={dli}
+        onChangeText={setDli}
+      />
 
       <Text style={styles.label}>CO₂ (ppm, optional)</Text>
-      <TextInput style={styles.input} keyboardType="numeric" value={co2} onChangeText={setCo2} />
+      <TextInput
+        style={styles.input}
+        keyboardType="numeric"
+        value={co2}
+        onChangeText={setCo2}
+      />
 
       <Text style={styles.label}>Light Hours (per day)</Text>
-      <TextInput style={styles.input} keyboardType="numeric" value={lightHours} onChangeText={setLightHours} />
+      <TextInput
+        style={styles.input}
+        keyboardType="numeric"
+        value={lightHours}
+        onChangeText={setLightHours}
+      />
 
       <TouchableOpacity style={styles.btn} onPress={run}>
-        <Text style={styles.btnText}>{loading ? "Checking..." : "Analyze Environment"}</Text>
+        <Text style={styles.btnText}>
+          {loading ? "Checking..." : "Analyze Environment"}
+        </Text>
       </TouchableOpacity>
 
       {result && (
@@ -76,10 +140,16 @@ export default function EnvironmentAssistantScreen() {
           <Text style={styles.section}>Target Ranges</Text>
           <Text>Day: {result.targets.tempDayC}°C</Text>
           <Text>Night: {result.targets.tempNightC}°C</Text>
-          <Text>RH: {result.targets.humidityMin}–{result.targets.humidityMax}%</Text>
+          <Text>
+            RH: {result.targets.humidityMin}–{result.targets.humidityMax}%
+          </Text>
           <Text>VPD Ideal: {result.targets.vpdIdeal} kPa</Text>
-          <Text>PPFD: {result.targets.ppfdMin}–{result.targets.ppfdMax}</Text>
-          <Text>DLI: {result.targets.dliMin}–{result.targets.dliMax}</Text>
+          <Text>
+            PPFD: {result.targets.ppfdMin}–{result.targets.ppfdMax}
+          </Text>
+          <Text>
+            DLI: {result.targets.dliMin}–{result.targets.dliMax}
+          </Text>
           <Text>CO₂ Ideal: {result.targets.co2Ideal} ppm</Text>
 
           <Text style={styles.section}>Current Assessment</Text>
@@ -123,5 +193,5 @@ const styles = StyleSheet.create({
   section: { fontSize: 18, fontWeight: "700", marginTop: 10, marginBottom: 4 },
   actionCard: { backgroundColor: "#f3f3f3", padding: 10, borderRadius: 8, marginTop: 6 },
   actionTitle: { fontWeight: "700" },
-  actionPriority: { fontSize: 12, color: "#555", marginTop: 2 },
+  actionPriority: { fontSize: 12, color: "#555", marginTop: 2 }
 });

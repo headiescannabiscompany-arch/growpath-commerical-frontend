@@ -3,7 +3,9 @@
     "target": "es2021",
     "allowSyntheticDefaultImports": true,
     "checkJs": true,
-    "jsx": "react-native"
+    "jsx": "react-native",
+    "moduleResolution": "nodenext",
+    "module": "NodeNext"
   },
   "exclude": ["node_modules", "backend"]
 }

@@ -1,11 +1,15 @@
 import React, { useEffect, useState } from "react";
 import { View, Text, FlatList, TouchableOpacity, Image, StyleSheet } from "react-native";
-import ScreenContainer from "../components/ScreenContainer";
-import { getFeed, likePost, unlikePost } from "../api/posts";
+import ScreenContainer from "../components/ScreenContainer.js";
+import { getFeed, likePost, unlikePost } from "../api/posts.js";
+import { useAuth } from "../context/AuthContext.js";
+import { useNavigation } from "@react-navigation/native";
 
-export default function FeedScreen({ navigation }) {
+export default function FeedScreen() {
   const [posts, setPosts] = useState([]);
   const [page, setPage] = useState(1);
+  const { isPro } = useAuth();
+  const navigation = useNavigation();
 
   async function load() {
     const res = await getFeed(page);
@@ -54,16 +58,55 @@ export default function FeedScreen({ navigation }) {
       )}
 
       <View style={styles.actions}>
-        <TouchableOpacity onPress={() => toggleLike(item)}>
-          <Text style={styles.like}>❤️ {item.likeCount || 0}</Text>
+        <TouchableOpacity
+          onPress={isPro ? () => toggleLike(item) : undefined}
+          disabled={!isPro}
+        >
+          <Text style={[styles.like, !isPro && { color: "#bbb" }]}>
+            ❤️ {item.likeCount || 0}
+          </Text>
         </TouchableOpacity>
 
         <TouchableOpacity
-          onPress={() => navigation.navigate("Comments", { postId: item._id })}
+          onPress={
+            isPro
+              ? () => navigation.navigate("Comments", { postId: item._id })
+              : undefined
+          }
+          disabled={!isPro}
         >
-          <Text style={styles.comment}>💬 Comments</Text>
+          <Text style={[styles.comment, !isPro && { color: "#bbb" }]}>💬 Comments</Text>
         </TouchableOpacity>
       </View>
+
+      {!isPro && (
+        <View
+          style={{
+            marginTop: 10,
+            backgroundColor: "#FEF3C7",
+            borderRadius: 8,
+            padding: 10
+          }}
+        >
+          <Text style={{ color: "#92400E", textAlign: "center", fontSize: 15 }}>
+            Liking and commenting are Pro features. Upgrade to Pro to join the
+            conversation.
+          </Text>
+          <TouchableOpacity
+            style={{
+              marginTop: 8,
+              backgroundColor: "#10B981",
+              padding: 8,
+              borderRadius: 8
+            }}
+            onPress={() => navigation.navigate("Subscription")}
+          >
+            <Text style={{ color: "white", textAlign: "center", fontWeight: "700" }}>
+              Upgrade to Pro
+            </Text>
+          </TouchableOpacity>
+        </View>
+      )}
     </View>
   );
 

@@ -10,7 +10,14 @@ function AppContent() {
 
   if (loading) {
     return (
-      <View style={{ flex: 1, justifyContent: "center", alignItems: "center", backgroundColor: "#fff" }}>
+      <View
+        style={{
+          flex: 1,
+          justifyContent: "center",
+          alignItems: "center",
+          backgroundColor: "#fff"
+        }}
+      >
         <ActivityIndicator size="large" color="#2ecc71" />
         <Text style={{ marginTop: 16, fontSize: 16 }}>Loading GrowPath AI...</Text>
       </View>

@@ -1,13 +1,13 @@
-import { api } from "./client";
+import { client as api } from "./client.js";
 
 export function listGrows() {
   return api("/api/grows");
 }
 
-export function createGrow(name, strain, stage) {
+export function createGrow(growData) {
   return api("/api/grows", {
     method: "POST",
-    body: JSON.stringify({ name, strain, stage })
+    body: JSON.stringify(growData)
   });
 }
 

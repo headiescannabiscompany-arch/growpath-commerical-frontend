@@ -49,14 +49,14 @@ export default function GrowLogTimelineScreen({ navigation }) {
           <Text style={styles.title}>{item.title || "Untitled Entry"}</Text>
           <Text style={styles.date}>{new Date(item.date).toLocaleDateString()}</Text>
 
-          {item.stage && (
-            <Text style={styles.stage}>Stage: {item.stage}</Text>
-          )}
+          {item.stage && <Text style={styles.stage}>Stage: {item.stage}</Text>}
 
           {item.tags?.length > 0 && (
             <View style={styles.tagRow}>
               {item.tags.slice(0, 2).map((tag, i) => (
-                <Text key={i} style={styles.tag}>{tag}</Text>
+                <Text key={i} style={styles.tag}>
+                  {tag}
+                </Text>
               ))}
               {item.tags.length > 2 && (
                 <Text style={styles.tag}>+{item.tags.length - 2}</Text>
@@ -156,9 +156,7 @@ const styles = StyleSheet.create({
     backgroundColor: "#fff",
     borderRadius: radius.card,
     padding: spacing(3),
-    shadowColor: "#000",
-    shadowOpacity: 0.1,
-    shadowOffset: { width: 0, height: 2 },
+    boxShadow: "0px 2px 4px rgba(0,0,0,0.1)",
     elevation: 3
   },
   photo: {

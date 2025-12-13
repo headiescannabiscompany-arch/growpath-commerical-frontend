@@ -151,15 +151,15 @@ export default function PlantDetailScreen({ route, navigation }) {
               </View>
             )}
             <Text style={styles.photoDate}>
-              {firstLog?.date
-                ? new Date(firstLog.date).toLocaleDateString()
-                : "N/A"}
+              {firstLog?.date ? new Date(firstLog.date).toLocaleDateString() : "N/A"}
             </Text>
           </View>
 
           <View style={styles.photoContainer}>
             <Text style={styles.photoLabel}>
-              {selectedLogIndex === logs.length - 1 ? "Now" : "Day " + (selectedLogIndex + 1)}
+              {selectedLogIndex === logs.length - 1
+                ? "Now"
+                : "Day " + (selectedLogIndex + 1)}
             </Text>
             {currentPhoto ? (
               <Image source={{ uri: currentPhoto }} style={styles.photo} />
@@ -343,10 +343,7 @@ const styles = StyleSheet.create({
     padding: 16,
     borderRadius: 12,
     marginBottom: 20,
-    shadowColor: "#000",
-    shadowOffset: { width: 0, height: 2 },
-    shadowOpacity: 0.1,
-    shadowRadius: 4,
+    boxShadow: "0px 2px 4px rgba(0,0,0,0.1)",
     elevation: 3
   },
   infoRow: {
