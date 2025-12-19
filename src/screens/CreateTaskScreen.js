@@ -21,7 +21,8 @@ export default function CreateTaskScreen({ route }) {
 
   async function load() {
     const res = await getPlants();
-    setPlants(res.data || []);
+    const payload = res?.data ?? res ?? [];
+    setPlants(Array.isArray(payload) ? payload : []);
   }
 
   async function save() {

@@ -27,7 +27,7 @@ export default function PaywallScreen({ navigation }) {
         Alert.alert("Error", result.message || "Failed to start trial");
       }
     } catch (error) {
-      Alert.alert("Error", error.response?.data?.message || "Failed to start trial");
+      Alert.alert("Error", error?.data?.message || error?.response?.data?.message || error?.message || "Failed to start trial");
     } finally {
       setLoading(false);
     }
@@ -45,7 +45,7 @@ export default function PaywallScreen({ navigation }) {
         Alert.alert("Error", result.message || "Failed to subscribe");
       }
     } catch (error) {
-      Alert.alert("Error", error.response?.data?.message || "Failed to subscribe");
+      Alert.alert("Error", error?.data?.message || error?.response?.data?.message || error?.message || "Failed to subscribe");
     } finally {
       setLoading(false);
     }

@@ -12,8 +12,10 @@ export default function TemplateDetailScreen({ route, navigation }) {
 
   async function load() {
     const [tRes, pRes] = await Promise.all([getTemplate(templateId), getPlants()]);
-    setTemplate(tRes.data);
-    setPlants(pRes.data || []);
+    const templateData = tRes?.data ?? tRes;
+    const plantList = pRes?.data ?? pRes ?? [];
+    setTemplate(templateData);
+    setPlants(Array.isArray(plantList) ? plantList : []);
   }
 
   useEffect(() => {

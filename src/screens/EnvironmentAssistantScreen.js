@@ -17,22 +17,29 @@ export default function EnvironmentAssistantScreen() {
   const [loading, setLoading] = useState(false);
 
   async function run() {
-    setLoading(true);
-    const res = await analyzeEnvironment({
-      stage,
-      tempDayC: tempDayC ? Number(tempDayC) : null,
-      tempNightC: tempNightC ? Number(tempNightC) : null,
-      humidity: humidity ? Number(humidity) : null,
-      vpd: vpd ? Number(vpd) : null,
-      ppfd: ppfd ? Number(ppfd) : null,
-      dli: dli ? Number(dli) : null,
-      co2: co2 ? Number(co2) : null,
-      lightHours: lightHours ? Number(lightHours) : null,
-      strainType: "",
-      medium: ""
-    });
-    setResult(res.data.env);
-    setLoading(false);
+    try {
+      setLoading(true);
+      const res = await analyzeEnvironment({
+        stage,
+        tempDayC: tempDayC ? Number(tempDayC) : null,
+        tempNightC: tempNightC ? Number(tempNightC) : null,
+        humidity: humidity ? Number(humidity) : null,
+        vpd: vpd ? Number(vpd) : null,
+        ppfd: ppfd ? Number(ppfd) : null,
+        dli: dli ? Number(dli) : null,
+        co2: co2 ? Number(co2) : null,
+        lightHours: lightHours ? Number(lightHours) : null,
+        strainType: "",
+        medium: ""
+      });
+      const payload = res?.data ?? res;
+      setResult(payload?.env || null);
+    } catch (error) {
+      console.warn("Failed to analyze environment:", error?.message || error);
+      setResult(null);
+    } finally {
+      setLoading(false);
+    }
   }
 
   return (

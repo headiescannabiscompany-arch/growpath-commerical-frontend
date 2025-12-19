@@ -1,5 +1,5 @@
 import React from "react";
-import { Text, FlatList, TouchableOpacity, StyleSheet, View } from "react-native";
+import { Text, FlatList, TouchableOpacity, StyleSheet, View, Alert } from "react-native";
 import ScreenContainer from "../components/ScreenContainer";
 import { convertScheduleToTemplate } from "../api/feeding";
 
@@ -14,7 +14,12 @@ export default function FeedingScheduleResult({ route, navigation }) {
       schedule,
     });
 
-    navigation.navigate("TemplateDetail", { templateId: res.data.template._id });
+    const payload = res?.data ?? res;
+    if (!payload?.template?._id) {
+      Alert.alert("Error", "Template save failed. Please try again.");
+      return;
+    }
+    navigation.navigate("TemplateDetail", { templateId: payload.template._id });
   }
 
   return (

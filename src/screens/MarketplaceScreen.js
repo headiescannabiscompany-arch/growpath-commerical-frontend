@@ -16,6 +16,7 @@ import {
   getRecommendedForYou
 } from "../api/courses";
 import ScreenContainer from "../components/ScreenContainer";
+import { extractCourses, extractHasMore } from "../utils/marketplaceTransforms";
 
 export default function MarketplaceScreen({ navigation }) {
   const [query, setQuery] = useState("");
@@ -30,12 +31,13 @@ export default function MarketplaceScreen({ navigation }) {
     try {
       setLoading(true);
       const res = await listCourses(newPage);
+      const nextCourses = extractCourses(res);
       if (newPage === 1) {
-        setCourses(res.data.courses || res.courses || []);
+        setCourses(nextCourses);
       } else {
-        setCourses((prev) => [...prev, ...(res.data.courses || res.courses || [])]);
+        setCourses((prev) => [...prev, ...nextCourses]);
       }
-      setHasMore(res.data.hasMore !== false);
+      setHasMore(extractHasMore(res));
       setPage(newPage);
     } catch (err) {
       console.log("Error loading courses:", err.message);
@@ -58,7 +60,8 @@ export default function MarketplaceScreen({ navigation }) {
         await load(1);
       } else {
         const res = await searchCourses(text);
-        setCourses(res.data || res || []);
+        const payload = res?.data ?? res ?? [];
+        setCourses(Array.isArray(payload) ? payload : []);
         setHasMore(false); // Search results don't paginate
       }
     } catch (err) {
@@ -72,7 +75,8 @@ export default function MarketplaceScreen({ navigation }) {
     try {
       setLoading(true);
       const res = await filterCourses({ sort });
-      setCourses(res.data || res || []);
+      const payload = res?.data ?? res ?? [];
+      setCourses(Array.isArray(payload) ? payload : []);
       setHasMore(false); // Filtered results don't paginate
     } catch (err) {
       console.log("Error filtering:", err.message);
@@ -90,7 +94,8 @@ export default function MarketplaceScreen({ navigation }) {
   async function loadTags() {
     try {
       const res = await getTrendingTags();
-      setTags(res.data || res || []);
+      const payload = res?.data ?? res ?? [];
+      setTags(Array.isArray(payload) ? payload : []);
     } catch (err) {
       console.log("Error loading tags:", err.message);
     }
@@ -99,7 +104,8 @@ export default function MarketplaceScreen({ navigation }) {
   async function loadRecommended() {
     try {
       const res = await getRecommendedForYou();
-      setRecommended(res.data || res || []);
+      const payload = res?.data ?? res ?? [];
+      setRecommended(Array.isArray(payload) ? payload : []);
     } catch (err) {
       console.log("Error loading recommended:", err.message);
     }

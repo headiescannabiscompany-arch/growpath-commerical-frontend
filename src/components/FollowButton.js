@@ -10,8 +10,8 @@ export default function FollowButton({ userId }) {
     async function load() {
       try {
         const res = await isFollowing(userId);
-        // api returns { isFollowing }
-        const val = res.data?.isFollowing ?? (res.isFollowing ?? false);
+        const payload = res?.data ?? res;
+        const val = payload?.isFollowing ?? false;
         if (mounted) setFollowing(!!val);
       } catch (err) {
         // ignore

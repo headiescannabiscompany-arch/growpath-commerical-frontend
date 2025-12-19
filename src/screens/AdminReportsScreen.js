@@ -19,8 +19,8 @@ export default function AdminReportsScreen() {
   async function loadReports() {
     setLoading(true);
     try {
-      const res = await getReports(global.token);
-      setReports(res.data);
+      const res = await getReports(global.authToken);
+      setReports(res?.data ?? res ?? []);
     } catch (err) {
       Alert.alert("Error", "Failed to load reports");
     } finally {
@@ -35,7 +35,7 @@ export default function AdminReportsScreen() {
   async function handleResolve(id) {
     setResolving(id);
     try {
-      await resolveReport(id, global.token);
+      await resolveReport(id, global.authToken);
       setReports(reports.map((r) => (r._id === id ? { ...r, status: "resolved" } : r)));
     } catch (err) {
       Alert.alert("Error", "Failed to resolve report");

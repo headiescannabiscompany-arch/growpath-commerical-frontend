@@ -1,5 +1,5 @@
 import React, { useState } from "react";
-import { Text, TextInput, TouchableOpacity, StyleSheet } from "react-native";
+import { Text, TextInput, TouchableOpacity, StyleSheet, Alert } from "react-native";
 import ScreenContainer from "../components/ScreenContainer";
 import { generateSchedule } from "../api/feeding";
 
@@ -10,15 +10,25 @@ export default function FeedingScheduleOptions({ navigation, route }) {
   const [weeks, setWeeks] = useState("12");
 
   async function next() {
-    const res = await generateSchedule({
-      nutrientData,
-      growMedium: medium,
-      strainType: strain,
-      experience: "Intermediate",
-      weeks: Number(weeks),
-    });
-
-    navigation.navigate("FeedingScheduleResult", { schedule: res.data.schedule, nutrientData });
+    try {
+      const res = await generateSchedule({
+        nutrientData,
+        growMedium: medium,
+        strainType: strain,
+        experience: "Intermediate",
+        weeks: Number(weeks),
+      });
+      const payload = res?.data ?? res;
+      if (!payload?.schedule) {
+        throw new Error("Schedule unavailable");
+      }
+      navigation.navigate("FeedingScheduleResult", {
+        schedule: payload.schedule,
+        nutrientData,
+      });
+    } catch (error) {
+      Alert.alert("Error", error?.message || "Failed to generate schedule");
+    }
   }
 
   return (

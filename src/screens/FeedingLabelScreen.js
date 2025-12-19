@@ -1,5 +1,5 @@
 import React, { useState } from "react";
-import { Text, TouchableOpacity, Image, ActivityIndicator } from "react-native";
+import { Text, TouchableOpacity, Image, ActivityIndicator, Alert } from "react-native";
 import * as ImagePicker from "expo-image-picker";
 import ScreenContainer from "../components/ScreenContainer";
 import { uploadLabel } from "../api/feeding";
@@ -14,10 +14,20 @@ export default function FeedingLabelScreen({ navigation }) {
   }
 
   async function extract() {
-    setLoading(true);
-    const res = await uploadLabel(photo);
-    setLoading(false);
-    navigation.navigate("FeedingConfirm", { nutrientData: res.data.nutrientData });
+    try {
+      setLoading(true);
+      const res = await uploadLabel(photo);
+      const payload = res?.data ?? res;
+      if (!payload?.nutrientData) {
+        throw new Error("Label data unavailable");
+      }
+      navigation.navigate("FeedingConfirm", { nutrientData: payload.nutrientData });
+    } catch (error) {
+      console.error("Failed to extract label:", error);
+      Alert.alert("Error", error?.message || "Unable to process label right now.");
+    } finally {
+      setLoading(false);
+    }
   }
 
   return (

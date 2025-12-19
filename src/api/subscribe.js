@@ -1,36 +1,17 @@
 import { client } from "./client";
 
 export const startSubscription = async (type, token) => {
-  const response = await client.post(
-    "/subscribe/start",
-    { type },
-    {
-      headers: {
-        Authorization: `Bearer ${token}`
-      }
-    }
-  );
-  return response.data;
+  return client.post("/subscribe/start", { type }, token);
 };
 
 export const cancelSubscription = async (token) => {
-  const response = await client.post(
-    "/subscribe/cancel",
-    {},
-    {
-      headers: {
-        Authorization: `Bearer ${token}`
-      }
-    }
-  );
-  return response.data;
+  return client.post("/subscribe/cancel", {}, token);
 };
 
 export const getSubscriptionStatus = async (token) => {
-  const response = await client.get("/api/subscribe/status", {
-    headers: {
-      Authorization: `Bearer ${token}`
-    }
-  });
-  return response.data;
+  return client.get("/api/subscribe/status", token);
 };
+
+if (typeof module !== "undefined") {
+  module.exports = { startSubscription, cancelSubscription, getSubscriptionStatus };
+}

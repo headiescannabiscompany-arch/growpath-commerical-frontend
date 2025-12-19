@@ -17,7 +17,7 @@ export default function TokenBalanceWidget({ onPress }) {
   async function load() {
     try {
       const res = await getTokenBalance();
-      setBalance(res.data || res);
+      setBalance(res?.data ?? res);
       setLoading(false);
     } catch (err) {
       console.error("Failed to load token balance:", err);
