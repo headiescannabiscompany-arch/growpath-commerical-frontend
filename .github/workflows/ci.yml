@@ -22,9 +22,21 @@ jobs:
       - name: Install dependencies
         run: npm ci
 
+      - name: Verify Expo dependency versions
+        run: npx expo install --check
+
+      - name: Run Expo Doctor
+        run: npx expo-doctor
+
       - name: Audit production dependencies
         run: npm run audit:ci # TODO: replace with `npm audit --omit=dev --audit-level=high` after the Expo/RN upgrade
 
       - name: Run lint
         run: npm run lint
         continue-on-error: true
+
+      - name: Run tests
+        run: npm test
+        continue-on-error: true # TODO: remove once we have real tests
+
+      # TODO: add a secrets/dependency scanner (GitGuardian preferred, or Snyk/Trivy) once the team picks a service

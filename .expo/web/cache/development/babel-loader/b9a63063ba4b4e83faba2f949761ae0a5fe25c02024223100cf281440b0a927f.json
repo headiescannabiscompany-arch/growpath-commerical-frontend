@@ -1,1 +1,0 @@
-{"ast":null,"code":"import client from \"./client\";\nexport default client;","map":{"version":3,"names":["client"],"sources":["C:/GrowPathAI-UI/src/api/index.js"],"sourcesContent":["import client from \"./client\";\nexport default client;\n"],"mappings":"AAAA,OAAOA,MAAM;AACb,eAAeA,MAAM","ignoreList":[]},"metadata":{},"sourceType":"module","externalDependencies":[]}
