@@ -13,7 +13,8 @@ export default function FeedScreen() {
 
   async function load() {
     const res = await getFeed(page);
-    setPosts((prev) => [...prev, ...(res?.data || [])]);
+    const payload = res?.data ?? res ?? [];
+    setPosts((prev) => [...prev, ...(Array.isArray(payload) ? payload : [])]);
   }
 
   useEffect(() => {

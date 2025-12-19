@@ -8,7 +8,8 @@ export default function TemplatesMarketplaceScreen({ navigation }) {
 
   async function load() {
     const res = await listTemplates();
-    setTemplates(res.data || []);
+    const payload = res?.data ?? res ?? [];
+    setTemplates(Array.isArray(payload) ? payload : []);
   }
 
   useEffect(() => {

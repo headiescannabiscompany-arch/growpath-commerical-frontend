@@ -182,15 +182,20 @@ export default function DiagnoseScreen({ route, navigation }) {
       };
 
       const res = await analyzeDiagnosis(payload);
-      setResult(res.data || res);
+      const data = res?.data ?? res;
+      setResult(data);
       setLoading(false);
     } catch (err) {
       setLoading(false);
       // Check if it's a token error
-      if (err.response?.status === 403 && err.response?.data?.aiTokens !== undefined) {
+      const status = err?.status ?? err?.response?.status;
+      const aiTokens = err?.data?.aiTokens ?? err?.response?.data?.aiTokens;
+      const message =
+        err?.data?.message || err?.response?.data?.message || err?.message || "Request failed";
+      if (status === 403 && aiTokens !== undefined) {
         Alert.alert(
           "🤖 Insufficient AI Tokens",
-          err.response.data.message +
+          message +
             "\n\nUpgrade to Pro for 100 daily tokens, or wait for your weekly refresh.",
           [
             { text: "Cancel", style: "cancel" },
@@ -198,7 +203,7 @@ export default function DiagnoseScreen({ route, navigation }) {
           ]
         );
       } else if (!handleApiError(err, navigation)) {
-        Alert.alert("Error", err.message);
+        Alert.alert("Error", message);
       }
     }
   }
@@ -215,14 +220,15 @@ export default function DiagnoseScreen({ route, navigation }) {
     try {
       setLoading(true);
       const res = await diagnoseImage(photos[0]);
+      const data = res?.data ?? res;
       setLoading(false);
       navigation.navigate("DiagnoseResult", {
-        diagnostics: res.data.diagnostics,
+        diagnostics: data?.diagnostics,
         photo: photos[0]
       });
     } catch (err) {
       setLoading(false);
-      Alert.alert("Error", err.message || "Vision analysis failed");
+      Alert.alert("Error", err?.message || "Vision analysis failed");
     }
   }
 

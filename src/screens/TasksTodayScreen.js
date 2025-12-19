@@ -31,11 +31,13 @@ export default function TasksTodayScreen() {
   const load = React.useCallback(async () => {
     const user = global.user || { role: "free" }; // Replace with your actual user context
     const res = await getTodayTasks();
-    setTasks(res.data || []);
+    const data = res?.data ?? res ?? [];
+    const taskList = Array.isArray(data) ? data : [];
+    setTasks(taskList);
 
     // Schedule reminders for all tasks if allowed (mobile only)
     if (Platform.OS !== "web" && canUseReminders(user) && permissionGranted) {
-      for (const task of res.data || []) {
+      for (const task of taskList) {
         if (task.dueDate) {
           await scheduleTaskReminder(task);
         }

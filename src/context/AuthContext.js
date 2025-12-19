@@ -14,6 +14,11 @@ export const AuthProvider = ({ children }) => {
     loadAuth();
   }, []);
 
+  const syncGlobals = (authToken, userData) => {
+    global.authToken = authToken || null;
+    global.user = userData || null;
+  };
+
   const loadAuth = async () => {
     try {
       // Add timeout for storage access
@@ -31,10 +36,10 @@ export const AuthProvider = ({ children }) => {
       ]);
 
       if (storedToken) {
+        const parsedUser = storedUser ? JSON.parse(storedUser) : null;
         setToken(storedToken);
-        if (storedUser) {
-          setUser(JSON.parse(storedUser));
-        }
+        setUser(parsedUser);
+        syncGlobals(storedToken, parsedUser);
         // Load PRO status with timeout
         const timeout = new Promise((_, reject) =>
           setTimeout(() => reject(new Error("Timeout")), 3000)
@@ -45,10 +50,18 @@ export const AuthProvider = ({ children }) => {
         } catch (err) {
           // Continue without PRO status - user can still use app
         }
+      } else {
+        syncGlobals(null, null);
+        setToken(null);
+        setUser(null);
+        setIsPro(false);
       }
     } catch (error) {
       // Failed to load auth - user will need to login
       console.log("Auth load failed:", error.message);
+      syncGlobals(null, null);
+      setToken(null);
+      setUser(null);
     } finally {
       setLoading(false);
     }
@@ -70,6 +83,7 @@ export const AuthProvider = ({ children }) => {
     // Update state immediately
     setToken(authToken);
     setUser(userData);
+    syncGlobals(authToken, userData);
 
     // Save to storage async (don't block on web)
     AsyncStorage.setItem("token", authToken).catch(() => {});
@@ -86,6 +100,7 @@ export const AuthProvider = ({ children }) => {
       setToken(null);
       setUser(null);
       setIsPro(false);
+      syncGlobals(null, null);
     } catch (error) {
       // Failed to logout
     }

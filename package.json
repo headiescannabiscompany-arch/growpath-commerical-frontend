@@ -12,7 +12,9 @@
     "lint:fix": "eslint . --ext .js,.jsx --fix",
     "format": "prettier --write \"**/*.{js,jsx,json}\"",
     "audit:ci": "node ./scripts/audit-ci.mjs",
-    "test": "echo \"No automated tests yet\""
+    "test": "node --test \"tests/**/*.test.js\"",
+    "backend:start": "node scripts/start-backend.js",
+    "acceptance": "node scripts/run-acceptance.js"
   },
   "husky": {
     "hooks": {

@@ -83,7 +83,11 @@ export default function GrowLogEntryScreen({ route, navigation }) {
   async function loadEntry() {
     setLoading(true);
     const res = await getEntry(entryId);
-    const e = res.data;
+    const e = res?.data ?? res;
+    if (!e) {
+      setLoading(false);
+      return;
+    }
 
     setTitle(e.title);
     setNotes(e.notes);

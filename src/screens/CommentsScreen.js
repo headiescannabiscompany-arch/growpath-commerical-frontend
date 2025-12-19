@@ -10,7 +10,8 @@ export default function CommentsScreen({ route }) {
 
   async function load() {
     const res = await getComments(postId);
-    setComments(res.data || []);
+    const payload = res?.data ?? res ?? [];
+    setComments(Array.isArray(payload) ? payload : []);
   }
 
   useEffect(() => {
