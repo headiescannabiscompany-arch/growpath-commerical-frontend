@@ -11,7 +11,8 @@
     "lint": "eslint . --ext .js,.jsx",
     "lint:fix": "eslint . --ext .js,.jsx --fix",
     "format": "prettier --write \"**/*.{js,jsx,json}\"",
-    "audit:ci": "node ./scripts/audit-ci.mjs"
+    "audit:ci": "node ./scripts/audit-ci.mjs",
+    "test": "echo \"No automated tests yet\""
   },
   "husky": {
     "hooks": {
@@ -26,7 +27,7 @@
   },
   "dependencies": {
     "@expo/webpack-config": "^19.0.0",
-    "@react-native-async-storage/async-storage": "^1.18.2",
+    "@react-native-async-storage/async-storage": "~1.18.2",
     "@react-navigation/bottom-tabs": "^6.6.1",
     "@react-navigation/native": "^6.1.18",
     "@react-navigation/native-stack": "^6.11.0",
@@ -35,10 +36,10 @@
     "dotenv": "^17.2.3",
     "expo": "~49.0.23",
     "expo-dev-client": "~2.4.13",
-    "expo-device": "^8.0.10",
-    "expo-document-picker": "^14.0.8",
+    "expo-device": "~5.4.0",
+    "expo-document-picker": "~11.5.4",
     "expo-image-picker": "~14.3.2",
-    "expo-notifications": "^0.32.15",
+    "expo-notifications": "~0.20.1",
     "expo-status-bar": "~1.6.0",
     "react": "18.2.0",
     "react-dom": "18.2.0",
@@ -50,7 +51,7 @@
     "react-native-screens": "~3.22.0",
     "react-native-svg": "13.9.0",
     "react-native-web": "~0.19.6",
-    "react-native-webview": "^13.16.0",
+    "react-native-webview": "13.2.2",
     "scheduler": "^0.23.2"
   },
   "devDependencies": {
@@ -68,6 +69,7 @@
     "ip": "2.0.1",
     "semver": "^7.6.3",
     "send": "^0.19.2",
-    "webpack-dev-server": "^5.2.2"
+    "webpack-dev-server": "^5.2.2",
+    "@expo/config-plugins": "~7.2.2"
   }
 }

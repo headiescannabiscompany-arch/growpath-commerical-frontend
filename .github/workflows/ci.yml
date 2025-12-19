@@ -22,9 +22,35 @@ jobs:
       - name: Install dependencies
         run: npm ci
 
+      - name: Verify Expo dependency versions
+        run: npx expo install --check
+
+      - name: Run Expo Doctor
+        run: |
+          set +e
+          OUTPUT=$(npx expo-doctor 2>&1)
+          STATUS=$?
+          printf '%s\n' "$OUTPUT"
+          if [ $STATUS -eq 0 ]; then
+            exit 0
+          fi
+          # Fail if there are warnings besides the known Android API 34 requirement
+          WARNINGS=$(printf '%s\n' "$OUTPUT" | grep -c "✖ Check")
+          if [ "$WARNINGS" -eq 1 ] && printf '%s\n' "$OUTPUT" | grep -q "Android API level 34"; then
+            echo "expo-doctor warning acknowledged: Expo SDK 49 targets Android API 33. Ignoring until the SDK 50+ upgrade."
+            exit 0
+          fi
+          exit $STATUS
+
       - name: Audit production dependencies
         run: npm run audit:ci # TODO: replace with `npm audit --omit=dev --audit-level=high` after the Expo/RN upgrade
 
       - name: Run lint
         run: npm run lint
         continue-on-error: true
+
+      - name: Run tests
+        run: npm test
+        continue-on-error: true # TODO: remove once we have real tests
+
+      # TODO: add a secrets/dependency scanner (GitGuardian preferred, or Snyk/Trivy) once the team picks a service
