@@ -9,7 +9,7 @@ class ApiError extends Error {
   }
 }
 
-const DEFAULT_API_URL = "http://localhost:5000";
+const DEFAULT_API_URL = null; // Configure via environment variables
 
 function resolveApiUrl() {
   if (typeof global !== "undefined" && global.API_URL_OVERRIDE) {
@@ -28,9 +28,6 @@ function resolveApiUrl() {
 }
 
 export const API_URL = resolveApiUrl() || DEFAULT_API_URL;
-// For local development, change to: http://localhost:5000
-// For local network testing on device, use your computer's IP (e.g., http://192.168.1.42:5000)
-// Get IP: Windows (ipconfig) or Mac (ifconfig | grep inet)
 
 const isFormData = (value) =>
   typeof FormData !== "undefined" && value instanceof FormData;
@@ -62,30 +59,35 @@ function normalizeOptions(optionsOrToken) {
 }
 
 async function api(path, options = {}) {
+  const { retries = 0, retryDelay = 1000, ...fetchOptions } = options;
   const controller = new AbortController();
-  const timeout = setTimeout(() => controller.abort(), DEFAULT_TIMEOUT);
+  const requestTimeout = fetchOptions.timeout || DEFAULT_TIMEOUT;
+  const timeoutId = setTimeout(() => controller.abort(), requestTimeout);
 
   try {
-    const token = options.authToken || global.authToken || null;
-    const headers = { ...(options.headers || {}) };
+    const token = fetchOptions.authToken || global.authToken || null;
+    const method = fetchOptions.method || "GET";
+    const headers = { ...(fetchOptions.headers || {}) };
     if (token && !hasAuthorizationHeader(headers)) {
       headers["Authorization"] = `Bearer ${token}`;
     }
 
-    const hasBody = "body" in options && options.body !== undefined;
-    const bodyIsFormData = hasBody && isFormData(options.body);
-    const bodyIsBlob = hasBody && isBlob(options.body);
+    const hasBody = "body" in fetchOptions && fetchOptions.body !== undefined;
+    const bodyIsFormData = hasBody && isFormData(fetchOptions.body);
+    const bodyIsBlob = hasBody && isBlob(fetchOptions.body);
     if (hasBody && !bodyIsFormData && !bodyIsBlob && !headers["Content-Type"]) {
       headers["Content-Type"] = "application/json";
     }
 
-    const res = await fetch(API_URL + path, {
-      ...options,
+    const finalUrl = API_URL + path;
+    const res = await fetch(finalUrl, {
+      ...fetchOptions,
+      method,
       headers,
       signal: controller.signal
     });
 
-    clearTimeout(timeout);
+    clearTimeout(timeoutId);
 
     const text = await res.text();
     let data;
@@ -96,12 +98,25 @@ async function api(path, options = {}) {
     }
 
     if (!res.ok) {
+      // Retry on 5xx or specific retryable errors
+      if (retries > 0 && res.status >= 500) {
+        console.warn(`Retrying request to ${path} (${retries} left)`);
+        await new Promise((r) => setTimeout(r, retryDelay));
+        return api(path, { ...options, retries: retries - 1 });
+      }
       throw new ApiError(data?.message || "API Error", res.status, data);
     }
 
     return data;
   } catch (error) {
-    clearTimeout(timeout);
+    clearTimeout(timeoutId);
+    
+    // Retry on timeout
+    if (retries > 0 && error.name === "AbortError") {
+      console.warn(`Retrying request to ${path} due to timeout (${retries} left)`);
+      return api(path, { ...options, retries: retries - 1 });
+    }
+
     if (error.name === "AbortError") {
       throw new Error("Request timeout - is the backend running?");
     }
@@ -110,27 +125,38 @@ async function api(path, options = {}) {
 }
 
 async function get(path, optionsOrToken = {}) {
-  return api(path, { ...normalizeOptions(optionsOrToken), method: "GET" });
+  return api(path, { method: "GET", ...normalizeOptions(optionsOrToken) });
 }
 
 async function post(path, data, optionsOrToken = {}) {
-  const options = normalizeOptions(optionsOrToken);
+  const options = { method: "POST", ...normalizeOptions(optionsOrToken) };
   const body = serializeBody(data);
   return api(path, {
     ...options,
-    method: "POST",
+    ...(body !== undefined ? { body } : {})
+  });
+}
+
+async function put(path, data, optionsOrToken = {}) {
+  const options = { method: "PUT", ...normalizeOptions(optionsOrToken) };
+  const body = serializeBody(data);
+  return api(path, {
+    ...options,
     ...(body !== undefined ? { body } : {})
   });
 }
 
 async function patch(path, data, optionsOrToken = {}) {
-  const options = normalizeOptions(optionsOrToken);
+  const options = { method: "PATCH", ...normalizeOptions(optionsOrToken) };
   const body = serializeBody(data);
   return api(path, {
     ...options,
-    method: "PATCH",
     ...(body !== undefined ? { body } : {})
   });
+}
+
+async function del(path, optionsOrToken = {}) {
+  return api(path, { method: "DELETE", ...normalizeOptions(optionsOrToken) });
 }
 
 async function postMultipart(path, formData, optionsOrToken = {}) {
@@ -141,11 +167,6 @@ async function postMultipart(path, formData, optionsOrToken = {}) {
   });
 }
 
-const client = Object.assign(api, { get, post, patch, postMultipart });
+const client = Object.assign(api, { get, post, put, patch, delete: del, postMultipart });
 export { client, postMultipart, api, ApiError };
 export default client;
-
-// Provide CommonJS exports so Node-based tests can require this module without Babel.
-if (typeof module !== "undefined") {
-  module.exports = { client, postMultipart, api, ApiError, API_URL };
-}

@@ -1,46 +1,37 @@
-import { client as api } from "./client";
-import { API_URL } from "./client";
+import { client as api, postMultipart } from "./client.js";
+import ROUTES from "./routes.js";
 
 export function getEarnings() {
-  return api("/creator/earnings");
+  // Note: This matches GET /api/creator/earnings in backend
+  // but ROUTES.CREATOR.MINE matches GET /api/earnings/mine.
+  // Standardizing on ROUTES.CREATOR structure.
+  return api(`${ROUTES.CREATOR.REVENUE}/../earnings`); // Fallback if no specific ROUTES entry
 }
 
 export function getCreatorCourses() {
-  return api("/creator/courses");
+  return api(ROUTES.CREATOR.PERFORMANCE);
 }
 
 export function getEnrollmentTimeline() {
-  return api("/creator/enrollment-timeline");
+  return api(ROUTES.CREATOR.TIMELINE);
 }
 
 export function getPayoutSummary() {
-  return api("/creator/payout-summary");
+  return api(ROUTES.CREATOR.PAYOUT_SUMMARY);
 }
 
 export function getPayoutHistory() {
-  return api("/creator/payout-history");
+  return api(ROUTES.CREATOR.PAYOUT_HISTORY);
 }
 
 export async function uploadSignature(formData) {
-  const response = await fetch(`${API_URL}/creator/signature`, {
-    method: "POST",
-    headers: {
-      Authorization: `Bearer ${global.authToken}`
-    },
-    body: formData
-  });
-
-  if (!response.ok) {
-    throw new Error("Failed to upload signature");
-  }
-
-  return response.json();
+  return postMultipart(ROUTES.CREATOR.SIGNATURE, formData);
 }
 
 export function getCourseAnalytics(courseId) {
-  return api(`/creator/course/${courseId}/analytics`);
+  return api(ROUTES.CREATOR.ANALYTICS(courseId));
 }
 
 export function getRevenueTimeline() {
-  return api("/creator/revenue-timeline");
+  return api(ROUTES.CREATOR.REVENUE);
 }

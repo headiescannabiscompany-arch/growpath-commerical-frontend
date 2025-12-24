@@ -1,165 +1,164 @@
-// ...existing code...
-export async function enroll() {
-  throw new Error("Enroll not implemented yet");
-}
-
-export async function buyCourse() {
-  throw new Error("Buy course not implemented yet");
-}
-import { api } from "./client";
+import { client as api } from "./client.js";
+import ROUTES from "./routes.js";
 
 export function getMyCourses() {
-  return api("/courses/mine");
+  return api(ROUTES.COURSES.MINE);
 }
 
 export function createCourse(payload) {
-  return api("/courses/create", {
+  return api(ROUTES.COURSES.CREATE, {
     method: "POST",
     body: JSON.stringify(payload)
   });
 }
 
 export function getCourse(id) {
-  return api(`/courses/${id}`);
+  return api(ROUTES.COURSES.DETAIL(id));
 }
 
 export function addLesson(courseId, payload) {
-  return api(`/courses/${courseId}/lesson`, {
+  return api(ROUTES.COURSES.LESSON(courseId), {
     method: "POST",
     body: JSON.stringify(payload)
   });
 }
 
 export function updateLesson(lessonId, payload) {
-  return api(`/courses/lesson/${lessonId}`, {
+  return api(ROUTES.COURSES.LESSON_DETAIL(lessonId), {
     method: "PUT",
     body: JSON.stringify(payload)
   });
 }
 
 export function deleteLesson(lessonId) {
-  return api(`/courses/lesson/${lessonId}`, {
+  return api(ROUTES.COURSES.LESSON_DETAIL(lessonId), {
     method: "DELETE"
   });
 }
 
 export function publishCourse(id) {
-  return api(`/courses/${id}/publish`, {
+  return api(ROUTES.COURSES.PUBLISH(id), {
     method: "PUT"
   });
 }
 
 export function getPublishedCourses() {
-  return api("/courses");
+  return api(ROUTES.COURSES.LIST);
 }
 
 export function enrollInCourse(courseId) {
-  return api(`/courses/${courseId}/enroll`, {
+  return api(ROUTES.COURSES.ENROLL(courseId), {
+    method: "POST"
+  });
+}
+
+export function buyCourse(courseId) {
+  return api(ROUTES.COURSES.BUY(courseId), {
     method: "POST"
   });
 }
 
 export function getEnrollmentStatus(courseId) {
-  return api(`/courses/${courseId}/enrollment-status`);
+  return api(ROUTES.COURSES.STATUS(courseId));
 }
 
 export function completeLesson(lessonId, courseId) {
-  return api(`/courses/lesson/${lessonId}/complete`, {
+  return api(ROUTES.COURSES.COMPLETE_LESSON(lessonId), {
     method: "POST",
     body: JSON.stringify({ courseId })
   });
 }
 
 export function addReview(courseId, rating, text) {
-  return api(`/courses/${courseId}/review`, {
+  return api(ROUTES.COURSES.REVIEW(courseId), {
     method: "POST",
     body: JSON.stringify({ rating, text })
   });
 }
 
 export function getReviews(courseId) {
-  return api(`/courses/${courseId}/reviews`);
+  return api(ROUTES.COURSES.REVIEWS(courseId));
 }
 
 export function deleteReview(courseId) {
-  return api(`/courses/${courseId}/review`, {
+  return api(ROUTES.COURSES.REVIEW(courseId), {
     method: "DELETE"
   });
 }
 
 export function searchCourses(query) {
-  return api(`/courses/search?q=${query}`);
+  return api(`${ROUTES.COURSES.SEARCH}?q=${query}`);
 }
 
 export function filterCourses(options) {
   const params = new URLSearchParams(options).toString();
-  return api(`/courses/filter?${params}`);
+  return api(`${ROUTES.COURSES.FILTER}?${params}`);
 }
 
 export function listCourses(page = 1) {
-  return api(`/courses/list?page=${page}`);
+  return api(`${ROUTES.COURSES.LIST}/list?page=${page}`);
 }
 
 export function getCategories() {
-  return api("/courses/categories");
+  return api(ROUTES.COURSES.CATEGORIES);
 }
 
 export function getCategoryCourses(category) {
-  return api(`/courses/category/${encodeURIComponent(category)}`);
+  return api(ROUTES.COURSES.CATEGORY_COURSES(category));
 }
 
 export function getSubcategories(category) {
-  return api(`/courses/subcategories/${encodeURIComponent(category)}`);
+  return api(ROUTES.COURSES.SUBCATEGORIES(category));
 }
 
 export function getTrendingTags() {
-  return api("/courses/trending-tags");
+  return api(ROUTES.COURSES.TRENDING_TAGS);
 }
 
 export function getRecommendedCourses(courseId) {
-  return api(`/courses/${courseId}/recommendations`);
+  return api(ROUTES.COURSES.RECOMMENDATIONS(courseId));
 }
 
 export function getRecommendedForYou() {
-  return api("/courses/recommended");
+  return api(ROUTES.COURSES.RECOMMENDED);
 }
 
 export function trackLessonView(lessonId) {
-  return api(`/courses/lessons/${lessonId}/view`, {
+  return api(ROUTES.COURSES.TRACK_VIEW(lessonId), {
     method: "POST",
     body: JSON.stringify({})
   });
 }
 
 export function sendWatchTime(lessonId, seconds) {
-  return api(`/courses/lessons/${lessonId}/watch`, {
+  return api(ROUTES.COURSES.TRACK_WATCH(lessonId), {
     method: "POST",
     body: JSON.stringify({ seconds })
   });
 }
 
 export function trackDropoff(lessonId, seconds) {
-  return api(`/courses/lessons/${lessonId}/dropoff`, {
+  return api(ROUTES.COURSES.TRACK_DROPOFF(lessonId), {
     method: "POST",
     body: JSON.stringify({ seconds })
   });
 }
 
-// Course Review System
+// Course Review System (Admin/Reviewer)
 export function submitForReview(courseId) {
-  return api(`/courses/${courseId}/submit-for-review`, {
+  return api(ROUTES.COURSES.SUBMIT_REVIEW(courseId), {
     method: "PUT"
   });
 }
 
 export function approveCourse(courseId) {
-  return api(`/courses/${courseId}/approve`, {
+  return api(ROUTES.COURSES.APPROVE(courseId), {
     method: "PUT"
   });
 }
 
 export function rejectCourse(courseId, reason) {
-  return api(`/courses/${courseId}/reject`, {
+  return api(ROUTES.COURSES.REJECT(courseId), {
     method: "PUT",
     body: JSON.stringify({ reason })
   });
@@ -167,7 +166,7 @@ export function rejectCourse(courseId, reason) {
 
 export function getPendingCourses(status) {
   const query = status ? `?status=${status}` : "";
-  return api(`/courses/admin/pending${query}`);
+  return api(`${ROUTES.COURSES.ADMIN_PENDING}${query}`);
 }
 
 // Alias for consistency

@@ -1,9 +1,10 @@
-import client from "./client";
+import client from "./client.js";
+import ROUTES from "./routes.js";
 
 export const submitReport = async ({ contentType, contentId, reason, token }) => {
   return client.post(
-    "/reports",
+    ROUTES.REPORTS.SUBMIT,
     { contentType, contentId, reason },
-    { headers: { Authorization: `Bearer ${token}` } }
+    token
   );
 };

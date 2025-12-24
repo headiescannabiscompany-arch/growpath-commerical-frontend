@@ -1,8 +1,8 @@
-import { client as api } from "./client";
-import * as Linking from "expo-linking";
+import { client as api } from "./client.js";
+import ROUTES from "./routes.js";
 
 export function createCheckout(courseId, successUrl, cancelUrl) {
-  return api(`/payments/checkout/${courseId}`, {
+  return api(ROUTES.PAYMENTS.CHECKOUT(courseId), {
     method: "POST",
     body: JSON.stringify({
       userId: global.user._id,

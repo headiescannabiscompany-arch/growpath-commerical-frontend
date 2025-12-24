@@ -1,7 +1,7 @@
-const test = require("node:test");
-const assert = require("node:assert/strict");
-
-const { client, ApiError, API_URL } = require("../src/api/client.js");
+import { test } from "node:test";
+import assert from "node:assert/strict";
+import { client, ApiError, API_URL } from "../src/api/client.js";
+import { handleApiError, isPro403Error, requirePro } from "../src/utils/proHelper.js";
 
 function setupGlobals(t) {
   const previousFetch = global.fetch;
@@ -71,7 +71,7 @@ test("client.postMultipart forwards FormData without forcing Content-Type", asyn
     };
   };
 
-  const form = new FormData();
+  const form = new global.FormData();
   form.append("photo", "example.png");
 
   await client.postMultipart("/upload", form, {
@@ -99,4 +99,78 @@ test("client throws ApiError with status/data when response is not ok", async (t
       error.status === 401 &&
       error.data.message === "Unauthorized"
   );
+});
+
+test("Subscription helpers propagate explicit tokens and payloads", async (t) => {
+  setupGlobals(t);
+  const calls = [];
+  global.fetch = async (url, options) => {
+    calls.push({ url, options });
+    return {
+      ok: true,
+      text: async () => JSON.stringify({ success: true })
+    };
+  };
+
+  await client.post("/subscribe/start", { type: "trial" }, "token-123");
+  await client.post("/subscribe/cancel", {}, "token-123");
+  await client.get("/api/subscribe/status", "token-123");
+
+  assert.equal(calls.length, 3);
+  calls.forEach(({ options }) => {
+    assert.equal(options.headers.Authorization, "Bearer token-123");
+  });
+  const trialCall = calls[0];
+  assert.equal(trialCall.options.body, JSON.stringify({ type: "trial" }));
+});
+
+test("Marketplace transforms handle array and nested payload shapes", async () => {
+  const { extractCourses, extractHasMore } = await import("../src/utils/marketplaceTransforms.js");
+  const nested = { data: { courses: [{ _id: "1" }], hasMore: true } };
+  const bare = [{ _id: "2" }, { _id: "3" }];
+  const empty = { data: { courses: [] } };
+
+  assert.deepEqual(extractCourses(nested), [{ _id: "1" }]);
+  assert.deepEqual(extractCourses(bare), bare);
+  assert.equal(extractHasMore(nested), true);
+  assert.equal(extractHasMore(empty), false);
+  assert.equal(extractHasMore(bare), true);
+});
+
+test("requirePro executes the action for Pro users", () => {
+  const navigation = { navigate: () => {} };
+  let called = false;
+  requirePro(navigation, true, () => { called = true; });
+  assert.equal(called, true);
+});
+
+test("requirePro navigates to Paywall for free users", () => {
+  const navigation = { screen: null, navigate(s) { this.screen = s; } };
+  let called = false;
+  requirePro(navigation, false, () => { called = true; });
+  assert.equal(called, false);
+  assert.equal(navigation.screen, "Paywall");
+});
+
+test("isPro403Error detects errors with status/data and Axios-style response objects", () => {
+  const apiError = new ApiError("PRO", 403, { message: "PRO required" });
+  assert.equal(isPro403Error(apiError), true);
+
+  const axiosError = { response: { status: 403, data: { message: "PRO required" } } };
+  assert.equal(isPro403Error(axiosError), true);
+
+  assert.equal(isPro403Error(new Error("Other")), false);
+});
+
+test("handleApiError navigates only when error requires PRO", () => {
+  const navigation = { screen: null, navigate(s) { this.screen = s; } };
+  const proError = new ApiError("PRO", 403, { message: "PRO required" });
+  
+  const handled = handleApiError(proError, navigation);
+  assert.equal(handled, true);
+  assert.equal(navigation.screen, "Paywall");
+
+  const otherError = new ApiError("Other", 500);
+  const handledOther = handleApiError(otherError, navigation);
+  assert.equal(handledOther, false);
 });

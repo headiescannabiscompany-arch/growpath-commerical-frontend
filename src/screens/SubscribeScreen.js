@@ -5,8 +5,7 @@ import Card from "../components/Card";
 import PrimaryButton from "../components/PrimaryButton";
 import { colors, spacing } from "../theme/theme";
 import { initIAP, buySubscription } from "../utils/iap";
-
-const API_URL = "http://192.168.1.42:4000";
+import { client } from "../api/client";
 
 export default function SubscribeScreen({ navigation }) {
   const [status, setStatus] = useState(null);
@@ -14,13 +13,7 @@ export default function SubscribeScreen({ navigation }) {
 
   async function load() {
     try {
-      const res = await fetch(`${API_URL}/api/subscription/me`, {
-        headers: {
-          Authorization: `Bearer ${global.authToken}`,
-          "Content-Type": "application/json"
-        }
-      });
-      const s = await res.json();
+      const s = await client.get("/api/subscription/me", global.authToken);
       setStatus(s);
     } catch (err) {
       Alert.alert("Error", err.message);
@@ -42,19 +35,11 @@ export default function SubscribeScreen({ navigation }) {
         // Native IAP
         const purchase = await buySubscription();
 
-        const res = await fetch(`${API_URL}/iap/verify`, {
-          method: "POST",
-          headers: {
-            Authorization: `Bearer ${global.authToken}`,
-            "Content-Type": "application/json"
-          },
-          body: JSON.stringify({
-            receipt: purchase.transactionReceipt,
-            platform: Platform.OS
-          })
-        });
+        const data = await client.post("/api/iap/verify", {
+          receipt: purchase.transactionReceipt,
+          platform: Platform.OS
+        }, global.authToken);
 
-        const data = await res.json();
         if (data.ok) {
           Alert.alert("Success", "You are now Pro!");
           load();

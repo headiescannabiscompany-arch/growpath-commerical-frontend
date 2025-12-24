@@ -2,6 +2,7 @@
   "name": "growpath-ai-frontend",
   "version": "1.0.0",
   "description": "GrowPath AI React Native Frontend",
+  "type": "module",
   "main": "index.js",
   "scripts": {
     "start": "expo start",
@@ -12,9 +13,11 @@
     "lint:fix": "eslint . --ext .js,.jsx --fix",
     "format": "prettier --write \"**/*.{js,jsx,json}\"",
     "audit:ci": "node ./scripts/audit-ci.mjs",
-    "test": "node --test \"tests/**/*.test.js\"",
+    "test": "node --test --import ./tests/setup_fetch_spy.js tests/*.test.js tests/**/*.test.js",
+    "test:live": "node scripts/test-live.js",
     "backend:start": "node scripts/start-backend.js",
-    "acceptance": "node scripts/run-acceptance.js"
+    "acceptance": "node scripts/run-acceptance.js",
+    "acceptance:live": "USE_LIVE_BACKEND=true ACCEPTANCE_COMMANDS='node --test --import ./tests/setup_fetch_spy.js tests/**/*.test.js' node scripts/run-acceptance.js"
   },
   "husky": {
     "hooks": {
@@ -57,6 +60,9 @@
     "scheduler": "^0.23.2"
   },
   "devDependencies": {
+    "@apidevtools/swagger-parser": "^12.1.0",
+    "ajv": "^8.17.1",
+    "ajv-formats": "^3.0.1",
     "eslint": "^8.0.0",
     "eslint-config-prettier": "^9.0.0",
     "eslint-plugin-prettier": "^5.0.0",
@@ -64,6 +70,7 @@
     "eslint-plugin-react-hooks": "^4.6.0",
     "eslint-plugin-react-native": "^4.1.0",
     "husky": "^8.0.0",
+    "js-yaml": "^4.1.1",
     "lint-staged": "^15.0.0",
     "prettier": "^3.0.0"
   },

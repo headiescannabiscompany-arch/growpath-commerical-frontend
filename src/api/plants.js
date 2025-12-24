@@ -1,29 +1,29 @@
-// ...existing code...
-export async function exportPlantPdf(plantId) {
-  // This is a stub. Replace with real implementation if needed.
-  return api.get(`/exports/plants/${plantId}.pdf`, {
-    responseType: "blob"
-  });
-}
-import { client } from "./client";
+import { client } from "./client.js";
+import ROUTES from "./routes.js";
 
 // Accepts FormData for media upload
 export async function createPlant(formData, token) {
-  return client.postMultipart("/api/plants", formData, token);
+  return client.postMultipart(ROUTES.PLANTS.CREATE, formData, token);
 }
 
 export async function getPlants(token) {
-  return client.get("/api/plants", token);
+  return client.get(ROUTES.PLANTS.LIST, token);
 }
 
 export async function getPlantWithLogs(id, token) {
-  return client.get(`/api/plants/${id}`, token);
+  return client.get(ROUTES.PLANTS.DETAIL(id), token);
 }
 
 export async function createPlantLog(id, data, token) {
-  return client.post(`/api/plants/${id}/logs`, data, token);
+  return client.post(ROUTES.PLANTS.LOGS(id), data, token);
 }
 
 export async function getPlantStats(id, token) {
-  return client.get(`/api/plants/${id}/stats`, token);
+  return client.get(ROUTES.PLANTS.STATS(id), token);
+}
+
+export async function exportPlantPdf(plantId) {
+  return client.get(ROUTES.PLANTS.EXPORT_PDF(plantId), {
+    responseType: "blob"
+  });
 }
