@@ -14,25 +14,27 @@ import Card from "../components/Card";
 import PrimaryButton from "../components/PrimaryButton";
 import { colors, spacing, radius } from "../theme/theme";
 import { likePost, commentOnPost } from "../api/forum";
+import { useAuth } from "../context/AuthContext";
 
 export default function PostDetailScreen({ route, navigation }) {
+  const { isEntitled } = useAuth();
   const { post, refreshFeed } = route.params;
   const [likes, setLikes] = useState(post.likes || 0);
   const [comments, setComments] = useState(post.comments || []);
   const [commentText, setCommentText] = useState("");
 
   // VIP Lock
-  if (post.vipOnly && global.user?.plan !== "pro") {
+  if (post.vipOnly && !isPro) {
     return (
       <ScreenContainer>
         <Card>
-          <Text style={styles.lockTitle}>PRO EXCLUSIVE</Text>
+          <Text style={styles.lockTitle}>EXCLUSIVE CONTENT</Text>
           <Text style={styles.lockText}>
-            This post is only available to Pro members.
+            This post is only available to Pro members and Guild participants.
           </Text>
           <PrimaryButton
-            title="Upgrade to Pro"
-            onPress={() => navigation.navigate("Subscribe")}
+            title="View Plans"
+            onPress={() => navigation.navigate("Subscription")}
           />
         </Card>
       </ScreenContainer>

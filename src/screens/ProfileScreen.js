@@ -10,9 +10,11 @@ import {
 } from "react-native";
 
 import FollowButton from "../components/FollowButton";
-import { getProfile, updateNotificationPreferences } from "../api/profile";
+import { getProfile, updateNotificationPreferences } from "../api/users";
+import { useAuth } from "../context/AuthContext";
 
 export default function ProfileScreen({ route, navigation }) {
+  const { user: currentUser, isPro: currentIsPro, isEntitled: currentIsEntitled } = useAuth();
   // Notification preferences state (for current user only)
   const [notifPrefs, setNotifPrefs] = useState({
     forumReactions: false,
@@ -20,7 +22,7 @@ export default function ProfileScreen({ route, navigation }) {
     forumNotifications: true
   });
   const [savingPrefs, setSavingPrefs] = useState(false);
-  const userId = route.params?.id || global.user._id;
+  const userId = route.params?.id || currentUser?._id;
 
   const [profile, setProfile] = useState(null);
   const [tab, setTab] = useState("posts");
@@ -40,8 +42,7 @@ export default function ProfileScreen({ route, navigation }) {
         user: {
           _id: userId,
           username: "User",
-          email: global.user?.email || "",
-          plan: "free",
+          email: currentUser?.email || "",
           avatar: null,
           banner: null,
           bio: "",
@@ -69,10 +70,11 @@ export default function ProfileScreen({ route, navigation }) {
     );
 
   const { user, posts, growlogs } = profile;
+  const isOwnProfile = userId === currentUser?._id;
 
   // Set notification prefs from profile (if own profile)
   useEffect(() => {
-    if (profile && userId === global.user._id && profile.user.preferences) {
+    if (profile && isOwnProfile && profile.user.preferences) {
       setNotifPrefs({
         forumReactions: !!profile.user.preferences.forumReactions,
         forumAggregated: profile.user.preferences.forumAggregated !== false,
@@ -116,7 +118,7 @@ export default function ProfileScreen({ route, navigation }) {
       </View>
 
       {/* FOLLOW BUTTON */}
-      {userId !== global.user._id && (
+      {!isOwnProfile && (
         <View style={{ marginVertical: 10, alignItems: "center" }}>
           <FollowButton userId={userId} />
         </View>
@@ -136,24 +138,26 @@ export default function ProfileScreen({ route, navigation }) {
           <Text style={styles.stat}>{(user.following || []).length} Following</Text>
         </TouchableOpacity>
 
-        <Text style={styles.stat}>{(posts || []).length} Posts</Text>
+        <Text style={styles.stat}>{(posts || []).length} Posts</n>
       </View>
 
       {/* SUBSCRIPTION STATUS (Own Profile Only) */}
-      {userId === global.user._id && (
+      {isOwnProfile && (
         <View style={styles.subscriptionCard}>
           <View style={styles.subscriptionHeader}>
             <View>
               <Text style={styles.subscriptionTitle}>
-                {user.plan === "pro" ? "✨ Pro Member" : "🌱 Free Plan"}
+                {currentIsPro ? "✨ Pro Member" : "🌱 Free Plan"}
               </Text>
               <Text style={styles.subscriptionSubtitle}>
-                {user.plan === "pro"
+                {currentIsPro
                   ? "All features unlocked"
-                  : "Limited features • Upgrade to unlock AI & more"}
+                  : currentIsEntitled 
+                    ? "Guild Access Active • Pro unlock available"
+                    : "Limited features • Upgrade to unlock AI & more"}
               </Text>
             </View>
-            {user.plan !== "pro" && (
+            {!currentIsPro && (
               <TouchableOpacity
                 style={styles.upgradeBtn}
                 onPress={() => navigation.navigate("Subscription")}

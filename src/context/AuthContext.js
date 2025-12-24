@@ -8,7 +8,12 @@ export const AuthProvider = ({ children }) => {
   const [token, setToken] = useState(null);
   const [user, setUser] = useState(null);
   const [isPro, setIsPro] = useState(false);
+  const [subscriptionStatus, setSubscriptionStatus] = useState("free");
+  const [isGuildMember, setIsGuildMember] = useState(false);
   const [loading, setLoading] = useState(true);
+
+  // Helper to check if user has access to premium tools (Pro OR Guild Member)
+  const isEntitled = isPro || isGuildMember;
 
   useEffect(() => {
     loadAuth();
@@ -17,11 +22,18 @@ export const AuthProvider = ({ children }) => {
   const syncGlobals = (authToken, userData) => {
     global.authToken = authToken || null;
     global.user = userData || null;
+    if (userData) {
+      setIsGuildMember(Array.isArray(userData.guilds) && userData.guilds.length > 0);
+      setSubscriptionStatus(userData.subscriptionStatus || "free");
+    } else {
+      setIsGuildMember(false);
+      setSubscriptionStatus("free");
+    }
   };
 
   const loadAuth = async () => {
     try {
-      // Add timeout for storage access
+      // ... existing storage logic ...
       const storageTimeout = new Promise((_, reject) =>
         setTimeout(() => reject(new Error("Storage timeout")), 1000)
       );
@@ -40,6 +52,7 @@ export const AuthProvider = ({ children }) => {
         setToken(storedToken);
         setUser(parsedUser);
         syncGlobals(storedToken, parsedUser);
+        
         // Load PRO status with timeout
         const timeout = new Promise((_, reject) =>
           setTimeout(() => reject(new Error("Timeout")), 3000)
@@ -48,7 +61,7 @@ export const AuthProvider = ({ children }) => {
         try {
           await Promise.race([loadProStatus(storedToken), timeout]);
         } catch (err) {
-          // Continue without PRO status - user can still use app
+          // Continue without updated PRO status
         }
       } else {
         syncGlobals(null, null);
@@ -57,7 +70,6 @@ export const AuthProvider = ({ children }) => {
         setIsPro(false);
       }
     } catch (error) {
-      // Failed to load auth - user will need to login
       console.log("Auth load failed:", error.message);
       syncGlobals(null, null);
       setToken(null);
@@ -71,27 +83,22 @@ export const AuthProvider = ({ children }) => {
     try {
       const result = await getSubscriptionStatus(authToken || token);
       if (result.success) {
-        // match subscriptionStatus to isPro logic
-        const status = result.status;
-        setIsPro(status === "active" || status === "trial");
+        setSubscriptionStatus(result.status);
+        setIsPro(result.status === "active" || result.status === "trial");
       }
     } catch (error) {
-      // Default to free tier if API is unreachable
       setIsPro(false);
     }
   };
 
   const login = async (authToken, userData) => {
-    // Update state immediately
     setToken(authToken);
     setUser(userData);
     syncGlobals(authToken, userData);
 
-    // Save to storage async (don't block on web)
     AsyncStorage.setItem("token", authToken).catch(() => {});
     AsyncStorage.setItem("user", JSON.stringify(userData)).catch(() => {});
 
-    // Load pro status in background
     loadProStatus(authToken).catch(() => {});
   };
 
@@ -102,6 +109,8 @@ export const AuthProvider = ({ children }) => {
       setToken(null);
       setUser(null);
       setIsPro(false);
+      setIsGuildMember(false);
+      setSubscriptionStatus("free");
       syncGlobals(null, null);
     } catch (error) {
       // Failed to logout
@@ -118,6 +127,9 @@ export const AuthProvider = ({ children }) => {
         token,
         user,
         isPro,
+        subscriptionStatus,
+        isGuildMember,
+        isEntitled,
         loading,
         login,
         logout,

@@ -17,7 +17,7 @@ import { useAuth } from "../context/AuthContext";
 import { requirePro, handleApiError } from "../utils/proHelper";
 
 export default function DiagnoseScreen({ route, navigation }) {
-  const { isPro } = useAuth();
+  const { isPro, isEntitled } = useAuth();
   const photosFromLog = route.params?.photos || [];
   const notesFromLog = route.params?.notes || "";
   const fromGrowLogId = route.params?.fromGrowLogId || null;
@@ -125,8 +125,7 @@ export default function DiagnoseScreen({ route, navigation }) {
   }
 
   async function runDiagnosis(pOverride, nOverride) {
-    // PRO feature check
-    if (!isPro) {
+    if (!isEntitled) {
       Alert.alert(
         "GrowPath Philosophy",
         "AI tools are here to help you learn and grow as a cultivator. Upgrade to PRO to unlock daily AI tokens and deepen your understanding with every diagnosis. Remember: your own observations and experience are always your most valuable tools—AI is just a guide on your path.",
@@ -209,7 +208,6 @@ export default function DiagnoseScreen({ route, navigation }) {
   }
 
   async function runVision() {
-    // PRO feature check
     if (!isPro) {
       navigation.navigate("Paywall");
       return;
