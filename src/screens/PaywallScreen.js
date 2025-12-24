@@ -11,6 +11,9 @@ import { useAuth } from "../context/AuthContext";
 import { startSubscription } from "../api/subscribe";
 import ScreenContainer from "../components/ScreenContainer";
 
+import * as Linking from "expo-linking";
+import { createCheckoutSession } from "../api/subscription";
+
 export default function PaywallScreen({ navigation }) {
   const { token } = useAuth();
   const [loading, setLoading] = useState(false);
@@ -27,7 +30,7 @@ export default function PaywallScreen({ navigation }) {
         Alert.alert("Error", result.message || "Failed to start trial");
       }
     } catch (error) {
-      Alert.alert("Error", error?.data?.message || error?.response?.data?.message || error?.message || "Failed to start trial");
+      Alert.alert("Error", error?.data?.message || error?.message || "Failed to start trial");
     } finally {
       setLoading(false);
     }
@@ -36,16 +39,15 @@ export default function PaywallScreen({ navigation }) {
   const handleSubscribe = async () => {
     setLoading(true);
     try {
-      const result = await startSubscription("paid", token);
-      if (result.success) {
-        Alert.alert("Success", "PRO subscription activated!", [
-          { text: "OK", onPress: () => navigation.goBack() }
-        ]);
+      const result = await createCheckoutSession();
+      if (result.url) {
+        // Open the Stripe Checkout page in the system browser
+        Linking.openURL(result.url);
       } else {
-        Alert.alert("Error", result.message || "Failed to subscribe");
+        Alert.alert("Error", "Could not create checkout session");
       }
     } catch (error) {
-      Alert.alert("Error", error?.data?.message || error?.response?.data?.message || error?.message || "Failed to subscribe");
+      Alert.alert("Error", error?.data?.message || error?.message || "Failed to subscribe");
     } finally {
       setLoading(false);
     }

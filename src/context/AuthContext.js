@@ -71,7 +71,9 @@ export const AuthProvider = ({ children }) => {
     try {
       const result = await getSubscriptionStatus(authToken || token);
       if (result.success) {
-        setIsPro(result.isPro);
+        // match subscriptionStatus to isPro logic
+        const status = result.status;
+        setIsPro(status === "active" || status === "trial");
       }
     } catch (error) {
       // Default to free tier if API is unreachable
