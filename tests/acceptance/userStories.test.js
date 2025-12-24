@@ -185,7 +185,41 @@ describe("Acceptance: User Stories", async () => {
     await guildsApi.listGuilds();
     assert.ok(fetchCalls.some(c => c.url.includes("/api/guilds")), "List guilds hit");
 
-    await guildsApi.joinGuild("guild1");
-    assert.ok(fetchCalls.some(c => c.url.includes("/api/guilds/guild1/join")), "Join guild hit");
+        await guildsApi.joinGuild("guild1");
+
+        assert.ok(fetchCalls.some(c => c.url.includes("/api/guilds/guild1/join")), "Join guild hit");
+
+      });
+
+    
+
+  it("User Story: Guild Member Access (Gated Features)", async (t) => {
+    const { getEntitlements } = await import("../../src/utils/entitlements.js");
+    
+    // 1. Mock a non-pro Guild member
+    globalThis.__MOCK_RESPONDER__ = async (url) => {
+       if (url.includes("/api/auth/login")) return { 
+          json: { token: "guild-token", user: { id: "u-guild", subscriptionStatus: "free", guilds: ["guild1"] } } 
+       };
+       return { json: { success: true } };
+    };
+
+    const loginRes = await authApi.login("guild@member.com", "pass");
+    assert.strictEqual(global.user.subscriptionStatus, "free");
+    assert.ok(global.user.guilds.length > 0, "Should be guild member");
+
+    // 2. Verify AI/VPD access (surfaced via logic)
+    await diagnoseApi.analyzeDiagnosis({ notes: "test" });
+    assert.ok(fetchCalls.some(c => c.url.includes("/api/diagnose/analyze")), "AI Analysis hit for guild member");
+
+    // 3. Verify logic mapping matches backend rules
+    const entitlements = getEntitlements(global.user);
+    assert.strictEqual(entitlements.isPro, false, "Guild member should not be Pro");
+    assert.strictEqual(entitlements.isEntitled, true, "Guild member should be entitled to AI tools");
   });
 });
+
+
+        
+
+    

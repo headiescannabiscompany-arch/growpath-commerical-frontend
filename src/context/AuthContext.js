@@ -1,6 +1,7 @@
 import React, { createContext, useState, useContext, useEffect } from "react";
 import AsyncStorage from "@react-native-async-storage/async-storage";
 import { getSubscriptionStatus } from "../api/subscribe";
+import { getEntitlements } from "../utils/entitlements";
 
 const AuthContext = createContext();
 
@@ -10,10 +11,19 @@ export const AuthProvider = ({ children }) => {
   const [isPro, setIsPro] = useState(false);
   const [subscriptionStatus, setSubscriptionStatus] = useState("free");
   const [isGuildMember, setIsGuildMember] = useState(false);
+  const [isEntitled, setIsEntitled] = useState(false);
   const [loading, setLoading] = useState(true);
 
-  // Helper to check if user has access to premium tools (Pro OR Guild Member)
-  const isEntitled = isPro || isGuildMember;
+  const updateStateFromUser = (userData) => {
+    const entitlements = getEntitlements(userData);
+    setIsPro(entitlements.isPro);
+    setIsGuildMember(entitlements.isGuildMember);
+    setIsEntitled(entitlements.isEntitled);
+    setSubscriptionStatus(entitlements.subscriptionStatus);
+    
+    // Expose for logic tests
+    global.__AUTH_STATE__ = entitlements;
+  };
 
   useEffect(() => {
     loadAuth();
@@ -22,13 +32,7 @@ export const AuthProvider = ({ children }) => {
   const syncGlobals = (authToken, userData) => {
     global.authToken = authToken || null;
     global.user = userData || null;
-    if (userData) {
-      setIsGuildMember(Array.isArray(userData.guilds) && userData.guilds.length > 0);
-      setSubscriptionStatus(userData.subscriptionStatus || "free");
-    } else {
-      setIsGuildMember(false);
-      setSubscriptionStatus("free");
-    }
+    updateStateFromUser(userData);
   };
 
   const loadAuth = async () => {
@@ -67,7 +71,7 @@ export const AuthProvider = ({ children }) => {
         syncGlobals(null, null);
         setToken(null);
         setUser(null);
-        setIsPro(false);
+        updateStateFromUser(null);
       }
     } catch (error) {
       console.log("Auth load failed:", error.message);
@@ -83,8 +87,17 @@ export const AuthProvider = ({ children }) => {
     try {
       const result = await getSubscriptionStatus(authToken || token);
       if (result.success) {
-        setSubscriptionStatus(result.status);
-        setIsPro(result.status === "active" || result.status === "trial");
+        // Construct a partial user object to calculate entitlements
+        const entitlements = getEntitlements({ 
+          subscriptionStatus: result.status,
+          guilds: user?.guilds || []
+        });
+        
+        setIsPro(entitlements.isPro);
+        setSubscriptionStatus(entitlements.subscriptionStatus);
+        setIsEntitled(entitlements.isEntitled);
+        
+        global.__AUTH_STATE__ = { ...global.__AUTH_STATE__, ...entitlements };
       }
     } catch (error) {
       setIsPro(false);
