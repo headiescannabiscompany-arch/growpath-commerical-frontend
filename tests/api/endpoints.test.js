@@ -1,5 +1,5 @@
-const { describe, it, before, beforeEach } = require("node:test");
-const assert = require("node:assert");
+import { describe, it, before, beforeEach } from "node:test";
+import assert from "node:assert";
 
 // Mock global fetch
 let fetchCalls = [];
@@ -26,7 +26,6 @@ describe("API Configuration & Endpoints", async () => {
   let tasksApi, growsApi, postsApi, ROUTES;
 
   before(async () => {
-    // Import ROUTES directly to verify its content
     const routesMod = await import("../../src/api/routes.js");
     ROUTES = routesMod.default || routesMod.ROUTES;
     

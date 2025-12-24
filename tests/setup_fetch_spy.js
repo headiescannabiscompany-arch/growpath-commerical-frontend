@@ -1,4 +1,4 @@
-const { validateResponse, getSpec } = require("./contract_utils.js");
+import { validateResponse, getSpec } from "./contract_utils.js";
 
 const fetchCalls = [];
 globalThis.__FETCH_CALLS__ = fetchCalls;

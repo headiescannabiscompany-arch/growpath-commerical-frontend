@@ -2,6 +2,7 @@
   "name": "growpath-ai-frontend",
   "version": "1.0.0",
   "description": "GrowPath AI React Native Frontend",
+  "type": "module",
   "main": "index.js",
   "scripts": {
     "start": "expo start",
@@ -12,7 +13,7 @@
     "lint:fix": "eslint . --ext .js,.jsx --fix",
     "format": "prettier --write \"**/*.{js,jsx,json}\"",
     "audit:ci": "node ./scripts/audit-ci.mjs",
-    "test": "node --test --import ./tests/setup_fetch_spy.js tests/",
+    "test": "node --test --import ./tests/setup_fetch_spy.js tests/*.test.js tests/**/*.test.js",
     "test:live": "node scripts/test-live.js",
     "backend:start": "node scripts/start-backend.js",
     "acceptance": "node scripts/run-acceptance.js",

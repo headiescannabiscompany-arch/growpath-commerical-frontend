@@ -1,23 +1,27 @@
-const path = require('path');
-const Ajv = require('ajv');
-const addFormats = require('ajv-formats');
-const SwaggerParser = require('@apidevtools/swagger-parser');
+import path from 'path';
+import { fileURLToPath } from 'url';
+import Ajv from 'ajv';
+import addFormats from 'ajv-formats';
+import SwaggerParser from '@apidevtools/swagger-parser';
+import fs from 'fs';
 
-const ajv = new Ajv({ 
-  allErrors: true, 
+const __filename = fileURLToPath(import.meta.url);
+const __dirname = path.dirname(__filename);
+
+const ajv = new Ajv({
+  allErrors: true,
   strict: false
 });
 addFormats(ajv);
+
 let dereferencedSpec = null;
 
-async function getSpec() {
+export async function getSpec() {
   if (dereferencedSpec) return dereferencedSpec;
 
   const backendDocsDir = path.resolve(__dirname, '../../growpath-backend/docs/openapi');
   const indexPath = path.join(backendDocsDir, 'index.yaml');
 
-  // Check if file exists to avoid crashing in environments without the backend repo (e.g. CI)
-  const fs = require('fs');
   if (!fs.existsSync(indexPath)) {
     return null;
   }
@@ -34,16 +38,14 @@ async function getSpec() {
 /**
  * Validates a response object.
  */
-async function validateResponse(apiPath, method, status, body) {
+export async function validateResponse(apiPath, method, status, body) {
   const spec = await getSpec();
-  if (!spec) return true; // Skip validation if spec is unavailable
-  
+  if (!spec) return true;
+
   const m = method.toLowerCase();
 
-  // 1. Find the path (exact match or parameter placeholder)
   let pathKey = apiPath;
   if (!spec.paths[pathKey]) {
-    // Try to find matching pattern (e.g. /api/plants/123 -> /api/plants/{id})
     pathKey = Object.keys(spec.paths).find(p => {
       const regex = new RegExp('^' + p.replace(/\{[^}]+\}/g, '[^/]+') + '$');
       return regex.test(apiPath);
@@ -63,7 +65,6 @@ async function validateResponse(apiPath, method, status, body) {
 
   const responseSpec = operation.responses[status] || operation.responses['default'];
   if (!responseSpec || !responseSpec.content) {
-    // Some responses (204 No Content) don't have bodies
     return true;
   }
 
@@ -80,5 +81,3 @@ async function validateResponse(apiPath, method, status, body) {
 
   return true;
 }
-
-module.exports = { getSpec, validateResponse };

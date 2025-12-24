@@ -170,8 +170,3 @@ async function postMultipart(path, formData, optionsOrToken = {}) {
 const client = Object.assign(api, { get, post, put, patch, delete: del, postMultipart });
 export { client, postMultipart, api, ApiError };
 export default client;
-
-// Provide CommonJS exports so Node-based tests can require this module without Babel.
-if (typeof module !== "undefined") {
-  module.exports = { client, postMultipart, api, ApiError, API_URL };
-}
