@@ -1,7 +1,8 @@
-import { client as api } from "./client";
+import { client as api } from "./client.js";
+import ROUTES from "./routes.js";
 
 export async function login(email, password) {
-  const data = await api("/api/auth/login", {
+  const data = await api(ROUTES.AUTH.LOGIN, {
     method: "POST",
     body: JSON.stringify({ email, password })
   });
@@ -12,7 +13,7 @@ export async function login(email, password) {
 }
 
 export async function signup(email, password, displayName) {
-  const data = await api("/api/auth/signup", {
+  const data = await api(ROUTES.AUTH.SIGNUP, {
     method: "POST",
     body: JSON.stringify({ email, password, displayName })
   });
@@ -23,7 +24,7 @@ export async function signup(email, password, displayName) {
 }
 
 export async function becomeCreator() {
-  const data = await api("/api/auth/become-creator", {
+  const data = await api(ROUTES.AUTH.BECOME_CREATOR, {
     method: "POST"
   });
 

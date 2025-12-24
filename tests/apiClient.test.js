@@ -100,3 +100,39 @@ test("client throws ApiError with status/data when response is not ok", async (t
       error.data.message === "Unauthorized"
   );
 });
+
+test("Subscription helpers propagate explicit tokens and payloads", async (t) => {
+  setupGlobals(t);
+  const calls = [];
+  global.fetch = async (url, options) => {
+    calls.push({ url, options });
+    return {
+      ok: true,
+      text: async () => JSON.stringify({ success: true })
+    };
+  };
+
+  await client.post("/subscribe/start", { type: "trial" }, "token-123");
+  await client.post("/subscribe/cancel", {}, "token-123");
+  await client.get("/api/subscribe/status", "token-123");
+
+  assert.equal(calls.length, 3);
+  calls.forEach(({ options }) => {
+    assert.equal(options.headers.Authorization, "Bearer token-123");
+  });
+  const trialCall = calls[0];
+  assert.equal(trialCall.options.body, JSON.stringify({ type: "trial" }));
+});
+
+test("Marketplace transforms handle array and nested payload shapes", () => {
+  const { extractCourses, extractHasMore } = require("../src/utils/marketplaceTransforms.js");
+  const nested = { data: { courses: [{ _id: "1" }], hasMore: true } };
+  const bare = [{ _id: "2" }, { _id: "3" }];
+  const empty = { data: { courses: [] } };
+
+  assert.deepEqual(extractCourses(nested), [{ _id: "1" }]);
+  assert.deepEqual(extractCourses(bare), bare);
+  assert.equal(extractHasMore(nested), true);
+  assert.equal(extractHasMore(empty), false);
+  assert.equal(extractHasMore(bare), true);
+});

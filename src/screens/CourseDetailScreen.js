@@ -14,8 +14,6 @@ import PrimaryButton from "../components/PrimaryButton";
 import { colors, spacing, radius } from "../theme/theme";
 import { enroll, buyCourse } from "../api/courses";
 
-const API_URL = "http://192.168.1.42:4000";
-
 export default function CourseDetailScreen({ route, navigation }) {
   const course = route.params.course;
   const [enrolled, setEnrolled] = useState(

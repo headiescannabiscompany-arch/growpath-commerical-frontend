@@ -43,7 +43,7 @@ jobs:
           exit $STATUS
 
       - name: Audit production dependencies
-        run: npm run audit:ci # TODO: replace with `npm audit --omit=dev --audit-level=high` after the Expo/RN upgrade
+        run: npm run audit:ci
 
       - name: Run lint
         run: npm run lint
@@ -51,6 +51,3 @@ jobs:
 
       - name: Run tests
         run: npm test
-        continue-on-error: true # TODO: remove once we have real tests
-
-      # TODO: add a secrets/dependency scanner (GitGuardian preferred, or Snyk/Trivy) once the team picks a service

@@ -1,7 +1,7 @@
 import React from "react";
 import { View, Text, TouchableOpacity, Image, StyleSheet } from "react-native";
 import ScreenContainer from "../components/ScreenContainer";
-import { convertTrainingToTasks } from "../api/training";
+// import { convertTrainingToTasks } from "../api/training"; // Removed
 
 export default function TrainingResultScreen({ route, navigation }) {
   const { photo, training } = route.params;

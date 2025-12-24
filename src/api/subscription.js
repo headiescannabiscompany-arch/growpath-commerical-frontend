@@ -1,17 +1,12 @@
-import { client as api } from "./client";
+import { client as api } from "./client.js";
+import ROUTES from "./routes.js";
 
 export function getSubscription() {
-  return api("/api/subscription/me");
+  return api(ROUTES.SUBSCRIBE.ME);
 }
 
 export function createCheckoutSession() {
-  return api("/api/subscription/create-checkout-session", {
-    method: "POST"
-  });
-}
-
-export function mockUpgrade() {
-  return api("/api/subscription/mock-upgrade", {
+  return api(ROUTES.SUBSCRIBE.CREATE_CHECKOUT_SESSION, {
     method: "POST"
   });
 }
