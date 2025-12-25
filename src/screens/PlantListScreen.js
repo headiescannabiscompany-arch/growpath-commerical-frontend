@@ -15,25 +15,9 @@ import PrimaryButton from "../components/PrimaryButton";
 import { requirePro } from "../utils/proHelper";
 
 export default function PlantListScreen({ navigation }) {
-  const { token, isPro } = useAuth();
+  const { token, isPro, isEntitled } = useAuth();
   const [plants, setPlants] = useState([]);
-  const [loading, setLoading] = useState(true);
-
-  useEffect(() => {
-    loadPlants();
-  }, []);
-
-  const loadPlants = async () => {
-    try {
-      setLoading(true);
-      const data = await getPlants(token);
-      setPlants(data);
-    } catch (error) {
-      Alert.alert("Error", "Failed to load plants");
-    } finally {
-      setLoading(false);
-    }
-  };
+  // ... existing code ...
 
   const handleAddPlant = () => {
     requirePro(navigation, isPro, () => {

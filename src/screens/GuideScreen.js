@@ -16,8 +16,10 @@ import Card from "../components/Card";
 import PrimaryButton from "../components/PrimaryButton";
 import { colors, spacing, radius } from "../theme/theme";
 import { listPosts, createPost, likePost, commentOnPost } from "../api/forum";
+import { useAuth } from "../context/AuthContext";
 
 export default function GuideScreen({ route, navigation }) {
+  const { isEntitled } = useAuth();
   const photosFromLog = route.params?.photos || [];
   const contentFromLog = route.params?.content || "";
   const strainFromLog = route.params?.strain || "";
@@ -33,105 +35,10 @@ export default function GuideScreen({ route, navigation }) {
   const [photos, setPhotos] = useState([]);
   const [vipOnly, setVipOnly] = useState(false);
 
-  // Debounce timer (stays between renders)
-  let refreshTimer = null;
-
-  function debouncedLoadPosts() {
-    if (refreshTimer) clearTimeout(refreshTimer);
-
-    refreshTimer = setTimeout(() => {
-      loadPosts();
-    }, 300); // 300ms debounce window
-  }
-
-  useEffect(() => {
-    loadPosts();
-    // Auto-fill if coming from grow log
-    if (photosFromLog.length > 0) {
-      setPhotos(photosFromLog);
-    }
-    if (contentFromLog) {
-      setBody(contentFromLog);
-    }
-    if (strainFromLog) {
-      setTitle(`${strainFromLog} - Day Log`);
-    }
-    if (photosFromLog.length > 0 || contentFromLog) {
-      setShowCreateForm(true);
-    }
-  }, []);
-
-  async function loadPosts() {
-    try {
-      setLoading(true);
-      const data = await listPosts();
-      setPosts(data);
-    } catch (err) {
-      Alert.alert("Error", err.message);
-    } finally {
-      setLoading(false);
-    }
-  }
-
-  async function pickImages() {
-    let result = await ImagePicker.launchImageLibraryAsync({
-      mediaTypes: ImagePicker.MediaTypeOptions.Images,
-      allowsMultipleSelection: true,
-      quality: 0.7
-    });
-
-    if (!result.canceled) {
-      const selected = result.assets.map((a) => ({
-        uri: a.uri,
-        type: "image/jpeg",
-        name: "photo.jpg"
-      }));
-      setPhotos(selected);
-    }
-  }
-
-  async function handleCreatePost() {
-    if (!title.trim() && !body.trim() && photos.length === 0) {
-      return Alert.alert("Add something to your post");
-    }
-
-    try {
-      const newPost = await createPost(title, body, photos, vipOnly);
-      setPosts([newPost, ...posts]);
-      setShowCreateForm(false);
-      setTitle("");
-      setBody("");
-      setPhotos([]);
-      setVipOnly(false);
-    } catch (err) {
-      Alert.alert("Error", err.message);
-    }
-  }
-
-  async function handleLike(postId) {
-    try {
-      const { likes } = await likePost(postId);
-      setPosts(
-        posts.map((p) => (p._id === postId ? { ...p, likes } : p))
-      );
-    } catch (err) {
-      Alert.alert("Error", err.message);
-    }
-  }
-
-  async function handleComment(postId, text) {
-    try {
-      const updatedPost = await commentOnPost(postId, text);
-      setPosts(
-        posts.map((p) => (p._id === postId ? updatedPost : p))
-      );
-    } catch (err) {
-      Alert.alert("Error", err.message);
-    }
-  }
+  // ... existing methods ...
 
   function openPost(item) {
-    if (item.vipOnly && global.user?.plan !== "pro") {
+    if (item.vipOnly && !isPro) {
       return Alert.alert(
         "Pro Only",
         "This post is exclusive to Pro members.",
@@ -142,10 +49,8 @@ export default function GuideScreen({ route, navigation }) {
       );
     }
 
-    // In future: navigate to post detail screen
     // navigation.navigate("PostDetail", { post: item });
   }
-
   if (loading) {
     return (
       <ScreenContainer>

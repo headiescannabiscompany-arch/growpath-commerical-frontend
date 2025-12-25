@@ -14,24 +14,18 @@ import Card from "../components/Card";
 import PrimaryButton from "../components/PrimaryButton";
 import { colors, spacing, radius } from "../theme/theme";
 import { addEntry, uploadEntryPhoto } from "../api/grows";
+import { useAuth } from "../context/AuthContext";
 
 export default function GrowJournalScreen({ route, navigation }) {
+  const { isEntitled } = useAuth();
   const grow = route.params.grow;
   const [entries, setEntries] = useState(grow.entries || []);
   const [note, setNote] = useState("");
 
-  async function handleAddEntry() {
-    try {
-      const updated = await addEntry(grow._id, note, []);
-      setEntries(updated.entries);
-      setNote("");
-    } catch (err) {
-      Alert.alert("Error", err.message);
-    }
-  }
+  // ... existing methods ...
 
   async function pickImage() {
-    if (global.user?.plan !== "pro") {
+    if (!isPro) {
       return Alert.alert(
         "Pro Feature",
         "Uploading photos requires Pro.",

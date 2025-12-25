@@ -1,6 +1,7 @@
 import React, { createContext, useState, useContext, useEffect } from "react";
 import AsyncStorage from "@react-native-async-storage/async-storage";
 import { getSubscriptionStatus } from "../api/subscribe";
+import { getEntitlements } from "../utils/entitlements";
 
 const AuthContext = createContext();
 
@@ -8,7 +9,21 @@ export const AuthProvider = ({ children }) => {
   const [token, setToken] = useState(null);
   const [user, setUser] = useState(null);
   const [isPro, setIsPro] = useState(false);
+  const [subscriptionStatus, setSubscriptionStatus] = useState("free");
+  const [isGuildMember, setIsGuildMember] = useState(false);
+  const [isEntitled, setIsEntitled] = useState(false);
   const [loading, setLoading] = useState(true);
+
+  const updateStateFromUser = (userData) => {
+    const entitlements = getEntitlements(userData);
+    setIsPro(entitlements.isPro);
+    setIsGuildMember(entitlements.isGuildMember);
+    setIsEntitled(entitlements.isEntitled);
+    setSubscriptionStatus(entitlements.subscriptionStatus);
+    
+    // Expose for logic tests
+    global.__AUTH_STATE__ = entitlements;
+  };
 
   useEffect(() => {
     loadAuth();
@@ -17,11 +32,12 @@ export const AuthProvider = ({ children }) => {
   const syncGlobals = (authToken, userData) => {
     global.authToken = authToken || null;
     global.user = userData || null;
+    updateStateFromUser(userData);
   };
 
   const loadAuth = async () => {
     try {
-      // Add timeout for storage access
+      // ... existing storage logic ...
       const storageTimeout = new Promise((_, reject) =>
         setTimeout(() => reject(new Error("Storage timeout")), 1000)
       );
@@ -40,6 +56,7 @@ export const AuthProvider = ({ children }) => {
         setToken(storedToken);
         setUser(parsedUser);
         syncGlobals(storedToken, parsedUser);
+        
         // Load PRO status with timeout
         const timeout = new Promise((_, reject) =>
           setTimeout(() => reject(new Error("Timeout")), 3000)
@@ -48,16 +65,15 @@ export const AuthProvider = ({ children }) => {
         try {
           await Promise.race([loadProStatus(storedToken), timeout]);
         } catch (err) {
-          // Continue without PRO status - user can still use app
+          // Continue without updated PRO status
         }
       } else {
         syncGlobals(null, null);
         setToken(null);
         setUser(null);
-        setIsPro(false);
+        updateStateFromUser(null);
       }
     } catch (error) {
-      // Failed to load auth - user will need to login
       console.log("Auth load failed:", error.message);
       syncGlobals(null, null);
       setToken(null);
@@ -71,27 +87,31 @@ export const AuthProvider = ({ children }) => {
     try {
       const result = await getSubscriptionStatus(authToken || token);
       if (result.success) {
-        // match subscriptionStatus to isPro logic
-        const status = result.status;
-        setIsPro(status === "active" || status === "trial");
+        // Construct a partial user object to calculate entitlements
+        const entitlements = getEntitlements({ 
+          subscriptionStatus: result.status,
+          guilds: user?.guilds || []
+        });
+        
+        setIsPro(entitlements.isPro);
+        setSubscriptionStatus(entitlements.subscriptionStatus);
+        setIsEntitled(entitlements.isEntitled);
+        
+        global.__AUTH_STATE__ = { ...global.__AUTH_STATE__, ...entitlements };
       }
     } catch (error) {
-      // Default to free tier if API is unreachable
       setIsPro(false);
     }
   };
 
   const login = async (authToken, userData) => {
-    // Update state immediately
     setToken(authToken);
     setUser(userData);
     syncGlobals(authToken, userData);
 
-    // Save to storage async (don't block on web)
     AsyncStorage.setItem("token", authToken).catch(() => {});
     AsyncStorage.setItem("user", JSON.stringify(userData)).catch(() => {});
 
-    // Load pro status in background
     loadProStatus(authToken).catch(() => {});
   };
 
@@ -102,6 +122,8 @@ export const AuthProvider = ({ children }) => {
       setToken(null);
       setUser(null);
       setIsPro(false);
+      setIsGuildMember(false);
+      setSubscriptionStatus("free");
       syncGlobals(null, null);
     } catch (error) {
       // Failed to logout
@@ -118,6 +140,9 @@ export const AuthProvider = ({ children }) => {
         token,
         user,
         isPro,
+        subscriptionStatus,
+        isGuildMember,
+        isEntitled,
         loading,
         login,
         logout,
