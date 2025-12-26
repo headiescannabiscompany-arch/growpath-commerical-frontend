@@ -1,5 +1,5 @@
 // IAP functionality disabled for development builds
-// react-native-iap requires native modules that aren't compatible with Expo SDK 49
+// react-native-iap requires native modules that are not bundled with the Expo managed runtime
 
 export const subscriptionSku = "growpath_pro_monthly";
 

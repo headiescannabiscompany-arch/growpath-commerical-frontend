@@ -67,9 +67,6 @@
       "eas": {
         "projectId": "6cc46b82-1bf2-4fe8-989a-0f77b7a51370"
       }
-    },
-    "hooks": {
-      "postPublish": []
     }
   }
 }

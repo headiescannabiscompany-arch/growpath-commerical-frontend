@@ -23,6 +23,9 @@ if (typeof global.FormData === 'undefined') {
   };
 }
 
+const isLiveBackend = process.env.USE_LIVE_BACKEND === "true";
+let primaryCredentials = null;
+
 describe("Acceptance: User Stories", async () => {
   let authApi, tasksApi, growsApi, forumApi, coursesApi, usersApi, creatorApi, diagnoseApi, guildsApi;
   const fetchCalls = global.__FETCH_CALLS__ || [];
@@ -44,7 +47,7 @@ describe("Acceptance: User Stories", async () => {
     specAvailable = !!spec;
   });
 
-  beforeEach(() => {
+  beforeEach(async () => {
     // Clear the global calls array between tests
     if (global.__FETCH_CALLS__) {
       global.__FETCH_CALLS__.length = 0;
@@ -69,6 +72,14 @@ describe("Acceptance: User Stories", async () => {
        if (url.includes("/api/user/follow/u2")) return { json: { following: true } };
        return { json: { success: true } };
     };
+
+    if (isLiveBackend && primaryCredentials) {
+      try {
+        await authApi.login(primaryCredentials.email, primaryCredentials.password);
+      } catch (err) {
+        console.warn("Re-login failed:", err.message);
+      }
+    }
   });
 
   it("User Story: Login and view tasks", async (t) => {
@@ -95,6 +106,10 @@ describe("Acceptance: User Stories", async () => {
 
     await tasksApi.getTodayTasks(global.authToken);
     assert.ok(fetchCalls.some(c => c.url.includes("/api/tasks/today")), "Tasks endpoint hit");
+
+    if (isLiveBackend) {
+      primaryCredentials = { email, password };
+    }
   });
 
   it("User Story: Create a grow and add a log entry", async (t) => {
@@ -150,11 +165,28 @@ describe("Acceptance: User Stories", async () => {
        return;
     }
 
-    await coursesApi.listCourses(1);
+    const courseList = await coursesApi.listCourses(1);
     assert.ok(fetchCalls.some(c => c.url.includes("/api/courses/list")), "List courses hit");
 
-    await coursesApi.enrollInCourse("c1");
-    assert.ok(fetchCalls.some(c => c.url.includes("/api/courses/c1/enroll")), "Enrollment hit");
+    let courseId = "c1";
+    if (isLiveBackend) {
+      const courses = Array.isArray(courseList?.courses)
+        ? courseList.courses
+        : Array.isArray(courseList)
+        ? courseList
+        : [];
+      if (!courses.length) {
+        t.skip("No published courses available to enroll in on live backend");
+        return;
+      }
+      courseId = courses[0]._id || courses[0].id;
+    }
+
+    await coursesApi.enrollInCourse(courseId);
+    assert.ok(
+      fetchCalls.some((c) => c.url.includes(`/api/courses/${courseId}/enroll`)),
+      "Enrollment hit"
+    );
 
     await usersApi.getCertificates();
     assert.ok(fetchCalls.some(c => c.url.includes("/api/user/certificates")), "Get certificates hit");
@@ -166,7 +198,7 @@ describe("Acceptance: User Stories", async () => {
        return;
     }
 
-    const grow = await growsApi.createGrow({ title: "White Widow", name: "WW #1" });
+    const grow = await growsApi.createGrow({ title: "White Widow", name: "WW #1", body: "Live body copy" });
     assert.ok(fetchCalls.some(c => c.url.includes("/api/grows")), "Create grow hit");
 
     await diagnoseApi.analyzeDiagnosis({ notes: "Bottom leaves are yellowing", stage: "veg" });
@@ -179,21 +211,64 @@ describe("Acceptance: User Stories", async () => {
        return;
     }
 
-    await usersApi.followUser("u2");
-    assert.ok(fetchCalls.some(c => c.url.includes("/api/user/follow/u2")), "Follow user hit");
+    let followTargetId = "u2";
+    if (isLiveBackend) {
+      const followEmail = `follow-${Date.now()}@example.com`;
+      const followPassword = "password123";
+      const originalCreds = primaryCredentials ? { ...primaryCredentials } : null;
 
-    await guildsApi.listGuilds();
+      await authApi.signup(followEmail, followPassword, "Community Friend");
+      const followUserId = global.user?.id;
+
+      if (!followUserId) {
+        t.skip("Unable to create follow target in live backend");
+        return;
+      }
+
+      followTargetId = followUserId;
+
+      if (originalCreds) {
+        await authApi.login(originalCreds.email, originalCreds.password);
+        primaryCredentials = originalCreds;
+      }
+
+      await usersApi.followUser(followTargetId);
+    } else {
+      await usersApi.followUser("u2");
+    }
+    assert.ok(
+      fetchCalls.some((c) => c.url.includes(`/api/user/follow/${followTargetId}`)),
+      "Follow user hit"
+    );
+
+    const guildList = await guildsApi.listGuilds();
     assert.ok(fetchCalls.some(c => c.url.includes("/api/guilds")), "List guilds hit");
 
-        await guildsApi.joinGuild("guild1");
+    let guildId = "guild1";
+    if (isLiveBackend) {
+      const guilds = Array.isArray(guildList) ? guildList : [];
+      if (!guilds.length) {
+        t.skip("No guilds available to join on live backend");
+        return;
+      }
+      guildId = guilds[0]._id || guilds[0].id;
+    }
 
-        assert.ok(fetchCalls.some(c => c.url.includes("/api/guilds/guild1/join")), "Join guild hit");
+    await guildsApi.joinGuild(guildId);
+    assert.ok(
+      fetchCalls.some((c) => c.url.includes(`/api/guilds/${guildId}/join`)),
+      "Join guild hit"
+    );
 
       });
 
     
 
   it("User Story: Guild Member Access (Gated Features)", async (t) => {
+    if (isLiveBackend) {
+      t.skip("Guild entitlement checks require mocked responses");
+      return;
+    }
     const { getEntitlements } = await import("../../src/utils/entitlements.js");
     
     // 1. Mock a non-pro Guild member
