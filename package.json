@@ -4,6 +4,10 @@
   "description": "GrowPath AI React Native Frontend",
   "type": "module",
   "main": "index.js",
+  "engines": {
+    "node": ">=20.19.4",
+    "npm": ">=10.8.0"
+  },
   "scripts": {
     "start": "expo start",
     "android": "expo start --android",
