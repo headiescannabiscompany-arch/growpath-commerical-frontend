@@ -1,6 +1,7 @@
 #!/usr/bin/env node
-const { spawn } = require("child_process");
-const path = require("path");
+import { spawn } from "node:child_process";
+import path from "node:path";
+import dotenv from "dotenv";
 
 const projectRoot = process.cwd();
 const envFile =
@@ -10,7 +11,7 @@ const envFile =
 
 if (envFile) {
   try {
-    require("dotenv").config({ path: envFile });
+    dotenv.config({ path: envFile });
   } catch (err) {
     console.warn(`Unable to load ${envFile}: ${err.message}`);
   }
