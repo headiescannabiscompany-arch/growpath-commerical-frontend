@@ -5,13 +5,13 @@ import {
   StyleSheet,
   TouchableOpacity,
   ActivityIndicator,
-  Alert
+  Alert,
+  Linking
 } from "react-native";
 import { useAuth } from "../context/AuthContext";
 import { startSubscription } from "../api/subscribe";
 import ScreenContainer from "../components/ScreenContainer";
 
-import * as Linking from "expo-linking";
 import { createCheckoutSession } from "../api/subscription";
 
 export default function PaywallScreen({ navigation }) {
