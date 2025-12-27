@@ -9,7 +9,7 @@ export async function login(email, password) {
 
   global.authToken = data.token;
   global.user = data.user;
-  return data.user;
+  return { user: data.user, token: data.token };
 }
 
 export async function signup(email, password, displayName) {
@@ -20,7 +20,7 @@ export async function signup(email, password, displayName) {
 
   global.authToken = data.token;
   global.user = data.user;
-  return data.user;
+  return { user: data.user, token: data.token };
 }
 
 export async function becomeCreator() {

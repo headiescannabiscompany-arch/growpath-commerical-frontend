@@ -4,6 +4,8 @@ import { useNavigation } from "@react-navigation/native";
 import { getTokenBalance } from "../api/tokens";
 import { useAuth } from "../context/AuthContext";
 
+const clamp = (value, min, max) => Math.max(min, Math.min(max, value));
+
 export default function TokenBalanceWidget({ onPress }) {
   const { isPro } = useAuth();
   const navigation = useNavigation();
@@ -25,17 +27,33 @@ export default function TokenBalanceWidget({ onPress }) {
     }
   }
 
-  const { aiTokens, maxTokens, percentage, isLow } = useMemo(() => {
-    const current = Number(balance?.aiTokens) || 0;
-    const max = Number(balance?.maxTokens) || 0;
-    const pct = max > 0 ? Math.min(100, Math.max(0, (current / max) * 100)) : 0;
+  const { aiTokens, maxTokens, percentage, isLow, missingMax } = useMemo(() => {
+    const rawMax = Number(balance?.maxTokens);
+    const hasValidMax = Number.isFinite(rawMax) && rawMax > 0;
+    const resolvedMax = hasValidMax ? rawMax : null;
+
+    const rawCurrent = Number(balance?.aiTokens);
+    const resolvedCurrent = Number.isFinite(rawCurrent) && rawCurrent >= 0 ? rawCurrent : 0;
+
+    const pct =
+      resolvedMax && resolvedMax > 0
+        ? clamp((resolvedCurrent / resolvedMax) * 100, 0, 100)
+        : 0;
+
     return {
-      aiTokens: current,
-      maxTokens: max,
+      aiTokens: resolvedCurrent,
+      maxTokens: resolvedMax,
       percentage: pct,
-      isLow: pct < 30
+      isLow: resolvedMax ? pct < 30 : false,
+      missingMax: !hasValidMax
     };
   }, [balance]);
+
+  useEffect(() => {
+    if (balance && missingMax) {
+      console.error("Token balance missing maxTokens value", balance);
+    }
+  }, [balance, missingMax]);
 
   const refillCopy = isPro
     ? "Pro members receive 100 AI tokens every day."
@@ -57,7 +75,7 @@ export default function TokenBalanceWidget({ onPress }) {
         <View style={styles.headerContent}>
           <Text style={styles.label}>AI Tokens</Text>
           <Text style={styles.balance}>
-            {aiTokens} / {maxTokens || "—"}
+            {aiTokens} / {maxTokens ?? "—"}
           </Text>
         </View>
         <View style={styles.barContainer}>

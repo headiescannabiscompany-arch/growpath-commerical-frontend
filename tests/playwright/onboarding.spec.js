@@ -22,6 +22,7 @@ test.describe("FE-02 Onboarding flows", () => {
     await page.addInitScript(() => {
       window.localStorage.clear();
       window.localStorage.setItem("seenOnboardingCarousel", "true");
+      window.global = window;
     });
 
     await page.goto("/");
@@ -37,6 +38,8 @@ test.describe("FE-02 Onboarding flows", () => {
     await page.addInitScript(() => {
       window.localStorage.clear();
       window.localStorage.setItem("seenOnboardingCarousel", "true");
+      window.localStorage.setItem("seenAppIntro", "true");
+      window.global = window;
       window.localStorage.setItem("token", "playwright-token");
       window.localStorage.setItem(
         "user",

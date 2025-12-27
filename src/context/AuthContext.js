@@ -20,7 +20,7 @@ export const AuthProvider = ({ children }) => {
     setIsGuildMember(entitlements.isGuildMember);
     setIsEntitled(entitlements.isEntitled);
     setSubscriptionStatus(entitlements.subscriptionStatus);
-    
+
     // Expose for logic tests
     global.__AUTH_STATE__ = entitlements;
   };
@@ -56,7 +56,7 @@ export const AuthProvider = ({ children }) => {
         setToken(storedToken);
         setUser(parsedUser);
         syncGlobals(storedToken, parsedUser);
-        
+
         // Load PRO status with timeout
         const timeout = new Promise((_, reject) =>
           setTimeout(() => reject(new Error("Timeout")), 3000)
@@ -88,15 +88,15 @@ export const AuthProvider = ({ children }) => {
       const result = await getSubscriptionStatus(authToken || token);
       if (result.success) {
         // Construct a partial user object to calculate entitlements
-        const entitlements = getEntitlements({ 
+        const entitlements = getEntitlements({
           subscriptionStatus: result.status,
           guilds: user?.guilds || []
         });
-        
+
         setIsPro(entitlements.isPro);
         setSubscriptionStatus(entitlements.subscriptionStatus);
         setIsEntitled(entitlements.isEntitled);
-        
+
         global.__AUTH_STATE__ = { ...global.__AUTH_STATE__, ...entitlements };
       }
     } catch (error) {

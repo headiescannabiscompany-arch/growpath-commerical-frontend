@@ -80,7 +80,13 @@ This will install:
 - husky
 - lint-staged
 
-### 4. Initialize Husky (Git Hooks)
+### 4. Create your local env file
+```powershell
+cp .env.test .env.development
+```
+Then edit `.env.development` to point `EXPO_PUBLIC_API_URL` at your running backend (defaults to `http://127.0.0.1:5001`). Expo CLI automatically loads `.env.development` for local runs, so the app knows where to send auth/login requests.
+
+### 5. Initialize Husky (Git Hooks)
 After npm install, run:
 ```powershell
 # In backend folder
