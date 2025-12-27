@@ -44,20 +44,26 @@ export default function LoginScreen({ navigation }) {
     console.log("Starting auth request...");
 
     try {
-      let user;
+      let authResult;
 
       if (mode === "login") {
         console.log("Calling login API...");
-        user = await apiLogin(email.trim(), password.trim());
-        console.log("Login successful, user:", user);
+        authResult = await apiLogin(email.trim(), password.trim());
+        console.log("Login successful:", authResult);
       } else {
         console.log("Calling signup API...");
-        user = await apiSignup(email.trim(), password.trim(), displayName.trim());
-        console.log("Signup successful, user:", user);
+        authResult = await apiSignup(email.trim(), password.trim(), displayName.trim());
+        console.log("Signup successful:", authResult);
+      }
+
+      const { user, token } = authResult || {};
+
+      if (!token || !user) {
+        throw new Error("Login response missing credentials");
       }
 
       // Update context state (without waiting for AsyncStorage on web)
-      const authToken = global.authToken;
+      const authToken = token;
       console.log("Auth token:", authToken);
       console.log("Calling contextLogin...");
       contextLogin(authToken, user); // Don't await - let it run async
