@@ -37,7 +37,9 @@
   },
   "expo": {
     "install": {
-      "exclude": ["react-native-worklets"]
+      "exclude": [
+        "react-native-worklets"
+      ]
     }
   },
   "dependencies": {
@@ -74,6 +76,7 @@
     "@babel/parser": "^7.26.0",
     "@babel/traverse": "^7.26.4",
     "@babel/types": "^7.26.0",
+    "@playwright/test": "^1.57.0",
     "ajv": "^8.17.1",
     "ajv-formats": "^3.0.1",
     "eslint": "^9.39.2",

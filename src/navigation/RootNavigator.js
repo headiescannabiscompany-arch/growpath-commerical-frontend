@@ -1,5 +1,5 @@
 import AppIntroScreen from "../screens/AppIntroScreen";
-import React, { useEffect } from "react";
+import React, { useEffect, useCallback } from "react";
 import { createNativeStackNavigator } from "@react-navigation/native-stack";
 import { useAuth } from "../context/AuthContext";
 import LoginScreen from "../screens/LoginScreen";
@@ -58,14 +58,56 @@ import CreatePlantScreen from "../screens/CreatePlantScreen";
 import LiveSessionScreen from "../screens/LiveSessionScreen";
 import LiveSessionsListScreen from "../screens/LiveSessionsListScreen";
 import AdminReportsScreen from "../screens/AdminReportsScreen";
+import AsyncStorage from "@react-native-async-storage/async-storage";
+
+const APP_INTRO_SEEN_KEY = "seenAppIntro";
+const LEGACY_ONBOARDING_KEY = "seenOnboarding";
 
 export default function RootNavigator() {
   const { isPro } = useAuth();
-  const [showIntro, setShowIntro] = React.useState(!isPro);
+  const [showIntro, setShowIntro] = React.useState(isPro ? false : null);
 
   useEffect(() => {
-    if (isPro) setShowIntro(false);
+    let mounted = true;
+
+    const resolveIntroState = async () => {
+      try {
+        const [introValue, legacyOnboarding] = await Promise.all([
+          AsyncStorage.getItem(APP_INTRO_SEEN_KEY),
+          AsyncStorage.getItem(LEGACY_ONBOARDING_KEY)
+        ]);
+        if (!mounted) return;
+
+        if (isPro) {
+          setShowIntro(false);
+        } else {
+          const shouldShow = introValue !== "true" && legacyOnboarding !== "true";
+          setShowIntro(shouldShow);
+        }
+      } catch {
+        if (mounted) setShowIntro(!isPro);
+      }
+    };
+
+    resolveIntroState();
+
+    return () => {
+      mounted = false;
+    };
   }, [isPro]);
+
+  const handleIntroDone = useCallback(async () => {
+    try {
+      await AsyncStorage.setItem(APP_INTRO_SEEN_KEY, "true");
+    } catch {
+      // best-effort; failure just means intro may show again next launch
+    }
+    setShowIntro(false);
+  }, []);
+
+  if (showIntro === null) {
+    return null;
+  }
 
   return (
     <Stack.Navigator
@@ -78,7 +120,7 @@ export default function RootNavigator() {
     >
       {!isPro && showIntro ? (
         <Stack.Screen name="AppIntro" options={{ headerShown: false }}>
-          {(props) => <AppIntroScreen {...props} onDone={() => setShowIntro(false)} />}
+          {(props) => <AppIntroScreen {...props} onDone={handleIntroDone} />}
         </Stack.Screen>
       ) : null}
       <Stack.Screen
