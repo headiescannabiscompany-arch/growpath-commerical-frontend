@@ -114,7 +114,7 @@ export default function LoginScreen({ navigation }) {
               />
             </View>
             <Text style={styles.appName}>GrowPath AI</Text>
-            <Text style={styles.tagline}>Your cannabis cultivation companion</Text>
+            <Text style={styles.tagline}>Your grow companion for every plant</Text>
           </View>
         </View>
       </ImageBackground>

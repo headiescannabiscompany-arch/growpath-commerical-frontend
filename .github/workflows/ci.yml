@@ -49,5 +49,8 @@ jobs:
         run: npm run lint
         continue-on-error: true
 
+      - name: Guard sensitive copy
+        run: npm run check:sensitive-copy
+
       - name: Run tests
         run: npm test
