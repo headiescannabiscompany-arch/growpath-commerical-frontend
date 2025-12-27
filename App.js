@@ -1,9 +1,15 @@
 import React from "react";
 import { View, Text, ActivityIndicator } from "react-native";
-import { NavigationContainer } from "@react-navigation/native";
+import { NavigationContainer, createNavigationContainerRef } from "@react-navigation/native";
 import { StatusBar } from "expo-status-bar";
 import RootNavigator from "./src/navigation/RootNavigator";
 import { AuthProvider, useAuth } from "./src/context/AuthContext";
+
+const navigationRef = createNavigationContainerRef();
+
+if (typeof globalThis !== "undefined") {
+  globalThis.__NAV__ = navigationRef;
+}
 
 function AppContent() {
   const { loading } = useAuth();
@@ -25,7 +31,7 @@ function AppContent() {
   }
 
   return (
-    <NavigationContainer>
+    <NavigationContainer ref={navigationRef}>
       <RootNavigator />
     </NavigationContainer>
   );
