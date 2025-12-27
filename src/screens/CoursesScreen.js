@@ -12,11 +12,13 @@ import { useNavigation } from "@react-navigation/native";
 import ScreenContainer from "../components/ScreenContainer.js";
 import { colors, spacing, radius } from "../theme/theme.js";
 import { listCourses } from "../api/courses.js";
+import { useAuth } from "../context/AuthContext";
 
 export default function CoursesScreen() {
   const [courses, setCourses] = useState([]);
   const [loading, setLoading] = useState(true);
   const navigation = useNavigation();
+  const { isGuildMember } = useAuth();
 
   async function load() {
     try {
@@ -59,7 +61,15 @@ export default function CoursesScreen() {
       <View style={styles.header}>
         <View>
           <Text style={styles.title}>Learn & Grow</Text>
-          <Text style={styles.subtitle}>Expert-led cannabis courses</Text>
+          <Text style={styles.subtitle}>
+            {isGuildMember ? "Expert-led cannabis courses" : "Expert-led grow courses"}
+          </Text>
+          {!isGuildMember && (
+            <Text style={styles.guildHint}>
+              Join a guild when you want crop-specific realms, while keeping your learning
+              path focused on the fundamentals until you opt in.
+            </Text>
+          )}
         </View>
         <TouchableOpacity
           style={styles.createBtn}
@@ -149,6 +159,12 @@ const styles = StyleSheet.create({
     fontSize: 14,
     color: "#6B7280",
     marginTop: 4
+  },
+  guildHint: {
+    fontSize: 13,
+    color: "#4B5563",
+    marginTop: 8,
+    maxWidth: 280
   },
   createBtn: {
     backgroundColor: "#10B981",

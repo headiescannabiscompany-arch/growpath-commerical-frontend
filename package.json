@@ -17,6 +17,7 @@
     "lint:fix": "eslint . --ext .js,.jsx --fix",
     "format": "prettier --write \"**/*.{js,jsx,json}\"",
     "audit:ci": "npm audit --omit=dev --audit-level=high",
+    "check:sensitive-copy": "node scripts/check-sensitive-copy.js",
     "test": "node --test --import ./tests/setup_fetch_spy.js tests/*.test.js tests/**/*.test.js",
     "test:live": "node scripts/test-live.js",
     "backend:start": "node scripts/start-backend.js",
@@ -70,6 +71,9 @@
   },
   "devDependencies": {
     "@apidevtools/swagger-parser": "^12.1.0",
+    "@babel/parser": "^7.26.0",
+    "@babel/traverse": "^7.26.4",
+    "@babel/types": "^7.26.0",
     "ajv": "^8.17.1",
     "ajv-formats": "^3.0.1",
     "eslint": "^9.39.2",

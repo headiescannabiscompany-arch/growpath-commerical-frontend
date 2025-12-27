@@ -39,10 +39,13 @@ function getCategoryColor(index) {
 
 export default function DashboardScreen() {
   const navigation = useNavigation();
-  const { isPro, isEntitled } = useAuth();
+  const { isPro, isEntitled, isGuildMember } = useAuth();
   const [plants, setPlants] = useState([]);
   const [loading, setLoading] = useState(true);
   const [trending, setTrending] = useState([]);
+  const heroSubtitle = isGuildMember
+    ? "Your guild unlocks specialized cannabis insights alongside the core GrowPath tools."
+    : "Track every plant, explore hydroponics, and opt into guilds when you want crop-specific depth.";
 
   useEffect(() => {
     loadPlants();
@@ -141,7 +144,7 @@ export default function DashboardScreen() {
         <View style={styles.header}>
           <View>
             <Text style={styles.greeting}>Welcome back 👋</Text>
-            <Text style={styles.subtitle}>Let's check on your garden</Text>
+            <Text style={styles.subtitle}>{heroSubtitle}</Text>
           </View>
         </View>
 

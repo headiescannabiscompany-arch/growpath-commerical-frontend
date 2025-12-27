@@ -159,7 +159,7 @@ export default function GuideScreen({ route, navigation }) {
               ))}
             </Card>
           </TouchableOpacity>
-        )}}
+        )}
       />
     </ScreenContainer>
   );
