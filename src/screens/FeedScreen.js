@@ -316,5 +316,22 @@ const styles = StyleSheet.create({
   emptyText: {
     color: "#6b7280",
     textAlign: "center"
+  },
+  gateContainer: {
+    flex: 1,
+    justifyContent: "center",
+    alignItems: "center",
+    paddingHorizontal: 24
+  },
+  gateTitle: {
+    fontSize: 20,
+    fontWeight: "700",
+    marginBottom: 10,
+    textAlign: "center"
+  },
+  gateCopy: {
+    textAlign: "center",
+    color: "#4b5563",
+    marginBottom: 16
   }
 });
