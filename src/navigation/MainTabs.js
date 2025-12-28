@@ -12,6 +12,8 @@ import ProfileScreen from "../screens/ProfileScreen";
 import CoursesScreen from "../screens/CoursesScreen";
 import { View, Text, StyleSheet } from "react-native";
 import { colors, radius, spacing } from "../theme/theme";
+import FeedScreen from "../screens/FeedScreen";
+import { useAuth } from "../context/AuthContext";
 
 const Tab = createBottomTabNavigator();
 
@@ -20,7 +22,8 @@ const TAB_ICONS = {
   Plants: "🌱",
   Diagnose: "🔍",
   Search: "🔎",
-  Forum: "💬",
+  Feed: "📡",
+  Guild: "💬",
   Courses: "📚",
   Profile: "👤",
   Calendar: "📅",
@@ -37,6 +40,7 @@ function TabIcon({ label, focused }) {
 }
 
 export default function MainTabs() {
+  const { isGuildMember } = useAuth();
   return (
     <Tab.Navigator
       screenOptions={{
@@ -78,6 +82,15 @@ export default function MainTabs() {
         options={{
           title: "Search",
           tabBarLabel: ({ focused }) => <TabIcon label="Search" focused={focused} />
+        }}
+      />
+
+      <Tab.Screen
+        name="FeedTab"
+        component={FeedScreen}
+        options={{
+          title: isGuildMember ? "Feed" : "Community",
+          tabBarLabel: ({ focused }) => <TabIcon label="Feed" focused={focused} />
         }}
       />
 

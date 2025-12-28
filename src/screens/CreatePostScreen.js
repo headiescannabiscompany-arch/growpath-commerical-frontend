@@ -1,9 +1,18 @@
 import React, { useState } from "react";
-import { View, Text, TextInput, TouchableOpacity, Image, Platform } from "react-native";
+import {
+  View,
+  Text,
+  TextInput,
+  TouchableOpacity,
+  Image,
+  Platform,
+  Alert,
+  ActivityIndicator
+} from "react-native";
 import ScreenContainer from "../components/ScreenContainer";
 import { createPost } from "../api/posts";
 import { useAuth } from "../context/AuthContext.js";
-import { useNavigation } from "@react-navigation/native";
+import { useNavigation, useRoute } from "@react-navigation/native";
 let ImagePicker;
 if (Platform.OS !== "web") {
   ImagePicker = require("expo-image-picker");
@@ -12,8 +21,11 @@ if (Platform.OS !== "web") {
 export default function CreatePostScreen() {
   const [text, setText] = useState("");
   const [photos, setPhotos] = useState([]);
+  const [submitting, setSubmitting] = useState(false);
   const { isPro } = useAuth();
   const navigation = useNavigation();
+  const route = useRoute();
+  const onPostCreated = route.params?.onPostCreated;
 
   async function pickImage() {
     if (Platform.OS === "web") return;
@@ -26,6 +38,13 @@ export default function CreatePostScreen() {
   }
 
   async function submit() {
+    if (!isPro || submitting) return;
+    if (!text.trim() && photos.length === 0) {
+      Alert.alert("Add a post", "Share some text or add a photo before posting.");
+      return;
+    }
+
+    setSubmitting(true);
     const form = new FormData();
     form.append("text", text);
 
@@ -44,8 +63,17 @@ export default function CreatePostScreen() {
       }
     }
 
-    await createPost(form);
-    navigation.goBack();
+    try {
+      await createPost(form);
+      if (typeof onPostCreated === "function") {
+        onPostCreated();
+      }
+      navigation.goBack();
+    } catch (err) {
+      Alert.alert("Unable to post", err.message || "Please try again in a moment.");
+    } finally {
+      setSubmitting(false);
+    }
   }
 
   return (
@@ -137,13 +165,19 @@ export default function CreatePostScreen() {
           borderRadius: 8
         }}
         onPress={isPro ? submit : undefined}
-        disabled={!isPro}
+        disabled={!isPro || submitting}
+        accessibilityRole="button"
+        testID="create-post-submit"
       >
-        <Text
-          style={{ color: isPro ? "white" : "#888", fontSize: 18, textAlign: "center" }}
-        >
-          Post
-        </Text>
+        {submitting ? (
+          <ActivityIndicator color="#fff" />
+        ) : (
+          <Text
+            style={{ color: isPro ? "white" : "#888", fontSize: 18, textAlign: "center" }}
+          >
+            Post
+          </Text>
+        )}
       </TouchableOpacity>
     </ScreenContainer>
   );

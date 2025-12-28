@@ -27,8 +27,6 @@ export default function LoginScreen({ navigation }) {
   async function handleAuth() {
     if (loading) return;
 
-    console.log("handleAuth called, mode:", mode);
-
     // Validate input
     if (!email.trim() || !password.trim()) {
       Alert.alert("Error", "Please enter email and password");
@@ -41,19 +39,13 @@ export default function LoginScreen({ navigation }) {
     }
 
     setLoading(true);
-    console.log("Starting auth request...");
-
     try {
       let authResult;
 
       if (mode === "login") {
-        console.log("Calling login API...");
         authResult = await apiLogin(email.trim(), password.trim());
-        console.log("Login successful:", authResult);
       } else {
-        console.log("Calling signup API...");
         authResult = await apiSignup(email.trim(), password.trim(), displayName.trim());
-        console.log("Signup successful:", authResult);
       }
 
       const { user, token } = authResult || {};
@@ -64,13 +56,9 @@ export default function LoginScreen({ navigation }) {
 
       // Update context state (without waiting for AsyncStorage on web)
       const authToken = token;
-      console.log("Auth token:", authToken);
-      console.log("Calling contextLogin...");
       contextLogin(authToken, user); // Don't await - let it run async
 
-      console.log("Navigating to MainTabs...");
       navigation.replace("MainTabs");
-      console.log("Navigation called");
     } catch (err) {
       console.error("Auth error:", err);
 
@@ -99,7 +87,6 @@ export default function LoginScreen({ navigation }) {
       }
     } finally {
       setLoading(false);
-      console.log("Loading set to false");
     }
   }
 

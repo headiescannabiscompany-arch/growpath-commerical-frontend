@@ -24,9 +24,13 @@ import {
   reportPost,
   savePostToGrowLog
 } from "../api/forum";
+import { applyLikeMetadata, userHasLiked } from "../utils/posts.js";
+import { useAuth } from "../context/AuthContext.js";
 
 export default function ForumPostDetailScreen({ route, navigation }) {
   const { id } = route.params;
+  const { user: authUser } = useAuth();
+  const currentUserId = authUser?._id ?? authUser?.id ?? null;
 
   const [post, setPost] = useState(null);
   const [comments, setComments] = useState([]);
@@ -34,12 +38,19 @@ export default function ForumPostDetailScreen({ route, navigation }) {
   const [loading, setLoading] = useState(false);
   const [reportVisible, setReportVisible] = useState(false);
 
+  const normalizePost = (payload) => {
+    const likesArray = Array.isArray(payload.likes) ? payload.likes : [];
+    const likeCount =
+      typeof payload.likeCount === "number" ? payload.likeCount : likesArray.length;
+    return { ...payload, likes: likesArray, likeCount };
+  };
+
   async function load() {
     try {
       const p = await getPost(id);
       const c = await getComments(id);
 
-      setPost(p);
+      setPost(normalizePost(p));
       setComments(c);
     } catch (err) {
       Alert.alert("Error", "Failed to load post");
@@ -51,22 +62,24 @@ export default function ForumPostDetailScreen({ route, navigation }) {
   }, []);
   // Like/unlike
   async function toggleLike() {
-    if (!post) return;
+    if (!post || !currentUserId) return;
 
     try {
-      if (post.likes.includes(global.user?._id)) {
-        await unlikePost(post._id);
-        setPost({
-          ...post,
-          likes: post.likes.filter((id) => id !== global.user._id)
-        });
-      } else {
-        await likePost(post._id);
-        setPost({
-          ...post,
-          likes: [...post.likes, global.user._id]
-        });
-      }
+      const liked = userHasLiked(post, currentUserId);
+      const apiFn = liked ? unlikePost : likePost;
+      const result = await apiFn(post._id);
+      setPost((prev) =>
+        applyLikeMetadata(
+          prev,
+          currentUserId,
+          typeof result?.likeCount === "number"
+            ? result.likeCount
+            : typeof result?.likes === "number"
+              ? result.likes
+              : undefined,
+          !liked
+        )
+      );
     } catch (err) {
       Alert.alert("Error", "Failed to update like");
     }
@@ -173,37 +186,31 @@ export default function ForumPostDetailScreen({ route, navigation }) {
     );
   }
 
+  const author = post.user || post.author || null;
+
   return (
     <ScreenContainer scroll>
-      {/* POST HEADER */}
-      <View
-        style={{
-          flexDirection: "row",
-          alignItems: "center",
-          justifyContent: "space-between"
-        }}
-      >
+      <View style={styles.header}>
         <View style={{ flex: 1 }}>
           <Text style={styles.username}>
-            {post.user?.username || post.user?.name || "Unknown User"}
+            {author?.username ||
+              author?.displayName ||
+              author?.name ||
+              "Unknown User"}
           </Text>
           <Text style={styles.timestamp}>
             {new Date(post.createdAt).toLocaleDateString()}
           </Text>
         </View>
-        <FollowButton userId={post.user?._id} />
+        <View style={styles.headerActions}>
+          <FollowButton userId={author?._id} />
+        </View>
       </View>
-
-      {/* POST CONTENT */}
       <Text style={styles.content}>{post.content}</Text>
-
-      {/* PHOTOS */}
       {post.photos &&
         post.photos.map((p, i) => (
           <Image key={i} source={{ uri: p }} style={styles.photo} />
         ))}
-
-      {/* TAGS & STRAIN */}
       {post.tags && post.tags.length > 0 && (
         <View style={styles.tagsRow}>
           {post.tags.map((tag) => (
@@ -213,15 +220,14 @@ export default function ForumPostDetailScreen({ route, navigation }) {
           ))}
         </View>
       )}
+      {post.strain ? <Text style={styles.strain}>Strain: {post.strain}</Text> : null}
 
-      {post.strain && <Text style={styles.strain}>Strain: {post.strain}</Text>}
-
-      {/* ACTION BUTTONS */}
       <View style={styles.actions}>
-        <TouchableOpacity onPress={toggleLike}>
-          <Text style={styles.actionBtn}>
-            {post.likes?.includes(global.user?._id) ? "❤️ Liked" : "🤍 Like"}
+        <TouchableOpacity onPress={toggleLike} style={styles.likeButton}>
+          <Text style={[styles.actionBtn, styles.likeLabel]}>
+            {userHasLiked(post, currentUserId) ? "❤️ Liked" : "🤍 Like"}
           </Text>
+          <Text style={styles.likeCount}>{`· ${post.likeCount || post.likes?.length || 0}`}</Text>
         </TouchableOpacity>
 
         <TouchableOpacity onPress={handleSave}>
@@ -237,7 +243,6 @@ export default function ForumPostDetailScreen({ route, navigation }) {
         </TouchableOpacity>
       </View>
 
-      {/* COMMENTS SECTION */}
       <Text style={styles.sectionTitle}>Comments ({comments.length})</Text>
 
       <FlatList
@@ -247,11 +252,20 @@ export default function ForumPostDetailScreen({ route, navigation }) {
         renderItem={({ item }) => (
           <View style={styles.commentRow}>
             <View style={styles.commentContent}>
-              <Text style={styles.commentUser}>{item.user?.username || "Unknown"}:</Text>
+              <Text style={styles.commentUser}>
+                {item.user?.username ||
+                  item.user?.displayName ||
+                  item.user?.name ||
+                  item.author?.username ||
+                  item.author?.displayName ||
+                  item.author?.name ||
+                  "Unknown"}
+                :
+              </Text>
               <Text style={styles.commentText}>{item.text}</Text>
             </View>
 
-            {item.user?._id === global.user?._id && (
+            {(item.user?._id || item.author?._id) === currentUserId && (
               <TouchableOpacity onPress={() => handleDelete(item._id)}>
                 <Text style={styles.deleteBtn}>Delete</Text>
               </TouchableOpacity>
@@ -260,7 +274,6 @@ export default function ForumPostDetailScreen({ route, navigation }) {
         )}
       />
 
-      {/* ADD COMMENT BOX */}
       <View style={styles.commentBox}>
         <TextInput
           style={styles.commentInput}
@@ -287,6 +300,15 @@ const styles = StyleSheet.create({
   },
   username: { fontWeight: "700", fontSize: 18, marginBottom: 4 },
   timestamp: { color: "#666", fontSize: 12, marginBottom: 10 },
+  header: {
+    flexDirection: "row",
+    alignItems: "center",
+    justifyContent: "space-between",
+    marginBottom: 12
+  },
+  headerActions: {
+    alignSelf: "flex-start"
+  },
   content: { marginBottom: 12, fontSize: 15, lineHeight: 22 },
   photo: {
     width: "100%",
@@ -322,13 +344,29 @@ const styles = StyleSheet.create({
     flexWrap: "wrap",
     paddingVertical: 10,
     borderTopWidth: 1,
-    borderTopColor: "#eee"
+    borderTopColor: "#eee",
+    pointerEvents: "auto"
+  },
+  likeButton: {
+    marginRight: 12,
+    marginBottom: 4,
+    flexDirection: "row",
+    alignItems: "center"
   },
   actionBtn: {
     marginRight: 12,
     fontWeight: "600",
     color: "#3498db",
     marginBottom: 4,
+    fontSize: 13
+  },
+  likeLabel: {
+    marginRight: 0
+  },
+  likeCount: {
+    marginLeft: 4,
+    color: "#111827",
+    fontWeight: "600",
     fontSize: 13
   },
   sectionTitle: {

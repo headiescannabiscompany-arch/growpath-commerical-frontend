@@ -1,4 +1,4 @@
-import React, { useEffect, useState } from "react";
+import React, { useCallback, useRef, useState } from "react";
 import {
   View,
   Text,
@@ -8,7 +8,7 @@ import {
   StyleSheet,
   RefreshControl
 } from "react-native";
-import { useNavigation } from "@react-navigation/native";
+import { useFocusEffect, useNavigation } from "@react-navigation/native";
 
 import ScreenContainer from "../components/ScreenContainer";
 import FollowButton from "../components/FollowButton";
@@ -19,12 +19,10 @@ export default function ForumScreen() {
   const [posts, setPosts] = useState([]);
   const [refreshing, setRefreshing] = useState(false);
   const navigation = useNavigation();
+  const listRef = useRef(null);
+  const pendingScrollToTop = useRef(false);
 
-  useEffect(() => {
-    load();
-  }, [mode]);
-
-  async function load() {
+  const load = useCallback(async (options = {}) => {
     try {
       const fn =
         mode === "trending"
@@ -35,16 +33,43 @@ export default function ForumScreen() {
 
       const res = await fn();
       setPosts(res.data || res);
+
+      const shouldScroll = options.scrollToTop || pendingScrollToTop.current;
+      if (shouldScroll) {
+        pendingScrollToTop.current = false;
+        requestAnimationFrame(() => {
+          listRef.current?.scrollToOffset({ offset: 0, animated: true });
+        });
+      }
     } catch (err) {
       // Failed to load feed
     }
-  }
+  }, [mode]);
 
-  async function reload() {
+  useFocusEffect(
+    useCallback(() => {
+      load();
+    }, [load])
+  );
+
+  const reload = useCallback(async () => {
     setRefreshing(true);
-    await load();
+    await load({ scrollToTop: true });
     setRefreshing(false);
-  }
+  }, [load]);
+
+  const changeMode = useCallback(
+    (nextMode) => {
+      pendingScrollToTop.current = true;
+      setMode(nextMode);
+    },
+    []
+  );
+
+  const handleCreatePost = useCallback(() => {
+    pendingScrollToTop.current = true;
+    navigation.navigate("ForumNewPost");
+  }, [navigation]);
 
   function renderPost({ item }) {
     return (
@@ -150,7 +175,7 @@ export default function ForumScreen() {
       <View style={styles.header}>
         <View style={styles.tabRow}>
           <TouchableOpacity
-            onPress={() => setMode("latest")}
+            onPress={() => changeMode("latest")}
             style={[styles.tab, mode === "latest" && styles.tabActive]}
           >
             <Text style={[styles.tabText, mode === "latest" && styles.tabTextActive]}>
@@ -159,7 +184,7 @@ export default function ForumScreen() {
           </TouchableOpacity>
 
           <TouchableOpacity
-            onPress={() => setMode("trending")}
+            onPress={() => changeMode("trending")}
             style={[styles.tab, mode === "trending" && styles.tabActive]}
           >
             <Text style={[styles.tabText, mode === "trending" && styles.tabTextActive]}>
@@ -168,7 +193,7 @@ export default function ForumScreen() {
           </TouchableOpacity>
 
           <TouchableOpacity
-            onPress={() => setMode("following")}
+            onPress={() => changeMode("following")}
             style={[styles.tab, mode === "following" && styles.tabActive]}
           >
             <Text style={[styles.tabText, mode === "following" && styles.tabTextActive]}>
@@ -177,15 +202,13 @@ export default function ForumScreen() {
           </TouchableOpacity>
         </View>
 
-        <TouchableOpacity
-          onPress={() => navigation.navigate("ForumNewPost")}
-          style={styles.createBtn}
-        >
+        <TouchableOpacity onPress={handleCreatePost} style={styles.createBtn}>
           <Text style={styles.createBtnText}>+ Create Post</Text>
         </TouchableOpacity>
       </View>
 
       <FlatList
+        ref={listRef}
         data={posts}
         keyExtractor={(item) => item._id}
         renderItem={renderPost}
