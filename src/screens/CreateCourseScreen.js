@@ -12,7 +12,7 @@ import {
 import * as ImagePicker from "expo-image-picker";
 import ScreenContainer from "../components/ScreenContainer";
 import { spacing } from "../theme/theme";
-import { createCourse } from "../api/courses";
+import { createCourse, getCourse } from "../api/courses";
 
 export default function CreateCourseScreen({ navigation }) {
   const [title, setTitle] = useState("");
@@ -86,13 +86,20 @@ export default function CreateCourseScreen({ navigation }) {
       };
 
       const newCourse = await createCourse(payload);
+      let normalizedCourse = newCourse;
+      try {
+        const detail = await getCourse(newCourse._id);
+        normalizedCourse = detail?.course || detail || newCourse;
+      } catch (err) {
+        // fall back to the original payload if detail fetch fails
+      }
 
       Alert.alert(
         "Course Created! 🎉",
         "Your course has been saved as a draft. Add lessons next, then submit for review."
       );
 
-      navigation.replace("CourseDetail", { course: newCourse });
+      navigation.replace("CourseDetail", { course: normalizedCourse });
     } catch (err) {
       Alert.alert("Error", err.message || "Failed to create course");
     } finally {
