@@ -9,6 +9,7 @@ import {
 } from "react-native";
 import ScreenContainer from "../components/ScreenContainer";
 import { getCategoryCourses } from "../api/courses";
+import { getCreatorName } from "../utils/creator";
 
 export default function CategoryCoursesScreen({ route, navigation }) {
   const { category } = route.params;
@@ -66,10 +67,7 @@ export default function CategoryCoursesScreen({ route, navigation }) {
               </Text>
               <Text style={styles.creator}>
                 By{" "}
-                {item.creator?.name ||
-                  item.creator?.displayName ||
-                  item.creator?.username ||
-                  "Unknown"}
+                {getCreatorName(item.creator)}
               </Text>
               {item.difficulty && (
                 <Text style={styles.difficulty}>📚 {item.difficulty}</Text>

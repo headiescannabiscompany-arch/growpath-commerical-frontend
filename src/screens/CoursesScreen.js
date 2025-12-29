@@ -13,6 +13,7 @@ import ScreenContainer from "../components/ScreenContainer.js";
 import { colors, spacing, radius } from "../theme/theme.js";
 import { listCourses } from "../api/courses.js";
 import { useAuth } from "../context/AuthContext";
+import { getCreatorName } from "../utils/creator";
 
 export default function CoursesScreen() {
   const [courses, setCourses] = useState([]);
@@ -116,10 +117,7 @@ export default function CoursesScreen() {
                 {item.title}
               </Text>
               <Text style={styles.creator} numberOfLines={1}>
-                {item.creator?.name ||
-                  item.creator?.displayName ||
-                  item.creator?.username ||
-                  "Instructor"}
+                {getCreatorName(item.creator, "Instructor")}
               </Text>
 
               <View style={styles.courseMeta}>

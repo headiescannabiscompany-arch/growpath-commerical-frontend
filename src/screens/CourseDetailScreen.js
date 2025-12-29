@@ -5,6 +5,7 @@ import Card from "../components/Card";
 import PrimaryButton from "../components/PrimaryButton";
 import { colors, spacing } from "../theme/theme";
 import { enrollInCourse, buyCourse, getCourse } from "../api/courses";
+import { getCreatorName } from "../utils/creator";
 
 export default function CourseDetailScreen({ route, navigation }) {
   const initialCourse = route.params.course;
@@ -85,13 +86,7 @@ export default function CourseDetailScreen({ route, navigation }) {
       <Text style={styles.title}>{course.title}</Text>
 
       <Card style={{ marginBottom: spacing(5) }}>
-        <Text style={styles.label}>
-          By:{" "}
-          {course.creator?.name ||
-            course.creator?.displayName ||
-            course.creator?.username ||
-            "Unknown"}
-        </Text>
+        <Text style={styles.label}>By: {getCreatorName(course.creator)}</Text>
 
         <Text style={styles.description}>{course.description}</Text>
 

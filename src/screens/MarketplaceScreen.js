@@ -17,6 +17,7 @@ import {
 } from "../api/courses";
 import ScreenContainer from "../components/ScreenContainer";
 import { extractCourses, extractHasMore } from "../utils/marketplaceTransforms";
+import { getCreatorName } from "../utils/creator";
 
 export default function MarketplaceScreen({ navigation }) {
   const [query, setQuery] = useState("");
@@ -124,11 +125,7 @@ export default function MarketplaceScreen({ navigation }) {
           {item.category && <Text style={styles.category}>{item.category}</Text>}
         </View>
         <Text style={styles.creator}>
-          By{" "}
-          {item.creator?.name ||
-            item.creator?.displayName ||
-            item.creator?.username ||
-            "Unknown"}
+          By {getCreatorName(item.creator)}
         </Text>
         {item.difficulty && <Text style={styles.difficulty}>📚 {item.difficulty}</Text>}
         <View style={styles.footer}>
