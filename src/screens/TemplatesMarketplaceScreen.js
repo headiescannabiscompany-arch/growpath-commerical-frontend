@@ -2,6 +2,7 @@ import React, { useEffect, useState } from "react";
 import { Text, FlatList, TouchableOpacity, StyleSheet } from "react-native";
 import ScreenContainer from "../components/ScreenContainer";
 import { listTemplates } from "../api/templates";
+import { getCreatorName } from "../utils/creator";
 
 export default function TemplatesMarketplaceScreen({ navigation }) {
   const [templates, setTemplates] = useState([]);
@@ -31,7 +32,9 @@ export default function TemplatesMarketplaceScreen({ navigation }) {
             <Text style={styles.meta}>{item.strain || "Any strain"} • {item.growMedium || "Any medium"}</Text>
             <Text style={styles.meta}>{item.difficulty || ""} • {item.durationDays} days</Text>
             <Text style={styles.price}>{item.price > 0 ? `$${item.price.toFixed(2)}` : "FREE"}</Text>
-            {item.creator?.username ? <Text style={styles.creator}>By {item.creator.username}</Text> : null}
+            {item.creator && (
+              <Text style={styles.creator}>By {getCreatorName(item.creator)}</Text>
+            )}
           </TouchableOpacity>
         )}
       />

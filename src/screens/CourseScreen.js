@@ -4,6 +4,7 @@ import ScreenContainer from "../components/ScreenContainer";
 import { getCourse, enrollInCourse, getEnrollmentStatus, getReviews, deleteReview, getRecommendedCourses } from "../api/courses";
 import { getQuestions, deleteQuestion, deleteAnswer } from "../api/questions";
 import { createCheckout } from "../api/payments";
+import { getCreatorName } from "../utils/creator";
 
 export default function CourseScreen({ route, navigation }) {
   const { id } = route.params;
@@ -117,7 +118,7 @@ export default function CourseScreen({ route, navigation }) {
       {course.coverImage ? <Image source={{ uri: course.coverImage }} style={styles.cover} /> : null}
 
       <Text style={styles.title}>{course.title}</Text>
-      <Text style={styles.creator}>By {course.creator?.username || course.creator?.name}</Text>
+      <Text style={styles.creator}>By {getCreatorName(course.creator)}</Text>
       <Text style={styles.desc}>{course.description}</Text>
 
       {!enrolled && (
@@ -364,7 +365,7 @@ export default function CourseScreen({ route, navigation }) {
                 <Text style={styles.recTitle2} numberOfLines={2}>
                   {rec.title}
                 </Text>
-                <Text style={styles.recCreator}>{rec.creator?.username || "Unknown"}</Text>
+                <Text style={styles.recCreator}>{getCreatorName(rec.creator)}</Text>
                 <View style={styles.recRatingRow}>
                   <Text style={styles.recRating}>
                     ⭐ {rec.rating ? rec.rating.toFixed(1) : "N/A"}

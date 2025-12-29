@@ -7,7 +7,12 @@ import MainTabs from "./MainTabs";
 import GrowJournalScreen from "../screens/GrowJournalScreen";
 import SubscribeScreen from "../screens/SubscribeScreen";
 import CourseDetailScreen from "../screens/CourseDetailScreen";
+import CourseScreen from "../screens/CourseScreen";
 import CreateCourseScreen from "../screens/CreateCourseScreen";
+import ManageCourseScreen from "../screens/ManageCourseScreen";
+import AddLessonScreen from "../screens/AddLessonScreen";
+import EditLessonScreen from "../screens/EditLessonScreen";
+import LessonScreen from "../screens/LessonScreen";
 import CreatorDashboardScreen from "../screens/CreatorDashboardScreen";
 import CreatorDashboardV2 from "../screens/CreatorDashboardV2";
 import CreatorPayoutScreen from "../screens/CreatorPayoutScreen";
@@ -136,6 +141,7 @@ export default function RootNavigator() {
       <Stack.Screen name="GrowJournal" component={GrowJournalScreen} />
       <Stack.Screen name="Subscribe" component={SubscribeScreen} />
       <Stack.Screen name="CourseDetail" component={CourseDetailScreen} />
+      <Stack.Screen name="Course" component={CourseScreen} options={{ title: "Course" }} />
       <Stack.Screen
         name="PrivacyPolicy"
         component={PrivacyPolicyScreen}
@@ -147,6 +153,22 @@ export default function RootNavigator() {
         options={{ title: "Admin: Reports" }}
       />
       <Stack.Screen name="CreateCourse" component={CreateCourseScreen} />
+      <Stack.Screen
+        name="ManageCourse"
+        component={ManageCourseScreen}
+        options={{ title: "Manage Course" }}
+      />
+      <Stack.Screen
+        name="AddLesson"
+        component={AddLessonScreen}
+        options={{ title: "Add Lesson" }}
+      />
+      <Stack.Screen
+        name="EditLesson"
+        component={EditLessonScreen}
+        options={{ title: "Edit Lesson" }}
+      />
+      <Stack.Screen name="Lesson" component={LessonScreen} options={{ title: "Lesson" }} />
       <Stack.Screen name="Earnings" component={EarningsScreen} />
       <Stack.Screen name="AdminCourses" component={AdminCoursesScreen} />
       <Stack.Screen name="CreatorDashboard" component={CreatorDashboardScreen} />
