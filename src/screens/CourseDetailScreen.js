@@ -9,9 +9,15 @@ import { getCreatorName } from "../utils/creator";
 
 export default function CourseDetailScreen({ route, navigation }) {
   const initialCourse = route.params.course;
+  const deriveCreatorId = (c) =>
+    c?.creator?._id || c?.creator?.id || (typeof c?.creator === "string" ? c.creator : null);
+  const userId = global.user?._id || global.user?.id || null;
   const [course, setCourse] = useState(initialCourse);
+  const [isCreator, setIsCreator] = useState(
+    Boolean(userId && deriveCreatorId(initialCourse) === userId)
+  );
   const [enrolled, setEnrolled] = useState(
-    (initialCourse.students || []).includes(global.user?.id)
+    (initialCourse.students || []).includes(userId) || isCreator
   );
   const [loading, setLoading] = useState(false);
   const [emptyModalVisible, setEmptyModalVisible] = useState(false);
@@ -30,6 +36,10 @@ export default function CourseDetailScreen({ route, navigation }) {
         const nextCourse = refreshed?.course || refreshed;
         if (nextCourse) {
           setCourse((prev) => ({ ...prev, ...nextCourse }));
+          const creatorCheck = deriveCreatorId(nextCourse);
+          if (creatorCheck && creatorCheck === userId) {
+            setIsCreator(true);
+          }
         }
         Alert.alert("Success", "You now own this course!");
         return;
@@ -56,6 +66,14 @@ export default function CourseDetailScreen({ route, navigation }) {
       const payload = detail?.course || detail;
       if (payload) {
         setCourse((prev) => ({ ...prev, ...payload }));
+        const creatorCheck = deriveCreatorId(payload);
+        if (creatorCheck && creatorCheck === userId) {
+          setIsCreator(true);
+          setEnrolled(true);
+        } else {
+          setIsCreator(false);
+          setEnrolled((payload.students || []).includes(userId));
+        }
       }
 
       const lessons = detail?.lessons || payload?.lessons || [];
@@ -96,7 +114,12 @@ export default function CourseDetailScreen({ route, navigation }) {
             : "FREE"}
         </Text>
 
-        {!enrolled ? (
+        {isCreator ? (
+          <PrimaryButton
+            title="Manage Course"
+            onPress={() => navigation.navigate("ManageCourse", { id: course._id })}
+          />
+        ) : !enrolled ? (
           <PrimaryButton
             title={loading ? "Processing..." : (course.priceCents > 0 ? "Buy Course" : "Enroll")}
             onPress={handleEnroll}

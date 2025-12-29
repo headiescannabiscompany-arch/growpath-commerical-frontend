@@ -9,6 +9,16 @@ export function createCourse(payload) {
   return api(ROUTES.COURSES.CREATE, {
     method: "POST",
     body: JSON.stringify(payload)
+  }).then((course) => {
+    if (course && !course.creator && global.user) {
+      course.creator = {
+        _id: global.user._id || global.user.id,
+        name: global.user.name || global.user.displayName || global.user.username,
+        displayName: global.user.displayName || global.user.name,
+        username: global.user.username
+      };
+    }
+    return course;
   });
 }
 
