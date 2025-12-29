@@ -124,7 +124,11 @@ export default function MarketplaceScreen({ navigation }) {
           {item.category && <Text style={styles.category}>{item.category}</Text>}
         </View>
         <Text style={styles.creator}>
-          By {item.creator?.username || item.creator?.name || "Unknown"}
+          By{" "}
+          {item.creator?.name ||
+            item.creator?.displayName ||
+            item.creator?.username ||
+            "Unknown"}
         </Text>
         {item.difficulty && <Text style={styles.difficulty}>📚 {item.difficulty}</Text>}
         <View style={styles.footer}>

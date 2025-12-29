@@ -1,7 +1,6 @@
 import React from "react";
 import { View, Text, Linking, TouchableOpacity, StyleSheet, Alert } from "react-native";
 import ScreenContainer from "../components/ScreenContainer";
-import { Video } from "expo-av";
 import { completeLesson } from "../api/courses";
 
 export default function LessonScreen({ route, navigation }) {
@@ -13,23 +12,18 @@ export default function LessonScreen({ route, navigation }) {
 
       {/* VIDEO */}
       {lesson.videoUrl ? (
-        <Video
-          source={{ uri: lesson.videoUrl }}
-          style={styles.video}
-          useNativeControls
-          resizeMode="contain"
-          onPlaybackStatusUpdate={(status) => {
-            if (status.isLoaded && status.durationMillis > 0) {
-              const progress = status.positionMillis / status.durationMillis;
-              if (progress > 0.9 && courseId) {
-                completeLesson(lesson._id, courseId).catch(err => {
-                  // Silent fail on auto-complete
-                  console.log("Auto-complete error:", err.message);
-                });
-              }
-            }
-          }}
-        />
+        <TouchableOpacity
+          style={styles.videoLink}
+          onPress={() => Linking.openURL(lesson.videoUrl)}
+        >
+          <Text style={styles.videoIcon}>▶️</Text>
+          <View style={{ flex: 1 }}>
+            <Text style={styles.videoTitle}>Watch Video Lesson</Text>
+            <Text numberOfLines={1} style={styles.videoSubtitle}>
+              {lesson.videoUrl}
+            </Text>
+          </View>
+        </TouchableOpacity>
       ) : null}
 
       {/* PDF */}
@@ -69,7 +63,17 @@ export default function LessonScreen({ route, navigation }) {
 
 const styles = StyleSheet.create({
   title: { fontSize: 22, fontWeight: "700", marginBottom: 10 },
-  video: { width: "100%", height: 220, borderRadius: 10, marginBottom: 20 },
+  videoLink: {
+    flexDirection: "row",
+    alignItems: "center",
+    backgroundColor: "#111827",
+    padding: 16,
+    borderRadius: 12,
+    marginBottom: 20
+  },
+  videoIcon: { fontSize: 24, marginRight: 12 },
+  videoTitle: { color: "#fff", fontWeight: "700", marginBottom: 4 },
+  videoSubtitle: { color: "rgba(255,255,255,0.7)", fontSize: 12 },
   link: { color: "#3498db", marginBottom: 20, fontWeight: "600" },
   content: { fontSize: 16, lineHeight: 22 },
   completeBtn: {

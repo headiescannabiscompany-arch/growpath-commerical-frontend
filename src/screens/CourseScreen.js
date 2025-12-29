@@ -117,7 +117,13 @@ export default function CourseScreen({ route, navigation }) {
       {course.coverImage ? <Image source={{ uri: course.coverImage }} style={styles.cover} /> : null}
 
       <Text style={styles.title}>{course.title}</Text>
-      <Text style={styles.creator}>By {course.creator?.username || course.creator?.name}</Text>
+      <Text style={styles.creator}>
+        By{" "}
+        {course.creator?.name ||
+          course.creator?.displayName ||
+          course.creator?.username ||
+          "Unknown"}
+      </Text>
       <Text style={styles.desc}>{course.description}</Text>
 
       {!enrolled && (
@@ -364,7 +370,12 @@ export default function CourseScreen({ route, navigation }) {
                 <Text style={styles.recTitle2} numberOfLines={2}>
                   {rec.title}
                 </Text>
-                <Text style={styles.recCreator}>{rec.creator?.username || "Unknown"}</Text>
+                <Text style={styles.recCreator}>
+                  {rec.creator?.name ||
+                    rec.creator?.displayName ||
+                    rec.creator?.username ||
+                    "Unknown"}
+                </Text>
                 <View style={styles.recRatingRow}>
                   <Text style={styles.recRating}>
                     ⭐ {rec.rating ? rec.rating.toFixed(1) : "N/A"}

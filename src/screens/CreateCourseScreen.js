@@ -89,18 +89,10 @@ export default function CreateCourseScreen({ navigation }) {
 
       Alert.alert(
         "Course Created! 🎉",
-        "Your course has been saved as a draft. Add lessons next, then submit for review.",
-        [
-          {
-            text: "Add Lessons",
-            onPress: () => navigation.replace("AddLesson", { courseId: newCourse._id })
-          },
-          {
-            text: "View Draft",
-            onPress: () => navigation.replace("CourseDetail", { course: newCourse })
-          }
-        ]
+        "Your course has been saved as a draft. Add lessons next, then submit for review."
       );
+
+      navigation.replace("CourseDetail", { course: newCourse });
     } catch (err) {
       Alert.alert("Error", err.message || "Failed to create course");
     } finally {
@@ -110,7 +102,11 @@ export default function CreateCourseScreen({ navigation }) {
 
   return (
     <ScreenContainer>
-      <ScrollView style={styles.container} contentContainerStyle={styles.content}>
+      <ScrollView
+        style={styles.container}
+        contentContainerStyle={styles.content}
+        keyboardShouldPersistTaps="handled"
+      >
         <Text style={styles.headerTitle}>Create New Course</Text>
         <Text style={styles.headerSubtitle}>
           Share your expertise and earn money teaching others

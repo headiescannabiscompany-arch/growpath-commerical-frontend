@@ -65,7 +65,11 @@ export default function CategoryCoursesScreen({ route, navigation }) {
                 {item.title}
               </Text>
               <Text style={styles.creator}>
-                By {item.creator?.username || "Unknown"}
+                By{" "}
+                {item.creator?.name ||
+                  item.creator?.displayName ||
+                  item.creator?.username ||
+                  "Unknown"}
               </Text>
               {item.difficulty && (
                 <Text style={styles.difficulty}>📚 {item.difficulty}</Text>

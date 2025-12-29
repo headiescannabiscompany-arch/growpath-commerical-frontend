@@ -23,7 +23,12 @@ export default function CoursesScreen() {
   async function load() {
     try {
       const data = await listCourses();
-      setCourses(data || []);
+      const normalized = Array.isArray(data)
+        ? data
+        : Array.isArray(data?.courses)
+          ? data.courses
+          : [];
+      setCourses(normalized);
     } catch (err) {
       Alert.alert("Error", err.message);
     } finally {
@@ -111,7 +116,10 @@ export default function CoursesScreen() {
                 {item.title}
               </Text>
               <Text style={styles.creator} numberOfLines={1}>
-                {item.creator?.displayName || "Instructor"}
+                {item.creator?.name ||
+                  item.creator?.displayName ||
+                  item.creator?.username ||
+                  "Instructor"}
               </Text>
 
               <View style={styles.courseMeta}>
