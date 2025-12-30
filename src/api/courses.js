@@ -52,6 +52,13 @@ export function publishCourse(id) {
   });
 }
 
+export function updateCourse(id, payload) {
+  return api(ROUTES.COURSES.DETAIL(id), {
+    method: "PUT",
+    body: JSON.stringify(payload || {})
+  });
+}
+
 export function getPublishedCourses() {
   return api(ROUTES.COURSES.LIST);
 }

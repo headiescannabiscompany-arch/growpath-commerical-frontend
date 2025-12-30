@@ -1,9 +1,10 @@
-import React, { useEffect, useState } from "react";
+import React, { useEffect, useMemo, useState } from "react";
 import { View, Text, TouchableOpacity, StyleSheet, Alert } from "react-native";
 
 import ScreenContainer from "../components/ScreenContainer";
 import { getEntries } from "../api/growlog";
 import { getTasks, completeTask } from "../api/tasks";
+import { groupItemsByDate } from "../utils/calendar";
 
 export default function GrowLogCalendarScreen({ navigation }) {
   const [entries, setEntries] = useState([]);
@@ -48,26 +49,15 @@ export default function GrowLogCalendarScreen({ navigation }) {
     return date.toISOString().split("T")[0];
   }
 
-  // All entries indexed by date
-  const entriesByDate = {};
-  entries.forEach((e) => {
-    const d = new Date(e.date);
-    const key = formatDate(d);
+  const entriesByDate = useMemo(
+    () => groupItemsByDate(entries, (entry) => entry.date || entry.createdAt),
+    [entries]
+  );
 
-    if (!entriesByDate[key]) entriesByDate[key] = [];
-    entriesByDate[key].push(e);
-  });
-
-  // All tasks indexed by due date
-  const tasksByDate = {};
-  tasks.forEach((t) => {
-    if (!t.dueDate) return;
-    const d = new Date(t.dueDate);
-    const key = formatDate(d);
-
-    if (!tasksByDate[key]) tasksByDate[key] = [];
-    tasksByDate[key].push(t);
-  });
+  const tasksByDate = useMemo(
+    () => groupItemsByDate(tasks, (task) => task.dueDate),
+    [tasks]
+  );
 
   // Calendar generation
   const firstDay = new Date(year, month, 1).getDay(); // 0=Sun
@@ -126,6 +116,19 @@ export default function GrowLogCalendarScreen({ navigation }) {
 
   return (
     <ScreenContainer scroll>
+      <View style={styles.infoCard}>
+        <Text style={styles.infoTitle}>Calendar vs Schedule</Text>
+        <Text style={styles.infoCopy}>
+          Calendar reflects what happened (grow logs) plus due tasks. Use Schedule to plan
+          and reprioritize upcoming work.
+        </Text>
+        <TouchableOpacity
+          style={styles.infoButton}
+          onPress={() => navigation.navigate("ScheduleTab")}
+        >
+          <Text style={styles.infoButtonText}>Open Schedule</Text>
+        </TouchableOpacity>
+      </View>
       <View
         style={{
           marginBottom: 18,
@@ -470,6 +473,34 @@ const styles = StyleSheet.create({
   addButtonText: {
     color: "white",
     fontSize: 16,
+    fontWeight: "600"
+  },
+  infoCard: {
+    backgroundColor: "#EEF2FF",
+    padding: 16,
+    borderRadius: 12,
+    marginBottom: 16
+  },
+  infoTitle: {
+    fontSize: 15,
+    fontWeight: "700",
+    color: "#312E81",
+    marginBottom: 6
+  },
+  infoCopy: {
+    color: "#4338CA",
+    marginBottom: 12,
+    lineHeight: 20
+  },
+  infoButton: {
+    alignSelf: "flex-start",
+    backgroundColor: "#4338CA",
+    paddingHorizontal: 14,
+    paddingVertical: 8,
+    borderRadius: 8
+  },
+  infoButtonText: {
+    color: "#fff",
     fontWeight: "600"
   }
 });

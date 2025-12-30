@@ -6,21 +6,23 @@ import {
   TouchableOpacity,
   FlatList,
   StyleSheet,
-  Alert
+  Alert,
+  Switch
 } from "react-native";
 
 import ScreenContainer from "../components/ScreenContainer";
 import {
   getCourse,
-  publishCourse,
   deleteLesson,
-  submitCourseForReview
+  submitCourseForReview,
+  updateCourse
 } from "../api/courses";
 
 export default function ManageCourseScreen({ route, navigation }) {
   const { id } = route.params;
   const [course, setCourse] = useState(null);
   const [lessons, setLessons] = useState([]);
+  const [publishLoading, setPublishLoading] = useState(false);
 
   async function load() {
     const res = await getCourse(id);
@@ -66,12 +68,6 @@ export default function ManageCourseScreen({ route, navigation }) {
     );
   }
 
-  async function handlePublish() {
-    await publishCourse(id);
-    Alert.alert("Published", "Your course is now live.");
-    load();
-  }
-
   async function handleDeleteLesson(lessonId) {
     Alert.alert("Delete lesson?", "This cannot be undone.", [
       { text: "Cancel", style: "cancel" },
@@ -84,6 +80,30 @@ export default function ManageCourseScreen({ route, navigation }) {
         }
       }
     ]);
+  }
+
+  const readyToPublish = lessons.length > 0 || !!course?.contentUrl;
+  const statusAllowsPublish = !course?.status || course.status === "approved";
+
+  async function handlePublishToggle(nextValue) {
+    if (!course) return;
+    if (nextValue && !readyToPublish) {
+      Alert.alert("Add content first", "Add lessons or a course link before publishing.");
+      return;
+    }
+    if (nextValue && !statusAllowsPublish) {
+      Alert.alert("Pending approval", "This course must be approved before publishing.");
+      return;
+    }
+    setPublishLoading(true);
+    try {
+      await updateCourse(course._id, { isPublished: nextValue });
+      setCourse((prev) => ({ ...prev, isPublished: nextValue }));
+    } catch (err) {
+      Alert.alert("Error", err?.message || "Failed to update publish status");
+    } finally {
+      setPublishLoading(false);
+    }
   }
 
   function renderLesson({ item }) {
@@ -143,6 +163,28 @@ export default function ManageCourseScreen({ route, navigation }) {
         <Text style={styles.status}>{course.isPublished ? "Published" : "Draft"}</Text>
       </View>
 
+      <View style={styles.publishToggle}>
+        <View style={{ flex: 1 }}>
+          <Text style={styles.publishToggleTitle}>Publish Course</Text>
+          <Text style={styles.publishToggleSubtitle}>
+            {readyToPublish
+              ? statusAllowsPublish
+                ? "Toggle visibility when you're ready to go live."
+                : "Course must be approved before publishing."
+              : "Add lessons or a course link to enable publishing."}
+          </Text>
+        </View>
+        <Switch
+          value={!!course.isPublished}
+          onValueChange={handlePublishToggle}
+          disabled={
+            publishLoading ||
+            (!readyToPublish && !course.isPublished) ||
+            (!statusAllowsPublish && !course.isPublished)
+          }
+        />
+      </View>
+
       <View style={styles.actionsRow}>
         <TouchableOpacity
           style={styles.secondaryBtn}
@@ -161,12 +203,6 @@ export default function ManageCourseScreen({ route, navigation }) {
           <View style={styles.pendingBadge}>
             <Text style={styles.pendingText}>⏳ Pending Review</Text>
           </View>
-        )}
-
-        {course.status === "approved" && !course.isPublished && (
-          <TouchableOpacity style={styles.primaryBtn} onPress={handlePublish}>
-            <Text style={styles.primaryText}>✅ Publish Course</Text>
-          </TouchableOpacity>
         )}
 
         {course.status === "rejected" && (
@@ -213,15 +249,26 @@ const styles = StyleSheet.create({
     alignItems: "center"
   },
   secondaryText: { fontWeight: "600" },
-  primaryBtn: {
-    flex: 1,
-    marginLeft: 8,
-    padding: 10,
-    borderRadius: 8,
-    backgroundColor: "#2ecc71",
-    alignItems: "center"
+  publishToggle: {
+    flexDirection: "row",
+    alignItems: "center",
+    padding: 12,
+    borderRadius: 10,
+    borderWidth: 1,
+    borderColor: "#E5E7EB",
+    backgroundColor: "#F9FAFB",
+    marginBottom: 16
   },
-  primaryText: { color: "white", fontWeight: "700" },
+  publishToggleTitle: {
+    fontWeight: "700",
+    fontSize: 16,
+    color: "#111827"
+  },
+  publishToggleSubtitle: {
+    color: "#6B7280",
+    fontSize: 13,
+    marginTop: 4
+  },
   reviewBtn: {
     flex: 1,
     marginLeft: 8,

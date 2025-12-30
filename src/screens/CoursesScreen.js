@@ -11,25 +11,44 @@ import {
 import { useNavigation } from "@react-navigation/native";
 import ScreenContainer from "../components/ScreenContainer.js";
 import { colors, spacing, radius } from "../theme/theme.js";
-import { listCourses } from "../api/courses.js";
+import { listCourses, getMyCourses } from "../api/courses.js";
 import { useAuth } from "../context/AuthContext";
 import { getCreatorName } from "../utils/creator";
 
 export default function CoursesScreen() {
   const [courses, setCourses] = useState([]);
+  const [drafts, setDrafts] = useState([]);
   const [loading, setLoading] = useState(true);
+  const [showDrafts, setShowDrafts] = useState(false);
   const navigation = useNavigation();
   const { isGuildMember } = useAuth();
 
   async function load() {
     try {
-      const data = await listCourses();
-      const normalized = Array.isArray(data)
-        ? data
-        : Array.isArray(data?.courses)
-          ? data.courses
-          : [];
-      setCourses(normalized);
+      const [publishedResult, mineResult] = await Promise.allSettled([
+        listCourses(),
+        getMyCourses()
+      ]);
+
+      if (publishedResult.status === "fulfilled") {
+        const data = publishedResult.value;
+        const normalized = Array.isArray(data)
+          ? data
+          : Array.isArray(data?.courses)
+            ? data.courses
+            : [];
+        setCourses(normalized);
+      } else {
+        throw publishedResult.reason || new Error("Failed to load courses");
+      }
+
+      if (mineResult.status === "fulfilled") {
+        const mine = Array.isArray(mineResult.value) ? mineResult.value : mineResult.value || [];
+        const myDrafts = mine.filter((course) => !course.isPublished);
+        setDrafts(myDrafts);
+      } else {
+        setDrafts([]);
+      }
     } catch (err) {
       Alert.alert("Error", err.message);
     } finally {
@@ -41,13 +60,87 @@ export default function CoursesScreen() {
     load();
   }, []);
 
-  return (
-    <ScreenContainer>
+  function renderDraftsSection() {
+    if (!drafts.length) return null;
+
+    return (
+      <View style={styles.draftSection}>
+        <View style={styles.draftHeader}>
+          <View style={{ flex: 1 }}>
+            <Text style={styles.draftTitle}>
+              My Draft Courses <Text style={styles.draftCount}>({drafts.length})</Text>
+            </Text>
+            <Text style={styles.draftSubtitle}>
+              Drafts stay private until you publish. Tap Show to review or keep building.
+            </Text>
+          </View>
+          <View style={styles.draftHeaderActions}>
+            <TouchableOpacity
+              style={styles.toggleDraftsBtn}
+              onPress={() => setShowDrafts((prev) => !prev)}
+            >
+              <Text style={styles.toggleDraftsText}>{showDrafts ? "Hide" : "Show"}</Text>
+            </TouchableOpacity>
+            <TouchableOpacity
+              style={styles.manageAllBtn}
+              onPress={() => navigation.navigate("CreatorDashboard")}
+            >
+              <Text style={styles.manageAllText}>Creator Hub</Text>
+            </TouchableOpacity>
+          </View>
+        </View>
+
+        {showDrafts &&
+          drafts.map((course) => {
+            const lessonsCount =
+              typeof course.lessonsCount === "number"
+                ? course.lessonsCount
+                : Array.isArray(course.lessons)
+                  ? course.lessons.length
+                  : 0;
+            return (
+              <View key={course._id} style={styles.draftCard}>
+                <View style={{ flex: 1 }}>
+                  <Text style={styles.draftCourseTitle} numberOfLines={1}>
+                    {course.title || "Untitled course"}
+                  </Text>
+                  <Text style={styles.draftMeta}>
+                    {lessonsCount} lesson{lessonsCount === 1 ? "" : "s"} ·{" "}
+                    {course.category || "Uncategorized"}
+                  </Text>
+                  <Text style={styles.draftStatus}>
+                    {course.isPublished ? "Published" : "Draft"}
+                  </Text>
+                </View>
+                <View style={styles.draftActions}>
+                  <TouchableOpacity
+                    style={styles.manageBtn}
+                    onPress={() => navigation.navigate("ManageCourse", { id: course._id })}
+                  >
+                    <Text style={styles.manageBtnText}>Manage</Text>
+                  </TouchableOpacity>
+                  <TouchableOpacity
+                    style={styles.viewBtn}
+                    onPress={() => navigation.navigate("CourseDetail", { course })}
+                  >
+                    <Text style={styles.viewBtnText}>Open</Text>
+                  </TouchableOpacity>
+                </View>
+              </View>
+            );
+          })}
+      </View>
+    );
+  }
+
+  const renderHeaderComponent = () => (
+    <View>
       <View
         style={{
           backgroundColor: "#F0FDF4",
           borderRadius: 8,
           padding: 12,
+          marginHorizontal: spacing(4),
           marginBottom: 12
         }}
       >
@@ -63,7 +156,6 @@ export default function CoursesScreen() {
           context.
         </Text>
       </View>
-      {/* Header with Create Button */}
       <View style={styles.header}>
         <View>
           <Text style={styles.title}>Learn & Grow</Text>
@@ -84,18 +176,22 @@ export default function CoursesScreen() {
           <Text style={styles.createBtnText}>+ Create</Text>
         </TouchableOpacity>
       </View>
+      {renderDraftsSection()}
+    </View>
+  );
 
-      {/* Course Grid */}
+  return (
+    <ScreenContainer>
       <FlatList
         data={courses}
         contentContainerStyle={styles.listContent}
         keyExtractor={(c) => c._id}
+        ListHeaderComponent={renderHeaderComponent}
         renderItem={({ item }) => (
           <TouchableOpacity
             style={styles.courseCard}
             onPress={() => navigation.navigate("CourseDetail", { course: item })}
           >
-            {/* Course Thumbnail */}
             <View style={styles.thumbnail}>
               {item.thumbnail ? (
                 <Image source={{ uri: item.thumbnail }} style={styles.thumbnailImage} />
@@ -111,7 +207,6 @@ export default function CoursesScreen() {
               )}
             </View>
 
-            {/* Course Info */}
             <View style={styles.courseInfo}>
               <Text style={styles.courseTitle} numberOfLines={2}>
                 {item.title}
@@ -279,5 +374,110 @@ const styles = StyleSheet.create({
     color: "#6B7280",
     textAlign: "center",
     paddingHorizontal: 40
+  },
+  draftSection: {
+    marginHorizontal: spacing(4),
+    marginBottom: spacing(4),
+    backgroundColor: "#F5F3FF",
+    borderRadius: 12,
+    borderWidth: 1,
+    borderColor: "#E0E7FF",
+    padding: spacing(4)
+  },
+  draftHeader: {
+    flexDirection: "row",
+    justifyContent: "space-between",
+    gap: spacing(3),
+    marginBottom: spacing(3)
+  },
+  draftTitle: {
+    fontSize: 18,
+    fontWeight: "700",
+    color: "#312E81"
+  },
+  draftCount: {
+    fontSize: 14,
+    color: "#5B21B6"
+  },
+  draftSubtitle: {
+    fontSize: 13,
+    color: "#4338CA",
+    marginTop: 4
+  },
+  draftHeaderActions: {
+    flexDirection: "row",
+    alignItems: "center",
+    gap: 8
+  },
+  toggleDraftsBtn: {
+    paddingHorizontal: 12,
+    paddingVertical: 6,
+    borderRadius: 999,
+    borderWidth: 1,
+    borderColor: "#A5B4FC"
+  },
+  toggleDraftsText: {
+    color: "#4338CA",
+    fontWeight: "600"
+  },
+  manageAllBtn: {
+    alignSelf: "flex-start",
+    backgroundColor: "#4338CA",
+    paddingHorizontal: 14,
+    paddingVertical: 8,
+    borderRadius: 999
+  },
+  manageAllText: {
+    color: "#fff",
+    fontWeight: "600"
+  },
+  draftCard: {
+    backgroundColor: "#fff",
+    borderRadius: 10,
+    padding: spacing(3),
+    borderWidth: 1,
+    borderColor: "#E5E7EB",
+    flexDirection: "row",
+    alignItems: "center",
+    marginBottom: spacing(3)
+  },
+  draftCourseTitle: {
+    fontSize: 16,
+    fontWeight: "600",
+    color: "#111827"
+  },
+  draftMeta: {
+    marginTop: 4,
+    color: "#4B5563"
+  },
+  draftStatus: {
+    color: "#7C3AED",
+    marginTop: 4,
+    fontSize: 13
+  },
+  draftActions: {
+    flexDirection: "row",
+    gap: 8,
+    marginLeft: spacing(2)
+  },
+  manageBtn: {
+    backgroundColor: "#0EA5E9",
+    paddingHorizontal: 14,
+    paddingVertical: 8,
+    borderRadius: 8
+  },
+  manageBtnText: {
+    color: "#fff",
+    fontWeight: "600"
+  },
+  viewBtn: {
+    backgroundColor: "#E0E7FF",
+    paddingHorizontal: 14,
+    paddingVertical: 8,
+    borderRadius: 8
+  },
+  viewBtnText: {
+    color: "#3730A3",
+    fontWeight: "600"
   }
 });

@@ -105,10 +105,7 @@ export default function AddLessonScreen({ route, navigation }) {
       pdfUrl: pdfFile ? pdfFile.uri : pdfUrl
       // Future: Add audioUrl, images array to lesson schema
     });
-
-    Alert.alert("Success", "Lesson added!", [
-      { text: "OK", onPress: () => navigation.goBack() }
-    ]);
+    navigation.goBack();
   }
 
   return (
