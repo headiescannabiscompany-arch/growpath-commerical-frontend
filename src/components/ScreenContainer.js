@@ -1,18 +1,24 @@
-import React from "react";
+import React, { forwardRef } from "react";
 import { View, ScrollView, StyleSheet } from "react-native";
 import { colors } from "../theme/theme";
 
-export default function ScreenContainer({ children, scroll = false }) {
+const ScreenContainer = forwardRef(function ScreenContainer(
+  { children, scroll = false, innerRef = null },
+  ref
+) {
   const Comp = scroll ? ScrollView : View;
   return (
     <Comp
+      ref={innerRef || ref}
       style={styles.container}
       contentContainerStyle={scroll && styles.scrollContent}
     >
       {children}
     </Comp>
   );
-}
+});
+
+export default ScreenContainer;
 
 const styles = StyleSheet.create({
   container: {

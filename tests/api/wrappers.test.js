@@ -190,6 +190,17 @@ describe("API Wrappers Unit Tests", async () => {
       assert.strictEqual(fetchCalls[0].options.method, "PUT");
     });
 
+    it("updateCourse sends PUT with payload", async () => {
+      const { updateCourse } = await import("../../src/api/courses.js");
+      await updateCourse("c1", { title: "Updated" });
+      assert.strictEqual(fetchCalls[0].options.method, "PUT");
+      assert.strictEqual(
+        fetchCalls[0].url.endsWith(ROUTES.COURSES.DETAIL("c1")),
+        true
+      );
+      assert.strictEqual(JSON.parse(fetchCalls[0].options.body).title, "Updated");
+    });
+
     it("completeLesson sends courseId", async () => {
       const { completeLesson } = await import("../../src/api/courses.js");
       await completeLesson("l1", "c1");
