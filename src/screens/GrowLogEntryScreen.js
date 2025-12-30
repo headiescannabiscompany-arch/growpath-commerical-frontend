@@ -15,12 +15,15 @@ import { createEntry, getEntry, updateEntry, autoTagEntry } from "../api/growlog
 
 export default function GrowLogEntryScreen({ route, navigation }) {
   const entryId = route.params?.id || null;
+  const initialDate =
+    route.params?.date || new Date().toISOString().split("T")[0];
 
   const [loading, setLoading] = useState(false);
 
   const [title, setTitle] = useState("");
   const [notes, setNotes] = useState("");
   const [photos, setPhotos] = useState([]);
+  const [entryDate, setEntryDate] = useState(initialDate);
 
   const [strain, setStrain] = useState("");
   const [breeder, setBreeder] = useState("");
@@ -98,6 +101,9 @@ export default function GrowLogEntryScreen({ route, navigation }) {
 
     setWeek(e.week ? String(e.week) : "");
     setDay(e.day ? String(e.day) : "");
+    if (e.date) {
+      setEntryDate(new Date(e.date).toISOString().split("T")[0]);
+    }
 
     setTags(e.tags || []);
 
@@ -174,6 +180,7 @@ export default function GrowLogEntryScreen({ route, navigation }) {
       week: week ? Number(week) : null,
       day: day ? Number(day) : null,
       tags,
+      date: entryDate ? new Date(entryDate) : undefined,
       environment: {
         light: {
           ppfd: lightPPFD,
@@ -272,6 +279,15 @@ export default function GrowLogEntryScreen({ route, navigation }) {
           value={notes}
           onChangeText={setNotes}
           placeholder="Details about your plants..."
+        />
+
+        {/* Entry Date */}
+        <Text style={styles.label}>Entry Date</Text>
+        <TextInput
+          style={styles.input}
+          value={entryDate}
+          onChangeText={setEntryDate}
+          placeholder="YYYY-MM-DD"
         />
 
         {/* Photos */}

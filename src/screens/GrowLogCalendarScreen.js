@@ -1,5 +1,6 @@
-import React, { useEffect, useMemo, useState } from "react";
+import React, { useEffect, useMemo, useRef, useState } from "react";
 import { View, Text, TouchableOpacity, StyleSheet, Alert } from "react-native";
+import { useFocusEffect } from "@react-navigation/native";
 
 import ScreenContainer from "../components/ScreenContainer";
 import { getEntries } from "../api/growlog";
@@ -10,6 +11,7 @@ export default function GrowLogCalendarScreen({ navigation }) {
   const [entries, setEntries] = useState([]);
   const [tasks, setTasks] = useState([]);
   const [selectedDate, setSelectedDate] = useState(null);
+  const scrollRef = useRef(null);
 
   const [year, setYear] = useState(new Date().getFullYear());
   const [month, setMonth] = useState(new Date().getMonth()); // 0-11
@@ -17,6 +19,12 @@ export default function GrowLogCalendarScreen({ navigation }) {
   useEffect(() => {
     load();
   }, []);
+
+  useFocusEffect(
+    React.useCallback(() => {
+      load();
+    }, [])
+  );
 
   async function load() {
     try {
@@ -114,8 +122,27 @@ export default function GrowLogCalendarScreen({ navigation }) {
   const selectedEntries = selectedKey ? entriesByDate[selectedKey] || [] : [];
   const selectedTasks = selectedKey ? tasksByDate[selectedKey] || [] : [];
 
+  useEffect(() => {
+    if (selectedDate) {
+      console.log(
+        "Calendar selection:",
+        selectedKey,
+        "| entries:",
+        selectedEntries.length,
+        "| tasks:",
+        selectedTasks.length
+      );
+    }
+  }, [selectedDate, selectedKey, selectedEntries.length, selectedTasks.length]);
+
+  useEffect(() => {
+    if (selectedDate && scrollRef.current?.scrollTo) {
+      scrollRef.current.scrollToEnd({ animated: true });
+    }
+  }, [selectedDate]);
+
   return (
-    <ScreenContainer scroll>
+    <ScreenContainer scroll innerRef={scrollRef}>
       <View style={styles.infoCard}>
         <Text style={styles.infoTitle}>Calendar vs Schedule</Text>
         <Text style={styles.infoCopy}>
@@ -228,8 +255,8 @@ export default function GrowLogCalendarScreen({ navigation }) {
       </View>
 
       {/* SELECTED DAY DATA */}
-      {(selectedEntries.length > 0 || selectedTasks.length > 0) && (
-        <View style={styles.selectedBox}>
+      {selectedDate && (
+        <View style={[styles.selectedBox, { marginBottom: 80 }]}>
           <Text style={styles.selectedTitle}>{selectedKey}</Text>
 
           {/* GROW LOG ENTRIES */}
@@ -278,6 +305,11 @@ export default function GrowLogCalendarScreen({ navigation }) {
                 </View>
               ))}
             </View>
+          )}
+          {selectedEntries.length === 0 && selectedTasks.length === 0 && (
+            <Text style={styles.emptySelectedState}>
+              No entries or tasks for this day yet. Add one below to start planning.
+            </Text>
           )}
 
           <View style={styles.buttonRow}>
@@ -474,6 +506,12 @@ const styles = StyleSheet.create({
     color: "white",
     fontSize: 16,
     fontWeight: "600"
+  },
+  emptySelectedState: {
+    textAlign: "center",
+    color: "#6B7280",
+    fontStyle: "italic",
+    marginBottom: 12
   },
   infoCard: {
     backgroundColor: "#EEF2FF",
