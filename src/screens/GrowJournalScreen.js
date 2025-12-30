@@ -1,4 +1,4 @@
-import React, { useEffect, useState } from "react";
+import React, { useState } from "react";
 import {
   Text,
   TextInput,
@@ -17,23 +17,36 @@ import { addEntry, uploadEntryPhoto } from "../api/grows";
 import { useAuth } from "../context/AuthContext";
 
 export default function GrowJournalScreen({ route, navigation }) {
-  const { isEntitled } = useAuth();
+  const { isPro } = useAuth();
   const grow = route.params.grow;
   const [entries, setEntries] = useState(grow.entries || []);
   const [note, setNote] = useState("");
+  const [addingEntry, setAddingEntry] = useState(false);
+  const [uploadingPhoto, setUploadingPhoto] = useState(false);
 
-  // ... existing methods ...
+  async function handleAddEntry() {
+    if (!note.trim()) {
+      return Alert.alert("Missing Note", "Please add a brief note before saving.");
+    }
+
+    try {
+      setAddingEntry(true);
+      const entry = await addEntry(grow._id, note.trim(), []);
+      setEntries((prev) => [entry, ...prev]);
+      setNote("");
+    } catch (err) {
+      Alert.alert("Error", err.message);
+    } finally {
+      setAddingEntry(false);
+    }
+  }
 
   async function pickImage() {
     if (!isPro) {
-      return Alert.alert(
-        "Pro Feature",
-        "Uploading photos requires Pro.",
-        [
-          { text: "Cancel" },
-          { text: "Go Pro", onPress: () => navigation.navigate("Subscribe") }
-        ]
-      );
+      return Alert.alert("Pro Feature", "Uploading photos requires Pro.", [
+        { text: "Cancel" },
+        { text: "Go Pro", onPress: () => navigation.navigate("Subscribe") }
+      ]);
     }
 
     let result = await ImagePicker.launchImageLibraryAsync({
@@ -49,10 +62,20 @@ export default function GrowJournalScreen({ route, navigation }) {
       };
 
       try {
-        const updated = await uploadEntryPhoto(grow._id, file);
-        setEntries(updated.grow.entries);
+        setUploadingPhoto(true);
+        const uploaded = await uploadEntryPhoto(grow._id, file);
+        if (uploaded?.url) {
+          const photoEntry = {
+            photos: [uploaded.url],
+            createdAt: new Date().toISOString()
+          };
+          setEntries((prev) => [photoEntry, ...prev]);
+          Alert.alert("Success", "Photo uploaded to your grow log.");
+        }
       } catch (err) {
         Alert.alert("Error", err.message);
+      } finally {
+        setUploadingPhoto(false);
       }
     }
   }
@@ -73,10 +96,22 @@ export default function GrowJournalScreen({ route, navigation }) {
           placeholderTextColor={colors.textSoft}
         />
 
-        <PrimaryButton title="Add Note" onPress={handleAddEntry} />
+        <PrimaryButton
+          title={addingEntry ? "Adding..." : "Add Note"}
+          onPress={handleAddEntry}
+          disabled={addingEntry}
+          testID="add-grow-entry"
+        />
 
-        <TouchableOpacity onPress={pickImage} style={styles.photoButton}>
-          <Text style={styles.photoText}>Add Photo</Text>
+        <TouchableOpacity
+          onPress={pickImage}
+          style={[styles.photoButton, uploadingPhoto && styles.photoButtonDisabled]}
+          disabled={uploadingPhoto}
+          testID="upload-grow-photo"
+        >
+          <Text style={styles.photoText}>
+            {uploadingPhoto ? "Uploading..." : "Add Photo"}
+          </Text>
         </TouchableOpacity>
       </Card>
 
@@ -89,8 +124,8 @@ export default function GrowJournalScreen({ route, navigation }) {
         contentContainerStyle={{ paddingBottom: 120 }}
         renderItem={({ item }) => (
           <Card style={{ marginBottom: spacing(4) }}>
-            {item.note ? (
-              <Text style={styles.entryText}>{item.note}</Text>
+            {item.note || item.notes ? (
+              <Text style={styles.entryText}>{item.note || item.notes}</Text>
             ) : null}
 
             {item.photos?.map((url, idx) => (
@@ -103,7 +138,9 @@ export default function GrowJournalScreen({ route, navigation }) {
             ))}
 
             <Text style={styles.date}>
-              {new Date(item.createdAt).toLocaleString()}
+              {item.createdAt || item.date
+                ? new Date(item.createdAt || item.date).toLocaleString()
+                : "Just now"}
             </Text>
           </Card>
         )}
@@ -140,6 +177,9 @@ const styles = StyleSheet.create({
     backgroundColor: colors.accentSoft,
     borderRadius: radius.card,
     alignItems: "center"
+  },
+  photoButtonDisabled: {
+    opacity: 0.6
   },
   photoText: {
     color: colors.accent,

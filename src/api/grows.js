@@ -1,8 +1,20 @@
 import { client as api, postMultipart } from "./client.js";
 import ROUTES from "./routes.js";
 
-export function listGrows() {
-  return api(ROUTES.GROWS.LIST);
+function buildQuery(filters = {}) {
+  const params = new URLSearchParams();
+  Object.entries(filters).forEach(([key, value]) => {
+    if (value !== undefined && value !== null && value !== "") {
+      params.append(key, value);
+    }
+  });
+  const qs = params.toString();
+  return qs ? `${ROUTES.GROWS.LIST}?${qs}` : ROUTES.GROWS.LIST;
+}
+
+export function listGrows(filters = {}) {
+  const path = buildQuery(filters);
+  return api(path);
 }
 
 export function createGrow(growData) {

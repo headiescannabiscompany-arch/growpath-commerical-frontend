@@ -217,6 +217,16 @@ describe("API Wrappers Unit Tests", async () => {
     });
   });
 
+  describe("Grows API", () => {
+    it("listGrows sends filters as query parameters", async () => {
+      const { listGrows } = await import("../../src/api/grows.js");
+      await listGrows({ stage: "veg", breeder: "Acme Seeds" });
+      const parsed = new URL(fetchCalls[0].url);
+      assert.strictEqual(parsed.searchParams.get("stage"), "veg");
+      assert.strictEqual(parsed.searchParams.get("breeder"), "Acme Seeds");
+    });
+  });
+
   describe("Tokens API", () => {
     it("getTokenBalance uses GET", async () => {
       const { getTokenBalance } = await import("../../src/api/tokens.js");

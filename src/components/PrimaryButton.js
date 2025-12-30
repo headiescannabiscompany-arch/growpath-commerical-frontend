@@ -9,7 +9,8 @@ export default function PrimaryButton({
   textStyle = {},
   disabled,
   children,
-  accessibilityRole = "button"
+  accessibilityRole = "button",
+  ...rest
 }) {
   return (
     <TouchableOpacity
@@ -17,6 +18,7 @@ export default function PrimaryButton({
       onPress={onPress}
       disabled={disabled}
       accessibilityRole={accessibilityRole}
+      {...rest}
     >
       {children || <Text style={[styles.label, textStyle]}>{title}</Text>}
     </TouchableOpacity>

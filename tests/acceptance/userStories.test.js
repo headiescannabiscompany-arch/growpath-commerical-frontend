@@ -61,7 +61,14 @@ describe("Acceptance: User Stories", async () => {
        if (url.includes("/api/user/creator/onboard")) return { json: { url: "https://stripe.com/onboard" } };
        if (url.includes("/api/creator/signature")) return { json: { success: true, url: "/sig.png" } };
        if (url.includes("/api/tasks/today")) return { json: [{ _id: "t1", title: "Test Task" }] };
-       if (url.includes("/api/grows")) return { json: { _id: "g1", title: "Live Test Plant" } };
+       if (url.includes("/api/grows/") && url.endsWith("/entries")) return { json: { _id: "entry-1" } };
+       if (url.includes("/api/grows/") && url.endsWith("/entries/photo")) return { json: { url: "/uploads/photo.jpg" } };
+       if (url.includes("/api/grows")) {
+         if (options?.method === "POST") {
+           return { json: { _id: "g1", name: "Live Test Plant" } };
+         }
+         return { json: [{ _id: "g1", name: "Live Test Plant", stage: "veg" }] };
+       }
        if (url.includes("/api/forum/create")) return { json: { _id: "f1", title: "Live Question" } };
        if (url.includes("/api/courses/create")) return { json: { _id: "c1", title: "New Course" } };
        if (url.includes("/api/courses/list")) return { json: { courses: [{ _id: "c1", title: "Intro to Growing" }], total: 1, hasMore: false } };
@@ -117,12 +124,25 @@ describe("Acceptance: User Stories", async () => {
        t.skip("OpenAPI spec missing");
        return;
     }
-    const grow = await growsApi.createGrow({ title: "Live Test Plant", name: "Live Test Plant", body: "Growing fast" });
+    const grow = await growsApi.createGrow({
+      name: "Live Test Plant",
+      strain: "Training Wheels",
+      stage: "veg",
+      environment: {
+        light: { ppfd: "650" }
+      }
+    });
     assert.ok(fetchCalls.some(c => c.url.includes("/api/grows")), "Create grow hit");
 
     const growId = grow?._id || grow?.id || "g123";
     await growsApi.addEntry(growId, "Real entry", ["test"]);
     assert.ok(fetchCalls.some(c => c.url.includes(`/api/grows/${growId}/entries`)), "Add entry hit");
+
+    await growsApi.listGrows({ stage: "veg", search: "Live" });
+    assert.ok(
+      fetchCalls.some((c) => c.url.includes("/api/grows?") && c.url.includes("stage=veg")),
+      "List grows with filters hit"
+    );
   });
 
   it("User Story: Post to forum and comment", async (t) => {
@@ -211,7 +231,11 @@ describe("Acceptance: User Stories", async () => {
        return;
     }
 
-    const grow = await growsApi.createGrow({ title: "White Widow", name: "WW #1", body: "Live body copy" });
+    const grow = await growsApi.createGrow({
+      name: "WW #1",
+      strain: "White Widow",
+      stage: "flower"
+    });
     assert.ok(fetchCalls.some(c => c.url.includes("/api/grows")), "Create grow hit");
 
     await diagnoseApi.analyzeDiagnosis({ notes: "Bottom leaves are yellowing", stage: "veg" });
