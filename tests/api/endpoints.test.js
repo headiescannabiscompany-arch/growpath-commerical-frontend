@@ -66,5 +66,13 @@ describe("API Configuration & Endpoints", async () => {
       await growsApi.addEntry("grow_1", "note", []);
       assert.ok(fetchCalls[0].url.endsWith(ROUTES.GROWS.ENTRIES("grow_1")));
     });
+
+    it("listGrows appends filters as query parameters", async () => {
+      await growsApi.listGrows({ stage: "veg", search: "blue dream" });
+      const parsed = new URL(fetchCalls[0].url);
+      assert.strictEqual(parsed.pathname, ROUTES.GROWS.LIST);
+      assert.strictEqual(parsed.searchParams.get("stage"), "veg");
+      assert.strictEqual(parsed.searchParams.get("search"), "blue dream");
+    });
   });
 });

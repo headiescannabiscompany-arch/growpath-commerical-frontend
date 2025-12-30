@@ -1,4 +1,4 @@
-import React, { useEffect, useState } from "react";
+import React, { useEffect, useState, useMemo } from "react";
 import {
   View,
   Text,
@@ -6,14 +6,28 @@ import {
   TouchableOpacity,
   FlatList,
   StyleSheet,
-  Alert,
-  ScrollView
+  Alert
 } from "react-native";
 import ScreenContainer from "../components/ScreenContainer";
 import Card from "../components/Card";
 import PrimaryButton from "../components/PrimaryButton";
 import { colors, spacing, radius } from "../theme/theme";
 import { createGrow, listGrows } from "../api/grows";
+
+const hasValue = (value) => {
+  if (typeof value === "string") {
+    return value.trim().length > 0;
+  }
+  return value !== undefined && value !== null;
+};
+
+const pruneSection = (section) => {
+  if (!section) return undefined;
+  const cleaned = Object.fromEntries(
+    Object.entries(section).filter(([, value]) => hasValue(value))
+  );
+  return Object.keys(cleaned).length ? cleaned : undefined;
+};
 
 export default function GrowLogsScreen({ navigation }) {
   const [loading, setLoading] = useState(false);
@@ -22,6 +36,10 @@ export default function GrowLogsScreen({ navigation }) {
   const [strain, setStrain] = useState("");
   const [breeder, setBreeder] = useState("");
   const [stage, setStage] = useState("");
+
+  const [stageFilter, setStageFilter] = useState("");
+  const [breederFilter, setBreederFilter] = useState("");
+  const [searchFilter, setSearchFilter] = useState("");
 
   // Advanced environment options
   const [showAdvanced, setShowAdvanced] = useState(false);
@@ -53,11 +71,24 @@ export default function GrowLogsScreen({ navigation }) {
   const [substrateType, setSubstrateType] = useState("");
   const [substratePH, setSubstratePH] = useState("");
 
-  async function loadGrows() {
+  const filterValues = useMemo(
+    () => ({
+      stage: stageFilter.trim() || undefined,
+      breeder: breederFilter.trim() || undefined,
+      search: searchFilter.trim() || undefined
+    }),
+    [stageFilter, breederFilter, searchFilter]
+  );
+
+  async function loadGrows(customFilters) {
     try {
       setLoading(true);
-      const data = await listGrows();
-      setGrows(data);
+      const filtersToUse =
+        customFilters !== undefined
+          ? customFilters
+          : filterValues;
+      const data = await listGrows(filtersToUse);
+      setGrows(Array.isArray(data) ? data : []);
     } catch (err) {
       Alert.alert("Error", err.message);
     } finally {
@@ -66,51 +97,68 @@ export default function GrowLogsScreen({ navigation }) {
   }
 
   useEffect(() => {
-    loadGrows();
+    loadGrows({});
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
+
+  const handleClearFilters = () => {
+    setStageFilter("");
+    setBreederFilter("");
+    setSearchFilter("");
+    loadGrows({});
+  };
+
+  const buildEnvironmentPayload = () => {
+    const environment = {
+      light: pruneSection({
+        ppfd: lightPPFD,
+        dli: lightDLI,
+        model: lightModel,
+        distance: lightDistance,
+        spectrum: lightSpectrum
+      }),
+      water: pruneSection({
+        source: waterSource,
+        treatment: waterTreatment,
+        ph: waterPH,
+        ppm: waterPPM
+      }),
+      air: pruneSection({
+        temperature,
+        humidity,
+        airflow
+      }),
+      nutrients: pruneSection({
+        brand: nutrientBrand,
+        strength: nutrientStrength,
+        schedule: feedingSchedule
+      }),
+      substrate: pruneSection({
+        type: substrateType,
+        ph: substratePH
+      })
+    };
+    const cleaned = Object.fromEntries(
+      Object.entries(environment).filter(([, value]) => value)
+    );
+    return Object.keys(cleaned).length ? cleaned : undefined;
+  };
 
   async function handleAddGrow() {
     if (!newName.trim()) return Alert.alert("Missing name");
 
     try {
+      const environment = buildEnvironmentPayload();
       const growData = {
-        name: newName,
-        strain,
-        breeder,
-        stage,
-        environment: {
-          light: {
-            ppfd: lightPPFD,
-            dli: lightDLI,
-            model: lightModel,
-            distance: lightDistance,
-            spectrum: lightSpectrum
-          },
-          water: {
-            source: waterSource,
-            treatment: waterTreatment,
-            ph: waterPH,
-            ppm: waterPPM
-          },
-          air: {
-            temperature,
-            humidity,
-            airflow
-          },
-          nutrients: {
-            brand: nutrientBrand,
-            strength: nutrientStrength,
-            schedule: feedingSchedule
-          },
-          substrate: {
-            type: substrateType,
-            ph: substratePH
-          }
-        }
+        name: newName.trim(),
+        strain: strain.trim() || undefined,
+        breeder: breeder.trim() || undefined,
+        stage: stage.trim() || undefined,
+        ...(environment ? { environment } : {})
       };
 
       const grow = await createGrow(growData);
-      setGrows([grow, ...grows]);
+      setGrows((prev) => [grow, ...prev]);
 
       // Reset all fields
       setNewName("");
@@ -135,6 +183,7 @@ export default function GrowLogsScreen({ navigation }) {
       setSubstrateType("");
       setSubstratePH("");
       setShowAdvanced(false);
+      await loadGrows();
     } catch (err) {
       Alert.alert("Error", err.message);
     }
@@ -147,6 +196,40 @@ export default function GrowLogsScreen({ navigation }) {
   return (
     <ScreenContainer scroll>
       <Text style={styles.title}>Your Plants</Text>
+
+      <Card style={styles.filterCard}>
+        <Text style={styles.label}>Filter Grows</Text>
+        <TextInput
+          value={stageFilter}
+          onChangeText={setStageFilter}
+          placeholder="Stage (e.g., veg, flower)"
+          style={styles.input}
+          placeholderTextColor={colors.textSoft}
+        />
+        <TextInput
+          value={breederFilter}
+          onChangeText={setBreederFilter}
+          placeholder="Breeder"
+          style={styles.input}
+          placeholderTextColor={colors.textSoft}
+        />
+        <TextInput
+          value={searchFilter}
+          onChangeText={setSearchFilter}
+          placeholder="Search name or strain"
+          style={styles.input}
+          placeholderTextColor={colors.textSoft}
+        />
+        <PrimaryButton
+          title={loading ? "Loading..." : "Apply Filters"}
+          onPress={() => loadGrows()}
+          disabled={loading}
+          testID="apply-grow-filters"
+        />
+        <TouchableOpacity style={styles.clearFilters} onPress={handleClearFilters}>
+          <Text style={styles.clearText}>Clear Filters</Text>
+        </TouchableOpacity>
+      </Card>
 
       {/* Add new grow */}
       <Card style={{ marginBottom: spacing(6) }}>
@@ -389,7 +472,11 @@ export default function GrowLogsScreen({ navigation }) {
           </View>
         )}
 
-        <PrimaryButton title="Create Grow" onPress={handleAddGrow} />
+        <PrimaryButton
+          title="Create Grow"
+          onPress={handleAddGrow}
+          testID="create-grow-button"
+        />
       </Card>
 
       <Text style={styles.label}>Your Grows</Text>
@@ -414,7 +501,7 @@ export default function GrowLogsScreen({ navigation }) {
           contentContainerStyle={{ paddingBottom: 80 }}
           renderItem={({ item }) => (
             <TouchableOpacity onPress={() => openGrow(item)}>
-              <Card style={{ marginBottom: spacing(4) }}>
+              <Card style={{ marginBottom: spacing(4) }} testID={`grow-card-${item._id}`}>
                 <Text style={styles.growName}>{item.name}</Text>
                 <Text style={styles.sub}>{item.strain}</Text>
                 <Text style={styles.sub}>{item.stage}</Text>
@@ -509,5 +596,16 @@ const styles = StyleSheet.create({
   sub: {
     color: colors.textSoft,
     marginBottom: spacing(1)
+  },
+  filterCard: {
+    marginBottom: spacing(6)
+  },
+  clearFilters: {
+    alignItems: "center",
+    marginTop: spacing(2)
+  },
+  clearText: {
+    color: colors.accent,
+    fontWeight: "600"
   }
 });
