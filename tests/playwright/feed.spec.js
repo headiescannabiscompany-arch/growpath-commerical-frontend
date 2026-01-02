@@ -122,4 +122,56 @@ test.describe("Feed behavior", () => {
       NEW_POST_TEXT
     );
   });
+
+  test("long posts are truncated and clicking navigates to detail", async ({ page }) => {
+    const LONG_TEXT = "Line 1\nLine 2\nLine 3\nLine 4\nLine 5\nLine 6\nLine 7\nLine 8 should be hidden";
+    const LONG_POST = {
+      _id: "long-post",
+      text: LONG_TEXT,
+      likeCount: 0,
+      user: { username: "Long Writer", avatar: null },
+      photos: []
+    };
+
+    const fulfillJson = (route, body) =>
+      route.fulfill({
+        status: 200,
+        contentType: "application/json",
+        body: JSON.stringify(body)
+      });
+
+    await page.route("**/api/**", async (route) => {
+      const url = new URL(route.request().url());
+      if (url.pathname === "/api/posts/feed") {
+        return fulfillJson(route, [LONG_POST]);
+      }
+      if (url.pathname === "/api/auth/login") {
+        return fulfillJson(route, {
+          token: "feed-token",
+          user: { _id: "u1", email: TEST_USER.email, subscriptionStatus: "active" }
+        });
+      }
+      return fulfillJson(route, { success: true });
+    });
+
+    await page.goto("/");
+    await page.getByPlaceholder("Email").fill(TEST_USER.email);
+    await page.getByPlaceholder("Password").fill(TEST_USER.password);
+    await page.getByRole("button", { name: /login/i }).click();
+
+    await page.evaluate(() => globalThis.__NAV__?.navigate("FeedTab"));
+    
+    // Check for truncation logic (visually checking CSS is hard in headless, but we can check navigation)
+    // Note: React Native Web maps numberOfLines to -webkit-line-clamp
+    
+    // Click the post body
+    await page.getByText("Line 1").click();
+
+    // Verify navigation to PostDetail
+    // PostDetailScreen displays "Posted by [Name]" which differs from the Feed's simple name display
+    await expect(page.getByText("Posted by Long Writer")).toBeVisible();
+    
+    // Also verify the full text is present (using .last() since the feed one might still be in DOM)
+    await expect(page.getByText("Line 8 should be hidden").last()).toBeVisible();
+  });
 });

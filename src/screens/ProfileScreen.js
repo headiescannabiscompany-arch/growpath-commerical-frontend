@@ -11,6 +11,7 @@ import {
 
 import FollowButton from "../components/FollowButton";
 import ScreenContainer from "../components/ScreenContainer";
+import TokenBalanceWidget from "../components/TokenBalanceWidget";
 import { getProfile, updateNotificationPreferences } from "../api/users";
 import { updateCourse } from "../api/courses";
 import { useAuth } from "../context/AuthContext";
@@ -235,6 +236,13 @@ export default function ProfileScreen({ route, navigation }) {
           <FollowButton userId={user._id} />
         </View>
       ) : null}
+
+      {/* AI TOKENS (Own Profile Only) */}
+      {isOwnProfile && (
+        <View style={{ marginHorizontal: 20, marginVertical: 10 }}>
+          <TokenBalanceWidget onPress={() => navigation.navigate("TokenInfo")} />
+        </View>
+      )}
 
       {isOwnProfile && (
         <View style={styles.courseShelf}>
