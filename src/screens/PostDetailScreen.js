@@ -1,4 +1,4 @@
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 import {
   View,
   Text,
@@ -13,16 +13,36 @@ import ScreenContainer from "../components/ScreenContainer";
 import Card from "../components/Card";
 import PrimaryButton from "../components/PrimaryButton";
 import { colors, spacing, radius } from "../theme/theme";
-import { likePost, commentOnPost } from "../api/forum";
+import { likePost, addComment, getComments } from "../api/posts";
 import { useAuth } from "../context/AuthContext";
 
 export default function PostDetailScreen({ route, navigation }) {
-  const { isEntitled, isPro } = useAuth();
+  const { isEntitled, isPro, user } = useAuth();
   const { post, refreshFeed } = route.params;
 
-  const [likes, setLikes] = useState(post.likes || 0);
-  const [comments, setComments] = useState(post.comments || []);
+  const initialLikeCount = typeof post.likeCount === "number"
+    ? post.likeCount
+    : Array.isArray(post.likes)
+      ? post.likes.length
+      : (typeof post.likes === "number" ? post.likes : 0);
+
+  const [likes, setLikes] = useState(initialLikeCount);
+  const [comments, setComments] = useState([]);
   const [commentText, setCommentText] = useState("");
+
+  // Load comments
+  useEffect(() => {
+    async function loadComments() {
+      try {
+        const res = await getComments(post._id);
+        const list = Array.isArray(res) ? res : res?.data || [];
+        setComments(list);
+      } catch (err) {
+        console.error("Failed to load comments", err);
+      }
+    }
+    loadComments();
+  }, [post._id]);
 
   // VIP Lock
   if (post.vipOnly && !isPro) {
@@ -45,7 +65,9 @@ export default function PostDetailScreen({ route, navigation }) {
   async function handleLike() {
     try {
       const res = await likePost(post._id);
-      setLikes(res.likes);
+      // api/posts likePost returns { likeCount: number }
+      // api/forum likePost returns { likes: number, likeCount: number }
+      setLikes(res.likeCount);
 
       if (typeof refreshFeed === "function") {
         refreshFeed();
@@ -59,8 +81,21 @@ export default function PostDetailScreen({ route, navigation }) {
     if (!commentText.trim()) return;
 
     try {
-      const updated = await commentOnPost(post._id, commentText);
-      setComments(updated.comments);
+      // api/posts addComment returns the comment object
+      // But we need to update the local comments list.
+      // Does it return the full list? No, usually just the new comment.
+      // But we might need to re-fetch comments or append.
+      // Let's check api/posts addComment response.
+      const newComment = await addComment(post._id, commentText);
+      
+      // Manually populate user for display since backend returns ID only
+      const populatedComment = {
+        ...newComment,
+        user: user || { username: "You" }
+      };
+      
+      // So I should append.
+      setComments([...comments, populatedComment]);
       setCommentText("");
 
       if (typeof refreshFeed === "function") {
@@ -126,7 +161,7 @@ export default function PostDetailScreen({ route, navigation }) {
         {comments.map((c, idx) => (
           <View key={idx} style={styles.commentItem}>
             <Text style={styles.commentAuthor}>
-              {c.author?.displayName || "User"}:
+              {c.author?.displayName || c.user?.username || c.user?.name || "User"}:
             </Text>
             <Text style={styles.commentText}>{c.text}</Text>
           </View>

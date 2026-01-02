@@ -10,6 +10,7 @@ import {
   Image,
   ImageBackground
 } from "react-native";
+import AsyncStorage from "@react-native-async-storage/async-storage";
 import ScreenContainer from "../components/ScreenContainer";
 import PrimaryButton from "../components/PrimaryButton";
 import { colors, radius, spacing } from "../theme/theme";
@@ -23,11 +24,16 @@ export default function LoginScreen({ navigation }) {
   const [password, setPassword] = useState("");
   const [displayName, setDisplayName] = useState("");
   const [loading, setLoading] = useState(false);
+  const [hasLoggedInBefore, setHasLoggedInBefore] = useState(false);
 
   useEffect(() => {
     if (token && user) {
       navigation.replace("MainTabs");
     }
+    
+    AsyncStorage.getItem("HAS_LOGGED_IN_BEFORE").then((val) => {
+      setHasLoggedInBefore(val === "true");
+    });
   }, [token, user, navigation]);
 
   async function handleAuth() {
@@ -62,6 +68,7 @@ export default function LoginScreen({ navigation }) {
 
       // Update context state (without waiting for AsyncStorage on web)
       const authToken = token;
+      await AsyncStorage.setItem("HAS_LOGGED_IN_BEFORE", "true");
       contextLogin(authToken, user); // Don't await - let it run async
 
       navigation.replace("MainTabs");
@@ -119,7 +126,9 @@ export default function LoginScreen({ navigation }) {
       </ImageBackground>
 
       <Text style={styles.title}>
-        {mode === "login" ? "Welcome Back" : "Create Account"}
+        {mode === "login" 
+          ? (hasLoggedInBefore ? "Welcome Back" : " ") 
+          : "Create Account"}
       </Text>
 
       {mode === "signup" && (
@@ -148,6 +157,8 @@ export default function LoginScreen({ navigation }) {
         placeholderTextColor={colors.textSoft}
         secureTextEntry
         style={styles.input}
+        returnKeyType="go"
+        onSubmitEditing={handleAuth}
       />
 
       <PrimaryButton

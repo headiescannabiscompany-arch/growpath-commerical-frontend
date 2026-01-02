@@ -9,16 +9,16 @@ export function getPost(id) {
   return api(ROUTES.FORUM.DETAIL(id));
 }
 
-export function getLatestPosts() {
-  return api(ROUTES.FORUM.FEED_LATEST);
+export function getLatestPosts(page = 1) {
+  return api(`${ROUTES.FORUM.FEED_LATEST}?page=${page}`);
 }
 
-export function getTrendingPosts() {
-  return api(ROUTES.FORUM.FEED_TRENDING);
+export function getTrendingPosts(page = 1) {
+  return api(`${ROUTES.FORUM.FEED_TRENDING}?page=${page}`);
 }
 
-export function getFollowingPosts() {
-  return api(ROUTES.FORUM.FEED_FOLLOWING);
+export function getFollowingPosts(page = 1) {
+  return api(`${ROUTES.FORUM.FEED_FOLLOWING}?page=${page}`);
 }
 
 export function createPost(payload) {

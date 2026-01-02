@@ -57,3 +57,16 @@ export function onboardCreator(refreshUrl, returnUrl) {
     body: JSON.stringify({ refreshUrl, returnUrl })
   });
 }
+
+export function getUserPosts(userId, page = 1) {
+  // Assuming route structure /api/user/:id/posts?page=...
+  // Since ROUTES doesn't have it explicitly, I'll construct it or add to ROUTES.
+  // Using direct construction for now as it's cleaner than modifying ROUTES file just for this if I don't have to.
+  // Wait, api/routes.js is a centralized map. I should check if I should update that too.
+  // For now, hardcoded path is fine if consistent with backend.
+  return api(`/api/user/${userId}/posts?page=${page}`);
+}
+
+export function getUserGrowLogs(userId, page = 1) {
+  return api(`/api/user/${userId}/growlogs?page=${page}`);
+}

@@ -6,7 +6,9 @@ import {
   ScrollView,
   TouchableOpacity,
   Dimensions,
-  Image
+  Image,
+  FlatList,
+  ActivityIndicator
 } from "react-native";
 import ScreenContainer from "../components/ScreenContainer";
 import { colors, spacing, radius, typography } from "../theme/theme";
@@ -51,7 +53,12 @@ export default function DashboardScreen() {
   const [plants, setPlants] = useState([]);
   const [loading, setLoading] = useState(true);
   const [trending, setTrending] = useState([]);
+  
+  // Feed State
   const [feedPosts, setFeedPosts] = useState([]);
+  const [feedPage, setFeedPage] = useState(1);
+  const [feedLoading, setFeedLoading] = useState(false);
+  const [feedHasMore, setFeedHasMore] = useState(true);
   
   const heroSubtitle = isGuildMember
     ? "Your guild unlocks specialized cannabis insights alongside the core GrowPath tools."
@@ -62,7 +69,7 @@ export default function DashboardScreen() {
   useEffect(() => {
     loadPlants();
     loadTrending();
-    loadFeed();
+    loadFeed(1);
   }, []);
 
   useEffect(() => {
@@ -109,15 +116,36 @@ export default function DashboardScreen() {
     }
   }
 
-  async function loadFeed() {
+  async function loadFeed(page = 1) {
+    if (feedLoading && page !== 1) return; // Prevent double load unless initial
+    setFeedLoading(true);
     try {
-      const response = await getFeed(1);
+      const response = await getFeed(page);
       const list = normalizePostList(response);
-      setFeedPosts(list.slice(0, 3));
+      
+      if (page === 1) {
+        setFeedPosts(list);
+      } else {
+        setFeedPosts(prev => [...prev, ...list]);
+      }
+      
+      // Assume page size 15 from api
+      if (list.length < 15) {
+        setFeedHasMore(false);
+      }
+      setFeedPage(page);
     } catch (err) {
       console.error("Failed to load dashboard feed:", err);
+    } finally {
+      setFeedLoading(false);
     }
   }
+
+  const loadMoreFeed = () => {
+    if (!feedLoading && feedHasMore) {
+      loadFeed(feedPage + 1);
+    }
+  };
 
   const QuickAction = ({ icon, label, onPress, color }) => (
     <TouchableOpacity
@@ -196,12 +224,18 @@ export default function DashboardScreen() {
     </TouchableOpacity>
   );
 
+  const renderFeedFooter = () => {
+    if (!feedLoading || feedPage === 1) return null;
+    return <ActivityIndicator style={{ padding: 10 }} color={colors.accent} />;
+  };
+
   return (
     <ScreenContainer testID="dashboard-screen">
       <ScrollView
         style={styles.container}
         showsVerticalScrollIndicator={false}
         testID="dashboard-scroll"
+        nestedScrollEnabled={true}
       >
         {/* Header */}
         <View style={styles.header}>
@@ -275,17 +309,28 @@ export default function DashboardScreen() {
           </View>
         </View>
 
-        {/* Latest Feed */}
-        {feedPosts.length > 0 && (
-          <View style={styles.section}>
-            <View style={styles.sectionHeader}>
-              <Text style={styles.sectionTitle}>Latest Updates</Text>
-            </View>
-            {feedPosts.map((item) => (
-              <FeedItem key={item._id} item={item} />
-            ))}
+        {/* Latest Feed (Scrollable Window) */}
+        <View style={styles.section}>
+          <View style={styles.sectionHeader}>
+            <Text style={styles.sectionTitle}>Latest Updates</Text>
           </View>
-        )}
+          <View style={{ height: 400, backgroundColor: "#f9fafb", borderRadius: 12 }}>
+            {feedPosts.length === 0 && feedLoading ? (
+              <ActivityIndicator style={{ marginTop: 20 }} color={colors.accent} />
+            ) : (
+              <FlatList
+                data={feedPosts}
+                keyExtractor={(item, index) => item._id || String(index)}
+                renderItem={({ item }) => <FeedItem item={item} />}
+                onEndReached={loadMoreFeed}
+                onEndReachedThreshold={0.5}
+                ListFooterComponent={renderFeedFooter}
+                nestedScrollEnabled={true}
+                contentContainerStyle={{ padding: 10 }}
+              />
+            )}
+          </View>
+        </View>
 
         {/* Stats Overview */}
         <View style={styles.section}>

@@ -1,4 +1,4 @@
-import React, { useEffect, useMemo, useState } from "react";
+import React, { useEffect, useMemo, useState, useCallback } from "react";
 import {
   View,
   Text,
@@ -6,22 +6,27 @@ import {
   TouchableOpacity,
   StyleSheet,
   Switch,
-  Alert
+  Alert,
+  FlatList,
+  ActivityIndicator
 } from "react-native";
 
 import FollowButton from "../components/FollowButton";
 import ScreenContainer from "../components/ScreenContainer";
 import TokenBalanceWidget from "../components/TokenBalanceWidget";
-import { getProfile, updateNotificationPreferences } from "../api/users";
+import { getProfile, updateNotificationPreferences, getUserPosts, getUserGrowLogs } from "../api/users";
 import { updateCourse } from "../api/courses";
 import { useAuth } from "../context/AuthContext";
 import { getEntitlements } from "../utils/entitlements";
+import { resolveImageUrl } from "../utils/images";
 
 const DEFAULT_PREFS = {
   forumNotifications: true,
   forumAggregated: true,
   forumReactions: true
 };
+
+const PAGE_SIZE = 10;
 
 function deriveNotificationPrefs(preferences) {
   return {
@@ -50,6 +55,17 @@ export default function ProfileScreen({ route, navigation }) {
   const [refreshNonce, setRefreshNonce] = useState(0);
   const [courseUpdatingId, setCourseUpdatingId] = useState(null);
 
+  // Pagination State
+  const [posts, setPosts] = useState([]);
+  const [postsPage, setPostsPage] = useState(1);
+  const [postsHasMore, setPostsHasMore] = useState(true);
+  
+  const [growlogs, setGrowlogs] = useState([]);
+  const [growlogsPage, setGrowlogsPage] = useState(1);
+  const [growlogsHasMore, setGrowlogsHasMore] = useState(true);
+  
+  const [loadingMore, setLoadingMore] = useState(false);
+
   useEffect(() => {
     let mounted = true;
     async function loadProfile(id) {
@@ -61,6 +77,18 @@ export default function ProfileScreen({ route, navigation }) {
         if (!mounted) return;
         setProfile(payload);
         setNotifPrefs(deriveNotificationPrefs(payload?.user?.preferences));
+        
+        // Init lists
+        const initialPosts = Array.isArray(payload.posts) ? payload.posts : [];
+        setPosts(initialPosts);
+        setPostsPage(1);
+        setPostsHasMore(initialPosts.length >= PAGE_SIZE);
+
+        const initialLogs = Array.isArray(payload.growlogs) ? payload.growlogs : [];
+        setGrowlogs(initialLogs);
+        setGrowlogsPage(1);
+        setGrowlogsHasMore(initialLogs.length >= PAGE_SIZE);
+
         setLoading(false);
       } catch (err) {
         if (!mounted) return;
@@ -82,6 +110,48 @@ export default function ProfileScreen({ route, navigation }) {
       mounted = false;
     };
   }, [resolvedUserId, refreshNonce]);
+
+  const loadMore = useCallback(async () => {
+    if (loadingMore) return;
+    
+    if (tab === "posts" && postsHasMore) {
+      setLoadingMore(true);
+      try {
+        const nextPage = postsPage + 1;
+        const res = await getUserPosts(resolvedUserId, nextPage);
+        const newItems = res?.data || res || [];
+        if (newItems.length > 0) {
+          setPosts(prev => [...prev, ...newItems]);
+          setPostsPage(nextPage);
+        }
+        if (newItems.length < PAGE_SIZE) {
+          setPostsHasMore(false);
+        }
+      } catch (err) {
+        console.error("Load more posts failed", err);
+      } finally {
+        setLoadingMore(false);
+      }
+    } else if (tab === "growlogs" && growlogsHasMore) {
+      setLoadingMore(true);
+      try {
+        const nextPage = growlogsPage + 1;
+        const res = await getUserGrowLogs(resolvedUserId, nextPage);
+        const newItems = res?.data || res || [];
+        if (newItems.length > 0) {
+          setGrowlogs(prev => [...prev, ...newItems]);
+          setGrowlogsPage(nextPage);
+        }
+        if (newItems.length < PAGE_SIZE) {
+          setGrowlogsHasMore(false);
+        }
+      } catch (err) {
+        console.error("Load more logs failed", err);
+      } finally {
+        setLoadingMore(false);
+      }
+    }
+  }, [tab, postsHasMore, postsPage, growlogsHasMore, growlogsPage, resolvedUserId, loadingMore]);
 
   function triggerReload() {
     if (!resolvedUserId) return;
@@ -145,48 +215,25 @@ export default function ProfileScreen({ route, navigation }) {
     if (!profile) {
       return {
         user: {},
-        posts: [],
-        growlogs: []
+        courses: []
       };
     }
     return {
       user: profile.user || {},
-      posts: Array.isArray(profile.posts) ? profile.posts : [],
-      growlogs: Array.isArray(profile.growlogs) ? profile.growlogs : [],
       courses: Array.isArray(profile.courses) ? profile.courses : []
     };
   }, [profile]);
 
-  const { user, posts, growlogs, courses: profileCourses } = profileData;
+  const { user, courses: profileCourses } = profileData;
   const myCourses = isOwnProfile ? profileCourses : [];
   const { isPro: profileIsPro, isEntitled: profileIsEntitled } = getEntitlements(user);
 
-  if (loading) {
-    return (
-      <View style={{ flex: 1, justifyContent: "center", alignItems: "center" }}>
-        <Text style={{ fontSize: 16 }}>Loading profile...</Text>
-      </View>
-    );
-  }
-
-  if (error) {
-    return (
-      <View style={{ flex: 1, justifyContent: "center", alignItems: "center", padding: 24 }}>
-        <Text style={{ fontSize: 16, textAlign: "center", marginBottom: 12 }}>{error}</Text>
-        <TouchableOpacity style={styles.retryBtn} onPress={triggerReload}>
-          <Text style={styles.retryText}>Retry</Text>
-        </TouchableOpacity>
-      </View>
-    );
-  }
-
-  return (
-    <ScreenContainer scroll contentContainerStyle={{ paddingBottom: 40 }}>
+  const renderHeader = () => (
+    <View>
       <View>
         <Image
           source={{
-            uri:
-              user.banner ||
+            uri: resolveImageUrl(user.banner) ||
               "https://images.unsplash.com/photo-1501004318641-b39e6451bec6?auto=format&fit=crop&w=1200&q=80"
           }}
           style={styles.banner}
@@ -194,8 +241,7 @@ export default function ProfileScreen({ route, navigation }) {
         <View style={styles.avatarContainer}>
           <Image
             source={{
-              uri:
-                user.avatar ||
+              uri: resolveImageUrl(user.avatar) ||
                 "https://images.unsplash.com/photo-1521579971123-1192931a1452?auto=format&fit=crop&w=200&q=80"
             }}
             style={styles.avatar}
@@ -226,7 +272,7 @@ export default function ProfileScreen({ route, navigation }) {
           <Text>Following</Text>
         </View>
         <View style={{ alignItems: "center" }}>
-          <Text style={styles.stat}>{(posts || []).length}</Text>
+          <Text style={styles.stat}>{posts.length + growlogs.length}</Text>
           <Text>Posts</Text>
         </View>
       </View>
@@ -310,34 +356,6 @@ export default function ProfileScreen({ route, navigation }) {
         </View>
       )}
 
-      {/* SUBSCRIPTION STATUS (Own Profile Only) */}
-      {isOwnProfile && (
-        <View style={styles.subscriptionCard}>
-          <View style={styles.subscriptionHeader}>
-            <View>
-              <Text style={styles.subscriptionTitle}>
-                {currentIsPro ? "✨ Pro Member" : "🌱 Free Plan"}
-              </Text>
-              <Text style={styles.subscriptionSubtitle}>
-                {currentIsPro
-                  ? "All features unlocked"
-                  : currentIsEntitled 
-                    ? "Guild Access Active • Pro unlock available"
-                    : "Limited features • Upgrade to unlock AI & more"}
-              </Text>
-            </View>
-            {!currentIsPro && (
-              <TouchableOpacity
-                style={styles.upgradeBtn}
-                onPress={() => navigation.navigate("Subscription")}
-              >
-                <Text style={styles.upgradeBtnText}>Upgrade</Text>
-              </TouchableOpacity>
-            )}
-          </View>
-        </View>
-      )}
-
       {/* NOTIFICATION PREFERENCES (Own Profile Only) */}
       {isOwnProfile && (
         <View style={styles.notifPrefsCard}>
@@ -402,45 +420,92 @@ export default function ProfileScreen({ route, navigation }) {
           <Text style={styles.tabText}>Courses</Text>
         </TouchableOpacity>
       </View>
+    </View>
+  );
 
-      {/* TAB CONTENT */}
-      {tab === "posts" && (posts || []).length > 0 && (
-        <View>
-          {(posts || []).map((p) => (
-            <TouchableOpacity
-              key={p._id}
-              style={styles.postCard}
-              onPress={() => navigation.navigate("ForumPostDetail", { id: p._id })}
-            >
-              {p.photos && p.photos[0] && (
-                <Image source={{ uri: p.photos[0] }} style={styles.postImage} />
-              )}
-              <Text>{p.content}</Text>
-            </TouchableOpacity>
-          ))}
-        </View>
-      )}
+  const renderItem = ({ item }) => {
+    if (tab === "posts") {
+      return (
+        <TouchableOpacity
+          key={item._id}
+          style={styles.postCard}
+          onPress={() => navigation.navigate("ForumPostDetail", { id: item._id })}
+        >
+          {item.photos && item.photos[0] && (
+            <Image source={{ uri: resolveImageUrl(item.photos[0]) }} style={styles.postImage} />
+          )}
+          <Text>{item.content}</Text>
+        </TouchableOpacity>
+      );
+    } else if (tab === "growlogs") {
+      return (
+        <TouchableOpacity
+          key={item._id}
+          style={styles.postCard}
+          onPress={() => navigation.navigate("GrowLogDetail", { id: item._id })}
+        >
+          {item.photos && item.photos[0] && (
+            <Image source={{ uri: resolveImageUrl(item.photos[0]) }} style={styles.postImage} />
+          )}
+          <Text>{item.title}</Text>
+        </TouchableOpacity>
+      );
+    }
+    return null;
+  };
 
-      {tab === "growlogs" && (growlogs || []).length > 0 && (
-        <View>
-          {(growlogs || []).map((g) => (
-            <TouchableOpacity
-              key={g._id}
-              style={styles.postCard}
-              onPress={() => navigation.navigate("GrowLogDetail", { id: g._id })}
-            >
-              {g.photos && g.photos[0] && (
-                <Image source={{ uri: g.photos[0] }} style={styles.postImage} />
-              )}
-              <Text>{g.title}</Text>
-            </TouchableOpacity>
-          ))}
-        </View>
-      )}
+  const renderFooter = () => {
+    // Only show footer logic if we are not at end of list
+    // and if tab supports pagination
+    if (tab === 'courses') {
+        return (
+            <View style={{ padding: 20 }}>
+                <Text style={{ textAlign: 'center' }}>Courses coming soon…</Text>
+                {renderBottomCards()}
+            </View>
+        );
+    }
+    
+    return (
+      <View>
+        {loadingMore && (
+          <ActivityIndicator style={{ padding: 20 }} color="#10B981" />
+        )}
+        {/* If this is the end of the list, show bottom cards */}
+        {((tab === 'posts' && !postsHasMore) || (tab === 'growlogs' && !growlogsHasMore)) && (
+            renderBottomCards()
+        )}
+      </View>
+    );
+  };
 
-      {tab === "courses" && (
-        <View>
-          <Text>Courses coming soon…</Text>
+  const renderBottomCards = () => (
+    <View>
+      {/* SUBSCRIPTION STATUS (Own Profile Only) */}
+      {isOwnProfile && (
+        <View style={styles.subscriptionCard}>
+          <View style={styles.subscriptionHeader}>
+            <View>
+              <Text style={styles.subscriptionTitle}>
+                {currentIsPro ? "✨ Pro Member" : "🌱 Free Plan"}
+              </Text>
+              <Text style={styles.subscriptionSubtitle}>
+                {currentIsPro
+                  ? "All features unlocked"
+                  : currentIsEntitled 
+                    ? "Guild Access Active • Pro unlock available"
+                    : "Limited features • Upgrade to unlock AI & more"}
+              </Text>
+            </View>
+            {!currentIsPro && (
+              <TouchableOpacity
+                style={styles.upgradeBtn}
+                onPress={() => navigation.navigate("Subscription")}
+              >
+                <Text style={styles.upgradeBtnText}>Upgrade</Text>
+              </TouchableOpacity>
+            )}
+          </View>
         </View>
       )}
 
@@ -471,6 +536,42 @@ export default function ProfileScreen({ route, navigation }) {
           </Text>
         </TouchableOpacity>
       </View>
+    </View>
+  );
+
+  if (loading) {
+    return (
+      <View style={{ flex: 1, justifyContent: "center", alignItems: "center" }}>
+        <Text style={{ fontSize: 16 }}>Loading profile...</Text>
+      </View>
+    );
+  }
+
+  if (error) {
+    return (
+      <View style={{ flex: 1, justifyContent: "center", alignItems: "center", padding: 24 }}>
+        <Text style={{ fontSize: 16, textAlign: "center", marginBottom: 12 }}>{error}</Text>
+        <TouchableOpacity style={styles.retryBtn} onPress={triggerReload}>
+          <Text style={styles.retryText}>Retry</Text>
+        </TouchableOpacity>
+      </View>
+    );
+  }
+
+  const activeData = tab === "posts" ? posts : tab === "growlogs" ? growlogs : [];
+
+  return (
+    <ScreenContainer scroll={false} contentContainerStyle={{ paddingBottom: 0 }}>
+      <FlatList
+        data={activeData}
+        keyExtractor={(item) => item._id}
+        renderItem={renderItem}
+        ListHeaderComponent={renderHeader}
+        ListFooterComponent={renderFooter}
+        onEndReached={loadMore}
+        onEndReachedThreshold={0.5}
+        contentContainerStyle={{ paddingBottom: 20 }}
+      />
     </ScreenContainer>
   );
 }

@@ -6,7 +6,8 @@ import {
   TouchableOpacity,
   Image,
   StyleSheet,
-  RefreshControl
+  RefreshControl,
+  ActivityIndicator
 } from "react-native";
 import { useFocusEffect, useNavigation } from "@react-navigation/native";
 
@@ -14,29 +15,45 @@ import ScreenContainer from "../components/ScreenContainer";
 import FollowButton from "../components/FollowButton";
 import { getLatestPosts, getTrendingPosts, getFollowingPosts } from "../api/forum";
 import useTabPressScrollReset from "../hooks/useTabPressScrollReset";
+import { resolveImageUrl } from "../utils/images";
+
+const PAGE_SIZE = 20;
 
 export default function ForumScreen() {
   const [mode, setMode] = useState("latest");
   const [posts, setPosts] = useState([]);
   const [refreshing, setRefreshing] = useState(false);
+  const [page, setPage] = useState(1);
+  const [hasMore, setHasMore] = useState(true);
+  const [loadingMore, setLoadingMore] = useState(false);
+
   const navigation = useNavigation();
   const listRef = useRef(null);
   const pendingScrollToTop = useRef(false);
+  
   useTabPressScrollReset(() => {
     listRef.current?.scrollToOffset({ offset: 0, animated: false });
   });
 
-  const load = useCallback(async (options = {}) => {
-    try {
-      const fn =
-        mode === "trending"
-          ? getTrendingPosts
-          : mode === "following"
-            ? getFollowingPosts
-            : getLatestPosts;
+  const fetchPosts = useCallback(async (pageNumber, currentMode) => {
+    const fn =
+      currentMode === "trending"
+        ? getTrendingPosts
+        : currentMode === "following"
+          ? getFollowingPosts
+          : getLatestPosts;
+    
+    // Pass page number to API
+    const res = await fn(pageNumber);
+    return res.data || res || [];
+  }, []);
 
-      const res = await fn();
-      setPosts(res.data || res);
+  const loadInitial = useCallback(async (options = {}) => {
+    try {
+      const list = await fetchPosts(1, mode);
+      setPosts(list);
+      setPage(1);
+      setHasMore(list.length >= PAGE_SIZE);
 
       const shouldScroll = options.scrollToTop || pendingScrollToTop.current;
       if (shouldScroll) {
@@ -47,27 +64,58 @@ export default function ForumScreen() {
       }
     } catch (err) {
       // Failed to load feed
+      console.error(err);
     }
-  }, [mode]);
+  }, [mode, fetchPosts]);
 
   useFocusEffect(
     useCallback(() => {
-      load();
-    }, [load])
+      // Initial load on focus or mode change
+      loadInitial();
+    }, [loadInitial])
   );
 
   const reload = useCallback(async () => {
     setRefreshing(true);
-    await load({ scrollToTop: true });
+    await loadInitial({ scrollToTop: true });
     setRefreshing(false);
-  }, [load]);
+  }, [loadInitial]);
+
+  const loadMore = useCallback(async () => {
+    if (loadingMore || !hasMore || refreshing) return;
+
+    setLoadingMore(true);
+    try {
+      const nextPage = page + 1;
+      const list = await fetchPosts(nextPage, mode);
+      
+      if (list.length > 0) {
+        setPosts(prev => [...prev, ...list]);
+        setPage(nextPage);
+      }
+      
+      if (list.length < PAGE_SIZE) {
+        setHasMore(false);
+      }
+    } catch (err) {
+      console.error("Failed to load more:", err);
+    } finally {
+      setLoadingMore(false);
+    }
+  }, [loadingMore, hasMore, refreshing, page, mode, fetchPosts]);
 
   const changeMode = useCallback(
     (nextMode) => {
+      if (mode === nextMode) return;
       pendingScrollToTop.current = true;
       setMode(nextMode);
+      // Mode change triggers useFocusEffect/loadInitial via dependency, 
+      // but explicitly resetting state here is safer visually
+      setPosts([]);
+      setPage(1);
+      setHasMore(true);
     },
-    []
+    [mode]
   );
 
   const handleCreatePost = useCallback(() => {
@@ -84,7 +132,7 @@ export default function ForumScreen() {
         {/* User */}
         <View style={styles.userRow}>
           <Image
-            source={{ uri: item.user?.avatar || "https://via.placeholder.com/100" }}
+            source={{ uri: resolveImageUrl(item.user?.avatar) || "https://via.placeholder.com/100" }}
             style={styles.avatar}
           />
           <View style={{ flex: 1 }}>
@@ -107,7 +155,7 @@ export default function ForumScreen() {
         {/* First photo thumbnail */}
         {item.photos && item.photos.length > 0 && (
           <Image
-            source={{ uri: item.photos[0] }}
+            source={{ uri: resolveImageUrl(item.photos[0]) }}
             style={styles.postImage}
             resizeMode="cover"
           />
@@ -136,6 +184,15 @@ export default function ForumScreen() {
       </TouchableOpacity>
     );
   }
+
+  const renderFooter = () => {
+    if (!loadingMore) return <View style={{ height: 40 }} />;
+    return (
+      <View style={{ paddingVertical: 20 }}>
+        <ActivityIndicator color="#10B981" />
+      </View>
+    );
+  };
 
   return (
     <ScreenContainer>
@@ -216,6 +273,9 @@ export default function ForumScreen() {
         data={posts}
         keyExtractor={(item) => item._id}
         renderItem={renderPost}
+        onEndReached={loadMore}
+        onEndReachedThreshold={0.5} // Preload when half screen away
+        ListFooterComponent={renderFooter}
         refreshControl={
           <RefreshControl
             refreshing={refreshing}

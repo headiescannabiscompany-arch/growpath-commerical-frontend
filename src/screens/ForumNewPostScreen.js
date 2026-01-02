@@ -14,6 +14,7 @@ import * as ImagePicker from "expo-image-picker";
 import ScreenContainer from "../components/ScreenContainer";
 import PrimaryButton from "../components/PrimaryButton";
 import { createPost } from "../api/forum";
+import { uploadImage } from "../api/uploads";
 
 export default function ForumNewPostScreen({ route, navigation }) {
   const photosFromLog = route.params?.photos || [];
@@ -98,9 +99,23 @@ export default function ForumNewPostScreen({ route, navigation }) {
     try {
       setLoading(true);
 
+      const uploadedPhotos = [];
+      for (const uri of photos) {
+        // If it looks like a remote URL, keep it
+        if (uri.startsWith("http") || uri.startsWith("/")) {
+          uploadedPhotos.push(uri);
+        } else {
+          // Upload local file
+          const res = await uploadImage(uri);
+          if (res?.url) {
+            uploadedPhotos.push(res.url);
+          }
+        }
+      }
+
       const payload = {
         content,
-        photos,
+        photos: uploadedPhotos,
         tags,
         strain,
         category,
