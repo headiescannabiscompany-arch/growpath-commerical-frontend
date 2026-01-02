@@ -1,8 +1,9 @@
-import { View, Text, ScrollView } from "react-native";
+import { View, Text } from "react-native";
 import { useEffect, useState } from "react";
 import { groupTasks } from "../utils/schedule";
 import TaskRow from "../components/TaskRow";
 import { getTasks } from "../api/tasks";
+import ScreenContainer from "../components/ScreenContainer";
 
 export default function ScheduleScreen() {
   const [groups, setGroups] = useState(null);
@@ -31,11 +32,15 @@ export default function ScheduleScreen() {
   }
 
   if (!groups) {
-    return <Text style={{ padding: 16 }}>Loading schedule…</Text>;
+    return (
+      <ScreenContainer>
+        <Text style={{ padding: 16 }}>Loading schedule…</Text>
+      </ScreenContainer>
+    );
   }
 
   return (
-    <ScrollView style={{ flex: 1, padding: 12 }}>
+    <ScreenContainer scroll contentContainerStyle={{ padding: 12 }}>
       {error && (
         <View
           style={{
@@ -78,7 +83,7 @@ export default function ScheduleScreen() {
       <Section title="Today" tasks={groups.today} />
       <Section title="Upcoming" tasks={groups.upcoming.slice(0, 14)} />
       <Section title="Completed" tasks={groups.completed} collapsed />
-    </ScrollView>
+    </ScreenContainer>
   );
 }
 

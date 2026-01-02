@@ -1,4 +1,4 @@
-import React, { useCallback, useState } from "react";
+import React, { useCallback, useState, useRef } from "react";
 import {
   View,
   Text,
@@ -14,12 +14,14 @@ import ScreenContainer from "../components/ScreenContainer.js";
 import { getFeed, likePost, unlikePost } from "../api/posts.js";
 import { useAuth } from "../context/AuthContext.js";
 import { applyLikeMetadata, normalizePostList, userHasLiked } from "../utils/posts.js";
+import useTabPressScrollReset from "../hooks/useTabPressScrollReset";
 
 const PAGE_SIZE = 15;
 
 export default function FeedScreen() {
   const navigation = useNavigation();
   const { isPro, user } = useAuth();
+  const flatListRef = useRef(null);
   const userId = user?._id || null;
   const [posts, setPosts] = useState([]);
   const [page, setPage] = useState(1);
@@ -27,6 +29,9 @@ export default function FeedScreen() {
   const [loadingMore, setLoadingMore] = useState(false);
   const [refreshing, setRefreshing] = useState(false);
   const [hasMore, setHasMore] = useState(true);
+  useTabPressScrollReset(() => {
+    flatListRef.current?.scrollToOffset({ offset: 0, animated: false });
+  });
 
   const fetchPage = useCallback(async (pageNumber) => {
     const response = await getFeed(pageNumber);
@@ -229,6 +234,7 @@ export default function FeedScreen() {
   return (
     <ScreenContainer scroll={false}>
       <FlatList
+        ref={flatListRef}
         data={posts}
         keyExtractor={(item, index) => item._id || `post-${index}`}
         onEndReached={loadMore}

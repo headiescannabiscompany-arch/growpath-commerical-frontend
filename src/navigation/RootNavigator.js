@@ -69,8 +69,9 @@ const APP_INTRO_SEEN_KEY = "seenAppIntro";
 const LEGACY_ONBOARDING_KEY = "seenOnboarding";
 
 export default function RootNavigator() {
-  const { isPro } = useAuth();
+  const { isPro, token, user } = useAuth();
   const [showIntro, setShowIntro] = React.useState(isPro ? false : null);
+  const isAuthenticated = Boolean(token && user);
 
   useEffect(() => {
     let mounted = true;
@@ -114,8 +115,18 @@ export default function RootNavigator() {
     return null;
   }
 
+  const navigatorKey = `${isAuthenticated ? "auth" : "guest"}-${showIntro ? "intro" : "main"}`;
+  const initialRouteName =
+    !isAuthenticated && !isPro && showIntro
+      ? "AppIntro"
+      : isAuthenticated
+        ? "MainTabs"
+        : "Login";
+
   return (
     <Stack.Navigator
+      key={navigatorKey}
+      initialRouteName={initialRouteName}
       screenOptions={{
         headerShown: true,
         headerStyle: { backgroundColor: "#10B981" },

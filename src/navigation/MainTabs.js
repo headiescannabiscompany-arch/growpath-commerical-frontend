@@ -30,11 +30,17 @@ const TAB_ICONS = {
   Schedule: "🗓️"
 };
 
-function TabIcon({ label, focused }) {
+function TabIcon({ label, focused, testID }) {
   return (
-    <View style={[styles.iconWrap, focused && styles.iconWrapActive]}>
+    <View style={[styles.iconWrap, focused && styles.iconWrapActive]} testID={testID}>
       <Text style={styles.iconEmoji}>{TAB_ICONS[label]}</Text>
-      <Text style={[styles.iconLabel, focused && styles.iconLabelActive]}>{label}</Text>
+      <Text
+        style={[styles.iconLabel, focused && styles.iconLabelActive]}
+        numberOfLines={1}
+        ellipsizeMode="tail"
+      >
+        {label}
+      </Text>
     </View>
   );
 }
@@ -54,7 +60,9 @@ export default function MainTabs() {
         component={DashboardScreen}
         options={{
           title: "Home",
-          tabBarLabel: ({ focused }) => <TabIcon label="Home" focused={focused} />
+          tabBarLabel: ({ focused }) => (
+            <TabIcon label="Home" focused={focused} testID="tab-home" />
+          )
         }}
       />
 
@@ -63,7 +71,9 @@ export default function MainTabs() {
         component={GrowLogsScreen}
         options={{
           title: "Plants",
-          tabBarLabel: ({ focused }) => <TabIcon label="Plants" focused={focused} />
+          tabBarLabel: ({ focused }) => (
+            <TabIcon label="Plants" focused={focused} testID="tab-plants" />
+          )
         }}
       />
 
@@ -72,7 +82,9 @@ export default function MainTabs() {
         component={DiagnoseScreen}
         options={{
           title: "Diagnose",
-          tabBarLabel: ({ focused }) => <TabIcon label="Diagnose" focused={focused} />
+          tabBarLabel: ({ focused }) => (
+            <TabIcon label="Diagnose" focused={focused} testID="tab-diagnose" />
+          )
         }}
       />
 
@@ -81,7 +93,9 @@ export default function MainTabs() {
         component={SearchScreen}
         options={{
           title: "Search",
-          tabBarLabel: ({ focused }) => <TabIcon label="Search" focused={focused} />
+          tabBarLabel: ({ focused }) => (
+            <TabIcon label="Search" focused={focused} testID="tab-search" />
+          )
         }}
       />
 
@@ -90,7 +104,9 @@ export default function MainTabs() {
         component={FeedScreen}
         options={{
           title: isGuildMember ? "Feed" : "Community",
-          tabBarLabel: ({ focused }) => <TabIcon label="Feed" focused={focused} />
+          tabBarLabel: ({ focused }) => (
+            <TabIcon label="Feed" focused={focused} testID="tab-feed" />
+          )
         }}
       />
 
@@ -99,7 +115,9 @@ export default function MainTabs() {
         component={ForumScreen}
         options={{
           title: "Growers Guild",
-          tabBarLabel: ({ focused }) => <TabIcon label="Guild" focused={focused} />
+          tabBarLabel: ({ focused }) => (
+            <TabIcon label="Guild" focused={focused} testID="tab-guild" />
+          )
         }}
       />
 
@@ -108,7 +126,9 @@ export default function MainTabs() {
         component={CoursesScreen}
         options={{
           title: "Courses",
-          tabBarLabel: ({ focused }) => <TabIcon label="Courses" focused={focused} />
+          tabBarLabel: ({ focused }) => (
+            <TabIcon label="Courses" focused={focused} testID="tab-courses" />
+          )
         }}
       />
 
@@ -117,7 +137,9 @@ export default function MainTabs() {
         component={ProfileScreen}
         options={{
           title: "Profile",
-          tabBarLabel: ({ focused }) => <TabIcon label="Profile" focused={focused} />
+          tabBarLabel: ({ focused }) => (
+            <TabIcon label="Profile" focused={focused} testID="tab-profile" />
+          )
         }}
       />
       <Tab.Screen
@@ -125,7 +147,9 @@ export default function MainTabs() {
         component={GrowLogCalendarScreen}
         options={{
           title: "Calendar",
-          tabBarLabel: ({ focused }) => <TabIcon label="Calendar" focused={focused} />
+          tabBarLabel: ({ focused }) => (
+            <TabIcon label="Calendar" focused={focused} testID="tab-calendar" />
+          )
         }}
       />
       <Tab.Screen
@@ -133,7 +157,9 @@ export default function MainTabs() {
         component={ScheduleScreen}
         options={{
           title: "Schedule",
-          tabBarLabel: ({ focused }) => <TabIcon label="Schedule" focused={focused} />
+          tabBarLabel: ({ focused }) => (
+            <TabIcon label="Schedule" focused={focused} testID="tab-schedule" />
+          )
         }}
       />
     </Tab.Navigator>
@@ -166,13 +192,16 @@ const styles = StyleSheet.create({
     borderColor: "rgba(255, 255, 255, 0.1)"
   },
   iconWrap: {
-    paddingHorizontal: spacing(2),
+    flexDirection: "row",
+    alignItems: "center",
+    justifyContent: "center",
+    paddingHorizontal: spacing(1.5),
     paddingVertical: spacing(1),
     borderRadius: radius.pill,
     backgroundColor: "transparent",
-    alignItems: "center",
-    justifyContent: "center",
-    minWidth: 70
+    minWidth: 70,
+    maxWidth: 140,
+    flexShrink: 1
   },
   iconWrapActive: {
     backgroundColor: colors.accent,
@@ -183,13 +212,14 @@ const styles = StyleSheet.create({
     elevation: 4
   },
   iconEmoji: {
-    fontSize: 22,
-    marginBottom: 2
+    fontSize: 20,
+    marginRight: spacing(0.5)
   },
   iconLabel: {
     fontSize: 10,
     color: colors.tabIcon,
-    fontWeight: "500"
+    fontWeight: "500",
+    flexShrink: 1
   },
   iconLabelActive: {
     color: "#FFFFFF",

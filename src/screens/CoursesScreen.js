@@ -1,4 +1,4 @@
-import React, { useEffect, useState } from "react";
+import React, { useEffect, useState, useRef } from "react";
 import {
   View,
   Text,
@@ -14,6 +14,7 @@ import { colors, spacing, radius } from "../theme/theme.js";
 import { listCourses, getMyCourses } from "../api/courses.js";
 import { useAuth } from "../context/AuthContext";
 import { getCreatorName } from "../utils/creator";
+import useTabPressScrollReset from "../hooks/useTabPressScrollReset";
 
 export default function CoursesScreen() {
   const [courses, setCourses] = useState([]);
@@ -21,7 +22,12 @@ export default function CoursesScreen() {
   const [loading, setLoading] = useState(true);
   const [showDrafts, setShowDrafts] = useState(false);
   const navigation = useNavigation();
+  const listRef = useRef(null);
   const { isGuildMember } = useAuth();
+
+  useTabPressScrollReset(() => {
+    listRef.current?.scrollToOffset({ offset: 0, animated: false });
+  });
 
   async function load() {
     try {
@@ -183,6 +189,7 @@ export default function CoursesScreen() {
   return (
     <ScreenContainer>
       <FlatList
+        ref={listRef}
         data={courses}
         contentContainerStyle={styles.listContent}
         keyExtractor={(c) => c._id}
