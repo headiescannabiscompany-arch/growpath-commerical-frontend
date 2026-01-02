@@ -9,28 +9,24 @@ import {
   Alert,
   ActivityIndicator
 } from "react-native";
+import * as ImagePicker from "expo-image-picker";
 import ScreenContainer from "../components/ScreenContainer";
 import { createPost } from "../api/posts";
 import { useAuth } from "../context/AuthContext.js";
 import { useNavigation, useRoute } from "@react-navigation/native";
-let ImagePicker;
-if (Platform.OS !== "web") {
-  ImagePicker = require("expo-image-picker");
-}
 
 export default function CreatePostScreen() {
   const [text, setText] = useState("");
   const [photos, setPhotos] = useState([]);
   const [submitting, setSubmitting] = useState(false);
-  const { isPro } = useAuth();
   const navigation = useNavigation();
   const route = useRoute();
   const onPostCreated = route.params?.onPostCreated;
 
   async function pickImage() {
-    if (Platform.OS === "web") return;
     const result = await ImagePicker.launchImageLibraryAsync({
-      allowsMultipleSelection: true
+      allowsMultipleSelection: true,
+      mediaTypes: ImagePicker.MediaTypeOptions.Images
     });
     if (!result.canceled) {
       setPhotos((prev) => [...prev, ...result.assets.map((a) => a.uri)]);
@@ -38,7 +34,7 @@ export default function CreatePostScreen() {
   }
 
   async function submit() {
-    if (!isPro || submitting) return;
+    if (submitting) return;
     if (!text.trim() && photos.length === 0) {
       Alert.alert("Add a post", "Share some text or add a photo before posting.");
       return;
@@ -53,7 +49,7 @@ export default function CreatePostScreen() {
       if (Platform.OS === "web") {
         const response = await fetch(photo);
         const blob = await response.blob();
-        form.append("photos", blob, photo.fileName || `photo.jpg`);
+        form.append("photos", blob, "photo.jpg");
       } else {
         form.append("photos", {
           uri: photo,
@@ -92,33 +88,21 @@ export default function CreatePostScreen() {
           borderRadius: 8,
           height: 120
         }}
-        editable={isPro}
       />
 
-      {Platform.OS === "web" ? (
-        <View
-          style={{ marginTop: 12, backgroundColor: "#eee", padding: 12, borderRadius: 8 }}
-        >
-          <Text style={{ color: "#888", textAlign: "center" }}>
-            Photo upload is available on mobile only.
-          </Text>
-        </View>
-      ) : (
-        <TouchableOpacity
-          style={{
-            marginTop: 12,
-            backgroundColor: isPro ? "#3498db" : "#ccc",
-            padding: 12,
-            borderRadius: 8
-          }}
-          onPress={isPro ? pickImage : undefined}
-          disabled={!isPro}
-        >
-          <Text style={{ color: isPro ? "white" : "#888", textAlign: "center" }}>
-            Add Photos
-          </Text>
-        </TouchableOpacity>
-      )}
+      <TouchableOpacity
+        style={{
+          marginTop: 12,
+          backgroundColor: "#3498db",
+          padding: 12,
+          borderRadius: 8
+        }}
+        onPress={pickImage}
+      >
+        <Text style={{ color: "white", textAlign: "center" }}>
+          Add Photos
+        </Text>
+      </TouchableOpacity>
 
       {photos.map((uri) => (
         <Image
@@ -128,44 +112,15 @@ export default function CreatePostScreen() {
         />
       ))}
 
-      {!isPro && (
-        <View
-          style={{
-            marginTop: 18,
-            backgroundColor: "#FEF3C7",
-            borderRadius: 8,
-            padding: 14
-          }}
-        >
-          <Text style={{ color: "#92400E", textAlign: "center", fontSize: 15 }}>
-            Posting is a Pro feature. Upgrade to Pro to share posts and photos with the
-            community.
-          </Text>
-          <TouchableOpacity
-            style={{
-              marginTop: 10,
-              backgroundColor: "#10B981",
-              padding: 10,
-              borderRadius: 8
-            }}
-            onPress={() => navigation.navigate && navigation.navigate("Subscription")}
-          >
-            <Text style={{ color: "white", textAlign: "center", fontWeight: "700" }}>
-              Upgrade to Pro
-            </Text>
-          </TouchableOpacity>
-        </View>
-      )}
-
       <TouchableOpacity
         style={{
           marginTop: 20,
-          backgroundColor: isPro ? "#2ecc71" : "#ccc",
+          backgroundColor: "#2ecc71",
           padding: 14,
           borderRadius: 8
         }}
-        onPress={isPro ? submit : undefined}
-        disabled={!isPro || submitting}
+        onPress={submit}
+        disabled={submitting}
         accessibilityRole="button"
         testID="create-post-submit"
       >
@@ -173,7 +128,7 @@ export default function CreatePostScreen() {
           <ActivityIndicator color="#fff" />
         ) : (
           <Text
-            style={{ color: isPro ? "white" : "#888", fontSize: 18, textAlign: "center" }}
+            style={{ color: "white", fontSize: 18, textAlign: "center" }}
           >
             Post
           </Text>

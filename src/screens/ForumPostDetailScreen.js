@@ -26,6 +26,7 @@ import {
 } from "../api/forum";
 import { applyLikeMetadata, userHasLiked } from "../utils/posts.js";
 import { useAuth } from "../context/AuthContext.js";
+import { resolveImageUrl } from "../utils/images.js";
 
 export default function ForumPostDetailScreen({ route, navigation }) {
   const { id } = route.params;
@@ -209,7 +210,7 @@ export default function ForumPostDetailScreen({ route, navigation }) {
       <Text style={styles.content}>{post.content}</Text>
       {post.photos &&
         post.photos.map((p, i) => (
-          <Image key={i} source={{ uri: p }} style={styles.photo} />
+          <Image key={i} source={{ uri: resolveImageUrl(p) }} style={styles.photo} />
         ))}
       {post.tags && post.tags.length > 0 && (
         <View style={styles.tagsRow}>
