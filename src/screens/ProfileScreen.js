@@ -4,13 +4,13 @@ import {
   Text,
   Image,
   TouchableOpacity,
-  ScrollView,
   StyleSheet,
   Switch,
   Alert
 } from "react-native";
 
 import FollowButton from "../components/FollowButton";
+import ScreenContainer from "../components/ScreenContainer";
 import { getProfile, updateNotificationPreferences } from "../api/users";
 import { updateCourse } from "../api/courses";
 import { useAuth } from "../context/AuthContext";
@@ -180,7 +180,7 @@ export default function ProfileScreen({ route, navigation }) {
   }
 
   return (
-    <ScrollView style={{ flex: 1 }} contentContainerStyle={{ paddingBottom: 40 }}>
+    <ScreenContainer scroll contentContainerStyle={{ paddingBottom: 40 }}>
       <View>
         <Image
           source={{
@@ -463,7 +463,7 @@ export default function ProfileScreen({ route, navigation }) {
           </Text>
         </TouchableOpacity>
       </View>
-    </ScrollView>
+    </ScreenContainer>
   );
 }
 

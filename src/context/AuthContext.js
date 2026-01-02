@@ -13,6 +13,7 @@ export const AuthProvider = ({ children }) => {
   const [isGuildMember, setIsGuildMember] = useState(false);
   const [isEntitled, setIsEntitled] = useState(false);
   const [loading, setLoading] = useState(true);
+  const [hasNavigatedAwayFromHome, setHasNavigatedAwayFromHome] = useState(false);
 
   const updateStateFromUser = (userData) => {
     const entitlements = getEntitlements(userData);
@@ -72,12 +73,14 @@ export const AuthProvider = ({ children }) => {
         setToken(null);
         setUser(null);
         updateStateFromUser(null);
+        setHasNavigatedAwayFromHome(false);
       }
     } catch (error) {
       console.log("Auth load failed:", error.message);
       syncGlobals(null, null);
       setToken(null);
       setUser(null);
+      setHasNavigatedAwayFromHome(false);
     } finally {
       setLoading(false);
     }
@@ -107,6 +110,7 @@ export const AuthProvider = ({ children }) => {
   const login = async (authToken, userData) => {
     setToken(authToken);
     setUser(userData);
+    setHasNavigatedAwayFromHome(false);
     syncGlobals(authToken, userData);
 
     AsyncStorage.setItem("token", authToken).catch(() => {});
@@ -124,7 +128,16 @@ export const AuthProvider = ({ children }) => {
       setIsPro(false);
       setIsGuildMember(false);
       setSubscriptionStatus("free");
+      setHasNavigatedAwayFromHome(false);
       syncGlobals(null, null);
+      if (global.__NAV__?.resetRoot) {
+        global.__NAV__.resetRoot({
+          index: 0,
+          routes: [{ name: "Login" }]
+        });
+      } else if (global.__NAV__?.navigate) {
+        global.__NAV__.navigate("Login");
+      }
     } catch (error) {
       // Failed to logout
     }
@@ -145,8 +158,10 @@ export const AuthProvider = ({ children }) => {
         isEntitled,
         loading,
         login,
-        logout,
-        refreshProStatus
+      logout,
+        refreshProStatus,
+        hasNavigatedAwayFromHome,
+        setHasNavigatedAwayFromHome
       }}
     >
       {children}

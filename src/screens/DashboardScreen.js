@@ -39,18 +39,38 @@ function getCategoryColor(index) {
 
 export default function DashboardScreen() {
   const navigation = useNavigation();
-  const { isPro, isEntitled, isGuildMember } = useAuth();
+  const {
+    isPro,
+    isEntitled,
+    isGuildMember,
+    logout,
+    hasNavigatedAwayFromHome,
+    setHasNavigatedAwayFromHome
+  } = useAuth();
   const [plants, setPlants] = useState([]);
   const [loading, setLoading] = useState(true);
   const [trending, setTrending] = useState([]);
   const heroSubtitle = isGuildMember
     ? "Your guild unlocks specialized cannabis insights alongside the core GrowPath tools."
     : "Track every plant, explore hydroponics, and opt into guilds when you want crop-specific depth.";
+  const showWelcomeMessage = !hasNavigatedAwayFromHome;
+  const headerTitle = showWelcomeMessage ? "Welcome back" : "GrowPath";
 
   useEffect(() => {
     loadPlants();
     loadTrending();
   }, []);
+
+  useEffect(() => {
+    const unsubscribe = navigation.addListener("blur", () => {
+      setHasNavigatedAwayFromHome(true);
+    });
+    return unsubscribe;
+  }, [navigation, setHasNavigatedAwayFromHome]);
+
+  const handleLogout = async () => {
+    await logout();
+  };
 
   async function loadPlants() {
     try {
@@ -138,14 +158,30 @@ export default function DashboardScreen() {
   );
 
   return (
-    <ScreenContainer>
-      <ScrollView style={styles.container} showsVerticalScrollIndicator={false}>
+    <ScreenContainer testID="dashboard-screen">
+      <ScrollView
+        style={styles.container}
+        showsVerticalScrollIndicator={false}
+        testID="dashboard-scroll"
+      >
         {/* Header */}
         <View style={styles.header}>
           <View>
-            <Text style={styles.greeting}>Welcome back 👋</Text>
+            <Text style={styles.greeting}>
+              {headerTitle}
+              {showWelcomeMessage ? " 👋" : ""}
+            </Text>
             <Text style={styles.subtitle}>{heroSubtitle}</Text>
           </View>
+          {!showWelcomeMessage && (
+            <TouchableOpacity
+              onPress={handleLogout}
+              style={styles.logoutButton}
+              testID="logout-button"
+            >
+              <Text style={styles.logoutText}>Log out</Text>
+            </TouchableOpacity>
+          )}
         </View>
 
         {/* AI Token Balance */}
@@ -354,6 +390,21 @@ const styles = StyleSheet.create({
   subtitle: {
     fontSize: 16,
     color: colors.textSoft
+  },
+  logoutButton: {
+    paddingHorizontal: spacing(3),
+    paddingVertical: spacing(1.5),
+    backgroundColor: colors.cardBg,
+    borderRadius: radius.pill,
+    borderWidth: 1,
+    borderColor: colors.accent,
+    minWidth: 90,
+    alignItems: "center"
+  },
+  logoutText: {
+    color: colors.accent,
+    fontWeight: "700",
+    fontSize: 14
   },
   section: {
     marginTop: spacing(4),

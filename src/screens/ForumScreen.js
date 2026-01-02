@@ -13,6 +13,7 @@ import { useFocusEffect, useNavigation } from "@react-navigation/native";
 import ScreenContainer from "../components/ScreenContainer";
 import FollowButton from "../components/FollowButton";
 import { getLatestPosts, getTrendingPosts, getFollowingPosts } from "../api/forum";
+import useTabPressScrollReset from "../hooks/useTabPressScrollReset";
 
 export default function ForumScreen() {
   const [mode, setMode] = useState("latest");
@@ -21,6 +22,9 @@ export default function ForumScreen() {
   const navigation = useNavigation();
   const listRef = useRef(null);
   const pendingScrollToTop = useRef(false);
+  useTabPressScrollReset(() => {
+    listRef.current?.scrollToOffset({ offset: 0, animated: false });
+  });
 
   const load = useCallback(async (options = {}) => {
     try {

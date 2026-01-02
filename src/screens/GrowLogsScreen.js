@@ -194,7 +194,7 @@ export default function GrowLogsScreen({ navigation }) {
   }
 
   return (
-    <ScreenContainer scroll>
+    <ScreenContainer scroll testID="growlogs-scroll">
       <Text style={styles.title}>Your Plants</Text>
 
       <Card style={styles.filterCard}>

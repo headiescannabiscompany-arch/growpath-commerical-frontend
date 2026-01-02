@@ -1,4 +1,4 @@
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 import {
   View,
   Text,
@@ -17,12 +17,18 @@ import { login as apiLogin, signup as apiSignup } from "../api/auth";
 import { useAuth } from "../context/AuthContext";
 
 export default function LoginScreen({ navigation }) {
-  const { login: contextLogin } = useAuth();
+  const { login: contextLogin, token, user } = useAuth();
   const [mode, setMode] = useState("login"); // "login" or "signup"
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [displayName, setDisplayName] = useState("");
   const [loading, setLoading] = useState(false);
+
+  useEffect(() => {
+    if (token && user) {
+      navigation.replace("MainTabs");
+    }
+  }, [token, user, navigation]);
 
   async function handleAuth() {
     if (loading) return;
@@ -91,7 +97,7 @@ export default function LoginScreen({ navigation }) {
   }
 
   return (
-    <ScreenContainer>
+    <ScreenContainer testID="login-form">
       <ImageBackground
         source={require("../../assets/ChatGPT Image Dec 12, 2025, 02_01_36 PM.png")}
         style={styles.headerBackground}

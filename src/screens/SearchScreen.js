@@ -70,7 +70,7 @@ export default function SearchScreen({ navigation }) {
   };
 
   return (
-    <ScreenContainer>
+    <ScreenContainer scroll>
       <View style={styles.container}>
         {/* Header */}
         <View style={styles.header}>
