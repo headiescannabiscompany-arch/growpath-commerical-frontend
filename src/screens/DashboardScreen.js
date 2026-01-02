@@ -5,15 +5,16 @@ import {
   StyleSheet,
   ScrollView,
   TouchableOpacity,
-  Dimensions
+  Dimensions,
+  Image
 } from "react-native";
 import ScreenContainer from "../components/ScreenContainer";
-import TokenBalanceWidget from "../components/TokenBalanceWidget";
 import { colors, spacing, radius, typography } from "../theme/theme";
 import { useAuth } from "../context/AuthContext";
 import { useNavigation } from "@react-navigation/native";
 import { getPlants } from "../api/plants";
-import { getTrending } from "../api/posts";
+import { getTrending, getFeed } from "../api/posts";
+import { normalizePostList } from "../utils/posts";
 
 const { width } = Dimensions.get("window");
 
@@ -50,6 +51,8 @@ export default function DashboardScreen() {
   const [plants, setPlants] = useState([]);
   const [loading, setLoading] = useState(true);
   const [trending, setTrending] = useState([]);
+  const [feedPosts, setFeedPosts] = useState([]);
+  
   const heroSubtitle = isGuildMember
     ? "Your guild unlocks specialized cannabis insights alongside the core GrowPath tools."
     : "Track every plant, explore hydroponics, and opt into guilds when you want crop-specific depth.";
@@ -59,6 +62,7 @@ export default function DashboardScreen() {
   useEffect(() => {
     loadPlants();
     loadTrending();
+    loadFeed();
   }, []);
 
   useEffect(() => {
@@ -102,6 +106,16 @@ export default function DashboardScreen() {
     } catch (err) {
       console.error("Failed to load trending:", err);
       setTrending([]);
+    }
+  }
+
+  async function loadFeed() {
+    try {
+      const response = await getFeed(1);
+      const list = normalizePostList(response);
+      setFeedPosts(list.slice(0, 3));
+    } catch (err) {
+      console.error("Failed to load dashboard feed:", err);
     }
   }
 
@@ -157,6 +171,31 @@ export default function DashboardScreen() {
     </TouchableOpacity>
   );
 
+  const FeedItem = ({ item }) => (
+    <TouchableOpacity 
+      style={styles.feedItem}
+      onPress={() => navigation.navigate("PostDetail", { post: item })}
+    >
+      <View style={styles.feedHeader}>
+        {item.user?.avatar ? (
+          <Image source={{ uri: item.user.avatar }} style={styles.feedAvatar} />
+        ) : (
+          <View style={[styles.feedAvatar, { backgroundColor: "#ddd" }]} />
+        )}
+        <View>
+          <Text style={styles.feedUsername}>{item.user?.username || "Grower"}</Text>
+          <Text style={styles.feedTime} numberOfLines={1}>
+             {new Date(item.createdAt).toLocaleDateString()}
+          </Text>
+        </View>
+      </View>
+      <Text style={styles.feedText} numberOfLines={2}>{item.text}</Text>
+      {item.photos?.length > 0 && (
+        <Image source={{ uri: item.photos[0] }} style={styles.feedImage} />
+      )}
+    </TouchableOpacity>
+  );
+
   return (
     <ScreenContainer testID="dashboard-screen">
       <ScrollView
@@ -182,11 +221,6 @@ export default function DashboardScreen() {
               <Text style={styles.logoutText}>Log out</Text>
             </TouchableOpacity>
           )}
-        </View>
-
-        {/* AI Token Balance */}
-        <View style={styles.section}>
-          <TokenBalanceWidget onPress={() => navigation.navigate("Subscription")} />
         </View>
 
         {/* Pro Upgrade Banner (only show if not entitled) */}
@@ -240,6 +274,18 @@ export default function DashboardScreen() {
             />
           </View>
         </View>
+
+        {/* Latest Feed */}
+        {feedPosts.length > 0 && (
+          <View style={styles.section}>
+            <View style={styles.sectionHeader}>
+              <Text style={styles.sectionTitle}>Latest Updates</Text>
+            </View>
+            {feedPosts.map((item) => (
+              <FeedItem key={item._id} item={item} />
+            ))}
+          </View>
+        )}
 
         {/* Stats Overview */}
         <View style={styles.section}>
@@ -394,7 +440,7 @@ const styles = StyleSheet.create({
   logoutButton: {
     paddingHorizontal: spacing(3),
     paddingVertical: spacing(1.5),
-    backgroundColor: colors.cardBg,
+    backgroundColor: colors.card,
     borderRadius: radius.pill,
     borderWidth: 1,
     borderColor: colors.accent,
@@ -456,7 +502,7 @@ const styles = StyleSheet.create({
   },
   statCard: {
     width: (width - spacing(4) * 2 - spacing(2)) / 2,
-    backgroundColor: colors.cardBg,
+    backgroundColor: colors.card,
     borderRadius: radius.card,
     padding: spacing(3),
     marginHorizontal: spacing(1),
@@ -490,7 +536,7 @@ const styles = StyleSheet.create({
   },
   plantCard: {
     width: 180,
-    backgroundColor: colors.cardBg,
+    backgroundColor: colors.card,
     borderRadius: radius.card,
     marginRight: spacing(3),
     boxShadow: "0px 4px 12px rgba(0, 0, 0, 0.08)",
@@ -540,7 +586,7 @@ const styles = StyleSheet.create({
     borderRadius: radius.pill
   },
   emptyState: {
-    backgroundColor: colors.cardBg,
+    backgroundColor: colors.card,
     borderRadius: radius.card,
     padding: spacing(6),
     alignItems: "center"
@@ -574,7 +620,7 @@ const styles = StyleSheet.create({
   },
   trendingCard: {
     width: 160,
-    backgroundColor: colors.cardBg,
+    backgroundColor: colors.card,
     borderRadius: radius.card,
     padding: spacing(4),
     marginRight: spacing(3),
@@ -647,5 +693,45 @@ const styles = StyleSheet.create({
   proArrow: {
     fontSize: 24,
     color: "#FFFFFF"
+  },
+  feedItem: {
+    backgroundColor: colors.card,
+    borderRadius: radius.card,
+    padding: spacing(3),
+    marginBottom: spacing(3),
+    boxShadow: "0px 2px 8px rgba(0, 0, 0, 0.05)",
+    elevation: 2
+  },
+  feedHeader: {
+    flexDirection: "row",
+    alignItems: "center",
+    marginBottom: spacing(2)
+  },
+  feedAvatar: {
+    width: 32,
+    height: 32,
+    borderRadius: 16,
+    marginRight: spacing(2)
+  },
+  feedUsername: {
+    fontSize: 14,
+    fontWeight: "700",
+    color: colors.text
+  },
+  feedTime: {
+    fontSize: 12,
+    color: colors.textSoft
+  },
+  feedText: {
+    fontSize: 14,
+    color: colors.text,
+    lineHeight: 20,
+    marginBottom: spacing(2)
+  },
+  feedImage: {
+    width: "100%",
+    height: 160,
+    borderRadius: radius.card,
+    backgroundColor: colors.bg
   }
 });

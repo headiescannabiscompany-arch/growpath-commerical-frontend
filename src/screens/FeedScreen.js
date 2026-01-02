@@ -147,6 +147,14 @@ export default function FeedScreen() {
 
   const renderItem = ({ item, index }) => {
     const likedByMe = userHasLiked(item, userId);
+
+    const navigateToDetail = () => {
+      navigation.navigate("PostDetail", {
+        post: item,
+        refreshFeed: handleRefresh
+      });
+    };
+
     return (
       <View style={styles.card} testID={`feed-card-${item._id || index}`}>
         <View style={styles.header}>
@@ -158,11 +166,17 @@ export default function FeedScreen() {
           <Text style={styles.username}>{item.user?.username || "Grower"}</Text>
         </View>
 
-        {item.text ? <Text style={styles.text}>{item.text}</Text> : null}
+        <TouchableOpacity onPress={navigateToDetail} activeOpacity={0.8}>
+          {item.text ? (
+            <Text style={styles.text} numberOfLines={7} ellipsizeMode="tail">
+              {item.text}
+            </Text>
+          ) : null}
 
-        {item.photos?.length > 0 && (
-          <Image source={{ uri: item.photos[0] }} style={styles.mainImage} />
-        )}
+          {item.photos?.length > 0 && (
+            <Image source={{ uri: item.photos[0] }} style={styles.mainImage} />
+          )}
+        </TouchableOpacity>
 
         <View style={styles.actions}>
           <TouchableOpacity

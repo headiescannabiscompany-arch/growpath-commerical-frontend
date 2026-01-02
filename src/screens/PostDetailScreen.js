@@ -17,8 +17,9 @@ import { likePost, commentOnPost } from "../api/forum";
 import { useAuth } from "../context/AuthContext";
 
 export default function PostDetailScreen({ route, navigation }) {
-  const { isEntitled } = useAuth();
+  const { isEntitled, isPro } = useAuth();
   const { post, refreshFeed } = route.params;
+
   const [likes, setLikes] = useState(post.likes || 0);
   const [comments, setComments] = useState(post.comments || []);
   const [commentText, setCommentText] = useState("");
@@ -70,18 +71,25 @@ export default function PostDetailScreen({ route, navigation }) {
     }
   }
 
+  const authorName =
+    post.author?.displayName ||
+    post.author?.username ||
+    post.user?.displayName ||
+    post.user?.username ||
+    "Grower";
+
+  const postBody = post.body || post.text || post.content || "";
+
   return (
     <ScreenContainer scroll>
-      <Text style={styles.title}>{post.title}</Text>
+      {post.title ? <Text style={styles.title}>{post.title}</Text> : null}
 
       <Card style={{ marginBottom: spacing(4) }}>
         {/* Author */}
-        <Text style={styles.author}>
-          Posted by {post.author?.displayName || "Unknown"}
-        </Text>
+        <Text style={styles.author}>Posted by {authorName}</Text>
 
         {/* Body */}
-        {post.body ? <Text style={styles.body}>{post.body}</Text> : null}
+        {postBody ? <Text style={styles.body}>{postBody}</Text> : null}
 
         {/* Photos */}
         {post.photos?.length > 0 && (

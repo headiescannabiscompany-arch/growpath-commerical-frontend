@@ -46,7 +46,7 @@ function TabIcon({ label, focused, testID }) {
 }
 
 export default function MainTabs() {
-  const { isGuildMember } = useAuth();
+  const { isGuildMember, isPro } = useAuth();
   return (
     <Tab.Navigator
       screenOptions={{
@@ -99,16 +99,18 @@ export default function MainTabs() {
         }}
       />
 
-      <Tab.Screen
-        name="FeedTab"
-        component={FeedScreen}
-        options={{
-          title: isGuildMember ? "Feed" : "Community",
-          tabBarLabel: ({ focused }) => (
-            <TabIcon label="Feed" focused={focused} testID="tab-feed" />
-          )
-        }}
-      />
+      {isPro && (
+        <Tab.Screen
+          name="FeedTab"
+          component={FeedScreen}
+          options={{
+            title: isGuildMember ? "Feed" : "Community",
+            tabBarLabel: ({ focused }) => (
+              <TabIcon label="Feed" focused={focused} testID="tab-feed" />
+            )
+          }}
+        />
+      )}
 
       <Tab.Screen
         name="ForumTab"
