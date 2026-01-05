@@ -24,10 +24,14 @@ export function createGrow(growData) {
   });
 }
 
-export function addEntry(growId, note, tags) {
+export function addEntry(growId, { note, tags = [], photos = [] } = {}) {
   return api(ROUTES.GROWS.ENTRIES(growId), {
     method: "POST",
-    body: JSON.stringify({ note, tags })
+    body: JSON.stringify({
+      note,
+      tags,
+      photos
+    })
   });
 }
 

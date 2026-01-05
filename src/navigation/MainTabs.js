@@ -1,5 +1,3 @@
-import ScheduleScreen from "../screens/ScheduleScreen";
-// Removed duplicate import and stray JSX
 import React from "react";
 import { createBottomTabNavigator } from "@react-navigation/bottom-tabs";
 import DashboardScreen from "../screens/DashboardScreen";
@@ -27,7 +25,6 @@ const TAB_ICONS = {
   Courses: "📚",
   Profile: "👤",
   Calendar: "📅",
-  Schedule: "🗓️"
 };
 
 function TabIcon({ label, focused, testID }) {
@@ -151,16 +148,6 @@ export default function MainTabs() {
           title: "Calendar",
           tabBarLabel: ({ focused }) => (
             <TabIcon label="Calendar" focused={focused} testID="tab-calendar" />
-          )
-        }}
-      />
-      <Tab.Screen
-        name="ScheduleTab"
-        component={ScheduleScreen}
-        options={{
-          title: "Schedule",
-          tabBarLabel: ({ focused }) => (
-            <TabIcon label="Schedule" focused={focused} testID="tab-schedule" />
           )
         }}
       />
