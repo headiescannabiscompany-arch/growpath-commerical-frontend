@@ -1,4 +1,4 @@
-import React, { useCallback, useRef, useState } from "react";
+import React, { useCallback, useRef, useState, useMemo } from "react";
 import {
   View,
   Text,
@@ -9,7 +9,8 @@ import {
   RefreshControl,
   ActivityIndicator
 } from "react-native";
-import { useFocusEffect, useNavigation } from "@react-navigation/native";
+import { useNavigation } from "@react-navigation/native";
+import { useInfiniteQuery } from "@tanstack/react-query";
 
 import ScreenContainer from "../components/ScreenContainer";
 import FollowButton from "../components/FollowButton";
@@ -21,12 +22,6 @@ const PAGE_SIZE = 20;
 
 export default function ForumScreen() {
   const [mode, setMode] = useState("latest");
-  const [posts, setPosts] = useState([]);
-  const [refreshing, setRefreshing] = useState(false);
-  const [page, setPage] = useState(1);
-  const [hasMore, setHasMore] = useState(true);
-  const [loadingMore, setLoadingMore] = useState(false);
-
   const navigation = useNavigation();
   const listRef = useRef(null);
   const pendingScrollToTop = useRef(false);
@@ -35,85 +30,46 @@ export default function ForumScreen() {
     listRef.current?.scrollToOffset({ offset: 0, animated: false });
   });
 
-  const fetchPosts = useCallback(async (pageNumber, currentMode) => {
-    const fn =
-      currentMode === "trending"
-        ? getTrendingPosts
-        : currentMode === "following"
-          ? getFollowingPosts
-          : getLatestPosts;
-    
-    // Pass page number to API
-    const res = await fn(pageNumber);
-    return res.data || res || [];
-  }, []);
+  const {
+    data,
+    fetchNextPage,
+    hasNextPage,
+    isFetchingNextPage,
+    refetch,
+    isRefreshing
+  } = useInfiniteQuery({
+    queryKey: ["forum-feed", mode],
+    queryFn: async ({ pageParam = 1 }) => {
+      const fn =
+        mode === "trending"
+          ? getTrendingPosts
+          : mode === "following"
+            ? getFollowingPosts
+            : getLatestPosts;
+      return fn(pageParam);
+    },
+    getNextPageParam: (lastPage, allPages) => {
+      return lastPage.length === PAGE_SIZE ? allPages.length + 1 : undefined;
+    },
+    staleTime: 1000 * 60 * 2, // 2 minutes
+  });
 
-  const loadInitial = useCallback(async (options = {}) => {
-    try {
-      const list = await fetchPosts(1, mode);
-      setPosts(list);
-      setPage(1);
-      setHasMore(list.length >= PAGE_SIZE);
+  const posts = useMemo(() => data?.pages.flat() || [], [data]);
 
-      const shouldScroll = options.scrollToTop || pendingScrollToTop.current;
-      if (shouldScroll) {
-        pendingScrollToTop.current = false;
-        requestAnimationFrame(() => {
-          listRef.current?.scrollToOffset({ offset: 0, animated: true });
-        });
-      }
-    } catch (err) {
-      // Failed to load feed
-      console.error(err);
+  const loadMore = useCallback(() => {
+    if (hasNextPage && !isFetchingNextPage) {
+      fetchNextPage();
     }
-  }, [mode, fetchPosts]);
-
-  useFocusEffect(
-    useCallback(() => {
-      // Initial load on focus or mode change
-      loadInitial();
-    }, [loadInitial])
-  );
-
-  const reload = useCallback(async () => {
-    setRefreshing(true);
-    await loadInitial({ scrollToTop: true });
-    setRefreshing(false);
-  }, [loadInitial]);
-
-  const loadMore = useCallback(async () => {
-    if (loadingMore || !hasMore || refreshing) return;
-
-    setLoadingMore(true);
-    try {
-      const nextPage = page + 1;
-      const list = await fetchPosts(nextPage, mode);
-      
-      if (list.length > 0) {
-        setPosts(prev => [...prev, ...list]);
-        setPage(nextPage);
-      }
-      
-      if (list.length < PAGE_SIZE) {
-        setHasMore(false);
-      }
-    } catch (err) {
-      console.error("Failed to load more:", err);
-    } finally {
-      setLoadingMore(false);
-    }
-  }, [loadingMore, hasMore, refreshing, page, mode, fetchPosts]);
+  }, [hasNextPage, isFetchingNextPage, fetchNextPage]);
 
   const changeMode = useCallback(
     (nextMode) => {
       if (mode === nextMode) return;
       pendingScrollToTop.current = true;
       setMode(nextMode);
-      // Mode change triggers useFocusEffect/loadInitial via dependency, 
-      // but explicitly resetting state here is safer visually
-      setPosts([]);
-      setPage(1);
-      setHasMore(true);
+      requestAnimationFrame(() => {
+        listRef.current?.scrollToOffset({ offset: 0, animated: false });
+      });
     },
     [mode]
   );
@@ -186,7 +142,7 @@ export default function ForumScreen() {
   }
 
   const renderFooter = () => {
-    if (!loadingMore) return <View style={{ height: 40 }} />;
+    if (!isFetchingNextPage) return <View style={{ height: 40 }} />;
     return (
       <View style={{ paddingVertical: 20 }}>
         <ActivityIndicator color="#10B981" />
@@ -278,8 +234,8 @@ export default function ForumScreen() {
         ListFooterComponent={renderFooter}
         refreshControl={
           <RefreshControl
-            refreshing={refreshing}
-            onRefresh={reload}
+            refreshing={isRefreshing}
+            onRefresh={refetch}
             tintColor="#2ecc71"
           />
         }

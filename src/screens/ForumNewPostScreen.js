@@ -9,6 +9,7 @@ import {
   StyleSheet,
   Alert
 } from "react-native";
+import { useQueryClient } from "@tanstack/react-query";
 
 import * as ImagePicker from "expo-image-picker";
 import ScreenContainer from "../components/ScreenContainer";
@@ -17,6 +18,7 @@ import { createPost } from "../api/forum";
 import { uploadImage } from "../api/uploads";
 
 export default function ForumNewPostScreen({ route, navigation }) {
+  const queryClient = useQueryClient();
   const photosFromLog = route.params?.photos || [];
   const notesFromLog = route.params?.content || "";
   const strainFromLog = route.params?.strain || "";
@@ -30,33 +32,7 @@ export default function ForumNewPostScreen({ route, navigation }) {
   const [category, setCategory] = useState("general");
   const [loading, setLoading] = useState(false);
 
-  const categoryOptions = [
-    { key: "general", label: "💬 General", desc: "General discussion" },
-    { key: "help", label: "🆘 Help/Advice", desc: "Ask for help" },
-    { key: "grow-log", label: "📔 Grow Log", desc: "Share your grow" },
-    { key: "harvest", label: "🌿 Harvest/Cure", desc: "Show off results" },
-    { key: "nutrients", label: "🧪 Nutrients", desc: "Feeding discussion" },
-    { key: "genetics", label: "🧬 Genetics", desc: "Strains & breeders" },
-    { key: "equipment", label: "⚡ Equipment", desc: "Lights, tents, etc." },
-    { key: "techniques", label: "🎓 Techniques", desc: "Training & methods" }
-  ];
-
-  const tagOptions = [
-    "yellowing",
-    "nuteburn",
-    "training",
-    "deficiency",
-    "overwatered",
-    "underwatered",
-    "stretch",
-    "heatstress",
-    "harvest",
-    "pest",
-    "autoflower",
-    "photoperiod",
-    "organic",
-    "hydro"
-  ];
+  // ... rest of state
 
   // ---------------------------------------
   // PICK PHOTOS
@@ -123,6 +99,9 @@ export default function ForumNewPostScreen({ route, navigation }) {
       };
 
       await createPost(payload);
+      
+      // Invalidate feed cache
+      queryClient.invalidateQueries({ queryKey: ["forum-feed"] });
 
       setLoading(false);
       // Return to feed

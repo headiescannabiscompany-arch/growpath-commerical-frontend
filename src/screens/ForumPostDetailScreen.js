@@ -1,4 +1,4 @@
-import React, { useEffect, useState } from "react";
+import React, { useState } from "react";
 import {
   View,
   Text,
@@ -9,6 +9,7 @@ import {
   StyleSheet,
   Alert
 } from "react-native";
+import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 
 import ScreenContainer from "../components/ScreenContainer";
 import FollowButton from "../components/FollowButton";
@@ -32,87 +33,70 @@ export default function ForumPostDetailScreen({ route, navigation }) {
   const { id } = route.params;
   const { user: authUser } = useAuth();
   const currentUserId = authUser?._id ?? authUser?.id ?? null;
+  const queryClient = useQueryClient();
 
-  const [post, setPost] = useState(null);
-  const [comments, setComments] = useState([]);
   const [myComment, setMyComment] = useState("");
   const [loading, setLoading] = useState(false);
-  const [reportVisible, setReportVisible] = useState(false);
 
-  const normalizePost = (payload) => {
-    const likesArray = Array.isArray(payload.likes) ? payload.likes : [];
-    const likeCount =
-      typeof payload.likeCount === "number" ? payload.likeCount : likesArray.length;
-    return { ...payload, likes: likesArray, likeCount };
-  };
-
-  async function load() {
-    try {
+  const { data: post, isLoading: loadingPost } = useQuery({
+    queryKey: ["forum-post", id],
+    queryFn: async () => {
       const p = await getPost(id);
-      const c = await getComments(id);
+      const likesArray = Array.isArray(p.likes) ? p.likes : [];
+      const likeCount =
+        typeof p.likeCount === "number" ? p.likeCount : likesArray.length;
+      return { ...p, likes: likesArray, likeCount };
+    },
+  });
 
-      setPost(normalizePost(p));
-      setComments(c);
-    } catch (err) {
-      Alert.alert("Error", "Failed to load post");
-    }
-  }
+  const { data: comments = [], isLoading: loadingComments } = useQuery({
+    queryKey: ["forum-comments", id],
+    queryFn: () => getComments(id),
+  });
 
-  useEffect(() => {
-    load();
-  }, []);
+  const likeMutation = useMutation({
+    mutationFn: (liked) => (liked ? unlikePost(id) : likePost(id)),
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ["forum-post", id] });
+      queryClient.invalidateQueries({ queryKey: ["forum-feed"] });
+    },
+  });
+
+  const commentMutation = useMutation({
+    mutationFn: (text) => addComment(id, text),
+    onSuccess: () => {
+      setMyComment("");
+      queryClient.invalidateQueries({ queryKey: ["forum-comments", id] });
+      queryClient.invalidateQueries({ queryKey: ["forum-feed"] });
+    },
+  });
+
+  const deleteCommentMutation = useMutation({
+    mutationFn: (commentId) => deleteComment(commentId),
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ["forum-comments", id] });
+    },
+  });
+
   // Like/unlike
   async function toggleLike() {
     if (!post || !currentUserId) return;
-
-    try {
-      const liked = userHasLiked(post, currentUserId);
-      const apiFn = liked ? unlikePost : likePost;
-      const result = await apiFn(post._id);
-      setPost((prev) =>
-        applyLikeMetadata(
-          prev,
-          currentUserId,
-          typeof result?.likeCount === "number"
-            ? result.likeCount
-            : typeof result?.likes === "number"
-              ? result.likes
-              : undefined,
-          !liked
-        )
-      );
-    } catch (err) {
-      Alert.alert("Error", "Failed to update like");
-    }
+    const liked = userHasLiked(post, currentUserId);
+    likeMutation.mutate(liked);
   }
 
   async function submitComment() {
     if (!myComment.trim()) return;
-
-    try {
-      setLoading(true);
-      const c = await addComment(post._id, myComment.trim());
-      setComments([...comments, c]);
-      setMyComment("");
-      setLoading(false);
-    } catch (err) {
-      setLoading(false);
-      Alert.alert("Error", "Failed to add comment");
-    }
+    commentMutation.mutate(myComment.trim());
   }
 
   async function handleDelete(commentId) {
-    try {
-      await deleteComment(commentId);
-      setComments(comments.filter((c) => c._id !== commentId));
-    } catch (err) {
-      Alert.alert("Error", "Failed to delete comment");
-    }
+    deleteCommentMutation.mutate(commentId);
   }
 
   async function handleSave() {
     try {
-      await savePost(post._id);
+      await savePost(id);
       Alert.alert("Saved", "This post was saved.");
     } catch (err) {
       Alert.alert("Error", "Failed to save post");
@@ -121,7 +105,7 @@ export default function ForumPostDetailScreen({ route, navigation }) {
 
   async function handleUnsave() {
     try {
-      await unsavePost(post._id);
+      await unsavePost(id);
       Alert.alert("Removed", "Unsaved.");
     } catch (err) {
       Alert.alert("Error", "Failed to unsave post");
@@ -130,7 +114,7 @@ export default function ForumPostDetailScreen({ route, navigation }) {
 
   async function handleGrowLogImport() {
     try {
-      await savePostToGrowLog(post._id);
+      await savePostToGrowLog(id);
       Alert.alert("Added!", "This post was added to your Grow Log.");
     } catch (err) {
       Alert.alert("Error", "Failed to import to Grow Log");
@@ -169,7 +153,7 @@ export default function ForumPostDetailScreen({ route, navigation }) {
 
   async function submitReport(reason) {
     try {
-      await reportPost(post._id, reason);
+      await reportPost(id, reason);
       Alert.alert(
         "Report Submitted",
         "Thank you. Our team will review this post shortly."
@@ -179,13 +163,15 @@ export default function ForumPostDetailScreen({ route, navigation }) {
     }
   }
 
-  if (!post) {
+  if (loadingPost && !post) {
     return (
       <ScreenContainer>
         <Text style={styles.loading}>Loading...</Text>
       </ScreenContainer>
     );
   }
+
+  if (!post) return null;
 
   const author = post.user || post.author || null;
 
@@ -282,10 +268,10 @@ export default function ForumPostDetailScreen({ route, navigation }) {
           onChangeText={setMyComment}
           placeholder="Add a comment..."
           multiline
-          editable={!loading}
+          editable={!commentMutation.isPending}
         />
-        <TouchableOpacity onPress={submitComment} disabled={loading}>
-          <Text style={styles.send}>{loading ? "..." : "Send"}</Text>
+        <TouchableOpacity onPress={submitComment} disabled={commentMutation.isPending}>
+          <Text style={styles.send}>{commentMutation.isPending ? "..." : "Send"}</Text>
         </TouchableOpacity>
       </View>
     </ScreenContainer>
