@@ -1,8 +1,19 @@
 import { client as api } from "./client.js";
 import ROUTES from "./routes.js";
 
-export function getEntries() {
-  return api(ROUTES.GROWLOG.LIST);
+function withQuery(base, filters = {}) {
+  const params = new URLSearchParams();
+  Object.entries(filters).forEach(([key, value]) => {
+    if (value !== undefined && value !== null && value !== "") {
+      params.append(key, value);
+    }
+  });
+  const qs = params.toString();
+  return qs ? `${base}?${qs}` : base;
+}
+
+export function getEntries(filters) {
+  return api(withQuery(ROUTES.GROWLOG.LIST, filters));
 }
 
 export function getEntry(id) {

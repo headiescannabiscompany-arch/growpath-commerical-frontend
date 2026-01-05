@@ -23,6 +23,7 @@ const PAGE_SIZE = 20;
 export default function ForumScreen() {
   const [mode, setMode] = useState("latest");
   const navigation = useNavigation();
+  const rootNavigation = navigation.getParent?.() ?? navigation;
   const listRef = useRef(null);
   const pendingScrollToTop = useRef(false);
   
@@ -76,14 +77,14 @@ export default function ForumScreen() {
 
   const handleCreatePost = useCallback(() => {
     pendingScrollToTop.current = true;
-    navigation.navigate("ForumNewPost");
-  }, [navigation]);
+    rootNavigation.navigate("ForumNewPost");
+  }, [rootNavigation]);
 
   function renderPost({ item }) {
     return (
       <TouchableOpacity
         style={styles.card}
-        onPress={() => navigation.navigate("ForumPostDetail", { id: item._id })}
+        onPress={() => rootNavigation.navigate("ForumPostDetail", { id: item._id })}
       >
         {/* User */}
         <View style={styles.userRow}>
@@ -180,7 +181,7 @@ export default function ForumScreen() {
             <Text style={styles.guildSubtitle}>Experience. Observation. Learning.</Text>
           </View>
           <TouchableOpacity
-            onPress={() => navigation.navigate("GuildCode")}
+            onPress={() => rootNavigation.navigate("GuildCode")}
             style={styles.codeButton}
           >
             <Text style={styles.codeButtonText}>📜 Guild Code</Text>

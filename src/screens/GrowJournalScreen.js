@@ -1,4 +1,4 @@
-import React, { useState } from "react";
+import React, { useState, useCallback } from "react";
 import {
   Text,
   TextInput,
@@ -9,11 +9,13 @@ import {
   Alert
 } from "react-native";
 import * as ImagePicker from "expo-image-picker";
+import { useFocusEffect } from "@react-navigation/native";
 import ScreenContainer from "../components/ScreenContainer";
 import Card from "../components/Card";
 import PrimaryButton from "../components/PrimaryButton";
 import { colors, spacing, radius } from "../theme/theme";
 import { addEntry, uploadEntryPhoto } from "../api/grows";
+import { getEntries as getGrowEntries } from "../api/growlog";
 import { useAuth } from "../context/AuthContext";
 
 export default function GrowJournalScreen({ route, navigation }) {
@@ -23,16 +25,40 @@ export default function GrowJournalScreen({ route, navigation }) {
   const [note, setNote] = useState("");
   const [addingEntry, setAddingEntry] = useState(false);
   const [uploadingPhoto, setUploadingPhoto] = useState(false);
+  const [loadingEntries, setLoadingEntries] = useState(false);
+  const growId = grow?._id;
+
+  const loadEntries = useCallback(async () => {
+    if (!growId) return;
+    try {
+      setLoadingEntries(true);
+      const response = await getGrowEntries({ grow: growId });
+      setEntries(Array.isArray(response) ? response : []);
+    } catch (err) {
+      Alert.alert("Error", err.message);
+    } finally {
+      setLoadingEntries(false);
+    }
+  }, [growId]);
+
+  useFocusEffect(
+    useCallback(() => {
+      loadEntries();
+    }, [loadEntries])
+  );
 
   async function handleAddEntry() {
     if (!note.trim()) {
       return Alert.alert("Missing Note", "Please add a brief note before saving.");
     }
+    if (!growId) {
+      return Alert.alert("Missing Grow", "Please reopen this grow and try again.");
+    }
 
     try {
       setAddingEntry(true);
-      const entry = await addEntry(grow._id, note.trim(), []);
-      setEntries((prev) => [entry, ...prev]);
+      await addEntry(growId, { note: note.trim() });
+      await loadEntries();
       setNote("");
     } catch (err) {
       Alert.alert("Error", err.message);
@@ -42,6 +68,9 @@ export default function GrowJournalScreen({ route, navigation }) {
   }
 
   async function pickImage() {
+    if (!growId) {
+      return Alert.alert("Missing Grow", "Please reopen this grow and try again.");
+    }
     if (!isPro) {
       return Alert.alert("Pro Feature", "Uploading photos requires Pro.", [
         { text: "Cancel" },
@@ -63,13 +92,10 @@ export default function GrowJournalScreen({ route, navigation }) {
 
       try {
         setUploadingPhoto(true);
-        const uploaded = await uploadEntryPhoto(grow._id, file);
+        const uploaded = await uploadEntryPhoto(growId, file);
         if (uploaded?.url) {
-          const photoEntry = {
-            photos: [uploaded.url],
-            createdAt: new Date().toISOString()
-          };
-          setEntries((prev) => [photoEntry, ...prev]);
+          await addEntry(growId, { photos: [uploaded.url] });
+          await loadEntries();
           Alert.alert("Success", "Photo uploaded to your grow log.");
         }
       } catch (err) {
@@ -120,7 +146,7 @@ export default function GrowJournalScreen({ route, navigation }) {
 
       <FlatList
         data={entries}
-        keyExtractor={(_, index) => index.toString()}
+        keyExtractor={(item, index) => item?._id || index.toString()}
         contentContainerStyle={{ paddingBottom: 120 }}
         renderItem={({ item }) => (
           <Card style={{ marginBottom: spacing(4) }}>

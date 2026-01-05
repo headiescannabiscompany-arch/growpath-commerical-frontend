@@ -17,6 +17,26 @@ import PrimaryButton from "../components/PrimaryButton";
 import { createPost } from "../api/forum";
 import { uploadImage } from "../api/uploads";
 
+const categoryOptions = [
+  { key: "general", label: "General", desc: "Updates, questions, daily logs" },
+  { key: "diagnostics", label: "Diagnostics", desc: "Ask for help identifying issues" },
+  { key: "training", label: "Training", desc: "Techniques, LST/HST, shaping" },
+  { key: "harvest", label: "Harvest", desc: "Drying, curing, post-harvest" },
+  { key: "gear", label: "Gear & Setup", desc: "Lights, tents, hardware" }
+];
+
+const tagOptions = [
+  "Vegetative",
+  "Flower",
+  "Propagation",
+  "Organic",
+  "Hydroponics",
+  "Pest Management",
+  "Diagnosis",
+  "Tips",
+  "Showcase"
+];
+
 export default function ForumNewPostScreen({ route, navigation }) {
   const queryClient = useQueryClient();
   const photosFromLog = route.params?.photos || [];

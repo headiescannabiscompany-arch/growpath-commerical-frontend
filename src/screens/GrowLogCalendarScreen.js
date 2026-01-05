@@ -1,20 +1,27 @@
-import React, { useEffect, useMemo, useRef, useState } from "react";
+import React, { useEffect, useMemo, useRef, useState, useCallback } from "react";
 import { View, Text, TouchableOpacity, StyleSheet, Alert } from "react-native";
 import { useFocusEffect } from "@react-navigation/native";
 
 import ScreenContainer from "../components/ScreenContainer";
 import { getEntries } from "../api/growlog";
+import { listGrows } from "../api/grows";
 import { getTasks, completeTask } from "../api/tasks";
 import { groupItemsByDate } from "../utils/calendar";
+import { groupTasks } from "../utils/schedule";
 
 export default function GrowLogCalendarScreen({ navigation }) {
   const [entries, setEntries] = useState([]);
+  const [growMap, setGrowMap] = useState({});
   const [tasks, setTasks] = useState([]);
   const [selectedDate, setSelectedDate] = useState(null);
   const scrollRef = useRef(null);
 
   const [year, setYear] = useState(new Date().getFullYear());
   const [month, setMonth] = useState(new Date().getMonth()); // 0-11
+  const [collapsedSections, setCollapsedSections] = useState({
+    upcoming: true,
+    completed: true
+  });
 
   useEffect(() => {
     load();
@@ -30,6 +37,21 @@ export default function GrowLogCalendarScreen({ navigation }) {
     try {
       const entriesRes = await getEntries();
       setEntries(entriesRes.data || entriesRes || []);
+
+      // Fetch grow metadata so we can label entries
+      try {
+        const growsRes = await listGrows();
+        const growList = growsRes.data || growsRes || [];
+        const nextMap = {};
+        growList.forEach((grow) => {
+          if (grow?._id) {
+            nextMap[grow._id] = grow.name || "Untitled Grow";
+          }
+        });
+        setGrowMap(nextMap);
+      } catch (err) {
+        console.log("Grows not loaded:", err?.message || err);
+      }
 
       // Load tasks too
       try {
@@ -52,6 +74,64 @@ export default function GrowLogCalendarScreen({ navigation }) {
     }
   }
 
+  function renderScheduleTask(task, sectionKey) {
+    const dueDate = task.dueDate ? new Date(task.dueDate).toLocaleDateString() : "No due date";
+
+    return (
+      <View key={task._id} style={styles.scheduleTask}>
+        <View style={{ flex: 1 }}>
+          <Text style={styles.scheduleTaskTitle}>{task.title}</Text>
+          {task.plant && (
+            <Text style={styles.taskPlant}>🌿 {task.plant.name}</Text>
+          )}
+          <Text style={styles.taskDue}>Due {dueDate}</Text>
+        </View>
+        {!task.completed ? (
+          <TouchableOpacity
+            style={styles.taskCompleteBtn}
+            onPress={() => handleCompleteTask(task._id)}
+          >
+            <Text style={styles.taskCompleteBtnText}>✓</Text>
+          </TouchableOpacity>
+        ) : (
+          <Text style={styles.taskDoneLabel}>Done</Text>
+        )}
+      </View>
+    );
+  }
+
+  function renderScheduleSection({ key, title, tasks, collapsible, collapsed, toggle }) {
+    if (!tasks || tasks.length === 0) return null;
+    const limit = key === "completed" ? 5 : tasks.length;
+    const visibleTasks = (!collapsible || !collapsed) ? tasks.slice(0, limit) : [];
+
+    return (
+      <View key={key} style={styles.scheduleSection}>
+        <View style={styles.scheduleSectionHeader}>
+          <Text style={styles.scheduleSectionTitle}>
+            {title}{" "}
+            <Text style={styles.scheduleCount}>({tasks.length})</Text>
+          </Text>
+          {collapsible ? (
+            <TouchableOpacity onPress={() => toggle(key)} style={styles.collapseButton}>
+              <Text style={styles.collapseButtonText}>{collapsed ? "Show" : "Hide"}</Text>
+            </TouchableOpacity>
+          ) : null}
+        </View>
+        {!collapsible || !collapsed ? (
+          <View style={{ gap: 8 }}>
+            {visibleTasks.map((task) => renderScheduleTask(task, key))}
+            {key === "completed" && tasks.length > limit ? (
+              <Text style={styles.scheduleHint}>
+                Showing latest {limit} completed tasks
+              </Text>
+            ) : null}
+          </View>
+        ) : null}
+      </View>
+    );
+  }
+
   // Helper: returns "YYYY-MM-DD"
   function formatDate(date) {
     return date.toISOString().split("T")[0];
@@ -66,6 +146,18 @@ export default function GrowLogCalendarScreen({ navigation }) {
     () => groupItemsByDate(tasks, (task) => task.dueDate),
     [tasks]
   );
+
+  const scheduleGroups = useMemo(
+    () => groupTasks(Array.isArray(tasks) ? tasks : []),
+    [tasks]
+  );
+
+  const toggleScheduleSection = useCallback((key) => {
+    setCollapsedSections((prev) => ({
+      ...prev,
+      [key]: !prev[key]
+    }));
+  }, []);
 
   // Calendar generation
   const firstDay = new Date(year, month, 1).getDay(); // 0=Sun
@@ -146,15 +238,9 @@ export default function GrowLogCalendarScreen({ navigation }) {
       <View style={styles.infoCard}>
         <Text style={styles.infoTitle}>Calendar vs Schedule</Text>
         <Text style={styles.infoCopy}>
-          Calendar reflects what happened (grow logs) plus due tasks. Use Schedule to plan
-          and reprioritize upcoming work.
+          Calendar reflects what happened (grow logs) plus due tasks. Use the schedule
+          below to revisit intent, adjust plans, and mark work complete.
         </Text>
-        <TouchableOpacity
-          style={styles.infoButton}
-          onPress={() => navigation.navigate("ScheduleTab")}
-        >
-          <Text style={styles.infoButtonText}>Open Schedule</Text>
-        </TouchableOpacity>
       </View>
       <View
         style={{
@@ -173,6 +259,47 @@ export default function GrowLogCalendarScreen({ navigation }) {
           Use the calendar to notice patterns, not to judge yourself.{"\n"}
           Growth is about observation and learning, not perfect routines.
         </Text>
+      </View>
+
+      {/* INLINE SCHEDULE SUMMARY */}
+      <View style={styles.scheduleCard}>
+        <Text style={styles.scheduleTitle}>Schedule</Text>
+        <Text style={styles.scheduleCopy}>
+          Overdue items stay visible until addressed. Upcoming and completed sections can
+          be expanded when you need them.
+        </Text>
+        {renderScheduleSection({
+          key: "overdue",
+          title: "Overdue",
+          tasks: scheduleGroups.overdue,
+          collapsible: false,
+          collapsed: false,
+          toggle: toggleScheduleSection
+        })}
+        {renderScheduleSection({
+          key: "today",
+          title: "Today",
+          tasks: scheduleGroups.today,
+          collapsible: false,
+          collapsed: false,
+          toggle: toggleScheduleSection
+        })}
+        {renderScheduleSection({
+          key: "upcoming",
+          title: "Upcoming",
+          tasks: scheduleGroups.upcoming,
+          collapsible: true,
+          collapsed: collapsedSections.upcoming,
+          toggle: toggleScheduleSection
+        })}
+        {renderScheduleSection({
+          key: "completed",
+          title: "Completed",
+          tasks: scheduleGroups.completed,
+          collapsible: true,
+          collapsed: collapsedSections.completed,
+          toggle: toggleScheduleSection
+        })}
       </View>
       {/* LEGEND */}
       <View style={styles.legend}>
@@ -263,18 +390,30 @@ export default function GrowLogCalendarScreen({ navigation }) {
           {selectedEntries.length > 0 && (
             <View style={styles.section}>
               <Text style={styles.sectionTitle}>🌱 Grow Log Entries</Text>
-              {selectedEntries.map((e) => (
+              {selectedEntries.map((e) => {
+                const growId = typeof e.grow === "object" ? e.grow?._id : e.grow;
+                const growName =
+                  (typeof e.grow === "object" ? e.grow?.name : growMap[growId]) || null;
+                return (
                 <TouchableOpacity
                   key={e._id}
                   style={styles.entryItem}
                   onPress={() => navigation.navigate("GrowLogDetail", { id: e._id })}
                 >
-                  <Text style={styles.entryTitle}>{e.title || "Untitled Entry"}</Text>
+                  <View style={styles.entryHeader}>
+                    <Text style={styles.entryTitle}>{e.title || "Untitled Entry"}</Text>
+                    {growName ? (
+                      <View style={styles.entryPill}>
+                        <Text style={styles.entryPillText}>{growName}</Text>
+                      </View>
+                    ) : null}
+                  </View>
                   <Text style={styles.entryNotes} numberOfLines={1}>
                     {e.notes}
                   </Text>
                 </TouchableOpacity>
-              ))}
+              );
+              })}
             </View>
           )}
 
@@ -443,6 +582,26 @@ const styles = StyleSheet.create({
     borderBottomWidth: 1,
     borderBottomColor: "#ddd"
   },
+  entryHeader: {
+    flexDirection: "row",
+    alignItems: "center",
+    gap: 8,
+    marginBottom: 2,
+    flexWrap: "wrap"
+  },
+  entryPill: {
+    alignSelf: "flex-start",
+    backgroundColor: "#DCFCE7",
+    paddingHorizontal: 10,
+    paddingVertical: 3,
+    borderRadius: 999,
+    marginBottom: 4
+  },
+  entryPillText: {
+    color: "#166534",
+    fontSize: 12,
+    fontWeight: "600"
+  },
   entryTitle: {
     fontSize: 16,
     fontWeight: "600"
@@ -530,15 +689,98 @@ const styles = StyleSheet.create({
     marginBottom: 12,
     lineHeight: 20
   },
-  infoButton: {
-    alignSelf: "flex-start",
-    backgroundColor: "#4338CA",
-    paddingHorizontal: 14,
-    paddingVertical: 8,
-    borderRadius: 8
+  scheduleCard: {
+    backgroundColor: "#fff",
+    borderRadius: 12,
+    padding: 16,
+    borderWidth: 1,
+    borderColor: "#E5E7EB",
+    marginBottom: 20
   },
-  infoButtonText: {
-    color: "#fff",
+  scheduleTitle: {
+    fontSize: 20,
+    fontWeight: "700",
+    marginBottom: 4,
+    color: "#111827"
+  },
+  scheduleCopy: {
+    color: "#4B5563",
+    fontSize: 13,
+    marginBottom: 12,
+    lineHeight: 18
+  },
+  scheduleSection: {
+    paddingVertical: 8,
+    borderTopWidth: 1,
+    borderTopColor: "#F3F4F6"
+  },
+  scheduleSectionHeader: {
+    flexDirection: "row",
+    alignItems: "center",
+    justifyContent: "space-between",
+    marginBottom: 8
+  },
+  scheduleSectionTitle: {
+    fontSize: 16,
+    fontWeight: "600",
+    color: "#1F2937"
+  },
+  scheduleCount: {
+    fontSize: 14,
+    color: "#6B7280",
+    fontWeight: "500"
+  },
+  collapseButton: {
+    paddingHorizontal: 10,
+    paddingVertical: 4,
+    borderRadius: 999,
+    backgroundColor: "#F3F4F6"
+  },
+  collapseButtonText: {
+    fontSize: 12,
+    color: "#374151",
     fontWeight: "600"
+  },
+  scheduleTask: {
+    flexDirection: "row",
+    alignItems: "center",
+    backgroundColor: "#F9FAFB",
+    borderRadius: 8,
+    padding: 12,
+    borderWidth: 1,
+    borderColor: "#E5E7EB",
+    gap: 12
+  },
+  scheduleTaskTitle: {
+    fontSize: 15,
+    fontWeight: "600",
+    color: "#111827"
+  },
+  taskDue: {
+    fontSize: 12,
+    color: "#6B7280",
+    marginTop: 2
+  },
+  taskCompleteBtn: {
+    width: 36,
+    height: 36,
+    borderRadius: 18,
+    backgroundColor: "#10B981",
+    justifyContent: "center",
+    alignItems: "center"
+  },
+  taskCompleteBtnText: {
+    color: "#fff",
+    fontSize: 18,
+    fontWeight: "700"
+  },
+  taskDoneLabel: {
+    color: "#10B981",
+    fontWeight: "600"
+  },
+  scheduleHint: {
+    fontSize: 12,
+    color: "#6B7280",
+    marginTop: 6
   }
 });
