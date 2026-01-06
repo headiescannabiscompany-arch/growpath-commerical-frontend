@@ -19,11 +19,13 @@ export const ROUTES = {
     LIST: `${PREFIX}/grows`,
     CREATE: `${PREFIX}/grows`,
     ENTRIES: (id) => `${PREFIX}/grows/${id}/entries`,
-    ENTRY_PHOTO: (id) => `${PREFIX}/grows/${id}/entries/photo`
+    ENTRY_PHOTO: (id) => `${PREFIX}/grows/${id}/entries/photo`,
+    ADD_PLANT: (id) => `${PREFIX}/grows/${id}/plants`
   },
   PLANTS: {
     LIST: `${PREFIX}/plants`,
     CREATE: `${PREFIX}/plants`,
+    UPLOAD_PHOTO: `${PREFIX}/plants/upload-photo`,
     DETAIL: (id) => `${PREFIX}/plants/${id}`,
     LOGS: (id) => `${PREFIX}/plants/${id}/logs`,
     STATS: (id) => `${PREFIX}/plants/${id}/stats`,

@@ -6,17 +6,41 @@ import {
   TouchableOpacity,
   Image,
   ScrollView,
-  Alert
+  Alert,
+  Switch,
+  Modal
 } from "react-native";
 
 import * as ImagePicker from "expo-image-picker";
 import ScreenContainer from "../components/ScreenContainer";
+import StageSlider from "../components/StageSlider";
 import { createEntry, getEntry, updateEntry, autoTagEntry } from "../api/growlog";
+import { listGrows } from "../api/grows";
+
+const stageMap = {
+  seedling: "Seedling",
+  veg: "Vegetative",
+  vegetative: "Vegetative",
+  flower: "Flower",
+  flowering: "Flower",
+  drying: "Drying",
+  curing: "Curing"
+};
+
+const stageReverseMap = {
+  Seedling: "seedling",
+  Vegetative: "veg",
+  Flower: "flower",
+  Drying: "drying",
+  Curing: "curing"
+};
 
 export default function GrowLogEntryScreen({ route, navigation }) {
   const entryId = route.params?.id || null;
   const initialDate =
     route.params?.date || new Date().toISOString().split("T")[0];
+  const initialGrowId = route.params?.grow || route.params?.growId || null;
+  const initialPlantId = route.params?.plant || route.params?.plantId || null;
 
   const [loading, setLoading] = useState(false);
 
@@ -24,10 +48,19 @@ export default function GrowLogEntryScreen({ route, navigation }) {
   const [notes, setNotes] = useState("");
   const [photos, setPhotos] = useState([]);
   const [entryDate, setEntryDate] = useState(initialDate);
+  const [selectedGrowId, setSelectedGrowId] = useState(initialGrowId);
+  const [selectedPlantIds, setSelectedPlantIds] = useState(
+    initialPlantId ? [initialPlantId] : []
+  );
+  const [grows, setGrows] = useState([]);
+  const [growsLoading, setGrowsLoading] = useState(true);
 
   const [strain, setStrain] = useState("");
   const [breeder, setBreeder] = useState("");
   const [stage, setStage] = useState("veg");
+  const [updateStageEnabled, setUpdateStageEnabled] = useState(false);
+  const [pendingPayload, setPendingPayload] = useState(null);
+  const [showStageConfirm, setShowStageConfirm] = useState(false);
 
   const [week, setWeek] = useState("");
   const [day, setDay] = useState("");
@@ -83,6 +116,59 @@ export default function GrowLogEntryScreen({ route, navigation }) {
     }
   }, []);
 
+  useEffect(() => {
+    loadGrows();
+  }, []);
+
+  useEffect(() => {
+    if (!selectedGrowId) {
+      setSelectedPlantIds([]);
+      return;
+    }
+    const grow = grows.find((g) => g._id === selectedGrowId);
+    if (!grow || !Array.isArray(grow.plants)) {
+      setSelectedPlantIds([]);
+      return;
+    }
+    setSelectedPlantIds((prev) =>
+      prev.filter((id) => grow.plants.some((plant) => (plant._id || plant) === id))
+    );
+  }, [selectedGrowId, grows]);
+
+  useEffect(() => {
+    if (selectedGrowId || selectedPlantIds.length === 0) return;
+    const grow = grows.find(
+      (g) => Array.isArray(g.plants) && g.plants.some((p) => selectedPlantIds.includes(p._id || p))
+    );
+    if (grow) {
+      setSelectedGrowId(grow._id);
+    }
+  }, [grows, selectedGrowId, selectedPlantIds]);
+
+  useEffect(() => {
+    if (!selectedGrowId && updateStageEnabled) {
+      setUpdateStageEnabled(false);
+    }
+  }, [selectedGrowId, updateStageEnabled]);
+
+  useEffect(() => {
+    const summary = resolveCurrentStageLabel();
+    if (summary === "Mixed" && updateStageEnabled) {
+      setUpdateStageEnabled(false);
+    }
+  }, [selectedGrowId, selectedPlantIds, grows, updateStageEnabled]);
+
+  useEffect(() => {
+    if (!updateStageEnabled || !selectedGrowId) return;
+    const summary = resolveCurrentStageLabel();
+    if (summary && summary !== "Mixed") {
+      const normalized = stageReverseMap[summary] || summary.toLowerCase();
+      if (normalized) {
+        setStage(normalized);
+      }
+    }
+  }, [selectedGrowId, selectedPlantIds, updateStageEnabled]);
+
   async function loadEntry() {
     setLoading(true);
     const res = await getEntry(entryId);
@@ -106,6 +192,14 @@ export default function GrowLogEntryScreen({ route, navigation }) {
     }
 
     setTags(e.tags || []);
+    setSelectedGrowId(e.grow || null);
+    if (Array.isArray(e.plants) && e.plants.length) {
+      setSelectedPlantIds(e.plants.map((p) => p?._id || p).filter(Boolean));
+    } else if (e.plant) {
+      setSelectedPlantIds([e.plant]);
+    } else {
+      setSelectedPlantIds([]);
+    }
 
     // Load environment data if exists
     if (e.environment) {
@@ -141,6 +235,26 @@ export default function GrowLogEntryScreen({ route, navigation }) {
     setLoading(false);
   }
 
+  async function loadGrows() {
+    try {
+      setGrowsLoading(true);
+      const response = await listGrows();
+      const list = Array.isArray(response)
+        ? response
+        : Array.isArray(response?.data)
+          ? response.data
+          : Array.isArray(response?.items)
+            ? response.items
+            : [];
+      setGrows(list);
+    } catch (err) {
+      console.warn("Failed to load grows:", err?.message || err);
+      setGrows([]);
+    } finally {
+      setGrowsLoading(false);
+    }
+  }
+
   // 📌 Add Photo
   async function addPhoto() {
     const result = await ImagePicker.launchImageLibraryAsync({
@@ -164,7 +278,22 @@ export default function GrowLogEntryScreen({ route, navigation }) {
     }
   }
 
-  // 📌 Save Entry
+  async function submitEntry(payload) {
+    try {
+      setLoading(true);
+      if (entryId) {
+        await updateEntry(entryId, payload);
+      } else {
+        await createEntry(payload);
+      }
+      navigation.goBack();
+    } catch (err) {
+      Alert.alert("Error", err.message);
+    } finally {
+      setLoading(false);
+    }
+  }
+
   async function handleSave() {
     if (!title.trim()) {
       return Alert.alert("Missing Title", "Please add a title for this entry.");
@@ -211,22 +340,21 @@ export default function GrowLogEntryScreen({ route, navigation }) {
         }
       }
     };
+    payload.grow = selectedGrowId || null;
+    payload.plants = selectedPlantIds;
+    payload.plant = selectedPlantIds.length === 1 ? selectedPlantIds[0] : null;
+    payload.applyStageToPlants = Boolean(updateStageEnabled);
 
-    try {
-      setLoading(true);
-
-      if (entryId) {
-        await updateEntry(entryId, payload);
-      } else {
-        await createEntry(payload);
+    if (updateStageEnabled) {
+      if (!selectedGrowId) {
+        return Alert.alert("Select a grow", "Choose a grow to update plant stages.");
       }
-
-      setLoading(false);
-      navigation.goBack();
-    } catch (err) {
-      Alert.alert("Error", err.message);
-      setLoading(false);
+      setPendingPayload(payload);
+      setShowStageConfirm(true);
+      return;
     }
+
+    await submitEntry(payload);
   }
 
   // 📌 AI auto-tagging
@@ -253,6 +381,59 @@ export default function GrowLogEntryScreen({ route, navigation }) {
       setLoading(false);
       Alert.alert("Error", err.message);
     }
+  }
+
+  async function confirmStageUpdate() {
+    const payload = pendingPayload;
+    setShowStageConfirm(false);
+    setPendingPayload(null);
+    if (payload) {
+      await submitEntry(payload);
+    }
+  }
+
+  function cancelStageUpdate() {
+    setShowStageConfirm(false);
+    setPendingPayload(null);
+  }
+
+  function resolveCurrentStageLabel(growPlants = null) {
+    if (!selectedGrowId) return null;
+    const grow = grows.find((g) => g._id === selectedGrowId);
+    if (!grow || !Array.isArray(grow.plants) || grow.plants.length === 0) {
+      return grow?.stage ? stageMap[grow.stage.toLowerCase()] || grow.stage : null;
+    }
+    const relevantPlants =
+      selectedPlantIds.length > 0
+        ? (growPlants || grow.plants).filter((plant) =>
+            selectedPlantIds.includes(plant._id || plant.id)
+          )
+        : growPlants || grow.plants;
+    if (!relevantPlants.length) {
+      return grow.stage ? stageMap[grow.stage.toLowerCase()] || grow.stage : null;
+    }
+    const plantStages = relevantPlants
+      .map((plant) => stageMap[plant.stage?.toLowerCase()] || plant.stage)
+      .filter(Boolean);
+    if (plantStages.length === 0) {
+      return grow.stage ? stageMap[grow.stage.toLowerCase()] || grow.stage : null;
+    }
+    const uniqueStages = Array.from(new Set(plantStages));
+    if (uniqueStages.length === 1) {
+      return uniqueStages[0];
+    }
+    return "Mixed";
+  }
+
+  function renderCurrentStageSummary() {
+    if (!selectedGrowId) return null;
+    const summary = resolveCurrentStageLabel();
+    if (!summary) return null;
+    return (
+      <Text style={styles.helperText}>
+        Current stage: {summary === "Mixed" ? "Mixed" : summary}
+      </Text>
+    );
   }
 
   return (
@@ -302,42 +483,177 @@ export default function GrowLogEntryScreen({ route, navigation }) {
           </TouchableOpacity>
         </ScrollView>
 
-        {/* Genetics Section */}
-        <View style={styles.geneticsSection}>
-          <Text style={styles.sectionTitle}>🧬 Plant Genetics</Text>
+        {/* Grow & Plant Linking */}
+        <View style={styles.linkSection}>
+          <Text style={styles.label}>Link to a Grow (optional)</Text>
+          {growsLoading ? (
+            <Text style={styles.helperText}>Loading your grows…</Text>
+          ) : grows.length === 0 ? (
+            <Text style={styles.helperText}>
+              Create a grow from the Plants tab to link entries here.
+            </Text>
+          ) : (
+            <View style={styles.pillRow}>
+              <TouchableOpacity
+                style={[
+                  styles.selectorPill,
+                  !selectedGrowId && styles.selectorPillActive
+                ]}
+                onPress={() => {
+                  setSelectedGrowId(null);
+                  setSelectedPlantIds([]);
+                }}
+              >
+                <Text
+                  style={[
+                    styles.selectorPillText,
+                    !selectedGrowId && styles.selectorPillTextActive
+                  ]}
+                >
+                  No Grow
+                </Text>
+              </TouchableOpacity>
+              {grows.map((grow) => (
+                <TouchableOpacity
+                  key={grow._id}
+                  style={[
+                    styles.selectorPill,
+                    selectedGrowId === grow._id && styles.selectorPillActive
+                  ]}
+                  onPress={() => {
+                    setSelectedGrowId((prev) => {
+                      const next = prev === grow._id ? null : grow._id;
+                      if (!next) setSelectedPlantIds([]);
+                      return next;
+                    });
+                  }}
+                >
+                  <Text
+                    style={[
+                      styles.selectorPillText,
+                      selectedGrowId === grow._id && styles.selectorPillTextActive
+                    ]}
+                  >
+                    {grow.name || grow.title || "Grow"}
+                  </Text>
+                </TouchableOpacity>
+                ))}
+            </View>
+          )}
 
-          <Text style={styles.label}>Strain</Text>
-          <TextInput
-            style={styles.input}
-            value={strain}
-            onChangeText={setStrain}
-            placeholder="Blueberry Muffin, Gelato #33…"
-          />
-
-          <Text style={styles.label}>Breeder</Text>
-          <TextInput
-            style={styles.input}
-            value={breeder}
-            onChangeText={setBreeder}
-            placeholder="Mephisto, Ethos, In House Genetics…"
-          />
+          {selectedGrowId ? (
+            <>
+              <Text style={[styles.label, { marginTop: 10 }]}>
+                Attach a plant (optional)
+              </Text>
+              {growsLoading ? (
+                <Text style={styles.helperText}>Loading plants…</Text>
+              ) : (() => {
+                const grow = grows.find((g) => g._id === selectedGrowId);
+                if (!grow || !Array.isArray(grow.plants) || grow.plants.length === 0) {
+                  return (
+                    <Text style={styles.helperText}>
+                      This grow does not have any plants yet.
+                    </Text>
+                  );
+                }
+                return (
+                  <View style={styles.pillRow}>
+                    <TouchableOpacity
+                      style={[
+                        styles.selectorPill,
+                        selectedPlantIds.length === 0 && styles.selectorPillActive
+                      ]}
+                      onPress={() => setSelectedPlantIds([])}
+                    >
+                      <Text
+                        style={[
+                          styles.selectorPillText,
+                          selectedPlantIds.length === 0 && styles.selectorPillTextActive
+                        ]}
+                      >
+                        Entire Grow
+                      </Text>
+                    </TouchableOpacity>
+                    {grow.plants.map((plant) => {
+                      const id = plant._id || plant.id;
+                      const isActive = selectedPlantIds.includes(id);
+                      return (
+                        <TouchableOpacity
+                          key={id}
+                          style={[
+                            styles.selectorPill,
+                            isActive && styles.selectorPillActive
+                          ]}
+                          onPress={() => {
+                            setSelectedPlantIds((prev) => {
+                              if (prev.includes(id)) {
+                                return prev.filter((pid) => pid !== id);
+                              }
+                              return [...prev, id];
+                            });
+                          }}
+                        >
+                          <Text
+                            style={[
+                              styles.selectorPillText,
+                              isActive && styles.selectorPillTextActive
+                            ]}
+                          >
+                            {plant.name || plant.strain || "Plant"}
+                          </Text>
+                        </TouchableOpacity>
+                      );
+                    })}
+                  </View>
+                );
+              })()}
+            </>
+          ) : null}
         </View>
 
         {/* Stage Picker */}
-        <Text style={styles.label}>Stage</Text>
-        <View style={styles.stageRow}>
-          {["seedling", "veg", "flower"].map((s) => (
-            <TouchableOpacity
-              key={s}
-              style={[styles.stageButton, stage === s && styles.stageButtonActive]}
-              onPress={() => setStage(s)}
-            >
-              <Text style={stage === s ? styles.stageTextActive : styles.stageText}>
-                {s}
-              </Text>
-            </TouchableOpacity>
-          ))}
+        <View style={styles.stageHeader}>
+          <View style={{ flex: 1 }}>
+            <Text style={styles.label}>Update Stage</Text>
+            <Text style={styles.helperText}>
+              Toggle on to adjust the grow stage and optionally sync it to your plants.
+            </Text>
+          </View>
+          <Switch
+            value={updateStageEnabled}
+            onValueChange={(next) => {
+              const summary = resolveCurrentStageLabel();
+              if (summary === "Mixed" && next) {
+                Alert.alert("Multiple stages detected", "Select specific plants before updating.");
+                return;
+              }
+              if (next && summary && summary !== "Mixed") {
+                const normalized = stageReverseMap[summary] || summary.toLowerCase();
+                if (normalized) {
+                  setStage(normalized);
+                }
+              }
+              setUpdateStageEnabled(next);
+            }}
+            disabled={resolveCurrentStageLabel() === "Mixed"}
+          />
         </View>
+        {updateStageEnabled ? (
+          <>
+            {!selectedGrowId ? (
+              <Text style={[styles.helperText, { color: "#b45309" }]}>
+                Select a grow above before updating stage.
+              </Text>
+            ) : null}
+            <StageSlider
+              value={stageMap[stage] || resolveCurrentStageLabel() || "Vegetative"}
+              onChange={(option) => setStage(stageReverseMap[option] || option.toLowerCase())}
+              disabled={!selectedGrowId}
+            />
+          </>
+        ) : null}
+        {renderCurrentStageSummary()}
 
         {/* Week & Day */}
         <View style={styles.row}>
@@ -667,6 +983,30 @@ export default function GrowLogEntryScreen({ route, navigation }) {
           </Text>
         </TouchableOpacity>
       </ScrollView>
+      <Modal visible={showStageConfirm} transparent animationType="fade" onRequestClose={cancelStageUpdate}>
+        <View style={styles.modalOverlay}>
+          <View style={styles.modalContent}>
+            <Text style={styles.modalTitle}>Update plant stages?</Text>
+            <Text style={styles.modalBody}>
+              This will set{" "}
+              {selectedPlantIds.length === 0
+                ? "all plants in this grow"
+                : selectedPlantIds.length === 1
+                  ? "the selected plant"
+                  : `${selectedPlantIds.length} selected plants`}{" "}
+              to {stageMap[stage] || stage}.
+            </Text>
+            <View style={styles.modalButtons}>
+              <TouchableOpacity style={[styles.modalButton, styles.modalButtonSecondary]} onPress={cancelStageUpdate}>
+                <Text style={styles.modalButtonTextSecondary}>Cancel</Text>
+              </TouchableOpacity>
+              <TouchableOpacity style={[styles.modalButton, styles.modalButtonPrimary]} onPress={confirmStageUpdate}>
+                <Text style={styles.modalButtonTextPrimary}>Confirm</Text>
+              </TouchableOpacity>
+            </View>
+          </View>
+        </View>
+      </Modal>
     </ScreenContainer>
   );
 }
@@ -693,17 +1033,6 @@ const styles = {
     justifyContent: "center",
     alignItems: "center"
   },
-  stageRow: { flexDirection: "row", marginTop: 5 },
-  stageButton: {
-    paddingHorizontal: 12,
-    paddingVertical: 6,
-    borderRadius: 8,
-    backgroundColor: "#eaeaea",
-    marginRight: 10
-  },
-  stageButtonActive: { backgroundColor: "#2ecc71" },
-  stageText: { color: "#555" },
-  stageTextActive: { color: "#fff" },
   row: { flexDirection: "row", marginTop: 10 },
   tagsContainer: { flexDirection: "row", flexWrap: "wrap", marginTop: 5 },
   tag: {
@@ -717,6 +1046,95 @@ const styles = {
   tagSelected: { backgroundColor: "#2ecc71" },
   tagText: { color: "#333" },
   tagTextSelected: { color: "#fff" },
+  linkSection: {
+    marginTop: 20,
+    padding: 12,
+    backgroundColor: "#f7f7f7",
+    borderRadius: 12
+  },
+  helperText: {
+    color: "#666",
+    marginTop: 4
+  },
+  stageHeader: {
+    flexDirection: "row",
+    alignItems: "center",
+    marginTop: 10,
+    gap: 12
+  },
+  pillRow: {
+    flexDirection: "row",
+    flexWrap: "wrap",
+    marginTop: 8
+  },
+  selectorPill: {
+    paddingHorizontal: 12,
+    paddingVertical: 6,
+    borderRadius: 20,
+    borderWidth: 1,
+    borderColor: "#ccc",
+    backgroundColor: "#fff",
+    marginRight: 8,
+    marginBottom: 8
+  },
+  selectorPillActive: {
+    backgroundColor: "#2ecc71",
+    borderColor: "#2ecc71"
+  },
+  selectorPillText: {
+    color: "#333",
+    fontWeight: "600"
+  },
+  selectorPillTextActive: {
+    color: "#fff"
+  },
+  modalOverlay: {
+    flex: 1,
+    backgroundColor: "rgba(0,0,0,0.4)",
+    justifyContent: "center",
+    alignItems: "center",
+    padding: 24
+  },
+  modalContent: {
+    backgroundColor: "#fff",
+    borderRadius: 16,
+    padding: 20,
+    width: "100%"
+  },
+  modalTitle: {
+    fontSize: 18,
+    fontWeight: "700",
+    marginBottom: 10
+  },
+  modalBody: {
+    fontSize: 14,
+    color: "#333",
+    marginBottom: 20
+  },
+  modalButtons: {
+    flexDirection: "row",
+    justifyContent: "flex-end",
+    gap: 12
+  },
+  modalButton: {
+    paddingVertical: 10,
+    paddingHorizontal: 16,
+    borderRadius: 8
+  },
+  modalButtonSecondary: {
+    backgroundColor: "#e5e7eb"
+  },
+  modalButtonPrimary: {
+    backgroundColor: "#059669"
+  },
+  modalButtonTextSecondary: {
+    color: "#374151",
+    fontWeight: "600"
+  },
+  modalButtonTextPrimary: {
+    color: "#fff",
+    fontWeight: "600"
+  },
   aiButton: {
     marginTop: 10,
     backgroundColor: "#3498db",

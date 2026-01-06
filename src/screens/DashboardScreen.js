@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from "react";
+import React, { useState, useEffect, useCallback } from "react";
 import {
   View,
   Text,
@@ -13,10 +13,13 @@ import {
 import ScreenContainer from "../components/ScreenContainer";
 import { colors, spacing, radius, typography } from "../theme/theme";
 import { useAuth } from "../context/AuthContext";
-import { useNavigation } from "@react-navigation/native";
+import { useNavigation, useFocusEffect } from "@react-navigation/native";
 import { getPlants } from "../api/plants";
-import { getTrending, getFeed } from "../api/posts";
+import { listGrows } from "../api/grows";
+import { getFeed } from "../api/posts";
+import { getTrendingPosts } from "../api/forum";
 import { normalizePostList } from "../utils/posts";
+import { getTasks } from "../api/tasks";
 
 const { width } = Dimensions.get("window");
 
@@ -40,6 +43,49 @@ function getCategoryColor(index) {
   return palette[index % palette.length];
 }
 
+function summarizeTasks(tasks = []) {
+  const startOfDay = new Date();
+  startOfDay.setHours(0, 0, 0, 0);
+  const endOfDay = new Date(startOfDay);
+  endOfDay.setHours(23, 59, 59, 999);
+
+  let dueToday = 0;
+  let overdue = 0;
+  let completedToday = 0;
+
+  tasks.forEach((task) => {
+    const dueDate = task.dueDate ? new Date(task.dueDate) : null;
+    if (!task.completed && dueDate instanceof Date && !Number.isNaN(dueDate)) {
+      const normalizedDue = new Date(dueDate);
+      normalizedDue.setHours(0, 0, 0, 0);
+      if (normalizedDue < startOfDay) {
+        overdue += 1;
+      } else if (normalizedDue.getTime() === startOfDay.getTime()) {
+        dueToday += 1;
+      }
+    }
+
+    if (task.completed && task.completedAt) {
+      const completedAt = new Date(task.completedAt);
+      if (
+        completedAt instanceof Date &&
+        !Number.isNaN(completedAt) &&
+        completedAt >= startOfDay &&
+        completedAt <= endOfDay
+      ) {
+        completedToday += 1;
+      }
+    }
+  });
+
+  return {
+    dueToday,
+    overdue,
+    completedToday,
+    total: dueToday + overdue + completedToday
+  };
+}
+
 export default function DashboardScreen() {
   const navigation = useNavigation();
   const {
@@ -51,8 +97,17 @@ export default function DashboardScreen() {
     setHasNavigatedAwayFromHome
   } = useAuth();
   const [plants, setPlants] = useState([]);
-  const [loading, setLoading] = useState(true);
+  const [plantsLoading, setPlantsLoading] = useState(true);
+  const [grows, setGrows] = useState([]);
+  const [growsLoading, setGrowsLoading] = useState(true);
   const [trending, setTrending] = useState([]);
+  const [tasksLoading, setTasksLoading] = useState(true);
+  const [taskStats, setTaskStats] = useState({
+    dueToday: 0,
+    overdue: 0,
+    completedToday: 0,
+    total: 0
+  });
   
   // Feed State
   const [feedPosts, setFeedPosts] = useState([]);
@@ -68,9 +123,21 @@ export default function DashboardScreen() {
 
   useEffect(() => {
     loadPlants();
+    loadGrows();
     loadTrending();
+    loadTaskStats();
     loadFeed(1);
   }, []);
+
+  useFocusEffect(
+    useCallback(() => {
+      loadPlants();
+      loadGrows();
+      loadTrending();
+      loadTaskStats();
+      loadFeed(1);
+    }, [])
+  );
 
   useEffect(() => {
     const unsubscribe = navigation.addListener("blur", () => {
@@ -97,18 +164,48 @@ export default function DashboardScreen() {
       console.error("Failed to load plants:", err);
       setPlants([]);
     } finally {
-      setLoading(false);
+      setPlantsLoading(false);
+    }
+  }
+
+  async function loadGrows() {
+    try {
+      const data = await listGrows();
+      const list = Array.isArray(data)
+        ? data
+        : Array.isArray(data?.items)
+          ? data.items
+          : [];
+      setGrows(list);
+    } catch (err) {
+      console.error("Failed to load grows:", err);
+      setGrows([]);
+    } finally {
+      setGrowsLoading(false);
+    }
+  }
+
+  async function loadTaskStats() {
+    try {
+      const response = await getTasks();
+      const tasks = Array.isArray(response?.data)
+        ? response.data
+        : Array.isArray(response)
+          ? response
+          : [];
+      setTaskStats(summarizeTasks(tasks));
+    } catch (err) {
+      console.error("Failed to load tasks:", err);
+      setTaskStats({ dueToday: 0, overdue: 0, completedToday: 0, total: 0 });
+    } finally {
+      setTasksLoading(false);
     }
   }
 
   async function loadTrending() {
     try {
-      const data = await getTrending();
-      const list = Array.isArray(data)
-        ? data
-        : Array.isArray(data?.posts)
-          ? data.posts
-          : [];
+      const data = await getTrendingPosts(1);
+      const list = Array.isArray(data) ? data : Array.isArray(data?.posts) ? data.posts : [];
       setTrending(list.slice(0, 4));
     } catch (err) {
       console.error("Failed to load trending:", err);
@@ -157,12 +254,21 @@ export default function DashboardScreen() {
     </TouchableOpacity>
   );
 
-  const StatCard = ({ icon, value, label, color }) => (
-    <View style={[styles.statCard, { borderLeftColor: color }]}>
+  const StatCard = ({ icon, value, label, color, sublabel, disabled = false }) => (
+    <View
+      style={[
+        styles.statCard,
+        { borderLeftColor: disabled ? colors.border : color },
+        disabled && styles.statCardDisabled
+      ]}
+    >
       <Text style={styles.statIcon}>{icon}</Text>
       <View style={styles.statContent}>
-        <Text style={styles.statValue}>{value}</Text>
-        <Text style={styles.statLabel}>{label}</Text>
+        <Text style={[styles.statValue, disabled && styles.statValueDisabled]}>{value}</Text>
+        <Text style={[styles.statLabel, disabled && styles.statLabelDisabled]}>{label}</Text>
+        {sublabel ? (
+          <Text style={[styles.statSubLabel, disabled && styles.statLabelDisabled]}>{sublabel}</Text>
+        ) : null}
       </View>
     </View>
   );
@@ -186,6 +292,62 @@ export default function DashboardScreen() {
     </TouchableOpacity>
   );
 
+  const getGrowDayCount = (grow) => {
+    if (!grow) return null;
+    if (typeof grow.daysOld === "number") return grow.daysOld;
+    const startDate = grow.startDate || grow.startedAt || grow.createdAt;
+    if (!startDate) return null;
+    const diff = Date.now() - new Date(startDate).getTime();
+    if (Number.isNaN(diff) || diff < 0) return null;
+    return Math.max(0, Math.floor(diff / 86400000));
+  };
+
+  const GrowCard = ({ grow }) => {
+    const growDays = getGrowDayCount(grow);
+    return (
+      <TouchableOpacity
+        style={styles.growCard}
+        onPress={() => navigation.navigate("GrowJournal", { grow })}
+      >
+        <View style={styles.growImagePlaceholder}>
+          <Text style={styles.growImageEmoji}>🌿</Text>
+          {growDays !== null && (
+            <View style={styles.growDaysBadge}>
+              <Text style={styles.growDaysValue}>{`Day ${growDays}`}</Text>
+              <Text style={styles.growDaysLabel}>since start</Text>
+            </View>
+          )}
+        </View>
+        <View style={styles.growCardBody}>
+          <View style={styles.growCardHeader}>
+            <Text style={styles.growCardName} numberOfLines={1}>
+              {grow.name || grow.title || "Unnamed Grow"}
+            </Text>
+            {grow.stage ? (
+              <View style={styles.growStageBadge}>
+                <Text style={styles.growStageText}>{grow.stage}</Text>
+              </View>
+            ) : null}
+          </View>
+          {grow.breeder ? (
+            <Text style={styles.growCardMeta} numberOfLines={1}>
+              {`Breeder: ${grow.breeder}`}
+            </Text>
+          ) : null}
+        </View>
+      </TouchableOpacity>
+    );
+  };
+
+  const longestGrowDays = (() => {
+    if (!grows.length) return 0;
+    const durations = grows
+      .map((grow) => getGrowDayCount(grow))
+      .filter((value) => typeof value === "number");
+    if (!durations.length) return 0;
+    return Math.max(...durations);
+  })();
+
   const TrendingCard = ({ category, icon, color, count, onPress }) => (
     <TouchableOpacity style={styles.trendingCard} onPress={onPress}>
       <View style={[styles.trendingIcon, { backgroundColor: color + "20" }]}>
@@ -193,9 +355,6 @@ export default function DashboardScreen() {
       </View>
       <Text style={styles.trendingCategory}>{category}</Text>
       <Text style={styles.trendingCount}>{count}</Text>
-      <View style={[styles.trendingBadge, { backgroundColor: color }]}>
-        <Text style={styles.trendingBadgeText}>🔥 Hot</Text>
-      </View>
     </TouchableOpacity>
   );
 
@@ -344,14 +503,22 @@ export default function DashboardScreen() {
             />
             <StatCard
               icon="📅"
-              value={
-                plants.length > 0 ? Math.max(...plants.map((p) => p.daysOld || 0)) : 0
-              }
+              value={longestGrowDays}
               label="Longest Grow"
               color="#10B981"
             />
-            <StatCard icon="✅" value="0" label="Tasks Today" color="#F59E0B" />
-            <StatCard icon="🏆" value="0" label="Harvests" color="#8B5CF6" />
+            <StatCard
+              icon="✅"
+              value={tasksLoading ? "…" : taskStats.total}
+              label="Tasks Today"
+              color="#F59E0B"
+              sublabel={
+                tasksLoading
+                  ? "Calculating…"
+                  : `${taskStats.dueToday} due • ${taskStats.overdue} overdue • ${taskStats.completedToday} done`
+              }
+            />
+            <StatCard icon="🏆" value="Coming Soon" label="Harvests" color="#8B5CF6" disabled />
           </View>
         </View>
 
@@ -363,14 +530,14 @@ export default function DashboardScreen() {
               <Text style={styles.seeAll}>See All →</Text>
             </TouchableOpacity>
           </View>
-          {loading ? (
+          {growsLoading ? (
             <View style={styles.emptyState}>
               <Text style={styles.emptyStateText}>Loading...</Text>
             </View>
-          ) : plants.length === 0 ? (
+          ) : grows.length === 0 ? (
             <View style={styles.emptyState}>
               <Text style={styles.emptyStateIcon}>🌱</Text>
-              <Text style={styles.emptyStateTitle}>No Plants Yet</Text>
+              <Text style={styles.emptyStateTitle}>No Grows Yet</Text>
               <Text style={styles.emptyStateText}>
                 Start your first grow to see it here
               </Text>
@@ -378,7 +545,7 @@ export default function DashboardScreen() {
                 style={styles.emptyStateButton}
                 onPress={() => navigation.navigate("PlantsTab")}
               >
-                <Text style={styles.emptyStateButtonText}>Add Your First Plant</Text>
+                <Text style={styles.emptyStateButtonText}>Add Your First Grow</Text>
               </TouchableOpacity>
             </View>
           ) : (
@@ -387,8 +554,8 @@ export default function DashboardScreen() {
               showsHorizontalScrollIndicator={false}
               style={styles.plantsScroll}
             >
-              {plants.slice(0, 5).map((plant) => (
-                <PlantCard key={plant._id} plant={plant} />
+              {grows.slice(0, 5).map((grow) => (
+                <GrowCard key={grow._id} grow={grow} />
               ))}
             </ScrollView>
           )}
@@ -408,16 +575,31 @@ export default function DashboardScreen() {
             style={styles.plantsScroll}
           >
             {trending.length > 0 ? (
-              trending.map((post, idx) => (
-                <TrendingCard
-                  key={post._id || idx}
-                  category={post.title || post.category || "Post"}
-                  icon={getCategoryIcon(post.category)}
-                  color={getCategoryColor(idx)}
-                  count={`${post.likes?.length || 0} likes`}
-                  onPress={() => navigation.navigate("ForumTab")}
-                />
-              ))
+              trending.map((post, idx) => {
+                const headline =
+                  post.content?.trim() ||
+                  post.title ||
+                  (post.tags && post.tags.length ? `#${post.tags[0]}` : "Post");
+                const snippet =
+                  post.content && post.content.length > 80
+                    ? `${post.content.slice(0, 77)}…`
+                    : post.content || "";
+                return (
+                  <TrendingCard
+                    key={post._id || idx}
+                    category={headline}
+                    icon={getCategoryIcon(post.tags?.[0] || post.category)}
+                    color={getCategoryColor(idx)}
+                    count={snippet || `${post.likes?.length || 0} likes`}
+                    onPress={() =>
+                      navigation.navigate("ForumPostDetail", {
+                        id: post._id,
+                        post
+                      })
+                    }
+                  />
+                );
+              })
             ) : (
               <>
                 <TrendingCard
@@ -558,6 +740,9 @@ const styles = StyleSheet.create({
     boxShadow: "0px 2px 8px rgba(0, 0, 0, 0.05)",
     elevation: 2
   },
+  statCardDisabled: {
+    backgroundColor: "#f1f1f1"
+  },
   statIcon: {
     fontSize: 32,
     marginRight: spacing(2)
@@ -570,8 +755,19 @@ const styles = StyleSheet.create({
     fontWeight: "700",
     color: colors.text
   },
+  statValueDisabled: {
+    color: colors.textSoft
+  },
   statLabel: {
     fontSize: 12,
+    color: colors.textSoft,
+    marginTop: spacing(0.5)
+  },
+  statLabelDisabled: {
+    color: "#9CA3AF"
+  },
+  statSubLabel: {
+    fontSize: 11,
     color: colors.textSoft,
     marginTop: spacing(0.5)
   },
@@ -629,6 +825,75 @@ const styles = StyleSheet.create({
     paddingHorizontal: spacing(2),
     paddingVertical: spacing(0.5),
     borderRadius: radius.pill
+  },
+  growCard: {
+    width: 210,
+    backgroundColor: colors.card,
+    borderRadius: radius.card,
+    marginRight: spacing(3),
+    boxShadow: "0px 4px 12px rgba(0, 0, 0, 0.08)",
+    elevation: 4,
+    overflow: "hidden"
+  },
+  growImagePlaceholder: {
+    height: 130,
+    backgroundColor: colors.accent + "15",
+    alignItems: "center",
+    justifyContent: "center",
+    position: "relative"
+  },
+  growImageEmoji: {
+    fontSize: 62
+  },
+  growDaysBadge: {
+    position: "absolute",
+    bottom: spacing(2),
+    right: spacing(2),
+    backgroundColor: "rgba(0,0,0,0.65)",
+    paddingHorizontal: spacing(2),
+    paddingVertical: spacing(1),
+    borderRadius: radius.card
+  },
+  growDaysValue: {
+    color: "#FFFFFF",
+    fontSize: 12,
+    fontWeight: "700"
+  },
+  growDaysLabel: {
+    color: "#FFFFFF",
+    fontSize: 10,
+    opacity: 0.8
+  },
+  growCardBody: {
+    padding: spacing(3)
+  },
+  growCardHeader: {
+    flexDirection: "row",
+    alignItems: "center",
+    justifyContent: "space-between",
+    marginBottom: spacing(1)
+  },
+  growCardName: {
+    fontSize: 16,
+    fontWeight: "700",
+    color: colors.text,
+    flex: 1,
+    marginRight: spacing(2)
+  },
+  growStageBadge: {
+    backgroundColor: colors.accent + "20",
+    paddingHorizontal: spacing(2),
+    paddingVertical: spacing(0.5),
+    borderRadius: radius.pill
+  },
+  growStageText: {
+    fontSize: 11,
+    fontWeight: "600",
+    color: colors.accent
+  },
+  growCardMeta: {
+    fontSize: 12,
+    color: colors.textSoft
   },
   emptyState: {
     backgroundColor: colors.card,
@@ -693,17 +958,6 @@ const styles = StyleSheet.create({
     fontSize: 12,
     color: colors.textSoft,
     marginBottom: spacing(2)
-  },
-  trendingBadge: {
-    paddingHorizontal: spacing(2),
-    paddingVertical: spacing(0.5),
-    borderRadius: radius.pill,
-    alignSelf: "flex-start"
-  },
-  trendingBadgeText: {
-    fontSize: 11,
-    fontWeight: "600",
-    color: "#FFFFFF"
   },
   proBanner: {
     backgroundColor: "linear-gradient(135deg, #667eea 0%, #764ba2 100%)",

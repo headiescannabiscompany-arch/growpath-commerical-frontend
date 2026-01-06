@@ -32,6 +32,8 @@ import GuildCodeScreen from "../screens/GuildCodeScreen";
 import SubcategoryBrowserScreen from "../screens/SubcategoryBrowserScreen";
 import CategoryBrowserScreen from "../screens/CategoryBrowserScreen";
 import CategoryCoursesScreen from "../screens/CategoryCoursesScreen";
+import GrowAddPlantScreen from "../screens/GrowAddPlantScreen";
+import GrowEditPlantScreen from "../screens/GrowEditPlantScreen";
 
 const Stack = createNativeStackNavigator();
 
@@ -150,6 +152,8 @@ export default function RootNavigator() {
         options={{ headerShown: false }}
       />
       <Stack.Screen name="GrowJournal" component={GrowJournalScreen} />
+      <Stack.Screen name="GrowAddPlant" component={GrowAddPlantScreen} options={{ title: "Add Plant" }} />
+      <Stack.Screen name="GrowEditPlant" component={GrowEditPlantScreen} options={{ title: "Edit Plant" }} />
       <Stack.Screen name="Subscribe" component={SubscribeScreen} />
       <Stack.Screen name="CourseDetail" component={CourseDetailScreen} />
       <Stack.Screen name="Course" component={CourseScreen} options={{ title: "Course" }} />

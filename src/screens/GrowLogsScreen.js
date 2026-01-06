@@ -1,18 +1,13 @@
 import React, { useEffect, useState, useMemo } from "react";
-import {
-  View,
-  Text,
-  TextInput,
-  TouchableOpacity,
-  FlatList,
-  StyleSheet,
-  Alert
-} from "react-native";
+import { View, Text, TextInput, TouchableOpacity, FlatList, StyleSheet, Alert } from "react-native";
+import * as ImagePicker from "expo-image-picker";
 import ScreenContainer from "../components/ScreenContainer";
 import Card from "../components/Card";
 import PrimaryButton from "../components/PrimaryButton";
 import { colors, spacing, radius } from "../theme/theme";
 import { createGrow, listGrows } from "../api/grows";
+import { uploadPlantPhoto } from "../api/plants";
+import PlantCard from "../components/PlantCard";
 
 const hasValue = (value) => {
   if (typeof value === "string") {
@@ -29,13 +24,23 @@ const pruneSection = (section) => {
   return Object.keys(cleaned).length ? cleaned : undefined;
 };
 
+const buildEmptyPlant = () => ({
+  key: `${Date.now()}-${Math.random().toString(36).slice(2, 7)}`,
+  name: "",
+  strain: "",
+  breeder: "",
+  stage: "",
+  photoUrl: null,
+  photoPreview: null,
+  uploadingPhoto: false
+});
+
 export default function GrowLogsScreen({ navigation }) {
   const [loading, setLoading] = useState(false);
   const [grows, setGrows] = useState([]);
   const [newName, setNewName] = useState("");
-  const [strain, setStrain] = useState("");
-  const [breeder, setBreeder] = useState("");
-  const [stage, setStage] = useState("");
+  const [newBreeder, setNewBreeder] = useState("");
+  const [plantForms, setPlantForms] = useState([buildEmptyPlant()]);
 
   const [stageFilter, setStageFilter] = useState("");
   const [breederFilter, setBreederFilter] = useState("");
@@ -144,17 +149,97 @@ export default function GrowLogsScreen({ navigation }) {
     return Object.keys(cleaned).length ? cleaned : undefined;
   };
 
+  const sanitizedPlants = () => {
+    const cleaned = plantForms
+      .map((plant) => ({
+        name: (plant.name || "").trim(),
+        strain: (plant.strain || "").trim(),
+        breeder: (plant.breeder || "").trim(),
+        stage: (plant.stage || "").trim(),
+        photos: plant.photoUrl ? [plant.photoUrl] : []
+      }))
+      .map((plant) => ({
+        name: plant.name || undefined,
+        strain: plant.strain || undefined,
+        breeder: plant.breeder || undefined,
+        stage: plant.stage || undefined,
+        photos: plant.photos && plant.photos.length ? plant.photos : undefined
+      }))
+      .filter(
+        (plant) =>
+          plant.name || plant.strain || plant.breeder || plant.stage || (plant.photos && plant.photos.length)
+      );
+    return cleaned;
+  };
+
+  const addPlantForm = () => {
+    setPlantForms((prev) => [...prev, buildEmptyPlant()]);
+  };
+
+  const updatePlantField = (key, field, value) => {
+    setPlantForms((prev) =>
+      prev.map((plant) => (plant.key === key ? { ...plant, [field]: value } : plant))
+    );
+  };
+
+  const updatePlantState = (key, updates) => {
+    setPlantForms((prev) =>
+      prev.map((plant) => (plant.key === key ? { ...plant, ...updates } : plant))
+    );
+  };
+
+  const removePlantForm = (key) => {
+    setPlantForms((prev) => (prev.length <= 1 ? prev : prev.filter((plant) => plant.key !== key)));
+  };
+
+  async function handleAddPlantPhoto(key) {
+    const perm = await ImagePicker.requestMediaLibraryPermissionsAsync();
+    if (!perm.granted) {
+      Alert.alert("Permission needed", "Photo library access is required to add plant photos.");
+      return;
+    }
+    const result = await ImagePicker.launchImageLibraryAsync({
+      mediaTypes: ImagePicker.MediaTypeOptions.Images,
+      quality: 0.7
+    });
+    if (result.canceled) return;
+    const asset = result.assets?.[0];
+    if (!asset?.uri) return;
+    const file = {
+      uri: asset.uri,
+      type: asset.mimeType || "image/jpeg",
+      name: asset.fileName || asset.uri.split("/").pop() || "plant-photo.jpg"
+    };
+    updatePlantState(key, { uploadingPhoto: true });
+    try {
+      const uploaded = await uploadPlantPhoto(file);
+      if (uploaded?.url) {
+        updatePlantState(key, { photoUrl: uploaded.url, photoPreview: asset.uri });
+      }
+    } catch (err) {
+      Alert.alert("Upload failed", err.message || "Unable to upload plant photo.");
+    } finally {
+      updatePlantState(key, { uploadingPhoto: false });
+    }
+  }
+
   async function handleAddGrow() {
     if (!newName.trim()) return Alert.alert("Missing name");
+    const plantPayloads = sanitizedPlants();
+    if (!plantPayloads.length) {
+      return Alert.alert(
+        "Add plant details",
+        "Each grow needs at least one plant. Add a plant name or strain before saving."
+      );
+    }
 
     try {
       const environment = buildEnvironmentPayload();
       const growData = {
         name: newName.trim(),
-        strain: strain.trim() || undefined,
-        breeder: breeder.trim() || undefined,
-        stage: stage.trim() || undefined,
-        ...(environment ? { environment } : {})
+        breeder: newBreeder.trim() || undefined,
+        ...(environment ? { environment } : {}),
+        plants: plantPayloads
       };
 
       const grow = await createGrow(growData);
@@ -162,9 +247,8 @@ export default function GrowLogsScreen({ navigation }) {
 
       // Reset all fields
       setNewName("");
-      setStrain("");
-      setBreeder("");
-      setStage("");
+      setNewBreeder("");
+      setPlantForms([buildEmptyPlant()]);
       setLightPPFD("");
       setLightDLI("");
       setLightModel("");
@@ -216,7 +300,7 @@ export default function GrowLogsScreen({ navigation }) {
         <TextInput
           value={searchFilter}
           onChangeText={setSearchFilter}
-          placeholder="Search name or strain"
+          placeholder="Search grow name or breeder"
           style={styles.input}
           placeholderTextColor={colors.textSoft}
         />
@@ -242,38 +326,35 @@ export default function GrowLogsScreen({ navigation }) {
           style={styles.input}
           placeholderTextColor={colors.textSoft}
         />
-
-        {/* Genetics Section */}
-        <View style={styles.geneticsSection}>
-          <Text style={styles.sectionTitle}>🧬 Plant Genetics</Text>
-
-          <Text style={styles.fieldLabel}>Strain</Text>
-          <TextInput
-            value={strain}
-            onChangeText={setStrain}
-            placeholder="Blueberry Muffin, Gelato #33, etc."
-            style={styles.input}
-            placeholderTextColor={colors.textSoft}
-          />
-
-          <Text style={styles.fieldLabel}>Breeder</Text>
-          <TextInput
-            value={breeder}
-            onChangeText={setBreeder}
-            placeholder="Barney's Farm, Mephisto, etc."
-            style={styles.input}
-            placeholderTextColor={colors.textSoft}
-          />
-        </View>
-
-        <Text style={styles.fieldLabel}>Growth Stage</Text>
         <TextInput
-          value={stage}
-          onChangeText={setStage}
-          placeholder="Seedling, Veg, Flower, etc."
+          value={newBreeder}
+          onChangeText={setNewBreeder}
+          placeholder="Breeder"
           style={styles.input}
           placeholderTextColor={colors.textSoft}
         />
+
+        <View style={styles.geneticsSection}>
+          <Text style={styles.sectionTitle}>🧬 Plants in this grow</Text>
+
+          {plantForms.map((plant, index) => (
+            <PlantCard
+              key={plant.key}
+              mode="create"
+              title={`Plant ${index + 1}`}
+              value={plant}
+              allowRemove={plantForms.length > 1}
+              onRemove={() => removePlantForm(plant.key)}
+              onChange={(field, text) => updatePlantField(plant.key, field, text)}
+              onAddPhoto={() => handleAddPlantPhoto(plant.key)}
+              uploadingPhoto={plant.uploadingPhoto}
+            />
+          ))}
+
+          <TouchableOpacity style={styles.addPlantButton} onPress={addPlantForm}>
+            <Text style={styles.addPlantButtonText}>+ Add another plant</Text>
+          </TouchableOpacity>
+        </View>
 
         {/* Advanced Environment Toggle */}
         <TouchableOpacity
@@ -503,8 +584,25 @@ export default function GrowLogsScreen({ navigation }) {
             <TouchableOpacity onPress={() => openGrow(item)}>
               <Card style={{ marginBottom: spacing(4) }} testID={`grow-card-${item._id}`}>
                 <Text style={styles.growName}>{item.name}</Text>
-                <Text style={styles.sub}>{item.strain}</Text>
-                <Text style={styles.sub}>{item.stage}</Text>
+                {Array.isArray(item.plants) && item.plants.length > 0 ? (
+                  <View style={styles.plantPillWrap}>
+                    {item.plants.map((plant) => (
+                      <View key={plant._id || plant.name} style={styles.plantPill}>
+                        <Text style={styles.plantPillName}>
+                          {plant.name || plant.strain || "Unnamed Plant"}
+                        </Text>
+                        {plant.strain ? (
+                          <Text style={styles.plantPillMeta}>{plant.strain}</Text>
+                        ) : null}
+                        {plant.stage ? (
+                          <Text style={styles.plantPillMeta}>{plant.stage}</Text>
+                        ) : null}
+                      </View>
+                    ))}
+                  </View>
+                ) : item.stage ? (
+                  <Text style={styles.sub}>{item.stage}</Text>
+                ) : null}
               </Card>
             </TouchableOpacity>
           )}
@@ -551,6 +649,18 @@ const styles = StyleSheet.create({
     borderColor: "rgba(16, 185, 129, 0.2)",
     marginBottom: spacing(4)
   },
+  addPlantButton: {
+    padding: spacing(3),
+    borderRadius: radius.pill,
+    borderWidth: 1,
+    borderColor: colors.accent,
+    alignItems: "center",
+    marginTop: spacing(2)
+  },
+  addPlantButtonText: {
+    color: colors.accent,
+    fontWeight: "600"
+  },
   sectionTitle: {
     fontSize: 16,
     fontWeight: "700",
@@ -592,6 +702,26 @@ const styles = StyleSheet.create({
     fontWeight: "700",
     marginBottom: spacing(1),
     color: colors.text
+  },
+  plantPillWrap: {
+    flexDirection: "row",
+    flexWrap: "wrap",
+    gap: spacing(1)
+  },
+  plantPill: {
+    backgroundColor: "rgba(16, 185, 129, 0.12)",
+    borderRadius: radius.pill,
+    paddingHorizontal: spacing(2),
+    paddingVertical: spacing(1),
+    marginBottom: spacing(1)
+  },
+  plantPillName: {
+    fontWeight: "600",
+    color: colors.text
+  },
+  plantPillMeta: {
+    fontSize: 12,
+    color: colors.textSoft
   },
   sub: {
     color: colors.textSoft,

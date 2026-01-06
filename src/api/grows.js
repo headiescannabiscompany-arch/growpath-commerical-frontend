@@ -41,3 +41,10 @@ export function uploadEntryPhoto(growId, file) {
 
   return postMultipart(ROUTES.GROWS.ENTRY_PHOTO(growId), form);
 }
+
+export function addPlantToGrow(growId, plant) {
+  return api(ROUTES.GROWS.ADD_PLANT(growId), {
+    method: "POST",
+    body: JSON.stringify(plant)
+  });
+}
