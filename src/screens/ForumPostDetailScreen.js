@@ -55,11 +55,38 @@ export default function ForumPostDetailScreen({ route, navigation }) {
   });
 
   const likeMutation = useMutation({
-    mutationFn: (liked) => (liked ? unlikePost(id) : likePost(id)),
-    onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ["forum-post", id] });
-      queryClient.invalidateQueries({ queryKey: ["forum-feed"] });
+    mutationFn: ({ liked }) => (liked ? unlikePost(id) : likePost(id)),
+    onMutate: async ({ liked }) => {
+      await queryClient.cancelQueries({ queryKey: ["forum-post", id] });
+      const previousPost = queryClient.getQueryData(["forum-post", id]);
+      if (previousPost && currentUserId) {
+        const optimistic = applyLikeMetadata(previousPost, currentUserId, undefined, !liked);
+        queryClient.setQueryData(["forum-post", id], optimistic);
+      }
+      return { previousPost, liked };
     },
+    onError: (_err, _vars, context) => {
+      if (context?.previousPost) {
+        queryClient.setQueryData(["forum-post", id], context.previousPost);
+      }
+    },
+    onSuccess: (data, { liked }) => {
+      if (currentUserId) {
+        const serverCount =
+          typeof data?.likeCount === "number"
+            ? data.likeCount
+            : typeof data?.likes === "number"
+              ? data.likes
+              : undefined;
+        queryClient.setQueryData(["forum-post", id], (existing) =>
+          applyLikeMetadata(existing, currentUserId, serverCount, !liked)
+        );
+      }
+    },
+    onSettled: () => {
+      queryClient.invalidateQueries({ queryKey: ["forum-feed"] });
+      queryClient.invalidateQueries({ queryKey: ["forum-feed", "trending"] });
+    }
   });
 
   const commentMutation = useMutation({
@@ -82,7 +109,7 @@ export default function ForumPostDetailScreen({ route, navigation }) {
   async function toggleLike() {
     if (!post || !currentUserId) return;
     const liked = userHasLiked(post, currentUserId);
-    likeMutation.mutate(liked);
+    likeMutation.mutate({ liked });
   }
 
   async function submitComment() {
