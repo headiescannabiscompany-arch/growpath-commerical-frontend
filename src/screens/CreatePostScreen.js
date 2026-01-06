@@ -14,6 +14,8 @@ import ScreenContainer from "../components/ScreenContainer";
 import { createPost } from "../api/posts";
 import { useAuth } from "../context/AuthContext.js";
 import { useNavigation, useRoute } from "@react-navigation/native";
+import GrowInterestPicker from "../components/GrowInterestPicker";
+import { buildEmptyTierSelection, flattenTierSelections } from "../utils/growInterests";
 
 export default function CreatePostScreen() {
   const [text, setText] = useState("");
@@ -22,6 +24,10 @@ export default function CreatePostScreen() {
   const navigation = useNavigation();
   const route = useRoute();
   const onPostCreated = route.params?.onPostCreated;
+  const { user } = useAuth();
+  const [growInterestSelections, setGrowInterestSelections] = useState(
+    buildEmptyTierSelection()
+  );
 
   async function pickImage() {
     const result = await ImagePicker.launchImageLibraryAsync({
@@ -43,6 +49,10 @@ export default function CreatePostScreen() {
     setSubmitting(true);
     const form = new FormData();
     form.append("text", text);
+    const selectedTags = flattenTierSelections(growInterestSelections);
+    if (selectedTags.length) {
+      form.append("growTags", JSON.stringify(selectedTags));
+    }
 
     for (const photo of photos) {
       // For web/TypeScript compatibility, use Blob and filename
@@ -73,7 +83,7 @@ export default function CreatePostScreen() {
   }
 
   return (
-    <ScreenContainer>
+    <ScreenContainer scroll>
       <Text style={{ fontSize: 22, fontWeight: "700" }}>Create Post</Text>
 
       <TextInput
@@ -111,6 +121,14 @@ export default function CreatePostScreen() {
           style={{ width: "100%", height: 180, marginTop: 10 }}
         />
       ))}
+
+      <GrowInterestPicker
+        title="Grow Interests relevant to this post"
+        helperText="Tag your update so growers with similar interests can discover it."
+        value={growInterestSelections}
+        onChange={setGrowInterestSelections}
+        defaultExpanded={false}
+      />
 
       <TouchableOpacity
         style={{

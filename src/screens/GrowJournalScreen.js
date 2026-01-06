@@ -10,14 +10,29 @@ import { addEntry, uploadEntryPhoto } from "../api/grows";
 import { getEntries as getGrowEntries } from "../api/growlog";
 import { useAuth } from "../context/AuthContext";
 import PlantCard from "../components/PlantCard";
+import GrowInterestPicker from "../components/GrowInterestPicker";
+import {
+  buildEmptyTierSelection,
+  flattenTierSelections,
+  groupTagsByTier
+} from "../utils/growInterests";
 
 export default function GrowJournalScreen({ route, navigation }) {
   const { isPro } = useAuth();
   const growRef = useRef(route.params?.grow);
+  const GROW_TAG_TIERS = [1, 2, 3, 5, 6];
 
   useEffect(() => {
     if (route.params?.grow) {
       growRef.current = route.params.grow;
+    }
+  }, [route.params?.grow]);
+
+  useEffect(() => {
+    if (route.params?.grow?.growTags) {
+      setGrowInterestSelections(groupTagsByTier(route.params.grow.growTags));
+    } else if (route.params?.grow) {
+      setGrowInterestSelections(buildEmptyTierSelection());
     }
   }, [route.params?.grow]);
 
@@ -29,6 +44,9 @@ export default function GrowJournalScreen({ route, navigation }) {
   const [uploadingPhoto, setUploadingPhoto] = useState(false);
   const [loadingEntries, setLoadingEntries] = useState(false);
   const [selectedPlantIds, setSelectedPlantIds] = useState([]);
+  const [growInterestSelections, setGrowInterestSelections] = useState(() =>
+    groupTagsByTier(grow?.growTags || [])
+  );
   const growId = grow?._id;
   if (!grow) {
     return (
@@ -88,6 +106,7 @@ export default function GrowJournalScreen({ route, navigation }) {
     try {
       setAddingEntry(true);
       const payload = { note: note.trim() };
+      payload.growTags = flattenTierSelections(growInterestSelections);
       if (selectedPlantIds.length > 0) {
         payload.plants = selectedPlantIds;
       }
@@ -128,7 +147,10 @@ export default function GrowJournalScreen({ route, navigation }) {
         setUploadingPhoto(true);
         const uploaded = await uploadEntryPhoto(growId, file);
         if (uploaded?.url) {
-          const payload = { photos: [uploaded.url] };
+          const payload = {
+            photos: [uploaded.url],
+            growTags: flattenTierSelections(growInterestSelections)
+          };
           if (selectedPlantIds.length > 0) {
             payload.plants = selectedPlantIds;
           }
@@ -240,6 +262,15 @@ export default function GrowJournalScreen({ route, navigation }) {
             </View>
           </View>
         ) : null}
+
+        <GrowInterestPicker
+          title="Grow Interests relevant to this entry"
+          helperText="Select the crops, environments, and goals this update relates to."
+          enabledTierIds={GROW_TAG_TIERS}
+          value={growInterestSelections}
+          onChange={setGrowInterestSelections}
+          defaultExpanded={Boolean(route.params?.entryId)}
+        />
 
         <TextInput
           value={note}

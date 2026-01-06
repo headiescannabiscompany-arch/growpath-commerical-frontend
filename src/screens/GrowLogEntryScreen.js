@@ -17,6 +17,12 @@ import StageSlider from "../components/StageSlider";
 import { createEntry, getEntry, updateEntry, autoTagEntry } from "../api/growlog";
 import { listGrows } from "../api/grows";
 import GrowPlantSelector from "../components/GrowPlantSelector";
+import GrowInterestPicker from "../components/GrowInterestPicker";
+import {
+  buildEmptyTierSelection,
+  flattenTierSelections,
+  groupTagsByTier
+} from "../utils/growInterests";
 
 const stageMap = {
   seedling: "Seedling",
@@ -67,6 +73,11 @@ export default function GrowLogEntryScreen({ route, navigation }) {
   const [day, setDay] = useState("");
 
   const [tags, setTags] = useState([]);
+  const [growInterestSelections, setGrowInterestSelections] = useState(
+    buildEmptyTierSelection()
+  );
+  const isEditing = Boolean(entryId);
+  const GROW_TAG_TIERS = [1, 2, 3, 5, 6];
 
   // Environment data (advanced)
   const [showAdvanced, setShowAdvanced] = useState(false);
@@ -170,6 +181,16 @@ export default function GrowLogEntryScreen({ route, navigation }) {
     }
   }, [selectedGrowId, selectedPlantIds, updateStageEnabled]);
 
+  useEffect(() => {
+    if (entryId || !selectedGrowId) return;
+    const grow = grows.find((g) => g._id === selectedGrowId);
+    if (grow?.growTags) {
+      setGrowInterestSelections(groupTagsByTier(grow.growTags));
+    } else {
+      setGrowInterestSelections(buildEmptyTierSelection());
+    }
+  }, [entryId, selectedGrowId, grows]);
+
   async function loadEntry() {
     setLoading(true);
     const res = await getEntry(entryId);
@@ -193,6 +214,7 @@ export default function GrowLogEntryScreen({ route, navigation }) {
     }
 
     setTags(e.tags || []);
+    setGrowInterestSelections(groupTagsByTier(e.growTags || []));
     setSelectedGrowId(e.grow || null);
     if (Array.isArray(e.plants) && e.plants.length) {
       setSelectedPlantIds(e.plants.map((p) => p?._id || p).filter(Boolean));
@@ -279,6 +301,12 @@ export default function GrowLogEntryScreen({ route, navigation }) {
     }
   }
 
+  function resetEntryAssociations() {
+    setSelectedGrowId(null);
+    setSelectedPlantIds([]);
+    setGrowInterestSelections(buildEmptyTierSelection());
+  }
+
   async function submitEntry(payload) {
     try {
       setLoading(true);
@@ -286,6 +314,7 @@ export default function GrowLogEntryScreen({ route, navigation }) {
         await updateEntry(entryId, payload);
       } else {
         await createEntry(payload);
+        resetEntryAssociations();
       }
       navigation.goBack();
     } catch (err) {
@@ -355,6 +384,7 @@ export default function GrowLogEntryScreen({ route, navigation }) {
     payload.plants = selectedPlantIds;
     payload.plant = selectedPlantIds.length === 1 ? selectedPlantIds[0] : null;
     payload.applyStageToPlants = Boolean(updateStageEnabled);
+    payload.growTags = flattenTierSelections(growInterestSelections);
 
     if (updateStageEnabled) {
       if (!selectedGrowId) {
@@ -502,6 +532,15 @@ export default function GrowLogEntryScreen({ route, navigation }) {
           onSelectGrow={setSelectedGrowId}
           selectedPlantIds={selectedPlantIds}
           onSelectPlants={setSelectedPlantIds}
+        />
+
+        <GrowInterestPicker
+          title="Grow Interests"
+          helperText="Select the tiers that apply to this entry. Leave any tier empty."
+          enabledTierIds={GROW_TAG_TIERS}
+          value={growInterestSelections}
+          onChange={setGrowInterestSelections}
+          defaultExpanded={isEditing}
         />
 
         {/* Stage Picker */}

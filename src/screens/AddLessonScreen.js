@@ -11,7 +11,9 @@ import {
 import * as DocumentPicker from "expo-document-picker";
 import * as ImagePicker from "expo-image-picker";
 import ScreenContainer from "../components/ScreenContainer";
+import GrowInterestPicker from "../components/GrowInterestPicker";
 import { addLesson } from "../api/courses";
+import { buildEmptyTierSelection, flattenTierSelections } from "../utils/growInterests";
 
 export default function AddLessonScreen({ route, navigation }) {
   const { courseId } = route.params;
@@ -25,6 +27,9 @@ export default function AddLessonScreen({ route, navigation }) {
   const [pdfFile, setPdfFile] = useState(null);
   const [audioFile, setAudioFile] = useState(null);
   const [images, setImages] = useState([]);
+  const [growInterestSelections, setGrowInterestSelections] = useState(() =>
+    buildEmptyTierSelection()
+  );
 
   async function pickVideo() {
     try {
@@ -102,7 +107,8 @@ export default function AddLessonScreen({ route, navigation }) {
       order: order ? Number(order) : 1,
       content,
       videoUrl: videoFile ? videoFile.uri : videoUrl,
-      pdfUrl: pdfFile ? pdfFile.uri : pdfUrl
+      pdfUrl: pdfFile ? pdfFile.uri : pdfUrl,
+      growTags: flattenTierSelections(growInterestSelections)
       // Future: Add audioUrl, images array to lesson schema
     });
     navigation.goBack();
@@ -180,6 +186,14 @@ export default function AddLessonScreen({ route, navigation }) {
           ))}
         </View>
       )}
+
+      <GrowInterestPicker
+        title="Lesson Grow Tags"
+        helperText="Mark which growers will find this lesson relevant. Leave any tier empty."
+        value={growInterestSelections}
+        onChange={setGrowInterestSelections}
+        defaultExpanded={false}
+      />
 
       <TouchableOpacity style={styles.btn} onPress={submit}>
         <Text style={styles.btnText}>Save Lesson</Text>

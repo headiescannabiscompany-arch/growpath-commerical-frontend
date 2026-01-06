@@ -11,12 +11,23 @@ import {
 } from "react-native";
 import { useFocusEffect, useNavigation } from "@react-navigation/native";
 import ScreenContainer from "../components/ScreenContainer.js";
+import ForumFilters from "../components/ForumFilters";
 import { getFeed, likePost, unlikePost } from "../api/posts.js";
 import { useAuth } from "../context/AuthContext.js";
 import { applyLikeMetadata, normalizePostList, userHasLiked } from "../utils/posts.js";
 import useTabPressScrollReset from "../hooks/useTabPressScrollReset";
+import {
+  flattenGrowInterests,
+  filterPostsByInterests,
+  getTier1Metadata,
+  normalizeInterestList
+} from "../utils/growInterests";
+import { INTEREST_TIERS } from "../config/interests";
 
 const PAGE_SIZE = 15;
+const tierOneConfig = getTier1Metadata();
+const TIER1_ID = tierOneConfig?.id || "crops";
+const TIER1_TAGS = new Set(tierOneConfig?.options || []);
 
 export default function FeedScreen() {
   const navigation = useNavigation();
@@ -29,14 +40,90 @@ export default function FeedScreen() {
   const [loadingMore, setLoadingMore] = useState(false);
   const [refreshing, setRefreshing] = useState(false);
   const [hasMore, setHasMore] = useState(true);
+  const filtersInitializedRef = useRef(false);
+  const [activeFilters, setActiveFilters] = useState([]);
+  const [showFilters, setShowFilters] = useState(false);
+  const normalizedUserInterests = useMemo(() => {
+    if (!user?.growInterests) return {};
+    const mapped = {};
+    Object.entries(user.growInterests).forEach(([key, value]) => {
+      const normalized = normalizeInterestList(value);
+      if (normalized.length) {
+        mapped[key] = normalized;
+      }
+    });
+    return mapped;
+  }, [user?.growInterests]);
+  const userTier1Selections = normalizedUserInterests[TIER1_ID] || [];
+  const flattenedInterests = useMemo(
+    () => flattenGrowInterests(user?.growInterests || {}),
+    [user?.growInterests]
+  );
+  const tier1Filters = useMemo(
+    () => activeFilters.filter((tag) => TIER1_TAGS.has(tag)),
+    [activeFilters]
+  );
+  const otherFilters = useMemo(
+    () => activeFilters.filter((tag) => !TIER1_TAGS.has(tag)),
+    [activeFilters]
+  );
+  const tier1FilterSet = useMemo(() => new Set(tier1Filters), [tier1Filters]);
+  const otherFilterSet = useMemo(() => new Set(otherFilters), [otherFilters]);
+  const filterTiers = useMemo(() => {
+    return INTEREST_TIERS.map((tier) => {
+      const isTierOne = tier.tier === 1;
+      const tierSelections = normalizedUserInterests[tier.id] || [];
+      const options = isTierOne ? tierSelections : tier.options;
+      if (isTierOne && options.length === 0) return null;
+      return {
+        id: tier.id,
+        label: tier.label,
+        tier: tier.tier,
+        isTierOne,
+        options
+      };
+    }).filter(Boolean);
+  }, [normalizedUserInterests]);
   useTabPressScrollReset(() => {
     flatListRef.current?.scrollToOffset({ offset: 0, animated: false });
   });
 
-  const fetchPage = useCallback(async (pageNumber) => {
-    const response = await getFeed(pageNumber);
-    return normalizePostList(response);
-  }, []);
+  useEffect(() => {
+    if (user?.growInterests) {
+      setActiveFilters(flattenGrowInterests(user.growInterests));
+    } else {
+      setActiveFilters([]);
+    }
+  }, [user?.growInterests]);
+
+  const toggleFilter = (tag, tierId = null) => {
+    setActiveFilters((prev) => {
+      const exists = prev.includes(tag);
+      let next = exists ? prev.filter((t) => t !== tag) : [...prev, tag];
+
+      if (tierId === TIER1_ID && userTier1Selections.length > 0) {
+        const hasTier1Selected = next.some((value) => userTier1Selections.includes(value));
+        if (!hasTier1Selected) {
+          const withoutTier1 = next.filter((value) => !userTier1Selections.includes(value));
+          next = Array.from(new Set([...withoutTier1, ...userTier1Selections]));
+        }
+      }
+
+      return next;
+    });
+  };
+
+  const fetchPage = useCallback(
+    async (pageNumber) => {
+      const response = await getFeed(pageNumber, {
+        tier1: tier1Filters,
+        tags: otherFilters
+      });
+      const list = normalizePostList(response);
+      return filterPostsByInterests(list, tier1FilterSet, otherFilterSet);
+    },
+    [tier1Filters, otherFilters, tier1FilterSet, otherFilterSet]
+  );
 
   const loadInitial = useCallback(async () => {
     setLoading(true);
@@ -57,6 +144,14 @@ export default function FeedScreen() {
       loadInitial();
     }, [loadInitial])
   );
+
+  useEffect(() => {
+    if (filtersInitializedRef.current) {
+      loadInitial();
+    } else {
+      filtersInitializedRef.current = true;
+    }
+  }, [loadInitial]);
 
   const handleRefresh = useCallback(async () => {
     if (refreshing) return;
@@ -122,26 +217,45 @@ export default function FeedScreen() {
   );
 
   const renderHeader = () => (
-    <View style={styles.listHeader}>
-      <View>
-        <Text style={styles.feedTitle}>Community Feed</Text>
-        <Text style={styles.feedSubtitle}>
-          Share grow updates and see what other cultivators are working on.
-        </Text>
+    <View>
+      <View style={styles.listHeader}>
+        <View style={{ flex: 1 }}>
+          <Text style={styles.feedTitle}>Community Feed</Text>
+          <Text style={styles.feedSubtitle}>
+            Share grow updates and see what other cultivators are working on.
+          </Text>
+        </View>
+        <TouchableOpacity
+          testID="feed-create-post"
+          accessibilityRole="button"
+          style={[
+            styles.createBtn,
+            { backgroundColor: isPro ? "#10B981" : "#d1d5db" }
+          ]}
+          onPress={isPro ? openCreatePost : () => navigation.navigate("Subscription")}
+        >
+          <Text style={[styles.createBtnText, !isPro && { color: "#666" }]}>
+            {isPro ? "+ New Post" : "Go Pro to Post"}
+          </Text>
+        </TouchableOpacity>
       </View>
-      <TouchableOpacity
-        testID="feed-create-post"
-        accessibilityRole="button"
-        style={[
-          styles.createBtn,
-          { backgroundColor: isPro ? "#10B981" : "#d1d5db" }
-        ]}
-        onPress={isPro ? openCreatePost : () => navigation.navigate("Subscription")}
-      >
-        <Text style={[styles.createBtnText, !isPro && { color: "#666" }]}>
-          {isPro ? "+ New Post" : "Go Pro to Post"}
-        </Text>
-      </TouchableOpacity>
+      <View style={styles.feedHeaderActions}>
+        <TouchableOpacity
+          style={styles.filterToggle}
+          onPress={() => setShowFilters((prev) => !prev)}
+        >
+          <Text style={styles.filterToggleText}>
+            Filters {activeFilters.length > 0 ? `(${activeFilters.length})` : ""}{" "}
+            {showFilters ? "▲" : "▼"}
+          </Text>
+        </TouchableOpacity>
+      </View>
+      <ForumFilters
+        visible={showFilters}
+        tiers={filterTiers}
+        activeFilters={activeFilters}
+        onToggleFilter={toggleFilter}
+      />
     </View>
   );
 
@@ -258,9 +372,9 @@ export default function FeedScreen() {
         ListEmptyComponent={
           !loading ? (
             <View style={styles.emptyState}>
-              <Text style={styles.emptyTitle}>No posts yet</Text>
+              <Text style={styles.emptyTitle}>No posts match these interests.</Text>
               <Text style={styles.emptyText}>
-                Be the first to share an update about your grow.
+                Try expanding the filters or check back later for new updates.
               </Text>
             </View>
           ) : null
@@ -290,6 +404,20 @@ const styles = StyleSheet.create({
     padding: 12,
     backgroundColor: "#F0FDF4",
     borderRadius: 10
+  },
+  feedHeaderActions: {
+    flexDirection: "row",
+    justifyContent: "space-between",
+    alignItems: "center",
+    marginBottom: 12,
+    paddingHorizontal: 12
+  },
+  filterToggle: {
+    paddingVertical: 6
+  },
+  filterToggleText: {
+    color: "#10B981",
+    fontWeight: "600"
   },
   feedTitle: { fontSize: 22, fontWeight: "700", marginBottom: 4 },
   feedSubtitle: { color: "#4b5563", fontSize: 14 },

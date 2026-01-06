@@ -17,17 +17,29 @@ import {
   submitCourseForReview,
   updateCourse
 } from "../api/courses";
+import GrowInterestPicker from "../components/GrowInterestPicker";
+import {
+  buildEmptyTierSelection,
+  flattenTierSelections,
+  groupTagsByTier
+} from "../utils/growInterests";
 
 export default function ManageCourseScreen({ route, navigation }) {
   const { id } = route.params;
   const [course, setCourse] = useState(null);
   const [lessons, setLessons] = useState([]);
   const [publishLoading, setPublishLoading] = useState(false);
+  const [courseTagSelections, setCourseTagSelections] = useState(() =>
+    buildEmptyTierSelection()
+  );
+  const [savingTags, setSavingTags] = useState(false);
 
   async function load() {
     const res = await getCourse(id);
-    setCourse(res.course || res.data?.course || res);
+    const normalizedCourse = res.course || res.data?.course || res;
+    setCourse(normalizedCourse);
     setLessons(res.lessons || res.data?.lessons || []);
+    setCourseTagSelections(groupTagsByTier(normalizedCourse?.growTags || []));
   }
 
   useEffect(() => {
@@ -139,6 +151,27 @@ export default function ManageCourseScreen({ route, navigation }) {
     );
   }
 
+  const handleCourseTagsChange = (next) => {
+    setCourseTagSelections(next);
+  };
+
+  async function handleSaveCourseTags() {
+    if (!course) return;
+    setSavingTags(true);
+    try {
+      const updated = await updateCourse(course._id, {
+        growTags: flattenTierSelections(courseTagSelections)
+      });
+      setCourse(updated);
+      setCourseTagSelections(groupTagsByTier(updated?.growTags || []));
+      Alert.alert("Saved", "Course tags updated.");
+    } catch (err) {
+      Alert.alert("Error", err?.message || "Failed to update grow interests");
+    } finally {
+      setSavingTags(false);
+    }
+  }
+
   if (!course)
     return (
       <ScreenContainer>
@@ -155,6 +188,20 @@ export default function ManageCourseScreen({ route, navigation }) {
       <Text style={styles.title}>{course.title}</Text>
       <Text style={styles.sub}>{course.category || "Uncategorized"}</Text>
       <Text style={styles.desc}>{course.description}</Text>
+
+        <GrowInterestPicker
+          title="Grow Interest Tags"
+          helperText="Select the tiers that best describe this course. You can leave any tier empty."
+          value={courseTagSelections}
+          onChange={handleCourseTagsChange}
+        />
+      <TouchableOpacity
+        style={[styles.saveTagsBtn, savingTags && styles.saveTagsBtnDisabled]}
+        onPress={handleSaveCourseTags}
+        disabled={savingTags}
+      >
+        <Text style={styles.saveTagsText}>{savingTags ? "Saving…" : "Save Grow Tags"}</Text>
+      </TouchableOpacity>
 
       <View style={styles.row}>
         <Text style={styles.price}>
@@ -278,6 +325,21 @@ const styles = StyleSheet.create({
     alignItems: "center"
   },
   reviewText: { color: "white", fontWeight: "700" },
+  saveTagsBtn: {
+    backgroundColor: "#10B981",
+    paddingVertical: 12,
+    borderRadius: 10,
+    marginBottom: 24
+  },
+  saveTagsBtnDisabled: {
+    opacity: 0.7
+  },
+  saveTagsText: {
+    color: "#FFFFFF",
+    fontWeight: "700",
+    textAlign: "center",
+    fontSize: 16
+  },
   pendingBadge: {
     flex: 1,
     marginLeft: 8,
