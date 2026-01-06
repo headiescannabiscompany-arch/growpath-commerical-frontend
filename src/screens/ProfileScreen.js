@@ -19,6 +19,7 @@ import { updateCourse } from "../api/courses";
 import { useAuth } from "../context/AuthContext";
 import { getEntitlements } from "../utils/entitlements";
 import { resolveImageUrl } from "../utils/images";
+import GrowInterestsEditor from "../components/GrowInterestsEditor";
 
 const DEFAULT_PREFS = {
   forumNotifications: true,
@@ -36,7 +37,7 @@ function deriveNotificationPrefs(preferences) {
 }
 
 export default function ProfileScreen({ route, navigation }) {
-  const { user: currentUser, isPro: currentIsPro, isEntitled: currentIsEntitled } = useAuth();
+  const { user: currentUser, isPro: currentIsPro, isEntitled: currentIsEntitled, updateUser } = useAuth();
   const resolvedUserId =
     route?.params?.userId ||
     route?.params?.id ||
@@ -255,7 +256,7 @@ export default function ProfileScreen({ route, navigation }) {
               {profileIsPro
                 ? "✨ Pro Member"
                 : profileIsEntitled
-                  ? "Guild Member"
+                  ? "Forum Member"
                   : "Free Member"}
             </Text>
           </View>
@@ -481,6 +482,24 @@ export default function ProfileScreen({ route, navigation }) {
 
   const renderBottomCards = () => (
     <View>
+      {/* GROW INTERESTS (Own Profile Only) */}
+      {isOwnProfile && (
+        <View style={{ marginHorizontal: 20, marginBottom: 10 }}>
+          <GrowInterestsEditor
+            initialInterests={user.growInterests}
+            onSave={(updated) => {
+              // Optimistic update of local profile
+              setProfile((prev) => ({
+                ...prev,
+                user: { ...prev.user, growInterests: updated }
+              }));
+              // Update global auth context so Forum filter sees it immediately
+              updateUser({ growInterests: updated });
+            }}
+          />
+        </View>
+      )}
+
       {/* SUBSCRIPTION STATUS (Own Profile Only) */}
       {isOwnProfile && (
         <View style={styles.subscriptionCard}>
@@ -493,7 +512,7 @@ export default function ProfileScreen({ route, navigation }) {
                 {currentIsPro
                   ? "All features unlocked"
                   : currentIsEntitled 
-                    ? "Guild Access Active • Pro unlock available"
+                    ? "Forum Access Active • Pro unlock available"
                     : "Limited features • Upgrade to unlock AI & more"}
               </Text>
             </View>

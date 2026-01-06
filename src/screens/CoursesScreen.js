@@ -170,7 +170,7 @@ export default function CoursesScreen() {
           </Text>
           {!isGuildMember && (
             <Text style={styles.guildHint}>
-              Join a guild when you want crop-specific realms, while keeping your learning
+              Join the forum when you want crop-specific realms, while keeping your learning
               path focused on the fundamentals until you opt in.
             </Text>
           )}

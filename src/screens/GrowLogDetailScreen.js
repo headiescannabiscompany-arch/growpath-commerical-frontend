@@ -128,7 +128,7 @@ export default function GrowLogDetailScreen({ route, navigation }) {
             })
           }
         >
-          <Text style={styles.actionLargeText}>Share to Guild</Text>
+          <Text style={styles.actionLargeText}>Share to Forum</Text>
         </TouchableOpacity>
       </View>
 

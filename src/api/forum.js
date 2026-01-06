@@ -9,16 +9,26 @@ export function getPost(id) {
   return api(ROUTES.FORUM.DETAIL(id));
 }
 
-export function getLatestPosts(page = 1) {
-  return api(`${ROUTES.FORUM.FEED_LATEST}?page=${page}`);
+function buildForumFeedQuery(page = 1, tier1 = [], tags = []) {
+  const qs = new URLSearchParams({ page });
+  if (tier1 && tier1.length > 0) qs.append("tier1", tier1.join(","));
+  if (tags && tags.length > 0) qs.append("tags", tags.join(","));
+  return qs.toString();
 }
 
-export function getTrendingPosts(page = 1) {
-  return api(`${ROUTES.FORUM.FEED_TRENDING}?page=${page}`);
+export function getLatestPosts(page = 1, tier1 = [], tags = []) {
+  const qs = buildForumFeedQuery(page, tier1, tags);
+  return api(`${ROUTES.FORUM.FEED_LATEST}?${qs}`);
 }
 
-export function getFollowingPosts(page = 1) {
-  return api(`${ROUTES.FORUM.FEED_FOLLOWING}?page=${page}`);
+export function getTrendingPosts(page = 1, tier1 = [], tags = []) {
+  const qs = buildForumFeedQuery(page, tier1, tags);
+  return api(`${ROUTES.FORUM.FEED_TRENDING}?${qs}`);
+}
+
+export function getFollowingPosts(page = 1, tier1 = [], tags = []) {
+  const qs = buildForumFeedQuery(page, tier1, tags);
+  return api(`${ROUTES.FORUM.FEED_FOLLOWING}?${qs}`);
 }
 
 export function createPost(payload) {

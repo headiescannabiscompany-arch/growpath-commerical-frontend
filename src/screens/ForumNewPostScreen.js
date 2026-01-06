@@ -1,4 +1,4 @@
-import React, { useState } from "react";
+import React, { useState, useMemo } from "react";
 import {
   View,
   Text,
@@ -16,6 +16,7 @@ import ScreenContainer from "../components/ScreenContainer";
 import PrimaryButton from "../components/PrimaryButton";
 import { createPost } from "../api/forum";
 import { uploadImage } from "../api/uploads";
+import { getAllTags } from "../config/interests";
 
 const categoryOptions = [
   { key: "general", label: "General", desc: "Updates, questions, daily logs" },
@@ -25,17 +26,7 @@ const categoryOptions = [
   { key: "gear", label: "Gear & Setup", desc: "Lights, tents, hardware" }
 ];
 
-const tagOptions = [
-  "Vegetative",
-  "Flower",
-  "Propagation",
-  "Organic",
-  "Hydroponics",
-  "Pest Management",
-  "Diagnosis",
-  "Tips",
-  "Showcase"
-];
+const MASTER_TAGS = getAllTags();
 
 export default function ForumNewPostScreen({ route, navigation }) {
   const queryClient = useQueryClient();
@@ -48,7 +39,12 @@ export default function ForumNewPostScreen({ route, navigation }) {
   const [content, setContent] = useState(notesFromLog);
   const [photos, setPhotos] = useState(photosFromLog);
   const [strain, setStrain] = useState(strainFromLog);
-  const [tags, setTags] = useState(tagsFromLog);
+  
+  // Tagging state
+  const [tagInput, setTagInput] = useState("");
+  const [selectedTags, setSelectedTags] = useState(tagsFromLog);
+  const [suggestions, setSuggestions] = useState([]);
+
   const [category, setCategory] = useState("general");
   const [loading, setLoading] = useState(false);
 
@@ -74,21 +70,60 @@ export default function ForumNewPostScreen({ route, navigation }) {
   }
 
   // ---------------------------------------
-  // TOGGLE TAG
+  // TAGGING LOGIC
   // ---------------------------------------
-  function toggleTag(tag) {
-    if (tags.includes(tag)) {
-      setTags(tags.filter((t) => t !== tag));
-    } else {
-      setTags([...tags, tag]);
+  const handleTagTextChange = (text) => {
+    setTagInput(text);
+    if (!text.trim()) {
+      setSuggestions([]);
+      return;
     }
-  }
+    const query = text.toLowerCase();
+    const matches = MASTER_TAGS.filter(
+      (t) => t.toLowerCase().includes(query) && !selectedTags.includes(t)
+    ).slice(0, 5); // Limit suggestions
+    setSuggestions(matches);
+  };
+
+  const addTag = (tag) => {
+    if (!selectedTags.includes(tag)) {
+      setSelectedTags([...selectedTags, tag]);
+    }
+    setTagInput("");
+    setSuggestions([]);
+  };
+
+  const removeTag = (tag) => {
+    setSelectedTags(selectedTags.filter((t) => t !== tag));
+  };
 
   // ---------------------------------------
   // SUBMIT POST
   // ---------------------------------------
   async function handleSubmit() {
-    if (!content.trim() && photos.length === 0) {
+    let finalContent = content;
+    const finalTags = [...selectedTags];
+
+    // Process pending tag input if any
+    if (tagInput.trim()) {
+      const inputs = tagInput.split(",").map(t => t.trim()).filter(Boolean);
+      inputs.forEach(input => {
+        // Check exact match (case insensitive)
+        const match = MASTER_TAGS.find(t => t.toLowerCase() === input.toLowerCase());
+        if (match) {
+          if (!finalTags.includes(match)) finalTags.push(match);
+        } else {
+          // Invalid tag -> inject as hashtag
+          // Remove punctuation for cleanliness
+          const cleanTag = input.replace(/[^\w]/g, "");
+          if (cleanTag) {
+            finalContent += ` #${cleanTag}`;
+          }
+        }
+      });
+    }
+
+    if (!finalContent.trim() && photos.length === 0) {
       return Alert.alert("Empty Post", "Add text or at least one photo.");
     }
 
@@ -110,9 +145,9 @@ export default function ForumNewPostScreen({ route, navigation }) {
       }
 
       const payload = {
-        content,
+        content: finalContent,
         photos: uploadedPhotos,
-        tags,
+        tags: finalTags,
         strain,
         category,
         growLogId
@@ -134,7 +169,7 @@ export default function ForumNewPostScreen({ route, navigation }) {
 
   return (
     <ScreenContainer scroll>
-      <Text style={styles.header}>New Guild Post</Text>
+      <Text style={styles.header}>New Forum Post</Text>
 
       {/* TEXT INPUT */}
       <TextInput
@@ -182,24 +217,51 @@ export default function ForumNewPostScreen({ route, navigation }) {
         onChangeText={setStrain}
       />
 
-      {/* TAGS */}
+      {/* TAGS INPUT */}
       <Text style={styles.label}>Tags</Text>
-      <View style={styles.tagsContainer}>
-        {tagOptions.map((tag) => (
-          <TouchableOpacity
-            key={tag}
-            onPress={() => toggleTag(tag)}
-            style={[styles.tag, tags.includes(tag) && styles.tagSelected]}
-          >
-            <Text style={tags.includes(tag) ? styles.tagTextSelected : styles.tagText}>
-              {tag}
-            </Text>
+      <View style={styles.tagInputContainer}>
+        {selectedTags.map((tag) => (
+          <TouchableOpacity key={tag} onPress={() => removeTag(tag)} style={styles.selectedTag}>
+            <Text style={styles.selectedTagText}>{tag} ✕</Text>
           </TouchableOpacity>
         ))}
+        <TextInput
+          style={styles.tagInput}
+          placeholder={selectedTags.length === 0 ? "Type to search tags..." : "Add more..."}
+          value={tagInput}
+          onChangeText={handleTagTextChange}
+          onSubmitEditing={() => {
+             // Treat enter as comma
+             if(tagInput.trim()) {
+                // If exact match found in master, add it. Else add comma to trigger processing later?
+                // Actually handleSubmit handles leftover.
+                // But for UX, let's just clear and let submit handle it, OR try to resolve now.
+                // Let's resolve valid ones immediately for feedback.
+                const match = MASTER_TAGS.find(t => t.toLowerCase() === tagInput.trim().toLowerCase());
+                if (match) {
+                    addTag(match);
+                }
+             }
+          }}
+        />
       </View>
+      
+      {/* SUGGESTIONS */}
+      {suggestions.length > 0 && (
+        <View style={styles.suggestionsContainer}>
+          {suggestions.map((s) => (
+            <TouchableOpacity key={s} onPress={() => addTag(s)} style={styles.suggestionPill}>
+              <Text style={styles.suggestionText}>{s}</Text>
+            </TouchableOpacity>
+          ))}
+        </View>
+      )}
+      <Text style={styles.helperText}>
+        Custom tags will be converted to #hashtags in your post body.
+      </Text>
 
       {/* PHOTO GRID */}
-      <Text style={styles.label}>Photos</Text>
+      <Text style={[styles.label, { marginTop: 16 }]}>Photos</Text>
       <ScrollView
         horizontal
         showsHorizontalScrollIndicator={false}
@@ -245,27 +307,57 @@ const styles = StyleSheet.create({
     fontWeight: "600",
     marginBottom: 5
   },
-  tagsContainer: {
+  tagInputContainer: {
     flexDirection: "row",
     flexWrap: "wrap",
-    marginBottom: 10
+    backgroundColor: "#f3f3f3",
+    borderRadius: 10,
+    padding: 8,
+    minHeight: 50,
+    alignItems: "center",
+    gap: 8
   },
-  tag: {
-    backgroundColor: "#e0e0e0",
+  tagInput: {
+    flex: 1,
+    minWidth: 120,
+    fontSize: 15
+  },
+  selectedTag: {
+    backgroundColor: "#2ecc71",
+    paddingVertical: 4,
+    paddingHorizontal: 8,
+    borderRadius: 12
+  },
+  selectedTagText: {
+    color: "white",
+    fontWeight: "600",
+    fontSize: 13
+  },
+  suggestionsContainer: {
+    flexDirection: "row",
+    flexWrap: "wrap",
+    gap: 8,
+    marginTop: 8,
+    marginBottom: 4
+  },
+  suggestionPill: {
+    backgroundColor: "#e8f5e9",
+    paddingHorizontal: 10,
     paddingVertical: 6,
-    paddingHorizontal: 12,
     borderRadius: 16,
-    marginRight: 8,
-    marginBottom: 8
+    borderWidth: 1,
+    borderColor: "#c8e6c9"
   },
-  tagSelected: {
-    backgroundColor: "#2ecc71"
+  suggestionText: {
+    color: "#2ecc71",
+    fontSize: 13,
+    fontWeight: "500"
   },
-  tagText: {
-    color: "#333"
-  },
-  tagTextSelected: {
-    color: "white"
+  helperText: {
+    fontSize: 12,
+    color: "#888",
+    fontStyle: "italic",
+    marginBottom: 10
   },
   categoryButton: {
     backgroundColor: "#F3F4F6",

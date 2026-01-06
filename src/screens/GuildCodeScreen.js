@@ -6,11 +6,11 @@ export default function GuildCodeScreen() {
   return (
     <ScreenContainer>
       <ScrollView style={styles.container} contentContainerStyle={{ paddingBottom: 40 }}>
-        <Text style={styles.title}>🌱 The Growers Guild</Text>
+        <Text style={styles.title}>🌱 The Growers Forum</Text>
 
-        <Text style={styles.heading}>What the Growers Guild Is</Text>
+        <Text style={styles.heading}>What the Growers Forum Is</Text>
         <Text style={styles.body}>
-          The Growers Guild is a community of cultivators focused on craft, learning, and
+          The Growers Forum is a community of cultivators focused on craft, learning, and
           shared experience.
         </Text>
         <Text style={styles.body}>
@@ -19,7 +19,7 @@ export default function GuildCodeScreen() {
           deliberately.
         </Text>
 
-        <Text style={styles.subheading}>The Guild values:</Text>
+        <Text style={styles.subheading}>The Forum values:</Text>
         <Text style={styles.bullet}>• Experience over opinion</Text>
         <Text style={styles.bullet}>• Observation over assumption</Text>
         <Text style={styles.bullet}>• Learning over posturing</Text>
@@ -28,7 +28,7 @@ export default function GuildCodeScreen() {
           If you grow plants and want to grow better, you belong here.
         </Text>
 
-        <Text style={styles.heading}>What the Growers Guild Is Not</Text>
+        <Text style={styles.heading}>What the Growers Forum Is Not</Text>
         <Text style={styles.bullet}>• Not social media</Text>
         <Text style={styles.bullet}>• Not a meme board</Text>
         <Text style={styles.bullet}>• Not a place to flex yields or setups</Text>
@@ -36,10 +36,10 @@ export default function GuildCodeScreen() {
 
         <Text style={styles.body}>Posts are meant to add signal, not noise.</Text>
 
-        <Text style={styles.heading}>🧭 How the Guild Works</Text>
-        <Text style={styles.body}>The Guild is progressively unlocked.</Text>
+        <Text style={styles.heading}>🧭 How the Forum Works</Text>
+        <Text style={styles.body}>The Forum is progressively unlocked.</Text>
         <Text style={styles.body}>
-          You may see Guild features before you can use them.{"\n"}
+          You may see Forum features before you can use them.{"\n"}
           This is intentional.
         </Text>
 
@@ -50,7 +50,7 @@ export default function GuildCodeScreen() {
         <Text style={styles.bullet}>• Consistent engagement with your own grow</Text>
 
         <Text style={styles.heading}>Entry State: Observer</Text>
-        <Text style={styles.body}>All new users enter the Guild as Observers.</Text>
+        <Text style={styles.body}>All new users enter the Forum as Observers.</Text>
 
         <Text style={styles.subheading}>Observers can:</Text>
         <Text style={styles.bullet}>• Read discussions</Text>
@@ -58,9 +58,9 @@ export default function GuildCodeScreen() {
         <Text style={styles.bullet}>• See how experienced growers communicate</Text>
         <Text style={styles.bullet}>• Understand the standards before posting</Text>
 
-        <Text style={styles.body}>This keeps the Guild useful for everyone.</Text>
+        <Text style={styles.body}>This keeps the Forum useful for everyone.</Text>
 
-        <Text style={styles.heading}>📜 Guild Code (Simple, Enforced)</Text>
+        <Text style={styles.heading}>📜 Forum Code (Simple, Enforced)</Text>
 
         <View style={styles.rule}>
           <Text style={styles.ruleNumber}>1. Speak from experience</Text>
@@ -98,12 +98,12 @@ export default function GuildCodeScreen() {
         <View style={styles.rule}>
           <Text style={styles.ruleNumber}>5. No spam, no selling, no DMs</Text>
           <Text style={styles.ruleBody}>
-            The Guild is not a marketplace.{"\n\n"}
+            The Forum is not a marketplace.{"\n\n"}
             No promotions, solicitations, or private outreach.
           </Text>
         </View>
 
-        <Text style={styles.heading}>🏛️ Guild Roles & Trust Levels</Text>
+        <Text style={styles.heading}>🏛️ Forum Roles & Trust Levels</Text>
         <Text style={styles.body}>
           These are not titles for ego.{"\n"}
           They exist to protect the quality of discussion.
@@ -113,7 +113,7 @@ export default function GuildCodeScreen() {
           <Text style={styles.roleTitle}>👁️ Observer</Text>
           <Text style={styles.roleDesc}>Default role</Text>
           <Text style={styles.roleDesc}>Read-only access</Text>
-          <Text style={styles.roleDesc}>Can view all public Guild discussions</Text>
+          <Text style={styles.roleDesc}>Can view all public Forum discussions</Text>
           <Text style={styles.roleDesc}>No posting or commenting</Text>
           <Text style={styles.rolePurpose}>
             Purpose: learn the tone, standards, and expectations.
@@ -167,7 +167,7 @@ export default function GuildCodeScreen() {
         <Text style={styles.bullet}>• Teach something learned the hard way</Text>
 
         <Text style={styles.heading}>🌱 Final Note to Members</Text>
-        <Text style={styles.body}>The Growers Guild exists because:</Text>
+        <Text style={styles.body}>The Growers Forum exists because:</Text>
         <Text style={styles.bullet}>• Good growers are tired of noise</Text>
         <Text style={styles.bullet}>• Real learning happens slowly</Text>
         <Text style={styles.bullet}>• Craft deserves respect</Text>

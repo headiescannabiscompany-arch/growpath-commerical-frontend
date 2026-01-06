@@ -28,7 +28,7 @@ export default function GrowJournalScreen({ route, navigation }) {
   const [addingEntry, setAddingEntry] = useState(false);
   const [uploadingPhoto, setUploadingPhoto] = useState(false);
   const [loadingEntries, setLoadingEntries] = useState(false);
-  const [selectedPlantId, setSelectedPlantId] = useState(null);
+  const [selectedPlantIds, setSelectedPlantIds] = useState([]);
   const growId = grow?._id;
   if (!grow) {
     return (
@@ -88,8 +88,8 @@ export default function GrowJournalScreen({ route, navigation }) {
     try {
       setAddingEntry(true);
       const payload = { note: note.trim() };
-      if (selectedPlantId) {
-        payload.plantId = selectedPlantId;
+      if (selectedPlantIds.length > 0) {
+        payload.plants = selectedPlantIds;
       }
       await addEntry(growId, payload);
       await loadEntries();
@@ -129,8 +129,8 @@ export default function GrowJournalScreen({ route, navigation }) {
         const uploaded = await uploadEntryPhoto(growId, file);
         if (uploaded?.url) {
           const payload = { photos: [uploaded.url] };
-          if (selectedPlantId) {
-            payload.plantId = selectedPlantId;
+          if (selectedPlantIds.length > 0) {
+            payload.plants = selectedPlantIds;
           }
           await addEntry(growId, payload);
           await loadEntries();
@@ -207,28 +207,36 @@ export default function GrowJournalScreen({ route, navigation }) {
               <TouchableOpacity
                 style={[
                   styles.plantPill,
-                  !selectedPlantId && styles.plantPillActive
+                  selectedPlantIds.length === 0 && styles.plantPillActive
                 ]}
-                onPress={() => setSelectedPlantId(null)}
+                onPress={() => setSelectedPlantIds([])}
               >
-                <Text style={styles.plantPillText}>
+                <Text style={selectedPlantIds.length === 0 ? styles.plantPillTextActive : styles.plantPillText}>
                   Entire grow
                 </Text>
               </TouchableOpacity>
-              {plants.map((plant) => (
-                <TouchableOpacity
-                  key={plant._id}
-                  style={[
-                    styles.plantPill,
-                    selectedPlantId === plant._id && styles.plantPillActive
-                  ]}
-                  onPress={() =>
-                    setSelectedPlantId((prev) => (prev === plant._id ? null : plant._id))
-                  }
-                >
-                  <Text style={styles.plantPillText}>{plant.name || plant.strain || "Plant"}</Text>
-                </TouchableOpacity>
-              ))}
+              {plants.map((plant) => {
+                const isActive = selectedPlantIds.includes(plant._id);
+                return (
+                  <TouchableOpacity
+                    key={plant._id}
+                    style={[
+                      styles.plantPill,
+                      isActive && styles.plantPillActive
+                    ]}
+                    onPress={() =>
+                      setSelectedPlantIds((prev) => {
+                         if (prev.includes(plant._id)) {
+                           return prev.filter(id => id !== plant._id);
+                         }
+                         return [...prev, plant._id];
+                      })
+                    }
+                  >
+                    <Text style={isActive ? styles.plantPillTextActive : styles.plantPillText}>{plant.name || plant.strain || "Plant"}</Text>
+                  </TouchableOpacity>
+                );
+              })}
             </View>
           </View>
         ) : null}
@@ -330,6 +338,10 @@ const styles = StyleSheet.create({
   plantPillText: {
     fontWeight: "600",
     color: colors.text
+  },
+  plantPillTextActive: {
+    color: colors.accent,
+    fontWeight: "700"
   },
   plantList: {
     gap: spacing(3)

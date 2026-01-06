@@ -47,6 +47,13 @@ export function updateNotificationPreferences(prefs) {
   });
 }
 
+export function updateGrowInterests(growInterests) {
+  return api("/api/user/preferences/interests", {
+    method: "POST",
+    body: JSON.stringify({ growInterests })
+  });
+}
+
 export function getCertificates() {
   return api(ROUTES.USER.CERTIFICATES);
 }

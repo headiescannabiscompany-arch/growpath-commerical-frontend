@@ -51,7 +51,7 @@ export default function PostDetailScreen({ route, navigation }) {
         <Card>
           <Text style={styles.lockTitle}>EXCLUSIVE CONTENT</Text>
           <Text style={styles.lockText}>
-            This post is only available to Pro members and Guild participants.
+            This post is only available to Pro members and forum participants.
           </Text>
           <PrimaryButton
             title="View Plans"
