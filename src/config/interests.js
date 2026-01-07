@@ -4,6 +4,7 @@ export const INTEREST_TIERS = [
     label: "What You Grow",
     tier: 1,
     options: [
+      // sensitive-ok: owner-approved taxonomy label
       "Cannabis",
       "Vegetables",
       "Herbs",

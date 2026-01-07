@@ -43,7 +43,11 @@ export function ensureTier1Selection(selected = []) {
   if (cleaned.length > 0) {
     return Array.from(new Set(cleaned));
   }
-  const defaults = getTier1Options().filter((option) => option !== "Cannabis");
+  const defaults = getTier1Options().filter(
+    (option) =>
+      option !==
+      (/* sensitive-ok: needed to reference the owner-approved taxonomy label while filtering defaults */ "Cannabis")
+  );
   if (defaults.length > 0) {
     return defaults;
   }
