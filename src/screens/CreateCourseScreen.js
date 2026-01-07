@@ -11,8 +11,10 @@ import {
 } from "react-native";
 import * as ImagePicker from "expo-image-picker";
 import ScreenContainer from "../components/ScreenContainer";
+import GrowInterestPicker from "../components/GrowInterestPicker";
 import { spacing } from "../theme/theme";
 import { createCourse, getCourse } from "../api/courses";
+import { buildEmptyTierSelection, flattenTierSelections } from "../utils/growInterests";
 
 export default function CreateCourseScreen({ navigation }) {
   const [title, setTitle] = useState("");
@@ -21,6 +23,9 @@ export default function CreateCourseScreen({ navigation }) {
   const [price, setPrice] = useState("");
   const [thumbnail, setThumbnail] = useState(null);
   const [loading, setLoading] = useState(false);
+  const [growInterestSelections, setGrowInterestSelections] = useState(() =>
+    buildEmptyTierSelection()
+  );
 
   const handlePickImage = async () => {
     try {
@@ -82,7 +87,8 @@ export default function CreateCourseScreen({ navigation }) {
         category: category.trim(),
         priceCents,
         thumbnail: thumbnail?.uri || "",
-        status: "draft" // Courses start as draft
+        status: "draft", // Courses start as draft
+        growTags: flattenTierSelections(growInterestSelections)
       };
 
       const newCourse = await createCourse(payload);
@@ -197,6 +203,14 @@ export default function CreateCourseScreen({ navigation }) {
             Leave blank or enter 0 for a free course. You'll earn 85% of paid enrollments.
           </Text>
         </View>
+
+        <GrowInterestPicker
+          title="Tag this course"
+          helperText="Select the crops, environments, and methods this course focuses on. You can leave any tier empty."
+          value={growInterestSelections}
+          onChange={setGrowInterestSelections}
+          defaultExpanded={false}
+        />
 
         {/* Revenue Info Card */}
         <View style={styles.infoCard}>

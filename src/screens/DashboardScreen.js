@@ -1,4 +1,4 @@
-import React, { useState, useEffect, useCallback } from "react";
+import React, { useState, useEffect, useMemo, useRef, useCallback } from "react";
 import {
   View,
   Text,
@@ -19,9 +19,16 @@ import { listGrows } from "../api/grows";
 import { getFeed } from "../api/posts";
 import { getTrendingPosts } from "../api/forum";
 import { normalizePostList } from "../utils/posts";
+import {
+  flattenGrowInterests,
+  filterPostsByInterests,
+  getTier1Metadata
+} from "../utils/growInterests";
 import { getTasks } from "../api/tasks";
 
 const { width } = Dimensions.get("window");
+const tierOneConfig = getTier1Metadata();
+const DASHBOARD_TIER1_TAGS = new Set(tierOneConfig?.options || []);
 
 function getCategoryIcon(category) {
   const icons = {
@@ -94,7 +101,10 @@ export default function DashboardScreen() {
     isGuildMember,
     logout,
     hasNavigatedAwayFromHome,
-    setHasNavigatedAwayFromHome
+    setHasNavigatedAwayFromHome,
+    suppressWelcomeMessage,
+    setSuppressWelcomeMessage,
+    user
   } = useAuth();
   const [plants, setPlants] = useState([]);
   const [plantsLoading, setPlantsLoading] = useState(true);
@@ -114,43 +124,37 @@ export default function DashboardScreen() {
   const [feedPage, setFeedPage] = useState(1);
   const [feedLoading, setFeedLoading] = useState(false);
   const [feedHasMore, setFeedHasMore] = useState(true);
+  const feedLoadingRef = useRef(false);
+  const hasFocusedRef = useRef(false);
+  const appliedFilterSignatureRef = useRef(null);
+
+  const flattenedInterests = useMemo(
+    () => flattenGrowInterests(user?.growInterests || {}),
+    [user?.growInterests]
+  );
+  const feedTier1Filters = useMemo(
+    () => flattenedInterests.filter((tag) => DASHBOARD_TIER1_TAGS.has(tag)),
+    [flattenedInterests]
+  );
+  const feedOtherFilters = useMemo(
+    () => flattenedInterests.filter((tag) => !DASHBOARD_TIER1_TAGS.has(tag)),
+    [flattenedInterests]
+  );
+  const feedTier1Set = useMemo(() => new Set(feedTier1Filters), [feedTier1Filters]);
+  const feedOtherSet = useMemo(() => new Set(feedOtherFilters), [feedOtherFilters]);
+  const feedFilterSignature = useMemo(() => {
+    const tier1Key = [...feedTier1Filters].sort().join(",");
+    const otherKey = [...feedOtherFilters].sort().join(",");
+    return `${tier1Key}|${otherKey}`;
+  }, [feedTier1Filters, feedOtherFilters]);
   
   const heroSubtitle = isGuildMember
-    ? "Your guild unlocks specialized cannabis insights alongside the core GrowPath tools."
-    : "Track every plant, explore hydroponics, and opt into guilds when you want crop-specific depth.";
-  const showWelcomeMessage = !hasNavigatedAwayFromHome;
+    ? "Your forum access unlocks specialized cannabis insights alongside the core GrowPath tools."
+    : "Track every plant, explore hydroponics, and join the forum when you want crop-specific depth.";
+  const showWelcomeMessage = !hasNavigatedAwayFromHome && !suppressWelcomeMessage;
   const headerTitle = showWelcomeMessage ? "Welcome back" : "GrowPath";
 
-  useEffect(() => {
-    loadPlants();
-    loadGrows();
-    loadTrending();
-    loadTaskStats();
-    loadFeed(1);
-  }, []);
-
-  useFocusEffect(
-    useCallback(() => {
-      loadPlants();
-      loadGrows();
-      loadTrending();
-      loadTaskStats();
-      loadFeed(1);
-    }, [])
-  );
-
-  useEffect(() => {
-    const unsubscribe = navigation.addListener("blur", () => {
-      setHasNavigatedAwayFromHome(true);
-    });
-    return unsubscribe;
-  }, [navigation, setHasNavigatedAwayFromHome]);
-
-  const handleLogout = async () => {
-    await logout();
-  };
-
-  async function loadPlants() {
+  const loadPlants = useCallback(async () => {
     try {
       const data = await getPlants();
       if (Array.isArray(data)) {
@@ -166,9 +170,9 @@ export default function DashboardScreen() {
     } finally {
       setPlantsLoading(false);
     }
-  }
+  }, []);
 
-  async function loadGrows() {
+  const loadGrows = useCallback(async () => {
     try {
       const data = await listGrows();
       const list = Array.isArray(data)
@@ -183,9 +187,10 @@ export default function DashboardScreen() {
     } finally {
       setGrowsLoading(false);
     }
-  }
+  }, []);
 
-  async function loadTaskStats() {
+  const loadTaskStats = useCallback(async () => {
+    setTasksLoading(true);
     try {
       const response = await getTasks();
       const tasks = Array.isArray(response?.data)
@@ -200,9 +205,9 @@ export default function DashboardScreen() {
     } finally {
       setTasksLoading(false);
     }
-  }
+  }, []);
 
-  async function loadTrending() {
+  const loadTrending = useCallback(async () => {
     try {
       const data = await getTrendingPosts(1);
       const list = Array.isArray(data) ? data : Array.isArray(data?.posts) ? data.posts : [];
@@ -211,37 +216,82 @@ export default function DashboardScreen() {
       console.error("Failed to load trending:", err);
       setTrending([]);
     }
-  }
+  }, []);
 
-  async function loadFeed(page = 1) {
-    if (feedLoading && page !== 1) return; // Prevent double load unless initial
+  const loadFeed = useCallback(async (page = 1) => {
+    if (feedLoadingRef.current) return;
+    feedLoadingRef.current = true;
     setFeedLoading(true);
     try {
-      const response = await getFeed(page);
+      const response = await getFeed(page, {
+        tier1: feedTier1Filters,
+        tags: feedOtherFilters
+      });
       const list = normalizePostList(response);
+      const filteredList = filterPostsByInterests(list, feedTier1Set, feedOtherSet);
       
       if (page === 1) {
-        setFeedPosts(list);
+        setFeedPosts(filteredList);
       } else {
-        setFeedPosts(prev => [...prev, ...list]);
+        setFeedPosts((prev) => [...prev, ...filteredList]);
       }
-      
-      // Assume page size 15 from api
-      if (list.length < 15) {
-        setFeedHasMore(false);
-      }
+
+      const hasMore = list.length === 15;
+      setFeedHasMore(hasMore);
       setFeedPage(page);
     } catch (err) {
       console.error("Failed to load dashboard feed:", err);
+      if (page === 1) {
+        setFeedPosts([]);
+      }
     } finally {
+      feedLoadingRef.current = false;
       setFeedLoading(false);
     }
-  }
+  }, [feedTier1Filters, feedOtherFilters, feedTier1Set, feedOtherSet]);
 
-  const loadMoreFeed = () => {
+  const loadMoreFeed = useCallback(() => {
     if (!feedLoading && feedHasMore) {
       loadFeed(feedPage + 1);
     }
+  }, [feedLoading, feedHasMore, loadFeed, feedPage]);
+
+  useEffect(() => {
+    loadPlants();
+    loadGrows();
+    loadTrending();
+    loadTaskStats();
+  }, [loadPlants, loadGrows, loadTrending, loadTaskStats]);
+
+  useEffect(() => {
+    if (appliedFilterSignatureRef.current === feedFilterSignature) return;
+    appliedFilterSignatureRef.current = feedFilterSignature;
+    loadFeed(1);
+  }, [feedFilterSignature, loadFeed]);
+
+  useFocusEffect(
+    useCallback(() => {
+      loadPlants();
+      loadGrows();
+      loadTrending();
+      loadTaskStats();
+      if (hasFocusedRef.current) {
+        loadFeed(1);
+      }
+      hasFocusedRef.current = true;
+    }, [loadPlants, loadGrows, loadTrending, loadTaskStats, loadFeed])
+  );
+
+  useEffect(() => {
+    const unsubscribe = navigation.addListener("blur", () => {
+      setHasNavigatedAwayFromHome(true);
+      setSuppressWelcomeMessage(false);
+    });
+    return unsubscribe;
+  }, [navigation, setHasNavigatedAwayFromHome, setSuppressWelcomeMessage]);
+
+  const handleLogout = async () => {
+    await logout();
   };
 
   const QuickAction = ({ icon, label, onPress, color }) => (
@@ -461,7 +511,7 @@ export default function DashboardScreen() {
             />
             <QuickAction
               icon="🏛️"
-              label="Guild"
+              label="Forum"
               color="#F59E0B"
               onPress={() => navigation.navigate("ForumTab")}
             />
@@ -473,26 +523,41 @@ export default function DashboardScreen() {
           <View style={styles.sectionHeader}>
             <Text style={styles.sectionTitle}>Latest Updates</Text>
           </View>
-          <View style={{ height: 400, backgroundColor: "#f9fafb", borderRadius: 12 }}>
-            {feedPosts.length === 0 && feedLoading ? (
-              <ActivityIndicator style={{ marginTop: 20 }} color={colors.accent} />
+          <View
+            style={[
+              styles.feedCard,
+              feedPosts.length > 0 || feedLoading ? null : styles.feedCardEmpty
+            ]}
+          >
+            {feedPosts.length === 0 && !feedLoading ? (
+              <View style={styles.emptyState}>
+                <Text style={styles.emptyStateTitle}>No recent updates match your interests.</Text>
+                <Text style={styles.emptyStateText}>
+                  Check back soon or explore the community for new activity.
+                </Text>
+              </View>
             ) : (
-              <FlatList
-                data={feedPosts}
-                keyExtractor={(item, index) => item._id || String(index)}
-                renderItem={({ item }) => <FeedItem item={item} />}
-                onEndReached={loadMoreFeed}
-                onEndReachedThreshold={0.5}
-                ListFooterComponent={renderFeedFooter}
-                nestedScrollEnabled={true}
-                contentContainerStyle={{ padding: 10 }}
-              />
+              <>
+                <FlatList
+                  data={feedPosts}
+                  keyExtractor={(item, index) => item._id || String(index)}
+                  renderItem={({ item }) => <FeedItem item={item} />}
+                  onEndReached={loadMoreFeed}
+                  onEndReachedThreshold={0.5}
+                  ListFooterComponent={renderFeedFooter}
+                  nestedScrollEnabled={true}
+                  contentContainerStyle={{ padding: 10 }}
+                />
+                {feedLoading && feedPage === 1 && (
+                  <ActivityIndicator style={{ marginTop: 20 }} color={colors.accent} />
+                )}
+              </>
             )}
           </View>
         </View>
 
         {/* Stats Overview */}
-        <View style={styles.section}>
+      <View style={styles.section}>
           <Text style={styles.sectionTitle}>Overview</Text>
           <View style={styles.statsGrid}>
             <StatCard
@@ -561,10 +626,10 @@ export default function DashboardScreen() {
           )}
         </View>
 
-        {/* Guild Trending Content */}
+        {/* Forum Trending Content */}
         <View style={styles.section}>
           <View style={styles.sectionHeader}>
-            <Text style={styles.sectionTitle}>🏛️ Trending in the Guild</Text>
+            <Text style={styles.sectionTitle}>🏛️ Trending in the Forum</Text>
             <TouchableOpacity onPress={() => navigation.navigate("ForumTab")}>
               <Text style={styles.seeAll}>View All →</Text>
             </TouchableOpacity>
@@ -694,6 +759,14 @@ const styles = StyleSheet.create({
     fontWeight: "700",
     color: colors.text,
     marginBottom: spacing(3)
+  },
+  feedCard: {
+    backgroundColor: "#f9fafb",
+    borderRadius: 12,
+    minHeight: 120
+  },
+  feedCardEmpty: {
+    minHeight: 0
   },
   seeAll: {
     fontSize: 14,

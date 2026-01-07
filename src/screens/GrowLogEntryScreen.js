@@ -16,6 +16,13 @@ import ScreenContainer from "../components/ScreenContainer";
 import StageSlider from "../components/StageSlider";
 import { createEntry, getEntry, updateEntry, autoTagEntry } from "../api/growlog";
 import { listGrows } from "../api/grows";
+import GrowPlantSelector from "../components/GrowPlantSelector";
+import GrowInterestPicker from "../components/GrowInterestPicker";
+import {
+  buildEmptyTierSelection,
+  flattenTierSelections,
+  groupTagsByTier
+} from "../utils/growInterests";
 
 const stageMap = {
   seedling: "Seedling",
@@ -66,6 +73,11 @@ export default function GrowLogEntryScreen({ route, navigation }) {
   const [day, setDay] = useState("");
 
   const [tags, setTags] = useState([]);
+  const [growInterestSelections, setGrowInterestSelections] = useState(
+    buildEmptyTierSelection()
+  );
+  const isEditing = Boolean(entryId);
+  const GROW_TAG_TIERS = [1, 2, 3, 5, 6];
 
   // Environment data (advanced)
   const [showAdvanced, setShowAdvanced] = useState(false);
@@ -169,6 +181,16 @@ export default function GrowLogEntryScreen({ route, navigation }) {
     }
   }, [selectedGrowId, selectedPlantIds, updateStageEnabled]);
 
+  useEffect(() => {
+    if (entryId || !selectedGrowId) return;
+    const grow = grows.find((g) => g._id === selectedGrowId);
+    if (grow?.growTags) {
+      setGrowInterestSelections(groupTagsByTier(grow.growTags));
+    } else {
+      setGrowInterestSelections(buildEmptyTierSelection());
+    }
+  }, [entryId, selectedGrowId, grows]);
+
   async function loadEntry() {
     setLoading(true);
     const res = await getEntry(entryId);
@@ -192,6 +214,7 @@ export default function GrowLogEntryScreen({ route, navigation }) {
     }
 
     setTags(e.tags || []);
+    setGrowInterestSelections(groupTagsByTier(e.growTags || []));
     setSelectedGrowId(e.grow || null);
     if (Array.isArray(e.plants) && e.plants.length) {
       setSelectedPlantIds(e.plants.map((p) => p?._id || p).filter(Boolean));
@@ -278,6 +301,12 @@ export default function GrowLogEntryScreen({ route, navigation }) {
     }
   }
 
+  function resetEntryAssociations() {
+    setSelectedGrowId(null);
+    setSelectedPlantIds([]);
+    setGrowInterestSelections(buildEmptyTierSelection());
+  }
+
   async function submitEntry(payload) {
     try {
       setLoading(true);
@@ -285,6 +314,7 @@ export default function GrowLogEntryScreen({ route, navigation }) {
         await updateEntry(entryId, payload);
       } else {
         await createEntry(payload);
+        resetEntryAssociations();
       }
       navigation.goBack();
     } catch (err) {
@@ -299,6 +329,16 @@ export default function GrowLogEntryScreen({ route, navigation }) {
       return Alert.alert("Missing Title", "Please add a title for this entry.");
     }
 
+    let finalDate = undefined;
+    if (entryDate) {
+      if (/^\d{4}-\d{2}-\d{2}$/.test(entryDate)) {
+        const [y, m, d] = entryDate.split("-").map(Number);
+        finalDate = new Date(y, m - 1, d);
+      } else {
+        finalDate = new Date(entryDate);
+      }
+    }
+
     const payload = {
       title,
       notes,
@@ -309,7 +349,7 @@ export default function GrowLogEntryScreen({ route, navigation }) {
       week: week ? Number(week) : null,
       day: day ? Number(day) : null,
       tags,
-      date: entryDate ? new Date(entryDate) : undefined,
+      date: finalDate,
       environment: {
         light: {
           ppfd: lightPPFD,
@@ -344,6 +384,7 @@ export default function GrowLogEntryScreen({ route, navigation }) {
     payload.plants = selectedPlantIds;
     payload.plant = selectedPlantIds.length === 1 ? selectedPlantIds[0] : null;
     payload.applyStageToPlants = Boolean(updateStageEnabled);
+    payload.growTags = flattenTierSelections(growInterestSelections);
 
     if (updateStageEnabled) {
       if (!selectedGrowId) {
@@ -484,133 +525,23 @@ export default function GrowLogEntryScreen({ route, navigation }) {
         </ScrollView>
 
         {/* Grow & Plant Linking */}
-        <View style={styles.linkSection}>
-          <Text style={styles.label}>Link to a Grow (optional)</Text>
-          {growsLoading ? (
-            <Text style={styles.helperText}>Loading your grows…</Text>
-          ) : grows.length === 0 ? (
-            <Text style={styles.helperText}>
-              Create a grow from the Plants tab to link entries here.
-            </Text>
-          ) : (
-            <View style={styles.pillRow}>
-              <TouchableOpacity
-                style={[
-                  styles.selectorPill,
-                  !selectedGrowId && styles.selectorPillActive
-                ]}
-                onPress={() => {
-                  setSelectedGrowId(null);
-                  setSelectedPlantIds([]);
-                }}
-              >
-                <Text
-                  style={[
-                    styles.selectorPillText,
-                    !selectedGrowId && styles.selectorPillTextActive
-                  ]}
-                >
-                  No Grow
-                </Text>
-              </TouchableOpacity>
-              {grows.map((grow) => (
-                <TouchableOpacity
-                  key={grow._id}
-                  style={[
-                    styles.selectorPill,
-                    selectedGrowId === grow._id && styles.selectorPillActive
-                  ]}
-                  onPress={() => {
-                    setSelectedGrowId((prev) => {
-                      const next = prev === grow._id ? null : grow._id;
-                      if (!next) setSelectedPlantIds([]);
-                      return next;
-                    });
-                  }}
-                >
-                  <Text
-                    style={[
-                      styles.selectorPillText,
-                      selectedGrowId === grow._id && styles.selectorPillTextActive
-                    ]}
-                  >
-                    {grow.name || grow.title || "Grow"}
-                  </Text>
-                </TouchableOpacity>
-                ))}
-            </View>
-          )}
+        <GrowPlantSelector
+          grows={grows}
+          loading={growsLoading}
+          selectedGrowId={selectedGrowId}
+          onSelectGrow={setSelectedGrowId}
+          selectedPlantIds={selectedPlantIds}
+          onSelectPlants={setSelectedPlantIds}
+        />
 
-          {selectedGrowId ? (
-            <>
-              <Text style={[styles.label, { marginTop: 10 }]}>
-                Attach a plant (optional)
-              </Text>
-              {growsLoading ? (
-                <Text style={styles.helperText}>Loading plants…</Text>
-              ) : (() => {
-                const grow = grows.find((g) => g._id === selectedGrowId);
-                if (!grow || !Array.isArray(grow.plants) || grow.plants.length === 0) {
-                  return (
-                    <Text style={styles.helperText}>
-                      This grow does not have any plants yet.
-                    </Text>
-                  );
-                }
-                return (
-                  <View style={styles.pillRow}>
-                    <TouchableOpacity
-                      style={[
-                        styles.selectorPill,
-                        selectedPlantIds.length === 0 && styles.selectorPillActive
-                      ]}
-                      onPress={() => setSelectedPlantIds([])}
-                    >
-                      <Text
-                        style={[
-                          styles.selectorPillText,
-                          selectedPlantIds.length === 0 && styles.selectorPillTextActive
-                        ]}
-                      >
-                        Entire Grow
-                      </Text>
-                    </TouchableOpacity>
-                    {grow.plants.map((plant) => {
-                      const id = plant._id || plant.id;
-                      const isActive = selectedPlantIds.includes(id);
-                      return (
-                        <TouchableOpacity
-                          key={id}
-                          style={[
-                            styles.selectorPill,
-                            isActive && styles.selectorPillActive
-                          ]}
-                          onPress={() => {
-                            setSelectedPlantIds((prev) => {
-                              if (prev.includes(id)) {
-                                return prev.filter((pid) => pid !== id);
-                              }
-                              return [...prev, id];
-                            });
-                          }}
-                        >
-                          <Text
-                            style={[
-                              styles.selectorPillText,
-                              isActive && styles.selectorPillTextActive
-                            ]}
-                          >
-                            {plant.name || plant.strain || "Plant"}
-                          </Text>
-                        </TouchableOpacity>
-                      );
-                    })}
-                  </View>
-                );
-              })()}
-            </>
-          ) : null}
-        </View>
+        <GrowInterestPicker
+          title="Grow Interests"
+          helperText="Select the tiers that apply to this entry. Leave any tier empty."
+          enabledTierIds={GROW_TAG_TIERS}
+          value={growInterestSelections}
+          onChange={setGrowInterestSelections}
+          defaultExpanded={isEditing}
+        />
 
         {/* Stage Picker */}
         <View style={styles.stageHeader}>

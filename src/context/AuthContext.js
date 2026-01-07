@@ -2,6 +2,9 @@ import React, { createContext, useState, useContext, useEffect } from "react";
 import AsyncStorage from "@react-native-async-storage/async-storage";
 import { getSubscriptionStatus } from "../api/subscribe";
 import { getEntitlements } from "../utils/entitlements";
+import { updateGrowInterests } from "../api/users";
+import { ONBOARDING_INTERESTS_KEY } from "../constants/storageKeys";
+import { normalizePendingInterests } from "../utils/growInterests";
 
 const AuthContext = createContext();
 
@@ -14,6 +17,7 @@ export const AuthProvider = ({ children }) => {
   const [isEntitled, setIsEntitled] = useState(false);
   const [loading, setLoading] = useState(true);
   const [hasNavigatedAwayFromHome, setHasNavigatedAwayFromHome] = useState(false);
+  const [suppressWelcomeMessage, setSuppressWelcomeMessage] = useState(false);
 
   const updateStateFromUser = (userData) => {
     const entitlements = getEntitlements(userData);
@@ -107,6 +111,49 @@ export const AuthProvider = ({ children }) => {
     }
   };
 
+  const applyPendingOnboardingInterests = async (baseUser = null) => {
+    try {
+      const raw = await AsyncStorage.getItem(ONBOARDING_INTERESTS_KEY);
+      if (!raw) return;
+
+      let parsed;
+      try {
+        parsed = JSON.parse(raw);
+      } catch (error) {
+        await AsyncStorage.removeItem(ONBOARDING_INTERESTS_KEY);
+        return;
+      }
+
+      const normalized = normalizePendingInterests(parsed);
+      if (!normalized) {
+        await AsyncStorage.removeItem(ONBOARDING_INTERESTS_KEY);
+        return;
+      }
+
+      await updateGrowInterests(normalized);
+
+      const mergedUser = { ...(baseUser || user || {}), growInterests: normalized };
+      setUser(mergedUser);
+      syncGlobals(token, mergedUser);
+      await AsyncStorage.setItem("user", JSON.stringify(mergedUser));
+      await AsyncStorage.removeItem(ONBOARDING_INTERESTS_KEY);
+      setSuppressWelcomeMessage(true);
+    } catch (error) {
+      console.warn("Failed to apply onboarding interests:", error?.message || error);
+    }
+  };
+
+  const updateUser = async (newUserData) => {
+    const merged = { ...user, ...newUserData };
+    setUser(merged);
+    syncGlobals(token, merged);
+    try {
+      await AsyncStorage.setItem("user", JSON.stringify(merged));
+    } catch (e) {
+      console.log("Failed to persist user update", e);
+    }
+  };
+
   const login = async (authToken, userData) => {
     setToken(authToken);
     setUser(userData);
@@ -147,6 +194,12 @@ export const AuthProvider = ({ children }) => {
     loadProStatus();
   };
 
+  useEffect(() => {
+    if (token && user) {
+      applyPendingOnboardingInterests(user);
+    }
+  }, [token, user]);
+
   return (
     <AuthContext.Provider
       value={{
@@ -158,10 +211,13 @@ export const AuthProvider = ({ children }) => {
         isEntitled,
         loading,
         login,
-      logout,
+        logout,
+        updateUser,
         refreshProStatus,
         hasNavigatedAwayFromHome,
-        setHasNavigatedAwayFromHome
+        setHasNavigatedAwayFromHome,
+        suppressWelcomeMessage,
+        setSuppressWelcomeMessage
       }}
     >
       {children}

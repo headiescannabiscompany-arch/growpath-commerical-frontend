@@ -1,8 +1,26 @@
 import { client } from "./client.js";
 import ROUTES from "./routes.js";
 
-export function getFeed(page = 1, token) {
-  return client.get(`${ROUTES.POSTS.FEED}?page=${page}`, token);
+export function getFeed(page = 1, options) {
+  let tier1 = [];
+  let tags = [];
+  let token;
+
+  if (typeof options === "string") {
+    token = options;
+  } else if (options && typeof options === "object") {
+    ({ tier1 = [], tags = [], token } = options);
+  }
+
+  const qs = new URLSearchParams({ page });
+  if (Array.isArray(tier1) && tier1.length) {
+    qs.append("tier1", tier1.join(","));
+  }
+  if (Array.isArray(tags) && tags.length) {
+    qs.append("tags", tags.join(","));
+  }
+
+  return client.get(`${ROUTES.POSTS.FEED}?${qs.toString()}`, token);
 }
 
 export function getTrending(token) {

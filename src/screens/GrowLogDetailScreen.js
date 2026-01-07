@@ -10,11 +10,14 @@ import {
 } from "react-native";
 import ScreenContainer from "../components/ScreenContainer";
 import { getEntry, deleteEntry } from "../api/growlog";
+import { listGrows } from "../api/grows";
 
 export default function GrowLogDetailScreen({ route, navigation }) {
   const entryId = route.params?.id;
   const [entry, setEntry] = useState(null);
   const [loading, setLoading] = useState(false);
+  const [sharePrefillLoading, setSharePrefillLoading] = useState(false);
+  const [growTagCache, setGrowTagCache] = useState(null);
 
   useEffect(() => {
     load();
@@ -45,6 +48,75 @@ export default function GrowLogDetailScreen({ route, navigation }) {
       navigation.goBack();
     } catch (err) {
       Alert.alert("Error", err.message);
+    }
+  }
+
+  async function fetchGrowTagsForId(growId) {
+    if (!growId) return [];
+    const targetId = typeof growId === "object" ? growId._id : growId;
+    if (!targetId) return [];
+
+    if (growTagCache && Object.prototype.hasOwnProperty.call(growTagCache, targetId)) {
+      return growTagCache[targetId] || [];
+    }
+
+    try {
+      const grows = await listGrows();
+      if (Array.isArray(grows)) {
+        const nextCache = grows.reduce((acc, grow) => {
+          if (grow?._id) {
+            acc[grow._id] = Array.isArray(grow.growTags)
+              ? grow.growTags.filter(Boolean)
+              : [];
+          }
+          return acc;
+        }, {});
+        setGrowTagCache(nextCache);
+        return nextCache[targetId] || [];
+      }
+    } catch (err) {
+      console.warn("Unable to load grow tags for forum share", err);
+    }
+    return [];
+  }
+
+  async function deriveShareInterestTags(currentEntry) {
+    if (!currentEntry) {
+      return { tags: [], expand: false };
+    }
+
+    const entryTags = Array.isArray(currentEntry.growTags)
+      ? currentEntry.growTags.filter(Boolean)
+      : [];
+    if (entryTags.length) {
+      return { tags: entryTags, expand: true };
+    }
+
+    const fallback = await fetchGrowTagsForId(currentEntry.grow);
+    return {
+      tags: fallback,
+      expand: fallback.length > 0
+    };
+  }
+
+  async function handleShareToForum() {
+    if (!entry || sharePrefillLoading) return;
+    try {
+      setSharePrefillLoading(true);
+      const { tags, expand } = await deriveShareInterestTags(entry);
+      navigation.navigate("ForumNewPost", {
+        photos: entry.photos || [],
+        content: entry.notes || "",
+        strain: entry.strain || "",
+        initialGrowInterests: tags,
+        expandInterestPicker: expand,
+        growLogId: entry._id,
+        fromGrowLogId: entry._id
+      });
+    } catch (err) {
+      Alert.alert("Error", err.message || "Unable to prepare the forum post.");
+    } finally {
+      setSharePrefillLoading(false);
     }
   }
 
@@ -118,17 +190,12 @@ export default function GrowLogDetailScreen({ route, navigation }) {
         {/* Share to Forum Button */}
         <TouchableOpacity
           style={[styles.actionLargeButton, { backgroundColor: "#9b59b6" }]}
-          onPress={() =>
-            navigation.navigate("ForumNewPost", {
-              photos: entry.photos || [],
-              content: entry.notes || "",
-              strain: entry.strain || "",
-              tags: entry.tags || [],
-              growLogId: entry._id
-            })
-          }
+          onPress={handleShareToForum}
+          disabled={sharePrefillLoading}
         >
-          <Text style={styles.actionLargeText}>Share to Guild</Text>
+          <Text style={styles.actionLargeText}>
+            {sharePrefillLoading ? "Preparing..." : "Share to Forum"}
+          </Text>
         </TouchableOpacity>
       </View>
 

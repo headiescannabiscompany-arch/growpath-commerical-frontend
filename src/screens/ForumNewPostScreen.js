@@ -16,6 +16,12 @@ import ScreenContainer from "../components/ScreenContainer";
 import PrimaryButton from "../components/PrimaryButton";
 import { createPost } from "../api/forum";
 import { uploadImage } from "../api/uploads";
+import GrowInterestPicker from "../components/GrowInterestPicker";
+import {
+  buildEmptyTierSelection,
+  flattenTierSelections,
+  groupTagsByTier
+} from "../utils/growInterests";
 
 const categoryOptions = [
   { key: "general", label: "General", desc: "Updates, questions, daily logs" },
@@ -25,30 +31,25 @@ const categoryOptions = [
   { key: "gear", label: "Gear & Setup", desc: "Lights, tents, hardware" }
 ];
 
-const tagOptions = [
-  "Vegetative",
-  "Flower",
-  "Propagation",
-  "Organic",
-  "Hydroponics",
-  "Pest Management",
-  "Diagnosis",
-  "Tips",
-  "Showcase"
-];
-
 export default function ForumNewPostScreen({ route, navigation }) {
   const queryClient = useQueryClient();
   const photosFromLog = route.params?.photos || [];
   const notesFromLog = route.params?.content || "";
   const strainFromLog = route.params?.strain || "";
-  const tagsFromLog = route.params?.tags || [];
-  const growLogId = route.params?.fromGrowLogId || null;
+  const initialGrowTags =
+    route.params?.initialGrowInterests ||
+    route.params?.tags ||
+    [];
+  const growLogId = route.params?.growLogId || route.params?.fromGrowLogId || null;
+  const defaultPickerExpansion = Boolean(route.params?.expandInterestPicker);
 
   const [content, setContent] = useState(notesFromLog);
   const [photos, setPhotos] = useState(photosFromLog);
   const [strain, setStrain] = useState(strainFromLog);
-  const [tags, setTags] = useState(tagsFromLog);
+  const [growInterestSelections, setGrowInterestSelections] = useState(
+    initialGrowTags.length ? groupTagsByTier(initialGrowTags) : buildEmptyTierSelection()
+  );
+
   const [category, setCategory] = useState("general");
   const [loading, setLoading] = useState(false);
 
@@ -74,20 +75,11 @@ export default function ForumNewPostScreen({ route, navigation }) {
   }
 
   // ---------------------------------------
-  // TOGGLE TAG
-  // ---------------------------------------
-  function toggleTag(tag) {
-    if (tags.includes(tag)) {
-      setTags(tags.filter((t) => t !== tag));
-    } else {
-      setTags([...tags, tag]);
-    }
-  }
-
-  // ---------------------------------------
   // SUBMIT POST
   // ---------------------------------------
   async function handleSubmit() {
+    const finalTags = flattenTierSelections(growInterestSelections);
+
     if (!content.trim() && photos.length === 0) {
       return Alert.alert("Empty Post", "Add text or at least one photo.");
     }
@@ -112,7 +104,7 @@ export default function ForumNewPostScreen({ route, navigation }) {
       const payload = {
         content,
         photos: uploadedPhotos,
-        tags,
+        tags: finalTags,
         strain,
         category,
         growLogId
@@ -134,7 +126,7 @@ export default function ForumNewPostScreen({ route, navigation }) {
 
   return (
     <ScreenContainer scroll>
-      <Text style={styles.header}>New Guild Post</Text>
+      <Text style={styles.header}>New Forum Post</Text>
 
       {/* TEXT INPUT */}
       <TextInput
@@ -182,24 +174,16 @@ export default function ForumNewPostScreen({ route, navigation }) {
         onChangeText={setStrain}
       />
 
-      {/* TAGS */}
-      <Text style={styles.label}>Tags</Text>
-      <View style={styles.tagsContainer}>
-        {tagOptions.map((tag) => (
-          <TouchableOpacity
-            key={tag}
-            onPress={() => toggleTag(tag)}
-            style={[styles.tag, tags.includes(tag) && styles.tagSelected]}
-          >
-            <Text style={tags.includes(tag) ? styles.tagTextSelected : styles.tagText}>
-              {tag}
-            </Text>
-          </TouchableOpacity>
-        ))}
-      </View>
+  <GrowInterestPicker
+    title="Grow Interests relevant to this forum post"
+    helperText="Select the tiers that best describe your update. Leave any tier empty."
+    value={growInterestSelections}
+    onChange={setGrowInterestSelections}
+    defaultExpanded={defaultPickerExpansion}
+  />
 
       {/* PHOTO GRID */}
-      <Text style={styles.label}>Photos</Text>
+      <Text style={[styles.label, { marginTop: 16 }]}>Photos</Text>
       <ScrollView
         horizontal
         showsHorizontalScrollIndicator={false}
@@ -244,28 +228,6 @@ const styles = StyleSheet.create({
   label: {
     fontWeight: "600",
     marginBottom: 5
-  },
-  tagsContainer: {
-    flexDirection: "row",
-    flexWrap: "wrap",
-    marginBottom: 10
-  },
-  tag: {
-    backgroundColor: "#e0e0e0",
-    paddingVertical: 6,
-    paddingHorizontal: 12,
-    borderRadius: 16,
-    marginRight: 8,
-    marginBottom: 8
-  },
-  tagSelected: {
-    backgroundColor: "#2ecc71"
-  },
-  tagText: {
-    color: "#333"
-  },
-  tagTextSelected: {
-    color: "white"
   },
   categoryButton: {
     backgroundColor: "#F3F4F6",

@@ -21,7 +21,7 @@ const TAB_ICONS = {
   Diagnose: "🔍",
   Search: "🔎",
   Feed: "📡",
-  Guild: "💬",
+  Forum: "💬",
   Courses: "📚",
   Profile: "👤",
   Calendar: "📅",
@@ -113,9 +113,9 @@ export default function MainTabs() {
         name="ForumTab"
         component={ForumScreen}
         options={{
-          title: "Growers Guild",
+          title: "Forum",
           tabBarLabel: ({ focused }) => (
-            <TabIcon label="Guild" focused={focused} testID="tab-guild" />
+            <TabIcon label="Forum" focused={focused} testID="tab-guild" />
           )
         }}
       />

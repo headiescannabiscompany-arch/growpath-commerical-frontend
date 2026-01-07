@@ -1,4 +1,4 @@
-import React, { useEffect, useState, useRef } from "react";
+import React, { useEffect, useState, useRef, useMemo, useCallback } from "react";
 import {
   View,
   Text,
@@ -10,24 +10,119 @@ import {
 } from "react-native";
 import { useNavigation } from "@react-navigation/native";
 import ScreenContainer from "../components/ScreenContainer.js";
+import ForumFilters from "../components/ForumFilters";
 import { colors, spacing, radius } from "../theme/theme.js";
 import { listCourses, getMyCourses } from "../api/courses.js";
 import { useAuth } from "../context/AuthContext";
 import { getCreatorName } from "../utils/creator";
 import useTabPressScrollReset from "../hooks/useTabPressScrollReset";
+import {
+  flattenGrowInterests,
+  filterPostsByInterests,
+  getTier1Metadata,
+  normalizeInterestList
+} from "../utils/growInterests";
+import { INTEREST_TIERS } from "../config/interests";
+
+const tierOneConfig = getTier1Metadata();
+const TIER1_ID = tierOneConfig?.id || "crops";
+const TIER1_TAGS = new Set(tierOneConfig?.options || []);
 
 export default function CoursesScreen() {
   const [courses, setCourses] = useState([]);
   const [drafts, setDrafts] = useState([]);
   const [loading, setLoading] = useState(true);
   const [showDrafts, setShowDrafts] = useState(false);
+  const [showFilters, setShowFilters] = useState(false);
+  const [activeFilters, setActiveFilters] = useState([]);
   const navigation = useNavigation();
   const listRef = useRef(null);
-  const { isGuildMember } = useAuth();
+  const { isGuildMember, user } = useAuth();
 
   useTabPressScrollReset(() => {
     listRef.current?.scrollToOffset({ offset: 0, animated: false });
   });
+
+  const normalizedUserInterests = useMemo(() => {
+    if (!user?.growInterests) return {};
+    const mapped = {};
+    Object.entries(user.growInterests).forEach(([key, value]) => {
+      const normalized = normalizeInterestList(value);
+      if (normalized.length) {
+        mapped[key] = normalized;
+      }
+    });
+    return mapped;
+  }, [user?.growInterests]);
+
+  const userTier1Selections = normalizedUserInterests[TIER1_ID] || [];
+
+  useEffect(() => {
+    if (user?.growInterests) {
+      setActiveFilters(flattenGrowInterests(user.growInterests));
+    } else {
+      setActiveFilters([]);
+    }
+  }, [user?.growInterests]);
+
+  const filterTiers = useMemo(() => {
+    return INTEREST_TIERS.map((tier) => {
+      const isTierOne = tier.tier === 1;
+      const tierSelections = normalizedUserInterests[tier.id] || [];
+      const options = isTierOne ? tierSelections : tier.options;
+      if (isTierOne && options.length === 0) return null;
+      return {
+        id: tier.id,
+        label: tier.label,
+        tier: tier.tier,
+        isTierOne,
+        options
+      };
+    }).filter(Boolean);
+  }, [normalizedUserInterests]);
+
+  const { tier1Filters, otherTierFilters } = useMemo(() => {
+    const grouped = { tier1Filters: [], otherTierFilters: [] };
+    activeFilters.forEach((tag) => {
+      if (TIER1_TAGS.has(tag)) grouped.tier1Filters.push(tag);
+      else grouped.otherTierFilters.push(tag);
+    });
+    return grouped;
+  }, [activeFilters]);
+
+  const tier1FilterSet = useMemo(() => new Set(tier1Filters), [tier1Filters]);
+  const otherFilterSet = useMemo(() => new Set(otherTierFilters), [otherTierFilters]);
+
+  const filteredCourses = useMemo(
+    () =>
+      filterPostsByInterests(
+        courses,
+        tier1FilterSet,
+        otherFilterSet,
+        (course) => course?.effectiveGrowTags || course?.growTags || course?.tags || []
+      ),
+    [courses, tier1FilterSet, otherFilterSet]
+  );
+
+  const toggleFilter = useCallback(
+    (tag, tierId = null) => {
+      setActiveFilters((prev) => {
+        const exists = prev.includes(tag);
+        let next = exists ? prev.filter((t) => t !== tag) : [...prev, tag];
+
+        if (tierId === TIER1_ID && userTier1Selections.length > 0) {
+          const hasTier1Selected = next.some((value) => userTier1Selections.includes(value));
+          if (!hasTier1Selected) {
+            const withoutTier1 = next.filter((value) => !userTier1Selections.includes(value));
+            next = Array.from(new Set([...withoutTier1, ...userTier1Selections]));
+          }
+        }
+
+        return next;
+      });
+    },
+    [userTier1Selections]
+  );
 
   async function load() {
     try {
@@ -170,7 +265,7 @@ export default function CoursesScreen() {
           </Text>
           {!isGuildMember && (
             <Text style={styles.guildHint}>
-              Join a guild when you want crop-specific realms, while keeping your learning
+              Join the forum when you want crop-specific realms, while keeping your learning
               path focused on the fundamentals until you opt in.
             </Text>
           )}
@@ -183,6 +278,27 @@ export default function CoursesScreen() {
         </TouchableOpacity>
       </View>
       {renderDraftsSection()}
+      {filterTiers.length > 0 && (
+        <View style={styles.filterSection}>
+          <View style={styles.filterHeaderRow}>
+            <TouchableOpacity
+              style={styles.filterToggle}
+              onPress={() => setShowFilters((prev) => !prev)}
+            >
+              <Text style={styles.filterToggleText}>
+                Filters {activeFilters.length > 0 ? `(${activeFilters.length})` : ""}{" "}
+                {showFilters ? "▲" : "▼"}
+              </Text>
+            </TouchableOpacity>
+          </View>
+          <ForumFilters
+            visible={showFilters}
+            tiers={filterTiers}
+            activeFilters={activeFilters}
+            onToggleFilter={toggleFilter}
+          />
+        </View>
+      )}
     </View>
   );
 
@@ -190,7 +306,7 @@ export default function CoursesScreen() {
     <ScreenContainer>
       <FlatList
         ref={listRef}
-        data={courses}
+        data={filteredCourses}
         contentContainerStyle={styles.listContent}
         keyExtractor={(c) => c._id}
         ListHeaderComponent={renderHeaderComponent}
@@ -232,15 +348,19 @@ export default function CoursesScreen() {
           </TouchableOpacity>
         )}
         ListEmptyComponent={
-          !loading && (
+          !loading ? (
             <View style={styles.emptyState}>
               <Text style={styles.emptyIcon}>🎓</Text>
-              <Text style={styles.emptyTitle}>No courses yet</Text>
+              <Text style={styles.emptyTitle}>
+                {courses.length > 0 ? "No courses match these interests." : "No courses yet"}
+              </Text>
               <Text style={styles.emptyText}>
-                Be the first to create a course and share your expertise
+                {courses.length > 0
+                  ? "Try expanding the filters or check back later for new classes."
+                  : "Be the first to create a course and share your expertise"}
               </Text>
             </View>
-          )
+          ) : null
         }
       />
     </ScreenContainer>
@@ -288,6 +408,22 @@ const styles = StyleSheet.create({
   listContent: {
     padding: spacing(4),
     paddingBottom: 100
+  },
+  filterSection: {
+    marginHorizontal: spacing(4),
+    marginBottom: spacing(4)
+  },
+  filterHeaderRow: {
+    flexDirection: "row",
+    justifyContent: "flex-end",
+    marginBottom: 8
+  },
+  filterToggle: {
+    paddingVertical: 6
+  },
+  filterToggleText: {
+    color: "#10B981",
+    fontWeight: "600"
   },
   courseCard: {
     backgroundColor: "#FFFFFF",

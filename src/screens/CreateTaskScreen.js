@@ -1,14 +1,18 @@
 import React, { useState, useEffect } from "react";
-import { Text, TextInput, TouchableOpacity, StyleSheet, View } from "react-native";
+import { Text, TextInput, TouchableOpacity, StyleSheet, View, Alert } from "react-native";
 import ScreenContainer from "../components/ScreenContainer.js";
 import { createCustomTask } from "../api/tasks.js";
-import { getPlants } from "../api/plants.js";
+import { listGrows } from "../api/grows.js";
 import { useAuth } from "../context/AuthContext.js";
 import { useNavigation } from "@react-navigation/native";
+import GrowPlantSelector from "../components/GrowPlantSelector.js";
 
 export default function CreateTaskScreen({ route }) {
-  const [plants, setPlants] = useState([]);
-  const [plantId, setPlantId] = useState("");
+  const [grows, setGrows] = useState([]);
+  const [selectedGrowId, setSelectedGrowId] = useState(null);
+  const [selectedPlantIds, setSelectedPlantIds] = useState([]);
+  const [growsLoading, setGrowsLoading] = useState(true);
+
   const [title, setTitle] = useState("");
   const [desc, setDesc] = useState("");
   const [date, setDate] = useState(route?.params?.dueDate || "");
@@ -20,13 +24,40 @@ export default function CreateTaskScreen({ route }) {
   }, []);
 
   async function load() {
-    const res = await getPlants();
-    const payload = res?.data ?? res ?? [];
-    setPlants(Array.isArray(payload) ? payload : []);
+    try {
+      setGrowsLoading(true);
+      const res = await listGrows();
+      const list = Array.isArray(res) ? res : [];
+      setGrows(list);
+    } catch (err) {
+      console.log(err);
+    } finally {
+      setGrowsLoading(false);
+    }
   }
 
   async function save() {
-    await createCustomTask({ plantId, title, description: desc, dueDate: date });
+    let finalDate = date;
+    // If date is YYYY-MM-DD, convert to local midnight ISO to avoid UTC shift
+    if (/^\d{4}-\d{2}-\d{2}$/.test(date)) {
+      const [y, m, d] = date.split("-").map(Number);
+      finalDate = new Date(y, m - 1, d).toISOString();
+    }
+
+    const payload = {
+      title,
+      description: desc,
+      dueDate: finalDate
+    };
+
+    if (selectedGrowId) {
+      payload.growId = selectedGrowId;
+    }
+    if (selectedPlantIds.length > 0) {
+      payload.plants = selectedPlantIds;
+    }
+
+    await createCustomTask(payload);
     navigation.goBack();
   }
 
@@ -53,16 +84,15 @@ export default function CreateTaskScreen({ route }) {
         style={styles.input}
       />
 
-      <Text style={styles.sub}>Assign to plant:</Text>
-      {plants.map((p) => (
-        <TouchableOpacity
-          key={p._id}
-          onPress={() => setPlantId(p._id)}
-          style={[styles.plant, plantId === p._id && { backgroundColor: "#d1f7d6" }]}
-        >
-          <Text>{p.name}</Text>
-        </TouchableOpacity>
-      ))}
+      <GrowPlantSelector
+        grows={grows}
+        loading={growsLoading}
+        selectedGrowId={selectedGrowId}
+        onSelectGrow={setSelectedGrowId}
+        selectedPlantIds={selectedPlantIds}
+        onSelectPlants={setSelectedPlantIds}
+        label="Assign to a Grow (optional)"
+      />
 
       {!isPro && (
         <View

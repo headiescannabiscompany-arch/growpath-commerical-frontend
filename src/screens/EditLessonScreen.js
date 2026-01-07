@@ -1,7 +1,9 @@
 import React, { useEffect, useState } from "react";
 import { Text, TextInput, TouchableOpacity, StyleSheet, Alert } from "react-native";
 import ScreenContainer from "../components/ScreenContainer";
+import GrowInterestPicker from "../components/GrowInterestPicker";
 import { updateLesson } from "../api/courses";
+import { buildEmptyTierSelection, flattenTierSelections, groupTagsByTier } from "../utils/growInterests";
 
 export default function EditLessonScreen({ route, navigation }) {
   const { lessonId } = route.params;
@@ -12,6 +14,9 @@ export default function EditLessonScreen({ route, navigation }) {
   const [content, setContent] = useState("");
   const [videoUrl, setVideoUrl] = useState("");
   const [pdfUrl, setPdfUrl] = useState("");
+  const [growInterestSelections, setGrowInterestSelections] = useState(() =>
+    buildEmptyTierSelection()
+  );
 
   useEffect(() => {
     if (route.params?.lesson) {
@@ -22,6 +27,7 @@ export default function EditLessonScreen({ route, navigation }) {
       setContent(l.content || "");
       setVideoUrl(l.videoUrl || "");
       setPdfUrl(l.pdfUrl || "");
+      setGrowInterestSelections(groupTagsByTier(l.growTags || []));
     } else {
       Alert.alert("Missing lesson data");
       navigation.goBack();
@@ -35,6 +41,7 @@ export default function EditLessonScreen({ route, navigation }) {
       content,
       videoUrl,
       pdfUrl,
+      growTags: flattenTierSelections(growInterestSelections)
     });
 
     navigation.goBack();
@@ -81,6 +88,14 @@ export default function EditLessonScreen({ route, navigation }) {
         style={styles.input}
         value={pdfUrl}
         onChangeText={setPdfUrl}
+      />
+
+      <GrowInterestPicker
+        title="Lesson Grow Tags"
+        helperText="Describe who this lesson applies to. Leave any tier empty."
+        value={growInterestSelections}
+        onChange={setGrowInterestSelections}
+        defaultExpanded
       />
 
       <TouchableOpacity style={styles.btn} onPress={submit}>

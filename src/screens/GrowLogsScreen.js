@@ -8,6 +8,8 @@ import { colors, spacing, radius } from "../theme/theme";
 import { createGrow, listGrows } from "../api/grows";
 import { uploadPlantPhoto } from "../api/plants";
 import PlantCard from "../components/PlantCard";
+import GrowInterestPicker from "../components/GrowInterestPicker";
+import { buildEmptyTierSelection, flattenTierSelections } from "../utils/growInterests";
 
 const hasValue = (value) => {
   if (typeof value === "string") {
@@ -41,6 +43,10 @@ export default function GrowLogsScreen({ navigation }) {
   const [newName, setNewName] = useState("");
   const [newBreeder, setNewBreeder] = useState("");
   const [plantForms, setPlantForms] = useState([buildEmptyPlant()]);
+  const [growInterestSelections, setGrowInterestSelections] = useState(() =>
+    buildEmptyTierSelection()
+  );
+  const GROW_TAG_TIERS = [1, 2, 3, 5, 6];
 
   const [stageFilter, setStageFilter] = useState("");
   const [breederFilter, setBreederFilter] = useState("");
@@ -241,6 +247,10 @@ export default function GrowLogsScreen({ navigation }) {
         ...(environment ? { environment } : {}),
         plants: plantPayloads
       };
+      const growTags = flattenTierSelections(growInterestSelections);
+      if (growTags.length) {
+        growData.growTags = growTags;
+      }
 
       const grow = await createGrow(growData);
       setGrows((prev) => [grow, ...prev]);
@@ -267,6 +277,7 @@ export default function GrowLogsScreen({ navigation }) {
       setSubstrateType("");
       setSubstratePH("");
       setShowAdvanced(false);
+      setGrowInterestSelections(buildEmptyTierSelection());
       await loadGrows();
     } catch (err) {
       Alert.alert("Error", err.message);
@@ -332,6 +343,15 @@ export default function GrowLogsScreen({ navigation }) {
           placeholder="Breeder"
           style={styles.input}
           placeholderTextColor={colors.textSoft}
+        />
+
+        <GrowInterestPicker
+          title="Tag this grow"
+          helperText="Select the environments, methods, goals, and constraints it covers. Leave any tier empty."
+          value={growInterestSelections}
+          enabledTierIds={GROW_TAG_TIERS}
+          onChange={setGrowInterestSelections}
+          defaultExpanded={false}
         />
 
         <View style={styles.geneticsSection}>

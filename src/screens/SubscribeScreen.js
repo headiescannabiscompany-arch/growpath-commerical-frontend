@@ -65,7 +65,7 @@ export default function SubscribeScreen({ navigation }) {
 
         <Text style={styles.item}>✔ Full AI Diagnose with Vision</Text>
         <Text style={styles.item}>✔ Unlimited plants & photo uploads</Text>
-        <Text style={styles.item}>✔ Growers Guild access & community</Text>
+        <Text style={styles.item}>✔ Growers Forum access & community</Text>
         <Text style={styles.item}>✔ Create & sell courses (earn 85%)</Text>
         <Text style={styles.item}>✔ Advanced grow analytics</Text>
 

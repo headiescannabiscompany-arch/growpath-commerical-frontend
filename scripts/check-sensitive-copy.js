@@ -106,6 +106,30 @@ function pathHasGuildGate(path) {
   return false;
 }
 
+function hasSensitiveOkComment(path) {
+  if (!path) return false;
+  const comments = [];
+  if (Array.isArray(path.node?.leadingComments)) {
+    comments.push(...path.node.leadingComments);
+  }
+  if (Array.isArray(path.node?.trailingComments)) {
+    comments.push(...path.node.trailingComments);
+  }
+  if (Array.isArray(path.parentPath?.node?.leadingComments)) {
+    comments.push(...path.parentPath.node.leadingComments);
+  }
+  if (Array.isArray(path.parentPath?.node?.trailingComments)) {
+    comments.push(...path.parentPath.node.trailingComments);
+  }
+  if (Array.isArray(path.parentPath?.parentPath?.node?.leadingComments)) {
+    comments.push(...path.parentPath.parentPath.node.leadingComments);
+  }
+  return comments.some((comment) => {
+    if (!comment?.value || typeof comment.value !== "string") return false;
+    return comment.value.toLowerCase().includes("sensitive-ok");
+  });
+}
+
 function recordViolation(file, loc, value) {
   violations.push({
     file,
@@ -117,6 +141,7 @@ function recordViolation(file, loc, value) {
 
 function checkCandidate({ value, path, file, loc }) {
   if (!containsKeyword(value)) return;
+  if (hasSensitiveOkComment(path)) return;
   if (pathHasGuildGate(path)) return;
   recordViolation(file, loc ?? path.node.loc, value);
 }

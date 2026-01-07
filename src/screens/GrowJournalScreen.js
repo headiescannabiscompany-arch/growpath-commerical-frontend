@@ -10,14 +10,29 @@ import { addEntry, uploadEntryPhoto } from "../api/grows";
 import { getEntries as getGrowEntries } from "../api/growlog";
 import { useAuth } from "../context/AuthContext";
 import PlantCard from "../components/PlantCard";
+import GrowInterestPicker from "../components/GrowInterestPicker";
+import {
+  buildEmptyTierSelection,
+  flattenTierSelections,
+  groupTagsByTier
+} from "../utils/growInterests";
 
 export default function GrowJournalScreen({ route, navigation }) {
   const { isPro } = useAuth();
   const growRef = useRef(route.params?.grow);
+  const GROW_TAG_TIERS = [1, 2, 3, 5, 6];
 
   useEffect(() => {
     if (route.params?.grow) {
       growRef.current = route.params.grow;
+    }
+  }, [route.params?.grow]);
+
+  useEffect(() => {
+    if (route.params?.grow?.growTags) {
+      setGrowInterestSelections(groupTagsByTier(route.params.grow.growTags));
+    } else if (route.params?.grow) {
+      setGrowInterestSelections(buildEmptyTierSelection());
     }
   }, [route.params?.grow]);
 
@@ -28,7 +43,10 @@ export default function GrowJournalScreen({ route, navigation }) {
   const [addingEntry, setAddingEntry] = useState(false);
   const [uploadingPhoto, setUploadingPhoto] = useState(false);
   const [loadingEntries, setLoadingEntries] = useState(false);
-  const [selectedPlantId, setSelectedPlantId] = useState(null);
+  const [selectedPlantIds, setSelectedPlantIds] = useState([]);
+  const [growInterestSelections, setGrowInterestSelections] = useState(() =>
+    groupTagsByTier(grow?.growTags || [])
+  );
   const growId = grow?._id;
   if (!grow) {
     return (
@@ -88,8 +106,9 @@ export default function GrowJournalScreen({ route, navigation }) {
     try {
       setAddingEntry(true);
       const payload = { note: note.trim() };
-      if (selectedPlantId) {
-        payload.plantId = selectedPlantId;
+      payload.growTags = flattenTierSelections(growInterestSelections);
+      if (selectedPlantIds.length > 0) {
+        payload.plants = selectedPlantIds;
       }
       await addEntry(growId, payload);
       await loadEntries();
@@ -128,9 +147,12 @@ export default function GrowJournalScreen({ route, navigation }) {
         setUploadingPhoto(true);
         const uploaded = await uploadEntryPhoto(growId, file);
         if (uploaded?.url) {
-          const payload = { photos: [uploaded.url] };
-          if (selectedPlantId) {
-            payload.plantId = selectedPlantId;
+          const payload = {
+            photos: [uploaded.url],
+            growTags: flattenTierSelections(growInterestSelections)
+          };
+          if (selectedPlantIds.length > 0) {
+            payload.plants = selectedPlantIds;
           }
           await addEntry(growId, payload);
           await loadEntries();
@@ -207,31 +229,48 @@ export default function GrowJournalScreen({ route, navigation }) {
               <TouchableOpacity
                 style={[
                   styles.plantPill,
-                  !selectedPlantId && styles.plantPillActive
+                  selectedPlantIds.length === 0 && styles.plantPillActive
                 ]}
-                onPress={() => setSelectedPlantId(null)}
+                onPress={() => setSelectedPlantIds([])}
               >
-                <Text style={styles.plantPillText}>
+                <Text style={selectedPlantIds.length === 0 ? styles.plantPillTextActive : styles.plantPillText}>
                   Entire grow
                 </Text>
               </TouchableOpacity>
-              {plants.map((plant) => (
-                <TouchableOpacity
-                  key={plant._id}
-                  style={[
-                    styles.plantPill,
-                    selectedPlantId === plant._id && styles.plantPillActive
-                  ]}
-                  onPress={() =>
-                    setSelectedPlantId((prev) => (prev === plant._id ? null : plant._id))
-                  }
-                >
-                  <Text style={styles.plantPillText}>{plant.name || plant.strain || "Plant"}</Text>
-                </TouchableOpacity>
-              ))}
+              {plants.map((plant) => {
+                const isActive = selectedPlantIds.includes(plant._id);
+                return (
+                  <TouchableOpacity
+                    key={plant._id}
+                    style={[
+                      styles.plantPill,
+                      isActive && styles.plantPillActive
+                    ]}
+                    onPress={() =>
+                      setSelectedPlantIds((prev) => {
+                         if (prev.includes(plant._id)) {
+                           return prev.filter(id => id !== plant._id);
+                         }
+                         return [...prev, plant._id];
+                      })
+                    }
+                  >
+                    <Text style={isActive ? styles.plantPillTextActive : styles.plantPillText}>{plant.name || plant.strain || "Plant"}</Text>
+                  </TouchableOpacity>
+                );
+              })}
             </View>
           </View>
         ) : null}
+
+        <GrowInterestPicker
+          title="Grow Interests relevant to this entry"
+          helperText="Select the crops, environments, and goals this update relates to."
+          enabledTierIds={GROW_TAG_TIERS}
+          value={growInterestSelections}
+          onChange={setGrowInterestSelections}
+          defaultExpanded={Boolean(route.params?.entryId)}
+        />
 
         <TextInput
           value={note}
@@ -330,6 +369,10 @@ const styles = StyleSheet.create({
   plantPillText: {
     fontWeight: "600",
     color: colors.text
+  },
+  plantPillTextActive: {
+    color: colors.accent,
+    fontWeight: "700"
   },
   plantList: {
     gap: spacing(3)
