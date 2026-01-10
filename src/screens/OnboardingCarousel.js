@@ -1,27 +1,27 @@
-import React, { useState } from "react";
-import { View, Text, StyleSheet, Image } from "react-native";
+﻿import React, { useState } from "react";
+import { View, Text, StyleSheet } from "react-native";
 import PrimaryButton from "../components/PrimaryButton.js";
 
 const slides = [
   {
-    title: "What is GrowPath?",
-    body: "GrowPath is your personal grow journal and learning companion. It helps you observe, plan, and reflect on your cultivation journey—without automating or controlling your process.",
-    emoji: "🌱"
+    title: "GrowPath Commercial",
+    body: "The all-in-one platform for cannabis industry businesses. From cultivators to nutrient companies to equipment manufacturers.",
+    emoji: "🚀"
   },
   {
-    title: "Who is it for?",
-    body: "GrowPath is for home growers who value learning, curiosity, and intentional progress. Whether you’re new or experienced, you’ll find tools to help you grow with confidence.",
-    emoji: "🧑‍🌾"
+    title: "For Cultivators",
+    body: "Metrc compliance tracking, multi-facility management, real-time inventory sync, and automated compliance monitoring.",
+    emoji: "🌿"
   },
   {
-    title: "What it does NOT do",
-    body: "GrowPath does not automate, optimize, or recommend actions. It never replaces your judgment or tells you what to do. You stay in control—always.",
-    emoji: "🚫🤖"
+    title: "For Industry Partners",
+    body: "Soil suppliers, nutrient companies, equipment manufacturers - build credibility with grow logs, courses, and direct customer engagement.",
+    emoji: "🤝"
   },
   {
-    title: "Why it matters",
-    body: "In a world of shortcuts, GrowPath helps you slow down, observe, and learn. Your journey is unique. We’re here to help you make it intentional.",
-    emoji: "💡"
+    title: "Freemium Model",
+    body: "Cultivators get core features free. Industry partners pay $50/month for ads, courses, content showcase, and audience reach.",
+    emoji: "💳"
   }
 ];
 
@@ -41,9 +41,6 @@ export default function OnboardingCarousel({ onDone }) {
         onPress={onDone}
         style={{ marginTop: 24 }}
         disabled={false}
-      >
-        {/* No children needed, but prop is required by type */}
-      </PrimaryButton>
       />
     </View>
   );

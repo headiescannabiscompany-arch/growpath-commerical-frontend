@@ -30,7 +30,6 @@ const buildEmptyPlant = () => ({
   key: `${Date.now()}-${Math.random().toString(36).slice(2, 7)}`,
   name: "",
   strain: "",
-  breeder: "",
   stage: "",
   photoUrl: null,
   photoPreview: null,
@@ -41,7 +40,6 @@ export default function GrowLogsScreen({ navigation }) {
   const [loading, setLoading] = useState(false);
   const [grows, setGrows] = useState([]);
   const [newName, setNewName] = useState("");
-  const [newBreeder, setNewBreeder] = useState("");
   const [plantForms, setPlantForms] = useState([buildEmptyPlant()]);
   const [growInterestSelections, setGrowInterestSelections] = useState(() =>
     buildEmptyTierSelection()
@@ -49,7 +47,6 @@ export default function GrowLogsScreen({ navigation }) {
   const GROW_TAG_TIERS = [1, 2, 3, 5, 6];
 
   const [stageFilter, setStageFilter] = useState("");
-  const [breederFilter, setBreederFilter] = useState("");
   const [searchFilter, setSearchFilter] = useState("");
 
   // Advanced environment options
@@ -85,10 +82,9 @@ export default function GrowLogsScreen({ navigation }) {
   const filterValues = useMemo(
     () => ({
       stage: stageFilter.trim() || undefined,
-      breeder: breederFilter.trim() || undefined,
       search: searchFilter.trim() || undefined
     }),
-    [stageFilter, breederFilter, searchFilter]
+    [stageFilter, searchFilter]
   );
 
   async function loadGrows(customFilters) {
@@ -114,7 +110,6 @@ export default function GrowLogsScreen({ navigation }) {
 
   const handleClearFilters = () => {
     setStageFilter("");
-    setBreederFilter("");
     setSearchFilter("");
     loadGrows({});
   };
@@ -243,7 +238,6 @@ export default function GrowLogsScreen({ navigation }) {
       const environment = buildEnvironmentPayload();
       const growData = {
         name: newName.trim(),
-        breeder: newBreeder.trim() || undefined,
         ...(environment ? { environment } : {}),
         plants: plantPayloads
       };
@@ -257,7 +251,6 @@ export default function GrowLogsScreen({ navigation }) {
 
       // Reset all fields
       setNewName("");
-      setNewBreeder("");
       setPlantForms([buildEmptyPlant()]);
       setLightPPFD("");
       setLightDLI("");
@@ -302,16 +295,9 @@ export default function GrowLogsScreen({ navigation }) {
           placeholderTextColor={colors.textSoft}
         />
         <TextInput
-          value={breederFilter}
-          onChangeText={setBreederFilter}
-          placeholder="Breeder"
-          style={styles.input}
-          placeholderTextColor={colors.textSoft}
-        />
-        <TextInput
           value={searchFilter}
           onChangeText={setSearchFilter}
-          placeholder="Search grow name or breeder"
+          placeholder="Search grow name"
           style={styles.input}
           placeholderTextColor={colors.textSoft}
         />
@@ -334,13 +320,6 @@ export default function GrowLogsScreen({ navigation }) {
           value={newName}
           onChangeText={setNewName}
           placeholder="Grow Name (required)"
-          style={styles.input}
-          placeholderTextColor={colors.textSoft}
-        />
-        <TextInput
-          value={newBreeder}
-          onChangeText={setNewBreeder}
-          placeholder="Breeder"
           style={styles.input}
           placeholderTextColor={colors.textSoft}
         />

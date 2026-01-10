@@ -37,7 +37,7 @@ function deriveNotificationPrefs(preferences) {
 }
 
 export default function ProfileScreen({ route, navigation }) {
-  const { user: currentUser, isPro: currentIsPro, isEntitled: currentIsEntitled, updateUser } = useAuth();
+  const { user: currentUser, isPro: currentIsPro, isEntitled: currentIsEntitled, updateUser, logout, facilitiesAccess } = useAuth();
   const resolvedUserId =
     route?.params?.userId ||
     route?.params?.id ||
@@ -554,6 +554,57 @@ export default function ProfileScreen({ route, navigation }) {
             Privacy Policy
           </Text>
         </TouchableOpacity>
+
+        {/* MODE SWITCHER - Show if user has facility access */}
+        {isOwnProfile && (
+          <View style={{ marginTop: 24, width: "100%" }}>
+            {currentUser?.facilitiesAccess && currentUser.facilitiesAccess.length > 0 && (
+              <TouchableOpacity
+                style={{
+                  backgroundColor: "#0ea5e9",
+                  paddingVertical: 12,
+                  borderRadius: 8,
+                  marginBottom: 12,
+                  alignItems: "center"
+                }}
+                onPress={() => {
+                  // Navigate to FacilityStack via mode change
+                  navigation.reset({
+                    index: 0,
+                    routes: [{ name: "FacilityStack" }]
+                  });
+                }}
+              >
+                <Text style={{ color: "white", fontWeight: "600", fontSize: 14 }}>
+                  🏭 Switch to GrowPath AI Facilities
+                </Text>
+              </TouchableOpacity>
+            )}
+
+            {/* LOGOUT BUTTON */}
+            <TouchableOpacity
+              style={{
+                backgroundColor: "#ef4444",
+                paddingVertical: 12,
+                borderRadius: 8,
+                alignItems: "center"
+              }}
+              onPress={() => {
+                Alert.alert("Logout", "Are you sure?", [
+                  { text: "Cancel", onPress: () => {} },
+                  {
+                    text: "Logout",
+                    onPress: () => logout()
+                  }
+                ]);
+              }}
+            >
+              <Text style={{ color: "white", fontWeight: "600", fontSize: 14 }}>
+                Logout
+              </Text>
+            </TouchableOpacity>
+          </View>
+        )}
       </View>
     </View>
   );

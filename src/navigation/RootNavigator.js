@@ -4,6 +4,7 @@ import { createNativeStackNavigator } from "@react-navigation/native-stack";
 import { useAuth } from "../context/AuthContext";
 import LoginScreen from "../screens/LoginScreen";
 import MainTabs from "./MainTabs";
+import FacilityStack from "./FacilityStack";
 import GrowJournalScreen from "../screens/GrowJournalScreen";
 import SubscribeScreen from "../screens/SubscribeScreen";
 import CourseDetailScreen from "../screens/CourseDetailScreen";
@@ -13,6 +14,9 @@ import ManageCourseScreen from "../screens/ManageCourseScreen";
 import AddLessonScreen from "../screens/AddLessonScreen";
 import EditLessonScreen from "../screens/EditLessonScreen";
 import LessonScreen from "../screens/LessonScreen";
+import VendorSignup from "../screens/VendorSignup";
+import CreateVendorGuide from "../screens/CreateVendorGuide";
+import VendorGuidesScreen from "../screens/VendorGuidesScreen";
 import CreatorDashboardScreen from "../screens/CreatorDashboardScreen";
 import CreatorDashboardV2 from "../screens/CreatorDashboardV2";
 import CreatorPayoutScreen from "../screens/CreatorPayoutScreen";
@@ -71,7 +75,7 @@ const APP_INTRO_SEEN_KEY = "seenAppIntro";
 const LEGACY_ONBOARDING_KEY = "seenOnboarding";
 
 export default function RootNavigator() {
-  const { isPro, token, user } = useAuth();
+  const { isPro, token, user, mode } = useAuth();
   const [showIntro, setShowIntro] = React.useState(isPro ? false : null);
   const isAuthenticated = Boolean(token && user);
 
@@ -122,7 +126,7 @@ export default function RootNavigator() {
     !isAuthenticated && !isPro && showIntro
       ? "AppIntro"
       : isAuthenticated
-        ? "MainTabs"
+        ? "FacilityStack"  // Always default to FacilityStack for authenticated users
         : "Login";
 
   return (
@@ -149,6 +153,11 @@ export default function RootNavigator() {
       <Stack.Screen
         name="MainTabs"
         component={MainTabs}
+        options={{ headerShown: false }}
+      />
+      <Stack.Screen
+        name="FacilityStack"
+        component={FacilityStack}
         options={{ headerShown: false }}
       />
       <Stack.Screen name="GrowJournal" component={GrowJournalScreen} />
@@ -184,6 +193,9 @@ export default function RootNavigator() {
         options={{ title: "Edit Lesson" }}
       />
       <Stack.Screen name="Lesson" component={LessonScreen} options={{ title: "Lesson" }} />
+      <Stack.Screen name="VendorSignup" component={VendorSignup} options={{ title: "Become a Vendor" }} />
+      <Stack.Screen name="CreateVendorGuide" component={CreateVendorGuide} options={{ title: "Create Guide" }} />
+      <Stack.Screen name="VendorGuides" component={VendorGuidesScreen} options={{ title: "Guides" }} />
       <Stack.Screen name="Earnings" component={EarningsScreen} />
       <Stack.Screen name="AdminCourses" component={AdminCoursesScreen} />
       <Stack.Screen name="CreatorDashboard" component={CreatorDashboardScreen} />

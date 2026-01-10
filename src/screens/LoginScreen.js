@@ -28,7 +28,7 @@ export default function LoginScreen({ navigation }) {
 
   useEffect(() => {
     if (token && user) {
-      navigation.replace("MainTabs");
+      navigation.replace("FacilityStack");
     }
     
     AsyncStorage.getItem("HAS_LOGGED_IN_BEFORE").then((val) => {
@@ -57,7 +57,9 @@ export default function LoginScreen({ navigation }) {
       if (mode === "login") {
         authResult = await apiLogin(email.trim(), password.trim());
       } else {
-        authResult = await apiSignup(email.trim(), password.trim(), displayName.trim());
+        // Get business type from AsyncStorage
+        const businessType = await AsyncStorage.getItem("businessType");
+        authResult = await apiSignup(email.trim(), password.trim(), displayName.trim(), businessType || "cultivator");
       }
 
       const { user, token } = authResult || {};
@@ -71,7 +73,7 @@ export default function LoginScreen({ navigation }) {
       await AsyncStorage.setItem("HAS_LOGGED_IN_BEFORE", "true");
       contextLogin(authToken, user); // Don't await - let it run async
 
-      navigation.replace("MainTabs");
+      navigation.replace("FacilityStack");
     } catch (err) {
       console.error("Auth error:", err);
 

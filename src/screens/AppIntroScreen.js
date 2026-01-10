@@ -108,13 +108,12 @@ export default function AppIntroScreen({ onDone }) {
       >
         {/* Step 0: Philosophy */}
         <View style={styles.introSection}>
-          <Text style={styles.headline}>Grow with intention.</Text>
+          <Text style={styles.headline}>Cannabis industry, united.</Text>
           <Text style={styles.body}>
-            GrowPath is designed to help you observe, plan, and learn from your grow — not
-            to automate it.{"\n\n"}
-            You stay in control. The app helps you think clearly.
+            GrowPath Commercial connects cultivators, nutrient companies, equipment manufacturers, and soil suppliers.{"\n\n"}
+            Cultivators manage operations and compliance. Industry partners build credibility and reach customers.
           </Text>
-          <Text style={styles.footer}>Built by growers. Used with judgment.</Text>
+          <Text style={styles.footer}>One platform. Multiple business models.</Text>
 
           <View style={styles.startBlock}>
             <Text style={styles.getStartedLabel}>Get started</Text>
@@ -123,7 +122,7 @@ export default function AppIntroScreen({ onDone }) {
               onPress={handleStart}
               disabled={step > 0}
             >
-              <Text style={styles.buttonText}>Select Interests</Text>
+              <Text style={styles.buttonText}>Select Business Type</Text>
             </TouchableOpacity>
             <TouchableOpacity style={styles.skipButton} onPress={handleSkip}>
               <Text style={styles.skipText}>Skip for now</Text>

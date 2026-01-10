@@ -18,6 +18,9 @@ export const AuthProvider = ({ children }) => {
   const [loading, setLoading] = useState(true);
   const [hasNavigatedAwayFromHome, setHasNavigatedAwayFromHome] = useState(false);
   const [suppressWelcomeMessage, setSuppressWelcomeMessage] = useState(false);
+  const [mode, setModeState] = useState("personal"); // "personal" or "facility"
+  const [selectedFacilityId, setSelectedFacilityIdState] = useState(null);
+  const [facilitiesAccess, setFacilitiesAccess] = useState([]); // Array of { facilityId, role, roomIds }
 
   const updateStateFromUser = (userData) => {
     const entitlements = getEntitlements(userData);
@@ -55,11 +58,21 @@ export const AuthProvider = ({ children }) => {
         AsyncStorage.getItem("user"),
         storageTimeout
       ]);
+      const storedMode = await Promise.race([
+        AsyncStorage.getItem("facilityMode"),
+        storageTimeout
+      ]);
+      const storedFacilityId = await Promise.race([
+        AsyncStorage.getItem("selectedFacilityId"),
+        storageTimeout
+      ]);
 
       if (storedToken) {
         const parsedUser = storedUser ? JSON.parse(storedUser) : null;
         setToken(storedToken);
         setUser(parsedUser);
+        if (storedMode) setModeState(storedMode);
+        if (storedFacilityId) setSelectedFacilityIdState(storedFacilityId);
         syncGlobals(storedToken, parsedUser);
 
         // Load PRO status with timeout
@@ -72,10 +85,20 @@ export const AuthProvider = ({ children }) => {
         } catch (err) {
           // Continue without updated PRO status
         }
+
+        // Load facility access
+        try {
+          await loadFacilityAccess(storedToken);
+        } catch (err) {
+          console.log("Failed to load facility access:", err.message);
+        }
       } else {
         syncGlobals(null, null);
         setToken(null);
         setUser(null);
+        setModeState("personal");
+        setSelectedFacilityIdState(null);
+        setFacilitiesAccess([]);
         updateStateFromUser(null);
         setHasNavigatedAwayFromHome(false);
       }
@@ -111,35 +134,31 @@ export const AuthProvider = ({ children }) => {
     }
   };
 
-  const applyPendingOnboardingInterests = async (baseUser = null) => {
+  const loadFacilityAccess = async (authToken) => {
     try {
-      const raw = await AsyncStorage.getItem(ONBOARDING_INTERESTS_KEY);
-      if (!raw) return;
-
-      let parsed;
-      try {
-        parsed = JSON.parse(raw);
-      } catch (error) {
-        await AsyncStorage.removeItem(ONBOARDING_INTERESTS_KEY);
-        return;
+      const response = await fetch("http://localhost:5001/api/auth/me", {
+        method: "GET",
+        headers: {
+          "Authorization": `Bearer ${authToken || token}`,
+          "Content-Type": "application/json"
+        }
+      });
+      if (response.ok) {
+        const data = await response.json();
+        setFacilitiesAccess(data.facilitiesAccess || []);
       }
-
-      const normalized = normalizePendingInterests(parsed);
-      if (!normalized) {
-        await AsyncStorage.removeItem(ONBOARDING_INTERESTS_KEY);
-        return;
-      }
-
-      await updateGrowInterests(normalized);
-
-      const mergedUser = { ...(baseUser || user || {}), growInterests: normalized };
-      setUser(mergedUser);
-      syncGlobals(token, mergedUser);
-      await AsyncStorage.setItem("user", JSON.stringify(mergedUser));
-      await AsyncStorage.removeItem(ONBOARDING_INTERESTS_KEY);
-      setSuppressWelcomeMessage(true);
     } catch (error) {
-      console.warn("Failed to apply onboarding interests:", error?.message || error);
+      console.log("Failed to load facility access:", error.message);
+    }
+  };
+
+  const applyPendingOnboardingInterests = async (baseUser = null) => {
+    // This is a commercial/facilities app - we don't use consumer interests
+    // Just clear any pending interests from storage
+    try {
+      await AsyncStorage.removeItem(ONBOARDING_INTERESTS_KEY);
+    } catch (error) {
+      // ignore
     }
   };
 
@@ -164,18 +183,24 @@ export const AuthProvider = ({ children }) => {
     AsyncStorage.setItem("user", JSON.stringify(userData)).catch(() => {});
 
     loadProStatus(authToken).catch(() => {});
+    loadFacilityAccess(authToken).catch(() => {});
   };
 
   const logout = async () => {
     try {
       await AsyncStorage.removeItem("token");
       await AsyncStorage.removeItem("user");
+      await AsyncStorage.removeItem("facilityMode");
+      await AsyncStorage.removeItem("selectedFacilityId");
       setToken(null);
       setUser(null);
       setIsPro(false);
       setIsGuildMember(false);
       setSubscriptionStatus("free");
       setHasNavigatedAwayFromHome(false);
+      setModeState("personal");
+      setSelectedFacilityIdState(null);
+      setFacilitiesAccess([]);
       syncGlobals(null, null);
       if (global.__NAV__?.resetRoot) {
         global.__NAV__.resetRoot({
@@ -192,6 +217,28 @@ export const AuthProvider = ({ children }) => {
 
   const refreshProStatus = () => {
     loadProStatus();
+  };
+
+  const setMode = async (newMode) => {
+    setModeState(newMode);
+    try {
+      await AsyncStorage.setItem("facilityMode", newMode);
+    } catch (e) {
+      console.log("Failed to persist facility mode", e);
+    }
+  };
+
+  const setSelectedFacilityId = async (facilityId) => {
+    setSelectedFacilityIdState(facilityId);
+    try {
+      if (facilityId) {
+        await AsyncStorage.setItem("selectedFacilityId", facilityId);
+      } else {
+        await AsyncStorage.removeItem("selectedFacilityId");
+      }
+    } catch (e) {
+      console.log("Failed to persist selected facility id", e);
+    }
   };
 
   useEffect(() => {
@@ -217,7 +264,12 @@ export const AuthProvider = ({ children }) => {
         hasNavigatedAwayFromHome,
         setHasNavigatedAwayFromHome,
         suppressWelcomeMessage,
-        setSuppressWelcomeMessage
+        setSuppressWelcomeMessage,
+        mode,
+        setMode,
+        selectedFacilityId,
+        setSelectedFacilityId,
+        facilitiesAccess
       }}
     >
       {children}

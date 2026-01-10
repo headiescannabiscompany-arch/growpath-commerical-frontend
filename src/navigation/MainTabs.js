@@ -172,10 +172,7 @@ const styles = StyleSheet.create({
     flex: 1,
     backgroundColor: colors.tabBg,
     borderRadius: radius.card + 4,
-    shadowColor: "#000",
-    shadowOpacity: 0.12,
-    shadowOffset: { width: 0, height: 8 },
-    shadowRadius: 32,
+    boxShadow: "0px 8px 32px rgba(0,0,0,0.12)",
     elevation: 8,
     borderWidth: 1,
     borderColor: "rgba(255, 255, 255, 0.1)"
@@ -194,10 +191,7 @@ const styles = StyleSheet.create({
   },
   iconWrapActive: {
     backgroundColor: colors.accent,
-    shadowColor: colors.accent,
-    shadowOpacity: 0.3,
-    shadowOffset: { width: 0, height: 4 },
-    shadowRadius: 8,
+    boxShadow: "0px 4px 8px rgba(0,0,0,0.2)",
     elevation: 4
   },
   iconEmoji: {

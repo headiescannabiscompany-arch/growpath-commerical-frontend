@@ -12,10 +12,10 @@ export async function login(email, password) {
   return { user: data.user, token: data.token };
 }
 
-export async function signup(email, password, displayName) {
+export async function signup(email, password, displayName, businessType) {
   const data = await api(ROUTES.AUTH.SIGNUP, {
     method: "POST",
-    body: JSON.stringify({ email, password, displayName })
+    body: JSON.stringify({ email, password, displayName, businessType })
   });
 
   global.authToken = data.token;

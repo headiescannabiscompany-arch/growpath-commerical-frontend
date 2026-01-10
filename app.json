@@ -1,12 +1,12 @@
 {
   "expo": {
-    "name": "GrowPath AI",
-    "slug": "growpath-ai",
+    "name": "GrowPath Commercial",
+    "slug": "growpath-commercial",
     "version": "1.0.0",
     "orientation": "portrait",
     "icon": "./assets/icon.png",
     "userInterfaceStyle": "automatic",
-    "scheme": "growpathai",
+    "scheme": "growpathcommercial",
     "splash": {
       "image": "./assets/splash.png",
       "resizeMode": "contain",

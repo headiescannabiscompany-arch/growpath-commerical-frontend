@@ -34,7 +34,7 @@ function AppContent() {
         }}
       >
         <ActivityIndicator size="large" color="#2ecc71" />
-        <Text style={{ marginTop: 16, fontSize: 16 }}>Loading GrowPath AI...</Text>
+        <Text style={{ marginTop: 16, fontSize: 16 }}>Loading GrowPath Commercial...</Text>
       </View>
     );
   }
