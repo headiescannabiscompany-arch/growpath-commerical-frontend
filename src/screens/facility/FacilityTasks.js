@@ -1,33 +1,123 @@
 /**
- * FacilityTasks Screen - Phase 2 Scaffold
- * 
- * Admin View: Global task visibility across facility
- * - All Tasks (facility-wide list with filters)
- * - By Room (room cards with task counts)
- * - By User (user cards with assigned tasks)
- * - Awaiting Verification (completed tasks needing verify)
- * 
- * Technician View: Limited to assigned tasks or allowed rooms
+ * FacilityTasks Screen - Basic CRUD Implementation
  */
 
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 import {
   View,
   Text,
   ScrollView,
   TouchableOpacity,
-  StyleSheet
+  StyleSheet,
+  TextInput,
+  Modal,
+  Alert,
+  ActivityIndicator,
+  RefreshControl
 } from "react-native";
 import { useAuth } from "../../context/AuthContext";
 import { hasGlobalFacilityAccess } from "../../types/facility";
+import { getTasks, createCustomTask, completeTask, deleteTask } from "../../api/tasks";
 
 const FacilityTasks = () => {
-  const { selectedFacilityId, facilitiesAccess } = useAuth();
+  const { selectedFacilityId, facilitiesAccess, token } = useAuth();
   const [activeTab, setActiveTab] = useState("all");
+  const [tasks, setTasks] = useState([]);
+  const [loading, setLoading] = useState(true);
+  const [refreshing, setRefreshing] = useState(false);
+  const [showCreateModal, setShowCreateModal] = useState(false);
+  const [newTaskTitle, setNewTaskTitle] = useState("");
+  const [newTaskDesc, setNewTaskDesc] = useState("");
+  const [newTaskDueDate, setNewTaskDueDate] = useState("");
+  const [creating, setCreating] = useState(false);
 
-  const userAccess = facilitiesAccess?.find(f => f.facilityId === selectedFacilityId);
+  const userAccess = facilitiesAccess?.find((f) => f.facilityId === selectedFacilityId);
   const userRole = userAccess?.role;
   const isAdmin = userRole ? hasGlobalFacilityAccess(userRole) : false;
+
+  useEffect(() => {
+    loadTasks();
+  }, [selectedFacilityId]);
+
+  const loadTasks = async () => {
+    setLoading(true);
+    try {
+      const result = await getTasks(token);
+      setTasks(Array.isArray(result) ? result : []);
+    } catch (error) {
+      console.log("Error loading tasks:", error);
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  const onRefresh = async () => {
+    setRefreshing(true);
+    await loadTasks();
+    setRefreshing(false);
+  };
+
+  const handleCreateTask = async () => {
+    if (!newTaskTitle.trim()) {
+      Alert.alert("Error", "Task title is required");
+      return;
+    }
+    setCreating(true);
+    try {
+      let finalDate = newTaskDueDate;
+      if (/^\d{4}-\d{2}-\d{2}$/.test(newTaskDueDate)) {
+        const [y, m, d] = newTaskDueDate.split("-").map(Number);
+        finalDate = new Date(y, m - 1, d).toISOString();
+      }
+
+      await createCustomTask(
+        {
+          title: newTaskTitle,
+          description: newTaskDesc,
+          dueDate: finalDate,
+          facilityId: selectedFacilityId
+        },
+        token
+      );
+
+      setShowCreateModal(false);
+      setNewTaskTitle("");
+      setNewTaskDesc("");
+      setNewTaskDueDate("");
+      await loadTasks();
+    } catch (error) {
+      Alert.alert("Error", "Failed to create task");
+    } finally {
+      setCreating(false);
+    }
+  };
+
+  const handleCompleteTask = async (taskId) => {
+    try {
+      await completeTask(taskId, token);
+      await loadTasks();
+    } catch (error) {
+      Alert.alert("Error", "Failed to complete task");
+    }
+  };
+
+  const handleDeleteTask = async (taskId) => {
+    Alert.alert("Delete Task", "Are you sure you want to delete this task?", [
+      { text: "Cancel", style: "cancel" },
+      {
+        text: "Delete",
+        style: "destructive",
+        onPress: async () => {
+          try {
+            await deleteTask(taskId, token);
+            await loadTasks();
+          } catch (error) {
+            Alert.alert("Error", "Failed to delete task");
+          }
+        }
+      }
+    ]);
+  };
 
   const tabs = [
     { id: "all", label: "All Tasks", adminOnly: false },
@@ -36,57 +126,36 @@ const FacilityTasks = () => {
     { id: "verify", label: "Awaiting Verify", adminOnly: true }
   ];
 
-  const visibleTabs = tabs.filter(tab => !tab.adminOnly || isAdmin);
+  const visibleTabs = tabs.filter((tab) => !tab.adminOnly || isAdmin);
 
-  const renderPlaceholder = () => (
-    <View style={styles.placeholderContainer}>
-      <Text style={styles.placeholderIcon}>📋</Text>
-      <Text style={styles.placeholderTitle}>Tasks Coming in Phase 2</Text>
-      <Text style={styles.placeholderText}>
-        This screen will show:
-      </Text>
-      <View style={styles.featureList}>
-        {isAdmin ? (
-          <>
-            <Text style={styles.featureItem}>• All tasks across facility (admin view)</Text>
-            <Text style={styles.featureItem}>• Filter by room, assignee, status, due date</Text>
-            <Text style={styles.featureItem}>• Bulk assign tasks to users</Text>
-            <Text style={styles.featureItem}>• Unassigned task alerts</Text>
-            <Text style={styles.featureItem}>• Task verification queue</Text>
-          </>
-        ) : (
-          <>
-            <Text style={styles.featureItem}>• Tasks assigned to you</Text>
-            <Text style={styles.featureItem}>• Tasks in your allowed rooms</Text>
-            <Text style={styles.featureItem}>• Complete checklist items</Text>
-            <Text style={styles.featureItem}>• Attach photos & measurements</Text>
-            <Text style={styles.featureItem}>• Create deviations from tasks</Text>
-          </>
-        )}
+  const pendingTasks = tasks.filter((t) => !t.completed);
+  const completedTasks = tasks.filter((t) => t.completed);
+
+  if (loading && !refreshing) {
+    return (
+      <View style={styles.container}>
+        <ActivityIndicator size="large" color="#0ea5e9" />
       </View>
-    </View>
-  );
+    );
+  }
 
   return (
     <View style={styles.container}>
+      {/* Add Task Button */}
+      <TouchableOpacity style={styles.addButton} onPress={() => setShowCreateModal(true)}>
+        <Text style={styles.addButtonText}>+ Add Task</Text>
+      </TouchableOpacity>
+
       {/* Tab Navigation */}
       <View style={styles.tabBar}>
         <ScrollView horizontal showsHorizontalScrollIndicator={false}>
-          {visibleTabs.map(tab => (
+          {visibleTabs.map((tab) => (
             <TouchableOpacity
               key={tab.id}
-              style={[
-                styles.tab,
-                activeTab === tab.id && styles.tabActive
-              ]}
+              style={[styles.tab, activeTab === tab.id && styles.tabActive]}
               onPress={() => setActiveTab(tab.id)}
             >
-              <Text
-                style={[
-                  styles.tabText,
-                  activeTab === tab.id && styles.tabTextActive
-                ]}
-              >
+              <Text style={[styles.tabText, activeTab === tab.id && styles.tabTextActive]}>
                 {tab.label}
               </Text>
             </TouchableOpacity>
@@ -95,96 +164,151 @@ const FacilityTasks = () => {
       </View>
 
       {/* Content */}
-      <ScrollView style={styles.content}>
-        {renderPlaceholder()}
-
-        {/* Phase 2 Filter UI Preview (Admin Only) */}
-        {isAdmin && activeTab === "all" && (
-          <View style={styles.card}>
-            <Text style={styles.cardTitle}>Filter Options (Phase 2)</Text>
-            <View style={styles.filterRow}>
-              <View style={styles.filterBox}>
-                <Text style={styles.filterLabel}>Room</Text>
-                <Text style={styles.filterValue}>All Rooms ▼</Text>
-              </View>
-              <View style={styles.filterBox}>
-                <Text style={styles.filterLabel}>Status</Text>
-                <Text style={styles.filterValue}>Open ▼</Text>
-              </View>
-            </View>
-            <View style={styles.filterRow}>
-              <View style={styles.filterBox}>
-                <Text style={styles.filterLabel}>Assigned To</Text>
-                <Text style={styles.filterValue}>All Users ▼</Text>
-              </View>
-              <View style={styles.filterBox}>
-                <Text style={styles.filterLabel}>Due Date</Text>
-                <Text style={styles.filterValue}>Any ▼</Text>
-              </View>
-            </View>
-          </View>
-        )}
-
-        {/* Phase 2 Task List Preview */}
+      <ScrollView
+        style={styles.content}
+        refreshControl={<RefreshControl refreshing={refreshing} onRefresh={onRefresh} />}
+      >
         {activeTab === "all" && (
-          <View style={styles.card}>
-            <Text style={styles.cardTitle}>Task List (Phase 2 Example)</Text>
-            
-            <View style={styles.taskItem}>
-              <View style={styles.taskCheckbox} />
-              <View style={styles.taskContent}>
-                <Text style={styles.taskTitle}>Water Room A - Veg 1</Text>
-                <Text style={styles.taskMeta}>Due: Today 2:00 PM • Assigned: John</Text>
-                {isAdmin && (
-                  <TouchableOpacity style={styles.assignButton} disabled>
-                    <Text style={styles.assignButtonText}>Reassign</Text>
-                  </TouchableOpacity>
-                )}
+          <>
+            {pendingTasks.length === 0 && completedTasks.length === 0 ? (
+              <View style={styles.emptyState}>
+                <Text style={styles.emptyIcon}>📋</Text>
+                <Text style={styles.emptyText}>No tasks yet</Text>
+                <Text style={styles.emptySubtext}>Tap + Add Task to create one</Text>
               </View>
-            </View>
+            ) : (
+              <>
+                {pendingTasks.length > 0 && (
+                  <View style={styles.section}>
+                    <Text style={styles.sectionTitle}>Pending ({pendingTasks.length})</Text>
+                    {pendingTasks.map((task) => (
+                      <View key={task._id} style={styles.taskItem}>
+                        <TouchableOpacity
+                          style={styles.taskCheckbox}
+                          onPress={() => handleCompleteTask(task._id)}
+                        >
+                          <Text style={styles.checkboxEmpty}>○</Text>
+                        </TouchableOpacity>
+                        <View style={styles.taskContent}>
+                          <Text style={styles.taskTitle}>{task.title}</Text>
+                          {task.description && (
+                            <Text style={styles.taskDesc}>{task.description}</Text>
+                          )}
+                          {task.dueDate && (
+                            <Text style={styles.taskMeta}>
+                              Due: {new Date(task.dueDate).toLocaleDateString()}
+                            </Text>
+                          )}
+                        </View>
+                        <TouchableOpacity
+                          style={styles.deleteButton}
+                          onPress={() => handleDeleteTask(task._id)}
+                        >
+                          <Text style={styles.deleteButtonText}>×</Text>
+                        </TouchableOpacity>
+                      </View>
+                    ))}
+                  </View>
+                )}
 
-            <View style={styles.taskItem}>
-              <View style={styles.taskCheckbox} />
-              <View style={styles.taskContent}>
-                <Text style={styles.taskTitle}>Defol Room B - Flower 2</Text>
-                <Text style={[styles.taskMeta, styles.taskUnassigned]}>
-                  Due: Today 4:00 PM • ⚠️ Unassigned
-                </Text>
-                {isAdmin && (
-                  <TouchableOpacity style={styles.assignButton} disabled>
-                    <Text style={styles.assignButtonText}>Assign</Text>
-                  </TouchableOpacity>
+                {completedTasks.length > 0 && (
+                  <View style={styles.section}>
+                    <Text style={styles.sectionTitle}>Completed ({completedTasks.length})</Text>
+                    {completedTasks.map((task) => (
+                      <View key={task._id} style={[styles.taskItem, styles.taskCompleted]}>
+                        <View style={styles.taskCheckbox}>
+                          <Text style={styles.checkboxChecked}>✓</Text>
+                        </View>
+                        <View style={styles.taskContent}>
+                          <Text style={[styles.taskTitle, styles.taskTitleCompleted]}>
+                            {task.title}
+                          </Text>
+                        </View>
+                        <TouchableOpacity
+                          style={styles.deleteButton}
+                          onPress={() => handleDeleteTask(task._id)}
+                        >
+                          <Text style={styles.deleteButtonText}>×</Text>
+                        </TouchableOpacity>
+                      </View>
+                    ))}
+                  </View>
                 )}
-              </View>
-            </View>
-          </View>
+              </>
+            )}
+          </>
         )}
 
-        {/* Admin Stats Preview */}
-        {isAdmin && (
-          <View style={styles.card}>
-            <Text style={styles.cardTitle}>Facility-Wide Stats (Phase 2)</Text>
-            <View style={styles.statsRow}>
-              <View style={styles.statBox}>
-                <Text style={styles.statValue}>12</Text>
-                <Text style={styles.statLabel}>Open</Text>
-              </View>
-              <View style={styles.statBox}>
-                <Text style={styles.statValue}>3</Text>
-                <Text style={styles.statLabel}>Overdue</Text>
-              </View>
-              <View style={styles.statBox}>
-                <Text style={styles.statValue}>5</Text>
-                <Text style={styles.statLabel}>Unassigned</Text>
-              </View>
-              <View style={styles.statBox}>
-                <Text style={styles.statValue}>8</Text>
-                <Text style={styles.statLabel}>Verify</Text>
-              </View>
-            </View>
+        {activeTab !== "all" && (
+          <View style={styles.placeholderContainer}>
+            <Text style={styles.placeholderIcon}>🚧</Text>
+            <Text style={styles.placeholderTitle}>Coming in Phase 2</Text>
+            <Text style={styles.placeholderText}>
+              Advanced filtering and grouping features will be available soon.
+            </Text>
           </View>
         )}
       </ScrollView>
+
+      {/* Create Task Modal */}
+      <Modal
+        visible={showCreateModal}
+        transparent
+        animationType="slide"
+        onRequestClose={() => setShowCreateModal(false)}
+      >
+        <View style={styles.modalOverlay}>
+          <View style={styles.modalContent}>
+            <Text style={styles.modalTitle}>Create New Task</Text>
+            <TextInput
+              style={styles.input}
+              placeholder="Task title"
+              value={newTaskTitle}
+              onChangeText={setNewTaskTitle}
+            />
+            <TextInput
+              style={[styles.input, styles.textArea]}
+              placeholder="Description (optional)"
+              value={newTaskDesc}
+              onChangeText={setNewTaskDesc}
+              multiline
+              numberOfLines={3}
+            />
+            <TextInput
+              style={styles.input}
+              placeholder="Due date (YYYY-MM-DD)"
+              value={newTaskDueDate}
+              onChangeText={setNewTaskDueDate}
+            />
+            <View style={styles.modalButtons}>
+              <TouchableOpacity
+                style={[styles.modalButton, styles.cancelButton]}
+                onPress={() => {
+                  setShowCreateModal(false);
+                  setNewTaskTitle("");
+                  setNewTaskDesc("");
+                  setNewTaskDueDate("");
+                }}
+              >
+                <Text style={styles.cancelButtonText}>Cancel</Text>
+              </TouchableOpacity>
+              <TouchableOpacity
+                style={[
+                  styles.modalButton,
+                  styles.createButton,
+                  creating && styles.disabledButton
+                ]}
+                onPress={handleCreateTask}
+                disabled={creating}
+              >
+                <Text style={styles.createButtonText}>
+                  {creating ? "Creating..." : "Create"}
+                </Text>
+              </TouchableOpacity>
+            </View>
+          </View>
+        </View>
+      </Modal>
     </View>
   );
 };
@@ -192,42 +316,139 @@ const FacilityTasks = () => {
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    backgroundColor: "#f3f4f6"
+    backgroundColor: "#f9fafb"
+  },
+  addButton: {
+    backgroundColor: "#0ea5e9",
+    margin: 16,
+    marginBottom: 8,
+    padding: 14,
+    borderRadius: 8,
+    alignItems: "center"
+  },
+  addButtonText: {
+    color: "#fff",
+    fontSize: 16,
+    fontWeight: "600"
   },
   tabBar: {
     backgroundColor: "#fff",
     borderBottomWidth: 1,
     borderBottomColor: "#e5e7eb",
-    paddingHorizontal: 16,
-    paddingVertical: 8
+    paddingHorizontal: 16
   },
   tab: {
+    paddingVertical: 12,
     paddingHorizontal: 16,
-    paddingVertical: 10,
-    marginRight: 8,
-    borderRadius: 8
+    marginRight: 8
   },
   tabActive: {
-    backgroundColor: "#eff6ff"
+    borderBottomWidth: 2,
+    borderBottomColor: "#0ea5e9"
   },
   tabText: {
     fontSize: 14,
-    fontWeight: "600",
     color: "#6b7280"
   },
   tabTextActive: {
-    color: "#0ea5e9"
+    color: "#0ea5e9",
+    fontWeight: "600"
   },
   content: {
     flex: 1,
     padding: 16
   },
-  placeholderContainer: {
-    backgroundColor: "#fff",
-    borderRadius: 12,
-    padding: 24,
+  emptyState: {
+    flex: 1,
+    justifyContent: "center",
     alignItems: "center",
-    marginBottom: 16
+    paddingVertical: 60
+  },
+  emptyIcon: {
+    fontSize: 48,
+    marginBottom: 12
+  },
+  emptyText: {
+    fontSize: 18,
+    fontWeight: "600",
+    color: "#6b7280",
+    marginBottom: 4
+  },
+  emptySubtext: {
+    fontSize: 14,
+    color: "#9ca3af"
+  },
+  section: {
+    marginBottom: 24
+  },
+  sectionTitle: {
+    fontSize: 16,
+    fontWeight: "600",
+    color: "#1f2937",
+    marginBottom: 12
+  },
+  taskItem: {
+    flexDirection: "row",
+    alignItems: "flex-start",
+    backgroundColor: "#fff",
+    padding: 12,
+    borderRadius: 8,
+    marginBottom: 8,
+    borderLeftWidth: 3,
+    borderLeftColor: "#0ea5e9"
+  },
+  taskCompleted: {
+    opacity: 0.6,
+    borderLeftColor: "#10b981"
+  },
+  taskCheckbox: {
+    marginRight: 12,
+    marginTop: 2
+  },
+  checkboxEmpty: {
+    fontSize: 20,
+    color: "#9ca3af"
+  },
+  checkboxChecked: {
+    fontSize: 20,
+    color: "#10b981"
+  },
+  taskContent: {
+    flex: 1
+  },
+  taskTitle: {
+    fontSize: 15,
+    fontWeight: "500",
+    color: "#1f2937",
+    marginBottom: 4
+  },
+  taskTitleCompleted: {
+    textDecorationLine: "line-through",
+    color: "#6b7280"
+  },
+  taskDesc: {
+    fontSize: 13,
+    color: "#6b7280",
+    marginBottom: 4
+  },
+  taskMeta: {
+    fontSize: 12,
+    color: "#9ca3af"
+  },
+  deleteButton: {
+    marginLeft: 8,
+    padding: 4
+  },
+  deleteButtonText: {
+    fontSize: 24,
+    color: "#ef4444",
+    fontWeight: "300"
+  },
+  placeholderContainer: {
+    flex: 1,
+    justifyContent: "center",
+    alignItems: "center",
+    paddingVertical: 60
   },
   placeholderIcon: {
     fontSize: 48,
@@ -235,127 +456,71 @@ const styles = StyleSheet.create({
   },
   placeholderTitle: {
     fontSize: 18,
-    fontWeight: "700",
-    color: "#111827",
+    fontWeight: "600",
+    color: "#6b7280",
     marginBottom: 8
   },
   placeholderText: {
     fontSize: 14,
-    color: "#6b7280",
-    marginBottom: 12,
+    color: "#9ca3af",
     textAlign: "center"
   },
-  featureList: {
-    alignSelf: "stretch",
-    marginTop: 8
+  modalOverlay: {
+    flex: 1,
+    backgroundColor: "rgba(0,0,0,0.5)",
+    justifyContent: "center",
+    padding: 20
   },
-  featureItem: {
-    fontSize: 14,
-    color: "#374151",
-    marginBottom: 6,
-    lineHeight: 20
-  },
-  card: {
+  modalContent: {
     backgroundColor: "#fff",
     borderRadius: 12,
-    padding: 16,
-    marginBottom: 16,
-    shadowColor: "#000",
-    shadowOpacity: 0.05,
-    shadowRadius: 8,
-    shadowOffset: { width: 0, height: 2 },
-    elevation: 2
+    padding: 20
   },
-  cardTitle: {
+  modalTitle: {
+    fontSize: 20,
+    fontWeight: "600",
+    marginBottom: 16,
+    color: "#1f2937"
+  },
+  input: {
+    borderWidth: 1,
+    borderColor: "#d1d5db",
+    borderRadius: 8,
+    padding: 12,
     fontSize: 16,
-    fontWeight: "700",
-    color: "#111827",
     marginBottom: 12
   },
-  filterRow: {
+  textArea: {
+    height: 80,
+    textAlignVertical: "top"
+  },
+  modalButtons: {
     flexDirection: "row",
     gap: 12,
-    marginBottom: 12
-  },
-  filterBox: {
-    flex: 1,
-    backgroundColor: "#f3f4f6",
-    padding: 12,
-    borderRadius: 8
-  },
-  filterLabel: {
-    fontSize: 11,
-    color: "#6b7280",
-    marginBottom: 4,
-    fontWeight: "600",
-    textTransform: "uppercase"
-  },
-  filterValue: {
-    fontSize: 14,
-    color: "#111827",
-    fontWeight: "500"
-  },
-  taskItem: {
-    flexDirection: "row",
-    paddingVertical: 12,
-    borderBottomWidth: 1,
-    borderBottomColor: "#f3f4f6"
-  },
-  taskCheckbox: {
-    width: 20,
-    height: 20,
-    borderWidth: 2,
-    borderColor: "#d1d5db",
-    borderRadius: 4,
-    marginRight: 12,
-    marginTop: 2
-  },
-  taskContent: {
-    flex: 1
-  },
-  taskTitle: {
-    fontSize: 15,
-    fontWeight: "600",
-    color: "#111827",
-    marginBottom: 4
-  },
-  taskMeta: {
-    fontSize: 13,
-    color: "#6b7280"
-  },
-  taskUnassigned: {
-    color: "#f59e0b"
-  },
-  assignButton: {
-    backgroundColor: "#eff6ff",
-    paddingVertical: 6,
-    paddingHorizontal: 12,
-    borderRadius: 6,
-    alignSelf: "flex-start",
     marginTop: 8
   },
-  assignButtonText: {
-    fontSize: 12,
-    color: "#0ea5e9",
-    fontWeight: "600"
-  },
-  statsRow: {
-    flexDirection: "row",
-    justifyContent: "space-around"
-  },
-  statBox: {
+  modalButton: {
+    flex: 1,
+    padding: 12,
+    borderRadius: 8,
     alignItems: "center"
   },
-  statValue: {
-    fontSize: 24,
-    fontWeight: "bold",
-    color: "#0ea5e9"
+  cancelButton: {
+    backgroundColor: "#f3f4f6"
   },
-  statLabel: {
-    fontSize: 11,
-    color: "#6b7280",
-    marginTop: 4,
+  cancelButtonText: {
+    color: "#374151",
     fontWeight: "600"
+  },
+  createButton: {
+    backgroundColor: "#0ea5e9"
+  },
+  createButtonText: {
+    color: "#fff",
+    fontWeight: "600"
+  },
+  disabledButton: {
+    opacity: 0.5
   }
 });
 

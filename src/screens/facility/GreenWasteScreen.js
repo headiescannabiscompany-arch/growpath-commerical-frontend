@@ -7,15 +7,21 @@ import {
   TouchableOpacity,
   FlatList,
   ActivityIndicator,
-  Alert
+  Alert,
+  Modal,
+  RefreshControl
 } from "react-native";
 import { useAuth } from "../../context/AuthContext";
 import { listGreenWasteEvents, createGreenWasteEvent } from "../../api/greenWaste";
 
+const DISPOSAL_METHODS = ["Compost", "Landfill", "Incinerator", "Donation", "Other"];
+
 export default function GreenWasteScreen() {
   const { selectedFacilityId } = useAuth();
   const [events, setEvents] = useState([]);
-  const [loading, setLoading] = useState(true);
+  const [loading, setLoading] = useState(false);
+  const [refreshing, setRefreshing] = useState(false);
+  const [showModal, setShowModal] = useState(false);
   const [amount, setAmount] = useState("");
   const [method, setMethod] = useState("");
   const [notes, setNotes] = useState("");
@@ -28,13 +34,29 @@ export default function GreenWasteScreen() {
   const loadEvents = async () => {
     setLoading(true);
     const res = await listGreenWasteEvents(selectedFacilityId);
-    if (res.success) setEvents(res.data);
+    if (res.success) setEvents(res.data || []);
     setLoading(false);
+  };
+
+  const onRefresh = () => {
+    setRefreshing(true);
+    loadEvents().then(() => setRefreshing(false));
+  };
+
+  const resetForm = () => {
+    setAmount("");
+    setMethod("");
+    setNotes("");
+  };
+
+  const closeModal = () => {
+    setShowModal(false);
+    resetForm();
   };
 
   const handleAddEvent = async () => {
     if (!amount || !method) {
-      Alert.alert("Missing info", "Amount and method are required.");
+      Alert.alert("Missing Info", "Amount and method are required.");
       return;
     }
     setSubmitting(true);
@@ -45,10 +67,9 @@ export default function GreenWasteScreen() {
     });
     setSubmitting(false);
     if (res.success) {
-      setAmount("");
-      setMethod("");
-      setNotes("");
+      closeModal();
       loadEvents();
+      Alert.alert("Success", "Waste event logged");
     } else {
       Alert.alert("Error", res.message || "Failed to add event");
     }
@@ -56,112 +77,300 @@ export default function GreenWasteScreen() {
 
   return (
     <View style={styles.container}>
-      <Text style={styles.header}>Green Waste Tracking</Text>
-      <Text style={styles.info}>
-        Track and record green waste disposal for compliance.
-      </Text>
+      <TouchableOpacity
+        style={styles.addButton}
+        onPress={() => {
+          resetForm();
+          setShowModal(true);
+        }}
+      >
+        <Text style={styles.addButtonText}>+ Log Waste Event</Text>
+      </TouchableOpacity>
 
-      <View style={styles.form}>
-        <Text style={styles.formLabel}>Amount (lbs or kg)</Text>
-        <TextInput
-          style={styles.input}
-          value={amount}
-          onChangeText={setAmount}
-          placeholder="Amount"
-          keyboardType="numeric"
-        />
-        <Text style={styles.formLabel}>Disposal Method</Text>
-        <TextInput
-          style={styles.input}
-          value={method}
-          onChangeText={setMethod}
-          placeholder="Method (e.g. compost, landfill)"
-        />
-        <Text style={styles.formLabel}>Notes</Text>
-        <TextInput
-          style={styles.input}
-          value={notes}
-          onChangeText={setNotes}
-          placeholder="Notes (optional)"
-          multiline
-        />
-        <TouchableOpacity
-          style={styles.addBtn}
-          onPress={handleAddEvent}
-          disabled={submitting}
-        >
-          <Text style={styles.addBtnText}>{submitting ? "Saving..." : "Add Event"}</Text>
-        </TouchableOpacity>
-      </View>
-
-      <Text style={styles.sectionHeader}>Event History</Text>
       {loading ? (
-        <ActivityIndicator color="#0ea5e9" />
+        <View style={{ flex: 1, justifyContent: "center", alignItems: "center" }}>
+          <ActivityIndicator size="large" color="#10b981" />
+        </View>
       ) : (
         <FlatList
           data={events}
           keyExtractor={(item) => item._id || item.id || Math.random().toString()}
           renderItem={({ item }) => (
-            <View style={styles.eventRow}>
-              <Text style={styles.eventMain}>
-                {item.amount} via {item.method}
-              </Text>
-              {item.notes ? <Text style={styles.eventNotes}>{item.notes}</Text> : null}
-              <Text style={styles.eventDate}>
-                {item.date ? new Date(item.date).toLocaleString() : ""}
-              </Text>
+            <View style={styles.eventCard}>
+              <View style={styles.eventHeader}>
+                <View>
+                  <Text style={styles.eventAmount}>{item.amount}</Text>
+                  <Text style={styles.eventMethod}>{item.method}</Text>
+                </View>
+              </View>
+              {item.notes && (
+                <Text style={styles.eventNotes}>{item.notes}</Text>
+              )}
+              {item.createdAt && (
+                <Text style={styles.eventDate}>
+                  Logged: {new Date(item.createdAt).toLocaleDateString()}
+                </Text>
+              )}
             </View>
           )}
-          ListEmptyComponent={<Text style={styles.emptyText}>No events yet</Text>}
+          ListEmptyComponent={
+            <View style={styles.empty}>
+              <Text style={styles.emptyText}>No waste events logged</Text>
+              <Text style={styles.emptySubtext}>Tap + to log first event</Text>
+            </View>
+          }
+          refreshControl={
+            <RefreshControl refreshing={refreshing} onRefresh={onRefresh} />
+          }
+          style={styles.list}
+          contentContainerStyle={{ flexGrow: 1 }}
         />
       )}
+
+      <Modal
+        visible={showModal}
+        transparent
+        animationType="slide"
+        onRequestClose={closeModal}
+      >
+        <View style={styles.modalOverlay}>
+          <View style={styles.modalContent}>
+            <Text style={styles.modalTitle}>Log Waste Disposal</Text>
+
+            <Text style={styles.formLabel}>Amount (lbs or kg) *</Text>
+            <TextInput
+              style={styles.input}
+              placeholder="e.g., 150"
+              value={amount}
+              onChangeText={setAmount}
+              keyboardType="decimal-pad"
+            />
+
+            <Text style={styles.formLabel}>Disposal Method *</Text>
+            <View style={styles.methodSelector}>
+              {DISPOSAL_METHODS.map((m) => (
+                <TouchableOpacity
+                  key={m}
+                  style={[
+                    styles.methodButton,
+                    method === m && styles.methodButtonActive
+                  ]}
+                  onPress={() => setMethod(m)}
+                >
+                  <Text
+                    style={[
+                      styles.methodButtonText,
+                      method === m && styles.methodButtonTextActive
+                    ]}
+                  >
+                    {m}
+                  </Text>
+                </TouchableOpacity>
+              ))}
+            </View>
+
+            <Text style={styles.formLabel}>Notes</Text>
+            <TextInput
+              style={[styles.input, styles.notesInput]}
+              placeholder="Additional notes (optional)"
+              value={notes}
+              onChangeText={setNotes}
+              multiline
+            />
+
+            <View style={styles.modalButtons}>
+              <TouchableOpacity
+                style={[styles.modalButton, styles.cancelButton]}
+                onPress={closeModal}
+              >
+                <Text style={styles.cancelButtonText}>Cancel</Text>
+              </TouchableOpacity>
+              <TouchableOpacity
+                style={[
+                  styles.modalButton,
+                  styles.logButton,
+                  submitting && styles.disabledButton
+                ]}
+                onPress={handleAddEvent}
+                disabled={submitting}
+              >
+                <Text style={styles.logButtonText}>
+                  {submitting ? "Logging..." : "Log Event"}
+                </Text>
+              </TouchableOpacity>
+            </View>
+          </View>
+        </View>
+      </Modal>
     </View>
   );
 }
 
 const styles = StyleSheet.create({
-  container: { flex: 1, backgroundColor: "#f9fafb", padding: 24 },
-  header: { fontSize: 22, fontWeight: "bold", marginBottom: 16 },
-  info: { fontSize: 16, color: "#374151", marginBottom: 16 },
-  form: {
+  container: {
+    flex: 1,
+    backgroundColor: "#f9fafb"
+  },
+  addButton: {
+    backgroundColor: "#10b981",
+    margin: 16,
+    marginBottom: 8,
+    padding: 14,
+    borderRadius: 8,
+    alignItems: "center"
+  },
+  addButtonText: {
+    color: "#fff",
+    fontSize: 16,
+    fontWeight: "600"
+  },
+  list: {
+    flex: 1,
+    backgroundColor: "#f9fafb",
+    padding: 16
+  },
+  eventCard: {
     backgroundColor: "#fff",
     borderRadius: 8,
     padding: 16,
-    marginBottom: 24,
+    marginBottom: 12,
+    borderLeftWidth: 4,
+    borderLeftColor: "#10b981",
     shadowColor: "#000",
-    shadowOpacity: 0.05,
-    shadowRadius: 2,
-    elevation: 1
+    shadowOpacity: 0.1,
+    shadowRadius: 4,
+    elevation: 2
   },
-  formLabel: { fontSize: 14, color: "#374151", marginTop: 8 },
+  eventHeader: {
+    marginBottom: 8
+  },
+  eventAmount: {
+    fontSize: 18,
+    fontWeight: "700",
+    color: "#1f2937"
+  },
+  eventMethod: {
+    fontSize: 14,
+    color: "#10b981",
+    fontWeight: "600",
+    marginTop: 4
+  },
+  eventNotes: {
+    fontSize: 14,
+    color: "#6b7280",
+    marginTop: 8
+  },
+  eventDate: {
+    fontSize: 12,
+    color: "#9ca3af",
+    marginTop: 8
+  },
+  empty: {
+    flex: 1,
+    justifyContent: "center",
+    alignItems: "center"
+  },
+  emptyText: {
+    fontSize: 16,
+    color: "#6b7280",
+    fontWeight: "500"
+  },
+  emptySubtext: {
+    fontSize: 14,
+    color: "#9ca3af",
+    marginTop: 8
+  },
+  modalOverlay: {
+    flex: 1,
+    backgroundColor: "rgba(0, 0, 0, 0.5)",
+    justifyContent: "flex-end"
+  },
+  modalContent: {
+    backgroundColor: "#fff",
+    borderTopLeftRadius: 16,
+    borderTopRightRadius: 16,
+    padding: 24,
+    maxHeight: "90%"
+  },
+  modalTitle: {
+    fontSize: 20,
+    fontWeight: "700",
+    color: "#1f2937",
+    marginBottom: 20
+  },
+  formLabel: {
+    fontSize: 14,
+    fontWeight: "600",
+    color: "#374151",
+    marginBottom: 8
+  },
   input: {
     borderWidth: 1,
     borderColor: "#e5e7eb",
     borderRadius: 8,
-    padding: 10,
-    marginTop: 4
+    paddingVertical: 10,
+    paddingHorizontal: 12,
+    marginBottom: 16,
+    fontSize: 14
   },
-  addBtn: {
-    backgroundColor: "#0ea5e9",
-    padding: 12,
+  notesInput: {
+    height: 80,
+    textAlignVertical: "top"
+  },
+  methodSelector: {
+    flexDirection: "row",
+    flexWrap: "wrap",
+    marginBottom: 16,
+    gap: 8
+  },
+  methodButton: {
+    backgroundColor: "#f3f4f6",
+    paddingVertical: 8,
+    paddingHorizontal: 12,
+    borderRadius: 6,
+    borderWidth: 1,
+    borderColor: "#e5e7eb"
+  },
+  methodButtonActive: {
+    backgroundColor: "#10b981",
+    borderColor: "#10b981"
+  },
+  methodButtonText: {
+    fontSize: 13,
+    color: "#6b7280",
+    fontWeight: "500"
+  },
+  methodButtonTextActive: {
+    color: "#fff"
+  },
+  modalButtons: {
+    flexDirection: "row",
+    gap: 12,
+    marginTop: 24
+  },
+  modalButton: {
+    flex: 1,
+    paddingVertical: 12,
     borderRadius: 8,
-    marginTop: 16,
     alignItems: "center"
   },
-  addBtnText: { color: "#fff", fontWeight: "bold", fontSize: 16 },
-  sectionHeader: { fontSize: 18, fontWeight: "bold", marginBottom: 8 },
-  eventRow: {
-    backgroundColor: "#fff",
-    borderRadius: 8,
-    padding: 12,
-    marginBottom: 12,
-    shadowColor: "#000",
-    shadowOpacity: 0.03,
-    shadowRadius: 1,
-    elevation: 1
+  cancelButton: {
+    backgroundColor: "#f3f4f6"
   },
-  eventMain: { fontSize: 16, fontWeight: "600" },
-  eventNotes: { fontSize: 14, color: "#374151", marginTop: 2 },
-  eventDate: { fontSize: 12, color: "#9ca3af", marginTop: 4 },
-  emptyText: { color: "#9ca3af", fontStyle: "italic", textAlign: "center", marginTop: 16 }
+  logButton: {
+    backgroundColor: "#10b981"
+  },
+  disabledButton: {
+    opacity: 0.6
+  },
+  cancelButtonText: {
+    color: "#6b7280",
+    fontWeight: "600",
+    fontSize: 16
+  },
+  logButtonText: {
+    color: "#fff",
+    fontWeight: "600",
+    fontSize: 16
+  }
 });
