@@ -1,5 +1,5 @@
 import React, { useEffect, useState } from "react";
-import { View, Text, TouchableOpacity, FlatList, StyleSheet } from "react-native";
+import { View, Text, TouchableOpacity, FlatList } from "react-native";
 import ScreenContainer from "../components/ScreenContainer";
 import { getSubcategories } from "../api/courses";
 
@@ -42,7 +42,7 @@ export default function SubcategoryBrowserScreen({ navigation, route }) {
   );
 }
 
-const styles = StyleSheet.create({
+const styles = {
   header: { fontSize: 26, fontWeight: "700", marginBottom: 6 },
   subtitle: { color: "#777", marginBottom: 16 },
   card: {
@@ -53,4 +53,4 @@ const styles = StyleSheet.create({
     elevation: 2,
   },
   cardText: { fontSize: 18, fontWeight: "600" },
-});
+};

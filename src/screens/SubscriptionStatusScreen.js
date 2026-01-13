@@ -2,7 +2,6 @@ import React, { useState, useEffect } from "react";
 import {
   View,
   Text,
-  StyleSheet,
   TouchableOpacity,
   ActivityIndicator,
   Alert
@@ -130,7 +129,7 @@ export default function SubscriptionStatusScreen({ navigation }) {
   );
 }
 
-const styles = StyleSheet.create({
+const styles = {
   container: {
     flex: 1,
     backgroundColor: "#F5F5F5"
@@ -206,4 +205,4 @@ const styles = StyleSheet.create({
     fontSize: 16,
     fontWeight: "bold"
   }
-});
+};

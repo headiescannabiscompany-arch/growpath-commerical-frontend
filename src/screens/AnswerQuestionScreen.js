@@ -52,4 +52,4 @@ const styles = StyleSheet.create({
   },
   btn: { backgroundColor: "#2ecc71", padding: 12, borderRadius: 8 },
   btnText: { textAlign: "center", color: "white", fontWeight: "700", fontSize: 16 },
-});
+};

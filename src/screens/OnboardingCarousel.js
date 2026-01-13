@@ -1,27 +1,27 @@
-﻿import React, { useState } from "react";
-import { View, Text, StyleSheet } from "react-native";
+import React, { useState } from "react";
+import { View, Text } from "react-native";
 import PrimaryButton from "../components/PrimaryButton.js";
 
 const slides = [
   {
     title: "GrowPath Commercial",
     body: "The all-in-one platform for cannabis industry businesses. From cultivators to nutrient companies to equipment manufacturers.",
-    emoji: "🚀"
+    emoji: "??"
   },
   {
     title: "For Cultivators",
     body: "Metrc compliance tracking, multi-facility management, real-time inventory sync, and automated compliance monitoring.",
-    emoji: "🌿"
+    emoji: "??"
   },
   {
     title: "For Industry Partners",
     body: "Soil suppliers, nutrient companies, equipment manufacturers - build credibility with grow logs, courses, and direct customer engagement.",
-    emoji: "🤝"
+    emoji: "??"
   },
   {
     title: "Freemium Model",
     body: "Cultivators get core features free. Industry partners pay $50/month for ads, courses, content showcase, and audience reach.",
-    emoji: "💳"
+    emoji: "??"
   }
 ];
 
@@ -46,7 +46,7 @@ export default function OnboardingCarousel({ onDone }) {
   );
 }
 
-const styles = StyleSheet.create({
+const styles = {
   container: {
     flex: 1,
     alignItems: "center",
@@ -82,4 +82,4 @@ const styles = StyleSheet.create({
   button: {
     marginTop: 12
   }
-});
+};

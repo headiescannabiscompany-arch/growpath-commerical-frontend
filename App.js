@@ -1,6 +1,9 @@
 import React from "react";
 import { View, Text, ActivityIndicator } from "react-native";
-import { NavigationContainer, createNavigationContainerRef } from "@react-navigation/native";
+import {
+  NavigationContainer,
+  createNavigationContainerRef
+} from "@react-navigation/native";
 import { StatusBar } from "expo-status-bar";
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import RootNavigator from "./src/navigation/RootNavigator";
@@ -11,13 +14,24 @@ const queryClient = new QueryClient({
   defaultOptions: {
     queries: {
       staleTime: 1000 * 60 * 5, // 5 minutes
-      cacheTime: 1000 * 60 * 30, // 30 minutes
-    },
-  },
+      cacheTime: 1000 * 60 * 30 // 30 minutes
+    }
+  }
 });
 
 if (typeof globalThis !== "undefined") {
   globalThis.__NAV__ = navigationRef;
+}
+if (typeof window !== "undefined") {
+  window.__NAV__ = navigationRef;
+  try {
+    if (window.parent && window.parent !== window) {
+      window.parent.__NAV__ = navigationRef;
+    }
+    if (window.top && window.top !== window) {
+      window.top.__NAV__ = navigationRef;
+    }
+  } catch {}
 }
 
 function AppContent() {
@@ -34,7 +48,9 @@ function AppContent() {
         }}
       >
         <ActivityIndicator size="large" color="#2ecc71" />
-        <Text style={{ marginTop: 16, fontSize: 16 }}>Loading GrowPath Commercial...</Text>
+        <Text style={{ marginTop: 16, fontSize: 16 }}>
+          Loading GrowPath Commercial...
+        </Text>
       </View>
     );
   }

@@ -1,4 +1,4 @@
-import { View, Text, Modal, TouchableOpacity, StyleSheet, ScrollView, Alert } from "react-native";
+import { View, Text, Modal, TouchableOpacity, ScrollView, Alert } from "react-native";
 import { useEffect, useState } from "react";
 import { useNavigation } from "@react-navigation/native";
 import { groupTasks } from "../utils/schedule";
@@ -192,7 +192,7 @@ function Section({ title, tasks, collapsed, onSelect }) {
   );
 }
 
-const styles = StyleSheet.create({
+const styles = {
   modalOverlay: {
     flex: 1,
     backgroundColor: "rgba(0,0,0,0.5)",
@@ -263,4 +263,4 @@ const styles = StyleSheet.create({
     fontWeight: "600",
     fontSize: 16
   }
-});
+};

@@ -15,7 +15,7 @@ const styles = StyleSheet.create({
     backgroundColor: colors.card,
     borderRadius: radius.card,
     padding: spacing(4),
-    boxShadow: "0px 6px 20px rgba(0, 0, 0, 0.04)",
+    // boxShadow is not supported in React Native, use elevation or shadow* props for native shadow
     elevation: 2
   }
 });

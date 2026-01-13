@@ -1,6 +1,6 @@
 import { defineConfig, devices } from "@playwright/test";
 
-const PORT = process.env.PLAYWRIGHT_WEB_PORT || "19006";
+const PORT = process.env.PLAYWRIGHT_WEB_PORT || "19009";
 const baseURL = process.env.PLAYWRIGHT_BASE_URL || `http://127.0.0.1:${PORT}`;
 
 export default defineConfig({
@@ -25,15 +25,7 @@ export default defineConfig({
     }
   ],
   webServer: {
-    command: [
-      `CI=1 EXPO_PUBLIC_API_URL=${process.env.EXPO_PUBLIC_API_URL || "http://127.0.0.1:5001"}`,
-      "npx",
-      "expo",
-      "start",
-      "--web",
-      "--port",
-      PORT
-    ].join(" "),
+    command: [`npx expo start --web --port ${PORT}`].join(" "),
     url: baseURL,
     reuseExistingServer: !process.env.CI,
     stdout: "pipe",

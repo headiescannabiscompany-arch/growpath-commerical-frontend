@@ -4,11 +4,11 @@ import {
   Text,
   TextInput,
   TouchableOpacity,
-  StyleSheet,
   Alert,
   ActivityIndicator,
   Image,
-  ImageBackground
+  ImageBackground,
+  StyleSheet
 } from "react-native";
 import AsyncStorage from "@react-native-async-storage/async-storage";
 import ScreenContainer from "../components/ScreenContainer";
@@ -30,7 +30,7 @@ export default function LoginScreen({ navigation }) {
     if (token && user) {
       navigation.replace("FacilityStack");
     }
-    
+
     AsyncStorage.getItem("HAS_LOGGED_IN_BEFORE").then((val) => {
       setHasLoggedInBefore(val === "true");
     });
@@ -59,7 +59,12 @@ export default function LoginScreen({ navigation }) {
       } else {
         // Get business type from AsyncStorage
         const businessType = await AsyncStorage.getItem("businessType");
-        authResult = await apiSignup(email.trim(), password.trim(), displayName.trim(), businessType || "cultivator");
+        authResult = await apiSignup(
+          email.trim(),
+          password.trim(),
+          displayName.trim(),
+          businessType || "cultivator"
+        );
       }
 
       const { user, token } = authResult || {};
@@ -128,9 +133,7 @@ export default function LoginScreen({ navigation }) {
       </ImageBackground>
 
       <Text style={styles.title}>
-        {mode === "login" 
-          ? (hasLoggedInBefore ? "Welcome Back" : " ") 
-          : "Create Account"}
+        {mode === "login" ? (hasLoggedInBefore ? "Welcome Back" : " ") : "Create Account"}
       </Text>
 
       {mode === "signup" && (
@@ -222,7 +225,6 @@ const styles = StyleSheet.create({
     justifyContent: "center",
     alignItems: "center",
     marginBottom: spacing(3),
-    boxShadow: "0px 8px 16px rgba(0, 0, 0, 0.3)",
     elevation: 8,
     borderWidth: 3,
     borderColor: "rgba(255, 255, 255, 0.9)"
@@ -235,15 +237,13 @@ const styles = StyleSheet.create({
     fontSize: 36,
     fontWeight: "800",
     color: "#ffffff",
-    marginBottom: spacing(1),
-    textShadow: "0px 2px 8px rgba(0,0,0,0.5)"
+    marginBottom: spacing(1)
   },
   tagline: {
     fontSize: 15,
     color: "#e5e7eb",
     fontStyle: "italic",
-    fontWeight: "600",
-    textShadow: "0px 1px 4px rgba(0,0,0,0.6)"
+    fontWeight: "600"
   },
   title: {
     fontSize: 24,

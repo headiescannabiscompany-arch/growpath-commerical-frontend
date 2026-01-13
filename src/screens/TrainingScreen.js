@@ -1,5 +1,5 @@
 import React from "react";
-import { Text, TouchableOpacity, StyleSheet, View } from "react-native";
+import { Text, TouchableOpacity, View } from "react-native";
 import ScreenContainer from "../components/ScreenContainer";
 
 // Placeholder screen to start AI Training Assistant; replace with real flow when available
@@ -29,9 +29,9 @@ export default function TrainingScreen({ navigation }) {
   );
 }
 
-const styles = StyleSheet.create({
+const styles = {
   header: { fontSize: 26, fontWeight: "700" },
   sub: { color: "#777", marginTop: 6 },
   primary: { marginTop: 24, backgroundColor: "#3498db", padding: 14, borderRadius: 10 },
   primaryText: { color: "white", textAlign: "center", fontWeight: "700" },
-});
+};

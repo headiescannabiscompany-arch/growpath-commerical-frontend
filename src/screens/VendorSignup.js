@@ -6,7 +6,6 @@ import {
   TextInput,
   TouchableOpacity,
   ActivityIndicator,
-  StyleSheet,
   Alert,
   Picker
 } from "react-native";
@@ -43,7 +42,7 @@ const VendorSignup = ({ navigation }) => {
       const response = await fetch("http://localhost:5001/api/vendors", {
         method: "POST",
         headers: {
-          "Authorization": `Bearer ${token}`,
+          Authorization: `Bearer ${token}`,
           "Content-Type": "application/json"
         },
         body: JSON.stringify({
@@ -95,7 +94,7 @@ const VendorSignup = ({ navigation }) => {
             onValueChange={setVendorType}
             style={styles.picker}
           >
-            {VENDOR_TYPES.map(type => (
+            {VENDOR_TYPES.map((type) => (
               <Picker.Item key={type.value} label={type.label} value={type.value} />
             ))}
           </Picker>
@@ -139,8 +138,8 @@ const VendorSignup = ({ navigation }) => {
         />
 
         <Text style={styles.infoText}>
-          After submitting, our team will verify your company and activate your vendor account
-          within 24-48 hours.
+          After submitting, our team will verify your company and activate your vendor
+          account within 24-48 hours.
         </Text>
 
         <TouchableOpacity
@@ -159,7 +158,7 @@ const VendorSignup = ({ navigation }) => {
   );
 };
 
-const styles = StyleSheet.create({
+const styles = {
   container: {
     flex: 1,
     backgroundColor: "#f9fafb",
@@ -183,9 +182,7 @@ const styles = StyleSheet.create({
     backgroundColor: "#fff",
     borderRadius: 8,
     padding: 16,
-    shadowColor: "#000",
-    shadowOpacity: 0.1,
-    shadowRadius: 4,
+    boxShadow: "0 1px 3px rgba(0, 0, 0, 0.1)",
     elevation: 2
   },
   label: {
@@ -242,6 +239,6 @@ const styles = StyleSheet.create({
     fontSize: 16,
     fontWeight: "600"
   }
-});
+};
 
 export default VendorSignup;

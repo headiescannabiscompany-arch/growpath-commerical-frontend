@@ -1,12 +1,23 @@
+import BillingAndReportingScreen from "../screens/facility/BillingAndReportingScreen.js";
 import React from "react";
 import { createNativeStackNavigator } from "@react-navigation/native-stack";
-import FacilityTabs from "./FacilityTabs";
-import FacilityPicker from "../screens/facility/FacilityPicker";
-import RoomDetail from "../screens/facility/RoomDetail";
+import FacilityTabs from "./FacilityTabs.js";
+import FacilityPicker from "../screens/facility/FacilityPicker.js";
+import RoomDetail from "../screens/facility/RoomDetail.js";
+import GreenWasteScreen from "../screens/facility/GreenWasteScreen.js";
+import AuditLogScreen from "../screens/facility/AuditLogScreen.js";
+import SOPTemplatesScreen from "../screens/facility/SOPTemplatesScreen.js";
+import VerificationScreen from "../screens/facility/VerificationScreen.js";
+import DeviationHandlingScreen from "../screens/facility/DeviationHandlingScreen.js";
+import VendorDashboardScreen from "../screens/facility/VendorDashboardScreen.js";
+import EquipmentToolsScreen from "../screens/facility/EquipmentToolsScreen.js";
+import { useAuth } from "../context/AuthContext.js";
 
 const Stack = createNativeStackNavigator();
 
 const FacilityStack = () => {
+  const { mode } = useAuth();
+  const isCommercial = mode === "commercial";
   return (
     <Stack.Navigator
       screenOptions={{
@@ -39,20 +50,66 @@ const FacilityStack = () => {
         }}
       >
         <Stack.Screen
-          name="FacilityPicker"
-          component={FacilityPicker}
-          options={{
-            title: "Select a Facility"
-          }}
+          name="VendorDashboard"
+          component={VendorDashboardScreen}
+          options={{ title: "Vendor Dashboard" }}
         />
+        <Stack.Screen
+          name="EquipmentTools"
+          component={EquipmentToolsScreen}
+          options={{ title: "Equipment Tools" }}
+        />
+        {!isCommercial && (
+          <>
+            <Stack.Screen
+              name="FacilityPicker"
+              component={FacilityPicker}
+              options={{
+                title: "Select a Facility"
+              }}
+            />
+            <Stack.Screen
+              name="GreenWaste"
+              component={GreenWasteScreen}
+              options={{ title: "Green Waste" }}
+            />
+            <Stack.Screen
+              name="AuditLog"
+              component={AuditLogScreen}
+              options={{ title: "Audit Logs" }}
+            />
+            <Stack.Screen
+              name="SOPTemplates"
+              component={SOPTemplatesScreen}
+              options={{ title: "SOP Templates" }}
+            />
+            <Stack.Screen
+              name="BillingAndReporting"
+              component={BillingAndReportingScreen}
+              options={{ title: "Billing & Reporting" }}
+            />
+            <Stack.Screen
+              name="Verification"
+              component={VerificationScreen}
+              options={{ title: "Task Verification" }}
+            />
+            <Stack.Screen
+              name="DeviationHandling"
+              component={DeviationHandlingScreen}
+              options={{ title: "Deviation Handling" }}
+            />
+          </>
+        )}
       </Stack.Group>
-      <Stack.Screen
-        name="RoomDetail"
-        component={RoomDetail}
-        options={({ route }) => ({
-          title: route.params?.roomId ? "Room Details" : "Room"
-        })}
-      />
+      {!isCommercial && (
+        <Stack.Screen
+          name="RoomDetail"
+          component={RoomDetail}
+          options={({ route }) => ({
+            title: route.params?.roomId ? "Room Details" : "Room"
+          })}
+        />
+      )}
     </Stack.Navigator>
   );
 };

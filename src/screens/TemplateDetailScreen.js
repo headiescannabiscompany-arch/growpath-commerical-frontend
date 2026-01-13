@@ -1,5 +1,5 @@
 import React, { useEffect, useState } from "react";
-import { Text, FlatList, TouchableOpacity, StyleSheet, View, Alert } from "react-native";
+import { Text, FlatList, TouchableOpacity, View, Alert } from "react-native";
 import ScreenContainer from "../components/ScreenContainer";
 import { getTemplate, applyTemplateToPlant } from "../api/templates";
 import { getPlants } from "../api/plants";
@@ -78,7 +78,7 @@ export default function TemplateDetailScreen({ route, navigation }) {
   );
 }
 
-const styles = StyleSheet.create({
+const styles = {
   header: { fontSize: 24, fontWeight: "700", marginBottom: 4 },
   meta: { color: "#777", fontSize: 13 },
   desc: { marginTop: 8, marginBottom: 16 },
@@ -95,4 +95,4 @@ const styles = StyleSheet.create({
   stepMeta: { fontSize: 12, color: "#777", marginTop: 2 },
   stepNutes: { fontSize: 12, color: "#27ae60", marginTop: 2 },
   stepDetails: { fontSize: 12, marginTop: 4 },
-});
+};

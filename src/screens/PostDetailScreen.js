@@ -6,7 +6,6 @@ import {
   TextInput,
   TouchableOpacity,
   ScrollView,
-  StyleSheet,
   Alert
 } from "react-native";
 import ScreenContainer from "../components/ScreenContainer";
@@ -184,7 +183,7 @@ export default function PostDetailScreen({ route, navigation }) {
   );
 }
 
-const styles = StyleSheet.create({
+const styles = {
   title: {
     fontSize: 26,
     fontWeight: "700",
@@ -262,4 +261,4 @@ const styles = StyleSheet.create({
     color: colors.text,
     fontSize: 16
   }
-});
+};

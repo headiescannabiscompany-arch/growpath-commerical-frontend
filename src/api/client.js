@@ -9,7 +9,7 @@ class ApiError extends Error {
   }
 }
 
-const DEFAULT_API_URL = null; // Configure via environment variables
+const DEFAULT_API_URL = "https://your-app.onrender.com/api"; // Fallback to deployed backend
 
 function resolveApiUrl() {
   if (typeof global !== "undefined" && global.API_URL_OVERRIDE) {
@@ -110,7 +110,7 @@ async function api(path, options = {}) {
     return data;
   } catch (error) {
     clearTimeout(timeoutId);
-    
+
     // Retry on timeout
     if (retries > 0 && error.name === "AbortError") {
       console.warn(`Retrying request to ${path} due to timeout (${retries} left)`);

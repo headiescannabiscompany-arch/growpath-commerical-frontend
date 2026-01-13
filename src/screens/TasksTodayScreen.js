@@ -3,7 +3,6 @@ import {
   Text,
   TouchableOpacity,
   FlatList,
-  StyleSheet,
   View,
   Platform
 } from "react-native";
@@ -170,7 +169,7 @@ export default function TasksTodayScreen() {
   );
 }
 
-const styles = StyleSheet.create({
+const styles = {
   header: { fontSize: 26, fontWeight: "700", marginBottom: 12 },
   card: { backgroundColor: "white", padding: 14, borderRadius: 10, marginBottom: 12 },
   title: { fontSize: 16, fontWeight: "700" },
@@ -183,4 +182,4 @@ const styles = StyleSheet.create({
     alignSelf: "flex-end"
   },
   doneText: { color: "white" }
-});
+};

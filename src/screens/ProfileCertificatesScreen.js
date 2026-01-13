@@ -1,5 +1,5 @@
 import React, { useEffect, useState } from "react";
-import { View, Text, TouchableOpacity, FlatList, StyleSheet, Alert } from "react-native";
+import { View, Text, TouchableOpacity, FlatList, Alert } from "react-native";
 import ScreenContainer from "../components/ScreenContainer";
 import { getMyCertificates } from "../api/certificates";
 
@@ -86,7 +86,7 @@ export default function ProfileCertificatesScreen({ navigation }) {
   );
 }
 
-const styles = StyleSheet.create({
+const styles = {
   header: {
     fontSize: 26,
     fontWeight: "700",
@@ -175,4 +175,4 @@ const styles = StyleSheet.create({
     fontWeight: "700",
     fontSize: 13
   }
-});
+};

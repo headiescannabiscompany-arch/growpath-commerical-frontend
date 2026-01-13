@@ -1,5 +1,5 @@
 import React, { useEffect, useState } from "react";
-import { Text, FlatList, TouchableOpacity, StyleSheet } from "react-native";
+import { Text, FlatList, TouchableOpacity } from "react-native";
 import ScreenContainer from "../components/ScreenContainer";
 import { listTemplates } from "../api/templates";
 import { getCreatorName } from "../utils/creator";
@@ -42,7 +42,7 @@ export default function TemplatesMarketplaceScreen({ navigation }) {
   );
 }
 
-const styles = StyleSheet.create({
+const styles = {
   header: { fontSize: 26, fontWeight: "700", marginBottom: 4 },
   sub: { color: "#777", marginBottom: 16 },
   card: { backgroundColor: "white", padding: 14, borderRadius: 10, marginBottom: 12 },
@@ -50,4 +50,4 @@ const styles = StyleSheet.create({
   meta: { fontSize: 13, color: "#555", marginTop: 2 },
   price: { marginTop: 6, fontSize: 16, fontWeight: "700", color: "#2ecc71" },
   creator: { fontSize: 12, color: "#777", marginTop: 6 },
-});
+};

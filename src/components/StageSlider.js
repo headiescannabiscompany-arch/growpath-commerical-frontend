@@ -10,13 +10,14 @@ export default function StageSlider({
   options = DEFAULT_OPTIONS,
   disabled = false
 }) {
-  const currentIndex = Math.max(0, options.findIndex((opt) => opt === value));
+  const currentIndex = Math.max(
+    0,
+    options.findIndex((opt) => opt === value)
+  );
 
   return (
     <View style={styles.container}>
-      {disabled && (
-        <View style={styles.disabledOverlay} />
-      )}
+      {disabled && <View style={styles.disabledOverlay} />}
       <View style={styles.trackRow}>
         {options.map((option, index) => {
           const isActive = index === currentIndex;
@@ -78,8 +79,8 @@ const styles = StyleSheet.create({
     ...StyleSheet.absoluteFillObject,
     backgroundColor: "rgba(255,255,255,0.6)",
     borderRadius: radius.card,
-    zIndex: 1,
-    pointerEvents: "none"
+    zIndex: 1
+    // pointerEvents is deprecated as a prop, use style.pointerEvents if needed
   },
   trackRow: {
     flexDirection: "row",

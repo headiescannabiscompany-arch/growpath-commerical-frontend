@@ -1,5 +1,5 @@
 import React, { useEffect, useState } from "react";
-import { View, Text, TouchableOpacity, FlatList, StyleSheet } from "react-native";
+import { View, Text, TouchableOpacity, FlatList } from "react-native";
 import ScreenContainer from "../components/ScreenContainer";
 import { getDiagnosisHistory } from "../api/diagnose";
 
@@ -51,7 +51,7 @@ export default function DiagnosisHistoryScreen({ navigation }) {
   );
 }
 
-const styles = StyleSheet.create({
+const styles = {
   header: {
     fontSize: 24,
     fontWeight: "700",
@@ -71,4 +71,4 @@ const styles = StyleSheet.create({
     color: "#777",
     marginTop: 2
   }
-});
+};

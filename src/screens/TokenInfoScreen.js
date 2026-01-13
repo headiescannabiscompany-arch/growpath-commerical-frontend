@@ -1,5 +1,5 @@
 import React, { useEffect, useState } from "react";
-import { View, Text, StyleSheet, TouchableOpacity, ScrollView } from "react-native";
+import { View, Text, TouchableOpacity, ScrollView } from "react-native";
 import ScreenContainer from "../components/ScreenContainer";
 import { getTokenBalance } from "../api/tokens";
 import { useAuth } from "../context/AuthContext";
@@ -133,7 +133,7 @@ export default function TokenInfoScreen({ navigation }) {
   );
 }
 
-const styles = StyleSheet.create({
+const styles = {
   container: {
     flex: 1,
     padding: 20
@@ -239,4 +239,4 @@ const styles = StyleSheet.create({
     fontSize: 16,
     fontWeight: "700"
   }
-});
+};

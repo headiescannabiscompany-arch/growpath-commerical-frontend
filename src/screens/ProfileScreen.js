@@ -4,7 +4,6 @@ import {
   Text,
   Image,
   TouchableOpacity,
-  StyleSheet,
   Switch,
   Alert,
   FlatList,
@@ -646,7 +645,7 @@ export default function ProfileScreen({ route, navigation }) {
   );
 }
 
-const styles = StyleSheet.create({
+const styles = {
   retryBtn: {
     backgroundColor: "#2ecc71",
     paddingHorizontal: 16,
@@ -883,4 +882,4 @@ const styles = StyleSheet.create({
     borderRadius: 8,
     marginBottom: 8
   }
-});
+};

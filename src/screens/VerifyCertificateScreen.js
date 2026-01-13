@@ -1,5 +1,5 @@
 import React, { useEffect, useState } from "react";
-import { View, Text, StyleSheet, ActivityIndicator } from "react-native";
+import { View, Text, ActivityIndicator } from "react-native";
 import ScreenContainer from "../components/ScreenContainer";
 import { verifyCertificate } from "../api/certificates";
 
@@ -94,7 +94,7 @@ export default function VerifyCertificateScreen({ route }) {
   );
 }
 
-const styles = StyleSheet.create({
+const styles = {
   center: {
     flex: 1,
     justifyContent: "center",
@@ -188,4 +188,4 @@ const styles = StyleSheet.create({
     fontWeight: "700",
     color: "#27ae60"
   }
-});
+};

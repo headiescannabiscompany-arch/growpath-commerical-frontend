@@ -5,7 +5,6 @@ import {
   FlatList,
   TouchableOpacity,
   ActivityIndicator,
-  StyleSheet,
   RefreshControl
 } from "react-native";
 
@@ -82,9 +81,7 @@ const VendorGuidesScreen = ({ navigation, route }) => {
                 <Text style={styles.vendorName}>by {item.vendor.companyName}</Text>
               )}
             </View>
-            {item.price > 0 && (
-              <Text style={styles.price}>${item.price}</Text>
-            )}
+            {item.price > 0 && <Text style={styles.price}>${item.price}</Text>}
           </View>
 
           <Text style={styles.guideDescription} numberOfLines={2}>
@@ -112,7 +109,9 @@ const VendorGuidesScreen = ({ navigation, route }) => {
         <View style={styles.empty}>
           <Text style={styles.emptyText}>No guides yet</Text>
           <Text style={styles.emptySubtext}>
-            {vendorType ? `Check back soon for ${getVendorTypeLabel()}` : "Featured vendor guides coming soon"}
+            {vendorType
+              ? `Check back soon for ${getVendorTypeLabel()}`
+              : "Featured vendor guides coming soon"}
           </Text>
         </View>
       }
@@ -123,7 +122,9 @@ const VendorGuidesScreen = ({ navigation, route }) => {
           <View style={styles.header}>
             <Text style={styles.title}>{getVendorTypeLabel()}</Text>
             {vendorCount > 0 && (
-              <Text style={styles.vendorCount}>from {vendorCount} verified companies</Text>
+              <Text style={styles.vendorCount}>
+                from {vendorCount} verified companies
+              </Text>
             )}
           </View>
         )
@@ -132,7 +133,7 @@ const VendorGuidesScreen = ({ navigation, route }) => {
   );
 };
 
-const styles = StyleSheet.create({
+const styles = {
   container: {
     flex: 1,
     justifyContent: "center",
@@ -164,9 +165,7 @@ const styles = StyleSheet.create({
     borderRadius: 8,
     padding: 12,
     marginBottom: 12,
-    shadowColor: "#000",
-    shadowOpacity: 0.1,
-    shadowRadius: 4,
+    boxShadow: "0 1px 3px rgba(0, 0, 0, 0.1)",
     elevation: 2
   },
   guideHeader: {
@@ -238,6 +237,6 @@ const styles = StyleSheet.create({
     fontSize: 14,
     color: "#9ca3af"
   }
-});
+};
 
 export default VendorGuidesScreen;

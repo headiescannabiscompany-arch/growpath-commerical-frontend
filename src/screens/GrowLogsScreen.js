@@ -1,5 +1,14 @@
 import React, { useEffect, useState, useMemo } from "react";
-import { View, Text, TextInput, TouchableOpacity, FlatList, StyleSheet, Alert } from "react-native";
+import { useAuth } from "../context/AuthContext";
+import {
+  View,
+  Text,
+  TextInput,
+  TouchableOpacity,
+  FlatList,
+  StyleSheet,
+  Alert
+} from "react-native";
 import * as ImagePicker from "expo-image-picker";
 import ScreenContainer from "../components/ScreenContainer";
 import Card from "../components/Card";
@@ -37,6 +46,8 @@ const buildEmptyPlant = () => ({
 });
 
 export default function GrowLogsScreen({ navigation }) {
+  const { mode } = useAuth();
+  const isCommercial = mode === "commercial";
   const [loading, setLoading] = useState(false);
   const [grows, setGrows] = useState([]);
   const [newName, setNewName] = useState("");
@@ -90,10 +101,7 @@ export default function GrowLogsScreen({ navigation }) {
   async function loadGrows(customFilters) {
     try {
       setLoading(true);
-      const filtersToUse =
-        customFilters !== undefined
-          ? customFilters
-          : filterValues;
+      const filtersToUse = customFilters !== undefined ? customFilters : filterValues;
       const data = await listGrows(filtersToUse);
       setGrows(Array.isArray(data) ? data : []);
     } catch (err) {
@@ -168,7 +176,11 @@ export default function GrowLogsScreen({ navigation }) {
       }))
       .filter(
         (plant) =>
-          plant.name || plant.strain || plant.breeder || plant.stage || (plant.photos && plant.photos.length)
+          plant.name ||
+          plant.strain ||
+          plant.breeder ||
+          plant.stage ||
+          (plant.photos && plant.photos.length)
       );
     return cleaned;
   };
@@ -190,13 +202,18 @@ export default function GrowLogsScreen({ navigation }) {
   };
 
   const removePlantForm = (key) => {
-    setPlantForms((prev) => (prev.length <= 1 ? prev : prev.filter((plant) => plant.key !== key)));
+    setPlantForms((prev) =>
+      prev.length <= 1 ? prev : prev.filter((plant) => plant.key !== key)
+    );
   };
 
   async function handleAddPlantPhoto(key) {
     const perm = await ImagePicker.requestMediaLibraryPermissionsAsync();
     if (!perm.granted) {
-      Alert.alert("Permission needed", "Photo library access is required to add plant photos.");
+      Alert.alert(
+        "Permission needed",
+        "Photo library access is required to add plant photos."
+      );
       return;
     }
     const result = await ImagePicker.launchImageLibraryAsync({
@@ -281,8 +298,25 @@ export default function GrowLogsScreen({ navigation }) {
     navigation.navigate("GrowJournal", { grow });
   }
 
+  if (isCommercial) {
+    return (
+      <ScreenContainer scroll testID="growlogs-scroll">
+        <Text style={styles.title}>Plant & Grow Log Management</Text>
+        <Card style={styles.filterCard}>
+          <Text style={styles.label}>
+            This feature is only available for Facility users.
+          </Text>
+          <Text style={styles.label}>
+            Commercial users do not have access to plant or facility management tools.
+          </Text>
+        </Card>
+      </ScreenContainer>
+    );
+  }
+
   return (
     <ScreenContainer scroll testID="growlogs-scroll">
+      {/* ...existing code for non-commercial users... */}
       <Text style={styles.title}>Your Plants</Text>
 
       <Card style={styles.filterCard}>

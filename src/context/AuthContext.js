@@ -8,6 +8,13 @@ import { normalizePendingInterests } from "../utils/growInterests";
 
 const AuthContext = createContext();
 
+const API_BASE_URL =
+  process.env.EXPO_PUBLIC_API_URL ||
+  process.env.API_URL ||
+  process.env.REACT_NATIVE_APP_API_URL ||
+  process.env.NEXT_PUBLIC_API_URL ||
+  "http://127.0.0.1:5001";
+
 export const AuthProvider = ({ children }) => {
   const [token, setToken] = useState(null);
   const [user, setUser] = useState(null);
@@ -18,7 +25,8 @@ export const AuthProvider = ({ children }) => {
   const [loading, setLoading] = useState(true);
   const [hasNavigatedAwayFromHome, setHasNavigatedAwayFromHome] = useState(false);
   const [suppressWelcomeMessage, setSuppressWelcomeMessage] = useState(false);
-  const [mode, setModeState] = useState("personal"); // "personal" or "facility"
+  const [mode, setModeState] = useState("personal"); // "personal", "facility", or "commercial"
+  const [facilityFeaturesEnabled, setFacilityFeaturesEnabled] = useState(true); // Commercial users can toggle this
   const [selectedFacilityId, setSelectedFacilityIdState] = useState(null);
   const [facilitiesAccess, setFacilitiesAccess] = useState([]); // Array of { facilityId, role, roomIds }
 
@@ -135,18 +143,61 @@ export const AuthProvider = ({ children }) => {
   };
 
   const loadFacilityAccess = async (authToken) => {
+    const baseUrl = API_BASE_URL.replace(/\/$/, "");
     try {
-      const response = await fetch("http://localhost:5001/api/auth/me", {
+      const response = await fetch(`${baseUrl}/api/auth/me`, {
         method: "GET",
         headers: {
-          "Authorization": `Bearer ${authToken || token}`,
+          Authorization: `Bearer ${authToken || token}`,
           "Content-Type": "application/json"
         }
       });
+
+      let facilitiesAccessResponse = [];
       if (response.ok) {
         const data = await response.json();
-        setFacilitiesAccess(data.facilitiesAccess || []);
+        facilitiesAccessResponse = data.facilitiesAccess || [];
       }
+
+      if (!facilitiesAccessResponse.length) {
+        try {
+          const facilitiesResp = await fetch(`${baseUrl}/api/facilities`, {
+            method: "GET",
+            headers: {
+              Authorization: `Bearer ${authToken || token}`,
+              "Content-Type": "application/json"
+            }
+          });
+
+          if (facilitiesResp.ok) {
+            const facilitiesData = await facilitiesResp.json();
+            const facilitiesList =
+              facilitiesData?.facilities || facilitiesData?.data || [];
+
+            if (facilitiesList.length) {
+              facilitiesAccessResponse = facilitiesList
+                .filter((facility) => facility?._id)
+                .map((facility) => ({
+                  facilityId: facility._id.toString(),
+                  role: "admin",
+                  permissions: ["read", "write", "delete", "admin"]
+                }));
+
+              if (!selectedFacilityId && facilitiesAccessResponse[0]?.facilityId) {
+                const defaultFacilityId = facilitiesAccessResponse[0].facilityId;
+                setSelectedFacilityIdState(defaultFacilityId);
+                AsyncStorage.setItem("selectedFacilityId", defaultFacilityId).catch(
+                  () => {}
+                );
+              }
+            }
+          }
+        } catch (fallbackError) {
+          console.log("Failed to infer facility access:", fallbackError.message);
+        }
+      }
+
+      setFacilitiesAccess(facilitiesAccessResponse);
     } catch (error) {
       console.log("Failed to load facility access:", error.message);
     }
@@ -269,7 +320,9 @@ export const AuthProvider = ({ children }) => {
         setMode,
         selectedFacilityId,
         setSelectedFacilityId,
-        facilitiesAccess
+        facilitiesAccess,
+        facilityFeaturesEnabled,
+        setFacilityFeaturesEnabled
       }}
     >
       {children}

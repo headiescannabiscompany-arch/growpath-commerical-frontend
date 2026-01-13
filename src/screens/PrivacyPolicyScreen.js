@@ -1,5 +1,5 @@
 import React from "react";
-import { ScrollView, Text, StyleSheet } from "react-native";
+import { ScrollView, Text } from "react-native";
 import ScreenContainer from "../components/ScreenContainer";
 
 // You can update this content if the policy changes
@@ -48,7 +48,7 @@ export default function PrivacyPolicyScreen() {
   );
 }
 
-const styles = StyleSheet.create({
+const styles = {
   container: {
     padding: 20
   },
@@ -57,4 +57,4 @@ const styles = StyleSheet.create({
     color: "#222",
     lineHeight: 24
   }
-});
+};

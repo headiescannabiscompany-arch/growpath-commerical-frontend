@@ -1,3 +1,6 @@
+import MarketplaceIntegrationScreen from "../screens/commercial/MarketplaceIntegrationScreen";
+import VendorMetricsScreen from "../screens/commercial/VendorMetricsScreen";
+import VendorAnalyticsScreen from "../screens/commercial/VendorAnalyticsScreen";
 import AppIntroScreen from "../screens/AppIntroScreen";
 import React, { useEffect, useCallback } from "react";
 import { createNativeStackNavigator } from "@react-navigation/native-stack";
@@ -126,7 +129,7 @@ export default function RootNavigator() {
     !isAuthenticated && !isPro && showIntro
       ? "AppIntro"
       : isAuthenticated
-        ? "FacilityStack"  // Always default to FacilityStack for authenticated users
+        ? "FacilityStack" // Always default to FacilityStack for authenticated users
         : "Login";
 
   return (
@@ -161,11 +164,23 @@ export default function RootNavigator() {
         options={{ headerShown: false }}
       />
       <Stack.Screen name="GrowJournal" component={GrowJournalScreen} />
-      <Stack.Screen name="GrowAddPlant" component={GrowAddPlantScreen} options={{ title: "Add Plant" }} />
-      <Stack.Screen name="GrowEditPlant" component={GrowEditPlantScreen} options={{ title: "Edit Plant" }} />
+      <Stack.Screen
+        name="GrowAddPlant"
+        component={GrowAddPlantScreen}
+        options={{ title: "Add Plant" }}
+      />
+      <Stack.Screen
+        name="GrowEditPlant"
+        component={GrowEditPlantScreen}
+        options={{ title: "Edit Plant" }}
+      />
       <Stack.Screen name="Subscribe" component={SubscribeScreen} />
       <Stack.Screen name="CourseDetail" component={CourseDetailScreen} />
-      <Stack.Screen name="Course" component={CourseScreen} options={{ title: "Course" }} />
+      <Stack.Screen
+        name="Course"
+        component={CourseScreen}
+        options={{ title: "Course" }}
+      />
       <Stack.Screen
         name="PrivacyPolicy"
         component={PrivacyPolicyScreen}
@@ -192,10 +207,41 @@ export default function RootNavigator() {
         component={EditLessonScreen}
         options={{ title: "Edit Lesson" }}
       />
-      <Stack.Screen name="Lesson" component={LessonScreen} options={{ title: "Lesson" }} />
-      <Stack.Screen name="VendorSignup" component={VendorSignup} options={{ title: "Become a Vendor" }} />
-      <Stack.Screen name="CreateVendorGuide" component={CreateVendorGuide} options={{ title: "Create Guide" }} />
-      <Stack.Screen name="VendorGuides" component={VendorGuidesScreen} options={{ title: "Guides" }} />
+      <Stack.Screen
+        name="Lesson"
+        component={LessonScreen}
+        options={{ title: "Lesson" }}
+      />
+      <Stack.Screen
+        name="VendorSignup"
+        component={VendorSignup}
+        options={{ title: "Become a Vendor" }}
+      />
+      <Stack.Screen
+        name="CreateVendorGuide"
+        component={CreateVendorGuide}
+        options={{ title: "Create Guide" }}
+      />
+      <Stack.Screen
+        name="VendorGuides"
+        component={VendorGuidesScreen}
+        options={{ title: "Guides" }}
+      />
+      <Stack.Screen
+        name="MarketplaceIntegration"
+        component={MarketplaceIntegrationScreen}
+        options={{ title: "Marketplace & Social" }}
+      />
+      <Stack.Screen
+        name="VendorMetrics"
+        component={VendorMetricsScreen}
+        options={{ title: "Vendor Metrics" }}
+      />
+      <Stack.Screen
+        name="VendorAnalytics"
+        component={VendorAnalyticsScreen}
+        options={{ title: "Vendor Analytics" }}
+      />
       <Stack.Screen name="Earnings" component={EarningsScreen} />
       <Stack.Screen name="AdminCourses" component={AdminCoursesScreen} />
       <Stack.Screen name="CreatorDashboard" component={CreatorDashboardScreen} />

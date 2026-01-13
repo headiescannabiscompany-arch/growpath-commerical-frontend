@@ -2,7 +2,6 @@ import React, { useState, useEffect } from "react";
 import {
   View,
   Text,
-  StyleSheet,
   FlatList,
   TouchableOpacity,
   ActivityIndicator,
@@ -126,7 +125,7 @@ export default function PlantListScreen({ navigation }) {
   );
 }
 
-const styles = StyleSheet.create({
+const styles = {
   container: {
     flex: 1,
     backgroundColor: "#F5F5F5"
@@ -255,4 +254,4 @@ const styles = StyleSheet.create({
     textAlign: "center",
     marginTop: 8
   }
-});
+};

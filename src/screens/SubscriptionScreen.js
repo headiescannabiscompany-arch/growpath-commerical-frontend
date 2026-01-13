@@ -2,7 +2,6 @@ import React, { useState, useEffect } from "react";
 import {
   View,
   Text,
-  StyleSheet,
   TouchableOpacity,
   ScrollView,
   Alert,
@@ -166,7 +165,7 @@ function Feature({ icon, title, description }) {
   );
 }
 
-const styles = StyleSheet.create({
+const styles = {
   container: {
     flex: 1
   },
@@ -310,4 +309,4 @@ const styles = StyleSheet.create({
     textAlign: "center",
     lineHeight: 18
   }
-});
+};

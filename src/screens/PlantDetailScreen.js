@@ -2,7 +2,6 @@ import React, { useState, useEffect, useRef } from "react";
 import {
   View,
   Text,
-  StyleSheet,
   ScrollView,
   TouchableOpacity,
   ActivityIndicator,
@@ -300,7 +299,7 @@ export default function PlantDetailScreen({ route, navigation }) {
   );
 }
 
-const styles = StyleSheet.create({
+const styles = {
   container: {
     flex: 1,
     backgroundColor: "#F5F5F5"
@@ -504,4 +503,4 @@ const styles = StyleSheet.create({
     fontSize: 16,
     fontWeight: "bold"
   }
-});
+};

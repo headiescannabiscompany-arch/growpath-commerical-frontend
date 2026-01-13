@@ -1,6 +1,11 @@
 import axios from "axios";
 
-const API_BASE_URL = "http://localhost:5001/api";
+const API_BASE_URL =
+  process.env.EXPO_PUBLIC_API_URL ||
+  process.env.API_URL ||
+  process.env.REACT_NATIVE_APP_API_URL ||
+  process.env.NEXT_PUBLIC_API_URL ||
+  "https://your-app.onrender.com/api";
 
 let authToken = null;
 
@@ -140,7 +145,9 @@ export const getFacilityBillingStatus = async (facilityId) => {
 // Facility Plan billing: start checkout session
 export const startFacilityCheckout = async (facilityId) => {
   try {
-    const response = await apiClient.post(`/facility-billing/checkout-session`, { facilityId });
+    const response = await apiClient.post(`/facility-billing/checkout-session`, {
+      facilityId
+    });
     return { success: true, data: response.data };
   } catch (error) {
     return {
@@ -231,6 +238,168 @@ export const getMetrcSyncStatus = async (facilityId) => {
   try {
     const response = await apiClient.get(`/metrc/sync/${facilityId}/status`);
     return { success: true, data: response.data };
+  } catch (error) {
+    return {
+      success: false,
+      message: error.response?.data?.message || error.message
+    };
+  }
+};
+
+// Update facility (including trackingMode)
+export const updateFacility = async (facilityId, updates) => {
+  try {
+    const response = await apiClient.patch(`/facilities/${facilityId}`, updates);
+    return {
+      success: true,
+      data: response.data
+    };
+  } catch (error) {
+    return {
+      success: false,
+      message: error.response?.data?.message || error.message
+    };
+  }
+};
+
+// BatchCycle endpoints
+export const listBatchCycles = async (facilityId, roomId) => {
+  try {
+    const params = { facility: facilityId };
+    if (roomId) params.room = roomId;
+    const response = await apiClient.get("/batch-cycles", { params });
+    return {
+      success: true,
+      data: response.data
+    };
+  } catch (error) {
+    return {
+      success: false,
+      message: error.response?.data?.message || error.message
+    };
+  }
+};
+
+export const createBatchCycle = async (facilityId, roomId, batchData) => {
+  try {
+    const response = await apiClient.post("/batch-cycles", {
+      facilityId,
+      roomId,
+      ...batchData
+    });
+    return {
+      success: true,
+      data: response.data
+    };
+  } catch (error) {
+    return {
+      success: false,
+      message: error.response?.data?.message || error.message
+    };
+  }
+};
+
+export const getBatchCycle = async (batchId) => {
+  try {
+    const response = await apiClient.get(`/batch-cycles/${batchId}`);
+    return {
+      success: true,
+      data: response.data
+    };
+  } catch (error) {
+    return {
+      success: false,
+      message: error.response?.data?.message || error.message
+    };
+  }
+};
+
+export const updateBatchCycle = async (batchId, updates) => {
+  try {
+    const response = await apiClient.patch(`/batch-cycles/${batchId}`, updates);
+    return {
+      success: true,
+      data: response.data
+    };
+  } catch (error) {
+    return {
+      success: false,
+      message: error.response?.data?.message || error.message
+    };
+  }
+};
+
+export const deleteBatchCycle = async (batchId) => {
+  try {
+    const response = await apiClient.delete(`/batch-cycles/${batchId}`);
+    return {
+      success: true,
+      data: response.data
+    };
+  } catch (error) {
+    return {
+      success: false,
+      message: error.response?.data?.message || error.message
+    };
+  }
+};
+
+// Zone endpoints (for greenhouse operations)
+export const listZones = async (roomId) => {
+  try {
+    const response = await apiClient.get("/zones", { params: { room: roomId } });
+    return {
+      success: true,
+      data: response.data
+    };
+  } catch (error) {
+    return {
+      success: false,
+      message: error.response?.data?.message || error.message
+    };
+  }
+};
+
+export const createZone = async (roomId, zoneData) => {
+  try {
+    const response = await apiClient.post("/zones", {
+      roomId,
+      ...zoneData
+    });
+    return {
+      success: true,
+      data: response.data
+    };
+  } catch (error) {
+    return {
+      success: false,
+      message: error.response?.data?.message || error.message
+    };
+  }
+};
+
+export const updateZone = async (zoneId, updates) => {
+  try {
+    const response = await apiClient.patch(`/zones/${zoneId}`, updates);
+    return {
+      success: true,
+      data: response.data
+    };
+  } catch (error) {
+    return {
+      success: false,
+      message: error.response?.data?.message || error.message
+    };
+  }
+};
+
+export const deleteZone = async (zoneId) => {
+  try {
+    const response = await apiClient.delete(`/zones/${zoneId}`);
+    return {
+      success: true,
+      data: response.data
+    };
   } catch (error) {
     return {
       success: false,

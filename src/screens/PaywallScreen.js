@@ -2,7 +2,6 @@ import React, { useState } from "react";
 import {
   View,
   Text,
-  StyleSheet,
   TouchableOpacity,
   ActivityIndicator,
   Alert,
@@ -101,7 +100,7 @@ export default function PaywallScreen({ navigation }) {
   );
 }
 
-const styles = StyleSheet.create({
+const styles = {
   container: {
     flex: 1,
     backgroundColor: "#F5F5F5"
@@ -166,4 +165,4 @@ const styles = StyleSheet.create({
   loader: {
     marginTop: 30
   }
-});
+};

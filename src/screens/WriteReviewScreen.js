@@ -1,5 +1,5 @@
 import React, { useState } from "react";
-import { View, Text, TextInput, TouchableOpacity, StyleSheet, Alert } from "react-native";
+import { View, Text, TextInput, TouchableOpacity, Alert } from "react-native";
 import ScreenContainer from "../components/ScreenContainer";
 import { addReview } from "../api/courses";
 
@@ -52,7 +52,7 @@ export default function WriteReviewScreen({ route, navigation }) {
   );
 }
 
-const styles = StyleSheet.create({
+const styles = {
   header: { fontSize: 24, fontWeight: "700", marginBottom: 20 },
   label: { fontWeight: "600", marginBottom: 4 },
   starsRow: { flexDirection: "row", marginBottom: 10 },
@@ -61,4 +61,4 @@ const styles = StyleSheet.create({
   input: { backgroundColor: "#eee", padding: 12, borderRadius: 8, height: 140, textAlignVertical: "top" },
   btn: { backgroundColor: "#2ecc71", padding: 12, borderRadius: 8, marginTop: 20 },
   btnText: { color: "white", fontWeight: "700", textAlign: "center", fontSize: 16 },
-});
+};

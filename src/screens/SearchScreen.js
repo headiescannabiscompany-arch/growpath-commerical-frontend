@@ -6,7 +6,6 @@ import {
   TouchableOpacity,
   Image,
   FlatList,
-  StyleSheet,
   ScrollView
 } from "react-native";
 
@@ -303,7 +302,7 @@ export default function SearchScreen({ navigation }) {
   );
 }
 
-const styles = StyleSheet.create({
+const styles = {
   container: {
     flex: 1
   },
@@ -610,4 +609,4 @@ const styles = StyleSheet.create({
     fontSize: 24,
     color: "#e0e0e0"
   }
-});
+};

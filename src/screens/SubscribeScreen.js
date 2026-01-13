@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from "react";
-import { Text, StyleSheet, Alert, Platform } from "react-native";
+import { Text, Alert, Platform } from "react-native";
 import ScreenContainer from "../components/ScreenContainer";
 import Card from "../components/Card";
 import PrimaryButton from "../components/PrimaryButton";
@@ -35,10 +35,14 @@ export default function SubscribeScreen({ navigation }) {
         // Native IAP
         const purchase = await buySubscription();
 
-        const data = await client.post("/api/iap/verify", {
-          receipt: purchase.transactionReceipt,
-          platform: Platform.OS
-        }, global.authToken);
+        const data = await client.post(
+          "/api/iap/verify",
+          {
+            receipt: purchase.transactionReceipt,
+            platform: Platform.OS
+          },
+          global.authToken
+        );
 
         if (data.ok) {
           Alert.alert("Success", "You are now Pro!");
@@ -90,7 +94,7 @@ export default function SubscribeScreen({ navigation }) {
   );
 }
 
-const styles = StyleSheet.create({
+const styles = {
   title: {
     fontSize: 26,
     fontWeight: "700",
@@ -126,4 +130,4 @@ const styles = StyleSheet.create({
     fontWeight: "600",
     color: colors.accent
   }
-});
+};
