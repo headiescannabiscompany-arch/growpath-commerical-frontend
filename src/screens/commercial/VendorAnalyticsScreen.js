@@ -8,6 +8,7 @@ import {
   FlatList
 } from "react-native";
 import { getVendorAnalytics, getVendorOrders } from "../../api/vendorAnalytics";
+import ErrorBoundary from "../../components/ErrorBoundary.js";
 // Placeholder for chart: use a simple bar chart with unicode blocks
 function BarChart({ data, label }) {
   const max = Math.max(...data.map((d) => d.value), 1);
@@ -66,37 +67,39 @@ export default function VendorAnalyticsScreen() {
   };
 
   return (
-    <ScrollView style={styles.container}>
-      <Text style={styles.header}>Vendor Analytics</Text>
-      <Text style={styles.info}>
-        View analytics and insights for your vendor account.
-      </Text>
+    <ErrorBoundary>
+      <ScrollView style={styles.container}>
+        <Text style={styles.header}>Vendor Analytics</Text>
+        <Text style={styles.info}>
+          View analytics and insights for your vendor account.
+        </Text>
 
-      {loading ? (
-        <ActivityIndicator color="#0ea5e9" />
-      ) : (
-        <>
-          <BarChart data={analytics.salesByMonth} label="Sales by Month" />
-          <BarChart data={analytics.topProducts} label="Top Products Sold" />
+        {loading ? (
+          <ActivityIndicator color="#0ea5e9" />
+        ) : (
+          <>
+            <BarChart data={analytics.salesByMonth} label="Sales by Month" />
+            <BarChart data={analytics.topProducts} label="Top Products Sold" />
 
-          <View style={styles.tableContainer}>
-            <Text style={styles.tableHeader}>Recent Orders</Text>
-            <FlatList
-              data={orders}
-              keyExtractor={(item) => item.id.toString()}
-              renderItem={({ item }) => (
-                <View style={styles.tableRow}>
-                  <Text style={styles.tableCell}>{item.date}</Text>
-                  <Text style={styles.tableCell}>{item.product}</Text>
-                  <Text style={styles.tableCell}>${item.amount}</Text>
-                </View>
-              )}
-              ListEmptyComponent={<Text style={styles.emptyText}>No orders found</Text>}
-            />
-          </View>
-        </>
-      )}
-    </ScrollView>
+            <View style={styles.tableContainer}>
+              <Text style={styles.tableHeader}>Recent Orders</Text>
+              <FlatList
+                data={orders}
+                keyExtractor={(item) => item.id.toString()}
+                renderItem={({ item }) => (
+                  <View style={styles.tableRow}>
+                    <Text style={styles.tableCell}>{item.date}</Text>
+                    <Text style={styles.tableCell}>{item.product}</Text>
+                    <Text style={styles.tableCell}>${item.amount}</Text>
+                  </View>
+                )}
+                ListEmptyComponent={<Text style={styles.emptyText}>No orders found</Text>}
+              />
+            </View>
+          </>
+        )}
+      </ScrollView>
+    </ErrorBoundary>
   );
 }
 
@@ -109,7 +112,11 @@ const styles = StyleSheet.create({
     borderRadius: 8,
     padding: 16,
     marginBottom: 24,
-    boxShadow: "0 1px 2px rgba(0, 0, 0, 0.04)"
+    shadowColor: "#000",
+    shadowOffset: { width: 0, height: 1 },
+    shadowOpacity: 0.04,
+    shadowRadius: 2,
+    elevation: 1
   },
   chartLabel: { fontSize: 16, fontWeight: "bold", marginBottom: 8 },
   barRow: { flexDirection: "row", alignItems: "center", marginBottom: 6 },
@@ -121,7 +128,11 @@ const styles = StyleSheet.create({
     borderRadius: 8,
     padding: 16,
     marginBottom: 24,
-    boxShadow: "0 1px 2px rgba(0, 0, 0, 0.04)"
+    shadowColor: "#000",
+    shadowOffset: { width: 0, height: 1 },
+    shadowOpacity: 0.04,
+    shadowRadius: 2,
+    elevation: 1
   },
   tableHeader: { fontSize: 16, fontWeight: "bold", marginBottom: 8 },
   tableRow: { flexDirection: "row", justifyContent: "space-between", marginBottom: 6 },

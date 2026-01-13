@@ -19,7 +19,15 @@ import {
   deleteEquipment
 } from "../../api/equipment";
 
-const EQUIPMENT_TYPES = ["Lighting", "HVAC", "CO2", "Watering", "Monitoring", "Safety", "Other"];
+const EQUIPMENT_TYPES = [
+  "Lighting",
+  "HVAC",
+  "CO2",
+  "Watering",
+  "Monitoring",
+  "Safety",
+  "Other"
+];
 
 export default function EquipmentToolsScreen() {
   const { selectedFacilityId } = useAuth();
@@ -153,14 +161,10 @@ export default function EquipmentToolsScreen() {
                   <Text style={styles.equipmentName}>
                     {`${item.brand || ""} ${item.model || ""}`.trim()}
                   </Text>
-                  {item.type && (
-                    <Text style={styles.equipmentType}>{item.type}</Text>
-                  )}
+                  {item.type && <Text style={styles.equipmentType}>{item.type}</Text>}
                 </View>
               </View>
-              {item.notes && (
-                <Text style={styles.equipmentNotes}>{item.notes}</Text>
-              )}
+              {item.notes && <Text style={styles.equipmentNotes}>{item.notes}</Text>}
               {item.createdAt && (
                 <Text style={styles.equipmentDate}>
                   Added: {new Date(item.createdAt).toLocaleDateString()}
@@ -229,10 +233,7 @@ export default function EquipmentToolsScreen() {
               {EQUIPMENT_TYPES.map((t) => (
                 <TouchableOpacity
                   key={t}
-                  style={[
-                    styles.typeButton,
-                    type === t && styles.typeButtonActive
-                  ]}
+                  style={[styles.typeButton, type === t && styles.typeButtonActive]}
                   onPress={() => setType(t)}
                 >
                   <Text

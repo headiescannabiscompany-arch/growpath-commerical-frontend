@@ -74,10 +74,14 @@ export default function DeviationHandlingScreen() {
 
   const getStatusColor = (status) => {
     switch (status?.toLowerCase()) {
-      case "closed": return "#10b981";
-      case "resolved": return "#06b6d4";
-      case "in progress": return "#f59e0b";
-      default: return "#ef4444";
+      case "closed":
+        return "#10b981";
+      case "resolved":
+        return "#06b6d4";
+      case "in progress":
+        return "#f59e0b";
+      default:
+        return "#ef4444";
     }
   };
 

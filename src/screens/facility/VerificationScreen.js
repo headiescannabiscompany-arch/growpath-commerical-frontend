@@ -56,7 +56,10 @@ export default function VerificationScreen() {
         onPress: async () => {
           setProcessingId(taskId);
           try {
-            await verifyTask(selectedFacilityId, taskId, { verified: true, status: "approved" });
+            await verifyTask(selectedFacilityId, taskId, {
+              verified: true,
+              status: "approved"
+            });
             await loadTasks();
             Alert.alert("Success", "Record approved");
           } catch (error) {
@@ -78,7 +81,10 @@ export default function VerificationScreen() {
         onPress: async () => {
           setProcessingId(taskId);
           try {
-            await verifyTask(selectedFacilityId, taskId, { verified: false, status: "rejected" });
+            await verifyTask(selectedFacilityId, taskId, {
+              verified: false,
+              status: "rejected"
+            });
             await loadTasks();
             Alert.alert("Success", "Record rejected");
           } catch (error) {
@@ -93,14 +99,17 @@ export default function VerificationScreen() {
 
   const getFilteredTasks = () => {
     if (filter === "all") return tasks;
-    return tasks.filter(t => (t.status || "pending") === filter);
+    return tasks.filter((t) => (t.status || "pending") === filter);
   };
 
   const getStatusColor = (status) => {
     switch (status) {
-      case "approved": return "#10b981";
-      case "rejected": return "#ef4444";
-      default: return "#f59e0b";
+      case "approved":
+        return "#10b981";
+      case "rejected":
+        return "#ef4444";
+      default:
+        return "#f59e0b";
     }
   };
 
@@ -113,12 +122,7 @@ export default function VerificationScreen() {
       <View style={styles.recordHeader}>
         <View style={styles.recordInfo}>
           <Text style={styles.recordName}>{item.name || "Unnamed Record"}</Text>
-          <Text
-            style={[
-              styles.recordStatus,
-              { color: getStatusColor(item.status) }
-            ]}
-          >
+          <Text style={[styles.recordStatus, { color: getStatusColor(item.status) }]}>
             {getStatusLabel(item.status)}
           </Text>
         </View>
@@ -176,10 +180,7 @@ export default function VerificationScreen() {
         {["all", "pending", "approved", "rejected"].map((f) => (
           <TouchableOpacity
             key={f}
-            style={[
-              styles.filterButton,
-              filter === f && styles.filterButtonActive
-            ]}
+            style={[styles.filterButton, filter === f && styles.filterButtonActive]}
             onPress={() => setFilter(f)}
           >
             <Text
@@ -197,9 +198,7 @@ export default function VerificationScreen() {
       {filteredTasks.length === 0 ? (
         <View style={styles.emptyState}>
           <Text style={styles.emptyText}>
-            {filter === "all"
-              ? "No records to review"
-              : `No ${filter} records`}
+            {filter === "all" ? "No records to review" : `No ${filter} records`}
           </Text>
         </View>
       ) : (

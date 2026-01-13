@@ -11,6 +11,13 @@ import VerificationScreen from "../screens/facility/VerificationScreen.js";
 import DeviationHandlingScreen from "../screens/facility/DeviationHandlingScreen.js";
 import VendorDashboardScreen from "../screens/facility/VendorDashboardScreen.js";
 import EquipmentToolsScreen from "../screens/facility/EquipmentToolsScreen.js";
+import NutrientToolsScreen from "../screens/facility/NutrientToolsScreen.js";
+import SocialMediaScreen from "../screens/commercial/SocialMediaScreen.js";
+import InfluencerDashboardScreen from "../screens/commercial/InfluencerDashboardScreen.js";
+import ContentMarketplaceScreen from "../screens/commercial/ContentMarketplaceScreen.js";
+import CommunitiesScreen from "../screens/commercial/CommunitiesScreen.js";
+import AdvertisingScreen from "../screens/commercial/AdvertisingScreen.js";
+import VendorMetricsScreen from "../screens/commercial/VendorMetricsScreen.js";
 import { useAuth } from "../context/AuthContext.js";
 
 const Stack = createNativeStackNavigator();
@@ -58,6 +65,41 @@ const FacilityStack = () => {
           name="EquipmentTools"
           component={EquipmentToolsScreen}
           options={{ title: "Equipment Tools" }}
+        />
+        <Stack.Screen
+          name="NutrientTools"
+          component={NutrientToolsScreen}
+          options={{ title: "Nutrient Tools" }}
+        />
+        <Stack.Screen
+          name="SocialMedia"
+          component={SocialMediaScreen}
+          options={{ title: "Social Media Integration" }}
+        />
+        <Stack.Screen
+          name="InfluencerDashboard"
+          component={InfluencerDashboardScreen}
+          options={{ title: "Influencer Dashboard" }}
+        />
+        <Stack.Screen
+          name="ContentMarketplace"
+          component={ContentMarketplaceScreen}
+          options={{ title: "Content Marketplace" }}
+        />
+        <Stack.Screen
+          name="Communities"
+          component={CommunitiesScreen}
+          options={{ title: "Communities" }}
+        />
+        <Stack.Screen
+          name="Advertising"
+          component={AdvertisingScreen}
+          options={{ title: "Advertising" }}
+        />
+        <Stack.Screen
+          name="VendorMetrics"
+          component={VendorMetricsScreen}
+          options={{ title: "Vendor Metrics" }}
         />
         {!isCommercial && (
           <>

@@ -14,7 +14,14 @@ import {
 import { useAuth } from "../../context/AuthContext";
 import { listAuditLogs, createAuditLog, reconcileAudit } from "../../api/audit";
 
-const ACTION_TYPES = ["Inventory Check", "Reconciliation", "Access Change", "Data Modification", "Report", "Other"];
+const ACTION_TYPES = [
+  "Inventory Check",
+  "Reconciliation",
+  "Access Change",
+  "Data Modification",
+  "Report",
+  "Other"
+];
 
 export default function AuditLogScreen() {
   const { selectedFacilityId } = useAuth();
@@ -94,12 +101,8 @@ export default function AuditLogScreen() {
               <View style={styles.logHeader}>
                 <Text style={styles.logAction}>{item.action}</Text>
               </View>
-              {item.details && (
-                <Text style={styles.logDetails}>{item.details}</Text>
-              )}
-              {item.user && (
-                <Text style={styles.logUser}>By: {item.user}</Text>
-              )}
+              {item.details && <Text style={styles.logDetails}>{item.details}</Text>}
+              {item.user && <Text style={styles.logUser}>By: {item.user}</Text>}
               {item.createdAt && (
                 <Text style={styles.logDate}>
                   {new Date(item.createdAt).toLocaleString()}
@@ -136,10 +139,7 @@ export default function AuditLogScreen() {
               {ACTION_TYPES.map((a) => (
                 <TouchableOpacity
                   key={a}
-                  style={[
-                    styles.actionButton,
-                    action === a && styles.actionButtonActive
-                  ]}
+                  style={[styles.actionButton, action === a && styles.actionButtonActive]}
                   onPress={() => setAction(a)}
                 >
                   <Text

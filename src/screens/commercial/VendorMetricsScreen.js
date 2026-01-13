@@ -40,6 +40,10 @@ export default function VendorMetricsScreen() {
   const [mixName, setMixName] = useState("");
   const [mixNotes, setMixNotes] = useState("");
   const [submitting, setSubmitting] = useState(false);
+  const [cecValue, setCecValue] = useState("15");
+  const [phValue, setPhValue] = useState("6.5");
+  const [ecValue, setEcValue] = useState("1.8");
+  const [soilComposition, setSoilComposition] = useState("");
 
   useEffect(() => {
     loadData();
@@ -98,6 +102,110 @@ export default function VendorMetricsScreen() {
           <View style={styles.metricsRow}>
             <Text style={styles.metricBox}>Avg. Soil pH: {metrics.avgSoilPH}</Text>
             <Text style={styles.metricBox}>Avg. EC: {metrics.avgNutrientEC}</Text>
+          </View>
+
+          {/* Soil Health Tracking Section */}
+          <View style={styles.card}>
+            <Text style={styles.sectionHeader}>🌱 Soil Health Metrics</Text>
+            <View style={styles.metricsGrid}>
+              <View style={styles.metricInput}>
+                <Text style={styles.metricLabel}>pH Level</Text>
+                <TextInput
+                  style={styles.numberInput}
+                  value={phValue}
+                  onChangeText={setPhValue}
+                  placeholder="6.5"
+                  keyboardType="decimal-pad"
+                />
+                <Text style={styles.metricUnit}>6.0 - 7.0 Optimal</Text>
+              </View>
+              <View style={styles.metricInput}>
+                <Text style={styles.metricLabel}>EC (Conductivity)</Text>
+                <TextInput
+                  style={styles.numberInput}
+                  value={ecValue}
+                  onChangeText={setEcValue}
+                  placeholder="1.8"
+                  keyboardType="decimal-pad"
+                />
+                <Text style={styles.metricUnit}>1.0 - 2.0 Range</Text>
+              </View>
+              <View style={styles.metricInput}>
+                <Text style={styles.metricLabel}>CEC (meq/100g)</Text>
+                <TextInput
+                  style={styles.numberInput}
+                  value={cecValue}
+                  onChangeText={setCecValue}
+                  placeholder="15"
+                  keyboardType="decimal-pad"
+                />
+                <Text style={styles.metricUnit}>12 - 20 Ideal</Text>
+              </View>
+            </View>
+
+            <Text style={styles.compositionLabel}>Soil Composition</Text>
+            <TextInput
+              style={[styles.input, { marginTop: 8, minHeight: 60 }]}
+              value={soilComposition}
+              onChangeText={setSoilComposition}
+              placeholder="e.g., Coco: 40%, Perlite: 30%, Compost: 30%"
+              multiline
+            />
+
+            {/* Nutrient Availability Chart */}
+            <View style={styles.phCurveContainer}>
+              <Text style={styles.curveLabel}>📊 Nutrient Availability by pH</Text>
+              <View style={styles.curveVisualization}>
+                <View style={styles.nutrientBar}>
+                  <Text style={styles.nutrientLabel}>N</Text>
+                  <View
+                    style={[
+                      styles.availabilityBar,
+                      { width: "75%", backgroundColor: "#10b981" }
+                    ]}
+                  />
+                </View>
+                <View style={styles.nutrientBar}>
+                  <Text style={styles.nutrientLabel}>P</Text>
+                  <View
+                    style={[
+                      styles.availabilityBar,
+                      { width: "85%", backgroundColor: "#f59e0b" }
+                    ]}
+                  />
+                </View>
+                <View style={styles.nutrientBar}>
+                  <Text style={styles.nutrientLabel}>K</Text>
+                  <View
+                    style={[
+                      styles.availabilityBar,
+                      { width: "80%", backgroundColor: "#3b82f6" }
+                    ]}
+                  />
+                </View>
+                <View style={styles.nutrientBar}>
+                  <Text style={styles.nutrientLabel}>Ca</Text>
+                  <View
+                    style={[
+                      styles.availabilityBar,
+                      { width: "70%", backgroundColor: "#8b5cf6" }
+                    ]}
+                  />
+                </View>
+                <View style={styles.nutrientBar}>
+                  <Text style={styles.nutrientLabel}>Mg</Text>
+                  <View
+                    style={[
+                      styles.availabilityBar,
+                      { width: "65%", backgroundColor: "#ec4899" }
+                    ]}
+                  />
+                </View>
+              </View>
+              <Text style={styles.curveNote}>
+                Availability varies with soil pH - optimal range 6.0-7.0
+              </Text>
+            </View>
           </View>
 
           <View style={styles.card}>
@@ -217,5 +325,90 @@ const styles = StyleSheet.create({
   eqRow: { flexDirection: "row", justifyContent: "space-between", marginBottom: 6 },
   eqName: { fontWeight: "bold", fontSize: 15 },
   eqNotes: { fontSize: 14, color: "#374151" },
-  emptyText: { color: "#9ca3af", fontStyle: "italic", textAlign: "center", marginTop: 16 }
+  emptyText: {
+    color: "#9ca3af",
+    fontStyle: "italic",
+    textAlign: "center",
+    marginTop: 16
+  },
+  metricsGrid: {
+    flexDirection: "row",
+    justifyContent: "space-between",
+    marginBottom: 16,
+    gap: 8
+  },
+  metricInput: {
+    flex: 1,
+    backgroundColor: "#f3f4f6",
+    borderRadius: 8,
+    padding: 10
+  },
+  metricLabel: {
+    fontSize: 13,
+    fontWeight: "bold",
+    color: "#374151",
+    marginBottom: 4
+  },
+  numberInput: {
+    borderWidth: 1,
+    borderColor: "#e5e7eb",
+    borderRadius: 6,
+    padding: 8,
+    fontSize: 14,
+    backgroundColor: "#fff"
+  },
+  metricUnit: {
+    fontSize: 12,
+    color: "#9ca3af",
+    marginTop: 4
+  },
+  compositionLabel: {
+    fontSize: 14,
+    fontWeight: "bold",
+    color: "#374151",
+    marginTop: 12,
+    marginBottom: 4
+  },
+  phCurveContainer: {
+    backgroundColor: "#f0f9ff",
+    borderRadius: 8,
+    padding: 12,
+    marginTop: 16,
+    borderLeftWidth: 4,
+    borderLeftColor: "#0ea5e9"
+  },
+  curveLabel: {
+    fontSize: 14,
+    fontWeight: "bold",
+    color: "#0c4a6e",
+    marginBottom: 12
+  },
+  curveVisualization: {
+    backgroundColor: "#fff",
+    borderRadius: 6,
+    padding: 10,
+    marginBottom: 8
+  },
+  nutrientBar: {
+    flexDirection: "row",
+    alignItems: "center",
+    marginBottom: 8
+  },
+  nutrientLabel: {
+    width: 30,
+    fontWeight: "bold",
+    fontSize: 12,
+    color: "#374151"
+  },
+  availabilityBar: {
+    height: 20,
+    borderRadius: 4,
+    marginLeft: 8
+  },
+  curveNote: {
+    fontSize: 12,
+    color: "#9ca3af",
+    fontStyle: "italic",
+    textAlign: "center"
+  }
 });

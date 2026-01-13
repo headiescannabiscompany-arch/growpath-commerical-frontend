@@ -103,9 +103,7 @@ export default function GreenWasteScreen() {
                   <Text style={styles.eventMethod}>{item.method}</Text>
                 </View>
               </View>
-              {item.notes && (
-                <Text style={styles.eventNotes}>{item.notes}</Text>
-              )}
+              {item.notes && <Text style={styles.eventNotes}>{item.notes}</Text>}
               {item.createdAt && (
                 <Text style={styles.eventDate}>
                   Logged: {new Date(item.createdAt).toLocaleDateString()}
@@ -151,10 +149,7 @@ export default function GreenWasteScreen() {
               {DISPOSAL_METHODS.map((m) => (
                 <TouchableOpacity
                   key={m}
-                  style={[
-                    styles.methodButton,
-                    method === m && styles.methodButtonActive
-                  ]}
+                  style={[styles.methodButton, method === m && styles.methodButtonActive]}
                   onPress={() => setMethod(m)}
                 >
                   <Text

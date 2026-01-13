@@ -131,15 +131,10 @@ export default function SOPTemplatesScreen() {
             <View style={styles.sopCard}>
               <View style={styles.sopHeader}>
                 <Text style={styles.sopTitle}>{item.title}</Text>
-                {item.version && (
-                  <Text style={styles.sopVersion}>v{item.version}</Text>
-                )}
+                {item.version && <Text style={styles.sopVersion}>v{item.version}</Text>}
               </View>
               {item.content && (
-                <Text
-                  style={styles.sopContent}
-                  numberOfLines={3}
-                >
+                <Text style={styles.sopContent} numberOfLines={3}>
                   {item.content}
                 </Text>
               )}

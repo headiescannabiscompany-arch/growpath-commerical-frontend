@@ -80,10 +80,14 @@ export default function BillingAndReportingScreen() {
 
   const getStatusBadgeColor = (status) => {
     switch (status?.toLowerCase()) {
-      case "active": return { bg: "#d1fae5", text: "#065f46" };
-      case "trialing": return { bg: "#dbeafe", text: "#0c4a6e" };
-      case "canceled": return { bg: "#fee2e2", text: "#991b1b" };
-      default: return { bg: "#f3f4f6", text: "#374151" };
+      case "active":
+        return { bg: "#d1fae5", text: "#065f46" };
+      case "trialing":
+        return { bg: "#dbeafe", text: "#0c4a6e" };
+      case "canceled":
+        return { bg: "#fee2e2", text: "#991b1b" };
+      default:
+        return { bg: "#f3f4f6", text: "#374151" };
     }
   };
 
@@ -99,9 +103,7 @@ export default function BillingAndReportingScreen() {
   return (
     <ScrollView
       style={styles.container}
-      refreshControl={
-        <RefreshControl refreshing={refreshing} onRefresh={onRefresh} />
-      }
+      refreshControl={<RefreshControl refreshing={refreshing} onRefresh={onRefresh} />}
     >
       <View style={styles.header}>
         <Text style={styles.title}>Billing & Reporting</Text>
@@ -112,12 +114,7 @@ export default function BillingAndReportingScreen() {
       <View style={styles.card}>
         <View style={styles.cardHeader}>
           <Text style={styles.cardTitle}>Plan Status</Text>
-          <View
-            style={[
-              styles.statusBadge,
-              { backgroundColor: statusBadge.bg }
-            ]}
-          >
+          <View style={[styles.statusBadge, { backgroundColor: statusBadge.bg }]}>
             <Text style={[styles.statusText, { color: statusBadge.text }]}>
               {statusText.charAt(0).toUpperCase() + statusText.slice(1)}
             </Text>
@@ -149,7 +146,11 @@ export default function BillingAndReportingScreen() {
 
             {statusText === "active" || statusText === "trialing" ? (
               <TouchableOpacity
-                style={[styles.button, styles.cancelButton, submitting && styles.disabled]}
+                style={[
+                  styles.button,
+                  styles.cancelButton,
+                  submitting && styles.disabled
+                ]}
                 onPress={handleCancel}
                 disabled={submitting}
               >
@@ -159,7 +160,11 @@ export default function BillingAndReportingScreen() {
               </TouchableOpacity>
             ) : (
               <TouchableOpacity
-                style={[styles.button, styles.subscribeButton, submitting && styles.disabled]}
+                style={[
+                  styles.button,
+                  styles.subscribeButton,
+                  submitting && styles.disabled
+                ]}
                 onPress={handleSubscribe}
                 disabled={submitting}
               >
@@ -209,7 +214,9 @@ export default function BillingAndReportingScreen() {
         </Text>
         <TouchableOpacity
           style={[styles.button, styles.reportButton]}
-          onPress={() => Alert.alert("Coming Soon", "State report generation coming soon.")}
+          onPress={() =>
+            Alert.alert("Coming Soon", "State report generation coming soon.")
+          }
         >
           <Text style={styles.reportButtonText}>Download State Report</Text>
         </TouchableOpacity>
