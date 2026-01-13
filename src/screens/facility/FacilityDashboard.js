@@ -195,6 +195,55 @@ const FacilityDashboard = () => {
         )}
       </View>
 
+      {/* Quick Actions Shortcuts */}
+      <View style={styles.card}>
+        <Text style={styles.cardTitle}>⚡ Quick Actions</Text>
+        <View style={styles.shortcutGrid}>
+          <TouchableOpacity
+            style={styles.shortcut}
+            onPress={() => navigation.navigate("Equipment")}
+          >
+            <Text style={styles.shortcutIcon}>🔧</Text>
+            <Text style={styles.shortcutLabel}>Equipment</Text>
+          </TouchableOpacity>
+          <TouchableOpacity
+            style={styles.shortcut}
+            onPress={() => navigation.navigate("SOP")}
+          >
+            <Text style={styles.shortcutIcon}>📋</Text>
+            <Text style={styles.shortcutLabel}>SOP</Text>
+          </TouchableOpacity>
+          <TouchableOpacity
+            style={styles.shortcut}
+            onPress={() => navigation.navigate("Settings")}
+          >
+            <Text style={styles.shortcutIcon}>⚙️</Text>
+            <Text style={styles.shortcutLabel}>Settings</Text>
+          </TouchableOpacity>
+          <TouchableOpacity
+            style={styles.shortcut}
+            onPress={() => navigation.navigate("Verification")}
+          >
+            <Text style={styles.shortcutIcon}>✓</Text>
+            <Text style={styles.shortcutLabel}>Verify</Text>
+          </TouchableOpacity>
+          <TouchableOpacity
+            style={styles.shortcut}
+            onPress={() => navigation.navigate("Deviation")}
+          >
+            <Text style={styles.shortcutIcon}>⚠️</Text>
+            <Text style={styles.shortcutLabel}>Deviation</Text>
+          </TouchableOpacity>
+          <TouchableOpacity
+            style={styles.shortcut}
+            onPress={() => navigation.navigate("Audit")}
+          >
+            <Text style={styles.shortcutIcon}>📊</Text>
+            <Text style={styles.shortcutLabel}>Audit</Text>
+          </TouchableOpacity>
+        </View>
+      </View>
+
       {/* Next Actions Card */}
       <View style={styles.card}>
         <Text style={styles.cardTitle}>⏰ Next Actions</Text>
@@ -541,6 +590,31 @@ const styles = StyleSheet.create({
     color: "#fff",
     fontSize: 14,
     fontWeight: "600"
+  },
+  shortcutGrid: {
+    flexDirection: "row",
+    flexWrap: "wrap",
+    justifyContent: "space-between",
+    gap: 8
+  },
+  shortcut: {
+    width: "32%",
+    backgroundColor: "#f3f4f6",
+    borderRadius: 12,
+    paddingVertical: 16,
+    alignItems: "center",
+    borderWidth: 1,
+    borderColor: "#e5e7eb"
+  },
+  shortcutIcon: {
+    fontSize: 28,
+    marginBottom: 8
+  },
+  shortcutLabel: {
+    fontSize: 12,
+    fontWeight: "600",
+    color: "#374151",
+    textAlign: "center"
   },
   error: {
     fontSize: 16,
