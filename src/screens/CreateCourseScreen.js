@@ -13,7 +13,7 @@ import * as ImagePicker from "expo-image-picker";
 import ScreenContainer from "../components/ScreenContainer";
 import GrowInterestPicker from "../components/GrowInterestPicker";
 import { spacing } from "../theme/theme";
-import { createCourse, getCourse } from "../api/courses";
+import { createCourse, getCourse, getMyCourses } from "../api/courses";
 import { buildEmptyTierSelection, flattenTierSelections } from "../utils/growInterests";
 
 export default function CreateCourseScreen({ navigation }) {
@@ -71,6 +71,13 @@ export default function CreateCourseScreen({ navigation }) {
       Alert.alert("Invalid Price", "Please enter a valid price or leave blank for free");
       return false;
     }
+    if (price) {
+      const parsed = parseFloat(price);
+      if (parsed < 10 || parsed > 250) {
+        Alert.alert("Price out of range", "Set a price between $10 and $250.");
+        return false;
+      }
+    }
     return true;
   };
 
@@ -79,12 +86,25 @@ export default function CreateCourseScreen({ navigation }) {
 
     setLoading(true);
     try {
+      const mine = await getMyCourses();
+      const activeCount = Array.isArray(mine)
+        ? mine.filter((c) => c.isPublished || ["pending", "approved"].includes(c.status))
+        : [];
+      if (activeCount.length >= 3) {
+        Alert.alert(
+          "Limit reached",
+          "You can have up to 3 active courses (published or pending approval). Unpublish one before creating a new course."
+        );
+        return;
+      }
+
       const priceCents = price ? Math.round(parseFloat(price) * 100) : 0;
 
       const payload = {
         title: title.trim(),
         description: description.trim(),
         category: category.trim(),
+        price: price ? parseFloat(price) : 0,
         priceCents,
         thumbnail: thumbnail?.uri || "",
         status: "draft", // Courses start as draft

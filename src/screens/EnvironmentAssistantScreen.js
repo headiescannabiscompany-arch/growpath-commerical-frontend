@@ -2,8 +2,11 @@ import React, { useState } from "react";
 import { View, Text, TextInput, TouchableOpacity, StyleSheet } from "react-native";
 import ScreenContainer from "../components/ScreenContainer";
 import { analyzeEnvironment } from "../api/environment";
+import { useAuth } from "../context/AuthContext";
+import { requirePro, handleApiError } from "../utils/proHelper";
 
-export default function EnvironmentAssistantScreen() {
+export default function EnvironmentAssistantScreen({ navigation }) {
+  const { isPro, token } = useAuth();
   const [stage, setStage] = useState("Veg");
   const [tempDayC, setTempDayC] = useState("");
   const [tempNightC, setTempNightC] = useState("");
@@ -17,29 +20,29 @@ export default function EnvironmentAssistantScreen() {
   const [loading, setLoading] = useState(false);
 
   async function run() {
-    try {
-      setLoading(true);
-      const res = await analyzeEnvironment({
-        stage,
-        tempDayC: tempDayC ? Number(tempDayC) : null,
-        tempNightC: tempNightC ? Number(tempNightC) : null,
-        humidity: humidity ? Number(humidity) : null,
-        vpd: vpd ? Number(vpd) : null,
-        ppfd: ppfd ? Number(ppfd) : null,
-        dli: dli ? Number(dli) : null,
-        co2: co2 ? Number(co2) : null,
-        lightHours: lightHours ? Number(lightHours) : null,
-        strainType: "",
-        medium: ""
-      });
-      const payload = res?.data ?? res;
-      setResult(payload?.env || null);
-    } catch (error) {
-      console.warn("Failed to analyze environment:", error?.message || error);
-      setResult(null);
-    } finally {
-      setLoading(false);
-    }
+    requirePro(navigation, isPro, async () => {
+      try {
+        setLoading(true);
+        setResult(null);
+        const data = {
+          stage,
+          tempDayC: parseFloat(tempDayC),
+          tempNightC: parseFloat(tempNightC),
+          humidity: parseFloat(humidity),
+          vpd: vpd ? parseFloat(vpd) : undefined,
+          ppfd: ppfd ? parseFloat(ppfd) : undefined,
+          dli: dli ? parseFloat(dli) : undefined,
+          co2: co2 ? parseFloat(co2) : undefined,
+          lightHours: lightHours ? parseFloat(lightHours) : undefined
+        };
+        const res = await analyzeEnvironment(data, token);
+        setResult(res);
+      } catch (err) {
+        handleApiError(err, navigation);
+      } finally {
+        setLoading(false);
+      }
+    });
   }
 
   return (

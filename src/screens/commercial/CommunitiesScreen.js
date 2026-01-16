@@ -108,16 +108,7 @@ const CommunitiesScreen = ({ navigation }) => {
     }
   ]);
 
-  const handleCreateGuild = () => {
-    if (!guildName) {
-      Alert.alert("Missing Info", "Guild name required");
-      return;
-    }
-    Alert.alert("Guild Created", `${guildName} created successfully!`);
-    setShowCreateGuildModal(false);
-    setGuildName("");
-    setGuildDescription("");
-  };
+  // Note: handled by async handleCreateGuild above
 
   const handleJoinGuild = (guildId, guildName) => {
     Alert.alert("Joined!", `You've joined ${guildName}`);

@@ -89,7 +89,7 @@ export default function ForumScreen() {
     const otherKey = [...otherTierFilters].sort().join(",");
     return `${tier1Key}|${otherKey}`;
   }, [tier1Filters, otherTierFilters]);
-  
+
   // Initialize active filters with user's selections
   useEffect(() => {
     if (user?.growInterests) {
@@ -127,9 +127,13 @@ export default function ForumScreen() {
       let next = exists ? prev.filter((t) => t !== tag) : [...prev, tag];
 
       if (tierId === TIER1_ID && userTier1Selections.length > 0) {
-        const hasTier1Selected = next.some((value) => userTier1Selections.includes(value));
+        const hasTier1Selected = next.some((value) =>
+          userTier1Selections.includes(value)
+        );
         if (!hasTier1Selected) {
-          const withoutTier1 = next.filter((value) => !userTier1Selections.includes(value));
+          const withoutTier1 = next.filter(
+            (value) => !userTier1Selections.includes(value)
+          );
           next = Array.from(new Set([...withoutTier1, ...userTier1Selections]));
         }
       }
@@ -143,29 +147,23 @@ export default function ForumScreen() {
     listRef.current?.scrollToOffset({ offset: 0, animated: false });
   });
 
-  const {
-    data,
-    fetchNextPage,
-    hasNextPage,
-    isFetchingNextPage,
-    refetch,
-    isRefreshing
-  } = useInfiniteQuery({
-    queryKey: ["forum-feed", mode, filtersKey],
-    queryFn: async ({ pageParam = 1 }) => {
-      const fn =
-        mode === "trending"
-          ? getTrendingPosts
-          : mode === "following"
-            ? getFollowingPosts
-            : getLatestPosts;
-      return fn(pageParam, tier1Filters, otherTierFilters);
-    },
-    getNextPageParam: (lastPage, allPages) => {
-      return lastPage.length === PAGE_SIZE ? allPages.length + 1 : undefined;
-    },
-    staleTime: 1000 * 60 * 2, // 2 minutes
-  });
+  const { data, fetchNextPage, hasNextPage, isFetchingNextPage, refetch, isRefreshing } =
+    useInfiniteQuery({
+      queryKey: ["forum-feed", mode, filtersKey],
+      queryFn: async ({ pageParam = 1 }) => {
+        const fn =
+          mode === "trending"
+            ? getTrendingPosts
+            : mode === "following"
+              ? getFollowingPosts
+              : getLatestPosts;
+        return fn(pageParam, tier1Filters, otherTierFilters);
+      },
+      getNextPageParam: (lastPage, allPages) => {
+        return lastPage.length === PAGE_SIZE ? allPages.length + 1 : undefined;
+      },
+      staleTime: 1000 * 60 * 2 // 2 minutes
+    });
 
   const posts = useMemo(() => data?.pages.flat() || [], [data]);
   const tier1FilterSet = useMemo(() => new Set(tier1Filters), [tier1Filters]);
@@ -214,6 +212,11 @@ export default function ForumScreen() {
   }, [rootNavigation]);
 
   function renderPost({ item }) {
+    const authorType = item.authorType || item.user?.type || "user";
+    const workspace = item.workspaceContext || item.workspace || "personal";
+    const identityLabel = authorType === "business" ? "Business" : "Member";
+    const workspaceLabel = workspace === "commercial" ? "Commercial" : workspace;
+
     return (
       <TouchableOpacity
         style={styles.card}
@@ -222,7 +225,9 @@ export default function ForumScreen() {
         {/* User */}
         <View style={styles.userRow}>
           <Image
-            source={{ uri: resolveImageUrl(item.user?.avatar) || "https://via.placeholder.com/100" }}
+            source={{
+              uri: resolveImageUrl(item.user?.avatar) || "https://via.placeholder.com/100"
+            }}
             style={styles.avatar}
           />
           <View style={{ flex: 1 }}>
@@ -230,6 +235,14 @@ export default function ForumScreen() {
             <Text style={styles.timestamp}>
               {new Date(item.createdAt).toLocaleDateString()}
             </Text>
+            <View style={styles.identityRow}>
+              <View style={styles.identityPill}>
+                <Text style={styles.identityText}>{identityLabel}</Text>
+              </View>
+              <View style={styles.workspacePill}>
+                <Text style={styles.workspaceText}>{workspaceLabel}</Text>
+              </View>
+            </View>
           </View>
           <FollowButton userId={item.user?._id} />
         </View>
@@ -302,15 +315,20 @@ export default function ForumScreen() {
               }}
             >
               <Text
-                style={{ color: "#10B981", fontWeight: "600", fontSize: 15, marginBottom: 2 }}
+                style={{
+                  color: "#10B981",
+                  fontWeight: "600",
+                  fontSize: 15,
+                  marginBottom: 2
+                }}
               >
                 🌱 Community & Shared Wisdom
               </Text>
               <Text style={{ color: "#222", fontSize: 13 }}>
-                The Growers Forum is a space for learning, sharing, and supporting each other.
-                There are no experts—only fellow growers on their own journeys. Ask questions,
-                offer insights, and remember: every experience helps the community grow
-                stronger.
+                The Growers Forum is a space for learning, sharing, and supporting each
+                other. There are no experts—only fellow growers on their own journeys. Ask
+                questions, offer insights, and remember: every experience helps the
+                community grow stronger.
               </Text>
             </View>
 
@@ -318,7 +336,9 @@ export default function ForumScreen() {
               <View style={styles.guildTitleRow}>
                 <View style={styles.guildTitleContainer}>
                   <Text style={styles.guildTitle}>🌱 The Growers Forum</Text>
-                  <Text style={styles.guildSubtitle}>Experience. Observation. Learning.</Text>
+                  <Text style={styles.guildSubtitle}>
+                    Experience. Observation. Learning.
+                  </Text>
                 </View>
                 <TouchableOpacity
                   onPress={() => rootNavigation.navigate("GuildCode")}
@@ -335,7 +355,9 @@ export default function ForumScreen() {
                   onPress={() => changeMode("latest")}
                   style={[styles.tab, mode === "latest" && styles.tabActive]}
                 >
-                  <Text style={[styles.tabText, mode === "latest" && styles.tabTextActive]}>
+                  <Text
+                    style={[styles.tabText, mode === "latest" && styles.tabTextActive]}
+                  >
                     Latest
                   </Text>
                 </TouchableOpacity>
@@ -344,7 +366,9 @@ export default function ForumScreen() {
                   onPress={() => changeMode("trending")}
                   style={[styles.tab, mode === "trending" && styles.tabActive]}
                 >
-                  <Text style={[styles.tabText, mode === "trending" && styles.tabTextActive]}>
+                  <Text
+                    style={[styles.tabText, mode === "trending" && styles.tabTextActive]}
+                  >
                     Trending
                   </Text>
                 </TouchableOpacity>
@@ -353,7 +377,9 @@ export default function ForumScreen() {
                   onPress={() => changeMode("following")}
                   style={[styles.tab, mode === "following" && styles.tabActive]}
                 >
-                  <Text style={[styles.tabText, mode === "following" && styles.tabTextActive]}>
+                  <Text
+                    style={[styles.tabText, mode === "following" && styles.tabTextActive]}
+                  >
                     Following
                   </Text>
                 </TouchableOpacity>
@@ -387,7 +413,11 @@ export default function ForumScreen() {
         onEndReachedThreshold={0.5}
         ListFooterComponent={renderFooter}
         refreshControl={
-          <RefreshControl refreshing={isRefreshing} onRefresh={refetch} tintColor="#2ecc71" />
+          <RefreshControl
+            refreshing={isRefreshing}
+            onRefresh={refetch}
+            tintColor="#2ecc71"
+          />
         }
         contentContainerStyle={{ paddingBottom: 100 }}
       />
@@ -464,9 +494,9 @@ const styles = StyleSheet.create({
     color: "white"
   },
   headerActions: {
-    flexDirection: 'row',
-    justifyContent: 'space-between',
-    alignItems: 'center',
+    flexDirection: "row",
+    justifyContent: "space-between",
+    alignItems: "center",
     marginBottom: 8
   },
   filterToggle: {

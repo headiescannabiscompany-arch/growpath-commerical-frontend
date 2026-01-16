@@ -11,16 +11,16 @@ import {
   Modal,
   RefreshControl
 } from "react-native";
-import { useAuth } from "../../context/AuthContext";
+import { useAuth } from "../../context/AuthContext.js";
+import { hasGlobalFacilityAccess } from "../../types/facility.js";
 import {
   listSOPTemplates,
   createSOPTemplate,
   updateSOPTemplate,
   deleteSOPTemplate
-} from "../../api/sop";
+} from "../../api/sop.js";
 
-export default function SOPTemplatesScreen() {
-  const { selectedFacilityId } = useAuth();
+  const { selectedFacilityId, facilitiesAccess } = useAuth();
   const [templates, setTemplates] = useState([]);
   const [loading, setLoading] = useState(false);
   const [refreshing, setRefreshing] = useState(false);
@@ -29,6 +29,11 @@ export default function SOPTemplatesScreen() {
   const [content, setContent] = useState("");
   const [editingId, setEditingId] = useState(null);
   const [submitting, setSubmitting] = useState(false);
+
+  // Entitlement gating: Only allow admin/lead roles to create, edit, or delete SOP templates
+  const userAccess = facilitiesAccess?.find((f) => f.facilityId === selectedFacilityId);
+  const userRole = userAccess?.role;
+  const notEntitled = !userRole || !hasGlobalFacilityAccess(userRole);
 
   useEffect(() => {
     loadTemplates();
@@ -58,6 +63,10 @@ export default function SOPTemplatesScreen() {
   };
 
   const handleSave = async () => {
+    if (notEntitled) {
+      Alert.alert("Access Denied", "You do not have permission to create or edit SOP templates in this facility.");
+      return;
+    }
     if (!title) {
       Alert.alert("Missing Info", "Title is required.");
       return;
@@ -80,6 +89,10 @@ export default function SOPTemplatesScreen() {
   };
 
   const handleEdit = (tpl) => {
+    if (notEntitled) {
+      Alert.alert("Access Denied", "You do not have permission to edit SOP templates in this facility.");
+      return;
+    }
     setTitle(tpl.title || "");
     setContent(tpl.content || "");
     setEditingId(tpl._id || tpl.id);
@@ -87,6 +100,10 @@ export default function SOPTemplatesScreen() {
   };
 
   const handleDelete = (tpl) => {
+    if (notEntitled) {
+      Alert.alert("Access Denied", "You do not have permission to delete SOP templates in this facility.");
+      return;
+    }
     Alert.alert("Delete SOP Template", "Are you sure you want to delete this SOP?", [
       { text: "Cancel", style: "cancel" },
       {
@@ -110,11 +127,16 @@ export default function SOPTemplatesScreen() {
   return (
     <View style={styles.container}>
       <TouchableOpacity
-        style={styles.addButton}
+        style={[styles.addButton, notEntitled && styles.disabledButton]}
         onPress={() => {
+          if (notEntitled) {
+            Alert.alert("Access Denied", "You do not have permission to create SOP templates in this facility.");
+            return;
+          }
           resetForm();
           setShowModal(true);
         }}
+        disabled={notEntitled}
       >
         <Text style={styles.addButtonText}>+ Add SOP</Text>
       </TouchableOpacity>

@@ -15,9 +15,9 @@ import {
   ActivityIndicator,
   RefreshControl
 } from "react-native";
-import { useAuth } from "../../context/AuthContext";
-import { hasGlobalFacilityAccess } from "../../types/facility";
-import { getTasks, createCustomTask, completeTask, deleteTask } from "../../api/tasks";
+import { useAuth } from "../../context/AuthContext.js";
+import { hasGlobalFacilityAccess } from "../../types/facility.js";
+import { getTasks, createCustomTask, completeTask, deleteTask } from "../../api/tasks.js";
 
 const FacilityTasks = () => {
   const { selectedFacilityId, facilitiesAccess, token } = useAuth();
@@ -28,12 +28,23 @@ const FacilityTasks = () => {
   const [showCreateModal, setShowCreateModal] = useState(false);
   const [newTaskTitle, setNewTaskTitle] = useState("");
   const [newTaskDesc, setNewTaskDesc] = useState("");
-  const [newTaskDueDate, setNewTaskDueDate] = useState("");
+  const today = new Date();
+  const defaultDueDate = `${today.getFullYear()}-${String(today.getMonth() + 1).padStart(
+    2,
+    "0"
+  )}-${String(today.getDate()).padStart(2, "0")}`;
+  const [newTaskDueDate, setNewTaskDueDate] = useState(defaultDueDate);
+  const [newTaskAssignee, setNewTaskAssignee] = useState("");
+  const [newTaskRoom, setNewTaskRoom] = useState("");
   const [creating, setCreating] = useState(false);
+  const currentUserId = useAuth()?.user?._id || useAuth()?.user?.id || null;
 
   const userAccess = facilitiesAccess?.find((f) => f.facilityId === selectedFacilityId);
   const userRole = userAccess?.role;
   const isAdmin = userRole ? hasGlobalFacilityAccess(userRole) : false;
+
+  // Entitlement gating: Only allow admin/lead roles to create, complete, or delete tasks
+  const notEntitled = !isAdmin;
 
   useEffect(() => {
     loadTasks();
@@ -58,6 +69,13 @@ const FacilityTasks = () => {
   };
 
   const handleCreateTask = async () => {
+    if (notEntitled) {
+      Alert.alert(
+        "Access Denied",
+        "You do not have permission to create tasks in this facility."
+      );
+      return;
+    }
     if (!newTaskTitle.trim()) {
       Alert.alert("Error", "Task title is required");
       return;
@@ -75,7 +93,9 @@ const FacilityTasks = () => {
           title: newTaskTitle,
           description: newTaskDesc,
           dueDate: finalDate,
-          facilityId: selectedFacilityId
+          facilityId: selectedFacilityId,
+          assignedTo: newTaskAssignee?.trim() || currentUserId,
+          roomId: newTaskRoom?.trim() || undefined
         },
         token
       );
@@ -83,7 +103,9 @@ const FacilityTasks = () => {
       setShowCreateModal(false);
       setNewTaskTitle("");
       setNewTaskDesc("");
-      setNewTaskDueDate("");
+      setNewTaskDueDate(defaultDueDate);
+      setNewTaskAssignee("");
+      setNewTaskRoom("");
       await loadTasks();
     } catch (error) {
       Alert.alert("Error", "Failed to create task");
@@ -93,6 +115,13 @@ const FacilityTasks = () => {
   };
 
   const handleCompleteTask = async (taskId) => {
+    if (notEntitled) {
+      Alert.alert(
+        "Access Denied",
+        "You do not have permission to complete tasks in this facility."
+      );
+      return;
+    }
     try {
       await completeTask(taskId, token);
       await loadTasks();
@@ -102,6 +131,13 @@ const FacilityTasks = () => {
   };
 
   const handleDeleteTask = async (taskId) => {
+    if (notEntitled) {
+      Alert.alert(
+        "Access Denied",
+        "You do not have permission to delete tasks in this facility."
+      );
+      return;
+    }
     Alert.alert("Delete Task", "Are you sure you want to delete this task?", [
       { text: "Cancel", style: "cancel" },
       {
@@ -142,7 +178,20 @@ const FacilityTasks = () => {
   return (
     <View style={styles.container}>
       {/* Add Task Button */}
-      <TouchableOpacity style={styles.addButton} onPress={() => setShowCreateModal(true)}>
+      <TouchableOpacity
+        style={[styles.addButton, notEntitled && styles.disabledButton]}
+        onPress={() => {
+          if (notEntitled) {
+            Alert.alert(
+              "Access Denied",
+              "You do not have permission to create tasks in this facility."
+            );
+            return;
+          }
+          setShowCreateModal(true);
+        }}
+        disabled={notEntitled}
+      >
         <Text style={styles.addButtonText}>+ Add Task</Text>
       </TouchableOpacity>
 
@@ -155,7 +204,9 @@ const FacilityTasks = () => {
               style={[styles.tab, activeTab === tab.id && styles.tabActive]}
               onPress={() => setActiveTab(tab.id)}
             >
-              <Text style={[styles.tabText, activeTab === tab.id && styles.tabTextActive]}>
+              <Text
+                style={[styles.tabText, activeTab === tab.id && styles.tabTextActive]}
+              >
                 {tab.label}
               </Text>
             </TouchableOpacity>
@@ -180,12 +231,15 @@ const FacilityTasks = () => {
               <>
                 {pendingTasks.length > 0 && (
                   <View style={styles.section}>
-                    <Text style={styles.sectionTitle}>Pending ({pendingTasks.length})</Text>
+                    <Text style={styles.sectionTitle}>
+                      Pending ({pendingTasks.length})
+                    </Text>
                     {pendingTasks.map((task) => (
                       <View key={task._id} style={styles.taskItem}>
                         <TouchableOpacity
                           style={styles.taskCheckbox}
                           onPress={() => handleCompleteTask(task._id)}
+                          disabled={notEntitled}
                         >
                           <Text style={styles.checkboxEmpty}>○</Text>
                         </TouchableOpacity>
@@ -199,10 +253,19 @@ const FacilityTasks = () => {
                               Due: {new Date(task.dueDate).toLocaleDateString()}
                             </Text>
                           )}
+                          {task.assignedTo && (
+                            <Text style={styles.taskMeta}>
+                              Assigned to:{" "}
+                              {task.assignedTo.displayName ||
+                                task.assignedTo.email ||
+                                task.assignedTo}
+                            </Text>
+                          )}
                         </View>
                         <TouchableOpacity
                           style={styles.deleteButton}
                           onPress={() => handleDeleteTask(task._id)}
+                          disabled={notEntitled}
                         >
                           <Text style={styles.deleteButtonText}>×</Text>
                         </TouchableOpacity>
@@ -213,9 +276,14 @@ const FacilityTasks = () => {
 
                 {completedTasks.length > 0 && (
                   <View style={styles.section}>
-                    <Text style={styles.sectionTitle}>Completed ({completedTasks.length})</Text>
+                    <Text style={styles.sectionTitle}>
+                      Completed ({completedTasks.length})
+                    </Text>
                     {completedTasks.map((task) => (
-                      <View key={task._id} style={[styles.taskItem, styles.taskCompleted]}>
+                      <View
+                        key={task._id}
+                        style={[styles.taskItem, styles.taskCompleted]}
+                      >
                         <View style={styles.taskCheckbox}>
                           <Text style={styles.checkboxChecked}>✓</Text>
                         </View>
@@ -227,6 +295,7 @@ const FacilityTasks = () => {
                         <TouchableOpacity
                           style={styles.deleteButton}
                           onPress={() => handleDeleteTask(task._id)}
+                          disabled={notEntitled}
                         >
                           <Text style={styles.deleteButtonText}>×</Text>
                         </TouchableOpacity>
@@ -276,6 +345,19 @@ const FacilityTasks = () => {
             />
             <TextInput
               style={styles.input}
+              placeholder="Assign to (email or name) — optional"
+              value={newTaskAssignee}
+              onChangeText={setNewTaskAssignee}
+              autoCapitalize="none"
+            />
+            <TextInput
+              style={styles.input}
+              placeholder="Room (id or name) — optional"
+              value={newTaskRoom}
+              onChangeText={setNewTaskRoom}
+            />
+            <TextInput
+              style={styles.input}
               placeholder="Due date (YYYY-MM-DD)"
               value={newTaskDueDate}
               onChangeText={setNewTaskDueDate}
@@ -287,7 +369,9 @@ const FacilityTasks = () => {
                   setShowCreateModal(false);
                   setNewTaskTitle("");
                   setNewTaskDesc("");
-                  setNewTaskDueDate("");
+                  setNewTaskAssignee("");
+                  setNewTaskRoom("");
+                  setNewTaskDueDate(defaultDueDate);
                 }}
               >
                 <Text style={styles.cancelButtonText}>Cancel</Text>
@@ -296,10 +380,11 @@ const FacilityTasks = () => {
                 style={[
                   styles.modalButton,
                   styles.createButton,
-                  creating && styles.disabledButton
+                  creating && styles.disabledButton,
+                  notEntitled && styles.disabledButton
                 ]}
                 onPress={handleCreateTask}
-                disabled={creating}
+                disabled={creating || notEntitled}
               >
                 <Text style={styles.createButtonText}>
                   {creating ? "Creating..." : "Create"}

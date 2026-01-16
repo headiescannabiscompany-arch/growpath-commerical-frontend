@@ -102,9 +102,12 @@ export const ROUTES = {
     REJECT: (id) => `${PREFIX}/courses/${id}/reject`,
     ADMIN_PENDING: `${PREFIX}/courses/admin/pending`,
     QUESTIONS: (courseId) => `${PREFIX}/courses/${courseId}/questions`,
-    QUESTION_ANSWER: (courseId, questionId) => `${PREFIX}/courses/${courseId}/questions/${questionId}/answer`,
-    QUESTION_DETAIL: (courseId, questionId) => `${PREFIX}/courses/${courseId}/questions/${questionId}`,
-    ANSWER_DETAIL: (courseId, answerId) => `${PREFIX}/courses/${courseId}/answers/${answerId}`
+    QUESTION_ANSWER: (courseId, questionId) =>
+      `${PREFIX}/courses/${courseId}/questions/${questionId}/answer`,
+    QUESTION_DETAIL: (courseId, questionId) =>
+      `${PREFIX}/courses/${courseId}/questions/${questionId}`,
+    ANSWER_DETAIL: (courseId, answerId) =>
+      `${PREFIX}/courses/${courseId}/answers/${answerId}`
   },
   TOKENS: {
     BALANCE: `${PREFIX}/tokens/balance`,
@@ -147,6 +150,18 @@ export const ROUTES = {
     SUBMIT: `${PREFIX}/reports`,
     LIST: `${PREFIX}/reports`,
     RESOLVE: (id) => `${PREFIX}/reports/${id}/resolve`
+  },
+  COMMERCIAL_REPORTS: {
+    VALIDATION: `${PREFIX}/commercial/reports/validation`,
+    COA_EXPLAINED: `${PREFIX}/commercial/reports/coa-explained`,
+    COURSE_SALES: `${PREFIX}/commercial/reports/course-sales`
+  },
+  COMMERCIAL_BILLING: {
+    SUMMARY: `${PREFIX}/commercial/billing/summary`,
+    INVOICES: `${PREFIX}/commercial/billing/invoices`,
+    RETRY_PAYMENT: (invoiceId) =>
+      `${PREFIX}/commercial/billing/invoices/${invoiceId}/retry`,
+    UPDATE_PAYMENT_METHOD: `${PREFIX}/commercial/billing/payment-method`
   },
   GUILDS: {
     LIST: `${PREFIX}/guilds`,

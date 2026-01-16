@@ -275,7 +275,11 @@ const styles = StyleSheet.create({
     borderRadius: 8,
     padding: 16,
     marginBottom: 24,
-    boxShadow: "0px 1px 4px rgba(0,0,0,0.08)"
+    shadowColor: "#000",
+    shadowOffset: { width: 0, height: 1 },
+    shadowOpacity: 0.08,
+    shadowRadius: 4,
+    elevation: 2
   },
   chartLabel: { fontSize: 16, fontWeight: "bold", marginBottom: 8 },
   barRow: { flexDirection: "row", alignItems: "center", marginBottom: 6 },
@@ -293,14 +297,22 @@ const styles = StyleSheet.create({
     marginRight: 8,
     flex: 1,
     textAlign: "center",
-    boxShadow: "0px 1px 3px rgba(0,0,0,0.06)"
+    shadowColor: "#000",
+    shadowOffset: { width: 0, height: 1 },
+    shadowOpacity: 0.06,
+    shadowRadius: 3,
+    elevation: 2
   },
   card: {
     backgroundColor: "#fff",
     borderRadius: 8,
     padding: 16,
     marginBottom: 24,
-    boxShadow: "0px 1px 6px rgba(0,0,0,0.1)"
+    shadowColor: "#000",
+    shadowOffset: { width: 0, height: 1 },
+    shadowOpacity: 0.1,
+    shadowRadius: 6,
+    elevation: 2
   },
   sectionHeader: { fontSize: 18, fontWeight: "bold", marginBottom: 8 },
   formRow: { flexDirection: "row", alignItems: "center", marginBottom: 12 },

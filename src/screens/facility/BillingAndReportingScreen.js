@@ -9,13 +9,13 @@ import {
   ScrollView,
   RefreshControl
 } from "react-native";
-import { useAuth } from "../../context/AuthContext";
+import { useAuth } from "../../context/AuthContext.js";
 import {
   getFacilityBillingStatus,
   startFacilityCheckout,
   cancelFacilityPlan
-} from "../../api/facility";
-import { getSubscriptionStatus } from "../../api/subscribe";
+} from "../../api/facility.js";
+import { getSubscriptionStatus } from "../../api/subscribe.js";
 
 export default function BillingAndReportingScreen() {
   const { selectedFacilityId } = useAuth();

@@ -70,7 +70,10 @@ const TeamScreen = () => {
         </View>
 
         <View style={styles.card}>
-          <Text style={styles.cardTitle}>Phase 2 Features</Text>
+          <Text style={styles.cardTitle}>Coming Soon (Phase 2)</Text>
+          <Text style={styles.cardSubtitle}>
+            The following capabilities are on our roadmap:
+          </Text>
           <Text style={styles.featureItem}>• Invite team members via email</Text>
           <Text style={styles.featureItem}>
             • Assign roles: Admin, Manager, Member, Viewer

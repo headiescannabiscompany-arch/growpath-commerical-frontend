@@ -7,7 +7,8 @@ import {
   FlatList,
   StyleSheet,
   Alert,
-  Switch
+  Switch,
+  TextInput
 } from "react-native";
 
 import ScreenContainer from "../components/ScreenContainer";
@@ -15,7 +16,9 @@ import {
   getCourse,
   deleteLesson,
   submitCourseForReview,
-  updateCourse
+  updateCourse,
+  publishCourse,
+  getMyCourses
 } from "../api/courses";
 import GrowInterestPicker from "../components/GrowInterestPicker";
 import {
@@ -33,6 +36,10 @@ export default function ManageCourseScreen({ route, navigation }) {
     buildEmptyTierSelection()
   );
   const [savingTags, setSavingTags] = useState(false);
+  const [editPrice, setEditPrice] = useState("");
+  const [editDescription, setEditDescription] = useState("");
+  const [editCategory, setEditCategory] = useState("");
+  const [activeCount, setActiveCount] = useState(0);
 
   async function load() {
     const res = await getCourse(id);
@@ -40,6 +47,25 @@ export default function ManageCourseScreen({ route, navigation }) {
     setCourse(normalizedCourse);
     setLessons(res.lessons || res.data?.lessons || []);
     setCourseTagSelections(groupTagsByTier(normalizedCourse?.growTags || []));
+    const priceValue =
+      typeof normalizedCourse?.price === "number"
+        ? normalizedCourse.price
+        : typeof normalizedCourse?.priceCents === "number"
+          ? normalizedCourse.priceCents / 100
+          : 0;
+    setEditPrice(priceValue ? priceValue.toString() : "");
+    setEditDescription(normalizedCourse?.description || "");
+    setEditCategory(normalizedCourse?.category || "");
+
+    try {
+      const mine = await getMyCourses();
+      const active = Array.isArray(mine)
+        ? mine.filter((c) => c.isPublished || ["pending", "approved"].includes(c.status))
+        : [];
+      setActiveCount(active.length);
+    } catch (err) {
+      setActiveCount(0);
+    }
   }
 
   useEffect(() => {
@@ -52,6 +78,14 @@ export default function ManageCourseScreen({ route, navigation }) {
       Alert.alert(
         "No Lessons",
         "Please add at least one lesson before submitting for review."
+      );
+      return;
+    }
+
+    if (activeCount >= 3) {
+      Alert.alert(
+        "Limit reached",
+        "You already have 3 active courses (published or pending). Unpublish one before submitting another."
       );
       return;
     }
@@ -107,10 +141,22 @@ export default function ManageCourseScreen({ route, navigation }) {
       Alert.alert("Pending approval", "This course must be approved before publishing.");
       return;
     }
+    if (nextValue && activeCount >= 3) {
+      Alert.alert(
+        "Limit reached",
+        "You already have 3 active courses (published or pending). Unpublish one first."
+      );
+      return;
+    }
     setPublishLoading(true);
     try {
-      await updateCourse(course._id, { isPublished: nextValue });
-      setCourse((prev) => ({ ...prev, isPublished: nextValue }));
+      if (nextValue) {
+        const updated = await publishCourse(course._id);
+        setCourse(updated || { ...course, isPublished: true });
+      } else {
+        const updated = await updateCourse(course._id, { isPublished: false });
+        setCourse(updated || { ...course, isPublished: false });
+      }
     } catch (err) {
       Alert.alert("Error", err?.message || "Failed to update publish status");
     } finally {
@@ -172,6 +218,42 @@ export default function ManageCourseScreen({ route, navigation }) {
     }
   }
 
+  async function handleSaveDetails() {
+    if (!course) return;
+    if (!editDescription.trim()) {
+      Alert.alert("Add description", "Description is required.");
+      return;
+    }
+    if (!editCategory.trim()) {
+      Alert.alert("Add category", "Category is required.");
+      return;
+    }
+    if (editPrice) {
+      const parsed = parseFloat(editPrice);
+      if (Number.isNaN(parsed)) {
+        Alert.alert("Price invalid", "Enter a number or leave blank for free.");
+        return;
+      }
+      if (parsed < 10 || parsed > 250) {
+        Alert.alert("Price out of range", "Set price between $10 and $250.");
+        return;
+      }
+    }
+
+    try {
+      const updated = await updateCourse(course._id, {
+        description: editDescription.trim(),
+        category: editCategory.trim(),
+        price: editPrice ? parseFloat(editPrice) : 0,
+        priceCents: editPrice ? Math.round(parseFloat(editPrice) * 100) : 0
+      });
+      setCourse(updated);
+      Alert.alert("Saved", "Course details updated.");
+    } catch (err) {
+      Alert.alert("Error", err?.message || "Failed to update course details");
+    }
+  }
+
   if (!course)
     return (
       <ScreenContainer>
@@ -189,25 +271,81 @@ export default function ManageCourseScreen({ route, navigation }) {
       <Text style={styles.sub}>{course.category || "Uncategorized"}</Text>
       <Text style={styles.desc}>{course.description}</Text>
 
-        <GrowInterestPicker
-          title="Grow Interest Tags"
-          helperText="Select the tiers that best describe this course. You can leave any tier empty."
-          value={courseTagSelections}
-          onChange={handleCourseTagsChange}
+      <View style={styles.editCard}>
+        <Text style={styles.sectionHeader}>Edit details</Text>
+        <Text style={styles.editLabel}>Category</Text>
+        <TextInput
+          style={styles.editInput}
+          value={editCategory}
+          onChangeText={setEditCategory}
+          placeholder="Training, nutrients, lighting"
         />
+        <Text style={styles.editLabel}>Description</Text>
+        <TextInput
+          style={[styles.editInput, { height: 100, textAlignVertical: "top" }]}
+          value={editDescription}
+          onChangeText={setEditDescription}
+          multiline
+        />
+        <Text style={styles.editLabel}>Price (USD, 10-250)</Text>
+        <View style={styles.priceRow}>
+          <Text style={styles.priceSymbol}>$</Text>
+          <TextInput
+            style={[styles.editInput, { flex: 1 }]}
+            value={editPrice}
+            onChangeText={setEditPrice}
+            keyboardType="decimal-pad"
+            placeholder="0 for free"
+          />
+        </View>
+        <TouchableOpacity style={styles.saveDetailsBtn} onPress={handleSaveDetails}>
+          <Text style={styles.saveDetailsText}>Save details</Text>
+        </TouchableOpacity>
+      </View>
+
+      <GrowInterestPicker
+        title="Grow Interest Tags"
+        helperText="Select the tiers that best describe this course. You can leave any tier empty."
+        value={courseTagSelections}
+        onChange={handleCourseTagsChange}
+      />
       <TouchableOpacity
         style={[styles.saveTagsBtn, savingTags && styles.saveTagsBtnDisabled]}
         onPress={handleSaveCourseTags}
         disabled={savingTags}
       >
-        <Text style={styles.saveTagsText}>{savingTags ? "Saving…" : "Save Grow Tags"}</Text>
+        <Text style={styles.saveTagsText}>
+          {savingTags ? "Saving…" : "Save Grow Tags"}
+        </Text>
       </TouchableOpacity>
 
       <View style={styles.row}>
         <Text style={styles.price}>
-          {course.price > 0 ? `$${course.price.toFixed(2)}` : "Free"}
+          {course.price > 0
+            ? `$${course.price.toFixed(2)}`
+            : course.priceCents > 0
+              ? `$${(course.priceCents / 100).toFixed(2)}`
+              : "Free"}
         </Text>
         <Text style={styles.status}>{course.isPublished ? "Published" : "Draft"}</Text>
+      </View>
+
+      <View style={styles.statusRow}>
+        <Text style={styles.statusChip}>
+          {course.isPublished
+            ? "Published"
+            : course.status === "pending"
+              ? "Pending review"
+              : course.status === "approved"
+                ? "Approved"
+                : course.status === "rejected"
+                  ? "Rejected"
+                  : "Draft"}
+        </Text>
+        <Text style={styles.statusHelper}>
+          Publishing requires approval. Submit for review first, then toggle publish once
+          approved.
+        </Text>
       </View>
 
       <View style={styles.publishToggle}>
@@ -286,6 +424,49 @@ const styles = StyleSheet.create({
   actionsRow: {
     flexDirection: "row",
     marginBottom: 16
+  },
+  editCard: {
+    backgroundColor: "#F9FAFB",
+    padding: 12,
+    borderRadius: 10,
+    borderWidth: 1,
+    borderColor: "#E5E7EB",
+    marginBottom: 16
+  },
+  editLabel: {
+    fontWeight: "600",
+    color: "#111827",
+    marginTop: 8,
+    marginBottom: 4
+  },
+  editInput: {
+    borderWidth: 1,
+    borderColor: "#E5E7EB",
+    borderRadius: 8,
+    paddingHorizontal: 10,
+    paddingVertical: 8,
+    backgroundColor: "#FFFFFF"
+  },
+  priceRow: {
+    flexDirection: "row",
+    alignItems: "center",
+    gap: 6
+  },
+  priceSymbol: {
+    fontWeight: "800",
+    fontSize: 16,
+    color: "#111827"
+  },
+  saveDetailsBtn: {
+    marginTop: 10,
+    backgroundColor: "#0ea5e9",
+    paddingVertical: 10,
+    borderRadius: 8,
+    alignItems: "center"
+  },
+  saveDetailsText: {
+    color: "#fff",
+    fontWeight: "700"
   },
   secondaryBtn: {
     flex: 1,
@@ -367,6 +548,25 @@ const styles = StyleSheet.create({
     color: "#666",
     textAlign: "center",
     marginTop: 4
+  },
+  statusRow: {
+    flexDirection: "row",
+    alignItems: "center",
+    gap: 8,
+    marginBottom: 8
+  },
+  statusChip: {
+    backgroundColor: "#ECFDF3",
+    color: "#166534",
+    paddingHorizontal: 10,
+    paddingVertical: 6,
+    borderRadius: 999,
+    fontWeight: "700"
+  },
+  statusHelper: {
+    flex: 1,
+    fontSize: 12,
+    color: "#6B7280"
   },
   sectionHeader: {
     fontSize: 18,

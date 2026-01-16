@@ -97,6 +97,9 @@ export default function DashboardScreen() {
   const navigation = useNavigation();
   const {
     isPro,
+    isProCommercial,
+    isFacility,
+    isCommercial,
     isEntitled,
     isGuildMember,
     logout,
@@ -104,163 +107,259 @@ export default function DashboardScreen() {
     setHasNavigatedAwayFromHome,
     suppressWelcomeMessage,
     setSuppressWelcomeMessage,
-    user
+    user,
+    mode,
+    setMode,
+    getAllowedModes,
+    facilitiesAccess,
+    subscriptionStatus
   } = useAuth();
+
+  // Helper: Check if subscription is required and active for current mode
+  let needsPaid = false;
+  let isPaid = false;
+  if (mode === "facility") {
+    needsPaid = true;
+    isPaid = isFacility;
+  } else if (mode === "commercial") {
+    needsPaid = true;
+    isPaid = isCommercial || isProCommercial;
+  } else if (mode === "personal") {
+    // Free, Pro, or Pro+Commercial
+    needsPaid = false;
+    isPaid = isPro || isProCommercial;
+  }
+
+  // Mode toggle UI
+  const allowedModes = getAllowedModes(user);
+  const renderModeToggle = () => (
+    <View style={{ flexDirection: "row", justifyContent: "center", marginVertical: 12 }}>
+      <TouchableOpacity
+        style={{
+          backgroundColor: mode === "personal" ? "#0ea5e9" : "#e5e7eb",
+          paddingVertical: 8,
+          paddingHorizontal: 18,
+          borderRadius: 8,
+          marginHorizontal: 4
+        }}
+        onPress={() => setMode("personal")}
+        disabled={!allowedModes.includes("personal")}
+      >
+        <Text style={{ color: mode === "personal" ? "white" : "#222" }}>Single User</Text>
+      </TouchableOpacity>
+      <TouchableOpacity
+        style={{
+          backgroundColor: mode === "facility" ? "#0ea5e9" : "#e5e7eb",
+          paddingVertical: 8,
+          paddingHorizontal: 18,
+          borderRadius: 8,
+          marginHorizontal: 4
+        }}
+        onPress={() => allowedModes.includes("facility") ? setMode("facility") : null}
+        disabled={!allowedModes.includes("facility")}
+      >
+        <Text style={{ color: mode === "facility" ? "white" : "#222" }}>
+          Facility{!allowedModes.includes("facility") ? " (no access)" : ""}
+        </Text>
+      </TouchableOpacity>
+      <TouchableOpacity
+        style={{
+          backgroundColor: mode === "commercial" ? "#0ea5e9" : "#e5e7eb",
+          paddingVertical: 8,
+          paddingHorizontal: 18,
+          borderRadius: 8,
+          marginHorizontal: 4
+        }}
+        onPress={() => allowedModes.includes("commercial") ? setMode("commercial") : null}
+        disabled={!allowedModes.includes("commercial")}
+      >
+        <Text style={{ color: mode === "commercial" ? "white" : "#222" }}>Commercial</Text>
+      </TouchableOpacity>
+    </View>
+  );
   const [plants, setPlants] = useState([]);
-  const [plantsLoading, setPlantsLoading] = useState(true);
-  const [grows, setGrows] = useState([]);
-  const [growsLoading, setGrowsLoading] = useState(true);
-  const [trending, setTrending] = useState([]);
-  const [tasksLoading, setTasksLoading] = useState(true);
-  const [taskStats, setTaskStats] = useState({
-    dueToday: 0,
-    overdue: 0,
-    completedToday: 0,
-    total: 0
-  });
-  
-  // Feed State
-  const [feedPosts, setFeedPosts] = useState([]);
-  const [feedPage, setFeedPage] = useState(1);
-  const [feedLoading, setFeedLoading] = useState(false);
-  const [feedHasMore, setFeedHasMore] = useState(true);
-  const feedLoadingRef = useRef(false);
-  const hasFocusedRef = useRef(false);
-  const appliedFilterSignatureRef = useRef(null);
+  // Block access if in a paid mode and not paid
+  if (needsPaid && !isPaid) {
+    return (
+      <ScreenContainer testID="dashboard-screen">
+        {renderModeToggle()}
+        <View style={{ flex: 1, justifyContent: "center", alignItems: "center", padding: 32 }}>
+          <Text style={{ fontSize: 18, fontWeight: "bold", marginBottom: 12 }}>
+            Subscription Required
+          </Text>
+          <Text style={{ fontSize: 15, color: "#444", textAlign: "center", marginBottom: 18 }}>
+            {mode === "facility"
+              ? "Facility features require an active $50/mo subscription."
+              : mode === "commercial"
+              ? "Commercial features require an active $50/mo subscription (or $25/mo Pro+Commercial for single users)."
+              : "Pro features require an active subscription."}
+          </Text>
+          <TouchableOpacity
+            style={{ backgroundColor: "#0ea5e9", paddingVertical: 12, paddingHorizontal: 32, borderRadius: 8 }}
+            onPress={() => navigation.navigate("Subscription")}
+          >
+            <Text style={{ color: "white", fontWeight: "bold", fontSize: 16 }}>Subscribe</Text>
+          </TouchableOpacity>
+        </View>
+      </ScreenContainer>
+    );
+  }
 
-  const flattenedInterests = useMemo(
-    () => flattenGrowInterests(user?.growInterests || {}),
-    [user?.growInterests]
-  );
-  const feedTier1Filters = useMemo(
-    () => flattenedInterests.filter((tag) => DASHBOARD_TIER1_TAGS.has(tag)),
-    [flattenedInterests]
-  );
-  const feedOtherFilters = useMemo(
-    () => flattenedInterests.filter((tag) => !DASHBOARD_TIER1_TAGS.has(tag)),
-    [flattenedInterests]
-  );
-  const feedTier1Set = useMemo(() => new Set(feedTier1Filters), [feedTier1Filters]);
-  const feedOtherSet = useMemo(() => new Set(feedOtherFilters), [feedOtherFilters]);
-  const feedFilterSignature = useMemo(() => {
-    const tier1Key = [...feedTier1Filters].sort().join(",");
-    const otherKey = [...feedOtherFilters].sort().join(",");
-    return `${tier1Key}|${otherKey}`;
-  }, [feedTier1Filters, feedOtherFilters]);
-  
-  const heroSubtitle = isGuildMember
-    ? "Your forum access unlocks specialized cannabis insights alongside the core GrowPath tools."
-    : "Track every plant, explore hydroponics, and join the forum when you want crop-specific depth.";
-  const showWelcomeMessage = !hasNavigatedAwayFromHome && !suppressWelcomeMessage;
-  const headerTitle = showWelcomeMessage ? "Welcome back" : "GrowPath";
+  return (
+    <ScreenContainer testID="dashboard-screen">
+      {renderModeToggle()}
+      <ScrollView
+        style={styles.container}
+        showsVerticalScrollIndicator={false}
+        testID="dashboard-scroll"
+        nestedScrollEnabled={true}
+      >
+        {/* Header */}
+        <View style={styles.header}>
+          <View>
+            <Text style={styles.greeting}>
+              {headerTitle}
+              {showWelcomeMessage ? " 👋" : ""}
+            </Text>
+            <Text style={styles.subtitle}>{heroSubtitle}</Text>
+          </View>
+          {!showWelcomeMessage && (
+            <TouchableOpacity
+              onPress={handleLogout}
+              style={styles.logoutButton}
+              testID="logout-button"
+            >
+              <Text style={styles.logoutText}>Log out</Text>
+            </TouchableOpacity>
+          )}
+        </View>
 
-  const loadPlants = useCallback(async () => {
-    try {
-      const data = await getPlants();
-      if (Array.isArray(data)) {
-        setPlants(data);
-      } else if (Array.isArray(data?.plants)) {
-        setPlants(data.plants);
-      } else {
-        setPlants([]);
-      }
-    } catch (err) {
-      console.error("Failed to load plants:", err);
-      setPlants([]);
-    } finally {
-      setPlantsLoading(false);
-    }
-  }, []);
+        {/* Pro Upgrade Banner (only show if not entitled) */}
+        {!isEntitled && (
+          <View style={styles.section}>
+            <TouchableOpacity
+              style={styles.proBanner}
+              onPress={() => navigation.navigate("Subscription")}
+            >
+              <View style={styles.proContent}>
+                <Text style={styles.proIcon}>✨</Text>
+                <View style={styles.proText}>
+                  <Text style={styles.proTitle}>Upgrade to Pro</Text>
+                  <Text style={styles.proSubtitle}>
+                    Unlimited plants, AI diagnostics & more
+                  </Text>
+                </View>
+                <Text style={styles.proArrow}>→</Text>
+              </View>
+            </TouchableOpacity>
+          </View>
+        )}
 
-  const loadGrows = useCallback(async () => {
-    try {
-      const data = await listGrows();
-      const list = Array.isArray(data)
-        ? data
-        : Array.isArray(data?.items)
-          ? data.items
-          : [];
-      setGrows(list);
-    } catch (err) {
-      console.error("Failed to load grows:", err);
-      setGrows([]);
-    } finally {
-      setGrowsLoading(false);
-    }
-  }, []);
+        {/* Quick Actions */}
+        <View style={styles.section}>
+          <Text style={styles.sectionTitle}>Quick Actions</Text>
+          <View style={styles.quickActions}>
+            <QuickAction
+              icon="➕"
+              label="Add Plant"
+              color={colors.accent}
+              onPress={() => navigation.navigate("PlantsTab")}
+            />
+            <QuickAction
+              icon="🔍"
+              label="Diagnose"
+              color="#10B981"
+              onPress={() => navigation.navigate("DiagnoseTab")}
+            />
+            <QuickAction
+              icon="📚"
+              label="Learn"
+              color="#8B5CF6"
+              onPress={() => navigation.navigate("CoursesTab")}
+            />
+            <QuickAction
+              icon="🏛️"
+              label="Forum"
+              color="#F59E0B"
+              onPress={() => navigation.navigate("ForumTab")}
+            />
+          </View>
+        </View>
 
-  const loadTaskStats = useCallback(async () => {
-    setTasksLoading(true);
-    try {
-      const response = await getTasks();
-      const tasks = Array.isArray(response?.data)
-        ? response.data
-        : Array.isArray(response)
-          ? response
-          : [];
-      setTaskStats(summarizeTasks(tasks));
-    } catch (err) {
-      console.error("Failed to load tasks:", err);
-      setTaskStats({ dueToday: 0, overdue: 0, completedToday: 0, total: 0 });
-    } finally {
-      setTasksLoading(false);
-    }
-  }, []);
+        {/* Latest Feed (Scrollable Window) */}
+        <View style={styles.section}>
+          <View style={styles.sectionHeader}>
+            <Text style={styles.sectionTitle}>Latest Updates</Text>
+          </View>
+          <View
+            style={[
+              styles.feedCard,
+              feedPosts.length > 0 || feedLoading ? null : styles.feedCardEmpty
+            ]}
+          >
+            {feedPosts.length === 0 && !feedLoading ? (
+              <View style={styles.emptyState}>
+                <Text style={styles.emptyStateTitle}>No recent updates match your interests.</Text>
+                <Text style={styles.emptyStateText}>
+                  Check back soon or explore the community for new activity.
+                </Text>
+              </View>
+            ) : (
+              <>
+                <FlatList
+                  data={feedPosts}
+                  keyExtractor={(item, index) => item._id || String(index)}
+                  renderItem={({ item }) => <FeedItem item={item} />}
+                  onEndReached={loadMoreFeed}
+                  onEndReachedThreshold={0.5}
+                  ListFooterComponent={renderFeedFooter}
+                  nestedScrollEnabled={true}
+                  contentContainerStyle={{ padding: 10 }}
+                />
+                {feedLoading && feedPage === 1 && (
+                  <ActivityIndicator style={{ marginTop: 20 }} color={colors.accent} />
+                )}
+              </>
+            )}
+          </View>
+        </View>
 
-  const loadTrending = useCallback(async () => {
-    try {
-      const data = await getTrendingPosts(1);
-      const list = Array.isArray(data) ? data : Array.isArray(data?.posts) ? data.posts : [];
-      setTrending(list.slice(0, 4));
-    } catch (err) {
-      console.error("Failed to load trending:", err);
-      setTrending([]);
-    }
-  }, []);
+        {/* Stats Overview */}
+      <View style={styles.section}>
+          <Text style={styles.sectionTitle}>Overview</Text>
+          <View style={styles.statsGrid}>
+            <StatCard
+              icon="🌱"
+              value={plants.length}
+              label="Active Plants"
+              color={colors.accent}
+            />
+            <StatCard
+              icon="📅"
+              value={longestGrowDays}
+              label="Longest Grow"
+              color="#10B981"
+            />
+            <StatCard
+              icon="✅"
+              value={tasksLoading ? "…" : taskStats.total}
+              label="Tasks Today"
+              color="#F59E0B"
+              sublabel={
+                tasksLoading
+                  ? "Calculating…"
+                  : `${taskStats.dueToday} due • ${taskStats.overdue} overdue • ${taskStats.completedToday} done`
+              }
+            />
+            <StatCard icon="🏆" value="Coming Soon" label="Harvests" color="#8B5CF6" disabled />
+          </View>
+        </View>
 
-  const loadFeed = useCallback(async (page = 1) => {
-    if (feedLoadingRef.current) return;
-    feedLoadingRef.current = true;
-    setFeedLoading(true);
-    try {
-      const response = await getFeed(page, {
-        tier1: feedTier1Filters,
-        tags: feedOtherFilters
-      });
-      const list = normalizePostList(response);
-      const filteredList = filterPostsByInterests(list, feedTier1Set, feedOtherSet);
-      
-      if (page === 1) {
-        setFeedPosts(filteredList);
-      } else {
-        setFeedPosts((prev) => [...prev, ...filteredList]);
-      }
-
-      const hasMore = list.length === 15;
-      setFeedHasMore(hasMore);
-      setFeedPage(page);
-    } catch (err) {
-      console.error("Failed to load dashboard feed:", err);
-      if (page === 1) {
-        setFeedPosts([]);
-      }
-    } finally {
-      feedLoadingRef.current = false;
-      setFeedLoading(false);
-    }
-  }, [feedTier1Filters, feedOtherFilters, feedTier1Set, feedOtherSet]);
-
-  const loadMoreFeed = useCallback(() => {
-    if (!feedLoading && feedHasMore) {
-      loadFeed(feedPage + 1);
-    }
-  }, [feedLoading, feedHasMore, loadFeed, feedPage]);
-
-  useEffect(() => {
-    loadPlants();
-    loadGrows();
-    loadTrending();
-    loadTaskStats();
+        {/* Active Grows */}
+        <View style={styles.section}>
+          <View style={styles.sectionHeader}>
+            <Text style={styles.sectionTitle}>Active Grows</Text>
+            <TouchableOpacity onPress={() => navigation.navigate("PlantsTab")}>...
   }, [loadPlants, loadGrows, loadTrending, loadTaskStats]);
 
   useEffect(() => {
@@ -409,7 +508,7 @@ export default function DashboardScreen() {
   );
 
   const FeedItem = ({ item }) => (
-    <TouchableOpacity 
+    <TouchableOpacity
       style={styles.feedItem}
       onPress={() => navigation.navigate("PostDetail", { post: item })}
     >

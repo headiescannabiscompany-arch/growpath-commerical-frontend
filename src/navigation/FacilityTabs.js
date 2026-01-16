@@ -5,48 +5,71 @@ import Ionicons from "react-native-vector-icons/Ionicons";
 import FacilityDashboard from "../screens/facility/FacilityDashboard.js";
 import RoomsList from "../screens/facility/RoomsList.js";
 import FacilityTasks from "../screens/facility/FacilityTasks.js";
-import TeamScreen from "../screens/facility/TeamScreen.js";
-import SettingsScreen from "../screens/facility/SettingsScreen.js";
-import PlantListScreen from "../screens/PlantListScreen.js";
-import { useAuth } from "../context/AuthContext.js";
-import { getFacilityDetail } from "../api/facility.js";
+  if (isCommercial) {
+    return (
+      <Tab.Navigator
+        screenOptions={({ route }) => ({
+          headerShown: true,
+          headerStyle: {
+            backgroundColor: "#fff",
+            borderBottomWidth: 1,
+            borderBottomColor: "#e5e7eb"
+          },
+          headerTitleStyle: {
+            fontSize: 18,
+            fontWeight: "600",
+            color: "#1f2937"
+          },
+          tabBarActiveTintColor: "#0ea5e9",
+          tabBarInactiveTintColor: "#9ca3af",
+          tabBarStyle: {
+            backgroundColor: "#fff",
+            borderTopWidth: 1,
+            borderTopColor: "#e5e7eb",
+            paddingBottom: 8,
+            paddingTop: 8
+          },
+          tabBarIcon: ({ focused, color, size }) => {
+            let iconName;
 
-// Placeholder screens for Zones and Metrc
-const ZonesListPlaceholder = () => (
-  <View style={{ flex: 1, justifyContent: "center", alignItems: "center" }}>
-    <Text>Zones feature coming soon</Text>
-  </View>
-);
+            if (route.name === "CommercialDashboard") {
+              iconName = focused ? "briefcase" : "briefcase-outline";
+            } else if (route.name === "CommercialCourses") {
+              iconName = focused ? "school" : "school-outline";
+            } else if (route.name === "CommercialProfile") {
+              iconName = focused ? "person" : "person-outline";
+            }
 
-const MetrcCheckpointsPlaceholder = () => (
-  <View style={{ flex: 1, justifyContent: "center", alignItems: "center" }}>
-    <Text>Metrc checkpoints feature coming soon</Text>
-  </View>
-);
+            return <Ionicons name={iconName} size={size} color={color} />;
+          },
+          tabBarLabel: () => <></>
+        })}
+      >
+        <Tab.Screen
+          name="CommercialDashboard"
+          component={CommercialDashboardScreen}
+          options={{
+            title: "Commercial"
+          }}
+        />
+        <Tab.Screen
+          name="CommercialCourses"
+          component={CoursesScreen}
+          options={{
+            title: "Courses"
+          }}
+        />
+        <Tab.Screen
+          name="CommercialProfile"
+          component={ProfileScreen}
+          options={{
+            title: "Profile"
+          }}
+        />
+      </Tab.Navigator>
+    );
+  }
 
-const Tab = createBottomTabNavigator();
-
-const FacilityTabs = () => {
-  const { selectedFacilityId } = useAuth();
-  const [trackingMode, setTrackingMode] = useState("batch");
-  const [loading, setLoading] = useState(true);
-
-  useEffect(() => {
-    loadFacilityTrackingMode();
-  }, [selectedFacilityId]);
-
-  const loadFacilityTrackingMode = async () => {
-    try {
-      const result = await getFacilityDetail(selectedFacilityId);
-      if (result.success && result.data) {
-        setTrackingMode(result.data.trackingMode || "batch");
-      }
-    } catch (error) {
-      console.error("Error loading facility tracking mode:", error);
-    } finally {
-      setLoading(false);
-    }
-  };
   return (
     <Tab.Navigator
       screenOptions={({ route }) => ({
@@ -83,6 +106,8 @@ const FacilityTabs = () => {
               iconName = focused ? "leaf" : "leaf-outline";
             } else if (trackingMode === "zone") {
               iconName = focused ? "layers" : "layers-outline";
+            } else if (trackingMode === "metrc-aligned") {
+              iconName = focused ? "counts" : "counts-outline";
             } else {
               iconName = focused ? "grid" : "grid-outline";
             }
@@ -156,6 +181,56 @@ const FacilityTabs = () => {
         <Tab.Screen
           name="CropsTabs"
           component={BatchCycleList}
+          options={{
+            title: "Batches"
+          }}
+        />
+      )}
+      */}
+
+      {trackingMode === "zone" && (
+        <Tab.Screen
+          name="CropsTabs"
+          component={ZonesListPlaceholder}
+          options={{
+            title: "Zones"
+          }}
+        />
+      )}
+
+      {trackingMode === "metrc-aligned" && (
+        <Tab.Screen
+          name="CropsTabs"
+          component={MetrcCheckpointsPlaceholder}
+          options={{
+            title: "Counts"
+          }}
+        />
+      )}
+
+      <Tab.Screen
+        name="FacilityTasks"
+        component={FacilityTasks}
+        options={{
+          title: "Tasks"
+        }}
+      />
+      <Tab.Screen
+        name="TeamScreen"
+        component={TeamScreen}
+        options={{
+          title: "Team"
+        }}
+      />
+      <Tab.Screen
+        name="SettingsScreen"
+        component={SettingsScreen}
+        options={{
+          title: "Settings"
+        }}
+      />
+    </Tab.Navigator>
+  );
           options={{
             title: "Batches"
           }}

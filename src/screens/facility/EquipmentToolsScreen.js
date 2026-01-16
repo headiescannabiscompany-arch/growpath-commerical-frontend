@@ -11,13 +11,13 @@ import {
   Modal,
   RefreshControl
 } from "react-native";
-import { useAuth } from "../../context/AuthContext";
+import { useAuth } from "../../context/AuthContext.js";
 import {
   listEquipment,
   createEquipment,
   updateEquipment,
   deleteEquipment
-} from "../../api/equipment";
+} from "../../api/equipment.js";
 
 const EQUIPMENT_TYPES = [
   "Lighting",

@@ -18,6 +18,9 @@ import ContentMarketplaceScreen from "../screens/commercial/ContentMarketplaceSc
 import CommunitiesScreen from "../screens/commercial/CommunitiesScreen.js";
 import AdvertisingScreen from "../screens/commercial/AdvertisingScreen.js";
 import VendorMetricsScreen from "../screens/commercial/VendorMetricsScreen.js";
+import CommercialToolsScreen from "../screens/commercial/CommercialToolsScreen.js";
+import CommercialReportsScreen from "../screens/commercial/CommercialReportsScreen.js";
+import CommercialProfileScreen from "../screens/commercial/CommercialProfileScreen.js";
 import { useAuth } from "../context/AuthContext.js";
 
 const Stack = createNativeStackNavigator();
@@ -100,6 +103,21 @@ const FacilityStack = () => {
           name="VendorMetrics"
           component={VendorMetricsScreen}
           options={{ title: "Vendor Metrics" }}
+        />
+        <Stack.Screen
+          name="CommercialTools"
+          component={CommercialToolsScreen}
+          options={{ title: "Commercial Tools" }}
+        />
+        <Stack.Screen
+          name="CommercialReports"
+          component={CommercialReportsScreen}
+          options={{ title: "Reports & Exports" }}
+        />
+        <Stack.Screen
+          name="CommercialProfile"
+          component={CommercialProfileScreen}
+          options={{ title: "Commercial Profile" }}
         />
         {!isCommercial && (
           <>

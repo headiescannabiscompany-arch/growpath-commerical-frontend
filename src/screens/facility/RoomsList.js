@@ -11,8 +11,8 @@ import {
   Modal,
   Alert
 } from "react-native";
-import { useAuth } from "../../context/AuthContext";
-import { listRooms, createRoom } from "../../api/facility";
+import { useAuth } from "../../context/AuthContext.js";
+import { listRooms, createRoom } from "../../api/facility.js";
 
 const RoomsList = ({ navigation }) => {
   const { selectedFacilityId } = useAuth();
@@ -22,6 +22,7 @@ const RoomsList = ({ navigation }) => {
   const [showCreateModal, setShowCreateModal] = useState(false);
   const [newRoomName, setNewRoomName] = useState("");
   const [newRoomType, setNewRoomType] = useState("Vegetative");
+  const [trackingMode, setTrackingMode] = useState("batch");
   const [creating, setCreating] = useState(false);
 
   useEffect(() => {
@@ -63,18 +64,58 @@ const RoomsList = ({ navigation }) => {
     try {
       const result = await createRoom(selectedFacilityId, {
         name: newRoomName,
-        roomType: newRoomType
+        roomType: newRoomType,
+        trackingMode
       });
       if (result.success) {
         setShowCreateModal(false);
         setNewRoomName("");
         setNewRoomType("Vegetative");
+        setTrackingMode("batch");
         await loadRooms();
+        if (result.data?._id) {
+          navigation.navigate("RoomDetail", { roomId: result.data._id });
+        }
       } else {
-        Alert.alert("Error", result.message || "Failed to create room");
+        // Optimistic local fallback to unblock demo when backend is offline
+        const localRoom = {
+          _id: `local-${Date.now()}`,
+          name: newRoomName,
+          roomType: newRoomType,
+          trackingMode,
+          stage: "N/A",
+          lastActivityAt: null,
+          _localOnly: true
+        };
+        setRooms((prev) => [localRoom, ...prev]);
+        setShowCreateModal(false);
+        setNewRoomName("");
+        setNewRoomType("Vegetative");
+        setTrackingMode("batch");
+        Alert.alert(
+          "Saved Locally",
+          result.message || "Backend unavailable. Room added locally for this session."
+        );
       }
     } catch (error) {
-      Alert.alert("Error", "Failed to create room");
+      const localRoom = {
+        _id: `local-${Date.now()}`,
+        name: newRoomName,
+        roomType: newRoomType,
+        trackingMode,
+        stage: "N/A",
+        lastActivityAt: null,
+        _localOnly: true
+      };
+      setRooms((prev) => [localRoom, ...prev]);
+      setShowCreateModal(false);
+      setNewRoomName("");
+      setNewRoomType("Vegetative");
+      setTrackingMode("batch");
+      Alert.alert(
+        "Saved Locally",
+        "Backend unavailable. Room added locally for this session."
+      );
     } finally {
       setCreating(false);
     }
@@ -132,14 +173,6 @@ const RoomsList = ({ navigation }) => {
         onRequestClose={() => setShowCreateModal(false)}
       >
         <View style={styles.modalOverlay}>
-          <View style={styles.modalContent}>
-            <Text style={styles.modalTitle}>Create New Room</Text>
-            <TextInput
-              style={styles.input}
-              placeholder="Room name"
-              value={newRoomName}
-              onChangeText={setNewRoomName}
-            />
             <View style={styles.typeSelector}>
               {["Vegetative", "Flowering", "Mother", "Clone", "Dry", "Cure"].map(
                 (type) => (
@@ -162,6 +195,36 @@ const RoomsList = ({ navigation }) => {
                   </TouchableOpacity>
                 )
               )}
+            </View>
+                      ]}
+                    >
+                      {type}
+                    </Text>
+                  </TouchableOpacity>
+                  style={[
+                    styles.typeButton,
+                    trackingMode === mode && styles.typeButtonActive
+                  ]}
+              )}
+            </View>
+            <Text style={styles.sectionLabel}>Tracking mode</Text>
+                    style={[
+                      styles.typeButtonText,
+                      trackingMode === mode && styles.typeButtonTextActive
+                    ]}
+              {["batch", "zone", "individual"].map((mode) => (
+                <TouchableOpacity
+                  key={mode}
+                  style=[styles.typeButton, trackingMode === mode && styles.typeButtonActive]
+                  onPress={() => setTrackingMode(mode)}
+                >
+                  <Text
+                    style=[styles.typeButtonText, trackingMode === mode && styles.typeButtonTextActive]
+                  >
+                    {mode === "batch" ? "Batch" : mode === "zone" ? "Zone" : "Individual"}
+                  </Text>
+                </TouchableOpacity>
+              ))}
             </View>
             <View style={styles.modalButtons}>
               <TouchableOpacity
@@ -212,6 +275,13 @@ const styles = StyleSheet.create({
     color: "#fff",
     fontSize: 16,
     fontWeight: "600"
+  },
+  sectionLabel: {
+    marginTop: 12,
+    marginBottom: 6,
+    fontSize: 14,
+    fontWeight: "600",
+    color: "#1f2937"
   },
   list: {
     flex: 1,

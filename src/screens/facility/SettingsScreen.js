@@ -7,13 +7,19 @@ import {
   Alert,
   ActivityIndicator
 } from "react-native";
-import { useAuth } from "../../context/AuthContext";
-import { getFacilityBillingStatus, startFacilityCheckout, cancelFacilityPlan } from "../../api/facility";
+import { useAuth } from "../../context/AuthContext.js";
+import {
+  getFacilityBillingStatus,
+  startFacilityCheckout,
+  cancelFacilityPlan,
+  getMetrcCredentials
+} from "../../api/facility.js";
 import * as Linking from "expo-linking";
 
 const SettingsScreen = ({ navigation }) => {
   const { user, selectedFacilityId, setMode, setSelectedFacilityId, logout } = useAuth();
   const [billing, setBilling] = useState(null);
+  const [metrcConnected, setMetrcConnected] = useState(false);
   const [loading, setLoading] = useState(false);
 
   const loadBilling = async () => {
@@ -26,16 +32,21 @@ const SettingsScreen = ({ navigation }) => {
 
   useEffect(() => {
     loadBilling();
+    (async () => {
+      if (!selectedFacilityId) return;
+      const creds = await getMetrcCredentials(selectedFacilityId);
+      setMetrcConnected(!!creds?.success && !!creds?.data?.vendorKey);
+    })();
   }, [selectedFacilityId]);
 
   useEffect(() => {
     const handleUrl = (event) => {
-      const url = event.url || '';
-      if (url.includes('facilityPlan=success')) {
+      const url = event.url || "";
+      if (url.includes("facilityPlan=success")) {
         loadBilling();
       }
     };
-    const subscription = Linking.addEventListener('url', handleUrl);
+    const subscription = Linking.addEventListener("url", handleUrl);
     return () => subscription.remove();
   }, []);
 
@@ -45,6 +56,15 @@ const SettingsScreen = ({ navigation }) => {
     navigation.reset({
       index: 0,
       routes: [{ name: "MainTabs" }]
+    });
+  };
+
+  const handleSwitchToCommercial = async () => {
+    await setMode("commercial");
+    await setSelectedFacilityId(null);
+    navigation.reset({
+      index: 0,
+      routes: [{ name: "FacilityStack" }]
     });
   };
 
@@ -89,7 +109,9 @@ const SettingsScreen = ({ navigation }) => {
   };
 
   const statusText = billing?.status || "none";
-  const graceText = billing?.graceUntil ? new Date(billing.graceUntil).toLocaleDateString() : null;
+  const graceText = billing?.graceUntil
+    ? new Date(billing.graceUntil).toLocaleDateString()
+    : null;
 
   const renderBillingSection = () => (
     <View style={styles.card}>
@@ -126,14 +148,56 @@ const SettingsScreen = ({ navigation }) => {
         <Text style={styles.subtitle}>$50/month • Metrc-ready facility ops</Text>
         <View style={styles.section}>
           <Text style={styles.label}>Current User</Text>
-          <Text style={styles.value}>{user?.name || "Unknown"}</Text>
+          <Text style={styles.value}>
+            {user?.displayName || user?.name || user?.email || "Unknown"}
+          </Text>
+        </View>
+        <View style={styles.section}>
+          <Text style={styles.label}>Metrc Connection</Text>
+          <Text style={styles.value}>
+            {metrcConnected ? "Connected" : "Not connected"}
+          </Text>
+          {!metrcConnected && (
+            <TouchableOpacity
+              style={[styles.button, { marginTop: 12 }]}
+              onPress={() => navigation.navigate("Verification")}
+            >
+              <Text style={styles.buttonText}>Connect Metrc</Text>
+            </TouchableOpacity>
+          )}
         </View>
       </View>
 
       {renderBillingSection()}
 
+      <View style={styles.card}>
+        <Text style={styles.title}>Quick Links</Text>
+        <TouchableOpacity
+          style={styles.button}
+          onPress={() => navigation.navigate("SOPTemplates")}
+        >
+          <Text style={styles.buttonText}>SOP Templates</Text>
+        </TouchableOpacity>
+        <TouchableOpacity
+          style={styles.button}
+          onPress={() => navigation.navigate("AuditLog")}
+        >
+          <Text style={styles.buttonText}>Audit Logs</Text>
+        </TouchableOpacity>
+        <TouchableOpacity
+          style={styles.button}
+          onPress={() => navigation.navigate("BillingAndReporting")}
+        >
+          <Text style={styles.buttonText}>Billing & Reporting</Text>
+        </TouchableOpacity>
+      </View>
+
       <TouchableOpacity style={styles.button} onPress={handleSwitchToPersonal}>
         <Text style={styles.buttonText}>🏠 Switch to GrowPath AI (Personal)</Text>
+      </TouchableOpacity>
+
+      <TouchableOpacity style={styles.button} onPress={handleSwitchToCommercial}>
+        <Text style={styles.buttonText}>🏢 Switch to Commercial Workspace</Text>
       </TouchableOpacity>
 
       <TouchableOpacity
@@ -152,16 +216,11 @@ const SettingsScreen = ({ navigation }) => {
       </TouchableOpacity>
 
       <View style={styles.card}>
-        <Text style={styles.title}>Facility Plan Inclusions</Text>
+        <Text style={styles.title}>Workspace Status</Text>
         <Text style={styles.infoText}>
-          $50/month covers facility and room management, role-based access, Metrc sync, SOPs, audit logs, and reconciliations.
+          This facility workspace is in Phase 1. Current focus: rooms, tasks, and team
+          access. Advanced compliance and reporting tools will be added later.
         </Text>
-        <Text style={[styles.infoText, { marginTop: 12 }]}>
-          Roadmap highlights:
-        </Text>
-        <Text style={styles.feature}>• Task verification & shift handoff</Text>
-        <Text style={styles.feature}>• Deviation handling & reports</Text>
-        <Text style={styles.feature}>• Billing and branded exports</Text>
       </View>
     </View>
   );

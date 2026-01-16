@@ -1,7 +1,24 @@
 import React, { useEffect, useState } from "react";
-import { View, Text, Image, TouchableOpacity, FlatList, ScrollView, StyleSheet, Alert, Linking } from "react-native";
+import {
+  View,
+  Text,
+  Image,
+  TouchableOpacity,
+  FlatList,
+  ScrollView,
+  StyleSheet,
+  Alert,
+  Linking
+} from "react-native";
 import ScreenContainer from "../components/ScreenContainer";
-import { getCourse, enrollInCourse, getEnrollmentStatus, getReviews, deleteReview, getRecommendedCourses } from "../api/courses";
+import {
+  getCourse,
+  enrollInCourse,
+  getEnrollmentStatus,
+  getReviews,
+  deleteReview,
+  getRecommendedCourses
+} from "../api/courses";
 import { getQuestions, deleteQuestion, deleteAnswer } from "../api/questions";
 import { createCheckout } from "../api/payments";
 import { getCreatorName } from "../utils/creator";
@@ -23,7 +40,19 @@ export default function CourseScreen({ route, navigation }) {
   async function load() {
     const res = await getCourse(id);
     const payload = res || res.data || {};
-    setCourse(payload.course || payload);
+    const normalized = payload.course || payload;
+    if (normalized) {
+      if (
+        typeof normalized.price !== "number" &&
+        typeof normalized.priceCents === "number"
+      ) {
+        normalized.price = normalized.priceCents / 100;
+      }
+      if (typeof normalized.price !== "number") {
+        normalized.price = 0;
+      }
+    }
+    setCourse(normalized);
     setLessons(payload.lessons || []);
     setEnrollment(payload.enrollment || null);
 
@@ -73,15 +102,25 @@ export default function CourseScreen({ route, navigation }) {
   }
 
   async function handleEnroll() {
-    if (course.price > 0) {
+    const priceValue =
+      typeof course.price === "number"
+        ? course.price
+        : typeof course.priceCents === "number"
+          ? course.priceCents / 100
+          : 0;
+    if (priceValue > 0) {
       if (!global.user) {
         Alert.alert("Sign in Required", "Please sign in to purchase courses.");
         return;
       }
 
       try {
-        const success = encodeURIComponent("growpath://course/" + course._id + "?success=1");
-        const cancel = encodeURIComponent("growpath://course/" + course._id + "?cancel=1");
+        const success = encodeURIComponent(
+          "growpath://course/" + course._id + "?success=1"
+        );
+        const cancel = encodeURIComponent(
+          "growpath://course/" + course._id + "?cancel=1"
+        );
 
         const res = await createCheckout(course._id, success, cancel);
         const checkoutUrl = res.url || res.data?.url;
@@ -111,11 +150,18 @@ export default function CourseScreen({ route, navigation }) {
     navigation.navigate("Lesson", { lesson });
   }
 
-  if (!course) return <ScreenContainer><Text>Loading…</Text></ScreenContainer>;
+  if (!course)
+    return (
+      <ScreenContainer>
+        <Text>Loading…</Text>
+      </ScreenContainer>
+    );
 
   return (
     <ScreenContainer scroll>
-      {course.coverImage ? <Image source={{ uri: course.coverImage }} style={styles.cover} /> : null}
+      {course.coverImage ? (
+        <Image source={{ uri: course.coverImage }} style={styles.cover} />
+      ) : null}
 
       <Text style={styles.title}>{course.title}</Text>
       <Text style={styles.creator}>By {getCreatorName(course.creator)}</Text>
@@ -124,14 +170,12 @@ export default function CourseScreen({ route, navigation }) {
       {!enrolled && (
         <TouchableOpacity style={styles.enrollBtn} onPress={handleEnroll}>
           <Text style={styles.enrollText}>
-            {course.price > 0 ? `Buy for $${course.price}` : "Enroll for Free"}
+            {priceValue > 0 ? `Buy for $${priceValue.toFixed(2)}` : "Enroll for Free"}
           </Text>
         </TouchableOpacity>
       )}
 
-      {enrolled && (
-        <Text style={styles.enrolledText}>✓ Enrolled — Start Learning</Text>
-      )}
+      {enrolled && <Text style={styles.enrolledText}>✓ Enrolled — Start Learning</Text>}
 
       {enrolled && enrollment && (
         <View style={styles.progressBox}>
@@ -143,11 +187,12 @@ export default function CourseScreen({ route, navigation }) {
             <TouchableOpacity
               style={styles.resumeBtn}
               onPress={() => {
-                const lastLesson = lessons.find(
-                  (l) => l._id === enrollment.lastLessonId
-                );
+                const lastLesson = lessons.find((l) => l._id === enrollment.lastLessonId);
                 if (lastLesson) {
-                  navigation.navigate("Lesson", { lesson: lastLesson, courseId: course._id });
+                  navigation.navigate("Lesson", {
+                    lesson: lastLesson,
+                    courseId: course._id
+                  });
                 }
               }}
             >
@@ -167,7 +212,13 @@ export default function CourseScreen({ route, navigation }) {
           return (
             <TouchableOpacity style={styles.lesson} onPress={() => openLesson(item)}>
               <View style={{ flexDirection: "row", alignItems: "center", flex: 1 }}>
-                <Text style={{ color: isComplete ? "#27ae60" : "#ccc", marginRight: 8, fontSize: 16 }}>
+                <Text
+                  style={{
+                    color: isComplete ? "#27ae60" : "#ccc",
+                    marginRight: 8,
+                    fontSize: 16
+                  }}
+                >
                   {isComplete ? "✓" : "○"}
                 </Text>
                 <View style={{ flex: 1 }}>
@@ -212,16 +263,16 @@ export default function CourseScreen({ route, navigation }) {
           <View style={styles.reviewCard}>
             <View style={{ flexDirection: "row", alignItems: "center", marginBottom: 8 }}>
               {item.user.avatar ? (
-                <Image
-                  source={{ uri: item.user.avatar }}
-                  style={styles.avatar}
-                />
+                <Image source={{ uri: item.user.avatar }} style={styles.avatar} />
               ) : (
                 <View style={[styles.avatar, { backgroundColor: "#ccc" }]} />
               )}
               <View style={{ flex: 1 }}>
                 <Text style={styles.username}>{item.user.username}</Text>
-                <Text style={styles.stars}>{"★".repeat(item.rating)}{"☆".repeat(5 - item.rating)}</Text>
+                <Text style={styles.stars}>
+                  {"★".repeat(item.rating)}
+                  {"☆".repeat(5 - item.rating)}
+                </Text>
               </View>
               {item.user._id === global.user?._id && (
                 <TouchableOpacity
@@ -239,9 +290,7 @@ export default function CourseScreen({ route, navigation }) {
               )}
             </View>
 
-            {item.text ? (
-              <Text style={styles.reviewText}>{item.text}</Text>
-            ) : null}
+            {item.text ? <Text style={styles.reviewText}>{item.text}</Text> : null}
           </View>
         )}
       />
@@ -271,7 +320,9 @@ export default function CourseScreen({ route, navigation }) {
               )}
               <View style={{ flex: 1 }}>
                 <Text style={styles.username}>{item.user.username}</Text>
-                <Text style={styles.questionTime}>{new Date(item.createdAt).toLocaleDateString()}</Text>
+                <Text style={styles.questionTime}>
+                  {new Date(item.createdAt).toLocaleDateString()}
+                </Text>
               </View>
               {item.user._id === global.user?._id && (
                 <TouchableOpacity
@@ -298,16 +349,27 @@ export default function CourseScreen({ route, navigation }) {
             {/* Answers */}
             {item.answers && item.answers.length > 0 && (
               <View style={styles.answersSection}>
-                <Text style={styles.answersCount}>{item.answers.length} {item.answers.length === 1 ? "answer" : "answers"}</Text>
+                <Text style={styles.answersCount}>
+                  {item.answers.length} {item.answers.length === 1 ? "answer" : "answers"}
+                </Text>
                 {item.answers.map((ans) => (
                   <View key={ans._id} style={styles.answerRow}>
                     {ans.user.avatar ? (
-                      <Image source={{ uri: ans.user.avatar }} style={styles.answerAvatar} />
+                      <Image
+                        source={{ uri: ans.user.avatar }}
+                        style={styles.answerAvatar}
+                      />
                     ) : (
                       <View style={[styles.answerAvatar, { backgroundColor: "#ccc" }]} />
                     )}
                     <View style={{ flex: 1 }}>
-                      <View style={{ flexDirection: "row", justifyContent: "space-between", alignItems: "center" }}>
+                      <View
+                        style={{
+                          flexDirection: "row",
+                          justifyContent: "space-between",
+                          alignItems: "center"
+                        }}
+                      >
                         <Text style={styles.answerName}>{ans.user.username}</Text>
                         {ans.user._id === global.user?._id && (
                           <TouchableOpacity
@@ -337,7 +399,7 @@ export default function CourseScreen({ route, navigation }) {
                 onPress={() =>
                   navigation.navigate("AnswerQuestion", {
                     courseId: course._id,
-                    questionId: item._id,
+                    questionId: item._id
                   })
                 }
               >
@@ -352,7 +414,11 @@ export default function CourseScreen({ route, navigation }) {
       {recommended.length > 0 && (
         <View style={styles.recSection}>
           <Text style={styles.recTitle}>Recommended Courses</Text>
-          <ScrollView horizontal showsHorizontalScrollIndicator={false} style={styles.recScroll}>
+          <ScrollView
+            horizontal
+            showsHorizontalScrollIndicator={false}
+            style={styles.recScroll}
+          >
             {recommended.map((rec) => (
               <TouchableOpacity
                 key={rec._id}
@@ -392,46 +458,46 @@ const styles = StyleSheet.create({
     backgroundColor: "#2ecc71",
     paddingVertical: 12,
     borderRadius: 8,
-    marginBottom: 20,
+    marginBottom: 20
   },
   enrollText: { color: "white", fontWeight: "700", textAlign: "center" },
   enrolledText: {
     color: "#27ae60",
     fontWeight: "700",
     marginBottom: 20,
-    fontSize: 16,
+    fontSize: 16
   },
   progressBox: {
     backgroundColor: "#eefaf0",
     padding: 12,
     borderRadius: 8,
-    marginBottom: 16,
+    marginBottom: 16
   },
   progressText: {
     fontWeight: "600",
-    marginBottom: 6,
+    marginBottom: 6
   },
   resumeBtn: {
     backgroundColor: "#2ecc71",
     padding: 10,
     borderRadius: 8,
-    alignSelf: "flex-start",
+    alignSelf: "flex-start"
   },
   resumeText: {
     color: "white",
-    fontWeight: "700",
+    fontWeight: "700"
   },
   section: {
     fontSize: 20,
     fontWeight: "700",
-    marginBottom: 8,
+    marginBottom: 8
   },
   lesson: {
     paddingVertical: 14,
     borderBottomColor: "#eee",
     borderBottomWidth: 1,
     flexDirection: "row",
-    alignItems: "center",
+    alignItems: "center"
   },
   lessonTitle: { fontWeight: "600" },
   lessonMeta: { color: "#777", fontSize: 12 },
@@ -440,93 +506,93 @@ const styles = StyleSheet.create({
     backgroundColor: "#3498db",
     padding: 10,
     borderRadius: 8,
-    marginBottom: 12,
+    marginBottom: 12
   },
   reviewBtnText: {
     color: "white",
     fontWeight: "700",
-    textAlign: "center",
+    textAlign: "center"
   },
   ratingOverview: {
     paddingVertical: 10,
-    marginBottom: 12,
+    marginBottom: 12
   },
   ratingText: {
     fontWeight: "700",
-    fontSize: 16,
+    fontSize: 16
   },
   reviewCard: {
     backgroundColor: "#f9f9f9",
     padding: 12,
     borderRadius: 8,
-    marginBottom: 10,
+    marginBottom: 10
   },
   avatar: {
     width: 40,
     height: 40,
     borderRadius: 20,
-    marginRight: 10,
+    marginRight: 10
   },
   username: {
     fontWeight: "600",
-    fontSize: 14,
+    fontSize: 14
   },
   stars: {
     color: "#f1c40f",
-    fontSize: 12,
+    fontSize: 12
   },
   reviewText: {
     color: "#333",
     fontSize: 14,
-    lineHeight: 20,
+    lineHeight: 20
   },
   deleteText: {
     color: "#e74c3c",
     fontSize: 18,
-    fontWeight: "700",
+    fontWeight: "700"
   },
   askBtn: {
     backgroundColor: "#9b59b6",
     padding: 10,
     borderRadius: 8,
-    marginBottom: 12,
+    marginBottom: 12
   },
   askText: {
     color: "white",
     fontWeight: "700",
-    textAlign: "center",
+    textAlign: "center"
   },
   questionBox: {
     backgroundColor: "#f5f5f5",
     padding: 12,
     borderRadius: 8,
-    marginBottom: 10,
+    marginBottom: 10
   },
   row: {
     flexDirection: "row",
     alignItems: "center",
-    marginBottom: 8,
+    marginBottom: 8
   },
   questionAvatar: {
     width: 40,
     height: 40,
     borderRadius: 20,
-    marginRight: 10,
+    marginRight: 10
   },
   questionTime: {
     fontSize: 12,
-    color: "#999",
+    color: "#999"
   },
   creatorBadge: {
     fontSize: 12,
     color: "#27ae60",
     fontWeight: "700",
-    marginBottom: 6,
+    marginBottom: 6
   },
   questionText: {
     fontSize: 14,
     lineHeight: 20,
-    marginBottom: 10,
+    marginBottom: 10
   },
   answersSection: {
     backgroundColor: "#fff",
@@ -534,53 +600,53 @@ const styles = StyleSheet.create({
     padding: 10,
     marginBottom: 10,
     borderLeftWidth: 3,
-    borderLeftColor: "#2ecc71",
+    borderLeftColor: "#2ecc71"
   },
   answersCount: {
     fontSize: 12,
     fontWeight: "700",
     color: "#2ecc71",
-    marginBottom: 8,
+    marginBottom: 8
   },
   answerRow: {
     flexDirection: "row",
-    marginBottom: 10,
+    marginBottom: 10
   },
   answerAvatar: {
     width: 32,
     height: 32,
     borderRadius: 16,
-    marginRight: 8,
+    marginRight: 8
   },
   answerName: {
     fontWeight: "600",
-    fontSize: 13,
+    fontSize: 13
   },
   answerText: {
     fontSize: 13,
     color: "#333",
     lineHeight: 18,
-    marginTop: 4,
+    marginTop: 4
   },
   replyLink: {
     color: "#9b59b6",
     fontWeight: "700",
-    fontSize: 13,
+    fontSize: 13
   },
   recSection: {
     marginTop: 20,
     marginBottom: 10,
-    paddingHorizontal: 10,
+    paddingHorizontal: 10
   },
   recTitle: {
     fontSize: 18,
     fontWeight: "700",
     marginBottom: 12,
-    color: "#333",
+    color: "#333"
   },
   recScroll: {
     marginHorizontal: -10,
-    paddingHorizontal: 10,
+    paddingHorizontal: 10
   },
   recCard: {
     width: 140,
@@ -591,23 +657,23 @@ const styles = StyleSheet.create({
     shadowColor: "#000",
     shadowOpacity: 0.1,
     shadowRadius: 3,
-    elevation: 2,
+    elevation: 2
   },
   recCover: {
     width: "100%",
     height: 80,
-    backgroundColor: "#e0e0e0",
+    backgroundColor: "#e0e0e0"
   },
   recTitle2: {
     fontSize: 12,
     fontWeight: "600",
     padding: 8,
-    color: "#333",
+    color: "#333"
   },
   recCreator: {
     fontSize: 11,
     color: "#666",
-    paddingHorizontal: 8,
+    paddingHorizontal: 8
   },
   recRatingRow: {
     flexDirection: "row",
@@ -615,16 +681,16 @@ const styles = StyleSheet.create({
     alignItems: "center",
     paddingHorizontal: 8,
     paddingBottom: 8,
-    marginTop: 4,
+    marginTop: 4
   },
   recRating: {
     fontSize: 11,
     fontWeight: "600",
-    color: "#f39c12",
+    color: "#f39c12"
   },
   recPrice: {
     fontSize: 11,
     fontWeight: "700",
-    color: "#27ae60",
-  },
+    color: "#27ae60"
+  }
 });

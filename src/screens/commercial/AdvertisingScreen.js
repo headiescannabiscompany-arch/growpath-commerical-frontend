@@ -271,7 +271,7 @@ const AdvertisingScreen = ({ navigation }) => {
                   <View style={styles.campaignMeta}>
                     <View style={styles.metaItem}>
                       <MaterialCommunityIcons
-                        name="share-social"
+                        name="share-variant"
                         size={16}
                         color={Colors.primary}
                       />

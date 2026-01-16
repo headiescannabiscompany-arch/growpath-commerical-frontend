@@ -113,6 +113,7 @@ const FacilityDashboard = () => {
   const displayBilling = billing || demoBilling;
   const displayMetrcConnected = metrcConnected || false;
   const displayMetrcSyncStatus = metrcSyncStatus || null;
+  const hasRooms = rooms?.length > 0;
 
   return (
     <ScrollView
@@ -122,9 +123,7 @@ const FacilityDashboard = () => {
       {/* Welcome Header */}
       <View style={styles.welcomeHeader}>
         <Text style={styles.welcomeTitle}>GrowPath Commercial</Text>
-        <Text style={styles.welcomeSubtitle}>
-          Professional Operations & Compliance Platform
-        </Text>
+        <Text style={styles.welcomeSubtitle}>Facility setup at a glance</Text>
       </View>
 
       {/* Context Header */}
@@ -195,68 +194,69 @@ const FacilityDashboard = () => {
         )}
       </View>
 
-      {/* Quick Actions Shortcuts */}
+      {/* Setup Checklist */}
       <View style={styles.card}>
-        <Text style={styles.cardTitle}>⚡ Quick Actions</Text>
-        <View style={styles.shortcutGrid}>
+        <Text style={styles.cardTitle}>⚡ Facility Setup</Text>
+        <TouchableOpacity
+          style={styles.shortcut}
+          onPress={() => navigation.navigate("RoomsList")}
+        >
+          <Text style={styles.shortcutIcon}>{hasRooms ? "✅" : "➕"}</Text>
+          <Text style={styles.shortcutLabel}>
+            {hasRooms ? "Rooms added" : "Add your first room"}
+          </Text>
+        </TouchableOpacity>
+        <TouchableOpacity
+          style={styles.shortcut}
+          onPress={() => navigation.navigate("FacilityTasks")}
+        >
+          <Text style={styles.shortcutIcon}>🗒️</Text>
+          <Text style={styles.shortcutLabel}>Create a task</Text>
+        </TouchableOpacity>
+        <TouchableOpacity
+          style={styles.shortcut}
+          onPress={() => navigation.navigate("TeamScreen")}
+        >
+          <Text style={styles.shortcutIcon}>👥</Text>
+          <Text style={styles.shortcutLabel}>View team access</Text>
+        </TouchableOpacity>
+        {!displayMetrcConnected && (
           <TouchableOpacity
             style={styles.shortcut}
-            onPress={() => navigation.navigate("Equipment")}
-          >
-            <Text style={styles.shortcutIcon}>🔧</Text>
-            <Text style={styles.shortcutLabel}>Equipment</Text>
-          </TouchableOpacity>
-          <TouchableOpacity
-            style={styles.shortcut}
-            onPress={() => navigation.navigate("SOP")}
-          >
-            <Text style={styles.shortcutIcon}>📋</Text>
-            <Text style={styles.shortcutLabel}>SOP</Text>
-          </TouchableOpacity>
-          <TouchableOpacity
-            style={styles.shortcut}
-            onPress={() => navigation.navigate("Settings")}
-          >
-            <Text style={styles.shortcutIcon}>⚙️</Text>
-            <Text style={styles.shortcutLabel}>Settings</Text>
-          </TouchableOpacity>
-          <TouchableOpacity
-            style={styles.shortcut}
-            onPress={() => navigation.navigate("Verification")}
-          >
-            <Text style={styles.shortcutIcon}>✓</Text>
-            <Text style={styles.shortcutLabel}>Verify</Text>
-          </TouchableOpacity>
-          <TouchableOpacity
-            style={styles.shortcut}
-            onPress={() => navigation.navigate("Deviation")}
+            onPress={() => navigation.navigate("SettingsScreen")}
           >
             <Text style={styles.shortcutIcon}>⚠️</Text>
-            <Text style={styles.shortcutLabel}>Deviation</Text>
+            <Text style={styles.shortcutLabel}>Connect Metrc (optional)</Text>
           </TouchableOpacity>
-          <TouchableOpacity
-            style={styles.shortcut}
-            onPress={() => navigation.navigate("Audit")}
-          >
-            <Text style={styles.shortcutIcon}>📊</Text>
-            <Text style={styles.shortcutLabel}>Audit</Text>
-          </TouchableOpacity>
-        </View>
+        )}
       </View>
 
       {/* Next Actions Card */}
       <View style={styles.card}>
-        <Text style={styles.cardTitle}>⏰ Next Actions</Text>
-        <View style={styles.emptyState}>
-          <Text style={styles.emptyText}>All tasks complete! 🎉</Text>
-          <Text style={styles.emptySubtext}>Phase 2 will show upcoming tasks here</Text>
-        </View>
-        <TouchableOpacity
-          style={styles.secondaryButton}
-          onPress={() => navigation.navigate("Rooms")}
-        >
-          <Text style={styles.secondaryButtonText}>View All Rooms →</Text>
-        </TouchableOpacity>
+        <Text style={styles.cardTitle}>⏰ Next Action</Text>
+        {!hasRooms ? (
+          <View style={styles.emptyState}>
+            <Text style={styles.emptyText}>Add your first room</Text>
+            <Text style={styles.emptySubtext}>Rooms are required to start work.</Text>
+            <TouchableOpacity
+              style={styles.primaryButton}
+              onPress={() => navigation.navigate("RoomsList")}
+            >
+              <Text style={styles.primaryButtonText}>+ Add Room</Text>
+            </TouchableOpacity>
+          </View>
+        ) : (
+          <View style={styles.emptyState}>
+            <Text style={styles.emptyText}>Create your first task</Text>
+            <Text style={styles.emptySubtext}>Assign work to a user or room.</Text>
+            <TouchableOpacity
+              style={styles.primaryButton}
+              onPress={() => navigation.navigate("FacilityTasks")}
+            >
+              <Text style={styles.primaryButtonText}>+ Add Task</Text>
+            </TouchableOpacity>
+          </View>
+        )}
       </View>
 
       {/* Not Done Recently Alert */}
@@ -289,7 +289,7 @@ const FacilityDashboard = () => {
       <View style={styles.card}>
         <View style={styles.cardHeader}>
           <Text style={styles.cardTitle}>🏢 Rooms</Text>
-          <TouchableOpacity onPress={() => navigation.navigate("Rooms")}>
+          <TouchableOpacity onPress={() => navigation.navigate("RoomsList")}>
             <Text style={styles.linkText}>View All</Text>
           </TouchableOpacity>
         </View>
@@ -322,34 +322,7 @@ const FacilityDashboard = () => {
         )}
       </View>
 
-      {/* Shift Handoff Notes (Phase 2 placeholder) */}
-      <View style={styles.card}>
-        <Text style={styles.cardTitle}>📝 Shift Handoff</Text>
-        <View style={styles.emptyState}>
-          <Text style={styles.emptyText}>No recent shift notes</Text>
-          <Text style={styles.emptySubtext}>
-            Phase 2 will enable shift-to-shift communication
-          </Text>
-        </View>
-        <TouchableOpacity style={styles.disabledButton} disabled>
-          <Text style={styles.disabledButtonText}>+ Add Shift Note (Coming Soon)</Text>
-        </TouchableOpacity>
-      </View>
-
-      {/* Phase Status */}
-      <View style={styles.card}>
-        <Text style={styles.cardTitle}>🎯 Your Plan</Text>
-        <Text style={styles.featureComplete}>✅ Multi-business Type Support</Text>
-        <Text style={styles.featureComplete}>✅ Cultivators: Free Core Operations</Text>
-        <Text style={styles.featureComplete}>
-          ✅ Industry Partners: $50/month Premium
-        </Text>
-        <Text style={styles.featureComplete}>✅ Metrc Integration & Compliance</Text>
-        <Text style={styles.featureComplete}>
-          ✅ Courses & Content Marketplace (Premium)
-        </Text>
-        <Text style={styles.featureComplete}>✅ Advertising & Reach Tools (Premium)</Text>
-      </View>
+      {/* Shift Handoff removed until feature ready */}
       {/* Billing badge */}
       <View style={styles.card}>
         <Text style={styles.cardTitle}>💳 Facility Plan</Text>

@@ -191,7 +191,7 @@ const SocialMediaScreen = ({ navigation }) => {
       <ScrollView style={styles.container} showsVerticalScrollIndicator={false}>
         {/* Header */}
         <View style={styles.header}>
-          <MaterialCommunityIcons name="share-social" size={40} color={Colors.primary} />
+          <MaterialCommunityIcons name="share-variant" size={40} color={Colors.primary} />
           <Text style={styles.title}>Social Media Integration</Text>
           <Text style={styles.subtitle}>
             Connect your social platforms to track reach and engagement

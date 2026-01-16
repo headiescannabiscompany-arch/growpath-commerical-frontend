@@ -1,9 +1,12 @@
 import React from "react";
 import { Text, TouchableOpacity, StyleSheet } from "react-native";
 import ScreenContainer from "../components/ScreenContainer";
+import { useAuth } from "../context/AuthContext";
+import { requirePro } from "../utils/proHelper";
 
 export default function FeedingConfirmScreen({ route, navigation }) {
   const { nutrientData } = route.params;
+  const { isPro } = useAuth();
 
   return (
     <ScreenContainer scroll>
@@ -13,14 +16,25 @@ export default function FeedingConfirmScreen({ route, navigation }) {
       <Text>{nutrientData.productName}</Text>
 
       <Text style={styles.label}>NPK:</Text>
-      <Text>{nutrientData.npk.n}-{nutrientData.npk.p}-{nutrientData.npk.k}</Text>
+      <Text>
+        {nutrientData.npk.n}-{nutrientData.npk.p}-{nutrientData.npk.k}
+      </Text>
 
       <Text style={styles.label}>Micros:</Text>
       {Object.entries(nutrientData.micros).map(([k, v]) => (
-        <Text key={k}>{k}: {v}</Text>
+        <Text key={k}>
+          {k}: {v}
+        </Text>
       ))}
 
-      <TouchableOpacity style={styles.nextBtn} onPress={() => navigation.navigate("FeedingScheduleOptions", { nutrientData })}>
+      <TouchableOpacity
+        style={styles.nextBtn}
+        onPress={() =>
+          requirePro(navigation, isPro, () =>
+            navigation.navigate("FeedingScheduleOptions", { nutrientData })
+          )
+        }
+      >
         <Text style={styles.nextText}>Next</Text>
       </TouchableOpacity>
     </ScreenContainer>
@@ -31,5 +45,5 @@ const styles = StyleSheet.create({
   header: { fontSize: 24, fontWeight: "700", marginBottom: 10 },
   label: { marginTop: 16, fontWeight: "700" },
   nextBtn: { backgroundColor: "#2ecc71", padding: 14, marginTop: 20, borderRadius: 8 },
-  nextText: { color: "white", textAlign: "center", fontWeight: "700" },
+  nextText: { color: "white", textAlign: "center", fontWeight: "700" }
 });

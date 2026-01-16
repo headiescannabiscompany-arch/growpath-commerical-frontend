@@ -1,4 +1,4 @@
-import React, { useState } from "react";
+import React, { useMemo, useState } from "react";
 import {
   View,
   Text,
@@ -22,6 +22,7 @@ import {
   flattenTierSelections,
   groupTagsByTier
 } from "../utils/growInterests";
+import { useAuth } from "../context/AuthContext.js";
 
 const categoryOptions = [
   { key: "general", label: "General", desc: "Updates, questions, daily logs" },
@@ -33,13 +34,14 @@ const categoryOptions = [
 
 export default function ForumNewPostScreen({ route, navigation }) {
   const queryClient = useQueryClient();
+  const { user, mode } = useAuth();
   const photosFromLog = route.params?.photos || [];
   const notesFromLog = route.params?.content || "";
   const strainFromLog = route.params?.strain || "";
-  const initialGrowTags =
-    route.params?.initialGrowInterests ||
-    route.params?.tags ||
-    [];
+  const initialGrowTags = route.params?.initialGrowInterests || route.params?.tags || [];
+  const initialPostType = route.params?.postType || "education";
+  const workspaceContext = route.params?.workspace || mode || "personal";
+  const isCommercial = workspaceContext === "commercial";
   const growLogId = route.params?.growLogId || route.params?.fromGrowLogId || null;
   const defaultPickerExpansion = Boolean(route.params?.expandInterestPicker);
 
@@ -49,6 +51,13 @@ export default function ForumNewPostScreen({ route, navigation }) {
   const [growInterestSelections, setGrowInterestSelections] = useState(
     initialGrowTags.length ? groupTagsByTier(initialGrowTags) : buildEmptyTierSelection()
   );
+
+  const allowedPostTypes = ["education", "offer", "discussion", "course"];
+  const safeInitialType = useMemo(
+    () => (allowedPostTypes.includes(initialPostType) ? initialPostType : "education"),
+    [initialPostType]
+  );
+  const [postType, setPostType] = useState(safeInitialType);
 
   const [category, setCategory] = useState("general");
   const [loading, setLoading] = useState(false);
@@ -80,6 +89,22 @@ export default function ForumNewPostScreen({ route, navigation }) {
   async function handleSubmit() {
     const finalTags = flattenTierSelections(growInterestSelections);
 
+    if (isCommercial && !allowedPostTypes.includes(postType)) {
+      Alert.alert("Choose a post type", "Pick education, offer, discussion, or course.");
+      return;
+    }
+
+    if (isCommercial && postType === "offer") {
+      const lower = content.toLowerCase();
+      if (content.includes("$") || lower.includes("http")) {
+        Alert.alert(
+          "Remove prices/links",
+          "Commercial offers cannot include prices or checkout links."
+        );
+        return;
+      }
+    }
+
     if (!content.trim() && photos.length === 0) {
       return Alert.alert("Empty Post", "Add text or at least one photo.");
     }
@@ -107,11 +132,17 @@ export default function ForumNewPostScreen({ route, navigation }) {
         tags: finalTags,
         strain,
         category,
-        growLogId
+        growLogId,
+        postType: isCommercial ? postType : "discussion",
+        authorType: isCommercial ? "business" : "user",
+        authorId: isCommercial
+          ? user?.business?.id || user?.business?._id || user?._id || null
+          : user?._id || null,
+        workspaceContext: workspaceContext
       };
 
       await createPost(payload);
-      
+
       // Invalidate feed cache
       queryClient.invalidateQueries({ queryKey: ["forum-feed"] });
 
@@ -127,6 +158,13 @@ export default function ForumNewPostScreen({ route, navigation }) {
   return (
     <ScreenContainer scroll>
       <Text style={styles.header}>New Forum Post</Text>
+
+      <View style={styles.identityBox}>
+        <Text style={styles.identityTitle}>
+          Posting as {isCommercial ? "Business" : "User"}
+        </Text>
+        <Text style={styles.identitySub}>Workspace: {workspaceContext}</Text>
+      </View>
 
       {/* TEXT INPUT */}
       <TextInput
@@ -165,6 +203,41 @@ export default function ForumNewPostScreen({ route, navigation }) {
         ))}
       </ScrollView>
 
+      {isCommercial && (
+        <View style={{ marginBottom: 12 }}>
+          <Text style={styles.label}>Post type (commercial)</Text>
+          <ScrollView horizontal showsHorizontalScrollIndicator={false}>
+            {allowedPostTypes.map((type) => (
+              <TouchableOpacity
+                key={type}
+                onPress={() => setPostType(type)}
+                style={[
+                  styles.categoryButton,
+                  postType === type && styles.categoryButtonActive
+                ]}
+              >
+                <Text
+                  style={
+                    postType === type ? styles.categoryTextActive : styles.categoryText
+                  }
+                >
+                  {type}
+                </Text>
+                <Text style={styles.categoryDesc}>
+                  {type === "education"
+                    ? "Teach something before you pitch"
+                    : type === "offer"
+                      ? "No price/checkout links allowed"
+                      : type === "course"
+                        ? "Announce or link to a course"
+                        : "Start a discussion"}
+                </Text>
+              </TouchableOpacity>
+            ))}
+          </ScrollView>
+        </View>
+      )}
+
       {/* STRAIN INPUT */}
       <Text style={styles.label}>Strain (optional)</Text>
       <TextInput
@@ -174,13 +247,13 @@ export default function ForumNewPostScreen({ route, navigation }) {
         onChangeText={setStrain}
       />
 
-  <GrowInterestPicker
-    title="Grow Interests relevant to this forum post"
-    helperText="Select the tiers that best describe your update. Leave any tier empty."
-    value={growInterestSelections}
-    onChange={setGrowInterestSelections}
-    defaultExpanded={defaultPickerExpansion}
-  />
+      <GrowInterestPicker
+        title="Grow Interests relevant to this forum post"
+        helperText="Select the tiers that best describe your update. Leave any tier empty."
+        value={growInterestSelections}
+        onChange={setGrowInterestSelections}
+        defaultExpanded={defaultPickerExpansion}
+      />
 
       {/* PHOTO GRID */}
       <Text style={[styles.label, { marginTop: 16 }]}>Photos</Text>
@@ -242,6 +315,20 @@ const styles = StyleSheet.create({
   categoryButtonActive: {
     backgroundColor: "#10B981",
     borderColor: "#10B981"
+  },
+  identityBox: {
+    backgroundColor: "#F3F4F6",
+    padding: 12,
+    borderRadius: 10,
+    marginBottom: 10
+  },
+  identityTitle: {
+    fontWeight: "700",
+    color: "#111827"
+  },
+  identitySub: {
+    color: "#4B5563",
+    fontSize: 12
   },
   categoryText: {
     fontSize: 14,

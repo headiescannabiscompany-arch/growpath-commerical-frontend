@@ -13,7 +13,12 @@ import {
 import FollowButton from "../components/FollowButton";
 import ScreenContainer from "../components/ScreenContainer";
 import TokenBalanceWidget from "../components/TokenBalanceWidget";
-import { getProfile, updateNotificationPreferences, getUserPosts, getUserGrowLogs } from "../api/users";
+import {
+  getProfile,
+  updateNotificationPreferences,
+  getUserPosts,
+  getUserGrowLogs
+} from "../api/users";
 import { updateCourse } from "../api/courses";
 import { useAuth } from "../context/AuthContext";
 import { getEntitlements } from "../utils/entitlements";
@@ -36,7 +41,65 @@ function deriveNotificationPrefs(preferences) {
 }
 
 export default function ProfileScreen({ route, navigation }) {
-  const { user: currentUser, isPro: currentIsPro, isEntitled: currentIsEntitled, updateUser, logout, facilitiesAccess } = useAuth();
+  const {
+    user: currentUser,
+    isPro: currentIsPro,
+    isEntitled: currentIsEntitled,
+    updateUser,
+    logout,
+    facilitiesAccess,
+    setMode,
+    setSelectedFacilityId,
+    mode
+  } = useAuth();
+  // Mode toggle UI for profile
+  const renderModeToggle = () => (
+    <View style={{ flexDirection: "row", justifyContent: "center", marginVertical: 16 }}>
+      <TouchableOpacity
+        style={{
+          backgroundColor: mode === "personal" ? "#0ea5e9" : "#e5e7eb",
+          paddingVertical: 8,
+          paddingHorizontal: 18,
+          borderRadius: 8,
+          marginHorizontal: 4
+        }}
+        onPress={() => handleSwitchWorkspace("personal")}
+      >
+        <Text style={{ color: mode === "personal" ? "white" : "#222" }}>Single User</Text>
+      </TouchableOpacity>
+      <TouchableOpacity
+        style={{
+          backgroundColor: mode === "facility" ? "#0ea5e9" : "#e5e7eb",
+          paddingVertical: 8,
+          paddingHorizontal: 18,
+          borderRadius: 8,
+          marginHorizontal: 4
+        }}
+        onPress={() =>
+          facilitiesAccess?.length ? handleSwitchWorkspace("facility") : null
+        }
+        disabled={!facilitiesAccess?.length}
+      >
+        <Text style={{ color: mode === "facility" ? "white" : "#222" }}>
+          Facility{!facilitiesAccess?.length ? " (no access)" : ""}
+        </Text>
+      </TouchableOpacity>
+      <TouchableOpacity
+        style={{
+          backgroundColor: mode === "commercial" ? "#0ea5e9" : "#e5e7eb",
+          paddingVertical: 8,
+          paddingHorizontal: 18,
+          borderRadius: 8,
+          marginHorizontal: 4
+        }}
+        onPress={() => handleSwitchWorkspace("commercial")}
+      >
+        <Text style={{ color: mode === "commercial" ? "white" : "#222" }}>
+          Commercial
+        </Text>
+      </TouchableOpacity>
+    </View>
+  );
   const resolvedUserId =
     route?.params?.userId ||
     route?.params?.id ||
@@ -59,11 +122,11 @@ export default function ProfileScreen({ route, navigation }) {
   const [posts, setPosts] = useState([]);
   const [postsPage, setPostsPage] = useState(1);
   const [postsHasMore, setPostsHasMore] = useState(true);
-  
+
   const [growlogs, setGrowlogs] = useState([]);
   const [growlogsPage, setGrowlogsPage] = useState(1);
   const [growlogsHasMore, setGrowlogsHasMore] = useState(true);
-  
+
   const [loadingMore, setLoadingMore] = useState(false);
 
   useEffect(() => {
@@ -77,7 +140,7 @@ export default function ProfileScreen({ route, navigation }) {
         if (!mounted) return;
         setProfile(payload);
         setNotifPrefs(deriveNotificationPrefs(payload?.user?.preferences));
-        
+
         // Init lists
         const initialPosts = Array.isArray(payload.posts) ? payload.posts : [];
         setPosts(initialPosts);
@@ -111,9 +174,28 @@ export default function ProfileScreen({ route, navigation }) {
     };
   }, [resolvedUserId, refreshNonce]);
 
+  const handleSwitchWorkspace = async (targetMode) => {
+    if (targetMode === "facility") {
+      const firstFacility = facilitiesAccess?.[0]?.facilityId;
+      if (firstFacility) {
+        await setSelectedFacilityId(firstFacility);
+      }
+    } else {
+      await setSelectedFacilityId(null);
+    }
+    await setMode(targetMode);
+    let stackName = "MainTabs";
+    if (targetMode === "facility") stackName = "FacilityStack";
+    if (targetMode === "commercial") stackName = "CommercialStack";
+    navigation.reset({
+      index: 0,
+      routes: [{ name: stackName }]
+    });
+  };
+
   const loadMore = useCallback(async () => {
     if (loadingMore) return;
-    
+
     if (tab === "posts" && postsHasMore) {
       setLoadingMore(true);
       try {
@@ -121,7 +203,7 @@ export default function ProfileScreen({ route, navigation }) {
         const res = await getUserPosts(resolvedUserId, nextPage);
         const newItems = res?.data || res || [];
         if (newItems.length > 0) {
-          setPosts(prev => [...prev, ...newItems]);
+          setPosts((prev) => [...prev, ...newItems]);
           setPostsPage(nextPage);
         }
         if (newItems.length < PAGE_SIZE) {
@@ -139,7 +221,7 @@ export default function ProfileScreen({ route, navigation }) {
         const res = await getUserGrowLogs(resolvedUserId, nextPage);
         const newItems = res?.data || res || [];
         if (newItems.length > 0) {
-          setGrowlogs(prev => [...prev, ...newItems]);
+          setGrowlogs((prev) => [...prev, ...newItems]);
           setGrowlogsPage(nextPage);
         }
         if (newItems.length < PAGE_SIZE) {
@@ -151,7 +233,15 @@ export default function ProfileScreen({ route, navigation }) {
         setLoadingMore(false);
       }
     }
-  }, [tab, postsHasMore, postsPage, growlogsHasMore, growlogsPage, resolvedUserId, loadingMore]);
+  }, [
+    tab,
+    postsHasMore,
+    postsPage,
+    growlogsHasMore,
+    growlogsPage,
+    resolvedUserId,
+    loadingMore
+  ]);
 
   function triggerReload() {
     if (!resolvedUserId) return;
@@ -170,7 +260,10 @@ export default function ProfileScreen({ route, navigation }) {
     } catch (err) {
       console.error("Preference update failed:", err);
       setNotifPrefs((prev) => ({ ...prev, [key]: !nextValue }));
-      Alert.alert("Update failed", "Unable to update notification preferences right now.");
+      Alert.alert(
+        "Update failed",
+        "Unable to update notification preferences right now."
+      );
     } finally {
       setSavingPrefs(false);
     }
@@ -208,7 +301,8 @@ export default function ProfileScreen({ route, navigation }) {
     }
   }
 
-  const viewerId = currentUser?._id || currentUser?.id || global.user?._id || global.user?.id;
+  const viewerId =
+    currentUser?._id || currentUser?.id || global.user?._id || global.user?.id;
   const isOwnProfile = viewerId && resolvedUserId && viewerId === resolvedUserId;
 
   const profileData = useMemo(() => {
@@ -233,7 +327,8 @@ export default function ProfileScreen({ route, navigation }) {
       <View>
         <Image
           source={{
-            uri: resolveImageUrl(user.banner) ||
+            uri:
+              resolveImageUrl(user.banner) ||
               "https://images.unsplash.com/photo-1501004318641-b39e6451bec6?auto=format&fit=crop&w=1200&q=80"
           }}
           style={styles.banner}
@@ -241,7 +336,8 @@ export default function ProfileScreen({ route, navigation }) {
         <View style={styles.avatarContainer}>
           <Image
             source={{
-              uri: resolveImageUrl(user.avatar) ||
+              uri:
+                resolveImageUrl(user.avatar) ||
                 "https://images.unsplash.com/photo-1521579971123-1192931a1452?auto=format&fit=crop&w=200&q=80"
             }}
             style={styles.avatar}
@@ -277,6 +373,8 @@ export default function ProfileScreen({ route, navigation }) {
         </View>
       </View>
 
+      {isOwnProfile && renderModeToggle()}
+
       {!isOwnProfile && user._id ? (
         <View style={{ alignItems: "center", marginVertical: 10 }}>
           <FollowButton userId={user._id} />
@@ -296,7 +394,8 @@ export default function ProfileScreen({ route, navigation }) {
             <View style={{ flex: 1 }}>
               <Text style={styles.courseShelfTitle}>My Courses</Text>
               <Text style={styles.courseShelfSubtitle}>
-                Drafts stay private until you publish. Toggle visibility when you're ready.
+                Drafts stay private until you publish. Toggle visibility when you're
+                ready.
               </Text>
             </View>
             <TouchableOpacity
@@ -338,14 +437,15 @@ export default function ProfileScreen({ route, navigation }) {
                       value={!!course.isPublished}
                       onValueChange={(value) => handleCoursePublishToggle(course, value)}
                       disabled={
-                        courseUpdatingId === course._id ||
-                        (!ready && !course.isPublished)
+                        courseUpdatingId === course._id || (!ready && !course.isPublished)
                       }
                     />
                   </View>
                   <TouchableOpacity
                     style={styles.manageCourseBtn}
-                    onPress={() => navigation.navigate("ManageCourse", { id: course._id })}
+                    onPress={() =>
+                      navigation.navigate("ManageCourse", { id: course._id })
+                    }
                   >
                     <Text style={styles.manageCourseText}>Manage Course</Text>
                   </TouchableOpacity>
@@ -432,7 +532,10 @@ export default function ProfileScreen({ route, navigation }) {
           onPress={() => navigation.navigate("ForumPostDetail", { id: item._id })}
         >
           {item.photos && item.photos[0] && (
-            <Image source={{ uri: resolveImageUrl(item.photos[0]) }} style={styles.postImage} />
+            <Image
+              source={{ uri: resolveImageUrl(item.photos[0]) }}
+              style={styles.postImage}
+            />
           )}
           <Text>{item.content}</Text>
         </TouchableOpacity>
@@ -445,7 +548,10 @@ export default function ProfileScreen({ route, navigation }) {
           onPress={() => navigation.navigate("GrowLogDetail", { id: item._id })}
         >
           {item.photos && item.photos[0] && (
-            <Image source={{ uri: resolveImageUrl(item.photos[0]) }} style={styles.postImage} />
+            <Image
+              source={{ uri: resolveImageUrl(item.photos[0]) }}
+              style={styles.postImage}
+            />
           )}
           <Text>{item.title}</Text>
         </TouchableOpacity>
@@ -457,24 +563,22 @@ export default function ProfileScreen({ route, navigation }) {
   const renderFooter = () => {
     // Only show footer logic if we are not at end of list
     // and if tab supports pagination
-    if (tab === 'courses') {
-        return (
-            <View style={{ padding: 20 }}>
-                <Text style={{ textAlign: 'center' }}>Courses coming soon…</Text>
-                {renderBottomCards()}
-            </View>
-        );
+    if (tab === "courses") {
+      return (
+        <View style={{ padding: 20 }}>
+          <Text style={{ textAlign: "center" }}>Courses coming soon…</Text>
+          {renderBottomCards()}
+        </View>
+      );
     }
-    
+
     return (
       <View>
-        {loadingMore && (
-          <ActivityIndicator style={{ padding: 20 }} color="#10B981" />
-        )}
+        {loadingMore && <ActivityIndicator style={{ padding: 20 }} color="#10B981" />}
         {/* If this is the end of the list, show bottom cards */}
-        {((tab === 'posts' && !postsHasMore) || (tab === 'growlogs' && !growlogsHasMore)) && (
-            renderBottomCards()
-        )}
+        {((tab === "posts" && !postsHasMore) ||
+          (tab === "growlogs" && !growlogsHasMore)) &&
+          renderBottomCards()}
       </View>
     );
   };
@@ -510,7 +614,7 @@ export default function ProfileScreen({ route, navigation }) {
               <Text style={styles.subscriptionSubtitle}>
                 {currentIsPro
                   ? "All features unlocked"
-                  : currentIsEntitled 
+                  : currentIsEntitled
                     ? "Forum Access Active • Pro unlock available"
                     : "Limited features • Upgrade to unlock AI & more"}
               </Text>
@@ -618,8 +722,12 @@ export default function ProfileScreen({ route, navigation }) {
 
   if (error) {
     return (
-      <View style={{ flex: 1, justifyContent: "center", alignItems: "center", padding: 24 }}>
-        <Text style={{ fontSize: 16, textAlign: "center", marginBottom: 12 }}>{error}</Text>
+      <View
+        style={{ flex: 1, justifyContent: "center", alignItems: "center", padding: 24 }}
+      >
+        <Text style={{ fontSize: 16, textAlign: "center", marginBottom: 12 }}>
+          {error}
+        </Text>
         <TouchableOpacity style={styles.retryBtn} onPress={triggerReload}>
           <Text style={styles.retryText}>Retry</Text>
         </TouchableOpacity>
@@ -719,6 +827,42 @@ const styles = {
     flexDirection: "row",
     justifyContent: "space-around",
     marginVertical: 10
+  },
+  workspaceCard: {
+    marginHorizontal: 20,
+    marginBottom: 10,
+    backgroundColor: "#F3F4F6",
+    borderRadius: 12,
+    padding: 14,
+    borderWidth: 1,
+    borderColor: "#E5E7EB"
+  },
+  workspaceTitle: {
+    fontWeight: "700",
+    fontSize: 16,
+    color: "#111827"
+  },
+  workspaceSub: {
+    color: "#4B5563",
+    marginTop: 2,
+    marginBottom: 8
+  },
+  workspaceRow: {
+    flexDirection: "row",
+    gap: 8,
+    flexWrap: "wrap"
+  },
+  workspaceBtn: {
+    paddingHorizontal: 12,
+    paddingVertical: 10,
+    borderRadius: 10,
+    backgroundColor: "#FFFFFF",
+    borderWidth: 1,
+    borderColor: "#E5E7EB"
+  },
+  workspaceBtnText: {
+    fontWeight: "700",
+    color: "#111827"
   },
   stat: {
     fontWeight: "600"

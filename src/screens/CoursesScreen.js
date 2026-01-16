@@ -31,6 +31,7 @@ const TIER1_TAGS = new Set(tierOneConfig?.options || []);
 export default function CoursesScreen() {
   const [courses, setCourses] = useState([]);
   const [drafts, setDrafts] = useState([]);
+  const [myCourses, setMyCourses] = useState([]);
   const [loading, setLoading] = useState(true);
   const [showDrafts, setShowDrafts] = useState(false);
   const [showFilters, setShowFilters] = useState(false);
@@ -111,9 +112,13 @@ export default function CoursesScreen() {
         let next = exists ? prev.filter((t) => t !== tag) : [...prev, tag];
 
         if (tierId === TIER1_ID && userTier1Selections.length > 0) {
-          const hasTier1Selected = next.some((value) => userTier1Selections.includes(value));
+          const hasTier1Selected = next.some((value) =>
+            userTier1Selections.includes(value)
+          );
           if (!hasTier1Selected) {
-            const withoutTier1 = next.filter((value) => !userTier1Selections.includes(value));
+            const withoutTier1 = next.filter(
+              (value) => !userTier1Selections.includes(value)
+            );
             next = Array.from(new Set([...withoutTier1, ...userTier1Selections]));
           }
         }
@@ -144,10 +149,14 @@ export default function CoursesScreen() {
       }
 
       if (mineResult.status === "fulfilled") {
-        const mine = Array.isArray(mineResult.value) ? mineResult.value : mineResult.value || [];
+        const mine = Array.isArray(mineResult.value)
+          ? mineResult.value
+          : mineResult.value || [];
         const myDrafts = mine.filter((course) => !course.isPublished);
+        setMyCourses(mine);
         setDrafts(myDrafts);
       } else {
+        setMyCourses([]);
         setDrafts([]);
       }
     } catch (err) {
@@ -182,22 +191,8 @@ export default function CoursesScreen() {
             >
               <Text style={styles.toggleDraftsText}>{showDrafts ? "Hide" : "Show"}</Text>
             </TouchableOpacity>
-            <TouchableOpacity
-              style={styles.manageAllBtn}
-              onPress={() => navigation.navigate("CreatorDashboard")}
-            >
-              <Text style={styles.manageAllText}>Creator Hub</Text>
-            </TouchableOpacity>
-          </View>
-        </View>
-
-        {showDrafts &&
-          drafts.map((course) => {
-            const lessonsCount =
-              typeof course.lessonsCount === "number"
-                ? course.lessonsCount
-                : Array.isArray(course.lessons)
-                  ? course.lessons.length
+      );
+    }
                   : 0;
             return (
               <View key={course._id} style={styles.draftCard}>
@@ -216,7 +211,9 @@ export default function CoursesScreen() {
                 <View style={styles.draftActions}>
                   <TouchableOpacity
                     style={styles.manageBtn}
-                    onPress={() => navigation.navigate("ManageCourse", { id: course._id })}
+                    onPress={() =>
+                      navigation.navigate("ManageCourse", { id: course._id })
+                    }
                   >
                     <Text style={styles.manageBtnText}>Manage</Text>
                   </TouchableOpacity>
@@ -232,6 +229,20 @@ export default function CoursesScreen() {
           })}
       </View>
     );
+                      <View style={styles.statusRow}>
+                        <Text style={styles.statusChip}>
+                          {item.isPublished
+                            ? "Published"
+                            : item.status === "pending"
+                              ? "Pending approval"
+                              : item.status === "approved"
+                                ? "Approved"
+                                : "Draft"}
+                        </Text>
+                        {typeof item.price === "number" && item.price > 0 && (
+                          <Text style={styles.priceTag}>${item.price.toFixed(2)}</Text>
+                        )}
+                      </View>
   }
 
   const renderHeaderComponent = () => (
@@ -265,18 +276,33 @@ export default function CoursesScreen() {
           </Text>
           {!isGuildMember && (
             <Text style={styles.guildHint}>
-              Join the forum when you want crop-specific realms, while keeping your learning
-              path focused on the fundamentals until you opt in.
+              Join the forum when you want crop-specific realms, while keeping your
+              learning path focused on the fundamentals until you opt in.
             </Text>
           )}
         </View>
         <TouchableOpacity
           style={styles.createBtn}
-          onPress={() => navigation.navigate("CreateCourse")}
+          onPress={() => {
+            const activeCount = myCourses.filter(
+              (c) => c.isPublished || ["pending", "approved"].includes(c.status)
+            ).length;
+            if (activeCount >= 3) {
+              Alert.alert(
+                "Limit reached",
+                "You can have up to 3 active courses. Unpublish or finish reviews before adding another."
+              );
+              return;
+            }
+            navigation.navigate("CreateCourse");
+          }}
         >
           <Text style={styles.createBtnText}>+ Create</Text>
         </TouchableOpacity>
       </View>
+      <Text style={styles.activeHint}>
+        Up to 3 active courses (published or pending approval). Drafts do not count.
+      </Text>
       {renderDraftsSection()}
       {filterTiers.length > 0 && (
         <View style={styles.filterSection}>
@@ -337,12 +363,28 @@ export default function CoursesScreen() {
               <Text style={styles.creator} numberOfLines={1}>
                 {getCreatorName(item.creator, "Instructor")}
               </Text>
-
+              <View style={styles.statusRow}>
+                <Text style={styles.statusChip}>
+                  {item.isPublished
+                    ? "Published"
+                    : item.status === "pending"
+                      ? "Pending approval"
+                      : item.status === "approved"
+                        ? "Approved"
+                        : "Draft"}
+                </Text>
+                {((typeof item.price === "number" && item.price > 0) || item.priceCents > 0) && (
+                  <Text style={styles.priceTag}>
+                    $
+                    {item.priceCents
+                      ? (item.priceCents / 100).toFixed(2)
+                      : item.price?.toFixed(2)}
+                  </Text>
+                )}
+              </View>
               <View style={styles.courseMeta}>
                 <Text style={styles.metaText}>{item.lessons?.length || 0} lessons</Text>
-                {item.priceCents > 0 && (
-                  <Text style={styles.price}>${(item.priceCents / 100).toFixed(2)}</Text>
-                )}
+                {item.category ? <Text style={styles.metaText}>{item.category}</Text> : null}
               </View>
             </View>
           </TouchableOpacity>
@@ -352,7 +394,9 @@ export default function CoursesScreen() {
             <View style={styles.emptyState}>
               <Text style={styles.emptyIcon}>🎓</Text>
               <Text style={styles.emptyTitle}>
-                {courses.length > 0 ? "No courses match these interests." : "No courses yet"}
+                {courses.length > 0
+                  ? "No courses match these interests."
+                  : "No courses yet"}
               </Text>
               <Text style={styles.emptyText}>
                 {courses.length > 0
@@ -382,6 +426,12 @@ const styles = StyleSheet.create({
     fontWeight: "800",
     color: "#111827",
     letterSpacing: -0.5
+  activeHint: {
+    fontSize: 12,
+    color: "#6B7280",
+    marginHorizontal: spacing(4),
+    marginBottom: spacing(2)
+  },
   },
   subtitle: {
     fontSize: 14,
@@ -478,6 +528,26 @@ const styles = StyleSheet.create({
     color: "#111827",
     marginBottom: 6,
     lineHeight: 24
+  },
+  statusRow: {
+    flexDirection: "row",
+    alignItems: "center",
+    marginTop: 4,
+    gap: 8
+  },
+  statusChip: {
+    paddingVertical: 4,
+    paddingHorizontal: 8,
+    borderRadius: 8,
+    backgroundColor: "#ECFDF3",
+    color: "#166534",
+    fontWeight: "700",
+    fontSize: 12
+  },
+  priceTag: {
+    fontSize: 12,
+    color: "#111827",
+    fontWeight: "600"
   },
   creator: {
     color: "#6B7280",

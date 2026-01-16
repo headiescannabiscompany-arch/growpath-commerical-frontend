@@ -26,6 +26,17 @@ export const AuthProvider = ({ children }) => {
   const [hasNavigatedAwayFromHome, setHasNavigatedAwayFromHome] = useState(false);
   const [suppressWelcomeMessage, setSuppressWelcomeMessage] = useState(false);
   const [mode, setModeState] = useState("personal"); // "personal", "facility", or "commercial"
+
+  // Helper: get allowed modes for the current user/entitlements
+  const getAllowedModes = (userData = user) => {
+    // This logic can be expanded based on entitlements structure
+    const ent = getEntitlements(userData);
+    const modes = ["personal"];
+    if (ent.facilityAccess) modes.push("facility");
+    if (ent.commercialAccess) modes.push("commercial");
+    // For dev/admin, you may want to always allow all
+    return modes;
+  };
   const [facilityFeaturesEnabled, setFacilityFeaturesEnabled] = useState(true); // Commercial users can toggle this
   const [selectedFacilityId, setSelectedFacilityIdState] = useState(null);
   const [facilitiesAccess, setFacilitiesAccess] = useState([]); // Array of { facilityId, role, roomIds }
@@ -318,6 +329,7 @@ export const AuthProvider = ({ children }) => {
         setSuppressWelcomeMessage,
         mode,
         setMode,
+        getAllowedModes,
         selectedFacilityId,
         setSelectedFacilityId,
         facilitiesAccess,

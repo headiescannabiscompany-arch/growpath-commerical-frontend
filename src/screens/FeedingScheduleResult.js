@@ -2,24 +2,28 @@ import React from "react";
 import { Text, FlatList, TouchableOpacity, StyleSheet, View, Alert } from "react-native";
 import ScreenContainer from "../components/ScreenContainer";
 import { convertScheduleToTemplate } from "../api/feeding";
+import { useAuth } from "../context/AuthContext";
+import { requirePro } from "../utils/proHelper";
 
 export default function FeedingScheduleResult({ route, navigation }) {
   const { schedule, nutrientData } = route.params;
+  const { isPro } = useAuth();
 
   async function saveTemplate() {
-    const res = await convertScheduleToTemplate({
-      title: `${nutrientData.productName} Feeding Plan`,
-      strain: "",
-      growMedium: "",
-      schedule,
+    requirePro(navigation, isPro, async () => {
+      const res = await convertScheduleToTemplate({
+        title: `${nutrientData.productName} Feeding Plan`,
+        strain: "",
+        growMedium: "",
+        schedule
+      });
+      const payload = res?.data ?? res;
+      if (!payload?.template?._id) {
+        Alert.alert("Error", "Template save failed. Please try again.");
+        return;
+      }
+      navigation.navigate("TemplateDetail", { templateId: payload.template._id });
     });
-
-    const payload = res?.data ?? res;
-    if (!payload?.template?._id) {
-      Alert.alert("Error", "Template save failed. Please try again.");
-      return;
-    }
-    navigation.navigate("TemplateDetail", { templateId: payload.template._id });
   }
 
   return (
@@ -51,5 +55,5 @@ const styles = StyleSheet.create({
   card: { backgroundColor: "white", padding: 14, borderRadius: 10, marginBottom: 12 },
   week: { fontWeight: "700", marginBottom: 4 },
   saveBtn: { backgroundColor: "#2ecc71", padding: 14, borderRadius: 8, marginTop: 20 },
-  saveText: { color: "white", textAlign: "center", fontWeight: "700" },
+  saveText: { color: "white", textAlign: "center", fontWeight: "700" }
 });

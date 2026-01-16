@@ -17,9 +17,9 @@ import { colors, radius, spacing } from "../theme/theme";
 import { login as apiLogin, signup as apiSignup } from "../api/auth";
 import { useAuth } from "../context/AuthContext";
 
-export default function LoginScreen({ navigation }) {
-  const { login: contextLogin, token, user } = useAuth();
-  const [mode, setMode] = useState("login"); // "login" or "signup"
+  const { login: contextLogin, token, user, mode: globalMode, setMode: setGlobalMode } = useAuth();
+  const [authMode, setAuthMode] = useState("login"); // "login" or "signup"
+  const [selectedMode, setSelectedMode] = useState(globalMode || "personal"); // "personal", "facility", "commercial"
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [displayName, setDisplayName] = useState("");
@@ -28,13 +28,19 @@ export default function LoginScreen({ navigation }) {
 
   useEffect(() => {
     if (token && user) {
-      navigation.replace("FacilityStack");
+      // Redirect based on selectedMode
+      if (selectedMode === "facility") {
+        navigation.replace("FacilityStack");
+      } else if (selectedMode === "commercial") {
+        navigation.replace("CommercialStack");
+      } else {
+        navigation.replace("MainTabs");
+      }
     }
-
     AsyncStorage.getItem("HAS_LOGGED_IN_BEFORE").then((val) => {
       setHasLoggedInBefore(val === "true");
     });
-  }, [token, user, navigation]);
+  }, [token, user, navigation, selectedMode]);
 
   async function handleAuth() {
     if (loading) return;
@@ -45,7 +51,7 @@ export default function LoginScreen({ navigation }) {
       return;
     }
 
-    if (mode === "signup" && !displayName.trim()) {
+    if (authMode === "signup" && !displayName.trim()) {
       Alert.alert("Error", "Please enter your name");
       return;
     }
@@ -54,7 +60,7 @@ export default function LoginScreen({ navigation }) {
     try {
       let authResult;
 
-      if (mode === "login") {
+      if (authMode === "login") {
         authResult = await apiLogin(email.trim(), password.trim());
       } else {
         // Get business type from AsyncStorage
@@ -73,12 +79,15 @@ export default function LoginScreen({ navigation }) {
         throw new Error("Login response missing credentials");
       }
 
+      // Set selected mode in global context
+      await setGlobalMode(selectedMode);
+
       // Update context state (without waiting for AsyncStorage on web)
       const authToken = token;
       await AsyncStorage.setItem("HAS_LOGGED_IN_BEFORE", "true");
       contextLogin(authToken, user); // Don't await - let it run async
 
-      navigation.replace("FacilityStack");
+      // Navigation will be handled by useEffect
     } catch (err) {
       console.error("Auth error:", err);
 
@@ -94,7 +103,7 @@ export default function LoginScreen({ navigation }) {
           { text: "Cancel", style: "cancel" },
           {
             text: "Switch to Login",
-            onPress: () => setMode("login"),
+            onPress: () => setAuthMode("login"),
             style: "default"
           }
         ]);
@@ -132,11 +141,51 @@ export default function LoginScreen({ navigation }) {
         </View>
       </ImageBackground>
 
+      {/* Mode Selector */}
+      <View style={{ flexDirection: "row", justifyContent: "center", marginVertical: 16 }}>
+        <TouchableOpacity
+          style={{
+            backgroundColor: selectedMode === "personal" ? "#0ea5e9" : "#e5e7eb",
+            paddingVertical: 8,
+            paddingHorizontal: 18,
+            borderRadius: 8,
+            marginHorizontal: 4
+          }}
+          onPress={() => setSelectedMode("personal")}
+        >
+          <Text style={{ color: selectedMode === "personal" ? "white" : "#222" }}>Single User</Text>
+        </TouchableOpacity>
+        <TouchableOpacity
+          style={{
+            backgroundColor: selectedMode === "facility" ? "#0ea5e9" : "#e5e7eb",
+            paddingVertical: 8,
+            paddingHorizontal: 18,
+            borderRadius: 8,
+            marginHorizontal: 4
+          }}
+          onPress={() => setSelectedMode("facility")}
+        >
+          <Text style={{ color: selectedMode === "facility" ? "white" : "#222" }}>Facility</Text>
+        </TouchableOpacity>
+        <TouchableOpacity
+          style={{
+            backgroundColor: selectedMode === "commercial" ? "#0ea5e9" : "#e5e7eb",
+            paddingVertical: 8,
+            paddingHorizontal: 18,
+            borderRadius: 8,
+            marginHorizontal: 4
+          }}
+          onPress={() => setSelectedMode("commercial")}
+        >
+          <Text style={{ color: selectedMode === "commercial" ? "white" : "#222" }}>Commercial</Text>
+        </TouchableOpacity>
+      </View>
+
       <Text style={styles.title}>
-        {mode === "login" ? (hasLoggedInBefore ? "Welcome Back" : " ") : "Create Account"}
+        {authMode === "login" ? (hasLoggedInBefore ? "Welcome Back" : " ") : "Create Account"}
       </Text>
 
-      {mode === "signup" && (
+      {authMode === "signup" && (
         <TextInput
           value={displayName}
           onChangeText={setDisplayName}
@@ -167,7 +216,7 @@ export default function LoginScreen({ navigation }) {
       />
 
       <PrimaryButton
-        title={loading ? "" : mode === "login" ? "Login" : "Sign Up"}
+        title={loading ? "" : authMode === "login" ? "Login" : "Sign Up"}
         onPress={handleAuth}
         style={{ marginTop: spacing(4) }}
         disabled={loading}
@@ -176,16 +225,16 @@ export default function LoginScreen({ navigation }) {
       </PrimaryButton>
 
       <TouchableOpacity
-        onPress={() => setMode(mode === "login" ? "signup" : "login")}
+        onPress={() => setAuthMode(authMode === "login" ? "signup" : "login")}
         style={{ marginTop: spacing(3) }}
       >
         <Text style={styles.link}>
-          {mode === "login" ? "Need an account? Sign up" : "Have an account? Log in"}
+          {authMode === "login" ? "Need an account? Sign up" : "Have an account? Log in"}
         </Text>
       </TouchableOpacity>
       {/* Privacy Policy link for onboarding */}
       <View style={{ alignItems: "center", marginTop: 30, marginBottom: 10 }}>
-        <TouchableOpacity onPress={() => navigation.navigate("PrivacyPolicy")}>
+        <TouchableOpacity onPress={() => navigation.navigate("PrivacyPolicy")}>...
           <Text
             style={{ color: "#3498db", fontSize: 15, textDecorationLine: "underline" }}
           >
