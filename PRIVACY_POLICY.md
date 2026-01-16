@@ -77,7 +77,6 @@ We may update this privacy policy periodically. We will notify you of significan
 
 ## Contact Us
 
-
 <!-- Removed growpathai privacy/support email references -->
 
 ## California Privacy Rights (CCPA)

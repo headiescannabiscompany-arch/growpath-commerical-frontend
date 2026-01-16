@@ -59,7 +59,12 @@ function normalizeOptions(optionsOrToken) {
 }
 
 async function api(path, options = {}) {
-  const { retries = 0, retryDelay = 1000, ...fetchOptions } = options;
+  const {
+    retries = 0,
+    retryDelay = 1000,
+    credentials = undefined,
+    ...fetchOptions
+  } = options;
   const controller = new AbortController();
   const requestTimeout = fetchOptions.timeout || DEFAULT_TIMEOUT;
   const timeoutId = setTimeout(() => controller.abort(), requestTimeout);
@@ -80,12 +85,17 @@ async function api(path, options = {}) {
     }
 
     const finalUrl = API_URL + path;
-    const res = await fetch(finalUrl, {
+    // To send cookies or credentials, set credentials: 'include' in options
+    // Example: client.get('/route', { credentials: 'include' })
+    const fetchConfig = {
       ...fetchOptions,
       method,
       headers,
       signal: controller.signal
-    });
+    };
+    if (credentials) fetchConfig.credentials = credentials;
+
+    const res = await fetch(finalUrl, fetchConfig);
 
     clearTimeout(timeoutId);
 

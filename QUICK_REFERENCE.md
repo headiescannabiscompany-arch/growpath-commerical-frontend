@@ -3,6 +3,7 @@
 ## Installation (After Node.js is installed)
 
 ### Backend
+
 ```powershell
 cd backend
 npm install
@@ -10,6 +11,7 @@ npx husky install
 ```
 
 ### Frontend
+
 ```powershell
 cd ..
 npm install
@@ -19,27 +21,32 @@ npx husky install
 ## Daily Commands
 
 ### Check for errors
+
 ```powershell
 npm run lint
 ```
 
 ### Auto-fix errors
+
 ```powershell
 npm run lint:fix
 ```
 
 ### Format all files
+
 ```powershell
 npm run format
 ```
 
 ### Start backend server
+
 ```powershell
 cd backend
 npm run dev
 ```
 
 ### Start Expo app
+
 ```powershell
 npm start
 ```
@@ -55,6 +62,7 @@ npm start
 ## Common Fixes
 
 ### Unused variable warning
+
 ```javascript
 // Before (warns)
 const unused = 123;
@@ -69,13 +77,15 @@ const _unused = 123;
 ```
 
 ### Missing import
+
 ```javascript
 // Error: 'React' is not defined
 // Fix: Add import
-import React from 'react';
+import React from "react";
 ```
 
 ### Undefined variable
+
 ```javascript
 // Error: 'foo' is not defined
 const x = foo; // ❌
@@ -86,19 +96,22 @@ const x = foo; // ✅
 ```
 
 ### Wrong quotes
+
 ```javascript
 // Auto-fixed by Prettier
-const name = 'John'; // → const name = "John";
+const name = "John"; // → const name = "John";
 ```
 
 ## Git Pre-Commit
 
 When you commit, automatically:
+
 1. ✅ Lints changed files
 2. ✅ Formats changed files
 3. ✅ Blocks commit if errors
 
 To bypass (not recommended):
+
 ```powershell
 git commit --no-verify -m "message"
 ```
@@ -114,14 +127,18 @@ Let the tools handle formatting!
 ## Troubleshooting
 
 ### Extensions not working
+
 1. Reload VS Code: `Ctrl + Shift + P` → "Reload Window"
 2. Check extensions installed: `Ctrl + Shift + X`
 
 ### npm commands fail
+
 Install Node.js from https://nodejs.org/
 
 ### Linting too slow
+
 Add more patterns to `.eslintignore`:
+
 ```
 node_modules/
 uploads/
@@ -129,7 +146,9 @@ public/
 ```
 
 ### Want different rules?
+
 Edit `.eslintrc.json` rules section:
+
 ```json
 "rules": {
   "no-unused-vars": "off",  // Disable unused vars warning
@@ -166,6 +185,7 @@ Edit `.eslintrc.json` rules section:
 ## Status Check
 
 Run this to verify setup:
+
 ```powershell
 # Check Node.js
 node --version
@@ -184,6 +204,7 @@ code --list-extensions | Select-String "eslint|prettier|error"
 ```
 
 Should show:
+
 - Node: v18.x or v20.x
 - npm: v9.x or v10.x
 - ESLint: v8.x

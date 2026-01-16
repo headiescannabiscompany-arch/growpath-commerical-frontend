@@ -1,3 +1,10 @@
+## CORS & Production Deployment Checklist
+
+- [ ] If deploying to production, update your .env and/or app.json with the production frontend domain.
+- [ ] Provide the production domain to the backend team so it can be added to the CORS allowlist.
+- [ ] If you need to send cookies or credentials (e.g., for session auth), set `credentials: 'include'` in fetch client calls, or set `withCredentials: true` in axios clients (see comments in src/api/client.js, facility.js, greenWaste.js).
+- [ ] If you encounter CORS errors, check the error message and confirm the frontend URL is in the backend CORS allowlist.
+
 # GrowPath AI - Complete Status Report & Action Plan
 
 **Generated:** December 12, 2025
@@ -13,12 +20,14 @@ Your app is configured to run on all three platforms:
 **iOS (iPhone/iPad):**
 
 <!-- Removed growpathai bundle reference -->
+
 - ✅ Permissions configured (camera, photo library)
 - ✅ Build configuration ready in eas.json
 
 **Android:**
 
 <!-- Removed growpathai package reference -->
+
 - ✅ Permissions configured
 - ✅ Adaptive icon configured
 - ✅ Build configuration ready
@@ -331,3 +340,43 @@ If OpenAI is unavailable, there's a heuristic analyzer that checks:
 - ✅ CreatorDashboardV2 → Creator tools
 
 **All buttons properly navigate to correct screens!**
+
+---
+
+## GrowPath User Type Feature Matrix
+
+| Feature / Tool           | Free User | Pro Grower ($10/mo) | Creator Plus ($25/mo) | Commercial Partner ($50/mo) | Facility ($50/mo) |
+| ------------------------ | :-------: | :-----------------: | :-------------------: | :-------------------------: | :---------------: |
+| Create Courses           |    ✅     |         ✅          |          ✅           |             ✅              |        ✅         |
+| Sell Paid Courses        |   ✅\*    |         ✅          |          ✅           |             ✅              |        ✅         |
+| Max Paid Courses         |     1     |         3–5         |       Unlimited       |          Unlimited          |     Unlimited     |
+| Lessons per Course       |     7     |         20          |       Unlimited       |          Unlimited          |     Unlimited     |
+| Certificates             |    ❌     |         ❌          |          ✅           |             ✅              |        ✅         |
+| Course Analytics         |    ❌     |        Basic        |       Advanced        |          Advanced           |     Advanced      |
+| Education Feed Boost     |    ❌     |         Low         |        Medium         |           Medium            |      Medium       |
+| Course Approval Required |   Yes\*   |        Yes\*        |          No           |             No              |        No         |
+| Soil Calculator          |    ✅     |         ✅          |          ✅           |             ✅              |        ✅         |
+| NPK Calculator           |    ✅     |         ✅          |          ✅           |             ✅              |        ✅         |
+| VPD Tool                 |    ✅     |         ✅          |          ✅           |             ✅              |        ✅         |
+| Feed Scheduler           |    ❌     |         ✅          |          ✅           |             ✅              |        ✅         |
+| Harvest Estimator        |    ❌     |         ✅          |          ✅           |             ✅              |        ✅         |
+| Timeline Planner         |    ❌     |         ✅          |          ✅           |             ✅              |        ✅         |
+| PDF/CSV Export           |    ❌     |         ✅          |          ✅           |             ✅              |        ✅         |
+| Pheno Matrix             |    ❌     |         ✅          |          ✅           |             ✅              |        ✅         |
+| Post Offers              |    ❌     |         ❌          |          ❌           |             ✅              |        ❌         |
+| Advertise Products       |    ❌     |         ❌          |          ❌           |             ✅              |        ❌         |
+| Capture Leads            |    ❌     |         ❌          |          ❌           |             ✅              |        ❌         |
+| Facility Dashboard       |    ❌     |         ❌          |          ❌           |             ❌              |        ✅         |
+| Compliance Tools         |    ❌     |         ❌          |          ❌           |             ❌              |        ✅         |
+| Team Roles               |    ❌     |         ❌          |          ❌           |             ❌              |        ✅         |
+| SOPs                     |    ❌     |         ❌          |          ❌           |             ❌              |        ✅         |
+| Audit Logs               |    ❌     |         ❌          |          ❌           |             ❌              |        ✅         |
+| METRC Integration        |    ❌     |         ❌          |          ❌           |             ❌              |        ✅         |
+| Task Verification        |    ❌     |         ❌          |          ❌           |             ❌              |        ✅         |
+| Operational Analytics    |    ❌     |         ❌          |          ❌           |             ❌              |        ✅         |
+
+\*Free/pro users: First course requires approval. Paid course limit and lesson cap apply. All plans: 15% platform fee on course sales.
+
+---
+
+This matrix should be shown to users during the buying/upgrade process to help them choose the right plan.

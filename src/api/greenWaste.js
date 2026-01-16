@@ -16,6 +16,8 @@ export const setAuthToken = (token) => {
 const apiClient = axios.create({
   baseURL: API_BASE_URL,
   timeout: 10000
+  // To send cookies/credentials cross-origin, set withCredentials: true
+  // Example: apiClient.defaults.withCredentials = true;
 });
 
 apiClient.interceptors.request.use((config) => {

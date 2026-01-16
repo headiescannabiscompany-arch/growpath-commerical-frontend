@@ -177,6 +177,7 @@ We strive to make the App accessible to all users. Contact us if you encounter a
 For questions about these Terms:
 
 <!-- Removed growpathai email references -->
+
 - **Address**: [Your Business Address]
 
 ## 19. Severability

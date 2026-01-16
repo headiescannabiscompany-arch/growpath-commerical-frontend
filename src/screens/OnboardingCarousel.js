@@ -22,10 +22,15 @@ const slides = [
     title: "Freemium Model",
     body: "Cultivators get core features free. Industry partners pay $50/month for ads, courses, content showcase, and audience reach.",
     emoji: "??"
+  },
+  {
+    title: "Compare Plans",
+    body: "See a full feature matrix for Free, Pro, Creator, Commercial, and Facility plans. Find the best fit for you.",
+    emoji: "📊"
   }
 ];
 
-export default function OnboardingCarousel({ onDone }) {
+export default function OnboardingCarousel({ onDone, navigation }) {
   const [index, setIndex] = useState(0);
   const slide = slides[index];
 
@@ -36,12 +41,20 @@ export default function OnboardingCarousel({ onDone }) {
       </View>
       <Text style={styles.title}>{slide.title}</Text>
       <Text style={styles.body}>{slide.body}</Text>
-      <PrimaryButton
-        title="Get Started"
-        onPress={onDone}
-        style={{ marginTop: 24 }}
-        disabled={false}
-      />
+      {index === slides.length - 1 ? (
+        <PrimaryButton
+          title="Get Started"
+          onPress={onDone}
+          style={{ marginTop: 24 }}
+          disabled={false}
+        />
+      ) : (
+        <PrimaryButton
+          title="Compare Plans"
+          onPress={() => navigation?.navigate?.("PlanFeatureMatrixScreen")}
+          style={{ marginTop: 12 }}
+        />
+      )}
     </View>
   );
 }

@@ -369,7 +369,12 @@ const SocialMediaScreen = ({ navigation }) => {
           </Text>
           <TouchableOpacity
             style={[styles.btn, styles.btnPrimary]}
-            onPress={() => Alert.alert("Coming Soon", "Post scheduling will be available in a future update.")}
+            onPress={() =>
+              Alert.alert(
+                "Coming Soon",
+                "Post scheduling will be available in a future update."
+              )
+            }
           >
             <MaterialCommunityIcons name="plus" size={18} color="#FFF" />
             <Text style={styles.btnTextPrimary}>Create Post Schedule</Text>
@@ -384,7 +389,12 @@ const SocialMediaScreen = ({ navigation }) => {
           </View>
           <TouchableOpacity
             style={[styles.btn, styles.btnSecondary]}
-            onPress={() => Alert.alert("Coming Soon", "Detailed analytics will be available in a future update.")}
+            onPress={() =>
+              Alert.alert(
+                "Coming Soon",
+                "Detailed analytics will be available in a future update."
+              )
+            }
           >
             <MaterialCommunityIcons
               name="database-search"
