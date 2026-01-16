@@ -654,9 +654,7 @@ const styles = StyleSheet.create({
     backgroundColor: "#fff",
     borderRadius: 8,
     overflow: "hidden",
-    shadowColor: "#000",
-    shadowOpacity: 0.1,
-    shadowRadius: 3,
+    boxShadow: "0px 2px 3px rgba(0,0,0,0.1)",
     elevation: 2
   },
   recCover: {

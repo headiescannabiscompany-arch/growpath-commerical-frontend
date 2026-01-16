@@ -43,15 +43,14 @@ export default function ForumPostDetailScreen({ route, navigation }) {
     queryFn: async () => {
       const p = await getPost(id);
       const likesArray = Array.isArray(p.likes) ? p.likes : [];
-      const likeCount =
-        typeof p.likeCount === "number" ? p.likeCount : likesArray.length;
+      const likeCount = typeof p.likeCount === "number" ? p.likeCount : likesArray.length;
       return { ...p, likes: likesArray, likeCount };
-    },
+    }
   });
 
   const { data: comments = [], isLoading: loadingComments } = useQuery({
     queryKey: ["forum-comments", id],
-    queryFn: () => getComments(id),
+    queryFn: () => getComments(id)
   });
 
   const likeMutation = useMutation({
@@ -60,7 +59,12 @@ export default function ForumPostDetailScreen({ route, navigation }) {
       await queryClient.cancelQueries({ queryKey: ["forum-post", id] });
       const previousPost = queryClient.getQueryData(["forum-post", id]);
       if (previousPost && currentUserId) {
-        const optimistic = applyLikeMetadata(previousPost, currentUserId, undefined, !liked);
+        const optimistic = applyLikeMetadata(
+          previousPost,
+          currentUserId,
+          undefined,
+          !liked
+        );
         queryClient.setQueryData(["forum-post", id], optimistic);
       }
       return { previousPost, liked };
@@ -95,14 +99,14 @@ export default function ForumPostDetailScreen({ route, navigation }) {
       setMyComment("");
       queryClient.invalidateQueries({ queryKey: ["forum-comments", id] });
       queryClient.invalidateQueries({ queryKey: ["forum-feed"] });
-    },
+    }
   });
 
   const deleteCommentMutation = useMutation({
     mutationFn: (commentId) => deleteComment(commentId),
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ["forum-comments", id] });
-    },
+    }
   });
 
   // Like/unlike
@@ -207,10 +211,7 @@ export default function ForumPostDetailScreen({ route, navigation }) {
       <View style={styles.header}>
         <View style={{ flex: 1 }}>
           <Text style={styles.username}>
-            {author?.username ||
-              author?.displayName ||
-              author?.name ||
-              "Unknown User"}
+            {author?.username || author?.displayName || author?.name || "Unknown User"}
           </Text>
           <Text style={styles.timestamp}>
             {new Date(post.createdAt).toLocaleDateString()}
@@ -241,7 +242,9 @@ export default function ForumPostDetailScreen({ route, navigation }) {
           <Text style={[styles.actionBtn, styles.likeLabel]}>
             {userHasLiked(post, currentUserId) ? "❤️ Liked" : "🤍 Like"}
           </Text>
-          <Text style={styles.likeCount}>{`· ${post.likeCount || post.likes?.length || 0}`}</Text>
+          <Text
+            style={styles.likeCount}
+          >{`· ${post.likeCount || post.likes?.length || 0}`}</Text>
         </TouchableOpacity>
 
         <TouchableOpacity onPress={handleSave}>
@@ -358,8 +361,8 @@ const styles = StyleSheet.create({
     flexWrap: "wrap",
     paddingVertical: 10,
     borderTopWidth: 1,
-    borderTopColor: "#eee",
-    pointerEvents: "auto"
+    borderTopColor: "#eee"
+    // pointerEvents should be set via style.pointerEvents in React Native Web
   },
   likeButton: {
     marginRight: 12,

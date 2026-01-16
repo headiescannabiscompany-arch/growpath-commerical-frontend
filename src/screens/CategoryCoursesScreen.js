@@ -5,7 +5,7 @@ import {
   TouchableOpacity,
   FlatList,
   StyleSheet,
-  ActivityIndicator,
+  ActivityIndicator
 } from "react-native";
 import ScreenContainer from "../components/ScreenContainer";
 import { getCategoryCourses } from "../api/courses";
@@ -58,17 +58,12 @@ export default function CategoryCoursesScreen({ route, navigation }) {
           renderItem={({ item }) => (
             <TouchableOpacity
               style={styles.card}
-              onPress={() =>
-                navigation.navigate("Course", { id: item._id })
-              }
+              onPress={() => navigation.navigate("Course", { id: item._id })}
             >
               <Text style={styles.title} numberOfLines={2}>
                 {item.title}
               </Text>
-              <Text style={styles.creator}>
-                By{" "}
-                {getCreatorName(item.creator)}
-              </Text>
+              <Text style={styles.creator}>By {getCreatorName(item.creator)}</Text>
               {item.difficulty && (
                 <Text style={styles.difficulty}>📚 {item.difficulty}</Text>
               )}
@@ -96,26 +91,26 @@ const styles = StyleSheet.create({
   loadingContainer: {
     flex: 1,
     justifyContent: "center",
-    alignItems: "center",
+    alignItems: "center"
   },
   loadingText: {
     marginTop: 12,
     fontSize: 14,
-    color: "#666",
+    color: "#666"
   },
   header: {
     fontSize: 26,
     fontWeight: "700",
     marginBottom: 4,
-    color: "#2c3e50",
+    color: "#2c3e50"
   },
   subtitle: {
     fontSize: 14,
     color: "#777",
-    marginBottom: 16,
+    marginBottom: 16
   },
   listContent: {
-    paddingBottom: 80,
+    paddingBottom: 80
   },
   card: {
     backgroundColor: "#fff",
@@ -124,54 +119,51 @@ const styles = StyleSheet.create({
     marginBottom: 12,
     borderWidth: 1,
     borderColor: "#e0e0e0",
-    shadowColor: "#000",
-    shadowOffset: { width: 0, height: 2 },
-    shadowOpacity: 0.1,
-    shadowRadius: 4,
-    elevation: 3,
+    boxShadow: "0px 2px 4px rgba(0,0,0,0.1)",
+    elevation: 3
   },
   title: {
     fontSize: 16,
     fontWeight: "700",
     color: "#2c3e50",
-    marginBottom: 6,
+    marginBottom: 6
   },
   creator: {
     fontSize: 12,
     color: "#777",
-    marginBottom: 4,
+    marginBottom: 4
   },
   difficulty: {
     fontSize: 12,
     color: "#27ae60",
     marginBottom: 8,
-    fontWeight: "600",
+    fontWeight: "600"
   },
   footer: {
     flexDirection: "row",
     justifyContent: "space-between",
     alignItems: "center",
-    marginTop: 8,
+    marginTop: 8
   },
   rating: {
     fontSize: 12,
     color: "#f39c12",
-    fontWeight: "600",
+    fontWeight: "600"
   },
   price: {
     fontSize: 16,
     fontWeight: "700",
-    color: "#27ae60",
+    color: "#27ae60"
   },
   emptyState: {
     flex: 1,
     justifyContent: "center",
     alignItems: "center",
-    minHeight: 200,
+    minHeight: 200
   },
   emptyText: {
     fontSize: 16,
     color: "#999",
-    fontWeight: "600",
-  },
+    fontWeight: "600"
+  }
 });

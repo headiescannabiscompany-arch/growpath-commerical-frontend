@@ -13,11 +13,18 @@ import {
 import AsyncStorage from "@react-native-async-storage/async-storage";
 import ScreenContainer from "../components/ScreenContainer";
 import PrimaryButton from "../components/PrimaryButton";
+import { useAuth } from "../context/AuthContext.js";
 import { colors, radius, spacing } from "../theme/theme";
 import { login as apiLogin, signup as apiSignup } from "../api/auth";
-import { useAuth } from "../context/AuthContext";
 
-  const { login: contextLogin, token, user, mode: globalMode, setMode: setGlobalMode } = useAuth();
+function LoginScreen({ navigation }) {
+  const {
+    login: contextLogin,
+    token,
+    user,
+    mode: globalMode,
+    setMode: setGlobalMode
+  } = useAuth();
   const [authMode, setAuthMode] = useState("login"); // "login" or "signup"
   const [selectedMode, setSelectedMode] = useState(globalMode || "personal"); // "personal", "facility", "commercial"
   const [email, setEmail] = useState("");
@@ -142,7 +149,9 @@ import { useAuth } from "../context/AuthContext";
       </ImageBackground>
 
       {/* Mode Selector */}
-      <View style={{ flexDirection: "row", justifyContent: "center", marginVertical: 16 }}>
+      <View
+        style={{ flexDirection: "row", justifyContent: "center", marginVertical: 16 }}
+      >
         <TouchableOpacity
           style={{
             backgroundColor: selectedMode === "personal" ? "#0ea5e9" : "#e5e7eb",
@@ -153,7 +162,9 @@ import { useAuth } from "../context/AuthContext";
           }}
           onPress={() => setSelectedMode("personal")}
         >
-          <Text style={{ color: selectedMode === "personal" ? "white" : "#222" }}>Single User</Text>
+          <Text style={{ color: selectedMode === "personal" ? "white" : "#222" }}>
+            Single User
+          </Text>
         </TouchableOpacity>
         <TouchableOpacity
           style={{
@@ -165,7 +176,9 @@ import { useAuth } from "../context/AuthContext";
           }}
           onPress={() => setSelectedMode("facility")}
         >
-          <Text style={{ color: selectedMode === "facility" ? "white" : "#222" }}>Facility</Text>
+          <Text style={{ color: selectedMode === "facility" ? "white" : "#222" }}>
+            Facility
+          </Text>
         </TouchableOpacity>
         <TouchableOpacity
           style={{
@@ -177,12 +190,18 @@ import { useAuth } from "../context/AuthContext";
           }}
           onPress={() => setSelectedMode("commercial")}
         >
-          <Text style={{ color: selectedMode === "commercial" ? "white" : "#222" }}>Commercial</Text>
+          <Text style={{ color: selectedMode === "commercial" ? "white" : "#222" }}>
+            Commercial
+          </Text>
         </TouchableOpacity>
       </View>
 
       <Text style={styles.title}>
-        {authMode === "login" ? (hasLoggedInBefore ? "Welcome Back" : " ") : "Create Account"}
+        {authMode === "login"
+          ? hasLoggedInBefore
+            ? "Welcome Back"
+            : " "
+          : "Create Account"}
       </Text>
 
       {authMode === "signup" && (
@@ -234,7 +253,8 @@ import { useAuth } from "../context/AuthContext";
       </TouchableOpacity>
       {/* Privacy Policy link for onboarding */}
       <View style={{ alignItems: "center", marginTop: 30, marginBottom: 10 }}>
-        <TouchableOpacity onPress={() => navigation.navigate("PrivacyPolicy")}>...
+        <TouchableOpacity onPress={() => navigation.navigate("PrivacyPolicy")}>
+          ...
           <Text
             style={{ color: "#3498db", fontSize: 15, textDecorationLine: "underline" }}
           >
@@ -245,6 +265,8 @@ import { useAuth } from "../context/AuthContext";
     </ScreenContainer>
   );
 }
+
+export default LoginScreen;
 
 const styles = StyleSheet.create({
   headerBackground: {

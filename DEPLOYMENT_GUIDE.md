@@ -89,7 +89,7 @@ Your eas.json needs these values filled in before production submission:
 4. **App Information:**
    - Name: GrowPath AI
    - Subtitle: Smart Cannabis Cultivation Tracking & Education
-   - Privacy Policy URL: https://www.growpathai.com/privacy (must be hosted)
+   - Privacy Policy URL: (must be hosted)
    - Category: Education
    - Secondary Category: Productivity
 
@@ -134,7 +134,7 @@ Your eas.json needs these values filled in before production submission:
    - Contains ads: No
 
 8. **Privacy Policy:**
-   - URL: https://www.growpathai.com/privacy (must be hosted)
+   - URL: (must be hosted)
 
 ---
 

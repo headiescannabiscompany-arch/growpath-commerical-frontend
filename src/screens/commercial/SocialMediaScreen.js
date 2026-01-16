@@ -367,7 +367,10 @@ const SocialMediaScreen = ({ navigation }) => {
           <Text style={styles.autoPostDescription}>
             Schedule posts across all connected platforms
           </Text>
-          <TouchableOpacity style={[styles.btn, styles.btnPrimary]} disabled>
+          <TouchableOpacity
+            style={[styles.btn, styles.btnPrimary]}
+            onPress={() => Alert.alert("Coming Soon", "Post scheduling will be available in a future update.")}
+          >
             <MaterialCommunityIcons name="plus" size={18} color="#FFF" />
             <Text style={styles.btnTextPrimary}>Create Post Schedule</Text>
           </TouchableOpacity>
@@ -379,7 +382,10 @@ const SocialMediaScreen = ({ navigation }) => {
             <MaterialCommunityIcons name="chart-line" size={24} color={Colors.primary} />
             <Text style={styles.analyticsTitle}>Social Analytics</Text>
           </View>
-          <TouchableOpacity style={[styles.btn, styles.btnSecondary]} disabled>
+          <TouchableOpacity
+            style={[styles.btn, styles.btnSecondary]}
+            onPress={() => Alert.alert("Coming Soon", "Detailed analytics will be available in a future update.")}
+          >
             <MaterialCommunityIcons
               name="database-search"
               size={18}

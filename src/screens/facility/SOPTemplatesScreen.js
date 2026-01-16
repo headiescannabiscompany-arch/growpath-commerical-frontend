@@ -20,6 +20,7 @@ import {
   deleteSOPTemplate
 } from "../../api/sop.js";
 
+export default function SOPTemplatesScreen() {
   const { selectedFacilityId, facilitiesAccess } = useAuth();
   const [templates, setTemplates] = useState([]);
   const [loading, setLoading] = useState(false);
@@ -64,7 +65,10 @@ import {
 
   const handleSave = async () => {
     if (notEntitled) {
-      Alert.alert("Access Denied", "You do not have permission to create or edit SOP templates in this facility.");
+      Alert.alert(
+        "Access Denied",
+        "You do not have permission to create or edit SOP templates in this facility."
+      );
       return;
     }
     if (!title) {
@@ -90,7 +94,10 @@ import {
 
   const handleEdit = (tpl) => {
     if (notEntitled) {
-      Alert.alert("Access Denied", "You do not have permission to edit SOP templates in this facility.");
+      Alert.alert(
+        "Access Denied",
+        "You do not have permission to edit SOP templates in this facility."
+      );
       return;
     }
     setTitle(tpl.title || "");
@@ -101,7 +108,10 @@ import {
 
   const handleDelete = (tpl) => {
     if (notEntitled) {
-      Alert.alert("Access Denied", "You do not have permission to delete SOP templates in this facility.");
+      Alert.alert(
+        "Access Denied",
+        "You do not have permission to delete SOP templates in this facility."
+      );
       return;
     }
     Alert.alert("Delete SOP Template", "Are you sure you want to delete this SOP?", [
@@ -130,7 +140,10 @@ import {
         style={[styles.addButton, notEntitled && styles.disabledButton]}
         onPress={() => {
           if (notEntitled) {
-            Alert.alert("Access Denied", "You do not have permission to create SOP templates in this facility.");
+            Alert.alert(
+              "Access Denied",
+              "You do not have permission to create SOP templates in this facility."
+            );
             return;
           }
           resetForm();
@@ -282,9 +295,7 @@ const styles = StyleSheet.create({
     marginBottom: 12,
     borderLeftWidth: 4,
     borderLeftColor: "#10b981",
-    shadowColor: "#000",
-    shadowOpacity: 0.1,
-    shadowRadius: 4,
+    boxShadow: "0px 2px 4px rgba(0,0,0,0.1)",
     elevation: 2
   },
   sopHeader: {

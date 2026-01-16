@@ -12,13 +12,13 @@ Your app is configured to run on all three platforms:
 
 **iOS (iPhone/iPad):**
 
-- ✅ Bundle ID: `com.growpathai.app`
+<!-- Removed growpathai bundle reference -->
 - ✅ Permissions configured (camera, photo library)
 - ✅ Build configuration ready in eas.json
 
 **Android:**
 
-- ✅ Package name: `com.growpathai.app`
+<!-- Removed growpathai package reference -->
 - ✅ Permissions configured
 - ✅ Adaptive icon configured
 - ✅ Build configuration ready

@@ -29,7 +29,7 @@ const CreateVendorGuide = ({ navigation }) => {
   const loadVendor = async () => {
     try {
       const response = await fetch("http://localhost:5001/api/vendors/profile/me", {
-        headers: { "Authorization": `Bearer ${token}` }
+        headers: { Authorization: `Bearer ${token}` }
       });
       if (response.ok) {
         const data = await response.json();
@@ -50,13 +50,13 @@ const CreateVendorGuide = ({ navigation }) => {
     try {
       const vendorProducts = products
         .split(",")
-        .map(p => ({ productName: p.trim() }))
-        .filter(p => p.productName);
+        .map((p) => ({ productName: p.trim() }))
+        .filter((p) => p.productName);
 
       const response = await fetch("http://localhost:5001/api/courses/vendor/guide", {
         method: "POST",
         headers: {
-          "Authorization": `Bearer ${token}`,
+          Authorization: `Bearer ${token}`,
           "Content-Type": "application/json"
         },
         body: JSON.stringify({
@@ -123,7 +123,7 @@ const CreateVendorGuide = ({ navigation }) => {
 
         <Text style={styles.label}>Target Audience</Text>
         <View style={styles.buttonGroup}>
-          {["home-grower", "commercial", "both"].map(audience => (
+          {["home-grower", "commercial", "both"].map((audience) => (
             <TouchableOpacity
               key={audience}
               style={[
@@ -138,7 +138,11 @@ const CreateVendorGuide = ({ navigation }) => {
                   targetAudience === audience && styles.audienceButtonTextActive
                 ]}
               >
-                {audience === "home-grower" ? "Home Growers" : audience === "commercial" ? "Commercial" : "Both"}
+                {audience === "home-grower"
+                  ? "Home Growers"
+                  : audience === "commercial"
+                    ? "Commercial"
+                    : "Both"}
               </Text>
             </TouchableOpacity>
           ))}
@@ -217,9 +221,7 @@ const styles = StyleSheet.create({
     backgroundColor: "#fff",
     borderRadius: 8,
     padding: 16,
-    shadowColor: "#000",
-    shadowOpacity: 0.1,
-    shadowRadius: 4,
+    boxShadow: "0px 2px 4px rgba(0,0,0,0.1)",
     elevation: 2
   },
   label: {

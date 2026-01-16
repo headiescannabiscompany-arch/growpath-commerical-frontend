@@ -26,6 +26,7 @@ export const AuthProvider = ({ children }) => {
   const [hasNavigatedAwayFromHome, setHasNavigatedAwayFromHome] = useState(false);
   const [suppressWelcomeMessage, setSuppressWelcomeMessage] = useState(false);
   const [mode, setModeState] = useState("personal"); // "personal", "facility", or "commercial"
+  console.log("[AuthProvider] API_BASE_URL:", API_BASE_URL);
 
   // Helper: get allowed modes for the current user/entitlements
   const getAllowedModes = (userData = user) => {
@@ -86,6 +87,17 @@ export const AuthProvider = ({ children }) => {
         storageTimeout
       ]);
 
+      console.log(
+        "[AuthContext] loadAuth: storedToken=",
+        storedToken,
+        "storedUser=",
+        storedUser,
+        "storedMode=",
+        storedMode,
+        "storedFacilityId=",
+        storedFacilityId
+      );
+
       if (storedToken) {
         const parsedUser = storedUser ? JSON.parse(storedUser) : null;
         setToken(storedToken);
@@ -129,6 +141,7 @@ export const AuthProvider = ({ children }) => {
       setHasNavigatedAwayFromHome(false);
     } finally {
       setLoading(false);
+      console.log("[AuthContext] loadAuth: loading set to false");
     }
   };
 

@@ -6,7 +6,7 @@ import {
   StyleSheet,
   Dimensions,
   TouchableOpacity,
-  ActivityIndicator,
+  ActivityIndicator
 } from "react-native";
 import ScreenContainer from "../components/ScreenContainer";
 import {
@@ -14,7 +14,7 @@ import {
   getCreatorCourses,
   getEnrollmentTimeline,
   getRevenueTimeline,
-  getCourseAnalytics,
+  getCourseAnalytics
 } from "../api/creator";
 import { LineChart, BarChart } from "react-native-chart-kit";
 
@@ -35,7 +35,7 @@ export default function CreatorDashboardV2({ navigation }) {
         getEarnings(),
         getCreatorCourses(),
         getEnrollmentTimeline(),
-        getRevenueTimeline(),
+        getRevenueTimeline()
       ]);
 
       setEarnings(e.data || e);
@@ -103,11 +103,11 @@ export default function CreatorDashboardV2({ navigation }) {
     propsForDots: {
       r: "4",
       strokeWidth: "2",
-      stroke: "#27ae60",
+      stroke: "#27ae60"
     },
     propsForLabels: {
-      fontSize: 11,
-    },
+      fontSize: 11
+    }
   };
 
   return (
@@ -119,9 +119,7 @@ export default function CreatorDashboardV2({ navigation }) {
         <View style={styles.earningsCard}>
           <View>
             <Text style={styles.summaryLabel}>Total Earnings</Text>
-            <Text style={styles.totalAmount}>
-              ${(earnings.total || 0).toFixed(2)}
-            </Text>
+            <Text style={styles.totalAmount}>${(earnings.total || 0).toFixed(2)}</Text>
             <Text style={styles.feeText}>
               Platform Fees: ${(earnings.totalFees || 0).toFixed(2)}
             </Text>
@@ -146,9 +144,9 @@ export default function CreatorDashboardV2({ navigation }) {
                     data:
                       revenueValues.length > 0 && revenueValues.some((v) => v > 0)
                         ? revenueValues
-                        : [0],
-                  },
-                ],
+                        : [0]
+                  }
+                ]
               }}
               width={screenWidth - 40}
               height={240}
@@ -162,9 +160,7 @@ export default function CreatorDashboardV2({ navigation }) {
         {/* Enrollments Trend Chart */}
         {enrollDates.length > 0 && enrollValues.some((v) => v > 0) && (
           <View style={styles.chartCard}>
-            <Text style={styles.chartTitle}>
-              👥 Enrollments Trend (Last 14 days)
-            </Text>
+            <Text style={styles.chartTitle}>👥 Enrollments Trend (Last 14 days)</Text>
             <LineChart
               data={{
                 labels: enrollDates.map((d) => d.slice(5)), // MM-DD format
@@ -173,9 +169,9 @@ export default function CreatorDashboardV2({ navigation }) {
                     data:
                       enrollValues.length > 0 && enrollValues.some((v) => v > 0)
                         ? enrollValues
-                        : [0],
-                  },
-                ],
+                        : [0]
+                  }
+                ]
               }}
               width={screenWidth - 40}
               height={240}
@@ -200,7 +196,7 @@ export default function CreatorDashboardV2({ navigation }) {
                   key={c.id}
                   style={[
                     styles.courseCard,
-                    selectedCourseId === c.id && styles.courseCardActive,
+                    selectedCourseId === c.id && styles.courseCardActive
                   ]}
                   onPress={() => changeCourse(c.id)}
                 >
@@ -208,9 +204,7 @@ export default function CreatorDashboardV2({ navigation }) {
                     {c.title}
                   </Text>
                   <Text style={styles.courseCardStat}>👥 {c.enrollments}</Text>
-                  <Text style={styles.courseCardStat}>
-                    ⭐ {c.rating.toFixed(1)}
-                  </Text>
+                  <Text style={styles.courseCardStat}>⭐ {c.rating.toFixed(1)}</Text>
                 </TouchableOpacity>
               ))}
             </ScrollView>
@@ -226,12 +220,9 @@ export default function CreatorDashboardV2({ navigation }) {
                 labels: lessonLabels,
                 datasets: [
                   {
-                    data:
-                      lessonCompletionRates.length > 0
-                        ? lessonCompletionRates
-                        : [0],
-                  },
-                ],
+                    data: lessonCompletionRates.length > 0 ? lessonCompletionRates : [0]
+                  }
+                ]
               }}
               width={screenWidth - 40}
               height={240}
@@ -284,23 +275,23 @@ export default function CreatorDashboardV2({ navigation }) {
 const styles = StyleSheet.create({
   container: {
     padding: 20,
-    paddingBottom: 40,
+    paddingBottom: 40
   },
   title: {
     fontSize: 28,
     fontWeight: "700",
     marginBottom: 20,
-    color: "#2c3e50",
+    color: "#2c3e50"
   },
   loadingContainer: {
     flex: 1,
     justifyContent: "center",
-    alignItems: "center",
+    alignItems: "center"
   },
   loadingText: {
     marginTop: 12,
     fontSize: 14,
-    color: "#666",
+    color: "#666"
   },
   earningsCard: {
     backgroundColor: "#d5f4e6",
@@ -308,23 +299,23 @@ const styles = StyleSheet.create({
     borderRadius: 12,
     marginBottom: 24,
     borderLeftWidth: 5,
-    borderLeftColor: "#27ae60",
+    borderLeftColor: "#27ae60"
   },
   summaryLabel: {
     fontSize: 13,
     color: "#555",
     fontWeight: "600",
-    marginBottom: 6,
+    marginBottom: 6
   },
   totalAmount: {
     fontSize: 32,
     fontWeight: "700",
     color: "#27ae60",
-    marginBottom: 4,
+    marginBottom: 4
   },
   feeText: {
     fontSize: 12,
-    color: "#666",
+    color: "#666"
   },
   payoutButton: {
     marginTop: 16,
@@ -332,12 +323,12 @@ const styles = StyleSheet.create({
     paddingHorizontal: 16,
     backgroundColor: "#27ae60",
     borderRadius: 8,
-    alignItems: "center",
+    alignItems: "center"
   },
   payoutButtonText: {
     fontSize: 14,
     fontWeight: "700",
-    color: "#fff",
+    color: "#fff"
   },
   chartCard: {
     backgroundColor: "#fff",
@@ -346,33 +337,30 @@ const styles = StyleSheet.create({
     marginBottom: 20,
     borderWidth: 1,
     borderColor: "#e0e0e0",
-    shadowColor: "#000",
-    shadowOffset: { width: 0, height: 2 },
-    shadowOpacity: 0.1,
-    shadowRadius: 4,
-    elevation: 3,
+    boxShadow: "0px 2px 4px rgba(0,0,0,0.1)",
+    elevation: 3
   },
   chartTitle: {
     fontSize: 16,
     fontWeight: "700",
     marginBottom: 16,
-    color: "#2c3e50",
+    color: "#2c3e50"
   },
   chart: {
-    borderRadius: 8,
+    borderRadius: 8
   },
   courseSelectorContainer: {
-    marginBottom: 20,
+    marginBottom: 20
   },
   selectorLabel: {
     fontSize: 16,
     fontWeight: "700",
     marginBottom: 12,
-    color: "#2c3e50",
+    color: "#2c3e50"
   },
   courseScroll: {
     marginHorizontal: -20,
-    paddingHorizontal: 20,
+    paddingHorizontal: 20
   },
   courseCard: {
     backgroundColor: "#f0f0f0",
@@ -383,22 +371,22 @@ const styles = StyleSheet.create({
     minWidth: 140,
     justifyContent: "center",
     borderWidth: 2,
-    borderColor: "#e0e0e0",
+    borderColor: "#e0e0e0"
   },
   courseCardActive: {
     backgroundColor: "#27ae60",
-    borderColor: "#27ae60",
+    borderColor: "#27ae60"
   },
   courseCardTitle: {
     fontSize: 13,
     fontWeight: "700",
     marginBottom: 8,
-    color: "#2c3e50",
+    color: "#2c3e50"
   },
   courseCardStat: {
     fontSize: 12,
     color: "#555",
-    marginBottom: 4,
+    marginBottom: 4
   },
   detailsCard: {
     backgroundColor: "#fff",
@@ -407,17 +395,14 @@ const styles = StyleSheet.create({
     marginBottom: 20,
     borderWidth: 1,
     borderColor: "#e0e0e0",
-    shadowColor: "#000",
-    shadowOffset: { width: 0, height: 2 },
-    shadowOpacity: 0.1,
-    shadowRadius: 4,
-    elevation: 3,
+    boxShadow: "0px 2px 4px rgba(0,0,0,0.1)",
+    elevation: 3
   },
   detailsTitle: {
     fontSize: 16,
     fontWeight: "700",
     marginBottom: 12,
-    color: "#2c3e50",
+    color: "#2c3e50"
   },
   lessonRow: {
     flexDirection: "row",
@@ -429,24 +414,24 @@ const styles = StyleSheet.create({
     borderRadius: 8,
     marginBottom: 8,
     borderLeftWidth: 3,
-    borderLeftColor: "#3498db",
+    borderLeftColor: "#3498db"
   },
   lessonInfo: {
     flex: 1,
-    marginRight: 12,
+    marginRight: 12
   },
   lessonName: {
     fontSize: 14,
     fontWeight: "700",
     color: "#2c3e50",
-    marginBottom: 4,
+    marginBottom: 4
   },
   lessonMeta: {
     fontSize: 12,
-    color: "#888",
+    color: "#888"
   },
   lessonStats: {
-    alignItems: "flex-end",
+    alignItems: "flex-end"
   },
   statBadge: {
     fontSize: 14,
@@ -455,21 +440,21 @@ const styles = StyleSheet.create({
     paddingHorizontal: 10,
     paddingVertical: 4,
     backgroundColor: "#d5f4e6",
-    borderRadius: 12,
+    borderRadius: 12
   },
   emptyState: {
     alignItems: "center",
     justifyContent: "center",
-    paddingVertical: 60,
+    paddingVertical: 60
   },
   emptyStateTitle: {
     fontSize: 18,
     fontWeight: "700",
     color: "#2c3e50",
-    marginBottom: 8,
+    marginBottom: 8
   },
   emptyStateText: {
     fontSize: 14,
-    color: "#888",
-  },
+    color: "#888"
+  }
 });

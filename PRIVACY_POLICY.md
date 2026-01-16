@@ -77,10 +77,8 @@ We may update this privacy policy periodically. We will notify you of significan
 
 ## Contact Us
 
-For privacy-related questions or requests:
 
-- **Email**: privacy@growpathai.com
-- **Support**: support@growpathai.com
+<!-- Removed growpathai privacy/support email references -->
 
 ## California Privacy Rights (CCPA)
 
@@ -92,4 +90,4 @@ EU users have additional rights under GDPR including data portability, right to 
 
 ---
 
-**Your Data Protection Officer**: privacy@growpathai.com
+<!-- Removed growpathai DPO reference -->

@@ -1,14 +1,54 @@
 import React, { useState } from "react";
-import { View, Text, TextInput, TouchableOpacity, Modal, ScrollView } from "react-native";
+import {
+  View,
+  Text,
+  TextInput,
+  TouchableOpacity,
+  Modal,
+  ScrollView,
+  StyleSheet
+} from "react-native";
 
 const STAGES = ["Seedling", "Vegetative", "Flowering", "Harvest", "Cured"];
 
-export default function PlantForm({ visible, onClose, onSave, initialData = {} }) {
-  const [name, setName] = useState(initialData?.name || "");
-  const [strain, setStrain] = useState(initialData?.strain || "");
-  const [stage, setStage] = useState(initialData?.stage || STAGES[0]);
-  const [growMedium, setGrowMedium] = useState(initialData?.growMedium || "Soil");
-  const [notes, setNotes] = useState(initialData?.notes || "");
+/**
+ * @typedef {Object} PlantData
+ * @property {string} name
+ * @property {string} strain
+ * @property {string} stage
+ * @property {string} growMedium
+ * @property {string} notes
+ */
+
+const defaultPlantData = {
+  name: "",
+  strain: "",
+  stage: STAGES[0],
+  growMedium: "Soil",
+  notes: ""
+};
+
+/**
+ * @param {{ visible: boolean, onClose: () => void, onSave: (data: PlantData) => void, initialData?: PlantData }} props
+ */
+export default function PlantForm({
+  visible,
+  onClose,
+  onSave,
+  initialData = defaultPlantData
+}) {
+  const safeData = {
+    name: initialData.name || "",
+    strain: initialData.strain || "",
+    stage: initialData.stage || STAGES[0],
+    growMedium: initialData.growMedium || "Soil",
+    notes: initialData.notes || ""
+  };
+  const [name, setName] = useState(safeData.name);
+  const [strain, setStrain] = useState(safeData.strain);
+  const [stage, setStage] = useState(safeData.stage);
+  const [growMedium, setGrowMedium] = useState(safeData.growMedium);
+  const [notes, setNotes] = useState(safeData.notes);
 
   function handleSave() {
     if (!name.trim()) return;
@@ -30,13 +70,14 @@ export default function PlantForm({ visible, onClose, onSave, initialData = {} }
             </Text>
           </TouchableOpacity>
         </View>
-
+        <Text style={styles.label}>Name</Text>
         <TextInput
           style={styles.input}
           value={name}
           onChangeText={setName}
-          placeholder="Plant Name"
+          placeholder="Plant name"
         />
+        <Text style={styles.label}>Strain</Text>
         <TextInput
           style={styles.input}
           value={strain}
@@ -50,17 +91,19 @@ export default function PlantForm({ visible, onClose, onSave, initialData = {} }
             style={[styles.stageBtn, stage === s && styles.stageBtnActive]}
             onPress={() => setStage(s)}
           >
-            <Text style={stage === s ? styles.stageTextActive : styles.stageText}>
+            <Text style={[styles.stageText, stage === s && styles.stageTextActive]}>
               {s}
             </Text>
           </TouchableOpacity>
         ))}
+        <Text style={styles.label}>Grow Medium</Text>
         <TextInput
           style={styles.input}
           value={growMedium}
           onChangeText={setGrowMedium}
-          placeholder="Grow Medium"
+          placeholder="Grow medium"
         />
+        <Text style={styles.label}>Notes</Text>
         <TextInput
           style={styles.input}
           value={notes}
@@ -68,14 +111,12 @@ export default function PlantForm({ visible, onClose, onSave, initialData = {} }
           placeholder="Notes"
           multiline
         />
-
-        <View style={{ height: 20 }} />
       </ScrollView>
     </Modal>
   );
 }
 
-const styles = {
+const styles = StyleSheet.create({
   container: {
     flex: 1,
     padding: 16,
@@ -92,13 +133,13 @@ const styles = {
   },
   header: {
     fontSize: 18,
-    fontWeight: "bold",
+    fontWeight: "700",
     color: "#1f2937"
   },
   headerButton: {
     fontSize: 16,
     color: "#0ea5e9",
-    fontWeight: "bold"
+    fontWeight: "700"
   },
   disabled: {
     color: "#d1d5db",
@@ -106,7 +147,7 @@ const styles = {
   },
   label: {
     fontSize: 14,
-    fontWeight: "bold",
+    fontWeight: "700",
     color: "#374151",
     marginTop: 16,
     marginBottom: 8
@@ -132,10 +173,10 @@ const styles = {
   },
   stageText: {
     color: "#1f2937",
-    fontWeight: "bold"
+    fontWeight: "700"
   },
   stageTextActive: {
     color: "#fff",
-    fontWeight: "bold"
+    fontWeight: "700"
   }
-};
+});

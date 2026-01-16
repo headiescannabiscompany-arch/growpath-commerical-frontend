@@ -1,8 +1,22 @@
 import React, { forwardRef, useRef, useCallback } from "react";
 import { View, ScrollView, StyleSheet } from "react-native";
-import { colors } from "../theme/theme";
-import useTabPressScrollReset from "../hooks/useTabPressScrollReset";
+import { colors } from "../theme/theme.js";
+import useTabPressScrollReset from "../hooks/useTabPressScrollReset.js";
 
+/**
+ * @typedef {Object} ScreenContainerProps
+ * @property {React.ReactNode} children
+ * @property {boolean} [scroll]
+ * @property {any} [innerRef]
+ * @property {any} [style]
+ * @property {any} [contentContainerStyle]
+ * @property {boolean} [resetOnTabPress]
+ * @property {string} [testID]
+ */
+
+/**
+ * @type {import('react').ForwardRefExoticComponent<ScreenContainerProps & React.RefAttributes<any>>}
+ */
 const ScreenContainer = forwardRef(function ScreenContainer(
   {
     children,

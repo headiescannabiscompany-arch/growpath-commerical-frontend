@@ -176,8 +176,7 @@ We strive to make the App accessible to all users. Contact us if you encounter a
 
 For questions about these Terms:
 
-- **Email**: legal@growpathai.com
-- **Support**: support@growpathai.com
+<!-- Removed growpathai email references -->
 - **Address**: [Your Business Address]
 
 ## 19. Severability

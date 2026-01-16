@@ -1,10 +1,6 @@
-import React, { useEffect, useState } from "react";
-import { View, Text, ActivityIndicator } from "react-native";
-import { createBottomTabNavigator } from "@react-navigation/bottom-tabs";
-import Ionicons from "react-native-vector-icons/Ionicons";
-import FacilityDashboard from "../screens/facility/FacilityDashboard.js";
-import RoomsList from "../screens/facility/RoomsList.js";
-import FacilityTasks from "../screens/facility/FacilityTasks.js";
+const FacilityTabs = ({ isCommercial, trackingMode }) => {
+  const Tab = createBottomTabNavigator();
+
   if (isCommercial) {
     return (
       <Tab.Navigator
@@ -231,56 +227,4 @@ import FacilityTasks from "../screens/facility/FacilityTasks.js";
       />
     </Tab.Navigator>
   );
-          options={{
-            title: "Batches"
-          }}
-        />
-      )}
-      */}
-
-      {trackingMode === "zone" && (
-        <Tab.Screen
-          name="CropsTabs"
-          component={ZonesListPlaceholder}
-          options={{
-            title: "Zones"
-          }}
-        />
-      )}
-
-      {trackingMode === "metrc-aligned" && (
-        <Tab.Screen
-          name="CropsTabs"
-          component={MetrcCheckpointsPlaceholder}
-          options={{
-            title: "Counts"
-          }}
-        />
-      )}
-
-      <Tab.Screen
-        name="FacilityTasks"
-        component={FacilityTasks}
-        options={{
-          title: "Tasks"
-        }}
-      />
-      <Tab.Screen
-        name="TeamScreen"
-        component={TeamScreen}
-        options={{
-          title: "Team"
-        }}
-      />
-      <Tab.Screen
-        name="SettingsScreen"
-        component={SettingsScreen}
-        options={{
-          title: "Settings"
-        }}
-      />
-    </Tab.Navigator>
-  );
 };
-
-export default FacilityTabs;

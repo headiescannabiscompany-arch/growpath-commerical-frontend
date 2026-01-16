@@ -256,9 +256,7 @@ const styles = StyleSheet.create({
     marginBottom: 12,
     borderLeftWidth: 4,
     borderLeftColor: "#f59e0b",
-    shadowColor: "#000",
-    shadowOpacity: 0.1,
-    shadowRadius: 4,
+    boxShadow: "0px 2px 4px rgba(0,0,0,0.1)",
     elevation: 2
   },
   recordHeader: {

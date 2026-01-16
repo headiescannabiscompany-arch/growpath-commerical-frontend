@@ -191,9 +191,13 @@ export default function CoursesScreen() {
             >
               <Text style={styles.toggleDraftsText}>{showDrafts ? "Hide" : "Show"}</Text>
             </TouchableOpacity>
-      );
-    }
-                  : 0;
+          </View>
+        </View>
+        {showDrafts &&
+          drafts.map((course) => {
+            const lessonsCount = Array.isArray(course.lessons)
+              ? course.lessons.length
+              : 0;
             return (
               <View key={course._id} style={styles.draftCard}>
                 <View style={{ flex: 1 }}>
@@ -229,20 +233,6 @@ export default function CoursesScreen() {
           })}
       </View>
     );
-                      <View style={styles.statusRow}>
-                        <Text style={styles.statusChip}>
-                          {item.isPublished
-                            ? "Published"
-                            : item.status === "pending"
-                              ? "Pending approval"
-                              : item.status === "approved"
-                                ? "Approved"
-                                : "Draft"}
-                        </Text>
-                        {typeof item.price === "number" && item.price > 0 && (
-                          <Text style={styles.priceTag}>${item.price.toFixed(2)}</Text>
-                        )}
-                      </View>
   }
 
   const renderHeaderComponent = () => (
@@ -373,7 +363,8 @@ export default function CoursesScreen() {
                         ? "Approved"
                         : "Draft"}
                 </Text>
-                {((typeof item.price === "number" && item.price > 0) || item.priceCents > 0) && (
+                {((typeof item.price === "number" && item.price > 0) ||
+                  item.priceCents > 0) && (
                   <Text style={styles.priceTag}>
                     $
                     {item.priceCents
@@ -384,7 +375,9 @@ export default function CoursesScreen() {
               </View>
               <View style={styles.courseMeta}>
                 <Text style={styles.metaText}>{item.lessons?.length || 0} lessons</Text>
-                {item.category ? <Text style={styles.metaText}>{item.category}</Text> : null}
+                {item.category ? (
+                  <Text style={styles.metaText}>{item.category}</Text>
+                ) : null}
               </View>
             </View>
           </TouchableOpacity>
@@ -426,23 +419,12 @@ const styles = StyleSheet.create({
     fontWeight: "800",
     color: "#111827",
     letterSpacing: -0.5
+  },
   activeHint: {
     fontSize: 12,
     color: "#6B7280",
     marginHorizontal: spacing(4),
     marginBottom: spacing(2)
-  },
-  },
-  subtitle: {
-    fontSize: 14,
-    color: "#6B7280",
-    marginTop: 4
-  },
-  guildHint: {
-    fontSize: 13,
-    color: "#4B5563",
-    marginTop: 8,
-    maxWidth: 280
   },
   createBtn: {
     backgroundColor: "#10B981",

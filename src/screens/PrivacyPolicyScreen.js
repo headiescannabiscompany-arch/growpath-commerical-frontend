@@ -35,7 +35,7 @@ We do not sell your personal information. We may share data with:
 - Legal Requirements: When required by law or to protect our rights
 - Business Transfers: In the event of a merger or acquisition
 
-For the full policy, visit our website or contact support@growpathai.com.
+For the full policy, visit our website or contact support.
 `;
 
 export default function PrivacyPolicyScreen() {

@@ -204,7 +204,7 @@ STRIPE_SECRET_KEY=sk_live_...  # Change from sk_test_ to sk_live_
 PRICE_ID=price_live_...  # Use live price ID
 
 # Production URLs
-FRONTEND_URL=https://growpathai.com
+FRONTEND_URL=
 NODE_ENV=production
 PORT=5000
 ```
@@ -213,7 +213,7 @@ PORT=5000
 
 ```javascript
 // Update API base URL
-export const API_BASE_URL = "https://api.growpathai.com";
+export const API_BASE_URL = "";
 // Currently set to http://localhost:5000
 ```
 

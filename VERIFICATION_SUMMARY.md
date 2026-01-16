@@ -201,7 +201,7 @@ NET PROFIT:          $9,200/month
 2. Create account (free, no card needed)
 3. Click "Developers" → "API keys"
 4. Copy "Secret key" (sk_test_...)
-5. Open: C:\GrowPathAI-UI\backend\.env
+5. Open: backend\.env
 6. Replace STRIPE_SECRET_KEY value
 7. Click "Products" → "+ Add product"
 8. Name: "GrowPath AI Pro", Price: $9.99/month

@@ -15,6 +15,7 @@ import Card from "../components/Card";
 import PrimaryButton from "../components/PrimaryButton";
 import { colors, spacing, radius } from "../theme/theme";
 import { createGrow, listGrows } from "../api/grows";
+import { listRooms } from "../api/facility";
 import { uploadPlantPhoto } from "../api/plants";
 import PlantCard from "../components/PlantCard";
 import GrowInterestPicker from "../components/GrowInterestPicker";
@@ -46,7 +47,27 @@ const buildEmptyPlant = () => ({
 });
 
 export default function GrowLogsScreen({ navigation }) {
-  const { mode } = useAuth();
+  const { mode, selectedFacilityId } = useAuth();
+  // Room selection state
+  const [rooms, setRooms] = useState([]);
+  const [selectedRoomId, setSelectedRoomId] = useState("");
+
+  // Fetch rooms for selected facility
+  useEffect(() => {
+    async function fetchRooms() {
+      if (!selectedFacilityId) {
+        setRooms([]);
+        return;
+      }
+      const res = await listRooms(selectedFacilityId);
+      if (res.success && Array.isArray(res.data)) {
+        setRooms(res.data);
+      } else {
+        setRooms([]);
+      }
+    }
+    fetchRooms();
+  }, [selectedFacilityId]);
   const isCommercial = mode === "commercial";
   const [loading, setLoading] = useState(false);
   const [grows, setGrows] = useState([]);
@@ -258,6 +279,9 @@ export default function GrowLogsScreen({ navigation }) {
         ...(environment ? { environment } : {}),
         plants: plantPayloads
       };
+      if (selectedRoomId) {
+        growData.roomId = selectedRoomId;
+      }
       const growTags = flattenTierSelections(growInterestSelections);
       if (growTags.length) {
         growData.growTags = growTags;
@@ -288,6 +312,7 @@ export default function GrowLogsScreen({ navigation }) {
       setSubstratePH("");
       setShowAdvanced(false);
       setGrowInterestSelections(buildEmptyTierSelection());
+      setSelectedRoomId("");
       await loadGrows();
     } catch (err) {
       Alert.alert("Error", err.message);
@@ -357,6 +382,42 @@ export default function GrowLogsScreen({ navigation }) {
           style={styles.input}
           placeholderTextColor={colors.textSoft}
         />
+
+        {/* Room Selector */}
+        {rooms.length > 0 && (
+          <View style={{ marginBottom: 16 }}>
+            <Text style={styles.label}>Assign to Room (optional)</Text>
+            <View style={{ flexDirection: "row", flexWrap: "wrap" }}>
+              {rooms.map((room) => (
+                <TouchableOpacity
+                  key={room._id || room.id}
+                  style={[
+                    styles.pill,
+                    selectedRoomId === (room._id || room.id) && styles.pillActive
+                  ]}
+                  onPress={() => setSelectedRoomId(room._id || room.id)}
+                >
+                  <Text
+                    style={[
+                      styles.pillText,
+                      selectedRoomId === (room._id || room.id) && styles.pillTextActive
+                    ]}
+                  >
+                    {room.name || "Room"}
+                  </Text>
+                </TouchableOpacity>
+              ))}
+              {selectedRoomId && (
+                <TouchableOpacity
+                  style={[styles.pill, { backgroundColor: "#eee" }]}
+                  onPress={() => setSelectedRoomId("")}
+                >
+                  <Text style={[styles.pillText, { color: "#888" }]}>Clear Room</Text>
+                </TouchableOpacity>
+              )}
+            </View>
+          </View>
+        )}
 
         <GrowInterestPicker
           title="Tag this grow"

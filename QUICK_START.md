@@ -43,7 +43,7 @@
 
 **Step 4: Update Configuration (2 min)**
 
-1. Open file: `C:\GrowPathAI-UI\backend\.env`
+1. Open file: `.env`
 2. Find line: `STRIPE_SECRET_KEY=sk_test_51QR2g9...`
 3. Replace with your secret key from Step 2
 4. Find line: `PRICE_ID=price_YourPriceIdHere`
@@ -55,7 +55,7 @@
 ```powershell
 # Stop current backend (Ctrl+C if running)
 # Then restart:
-cd C:\GrowPathAI-UI\backend
+cd backend
 node server.js
 ```
 

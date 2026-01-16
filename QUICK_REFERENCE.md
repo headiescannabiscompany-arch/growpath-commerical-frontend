@@ -148,8 +148,7 @@ Edit `.eslintrc.json` rules section:
 ## Project Structure
 
 ```
-GrowPathAI-UI/
-├── .vscode/
+.vscode/
 │   └── settings.json          ← VS Code auto-format config
 ├── backend/
 │   ├── .eslintrc.json         ← Backend linting rules

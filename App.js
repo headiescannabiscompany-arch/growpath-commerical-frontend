@@ -35,7 +35,8 @@ if (typeof window !== "undefined") {
 }
 
 function AppContent() {
-  const { loading } = useAuth();
+  const { loading, token, user } = useAuth();
+  console.log("[AppContent] loading:", loading, "token:", token, "user:", user);
 
   if (loading) {
     return (
@@ -63,6 +64,13 @@ function AppContent() {
 }
 
 export default function App() {
+  console.log(
+    "[App] API_BASE_URL:",
+    process.env.EXPO_PUBLIC_API_URL,
+    process.env.API_URL,
+    process.env.REACT_NATIVE_APP_API_URL,
+    process.env.NEXT_PUBLIC_API_URL
+  );
   return (
     <QueryClientProvider client={queryClient}>
       <AuthProvider>

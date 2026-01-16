@@ -55,10 +55,12 @@ export default function ScheduleScreen() {
         "Marking tasks as complete is a Pro feature. Upgrade to track your progress!",
         [
           { text: "Cancel", style: "cancel" },
-          { text: "Upgrade", onPress: () => {
+          {
+            text: "Upgrade",
+            onPress: () => {
               setModalVisible(false);
               navigation.navigate("Subscription");
-            } 
+            }
           }
         ]
       );
@@ -125,8 +127,17 @@ export default function ScheduleScreen() {
       </View>
       <Section title="Overdue" tasks={groups.overdue} onSelect={handleSelectTask} />
       <Section title="Today" tasks={groups.today} onSelect={handleSelectTask} />
-      <Section title="Upcoming" tasks={groups.upcoming.slice(0, 14)} onSelect={handleSelectTask} />
-      <Section title="Completed" tasks={groups.completed} collapsed onSelect={handleSelectTask} />
+      <Section
+        title="Upcoming"
+        tasks={groups.upcoming.slice(0, 14)}
+        onSelect={handleSelectTask}
+      />
+      <Section
+        title="Completed"
+        tasks={groups.completed}
+        collapsed
+        onSelect={handleSelectTask}
+      />
 
       {/* TASK DETAIL MODAL */}
       <Modal
@@ -151,12 +162,17 @@ export default function ScheduleScreen() {
               )}
               <View style={styles.divider} />
               <Text style={styles.modalInfo}>
-                Due: {selectedTask?.dueDate ? new Date(selectedTask.dueDate).toLocaleDateString() : "No due date"}
+                Due:{" "}
+                {selectedTask?.dueDate
+                  ? new Date(selectedTask.dueDate).toLocaleDateString()
+                  : "No due date"}
               </Text>
               {selectedTask?.completed ? (
-                 <Text style={[styles.modalInfo, { color: "#10B981", fontWeight: "bold" }]}>
-                   Completed on {new Date(selectedTask.completedAt).toLocaleDateString()}
-                 </Text>
+                <Text
+                  style={[styles.modalInfo, { color: "#10B981", fontWeight: "bold" }]}
+                >
+                  Completed on {new Date(selectedTask.completedAt).toLocaleDateString()}
+                </Text>
               ) : (
                 <TouchableOpacity
                   style={styles.completeBtn}
@@ -166,10 +182,7 @@ export default function ScheduleScreen() {
                 </TouchableOpacity>
               )}
             </ScrollView>
-            <TouchableOpacity
-              style={styles.closeBtn}
-              onPress={handleCloseModal}
-            >
+            <TouchableOpacity style={styles.closeBtn} onPress={handleCloseModal}>
               <Text style={styles.closeBtnText}>Close</Text>
             </TouchableOpacity>
           </View>
@@ -206,10 +219,7 @@ const styles = {
     maxWidth: 340,
     borderRadius: 12,
     padding: 20,
-    shadowColor: "#000",
-    shadowOffset: { width: 0, height: 2 },
-    shadowOpacity: 0.25,
-    shadowRadius: 4,
+    boxShadow: "0px 2px 4px rgba(0,0,0,0.25)",
     elevation: 5
   },
   modalTitle: {
