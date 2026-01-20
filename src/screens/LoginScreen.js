@@ -35,12 +35,17 @@ function LoginScreen({ navigation }) {
 
   useEffect(() => {
     if (token && user) {
-      // Redirect based on selectedMode
-      if (selectedMode === "facility") {
+      // Always set mode to 'personal' for new users unless already set
+      if (!selectedMode || selectedMode === "personal") {
+        setGlobalMode("personal");
+        navigation.replace("MainTabs");
+      } else if (selectedMode === "facility") {
         navigation.replace("FacilityStack");
       } else if (selectedMode === "commercial") {
         navigation.replace("CommercialStack");
       } else {
+        // fallback: set to personal
+        setGlobalMode("personal");
         navigation.replace("MainTabs");
       }
     }
@@ -48,7 +53,7 @@ function LoginScreen({ navigation }) {
     AsyncStorage.getItem("HAS_LOGGED_IN_BEFORE").then((val) => {
       setHasLoggedInBefore(val === "true");
     });
-  }, [token, user, navigation, selectedMode]);
+  }, [token, user, navigation, selectedMode, setGlobalMode]);
 
   async function handleAuth() {
     if (loading) return;
