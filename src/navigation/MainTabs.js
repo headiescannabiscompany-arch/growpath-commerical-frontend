@@ -8,6 +8,7 @@ import ForumScreen from "../screens/ForumScreen";
 import SearchScreen from "../screens/SearchScreen";
 import ProfileScreen from "../screens/ProfileScreen";
 import CoursesScreen from "../screens/CoursesScreen";
+import DebugScreen from "../screens/DebugScreen";
 import AppShell from "../components/AppShell";
 import { View, Text, StyleSheet } from "react-native";
 import { SafeAreaView } from "react-native-safe-area-context";
@@ -154,6 +155,19 @@ export default function MainTabs() {
             )
           }}
         />
+        {/* DEV: Debug tab only in development */}
+        {__DEV__ && (
+          <Tab.Screen
+            name="DebugTab"
+            component={DebugScreen}
+            options={{
+              title: "Debug",
+              tabBarLabel: ({ focused }) => (
+                <TabIcon label="Debug" focused={focused} testID="tab-debug" />
+              )
+            }}
+          />
+        )}
       </Tab.Navigator>
     </SafeAreaView>
   );

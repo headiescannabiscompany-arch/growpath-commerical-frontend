@@ -214,6 +214,12 @@
 			"label": "Start Expo Web",
 			"type": "shell",
 			"command": "npx expo start -c --web"
+		},
+		{
+			"label": "Frontend: expo",
+			"type": "shell",
+			"command": "npx expo start --clear",
+			"isBackground": true
 		}
 	]
 }

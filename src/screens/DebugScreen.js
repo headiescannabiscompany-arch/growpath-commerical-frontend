@@ -1,68 +1,110 @@
-import React, { useContext } from "react";
-import { View, Text, StyleSheet, Button, ScrollView } from "react-native";
-// Import your AuthContext or similar user context here
-// import { AuthContext } from "../AuthContext";
-import { PLANS, MODES, ROLES } from "../constants/userModes";
-
-// TODO: Replace with your actual AuthContext
-const fakeUser = {
-  id: "test-user-1",
-  email: "testuser@example.com",
-  plan: PLANS.FREE,
-  mode: MODES.PERSONAL,
-  role: ROLES.USER,
-  facilityId: null
-};
+import React from "react";
+import { View, Text, StyleSheet, Button, ScrollView, Alert } from "react-native";
+import { PLANS, MODES, ROLES } from "../constants/userModes.js";
+import { useAuth } from "../context/AuthContext.js";
+import { FEATURES, getEntitlement } from "../utils/entitlements.js";
 
 export default function DebugScreen() {
-  // const { user, setUser, setMode, setPlan, setRole, setFacilityId, clearAuth } = useContext(AuthContext);
-  // For now, use fakeUser and console.log for actions
+  const {
+    user,
+    setMode,
+    mode,
+    updateUser,
+    logout,
+    setSelectedFacilityId,
+    selectedFacilityId,
+    facilityFeaturesEnabled,
+    setFacilityFeaturesEnabled
+  } = useAuth();
+  // Feature flag toggles (example: facility features)
+  const handleToggleFacilityFeatures = () => {
+    setFacilityFeaturesEnabled(!facilityFeaturesEnabled);
+    Alert.alert(
+      "Facility Features",
+      `Facility features are now ${!facilityFeaturesEnabled ? "enabled" : "disabled"}`
+    );
+  };
+
+  // Mock API toggle (dev only, just a placeholder)
+  const [mockApiEnabled, setMockApiEnabled] = React.useState(false);
+  const handleToggleMockApi = () => {
+    setMockApiEnabled((prev) => !prev);
+    Alert.alert(
+      "Mock API",
+      `Mock API is now ${!mockApiEnabled ? "enabled" : "disabled"}`
+    );
+  };
+
+  // Test data reset (dev only, just a placeholder)
+  const handleResetTestData = () => {
+    Alert.alert("Test Data", "Test data reset (not implemented)");
+  };
+
+  // Helper: update user role/plan for impersonation
+  const impersonate = (updates) => {
+    if (!user) return;
+    updateUser({ ...user, ...updates });
+  };
+
+  // Helper: clear auth and reload
+  const handleClearAuth = () => {
+    logout();
+    Alert.alert("Auth cleared", "You have been logged out.");
+  };
 
   return (
     <ScrollView contentContainerStyle={styles.container}>
       <Text style={styles.title}>Debug QA Harness</Text>
-      <Text style={styles.label}>User ID: {fakeUser.id}</Text>
-      <Text style={styles.label}>Email: {fakeUser.email}</Text>
-      <Text style={styles.label}>Plan: {fakeUser.plan}</Text>
-      <Text style={styles.label}>Mode: {fakeUser.mode}</Text>
-      <Text style={styles.label}>Role: {fakeUser.role}</Text>
-      <Text style={styles.label}>Facility ID: {fakeUser.facilityId || "-"}</Text>
+      <Text style={styles.label}>User ID: {user?.id || "-"}</Text>
+      <Text style={styles.label}>Email: {user?.email || "-"}</Text>
+      <Text style={styles.label}>Plan: {user?.plan || "-"}</Text>
+      <Text style={styles.label}>Mode: {mode}</Text>
+      <Text style={styles.label}>Role: {user?.role || "-"}</Text>
+      <Text style={styles.label}>Facility ID: {selectedFacilityId || "-"}</Text>
 
       <View style={styles.section}>
         <Text style={styles.sectionTitle}>Switch Mode</Text>
-        <Button title="Personal" onPress={() => console.log("Switch to personal mode")} />
-        <Button
-          title="Commercial"
-          onPress={() => console.log("Switch to commercial mode")}
-        />
-        <Button title="Facility" onPress={() => console.log("Switch to facility mode")} />
+        <Button title="Personal" onPress={() => setMode(MODES.PERSONAL)} />
+        <Button title="Commercial" onPress={() => setMode(MODES.COMMERCIAL)} />
+        <Button title="Facility" onPress={() => setMode(MODES.FACILITY)} />
       </View>
 
       <View style={styles.section}>
         <Text style={styles.sectionTitle}>Impersonate Test User</Text>
-        <Button title="Free User" onPress={() => console.log("Impersonate Free User")} />
-        <Button title="Pro User" onPress={() => console.log("Impersonate Pro User")} />
+        <Button
+          title="Free User"
+          onPress={() => impersonate({ plan: PLANS.FREE, role: ROLES.USER })}
+        />
+        <Button
+          title="Pro User"
+          onPress={() => impersonate({ plan: PLANS.PRO, role: ROLES.USER })}
+        />
         <Button
           title="Commercial Owner"
-          onPress={() => console.log("Impersonate Commercial Owner")}
+          onPress={() => impersonate({ plan: PLANS.COMMERCIAL, role: ROLES.OWNER })}
         />
         <Button
           title="Facility Owner"
-          onPress={() => console.log("Impersonate Facility Owner")}
+          onPress={() => impersonate({ plan: PLANS.FACILITY, role: ROLES.OWNER })}
         />
         <Button
           title="Facility Staff"
-          onPress={() => console.log("Impersonate Facility Staff")}
+          onPress={() => impersonate({ plan: PLANS.FACILITY, role: ROLES.STAFF })}
         />
       </View>
 
       <View style={styles.section}>
-        <Text style={styles.sectionTitle}>Other Actions</Text>
+        <Text style={styles.sectionTitle}>Feature Flags & QA Tools</Text>
         <Button
-          title="Clear Auth + Reload"
-          onPress={() => console.log("Clear auth and reload")}
+          title={`Facility Features: ${facilityFeaturesEnabled ? "ON" : "OFF"}`}
+          onPress={handleToggleFacilityFeatures}
         />
-        <Button title="Toggle Mock API" onPress={() => console.log("Toggle mock API")} />
+        <Button
+          title={`Mock API: ${mockApiEnabled ? "ON" : "OFF"}`}
+          onPress={handleToggleMockApi}
+        />
+        <Button title="Reset Test Data" onPress={handleResetTestData} />
+        <Button title="Clear Auth + Reload" onPress={handleClearAuth} />
       </View>
     </ScrollView>
   );

@@ -150,16 +150,22 @@ export default function RootNavigator() {
   }
 
   // Role-based navigator branching
+
+  // Deep link: if window.location or navigation state includes /debug, set initialRouteName to Debug
   let initialRouteName =
-    !isAuthenticated && !isPro && showIntro
-      ? "AppIntro"
-      : isAuthenticated
-        ? mode === "facility"
-          ? "FacilityStack"
-          : mode === "commercial"
-            ? "CommercialTabs"
-            : "MainTabs"
-        : "Login";
+    typeof window !== "undefined" &&
+    window.location &&
+    window.location.pathname === "/debug"
+      ? "Debug"
+      : !isAuthenticated && !isPro && showIntro
+        ? "AppIntro"
+        : isAuthenticated
+          ? mode === "facility"
+            ? "FacilityStack"
+            : mode === "commercial"
+              ? "CommercialTabs"
+              : "MainTabs"
+          : "Login";
 
   const navigatorKey = `${isAuthenticated ? "auth" : "guest"}-${showIntro ? "intro" : "main"}-${mode}`;
 
