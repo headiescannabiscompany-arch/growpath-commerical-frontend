@@ -29,9 +29,9 @@ import { applyLikeMetadata, userHasLiked } from "../utils/posts.js";
 import { useAuth } from "../context/AuthContext.js";
 import { resolveImageUrl } from "../utils/images.js";
 
-export default function ForumPostDetailScreen({ route, navigation }) {
+export function ForumPostDetailScreen({ route, navigation }) {
   const { id } = route.params;
-  const { user: authUser } = useAuth();
+  const { user: authUser, capabilities } = useAuth();
   const currentUserId = authUser?._id ?? authUser?.id ?? null;
   const queryClient = useQueryClient();
 
@@ -238,26 +238,34 @@ export default function ForumPostDetailScreen({ route, navigation }) {
       {post.strain ? <Text style={styles.strain}>Strain: {post.strain}</Text> : null}
 
       <View style={styles.actions}>
-        <TouchableOpacity onPress={toggleLike} style={styles.likeButton}>
-          <Text style={[styles.actionBtn, styles.likeLabel]}>
-            {userHasLiked(post, currentUserId) ? "❤️ Liked" : "🤍 Like"}
-          </Text>
-          <Text
-            style={styles.likeCount}
-          >{`· ${post.likeCount || post.likes?.length || 0}`}</Text>
-        </TouchableOpacity>
+        {capabilities?.canUseForum && (
+          <TouchableOpacity onPress={toggleLike} style={styles.likeButton}>
+            <Text style={[styles.actionBtn, styles.likeLabel]}>
+              {userHasLiked(post, currentUserId) ? "❤️ Liked" : "🤍 Like"}
+            </Text>
+            <Text
+              style={styles.likeCount}
+            >{`· ${post.likeCount || post.likes?.length || 0}`}</Text>
+          </TouchableOpacity>
+        )}
 
-        <TouchableOpacity onPress={handleSave}>
-          <Text style={styles.actionBtn}>🔖 Save</Text>
-        </TouchableOpacity>
+        {capabilities?.canUseForum && (
+          <TouchableOpacity onPress={handleSave}>
+            <Text style={styles.actionBtn}>🔖 Save</Text>
+          </TouchableOpacity>
+        )}
 
-        <TouchableOpacity onPress={handleGrowLogImport}>
-          <Text style={styles.actionBtn}>📌 To Grow Log</Text>
-        </TouchableOpacity>
+        {capabilities?.canUseForum && (
+          <TouchableOpacity onPress={handleGrowLogImport}>
+            <Text style={styles.actionBtn}>📌 To Grow Log</Text>
+          </TouchableOpacity>
+        )}
 
-        <TouchableOpacity onPress={handleReport}>
-          <Text style={styles.actionBtn}>🚩 Report</Text>
-        </TouchableOpacity>
+        {capabilities?.canUseForum && (
+          <TouchableOpacity onPress={handleReport}>
+            <Text style={styles.actionBtn}>🚩 Report</Text>
+          </TouchableOpacity>
+        )}
       </View>
 
       <Text style={styles.sectionTitle}>Comments ({comments.length})</Text>
@@ -282,28 +290,31 @@ export default function ForumPostDetailScreen({ route, navigation }) {
               <Text style={styles.commentText}>{item.text}</Text>
             </View>
 
-            {(item.user?._id || item.author?._id) === currentUserId && (
-              <TouchableOpacity onPress={() => handleDelete(item._id)}>
-                <Text style={styles.deleteBtn}>Delete</Text>
-              </TouchableOpacity>
-            )}
+            {(item.user?._id || item.author?._id) === currentUserId &&
+              capabilities?.canPostForum && (
+                <TouchableOpacity onPress={() => handleDelete(item._id)}>
+                  <Text style={styles.deleteBtn}>Delete</Text>
+                </TouchableOpacity>
+              )}
           </View>
         )}
       />
 
-      <View style={styles.commentBox}>
-        <TextInput
-          style={styles.commentInput}
-          value={myComment}
-          onChangeText={setMyComment}
-          placeholder="Add a comment..."
-          multiline
-          editable={!commentMutation.isPending}
-        />
-        <TouchableOpacity onPress={submitComment} disabled={commentMutation.isPending}>
-          <Text style={styles.send}>{commentMutation.isPending ? "..." : "Send"}</Text>
-        </TouchableOpacity>
-      </View>
+      {capabilities?.canPostForum && (
+        <View style={styles.commentBox}>
+          <TextInput
+            style={styles.commentInput}
+            value={myComment}
+            onChangeText={setMyComment}
+            placeholder="Add a comment..."
+            multiline
+            editable={!commentMutation.isPending}
+          />
+          <TouchableOpacity onPress={submitComment} disabled={commentMutation.isPending}>
+            <Text style={styles.send}>{commentMutation.isPending ? "..." : "Send"}</Text>
+          </TouchableOpacity>
+        </View>
+      )}
     </ScreenContainer>
   );
 }

@@ -11,14 +11,15 @@ import {
   TextInput
 } from "react-native";
 import { useNavigation } from "@react-navigation/native";
+import { useAuth } from "../context/AuthContext";
 
 function CoursesScreen() {
   const navigation = useNavigation();
+  const { capabilities } = useAuth();
 
   // State hooks
   const [loading, setLoading] = useState(false);
   const [courses, setCourses] = useState([]);
-  const [plan, setPlan] = useState("free"); // Replace with actual plan logic from backend/user context
 
   // Fetch courses from backend
   React.useEffect(() => {
@@ -43,14 +44,7 @@ function CoursesScreen() {
     };
   }, []);
 
-  // QA: Plan switcher for verifying plan logic and user flows
-  const plans = [
-    { key: "free", label: "Free" },
-    { key: "pro", label: "Pro" },
-    { key: "influencer", label: "Influencer" },
-    { key: "commercial", label: "Commercial" },
-    { key: "facility", label: "Facility" }
-  ];
+  // Plan switcher removed; use capabilities for gating
 
   // Modal state
   const [inviteModalVisible, setInviteModalVisible] = useState(false);
@@ -60,7 +54,7 @@ function CoursesScreen() {
   // Modal data state
   const [selectedUser, setSelectedUser] = useState(null);
   const [inviteName, setInviteName] = useState("");
-  const [inviteRole, setInviteRole] = useState("staff");
+  // inviteRole state removed; role is determined by backend/capabilities
   const [actionFeedback, setActionFeedback] = useState("");
 
   // --- Backend Integration ---
@@ -71,7 +65,7 @@ function CoursesScreen() {
     fetch("/api/invite", {
       method: "POST",
       headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({ name: inviteName, role: inviteRole })
+      body: JSON.stringify({ name: inviteName }) // role is set by backend/capabilities
     })
       .then((res) => res.json())
       .then((data) => {
@@ -187,7 +181,7 @@ function CoursesScreen() {
         <View style={styles.modalContent}>
           <Text style={styles.modalTitle}>Invite User</Text>
           <Text style={styles.modalText}>
-            Enter the name and select a role for the new user.
+            Enter the name for the new user. (Role is set by backend/capabilities)
           </Text>
           <View style={styles.inviteInputRow}>
             <Text style={styles.inviteLabel}>Name:</Text>
@@ -203,27 +197,6 @@ function CoursesScreen() {
                 placeholderTextColor="#888"
               />
             </View>
-          </View>
-          <View style={styles.roleSelectSection}>
-            {["admin", "manager", "staff", "learner"].map((role) => (
-              <TouchableOpacity
-                key={role}
-                style={[
-                  styles.roleOptionBtn,
-                  inviteRole === role && styles.roleOptionBtnSelected
-                ]}
-                onPress={() => setInviteRole(role)}
-              >
-                <Text
-                  style={[
-                    styles.roleOptionText,
-                    inviteRole === role && styles.roleOptionTextSelected
-                  ]}
-                >
-                  {role.charAt(0).toUpperCase() + role.slice(1)}
-                </Text>
-              </TouchableOpacity>
-            ))}
           </View>
           <View style={styles.modalActions}>
             <TouchableOpacity
@@ -259,29 +232,8 @@ function CoursesScreen() {
         <View style={styles.modalContent}>
           <Text style={styles.modalTitle}>Change User Role</Text>
           <Text style={styles.modalText}>
-            Select a new role for {selectedUser?.name || "user"}.
+            Role changes are managed by backend/capabilities.
           </Text>
-          <View style={styles.roleSelectSection}>
-            {["admin", "manager", "staff", "learner"].map((role) => (
-              <TouchableOpacity
-                key={role}
-                style={[
-                  styles.roleOptionBtn,
-                  selectedUser?.role === role && styles.roleOptionBtnSelected
-                ]}
-                onPress={() => setSelectedUser({ ...selectedUser, role })}
-              >
-                <Text
-                  style={[
-                    styles.roleOptionText,
-                    selectedUser?.role === role && styles.roleOptionTextSelected
-                  ]}
-                >
-                  {role.charAt(0).toUpperCase() + role.slice(1)}
-                </Text>
-              </TouchableOpacity>
-            ))}
-          </View>
           <View style={styles.modalActions}>
             <TouchableOpacity
               style={[styles.modalBtn, { minWidth: 80 }]}
@@ -443,16 +395,17 @@ function CoursesScreen() {
           )}
         </View>
         {/* Influencer analytics */}
-        {plan === "influencer" && (
+        {capabilities?.canViewCourseAnalytics && (
           <Text
             style={styles.courseAnalytics}
-            accessibilityLabel={`Views: ${item.analytics.views}, Enrollments: ${item.analytics.enrollments}`}
+            accessibilityLabel={`Views: ${item.analytics?.views}, Enrollments: ${item.analytics?.enrollments}`}
           >
-            Views: {item.analytics.views} · Enrollments: {item.analytics.enrollments}
+            Views: {item.analytics?.views ?? 0} · Enrollments:{" "}
+            {item.analytics?.enrollments ?? 0}
           </Text>
         )}
         {/* Publishing controls for published courses (Influencer only) */}
-        {plan === "influencer" && item.isPublished && (
+        {capabilities?.canPublishCourses && item.isPublished && (
           <View style={styles.publishControls}>
             <TouchableOpacity
               style={styles.unpublishBtn}
@@ -471,45 +424,14 @@ function CoursesScreen() {
     </View>
   );
 
-  // Plan-based course filtering
+  // Replace plan-based course filtering with capability-based
   let visibleCourses = courses;
-  if (plan === "free") {
+  if (!capabilities?.canSeePaidCourses) {
     visibleCourses = courses.filter((c) => c.priceCents === 0);
   }
 
   return (
     <View style={{ flex: 1 }}>
-      {/* QA Plan Switcher */}
-      <View
-        style={{
-          flexDirection: "row",
-          justifyContent: "center",
-          paddingVertical: 10,
-          backgroundColor: "#F3F4F6"
-        }}
-      >
-        {plans.map((p) => (
-          <TouchableOpacity
-            key={p.key}
-            style={{
-              backgroundColor: plan === p.key ? "#1D4ED8" : "#E5E7EB",
-              borderRadius: 6,
-              paddingHorizontal: 12,
-              paddingVertical: 8,
-              marginHorizontal: 4
-            }}
-            onPress={() => setPlan(p.key)}
-            accessibilityRole="button"
-            accessibilityLabel={`Switch to ${p.label} plan`}
-            testID={`planSwitcherBtn-${p.key}`}
-          >
-            <Text style={{ color: plan === p.key ? "#fff" : "#222", fontWeight: "bold" }}>
-              {p.label}
-            </Text>
-          </TouchableOpacity>
-        ))}
-      </View>
-
       {/* Modals */}
       {renderInviteModal()}
       {renderRoleModal()}

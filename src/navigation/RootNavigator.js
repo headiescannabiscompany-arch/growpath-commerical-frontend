@@ -50,7 +50,7 @@ import GrowLogDetailScreen from "../screens/GrowLogDetailScreen.js";
 import GrowLogEntryScreen from "../screens/GrowLogEntryScreen.js";
 import GrowLogCalendarScreen from "../screens/GrowLogCalendarScreen.js";
 import DiagnosisHistoryScreen from "../screens/DiagnosisHistoryScreen.js";
-import ForumPostDetailScreen from "../screens/ForumPostDetailScreen.js";
+import { ForumPostDetailScreen } from "../screens/ForumPostDetailScreen.js";
 import ForumNewPostScreen from "../screens/ForumNewPostScreen.js";
 import GuildCodeScreen from "../screens/GuildCodeScreen.js";
 import SubcategoryBrowserScreen from "../screens/SubcategoryBrowserScreen.js";

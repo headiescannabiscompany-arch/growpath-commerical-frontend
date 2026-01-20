@@ -1,4 +1,5 @@
 import React, { useEffect, useState } from "react";
+import { useAuth } from "../context/AuthContext";
 import {
   View,
   ActivityIndicator,
@@ -15,6 +16,7 @@ export default function LiveSessionScreen({ route }) {
   const [session, setSession] = useState(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
+  const { user, capabilities } = useAuth();
 
   useEffect(() => {
     async function fetchSession() {
@@ -33,8 +35,8 @@ export default function LiveSessionScreen({ route }) {
   if (loading) return <ActivityIndicator size="large" style={{ flex: 1 }} />;
   if (error) return <Text style={{ color: "red", padding: 16 }}>{error}</Text>;
 
-  // Check if user is admin (assume global.user.role === 'admin')
-  const isAdmin = global.user && global.user.role === "admin";
+  // Capability-driven admin check (replace with your actual admin capability key)
+  const isAdmin = capabilities && capabilities.canManageLiveSessions;
 
   if (!session) return <Text>No session found.</Text>;
 

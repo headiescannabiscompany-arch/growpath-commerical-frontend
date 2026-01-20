@@ -226,6 +226,23 @@
 			"type": "shell",
 			"command": "npx expo start --clear",
 			"isBackground": true
+		},
+		{
+			"label": "Test: All QA",
+			"type": "shell",
+			"command": "npm test -- tests/",
+			"isBackground": false
+		},
+		{
+			"label": "Test: All QA (retry)",
+			"type": "shell",
+			"command": "npm test -- tests/",
+			"isBackground": false
+		},
+		{
+			"label": "Test: LiveSessionScreen QA",
+			"type": "shell",
+			"command": "npm test -- tests/LiveSessionScreen.qa.test.js"
 		}
 	]
 }
