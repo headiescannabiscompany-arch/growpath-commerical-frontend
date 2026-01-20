@@ -1,5 +1,13 @@
 import React from "react";
-import { View, Text, TouchableOpacity, StyleSheet, Linking, Alert } from "react-native";
+import {
+  View,
+  Text,
+  TouchableOpacity,
+  StyleSheet,
+  Linking,
+  Alert,
+  Platform
+} from "react-native";
 import { API_URL } from "../api/client";
 
 export default function CertificateViewer({ route, navigation }) {
@@ -105,10 +113,15 @@ const styles = StyleSheet.create({
     padding: 24,
     alignItems: "center",
     marginBottom: 20,
-    shadowColor: "#000",
-    shadowOpacity: 0.1,
-    shadowRadius: 4,
-    elevation: 3,
+    ...Platform.select({
+      web: { boxShadow: "0 4px 12px rgba(0,0,0,0.10)" },
+      default: {
+        shadowColor: "#000",
+        shadowOpacity: 0.1,
+        shadowRadius: 4,
+        elevation: 3
+      }
+    }),
     borderTopWidth: 4,
     borderTopColor: "#f39c12"
   },

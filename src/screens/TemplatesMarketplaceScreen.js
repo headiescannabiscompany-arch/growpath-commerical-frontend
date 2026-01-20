@@ -23,21 +23,43 @@ export default function TemplatesMarketplaceScreen({ navigation }) {
       <Text style={styles.header}>Grow Templates</Text>
       <Text style={styles.sub}>Import ready-made grow schedules into your plants.</Text>
 
-      <FlatList
-        data={templates}
-        keyExtractor={(t) => t._id}
-        renderItem={({ item }) => (
-          <TouchableOpacity style={styles.card} onPress={() => navigation.navigate("TemplateDetail", { templateId: item._id })}>
-            <Text style={styles.title}>{item.title}</Text>
-            <Text style={styles.meta}>{item.strain || "Any strain"} • {item.growMedium || "Any medium"}</Text>
-            <Text style={styles.meta}>{item.difficulty || ""} • {item.durationDays} days</Text>
-            <Text style={styles.price}>{item.price > 0 ? `$${item.price.toFixed(2)}` : "FREE"}</Text>
-            {item.creator && (
-              <Text style={styles.creator}>By {getCreatorName(item.creator)}</Text>
-            )}
-          </TouchableOpacity>
-        )}
-      />
+      <FeatureGate
+        plan="pro"
+        navigation={navigation}
+        fallback={
+          <Text style={{ color: "#92400E", textAlign: "center", margin: 20 }}>
+            The Templates Marketplace is a Pro feature. Upgrade to Pro to access premium
+            grow templates.
+          </Text>
+        }
+      >
+        <FlatList
+          data={templates}
+          keyExtractor={(t) => t._id}
+          renderItem={({ item }) => (
+            <TouchableOpacity
+              style={styles.card}
+              onPress={() =>
+                navigation.navigate("TemplateDetail", { templateId: item._id })
+              }
+            >
+              <Text style={styles.title}>{item.title}</Text>
+              <Text style={styles.meta}>
+                {item.strain || "Any strain"} • {item.growMedium || "Any medium"}
+              </Text>
+              <Text style={styles.meta}>
+                {item.difficulty || ""} • {item.durationDays} days
+              </Text>
+              <Text style={styles.price}>
+                {item.price > 0 ? `$${item.price.toFixed(2)}` : "FREE"}
+              </Text>
+              {item.creator && (
+                <Text style={styles.creator}>By {getCreatorName(item.creator)}</Text>
+              )}
+            </TouchableOpacity>
+          )}
+        />
+      </FeatureGate>
     </ScreenContainer>
   );
 }
@@ -49,5 +71,5 @@ const styles = {
   title: { fontSize: 18, fontWeight: "700" },
   meta: { fontSize: 13, color: "#555", marginTop: 2 },
   price: { marginTop: 6, fontSize: 16, fontWeight: "700", color: "#2ecc71" },
-  creator: { fontSize: 12, color: "#777", marginTop: 6 },
+  creator: { fontSize: 12, color: "#777", marginTop: 6 }
 };

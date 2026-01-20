@@ -11,11 +11,11 @@ import {
   StyleSheet
 } from "react-native";
 import AsyncStorage from "@react-native-async-storage/async-storage";
-import ScreenContainer from "../components/ScreenContainer";
-import PrimaryButton from "../components/PrimaryButton";
+import ScreenContainer from "../components/ScreenContainer.js";
+import PrimaryButton from "../components/PrimaryButton.js";
 import { useAuth } from "../context/AuthContext.js";
-import { colors, radius, spacing } from "../theme/theme";
-import { login as apiLogin, signup as apiSignup } from "../api/auth";
+import { colors, radius, spacing } from "../theme/theme.js";
+import { login as apiLogin, signup as apiSignup } from "../api/auth.js";
 
 function LoginScreen({ navigation }) {
   const {
@@ -44,6 +44,7 @@ function LoginScreen({ navigation }) {
         navigation.replace("MainTabs");
       }
     }
+    // @ts-ignore
     AsyncStorage.getItem("HAS_LOGGED_IN_BEFORE").then((val) => {
       setHasLoggedInBefore(val === "true");
     });
@@ -71,6 +72,7 @@ function LoginScreen({ navigation }) {
         authResult = await apiLogin(email.trim(), password.trim());
       } else {
         // Get business type from AsyncStorage
+        // @ts-ignore
         const businessType = await AsyncStorage.getItem("businessType");
         authResult = await apiSignup(
           email.trim(),
@@ -91,6 +93,7 @@ function LoginScreen({ navigation }) {
 
       // Update context state (without waiting for AsyncStorage on web)
       const authToken = token;
+      // @ts-ignore
       await AsyncStorage.setItem("HAS_LOGGED_IN_BEFORE", "true");
       contextLogin(authToken, user); // Don't await - let it run async
 
@@ -127,142 +130,170 @@ function LoginScreen({ navigation }) {
   }
 
   return (
-    <ScreenContainer testID="login-form">
-      <ImageBackground
-        source={require("../../assets/ChatGPT Image Dec 12, 2025, 02_01_36 PM.png")}
-        style={styles.headerBackground}
-        imageStyle={styles.headerImageStyle}
+    <>
+      <Text
+        style={{
+          color: "black",
+          fontSize: 24,
+          fontWeight: "bold",
+          backgroundColor: "yellow",
+          padding: 8,
+          textAlign: "center"
+        }}
       >
-        <View style={styles.overlay}>
-          <View style={styles.logoContainer}>
-            <View style={styles.logoCircle}>
-              <Image
-                source={require("../../assets/icon.png")}
-                style={styles.logoImage}
-                resizeMode="contain"
-              />
-            </View>
-            <Text style={styles.appName}>GrowPath AI</Text>
-            <Text style={styles.tagline}>Your grow companion for every plant</Text>
-          </View>
-        </View>
-      </ImageBackground>
-
-      {/* Mode Selector */}
-      <View
-        style={{ flexDirection: "row", justifyContent: "center", marginVertical: 16 }}
-      >
-        <TouchableOpacity
-          style={{
-            backgroundColor: selectedMode === "personal" ? "#0ea5e9" : "#e5e7eb",
-            paddingVertical: 8,
-            paddingHorizontal: 18,
-            borderRadius: 8,
-            marginHorizontal: 4
-          }}
-          onPress={() => setSelectedMode("personal")}
-        >
-          <Text style={{ color: selectedMode === "personal" ? "white" : "#222" }}>
-            Single User
-          </Text>
-        </TouchableOpacity>
-        <TouchableOpacity
-          style={{
-            backgroundColor: selectedMode === "facility" ? "#0ea5e9" : "#e5e7eb",
-            paddingVertical: 8,
-            paddingHorizontal: 18,
-            borderRadius: 8,
-            marginHorizontal: 4
-          }}
-          onPress={() => setSelectedMode("facility")}
-        >
-          <Text style={{ color: selectedMode === "facility" ? "white" : "#222" }}>
-            Facility
-          </Text>
-        </TouchableOpacity>
-        <TouchableOpacity
-          style={{
-            backgroundColor: selectedMode === "commercial" ? "#0ea5e9" : "#e5e7eb",
-            paddingVertical: 8,
-            paddingHorizontal: 18,
-            borderRadius: 8,
-            marginHorizontal: 4
-          }}
-          onPress={() => setSelectedMode("commercial")}
-        >
-          <Text style={{ color: selectedMode === "commercial" ? "white" : "#222" }}>
-            Commercial
-          </Text>
-        </TouchableOpacity>
-      </View>
-
-      <Text style={styles.title}>
-        {authMode === "login"
-          ? hasLoggedInBefore
-            ? "Welcome Back"
-            : " "
-          : "Create Account"}
+        LOGIN SCREEN
       </Text>
+      <Text style={{ color: "red", fontWeight: "bold", fontSize: 20 }}>
+        DEBUG: LoginScreen visible
+      </Text>
+      <ScreenContainer testID="login-form">
+        {/* DEBUG marker */}
+        <View style={{ backgroundColor: "red", padding: 8 }}>
+          <Text style={{ color: "white", fontWeight: "bold" }}>
+            DEBUG: LoginScreen loaded
+          </Text>
+        </View>
+        {/* @ts-ignore: Metro/JS false positive for PNG import */}
+        <ImageBackground
+          // @ts-ignore
+          source={require("../../assets/ChatGPT Image Dec 12, 2025, 02_01_36 PM.png")}
+          style={styles.headerBackground}
+          imageStyle={styles.headerImageStyle}
+        >
+          <View style={[styles.overlay, { zIndex: 1, pointerEvents: "box-none" }]}>
+            <View style={styles.logoContainer}>
+              <View style={styles.logoCircle}>
+                {/* @ts-ignore: Metro/JS false positive for PNG import */}
+                <Image
+                  // @ts-ignore
+                  source={require("../../assets/icon.png")}
+                  style={styles.logoImage}
+                  resizeMode="contain"
+                />
+              </View>
+              <Text style={styles.appName}>GrowPath AI</Text>
+              <Text style={styles.tagline}>Your grow companion for every plant</Text>
+            </View>
+          </View>
+        </ImageBackground>
 
-      {authMode === "signup" && (
+        {/* Mode Selector */}
+        <View
+          style={{ flexDirection: "row", justifyContent: "center", marginVertical: 16 }}
+        >
+          <TouchableOpacity
+            style={{
+              backgroundColor: selectedMode === "personal" ? "#0ea5e9" : "#e5e7eb",
+              paddingVertical: 8,
+              paddingHorizontal: 18,
+              borderRadius: 8,
+              marginHorizontal: 4
+            }}
+            onPress={() => setSelectedMode("personal")}
+          >
+            <Text style={{ color: selectedMode === "personal" ? "white" : "#222" }}>
+              Single User
+            </Text>
+          </TouchableOpacity>
+          <TouchableOpacity
+            style={{
+              backgroundColor: selectedMode === "facility" ? "#0ea5e9" : "#e5e7eb",
+              paddingVertical: 8,
+              paddingHorizontal: 18,
+              borderRadius: 8,
+              marginHorizontal: 4
+            }}
+            onPress={() => setSelectedMode("facility")}
+          >
+            <Text style={{ color: selectedMode === "facility" ? "white" : "#222" }}>
+              Facility
+            </Text>
+          </TouchableOpacity>
+          <TouchableOpacity
+            style={{
+              backgroundColor: selectedMode === "commercial" ? "#0ea5e9" : "#e5e7eb",
+              paddingVertical: 8,
+              paddingHorizontal: 18,
+              borderRadius: 8,
+              marginHorizontal: 4
+            }}
+            onPress={() => setSelectedMode("commercial")}
+          >
+            <Text style={{ color: selectedMode === "commercial" ? "white" : "#222" }}>
+              Commercial
+            </Text>
+          </TouchableOpacity>
+        </View>
+
+        <Text style={styles.title}>
+          {authMode === "login"
+            ? hasLoggedInBefore
+              ? "Welcome Back"
+              : " "
+            : "Create Account"}
+        </Text>
+
+        {authMode === "signup" && (
+          <TextInput
+            value={displayName}
+            onChangeText={setDisplayName}
+            placeholder="Display Name"
+            placeholderTextColor={colors.textSoft}
+            style={styles.input}
+          />
+        )}
+
         <TextInput
-          value={displayName}
-          onChangeText={setDisplayName}
-          placeholder="Display Name"
+          value={email}
+          onChangeText={setEmail}
+          placeholder="Email"
           placeholderTextColor={colors.textSoft}
           style={styles.input}
+          autoCapitalize="none"
         />
-      )}
 
-      <TextInput
-        value={email}
-        onChangeText={setEmail}
-        placeholder="Email"
-        placeholderTextColor={colors.textSoft}
-        style={styles.input}
-        autoCapitalize="none"
-      />
+        <TextInput
+          value={password}
+          onChangeText={setPassword}
+          placeholder="Password"
+          placeholderTextColor={colors.textSoft}
+          secureTextEntry
+          style={styles.input}
+          returnKeyType="go"
+          onSubmitEditing={handleAuth}
+        />
 
-      <TextInput
-        value={password}
-        onChangeText={setPassword}
-        placeholder="Password"
-        placeholderTextColor={colors.textSoft}
-        secureTextEntry
-        style={styles.input}
-        returnKeyType="go"
-        onSubmitEditing={handleAuth}
-      />
+        <PrimaryButton
+          title={loading ? "" : authMode === "login" ? "Login" : "Sign Up"}
+          onPress={handleAuth}
+          style={{ marginTop: spacing(4) }}
+          disabled={loading}
+        >
+          {loading && <ActivityIndicator color="#fff" />}
+        </PrimaryButton>
 
-      <PrimaryButton
-        title={loading ? "" : authMode === "login" ? "Login" : "Sign Up"}
-        onPress={handleAuth}
-        style={{ marginTop: spacing(4) }}
-        disabled={loading}
-      >
-        {loading && <ActivityIndicator color="#fff" />}
-      </PrimaryButton>
-
-      <TouchableOpacity
-        onPress={() => setAuthMode(authMode === "login" ? "signup" : "login")}
-        style={{ marginTop: spacing(3) }}
-      >
-        <Text style={styles.link}>
-          {authMode === "login" ? "Need an account? Sign up" : "Have an account? Log in"}
-        </Text>
-      </TouchableOpacity>
-      {/* Privacy Policy link for onboarding */}
-      <View style={{ alignItems: "center", marginTop: 30, marginBottom: 10 }}>
-        <TouchableOpacity onPress={() => navigation.navigate("PrivacyPolicy")}>
-          ...
-          <Text
-            style={{ color: "#3498db", fontSize: 15, textDecorationLine: "underline" }}
-          >
-            Privacy Policy
+        <TouchableOpacity
+          onPress={() => setAuthMode(authMode === "login" ? "signup" : "login")}
+          style={{ marginTop: spacing(3) }}
+        >
+          <Text style={styles.link}>
+            {authMode === "login"
+              ? "Need an account? Sign up"
+              : "Have an account? Log in"}
           </Text>
         </TouchableOpacity>
-      </View>
-    </ScreenContainer>
+        {/* Privacy Policy link for onboarding */}
+        <View style={{ alignItems: "center", marginTop: 30, marginBottom: 10 }}>
+          <TouchableOpacity onPress={() => navigation.navigate("PrivacyPolicy")}>
+            <Text
+              style={{ color: "#3498db", fontSize: 15, textDecorationLine: "underline" }}
+            >
+              Privacy Policy
+            </Text>
+          </TouchableOpacity>
+        </View>
+      </ScreenContainer>
+    </>
   );
 }
 
@@ -282,7 +313,9 @@ const styles = StyleSheet.create({
     backgroundColor: "rgba(0, 0, 0, 0.4)",
     justifyContent: "center",
     alignItems: "center",
-    position: "relative"
+    position: "relative",
+    pointerEvents: "box-none",
+    zIndex: 1
   },
   logoContainer: {
     alignItems: "center",

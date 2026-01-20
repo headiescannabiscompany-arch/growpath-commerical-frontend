@@ -1,3 +1,12 @@
+// Example: Output a full facility object if populated, or just an object with the \_id if not
+const facilityOut = isPopulatedFacility(facilityId)
+? {
+\_id: facilityId.\_id,
+name: facilityId.name ?? "",
+businessType: facilityId.businessType ?? ""
+}
+: { \_id: facilityId }; // If you want just the ObjectId when not populated
+
 ## CORS & Production Deployment Checklist
 
 - [ ] If deploying to production, update your .env and/or app.json with the production frontend domain.
@@ -380,3 +389,24 @@ If OpenAI is unavailable, there's a heuristic analyzer that checks:
 ---
 
 This matrix should be shown to users during the buying/upgrade process to help them choose the right plan.
+
+## Test the Course Endpoint
+
+1. Start your backend server.
+2. Use your frontend, Postman, or curl to send a GET request to `/api/courses/:id`.
+3. You should receive the course data in JSON format.
+
+## Backend API Usage Notes for Frontend Team
+
+- The backend API is up and running at `api`.
+- All endpoints should be accessed via `/api/<resource>`, for example: `courses`, `communities`, etc.
+- The backend is modular and stable—new endpoints will be added under `api` as features are migrated.
+- If you hit `api` directly, you’ll get `{ ok: true }` as a health check.
+- Legacy routes are disabled; only modular `api` endpoints are supported.
+
+**Example usage:**
+
+- To fetch courses: `GET /api/courses`
+- To check backend health: `GET /api`
+
+> Please report any 404/410 errors so the backend team can prioritize which endpoints to migrate next!

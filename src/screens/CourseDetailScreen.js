@@ -1,5 +1,13 @@
 import React, { useState } from "react";
-import { View, Text, StyleSheet, Linking, Alert, Modal, TouchableOpacity } from "react-native";
+import {
+  View,
+  Text,
+  StyleSheet,
+  Linking,
+  Alert,
+  Modal,
+  TouchableOpacity
+} from "react-native";
 import ScreenContainer from "../components/ScreenContainer";
 import Card from "../components/Card";
 import PrimaryButton from "../components/PrimaryButton";
@@ -10,7 +18,9 @@ import { getCreatorName } from "../utils/creator";
 export default function CourseDetailScreen({ route, navigation }) {
   const initialCourse = route.params.course;
   const deriveCreatorId = (c) =>
-    c?.creator?._id || c?.creator?.id || (typeof c?.creator === "string" ? c.creator : null);
+    c?.creator?._id ||
+    c?.creator?.id ||
+    (typeof c?.creator === "string" ? c.creator : null);
   const userId = global.user?._id || global.user?.id || null;
   const [course, setCourse] = useState(initialCourse);
   const [isCreator, setIsCreator] = useState(
@@ -45,8 +55,8 @@ export default function CourseDetailScreen({ route, navigation }) {
         return;
       }
 
-      // Paid course – Stripe Checkout
-      const data = await buyCourse(course._id);
+      // Paid course – Stripe Checkout (new backend)
+      const data = await buyCourseStripeCheckout(course._id);
       if (data.url) {
         Linking.openURL(data.url);
       } else {
@@ -109,9 +119,7 @@ export default function CourseDetailScreen({ route, navigation }) {
         <Text style={styles.description}>{course.description}</Text>
 
         <Text style={styles.price}>
-          {course.priceCents > 0
-            ? `$${(course.priceCents / 100).toFixed(2)}`
-            : "FREE"}
+          {course.priceCents > 0 ? `$${(course.priceCents / 100).toFixed(2)}` : "FREE"}
         </Text>
 
         {isCreator ? (
@@ -121,7 +129,9 @@ export default function CourseDetailScreen({ route, navigation }) {
           />
         ) : !enrolled ? (
           <PrimaryButton
-            title={loading ? "Processing..." : (course.priceCents > 0 ? "Buy Course" : "Enroll")}
+            title={
+              loading ? "Processing..." : course.priceCents > 0 ? "Buy Course" : "Enroll"
+            }
             onPress={handleEnroll}
             disabled={loading}
           />
@@ -140,8 +150,8 @@ export default function CourseDetailScreen({ route, navigation }) {
           <View style={styles.modalCard}>
             <Text style={styles.modalTitle}>Empty Course</Text>
             <Text style={styles.modalText}>
-              This creator hasn't added any in-app lessons yet. You can still open the course to see
-              its overview and Q&A.
+              This creator hasn't added any in-app lessons yet. You can still open the
+              course to see its overview and Q&A.
             </Text>
             <View style={styles.modalActions}>
               <TouchableOpacity
@@ -174,8 +184,8 @@ export default function CourseDetailScreen({ route, navigation }) {
           <View style={styles.modalCard}>
             <Text style={styles.modalTitle}>External Course Content</Text>
             <Text style={styles.modalText}>
-              This course hosts its lessons outside the app. Opening the content link will take you
-              to the creator's site.
+              This course hosts its lessons outside the app. Opening the content link will
+              take you to the creator's site.
             </Text>
             <View style={styles.modalActions}>
               <TouchableOpacity

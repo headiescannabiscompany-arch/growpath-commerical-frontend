@@ -275,10 +275,8 @@ const styles = StyleSheet.create({
     borderRadius: 8,
     padding: 16,
     marginBottom: 24,
-    shadowColor: "#000",
-    shadowOffset: { width: 0, height: 1 },
-    shadowOpacity: 0.08,
-    shadowRadius: 4,
+    // Web: use boxShadow instead of shadow*
+    boxShadow: "0px 1px 4px rgba(0,0,0,0.08)",
     elevation: 2
   },
   chartLabel: { fontSize: 16, fontWeight: "bold", marginBottom: 8 },
@@ -297,10 +295,8 @@ const styles = StyleSheet.create({
     marginRight: 8,
     flex: 1,
     textAlign: "center",
-    shadowColor: "#000",
-    shadowOffset: { width: 0, height: 1 },
-    shadowOpacity: 0.06,
-    shadowRadius: 3,
+    // Web: use boxShadow instead of shadow*
+    boxShadow: "0px 1px 3px rgba(0,0,0,0.06)",
     elevation: 2
   },
   card: {
@@ -308,10 +304,8 @@ const styles = StyleSheet.create({
     borderRadius: 8,
     padding: 16,
     marginBottom: 24,
-    shadowColor: "#000",
-    shadowOffset: { width: 0, height: 1 },
-    shadowOpacity: 0.1,
-    shadowRadius: 6,
+    // Web: use boxShadow instead of shadow*
+    boxShadow: "0px 1px 6px rgba(0,0,0,0.1)",
     elevation: 2
   },
   sectionHeader: { fontSize: 18, fontWeight: "bold", marginBottom: 8 },

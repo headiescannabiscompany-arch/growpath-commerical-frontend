@@ -1,11 +1,6 @@
-import React, { useState, useEffect } from "react";
-import {
-  View,
-  Text,
-  TouchableOpacity,
-  ActivityIndicator,
-  Alert
-} from "react-native";
+import React, { useState, useEffect, useCallback } from "react";
+import { View, Text, TouchableOpacity, ActivityIndicator, Alert } from "react-native";
+import { useFocusEffect } from "@react-navigation/native";
 import { useAuth } from "../context/AuthContext";
 import { getSubscriptionStatus, cancelSubscription } from "../api/subscribe";
 import ScreenContainer from "../components/ScreenContainer";
@@ -15,9 +10,17 @@ export default function SubscriptionStatusScreen({ navigation }) {
   const [loading, setLoading] = useState(true);
   const [status, setStatus] = useState(null);
 
+  // Refresh on mount
   useEffect(() => {
     loadStatus();
   }, []);
+
+  // Refresh on screen focus (after returning from Stripe)
+  useFocusEffect(
+    useCallback(() => {
+      loadStatus();
+    }, [])
+  );
 
   const loadStatus = async () => {
     setLoading(true);
@@ -110,6 +113,10 @@ export default function SubscriptionStatusScreen({ navigation }) {
           )}
         </View>
 
+        <TouchableOpacity style={styles.refreshButton} onPress={loadStatus}>
+          <Text style={styles.refreshButtonText}>🔄 Refresh Status</Text>
+        </TouchableOpacity>
+
         {isPro && (
           <TouchableOpacity style={styles.cancelButton} onPress={handleCancel}>
             <Text style={styles.cancelButtonText}>Cancel Subscription</Text>
@@ -181,6 +188,18 @@ const styles = {
     fontSize: 14,
     color: "#856404",
     textAlign: "center"
+  },
+  refreshButton: {
+    backgroundColor: "#E0E0E0",
+    paddingVertical: 10,
+    borderRadius: 8,
+    alignItems: "center",
+    marginBottom: 10
+  },
+  refreshButtonText: {
+    color: "#333",
+    fontSize: 15,
+    fontWeight: "bold"
   },
   cancelButton: {
     backgroundColor: "#DC3545",

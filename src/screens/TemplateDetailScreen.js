@@ -39,19 +39,29 @@ export default function TemplateDetailScreen({ route, navigation }) {
   return (
     <ScreenContainer>
       <Text style={styles.header}>{template.title}</Text>
-      <Text style={styles.meta}>{template.strain || "Any strain"} • {template.growMedium || "Any medium"}</Text>
-      <Text style={styles.meta}>{template.difficulty} • {template.durationDays} days</Text>
+      <Text style={styles.meta}>
+        {template.strain || "Any strain"} • {template.growMedium || "Any medium"}
+      </Text>
+      <Text style={styles.meta}>
+        {template.difficulty} • {template.durationDays} days
+      </Text>
       <Text style={styles.desc}>{template.description}</Text>
 
-      <TouchableOpacity style={styles.applyBtn} onPress={() => setSelectingPlant(true)}>
-        <Text style={styles.applyText}>Apply to a Plant</Text>
-      </TouchableOpacity>
+      <FeatureGate plan="pro" navigation={navigation}>
+        <TouchableOpacity style={styles.applyBtn} onPress={() => setSelectingPlant(true)}>
+          <Text style={styles.applyText}>Apply to a Plant</Text>
+        </TouchableOpacity>
+      </FeatureGate>
 
       {selectingPlant && (
         <View style={styles.plantPicker}>
           <Text style={styles.section}>Choose a plant</Text>
           {plants.map((p) => (
-            <TouchableOpacity key={p._id} style={styles.plantRow} onPress={() => handleApplyToPlant(p._id)}>
+            <TouchableOpacity
+              key={p._id}
+              style={styles.plantRow}
+              onPress={() => handleApplyToPlant(p._id)}
+            >
               <Text style={styles.plantName}>{p.name}</Text>
               <Text style={styles.plantStrain}>{p.strain}</Text>
             </TouchableOpacity>
@@ -68,8 +78,12 @@ export default function TemplateDetailScreen({ route, navigation }) {
           <View style={styles.stepCard}>
             <Text style={styles.stepDay}>Day {item.day}</Text>
             <Text style={styles.stepLabel}>{item.label}</Text>
-            <Text style={styles.stepMeta}>{item.stage} • {item.actionType}</Text>
-            {item.nutrients ? <Text style={styles.stepNutes}>Nutrients: {item.nutrients}</Text> : null}
+            <Text style={styles.stepMeta}>
+              {item.stage} • {item.actionType}
+            </Text>
+            {item.nutrients ? (
+              <Text style={styles.stepNutes}>Nutrients: {item.nutrients}</Text>
+            ) : null}
             {item.details ? <Text style={styles.stepDetails}>{item.details}</Text> : null}
           </View>
         )}
@@ -82,9 +96,19 @@ const styles = {
   header: { fontSize: 24, fontWeight: "700", marginBottom: 4 },
   meta: { color: "#777", fontSize: 13 },
   desc: { marginTop: 8, marginBottom: 16 },
-  applyBtn: { backgroundColor: "#2ecc71", padding: 10, borderRadius: 8, marginBottom: 16 },
+  applyBtn: {
+    backgroundColor: "#2ecc71",
+    padding: 10,
+    borderRadius: 8,
+    marginBottom: 16
+  },
   applyText: { color: "white", textAlign: "center", fontWeight: "700" },
-  plantPicker: { backgroundColor: "#f5f5f5", padding: 10, borderRadius: 8, marginBottom: 16 },
+  plantPicker: {
+    backgroundColor: "#f5f5f5",
+    padding: 10,
+    borderRadius: 8,
+    marginBottom: 16
+  },
   plantRow: { paddingVertical: 6, borderBottomWidth: 1, borderBottomColor: "#ddd" },
   plantName: { fontWeight: "700" },
   plantStrain: { fontSize: 12, color: "#777" },
@@ -94,5 +118,5 @@ const styles = {
   stepLabel: { fontSize: 14, marginTop: 2 },
   stepMeta: { fontSize: 12, color: "#777", marginTop: 2 },
   stepNutes: { fontSize: 12, color: "#27ae60", marginTop: 2 },
-  stepDetails: { fontSize: 12, marginTop: 4 },
+  stepDetails: { fontSize: 12, marginTop: 4 }
 };

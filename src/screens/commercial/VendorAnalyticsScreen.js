@@ -112,10 +112,8 @@ const styles = StyleSheet.create({
     borderRadius: 8,
     padding: 16,
     marginBottom: 24,
-    shadowColor: "#000",
-    shadowOffset: { width: 0, height: 1 },
-    shadowOpacity: 0.04,
-    shadowRadius: 2,
+    // Web: use boxShadow instead of shadow*
+    boxShadow: "0px 1px 2px rgba(0,0,0,0.04)",
     elevation: 1
   },
   chartLabel: { fontSize: 16, fontWeight: "bold", marginBottom: 8 },
@@ -128,10 +126,8 @@ const styles = StyleSheet.create({
     borderRadius: 8,
     padding: 16,
     marginBottom: 24,
-    shadowColor: "#000",
-    shadowOffset: { width: 0, height: 1 },
-    shadowOpacity: 0.04,
-    shadowRadius: 2,
+    // Web: use boxShadow instead of shadow*
+    boxShadow: "0px 1px 2px rgba(0,0,0,0.04)",
     elevation: 1
   },
   tableHeader: { fontSize: 16, fontWeight: "bold", marginBottom: 8 },

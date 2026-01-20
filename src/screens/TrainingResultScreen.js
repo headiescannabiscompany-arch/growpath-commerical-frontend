@@ -11,28 +11,28 @@ export default function TrainingResultScreen({ route, navigation }) {
   if (training.topRecommendation?.shouldTop) {
     actions.push({
       title: `Top at node ${training.topRecommendation.recommendedNode}`,
-      details: training.topRecommendation.reason,
+      details: training.topRecommendation.reason
     });
   }
 
   if (training.fimRecommendation?.shouldFIM) {
     actions.push({
       title: "Perform FIM",
-      details: training.fimRecommendation.reason,
+      details: training.fimRecommendation.reason
     });
   }
 
   if (training.lst?.shouldTrain) {
     actions.push({
       title: "Apply LST",
-      details: "Bend branches: " + (training.lst.branchesToBend || []).join(", "),
+      details: "Bend branches: " + (training.lst.branchesToBend || []).join(", ")
     });
   }
 
   if (training.defoliation?.shouldDefoliate) {
     actions.push({
       title: `Defoliate (${training.defoliation.leavesToRemoveCount} leaves)`,
-      details: training.defoliation.reason,
+      details: training.defoliation.reason
     });
   }
 
@@ -57,9 +57,11 @@ export default function TrainingResultScreen({ route, navigation }) {
         </View>
       ))}
 
-      <TouchableOpacity style={styles.taskBtn} onPress={saveTasks}>
-        <Text style={styles.taskText}>Convert to Tasks</Text>
-      </TouchableOpacity>
+      <FeatureGate plan="pro" navigation={navigation}>
+        <TouchableOpacity style={styles.taskBtn} onPress={saveTasks}>
+          <Text style={styles.taskText}>Convert to Tasks</Text>
+        </TouchableOpacity>
+      </FeatureGate>
     </ScreenContainer>
   );
 }
@@ -73,5 +75,5 @@ const styles = {
   title: { fontWeight: "700" },
   desc: { marginTop: 4 },
   taskBtn: { backgroundColor: "#2ecc71", padding: 14, borderRadius: 8, marginTop: 20 },
-  taskText: { color: "white", textAlign: "center", fontWeight: "700" },
+  taskText: { color: "white", textAlign: "center", fontWeight: "700" }
 };

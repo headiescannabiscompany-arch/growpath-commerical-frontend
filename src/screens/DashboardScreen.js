@@ -7,9 +7,10 @@ import {
   FlatList,
   ActivityIndicator,
   Dimensions,
-  StyleSheet
+  StyleSheet,
+  SafeAreaView
 } from "react-native";
-import ScreenContainer from "../components/ScreenContainer.js";
+import AppShell from "../components/AppShell.js";
 import { colors, spacing, radius, Typography } from "../theme/theme.js";
 import { useAuth } from "../context/AuthContext.js";
 import { useNavigation, useFocusEffect } from "@react-navigation/native";
@@ -24,6 +25,7 @@ import {
   getTier1Metadata
 } from "../utils/growInterests.js";
 import { getTasks } from "../api/tasks.js";
+import { FEATURES, getEntitlement } from "../utils/entitlements.js";
 
 const { width } = Dimensions.get("window");
 const tierOneConfig = getTier1Metadata();
@@ -90,457 +92,6 @@ function summarizeTasks(tasks = []) {
     completedToday,
     total: dueToday + overdue + completedToday
   };
-}
-
-export default function DashboardScreen() {
-  // --- STUBS AND HOOKS ---
-  // Add missing refs, states, and handlers
-  const [feedPosts, setFeedPosts] = useState([]);
-  const [feedLoading, setFeedLoading] = useState(false);
-  const [feedPage, setFeedPage] = useState(1);
-  const [plants, setPlants] = useState([]);
-  const [tasksLoading, setTasksLoading] = useState(false);
-  const [taskStats, setTaskStats] = useState({
-    dueToday: 0,
-    overdue: 0,
-    completedToday: 0,
-    total: 0
-  });
-  const [grows, setGrows] = useState([]);
-  const [growsLoading, setGrowsLoading] = useState(false);
-  const [trending, setTrending] = useState([]);
-  const appliedFilterSignatureRef = useRef("");
-  const feedFilterSignature = "";
-  const hasFocusedRef = useRef(false);
-  const headerTitle = "Welcome";
-  const heroSubtitle = "Your dashboard overview";
-  const showWelcomeMessage = false;
-  const renderModeToggle = () => null;
-  const handleLogout = () => logout();
-  const loadFeed = () => {};
-  const loadPlants = () => {};
-  const loadGrows = () => {};
-  const loadTrending = () => {};
-  const loadTaskStats = async () => {
-    setTasksLoading(true);
-    try {
-      const res = await getTasks();
-      const tasks = Array.isArray(res?.data) ? res.data : Array.isArray(res) ? res : [];
-      setTaskStats(summarizeTasks(tasks));
-    } catch (err) {
-      setTaskStats({ dueToday: 0, overdue: 0, completedToday: 0, total: 0 });
-    } finally {
-      setTasksLoading(false);
-    }
-  };
-  const loadMoreFeed = () => {};
-  const renderFeedFooter = () => null;
-  const longestGrowDays = 0;
-  // --- COMPONENTS ---
-  const QuickAction = ({ icon, label, onPress, color }) => (
-    <TouchableOpacity
-      style={[styles.quickAction, { backgroundColor: color }]}
-      onPress={onPress}
-    >
-      <Text style={styles.quickActionIcon}>{icon}</Text>
-      <Text style={styles.quickActionLabel}>{label}</Text>
-    </TouchableOpacity>
-  );
-  const StatCard = ({ icon, value, label, color, sublabel, disabled = false }) => (
-    <View
-      style={[
-        styles.statCard,
-        { borderLeftColor: disabled ? colors.border : color },
-        disabled && styles.statCardDisabled
-      ]}
-    >
-      <Text style={styles.statIcon}>{icon}</Text>
-      <View style={styles.statContent}>
-        <Text style={[styles.statValue, disabled && styles.statValueDisabled]}>
-          {value}
-        </Text>
-        <Text style={[styles.statLabel, disabled && styles.statLabelDisabled]}>
-          {label}
-        </Text>
-        {sublabel && <Text style={styles.statSubLabel}>{sublabel}</Text>}
-      </View>
-    </View>
-  );
-  const GrowCard = ({ grow }) => (
-    <View style={styles.growCard}>
-      <View style={styles.growImagePlaceholder}>
-        <Text style={styles.growImageEmoji}>🌱</Text>
-      </View>
-      <View style={styles.growCardBody}>
-        <View style={styles.growCardHeader}>
-          <Text style={styles.growCardName}>{grow.name || "Unnamed Grow"}</Text>
-          <View style={styles.growStageBadge}>
-            <Text style={styles.growStageText}>{grow.stage || "Seedling"}</Text>
-          </View>
-        </View>
-        <Text style={styles.growCardMeta}>Breeder: {grow.breeder || "Unknown"}</Text>
-      </View>
-    </View>
-  );
-  const TrendingCard = ({ category, icon, color, count, onPress }) => (
-    <TouchableOpacity style={styles.trendingCard} onPress={onPress}>
-      <View style={[styles.trendingIcon, { backgroundColor: color + "20" }]}>
-        <Text style={styles.trendingIconEmoji}>{icon}</Text>
-      </View>
-      <Text style={styles.trendingCategory}>{category}</Text>
-      <Text style={styles.trendingCount}>{count}</Text>
-    </TouchableOpacity>
-  );
-  const FeedItem = ({ item }) => (
-    <View style={styles.feedItem}>
-      <View style={styles.feedHeader}>
-        <View style={[styles.feedAvatar, { backgroundColor: "#ddd" }]} />
-        <View>
-          <Text style={styles.feedUsername}>{item.user?.username || "Grower"}</Text>
-          <Text style={styles.feedTime}>{item.createdAt}</Text>
-        </View>
-      </View>
-      <Text style={styles.feedText}>{item.text}</Text>
-    </View>
-  );
-  const navigation = useNavigation();
-  const {
-    isPro,
-    isProCommercial,
-    isFacility,
-    isCommercial,
-    isEntitled,
-    isGuildMember,
-    logout,
-    hasNavigatedAwayFromHome,
-    setHasNavigatedAwayFromHome,
-    suppressWelcomeMessage,
-    setSuppressWelcomeMessage,
-    user,
-    mode,
-    setMode,
-    getAllowedModes,
-    facilitiesAccess,
-    subscriptionStatus
-  } = useAuth();
-
-  // Helper: Check if subscription is required and active for current mode
-  let needsPaid = false;
-  let isPaid = false;
-  if (mode === "facility") {
-    needsPaid = true;
-    isPaid = isFacility;
-  } else if (mode === "commercial") {
-    needsPaid = true;
-    isPaid = isCommercial || isProCommercial;
-  } else if (mode === "personal") {
-    // Free, Pro, or Pro+Commercial
-    needsPaid = false;
-    isPaid = isPro || isProCommercial;
-  }
-  // ...existing code...
-  // Effects must be inside the component, not inside JSX
-  useEffect(() => {
-    if (appliedFilterSignatureRef.current === feedFilterSignature) return;
-    appliedFilterSignatureRef.current = feedFilterSignature;
-    loadFeed();
-  }, [feedFilterSignature, loadFeed]);
-
-  useFocusEffect(
-    useCallback(() => {
-      loadPlants();
-      loadGrows();
-      loadTrending();
-      loadTaskStats();
-      if (hasFocusedRef.current) {
-        loadFeed();
-      }
-      hasFocusedRef.current = true;
-    }, [loadPlants, loadGrows, loadTrending, loadTaskStats, loadFeed])
-  );
-
-  useEffect(() => {
-    const unsubscribe = navigation.addListener("blur", () => {
-      setHasNavigatedAwayFromHome(true);
-      setSuppressWelcomeMessage(false);
-    });
-    return unsubscribe;
-  }, [navigation, setHasNavigatedAwayFromHome, setSuppressWelcomeMessage]);
-
-  return (
-    <ScreenContainer testID="dashboard-screen">
-      <View style={{ flex: 1 }}>
-        {/* All dashboard children go here */}
-        {/* Header */}
-        <View style={styles.header}>
-          <View>
-            <Text style={styles.greeting}>
-              {headerTitle}
-              {showWelcomeMessage ? " 👋" : ""}
-            </Text>
-            <Text style={styles.subtitle}>{heroSubtitle}</Text>
-          </View>
-          {!showWelcomeMessage && (
-            <TouchableOpacity
-              onPress={handleLogout}
-              style={styles.logoutButton}
-              testID="logout-button"
-            >
-              <Text style={styles.logoutText}>Log out</Text>
-            </TouchableOpacity>
-          )}
-        </View>
-
-        {/* Pro Upgrade Banner (only show if not entitled) */}
-        {!isEntitled && (
-          <View style={styles.section}>
-            <TouchableOpacity
-              style={styles.proBanner}
-              onPress={() => navigation.navigate("Subscription")}
-            >
-              <View style={styles.proContent}>
-                <Text style={styles.proIcon}>✨</Text>
-                <View style={styles.proText}>
-                  <Text style={styles.proTitle}>Upgrade to Pro</Text>
-                  <Text style={styles.proSubtitle}>
-                    Unlimited plants, AI diagnostics & more
-                  </Text>
-                </View>
-                <Text style={styles.proArrow}>→</Text>
-              </View>
-            </TouchableOpacity>
-          </View>
-        )}
-
-        {/* Quick Actions */}
-        <View style={styles.section}>
-          <Text style={styles.sectionTitle}>Quick Actions</Text>
-          <View style={styles.quickActions}>
-            <QuickAction
-              icon="➕"
-              label="Add Plant"
-              color={colors.accent}
-              onPress={() => navigation.navigate("PlantsTab")}
-            />
-            <QuickAction
-              icon="🔍"
-              label="Diagnose"
-              color="#10B981"
-              onPress={() => navigation.navigate("DiagnoseTab")}
-            />
-            <QuickAction
-              icon="📚"
-              label="Learn"
-              color="#8B5CF6"
-              onPress={() => navigation.navigate("CoursesTab")}
-            />
-            <QuickAction
-              icon="🏛️"
-              label="Forum"
-              color="#F59E0B"
-              onPress={() => navigation.navigate("ForumTab")}
-            />
-          </View>
-        </View>
-
-        {/* Latest Feed (Scrollable Window) */}
-        <View style={styles.section}>
-          <View style={styles.sectionHeader}>
-            <Text style={styles.sectionTitle}>Latest Updates</Text>
-          </View>
-          <View
-            style={[
-              styles.feedCard,
-              feedPosts.length > 0 || feedLoading ? null : styles.feedCardEmpty
-            ]}
-          >
-            {feedPosts.length === 0 && !feedLoading ? (
-              <View style={styles.emptyState}>
-                <Text style={styles.emptyStateTitle}>
-                  No recent updates match your interests.
-                </Text>
-                <Text style={styles.emptyStateText}>
-                  Check back soon or explore the community for new activity.
-                </Text>
-              </View>
-            ) : (
-              <>
-                <FlatList
-                  data={feedPosts}
-                  keyExtractor={(item, index) => item._id || String(index)}
-                  renderItem={({ item }) => <FeedItem item={item} />}
-                  onEndReached={loadMoreFeed}
-                  onEndReachedThreshold={0.5}
-                  ListFooterComponent={renderFeedFooter}
-                  nestedScrollEnabled={true}
-                  contentContainerStyle={{ padding: 10 }}
-                />
-                {feedLoading && feedPage === 1 && (
-                  <ActivityIndicator style={{ marginTop: 20 }} color={colors.accent} />
-                )}
-              </>
-            )}
-          </View>
-        </View>
-
-        {/* Stats Overview */}
-        <View style={styles.section}>
-          <Text style={styles.sectionTitle}>Overview</Text>
-          <View style={styles.statsGrid}>
-            <StatCard
-              icon="🌱"
-              value={plants.length}
-              label="Active Plants"
-              color={colors.accent}
-              sublabel=""
-            />
-            <StatCard
-              icon="📅"
-              value={longestGrowDays}
-              label="Longest Grow"
-              color="#10B981"
-              sublabel=""
-            />
-            <StatCard
-              icon="✅"
-              value={tasksLoading ? "…" : taskStats.total}
-              label="Tasks Today"
-              color="#F59E0B"
-              sublabel={
-                tasksLoading
-                  ? "Calculating…"
-                  : `${taskStats.dueToday} due • ${taskStats.overdue} overdue • ${taskStats.completedToday} done`
-              }
-            />
-            <StatCard
-              icon="🏆"
-              value="Coming Soon"
-              label="Harvests"
-              color="#8B5CF6"
-              sublabel=""
-              disabled
-            />
-          </View>
-        </View>
-
-        {/* Active Grows */}
-        <View style={styles.section}>
-          <View style={styles.sectionHeader}>
-            <Text style={styles.sectionTitle}>Active Grows</Text>
-            <TouchableOpacity onPress={() => navigation.navigate("PlantsTab")}>
-              <Text style={styles.seeAll}>See All →</Text>
-            </TouchableOpacity>
-          </View>
-          {growsLoading ? (
-            <View style={styles.emptyState}>
-              <Text style={styles.emptyStateText}>Loading...</Text>
-            </View>
-          ) : grows.length === 0 ? (
-            <View style={styles.emptyState}>
-              <Text style={styles.emptyStateIcon}>🌱</Text>
-              <Text style={styles.emptyStateTitle}>No Grows Yet</Text>
-              <Text style={styles.emptyStateText}>
-                Start your first grow to see it here
-              </Text>
-              <TouchableOpacity
-                style={styles.emptyStateButton}
-                onPress={() => navigation.navigate("PlantsTab")}
-              >
-                <Text style={styles.emptyStateButtonText}>Add Your First Grow</Text>
-              </TouchableOpacity>
-            </View>
-          ) : (
-            <ScrollView
-              horizontal
-              showsHorizontalScrollIndicator={false}
-              style={styles.plantsScroll}
-            >
-              {grows.slice(0, 5).map((grow) => (
-                <GrowCard key={grow._id} grow={grow} />
-              ))}
-            </ScrollView>
-          )}
-        </View>
-
-        {/* Forum Trending Content */}
-        <View style={styles.section}>
-          <View style={styles.sectionHeader}>
-            <Text style={styles.sectionTitle}>🏛️ Trending in the Forum</Text>
-            <TouchableOpacity onPress={() => navigation.navigate("ForumTab")}>
-              <Text style={styles.seeAll}>View All →</Text>
-            </TouchableOpacity>
-          </View>
-          <ScrollView
-            horizontal
-            showsHorizontalScrollIndicator={false}
-            style={styles.plantsScroll}
-          >
-            {trending.length > 0 ? (
-              trending.map((post, idx) => {
-                const headline =
-                  post.content?.trim() ||
-                  post.title ||
-                  (post.tags && post.tags.length ? `#${post.tags[0]}` : "Post");
-                const snippet =
-                  post.content && post.content.length > 80
-                    ? `${post.content.slice(0, 77)}…`
-                    : post.content || "";
-                return (
-                  <TrendingCard
-                    key={post._id || idx}
-                    category={headline}
-                    icon={getCategoryIcon(post.tags?.[0] || post.category)}
-                    color={getCategoryColor(idx)}
-                    count={snippet || `${post.likes?.length || 0} likes`}
-                    onPress={() =>
-                      navigation.navigate("ForumPostDetail", {
-                        id: post._id,
-                        post
-                      })
-                    }
-                  />
-                );
-              })
-            ) : (
-              <View style={{ flexDirection: "row" }}>
-                <TrendingCard
-                  category="Nutrients"
-                  icon="💧"
-                  color="#3B82F6"
-                  count="LAWNS Essential"
-                  onPress={() => navigation.navigate("ForumTab")}
-                />
-                <TrendingCard
-                  category="Lighting"
-                  icon="💡"
-                  color="#F59E0B"
-                  count="LAWNS Essential"
-                  onPress={() => navigation.navigate("CoursesTab")}
-                />
-                <TrendingCard
-                  category="Substrate"
-                  icon="🌱"
-                  color="#10B981"
-                  count="LAWNS Essential"
-                  onPress={() => navigation.navigate("ForumTab")}
-                />
-                <TrendingCard
-                  category="Training"
-                  icon="✂️"
-                  color="#8B5CF6"
-                  count="Learn More"
-                  onPress={() => navigation.navigate("CoursesTab")}
-                />
-              </View>
-            )}
-          </ScrollView>
-        </View>
-
-        {/* Bottom Padding for Tab Bar */}
-        <View style={{ height: 120 }} />
-      </View>
-    </ScreenContainer>
-  );
 }
 
 const styles = StyleSheet.create({
@@ -942,3 +493,77 @@ const styles = StyleSheet.create({
     backgroundColor: colors.bg
   }
 });
+
+export default function DashboardScreen() {
+  const { user, mode } = useAuth();
+  // Entitlement checks for dashboard actions
+  const analyticsEnt = getEntitlement(FEATURES.DASHBOARD_ANALYTICS, user?.role || "free");
+  const exportEnt = getEntitlement(FEATURES.DASHBOARD_EXPORT, user?.role || "free");
+  const teamToolsEnt = getEntitlement("rooms_equipment_staff", user?.role || "free");
+  const addPlantEnt = getEntitlement(FEATURES.GROWLOGS_MULTI, user?.role || "free");
+
+  return (
+    <AppShell style={styles.container} contentContainerStyle={null}>
+      <View style={styles.header}>
+        <Text style={styles.greeting}>Welcome to GrowPath!</Text>
+      </View>
+      <View style={styles.section}>
+        <Text style={styles.subtitle}>
+          Your dashboard is ready. Start adding your plants, grows, and tasks!
+        </Text>
+        {/* Analytics (always rendered, gated) */}
+        <TouchableOpacity
+          style={[styles.logoutButton, analyticsEnt !== "enabled" && { opacity: 0.5 }]}
+          disabled={analyticsEnt !== "enabled"}
+        >
+          <Text style={styles.logoutText}>
+            {analyticsEnt === "cta"
+              ? "Upgrade for Analytics"
+              : analyticsEnt === "enabled"
+                ? "View Analytics"
+                : "Analytics (Locked)"}
+          </Text>
+        </TouchableOpacity>
+        {/* Export (always rendered, gated) */}
+        <TouchableOpacity
+          style={[styles.logoutButton, exportEnt !== "enabled" && { opacity: 0.5 }]}
+          disabled={exportEnt !== "enabled"}
+        >
+          <Text style={styles.logoutText}>
+            {exportEnt === "cta"
+              ? "Upgrade for Export"
+              : exportEnt === "enabled"
+                ? "Export Data"
+                : "Export (Locked)"}
+          </Text>
+        </TouchableOpacity>
+        {/* Team Tools (always rendered, gated) */}
+        <TouchableOpacity
+          style={[styles.logoutButton, teamToolsEnt !== "enabled" && { opacity: 0.5 }]}
+          disabled={teamToolsEnt !== "enabled"}
+        >
+          <Text style={styles.logoutText}>
+            {teamToolsEnt === "cta"
+              ? "Upgrade for Team Tools"
+              : teamToolsEnt === "enabled"
+                ? "Team Tools"
+                : "Team Tools (Locked)"}
+          </Text>
+        </TouchableOpacity>
+        {/* Add Plant (always rendered, gated) */}
+        <TouchableOpacity
+          style={[styles.logoutButton, addPlantEnt !== "enabled" && { opacity: 0.5 }]}
+          disabled={addPlantEnt !== "enabled"}
+        >
+          <Text style={styles.logoutText}>
+            {addPlantEnt === "cta"
+              ? "Upgrade to Add Plants"
+              : addPlantEnt === "enabled"
+                ? "Add Plant"
+                : "Add Plant (Locked)"}
+          </Text>
+        </TouchableOpacity>
+      </View>
+    </AppShell>
+  );
+}

@@ -91,7 +91,7 @@ const TeamScreen = () => {
         animationType="slide"
         onRequestClose={() => setShowInviteModal(false)}
       >
-        <View style={styles.modalOverlay}>
+        <View style={[styles.modalOverlay, { zIndex: 1000, pointerEvents: "auto" }]}>
           <View style={styles.modalContent}>
             <Text style={styles.modalTitle}>Invite Team Member</Text>
             <TextInput
@@ -249,7 +249,9 @@ const styles = StyleSheet.create({
     flex: 1,
     backgroundColor: "rgba(0,0,0,0.5)",
     justifyContent: "center",
-    padding: 20
+    padding: 20,
+    pointerEvents: "auto",
+    zIndex: 1000
   },
   modalContent: {
     backgroundColor: "#fff",

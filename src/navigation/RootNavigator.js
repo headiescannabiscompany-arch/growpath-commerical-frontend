@@ -2,9 +2,22 @@ import MarketplaceIntegrationScreen from "../screens/commercial/MarketplaceInteg
 import VendorMetricsScreen from "../screens/commercial/VendorMetricsScreen.js";
 import VendorAnalyticsScreen from "../screens/commercial/VendorAnalyticsScreen.js";
 import AppIntroScreen from "../screens/AppIntroScreen.js";
+import ToolsScreen from "../screens/ToolsScreen.js";
+import VPDCalculatorScreen from "../screens/VPDCalculatorScreen.js";
+import LightCalculatorScreen from "../screens/LightCalculatorScreen.js";
+import ScheduleCalculatorScreen from "../screens/WateringSchedulerScreen.js";
+// Stubs for other tools
+import NutrientCalculatorScreen from "../screens/NutrientCalculatorScreen.js";
+import WateringSchedulerScreen from "../screens/WateringSchedulerScreen.js";
+import PHECCalculatorScreen from "../screens/PHECCalculatorScreen.js";
+import GrowthTrackerScreen from "../screens/GrowthTrackerScreen.js";
+import PestDiseaseIdentifierScreen from "../screens/PestDiseaseIdentifierScreen.js";
+import HarvestEstimatorScreen from "../screens/HarvestEstimatorScreen.js";
 import React, { useEffect, useCallback } from "react";
+import { Text } from "react-native";
 import { createNativeStackNavigator } from "@react-navigation/native-stack";
 import { useAuth } from "../context/AuthContext.js";
+import { FacilityTabs } from "./FacilityTabs.js";
 import LoginScreen from "../screens/LoginScreen.js";
 import MainTabs from "./MainTabs.js";
 import FacilityStack from "./FacilityStack.js";
@@ -44,8 +57,8 @@ import GrowEditPlantScreen from "../screens/GrowEditPlantScreen.js";
 
 const Stack = createNativeStackNavigator();
 
-import FeedScreen from "../screens/FeedScreen.js";
 import PrivacyPolicyScreen from "../screens/PrivacyPolicyScreen.js";
+import PricingMatrixScreen from "../screens/PricingMatrixScreen.js";
 import CreatePostScreen from "../screens/CreatePostScreen.js";
 import CommentsScreen from "../screens/CommentsScreen.js";
 import TemplatesMarketplaceScreen from "../screens/TemplatesMarketplaceScreen.js";
@@ -78,21 +91,19 @@ const APP_INTRO_SEEN_KEY = "seenAppIntro";
 const LEGACY_ONBOARDING_KEY = "seenOnboarding";
 
 export default function RootNavigator() {
-  const { isPro, token, user } = useAuth();
+  const { isPro, token, user, mode } = useAuth();
   const [showIntro, setShowIntro] = React.useState(isPro ? false : null);
   const isAuthenticated = Boolean(token && user);
 
   useEffect(() => {
     let mounted = true;
-
     const resolveIntroState = async () => {
       try {
         const [introValue, legacyOnboarding] = await Promise.all([
-          AsyncStorage.getItem(APP_INTRO_SEEN_KEY),
-          AsyncStorage.getItem(LEGACY_ONBOARDING_KEY)
+          AsyncStorage.default.getItem(APP_INTRO_SEEN_KEY),
+          AsyncStorage.default.getItem(LEGACY_ONBOARDING_KEY)
         ]);
         if (!mounted) return;
-
         if (isPro) {
           setShowIntro(false);
         } else {
@@ -103,9 +114,7 @@ export default function RootNavigator() {
         if (mounted) setShowIntro(!isPro);
       }
     };
-
     resolveIntroState();
-
     return () => {
       mounted = false;
     };
@@ -113,7 +122,7 @@ export default function RootNavigator() {
 
   const handleIntroDone = useCallback(async () => {
     try {
-      await AsyncStorage.setItem(APP_INTRO_SEEN_KEY, "true");
+      await AsyncStorage.default.setItem(APP_INTRO_SEEN_KEY, "true");
     } catch {
       // best-effort; failure just means intro may show again next launch
     }
@@ -121,108 +130,269 @@ export default function RootNavigator() {
   }, []);
 
   if (showIntro === null) {
-    return null;
+    return (
+      <Text
+        style={{
+          backgroundColor: "red",
+          color: "white",
+          fontWeight: "bold",
+          fontSize: 20,
+          padding: 8,
+          textAlign: "center",
+          zIndex: 9999
+        }}
+      >
+        FALLBACK: showIntro is null
+      </Text>
+    );
   }
 
-  const navigatorKey = `${isAuthenticated ? "auth" : "guest"}-${showIntro ? "intro" : "main"}`;
-  const initialRouteName =
+  // Role-based navigator branching
+  let initialRouteName =
     !isAuthenticated && !isPro && showIntro
       ? "AppIntro"
       : isAuthenticated
-        ? "MainTabs" // Single-user app: default to MainTabs
+        ? mode === "facility"
+          ? "FacilityStack"
+          : mode === "commercial"
+            ? "CommercialTabs"
+            : "MainTabs"
         : "Login";
 
+  const navigatorKey = `${isAuthenticated ? "auth" : "guest"}-${showIntro ? "intro" : "main"}-${mode}`;
+
+  // Role helpers
+  const isCreator = user && user.role === "creator";
+  const isPartner = user && user.role === "partner";
+  const isFacility = user && user.role === "facility";
+  const isAdmin = user && user.role === "admin";
+
   return (
-    <Stack.Navigator
-      key={navigatorKey}
-      initialRouteName={initialRouteName}
-      screenOptions={{
-        headerShown: true,
-        headerStyle: { backgroundColor: "#10B981" },
-        headerTintColor: "#fff",
-        headerTitleStyle: { fontWeight: "bold" }
-      }}
-    >
-      {!isPro && showIntro ? (
-        <Stack.Screen name="AppIntro" options={{ headerShown: false }}>
-          {(props) => <AppIntroScreen {...props} onDone={handleIntroDone} />}
-        </Stack.Screen>
-      ) : null}
-      <Stack.Screen
-        name="Login"
-        component={LoginScreen}
-        options={{ headerShown: false }}
-      />
-      <Stack.Screen
-        name="MainTabs"
-        component={MainTabs}
-        options={{ headerShown: false }}
-      />
-      <Stack.Screen name="GrowJournal" component={GrowJournalScreen} />
-      <Stack.Screen
-        name="GrowAddPlant"
-        component={GrowAddPlantScreen}
-        options={{ title: "Add Plant" }}
-      />
-      <Stack.Screen
-        name="GrowEditPlant"
-        component={GrowEditPlantScreen}
-        options={{ title: "Edit Plant" }}
-      />
-      <Stack.Screen name="Subscribe" component={SubscribeScreen} />
-      <Stack.Screen name="CourseDetail" component={CourseDetailScreen} />
-      <Stack.Screen
-        name="Course"
-        component={CourseScreen}
-        options={{ title: "Course" }}
-      />
-      <Stack.Screen
-        name="EditLesson"
-        component={EditLessonScreen}
-        options={{ title: "Edit Lesson" }}
-      />
-      <Stack.Screen
-        name="Lesson"
-        component={LessonScreen}
-        options={{ title: "Lesson" }}
-      />
-      <Stack.Screen
-        name="VendorSignup"
-        component={VendorSignup}
-        options={{ title: "Become a Vendor" }}
-      />
-      <Stack.Screen
-        name="CreateVendorGuide"
-        component={CreateVendorGuide}
-        options={{ title: "Create Guide" }}
-      />
-      <Stack.Screen
-        name="VendorGuides"
-        component={VendorGuidesScreen}
-        options={{ title: "Guides" }}
-      />
-      <Stack.Screen
-        name="MarketplaceIntegration"
-        component={MarketplaceIntegrationScreen}
-        options={{ title: "Marketplace & Social" }}
-      />
-      <Stack.Screen
-        name="VendorMetrics"
-        component={VendorMetricsScreen}
-        options={{ title: "Vendor Metrics" }}
-      />
-      <Stack.Screen
-        name="VendorAnalytics"
-        component={VendorAnalyticsScreen}
-        options={{ title: "Vendor Analytics" }}
-      />
-      <Stack.Screen name="Earnings" component={EarningsScreen} />
-      <Stack.Screen name="AdminCourses" component={AdminCoursesScreen} />
-      <Stack.Screen name="CreatorDashboard" component={CreatorDashboardScreen} />
-      <Stack.Screen name="CreatorDashboardV2" component={CreatorDashboardV2} />
-      <Stack.Screen name="CreatorPayouts" component={CreatorPayoutScreen} />
-      <Stack.Screen name="CreatorSignatureUpload" component={CreatorSignatureUpload} />
-      {/* ...add the rest of your screens here... */}
-    </Stack.Navigator>
+    <>
+      <Text
+        style={{
+          backgroundColor: "blue",
+          color: "white",
+          fontWeight: "bold",
+          fontSize: 20,
+          padding: 8,
+          textAlign: "center",
+          zIndex: 9999
+        }}
+      >
+        DEBUG: RootNavigator visible
+      </Text>
+      <Stack.Navigator
+        key={navigatorKey}
+        initialRouteName={initialRouteName}
+        screenOptions={{
+          headerShown: true,
+          headerStyle: { backgroundColor: "#10B981" },
+          headerTintColor: "#fff",
+          headerTitleStyle: { fontWeight: "bold" }
+        }}
+      >
+        {/* Public/Onboarding */}
+        {!isPro && showIntro ? (
+          <Stack.Screen name="AppIntro" options={{ headerShown: false }}>
+            {(props) => <AppIntroScreen {...props} onDone={handleIntroDone} />}
+          </Stack.Screen>
+        ) : null}
+        <Stack.Screen
+          name="Login"
+          component={LoginScreen}
+          options={{ headerShown: false }}
+        />
+        <Stack.Screen name="PrivacyPolicy" component={PrivacyPolicyScreen} />
+
+        <Stack.Screen
+          name="PricingMatrix"
+          component={PricingMatrixScreen}
+          options={{ title: "Plans & Pricing" }}
+        />
+
+        {/* Main App (Regular/Pro) */}
+        {isAuthenticated && (
+          <>
+            {/* Personal mode */}
+            {mode === "personal" && (
+              <Stack.Screen
+                name="MainTabs"
+                component={MainTabs}
+                options={{ headerShown: false }}
+              />
+            )}
+            {/* Facility mode */}
+            {mode === "facility" && (
+              <Stack.Screen
+                name="FacilityStack"
+                component={FacilityTabs}
+                options={{ headerShown: false }}
+                initialParams={{ isCommercial: false }}
+              />
+            )}
+            {/* Commercial mode */}
+            {mode === "commercial" && (
+              <Stack.Screen
+                name="CommercialTabs"
+                component={FacilityTabs}
+                options={{ headerShown: false }}
+                initialParams={{ isCommercial: true }}
+              />
+            )}
+            {/* Fallback for unknown mode */}
+            {!["personal", "facility", "commercial"].includes(mode) && (
+              <Stack.Screen name="UnknownMode">
+                {() => (
+                  <Text
+                    style={{
+                      flex: 1,
+                      textAlign: "center",
+                      textAlignVertical: "center",
+                      color: "#ef4444",
+                      fontSize: 20,
+                      padding: 32
+                    }}
+                  >
+                    Unknown user mode: {mode}. Please contact support.
+                  </Text>
+                )}
+              </Stack.Screen>
+            )}
+            <Stack.Screen
+              name="Tools"
+              component={ToolsScreen}
+              options={{ title: "Tools" }}
+            />
+            <Stack.Screen
+              name="VPDCalculator"
+              component={VPDCalculatorScreen}
+              options={{ title: "VPD Calculator" }}
+            />
+            <Stack.Screen
+              name="LightCalculator"
+              component={LightCalculatorScreen}
+              options={{ title: "Light Calculator" }}
+            />
+            {/* Add other tool screens here as you implement them */}
+            <Stack.Screen name="GrowJournal" component={GrowJournalScreen} />
+            <Stack.Screen
+              name="GrowAddPlant"
+              component={GrowAddPlantScreen}
+              options={{ title: "Add Plant" }}
+            />
+            <Stack.Screen
+              name="GrowEditPlant"
+              component={GrowEditPlantScreen}
+              options={{ title: "Edit Plant" }}
+            />
+            <Stack.Screen name="Subscribe" component={SubscribeScreen} />
+            <Stack.Screen name="CourseDetail" component={CourseDetailScreen} />
+            <Stack.Screen
+              name="Course"
+              component={CourseScreen}
+              options={{ title: "Course" }}
+            />
+            <Stack.Screen
+              name="EditLesson"
+              component={EditLessonScreen}
+              options={{ title: "Edit Lesson" }}
+            />
+            <Stack.Screen
+              name="Lesson"
+              component={LessonScreen}
+              options={{ title: "Lesson" }}
+            />
+            <Stack.Screen
+              name="ProfileCertificates"
+              component={ProfileCertificatesScreen}
+            />
+            <Stack.Screen name="CertificateViewer" component={CertificateViewer} />
+            <Stack.Screen name="VerifyCertificate" component={VerifyCertificateScreen} />
+            <Stack.Screen name="PostDetail" component={PostDetailScreen} />
+            <Stack.Screen name="GrowLogTimeline" component={GrowLogTimelineScreen} />
+            <Stack.Screen name="GrowLogDetail" component={GrowLogDetailScreen} />
+            <Stack.Screen name="GrowLogEntry" component={GrowLogEntryScreen} />
+            <Stack.Screen name="GrowLogCalendar" component={GrowLogCalendarScreen} />
+            <Stack.Screen name="DiagnosisHistory" component={DiagnosisHistoryScreen} />
+            <Stack.Screen name="ForumPostDetail" component={ForumPostDetailScreen} />
+            <Stack.Screen name="ForumNewPost" component={ForumNewPostScreen} />
+            <Stack.Screen name="GuildCode" component={GuildCodeScreen} />
+            <Stack.Screen
+              name="SubcategoryBrowser"
+              component={SubcategoryBrowserScreen}
+            />
+            <Stack.Screen name="CategoryBrowser" component={CategoryBrowserScreen} />
+            <Stack.Screen name="CategoryCourses" component={CategoryCoursesScreen} />
+            <Stack.Screen name="Earnings" component={EarningsScreen} />
+            {/* Creator/Educator */}
+            {isCreator && (
+              <>
+                <Stack.Screen
+                  name="CreatorDashboard"
+                  component={CreatorDashboardScreen}
+                />
+                <Stack.Screen name="CreatorDashboardV2" component={CreatorDashboardV2} />
+                <Stack.Screen name="CreatorPayouts" component={CreatorPayoutScreen} />
+                <Stack.Screen
+                  name="CreatorSignatureUpload"
+                  component={CreatorSignatureUpload}
+                />
+                <Stack.Screen name="CreateCourse" component={CreateCourseScreen} />
+                <Stack.Screen name="ManageCourse" component={ManageCourseScreen} />
+                <Stack.Screen name="AddLesson" component={AddLessonScreen} />
+                <Stack.Screen name="VendorSignup" component={VendorSignup} />
+                <Stack.Screen name="CreateVendorGuide" component={CreateVendorGuide} />
+                <Stack.Screen name="VendorGuides" component={VendorGuidesScreen} />
+              </>
+            )}
+            {/* Partner/Brand */}
+            {isPartner && (
+              <>
+                <Stack.Screen
+                  name="MarketplaceIntegration"
+                  component={MarketplaceIntegrationScreen}
+                />
+                <Stack.Screen name="VendorMetrics" component={VendorMetricsScreen} />
+                <Stack.Screen name="VendorAnalytics" component={VendorAnalyticsScreen} />
+              </>
+            )}
+            {/* Facility/Commercial */}
+            {isFacility ? (
+              <Stack.Screen name="FacilityStack" component={FacilityStack} />
+            ) : (
+              <Stack.Screen
+                name="NotFacility"
+                options={{ title: "Facility Access Required", headerShown: true }}
+              >
+                {() => (
+                  <Text
+                    style={{
+                      flex: 1,
+                      textAlign: "center",
+                      textAlignVertical: "center",
+                      color: "#0ea5e9",
+                      fontSize: 20,
+                      padding: 32
+                    }}
+                  >
+                    This section is for facility/commercial users only. If you believe
+                    this is an error, please contact support or select a different
+                    workspace.
+                  </Text>
+                )}
+              </Stack.Screen>
+            )}
+            {/* Admin */}
+            {isAdmin && (
+              <>
+                <Stack.Screen name="AdminCourses" component={AdminCoursesScreen} />
+                <Stack.Screen name="AdminReports" component={AdminReportsScreen} />
+              </>
+            )}
+          </>
+        )}
+      </Stack.Navigator>
+    </>
   );
 }

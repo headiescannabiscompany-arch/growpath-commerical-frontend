@@ -83,11 +83,18 @@ export default function SubscribeScreen({ navigation }) {
         {status.subscriptionStatus === "active" ? (
           <Text style={styles.active}>You are already a Pro user 🎉</Text>
         ) : (
-          <PrimaryButton
-            title={loading ? "Processing..." : "Unlock Premium"}
-            onPress={handleUpgrade}
-            disabled={loading}
-          />
+          <>
+            <PrimaryButton
+              title={loading ? "Processing..." : "Unlock Premium"}
+              onPress={handleUpgrade}
+              disabled={loading}
+            />
+            <PrimaryButton
+              title="View Plans & Pricing"
+              onPress={() => navigation.navigate("PricingMatrix")}
+              style={{ marginTop: 10 }}
+            />
+          </>
         )}
       </Card>
     </ScreenContainer>

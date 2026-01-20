@@ -140,6 +140,14 @@ export default function SubscriptionScreen({ navigation }) {
           </Text>
         </TouchableOpacity>
 
+        {/* View Plans & Pricing Button */}
+        <TouchableOpacity
+          style={[styles.subscribeBtn, { backgroundColor: "#10B981" }]}
+          onPress={() => navigation.navigate("PricingMatrix")}
+        >
+          <Text style={styles.subscribeBtnText}>View Plans & Pricing</Text>
+        </TouchableOpacity>
+
         {/* Footer */}
         <Text style={styles.footer}>
           By subscribing, you agree to our Terms of Service and Privacy Policy. Your

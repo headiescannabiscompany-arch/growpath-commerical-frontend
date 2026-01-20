@@ -214,7 +214,7 @@ export default function SOPTemplatesScreen() {
         animationType="slide"
         onRequestClose={closeModal}
       >
-        <View style={styles.modalOverlay}>
+        <View style={[styles.modalOverlay, { zIndex: 1000, pointerEvents: "auto" }]}>
           <View style={styles.modalContent}>
             <Text style={styles.modalTitle}>
               {editingId ? "Edit SOP" : "Create New SOP"}
@@ -373,7 +373,9 @@ const styles = StyleSheet.create({
   modalOverlay: {
     flex: 1,
     backgroundColor: "rgba(0, 0, 0, 0.5)",
-    justifyContent: "flex-end"
+    justifyContent: "flex-end",
+    pointerEvents: "auto",
+    zIndex: 1000
   },
   modalContent: {
     backgroundColor: "#fff",

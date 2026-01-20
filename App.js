@@ -6,29 +6,32 @@ import {
 } from "@react-navigation/native";
 import { StatusBar } from "expo-status-bar";
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
-import RootNavigator from "./src/navigation/RootNavigator";
-import { AuthProvider, useAuth } from "./src/context/AuthContext";
+import RootNavigator from "./src/navigation/RootNavigator.js";
+import { AuthProvider, useAuth } from "./src/context/AuthContext.js";
 
 const navigationRef = createNavigationContainerRef();
 const queryClient = new QueryClient({
   defaultOptions: {
     queries: {
-      staleTime: 1000 * 60 * 5, // 5 minutes
-      cacheTime: 1000 * 60 * 30 // 30 minutes
+      staleTime: 1000 * 60 * 5 // 5 minutes
     }
   }
 });
 
 if (typeof globalThis !== "undefined") {
+  // @ts-ignore
   globalThis.__NAV__ = navigationRef;
 }
 if (typeof window !== "undefined") {
+  // @ts-ignore
   window.__NAV__ = navigationRef;
   try {
     if (window.parent && window.parent !== window) {
+      // @ts-ignore
       window.parent.__NAV__ = navigationRef;
     }
     if (window.top && window.top !== window) {
+      // @ts-ignore
       window.top.__NAV__ = navigationRef;
     }
   } catch {}

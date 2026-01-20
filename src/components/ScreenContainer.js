@@ -81,7 +81,7 @@ export default ScreenContainer;
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    backgroundColor: colors.bg,
+    backgroundColor: "yellow", // DEBUG: force visible background
     paddingHorizontal: 20,
     paddingTop: 32
   },

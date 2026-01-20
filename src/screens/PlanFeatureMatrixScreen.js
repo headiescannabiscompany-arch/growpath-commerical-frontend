@@ -1,6 +1,6 @@
 import React from "react";
 import { View, Text, ScrollView, StyleSheet } from "react-native";
-import PrimaryButton from "../components/PrimaryButton";
+import PrimaryButton from "../components/PrimaryButton.js";
 
 const featureMatrix = [
   [
@@ -65,7 +65,11 @@ export default function PlanFeatureMatrixScreen({ navigation, route }) {
       <PrimaryButton
         title="Choose Plan"
         onPress={() => navigation?.navigate?.("RegisterScreen")}
-      />
+        style={{ marginTop: 18 }}
+        disabled={false}
+      >
+        <Text>Choose Plan</Text>
+      </PrimaryButton>
     </ScrollView>
   );
 }

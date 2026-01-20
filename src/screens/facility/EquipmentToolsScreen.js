@@ -315,9 +315,7 @@ const styles = StyleSheet.create({
     marginBottom: 12,
     borderLeftWidth: 4,
     borderLeftColor: "#0ea5e9",
-    shadowColor: "#000",
-    shadowOpacity: 0.1,
-    shadowRadius: 4,
+    boxShadow: "0px 2px 8px rgba(0,0,0,0.10)",
     elevation: 2
   },
   equipmentHeader: {

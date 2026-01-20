@@ -10,7 +10,7 @@ import {
 import { useAuth } from "../context/AuthContext";
 import { startSubscription } from "../api/subscribe";
 import ScreenContainer from "../components/ScreenContainer";
-
+import PrimaryButton from "../components/PrimaryButton";
 import { createCheckoutSession } from "../api/subscription";
 
 export default function PaywallScreen({ navigation }) {
@@ -29,7 +29,10 @@ export default function PaywallScreen({ navigation }) {
         Alert.alert("Error", result.message || "Failed to start trial");
       }
     } catch (error) {
-      Alert.alert("Error", error?.data?.message || error?.message || "Failed to start trial");
+      Alert.alert(
+        "Error",
+        error?.data?.message || error?.message || "Failed to start trial"
+      );
     } finally {
       setLoading(false);
     }
@@ -42,11 +45,25 @@ export default function PaywallScreen({ navigation }) {
       if (result.url) {
         // Open the Stripe Checkout page in the system browser
         Linking.openURL(result.url);
+        Alert.alert(
+          "Complete Payment",
+          "After completing payment in your browser, return to the app and refresh your subscription status.",
+          [
+            {
+              text: "Go to Status",
+              onPress: () => navigation.navigate("SubscriptionStatus")
+            },
+            { text: "OK" }
+          ]
+        );
       } else {
         Alert.alert("Error", "Could not create checkout session");
       }
     } catch (error) {
-      Alert.alert("Error", error?.data?.message || error?.message || "Failed to subscribe");
+      Alert.alert(
+        "Error",
+        error?.data?.message || error?.message || "Failed to subscribe"
+      );
     } finally {
       setLoading(false);
     }
@@ -86,6 +103,12 @@ export default function PaywallScreen({ navigation }) {
             >
               <Text style={styles.buttonText}>Subscribe Now - $9.99/month</Text>
             </TouchableOpacity>
+
+            <PrimaryButton
+              title="View Plans & Pricing"
+              onPress={() => navigation.navigate("PricingMatrix")}
+              style={{ marginBottom: 10 }}
+            />
 
             <TouchableOpacity
               style={styles.cancelButton}

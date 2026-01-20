@@ -2,6 +2,7 @@ import React, { useEffect, useState } from "react";
 import { View, Text, TouchableOpacity, ScrollView } from "react-native";
 import ScreenContainer from "../components/ScreenContainer";
 import { getTokenBalance } from "../api/tokens";
+import FeatureGate from "../components/FeatureGate";
 import { useAuth } from "../context/AuthContext";
 
 export default function TokenInfoScreen({ navigation }) {
@@ -78,42 +79,44 @@ export default function TokenInfoScreen({ navigation }) {
         {/* Token Refresh */}
         <View style={styles.section}>
           <Text style={styles.sectionTitle}>Token Refresh</Text>
-          {isPro ? (
-            <>
-              <Text style={styles.bodyText}>
-                ✨ As a <Text style={styles.boldText}>Pro member</Text>, you get:
+          <FeatureGate
+            plan="pro"
+            navigation={navigation}
+            fallback={
+              <>
+                <Text style={styles.bodyText}>
+                  On the <Text style={styles.boldText}>Free plan</Text>, you get:
+                </Text>
+                <Text style={styles.bulletText}>• 10 tokens weekly</Text>
+                <Text style={styles.bulletText}>• Tokens refresh every 7 days</Text>
+                {balance?.nextRefresh && (
+                  <Text style={styles.refreshText}>
+                    Next refresh: {new Date(balance.nextRefresh).toLocaleDateString()}
+                  </Text>
+                )}
+                <TouchableOpacity
+                  style={styles.upgradeButton}
+                  onPress={() => navigation.navigate("Subscription")}
+                >
+                  <Text style={styles.upgradeButtonText}>
+                    ✨ Upgrade to Pro for 100 Daily Tokens
+                  </Text>
+                </TouchableOpacity>
+              </>
+            }
+          >
+            <Text style={styles.bodyText}>
+              ✨ As a <Text style={styles.boldText}>Pro member</Text>, you get:
+            </Text>
+            <Text style={styles.bulletText}>• 100 tokens daily</Text>
+            <Text style={styles.bulletText}>• Auto-refresh every 24 hours</Text>
+            <Text style={styles.bulletText}>• Priority AI processing</Text>
+            {balance?.nextRefresh && (
+              <Text style={styles.refreshText}>
+                Next refresh: {new Date(balance.nextRefresh).toLocaleDateString()}
               </Text>
-              <Text style={styles.bulletText}>• 100 tokens daily</Text>
-              <Text style={styles.bulletText}>• Auto-refresh every 24 hours</Text>
-              <Text style={styles.bulletText}>• Priority AI processing</Text>
-              {balance?.nextRefresh && (
-                <Text style={styles.refreshText}>
-                  Next refresh: {new Date(balance.nextRefresh).toLocaleDateString()}
-                </Text>
-              )}
-            </>
-          ) : (
-            <>
-              <Text style={styles.bodyText}>
-                On the <Text style={styles.boldText}>Free plan</Text>, you get:
-              </Text>
-              <Text style={styles.bulletText}>• 10 tokens weekly</Text>
-              <Text style={styles.bulletText}>• Tokens refresh every 7 days</Text>
-              {balance?.nextRefresh && (
-                <Text style={styles.refreshText}>
-                  Next refresh: {new Date(balance.nextRefresh).toLocaleDateString()}
-                </Text>
-              )}
-              <TouchableOpacity
-                style={styles.upgradeButton}
-                onPress={() => navigation.navigate("Subscription")}
-              >
-                <Text style={styles.upgradeButtonText}>
-                  ✨ Upgrade to Pro for 100 Daily Tokens
-                </Text>
-              </TouchableOpacity>
-            </>
-          )}
+            )}
+          </FeatureGate>
         </View>
 
         {/* Tips */}

@@ -140,7 +140,7 @@ export default function CommercialDashboardScreen() {
             <Text style={styles.heroTitle}>{businessName}</Text>
             <Text style={styles.heroSubtitle}>{businessType}</Text>
           </View>
-          <StatPill label="Completed" value={`${completionCount}/5`} />
+          <StatPill label="Completed" value={`${completionCount}/5`} muted={false} />
         </View>
         <View style={styles.progressBarTrack}>
           <View style={[styles.progressBarFill, { width: `${completionPct}%` }]} />
@@ -160,28 +160,40 @@ export default function CommercialDashboardScreen() {
             style={styles.ctaButton}
             textStyle={styles.ctaButtonText}
             accessibilityRole="button"
-          />
+            disabled={false}
+          >
+            Create education post
+          </PrimaryButton>
           <PrimaryButton
             title="Publish course"
             onPress={handlePublishCourse}
             style={styles.ctaButton}
             textStyle={styles.ctaButtonText}
             accessibilityRole="button"
-          />
+            disabled={false}
+          >
+            Publish course
+          </PrimaryButton>
           <PrimaryButton
             title="Open tools"
             onPress={handleOpenTools}
             style={styles.ctaButton}
             textStyle={styles.ctaButtonText}
             accessibilityRole="button"
-          />
+            disabled={false}
+          >
+            Open tools
+          </PrimaryButton>
           <PrimaryButton
             title="Reports"
             onPress={handleOpenReports}
             style={styles.ctaButton}
             textStyle={styles.ctaButtonText}
             accessibilityRole="button"
-          />
+            disabled={false}
+          >
+            Reports
+          </PrimaryButton>
         </View>
       </Card>
 
@@ -275,11 +287,11 @@ const styles = StyleSheet.create({
   heroLabel: {
     fontSize: Typography.size.caption,
     color: Colors.textSecondary,
-    fontWeight: Typography.weight.semibold
+    fontWeight: 600
   },
   heroTitle: {
     fontSize: Typography.size.h2,
-    fontWeight: Typography.weight.bold,
+    fontWeight: 700,
     color: Colors.text,
     marginTop: Spacing.xs
   },
@@ -309,7 +321,7 @@ const styles = StyleSheet.create({
   },
   sectionTitle: {
     fontSize: Typography.size.subtitle,
-    fontWeight: Typography.weight.semibold,
+    fontWeight: 600,
     color: Colors.text
   },
   ctaRow: {
@@ -326,7 +338,7 @@ const styles = StyleSheet.create({
   },
   ctaButtonText: {
     fontSize: Typography.size.caption,
-    fontWeight: Typography.weight.semibold
+    fontWeight: 600
   },
   checklistCard: {
     marginTop: Spacing.lg
@@ -369,7 +381,7 @@ const styles = StyleSheet.create({
   },
   statValue: {
     fontSize: Typography.size.h3,
-    fontWeight: Typography.weight.bold,
+    fontWeight: 700,
     color: Colors.text
   },
   statLabel: {
@@ -408,7 +420,7 @@ const styles = StyleSheet.create({
   },
   actionTitle: {
     fontSize: Typography.size.body,
-    fontWeight: Typography.weight.semibold,
+    fontWeight: 600,
     color: Colors.text
   },
   actionSubtitle: {

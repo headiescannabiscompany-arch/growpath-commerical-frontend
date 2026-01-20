@@ -8,7 +8,8 @@ import {
   ActivityIndicator,
   Image,
   ImageBackground,
-  LinearGradient
+  LinearGradient,
+  Platform
 } from "react-native";
 import ScreenContainer from "../components/ScreenContainer";
 import { getCategories } from "../api/courses";
@@ -238,10 +239,15 @@ const styles = StyleSheet.create({
     borderRadius: 16,
     overflow: "hidden",
     elevation: 4,
-    shadowColor: "#000",
-    shadowOffset: { width: 0, height: 3 },
-    shadowOpacity: 0.2,
-    shadowRadius: 5
+    ...Platform.select({
+      web: { boxShadow: "0 3px 15px rgba(0,0,0,0.20)" },
+      default: {
+        shadowColor: "#000",
+        shadowOffset: { width: 0, height: 3 },
+        shadowOpacity: 0.2,
+        shadowRadius: 5
+      }
+    })
   },
   gradientCard: {
     height: 220,

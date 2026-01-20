@@ -1,5 +1,12 @@
 import React, { useState, useRef, useEffect } from "react";
-import { View, Text, StyleSheet, TouchableOpacity, ScrollView, Dimensions } from "react-native";
+import {
+  View,
+  Text,
+  StyleSheet,
+  TouchableOpacity,
+  ScrollView,
+  Dimensions
+} from "react-native";
 import AsyncStorage from "@react-native-async-storage/async-storage";
 import { INTEREST_TIERS } from "../config/interests";
 import { ONBOARDING_INTERESTS_KEY } from "../constants/storageKeys";
@@ -70,7 +77,15 @@ export default function AppIntroScreen({ onDone }) {
     onDone();
   };
 
-  const renderSelectionStep = (title, subtitle, options, selected, setSelected, onNext, isLast) => (
+  const renderSelectionStep = (
+    title,
+    subtitle,
+    options,
+    selected,
+    setSelected,
+    onNext,
+    isLast
+  ) => (
     <View style={styles.sectionContainer}>
       <Text style={styles.sectionTitle}>{title}</Text>
       <Text style={styles.sectionSubtitle}>{subtitle}</Text>
@@ -110,8 +125,10 @@ export default function AppIntroScreen({ onDone }) {
         <View style={styles.introSection}>
           <Text style={styles.headline}>Cannabis industry, united.</Text>
           <Text style={styles.body}>
-            GrowPath Commercial connects cultivators, nutrient companies, equipment manufacturers, and soil suppliers.{"\n\n"}
-            Cultivators manage operations and compliance. Industry partners build credibility and reach customers.
+            GrowPath Commercial connects cultivators, nutrient companies, equipment
+            manufacturers, and soil suppliers.{"\n\n"}
+            Cultivators manage operations and compliance. Industry partners build
+            credibility and reach customers.
           </Text>
           <Text style={styles.footer}>One platform. Multiple business models.</Text>
 
@@ -122,7 +139,7 @@ export default function AppIntroScreen({ onDone }) {
               onPress={handleStart}
               disabled={step > 0}
             >
-              <Text style={styles.buttonText}>Select Business Type</Text>
+              <Text style={styles.buttonText}>Select Grow Interests</Text>
             </TouchableOpacity>
             <TouchableOpacity style={styles.skipButton} onPress={handleSkip}>
               <Text style={styles.skipText}>Skip for now</Text>
@@ -153,7 +170,7 @@ export default function AppIntroScreen({ onDone }) {
             handleFinish,
             true
           )}
-          
+
         {/* Padding for scroll */}
         <View style={{ height: 100 }} />
       </ScrollView>

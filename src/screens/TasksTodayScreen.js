@@ -1,11 +1,5 @@
 import React, { useEffect, useState } from "react";
-import {
-  Text,
-  TouchableOpacity,
-  FlatList,
-  View,
-  Platform
-} from "react-native";
+import { Text, TouchableOpacity, FlatList, View, Platform } from "react-native";
 import { useNavigation } from "@react-navigation/native";
 import ScreenContainer from "../components/ScreenContainer";
 import TaskCompleteModal from "../components/TaskCompleteModal";
@@ -16,6 +10,7 @@ import {
   scheduleTaskReminder,
   canUseReminders
 } from "../utils/notifications";
+import FeatureGate from "../components/FeatureGate";
 import { useAuth } from "../context/AuthContext";
 
 export default function TasksTodayScreen() {
@@ -122,45 +117,11 @@ export default function TasksTodayScreen() {
               )}
               <Text style={styles.desc}>{item.description}</Text>
 
-              <TouchableOpacity
-                style={[styles.doneBtn, !isPro && { backgroundColor: "#ccc" }]}
-                onPress={isPro ? () => finish(item._id) : undefined}
-                disabled={!isPro}
-              >
-                <Text style={[styles.doneText, !isPro && { color: "#888" }]}>
-                  Complete
-                </Text>
-              </TouchableOpacity>
-              {!isPro && (
-                <View
-                  style={{
-                    marginTop: 8,
-                    backgroundColor: "#FEF3C7",
-                    borderRadius: 8,
-                    padding: 10
-                  }}
-                >
-                  <Text style={{ color: "#92400E", textAlign: "center", fontSize: 14 }}>
-                    Task completion is a Pro feature. Upgrade to Pro to track your
-                    progress and mark tasks complete.
-                  </Text>
-                  <TouchableOpacity
-                    style={{
-                      marginTop: 8,
-                      backgroundColor: "#10B981",
-                      padding: 8,
-                      borderRadius: 8
-                    }}
-                    onPress={() => navigation.navigate("Subscription")}
-                  >
-                    <Text
-                      style={{ color: "white", textAlign: "center", fontWeight: "700" }}
-                    >
-                      Upgrade to Pro
-                    </Text>
-                  </TouchableOpacity>
-                </View>
-              )}
+              <FeatureGate plan="pro" navigation={navigation}>
+                <TouchableOpacity style={styles.doneBtn} onPress={() => finish(item._id)}>
+                  <Text style={styles.doneText}>Complete</Text>
+                </TouchableOpacity>
+              </FeatureGate>
             </View>
           )}
         />

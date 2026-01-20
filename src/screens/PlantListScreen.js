@@ -9,7 +9,7 @@ import {
 } from "react-native";
 import { useAuth } from "../context/AuthContext";
 import { getPlants } from "../api/plants";
-import ScreenContainer from "../components/ScreenContainer";
+import AppShell from "../components/AppShell.js";
 import PrimaryButton from "../components/PrimaryButton";
 import { requirePro } from "../utils/proHelper";
 
@@ -84,14 +84,14 @@ export default function PlantListScreen({ navigation }) {
 
   if (loading) {
     return (
-      <ScreenContainer style={styles.container}>
+      <AppShell style={styles.container} contentContainerStyle={null}>
         <ActivityIndicator size="large" color="#28A745" style={styles.loader} />
-      </ScreenContainer>
+      </AppShell>
     );
   }
 
   return (
-    <ScreenContainer style={styles.container}>
+    <AppShell style={styles.container} contentContainerStyle={null}>
       <View style={styles.header}>
         <Text style={styles.title}>My Plants</Text>
         {!isPro && plants.length >= 1 && (
@@ -121,7 +121,7 @@ export default function PlantListScreen({ navigation }) {
           <Text style={styles.proHint}>⭐ Upgrade to PRO for unlimited plants</Text>
         )}
       </View>
-    </ScreenContainer>
+    </AppShell>
   );
 }
 

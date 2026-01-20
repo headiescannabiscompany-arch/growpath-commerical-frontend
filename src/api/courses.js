@@ -1,3 +1,10 @@
+// Buy a course (standard API, not Stripe checkout)
+export function buyCourse(courseId, payload) {
+  return api(`/api/courses/${courseId}/buy`, {
+    method: "POST",
+    body: JSON.stringify(payload || {})
+  });
+}
 import { client as api } from "./client.js";
 import ROUTES from "./routes.js";
 
@@ -69,8 +76,9 @@ export function enrollInCourse(courseId) {
   });
 }
 
-export function buyCourse(courseId) {
-  return api(ROUTES.COURSES.BUY(courseId), {
+// Stripe-powered course checkout
+export function buyCourseStripeCheckout(courseId) {
+  return api(`/api/courses/${courseId}/checkout`, {
     method: "POST"
   });
 }

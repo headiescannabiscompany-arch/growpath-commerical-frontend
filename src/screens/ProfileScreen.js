@@ -11,7 +11,7 @@ import {
 } from "react-native";
 
 import FollowButton from "../components/FollowButton";
-import ScreenContainer from "../components/ScreenContainer";
+import AppShell from "../components/AppShell.js";
 import TokenBalanceWidget from "../components/TokenBalanceWidget";
 import {
   getProfile,
@@ -20,8 +20,10 @@ import {
   getUserGrowLogs
 } from "../api/users";
 import { updateCourse } from "../api/courses";
-import { useAuth } from "../context/AuthContext";
-import { getEntitlements } from "../utils/entitlements";
+import { useAuth } from "../context/AuthContext.js";
+import { getEntitlement, getEntitlements, FEATURES } from "../utils/entitlements";
+import PrimaryButton from "../components/PrimaryButton.js";
+import CommercialBanner from "../components/CommercialBanner.js";
 import { resolveImageUrl } from "../utils/images";
 import GrowInterestsEditor from "../components/GrowInterestsEditor";
 
@@ -322,8 +324,16 @@ export default function ProfileScreen({ route, navigation }) {
   const myCourses = isOwnProfile ? profileCourses : [];
   const { isPro: profileIsPro, isEntitled: profileIsEntitled } = getEntitlements(user);
 
-  const renderHeader = () => (
+  const userRole = user?.role || "free";
+  // Example entitlement logic for workspace toggles (expand as needed)
+  const facilityEnt = getEntitlement("rooms_equipment_staff", userRole);
+  const complianceEnt = getEntitlement("compliance_tools", userRole);
+  const socialEnt = getEntitlement("social_visibility_tools", userRole);
+
+  return (
     <View>
+      <CommercialBanner userRole={userRole} mode={user?.mode} />
+      {/* ...existing code for avatar, stats, etc... */}
       <View>
         <Image
           source={{
@@ -375,6 +385,85 @@ export default function ProfileScreen({ route, navigation }) {
 
       {isOwnProfile && renderModeToggle()}
 
+      {/* Workspace/role features always visible, gated by entitlement */}
+      <View
+        style={{ flexDirection: "row", gap: 12, marginHorizontal: 20, marginBottom: 8 }}
+      >
+        <PrimaryButton
+          title={facilityEnt === "cta" ? "Upgrade for Facility" : "Facility Tools"}
+          style={{
+            flex: 1,
+            backgroundColor: facilityEnt === "enabled" ? "#0ea5e9" : "#ccc"
+          }}
+          disabled={facilityEnt !== "enabled"}
+          onPress={() => {
+            if (facilityEnt === "cta") {
+              Alert.alert(
+                "Upgrade Required",
+                "Upgrade your plan to access facility tools."
+              );
+              return;
+            }
+            Alert.alert("Facility Tools", "Facility tools coming soon.");
+          }}
+        />
+        <PrimaryButton
+          title={complianceEnt === "cta" ? "Upgrade for Compliance" : "Compliance Tools"}
+          style={{
+            flex: 1,
+            backgroundColor: complianceEnt === "enabled" ? "#0ea5e9" : "#ccc"
+          }}
+          disabled={complianceEnt !== "enabled"}
+          onPress={() => {
+            if (complianceEnt === "cta") {
+              Alert.alert(
+                "Upgrade Required",
+                "Upgrade your plan to access compliance tools."
+              );
+              return;
+            }
+            Alert.alert("Compliance Tools", "Compliance tools coming soon.");
+          }}
+        />
+        <PrimaryButton
+          title={socialEnt === "cta" ? "Upgrade for Social" : "Social Tools"}
+          style={{
+            flex: 1,
+            backgroundColor: socialEnt === "enabled" ? "#0ea5e9" : "#ccc"
+          }}
+          disabled={socialEnt !== "enabled"}
+          onPress={() => {
+            if (socialEnt === "cta") {
+              Alert.alert(
+                "Upgrade Required",
+                "Upgrade your plan to access social tools."
+              );
+              return;
+            }
+            Alert.alert("Social Tools", "Social tools coming soon.");
+          }}
+        />
+      </View>
+
+      {/* ...existing code for plans, tokens, courses, etc... */}
+      {/* View Plans & Pricing Button (always visible) */}
+      <TouchableOpacity
+        style={{
+          backgroundColor: "#10B981",
+          paddingVertical: 12,
+          paddingHorizontal: 24,
+          borderRadius: 8,
+          alignSelf: "center",
+          marginVertical: 12
+        }}
+        onPress={() => navigation.navigate("PricingMatrix")}
+      >
+        <Text style={{ color: "white", fontWeight: "bold", fontSize: 16 }}>
+          View Plans & Pricing
+        </Text>
+      </TouchableOpacity>
+
+      {/* ...existing code for rest of header... */}
       {!isOwnProfile && user._id ? (
         <View style={{ alignItems: "center", marginVertical: 10 }}>
           <FollowButton userId={user._id} />
@@ -388,6 +477,7 @@ export default function ProfileScreen({ route, navigation }) {
         </View>
       )}
 
+      {/* ...existing code for courses, notification prefs, edit, tabs... */}
       {isOwnProfile && (
         <View style={styles.courseShelf}>
           <View style={styles.courseShelfHeader}>
@@ -456,7 +546,7 @@ export default function ProfileScreen({ route, navigation }) {
         </View>
       )}
 
-      {/* NOTIFICATION PREFERENCES (Own Profile Only) */}
+      {/* ...existing code for notification prefs, edit, tabs... */}
       {isOwnProfile && (
         <View style={styles.notifPrefsCard}>
           <Text style={styles.notifPrefsTitle}>Notification Preferences</Text>
@@ -487,7 +577,7 @@ export default function ProfileScreen({ route, navigation }) {
         </View>
       )}
 
-      {/* EDIT PROFILE BUTTON */}
+      {/* ...existing code for edit, tabs... */}
       {isOwnProfile && (
         <TouchableOpacity
           style={styles.editBtn}
@@ -497,7 +587,7 @@ export default function ProfileScreen({ route, navigation }) {
         </TouchableOpacity>
       )}
 
-      {/* TABS */}
+      {/* ...existing code for tabs... */}
       <View style={styles.tabs}>
         <TouchableOpacity
           onPress={() => setTab("posts")}
@@ -738,7 +828,7 @@ export default function ProfileScreen({ route, navigation }) {
   const activeData = tab === "posts" ? posts : tab === "growlogs" ? growlogs : [];
 
   return (
-    <ScreenContainer scroll={false} contentContainerStyle={{ paddingBottom: 0 }}>
+    <AppShell scroll={false} contentContainerStyle={{ paddingBottom: 0 }}>
       <FlatList
         data={activeData}
         keyExtractor={(item) => item._id}
@@ -749,7 +839,7 @@ export default function ProfileScreen({ route, navigation }) {
         onEndReachedThreshold={0.5}
         contentContainerStyle={{ paddingBottom: 20 }}
       />
-    </ScreenContainer>
+    </AppShell>
   );
 }
 

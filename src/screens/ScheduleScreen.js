@@ -146,7 +146,7 @@ export default function ScheduleScreen() {
         animationType="fade"
         onRequestClose={handleCloseModal}
       >
-        <View style={styles.modalOverlay}>
+        <View style={[styles.modalOverlay, { zIndex: 1000, pointerEvents: "auto" }]}>
           <View style={styles.modalContent}>
             <Text style={styles.modalTitle}>{selectedTask?.title}</Text>
             <ScrollView style={{ maxHeight: 300 }}>
@@ -211,7 +211,9 @@ const styles = {
     backgroundColor: "rgba(0,0,0,0.5)",
     justifyContent: "center",
     alignItems: "center",
-    padding: 20
+    padding: 20,
+    pointerEvents: "auto",
+    zIndex: 1000
   },
   modalContent: {
     backgroundColor: "white",

@@ -255,7 +255,18 @@ const SocialMediaScreen = ({ navigation }) => {
                 <View style={styles.platformHeader}>
                   <View style={styles.platformInfo}>
                     <MaterialCommunityIcons
-                      name={platform.icon}
+                      // @ts-ignore: allow tiktok icon name for web
+                      name={
+                        platform.id === "instagram"
+                          ? "instagram"
+                          : platform.id === "tiktok"
+                            ? "tiktok"
+                            : platform.id === "twitter"
+                              ? "twitter"
+                              : platform.id === "youtube"
+                                ? "youtube"
+                                : "account"
+                      }
                       size={28}
                       color={platform.color}
                     />
@@ -302,7 +313,7 @@ const SocialMediaScreen = ({ navigation }) => {
                           onPress={() => handleDisconnect(platform.id)}
                         >
                           <MaterialCommunityIcons
-                            name="unlink"
+                            name="link"
                             size={18}
                             color={Colors.primary}
                           />
@@ -464,10 +475,7 @@ const styles = StyleSheet.create({
     borderRadius: 12,
     marginBottom: Spacing.md,
     overflow: "hidden",
-    shadowColor: "#000",
-    shadowOffset: { width: 0, height: 2 },
-    shadowOpacity: 0.1,
-    shadowRadius: 8,
+    boxShadow: "0px 2px 8px rgba(0,0,0,0.1)",
     elevation: 3
   },
   platformHeader: {

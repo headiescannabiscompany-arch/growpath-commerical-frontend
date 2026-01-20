@@ -1,27 +1,28 @@
+// @ts-nocheck
 import React, { useState } from "react";
 import { View, Text } from "react-native";
 import PrimaryButton from "../components/PrimaryButton.js";
 
 const slides = [
   {
-    title: "GrowPath Commercial",
-    body: "The all-in-one platform for cannabis industry businesses. From cultivators to nutrient companies to equipment manufacturers.",
-    emoji: "??"
+    title: "Select grow interests",
+    body: "Tell us what you're interested in: home growing, commercial cultivation, equipment, nutrients, or learning. We'll personalize your experience.",
+    emoji: "🌱"
   },
   {
     title: "For Cultivators",
     body: "Metrc compliance tracking, multi-facility management, real-time inventory sync, and automated compliance monitoring.",
-    emoji: "??"
+    emoji: "🏭"
   },
   {
     title: "For Industry Partners",
     body: "Soil suppliers, nutrient companies, equipment manufacturers - build credibility with grow logs, courses, and direct customer engagement.",
-    emoji: "??"
+    emoji: "🤝"
   },
   {
     title: "Freemium Model",
     body: "Cultivators get core features free. Industry partners pay $50/month for ads, courses, content showcase, and audience reach.",
-    emoji: "??"
+    emoji: "💸"
   },
   {
     title: "Compare Plans",
@@ -41,19 +42,35 @@ export default function OnboardingCarousel({ onDone, navigation }) {
       </View>
       <Text style={styles.title}>{slide.title}</Text>
       <Text style={styles.body}>{slide.body}</Text>
-      {index === slides.length - 1 ? (
+      {/* Add button to view pricing matrix on the 'Compare Plans' slide */}
+      {slide.title === "Compare Plans" && navigation && (
+        <PrimaryButton
+          title="View Plans & Pricing"
+          onPress={() => navigation.navigate("PricingMatrix")}
+          style={{ marginTop: 12 }}
+        >
+          <Text>View Plans & Pricing</Text>
+        </PrimaryButton>
+      )}
+      {index < slides.length - 1 && (
+        <PrimaryButton
+          title="Next"
+          onPress={() => setIndex(index + 1)}
+          style={{ marginTop: 12 }}
+          disabled={false}
+        >
+          <Text>Next</Text>
+        </PrimaryButton>
+      )}
+      {index === slides.length - 1 && (
         <PrimaryButton
           title="Get Started"
           onPress={onDone}
           style={{ marginTop: 24 }}
           disabled={false}
-        />
-      ) : (
-        <PrimaryButton
-          title="Compare Plans"
-          onPress={() => navigation?.navigate?.("PlanFeatureMatrixScreen")}
-          style={{ marginTop: 12 }}
-        />
+        >
+          <Text>Get Started</Text>
+        </PrimaryButton>
       )}
     </View>
   );

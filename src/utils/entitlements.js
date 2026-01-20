@@ -1,61 +1,183 @@
-/**
- * Centralized entitlement logic shared between React context and tests.
- * Matches backend gating rules.
- */
-export function getEntitlements(user) {
-  if (!user) {
-    return {
-      isPro: false,
-      isProCommercial: false,
-      isFacility: false,
-      isCommercial: false,
-      isGuildMember: false,
-      isEntitled: false,
-      subscriptionStatus: "free"
-    };
+// Central entitlement utility for GrowPath roles and features
+
+// User roles
+export const ROLES = {
+  FREE: "free",
+  PRO: "pro",
+  INFLUENCER: "influencer",
+  COMMERCIAL: "commercial",
+  FACILITY: "facility"
+};
+
+// Features (add more as needed)
+export const FEATURES = {
+  DASHBOARD_ANALYTICS: "dashboard_analytics",
+  DASHBOARD_EXPORT: "dashboard_export",
+  GROWLOGS_MULTI: "growlogs_multi",
+  GROWLOGS_EXPORT: "growlogs_export",
+  GROWLOGS_BATCH: "growlogs_batch",
+  GROWLOGS_COMPLIANCE: "growlogs_compliance",
+  DIAGNOSE_AI: "diagnose_ai",
+  DIAGNOSE_ADVANCED: "diagnose_advanced",
+  DIAGNOSE_EXPORT: "diagnose_export",
+  COURSES_CREATE: "courses_create",
+  COURSES_ANALYTICS: "courses_analytics",
+  COURSES_AFFILIATE: "courses_affiliate",
+  FORUM_FEATURED: "forum_featured",
+  FORUM_BRAND: "forum_brand",
+  FORUM_INSIGHTS: "forum_insights"
+};
+
+// Entitlement matrix
+// Each feature: { [role]: "enabled" | "disabled" | "cta" }
+export const ENTITLEMENT_MATRIX = {
+  [FEATURES.DASHBOARD_ANALYTICS]: {
+    free: "cta",
+    pro: "enabled",
+    influencer: "enabled",
+    commercial: "enabled",
+    facility: "enabled"
+  },
+  [FEATURES.DASHBOARD_EXPORT]: {
+    free: "cta",
+    pro: "enabled",
+    influencer: "enabled",
+    commercial: "enabled",
+    facility: "enabled"
+  },
+  [FEATURES.GROWLOGS_MULTI]: {
+    free: "disabled",
+    pro: "disabled",
+    influencer: "cta",
+    commercial: "enabled",
+    facility: "enabled"
+  },
+  [FEATURES.GROWLOGS_EXPORT]: {
+    free: "cta",
+    pro: "enabled",
+    influencer: "enabled",
+    commercial: "enabled",
+    facility: "enabled"
+  },
+  [FEATURES.GROWLOGS_BATCH]: {
+    free: "disabled",
+    pro: "disabled",
+    influencer: "disabled",
+    commercial: "enabled",
+    facility: "enabled"
+  },
+  [FEATURES.GROWLOGS_COMPLIANCE]: {
+    free: "disabled",
+    pro: "disabled",
+    influencer: "disabled",
+    commercial: "disabled",
+    facility: "enabled"
+  },
+  [FEATURES.DIAGNOSE_AI]: {
+    free: "cta",
+    pro: "enabled",
+    influencer: "enabled",
+    commercial: "enabled",
+    facility: "enabled"
+  },
+  [FEATURES.DIAGNOSE_ADVANCED]: {
+    free: "disabled",
+    pro: "enabled",
+    influencer: "enabled",
+    commercial: "enabled",
+    facility: "enabled"
+  },
+  [FEATURES.DIAGNOSE_EXPORT]: {
+    free: "disabled",
+    pro: "enabled",
+    influencer: "enabled",
+    commercial: "enabled",
+    facility: "enabled"
+  },
+  [FEATURES.COURSES_CREATE]: {
+    free: "disabled",
+    pro: "cta",
+    influencer: "enabled",
+    commercial: "cta",
+    facility: "enabled"
+  },
+  [FEATURES.COURSES_ANALYTICS]: {
+    free: "disabled",
+    pro: "cta",
+    influencer: "enabled",
+    commercial: "enabled",
+    facility: "enabled"
+  },
+  [FEATURES.COURSES_AFFILIATE]: {
+    free: "disabled",
+    pro: "disabled",
+    influencer: "enabled",
+    commercial: "disabled",
+    facility: "disabled"
+  },
+  [FEATURES.FORUM_FEATURED]: {
+    free: "disabled",
+    pro: "disabled",
+    influencer: "enabled",
+    commercial: "disabled",
+    facility: "disabled"
+  },
+  [FEATURES.FORUM_BRAND]: {
+    free: "disabled",
+    pro: "disabled",
+    influencer: "enabled",
+    commercial: "disabled",
+    facility: "disabled"
+  },
+  [FEATURES.FORUM_INSIGHTS]: {
+    free: "disabled",
+    pro: "disabled",
+    influencer: "enabled",
+    commercial: "enabled",
+    facility: "enabled"
+  },
+  // Commercial/Facility-only features
+  rooms_equipment_staff: {
+    free: "disabled",
+    pro: "disabled",
+    influencer: "disabled",
+    commercial: "enabled",
+    facility: "enabled"
+  },
+  compliance_tools: {
+    free: "disabled",
+    pro: "disabled",
+    influencer: "disabled",
+    commercial: "disabled",
+    facility: "enabled"
+  },
+  social_visibility_tools: {
+    free: "disabled",
+    pro: "disabled",
+    influencer: "enabled",
+    commercial: "disabled",
+    facility: "disabled"
   }
+};
 
-  const subscriptionStatus = user.subscriptionStatus || "free";
-  // You may want to use user.subscriptionType or similar if available
-  // Example: user.subscriptionType = "pro", "pro_commercial", "facility", "commercial"
-  const subscriptionType = user.subscriptionType || "free";
+// Utility: get entitlement for a feature/role
+export function getEntitlement(feature, role) {
+  const matrix = ENTITLEMENT_MATRIX[feature];
+  if (!matrix) return "disabled";
+  return matrix[role] || "disabled";
+}
 
-  // Single-user Pro: $10/mo
-  const isPro =
-    (subscriptionType === "pro" || subscriptionType === "pro_commercial") &&
-    (subscriptionStatus === "active" || subscriptionStatus === "trial");
-  // Single-user Pro+Commercial: $25/mo
-  const isProCommercial =
-    subscriptionType === "pro_commercial" &&
-    (subscriptionStatus === "active" || subscriptionStatus === "trial");
-  // Facility: $50/mo
-  const isFacility =
-    subscriptionType === "facility" &&
-    (subscriptionStatus === "active" || subscriptionStatus === "trial");
-  // Commercial: $50/mo
-  const isCommercial =
-    subscriptionType === "commercial" &&
-    (subscriptionStatus === "active" || subscriptionStatus === "trial");
-
-  const isGuildMember = Array.isArray(user.guilds) && user.guilds.length > 0;
-
-  // Pro OR Guild Member unlocks AI/VPD
-  const isEntitled =
-    isPro || isProCommercial || isFacility || isCommercial || isGuildMember;
-
-  // For mode gating
-  const facilityAccess = isFacility;
-  const commercialAccess = isCommercial || isProCommercial;
+// --- compatibility export for existing code ---
+export function getEntitlements(input = {}) {
+  const role =
+    input?.role ||
+    input?.user?.role ||
+    (input?.mode === "facility" ? "facility" : "user");
 
   return {
-    isPro,
-    isProCommercial,
-    isFacility,
-    isCommercial,
-    isGuildMember,
-    isEntitled,
-    subscriptionStatus,
-    facilityAccess,
-    commercialAccess
+    role,
+    // You can expand this later. For now keep app alive.
+    can: (feature) => !!getEntitlement(feature, role),
+    get: (feature) => getEntitlement(feature, role)
   };
 }

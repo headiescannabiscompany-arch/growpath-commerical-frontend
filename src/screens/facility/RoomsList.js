@@ -172,85 +172,74 @@ const RoomsList = ({ navigation }) => {
         animationType="slide"
         onRequestClose={() => setShowCreateModal(false)}
       >
-        <View style={styles.modalOverlay}>
-            <View style={styles.typeSelector}>
-              {["Vegetative", "Flowering", "Mother", "Clone", "Dry", "Cure"].map(
-                (type) => (
-                  <TouchableOpacity
-                    key={type}
-                    style={[
-                      styles.typeButton,
-                      newRoomType === type && styles.typeButtonActive
-                    ]}
-                    onPress={() => setNewRoomType(type)}
-                  >
-                    <Text
-                      style={[
-                        styles.typeButtonText,
-                        newRoomType === type && styles.typeButtonTextActive
-                      ]}
-                    >
-                      {type}
-                    </Text>
-                  </TouchableOpacity>
-                )
-              )}
-            </View>
-                      ]}
-                    >
-                      {type}
-                    </Text>
-                  </TouchableOpacity>
-                  style={[
-                    styles.typeButton,
-                    trackingMode === mode && styles.typeButtonActive
-                  ]}
-              )}
-            </View>
-            <Text style={styles.sectionLabel}>Tracking mode</Text>
-                    style={[
-                      styles.typeButtonText,
-                      trackingMode === mode && styles.typeButtonTextActive
-                    ]}
-              {["batch", "zone", "individual"].map((mode) => (
-                <TouchableOpacity
-                  key={mode}
-                  style=[styles.typeButton, trackingMode === mode && styles.typeButtonActive]
-                  onPress={() => setTrackingMode(mode)}
-                >
-                  <Text
-                    style=[styles.typeButtonText, trackingMode === mode && styles.typeButtonTextActive]
-                  >
-                    {mode === "batch" ? "Batch" : mode === "zone" ? "Zone" : "Individual"}
-                  </Text>
-                </TouchableOpacity>
-              ))}
-            </View>
-            <View style={styles.modalButtons}>
+        <View style={[styles.modalOverlay, { zIndex: 1000, pointerEvents: "auto" }]}>
+          <View style={styles.typeSelector}>
+            {["Vegetative", "Flowering", "Mother", "Clone", "Dry", "Cure"].map((type) => (
               <TouchableOpacity
-                style={[styles.modalButton, styles.cancelButton]}
-                onPress={() => {
-                  setShowCreateModal(false);
-                  setNewRoomName("");
-                  setNewRoomType("Vegetative");
-                }}
-              >
-                <Text style={styles.cancelButtonText}>Cancel</Text>
-              </TouchableOpacity>
-              <TouchableOpacity
+                key={type}
                 style={[
-                  styles.modalButton,
-                  styles.createButton,
-                  creating && styles.disabledButton
+                  styles.typeButton,
+                  newRoomType === type && styles.typeButtonActive
                 ]}
-                onPress={handleCreateRoom}
-                disabled={creating}
+                onPress={() => setNewRoomType(type)}
               >
-                <Text style={styles.createButtonText}>
-                  {creating ? "Creating..." : "Create"}
+                <Text
+                  style={[
+                    styles.typeButtonText,
+                    newRoomType === type && styles.typeButtonTextActive
+                  ]}
+                >
+                  {type}
                 </Text>
               </TouchableOpacity>
-            </View>
+            ))}
+          </View>
+          <Text style={styles.sectionLabel}>Tracking mode</Text>
+          <View style={styles.typeSelector}>
+            {["batch", "zone", "individual"].map((mode) => (
+              <TouchableOpacity
+                key={mode}
+                style={[
+                  styles.typeButton,
+                  trackingMode === mode && styles.typeButtonActive
+                ]}
+                onPress={() => setTrackingMode(mode)}
+              >
+                <Text
+                  style={[
+                    styles.typeButtonText,
+                    trackingMode === mode && styles.typeButtonTextActive
+                  ]}
+                >
+                  {mode === "batch" ? "Batch" : mode === "zone" ? "Zone" : "Individual"}
+                </Text>
+              </TouchableOpacity>
+            ))}
+          </View>
+          <View style={styles.modalButtons}>
+            <TouchableOpacity
+              style={[styles.modalButton, styles.cancelButton]}
+              onPress={() => {
+                setShowCreateModal(false);
+                setNewRoomName("");
+                setNewRoomType("Vegetative");
+              }}
+            >
+              <Text style={styles.cancelButtonText}>Cancel</Text>
+            </TouchableOpacity>
+            <TouchableOpacity
+              style={[
+                styles.modalButton,
+                styles.createButton,
+                creating && styles.disabledButton
+              ]}
+              onPress={handleCreateRoom}
+              disabled={creating}
+            >
+              <Text style={styles.createButtonText}>
+                {creating ? "Creating..." : "Create"}
+              </Text>
+            </TouchableOpacity>
           </View>
         </View>
       </Modal>
@@ -295,9 +284,7 @@ const styles = StyleSheet.create({
     marginBottom: 12,
     borderLeftWidth: 4,
     borderLeftColor: "#0ea5e9",
-    shadowColor: "#000",
-    shadowOpacity: 0.1,
-    shadowRadius: 4,
+    boxShadow: "0px 2px 8px rgba(0,0,0,0.10)",
     elevation: 2
   },
   roomHeader: {

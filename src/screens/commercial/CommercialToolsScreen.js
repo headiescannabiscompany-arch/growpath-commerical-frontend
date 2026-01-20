@@ -47,6 +47,7 @@ const TOOL_ITEMS = [
 const ToolCard = ({ icon, title, description, onPress, cta }) => (
   <TouchableOpacity style={styles.toolCard} onPress={onPress}>
     <View style={styles.iconWrap}>
+      {/* @ts-ignore */}
       <MaterialCommunityIcons name={icon} size={22} color={Colors.primary} />
     </View>
     <View style={styles.toolBody}>
@@ -119,7 +120,7 @@ const styles = StyleSheet.create({
   },
   headerTitle: {
     fontSize: Typography.size.h2,
-    fontWeight: Typography.weight.bold,
+    fontWeight: 700,
     color: Colors.text
   },
   headerSubtitle: {
@@ -132,7 +133,7 @@ const styles = StyleSheet.create({
   },
   sectionTitle: {
     fontSize: Typography.size.subtitle,
-    fontWeight: Typography.weight.semibold,
+    fontWeight: 600,
     color: Colors.text
   },
   toolsGrid: {
@@ -163,7 +164,7 @@ const styles = StyleSheet.create({
   },
   toolTitle: {
     fontSize: Typography.size.body,
-    fontWeight: Typography.weight.semibold,
+    fontWeight: 600,
     color: Colors.text
   },
   toolDescription: {
@@ -172,7 +173,7 @@ const styles = StyleSheet.create({
   },
   toolCta: {
     fontSize: Typography.size.caption,
-    fontWeight: Typography.weight.semibold,
+    fontWeight: 600,
     color: Colors.primary,
     marginLeft: Spacing.sm
   },

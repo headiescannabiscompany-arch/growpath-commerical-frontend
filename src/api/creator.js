@@ -1,3 +1,11 @@
+export function markPayoutPaid(payoutId) {
+  return api(`${ROUTES.CREATOR.PAYOUT_HISTORY}/${payoutId}/mark-paid`, {
+    method: "POST"
+  });
+}
+export function requestPayout() {
+  return api(ROUTES.CREATOR.REQUEST_PAYOUT, { method: "POST" });
+}
 import { client as api, postMultipart } from "./client.js";
 import ROUTES from "./routes.js";
 

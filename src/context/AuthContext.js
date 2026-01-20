@@ -177,6 +177,12 @@ export const AuthProvider = ({ children }) => {
         }
       });
 
+      if (response.status === 401) {
+        // Token invalid/expired: clear auth and show login
+        await logout();
+        return;
+      }
+
       let facilitiesAccessResponse = [];
       if (response.ok) {
         const data = await response.json();

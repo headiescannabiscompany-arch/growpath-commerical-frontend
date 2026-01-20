@@ -118,12 +118,19 @@ const NutrientToolsScreen = ({ navigation }) => {
             <TouchableOpacity key={tool.id} onPress={tool.action} activeOpacity={0.7}>
               <Card style={[styles.toolCard, { backgroundColor: tool.color }]}>
                 <View style={styles.toolHeader}>
-                  <MaterialCommunityIcons
-                    name={tool.icon}
-                    size={32}
-                    color={Colors.primary}
-                    style={styles.toolIcon}
-                  />
+                  {(() => {
+                    const iconName = tool.icon;
+                    return (
+                      <MaterialCommunityIcons
+                        // @ts-ignore
+                        // @ts-ignore
+                        name={iconName}
+                        size={32}
+                        color={Colors.primary}
+                        style={styles.toolIcon}
+                      />
+                    );
+                  })()}
                   <View style={[styles.badge, { backgroundColor: Colors.primary }]}>
                     <Text style={styles.badgeText}>{tool.badge}</Text>
                   </View>
@@ -204,10 +211,7 @@ const styles = StyleSheet.create({
     backgroundColor: Colors.surface,
     borderRadius: 12,
     minWidth: "28%",
-    shadowColor: "#000",
-    shadowOffset: { width: 0, height: 2 },
-    shadowOpacity: 0.1,
-    shadowRadius: 8,
+    boxShadow: "0px 2px 8px rgba(0,0,0,0.10)",
     elevation: 3
   },
   statValue: {
