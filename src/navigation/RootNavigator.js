@@ -58,6 +58,8 @@ import GrowEditPlantScreen from "../screens/GrowEditPlantScreen.js";
 const Stack = createNativeStackNavigator();
 
 import PrivacyPolicyScreen from "../screens/PrivacyPolicyScreen.js";
+// DEV: Debug QA Harness
+import DebugScreen from "../screens/DebugScreen.js";
 import PricingMatrixScreen from "../screens/PricingMatrixScreen.js";
 import CreatePostScreen from "../screens/CreatePostScreen.js";
 import CommentsScreen from "../screens/CommentsScreen.js";
@@ -192,6 +194,14 @@ export default function RootNavigator() {
           headerTitleStyle: { fontWeight: "bold" }
         }}
       >
+        {/* DEV: Debug QA Harness (only in development) */}
+        {__DEV__ && (
+          <Stack.Screen
+            name="Debug"
+            component={DebugScreen}
+            options={{ title: "Debug QA Harness" }}
+          />
+        )}
         {/* Public/Onboarding */}
         {!isPro && showIntro ? (
           <Stack.Screen name="AppIntro" options={{ headerShown: false }}>
