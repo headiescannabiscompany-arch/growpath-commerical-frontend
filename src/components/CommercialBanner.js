@@ -4,7 +4,15 @@ import { View, Text, StyleSheet, Image } from "react-native";
 import ContextBar from "./ContextBar.js";
 
 // Simple, reusable banner for promos, upgrades, featured tools, etc.
-export default function CommercialBanner({ mode, capabilities, contextBarProps }) {
+const defaultCapabilities = {
+  canUseTimelinePlanner: false,
+  canExportPdf: false
+};
+export default function CommercialBanner({
+  mode,
+  capabilities = defaultCapabilities,
+  contextBarProps
+}) {
   let bannerText = "🌱 Featured: Try GrowPath Pro for advanced tools & community!";
   if (mode === "facility")
     bannerText = "🏭 Facility: Access your team tools and analytics!";
