@@ -2,7 +2,6 @@ import React from "react";
 import { View, Text, StyleSheet, ScrollView } from "react-native";
 
 export default function AnalyticsScreen() {
-  // TODO: Fetch analytics data from backend
   return (
     <ScrollView contentContainerStyle={styles.container}>
       <Text style={styles.title}>Analytics</Text>
@@ -11,12 +10,12 @@ export default function AnalyticsScreen() {
       </Text>
       <View style={styles.section}>
         <Text style={styles.sectionTitle}>Overview</Text>
-        {/* TODO: Render analytics summary from backend */}
+        {/* Analytics summary will be rendered here */}
         <Text style={styles.placeholder}>Views: 0 · Enrollments: 0 · Revenue: $0</Text>
       </View>
       <View style={styles.section}>
         <Text style={styles.sectionTitle}>Reports & Export</Text>
-        {/* TODO: Add export/reporting features */}
+        {/* Export/reporting features will be added here */}
         <Text style={styles.placeholder}>No reports available.</Text>
       </View>
     </ScrollView>

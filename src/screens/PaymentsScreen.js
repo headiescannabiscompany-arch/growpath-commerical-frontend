@@ -2,7 +2,6 @@ import React from "react";
 import { View, Text, StyleSheet, TouchableOpacity, ScrollView } from "react-native";
 
 export default function PaymentsScreen() {
-  // TODO: Fetch payment history, subscription status, and upgrade options from backend
   return (
     <ScrollView contentContainerStyle={styles.container}>
       <Text style={styles.title}>Payments & Upgrades</Text>
@@ -12,13 +11,13 @@ export default function PaymentsScreen() {
       {/* Payment history */}
       <View style={styles.section}>
         <Text style={styles.sectionTitle}>Payment History</Text>
-        {/* TODO: Render payment history from backend */}
+        {/* Payment history will be rendered here */}
         <Text style={styles.placeholder}>No payments found.</Text>
       </View>
       {/* Subscription status */}
       <View style={styles.section}>
         <Text style={styles.sectionTitle}>Current Subscription</Text>
-        {/* TODO: Render current subscription status from backend */}
+        {/* Current subscription status will be rendered here */}
         <Text style={styles.placeholder}>Free Plan</Text>
         <TouchableOpacity style={styles.upgradeBtn}>
           <Text style={styles.upgradeBtnText}>Upgrade Plan</Text>
@@ -27,7 +26,7 @@ export default function PaymentsScreen() {
       {/* Upgrade options */}
       <View style={styles.section}>
         <Text style={styles.sectionTitle}>Upgrade Options</Text>
-        {/* TODO: Render upgrade options from backend */}
+        {/* Upgrade options will be rendered here */}
         <Text style={styles.placeholder}>Pro, Influencer, Commercial, Enterprise</Text>
       </View>
     </ScrollView>

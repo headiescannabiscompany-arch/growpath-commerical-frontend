@@ -2,7 +2,6 @@ import React from "react";
 import { View, Text, StyleSheet, TouchableOpacity, ScrollView } from "react-native";
 
 export default function FacilitiesScreen() {
-  // TODO: Fetch facilities and user list from backend
   return (
     <ScrollView contentContainerStyle={styles.container}>
       <Text style={styles.title}>Facility Management</Text>
@@ -11,7 +10,7 @@ export default function FacilitiesScreen() {
       </Text>
       <View style={styles.section}>
         <Text style={styles.sectionTitle}>Users & Facilities</Text>
-        {/* TODO: Render user/facility list from backend */}
+        {/* User/facility list will be rendered here */}
         <Text style={styles.placeholder}>No users or facilities found.</Text>
       </View>
       <View style={styles.section}>
@@ -25,7 +24,7 @@ export default function FacilitiesScreen() {
         <TouchableOpacity style={styles.adminBtn}>
           <Text style={styles.adminBtnText}>Set Roles</Text>
         </TouchableOpacity>
-        {/* TODO: Wire up admin actions to backend */}
+        {/* Admin actions will be wired to backend here */}
       </View>
     </ScrollView>
   );

@@ -4,16 +4,18 @@ import { View, Text, StyleSheet, Image } from "react-native";
 import ContextBar from "./ContextBar.js";
 
 // Simple, reusable banner for promos, upgrades, featured tools, etc.
-export default function CommercialBanner({ userRole, mode, contextBarProps }) {
+export default function CommercialBanner({ mode, capabilities, contextBarProps }) {
   let bannerText = "🌱 Featured: Try GrowPath Pro for advanced tools & community!";
   if (mode === "facility")
     bannerText = "🏭 Facility: Access your team tools and analytics!";
   else if (mode === "commercial")
     bannerText = "💼 Commercial: Manage your marketplace and vendor tools!";
-  else if (userRole === "admin")
-    bannerText = "🔒 Admin: Manage all users, reports, and analytics.";
-  else if (userRole === "creator")
-    bannerText = "🎓 Creator: Build and publish your own courses!";
+
+  // Show upgrade CTA if something is locked (example: Pro tools)
+  let showUpgrade = false;
+  if (!capabilities.canUseTimelinePlanner || !capabilities.canExportPdf) {
+    showUpgrade = true;
+  }
 
   return (
     <View>
@@ -28,6 +30,11 @@ export default function CommercialBanner({ userRole, mode, contextBarProps }) {
           resizeMode="contain"
         />
         <Text style={styles.text}>{bannerText}</Text>
+        {showUpgrade && (
+          <Text style={[styles.text, { fontSize: 12, marginLeft: 8 }]}>
+            Unlock more with Pro!
+          </Text>
+        )}
       </View>
     </View>
   );

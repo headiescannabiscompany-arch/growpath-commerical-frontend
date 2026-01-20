@@ -1,12 +1,11 @@
-import path from 'path';
-import { fileURLToPath } from 'url';
-import Ajv from 'ajv';
-import addFormats from 'ajv-formats';
-import SwaggerParser from '@apidevtools/swagger-parser';
-import fs from 'fs';
+const path = require("path");
+const Ajv = require("ajv");
+const addFormats = require("ajv-formats");
+const SwaggerParser = require("@apidevtools/swagger-parser");
+const fs = require("fs");
 
-const __filename = fileURLToPath(import.meta.url);
-const __dirname = path.dirname(__filename);
+const __filename = __filename;
+const __dirname = __dirname;
 
 const ajv = new Ajv({
   allErrors: true,
@@ -19,8 +18,8 @@ let dereferencedSpec = null;
 export async function getSpec() {
   if (dereferencedSpec) return dereferencedSpec;
 
-  const backendDocsDir = path.resolve(__dirname, '../../growpath-backend/docs/openapi');
-  const indexPath = path.join(backendDocsDir, 'index.yaml');
+  const backendDocsDir = path.resolve(__dirname, "../../growpath-backend/docs/openapi");
+  const indexPath = path.join(backendDocsDir, "index.yaml");
 
   if (!fs.existsSync(indexPath)) {
     return null;
@@ -30,7 +29,7 @@ export async function getSpec() {
     dereferencedSpec = await SwaggerParser.dereference(indexPath);
     return dereferencedSpec;
   } catch (err) {
-    console.warn('[Contract] Failed to parse OpenAPI spec:', err.message);
+    console.warn("[Contract] Failed to parse OpenAPI spec:", err.message);
     return null;
   }
 }
@@ -46,8 +45,8 @@ export async function validateResponse(apiPath, method, status, body) {
 
   let pathKey = apiPath;
   if (!spec.paths[pathKey]) {
-    pathKey = Object.keys(spec.paths).find(p => {
-      const regex = new RegExp('^' + p.replace(/\{[^}]+\}/g, '[^/]+') + '$');
+    pathKey = Object.keys(spec.paths).find((p) => {
+      const regex = new RegExp("^" + p.replace(/\{[^}]+\}/g, "[^/]+") + "$");
       return regex.test(apiPath);
     });
   }
@@ -63,12 +62,12 @@ export async function validateResponse(apiPath, method, status, body) {
     return true;
   }
 
-  const responseSpec = operation.responses[status] || operation.responses['default'];
+  const responseSpec = operation.responses[status] || operation.responses["default"];
   if (!responseSpec || !responseSpec.content) {
     return true;
   }
 
-  const schema = responseSpec.content['application/json']?.schema;
+  const schema = responseSpec.content["application/json"]?.schema;
   if (!schema) return true;
 
   const validate = ajv.compile(schema);
@@ -76,7 +75,9 @@ export async function validateResponse(apiPath, method, status, body) {
 
   if (!valid) {
     const errors = JSON.stringify(validate.errors, null, 2);
-    throw new Error(`[Contract Violation] ${m.toUpperCase()} ${apiPath} (${status}):\n${errors}`);
+    throw new Error(
+      `[Contract Violation] ${m.toUpperCase()} ${apiPath} (${status}):\n${errors}`
+    );
   }
 
   return true;

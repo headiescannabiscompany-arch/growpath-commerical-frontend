@@ -220,6 +220,12 @@
 			"type": "shell",
 			"command": "npx expo start --clear",
 			"isBackground": true
+		},
+		{
+			"label": "Frontend: expo",
+			"type": "shell",
+			"command": "npx expo start --clear",
+			"isBackground": true
 		}
 	]
 }

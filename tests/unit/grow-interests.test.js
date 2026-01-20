@@ -1,5 +1,4 @@
-import { describe, it } from "node:test";
-import assert from "node:assert/strict";
+import { describe, it, expect } from "@jest/globals";
 
 import {
   ensureTier1Selection,
@@ -17,19 +16,18 @@ describe("growInterests utils", () => {
       goals: []
     });
 
-    assert.deepEqual(
-      new Set(flattened),
+    expect(new Set(flattened)).toEqual(
       new Set(["Cannabis", "Herbs", "Indoor", "Hydroponics"])
     );
   });
 
   it("ensures tier 1 selection falls back to defaults when empty", () => {
     const fallback = ensureTier1Selection([]);
-    assert.ok(fallback.length > 0, "should have fallback crops");
-    assert.ok(!fallback.includes("Cannabis"), "fallback should exclude Cannabis");
+    expect(fallback.length).toBeGreaterThan(0);
+    expect(fallback.includes("Cannabis")).toBe(false);
 
     const custom = ensureTier1Selection(["Herbs", "Herbs"]);
-    assert.deepEqual(custom, ["Herbs"], "should dedupe explicit selections");
+    expect(custom).toEqual(["Herbs"]);
   });
 
   it("normalizes pending onboarding interests and injects tier 1 defaults", () => {
@@ -38,8 +36,8 @@ describe("growInterests utils", () => {
       environment: "Indoor"
     });
 
-    assert.ok(Array.isArray(normalized.environment), "environment should be array");
-    assert.ok(normalized.crops.length > 0, "crops should default to tier 1 set");
+    expect(Array.isArray(normalized.environment)).toBe(true);
+    expect(normalized.crops.length).toBeGreaterThan(0);
   });
 
   it("filters posts using OR logic across tier 1 and other tiers", () => {
@@ -53,16 +51,12 @@ describe("growInterests utils", () => {
     const otherSet = new Set(["Hydroponics"]);
 
     const filtered = filterPostsByInterests(posts, tier1Set, otherSet);
-    assert.deepEqual(
-      filtered.map((p) => p._id),
-      ["3"],
-      "should only include posts matching tier 1 and the other-tier filters"
-    );
+    expect(filtered.map((p) => p._id)).toEqual(["3"]);
 
     const tierOnly = filterPostsByInterests(posts, tier1Set, new Set());
-    assert.deepEqual(tierOnly.map((p) => p._id), ["1", "3"]);
+    expect(tierOnly.map((p) => p._id)).toEqual(["1", "3"]);
 
     const noFilters = filterPostsByInterests(posts, new Set(), new Set());
-    assert.equal(noFilters.length, posts.length, "no filters should return all posts");
+    expect(noFilters.length).toBe(posts.length);
   });
 });

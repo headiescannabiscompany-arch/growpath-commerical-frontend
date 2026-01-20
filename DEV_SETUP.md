@@ -3,7 +3,9 @@
 ## What Was Configured
 
 ### ✅ VS Code Extensions Installed
+
 All extensions have been installed:
+
 - ✅ ESLint - Real-time linting
 - ✅ Prettier - Code formatting
 - ✅ Error Lens - Inline error highlighting
@@ -17,6 +19,7 @@ All extensions have been installed:
 ### ✅ Configuration Files Created
 
 #### Root Level (Frontend/React Native)
+
 - [.eslintrc.json](.eslintrc.json) - ESLint config with React Native support
 - [.prettierrc](.prettierrc) - Prettier formatting rules
 - [jsconfig.json](jsconfig.json) - JavaScript type checking
@@ -26,6 +29,7 @@ All extensions have been installed:
 - [.prettierignore](.prettierignore) - Prettier ignore patterns
 
 #### Backend Level
+
 - [backend/.eslintrc.json](backend/.eslintrc.json) - ESLint config for Node.js
 - [backend/.prettierrc](backend/.prettierrc) - Prettier formatting rules
 - [backend/jsconfig.json](backend/jsconfig.json) - JavaScript type checking
@@ -34,28 +38,34 @@ All extensions have been installed:
 - [backend/.prettierignore](backend/.prettierignore) - Prettier ignore patterns
 
 #### VS Code Workspace Settings
+
 - [.vscode/settings.json](.vscode/settings.json) - Auto-format on save enabled
 
 ## Next Steps (Manual Installation Required)
 
 ### 1. Install Node.js
+
 Node.js is not currently installed on your system. Download and install:
+
 - **Node.js LTS**: https://nodejs.org/
 - Recommended: v18.x or v20.x LTS
 
 After installation, verify:
+
 ```powershell
 node --version
 npm --version
 ```
 
 ### 2. Install Backend Dependencies
+
 ```powershell
 cd backend
 npm install
 ```
 
 This will install:
+
 - eslint
 - prettier
 - eslint-config-prettier
@@ -64,12 +74,14 @@ This will install:
 - lint-staged
 
 ### 3. Install Frontend Dependencies
+
 ```powershell
 cd ..
 npm install
 ```
 
 This will install:
+
 - eslint
 - prettier
 - eslint-config-prettier
@@ -81,13 +93,17 @@ This will install:
 - lint-staged
 
 ### 4. Create your local env file
+
 ```powershell
 cp .env.test .env.development
 ```
+
 Then edit `.env.development` to point `EXPO_PUBLIC_API_URL` at your running backend (defaults to `http://127.0.0.1:5001`). Expo CLI automatically loads `.env.development` for local runs, so the app knows where to send auth/login requests.
 
 ### 5. Initialize Husky (Git Hooks)
+
 After npm install, run:
+
 ```powershell
 # In backend folder
 cd backend
@@ -103,7 +119,9 @@ This enables automatic code quality checks before commits.
 ## How to Use
 
 ### Auto-Format on Save
+
 Everything is already configured! Just:
+
 1. Open any `.js` file
 2. Make changes
 3. Press `Ctrl + S` (Save)
@@ -112,6 +130,7 @@ Everything is already configured! Just:
 ### Manual Linting
 
 #### Backend
+
 ```powershell
 cd backend
 npm run lint          # Check for errors
@@ -120,6 +139,7 @@ npm run format        # Format all files
 ```
 
 #### Frontend
+
 ```powershell
 npm run lint          # Check for errors
 npm run lint:fix      # Auto-fix errors
@@ -127,10 +147,13 @@ npm run format        # Format all files
 ```
 
 ### View Problems Panel
+
 Press `Ctrl + Shift + M` to see all errors and warnings across your project.
 
 ### Pre-Commit Hook
+
 When you run `git commit`, husky will:
+
 1. Run ESLint on changed files
 2. Run Prettier on changed files
 3. Block the commit if any errors exist
@@ -140,27 +163,33 @@ This prevents broken code from entering the repository.
 ## What Each Tool Does
 
 ### ESLint
+
 - Detects bugs, errors, and anti-patterns
 - Enforces code quality standards
 - Shows red squiggles under problematic code
 
 ### Prettier
+
 - Auto-formats code consistently
 - Fixes indentation, spacing, quotes
 - Removes formatting debates from code reviews
 
 ### Error Lens
+
 - Shows errors inline (not just squiggles)
 - Makes debugging 10x faster
 - Highlights issues in bright colors
 
 ### EditorConfig
+
 - Ensures consistent formatting across editors
 - Sets tab size, line endings, charset
 - Works in VS Code, Sublime, Vim, etc.
 
 ### Type Checking (jsconfig.json)
+
 VS Code will now show warnings for:
+
 - ❌ Undefined variables
 - ❌ Wrong function signatures
 - ❌ Invalid imports
@@ -169,6 +198,7 @@ VS Code will now show warnings for:
 ## Configuration Details
 
 ### ESLint Rules
+
 - `prettier/prettier: error` - Format issues are errors
 - `no-unused-vars: warn` - Unused variables show warnings
 - `no-undef: error` - Undefined variables are errors
@@ -176,6 +206,7 @@ VS Code will now show warnings for:
 - `react/react-in-jsx-scope: off` - React 17+ doesn't need import
 
 ### Prettier Rules
+
 - Double quotes for strings
 - 2-space indentation
 - Semicolons required
@@ -183,25 +214,30 @@ VS Code will now show warnings for:
 - 90 character line width
 
 ### Pre-Commit Hook
+
 Only staged files are checked (fast commits!)
 Files are auto-fixed before commit if possible.
 
 ## Troubleshooting
 
 ### "ESLint is disabled"
+
 1. Open Command Palette: `Ctrl + Shift + P`
 2. Type: `ESLint: Restart ESLint Server`
 
 ### "Prettier not formatting"
+
 1. Check bottom-right of VS Code
 2. Click on file type (e.g., "JavaScript")
 3. Select "Configure File Association for '.js'"
 4. Choose "JavaScript"
 
 ### "Error: Cannot find module 'eslint'"
+
 Run `npm install` in both root and backend folders.
 
 ### Git hooks not working
+
 ```powershell
 cd backend
 npx husky install
@@ -213,28 +249,35 @@ npx husky install
 ## Testing the Setup
 
 ### 1. Test Auto-Format
+
 Open [backend/server.js](backend/server.js) and add:
+
 ```javascript
-const x=1+2;
+const x = 1 + 2;
 ```
 
 Press `Ctrl + S`. It should auto-format to:
+
 ```javascript
 const x = 1 + 2;
 ```
 
 ### 2. Test ESLint Errors
+
 Add this invalid code:
+
 ```javascript
 undefinedFunction();
 ```
 
 You should see:
+
 - Red squiggle under `undefinedFunction`
 - Error message from Error Lens
 - Entry in Problems Panel (`Ctrl + Shift + M`)
 
 ### 3. Test Pre-Commit Hook
+
 ```powershell
 git add .
 git commit -m "test"
@@ -245,35 +288,39 @@ If any linting errors exist, the commit will be blocked.
 ## Professional Benefits
 
 ✅ **Catch bugs before runtime**
+
 - Undefined variables detected instantly
 - Invalid function calls highlighted
 - Type mismatches shown
 
 ✅ **Consistent code style**
+
 - Everyone's code looks the same
 - No formatting arguments
 - Auto-fixed on save
 
 ✅ **Faster code reviews**
+
 - No comments about formatting
 - Focus on logic, not style
 - Pre-commit hooks ensure quality
 
 ✅ **Better onboarding**
+
 - New developers see errors immediately
 - Code quality enforced automatically
 - Best practices baked in
 
 ## VS Code Keyboard Shortcuts
 
-| Action | Windows/Linux | Mac |
-|--------|--------------|-----|
-| Problems Panel | `Ctrl + Shift + M` | `Cmd + Shift + M` |
-| Command Palette | `Ctrl + Shift + P` | `Cmd + Shift + P` |
-| Format Document | `Shift + Alt + F` | `Shift + Option + F` |
-| Quick Fix | `Ctrl + .` | `Cmd + .` |
-| Go to Definition | `F12` | `F12` |
-| Find References | `Shift + F12` | `Shift + F12` |
+| Action           | Windows/Linux      | Mac                  |
+| ---------------- | ------------------ | -------------------- |
+| Problems Panel   | `Ctrl + Shift + M` | `Cmd + Shift + M`    |
+| Command Palette  | `Ctrl + Shift + P` | `Cmd + Shift + P`    |
+| Format Document  | `Shift + Alt + F`  | `Shift + Option + F` |
+| Quick Fix        | `Ctrl + .`         | `Cmd + .`            |
+| Go to Definition | `F12`              | `F12`                |
+| Find References  | `Shift + F12`      | `Shift + F12`        |
 
 ## Recommended Next Steps
 
@@ -285,3 +332,36 @@ If any linting errors exist, the commit will be blocked.
 6. **Start fixing errors** one by one until clean
 
 Your development environment is now professional-grade! 🚀
+
+## Capability-Driven UI Gating
+
+All feature access in the app is now controlled by a capability-driven system. User capabilities are determined by their plan, role, and entitlements, which are provided by the backend and processed in the frontend (see `AuthContext` and `src/utils/entitlements.js`).
+
+**Supported user types:**
+
+- Free
+- Pro
+- Influencer
+- Commercial
+- Facility
+- Guild member (users with one or more guilds)
+
+UI elements and features are automatically gated based on these capabilities. To add new user types or features, update the entitlements logic and ensure the backend returns the correct user fields (`plan`, `role`, `subscriptionStatus`, `guilds`, etc.).
+
+## Automated Testing for All User Types
+
+The test suite covers all user types and capability-driven UI gating. Acceptance and QA tests use static mocks to simulate different user types and feature access.
+
+**To run all tests:**
+
+```powershell
+npm test
+```
+
+- All tests must pass before merging or deploying.
+- If you add new user types or change entitlements, update the tests and mocks accordingly.
+
+**Troubleshooting:**
+
+- If a test fails due to missing entitlements or user fields, check your mock data and ensure the user object includes all required fields (plan, role, subscriptionStatus, guilds, etc.).
+- For real backend issues, verify the API returns the correct user shape.

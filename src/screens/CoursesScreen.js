@@ -11,34 +11,37 @@ import {
   TextInput
 } from "react-native";
 import { useNavigation } from "@react-navigation/native";
-import { useAuth } from "../context/AuthContext.js";
 
 function CoursesScreen() {
   const navigation = useNavigation();
 
-  // Action handlers (stubs for now)
-  function handleCreateCourse() {
-    setActionFeedback("Create Course (stub)");
-    // navigation.navigate('CreateCourse'); // Uncomment when screen exists
-  }
-  function handleManageUsers() {
-    setActionFeedback("");
-    setInviteModalVisible(true);
-  }
-  function handleExportCompliance() {
-    setActionFeedback("");
-    setComplianceModalVisible(true);
-  }
-  function handlePublish(courseId) {
-    setActionFeedback(`Publish course ${courseId} (stub)`);
-  }
-  function handleUnpublish(courseId) {
-    setActionFeedback(`Unpublish course ${courseId} (stub)`);
-  }
-  // Example state hooks (add more as needed)
+  // State hooks
   const [loading, setLoading] = useState(false);
   const [courses, setCourses] = useState([]);
-  const [plan, setPlan] = useState("free"); // TODO: Replace with actual plan logic from backend/user context
+  const [plan, setPlan] = useState("free"); // Replace with actual plan logic from backend/user context
+
+  // Fetch courses from backend
+  React.useEffect(() => {
+    let alive = true;
+    setLoading(true);
+    fetch("/api/courses")
+      .then((res) => {
+        if (!res.ok) throw new Error("Failed to fetch courses");
+        return res.json();
+      })
+      .then((data) => {
+        if (alive) setCourses(data);
+      })
+      .catch(() => {
+        if (alive) setCourses([]);
+      })
+      .finally(() => {
+        if (alive) setLoading(false);
+      });
+    return () => {
+      alive = false;
+    };
+  }, []);
 
   // QA: Plan switcher for verifying plan logic and user flows
   const plans = [
@@ -60,46 +63,117 @@ function CoursesScreen() {
   const [inviteRole, setInviteRole] = useState("staff");
   const [actionFeedback, setActionFeedback] = useState("");
 
-  // --- BACKEND INTEGRATION TODOs ---
+  // --- Backend Integration ---
+  // Invite user (Facility)
+  function handleInviteUser() {
+    setActionFeedback("");
+    setLoading(true);
+    fetch("/api/invite", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ name: inviteName, role: inviteRole })
+    })
+      .then((res) => res.json())
+      .then((data) => {
+        if (data.success) {
+          setActionFeedback("Invite sent!");
+          setInviteModalVisible(false);
+        } else {
+          setActionFeedback(data.error || "Failed to invite user");
+        }
+      })
+      .catch(() => setActionFeedback("Failed to invite user"))
+      .finally(() => setLoading(false));
+  }
 
-  // TODO: Fetch courses from backend API
-  // useEffect(() => {
-  //   setLoading(true);
-  //   fetch('/api/courses')
-  //     .then(res => res.json())
-  //     .then(data => setCourses(data))
-  //     .finally(() => setLoading(false));
-  // }, []);
+  // Change user role (Facility)
+  function handleChangeUserRole() {
+    if (!selectedUser) return;
+    setActionFeedback("");
+    setLoading(true);
+    fetch(`/api/users/${selectedUser._id}/role`, {
+      method: "PUT",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ role: selectedUser.role })
+    })
+      .then((res) => res.json())
+      .then((data) => {
+        if (data.success) {
+          setActionFeedback("Role changed!");
+          setRoleModalVisible(false);
+        } else {
+          setActionFeedback(data.error || "Failed to change role");
+        }
+      })
+      .catch(() => setActionFeedback("Failed to change role"))
+      .finally(() => setLoading(false));
+  }
 
-  // TODO: Implement invite user API call
-  // function inviteUser(name, role) {
-  //   // Call backend to invite user
-  //   // fetch('/api/invite', { method: 'POST', body: JSON.stringify({ name, role }) })
-  // }
+  // Remove user (Facility)
+  function handleRemoveUser() {
+    if (!selectedUser) return;
+    setActionFeedback("");
+    setLoading(true);
+    fetch(`/api/users/${selectedUser._id}`, { method: "DELETE" })
+      .then((res) => res.json())
+      .then((data) => {
+        if (data.success) {
+          setActionFeedback("User removed!");
+          setRemoveModalVisible(false);
+        } else {
+          setActionFeedback(data.error || "Failed to remove user");
+        }
+      })
+      .catch(() => setActionFeedback("Failed to remove user"))
+      .finally(() => setLoading(false));
+  }
 
-  // TODO: Implement change user role API call
-  // function changeUserRole(userId, newRole) {
-  //   // Call backend to change role
-  //   // fetch(`/api/users/${userId}/role`, { method: 'PUT', body: JSON.stringify({ role: newRole }) })
-  // }
+  // Export compliance metrics (Facility)
+  function handleExportCompliance(format) {
+    setActionFeedback("");
+    setLoading(true);
+    fetch(`/api/compliance/export?format=${format}`)
+      .then((res) => {
+        if (!res.ok) throw new Error("Export failed");
+        // For demo: just show feedback, real app would download file
+        setActionFeedback(`Exported as ${format.toUpperCase()}!`);
+        setComplianceModalVisible(false);
+      })
+      .catch(() => setActionFeedback("Export failed"))
+      .finally(() => setLoading(false));
+  }
 
-  // TODO: Implement remove user API call
-  // function removeUser(userId) {
-  //   // Call backend to remove user
-  //   // fetch(`/api/users/${userId}`, { method: 'DELETE' })
-  // }
-
-  // TODO: Implement export compliance metrics API call
-  // function exportCompliance(format) {
-  //   // Call backend to export compliance metrics (CSV/PDF)
-  //   // fetch(`/api/compliance/export?format=${format}`)
-  // }
-
-  // TODO: Wire up publish/unpublish course API calls
-  // function publishCourse(courseId) { /* ... */ }
-  // function unpublishCourse(courseId) { /* ... */ }
-
-  // TODO: Add error handling and user feedback for all backend actions
+  // Publish/Unpublish course (Influencer)
+  function handlePublish(courseId) {
+    setActionFeedback("");
+    setLoading(true);
+    fetch(`/api/courses/${courseId}/publish`, { method: "POST" })
+      .then((res) => res.json())
+      .then((data) => {
+        if (data.success) {
+          setActionFeedback("Course published!");
+        } else {
+          setActionFeedback(data.error || "Failed to publish");
+        }
+      })
+      .catch(() => setActionFeedback("Failed to publish"))
+      .finally(() => setLoading(false));
+  }
+  function handleUnpublish(courseId) {
+    setActionFeedback("");
+    setLoading(true);
+    fetch(`/api/courses/${courseId}/unpublish`, { method: "POST" })
+      .then((res) => res.json())
+      .then((data) => {
+        if (data.success) {
+          setActionFeedback("Course unpublished!");
+        } else {
+          setActionFeedback(data.error || "Failed to unpublish");
+        }
+      })
+      .catch(() => setActionFeedback("Failed to unpublish"))
+      .finally(() => setLoading(false));
+  }
 
   // --- Modal Renderers ---
   const renderInviteModal = () => (
@@ -153,11 +227,12 @@ function CoursesScreen() {
           </View>
           <View style={styles.modalActions}>
             <TouchableOpacity
-              style={styles.modalBtn}
-              onPress={() => {
-                setActionFeedback("Invite sent! (stub)");
-                setInviteModalVisible(false);
-              }}
+              style={[styles.modalBtn, { minWidth: 80 }]}
+              onPress={handleInviteUser}
+              accessibilityRole="button"
+              accessibilityLabel="Send invite to user"
+              hitSlop={{ top: 8, bottom: 8, left: 8, right: 8 }}
+              activeOpacity={0.8}
             >
               <Text style={styles.modalBtnText}>Invite</Text>
             </TouchableOpacity>
@@ -209,11 +284,12 @@ function CoursesScreen() {
           </View>
           <View style={styles.modalActions}>
             <TouchableOpacity
-              style={styles.modalBtn}
-              onPress={() => {
-                setActionFeedback("Role changed! (stub)");
-                setRoleModalVisible(false);
-              }}
+              style={[styles.modalBtn, { minWidth: 80 }]}
+              onPress={handleChangeUserRole}
+              accessibilityRole="button"
+              accessibilityLabel="Change user role"
+              hitSlop={{ top: 8, bottom: 8, left: 8, right: 8 }}
+              activeOpacity={0.8}
             >
               <Text style={styles.modalBtnText}>Change</Text>
             </TouchableOpacity>
@@ -244,11 +320,12 @@ function CoursesScreen() {
           </Text>
           <View style={styles.modalActions}>
             <TouchableOpacity
-              style={styles.modalBtn}
-              onPress={() => {
-                setActionFeedback("User removed! (stub)");
-                setRemoveModalVisible(false);
-              }}
+              style={[styles.modalBtn, { minWidth: 80 }]}
+              onPress={handleRemoveUser}
+              accessibilityRole="button"
+              accessibilityLabel="Remove user"
+              hitSlop={{ top: 8, bottom: 8, left: 8, right: 8 }}
+              activeOpacity={0.8}
             >
               <Text style={styles.modalBtnText}>Remove</Text>
             </TouchableOpacity>
@@ -279,20 +356,22 @@ function CoursesScreen() {
           </Text>
           <View style={styles.modalActions}>
             <TouchableOpacity
-              style={styles.modalBtn}
-              onPress={() => {
-                setActionFeedback("Exported as CSV! (stub)");
-                setComplianceModalVisible(false);
-              }}
+              style={[styles.modalBtn, { minWidth: 80 }]}
+              onPress={() => handleExportCompliance("csv")}
+              accessibilityRole="button"
+              accessibilityLabel="Export compliance as CSV"
+              hitSlop={{ top: 8, bottom: 8, left: 8, right: 8 }}
+              activeOpacity={0.8}
             >
               <Text style={styles.modalBtnText}>CSV</Text>
             </TouchableOpacity>
             <TouchableOpacity
-              style={styles.modalBtn}
-              onPress={() => {
-                setActionFeedback("Exported as PDF! (stub)");
-                setComplianceModalVisible(false);
-              }}
+              style={[styles.modalBtn, { minWidth: 80 }]}
+              onPress={() => handleExportCompliance("pdf")}
+              accessibilityRole="button"
+              accessibilityLabel="Export compliance as PDF"
+              hitSlop={{ top: 8, bottom: 8, left: 8, right: 8 }}
+              activeOpacity={0.8}
             >
               <Text style={styles.modalBtnText}>PDF</Text>
             </TouchableOpacity>
@@ -380,6 +459,9 @@ function CoursesScreen() {
               accessibilityRole="button"
               accessibilityLabel="Unpublish course"
               testID={`unpublishBtn-${item._id}`}
+              onPress={() => handleUnpublish(item._id)}
+              hitSlop={{ top: 8, bottom: 8, left: 8, right: 8 }}
+              activeOpacity={0.8}
             >
               <Text style={styles.unpublishBtnText}>Unpublish</Text>
             </TouchableOpacity>

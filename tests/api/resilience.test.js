@@ -1,5 +1,4 @@
-import { describe, it, beforeEach } from "node:test";
-import assert from "node:assert";
+import { describe, it, beforeEach, expect } from "@jest/globals";
 import { client, ApiError } from "../../src/api/client.js";
 
 describe("API Resilience & Network Failures", () => {
@@ -14,10 +13,9 @@ describe("API Resilience & Network Failures", () => {
       text: async () => JSON.stringify({ message: "Overloaded" })
     });
 
-    await assert.rejects(
-      () => client.get("/any"),
-      (err) => err instanceof ApiError && err.status === 503
-    );
+    await expect(client.get("/any")).rejects.toMatchObject({
+      status: 503
+    });
   });
 
   it("handles network-level connection refused (thrown error)", async () => {
@@ -25,16 +23,13 @@ describe("API Resilience & Network Failures", () => {
       throw new Error("fetch failed");
     };
 
-    await assert.rejects(
-      () => client.get("/any"),
-      (err) => err.message === "fetch failed"
-    );
+    await expect(client.get("/any")).rejects.toThrow("fetch failed");
   });
 
   it("handles request timeouts correctly", async () => {
     global.fetch = async (url, options) => {
       return new Promise((_, reject) => {
-        options.signal.addEventListener('abort', () => {
+        options.signal.addEventListener("abort", () => {
           const error = new Error("The operation was aborted");
           error.name = "AbortError";
           reject(error);
@@ -42,9 +37,8 @@ describe("API Resilience & Network Failures", () => {
       });
     };
 
-    await assert.rejects(
-      () => client("/timeout-test", { timeout: 10 }), 
-      (err) => err.message.includes("Request timeout")
+    await expect(client("/timeout-test", { timeout: 10 })).rejects.toThrow(
+      /Request timeout/
     );
   });
 
@@ -66,8 +60,8 @@ describe("API Resilience & Network Failures", () => {
     };
 
     const result = await client("/retry-test", { retries: 3, retryDelay: 10 });
-    assert.strictEqual(attempts, 3);
-    assert.strictEqual(result.success, true);
+    expect(attempts).toBe(3);
+    expect(result.success).toBe(true);
   });
 
   it("retries on timeouts and eventually fails if still timing out", async () => {
@@ -75,7 +69,7 @@ describe("API Resilience & Network Failures", () => {
     global.fetch = async (url, options) => {
       attempts++;
       return new Promise((_, reject) => {
-        options.signal.addEventListener('abort', () => {
+        options.signal.addEventListener("abort", () => {
           const error = new Error("The operation was aborted");
           error.name = "AbortError";
           reject(error);
@@ -83,10 +77,9 @@ describe("API Resilience & Network Failures", () => {
       });
     };
 
-    await assert.rejects(
-      () => client("/retry-timeout", { retries: 2, timeout: 10 }),
-      (err) => err.message.includes("Request timeout")
+    await expect(client("/retry-timeout", { retries: 2, timeout: 10 })).rejects.toThrow(
+      /Request timeout/
     );
-    assert.strictEqual(attempts, 3);
+    expect(attempts).toBe(3);
   });
 });

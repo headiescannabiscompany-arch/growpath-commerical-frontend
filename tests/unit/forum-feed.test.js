@@ -1,5 +1,6 @@
-import { describe, it } from "node:test";
-import assert from "node:assert/strict";
+// Jest-compatible version
+
+import { describe, it, expect } from "@jest/globals";
 
 import { shouldAutoFetchMore } from "../../src/utils/forumFeed.js";
 
@@ -18,8 +19,8 @@ describe("forum feed auto-fetch helper", () => {
       filteredCount: 5,
       lastFilteredCount: 3
     });
-    assert.equal(decision.shouldFetch, true);
-    assert.equal(decision.nextLastCount, 5);
+    expect(decision.shouldFetch).toBe(true);
+    expect(decision.nextLastCount).toBe(5);
   });
 
   it("stops when new page produced no additional posts", () => {
@@ -28,8 +29,8 @@ describe("forum feed auto-fetch helper", () => {
       filteredCount: 3,
       lastFilteredCount: 5
     });
-    assert.equal(decision.shouldFetch, false);
-    assert.equal(decision.nextLastCount, 3);
+    expect(decision.shouldFetch).toBe(false);
+    expect(decision.nextLastCount).toBe(3);
   });
 
   it("stops when filtered list already has at least one full page", () => {
@@ -38,7 +39,7 @@ describe("forum feed auto-fetch helper", () => {
       filteredCount: 20,
       lastFilteredCount: 10
     });
-    assert.equal(decision.shouldFetch, false);
+    expect(decision.shouldFetch).toBe(false);
   });
 
   it("stops when backend has no additional pages", () => {
@@ -48,7 +49,7 @@ describe("forum feed auto-fetch helper", () => {
       lastFilteredCount: 2,
       hasNextPage: false
     });
-    assert.equal(decision.shouldFetch, false);
+    expect(decision.shouldFetch).toBe(false);
   });
 
   it("stops when already fetching", () => {
@@ -58,6 +59,6 @@ describe("forum feed auto-fetch helper", () => {
       lastFilteredCount: 2,
       isFetching: true
     });
-    assert.equal(decision.shouldFetch, false);
+    expect(decision.shouldFetch).toBe(false);
   });
 });

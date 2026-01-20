@@ -18,7 +18,7 @@
     "format": "prettier --write \"**/*.{js,jsx,json}\"",
     "audit:ci": "npm audit --omit=dev --audit-level=high",
     "check:sensitive-copy": "node scripts/check-sensitive-copy.js",
-    "test": "node --test --import ./tests/setup_fetch_spy.js tests/*.test.js tests/**/*.test.js",
+    "test": "jest",
     "test:live": "node scripts/test-live.js",
     "backend:start": "node scripts/start-backend.js",
     "acceptance": "node scripts/run-acceptance.js",
@@ -81,6 +81,9 @@
     "@babel/traverse": "^7.26.4",
     "@babel/types": "^7.26.0",
     "@playwright/test": "^1.57.0",
+    "@testing-library/jest-native": "^5.4.3",
+    "@testing-library/react-native": "^13.3.3",
+    "@types/jest": "^30.0.0",
     "ajv": "^8.17.1",
     "ajv-formats": "^3.0.1",
     "eslint": "^9.39.2",
@@ -90,8 +93,12 @@
     "eslint-plugin-react-hooks": "^7.0.1",
     "eslint-plugin-react-native": "^5.0.0",
     "husky": "^9.1.7",
+    "jest": "^30.2.0",
+    "jest-environment-jsdom": "^30.2.0",
     "js-yaml": "^4.1.1",
     "lint-staged": "^16.2.7",
-    "prettier": "^3.0.0"
+    "msw": "^2.12.7",
+    "prettier": "^3.0.0",
+    "react-test-renderer": "^19.1.0"
   }
 }

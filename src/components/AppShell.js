@@ -10,15 +10,15 @@ export default function AppShell({
   style,
   contentContainerStyle
 }) {
-  const { user, mode } = useAuth();
+  const { user, mode, capabilities, limits } = useAuth();
   // Prepare contextBarProps for commercial/facility users
-  const contextBarProps = { user, mode };
+  const contextBarProps = { user, mode, capabilities, limits };
   if (scroll) {
     return (
       <View style={styles.container}>
         <CommercialBanner
-          userRole={user?.role}
           mode={mode}
+          capabilities={capabilities}
           contextBarProps={contextBarProps}
         />
         <ScrollView
@@ -34,8 +34,8 @@ export default function AppShell({
   return (
     <View style={styles.container}>
       <CommercialBanner
-        userRole={user?.role}
         mode={mode}
+        capabilities={capabilities}
         contextBarProps={contextBarProps}
       />
       <View style={[styles.content, style]}>{children}</View>

@@ -84,7 +84,19 @@ async function api(path, options = {}) {
       headers["Content-Type"] = "application/json";
     }
 
-    const finalUrl = API_URL + path;
+    // Ensure only one /api prefix is present
+    let finalUrl;
+    if (API_URL.endsWith("/api") && path.startsWith("/api")) {
+      finalUrl = API_URL + path.slice(4); // remove leading /api from path
+    } else if (API_URL.endsWith("/api/") && path.startsWith("/api/")) {
+      finalUrl = API_URL + path.slice(5); // remove leading /api/ from path
+    } else if (API_URL.endsWith("/") && path.startsWith("/")) {
+      finalUrl = API_URL + path.slice(1);
+    } else if (!API_URL.endsWith("/") && !path.startsWith("/")) {
+      finalUrl = API_URL + "/" + path;
+    } else {
+      finalUrl = API_URL + path;
+    }
     // To send cookies or credentials, set credentials: 'include' in options
     // Example: client.get('/route', { credentials: 'include' })
     const fetchConfig = {

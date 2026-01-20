@@ -4,6 +4,7 @@ import ScreenContainer from "../components/ScreenContainer.js";
 import Card from "../components/Card.js";
 import { colors, spacing } from "../theme/theme.js";
 import { useNavigation } from "@react-navigation/native";
+import { useAuth } from "../context/AuthContext.js";
 
 const TOOLS = [
   { id: "vpd", title: "VPD Calculator", screen: "VPDCalculator" },
@@ -17,21 +18,45 @@ const TOOLS = [
   { id: "harvest", title: "Harvest Estimator", screen: "HarvestEstimator" }
 ];
 
+const TOOL_CAPS = {
+  vpd: "canUseVpdTool",
+  light: "canUseToolsHub",
+  nutrient: "canUseNuteCalc",
+  watering: "canUseToolsHub",
+  schedule: "canUseTimelinePlanner",
+  ph_ec: "canUseToolsHub",
+  growth: "canUseToolsHub",
+  pest: "canUseToolsHub",
+  harvest: "canUseToolsHub"
+};
+
 export default function ToolsScreen() {
   const navigation = useNavigation();
+  const { capabilities } = useAuth();
+
   return (
     <ScreenContainer>
       <Card style={styles.card}>
         <Text style={styles.title}>Single-User Tools</Text>
-        {TOOLS.map((tool) => (
-          <TouchableOpacity
-            key={tool.id}
-            style={styles.toolButton}
-            onPress={() => navigation.navigate(tool.screen)}
-          >
-            <Text style={styles.toolText}>{tool.title}</Text>
-          </TouchableOpacity>
-        ))}
+        {TOOLS.map((tool) => {
+          const capKey = TOOL_CAPS[tool.id] || "canUseToolsHub";
+          const enabled = capabilities[capKey];
+          return (
+            <TouchableOpacity
+              key={tool.id}
+              style={[styles.toolButton, !enabled && { opacity: 0.5 }]}
+              onPress={() => enabled && navigation.navigate(tool.screen)}
+              disabled={!enabled}
+            >
+              <Text style={styles.toolText}>{tool.title}</Text>
+              {!enabled && (
+                <Text style={{ color: "#888", fontSize: 12 }}>
+                  Locked — Upgrade to access
+                </Text>
+              )}
+            </TouchableOpacity>
+          );
+        })}
       </Card>
     </ScreenContainer>
   );

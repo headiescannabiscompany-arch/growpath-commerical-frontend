@@ -6,6 +6,57 @@ import { updateGrowInterests } from "../api/users";
 import { ONBOARDING_INTERESTS_KEY } from "../constants/storageKeys";
 import { normalizePendingInterests } from "../utils/growInterests";
 
+// --- Capabilities and Limits Schema ---
+// See capability schema in requirements
+const defaultCapabilities = {
+  canUsePersonal: false,
+  canUseFacility: false,
+  canUseCommercial: false,
+  canSwitchModes: false,
+  canUseGrowAreas: false,
+  canUsePlants: false,
+  canUseGrowLogs: false,
+  canUseTasks: false,
+  canUseDiagnostics: false,
+  canUseToolsHub: false,
+  canUseSoilCalc: false,
+  canUseNuteCalc: false,
+  canUseVpdTool: false,
+  canUseTimelinePlanner: false,
+  canUseAdvancedGrowOptions: false,
+  canUsePhenoMatrix: false,
+  canUseBreedingTools: false,
+  canUseFeed: false,
+  canPostFeed: false,
+  canUseForum: false,
+  canPostForum: false,
+  canUseCourses: false,
+  canCreateCourses: false,
+  canSellCourses: false,
+  canUseCreatorDashboard: false,
+  canExportPdf: false,
+  canUseReports: false,
+  canManageRoomsZones: false,
+  canManageTeam: false,
+  canUseSOP: false,
+  canUseAuditLogs: false,
+  canUseMetrc: false,
+  canUseComplianceAnalytics: false,
+  canUseCommercialMetrics: false,
+  canUseAdsManager: false,
+  canUseMarketplace: false,
+  canUseVendorMetrics: false
+};
+
+const defaultLimits = {
+  maxPlants: 0,
+  maxGrowAreas: 0,
+  maxUploadsPerDay: 0,
+  maxPostsPerDay: 0,
+  maxCoursesPerMonth: 0,
+  maxCoursePublishPerDay: 0
+};
+
 const AuthContext = createContext();
 
 const API_BASE_URL =
@@ -26,6 +77,8 @@ export const AuthProvider = ({ children }) => {
   const [hasNavigatedAwayFromHome, setHasNavigatedAwayFromHome] = useState(false);
   const [suppressWelcomeMessage, setSuppressWelcomeMessage] = useState(false);
   const [mode, setModeState] = useState("personal"); // "personal", "facility", or "commercial"
+  const [capabilities, setCapabilities] = useState(defaultCapabilities);
+  const [limits, setLimits] = useState(defaultLimits);
   console.log("[AuthProvider] API_BASE_URL:", API_BASE_URL);
 
   // Helper: get allowed modes for the current user/entitlements
@@ -42,13 +95,104 @@ export const AuthProvider = ({ children }) => {
   const [selectedFacilityId, setSelectedFacilityIdState] = useState(null);
   const [facilitiesAccess, setFacilitiesAccess] = useState([]); // Array of { facilityId, role, roomIds }
 
+  // --- Capability and Limits Derivation ---
+  // --- Capability and Limits Derivation ---
+  const buildCapabilities = (entitlements, mode) => {
+    // Influencer support
+    const isFree = entitlements.plan === "free";
+    const isPro = entitlements.plan === "pro";
+    const isInfluencer = entitlements.plan === "influencer" || entitlements.hasInfluencer;
+    const hasFacility = entitlements.hasFacility;
+    const hasCommercial = entitlements.hasCommercial;
+    const canSwitchModes = hasFacility && hasCommercial;
+
+    // Influencer: like Pro, but can post in feed and has access to appropriate tools
+    // Commercial: more business tools
+    // Facility: all tools, especially compliance and plant tracking
+
+    return {
+      ...defaultCapabilities,
+      canUsePersonal: true,
+      canUseFacility: !!hasFacility,
+      canUseCommercial: !!hasCommercial,
+      canSwitchModes,
+      canUseGrowAreas: true,
+      canUsePlants: true,
+      canUseGrowLogs: true,
+      canUseTasks: true,
+      canUseDiagnostics: isPro || isInfluencer || hasFacility || hasCommercial,
+      canUseToolsHub: true,
+      canUseSoilCalc: true,
+      canUseNuteCalc: true,
+      canUseVpdTool: true,
+      canUseTimelinePlanner: isPro || isInfluencer || hasFacility || hasCommercial,
+      canUseAdvancedGrowOptions: isPro || isInfluencer || hasFacility || hasCommercial,
+      canUsePhenoMatrix: isPro || isInfluencer || hasFacility || hasCommercial,
+      canUseBreedingTools: isPro || isInfluencer || hasFacility,
+      canUseFeed: true,
+      canPostFeed: isPro || isInfluencer || hasCommercial || hasFacility,
+      canUseForum: true,
+      canPostForum: isPro || isInfluencer || hasCommercial || hasFacility,
+      canUseCourses: true,
+      canCreateCourses: true,
+      canSellCourses: true,
+      canUseCreatorDashboard: isPro || isInfluencer || hasCommercial,
+      canExportPdf: isPro || isInfluencer || hasFacility || hasCommercial,
+      canUseReports: isPro || isInfluencer || hasFacility || hasCommercial,
+      canManageRoomsZones: !!hasFacility,
+      canManageTeam: !!hasFacility,
+      canUseSOP: !!hasFacility,
+      canUseAuditLogs: !!hasFacility,
+      canUseMetrc: !!hasFacility,
+      canUseComplianceAnalytics: !!hasFacility,
+      canUseCommercialMetrics: !!hasCommercial,
+      canUseAdsManager: !!hasCommercial,
+      canUseMarketplace: !!hasCommercial,
+      canUseVendorMetrics: !!hasCommercial
+    };
+  };
+  const buildLimits = (entitlements) => {
+    // Example: customize these values as needed
+    if (entitlements.plan === "pro") {
+      return {
+        maxPlants: 50,
+        maxGrowAreas: 10,
+        maxUploadsPerDay: 20,
+        maxPostsPerDay: 10,
+        maxCoursesPerMonth: 5,
+        maxCoursePublishPerDay: 2
+      };
+    }
+    if (entitlements.hasFacility || entitlements.hasCommercial) {
+      return {
+        maxPlants: 500,
+        maxGrowAreas: 50,
+        maxUploadsPerDay: 100,
+        maxPostsPerDay: 50,
+        maxCoursesPerMonth: 20,
+        maxCoursePublishPerDay: 10
+      };
+    }
+    // Free tier
+    return {
+      maxPlants: 5,
+      maxGrowAreas: 2,
+      maxUploadsPerDay: 2,
+      maxPostsPerDay: 2,
+      maxCoursesPerMonth: 1,
+      maxCoursePublishPerDay: 1
+    };
+  };
+
   const updateStateFromUser = (userData) => {
     const entitlements = getEntitlements(userData);
     setIsPro(entitlements.isPro);
     setIsGuildMember(entitlements.isGuildMember);
     setIsEntitled(entitlements.isEntitled);
     setSubscriptionStatus(entitlements.subscriptionStatus);
-
+    // Derive and set capabilities/limits
+    setCapabilities(buildCapabilities(entitlements, mode));
+    setLimits(buildLimits(entitlements));
     // Expose for logic tests
     global.__AUTH_STATE__ = entitlements;
   };
@@ -353,7 +497,9 @@ export const AuthProvider = ({ children }) => {
         setSelectedFacilityId,
         facilitiesAccess,
         facilityFeaturesEnabled,
-        setFacilityFeaturesEnabled
+        setFacilityFeaturesEnabled,
+        capabilities,
+        limits
       }}
     >
       {children}

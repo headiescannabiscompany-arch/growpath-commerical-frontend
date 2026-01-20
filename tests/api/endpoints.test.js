@@ -1,5 +1,8 @@
-import { describe, it, before, beforeEach } from "node:test";
-import assert from "node:assert";
+import { describe, it, beforeEach, expect } from "@jest/globals";
+import * as tasksApi from "../../src/api/tasks.js";
+import * as growsApi from "../../src/api/grows.js";
+import * as postsApi from "../../src/api/posts.js";
+import { ROUTES } from "../../src/api/routes.js";
 
 // Mock global fetch
 let fetchCalls = [];
@@ -8,71 +11,64 @@ global.fetch = async (url, options) => {
   return {
     ok: true,
     text: async () => JSON.stringify({ success: true, data: {} }),
-    json: async () => ({ success: true, data: {} }),
+    json: async () => ({ success: true, data: {} })
   };
 };
 
 global.API_URL_OVERRIDE = "http://test-api.com";
 global.authToken = "test-token";
 
-if (typeof FormData === 'undefined') {
+if (typeof FormData === "undefined") {
   global.FormData = class FormData {
-    constructor() { this.data = []; }
-    append(k, v) { this.data.push([k, v]); }
+    constructor() {
+      this.data = [];
+    }
+    append(k, v) {
+      this.data.push([k, v]);
+    }
   };
 }
 
-describe("API Configuration & Endpoints", async () => {
-  let tasksApi, growsApi, postsApi, ROUTES;
-
-  before(async () => {
-    const routesMod = await import("../../src/api/routes.js");
-    ROUTES = routesMod.default || routesMod.ROUTES;
-    
-    tasksApi = await import("../../src/api/tasks.js");
-    growsApi = await import("../../src/api/grows.js");
-    postsApi = await import("../../src/api/posts.js");
-  });
-
+describe("API Configuration & Endpoints", () => {
   beforeEach(() => {
     fetchCalls = [];
   });
 
   describe("Route Map Contract", () => {
     it("ROUTES has correct literal values", () => {
-      assert.strictEqual(ROUTES.AUTH.LOGIN, "/api/auth/login");
-      assert.strictEqual(ROUTES.TASKS.TODAY, "/api/tasks/today");
-      assert.strictEqual(ROUTES.GROWS.LIST, "/api/grows");
-      assert.strictEqual(ROUTES.TASKS.COMPLETE("123"), "/api/tasks/123/complete");
+      expect(ROUTES.AUTH.LOGIN).toBe("/api/auth/login");
+      expect(ROUTES.TASKS.TODAY).toBe("/api/tasks/today");
+      expect(ROUTES.GROWS.LIST).toBe("/api/grows");
+      expect(ROUTES.TASKS.COMPLETE("123")).toBe("/api/tasks/123/complete");
     });
   });
 
   describe("Tasks API with Shared Config", () => {
     it("getTodayTasks uses ROUTES.TASKS.TODAY", async () => {
       await tasksApi.getTodayTasks("token123");
-      assert.strictEqual(fetchCalls.length, 1);
-      assert.ok(fetchCalls[0].url.endsWith(ROUTES.TASKS.TODAY));
+      expect(fetchCalls.length).toBe(1);
+      expect(fetchCalls[0].url.endsWith(ROUTES.TASKS.TODAY)).toBe(true);
     });
 
     it("completeTask uses ROUTES.TASKS.COMPLETE", async () => {
       await tasksApi.completeTask("task_99", "token123");
-      assert.ok(fetchCalls[0].url.endsWith("/api/tasks/task_99/complete"));
-      assert.strictEqual(fetchCalls[0].options.method, "PUT");
+      expect(fetchCalls[0].url.endsWith("/api/tasks/task_99/complete")).toBe(true);
+      expect(fetchCalls[0].options.method).toBe("PUT");
     });
   });
 
   describe("Grows API with Shared Config", () => {
     it("addEntry uses ROUTES.GROWS.ENTRIES", async () => {
-      await growsApi.addEntry("grow_1", "note", []);
-      assert.ok(fetchCalls[0].url.endsWith(ROUTES.GROWS.ENTRIES("grow_1")));
+      await growsApi.addEntry("grow_1", {});
+      expect(fetchCalls[0].url.endsWith(ROUTES.GROWS.ENTRIES("grow_1"))).toBe(true);
     });
 
     it("listGrows appends filters as query parameters", async () => {
       await growsApi.listGrows({ stage: "veg", search: "blue dream" });
       const parsed = new URL(fetchCalls[0].url);
-      assert.strictEqual(parsed.pathname, ROUTES.GROWS.LIST);
-      assert.strictEqual(parsed.searchParams.get("stage"), "veg");
-      assert.strictEqual(parsed.searchParams.get("search"), "blue dream");
+      expect(parsed.pathname).toBe(ROUTES.GROWS.LIST);
+      expect(parsed.searchParams.get("stage")).toBe("veg");
+      expect(parsed.searchParams.get("search")).toBe("blue dream");
     });
   });
 });

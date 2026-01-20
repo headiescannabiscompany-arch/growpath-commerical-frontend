@@ -1,17 +1,16 @@
-import { describe, it } from "node:test";
-import assert from "node:assert";
+import { describe, it, expect } from "@jest/globals";
 import { groupItemsByDate, toDateKey } from "../../src/utils/calendar.js";
 
 describe("calendar utils", () => {
   it("toDateKey normalizes valid inputs and skips invalid dates", () => {
     const iso = toDateKey("2025-12-31T04:00:00.000Z");
-    assert.strictEqual(iso, "2025-12-31");
+    expect(iso).toBe("2025-12-31");
 
     const fromDate = toDateKey(new Date("2024-01-02T00:00:00.000Z"));
-    assert.strictEqual(fromDate, "2024-01-02");
+    expect(fromDate).toBe("2024-01-02");
 
-    assert.strictEqual(toDateKey(null), null);
-    assert.strictEqual(toDateKey("not-a-date"), null);
+    expect(toDateKey(null)).toBeNull();
+    expect(toDateKey("not-a-date")).toBeNull();
   });
 
   it("groupItemsByDate skips invalid entries and groups items by resolved key", () => {
@@ -26,8 +25,8 @@ describe("calendar utils", () => {
       (item) => item.date || item.recordedAt
     );
 
-    assert.deepStrictEqual(Object.keys(grouped).sort(), ["2025-01-01", "2025-01-02"]);
-    assert.strictEqual(grouped["2025-01-01"].length, 2);
-    assert.strictEqual(grouped["2025-01-02"][0].id, 5);
+    expect(Object.keys(grouped).sort()).toEqual(["2025-01-01", "2025-01-02"]);
+    expect(grouped["2025-01-01"].length).toBe(2);
+    expect(grouped["2025-01-02"][0].id).toBe(5);
   });
 });

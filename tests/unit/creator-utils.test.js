@@ -1,21 +1,20 @@
-import { test } from "node:test";
-import assert from "node:assert/strict";
+import { test, expect } from "@jest/globals";
 import { getCreatorName } from "../../src/utils/creator.js";
 
 test("prefers explicit name", () => {
   const name = getCreatorName({ name: "Acceptance Creator", username: "creator123" });
-  assert.equal(name, "Acceptance Creator");
+  expect(name).toBe("Acceptance Creator");
 });
 
 test("falls back to displayName, then username", () => {
   const viaDisplayName = getCreatorName({ displayName: "Display", username: "handle" });
-  assert.equal(viaDisplayName, "Display");
+  expect(viaDisplayName).toBe("Display");
 
   const viaUsername = getCreatorName({ username: "handle" });
-  assert.equal(viaUsername, "handle");
+  expect(viaUsername).toBe("handle");
 });
 
 test("uses custom fallback when creator info is missing", () => {
-  assert.equal(getCreatorName(null, "Instructor"), "Instructor");
-  assert.equal(getCreatorName(undefined), "Unknown");
+  expect(getCreatorName(null, "Instructor")).toBe("Instructor");
+  expect(getCreatorName(undefined)).toBe("Unknown");
 });

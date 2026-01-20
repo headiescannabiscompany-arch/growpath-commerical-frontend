@@ -172,11 +172,16 @@ export function getEntitlements(input = {}) {
   const role =
     input?.role ||
     input?.user?.role ||
-    (input?.mode === "facility" ? "facility" : "user");
+    (input?.mode === "facility" ? "facility" : "free");
+
+  // Compatibility: isPro = role === "pro"; isEntitled = has at least one guild
+  const isPro = role === "pro";
+  const isEntitled = Array.isArray(input?.guilds) ? input.guilds.length > 0 : false;
 
   return {
     role,
-    // You can expand this later. For now keep app alive.
+    isPro,
+    isEntitled,
     can: (feature) => !!getEntitlement(feature, role),
     get: (feature) => getEntitlement(feature, role)
   };

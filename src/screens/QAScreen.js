@@ -2,7 +2,6 @@ import React from "react";
 import { View, Text, StyleSheet, TouchableOpacity, ScrollView } from "react-native";
 
 export default function QAScreen() {
-  // TODO: Integrate QA harness, feature flags, and mock API controls
   return (
     <ScrollView contentContainerStyle={styles.container}>
       <Text style={styles.title}>QA & Debug Tools</Text>
@@ -11,17 +10,17 @@ export default function QAScreen() {
       </Text>
       <View style={styles.section}>
         <Text style={styles.sectionTitle}>Feature Flags</Text>
-        {/* TODO: Render feature flags and toggles */}
+        {/* Feature flags and toggles will be rendered here */}
         <Text style={styles.placeholder}>No feature flags available.</Text>
       </View>
       <View style={styles.section}>
         <Text style={styles.sectionTitle}>Mock API Controls</Text>
-        {/* TODO: Render mock API controls */}
+        {/* Mock API controls will be rendered here */}
         <Text style={styles.placeholder}>No mock API controls available.</Text>
       </View>
       <View style={styles.section}>
         <Text style={styles.sectionTitle}>Debug Harness</Text>
-        {/* TODO: Integrate debug harness */}
+        {/* Debug harness will be integrated here */}
         <Text style={styles.placeholder}>No debug tools available.</Text>
       </View>
     </ScrollView>
