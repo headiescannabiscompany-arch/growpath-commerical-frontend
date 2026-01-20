@@ -14,6 +14,10 @@ import GrowthTrackerScreen from "../screens/GrowthTrackerScreen.js";
 import PestDiseaseIdentifierScreen from "../screens/PestDiseaseIdentifierScreen.js";
 import HarvestEstimatorScreen from "../screens/HarvestEstimatorScreen.js";
 import React, { useEffect, useCallback } from "react";
+import PaymentsScreen from "../screens/PaymentsScreen.js";
+import AnalyticsScreen from "../screens/AnalyticsScreen.js";
+import FacilitiesScreen from "../screens/FacilitiesScreen.js";
+import QAScreen from "../screens/QAScreen.js";
 import { Text } from "react-native";
 import { createNativeStackNavigator } from "@react-navigation/native-stack";
 import { useAuth } from "../context/AuthContext.js";
@@ -404,6 +408,10 @@ export default function RootNavigator() {
               <>
                 <Stack.Screen name="AdminCourses" component={AdminCoursesScreen} />
                 <Stack.Screen name="AdminReports" component={AdminReportsScreen} />
+                <Stack.Screen name="PaymentsScreen" component={PaymentsScreen} />
+                <Stack.Screen name="AnalyticsScreen" component={AnalyticsScreen} />
+                <Stack.Screen name="FacilitiesScreen" component={FacilitiesScreen} />
+                <Stack.Screen name="QAScreen" component={QAScreen} />
               </>
             )}
           </>
