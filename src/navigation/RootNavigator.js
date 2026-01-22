@@ -21,10 +21,10 @@ import QAScreen from "../screens/QAScreen.js";
 import { Text } from "react-native";
 import { createNativeStackNavigator } from "@react-navigation/native-stack";
 import { useAuth } from "../context/AuthContext.js";
-import { FacilityTabs } from "./FacilityTabs.js";
+import PersonalTabs from "./PersonalTabs.js";
+import CommercialTabs from "./CommercialTabs.js";
+import FacilityTabs from "./FacilityTabs.js";
 import LoginScreen from "../screens/LoginScreen.js";
-import MainTabs from "./MainTabs.js";
-import FacilityStack from "./FacilityStack.js";
 import GrowJournalScreen from "../screens/GrowJournalScreen.js";
 import SubscribeScreen from "../screens/SubscribeScreen.js";
 import CourseDetailScreen from "../screens/CourseDetailScreen.js";
@@ -165,10 +165,10 @@ export default function RootNavigator() {
         ? "AppIntro"
         : isAuthenticated
           ? mode === "facility"
-            ? "FacilityStack"
+            ? "FacilityTabs"
             : mode === "commercial"
               ? "CommercialTabs"
-              : "MainTabs"
+              : "PersonalTabs"
           : "Login";
 
   const navigatorKey = `${isAuthenticated ? "auth" : "guest"}-${showIntro ? "intro" : "main"}-${mode}`;
@@ -237,27 +237,23 @@ export default function RootNavigator() {
             {/* Personal mode */}
             {mode === "personal" && (
               <Stack.Screen
-                name="MainTabs"
-                component={MainTabs}
+                name="PersonalTabs"
+                component={PersonalTabs}
                 options={{ headerShown: false }}
               />
             )}
-            {/* Facility mode */}
             {mode === "facility" && (
               <Stack.Screen
-                name="FacilityStack"
+                name="FacilityTabs"
                 component={FacilityTabs}
                 options={{ headerShown: false }}
-                initialParams={{ isCommercial: false }}
               />
             )}
-            {/* Commercial mode */}
             {mode === "commercial" && (
               <Stack.Screen
                 name="CommercialTabs"
-                component={FacilityTabs}
+                component={CommercialTabs}
                 options={{ headerShown: false }}
-                initialParams={{ isCommercial: true }}
               />
             )}
             {/* Fallback for unknown mode */}
@@ -378,31 +374,7 @@ export default function RootNavigator() {
               </>
             )}
             {/* Facility/Commercial */}
-            {isFacility ? (
-              <Stack.Screen name="FacilityStack" component={FacilityStack} />
-            ) : (
-              <Stack.Screen
-                name="NotFacility"
-                options={{ title: "Facility Access Required", headerShown: true }}
-              >
-                {() => (
-                  <Text
-                    style={{
-                      flex: 1,
-                      textAlign: "center",
-                      textAlignVertical: "center",
-                      color: "#0ea5e9",
-                      fontSize: 20,
-                      padding: 32
-                    }}
-                  >
-                    This section is for facility/commercial users only. If you believe
-                    this is an error, please contact support or select a different
-                    workspace.
-                  </Text>
-                )}
-              </Stack.Screen>
-            )}
+            {/* FacilityStack removed; use FacilityTabs for facility mode */}
             {/* Admin */}
             {isAdmin && (
               <>

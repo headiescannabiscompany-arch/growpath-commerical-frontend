@@ -42,7 +42,7 @@ function LoginScreen({ navigation }) {
       } else if (selectedMode === "facility") {
         navigation.replace("FacilityStack");
       } else if (selectedMode === "commercial") {
-        navigation.replace("CommercialStack");
+        navigation.replace("CommercialTabs");
       } else {
         // fallback: set to personal
         setGlobalMode("personal");

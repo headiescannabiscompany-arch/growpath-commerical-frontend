@@ -19,15 +19,15 @@ const TOOLS = [
 ];
 
 const TOOL_CAPS = {
-  vpd: "canUseVpdTool",
-  light: "canUseToolsHub",
-  nutrient: "canUseNuteCalc",
-  watering: "canUseToolsHub",
-  schedule: "canUseTimelinePlanner",
-  ph_ec: "canUseToolsHub",
-  growth: "canUseToolsHub",
-  pest: "canUseToolsHub",
-  harvest: "canUseToolsHub"
+  vpd: "tools.vpdCalc",
+  light: "tools.lightCalc",
+  nutrient: "tools.npkCalc",
+  watering: "tools.wateringScheduler",
+  schedule: "tools.stageTimeline",
+  ph_ec: "tools.phEcCalc",
+  growth: "tools.growthTracker",
+  pest: "tools.pestIdentifier",
+  harvest: "tools.harvestEstimator"
 };
 
 export default function ToolsScreen() {

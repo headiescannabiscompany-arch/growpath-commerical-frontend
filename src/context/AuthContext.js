@@ -5,47 +5,26 @@ import { getEntitlements } from "../utils/entitlements";
 import { updateGrowInterests } from "../api/users";
 import { ONBOARDING_INTERESTS_KEY } from "../constants/storageKeys";
 import { normalizePendingInterests } from "../utils/growInterests";
+import { deriveCapabilities } from "../config/capabilities.ts";
 
 // --- Capabilities and Limits Schema ---
 // See capability schema in requirements
+import { CAPABILITIES } from "../capabilities/keys";
+
+// Default capabilities object using canonical keys
 const defaultCapabilities = {
-  canUsePersonal: false,
-  canUseFacility: false,
-  canUseCommercial: false,
-  canSwitchModes: false,
-  canUseGrowAreas: false,
-  canUsePlants: false,
-  canUseGrowLogs: false,
-  canUseTasks: false,
-  canUseDiagnostics: false,
-  canUseToolsHub: false,
-  canUseSoilCalc: false,
-  canUseNuteCalc: false,
-  canUseVpdTool: false,
-  canUseTimelinePlanner: false,
-  canUseAdvancedGrowOptions: false,
-  canUsePhenoMatrix: false,
-  canUseBreedingTools: false,
-  canUseFeed: false,
-  canPostFeed: false,
-  canUseForum: false,
-  canPostForum: false,
-  canUseCourses: false,
-  canCreateCourses: false,
-  canSellCourses: false,
-  canUseCreatorDashboard: false,
-  canExportPdf: false,
-  canUseReports: false,
-  canManageRoomsZones: false,
-  canManageTeam: false,
-  canUseSOP: false,
-  canUseAuditLogs: false,
-  canUseMetrc: false,
-  canUseComplianceAnalytics: false,
-  canUseCommercialMetrics: false,
-  canUseAdsManager: false,
-  canUseMarketplace: false,
-  canUseVendorMetrics: false
+  [CAPABILITIES.VIEW_DASHBOARD]: false,
+  [CAPABILITIES.VIEW_PROFILE]: false,
+  [CAPABILITIES.EDIT_PROFILE]: false,
+  [CAPABILITIES.VIEW_COURSES]: false,
+  [CAPABILITIES.ENROLL_COURSE]: false,
+  [CAPABILITIES.MANAGE_ENROLLMENTS]: false,
+  [CAPABILITIES.VIEW_FORUM]: false,
+  [CAPABILITIES.POST_FORUM]: false,
+  [CAPABILITIES.MANAGE_USERS]: false,
+  [CAPABILITIES.MANAGE_FACILITY]: false,
+  [CAPABILITIES.VIEW_PAYMENTS]: false,
+  [CAPABILITIES.MANAGE_PAYMENTS]: false
 };
 
 const defaultLimits = {
@@ -57,7 +36,7 @@ const defaultLimits = {
   maxCoursePublishPerDay: 0
 };
 
-const AuthContext = createContext();
+export const AuthContext = createContext();
 
 const API_BASE_URL =
   process.env.EXPO_PUBLIC_API_URL ||
@@ -69,16 +48,14 @@ const API_BASE_URL =
 export const AuthProvider = ({ children }) => {
   const [token, setToken] = useState(null);
   const [user, setUser] = useState(null);
-  const [isPro, setIsPro] = useState(false);
-  const [subscriptionStatus, setSubscriptionStatus] = useState("free");
-  const [isGuildMember, setIsGuildMember] = useState(false);
-  const [isEntitled, setIsEntitled] = useState(false);
-  const [loading, setLoading] = useState(true);
-  const [hasNavigatedAwayFromHome, setHasNavigatedAwayFromHome] = useState(false);
-  const [suppressWelcomeMessage, setSuppressWelcomeMessage] = useState(false);
+  const [plan, setPlan] = useState("free");
   const [mode, setModeState] = useState("personal"); // "personal", "facility", or "commercial"
   const [capabilities, setCapabilities] = useState(defaultCapabilities);
   const [limits, setLimits] = useState(defaultLimits);
+  const [tokenBalance, setTokenBalance] = useState(0);
+  const [loading, setLoading] = useState(true);
+  const [hasNavigatedAwayFromHome, setHasNavigatedAwayFromHome] = useState(false);
+  const [suppressWelcomeMessage, setSuppressWelcomeMessage] = useState(false);
   console.log("[AuthProvider] API_BASE_URL:", API_BASE_URL);
 
   // Helper: get allowed modes for the current user/entitlements
@@ -97,59 +74,48 @@ export const AuthProvider = ({ children }) => {
 
   // --- Capability and Limits Derivation ---
   // --- Capability and Limits Derivation ---
+  // Build capabilities using canonical keys for registry
   const buildCapabilities = (entitlements, mode) => {
-    // Influencer support
-    const isFree = entitlements.plan === "free";
-    const isPro = entitlements.plan === "pro";
-    const isInfluencer = entitlements.plan === "influencer" || entitlements.hasInfluencer;
-    const hasFacility = entitlements.hasFacility;
-    const hasCommercial = entitlements.hasCommercial;
-    const canSwitchModes = hasFacility && hasCommercial;
-
-    // Influencer: like Pro, but can post in feed and has access to appropriate tools
-    // Commercial: more business tools
-    // Facility: all tools, especially compliance and plant tracking
-
-    return {
-      ...defaultCapabilities,
-      canUsePersonal: true,
-      canUseFacility: !!hasFacility,
-      canUseCommercial: !!hasCommercial,
-      canSwitchModes,
-      canUseGrowAreas: true,
-      canUsePlants: true,
-      canUseGrowLogs: true,
-      canUseTasks: true,
-      canUseDiagnostics: isPro || isInfluencer || hasFacility || hasCommercial,
-      canUseToolsHub: true,
-      canUseSoilCalc: true,
-      canUseNuteCalc: true,
-      canUseVpdTool: true,
-      canUseTimelinePlanner: isPro || isInfluencer || hasFacility || hasCommercial,
-      canUseAdvancedGrowOptions: isPro || isInfluencer || hasFacility || hasCommercial,
-      canUsePhenoMatrix: isPro || isInfluencer || hasFacility || hasCommercial,
-      canUseBreedingTools: isPro || isInfluencer || hasFacility,
-      canUseFeed: true,
-      canPostFeed: isPro || isInfluencer || hasCommercial || hasFacility,
-      canUseForum: true,
-      canPostForum: isPro || isInfluencer || hasCommercial || hasFacility,
-      canUseCourses: true,
-      canCreateCourses: true,
-      canSellCourses: true,
-      canUseCreatorDashboard: isPro || isInfluencer || hasCommercial,
-      canExportPdf: isPro || isInfluencer || hasFacility || hasCommercial,
-      canUseReports: isPro || isInfluencer || hasFacility || hasCommercial,
-      canManageRoomsZones: !!hasFacility,
-      canManageTeam: !!hasFacility,
-      canUseSOP: !!hasFacility,
-      canUseAuditLogs: !!hasFacility,
-      canUseMetrc: !!hasFacility,
-      canUseComplianceAnalytics: !!hasFacility,
-      canUseCommercialMetrics: !!hasCommercial,
-      canUseAdsManager: !!hasCommercial,
-      canUseMarketplace: !!hasCommercial,
-      canUseVendorMetrics: !!hasCommercial
-    };
+    // Map plan/mode/entitlements to canonical capability keys
+    const plan = entitlements?.plan || "free";
+    const caps = { ...defaultCapabilities };
+    // Personal plan: basic access
+    if (plan === "personal" || mode === "personal") {
+      caps[CAPABILITIES.VIEW_DASHBOARD] = true;
+      caps[CAPABILITIES.VIEW_PROFILE] = true;
+      caps[CAPABILITIES.EDIT_PROFILE] = true;
+      caps[CAPABILITIES.VIEW_COURSES] = true;
+      caps[CAPABILITIES.ENROLL_COURSE] = true;
+      caps[CAPABILITIES.VIEW_FORUM] = true;
+      caps[CAPABILITIES.POST_FORUM] = true;
+    }
+    if (plan === "commercial" || mode === "commercial") {
+      caps[CAPABILITIES.VIEW_DASHBOARD] = true;
+      caps[CAPABILITIES.VIEW_PROFILE] = true;
+      caps[CAPABILITIES.EDIT_PROFILE] = true;
+      caps[CAPABILITIES.VIEW_COURSES] = true;
+      caps[CAPABILITIES.ENROLL_COURSE] = true;
+      caps[CAPABILITIES.MANAGE_ENROLLMENTS] = true;
+      caps[CAPABILITIES.VIEW_FORUM] = true;
+      caps[CAPABILITIES.POST_FORUM] = true;
+      caps[CAPABILITIES.MANAGE_USERS] = true;
+      caps[CAPABILITIES.VIEW_PAYMENTS] = true;
+    }
+    if (plan === "facility" || mode === "facility") {
+      caps[CAPABILITIES.VIEW_DASHBOARD] = true;
+      caps[CAPABILITIES.VIEW_PROFILE] = true;
+      caps[CAPABILITIES.EDIT_PROFILE] = true;
+      caps[CAPABILITIES.VIEW_COURSES] = true;
+      caps[CAPABILITIES.ENROLL_COURSE] = true;
+      caps[CAPABILITIES.MANAGE_ENROLLMENTS] = true;
+      caps[CAPABILITIES.VIEW_FORUM] = true;
+      caps[CAPABILITIES.POST_FORUM] = true;
+      caps[CAPABILITIES.MANAGE_USERS] = true;
+      caps[CAPABILITIES.MANAGE_FACILITY] = true;
+      caps[CAPABILITIES.VIEW_PAYMENTS] = true;
+      caps[CAPABILITIES.MANAGE_PAYMENTS] = true;
+    }
+    return caps;
   };
   const buildLimits = (entitlements) => {
     // Example: customize these values as needed
@@ -186,14 +152,55 @@ export const AuthProvider = ({ children }) => {
 
   const updateStateFromUser = (userData) => {
     const entitlements = getEntitlements(userData);
-    setIsPro(entitlements.isPro);
-    setIsGuildMember(entitlements.isGuildMember);
-    setIsEntitled(entitlements.isEntitled);
-    setSubscriptionStatus(entitlements.subscriptionStatus);
-    // Derive and set capabilities/limits
-    setCapabilities(buildCapabilities(entitlements, mode));
-    setLimits(buildLimits(entitlements));
-    // Expose for logic tests
+    setPlan(entitlements.plan || "free");
+    // Derive all capabilities (feature-based)
+    const derived = deriveCapabilities({
+      plan: entitlements.plan || "free",
+      mode,
+      entitlements,
+      limits
+    });
+    // Map to canonical keys for navigation gating
+    const canonicalCaps = { ...defaultCapabilities };
+    // Personal plan: basic access
+    if (entitlements.plan === "personal" || mode === "personal") {
+      canonicalCaps[CAPABILITIES.VIEW_DASHBOARD] = true;
+      canonicalCaps[CAPABILITIES.VIEW_PROFILE] = true;
+      canonicalCaps[CAPABILITIES.EDIT_PROFILE] = true;
+      canonicalCaps[CAPABILITIES.VIEW_COURSES] = true;
+      canonicalCaps[CAPABILITIES.ENROLL_COURSE] = true;
+      canonicalCaps[CAPABILITIES.VIEW_FORUM] = true;
+      canonicalCaps[CAPABILITIES.POST_FORUM] = true;
+    }
+    if (entitlements.plan === "commercial" || mode === "commercial") {
+      canonicalCaps[CAPABILITIES.VIEW_DASHBOARD] = true;
+      canonicalCaps[CAPABILITIES.VIEW_PROFILE] = true;
+      canonicalCaps[CAPABILITIES.EDIT_PROFILE] = true;
+      canonicalCaps[CAPABILITIES.VIEW_COURSES] = true;
+      canonicalCaps[CAPABILITIES.ENROLL_COURSE] = true;
+      canonicalCaps[CAPABILITIES.MANAGE_ENROLLMENTS] = true;
+      canonicalCaps[CAPABILITIES.VIEW_FORUM] = true;
+      canonicalCaps[CAPABILITIES.POST_FORUM] = true;
+      canonicalCaps[CAPABILITIES.MANAGE_USERS] = true;
+      canonicalCaps[CAPABILITIES.VIEW_PAYMENTS] = true;
+    }
+    if (entitlements.plan === "facility" || mode === "facility") {
+      canonicalCaps[CAPABILITIES.VIEW_DASHBOARD] = true;
+      canonicalCaps[CAPABILITIES.VIEW_PROFILE] = true;
+      canonicalCaps[CAPABILITIES.EDIT_PROFILE] = true;
+      canonicalCaps[CAPABILITIES.VIEW_COURSES] = true;
+      canonicalCaps[CAPABILITIES.ENROLL_COURSE] = true;
+      canonicalCaps[CAPABILITIES.MANAGE_ENROLLMENTS] = true;
+      canonicalCaps[CAPABILITIES.VIEW_FORUM] = true;
+      canonicalCaps[CAPABILITIES.POST_FORUM] = true;
+      canonicalCaps[CAPABILITIES.MANAGE_USERS] = true;
+      canonicalCaps[CAPABILITIES.MANAGE_FACILITY] = true;
+      canonicalCaps[CAPABILITIES.VIEW_PAYMENTS] = true;
+      canonicalCaps[CAPABILITIES.MANAGE_PAYMENTS] = true;
+    }
+    setCapabilities({ ...derived, ...canonicalCaps });
+    setLimits({ maxGrows: entitlements.grows || 1, maxPlants: entitlements.plants || 1 });
+    setTokenBalance(entitlements.tokenBalance || 0);
     global.__AUTH_STATE__ = entitlements;
   };
 
@@ -477,29 +484,25 @@ export const AuthProvider = ({ children }) => {
       value={{
         token,
         user,
-        isPro,
-        subscriptionStatus,
-        isGuildMember,
-        isEntitled,
+        plan,
+        mode,
+        setMode,
+        capabilities,
+        limits,
+        tokenBalance,
         loading,
         login,
         logout,
         updateUser,
-        refreshProStatus,
         hasNavigatedAwayFromHome,
         setHasNavigatedAwayFromHome,
         suppressWelcomeMessage,
         setSuppressWelcomeMessage,
-        mode,
-        setMode,
-        getAllowedModes,
         selectedFacilityId,
         setSelectedFacilityId,
         facilitiesAccess,
         facilityFeaturesEnabled,
-        setFacilityFeaturesEnabled,
-        capabilities,
-        limits
+        setFacilityFeaturesEnabled
       }}
     >
       {children}

@@ -243,6 +243,151 @@
 			"label": "Test: LiveSessionScreen QA",
 			"type": "shell",
 			"command": "npm test -- tests/LiveSessionScreen.qa.test.js"
+		},
+		{
+			"label": "Frontend: expo",
+			"type": "shell",
+			"command": "npx expo start --clear",
+			"isBackground": true
+		},
+		{
+			"label": "Frontend: expo",
+			"type": "shell",
+			"command": "npx expo start --clear",
+			"isBackground": true
+		},
+		{
+			"label": "Frontend: expo",
+			"type": "shell",
+			"command": "npx expo start --clear",
+			"isBackground": true
+		},
+		{
+			"label": "Frontend: expo",
+			"type": "shell",
+			"command": "npx expo start --clear",
+			"isBackground": true
+		},
+		{
+			"label": "Frontend: expo",
+			"type": "shell",
+			"command": "npx expo start --clear",
+			"isBackground": true
+		},
+		{
+			"label": "Frontend: expo",
+			"type": "shell",
+			"command": "npx expo start --clear",
+			"isBackground": true
+		},
+		{
+			"label": "Frontend: expo",
+			"type": "shell",
+			"command": "npx expo start --clear",
+			"isBackground": false
+		},
+		{
+			"label": "Start Expo (fix check)",
+			"type": "shell",
+			"command": "npx expo start --clear"
+		},
+		{
+			"label": "Start Expo (final syntax check)",
+			"type": "shell",
+			"command": "npx expo start --clear"
+		},
+		{
+			"label": "Start Expo (final check, full reload)",
+			"type": "shell",
+			"command": "npx expo start --clear"
+		},
+		{
+			"label": "Start Expo (final syntax check, after stray block removal)",
+			"type": "shell",
+			"command": "npx expo start --clear"
+		},
+		{
+			"label": "Start Expo (final syntax check, after all stray style blocks removed)",
+			"type": "shell",
+			"command": "npx expo start --clear"
+		},
+		{
+			"label": "Run LiveSessionScreen QA tests",
+			"type": "shell",
+			"command": "npm test -- tests/LiveSessionScreen.qa.test.js"
+		},
+		{
+			"label": "Start Expo (after final style block removal)",
+			"type": "shell",
+			"command": "npx expo start --clear"
+		},
+		{
+			"label": "Start Expo (after all style blocks removed)",
+			"type": "shell",
+			"command": "npx expo start --clear"
+		},
+		{
+			"label": "Start Expo (final, styles restored)",
+			"type": "shell",
+			"command": "npx expo start --clear"
+		},
+		{
+			"label": "Start Expo (final syntax fix, styles block)",
+			"type": "shell",
+			"command": "npx expo start --clear"
+		},
+		{
+			"label": "Start Expo (final, file ends cleanly)",
+			"type": "shell",
+			"command": "npx expo start --clear"
+		},
+		{
+			"label": "Start Expo (clear cache)",
+			"type": "shell",
+			"command": "npx expo start --clear",
+			"isBackground": false
+		},
+		{
+			"label": "Start Expo (clear cache)",
+			"type": "shell",
+			"command": "npx expo start --clear",
+			"isBackground": false
+		},
+		{
+			"label": "Start Expo (clear cache)",
+			"type": "shell",
+			"command": "npx expo start --clear",
+			"isBackground": false
+		},
+		{
+			"label": "Start Expo (clear cache)",
+			"type": "shell",
+			"command": "npx expo start --clear",
+			"isBackground": false
+		},
+		{
+			"label": "Start Expo (clear cache)",
+			"type": "shell",
+			"command": "npx expo start --clear",
+			"isBackground": false
+		},
+		{
+			"label": "Start Expo (clear cache)",
+			"type": "shell",
+			"command": "npx expo start --clear",
+			"isBackground": false
+		},
+		{
+			"label": "Start Expo (clear cache)",
+			"type": "shell",
+			"command": "npx expo start --clear",
+			"isBackground": false
+		},
+		{
+			"label": "Start Expo (clear cache)",
+			"type": "shell",
+			"command": "npx expo start --clear",
+			"isBackground": false
 		}
 	]
 }

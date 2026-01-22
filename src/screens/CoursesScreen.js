@@ -11,7 +11,7 @@ import {
   TextInput
 } from "react-native";
 import { useNavigation } from "@react-navigation/native";
-import { useAuth } from "../context/AuthContext";
+import { useAuth } from "../context/AuthContext.js";
 
 function CoursesScreen() {
   const navigation = useNavigation();

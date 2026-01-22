@@ -167,9 +167,11 @@ export default function DiagnoseScreen({ route, navigation }) {
                   maxWidth: "80%"
                 }}
               >
-                <Text style={{ color: msg.sender === "user" ? "#0f172a" : "#e5e7eb" }}>
-                  {msg.text}
-                </Text>
+                {typeof msg.text === "string" ? (
+                  <Text style={{ color: msg.sender === "user" ? "#0f172a" : "#e5e7eb" }}>
+                    {msg.text}
+                  </Text>
+                ) : null}
               </View>
             ))}
           </View>

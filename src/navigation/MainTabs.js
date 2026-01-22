@@ -11,6 +11,7 @@ import CoursesScreen from "../screens/CoursesScreen";
 import DebugScreen from "../screens/DebugScreen";
 import AppShell from "../components/AppShell";
 import { View, Text, StyleSheet } from "react-native";
+import { TAB_CONFIG, canAccess } from "./tabConfig";
 import { SafeAreaView } from "react-native-safe-area-context";
 import { colors, radius, spacing } from "../theme/theme";
 import FeedScreen from "../screens/FeedScreen";
@@ -29,7 +30,6 @@ const TAB_ICONS = {
   Profile: "👤",
   Calendar: "📅"
 };
-
 function TabIcon({ label, focused, testID }) {
   return (
     <View style={[styles.iconWrap, focused && styles.iconWrapActive]} testID={testID}>
@@ -45,10 +45,26 @@ function TabIcon({ label, focused, testID }) {
   );
 }
 
-export default function MainTabs() {
-  const { isGuildMember, isPro } = useAuth();
+function MainTabs() {
+  const { capabilities } = useAuth();
+  // Map tab config to actual screen components
+  const tabScreens = {
+    DashboardScreen,
+    GrowLogsScreen,
+    GrowLogCalendarScreen,
+    DiagnoseScreen,
+    ForumScreen,
+    SearchScreen,
+    ProfileScreen,
+    CoursesScreen,
+    DebugScreen,
+    FeedScreen
+  };
+  const filteredTabs = TAB_CONFIG.filter(
+    (tab) => canAccess(capabilities, tab.requiredCaps) && (!tab.devOnly || __DEV__)
+  );
   return (
-    <SafeAreaView style={{ flex: 1 }} edges={["bottom"]}>
+    <SafeAreaView style={{ flex: 1 }}>
       <Tab.Navigator
         screenOptions={{
           headerShown: false,
@@ -56,95 +72,23 @@ export default function MainTabs() {
           tabBarBackground: () => <View style={styles.tabBg} />
         }}
       >
-        <Tab.Screen
-          name="HomeTab"
-          component={DashboardScreen}
-          options={{
-            title: "Home",
-            tabBarLabel: ({ focused }) => (
-              <TabIcon label="Home" focused={focused} testID="tab-home" />
-            )
-          }}
-        />
-
-        <Tab.Screen
-          name="PlantsTab"
-          component={GrowLogsScreen}
-          options={{
-            title: "Plants",
-            tabBarLabel: ({ focused }) => (
-              <TabIcon label="Plants" focused={focused} testID="tab-plants" />
-            )
-          }}
-        />
-
-        <Tab.Screen
-          name="DiagnoseTab"
-          component={DiagnoseScreen}
-          options={{
-            title: "Diagnose",
-            tabBarLabel: ({ focused }) => (
-              <TabIcon label="Diagnose" focused={focused} testID="tab-diagnose" />
-            )
-          }}
-        />
-
-        <Tab.Screen
-          name="SearchTab"
-          component={SearchScreen}
-          options={{
-            title: "Search",
-            tabBarLabel: ({ focused }) => (
-              <TabIcon label="Search" focused={focused} testID="tab-search" />
-            )
-          }}
-        />
-
-        {isPro && (
+        {filteredTabs.map((tab) => (
           <Tab.Screen
-            name="FeedTab"
-            component={FeedScreen}
+            key={tab.key}
+            name={tab.routeName}
+            component={tabScreens[tab.component]}
             options={{
-              title: isGuildMember ? "Feed" : "Community",
+              title: tab.label,
               tabBarLabel: ({ focused }) => (
-                <TabIcon label="Feed" focused={focused} testID="tab-feed" />
+                <TabIcon
+                  label={tab.label}
+                  focused={focused}
+                  testID={`tab-${tab.key.toLowerCase()}`}
+                />
               )
             }}
           />
-        )}
-
-        <Tab.Screen
-          name="ForumTab"
-          component={ForumScreen}
-          options={{
-            title: "Forum",
-            tabBarLabel: ({ focused }) => (
-              <TabIcon label="Forum" focused={focused} testID="tab-guild" />
-            )
-          }}
-        />
-
-        <Tab.Screen
-          name="CoursesTab"
-          component={CoursesScreen}
-          options={{
-            title: "Courses",
-            tabBarLabel: ({ focused }) => (
-              <TabIcon label="Courses" focused={focused} testID="tab-courses" />
-            )
-          }}
-        />
-
-        <Tab.Screen
-          name="ProfileTab"
-          component={ProfileScreen}
-          options={{
-            title: "Profile",
-            tabBarLabel: ({ focused }) => (
-              <TabIcon label="Profile" focused={focused} testID="tab-profile" />
-            )
-          }}
-        />
+        ))}
         <Tab.Screen
           name="CalendarTab"
           component={GrowLogCalendarScreen}
@@ -172,6 +116,8 @@ export default function MainTabs() {
     </SafeAreaView>
   );
 }
+
+export default MainTabs;
 const styles = StyleSheet.create({
   tabBar: {
     position: "absolute",
