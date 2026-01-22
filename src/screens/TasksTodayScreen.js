@@ -52,6 +52,10 @@ export default function TasksTodayScreen() {
   }, [load]);
 
   async function finish(id) {
+    if (!id) {
+      Alert.alert("Error", "Task is missing an ID and cannot be completed.");
+      return;
+    }
     await completeTask(id);
     setShowCompleteModal(true);
     load();

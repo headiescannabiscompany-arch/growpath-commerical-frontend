@@ -122,6 +122,10 @@ const FacilityTasks = () => {
       );
       return;
     }
+    if (!taskId) {
+      Alert.alert("Error", "Task is missing an ID and cannot be completed.");
+      return;
+    }
     try {
       await completeTask(taskId, token);
       await loadTasks();

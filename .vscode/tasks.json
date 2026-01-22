@@ -388,6 +388,110 @@
 			"type": "shell",
 			"command": "npx expo start --clear",
 			"isBackground": false
+		},
+		{
+			"label": "Start Expo (clear cache)",
+			"type": "shell",
+			"command": "npx expo start --clear",
+			"isBackground": false
+		},
+		{
+			"label": "Restart Frontend (watch)",
+			"type": "shell",
+			"command": "npm start",
+			"isBackground": false
+		},
+		{
+			"label": "Restart Frontend (watch)",
+			"type": "shell",
+			"command": "npm start",
+			"isBackground": false
+		},
+		{
+			"label": "Start Expo (clear cache)",
+			"type": "shell",
+			"command": "npx expo start --clear",
+			"isBackground": false
+		},
+		{
+			"label": "Restart Expo after fixing duplicate import",
+			"type": "shell",
+			"command": "npx expo start --clear"
+		},
+		{
+			"label": "Restart Expo after all entitlement fixes",
+			"type": "shell",
+			"command": "npx expo start --clear"
+		},
+		{
+			"label": "Restart Expo after all entitlement fixes",
+			"type": "shell",
+			"command": "npx expo start --clear"
+		},
+		{
+			"label": "Restart Expo after AuthProvider fix",
+			"type": "shell",
+			"command": "npx expo start --clear"
+		},
+		{
+			"label": "Restart Expo after mode state fix",
+			"type": "shell",
+			"command": "npx expo start --clear"
+		},
+		{
+			"label": "Restart Expo after capabilities state fix (frontend)",
+			"type": "shell",
+			"command": "npx expo start --clear"
+		},
+		{
+			"label": "Restart Expo after tokenBalance state fix (frontend)",
+			"type": "shell",
+			"command": "npx expo start --clear"
+		},
+		{
+			"label": "Restart Expo after loading state fix (frontend)",
+			"type": "shell",
+			"command": "npx expo start --clear"
+		},
+		{
+			"label": "Restart Expo after hasNavigatedAwayFromHome state fix (frontend)",
+			"type": "shell",
+			"command": "npx expo start --clear"
+		},
+		{
+			"label": "Restart Expo after suppressWelcomeMessage state fix (frontend)",
+			"type": "shell",
+			"command": "npx expo start --clear"
+		},
+		{
+			"label": "Restart Expo after selectedFacilityId state fix (frontend)",
+			"type": "shell",
+			"command": "npx expo start --clear"
+		},
+		{
+			"label": "Restart Expo after facilitiesAccess fix (frontend)",
+			"type": "shell",
+			"command": "npx expo start --clear"
+		},
+		{
+			"label": "Restart Expo after facilitiesAccess order fix (frontend)",
+			"type": "shell",
+			"command": "npx expo start --clear"
+		},
+		{
+			"label": "Restart Expo after facilityFeaturesEnabled state fix (frontend)",
+			"type": "shell",
+			"command": "npx expo start --clear"
+		},
+		{
+			"label": "Restart Expo after setFacilitiesAccess state fix (frontend)",
+			"type": "shell",
+			"command": "npx expo start --clear"
+		},
+		{
+			"label": "Restart Expo after facilitiesAccess derived fix (frontend)",
+			"type": "shell",
+			"command": "npx expo start --clear"
 		}
 	]
 }

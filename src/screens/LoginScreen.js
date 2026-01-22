@@ -136,18 +136,32 @@ function LoginScreen({ navigation }) {
 
   return (
     <>
-      <Text
-        style={{
-          color: "black",
-          fontSize: 24,
-          fontWeight: "bold",
-          backgroundColor: "yellow",
-          padding: 8,
-          textAlign: "center"
-        }}
-      >
-        LOGIN SCREEN
-      </Text>
+      {__DEV__ && DEBUG_LAYOUT ? (
+        <Text
+          style={{
+            color: "black",
+            fontSize: 24,
+            fontWeight: "bold",
+            backgroundColor: "yellow",
+            padding: 8,
+            textAlign: "center"
+          }}
+        >
+          LOGIN SCREEN
+        </Text>
+      ) : (
+        <Text
+          style={{
+            color: "black",
+            fontSize: 24,
+            fontWeight: "bold",
+            padding: 8,
+            textAlign: "center"
+          }}
+        >
+          LOGIN SCREEN
+        </Text>
+      )}
       <Text style={{ color: "red", fontWeight: "bold", fontSize: 20 }}>
         DEBUG: LoginScreen visible
       </Text>

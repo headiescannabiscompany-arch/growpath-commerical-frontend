@@ -78,10 +78,11 @@ const ScreenContainer = forwardRef(function ScreenContainer(
 
 export default ScreenContainer;
 
+const DEBUG_LAYOUT = __DEV__ && false; // Toggle to true to enable debug backgrounds
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    backgroundColor: "yellow", // DEBUG: force visible background
+    ...(DEBUG_LAYOUT ? { backgroundColor: "yellow" } : {}),
     paddingHorizontal: 20,
     paddingTop: 32
   },

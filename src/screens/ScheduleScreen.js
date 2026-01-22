@@ -67,6 +67,10 @@ export default function ScheduleScreen() {
       return;
     }
 
+    if (!task || !task._id) {
+      Alert.alert("Error", "Task is missing an ID and cannot be completed.");
+      return;
+    }
     try {
       await completeTask(task._id);
       setModalVisible(false);

@@ -162,7 +162,7 @@ export default function CommercialDashboardScreen() {
             accessibilityRole="button"
             disabled={false}
           >
-            Create education post
+            <Text>Create education post</Text>
           </PrimaryButton>
           <PrimaryButton
             title="Publish course"
@@ -172,7 +172,7 @@ export default function CommercialDashboardScreen() {
             accessibilityRole="button"
             disabled={false}
           >
-            Publish course
+            <Text>Publish course</Text>
           </PrimaryButton>
           <PrimaryButton
             title="Open tools"
@@ -182,7 +182,7 @@ export default function CommercialDashboardScreen() {
             accessibilityRole="button"
             disabled={false}
           >
-            Open tools
+            <Text>Open tools</Text>
           </PrimaryButton>
           <PrimaryButton
             title="Reports"
@@ -192,7 +192,7 @@ export default function CommercialDashboardScreen() {
             accessibilityRole="button"
             disabled={false}
           >
-            Reports
+            <Text>Reports</Text>
           </PrimaryButton>
         </View>
       </Card>
@@ -200,8 +200,8 @@ export default function CommercialDashboardScreen() {
       <Card style={styles.checklistCard}>
         <Text style={styles.sectionTitle}>Profile completion</Text>
         <View style={styles.checklistWrap}>
-          {checklist.map((item) => (
-            <ChecklistItem key={item.id} label={item.label} done={item.done} />
+          {checklist.map((item, idx) => (
+            <ChecklistItem key={item.id || idx} label={item.label} done={item.done} />
           ))}
         </View>
       </Card>

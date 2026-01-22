@@ -14,29 +14,46 @@ const TeamScreen = () => (
 import React, { useContext } from "react";
 import { createBottomTabNavigator } from "@react-navigation/bottom-tabs";
 import { AuthContext } from "../context/AuthContext.js";
-import { PAGE_REGISTRY_FACILITY } from "./pageRegistry.facility.js";
 import { Ionicons } from "@expo/vector-icons";
+import { buildCaps } from "../auth/capabilities";
+import { filterRegistry } from "./filterRegistry";
 
 const Tab = createBottomTabNavigator();
 
 export default function FacilityTabs() {
-  const { capabilities } = useContext(AuthContext);
-  const pages = PAGE_REGISTRY_FACILITY.filter(
-    (page) => capabilities && capabilities[page.capabilityKey]
+  const SHOW_ALL_TABS_FOR_TESTING =
+    process.env.EXPO_PUBLIC_SHOW_ALL_TABS === "true" ||
+    process.env.REACT_APP_SHOW_ALL_TABS === "true";
+
+  const { user } = useContext(AuthContext);
+  const caps = buildCaps(user);
+  const enabledPages = filterRegistry(
+    PAGE_REGISTRY_FACILITY,
+    user,
+    caps,
+    SHOW_ALL_TABS_FOR_TESTING
   );
+
+  function renderIonicon(name, color, size) {
+    return React.createElement(Ionicons, { name, color, size });
+  }
+
+  const pagesToRender = enabledPages?.length
+    ? enabledPages
+    : [{ name: "Dashboard", component: () => null }];
+
   return (
     <Tab.Navigator>
-      {pages.map((page) => (
+      {pagesToRender.map((page) => (
         <Tab.Screen
           key={page.name}
           name={page.name}
           component={page.component}
           options={{
             tabBarIcon: page.icon
-              ? ({ color, size }) => (
-                  <Ionicons name={page.icon} color={color} size={size} />
-                )
-              : undefined,
+              ? ({ color, size }) => renderIonicon(page.icon, color, size)
+              : () => null,
+            tabBarLabel: page.label,
             title: page.label
           }}
         />

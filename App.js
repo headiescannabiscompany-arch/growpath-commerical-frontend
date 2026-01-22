@@ -38,7 +38,7 @@ if (typeof window !== "undefined") {
 }
 
 function AppContent() {
-  const { loading, token, user } = useAuth();
+  const { loading, token, user, mode, selectedFacilityId } = useAuth();
   console.log("[AppContent] loading:", loading, "token:", token, "user:", user);
 
   if (loading) {
@@ -59,8 +59,10 @@ function AppContent() {
     );
   }
 
+  // Key navigator by mode and facilityId to force remount
+  const navKey = `${mode}:${selectedFacilityId || "none"}`;
   return (
-    <NavigationContainer ref={navigationRef}>
+    <NavigationContainer ref={navigationRef} key={navKey}>
       <RootNavigator />
     </NavigationContainer>
   );

@@ -76,6 +76,11 @@ async function api(path, options = {}) {
     if (token && !hasAuthorizationHeader(headers)) {
       headers["Authorization"] = `Bearer ${token}`;
     }
+    // Facility context: send X-Facility-Id if present
+    const facilityId = global.selectedFacilityId || fetchOptions.facilityId;
+    if (facilityId) {
+      headers["X-Facility-Id"] = facilityId;
+    }
 
     const hasBody = "body" in fetchOptions && fetchOptions.body !== undefined;
     const bodyIsFormData = hasBody && isFormData(fetchOptions.body);

@@ -1,6 +1,7 @@
 import React, { createContext, useState, useContext, useEffect } from "react";
 import AsyncStorage from "@react-native-async-storage/async-storage";
 import { getSubscriptionStatus } from "../api/subscribe";
+import client from "../api";
 import { getEntitlements } from "../utils/entitlements";
 import { updateGrowInterests } from "../api/users";
 import { ONBOARDING_INTERESTS_KEY } from "../constants/storageKeys";
@@ -46,33 +47,22 @@ const API_BASE_URL =
   "http://127.0.0.1:5001";
 
 export const AuthProvider = ({ children }) => {
+  const [facilityFeaturesEnabled, setFacilityFeaturesEnabled] = useState(false);
   const [token, setToken] = useState(null);
   const [user, setUser] = useState(null);
   const [plan, setPlan] = useState("free");
-  const [mode, setModeState] = useState("personal"); // "personal", "facility", or "commercial"
-  const [capabilities, setCapabilities] = useState(defaultCapabilities);
-  const [limits, setLimits] = useState(defaultLimits);
+  // Add mode state for role-based navigation
+  const [mode, setModeState] = useState("personal");
+  // Capabilities and limits state
+  const [capabilities, setCapabilities] = useState({ ...defaultCapabilities });
+  const [limits, setLimits] = useState({ ...defaultLimits });
   const [tokenBalance, setTokenBalance] = useState(0);
   const [loading, setLoading] = useState(true);
   const [hasNavigatedAwayFromHome, setHasNavigatedAwayFromHome] = useState(false);
   const [suppressWelcomeMessage, setSuppressWelcomeMessage] = useState(false);
-  console.log("[AuthProvider] API_BASE_URL:", API_BASE_URL);
-
-  // Helper: get allowed modes for the current user/entitlements
-  const getAllowedModes = (userData = user) => {
-    // This logic can be expanded based on entitlements structure
-    const ent = getEntitlements(userData);
-    const modes = ["personal"];
-    if (ent.facilityAccess) modes.push("facility");
-    if (ent.commercialAccess) modes.push("commercial");
-    // For dev/admin, you may want to always allow all
-    return modes;
-  };
-  const [facilityFeaturesEnabled, setFacilityFeaturesEnabled] = useState(true); // Commercial users can toggle this
   const [selectedFacilityId, setSelectedFacilityIdState] = useState(null);
-  const [facilitiesAccess, setFacilitiesAccess] = useState([]); // Array of { facilityId, role, roomIds }
-
-  // --- Capability and Limits Derivation ---
+  // Derived facilitiesAccess from user (must come after user state)
+  const facilitiesAccess = user?.facilitiesAccess ?? [];
   // --- Capability and Limits Derivation ---
   // Build capabilities using canonical keys for registry
   const buildCapabilities = (entitlements, mode) => {
@@ -253,7 +243,8 @@ export const AuthProvider = ({ children }) => {
         const parsedUser = storedUser ? JSON.parse(storedUser) : null;
         setToken(storedToken);
         setUser(parsedUser);
-        if (storedMode) setModeState(storedMode);
+        // Force commercial mode for testing, regardless of storage
+        setModeState("commercial");
         if (storedFacilityId) setSelectedFacilityIdState(storedFacilityId);
         syncGlobals(storedToken, parsedUser);
 
@@ -280,7 +271,7 @@ export const AuthProvider = ({ children }) => {
         setUser(null);
         setModeState("personal");
         setSelectedFacilityIdState(null);
-        setFacilitiesAccess([]);
+        // facilitiesAccess is now derived from user, not state
         updateStateFromUser(null);
         setHasNavigatedAwayFromHome(false);
       }
@@ -378,7 +369,7 @@ export const AuthProvider = ({ children }) => {
         }
       }
 
-      setFacilitiesAccess(facilitiesAccessResponse);
+      // facilitiesAccess is now derived from user, not state
     } catch (error) {
       console.log("Failed to load facility access:", error.message);
     }

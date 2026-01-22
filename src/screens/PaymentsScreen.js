@@ -54,9 +54,7 @@ const styles = StyleSheet.create({
     borderRadius: 8,
     padding: 16,
     marginBottom: 16,
-    shadowColor: "#000",
-    shadowOpacity: 0.03,
-    shadowRadius: 2,
+    boxShadow: "0px 1px 2px rgba(0,0,0,0.03)",
     elevation: 1
   },
   sectionTitle: {

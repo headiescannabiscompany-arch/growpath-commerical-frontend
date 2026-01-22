@@ -18,7 +18,7 @@ function BarChart({ data, label }) {
     <View style={styles.chartContainer}>
       <Text style={styles.chartLabel}>{label}</Text>
       {data.map((d, i) => (
-        <View key={i} style={styles.barRow}>
+        <View key={d.id || d.label || i} style={styles.barRow}>
           <Text style={styles.barLabel}>{d.label}</Text>
           <Text style={styles.barBlock}>
             {"█".repeat(Math.round((d.value / max) * 20))}

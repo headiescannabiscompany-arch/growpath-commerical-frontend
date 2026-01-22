@@ -59,13 +59,6 @@ export const PAGE_REGISTRY_COMMERCIAL = [
     component: require("../screens/FeedScreen").default
   },
   {
-    name: "Team",
-    label: "Team",
-    icon: "people-outline",
-    capabilityKey: "seller.team",
-    component: require("../screens/TeamScreen").default
-  },
-  {
     name: "Tasks",
     label: "Tasks",
     icon: "checkbox-outline",

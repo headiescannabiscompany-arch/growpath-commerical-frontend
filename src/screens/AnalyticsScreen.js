@@ -1,5 +1,5 @@
 import React from "react";
-import { View, Text, StyleSheet, ScrollView } from "react-native";
+import { View, Text, StyleSheet, ScrollView, Platform } from "react-native";
 
 export default function AnalyticsScreen() {
   return (
@@ -43,10 +43,15 @@ const styles = StyleSheet.create({
     borderRadius: 8,
     padding: 16,
     marginBottom: 16,
-    shadowColor: "#000",
-    shadowOpacity: 0.03,
-    shadowRadius: 2,
-    elevation: 1
+    // Use boxShadow for web, shadow* for native
+    ...(Platform.OS === "web"
+      ? { boxShadow: "0px 2px 4px rgba(0,0,0,0.03)" }
+      : {
+          shadowColor: "#000",
+          shadowOpacity: 0.03,
+          shadowRadius: 2,
+          elevation: 1
+        })
   },
   sectionTitle: {
     fontSize: 18,
