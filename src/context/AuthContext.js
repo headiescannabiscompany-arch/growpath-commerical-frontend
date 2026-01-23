@@ -1,158 +1,49 @@
-import React, { createContext, useState, useContext, useEffect } from "react";
+import React, { createContext, useContext, useEffect, useMemo, useState } from "react";
 import AsyncStorage from "@react-native-async-storage/async-storage";
-import { getSubscriptionStatus } from "../api/subscribe";
-import client from "../api";
-import { getEntitlements } from "../utils/entitlements";
-import { updateGrowInterests } from "../api/users";
-import { ONBOARDING_INTERESTS_KEY } from "../constants/storageKeys";
-import { normalizePendingInterests } from "../utils/growInterests";
-import { deriveCapabilities } from "../config/capabilities.ts";
-
-// --- Capabilities and Limits Schema ---
-// See capability schema in requirements
+import { setAuthToken } from "../api/client";
+import { MODES } from "../constants/userModes";
 import { CAPABILITIES } from "../capabilities/keys";
+import { getEntitlements } from "../utils/entitlements";
+import { deriveCapabilities } from "../config/capabilities";
 
-// Default capabilities object using canonical keys
-const defaultCapabilities = {
-  [CAPABILITIES.VIEW_DASHBOARD]: false,
-  [CAPABILITIES.VIEW_PROFILE]: false,
-  [CAPABILITIES.EDIT_PROFILE]: false,
-  [CAPABILITIES.VIEW_COURSES]: false,
-  [CAPABILITIES.ENROLL_COURSE]: false,
-  [CAPABILITIES.MANAGE_ENROLLMENTS]: false,
-  [CAPABILITIES.VIEW_FORUM]: false,
-  [CAPABILITIES.POST_FORUM]: false,
-  [CAPABILITIES.MANAGE_USERS]: false,
-  [CAPABILITIES.MANAGE_FACILITY]: false,
-  [CAPABILITIES.VIEW_PAYMENTS]: false,
-  [CAPABILITIES.MANAGE_PAYMENTS]: false
-};
+const AuthContext = createContext(null);
 
-const defaultLimits = {
-  maxPlants: 0,
-  maxGrowAreas: 0,
-  maxUploadsPerDay: 0,
-  maxPostsPerDay: 0,
-  maxCoursesPerMonth: 0,
-  maxCoursePublishPerDay: 0
-};
-
-export const AuthContext = createContext();
-
-const API_BASE_URL =
-  process.env.EXPO_PUBLIC_API_URL ||
-  process.env.API_URL ||
-  process.env.REACT_NATIVE_APP_API_URL ||
-  process.env.NEXT_PUBLIC_API_URL ||
-  "http://127.0.0.1:5001";
-
-export const AuthProvider = ({ children }) => {
-  const [facilityFeaturesEnabled, setFacilityFeaturesEnabled] = useState(false);
-  const [token, setToken] = useState(null);
-  const [user, setUser] = useState(null);
+export function AuthProvider({ children }) {
+  const defaultCapabilities = Object.fromEntries(
+    Object.values(CAPABILITIES).map((k) => [k, false])
+  );
+  const defaultLimits = { maxPlants: 1, maxGrows: 1 };
   const [plan, setPlan] = useState("free");
-  const [mode, setModeState] = useState("personal");
   const [capabilities, setCapabilities] = useState({ ...defaultCapabilities });
   const [limits, setLimits] = useState({ ...defaultLimits });
-  const [tokenBalance, setTokenBalance] = useState(0);
-  const [loading, setLoading] = useState(true);
-  const [authChecked, setAuthChecked] = useState(false); // New: track if /api/auth/me has completed
-  const [hasNavigatedAwayFromHome, setHasNavigatedAwayFromHome] = useState(false);
-  const [suppressWelcomeMessage, setSuppressWelcomeMessage] = useState(false);
-  const [selectedFacilityId, setSelectedFacilityIdState] = useState(null);
-  // Derived facilitiesAccess from user (must come after user state)
-  const facilitiesAccess = user?.facilitiesAccess ?? [];
-  // --- Capability and Limits Derivation ---
-  // Build capabilities using canonical keys for registry
-  const buildCapabilities = (entitlements, mode) => {
-    // Map plan/mode/entitlements to canonical capability keys
-    const plan = entitlements?.plan || "free";
-    const caps = { ...defaultCapabilities };
-    // Personal plan: basic access
-    if (plan === "personal" || mode === "personal") {
-      caps[CAPABILITIES.VIEW_DASHBOARD] = true;
-      caps[CAPABILITIES.VIEW_PROFILE] = true;
-      caps[CAPABILITIES.EDIT_PROFILE] = true;
-      caps[CAPABILITIES.VIEW_COURSES] = true;
-      caps[CAPABILITIES.ENROLL_COURSE] = true;
-      caps[CAPABILITIES.VIEW_FORUM] = true;
-      caps[CAPABILITIES.POST_FORUM] = true;
-    }
-    if (plan === "commercial" || mode === "commercial") {
-      caps[CAPABILITIES.VIEW_DASHBOARD] = true;
-      caps[CAPABILITIES.VIEW_PROFILE] = true;
-      caps[CAPABILITIES.EDIT_PROFILE] = true;
-      caps[CAPABILITIES.VIEW_COURSES] = true;
-      caps[CAPABILITIES.ENROLL_COURSE] = true;
-      caps[CAPABILITIES.MANAGE_ENROLLMENTS] = true;
-      caps[CAPABILITIES.VIEW_FORUM] = true;
-      caps[CAPABILITIES.POST_FORUM] = true;
-      caps[CAPABILITIES.MANAGE_USERS] = true;
-      caps[CAPABILITIES.VIEW_PAYMENTS] = true;
-    }
-    if (plan === "facility" || mode === "facility") {
-      caps[CAPABILITIES.VIEW_DASHBOARD] = true;
-      caps[CAPABILITIES.VIEW_PROFILE] = true;
-      caps[CAPABILITIES.EDIT_PROFILE] = true;
-      caps[CAPABILITIES.VIEW_COURSES] = true;
-      caps[CAPABILITIES.ENROLL_COURSE] = true;
-      caps[CAPABILITIES.MANAGE_ENROLLMENTS] = true;
-      caps[CAPABILITIES.VIEW_FORUM] = true;
-      caps[CAPABILITIES.POST_FORUM] = true;
-      caps[CAPABILITIES.MANAGE_USERS] = true;
-      caps[CAPABILITIES.MANAGE_FACILITY] = true;
-      caps[CAPABILITIES.VIEW_PAYMENTS] = true;
-      caps[CAPABILITIES.MANAGE_PAYMENTS] = true;
-    }
-    return caps;
-  };
-  const buildLimits = (entitlements) => {
-    // Example: customize these values as needed
-    if (entitlements.plan === "pro") {
-      return {
-        maxPlants: 50,
-        maxGrowAreas: 10,
-        maxUploadsPerDay: 20,
-        maxPostsPerDay: 10,
-        maxCoursesPerMonth: 5,
-        maxCoursePublishPerDay: 2
-      };
-    }
-    if (entitlements.hasFacility || entitlements.hasCommercial) {
-      return {
-        maxPlants: 500,
-        maxGrowAreas: 50,
-        maxUploadsPerDay: 100,
-        maxPostsPerDay: 50,
-        maxCoursesPerMonth: 20,
-        maxCoursePublishPerDay: 10
-      };
-    }
-    // Free tier
-    return {
-      maxPlants: 5,
-      maxGrowAreas: 2,
-      maxUploadsPerDay: 2,
-      maxPostsPerDay: 2,
-      maxCoursesPerMonth: 1,
-      maxCoursePublishPerDay: 1
-    };
-  };
 
-  const updateStateFromUser = (userData) => {
-    const entitlements = getEntitlements(userData);
-    setPlan(entitlements.plan || "free");
-    // Derive all capabilities (feature-based)
-    const derived = deriveCapabilities({
-      plan: entitlements.plan || "free",
-      mode,
-      entitlements,
-      limits
-    });
-    // Map to canonical keys for navigation gating
+  const applyUserState = (userData, storedModeFallback) => {
+    if (!userData) {
+      setPlan("free");
+      setModeState(MODES.PERSONAL);
+      setCapabilities({ ...defaultCapabilities });
+      setLimits({ ...defaultLimits });
+      return;
+    }
+    // 1) entitlements must always exist
+    const ent =
+      (typeof getEntitlements === "function" ? getEntitlements(userData || null) : {}) ||
+      {};
+
+    // 2) plan must never be undefined
+    const nextPlan = ent.plan || userData?.plan || "free";
+    setPlan(nextPlan);
+
+    // 3) mode must be derived consistently
+    const nextMode =
+      userData?.mode ||
+      storedModeFallback ||
+      (ent.hasFacility ? "facility" : ent.hasCommercial ? "commercial" : "personal");
+    setModeState(nextMode);
+
+    // 4) capabilities must always be an object with canonical keys
     const canonicalCaps = { ...defaultCapabilities };
-    // Personal plan: basic access
-    if (entitlements.plan === "personal" || mode === "personal") {
+    if (nextMode === "personal") {
       canonicalCaps[CAPABILITIES.VIEW_DASHBOARD] = true;
       canonicalCaps[CAPABILITIES.VIEW_PROFILE] = true;
       canonicalCaps[CAPABILITIES.EDIT_PROFILE] = true;
@@ -160,8 +51,7 @@ export const AuthProvider = ({ children }) => {
       canonicalCaps[CAPABILITIES.ENROLL_COURSE] = true;
       canonicalCaps[CAPABILITIES.VIEW_FORUM] = true;
       canonicalCaps[CAPABILITIES.POST_FORUM] = true;
-    }
-    if (entitlements.plan === "commercial" || mode === "commercial") {
+    } else if (nextMode === "commercial") {
       canonicalCaps[CAPABILITIES.VIEW_DASHBOARD] = true;
       canonicalCaps[CAPABILITIES.VIEW_PROFILE] = true;
       canonicalCaps[CAPABILITIES.EDIT_PROFILE] = true;
@@ -172,8 +62,7 @@ export const AuthProvider = ({ children }) => {
       canonicalCaps[CAPABILITIES.POST_FORUM] = true;
       canonicalCaps[CAPABILITIES.MANAGE_USERS] = true;
       canonicalCaps[CAPABILITIES.VIEW_PAYMENTS] = true;
-    }
-    if (entitlements.plan === "facility" || mode === "facility") {
+    } else if (nextMode === "facility") {
       canonicalCaps[CAPABILITIES.VIEW_DASHBOARD] = true;
       canonicalCaps[CAPABILITIES.VIEW_PROFILE] = true;
       canonicalCaps[CAPABILITIES.EDIT_PROFILE] = true;
@@ -187,327 +76,153 @@ export const AuthProvider = ({ children }) => {
       canonicalCaps[CAPABILITIES.VIEW_PAYMENTS] = true;
       canonicalCaps[CAPABILITIES.MANAGE_PAYMENTS] = true;
     }
+    let derived = {};
+    try {
+      derived =
+        typeof deriveCapabilities === "function"
+          ? deriveCapabilities({
+              plan: nextPlan,
+              mode: nextMode,
+              entitlements: ent,
+              limits
+            })
+          : {};
+    } catch (_) {}
     setCapabilities({ ...derived, ...canonicalCaps });
-    setLimits({ maxGrows: entitlements.grows || 1, maxPlants: entitlements.plants || 1 });
-    setTokenBalance(entitlements.tokenBalance || 0);
-    global.__AUTH_STATE__ = entitlements;
+
+    // 5) limits must never be undefined
+    const nextLimits = {
+      ...defaultLimits,
+      maxPlants: ent.plants ?? defaultLimits.maxPlants,
+      maxGrows: ent.grows ?? 1
+    };
+    setLimits(nextLimits);
+    global.__AUTH_STATE__ = ent;
   };
+  // ...existing code...
+  const [loading, setLoading] = useState(true);
+  const [authChecked, setAuthChecked] = useState(false);
+
+  const [token, setToken] = useState(null);
+  const [user, setUser] = useState(null);
+
+  const [mode, setModeState] = useState(MODES.PERSONAL);
+  const [selectedFacilityId, setSelectedFacilityIdState] = useState(null);
+  const [facilityFeaturesEnabled, setFacilityFeaturesEnabled] = useState(false);
 
   useEffect(() => {
-    loadAuth();
-    // After initial load, always validate token and load facility context
-    // Only set authChecked true after /api/auth/me completes
-    // This ensures UI gating is robust
-    // This is handled inside loadFacilityAccess
-  }, []);
+    (async () => {
+      try {
+        const storedToken = await AsyncStorage.getItem("token");
+        const storedUser = await AsyncStorage.getItem("user");
+        const storedMode = await AsyncStorage.getItem("facilityMode");
+        const storedFacilityId = await AsyncStorage.getItem("selectedFacilityId");
 
-  const syncGlobals = (authToken, userData) => {
-    global.authToken = authToken || null;
-    global.user = userData || null;
-    updateStateFromUser(userData);
-  };
+        let parsedUser = null;
+        if (storedUser) {
+          try {
+            parsedUser = JSON.parse(storedUser);
+            setUser(parsedUser);
+          } catch {
+            setUser(null);
+          }
+        }
 
-  const loadAuth = async () => {
-    try {
-      const storageTimeout = new Promise((_, reject) =>
-        setTimeout(() => reject(new Error("Storage timeout")), 1000)
-      );
+        if (storedToken) {
+          setToken(storedToken);
+          setAuthToken(storedToken);
+        } else {
+          setToken(null);
+          setAuthToken(null);
+        }
 
-      const storedToken = await Promise.race([
-        AsyncStorage.getItem("token"),
-        storageTimeout
-      ]);
-      const storedMode = await Promise.race([
-        AsyncStorage.getItem("facilityMode"),
-        storageTimeout
-      ]);
-      const storedFacilityId = await Promise.race([
-        AsyncStorage.getItem("selectedFacilityId"),
-        storageTimeout
-      ]);
-
-      if (storedToken) {
-        setToken(storedToken);
-        setModeState(storedMode || "commercial");
+        if (storedMode) setModeState(storedMode);
         if (storedFacilityId) setSelectedFacilityIdState(storedFacilityId);
 
-        // Always fetch fresh user from backend
-        try {
-          const response = await client.get("/api/auth/me");
-          const freshUser = response.data;
-          setUser(freshUser);
-          syncGlobals(storedToken, freshUser);
-          await AsyncStorage.setItem("user", JSON.stringify(freshUser));
-          await AsyncStorage.setItem("mode", freshUser.mode);
-        } catch (err) {
-          console.log("Failed to fetch /api/auth/me:", err.message);
-          setUser(null);
-          syncGlobals(storedToken, null);
-        }
-
-        // Load PRO status with timeout
-        const timeout = new Promise((_, reject) =>
-          setTimeout(() => reject(new Error("Timeout")), 3000)
-        );
-
-        try {
-          await Promise.race([loadProStatus(storedToken), timeout]);
-        } catch (err) {
-          // Continue without updated PRO status
-        }
-
-        // Load facility access and set authChecked only after success
-        try {
-          await loadFacilityAccess(storedToken);
-          setAuthChecked(true);
-        } catch (err) {
-          console.log("Failed to load facility access:", err.message);
-          setAuthChecked(true); // Still allow app to render, but may show login
-        }
-      } else {
-        syncGlobals(null, null);
-        setToken(null);
-        setUser(null);
-        setModeState("personal");
-        setSelectedFacilityIdState(null);
-        updateStateFromUser(null);
-        setHasNavigatedAwayFromHome(false);
+        // Apply user state after loading user and mode
+        applyUserState(parsedUser, storedMode || null);
+      } finally {
+        setLoading(false);
         setAuthChecked(true);
       }
-    } catch (error) {
-      console.log("Auth load failed:", error.message);
-      syncGlobals(null, null);
-      setToken(null);
-      setUser(null);
-      setHasNavigatedAwayFromHome(false);
-      setAuthChecked(true);
-    } finally {
-      setLoading(false);
-      console.log("[AuthContext] loadAuth: loading set to false");
-    }
-  };
-
-  const loadProStatus = async (authToken) => {
-    try {
-      const result = await getSubscriptionStatus(authToken || token);
-      if (result.success) {
-        // Construct a partial user object to calculate entitlements
-        const entitlements = getEntitlements({
-          subscriptionStatus: result.status,
-          guilds: user?.guilds || []
-        });
-
-        setIsPro(entitlements.isPro);
-        setSubscriptionStatus(entitlements.subscriptionStatus);
-        setIsEntitled(entitlements.isEntitled);
-
-        global.__AUTH_STATE__ = { ...global.__AUTH_STATE__, ...entitlements };
-      }
-    } catch (error) {
-      setIsPro(false);
-    }
-  };
-
-  const loadFacilityAccess = async (authToken) => {
-    const baseUrl = API_BASE_URL.replace(/\/$/, "");
-    try {
-      const response = await fetch(`${baseUrl}/api/auth/me`, {
-        method: "GET",
-        headers: {
-          Authorization: `Bearer ${authToken || token}`,
-          "Content-Type": "application/json"
-        }
-      });
-
-      if (response.status === 401) {
-        // Token invalid/expired: clear auth and show login
-        await logout();
-        return;
-      }
-
-      let facilitiesAccessResponse = [];
-      if (response.ok) {
-        const data = await response.json();
-        facilitiesAccessResponse = data.facilitiesAccess || [];
-      }
-
-      if (!facilitiesAccessResponse.length) {
-        try {
-          const facilitiesResp = await fetch(`${baseUrl}/api/facilities`, {
-            method: "GET",
-            headers: {
-              Authorization: `Bearer ${authToken || token}`,
-              "Content-Type": "application/json"
-            }
-          });
-
-          if (facilitiesResp.ok) {
-            const facilitiesData = await facilitiesResp.json();
-            const facilitiesList =
-              facilitiesData?.facilities || facilitiesData?.data || [];
-
-            if (facilitiesList.length) {
-              facilitiesAccessResponse = facilitiesList
-                .filter((facility) => facility?._id)
-                .map((facility) => ({
-                  facilityId: facility._id.toString(),
-                  role: "admin",
-                  permissions: ["read", "write", "delete", "admin"]
-                }));
-
-              if (!selectedFacilityId && facilitiesAccessResponse[0]?.facilityId) {
-                const defaultFacilityId = facilitiesAccessResponse[0].facilityId;
-                setSelectedFacilityIdState(defaultFacilityId);
-                AsyncStorage.setItem("selectedFacilityId", defaultFacilityId).catch(
-                  () => {}
-                );
-              }
-            }
-          }
-        } catch (fallbackError) {
-          console.log("Failed to infer facility access:", fallbackError.message);
-        }
-      }
-
-      // facilitiesAccess is now derived from user, not state
-    } catch (error) {
-      console.log("Failed to load facility access:", error.message);
-    }
-  };
-
-  const applyPendingOnboardingInterests = async (baseUser = null) => {
-    // This is a commercial/facilities app - we don't use consumer interests
-    // Just clear any pending interests from storage
-    try {
-      await AsyncStorage.removeItem(ONBOARDING_INTERESTS_KEY);
-    } catch (error) {
-      // ignore
-    }
-  };
-
-  const updateUser = async (newUserData) => {
-    const merged = { ...user, ...newUserData };
-    setUser(merged);
-    syncGlobals(token, merged);
-    try {
-      await AsyncStorage.setItem("user", JSON.stringify(merged));
-    } catch (e) {
-      console.log("Failed to persist user update", e);
-    }
-  };
-
-  const login = async (authToken, userData) => {
-    setToken(authToken);
-    setUser(userData);
-    setHasNavigatedAwayFromHome(false);
-    syncGlobals(authToken, userData);
-
-    AsyncStorage.setItem("token", authToken).catch(() => {});
-    AsyncStorage.setItem("user", JSON.stringify(userData)).catch(() => {});
-
-    await loadProStatus(authToken).catch(() => {});
-    await loadFacilityAccess(authToken).catch(() => {});
-    setAuthChecked(true);
-  };
-
-  const logout = async () => {
-    try {
-      await AsyncStorage.removeItem("token");
-      await AsyncStorage.removeItem("user");
-      await AsyncStorage.removeItem("facilityMode");
-      await AsyncStorage.removeItem("selectedFacilityId");
-      setToken(null);
-      setUser(null);
-      setIsPro(false);
-      setIsGuildMember(false);
-      setSubscriptionStatus("free");
-      setHasNavigatedAwayFromHome(false);
-      setModeState("personal");
-      setSelectedFacilityIdState(null);
-      setFacilitiesAccess([]);
-      syncGlobals(null, null);
-      if (global.__NAV__?.resetRoot) {
-        global.__NAV__.resetRoot({
-          index: 0,
-          routes: [{ name: "Login" }]
-        });
-      } else if (global.__NAV__?.navigate) {
-        global.__NAV__.navigate("Login");
-      }
-    } catch (error) {
-      // Failed to logout
-    }
-  };
-
-  const refreshProStatus = () => {
-    loadProStatus();
-  };
+    })();
+  }, []);
 
   const setMode = async (newMode) => {
     setModeState(newMode);
     try {
       await AsyncStorage.setItem("facilityMode", newMode);
-    } catch (e) {
-      console.log("Failed to persist facility mode", e);
-    }
+    } catch (_) {}
+    applyUserState(user, newMode);
   };
 
   const setSelectedFacilityId = async (facilityId) => {
-    setSelectedFacilityIdState(facilityId);
-    try {
-      if (facilityId) {
-        await AsyncStorage.setItem("selectedFacilityId", facilityId);
-      } else {
-        await AsyncStorage.removeItem("selectedFacilityId");
-      }
-    } catch (e) {
-      console.log("Failed to persist selected facility id", e);
+    setSelectedFacilityIdState(facilityId || null);
+    if (facilityId) {
+      await AsyncStorage.setItem("selectedFacilityId", facilityId).catch(() => {});
+    } else {
+      await AsyncStorage.removeItem("selectedFacilityId").catch(() => {});
     }
+    global.selectedFacilityId = facilityId || null;
   };
 
-  useEffect(() => {
-    if (token && user) {
-      applyPendingOnboardingInterests(user);
-    }
-  }, [token, user]);
+  const updateUser = async (nextUser) => {
+    setUser(nextUser || null);
+    await AsyncStorage.setItem("user", JSON.stringify(nextUser || null)).catch(() => {});
+  };
 
-  return (
-    <AuthContext.Provider
-      value={{
-        token,
-        user,
-        plan,
-        mode,
-        setMode,
-        capabilities,
-        limits,
-        tokenBalance,
-        loading,
-        login,
-        logout,
-        updateUser,
-        hasNavigatedAwayFromHome,
-        setHasNavigatedAwayFromHome,
-        suppressWelcomeMessage,
-        setSuppressWelcomeMessage,
-        selectedFacilityId,
-        setSelectedFacilityId,
-        facilitiesAccess,
-        facilityFeaturesEnabled,
-        setFacilityFeaturesEnabled,
-        authChecked // Expose authChecked for robust UI gating
-      }}
-    >
-      {/* Only render children when authChecked is true and not loading */}
-      {authChecked && !loading ? children : null}
-    </AuthContext.Provider>
+  const logout = async () => {
+    await AsyncStorage.removeItem("token").catch(() => {});
+    await AsyncStorage.removeItem("user").catch(() => {});
+    await AsyncStorage.removeItem("facilityMode").catch(() => {});
+    await AsyncStorage.removeItem("selectedFacilityId").catch(() => {});
+
+    setToken(null);
+    setAuthToken(null);
+    setUser(null);
+
+    setModeState(MODES.PERSONAL);
+    setSelectedFacilityIdState(null);
+    setFacilityFeaturesEnabled(false);
+  };
+
+  const value = useMemo(
+    () => ({
+      loading,
+      authChecked,
+      token,
+      user,
+      plan,
+      mode,
+      setMode,
+      selectedFacilityId,
+      setSelectedFacilityId,
+      facilityFeaturesEnabled,
+      setFacilityFeaturesEnabled,
+      updateUser,
+      logout,
+      capabilities,
+      limits
+    }),
+    [
+      loading,
+      authChecked,
+      token,
+      user,
+      plan,
+      mode,
+      selectedFacilityId,
+      facilityFeaturesEnabled,
+      capabilities,
+      limits
+    ]
   );
-};
 
-export const useAuth = () => {
-  const context = useContext(AuthContext);
-  if (!context) {
-    throw new Error("useAuth must be used within an AuthProvider");
-  }
-  return context;
-};
+  return <AuthContext.Provider value={value}>{children}</AuthContext.Provider>;
+}
+
+export function useAuth() {
+  const ctx = useContext(AuthContext);
+  if (!ctx) throw new Error("useAuth must be used within an AuthProvider");
+  return ctx;
+}
