@@ -46,7 +46,9 @@ function TabIcon({ label, focused, testID }) {
 }
 
 function MainTabs() {
-  const { capabilities } = useAuth();
+  const { capabilities: rawCapabilities } = useAuth();
+  // Always default capabilities to an empty object for safety
+  const capabilities = rawCapabilities || {};
   // Map tab config to actual screen components
   const tabScreens = {
     DashboardScreen,
@@ -60,8 +62,24 @@ function MainTabs() {
     DebugScreen,
     FeedScreen
   };
-  const filteredTabs = TAB_CONFIG.filter(
-    (tab) => canAccess(capabilities, tab.requiredCaps) && (!tab.devOnly || __DEV__)
+  let filteredTabs = TAB_CONFIG.filter(
+    (tab) => canAccess(tab.requiredCaps, capabilities) && (!tab.devOnly || __DEV__)
+  );
+  if (!filteredTabs.length) {
+    filteredTabs.push({
+      key: "DebugTab",
+      label: "Debug",
+      icon: "🛠️",
+      routeName: "DebugTab",
+      requiredCaps: [],
+      component: "DebugScreen"
+    });
+  }
+  console.log(
+    "[MainTabs] tabs:",
+    filteredTabs.map((t) => t.label),
+    "caps:",
+    capabilities
   );
   return (
     <SafeAreaView style={{ flex: 1 }}>
@@ -89,29 +107,6 @@ function MainTabs() {
             }}
           />
         ))}
-        <Tab.Screen
-          name="CalendarTab"
-          component={GrowLogCalendarScreen}
-          options={{
-            title: "Calendar",
-            tabBarLabel: ({ focused }) => (
-              <TabIcon label="Calendar" focused={focused} testID="tab-calendar" />
-            )
-          }}
-        />
-        {/* DEV: Debug tab only in development */}
-        {__DEV__ && (
-          <Tab.Screen
-            name="DebugTab"
-            component={DebugScreen}
-            options={{
-              title: "Debug",
-              tabBarLabel: ({ focused }) => (
-                <TabIcon label="Debug" focused={focused} testID="tab-debug" />
-              )
-            }}
-          />
-        )}
       </Tab.Navigator>
     </SafeAreaView>
   );

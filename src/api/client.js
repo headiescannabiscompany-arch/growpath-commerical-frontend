@@ -34,28 +34,24 @@ const isFormData = (value) =>
 
 const isBlob = (value) => typeof Blob !== "undefined" && value instanceof Blob;
 
+// Sticky module-level auth token
+let AUTH_TOKEN = null;
+export function setAuthToken(token) {
+  AUTH_TOKEN = token || null;
+}
+
+function getAuthHeaders(extra = {}) {
+  return {
+    ...extra,
+    ...(AUTH_TOKEN ? { Authorization: `Bearer ${AUTH_TOKEN}` } : {})
+  };
+}
+
 function serializeBody(data) {
   if (data === undefined || data === null) return undefined;
   if (isFormData(data) || isBlob(data)) return data;
   if (typeof data === "string") return data;
   return JSON.stringify(data);
-}
-
-function hasAuthorizationHeader(headers = {}) {
-  const keys = Object.keys(headers);
-  return keys.some((key) => key.toLowerCase() === "authorization");
-}
-
-function normalizeOptions(optionsOrToken) {
-  if (!optionsOrToken) return {};
-  if (typeof optionsOrToken === "string") {
-    return {
-      headers: {
-        Authorization: `Bearer ${optionsOrToken}`
-      }
-    };
-  }
-  return optionsOrToken;
 }
 
 async function api(path, options = {}) {
@@ -70,14 +66,10 @@ async function api(path, options = {}) {
   const timeoutId = setTimeout(() => controller.abort(), requestTimeout);
 
   try {
-    const token = fetchOptions.authToken || global.authToken || null;
     const method = fetchOptions.method || "GET";
-    const headers = { ...(fetchOptions.headers || {}) };
-    if (token && !hasAuthorizationHeader(headers)) {
-      headers["Authorization"] = `Bearer ${token}`;
-    }
+    const headers = getAuthHeaders(fetchOptions.headers || {});
     // Facility context: send X-Facility-Id if present
-    const facilityId = global.selectedFacilityId || fetchOptions.facilityId;
+    const facilityId = fetchOptions.facilityId || global.selectedFacilityId;
     if (facilityId) {
       headers["X-Facility-Id"] = facilityId;
     }
@@ -151,49 +143,53 @@ async function api(path, options = {}) {
   }
 }
 
-async function get(path, optionsOrToken = {}) {
-  return api(path, { method: "GET", ...normalizeOptions(optionsOrToken) });
+async function get(path, options = {}) {
+  return api(path, { method: "GET", ...options });
 }
 
-async function post(path, data, optionsOrToken = {}) {
-  const options = { method: "POST", ...normalizeOptions(optionsOrToken) };
+async function post(path, data, options = {}) {
   const body = serializeBody(data);
   return api(path, {
-    ...options,
-    ...(body !== undefined ? { body } : {})
-  });
-}
-
-async function put(path, data, optionsOrToken = {}) {
-  const options = { method: "PUT", ...normalizeOptions(optionsOrToken) };
-  const body = serializeBody(data);
-  return api(path, {
-    ...options,
-    ...(body !== undefined ? { body } : {})
-  });
-}
-
-async function patch(path, data, optionsOrToken = {}) {
-  const options = { method: "PATCH", ...normalizeOptions(optionsOrToken) };
-  const body = serializeBody(data);
-  return api(path, {
-    ...options,
-    ...(body !== undefined ? { body } : {})
-  });
-}
-
-async function del(path, optionsOrToken = {}) {
-  return api(path, { method: "DELETE", ...normalizeOptions(optionsOrToken) });
-}
-
-async function postMultipart(path, formData, optionsOrToken = {}) {
-  return api(path, {
-    ...normalizeOptions(optionsOrToken),
     method: "POST",
-    body: formData
+    ...options,
+    ...(body !== undefined ? { body } : {})
   });
 }
 
-const client = Object.assign(api, { get, post, put, patch, delete: del, postMultipart });
+async function put(path, data, options = {}) {
+  const body = serializeBody(data);
+  return api(path, {
+    method: "PUT",
+    ...options,
+    ...(body !== undefined ? { body } : {})
+  });
+}
+
+async function patch(path, data, options = {}) {
+  const body = serializeBody(data);
+  return api(path, {
+    method: "PATCH",
+    ...options,
+    ...(body !== undefined ? { body } : {})
+  });
+}
+
+async function del(path, options = {}) {
+  return api(path, { method: "DELETE", ...options });
+}
+
+async function postMultipart(path, formData, options = {}) {
+  return api(path, { method: "POST", ...options, body: formData });
+}
+
+const client = Object.assign(api, {
+  get,
+  post,
+  put,
+  patch,
+  delete: del,
+  postMultipart,
+  setAuthToken
+});
 export { client, postMultipart, api, ApiError };
 export default client;

@@ -55,7 +55,7 @@ export default function DebugScreen() {
   return (
     <ScrollView contentContainerStyle={styles.container}>
       <Text style={styles.title}>Debug QA Harness</Text>
-      <Text style={styles.label}>User ID: {user?.id || "-"}</Text>
+      <Text style={styles.label}>User ID: {user?._id || user?.id || "-"}</Text>
       <Text style={styles.label}>Email: {user?.email || "-"}</Text>
       <Text style={styles.label}>Plan: {user?.plan || "-"}</Text>
       <Text style={styles.label}>Mode: {mode}</Text>

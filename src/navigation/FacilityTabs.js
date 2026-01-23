@@ -1,50 +1,41 @@
-import { PAGE_REGISTRY_FACILITY } from "./pageRegistry.facility.js";
-
-import React, { useContext } from "react";
+import React, { useMemo } from "react";
 import { createBottomTabNavigator } from "@react-navigation/bottom-tabs";
-import { AuthContext } from "../context/AuthContext.js";
-import { Ionicons } from "@expo/vector-icons";
-import { buildCaps } from "../auth/capabilities";
-import { filterRegistry } from "./filterRegistry";
+import StubScreen from "../components/StubScreen";
+
+function FacilityHomeStub(props) {
+  return <StubScreen {...props} title="Facility Home" subtitle="Stub" />;
+}
+function FacilityTasksStub(props) {
+  return <StubScreen {...props} title="Facility Tasks" subtitle="Stub" />;
+}
+function FacilityReportsStub(props) {
+  return <StubScreen {...props} title="Facility Reports" subtitle="Stub" />;
+}
+function FacilityProfileStub(props) {
+  return <StubScreen {...props} title="Facility Profile" subtitle="Stub" />;
+}
 
 const Tab = createBottomTabNavigator();
 
 export default function FacilityTabs() {
-  const SHOW_ALL_TABS_FOR_TESTING =
-    process.env.EXPO_PUBLIC_SHOW_ALL_TABS === "true" ||
-    process.env.REACT_APP_SHOW_ALL_TABS === "true";
-
-  const { user } = useContext(AuthContext);
-  const caps = buildCaps(user);
-  const enabledPages = filterRegistry(
-    PAGE_REGISTRY_FACILITY,
-    user,
-    caps,
-    SHOW_ALL_TABS_FOR_TESTING
+  const tabs = useMemo(
+    () => [
+      { name: "FacilityHome", component: FacilityHomeStub, title: "Home" },
+      { name: "FacilityTasks", component: FacilityTasksStub, title: "Tasks" },
+      { name: "FacilityReports", component: FacilityReportsStub, title: "Reports" },
+      { name: "FacilityProfile", component: FacilityProfileStub, title: "Profile" }
+    ],
+    []
   );
 
-  function renderIonicon(name, color, size) {
-    return React.createElement(Ionicons, { name, color, size });
-  }
-
-  const pagesToRender = enabledPages?.length
-    ? enabledPages
-    : [{ name: "Dashboard", component: () => null }];
-
   return (
-    <Tab.Navigator>
-      {pagesToRender.map((page) => (
+    <Tab.Navigator screenOptions={{ headerShown: true }}>
+      {tabs.map((t) => (
         <Tab.Screen
-          key={page.name}
-          name={page.name}
-          component={page.component}
-          options={{
-            tabBarIcon: page.icon
-              ? ({ color, size }) => renderIonicon(page.icon, color, size)
-              : () => null,
-            tabBarLabel: page.label,
-            title: page.label
-          }}
+          key={t.name}
+          name={t.name}
+          component={t.component}
+          options={{ title: t.title }}
         />
       ))}
     </Tab.Navigator>

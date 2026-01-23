@@ -20,13 +20,7 @@ import { colors, radius, spacing } from "../theme/theme.js";
 import { login as apiLogin, signup as apiSignup } from "../api/auth.js";
 
 function LoginScreen({ navigation }) {
-  const {
-    login: contextLogin,
-    token,
-    user,
-    mode: globalMode,
-    setMode: setGlobalMode
-  } = useAuth();
+  const { login: contextLogin, token, user, mode: globalMode } = useAuth();
   const [authMode, setAuthMode] = useState("login"); // "login" or "signup"
   const [selectedMode, setSelectedMode] = useState(globalMode || "personal"); // "personal", "facility", "commercial"
   const [email, setEmail] = useState("");
@@ -39,7 +33,6 @@ function LoginScreen({ navigation }) {
     if (token && user) {
       // Always set mode to 'personal' for new users unless already set
       if (!selectedMode || selectedMode === "personal") {
-        setGlobalMode("personal");
         navigation.replace("MainTabs");
       } else if (selectedMode === "facility") {
         navigation.replace("FacilityStack");
@@ -47,7 +40,6 @@ function LoginScreen({ navigation }) {
         navigation.replace("CommercialTabs");
       } else {
         // fallback: set to personal
-        setGlobalMode("personal");
         navigation.replace("MainTabs");
       }
     }
@@ -55,7 +47,7 @@ function LoginScreen({ navigation }) {
     AsyncStorage.getItem("HAS_LOGGED_IN_BEFORE").then((val) => {
       setHasLoggedInBefore(val === "true");
     });
-  }, [token, user, navigation, selectedMode, setGlobalMode]);
+  }, [token, user, navigation, selectedMode]);
 
   async function handleAuth() {
     if (loading) return;
@@ -94,9 +86,6 @@ function LoginScreen({ navigation }) {
       if (!token || !user) {
         throw new Error("Login response missing credentials");
       }
-
-      // Set selected mode in global context
-      await setGlobalMode(selectedMode);
 
       // Update context state (without waiting for AsyncStorage on web)
       const authToken = token;

@@ -1,63 +1,35 @@
-import BillingAndReportingScreen from "../screens/facility/BillingAndReportingScreen.js";
 import React from "react";
 import { createNativeStackNavigator } from "@react-navigation/native-stack";
-import FacilityTabs from "./FacilityTabs.js";
-import FacilityPicker from "../screens/facility/FacilityPicker.js";
-import RoomDetail from "../screens/facility/RoomDetail.js";
-import GreenWasteScreen from "../screens/facility/GreenWasteScreen.js";
-import AuditLogScreen from "../screens/facility/AuditLogScreen.js";
-import SOPTemplatesScreen from "../screens/facility/SOPTemplatesScreen.js";
-import VerificationScreen from "../screens/facility/VerificationScreen.js";
-import DeviationHandlingScreen from "../screens/facility/DeviationHandlingScreen.js";
-import VendorDashboardScreen from "../screens/facility/VendorDashboardScreen.js";
-import EquipmentToolsScreen from "../screens/facility/EquipmentToolsScreen.js";
-import NutrientToolsScreen from "../screens/facility/NutrientToolsScreen.js";
-import SocialMediaScreen from "../screens/commercial/SocialMediaScreen.js";
-import InfluencerDashboardScreen from "../screens/commercial/InfluencerDashboardScreen.js";
-import ContentMarketplaceScreen from "../screens/commercial/ContentMarketplaceScreen.js";
-import CommunitiesScreen from "../screens/commercial/CommunitiesScreen.js";
-import AdvertisingScreen from "../screens/commercial/AdvertisingScreen.js";
-import VendorMetricsScreen from "../screens/commercial/VendorMetricsScreen.js";
-import CommercialToolsScreen from "../screens/commercial/CommercialToolsScreen.js";
-import CommercialReportsScreen from "../screens/commercial/CommercialReportsScreen.js";
-import CommercialProfileScreen from "../screens/commercial/CommercialProfileScreen.js";
-import { useAuth } from "../context/AuthContext.js";
+import FacilityTabs from "./FacilityTabs";
+import StubScreen from "../components/StubScreen";
 
 const Stack = createNativeStackNavigator();
 
-const FacilityStack = () => {
-  const { mode } = useAuth();
-  const isCommercial = mode === "commercial";
+function makeStub(title) {
+  return function Screen(props) {
+    return <StubScreen {...props} title={title} subtitle="Facility stub" />;
+  };
+}
+
+export default function FacilityStack() {
   return (
-    <Stack.Navigator
-      screenOptions={{
-        headerShown: true,
-        headerStyle: {
-          backgroundColor: "#fff",
-          borderBottomWidth: 1,
-          borderBottomColor: "#e5e7eb"
-        },
-        headerTitleStyle: {
-          fontSize: 18,
-          fontWeight: "600",
-          color: "#1f2937"
-        },
-        headerTintColor: "#0ea5e9",
-        headerBackTitleVisible: false
-      }}
-    >
+    <Stack.Navigator screenOptions={{ headerShown: true }}>
+      {/* Root */}
       <Stack.Screen
         name="FacilityTabs"
         component={FacilityTabs}
-        options={{
-          headerShown: false
-        }}
+        options={{ title: "Facility" }}
       />
-      <Stack.Group
-        screenOptions={{
-          presentation: "modal",
-          animationEnabled: true
-        }}
+      {/* Common “missing” screens you were navigating to */}
+      <Stack.Screen name="GuildCode" component={makeStub("Guild Code")} />
+      <Stack.Screen name="Subscription" component={makeStub("Subscription")} />
+      <Stack.Screen name="PricingMatrix" component={makeStub("Pricing Matrix")} />
+      {/* Forum-related */}
+      <Stack.Screen name="ForumNewPost" component={makeStub("Forum: New Post")} />
+      <Stack.Screen name="ForumPost" component={makeStub("Forum: Post")} />
+    </Stack.Navigator>
+  );
+}
       >
         <Stack.Screen
           name="VendorDashboard"

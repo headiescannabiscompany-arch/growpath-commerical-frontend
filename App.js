@@ -38,10 +38,29 @@ if (typeof window !== "undefined") {
 }
 
 function AppContent() {
-  const { loading, token, user, mode, selectedFacilityId } = useAuth();
-  console.log("[AppContent] loading:", loading, "token:", token, "user:", user);
+  const {
+    loading,
+    authChecked,
+    token,
+    user,
+    mode,
+    selectedFacilityId,
+    plan,
+    capabilities
+  } = useAuth();
+  console.log("[RenderGate] snapshot", {
+    loading: typeof loading !== "undefined" ? loading : "undef",
+    authChecked: typeof authChecked !== "undefined" ? authChecked : "undef",
+    token: typeof token !== "undefined" ? !!token : "undef",
+    user: typeof user !== "undefined" ? !!user : "undef",
+    mode: typeof mode !== "undefined" ? mode : "undef",
+    plan: typeof plan !== "undefined" ? plan : "undef",
+    capabilities: typeof capabilities !== "undefined" ? capabilities : "undef",
+    capabilitiesPresent: !!capabilities,
+    capabilitiesKeys: capabilities ? Object.keys(capabilities).slice(0, 25) : null
+  });
 
-  if (loading) {
+  if (!authChecked || loading) {
     return (
       <View
         style={{
@@ -51,15 +70,11 @@ function AppContent() {
           backgroundColor: "#fff"
         }}
       >
-        <ActivityIndicator size="large" color="#2ecc71" />
-        <Text style={{ marginTop: 16, fontSize: 16 }}>
-          Loading GrowPath Commercial...
-        </Text>
+        <Text style={{ fontSize: 24 }}>Loading App...</Text>
       </View>
     );
   }
 
-  // Key navigator by mode and facilityId to force remount
   const navKey = `${mode}:${selectedFacilityId || "none"}`;
   return (
     <NavigationContainer ref={navigationRef} key={navKey}>

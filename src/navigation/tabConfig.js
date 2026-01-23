@@ -1,11 +1,12 @@
-// Central tab config for capability-driven navigation
+import { CAPABILITIES } from "../capabilities/keys";
+
 export const TAB_CONFIG = [
   {
     key: "HomeTab",
     label: "Home",
     icon: "🏠",
     routeName: "HomeTab",
-    requiredCaps: ["viewDashboard"],
+    requiredCaps: [CAPABILITIES.VIEW_DASHBOARD],
     component: "DashboardScreen"
   },
   {
@@ -13,7 +14,7 @@ export const TAB_CONFIG = [
     label: "Plants",
     icon: "🌱",
     routeName: "PlantsTab",
-    requiredCaps: ["viewPlants"],
+    requiredCaps: [CAPABILITIES.VIEW_PLANTS],
     component: "GrowLogsScreen"
   },
   {
@@ -21,7 +22,7 @@ export const TAB_CONFIG = [
     label: "Diagnose",
     icon: "🔍",
     routeName: "DiagnoseTab",
-    requiredCaps: ["aiDiagnose"],
+    requiredCaps: [CAPABILITIES.AI_DIAGNOSE],
     component: "DiagnoseScreen"
   },
   {
@@ -29,7 +30,7 @@ export const TAB_CONFIG = [
     label: "Search",
     icon: "🔎",
     routeName: "SearchTab",
-    requiredCaps: ["search"],
+    requiredCaps: [CAPABILITIES.SEARCH],
     component: "SearchScreen"
   },
   {
@@ -37,7 +38,7 @@ export const TAB_CONFIG = [
     label: "Feed",
     icon: "📡",
     routeName: "FeedTab",
-    requiredCaps: ["viewFeed"],
+    requiredCaps: [CAPABILITIES.VIEW_FEED],
     component: "FeedScreen"
   },
   {
@@ -45,7 +46,7 @@ export const TAB_CONFIG = [
     label: "Forum",
     icon: "💬",
     routeName: "ForumTab",
-    requiredCaps: ["viewForum"],
+    requiredCaps: [CAPABILITIES.VIEW_FORUM],
     component: "ForumScreen"
   },
   {
@@ -53,7 +54,7 @@ export const TAB_CONFIG = [
     label: "Courses",
     icon: "📚",
     routeName: "CoursesTab",
-    requiredCaps: ["viewCourses"],
+    requiredCaps: [CAPABILITIES.VIEW_COURSES],
     component: "CoursesScreen"
   },
   {
@@ -61,7 +62,7 @@ export const TAB_CONFIG = [
     label: "Profile",
     icon: "👤",
     routeName: "ProfileTab",
-    requiredCaps: ["viewProfile"],
+    requiredCaps: [CAPABILITIES.VIEW_PROFILE],
     component: "ProfileScreen"
   },
   {
@@ -69,7 +70,7 @@ export const TAB_CONFIG = [
     label: "Calendar",
     icon: "📅",
     routeName: "CalendarTab",
-    requiredCaps: ["viewGrowLog"],
+    requiredCaps: [CAPABILITIES.VIEW_GROW_LOG],
     component: "GrowLogCalendarScreen"
   },
   {
@@ -77,14 +78,15 @@ export const TAB_CONFIG = [
     label: "Debug",
     icon: "🛠️",
     routeName: "DebugTab",
-    requiredCaps: ["debug"],
+    requiredCaps: [CAPABILITIES.DEBUG],
     component: "DebugScreen",
     devOnly: true
   }
 ];
 
-// Helper to check if user has all required capabilities
-export function canAccess(capabilities, requiredCaps) {
-  if (!requiredCaps || requiredCaps.length === 0) return true;
-  return requiredCaps.every((cap) => capabilities[cap]);
+// Bulletproof capability check: supports both canonical and camelCase keys
+export function canAccess(requiredCaps = [], capabilities = {}) {
+  const caps = capabilities || {};
+  if (!requiredCaps?.length) return true;
+  return requiredCaps.every((cap) => !!caps[cap]);
 }
