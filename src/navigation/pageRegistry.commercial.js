@@ -6,36 +6,50 @@ export const PAGE_REGISTRY_COMMERCIAL = [
     name: "CommercialDashboard",
     label: "Dashboard",
     icon: "business-outline",
-    capabilityKey: "view.dashboard",
+    capabilityKey: "commercial.dashboard",
     component: require("../screens/commercial/CommercialDashboardScreen.js").default
   },
   {
     name: "Storefront",
     label: "Storefront",
     icon: "storefront-outline",
-    capabilityKey: "seller.storefront",
+    capabilityKey: "commercial.storefront",
     component: require("../screens/StorefrontScreen").default
   },
   {
     name: "Links",
     label: "Links",
     icon: "link-outline",
-    capabilityKey: "seller.links",
+    capabilityKey: "commercial.links",
     component: require("../screens/LinksScreen").default
   },
   {
     name: "Campaigns",
     label: "Campaigns",
     icon: "rocket-outline",
-    capabilityKey: "seller.campaigns",
+    capabilityKey: "commercial.campaigns",
     component: require("../screens/CampaignsScreen").default
   },
   {
     name: "SocialTools",
     label: "Social Tools",
     icon: "share-social-outline",
-    capabilityKey: "seller.socialComposer",
+    capabilityKey: "commercial.socialTools",
     component: require("../screens/SocialToolsScreen").default
+  },
+  {
+    name: "CommercialOrders",
+    label: "Orders",
+    icon: "cart-outline",
+    capabilityKey: "commercial.orders",
+    component: require("../screens/CommercialOrdersScreen").default
+  },
+  {
+    name: "CommercialInventory",
+    label: "Inventory",
+    icon: "cube-outline",
+    capabilityKey: "commercial.inventory",
+    component: require("../screens/CommercialInventoryScreen").default
   },
   {
     name: "Courses",
@@ -62,7 +76,7 @@ export const PAGE_REGISTRY_COMMERCIAL = [
     name: "Tasks",
     label: "Tasks",
     icon: "checkbox-outline",
-    capabilityKey: "seller.tasks",
+    capabilityKey: "commercial.tasks",
     component: require("../screens/TasksScreen").default
   },
   {

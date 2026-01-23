@@ -186,10 +186,11 @@ export default function ProfileScreen({ route, navigation }) {
       await setSelectedFacilityId(null);
     }
     await setMode(targetMode);
-    let stackName = "MainTabs";
-    if (targetMode === "facility") stackName = "FacilityStack";
-    if (targetMode === "commercial") stackName = "CommercialStack";
-    navigation.reset({
+    let stackName = "PersonalTabs";
+    if (targetMode === "facility") stackName = "FacilityTabs";
+    if (targetMode === "commercial") stackName = "CommercialTabs";
+    // Use getParent()?.reset to target root stack
+    navigation.getParent()?.reset({
       index: 0,
       routes: [{ name: stackName }]
     });

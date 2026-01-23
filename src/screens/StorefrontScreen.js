@@ -216,9 +216,36 @@ export default function StorefrontScreen() {
     return (
       <View style={styles.container}>
         <Text style={styles.header}>Storefront</Text>
-        <Text style={styles.error}>
-          {vendorsQuery.error?.message ?? "Failed to load vendors."}
-        </Text>
+        <View
+          style={{
+            marginTop: 40,
+            padding: 24,
+            borderRadius: 12,
+            backgroundColor: "#FEE2E2",
+            alignItems: "center",
+            borderWidth: 1,
+            borderColor: "#FCA5A5"
+          }}
+        >
+          <Text style={{ fontSize: 32, color: "#B91C1C", marginBottom: 8 }}>🚫</Text>
+          <Text
+            style={{
+              color: "#B91C1C",
+              fontWeight: "bold",
+              fontSize: 18,
+              marginBottom: 4
+            }}
+          >
+            {vendorsQuery.error?.message?.includes("403")
+              ? "Access Denied"
+              : vendorsQuery.error?.message?.includes("404")
+                ? "Not Found"
+                : "API Error"}
+          </Text>
+          <Text style={{ color: "#B91C1C", textAlign: "center" }}>
+            {vendorsQuery.error?.message ?? "Failed to load vendors."}
+          </Text>
+        </View>
         <Pressable style={styles.button} onPress={() => vendorsQuery.refetch()}>
           <Text style={styles.buttonText}>Retry</Text>
         </Pressable>

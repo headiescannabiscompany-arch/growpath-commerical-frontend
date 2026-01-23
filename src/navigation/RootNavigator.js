@@ -50,8 +50,6 @@ import CreatorDashboardV2 from "../screens/CreatorDashboardV2.js";
 import CreatorPayoutScreen from "../screens/CreatorPayoutScreen.js";
 import CreatorSignatureUpload from "../screens/CreatorSignatureUpload.js";
 import ProfileCertificatesScreen from "../screens/ProfileCertificatesScreen.js";
-import CertificateViewer from "../screens/CertificateViewer.js";
-import VerifyCertificateScreen from "../screens/VerifyCertificateScreen.js";
 import PostDetailScreen from "../screens/PostDetailScreen.js";
 import GrowLogTimelineScreen from "../screens/GrowLogTimelineScreen.js";
 import GrowLogDetailScreen from "../screens/GrowLogDetailScreen.js";
@@ -105,101 +103,43 @@ const APP_INTRO_SEEN_KEY = "seenAppIntro";
 const LEGACY_ONBOARDING_KEY = "seenOnboarding";
 
 export default function RootNavigator() {
-  const { isPro, token, user, mode } = useAuth();
-  const [showIntro, setShowIntro] = React.useState(isPro ? false : null);
-  const isAuthenticated = Boolean(token && user);
+  const { token, user, mode, capabilities } = useAuth();
+  // Log mode for debugging
+  console.log(
+    "[RootNavigator] token?",
+    !!token,
+    "mode:",
+    mode,
+    "user:",
+    user?.email,
+    "capabilities:",
+    capabilities
+  );
 
-  useEffect(() => {
-    let mounted = true;
-    const resolveIntroState = async () => {
-      try {
-        const [introValue, legacyOnboarding] = await Promise.all([
-          AsyncStorage.default.getItem(APP_INTRO_SEEN_KEY),
-          AsyncStorage.default.getItem(LEGACY_ONBOARDING_KEY)
-        ]);
-        if (!mounted) return;
-        if (isPro) {
-          setShowIntro(false);
-        } else if (introValue === "true" || legacyOnboarding === "true") {
-          setShowIntro(false);
-        } else {
-          setShowIntro(true);
-        }
-      } catch (e) {
-        setShowIntro(false);
-      }
-    };
-    resolveIntroState();
-    return () => {
-      mounted = false;
-    };
-  }, []);
+  if (!token) return <AuthStackNavigator />;
 
-  // If not authenticated, show AuthStackNavigator (Login/Register)
-  if (!isAuthenticated) {
-    return <AuthStackNavigator />;
-  }
+  // Determine allowed modes from capabilities
+  const allowedModes = [];
+  if (capabilities?.facilityTabs) allowedModes.push("facility");
+  if (capabilities?.commercialTabs) allowedModes.push("commercial");
+  if (capabilities?.personalTabs || allowedModes.length === 0)
+    allowedModes.push("personal");
 
-  const navigatorKey = `auth-${showIntro ? "intro" : "main"}-${mode}`;
+  // Fallback to first allowed mode if current mode is not allowed
+  const activeMode = allowedModes.includes(mode) ? mode : allowedModes[0];
 
-  // Role helpers
-  const isCreator = user && user.role === "creator";
-  const isPartner = user && user.role === "partner";
-  const isFacility = user && user.role === "facility";
-  const isAdmin = user && user.role === "admin";
-
+  // Register only allowed tab shells as stack routes
   return (
-    <>
-      {__DEV__ && (
-        <View
-          style={{
-            pointerEvents: "none",
-            position: "absolute",
-            top: 8,
-            left: 8,
-            zIndex: 9999,
-            paddingVertical: 4,
-            paddingHorizontal: 8,
-            borderRadius: 6,
-            backgroundColor: "rgba(0,0,0,0.6)"
-          }}
-        >
-          <Text style={{ color: "white", fontSize: 12 }}>RootNavigator visible</Text>
-        </View>
+    <Stack.Navigator screenOptions={{ headerShown: false }}>
+      {allowedModes.includes("personal") && (
+        <Stack.Screen name="PersonalTabs" component={PersonalTabs} />
       )}
-      <Stack.Navigator
-        key={navigatorKey}
-        screenOptions={{
-          headerShown: true
-          /*...*/
-        }}
-      >
-        <Stack.Screen
-          name="PersonalTabs"
-          component={PersonalTabs}
-          options={{ headerShown: false }}
-        />
-        <Stack.Screen
-          name="FacilityTabs"
-          component={FacilityTabs}
-          options={{ headerShown: false }}
-        />
-        <Stack.Screen
-          name="CommercialTabs"
-          component={CommercialTabs}
-          options={{ headerShown: false }}
-        />
-        {/* Stub screens for missing navigation targets */}
-        <Stack.Screen name="ForumNewPost" component={StubScreen} />
-        <Stack.Screen name="CreateCourse" component={StubScreen} />
-        <Stack.Screen name="CommercialTools" component={StubScreen} />
-        <Stack.Screen name="CommercialReports" component={StubScreen} />
-        <Stack.Screen name="CommercialProfile" component={StubScreen} />
-        <Stack.Screen name="GuildCode" component={StubScreen} />
-        <Stack.Screen name="Subscription" component={StubScreen} />
-        <Stack.Screen name="PricingMatrix" component={StubScreen} />
-        {/* ...other screens... */}
-      </Stack.Navigator>
-    </>
+      {allowedModes.includes("commercial") && (
+        <Stack.Screen name="CommercialTabs" component={CommercialTabs} />
+      )}
+      {allowedModes.includes("facility") && (
+        <Stack.Screen name="FacilityTabs" component={FacilityTabs} />
+      )}
+    </Stack.Navigator>
   );
 }

@@ -8,56 +8,56 @@ export const PAGE_REGISTRY_PERSONAL = [
     name: "Dashboard",
     label: "Dashboard",
     icon: "home-outline",
-    capabilityKey: "view.dashboard",
+    capabilityKey: "personal.dashboard",
     component: require("../screens/DashboardScreen").default
   },
-  // {
-  //   name: "Grows",
-  //   label: "Grows",
-  //   icon: "leaf-outline",
-  //   capabilityKey: "view.grows",
-  //   component: require("../screens/GrowsScreen").default
-  // },
-  // {
-  //   name: "Plants",
-  //   label: "Plants",
-  //   icon: "flower-outline",
-  //   capabilityKey: "view.plants",
-  //   component: require("../screens/PlantsScreen").default
-  // },
-  // {
-  //   name: "GrowLog",
-  //   label: "Grow Log",
-  //   icon: "book-outline",
-  //   capabilityKey: "view.growlog",
-  //   component: require("../screens/GrowLogScreen").default
-  // },
-  // {
-  //   name: "Calendar",
-  //   label: "Calendar",
-  //   icon: "calendar-outline",
-  //   capabilityKey: "view.calendar",
-  //   component: require("../screens/CalendarScreen").default
-  // },
+  {
+    name: "Grows",
+    label: "Grows",
+    icon: "leaf-outline",
+    capabilityKey: "personal.grows",
+    component: require("../screens/GrowsScreen").default
+  },
+  {
+    name: "Plants",
+    label: "Plants",
+    icon: "flower-outline",
+    capabilityKey: "personal.plants",
+    component: require("../screens/PlantsScreen").default
+  },
+  {
+    name: "GrowLog",
+    label: "Grow Log",
+    icon: "book-outline",
+    capabilityKey: "personal.growlog",
+    component: require("../screens/GrowLogScreen").default
+  },
+  {
+    name: "Calendar",
+    label: "Calendar",
+    icon: "calendar-outline",
+    capabilityKey: "personal.calendar",
+    component: require("../screens/CalendarScreen").default
+  },
   {
     name: "Tools",
     label: "Tools",
     icon: "construct-outline",
-    capabilityKey: "view.tools",
+    capabilityKey: "personal.tools",
     component: require("../screens/ToolsScreen").default
   },
   {
     name: "Diagnose",
     label: "Diagnose",
     icon: "medkit-outline",
-    capabilityKey: "view.diagnose",
+    capabilityKey: "personal.diagnose",
     component: require("../screens/DiagnoseScreen").default
   },
   {
     name: "Analytics",
     label: "Analytics",
     icon: "stats-chart-outline",
-    capabilityKey: "view.analytics",
+    capabilityKey: "personal.analytics",
     component: require("../screens/AnalyticsScreen").default
   },
   {

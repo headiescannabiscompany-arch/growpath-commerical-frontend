@@ -1,15 +1,4 @@
-// Temporary stub to prevent crash if SettingsScreen is not defined
-const SettingsScreen = () => (
-  <SafeAreaView style={{ flex: 1, alignItems: "center", justifyContent: "center" }}>
-    <Text>Settings (stub)</Text>
-  </SafeAreaView>
-);
-// Temporary stub to prevent crash if TeamScreen is not defined
-const TeamScreen = () => (
-  <SafeAreaView style={{ flex: 1, alignItems: "center", justifyContent: "center" }}>
-    <Text>Team (stub)</Text>
-  </SafeAreaView>
-);
+import { PAGE_REGISTRY_FACILITY } from "./pageRegistry.facility.js";
 
 import React, { useContext } from "react";
 import { createBottomTabNavigator } from "@react-navigation/bottom-tabs";

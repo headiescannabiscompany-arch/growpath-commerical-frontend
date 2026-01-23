@@ -51,13 +51,12 @@ export const AuthProvider = ({ children }) => {
   const [token, setToken] = useState(null);
   const [user, setUser] = useState(null);
   const [plan, setPlan] = useState("free");
-  // Add mode state for role-based navigation
   const [mode, setModeState] = useState("personal");
-  // Capabilities and limits state
   const [capabilities, setCapabilities] = useState({ ...defaultCapabilities });
   const [limits, setLimits] = useState({ ...defaultLimits });
   const [tokenBalance, setTokenBalance] = useState(0);
   const [loading, setLoading] = useState(true);
+  const [authChecked, setAuthChecked] = useState(false); // New: track if /api/auth/me has completed
   const [hasNavigatedAwayFromHome, setHasNavigatedAwayFromHome] = useState(false);
   const [suppressWelcomeMessage, setSuppressWelcomeMessage] = useState(false);
   const [selectedFacilityId, setSelectedFacilityIdState] = useState(null);
@@ -196,6 +195,10 @@ export const AuthProvider = ({ children }) => {
 
   useEffect(() => {
     loadAuth();
+    // After initial load, always validate token and load facility context
+    // Only set authChecked true after /api/auth/me completes
+    // This ensures UI gating is robust
+    // This is handled inside loadFacilityAccess
   }, []);
 
   const syncGlobals = (authToken, userData) => {
@@ -206,17 +209,12 @@ export const AuthProvider = ({ children }) => {
 
   const loadAuth = async () => {
     try {
-      // ... existing storage logic ...
       const storageTimeout = new Promise((_, reject) =>
         setTimeout(() => reject(new Error("Storage timeout")), 1000)
       );
 
       const storedToken = await Promise.race([
         AsyncStorage.getItem("token"),
-        storageTimeout
-      ]);
-      const storedUser = await Promise.race([
-        AsyncStorage.getItem("user"),
         storageTimeout
       ]);
       const storedMode = await Promise.race([
@@ -228,25 +226,24 @@ export const AuthProvider = ({ children }) => {
         storageTimeout
       ]);
 
-      console.log(
-        "[AuthContext] loadAuth: storedToken=",
-        storedToken,
-        "storedUser=",
-        storedUser,
-        "storedMode=",
-        storedMode,
-        "storedFacilityId=",
-        storedFacilityId
-      );
-
       if (storedToken) {
-        const parsedUser = storedUser ? JSON.parse(storedUser) : null;
         setToken(storedToken);
-        setUser(parsedUser);
-        // Force commercial mode for testing, regardless of storage
-        setModeState("commercial");
+        setModeState(storedMode || "commercial");
         if (storedFacilityId) setSelectedFacilityIdState(storedFacilityId);
-        syncGlobals(storedToken, parsedUser);
+
+        // Always fetch fresh user from backend
+        try {
+          const response = await client.get("/api/auth/me");
+          const freshUser = response.data;
+          setUser(freshUser);
+          syncGlobals(storedToken, freshUser);
+          await AsyncStorage.setItem("user", JSON.stringify(freshUser));
+          await AsyncStorage.setItem("mode", freshUser.mode);
+        } catch (err) {
+          console.log("Failed to fetch /api/auth/me:", err.message);
+          setUser(null);
+          syncGlobals(storedToken, null);
+        }
 
         // Load PRO status with timeout
         const timeout = new Promise((_, reject) =>
@@ -259,11 +256,13 @@ export const AuthProvider = ({ children }) => {
           // Continue without updated PRO status
         }
 
-        // Load facility access
+        // Load facility access and set authChecked only after success
         try {
           await loadFacilityAccess(storedToken);
+          setAuthChecked(true);
         } catch (err) {
           console.log("Failed to load facility access:", err.message);
+          setAuthChecked(true); // Still allow app to render, but may show login
         }
       } else {
         syncGlobals(null, null);
@@ -271,9 +270,9 @@ export const AuthProvider = ({ children }) => {
         setUser(null);
         setModeState("personal");
         setSelectedFacilityIdState(null);
-        // facilitiesAccess is now derived from user, not state
         updateStateFromUser(null);
         setHasNavigatedAwayFromHome(false);
+        setAuthChecked(true);
       }
     } catch (error) {
       console.log("Auth load failed:", error.message);
@@ -281,6 +280,7 @@ export const AuthProvider = ({ children }) => {
       setToken(null);
       setUser(null);
       setHasNavigatedAwayFromHome(false);
+      setAuthChecked(true);
     } finally {
       setLoading(false);
       console.log("[AuthContext] loadAuth: loading set to false");
@@ -405,8 +405,9 @@ export const AuthProvider = ({ children }) => {
     AsyncStorage.setItem("token", authToken).catch(() => {});
     AsyncStorage.setItem("user", JSON.stringify(userData)).catch(() => {});
 
-    loadProStatus(authToken).catch(() => {});
-    loadFacilityAccess(authToken).catch(() => {});
+    await loadProStatus(authToken).catch(() => {});
+    await loadFacilityAccess(authToken).catch(() => {});
+    setAuthChecked(true);
   };
 
   const logout = async () => {
@@ -493,10 +494,12 @@ export const AuthProvider = ({ children }) => {
         setSelectedFacilityId,
         facilitiesAccess,
         facilityFeaturesEnabled,
-        setFacilityFeaturesEnabled
+        setFacilityFeaturesEnabled,
+        authChecked // Expose authChecked for robust UI gating
       }}
     >
-      {children}
+      {/* Only render children when authChecked is true and not loading */}
+      {authChecked && !loading ? children : null}
     </AuthContext.Provider>
   );
 };

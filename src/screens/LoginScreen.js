@@ -1,4 +1,6 @@
 import React, { useState, useEffect } from "react";
+// DEBUG_LAYOUT: toggle yellow background for debug
+const DEBUG_LAYOUT = __DEV__ && false;
 import {
   View,
   Text,

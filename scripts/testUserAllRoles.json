@@ -1,0 +1,33 @@
+{
+  "id": "test-all-roles",
+  "email": "allroles@growpath.com",
+  "displayName": "All Roles User",
+  "role": "admin",
+  "plan": "facility",
+  "modes": ["personal", "commercial", "facility"],
+  "facilitiesAccess": [
+    {
+      "facilityId": "facility-1",
+      "role": "admin",
+      "permissions": ["read", "write", "delete", "admin"]
+    }
+  ],
+  "capabilities": {
+    "view.dashboard": true,
+    "view.profile": true,
+    "view.courses": true,
+    "view.forum": true,
+    "view.community.forum": true,
+    "view.community.feed": true,
+    "facility.dashboard": true,
+    "facility.tasks": true,
+    "facility.facilities": true,
+    "facility.multiGrow": true,
+    "facility.plants": true,
+    "facility.growLogs": true,
+    "facility.complianceExports": true,
+    "facility.phenoTracking": true,
+    "facility.tasksJobs": true,
+    "facility.users": true
+  }
+}

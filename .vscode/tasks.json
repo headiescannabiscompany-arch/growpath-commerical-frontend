@@ -492,6 +492,106 @@
 			"label": "Restart Expo after facilitiesAccess derived fix (frontend)",
 			"type": "shell",
 			"command": "npx expo start --clear"
+		},
+		{
+			"label": "Start Expo (clear cache)",
+			"type": "shell",
+			"command": "npx expo start --clear"
+		},
+		{
+			"label": "Start Expo (clear cache)",
+			"type": "shell",
+			"command": "npx expo start --clear"
+		},
+		{
+			"label": "Start Expo (clear cache)",
+			"type": "shell",
+			"command": "npx expo start --clear"
+		},
+		{
+			"label": "Start Expo (clear cache)",
+			"type": "shell",
+			"command": "npx expo start --clear"
+		},
+		{
+			"label": "Restart Expo (frontend)",
+			"type": "shell",
+			"command": "npx expo start --clear"
+		},
+		{
+			"label": "Start Expo (clear cache)",
+			"type": "shell",
+			"command": "npx expo start --clear"
+		},
+		{
+			"label": "Start Expo (clear cache)",
+			"type": "shell",
+			"command": "npx expo start --clear"
+		},
+		{
+			"label": "Start Expo (clear cache)",
+			"type": "shell",
+			"command": "npx expo start --clear"
+		},
+		{
+			"label": "Restart Expo (frontend)",
+			"type": "shell",
+			"command": "npx expo start --clear"
+		},
+		{
+			"label": "Restart Expo (frontend)",
+			"type": "shell",
+			"command": "npx expo start --clear"
+		},
+		{
+			"label": "Restart Expo (frontend)",
+			"type": "shell",
+			"command": "npx expo start --clear"
+		},
+		{
+			"label": "Start Expo (after import cleanup)",
+			"type": "shell",
+			"command": "npx expo start --clear"
+		},
+		{
+			"label": "Start Expo (watch for errors)",
+			"type": "shell",
+			"command": "npx expo start --clear"
+		},
+		{
+			"label": "Start Expo (final error watch)",
+			"type": "shell",
+			"command": "npx expo start --clear"
+		},
+		{
+			"label": "Start Expo (after deduplication fix)",
+			"type": "shell",
+			"command": "npx expo start --clear"
+		},
+		{
+			"label": "Start Expo (after deduplication and import fix)",
+			"type": "shell",
+			"command": "npx expo start --clear"
+		},
+		{
+			"label": "Start Expo (after FacilityProfileScreen cleanup)",
+			"type": "shell",
+			"command": "npx expo start --clear"
+		},
+		{
+			"label": "Start Expo (after FacilityProfileScreen style cleanup)",
+			"type": "shell",
+			"command": "npx expo start --clear"
+		},
+		{
+			"label": "Start Expo (after FacilityInventoryScreen StyleSheet fix)",
+			"type": "shell",
+			"command": "npx expo start --clear"
+		},
+		{
+			"label": "Start Expo (after FacilityFeedScreen StyleSheet fix)",
+			"type": "shell",
+			"command": "npx expo start --clear"
 		}
 	]
 }

@@ -104,7 +104,34 @@ export default function LinksScreen() {
       {loading ? (
         <ActivityIndicator size="small" color="#10B981" style={{ marginTop: 40 }} />
       ) : error ? (
-        <Text style={{ color: "#ef4444", marginTop: 40 }}>{error}</Text>
+        <View
+          style={{
+            marginTop: 40,
+            padding: 24,
+            borderRadius: 12,
+            backgroundColor: "#FEE2E2",
+            alignItems: "center",
+            borderWidth: 1,
+            borderColor: "#FCA5A5"
+          }}
+        >
+          <Text style={{ fontSize: 32, color: "#B91C1C", marginBottom: 8 }}>🚫</Text>
+          <Text
+            style={{
+              color: "#B91C1C",
+              fontWeight: "bold",
+              fontSize: 18,
+              marginBottom: 4
+            }}
+          >
+            {error.includes("403")
+              ? "Access Denied"
+              : error.includes("404")
+                ? "Not Found"
+                : "API Error"}
+          </Text>
+          <Text style={{ color: "#B91C1C", textAlign: "center" }}>{error}</Text>
+        </View>
       ) : (
         <FlatList
           data={links}

@@ -2,6 +2,14 @@
 // Centralized registry filter for tabs/pages
 
 export function filterRegistry(registry, user, caps, showAll = false) {
+  // DEV override: show all tabs for OWNER/ADMIN/PRO in dev
+  if (
+    typeof __DEV__ !== "undefined" &&
+    __DEV__ &&
+    (user?.role === "OWNER" || user?.role === "ADMIN" || user?.plan === "PRO")
+  ) {
+    return registry;
+  }
   if (showAll) return registry;
   return registry.filter((page) => {
     // Admin bypass
