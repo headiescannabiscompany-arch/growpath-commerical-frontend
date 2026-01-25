@@ -14,7 +14,7 @@ import * as ImagePicker from "expo-image-picker";
 import AppShell from "../components/AppShell.js";
 import PrimaryButton from "../components/PrimaryButton.js";
 import TokenBalanceWidget from "../components/TokenBalanceWidget.js";
-import { analyzeDiagnosis, diagnoseImage } from "../api/diagnose.js";
+import { useDiagnose } from "../hooks/useDiagnose";
 import { useAuth } from "../context/AuthContext.js";
 import { FEATURES, getEntitlement } from "../utils/entitlements.js";
 
@@ -76,29 +76,60 @@ export default function DiagnoseScreen({ route, navigation }) {
   const [substrateEC, setSubstrateEC] = useState("");
   const [airCO2, setAirCO2] = useState("");
   const [showAdvanced, setShowAdvanced] = useState(false);
-  const [loading, setLoading] = useState(false);
+  const { analyze, analyzing, analyzeError, diagnosePhoto, diagnosing, diagnoseError } =
+    useDiagnose();
   const [result, setResult] = useState(null);
 
   // --- Add missing handler stubs ---
-  function handleDiagnose() {
-    // Simulate chat-style diagnosis and follow-up
-    setLoading(true);
-    setTimeout(() => {
+  async function handleDiagnose() {
+    try {
+      const payload = {
+        notes,
+        photos,
+        stage,
+        strain,
+        breeder,
+        lightPPFD,
+        lightDLI,
+        lightModel,
+        lightDistance,
+        lightSpectrum,
+        waterSource,
+        waterTreatment,
+        waterPH,
+        waterPPM,
+        temperature,
+        humidity,
+        airflow,
+        nutrientBrand,
+        nutrientStrength,
+        feedingSchedule,
+        substrateType,
+        substratePH,
+        substrateEC,
+        airCO2
+      };
+      const res = await analyze(payload);
+      setResult(res);
       setChatHistory((prev) => [
         ...prev,
         { sender: "user", text: notes },
-        {
-          sender: "ai",
-          text: "Thanks for sharing. Are you seeing any brown spots or crispy edges?"
-        }
+        { sender: "ai", text: res?.followUp || "Diagnosis complete." }
       ]);
-      setFollowUp("Are you seeing any brown spots or crispy edges?");
-      setLoading(false);
-    }, 1200);
+      if (res?.followUp) setFollowUp(res.followUp);
+      setNotes("");
+    } catch (e) {
+      // error handled by hook
+    }
   }
-  function runVision() {
-    // TODO: Implement vision logic
-    alert("Vision pressed");
+  async function runVision() {
+    try {
+      if (!photos.length) return;
+      const res = await diagnosePhoto(photos[0]?.uri);
+      setResult(res);
+    } catch (e) {
+      // error handled by hook
+    }
   }
   function severityLabel(severity) {
     // TODO: Implement severity label logic
@@ -513,8 +544,8 @@ export default function DiagnoseScreen({ route, navigation }) {
         )}
 
         <PrimaryButton
-          title={loading ? "Analyzing..." : followUp ? "Send" : "Run Diagnosis"}
-          onPress={() => {
+          title={analyzing ? "Analyzing..." : followUp ? "Send" : "Run Diagnosis"}
+          onPress={async () => {
             if (aiEnt !== "enabled") return;
             if (followUp) {
               setChatHistory((prev) => [
@@ -528,14 +559,14 @@ export default function DiagnoseScreen({ route, navigation }) {
               setFollowUp("");
               setNotes("");
             } else {
-              handleDiagnose();
+              await handleDiagnose();
             }
           }}
-          disabled={loading || (!notes && !followUp) || aiEnt !== "enabled"}
+          disabled={analyzing || (!notes && !followUp) || aiEnt !== "enabled"}
           style={{ marginTop: 20, opacity: aiEnt === "enabled" ? 1 : 0.5 }}
         >
           <Text>
-            {loading
+            {analyzing
               ? "Analyzing..."
               : followUp
                 ? "Send"
@@ -554,15 +585,15 @@ export default function DiagnoseScreen({ route, navigation }) {
 
         {photos.length > 0 && (
           <PrimaryButton
-            title={loading ? "Analyzing..." : "AI Vision Analyze"}
-            onPress={() => {
-              if (aiEnt === "enabled") runVision();
+            title={diagnosing ? "Analyzing..." : "AI Vision Analyze"}
+            onPress={async () => {
+              if (aiEnt === "enabled") await runVision();
             }}
-            disabled={loading || aiEnt !== "enabled"}
+            disabled={diagnosing || aiEnt !== "enabled"}
             style={{ marginTop: 10, opacity: aiEnt === "enabled" ? 1 : 0.5 }}
           >
             <Text>
-              {loading
+              {diagnosing
                 ? "Analyzing..."
                 : aiEnt === "cta"
                   ? "Upgrade for AI Vision"
@@ -571,6 +602,14 @@ export default function DiagnoseScreen({ route, navigation }) {
                     : "AI Vision (Locked)"}
             </Text>
           </PrimaryButton>
+        )}
+        {/* Error display */}
+        {(analyzeError || diagnoseError) && (
+          <Text style={{ color: "#ef4444", marginTop: 8 }}>
+            {analyzeError?.message ||
+              diagnoseError?.message ||
+              "An error occurred during diagnosis."}
+          </Text>
         )}
         {photos.length > 0 && aiEnt !== "enabled" && (
           <Text style={{ color: "gray", fontSize: 12, marginTop: 4 }}>

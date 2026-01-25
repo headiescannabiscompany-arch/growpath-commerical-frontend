@@ -1,0 +1,14 @@
+{
+	"folders": [
+		{
+			"path": "../.."
+		},
+		{
+			"path": "../../../../GrowPathAI-UI-UI"
+		},
+		{
+			"path": "../../../../GrowPathAI-UI"
+		}
+	],
+	"settings": {}
+}

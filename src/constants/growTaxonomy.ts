@@ -1,0 +1,19 @@
+export const GROW_TAXONOMY = [
+  "clones",
+  "seeds",
+  "flower",
+  "hash",
+  "rosin",
+  "distillate",
+  "indoor",
+  "outdoor",
+  "greenhouse",
+  "nutrients",
+  "lighting",
+  "genetics",
+  "extraction",
+  "compliance",
+  "licensing",
+  "equipment",
+  "tissue-culture"
+];

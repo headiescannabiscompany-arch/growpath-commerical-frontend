@@ -1,5 +1,22 @@
 # BACKEND IMPLEMENTATION CHECKLIST
 
+> Status: CANONICAL
+> Owner: Backend/Product
+> Last reviewed: 2026-01-24
+> Source of truth for: Backend implementation phases, deliverables, and validation
+
+## Reality Check (Read This First)
+
+Frontend is structurally complete, but backend must define reality:
+
+- Modes, roles, capabilities, money, and authority are defined by backend, not frontend.
+- GET /api/auth/me must return the full contract (id, email, role, plan, mode, capabilities, facilitiesAccess[]).
+- Facility is an operating context, not just a resource.
+- Stripe webhooks and idempotent models are the authority for money and access.
+- Playwright and QA tests validate interface contracts, not business truth—backend rules take precedence.
+
+# ...existing checklist content below remains, now under the correct product reality...
+
 **Updated:** 2024-01-15
 **Frontend Status:** ✅ 100% COMPLETE
 **Backend Status:** ⏳ READY FOR DEVELOPMENT
@@ -608,8 +625,8 @@ When complete, update this checklist and mark phases as done:
 - [ ] Phase 8: ✅ Complete (Date: **\_\_\_**)
 - [ ] Full Platform: ✅ READY FOR PRODUCTION (Date: **\_\_\_**)
 
-**Completed By:** ******\_\_\_******
-**Date:** ******\_\_\_******
+**Completed By:** **\*\***\_\_\_**\*\***
+**Date:** **\*\***\_\_\_**\*\***
 **Notes:**
 
 ---

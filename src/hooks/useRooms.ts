@@ -1,0 +1,28 @@
+import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
+import { fetchRooms, createRoom } from "../api/rooms";
+import { useEntitlements } from "../context/EntitlementsContext";
+
+export function useRooms() {
+  const { selectedFacilityId } = useEntitlements();
+  const facilityId = selectedFacilityId;
+  const queryClient = useQueryClient();
+
+  const roomsQuery = useQuery({
+    queryKey: ["rooms", facilityId],
+    queryFn: () => fetchRooms(facilityId!),
+    enabled: !!facilityId
+  });
+
+  const createRoomMutation = useMutation({
+    mutationFn: (data: { name: string }) => createRoom(facilityId!, data),
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ["rooms", facilityId] });
+    }
+  });
+
+  return {
+    ...roomsQuery,
+    createRoom: createRoomMutation.mutateAsync,
+    creating: createRoomMutation.isPending
+  };
+}

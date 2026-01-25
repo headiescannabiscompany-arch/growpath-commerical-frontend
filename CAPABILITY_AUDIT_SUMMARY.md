@@ -1,5 +1,10 @@
 # Capability-Driven Audit Summary (2026-01-20)
 
+> Status: CANONICAL
+> Owner: Product/Engineering
+> Last reviewed: 2026-01-24
+> Source of truth for: Capability-driven feature gating and migration status
+
 ## Status: Migration Complete
 
 All major screens and components now use the centralized `capabilities` object from AuthContext for feature gating. All legacy plan/role-based logic has been removed. All QA and unit tests are updated and passing.

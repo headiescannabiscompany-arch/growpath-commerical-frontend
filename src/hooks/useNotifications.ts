@@ -1,0 +1,27 @@
+import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
+import { useEntitlements } from "../context/EntitlementsContext";
+import { useApiGuards } from "../api/hooks";
+import { listNotifications, markNotificationRead } from "../api/notifications";
+
+export function useNotifications() {
+  const qc = useQueryClient();
+  const { selectedFacilityId } = useEntitlements();
+  const { onError } = useApiGuards();
+
+  const queryKey = ["notifications", selectedFacilityId];
+
+  const query = useQuery({
+    queryKey,
+    queryFn: () => listNotifications(selectedFacilityId!),
+    enabled: !!selectedFacilityId,
+    onError
+  });
+
+  const markRead = useMutation({
+    mutationFn: (id: string) => markNotificationRead(selectedFacilityId!, id),
+    onSuccess: () => qc.invalidateQueries({ queryKey }),
+    onError
+  });
+
+  return { ...query, markRead: markRead.mutateAsync };
+}

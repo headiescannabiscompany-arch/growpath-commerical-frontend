@@ -1,0 +1,30 @@
+export type ApiErrorCode =
+  | "UNAUTHORIZED"
+  | "FORBIDDEN"
+  | "VALIDATION_ERROR"
+  | "NOT_FOUND"
+  | "RATE_LIMITED"
+  | "SERVER_ERROR"
+  | "NETWORK_ERROR"
+  | "PARSE_ERROR"
+  | "UNKNOWN";
+
+export type ApiError = {
+  code: ApiErrorCode;
+  message: string;
+  status?: number;
+  details?: any;
+};
+
+export function normalizeApiError(err: any): ApiError {
+  // Already normalized
+  if (err?.code && err?.message) return err as ApiError;
+
+  // fetch network failures
+  const msg = String(err?.message || "");
+  if (msg.includes("Network request failed") || msg.includes("Failed to fetch")) {
+    return { code: "NETWORK_ERROR", message: "Network error. Check your connection." };
+  }
+
+  return { code: "UNKNOWN", message: "Unexpected error." };
+}

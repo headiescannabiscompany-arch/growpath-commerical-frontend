@@ -1,0 +1,17 @@
+import React from "react";
+import { useEntitlements } from "../entitlements/useEntitlements";
+import { CapabilityKey } from "../entitlements/types";
+
+export function FeatureGate({
+  capability,
+  children,
+  fallback = null
+}: {
+  capability: CapabilityKey | CapabilityKey[];
+  children: React.ReactNode;
+  fallback?: React.ReactNode;
+}) {
+  const ent = useEntitlements();
+  if (!ent.ready) return null;
+  return ent.can(capability) ? <>{children}</> : <>{fallback}</>;
+}

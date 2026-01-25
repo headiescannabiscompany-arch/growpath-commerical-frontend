@@ -592,6 +592,25 @@
 			"label": "Start Expo (after FacilityFeedScreen StyleSheet fix)",
 			"type": "shell",
 			"command": "npx expo start --clear"
+		},
+		{
+			"label": "Test: All QA",
+			"type": "shell",
+			"command": "npm",
+			"args": [
+				"test"
+			],
+			"group": "test"
+		},
+		{
+			"label": "Test: All QA",
+			"type": "shell",
+			"command": "npm run test:all"
+		},
+		{
+			"label": "Test: LiveSessionScreen QA",
+			"type": "shell",
+			"command": "npm run test:LiveSessionScreen"
 		}
 	]
 }

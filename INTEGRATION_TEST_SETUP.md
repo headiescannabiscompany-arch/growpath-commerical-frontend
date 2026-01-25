@@ -108,6 +108,7 @@ npx playwright test tests/playwright/equipment.spec.js
 - Check facilityId matches in localStorage and backend
 - Verify endpoint: `GET http://127.0.0.1:5001/api/facilities/facility-1/equipment`
 - Review network tab in Playwright trace:
+
   ```bash
   npx playwright show-trace test-results/<test-name>/trace.zip
   ```
@@ -155,8 +156,271 @@ npx playwright test tests/playwright/equipment.spec.js
 - `POST /api/auth/signup` - Register
 - `GET /api/auth/me` - Current user (includes facilitiesAccess)
 
-## Documentation
+# Auth API – Frontend Contract
 
-- API Reference: `growlog-api.md`
-- OpenAPI Spec: `swagger.yaml`
-- Production Checklist: `PRODUCTION_CHECKLIST.md`
+**Base path:** `/api/auth`
+
+---
+
+## Register
+
+**POST** `/api/auth/register`
+
+- **Body:** `{ name?, displayName?, email, password }`
+- **Response:** `{ token }`
+
+## Signup (Preferred)
+
+**POST** `/api/auth/signup`
+
+- **Body:** `{ name?, displayName?, email, password }`
+- **Response:** `{ token, user }`
+
+## Login
+
+**POST** `/api/auth/login`
+
+- **Body:** `{ email, password }`
+- **Response:** `{ token, user }`
+
+## Become Creator
+
+**POST** `/api/auth/become-creator`
+
+- **Headers:** `Authorization: Bearer <token>`
+- **Response:** `{ ok: true, role: "creator" }`
+
+## Save Push Token
+
+**POST** `/api/auth/save-push-token`
+
+- **Headers:** `Authorization: Bearer <token>`
+- **Body:** `{ pushToken | token | expoPushToken }`
+- **Response:** `{ ok: true }`
+
+## User Object Shape (from /signup and /login)
+
+```json
+{
+  "id": "string",
+  "email": "string",
+  "displayName": "string",
+  "role": "user | creator | admin",
+  "plan": "string | null",
+  "subscriptionStatus": "string | null"
+}
+```
+
+## Token Handling
+
+- JWT returned from `/register`, `/signup`, `/login`
+- All protected endpoints require: `Authorization: Bearer <token>`
+
+## Error Shape
+
+- All errors: `{ "message": "string" }`
+- Status codes: 400, 401, 404, 500
+
+---
+
+## OpenAPI 3.0 Snippet
+
+```yaml
+openapi: 3.0.3
+info:
+  title: GrowPath Auth API
+  version: 1.0.0
+servers:
+  - url: /api
+components:
+  securitySchemes:
+    bearerAuth:
+      type: http
+      scheme: bearer
+      bearerFormat: JWT
+  schemas:
+    Error:
+      type: object
+      properties:
+        message:
+          type: string
+      required: [message]
+    AuthRegisterRequest:
+      type: object
+      properties:
+        name: { type: string, nullable: true }
+        displayName: { type: string, nullable: true }
+        email: { type: string }
+        password: { type: string }
+      required: [email, password]
+    AuthLoginRequest:
+      type: object
+      properties:
+        email: { type: string }
+        password: { type: string }
+      required: [email, password]
+    User:
+      type: object
+      properties:
+        id: { type: string }
+        email: { type: string }
+        displayName: { type: string }
+        role:
+          type: string
+          enum: [user, creator, admin]
+        plan:
+          type: string
+          nullable: true
+        subscriptionStatus:
+          type: string
+          nullable: true
+      required: [id, email, displayName, role, plan, subscriptionStatus]
+    TokenOnlyResponse:
+      type: object
+      properties:
+        token: { type: string }
+      required: [token]
+    AuthResponse:
+      type: object
+      properties:
+        token: { type: string }
+        user: { $ref: "#/components/schemas/User" }
+      required: [token, user]
+    OkResponse:
+      type: object
+      properties:
+        ok: { type: boolean }
+      required: [ok]
+    BecomeCreatorResponse:
+      type: object
+      properties:
+        ok: { type: boolean }
+        role: { type: string, enum: [creator] }
+      required: [ok, role]
+    SavePushTokenRequest:
+      type: object
+      properties:
+        pushToken: { type: string }
+        token: { type: string }
+        expoPushToken: { type: string }
+      additionalProperties: false
+paths:
+  /auth/register:
+    post:
+      summary: Register (token only)
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema: { $ref: "#/components/schemas/AuthRegisterRequest" }
+      responses:
+        "200":
+          description: OK
+          content:
+            application/json:
+              schema: { $ref: "#/components/schemas/TokenOnlyResponse" }
+        "400":
+          description: Bad Request
+          content:
+            application/json:
+              schema: { $ref: "#/components/schemas/Error" }
+        "500":
+          description: Server Error
+          content:
+            application/json:
+              schema: { $ref: "#/components/schemas/Error" }
+  /auth/signup:
+    post:
+      summary: Signup (token + user)
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema: { $ref: "#/components/schemas/AuthRegisterRequest" }
+      responses:
+        "200":
+          description: OK
+          content:
+            application/json:
+              schema: { $ref: "#/components/schemas/AuthResponse" }
+        "400":
+          description: Bad Request
+          content:
+            application/json:
+              schema: { $ref: "#/components/schemas/Error" }
+        "500":
+          description: Server Error
+          content:
+            application/json:
+              schema: { $ref: "#/components/schemas/Error" }
+  /auth/login:
+    post:
+      summary: Login (token + user)
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema: { $ref: "#/components/schemas/AuthLoginRequest" }
+      responses:
+        "200":
+          description: OK
+          content:
+            application/json:
+              schema: { $ref: "#/components/schemas/AuthResponse" }
+        "400":
+          description: Bad credentials / invalid input
+          content:
+            application/json:
+              schema: { $ref: "#/components/schemas/Error" }
+        "500":
+          description: Server Error
+          content:
+            application/json:
+              schema: { $ref: "#/components/schemas/Error" }
+  /auth/become-creator:
+    post:
+      summary: Upgrade user to creator
+      security:
+        - bearerAuth: []
+      responses:
+        "200":
+          description: OK
+          content:
+            application/json:
+              schema: { $ref: "#/components/schemas/BecomeCreatorResponse" }
+        "401":
+          description: Unauthorized
+          content:
+            application/json:
+              schema: { $ref: "#/components/schemas/Error" }
+  /auth/save-push-token:
+    post:
+      summary: Save a device push token
+      security:
+        - bearerAuth: []
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema: { $ref: "#/components/schemas/SavePushTokenRequest" }
+      responses:
+        "200":
+          description: OK
+          content:
+            application/json:
+              schema: { $ref: "#/components/schemas/OkResponse" }
+        "400":
+          description: Bad Request
+          content:
+            application/json:
+              schema: { $ref: "#/components/schemas/Error" }
+        "401":
+          description: Unauthorized
+          content:
+            application/json:
+              schema: { $ref: "#/components/schemas/Error" }
+```
+
+---
+
+If you need a ready-to-use API client for your stack (React, Next.js, Expo, etc.), let me know!

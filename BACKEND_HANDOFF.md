@@ -4,91 +4,225 @@
 
 This document summarizes all backend API requirements, integration points, and expected data structures for CoursesScreen.js. The frontend is fully stubbed and ready for backend integration.
 
----
+# Backend Handoff: Courses System (GrowPath AI Aligned)
 
-## API Endpoints Needed
+> Status: CANONICAL
+> Owner: Backend/Product
+> Last reviewed: 2026-01-24
+> Source of truth for: Backend contracts, per-screen handoff, and operating logic
+
+## Context (Read First)
+
+Courses are a cross-shell workflow.
+
+They behave differently depending on user shell:
+
+| Shell        | Role in courses                       |
+| ------------ | ------------------------------------- |
+| personal\_\* | student (buy, enroll, watch)          |
+| commercial   | creator (publish, sell, earnings)     |
+| facility     | trainer (assign, monitor, compliance) |
+
+Backend determines:
+
+- visibility
+- permissions
+- access
+  based on /api/auth/me.
+
+Frontend must never guess.
+
+## Keystone Requirement
+
+Every request must rely on:
+
+GET /api/auth/me
+→ role
+→ plan
+→ mode
+→ capabilities
+→ facilitiesAccess
+
+Courses logic is capability-driven, not price-driven.
+
+---
 
 ### 1. Fetch Courses
 
-- **Endpoint:** `GET /api/courses`
-- **Returns:** Array of course objects
-- **Course Object Example:**
-  ```json
-  {
-    "_id": "string",
-    "title": "string",
-    "creator": "string",
-    "thumbnail": "string (url)",
-    "priceCents": 0,
-    "lessons": [ ... ],
-    "analytics": { "views": 0, "enrollments": 0 },
-    "isPublished": true|false
+**Endpoint**
+
+GET /api/courses
+
+**Backend Responsibility**
+
+Backend must filter based on:
+
+- user.mode
+- user.capabilities
+- facility context (if applicable)
+
+Not on:
+
+- price
+- frontend plan toggles
+
+**Example Logic**
+
+```js
+if (user.mode === "personal_free") {
+  return only public free courses
+}
+if (user.mode === "commercial") {
+  return:
+    - own courses
+    - published public courses
+}
+if (user.mode === "facility") {
+  return:
+    - courses assigned to facility
+}
+```
+
+This logic does not live in the screen.
+
+---
+
+### 2. Facility User Management (Scoped Correctly)
+
+These must be facility-scoped:
+
+**Invite User**
+POST /api/facilities/:facilityId/invite
+
+**Change Role**
+PUT /api/facilities/:facilityId/users/:userId/role
+
+**Remove User**
+DELETE /api/facilities/:facilityId/users/:userId
+
+Backend must enforce:
+
+- requester is OWNER or MANAGER
+- target user is a member of that facility
+- audit log is created
+
+Global user mutation is forbidden.
+
+---
+
+### 3. Compliance Export (Facility)
+
+**Correct endpoint:**
+GET /api/facilities/:facilityId/compliance/export?format=csv|pdf
+
+Backend must verify:
+
+- user has facility access
+- user role permits export
+
+---
+
+### 4. Publish / Unpublish Course (Creator)
+
+**Endpoints**
+POST /api/courses/:courseId/publish
+POST /api/courses/:courseId/unpublish
+
+Backend must verify:
+
+- user is course creator
+- user has commercial capability
+
+---
+
+### 5. Data Model Expectations (Authoritative)
+
+Courses must include:
+
+```
+{
+  "_id": "...",
+  "title": "...",
+  "creatorId": "...",
+  "priceCents": 1000,
+  "isPublished": true,
+  "visibility": "public|facility|private",
+  "analytics": {
+    "views": 0,
+    "enrollments": 0
   }
-  ```
-- **Plan-based filtering:**
-  - Free: Only courses with `priceCents === 0`
-  - Pro/Influencer/Commercial/Facility: All courses
+}
+```
 
-### 2. Invite User (Facility)
+Access to a course is determined by:
 
-- **Endpoint:** `POST /api/invite`
-- **Body:** `{ name: string, role: "admin"|"manager"|"staff"|"learner" }`
-- **Returns:** Success/failure
+- Purchase (personal/commercial)
+- Assignment (facility)
+- Visibility flag
 
-### 3. Change User Role (Facility)
-
-- **Endpoint:** `PUT /api/users/:userId/role`
-- **Body:** `{ role: "admin"|"manager"|"staff"|"learner" }`
-- **Returns:** Success/failure
-
-### 4. Remove User (Facility)
-
-- **Endpoint:** `DELETE /api/users/:userId`
-- **Returns:** Success/failure
-
-### 5. Export Compliance Metrics (Facility)
-
-- **Endpoint:** `GET /api/compliance/export?format=csv|pdf`
-- **Returns:** File download (CSV or PDF)
-
-### 6. Publish/Unpublish Course (Influencer)
-
-- **Endpoint:**
-  - Publish: `POST /api/courses/:courseId/publish`
-  - Unpublish: `POST /api/courses/:courseId/unpublish`
-- **Returns:** Success/failure
+Not by frontend conditionals.
 
 ---
 
-## Integration Points in CoursesScreen.js
+## Critical Rule (Paste This at Top of File)
 
-- All API calls are stubbed with TODOs and ready for implementation.
-- All modals (invite, role change, remove, export) are wired to open/close logic and expect backend responses for feedback.
-- Action feedback is displayed to the user after each backend action.
-- Plan logic and UI are fully testable via the QA plan switcher.
-
----
-
-## Data/State Expectations
-
-- Courses are expected to have analytics, publishing state, and price.
-- Facility user management expects user objects with `_id`, `name`, and `role`.
-- All actions should return clear success/failure responses for user feedback.
+Courses are not UI features.
+They are capability-driven workflows.
+Backend determines access.
+Frontend only renders what backend authorizes.
 
 ---
 
-## Next Steps
+## Why This Correction Matters
 
-- Implement the above endpoints and connect them to the stubbed functions in CoursesScreen.js.
-- Ensure CORS and authentication are handled for all endpoints.
-- Notify frontend of any changes to data shape or endpoint URLs.
+Your original handoff would have produced:
 
----
+- global role mutation
+- price-based security
+- fake facility permissions
+- frontend-defined access rules
 
-## Contact
+Which is exactly the pattern that:
 
-For any questions or clarifications, please reach out to the frontend team.
+- killed Facility
+- broke Commercial
+- made money fake
+- made Copilot hallucinate
 
----
+## The Real Difference
+
+Old handoff model:
+
+“Here are endpoints the screen needs.”
+
+Correct handoff model:
+
+“Here is the operating logic that defines what this screen means.”
+
+One produces:
+
+- an app that passes tests
+
+The other produces:
+
+- a platform that scales without collapsing.
+
+## Final Verdict
+
+This handoff doc was technically fine
+but architecturally dangerous.
+
+After correction:
+
+- it aligns with your shell model
+- it enforces reality
+- it prevents another year of drift
+
+This is the exact category of document that used to:
+
+- silently recreate the same bug
+- in every new feature.
+
+Now it won’t.
 
 **Frontend is ready for backend integration.**

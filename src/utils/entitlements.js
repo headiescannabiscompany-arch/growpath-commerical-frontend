@@ -1,3 +1,17 @@
+// Universal entitlement gating helper (futureproof, capabilities-first)
+export function requireEntitlement(navigation, allowed, action) {
+  if (!allowed) {
+    navigation.navigate("Paywall");
+    return false;
+  }
+  action?.();
+  return true;
+}
+
+// Compatibility: requirePro is just a shortcut for the pro capability bundle
+export function requirePro(navigation, isPro, action) {
+  return requireEntitlement(navigation, !!isPro, action);
+}
 // Central entitlement utility for GrowPath roles and features
 
 // User roles

@@ -1,47 +1,86 @@
-# Development Environment Setup Complete ✅
+# GrowPath AI – Development Environment & Platform Safety Guide
 
-## What Was Configured
+> Status: CANONICAL
+> Owner: Engineering/Platform
+> Last reviewed: 2026-01-24
+> Source of truth for: Tooling, linting, and architectural guardrails
 
-### ✅ VS Code Extensions Installed
+## Core Principle
 
-All extensions have been installed:
+Linting and tooling are not just for formatting or style. In GrowPath, they are the last line of defense against architectural drift and compliance failure. ESLint, Prettier, and Husky must:
 
-- ✅ ESLint - Real-time linting
-- ✅ Prettier - Code formatting
-- ✅ Error Lens - Inline error highlighting
-- ✅ GitLens - Git supercharged
-- ✅ Path Intellisense - Auto-complete paths
-- ✅ npm Intellisense - Auto-complete npm modules
-- ✅ EditorConfig - Consistent coding styles
-- ✅ Thunder Client - API testing (Postman alternative)
-- ✅ MongoDB for VS Code - Database management
+- Prevent illegal backend patterns
+- Enforce operating system rules
+- Stop compliance drift
+- Protect capability-based security
 
-### ✅ Configuration Files Created
+If lint passes but architecture is broken, lint is misconfigured.
 
-#### Root Level (Frontend/React Native)
+---
 
-- [.eslintrc.json](.eslintrc.json) - ESLint config with React Native support
-- [.prettierrc](.prettierrc) - Prettier formatting rules
-- [jsconfig.json](jsconfig.json) - JavaScript type checking
-- [.editorconfig](.editorconfig) - Editor consistency rules
-- [package.json](package.json) - Updated with lint scripts and husky
-- [.eslintignore](.eslintignore) - ESLint ignore patterns
-- [.prettierignore](.prettierignore) - Prettier ignore patterns
+## What Was Configured (Tooling Basics)
 
-#### Backend Level
+### VS Code Extensions
 
-- [backend/.eslintrc.json](backend/.eslintrc.json) - ESLint config for Node.js
-- [backend/.prettierrc](backend/.prettierrc) - Prettier formatting rules
-- [backend/jsconfig.json](backend/jsconfig.json) - JavaScript type checking
-- [backend/package.json](backend/package.json) - Updated with lint scripts and husky
-- [backend/.eslintignore](backend/.eslintignore) - ESLint ignore patterns
-- [backend/.prettierignore](backend/.prettierignore) - Prettier ignore patterns
+...existing code...
 
-#### VS Code Workspace Settings
+---
 
-- [.vscode/settings.json](.vscode/settings.json) - Auto-format on save enabled
+## Mandatory Architectural Rules (Add These to .eslintrc.json backend)
 
-## Next Steps (Manual Installation Required)
+1. **No direct facility role mutation**
+   - Block: `PUT /api/users/:id/role`
+   - Enforce: `PUT /api/facilities/:facilityId/users/:id/role`
+   - Lint rule: no route paths matching `/api/users/.*role`
+
+2. **No hard deletes on immutable collections**
+   - For: AuditLog, Verification, Deviation, GreenWaste, SOPTemplate
+   - Disallow: `Model.deleteOne()`, `Model.findByIdAndDelete()`
+   - Allow only: create, status change, soft archive where defined
+
+3. **All facility routes must require access middleware**
+   - Disallow: `router.get("/facilities/:id", handler)`
+   - Require: `router.get("/facilities/:id", requireMode("facility"), requireFacilityAccess, handler)`
+
+4. **No frontend-defined access rules**
+   - Disallow: `if (user.plan === "free") showFeature()`
+   - Require: `if (capabilities.analytics) showFeature()`
+
+5. **Money must be integer cents**
+   - Disallow: `price: 9.99`
+   - Require: `priceCents: 999`
+
+---
+
+## New “Never Edit Manually” List
+
+Add these to your system contracts:
+
+- AUTH_CONTRACT.md
+- FACILITY_OS_PRIMITIVES.md
+- PAYMENTS_SPEC.md
+- FRONTEND_SCREEN_MAP.md
+
+These are not config files. They are architectural contracts.
+
+---
+
+## New Daily Command (Missing)
+
+Add this to your workflow:
+
+`npm run arch:check`
+
+Which should:
+
+- scan for forbidden patterns
+- verify middleware presence
+- block illegal deletes
+- flag missing audit writes
+
+This is your platform integrity test, not just lint.
+
+---
 
 ### 1. Install Node.js
 
@@ -116,35 +155,15 @@ npx husky install
 
 This enables automatic code quality checks before commits.
 
-## How to Use
+## How to Use (Muscle Memory)
 
 ### Auto-Format on Save
 
-Everything is already configured! Just:
-
-1. Open any `.js` file
-2. Make changes
-3. Press `Ctrl + S` (Save)
-4. Watch ESLint and Prettier auto-fix your code
+...existing code...
 
 ### Manual Linting
 
-#### Backend
-
-```powershell
-cd backend
-npm run lint          # Check for errors
-npm run lint:fix      # Auto-fix errors
-npm run format        # Format all files
-```
-
-#### Frontend
-
-```powershell
-npm run lint          # Check for errors
-npm run lint:fix      # Auto-fix errors
-npm run format        # Format all files
-```
+...existing code...
 
 ### View Problems Panel
 
@@ -152,13 +171,29 @@ Press `Ctrl + Shift + M` to see all errors and warnings across your project.
 
 ### Pre-Commit Hook
 
-When you run `git commit`, husky will:
+...existing code...
 
-1. Run ESLint on changed files
-2. Run Prettier on changed files
-3. Block the commit if any errors exist
+---
 
-This prevents broken code from entering the repository.
+## Redefining “Best Practices”
+
+Replace this:
+
+✅ Don't fight the linter — it's catching real bugs
+
+With this:
+
+✅ If lint passes but architecture feels wrong, the linter is wrong.
+
+The linter must protect:
+
+- shell boundaries
+- capability flow
+- authority layers
+- immutability rules
+  Not just semicolons.
+
+---
 
 ## What Each Tool Does
 
@@ -285,6 +320,20 @@ git commit -m "test"
 
 If any linting errors exist, the commit will be blocked.
 
+---
+
+## The Real Pattern
+
+Old meaning of lint:
+“Make code pretty and consistent.”
+
+Your meaning now:
+“Make illegal systems impossible to commit.”
+
+That’s a completely different class of tooling.
+
+---
+
 ## Professional Benefits
 
 ✅ **Catch bugs before runtime**
@@ -331,7 +380,10 @@ If any linting errors exist, the commit will be blocked.
 5. **Open Problems Panel** with `Ctrl + Shift + M`
 6. **Start fixing errors** one by one until clean
 
-Your development environment is now professional-grade! 🚀
+Your development environment is now platform-grade. 🚀
+
+After your architectural reset, linting is no longer about style.
+It’s about preventing another year of drift.
 
 ## Capability-Driven UI Gating
 

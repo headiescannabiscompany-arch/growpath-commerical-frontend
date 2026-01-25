@@ -1,0 +1,66 @@
+import React from "react";
+import { View, ActivityIndicator, FlatList, Text, Button } from "react-native";
+import { useNavigation } from "@react-navigation/native";
+import EmptyState from "../../components/EmptyState";
+import { useCalendar } from "../../hooks/useCalendar";
+import { useEntitlements } from "../../context/EntitlementsContext";
+import NotEntitledScreen from "../common/NotEntitledScreen";
+
+function getMonthRange(date: Date) {
+  const start = new Date(date.getFullYear(), date.getMonth(), 1);
+  const end = new Date(date.getFullYear(), date.getMonth() + 1, 0, 23, 59, 59, 999);
+  return [start.toISOString(), end.toISOString()];
+}
+
+export default function CalendarScreen() {
+  const navigation = useNavigation<any>();
+  const { capabilities } = useEntitlements() || {};
+  if (!capabilities?.calendar) return <NotEntitledScreen />;
+
+  const [startISO, endISO] = getMonthRange(new Date());
+  const { data, isLoading, error, refetch } = useCalendar(startISO, endISO);
+  const events = Array.isArray(data) ? data : [];
+
+  if (isLoading) {
+    return (
+      <View style={{ flex: 1, alignItems: "center", justifyContent: "center" }}>
+        <ActivityIndicator size="large" />
+      </View>
+    );
+  }
+
+  if (error) {
+    return (
+      <View style={{ flex: 1, padding: 16, justifyContent: "center" }}>
+        <Text style={{ fontSize: 18, fontWeight: "600", marginBottom: 8 }}>
+          Couldn’t load events
+        </Text>
+        <Text style={{ marginBottom: 12 }}>
+          Please check your connection and try again.
+        </Text>
+        <Button title="Retry" onPress={() => refetch()} />
+      </View>
+    );
+  }
+
+  if (events.length === 0) {
+    return (
+      <EmptyState
+        title="No schedule yet"
+        description="Add your first event to plan watering, feeding, and key milestones."
+        actionLabel="Add first event"
+        onAction={() => navigation.navigate("AddEvent")}
+      />
+    );
+  }
+
+  return (
+    <FlatList
+      data={events}
+      keyExtractor={(e: any) => e.id}
+      renderItem={({ item }) => (
+        <Text style={{ padding: 12 }}>{item.title || "Untitled Event"}</Text>
+      )}
+    />
+  );
+}

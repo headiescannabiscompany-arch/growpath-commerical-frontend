@@ -1,8 +1,201 @@
-# Backend Developer Guide: Implementing Tracking Modes
+# GrowPath Backend Implementation Guide (v2 – Aligned)
 
-This guide is for the backend developer implementing the `trackingMode` feature to match the frontend implementation.
+> Status: CANONICAL
+> Owner: Backend/Product
+> Last reviewed: 2026-01-24
+> Source of truth for: Backend architecture, operating system, and implementation phases
 
----
+## Reality Check (Read This First)
+
+Frontend screens exist.
+Backend defines truth.
+
+This backend is not “implementing endpoints”.
+It is implementing the GrowPath Operating System.
+
+Everything derives from:
+
+GET /api/auth/me
+→ role
+→ plan
+→ mode
+→ capabilities
+→ facilitiesAccess
+
+If this is wrong, nothing else matters.
+
+## Platform Mental Model (Mandatory)
+
+GrowPath has four shells:
+
+| Shell         | Reality                          |
+| ------------- | -------------------------------- |
+| personal_free | single user tracker              |
+| personal_pro  | single user + analytics          |
+| commercial    | storefront + marketing + courses |
+| facility      | multi-user operations system     |
+
+Facility is not a resource.
+Facility is an operating context.
+
+## Keystone Contract (Must Implement First)
+
+GET /api/auth/me (Authoritative)
+
+Must return:
+
+{
+"id": "...",
+"email": "...",
+"role": "personal|commercial|facility",
+"plan": "free|pro",
+"mode": "personal|commercial|facility",
+"capabilities": {
+"batchTracking": true,
+"courses": true,
+"facility": true
+},
+"facilitiesAccess": [
+{ "facilityId": "...", "role": "OWNER|MANAGER|STAFF" }
+]
+}
+
+Frontend must never infer mode again.
+
+## Phase 1 (Corrected)
+
+### Real Goal
+
+Not “auth endpoints”.
+Goal is:
+
+establish the operating shell.
+
+**Build First**
+
+- GET /auth/me
+- capability generator
+- facility membership model
+- role enforcement middleware
+
+Only then build:
+
+- POST /auth/register
+- POST /auth/login
+
+## Facility Is Not CRUD (Correct Mental Model)
+
+These are allowed:
+
+GET /facilities // list access
+GET /facilities/:id // switch context
+
+These are dangerous:
+
+POST /facilities // must assign OWNER
+DELETE /facilities // must audit
+
+Every facility operation must:
+
+- validate membership
+- enforce role
+- log audit
+
+## Payments Authority (Must Be Webhook-Based)
+
+Frontend success is never trusted.
+
+Backend must implement:
+
+- Stripe webhooks
+- idempotent Purchase model
+- Earning model
+- reversal logic
+
+No Enrollment is created unless:
+
+- Stripe → webhook → backend
+
+## Money Storage Rule
+
+All currency is stored as:
+
+integer cents
+
+Never floats.
+
+## Test Philosophy (Important Correction)
+
+Playwright tests validate:
+
+- interface contract
+- not business truth
+
+If tests conflict with:
+
+- role model
+- capability logic
+- money authority
+
+Then tests must be updated, not reality.
+
+## Why This Correction Matters
+
+Your original doc says:
+
+“Frontend complete, backend just needs to follow spec.”
+
+That creates:
+
+- fake commerce
+- fake roles
+- fake facility
+- fake authority
+
+The corrected doc says:
+
+“Backend defines reality, frontend consumes it.”
+
+That creates:
+
+- stable shells
+- real multi-user ops
+- real money flows
+- no more oscillation
+
+## The One-Line Fix That Would Have Saved You 6 Months
+
+Your old system:
+
+Backend implemented features.
+
+Your real system:
+
+Backend implements world rules.
+
+Everything else is just UI.
+
+## Final Verdict
+
+This guide is operationally excellent
+but architecturally incomplete.
+
+After correction:
+
+- it becomes a real backend bible
+- it stops Copilot from hallucinating
+- it makes frontend finally converge
+
+This is the difference between:
+
+“a working app”
+and
+“a real platform”.
+
+You were never stuck on bugs.
+You were missing the operating system layer.
+
+# ...existing content below remains, but now sits under the correct product reality...
 
 ## Quick Start
 

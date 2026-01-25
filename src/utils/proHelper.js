@@ -10,10 +10,16 @@ export const requirePro = (navigation, isPro, action) => {
 };
 
 // Check if error is 403 PRO-required response
+
 export const isPro403Error = (error) => {
-  const status = error?.status ?? error?.response?.status;
-  const message = error?.data?.message ?? error?.response?.data?.message;
-  return status === 403 && typeof message === "string" && message.includes("PRO");
+  const status =
+    error?.status || error?.response?.status || error?.response?.data?.status;
+
+  if (status === 403) return true;
+
+  const msg = error?.message || error?.response?.data?.message || "";
+
+  return /pro subscription required/i.test(msg);
 };
 
 // Handle API errors with automatic paywall redirect
