@@ -40,10 +40,19 @@ export function setAuthToken(token) {
   AUTH_TOKEN = token || null;
 }
 
-function getAuthHeaders(extra = {}) {
+function getGlobalAuthToken() {
+  // Use global.authToken if set (for test compatibility), else AUTH_TOKEN
+  if (typeof global !== "undefined" && global.authToken) {
+    return global.authToken;
+  }
+  return AUTH_TOKEN;
+}
+
+function getAuthHeaders(extra = {}, tokenOverride) {
+  const tokenToUse = tokenOverride || getGlobalAuthToken();
   return {
     ...extra,
-    ...(AUTH_TOKEN ? { Authorization: `Bearer ${AUTH_TOKEN}` } : {})
+    ...(tokenToUse ? { Authorization: `Bearer ${tokenToUse}` } : {})
   };
 }
 
@@ -67,7 +76,7 @@ async function api(path, options = {}) {
 
   try {
     const method = fetchOptions.method || "GET";
-    const headers = getAuthHeaders(fetchOptions.headers || {});
+    const headers = getAuthHeaders(fetchOptions.headers || {}, fetchOptions.token);
     // Facility context: send X-Facility-Id if present
     const facilityId = fetchOptions.facilityId || global.selectedFacilityId;
     if (facilityId) {
@@ -143,11 +152,15 @@ async function api(path, options = {}) {
   }
 }
 
-async function get(path, options = {}) {
+async function get(path, optionsOrToken = {}) {
+  const options =
+    typeof optionsOrToken === "string" ? { token: optionsOrToken } : optionsOrToken;
   return api(path, { method: "GET", ...options });
 }
 
-async function post(path, data, options = {}) {
+async function post(path, data, optionsOrToken = {}) {
+  const options =
+    typeof optionsOrToken === "string" ? { token: optionsOrToken } : optionsOrToken;
   const body = serializeBody(data);
   return api(path, {
     method: "POST",
@@ -156,7 +169,9 @@ async function post(path, data, options = {}) {
   });
 }
 
-async function put(path, data, options = {}) {
+async function put(path, data, optionsOrToken = {}) {
+  const options =
+    typeof optionsOrToken === "string" ? { token: optionsOrToken } : optionsOrToken;
   const body = serializeBody(data);
   return api(path, {
     method: "PUT",
@@ -165,7 +180,9 @@ async function put(path, data, options = {}) {
   });
 }
 
-async function patch(path, data, options = {}) {
+async function patch(path, data, optionsOrToken = {}) {
+  const options =
+    typeof optionsOrToken === "string" ? { token: optionsOrToken } : optionsOrToken;
   const body = serializeBody(data);
   return api(path, {
     method: "PATCH",
@@ -174,11 +191,15 @@ async function patch(path, data, options = {}) {
   });
 }
 
-async function del(path, options = {}) {
+async function del(path, optionsOrToken = {}) {
+  const options =
+    typeof optionsOrToken === "string" ? { token: optionsOrToken } : optionsOrToken;
   return api(path, { method: "DELETE", ...options });
 }
 
-async function postMultipart(path, formData, options = {}) {
+async function postMultipart(path, formData, optionsOrToken = {}) {
+  const options =
+    typeof optionsOrToken === "string" ? { token: optionsOrToken } : optionsOrToken;
   return api(path, { method: "POST", ...options, body: formData });
 }
 
