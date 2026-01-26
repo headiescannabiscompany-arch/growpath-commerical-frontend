@@ -162,9 +162,11 @@ export function EntitlementsProvider({ children }: { children: React.ReactNode }
   );
 }
 
-export function useEntitlementsContext() {
+// FIXED: Implement the hook so it returns the context value
+export function useEntitlements() {
   const ctx = useContext(EntitlementsContext);
-  if (!ctx)
-    throw new Error("useEntitlementsContext must be used within <EntitlementsProvider>");
+  if (!ctx) {
+    throw new Error("useEntitlements must be used within an EntitlementsProvider");
+  }
   return ctx;
 }

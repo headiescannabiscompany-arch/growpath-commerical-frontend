@@ -1,1 +1,1 @@
-import { useEntitlements } from "./EntitlementsProvider";  export function useEntitlements() {   return useEntitlements(); }
+﻿export { useEntitlements } from "./EntitlementsProvider";
