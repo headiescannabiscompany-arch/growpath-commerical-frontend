@@ -9,7 +9,7 @@ import {
   Alert,
   StyleSheet
 } from "react-native";
-import { useAuth } from "../../context/AuthContext";
+import { useAuth } from "@/auth/AuthContext";
 import { listVendors, createVendor, updateVendor, deleteVendor } from "../../api/vendor";
 
 // Placeholder analytics data for future management

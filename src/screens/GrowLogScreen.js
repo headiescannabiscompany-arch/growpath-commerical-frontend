@@ -1,6 +1,6 @@
 import React, { useMemo } from "react";
 import { View, Text, ScrollView, StyleSheet } from "react-native";
-import { useAuth } from "../context/AuthContext";
+import { useAuth } from "@/auth/AuthContext";
 
 function ErrorCard({ status, message, details }) {
   const title =

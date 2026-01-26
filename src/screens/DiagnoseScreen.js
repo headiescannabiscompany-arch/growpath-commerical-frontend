@@ -15,7 +15,7 @@ import AppShell from "../components/AppShell.js";
 import PrimaryButton from "../components/PrimaryButton.js";
 import TokenBalanceWidget from "../components/TokenBalanceWidget.js";
 import { useDiagnose } from "../hooks/useDiagnose";
-import { useAuth } from "../context/AuthContext.js";
+import { useAuth } from "@/auth/AuthContext";
 import { FEATURES, getEntitlement } from "../utils/entitlements.js";
 
 // Move DiagnoseScreen function here, after styles

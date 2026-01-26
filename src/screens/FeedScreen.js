@@ -13,7 +13,7 @@ import { useFocusEffect, useNavigation } from "@react-navigation/native";
 import ScreenContainer from "../components/ScreenContainer.js";
 import ForumFilters from "../components/ForumFilters";
 import { getFeed, likePost, unlikePost } from "../api/posts.js";
-import { useAuth } from "../context/AuthContext.js";
+import { useAuth } from "@/auth/AuthContext";
 import { applyLikeMetadata, normalizePostList, userHasLiked } from "../utils/posts.js";
 import useTabPressScrollReset from "../hooks/useTabPressScrollReset";
 import {

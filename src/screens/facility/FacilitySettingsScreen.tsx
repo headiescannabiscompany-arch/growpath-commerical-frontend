@@ -1,13 +1,13 @@
 import React from "react";
 import { View, Text, Pressable } from "react-native";
 import { useNavigation } from "@react-navigation/native";
-import { useAuth } from "../../context/AuthContext";
-import { useEntitlements } from "../../context/EntitlementsContext";
+import { useSession } from "@/session";
+import { useEntitlements } from "@/entitlements";
 
 export default function FacilitySettingsScreen() {
   const nav = useNavigation<any>();
-  const { selectedFacilityId } = useEntitlements();
-  const { setMode, setSelectedFacilityId, setFacilityFeaturesEnabled } = useAuth();
+  const { facilityId } = useEntitlements();
+  const { setMode, setSelectedFacilityId, setFacilityFeaturesEnabled } = useSession();
 
   const switchFacility = () => {
     setSelectedFacilityId(null);
@@ -24,7 +24,7 @@ export default function FacilitySettingsScreen() {
   return (
     <View style={{ flex: 1, padding: 16, gap: 12 }}>
       <Text style={{ fontSize: 18, fontWeight: "700" }}>Facility Settings</Text>
-      <Text style={{ opacity: 0.7 }}>Current Facility: {selectedFacilityId}</Text>
+      <Text style={{ opacity: 0.7 }}>Current Facility: {facilityId}</Text>
 
       <Pressable
         onPress={switchFacility}

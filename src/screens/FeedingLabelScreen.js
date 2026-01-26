@@ -3,7 +3,7 @@ import { Text, TouchableOpacity, Image, ActivityIndicator, Alert } from "react-n
 import * as ImagePicker from "expo-image-picker";
 import ScreenContainer from "../components/ScreenContainer";
 import { uploadLabel } from "../api/feeding";
-import { useAuth } from "../context/AuthContext";
+import { useAuth } from "@/auth/AuthContext";
 import { requirePro } from "../utils/proHelper";
 
 export default function FeedingLabelScreen({ navigation }) {

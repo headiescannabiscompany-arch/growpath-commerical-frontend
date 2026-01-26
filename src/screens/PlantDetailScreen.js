@@ -10,7 +10,7 @@ import {
   Image
 } from "react-native";
 import { LineChart } from "react-native-chart-kit";
-import { useAuth } from "../context/AuthContext";
+import { useAuth } from "@/auth/AuthContext";
 import { getPlantWithLogs, exportPlantPdf } from "../api/plants";
 import ScreenContainer from "../components/ScreenContainer";
 import PrimaryButton from "../components/PrimaryButton";

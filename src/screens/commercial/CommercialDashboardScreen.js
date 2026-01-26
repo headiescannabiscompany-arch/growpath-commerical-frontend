@@ -7,7 +7,7 @@ import Card from "../../components/Card.js";
 import EmptyState from "../../components/EmptyState.js";
 import PrimaryButton from "../../components/PrimaryButton.js";
 import { Colors, Typography, Spacing } from "../../theme/theme.js";
-import { useAuth } from "../../context/AuthContext.js";
+import { useAuth } from "@/auth/AuthContext";
 
 const ChecklistItem = ({ label, done }) => {
   return (

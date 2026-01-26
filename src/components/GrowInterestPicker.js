@@ -6,7 +6,7 @@ import {
   getTier1Metadata,
   normalizeInterestList
 } from "../utils/growInterests";
-import { useAuth } from "../context/AuthContext";
+import { useAuth } from "@/auth/AuthContext";
 
 function resolveVisibleTiers(enabledTierIds) {
   if (!Array.isArray(enabledTierIds) || enabledTierIds.length === 0) {

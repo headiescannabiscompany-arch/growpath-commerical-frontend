@@ -12,7 +12,7 @@ import {
 } from "react-native";
 import AppShell from "../components/AppShell.js";
 import { colors, spacing, radius, Typography } from "../theme/theme.js";
-import { useAuth } from "../context/AuthContext.js";
+import { useAuth } from "@/auth/AuthContext";
 import { useNavigation, useFocusEffect } from "@react-navigation/native";
 import { getPlants } from "../api/plants.js";
 import { listGrows } from "../api/grows.js";

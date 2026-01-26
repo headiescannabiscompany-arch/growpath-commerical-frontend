@@ -1,7 +1,7 @@
 // backend/routes/user.js
 const express = require("express");
 const router = express.Router();
-// const auth = require("../middleware/auth"); // Uncomment if you have auth middleware
+const auth = require("../middleware/auth");
 const User = require("../models/User");
 
 // PATCH /api/user/interests
@@ -46,40 +46,43 @@ router.patch(
 // GET /api/auth/me -- canonical user contract
 const { resolveCapabilities } = require("../entitlements/capabilityPolicy");
 
-router.get(
-  "/auth/me",
-  /*auth,*/ async (req, res) => {
-    try {
-      // In production, use real user from auth middleware
-      const user = global.mockUser || {
-        id: "user-1",
-        email: "demo@growpath.com",
-        plan: "commercial",
-        mode: "commercial",
-        selectedFacilityId: null,
-        facilityRole: null
-        // ...other fields as needed
-      };
+router.get("/auth/me", auth, async (req, res) => {
+  try {
+    // In production, use real user from auth middleware
+    const user = global.mockUser || {
+      id: req.user?.id || "user-1",
+      email: "demo@growpath.com",
+      plan: "commercial",
+      mode: "commercial",
+      selectedFacilityId: null,
+      facilityRole: null
+      // ...other fields as needed
+    };
 
-      // Canonical capability resolution
-      const capabilities = resolveCapabilities(user);
-      // Example limits (could be expanded)
-      const limits = { maxRooms: 5, maxTeam: 10 };
+    // Canonical capability resolution
+    const capabilities = resolveCapabilities(user);
+    // Example limits (could be expanded)
+    const limits = { maxRooms: 5, maxTeam: 10 };
 
-      res.json({
+    res.json({
+      user: {
         id: user.id,
-        email: user.email,
+        email: user.email
+      },
+      session: {
         plan: user.plan,
         mode: user.mode,
-        selectedFacilityId: user.selectedFacilityId || null,
-        facilityRole: user.facilityRole || null,
+        facilityId: user.selectedFacilityId || null,
+        facilityRole: user.facilityRole || null
+      },
+      entitlements: {
         capabilities,
         limits
-      });
-    } catch (err) {
-      res.status(500).json({ message: "Failed to resolve user contract" });
-    }
+      }
+    });
+  } catch (err) {
+    res.status(500).json({ message: "Failed to resolve user contract" });
   }
-);
+});
 
 module.exports = router;

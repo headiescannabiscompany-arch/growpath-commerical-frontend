@@ -1,7 +1,7 @@
 import React from "react";
 import { Text, TouchableOpacity, StyleSheet } from "react-native";
 import ScreenContainer from "../components/ScreenContainer";
-import { useAuth } from "../context/AuthContext";
+import { useAuth } from "@/auth/AuthContext";
 import { requirePro } from "../utils/proHelper";
 
 export default function FeedingConfirmScreen({ route, navigation }) {

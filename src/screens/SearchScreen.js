@@ -1,7 +1,7 @@
 import React from "react";
 import { View, Text, StyleSheet } from "react-native";
 import AppShell from "../components/AppShell.js";
-import { useAuth } from "../context/AuthContext.js";
+import { useAuth } from "@/auth/AuthContext";
 import { FEATURES, getEntitlement } from "../utils/entitlements.js";
 
 const styles = StyleSheet.create({

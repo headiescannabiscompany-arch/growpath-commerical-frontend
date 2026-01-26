@@ -1,7 +1,7 @@
 import React from "react";
 import { View, Text, StyleSheet, Button, ScrollView, Alert } from "react-native";
 import { PLANS, MODES, ROLES } from "../constants/userModes.js";
-import { useAuth } from "../context/AuthContext.js";
+import { useAuth } from "@/auth/AuthContext";
 import { FEATURES, getEntitlement } from "../utils/entitlements.js";
 
 export default function DebugScreen() {

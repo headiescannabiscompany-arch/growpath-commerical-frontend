@@ -11,7 +11,7 @@ import {
   Modal,
   RefreshControl
 } from "react-native";
-import { useAuth } from "../../context/AuthContext";
+import { useAuth } from "@/auth/AuthContext";
 import { listDeviations, createDeviation } from "../../api/deviation";
 
 const DEVIATION_STATUSES = ["Open", "In Progress", "Resolved", "Closed"];

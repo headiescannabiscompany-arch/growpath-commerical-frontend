@@ -13,7 +13,7 @@ import Card from "../components/Card";
 import PrimaryButton from "../components/PrimaryButton";
 import { colors, spacing, radius } from "../theme/theme";
 import { likePost, addComment, getComments } from "../api/posts";
-import { useAuth } from "../context/AuthContext";
+import { useAuth } from "@/auth/AuthContext";
 
 export default function PostDetailScreen({ route, navigation }) {
   const { isEntitled, isPro, user } = useAuth();

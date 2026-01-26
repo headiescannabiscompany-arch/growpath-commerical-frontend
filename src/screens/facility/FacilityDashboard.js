@@ -9,7 +9,7 @@ import {
   RefreshControl
 } from "react-native";
 import { useNavigation } from "@react-navigation/native";
-import { useAuth } from "../../context/AuthContext";
+import { useAuth } from "@/auth/AuthContext";
 import {
   getFacilityDetail,
   getFacilityBillingStatus,

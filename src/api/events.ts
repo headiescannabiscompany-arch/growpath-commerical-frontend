@@ -1,5 +1,6 @@
 // src/api/events.ts
 import { api } from "./client";
+import { useAuth } from "../auth/AuthContext";
 
 export type CoreEventType =
   | "view_feed"
@@ -7,7 +8,9 @@ export type CoreEventType =
   | "like_post"
   | "hit_paywall"
   | "upgrade_click"
-  | "upgrade_success";
+  | "upgrade_success"
+  | "USER_LOGIN"
+  | "USER_REGISTER";
 
 export async function logEvent(type: CoreEventType, meta: Record<string, any> = {}) {
   try {

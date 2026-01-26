@@ -1,21 +1,27 @@
 import { describe, it, expect, beforeEach, afterEach } from "@jest/globals";
-import { client, ApiError, API_URL } from "../src/api/client.js";
+import {
+  client,
+  ApiError,
+  API_URL,
+  setAuthToken,
+  setTokenGetter
+} from "../src/api/client.js";
 import { handleApiError, isPro403Error, requirePro } from "../src/utils/proHelper.js";
 import { extractCourses, extractHasMore } from "../src/utils/marketplaceTransforms.js";
 
-let previousFetch, previousToken;
+let previousFetch;
 beforeEach(() => {
   previousFetch = global.fetch;
-  previousToken = global.authToken;
+  setTokenGetter(null); // Prevent lingering TOKEN_GETTER from overriding AUTH_TOKEN
+  setAuthToken(null); // Optional: keeps tests isolated
 });
 afterEach(() => {
   global.fetch = previousFetch;
-  global.authToken = previousToken;
 });
 
 it("client.post attaches the global auth token and serializes JSON bodies", async () => {
   const calls = [];
-  global.authToken = "abc123";
+  setAuthToken("abc123");
   global.fetch = async (url, options) => {
     calls.push({ url, options });
     return {
@@ -35,7 +41,7 @@ it("client.post attaches the global auth token and serializes JSON bodies", asyn
 
 it("client.get uses token argument and bypasses globals when provided", async () => {
   const calls = [];
-  global.authToken = "should-not-be-used";
+  setAuthToken("should-not-be-used");
   global.fetch = async (url, options) => {
     calls.push({ url, options });
     return {

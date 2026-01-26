@@ -11,7 +11,7 @@ import {
   Modal,
   RefreshControl
 } from "react-native";
-import { useAuth } from "../../context/AuthContext";
+import { useAuth } from "@/auth/AuthContext";
 import { listAuditLogs, createAuditLog, reconcileAudit } from "../../api/audit";
 
 const ACTION_TYPES = [

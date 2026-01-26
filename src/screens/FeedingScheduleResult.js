@@ -2,7 +2,7 @@ import React from "react";
 import { Text, FlatList, TouchableOpacity, StyleSheet, View, Alert } from "react-native";
 import ScreenContainer from "../components/ScreenContainer";
 import { convertScheduleToTemplate } from "../api/feeding";
-import { useAuth } from "../context/AuthContext";
+import { useAuth } from "@/auth/AuthContext";
 import { requirePro } from "../utils/proHelper";
 
 export default function FeedingScheduleResult({ route, navigation }) {

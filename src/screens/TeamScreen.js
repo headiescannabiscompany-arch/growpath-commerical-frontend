@@ -17,7 +17,7 @@ import {
   updateTeamMember,
   removeTeamMember
 } from "../api/team.js";
-import { useAuth } from "../context/AuthContext.js";
+import { useAuth } from "@/auth/AuthContext";
 
 export default function TeamScreen() {
   const { token } = useAuth();

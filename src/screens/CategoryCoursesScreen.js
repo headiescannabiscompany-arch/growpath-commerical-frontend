@@ -44,7 +44,7 @@ export default function CategoryCoursesScreen({ route, navigation }) {
   }
 
   // Example entitlement logic: Only Pro users can access paid courses
-  const { user } = require("../context/AuthContext.js").useAuth();
+  const { user } = require("@/auth/AuthContext").useAuth();
   const isPro = user?.plan === "pro" || user?.role === "admin";
 
   return (

@@ -11,7 +11,7 @@ import {
   Modal,
   RefreshControl
 } from "react-native";
-import { useAuth } from "../../context/AuthContext";
+import { useAuth } from "@/auth/AuthContext";
 import { listGreenWasteEvents, createGreenWasteEvent } from "../../api/greenWaste";
 
 const DISPOSAL_METHODS = ["Compost", "Landfill", "Incinerator", "Donation", "Other"];

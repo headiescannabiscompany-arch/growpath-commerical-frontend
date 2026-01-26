@@ -7,7 +7,7 @@ import {
   ActivityIndicator,
   StyleSheet
 } from "react-native";
-import { useAuth } from "../../context/AuthContext";
+import { useAuth } from "@/auth/AuthContext";
 import { getFacilityDetail } from "../../api/facility";
 
 const FacilityPicker = ({ navigation }) => {

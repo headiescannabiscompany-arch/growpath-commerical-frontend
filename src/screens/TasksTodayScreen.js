@@ -11,7 +11,7 @@ import {
   canUseReminders
 } from "../utils/notifications";
 import FeatureGate from "../components/FeatureGate";
-import { useAuth } from "../context/AuthContext";
+import { useAuth } from "@/auth/AuthContext";
 
 export default function TasksTodayScreen() {
   const [tasks, setTasks] = useState([]);

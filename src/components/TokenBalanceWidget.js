@@ -2,7 +2,7 @@ import React, { useEffect, useState, useMemo } from "react";
 import { View, Text, TouchableOpacity, StyleSheet } from "react-native";
 import { useNavigation } from "@react-navigation/native";
 import { getTokenBalance } from "../api/tokens";
-import { useAuth } from "../context/AuthContext";
+import { useAuth } from "@/auth/AuthContext";
 
 const clamp = (value, min, max) => Math.max(min, Math.min(max, value));
 

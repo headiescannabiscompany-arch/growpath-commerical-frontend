@@ -15,7 +15,7 @@ import {
 import AsyncStorage from "@react-native-async-storage/async-storage";
 import ScreenContainer from "../components/ScreenContainer.js";
 import PrimaryButton from "../components/PrimaryButton.js";
-import { useAuth } from "../context/AuthContext.js";
+import { useAuth } from "@/auth/AuthContext";
 import { colors, radius, spacing } from "../theme/theme.js";
 import { login as apiLogin, signup as apiSignup } from "../api/auth.js";
 

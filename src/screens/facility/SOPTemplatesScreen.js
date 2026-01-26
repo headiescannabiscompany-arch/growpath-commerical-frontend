@@ -11,7 +11,7 @@ import {
   Modal,
   RefreshControl
 } from "react-native";
-import { useAuth } from "../../context/AuthContext.js";
+import { useAuth } from "@/auth/AuthContext";
 import { hasGlobalFacilityAccess } from "../../types/facility.js";
 import {
   listSOPTemplates,

@@ -1,43 +1,7 @@
-import React from "react";
-import { createBottomTabNavigator } from "@react-navigation/bottom-tabs";
-import DashboardScreen from "../screens/DashboardScreen";
-import GrowLogsScreen from "../screens/GrowLogsScreen";
-import GrowLogCalendarScreen from "../screens/GrowLogCalendarScreen";
-import DiagnoseScreen from "../screens/DiagnoseScreen";
-import ForumScreen from "../screens/ForumScreen";
-import SearchScreen from "../screens/SearchScreen";
-import ProfileScreen from "../screens/ProfileScreen";
-import CoursesScreen from "../screens/CoursesScreen";
-import DebugScreen from "../screens/DebugScreen";
-import AppShell from "../components/AppShell";
-import { View, Text, StyleSheet } from "react-native";
-import { TAB_CONFIG, canAccess } from "./tabConfig";
-import { SafeAreaView } from "react-native-safe-area-context";
-import { colors, radius, spacing } from "../theme/theme";
-import FeedScreen from "../screens/FeedScreen";
-import { useAuth } from "../context/AuthContext";
-
-const Tab = createBottomTabNavigator();
-
-const TAB_ICONS = {
-  Home: "🏠",
-  Plants: "🌱",
-  Diagnose: "🔍",
-  Search: "🔎",
-  Feed: "📡",
-  Forum: "💬",
-  Courses: "📚",
-  Profile: "👤",
-  Calendar: "📅"
-};
-function TabIcon({ label, focused, testID }) {
-  return (
-    <View style={[styles.iconWrap, focused && styles.iconWrapActive]} testID={testID}>
-      <Text style={styles.iconEmoji}>{TAB_ICONS[label]}</Text>
-      <Text
-        style={[styles.iconLabel, focused && styles.iconLabelActive]}
-        numberOfLines={1}
-        ellipsizeMode="tail"
+// ARCHIVED: Legacy navigator, replaced by Expo Router. Do not use.
+export default function MainTabs() {
+  return null;
+}
       >
         {label}
       </Text>

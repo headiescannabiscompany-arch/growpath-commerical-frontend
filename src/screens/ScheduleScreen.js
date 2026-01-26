@@ -5,7 +5,7 @@ import { groupTasks } from "../utils/schedule";
 import TaskRow from "../components/TaskRow";
 import { getTasks, completeTask } from "../api/tasks";
 import ScreenContainer from "../components/ScreenContainer";
-import { useAuth } from "../context/AuthContext";
+import { useAuth } from "@/auth/AuthContext";
 
 export default function ScheduleScreen() {
   const [groups, setGroups] = useState(null);

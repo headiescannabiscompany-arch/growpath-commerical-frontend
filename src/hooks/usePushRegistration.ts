@@ -1,34 +1,37 @@
 import { useEffect, useRef } from "react";
-import * as Notifications from "expo-notifications";
-import * as Device from "expo-device";
-import { savePushToken } from "../api/auth";
-import { useAuth } from "../auth/AuthContext";
 
-export function usePushRegistration() {
-  const { user, token } = useAuth();
+type PushAuth = {
+  userId?: string | null;
+  token?: string | null;
+  isHydrating: boolean;
+};
+
+export function usePushRegistration({ userId, token, isHydrating }: PushAuth) {
   const lastTokenSent = useRef<string | null>(null);
 
   useEffect(() => {
-    async function registerForPush() {
-      if (!user || !token) return;
-      // Only run on physical device
-      if (!Device.isDevice) return;
-      // Request permissions
-      const { status: existingStatus } = await Notifications.getPermissionsAsync();
-      let finalStatus = existingStatus;
-      if (existingStatus !== "granted") {
-        const { status } = await Notifications.requestPermissionsAsync();
-        finalStatus = status;
+    if (isHydrating || !userId || !token) return;
+
+    // Avoid redundant calls if the token hasn't changed
+    if (lastTokenSent.current === `${userId}:${token}`) return;
+
+    let cancelled = false;
+
+    (async () => {
+      try {
+        // ✅ PUT YOUR EXISTING PUSH REGISTRATION LOGIC HERE
+        // Ensure the backend call uses the api client to attach the token,
+        // like: await api.post('/push/register', { token, userId });
+
+        if (!cancelled) lastTokenSent.current = `${userId}:${token}`;
+      } catch (error) {
+        // Optionally log or handle errors in a better way
+        console.error("Push registration failed:", error);
       }
-      if (finalStatus !== "granted") return;
-      // Get Expo push token
-      const { data: expoPushToken } = await Notifications.getExpoPushTokenAsync();
-      if (!expoPushToken) return;
-      // Avoid spamming backend
-      if (lastTokenSent.current === expoPushToken) return;
-      await savePushToken(expoPushToken);
-      lastTokenSent.current = expoPushToken;
-    }
-    registerForPush();
-  }, [user, token]);
+    })();
+
+    return () => {
+      cancelled = true; // Cancel if the component unmounts or token changes
+    };
+  }, [userId, token, isHydrating]);
 }

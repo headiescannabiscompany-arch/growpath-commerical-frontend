@@ -1,5 +1,5 @@
 import React, { useEffect, useState, useMemo } from "react";
-import { useAuth } from "../context/AuthContext.js";
+import { useAuth } from "@/auth/AuthContext";
 import {
   View,
   Text,

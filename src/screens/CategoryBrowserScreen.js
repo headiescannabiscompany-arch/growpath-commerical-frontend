@@ -13,7 +13,7 @@ import {
 } from "react-native";
 import ScreenContainer from "../components/ScreenContainer";
 import { getCategories } from "../api/courses";
-import { useAuth } from "../context/AuthContext";
+import { useAuth } from "@/auth/AuthContext";
 
 // Organized grow guide categories with visual themes
 const GROW_CATEGORIES = [

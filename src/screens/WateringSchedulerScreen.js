@@ -1,5 +1,5 @@
 import React, { useState } from "react";
-import { useAuth } from "../context/AuthContext.js";
+import { useAuth } from "@/auth/AuthContext";
 import { View, Text, TextInput, StyleSheet, TouchableOpacity } from "react-native";
 import ScreenContainer from "../components/ScreenContainer.js";
 import Card from "../components/Card.js";

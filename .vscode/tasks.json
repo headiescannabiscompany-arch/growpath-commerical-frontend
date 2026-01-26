@@ -629,6 +629,24 @@
 			"type": "shell",
 			"command": "npm test",
 			"group": "test"
+		},
+		{
+			"label": "Start Expo Web",
+			"type": "shell",
+			"command": "npx expo start --web",
+			"group": "build"
+		},
+		{
+			"label": "Test: All QA",
+			"type": "shell",
+			"command": "npm test",
+			"group": "test"
+		},
+		{
+			"label": "Start Expo Web",
+			"type": "shell",
+			"command": "npx expo start --web",
+			"group": "build"
 		}
 	]
 }

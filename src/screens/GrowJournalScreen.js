@@ -8,7 +8,7 @@ import PrimaryButton from "../components/PrimaryButton";
 import { colors, spacing, radius } from "../theme/theme";
 import { addEntry, uploadEntryPhoto } from "../api/grows";
 import { getEntries as getGrowEntries } from "../api/growlog";
-import { useAuth } from "../context/AuthContext";
+import { useAuth } from "@/auth/AuthContext";
 import PlantCard from "../components/PlantCard";
 import GrowInterestPicker from "../components/GrowInterestPicker";
 import {

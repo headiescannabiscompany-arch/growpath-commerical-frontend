@@ -19,7 +19,7 @@ import ForumFilters from "../components/ForumFilters.js";
 import { getLatestPosts, getTrendingPosts, getFollowingPosts } from "../api/forum.js";
 import useTabPressScrollReset from "../hooks/useTabPressScrollReset.js";
 import { resolveImageUrl } from "../utils/images.js";
-import { useAuth } from "../context/AuthContext.js";
+import { useAuth } from "@/auth/AuthContext";
 import { getEntitlement, FEATURES } from "../utils/entitlements.js";
 import PrimaryButton from "../components/PrimaryButton.js";
 import CommercialBanner from "../components/CommercialBanner.js";

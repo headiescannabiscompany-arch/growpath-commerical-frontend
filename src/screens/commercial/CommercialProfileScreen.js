@@ -13,7 +13,7 @@ import ScreenContainer from "../../components/ScreenContainer.js";
 import Card from "../../components/Card.js";
 import { Colors, Typography, Spacing } from "../../theme/theme.js";
 import PrimaryButton from "../../components/PrimaryButton.js";
-import { useAuth } from "../../context/AuthContext.js";
+import { useAuth } from "@/auth/AuthContext";
 import {
   getCommercialBillingSummary,
   listCommercialInvoices,

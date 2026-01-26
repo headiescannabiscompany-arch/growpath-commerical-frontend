@@ -3,9 +3,8 @@ import { ApiError, normalizeApiError } from "./errors";
 
 let authToken: string | null = null;
 
-// AuthContext should call this when token changes
 export function setAuthToken(token: string | null) {
-  authToken = token;
+  authToken = token || null;
 }
 
 type RequestOptions = {
@@ -13,7 +12,19 @@ type RequestOptions = {
   body?: any;
   headers?: Record<string, string>;
   signal?: AbortSignal;
+  timeout?: number;
+  facilityId?: string | null;
 };
+
+const DEFAULT_TIMEOUT = 10000;
+
+function isFormData(value: any) {
+  return typeof FormData !== "undefined" && value instanceof FormData;
+}
+
+function isBlob(value: any) {
+  return typeof Blob !== "undefined" && value instanceof Blob;
+}
 
 async function safeJson(res: Response) {
   const text = await res.text();
@@ -21,7 +32,6 @@ async function safeJson(res: Response) {
   try {
     return JSON.parse(text);
   } catch {
-    // backend returned non-JSON (or HTML)
     const err: ApiError = {
       code: "PARSE_ERROR",
       message: "Invalid server response.",
@@ -32,39 +42,86 @@ async function safeJson(res: Response) {
   }
 }
 
-export async function api<T>(path: string, opts: RequestOptions = {}): Promise<T> {
+async function request(path: string, options: RequestOptions = {}) {
+  const method = options.method || "GET";
+  const headers: Record<string, string> = { ...(options.headers || {}) };
+
+  if (options.facilityId) {
+    headers["X-Facility-Id"] = String(options.facilityId);
+  }
+
+  if (authToken) {
+    headers["Authorization"] = `Bearer ${authToken}`;
+  }
+
+  const hasBody = "body" in options && options.body !== undefined;
+  const bodyIsFD = hasBody && isFormData(options.body);
+  const bodyIsBlob = hasBody && isBlob(options.body);
+
+  if (hasBody && !bodyIsFD && !bodyIsBlob && !headers["Content-Type"]) {
+    headers["Content-Type"] = "application/json";
+  }
+
+  const controller = new AbortController();
+  const timeout = options.timeout ?? DEFAULT_TIMEOUT;
+  const timeoutId = setTimeout(() => controller.abort(), timeout);
+
   try {
-    const res = await fetch(`${config.apiBaseUrl}${path}`, {
-      method: opts.method || "GET",
-      headers: {
-        "Content-Type": "application/json",
-        ...(authToken ? { Authorization: `Bearer ${authToken}` } : {}),
-        ...(opts.headers || {})
-      },
-      body: opts.body !== undefined ? JSON.stringify(opts.body) : undefined,
-      signal: opts.signal
+    const url = path.startsWith("http")
+      ? path
+      : `${config.apiBaseUrl}${path.startsWith("/") ? "" : "/"}${path}`;
+
+    const body =
+      hasBody && !bodyIsFD && !bodyIsBlob && typeof options.body !== "string"
+        ? JSON.stringify(options.body)
+        : hasBody
+          ? options.body
+          : undefined;
+
+    const res = await fetch(url, {
+      method,
+      headers,
+      body,
+      signal: options.signal ?? controller.signal
     });
 
-    const data = await safeJson(res);
+    clearTimeout(timeoutId);
 
     if (!res.ok) {
-      const err: ApiError = {
-        code:
-          data?.code ||
-          (res.status === 401
-            ? "UNAUTHORIZED"
-            : res.status === 403
-              ? "FORBIDDEN"
-              : "SERVER_ERROR"),
-        message: data?.message || `Request failed (${res.status})`,
-        status: res.status,
-        details: data
-      };
-      throw err;
+      const data = await safeJson(res).catch(() => null);
+      throw normalizeApiError(data ?? { status: res.status });
     }
 
-    return data as T;
-  } catch (e) {
-    throw normalizeApiError(e);
+    return await safeJson(res);
+  } catch (e: any) {
+    clearTimeout(timeoutId);
+    if (e?.name === "AbortError")
+      throw new Error("Request timeout - is the backend running?");
+    throw e;
   }
 }
+
+export const client = {
+  get: (path: string, options: RequestOptions = {}) =>
+    request(path, { ...options, method: "GET" }),
+
+  delete: (path: string, options: RequestOptions = {}) =>
+    request(path, { ...options, method: "DELETE" }),
+
+  post: (path: string, data: any, options: RequestOptions = {}) =>
+    request(path, { ...options, method: "POST", body: data }),
+
+  put: (path: string, data: any, options: RequestOptions = {}) =>
+    request(path, { ...options, method: "PUT", body: data }),
+
+  patch: (path: string, data: any, options: RequestOptions = {}) =>
+    request(path, { ...options, method: "PATCH", body: data }),
+
+  postMultipart: (path: string, formData: FormData, options: RequestOptions = {}) =>
+    request(path, { ...options, method: "POST", body: formData }),
+
+  setAuthToken
+};
+
+export const api = client;
+export default client;

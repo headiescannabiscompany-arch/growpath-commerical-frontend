@@ -7,7 +7,7 @@ import {
   Alert,
   Linking
 } from "react-native";
-import { useAuth } from "../context/AuthContext";
+import { useAuth } from "@/auth/AuthContext";
 import { startSubscription } from "../api/subscribe";
 import ScreenContainer from "../components/ScreenContainer";
 import PrimaryButton from "../components/PrimaryButton";

@@ -1,194 +1,160 @@
 import React, {
   createContext,
+  useCallback,
   useContext,
   useEffect,
   useMemo,
-  useRef,
   useState
 } from "react";
-import {
-  UserMeResponse,
-  Mode,
-  Plan,
-  FacilityRole,
-  CapabilityKey,
-  LimitKey
-} from "./types";
-import { client } from "../api/client";
-import { useAuth } from "../auth/AuthContext";
+import { useAuth } from "@/auth/AuthContext";
+import { useSession } from "@/session";
+import { client } from "@/api/client";
 
-type EntitlementsState = {
+type Plan = "free" | "pro" | "creator_plus" | "commercial" | "facility";
+type Mode = "personal" | "commercial" | "facility";
+
+type Capabilities = Record<string, boolean>;
+type Limits = Record<string, number>;
+
+type EntitlementsContextValue = {
   ready: boolean;
   loading: boolean;
-  error?: string;
-  userId?: string;
-  mode: Mode;
+  userId: string | null;
   plan: Plan;
+  mode: Mode;
   facilityId?: string;
-  facilityRole?: FacilityRole;
-  capabilities: Record<string, boolean>;
-  limits: Record<string, number>;
-  can: (cap: CapabilityKey | CapabilityKey[]) => boolean;
-  limit: (key: LimitKey, fallback?: number) => number;
+  facilityRole?: string;
+  capabilities: Capabilities;
+  limits: Limits;
   refresh: () => Promise<void>;
 };
 
-const DEFAULT_CAPS: Record<string, boolean> = {};
-const DEFAULT_LIMITS: Record<string, number> = {};
+const EntitlementsContext = createContext<EntitlementsContextValue | null>(null);
 
-const EntitlementsContext = createContext<EntitlementsState | null>(null);
+const DEFAULT_CAPABILITIES: Capabilities = {};
+const DEFAULT_LIMITS: Limits = { maxPlants: 1, maxGrows: 1 };
 
-function normalizeRole(role?: string): FacilityRole | undefined {
-  if (!role) return undefined;
-  const r = role.toUpperCase().trim();
-  if (r === "OWNER" || r === "MANAGER" || r === "TECH" || r === "VIEWER")
-    return r as FacilityRole;
-  return undefined;
+function normalizePlan(p: any): Plan {
+  if (p === "pro" || p === "creator_plus" || p === "commercial" || p === "facility")
+    return p;
+  return "free";
 }
 
-function pickFromAuth(auth: any): Partial<UserMeResponse> | null {
-  if (!auth) return null;
-  const plan = auth.plan ?? auth.session?.plan;
-  const mode = auth.mode ?? auth.session?.mode;
-  const facilityId = auth.facilityId ?? auth.session?.facilityId;
-  const facilityRole = auth.facilityRole ?? auth.session?.facilityRole;
-  const capabilities =
-    auth.capabilities ?? auth.entitlements?.capabilities ?? auth.session?.capabilities;
-  const limits = auth.limits ?? auth.entitlements?.limits ?? auth.session?.limits;
-  const userId = auth.user?.id ?? auth.userId ?? auth.session?.userId;
-  if (!plan || !mode) return null;
-  return {
-    user: userId
-      ? { id: String(userId), email: auth.user?.email ?? auth.email ?? "" }
-      : undefined,
-    session: { plan, mode, facilityId, facilityRole },
-    entitlements: {
-      capabilities: capabilities ?? {},
-      limits: limits ?? {}
-    }
-  } as Partial<UserMeResponse>;
+function normalizeMode(m: any): Mode {
+  if (m === "commercial" || m === "facility") return m;
+  return "personal";
 }
 
 export function EntitlementsProvider({ children }: { children: React.ReactNode }) {
   const auth = useAuth();
+  const session = useSession();
+
   const [ready, setReady] = useState(false);
   const [loading, setLoading] = useState(false);
-  const [error, setError] = useState<string | undefined>(undefined);
-  const [userId, setUserId] = useState<string | undefined>(undefined);
   const [plan, setPlan] = useState<Plan>("free");
-  const [mode, setMode] = useState<Mode>("personal");
-  const [facilityId, setFacilityId] = useState<string | undefined>(undefined);
-  const [facilityRole, setFacilityRole] = useState<FacilityRole | undefined>(undefined);
-  const [capabilities, setCapabilities] = useState<Record<string, boolean>>({
-    ...DEFAULT_CAPS
+  const [capabilities, setCapabilities] = useState<Capabilities>({
+    ...DEFAULT_CAPABILITIES
   });
-  const [limits, setLimits] = useState<Record<string, number>>({ ...DEFAULT_LIMITS });
-  const lastHydrateSource = useRef<"auth" | "me" | null>(null);
+  const [limits, setLimits] = useState<Limits>({ ...DEFAULT_LIMITS });
 
-  const hydrateFromMe = async () => {
-    setLoading(true);
-    setError(undefined);
-    try {
-      const res = await client.get<UserMeResponse>("/api/user/me");
-      const data = res.data;
-      setUserId(data.user?.id);
-      setPlan(data.session.plan);
-      setMode(data.session.mode);
-      setFacilityId(data.session.facilityId);
-      setFacilityRole(normalizeRole(String(data.session.facilityRole)) ?? undefined);
-      setCapabilities(data.entitlements?.capabilities ?? {});
-      setLimits(data.entitlements?.limits ?? {});
-      lastHydrateSource.current = "me";
-      setReady(true);
-    } catch (e: any) {
-      setError(e?.message ?? "Failed to load entitlements");
-    } finally {
-      setLoading(false);
-    }
-  };
+  const userId = auth.user?.id ?? null;
 
-  const hydrateFromAuthIfPossible = () => {
-    const picked = pickFromAuth(auth);
-    if (!picked?.session?.plan || !picked?.session?.mode) return false;
-    setUserId(picked.user?.id);
-    setPlan(picked.session.plan as Plan);
-    setMode(picked.session.mode as Mode);
-    setFacilityId(picked.session.facilityId);
-    setFacilityRole(normalizeRole(String(picked.session.facilityRole)) ?? undefined);
-    setCapabilities(picked.entitlements?.capabilities ?? {});
-    setLimits(picked.entitlements?.limits ?? {});
-    lastHydrateSource.current = "auth";
-    setReady(true);
-    return true;
-  };
+  const applyServerSessionToClient = useCallback(
+    (serverSession: any) => {
+      try {
+        if (serverSession?.mode) session.setMode(normalizeMode(serverSession.mode));
+        if ("facilityId" in (serverSession ?? {})) {
+          session.setSelectedFacilityId(serverSession.facilityId ?? null);
+        }
+        if ("facilityRole" in (serverSession ?? {})) {
+          session.setFacilityRole(serverSession.facilityRole ?? null);
+        }
+        if ("facilityFeaturesEnabled" in (serverSession ?? {})) {
+          session.setFacilityFeaturesEnabled(!!serverSession.facilityFeaturesEnabled);
+        }
+      } catch {
+        // ignore
+      }
+    },
+    [session]
+  );
 
-  useEffect(() => {
-    // Use isHydrating and isAuthed from AuthContext
-    if (auth?.isHydrating) return;
-    if (!auth?.user) {
-      setReady(true);
-      setLoading(false);
-      setError(undefined);
-      setUserId(undefined);
+  const hydrateFromMe = useCallback(async () => {
+    if (!auth.token) {
       setPlan("free");
-      setMode("personal");
-      setFacilityId(undefined);
-      setFacilityRole(undefined);
-      setCapabilities({});
-      setLimits({});
-      lastHydrateSource.current = null;
+      setCapabilities({ ...DEFAULT_CAPABILITIES });
+      setLimits({ ...DEFAULT_LIMITS });
+      setReady(true);
+      setLoading(false);
       return;
     }
-    const ok = hydrateFromAuthIfPossible();
-    if (!ok) {
-      hydrateFromMe();
+
+    setLoading(true);
+    try {
+      const resp = await client.get("/api/user/me", {
+        headers: { Authorization: `Bearer ${auth.token}` }
+      });
+      const serverPlan = normalizePlan(resp?.session?.plan);
+      setPlan(serverPlan);
+      applyServerSessionToClient(resp?.session);
+      const caps = resp?.entitlements?.capabilities ?? DEFAULT_CAPABILITIES;
+      const lims = resp?.entitlements?.limits ?? DEFAULT_LIMITS;
+      setCapabilities({ ...caps });
+      setLimits({ ...lims });
+    } catch (e: any) {
+      setPlan("free");
+      setCapabilities({ ...DEFAULT_CAPABILITIES });
+      setLimits({ ...DEFAULT_LIMITS });
+    } finally {
+      setLoading(false);
+      setReady(true);
     }
-  }, [auth?.isHydrating, auth?.user]);
+  }, [auth.token, applyServerSessionToClient]);
 
-  const refresh = async () => {
-    if (!!auth?.user) {
-      await hydrateFromMe();
+  useEffect(() => {
+    if (auth.isHydrating) return;
+    if (!auth.user || !auth.token) {
+      session.resetSession().catch(() => {});
+      setPlan("free");
+      setCapabilities({ ...DEFAULT_CAPABILITIES });
+      setLimits({ ...DEFAULT_LIMITS });
+      setReady(true);
+      setLoading(false);
+      return;
     }
-  };
+    setReady(false);
+    hydrateFromMe();
+  }, [auth.isHydrating, auth.user, auth.token, hydrateFromMe, session]);
 
-  const can = (cap: CapabilityKey | CapabilityKey[]) => {
-    const caps = capabilities ?? {};
-    if (Array.isArray(cap)) return cap.every((k) => !!caps[k]);
-    return !!caps[cap];
-  };
+  const refresh = useCallback(async () => {
+    setReady(false);
+    await hydrateFromMe();
+  }, [hydrateFromMe]);
 
-  const limit = (key: LimitKey, fallback = 0) => {
-    const v = limits?.[key];
-    return typeof v === "number" ? v : fallback;
-  };
-
-  const value = useMemo<EntitlementsState>(
+  const value = useMemo<EntitlementsContextValue>(
     () => ({
       ready,
       loading,
-      error,
       userId,
-      mode,
       plan,
-      facilityId,
-      facilityRole,
+      mode: session.mode,
+      facilityId: session.selectedFacilityId ?? undefined,
+      facilityRole: session.facilityRole ?? undefined,
       capabilities,
       limits,
-      can,
-      limit,
       refresh
     }),
     [
       ready,
       loading,
-      error,
       userId,
-      mode,
       plan,
-      facilityId,
-      facilityRole,
+      session.mode,
+      session.selectedFacilityId,
+      session.facilityRole,
       capabilities,
-      limits
+      limits,
+      refresh
     ]
   );
 
@@ -200,6 +166,6 @@ export function EntitlementsProvider({ children }: { children: React.ReactNode }
 export function useEntitlementsContext() {
   const ctx = useContext(EntitlementsContext);
   if (!ctx)
-    throw new Error("useEntitlementsContext must be used within EntitlementsProvider");
+    throw new Error("useEntitlementsContext must be used within <EntitlementsProvider>");
   return ctx;
 }

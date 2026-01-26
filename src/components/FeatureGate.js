@@ -2,7 +2,7 @@
 // Usage: <FeatureGate plan="pro">...</FeatureGate>
 import React from "react";
 import { View, Text, TouchableOpacity } from "react-native";
-import { useAuth } from "../context/AuthContext";
+import { useAuth } from "@/auth/AuthContext";
 
 export default function FeatureGate({ plan = "pro", children, fallback, navigation }) {
   const { isPro, subscriptionStatus, isEntitled } = useAuth();

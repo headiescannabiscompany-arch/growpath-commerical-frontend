@@ -13,7 +13,7 @@ import {
   ScrollView
 } from "react-native";
 import { getSocialAccounts, getSocialMetrics, schedulePost } from "../api/socialMedia.js";
-import { useAuth } from "../context/AuthContext.js";
+import { useAuth } from "@/auth/AuthContext";
 
 export default function SocialToolsScreen() {
   // const { token } = useAuth(); // Not used in current API, but available if needed

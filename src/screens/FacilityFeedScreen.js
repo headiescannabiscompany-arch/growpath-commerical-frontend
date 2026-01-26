@@ -1,7 +1,7 @@
 import React from "react";
 import { StyleSheet } from "react-native";
 import ScreenScaffold, { Section, Card, Pill } from "../components/ScreenScaffold";
-import { useAuth } from "../context/AuthContext";
+import { useAuth } from "@/auth/AuthContext";
 
 export default function FacilityFeedScreen() {
   const { capabilities } = useAuth();

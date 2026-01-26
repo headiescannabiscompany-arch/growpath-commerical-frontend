@@ -20,7 +20,7 @@ import {
   getUserGrowLogs
 } from "../api/users";
 import { updateCourse } from "../api/courses";
-import { useAuth } from "../context/AuthContext.js";
+import { useAuth } from "@/auth/AuthContext";
 import { getEntitlement, getEntitlements, FEATURES } from "../utils/entitlements";
 import PrimaryButton from "../components/PrimaryButton.js";
 import CommercialBanner from "../components/CommercialBanner.js";

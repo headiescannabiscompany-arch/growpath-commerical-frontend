@@ -1,5 +1,1 @@
-import { useEntitlementsContext } from "./EntitlementsProvider";
-
-export function useEntitlements() {
-  return useEntitlementsContext();
-}
+import { useEntitlements } from "./EntitlementsProvider";  export function useEntitlements() {   return useEntitlements(); }

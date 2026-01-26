@@ -8,7 +8,7 @@ import {
   type SignupBody
 } from "../api/auth";
 import { setToken as persistToken, getToken as readToken } from "./tokenStore";
-import { ApiError } from "../api/client";
+import { setAuthToken } from "../api/client";
 import { apiMe } from "../api/me";
 
 type AuthState = {
@@ -35,14 +35,16 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
         const t = await readToken();
         if (!mounted) return;
         setToken(t);
+        setAuthToken(t); // keep api client in sync
         if (t) {
           try {
             const me = await apiMe();
             if (mounted) setUser(me.user);
-          } catch (e) {
-            // If token is invalid, clear it
+          } catch {
+            // If token is invalid/expired, clear it
             if (mounted) {
               setToken(null);
+              setAuthToken(null); // keep api client in sync
               setUser(null);
               await persistToken(null);
             }
@@ -58,11 +60,16 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
   }, []);
 
   // Register push token after login/hydration
-  usePushRegistration();
+  usePushRegistration({
+    userId: user?.id ?? null,
+    token,
+    isHydrating
+  });
 
   async function login(email: string, password: string) {
     const res = await apiLogin({ email, password });
     setToken(res.token);
+    setAuthToken(res.token); // critical
     setUser(res.user);
     await persistToken(res.token);
     logEvent("USER_LOGIN");
@@ -71,6 +78,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
   async function signup(body: SignupBody) {
     const res = await apiSignup(body);
     setToken(res.token);
+    setAuthToken(res.token); // critical
     setUser(res.user);
     await persistToken(res.token);
     logEvent("USER_REGISTER");
@@ -78,6 +86,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
 
   async function logout() {
     setToken(null);
+    setAuthToken(null); // critical
     setUser(null);
     await persistToken(null);
   }
@@ -106,7 +115,9 @@ export function useAuth() {
 
 // Optional helper to display best error message in UI
 export function getAuthErrorMessage(e: unknown) {
-  if (e instanceof ApiError) return e.message;
-  if (e instanceof Error) return e.message;
+  if (e && typeof e === "object" && "message" in e) {
+    return String((e as any).message);
+  }
+  if (typeof e === "string") return e;
   return "Something went wrong.";
 }

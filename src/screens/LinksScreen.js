@@ -13,7 +13,7 @@ import {
   Linking
 } from "react-native";
 import { getLinks, addLink, updateLink, removeLink } from "../api/links.js";
-import { useAuth } from "../context/AuthContext.js";
+import { useAuth } from "@/auth/AuthContext";
 
 export default function LinksScreen() {
   const { token } = useAuth();

@@ -1,7 +1,7 @@
 import React from "react";
 import { View, ScrollView, StyleSheet } from "react-native";
 import CommercialBanner from "./CommercialBanner.js";
-import { useAuth } from "../context/AuthContext.js";
+import { useAuth } from "@/auth/AuthContext";
 
 // AppShell wraps every screen with the CommercialBanner and consistent scroll behavior
 export default function AppShell({

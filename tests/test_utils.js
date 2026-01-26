@@ -1,34 +1,36 @@
-import { after } from "node:test";
-
-export function setupNetworkMock(t, mockResponder) {
+export function setupNetworkMock(mockResponder) {
   const originalFetch = global.fetch;
   const useLiveFlag = process.env.USE_LIVE_BACKEND === "true";
-  
+
   const fetchCalls = [];
-  
+
   global.fetch = async (url, options) => {
     fetchCalls.push({ url, options });
 
-    if (useLiveFlag) {
+    if (useLiveFlag && typeof originalFetch === "function") {
       try {
         const res = await originalFetch(url, options);
         return res;
       } catch (err) {
-        console.warn(`FETCH (LIVE FAILED): ${url} - Falling back to mock. Error: ${err.message}`);
+        console.warn(
+          `FETCH (LIVE FAILED): ${url} - Falling back to mock. Error: ${err?.message || String(err)}`
+        );
       }
     }
 
-    console.log(`FETCH (MOCK): ${url}`);
+    // Optional: keep logs if you want; otherwise remove to reduce noise
+    // console.log(`FETCH (MOCK): ${url}`);
+
     const res = await mockResponder(url, options);
     return {
       ok: res.ok ?? true,
       status: res.status ?? 200,
       text: async () => res.text ?? JSON.stringify(res.json ?? {}),
-      json: async () => res.json ?? JSON.parse(res.text ?? "{}"),
+      json: async () => res.json ?? JSON.parse(res.text ?? "{}")
     };
   };
 
-  after(() => {
+  afterAll(() => {
     global.fetch = originalFetch;
   });
 

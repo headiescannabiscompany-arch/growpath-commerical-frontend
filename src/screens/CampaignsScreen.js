@@ -18,7 +18,7 @@ import {
   removeCampaign,
   getCampaignAnalytics
 } from "../api/campaigns.js";
-import { useAuth } from "../context/AuthContext.js";
+import { useAuth } from "@/auth/AuthContext";
 
 export default function CampaignsScreen() {
   const { token } = useAuth();

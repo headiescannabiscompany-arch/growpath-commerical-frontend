@@ -2,7 +2,7 @@ import React, { useState } from "react";
 import { View, Text, TextInput, TouchableOpacity, StyleSheet } from "react-native";
 import ScreenContainer from "../components/ScreenContainer";
 import { analyzeEnvironment } from "../api/environment";
-import { useAuth } from "../context/AuthContext";
+import { useAuth } from "@/auth/AuthContext";
 import { requirePro, handleApiError } from "../utils/proHelper";
 
 export default function EnvironmentAssistantScreen({ navigation }) {

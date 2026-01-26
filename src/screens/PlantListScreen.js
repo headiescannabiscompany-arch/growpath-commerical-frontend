@@ -7,7 +7,7 @@ import {
   ActivityIndicator,
   Alert
 } from "react-native";
-import { useAuth } from "../context/AuthContext";
+import { useAuth } from "@/auth/AuthContext";
 import { getPlants } from "../api/plants";
 import AppShell from "../components/AppShell.js";
 import PrimaryButton from "../components/PrimaryButton";

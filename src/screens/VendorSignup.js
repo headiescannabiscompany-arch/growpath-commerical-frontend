@@ -9,7 +9,7 @@ import {
   Alert,
   Picker
 } from "react-native";
-import { useAuth } from "../context/AuthContext";
+import { useAuth } from "@/auth/AuthContext";
 
 const VENDOR_TYPES = [
   { label: "Select vendor type...", value: "" },

@@ -2,7 +2,7 @@ import React, { useState } from "react";
 import { Text, TextInput, TouchableOpacity, StyleSheet, Alert } from "react-native";
 import ScreenContainer from "../components/ScreenContainer";
 import { generateSchedule } from "../api/feeding";
-import { useAuth } from "../context/AuthContext";
+import { useAuth } from "@/auth/AuthContext";
 import { requirePro } from "../utils/proHelper";
 
 export default function FeedingScheduleOptions({ navigation, route }) {

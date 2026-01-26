@@ -23,19 +23,25 @@
  */
 // Automated QA integration tests for CoursesScreen.js
 // Uses Jest + React Native Testing Library (RNTL)
-/// <reference types="jest" />
-
 import React from "react";
 import { render, fireEvent, waitFor } from "@testing-library/react-native";
-import CoursesScreen from "../src/screens/CoursesScreen.js";
 import { NavigationContainer } from "@react-navigation/native";
-import * as AuthContext from "../src/context/AuthContext.js";
+
+const mockUseAuth = jest.fn();
+
+jest.mock("@/auth/AuthContext", () => ({
+  __esModule: true,
+  useAuth: () => mockUseAuth()
+}));
+
 jest.mock("@react-native-async-storage/async-storage", () => ({
   setItem: jest.fn(),
   getItem: jest.fn(),
   removeItem: jest.fn(),
   clear: jest.fn()
 }));
+
+import CoursesScreen from "../src/screens/CoursesScreen.js";
 
 // All plan/role logic is now capability-driven in the app. These tests simulate plan switching via UI, but assertions should reflect capability-driven gating.
 
@@ -63,6 +69,7 @@ const mockCourses = [
 ];
 
 beforeEach(() => {
+  mockUseAuth.mockReset();
   global.fetch = jest.fn((url, options) => {
     const urlStr = typeof url === "string" ? url : String(url);
     if (urlStr === "/api/courses") {
@@ -131,19 +138,21 @@ beforeEach(() => {
 });
 
 describe("CoursesScreen QA (capability-driven)", () => {
-  const renderWithNav = () =>
-    render(
+  const renderWithNav = async () => {
+    let result;
+    return render(
       <NavigationContainer>
         <CoursesScreen />
       </NavigationContainer>
     );
+  };
 
   it("shows only free courses if cannot see paid courses", async () => {
-    jest.spyOn(AuthContext, "useAuth").mockReturnValue({
+    mockUseAuth.mockReturnValue({
       user: { _id: "user1" },
       capabilities: { canSeePaidCourses: false }
     });
-    const { getByText, queryByText } = renderWithNav();
+    const { getByText, queryByText } = await renderWithNav();
     await waitFor(() => {
       expect(getByText("Free Course")).toBeTruthy();
       expect(queryByText("Pro Course")).toBeNull();
@@ -151,11 +160,11 @@ describe("CoursesScreen QA (capability-driven)", () => {
   });
 
   it("shows all courses if canSeePaidCourses is true", async () => {
-    jest.spyOn(AuthContext, "useAuth").mockReturnValue({
+    mockUseAuth.mockReturnValue({
       user: { _id: "user1" },
       capabilities: { canSeePaidCourses: true }
     });
-    const { getByText } = renderWithNav();
+    const { getByText } = await renderWithNav();
     await waitFor(() => {
       expect(getByText("Free Course")).toBeTruthy();
       expect(getByText("Pro Course")).toBeTruthy();
@@ -163,11 +172,11 @@ describe("CoursesScreen QA (capability-driven)", () => {
   });
 
   it("shows analytics if canViewCourseAnalytics is true", async () => {
-    jest.spyOn(AuthContext, "useAuth").mockReturnValue({
+    mockUseAuth.mockReturnValue({
       user: { _id: "user1" },
       capabilities: { canSeePaidCourses: true, canViewCourseAnalytics: true }
     });
-    const { getAllByText } = renderWithNav();
+    const { getAllByText } = await renderWithNav();
     await waitFor(() => {
       // Should find at least one Views: label
       expect(getAllByText(/Views:/).length).toBeGreaterThan(0);
@@ -175,22 +184,22 @@ describe("CoursesScreen QA (capability-driven)", () => {
   });
 
   it("shows publish controls if canPublishCourses is true and course is published", async () => {
-    jest.spyOn(AuthContext, "useAuth").mockReturnValue({
+    mockUseAuth.mockReturnValue({
       user: { _id: "user1" },
       capabilities: { canSeePaidCourses: true, canPublishCourses: true }
     });
-    const { getByText } = renderWithNav();
+    const { getByText } = await renderWithNav();
     await waitFor(() => {
       expect(getByText("Unpublish")).toBeTruthy();
     });
   });
 
   it("invites a user and shows feedback", async () => {
-    jest.spyOn(AuthContext, "useAuth").mockReturnValue({
+    mockUseAuth.mockReturnValue({
       user: { _id: "user1" },
       capabilities: { canSeePaidCourses: true }
     });
-    const { getByLabelText, getByText, findByText, queryByText } = renderWithNav();
+    const { getByLabelText, getByText, findByText, queryByText } = await renderWithNav();
     // Defensive: skip if Invite button is not rendered
     if (!queryByText("Invite")) {
       console.warn("Invite button not rendered; skipping test");
@@ -203,7 +212,7 @@ describe("CoursesScreen QA (capability-driven)", () => {
   });
 
   it("shows error feedback on failed API call", async () => {
-    jest.spyOn(AuthContext, "useAuth").mockReturnValue({
+    mockUseAuth.mockReturnValue({
       user: { _id: "user1" },
       capabilities: { canSeePaidCourses: true }
     });
@@ -211,7 +220,7 @@ describe("CoursesScreen QA (capability-driven)", () => {
     global.fetch.mockImplementationOnce(() =>
       Promise.resolve({ ok: false, json: () => Promise.resolve({ error: "Failed" }) })
     );
-    const { getByText, findByText, queryByText } = renderWithNav();
+    const { getByText, findByText, queryByText } = await renderWithNav();
     if (!queryByText("Invite")) {
       console.warn("Invite button not rendered; skipping test");
       return;

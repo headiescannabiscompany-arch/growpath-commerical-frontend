@@ -9,7 +9,7 @@ import {
   StyleSheet,
   Alert
 } from "react-native";
-import { useAuth } from "../context/AuthContext";
+import { useAuth } from "@/auth/AuthContext";
 
 const CreateVendorGuide = ({ navigation }) => {
   const { token, user } = useAuth();

@@ -13,7 +13,7 @@ import {
 import * as ImagePicker from "expo-image-picker";
 import ScreenContainer from "../components/ScreenContainer";
 import { createPost } from "../api/posts";
-import { useAuth } from "../context/AuthContext.js";
+import { useAuth } from "@/auth/AuthContext";
 import { useNavigation, useRoute } from "@react-navigation/native";
 import GrowInterestPicker from "../components/GrowInterestPicker";
 import { buildEmptyTierSelection, flattenTierSelections } from "../utils/growInterests";

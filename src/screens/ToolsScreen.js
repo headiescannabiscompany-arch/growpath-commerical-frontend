@@ -4,7 +4,7 @@ import ScreenContainer from "../components/ScreenContainer.js";
 import Card from "../components/Card.js";
 import { colors, spacing } from "../theme/theme.js";
 import { useNavigation } from "@react-navigation/native";
-import { useAuth } from "../context/AuthContext.js";
+import { useAuth } from "@/auth/AuthContext";
 
 const TOOLS = [
   { id: "vpd", title: "VPD Calculator", screen: "VPDCalculator" },

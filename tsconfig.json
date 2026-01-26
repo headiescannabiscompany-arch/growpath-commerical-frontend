@@ -1,6 +1,16 @@
 {
   "extends": "expo/tsconfig.base",
   "compilerOptions": {
-    "module": "ESNext"
-  }
+    "module": "ESNext",
+    "skipLibCheck": true,
+    "esModuleInterop": true,
+    "strict": true,
+    "moduleResolution": "bundler",
+    "baseUrl": ".",
+    "paths": {
+      "@/*": ["src/*"]
+    },
+    "forceConsistentCasingInFileNames": true
+  },
+  "exclude": ["node_modules"]
 }

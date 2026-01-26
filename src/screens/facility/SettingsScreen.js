@@ -7,7 +7,7 @@ import {
   Alert,
   ActivityIndicator
 } from "react-native";
-import { useAuth } from "../../context/AuthContext.js";
+import { useAuth } from "@/auth/AuthContext";
 import {
   getFacilityBillingStatus,
   startFacilityCheckout,

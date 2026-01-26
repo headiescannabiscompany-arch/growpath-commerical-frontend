@@ -19,7 +19,7 @@ import {
   reopenTask,
   deleteTask
 } from "../api/tasks.js";
-import { useAuth } from "../context/AuthContext.js";
+import { useAuth } from "@/auth/AuthContext";
 
 export default function TasksScreen() {
   const { token } = useAuth();

@@ -16,7 +16,7 @@ import Card from "../components/Card";
 import PrimaryButton from "../components/PrimaryButton";
 import { colors, spacing, radius } from "../theme/theme";
 import { listPosts, createPost, likePost, commentOnPost } from "../api/forum";
-import { useAuth } from "../context/AuthContext";
+import { useAuth } from "@/auth/AuthContext";
 
 export default function GuideScreen({ route, navigation }) {
   const { isEntitled } = useAuth();

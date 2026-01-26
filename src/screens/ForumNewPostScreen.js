@@ -22,7 +22,7 @@ import {
   flattenTierSelections,
   groupTagsByTier
 } from "../utils/growInterests";
-import { useAuth } from "../context/AuthContext.js";
+import { useAuth } from "@/auth/AuthContext";
 
 const categoryOptions = [
   { key: "general", label: "General", desc: "Updates, questions, daily logs" },

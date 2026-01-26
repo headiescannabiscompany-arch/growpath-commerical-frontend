@@ -3,7 +3,7 @@ import { Text, TextInput, TouchableOpacity, StyleSheet, View, Alert } from "reac
 import ScreenContainer from "../components/ScreenContainer.js";
 import { createCustomTask } from "../api/tasks.js";
 import { listGrows } from "../api/grows.js";
-import { useAuth } from "../context/AuthContext.js";
+import { useAuth } from "@/auth/AuthContext";
 import { useNavigation } from "@react-navigation/native";
 import GrowPlantSelector from "../components/GrowPlantSelector.js";
 
