@@ -13,5 +13,3 @@ export default function SplashScreen({ navigation }) {
     </View>
   );
 }
-
-export { default } from "../../../src/screens/personal/GrowsScreen.tsx";

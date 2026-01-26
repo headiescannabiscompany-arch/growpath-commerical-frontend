@@ -647,6 +647,12 @@
 			"type": "shell",
 			"command": "npx expo start --web",
 			"group": "build"
+		},
+		{
+			"label": "Start Frontend",
+			"type": "shell",
+			"command": "npx expo start",
+			"group": "build"
 		}
 	]
 }

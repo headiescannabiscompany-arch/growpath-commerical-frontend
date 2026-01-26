@@ -28,8 +28,7 @@ type EntitlementsContextValue = {
   limits: Limits;
   refresh: () => Promise<void>;
 };
-
-const EntitlementsContext = createContext<EntitlementsContextValue | null>(null);
+export const EntitlementsContext = createContext<EntitlementsContextValue | null>(null);
 
 const DEFAULT_CAPABILITIES: Capabilities = {};
 const DEFAULT_LIMITS: Limits = { maxPlants: 1, maxGrows: 1 };
