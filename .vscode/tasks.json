@@ -611,6 +611,24 @@
 			"label": "Test: LiveSessionScreen QA",
 			"type": "shell",
 			"command": "npm run test:LiveSessionScreen"
+		},
+		{
+			"label": "Run Frontend Tests",
+			"type": "shell",
+			"command": "npm test",
+			"group": "test"
+		},
+		{
+			"label": "Run Frontend Tests",
+			"type": "shell",
+			"command": "npm test",
+			"group": "test"
+		},
+		{
+			"label": "Run Frontend Tests",
+			"type": "shell",
+			"command": "npm test",
+			"group": "test"
 		}
 	]
 }
