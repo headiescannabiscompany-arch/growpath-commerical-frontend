@@ -1,1 +1,17 @@
-import React from "react"; import { Slot } from "expo-router";  import { AuthProvider } from "../auth/AuthContext"; import { EntitlementsProvider } from "@/entitlements";  export default function RootLayout() {   return (     <AuthProvider>       <EntitlementsProvider>         <Slot />       </EntitlementsProvider>     </AuthProvider>   ); }  res.json({   user: {     id: user.id,     email: user.email   },   session: {     plan: user.plan,     mode: user.mode,     facilityId: user.selectedFacilityId || null,     facilityRole: user.facilityRole || null   },   entitlements: {     capabilities,     limits   } });
+import React from "react";
+import { Slot } from "expo-router";
+import { AuthProvider } from "../auth/AuthContext";
+import { SessionProvider } from "../session/SessionProvider";
+import { EntitlementsProvider } from "@/entitlements";
+
+export default function RootLayout() {
+  return (
+    <AuthProvider>
+      <SessionProvider>
+        <EntitlementsProvider>
+          <Slot />
+        </EntitlementsProvider>
+      </SessionProvider>
+    </AuthProvider>
+  );
+}
