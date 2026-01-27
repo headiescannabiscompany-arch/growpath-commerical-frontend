@@ -1,55 +1,20 @@
-import React, { useEffect, useState } from "react";
-import { View, Text, TextInput, TouchableOpacity, FlatList } from "react-native";
-import ScreenContainer from "../components/ScreenContainer";
-import { getComments, addComment } from "../api/posts";
+import React from "react";
+import { View, Text, FlatList } from "react-native";
 
-export default function CommentsScreen({ route }) {
-  const { postId } = route.params;
-  const [comments, setComments] = useState([]);
-  const [text, setText] = useState("");
-
-  async function load() {
-    const res = await getComments(postId);
-    const payload = res?.data ?? res ?? [];
-    setComments(Array.isArray(payload) ? payload : []);
-  }
-
-  useEffect(() => {
-    load();
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, []);
-
-  async function send() {
-    if (!text.trim()) return;
-    await addComment(postId, text);
-    setText("");
-    load();
-  }
+export default function CommentsScreen() {
+  const comments = [
+    { id: "1", text: "Great course!" },
+    { id: "2", text: "Very detailed breakdown." }
+  ];
 
   return (
-    <ScreenContainer>
+    <View style={{ padding: 20 }}>
+      <Text style={{ fontSize: 24 }}>Comments</Text>
       <FlatList
         data={comments}
-        keyExtractor={(c) => c._id}
-        renderItem={({ item }) => (
-          <View style={{ padding: 10, backgroundColor: "white", marginBottom: 8, borderRadius: 8 }}>
-            <Text style={{ fontWeight: "700" }}>{item.user?.username || "User"}</Text>
-            <Text>{item.text}</Text>
-          </View>
-        )}
+        keyExtractor={(i) => i.id}
+        renderItem={({ item }) => <Text style={{ padding: 8 }}>{item.text}</Text>}
       />
-
-      <View style={{ flexDirection: "row", marginTop: 16 }}>
-        <TextInput
-          value={text}
-          onChangeText={setText}
-          style={{ flex: 1, backgroundColor: "#eee", padding: 10, borderRadius: 8 }}
-          placeholder="Write a comment..."
-        />
-        <TouchableOpacity style={{ marginLeft: 10, backgroundColor: "#2ecc71", padding: 12, borderRadius: 8 }} onPress={send}>
-          <Text style={{ color: "white" }}>Send</Text>
-        </TouchableOpacity>
-      </View>
-    </ScreenContainer>
+    </View>
   );
 }

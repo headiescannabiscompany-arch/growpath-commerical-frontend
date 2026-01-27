@@ -6,9 +6,9 @@ import React, {
   useMemo,
   useState
 } from "react";
-import { useAuth } from "@/auth/AuthContext";
-import { useSession } from "@/session";
-import { client } from "@/api/client";
+import { useAuth } from "../auth/AuthContext";
+import { useSession } from "../session";
+import { client } from "../api/client";
 
 type Plan = "free" | "pro" | "creator_plus" | "commercial" | "facility";
 type Mode = "personal" | "commercial" | "facility";

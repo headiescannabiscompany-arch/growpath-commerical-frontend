@@ -1,7 +1,7 @@
 import React from "react";
 import { View, Text, Pressable } from "react-native";
 import { useRouter } from "expo-router";
-import { useEntitlements } from "@/entitlements";
+import { useEntitlements } from "../../../entitlements";
 
 export default function CommercialFeedScreen() {
   const router = useRouter();
@@ -10,8 +10,12 @@ export default function CommercialFeedScreen() {
 
   if (!facilityId) {
     return (
-      <View style={{ flex: 1, justifyContent: "center", alignItems: "center", padding: 16 }}>
-        <Text style={{ fontSize: 18, color: "#888", textAlign: "center", marginBottom: 12 }}>
+      <View
+        style={{ flex: 1, justifyContent: "center", alignItems: "center", padding: 16 }}
+      >
+        <Text
+          style={{ fontSize: 18, color: "#888", textAlign: "center", marginBottom: 12 }}
+        >
           Commercial feed is locked. Select a facility to continue.
         </Text>
         <Pressable
@@ -21,7 +25,7 @@ export default function CommercialFeedScreen() {
             paddingVertical: 10,
             borderWidth: 1,
             borderColor: "#aaa",
-            borderRadius: 8,
+            borderRadius: 8
           }}
         >
           <Text>Go back</Text>

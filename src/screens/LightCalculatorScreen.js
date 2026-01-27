@@ -1,113 +1,90 @@
-import React, { useState } from "react";
-import { useAuth } from "@/auth/AuthContext";
-import { View, Text, TextInput, StyleSheet, TouchableOpacity } from "react-native";
-import AppShell from "../components/AppShell.js";
-import Card from "../components/Card.js";
-import { colors, spacing } from "../theme/theme.js";
-import { saveToolUsage } from "../../toolUsageApi.js";
+import React, { useMemo, useState } from "react";
+import { SafeAreaView, StyleSheet, Text, TextInput, View } from "react-native";
 
 export default function LightCalculatorScreen() {
-  const { user } = useAuth();
-  const [area, setArea] = useState(1);
-  const [ppfd, setPpfd] = useState(400);
-  const [hours, setHours] = useState(16);
-  const [dli, setDli] = useState(null);
+  // Simple but legit: DLI ≈ PPFD * photoperiod(hours) * 0.0036
+  const [ppfd, setPpfd] = useState("700");
+  const [hours, setHours] = useState("12");
 
-  function calculateDLI(ppfd, hours) {
-    // DLI = PPFD (μmol/m²/s) * 3600 * hours / 1,000,000
-    return ((ppfd * 3600 * hours) / 1000000).toFixed(2);
-  }
+  const dli = useMemo(() => {
+    const p = Number(ppfd);
+    const h = Number(hours);
+    if (!Number.isFinite(p) || !Number.isFinite(h) || p <= 0 || h <= 0) return null;
+    return p * h * 0.0036;
+  }, [ppfd, hours]);
 
-  async function handleCalculate() {
-    const dli = calculateDLI(Number(ppfd), Number(hours));
-    setDli(dli);
-    try {
-      await saveToolUsage({
-        userId: user?.id || user?._id || null,
-        tool: "LightCalculator",
-        input: { area, ppfd, hours },
-        output: { dli }
-      });
-    } catch (err) {
-      console.error("Failed to save tool usage", err);
-    }
-  }
+  const guidance = useMemo(() => {
+    if (dli == null) return "Enter PPFD and hours.";
+    if (dli < 20) return "Low DLI. Likely veg/low intensity.";
+    if (dli < 35)
+      return "Moderate DLI. Solid for veg / early flower depending on cultivar.";
+    if (dli < 45) return "High DLI. Common for strong flower rooms.";
+    return "Very high DLI. Watch CO₂, heat, VPD, and stress signals.";
+  }, [dli]);
 
   return (
-    <AppShell style={undefined} contentContainerStyle={undefined}>
-      <Card style={styles.card}>
-        <Text style={styles.title}>Light Calculator</Text>
-        <Text style={styles.label}>Grow Area (m²)</Text>
+    <SafeAreaView style={styles.safe}>
+      <Text style={styles.title}>Light Calculator</Text>
+
+      <View style={styles.card}>
+        <Text style={styles.label}>PPFD (µmol/m²/s)</Text>
         <TextInput
+          value={ppfd}
+          onChangeText={setPpfd}
           style={styles.input}
           keyboardType="numeric"
-          value={String(area)}
-          onChangeText={(text) => setArea(Number(text))}
         />
-        <Text style={styles.label}>PPFD (μmol/m²/s)</Text>
+
+        <Text style={styles.label}>Photoperiod (hours/day)</Text>
         <TextInput
+          value={hours}
+          onChangeText={setHours}
           style={styles.input}
           keyboardType="numeric"
-          value={String(ppfd)}
-          onChangeText={(text) => setPpfd(Number(text))}
         />
-        <Text style={styles.label}>Light Hours per Day</Text>
-        <TextInput
-          style={styles.input}
-          keyboardType="numeric"
-          value={String(hours)}
-          onChangeText={(text) => setHours(Number(text))}
-        />
-        <TouchableOpacity style={styles.button} onPress={handleCalculate}>
-          <Text style={styles.buttonText}>Calculate DLI</Text>
-        </TouchableOpacity>
-        {dli !== null && <Text style={styles.result}>DLI: {dli} mol/m²/day</Text>}
-      </Card>
-    </AppShell>
+
+        <View style={styles.result}>
+          <Text style={styles.resultTitle}>Estimated DLI</Text>
+          <Text style={styles.resultValue}>
+            {dli == null ? "—" : dli.toFixed(1)} mol/m²/day
+          </Text>
+          <Text style={styles.muted}>{guidance}</Text>
+        </View>
+
+        <Text style={styles.muted}>Formula: DLI ≈ PPFD × hours × 0.0036</Text>
+      </View>
+    </SafeAreaView>
   );
 }
 
 const styles = StyleSheet.create({
+  safe: { flex: 1, padding: 14 },
+  title: { fontSize: 22, fontWeight: "900" },
   card: {
-    margin: spacing(2),
-    padding: spacing(3),
-    alignItems: "stretch"
-  },
-  title: {
-    fontSize: 22,
-    fontWeight: "bold",
-    marginBottom: spacing(2),
-    color: colors.primary
-  },
-  label: {
-    fontSize: 16,
-    marginTop: spacing(2),
-    color: colors.textSecondary
-  },
-  input: {
+    marginTop: 12,
+    padding: 12,
+    borderRadius: 16,
     borderWidth: 1,
-    borderColor: colors.border,
-    borderRadius: 8,
-    padding: spacing(1),
-    fontSize: 16,
-    marginTop: spacing(0.5)
+    borderColor: "#E5E7EB",
+    backgroundColor: "#fff"
   },
-  button: {
-    backgroundColor: colors.primary,
-    borderRadius: 8,
-    padding: spacing(2),
-    marginTop: spacing(3),
-    alignItems: "center"
-  },
-  buttonText: {
-    color: "#fff",
-    fontWeight: "bold",
-    fontSize: 16
+  label: { marginTop: 12, fontSize: 12, color: "#6B7280", fontWeight: "900" },
+  input: {
+    marginTop: 8,
+    height: 44,
+    borderRadius: 12,
+    borderWidth: 1,
+    borderColor: "#E5E7EB",
+    paddingHorizontal: 12
   },
   result: {
-    marginTop: spacing(3),
-    fontSize: 18,
-    fontWeight: "bold",
-    color: colors.success
-  }
+    marginTop: 16,
+    padding: 12,
+    borderRadius: 14,
+    borderWidth: 1,
+    borderColor: "#111827"
+  },
+  resultTitle: { fontWeight: "900" },
+  resultValue: { marginTop: 6, fontSize: 22, fontWeight: "900" },
+  muted: { marginTop: 8, color: "#6B7280", lineHeight: 18 }
 });

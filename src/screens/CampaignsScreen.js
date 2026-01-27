@@ -1,302 +1,277 @@
-import React, { useEffect, useState } from "react";
+import React, { useEffect, useMemo, useState } from "react";
 import {
   View,
   Text,
-  FlatList,
-  StyleSheet,
-  Button,
   TextInput,
-  Modal,
+  FlatList,
   TouchableOpacity,
-  ActivityIndicator,
-  Alert
+  Alert,
+  RefreshControl,
+  ActivityIndicator
 } from "react-native";
-import {
-  getCampaigns,
-  addCampaign,
-  updateCampaign,
-  removeCampaign,
-  getCampaignAnalytics
-} from "../api/campaigns.js";
-import { useAuth } from "@/auth/AuthContext";
 
-export default function CampaignsScreen() {
-  const { token } = useAuth();
-  const [campaigns, setCampaigns] = useState([]);
+// Swap this with your real axios client later
+// import client from "../api/client";
+
+const mockFetchCampaigns = async () => {
+  await new Promise((r) => setTimeout(r, 500));
+  return [
+    {
+      id: "cmp_1",
+      title: "GrowPath App Drop Live",
+      status: "ACTIVE",
+      startsAt: "2026-02-05",
+      endsAt: "2026-02-12",
+      channel: "Facebook",
+      objective: "Recruit beta testers during a live demo",
+      budget: 0
+    },
+    {
+      id: "cmp_2",
+      title: "Creator Course Launch: LAWNS Fundamentals",
+      status: "DRAFT",
+      startsAt: "2026-02-15",
+      endsAt: "2026-02-22",
+      channel: "In-app",
+      objective: "Drive enrollments + collect reviews",
+      budget: 50
+    },
+    {
+      id: "cmp_3",
+      title: "Facilities Pilot Outreach",
+      status: "PAUSED",
+      startsAt: "2026-03-01",
+      endsAt: "2026-03-30",
+      channel: "Email",
+      objective: "Book 5 facility onboarding calls",
+      budget: 0
+    }
+  ];
+};
+
+function StatusPill({ status }) {
+  const bg =
+    status === "ACTIVE"
+      ? "#E8FFF1"
+      : status === "DRAFT"
+        ? "#EEF4FF"
+        : status === "PAUSED"
+          ? "#FFF6E5"
+          : "#F2F2F2";
+
+  const fg =
+    status === "ACTIVE"
+      ? "#1A7F37"
+      : status === "DRAFT"
+        ? "#1E4DB7"
+        : status === "PAUSED"
+          ? "#9A6A00"
+          : "#444";
+
+  return (
+    <View
+      style={{
+        backgroundColor: bg,
+        paddingHorizontal: 10,
+        paddingVertical: 4,
+        borderRadius: 999
+      }}
+    >
+      <Text style={{ color: fg, fontSize: 12, fontWeight: "700" }}>{status}</Text>
+    </View>
+  );
+}
+
+function FilterButton({ label, active, onPress }) {
+  return (
+    <TouchableOpacity
+      onPress={onPress}
+      style={{
+        paddingHorizontal: 12,
+        paddingVertical: 6,
+        borderRadius: 999,
+        backgroundColor: active ? "#111827" : "#E5E7EB",
+        marginRight: 8
+      }}
+    >
+      <Text style={{ color: active ? "white" : "#111827", fontWeight: "700" }}>
+        {label}
+      </Text>
+    </TouchableOpacity>
+  );
+}
+
+function EmptyState({ onCreate }) {
+  return (
+    <View style={{ paddingTop: 40, alignItems: "center" }}>
+      <Text style={{ fontSize: 20, fontWeight: "800", marginBottom: 6 }}>
+        No campaigns yet
+      </Text>
+      <Text style={{ opacity: 0.7, textAlign: "center", paddingHorizontal: 20 }}>
+        Create your first campaign to organize launches, promos, and outreach.
+      </Text>
+
+      <TouchableOpacity
+        onPress={onCreate}
+        style={{
+          marginTop: 18,
+          backgroundColor: "#111827",
+          paddingHorizontal: 16,
+          paddingVertical: 12,
+          borderRadius: 12
+        }}
+      >
+        <Text style={{ color: "white", fontWeight: "800" }}>Create Campaign</Text>
+      </TouchableOpacity>
+    </View>
+  );
+}
+
+export default function CampaignsScreen({ navigation }) {
+  const [query, setQuery] = useState("");
+  const [statusFilter, setStatusFilter] = useState("ALL");
+  const [items, setItems] = useState([]);
   const [loading, setLoading] = useState(true);
-  const [error, setError] = useState(null);
-  const [modalVisible, setModalVisible] = useState(false);
-  const [editCampaign, setEditCampaign] = useState(null);
-  const [name, setName] = useState("");
-  const [saving, setSaving] = useState(false);
-  const [analytics, setAnalytics] = useState(null);
-  const [analyticsLoading, setAnalyticsLoading] = useState(false);
+  const [refreshing, setRefreshing] = useState(false);
 
-  useEffect(() => {
-    fetchCampaigns();
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [token]);
-
-  const fetchCampaigns = async () => {
-    setLoading(true);
-    setError(null);
+  const loadCampaigns = async () => {
     try {
-      const data = await getCampaigns(token);
-      setCampaigns(Array.isArray(data) ? data : data?.campaigns || []);
-    } catch (err) {
-      let details = err.message || "Error loading campaigns";
-      if (err.status || err.data) {
-        details = `API Error${err.status ? ` (${err.status})` : ""}${err.data?.endpoint ? ` – ${err.data.endpoint}` : ""}${err.data?.message ? ` – ${err.data.message}` : ""}`;
-      }
-      setError(details);
+      setLoading(true);
+      const data = await mockFetchCampaigns();
+      setItems(data);
+    } catch (e) {
+      Alert.alert("Error", "Failed to load campaigns");
     } finally {
       setLoading(false);
     }
   };
 
-  const openAddModal = () => {
-    setEditCampaign(null);
-    setName("");
-    setModalVisible(true);
+  const onRefresh = async () => {
+    setRefreshing(true);
+    await loadCampaigns();
+    setRefreshing(false);
   };
 
-  const openEditModal = (campaign) => {
-    setEditCampaign(campaign);
-    setName(campaign.name);
-    setModalVisible(true);
-  };
+  useEffect(() => {
+    loadCampaigns();
+  }, []);
 
-  const handleSave = async () => {
-    if (!name.trim()) return;
-    setSaving(true);
-    try {
-      if (editCampaign) {
-        await updateCampaign(editCampaign.id, { name }, token);
-      } else {
-        await addCampaign({ name }, token);
-      }
-      setModalVisible(false);
-      fetchCampaigns();
-    } catch (err) {
-      Alert.alert("Error", err.message || "Failed to save campaign");
-    } finally {
-      setSaving(false);
-    }
-  };
+  const filtered = useMemo(() => {
+    return items.filter((c) => {
+      const matchQuery = c.title.toLowerCase().includes(query.toLowerCase());
+      const matchStatus = statusFilter === "ALL" || c.status === statusFilter;
+      return matchQuery && matchStatus;
+    });
+  }, [items, query, statusFilter]);
 
-  const handleDelete = async (campaign) => {
-    Alert.alert(
-      "Remove Campaign",
-      `Are you sure you want to remove '${campaign.name}'?`,
-      [
-        { text: "Cancel", style: "cancel" },
-        {
-          text: "Remove",
-          style: "destructive",
-          onPress: async () => {
-            try {
-              await removeCampaign(campaign.id, token);
-              fetchCampaigns();
-            } catch (err) {
-              Alert.alert("Error", err.message || "Failed to remove campaign");
-            }
-          }
-        }
-      ]
+  if (loading) {
+    return (
+      <View
+        style={{
+          flex: 1,
+          justifyContent: "center",
+          alignItems: "center"
+        }}
+      >
+        <ActivityIndicator size="large" />
+        <Text style={{ marginTop: 10 }}>Loading campaigns...</Text>
+      </View>
     );
-  };
-
-  const handleShowAnalytics = async (campaign) => {
-    setAnalyticsLoading(true);
-    setAnalytics(null);
-    try {
-      const data = await getCampaignAnalytics(campaign.id, token);
-      setAnalytics(data);
-    } catch (err) {
-      Alert.alert("Error", err.message || "Failed to load analytics");
-    } finally {
-      setAnalyticsLoading(false);
-    }
-  };
+  }
 
   return (
-    <View style={styles.container}>
-      <Text style={styles.header}>Campaigns</Text>
-      {loading ? (
-        <ActivityIndicator size="small" color="#10B981" style={{ marginTop: 40 }} />
-      ) : error ? (
-        <View
-          style={{
-            marginTop: 40,
-            padding: 24,
-            borderRadius: 12,
-            backgroundColor: "#FEE2E2",
-            alignItems: "center",
-            borderWidth: 1,
-            borderColor: "#FCA5A5"
-          }}
+    <View style={{ flex: 1, padding: 16 }}>
+      {/* Header */}
+      <View
+        style={{
+          flexDirection: "row",
+          justifyContent: "space-between",
+          marginBottom: 12
+        }}
+      >
+        <Text style={{ fontSize: 26, fontWeight: "900" }}>Campaigns</Text>
+        <TouchableOpacity
+          onPress={() =>
+            navigation?.navigate?.("CreateCampaign") ||
+            Alert.alert("Create", "Hook this to your create screen")
+          }
         >
-          <Text style={{ fontSize: 32, color: "#B91C1C", marginBottom: 8 }}>🚫</Text>
-          <Text
-            style={{
-              color: "#B91C1C",
-              fontWeight: "bold",
-              fontSize: 18,
-              marginBottom: 4
-            }}
-          >
-            {error.includes("403")
-              ? "Access Denied"
-              : error.includes("404")
-                ? "Not Found"
-                : "API Error"}
-          </Text>
-          <Text style={{ color: "#B91C1C", textAlign: "center" }}>{error}</Text>
-        </View>
-      ) : (
-        <FlatList
-          data={campaigns}
-          keyExtractor={(item) => item.id}
-          renderItem={({ item }) => (
-            <View style={styles.campaignRow}>
-              <View>
-                <Text style={styles.campaignName}>{item.name}</Text>
-                <Button title="Analytics" onPress={() => handleShowAnalytics(item)} />
-              </View>
-              <View style={{ flexDirection: "row", gap: 8 }}>
-                <Button title="Edit" onPress={() => openEditModal(item)} />
-                <Button
-                  title="Remove"
-                  color="#ef4444"
-                  onPress={() => handleDelete(item)}
-                />
-              </View>
-            </View>
-          )}
-          ListEmptyComponent={<Text>No campaigns available.</Text>}
-        />
-      )}
-      <View style={styles.actions}>
-        <Button title="Add Campaign" onPress={openAddModal} />
+          <Text style={{ color: "#2563EB", fontWeight: "800" }}>+ New</Text>
+        </TouchableOpacity>
       </View>
 
-      <Modal
-        visible={modalVisible}
-        transparent
-        animationType="slide"
-        onRequestClose={() => setModalVisible(false)}
-      >
-        <View style={styles.modalOverlay}>
-          <View style={styles.modalContent}>
-            <Text style={styles.modalTitle}>
-              {editCampaign ? "Edit Campaign" : "Add Campaign"}
-            </Text>
-            <TextInput
-              style={styles.input}
-              placeholder="Name"
-              value={name}
-              onChangeText={setName}
-              autoFocus
-            />
-            <View style={{ flexDirection: "row", gap: 12, marginTop: 20 }}>
-              <TouchableOpacity
-                style={styles.saveBtn}
-                onPress={handleSave}
-                disabled={saving}
-              >
-                <Text style={styles.saveBtnText}>{saving ? "Saving..." : "Save"}</Text>
-              </TouchableOpacity>
-              <TouchableOpacity
-                style={styles.cancelBtn}
-                onPress={() => setModalVisible(false)}
-              >
-                <Text style={styles.cancelBtnText}>Cancel</Text>
-              </TouchableOpacity>
-            </View>
-          </View>
-        </View>
-      </Modal>
+      {/* Search */}
+      <TextInput
+        placeholder="Search campaigns..."
+        value={query}
+        onChangeText={setQuery}
+        style={{
+          borderWidth: 1,
+          borderColor: "#E5E7EB",
+          borderRadius: 10,
+          padding: 10,
+          marginBottom: 10
+        }}
+      />
 
-      <Modal
-        visible={!!analytics}
-        transparent
-        animationType="slide"
-        onRequestClose={() => setAnalytics(null)}
-      >
-        <View style={styles.modalOverlay}>
-          <View style={styles.modalContent}>
-            <Text style={styles.modalTitle}>Campaign Analytics</Text>
-            {analyticsLoading ? (
-              <ActivityIndicator size="small" color="#10B981" style={{ marginTop: 20 }} />
-            ) : analytics ? (
-              <Text style={{ marginTop: 8 }}>{JSON.stringify(analytics, null, 2)}</Text>
-            ) : null}
-            <TouchableOpacity style={styles.cancelBtn} onPress={() => setAnalytics(null)}>
-              <Text style={styles.cancelBtnText}>Close</Text>
-            </TouchableOpacity>
-          </View>
-        </View>
-      </Modal>
+      {/* Filters */}
+      <View style={{ flexDirection: "row", marginBottom: 12 }}>
+        {["ALL", "ACTIVE", "DRAFT", "PAUSED", "ENDED"].map((s) => (
+          <FilterButton
+            key={s}
+            label={s}
+            active={statusFilter === s}
+            onPress={() => setStatusFilter(s)}
+          />
+        ))}
+      </View>
+
+      {/* List */}
+      <FlatList
+        data={filtered}
+        keyExtractor={(i) => i.id}
+        refreshControl={<RefreshControl refreshing={refreshing} onRefresh={onRefresh} />}
+        ListEmptyComponent={
+          <EmptyState
+            onCreate={() =>
+              navigation?.navigate?.("CreateCampaign") ||
+              Alert.alert("Create", "Hook this to your create screen")
+            }
+          />
+        }
+        renderItem={({ item }) => (
+          <TouchableOpacity
+            onPress={() =>
+              navigation?.navigate?.("CampaignDetail", { id: item.id }) ||
+              Alert.alert("Campaign", item.title)
+            }
+            style={{
+              padding: 14,
+              borderRadius: 14,
+              borderWidth: 1,
+              borderColor: "#E5E7EB",
+              marginBottom: 10
+            }}
+          >
+            <View
+              style={{
+                flexDirection: "row",
+                justifyContent: "space-between",
+                marginBottom: 4
+              }}
+            >
+              <Text style={{ fontSize: 16, fontWeight: "800" }}>{item.title}</Text>
+              <StatusPill status={item.status} />
+            </View>
+
+            <Text style={{ opacity: 0.7, marginBottom: 4 }}>{item.objective}</Text>
+
+            <Text style={{ fontSize: 12, opacity: 0.6 }}>
+              {item.channel} • {item.startsAt} → {item.endsAt}
+            </Text>
+          </TouchableOpacity>
+        )}
+      />
     </View>
   );
 }
-
-const styles = StyleSheet.create({
-  container: { flex: 1, padding: 16, backgroundColor: "#fff" },
-  header: { fontSize: 24, fontWeight: "bold", marginBottom: 16 },
-  campaignRow: {
-    flexDirection: "row",
-    alignItems: "center",
-    justifyContent: "space-between",
-    paddingVertical: 12,
-    borderBottomWidth: 1,
-    borderColor: "#eee"
-  },
-  campaignName: { fontSize: 18 },
-  actions: {
-    flexDirection: "row",
-    justifyContent: "flex-end",
-    marginTop: 24
-  },
-  modalOverlay: {
-    flex: 1,
-    backgroundColor: "rgba(0,0,0,0.3)",
-    justifyContent: "center",
-    alignItems: "center"
-  },
-  modalContent: {
-    backgroundColor: "#fff",
-    borderRadius: 10,
-    padding: 24,
-    width: 300,
-    alignItems: "center",
-    shadowColor: "#000",
-    shadowOpacity: 0.1,
-    shadowRadius: 8,
-    elevation: 4
-  },
-  modalTitle: { fontSize: 18, fontWeight: "bold", color: "#222", marginBottom: 12 },
-  input: {
-    width: "100%",
-    borderWidth: 1,
-    borderColor: "#ddd",
-    borderRadius: 6,
-    padding: 10,
-    marginBottom: 12,
-    fontSize: 16
-  },
-  saveBtn: {
-    backgroundColor: "#10B981",
-    borderRadius: 6,
-    paddingHorizontal: 18,
-    paddingVertical: 10
-  },
-  saveBtnText: { color: "white", fontWeight: "bold", fontSize: 15 },
-  cancelBtn: {
-    backgroundColor: "#ddd",
-    borderRadius: 6,
-    paddingHorizontal: 18,
-    paddingVertical: 10
-  },
-  cancelBtnText: { color: "#333", fontWeight: "bold", fontSize: 15 }
-});

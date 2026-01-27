@@ -1,140 +1,133 @@
-import React from "react";
-import { View, Text, StyleSheet, Button, ScrollView, Alert } from "react-native";
-import { PLANS, MODES, ROLES } from "../constants/userModes.js";
-import { useAuth } from "@/auth/AuthContext";
-import { FEATURES, getEntitlement } from "../utils/entitlements.js";
+import React, { useMemo, useState } from "react";
+import {
+  Alert,
+  Pressable,
+  SafeAreaView,
+  ScrollView,
+  StyleSheet,
+  Text,
+  View
+} from "react-native";
+
+async function safeFetchJson(url, opts) {
+  const res = await fetch(url, {
+    ...(opts || {}),
+    headers: { "Content-Type": "application/json", ...(opts?.headers || {}) }
+  });
+  const text = await res.text();
+  let json = null;
+  try {
+    json = text ? JSON.parse(text) : null;
+  } catch {
+    json = { raw: text };
+  }
+  if (!res.ok) throw new Error(json?.message || `Request failed (${res.status})`);
+  return json;
+}
 
 export default function DebugScreen() {
-  const {
-    user,
-    setMode,
-    mode,
-    updateUser,
-    logout,
-    setSelectedFacilityId,
-    selectedFacilityId,
-    facilityFeaturesEnabled,
-    setFacilityFeaturesEnabled
-  } = useAuth();
-  // Feature flag toggles (example: facility features)
-  const handleToggleFacilityFeatures = () => {
-    setFacilityFeaturesEnabled(!facilityFeaturesEnabled);
-    Alert.alert(
-      "Facility Features",
-      `Facility features are now ${!facilityFeaturesEnabled ? "enabled" : "disabled"}`
-    );
-  };
+  const [ping, setPing] = useState(null);
+  const [serverInfo, setServerInfo] = useState(null);
+  const [working, setWorking] = useState(false);
 
-  // Mock API toggle (dev only, just a placeholder)
-  const [mockApiEnabled, setMockApiEnabled] = React.useState(false);
-  const handleToggleMockApi = () => {
-    setMockApiEnabled((prev) => !prev);
-    Alert.alert(
-      "Mock API",
-      `Mock API is now ${!mockApiEnabled ? "enabled" : "disabled"}`
-    );
-  };
+  const deviceInfo = useMemo(() => {
+    return {
+      platform: "react-native",
+      ts: new Date().toISOString()
+    };
+  }, []);
 
-  // Test data reset (dev only, just a placeholder)
-  const handleResetTestData = () => {
-    Alert.alert("Test Data", "Test data reset (not implemented)");
-  };
+  async function doPing() {
+    setWorking(true);
+    try {
+      const data = await safeFetchJson("https://example.com/api/health");
+      setPing(data);
+    } catch (e) {
+      Alert.alert("Ping failed", e.message || "Could not reach server.");
+    } finally {
+      setWorking(false);
+    }
+  }
 
-  // Helper: update user role/plan for impersonation
-  const impersonate = (updates) => {
-    if (!user) return;
-    updateUser({ ...user, ...updates });
-  };
-
-  // Helper: clear auth and reload
-  const handleClearAuth = () => {
-    logout();
-    Alert.alert("Auth cleared", "You have been logged out.");
-  };
+  async function loadInfo() {
+    setWorking(true);
+    try {
+      const data = await safeFetchJson("https://example.com/api/debug/info");
+      setServerInfo(data);
+    } catch (e) {
+      Alert.alert("Info failed", e.message || "Could not load debug info.");
+    } finally {
+      setWorking(false);
+    }
+  }
 
   return (
-    <ScrollView contentContainerStyle={styles.container}>
-      <Text style={styles.title}>Debug QA Harness</Text>
-      <Text style={styles.label}>User ID: {user?._id || user?.id || "-"}</Text>
-      <Text style={styles.label}>Email: {user?.email || "-"}</Text>
-      <Text style={styles.label}>Plan: {user?.plan || "-"}</Text>
-      <Text style={styles.label}>Mode: {mode}</Text>
-      <Text style={styles.label}>Role: {user?.role || "-"}</Text>
-      <Text style={styles.label}>Facility ID: {selectedFacilityId || "-"}</Text>
+    <SafeAreaView style={styles.safe}>
+      <Text style={styles.title}>Debug</Text>
 
-      <View style={styles.section}>
-        <Text style={styles.sectionTitle}>Switch Mode</Text>
-        <Button title="Personal" onPress={() => setMode(MODES.PERSONAL)} />
-        <Button title="Commercial" onPress={() => setMode(MODES.COMMERCIAL)} />
-        <Button title="Facility" onPress={() => setMode(MODES.FACILITY)} />
+      <View style={styles.card}>
+        <Text style={styles.sectionTitle}>Quick actions</Text>
+        <View style={styles.row}>
+          <Pressable
+            style={[styles.btn, working && styles.btnDisabled]}
+            onPress={doPing}
+            disabled={working}
+          >
+            <Text style={styles.btnText}>Ping API</Text>
+          </Pressable>
+          <Pressable
+            style={[styles.btn, working && styles.btnDisabled]}
+            onPress={loadInfo}
+            disabled={working}
+          >
+            <Text style={styles.btnText}>Server Info</Text>
+          </Pressable>
+        </View>
       </View>
 
-      <View style={styles.section}>
-        <Text style={styles.sectionTitle}>Impersonate Test User</Text>
-        <Button
-          title="Free User"
-          onPress={() => impersonate({ plan: PLANS.FREE, role: ROLES.USER })}
-        />
-        <Button
-          title="Pro User"
-          onPress={() => impersonate({ plan: PLANS.PRO, role: ROLES.USER })}
-        />
-        <Button
-          title="Commercial Owner"
-          onPress={() => impersonate({ plan: PLANS.COMMERCIAL, role: ROLES.OWNER })}
-        />
-        <Button
-          title="Facility Owner"
-          onPress={() => impersonate({ plan: PLANS.FACILITY, role: ROLES.OWNER })}
-        />
-        <Button
-          title="Facility Staff"
-          onPress={() => impersonate({ plan: PLANS.FACILITY, role: ROLES.STAFF })}
-        />
-      </View>
+      <ScrollView contentContainerStyle={{ paddingBottom: 24 }}>
+        <View style={styles.card}>
+          <Text style={styles.sectionTitle}>Device</Text>
+          <Text style={styles.mono}>{JSON.stringify(deviceInfo, null, 2)}</Text>
+        </View>
 
-      <View style={styles.section}>
-        <Text style={styles.sectionTitle}>Feature Flags & QA Tools</Text>
-        <Button
-          title={`Facility Features: ${facilityFeaturesEnabled ? "ON" : "OFF"}`}
-          onPress={handleToggleFacilityFeatures}
-        />
-        <Button
-          title={`Mock API: ${mockApiEnabled ? "ON" : "OFF"}`}
-          onPress={handleToggleMockApi}
-        />
-        <Button title="Reset Test Data" onPress={handleResetTestData} />
-        <Button title="Clear Auth + Reload" onPress={handleClearAuth} />
-      </View>
-    </ScrollView>
+        <View style={styles.card}>
+          <Text style={styles.sectionTitle}>Ping result</Text>
+          <Text style={styles.mono}>{ping ? JSON.stringify(ping, null, 2) : "—"}</Text>
+        </View>
+
+        <View style={styles.card}>
+          <Text style={styles.sectionTitle}>Server info</Text>
+          <Text style={styles.mono}>
+            {serverInfo ? JSON.stringify(serverInfo, null, 2) : "—"}
+          </Text>
+        </View>
+      </ScrollView>
+    </SafeAreaView>
   );
 }
 
 const styles = StyleSheet.create({
-  container: {
-    flexGrow: 1,
-    alignItems: "center",
-    justifyContent: "flex-start",
-    backgroundColor: "#fff",
-    padding: 24
+  safe: { flex: 1, padding: 14 },
+  title: { fontSize: 22, fontWeight: "900" },
+  card: {
+    marginTop: 12,
+    padding: 12,
+    borderRadius: 16,
+    borderWidth: 1,
+    borderColor: "#E5E7EB",
+    backgroundColor: "#fff"
   },
-  title: {
-    fontSize: 28,
-    fontWeight: "bold",
-    color: "#222",
-    marginBottom: 16
+  sectionTitle: { fontSize: 14, fontWeight: "900" },
+  row: { flexDirection: "row", gap: 10, marginTop: 12 },
+  btn: {
+    flex: 1,
+    paddingVertical: 12,
+    borderRadius: 12,
+    backgroundColor: "#111827",
+    alignItems: "center"
   },
-  label: {
-    fontSize: 16,
-    marginBottom: 4
-  },
-  section: {
-    marginTop: 24,
-    width: "100%"
-  },
-  sectionTitle: {
-    fontSize: 18,
-    fontWeight: "bold",
-    marginBottom: 8
-  }
+  btnDisabled: { opacity: 0.6 },
+  btnText: { color: "#fff", fontWeight: "900" },
+  mono: { marginTop: 10, fontFamily: "monospace", color: "#111827" }
 });

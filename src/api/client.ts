@@ -1,5 +1,6 @@
 import { config } from "../config/config";
 import { ApiError, normalizeApiError } from "./errors";
+import { useSession } from "../session";
 
 let authToken: string | null = null;
 

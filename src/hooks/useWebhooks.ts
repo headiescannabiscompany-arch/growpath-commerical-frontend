@@ -1,61 +1,38 @@
-import { useEffect } from "react";
-import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
-import { useEntitlements } from "@/entitlements";
-import { useApiGuards } from "../api/hooks";
-import {
-  listWebhooks,
-  createWebhook,
-  updateWebhook,
-  deleteWebhook
-} from "../api/webhooks";
+import React, { createContext, useContext, useEffect, useState } from "react";
+import AsyncStorage from "@react-native-async-storage/async-storage";
 
-export function useWebhooks() {
-  const qc = useQueryClient();
-  const { facilityId } = useEntitlements();
-  const { onError } = useApiGuards();
+type Plan = "free" | "pro" | "commercial" | "facility";
+type Entitlements = {
+  plan: Plan;
+  capabilities: Record<string, boolean>;
+};
 
-  const queryKey = ["webhooks", facilityId] as const;
+const EntitlementsContext = createContext<Entitlements | null>(null);
 
-  const query = useQuery({
-    queryKey,
-    queryFn: () => listWebhooks(facilityId!),
-    enabled: !!facilityId
-  });
+export function EntitlementsProvider({ children }) {
+  const [plan, setPlan] = useState<Plan>("free");
+  const [capabilities, setCapabilities] = useState({});
 
   useEffect(() => {
-    if (query.error) onError(query.error);
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [query.error]);
+    (async () => {
+      const stored = await AsyncStorage.getItem("entitlements");
+      if (stored) {
+        const parsed = JSON.parse(stored);
+        setPlan(parsed.plan);
+        setCapabilities(parsed.capabilities);
+      }
+    })();
+  }, []);
 
-  const create = useMutation({
-    mutationFn: (data: any) => createWebhook(facilityId!, data),
-    onSuccess: async () => {
-      await qc.invalidateQueries({ queryKey });
-    },
-    onError
-  });
+  return (
+    <EntitlementsContext.Provider value={{ plan, capabilities }}>
+      {children}
+    </EntitlementsContext.Provider>
+  );
+}
 
-  const update = useMutation({
-    mutationFn: ({ webhookId, ...data }: any) =>
-      updateWebhook(facilityId!, webhookId, data),
-    onSuccess: async () => {
-      await qc.invalidateQueries({ queryKey });
-    },
-    onError
-  });
-
-  const remove = useMutation({
-    mutationFn: (webhookId: string) => deleteWebhook(facilityId!, webhookId),
-    onSuccess: async () => {
-      await qc.invalidateQueries({ queryKey });
-    },
-    onError
-  });
-
-  return {
-    ...query,
-    createWebhook: create.mutateAsync,
-    updateWebhook: update.mutateAsync,
-    deleteWebhook: remove.mutateAsync
-  };
+export function useEntitlements() {
+  const ctx = useContext(EntitlementsContext);
+  if (!ctx) throw new Error("useEntitlements outside provider");
+  return ctx;
 }

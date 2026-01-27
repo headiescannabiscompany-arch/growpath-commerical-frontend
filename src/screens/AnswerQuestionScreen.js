@@ -1,55 +1,20 @@
 import React, { useState } from "react";
-import { Text, TextInput, TouchableOpacity, StyleSheet, Alert } from "react-native";
-import ScreenContainer from "../components/ScreenContainer";
-import { answerQuestion } from "../api/questions";
+import { View, Text, TextInput, Button } from "react-native";
 
-export default function AnswerQuestionScreen({ route, navigation }) {
-  const { courseId, questionId } = route.params;
-  const [text, setText] = useState("");
-
-  async function submit() {
-    if (!text.trim()) {
-      return Alert.alert("Please enter an answer");
-    }
-
-    try {
-      await answerQuestion(courseId, questionId, text);
-      Alert.alert("Success", "Answer posted!");
-      navigation.goBack();
-    } catch (err) {
-      Alert.alert("Error", err.message || "Failed to post answer");
-    }
-  }
+export default function AnswerQuestionScreen() {
+  const [answer, setAnswer] = useState("");
 
   return (
-    <ScreenContainer scroll>
-      <Text style={styles.header}>Your Answer</Text>
-
+    <View style={{ padding: 20 }}>
+      <Text style={{ fontSize: 24 }}>Answer Question</Text>
       <TextInput
-        style={styles.textBox}
-        placeholder="Write your answer…"
-        value={text}
-        onChangeText={setText}
         multiline
+        placeholder="Type your answer..."
+        value={answer}
+        onChangeText={setAnswer}
+        style={{ borderWidth: 1, padding: 10, height: 120 }}
       />
-
-      <TouchableOpacity style={styles.btn} onPress={submit}>
-        <Text style={styles.btnText}>Post Answer</Text>
-      </TouchableOpacity>
-    </ScreenContainer>
+      <Button title="Submit" onPress={() => alert("Submitted")} />
+    </View>
   );
 }
-
-const styles = StyleSheet.create({
-  header: { fontSize: 24, fontWeight: "700", marginBottom: 20 },
-  textBox: {
-    backgroundColor: "#eee",
-    padding: 12,
-    borderRadius: 8,
-    height: 150,
-    marginBottom: 20,
-    textAlignVertical: "top",
-  },
-  btn: { backgroundColor: "#2ecc71", padding: 12, borderRadius: 8 },
-  btnText: { textAlign: "center", color: "white", fontWeight: "700", fontSize: 16 },
-};
