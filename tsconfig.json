@@ -12,5 +12,5 @@
     },
     "forceConsistentCasingInFileNames": true
   },
-  "exclude": ["node_modules"]
+  "exclude": ["backend", "node_modules"]
 }
