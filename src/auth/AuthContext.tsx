@@ -104,6 +104,13 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
     [token, user, isHydrating]
   );
 
+  console.log(
+    "[AUTH DEBUG] AuthContext typeof =",
+    typeof AuthContext,
+    "value =",
+    AuthContext
+  );
+
   return <AuthContext.Provider value={value}>{children}</AuthContext.Provider>;
 }
 
