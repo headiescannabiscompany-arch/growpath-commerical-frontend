@@ -1,11 +1,12 @@
 import { defineConfig, devices } from "@playwright/test";
 
 const PORT = process.env.PLAYWRIGHT_WEB_PORT || "19009";
-const baseURL = process.env.PLAYWRIGHT_BASE_URL || `http://127.0.0.1:${PORT}`;
+const baseURL = process.env.PLAYWRIGHT_BASE_URL || `http://localhost:${PORT}`;
 
 export default defineConfig({
   testDir: "./tests/playwright",
   fullyParallel: false,
+  workers: 1,
   timeout: 180000,
   expect: {
     timeout: 60000
@@ -25,8 +26,9 @@ export default defineConfig({
     }
   ],
   webServer: {
-    command: [`npx expo start --web --port ${PORT}`].join(" "),
-    url: baseURL,
+    command: `npx expo start --web --port ${PORT} --non-interactive`,
+    url: `http://localhost:${PORT}`,
+    env: { EXPO_PUBLIC_E2E: "1" },
     reuseExistingServer: !process.env.CI,
     stdout: "pipe",
     stderr: "pipe",

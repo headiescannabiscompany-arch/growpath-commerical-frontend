@@ -1,3 +1,6 @@
+export function createFacility(data: { name: string }) {
+  return api.post("/api/facilities", data);
+}
 import { api } from "./client";
 
 export type Facility = {
