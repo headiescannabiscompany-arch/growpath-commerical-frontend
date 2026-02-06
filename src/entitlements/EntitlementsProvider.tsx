@@ -1,4 +1,11 @@
-import React, { createContext, useContext, useEffect, useMemo, useRef, useState } from "react";
+import React, {
+  createContext,
+  useContext,
+  useEffect,
+  useMemo,
+  useRef,
+  useState
+} from "react";
 import { useAuth } from "../auth/AuthContext";
 import { apiMe } from "../api/me";
 
@@ -37,7 +44,11 @@ function pickMode(ctxMode: any): EntitlementsMode {
 }
 
 // Pure "apply" function (no side effects other than returning next state)
-function applyServerCtx(prev: EntitlementsState, ctx: any, userPlan: any): EntitlementsState {
+function applyServerCtx(
+  prev: EntitlementsState,
+  ctx: any,
+  userPlan: any
+): EntitlementsState {
   const mode = pickMode(ctx?.mode);
   const plan = userPlan ?? ctx?.plan ?? prev.plan ?? null;
 
@@ -45,8 +56,9 @@ function applyServerCtx(prev: EntitlementsState, ctx: any, userPlan: any): Entit
     ready: true,
     mode,
     plan,
-    capabilities: (ctx?.capabilities && typeof ctx.capabilities === "object") ? ctx.capabilities : {},
-    limits: (ctx?.limits && typeof ctx.limits === "object") ? ctx.limits : {}
+    capabilities:
+      ctx?.capabilities && typeof ctx.capabilities === "object" ? ctx.capabilities : {},
+    limits: ctx?.limits && typeof ctx.limits === "object" ? ctx.limits : {}
   };
 }
 
@@ -138,44 +150,11 @@ export function EntitlementsProvider({ children }: { children: React.ReactNode }
 
   const value = useMemo(() => state, [state]);
 
-  return <EntitlementsContext.Provider value={value}>{children}</EntitlementsContext.Provider>;
-}
-
-export function useEntitlements() {
-  return useContext(EntitlementsContext);
-}
-      userId,
-      plan,
-      mode: session.mode,
-      facilityId: session.selectedFacilityId ?? undefined,
-      facilityRole: session.facilityRole ?? undefined,
-      capabilities,
-      limits,
-      refresh
-    }),
-    [
-      ready,
-      loading,
-      userId,
-      plan,
-      session.mode,
-      session.selectedFacilityId,
-      session.facilityRole,
-      capabilities,
-      limits,
-      refresh
-    ]
-  );
-
   return (
     <EntitlementsContext.Provider value={value}>{children}</EntitlementsContext.Provider>
   );
 }
 
 export function useEntitlements() {
-  const ctx = useContext(EntitlementsContext);
-  if (!ctx) {
-    throw new Error("useEntitlements must be used within an EntitlementsProvider");
-  }
-  return ctx;
+  return useContext(EntitlementsContext);
 }
