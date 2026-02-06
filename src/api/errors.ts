@@ -31,6 +31,26 @@ export function normalizeApiError(err: any): ApiError {
     };
   }
 
+  // Handle 401 status - map to INVALID_CREDENTIALS for login/auth flows
+  if (err?.status === 401) {
+    return {
+      code: "INVALID_CREDENTIALS",
+      message: err?.error?.message || "Incorrect email or password",
+      status: 401,
+      details: err
+    };
+  }
+
+  // Handle 400 status - map to VALIDATION_ERROR
+  if (err?.status === 400) {
+    return {
+      code: "VALIDATION_ERROR",
+      message: err?.error?.message || err?.message || "Invalid input",
+      status: 400,
+      details: err
+    };
+  }
+
   // Backend returned an error object with message
   if (err?.message) {
     return {

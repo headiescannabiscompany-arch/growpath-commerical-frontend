@@ -94,19 +94,29 @@ function LoginScreen() {
     } catch (err) {
       console.error("Auth error:", err);
 
-      // Better error messages
-      let title = "Error";
-      let message = err.message || "Authentication failed. Please check your connection.";
+      // Extract error message - handles Error objects and plain objects
+      const errorMessage =
+        err?.message || "Authentication failed. Please check your connection.";
+      const errorCode = err?.code;
 
-      // Handle error codes from backend
-      if (err.code === "INVALID_CREDENTIALS") {
+      let title = "Error";
+      let message = errorMessage;
+
+      // Handle 401 / INVALID_CREDENTIALS - show friendly message
+      if (
+        errorCode === "INVALID_CREDENTIALS" ||
+        errorMessage.includes("Incorrect email or password")
+      ) {
         title = "Login Failed";
         message = "Incorrect email or password. Please try again.";
         Alert.alert(title, message);
-      } else if (err.code === "VALIDATION_ERROR") {
+      } else if (errorCode === "VALIDATION_ERROR") {
         title = "Invalid Input";
         Alert.alert(title, message);
-      } else if (err.message === "User already exists") {
+      } else if (
+        errorMessage === "User already exists" ||
+        errorMessage.includes("already registered")
+      ) {
         title = "Account Already Exists";
         message = "This email is already registered. Would you like to login instead?";
 
@@ -118,7 +128,12 @@ function LoginScreen() {
             style: "default"
           }
         ]);
+      } else if (errorCode === "NETWORK_ERROR") {
+        title = "Connection Error";
+        message = "Unable to reach the server. Please check your internet connection.";
+        Alert.alert(title, message);
       } else {
+        // Fallback for unknown errors
         Alert.alert(title, message);
       }
     } finally {
