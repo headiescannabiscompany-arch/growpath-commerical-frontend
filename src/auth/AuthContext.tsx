@@ -111,15 +111,11 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
       setUser(res.user);
       await persistToken(res.token);
     } catch (err: any) {
-      // Extract error message from normalized error or raw error
-      const message =
-        err?.message || err?.data?.error?.message || "Invalid email or password";
-
-      // Throw as Error object (not plain object) so caller can handle it
-      throw new Error(message);
+      // Pass through normalized errors so UI can branch on code/status
+      throw err;
     }
-    // Fire analytics after successful auth (non-blocking, never awaited)
-    logEvent("USER_LOGIN");
+    // Fire analytics after successful auth (fire-and-forget)
+    void logEvent("USER_LOGIN");
   }
 
   async function signup(body: SignupBody) {
@@ -130,14 +126,11 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
       setUser(res.user);
       await persistToken(res.token);
     } catch (err: any) {
-      // Extract error message from normalized error or raw error
-      const message = err?.message || err?.data?.error?.message || "Signup failed";
-
-      // Throw as Error object (not plain object) so caller can handle it
-      throw new Error(message);
+      // Pass through normalized errors so UI can branch on code/status
+      throw err;
     }
-    // Fire analytics after successful auth (non-blocking, never awaited)
-    logEvent("USER_REGISTER");
+    // Fire analytics after successful auth (fire-and-forget)
+    void logEvent("USER_REGISTER");
   }
 
   async function logout() {

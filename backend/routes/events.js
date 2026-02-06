@@ -17,7 +17,9 @@ const ALLOWED = new Set([
   "like_post",
   "hit_paywall",
   "upgrade_click",
-  "upgrade_success"
+  "upgrade_success",
+  "USER_LOGIN",
+  "USER_REGISTER"
 ]);
 
 router.post("/", authOptional, async (req, res) => {
@@ -40,7 +42,11 @@ router.post("/", authOptional, async (req, res) => {
     });
   }
 
-  await logEvent(req, eventType, meta, { source, ts });
+  try {
+    await logEvent(req, eventType, meta, { source, ts });
+  } catch (e) {
+    // never fail UX because analytics failed
+  }
   return res.json({ ok: true });
 });
 
