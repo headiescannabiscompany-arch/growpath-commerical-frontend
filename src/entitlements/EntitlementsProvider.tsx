@@ -121,7 +121,7 @@ export function EntitlementsProvider({ children }: { children: React.ReactNode }
     } finally {
       setLoading(false);
     }
-  }, [auth.token, applyServerSessionToClient]);
+  }, [auth.token, applyServerContextToClient]);
 
   useEffect(() => {
     if (auth.isHydrating) return;
