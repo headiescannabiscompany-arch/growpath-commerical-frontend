@@ -5,7 +5,8 @@ import { endpoints } from "../../api/endpoints";
 import { useFacility } from "../../facility/FacilityProvider";
 
 export function useRooms() {
-  const { facilityId } = useFacility();
+  const facility = useFacility();
+  const facilityId = facility?.facilityId || null;
   return useQuery({
     queryKey: ["rooms", facilityId],
     queryFn: () => api.get(endpoints.rooms(facilityId)),
@@ -14,7 +15,8 @@ export function useRooms() {
 }
 
 export function useRoom(roomId) {
-  const { facilityId } = useFacility();
+  const facility = useFacility();
+  const facilityId = facility?.facilityId || null;
   return useQuery({
     queryKey: ["room", facilityId, roomId],
     queryFn: () => api.get(endpoints.room(facilityId, roomId)),

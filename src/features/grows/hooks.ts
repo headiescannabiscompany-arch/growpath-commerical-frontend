@@ -7,7 +7,8 @@ import { Grow } from "./types";
 
 export function useGrows() {
   const { token } = useAuth();
-  const { facilityId } = useFacility();
+  const facility = useFacility();
+  const facilityId = facility?.facilityId || null;
 
   return useQuery<Grow[]>({
     queryKey: ["grows", facilityId],
@@ -18,7 +19,8 @@ export function useGrows() {
 
 export function useGrow(id: string) {
   const { token } = useAuth();
-  const { facilityId } = useFacility();
+  const facility = useFacility();
+  const facilityId = facility?.facilityId || null;
 
   return useQuery<Grow>({
     queryKey: ["grow", facilityId, id],

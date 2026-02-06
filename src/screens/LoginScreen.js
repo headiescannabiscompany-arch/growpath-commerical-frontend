@@ -138,7 +138,7 @@ function LoginScreen({ navigation }) {
             textAlign: "center"
           }}
         >
-          LOGIN SCREEN
+          {null}
         </Text>
       ) : (
         <Text
@@ -150,42 +150,33 @@ function LoginScreen({ navigation }) {
             textAlign: "center"
           }}
         >
-          LOGIN SCREEN
+          {null}
         </Text>
       )}
-      <Text style={{ color: "red", fontWeight: "bold", fontSize: 20 }}>
-        DEBUG: LoginScreen visible
-      </Text>
-      <ScreenContainer testID="login-form">
-        {/* DEBUG marker */}
-        <View style={{ backgroundColor: "red", padding: 8 }}>
-          <Text style={{ color: "white", fontWeight: "bold" }}>
-            DEBUG: LoginScreen loaded
-          </Text>
-        </View>
-        {/* @ts-ignore: Metro/JS false positive for PNG import */}
+      <ScreenContainer testID="login-form" scroll={true}>
+        {/* Banner Image */}
         <ImageBackground
           // @ts-ignore
-          source={require("../../assets/ChatGPT Image Dec 12, 2025, 02_01_36 PM.png")}
+          source={require("../../assets/banner.png")}
           style={styles.headerBackground}
           imageStyle={styles.headerImageStyle}
-        >
-          <View style={[styles.overlay, { zIndex: 1, pointerEvents: "box-none" }]}>
-            <View style={styles.logoContainer}>
-              <View style={styles.logoCircle}>
-                {/* @ts-ignore: Metro/JS false positive for PNG import */}
-                <Image
-                  // @ts-ignore
-                  source={require("../../assets/icon.png")}
-                  style={styles.logoImage}
-                  resizeMode="contain"
-                />
-              </View>
-              <Text style={styles.appName}>GrowPath AI</Text>
-              <Text style={styles.tagline}>Your grow companion for every plant</Text>
-            </View>
+          resizeMode="contain"
+        />
+
+        {/* Logo and Text Below Banner */}
+        <View style={styles.logoContainer}>
+          <View style={styles.logoCircle}>
+            {/* @ts-ignore: Metro/JS false positive for PNG import */}
+            <Image
+              // @ts-ignore
+              source={require("../../assets/icon-white.png")}
+              style={styles.logoImage}
+              resizeMode="contain"
+            />
           </View>
-        </ImageBackground>
+          <Text style={styles.appName}>GrowPath AI</Text>
+          <Text style={styles.tagline}>Your grow companion for every plant</Text>
+        </View>
 
         {/* Mode Selector */}
         <View
@@ -312,11 +303,11 @@ export default LoginScreen;
 const styles = StyleSheet.create({
   headerBackground: {
     width: "100%",
-    height: 280,
+    height: 420,
     marginBottom: spacing(6)
   },
   headerImageStyle: {
-    opacity: 0.9
+    opacity: 1
   },
   overlay: {
     flex: 1,
@@ -324,62 +315,58 @@ const styles = StyleSheet.create({
     justifyContent: "center",
     alignItems: "center",
     position: "relative",
-    pointerEvents: "box-none",
     zIndex: 1
   },
   logoContainer: {
     alignItems: "center",
-    paddingVertical: spacing(6)
+    paddingVertical: spacing(8)
   },
   logoCircle: {
-    width: 100,
-    height: 100,
-    borderRadius: 50,
-    backgroundColor: "rgba(16, 185, 129, 0.95)",
+    width: 160,
+    height: 160,
+    borderRadius: 80,
+    backgroundColor: "transparent",
     justifyContent: "center",
     alignItems: "center",
-    marginBottom: spacing(3),
-    elevation: 8,
-    borderWidth: 3,
-    borderColor: "rgba(255, 255, 255, 0.9)"
+    marginBottom: spacing(4)
   },
   logoImage: {
-    width: 70,
-    height: 70
+    width: 160,
+    height: 160
   },
   appName: {
-    fontSize: 36,
+    fontSize: 48,
     fontWeight: "800",
     color: "#ffffff",
-    marginBottom: spacing(1)
+    marginBottom: spacing(2)
   },
   tagline: {
-    fontSize: 15,
+    fontSize: 18,
     color: "#e5e7eb",
     fontStyle: "italic",
     fontWeight: "600"
   },
   title: {
-    fontSize: 24,
+    fontSize: 32,
     fontWeight: "700",
-    marginBottom: spacing(6),
+    marginBottom: spacing(8),
     color: colors.text,
     textAlign: "center"
   },
   input: {
-    padding: spacing(4),
+    padding: spacing(5),
     borderRadius: radius.card,
     backgroundColor: "#fff",
-    marginBottom: spacing(4),
+    marginBottom: spacing(5),
     borderWidth: 1,
     borderColor: colors.border,
     color: colors.text,
-    fontSize: 16
+    fontSize: 18
   },
   link: {
     color: colors.accent,
     fontWeight: "600",
     textAlign: "center",
-    fontSize: 15
+    fontSize: 16
   }
 });

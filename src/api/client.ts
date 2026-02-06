@@ -94,6 +94,14 @@ async function request(path: string, options: RequestOptions = {}) {
     clearTimeout(timeoutId);
     if (e?.name === "AbortError")
       throw new Error("Request timeout - is the backend running?");
+    console.error("[API] Request error:", {
+      url: path,
+      method,
+      error: e,
+      message: e?.message,
+      code: e?.code,
+      status: e?.status
+    });
     throw e;
   }
 }

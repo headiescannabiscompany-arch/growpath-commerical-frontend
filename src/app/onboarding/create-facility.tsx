@@ -8,17 +8,38 @@ import {
   StyleSheet
 } from "react-native";
 import { useCreateFacility } from "../../hooks/useCreateFacility";
-import { useRouter } from "expo-router";
+import { useRouter, Redirect } from "expo-router";
+import { useAuth } from "@/auth/AuthContext";
 
 export default function CreateFacilityScreen() {
   const [name, setName] = useState("");
   const [touched, setTouched] = useState(false);
   const createFacility = useCreateFacility();
   const router = useRouter();
+  const auth = useAuth();
+
+  // Wait for auth to hydrate
+  if (auth.isHydrating) {
+    return (
+      <View style={styles.container}>
+        <ActivityIndicator size="large" />
+      </View>
+    );
+  }
+
+  // 🔒 Not logged in → redirect to login
+  if (!auth.token) {
+    return <Redirect href="/login" />;
+  }
 
   const handleCreate = async () => {
     setTouched(true);
     if (!name.trim()) return;
+    if (!auth.token) {
+      // Extra safety check
+      alert("Please log in to create a facility.");
+      return;
+    }
     createFacility.mutate(
       { name: name.trim() },
       {

@@ -1,46 +1,62 @@
 import React from "react";
-import { View, Text, Pressable } from "react-native";
-import { router } from "expo-router";
+import { ActivityIndicator, View, Text } from "react-native";
+import { Redirect } from "expo-router";
+import { useAuth } from "@/auth/AuthContext";
+import { useEntitlements } from "@/entitlements";
 
-function LinkButton({ title, href }: { title: string; href: string }) {
-  return (
-    <Pressable
-      onPress={() => router.push(href)}
-      style={{
-        width: "100%",
-        paddingVertical: 12,
-        paddingHorizontal: 14,
-        borderRadius: 12,
-        borderWidth: 1,
-        borderColor: "#E5E7EB",
-        marginTop: 10,
-      }}
-    >
-      <Text style={{ fontSize: 16, fontWeight: "700" }}>{title}</Text>
-      <Text style={{ marginTop: 4, opacity: 0.6 }}>{href}</Text>
-    </Pressable>
-  );
-}
+export default function Index() {
+  const auth = useAuth();
+  const ent = useEntitlements();
 
-export default function Home() {
-  return (
-    <View style={{ flex: 1, padding: 16, justifyContent: "center" }}>
-      <Text style={{ fontSize: 26, fontWeight: "900" }}>GrowPath AI</Text>
-      <Text style={{ marginTop: 6, opacity: 0.7 }}>
-        Home � choose a route to test.
-      </Text>
+  console.log("[INDEX] auth.isHydrating:", auth.isHydrating);
+  console.log("[INDEX] auth.token:", !!auth.token);
+  console.log("[INDEX] ent.ready:", ent.ready);
 
-      <View style={{ marginTop: 18 }}>
-        <LinkButton title="Campaigns" href="/campaigns" />
-        <LinkButton title="Courses" href="/courses" />
-        <LinkButton title="Creator Dashboard" href="/creator-dashboard" />
-        <LinkButton title="Certificates" href="/certificates" />
-        <LinkButton title="Verify Certificate" href="/certificate-verification" />
-        <LinkButton title="Comments" href="/comments" />
-        <LinkButton title="Commercial Inventory" href="/commercial-inventory" />
-        <LinkButton title="Debug" href="/debug" />
-        <LinkButton title="Light Calculator" href="/light-calculator" />
+  // Wait for auth hydration
+  if (auth.isHydrating) {
+    return (
+      <View
+        style={{
+          flex: 1,
+          justifyContent: "center",
+          alignItems: "center",
+          backgroundColor: "#fff"
+        }}
+      >
+        <ActivityIndicator size="large" />
+        <Text style={{ marginTop: 16 }}>Loading auth...</Text>
       </View>
-    </View>
-  );
+    );
+  }
+
+  // Not logged in → send to login
+  if (!auth.token) {
+    console.log("[INDEX] No token, redirecting to /login");
+    return <Redirect href="/login" />;
+  }
+
+  // Logged in but entitlements still hydrating → show loader
+  if (!ent.ready) {
+    return (
+      <View
+        style={{
+          flex: 1,
+          justifyContent: "center",
+          alignItems: "center",
+          backgroundColor: "#fff"
+        }}
+      >
+        <ActivityIndicator size="large" />
+        <Text style={{ marginTop: 16 }}>Loading entitlements...</Text>
+      </View>
+    );
+  }
+
+  // Route based on mode
+  console.log("[INDEX] ent.mode:", ent.mode);
+  if (ent.mode === "facility") return <Redirect href="/dashboard" />;
+  if (ent.mode === "commercial") return <Redirect href="/feed" />;
+
+  // Default personal landing
+  return <Redirect href="/feed" />;
 }

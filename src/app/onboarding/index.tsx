@@ -1,11 +1,34 @@
 import React from "react";
 import { View, ActivityIndicator } from "react-native";
-import { useRouter } from "expo-router";
+import { useRouter, Redirect } from "expo-router";
+import { useAuth } from "@/auth/AuthContext";
 import { useOnboarding } from "../../onboarding/useOnboarding";
 
 export default function OnboardingRouter() {
   const router = useRouter();
+  const auth = useAuth();
   const state = useOnboarding();
+
+  // Wait for auth to hydrate
+  if (auth.isHydrating) {
+    return (
+      <View
+        style={{
+          flex: 1,
+          justifyContent: "center",
+          alignItems: "center",
+          backgroundColor: "#fff"
+        }}
+      >
+        <ActivityIndicator size="large" />
+      </View>
+    );
+  }
+
+  // 🔒 Not logged in → never run onboarding hooks that call facility APIs
+  if (!auth.token) {
+    return <Redirect href="/login" />;
+  }
 
   React.useEffect(() => {
     if (state === "loading") return;
