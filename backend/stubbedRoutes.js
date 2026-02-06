@@ -28,6 +28,15 @@ module.exports = function (app) {
   } catch (e) {
     // Ignore if not present
   }
+
+  // Mount personal mode routes (for /api/personal/grows, /logs, /tasks)
+  try {
+    const personalRoutes = require("./routes/personal");
+    app.use("/api/personal", personalRoutes);
+  } catch (e) {
+    // Ignore if not present
+  }
+
   // --- User stub ---
   const mockUser = {
     id: "user-1",

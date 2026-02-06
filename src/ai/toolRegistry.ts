@@ -1,32 +1,48 @@
-import { calcVpdKpa, type TempUnit } from "@/tools/vpd";
+import { calcVpdFromTemp, type TempUnit } from "@/tools/vpd";
 
-export type ToolCall = {
-  name: "calc_vpd";
-  args: { temp: number; unit: TempUnit; rh: number };
+export type ToolName = "calc_vpd";
+
+export type CalcVpdArgs = {
+  temp: number;
+  unit: TempUnit; // "F" | "C"
+  rh: number; // 0-100
 };
 
-export type ToolResult =
-  | { ok: true; name: "calc_vpd"; result: { vpdKpa: number } }
-  | { ok: false; name: string; error: string };
+export type ToolCall = { name: "calc_vpd"; args: CalcVpdArgs };
 
-function validateNumber(n: unknown) {
-  return typeof n === "number" && Number.isFinite(n);
+export type ToolResult =
+  | {
+      ok: true;
+      name: "calc_vpd";
+      data: { tempC: number; vpdKpa: number };
+    }
+  | {
+      ok: false;
+      name: ToolName;
+      error: { code: "INVALID_ARGS"; message: string };
+    };
+
+function invalid(name: ToolName, message: string): ToolResult {
+  return { ok: false, name, error: { code: "INVALID_ARGS", message } };
 }
 
-export async function runTool(call: ToolCall): Promise<ToolResult> {
+export function runTool(call: ToolCall): ToolResult {
   if (call.name === "calc_vpd") {
     const { temp, unit, rh } = call.args;
 
-    if (!validateNumber(temp))
-      return { ok: false, name: call.name, error: "temp must be a number" };
-    if (unit !== "C" && unit !== "F")
-      return { ok: false, name: call.name, error: "unit must be C or F" };
-    if (!validateNumber(rh) || rh < 0 || rh > 100)
-      return { ok: false, name: call.name, error: "rh must be 0–100" };
+    if (!Number.isFinite(temp)) return invalid("calc_vpd", "temp must be a number");
+    if (unit !== "F" && unit !== "C")
+      return invalid("calc_vpd", "unit must be 'F' or 'C'");
+    if (!Number.isFinite(rh) || rh < 0 || rh > 100) {
+      return invalid("calc_vpd", "rh must be 0–100");
+    }
 
-    const v = calcVpdKpa(temp, unit, rh);
-    return { ok: true, name: "calc_vpd", result: { vpdKpa: v } };
+    const data = calcVpdFromTemp(temp, unit, rh);
+    if (!Number.isFinite(data.vpdKpa)) return invalid("calc_vpd", "calculation failed");
+
+    return { ok: true, name: "calc_vpd", data };
   }
 
-  return { ok: false, name: (call as any)?.name ?? "unknown", error: "Unknown tool" };
+  // exhaustive
+  return invalid(call.name, "unknown tool");
 }

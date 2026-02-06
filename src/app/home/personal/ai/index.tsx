@@ -1,10 +1,23 @@
-import React, { useMemo, useState } from "react";
+import React, { useMemo, useState, useEffect } from "react";
 import { View, Text, StyleSheet, TextInput, Pressable, ScrollView } from "react-native";
 import { runTool } from "@/ai/toolRegistry";
+import { listPersonalGrows } from "@/api/grows";
+import { listPersonalLogs } from "@/api/logs";
+import { listPersonalTasks } from "@/api/tasks";
 
 const styles = StyleSheet.create({
   container: { flex: 1, backgroundColor: "#fff" },
   body: { flex: 1, padding: 16 },
+  contextCard: {
+    padding: 12,
+    borderWidth: 1,
+    borderColor: "#E2E8F0",
+    borderRadius: 12,
+    marginBottom: 10,
+    backgroundColor: "#F8FAFC"
+  },
+  contextText: { fontSize: 12, color: "#64748B", marginBottom: 4 },
+  contextTitle: { fontWeight: "700", color: "#0F172A" },
   msg: {
     padding: 12,
     borderWidth: 1,
@@ -28,6 +41,13 @@ const styles = StyleSheet.create({
 });
 
 type Msg = { role: "user" | "assistant"; text: string };
+
+interface ContextData {
+  growCount: number;
+  logCount: number;
+  taskCount: number;
+  loadedAt: string;
+}
 
 function parseVpdCommand(
   text: string
@@ -57,8 +77,39 @@ export default function AiScreen() {
   const [messages, setMessages] = useState<Msg[]>([
     { role: "assistant", text: "Ask me something. Try: vpd 78f 60" }
   ]);
+  const [context, setContext] = useState<ContextData | null>(null);
 
   const canSend = useMemo(() => draft.trim().length > 0, [draft]);
+
+  // Fetch context (grows, logs, tasks) on mount
+  useEffect(() => {
+    async function loadContext() {
+      try {
+        const [grows, logs, tasks] = await Promise.all([
+          listPersonalGrows(),
+          listPersonalLogs(),
+          listPersonalTasks()
+        ]);
+
+        setContext({
+          growCount: grows.length,
+          logCount: logs.length,
+          taskCount: tasks.length,
+          loadedAt: new Date().toLocaleTimeString()
+        });
+      } catch (err) {
+        console.error("[AI] Failed to load context:", err);
+        setContext({
+          growCount: 0,
+          logCount: 0,
+          taskCount: 0,
+          loadedAt: "error"
+        });
+      }
+    }
+
+    loadContext();
+  }, []);
 
   function send() {
     const text = draft.trim();
@@ -98,6 +149,17 @@ export default function AiScreen() {
   return (
     <View style={styles.container}>
       <ScrollView style={styles.body} contentContainerStyle={{ paddingBottom: 24 }}>
+        {context && (
+          <View style={styles.contextCard}>
+            <Text style={[styles.contextText, styles.contextTitle]}>
+              📚 Context Loaded
+            </Text>
+            <Text style={styles.contextText}>Grows: {context.growCount}</Text>
+            <Text style={styles.contextText}>Logs: {context.logCount}</Text>
+            <Text style={styles.contextText}>Tasks: {context.taskCount}</Text>
+            <Text style={styles.contextText}>Updated: {context.loadedAt}</Text>
+          </View>
+        )}
         {messages.map((m, idx) => (
           <View key={idx} style={styles.msg}>
             <Text style={styles.msgRole}>{m.role.toUpperCase()}</Text>

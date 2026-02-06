@@ -35,3 +35,49 @@ export async function deleteTask(facilityId: string, id: string) {
   const res = await api.delete(endpoints.task(facilityId, id));
   return res?.deleted ?? res?.ok ?? res;
 }
+
+// ===== Personal Mode Tasks (User-Scoped) =====
+
+export interface PersonalTask {
+  id: string;
+  growId: string;
+  title: string;
+  description: string;
+  dueDate: string;
+  completed: boolean;
+  createdAt: string;
+}
+
+interface PersonalTasksResponse {
+  ok: boolean;
+  data: {
+    tasks: PersonalTask[];
+  };
+}
+
+/**
+ * Fetch tasks for the authenticated personal mode user.
+ * Optionally filter by growId.
+ */
+export async function listPersonalTasks(options?: {
+  growId?: string;
+}): Promise<PersonalTask[]> {
+  try {
+    const query = options?.growId ? `?growId=${encodeURIComponent(options.growId)}` : "";
+    const res = await api.get(`/personal/tasks${query}`);
+
+    if (
+      typeof res === "object" &&
+      res !== null &&
+      "data" in res &&
+      res.data &&
+      "tasks" in res.data
+    ) {
+      return res.data.tasks as PersonalTask[];
+    }
+    return [];
+  } catch (err) {
+    console.error("[listPersonalTasks] Error:", err);
+    return [];
+  }
+}

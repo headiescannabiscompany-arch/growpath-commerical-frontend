@@ -35,3 +35,43 @@ export async function deleteGrow(facilityId: string, id: string) {
   const res = await api.delete(endpoints.grow(facilityId, id));
   return res?.deleted ?? res?.ok ?? res;
 }
+
+// ===== Personal Mode Grows (User-Scoped) =====
+
+export interface PersonalGrow extends Grow {
+  startDate: string;
+  strain: string;
+  location: string;
+  status: "vegetating" | "flowering" | "curing" | "harvested";
+  updatedAt: string;
+}
+
+interface PersonalGrowsResponse {
+  ok: boolean;
+  data: {
+    grows: PersonalGrow[];
+  };
+}
+
+/**
+ * Fetch all grows for the authenticated personal mode user.
+ * Personal mode is user-scoped; no facilityId parameter.
+ */
+export async function listPersonalGrows(): Promise<PersonalGrow[]> {
+  try {
+    const res = await api.get("/personal/grows");
+    if (
+      typeof res === "object" &&
+      res !== null &&
+      "data" in res &&
+      res.data &&
+      "grows" in res.data
+    ) {
+      return res.data.grows as PersonalGrow[];
+    }
+    return [];
+  } catch (err) {
+    console.error("[listPersonalGrows] Error:", err);
+    return [];
+  }
+}

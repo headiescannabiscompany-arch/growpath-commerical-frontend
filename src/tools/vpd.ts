@@ -1,15 +1,21 @@
 export type TempUnit = "C" | "F";
 
-export function toCelsius(temp: number, unit: TempUnit) {
-  return unit === "C" ? temp : (temp - 32) * (5 / 9);
+export function toCelsius(value: number, unit: TempUnit): number {
+  return unit === "F" ? ((value - 32) * 5) / 9 : value;
 }
 
-// Tetens SVP (kPa) → VPD = SVP * (1 - RH)
-export function calcVpdKpaFromC(tempC: number, rh: number) {
-  const svp = 0.6108 * Math.exp((17.27 * tempC) / (tempC + 237.3));
+// Tetens (good enough for v1)
+export function calcVpdKpa(tempC: number, rh: number): number {
+  const svp = 0.6108 * Math.exp((17.27 * tempC) / (tempC + 237.3)); // kPa
   return svp * (1 - rh / 100);
 }
 
-export function calcVpdKpa(temp: number, unit: TempUnit, rh: number) {
-  return calcVpdKpaFromC(toCelsius(temp, unit), rh);
+export function calcVpdFromTemp(
+  temp: number,
+  unit: TempUnit,
+  rh: number
+): { tempC: number; vpdKpa: number } {
+  const tempC = toCelsius(temp, unit);
+  const vpdKpa = calcVpdKpa(tempC, rh);
+  return { tempC, vpdKpa };
 }
