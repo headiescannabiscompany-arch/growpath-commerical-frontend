@@ -15,7 +15,7 @@ import {
   type SignupBody
 } from "../api/auth";
 import { setToken as persistToken, getToken as readToken } from "./tokenStore";
-import { setAuthToken } from "../api/client";
+import { setAuthToken, setOnUnauthorized } from "../api/client";
 import { apiMe } from "../api/me";
 
 type AuthState = {
@@ -54,6 +54,16 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
       isLoggingOutRef.current = false;
     }
   };
+
+  // Wire global 401 invalidation: any 401 from any endpoint (except login/signup) triggers hardLogout
+  useEffect(() => {
+    setOnUnauthorized(() => {
+      void hardLogout();
+    });
+    return () => {
+      setOnUnauthorized(null);
+    };
+  }, []);
 
   useEffect(() => {
     // Only hydrate once

@@ -3,10 +3,12 @@ import { ActivityIndicator, View, Text } from "react-native";
 import { Redirect } from "expo-router";
 import { useAuth } from "@/auth/AuthContext";
 import { useEntitlements } from "@/entitlements";
+import { useFacility } from "@/facility/FacilityProvider";
 
 export default function Index() {
   const auth = useAuth();
   const ent = useEntitlements();
+  const facility = useFacility();
 
   console.log("[INDEX] auth.isHydrating:", auth.isHydrating);
   console.log("[INDEX] auth.token:", !!auth.token);
@@ -52,15 +54,48 @@ export default function Index() {
     );
   }
 
-  // Route based on mode - even on entitlements hydration failure, default to personal
+  // Route based on mode
   console.log("[INDEX] ent.mode:", ent.mode);
   console.log("[INDEX] ent.plan:", ent.plan);
+  console.log("[INDEX] facility.isReady:", facility?.isReady);
+  console.log("[INDEX] facility.selectedId:", facility?.selectedId);
 
-  if (ent.mode === "facility") return <Redirect href="/dashboard" />;
-  if (ent.mode === "commercial") return <Redirect href="/feed" />;
+  // Commercial/facility users: wait for facilities to load, then require facility selection
+  if (ent.mode === "facility" || ent.mode === "commercial") {
+    if (!facility?.isReady) {
+      return (
+        <View
+          style={{
+            flex: 1,
+            justifyContent: "center",
+            alignItems: "center",
+            backgroundColor: "#fff"
+          }}
+        >
+          <ActivityIndicator size="large" />
+          <Text style={{ marginTop: 16 }}>Loading facilities...</Text>
+        </View>
+      );
+    }
+
+    // Facilities loaded: route to picker if no selection, else to dashboard
+    if (!facility?.selectedId) {
+      console.log("[INDEX] No facility selected, routing to /facilities");
+      return <Redirect href="/facilities" />;
+    }
+
+    // Has selection
+    if (ent.mode === "facility") {
+      console.log("[INDEX] Facility mode with selection, routing to /dashboard");
+      return <Redirect href="/dashboard" />;
+    }
+    if (ent.mode === "commercial") {
+      console.log("[INDEX] Commercial mode with selection, routing to /feed");
+      return <Redirect href="/feed" />;
+    }
+  }
 
   // Default to personal home for free/personal users
-  // This is a safe default that doesn't require facility/commercial setup
   console.log("[INDEX] Routing to /home (personal default)");
   return <Redirect href="/home" />;
 }

@@ -3,9 +3,14 @@ import { normalizeApiError, type ApiError } from "./errors";
 import { mockRequest } from "./mockServer";
 
 let authToken: string | null = null;
+let onUnauthorized: null | (() => void | Promise<void>) = null;
 
 export function setAuthToken(token: string | null) {
   authToken = token || null;
+}
+
+export function setOnUnauthorized(fn: null | (() => void | Promise<void>)) {
+  onUnauthorized = fn;
 }
 
 type RequestOptions = {
@@ -15,6 +20,7 @@ type RequestOptions = {
   signal?: AbortSignal;
   timeout?: number;
   auth?: boolean; // default true; set to false to skip Authorization header
+  silent?: boolean; // default false; set to true to suppress console.error on failure
 };
 
 const DEFAULT_TIMEOUT = 10000;
@@ -123,14 +129,25 @@ async function request(path: string, options: RequestOptions = {}) {
     // Ensure *everything* thrown from client is normalized with path context
     const normalized = normalizeApiError(e, { path });
 
-    console.error("[API] Request error:", {
-      url: path,
-      method,
-      error: e,
-      message: normalized?.message,
-      code: normalized?.code,
-      status: normalized?.status
-    });
+    // Global 401 invalidation: any non-credential endpoint returns 401 => force logout
+    if (normalized?.status === 401 && normalized?.code === "UNAUTHORIZED") {
+      try {
+        void onUnauthorized?.();
+      } catch {
+        // swallow errors from logout handler
+      }
+    }
+
+    if (!options.silent) {
+      console.error("[API] Request error:", {
+        url: path,
+        method,
+        error: e,
+        message: normalized?.message,
+        code: normalized?.code,
+        status: normalized?.status
+      });
+    }
 
     throw normalized;
   }
