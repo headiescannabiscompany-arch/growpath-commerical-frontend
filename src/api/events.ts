@@ -1,6 +1,5 @@
 // src/api/events.ts
 import { api } from "./client";
-import { useAuth } from "../auth/AuthContext";
 
 export type CoreEventType =
   | "view_feed"
@@ -12,9 +11,23 @@ export type CoreEventType =
   | "USER_LOGIN"
   | "USER_REGISTER";
 
+type EventPayload = {
+  eventType: string; // backend requires this
+  meta?: Record<string, any>;
+  source?: string;
+  ts?: string;
+};
+
 export async function logEvent(type: CoreEventType, meta: Record<string, any> = {}) {
   try {
-    await api.post("/api/events", { type, meta });
+    const payload: EventPayload = {
+      eventType: type, // ✅ map frontend "type" -> backend "eventType"
+      meta,
+      source: meta?.source || "app",
+      ts: new Date().toISOString()
+    };
+
+    await api.post("/api/events", payload);
   } catch {
     // swallow — analytics must never break UX
   }

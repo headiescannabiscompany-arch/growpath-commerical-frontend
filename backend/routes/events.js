@@ -21,15 +21,26 @@ const ALLOWED = new Set([
 ]);
 
 router.post("/", authOptional, async (req, res) => {
-  const { type, meta } = req.body || {};
-  if (!type || typeof type !== "string") {
-    return res.status(400).json({ message: "type is required" });
-  }
-  if (!ALLOWED.has(type)) {
-    return res.status(400).json({ message: "unknown event type" });
+  const body = req.body || {};
+  // Accept both shapes: { eventType, meta } (canonical) and { type, meta } (legacy)
+  const eventType = body.eventType || body.type || null;
+  const meta = body.meta || {};
+  const source = body.source || "app";
+  const ts = body.ts || new Date().toISOString();
+
+  if (!eventType || typeof eventType !== "string") {
+    return res.status(400).json({
+      error: { code: "VALIDATION_ERROR", message: "eventType is required" }
+    });
   }
 
-  await logEvent(req, type, meta);
+  if (!ALLOWED.has(eventType)) {
+    return res.status(400).json({
+      error: { code: "VALIDATION_ERROR", message: "unknown event type" }
+    });
+  }
+
+  await logEvent(req, eventType, meta, { source, ts });
   return res.json({ ok: true });
 });
 

@@ -118,10 +118,8 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
       // Throw as Error object (not plain object) so caller can handle it
       throw new Error(message);
     }
-    // Fire analytics after successful auth (outside try-catch so it doesn't interfere with login)
-    logEvent("USER_LOGIN").catch(() => {
-      // analytics must never break UX
-    });
+    // Fire analytics after successful auth (non-blocking, never awaited)
+    logEvent("USER_LOGIN");
   }
 
   async function signup(body: SignupBody) {
@@ -138,10 +136,8 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
       // Throw as Error object (not plain object) so caller can handle it
       throw new Error(message);
     }
-    // Fire analytics after successful auth (outside try-catch so it doesn't interfere with signup)
-    logEvent("USER_REGISTER").catch(() => {
-      // analytics must never break UX
-    });
+    // Fire analytics after successful auth (non-blocking, never awaited)
+    logEvent("USER_REGISTER");
   }
 
   async function logout() {
