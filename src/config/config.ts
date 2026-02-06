@@ -12,6 +12,6 @@ function readExtra(): Extra {
 export const config = {
   env: __DEV__ ? "dev" : "prod",
   apiBaseUrl:
-    readExtra().API_BASE_URL ||
-    (__DEV__ ? "http://localhost:3000" : "https://api.growpath.ai")
+    process.env.EXPO_PUBLIC_API_URL ||
+    (__DEV__ ? "http://localhost:5001" : "https://api.growpath.ai")
 };
