@@ -24,7 +24,18 @@
     "no-unused-vars": "warn",
     "no-undef": "error",
     "react/prop-types": "off",
-    "react/react-in-jsx-scope": "off"
+    "react/react-in-jsx-scope": "off",
+    "no-restricted-syntax": [
+      "error",
+      {
+        "selector": "Literal[value=/^\\/api\\//]",
+        "message": "Hardcoded /api/ paths are forbidden. Use endpoints.* from src/api/endpoints.ts instead."
+      },
+      {
+        "selector": "TemplateLiteral[quasis.0.value.raw=/\\/api\\//]",
+        "message": "Hardcoded /api/ paths in template literals are forbidden. Use endpoints.* from src/api/endpoints.ts instead."
+      }
+    ]
   },
   "settings": {
     "react": {
