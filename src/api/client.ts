@@ -14,6 +14,7 @@ type RequestOptions = {
   headers?: Record<string, string>;
   signal?: AbortSignal;
   timeout?: number;
+  auth?: boolean; // default true; set to false to skip Authorization header
 };
 
 const DEFAULT_TIMEOUT = 10000;
@@ -51,7 +52,8 @@ async function request(path: string, options: RequestOptions = {}) {
 
   // CONTRACT: facility context is only in the URL path (/api/facility/:facilityId/...)
   // Do not inject X-Facility-Id headers.
-  if (authToken) {
+  const useAuth = options.auth !== false;
+  if (useAuth && authToken) {
     headers["Authorization"] = `Bearer ${authToken}`;
   }
 

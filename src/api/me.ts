@@ -1,18 +1,24 @@
 // src/api/me.ts
-// Contract-locked wrapper: returns current user profile or throws ApiError
+// Contract-locked: returns canonical { user, ctx } shape or throws ApiError.
 import { api } from "./client";
 import { endpoints } from "./endpoints";
 import type { AuthUser } from "./auth";
 
-export type MeResponse = AuthUser & {
-  mode?: "personal" | "commercial" | "facility";
-  plan?: string;
-  subscriptionStatus?: string;
-  capabilities?: Record<string, boolean>;
-  limits?: Record<string, number>;
+export type MeCtx = {
+  mode: "personal" | "commercial" | "facility";
+  capabilities: Record<string, boolean>;
+  limits: Record<string, number>;
+  facilityId?: string | null;
+  facilityRole?: string | null;
+  facilityFeaturesEnabled?: boolean;
 };
 
-/** Fetch current user profile. Throws ApiError on failure (e.g., 401 if token invalid). */
+export type MeResponse = {
+  user: AuthUser;
+  ctx: MeCtx;
+};
+
+/** Fetch current user profile. Returns MeResponse or throws ApiError. */
 export async function apiMe(): Promise<MeResponse> {
-  return api.get(endpoints.me);
+  return api.get(endpoints.me) as Promise<MeResponse>;
 }

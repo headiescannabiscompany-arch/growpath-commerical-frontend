@@ -1,5 +1,5 @@
 // src/api/auth.ts
-// Contract-locked wrappers: every function returns the canonical response type or throws ApiError.
+// Contract-locked: every function returns canonical response type or throws ApiError with code/status.
 import { api } from "./client";
 import type { ApiError } from "./errors";
 
@@ -34,27 +34,29 @@ export type SignupResponse = {
   user: AuthUser;
 };
 
-/** Login with email/password. Throws ApiError on failure. */
+/** Login with email/password. Returns LoginResponse or throws ApiError. */
 export async function login(body: LoginBody): Promise<LoginResponse> {
-  return api.post("/api/auth/login", body, { auth: false });
+  return api.post("/api/auth/login", body, { auth: false }) as Promise<LoginResponse>;
 }
 
-/** Signup with email/password. Throws ApiError on failure. */
+/** Signup with email/password. Returns SignupResponse or throws ApiError. */
 export async function signup(body: SignupBody): Promise<SignupResponse> {
-  return api.post("/api/auth/signup", body, { auth: false });
+  return api.post("/api/auth/signup", body, { auth: false }) as Promise<SignupResponse>;
 }
 
-/** Register (legacy). Throws ApiError on failure. */
+/** Register (legacy). Returns { token } or throws ApiError. */
 export async function register(body: SignupBody): Promise<{ token: string }> {
-  return api.post("/api/auth/register", body, { auth: false });
+  return api.post("/api/auth/register", body, { auth: false }) as Promise<{
+    token: string;
+  }>;
 }
 
-/** Upgrade account to creator. Throws ApiError on failure. */
+/** Upgrade account to creator. Returns { ok, role } or throws ApiError. */
 export async function becomeCreator(): Promise<{ ok: true; role: "creator" }> {
-  return api.post("/api/auth/become-creator");
+  return api.post("/api/auth/become-creator") as Promise<{ ok: true; role: "creator" }>;
 }
 
-/** Save push notification token. Throws ApiError on failure. */
+/** Save push notification token. Returns { ok } or throws ApiError. */
 export async function savePushToken(pushToken: string): Promise<{ ok: true }> {
-  return api.post("/api/auth/save-push-token", { pushToken });
+  return api.post("/api/auth/save-push-token", { pushToken }) as Promise<{ ok: true }>;
 }

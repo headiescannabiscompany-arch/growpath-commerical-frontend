@@ -60,18 +60,18 @@ export function EntitlementsProvider({ children }: { children: React.ReactNode }
 
   const userId = auth.user?.id ?? null;
 
-  const applyServerSessionToClient = useCallback(
-    (serverSession: any) => {
+  const applyServerContextToClient = useCallback(
+    (serverCtx: any) => {
       try {
-        if (serverSession?.mode) session.setMode(normalizeMode(serverSession.mode));
-        if ("facilityId" in (serverSession ?? {})) {
-          session.setSelectedFacilityId(serverSession.facilityId ?? null);
+        if (serverCtx?.mode) session.setMode(normalizeMode(serverCtx.mode));
+        if ("facilityId" in (serverCtx ?? {})) {
+          session.setSelectedFacilityId(serverCtx.facilityId ?? null);
         }
-        if ("facilityRole" in (serverSession ?? {})) {
-          session.setFacilityRole(serverSession.facilityRole ?? null);
+        if ("facilityRole" in (serverCtx ?? {})) {
+          session.setFacilityRole(serverCtx.facilityRole ?? null);
         }
-        if ("facilityFeaturesEnabled" in (serverSession ?? {})) {
-          session.setFacilityFeaturesEnabled(!!serverSession.facilityFeaturesEnabled);
+        if ("facilityFeaturesEnabled" in (serverCtx ?? {})) {
+          session.setFacilityFeaturesEnabled(!!serverCtx.facilityFeaturesEnabled);
         }
       } catch {
         // ignore
@@ -97,11 +97,11 @@ export function EntitlementsProvider({ children }: { children: React.ReactNode }
       setAuthToken(auth.token);
 
       const resp = await apiMe();
-      const serverPlan = normalizePlan(resp?.session?.plan);
+      const serverPlan = normalizePlan(resp?.user?.plan);
       setPlan(serverPlan);
-      applyServerSessionToClient(resp?.session);
-      const caps = resp?.entitlements?.capabilities ?? DEFAULT_CAPABILITIES;
-      const lims = resp?.entitlements?.limits ?? DEFAULT_LIMITS;
+      applyServerContextToClient(resp?.ctx);
+      const caps = resp?.ctx?.capabilities ?? DEFAULT_CAPABILITIES;
+      const lims = resp?.ctx?.limits ?? DEFAULT_LIMITS;
       setCapabilities({ ...caps });
       setLimits({ ...lims });
       setReady(true); // Only mark ready on success
