@@ -1,8 +1,3 @@
-import React from "react";
-import { ActivityIndicator, View, Text } from "react-native";
-import { Redirect } from "expo-router";
-import { useAuth } from "@/auth/AuthContext";
-import { useEntitlements } from "@/entitlements";
 import React, { useEffect, useMemo, useRef, useState } from "react";
 import { ActivityIndicator, View, Text } from "react-native";
 import { useRouter } from "expo-router";

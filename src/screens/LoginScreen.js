@@ -98,7 +98,7 @@ function LoginScreen() {
       const errorMessage =
         err?.message || "Authentication failed. Please check your connection.";
 
-      if (errorCode === "INVALID_CREDENTIALS") {
+      if (err?.status === 401 || errorCode === "INVALID_CREDENTIALS") {
         Alert.alert("Login Failed", "Incorrect email or password. Please try again.");
       } else if (errorCode === "VALIDATION_ERROR") {
         Alert.alert("Invalid Input", errorMessage);
@@ -116,7 +116,7 @@ function LoginScreen() {
         );
       } else if (errorCode === "NETWORK_ERROR") {
         Alert.alert("Connection Error", "Unable to reach the server. Please try again.");
-      } else if (errorCode === "UNAUTHORIZED") {
+      } else if (errorCode === "UNAUTHORIZED" || errorCode === "UNAUTHENTICATED") {
         Alert.alert("Session Expired", "Please login again.");
       } else {
         Alert.alert("Error", errorMessage);

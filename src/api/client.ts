@@ -188,11 +188,12 @@ async function request(path: string, options: RequestOptions = {}) {
 
     // Global 401 invalidation: opt-in per-call to prevent auth thrash on /api/me
     const invalidateOn401 = options.invalidateOn401 !== false;
-    if (
-      invalidateOn401 &&
+    const isAuth401 =
       normalized?.status === 401 &&
-      normalized?.code === "UNAUTHORIZED"
-    ) {
+      (normalized?.code === "UNAUTHORIZED" ||
+        normalized?.code === "UNAUTHENTICATED" ||
+        normalized?.code === "INVALID_TOKEN");
+    if (invalidateOn401 && isAuth401) {
       try {
         void onUnauthorized?.();
       } catch {
