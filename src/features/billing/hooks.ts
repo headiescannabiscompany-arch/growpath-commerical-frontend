@@ -1,7 +1,7 @@
 import { api } from "../../api/client";
 import { endpoints } from "../../api/endpoints";
 import { useFacility } from "../../facility/FacilityProvider";
-import { useAuth } from "../../auth/AuthProvider";
+import { useAuth } from "../../auth/AuthContext";
 
 export function useBilling() {
   const { facilityId } = useFacility();
