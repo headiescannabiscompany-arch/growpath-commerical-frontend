@@ -16,9 +16,11 @@ import AsyncStorage from "@react-native-async-storage/async-storage";
 import ScreenContainer from "../components/ScreenContainer.js";
 import PrimaryButton from "../components/PrimaryButton.js";
 import { useAuth } from "@/auth/AuthContext";
+import { useRouter } from "expo-router";
 import { colors, radius, spacing } from "../theme/theme.js";
 
-function LoginScreen({ navigation }) {
+function LoginScreen() {
+  const router = useRouter();
   const {
     login: contextLogin,
     signup: contextSignup,
@@ -38,21 +40,21 @@ function LoginScreen({ navigation }) {
     if (token && user) {
       // Always set mode to 'personal' for new users unless already set
       if (!selectedMode || selectedMode === "personal") {
-        navigation.replace("MainTabs");
+        router.replace("/");
       } else if (selectedMode === "facility") {
-        navigation.replace("FacilityStack");
+        router.replace("/");
       } else if (selectedMode === "commercial") {
-        navigation.replace("CommercialTabs");
+        router.replace("/");
       } else {
         // fallback: set to personal
-        navigation.replace("MainTabs");
+        router.replace("/");
       }
     }
     // @ts-ignore
     AsyncStorage.getItem("HAS_LOGGED_IN_BEFORE").then((val) => {
       setHasLoggedInBefore(val === "true");
     });
-  }, [token, user, navigation, selectedMode]);
+  }, [token, user, selectedMode, router]);
 
   async function handleAuth() {
     if (loading) return;
