@@ -9,63 +9,46 @@ import {
   View
 } from "react-native";
 
-async function safeFetchJson(url, opts) {
-  const res = await fetch(url, {
-    ...(opts || {}),
-    headers: { "Content-Type": "application/json", ...(opts?.headers || {}) }
-  });
-  const text = await res.text();
-  let json = null;
-  try {
-    json = text ? JSON.parse(text) : null;
-  } catch {
-    json = { raw: text };
-  }
-  if (!res.ok) throw new Error(json?.message || `Request failed (${res.status})`);
-  return json;
-}
+import { handleApiError } from "@/utils/handleApiError";
+import { useLiveSession } from "@/hooks/useLiveSession";
 
 export default function LiveSessionScreen({ route }) {
   const mode = route?.params?.mode || "join"; // "host" | "join"
   const [sessionCode, setSessionCode] = useState("");
   const [displayName, setDisplayName] = useState("Guest");
-  const [status, setStatus] = useState("idle"); // idle | working | live
   const [session, setSession] = useState(null);
+
+  const { hostAsync, joinAsync, endAsync, isWorking } = useLiveSession();
 
   const title = useMemo(
     () => (mode === "host" ? "Host Live Session" : "Join Live Session"),
     [mode]
   );
 
+  const isLive = Boolean(session);
+
   async function host() {
-    setStatus("working");
+    if (isWorking) return;
     try {
-      const data = await safeFetchJson("https://example.com/api/live/host", {
-        method: "POST",
-        body: JSON.stringify({ displayName })
-      });
-      setSession(data?.session || data);
-      setStatus("live");
+      const s = await hostAsync({ displayName });
+      setSession(s);
     } catch (e) {
-      Alert.alert("Host failed", e.message || "Could not start session.");
-      setStatus("idle");
+      handleApiError(e);
+      Alert.alert("Host failed", e?.message || "Could not start session.");
     }
   }
 
   async function join() {
+    if (isWorking) return;
     const code = sessionCode.trim();
     if (!code) return Alert.alert("Join", "Enter a session code.");
-    setStatus("working");
+
     try {
-      const data = await safeFetchJson("https://example.com/api/live/join", {
-        method: "POST",
-        body: JSON.stringify({ code, displayName })
-      });
-      setSession(data?.session || data);
-      setStatus("live");
+      const s = await joinAsync({ code, displayName });
+      setSession(s);
     } catch (e) {
-      Alert.alert("Join failed", e.message || "Could not join session.");
-      setStatus("idle");
+      handleApiError(e);
+      Alert.alert("Join failed", e?.message || "Could not join session.");
     }
   }
 
@@ -77,14 +60,15 @@ export default function LiveSessionScreen({ route }) {
         style: "destructive",
         onPress: async () => {
           try {
-            await safeFetchJson("https://example.com/api/live/end", {
-              method: "POST",
-              body: JSON.stringify({ sessionId: session?.id })
-            });
-          } catch {}
-          setSession(null);
-          setStatus("idle");
-          setSessionCode("");
+            const sessionId = String(session?.id || session?._id || "");
+            if (sessionId) await endAsync({ sessionId });
+          } catch (e) {
+            // Ending is best-effort; still route errors
+            handleApiError(e);
+          } finally {
+            setSession(null);
+            setSessionCode("");
+          }
         }
       }
     ]);
@@ -115,30 +99,31 @@ export default function LiveSessionScreen({ route }) {
           </>
         )}
 
-        {status === "live" ? (
+        {isLive ? (
           <View style={{ gap: 10 }}>
             <View style={styles.liveBox}>
               <Text style={styles.liveTitle}>LIVE</Text>
               <Text style={styles.muted}>
-                Session: {session?.code || session?.id || "—"}
+                Session: {session?.code || session?.id || session?._id || "—"}
               </Text>
               <Text style={styles.muted}>
                 This screen is ready for your next step: WebRTC / Twitch embed / realtime
                 chat.
               </Text>
             </View>
-            <Pressable style={styles.dangerBtn} onPress={end}>
+
+            <Pressable style={styles.dangerBtn} onPress={end} disabled={isWorking}>
               <Text style={styles.dangerText}>End Session</Text>
             </Pressable>
           </View>
         ) : (
           <Pressable
-            style={[styles.btn, status === "working" && styles.btnDisabled]}
+            style={[styles.btn, isWorking && styles.btnDisabled]}
             onPress={mode === "host" ? host : join}
-            disabled={status === "working"}
+            disabled={isWorking}
           >
             <Text style={styles.btnText}>
-              {status === "working" ? "Working…" : mode === "host" ? "Start" : "Join"}
+              {isWorking ? "Working…" : mode === "host" ? "Start" : "Join"}
             </Text>
           </Pressable>
         )}
