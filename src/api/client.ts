@@ -104,23 +104,33 @@ async function request(path: string, options: RequestOptions = {}) {
 
     if (!res.ok) {
       const data = await safeJson(res).catch(() => null);
-      throw normalizeApiError(data ?? { status: res.status });
+      throw normalizeApiError(data ?? { status: res.status }, { path });
     }
 
     return await safeJson(res);
   } catch (e: any) {
     clearTimeout(timeoutId);
-    if (e?.name === "AbortError")
-      throw new Error("Request timeout - is the backend running?");
+
+    if (e?.name === "AbortError") {
+      throw normalizeApiError(
+        { message: "Request timeout - is the backend running?" },
+        { path }
+      );
+    }
+
+    // Ensure *everything* thrown from client is normalized with path context
+    const normalized = normalizeApiError(e, { path });
+
     console.error("[API] Request error:", {
       url: path,
       method,
       error: e,
-      message: e?.message,
-      code: e?.code,
-      status: e?.status
+      message: normalized?.message,
+      code: normalized?.code,
+      status: normalized?.status
     });
-    throw e;
+
+    throw normalized;
   }
 }
 

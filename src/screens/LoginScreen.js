@@ -94,47 +94,32 @@ function LoginScreen() {
     } catch (err) {
       console.error("Auth error:", err);
 
-      // Extract error message - handles Error objects and plain objects
+      const errorCode = err?.code;
       const errorMessage =
         err?.message || "Authentication failed. Please check your connection.";
-      const errorCode = err?.code;
 
-      let title = "Error";
-      let message = errorMessage;
-
-      // Handle 401 / INVALID_CREDENTIALS - show friendly message
-      if (
-        errorCode === "INVALID_CREDENTIALS" ||
-        errorMessage.includes("Incorrect email or password")
-      ) {
-        title = "Login Failed";
-        message = "Incorrect email or password. Please try again.";
-        Alert.alert(title, message);
+      if (errorCode === "INVALID_CREDENTIALS") {
+        Alert.alert("Login Failed", "Incorrect email or password. Please try again.");
       } else if (errorCode === "VALIDATION_ERROR") {
-        title = "Invalid Input";
-        Alert.alert(title, message);
+        Alert.alert("Invalid Input", errorMessage);
       } else if (
         errorMessage === "User already exists" ||
-        errorMessage.includes("already registered")
+        String(errorMessage).toLowerCase().includes("already")
       ) {
-        title = "Account Already Exists";
-        message = "This email is already registered. Would you like to login instead?";
-
-        Alert.alert(title, message, [
-          { text: "Cancel", style: "cancel" },
-          {
-            text: "Switch to Login",
-            onPress: () => setAuthMode("login"),
-            style: "default"
-          }
-        ]);
+        Alert.alert(
+          "Account Already Exists",
+          "This email is already registered. Would you like to login instead?",
+          [
+            { text: "Cancel", style: "cancel" },
+            { text: "Switch to Login", onPress: () => setAuthMode("login") }
+          ]
+        );
       } else if (errorCode === "NETWORK_ERROR") {
-        title = "Connection Error";
-        message = "Unable to reach the server. Please check your internet connection.";
-        Alert.alert(title, message);
+        Alert.alert("Connection Error", "Unable to reach the server. Please try again.");
+      } else if (errorCode === "UNAUTHORIZED") {
+        Alert.alert("Session Expired", "Please login again.");
       } else {
-        // Fallback for unknown errors
-        Alert.alert(title, message);
+        Alert.alert("Error", errorMessage);
       }
     } finally {
       setLoading(false);
