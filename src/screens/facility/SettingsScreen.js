@@ -1,189 +1,135 @@
-import React, { useEffect, useState } from "react";
-import {
-  View,
-  Text,
-  TouchableOpacity,
-  StyleSheet,
-  Alert,
-  ActivityIndicator
-} from "react-native";
-import { useAuth } from "@/auth/AuthContext";
-import {
-  getFacilityBillingStatus,
-  startFacilityCheckout,
-  cancelFacilityPlan,
-  getMetrcCredentials
-} from "../../api/facility.js";
-import * as Linking from "expo-linking";
+import React, { useMemo } from "react";
+import { View, Text, TouchableOpacity, StyleSheet, Alert } from "react-native";
+import { useFacility } from "../../facility/FacilityProvider";
+import { can } from "../../facility/roleGates";
+import { handleApiError } from "../../ui/handleApiError";
 
 const SettingsScreen = ({ navigation }) => {
-  const { user, selectedFacilityId, setMode, setSelectedFacilityId, logout } = useAuth();
-  const [billing, setBilling] = useState(null);
-  const [metrcConnected, setMetrcConnected] = useState(false);
-  const [loading, setLoading] = useState(false);
+  const { activeFacilityId, facilityRole, resetFacility } = useFacility();
+  const handlers = useMemo(
+    () => ({
+      onAuthRequired: () => {
+        // TODO: logout + route to login
+        console.log("AUTH_REQUIRED: route to login");
+      },
+      onFacilityDenied: () => {
+        Alert.alert("No Access", "You don't have access to this facility.");
+      },
+      toast: (msg) => Alert.alert("Notice", msg)
+    }),
+    []
+  );
 
-  const loadBilling = async () => {
-    if (!selectedFacilityId) return;
-    setLoading(true);
-    const res = await getFacilityBillingStatus(selectedFacilityId);
-    if (res.success) setBilling(res.data);
-    setLoading(false);
-  };
+  // Facility not selected
+  if (!activeFacilityId) {
+    return (
+      <View style={styles.container}>
+        <View style={styles.card}>
+          <Text style={styles.title}>Settings</Text>
+          <Text style={styles.infoText}>Select a facility to view facility settings.</Text>
+        </View>
+      </View>
+    );
+  }
 
-  useEffect(() => {
-    loadBilling();
-    (async () => {
-      if (!selectedFacilityId) return;
-      const creds = await getMetrcCredentials(selectedFacilityId);
-      setMetrcConnected(!!creds?.success && !!creds?.data?.vendorKey);
-    })();
-  }, [selectedFacilityId]);
+  // NOTE:
+  // Billing + Metrc endpoints are intentionally NOT called here unless they are part of the frozen v1 API contract.
+  // This prevents drift and "phantom" feature work.
 
-  useEffect(() => {
-    const handleUrl = (event) => {
-      const url = event.url || "";
-      if (url.includes("facilityPlan=success")) {
-        loadBilling();
-      }
-    };
-    const subscription = Linking.addEventListener("url", handleUrl);
-    return () => subscription.remove();
-  }, []);
+  const allowTeamInvite = can(facilityRole, "TEAM_INVITE");
 
-  const handleSwitchToPersonal = async () => {
-    await setMode("personal");
-    await setSelectedFacilityId(null);
-    navigation.reset({
-      index: 0,
-      routes: [{ name: "MainTabs" }]
-    });
-  };
-
-  const handleSwitchToCommercial = async () => {
-    await setMode("commercial");
-    await setSelectedFacilityId(null);
-    navigation.reset({
-      index: 0,
-      routes: [{ name: "FacilityStack" }]
-    });
-  };
-
-  const handleSubscribe = async () => {
-    if (!selectedFacilityId) {
-      Alert.alert("Select a facility first");
-      return;
-    }
-    setLoading(true);
-    const res = await startFacilityCheckout(selectedFacilityId);
-    setLoading(false);
-    if (!res.success) {
-      Alert.alert("Checkout failed", res.message || "Try again");
-      return;
-    }
-    const url = res.data?.url;
-    if (url) {
-      Linking.openURL(url);
-      // Also listen for redirect query param when app resumes
-      loadBilling();
-    }
-  };
-
-  const handleCancel = async () => {
-    if (!selectedFacilityId) return;
-    Alert.alert("Cancel Facility Plan", "Cancel at period end?", [
-      { text: "No" },
+  const handleLogout = async () => {
+    Alert.alert("Logout", "Are you sure?", [
+      { text: "Cancel" },
       {
-        text: "Yes",
+        text: "Logout",
         onPress: async () => {
-          setLoading(true);
-          const res = await cancelFacilityPlan(selectedFacilityId);
-          setLoading(false);
-          if (!res.success) {
-            Alert.alert("Cancel failed", res.message || "Try again");
-            return;
+          try {
+            // Reset facility session; auth provider should handle token clearing separately.
+            if (typeof resetFacility === "function") await resetFacility();
+            navigation.reset({ index: 0, routes: [{ name: "Login" }] });
+          } catch (e) {
+            handleApiError(e, handlers);
           }
-          loadBilling();
         }
       }
     ]);
   };
 
-  const statusText = billing?.status || "none";
-  const graceText = billing?.graceUntil
-    ? new Date(billing.graceUntil).toLocaleDateString()
-    : null;
-
-  const renderBillingSection = () => (
-    <View style={styles.card}>
-      <Text style={styles.title}>Facility Plan Billing</Text>
-      {loading ? (
-        <ActivityIndicator color="#0ea5e9" />
-      ) : (
-        <>
-          <Text style={styles.infoText}>Status: {statusText}</Text>
-          {billing?.currentPeriodEnd && (
-            <Text style={styles.infoText}>
-              Renews: {new Date(billing.currentPeriodEnd).toLocaleDateString()}
-            </Text>
-          )}
-          {graceText && <Text style={styles.infoText}>Grace until: {graceText}</Text>}
-          {statusText === "active" || statusText === "trialing" ? (
-            <TouchableOpacity style={styles.button} onPress={handleCancel}>
-              <Text style={styles.buttonText}>Cancel at period end</Text>
-            </TouchableOpacity>
-          ) : (
-            <TouchableOpacity style={styles.button} onPress={handleSubscribe}>
-              <Text style={styles.buttonText}>Subscribe ($50/month)</Text>
-            </TouchableOpacity>
-          )}
-        </>
-      )}
-    </View>
-  );
-
   return (
     <View style={styles.container}>
+      {/* Facility Settings */}
       <View style={styles.card}>
-        <Text style={styles.title}>GrowPath AI Facility Plan</Text>
-        <Text style={styles.subtitle}>$50/month • Metrc-ready facility ops</Text>
+        <Text style={styles.title}>Facility Settings</Text>
+        <Text style={styles.subtitle}>Contract-locked v1 settings</Text>
+
         <View style={styles.section}>
-          <Text style={styles.label}>Current User</Text>
-          <Text style={styles.value}>
-            {user?.displayName || user?.name || user?.email || "Unknown"}
-          </Text>
+          <Text style={styles.label}>Facility Role</Text>
+          <Text style={styles.value}>{facilityRole || "Unknown"}</Text>
         </View>
+
         <View style={styles.section}>
-          <Text style={styles.label}>Metrc Connection</Text>
-          <Text style={styles.value}>
-            {metrcConnected ? "Connected" : "Not connected"}
-          </Text>
-          {!metrcConnected && (
-            <TouchableOpacity
-              style={[styles.button, { marginTop: 12 }]}
-              onPress={() => navigation.navigate("Verification")}
-            >
-              <Text style={styles.buttonText}>Connect Metrc</Text>
-            </TouchableOpacity>
-          )}
+          <Text style={styles.label}>Facility</Text>
+          <Text style={styles.value}>{activeFacilityId}</Text>
         </View>
+
+        {allowTeamInvite ? (
+          <TouchableOpacity
+            style={[styles.button, { marginTop: 12 }]}
+            onPress={() => navigation.navigate("TeamScreen")}
+          >
+            <Text style={styles.buttonText}>Manage Team</Text>
+          </TouchableOpacity>
+        ) : (
+          <TouchableOpacity
+            style={[styles.button, { marginTop: 12 }]}
+            onPress={() => navigation.navigate("TeamScreen")}
+          >
+            <Text style={styles.buttonText}>View Team</Text>
+          </TouchableOpacity>
+        )}
       </View>
 
-      {renderBillingSection()}
+      {/* Metrc */}
+      <View style={styles.card}>
+        <Text style={styles.title}>Metrc Connection</Text>
+        <Text style={styles.infoText}>
+          Metrc integration is not enabled unless its endpoints are included in the frozen v1 contract.
+        </Text>
+        <TouchableOpacity
+          style={[styles.button, { marginTop: 12 }]}
+          onPress={() => navigation.navigate("Verification")}
+        >
+          <Text style={styles.buttonText}>Open Metrc Setup</Text>
+        </TouchableOpacity>
+      </View>
 
+      {/* Billing */}
+      <View style={styles.card}>
+        <Text style={styles.title}>Facility Billing</Text>
+        <Text style={styles.infoText}>
+          Billing actions require canonical backend endpoints (checkout/cancel/status) to be part of the v1 contract.
+        </Text>
+        <TouchableOpacity
+          style={[styles.button, { marginTop: 12 }]}
+          onPress={() => navigation.navigate("BillingAndReporting")}
+        >
+          <Text style={styles.buttonText}>Billing & Reporting</Text>
+        </TouchableOpacity>
+      </View>
+
+      {/* Quick Links */}
       <View style={styles.card}>
         <Text style={styles.title}>Quick Links</Text>
-        <TouchableOpacity
-          style={styles.button}
-          onPress={() => navigation.navigate("SOPTemplates")}
-        >
+
+        <TouchableOpacity style={styles.button} onPress={() => navigation.navigate("SOPTemplates")}>
           <Text style={styles.buttonText}>SOP Templates</Text>
         </TouchableOpacity>
-        <TouchableOpacity
-          style={styles.button}
-          onPress={() => navigation.navigate("AuditLog")}
-        >
+
+        <TouchableOpacity style={styles.button} onPress={() => navigation.navigate("AuditLog")}>
           <Text style={styles.buttonText}>Audit Logs</Text>
         </TouchableOpacity>
+
         <TouchableOpacity
           style={styles.button}
           onPress={() => navigation.navigate("BillingAndReporting")}
@@ -192,46 +138,26 @@ const SettingsScreen = ({ navigation }) => {
         </TouchableOpacity>
       </View>
 
-      <TouchableOpacity style={styles.button} onPress={handleSwitchToPersonal}>
-        <Text style={styles.buttonText}>🏠 Switch to GrowPath AI (Personal)</Text>
-      </TouchableOpacity>
-
-      <TouchableOpacity style={styles.button} onPress={handleSwitchToCommercial}>
-        <Text style={styles.buttonText}>🏢 Switch to Commercial Workspace</Text>
-      </TouchableOpacity>
-
-      <TouchableOpacity
-        style={[styles.button, styles.logoutButton]}
-        onPress={() => {
-          Alert.alert("Logout", "Are you sure?", [
-            { text: "Cancel", onPress: () => {} },
-            {
-              text: "Logout",
-              onPress: () => logout()
-            }
-          ]);
-        }}
-      >
+      {/* Logout */}
+      <TouchableOpacity style={[styles.button, styles.logoutButton]} onPress={handleLogout}>
         <Text style={styles.buttonText}>Logout</Text>
       </TouchableOpacity>
 
+      {/* Status */}
       <View style={styles.card}>
         <Text style={styles.title}>Workspace Status</Text>
         <Text style={styles.infoText}>
-          This facility workspace is in Phase 1. Current focus: rooms, tasks, and team
-          access. Advanced compliance and reporting tools will be added later.
+          Facility workspace is v1. Current focus: rooms, tasks, team, grows, plants, inventory, growlogs.
+          Compliance/reporting integrations come only after endpoints are frozen into the contract.
         </Text>
       </View>
     </View>
   );
 };
+};
 
 const styles = StyleSheet.create({
-  container: {
-    flex: 1,
-    backgroundColor: "#f9fafb",
-    padding: 16
-  },
+  container: { flex: 1, backgroundColor: "#f9fafb", padding: 16 },
   card: {
     backgroundColor: "#fff",
     borderRadius: 8,
@@ -240,61 +166,22 @@ const styles = StyleSheet.create({
     boxShadow: "0px 2px 4px rgba(0,0,0,0.1)",
     elevation: 2
   },
-  title: {
-    fontSize: 18,
-    fontWeight: "600",
-    color: "#1f2937",
-    marginBottom: 4
-  },
-  subtitle: {
-    fontSize: 13,
-    color: "#6b7280",
-    marginBottom: 12,
-    fontWeight: "500"
-  },
-  section: {
-    borderTopWidth: 1,
-    borderTopColor: "#f3f4f6",
-    paddingTop: 12
-  },
-  label: {
-    fontSize: 13,
-    color: "#6b7280",
-    fontWeight: "500",
-    marginBottom: 4
-  },
-  value: {
-    fontSize: 14,
-    color: "#1f2937",
-    fontWeight: "600"
-  },
+  title: { fontSize: 18, fontWeight: "600", color: "#1f2937", marginBottom: 4 },
+  subtitle: { fontSize: 13, color: "#6b7280", marginBottom: 12, fontWeight: "500" },
+  section: { borderTopWidth: 1, borderTopColor: "#f3f4f6", paddingTop: 12, marginTop: 12 },
+  label: { fontSize: 13, color: "#6b7280", fontWeight: "500", marginBottom: 4 },
+  value: { fontSize: 14, color: "#1f2937", fontWeight: "600" },
   button: {
     backgroundColor: "#0ea5e9",
     borderRadius: 8,
     paddingVertical: 12,
     paddingHorizontal: 16,
-    marginBottom: 16,
+    marginBottom: 12,
     alignItems: "center"
   },
-  logoutButton: {
-    backgroundColor: "#ef4444"
-  },
-  buttonText: {
-    color: "#fff",
-    fontSize: 16,
-    fontWeight: "600"
-  },
-  infoText: {
-    fontSize: 14,
-    color: "#374151",
-    lineHeight: 20
-  },
-  feature: {
-    fontSize: 13,
-    color: "#6b7280",
-    marginTop: 4,
-    marginLeft: 8
-  }
+  logoutButton: { backgroundColor: "#ef4444" },
+  buttonText: { color: "#fff", fontSize: 16, fontWeight: "600" },
+  infoText: { fontSize: 14, color: "#374151", lineHeight: 20 }
 });
 
 export default SettingsScreen;

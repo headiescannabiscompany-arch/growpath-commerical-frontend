@@ -1,329 +1,207 @@
-/**
- * FacilityTasks Screen - Basic CRUD Implementation
- */
-
-import React, { useState, useEffect } from "react";
+import React, { useMemo, useState } from "react";
 import {
   View,
   Text,
-  ScrollView,
-  TouchableOpacity,
-  StyleSheet,
-  TextInput,
-  Modal,
-  Alert,
+  Button,
   ActivityIndicator,
+  FlatList,
+  TextInput,
+  Pressable,
+  Modal,
+  StyleSheet,
+  ScrollView,
   RefreshControl
 } from "react-native";
-import { useAuth } from "@/auth/AuthContext";
-import { hasGlobalFacilityAccess } from "../../types/facility.js";
-import { getTasks, createCustomTask, completeTask, deleteTask } from "../../api/tasks.js";
+import { useFacility } from "../../facility/FacilityProvider";
+import { can } from "../../facility/roleGates";
+import { handleApiError } from "../../ui/handleApiError";
+import { useTasks } from "../../hooks/useTasks";
 
-const FacilityTasks = () => {
-  const { selectedFacilityId, facilitiesAccess, token } = useAuth();
-  const [activeTab, setActiveTab] = useState("all");
-  const [tasks, setTasks] = useState([]);
-  const [loading, setLoading] = useState(true);
-  const [refreshing, setRefreshing] = useState(false);
+// Canonical Tasks screen:
+// - No direct API imports
+// - Facility context from useFacility()
+// - Role gating via can()
+// - Error handling via handleApiError()
+
+export default function FacilityTasks() {
+  const { activeFacilityId, facilityRole } = useFacility();
+  const { data, isLoading, error, refetch, createTask, creating } = useTasks();
+
+  // Minimal local UI state for creating tasks
+  const [title, setTitle] = useState("");
+  const [description, setDescription] = useState("");
   const [showCreateModal, setShowCreateModal] = useState(false);
-  const [newTaskTitle, setNewTaskTitle] = useState("");
-  const [newTaskDesc, setNewTaskDesc] = useState("");
-  const today = new Date();
-  const defaultDueDate = `${today.getFullYear()}-${String(today.getMonth() + 1).padStart(
-    2,
-    "0"
-  )}-${String(today.getDate()).padStart(2, "0")}`;
-  const [newTaskDueDate, setNewTaskDueDate] = useState(defaultDueDate);
-  const [newTaskAssignee, setNewTaskAssignee] = useState("");
-  const [newTaskRoom, setNewTaskRoom] = useState("");
-  const [creating, setCreating] = useState(false);
-  const currentUserId = useAuth()?.user?._id || useAuth()?.user?.id || null;
 
-  const userAccess = facilitiesAccess?.find((f) => f.facilityId === selectedFacilityId);
-  const userRole = userAccess?.role;
-  const isAdmin = userRole ? hasGlobalFacilityAccess(userRole) : false;
-
-  // Entitlement gating: Only allow admin/lead roles to create, complete, or delete tasks
-  const notEntitled = !isAdmin;
-
-  useEffect(() => {
-    loadTasks();
-  }, [selectedFacilityId]);
-
-  const loadTasks = async () => {
-    setLoading(true);
-    try {
-      const result = await getTasks(token);
-      setTasks(Array.isArray(result) ? result : []);
-    } catch (error) {
-      console.log("Error loading tasks:", error);
-    } finally {
-      setLoading(false);
-    }
-  };
-
-  const onRefresh = async () => {
-    setRefreshing(true);
-    await loadTasks();
-    setRefreshing(false);
-  };
-
-  const handleCreateTask = async () => {
-    if (notEntitled) {
-      Alert.alert(
-        "Access Denied",
-        "You do not have permission to create tasks in this facility."
-      );
-      return;
-    }
-    if (!newTaskTitle.trim()) {
-      Alert.alert("Error", "Task title is required");
-      return;
-    }
-    setCreating(true);
-    try {
-      let finalDate = newTaskDueDate;
-      if (/^\d{4}-\d{2}-\d{2}$/.test(newTaskDueDate)) {
-        const [y, m, d] = newTaskDueDate.split("-").map(Number);
-        finalDate = new Date(y, m - 1, d).toISOString();
+  const handlers = useMemo(
+    () => ({
+      onAuthRequired: () => {
+        // TODO: call your logout + navigate to login
+        console.log("AUTH_REQUIRED: route to login");
+      },
+      onFacilityDenied: () => {
+        // TODO: route to a "No access to this facility" screen, or show inline state
+        console.log("FACILITY_ACCESS_DENIED: show no-access state");
+      },
+      toast: (msg: string) => {
+        // TODO: replace with your toast implementation
+        console.log(msg);
       }
+    }),
+    []
+  );
 
-      await createCustomTask(
-        {
-          title: newTaskTitle,
-          description: newTaskDesc,
-          dueDate: finalDate,
-          facilityId: selectedFacilityId,
-          assignedTo: newTaskAssignee?.trim() || currentUserId,
-          roomId: newTaskRoom?.trim() || undefined
-        },
-        token
-      );
-
-      setShowCreateModal(false);
-      setNewTaskTitle("");
-      setNewTaskDesc("");
-      setNewTaskDueDate(defaultDueDate);
-      setNewTaskAssignee("");
-      setNewTaskRoom("");
-      await loadTasks();
-    } catch (error) {
-      Alert.alert("Error", "Failed to create task");
-    } finally {
-      setCreating(false);
-    }
-  };
-
-  const handleCompleteTask = async (taskId) => {
-    if (notEntitled) {
-      Alert.alert(
-        "Access Denied",
-        "You do not have permission to complete tasks in this facility."
-      );
-      return;
-    }
-    if (!taskId) {
-      Alert.alert("Error", "Task is missing an ID and cannot be completed.");
-      return;
-    }
-    try {
-      await completeTask(taskId, token);
-      await loadTasks();
-    } catch (error) {
-      Alert.alert("Error", "Failed to complete task");
-    }
-  };
-
-  const handleDeleteTask = async (taskId) => {
-    if (notEntitled) {
-      Alert.alert(
-        "Access Denied",
-        "You do not have permission to delete tasks in this facility."
-      );
-      return;
-    }
-    Alert.alert("Delete Task", "Are you sure you want to delete this task?", [
-      { text: "Cancel", style: "cancel" },
-      {
-        text: "Delete",
-        style: "destructive",
-        onPress: async () => {
-          try {
-            await deleteTask(taskId, token);
-            await loadTasks();
-          } catch (error) {
-            Alert.alert("Error", "Failed to delete task");
-          }
-        }
-      }
-    ]);
-  };
-
-  const tabs = [
-    { id: "all", label: "All Tasks", adminOnly: false },
-    { id: "byRoom", label: "By Room", adminOnly: true },
-    { id: "byUser", label: "By User", adminOnly: true },
-    { id: "verify", label: "Awaiting Verify", adminOnly: true }
-  ];
-
-  const visibleTabs = tabs.filter((tab) => !tab.adminOnly || isAdmin);
-
-  const pendingTasks = tasks.filter((t) => !t.completed);
-  const completedTasks = tasks.filter((t) => t.completed);
-
-  if (loading && !refreshing) {
+  // Facility not selected yet
+  if (!activeFacilityId) {
     return (
       <View style={styles.container}>
-        <ActivityIndicator size="large" color="#0ea5e9" />
+        <Text style={styles.heading}>Tasks</Text>
+        <Text style={styles.placeholderText}>Select a facility to view tasks.</Text>
+      </View>
+    );
+  }
+
+  // Standardized error handling
+  if (error) handleApiError(error, handlers);
+
+  const tasks = Array.isArray(data) ? data : [];
+
+  const allowCreate = can(facilityRole, "TASKS_CREATE");
+  const allowDelete = can(facilityRole, "TASKS_DELETE");
+  const allowUpdate = can(facilityRole, "TASKS_UPDATE");
+  const allowComplete = can(facilityRole, "TASKS_UPDATE"); // Complete is an update action
+
+  async function onCreate() {
+    if (!allowCreate) return handlers.toast("You don't have permission to create tasks.");
+    const t = title.trim();
+    if (!t) return handlers.toast("Enter a task title.");
+    try {
+      await createTask({ title: t, description: description.trim() || undefined });
+      setTitle("");
+      setDescription("");
+      setShowCreateModal(false);
+    } catch (e) {
+      handleApiError(e, handlers);
+    }
+  }
+
+  const pendingTasks = tasks.filter((t: any) => !t.completed);
+  const completedTasks = tasks.filter((t: any) => t.completed);
+
+  function renderTaskItem(item: any, section: "pending" | "completed") {
+    const taskTitle = item?.title ?? item?.name ?? "(untitled)";
+    const taskId = item?.id ?? item?._id ?? "";
+
+    return (
+      <View key={taskId} style={styles.taskItem}>
+        <View style={styles.taskContent}>
+          <Text style={styles.taskTitle}>{taskTitle}</Text>
+          {item?.description ? (
+            <Text style={styles.taskDesc}>{item.description}</Text>
+          ) : null}
+          {item?.dueDate || item?.dueAt ? (
+            <Text style={styles.taskMeta}>
+              Due: {new Date(item.dueDate || item.dueAt).toLocaleDateString()}
+            </Text>
+          ) : null}
+          {item?.assignedTo ? (
+            <Text style={styles.taskMeta}>
+              Assigned to: {item.assignedTo.displayName || item.assignedTo.email || item.assignedTo}
+            </Text>
+          ) : null}
+        </View>
+
+        {/* Action row */}
+        <View style={styles.actionRow}>
+          {section === "pending" && allowComplete ? (
+            <Pressable
+              onPress={() => handlers.toast(`Mark as complete for ${taskId} (hook mutation needed)`)}
+              style={styles.actionButton}
+            >
+              <Text style={styles.actionButtonText}>✓</Text>
+            </Pressable>
+          ) : null}
+
+          {allowUpdate ? (
+            <Pressable
+              onPress={() => handlers.toast(`Edit flow for ${taskId} (modal/navigation needed)`)}
+              style={styles.actionButton}
+            >
+              <Text style={styles.actionButtonText}>✎</Text>
+            </Pressable>
+          ) : null}
+
+          {allowDelete ? (
+            <Pressable
+              onPress={() => handlers.toast(`Delete flow for ${taskId} (hook mutation needed)`)}
+              style={styles.actionButton}
+            >
+              <Text style={styles.actionButtonText}>×</Text>
+            </Pressable>
+          ) : null}
+        </View>
       </View>
     );
   }
 
   return (
     <View style={styles.container}>
-      {/* Add Task Button */}
-      <TouchableOpacity
-        style={[styles.addButton, notEntitled && styles.disabledButton]}
-        onPress={() => {
-          if (notEntitled) {
-            Alert.alert(
-              "Access Denied",
-              "You do not have permission to create tasks in this facility."
-            );
-            return;
-          }
-          setShowCreateModal(true);
-        }}
-        disabled={notEntitled}
-      >
-        <Text style={styles.addButtonText}>+ Add Task</Text>
-      </TouchableOpacity>
-
-      {/* Tab Navigation */}
-      <View style={styles.tabBar}>
-        <ScrollView horizontal showsHorizontalScrollIndicator={false}>
-          {visibleTabs.map((tab) => (
-            <TouchableOpacity
-              key={tab.id}
-              style={[styles.tab, activeTab === tab.id && styles.tabActive]}
-              onPress={() => setActiveTab(tab.id)}
-            >
-              <Text
-                style={[styles.tabText, activeTab === tab.id && styles.tabTextActive]}
-              >
-                {tab.label}
-              </Text>
-            </TouchableOpacity>
-          ))}
-        </ScrollView>
+      {/* Header with refresh */}
+      <View style={styles.header}>
+        <Text style={styles.heading}>Tasks</Text>
+        <Button title="Refresh" onPress={() => refetch()} />
       </View>
 
-      {/* Content */}
-      <ScrollView
-        style={styles.content}
-        refreshControl={<RefreshControl refreshing={refreshing} onRefresh={onRefresh} />}
-      >
-        {activeTab === "all" && (
-          <>
-            {pendingTasks.length === 0 && completedTasks.length === 0 ? (
-              <View style={styles.emptyState}>
-                <Text style={styles.emptyIcon}>📋</Text>
-                <Text style={styles.emptyText}>No tasks yet</Text>
-                <Text style={styles.emptySubtext}>Tap + Add Task to create one</Text>
-              </View>
-            ) : (
-              <>
-                {pendingTasks.length > 0 && (
-                  <View style={styles.section}>
-                    <Text style={styles.sectionTitle}>
-                      Pending ({pendingTasks.length})
-                    </Text>
-                    {pendingTasks.map((task) => (
-                      <View key={task._id} style={styles.taskItem}>
-                        <TouchableOpacity
-                          style={styles.taskCheckbox}
-                          onPress={() => handleCompleteTask(task._id)}
-                          disabled={notEntitled}
-                        >
-                          <Text style={styles.checkboxEmpty}>○</Text>
-                        </TouchableOpacity>
-                        <View style={styles.taskContent}>
-                          <Text style={styles.taskTitle}>{task.title}</Text>
-                          {task.description && (
-                            <Text style={styles.taskDesc}>{task.description}</Text>
-                          )}
-                          {task.dueDate && (
-                            <Text style={styles.taskMeta}>
-                              Due: {new Date(task.dueDate).toLocaleDateString()}
-                            </Text>
-                          )}
-                          {task.assignedTo && (
-                            <Text style={styles.taskMeta}>
-                              Assigned to:{" "}
-                              {task.assignedTo.displayName ||
-                                task.assignedTo.email ||
-                                task.assignedTo}
-                            </Text>
-                          )}
-                        </View>
-                        <TouchableOpacity
-                          style={styles.deleteButton}
-                          onPress={() => handleDeleteTask(task._id)}
-                          disabled={notEntitled}
-                        >
-                          <Text style={styles.deleteButtonText}>×</Text>
-                        </TouchableOpacity>
-                      </View>
-                    ))}
-                  </View>
-                )}
+      {/* Create button */}
+      {allowCreate ? (
+        <Pressable
+          style={styles.createButton}
+          onPress={() => setShowCreateModal(true)}
+        >
+          <Text style={styles.createButtonText}>+ Add Task</Text>
+        </Pressable>
+      ) : null}
 
-                {completedTasks.length > 0 && (
-                  <View style={styles.section}>
-                    <Text style={styles.sectionTitle}>
-                      Completed ({completedTasks.length})
-                    </Text>
-                    {completedTasks.map((task) => (
-                      <View
-                        key={task._id}
-                        style={[styles.taskItem, styles.taskCompleted]}
-                      >
-                        <View style={styles.taskCheckbox}>
-                          <Text style={styles.checkboxChecked}>✓</Text>
-                        </View>
-                        <View style={styles.taskContent}>
-                          <Text style={[styles.taskTitle, styles.taskTitleCompleted]}>
-                            {task.title}
-                          </Text>
-                        </View>
-                        <TouchableOpacity
-                          style={styles.deleteButton}
-                          onPress={() => handleDeleteTask(task._id)}
-                          disabled={notEntitled}
-                        >
-                          <Text style={styles.deleteButtonText}>×</Text>
-                        </TouchableOpacity>
-                      </View>
-                    ))}
-                  </View>
+      {/* Task list or empty state */}
+      <ScrollView
+        style={styles.listContainer}
+        refreshControl={<RefreshControl refreshing={isLoading} onRefresh={refetch} />}
+      >
+        {isLoading && !tasks.length ? (
+          <ActivityIndicator style={{ marginTop: 20 }} />
+        ) : tasks.length === 0 ? (
+          <View style={styles.emptyState}>
+            <Text style={styles.emptyIcon}>📋</Text>
+            <Text style={styles.emptyText}>No tasks yet</Text>
+            {allowCreate && (
+              <Text style={styles.emptySubtext}>Tap + Add Task to create one</Text>
+            )}
+          </View>
+        ) : (
+          <>
+            {pendingTasks.length > 0 && (
+              <View style={styles.section}>
+                <Text style={styles.sectionTitle}>
+                  Pending ({pendingTasks.length})
+                </Text>
+                {pendingTasks.map((task: any) => renderTaskItem(task, "pending"))}
+              </View>
+            )}
+
+            {completedTasks.length > 0 && (
+              <View style={styles.section}>
+                <Text style={styles.sectionTitle}>
+                  Completed ({completedTasks.length})
+                </Text>
+                {completedTasks.map((task: any) =>
+                  renderTaskItem({ ...task, title: `[✓] ${task.title}` }, "completed")
                 )}
-              </>
+              </View>
             )}
           </>
         )}
-
-        {activeTab !== "all" && (
-          <View style={styles.placeholderContainer}>
-            <Text style={styles.placeholderIcon}>🚧</Text>
-            <Text style={styles.placeholderTitle}>Coming in Phase 2</Text>
-            <Text style={styles.placeholderText}>
-              Advanced filtering and grouping features will be available soon.
-            </Text>
-          </View>
-        )}
       </ScrollView>
 
-      {/* Create Task Modal */}
+      {/* Create task modal */}
       <Modal
         visible={showCreateModal}
         transparent
@@ -333,122 +211,151 @@ const FacilityTasks = () => {
         <View style={styles.modalOverlay}>
           <View style={styles.modalContent}>
             <Text style={styles.modalTitle}>Create New Task</Text>
+
             <TextInput
               style={styles.input}
               placeholder="Task title"
-              value={newTaskTitle}
-              onChangeText={setNewTaskTitle}
+              value={title}
+              onChangeText={setTitle}
+              placeholderTextColor="#999"
             />
+
             <TextInput
               style={[styles.input, styles.textArea]}
               placeholder="Description (optional)"
-              value={newTaskDesc}
-              onChangeText={setNewTaskDesc}
+              value={description}
+              onChangeText={setDescription}
               multiline
               numberOfLines={3}
+              placeholderTextColor="#999"
             />
-            <TextInput
-              style={styles.input}
-              placeholder="Assign to (email or name) — optional"
-              value={newTaskAssignee}
-              onChangeText={setNewTaskAssignee}
-              autoCapitalize="none"
-            />
-            <TextInput
-              style={styles.input}
-              placeholder="Room (id or name) — optional"
-              value={newTaskRoom}
-              onChangeText={setNewTaskRoom}
-            />
-            <TextInput
-              style={styles.input}
-              placeholder="Due date (YYYY-MM-DD)"
-              value={newTaskDueDate}
-              onChangeText={setNewTaskDueDate}
-            />
+
             <View style={styles.modalButtons}>
-              <TouchableOpacity
+              <Pressable
                 style={[styles.modalButton, styles.cancelButton]}
                 onPress={() => {
                   setShowCreateModal(false);
-                  setNewTaskTitle("");
-                  setNewTaskDesc("");
-                  setNewTaskAssignee("");
-                  setNewTaskRoom("");
-                  setNewTaskDueDate(defaultDueDate);
+                  setTitle("");
+                  setDescription("");
                 }}
               >
                 <Text style={styles.cancelButtonText}>Cancel</Text>
-              </TouchableOpacity>
-              <TouchableOpacity
+              </Pressable>
+
+              <Pressable
                 style={[
                   styles.modalButton,
-                  styles.createButton,
-                  creating && styles.disabledButton,
-                  notEntitled && styles.disabledButton
+                  styles.confirmButton,
+                  creating && styles.disabledButton
                 ]}
-                onPress={handleCreateTask}
-                disabled={creating || notEntitled}
+                onPress={onCreate}
+                disabled={creating}
               >
-                <Text style={styles.createButtonText}>
+                <Text style={styles.confirmButtonText}>
                   {creating ? "Creating..." : "Create"}
                 </Text>
-              </TouchableOpacity>
+              </Pressable>
             </View>
           </View>
         </View>
       </Modal>
     </View>
   );
-};
+}
 
 const styles = StyleSheet.create({
   container: {
     flex: 1,
     backgroundColor: "#f9fafb"
   },
-  addButton: {
+  header: {
+    flexDirection: "row",
+    justifyContent: "space-between",
+    alignItems: "center",
+    paddingHorizontal: 16,
+    paddingTop: 16,
+    paddingBottom: 12
+  },
+  heading: {
+    fontSize: 18,
+    fontWeight: "700",
+    color: "#1f2937"
+  },
+  createButton: {
     backgroundColor: "#0ea5e9",
-    margin: 16,
-    marginBottom: 8,
-    padding: 14,
+    marginHorizontal: 16,
+    marginVertical: 8,
+    paddingVertical: 12,
     borderRadius: 8,
     alignItems: "center"
   },
-  addButtonText: {
+  createButtonText: {
     color: "#fff",
     fontSize: 16,
     fontWeight: "600"
   },
-  tabBar: {
-    backgroundColor: "#fff",
-    borderBottomWidth: 1,
-    borderBottomColor: "#e5e7eb",
+  listContainer: {
+    flex: 1,
     paddingHorizontal: 16
   },
-  tab: {
+  section: {
+    marginVertical: 16
+  },
+  sectionTitle: {
+    fontSize: 16,
+    fontWeight: "600",
+    color: "#1f2937",
+    marginBottom: 12
+  },
+  taskItem: {
+    flexDirection: "row",
+    alignItems: "flex-start",
+    backgroundColor: "#fff",
     paddingVertical: 12,
-    paddingHorizontal: 16,
-    marginRight: 8
+    paddingHorizontal: 12,
+    borderRadius: 8,
+    marginBottom: 8,
+    borderLeftWidth: 3,
+    borderLeftColor: "#0ea5e9"
   },
-  tabActive: {
-    borderBottomWidth: 2,
-    borderBottomColor: "#0ea5e9"
-  },
-  tabText: {
-    fontSize: 14,
-    color: "#6b7280"
-  },
-  tabTextActive: {
-    color: "#0ea5e9",
-    fontWeight: "600"
-  },
-  content: {
+  taskContent: {
     flex: 1,
-    padding: 16
+    marginHorizontal: 12
+  },
+  taskTitle: {
+    fontSize: 15,
+    fontWeight: "500",
+    color: "#1f2937",
+    marginBottom: 4
+  },
+  taskDesc: {
+    fontSize: 13,
+    color: "#6b7280",
+    marginBottom: 4
+  },
+  taskMeta: {
+    fontSize: 12,
+    color: "#9ca3af"
+  },
+  actionRow: {
+    flexDirection: "row",
+    gap: 8
+  },
+  actionButton: {
+    paddingVertical: 6,
+    paddingHorizontal: 10,
+    borderWidth: 1,
+    borderColor: "#d1d5db",
+    borderRadius: 6,
+    alignItems: "center",
+    justifyContent: "center"
+  },
+  actionButtonText: {
+    fontSize: 16,
+    color: "#374151",
+    fontWeight: "500"
   },
   emptyState: {
-    flex: 1,
     justifyContent: "center",
     alignItems: "center",
     paddingVertical: 60
@@ -467,103 +374,23 @@ const styles = StyleSheet.create({
     fontSize: 14,
     color: "#9ca3af"
   },
-  section: {
-    marginBottom: 24
-  },
-  sectionTitle: {
-    fontSize: 16,
-    fontWeight: "600",
-    color: "#1f2937",
-    marginBottom: 12
-  },
-  taskItem: {
-    flexDirection: "row",
-    alignItems: "flex-start",
-    backgroundColor: "#fff",
-    padding: 12,
-    borderRadius: 8,
-    marginBottom: 8,
-    borderLeftWidth: 3,
-    borderLeftColor: "#0ea5e9"
-  },
-  taskCompleted: {
-    opacity: 0.6,
-    borderLeftColor: "#10b981"
-  },
-  taskCheckbox: {
-    marginRight: 12,
-    marginTop: 2
-  },
-  checkboxEmpty: {
-    fontSize: 20,
-    color: "#9ca3af"
-  },
-  checkboxChecked: {
-    fontSize: 20,
-    color: "#10b981"
-  },
-  taskContent: {
-    flex: 1
-  },
-  taskTitle: {
-    fontSize: 15,
-    fontWeight: "500",
-    color: "#1f2937",
-    marginBottom: 4
-  },
-  taskTitleCompleted: {
-    textDecorationLine: "line-through",
-    color: "#6b7280"
-  },
-  taskDesc: {
-    fontSize: 13,
-    color: "#6b7280",
-    marginBottom: 4
-  },
-  taskMeta: {
-    fontSize: 12,
-    color: "#9ca3af"
-  },
-  deleteButton: {
-    marginLeft: 8,
-    padding: 4
-  },
-  deleteButtonText: {
-    fontSize: 24,
-    color: "#ef4444",
-    fontWeight: "300"
-  },
-  placeholderContainer: {
-    flex: 1,
-    justifyContent: "center",
-    alignItems: "center",
-    paddingVertical: 60
-  },
-  placeholderIcon: {
-    fontSize: 48,
-    marginBottom: 12
-  },
-  placeholderTitle: {
-    fontSize: 18,
-    fontWeight: "600",
-    color: "#6b7280",
-    marginBottom: 8
-  },
   placeholderText: {
     fontSize: 14,
     color: "#9ca3af",
-    textAlign: "center"
+    marginTop: 12
   },
   modalOverlay: {
     flex: 1,
     backgroundColor: "rgba(0,0,0,0.5)",
-    justifyContent: "center",
-    padding: 20
+    justifyContent: "flex-end"
   },
   modalContent: {
     backgroundColor: "#fff",
-    borderRadius: 12,
-    padding: 20
+    borderTopLeftRadius: 20,
+    borderTopRightRadius: 20,
+    paddingHorizontal: 16,
+    paddingVertical: 20,
+    paddingBottom: 40
   },
   modalTitle: {
     fontSize: 20,
@@ -575,9 +402,11 @@ const styles = StyleSheet.create({
     borderWidth: 1,
     borderColor: "#d1d5db",
     borderRadius: 8,
-    padding: 12,
+    paddingHorizontal: 12,
+    paddingVertical: 10,
     fontSize: 16,
-    marginBottom: 12
+    marginBottom: 12,
+    color: "#1f2937"
   },
   textArea: {
     height: 80,
@@ -586,11 +415,11 @@ const styles = StyleSheet.create({
   modalButtons: {
     flexDirection: "row",
     gap: 12,
-    marginTop: 8
+    marginTop: 16
   },
   modalButton: {
     flex: 1,
-    padding: 12,
+    paddingVertical: 12,
     borderRadius: 8,
     alignItems: "center"
   },
@@ -601,10 +430,10 @@ const styles = StyleSheet.create({
     color: "#374151",
     fontWeight: "600"
   },
-  createButton: {
+  confirmButton: {
     backgroundColor: "#0ea5e9"
   },
-  createButtonText: {
+  confirmButtonText: {
     color: "#fff",
     fontWeight: "600"
   },
@@ -612,5 +441,3 @@ const styles = StyleSheet.create({
     opacity: 0.5
   }
 });
-
-export default FacilityTasks;
