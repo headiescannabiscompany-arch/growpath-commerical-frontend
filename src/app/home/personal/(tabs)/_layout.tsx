@@ -51,6 +51,13 @@ export default function PersonalTabsLayout() {
           tabBarIcon: tabIcon("person-outline")
         }}
       />
+      <Tabs.Screen
+        name="ai"
+        options={{
+          title: "AI",
+          tabBarIcon: tabIcon("sparkles-outline")
+        }}
+      />
     </Tabs>
   );
 }

@@ -1,6 +1,7 @@
 import React, { useMemo, useState } from "react";
 import { View, Text, StyleSheet, TextInput, Pressable } from "react-native";
 import BackButton from "@/components/nav/BackButton";
+import { calcVpdKpa, toCelsius, type TempUnit } from "@/tools/vpd";
 
 const styles = StyleSheet.create({
   container: { flex: 1, padding: 20, backgroundColor: "#fff" },
@@ -41,18 +42,8 @@ const styles = StyleSheet.create({
   hint: { marginTop: 6, fontSize: 12, color: "#64748B" }
 });
 
-function toCelsius(temp: number, unit: "C" | "F") {
-  return unit === "C" ? temp : (temp - 32) * (5 / 9);
-}
-
-// Tetens SVP (kPa), VPD = SVP * (1 - RH)
-function calcVpdKpa(tempC: number, rh: number) {
-  const svp = 0.6108 * Math.exp((17.27 * tempC) / (tempC + 237.3));
-  return svp * (1 - rh / 100);
-}
-
 export default function VpdToolScreen() {
-  const [unit, setUnit] = useState<"C" | "F">("F"); // defaulting to F
+  const [unit, setUnit] = useState<TempUnit>("F"); // defaulting to F
   const [tempText, setTempText] = useState("77");
   const [rhText, setRhText] = useState("60");
 
@@ -65,7 +56,7 @@ export default function VpdToolScreen() {
     if (rh < 0 || rh > 100) return { vpd: null, valid: false, tempC: null as any };
 
     const c = toCelsius(t, unit);
-    const v = calcVpdKpa(c, rh);
+    const v = calcVpdKpa(t, unit, rh);
     if (!Number.isFinite(v)) return { vpd: null, valid: false, tempC: null as any };
 
     return { vpd: v, valid: true, tempC: c };
