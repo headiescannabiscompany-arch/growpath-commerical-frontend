@@ -17,10 +17,15 @@ import ScreenContainer from "../components/ScreenContainer.js";
 import PrimaryButton from "../components/PrimaryButton.js";
 import { useAuth } from "@/auth/AuthContext";
 import { colors, radius, spacing } from "../theme/theme.js";
-import { login as apiLogin, signup as apiSignup } from "../api/auth.js";
 
 function LoginScreen({ navigation }) {
-  const { login: contextLogin, token, user, mode: globalMode } = useAuth();
+  const {
+    login: contextLogin,
+    signup: contextSignup,
+    token,
+    user,
+    mode: globalMode
+  } = useAuth();
   const [authMode, setAuthMode] = useState("login"); // "login" or "signup"
   const [selectedMode, setSelectedMode] = useState(globalMode || "personal"); // "personal", "facility", "commercial"
   const [email, setEmail] = useState("");
@@ -65,35 +70,25 @@ function LoginScreen({ navigation }) {
 
     setLoading(true);
     try {
-      let authResult;
-
       if (authMode === "login") {
-        authResult = await apiLogin(email.trim(), password.trim());
+        // Call context login, which wraps API errors properly
+        await contextLogin(email.trim(), password.trim());
       } else {
         // Get business type from AsyncStorage
         // @ts-ignore
         const businessType = await AsyncStorage.getItem("businessType");
-        authResult = await apiSignup(
-          email.trim(),
-          password.trim(),
-          displayName.trim(),
-          businessType || "cultivator"
-        );
+        // Create signup body and call context signup
+        await contextSignup({
+          email: email.trim(),
+          password: password.trim(),
+          displayName: displayName.trim(),
+          businessType: businessType || "cultivator"
+        });
       }
 
-      const { user, token } = authResult || {};
-
-      if (!token || !user) {
-        throw new Error("Login response missing credentials");
-      }
-
-      // Update context state (without waiting for AsyncStorage on web)
-      const authToken = token;
+      // Navigation will be handled by useEffect after state updates
       // @ts-ignore
       await AsyncStorage.setItem("HAS_LOGGED_IN_BEFORE", "true");
-      contextLogin(authToken, user); // Don't await - let it run async
-
-      // Navigation will be handled by useEffect
     } catch (err) {
       console.error("Auth error:", err);
 

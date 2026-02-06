@@ -67,21 +67,38 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
   });
 
   async function login(email: string, password: string) {
-    const res = await apiLogin({ email, password });
-    setToken(res.token);
-    setAuthToken(res.token); // critical
-    setUser(res.user);
-    await persistToken(res.token);
-    logEvent("USER_LOGIN");
+    try {
+      const res = await apiLogin({ email, password });
+      setToken(res.token);
+      setAuthToken(res.token); // critical
+      setUser(res.user);
+      await persistToken(res.token);
+      logEvent("USER_LOGIN");
+    } catch (err: any) {
+      // Extract error message from normalized error or raw error
+      const message =
+        err?.message || err?.data?.error?.message || "Invalid email or password";
+
+      // Throw as Error object (not plain object) so caller can handle it
+      throw new Error(message);
+    }
   }
 
   async function signup(body: SignupBody) {
-    const res = await apiSignup(body);
-    setToken(res.token);
-    setAuthToken(res.token); // critical
-    setUser(res.user);
-    await persistToken(res.token);
-    logEvent("USER_REGISTER");
+    try {
+      const res = await apiSignup(body);
+      setToken(res.token);
+      setAuthToken(res.token); // critical
+      setUser(res.user);
+      await persistToken(res.token);
+      logEvent("USER_REGISTER");
+    } catch (err: any) {
+      // Extract error message from normalized error or raw error
+      const message = err?.message || err?.data?.error?.message || "Signup failed";
+
+      // Throw as Error object (not plain object) so caller can handle it
+      throw new Error(message);
+    }
   }
 
   async function logout() {
