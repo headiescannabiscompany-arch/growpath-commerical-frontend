@@ -1,9 +1,13 @@
+﻿import type { ApiError } from "@/api/errors";
+
 type ToastLike = {
   toast?: (opts: { title?: string; message?: string; type?: string }) => void;
 };
 
 type Handlers = {
   ui?: ToastLike;
+  onAuthRequired?: () => void;
+  onFacilityDenied?: () => void;
 };
 
 let handlers: Handlers | null = null;
@@ -12,102 +16,45 @@ export function setApiErrorHandlers(next: Handlers) {
   handlers = next || null;
 }
 
-export function handleApiError(err: any, fallbackMessage = "Something went wrong.") {
-  const message =
-    err?.message || err?.error?.message || err?.error?.code || fallbackMessage;
-
-  // Try toast if present
-  try {
-    const t = handlers?.ui?.toast;
-    if (typeof t === "function") {
-      t({ title: "Error", message, type: "error" });
-      return message;
-    }
-  } catch {
-    // ignore
-  }
-
-  // eslint-disable-next-line no-console
-  console.error("[API ERROR]", err);
-
-  return message;
-}
-type ToastLike = {
-  toast?: (opts: { title?: string; message?: string; type?: string }) => void;
-};
-
-type Handlers = {
-  ui?: ToastLike;
-};
-
-let handlers: Handlers | null = null;
-
-export function setApiErrorHandlers(next: Handlers) {
-  handlers = next || null;
+function bestMessage(err: any, fallback: string) {
+  return (
+    err?.message ||
+    err?.error?.message ||
+    err?.error?.code ||
+    err?.code ||
+    fallback
+  );
 }
 
 export function handleApiError(err: any, fallbackMessage = "Something went wrong.") {
-  const message =
-    err?.message || err?.error?.message || err?.error?.code || fallbackMessage;
-
+  // Never crash, ever.
   try {
-    const t = handlers?.ui?.toast;
-    if (typeof t === "function") {
-      t({ title: "Error", message, type: "error" });
+    const e = err as ApiError | any;
+
+    // Optional routing hooks
+    if (e?.code === "AUTH_REQUIRED") {
+      handlers?.onAuthRequired?.();
+    } else if (e?.code === "FACILITY_ACCESS_DENIED") {
+      handlers?.onFacilityDenied?.();
+    }
+
+    const message = bestMessage(e, fallbackMessage);
+
+    // Optional toast
+    const toast = handlers?.ui?.toast;
+    if (typeof toast === "function") {
+      toast({ title: "Error", message, type: "error" });
       return message;
     }
-  } catch {
-    // ignore
-  }
 
-  // eslint-disable-next-line no-console
-  console.error("[API ERROR]", err);
+    // Dev visibility, no UI dependency
+    // eslint-disable-next-line no-console
+    console.error("[API ERROR]", e);
 
-  return message;
-}
-import type { ApiError } from "../api/errors";
-import { Alert } from "react-native";
-
-type Handlers = {
-  onAuthRequired?: () => void; // logout + navigate to login
-  onFacilityDenied?: () => void; // show "no access" screen
-  toast?: (msg: string) => void;
-};
-
-const defaultHandlers: Handlers = {
-  onAuthRequired: () => Alert.alert("Auth Required", "Please log in again."),
-  onFacilityDenied: () =>
-    Alert.alert("Access Denied", "You don't have access to this facility."),
-  toast: (msg: string) => Alert.alert("Info", msg)
-};
-
-export function handleApiError(err: any, h?: Handlers) {
-  const handlers = { ...defaultHandlers, ...h };
-  const e = err as ApiError;
-
-  switch (e?.code) {
-    case "AUTH_REQUIRED":
-      handlers.onAuthRequired?.();
-      return;
-
-    case "FACILITY_ACCESS_DENIED":
-      handlers.onFacilityDenied?.();
-      return;
-
-    case "ROLE_NOT_ALLOWED":
-      handlers.toast?.("You don’t have permission to do that.");
-      return;
-
-    case "NOT_FOUND":
-      handlers.toast?.("Not found.");
-      return;
-
-    case "RATE_LIMITED":
-      handlers.toast?.("Rate limited. Try again in a moment.");
-      return;
-
-    default:
-      handlers.toast?.(e?.message || "Something went wrong.");
-      return;
+    return message;
+  } catch (crashErr) {
+    // eslint-disable-next-line no-console
+    console.error("[API ERROR] handleApiError crashed", crashErr, err);
+    return fallbackMessage;
   }
 }
