@@ -1,7 +1,7 @@
 import React, { useMemo, useState } from "react";
 import { View, Text, StyleSheet, TextInput, Pressable } from "react-native";
 import BackButton from "@/components/nav/BackButton";
-import { calcVpdKpa, toCelsius, type TempUnit } from "@/tools/vpd";
+import { calcVpdFromTemp, type TempUnit } from "@/tools/vpd";
 
 const styles = StyleSheet.create({
   container: { flex: 1, padding: 20, backgroundColor: "#fff" },
@@ -55,11 +55,8 @@ export default function VpdToolScreen() {
       return { vpd: null, valid: false, tempC: null as any };
     if (rh < 0 || rh > 100) return { vpd: null, valid: false, tempC: null as any };
 
-    const c = toCelsius(t, unit);
-    const v = calcVpdKpa(t, unit, rh);
-    if (!Number.isFinite(v)) return { vpd: null, valid: false, tempC: null as any };
-
-    return { vpd: v, valid: true, tempC: c };
+    const result = calcVpdFromTemp(t, unit, rh);
+    return { vpd: result.vpdKpa, valid: true, tempC: result.tempC };
   }, [tempText, rhText, unit]);
 
   return (
