@@ -54,9 +54,12 @@ export default function Index() {
 
   // Route based on mode
   console.log("[INDEX] ent.mode:", ent.mode);
+  console.log("[INDEX] ent.plan:", ent.plan);
+
   if (ent.mode === "facility") return <Redirect href="/dashboard" />;
   if (ent.mode === "commercial") return <Redirect href="/feed" />;
 
-  // Default personal landing
-  return <Redirect href="/feed" />;
+  // Default to personal home for free/personal users
+  // This is a safe default that doesn't require facility/commercial setup
+  return <Redirect href="/home" />;
 }

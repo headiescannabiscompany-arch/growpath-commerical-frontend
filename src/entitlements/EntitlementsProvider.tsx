@@ -103,14 +103,19 @@ export function EntitlementsProvider({ children }: { children: React.ReactNode }
       const lims = resp?.entitlements?.limits ?? DEFAULT_LIMITS;
       setCapabilities({ ...caps });
       setLimits({ ...lims });
+      setReady(true); // Only mark ready on success
     } catch (e: any) {
       console.error("Failed to hydrate entitlements:", e);
+      // If 401, token is invalid - clear it
+      if (e?.status === 401) {
+        setAuthToken(null);
+      }
       setPlan("free");
       setCapabilities({ ...DEFAULT_CAPABILITIES });
       setLimits({ ...DEFAULT_LIMITS });
+      setReady(true); // Mark ready even on failure so UI isn't stuck loading
     } finally {
       setLoading(false);
-      setReady(true);
     }
   }, [auth.token, applyServerSessionToClient]);
 
