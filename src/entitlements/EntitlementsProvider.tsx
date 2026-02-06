@@ -1,153 +1,149 @@
-import React, {
-  createContext,
-  useCallback,
-  useContext,
-  useEffect,
-  useMemo,
-  useState
-} from "react";
+import React, { createContext, useContext, useEffect, useMemo, useRef, useState } from "react";
 import { useAuth } from "../auth/AuthContext";
-import { useSession } from "../session";
 import { apiMe } from "../api/me";
-import { setAuthToken } from "../api/client";
-import { setToken as persistToken } from "../auth/tokenStore";
 
-type Plan = "free" | "pro" | "creator_plus" | "commercial" | "facility";
-type Mode = "personal" | "commercial" | "facility";
+type EntitlementsMode = "personal" | "commercial" | "facility";
 
-type Capabilities = Record<string, boolean>;
-type Limits = Record<string, number>;
-
-type EntitlementsContextValue = {
+type EntitlementsState = {
   ready: boolean;
-  loading: boolean;
-  userId: string | null;
-  plan: Plan;
-  mode: Mode;
-  facilityId?: string;
-  facilityRole?: string;
-  capabilities: Capabilities;
-  limits: Limits;
-  refresh: () => Promise<void>;
+  mode: EntitlementsMode;
+  plan: string | null;
+  capabilities: Record<string, any>;
+  limits: Record<string, any>;
 };
-export const EntitlementsContext = createContext<EntitlementsContextValue | null>(null);
 
-const DEFAULT_CAPABILITIES: Capabilities = {};
-const DEFAULT_LIMITS: Limits = { maxPlants: 1, maxGrows: 1 };
+const DEFAULT_STATE: EntitlementsState = {
+  ready: false,
+  mode: "personal",
+  plan: null,
+  capabilities: {},
+  limits: {}
+};
 
-function normalizePlan(p: any): Plan {
-  if (p === "pro" || p === "creator_plus" || p === "commercial" || p === "facility")
-    return p;
-  return "free";
+const EntitlementsContext = createContext<EntitlementsState>(DEFAULT_STATE);
+
+function safeStringify(v: any) {
+  try {
+    return JSON.stringify(v ?? null);
+  } catch {
+    return String(v);
+  }
 }
 
-function normalizeMode(m: any): Mode {
-  if (m === "commercial" || m === "facility") return m;
+function pickMode(ctxMode: any): EntitlementsMode {
+  if (ctxMode === "commercial") return "commercial";
+  if (ctxMode === "facility") return "facility";
   return "personal";
 }
 
+// Pure "apply" function (no side effects other than returning next state)
+function applyServerCtx(prev: EntitlementsState, ctx: any, userPlan: any): EntitlementsState {
+  const mode = pickMode(ctx?.mode);
+  const plan = userPlan ?? ctx?.plan ?? prev.plan ?? null;
+
+  return {
+    ready: true,
+    mode,
+    plan,
+    capabilities: (ctx?.capabilities && typeof ctx.capabilities === "object") ? ctx.capabilities : {},
+    limits: (ctx?.limits && typeof ctx.limits === "object") ? ctx.limits : {}
+  };
+}
+
 export function EntitlementsProvider({ children }: { children: React.ReactNode }) {
-  const auth = useAuth();
-  const session = useSession();
+  const { token, isHydrating, logout } = useAuth();
 
-  const [ready, setReady] = useState(false);
-  const [loading, setLoading] = useState(false);
-  const [plan, setPlan] = useState<Plan>("free");
-  const [capabilities, setCapabilities] = useState<Capabilities>({
-    ...DEFAULT_CAPABILITIES
-  });
-  const [limits, setLimits] = useState<Limits>({ ...DEFAULT_LIMITS });
+  const [state, setState] = useState<EntitlementsState>(DEFAULT_STATE);
 
-  const userId = auth.user?.id ?? null;
-
-  const applyServerContextToClient = useCallback(
-    (serverCtx: any) => {
-      try {
-        if (serverCtx?.mode) session.setMode(normalizeMode(serverCtx.mode));
-        if ("facilityId" in (serverCtx ?? {})) {
-          session.setSelectedFacilityId(serverCtx.facilityId ?? null);
-        }
-        if ("facilityRole" in (serverCtx ?? {})) {
-          session.setFacilityRole(serverCtx.facilityRole ?? null);
-        }
-        if ("facilityFeaturesEnabled" in (serverCtx ?? {})) {
-          session.setFacilityFeaturesEnabled(!!serverCtx.facilityFeaturesEnabled);
-        }
-      } catch {
-        // ignore
-      }
-    },
-    [session]
-  );
-
-  const hydrateFromMe = useCallback(async () => {
-    if (!auth.token) {
-      setAuthToken(null);
-      setPlan("free");
-      setCapabilities({ ...DEFAULT_CAPABILITIES });
-      setLimits({ ...DEFAULT_LIMITS });
-      setReady(true);
-      setLoading(false);
-      return;
-    }
-
-    setLoading(true);
-    try {
-      // Set token on client before calling apiMe
-      setAuthToken(auth.token);
-
-      const resp = await apiMe();
-      const serverPlan = normalizePlan(resp?.user?.plan);
-      setPlan(serverPlan);
-      applyServerContextToClient(resp?.ctx);
-      const caps = resp?.ctx?.capabilities ?? DEFAULT_CAPABILITIES;
-      const lims = resp?.ctx?.limits ?? DEFAULT_LIMITS;
-      setCapabilities({ ...caps });
-      setLimits({ ...lims });
-      setReady(true); // Only mark ready on success
-    } catch (e: any) {
-      console.error("Failed to hydrate entitlements:", e);
-      // If 401, token is invalid - clear it
-      if (e?.status === 401) {
-        console.log("[ENTITLEMENTS] Got 401 from /api/me, clearing token permanently");
-        setAuthToken(null);
-        // CRITICAL: persist null to storage to prevent token reappearance
-        await persistToken(null);
-      }
-      setPlan("free");
-      setCapabilities({ ...DEFAULT_CAPABILITIES });
-      setLimits({ ...DEFAULT_LIMITS });
-      setReady(true); // Mark ready even on failure so UI isn't stuck loading
-    } finally {
-      setLoading(false);
-    }
-  }, [auth.token, applyServerContextToClient]);
+  // Guard: prevent re-applying the same server ctx over and over
+  const lastAppliedRef = useRef<string>("");
 
   useEffect(() => {
-    if (auth.isHydrating) return;
-    if (!auth.user || !auth.token) {
-      setAuthToken(null);
-      session.resetSession().catch(() => {});
-      setPlan("free");
-      setCapabilities({ ...DEFAULT_CAPABILITIES });
-      setLimits({ ...DEFAULT_LIMITS });
-      setReady(true);
-      setLoading(false);
-      return;
+    let mounted = true;
+
+    // While auth is hydrating, keep entitlements not-ready (prevents early fetches)
+    if (isHydrating) {
+      setState((s) => (s.ready ? DEFAULT_STATE : s));
+      return () => {
+        mounted = false;
+      };
     }
-    setReady(false);
-    hydrateFromMe();
-  }, [auth.isHydrating, auth.user, auth.token, hydrateFromMe, session]);
 
-  const refresh = useCallback(async () => {
-    setReady(false);
-    await hydrateFromMe();
-  }, [hydrateFromMe]);
+    // No token => personal defaults, ready=true (so app can route deterministically)
+    if (!token) {
+      setState({
+        ready: true,
+        mode: "personal",
+        plan: null,
+        capabilities: {},
+        limits: {}
+      });
+      lastAppliedRef.current = "NO_TOKEN";
+      return () => {
+        mounted = false;
+      };
+    }
 
-  const value = useMemo<EntitlementsContextValue>(
-    () => ({
-      ready,
-      loading,
+    (async () => {
+      try {
+        // Contract: apiMe returns { user, ctx }
+        const resp = await apiMe({ silent: true });
+
+        const ctx = resp?.ctx ?? null;
+        const userPlan = resp?.user?.plan ?? null;
+
+        const fingerprint = safeStringify({ ctx, userPlan });
+
+        if (!mounted) return;
+
+        // Only apply if changed
+        if (fingerprint !== lastAppliedRef.current) {
+          lastAppliedRef.current = fingerprint;
+          setState((prev) => applyServerCtx(prev, ctx, userPlan));
+        } else {
+          // Ensure ready is true even if ctx unchanged
+          setState((prev) => (prev.ready ? prev : { ...prev, ready: true }));
+        }
+      } catch (e: any) {
+        if (!mounted) return;
+
+        // Global 401: token invalid => force logout (hard logout lives in AuthContext)
+        if (e?.status === 401 || e?.code === "UNAUTHORIZED") {
+          await logout();
+          // After logout, set safe defaults (ready true so routing is stable)
+          setState({
+            ready: true,
+            mode: "personal",
+            plan: null,
+            capabilities: {},
+            limits: {}
+          });
+          lastAppliedRef.current = "UNAUTHORIZED";
+          return;
+        }
+
+        // Non-401 failures: do NOT brick the app.
+        // Keep token as-is; set ready so UI can render (FacilityProvider will gate by mode/plan anyway)
+        setState((prev) => ({
+          ...prev,
+          ready: true
+        }));
+      }
+    })();
+
+    return () => {
+      mounted = false;
+    };
+  }, [token, isHydrating, logout]);
+
+  const value = useMemo(() => state, [state]);
+
+  return <EntitlementsContext.Provider value={value}>{children}</EntitlementsContext.Provider>;
+}
+
+export function useEntitlements() {
+  return useContext(EntitlementsContext);
+}
       userId,
       plan,
       mode: session.mode,
