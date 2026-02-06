@@ -9,7 +9,7 @@ import {
   View
 } from "react-native";
 
-import { handleApiError } from "@/utils/handleApiError";
+import { handleApiError } from "@/ui/handleApiError";
 import { useDebugApi } from "@/hooks/useDebugApi";
 
 export default function DebugScreen() {

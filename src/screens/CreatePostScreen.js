@@ -17,7 +17,7 @@ import GrowInterestPicker from "../components/GrowInterestPicker";
 import { buildEmptyTierSelection, flattenTierSelections } from "../utils/growInterests";
 
 import { useAuth } from "@/auth/AuthContext";
-import { handleApiError } from "@/utils/handleApiError";
+import { handleApiError } from "@/ui/handleApiError";
 import { useCreatePost } from "@/hooks/useCreatePost";
 
 export default function CreatePostScreen() {

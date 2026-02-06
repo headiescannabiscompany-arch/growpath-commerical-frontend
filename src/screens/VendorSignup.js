@@ -10,7 +10,7 @@ import {
   Picker
 } from "react-native";
 import { useVendorSignup } from "@/hooks/useVendorSignup";
-import { handleApiError } from "@/util/handleApiError";
+import { handleApiError } from "@/ui/handleApiError";
 
 const VENDOR_TYPES = [
   { label: "Select vendor type...", value: "" },

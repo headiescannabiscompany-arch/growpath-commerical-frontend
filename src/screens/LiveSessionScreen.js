@@ -9,7 +9,7 @@ import {
   View
 } from "react-native";
 
-import { handleApiError } from "@/utils/handleApiError";
+import { handleApiError } from "@/ui/handleApiError";
 import { useLiveSession } from "@/hooks/useLiveSession";
 
 export default function LiveSessionScreen({ route }) {
