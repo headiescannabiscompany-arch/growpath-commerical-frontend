@@ -2,7 +2,8 @@ import React, { useEffect } from "react";
 import { Slot } from "expo-router";
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import { AuthProvider } from "../auth/AuthContext";
-import { EntitlementsProvider } from "../entitlements";
+import { SessionProvider } from "../session/SessionProvider";
+import { EntitlementsProvider } from "../entitlements/EntitlementsProvider";
 
 const queryClient = new QueryClient({
   defaultOptions: {
@@ -22,9 +23,11 @@ export default function RootLayout() {
   return (
     <QueryClientProvider client={queryClient}>
       <AuthProvider>
-        <EntitlementsProvider>
-          <Slot />
-        </EntitlementsProvider>
+        <SessionProvider>
+          <EntitlementsProvider>
+            <Slot />
+          </EntitlementsProvider>
+        </SessionProvider>
       </AuthProvider>
     </QueryClientProvider>
   );
