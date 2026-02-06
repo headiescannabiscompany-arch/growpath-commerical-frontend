@@ -6,10 +6,12 @@ export function facilityPath(facilityId: string, path: string) {
 }
 
 export const endpoints = {
+  me: `${BASE}/me`,
   facilities: `${BASE}/facilities`,
   plants: (facilityId: string) => facilityPath(facilityId, "/plants"),
   plant: (facilityId: string, id: string) => facilityPath(facilityId, `/plants/${id}`),
   tasks: (facilityId: string) => facilityPath(facilityId, "/tasks"),
+  task: (facilityId: string, id: string) => facilityPath(facilityId, `/tasks/${id}`),
   inventory: (facilityId: string) => facilityPath(facilityId, "/inventory"),
   grows: (facilityId: string) => facilityPath(facilityId, "/grows"),
   team: (facilityId: string) => facilityPath(facilityId, "/team"),

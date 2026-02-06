@@ -1,6 +1,5 @@
 import { config } from "../config/config";
-import { ApiError, normalizeApiError } from "./errors";
-import { useSession } from "../session";
+import { normalizeApiError, type ApiError } from "./errors";
 
 let authToken: string | null = null;
 
@@ -14,7 +13,6 @@ type RequestOptions = {
   headers?: Record<string, string>;
   signal?: AbortSignal;
   timeout?: number;
-  facilityId?: string | null;
 };
 
 const DEFAULT_TIMEOUT = 10000;
@@ -47,10 +45,8 @@ async function request(path: string, options: RequestOptions = {}) {
   const method = options.method || "GET";
   const headers: Record<string, string> = { ...(options.headers || {}) };
 
-  if (options.facilityId) {
-    headers["X-Facility-Id"] = String(options.facilityId);
-  }
-
+  // CONTRACT: facility context is only in the URL path (/api/facility/:facilityId/...)
+  // Do not inject X-Facility-Id headers.
   if (authToken) {
     headers["Authorization"] = `Bearer ${authToken}`;
   }

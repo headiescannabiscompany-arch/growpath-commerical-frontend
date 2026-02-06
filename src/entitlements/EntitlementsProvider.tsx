@@ -8,7 +8,8 @@ import React, {
 } from "react";
 import { useAuth } from "../auth/AuthContext";
 import { useSession } from "../session";
-import { client } from "../api/client";
+import { apiMe } from "../api/me";
+import { setAuthToken } from "../api/client";
 
 type Plan = "free" | "pro" | "creator_plus" | "commercial" | "facility";
 type Mode = "personal" | "commercial" | "facility";
@@ -80,6 +81,7 @@ export function EntitlementsProvider({ children }: { children: React.ReactNode }
 
   const hydrateFromMe = useCallback(async () => {
     if (!auth.token) {
+      setAuthToken(null);
       setPlan("free");
       setCapabilities({ ...DEFAULT_CAPABILITIES });
       setLimits({ ...DEFAULT_LIMITS });
@@ -90,9 +92,10 @@ export function EntitlementsProvider({ children }: { children: React.ReactNode }
 
     setLoading(true);
     try {
-      const resp = await client.get("/api/user/me", {
-        headers: { Authorization: `Bearer ${auth.token}` }
-      });
+      // Set token on client before calling apiMe
+      setAuthToken(auth.token);
+
+      const resp = await apiMe();
       const serverPlan = normalizePlan(resp?.session?.plan);
       setPlan(serverPlan);
       applyServerSessionToClient(resp?.session);
@@ -101,6 +104,7 @@ export function EntitlementsProvider({ children }: { children: React.ReactNode }
       setCapabilities({ ...caps });
       setLimits({ ...lims });
     } catch (e: any) {
+      console.error("Failed to hydrate entitlements:", e);
       setPlan("free");
       setCapabilities({ ...DEFAULT_CAPABILITIES });
       setLimits({ ...DEFAULT_LIMITS });
@@ -113,6 +117,7 @@ export function EntitlementsProvider({ children }: { children: React.ReactNode }
   useEffect(() => {
     if (auth.isHydrating) return;
     if (!auth.user || !auth.token) {
+      setAuthToken(null);
       session.resetSession().catch(() => {});
       setPlan("free");
       setCapabilities({ ...DEFAULT_CAPABILITIES });
@@ -162,7 +167,6 @@ export function EntitlementsProvider({ children }: { children: React.ReactNode }
   );
 }
 
-// FIXED: Implement the hook so it returns the context value
 export function useEntitlements() {
   const ctx = useContext(EntitlementsContext);
   if (!ctx) {

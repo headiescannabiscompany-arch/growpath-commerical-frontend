@@ -1,18 +1,21 @@
 import { Platform } from "react-native";
 import * as SecureStore from "expo-secure-store";
+import AsyncStorage from "@react-native-async-storage/async-storage";
 
 const KEY = "gp_token";
 
 export async function setToken(token: string | null) {
   if (Platform.OS === "web") {
+    // Web: use AsyncStorage instead of localStorage
     if (!token) {
-      localStorage.removeItem(KEY);
+      await AsyncStorage.removeItem(KEY);
       return;
     }
-    localStorage.setItem(KEY, token);
+    await AsyncStorage.setItem(KEY, token);
     return;
   }
 
+  // Native: use SecureStore
   if (!token) {
     await SecureStore.deleteItemAsync(KEY);
     return;
@@ -23,7 +26,7 @@ export async function setToken(token: string | null) {
 
 export async function getToken() {
   if (Platform.OS === "web") {
-    return localStorage.getItem(KEY);
+    return AsyncStorage.getItem(KEY);
   }
   return SecureStore.getItemAsync(KEY);
 }

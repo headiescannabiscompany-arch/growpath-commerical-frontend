@@ -1,7 +1,7 @@
-// src/api/me.ts
 import { api } from "./client";
+import { endpoints } from "./endpoints";
 import type { AuthUser } from "./auth";
 
-export async function apiMe(): Promise<{ user: AuthUser }> {
-  return api.get("/api/user/me");
+export async function apiMe() {
+  return api.get(endpoints.me);
 }
