@@ -21,6 +21,7 @@ type RequestOptions = {
   timeout?: number;
   auth?: boolean; // default true; set to false to skip Authorization header
   silent?: boolean; // default false; set to true to suppress console.error on failure
+  invalidateOn401?: boolean; // default true; set to false to opt out of global logout on 401
 };
 
 const DEFAULT_TIMEOUT = 10000;
@@ -129,8 +130,13 @@ async function request(path: string, options: RequestOptions = {}) {
     // Ensure *everything* thrown from client is normalized with path context
     const normalized = normalizeApiError(e, { path });
 
-    // Global 401 invalidation: any non-credential endpoint returns 401 => force logout
-    if (normalized?.status === 401 && normalized?.code === "UNAUTHORIZED") {
+    // Global 401 invalidation: opt-in per-call to prevent auth thrash on /api/me
+    const invalidateOn401 = options.invalidateOn401 !== false;
+    if (
+      invalidateOn401 &&
+      normalized?.status === 401 &&
+      normalized?.code === "UNAUTHORIZED"
+    ) {
       try {
         void onUnauthorized?.();
       } catch {

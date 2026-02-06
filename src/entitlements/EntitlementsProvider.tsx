@@ -70,6 +70,12 @@ export function EntitlementsProvider({ children }: { children: React.ReactNode }
   // Guard: prevent re-applying the same server ctx over and over
   const lastAppliedRef = useRef<string>("");
 
+  // Stabilize logout reference to prevent effect re-runs from logout identity changes
+  const logoutRef = useRef(logout);
+  useEffect(() => {
+    logoutRef.current = logout;
+  }, [logout]);
+
   useEffect(() => {
     let mounted = true;
 
@@ -111,11 +117,7 @@ export function EntitlementsProvider({ children }: { children: React.ReactNode }
         // Only apply if changed
         if (fingerprint !== lastAppliedRef.current) {
           lastAppliedRef.current = fingerprint;
-          setState((prev) => {
-            const next = applyServerCtx(prev, ctx, userPlan);
-            console.log("[ENT] applyServerCtx plan:", next.plan, "mode:", next.mode);
-            return next;
-          });
+          setState((prev) => applyServerCtx(prev, ctx, userPlan));
         } else {
           // Ensure ready is true even if ctx unchanged
           setState((prev) => (prev.ready ? prev : { ...prev, ready: true }));
@@ -150,7 +152,7 @@ export function EntitlementsProvider({ children }: { children: React.ReactNode }
     return () => {
       mounted = false;
     };
-  }, [token, isHydrating, logout]);
+  }, [token, isHydrating]);
 
   const value = useMemo(() => state, [state]);
 

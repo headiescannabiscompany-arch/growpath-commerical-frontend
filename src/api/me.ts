@@ -20,5 +20,8 @@ export type MeResponse = {
 
 /** Fetch current user profile. Returns MeResponse or throws ApiError. */
 export async function apiMe(options: { silent?: boolean } = {}): Promise<MeResponse> {
-  return api.get(endpoints.me, options) as Promise<MeResponse>;
+  return api.get(endpoints.me, {
+    ...options,
+    invalidateOn401: false
+  }) as Promise<MeResponse>;
 }

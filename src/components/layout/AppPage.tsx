@@ -30,11 +30,6 @@ export default function AppPage({
   const ent = useEntitlements();
   const plan = ent.plan || "free";
   const policy = getFeedPolicy({ routeKey, plan, mode: ent.mode });
-  const debugStamp = (
-    <Text style={{ fontSize: 12, opacity: 0.6, marginBottom: 8 }}>
-      rail key={routeKey} · mode={ent.mode ?? "null"} · plan={ent.plan ?? "null"}
-    </Text>
-  );
 
   const computedRail =
     policy.includeForumHighlights || policy.slots > 0 ? (
@@ -59,10 +54,7 @@ export default function AppPage({
       <View style={[styles.columns, isWide ? styles.columnsWide : styles.columnsNarrow]}>
         <View style={styles.main}>{children}</View>
         {rail ? (
-          <View style={[styles.rail, !isWide && styles.railNarrow]}>
-            {debugStamp}
-            {rail}
-          </View>
+          <View style={[styles.rail, !isWide && styles.railNarrow]}>{rail}</View>
         ) : null}
       </View>
     </ScrollView>
