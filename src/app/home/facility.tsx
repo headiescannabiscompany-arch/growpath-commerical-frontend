@@ -127,7 +127,10 @@ export default function FacilityHome() {
                 <Text style={styles.cardDesc}>
                   Overview, metrics, alerts, and quick actions
                 </Text>
-                <Link href="/dashboard" style={styles.link}>
+                <Link
+                  href={`/facilities/${facility.selectedId}/dashboard`}
+                  style={styles.link}
+                >
                   Open Dashboard →
                 </Link>
               </View>
@@ -137,7 +140,10 @@ export default function FacilityHome() {
                 <Text style={styles.cardDesc}>
                   Manage grow rooms, zones, and environmental controls
                 </Text>
-                <Link href="/rooms" style={styles.link}>
+                <Link
+                  href={`/facilities/${facility.selectedId}/rooms`}
+                  style={styles.link}
+                >
                   Manage Rooms →
                 </Link>
               </View>
@@ -147,7 +153,10 @@ export default function FacilityHome() {
                 <Text style={styles.cardDesc}>
                   Daily tasks, assignments, verification, and SOPs
                 </Text>
-                <Link href="/tasks" style={styles.link}>
+                <Link
+                  href={`/facilities/${facility.selectedId}/tasks`}
+                  style={styles.link}
+                >
                   View Tasks →
                 </Link>
               </View>
@@ -157,7 +166,10 @@ export default function FacilityHome() {
                 <Text style={styles.cardDesc}>
                   Track inventory, supplies, and stock levels
                 </Text>
-                <Link href="/inventory" style={styles.link}>
+                <Link
+                  href={`/facilities/${facility.selectedId}/inventory`}
+                  style={styles.link}
+                >
                   Manage Inventory →
                 </Link>
               </View>
@@ -172,7 +184,10 @@ export default function FacilityHome() {
                 <Text style={styles.cardDesc}>
                   Manage team members, roles, and permissions
                 </Text>
-                <Link href="/team" style={styles.link}>
+                <Link
+                  href={`/facilities/${facility.selectedId}/team`}
+                  style={styles.link}
+                >
                   Manage Team →
                 </Link>
               </View>
@@ -182,7 +197,10 @@ export default function FacilityHome() {
                 <Text style={styles.cardDesc}>
                   Compliance tracking, audit logs, and reports
                 </Text>
-                <Link href="/compliance" style={styles.link}>
+                <Link
+                  href={`/facilities/${facility.selectedId}/compliance`}
+                  style={styles.link}
+                >
                   View Compliance →
                 </Link>
               </View>
@@ -192,7 +210,10 @@ export default function FacilityHome() {
                 <Text style={styles.cardDesc}>
                   Standard operating procedures and protocols
                 </Text>
-                <Link href="/sops" style={styles.link}>
+                <Link
+                  href={`/facilities/${facility.selectedId}/sops`}
+                  style={styles.link}
+                >
                   Manage SOPs →
                 </Link>
               </View>

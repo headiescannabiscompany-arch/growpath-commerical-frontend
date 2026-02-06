@@ -1,10 +1,13 @@
 import React from "react";
-import { View, Text } from "react-native";
+import { Redirect } from "expo-router";
+import { useFacility } from "@/facility/FacilityProvider";
 
-export default function DashboardScreen() {
-  return (
-    <View style={{ flex: 1, justifyContent: "center", alignItems: "center" }}>
-      <Text>Dashboard (placeholder)</Text>
-    </View>
-  );
+export default function DashboardShim() {
+  const facility = useFacility();
+
+  if (!facility?.selectedId) {
+    return <Redirect href="/facilities" />;
+  }
+
+  return <Redirect href={`/facilities/${facility.selectedId}/dashboard`} />;
 }

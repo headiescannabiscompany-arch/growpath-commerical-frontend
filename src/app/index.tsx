@@ -60,7 +60,7 @@ export default function Index() {
   console.log("[INDEX] facility.isReady:", facility?.isReady);
   console.log("[INDEX] facility.selectedId:", facility?.selectedId);
 
-  // Commercial/facility users: wait for facilities to load, then require facility selection
+  // Facility/commercial modes often depend on facility list + selection
   if (ent.mode === "facility" || ent.mode === "commercial") {
     if (!facility?.isReady) {
       return (
@@ -78,24 +78,26 @@ export default function Index() {
       );
     }
 
-    // Facilities loaded: route to picker if no selection, else to dashboard
     if (!facility?.selectedId) {
+      // Require selection
       console.log("[INDEX] No facility selected, routing to /facilities");
       return <Redirect href="/facilities" />;
     }
 
-    // Has selection
+    // Canonical facility-scoped landing
     if (ent.mode === "facility") {
-      console.log("[INDEX] Facility mode with selection, routing to /dashboard");
-      return <Redirect href="/dashboard" />;
+      console.log("[INDEX] Facility mode with selection, routing to facility dashboard");
+      return <Redirect href={`/facilities/${facility.selectedId}/dashboard`} />;
     }
+
+    // Commercial landing stays mode-specific
     if (ent.mode === "commercial") {
       console.log("[INDEX] Commercial mode with selection, routing to /feed");
       return <Redirect href="/feed" />;
     }
   }
 
-  // Default to personal home for free/personal users
+  // Personal default landing
   console.log("[INDEX] Routing to /home (personal default)");
   return <Redirect href="/home" />;
 }
