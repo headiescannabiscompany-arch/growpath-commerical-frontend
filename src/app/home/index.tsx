@@ -1,26 +1,47 @@
 import React from "react";
-import { View, Text, ScrollView } from "react-native";
+import { ActivityIndicator, View } from "react-native";
+import { Redirect } from "expo-router";
+import { useEntitlements } from "@/entitlements";
 import { useAuth } from "@/auth/AuthContext";
 
-export default function HomeScreen() {
+/**
+ * Home Index - Mode-Aware Shell Switcher
+ *
+ * This is the landing page after login. It fans out to different
+ * "home" screens based on the user's mode.
+ *
+ * All other features (courses, forum, tools, profile) remain as
+ * separate routes accessible via navigation/tabs.
+ */
+export default function HomeIndex() {
   const auth = useAuth();
+  const ent = useEntitlements();
 
-  return (
-    <ScrollView
-      contentContainerStyle={{
-        flex: 1,
-        justifyContent: "center",
-        alignItems: "center",
-        padding: 20
-      }}
-    >
-      <Text style={{ fontSize: 24, fontWeight: "bold", marginBottom: 16 }}>Welcome!</Text>
-      <Text style={{ fontSize: 16, color: "#666", marginBottom: 32 }}>
-        Logged in as: {auth.user?.email}
-      </Text>
-      <Text style={{ fontSize: 14, color: "#999" }}>
-        This is your personal home screen.
-      </Text>
-    </ScrollView>
-  );
+  // Wait for auth + entitlements to hydrate
+  if (auth.isHydrating || !ent.ready) {
+    return (
+      <View
+        style={{
+          flex: 1,
+          alignItems: "center",
+          justifyContent: "center",
+          backgroundColor: "#fff"
+        }}
+      >
+        <ActivityIndicator size="large" />
+      </View>
+    );
+  }
+
+  // Not logged in → login screen
+  if (!auth.token) {
+    return <Redirect href="/login" />;
+  }
+
+  // Mode-based fan-out: each mode gets its own home screen
+  if (ent.mode === "commercial") return <Redirect href="/home/commercial" />;
+  if (ent.mode === "facility") return <Redirect href="/home/facility" />;
+
+  // Default: personal mode
+  return <Redirect href="/home/personal" />;
 }
