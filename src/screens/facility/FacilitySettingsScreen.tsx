@@ -9,6 +9,9 @@ import {
   TextInput,
   View
 } from "react-native";
+import { useFacility } from "../../facility/FacilityProvider";
+import { handleApiError } from "../../ui/handleApiError";
+import { useFacilitySettings } from "../../hooks/useFacilitySettings";
 
 type Facility = {
   id: string;
@@ -19,30 +22,13 @@ type Facility = {
   complianceMode?: "basic" | "strict";
 };
 
-async function safeFetchJson(url: string, opts?: RequestInit) {
-  const res = await fetch(url, {
-    ...(opts || {}),
-    headers: {
-      "Content-Type": "application/json",
-      ...(opts?.headers || {})
-    }
-  });
-  const text = await res.text();
-  let json: any = null;
-  try {
-    json = text ? JSON.parse(text) : null;
-  } catch {
-    json = { raw: text };
-  }
-  if (!res.ok) throw new Error(json?.message || `Request failed (${res.status})`);
-  return json;
-}
-
 export default function FacilitySettingsScreen({ route, navigation }: any) {
-  const facilityId = route?.params?.facilityId as string | undefined;
+  const { activeFacilityId } = useFacility();
+  const facilityId =
+    (route?.params?.facilityId as string | undefined) ?? activeFacilityId;
 
-  const [loading, setLoading] = useState(false);
-  const [facility, setFacility] = useState<Facility | null>(null);
+  const { facility, isLoading, error, refetch, updateFacility, updating } =
+    useFacilitySettings(facilityId);
 
   const [name, setName] = useState("");
   const [timezone, setTimezone] = useState("America/New_York");
@@ -50,6 +36,32 @@ export default function FacilitySettingsScreen({ route, navigation }: any) {
   const [notes, setNotes] = useState("");
   const [complianceMode, setComplianceMode] =
     useState<Facility["complianceMode"]>("basic");
+
+  const handlers = useMemo(
+    () => ({
+      onAuthRequired: () => {
+        console.log("AUTH_REQUIRED: route to login");
+      },
+      onFacilityDenied: () => {
+        Alert.alert("No Access", "You don't have access to this facility.");
+      },
+      toast: (msg) => Alert.alert("Notice", msg)
+    }),
+    []
+  );
+
+  useEffect(() => {
+    if (error) handleApiError(error, handlers);
+  }, [error, handlers]);
+
+  useEffect(() => {
+    if (!facility) return;
+    setName(facility.name || "");
+    setTimezone(facility.timezone || "America/New_York");
+    setAddress(facility.address || "");
+    setNotes(facility.notes || "");
+    setComplianceMode(facility.complianceMode || "basic");
+  }, [facility]);
 
   const dirty = useMemo(() => {
     if (!facility) return false;
@@ -68,29 +80,12 @@ export default function FacilitySettingsScreen({ route, navigation }: any) {
       navigation?.goBack?.();
       return;
     }
-    setLoading(true);
-    try {
-      const data = await safeFetchJson(
-        `https://example.com/api/facilities/${facilityId}`
-      );
-      const f: Facility = data?.facility || data;
-      setFacility(f);
-      setName(f.name || "");
-      setTimezone(f.timezone || "America/New_York");
-      setAddress(f.address || "");
-      setNotes(f.notes || "");
-      setComplianceMode(f.complianceMode || "basic");
-    } catch (e: any) {
-      Alert.alert("Facility", e?.message || "Failed to load facility.");
-    } finally {
-      setLoading(false);
-    }
+    await refetch();
   }
 
   async function save() {
     if (!facilityId) return;
     if (!name.trim()) return Alert.alert("Facility", "Name is required.");
-    setLoading(true);
     try {
       const payload = {
         name: name.trim(),
@@ -99,26 +94,27 @@ export default function FacilitySettingsScreen({ route, navigation }: any) {
         notes: notes.trim(),
         complianceMode
       };
-      const data = await safeFetchJson(
-        `https://example.com/api/facilities/${facilityId}`,
-        {
-          method: "PATCH",
-          body: JSON.stringify(payload)
-        }
-      );
-      const f: Facility = data?.facility || data;
-      setFacility(f);
+      await updateFacility(payload);
       Alert.alert("Saved", "Facility settings updated.");
     } catch (e: any) {
+      handleApiError(e, handlers);
       Alert.alert("Save failed", e?.message || "Failed to save settings.");
-    } finally {
-      setLoading(false);
     }
   }
 
   useEffect(() => {
     load();
   }, [facilityId]);
+
+  if (!facilityId) {
+    return (
+      <SafeAreaView style={styles.safe}>
+        <View style={styles.center}>
+          <Text style={styles.muted}>No facility selected</Text>
+        </View>
+      </SafeAreaView>
+    );
+  }
 
   return (
     <SafeAreaView style={styles.safe}>
@@ -129,7 +125,7 @@ export default function FacilitySettingsScreen({ route, navigation }: any) {
         </Pressable>
       </View>
 
-      {loading && !facility ? (
+      {isLoading && !facility ? (
         <View style={styles.center}>
           <ActivityIndicator />
           <Text style={styles.muted}>Loading…</Text>
@@ -186,11 +182,11 @@ export default function FacilitySettingsScreen({ route, navigation }: any) {
           <View style={styles.footerRow}>
             <Text style={styles.muted}>{dirty ? "Unsaved changes" : "Up to date"}</Text>
             <Pressable
-              style={[styles.btn, !dirty && styles.btnDisabled]}
+              style={[styles.btn, (!dirty || updating) && styles.btnDisabled]}
               onPress={save}
-              disabled={!dirty || loading}
+              disabled={!dirty || updating}
             >
-              <Text style={styles.btnText}>Save</Text>
+              <Text style={styles.btnText}>{updating ? "Saving..." : "Save"}</Text>
             </Pressable>
           </View>
         </View>

@@ -18,7 +18,7 @@ import { api } from "../../api/client";
 import { endpoints } from "../../api/endpoints";
 
 // CONTRACT: RoomDetail is facility-scoped. No legacy ../../api/facility imports.
-// Canonical route: GET /api/facility/:facilityId/rooms/:roomId -> { room } (or { ... }).
+// Canonical route: GET facility/:facilityId/rooms/:roomId -> { room } (or { ... }).
 
 async function fetchRoomById(facilityId, roomId) {
   const res = await api.get(endpoints.room(facilityId, roomId));

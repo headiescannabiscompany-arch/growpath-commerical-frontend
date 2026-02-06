@@ -15,7 +15,8 @@ export function useRooms() {
   });
 
   const createRoomMutation = useMutation({
-    mutationFn: (data: { name: string }) => createRoom(activeFacilityId!, data),
+    mutationFn: (data: { name: string; roomType?: string; trackingMode?: string }) =>
+      createRoom(activeFacilityId!, data),
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ["rooms", activeFacilityId] });
     }

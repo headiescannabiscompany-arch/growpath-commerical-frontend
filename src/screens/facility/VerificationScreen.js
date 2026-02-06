@@ -1,4 +1,4 @@
-import React, { useEffect, useState } from "react";
+import React, { useEffect, useMemo, useState } from "react";
 import {
   View,
   Text,
@@ -10,44 +10,54 @@ import {
   RefreshControl,
   TextInput
 } from "react-native";
-import { useAuth } from "@/auth/AuthContext";
-import { listVerifications, verifyTask } from "../../api/verification.js";
+import { useFacility } from "../../facility/FacilityProvider";
+import { handleApiError } from "../../ui/handleApiError";
+import { useVerification } from "../../hooks/useVerification";
 
 export default function VerificationScreen() {
-  const { selectedFacilityId } = useAuth();
-  const [tasks, setTasks] = useState([]);
-  const [loading, setLoading] = useState(false);
-  const [refreshing, setRefreshing] = useState(false);
+  const { activeFacilityId } = useFacility();
+  const facilityId = activeFacilityId;
   const [filter, setFilter] = useState("all"); // all, pending, approved, rejected
   const [processingId, setProcessingId] = useState(null);
 
+  const {
+    records,
+    isLoading,
+    isRefreshing,
+    error,
+    refetch,
+    approveRecord,
+    rejectRecord
+  } = useVerification(facilityId);
+
+  const handlers = useMemo(
+    () => ({
+      onAuthRequired: () => {
+        console.log("AUTH_REQUIRED: route to login");
+      },
+      onFacilityDenied: () => {
+        Alert.alert("No Access", "You don't have access to this facility.");
+      },
+      toast: (msg) => Alert.alert("Notice", msg)
+    }),
+    []
+  );
+
   useEffect(() => {
-    loadTasks();
-  }, [selectedFacilityId]);
+    if (error) handleApiError(error, handlers);
+  }, [error, handlers]);
 
-  const loadTasks = async () => {
-    try {
-      setLoading(true);
-      if (!selectedFacilityId) {
-        setTasks([]);
-        return;
-      }
-      const data = await listVerifications(selectedFacilityId);
-      setTasks(Array.isArray(data) ? data : []);
-    } catch (error) {
-      console.warn("Error loading verification tasks:", error);
-      setTasks([]);
-    } finally {
-      setLoading(false);
-    }
-  };
+  const canInteract = useMemo(() => Boolean(facilityId), [facilityId]);
 
-  const onRefresh = () => {
-    setRefreshing(true);
-    loadTasks().then(() => setRefreshing(false));
+  const onRefresh = async () => {
+    await refetch();
   };
 
   const handleApprove = (taskId) => {
+    if (!canInteract) {
+      Alert.alert("No Facility", "Select a facility to continue.");
+      return;
+    }
     Alert.alert("Approve Record", "Are you sure you want to approve this record?", [
       { text: "Cancel", style: "cancel" },
       {
@@ -56,13 +66,11 @@ export default function VerificationScreen() {
         onPress: async () => {
           setProcessingId(taskId);
           try {
-            await verifyTask(selectedFacilityId, taskId, {
-              verified: true,
-              status: "approved"
-            });
-            await loadTasks();
+            await approveRecord(taskId);
+            await refetch();
             Alert.alert("Success", "Record approved");
           } catch (error) {
+            handleApiError(error, handlers);
             Alert.alert("Error", error.message || "Failed to approve");
           } finally {
             setProcessingId(null);
@@ -73,6 +81,10 @@ export default function VerificationScreen() {
   };
 
   const handleReject = (taskId) => {
+    if (!canInteract) {
+      Alert.alert("No Facility", "Select a facility to continue.");
+      return;
+    }
     Alert.alert("Reject Record", "Are you sure you want to reject this record?", [
       { text: "Cancel", style: "cancel" },
       {
@@ -81,13 +93,11 @@ export default function VerificationScreen() {
         onPress: async () => {
           setProcessingId(taskId);
           try {
-            await verifyTask(selectedFacilityId, taskId, {
-              verified: false,
-              status: "rejected"
-            });
-            await loadTasks();
+            await rejectRecord({ recordId: taskId });
+            await refetch();
             Alert.alert("Success", "Record rejected");
           } catch (error) {
+            handleApiError(error, handlers);
             Alert.alert("Error", error.message || "Failed to reject");
           } finally {
             setProcessingId(null);
@@ -96,6 +106,8 @@ export default function VerificationScreen() {
       }
     ]);
   };
+
+  const tasks = Array.isArray(records) ? records : [];
 
   const getFilteredTasks = () => {
     if (filter === "all") return tasks;
@@ -117,56 +129,60 @@ export default function VerificationScreen() {
     return (status || "pending").charAt(0).toUpperCase() + (status || "pending").slice(1);
   };
 
-  const renderTask = ({ item }) => (
-    <View style={styles.recordCard}>
-      <View style={styles.recordHeader}>
-        <View style={styles.recordInfo}>
-          <Text style={styles.recordName}>{item.name || "Unnamed Record"}</Text>
-          <Text style={[styles.recordStatus, { color: getStatusColor(item.status) }]}>
-            {getStatusLabel(item.status)}
+  const renderTask = ({ item }) => {
+    const recordId = item?._id || item?.id;
+    const isProcessing = processingId === recordId;
+    return (
+      <View style={styles.recordCard}>
+        <View style={styles.recordHeader}>
+          <View style={styles.recordInfo}>
+            <Text style={styles.recordName}>{item.name || "Unnamed Record"}</Text>
+            <Text style={[styles.recordStatus, { color: getStatusColor(item.status) }]}>
+              {getStatusLabel(item.status)}
+            </Text>
+          </View>
+        </View>
+        {item.description && (
+          <Text style={styles.recordDescription}>{item.description}</Text>
+        )}
+        {item.completedAt && (
+          <Text style={styles.recordDate}>
+            Submitted: {new Date(item.completedAt).toLocaleDateString()}
           </Text>
-        </View>
+        )}
+        {item.status === "pending" && (
+          <View style={styles.recordActions}>
+            <TouchableOpacity
+              style={[styles.actionBtn, styles.approveBtn]}
+              onPress={() => handleApprove(recordId)}
+              disabled={isProcessing}
+            >
+              {isProcessing ? (
+                <ActivityIndicator color="#fff" size="small" />
+              ) : (
+                <Text style={styles.approveBtnText}>✓ Approve</Text>
+              )}
+            </TouchableOpacity>
+            <TouchableOpacity
+              style={[styles.actionBtn, styles.rejectBtn]}
+              onPress={() => handleReject(recordId)}
+              disabled={isProcessing}
+            >
+              {isProcessing ? (
+                <ActivityIndicator color="#fff" size="small" />
+              ) : (
+                <Text style={styles.rejectBtnText}>✕ Reject</Text>
+              )}
+            </TouchableOpacity>
+          </View>
+        )}
       </View>
-      {item.description && (
-        <Text style={styles.recordDescription}>{item.description}</Text>
-      )}
-      {item.completedAt && (
-        <Text style={styles.recordDate}>
-          Submitted: {new Date(item.completedAt).toLocaleDateString()}
-        </Text>
-      )}
-      {item.status === "pending" && (
-        <View style={styles.recordActions}>
-          <TouchableOpacity
-            style={[styles.actionBtn, styles.approveBtn]}
-            onPress={() => handleApprove(item._id || item.id)}
-            disabled={processingId === item._id || item.id}
-          >
-            {processingId === item._id || item.id ? (
-              <ActivityIndicator color="#fff" size="small" />
-            ) : (
-              <Text style={styles.approveBtnText}>✓ Approve</Text>
-            )}
-          </TouchableOpacity>
-          <TouchableOpacity
-            style={[styles.actionBtn, styles.rejectBtn]}
-            onPress={() => handleReject(item._id || item.id)}
-            disabled={processingId === item._id || item.id}
-          >
-            {processingId === item._id || item.id ? (
-              <ActivityIndicator color="#fff" size="small" />
-            ) : (
-              <Text style={styles.rejectBtnText}>✕ Reject</Text>
-            )}
-          </TouchableOpacity>
-        </View>
-      )}
-    </View>
-  );
+    );
+  };
 
   const filteredTasks = getFilteredTasks();
 
-  if (loading) {
+  if (isLoading) {
     return (
       <View style={styles.container}>
         <ActivityIndicator size="large" color="#f59e0b" />
@@ -195,7 +211,11 @@ export default function VerificationScreen() {
         ))}
       </View>
 
-      {filteredTasks.length === 0 ? (
+      {!canInteract ? (
+        <View style={styles.emptyState}>
+          <Text style={styles.emptyText}>No facility selected</Text>
+        </View>
+      ) : filteredTasks.length === 0 ? (
         <View style={styles.emptyState}>
           <Text style={styles.emptyText}>
             {filter === "all" ? "No records to review" : `No ${filter} records`}
@@ -205,10 +225,10 @@ export default function VerificationScreen() {
         <FlatList
           data={filteredTasks}
           renderItem={renderTask}
-          keyExtractor={(item) => item._id || item.id || Math.random().toString()}
+          keyExtractor={(item) => String(item?._id || item?.id)}
           contentContainerStyle={styles.listContent}
           refreshControl={
-            <RefreshControl refreshing={refreshing} onRefresh={onRefresh} />
+            <RefreshControl refreshing={isRefreshing} onRefresh={onRefresh} />
           }
         />
       )}

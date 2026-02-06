@@ -1,4 +1,4 @@
-import React, { useEffect, useState } from "react";
+import React, { useEffect, useMemo, useState } from "react";
 import {
   View,
   Text,
@@ -11,44 +11,48 @@ import {
   Modal,
   Alert
 } from "react-native";
-import { useAuth } from "@/auth/AuthContext";
-import { listRooms, createRoom } from "../../api/facility.js";
+import { useFacility } from "../../facility/FacilityProvider";
+import { handleApiError } from "../../ui/handleApiError";
+import { useRooms } from "../../hooks/useRooms";
 
 const RoomsList = ({ navigation }) => {
-  const { selectedFacilityId } = useAuth();
-  const [rooms, setRooms] = useState([]);
-  const [loading, setLoading] = useState(true);
-  const [refreshing, setRefreshing] = useState(false);
+  const { activeFacilityId } = useFacility();
+  const facilityId = activeFacilityId;
   const [showCreateModal, setShowCreateModal] = useState(false);
   const [newRoomName, setNewRoomName] = useState("");
   const [newRoomType, setNewRoomType] = useState("Vegetative");
   const [trackingMode, setTrackingMode] = useState("batch");
-  const [creating, setCreating] = useState(false);
+  const {
+    data: roomsData,
+    isLoading,
+    isRefetching: isRefreshing,
+    error,
+    refetch,
+    createRoom,
+    creating
+  } = useRooms();
+
+  const handlers = useMemo(
+    () => ({
+      onAuthRequired: () => {
+        console.log("AUTH_REQUIRED: route to login");
+      },
+      onFacilityDenied: () => {
+        Alert.alert("No Access", "You don't have access to this facility.");
+      },
+      toast: (msg) => Alert.alert("Notice", msg)
+    }),
+    []
+  );
 
   useEffect(() => {
-    loadRooms();
-  }, [selectedFacilityId]);
+    if (error) handleApiError(error, handlers);
+  }, [error, handlers]);
 
-  const loadRooms = async () => {
-    setLoading(true);
-    try {
-      if (selectedFacilityId) {
-        const result = await listRooms(selectedFacilityId);
-        if (result.success) {
-          setRooms(result.data || []);
-        }
-      }
-    } catch (error) {
-      console.log("Error loading rooms:", error);
-    } finally {
-      setLoading(false);
-    }
-  };
+  const canInteract = useMemo(() => Boolean(facilityId), [facilityId]);
 
   const onRefresh = async () => {
-    setRefreshing(true);
-    await loadRooms();
-    setRefreshing(false);
+    await refetch();
   };
 
   const handleRoomPress = (roomId) => {
@@ -56,72 +60,34 @@ const RoomsList = ({ navigation }) => {
   };
 
   const handleCreateRoom = async () => {
+    if (!canInteract) {
+      Alert.alert("No Facility", "Select a facility to continue.");
+      return;
+    }
     if (!newRoomName.trim()) {
       Alert.alert("Error", "Room name is required");
       return;
     }
-    setCreating(true);
     try {
-      const result = await createRoom(selectedFacilityId, {
+      const result = await createRoom({
         name: newRoomName,
         roomType: newRoomType,
         trackingMode
       });
-      if (result.success) {
-        setShowCreateModal(false);
-        setNewRoomName("");
-        setNewRoomType("Vegetative");
-        setTrackingMode("batch");
-        await loadRooms();
-        if (result.data?._id) {
-          navigation.navigate("RoomDetail", { roomId: result.data._id });
-        }
-      } else {
-        // Optimistic local fallback to unblock demo when backend is offline
-        const localRoom = {
-          _id: `local-${Date.now()}`,
-          name: newRoomName,
-          roomType: newRoomType,
-          trackingMode,
-          stage: "N/A",
-          lastActivityAt: null,
-          _localOnly: true
-        };
-        setRooms((prev) => [localRoom, ...prev]);
-        setShowCreateModal(false);
-        setNewRoomName("");
-        setNewRoomType("Vegetative");
-        setTrackingMode("batch");
-        Alert.alert(
-          "Saved Locally",
-          result.message || "Backend unavailable. Room added locally for this session."
-        );
-      }
-    } catch (error) {
-      const localRoom = {
-        _id: `local-${Date.now()}`,
-        name: newRoomName,
-        roomType: newRoomType,
-        trackingMode,
-        stage: "N/A",
-        lastActivityAt: null,
-        _localOnly: true
-      };
-      setRooms((prev) => [localRoom, ...prev]);
       setShowCreateModal(false);
       setNewRoomName("");
       setNewRoomType("Vegetative");
       setTrackingMode("batch");
-      Alert.alert(
-        "Saved Locally",
-        "Backend unavailable. Room added locally for this session."
-      );
-    } finally {
-      setCreating(false);
+      if (result?._id || result?.id) {
+        navigation.navigate("RoomDetail", { roomId: result?._id || result?.id });
+      }
+    } catch (error) {
+      handleApiError(error, handlers);
+      Alert.alert("Error", "Failed to create room");
     }
   };
 
-  if (loading) {
+  if (isLoading) {
     return (
       <View style={styles.container}>
         <ActivityIndicator size="large" color="#0ea5e9" />
@@ -129,42 +95,65 @@ const RoomsList = ({ navigation }) => {
     );
   }
 
+  const rooms = Array.isArray(roomsData) ? roomsData : [];
+
   return (
     <View style={styles.container}>
-      <TouchableOpacity style={styles.addButton} onPress={() => setShowCreateModal(true)}>
+      <TouchableOpacity
+        style={[styles.addButton, !canInteract && styles.disabledButton]}
+        onPress={() => {
+          if (!canInteract) {
+            Alert.alert("No Facility", "Select a facility to continue.");
+            return;
+          }
+          setShowCreateModal(true);
+        }}
+        disabled={!canInteract}
+      >
         <Text style={styles.addButtonText}>+ Add Room</Text>
       </TouchableOpacity>
 
-      <FlatList
-        data={rooms}
-        keyExtractor={(item) => item._id}
-        renderItem={({ item }) => (
-          <TouchableOpacity
-            style={styles.roomCard}
-            onPress={() => handleRoomPress(item._id)}
-          >
-            <View style={styles.roomHeader}>
-              <Text style={styles.roomName}>{item.name}</Text>
-              <Text style={styles.roomType}>{item.roomType}</Text>
+      {!canInteract ? (
+        <View style={styles.empty}>
+          <Text style={styles.emptyText}>No facility selected</Text>
+          <Text style={styles.emptySubtext}>Pick a facility to view rooms</Text>
+        </View>
+      ) : (
+        <FlatList
+          data={rooms}
+          keyExtractor={(item) => String(item?._id || item?.id)}
+          renderItem={({ item }) => (
+            <TouchableOpacity
+              style={styles.roomCard}
+              onPress={() => handleRoomPress(item?._id || item?.id)}
+            >
+              <View style={styles.roomHeader}>
+                <Text style={styles.roomName}>{item?.name || "Room"}</Text>
+                {item?.roomType ? (
+                  <Text style={styles.roomType}>{item.roomType}</Text>
+                ) : null}
+              </View>
+              <Text style={styles.roomStage}>Stage: {item.stage || "N/A"}</Text>
+              {item.lastActivityAt && (
+                <Text style={styles.roomActivity}>
+                  Last activity: {new Date(item.lastActivityAt).toLocaleDateString()}
+                </Text>
+              )}
+            </TouchableOpacity>
+          )}
+          ListEmptyComponent={
+            <View style={styles.empty}>
+              <Text style={styles.emptyText}>No rooms yet</Text>
+              <Text style={styles.emptySubtext}>Tap + to add a room</Text>
             </View>
-            <Text style={styles.roomStage}>Stage: {item.stage || "N/A"}</Text>
-            {item.lastActivityAt && (
-              <Text style={styles.roomActivity}>
-                Last activity: {new Date(item.lastActivityAt).toLocaleDateString()}
-              </Text>
-            )}
-          </TouchableOpacity>
-        )}
-        ListEmptyComponent={
-          <View style={styles.empty}>
-            <Text style={styles.emptyText}>No rooms yet</Text>
-            <Text style={styles.emptySubtext}>Tap + to add a room</Text>
-          </View>
-        }
-        refreshControl={<RefreshControl refreshing={refreshing} onRefresh={onRefresh} />}
-        style={styles.list}
-        contentContainerStyle={{ flexGrow: 1 }}
-      />
+          }
+          refreshControl={
+            <RefreshControl refreshing={isRefreshing} onRefresh={onRefresh} />
+          }
+          style={styles.list}
+          contentContainerStyle={{ flexGrow: 1 }}
+        />
+      )}
 
       <Modal
         visible={showCreateModal}

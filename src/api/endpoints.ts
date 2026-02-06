@@ -48,6 +48,22 @@ export const endpoints = {
   deviation: (facilityId: string, id: string) =>
     facilityPath(facilityId, `/deviations/${id}`),
 
+  // verification
+  verification: (facilityId: string) => `${BASE}/facilities/${facilityId}/verification`,
+  verificationRecord: (facilityId: string, id: string) =>
+    `${BASE}/facilities/${facilityId}/verification/${id}`,
+  verificationReject: (facilityId: string, id: string) =>
+    `${BASE}/facilities/${facilityId}/verification/${id}/reject`,
+
+  // SOP templates
+  sopTemplates: (facilityId: string) => `${BASE}/facilities/${facilityId}/sop-templates`,
+  sopTemplate: (facilityId: string, id: string) =>
+    `${BASE}/facilities/${facilityId}/sop-templates/${id}`,
+
+  // vendors (facility scoped via query)
+  vendors: `${BASE}/vendors`,
+  vendor: (id: string) => `${BASE}/vendors/${id}`,
+
   // billing
   facilityBillingStatus: `${BASE}/facility-billing/status`,
   facilityBillingCheckout: `${BASE}/facility-billing/checkout-session`,

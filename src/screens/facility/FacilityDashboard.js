@@ -20,18 +20,18 @@ import { api } from "../../api/client";
 import { endpoints } from "../../api/endpoints";
 import { useRooms } from "../../hooks/useRooms";
 
-// CONTRACT: Dashboard must not call legacy facility APIs or use selectedFacilityId.
+// CONTRACT: Dashboard must not call legacy facility APIs.
 // Facility context comes from FacilityProvider only.
 // Only canonical endpoints are used here.
 
 async function fetchFacilityDetail(facilityId) {
-  // Contract: GET /api/facility/:facilityId -> { facility: {...} } (or { ... })
+  // Contract: GET facility/:facilityId -> { facility: {...} } (or { ... })
   const res = await api.get(`${endpoints.facilities}/${facilityId}`);
   return res?.facility ?? res;
 }
 
 async function fetchFacilitySettings(facilityId) {
-  // Contract: GET /api/facility/:facilityId/settings -> { settings: {...} } (or { ... })
+  // Contract: GET facility/:facilityId/settings -> { settings: {...} } (or { ... })
   const res = await api.get(`${endpoints.facilities}/${facilityId}/settings`);
   return res?.settings ?? res;
 }

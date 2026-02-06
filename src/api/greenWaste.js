@@ -1,51 +1,20 @@
-import axios from "axios";
-
-const API_BASE_URL =
-  process.env.EXPO_PUBLIC_API_URL ||
-  process.env.API_URL ||
-  process.env.REACT_NATIVE_APP_API_URL ||
-  process.env.NEXT_PUBLIC_API_URL ||
-  "https://your-app.onrender.com/api";
-
-let authToken = null;
-
-export const setAuthToken = (token) => {
-  authToken = token;
-};
-
-const apiClient = axios.create({
-  baseURL: API_BASE_URL,
-  timeout: 10000
-  // To send cookies/credentials cross-origin, set withCredentials: true
-  // Example: apiClient.defaults.withCredentials = true;
-});
-
-apiClient.interceptors.request.use((config) => {
-  if (authToken) {
-    config.headers.Authorization = `Bearer ${authToken}`;
-  }
-  return config;
-});
+import { api } from "./client";
+import { endpoints } from "./endpoints";
 
 export const listGreenWasteEvents = async (facilityId) => {
   try {
-    const response = await apiClient.get("/greenwaste", {
-      params: { facility: facilityId }
-    });
-    return { success: true, data: response.data };
+    const response = await api.get(endpoints.greenWaste(facilityId));
+    return { success: true, data: response?.logs ?? response?.data ?? response };
   } catch (error) {
-    return { success: false, message: error.response?.data?.message || error.message };
+    return { success: false, message: error?.message || "Failed to load green waste" };
   }
 };
 
 export const createGreenWasteEvent = async (facilityId, eventData) => {
   try {
-    const response = await apiClient.post("/greenwaste", {
-      facilityId,
-      ...eventData
-    });
-    return { success: true, data: response.data };
+    const response = await api.post(endpoints.greenWaste(facilityId), eventData);
+    return { success: true, data: response?.created ?? response?.log ?? response };
   } catch (error) {
-    return { success: false, message: error.response?.data?.message || error.message };
+    return { success: false, message: error?.message || "Failed to create event" };
   }
 };

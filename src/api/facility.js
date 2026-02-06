@@ -1,47 +1,26 @@
-import axios from "axios";
+import { api } from "./client";
 
-const API_BASE_URL =
-  process.env.EXPO_PUBLIC_API_URL ||
-  process.env.API_URL ||
-  process.env.REACT_NATIVE_APP_API_URL ||
-  process.env.NEXT_PUBLIC_API_URL ||
-  "https://your-app.onrender.com/api";
-
-let authToken = null;
-
-export const setAuthToken = (token) => {
-  authToken = token;
+const buildQuery = (params = {}) => {
+  const entries = Object.entries(params).filter(([, v]) => v !== undefined && v !== null);
+  if (entries.length === 0) return "";
+  const qs = entries
+    .map(([k, v]) => `${encodeURIComponent(k)}=${encodeURIComponent(String(v))}`)
+    .join("&");
+  return `?${qs}`;
 };
-
-const apiClient = axios.create({
-  baseURL: API_BASE_URL,
-  timeout: 10000
-  // To send cookies/credentials cross-origin, set withCredentials: true
-  // Example: apiClient.defaults.withCredentials = true;
-});
-
-// Request interceptor to add auth token
-apiClient.interceptors.request.use((config) => {
-  if (authToken) {
-    config.headers.Authorization = `Bearer ${authToken}`;
-  }
-  return config;
-});
 
 // List rooms for a facility
 export const listRooms = async (facilityId) => {
   try {
-    const response = await apiClient.get("/rooms", {
-      params: { facility: facilityId }
-    });
+    const response = await api.get(`/rooms${buildQuery({ facility: facilityId })}`);
     return {
       success: true,
-      data: response.data
+      data: response?.rooms ?? response?.data ?? response
     };
   } catch (error) {
     return {
       success: false,
-      message: error.response?.data?.message || error.message
+      message: error?.message || "Failed to load rooms"
     };
   }
 };
@@ -49,15 +28,15 @@ export const listRooms = async (facilityId) => {
 // Get room detail
 export const getRoom = async (roomId) => {
   try {
-    const response = await apiClient.get(`/rooms/${roomId}`);
+    const response = await api.get(`/rooms/${roomId}`);
     return {
       success: true,
-      data: response.data
+      data: response?.room ?? response?.data ?? response
     };
   } catch (error) {
     return {
       success: false,
-      message: error.response?.data?.message || error.message
+      message: error?.message || "Failed to load room"
     };
   }
 };
@@ -65,18 +44,18 @@ export const getRoom = async (roomId) => {
 // Create a new room
 export const createRoom = async (facilityId, roomData) => {
   try {
-    const response = await apiClient.post("/rooms", {
+    const response = await api.post("/rooms", {
       facilityId,
       ...roomData
     });
     return {
       success: true,
-      data: response.data
+      data: response?.created ?? response?.room ?? response
     };
   } catch (error) {
     return {
       success: false,
-      message: error.response?.data?.message || error.message
+      message: error?.message || "Failed to create room"
     };
   }
 };
@@ -84,15 +63,15 @@ export const createRoom = async (facilityId, roomData) => {
 // Update room
 export const updateRoom = async (roomId, roomData) => {
   try {
-    const response = await apiClient.patch(`/rooms/${roomId}`, roomData);
+    const response = await api.patch(`/rooms/${roomId}`, roomData);
     return {
       success: true,
-      data: response.data
+      data: response?.updated ?? response?.room ?? response
     };
   } catch (error) {
     return {
       success: false,
-      message: error.response?.data?.message || error.message
+      message: error?.message || "Failed to update room"
     };
   }
 };
@@ -100,15 +79,15 @@ export const updateRoom = async (roomId, roomData) => {
 // Delete room (soft delete)
 export const deleteRoom = async (roomId) => {
   try {
-    const response = await apiClient.delete(`/rooms/${roomId}`);
+    const response = await api.delete(`/rooms/${roomId}`);
     return {
       success: true,
-      data: response.data
+      data: response?.deleted ?? response?.ok ?? response
     };
   } catch (error) {
     return {
       success: false,
-      message: error.response?.data?.message || error.message
+      message: error?.message || "Failed to delete room"
     };
   }
 };
@@ -116,15 +95,15 @@ export const deleteRoom = async (roomId) => {
 // Get facility details
 export const getFacilityDetail = async (facilityId) => {
   try {
-    const response = await apiClient.get(`/facilities/${facilityId}`);
+    const response = await api.get(`/facilities/${facilityId}`);
     return {
       success: true,
-      data: response.data
+      data: response?.facility ?? response?.data ?? response
     };
   } catch (error) {
     return {
       success: false,
-      message: error.response?.data?.message || error.message
+      message: error?.message || "Failed to load facility"
     };
   }
 };
@@ -132,14 +111,14 @@ export const getFacilityDetail = async (facilityId) => {
 // Facility Plan billing: get status
 export const getFacilityBillingStatus = async (facilityId) => {
   try {
-    const response = await apiClient.get(`/facility-billing/status`, {
-      params: { facility: facilityId }
-    });
-    return { success: true, data: response.data?.data || response.data };
+    const response = await api.get(
+      `/facility-billing/status${buildQuery({ facility: facilityId })}`
+    );
+    return { success: true, data: response?.data ?? response };
   } catch (error) {
     return {
       success: false,
-      message: error.response?.data?.message || error.message
+      message: error?.message || "Failed to load billing status"
     };
   }
 };
@@ -147,14 +126,14 @@ export const getFacilityBillingStatus = async (facilityId) => {
 // Facility Plan billing: start checkout session
 export const startFacilityCheckout = async (facilityId) => {
   try {
-    const response = await apiClient.post(`/facility-billing/checkout-session`, {
+    const response = await api.post(`/facility-billing/checkout-session`, {
       facilityId
     });
-    return { success: true, data: response.data };
+    return { success: true, data: response?.data ?? response };
   } catch (error) {
     return {
       success: false,
-      message: error.response?.data?.message || error.message
+      message: error?.message || "Failed to start checkout"
     };
   }
 };
@@ -162,12 +141,12 @@ export const startFacilityCheckout = async (facilityId) => {
 // Facility Plan billing: cancel at period end
 export const cancelFacilityPlan = async (facilityId) => {
   try {
-    const response = await apiClient.post(`/facility-billing/cancel`, { facilityId });
-    return { success: true, data: response.data };
+    const response = await api.post(`/facility-billing/cancel`, { facilityId });
+    return { success: true, data: response?.data ?? response };
   } catch (error) {
     return {
       success: false,
-      message: error.response?.data?.message || error.message
+      message: error?.message || "Failed to cancel plan"
     };
   }
 };
@@ -175,75 +154,75 @@ export const cancelFacilityPlan = async (facilityId) => {
 // Metrc credentials management
 export const getMetrcCredentials = async (facilityId) => {
   try {
-    const response = await apiClient.get(`/metrc/credentials/${facilityId}`);
-    return { success: true, data: response.data };
+    const response = await api.get(`/metrc/credentials/${facilityId}`);
+    return { success: true, data: response?.data ?? response };
   } catch (error) {
     return {
       success: false,
-      message: error.response?.data?.message || error.message
+      message: error?.message || "Failed to load Metrc credentials"
     };
   }
 };
 
 export const saveMetrcCredentials = async (facilityId, vendorKey, userKey) => {
   try {
-    const response = await apiClient.post(`/metrc/credentials/${facilityId}`, {
+    const response = await api.post(`/metrc/credentials/${facilityId}`, {
       vendorKey,
       userKey
     });
-    return { success: true, data: response.data };
+    return { success: true, data: response?.data ?? response };
   } catch (error) {
     return {
       success: false,
-      message: error.response?.data?.message || error.message
+      message: error?.message || "Failed to save Metrc credentials"
     };
   }
 };
 
 export const deleteMetrcCredentials = async (facilityId) => {
   try {
-    const response = await apiClient.delete(`/metrc/credentials/${facilityId}`);
+    await api.delete(`/metrc/credentials/${facilityId}`);
     return { success: true };
   } catch (error) {
     return {
       success: false,
-      message: error.response?.data?.message || error.message
+      message: error?.message || "Failed to delete Metrc credentials"
     };
   }
 };
 
 export const verifyMetrcCredentials = async (facilityId) => {
   try {
-    const response = await apiClient.get(`/metrc/credentials/${facilityId}/verify`);
-    return { success: true, data: response.data };
+    const response = await api.get(`/metrc/credentials/${facilityId}/verify`);
+    return { success: true, data: response?.data ?? response };
   } catch (error) {
     return {
       success: false,
-      message: error.response?.data?.message || error.message
+      message: error?.message || "Failed to verify Metrc credentials"
     };
   }
 };
 
 export const triggerMetrcSync = async (facilityId) => {
   try {
-    const response = await apiClient.post(`/metrc/sync/${facilityId}`);
-    return { success: true, data: response.data };
+    const response = await api.post(`/metrc/sync/${facilityId}`);
+    return { success: true, data: response?.data ?? response };
   } catch (error) {
     return {
       success: false,
-      message: error.response?.data?.message || error.message
+      message: error?.message || "Failed to start Metrc sync"
     };
   }
 };
 
 export const getMetrcSyncStatus = async (facilityId) => {
   try {
-    const response = await apiClient.get(`/metrc/sync/${facilityId}/status`);
-    return { success: true, data: response.data };
+    const response = await api.get(`/metrc/sync/${facilityId}/status`);
+    return { success: true, data: response?.data ?? response };
   } catch (error) {
     return {
       success: false,
-      message: error.response?.data?.message || error.message
+      message: error?.message || "Failed to load Metrc sync status"
     };
   }
 };
@@ -251,15 +230,15 @@ export const getMetrcSyncStatus = async (facilityId) => {
 // Update facility (including trackingMode)
 export const updateFacility = async (facilityId, updates) => {
   try {
-    const response = await apiClient.patch(`/facilities/${facilityId}`, updates);
+    const response = await api.patch(`/facilities/${facilityId}`, updates);
     return {
       success: true,
-      data: response.data
+      data: response?.updated ?? response?.facility ?? response
     };
   } catch (error) {
     return {
       success: false,
-      message: error.response?.data?.message || error.message
+      message: error?.message || "Failed to update facility"
     };
   }
 };
@@ -267,81 +246,81 @@ export const updateFacility = async (facilityId, updates) => {
 // BatchCycle endpoints
 export const listBatchCycles = async (facilityId, roomId) => {
   try {
-    const params = { facility: facilityId };
-    if (roomId) params.room = roomId;
-    const response = await apiClient.get("/batch-cycles", { params });
+    const response = await api.get(
+      `/batch-cycles${buildQuery({ facility: facilityId, room: roomId })}`
+    );
     return {
       success: true,
-      data: response.data
+      data: response?.data ?? response
     };
   } catch (error) {
     return {
       success: false,
-      message: error.response?.data?.message || error.message
+      message: error?.message || "Failed to load batch cycles"
     };
   }
 };
 
 export const createBatchCycle = async (facilityId, roomId, batchData) => {
   try {
-    const response = await apiClient.post("/batch-cycles", {
+    const response = await api.post("/batch-cycles", {
       facilityId,
       roomId,
       ...batchData
     });
     return {
       success: true,
-      data: response.data
+      data: response?.created ?? response?.data ?? response
     };
   } catch (error) {
     return {
       success: false,
-      message: error.response?.data?.message || error.message
+      message: error?.message || "Failed to create batch cycle"
     };
   }
 };
 
 export const getBatchCycle = async (batchId) => {
   try {
-    const response = await apiClient.get(`/batch-cycles/${batchId}`);
+    const response = await api.get(`/batch-cycles/${batchId}`);
     return {
       success: true,
-      data: response.data
+      data: response?.data ?? response
     };
   } catch (error) {
     return {
       success: false,
-      message: error.response?.data?.message || error.message
+      message: error?.message || "Failed to load batch cycle"
     };
   }
 };
 
 export const updateBatchCycle = async (batchId, updates) => {
   try {
-    const response = await apiClient.patch(`/batch-cycles/${batchId}`, updates);
+    const response = await api.patch(`/batch-cycles/${batchId}`, updates);
     return {
       success: true,
-      data: response.data
+      data: response?.updated ?? response?.data ?? response
     };
   } catch (error) {
     return {
       success: false,
-      message: error.response?.data?.message || error.message
+      message: error?.message || "Failed to update batch cycle"
     };
   }
 };
 
 export const deleteBatchCycle = async (batchId) => {
   try {
-    const response = await apiClient.delete(`/batch-cycles/${batchId}`);
+    const response = await api.delete(`/batch-cycles/${batchId}`);
     return {
       success: true,
-      data: response.data
+      data: response?.deleted ?? response?.ok ?? response
     };
   } catch (error) {
     return {
       success: false,
-      message: error.response?.data?.message || error.message
+      message: error?.message || "Failed to delete batch cycle"
     };
   }
 };
@@ -349,63 +328,63 @@ export const deleteBatchCycle = async (batchId) => {
 // Zone endpoints (for greenhouse operations)
 export const listZones = async (roomId) => {
   try {
-    const response = await apiClient.get("/zones", { params: { room: roomId } });
+    const response = await api.get(`/zones${buildQuery({ room: roomId })}`);
     return {
       success: true,
-      data: response.data
+      data: response?.data ?? response
     };
   } catch (error) {
     return {
       success: false,
-      message: error.response?.data?.message || error.message
+      message: error?.message || "Failed to load zones"
     };
   }
 };
 
 export const createZone = async (roomId, zoneData) => {
   try {
-    const response = await apiClient.post("/zones", {
+    const response = await api.post("/zones", {
       roomId,
       ...zoneData
     });
     return {
       success: true,
-      data: response.data
+      data: response?.created ?? response?.data ?? response
     };
   } catch (error) {
     return {
       success: false,
-      message: error.response?.data?.message || error.message
+      message: error?.message || "Failed to create zone"
     };
   }
 };
 
 export const updateZone = async (zoneId, updates) => {
   try {
-    const response = await apiClient.patch(`/zones/${zoneId}`, updates);
+    const response = await api.patch(`/zones/${zoneId}`, updates);
     return {
       success: true,
-      data: response.data
+      data: response?.updated ?? response?.data ?? response
     };
   } catch (error) {
     return {
       success: false,
-      message: error.response?.data?.message || error.message
+      message: error?.message || "Failed to update zone"
     };
   }
 };
 
 export const deleteZone = async (zoneId) => {
   try {
-    const response = await apiClient.delete(`/zones/${zoneId}`);
+    const response = await api.delete(`/zones/${zoneId}`);
     return {
       success: true,
-      data: response.data
+      data: response?.deleted ?? response?.ok ?? response
     };
   } catch (error) {
     return {
       success: false,
-      message: error.response?.data?.message || error.message
+      message: error?.message || "Failed to delete zone"
     };
   }
 };

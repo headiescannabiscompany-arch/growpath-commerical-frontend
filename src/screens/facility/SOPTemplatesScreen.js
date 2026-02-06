@@ -1,4 +1,4 @@
-import React, { useEffect, useState } from "react";
+import React, { useEffect, useMemo, useState } from "react";
 import {
   View,
   Text,
@@ -11,45 +11,55 @@ import {
   Modal,
   RefreshControl
 } from "react-native";
-import { useAuth } from "@/auth/AuthContext";
+import { useFacility } from "../../facility/FacilityProvider";
+import { handleApiError } from "../../ui/handleApiError";
 import { hasGlobalFacilityAccess } from "../../types/facility.js";
-import {
-  listSOPTemplates,
-  createSOPTemplate,
-  updateSOPTemplate,
-  deleteSOPTemplate
-} from "../../api/sop.js";
+import { useSopTemplates } from "../../hooks/useSopTemplates";
 
 export default function SOPTemplatesScreen() {
-  const { selectedFacilityId, facilitiesAccess } = useAuth();
-  const [templates, setTemplates] = useState([]);
-  const [loading, setLoading] = useState(false);
-  const [refreshing, setRefreshing] = useState(false);
+  const { activeFacilityId, facilityRole } = useFacility();
+  const facilityId = activeFacilityId;
   const [showModal, setShowModal] = useState(false);
   const [title, setTitle] = useState("");
   const [content, setContent] = useState("");
   const [editingId, setEditingId] = useState(null);
-  const [submitting, setSubmitting] = useState(false);
+  const {
+    templates,
+    isLoading,
+    isRefreshing,
+    error,
+    refetch,
+    createTemplate,
+    updateTemplate,
+    deleteTemplate,
+    creating,
+    updating,
+    deleting
+  } = useSopTemplates(facilityId);
 
-  // Entitlement gating: Only allow admin/lead roles to create, edit, or delete SOP templates
-  const userAccess = facilitiesAccess?.find((f) => f.facilityId === selectedFacilityId);
-  const userRole = userAccess?.role;
-  const notEntitled = !userRole || !hasGlobalFacilityAccess(userRole);
+  const handlers = useMemo(
+    () => ({
+      onAuthRequired: () => {
+        console.log("AUTH_REQUIRED: route to login");
+      },
+      onFacilityDenied: () => {
+        Alert.alert("No Access", "You don't have access to this facility.");
+      },
+      toast: (msg) => Alert.alert("Notice", msg)
+    }),
+    []
+  );
 
   useEffect(() => {
-    loadTemplates();
-  }, [selectedFacilityId]);
+    if (error) handleApiError(error, handlers);
+  }, [error, handlers]);
 
-  const loadTemplates = async () => {
-    setLoading(true);
-    const res = await listSOPTemplates(selectedFacilityId);
-    if (res.success) setTemplates(res.data || []);
-    setLoading(false);
-  };
+  const canInteract = useMemo(() => Boolean(facilityId), [facilityId]);
+  const notEntitled = !facilityRole || !hasGlobalFacilityAccess(facilityRole);
+  const submitting = creating || updating || deleting;
 
-  const onRefresh = () => {
-    setRefreshing(true);
-    loadTemplates().then(() => setRefreshing(false));
+  const onRefresh = async () => {
+    await refetch();
   };
 
   const resetForm = () => {
@@ -64,6 +74,10 @@ export default function SOPTemplatesScreen() {
   };
 
   const handleSave = async () => {
+    if (!canInteract) {
+      Alert.alert("No Facility", "Select a facility to continue.");
+      return;
+    }
     if (notEntitled) {
       Alert.alert(
         "Access Denied",
@@ -75,20 +89,17 @@ export default function SOPTemplatesScreen() {
       Alert.alert("Missing Info", "Title is required.");
       return;
     }
-    setSubmitting(true);
-    let res;
-    if (editingId) {
-      res = await updateSOPTemplate(selectedFacilityId, editingId, { title, content });
-    } else {
-      res = await createSOPTemplate(selectedFacilityId, { title, content });
-    }
-    setSubmitting(false);
-    if (res.success) {
+    try {
+      if (editingId) {
+        await updateTemplate({ id: editingId, patch: { title, content } });
+      } else {
+        await createTemplate({ title, content });
+      }
       closeModal();
-      loadTemplates();
       Alert.alert("Success", editingId ? "SOP updated" : "SOP created");
-    } else {
-      Alert.alert("Error", res.message || "Failed to save SOP");
+    } catch (err) {
+      handleApiError(err, handlers);
+      Alert.alert("Error", "Failed to save SOP");
     }
   };
 
@@ -107,6 +118,10 @@ export default function SOPTemplatesScreen() {
   };
 
   const handleDelete = (tpl) => {
+    if (!canInteract) {
+      Alert.alert("No Facility", "Select a facility to continue.");
+      return;
+    }
     if (notEntitled) {
       Alert.alert(
         "Access Denied",
@@ -120,14 +135,12 @@ export default function SOPTemplatesScreen() {
         text: "Delete",
         style: "destructive",
         onPress: async () => {
-          setSubmitting(true);
-          const res = await deleteSOPTemplate(selectedFacilityId, tpl._id || tpl.id);
-          setSubmitting(false);
-          if (res.success) {
-            loadTemplates();
+          try {
+            await deleteTemplate(tpl._id || tpl.id);
             Alert.alert("Success", "SOP deleted");
-          } else {
-            Alert.alert("Error", res.message || "Failed to delete SOP");
+          } catch (err) {
+            handleApiError(err, handlers);
+            Alert.alert("Error", "Failed to delete SOP");
           }
         }
       }
@@ -137,8 +150,12 @@ export default function SOPTemplatesScreen() {
   return (
     <View style={styles.container}>
       <TouchableOpacity
-        style={[styles.addButton, notEntitled && styles.disabledButton]}
+        style={[styles.addButton, (!canInteract || notEntitled) && styles.disabledButton]}
         onPress={() => {
+          if (!canInteract) {
+            Alert.alert("No Facility", "Select a facility to continue.");
+            return;
+          }
           if (notEntitled) {
             Alert.alert(
               "Access Denied",
@@ -149,35 +166,42 @@ export default function SOPTemplatesScreen() {
           resetForm();
           setShowModal(true);
         }}
-        disabled={notEntitled}
+        disabled={!canInteract || notEntitled}
       >
         <Text style={styles.addButtonText}>+ Add SOP</Text>
       </TouchableOpacity>
 
-      {loading ? (
+      {!canInteract ? (
+        <View style={styles.empty}>
+          <Text style={styles.emptyText}>No facility selected</Text>
+          <Text style={styles.emptySubtext}>Pick a facility to view SOPs</Text>
+        </View>
+      ) : isLoading ? (
         <View style={{ flex: 1, justifyContent: "center", alignItems: "center" }}>
           <ActivityIndicator size="large" color="#0ea5e9" />
         </View>
       ) : (
         <FlatList
           data={templates}
-          keyExtractor={(item) => item._id || item.id || Math.random().toString()}
+          keyExtractor={(item) => String(item?._id || item?.id)}
           renderItem={({ item }) => (
             <View style={styles.sopCard}>
               <View style={styles.sopHeader}>
-                <Text style={styles.sopTitle}>{item.title}</Text>
-                {item.version && <Text style={styles.sopVersion}>v{item.version}</Text>}
+                <Text style={styles.sopTitle}>{item?.title || "Untitled SOP"}</Text>
+                {item?.version ? (
+                  <Text style={styles.sopVersion}>v{item.version}</Text>
+                ) : null}
               </View>
-              {item.content && (
+              {item?.content ? (
                 <Text style={styles.sopContent} numberOfLines={3}>
                   {item.content}
                 </Text>
-              )}
-              {item.createdAt && (
+              ) : null}
+              {item?.createdAt ? (
                 <Text style={styles.sopDate}>
                   Created: {new Date(item.createdAt).toLocaleDateString()}
                 </Text>
-              )}
+              ) : null}
               <View style={styles.sopActions}>
                 <TouchableOpacity
                   style={styles.actionButton}
@@ -201,7 +225,7 @@ export default function SOPTemplatesScreen() {
             </View>
           }
           refreshControl={
-            <RefreshControl refreshing={refreshing} onRefresh={onRefresh} />
+            <RefreshControl refreshing={isRefreshing} onRefresh={onRefresh} />
           }
           style={styles.list}
           contentContainerStyle={{ flexGrow: 1 }}

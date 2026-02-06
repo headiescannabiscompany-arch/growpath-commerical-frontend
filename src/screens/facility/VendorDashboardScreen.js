@@ -1,4 +1,4 @@
-import React, { useEffect, useState } from "react";
+import React, { useEffect, useMemo, useState } from "react";
 import {
   View,
   Text,
@@ -9,8 +9,9 @@ import {
   Alert,
   StyleSheet
 } from "react-native";
-import { useAuth } from "@/auth/AuthContext";
-import { listVendors, createVendor, updateVendor, deleteVendor } from "../../api/vendor";
+import { useFacility } from "../../facility/FacilityProvider";
+import { handleApiError } from "../../ui/handleApiError";
+import { useVendors } from "../../hooks/useVendors";
 
 // Placeholder analytics data for future management
 const sampleAnalytics = [
@@ -21,45 +22,67 @@ const sampleAnalytics = [
 ];
 
 export default function VendorDashboardScreen() {
-  const { selectedFacilityId } = useAuth();
-  const [vendors, setVendors] = useState([]);
-  const [loading, setLoading] = useState(true);
+  const { activeFacilityId } = useFacility();
+  const facilityId = activeFacilityId;
   const [name, setName] = useState("");
   const [contact, setContact] = useState("");
   const [editingId, setEditingId] = useState(null);
-  const [submitting, setSubmitting] = useState(false);
+
+  const {
+    vendors,
+    isLoading,
+    error,
+    refetch,
+    addVendor,
+    updateVendorItem,
+    deleteVendorItem,
+    adding,
+    updating,
+    deleting
+  } = useVendors(facilityId);
+
+  const handlers = useMemo(
+    () => ({
+      onAuthRequired: () => {
+        console.log("AUTH_REQUIRED: route to login");
+      },
+      onFacilityDenied: () => {
+        Alert.alert("No Access", "You don't have access to this facility.");
+      },
+      toast: (msg) => Alert.alert("Notice", msg)
+    }),
+    []
+  );
 
   useEffect(() => {
-    loadVendors();
-  }, [selectedFacilityId]);
+    if (error) handleApiError(error, handlers);
+  }, [error, handlers]);
 
-  const loadVendors = async () => {
-    setLoading(true);
-    const res = await listVendors(selectedFacilityId);
-    if (res.success) setVendors(res.data);
-    setLoading(false);
-  };
+  const canInteract = useMemo(() => Boolean(facilityId), [facilityId]);
+  const submitting = adding || updating || deleting;
 
   const handleSave = async () => {
+    if (!canInteract) {
+      Alert.alert("No Facility", "Select a facility to continue.");
+      return;
+    }
     if (!name) {
       Alert.alert("Missing info", "Vendor name is required.");
       return;
     }
-    setSubmitting(true);
-    let res;
-    if (editingId) {
-      res = await updateVendor(selectedFacilityId, editingId, { name, contact });
-    } else {
-      res = await createVendor(selectedFacilityId, { name, contact });
-    }
-    setSubmitting(false);
-    if (res.success) {
+    try {
+      if (editingId) {
+        await updateVendorItem({ id: editingId, patch: { name, contact } });
+      } else {
+        await addVendor({ name, contact });
+      }
       setName("");
       setContact("");
       setEditingId(null);
-      loadVendors();
-    } else {
-      Alert.alert("Error", res.message || "Failed to save vendor");
+      await refetch();
+    } catch (err) {
+      handleApiError(err, handlers);
+      Alert.alert("Error", "Failed to save vendor");
     }
   };
 
@@ -70,17 +93,23 @@ export default function VendorDashboardScreen() {
   };
 
   const handleDelete = async (vendor) => {
+    if (!canInteract) {
+      Alert.alert("No Facility", "Select a facility to continue.");
+      return;
+    }
     Alert.alert("Delete Vendor", "Are you sure?", [
       { text: "Cancel", style: "cancel" },
       {
         text: "Delete",
         style: "destructive",
         onPress: async () => {
-          setSubmitting(true);
-          const res = await deleteVendor(selectedFacilityId, vendor._id || vendor.id);
-          setSubmitting(false);
-          if (res.success) loadVendors();
-          else Alert.alert("Error", res.message || "Failed to delete");
+          try {
+            await deleteVendorItem(vendor._id || vendor.id);
+            await refetch();
+          } catch (err) {
+            handleApiError(err, handlers);
+            Alert.alert("Error", "Failed to delete");
+          }
         }
       }
     ]);
@@ -121,7 +150,7 @@ export default function VendorDashboardScreen() {
         <TouchableOpacity
           style={styles.addBtn}
           onPress={handleSave}
-          disabled={submitting}
+          disabled={submitting || !canInteract}
         >
           <Text style={styles.addBtnText}>
             {submitting ? "Saving..." : editingId ? "Update Vendor" : "Add Vendor"}
@@ -142,16 +171,18 @@ export default function VendorDashboardScreen() {
       </View>
 
       <Text style={styles.sectionHeader}>Vendors</Text>
-      {loading ? (
+      {!canInteract ? (
+        <Text style={styles.emptyText}>No facility selected</Text>
+      ) : isLoading ? (
         <ActivityIndicator color="#0ea5e9" />
       ) : (
         <FlatList
           data={vendors}
-          keyExtractor={(item) => item._id || item.id || Math.random().toString()}
+          keyExtractor={(item) => String(item?._id || item?.id)}
           renderItem={({ item }) => (
             <View style={styles.vendorRow}>
-              <Text style={styles.vendorName}>{item.name}</Text>
-              {item.contact ? (
+              <Text style={styles.vendorName}>{item?.name || "Vendor"}</Text>
+              {item?.contact ? (
                 <Text style={styles.vendorContact}>{item.contact}</Text>
               ) : null}
               <View style={styles.vendorActions}>
