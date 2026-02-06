@@ -1,64 +1,54 @@
-import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
+import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
+import { useFacility } from "../facility/FacilityProvider";
 import {
-  getFacilityMembers,
-  inviteFacilityMember,
-  updateMemberRole,
-  removeMember
-} from "../api/facilityTeam";
-import { useEntitlements } from "../entitlements";
-import { useApiGuards } from "../api/hooks";
+  listTeamMembers,
+  inviteTeamMember,
+  updateTeamMemberRole,
+  removeTeamMember,
+  FacilityRole
+} from "../api/team";
+
+// CONTRACT: facility context comes from FacilityProvider only.
 export function useFacilityTeam() {
-  const qc = useQueryClient();
-  const ent = useEntitlements();
-  const facilityId = ent.facilityId;
-  const { onError } = useApiGuards();
-  if (!facilityId) {
-    return {
-      data: null,
-      isLoading: false,
-      error: new Error("No facilityId available"),
-      refetch: async () => {}
-    };
-  }
-  const members = useQuery({
-    queryKey: ["facilityMembers", facilityId],
-    queryFn: () => getFacilityMembers(facilityId!),
-    enabled: !!facilityId
+  const queryClient = useQueryClient();
+  const { activeFacilityId } = useFacility();
+
+  const membersQuery = useQuery({
+    queryKey: ["teamMembers", activeFacilityId],
+    queryFn: () => listTeamMembers(activeFacilityId!),
+    enabled: !!activeFacilityId
   });
-  const invite = useMutation({
-    mutationFn: (data: {
-      email: string;
-      role: import("../api/facilityTeam").FacilityMember["role"];
-    }) => inviteFacilityMember(facilityId!, data),
+
+  const inviteMutation = useMutation({
+    mutationFn: (data: { email: string; role: FacilityRole }) =>
+      inviteTeamMember(activeFacilityId!, data),
     onSuccess: () => {
-      qc.invalidateQueries({ queryKey: ["facilityMembers", facilityId] });
-    },
-    onError
+      queryClient.invalidateQueries({ queryKey: ["teamMembers", activeFacilityId] });
+    }
   });
-  const updateRole = useMutation({
-    mutationFn: ({
-      memberId,
-      role
-    }: {
-      memberId: string;
-      role: import("../api/facilityTeam").FacilityMember["role"];
-    }) => updateMemberRole(facilityId!, memberId, role),
+
+  const updateRoleMutation = useMutation({
+    mutationFn: (data: { userId: string; role: FacilityRole }) =>
+      updateTeamMemberRole(activeFacilityId!, data.userId, { role: data.role }),
     onSuccess: () => {
-      qc.invalidateQueries({ queryKey: ["facilityMembers", facilityId] });
-    },
-    onError
+      queryClient.invalidateQueries({ queryKey: ["teamMembers", activeFacilityId] });
+    }
   });
-  const remove = useMutation({
-    mutationFn: (memberId: string) => removeMember(facilityId!, memberId),
+
+  const removeMutation = useMutation({
+    mutationFn: (userId: string) => removeTeamMember(activeFacilityId!, userId),
     onSuccess: () => {
-      qc.invalidateQueries({ queryKey: ["facilityMembers", facilityId] });
-    },
-    onError
+      queryClient.invalidateQueries({ queryKey: ["teamMembers", activeFacilityId] });
+    }
   });
+
   return {
-    ...members,
-    invite: invite.mutateAsync,
-    updateRole: updateRole.mutateAsync,
-    remove: remove.mutateAsync
+    ...membersQuery,
+    invite: inviteMutation.mutateAsync,
+    inviting: inviteMutation.isPending,
+    updateRole: updateRoleMutation.mutateAsync,
+    updatingRole: updateRoleMutation.isPending,
+    remove: removeMutation.mutateAsync,
+    removing: removeMutation.isPending
   };
 }

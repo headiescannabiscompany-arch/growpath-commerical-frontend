@@ -1,1 +1,28 @@
-import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query"; import {   fetchInventory,   createInventoryItem,   updateInventoryItem } from "../api/facilityInventory"; import { useEntitlements } from "@/entitlements";  export function useInventory() {   const { selectedFacilityId } = useEntitlements();   const facilityId = selectedFacilityId;   const queryClient = useQueryClient();    const inventoryQuery = useQuery({     queryKey: ["inventory", facilityId],     queryFn: () => fetchInventory(facilityId!),     enabled: !!facilityId   });    const createItem = useMutation({     mutationFn: (data: any) => createInventoryItem(facilityId!, data),     onSuccess: () => {       queryClient.invalidateQueries({         queryKey: ["inventory", facilityId]       });     }   });    const updateItem = useMutation({     mutationFn: ({ id, data }: any) => updateInventoryItem(facilityId!, id, data),     onSuccess: () => {       queryClient.invalidateQueries({         queryKey: ["inventory", facilityId]       });     }   });    return {     ...inventoryQuery,     createItem: createItem.mutateAsync,     updateItem: updateItem.mutateAsync,     creating: createItem.isPending   }; }
+import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
+import { useFacility } from "../facility/FacilityProvider";
+import { getInventory, createInventoryItem } from "../api/inventory";
+
+// CONTRACT: facility context comes from FacilityProvider only.
+export function useInventory() {
+  const queryClient = useQueryClient();
+  const { activeFacilityId } = useFacility();
+
+  const inventoryQuery = useQuery({
+    queryKey: ["inventory", activeFacilityId],
+    queryFn: () => getInventory(activeFacilityId!),
+    enabled: !!activeFacilityId
+  });
+
+  const createMutation = useMutation({
+    mutationFn: (data: any) => createInventoryItem(activeFacilityId!, data),
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ["inventory", activeFacilityId] });
+    }
+  });
+
+  return {
+    ...inventoryQuery,
+    createInventoryItem: createMutation.mutateAsync,
+    creating: createMutation.isPending
+  };
+}

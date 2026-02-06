@@ -1,25 +1,28 @@
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
-import { fetchGrowLogs, createGrowLog } from "../api/growlog";
+import { useFacility } from "../facility/FacilityProvider";
+import { getGrowlogs, createGrowlog } from "../api/growlogs";
 
-export function useGrowLogs(growId?: string) {
-  const qc = useQueryClient();
+// CONTRACT: facility context comes from FacilityProvider only.
+export function useGrowlogs() {
+  const queryClient = useQueryClient();
+  const { activeFacilityId } = useFacility();
 
-  const query = useQuery({
-    queryKey: ["growLogs", growId],
-    queryFn: () => fetchGrowLogs(growId!),
-    enabled: !!growId
+  const growlogsQuery = useQuery({
+    queryKey: ["growlogs", activeFacilityId],
+    queryFn: () => getGrowlogs(activeFacilityId!),
+    enabled: !!activeFacilityId
   });
 
-  const addLog = useMutation({
-    mutationFn: (data: any) => createGrowLog(growId!, data),
+  const createMutation = useMutation({
+    mutationFn: (data: any) => createGrowlog(activeFacilityId!, data),
     onSuccess: () => {
-      qc.invalidateQueries({ queryKey: ["growLogs", growId] });
+      queryClient.invalidateQueries({ queryKey: ["growlogs", activeFacilityId] });
     }
   });
 
   return {
-    ...query,
-    addLog: addLog.mutateAsync,
-    adding: addLog.isPending
+    ...growlogsQuery,
+    createGrowlog: createMutation.mutateAsync,
+    creating: createMutation.isPending
   };
 }
