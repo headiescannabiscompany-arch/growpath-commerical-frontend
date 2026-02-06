@@ -59,7 +59,7 @@ interface PersonalGrowsResponse {
  */
 export async function listPersonalGrows(): Promise<PersonalGrow[]> {
   try {
-    const res = await api.get("/personal/grows");
+    const res = await api.get("/api/personal/grows");
     if (
       typeof res === "object" &&
       res !== null &&

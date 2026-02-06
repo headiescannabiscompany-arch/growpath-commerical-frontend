@@ -27,7 +27,7 @@ export async function listPersonalLogs(options?: {
 }): Promise<PersonalLog[]> {
   try {
     const query = options?.growId ? `?growId=${encodeURIComponent(options.growId)}` : "";
-    const res = await api.get(`/personal/logs${query}`);
+    const res = await api.get(`/api/personal/logs${query}`);
 
     if (
       typeof res === "object" &&

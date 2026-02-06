@@ -64,7 +64,7 @@ export async function listPersonalTasks(options?: {
 }): Promise<PersonalTask[]> {
   try {
     const query = options?.growId ? `?growId=${encodeURIComponent(options.growId)}` : "";
-    const res = await api.get(`/personal/tasks${query}`);
+    const res = await api.get(`/api/personal/tasks${query}`);
 
     if (
       typeof res === "object" &&

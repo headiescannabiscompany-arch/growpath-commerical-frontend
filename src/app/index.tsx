@@ -93,8 +93,8 @@ export default function Index() {
       }
     }
 
-    console.log("[INDEX] Personal default → /home");
-    return { kind: "nav" as const, href: "/home" };
+    console.log("[INDEX] Personal default → /home/personal");
+    return { kind: "nav" as const, href: "/home/personal" };
   }, [
     auth.isHydrating,
     settled,
