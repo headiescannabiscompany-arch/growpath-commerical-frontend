@@ -7,7 +7,6 @@ import React, {
   useState
 } from "react";
 import { useAuth } from "../auth/AuthContext";
-import { apiMe } from "../api/me";
 
 type EntitlementsMode = "personal" | "commercial" | "facility";
 
@@ -63,7 +62,8 @@ function applyServerCtx(
 }
 
 export function EntitlementsProvider({ children }: { children: React.ReactNode }) {
-  const { token, isHydrating, logout } = useAuth();
+  const auth = useAuth();
+  const { token, isHydrating, logout } = auth;
 
   const [state, setState] = useState<EntitlementsState>(DEFAULT_STATE);
 
@@ -106,7 +106,7 @@ export function EntitlementsProvider({ children }: { children: React.ReactNode }
       };
     }
 
-    // Only fetch /api/me if we haven't already fetched for this token
+    // Only apply if we haven't already applied for this token
     if (lastFetchedTokenRef.current === token) {
       return () => {
         mounted = false;
@@ -114,58 +114,25 @@ export function EntitlementsProvider({ children }: { children: React.ReactNode }
     }
     lastFetchedTokenRef.current = token;
 
-    (async () => {
-      try {
-        // Contract: apiMe returns { user, ctx }
-        // Use invalidateOn401: false to prevent token thrashing during hydration
-        const resp = await apiMe({ silent: true });
+    // Read ctx and user from AuthContext (no duplicate fetch)
+    const ctx = auth.ctx ?? null;
+    const userPlan = auth.user?.plan ?? null;
 
-        const ctx = resp?.ctx ?? null;
-        const userPlan = resp?.user?.plan ?? null;
+    const fingerprint = safeStringify({ ctx, userPlan });
 
-        const fingerprint = safeStringify({ ctx, userPlan });
-
-        if (!mounted) return;
-
-        // Only apply if changed
-        if (fingerprint !== lastAppliedRef.current) {
-          lastAppliedRef.current = fingerprint;
-          setState((prev) => applyServerCtx(prev, ctx, userPlan));
-        } else {
-          // Ensure ready is true even if ctx unchanged
-          setState((prev) => (prev.ready ? prev : { ...prev, ready: true }));
-        }
-      } catch (e: any) {
-        if (!mounted) return;
-
-        // Global 401: token invalid => force logout (hard logout lives in AuthContext)
-        if (e?.status === 401 || e?.code === "UNAUTHORIZED") {
-          await logout();
-          // After logout, set safe defaults (ready true so routing is stable)
-          setState({
-            ready: true,
-            mode: "personal",
-            plan: "free",
-            capabilities: {},
-            limits: {}
-          });
-          lastAppliedRef.current = "UNAUTHORIZED";
-          return;
-        }
-
-        // Non-401 failures: do NOT brick the app.
-        // Keep token as-is; set ready so UI can render (FacilityProvider will gate by mode/plan anyway)
-        setState((prev) => ({
-          ...prev,
-          ready: true
-        }));
-      }
-    })();
+    // Only apply if changed
+    if (fingerprint !== lastAppliedRef.current) {
+      lastAppliedRef.current = fingerprint;
+      setState((prev) => applyServerCtx(prev, ctx, userPlan));
+    } else {
+      // Ensure ready is true even if ctx unchanged
+      setState((prev) => (prev.ready ? prev : { ...prev, ready: true }));
+    }
 
     return () => {
       mounted = false;
     };
-  }, [token, isHydrating]);
+  }, [auth.isHydrating, auth.token, auth.ctx, auth.user]);
 
   const value = useMemo(() => state, [state]);
 

@@ -21,6 +21,7 @@ import { apiMe } from "../api/me";
 type AuthState = {
   token: string | null;
   user: AuthUser | null;
+  ctx: any | null;
   isHydrating: boolean;
   isAuthed: boolean;
   login: (email: string, password: string) => Promise<void>;
@@ -33,6 +34,7 @@ const AuthContext = createContext<AuthState | null>(null);
 export function AuthProvider({ children }: { children: React.ReactNode }) {
   const [token, setToken] = useState<string | null>(null);
   const [user, setUser] = useState<AuthUser | null>(null);
+  const [ctx, setCtx] = useState<any | null>(null);
   const [isHydrating, setIsHydrating] = useState(true);
 
   // Prevent rehydration loops - hydrate only once
@@ -49,6 +51,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
       setAuthToken(null);
       setToken(null);
       setUser(null);
+      setCtx(null);
       await persistToken(null);
     } finally {
       isLoggingOutRef.current = false;
@@ -83,7 +86,10 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
           // Try to validate token with backend
           try {
             const me = await apiMe();
-            if (mounted) setUser(me.user);
+            if (mounted) {
+              setUser(me.user);
+              setCtx(me.ctx ?? null);
+            }
           } catch (e: any) {
             // If 401, token is invalid - do hard logout
             if (e?.status === 401) {
