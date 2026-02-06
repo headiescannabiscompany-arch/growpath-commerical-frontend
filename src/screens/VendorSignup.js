@@ -1,4 +1,4 @@
-import React, { useState } from "react";
+import React, { useState, useEffect, useMemo } from "react";
 import {
   View,
   Text,
@@ -9,7 +9,8 @@ import {
   Alert,
   Picker
 } from "react-native";
-import { useAuth } from "@/auth/AuthContext";
+import { useVendorSignup } from "@/hooks/useVendorSignup";
+import { handleApiError } from "@/util/handleApiError";
 
 const VENDOR_TYPES = [
   { label: "Select vendor type...", value: "" },
@@ -22,8 +23,7 @@ const VENDOR_TYPES = [
 ];
 
 const VendorSignup = ({ navigation }) => {
-  const { token } = useAuth();
-  const [loading, setLoading] = useState(false);
+  const { signupAsVendor, isPending, error } = useVendorSignup();
   const [vendorType, setVendorType] = useState("");
   const [companyName, setCompanyName] = useState("");
   const [description, setDescription] = useState("");
@@ -31,41 +31,47 @@ const VendorSignup = ({ navigation }) => {
   const [contactEmail, setContactEmail] = useState("");
   const [contactPhone, setContactPhone] = useState("");
 
+  const handlers = useMemo(
+    () => ({
+      onAuthRequired: () => {
+        Alert.alert("Authentication Required", "Please log in to sign up as a vendor");
+      },
+      onFacilityDenied: () => {
+        Alert.alert("Access Denied", "You don't have permission to sign up as a vendor");
+      },
+      toast: (message) => {
+        Alert.alert("Notice", message);
+      }
+    }),
+    []
+  );
+
+  useEffect(() => {
+    if (error) {
+      handleApiError(error, handlers);
+    }
+  }, [error, handlers]);
+
   const handleSignup = async () => {
     if (!companyName || !vendorType || !contactEmail) {
       Alert.alert("Missing Info", "Please fill in company name, type, and email");
       return;
     }
 
-    setLoading(true);
     try {
-      const response = await fetch("http://localhost:5001/api/vendors", {
-        method: "POST",
-        headers: {
-          Authorization: `Bearer ${token}`,
-          "Content-Type": "application/json"
-        },
-        body: JSON.stringify({
-          companyName,
-          vendorType,
-          description,
-          websiteUrl,
-          contactEmail,
-          contactPhone
-        })
+      await signupAsVendor({
+        companyName,
+        vendorType,
+        description,
+        websiteUrl,
+        contactEmail,
+        contactPhone
       });
 
-      const data = await response.json();
-      if (response.ok) {
-        Alert.alert("Success", "Vendor account created! Pending admin verification.");
-        navigation.goBack();
-      } else {
-        Alert.alert("Error", data.message || "Failed to create vendor account");
-      }
-    } catch (error) {
-      Alert.alert("Error", error.message);
-    } finally {
-      setLoading(false);
+      Alert.alert("Success", "Vendor account created! Pending admin verification.");
+      navigation.goBack();
+    } catch (err) {
+      handleApiError(err, handlers);
     }
   };
 
@@ -143,11 +149,11 @@ const VendorSignup = ({ navigation }) => {
         </Text>
 
         <TouchableOpacity
-          style={[styles.button, loading && styles.buttonDisabled]}
+          style={[styles.button, isPending && styles.buttonDisabled]}
           onPress={handleSignup}
-          disabled={loading}
+          disabled={isPending}
         >
-          {loading ? (
+          {isPending ? (
             <ActivityIndicator color="#fff" />
           ) : (
             <Text style={styles.buttonText}>Create Vendor Account</Text>

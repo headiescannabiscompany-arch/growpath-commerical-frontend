@@ -64,6 +64,9 @@ export const endpoints = {
   vendors: `${BASE}/vendors`,
   vendor: (id: string) => `${BASE}/vendors/${id}`,
 
+  // vendor signup (public endpoint)
+  vendorSignup: `${BASE}/vendors/signup`,
+
   // billing
   facilityBillingStatus: `${BASE}/facility-billing/status`,
   facilityBillingCheckout: `${BASE}/facility-billing/checkout-session`,
