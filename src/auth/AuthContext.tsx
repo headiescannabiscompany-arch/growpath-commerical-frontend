@@ -91,15 +91,15 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
               setCtx(me.ctx ?? null);
             }
           } catch (e: any) {
-            // If 401, token is invalid - do hard logout
+            // Only hardLogout on 401 (token is invalid)
             if (e?.status === 401) {
               console.log("[AUTH] Token rejected by server (401), clearing");
               await hardLogout();
               return;
             }
-            // Other errors: still clear token to avoid bad state
-            console.error("[AUTH] Failed to hydrate user:", e);
-            await hardLogout();
+            // Network/server errors: keep token, user stays null until backend recovers
+            console.error("[AUTH] Failed to hydrate user (non-401):", e);
+            // do NOT hardLogout - let app work offline or retry
           }
         }
       } finally {
@@ -157,13 +157,14 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
     () => ({
       token,
       user,
+      ctx,
       isHydrating,
       isAuthed: !!token,
       login,
       signup,
       logout
     }),
-    [token, user, isHydrating]
+    [token, user, ctx, isHydrating]
   );
 
   return <AuthContext.Provider value={value}>{children}</AuthContext.Provider>;
