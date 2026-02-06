@@ -1,4 +1,4 @@
-import React, { useEffect, useState } from "react";
+import React, { useEffect, useMemo, useState } from "react";
 import {
   View,
   Text,
@@ -11,8 +11,10 @@ import {
   Modal,
   RefreshControl
 } from "react-native";
-import { useAuth } from "@/auth/AuthContext";
-import { listAuditLogs, createAuditLog, reconcileAudit } from "../../api/audit";
+
+import { useFacility } from "../../facility/FacilityProvider";
+import { handleApiError } from "../../ui/handleApiError";
+import { useAuditLogs } from "../../hooks/useAuditLogs";
 
 const ACTION_TYPES = [
   "Inventory Check",
@@ -24,30 +26,34 @@ const ACTION_TYPES = [
 ];
 
 export default function AuditLogScreen() {
-  const { selectedFacilityId } = useAuth();
-  const [logs, setLogs] = useState([]);
-  const [loading, setLoading] = useState(false);
-  const [refreshing, setRefreshing] = useState(false);
+  const { activeFacilityId } = useFacility();
+  const facilityId = activeFacilityId;
+
   const [showModal, setShowModal] = useState(false);
   const [action, setAction] = useState("");
   const [details, setDetails] = useState("");
-  const [submitting, setSubmitting] = useState(false);
+
+  const { logs, isLoading, isRefreshing, error, refetch, addLog, isAdding } =
+    useAuditLogs(facilityId);
+
+  const handlers = useMemo(
+    () => ({
+      onAuthRequired: () => {
+        console.log("AUTH_REQUIRED: route to login");
+      },
+      onFacilityDenied: () => {
+        Alert.alert("No Access", "You don't have access to this facility.");
+      },
+      toast: (msg) => Alert.alert("Notice", msg)
+    }),
+    []
+  );
 
   useEffect(() => {
-    loadLogs();
-  }, [selectedFacilityId]);
+    if (error) handleApiError(error, handlers);
+  }, [error, handlers]);
 
-  const loadLogs = async () => {
-    setLoading(true);
-    const res = await listAuditLogs(selectedFacilityId);
-    if (res.success) setLogs(res.data || []);
-    setLoading(false);
-  };
-
-  const onRefresh = () => {
-    setRefreshing(true);
-    loadLogs().then(() => setRefreshing(false));
-  };
+  const canInteract = useMemo(() => Boolean(facilityId), [facilityId]);
 
   const resetForm = () => {
     setAction("");
@@ -59,55 +65,78 @@ export default function AuditLogScreen() {
     resetForm();
   };
 
+  const onRefresh = async () => {
+    await refetch();
+  };
+
   const handleAddLog = async () => {
+    if (!canInteract) {
+      Alert.alert("No Facility", "Select a facility to continue.");
+      return;
+    }
+
     if (!action) {
       Alert.alert("Missing Info", "Action is required.");
       return;
     }
-    setSubmitting(true);
-    const res = await createAuditLog(selectedFacilityId, { action, details });
-    setSubmitting(false);
-    if (res.success) {
+
+    try {
+      await addLog({ action, details });
       closeModal();
-      loadLogs();
       Alert.alert("Success", "Audit log entry added");
-    } else {
-      Alert.alert("Error", res.message || "Failed to add log");
+    } catch (err) {
+      handleApiError(err, handlers);
+      Alert.alert("Error", "Failed to add log");
     }
   };
 
   return (
     <View style={styles.container}>
       <TouchableOpacity
-        style={styles.addButton}
+        style={[styles.addButton, !canInteract && styles.disabledButton]}
         onPress={() => {
+          if (!canInteract) {
+            Alert.alert("No Facility", "Select a facility to continue.");
+            return;
+          }
           resetForm();
           setShowModal(true);
         }}
+        disabled={!canInteract}
       >
         <Text style={styles.addButtonText}>+ Add Audit Log</Text>
       </TouchableOpacity>
 
-      {loading ? (
+      {!canInteract ? (
+        <View style={styles.empty}>
+          <Text style={styles.emptyText}>No facility selected</Text>
+          <Text style={styles.emptySubtext}>Pick a facility to view audit logs</Text>
+        </View>
+      ) : isLoading ? (
         <View style={{ flex: 1, justifyContent: "center", alignItems: "center" }}>
           <ActivityIndicator size="large" color="#8b5cf6" />
         </View>
       ) : (
         <FlatList
           data={logs}
-          keyExtractor={(item) => item._id || item.id || Math.random().toString()}
+          keyExtractor={(item) => String(item?._id || item?.id)}
           renderItem={({ item }) => (
             <View style={styles.logCard}>
               <View style={styles.logHeader}>
-                <Text style={styles.logAction}>{item.action}</Text>
+                <Text style={styles.logAction}>{item?.action || "Audit Entry"}</Text>
               </View>
-              {item.details && <Text style={styles.logDetails}>{item.details}</Text>}
-              {item.user && <Text style={styles.logUser}>By: {item.user}</Text>}
-              {item.createdAt && (
+
+              {item?.details ? (
+                <Text style={styles.logDetails}>{item.details}</Text>
+              ) : null}
+
+              {item?.user ? <Text style={styles.logUser}>By: {item.user}</Text> : null}
+
+              {item?.createdAt ? (
                 <Text style={styles.logDate}>
                   {new Date(item.createdAt).toLocaleString()}
                 </Text>
-              )}
+              ) : null}
             </View>
           )}
           ListEmptyComponent={
@@ -117,7 +146,7 @@ export default function AuditLogScreen() {
             </View>
           }
           refreshControl={
-            <RefreshControl refreshing={refreshing} onRefresh={onRefresh} />
+            <RefreshControl refreshing={isRefreshing} onRefresh={onRefresh} />
           }
           style={styles.list}
           contentContainerStyle={{ flexGrow: 1 }}
@@ -170,17 +199,18 @@ export default function AuditLogScreen() {
               >
                 <Text style={styles.cancelButtonText}>Cancel</Text>
               </TouchableOpacity>
+
               <TouchableOpacity
                 style={[
                   styles.modalButton,
                   styles.saveButton,
-                  submitting && styles.disabledButton
+                  isAdding && styles.disabledButton
                 ]}
                 onPress={handleAddLog}
-                disabled={submitting}
+                disabled={isAdding}
               >
                 <Text style={styles.saveButtonText}>
-                  {submitting ? "Saving..." : "Add Entry"}
+                  {isAdding ? "Saving..." : "Add Entry"}
                 </Text>
               </TouchableOpacity>
             </View>
