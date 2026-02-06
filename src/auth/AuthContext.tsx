@@ -1,4 +1,11 @@
-import React, { createContext, useContext, useEffect, useMemo, useState } from "react";
+import React, {
+  createContext,
+  useContext,
+  useEffect,
+  useMemo,
+  useState,
+  useRef
+} from "react";
 import { logEvent } from "../api/events";
 import { usePushRegistration } from "../hooks/usePushRegistration";
 import {
@@ -28,32 +35,62 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
   const [user, setUser] = useState<AuthUser | null>(null);
   const [isHydrating, setIsHydrating] = useState(true);
 
+  // Prevent rehydration loops - hydrate only once
+  const didHydrateRef = useRef(false);
+  // Prevent multiple logout operations in flight
+  const isLoggingOutRef = useRef(false);
+
+  // Hard logout that prevents token from reappearing
+  const hardLogout = async () => {
+    if (isLoggingOutRef.current) return; // Already logging out
+    isLoggingOutRef.current = true;
+
+    try {
+      setAuthToken(null);
+      setToken(null);
+      setUser(null);
+      await persistToken(null);
+    } finally {
+      isLoggingOutRef.current = false;
+    }
+  };
+
   useEffect(() => {
+    // Only hydrate once
+    if (didHydrateRef.current) return;
+    didHydrateRef.current = true;
+
     let mounted = true;
     (async () => {
       try {
         const t = await readToken();
         if (!mounted) return;
-        setToken(t);
-        setAuthToken(t); // keep api client in sync
+
         if (t) {
+          setToken(t);
+          setAuthToken(t); // keep api client in sync
+
+          // Try to validate token with backend
           try {
             const me = await apiMe();
             if (mounted) setUser(me.user);
-          } catch {
-            // If token is invalid/expired, clear it
-            if (mounted) {
-              setToken(null);
-              setAuthToken(null); // keep api client in sync
-              setUser(null);
-              await persistToken(null);
+          } catch (e: any) {
+            // If 401, token is invalid - do hard logout
+            if (e?.status === 401) {
+              console.log("[AUTH] Token rejected by server (401), clearing");
+              await hardLogout();
+              return;
             }
+            // Other errors: still clear token to avoid bad state
+            console.error("[AUTH] Failed to hydrate user:", e);
+            await hardLogout();
           }
         }
       } finally {
         if (mounted) setIsHydrating(false);
       }
     })();
+
     return () => {
       mounted = false;
     };
@@ -102,10 +139,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
   }
 
   async function logout() {
-    setToken(null);
-    setAuthToken(null); // critical
-    setUser(null);
-    await persistToken(null);
+    await hardLogout();
   }
 
   const value = useMemo<AuthState>(

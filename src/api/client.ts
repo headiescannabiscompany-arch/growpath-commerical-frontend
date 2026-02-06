@@ -51,6 +51,16 @@ async function request(path: string, options: RequestOptions = {}) {
     headers["Authorization"] = `Bearer ${authToken}`;
   }
 
+  // Debug: log if auth header is present
+  if (path.includes("/api/me") || path.includes("/api/facilities")) {
+    console.log(
+      "[API] Request to",
+      path,
+      "- Authorization header present:",
+      !!headers["Authorization"]
+    );
+  }
+
   const hasBody = "body" in options && options.body !== undefined;
   const bodyIsFD = hasBody && isFormData(options.body);
   const bodyIsBlob = hasBody && isBlob(options.body);

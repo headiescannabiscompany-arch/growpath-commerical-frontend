@@ -52,7 +52,7 @@ export default function Index() {
     );
   }
 
-  // Route based on mode
+  // Route based on mode - even on entitlements hydration failure, default to personal
   console.log("[INDEX] ent.mode:", ent.mode);
   console.log("[INDEX] ent.plan:", ent.plan);
 
@@ -61,5 +61,6 @@ export default function Index() {
 
   // Default to personal home for free/personal users
   // This is a safe default that doesn't require facility/commercial setup
+  console.log("[INDEX] Routing to /home (personal default)");
   return <Redirect href="/home" />;
 }
