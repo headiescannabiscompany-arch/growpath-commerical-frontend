@@ -10,6 +10,7 @@ import { useAuth } from "../auth/AuthContext";
 import { useSession } from "../session";
 import { apiMe } from "../api/me";
 import { setAuthToken } from "../api/client";
+import { setToken as persistToken } from "../auth/tokenStore";
 
 type Plan = "free" | "pro" | "creator_plus" | "commercial" | "facility";
 type Mode = "personal" | "commercial" | "facility";
@@ -108,7 +109,10 @@ export function EntitlementsProvider({ children }: { children: React.ReactNode }
       console.error("Failed to hydrate entitlements:", e);
       // If 401, token is invalid - clear it
       if (e?.status === 401) {
+        console.log("[ENTITLEMENTS] Got 401 from /api/me, clearing token permanently");
         setAuthToken(null);
+        // CRITICAL: persist null to storage to prevent token reappearance
+        await persistToken(null);
       }
       setPlan("free");
       setCapabilities({ ...DEFAULT_CAPABILITIES });

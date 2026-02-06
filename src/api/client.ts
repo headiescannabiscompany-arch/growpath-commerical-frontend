@@ -1,5 +1,6 @@
 import { config } from "../config/config";
 import { normalizeApiError, type ApiError } from "./errors";
+import { mockRequest } from "./mockServer";
 
 let authToken: string | null = null;
 
@@ -16,6 +17,9 @@ type RequestOptions = {
 };
 
 const DEFAULT_TIMEOUT = 10000;
+
+const isMockEnabled =
+  typeof process !== "undefined" && process.env?.EXPO_PUBLIC_API_MOCK === "1";
 
 function isFormData(value: any) {
   return typeof FormData !== "undefined" && value instanceof FormData;
@@ -49,6 +53,10 @@ async function request(path: string, options: RequestOptions = {}) {
   // Do not inject X-Facility-Id headers.
   if (authToken) {
     headers["Authorization"] = `Bearer ${authToken}`;
+  }
+
+  if (isMockEnabled) {
+    return await mockRequest(path, method, options, headers, authToken);
   }
 
   // Debug: log if auth header is present

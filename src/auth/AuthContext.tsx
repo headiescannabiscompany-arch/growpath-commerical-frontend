@@ -110,7 +110,6 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
       setAuthToken(res.token); // critical
       setUser(res.user);
       await persistToken(res.token);
-      logEvent("USER_LOGIN");
     } catch (err: any) {
       // Extract error message from normalized error or raw error
       const message =
@@ -119,6 +118,10 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
       // Throw as Error object (not plain object) so caller can handle it
       throw new Error(message);
     }
+    // Fire analytics after successful auth (outside try-catch so it doesn't interfere with login)
+    logEvent("USER_LOGIN").catch(() => {
+      // analytics must never break UX
+    });
   }
 
   async function signup(body: SignupBody) {
@@ -128,7 +131,6 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
       setAuthToken(res.token); // critical
       setUser(res.user);
       await persistToken(res.token);
-      logEvent("USER_REGISTER");
     } catch (err: any) {
       // Extract error message from normalized error or raw error
       const message = err?.message || err?.data?.error?.message || "Signup failed";
@@ -136,6 +138,10 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
       // Throw as Error object (not plain object) so caller can handle it
       throw new Error(message);
     }
+    // Fire analytics after successful auth (outside try-catch so it doesn't interfere with signup)
+    logEvent("USER_REGISTER").catch(() => {
+      // analytics must never break UX
+    });
   }
 
   async function logout() {
