@@ -67,6 +67,25 @@ export const endpoints = {
   // vendor signup (public endpoint)
   vendorSignup: `${BASE}/vendors/signup`,
 
+  // feed / global utilities (non facility-scoped)
+  feed: `${BASE}/feed`,
+
+  // tasks (global, non facility-scoped)
+  tasksGlobal: `${BASE}/tasks`,
+  taskGlobal: (id: string) => `${BASE}/tasks/${id}`,
+
+  // alerts (global, non facility-scoped)
+  alertsGlobal: `${BASE}/alerts`,
+  alertGlobal: (id: string) => `${BASE}/alerts/${id}`,
+
+  // legacy global growlog endpoint (non facility-scoped)
+  growlogLegacy: `${BASE}/growlog`,
+
+  // live sessions (non facility-scoped)
+  liveHost: `${BASE}/live/host`,
+  liveJoin: `${BASE}/live/join`,
+  liveEnd: `${BASE}/live/end`,
+
   // billing
   facilityBillingStatus: `${BASE}/facility-billing/status`,
   facilityBillingCheckout: `${BASE}/facility-billing/checkout-session`,

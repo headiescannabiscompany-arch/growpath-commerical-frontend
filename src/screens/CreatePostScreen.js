@@ -5,26 +5,28 @@ import {
   TextInput,
   TouchableOpacity,
   Image,
-  Platform,
   Alert,
   ActivityIndicator,
   ScrollView
 } from "react-native";
 import * as ImagePicker from "expo-image-picker";
-import ScreenContainer from "../components/ScreenContainer";
-import { createPost } from "../api/posts";
-import { useAuth } from "@/auth/AuthContext";
 import { useNavigation, useRoute } from "@react-navigation/native";
+
+import ScreenContainer from "../components/ScreenContainer";
 import GrowInterestPicker from "../components/GrowInterestPicker";
 import { buildEmptyTierSelection, flattenTierSelections } from "../utils/growInterests";
+
+import { useAuth } from "@/auth/AuthContext";
+import { handleApiError } from "@/utils/handleApiError";
+import { useCreatePost } from "@/hooks/useCreatePost";
 
 export default function CreatePostScreen() {
   const [text, setText] = useState("");
   const [photos, setPhotos] = useState([]);
-  const [submitting, setSubmitting] = useState(false);
   const navigation = useNavigation();
   const route = useRoute();
   const onPostCreated = route.params?.onPostCreated;
+
   const { user, mode } = useAuth();
   const [growInterestSelections, setGrowInterestSelections] = useState(
     buildEmptyTierSelection()
@@ -32,6 +34,7 @@ export default function CreatePostScreen() {
 
   const workspaceContext = route.params?.workspace || mode || "personal";
   const isCommercial = workspaceContext === "commercial";
+
   const allowedPostTypes = ["education", "offer", "discussion", "course"];
   const safeInitialType = useMemo(
     () =>
@@ -40,7 +43,10 @@ export default function CreatePostScreen() {
         : "education",
     [route.params?.postType]
   );
+
   const [postType, setPostType] = useState(isCommercial ? safeInitialType : "discussion");
+
+  const { createPost, isCreating } = useCreatePost();
 
   async function pickImage() {
     const result = await ImagePicker.launchImageLibraryAsync({
@@ -53,7 +59,8 @@ export default function CreatePostScreen() {
   }
 
   async function submit() {
-    if (submitting) return;
+    if (isCreating) return;
+
     if (!text.trim() && photos.length === 0) {
       Alert.alert("Add a post", "Share some text or add a photo before posting.");
       return;
@@ -75,48 +82,28 @@ export default function CreatePostScreen() {
       }
     }
 
-    setSubmitting(true);
-    const form = new FormData();
-    form.append("text", text);
-    form.append("workspaceContext", workspaceContext);
-    form.append("authorType", isCommercial ? "business" : "user");
-    form.append(
-      "authorId",
-      isCommercial
-        ? user?.business?.id || user?.business?._id || user?._id || ""
-        : user?._id || ""
-    );
-    form.append("postType", isCommercial ? postType : "discussion");
     const selectedTags = flattenTierSelections(growInterestSelections);
-    if (selectedTags.length) {
-      form.append("growTags", JSON.stringify(selectedTags));
-    }
 
-    for (const photo of photos) {
-      // For web/TypeScript compatibility, use Blob and filename
-      if (Platform.OS === "web") {
-        const response = await fetch(photo);
-        const blob = await response.blob();
-        form.append("photos", blob, "photo.jpg");
-      } else {
-        form.append("photos", {
-          uri: photo,
-          name: `photo_${photos.indexOf(photo)}.jpg`,
-          type: "image/jpeg"
-        });
-      }
-    }
+    const authorId = isCommercial
+      ? user?.business?.id || user?.business?._id || user?._id || ""
+      : user?._id || "";
 
     try {
-      await createPost(form);
-      if (typeof onPostCreated === "function") {
-        onPostCreated();
-      }
+      await createPost({
+        text,
+        workspaceContext,
+        authorType: isCommercial ? "business" : "user",
+        authorId,
+        postType: isCommercial ? postType : "discussion",
+        growTags: selectedTags,
+        photos
+      });
+
+      if (typeof onPostCreated === "function") onPostCreated();
       navigation.goBack();
     } catch (err) {
-      Alert.alert("Unable to post", err.message || "Please try again in a moment.");
-    } finally {
-      setSubmitting(false);
+      handleApiError(err);
+      Alert.alert("Unable to post", "Please try again in a moment.");
     }
   }
 
@@ -243,14 +230,15 @@ export default function CreatePostScreen() {
           marginTop: 20,
           backgroundColor: "#2ecc71",
           padding: 14,
-          borderRadius: 8
+          borderRadius: 8,
+          opacity: isCreating ? 0.7 : 1
         }}
         onPress={submit}
-        disabled={submitting}
+        disabled={isCreating}
         accessibilityRole="button"
         testID="create-post-submit"
       >
-        {submitting ? (
+        {isCreating ? (
           <ActivityIndicator color="#fff" />
         ) : (
           <Text style={{ color: "white", fontSize: 18, textAlign: "center" }}>Post</Text>
