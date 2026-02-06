@@ -2,11 +2,13 @@ import React from "react";
 import { View, ActivityIndicator } from "react-native";
 import { useRouter, Redirect } from "expo-router";
 import { useAuth } from "@/auth/AuthContext";
+import { useFacility } from "@/facility/FacilityProvider";
 import { useOnboarding } from "../../onboarding/useOnboarding";
 
 export default function OnboardingRouter() {
   const router = useRouter();
   const auth = useAuth();
+  const facility = useFacility();
   const state = useOnboarding();
 
   // Wait for auth to hydrate
@@ -37,8 +39,14 @@ export default function OnboardingRouter() {
     else if (state === "pick-facility") router.replace("/onboarding/pick-facility");
     else if (state === "first-setup") router.replace("/onboarding/first-setup");
     else if (state === "start-grow") router.replace("/onboarding/start-grow");
-    else if (state === "dashboard") router.replace("/dashboard");
-  }, [state]);
+    else if (state === "dashboard") {
+      if (facility?.selectedId) {
+        router.replace(`/facilities/${facility.selectedId}/dashboard`);
+      } else {
+        router.replace("/facilities");
+      }
+    }
+  }, [state, facility?.selectedId, router]);
 
   // Show splash while loading or routing
   return (

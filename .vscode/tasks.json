@@ -653,6 +653,13 @@
 			"type": "shell",
 			"command": "npx expo start",
 			"group": "build"
+		},
+		{
+			"label": "Clear Expo Cache and Restart",
+			"type": "shell",
+			"command": "npx expo start --web --clear",
+			"isBackground": true,
+			"problemMatcher": []
 		}
 	]
 }
