@@ -6,15 +6,38 @@ export function facilityPath(facilityId: string, path: string) {
 }
 
 export const endpoints = {
+  // user
   me: `${BASE}/me`,
+
+  // facilities
   facilities: `${BASE}/facilities`,
+
+  // plants
   plants: (facilityId: string) => facilityPath(facilityId, "/plants"),
   plant: (facilityId: string, id: string) => facilityPath(facilityId, `/plants/${id}`),
+
+  // tasks
   tasks: (facilityId: string) => facilityPath(facilityId, "/tasks"),
   task: (facilityId: string, id: string) => facilityPath(facilityId, `/tasks/${id}`),
+
+  // inventory
   inventory: (facilityId: string) => facilityPath(facilityId, "/inventory"),
+  inventoryItem: (facilityId: string, id: string) =>
+    facilityPath(facilityId, `/inventory/${id}`),
+
+  // grows
   grows: (facilityId: string) => facilityPath(facilityId, "/grows"),
-  team: (facilityId: string) => facilityPath(facilityId, "/team"),
+  grow: (facilityId: string, id: string) => facilityPath(facilityId, `/grows/${id}`),
+
+  // growlogs
+  growlogs: (facilityId: string) => facilityPath(facilityId, "/growlogs"),
+  growlog: (facilityId: string, id: string) =>
+    facilityPath(facilityId, `/growlogs/${id}`),
+
+  // rooms
   rooms: (facilityId: string) => facilityPath(facilityId, "/rooms"),
-  room: (facilityId: string, id: string) => facilityPath(facilityId, `/rooms/${id}`)
+  room: (facilityId: string, id: string) => facilityPath(facilityId, `/rooms/${id}`),
+
+  // team
+  team: (facilityId: string) => facilityPath(facilityId, "/team")
 };
