@@ -9,26 +9,14 @@ import {
   View
 } from "react-native";
 
-async function safeFetchJson(url, opts) {
-  const res = await fetch(url, {
-    ...(opts || {}),
-    headers: { "Content-Type": "application/json", ...(opts?.headers || {}) }
-  });
-  const text = await res.text();
-  let json = null;
-  try {
-    json = text ? JSON.parse(text) : null;
-  } catch {
-    json = { raw: text };
-  }
-  if (!res.ok) throw new Error(json?.message || `Request failed (${res.status})`);
-  return json;
-}
+import { handleApiError } from "@/utils/handleApiError";
+import { useDebugApi } from "@/hooks/useDebugApi";
 
 export default function DebugScreen() {
   const [ping, setPing] = useState(null);
   const [serverInfo, setServerInfo] = useState(null);
-  const [working, setWorking] = useState(false);
+
+  const { pingAsync, infoAsync, isWorking } = useDebugApi();
 
   const deviceInfo = useMemo(() => {
     return {
@@ -38,26 +26,24 @@ export default function DebugScreen() {
   }, []);
 
   async function doPing() {
-    setWorking(true);
+    if (isWorking) return;
     try {
-      const data = await safeFetchJson("https://example.com/api/health");
+      const data = await pingAsync();
       setPing(data);
     } catch (e) {
-      Alert.alert("Ping failed", e.message || "Could not reach server.");
-    } finally {
-      setWorking(false);
+      handleApiError(e);
+      Alert.alert("Ping failed", e?.message || "Could not reach server.");
     }
   }
 
   async function loadInfo() {
-    setWorking(true);
+    if (isWorking) return;
     try {
-      const data = await safeFetchJson("https://example.com/api/debug/info");
+      const data = await infoAsync();
       setServerInfo(data);
     } catch (e) {
-      Alert.alert("Info failed", e.message || "Could not load debug info.");
-    } finally {
-      setWorking(false);
+      handleApiError(e);
+      Alert.alert("Info failed", e?.message || "Could not load debug info.");
     }
   }
 
@@ -69,16 +55,17 @@ export default function DebugScreen() {
         <Text style={styles.sectionTitle}>Quick actions</Text>
         <View style={styles.row}>
           <Pressable
-            style={[styles.btn, working && styles.btnDisabled]}
+            style={[styles.btn, isWorking && styles.btnDisabled]}
             onPress={doPing}
-            disabled={working}
+            disabled={isWorking}
           >
             <Text style={styles.btnText}>Ping API</Text>
           </Pressable>
+
           <Pressable
-            style={[styles.btn, working && styles.btnDisabled]}
+            style={[styles.btn, isWorking && styles.btnDisabled]}
             onPress={loadInfo}
-            disabled={working}
+            disabled={isWorking}
           >
             <Text style={styles.btnText}>Server Info</Text>
           </Pressable>

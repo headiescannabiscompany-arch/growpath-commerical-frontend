@@ -86,6 +86,10 @@ export const endpoints = {
   liveJoin: `${BASE}/live/join`,
   liveEnd: `${BASE}/live/end`,
 
+  // debug / health (non facility-scoped)
+  health: `${BASE}/health`,
+  debugInfo: `${BASE}/debug/info`,
+
   // billing
   facilityBillingStatus: `${BASE}/facility-billing/status`,
   facilityBillingCheckout: `${BASE}/facility-billing/checkout-session`,
