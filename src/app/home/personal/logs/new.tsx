@@ -1,6 +1,7 @@
 import React from "react";
 import { View, Text, StyleSheet, TextInput, Pressable } from "react-native";
 import { useRouter } from "expo-router";
+import BackButton from "@/components/nav/BackButton";
 
 const styles = StyleSheet.create({
   container: { flex: 1, padding: 20, backgroundColor: "#fff" },
@@ -30,6 +31,8 @@ export default function NewLogScreen() {
 
   return (
     <View style={styles.container}>
+      <BackButton />
+
       <Text style={styles.title}>New Log</Text>
 
       <Text style={styles.label}>Title</Text>

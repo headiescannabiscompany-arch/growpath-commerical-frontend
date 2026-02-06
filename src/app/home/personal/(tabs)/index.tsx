@@ -73,7 +73,7 @@ export default function PersonalHomeTab() {
           <Text style={styles.cardDesc}>
             Track your grows, log activities, monitor plant health
           </Text>
-          <Link href="/home/personal/grows" style={styles.link}>
+          <Link href="/home/personal/(tabs)/grows" style={styles.link}>
             View Grows →
           </Link>
         </AppCard>
@@ -83,7 +83,7 @@ export default function PersonalHomeTab() {
           <Text style={styles.cardDesc}>
             Daily notes, photos, measurements, and progress tracking
           </Text>
-          <Link href="/home/personal/logs" style={styles.link}>
+          <Link href="/home/personal/(tabs)/logs" style={styles.link}>
             Open Logs →
           </Link>
         </AppCard>
@@ -107,7 +107,7 @@ export default function PersonalHomeTab() {
           <Text style={styles.cardDesc}>
             Soil calc, NPK, VPD, feed scheduler, harvest estimator
           </Text>
-          <Link href="/home/personal/tools" style={styles.link}>
+          <Link href="/home/personal/(tabs)/tools" style={styles.link}>
             Open Tools →
           </Link>
         </AppCard>
@@ -144,7 +144,7 @@ export default function PersonalHomeTab() {
           <Text style={styles.cardDesc}>
             Account settings, preferences, plan management
           </Text>
-          <Link href="/home/personal/profile" style={styles.link}>
+          <Link href="/home/personal/(tabs)/profile" style={styles.link}>
             Open Profile →
           </Link>
         </AppCard>

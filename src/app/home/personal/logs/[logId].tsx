@@ -1,6 +1,7 @@
 import React from "react";
 import { View, Text, StyleSheet } from "react-native";
-import { useLocalSearchParams, Link } from "expo-router";
+import { useLocalSearchParams } from "expo-router";
+import BackButton from "@/components/nav/BackButton";
 
 const styles = StyleSheet.create({
   container: { flex: 1, padding: 20, backgroundColor: "#fff" },
@@ -14,9 +15,7 @@ const styles = StyleSheet.create({
     borderRadius: 12,
     marginBottom: 12
   },
-  cardTitle: { fontSize: 16, fontWeight: "700", marginBottom: 6 },
-
-  link: { marginTop: 8, fontSize: 14, fontWeight: "700", color: "#16A34A" }
+  cardTitle: { fontSize: 16, fontWeight: "700", marginBottom: 6 }
 });
 
 export default function LogDetailScreen() {
@@ -24,6 +23,8 @@ export default function LogDetailScreen() {
 
   return (
     <View style={styles.container}>
+      <BackButton />
+
       <Text style={styles.title}>Log Details</Text>
       <Text style={styles.meta}>Log ID: {logId}</Text>
 
@@ -36,10 +37,6 @@ export default function LogDetailScreen() {
         <Text style={styles.cardTitle}>Attachments</Text>
         <Text>Photo uploads will appear here.</Text>
       </View>
-
-      <Link href="/home/personal/logs" style={styles.link}>
-        Back to Logs →
-      </Link>
     </View>
   );
 }

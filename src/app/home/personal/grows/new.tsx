@@ -1,6 +1,7 @@
 import React from "react";
 import { View, Text, StyleSheet, TextInput, Pressable } from "react-native";
 import { useRouter } from "expo-router";
+import BackButton from "@/components/nav/BackButton";
 
 const styles = StyleSheet.create({
   container: {
@@ -43,6 +44,8 @@ export default function NewGrowScreen() {
 
   return (
     <View style={styles.container}>
+      <BackButton />
+
       <Text style={styles.title}>New Grow</Text>
 
       <Text style={styles.label}>Grow Name</Text>

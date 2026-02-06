@@ -1,6 +1,7 @@
 import React from "react";
 import { View, Text, StyleSheet } from "react-native";
-import { useLocalSearchParams, Link } from "expo-router";
+import { useLocalSearchParams } from "expo-router";
+import BackButton from "@/components/nav/BackButton";
 
 const styles = StyleSheet.create({
   container: {
@@ -29,12 +30,6 @@ const styles = StyleSheet.create({
     fontSize: 16,
     fontWeight: "700",
     marginBottom: 6
-  },
-  link: {
-    marginTop: 8,
-    fontSize: 14,
-    fontWeight: "700",
-    color: "#16A34A"
   }
 });
 
@@ -43,6 +38,8 @@ export default function GrowDetailScreen() {
 
   return (
     <View style={styles.container}>
+      <BackButton />
+
       <Text style={styles.title}>Grow Details</Text>
       <Text style={styles.meta}>Grow ID: {growId}</Text>
 
@@ -55,10 +52,6 @@ export default function GrowDetailScreen() {
         <Text style={styles.cardTitle}>Plants</Text>
         <Text>Plant list will appear here.</Text>
       </View>
-
-      <Link href="/home/personal/grows" style={styles.link}>
-        Back to Grows →
-      </Link>
     </View>
   );
 }
