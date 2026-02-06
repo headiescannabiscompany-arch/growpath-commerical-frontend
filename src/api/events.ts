@@ -12,18 +12,18 @@ export type CoreEventType =
   | "USER_REGISTER";
 
 type EventPayload = {
-  eventType: string; // backend requires this
-  meta?: Record<string, any>;
+  eventType: CoreEventType;
+  metadata?: Record<string, any>;
   source?: string;
   ts?: string;
 };
 
-export async function logEvent(type: CoreEventType, meta: Record<string, any> = {}) {
+export async function logEvent(type: CoreEventType, metadata: Record<string, any> = {}) {
   try {
     const payload: EventPayload = {
-      eventType: type, // ✅ map frontend "type" -> backend "eventType"
-      meta,
-      source: meta?.source || "app",
+      eventType: type,
+      metadata,
+      source: metadata?.source || "app",
       ts: new Date().toISOString()
     };
 
