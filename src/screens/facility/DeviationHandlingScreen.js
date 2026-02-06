@@ -1,4 +1,4 @@
-import React, { useEffect, useState } from "react";
+import React, { useEffect, useMemo, useState } from "react";
 import {
   View,
   Text,
@@ -11,35 +11,42 @@ import {
   Modal,
   RefreshControl
 } from "react-native";
-import { useAuth } from "@/auth/AuthContext";
-import { listDeviations, createDeviation } from "../../api/deviation";
+import { useFacility } from "../../facility/FacilityProvider";
+import { handleApiError } from "../../ui/handleApiError";
+import { useDeviations } from "../../hooks/useDeviations";
 
 const DEVIATION_STATUSES = ["Open", "In Progress", "Resolved", "Closed"];
 
 export default function DeviationHandlingScreen() {
-  const { selectedFacilityId } = useAuth();
-  const [deviations, setDeviations] = useState([]);
-  const [loading, setLoading] = useState(false);
-  const [refreshing, setRefreshing] = useState(false);
+  const { activeFacilityId } = useFacility();
+  const facilityId = activeFacilityId;
   const [showModal, setShowModal] = useState(false);
   const [description, setDescription] = useState("");
   const [assignedTo, setAssignedTo] = useState("");
-  const [submitting, setSubmitting] = useState(false);
+  const { deviations, isLoading, isRefreshing, error, refetch, addDeviation, isAdding } =
+    useDeviations(facilityId);
+
+  const handlers = useMemo(
+    () => ({
+      onAuthRequired: () => {
+        console.log("AUTH_REQUIRED: route to login");
+      },
+      onFacilityDenied: () => {
+        Alert.alert("No Access", "You don't have access to this facility.");
+      },
+      toast: (msg) => Alert.alert("Notice", msg)
+    }),
+    []
+  );
 
   useEffect(() => {
-    loadDeviations();
-  }, [selectedFacilityId]);
+    if (error) handleApiError(error, handlers);
+  }, [error, handlers]);
 
-  const loadDeviations = async () => {
-    setLoading(true);
-    const res = await listDeviations(selectedFacilityId);
-    if (res.success) setDeviations(res.data || []);
-    setLoading(false);
-  };
+  const canInteract = useMemo(() => Boolean(facilityId), [facilityId]);
 
-  const onRefresh = () => {
-    setRefreshing(true);
-    loadDeviations().then(() => setRefreshing(false));
+  const onRefresh = async () => {
+    await refetch();
   };
 
   const resetForm = () => {
@@ -53,22 +60,24 @@ export default function DeviationHandlingScreen() {
   };
 
   const handleSubmit = async () => {
+    if (!canInteract) {
+      Alert.alert("No Facility", "Select a facility to continue.");
+      return;
+    }
     if (!description) {
       Alert.alert("Missing Info", "Description is required.");
       return;
     }
-    setSubmitting(true);
-    const res = await createDeviation(selectedFacilityId, {
-      description,
-      assignedTo: assignedTo || undefined
-    });
-    setSubmitting(false);
-    if (res.success) {
+    try {
+      await addDeviation({
+        description,
+        assignedTo: assignedTo || undefined
+      });
       closeModal();
-      loadDeviations();
       Alert.alert("Success", "Deviation reported");
-    } else {
-      Alert.alert("Error", res.message || "Failed to report deviation");
+    } catch (err) {
+      handleApiError(err, handlers);
+      Alert.alert("Error", "Failed to report deviation");
     }
   };
 
@@ -88,29 +97,39 @@ export default function DeviationHandlingScreen() {
   return (
     <View style={styles.container}>
       <TouchableOpacity
-        style={styles.addButton}
+        style={[styles.addButton, !canInteract && styles.disabledButton]}
         onPress={() => {
+          if (!canInteract) {
+            Alert.alert("No Facility", "Select a facility to continue.");
+            return;
+          }
           resetForm();
           setShowModal(true);
         }}
+        disabled={!canInteract}
       >
         <Text style={styles.addButtonText}>+ Report Deviation</Text>
       </TouchableOpacity>
 
-      {loading ? (
+      {!canInteract ? (
+        <View style={styles.empty}>
+          <Text style={styles.emptyText}>No facility selected</Text>
+          <Text style={styles.emptySubtext}>Pick a facility to view deviations</Text>
+        </View>
+      ) : isLoading ? (
         <View style={{ flex: 1, justifyContent: "center", alignItems: "center" }}>
           <ActivityIndicator size="large" color="#ef4444" />
         </View>
       ) : (
         <FlatList
           data={deviations}
-          keyExtractor={(item) => item._id || item.id || Math.random().toString()}
+          keyExtractor={(item) => String(item?._id || item?.id)}
           renderItem={({ item }) => (
             <View style={styles.deviationCard}>
               <View style={styles.deviationHeader}>
                 <View style={styles.deviationInfo}>
-                  <Text style={styles.deviationDesc}>{item.description}</Text>
-                  {item.status && (
+                  <Text style={styles.deviationDesc}>{item?.description || ""}</Text>
+                  {item?.status ? (
                     <Text
                       style={[
                         styles.deviationStatus,
@@ -119,22 +138,22 @@ export default function DeviationHandlingScreen() {
                     >
                       {item.status}
                     </Text>
-                  )}
+                  ) : null}
                 </View>
               </View>
-              {item.assignedTo && (
+              {item?.assignedTo ? (
                 <Text style={styles.assignedTo}>Assigned to: {item.assignedTo}</Text>
-              )}
-              {item.createdAt && (
+              ) : null}
+              {item?.createdAt ? (
                 <Text style={styles.deviationDate}>
                   Reported: {new Date(item.createdAt).toLocaleDateString()}
                 </Text>
-              )}
-              {item.resolvedAt && (
+              ) : null}
+              {item?.resolvedAt ? (
                 <Text style={styles.deviationDate}>
                   Resolved: {new Date(item.resolvedAt).toLocaleDateString()}
                 </Text>
-              )}
+              ) : null}
             </View>
           )}
           ListEmptyComponent={
@@ -144,7 +163,7 @@ export default function DeviationHandlingScreen() {
             </View>
           }
           refreshControl={
-            <RefreshControl refreshing={refreshing} onRefresh={onRefresh} />
+            <RefreshControl refreshing={isRefreshing} onRefresh={onRefresh} />
           }
           style={styles.list}
           contentContainerStyle={{ flexGrow: 1 }}
@@ -189,13 +208,13 @@ export default function DeviationHandlingScreen() {
                 style={[
                   styles.modalButton,
                   styles.reportButton,
-                  submitting && styles.disabledButton
+                  isAdding && styles.disabledButton
                 ]}
                 onPress={handleSubmit}
-                disabled={submitting}
+                disabled={isAdding}
               >
                 <Text style={styles.reportButtonText}>
-                  {submitting ? "Reporting..." : "Report"}
+                  {isAdding ? "Reporting..." : "Report"}
                 </Text>
               </TouchableOpacity>
             </View>

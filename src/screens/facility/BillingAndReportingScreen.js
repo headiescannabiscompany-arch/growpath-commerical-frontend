@@ -1,4 +1,4 @@
-import React, { useEffect, useState } from "react";
+import React, { useEffect, useMemo, useState } from "react";
 import {
   View,
   Text,
@@ -9,51 +9,84 @@ import {
   ScrollView,
   RefreshControl
 } from "react-native";
-import { useAuth } from "@/auth/AuthContext";
-import {
-  getFacilityBillingStatus,
-  startFacilityCheckout,
-  cancelFacilityPlan
-} from "../../api/facility.js";
-import { getSubscriptionStatus } from "../../api/subscribe.js";
+import { useFacility } from "../../facility/FacilityProvider";
+import { handleApiError } from "../../ui/handleApiError";
+import { useFacilityBilling } from "../../hooks/useFacilityBilling";
+import { useSubscriptionStatus } from "../../hooks/useSubscriptionStatus";
 
 export default function BillingAndReportingScreen() {
-  const { selectedFacilityId } = useAuth();
-  const [billing, setBilling] = useState(null);
-  const [loading, setLoading] = useState(true);
   const [refreshing, setRefreshing] = useState(false);
-  const [submitting, setSubmitting] = useState(false);
-  const [subscription, setSubscription] = useState(null);
+  const { activeFacilityId } = useFacility();
+  const facilityId = activeFacilityId;
+
+  const {
+    billing,
+    isLoading: billingLoading,
+    error: billingError,
+    refetch: refetchBilling,
+    startCheckout,
+    cancelPlan,
+    isStartingCheckout,
+    isCanceling
+  } = useFacilityBilling(facilityId);
+
+  const {
+    subscription,
+    error: subscriptionError,
+    refetch: refetchSubscription
+  } = useSubscriptionStatus();
+
+  const handlers = useMemo(
+    () => ({
+      onAuthRequired: () => {
+        console.log("AUTH_REQUIRED: route to login");
+      },
+      onFacilityDenied: () => {
+        Alert.alert("No Access", "You don't have access to this facility.");
+      },
+      toast: (msg) => Alert.alert("Notice", msg)
+    }),
+    []
+  );
 
   useEffect(() => {
-    loadBilling();
-  }, [selectedFacilityId]);
+    if (billingError) handleApiError(billingError, handlers);
+  }, [billingError, handlers]);
 
-  const loadBilling = async () => {
-    setLoading(true);
-    const res = await getFacilityBillingStatus(selectedFacilityId);
-    if (res.success) setBilling(res.data);
-    setLoading(false);
-  };
+  useEffect(() => {
+    if (subscriptionError) handleApiError(subscriptionError, handlers);
+  }, [subscriptionError, handlers]);
+
+  const canInteract = useMemo(() => Boolean(facilityId), [facilityId]);
+  const submitting = isStartingCheckout || isCanceling;
 
   const onRefresh = () => {
     setRefreshing(true);
-    Promise.all([loadBilling(), loadSubscription()]).then(() => setRefreshing(false));
-  };
-
-  const loadSubscription = async () => {
-    const res = await getSubscriptionStatus();
-    if (res.success) setSubscription(res.data);
+    Promise.all([refetchBilling(), refetchSubscription()]).then(() =>
+      setRefreshing(false)
+    );
   };
 
   const handleSubscribe = async () => {
-    setSubmitting(true);
-    const res = await startFacilityCheckout(selectedFacilityId);
-    setSubmitting(false);
-    if (res.success && res.data?.checkoutUrl) {
-      window.open(res.data.checkoutUrl, "_blank");
-    } else {
-      Alert.alert("Error", res.message || "Failed to start subscription");
+    if (!canInteract) {
+      Alert.alert("No Facility", "Select a facility to continue.");
+      return;
+    }
+    try {
+      const res = await startCheckout();
+      const checkoutUrl = res?.checkoutUrl ?? res?.url;
+      if (checkoutUrl) {
+        if (typeof window !== "undefined" && window.open) {
+          window.open(checkoutUrl, "_blank");
+        } else {
+          Alert.alert("Checkout", "Open the checkout URL in a browser.");
+        }
+      } else {
+        Alert.alert("Error", "Failed to start subscription");
+      }
+    } catch (err) {
+      handleApiError(err, handlers);
+      Alert.alert("Error", "Failed to start subscription");
     }
   };
 
@@ -64,14 +97,13 @@ export default function BillingAndReportingScreen() {
         text: "Yes",
         style: "destructive",
         onPress: async () => {
-          setSubmitting(true);
-          const res = await cancelFacilityPlan(selectedFacilityId);
-          setSubmitting(false);
-          if (res.success) {
-            loadBilling();
+          try {
+            await cancelPlan();
+            refetchBilling();
             Alert.alert("Success", "Subscription cancelled at period end");
-          } else {
-            Alert.alert("Error", res.message || "Failed to cancel");
+          } catch (err) {
+            handleApiError(err, handlers);
+            Alert.alert("Error", "Failed to cancel");
           }
         }
       }
@@ -110,6 +142,15 @@ export default function BillingAndReportingScreen() {
         <Text style={styles.subtitle}>Manage subscriptions and generate reports</Text>
       </View>
 
+      {!canInteract ? (
+        <View style={styles.card}>
+          <Text style={styles.cardTitle}>No facility selected</Text>
+          <Text style={styles.cardSubtext}>
+            Pick a facility to manage billing and reports.
+          </Text>
+        </View>
+      ) : null}
+
       {/* Billing Status Card */}
       <View style={styles.card}>
         <View style={styles.cardHeader}>
@@ -121,7 +162,7 @@ export default function BillingAndReportingScreen() {
           </View>
         </View>
 
-        {loading ? (
+        {billingLoading ? (
           <ActivityIndicator color="#0ea5e9" />
         ) : (
           <>
@@ -149,10 +190,10 @@ export default function BillingAndReportingScreen() {
                 style={[
                   styles.button,
                   styles.cancelButton,
-                  submitting && styles.disabled
+                  (submitting || !canInteract) && styles.disabled
                 ]}
                 onPress={handleCancel}
-                disabled={submitting}
+                disabled={submitting || !canInteract}
               >
                 <Text style={styles.cancelButtonText}>
                   {submitting ? "Processing..." : "Cancel at Period End"}
@@ -163,10 +204,10 @@ export default function BillingAndReportingScreen() {
                 style={[
                   styles.button,
                   styles.subscribeButton,
-                  submitting && styles.disabled
+                  (submitting || !canInteract) && styles.disabled
                 ]}
                 onPress={handleSubscribe}
-                disabled={submitting}
+                disabled={submitting || !canInteract}
               >
                 <Text style={styles.subscribeButtonText}>
                   {submitting ? "Processing..." : "Subscribe Now"}

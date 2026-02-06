@@ -1,4 +1,4 @@
-import React, { useEffect, useState } from "react";
+import React, { useEffect, useMemo, useState } from "react";
 import {
   View,
   Text,
@@ -11,36 +11,43 @@ import {
   Modal,
   RefreshControl
 } from "react-native";
-import { useAuth } from "@/auth/AuthContext";
-import { listGreenWasteEvents, createGreenWasteEvent } from "../../api/greenWaste";
+import { useFacility } from "../../facility/FacilityProvider";
+import { handleApiError } from "../../ui/handleApiError";
+import { useGreenWaste } from "../../hooks/useGreenWaste";
 
 const DISPOSAL_METHODS = ["Compost", "Landfill", "Incinerator", "Donation", "Other"];
 
 export default function GreenWasteScreen() {
-  const { selectedFacilityId } = useAuth();
-  const [events, setEvents] = useState([]);
-  const [loading, setLoading] = useState(false);
-  const [refreshing, setRefreshing] = useState(false);
+  const { activeFacilityId } = useFacility();
+  const facilityId = activeFacilityId;
   const [showModal, setShowModal] = useState(false);
   const [amount, setAmount] = useState("");
   const [method, setMethod] = useState("");
   const [notes, setNotes] = useState("");
-  const [submitting, setSubmitting] = useState(false);
+  const { events, isLoading, isRefreshing, error, refetch, addEvent, isAdding } =
+    useGreenWaste(facilityId);
+
+  const handlers = useMemo(
+    () => ({
+      onAuthRequired: () => {
+        console.log("AUTH_REQUIRED: route to login");
+      },
+      onFacilityDenied: () => {
+        Alert.alert("No Access", "You don't have access to this facility.");
+      },
+      toast: (msg) => Alert.alert("Notice", msg)
+    }),
+    []
+  );
 
   useEffect(() => {
-    loadEvents();
-  }, [selectedFacilityId]);
+    if (error) handleApiError(error, handlers);
+  }, [error, handlers]);
 
-  const loadEvents = async () => {
-    setLoading(true);
-    const res = await listGreenWasteEvents(selectedFacilityId);
-    if (res.success) setEvents(res.data || []);
-    setLoading(false);
-  };
+  const canInteract = useMemo(() => Boolean(facilityId), [facilityId]);
 
-  const onRefresh = () => {
-    setRefreshing(true);
-    loadEvents().then(() => setRefreshing(false));
+  const onRefresh = async () => {
+    await refetch();
   };
 
   const resetForm = () => {
@@ -55,60 +62,68 @@ export default function GreenWasteScreen() {
   };
 
   const handleAddEvent = async () => {
+    if (!canInteract) {
+      Alert.alert("No Facility", "Select a facility to continue.");
+      return;
+    }
     if (!amount || !method) {
       Alert.alert("Missing Info", "Amount and method are required.");
       return;
     }
-    setSubmitting(true);
-    const res = await createGreenWasteEvent(selectedFacilityId, {
-      amount,
-      method,
-      notes
-    });
-    setSubmitting(false);
-    if (res.success) {
+    try {
+      await addEvent({ amount, method, notes });
       closeModal();
-      loadEvents();
       Alert.alert("Success", "Waste event logged");
-    } else {
-      Alert.alert("Error", res.message || "Failed to add event");
+    } catch (err) {
+      handleApiError(err, handlers);
+      Alert.alert("Error", "Failed to add event");
     }
   };
 
   return (
     <View style={styles.container}>
       <TouchableOpacity
-        style={styles.addButton}
+        style={[styles.addButton, !canInteract && styles.disabledButton]}
         onPress={() => {
+          if (!canInteract) {
+            Alert.alert("No Facility", "Select a facility to continue.");
+            return;
+          }
           resetForm();
           setShowModal(true);
         }}
+        disabled={!canInteract}
       >
         <Text style={styles.addButtonText}>+ Log Waste Event</Text>
       </TouchableOpacity>
 
-      {loading ? (
+      {!canInteract ? (
+        <View style={styles.empty}>
+          <Text style={styles.emptyText}>No facility selected</Text>
+          <Text style={styles.emptySubtext}>Pick a facility to view waste logs</Text>
+        </View>
+      ) : isLoading ? (
         <View style={{ flex: 1, justifyContent: "center", alignItems: "center" }}>
           <ActivityIndicator size="large" color="#10b981" />
         </View>
       ) : (
         <FlatList
           data={events}
-          keyExtractor={(item) => item._id || item.id || Math.random().toString()}
+          keyExtractor={(item) => String(item?._id || item?.id)}
           renderItem={({ item }) => (
             <View style={styles.eventCard}>
               <View style={styles.eventHeader}>
                 <View>
-                  <Text style={styles.eventAmount}>{item.amount}</Text>
-                  <Text style={styles.eventMethod}>{item.method}</Text>
+                  <Text style={styles.eventAmount}>{item?.amount ?? ""}</Text>
+                  <Text style={styles.eventMethod}>{item?.method ?? ""}</Text>
                 </View>
               </View>
-              {item.notes && <Text style={styles.eventNotes}>{item.notes}</Text>}
-              {item.createdAt && (
+              {item?.notes ? <Text style={styles.eventNotes}>{item.notes}</Text> : null}
+              {item?.createdAt ? (
                 <Text style={styles.eventDate}>
                   Logged: {new Date(item.createdAt).toLocaleDateString()}
                 </Text>
-              )}
+              ) : null}
             </View>
           )}
           ListEmptyComponent={
@@ -118,7 +133,7 @@ export default function GreenWasteScreen() {
             </View>
           }
           refreshControl={
-            <RefreshControl refreshing={refreshing} onRefresh={onRefresh} />
+            <RefreshControl refreshing={isRefreshing} onRefresh={onRefresh} />
           }
           style={styles.list}
           contentContainerStyle={{ flexGrow: 1 }}
@@ -184,13 +199,13 @@ export default function GreenWasteScreen() {
                 style={[
                   styles.modalButton,
                   styles.logButton,
-                  submitting && styles.disabledButton
+                  isAdding && styles.disabledButton
                 ]}
                 onPress={handleAddEvent}
-                disabled={submitting}
+                disabled={isAdding}
               >
                 <Text style={styles.logButtonText}>
-                  {submitting ? "Logging..." : "Log Event"}
+                  {isAdding ? "Logging..." : "Log Event"}
                 </Text>
               </TouchableOpacity>
             </View>

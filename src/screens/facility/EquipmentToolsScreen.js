@@ -1,4 +1,4 @@
-import React, { useEffect, useState } from "react";
+import React, { useEffect, useMemo, useState } from "react";
 import {
   View,
   Text,
@@ -11,13 +11,9 @@ import {
   Modal,
   RefreshControl
 } from "react-native";
-import { useAuth } from "@/auth/AuthContext";
-import {
-  listEquipment,
-  createEquipment,
-  updateEquipment,
-  deleteEquipment
-} from "../../api/equipment.js";
+import { useFacility } from "../../facility/FacilityProvider";
+import { handleApiError } from "../../ui/handleApiError";
+import { useEquipmentTools } from "../../hooks/useEquipmentTools";
 
 const EQUIPMENT_TYPES = [
   "Lighting",
@@ -30,33 +26,52 @@ const EQUIPMENT_TYPES = [
 ];
 
 export default function EquipmentToolsScreen() {
-  const { selectedFacilityId } = useAuth();
-  const { token } = useAuth();
-  const [equipment, setEquipment] = useState([]);
-  const [loading, setLoading] = useState(false);
-  const [refreshing, setRefreshing] = useState(false);
+  const { activeFacilityId } = useFacility();
+  const facilityId = activeFacilityId;
+
   const [showModal, setShowModal] = useState(false);
   const [brand, setBrand] = useState("");
   const [model, setModel] = useState("");
   const [type, setType] = useState("");
   const [notes, setNotes] = useState("");
   const [editingId, setEditingId] = useState(null);
-  const [submitting, setSubmitting] = useState(false);
+
+  const {
+    equipment,
+    isLoading,
+    isRefreshing,
+    error,
+    refetch,
+    addEquipment,
+    updateEquipmentItem,
+    deleteEquipmentItem,
+    isAdding,
+    isUpdating,
+    isDeleting
+  } = useEquipmentTools(facilityId);
+
+  const handlers = useMemo(
+    () => ({
+      onAuthRequired: () => {
+        console.log("AUTH_REQUIRED: route to login");
+      },
+      onFacilityDenied: () => {
+        Alert.alert("No Access", "You don't have access to this facility.");
+      },
+      toast: (msg) => Alert.alert("Notice", msg)
+    }),
+    []
+  );
 
   useEffect(() => {
-    loadEquipment();
-  }, [selectedFacilityId]);
+    if (error) handleApiError(error, handlers);
+  }, [error, handlers]);
 
-  const loadEquipment = async () => {
-    setLoading(true);
-    const res = await listEquipment(selectedFacilityId);
-    if (res.success) setEquipment(res.data || []);
-    setLoading(false);
-  };
+  const canInteract = useMemo(() => Boolean(facilityId), [facilityId]);
+  const isSubmitting = isAdding || isUpdating || isDeleting;
 
-  const onRefresh = () => {
-    setRefreshing(true);
-    loadEquipment().then(() => setRefreshing(false));
+  const onRefresh = async () => {
+    await refetch();
   };
 
   const resetForm = () => {
@@ -73,34 +88,38 @@ export default function EquipmentToolsScreen() {
   };
 
   const handleSave = async () => {
+    if (!canInteract) {
+      Alert.alert("No Facility", "Select a facility to continue.");
+      return;
+    }
     if (!brand || !model) {
       Alert.alert("Missing Info", "Brand and model are required.");
       return;
     }
-    setSubmitting(true);
-    let res;
-    if (editingId) {
-      res = await updateEquipment(selectedFacilityId, editingId, {
-        brand,
-        model,
-        type,
-        notes
-      });
-    } else {
-      res = await createEquipment(selectedFacilityId, {
-        brand,
-        model,
-        type,
-        notes
-      });
-    }
-    setSubmitting(false);
-    if (res.success) {
+    try {
+      if (editingId) {
+        await updateEquipmentItem({
+          id: editingId,
+          patch: {
+            brand,
+            model,
+            type,
+            notes
+          }
+        });
+      } else {
+        await addEquipment({
+          brand,
+          model,
+          type,
+          notes
+        });
+      }
       closeModal();
-      loadEquipment();
       Alert.alert("Success", editingId ? "Equipment updated" : "Equipment added");
-    } else {
-      Alert.alert("Error", res.message || "Failed to save equipment");
+    } catch (err) {
+      handleApiError(err, handlers);
+      Alert.alert("Error", "Failed to save equipment");
     }
   };
 
@@ -114,20 +133,22 @@ export default function EquipmentToolsScreen() {
   };
 
   const handleDelete = (item) => {
+    if (!canInteract) {
+      Alert.alert("No Facility", "Select a facility to continue.");
+      return;
+    }
     Alert.alert("Delete Equipment", "Are you sure you want to delete this equipment?", [
       { text: "Cancel", style: "cancel" },
       {
         text: "Delete",
         style: "destructive",
         onPress: async () => {
-          setSubmitting(true);
-          const res = await deleteEquipment(selectedFacilityId, item._id || item.id);
-          setSubmitting(false);
-          if (res.success) {
-            loadEquipment();
+          try {
+            await deleteEquipmentItem(item?._id || item?.id);
             Alert.alert("Success", "Equipment deleted");
-          } else {
-            Alert.alert("Error", res.message || "Failed to delete equipment");
+          } catch (err) {
+            handleApiError(err, handlers);
+            Alert.alert("Error", "Failed to delete equipment");
           }
         }
       }
@@ -137,39 +158,53 @@ export default function EquipmentToolsScreen() {
   return (
     <View style={styles.container}>
       <TouchableOpacity
-        style={styles.addButton}
+        style={[styles.addButton, !canInteract && styles.disabledButton]}
         onPress={() => {
+          if (!canInteract) {
+            Alert.alert("No Facility", "Select a facility to continue.");
+            return;
+          }
           resetForm();
           setShowModal(true);
         }}
+        disabled={!canInteract}
       >
         <Text style={styles.addButtonText}>+ Add Equipment</Text>
       </TouchableOpacity>
 
-      {loading ? (
+      {!canInteract ? (
+        <View style={styles.empty}>
+          <Text style={styles.emptyText}>No facility selected</Text>
+          <Text style={styles.emptySubtext}>Pick a facility to view equipment</Text>
+        </View>
+      ) : isLoading ? (
         <View style={{ flex: 1, justifyContent: "center", alignItems: "center" }}>
           <ActivityIndicator size="large" color="#0ea5e9" />
         </View>
       ) : (
         <FlatList
           data={equipment}
-          keyExtractor={(item) => item._id || item.id || Math.random().toString()}
+          keyExtractor={(item) => String(item?._id || item?.id)}
           renderItem={({ item }) => (
             <View style={styles.equipmentCard}>
               <View style={styles.equipmentHeader}>
                 <View style={styles.equipmentInfo}>
                   <Text style={styles.equipmentName}>
-                    {`${item.brand || ""} ${item.model || ""}`.trim()}
+                    {`${item?.brand || ""} ${item?.model || ""}`.trim()}
                   </Text>
-                  {item.type && <Text style={styles.equipmentType}>{item.type}</Text>}
+                  {item?.type ? (
+                    <Text style={styles.equipmentType}>{item.type}</Text>
+                  ) : null}
                 </View>
               </View>
-              {item.notes && <Text style={styles.equipmentNotes}>{item.notes}</Text>}
-              {item.createdAt && (
+              {item?.notes ? (
+                <Text style={styles.equipmentNotes}>{item.notes}</Text>
+              ) : null}
+              {item?.createdAt ? (
                 <Text style={styles.equipmentDate}>
                   Added: {new Date(item.createdAt).toLocaleDateString()}
                 </Text>
-              )}
+              ) : null}
               <View style={styles.equipmentActions}>
                 <TouchableOpacity
                   style={styles.actionButton}
@@ -268,13 +303,13 @@ export default function EquipmentToolsScreen() {
                 style={[
                   styles.modalButton,
                   styles.saveButton,
-                  submitting && styles.disabledButton
+                  isSubmitting && styles.disabledButton
                 ]}
                 onPress={handleSave}
-                disabled={submitting}
+                disabled={isSubmitting}
               >
                 <Text style={styles.saveButtonText}>
-                  {submitting ? "Saving..." : editingId ? "Update" : "Add"}
+                  {isSubmitting ? "Saving..." : editingId ? "Update" : "Add"}
                 </Text>
               </TouchableOpacity>
             </View>
