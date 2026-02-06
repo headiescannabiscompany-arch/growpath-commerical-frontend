@@ -70,6 +70,9 @@ export function EntitlementsProvider({ children }: { children: React.ReactNode }
   // Guard: prevent re-applying the same server ctx over and over
   const lastAppliedRef = useRef<string>("");
 
+  // Guard: prevent refetching /api/me for the same token
+  const lastFetchedTokenRef = useRef<string | null>(null);
+
   // Stabilize logout reference to prevent effect re-runs from logout identity changes
   const logoutRef = useRef(logout);
   useEffect(() => {
@@ -97,14 +100,24 @@ export function EntitlementsProvider({ children }: { children: React.ReactNode }
         limits: {}
       });
       lastAppliedRef.current = "NO_TOKEN";
+      lastFetchedTokenRef.current = null;
       return () => {
         mounted = false;
       };
     }
 
+    // Only fetch /api/me if we haven't already fetched for this token
+    if (lastFetchedTokenRef.current === token) {
+      return () => {
+        mounted = false;
+      };
+    }
+    lastFetchedTokenRef.current = token;
+
     (async () => {
       try {
         // Contract: apiMe returns { user, ctx }
+        // Use invalidateOn401: false to prevent token thrashing during hydration
         const resp = await apiMe({ silent: true });
 
         const ctx = resp?.ctx ?? null;
