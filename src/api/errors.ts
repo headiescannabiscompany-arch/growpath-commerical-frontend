@@ -1,4 +1,5 @@
 export type ApiErrorCode =
+  | "INVALID_CREDENTIALS"
   | "UNAUTHORIZED"
   | "FORBIDDEN"
   | "VALIDATION_ERROR"
@@ -19,6 +20,16 @@ export type ApiError = {
 export function normalizeApiError(err: any): ApiError {
   // Already normalized
   if (err?.code && err?.message) return err as ApiError;
+
+  // Backend returned error in { error: { code, message } } envelope
+  if (err?.error?.code && err?.error?.message) {
+    return {
+      code: err.error.code as ApiErrorCode,
+      message: err.error.message,
+      status: err.status,
+      details: err
+    };
+  }
 
   // Backend returned an error object with message
   if (err?.message) {

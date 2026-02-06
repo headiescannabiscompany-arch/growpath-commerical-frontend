@@ -101,7 +101,15 @@ function LoginScreen({ navigation }) {
       let title = "Error";
       let message = err.message || "Authentication failed. Please check your connection.";
 
-      if (err.message === "User already exists") {
+      // Handle error codes from backend
+      if (err.code === "INVALID_CREDENTIALS") {
+        title = "Login Failed";
+        message = "Incorrect email or password. Please try again.";
+        Alert.alert(title, message);
+      } else if (err.code === "VALIDATION_ERROR") {
+        title = "Invalid Input";
+        Alert.alert(title, message);
+      } else if (err.message === "User already exists") {
         title = "Account Already Exists";
         message = "This email is already registered. Would you like to login instead?";
 
@@ -113,10 +121,6 @@ function LoginScreen({ navigation }) {
             style: "default"
           }
         ]);
-      } else if (err.message === "Invalid credentials") {
-        title = "Login Failed";
-        message = "Invalid email or password. Please try again.";
-        Alert.alert(title, message);
       } else {
         Alert.alert(title, message);
       }

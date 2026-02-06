@@ -17,7 +17,7 @@ export async function login(email, password) {
       code: err?.code,
       status: err?.status
     });
-    throw err?.data?.message || err.message || "Login failed";
+    throw err; // Throw the full error object, not just the message
   }
 }
 
