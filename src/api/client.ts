@@ -86,9 +86,36 @@ async function request(path: string, options: RequestOptions = {}) {
     headers["Content-Type"] = "application/json";
   }
 
-  const controller = new AbortController();
   const timeout = options.timeout ?? DEFAULT_TIMEOUT;
-  const timeoutId = setTimeout(() => controller.abort(), timeout);
+  const timeoutController = new AbortController();
+  const timeoutId = setTimeout(() => timeoutController.abort(), timeout);
+
+  // Merge timeout signal + caller signal so either can cancel fetch
+  const mergedSignal: AbortSignal = (() => {
+    const callerSignal = options.signal;
+
+    if (!callerSignal) return timeoutController.signal;
+
+    // Prefer native AbortSignal.any if available
+    const anyFn = (AbortSignal as any)?.any;
+    if (typeof anyFn === "function") {
+      return anyFn([callerSignal, timeoutController.signal]);
+    }
+
+    // Fallback merge (older runtimes)
+    const merged = new AbortController();
+    const onAbort = () => merged.abort();
+
+    if (callerSignal.aborted || timeoutController.signal.aborted) {
+      merged.abort();
+      return merged.signal;
+    }
+
+    callerSignal.addEventListener("abort", onAbort, { once: true });
+    timeoutController.signal.addEventListener("abort", onAbort, { once: true });
+
+    return merged.signal;
+  })();
 
   try {
     const url = path.startsWith("http")
@@ -106,7 +133,7 @@ async function request(path: string, options: RequestOptions = {}) {
       method,
       headers,
       body,
-      signal: options.signal ?? controller.signal
+      signal: mergedSignal
     });
 
     clearTimeout(timeoutId);
