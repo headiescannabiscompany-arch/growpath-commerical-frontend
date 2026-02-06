@@ -24,20 +24,20 @@ const styles = StyleSheet.create({
   }
 });
 
-export default function Diagnose() {
+export default function Inventory() {
   return (
     <AppPage
-      routeKey="diagnose"
+      routeKey="inventory"
       header={
         <View>
-          <Text style={styles.headerTitle}>Diagnose</Text>
-          <Text style={styles.headerSubtitle}>AI-assisted plant diagnostics</Text>
+          <Text style={styles.headerTitle}>Inventory</Text>
+          <Text style={styles.headerSubtitle}>Stock levels and products</Text>
         </View>
       }
     >
       <AppCard>
-        <Text style={styles.cardTitle}>Upload a photo</Text>
-        <Text style={styles.cardDesc}>Stub screen</Text>
+        <Text style={styles.cardTitle}>Inventory Overview</Text>
+        <Text style={styles.cardDesc}>Coming next</Text>
       </AppCard>
     </AppPage>
   );

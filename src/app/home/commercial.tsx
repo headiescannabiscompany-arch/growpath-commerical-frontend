@@ -1,62 +1,48 @@
 import React from "react";
-import { View, Text, ScrollView, StyleSheet } from "react-native";
+import { View, Text, StyleSheet } from "react-native";
 import { Link } from "expo-router";
 import { useAuth } from "@/auth/AuthContext";
 import { useEntitlements } from "@/entitlements";
 import { useFacility } from "@/facility/FacilityProvider";
+import AppPage from "@/components/layout/AppPage";
+import AppCard from "@/components/layout/AppCard";
 
 const styles = StyleSheet.create({
-  container: {
-    flex: 1,
-    backgroundColor: "#fff"
-  },
-  header: {
-    padding: 20,
-    borderBottomWidth: 1,
-    borderBottomColor: "#eee"
-  },
-  title: {
+  headerTitle: {
     fontSize: 28,
     fontWeight: "700",
     marginBottom: 4
   },
-  subtitle: {
+  headerSubtitle: {
     fontSize: 14,
-    color: "#666"
-  },
-  content: {
-    padding: 20
+    color: "#64748B"
   },
   section: {
-    marginBottom: 24
+    gap: 12
   },
   sectionTitle: {
     fontSize: 18,
-    fontWeight: "600",
-    marginBottom: 12
-  },
-  card: {
-    padding: 16,
-    borderWidth: 1,
-    borderColor: "#ddd",
-    borderRadius: 12,
-    marginBottom: 12,
-    backgroundColor: "#f9f9f9"
+    fontWeight: "700",
+    color: "#0F172A"
   },
   cardTitle: {
     fontSize: 16,
-    fontWeight: "600",
-    marginBottom: 4
+    fontWeight: "700",
+    marginBottom: 6
   },
   cardDesc: {
     fontSize: 14,
-    color: "#666",
-    marginBottom: 8
+    color: "#475569",
+    marginBottom: 10
   },
   link: {
-    fontSize: 15,
-    fontWeight: "600",
-    color: "#2196F3"
+    fontSize: 14,
+    fontWeight: "700",
+    color: "#2563EB"
+  },
+  warningCard: {
+    backgroundColor: "#FEF3C7",
+    borderColor: "#F59E0B"
   }
 });
 
@@ -78,137 +64,133 @@ export default function CommercialHome() {
   const auth = useAuth();
   const ent = useEntitlements();
   const facility = useFacility();
+  const plan = ent.plan || "commercial";
 
   return (
-    <ScrollView style={styles.container}>
-      <View style={styles.header}>
-        <Text style={styles.title}>Brand Dashboard</Text>
-        <Text style={styles.subtitle}>
-          {auth.user?.email} · {ent.plan || "commercial"} plan
-        </Text>
-        {facility.selectedId && (
-          <Text style={styles.subtitle}>
-            Managing:{" "}
-            {facility.facilities.find((f) => f.id === facility.selectedId)?.name}
+    <AppPage
+      routeKey="home"
+      header={
+        <View>
+          <Text style={styles.headerTitle}>Brand Dashboard</Text>
+          <Text style={styles.headerSubtitle}>
+            {auth.user?.email} · {plan} plan
           </Text>
-        )}
+          {facility.selectedId ? (
+            <Text style={styles.headerSubtitle}>
+              Managing:{" "}
+              {facility.facilities.find((f) => f.id === facility.selectedId)?.name}
+            </Text>
+          ) : null}
+        </View>
+      }
+    >
+      {!facility.selectedId && facility.facilities.length > 0 ? (
+        <View style={styles.section}>
+          <Text style={styles.sectionTitle}>⚠️ Action Required</Text>
+          <AppCard style={styles.warningCard}>
+            <Text style={styles.cardTitle}>Select a Facility</Text>
+            <Text style={styles.cardDesc}>
+              You have access to facilities. Select one to manage.
+            </Text>
+            <Link href="/facilities" style={styles.link}>
+              Select Facility →
+            </Link>
+          </AppCard>
+        </View>
+      ) : null}
+
+      <View style={styles.section}>
+        <Text style={styles.sectionTitle}>Marketing & Sales</Text>
+
+        <AppCard>
+          <Text style={styles.cardTitle}>📱 Feed</Text>
+          <Text style={styles.cardDesc}>
+            Your brand's content feed, engagement, and reach
+          </Text>
+          <Link href="/feed" style={styles.link}>
+            View Feed →
+          </Link>
+        </AppCard>
+
+        <AppCard>
+          <Text style={styles.cardTitle}>🎯 Campaigns</Text>
+          <Text style={styles.cardDesc}>Create and manage marketing campaigns</Text>
+          <Link href="/campaigns" style={styles.link}>
+            Manage Campaigns →
+          </Link>
+        </AppCard>
+
+        <AppCard>
+          <Text style={styles.cardTitle}>💰 Offers</Text>
+          <Text style={styles.cardDesc}>Special offers, promotions, and deals</Text>
+          <Link href="/offers" style={styles.link}>
+            Manage Offers →
+          </Link>
+        </AppCard>
       </View>
 
-      <View style={styles.content}>
-        {/* Facility Management (if applicable) */}
-        {!facility.selectedId && facility.facilities.length > 0 && (
-          <View style={styles.section}>
-            <Text style={styles.sectionTitle}>⚠️ Action Required</Text>
-            <View style={styles.card}>
-              <Text style={styles.cardTitle}>Select a Facility</Text>
-              <Text style={styles.cardDesc}>
-                You have access to facilities. Select one to manage.
-              </Text>
-              <Link href="/facilities" style={styles.link}>
-                Select Facility →
-              </Link>
-            </View>
-          </View>
-        )}
+      <View style={styles.section}>
+        <Text style={styles.sectionTitle}>Commerce</Text>
 
-        {/* Marketing Section */}
-        <View style={styles.section}>
-          <Text style={styles.sectionTitle}>Marketing & Sales</Text>
+        <AppCard>
+          <Text style={styles.cardTitle}>🏪 Storefront</Text>
+          <Text style={styles.cardDesc}>
+            Manage your online storefront and product listings
+          </Text>
+          <Link href="/storefront" style={styles.link}>
+            Manage Storefront →
+          </Link>
+        </AppCard>
 
-          <View style={styles.card}>
-            <Text style={styles.cardTitle}>📱 Feed</Text>
-            <Text style={styles.cardDesc}>
-              Your brand's content feed, engagement, and reach
-            </Text>
-            <Link href="/feed" style={styles.link}>
-              View Feed →
-            </Link>
-          </View>
+        <AppCard>
+          <Text style={styles.cardTitle}>📦 Orders</Text>
+          <Text style={styles.cardDesc}>
+            Track orders, fulfillment, and customer interactions
+          </Text>
+          <Link href="/orders" style={styles.link}>
+            View Orders →
+          </Link>
+        </AppCard>
 
-          <View style={styles.card}>
-            <Text style={styles.cardTitle}>🎯 Campaigns</Text>
-            <Text style={styles.cardDesc}>Create and manage marketing campaigns</Text>
-            <Link href="/campaigns" style={styles.link}>
-              Manage Campaigns →
-            </Link>
-          </View>
-
-          <View style={styles.card}>
-            <Text style={styles.cardTitle}>💰 Offers</Text>
-            <Text style={styles.cardDesc}>Special offers, promotions, and deals</Text>
-            <Link href="/offers" style={styles.link}>
-              Manage Offers →
-            </Link>
-          </View>
-        </View>
-
-        {/* Commerce Section */}
-        <View style={styles.section}>
-          <Text style={styles.sectionTitle}>Commerce</Text>
-
-          <View style={styles.card}>
-            <Text style={styles.cardTitle}>🏪 Storefront</Text>
-            <Text style={styles.cardDesc}>
-              Manage your online storefront and product listings
-            </Text>
-            <Link href="/storefront" style={styles.link}>
-              Manage Storefront →
-            </Link>
-          </View>
-
-          <View style={styles.card}>
-            <Text style={styles.cardTitle}>📦 Orders</Text>
-            <Text style={styles.cardDesc}>
-              Track orders, fulfillment, and customer interactions
-            </Text>
-            <Link href="/orders" style={styles.link}>
-              View Orders →
-            </Link>
-          </View>
-
-          <View style={styles.card}>
-            <Text style={styles.cardTitle}>📊 Inventory</Text>
-            <Text style={styles.cardDesc}>Manage product inventory and stock levels</Text>
-            <Link href="/inventory" style={styles.link}>
-              Manage Inventory →
-            </Link>
-          </View>
-        </View>
-
-        {/* Content Section */}
-        <View style={styles.section}>
-          <Text style={styles.sectionTitle}>Content & Community</Text>
-
-          <View style={styles.card}>
-            <Text style={styles.cardTitle}>📚 Courses</Text>
-            <Text style={styles.cardDesc}>Create and sell educational courses</Text>
-            <Link href="/courses" style={styles.link}>
-              Manage Courses →
-            </Link>
-          </View>
-
-          <View style={styles.card}>
-            <Text style={styles.cardTitle}>👥 Communities</Text>
-            <Text style={styles.cardDesc}>Build and manage brand communities</Text>
-            <Link href="/communities" style={styles.link}>
-              Manage Communities →
-            </Link>
-          </View>
-        </View>
-
-        {/* Account Section */}
-        <View style={styles.section}>
-          <View style={styles.card}>
-            <Text style={styles.cardTitle}>⚙️ Profile & Settings</Text>
-            <Text style={styles.cardDesc}>
-              Account settings, team management, billing
-            </Text>
-            <Link href="/profile" style={styles.link}>
-              Open Profile →
-            </Link>
-          </View>
-        </View>
+        <AppCard>
+          <Text style={styles.cardTitle}>📊 Inventory</Text>
+          <Text style={styles.cardDesc}>Manage product inventory and stock levels</Text>
+          <Link href="/inventory" style={styles.link}>
+            Manage Inventory →
+          </Link>
+        </AppCard>
       </View>
-    </ScrollView>
+
+      <View style={styles.section}>
+        <Text style={styles.sectionTitle}>Content & Community</Text>
+
+        <AppCard>
+          <Text style={styles.cardTitle}>📚 Courses</Text>
+          <Text style={styles.cardDesc}>Create and sell educational courses</Text>
+          <Link href="/courses" style={styles.link}>
+            Manage Courses →
+          </Link>
+        </AppCard>
+
+        <AppCard>
+          <Text style={styles.cardTitle}>👥 Communities</Text>
+          <Text style={styles.cardDesc}>Build and manage brand communities</Text>
+          <Link href="/communities" style={styles.link}>
+            Manage Communities →
+          </Link>
+        </AppCard>
+      </View>
+
+      <View style={styles.section}>
+        <Text style={styles.sectionTitle}>Account</Text>
+        <AppCard>
+          <Text style={styles.cardTitle}>⚙️ Profile & Settings</Text>
+          <Text style={styles.cardDesc}>Account settings, team management, billing</Text>
+          <Link href="/profile" style={styles.link}>
+            Open Profile →
+          </Link>
+        </AppCard>
+      </View>
+    </AppPage>
   );
 }

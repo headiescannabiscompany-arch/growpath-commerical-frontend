@@ -1,61 +1,43 @@
 import React from "react";
-import { View, Text, ScrollView, TouchableOpacity, StyleSheet } from "react-native";
+import { View, Text, StyleSheet } from "react-native";
 import { Link } from "expo-router";
 import { useAuth } from "@/auth/AuthContext";
 import { useEntitlements } from "@/entitlements";
+import AppPage from "@/components/layout/AppPage";
+import AppCard from "@/components/layout/AppCard";
 
 const styles = StyleSheet.create({
-  container: {
-    flex: 1,
-    backgroundColor: "#fff"
-  },
-  header: {
-    padding: 20,
-    borderBottomWidth: 1,
-    borderBottomColor: "#eee"
-  },
-  title: {
+  headerTitle: {
     fontSize: 28,
     fontWeight: "700",
     marginBottom: 4
   },
-  subtitle: {
+  headerSubtitle: {
     fontSize: 14,
-    color: "#666"
-  },
-  content: {
-    padding: 20
+    color: "#64748B"
   },
   section: {
-    marginBottom: 24
+    gap: 12
   },
   sectionTitle: {
     fontSize: 18,
-    fontWeight: "600",
-    marginBottom: 12
-  },
-  card: {
-    padding: 16,
-    borderWidth: 1,
-    borderColor: "#ddd",
-    borderRadius: 12,
-    marginBottom: 12,
-    backgroundColor: "#f9f9f9"
+    fontWeight: "700",
+    color: "#0F172A"
   },
   cardTitle: {
     fontSize: 16,
-    fontWeight: "600",
-    marginBottom: 4
+    fontWeight: "700",
+    marginBottom: 6
   },
   cardDesc: {
     fontSize: 14,
-    color: "#666",
-    marginBottom: 8
+    color: "#475569",
+    marginBottom: 10
   },
   link: {
-    fontSize: 15,
-    fontWeight: "600",
-    color: "#4CAF50"
+    fontSize: 14,
+    fontWeight: "700",
+    color: "#16A34A"
   }
 });
 
@@ -77,105 +59,104 @@ const styles = StyleSheet.create({
 export default function PersonalHome() {
   const auth = useAuth();
   const ent = useEntitlements();
+  const plan = ent.plan || "free";
 
   return (
-    <ScrollView style={styles.container}>
-      <View style={styles.header}>
-        <Text style={styles.title}>Your Garden</Text>
-        <Text style={styles.subtitle}>
-          {auth.user?.email} · {ent.plan || "free"} plan
-        </Text>
+    <AppPage
+      routeKey="home"
+      header={
+        <View>
+          <Text style={styles.headerTitle}>Your Garden</Text>
+          <Text style={styles.headerSubtitle}>
+            {auth.user?.email} · {plan} plan
+          </Text>
+        </View>
+      }
+    >
+      <View style={styles.section}>
+        <Text style={styles.sectionTitle}>Quick Actions</Text>
+
+        <AppCard>
+          <Text style={styles.cardTitle}>🌱 Grows & Plants</Text>
+          <Text style={styles.cardDesc}>
+            Track your grows, log activities, monitor plant health
+          </Text>
+          <Link href="/grows" style={styles.link}>
+            View Grows →
+          </Link>
+        </AppCard>
+
+        <AppCard>
+          <Text style={styles.cardTitle}>📝 Grow Logs</Text>
+          <Text style={styles.cardDesc}>
+            Daily notes, photos, measurements, and progress tracking
+          </Text>
+          <Link href="/logs" style={styles.link}>
+            Open Logs →
+          </Link>
+        </AppCard>
+
+        <AppCard>
+          <Text style={styles.cardTitle}>🔬 Diagnose</Text>
+          <Text style={styles.cardDesc}>
+            AI-powered plant diagnosis and issue detection
+          </Text>
+          <Link href="/diagnose" style={styles.link}>
+            Diagnose Issues →
+          </Link>
+        </AppCard>
       </View>
 
-      <View style={styles.content}>
-        {/* Quick Actions Section */}
-        <View style={styles.section}>
-          <Text style={styles.sectionTitle}>Quick Actions</Text>
+      <View style={styles.section}>
+        <Text style={styles.sectionTitle}>Growing Tools</Text>
 
-          <View style={styles.card}>
-            <Text style={styles.cardTitle}>🌱 Grows & Plants</Text>
-            <Text style={styles.cardDesc}>
-              Track your grows, log activities, monitor plant health
-            </Text>
-            <Link href="/grows" style={styles.link}>
-              View Grows →
-            </Link>
-          </View>
-
-          <View style={styles.card}>
-            <Text style={styles.cardTitle}>📝 Grow Logs</Text>
-            <Text style={styles.cardDesc}>
-              Daily notes, photos, measurements, and progress tracking
-            </Text>
-            <Link href="/logs" style={styles.link}>
-              Open Logs →
-            </Link>
-          </View>
-
-          <View style={styles.card}>
-            <Text style={styles.cardTitle}>🔬 Diagnose</Text>
-            <Text style={styles.cardDesc}>
-              AI-powered plant diagnosis and issue detection
-            </Text>
-            <Link href="/diagnose" style={styles.link}>
-              Diagnose Issues →
-            </Link>
-          </View>
-        </View>
-
-        {/* Tools Section */}
-        <View style={styles.section}>
-          <Text style={styles.sectionTitle}>Growing Tools</Text>
-
-          <View style={styles.card}>
-            <Text style={styles.cardTitle}>🧪 Calculators & Tools</Text>
-            <Text style={styles.cardDesc}>
-              Soil calc, NPK, VPD, feed scheduler, harvest estimator
-            </Text>
-            <Link href="/tools" style={styles.link}>
-              Open Tools →
-            </Link>
-          </View>
-        </View>
-
-        {/* Learning Section */}
-        <View style={styles.section}>
-          <Text style={styles.sectionTitle}>Learning & Community</Text>
-
-          <View style={styles.card}>
-            <Text style={styles.cardTitle}>📚 Courses</Text>
-            <Text style={styles.cardDesc}>
-              Browse courses, track progress, earn certificates
-            </Text>
-            <Link href="/courses" style={styles.link}>
-              Browse Courses →
-            </Link>
-          </View>
-
-          <View style={styles.card}>
-            <Text style={styles.cardTitle}>💬 Forum</Text>
-            <Text style={styles.cardDesc}>
-              Connect with growers, ask questions, share knowledge
-            </Text>
-            <Link href="/forum" style={styles.link}>
-              Open Forum →
-            </Link>
-          </View>
-        </View>
-
-        {/* Account Section */}
-        <View style={styles.section}>
-          <View style={styles.card}>
-            <Text style={styles.cardTitle}>⚙️ Profile & Settings</Text>
-            <Text style={styles.cardDesc}>
-              Account settings, preferences, plan management
-            </Text>
-            <Link href="/profile" style={styles.link}>
-              Open Profile →
-            </Link>
-          </View>
-        </View>
+        <AppCard>
+          <Text style={styles.cardTitle}>🧪 Calculators & Tools</Text>
+          <Text style={styles.cardDesc}>
+            Soil calc, NPK, VPD, feed scheduler, harvest estimator
+          </Text>
+          <Link href="/tools" style={styles.link}>
+            Open Tools →
+          </Link>
+        </AppCard>
       </View>
-    </ScrollView>
+
+      <View style={styles.section}>
+        <Text style={styles.sectionTitle}>Learning & Community</Text>
+
+        <AppCard>
+          <Text style={styles.cardTitle}>📚 Courses</Text>
+          <Text style={styles.cardDesc}>
+            Browse courses, track progress, earn certificates
+          </Text>
+          <Link href="/courses" style={styles.link}>
+            Browse Courses →
+          </Link>
+        </AppCard>
+
+        <AppCard>
+          <Text style={styles.cardTitle}>💬 Forum</Text>
+          <Text style={styles.cardDesc}>
+            Connect with growers, ask questions, share knowledge
+          </Text>
+          <Link href="/forum" style={styles.link}>
+            Open Forum →
+          </Link>
+        </AppCard>
+      </View>
+
+      <View style={styles.section}>
+        <Text style={styles.sectionTitle}>Account</Text>
+        <AppCard>
+          <Text style={styles.cardTitle}>⚙️ Profile & Settings</Text>
+          <Text style={styles.cardDesc}>
+            Account settings, preferences, plan management
+          </Text>
+          <Link href="/profile" style={styles.link}>
+            Open Profile →
+          </Link>
+        </AppCard>
+      </View>
+    </AppPage>
   );
 }

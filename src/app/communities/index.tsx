@@ -24,20 +24,20 @@ const styles = StyleSheet.create({
   }
 });
 
-export default function Diagnose() {
+export default function Communities() {
   return (
     <AppPage
-      routeKey="diagnose"
+      routeKey="communities"
       header={
         <View>
-          <Text style={styles.headerTitle}>Diagnose</Text>
-          <Text style={styles.headerSubtitle}>AI-assisted plant diagnostics</Text>
+          <Text style={styles.headerTitle}>Communities</Text>
+          <Text style={styles.headerSubtitle}>Audience and membership</Text>
         </View>
       }
     >
       <AppCard>
-        <Text style={styles.cardTitle}>Upload a photo</Text>
-        <Text style={styles.cardDesc}>Stub screen</Text>
+        <Text style={styles.cardTitle}>Community Hub</Text>
+        <Text style={styles.cardDesc}>Coming next</Text>
       </AppCard>
     </AppPage>
   );

@@ -50,7 +50,7 @@ function applyServerCtx(
   userPlan: any
 ): EntitlementsState {
   const mode = pickMode(ctx?.mode);
-  const plan = userPlan ?? ctx?.plan ?? prev.plan ?? null;
+  const plan = userPlan ?? ctx?.plan ?? prev.plan ?? "free";
 
   return {
     ready: true,
@@ -86,7 +86,7 @@ export function EntitlementsProvider({ children }: { children: React.ReactNode }
       setState({
         ready: true,
         mode: "personal",
-        plan: null,
+        plan: "free",
         capabilities: {},
         limits: {}
       });
@@ -111,7 +111,11 @@ export function EntitlementsProvider({ children }: { children: React.ReactNode }
         // Only apply if changed
         if (fingerprint !== lastAppliedRef.current) {
           lastAppliedRef.current = fingerprint;
-          setState((prev) => applyServerCtx(prev, ctx, userPlan));
+          setState((prev) => {
+            const next = applyServerCtx(prev, ctx, userPlan);
+            console.log("[ENT] applyServerCtx plan:", next.plan, "mode:", next.mode);
+            return next;
+          });
         } else {
           // Ensure ready is true even if ctx unchanged
           setState((prev) => (prev.ready ? prev : { ...prev, ready: true }));
@@ -126,7 +130,7 @@ export function EntitlementsProvider({ children }: { children: React.ReactNode }
           setState({
             ready: true,
             mode: "personal",
-            plan: null,
+            plan: "free",
             capabilities: {},
             limits: {}
           });

@@ -24,20 +24,20 @@ const styles = StyleSheet.create({
   }
 });
 
-export default function Diagnose() {
+export default function Orders() {
   return (
     <AppPage
-      routeKey="diagnose"
+      routeKey="orders"
       header={
         <View>
-          <Text style={styles.headerTitle}>Diagnose</Text>
-          <Text style={styles.headerSubtitle}>AI-assisted plant diagnostics</Text>
+          <Text style={styles.headerTitle}>Orders</Text>
+          <Text style={styles.headerSubtitle}>Track and fulfill orders</Text>
         </View>
       }
     >
       <AppCard>
-        <Text style={styles.cardTitle}>Upload a photo</Text>
-        <Text style={styles.cardDesc}>Stub screen</Text>
+        <Text style={styles.cardTitle}>Order Queue</Text>
+        <Text style={styles.cardDesc}>Coming next</Text>
       </AppCard>
     </AppPage>
   );
