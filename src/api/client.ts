@@ -5,6 +5,13 @@ import { mockRequest } from "./mockServer";
 let authToken: string | null = null;
 let onUnauthorized: null | (() => void | Promise<void>) = null;
 
+// Single-flight deduplication map for idempotent GET requests
+const inflight = new Map<string, Promise<any>>();
+
+function inflightKey(method: string, url: string) {
+  return `${method.toUpperCase()} ${url}`;
+}
+
 export function setAuthToken(token: string | null) {
   authToken = token || null;
 }
@@ -129,21 +136,43 @@ async function request(path: string, options: RequestOptions = {}) {
           ? options.body
           : undefined;
 
-    const res = await fetch(url, {
-      method,
-      headers,
-      body,
-      signal: mergedSignal
-    });
+    const key = inflightKey(method, url);
 
-    clearTimeout(timeoutId);
+    // ✅ Dedupe ONLY safe idempotent reads (GET) — including /api/me
+    const shouldDedupe =
+      method === "GET" && (path === "/api/me" || path.startsWith("/api/me?"));
 
-    if (!res.ok) {
-      const data = await safeJson(res).catch(() => null);
-      throw normalizeApiError(data ?? { status: res.status }, { path });
+    if (shouldDedupe) {
+      const existing = inflight.get(key);
+      if (existing) return await existing;
     }
 
-    return await safeJson(res);
+    const p = (async () => {
+      const res = await fetch(url, {
+        method,
+        headers,
+        body,
+        signal: mergedSignal
+      });
+
+      clearTimeout(timeoutId);
+
+      if (!res.ok) {
+        const data = await safeJson(res).catch(() => null);
+        throw normalizeApiError(data ?? { status: res.status }, { path });
+      }
+
+      return await safeJson(res);
+    })();
+
+    if (shouldDedupe) inflight.set(key, p);
+
+    try {
+      const out = await p;
+      return out;
+    } finally {
+      if (shouldDedupe) inflight.delete(key);
+    }
   } catch (e: any) {
     clearTimeout(timeoutId);
 
