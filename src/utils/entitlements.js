@@ -31,6 +31,7 @@ export const FEATURES = {
   GROWLOGS_EXPORT: "growlogs_export",
   GROWLOGS_BATCH: "growlogs_batch",
   GROWLOGS_COMPLIANCE: "growlogs_compliance",
+  SEARCH: "search",
   DIAGNOSE_AI: "diagnose_ai",
   DIAGNOSE_ADVANCED: "diagnose_advanced",
   DIAGNOSE_EXPORT: "diagnose_export",
@@ -45,6 +46,13 @@ export const FEATURES = {
 // Entitlement matrix
 // Each feature: { [role]: "enabled" | "disabled" | "cta" }
 export const ENTITLEMENT_MATRIX = {
+  [FEATURES.SEARCH]: {
+    free: "cta",
+    pro: "enabled",
+    influencer: "enabled",
+    commercial: "enabled",
+    facility: "enabled"
+  },
   [FEATURES.DASHBOARD_ANALYTICS]: {
     free: "cta",
     pro: "enabled",

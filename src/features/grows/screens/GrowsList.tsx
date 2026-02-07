@@ -1,7 +1,7 @@
 import { View, Text, Button } from "react-native";
 import { useGrows } from "../hooks";
 
-export default function GrowsList({ navigation }) {
+export default function GrowsList({ navigation }: any) {
   const { data, isLoading } = useGrows();
 
   if (isLoading) return <Text>Loading…</Text>;

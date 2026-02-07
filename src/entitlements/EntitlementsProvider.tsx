@@ -1,5 +1,6 @@
 import React, {
   createContext,
+  useCallback,
   useContext,
   useEffect,
   useMemo,
@@ -10,23 +11,35 @@ import { useAuth } from "../auth/AuthContext";
 
 type EntitlementsMode = "personal" | "commercial" | "facility";
 
-type EntitlementsState = {
+export type EntitlementsState = {
   ready: boolean;
   mode: EntitlementsMode;
   plan: string | null;
+  facilityId: string | null;
+  selectedFacilityId: string | null; // Alias for facilityId (backward compatibility)
+  facilityRole: string | null; // User's role in facility mode
   capabilities: Record<string, any>;
   limits: Record<string, any>;
+  can: ((capability: string | string[]) => boolean) & Record<string, boolean>;
+  refresh?: (plan?: string, capabilities?: Record<string, any>) => void;
 };
 
-const DEFAULT_STATE: EntitlementsState = {
+const DEFAULT_STATE: Omit<EntitlementsState, "can"> = {
   ready: false,
   mode: "personal",
   plan: null,
+  facilityId: null,
+  selectedFacilityId: null,
+  facilityRole: null,
   capabilities: {},
   limits: {}
 };
 
-const EntitlementsContext = createContext<EntitlementsState>(DEFAULT_STATE);
+const EntitlementsContext = createContext<EntitlementsState>({
+  ...DEFAULT_STATE,
+  can: Object.assign(((capability: string | string[]) => false) as any, {}),
+  refresh: () => {}
+});
 
 function safeStringify(v: any) {
   try {
@@ -44,17 +57,22 @@ function pickMode(ctxMode: any): EntitlementsMode {
 
 // Pure "apply" function (no side effects other than returning next state)
 function applyServerCtx(
-  prev: EntitlementsState,
+  prev: Omit<EntitlementsState, "can">,
   ctx: any,
   userPlan: any
-): EntitlementsState {
+): Omit<EntitlementsState, "can"> {
   const mode = pickMode(ctx?.mode);
   const plan = userPlan ?? ctx?.plan ?? prev.plan ?? "free";
+  const facilityId = ctx?.facilityId ?? null;
+  const facilityRole = ctx?.facilityRole ?? null;
 
   return {
     ready: true,
     mode,
     plan,
+    facilityId,
+    selectedFacilityId: facilityId, // Alias
+    facilityRole,
     capabilities:
       ctx?.capabilities && typeof ctx.capabilities === "object" ? ctx.capabilities : {},
     limits: ctx?.limits && typeof ctx.limits === "object" ? ctx.limits : {}
@@ -65,7 +83,7 @@ export function EntitlementsProvider({ children }: { children: React.ReactNode }
   const auth = useAuth();
   const { token, isHydrating, logout } = auth;
 
-  const [state, setState] = useState<EntitlementsState>(DEFAULT_STATE);
+  const [state, setState] = useState<Omit<EntitlementsState, "can">>(DEFAULT_STATE);
 
   // Guard: prevent re-applying the same server ctx over and over
   const lastAppliedRef = useRef<string>("");
@@ -94,8 +112,11 @@ export function EntitlementsProvider({ children }: { children: React.ReactNode }
     if (!token) {
       setState({
         ready: true,
+        selectedFacilityId: null,
+        facilityRole: null,
         mode: "personal",
         plan: "free",
+        facilityId: null,
         capabilities: {},
         limits: {}
       });
@@ -133,8 +154,27 @@ export function EntitlementsProvider({ children }: { children: React.ReactNode }
       mounted = false;
     };
   }, [auth.isHydrating, auth.token, auth.ctx, auth.user]);
+  const can = useMemo(() => {
+    const fn = (capability: string | string[]) => {
+      if (!state.ready) return false;
+      if (Array.isArray(capability)) {
+        return capability.every((cap) => state.capabilities[cap] === true);
+      }
+      return state.capabilities[capability] === true;
+    };
+    return Object.assign(fn, state.capabilities);
+  }, [state.ready, state.capabilities]);
 
-  const value = useMemo(() => state, [state]);
+  const refresh = useCallback((plan?: string, capabilities?: Record<string, any>) => {
+    setState((s) => ({
+      ...s,
+      ready: true,
+      plan: plan ?? s.plan,
+      capabilities: capabilities ?? s.capabilities
+    }));
+  }, []);
+
+  const value = useMemo(() => ({ ...state, can, refresh }), [state, can]);
 
   return (
     <EntitlementsContext.Provider value={value}>{children}</EntitlementsContext.Provider>

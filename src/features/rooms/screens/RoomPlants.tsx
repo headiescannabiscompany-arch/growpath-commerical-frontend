@@ -3,7 +3,7 @@ import { View, Text, Button } from "react-native";
 import { usePlants } from "../../plants/hooks";
 import { useNavigation } from "@react-navigation/native";
 
-export default function RoomPlants({ roomId }) {
+export default function RoomPlants({ roomId }: { roomId: string }) {
   const { data: plants, isLoading } = usePlants();
   const navigation = useNavigation();
 
@@ -20,7 +20,7 @@ export default function RoomPlants({ roomId }) {
           <Text>Stage: {plant.stage}</Text>
           <Button
             title="Move Plant"
-            onPress={() => navigation.navigate("MovePlant", { id: plant.id })}
+            onPress={() => (navigation as any).navigate("MovePlant", { id: plant.id })}
           />
         </View>
       ))}

@@ -5,6 +5,7 @@ export type Growlog = {
   id: string;
   title?: string;
   body?: string;
+  note?: string;
   createdAt?: string;
 };
 

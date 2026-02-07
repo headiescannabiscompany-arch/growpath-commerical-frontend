@@ -13,7 +13,7 @@ import {
   RefreshControl
 } from "react-native";
 import { useFacility } from "../../facility/FacilityProvider";
-import { can } from "../../facility/roleGates";
+import { can, type FacilityRole } from "../../facility/roleGates";
 import { handleApiError } from "../../ui/handleApiError";
 import { useTasks } from "../../hooks/useTasks";
 
@@ -24,7 +24,9 @@ import { useTasks } from "../../hooks/useTasks";
 // - Error handling via handleApiError()
 
 export default function FacilityTasks() {
-  const { activeFacilityId, facilityRole } = useFacility();
+  const { activeFacilityId, facilityRole: rawRole } = useFacility();
+  // Phase 2.3.2: Cast string | null to FacilityRole | null
+  const facilityRole = rawRole as FacilityRole | null;
   const { data, isLoading, error, refetch, createTask, creating } = useTasks();
 
   // Minimal local UI state for creating tasks
@@ -61,7 +63,7 @@ export default function FacilityTasks() {
   }
 
   // Standardized error handling
-  if (error) handleApiError(error, handlers);
+  if (error) handleApiError(error, "Failed to load tasks");
 
   const tasks = Array.isArray(data) ? data : [];
 
@@ -80,7 +82,7 @@ export default function FacilityTasks() {
       setDescription("");
       setShowCreateModal(false);
     } catch (e) {
-      handleApiError(e, handlers);
+      handleApiError(e, "Failed to create task");
     }
   }
 
@@ -105,7 +107,8 @@ export default function FacilityTasks() {
           ) : null}
           {item?.assignedTo ? (
             <Text style={styles.taskMeta}>
-              Assigned to: {item.assignedTo.displayName || item.assignedTo.email || item.assignedTo}
+              Assigned to:{" "}
+              {item.assignedTo.displayName || item.assignedTo.email || item.assignedTo}
             </Text>
           ) : null}
         </View>
@@ -114,7 +117,9 @@ export default function FacilityTasks() {
         <View style={styles.actionRow}>
           {section === "pending" && allowComplete ? (
             <Pressable
-              onPress={() => handlers.toast(`Mark as complete for ${taskId} (hook mutation needed)`)}
+              onPress={() =>
+                handlers.toast(`Mark as complete for ${taskId} (hook mutation needed)`)
+              }
               style={styles.actionButton}
             >
               <Text style={styles.actionButtonText}>✓</Text>
@@ -123,7 +128,9 @@ export default function FacilityTasks() {
 
           {allowUpdate ? (
             <Pressable
-              onPress={() => handlers.toast(`Edit flow for ${taskId} (modal/navigation needed)`)}
+              onPress={() =>
+                handlers.toast(`Edit flow for ${taskId} (modal/navigation needed)`)
+              }
               style={styles.actionButton}
             >
               <Text style={styles.actionButtonText}>✎</Text>
@@ -132,7 +139,9 @@ export default function FacilityTasks() {
 
           {allowDelete ? (
             <Pressable
-              onPress={() => handlers.toast(`Delete flow for ${taskId} (hook mutation needed)`)}
+              onPress={() =>
+                handlers.toast(`Delete flow for ${taskId} (hook mutation needed)`)
+              }
               style={styles.actionButton}
             >
               <Text style={styles.actionButtonText}>×</Text>
@@ -153,10 +162,7 @@ export default function FacilityTasks() {
 
       {/* Create button */}
       {allowCreate ? (
-        <Pressable
-          style={styles.createButton}
-          onPress={() => setShowCreateModal(true)}
-        >
+        <Pressable style={styles.createButton} onPress={() => setShowCreateModal(true)}>
           <Text style={styles.createButtonText}>+ Add Task</Text>
         </Pressable>
       ) : null}
@@ -180,9 +186,7 @@ export default function FacilityTasks() {
           <>
             {pendingTasks.length > 0 && (
               <View style={styles.section}>
-                <Text style={styles.sectionTitle}>
-                  Pending ({pendingTasks.length})
-                </Text>
+                <Text style={styles.sectionTitle}>Pending ({pendingTasks.length})</Text>
                 {pendingTasks.map((task: any) => renderTaskItem(task, "pending"))}
               </View>
             )}

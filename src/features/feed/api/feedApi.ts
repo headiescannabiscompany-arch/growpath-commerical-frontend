@@ -39,7 +39,8 @@ export async function getCommercialFeed(
 // ------------------------------
 
 export async function getTasks(params: Record<string, any>) {
-  return api.get(endpoints.tasksGlobal, { params });
+  const search = new URLSearchParams(params as Record<string, string>);
+  return api.get(`${endpoints.tasksGlobal}?${search.toString()}`);
 }
 
 export async function patchTask(id: string, body: Record<string, any>) {
@@ -47,7 +48,8 @@ export async function patchTask(id: string, body: Record<string, any>) {
 }
 
 export async function getAlerts(params: Record<string, any>) {
-  return api.get(endpoints.alertsGlobal, { params });
+  const search = new URLSearchParams(params as Record<string, string>);
+  return api.get(`${endpoints.alertsGlobal}?${search.toString()}`);
 }
 
 export async function patchAlert(id: string, body: Record<string, any>) {
@@ -55,5 +57,6 @@ export async function patchAlert(id: string, body: Record<string, any>) {
 }
 
 export async function getGrowLogs(params: Record<string, any>) {
-  return api.get(endpoints.growlogLegacy, { params });
+  const search = new URLSearchParams(params as Record<string, string>);
+  return api.get(`${endpoints.growlogLegacy}?${search.toString()}`);
 }

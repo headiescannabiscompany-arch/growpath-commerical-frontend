@@ -1,0 +1,36 @@
+diff --git a/node_modules/@react-navigation/elements/lib/module/Screen.js b/node_modules/@react-navigation/elements/lib/module/Screen.js
+index 8689e62..2c68adb 100644
+--- a/node_modules/@react-navigation/elements/lib/module/Screen.js
++++ b/node_modules/@react-navigation/elements/lib/module/Screen.js
+@@ -2,7 +2,7 @@
+ 
+ import { NavigationContext, NavigationRouteContext } from '@react-navigation/native';
+ import * as React from 'react';
+-import { StyleSheet, View } from 'react-native';
++import { Platform, StyleSheet, View } from 'react-native';
+ import { useSafeAreaInsets } from 'react-native-safe-area-context';
+ import { Background } from "./Background.js";
+ import { getDefaultHeaderHeight } from "./Header/getDefaultHeaderHeight.js";
+@@ -47,14 +47,20 @@ export function Screen(props) {
+         value: route,
+         children: /*#__PURE__*/_jsx(View, {
+           ref: headerRef,
+-          pointerEvents: "box-none",
++          pointerEvents: Platform.OS === "web" ? undefined : "box-none",
+           onLayout: e => {
+             const {
+               height
+             } = e.nativeEvent.layout;
+             setHeaderHeight(height);
+           },
+-          style: [styles.header, headerTransparent ? styles.absolute : null],
++          style: [
++            styles.header,
++            headerTransparent ? styles.absolute : null,
++            Platform.OS === "web" ? {
++              pointerEvents: "box-none"
++            } : null
++          ],
+           children: header
+         })
+       })

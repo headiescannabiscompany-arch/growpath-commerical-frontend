@@ -1,7 +1,7 @@
 import { View, Text } from "react-native";
 import { useGrow } from "../hooks";
 
-export default function GrowDetail({ route }) {
+export default function GrowDetail({ route }: any) {
   const { id } = route.params;
   const { data } = useGrow(id);
 

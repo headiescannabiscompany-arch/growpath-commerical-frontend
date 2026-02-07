@@ -2,12 +2,29 @@ import React from "react";
 import { SwipeListView } from "react-native-swipe-list-view";
 import { View, Text, TouchableOpacity } from "react-native";
 
-export default function TaskListSwipe({ tasks, onComplete, onReassign }) {
+type TaskItem = {
+  id: string;
+  title?: string;
+  assignedToName?: string;
+  status?: string;
+};
+
+type TaskListSwipeProps = {
+  tasks: TaskItem[];
+  onComplete: (task: TaskItem) => void;
+  onReassign: (task: TaskItem) => void;
+};
+
+export default function TaskListSwipe({
+  tasks,
+  onComplete,
+  onReassign
+}: TaskListSwipeProps) {
   return (
-    <SwipeListView
+    <SwipeListView<TaskItem>
       data={tasks}
-      keyExtractor={(item) => item.id}
-      renderItem={({ item }) => (
+      keyExtractor={(item: TaskItem) => item.id}
+      renderItem={({ item }: { item: TaskItem }) => (
         <View
           style={{
             padding: 16,
@@ -22,7 +39,7 @@ export default function TaskListSwipe({ tasks, onComplete, onReassign }) {
           <Text>Status: {item.status}</Text>
         </View>
       )}
-      renderHiddenItem={({ item }) => (
+      renderHiddenItem={({ item }: { item: TaskItem }) => (
         <View style={{ flex: 1, flexDirection: "row" }}>
           <SwipeActionButton
             text="Complete"
@@ -44,7 +61,13 @@ export default function TaskListSwipe({ tasks, onComplete, onReassign }) {
   );
 }
 
-function SwipeActionButton({ text, color, onPress }) {
+type SwipeActionButtonProps = {
+  text: string;
+  color: string;
+  onPress: () => void;
+};
+
+function SwipeActionButton({ text, color, onPress }: SwipeActionButtonProps) {
   return (
     <TouchableOpacity
       onPress={onPress}

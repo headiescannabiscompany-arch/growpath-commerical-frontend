@@ -1,9 +1,9 @@
 import { View, Text, Button } from "react-native";
 import { useTeam } from "../hooks";
-import { useEntitlements } from "../../../entitlementsProvider";
+import { useEntitlements } from "../../../entitlements";
 import UpgradePrompt from "../../UpgradePrompt";
 
-export default function TeamList({ navigation }) {
+export default function TeamList({ navigation }: any) {
   const { can } = useEntitlements();
   if (!can.team) return <UpgradePrompt feature="Team" />;
   const { data } = useTeam();

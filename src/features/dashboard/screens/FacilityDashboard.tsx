@@ -3,26 +3,34 @@ import { useFacilityDashboard } from "../hooks";
 
 export default function FacilityDashboard() {
   const d = useFacilityDashboard();
+
+  // Phase 2.3.5: Default aliases to eliminate TS18048 (possibly undefined)
+  const plants = d?.plants ?? { total: 0, flowering: 0, veg: 0, lateFlower: 0 };
+  const tasks = d?.tasks ?? { open: 0, overdue: 0, completedThisWeek: 0 };
+  const inventory = d?.inventory ?? { lowStock: 0, stockoutRisk: 0 };
+  const grows = d?.grows ?? { active: 0, completed: 0 };
+  const team = d?.team ?? { total: 0 };
+
   if (d.isLoading) return <Text>Loading…</Text>;
 
   return (
     <View>
-      <Text>Plants: {d.plants.total}</Text>
-      <Text>Flowering: {d.plants.flowering}</Text>
-      <Text>Veg: {d.plants.veg}</Text>
-      <Text>Late Flower: {d.plants.lateFlower}</Text>
+      <Text>Plants: {plants.total}</Text>
+      <Text>Flowering: {plants.flowering}</Text>
+      <Text>Veg: {plants.veg}</Text>
+      <Text>Late Flower: {plants.lateFlower}</Text>
 
-      <Text>Open Tasks: {d.tasks.open}</Text>
-      <Text>Overdue: {d.tasks.overdue}</Text>
-      <Text>Completed This Week: {d.tasks.completedThisWeek}</Text>
+      <Text>Open Tasks: {tasks.open}</Text>
+      <Text>Overdue: {tasks.overdue}</Text>
+      <Text>Completed This Week: {tasks.completedThisWeek}</Text>
 
-      <Text>Low Inventory: {d.inventory.lowStock}</Text>
-      <Text>Stockout Risk: {d.inventory.stockoutRisk}</Text>
+      <Text>Low Inventory: {inventory.lowStock}</Text>
+      <Text>Stockout Risk: {inventory.stockoutRisk}</Text>
 
-      <Text>Active Grows: {d.grows.active}</Text>
-      <Text>Completed Grows: {d.grows.completed}</Text>
+      <Text>Active Grows: {grows.active}</Text>
+      <Text>Completed Grows: {grows.completed}</Text>
 
-      <Text>Team Members: {d.team.total}</Text>
+      <Text>Team Members: {team.total}</Text>
     </View>
   );
 }

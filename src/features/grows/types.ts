@@ -4,5 +4,7 @@ export type Grow = {
   startDate: string;
   endDate?: string;
   stage: string;
+  yield?: number;
+  notes?: string;
   deletedAt?: string | null;
 };

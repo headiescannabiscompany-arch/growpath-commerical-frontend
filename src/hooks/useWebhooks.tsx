@@ -9,7 +9,7 @@ type Entitlements = {
 
 const EntitlementsContext = createContext<Entitlements | null>(null);
 
-export function EntitlementsProvider({ children }) {
+export function EntitlementsProvider({ children }: { children: React.ReactNode }) {
   const [plan, setPlan] = useState<Plan>("free");
   const [capabilities, setCapabilities] = useState({});
 
@@ -35,4 +35,22 @@ export function useEntitlements() {
   const ctx = useContext(EntitlementsContext);
   if (!ctx) throw new Error("useEntitlements outside provider");
   return ctx;
+}
+
+export type Webhook = {
+  id: string;
+  url: string;
+  events: string[];
+  enabled: boolean;
+};
+
+// Stub for Phase 2.3 compilation (webhooks not implemented yet)
+export function useWebhooks() {
+  return {
+    data: [] as Webhook[],
+    isLoading: false,
+    createWebhook: async (_data: any) => {},
+    updateWebhook: async (_id: string, _data: any) => {},
+    deleteWebhook: async (_id: string) => {}
+  };
 }

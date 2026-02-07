@@ -25,7 +25,7 @@ type Facility = {
 export default function FacilitySettingsScreen({ route, navigation }: any) {
   const { activeFacilityId } = useFacility();
   const facilityId =
-    (route?.params?.facilityId as string | undefined) ?? activeFacilityId;
+    (route?.params?.facilityId as string | undefined) ?? (activeFacilityId || undefined);
 
   const { facility, isLoading, error, refetch, updateFacility, updating } =
     useFacilitySettings(facilityId);
@@ -45,14 +45,14 @@ export default function FacilitySettingsScreen({ route, navigation }: any) {
       onFacilityDenied: () => {
         Alert.alert("No Access", "You don't have access to this facility.");
       },
-      toast: (msg) => Alert.alert("Notice", msg)
+      toast: (msg: string) => Alert.alert("Notice", msg)
     }),
     []
   );
 
   useEffect(() => {
-    if (error) handleApiError(error, handlers);
-  }, [error, handlers]);
+    if (error) handleApiError(error, "Failed to load facility settings");
+  }, [error]);
 
   useEffect(() => {
     if (!facility) return;
@@ -97,7 +97,7 @@ export default function FacilitySettingsScreen({ route, navigation }: any) {
       await updateFacility(payload);
       Alert.alert("Saved", "Facility settings updated.");
     } catch (e: any) {
-      handleApiError(e, handlers);
+      handleApiError(e, "Failed to save settings");
       Alert.alert("Save failed", e?.message || "Failed to save settings.");
     }
   }

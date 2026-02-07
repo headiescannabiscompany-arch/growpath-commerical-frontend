@@ -8,7 +8,9 @@ const COLORS = {
   VIEWER: "#e0e0e0"
 };
 
-export default function RoleBadge({ role }) {
+type RoleKey = keyof typeof COLORS;
+
+export default function RoleBadge({ role }: { role: RoleKey }) {
   return (
     <Text
       style={{

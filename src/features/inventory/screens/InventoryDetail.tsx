@@ -1,7 +1,7 @@
 import { View, Text, Button } from "react-native";
 import { useInventoryItem, useDeleteInventoryItem } from "../hooks";
 
-export default function InventoryDetail({ route, navigation }) {
+export default function InventoryDetail({ route, navigation }: any) {
   const { id } = route.params;
   const { data } = useInventoryItem(id);
   const del = useDeleteInventoryItem(id);

@@ -2,7 +2,7 @@ import { useState } from "react";
 import { View, TextInput, Button } from "react-native";
 import { useInventoryItem, useUpdateInventoryItem } from "../hooks";
 
-export default function InventoryEdit({ route, navigation }) {
+export default function InventoryEdit({ route, navigation }: any) {
   const { id } = route.params;
   const { data } = useInventoryItem(id);
   const update = useUpdateInventoryItem(id);

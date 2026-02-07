@@ -216,27 +216,170 @@ async function request(path: string, options: RequestOptions = {}) {
   }
 }
 
-export const client = {
-  get: (path: string, options: RequestOptions = {}) =>
-    request(path, { ...options, method: "GET" }),
+// --- Phase 2.2: Callable client adapter (supports legacy + modern call patterns) ---
 
-  delete: (path: string, options: RequestOptions = {}) =>
-    request(path, { ...options, method: "DELETE" }),
+type HttpMethod = "GET" | "POST" | "PUT" | "PATCH" | "DELETE";
 
-  post: (path: string, data: any, options: RequestOptions = {}) =>
-    request(path, { ...options, method: "POST", body: data }),
-
-  put: (path: string, data: any, options: RequestOptions = {}) =>
-    request(path, { ...options, method: "PUT", body: data }),
-
-  patch: (path: string, data: any, options: RequestOptions = {}) =>
-    request(path, { ...options, method: "PATCH", body: data }),
-
-  postMultipart: (path: string, formData: FormData, options: RequestOptions = {}) =>
-    request(path, { ...options, method: "POST", body: formData }),
-
-  setAuthToken
+type ApiCallOptions = RequestOptions & {
+  method?: HttpMethod | string;
+  body?: any;
 };
 
+type ClientCallable = {
+  // Pattern A: api<T>(url) => GET
+  <T = any>(path: string): Promise<T>;
+
+  // Pattern A: api<T>(url, { method, body, ...opts })
+  <T = any>(path: string, options: ApiCallOptions): Promise<T>;
+
+  // Pattern B: client(method, url, body, options) legacy 4-arg
+  <T = any>(
+    method: HttpMethod | string,
+    path: string,
+    body?: any,
+    options?: RequestOptions
+  ): Promise<T>;
+
+  // Pattern C: object methods
+  get<T = any>(path: string, options?: RequestOptions): Promise<T>;
+  // Phase 2.3.2: Compatibility overload for api.get(url, facilityId, options) legacy misuse
+  get<T = any>(
+    path: string,
+    facilityId: string | null,
+    options?: RequestOptions
+  ): Promise<T>;
+  delete<T = any>(path: string, options?: RequestOptions): Promise<T>;
+  // Phase 2.3.2: Compatibility overload for api.delete(url, facilityId, options) legacy misuse
+  delete<T = any>(
+    path: string,
+    facilityId: string | null,
+    options?: RequestOptions
+  ): Promise<T>;
+  del<T = any>(path: string, options?: RequestOptions): Promise<T>; // alias for delete
+  del<T = any>(
+    path: string,
+    facilityId: string | null,
+    options?: RequestOptions
+  ): Promise<T>; // alias with compat overload
+  // Phase 2.3.7: Overload for api.post(path) with empty body (e.g., auth actions)
+  post<T = any>(path: string): Promise<T>;
+  post<T = any>(path: string, data: any, options?: RequestOptions): Promise<T>;
+  // Phase 2.3.2: Compatibility overload for api.post(url, data, facilityId, options) legacy misuse
+  post<T = any>(
+    path: string,
+    data: any,
+    facilityId: string | null,
+    options?: RequestOptions
+  ): Promise<T>;
+  put<T = any>(path: string, data: any, options?: RequestOptions): Promise<T>;
+  // Phase 2.3.2: Compatibility overload for api.put(url, data, facilityId, options) legacy misuse
+  put<T = any>(
+    path: string,
+    data: any,
+    facilityId: string | null,
+    options?: RequestOptions
+  ): Promise<T>;
+  patch<T = any>(path: string, data: any, options?: RequestOptions): Promise<T>;
+  // Phase 2.3.2: Compatibility overload for api.patch(url, data, facilityId, options) legacy misuse
+  patch<T = any>(
+    path: string,
+    data: any,
+    facilityId: string | null,
+    options?: RequestOptions
+  ): Promise<T>;
+  postMultipart<T = any>(
+    path: string,
+    formData: FormData,
+    options?: RequestOptions
+  ): Promise<T>;
+
+  // keep existing helper
+  setAuthToken: typeof setAuthToken;
+};
+
+function normalizeMethod(m?: string): HttpMethod {
+  const up = (m || "GET").toUpperCase();
+  if (up === "GET" || up === "POST" || up === "PUT" || up === "PATCH" || up === "DELETE")
+    return up;
+  // if someone passes weird method, treat as GET default to avoid blowing up types
+  return "GET";
+}
+
+function makeClient(): ClientCallable {
+  const fn = (async (...args: any[]) => {
+    // Supports:
+    // 1) (path)
+    // 2) (path, options)
+    // 3) (method, path, body, options)
+
+    // Case 3: legacy signature: (method, path, body, options)
+    if (
+      typeof args[0] === "string" &&
+      typeof args[1] === "string" &&
+      /^[A-Za-z]+$/.test(args[0])
+    ) {
+      const method = normalizeMethod(args[0]);
+      const path = args[1];
+      const body = args.length >= 3 ? args[2] : undefined;
+      const options: RequestOptions = args.length >= 4 ? args[3] || {} : {};
+      return request(path, { ...options, method, body });
+    }
+
+    // Case 1/2: (path) or (path, options)
+    const path: string = args[0];
+    const options: ApiCallOptions = (args[1] || {}) as ApiCallOptions;
+    const method = normalizeMethod(options.method);
+    const body = (options as any).body;
+
+    // Remove method/body from options before passing down, since request() already takes method/body explicitly
+    const { method: _m, body: _b, ...rest } = options as any;
+
+    return request(path, { ...(rest as RequestOptions), method, body });
+  }) as unknown as ClientCallable;
+
+  // Pattern C methods
+  // Phase 2.3.2: Handle both get(path, options) and get(path, facilityId, options)
+  fn.get = (path: string, a?: any, b?: any) => {
+    // Supports:
+    // get(path, options)
+    // get(path, facilityId, options)  <-- ignore facilityId, use options
+    const options: RequestOptions =
+      typeof a === "string" || a == null ? b || {} : a || {};
+    return request(path, { ...options, method: "GET" });
+  };
+  fn.delete = (path: string, a?: any, b?: any) => {
+    const options: RequestOptions =
+      typeof a === "string" || a == null ? b || {} : a || {};
+    return request(path, { ...options, method: "DELETE" });
+  };
+  fn.del = fn.delete; // alias
+  // Phase 2.3.2: Handle both post(path, data, options) and post(path, data, facilityId, options)
+  fn.post = (path: string, data?: any, a?: any, b?: any) => {
+    const options: RequestOptions =
+      typeof a === "string" || a == null ? b || {} : a || {};
+    return request(path, { ...options, method: "POST", body: data });
+  };
+  fn.put = (path: string, data: any, a?: any, b?: any) => {
+    const options: RequestOptions =
+      typeof a === "string" || a == null ? b || {} : a || {};
+    return request(path, { ...options, method: "PUT", body: data });
+  };
+  fn.patch = (path: string, data: any, a?: any, b?: any) => {
+    const options: RequestOptions =
+      typeof a === "string" || a == null ? b || {} : a || {};
+    return request(path, { ...options, method: "PATCH", body: data });
+  };
+  fn.postMultipart = (path, formData, options = {}) =>
+    request(path, { ...options, method: "POST", body: formData });
+
+  // Keep existing helper
+  fn.setAuthToken = setAuthToken;
+
+  return fn;
+}
+
+// Export shape (unchanged for consumers)
+export const client = makeClient();
 export const api = client;
+export const apiRequest = client;
 export default client;

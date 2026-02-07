@@ -1,9 +1,9 @@
 import { View, Text, Button } from "react-native";
 import { useInventory } from "../hooks";
-import { useEntitlements } from "../../../entitlementsProvider";
+import { useEntitlements } from "../../../entitlements";
 import UpgradePrompt from "../../UpgradePrompt";
 
-export default function InventoryList({ navigation }) {
+export default function InventoryList({ navigation }: any) {
   const { can } = useEntitlements();
   if (!can.inventory) return <UpgradePrompt feature="Inventory" />;
   const { data, isLoading } = useInventory();

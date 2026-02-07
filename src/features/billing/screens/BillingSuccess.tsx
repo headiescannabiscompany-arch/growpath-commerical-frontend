@@ -1,7 +1,7 @@
 import React, { useEffect } from "react";
 import { View, Text } from "react-native";
 import { useBilling } from "../hooks";
-import { useEntitlements } from "../../entitlementsProvider";
+import { useEntitlements } from "../../../entitlements";
 
 export default function BillingSuccess() {
   const billing = useBilling();

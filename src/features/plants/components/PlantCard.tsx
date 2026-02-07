@@ -1,7 +1,20 @@
 import React from "react";
 import { View, Text, Button, TouchableOpacity } from "react-native";
+import type { Plant } from "../types";
 
-export default function PlantCard({ plant, onStageChange, onMoveRoom, onAddTask }) {
+type PlantCardProps = {
+  plant: Plant;
+  onStageChange: () => void;
+  onMoveRoom: () => void;
+  onAddTask: () => void;
+};
+
+export default function PlantCard({
+  plant,
+  onStageChange,
+  onMoveRoom,
+  onAddTask
+}: PlantCardProps) {
   return (
     <View
       style={{

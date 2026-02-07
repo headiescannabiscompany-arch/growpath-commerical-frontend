@@ -1,9 +1,10 @@
 import { api } from "./client";
 import { endpoints } from "./endpoints";
 
-export type FacilityRole = "OWNER" | "MANAGER" | "STAFF" | "VIEWER";
+export type FacilityRole = "OWNER" | "ADMIN" | "MANAGER" | "STAFF" | "VIEWER";
 
 export type TeamMember = {
+  id: string;
   userId: string;
   role: FacilityRole;
   email?: string;
@@ -13,7 +14,11 @@ export type TeamMember = {
 export async function listTeamMembers(facilityId: string): Promise<TeamMember[]> {
   const res = await api.get(endpoints.teamMembers(facilityId));
   // Contract: { members: [...] }
-  return res?.members ?? [];
+  const members = res?.members ?? [];
+  return members.map((m: any) => ({
+    ...m,
+    id: String(m.id ?? m.userId ?? m._id ?? "")
+  }));
 }
 
 export async function inviteTeamMember(

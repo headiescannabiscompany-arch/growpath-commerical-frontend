@@ -1,1 +1,27 @@
-import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query"; import { useEntitlements } from "@/entitlements"; import { useApiGuards } from "../api/hooks"; import { listComplianceLogs, createComplianceLog } from "../api/complianceLogs"; import type { ComplianceLogType } from "../types/compliance";  export function useComplianceLogs(filter?: { type?: ComplianceLogType }) {   const qc = useQueryClient();   const { selectedFacilityId } = useEntitlements();   const { onError } = useApiGuards();    const queryKey = ["complianceLogs", selectedFacilityId, filter?.type || "all"];    const query = useQuery({     queryKey,     queryFn: () => listComplianceLogs(selectedFacilityId!, filter),     enabled: !!selectedFacilityId,     onError   });    const create = useMutation({     mutationFn: (body: { type: ComplianceLogType; title: string; notes?: string }) =>       createComplianceLog(selectedFacilityId!, body),     onSuccess: () => qc.invalidateQueries({ queryKey }),     onError   });    return {     ...query,     createLog: create.mutateAsync,     creating: create.isPending   }; }
+import { useEffect } from "react";
+import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
+import { useEntitlements } from "@/entitlements";
+import { useApiGuards } from "../api/hooks";
+import { listComplianceLogs, createComplianceLog } from "../api/complianceLogs";
+import type { ComplianceLogType } from "../types/compliance";
+export function useComplianceLogs(filter?: { type?: ComplianceLogType }) {
+  const qc = useQueryClient();
+  const { selectedFacilityId } = useEntitlements();
+  const { onError } = useApiGuards();
+  const queryKey = ["complianceLogs", selectedFacilityId, filter?.type || "all"];
+  const query = useQuery({
+    queryKey,
+    queryFn: () => listComplianceLogs(selectedFacilityId!, filter),
+    enabled: !!selectedFacilityId
+  });
+  useEffect(() => {
+    if (query.error) onError?.(query.error);
+  }, [query.error, onError]);
+  const create = useMutation({
+    mutationFn: (body: { type: ComplianceLogType; title: string; notes?: string }) =>
+      createComplianceLog(selectedFacilityId!, body),
+    onSuccess: () => qc.invalidateQueries({ queryKey }),
+    onError
+  });
+  return { ...query, createLog: create.mutateAsync, creating: create.isPending };
+}

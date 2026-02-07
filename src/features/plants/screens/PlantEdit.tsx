@@ -2,7 +2,7 @@ import { useState } from "react";
 import { View, TextInput, Button } from "react-native";
 import { usePlant, useUpdatePlant } from "../hooks";
 
-export default function PlantEdit({ route, navigation }) {
+export default function PlantEdit({ route, navigation }: any) {
   const { id } = route.params;
   const { data } = usePlant(id);
   const update = useUpdatePlant(id);

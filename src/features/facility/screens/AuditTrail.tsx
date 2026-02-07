@@ -1,11 +1,12 @@
 import React, { useEffect, useState } from "react";
 import { View, Text, ScrollView } from "react-native";
 import { api } from "../../../api/client";
-import { useFacility } from "../../facility/FacilityProvider";
+import { useFacility } from "../../../facility/FacilityProvider";
+import type { AuditLog } from "../../../types/contracts";
 
 export default function AuditTrail() {
   const { facilityId } = useFacility();
-  const [events, setEvents] = useState([]);
+  const [events, setEvents] = useState<AuditLog[]>([]);
 
   useEffect(() => {
     api.get(`/api/facility/${facilityId}/audit`).then(setEvents);

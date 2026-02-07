@@ -6,7 +6,7 @@ import { usePlants } from "../../plants/hooks";
 
 export default function HarvestSummary() {
   const route = useRoute();
-  const { id } = route.params;
+  const { id } = (route.params || {}) as any;
   const { data: grow } = useGrow(id);
   const { data: plants } = usePlants();
   const growPlants = plants?.filter((p) => p.growId === id) || [];

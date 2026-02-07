@@ -1,5 +1,7 @@
 export type ApiErrorCode =
   | "INVALID_CREDENTIALS"
+  | "UNAUTHENTICATED"
+  | "INVALID_TOKEN"
   | "UNAUTHORIZED"
   | "FORBIDDEN"
   | "VALIDATION_ERROR"

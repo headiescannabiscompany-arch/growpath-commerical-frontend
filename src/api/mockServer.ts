@@ -201,6 +201,7 @@ export async function mockRequest(
     const profile = getMockProfileFromToken(token);
     if (!profile) {
       throwMockError(401, "UNAUTHORIZED", "Missing or invalid token");
+      return { user: null, session: null, entitlements: null } as any;
     }
     return {
       user: profile.user,
@@ -215,6 +216,7 @@ export async function mockRequest(
     const profile = getMockProfileFromToken(token);
     if (!profile) {
       throwMockError(401, "UNAUTHORIZED", "Missing or invalid token");
+      return { entitlements: null } as any;
     }
     return { entitlements: profile.entitlements };
   }
@@ -225,6 +227,7 @@ export async function mockRequest(
     const profile = getMockProfileFromToken(token);
     if (!profile) {
       throwMockError(401, "UNAUTHORIZED", "Missing or invalid token");
+      return [] as any;
     }
     return profile.facilities;
   }

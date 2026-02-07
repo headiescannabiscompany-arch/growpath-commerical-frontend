@@ -7,7 +7,7 @@ import { useRoute, useNavigation } from "@react-navigation/native";
 export default function AssignPlantsToGrow() {
   const route = useRoute();
   const navigation = useNavigation();
-  const { growId } = route.params;
+  const { growId } = (route.params || {}) as any;
   const { data: plants } = usePlants();
   const updatePlant = useUpdatePlant();
   const [selected, setSelected] = useState<string[]>([]);
@@ -22,7 +22,7 @@ export default function AssignPlantsToGrow() {
 
   const handleAssign = async () => {
     await Promise.all(selected.map((id) => updatePlant.mutateAsync({ id, growId })));
-    navigation.navigate("GrowDetail", { id: growId });
+    (navigation as any).navigate("GrowDetail", { id: growId });
   };
 
   return (

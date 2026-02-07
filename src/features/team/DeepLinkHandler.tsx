@@ -5,15 +5,16 @@ import { useNavigation } from "@react-navigation/native";
 export default function DeepLinkHandler() {
   const navigation = useNavigation();
   useEffect(() => {
-    const handleUrl = ({ url }) => {
+    const handleUrl = ({ url }: { url: string }) => {
       const { path, queryParams } = Linking.parse(url);
       if (path?.startsWith("invite/")) {
         const token = path.split("/")[1];
-        navigation.navigate("AcceptInvite", { token });
+        (navigation as any).navigate("AcceptInvite", { token });
       }
     };
-    Linking.addEventListener("url", handleUrl);
-    return () => Linking.removeEventListener("url", handleUrl);
+    // Phase 2.3.3: React Native modern API - addEventListener returns subscription
+    const subscription = Linking.addEventListener("url", handleUrl);
+    return () => subscription.remove();
   }, [navigation]);
   return null;
 }

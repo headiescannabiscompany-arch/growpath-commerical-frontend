@@ -9,12 +9,14 @@ export async function fetchUnifiedFeed(params: {
   assignedTo?: string;
   cursor?: string;
   limit?: number;
+  filters?: Record<string, any>;
 }) {
+  const mergedParams = { ...params, ...(params.filters || {}) };
   // Fetch all in parallel
   const [tasksRes, alertsRes, logsRes] = await Promise.all([
-    getTasks(params),
-    getAlerts(params),
-    getGrowLogs(params)
+    getTasks(mergedParams),
+    getAlerts(mergedParams),
+    getGrowLogs(mergedParams)
   ]);
 
   // Normalize

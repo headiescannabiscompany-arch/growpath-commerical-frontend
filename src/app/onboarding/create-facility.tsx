@@ -70,11 +70,11 @@ export default function CreateFacilityScreen() {
         </Text>
       )}
       <Button
-        title={createFacility.isLoading ? "Creating..." : "Create Facility"}
+        title={createFacility.isPending ? "Creating..." : "Create Facility"}
         onPress={handleCreate}
-        disabled={!name.trim() || createFacility.isLoading}
+        disabled={!name.trim() || createFacility.isPending}
       />
-      {createFacility.isLoading && <ActivityIndicator style={{ marginTop: 16 }} />}
+      {createFacility.isPending && <ActivityIndicator style={{ marginTop: 16 }} />}
     </View>
   );
 }

@@ -35,7 +35,7 @@ export function useCommercialFeed({
       fetchUnifiedFeed({
         facilityId,
         filters,
-        cursor: pageParam,
+        cursor: pageParam as string | undefined,
         limit: pageSize
       }),
     getNextPageParam: (lastPage) => lastPage.nextCursor ?? undefined,

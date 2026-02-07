@@ -41,17 +41,23 @@ export function useCreatePlant() {
   });
 }
 
-export function useUpdatePlant(id: string) {
+export function useUpdatePlant(id?: string) {
   const qc = useQueryClient();
   const { token } = useAuth();
   const { facilityId } = useFacility();
 
   return useMutation({
-    mutationFn: (data: Partial<Plant>) =>
-      api.patch(endpoints.plant(facilityId!, id), data, token),
-    onSuccess: () => {
+    mutationFn: (data: Partial<Plant> & { id?: string }) => {
+      const plantId = id ?? data.id;
+      if (!plantId) throw new Error("Plant id required");
+      return api.patch(endpoints.plant(facilityId!, plantId), data, token);
+    },
+    onSuccess: (_data, variables) => {
       qc.invalidateQueries({ queryKey: ["plants", facilityId] });
-      qc.invalidateQueries({ queryKey: ["plant", facilityId, id] });
+      const plantId = id ?? (variables as any)?.id;
+      if (plantId) {
+        qc.invalidateQueries({ queryKey: ["plant", facilityId, plantId] });
+      }
     }
   });
 }
@@ -65,6 +71,7 @@ export function useDeletePlant(id: string) {
     mutationFn: () => api.del(endpoints.plant(facilityId!, id), token),
     onSuccess: () => {
       qc.invalidateQueries({ queryKey: ["plants", facilityId] });
+      qc.invalidateQueries({ queryKey: ["plant", facilityId, id] });
     }
   });
 }

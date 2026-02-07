@@ -9,7 +9,9 @@ export type CoreEventType =
   | "upgrade_click"
   | "upgrade_success"
   | "USER_LOGIN"
-  | "USER_REGISTER";
+  | "USER_REGISTER"
+  | "PAYWALL_VIEW" // Phase 2.3.2 - RequirePlan tracking
+  | "FACILITY_SELECTED"; // Phase 2.3.2 - FacilityProvider tracking
 
 type EventPayload = {
   eventType: CoreEventType;

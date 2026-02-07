@@ -48,6 +48,9 @@ export const endpoints = {
   deviation: (facilityId: string, id: string) =>
     facilityPath(facilityId, `/deviations/${id}`),
 
+  // audit logs
+  auditLogs: (facilityId: string) => facilityPath(facilityId, "/audit-logs"),
+
   // verification
   verification: (facilityId: string) => `${BASE}/facilities/${facilityId}/verification`,
   verificationRecord: (facilityId: string, id: string) =>
@@ -99,5 +102,9 @@ export const endpoints = {
   subscriptionStatus: `${BASE}/subscribe/status`,
 
   // team
-  team: (facilityId: string) => facilityPath(facilityId, "/team")
+  team: (facilityId: string) => facilityPath(facilityId, "/team"),
+  teamMembers: (facilityId: string) => facilityPath(facilityId, "/team"),
+  teamMember: (facilityId: string, userId: string) =>
+    facilityPath(facilityId, `/team/${userId}`),
+  teamInvite: (facilityId: string) => facilityPath(facilityId, "/team/invite")
 };

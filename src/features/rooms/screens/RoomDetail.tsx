@@ -3,7 +3,7 @@ import { View, Text, Button } from "react-native";
 import PlantsTab from "./RoomPlants";
 import EnvironmentTab from "./RoomEnvironment";
 
-export default function RoomDetail({ route }) {
+export default function RoomDetail({ route }: any) {
   const [tab, setTab] = useState("plants");
   const { id } = route.params;
 

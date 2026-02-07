@@ -26,7 +26,9 @@ const SettingsScreen = ({ navigation }) => {
       <View style={styles.container}>
         <View style={styles.card}>
           <Text style={styles.title}>Settings</Text>
-          <Text style={styles.infoText}>Select a facility to view facility settings.</Text>
+          <Text style={styles.infoText}>
+            Select a facility to view facility settings.
+          </Text>
         </View>
       </View>
     );
@@ -94,7 +96,8 @@ const SettingsScreen = ({ navigation }) => {
       <View style={styles.card}>
         <Text style={styles.title}>Metrc Connection</Text>
         <Text style={styles.infoText}>
-          Metrc integration is not enabled unless its endpoints are included in the frozen v1 contract.
+          Metrc integration is not enabled unless its endpoints are included in the frozen
+          v1 contract.
         </Text>
         <TouchableOpacity
           style={[styles.button, { marginTop: 12 }]}
@@ -108,7 +111,8 @@ const SettingsScreen = ({ navigation }) => {
       <View style={styles.card}>
         <Text style={styles.title}>Facility Billing</Text>
         <Text style={styles.infoText}>
-          Billing actions require canonical backend endpoints (checkout/cancel/status) to be part of the v1 contract.
+          Billing actions require canonical backend endpoints (checkout/cancel/status) to
+          be part of the v1 contract.
         </Text>
         <TouchableOpacity
           style={[styles.button, { marginTop: 12 }]}
@@ -122,11 +126,17 @@ const SettingsScreen = ({ navigation }) => {
       <View style={styles.card}>
         <Text style={styles.title}>Quick Links</Text>
 
-        <TouchableOpacity style={styles.button} onPress={() => navigation.navigate("SOPTemplates")}>
+        <TouchableOpacity
+          style={styles.button}
+          onPress={() => navigation.navigate("SOPTemplates")}
+        >
           <Text style={styles.buttonText}>SOP Templates</Text>
         </TouchableOpacity>
 
-        <TouchableOpacity style={styles.button} onPress={() => navigation.navigate("AuditLog")}>
+        <TouchableOpacity
+          style={styles.button}
+          onPress={() => navigation.navigate("AuditLog")}
+        >
           <Text style={styles.buttonText}>Audit Logs</Text>
         </TouchableOpacity>
 
@@ -139,7 +149,10 @@ const SettingsScreen = ({ navigation }) => {
       </View>
 
       {/* Logout */}
-      <TouchableOpacity style={[styles.button, styles.logoutButton]} onPress={handleLogout}>
+      <TouchableOpacity
+        style={[styles.button, styles.logoutButton]}
+        onPress={handleLogout}
+      >
         <Text style={styles.buttonText}>Logout</Text>
       </TouchableOpacity>
 
@@ -147,13 +160,13 @@ const SettingsScreen = ({ navigation }) => {
       <View style={styles.card}>
         <Text style={styles.title}>Workspace Status</Text>
         <Text style={styles.infoText}>
-          Facility workspace is v1. Current focus: rooms, tasks, team, grows, plants, inventory, growlogs.
-          Compliance/reporting integrations come only after endpoints are frozen into the contract.
+          Facility workspace is v1. Current focus: rooms, tasks, team, grows, plants,
+          inventory, growlogs. Compliance/reporting integrations come only after endpoints
+          are frozen into the contract.
         </Text>
       </View>
     </View>
   );
-};
 };
 
 const styles = StyleSheet.create({
@@ -168,7 +181,12 @@ const styles = StyleSheet.create({
   },
   title: { fontSize: 18, fontWeight: "600", color: "#1f2937", marginBottom: 4 },
   subtitle: { fontSize: 13, color: "#6b7280", marginBottom: 12, fontWeight: "500" },
-  section: { borderTopWidth: 1, borderTopColor: "#f3f4f6", paddingTop: 12, marginTop: 12 },
+  section: {
+    borderTopWidth: 1,
+    borderTopColor: "#f3f4f6",
+    paddingTop: 12,
+    marginTop: 12
+  },
   label: { fontSize: 13, color: "#6b7280", fontWeight: "500", marginBottom: 4 },
   value: { fontSize: 14, color: "#1f2937", fontWeight: "600" },
   button: {

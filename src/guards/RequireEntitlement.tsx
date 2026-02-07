@@ -36,8 +36,12 @@ export function RequireEntitlement({
     const caps = asArray(capability);
     const roles = asArray(facilityRole);
     if (modes.length && !modes.includes(ent.mode)) return false;
-    if (plans.length && !plans.includes(ent.plan)) return false;
-    if (roles.length && (!ent.facilityRole || !roles.includes(ent.facilityRole)))
+    // Phase 2.3.2: Cast plan and facilityRole for type checking
+    if (plans.length && !plans.includes(ent.plan as Plan)) return false;
+    if (
+      roles.length &&
+      (!ent.facilityRole || !roles.includes(ent.facilityRole as FacilityRole))
+    )
       return false;
     if (requireFacility && (ent.mode === "commercial" || ent.mode === "facility")) {
       if (!ent.facilityId) return false;

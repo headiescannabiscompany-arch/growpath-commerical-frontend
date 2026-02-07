@@ -5,11 +5,11 @@ import { api } from "../../../api/client";
 
 export default function AcceptInvite() {
   const route = useRoute();
-  const navigation = useNavigation();
-  const { token } = route.params;
-  const [invite, setInvite] = useState(null);
+  const navigation = useNavigation() as any;
+  const { token } = (route.params || {}) as any;
+  const [invite, setInvite] = useState<any>(null); // Phase 2.3.2: Accept any for invite data
   const [loading, setLoading] = useState(true);
-  const [error, setError] = useState(null);
+  const [error, setError] = useState<any>(null); // Phase 2.3.2: Accept any for error
 
   useEffect(() => {
     api

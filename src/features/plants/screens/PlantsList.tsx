@@ -1,9 +1,9 @@
 import { View, Text, Button } from "react-native";
 import { usePlants } from "../hooks";
-import { useEntitlements } from "../../../entitlementsProvider";
+import { useEntitlements } from "../../../entitlements";
 import UpgradePrompt from "../../UpgradePrompt";
 
-export default function PlantsList({ navigation }) {
+export default function PlantsList({ navigation }: any) {
   const { can } = useEntitlements();
   if (!can.plants) return <UpgradePrompt feature="Plants" />;
   const { data, isLoading, error } = usePlants();

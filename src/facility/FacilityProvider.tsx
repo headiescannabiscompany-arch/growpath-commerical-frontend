@@ -19,11 +19,21 @@ export type Facility = {
   state: string;
   licenseNumber: string;
   licenseExpiry: string; // ISO date string
+  ownerId?: string;
+  ownerName?: string;
+  type?: string;
+  createdAt?: string;
+  plan?: string;
+  stripeStatus?: string;
 };
 
 export type FacilityState = {
   facilities: Facility[];
+  facility: Facility | null;
   selectedId: string | null;
+  facilityId: string | null; // Alias for selectedId (backward compatibility)
+  activeFacilityId: string | null; // Alias for selectedId (backward compatibility)
+  facilityRole: string | null; // User's role in the selected facility
   isReady: boolean;
   isLoading: boolean;
   error: string | null;
@@ -170,7 +180,11 @@ export function FacilityProvider({ children }: { children: React.ReactNode }) {
   const value = useMemo<FacilityState>(
     () => ({
       facilities,
+      facility: facilities.find((f) => f.id === selectedId) ?? null,
       selectedId,
+      facilityId: selectedId, // Alias for backward compatibility
+      activeFacilityId: selectedId, // Alias for backward compatibility
+      facilityRole: null, // TODO: Fetch from /api/me or facility detail
       isReady,
       isLoading,
       error,

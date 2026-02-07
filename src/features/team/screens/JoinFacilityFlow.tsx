@@ -3,7 +3,7 @@ import { View, Text, Button } from "react-native";
 import { useNavigation } from "@react-navigation/native";
 
 export default function JoinFacilityFlow() {
-  const navigation = useNavigation();
+  const navigation = useNavigation() as any;
   return (
     <View style={{ padding: 24 }}>
       <Text style={{ fontSize: 20, fontWeight: "bold" }}>Join a Facility</Text>

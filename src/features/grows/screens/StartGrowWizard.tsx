@@ -20,7 +20,7 @@ export default function StartGrowWizard() {
 
   const handleStart = async () => {
     const grow = await createGrow.mutateAsync({ name, startDate, rooms: selectedRooms });
-    navigation.navigate("AssignPlantsToGrow", { growId: grow.id });
+    (navigation as any).navigate("AssignPlantsToGrow", { growId: grow.id });
   };
 
   return (
@@ -39,7 +39,7 @@ export default function StartGrowWizard() {
         style={{ borderWidth: 1, marginVertical: 8, padding: 8 }}
       />
       <Text style={{ marginTop: 12 }}>Select Rooms:</Text>
-      {rooms?.map((room) => (
+      {rooms?.map((room: any) => (
         <Button
           key={room.id}
           title={room.name + (selectedRooms.includes(room.id) ? " ✓" : "")}

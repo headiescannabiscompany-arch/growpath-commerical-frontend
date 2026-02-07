@@ -14,10 +14,11 @@ import { PLANS } from "../capabilities/plans.js";
 
 // Build canonical PLAN_CAPS using PLANS and CAPABILITIES
 const PLAN_CAPS: Record<string, Record<string, boolean>> = {};
-Object.keys(PLANS).forEach((plan) => {
+const planMap = PLANS as Record<string, string[]>;
+Object.keys(planMap).forEach((plan) => {
   PLAN_CAPS[plan] = {};
   Object.values(CAPABILITIES).forEach((capKey) => {
-    PLAN_CAPS[plan][capKey] = PLANS[plan].includes(capKey);
+    PLAN_CAPS[plan][capKey] = planMap[plan].includes(capKey);
   });
 });
 

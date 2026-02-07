@@ -1,6 +1,16 @@
 import React from "react";
+import { Text, TouchableOpacity } from "react-native";
 import { SwipeListView } from "react-native-swipe-list-view";
 import PlantCard from "./PlantCard";
+import type { Plant } from "../types";
+
+type PlantListSwipeProps = {
+  plants: Plant[];
+  onStageChange: (plant: Plant) => void;
+  onMoveRoom: (plant: Plant) => void;
+  onAddTask: (plant: Plant) => void;
+  onMarkWatered: (plant: Plant) => void;
+};
 
 export default function PlantListSwipe({
   plants,
@@ -8,12 +18,12 @@ export default function PlantListSwipe({
   onMoveRoom,
   onAddTask,
   onMarkWatered
-}) {
+}: PlantListSwipeProps) {
   return (
-    <SwipeListView
+    <SwipeListView<Plant>
       data={plants}
-      keyExtractor={(item) => item.id}
-      renderItem={({ item }) => (
+      keyExtractor={(item: Plant) => item.id}
+      renderItem={({ item }: { item: Plant }) => (
         <PlantCard
           plant={item}
           onStageChange={() => onStageChange(item)}
@@ -21,7 +31,7 @@ export default function PlantListSwipe({
           onAddTask={() => onAddTask(item)}
         />
       )}
-      renderHiddenItem={({ item }) => (
+      renderHiddenItem={({ item }: { item: Plant }) => (
         <>
           <SwipeActionButton
             text="Mark Watered"
@@ -38,7 +48,13 @@ export default function PlantListSwipe({
   );
 }
 
-function SwipeActionButton({ text, color, onPress }) {
+type SwipeActionButtonProps = {
+  text: string;
+  color: string;
+  onPress: () => void;
+};
+
+function SwipeActionButton({ text, color, onPress }: SwipeActionButtonProps) {
   return (
     <TouchableOpacity
       onPress={onPress}

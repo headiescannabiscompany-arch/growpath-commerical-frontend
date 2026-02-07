@@ -5,7 +5,7 @@ import LiveSessionScreen from "@/screens/LiveSessionScreen";
 export default function LiveSessionRoute() {
   return (
     <AppPage routeKey="live-session">
-      <LiveSessionScreen />
+      <LiveSessionScreen route={{} as any} />
     </AppPage>
   );
 }

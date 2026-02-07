@@ -6,7 +6,7 @@ import { useUpdateGrow } from "../hooks";
 export default function EndGrowFlow() {
   const route = useRoute();
   const navigation = useNavigation();
-  const { id } = route.params;
+  const { id } = (route.params || {}) as any;
   const [endDate, setEndDate] = useState("");
   const [notes, setNotes] = useState("");
   const [yieldAmount, setYieldAmount] = useState("");
@@ -14,7 +14,7 @@ export default function EndGrowFlow() {
 
   const handleEnd = async () => {
     await updateGrow.mutateAsync({ id, endDate, notes, yield: yieldAmount });
-    navigation.navigate("HarvestSummary", { id });
+    (navigation as any).navigate("HarvestSummary", { id });
   };
 
   return (

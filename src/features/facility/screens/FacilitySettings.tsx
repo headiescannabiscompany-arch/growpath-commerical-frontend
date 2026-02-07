@@ -1,7 +1,7 @@
 import React from "react";
 import { View, Text, Button } from "react-native";
-import { useFacility } from "../../facility/FacilityProvider";
-import { useAuth } from "../../auth/AuthContext";
+import { useFacility } from "../../../facility/FacilityProvider";
+import { useAuth } from "../../../auth/AuthContext";
 
 export default function FacilitySettings() {
   const { facility } = useFacility();

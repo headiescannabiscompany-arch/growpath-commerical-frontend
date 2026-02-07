@@ -12,7 +12,7 @@ export default function RequirePlan({
 }) {
   const { user } = useAuth();
   const router = useRouter();
-  const hasAccess = user && allow.includes(user.plan);
+  const hasAccess = user && user.plan && allow.includes(user.plan);
 
   useEffect(() => {
     if (!hasAccess) {

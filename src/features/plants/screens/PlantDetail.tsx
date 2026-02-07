@@ -1,7 +1,7 @@
 import { View, Text, Button } from "react-native";
 import { usePlant, useDeletePlant } from "../hooks";
 
-export default function PlantDetail({ route, navigation }) {
+export default function PlantDetail({ route, navigation }: any) {
   const { id } = route.params;
   const { data } = usePlant(id);
   const del = useDeletePlant(id);

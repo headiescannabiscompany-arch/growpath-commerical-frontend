@@ -2,7 +2,7 @@ import { useState } from "react";
 import { View, TextInput, Button } from "react-native";
 import { useInviteMember } from "../hooks";
 
-export default function InviteMember({ navigation }) {
+export default function InviteMember({ navigation }: any) {
   const invite = useInviteMember();
   const [email, setEmail] = useState("");
 

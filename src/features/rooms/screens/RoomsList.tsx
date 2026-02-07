@@ -21,7 +21,7 @@ export default function RoomsList() {
           </Text>
           <Button
             title="View Room"
-            onPress={() => navigation.navigate("RoomDetail", { id: room.id })}
+            onPress={() => (navigation as any).navigate("RoomDetail", { id: room.id })}
           />
         </View>
       )}

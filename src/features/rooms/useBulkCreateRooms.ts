@@ -2,6 +2,7 @@ import { useMutation, useQueryClient } from "@tanstack/react-query";
 import { api } from "../../api/client";
 import { endpoints } from "../../api/endpoints";
 import { useFacility } from "../../facility/FacilityProvider";
+import { requireString } from "../../utils/require";
 
 export function useBulkCreateRooms() {
   const { facilityId } = useFacility();
@@ -13,7 +14,7 @@ export function useBulkCreateRooms() {
       const results = [];
       for (const room of rooms) {
         try {
-          await api.post(endpoints.rooms(facilityId), room);
+          await api.post(endpoints.rooms(requireString(facilityId, "facilityId")), room);
           results.push({ success: true });
         } catch (e) {
           results.push({ success: false, error: e });

@@ -8,6 +8,17 @@ import { Colors, Typography, Spacing } from "../theme/theme.js";
  * Displays when an error occurs with retry option
  */
 
+/**
+ * @typedef {{
+ *  title?: string;
+ *  message?: string;
+ *  icon?: string;
+ *  onRetry?: (() => void) | null;
+ *  retryLabel?: string;
+ * }} ErrorStateProps
+ */
+
+/** @param {ErrorStateProps} props */
 const ErrorState = ({
   title = "Something went wrong",
   message = "Please try again",

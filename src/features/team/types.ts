@@ -1,7 +1,8 @@
 export type TeamMember = {
   id: string;
   userId: string;
+  name?: string;
   email?: string;
-  role: "OWNER" | "MANAGER" | "STAFF" | "VIEWER";
+  role: "OWNER" | "ADMIN" | "MANAGER" | "STAFF" | "VIEWER";
   deletedAt?: string | null;
 };

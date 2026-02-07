@@ -1,0 +1,126 @@
+﻿src/features/grows/index.ts(408,1): error TS1005: '}' expected.
+src/hooks/useWebhooks.ts(28,35): error TS1005: '>' expected.
+src/hooks/useWebhooks.ts(28,40): error TS1005: ')' expected.
+src/hooks/useWebhooks.ts(28,42): error TS1136: Property assignment expected.
+src/hooks/useWebhooks.ts(28,65): error TS1109: Expression expected.
+src/hooks/useWebhooks.ts(30,6): error TS1161: Unterminated regular expression literal.
+src/hooks/useWebhooks.ts(31,3): error TS1128: Declaration or statement expected.
+src/hooks/useWebhooks.ts(32,1): error TS1128: Declaration or statement expected.
+src/navigation/FacilityStack.js(33,7): error TS1109: Expression expected.
+src/navigation/FacilityStack.js(34,9): error TS2657: JSX expressions must have one parent element.
+src/navigation/FacilityStack.js(135,7): error TS1128: Declaration or statement expected.
+src/navigation/FacilityStack.js(136,7): error TS8013: Non-null assertions can only be used in TypeScript files.
+src/navigation/FacilityStack.js(136,8): error TS1136: Property assignment expected.
+src/navigation/FacilityStack.js(136,9): error TS1005: ';' expected.
+src/navigation/FacilityStack.js(144,8): error TS1128: Declaration or statement expected.
+src/navigation/FacilityStack.js(145,5): error TS1128: Declaration or statement expected.
+src/navigation/FacilityStack.js(146,3): error TS1109: Expression expected.
+src/navigation/FacilityStack.js(147,1): error TS1128: Declaration or statement expected.
+src/navigation/MainTabs.js(5,7): error TS1109: Expression expected.
+src/navigation/MainTabs.js(7,7): error TS1128: Declaration or statement expected.
+src/navigation/MainTabs.js(8,5): error TS1109: Expression expected.
+src/navigation/MainTabs.js(9,3): error TS1109: Expression expected.
+src/navigation/MainTabs.js(10,1): error TS1128: Declaration or statement expected.
+src/navigation/PersonalTabs.js(5,26): error TS1005: ',' expected.
+src/navigation/PersonalTabs.js(6,20): error TS1136: Property assignment expected.
+src/navigation/PersonalTabs.js(10,24): error TS1005: ';' expected.
+src/navigation/PersonalTabs.js(11,18): error TS1005: ';' expected.
+src/navigation/PersonalTabs.js(12,12): error TS1128: Declaration or statement expected.
+src/navigation/PersonalTabs.js(13,9): error TS1161: Unterminated regular expression literal.
+src/navigation/PersonalTabs.js(14,7): error TS1128: Declaration or statement expected.
+src/navigation/PersonalTabs.js(14,8): error TS1128: Declaration or statement expected.
+src/navigation/PersonalTabs.js(14,9): error TS1128: Declaration or statement expected.
+src/navigation/PersonalTabs.js(15,5): error TS1128: Declaration or statement expected.
+src/navigation/PersonalTabs.js(16,3): error TS1109: Expression expected.
+src/navigation/PersonalTabs.js(17,1): error TS1128: Declaration or statement expected.
+src/screens/AskQuestionScreen.js(55,2): error TS1005: ')' expected.
+src/screens/CalendarScreen.js(119,1): error TS1005: ',' expected.
+src/screens/CalendarScreen.js(119,5): error TS1005: ',' expected.
+src/screens/CalendarScreen.js(119,10): error TS1005: ',' expected.
+src/screens/CalendarScreen.js(121,1): error TS1005: ',' expected.
+src/screens/CalendarScreen.js(121,6): error TS1005: ',' expected.
+src/screens/CalendarScreen.js(121,9): error TS1005: ',' expected.
+src/screens/CalendarScreen.js(121,13): error TS1005: ',' expected.
+src/screens/CalendarScreen.js(121,33): error TS1005: ',' expected.
+src/screens/CalendarScreen.js(121,40): error TS1005: ';' expected.
+src/screens/CalendarScreen.js(121,59): error TS1003: Identifier expected.
+src/screens/CalendarScreen.js(122,1): error TS1434: Unexpected keyword or identifier.
+src/screens/CalendarScreen.js(122,14): error TS1005: ';' expected.
+src/screens/CalendarScreen.js(122,29): error TS1127: Invalid character.
+src/screens/CalendarScreen.js(122,36): error TS1005: ';' expected.
+src/screens/CalendarScreen.js(122,69): error TS1005: ';' expected.
+src/screens/CalendarScreen.js(122,72): error TS1434: Unexpected keyword or identifier.
+src/screens/CalendarScreen.js(122,82): error TS1005: '(' expected.
+src/screens/CalendarScreen.js(122,87): error TS1005: ';' expected.
+src/screens/CalendarScreen.js(122,91): error TS1005: ';' expected.
+src/screens/CalendarScreen.js(122,96): error TS1109: Expression expected.
+src/screens/CalendarScreen.js(122,98): error TS1109: Expression expected.
+src/screens/CalendarScreen.js(122,99): error TS1003: Identifier expected.
+src/screens/CalendarScreen.js(124,1): error TS1005: ')' expected.
+src/screens/CalendarScreen.js(124,5): error TS1434: Unexpected keyword or identifier.
+src/screens/CalendarScreen.js(124,9): error TS1434: Unexpected keyword or identifier.
+src/screens/CalendarScreen.js(124,20): error TS1005: ';' expected.
+src/screens/CalendarScreen.js(124,34): error TS8016: Type assertion expressions can only be used in TypeScript files.
+src/screens/CalendarScreen.js(124,34): error TS1110: Type expected.
+src/screens/CalendarScreen.js(124,38): error TS1003: Identifier expected.
+src/screens/CalendarScreen.js(418,1): error TS1434: Unexpected keyword or identifier.
+src/screens/CalendarScreen.js(418,10): error TS1005: ';' expected.
+src/screens/CalendarScreen.js(418,13): error TS1434: Unexpected keyword or identifier.
+src/screens/CalendarScreen.js(418,17): error TS1434: Unexpected keyword or identifier.
+src/screens/CalendarScreen.js(418,23): error TS1434: Unexpected keyword or identifier.
+src/screens/CalendarScreen.js(418,33): error TS1434: Unexpected keyword or identifier.
+src/screens/CalendarScreen.js(418,44): error TS1005: '(' expected.
+src/screens/CalendarScreen.js(420,1): error TS1005: ';' expected.
+src/screens/CalendarScreen.js(420,6): error TS1005: ';' expected.
+src/screens/CalendarScreen.js(420,11): error TS1005: ')' expected.
+src/screens/CalendarScreen.js(424,1): error TS1434: Unexpected keyword or identifier.
+src/screens/CalendarScreen.js(428,1): error TS1434: Unexpected keyword or identifier.
+src/screens/CalendarScreen.js(430,1): error TS1434: Unexpected keyword or identifier.
+src/screens/CalendarScreen.js(432,1): error TS1434: Unexpected keyword or identifier.
+src/screens/CalendarScreen.js(432,6): error TS1434: Unexpected keyword or identifier.
+src/screens/CalendarScreen.js(432,15): error TS1109: Expression expected.
+src/screens/CalendarScreen.js(432,21): error TS1005: ')' expected.
+src/screens/CalendarScreen.js(432,26): error TS1434: Unexpected keyword or identifier.
+src/screens/CalendarScreen.js(432,30): error TS1128: Declaration or statement expected.
+src/screens/CalendarScreen.js(434,15): error TS1005: ';' expected.
+src/screens/CalendarScreen.js(434,23): error TS1005: ',' expected.
+src/screens/CalendarScreen.js(434,29): error TS1005: ',' expected.
+src/screens/CalendarScreen.js(436,1): error TS1435: Unknown keyword or identifier. Did you mean 'this'?
+src/screens/CalendarScreen.js(436,6): error TS1228: A type predicate is only allowed in return type position for functions and methods.
+src/screens/CalendarScreen.js(436,9): error TS1434: Unexpected keyword or identifier.
+src/screens/CalendarScreen.js(436,17): error TS1434: Unexpected keyword or identifier.
+src/screens/CalendarScreen.js(436,22): error TS1434: Unexpected keyword or identifier.
+src/screens/CalendarScreen.js(436,24): error TS1434: Unexpected keyword or identifier.
+src/screens/CalendarScreen.js(436,35): error TS1434: Unexpected keyword or identifier.
+src/screens/CalendarScreen.js(436,40): error TS1434: Unexpected keyword or identifier.
+src/screens/CalendarScreen.js(436,49): error TS1434: Unexpected keyword or identifier.
+src/screens/CalendarScreen.js(436,57): error TS1434: Unexpected keyword or identifier.
+src/screens/CalendarScreen.js(436,74): error TS1003: Identifier expected.
+src/screens/CalendarScreen.js(437,1): error TS1434: Unexpected keyword or identifier.
+src/screens/CalendarScreen.js(437,5): error TS1434: Unexpected keyword or identifier.
+src/screens/CalendarScreen.js(437,7): error TS1434: Unexpected keyword or identifier.
+src/screens/CalendarScreen.js(437,16): error TS1127: Invalid character.
+src/screens/CalendarScreen.js(437,23): error TS1005: ';' expected.
+src/screens/CalendarScreen.js(437,26): error TS1434: Unexpected keyword or identifier.
+src/screens/CalendarScreen.js(437,30): error TS1434: Unexpected keyword or identifier.
+src/screens/CalendarScreen.js(437,35): error TS1434: Unexpected keyword or identifier.
+src/screens/CalendarScreen.js(437,46): error TS1434: Unexpected keyword or identifier.
+src/screens/CalendarScreen.js(437,90): error TS1003: Identifier expected.
+src/screens/CalendarScreen.js(439,1): error TS1434: Unexpected keyword or identifier.
+src/screens/CalendarScreen.js(439,6): error TS1434: Unexpected keyword or identifier.
+src/screens/CalendarScreen.js(439,17): error TS1434: Unexpected keyword or identifier.
+src/screens/CalendarScreen.js(444,5): error TS1005: '(' expected.
+src/screens/CalendarScreen.js(449,1): error TS1434: Unexpected keyword or identifier.
+src/screens/CalendarScreen.js(449,7): error TS1127: Invalid character.
+src/screens/CalendarScreen.js(449,8): error TS1434: Unexpected keyword or identifier.
+src/screens/CalendarScreen.js(449,15): error TS1003: Identifier expected.
+src/screens/CalendarScreen.js(450,1): error TS1005: '}' expected.
+src/screens/commercial/StorefrontScreen.tsx(1,2260): error TS1005: '}' expected.
+src/screens/facility/FacilityTasks.js(45,20): error TS8010: Type annotations can only be used in TypeScript files.
+src/screens/facility/FacilityTasks.js(87,41): error TS8010: Type annotations can only be used in TypeScript files.
+src/screens/facility/FacilityTasks.js(88,43): error TS8010: Type annotations can only be used in TypeScript files.
+src/screens/facility/FacilityTasks.js(90,33): error TS8010: Type annotations can only be used in TypeScript files.
+src/screens/facility/FacilityTasks.js(90,47): error TS8010: Type annotations can only be used in TypeScript files.
+src/screens/facility/FacilityTasks.js(186,42): error TS8010: Type annotations can only be used in TypeScript files.
+src/screens/facility/FacilityTasks.js(195,44): error TS8010: Type annotations can only be used in TypeScript files.
+src/screens/facility/SettingsScreen.js(157,1): error TS1128: Declaration or statement expected.

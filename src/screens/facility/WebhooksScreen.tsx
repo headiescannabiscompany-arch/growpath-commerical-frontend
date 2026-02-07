@@ -87,7 +87,7 @@ export default function WebhooksScreen() {
                 <Switch
                   value={item.enabled}
                   onValueChange={(val) => {
-                    void updateWebhook({ webhookId: item.id, enabled: val });
+                    void updateWebhook(item.id, { enabled: val });
                   }}
                 />
                 <Pressable

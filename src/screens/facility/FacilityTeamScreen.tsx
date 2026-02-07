@@ -2,6 +2,7 @@ import React, { useState } from "react";
 import { View, Text, FlatList, TextInput, Pressable } from "react-native";
 import { Picker } from "@react-native-picker/picker";
 import { useFacilityTeam } from "../../hooks/useFacilityTeam";
+import type { FacilityRole } from "../../api/team";
 import EmptyState from "../../components/EmptyState";
 import LoadingSpinner from "../../components/LoadingSpinner";
 import ErrorState from "../../components/ErrorState";
@@ -18,7 +19,7 @@ export default function FacilityTeamScreen() {
     remove
   } = useFacilityTeam();
   const [email, setEmail] = useState("");
-  const [role, setRole] = useState("STAFF");
+  const [role, setRole] = useState<FacilityRole>("STAFF");
 
   const submitInvite = async () => {
     if (!email.trim()) return;
@@ -99,7 +100,7 @@ export default function FacilityTeamScreen() {
                 selectedValue={item.role}
                 style={{ height: 32, width: 100 }}
                 onValueChange={(newRole) =>
-                  updateRole({ memberId: item.id, role: newRole })
+                  updateRole({ userId: item.id, role: newRole })
                 }
               >
                 {ROLES.map((r) => (

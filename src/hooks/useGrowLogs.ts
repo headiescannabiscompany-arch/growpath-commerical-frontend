@@ -3,12 +3,12 @@ import { useFacility } from "../facility/FacilityProvider";
 import { getGrowlogs, createGrowlog } from "../api/growlogs";
 
 // CONTRACT: facility context comes from FacilityProvider only.
-export function useGrowlogs() {
+export function useGrowlogs(growId?: string) {
   const queryClient = useQueryClient();
   const { activeFacilityId } = useFacility();
 
   const growlogsQuery = useQuery({
-    queryKey: ["growlogs", activeFacilityId],
+    queryKey: ["growlogs", activeFacilityId, growId],
     queryFn: () => getGrowlogs(activeFacilityId!),
     enabled: !!activeFacilityId
   });
@@ -26,3 +26,6 @@ export function useGrowlogs() {
     creating: createMutation.isPending
   };
 }
+
+// Backward-compatible alias
+export const useGrowLogs = useGrowlogs;

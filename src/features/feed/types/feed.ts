@@ -40,3 +40,14 @@ export interface FeedResponse {
   nextCursor?: string;
   hasMore: boolean;
 }
+
+// Additional types for Phase 2.3
+export type FeedFilters = {
+  facilityId?: string;
+  type?: string;
+};
+
+export type FeedPage<T = any> = {
+  items: T[];
+  nextCursor?: string | null;
+};

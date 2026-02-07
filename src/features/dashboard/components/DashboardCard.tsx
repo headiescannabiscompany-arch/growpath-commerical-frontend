@@ -1,7 +1,13 @@
 import React from "react";
 import { View, Text } from "react-native";
 
-export default function DashboardCard({ title, value, unit }) {
+type DashboardCardProps = {
+  title: string;
+  value: string | number;
+  unit?: string;
+};
+
+export default function DashboardCard({ title, value, unit }: DashboardCardProps) {
   return (
     <View
       style={{
