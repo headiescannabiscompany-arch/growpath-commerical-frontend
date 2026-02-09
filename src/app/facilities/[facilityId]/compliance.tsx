@@ -3,6 +3,7 @@ import { View, Text, StyleSheet } from "react-native";
 import { useLocalSearchParams } from "expo-router";
 import AppPage from "@/components/layout/AppPage";
 import AppCard from "@/components/layout/AppCard";
+import { LegacyFacilityRouteShim } from "@/features/routing/LegacyFacilityRouteShim";
 
 const styles = StyleSheet.create({
   headerTitle: {
@@ -25,22 +26,6 @@ const styles = StyleSheet.create({
   }
 });
 
-export default function FacilityCompliance() {
-  const { facilityId } = useLocalSearchParams<{ facilityId: string }>();
-  return (
-    <AppPage
-      routeKey="facility_ops"
-      header={
-        <View>
-          <Text style={styles.headerTitle}>Compliance</Text>
-          <Text style={styles.headerSubtitle}>facilityId: {facilityId}</Text>
-        </View>
-      }
-    >
-      <AppCard>
-        <Text style={styles.cardTitle}>Audit Logs</Text>
-        <Text style={styles.cardDesc}>Stub screen</Text>
-      </AppCard>
-    </AppPage>
-  );
+export default function LegacyFacilityCompliance() {
+  return <LegacyFacilityRouteShim section="compliance" />;
 }

@@ -27,20 +27,5 @@ const styles = StyleSheet.create({
 
 export default function FacilityInventory() {
   const { facilityId } = useLocalSearchParams<{ facilityId: string }>();
-  return (
-    <AppPage
-      routeKey="facility_ops"
-      header={
-        <View>
-          <Text style={styles.headerTitle}>Inventory</Text>
-          <Text style={styles.headerSubtitle}>facilityId: {facilityId}</Text>
-        </View>
-      }
-    >
-      <AppCard>
-        <Text style={styles.cardTitle}>Inventory Overview</Text>
-        <Text style={styles.cardDesc}>Stub screen</Text>
-      </AppCard>
-    </AppPage>
-  );
+  return <LegacyFacilityRouteShim section="inventory" />;
 }

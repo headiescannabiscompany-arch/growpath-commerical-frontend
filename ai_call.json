@@ -1,0 +1,1 @@
+﻿{"fn":"ask","args":{"prompt":"Leaves are clawing and tips are burning. Give probabilities for likely causes. Then list what successful growers do, actions + benefits/risks, and your recommended action based on quality-first goals.","goal":"quality"},"tool":"assistant","context":{"growId":"GROW_TEST_001"}}

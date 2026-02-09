@@ -1,23 +1,8 @@
-import React from "react";
-import { View, Text, StyleSheet } from "react-native";
-import { useLocalSearchParams } from "expo-router";
-import AppPage from "@/components/layout/AppPage";
-import AppCard from "@/components/layout/AppCard";
+import { LegacyFacilityRouteShim } from "@/features/routing/LegacyFacilityRouteShim";
 
-const styles = StyleSheet.create({
-  headerTitle: {
-    fontSize: 22,
-    fontWeight: "700",
-    marginBottom: 4
-  },
-  headerSubtitle: {
-    fontSize: 14,
-    color: "#64748B"
-  },
-  cardTitle: {
-    fontSize: 16,
-    fontWeight: "700",
-    marginBottom: 6
+export default function LegacyFacilityTeam() {
+  return <LegacyFacilityRouteShim section="team" />;
+}
   },
   cardDesc: {
     fontSize: 14,

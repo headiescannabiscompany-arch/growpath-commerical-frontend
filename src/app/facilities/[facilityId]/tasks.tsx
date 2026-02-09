@@ -25,7 +25,11 @@ const styles = StyleSheet.create({
   }
 });
 
-export default function FacilityTasks() {
+import { LegacyFacilityRouteShim } from "@/features/routing/LegacyFacilityRouteShim";
+
+export default function LegacyFacilityTasks() {
+  return <LegacyFacilityRouteShim section="tasks" />;
+}
   const { facilityId } = useLocalSearchParams<{ facilityId: string }>();
   return (
     <AppPage

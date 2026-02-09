@@ -1,0 +1,10 @@
+{
+  // Recommended VS Code extensions for GrowPath
+  "recommendations": [
+    "ms-vscode.vscode-typescript-next",
+    "esbenp.prettier-vscode",
+    "dbaeumer.vscode-eslint",
+    "msjsdiag.vscode-react-native",
+    "ms-vscode-remote.remote-containers"
+  ]
+}

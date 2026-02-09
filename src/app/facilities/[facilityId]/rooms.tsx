@@ -27,20 +27,7 @@ const styles = StyleSheet.create({
 
 export default function FacilityRooms() {
   const { facilityId } = useLocalSearchParams<{ facilityId: string }>();
-  return (
-    <AppPage
-      routeKey="facility_ops"
-      header={
-        <View>
-          <Text style={styles.headerTitle}>Rooms</Text>
-          <Text style={styles.headerSubtitle}>facilityId: {facilityId}</Text>
-        </View>
-      }
-    >
-      <AppCard>
-        <Text style={styles.cardTitle}>Room Management</Text>
-        <Text style={styles.cardDesc}>Stub screen</Text>
-      </AppCard>
-    </AppPage>
-  );
+  export default function LegacyFacilityRooms() {
+    return <LegacyFacilityRouteShim section="rooms" />;
+  }
 }

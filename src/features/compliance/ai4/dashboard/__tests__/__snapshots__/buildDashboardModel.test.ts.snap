@@ -1,0 +1,14 @@
+// Jest Snapshot v1, https://jestjs.io/docs/snapshot-testing
+
+exports[`buildDashboardModel (drift-stopper) golden snapshot: model output is stable 1`] = `
+{
+  "actionQueue": [],
+  "aiComparisonHighlights": [],
+  "complianceStatus": {
+    "latestReportId": "",
+    "level": "red",
+    "summary": "No weekly reports found",
+  },
+  "trendSignals": [],
+}
+`;

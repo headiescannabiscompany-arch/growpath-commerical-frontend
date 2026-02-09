@@ -1,7 +1,7 @@
+
 import React, { useEffect, useMemo, useState } from "react";
 import {
   ActivityIndicator,
-  Alert,
   Pressable,
   SafeAreaView,
   StyleSheet,
@@ -9,6 +9,9 @@ import {
   TextInput,
   View
 } from "react-native";
+import { apiRequest } from "@/api/client";
+import { useApiErrorHandler, UiErrorState } from "@/hooks/useApiErrorHandler";
+import { InlineError } from "@/components/InlineError";
 
 type Facility = {
   id: string;
@@ -19,37 +22,19 @@ type Facility = {
   complianceMode?: "basic" | "strict";
 };
 
-async function safeFetchJson(url: string, opts?: RequestInit) {
-  const res = await fetch(url, {
-    ...(opts || {}),
-    headers: {
-      "Content-Type": "application/json",
-      ...(opts?.headers || {})
-    }
-  });
-  const text = await res.text();
-  let json: any = null;
-  try {
-    json = text ? JSON.parse(text) : null;
-  } catch {
-    json = { raw: text };
-  }
-  if (!res.ok) throw new Error(json?.message || `Request failed (${res.status})`);
-  return json;
-}
 
-export default function FacilitySettingsScreen({ route, navigation }: any) {
   const facilityId = route?.params?.facilityId as string | undefined;
+  const onApiError = useApiErrorHandler();
 
   const [loading, setLoading] = useState(false);
   const [facility, setFacility] = useState<Facility | null>(null);
+  const [err, setErr] = useState<UiErrorState | null>(null);
 
   const [name, setName] = useState("");
   const [timezone, setTimezone] = useState("America/New_York");
   const [address, setAddress] = useState("");
   const [notes, setNotes] = useState("");
-  const [complianceMode, setComplianceMode] =
-    useState<Facility["complianceMode"]>("basic");
+  const [complianceMode, setComplianceMode] = useState<Facility["complianceMode"]>("basic");
 
   const dirty = useMemo(() => {
     if (!facility) return false;
@@ -64,60 +49,49 @@ export default function FacilitySettingsScreen({ route, navigation }: any) {
 
   async function load() {
     if (!facilityId) {
-      Alert.alert("Facility", "Missing facilityId.");
+      setErr({ message: "Missing facilityId." });
       navigation?.goBack?.();
       return;
     }
     setLoading(true);
-    try {
-      const data = await safeFetchJson(
-        `https://example.com/api/facilities/${facilityId}`
-      );
-      const f: Facility = data?.facility || data;
-      setFacility(f);
-      setName(f.name || "");
-      setTimezone(f.timezone || "America/New_York");
-      setAddress(f.address || "");
-      setNotes(f.notes || "");
-      setComplianceMode(f.complianceMode || "basic");
-    } catch (e: any) {
-      Alert.alert("Facility", e?.message || "Failed to load facility.");
-    } finally {
-      setLoading(false);
-    }
+    setErr(null);
+    const r = await apiRequest<{ facility: Facility }>(`/api/facilities/${facilityId}`);
+    if (!r.ok) return setErr(onApiError(r));
+    const f: Facility = r.data?.facility || (r.data as any) || {};
+    setFacility(f);
+    setName(f.name || "");
+    setTimezone(f.timezone || "America/New_York");
+    setAddress(f.address || "");
+    setNotes(f.notes || "");
+    setComplianceMode(f.complianceMode || "basic");
+    setLoading(false);
   }
 
   async function save() {
-    if (!facilityId) return;
-    if (!name.trim()) return Alert.alert("Facility", "Name is required.");
+    if (!facilityId) return setErr({ message: "Missing facilityId." });
+    if (!name.trim()) return setErr({ message: "Name is required." });
     setLoading(true);
-    try {
-      const payload = {
-        name: name.trim(),
-        timezone: timezone.trim(),
-        address: address.trim(),
-        notes: notes.trim(),
-        complianceMode
-      };
-      const data = await safeFetchJson(
-        `https://example.com/api/facilities/${facilityId}`,
-        {
-          method: "PATCH",
-          body: JSON.stringify(payload)
-        }
-      );
-      const f: Facility = data?.facility || data;
-      setFacility(f);
-      Alert.alert("Saved", "Facility settings updated.");
-    } catch (e: any) {
-      Alert.alert("Save failed", e?.message || "Failed to save settings.");
-    } finally {
-      setLoading(false);
-    }
+    setErr(null);
+    const payload = {
+      name: name.trim(),
+      timezone: timezone.trim(),
+      address: address.trim(),
+      notes: notes.trim(),
+      complianceMode
+    };
+    const r = await apiRequest<{ facility: Facility }>(`/api/facilities/${facilityId}`, {
+      method: "PATCH",
+      body: payload
+    });
+    if (!r.ok) return setErr(onApiError(r));
+    const f: Facility = r.data?.facility || (r.data as any) || {};
+    setFacility(f);
+    setLoading(false);
   }
 
   useEffect(() => {
     load();
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [facilityId]);
 
   return (
@@ -128,6 +102,10 @@ export default function FacilitySettingsScreen({ route, navigation }: any) {
           <Text style={styles.btnText}>Refresh</Text>
         </Pressable>
       </View>
+
+      {err ? (
+        <InlineError title={err.title} message={err.message} requestId={err.requestId ?? null} />
+      ) : null}
 
       {loading && !facility ? (
         <View style={styles.center}>

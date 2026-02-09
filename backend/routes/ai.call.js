@@ -429,6 +429,11 @@ router.post("/call", async (req, res) => {
       return fail(res, "VALIDATION_ERROR", "Missing tool or fn");
     }
 
+    // args must be an object if provided
+    if (args != null && (typeof args !== "object" || Array.isArray(args))) {
+      return fail(res, "BAD_REQUEST", "args must be an object");
+    }
+
     // Handle fn in "tool.function" format
     if (fn.includes(".")) {
       const parts = fn.split(".");
@@ -485,8 +490,33 @@ router.post("/call", async (req, res) => {
     // Success: Return envelope (writes are inside data)
     return ok(res, result.data);
   } catch (err) {
-    console.error("[AI.CALL] Error:", err.message);
-    return fail(res, "INTERNAL_ERROR", err.message, 500);
+    const errorId = `ai_${Date.now()}_${Math.random().toString(16).slice(2)}`;
+    console.error("[AI_CALL_INTERNAL_ERROR]", {
+      errorId,
+      tool,
+      fn,
+      growId: context?.growId ?? null,
+      facilityId:
+        req.params?.facilityId ??
+        req.ctx?.facilityId ??
+        req.headers["x-test-facility-id"] ??
+        null,
+      userId:
+        req.user?.id ??
+        req.user?._id ??
+        req.ctx?.userId ??
+        req.headers["x-test-user-id"] ??
+        null,
+      argsType: typeof args,
+      hasArgs: !!args,
+      errMessage: err?.message
+        ? err.message
+        : typeof err === "string"
+          ? err
+          : "Unknown error",
+      stack: err?.stack
+    });
+    return fail(res, "INTERNAL_ERROR", "AI handler failed", 500);
   }
 });
 

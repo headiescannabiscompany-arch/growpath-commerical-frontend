@@ -167,6 +167,7 @@ function computeEntitlements({ plan, mode, appRole, facilityRole }) {
   if (!APP_ROLES.includes(appRole)) appRole = "user";
   if (facilityRole && !FACILITY_ROLES.includes(facilityRole)) facilityRole = "VIEWER";
 
+  // Admin: all caps, but still report requested mode/plan for UX
   if (appRole === "admin") {
     return {
       plan,
@@ -179,6 +180,16 @@ function computeEntitlements({ plan, mode, appRole, facilityRole }) {
   }
 
   const caps = new Set(PLAN_CAPS[plan] || PLAN_CAPS.free);
+
+  // Enforce mode-required caps: if mode implies certain caps and plan lacks them,
+  // degrade mode to personal (or you can choose to throw during /api/me bootstrap).
+  const required = MODE_REQUIRED_CAPS[mode] || new Set();
+  for (const req of required) {
+    if (!caps.has(req)) {
+      mode = "personal";
+      break;
+    }
+  }
 
   return {
     plan,
@@ -195,12 +206,30 @@ function canInFacilityRole(capability, facilityRole) {
   if (!allowed) return true;
   if (!facilityRole) return false;
   return allowed.includes(facilityRole);
+
+  // Helpers for consistent server authorization checks
+  function hasCap(ent, capability) {
+    return Array.isArray(ent?.capabilities) && ent.capabilities.includes(capability);
+  }
+
+  function can(ent, capability) {
+    if (!hasCap(ent, capability)) return false;
+
+    const isFacilityCap = String(capability).startsWith("facility.");
+    if (!isFacilityCap) return true;
+
+    // Facility caps require facility context (role must be present) + role gates
+    if (!ent?.facilityRole) return false;
+    return canInFacilityRole(capability, ent.facilityRole);
+  }
 }
 
 module.exports = {
   CAP,
   computeEntitlements,
   canInFacilityRole,
+  hasCap,
+  can,
   PLANS,
   MODES,
   FACILITY_ROLES

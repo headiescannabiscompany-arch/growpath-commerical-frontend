@@ -1,4 +1,4 @@
-import React, { useEffect, useState, useMemo } from "react";
+import React, { useEffect, useMemo, useState } from "react";
 import { useAuth } from "@/auth/AuthContext";
 import {
   View,
@@ -6,36 +6,33 @@ import {
   TextInput,
   TouchableOpacity,
   FlatList,
-  StyleSheet,
-  Alert
+  StyleSheet
 } from "react-native";
 import * as ImagePicker from "expo-image-picker";
+
 import ScreenContainer from "../components/ScreenContainer.js";
 import Card from "../components/Card.js";
 import PrimaryButton from "../components/PrimaryButton.js";
+import InlineError from "../components/InlineError";
+import { useApiErrorHandler } from "../hooks/useApiErrorHandler";
+
 import { colors, spacing, radius } from "../theme/theme.js";
 import { createGrow, listGrows } from "../api/grows.js";
-import { listRooms } from "../api/facility.js";
-import { uploadPlantPhoto } from "../api/plants.js";
-import PlantCard from "../components/PlantCard.js";
-
-import GrowInterestPicker from "../components/GrowInterestPicker.js";
-import {
-  buildEmptyTierSelection,
-  flattenTierSelections
-} from "../utils/growInterests.js";
-
 import { FEATURES, getEntitlement } from "../utils/entitlements.js";
 
 function GrowLogsScreen() {
   const { user } = useAuth();
+
   const [grows, setGrows] = useState([]);
   const [loading, setLoading] = useState(true);
+  const [rawError, setRawError] = useState(null);
+
   const [name, setName] = useState("");
   const [genetics, setGenetics] = useState("");
   const [stage, setStage] = useState("");
   const [photo, setPhoto] = useState(null);
   const [showAdvanced, setShowAdvanced] = useState(false);
+
   const [waterPH, setWaterPH] = useState("");
   const [waterPPM, setWaterPPM] = useState("");
   const [temperature, setTemperature] = useState("");
@@ -47,34 +44,95 @@ function GrowLogsScreen() {
   const [substrateType, setSubstrateType] = useState("");
   const [substratePH, setSubstratePH] = useState("");
 
-  // Entitlement logic
+  // Entitlements
   const multiGrowEnt = getEntitlement(FEATURES.MULTIPLE_GROWS, user?.role);
   const photoEnt = getEntitlement(FEATURES.GROW_PHOTO, user?.role);
   const advancedEnt = getEntitlement(FEATURES.GROW_ADVANCED, user?.role);
 
-  useEffect(() => {
+  const { toInlineError } = useApiErrorHandler();
+  const inlineError = useMemo(
+    () => (rawError ? toInlineError(rawError) : null),
+    [rawError, toInlineError]
+  );
+
+  const loadGrows = async () => {
     setLoading(true);
-    listGrows()
-      .then((data) => setGrows(data))
-      .catch(() => setGrows([]))
-      .finally(() => setLoading(false));
+    setRawError(null);
+    try {
+      const data = await listGrows();
+      setGrows(Array.isArray(data) ? data : []);
+    } catch (e) {
+      setGrows([]);
+      setRawError(e);
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  useEffect(() => {
+    loadGrows();
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
-  const handleAddGrow = () => {
+  const handleAddGrow = async () => {
     if (multiGrowEnt !== "enabled") {
-      Alert.alert("Upgrade Required", "Upgrade your plan to add more grows.");
+      setRawError({
+        code: "upgrade_required",
+        message: "Upgrade your plan to add more grows."
+      });
       return;
     }
-    // ...create grow logic (omitted for brevity)...
+
+    try {
+      setRawError(null);
+      // TODO: build real payload from your state fields
+      const created = await createGrow({
+        name,
+        genetics,
+        stage,
+        photo,
+        advanced:
+          advancedEnt === "enabled"
+            ? {
+                waterPH,
+                waterPPM,
+                temperature,
+                humidity,
+                airflow,
+                nutrientBrand,
+                nutrientStrength,
+                feedingSchedule,
+                substrateType,
+                substratePH
+              }
+            : undefined
+      });
+
+      if (created && (created._id || created.id)) {
+        setGrows((prev) => [created, ...prev]);
+      } else {
+        await loadGrows();
+      }
+
+      setName("");
+      setGenetics("");
+      setStage("");
+      setPhoto(null);
+    } catch (e) {
+      setRawError(e);
+    }
   };
 
   const openGrow = (grow) => {
-    // ...navigate to grow details (omitted for brevity)...
+    // keep your navigation logic as-is (omitted in your snippet)
   };
 
   const handlePickPhoto = async () => {
     if (photoEnt !== "enabled") {
-      Alert.alert("Upgrade Required", "Upgrade to add photos to your grow log.");
+      setRawError({
+        code: "upgrade_required",
+        message: "Upgrade to add photos to your grow log."
+      });
       return;
     }
     const result = await ImagePicker.launchImageLibraryAsync({
@@ -89,8 +147,17 @@ function GrowLogsScreen() {
 
   return (
     <ScreenContainer>
+      {inlineError ? (
+        <InlineError
+          error={inlineError}
+          onRetry={() => loadGrows()}
+          style={{ marginBottom: spacing(4) }}
+        />
+      ) : null}
+
       <Card style={{ marginBottom: spacing(6) }}>
         <Text style={styles.title}>Create a Grow Log</Text>
+
         <Text style={styles.fieldLabel}>Grow Name</Text>
         <TextInput
           value={name}
@@ -99,6 +166,7 @@ function GrowLogsScreen() {
           style={styles.input}
           placeholderTextColor={colors.textSoft}
         />
+
         <Text style={styles.fieldLabel}>Genetics</Text>
         <TextInput
           value={genetics}
@@ -107,6 +175,7 @@ function GrowLogsScreen() {
           style={styles.input}
           placeholderTextColor={colors.textSoft}
         />
+
         <Text style={styles.fieldLabel}>Stage</Text>
         <TextInput
           value={stage}
@@ -116,7 +185,7 @@ function GrowLogsScreen() {
           placeholderTextColor={colors.textSoft}
         />
 
-        {/* Photo upload, always visible, gated by entitlement */}
+        {/* Photo upload (gated) */}
         <TouchableOpacity
           style={[styles.addPlantButton, photoEnt !== "enabled" && { opacity: 0.5 }]}
           onPress={handlePickPhoto}
@@ -126,13 +195,13 @@ function GrowLogsScreen() {
             {photoEnt === "cta" ? "Upgrade to add photo" : "Add Grow Photo"}
           </Text>
         </TouchableOpacity>
-        {photo && (
+        {photo ? (
           <Text style={{ color: colors.textSoft, marginTop: spacing(1) }}>
             Photo selected
           </Text>
-        )}
+        ) : null}
 
-        {/* Advanced section toggle, always visible, gated by entitlement */}
+        {/* Advanced toggle (still visible; advancedEnt can be enforced at save-time) */}
         <TouchableOpacity
           style={styles.advancedToggle}
           onPress={() => setShowAdvanced((v) => !v)}
@@ -141,9 +210,15 @@ function GrowLogsScreen() {
             {showAdvanced ? "Hide Advanced" : "Show Advanced"}
           </Text>
         </TouchableOpacity>
-        {showAdvanced && (
-          <View style={styles.advancedSection}>
-            {/* Water Section */}
+
+        {showAdvanced ? (
+          <View
+            style={[
+              styles.advancedSection,
+              advancedEnt !== "enabled" && { opacity: 0.6 }
+            ]}
+          >
+            {/* Water */}
             <View style={styles.envSection}>
               <Text style={styles.envSectionTitle}>💧 Water</Text>
               <Text style={styles.fieldLabel}>Water pH</Text>
@@ -154,6 +229,7 @@ function GrowLogsScreen() {
                 style={styles.input}
                 placeholderTextColor={colors.textSoft}
                 keyboardType="decimal-pad"
+                editable={advancedEnt === "enabled"}
               />
               <Text style={styles.fieldLabel}>Water PPM/EC</Text>
               <TextInput
@@ -162,9 +238,11 @@ function GrowLogsScreen() {
                 placeholder="e.g., 250 ppm or 0.5 EC"
                 style={styles.input}
                 placeholderTextColor={colors.textSoft}
+                editable={advancedEnt === "enabled"}
               />
             </View>
-            {/* Air Section */}
+
+            {/* Air */}
             <View style={styles.envSection}>
               <Text style={styles.envSectionTitle}>🌬️ Air & Climate</Text>
               <Text style={styles.fieldLabel}>Temperature</Text>
@@ -174,6 +252,7 @@ function GrowLogsScreen() {
                 placeholder="e.g., 75°F or 24°C"
                 style={styles.input}
                 placeholderTextColor={colors.textSoft}
+                editable={advancedEnt === "enabled"}
               />
               <Text style={styles.fieldLabel}>Humidity (%)</Text>
               <TextInput
@@ -183,6 +262,7 @@ function GrowLogsScreen() {
                 style={styles.input}
                 placeholderTextColor={colors.textSoft}
                 keyboardType="numeric"
+                editable={advancedEnt === "enabled"}
               />
               <Text style={styles.fieldLabel}>Airflow Quality</Text>
               <TextInput
@@ -191,9 +271,11 @@ function GrowLogsScreen() {
                 placeholder="Excellent, Good, Poor, etc."
                 style={styles.input}
                 placeholderTextColor={colors.textSoft}
+                editable={advancedEnt === "enabled"}
               />
             </View>
-            {/* Nutrients Section */}
+
+            {/* Nutrients */}
             <View style={styles.envSection}>
               <Text style={styles.envSectionTitle}>🧪 Nutrients</Text>
               <Text style={styles.fieldLabel}>Nutrient Brand/Line</Text>
@@ -203,6 +285,7 @@ function GrowLogsScreen() {
                 placeholder="Fox Farm Trio, General Hydroponics, etc."
                 style={styles.input}
                 placeholderTextColor={colors.textSoft}
+                editable={advancedEnt === "enabled"}
               />
               <Text style={styles.fieldLabel}>Feeding Strength</Text>
               <TextInput
@@ -211,6 +294,7 @@ function GrowLogsScreen() {
                 placeholder="1/2 strength, Full strength, etc."
                 style={styles.input}
                 placeholderTextColor={colors.textSoft}
+                editable={advancedEnt === "enabled"}
               />
               <Text style={styles.fieldLabel}>Feeding Schedule</Text>
               <TextInput
@@ -219,9 +303,11 @@ function GrowLogsScreen() {
                 placeholder="Every watering, Feed-Water-Water, etc."
                 style={styles.input}
                 placeholderTextColor={colors.textSoft}
+                editable={advancedEnt === "enabled"}
               />
             </View>
-            {/* Substrate Section */}
+
+            {/* Substrate */}
             <View style={styles.envSection}>
               <Text style={styles.envSectionTitle}>🌱 Growing Medium</Text>
               <Text style={styles.fieldLabel}>Substrate Type</Text>
@@ -231,6 +317,7 @@ function GrowLogsScreen() {
                 placeholder="Coco coir, Soil, Hydro, etc."
                 style={styles.input}
                 placeholderTextColor={colors.textSoft}
+                editable={advancedEnt === "enabled"}
               />
               <Text style={styles.fieldLabel}>Substrate pH</Text>
               <TextInput
@@ -240,12 +327,18 @@ function GrowLogsScreen() {
                 style={styles.input}
                 placeholderTextColor={colors.textSoft}
                 keyboardType="decimal-pad"
+                editable={advancedEnt === "enabled"}
               />
             </View>
-          </View>
-        )}
 
-        {/* Add new grow button always rendered, gated by entitlement */}
+            {advancedEnt !== "enabled" ? (
+              <Text style={{ color: colors.textSoft }}>
+                Advanced fields are locked on your plan.
+              </Text>
+            ) : null}
+          </View>
+        ) : null}
+
         <PrimaryButton
           title="button"
           onPress={handleAddGrow}
@@ -264,6 +357,7 @@ function GrowLogsScreen() {
       </Card>
 
       <Text style={styles.label}>Your Grows</Text>
+
       {loading ? (
         <Text>Loading...</Text>
       ) : grows.length === 0 ? (
@@ -277,6 +371,7 @@ function GrowLogsScreen() {
             Start a log when you want to track your plant’s journey.{"\n"}
             Sometimes, observation is enough—logging is here when you need it.
           </Text>
+
           <PrimaryButton
             title="button"
             onPress={handleAddGrow}
@@ -289,29 +384,38 @@ function GrowLogsScreen() {
       ) : (
         <FlatList
           data={grows}
-          keyExtractor={(item) => item._id}
+          keyExtractor={(item, idx) =>
+            String(item?._id ?? item?.id ?? item?.growId ?? idx)
+          }
           contentContainerStyle={{ paddingBottom: 80 }}
           renderItem={({ item }) => (
             <TouchableOpacity onPress={() => openGrow(item)}>
-              <Card style={{ marginBottom: spacing(4) }} testID={`grow-card-${item._id}`}>
-                <Text style={styles.growName}>{item.name}</Text>
-                {Array.isArray(item.plants) && item.plants.length > 0 ? (
+              <Card
+                style={{ marginBottom: spacing(4) }}
+                testID={`grow-card-${item?._id ?? item?.id}`}
+              >
+                <Text style={styles.growName}>{item?.name}</Text>
+
+                {Array.isArray(item?.plants) && item.plants.length > 0 ? (
                   <View style={styles.plantPillWrap}>
                     {item.plants.map((plant) => (
-                      <View key={plant._id || plant.name} style={styles.plantPill}>
+                      <View
+                        key={plant?._id ?? plant?.id ?? plant?.name}
+                        style={styles.plantPill}
+                      >
                         <Text style={styles.plantPillName}>
-                          {plant.name || plant.strain || "Unnamed Plant"}
+                          {plant?.name || plant?.strain || "Unnamed Plant"}
                         </Text>
-                        {plant.strain ? (
+                        {plant?.strain ? (
                           <Text style={styles.plantPillMeta}>{plant.strain}</Text>
                         ) : null}
-                        {plant.stage ? (
+                        {plant?.stage ? (
                           <Text style={styles.plantPillMeta}>{plant.stage}</Text>
                         ) : null}
                       </View>
                     ))}
                   </View>
-                ) : item.stage ? (
+                ) : item?.stage ? (
                   <Text style={styles.sub}>{item.stage}</Text>
                 ) : null}
               </Card>

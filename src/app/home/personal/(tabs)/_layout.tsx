@@ -31,6 +31,13 @@ export default function PersonalTabsLayout() {
         }}
       />
       <Tabs.Screen
+        name="tasks"
+        options={{
+          title: "Tasks",
+          tabBarIcon: tabIcon("checkmark-done-outline")
+        }}
+      />
+      <Tabs.Screen
         name="logs"
         options={{
           title: "Logs",

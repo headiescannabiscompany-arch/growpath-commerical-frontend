@@ -6,6 +6,8 @@ export function facilityPath(facilityId: string, path: string) {
 }
 
 export const endpoints = {
+  // AI compliance insights
+  aiCall: (facilityId: string) => facilityPath(facilityId, "/ai/call"),
   // user
   me: `${BASE}/me`,
 
@@ -24,6 +26,8 @@ export const endpoints = {
   inventory: (facilityId: string) => facilityPath(facilityId, "/inventory"),
   inventoryItem: (facilityId: string, id: string) =>
     facilityPath(facilityId, `/inventory/${id}`),
+  inventoryAdjust: (facilityId: string, id: string) =>
+    facilityPath(facilityId, `/inventory/${id}/adjust`),
 
   // grows
   grows: (facilityId: string) => facilityPath(facilityId, "/grows"),
@@ -62,6 +66,16 @@ export const endpoints = {
   sopTemplates: (facilityId: string) => `${BASE}/facilities/${facilityId}/sop-templates`,
   sopTemplate: (facilityId: string, id: string) =>
     `${BASE}/facilities/${facilityId}/sop-templates/${id}`,
+
+  // SOP runs
+  sopRuns: (facilityId: string) => facilityPath(facilityId, "/sop-runs"),
+  sopRun: (facilityId: string, id: string) => facilityPath(facilityId, `/sop-runs/${id}`),
+
+  // SOP run actions
+  sopRunStep: (facilityId: string, runId: string, stepId: string) =>
+    facilityPath(facilityId, `/sop-runs/${runId}/steps/${stepId}`),
+  sopRunComplete: (facilityId: string, runId: string) =>
+    facilityPath(facilityId, `/sop-runs/${runId}/complete`),
 
   // vendors (facility scoped via query)
   vendors: `${BASE}/vendors`,
@@ -106,5 +120,12 @@ export const endpoints = {
   teamMembers: (facilityId: string) => facilityPath(facilityId, "/team"),
   teamMember: (facilityId: string, userId: string) =>
     facilityPath(facilityId, `/team/${userId}`),
-  teamInvite: (facilityId: string) => facilityPath(facilityId, "/team/invite")
+  teamInvite: (facilityId: string) => facilityPath(facilityId, "/team/invite"),
+
+  compliance: {
+    deviationsSummary: (facilityId: string) =>
+      `/api/facility/${encodeURIComponent(facilityId)}/compliance/deviations/summary`,
+    sopsRecommended: (facilityId: string) =>
+      `/api/facility/${encodeURIComponent(facilityId)}/compliance/sops/recommended`
+  }
 };

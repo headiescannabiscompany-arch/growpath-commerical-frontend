@@ -1,4 +1,4 @@
-import React, { useEffect, useMemo, useState } from "react";
+import React, { useMemo, useState } from "react";
 import {
   View,
   Text,
@@ -6,19 +6,20 @@ import {
   TouchableOpacity,
   FlatList,
   ActivityIndicator,
-  Alert,
-  RefreshControl,
-  TextInput
+  RefreshControl
 } from "react-native";
-import { useFacility } from "../../facility/FacilityProvider";
-import { handleApiError } from "../../ui/handleApiError";
-import { useVerification } from "../../hooks/useVerification";
+
+import { useFacility } from "@/state/useFacility";
+import { useVerification } from "@/hooks/useVerification";
+import { useApiErrorHandler } from "@/hooks/useApiErrorHandler";
+import { InlineError } from "@/components/InlineError";
 
 export default function VerificationScreen() {
-  const { activeFacilityId } = useFacility();
-  const facilityId = activeFacilityId;
-  const [filter, setFilter] = useState("all"); // all, pending, approved, rejected
-  const [processingId, setProcessingId] = useState(null);
+  const { selectedId: facilityId } = useFacility();
+  const canInteract = Boolean(facilityId);
+
+  const [filter, setFilter] = useState<"all" | "pending" | "approved" | "rejected">("all");
+  const [processingId, setProcessingId] = useState<string | null>(null);
 
   const {
     records,
@@ -30,91 +31,17 @@ export default function VerificationScreen() {
     rejectRecord
   } = useVerification(facilityId);
 
-  const handlers = useMemo(
-    () => ({
-      onAuthRequired: () => {
-        console.log("AUTH_REQUIRED: route to login");
-      },
-      onFacilityDenied: () => {
-        Alert.alert("No Access", "You don't have access to this facility.");
-      },
-      toast: (msg) => Alert.alert("Notice", msg)
-    }),
-    []
-  );
-
-  useEffect(() => {
-    if (error) handleApiError(error, handlers);
-  }, [error, handlers]);
-
-  const canInteract = useMemo(() => Boolean(facilityId), [facilityId]);
-
-  const onRefresh = async () => {
-    await refetch();
-  };
-
-  const handleApprove = (taskId) => {
-    if (!canInteract) {
-      Alert.alert("No Facility", "Select a facility to continue.");
-      return;
-    }
-    Alert.alert("Approve Record", "Are you sure you want to approve this record?", [
-      { text: "Cancel", style: "cancel" },
-      {
-        text: "Approve",
-        style: "default",
-        onPress: async () => {
-          setProcessingId(taskId);
-          try {
-            await approveRecord(taskId);
-            await refetch();
-            Alert.alert("Success", "Record approved");
-          } catch (error) {
-            handleApiError(error, handlers);
-            Alert.alert("Error", error.message || "Failed to approve");
-          } finally {
-            setProcessingId(null);
-          }
-        }
-      }
-    ]);
-  };
-
-  const handleReject = (taskId) => {
-    if (!canInteract) {
-      Alert.alert("No Facility", "Select a facility to continue.");
-      return;
-    }
-    Alert.alert("Reject Record", "Are you sure you want to reject this record?", [
-      { text: "Cancel", style: "cancel" },
-      {
-        text: "Reject",
-        style: "destructive",
-        onPress: async () => {
-          setProcessingId(taskId);
-          try {
-            await rejectRecord({ recordId: taskId });
-            await refetch();
-            Alert.alert("Success", "Record rejected");
-          } catch (error) {
-            handleApiError(error, handlers);
-            Alert.alert("Error", error.message || "Failed to reject");
-          } finally {
-            setProcessingId(null);
-          }
-        }
-      }
-    ]);
-  };
+  const handleApiError = useApiErrorHandler();
+  const [actionError, setActionError] = useState<any>(null);
 
   const tasks = Array.isArray(records) ? records : [];
 
-  const getFilteredTasks = () => {
+  const filteredTasks = useMemo(() => {
     if (filter === "all") return tasks;
-    return tasks.filter((t) => (t.status || "pending") === filter);
-  };
+    return tasks.filter((t) => (t.status ?? "pending") === filter);
+  }, [tasks, filter]);
 
-  const getStatusColor = (status) => {
+  const getStatusColor = (status?: string) => {
     switch (status) {
       case "approved":
         return "#10b981";
@@ -125,51 +52,77 @@ export default function VerificationScreen() {
     }
   };
 
-  const getStatusLabel = (status) => {
-    return (status || "pending").charAt(0).toUpperCase() + (status || "pending").slice(1);
+  const getStatusLabel = (status?: string) => {
+    const s = status ?? "pending";
+    return s.charAt(0).toUpperCase() + s.slice(1);
   };
 
-  const renderTask = ({ item }) => {
-    const recordId = item?._id || item?.id;
+  const runAction = async (fn: () => Promise<void>, recordId: string) => {
+    if (!canInteract) return;
+
+    setProcessingId(recordId);
+    setActionError(null);
+
+    try {
+      await fn();
+      await refetch(); // deterministic reload
+    } catch (e: any) {
+      setActionError(handleApiError(e));
+    } finally {
+      setProcessingId(null);
+    }
+  };
+
+  const renderTask = ({ item }: any) => {
+    const recordId = String(item?._id || item?.id);
     const isProcessing = processingId === recordId;
+
     return (
       <View style={styles.recordCard}>
         <View style={styles.recordHeader}>
-          <View style={styles.recordInfo}>
-            <Text style={styles.recordName}>{item.name || "Unnamed Record"}</Text>
-            <Text style={[styles.recordStatus, { color: getStatusColor(item.status) }]}>
-              {getStatusLabel(item.status)}
-            </Text>
-          </View>
+          <Text style={styles.recordName}>
+            {item.name || "Unnamed Record"}
+          </Text>
+          <Text style={[styles.recordStatus, { color: getStatusColor(item.status) }]}>
+            {getStatusLabel(item.status)}
+          </Text>
         </View>
+
         {item.description && (
           <Text style={styles.recordDescription}>{item.description}</Text>
         )}
+
         {item.completedAt && (
           <Text style={styles.recordDate}>
             Submitted: {new Date(item.completedAt).toLocaleDateString()}
           </Text>
         )}
-        {item.status === "pending" && (
+
+        {item.status === "pending" && canInteract && (
           <View style={styles.recordActions}>
             <TouchableOpacity
               style={[styles.actionBtn, styles.approveBtn]}
-              onPress={() => handleApprove(recordId)}
               disabled={isProcessing}
+              onPress={() =>
+                runAction(() => approveRecord(recordId), recordId)
+              }
             >
               {isProcessing ? (
-                <ActivityIndicator color="#fff" size="small" />
+                <ActivityIndicator size="small" />
               ) : (
                 <Text style={styles.approveBtnText}>✓ Approve</Text>
               )}
             </TouchableOpacity>
+
             <TouchableOpacity
               style={[styles.actionBtn, styles.rejectBtn]}
-              onPress={() => handleReject(recordId)}
               disabled={isProcessing}
+              onPress={() =>
+                runAction(() => rejectRecord({ recordId }), recordId)
+              }
             >
               {isProcessing ? (
-                <ActivityIndicator color="#fff" size="small" />
+                <ActivityIndicator size="small" />
               ) : (
                 <Text style={styles.rejectBtnText}>✕ Reject</Text>
               )}
@@ -180,11 +133,9 @@ export default function VerificationScreen() {
     );
   };
 
-  const filteredTasks = getFilteredTasks();
-
   if (isLoading) {
     return (
-      <View style={styles.container}>
+      <View style={styles.centered}>
         <ActivityIndicator size="large" color="#f59e0b" />
       </View>
     );
@@ -192,24 +143,31 @@ export default function VerificationScreen() {
 
   return (
     <View style={styles.container}>
+      {/* Filter bar */}
       <View style={styles.filterBar}>
-        {["all", "pending", "approved", "rejected"].map((f) => (
+        {(["all", "pending", "approved", "rejected"] as const).map((f) => (
           <TouchableOpacity
             key={f}
-            style={[styles.filterButton, filter === f && styles.filterButtonActive]}
+            style=[
+              styles.filterButton,
+              filter === f && styles.filterButtonActive
+            ]
             onPress={() => setFilter(f)}
           >
             <Text
-              style={[
+              style=[
                 styles.filterButtonText,
                 filter === f && styles.filterButtonTextActive
-              ]}
+              ]
             >
               {f.charAt(0).toUpperCase() + f.slice(1)}
             </Text>
           </TouchableOpacity>
         ))}
       </View>
+
+      {/* Contract-locked errors */}
+      <InlineError error={error || actionError} />
 
       {!canInteract ? (
         <View style={styles.emptyState}>
@@ -218,17 +176,22 @@ export default function VerificationScreen() {
       ) : filteredTasks.length === 0 ? (
         <View style={styles.emptyState}>
           <Text style={styles.emptyText}>
-            {filter === "all" ? "No records to review" : `No ${filter} records`}
+            {filter === "all"
+              ? "No records to review"
+              : `No ${filter} records`}
           </Text>
         </View>
       ) : (
         <FlatList
           data={filteredTasks}
-          renderItem={renderTask}
           keyExtractor={(item) => String(item?._id || item?.id)}
+          renderItem={renderTask}
           contentContainerStyle={styles.listContent}
           refreshControl={
-            <RefreshControl refreshing={isRefreshing} onRefresh={onRefresh} />
+            <RefreshControl
+              refreshing={isRefreshing}
+              onRefresh={refetch}
+            />
           }
         />
       )}

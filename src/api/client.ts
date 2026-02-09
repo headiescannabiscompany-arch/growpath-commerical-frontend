@@ -1,6 +1,6 @@
 import { config } from "../config/config";
-import { normalizeApiError, type ApiError } from "./errors";
 import { mockRequest } from "./mockServer";
+import { parseFetchError } from "@/utils/parseApiError";
 
 let authToken: string | null = null;
 let onUnauthorized: null | (() => void | Promise<void>) = null;
@@ -50,13 +50,12 @@ async function safeJson(res: Response) {
   try {
     return JSON.parse(text);
   } catch {
-    const err: ApiError = {
+    throw {
       code: "PARSE_ERROR",
       message: "Invalid server response.",
       status: res.status,
       details: { raw: text.slice(0, 1000) }
     };
-    throw err;
   }
 }
 
@@ -148,21 +147,62 @@ async function request(path: string, options: RequestOptions = {}) {
     }
 
     const p = (async () => {
-      const res = await fetch(url, {
-        method,
-        headers,
-        body,
-        signal: mergedSignal
-      });
+      let res: Response;
+      try {
+        res = await fetch(url, {
+          method,
+          headers,
+          body,
+          signal: mergedSignal
+        });
+      } catch (e) {
+        // Network/offline error
+        return {
+          ok: false,
+          status: null,
+          code: "NETWORK_ERROR",
+          message: "Network request failed",
+          requestId: null,
+          raw: e
+        };
+      }
 
       clearTimeout(timeoutId);
 
-      if (!res.ok) {
-        const data = await safeJson(res).catch(() => null);
-        throw normalizeApiError(data ?? { status: res.status }, { path });
+      const requestId = (() => {
+        try {
+          return res.headers.get("x-request-id");
+        } catch {
+          return null;
+        }
+      })();
+
+      // Handle no-content
+      if (res.status === 204) {
+        return { ok: true, status: res.status, data: undefined, requestId };
       }
 
-      return await safeJson(res);
+      let json: any = null;
+      try {
+        json = await res.json();
+      } catch (_) {
+        json = null;
+      }
+
+      if (!res.ok) {
+        const parsed = await parseFetchError(res);
+        parsed.raw = json ?? parsed.raw;
+        return {
+          ok: false,
+          status: parsed.status ?? res.status,
+          code: parsed.code ?? json?.error?.code ?? "UNKNOWN_ERROR",
+          message: parsed.message ?? json?.error?.message ?? "Something went wrong",
+          requestId: parsed.requestId ?? requestId,
+          raw: json ?? parsed.raw ?? res
+        };
+      }
+
+      return { ok: true, status: res.status, data: json, requestId };
     })();
 
     if (shouldDedupe) inflight.set(key, p);
@@ -175,44 +215,15 @@ async function request(path: string, options: RequestOptions = {}) {
     }
   } catch (e: any) {
     clearTimeout(timeoutId);
-
-    if (e?.name === "AbortError") {
-      throw normalizeApiError(
-        { message: "Request timeout - is the backend running?" },
-        { path }
-      );
-    }
-
-    // Ensure *everything* thrown from client is normalized with path context
-    const normalized = normalizeApiError(e, { path });
-
-    // Global 401 invalidation: opt-in per-call to prevent auth thrash on /api/me
-    const invalidateOn401 = options.invalidateOn401 !== false;
-    const isAuth401 =
-      normalized?.status === 401 &&
-      (normalized?.code === "UNAUTHORIZED" ||
-        normalized?.code === "UNAUTHENTICATED" ||
-        normalized?.code === "INVALID_TOKEN");
-    if (invalidateOn401 && isAuth401) {
-      try {
-        void onUnauthorized?.();
-      } catch {
-        // swallow errors from logout handler
-      }
-    }
-
-    if (!options.silent) {
-      console.error("[API] Request error:", {
-        url: path,
-        method,
-        error: e,
-        message: normalized?.message,
-        code: normalized?.code,
-        status: normalized?.status
-      });
-    }
-
-    throw normalized;
+    // Defensive: fallback error shape
+    return {
+      ok: false,
+      status: null,
+      code: "CLIENT_ERROR",
+      message: e?.message || "Client error",
+      requestId: null,
+      raw: e
+    };
   }
 }
 
