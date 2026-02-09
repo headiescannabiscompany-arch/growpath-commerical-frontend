@@ -1,30 +1,42 @@
-import { useMemo, useState } from "react";
+import { useMemo, useSyncExternalStore } from "react";
 
 export type AccountMode = "personal" | "commercial" | "facility";
 
-export type UseAccountMode = {
+type Store = {
   mode: AccountMode;
-  setMode: (m: AccountMode) => void;
-  isPersonal: boolean;
-  isCommercial: boolean;
-  isFacility: boolean;
 };
 
+let store: Store = { mode: "commercial" };
+const listeners = new Set<() => void>();
+
+function emit() {
+  for (const l of listeners) l();
+}
+
+function subscribe(listener: () => void) {
+  listeners.add(listener);
+  return () => listeners.delete(listener);
+}
+
+function getSnapshot() {
+  return store;
+}
+
 /**
- * Minimal web-safe stub to keep routing stable.
- * Later we can back this with Zustand/AsyncStorage + entitlements.
+ * Minimal web-safe account mode store.
+ * Replace later with your real auth/entitlements-driven mode.
  */
-export function useAccountMode(): UseAccountMode {
-  const [mode, setMode] = useState<AccountMode>("commercial");
+export function useAccountMode() {
+  const snap = useSyncExternalStore(subscribe, getSnapshot, getSnapshot);
 
   return useMemo(
     () => ({
-      mode,
-      setMode,
-      isPersonal: mode === "personal",
-      isCommercial: mode === "commercial",
-      isFacility: mode === "facility"
+      mode: snap.mode,
+      setMode: (mode: AccountMode) => {
+        store = { ...store, mode };
+        emit();
+      }
     }),
-    [mode]
+    [snap.mode]
   );
 }
