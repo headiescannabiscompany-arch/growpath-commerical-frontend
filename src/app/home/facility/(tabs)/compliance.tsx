@@ -238,7 +238,7 @@ export default function ComplianceDashboard() {
               ? "Adjustments down vs 30-day avg"
               : "Flat vs 30-day avg"
         }
-        onPress={() => router.push("/app/home/facility/(tabs)/inventory")}
+        onPress={() => router.push("/app/home/facility/inventory")}
       />
 
       {/* Audit Activity (trend) */}
