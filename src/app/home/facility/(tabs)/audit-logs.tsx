@@ -23,10 +23,17 @@ export default function FacilityAuditLogsTab() {
             </Text>
 
             <TouchableOpacity
-              onPress={() => router.back()}
+              onPress={() => router.push("/home/facility/audit-logs")}
               style={{ borderWidth: 1, borderRadius: 10, padding: 12 }}
             >
-              <Text style={{ fontWeight: "900" }}>Back</Text>
+              <Text style={{ fontWeight: "900" }}>Open Audit Logs</Text>
+            </TouchableOpacity>
+
+            <TouchableOpacity
+              onPress={() => router.push("/home/facility/select")}
+              style={{ borderWidth: 1, borderRadius: 10, padding: 12 }}
+            >
+              <Text style={{ fontWeight: "900" }}>Change Facility</Text>
             </TouchableOpacity>
           </>
         )}
