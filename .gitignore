@@ -1,2 +1,4 @@
+# Glue-repair backups
+*.bak
 node_modules
 .expo/
