@@ -1,27 +1,21 @@
 import React from "react";
-import { Stack, useRouter } from "expo-router";
-import { useAccountMode } from "@/state/useAccountMode";
-import { useFacility } from "@/state/useFacility";
+import { Stack, Redirect } from "expo-router";
+import { useEntitlements } from "@/entitlements/EntitlementsContext";
 
 export default function PersonalLayout() {
-  const router = useRouter();
-  const { mode } = useAccountMode();
-  const { selectedId } = useFacility();
+  const ent = useEntitlements();
 
-  if (mode !== "SINGLE_USER") {
-    const target =
-      mode === "FACILITY"
-        ? selectedId
-          ? "/home/facility"
-          : "/home/facility/select"
-        : "/home/commercial";
+  // Don’t route until entitlements are ready
+  if (!ent?.ready) return null;
 
-    React.useEffect(() => {
-      router.replace(target);
-    }, [router, target]);
+  // Only personal users may be here
+  if (ent.mode === "facility") return <Redirect href="/home/facility" />;
+  if (ent.mode === "commercial") return <Redirect href="/home/commercial" />;
 
-    return null;
-  }
-
-  return <Stack screenOptions={{ headerShown: false }} />;
+  return (
+    <Stack screenOptions={{ headerShown: false }}>
+      {/* Personal tabs live under /home/personal/(tabs), but (tabs) is NOT part of the URL */}
+      <Stack.Screen name="(tabs)" options={{ headerShown: false }} />
+    </Stack>
+  );
 }
