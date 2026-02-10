@@ -12,7 +12,7 @@ function sortRecommendedSops<T extends { title: string; sopId: string }>(list: T
 import {
   AI4DashboardData,
   ComplianceStatus
-} from "@/app/home/facility/compliance/ai4.dashboard.contract";
+} from "@/contracts/compliance/ai4.dashboard.contract";
 
 export type WeeklyComplianceReport = {
   id: string;
