@@ -1,7 +1,7 @@
 import React from "react";
 import { View, Text, Pressable } from "react-native";
 import { useRouter } from "expo-router";
-import { useEntitlements } from "../../../entitlements";
+import { useEntitlements } from "@/entitlements";
 
 export default function CommercialFeedScreen() {
   const router = useRouter();

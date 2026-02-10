@@ -1,6 +1,6 @@
 import React from "react";
 import { Stack, Redirect } from "expo-router";
-import { useEntitlements } from "@/entitlements/EntitlementsContext";
+import { useEntitlements } from "@/entitlements";
 
 export default function PersonalLayout() {
   const ent = useEntitlements();
