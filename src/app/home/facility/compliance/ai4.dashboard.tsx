@@ -1,4 +1,30 @@
 import React from "react";
+import { View, Text } from "react-native";
+import { ScreenBoundary } from "@/components/ScreenBoundary";
+import { useFacility } from "@/state/useFacility";
+
+export default function ComplianceAi4DashboardScreen() {
+  const { selectedId: facilityId } = useFacility();
+
+  return (
+    <ScreenBoundary name="facility.compliance.ai4.dashboard">
+      <View style={{ flex: 1, padding: 16, gap: 12 }}>
+        <Text style={{ fontSize: 20, fontWeight: "900" }}>
+          Compliance Dashboard (AI4)
+        </Text>
+
+        {!facilityId ? (
+          <Text>Select a facility first.</Text>
+        ) : (
+          <Text style={{ opacity: 0.75 }}>
+            Stub screen (safe mount). Wire AI4 dashboard model + API calls next.
+          </Text>
+        )}
+      </View>
+    </ScreenBoundary>
+  );
+}
+import React from "react";
 import { View, Text, StyleSheet, TouchableOpacity, ScrollView } from "react-native";
 import { exampleAI4DashboardData, AI4DashboardData } from "./ai4.dashboard.contract";
 
