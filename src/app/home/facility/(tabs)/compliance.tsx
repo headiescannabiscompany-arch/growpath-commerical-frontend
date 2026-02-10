@@ -7,7 +7,7 @@ import {
   ScrollView
 } from "react-native";
 import { useFacility } from "@/state/useFacility";
-import { apiRequest } from "@/api/apiRequest";
+import { apiRequest } from "@/api/client";
 import { endpoints } from "@/api/endpoints";
 import { useApiErrorHandler } from "@/hooks/useApiErrorHandler";
 import { InlineError } from "@/components/InlineError";
