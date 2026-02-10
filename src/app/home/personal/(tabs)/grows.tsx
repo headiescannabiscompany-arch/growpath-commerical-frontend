@@ -1,4 +1,4 @@
-import React from "react";
+﻿import React from "react";
 import { View, Text } from "react-native";
 import { ErrorBoundary } from "@/components/system/ErrorBoundary";
 
@@ -26,16 +26,4 @@ export default function PersonalGrowsRoute() {
       </View>
     </ErrorBoundary>
   );
-}
-import React, { useEffect } from "react";
-import { useRouter } from "expo-router";
-
-export default function PersonalGrowsTab() {
-  const router = useRouter();
-
-  useEffect(() => {
-    router.replace("/home/personal/grows" as any);
-  }, [router]);
-
-  return null;
 }
