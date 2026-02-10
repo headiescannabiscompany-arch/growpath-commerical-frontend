@@ -5,7 +5,7 @@
 The previous conversation summary claimed:
 
 - ✅ Metro compiles successfully (1049 modules, 984ms)
-- ✅ Expo running on http://localhost:8081
+- ✅ Expo running on <http://localhost:8081>
 - ✅ All frontend code ready for E2E test
 - ✅ Feature complete and verified
 
