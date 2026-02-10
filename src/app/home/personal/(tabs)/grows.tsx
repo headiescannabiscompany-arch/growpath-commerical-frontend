@@ -81,7 +81,7 @@ export default function GrowsTab() {
   );
 
   return (
-    <View style={{ flex: 1, padding: 16 }}>
+    <View testID="screen-personal-grows" style={{ flex: 1, padding: 16 }}>
       <View style={{ marginBottom: 12 }}>
         <Text style={{ fontSize: 20, fontWeight: "700" }}>Grows</Text>
         <Text style={{ opacity: 0.7, marginTop: 4 }}>
