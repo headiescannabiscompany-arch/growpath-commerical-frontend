@@ -1,16 +1,17 @@
 import { Page, expect } from "@playwright/test";
 
-  await page.goto("/home/personal/grows");
+export async function goToPersonalGrows(page: Page) {
+  await page.goto("/home/personal/grows", { waitUntil: "domcontentloaded" });
 
-  // Wait until either we get redirected to auth OR the grows screen mounts.
-  await Promise.race([
-    page.waitForURL(/\/(login|auth)/, { timeout: 15_000 }),
-    page.getByTestId("screen-personal-grows").waitFor({ state: "visible", timeout: 15_000 })
-  ]);
+  // Wait until the router settles on either grows or auth.
+  await page.waitForURL(/\/(home\/personal\/grows|login|auth)(\?|$)/, {
+    timeout: 15_000
+  });
 
-  // If we ended up in auth, return (caller can handle/throw)
-  const url = page.url();
-  if (url.includes("/login") || url.includes("/auth")) return;
+  if (/\/(login|auth)(\?|$)/.test(page.url())) return;
 
-  await expect(page.getByTestId("screen-personal-grows")).toBeVisible();
+  // Best practice: assert a stable testID instead of text.
+  await expect(page.getByTestId("screen-personal-grows")).toBeVisible({
+    timeout: 15_000
+  });
 }
