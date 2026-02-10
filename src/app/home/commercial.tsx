@@ -161,7 +161,7 @@ export default function CommercialHome() {
         <AppCard>
           <Text style={styles.cardTitle}>📊 Inventory</Text>
           <Text style={styles.cardDesc}>Manage product inventory and stock levels</Text>
-          <Link href="/inventory" style={styles.link}>
+          <Link href="/home/commercial/inventory" style={styles.link}>
             Manage Inventory →
           </Link>
         </AppCard>
