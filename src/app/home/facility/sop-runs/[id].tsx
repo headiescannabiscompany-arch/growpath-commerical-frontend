@@ -1,48 +1,23 @@
-import React from "react";
-import { View, Text, TouchableOpacity } from "react-native";
-import { useLocalSearchParams, useRouter } from "expo-router";
-
+﻿import React from "react";
+import { View, Text } from "react-native";
+import { useLocalSearchParams } from "expo-router";
 import { ScreenBoundary } from "@/components/ScreenBoundary";
 import { useFacility } from "@/state/useFacility";
 
-export default function FacilitySopRunDetailScreen() {
-  const router = useRouter();
-  const { id } = useLocalSearchParams<{ id: string }>();
+export default function SopRunDetailScreen() {
+  const { id } = useLocalSearchParams<{ id?: string }>();
   const { selectedId: facilityId } = useFacility();
 
   return (
-    <ScreenBoundary name="facility.sopRuns.detail">
+    <ScreenBoundary name="facility.sopRun.detail">
       <View style={{ flex: 1, padding: 16, gap: 12 }}>
-        {!facilityId ? (
-          <>
-            <Text>Select a facility first.</Text>
-            <TouchableOpacity
-              onPress={() => router.push("/home/facility/select")}
-              style={{ borderWidth: 1, borderRadius: 10, padding: 12 }}
-            >
-              <Text style={{ fontWeight: "900" }}>Go to Facility Select</Text>
-            </TouchableOpacity>
-          </>
-        ) : (
-          <>
-            <Text style={{ fontSize: 20, fontWeight: "900" }}>SOP Run Detail</Text>
-            <Text style={{ opacity: 0.75 }}>Stub detail for run: {String(id || "")}</Text>
-          </>
-        )}
-
-        <TouchableOpacity
-          onPress={() => router.back()}
-          style={{ borderWidth: 1, borderRadius: 10, padding: 12 }}
-        >
-          <Text style={{ fontWeight: "900" }}>Back</Text>
-        </TouchableOpacity>
+        <Text style={{ fontSize: 20, fontWeight: "900" }}>SOP Run</Text>
+        <Text>Facility: {facilityId || "none"}</Text>
+        <Text>Run ID: {id || "missing"}</Text>
+        <Text style={{ opacity: 0.75 }}>
+          Safe-mount stub. Wire SOP run details next.
+        </Text>
       </View>
-    </ScreenBoundary>
-  );
-}
-    </ScreenBoundary>
-  );
-}
     </ScreenBoundary>
   );
 }
