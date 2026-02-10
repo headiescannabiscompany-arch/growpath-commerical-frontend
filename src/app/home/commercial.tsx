@@ -1,3 +1,4 @@
+import { Redirect } from "expo-router";
 import React from "react";
 import { View, Text, StyleSheet } from "react-native";
 import { Link } from "expo-router";
@@ -65,6 +66,11 @@ export default function CommercialHome() {
   const ent = useEntitlements();
   const facility = useFacility();
   const plan = ent.plan || "commercial";
+
+  if (!ent?.ready) return null;
+  if (ent.mode !== "commercial") {
+    return <Redirect href="/home/personal" />;
+  }
 
   return (
     <AppPage
