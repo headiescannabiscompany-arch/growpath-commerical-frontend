@@ -14,4 +14,3 @@ export default function Ai4ComplianceDashboardScreen() {
     </ScreenBoundary>
   );
 }
-import React from "react";
