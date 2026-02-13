@@ -1,19 +1,17 @@
 import { Platform } from "react-native";
-import { client } from "./client";
+import { apiRequest } from "./apiRequest";
 
 export async function uploadImage(uri) {
   const formData = new FormData();
   const filename = uri.split("/").pop() || "upload.jpg";
   const match = /\.(\w+)$/.exec(filename);
-  const type = match ? `image/${match[1]}` : `image/jpeg`;
+  const type = match ? `image/${match[1]}` : "image/jpeg";
 
   if (Platform.OS === "web") {
-    // For web, we need to fetch the blob
     const response = await fetch(uri);
     const blob = await response.blob();
     formData.append("image", blob, filename);
   } else {
-    // For native, we use the object format
     formData.append("image", {
       uri,
       name: filename,
@@ -21,5 +19,8 @@ export async function uploadImage(uri) {
     });
   }
 
-  return client.post("/api/uploads/image", formData);
+  return apiRequest("/api/uploads/image", {
+    method: "POST",
+    body: formData
+  });
 }
