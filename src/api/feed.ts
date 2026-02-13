@@ -1,5 +1,5 @@
 import { Platform } from "react-native";
-import { createPost as legacyCreatePost } from "@/api/posts";
+import { apiRequest } from "@/api/apiRequest";
 
 export type CreatePostInput = {
   text: string;
@@ -10,6 +10,9 @@ export type CreatePostInput = {
   growTags?: string[];
   photos?: string[]; // array of uri
 };
+
+// Set this to your real backend route if different
+const CREATE_POST_PATH = "/api/posts";
 
 async function uriToBlob(uri: string): Promise<Blob> {
   const resp = await fetch(uri);
@@ -44,6 +47,8 @@ export async function createFeedPost(input: CreatePostInput) {
     }
   }
 
-  // Use your existing posts API for now (keeps routing consistent).
-  return legacyCreatePost(form);
+  return apiRequest(CREATE_POST_PATH, {
+    method: "POST",
+    body: form
+  });
 }
