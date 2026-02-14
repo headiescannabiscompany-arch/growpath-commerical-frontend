@@ -67,8 +67,18 @@ async function request(path: string, options: RequestOptions = {}) {
   // CONTRACT: facility context is only in the URL path (/api/facility/:facilityId/...)
   // Do not inject X-Facility-Id headers.
   const useAuth = options.auth !== false;
+
   if (useAuth && authToken) {
     headers["Authorization"] = `Bearer ${authToken}`;
+  }
+
+  // TEMPORARY: Debug log for Authorization header preview
+  if (path === "/api/me" || path.startsWith("/api/me") || path.includes("/grows")) {
+    const a = headers["Authorization"];
+    console.log(
+      "[API] Authorization preview:",
+      a ? `${a.slice(0, 18)}… (len=${a.length})` : "(none)"
+    );
   }
 
   if (isMockEnabled) {

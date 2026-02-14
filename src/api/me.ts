@@ -54,8 +54,7 @@ export async function apiMe(options: { silent?: boolean } = {}): Promise<MeRespo
   inflightPromise = (async () => {
     try {
       const result = await api.get(endpoints.me, {
-        ...options,
-        invalidateOn401: false
+        ...options
       });
       const typed = result as MeResponse;
       if (token) {

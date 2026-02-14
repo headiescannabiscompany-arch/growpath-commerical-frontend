@@ -1,3 +1,5 @@
+import { initUnauthorizedHandler } from "@/auth/initUnauthorized";
+initUnauthorizedHandler();
 import React, { useEffect } from "react";
 import { Slot } from "expo-router";
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
