@@ -6,11 +6,12 @@ import React, {
   useState,
   useRef
 } from "react";
+import AsyncStorage from "@react-native-async-storage/async-storage";
+
 import { useEntitlements } from "../entitlements/EntitlementsProvider";
 import { useAuth } from "../auth/AuthContext";
-import { client } from "../api/client";
+import { apiRequest } from "../api/apiRequest";
 import { logEvent } from "../api/events";
-import AsyncStorage from "@react-native-async-storage/async-storage";
 
 export type Facility = {
   id: string;
@@ -45,10 +46,17 @@ const FacilityContext = createContext<FacilityState | null>(null);
 
 const STORAGE_KEY = "facility:selectedId";
 
-// Defensive normalization: handle various API shapes
-function normalizeFacilities(raw: any[]): Facility[] {
-  if (!Array.isArray(raw)) return [];
-  return raw
+// Defensive normalization: handle array OR common wrapper objects
+function normalizeFacilities(raw: any): Facility[] {
+  const arr = Array.isArray(raw)
+    ? raw
+    : Array.isArray(raw?.facilities)
+      ? raw.facilities
+      : Array.isArray(raw?.data)
+        ? raw.data
+        : [];
+
+  return arr
     .map((f: any) => ({
       id: f.id || f._id || "",
       name: f.name || "Unnamed Facility",
@@ -57,7 +65,7 @@ function normalizeFacilities(raw: any[]): Facility[] {
       licenseNumber: f.licenseNumber || f.license?.number || "",
       licenseExpiry: f.licenseExpiry || f.license?.expiry || ""
     }))
-    .filter((f) => f.id);
+    .filter((f: Facility) => !!f.id);
 }
 
 export function FacilityProvider({ children }: { children: React.ReactNode }) {
@@ -66,6 +74,8 @@ export function FacilityProvider({ children }: { children: React.ReactNode }) {
 
   const [facilities, setFacilities] = useState<Facility[]>([]);
   const [selectedId, setSelectedId] = useState<string | null>(null);
+  const [storageLoaded, setStorageLoaded] = useState(false);
+
   const [isReady, setIsReady] = useState(false);
   const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
@@ -75,20 +85,34 @@ export function FacilityProvider({ children }: { children: React.ReactNode }) {
 
   // Load selected facility from storage
   useEffect(() => {
+    let mounted = true;
+
     (async () => {
       try {
         const stored = await AsyncStorage.getItem(STORAGE_KEY);
-        if (stored) setSelectedId(stored);
+        if (mounted && stored) setSelectedId(stored);
       } catch (e) {
         console.error("[FACILITY] Failed to read stored facility:", e);
+      } finally {
+        if (mounted) setStorageLoaded(true);
       }
     })();
+
+    return () => {
+      mounted = false;
+    };
   }, []);
 
-  // Fetch facilities only for commercial/facility mode users with ready entitlements
+  // Load facilities only for commercial/facility mode users with ready entitlements
   useEffect(() => {
-    // Only fetch if: token exists, entitlements ready, mode is NOT personal, and we haven't fetched yet
-    if (!token || !entReady || mode === "personal" || didFetchRef.current) return;
+    if (
+      !token ||
+      !entReady ||
+      !storageLoaded ||
+      mode === "personal" ||
+      didFetchRef.current
+    )
+      return;
 
     didFetchRef.current = true;
     let mounted = true;
@@ -98,27 +122,22 @@ export function FacilityProvider({ children }: { children: React.ReactNode }) {
         setIsLoading(true);
         setError(null);
 
-        // Fire silent request - don't break UI if this fails
-        const resp = await client("GET", "/api/facilities", null, {
+        const data = await apiRequest("/api/facilities", {
+          method: "GET",
           auth: true,
           silent: true
         });
 
         if (!mounted) return;
 
-        const normalized = normalizeFacilities(resp?.data || []);
+        const normalized = normalizeFacilities(data);
         setFacilities(normalized);
 
-        // Auto-select logic:
-        // - If 0 facilities: stay null (show picker/message)
-        // - If 1 facility: auto-select it
-        // - If >1 facilities: try to use stored selection, else show picker
         if (normalized.length === 1) {
           const fid = normalized[0].id;
           setSelectedId(fid);
           await AsyncStorage.setItem(STORAGE_KEY, fid);
         } else if (normalized.length > 1 && selectedId) {
-          // Validate stored selection still exists
           if (!normalized.find((f) => f.id === selectedId)) {
             setSelectedId(null);
             await AsyncStorage.removeItem(STORAGE_KEY);
@@ -130,7 +149,6 @@ export function FacilityProvider({ children }: { children: React.ReactNode }) {
         if (!mounted) return;
         console.error("[FACILITY] Failed to fetch facilities:", e);
         setError(e?.message || "Failed to load facilities");
-        // Always mark ready to avoid blocking UI
         setIsReady(true);
       } finally {
         if (mounted) setIsLoading(false);
@@ -140,13 +158,12 @@ export function FacilityProvider({ children }: { children: React.ReactNode }) {
     return () => {
       mounted = false;
     };
-  }, [token, entReady, mode]);
+  }, [token, entReady, storageLoaded, mode, selectedId]);
 
   async function selectFacility(id: string) {
     try {
       setSelectedId(id);
       await AsyncStorage.setItem(STORAGE_KEY, id);
-      // Fire analytics (fire-and-forget)
       void logEvent("FACILITY_SELECTED", { facilityId: id });
     } catch (e: any) {
       console.error("[FACILITY] Failed to select facility:", e);
@@ -155,17 +172,23 @@ export function FacilityProvider({ children }: { children: React.ReactNode }) {
   }
 
   async function refetch() {
+    if (!token || !entReady || mode === "personal") {
+      setIsReady(true);
+      return;
+    }
+
     didFetchRef.current = false;
     setIsLoading(true);
     setError(null);
 
     try {
-      const resp = await client("GET", "/api/facilities", null, {
+      const data = await apiRequest("/api/facilities", {
+        method: "GET",
         auth: true,
         silent: true
       });
 
-      const normalized = normalizeFacilities(resp?.data || []);
+      const normalized = normalizeFacilities(data);
       setFacilities(normalized);
       setIsReady(true);
     } catch (e: any) {

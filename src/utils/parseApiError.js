@@ -6,12 +6,12 @@
  * and correlation id is in response header: x-request-id
  *
  * This helper gracefully handles:
- * - fetch Response objects (preferred)
- * - axios-style errors (optional compatibility)
+ * - Response objects (preferred)
+ * - client error objects with { response: { status, data, headers } }
  * - plain objects (already-parsed bodies)
  * - network/offline exceptions
  *
- * @param {any} input - fetch Response | error object | parsed body
+ * @param {any} input - Response | error object | parsed body
  * @param {object} [opts]
  * @param {string} [opts.fallbackCode="UNKNOWN_ERROR"]
  * @param {string} [opts.fallbackMessage="Something went wrong"]
@@ -30,7 +30,7 @@ export function parseApiError(input, opts = {}) {
     raw: input
   };
 
-  // 1) fetch Response object
+  // 1) Response object
   if (
     input &&
     typeof input === "object" &&
@@ -39,48 +39,47 @@ export function parseApiError(input, opts = {}) {
   ) {
     base.status = input.status;
     base.requestId = input.headers.get("x-request-id");
-
-    // We can't synchronously read the body here; caller should pass parsed body (see helpers below).
     return base;
   }
 
-  // 2) axios-style error compatibility (optional)
-  // axios error: { response: { status, data, headers } }
-  const axiosResp = input?.response;
-  if (axiosResp && typeof axiosResp === "object") {
-    base.status = typeof axiosResp.status === "number" ? axiosResp.status : null;
+  // 2) client error object with { response: { status, data, headers } }
+  const resp = input?.response;
+  if (resp && typeof resp === "object") {
+    base.status = typeof resp.status === "number" ? resp.status : null;
 
-    const headers = axiosResp.headers || {};
-    base.requestId = headers["x-request-id"] || headers["X-Request-Id"] || null;
+    const headers = resp.headers || {};
+    base.requestId =
+      headers["x-request-id"] ||
+      headers["X-Request-Id"] ||
+      headers["x-requestid"] ||
+      headers["X-REQUEST-ID"] ||
+      null;
 
-    const data = axiosResp.data;
-    const code = data?.error?.code;
-    const message = data?.error?.message;
+    const data = resp.data;
+    const code = data?.error?.code ?? data?.code;
+    const message = data?.error?.message ?? data?.message;
 
-    if (typeof code === "string") base.code = code;
-    if (typeof message === "string") base.message = message;
+    if (typeof code === "string" && code.trim()) base.code = code;
+    if (typeof message === "string" && message.trim()) base.message = message;
 
     base.raw = data ?? input;
     return base;
   }
 
   // 3) Already-parsed backend error envelope
-  // { success:false, error:{ code, message } }
   if (input && typeof input === "object") {
-    const code = input?.error?.code;
-    const message = input?.error?.message;
+    const code = input?.error?.code ?? input?.code;
+    const message = input?.error?.message ?? input?.message;
 
-    if (typeof code === "string") base.code = code;
-    if (typeof message === "string") base.message = message;
+    if (typeof code === "string" && code.trim()) base.code = code;
+    if (typeof message === "string" && message.trim()) base.message = message;
 
-    // Some callers may attach requestId separately; support it without depending on it
     if (typeof input?.requestId === "string") base.requestId = input.requestId;
     if (typeof input?.status === "number") base.status = input.status;
-
     return base;
   }
 
-  // 4) Network/offline or thrown string
+  // 4) thrown string
   if (typeof input === "string") {
     base.message = input;
     return base;
@@ -90,7 +89,7 @@ export function parseApiError(input, opts = {}) {
 }
 
 /**
- * Convenience helper for fetch:
+ * Convenience helper:
  * Given a non-ok Response, parse JSON safely and return parsed error.
  *
  * @param {Response} res
@@ -101,10 +100,18 @@ export async function parseFetchError(res) {
 
   let body = null;
   try {
-    // Some endpoints might return empty bodies (e.g., 204)
     body = await res.clone().json();
   } catch (_) {
     body = null;
+  }
+
+  if (!body) {
+    try {
+      const text = await res.clone().text();
+      body = text ? { message: text } : null;
+    } catch (_) {
+      body = null;
+    }
   }
 
   const merged = parseApiError(body, {

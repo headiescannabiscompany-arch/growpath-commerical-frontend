@@ -10,44 +10,40 @@ import {
   ActivityIndicator
 } from "react-native";
 
-// Swap this with your real axios client later
-// import client from "../api/client";
+import { apiRequest } from "@/api/apiRequest";
 
-const mockFetchCampaigns = async () => {
-  await new Promise((r) => setTimeout(r, 500));
-  return [
-    {
-      id: "cmp_1",
-      title: "GrowPath App Drop Live",
-      status: "ACTIVE",
-      startsAt: "2026-02-05",
-      endsAt: "2026-02-12",
-      channel: "Facebook",
-      objective: "Recruit beta testers during a live demo",
-      budget: 0
-    },
-    {
-      id: "cmp_2",
-      title: "Creator Course Launch: LAWNS Fundamentals",
-      status: "DRAFT",
-      startsAt: "2026-02-15",
-      endsAt: "2026-02-22",
-      channel: "In-app",
-      objective: "Drive enrollments + collect reviews",
-      budget: 50
-    },
-    {
-      id: "cmp_3",
-      title: "Facilities Pilot Outreach",
-      status: "PAUSED",
-      startsAt: "2026-03-01",
-      endsAt: "2026-03-30",
-      channel: "Email",
-      objective: "Book 5 facility onboarding calls",
-      budget: 0
-    }
-  ];
-};
+const FALLBACK_CAMPAIGNS = [
+  {
+    id: "cmp_1",
+    title: "GrowPath App Drop Live",
+    status: "ACTIVE",
+    startsAt: "2026-02-05",
+    endsAt: "2026-02-12",
+    channel: "Facebook",
+    objective: "Recruit beta testers during a live demo",
+    budget: 0
+  },
+  {
+    id: "cmp_2",
+    title: "Creator Course Launch: LAWNS Fundamentals",
+    status: "DRAFT",
+    startsAt: "2026-02-15",
+    endsAt: "2026-02-22",
+    channel: "In-app",
+    objective: "Drive enrollments + collect reviews",
+    budget: 50
+  },
+  {
+    id: "cmp_3",
+    title: "Facilities Pilot Outreach",
+    status: "PAUSED",
+    startsAt: "2026-03-01",
+    endsAt: "2026-03-30",
+    channel: "Email",
+    objective: "Book 5 facility onboarding calls",
+    budget: 0
+  }
+];
 
 function StatusPill({ status }) {
   const bg =
@@ -104,17 +100,23 @@ function FilterButton({ label, active, onPress }) {
 function EmptyState({ onCreate }) {
   return (
     <View style={{ paddingTop: 40, alignItems: "center" }}>
-      <Text style={{ fontSize: 20, fontWeight: "800", marginBottom: 6 }}>
-        No campaigns yet
-      </Text>
-      <Text style={{ opacity: 0.7, textAlign: "center", paddingHorizontal: 20 }}>
-        Create your first campaign to organize launches, promos, and outreach.
-      </Text>
-
-      <TouchableOpacity
-        onPress={onCreate}
-        style={{
-          marginTop: 18,
+        const loadCampaigns = useCallback(async () => {
+          setLoading(true);
+          try {
+            const res = await apiRequest("/api/campaigns", { method: "GET" });
+            const list = normalizeCampaignsResponse(res);
+            if (Array.isArray(list) && list.length > 0) {
+              setItems(list);
+            } else {
+              setItems([]);
+            }
+          } catch (e) {
+            console.log("[Campaigns] API unavailable, using fallback data:", e?.message || e);
+            setItems(FALLBACK_CAMPAIGNS);
+          } finally {
+            setLoading(false);
+          }
+        }, []);
           backgroundColor: "#111827",
           paddingHorizontal: 16,
           paddingVertical: 12,

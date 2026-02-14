@@ -1,25 +1,44 @@
-import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
-import { fetchCalendarEvents, createCalendarEvent } from "../api/calendar";
+import * as React from "react";
+import { useQuery } from "@tanstack/react-query";
+import { apiRequest } from "../api/apiRequest";
 
-export function useCalendar(startISO: string, endISO: string) {
-  const qc = useQueryClient();
+type UseCalendarResult<T = any> = {
+  data: T | null;
+  isLoading: boolean;
+  error: any;
+  refetch: () => Promise<void>;
+};
+
+export function useCalendar<T = any[]>(
+  startISO: string,
+  endISO: string
+): UseCalendarResult<T> {
+  const enabled = Boolean(startISO && endISO);
 
   const query = useQuery({
-    queryKey: ["calendarEvents", startISO, endISO],
-    queryFn: () => fetchCalendarEvents(startISO, endISO),
-    enabled: !!startISO && !!endISO
-  });
-
-  const createEvent = useMutation({
-    mutationFn: (data: any) => createCalendarEvent(data),
-    onSuccess: () => {
-      qc.invalidateQueries({ queryKey: ["calendarEvents", startISO, endISO] });
+    queryKey: ["calendar", startISO, endISO],
+    enabled,
+    queryFn: async ({ signal }) => {
+      const qs = `?start=${encodeURIComponent(startISO)}&end=${encodeURIComponent(
+        endISO
+      )}`;
+      return await apiRequest<T>(`/api/calendar${qs}`, {
+        method: "GET",
+        signal
+      });
     }
   });
 
+  const refetch = React.useCallback(async () => {
+    if (!enabled) return;
+    await query.refetch();
+  }, [enabled, query.refetch]);
+
   return {
-    ...query,
-    createEvent: createEvent.mutateAsync,
-    creating: createEvent.isPending
+    data: (query.data as T) ?? null,
+    // treat refetch as loading too, to match your screen patterns
+    isLoading: query.isLoading || query.isFetching,
+    error: query.error ?? null,
+    refetch
   };
 }

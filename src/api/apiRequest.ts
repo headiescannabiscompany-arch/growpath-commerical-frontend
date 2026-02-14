@@ -1,103 +1,150 @@
+import { api, setAuthToken } from "./client";
 import { getToken } from "../auth/tokenStore";
 
 export type ApiRequestOptions = {
   method?: string;
   headers?: Record<string, string>;
-  body?: any; // object -> JSON.stringify
+  body?: any;
   responseType?: "auto" | "json" | "text" | "blob" | "arrayBuffer";
+  signal?: AbortSignal;
+  timeoutMs?: number;
+  auth?: boolean;
+  silent?: boolean;
+  invalidateOn401?: boolean;
 };
 
-function baseUrl() {
-  const raw = process.env.EXPO_PUBLIC_API_URL;
-  return (raw && String(raw).replace(/\/+$/, "")) || "";
+// Best-effort token sync so apiRequest callers get auth even if some flows forgot setAuthToken()
+let lastSyncedToken: string | null | undefined = undefined;
+
+async function syncAuthTokenIfNeeded(authEnabled: boolean) {
+  if (!authEnabled) return;
+
+  try {
+    const t = await getToken();
+    const raw = t ? String(t) : "";
+    const normalized = raw
+      ? raw.startsWith("Bearer ")
+        ? raw.slice("Bearer ".length)
+        : raw
+      : null;
+
+    if (normalized !== lastSyncedToken) {
+      setAuthToken(normalized);
+      lastSyncedToken = normalized;
+    }
+  } catch {
+    // ignore token read errors; request() will proceed without auth
+  }
 }
 
-export async function apiRequest(path: string, opts: ApiRequestOptions = {}) {
-  const url = path.startsWith("http") ? path : `${baseUrl()}${path}`;
+export async function apiRequest<T = any>(
+  path: string,
+  opts: ApiRequestOptions = {}
+): Promise<T> {
+  const useAuth = opts.auth !== false;
+  await syncAuthTokenIfNeeded(useAuth);
 
-  const method = (opts.method || "GET").toUpperCase();
-  const headers: Record<string, string> = { ...(opts.headers || {}) };
-
-  // Inject Authorization header if token is present
-  const token = await getToken();
-  if (token) {
-    headers["Authorization"] = token.startsWith("Bearer ") ? token : `Bearer ${token}`;
-  }
-
-  let body: any = undefined;
-  if (opts.body !== undefined) {
-    const isFormData = typeof FormData !== "undefined" && opts.body instanceof FormData;
-
-    if (isFormData) {
-      body = opts.body;
-      // IMPORTANT: do NOT set Content-Type; fetch sets multipart boundary automatically.
-      if (headers["Content-Type"] === "application/json") delete headers["Content-Type"];
-    } else if (typeof opts.body === "string") {
-      body = opts.body;
-    } else {
-      headers["Content-Type"] = headers["Content-Type"] || "application/json";
-      body = JSON.stringify(opts.body);
-    }
-  }
-
-  const res = await fetch(url, {
-    method,
-    headers,
-    body,
-    credentials: "include"
+  const out: any = await api(path, {
+    method: (opts.method as any) || "GET",
+    headers: opts.headers,
+    body: opts.body,
+    responseType: opts.responseType,
+    signal: opts.signal,
+    timeout: opts.timeoutMs,
+    auth: opts.auth,
+    silent: opts.silent,
+    invalidateOn401: opts.invalidateOn401
   });
 
-  // Parse response safely
-  const requestId = res.headers.get("x-request-id") || undefined;
-  const contentType = res.headers.get("content-type") || "";
+  // canonical client returns { ok, status, data, requestId, ... }
+  if (out && typeof out === "object" && "ok" in out) {
+    if (out.ok) return out.data as T;
 
-  const responseType = (opts as any).responseType || "auto";
-
-  let data: any = null;
-
-  if (res.status !== 204 && res.status !== 205) {
-    if (responseType === "blob") {
-      data = await res.blob();
-    } else if (responseType === "arrayBuffer") {
-      data = await res.arrayBuffer();
-    } else if (responseType === "text") {
-      data = await res.text();
-    } else if (responseType === "json") {
-      data = await res.json();
-    } else {
-      // auto
-      if (contentType.includes("application/json")) {
-        try {
-          data = await res.json();
-        } catch {
-          try {
-            data = await res.text();
-          } catch {
-            data = null;
-          }
-        }
-      } else {
-        try {
-          data = await res.text();
-        } catch {
-          data = null;
-        }
-      }
-    }
-  }
-
-  if (!res.ok) {
-    const err: any = new Error(
-      data?.error?.message || data?.message || `HTTP ${res.status}`
-    );
-    err.status = res.status;
-    err.code = data?.error?.code || data?.code;
-    err.payload = data;
-    err.url = url;
-    err.method = method;
-    err.requestId = requestId;
+    const err: any = new Error(out.message || "Request failed");
+    err.status = out.status ?? null;
+    err.code = out.code ?? "UNKNOWN_ERROR";
+    err.payload = out.raw;
+    err.url = path;
+    err.method = (opts.method || "GET").toUpperCase();
+    err.requestId = out.requestId ?? null;
     throw err;
   }
 
-  return data;
+  // fallback (should not happen)
+  return out as T;
+}
+import { api, setAuthToken } from "./client";
+import { getToken } from "../auth/tokenStore";
+
+export type ApiRequestOptions = {
+  method?: string;
+  headers?: Record<string, string>;
+  body?: any;
+  responseType?: "auto" | "json" | "text" | "blob" | "arrayBuffer";
+  signal?: AbortSignal;
+  timeoutMs?: number;
+  auth?: boolean;
+  silent?: boolean;
+  invalidateOn401?: boolean;
+};
+
+// Best-effort token sync so apiRequest callers get auth even if some flows forgot setAuthToken()
+let lastSyncedToken: string | null | undefined = undefined;
+
+async function syncAuthTokenIfNeeded(authEnabled: boolean) {
+  if (!authEnabled) return;
+
+  try {
+    const t = await getToken();
+    const raw = t ? String(t) : "";
+    const normalized = raw
+      ? raw.startsWith("Bearer ")
+        ? raw.slice("Bearer ".length)
+        : raw
+      : null;
+
+    if (normalized !== lastSyncedToken) {
+      setAuthToken(normalized);
+      lastSyncedToken = normalized;
+    }
+  } catch {
+    // ignore token read errors; request() will proceed without auth
+  }
+}
+
+export async function apiRequest<T = any>(
+  path: string,
+  opts: ApiRequestOptions = {}
+): Promise<T> {
+  const useAuth = opts.auth !== false;
+  await syncAuthTokenIfNeeded(useAuth);
+
+  const out: any = await api(path, {
+    method: (opts.method as any) || "GET",
+    headers: opts.headers,
+    body: opts.body,
+    responseType: opts.responseType,
+    signal: opts.signal,
+    timeout: opts.timeoutMs,
+    auth: opts.auth,
+    silent: opts.silent,
+    invalidateOn401: opts.invalidateOn401
+  });
+
+  // canonical client returns { ok, status, data, requestId, ... }
+  if (out && typeof out === "object" && "ok" in out) {
+    if (out.ok) return out.data as T;
+
+    const err: any = new Error(out.message || "Request failed");
+    err.status = out.status ?? null;
+    err.code = out.code ?? "UNKNOWN_ERROR";
+    err.payload = out.raw;
+    err.url = path;
+    err.method = (opts.method || "GET").toUpperCase();
+    err.requestId = out.requestId ?? null;
+    throw err;
+  }
+
+  // fallback (should not happen)
+  return out as T;
 }

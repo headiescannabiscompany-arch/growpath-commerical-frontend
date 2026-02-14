@@ -1,4 +1,5 @@
-import React, { useMemo, useState } from "react";
+
+import React from "react";
 import {
   View,
   Text,
@@ -6,43 +7,40 @@ import {
   ActivityIndicator,
   StyleSheet,
   RefreshControl,
-  TouchableOpacity,
-  Alert
+  TouchableOpacity
 } from "react-native";
 import { useQuery } from "@tanstack/react-query";
 
 import { useFacility } from "../../facility/FacilityProvider";
-import { handleApiError } from "../../ui/handleApiError";
-
-import { api } from "../../api/client";
 import { endpoints } from "../../api/endpoints";
+import { apiRequest } from "../../api/apiRequest";
 
-// CONTRACT: RoomDetail is facility-scoped. No legacy ../../api/facility imports.
-// Canonical route: GET facility/:facilityId/rooms/:roomId -> { room } (or { ... }).
+import InlineError from "../../components/InlineError";
+import { useApiErrorHandler } from "../../hooks/useApiErrorHandler";
 
-async function fetchRoomById(facilityId, roomId) {
-  const res = await api.get(endpoints.room(facilityId, roomId));
-  return res?.room ?? res;
+// CONTRACT: RoomDetail is facility-scoped.
+// Canonical route: GET facility/:facilityId/rooms/:roomId -> { room } OR { ... }
+
+function normalizeRoom(raw) {
+  if (!raw) return null;
+  if (raw.room) return raw.room;
+  if (raw.data?.room) return raw.data.room;
+  return raw;
 }
 
-const RoomDetail = ({ route }) => {
-  const { roomId } = route.params || {};
-  const { activeFacilityId } = useFacility();
-  const [tab, setTab] = useState("overview");
+async function fetchRoomById(facilityId, roomId) {
+  const data = await apiRequest(endpoints.room(facilityId, roomId), {
+    method: "GET",
+    auth: true
+  });
+  return normalizeRoom(data);
+}
 
-  const handlers = useMemo(
-    () => ({
-      onAuthRequired: () => {
-        // TODO: logout + route to login
-        console.log("AUTH_REQUIRED: route to login");
-      },
-      onFacilityDenied: () => {
-        Alert.alert("No Access", "You don't have access to this facility.");
-      },
-      toast: (msg) => Alert.alert("Notice", msg)
-    }),
-    []
-  );
+export default function RoomDetail({ route }) {
+  const { roomId } = route?.params || {};
+  const { activeFacilityId } = useFacility();
+
+  const [tab, setTab] = React.useState("overview");
 
   const roomQuery = useQuery({
     queryKey: ["room", activeFacilityId, roomId],
@@ -50,9 +48,11 @@ const RoomDetail = ({ route }) => {
     enabled: !!activeFacilityId && !!roomId
   });
 
-  if (roomQuery.error) handleApiError(roomQuery.error, handlers);
-
-  const room = roomQuery.data || null;
+  const { toInlineError } = useApiErrorHandler();
+  const inlineError = React.useMemo(
+    () => (roomQuery.error ? toInlineError(roomQuery.error) : null),
+    [roomQuery.error, toInlineError]
+  );
 
   // Facility not selected or no param
   if (!activeFacilityId || !roomId) {
@@ -66,10 +66,21 @@ const RoomDetail = ({ route }) => {
     );
   }
 
-  if (roomQuery.isLoading) {
+  if (roomQuery.isLoading && !roomQuery.data) {
     return (
       <View style={styles.container}>
-        <ActivityIndicator size="large" color="#0ea5e9" />
+        <ActivityIndicator size="large" />
+      </View>
+    );
+  }
+
+  const room = roomQuery.data || null;
+
+  // If request failed and we have no cached room, show InlineError-only state
+  if (inlineError && !room) {
+    return (
+      <View style={[styles.container, { padding: 16, justifyContent: "center" }]}>
+        <InlineError error={inlineError} onRetry={() => roomQuery.refetch()} />
       </View>
     );
   }
@@ -84,20 +95,17 @@ const RoomDetail = ({ route }) => {
 
   const trackingMode = room?.trackingMode || route?.params?.trackingMode || "batch";
 
-  const tabs = useMemo(() => {
+  const tabs = React.useMemo(() => {
     const base = [
       { key: "overview", label: "Overview" },
       { key: "tasks", label: "Tasks" },
       { key: "activity", label: "Activity" }
     ];
 
-    if (trackingMode === "individual") {
-      base.splice(1, 0, { key: "plants", label: "Plants" });
-    } else if (trackingMode === "zone") {
-      base.splice(1, 0, { key: "zones", label: "Zones" });
-    } else {
-      base.splice(1, 0, { key: "batches", label: "Batches" });
-    }
+    if (trackingMode === "individual") base.splice(1, 0, { key: "plants", label: "Plants" });
+    else if (trackingMode === "zone") base.splice(1, 0, { key: "zones", label: "Zones" });
+    else base.splice(1, 0, { key: "batches", label: "Batches" });
+
     return base;
   }, [trackingMode]);
 
@@ -132,8 +140,11 @@ const RoomDetail = ({ route }) => {
     }
     return (
       <View style={styles.card}>
-        {arr.map((item) => (
-          <View key={String(item?.id || item?._id || item?.name)} style={styles.infoRow}>
+        {arr.map((item, idx) => (
+          <View
+            key={String(item?.id || item?._id || item?.name || idx)}
+            style={styles.infoRow}
+          >
             <Text style={styles.label}>{item?.name ?? "Item"}</Text>
             <Text style={styles.value}>{item?.status || item?.stage || ""}</Text>
           </View>
@@ -163,9 +174,7 @@ const RoomDetail = ({ route }) => {
             </View>
             <View style={styles.infoRow}>
               <Text style={styles.label}>Status:</Text>
-              <Text
-                style={[styles.value, { color: room?.isActive ? "#10b981" : "#ef4444" }]}
-              >
+              <Text style={[styles.value, { color: room?.isActive ? "#10b981" : "#ef4444" }]}>
                 {room?.isActive ? "Active" : "Inactive"}
               </Text>
             </View>
@@ -200,37 +209,17 @@ const RoomDetail = ({ route }) => {
       );
     }
 
-    if (tab === "batches") {
-      return renderListSection(
-        room?.batches || [],
-        "No batches tracked",
-        "Add batches to see them here."
-      );
-    }
+    if (tab === "batches")
+      return renderListSection(room?.batches || [], "No batches tracked", "Add batches to see them here.");
 
-    if (tab === "zones") {
-      return renderListSection(
-        room?.zones || [],
-        "No zones yet",
-        "Add zones for this room."
-      );
-    }
+    if (tab === "zones")
+      return renderListSection(room?.zones || [], "No zones yet", "Add zones for this room.");
 
-    if (tab === "plants") {
-      return renderListSection(
-        room?.plants || [],
-        "No plants tracked",
-        "Assign plants to this room."
-      );
-    }
+    if (tab === "plants")
+      return renderListSection(room?.plants || [], "No plants tracked", "Assign plants to this room.");
 
-    if (tab === "tasks") {
-      return renderListSection(
-        room?.tasks || [],
-        "No tasks",
-        "Tasks scoped to this room will appear here."
-      );
-    }
+    if (tab === "tasks")
+      return renderListSection(room?.tasks || [], "No tasks", "Tasks scoped to this room will appear here.");
 
     if (tab === "activity") {
       return (
@@ -259,11 +248,19 @@ const RoomDetail = ({ route }) => {
       style={styles.container}
       refreshControl={
         <RefreshControl
-          refreshing={roomQuery.isFetching}
+          refreshing={!!roomQuery.isFetching}
           onRefresh={() => roomQuery.refetch()}
         />
       }
     >
+      {inlineError ? (
+        <InlineError
+          error={inlineError}
+          onRetry={() => roomQuery.refetch()}
+          style={{ margin: 16, marginBottom: 8 }}
+        />
+      ) : null}
+
       {renderTabBar()}
       {renderTabContent()}
 
@@ -275,7 +272,7 @@ const RoomDetail = ({ route }) => {
       </View>
     </ScrollView>
   );
-};
+}
 
 const styles = StyleSheet.create({
   container: {

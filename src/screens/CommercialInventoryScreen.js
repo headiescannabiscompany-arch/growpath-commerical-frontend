@@ -1,4 +1,4 @@
-import React, { useEffect, useMemo, useState } from "react";
+import React, { useCallback, useEffect, useMemo, useState } from "react";
 import {
   ActivityIndicator,
   Alert,
@@ -11,20 +11,35 @@ import {
   View
 } from "react-native";
 
-async function safeFetchJson(url, opts) {
-  const res = await fetch(url, {
-    ...(opts || {}),
-    headers: { "Content-Type": "application/json", ...(opts?.headers || {}) }
-  });
-  const text = await res.text();
-  let json = null;
-  try {
-    json = text ? JSON.parse(text) : null;
-  } catch {
-    json = { raw: text };
-  }
-  if (!res.ok) throw new Error(json?.message || `Request failed (${res.status})`);
-  return json;
+import { apiRequest } from "@/api/apiRequest";
+
+/**
+ * CommercialInventoryScreen
+ *
+ * Contract:
+ * - Drift-free: no direct network calls (apiRequest only)
+ * - Network calls go through apiRequest only
+ * - No hardcoded hostnames
+ * - Envelope-tolerant response parsing
+ */
+
+function normalizeInventoryResponse(res) {
+  if (!res) return [];
+
+  // direct array
+  if (Array.isArray(res)) return res;
+
+  // common envelopes
+  if (Array.isArray(res.items)) return res.items;
+  if (Array.isArray(res.data)) return res.data;
+  if (Array.isArray(res.inventory)) return res.inventory;
+  if (Array.isArray(res.results)) return res.results;
+
+  // nested shapes
+  if (Array.isArray(res?.data?.items)) return res.data.items;
+  if (Array.isArray(res?.data?.inventory)) return res.data.inventory;
+
+  return [];
 }
 
 export default function CommercialInventoryScreen() {
@@ -35,27 +50,32 @@ export default function CommercialInventoryScreen() {
   const filtered = useMemo(() => {
     const s = q.trim().toLowerCase();
     if (!s) return items;
-    return items.filter((it) =>
-      `${it.name || ""} ${it.sku || ""} ${it.vendor || ""}`.toLowerCase().includes(s)
+
+    return (items || []).filter((it) =>
+      `${it?.name || ""} ${it?.sku || ""} ${it?.vendor || ""}`.toLowerCase().includes(s)
     );
   }, [items, q]);
 
-  async function load() {
+  const load = useCallback(async () => {
     setLoading(true);
     try {
-      // Commercial endpoint (vendor/warehouse aware)
-      const data = await safeFetchJson("https://example.com/api/commercial/inventory");
-      setItems(Array.isArray(data?.items) ? data.items : Array.isArray(data) ? data : []);
+      // Canonical commercial endpoint (non-facility scoped)
+      // If your backend uses a different path, change ONLY this string.
+      const res = await apiRequest("/api/commercial/inventory", { method: "GET" });
+
+      const list = normalizeInventoryResponse(res);
+      setItems(Array.isArray(list) ? list : []);
     } catch (e) {
-      Alert.alert("Commercial Inventory", e.message || "Failed to load.");
+      setItems([]);
+      Alert.alert("Commercial Inventory", e?.message || "Failed to load.");
     } finally {
       setLoading(false);
     }
-  }
+  }, []);
 
   useEffect(() => {
     load();
-  }, []);
+  }, [load]);
 
   return (
     <SafeAreaView style={styles.safe}>
@@ -83,18 +103,20 @@ export default function CommercialInventoryScreen() {
       ) : (
         <FlatList
           data={filtered}
-          keyExtractor={(it, idx) => String(it.id || idx)}
+          keyExtractor={(it, idx) => String(it?.id || it?._id || idx)}
           contentContainerStyle={{ paddingBottom: 24 }}
           renderItem={({ item }) => (
             <View style={styles.item}>
               <View style={{ flex: 1 }}>
-                <Text style={styles.itemTitle}>{item.name || "Unnamed item"}</Text>
+                <Text style={styles.itemTitle}>{item?.name || "Unnamed item"}</Text>
+
                 <Text style={styles.muted}>
-                  {item.sku ? `SKU ${item.sku}` : "No SKU"}{" "}
-                  {item.vendor ? `• ${item.vendor}` : ""}
+                  {item?.sku ? `SKU ${item.sku}` : "No SKU"}{" "}
+                  {item?.vendor ? `• ${item.vendor}` : ""}
                 </Text>
+
                 <Text style={styles.muted}>
-                  On hand: {item.qty ?? 0} {item.unit || "ea"}
+                  On hand: {item?.qty ?? 0} {item?.unit || "ea"}
                 </Text>
               </View>
             </View>

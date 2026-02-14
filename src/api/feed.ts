@@ -1,54 +1,56 @@
 import { Platform } from "react-native";
 import { apiRequest } from "@/api/apiRequest";
+import { uriToBlob } from "@/api/uriToBlob";
+
+export type Post = {
+  _id?: string;
+  id?: string;
+  user?: any;
+  text: string;
+  photos?: string[];
+  plant?: string | null;
+  likeCount?: number;
+  score?: number;
+  createdAt?: string;
+  updatedAt?: string;
+};
 
 export type CreatePostInput = {
   text: string;
-  workspaceContext: string;
-  authorType: "business" | "user";
-  authorId: string;
-  postType: string;
-  growTags?: string[];
+  plantId?: string | null;
   photos?: string[]; // array of uri
 };
 
-// Set this to your real backend route if different
 const CREATE_POST_PATH = "/api/posts";
 
-async function uriToBlob(uri: string): Promise<Blob> {
-  const resp = await fetch(uri);
-  return await resp.blob();
+function normalizeCreatedPost(res: any): Post {
+  // ✅ Today: backend returns post directly
+  // ✅ Future: if you later wrap it as { created: post } or { post: post }, this still works
+  return (res?.created ?? res?.post ?? res) as Post;
 }
 
-export async function createFeedPost(input: CreatePostInput) {
+export async function createFeedPost(input: CreatePostInput): Promise<Post> {
   const form = new FormData();
 
   form.append("text", input.text);
-  form.append("workspaceContext", input.workspaceContext);
-  form.append("authorType", input.authorType);
-  form.append("authorId", input.authorId);
-  form.append("postType", input.postType);
-
-  const tags = input.growTags || [];
-  if (tags.length) form.append("growTags", JSON.stringify(tags));
+  if (input.plantId) form.append("plantId", input.plantId);
 
   const photos = input.photos || [];
   for (let i = 0; i < photos.length; i++) {
-    const photo = photos[i];
+    const uri = photos[i];
 
     if (Platform.OS === "web") {
-      const blob = await uriToBlob(photo);
+      const blob = await uriToBlob(uri);
       form.append("photos", blob, `photo_${i}.jpg`);
     } else {
-      form.append("photos", {
-        uri: photo,
-        name: `photo_${i}.jpg`,
-        type: "image/jpeg"
-      } as any);
+      form.append("photos", { uri, name: `photo_${i}.jpg`, type: "image/jpeg" } as any);
     }
   }
 
-  return apiRequest(CREATE_POST_PATH, {
+  const res = await apiRequest<any>(CREATE_POST_PATH, {
     method: "POST",
     body: form
   });
+
+  return normalizeCreatedPost(res);
 }

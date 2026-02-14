@@ -29,6 +29,7 @@ type RequestOptions = {
   auth?: boolean; // default true; set to false to skip Authorization header
   silent?: boolean; // default false; set to true to suppress console.error on failure
   invalidateOn401?: boolean; // default true; set to false to opt out of global logout on 401
+  responseType?: "auto" | "json" | "text" | "blob" | "arrayBuffer";
 };
 
 const DEFAULT_TIMEOUT = 10000;
@@ -153,7 +154,8 @@ async function request(path: string, options: RequestOptions = {}) {
           method,
           headers,
           body,
-          signal: mergedSignal
+          signal: mergedSignal,
+          credentials: "include"
         });
       } catch (e) {
         // Network/offline error
@@ -182,27 +184,76 @@ async function request(path: string, options: RequestOptions = {}) {
         return { ok: true, status: res.status, data: undefined, requestId };
       }
 
-      let json: any = null;
-      try {
-        json = await res.json();
-      } catch (_) {
-        json = null;
-      }
-
+      // If error: let parseFetchError read the body (do NOT pre-consume with res.json()).
       if (!res.ok) {
         const parsed = await parseFetchError(res);
-        parsed.raw = json ?? parsed.raw;
+
+        // Global unauthorized handling (opt-out supported)
+        if (
+          parsed?.status === 401 &&
+          options.invalidateOn401 !== false &&
+          onUnauthorized
+        ) {
+          try {
+            await onUnauthorized();
+          } catch {
+            // swallow: unauthorized handler should never crash request path
+          }
+        }
+
         return {
           ok: false,
           status: parsed.status ?? res.status,
-          code: parsed.code ?? json?.error?.code ?? "UNKNOWN_ERROR",
-          message: parsed.message ?? json?.error?.message ?? "Something went wrong",
+          code: parsed.code ?? "UNKNOWN_ERROR",
+          message: parsed.message ?? "Something went wrong",
           requestId: parsed.requestId ?? requestId,
-          raw: json ?? parsed.raw ?? res
+          raw: parsed.raw ?? res
         };
       }
 
-      return { ok: true, status: res.status, data: json, requestId };
+      // OK: parse according to responseType
+      const rt = options.responseType || "auto";
+
+      if (rt === "blob") {
+        const blob = await res.blob();
+        return { ok: true, status: res.status, data: blob, requestId };
+      }
+
+      if (rt === "arrayBuffer") {
+        const buf = await res.arrayBuffer();
+        return { ok: true, status: res.status, data: buf, requestId };
+      }
+
+      if (rt === "text") {
+        const text = await res.text();
+        return { ok: true, status: res.status, data: text, requestId };
+      }
+
+      // json OR auto
+      const text = await res.text();
+      if (!text) return { ok: true, status: res.status, data: null, requestId };
+
+      if (rt === "json") {
+        try {
+          return { ok: true, status: res.status, data: JSON.parse(text), requestId };
+        } catch {
+          return {
+            ok: false,
+            status: res.status,
+            code: "PARSE_ERROR",
+            message: "Invalid JSON server response.",
+            requestId,
+            raw: { raw: text.slice(0, 1000) }
+          };
+        }
+      }
+
+      // auto: try json, else return text
+      try {
+        return { ok: true, status: res.status, data: JSON.parse(text), requestId };
+      } catch {
+        return { ok: true, status: res.status, data: text, requestId };
+      }
     })();
 
     if (shouldDedupe) inflight.set(key, p);

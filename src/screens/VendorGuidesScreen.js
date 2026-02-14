@@ -1,4 +1,4 @@
-import React, { useEffect, useState } from "react";
+import React, { useCallback, useEffect, useMemo, useState } from "react";
 import {
   View,
   Text,
@@ -8,52 +8,98 @@ import {
   RefreshControl
 } from "react-native";
 
-const VendorGuidesScreen = ({ navigation, route }) => {
+import { apiRequest } from "@/api/apiRequest";
+
+function normalizeGuidesResponse(res) {
+  if (!res) return { guides: [], vendorCount: 0 };
+  if (Array.isArray(res)) return { guides: res, vendorCount: 0 };
+  if (Array.isArray(res.courses)) {
+    return { guides: res.courses, vendorCount: Number(res.vendorCount || 0) };
+  }
+  if (Array.isArray(res.data)) {
+    return { guides: res.data, vendorCount: Number(res.vendorCount || 0) };
+  }
+  if (Array.isArray(res?.data?.courses)) {
+    return {
+      guides: res.data.courses,
+      vendorCount: Number(res.data.vendorCount || res.vendorCount || 0)
+    };
+  }
+  const maybe =
+    res.items || res.results || res.guides || res.vendorGuides || res.list || null;
+  if (Array.isArray(maybe)) {
+    return { guides: maybe, vendorCount: Number(res.vendorCount || 0) };
+  }
+  return { guides: [], vendorCount: Number(res.vendorCount || 0) };
+}
+
+function getVendorTypeLabel(vendorType) {
+  const labels = {
+    soil: "Soil Company Guides",
+    nutrients: "Nutrient Company Guides",
+    genetics: "Genetics Company Guides",
+    equipment: "Equipment Guides",
+    supplements: "Supplement Guides"
+  };
+  return labels[vendorType] || "Vendor Guides";
+}
+
+export default function VendorGuidesScreen({ navigation, route }) {
   const vendorType = route?.params?.vendorType;
+
   const [guides, setGuides] = useState([]);
+  const [vendorCount, setVendorCount] = useState(0);
   const [loading, setLoading] = useState(true);
   const [refreshing, setRefreshing] = useState(false);
-  const [vendorCount, setVendorCount] = useState(0);
 
-  useEffect(() => {
-    loadGuides();
+  const title = useMemo(() => getVendorTypeLabel(vendorType), [vendorType]);
+
+  const buildPath = useCallback(() => {
+    if (vendorType) {
+      const q = encodeURIComponent(String(vendorType));
+      return `/api/courses/filter/by-vendor-type?vendorType=${q}`;
+    }
+    return "/api/courses/featured/vendor-guides";
   }, [vendorType]);
 
-  const loadGuides = async () => {
+  const loadGuides = useCallback(async () => {
     setLoading(true);
     try {
-      const url = vendorType
-        ? `http://localhost:5001/api/courses/filter/by-vendor-type?vendorType=${vendorType}`
-        : "http://localhost:5001/api/courses/featured/vendor-guides";
-
-      const response = await fetch(url);
-      const data = await response.json();
-
-      setGuides(data.courses || data);
-      setVendorCount(data.vendorCount);
-    } catch (error) {
-      console.log("Error loading guides:", error);
+      const path = buildPath();
+      const res = await apiRequest(path, { method: "GET" });
+      const norm = normalizeGuidesResponse(res);
+      setGuides(Array.isArray(norm.guides) ? norm.guides : []);
+      setVendorCount(Number(norm.vendorCount || 0));
+    } catch (err) {
+      // Deterministic: don't crash screen; show empty state
+      console.log("Error loading guides:", err?.message || String(err));
+      setGuides([]);
+      setVendorCount(0);
     } finally {
       setLoading(false);
     }
-  };
+  }, [buildPath]);
 
-  const onRefresh = async () => {
+  const onRefresh = useCallback(async () => {
     setRefreshing(true);
-    await loadGuides();
-    setRefreshing(false);
-  };
+    try {
+      const path = buildPath();
+      const res = await apiRequest(path, { method: "GET" });
+      const norm = normalizeGuidesResponse(res);
+      setGuides(Array.isArray(norm.guides) ? norm.guides : []);
+      setVendorCount(Number(norm.vendorCount || 0));
+    } catch (err) {
+      console.log("Error refreshing guides:", err?.message || String(err));
+      setGuides([]);
+      setVendorCount(0);
+    } finally {
+      setRefreshing(false);
+    }
+  }, [buildPath]);
 
-  const getVendorTypeLabel = () => {
-    const labels = {
-      soil: "Soil Company Guides",
-      nutrients: "Nutrient Company Guides",
-      genetics: "Genetics Company Guides",
-      equipment: "Equipment Guides",
-      supplements: "Supplement Guides"
-    };
-    return labels[vendorType] || "Vendor Guides";
-  };
+  useEffect(() => {
+    loadGuides();
+  }, [loadGuides]);
 
   if (loading) {
     return (
@@ -66,42 +112,48 @@ const VendorGuidesScreen = ({ navigation, route }) => {
   return (
     <FlatList
       data={guides}
-      keyExtractor={(item) => item._id}
+      keyExtractor={(item, idx) => String(item?._id || item?.id || idx)}
       renderItem={({ item }) => (
         <TouchableOpacity
           style={styles.guideCard}
-          onPress={() => navigation.navigate("Course", { courseId: item._id })}
+          onPress={() =>
+            navigation?.navigate?.("Course", { courseId: item?._id || item?.id })
+          }
         >
           <View style={styles.guideHeader}>
             <View style={styles.guideInfo}>
               <Text style={styles.guideTitle} numberOfLines={2}>
-                {item.title}
+                {item?.title || "Untitled guide"}
               </Text>
-              {item.vendor && (
+              {item?.vendor?.companyName ? (
                 <Text style={styles.vendorName}>by {item.vendor.companyName}</Text>
-              )}
+              ) : null}
             </View>
-            {item.price > 0 && <Text style={styles.price}>${item.price}</Text>}
+            {Number(item?.price || 0) > 0 ? (
+              <Text style={styles.price}>${Number(item.price).toFixed(0)}</Text>
+            ) : null}
           </View>
 
-          <Text style={styles.guideDescription} numberOfLines={2}>
-            {item.description}
-          </Text>
+          {item?.description ? (
+            <Text style={styles.guideDescription} numberOfLines={2}>
+              {item.description}
+            </Text>
+          ) : null}
 
           <View style={styles.guideFooter}>
             <View style={styles.stats}>
-              {item.enrollments > 0 && (
+              {Number(item?.enrollments || 0) > 0 ? (
                 <Text style={styles.stat}>{item.enrollments} enrolled</Text>
-              )}
-              {item.rating > 0 && (
+              ) : null}
+              {Number(item?.rating || 0) > 0 ? (
                 <Text style={styles.stat}>⭐ {item.rating.toFixed(1)}</Text>
-              )}
+              ) : null}
             </View>
-            {item.targetAudience && (
+            {item?.targetAudience ? (
               <Text style={styles.audience}>
                 {item.targetAudience === "both" ? "All growers" : item.targetAudience}
               </Text>
-            )}
+            ) : null}
           </View>
         </TouchableOpacity>
       )}
@@ -110,7 +162,7 @@ const VendorGuidesScreen = ({ navigation, route }) => {
           <Text style={styles.emptyText}>No guides yet</Text>
           <Text style={styles.emptySubtext}>
             {vendorType
-              ? `Check back soon for ${getVendorTypeLabel()}`
+              ? `Check back soon for ${title}`
               : "Featured vendor guides coming soon"}
           </Text>
         </View>
@@ -118,20 +170,20 @@ const VendorGuidesScreen = ({ navigation, route }) => {
       refreshControl={<RefreshControl refreshing={refreshing} onRefresh={onRefresh} />}
       style={styles.list}
       ListHeaderComponent={
-        vendorType && (
+        vendorType ? (
           <View style={styles.header}>
-            <Text style={styles.title}>{getVendorTypeLabel()}</Text>
-            {vendorCount > 0 && (
+            <Text style={styles.title}>{title}</Text>
+            {vendorCount > 0 ? (
               <Text style={styles.vendorCount}>
                 from {vendorCount} verified companies
               </Text>
-            )}
+            ) : null}
           </View>
-        )
+        ) : null
       }
     />
   );
-};
+}
 
 const styles = {
   container: {
@@ -235,8 +287,8 @@ const styles = {
   },
   emptySubtext: {
     fontSize: 14,
-    color: "#9ca3af"
+    color: "#9ca3af",
+    textAlign: "center",
+    paddingHorizontal: 16
   }
 };
-
-export default VendorGuidesScreen;

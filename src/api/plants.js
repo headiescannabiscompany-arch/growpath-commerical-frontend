@@ -1,60 +1,83 @@
-import { client, postMultipart } from "./client.js";
+import { Platform } from "react-native";
 import ROUTES from "./routes.js";
+import { apiRequest } from "./apiRequest";
+import { uriToBlob } from "./uriToBlob";
 
-const isWebEnvironment =
-  typeof document !== "undefined" ||
-  (typeof navigator !== "undefined" && navigator.product === "ReactNativeWeb") ||
-  (typeof window !== "undefined" && typeof window.document !== "undefined");
+// CONTRACT:
+// - apiRequest is the only network client
+// - Web blob loading uses uriToBlob helper (no direct network calls here)
+// - Native uses { uri, name, type } for FormData
+
+function guessMimeFromName(name) {
+  const lower = String(name || "").toLowerCase();
+  if (lower.endsWith(".png")) return "image/png";
+  if (lower.endsWith(".webp")) return "image/webp";
+  if (lower.endsWith(".gif")) return "image/gif";
+  if (lower.endsWith(".jpeg") || lower.endsWith(".jpg")) return "image/jpeg";
+  return "image/jpeg";
+}
 
 // Accepts FormData for media upload
-export async function createPlant(formData, token) {
-  return client.postMultipart(ROUTES.PLANTS.CREATE, formData, token);
+export async function createPlant(formData, _token) {
+  return apiRequest(ROUTES.PLANTS.CREATE, {
+    method: "POST",
+    body: formData
+  });
 }
 
-export async function getPlants(token) {
-  return client.get(ROUTES.PLANTS.LIST, token);
+export async function getPlants(_token) {
+  return apiRequest(ROUTES.PLANTS.LIST, { method: "GET" });
 }
 
-export async function getPlantWithLogs(id, token) {
-  return client.get(ROUTES.PLANTS.DETAIL(id), token);
+export async function getPlantWithLogs(id, _token) {
+  return apiRequest(ROUTES.PLANTS.DETAIL(id), { method: "GET" });
 }
 
-export async function createPlantLog(id, data, token) {
-  return client.post(ROUTES.PLANTS.LOGS(id), data, token);
+export async function createPlantLog(id, data, _token) {
+  return apiRequest(ROUTES.PLANTS.LOGS(id), {
+    method: "POST",
+    body: data
+  });
 }
 
-export async function getPlantStats(id, token) {
-  return client.get(ROUTES.PLANTS.STATS(id), token);
+export async function getPlantStats(id, _token) {
+  return apiRequest(ROUTES.PLANTS.STATS(id), { method: "GET" });
 }
 
 export async function exportPlantPdf(plantId) {
-  return client.get(ROUTES.PLANTS.EXPORT_PDF(plantId), {
+  return apiRequest(ROUTES.PLANTS.EXPORT_PDF(plantId), {
+    method: "GET",
     responseType: "blob"
   });
 }
 
 export async function uploadPlantPhoto(file) {
-  const form = new FormData();
+  if (!file || !file.uri) throw new Error("uploadPlantPhoto: file.uri is required");
 
-  if (isWebEnvironment) {
-    const response = await fetch(file.uri);
-    const blob = await response.blob();
-    form.append("photo", blob, file.name || "plant-photo.jpg");
+  const form = new FormData();
+  const name = file.name || "plant-photo.jpg";
+  const type = file.type || guessMimeFromName(name);
+
+  if (Platform.OS === "web") {
+    const blob = await uriToBlob(file.uri);
+    form.append("photo", blob, name);
   } else {
     form.append("photo", {
       uri: file.uri,
-      name: file.name || "plant-photo.jpg",
-      type: file.type || "image/jpeg"
+      name,
+      type
     });
   }
 
-  return postMultipart(ROUTES.PLANTS.UPLOAD_PHOTO, form);
+  return apiRequest(ROUTES.PLANTS.UPLOAD_PHOTO, {
+    method: "POST",
+    body: form
+  });
 }
 
 export async function updatePlant(id, data) {
-  return client(ROUTES.PLANTS.DETAIL(id), {
+  return apiRequest(ROUTES.PLANTS.DETAIL(id), {
     method: "PUT",
-    headers: { "Content-Type": "application/json" },
-    body: JSON.stringify(data)
+    body: data
   });
 }

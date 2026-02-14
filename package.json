@@ -56,6 +56,7 @@
     "axios": "^1.13.2",
     "dotenv": "^17.2.3",
     "expo": "~54.0.31",
+      "drift:scan": "powershell -NoProfile -ExecutionPolicy Bypass -Command \"Get-ChildItem .\\src -Recurse -File -Include *.js,*.jsx,*.ts,*.tsx | Where-Object { $_.FullName -notlike '*\\src\\api\\uriToBlob.ts' } | Select-String -Pattern '\\bfetch\\s*\\(|\\baxios\\b|\\bXMLHttpRequest\\b' | Where-Object { $_.Path -notlike '*\\src\\api\\client.ts' -and $_.Path -notlike '*\\src\\api\\apiRequest.ts' } | Where-Object { $_.Line -notmatch '\\bapiRequest\\b' } | Select-Object Path,LineNumber,Line | Sort-Object Path,LineNumber\""
     "expo-dev-client": "~6.0.20",
     "expo-device": "~8.0.10",
     "expo-document-picker": "~14.0.8",
