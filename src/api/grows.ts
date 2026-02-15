@@ -46,12 +46,7 @@ export interface PersonalGrow extends Grow {
   updatedAt: string;
 }
 
-interface PersonalGrowsResponse {
-  ok: boolean;
-  data: {
-    grows: PersonalGrow[];
-  };
-}
+// Removed unused PersonalGrowsResponse interface
 
 /**
  * Fetch all grows for the authenticated personal mode user.

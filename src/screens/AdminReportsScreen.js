@@ -21,7 +21,7 @@ export default function AdminReportsScreen() {
     try {
       const res = await getReports(global.authToken);
       setReports(res?.data ?? res ?? []);
-    } catch (err) {
+    } catch (_err) {
       Alert.alert("Error", "Failed to load reports");
     } finally {
       setLoading(false);
@@ -37,7 +37,7 @@ export default function AdminReportsScreen() {
     try {
       await resolveReport(id, global.authToken);
       setReports(reports.map((r) => (r._id === id ? { ...r, status: "resolved" } : r)));
-    } catch (err) {
+    } catch (_err) {
       Alert.alert("Error", "Failed to resolve report");
     } finally {
       setResolving(null);
@@ -122,3 +122,4 @@ const styles = StyleSheet.create({
     fontWeight: "normal"
   }
 });
+

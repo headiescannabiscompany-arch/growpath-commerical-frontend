@@ -99,18 +99,13 @@ export const INTEREST_TIERS = [
     id: "experience",
     label: "Experience Level",
     tier: 7,
-    options: [
-      "Beginner",
-      "Intermediate",
-      "Advanced",
-      "Experimental / R&D"
-    ]
+    options: ["Beginner", "Intermediate", "Advanced", "Experimental / R&D"]
   }
 ];
 
 export function getAllTags() {
   const all = [];
-  INTEREST_TIERS.forEach(tier => {
+  INTEREST_TIERS.forEach((tier) => {
     all.push(...tier.options);
   });
   return all;

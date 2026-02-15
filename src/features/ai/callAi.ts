@@ -33,9 +33,5 @@ export type AiCallPayload = {
 export async function callAiTool(facilityId: string, payload: AiCallPayload) {
   const url = getAiCallUrl(facilityId);
 
-  return apiRequest({
-    method: "POST",
-    url,
-    body: payload
-  });
+  return apiRequest(url, { method: "POST", body: payload });
 }

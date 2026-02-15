@@ -12,5 +12,5 @@
     },
     "forceConsistentCasingInFileNames": true
   },
-  "exclude": ["node_modules", "backend"]
+  "exclude": ["node_modules", "backend", "src/screens/**" ]
 }

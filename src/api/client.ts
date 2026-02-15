@@ -45,20 +45,7 @@ function isBlob(value: any) {
   return typeof Blob !== "undefined" && value instanceof Blob;
 }
 
-async function safeJson(res: Response) {
-  const text = await res.text();
-  if (!text) return null;
-  try {
-    return JSON.parse(text);
-  } catch {
-    throw {
-      code: "PARSE_ERROR",
-      message: "Invalid server response.",
-      status: res.status,
-      details: { raw: text.slice(0, 1000) }
-    };
-  }
-}
+// Removed unused safeJson function
 
 async function request(path: string, options: RequestOptions = {}) {
   const method = options.method || "GET";

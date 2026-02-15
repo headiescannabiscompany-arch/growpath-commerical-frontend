@@ -27,9 +27,7 @@ export function userHasLiked(post, userId) {
 export function applyLikeMetadata(post, userId, likeCount, shouldLike) {
   if (!post) return post;
   const normalizedLikes = Array.isArray(post.likes)
-    ? post.likes
-        .map((like) => normalizeId(like))
-        .filter((id) => id !== null)
+    ? post.likes.map((like) => normalizeId(like)).filter((id) => id !== null)
     : [];
 
   let nextLikes = normalizedLikes;

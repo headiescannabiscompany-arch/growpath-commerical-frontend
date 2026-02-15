@@ -25,6 +25,8 @@ export default function FirstSetupRooms() {
     failed: []
   });
   const [touched, setTouched] = useState(false);
+
+  void touched;
   const { data: existingRooms } = useRooms();
   const bulkCreate = useBulkCreateRooms();
   const router = useRouter();

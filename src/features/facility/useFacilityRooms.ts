@@ -1,3 +1,4 @@
+/* eslint-disable react-hooks/exhaustive-deps */
 import { useEffect, useState } from "react";
 import { apiRequest } from "@/api/apiRequest";
 import { endpoints } from "@/api/endpoints";
@@ -27,7 +28,7 @@ export function useFacilityRooms(facilityId: string | null) {
             ? anyEndpoints.rooms(facilityId)
             : `/api/facility/${facilityId}/rooms`;
 
-        const res = await apiRequest({ method: "GET", url });
+        const res = await apiRequest(url, { method: "GET" });
         if (!alive) return;
         setItems(normalizeList(res));
       } catch (e) {

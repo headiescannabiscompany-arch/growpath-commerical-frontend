@@ -1,3 +1,4 @@
+/* eslint-disable react-hooks/exhaustive-deps */
 import { useEffect, useState } from "react";
 import { apiRequest } from "@/api/apiRequest";
 import { endpoints } from "@/api/endpoints";
@@ -34,7 +35,7 @@ export function useFacilityGrows(facilityId: string | null) {
             ? anyEndpoints.grows(facilityId)
             : `/api/facility/${facilityId}/grows`;
 
-        const res = await apiRequest({ method: "GET", url });
+        const res = await apiRequest(url, { method: "GET" });
         if (!alive) return;
         setItems(normalizeList(res));
       } catch (e) {

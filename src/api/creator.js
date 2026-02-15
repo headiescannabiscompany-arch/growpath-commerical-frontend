@@ -1,45 +1,45 @@
+import { client as api, postMultipart } from "./client.js";
+import apiRoutes from "./routes.js";
 export function markPayoutPaid(payoutId) {
-  return api(`${ROUTES.CREATOR.PAYOUT_HISTORY}/${payoutId}/mark-paid`, {
+  return api(`${apiRoutes.CREATOR.PAYOUT_HISTORY}/${payoutId}/mark-paid`, {
     method: "POST"
   });
 }
 export function requestPayout() {
-  return api(ROUTES.CREATOR.REQUEST_PAYOUT, { method: "POST" });
+  return api(apiRoutes.CREATOR.REQUEST_PAYOUT, { method: "POST" });
 }
-import { client as api, postMultipart } from "./client.js";
-import ROUTES from "./routes.js";
 
 export function getEarnings() {
   // Note: This matches GET /api/creator/earnings in backend
-  // but ROUTES.CREATOR.MINE matches GET /api/earnings/mine.
-  // Standardizing on ROUTES.CREATOR structure.
-  return api(`${ROUTES.CREATOR.REVENUE}/../earnings`); // Fallback if no specific ROUTES entry
+  // but apiRoutes.CREATOR.MINE matches GET /api/earnings/mine.
+  // Standardizing on apiRoutes.CREATOR structure.
+  return api(`${apiRoutes.CREATOR.REVENUE}/../earnings`); // Fallback if no specific apiRoutes entry
 }
 
 export function getCreatorCourses() {
-  return api(ROUTES.CREATOR.PERFORMANCE);
+  return api(apiRoutes.CREATOR.PERFORMANCE);
 }
 
 export function getEnrollmentTimeline() {
-  return api(ROUTES.CREATOR.TIMELINE);
+  return api(apiRoutes.CREATOR.TIMELINE);
 }
 
 export function getPayoutSummary() {
-  return api(ROUTES.CREATOR.PAYOUT_SUMMARY);
+  return api(apiRoutes.CREATOR.PAYOUT_SUMMARY);
 }
 
 export function getPayoutHistory() {
-  return api(ROUTES.CREATOR.PAYOUT_HISTORY);
+  return api(apiRoutes.CREATOR.PAYOUT_HISTORY);
 }
 
 export async function uploadSignature(formData) {
-  return postMultipart(ROUTES.CREATOR.SIGNATURE, formData);
+  return postMultipart(apiRoutes.CREATOR.SIGNATURE, formData);
 }
 
 export function getCourseAnalytics(courseId) {
-  return api(ROUTES.CREATOR.ANALYTICS(courseId));
+  return api(apiRoutes.CREATOR.ANALYTICS(courseId));
 }
 
 export function getRevenueTimeline() {
-  return api(ROUTES.CREATOR.REVENUE);
+  return api(apiRoutes.CREATOR.REVENUE);
 }

@@ -10,7 +10,8 @@ import {
   TouchableOpacity,
   ActivityIndicator,
   Alert,
-  Switch
+  Switch,
+  Platform
 } from "react-native";
 import {
   getTasks,
@@ -272,10 +273,15 @@ const styles = StyleSheet.create({
     padding: 24,
     width: 300,
     alignItems: "center",
-    shadowColor: "#000",
-    shadowOpacity: 0.1,
-    shadowRadius: 8,
-    elevation: 4
+    elevation: 4,
+    ...(Platform.OS === "web"
+      ? { boxShadow: "0px 6px 24px rgba(0,0,0,0.18)" }
+      : {
+          shadowColor: "#000",
+          shadowOffset: { width: 0, height: 6 },
+          shadowOpacity: 0.18,
+          shadowRadius: 12
+        })
   },
   modalTitle: { fontSize: 18, fontWeight: "bold", color: "#222", marginBottom: 12 },
   input: {

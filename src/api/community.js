@@ -3,7 +3,7 @@
  * Handles guild management, memberships, and discussions
  */
 
-import client from "./client.js";
+import apiClient from "./apiClient.js";
 
 export const COMMUNITY_ROUTES = {
   BROWSE: "/api/communities/browse",
@@ -20,7 +20,7 @@ export const COMMUNITY_ROUTES = {
 
 export const browseGuilds = async (search = "", page = 1) => {
   try {
-    const response = await client.get(COMMUNITY_ROUTES.BROWSE, {
+    const response = await apiClient.get(COMMUNITY_ROUTES.BROWSE, {
       params: { search, page }
     });
     return response.data;
@@ -31,7 +31,7 @@ export const browseGuilds = async (search = "", page = 1) => {
 
 export const getMyGuilds = async () => {
   try {
-    const response = await client.get(COMMUNITY_ROUTES.GET_GUILDS);
+    const response = await apiClient.get(COMMUNITY_ROUTES.GET_GUILDS);
     return response.data;
   } catch (error) {
     throw new Error(`Failed to fetch your guilds: ${error.message}`);
@@ -40,7 +40,7 @@ export const getMyGuilds = async () => {
 
 export const createGuild = async (name, description, topics, isPublic) => {
   try {
-    const response = await client.post(COMMUNITY_ROUTES.CREATE_GUILD, {
+    const response = await apiClient.post(COMMUNITY_ROUTES.CREATE_GUILD, {
       name,
       description,
       topics,
@@ -54,7 +54,7 @@ export const createGuild = async (name, description, topics, isPublic) => {
 
 export const joinGuild = async (guildId) => {
   try {
-    const response = await client.post(
+    const response = await apiClient.post(
       COMMUNITY_ROUTES.JOIN_GUILD.replace(":guildId", guildId)
     );
     return response.data;
@@ -65,7 +65,7 @@ export const joinGuild = async (guildId) => {
 
 export const leaveGuild = async (guildId) => {
   try {
-    const response = await client.post(
+    const response = await apiClient.post(
       COMMUNITY_ROUTES.LEAVE_GUILD.replace(":guildId", guildId)
     );
     return response.data;
@@ -76,7 +76,7 @@ export const leaveGuild = async (guildId) => {
 
 export const getGuildDiscussions = async (guildId, page = 1) => {
   try {
-    const response = await client.get(
+    const response = await apiClient.get(
       COMMUNITY_ROUTES.GET_DISCUSSIONS.replace(":guildId", guildId),
       { params: { page } }
     );
@@ -88,7 +88,7 @@ export const getGuildDiscussions = async (guildId, page = 1) => {
 
 export const createDiscussion = async (guildId, title, content) => {
   try {
-    const response = await client.post(
+    const response = await apiClient.post(
       COMMUNITY_ROUTES.CREATE_DISCUSSION.replace(":guildId", guildId),
       { title, content }
     );
@@ -100,7 +100,7 @@ export const createDiscussion = async (guildId, title, content) => {
 
 export const getDiscussionDetail = async (guildId, discussionId) => {
   try {
-    const response = await client.get(
+    const response = await apiClient.get(
       COMMUNITY_ROUTES.GET_DISCUSSION_DETAIL.replace(":guildId", guildId).replace(
         ":discussionId",
         discussionId
@@ -114,7 +114,7 @@ export const getDiscussionDetail = async (guildId, discussionId) => {
 
 export const postReply = async (guildId, discussionId, content) => {
   try {
-    const response = await client.post(
+    const response = await apiClient.post(
       COMMUNITY_ROUTES.POST_REPLY.replace(":guildId", guildId).replace(
         ":discussionId",
         discussionId
@@ -129,7 +129,7 @@ export const postReply = async (guildId, discussionId, content) => {
 
 export const getGuildMembers = async (guildId) => {
   try {
-    const response = await client.get(
+    const response = await apiClient.get(
       COMMUNITY_ROUTES.GET_MEMBERS.replace(":guildId", guildId)
     );
     return response.data;

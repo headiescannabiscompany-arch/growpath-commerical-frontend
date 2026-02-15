@@ -1,4 +1,3 @@
-import { useEffect } from "react";
 import { useFacility } from "../facility/FacilityProvider";
 import { useInvites } from "../hooks/useInvites";
 import { useRooms } from "../features/rooms/hooks";

@@ -35,21 +35,21 @@ export default function ToolsHubScreen() {
         <View style={styles.card}>
           <Text style={styles.cardTitle}>🌡️ VPD Calculator</Text>
           <Text style={styles.cardDesc}>Estimate VPD from temperature and humidity.</Text>
-          <Link href="/home/personal/tools/vpd" style={styles.link}>
-            Open VPD →
+          <Link href="/home/personal/tools/vpd" style={styles.link} asChild>
+            <Text>Open VPD {"\u2192"}</Text>
           </Link>
         </View>
 
         <View style={styles.card}>
           <Text style={styles.cardTitle}>🧪 NPK Helper</Text>
           <Text style={styles.cardDesc}>Coming next (stub).</Text>
-          <Text style={styles.link}>Soon →</Text>
+          <Text style={styles.link}>Soon {"\u2192"}</Text>
         </View>
 
         <View style={styles.card}>
           <Text style={styles.cardTitle}>💧 Watering Tracker</Text>
           <Text style={styles.cardDesc}>Coming next (stub).</Text>
-          <Text style={styles.link}>Soon →</Text>
+          <Text style={styles.link}>Soon {"\u2192"}</Text>
         </View>
       </View>
     </View>

@@ -13,7 +13,7 @@ export default function FollowButton({ userId }) {
         const payload = res?.data ?? res;
         const val = payload?.isFollowing ?? false;
         if (mounted) setFollowing(!!val);
-      } catch (err) {
+      } catch (_err) {
         // ignore
       }
     }
@@ -30,7 +30,7 @@ export default function FollowButton({ userId }) {
         await followUser(userId);
         setFollowing(true);
       }
-    } catch (err) {
+    } catch (_err) {
       // ignore
     }
   }

@@ -12,8 +12,8 @@ export default function FacilityLayout() {
 
   const redirectTarget = useMemo(() => {
     // Mode gate
-    if (mode !== "FACILITY") {
-      return mode === "COMMERCIAL" ? "/home/commercial" : "/home/personal";
+    if (mode !== "facility") {
+      return mode === "commercial" ? "/home/commercial" : "/home/personal";
     }
 
     // Facility selection gate (allow /select to render without selectedId)

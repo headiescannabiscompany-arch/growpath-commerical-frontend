@@ -115,7 +115,7 @@ describe("complianceDashboardApi normalizers", () => {
   });
 
   test("normalizeSopsRecommended returns empty array for missing input", () => {
-    const normSops = normalizeSopsRecommended({});
+    const normSops = normalizeSopsRecommended({}, "FAC_TEST_001");
     expect(normSops.recommendedSops).toEqual([]);
   });
 });

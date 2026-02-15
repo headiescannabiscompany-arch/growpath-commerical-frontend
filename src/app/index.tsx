@@ -38,9 +38,12 @@ export default function Index() {
     return () => clearTimeout(id);
   }, [auth.isHydrating]);
 
-  console.log("[INDEX] auth.isHydrating:", auth.isHydrating);
-  console.log("[INDEX] auth.token:", !!auth.token);
-  console.log("[INDEX] ent.ready:", ent.ready);
+  // Log only when these values change (prevents console spam)
+  useEffect(() => {
+    console.log("[INDEX] auth.isHydrating:", auth.isHydrating);
+    console.log("[INDEX] auth.token:", !!auth.token);
+    console.log("[INDEX] ent.ready:", ent.ready);
+  }, [auth.isHydrating, auth.token, ent.ready]);
 
   // Decide what to do (render vs navigate)
   const decision = useMemo(() => {
@@ -48,17 +51,18 @@ export default function Index() {
       return { kind: "render" as const, node: <Center label="Loading auth..." /> };
     }
 
-    // IMPORTANT: after settled, only then decide login vs app
-    if (!auth.token) {
-      console.log("[INDEX] No token after settle → route to /login");
-      return { kind: "nav" as const, href: "/login" };
-    }
-
+    // Deterministic: ensure entitlements settle before routing decisions
     if (!ent.ready) {
       return {
         kind: "render" as const,
         node: <Center label="Loading entitlements..." />
       };
+    }
+
+    // After entitlements are ready, decide login vs app
+    if (!auth.token) {
+      console.log("[INDEX] No token after settle → route to /login");
+      return { kind: "nav" as const, href: "/login" };
     }
 
     console.log("[INDEX] ent.mode:", ent.mode);

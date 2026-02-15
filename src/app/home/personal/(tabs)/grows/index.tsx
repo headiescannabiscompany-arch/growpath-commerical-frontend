@@ -90,7 +90,15 @@ export default function GrowsListScreen() {
           <Text style={styles.emptyText}>
             Create your first grow to start tracking plants.
           </Text>
-          <Link href="/home/personal/grows/new" asChild>
+          <Link
+            href="/home/personal/grows/new"
+            asChild
+            onPress={() => {
+              // Deterministically blur active element for web accessibility warning fix
+
+              require("@/utils/blurActiveElement").blurActiveElement();
+            }}
+          >
             <Pressable style={styles.cta}>
               <Text style={styles.ctaText}>+ New Grow</Text>
             </Pressable>

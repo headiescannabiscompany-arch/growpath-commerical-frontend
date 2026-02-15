@@ -1,6 +1,9 @@
 // Capability derivation for GrowPath (TypeScript)
 // Usage: deriveCapabilities({ plan, mode, entitlements, limits })
 
+import { CAPABILITIES } from "../capabilities/keys.js";
+import { PLANS } from "../capabilities/plans.js";
+
 export type Capabilities = {
   grows: number;
   plants: number;
@@ -8,9 +11,6 @@ export type Capabilities = {
   maxPlants: number;
   [key: string]: boolean | number | undefined;
 };
-
-import { CAPABILITIES } from "../capabilities/keys.js";
-import { PLANS } from "../capabilities/plans.js";
 
 // Build canonical PLAN_CAPS using PLANS and CAPABILITIES
 const PLAN_CAPS: Record<string, Record<string, boolean>> = {};

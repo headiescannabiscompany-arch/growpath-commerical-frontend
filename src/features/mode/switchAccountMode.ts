@@ -1,40 +1,27 @@
-export type AccountMode = "SINGLE_USER" | "COMMERCIAL" | "FACILITY";
+import type { AccountMode } from "../../state/useAccountMode";
 
 export type SwitchModeDeps = {
-  // current state
   currentMode: AccountMode;
-  selectedFacilityId: string | null;
-  brandId?: string | null;
-
-  // setters (state stores)
   setMode: (mode: AccountMode) => void;
-  setSelectedFacilityId?: (facilityId: string | null) => void;
-
-  // navigation
-  replace: (path: string) => void;
+  router: { replace: (href: string) => void };
 };
 
-export function switchAccountMode(targetMode: AccountMode, deps: SwitchModeDeps) {
-  const { selectedFacilityId, setMode, setSelectedFacilityId, replace } = deps;
+/**
+ * Deterministic mode switcher.
+ * Mode strings follow entitlements/state: "personal" | "commercial" | "facility".
+ */
+export function switchAccountMode(nextMode: AccountMode, deps: SwitchModeDeps) {
+  const { currentMode, setMode, router } = deps;
+  if (nextMode === currentMode) return;
 
-  // 1) Mode update (single source of truth)
-  setMode(targetMode);
+  setMode(nextMode);
 
-  // 2) Context clearing rules
-  if (targetMode !== "FACILITY" && typeof setSelectedFacilityId === "function") {
-    setSelectedFacilityId(null);
-  }
+  const href =
+    nextMode === "facility"
+      ? "/home/facility"
+      : nextMode === "commercial"
+        ? "/home/commercial"
+        : "/home/personal";
 
-  // 3) Deterministic destination
-  if (targetMode === "FACILITY") {
-    replace(selectedFacilityId ? "/home/facility" : "/home/facility/select");
-    return;
-  }
-
-  if (targetMode === "COMMERCIAL") {
-    replace("/home/commercial");
-    return;
-  }
-
-  replace("/home/personal");
+  router.replace(href);
 }

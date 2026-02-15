@@ -1,11 +1,4 @@
 // Deterministic sort for recommended SOPs: title ASC, then sopId ASC
-function sortRecommendedSops<T extends { title: string; sopId: string }>(list: T[]): T[] {
-  return [...list].sort((a, b) => {
-    const titleCmp = a.title.localeCompare(b.title);
-    if (titleCmp !== 0) return titleCmp;
-    return a.sopId.localeCompare(b.sopId);
-  });
-}
 // Pure deterministic builder for AI4 Dashboard
 // No Date.now(), no routing, no placeholder outputs
 
@@ -13,6 +6,18 @@ import {
   AI4DashboardData,
   ComplianceStatus
 } from "@/contracts/compliance/ai4.dashboard.contract";
+
+import type {
+  DeviationsSummaryResponse,
+  SopsRecommendedResponse
+} from "./complianceDashboardApi.contract";
+function sortRecommendedSops<T extends { title: string; sopId: string }>(list: T[]): T[] {
+  return [...list].sort((a, b) => {
+    const titleCmp = a.title.localeCompare(b.title);
+    if (titleCmp !== 0) return titleCmp;
+    return a.sopId.localeCompare(b.sopId);
+  });
+}
 
 export type WeeklyComplianceReport = {
   id: string;
@@ -22,7 +27,7 @@ export type WeeklyComplianceReport = {
   overallStatus?: "green" | "yellow" | "red";
   summary?: string;
   score?: number;
-  deviations?: Array<{ code: string; label: string; severity: "LOW" | "MED" | "HIGH" }>;
+  deviations?: { code: string; label: string; severity: "LOW" | "MED" | "HIGH" }[];
 };
 
 export type SavedComparison = {
@@ -32,11 +37,6 @@ export type SavedComparison = {
   headlineSummary: string;
   keyChanges: string[];
 };
-
-import type {
-  DeviationsSummaryResponse,
-  SopsRecommendedResponse
-} from "./complianceDashboardApi.contract";
 
 export type BuildDashboardModelArgs = {
   facilityId: string;
@@ -94,13 +94,13 @@ export function buildDashboardModel({
   }
 
   // Recurring Deviations: prefer backend, else local
-  let recurringDeviations: Array<{
+  let recurringDeviations: {
     code: string;
     label: string;
     count: number;
     lastSeenAt: string;
     severity: string;
-  }> = [];
+  }[] = [];
   if (
     deviationsSummary &&
     Array.isArray(deviationsSummary.recurringDeviations) &&
@@ -132,7 +132,7 @@ export function buildDashboardModel({
           };
         }
         deviationCounts[dev.code].count++;
-        deviationCounts[dev.code].lastSeenAt = r.createdAt || r.weekStart;
+        deviationCounts[dev.code].lastSeenAt = r.createdAt || r.weekStart || "";
       });
     });
     recurringDeviations = Object.values(deviationCounts)
@@ -163,7 +163,7 @@ export function buildDashboardModel({
   }
 
   // Recommended SOPs: prefer backend, else []
-  let recommendedSops: Array<{ sopId: string; title: string; reason: string }> = [];
+  let recommendedSops: { sopId: string; title: string; reason: string }[] = [];
   if (
     sopsRecommended &&
     Array.isArray(sopsRecommended.recommendedSops) &&

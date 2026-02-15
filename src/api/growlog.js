@@ -1,5 +1,5 @@
 import { client as api } from "./client.js";
-import ROUTES from "./routes.js";
+import routes from "./routes.js";
 
 function withQuery(base, filters = {}) {
   const params = new URLSearchParams();
@@ -13,37 +13,37 @@ function withQuery(base, filters = {}) {
 }
 
 export function getEntries(filters) {
-  return api(withQuery(ROUTES.GROWLOG.LIST, filters));
+  return api(withQuery(routes.GROWLOG.LIST, filters));
 }
 
 export function getEntry(id) {
-  return api(ROUTES.GROWLOG.DETAIL(id));
+  return api(routes.GROWLOG.DETAIL(id));
 }
 
 export function createEntry(data) {
-  return api(ROUTES.GROWLOG.CREATE, {
+  return api(routes.GROWLOG.CREATE, {
     method: "POST",
     body: JSON.stringify(data)
   });
 }
 
 export function updateEntry(id, data) {
-  return api(ROUTES.GROWLOG.DETAIL(id), {
+  return api(routes.GROWLOG.DETAIL(id), {
     method: "PUT",
     body: JSON.stringify(data)
   });
 }
 
 export function deleteEntry(id) {
-  return api(ROUTES.GROWLOG.DETAIL(id), { method: "DELETE" });
+  return api(routes.GROWLOG.DETAIL(id), { method: "DELETE" });
 }
 
 export function autoTagEntry(id) {
-  return api(ROUTES.GROWLOG.AUTO_TAG(id), {
+  return api(routes.GROWLOG.AUTO_TAG(id), {
     method: "POST"
   });
 }
 
 export function getPlants() {
-  return api(ROUTES.PLANTS.LIST);
+  return api(routes.PLANTS.LIST);
 }

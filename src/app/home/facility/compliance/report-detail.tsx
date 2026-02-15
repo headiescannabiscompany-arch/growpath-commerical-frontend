@@ -1,4 +1,4 @@
-import React, { useEffect, useState } from "react";
+import React, { useCallback, useEffect, useState } from "react";
 import {
   View,
   Text,
@@ -22,7 +22,7 @@ export default function WeeklyReportDetailScreen({ route, navigation }: any) {
   const [error, setError] = useState<any>(null);
   const [item, setItem] = useState<SavedWeeklyReport | null>(null);
 
-  const load = async () => {
+  const load = useCallback(async () => {
     if (!facilityId || !id) return;
     setLoading(true);
     setError(null);
@@ -35,11 +35,11 @@ export default function WeeklyReportDetailScreen({ route, navigation }: any) {
     } finally {
       setLoading(false);
     }
-  };
+  }, [facilityId, id, handleApiError]);
 
   useEffect(() => {
     load();
-  }, [facilityId, id]);
+  }, [load]);
 
   if (loading) {
     return (

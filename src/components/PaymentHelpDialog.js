@@ -43,7 +43,7 @@ export default function PaymentHelpDialog({ onClose }) {
             </View>
 
             <View style={styles.problem}>
-              <Text style={styles.problemTitle}>❌ Can't Cancel Subscription</Text>
+              <Text style={styles.problemTitle}>❌ Can{"'"}t Cancel Subscription</Text>
               <Text style={styles.problemText}>
                 • Go to Profile → Subscription → Cancel{"\n"}• If using Apple/Google:
                 Cancel through App Store/Play Store{"\n"}• Email support for immediate

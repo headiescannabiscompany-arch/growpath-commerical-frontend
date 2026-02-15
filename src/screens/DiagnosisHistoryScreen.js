@@ -14,7 +14,7 @@ export default function DiagnosisHistoryScreen({ navigation }) {
     try {
       const res = await getDiagnosisHistory();
       setItems(res.data || res);
-    } catch (err) {
+    } catch (_err) {
       // Failed to load history
     }
   }
@@ -72,3 +72,4 @@ const styles = {
     marginTop: 2
   }
 };
+

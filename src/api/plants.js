@@ -1,5 +1,5 @@
 import { Platform } from "react-native";
-import ROUTES from "./routes.js";
+import routes from "./routes.js";
 import { apiRequest } from "./apiRequest";
 import { uriToBlob } from "./uriToBlob";
 
@@ -19,33 +19,33 @@ function guessMimeFromName(name) {
 
 // Accepts FormData for media upload
 export async function createPlant(formData, _token) {
-  return apiRequest(ROUTES.PLANTS.CREATE, {
+  return apiRequest(routes.PLANTS.CREATE, {
     method: "POST",
     body: formData
   });
 }
 
 export async function getPlants(_token) {
-  return apiRequest(ROUTES.PLANTS.LIST, { method: "GET" });
+  return apiRequest(routes.PLANTS.LIST, { method: "GET" });
 }
 
 export async function getPlantWithLogs(id, _token) {
-  return apiRequest(ROUTES.PLANTS.DETAIL(id), { method: "GET" });
+  return apiRequest(routes.PLANTS.DETAIL(id), { method: "GET" });
 }
 
 export async function createPlantLog(id, data, _token) {
-  return apiRequest(ROUTES.PLANTS.LOGS(id), {
+  return apiRequest(routes.PLANTS.LOGS(id), {
     method: "POST",
     body: data
   });
 }
 
 export async function getPlantStats(id, _token) {
-  return apiRequest(ROUTES.PLANTS.STATS(id), { method: "GET" });
+  return apiRequest(routes.PLANTS.STATS(id), { method: "GET" });
 }
 
 export async function exportPlantPdf(plantId) {
-  return apiRequest(ROUTES.PLANTS.EXPORT_PDF(plantId), {
+  return apiRequest(routes.PLANTS.EXPORT_PDF(plantId), {
     method: "GET",
     responseType: "blob"
   });
@@ -69,14 +69,14 @@ export async function uploadPlantPhoto(file) {
     });
   }
 
-  return apiRequest(ROUTES.PLANTS.UPLOAD_PHOTO, {
+  return apiRequest(routes.PLANTS.UPLOAD_PHOTO, {
     method: "POST",
     body: form
   });
 }
 
 export async function updatePlant(id, data) {
-  return apiRequest(ROUTES.PLANTS.DETAIL(id), {
+  return apiRequest(routes.PLANTS.DETAIL(id), {
     method: "PUT",
     body: data
   });

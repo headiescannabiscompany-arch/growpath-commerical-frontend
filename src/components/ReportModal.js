@@ -16,7 +16,12 @@ const ReportModal = ({ visible, onClose, contentType, contentId, token, onSucces
       onSuccess && onSuccess();
       onClose();
     } catch (e) {
-      setError(e?.data?.error || e?.response?.data?.error || e?.message || "Failed to submit report");
+      setError(
+        e?.data?.error ||
+          e?.response?.data?.error ||
+          e?.message ||
+          "Failed to submit report"
+      );
     } finally {
       setLoading(false);
     }

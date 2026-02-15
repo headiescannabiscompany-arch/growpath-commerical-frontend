@@ -1,20 +1,51 @@
 import { useEffect } from "react";
 import * as Linking from "expo-linking";
-import { useNavigation } from "@react-navigation/native";
+import { useRouter } from "expo-router";
 
+/**
+ * Canonical deep link handler (safe + lint-clean).
+ * If you later want specific deep-link routes (invites, joins, etc),
+ * we’ll extend handleUrl() with explicit mapping.
+ */
 export default function DeepLinkHandler() {
-  const navigation = useNavigation();
+  const router = useRouter();
+
   useEffect(() => {
-    const handleUrl = ({ url }: { url: string }) => {
-      const { path, queryParams } = Linking.parse(url);
-      if (path?.startsWith("invite/")) {
-        const token = path.split("/")[1];
-        (navigation as any).navigate("AcceptInvite", { token });
+    let mounted = true;
+
+    const handleUrl = (url: string) => {
+      try {
+        const parsed = Linking.parse(url);
+        const path = typeof parsed?.path === "string" ? parsed.path : "";
+        if (!path) return;
+
+        // Keep it simple: route by path only (query handling can be added later)
+        router.push(`/${path}`);
+      } catch {
+        // ignore
       }
     };
-    // Phase 2.3.3: React Native modern API - addEventListener returns subscription
-    const subscription = Linking.addEventListener("url", handleUrl);
-    return () => subscription.remove();
-  }, [navigation]);
+
+    (async () => {
+      try {
+        const initialUrl = await Linking.getInitialURL();
+        if (!mounted || !initialUrl) return;
+        handleUrl(initialUrl);
+      } catch {
+        // ignore
+      }
+    })();
+
+    const sub = Linking.addEventListener("url", (evt) => {
+      if (!mounted) return;
+      if (evt?.url) handleUrl(evt.url);
+    });
+
+    return () => {
+      mounted = false;
+      sub.remove();
+    };
+  }, [router]);
+
   return null;
 }

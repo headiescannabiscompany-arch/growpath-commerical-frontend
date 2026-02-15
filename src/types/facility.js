@@ -1,7 +1,7 @@
 /**
  * Facility Data Contracts & Type Definitions
  * Phase 1: Foundation for facility operations
- * 
+ *
  * These types ensure consistency across frontend/backend and enable
  * Phase 2+ features to bolt on without interface changes.
  */

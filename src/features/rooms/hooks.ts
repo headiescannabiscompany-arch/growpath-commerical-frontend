@@ -1,9 +1,9 @@
-export { useBulkCreateRooms } from "./useBulkCreateRooms";
 import { useQuery } from "@tanstack/react-query";
 import { api } from "../../api/client";
 import { endpoints } from "../../api/endpoints";
 import { useFacility } from "../../facility/FacilityProvider";
 import { requireString } from "../../utils/require";
+export { useBulkCreateRooms } from "./useBulkCreateRooms";
 
 export function useRooms() {
   const facility = useFacility();

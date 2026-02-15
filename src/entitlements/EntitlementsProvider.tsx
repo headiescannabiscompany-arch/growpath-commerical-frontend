@@ -98,14 +98,10 @@ export function EntitlementsProvider({ children }: { children: React.ReactNode }
   }, [logout]);
 
   useEffect(() => {
-    let mounted = true;
-
     // While auth is hydrating, keep entitlements not-ready (prevents early fetches)
     if (isHydrating) {
       setState((s) => (s.ready ? DEFAULT_STATE : s));
-      return () => {
-        mounted = false;
-      };
+      return () => {};
     }
 
     // No token => personal defaults, ready=true (so app can route deterministically)
@@ -122,16 +118,12 @@ export function EntitlementsProvider({ children }: { children: React.ReactNode }
       });
       lastAppliedRef.current = "NO_TOKEN";
       lastFetchedTokenRef.current = null;
-      return () => {
-        mounted = false;
-      };
+      return () => {};
     }
 
     // Only apply if we haven't already applied for this token
     if (lastFetchedTokenRef.current === token) {
-      return () => {
-        mounted = false;
-      };
+      return () => {};
     }
     lastFetchedTokenRef.current = token;
 
@@ -150,10 +142,8 @@ export function EntitlementsProvider({ children }: { children: React.ReactNode }
       setState((prev) => (prev.ready ? prev : { ...prev, ready: true }));
     }
 
-    return () => {
-      mounted = false;
-    };
-  }, [auth.isHydrating, auth.token, auth.ctx, auth.user]);
+    return () => {};
+  }, [isHydrating, token, auth.ctx, auth.user]);
   const can = useMemo(() => {
     const fn = (capability: string | string[]) => {
       if (!state.ready) return false;
@@ -174,7 +164,7 @@ export function EntitlementsProvider({ children }: { children: React.ReactNode }
     }));
   }, []);
 
-  const value = useMemo(() => ({ ...state, can, refresh }), [state, can]);
+  const value = useMemo(() => ({ ...state, can, refresh }), [state, can, refresh]);
 
   return (
     <EntitlementsContext.Provider value={value}>{children}</EntitlementsContext.Provider>

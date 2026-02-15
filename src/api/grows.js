@@ -1,5 +1,5 @@
 import { client as api, postMultipart } from "./client.js";
-import ROUTES from "./routes.js";
+import routes from "./routes.js";
 
 function buildQuery(filters = {}) {
   const params = new URLSearchParams();
@@ -9,7 +9,7 @@ function buildQuery(filters = {}) {
     }
   });
   const qs = params.toString();
-  return qs ? `${ROUTES.GROWS.LIST}?${qs}` : ROUTES.GROWS.LIST;
+  return qs ? `${routes.GROWS.LIST}?${qs}` : routes.GROWS.LIST;
 }
 
 export function listGrows(filters = {}) {
@@ -18,14 +18,14 @@ export function listGrows(filters = {}) {
 }
 
 export function createGrow(growData) {
-  return api(ROUTES.GROWS.CREATE, {
+  return api(routes.GROWS.CREATE, {
     method: "POST",
     body: JSON.stringify(growData)
   });
 }
 
 export function addEntry(growId, data = {}) {
-  return api(ROUTES.GROWS.ENTRIES(growId), {
+  return api(routes.GROWS.ENTRIES(growId), {
     method: "POST",
     body: JSON.stringify(data)
   });
@@ -35,11 +35,11 @@ export function uploadEntryPhoto(growId, file) {
   const form = new FormData();
   form.append("photo", file);
 
-  return postMultipart(ROUTES.GROWS.ENTRY_PHOTO(growId), form);
+  return postMultipart(routes.GROWS.ENTRY_PHOTO(growId), form);
 }
 
 export function addPlantToGrow(growId, plant) {
-  return api(ROUTES.GROWS.ADD_PLANT(growId), {
+  return api(routes.GROWS.ADD_PLANT(growId), {
     method: "POST",
     body: JSON.stringify(plant)
   });

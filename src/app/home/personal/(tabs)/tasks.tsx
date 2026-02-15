@@ -1,8 +1,10 @@
+import { useRouter } from "expo-router";
 import React from "react";
-import { View, Text } from "react-native";
+import { View, Text, TouchableOpacity } from "react-native";
 import { ErrorBoundary } from "@/components/system/ErrorBoundary";
 
 export default function PersonalTasksRoute() {
+  const router = useRouter();
   return (
     <ErrorBoundary>
       <View style={{ flex: 1, padding: 16 }}>

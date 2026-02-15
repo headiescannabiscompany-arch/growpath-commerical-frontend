@@ -63,7 +63,7 @@ export default function CommercialFeedCard({ post }: Props) {
       } else {
         await api.post(`/api/commercial/like/${post.id}`);
       }
-    } catch (err) {
+    } catch {
       // rollback on error
       setLiked(prevLiked);
       setLikeCount(prevCount);
@@ -116,12 +116,12 @@ export default function CommercialFeedCard({ post }: Props) {
           {loading ? (
             <ActivityIndicator size="small" />
           ) : (
-            <Text>{liked ? "♥ Liked" : "♡ Like"}</Text>
+            <Text>{liked ? "â™¥ Liked" : "â™¡ Like"}</Text>
           )}
         </Pressable>
 
         <Text style={{ opacity: 0.7 }}>
-          {likeCount} likes · {post.commentCount || 0} comments
+          {likeCount} likes Â· {post.commentCount || 0} comments
         </Text>
       </View>
 

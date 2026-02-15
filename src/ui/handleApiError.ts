@@ -1,4 +1,4 @@
-﻿import type { ApiError } from "@/api/errors";
+import type { ApiError } from "@/api/errors";
 
 type ToastLike = {
   toast?: (opts: { title?: string; message?: string; type?: string }) => void;
@@ -17,13 +17,7 @@ export function setApiErrorHandlers(next: Handlers) {
 }
 
 function bestMessage(err: any, fallback: string) {
-  return (
-    err?.message ||
-    err?.error?.message ||
-    err?.error?.code ||
-    err?.code ||
-    fallback
-  );
+  return err?.message || err?.error?.message || err?.error?.code || err?.code || fallback;
 }
 
 export function handleApiError(err: any, fallbackMessage = "Something went wrong.") {
@@ -48,12 +42,11 @@ export function handleApiError(err: any, fallbackMessage = "Something went wrong
     }
 
     // Dev visibility, no UI dependency
-    // eslint-disable-next-line no-console
+
     console.error("[API ERROR]", e);
 
     return message;
   } catch (crashErr) {
-    // eslint-disable-next-line no-console
     console.error("[API ERROR] handleApiError crashed", crashErr, err);
     return fallbackMessage;
   }

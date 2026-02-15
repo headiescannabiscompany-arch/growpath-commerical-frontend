@@ -1,5 +1,13 @@
 import React from "react";
-import { View, Text, TextInput, Image, TouchableOpacity, StyleSheet, ActivityIndicator } from "react-native";
+import {
+  View,
+  Text,
+  TextInput,
+  Image,
+  TouchableOpacity,
+  StyleSheet,
+  ActivityIndicator
+} from "react-native";
 import { colors, radius, spacing } from "../theme/theme";
 import StageSlider from "./StageSlider";
 import { resolveImageUrl } from "../utils/images";
@@ -45,7 +53,9 @@ export default function PlantCard({
             <Text style={styles.photoPlaceholderText}>{placeholderText}</Text>
           </View>
         )}
-        <Text style={styles.viewName}>{value.name || value.strain || "Unnamed Plant"}</Text>
+        <Text style={styles.viewName}>
+          {value.name || value.strain || "Unnamed Plant"}
+        </Text>
       </View>
     );
   }
@@ -65,7 +75,9 @@ export default function PlantCard({
 
       {mode === "view" ? (
         <View style={{ gap: spacing(1) }}>
-          <Text style={styles.viewName}>{value.name || value.strain || "Unnamed Plant"}</Text>
+          <Text style={styles.viewName}>
+            {value.name || value.strain || "Unnamed Plant"}
+          </Text>
           {value.strain ? <Text style={styles.metaText}>{value.strain}</Text> : null}
           {value.stage ? <Text style={styles.metaText}>{value.stage}</Text> : null}
         </View>
@@ -99,7 +111,10 @@ export default function PlantCard({
           />
 
           <Text style={styles.fieldLabel}>Growth Stage</Text>
-          <StageSlider value={value.stage} onChange={(option) => handleChange("stage", option)} />
+          <StageSlider
+            value={value.stage}
+            onChange={(option) => handleChange("stage", option)}
+          />
         </>
       )}
 
@@ -121,7 +136,9 @@ export default function PlantCard({
             {uploadingPhoto ? (
               <View style={styles.photoButtonRow}>
                 <ActivityIndicator size="small" color={colors.accent} />
-                <Text style={[styles.photoButtonText, { marginLeft: spacing(2) }]}>Uploading...</Text>
+                <Text style={[styles.photoButtonText, { marginLeft: spacing(2) }]}>
+                  Uploading...
+                </Text>
               </View>
             ) : (
               <Text style={styles.photoButtonText}>

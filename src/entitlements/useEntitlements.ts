@@ -1,1 +1,1 @@
-﻿export { useEntitlements } from "./EntitlementsProvider";
+export { useEntitlements } from "./EntitlementsProvider";

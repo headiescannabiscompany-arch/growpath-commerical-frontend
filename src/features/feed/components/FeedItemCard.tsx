@@ -49,7 +49,7 @@ export const FeedItemCard = React.memo(function FeedItemCard({
   const handleTaskAction = useCallback(async () => {
     try {
       await optimisticTaskStatus(item.id, item.status === "open" ? "done" : "open");
-    } catch (e) {
+    } catch {
       Alert.alert("Error", "Failed to update task.");
     }
   }, [item, optimisticTaskStatus]);
@@ -57,7 +57,7 @@ export const FeedItemCard = React.memo(function FeedItemCard({
   const handleAlertAck = useCallback(async () => {
     try {
       await optimisticAlertStatus(item.id, "ack");
-    } catch (e) {
+    } catch {
       Alert.alert("Error", "Failed to acknowledge alert.");
     }
   }, [item, optimisticAlertStatus]);
@@ -76,7 +76,7 @@ export const FeedItemCard = React.memo(function FeedItemCard({
         </View>
       </View>
       <Text style={styles.secondary}>
-        {item.actor.name} • {item.scope.facilityId}
+        {item.actor.name} â€¢ {item.scope.facilityId}
       </Text>
       <Text style={styles.timestamp}>{new Date(item.createdAt).toLocaleString()}</Text>
       {/* Optimistic actions for tasks and alerts, gated by entitlements */}

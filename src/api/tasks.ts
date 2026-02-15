@@ -74,12 +74,7 @@ export interface PersonalTask {
   createdAt: string;
 }
 
-interface PersonalTasksResponse {
-  ok: boolean;
-  data: {
-    tasks: PersonalTask[];
-  };
-}
+// Removed unused PersonalTasksResponse interface
 
 /**
  * Fetch tasks for the authenticated personal mode user.

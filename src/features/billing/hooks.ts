@@ -1,5 +1,4 @@
 import { api } from "../../api/client";
-import { endpoints } from "../../api/endpoints";
 import { useFacility } from "../../facility/FacilityProvider";
 import { useAuth } from "../../auth/AuthContext";
 

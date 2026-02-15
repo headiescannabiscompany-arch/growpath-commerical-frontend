@@ -1,5 +1,6 @@
 // src/api/audit.js
-// API module for audit logs and reconciliation
+// API module for audit logs and reconciliation (canonical: apiRequest + endpoints)
+
 import { apiRequest } from "./apiRequest";
 import { endpoints } from "./endpoints";
 
@@ -47,38 +48,10 @@ export async function createAuditLog(facilityId, a, b) {
 }
 
 export async function reconcileAudit(facilityId, data) {
-  return apiRequest(`${endpoints.auditLogs(facilityId)}/reconcile`, {
+  const res = await apiRequest(`${endpoints.auditLogs(facilityId)}/reconcile`, {
     method: "POST",
     body: data
   });
-}
 
-// The original functions have been replaced with new implementations that use apiRequest and endpoints.
-import client from "./client";
-
-export async function listAuditLogs(facilityId) {
-  try {
-    const res = await client.get(`/facilities/${facilityId}/audit-logs`);
-    return { success: true, data: res.data };
-  } catch (e) {
-    return { success: false, message: e.message };
-  }
-}
-
-export async function createAuditLog(facilityId, data) {
-  try {
-    const res = await client.post(`/facilities/${facilityId}/audit-logs`, data);
-    return { success: true, data: res.data };
-  } catch (e) {
-    return { success: false, message: e.message };
-  }
-}
-
-export async function reconcileAudit(facilityId, data) {
-  try {
-    const res = await client.post(`/facilities/${facilityId}/audit-logs/reconcile`, data);
-    return { success: true, data: res.data };
-  } catch (e) {
-    return { success: false, message: e.message };
-  }
+  return { success: true, data: res };
 }

@@ -1,30 +1,41 @@
 import React from "react";
-import { View, StyleSheet, ViewStyle, Platform } from "react-native";
+import { View, Text, StyleSheet, TouchableOpacity } from "react-native";
 
-type AppCardProps = {
-  children: React.ReactNode;
-  style?: ViewStyle | ViewStyle[];
+export type AppCardProps = {
+  style?: any;
+  title?: string;
+  subtitle?: string;
+  children?: React.ReactNode;
+  onPress?: () => void;
 };
 
-export default function AppCard({ children, style }: AppCardProps) {
-  return <View style={[styles.card, style]}>{children}</View>;
+export default function AppCard({ title, subtitle, children, onPress }: AppCardProps) {
+  const Inner = (
+    <View style={styles.card}>
+      {!!title && <Text style={styles.title}>{title}</Text>}
+      {!!subtitle && <Text style={styles.subtitle}>{subtitle}</Text>}
+      {!!children && <View style={styles.content}>{children}</View>}
+    </View>
+  );
+
+  if (onPress) {
+    return (
+      <TouchableOpacity onPress={onPress} activeOpacity={0.85}>
+        {Inner}
+      </TouchableOpacity>
+    );
+  }
+  return Inner;
 }
 
 const styles = StyleSheet.create({
   card: {
-    backgroundColor: "#fff",
-    borderRadius: 12,
-    padding: 16,
+    padding: 12,
     borderWidth: 1,
-    borderColor: "#E5E7EB",
-    ...(Platform.OS === "web"
-      ? { boxShadow: "0px 2px 6px rgba(0,0,0,0.08)" }
-      : {
-          shadowColor: "#000",
-          shadowOffset: { width: 0, height: 2 },
-          shadowOpacity: 0.08,
-          shadowRadius: 6,
-          elevation: 2
-        })
-  }
+    borderRadius: 12,
+    borderColor: "rgba(0,0,0,0.15)"
+  },
+  title: { fontSize: 16, fontWeight: "600" },
+  subtitle: { marginTop: 4, opacity: 0.75 },
+  content: { marginTop: 10 }
 });

@@ -1,7 +1,7 @@
 import React from "react";
 import { View, Text, StyleSheet, TouchableOpacity } from "react-native";
 import { MaterialCommunityIcons } from "@expo/vector-icons";
-import { Colors, Typography, Spacing } from "../theme/theme.js";
+import { Typography, Spacing } from "../theme/theme.js";
 
 /**
  * ErrorState Component

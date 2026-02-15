@@ -1,5 +1,5 @@
 import React, { useState } from "react";
-import { View, Text, Button } from "react-native";
+import { View, Button } from "react-native";
 import PlantsTab from "./RoomPlants";
 import EnvironmentTab from "./RoomEnvironment";
 

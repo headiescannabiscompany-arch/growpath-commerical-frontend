@@ -1,24 +1,23 @@
+import { useMemo } from "react";
 import { useRouter } from "expo-router";
-import { switchAccountMode, type AccountMode } from "./switchAccountMode";
-import { useAccountMode } from "@/state/useAccountMode";
-import { useFacility } from "@/state/useFacility";
 
-export function useModeSwitcher() {
+import { useAccountMode } from "../../state/useAccountMode";
+import type { AccountMode } from "../../state/useAccountMode";
+import { switchAccountMode } from "./switchAccountMode";
+
+export type UseModeSwitcherResult = {
+  mode: AccountMode;
+  switchTo: (mode: AccountMode) => void;
+};
+
+export function useModeSwitcher(): UseModeSwitcherResult {
   const router = useRouter();
-
   const { mode, setMode } = useAccountMode();
-  const { selectedId, setSelectedId } = useFacility() as any;
 
-  function switchTo(target: AccountMode) {
-    switchAccountMode(target, {
-      currentMode: mode,
-      selectedFacilityId: selectedId ?? null,
-      setMode,
-      setSelectedFacilityId:
-        typeof setSelectedId === "function" ? setSelectedId : undefined,
-      replace: router.replace
-    });
-  }
+  const switchTo = useMemo(() => {
+    return (next: AccountMode) =>
+      switchAccountMode(next, { currentMode: mode, setMode, router });
+  }, [mode, setMode, router]);
 
   return { mode, switchTo };
 }

@@ -15,7 +15,7 @@ export default function VerifyCertificateScreen({ route }) {
         const res = await verifyCertificate(certificateId);
         setCert(res.data || res);
         setLoading(false);
-      } catch (err) {
+      } catch (_err) {
         setError("Certificate not found or invalid");
         setLoading(false);
       }
@@ -29,7 +29,7 @@ export default function VerifyCertificateScreen({ route }) {
       <ScreenContainer>
         <View style={styles.center}>
           <ActivityIndicator size="large" color="#3498db" />
-          <Text style={styles.loadingText}>Verifying certificate…</Text>
+          <Text style={styles.loadingText}>Verifying certificateâ€¦</Text>
         </View>
       </ScreenContainer>
     );
@@ -39,7 +39,7 @@ export default function VerifyCertificateScreen({ route }) {
     return (
       <ScreenContainer>
         <View style={styles.center}>
-          <Text style={styles.errorIcon}>❌</Text>
+          <Text style={styles.errorIcon}>âŒ</Text>
           <Text style={styles.errorTitle}>Invalid Certificate</Text>
           <Text style={styles.errorText}>
             {error || "This certificate could not be verified"}
@@ -52,7 +52,7 @@ export default function VerifyCertificateScreen({ route }) {
   return (
     <ScreenContainer scroll>
       <View style={styles.header}>
-        <Text style={styles.icon}>✓</Text>
+        <Text style={styles.icon}>âœ“</Text>
         <Text style={styles.title}>Certificate Verified</Text>
       </View>
 
@@ -87,7 +87,7 @@ export default function VerifyCertificateScreen({ route }) {
       </View>
 
       <View style={styles.validationBadge}>
-        <Text style={styles.validationIcon}>🔐</Text>
+        <Text style={styles.validationIcon}>ðŸ”</Text>
         <Text style={styles.validationText}>This certificate is authentic</Text>
       </View>
     </ScreenContainer>
@@ -189,3 +189,4 @@ const styles = {
     color: "#27ae60"
   }
 };
+

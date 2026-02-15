@@ -20,7 +20,7 @@ export default function CreatorSignatureUpload({ navigation }) {
       if (!res.canceled) {
         setImage(res.assets[0].uri);
       }
-    } catch (err) {
+    } catch (_err) {
       Alert.alert("Error", "Failed to pick image");
     }
   }
@@ -46,7 +46,7 @@ export default function CreatorSignatureUpload({ navigation }) {
       Alert.alert("Success", "Signature uploaded successfully!", [
         { text: "OK", onPress: () => navigation.goBack() }
       ]);
-    } catch (err) {
+    } catch (_err) {
       setLoading(false);
       Alert.alert("Error", "Failed to upload signature");
     }
@@ -65,7 +65,7 @@ export default function CreatorSignatureUpload({ navigation }) {
           onPress={pickImage}
           disabled={loading}
         >
-          <Text style={styles.pickBtnText}>📷 Select Signature Image</Text>
+          <Text style={styles.pickBtnText}>ðŸ“· Select Signature Image</Text>
         </TouchableOpacity>
 
         {image && (
@@ -81,10 +81,10 @@ export default function CreatorSignatureUpload({ navigation }) {
 
       <View style={styles.section}>
         <Text style={styles.sectionTitle}>Guidelines</Text>
-        <Text style={styles.guideline}>✓ Use a transparent PNG image</Text>
-        <Text style={styles.guideline}>✓ Minimum width: 200px</Text>
-        <Text style={styles.guideline}>✓ Keep signature clear and readable</Text>
-        <Text style={styles.guideline}>✓ File size should be under 1MB</Text>
+        <Text style={styles.guideline}>âœ“ Use a transparent PNG image</Text>
+        <Text style={styles.guideline}>âœ“ Minimum width: 200px</Text>
+        <Text style={styles.guideline}>âœ“ Keep signature clear and readable</Text>
+        <Text style={styles.guideline}>âœ“ File size should be under 1MB</Text>
       </View>
 
       <TouchableOpacity
@@ -93,7 +93,7 @@ export default function CreatorSignatureUpload({ navigation }) {
         disabled={loading || !image}
       >
         <Text style={styles.saveText}>
-          {loading ? "Uploading..." : "✓ Save Signature"}
+          {loading ? "Uploading..." : "âœ“ Save Signature"}
         </Text>
       </TouchableOpacity>
     </ScreenContainer>
@@ -179,3 +179,4 @@ const styles = StyleSheet.create({
     fontSize: 15,
   },
 });
+

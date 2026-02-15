@@ -13,7 +13,7 @@ import * as ImagePicker from "expo-image-picker";
 import ScreenContainer from "../components/ScreenContainer.js";
 import Card from "../components/Card.js";
 import PrimaryButton from "../components/PrimaryButton.js";
-import InlineError from "../components/InlineError";
+import { InlineError } from "../components/InlineError";
 import { useApiErrorHandler } from "../hooks/useApiErrorHandler";
 
 import { colors, spacing, radius } from "../theme/theme.js";
@@ -71,7 +71,7 @@ function GrowLogsScreen() {
 
   useEffect(() => {
     loadGrows();
-    // eslint-disable-next-line react-hooks/exhaustive-deps
+     
   }, []);
 
   const handleAddGrow = async () => {
@@ -220,7 +220,7 @@ function GrowLogsScreen() {
           >
             {/* Water */}
             <View style={styles.envSection}>
-              <Text style={styles.envSectionTitle}>💧 Water</Text>
+              <Text style={styles.envSectionTitle}>ðŸ’§ Water</Text>
               <Text style={styles.fieldLabel}>Water pH</Text>
               <TextInput
                 value={waterPH}
@@ -244,12 +244,12 @@ function GrowLogsScreen() {
 
             {/* Air */}
             <View style={styles.envSection}>
-              <Text style={styles.envSectionTitle}>🌬️ Air & Climate</Text>
+              <Text style={styles.envSectionTitle}>ðŸŒ¬ï¸ Air & Climate</Text>
               <Text style={styles.fieldLabel}>Temperature</Text>
               <TextInput
                 value={temperature}
                 onChangeText={setTemperature}
-                placeholder="e.g., 75°F or 24°C"
+                placeholder="e.g., 75Â°F or 24Â°C"
                 style={styles.input}
                 placeholderTextColor={colors.textSoft}
                 editable={advancedEnt === "enabled"}
@@ -277,7 +277,7 @@ function GrowLogsScreen() {
 
             {/* Nutrients */}
             <View style={styles.envSection}>
-              <Text style={styles.envSectionTitle}>🧪 Nutrients</Text>
+              <Text style={styles.envSectionTitle}>ðŸ§ª Nutrients</Text>
               <Text style={styles.fieldLabel}>Nutrient Brand/Line</Text>
               <TextInput
                 value={nutrientBrand}
@@ -309,7 +309,7 @@ function GrowLogsScreen() {
 
             {/* Substrate */}
             <View style={styles.envSection}>
-              <Text style={styles.envSectionTitle}>🌱 Growing Medium</Text>
+              <Text style={styles.envSectionTitle}>ðŸŒ± Growing Medium</Text>
               <Text style={styles.fieldLabel}>Substrate Type</Text>
               <TextInput
                 value={substrateType}
@@ -368,8 +368,8 @@ function GrowLogsScreen() {
           <Text
             style={{ fontSize: 15, color: "#444", textAlign: "center", marginBottom: 18 }}
           >
-            Start a log when you want to track your plant’s journey.{"\n"}
-            Sometimes, observation is enough—logging is here when you need it.
+            Start a log when you want to track your plantâ€™s journey.{"\n"}
+            Sometimes, observation is enoughâ€”logging is here when you need it.
           </Text>
 
           <PrimaryButton
@@ -556,3 +556,4 @@ const styles = StyleSheet.create({
     fontWeight: "600"
   }
 });
+

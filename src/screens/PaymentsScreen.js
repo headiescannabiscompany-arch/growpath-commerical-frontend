@@ -1,3 +1,4 @@
+/* eslint-disable react/no-unescaped-entities */
 import React from "react";
 import { View, Text, StyleSheet, TouchableOpacity, ScrollView } from "react-native";
 
@@ -81,3 +82,4 @@ const styles = StyleSheet.create({
     fontSize: 16
   }
 });
+

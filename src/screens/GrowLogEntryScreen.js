@@ -1,3 +1,4 @@
+/* eslint-disable react/no-unescaped-entities */
 import React, { useState, useEffect } from "react";
 import {
   View,
@@ -278,7 +279,7 @@ export default function GrowLogEntryScreen({ route, navigation }) {
     }
   }
 
-  // 📌 Add Photo
+  // ðŸ“Œ Add Photo
   async function addPhoto() {
     const result = await ImagePicker.launchImageLibraryAsync({
       mediaTypes: ImagePicker.MediaTypeOptions.Images,
@@ -292,7 +293,7 @@ export default function GrowLogEntryScreen({ route, navigation }) {
     }
   }
 
-  // 📌 Toggle tags
+  // ðŸ“Œ Toggle tags
   function toggleTag(tag) {
     if (tags.includes(tag)) {
       setTags(tags.filter((t) => t !== tag));
@@ -398,7 +399,7 @@ export default function GrowLogEntryScreen({ route, navigation }) {
     await submitEntry(payload);
   }
 
-  // 📌 AI auto-tagging
+  // ðŸ“Œ AI auto-tagging
   async function handleAutoTag() {
     if (!entryId) {
       return Alert.alert(
@@ -490,7 +491,7 @@ export default function GrowLogEntryScreen({ route, navigation }) {
           style={styles.input}
           value={title}
           onChangeText={setTitle}
-          placeholder="Day 21 - Heavy stretch today…"
+          placeholder="Day 21 - Heavy stretch todayâ€¦"
         />
 
         {/* Notes */}
@@ -635,7 +636,7 @@ export default function GrowLogEntryScreen({ route, navigation }) {
             disabled={loading}
           >
             <Text style={styles.aiButtonText}>
-              {loading ? "Analyzing..." : "🤖 Auto-tag with AI"}
+              {loading ? "Analyzing..." : "ðŸ¤– Auto-tag with AI"}
             </Text>
           </TouchableOpacity>
         )}
@@ -646,7 +647,7 @@ export default function GrowLogEntryScreen({ route, navigation }) {
           onPress={() => setShowAdvanced(!showAdvanced)}
         >
           <Text style={styles.advancedToggleText}>
-            {showAdvanced ? "▼" : "▶"} Advanced: Environment Details (Track full grow
+            {showAdvanced ? "â–¼" : "â–¶"} Advanced: Environment Details (Track full grow
             conditions)
           </Text>
         </TouchableOpacity>
@@ -655,10 +656,10 @@ export default function GrowLogEntryScreen({ route, navigation }) {
           <View style={styles.advancedSection}>
             {/* LIGHT SECTION */}
             <View style={styles.envSection}>
-              <Text style={styles.envSectionTitle}>💡 Light Information</Text>
+              <Text style={styles.envSectionTitle}>ðŸ’¡ Light Information</Text>
 
               <View style={styles.infoBox}>
-                <Text style={styles.infoBoxTitle}>📱 Measure PPFD/DLI</Text>
+                <Text style={styles.infoBoxTitle}>ðŸ“± Measure PPFD/DLI</Text>
                 <Text style={styles.infoBoxText}>
                   Download "Photone" app to measure light intensity. Aim for 400-600 PPFD
                   in veg, 600-900 in flower.
@@ -667,7 +668,7 @@ export default function GrowLogEntryScreen({ route, navigation }) {
 
               <View style={styles.row}>
                 <View style={{ flex: 1 }}>
-                  <Text style={styles.label}>PPFD (μmol/m²/s)</Text>
+                  <Text style={styles.label}>PPFD (Î¼mol/mÂ²/s)</Text>
                   <TextInput
                     style={styles.input}
                     value={lightPPFD}
@@ -678,7 +679,7 @@ export default function GrowLogEntryScreen({ route, navigation }) {
                 </View>
                 <View style={{ width: 12 }} />
                 <View style={{ flex: 1 }}>
-                  <Text style={styles.label}>DLI (mol/m²/day)</Text>
+                  <Text style={styles.label}>DLI (mol/mÂ²/day)</Text>
                   <TextInput
                     style={styles.input}
                     value={lightDLI}
@@ -722,7 +723,7 @@ export default function GrowLogEntryScreen({ route, navigation }) {
 
             {/* WATER SECTION */}
             <View style={styles.envSection}>
-              <Text style={styles.envSectionTitle}>💧 Water Information</Text>
+              <Text style={styles.envSectionTitle}>ðŸ’§ Water Information</Text>
 
               <Text style={styles.label}>Water Source</Text>
               <View style={styles.buttonRow}>
@@ -801,16 +802,16 @@ export default function GrowLogEntryScreen({ route, navigation }) {
 
             {/* AIR SECTION */}
             <View style={styles.envSection}>
-              <Text style={styles.envSectionTitle}>🌬️ Air & Climate</Text>
+              <Text style={styles.envSectionTitle}>ðŸŒ¬ï¸ Air & Climate</Text>
 
               <View style={styles.row}>
                 <View style={{ flex: 1 }}>
-                  <Text style={styles.label}>Temperature (°F)</Text>
+                  <Text style={styles.label}>Temperature (Â°F)</Text>
                   <TextInput
                     style={styles.input}
                     value={temperature}
                     onChangeText={setTemperature}
-                    placeholder="75-82°F"
+                    placeholder="75-82Â°F"
                     keyboardType="numeric"
                   />
                 </View>
@@ -852,7 +853,7 @@ export default function GrowLogEntryScreen({ route, navigation }) {
 
             {/* NUTRIENTS SECTION */}
             <View style={styles.envSection}>
-              <Text style={styles.envSectionTitle}>🧪 Nutrients</Text>
+              <Text style={styles.envSectionTitle}>ðŸ§ª Nutrients</Text>
 
               <Text style={styles.label}>Nutrient Brand/Line</Text>
               <TextInput
@@ -881,7 +882,7 @@ export default function GrowLogEntryScreen({ route, navigation }) {
 
             {/* SUBSTRATE SECTION */}
             <View style={styles.envSection}>
-              <Text style={styles.envSectionTitle}>🌱 Substrate/Medium</Text>
+              <Text style={styles.envSectionTitle}>ðŸŒ± Substrate/Medium</Text>
 
               <Text style={styles.label}>Substrate Type</Text>
               <TextInput
@@ -1186,3 +1187,4 @@ const styles = {
     textTransform: "capitalize"
   }
 };
+

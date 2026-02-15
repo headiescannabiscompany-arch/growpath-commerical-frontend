@@ -1,7 +1,6 @@
 import React, { useState } from "react";
 import { View, Text, Button } from "react-native";
-import { usePlants } from "../../plants/hooks";
-import { useUpdatePlant } from "../../plants/hooks";
+import { usePlants, useUpdatePlant } from "../../plants/hooks";
 import { useRoute, useNavigation } from "@react-navigation/native";
 
 export default function AssignPlantsToGrow() {

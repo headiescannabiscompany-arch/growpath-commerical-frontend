@@ -11,7 +11,9 @@ export function buildVisibleTabs(capabilities, { mode } = {}) {
 
   // Safety fallback: never render 0 tabs
   if (visible.length === 0) {
-    return PAGE_REGISTRY.filter((p) => ["nav.dashboard", "nav.profile"].includes(p.capability));
+    return PAGE_REGISTRY.filter((p) =>
+      ["nav.dashboard", "nav.profile"].includes(p.capability)
+    );
   }
 
   // Optional: mode-based preference ordering (does not override capability)
@@ -26,9 +28,11 @@ export function buildVisibleTabs(capabilities, { mode } = {}) {
       "Calendar",
       "Courses",
       "Forum",
-      "Profile",
+      "Profile"
     ]);
-    return visible.sort((a, b) => (priority.has(b.name) ? 1 : 0) - (priority.has(a.name) ? 1 : 0));
+    return visible.sort(
+      (a, b) => (priority.has(b.name) ? 1 : 0) - (priority.has(a.name) ? 1 : 0)
+    );
   }
 
   return visible;

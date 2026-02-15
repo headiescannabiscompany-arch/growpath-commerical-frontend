@@ -1,4 +1,4 @@
-﻿import React, { useCallback, useEffect, useMemo, useState } from "react";
+import React, { useCallback, useEffect, useMemo, useState } from "react";
 import {
   ActivityIndicator,
   FlatList,
@@ -132,7 +132,8 @@ export default function FacilityInventoryTab() {
           <Text style={{ fontSize: 20, fontWeight: "900" }}>Inventory</Text>
 
           <View style={{ flexDirection: "row" }}>
-            <TouchableOpacity onPress={() => router.push("/home/facility/select")}>\n              <Text style={{ fontWeight: "900" }}>Change Facility</Text>
+            <TouchableOpacity onPress={() => router.push("/home/facility/select")}>
+              <Text style={{ fontWeight: "900" }}>Change Facility</Text>
             </TouchableOpacity>
 
             <View style={{ width: 14 }} />
@@ -151,7 +152,9 @@ export default function FacilityInventoryTab() {
           <FlatList
             data={sorted}
             keyExtractor={(i) => String(i._id)}
-            refreshControl={<RefreshControl refreshing={refreshing} onRefresh={onRefresh} />}
+            refreshControl={
+              <RefreshControl refreshing={refreshing} onRefresh={onRefresh} />
+            }
             renderItem={({ item }) => {
               const qty = typeof item.quantity === "number" ? String(item.quantity) : "—";
               const unit = item.unit ? ` ${item.unit}` : "";

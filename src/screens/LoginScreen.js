@@ -1,6 +1,4 @@
 import React, { useState, useEffect } from "react";
-// DEBUG_LAYOUT: toggle yellow background for debug
-const DEBUG_LAYOUT = __DEV__ && false;
 import {
   View,
   Text,
@@ -18,6 +16,8 @@ import PrimaryButton from "../components/PrimaryButton.js";
 import { useAuth } from "@/auth/AuthContext";
 import { useRouter } from "expo-router";
 import { colors, radius, spacing } from "../theme/theme.js";
+// DEBUG_LAYOUT: toggle yellow background for debug
+const DEBUG_LAYOUT = __DEV__ && false;
 
 function LoginScreen() {
   const router = useRouter();

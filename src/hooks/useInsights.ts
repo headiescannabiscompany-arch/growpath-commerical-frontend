@@ -1,4 +1,12 @@
-import { runInsights } from "../api/insights";
+import {
+  runInsights,
+  fetchInsights,
+  resolveInsight,
+  snoozeInsight
+} from "../api/insights";
+import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
+
+import { Insight } from "../types/insight";
 export function useRunInsights(facilityId: string) {
   const queryClient = useQueryClient();
   return useMutation({
@@ -8,9 +16,6 @@ export function useRunInsights(facilityId: string) {
     }
   });
 }
-import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
-import { fetchInsights, resolveInsight, snoozeInsight } from "../api/insights";
-import { Insight } from "../types/insight";
 
 export function useInsights(facilityId: string) {
   return useQuery<Insight[]>({

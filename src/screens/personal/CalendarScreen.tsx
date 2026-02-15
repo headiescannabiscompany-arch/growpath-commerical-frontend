@@ -3,7 +3,7 @@ import { View, ActivityIndicator, FlatList, Text } from "react-native";
 import { useNavigation } from "@react-navigation/native";
 
 import EmptyState from "../../components/EmptyState";
-import InlineError from "../../components/InlineError";
+import { InlineError } from "../../components/InlineError";
 import NotEntitledScreen from "../common/NotEntitledScreen";
 
 import { useEntitlements } from "@/entitlements";
@@ -70,7 +70,7 @@ function CalendarScreenInner() {
 }
 
 export default function CalendarScreen() {
-  // ✅ Entitlement gate in outer component avoids conditional hooks
+  // âœ… Entitlement gate in outer component avoids conditional hooks
   const ent = useEntitlements() || {};
   const capabilities = ent.capabilities || {};
 
@@ -78,3 +78,4 @@ export default function CalendarScreen() {
 
   return <CalendarScreenInner />;
 }
+

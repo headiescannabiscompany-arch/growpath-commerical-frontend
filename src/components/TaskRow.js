@@ -1,4 +1,4 @@
-import { View, Text, Pressable } from "react-native";
+import { Text, Pressable } from "react-native";
 
 export default function TaskRow({ task, onPress }) {
   return (

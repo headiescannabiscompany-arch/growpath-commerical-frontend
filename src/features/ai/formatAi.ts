@@ -19,13 +19,15 @@ function pick<T = any>(obj: AnyObj, paths: string[]): T | null {
 
 export type FormattedAi = {
   primaryTake?: string | null;
-  probabilities?: Array<{ label: string; p: number }> | null;
+  probabilities?: { label: string; p: number }[] | null;
   bestPractice?: string | null;
-  options?: Array<{
-    action: string;
-    benefit?: string | null;
-    risk?: string | null;
-  }> | null;
+  options?:
+    | {
+        action: string;
+        benefit?: string | null;
+        risk?: string | null;
+      }[]
+    | null;
   recommended?: string | null;
   rationale?: string | null;
   youDecide?: string | null;

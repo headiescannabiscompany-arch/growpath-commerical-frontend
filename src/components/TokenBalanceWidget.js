@@ -33,7 +33,8 @@ export default function TokenBalanceWidget({ onPress }) {
     const resolvedMax = hasValidMax ? rawMax : null;
 
     const rawCurrent = Number(balance?.aiTokens);
-    const resolvedCurrent = Number.isFinite(rawCurrent) && rawCurrent >= 0 ? rawCurrent : 0;
+    const resolvedCurrent =
+      Number.isFinite(rawCurrent) && rawCurrent >= 0 ? rawCurrent : 0;
 
     const pct =
       resolvedMax && resolvedMax > 0
@@ -80,11 +81,7 @@ export default function TokenBalanceWidget({ onPress }) {
         </View>
         <View style={styles.barContainer}>
           <View
-            style={[
-              styles.bar,
-              { width: `${percentage}%` },
-              isLow && styles.barLow
-            ]}
+            style={[styles.bar, { width: `${percentage}%` }, isLow && styles.barLow]}
           />
         </View>
       </View>

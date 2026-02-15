@@ -101,6 +101,11 @@ export default function LoginScreen() {
           <Text style={styles.buttonText}>Sign in</Text>
         )}
       </Pressable>
+
+      {/* NEW: Create account link */}
+      <Pressable onPress={() => router.push("/register")} style={styles.linkBtn}>
+        <Text style={styles.linkText}>Create account</Text>
+      </Pressable>
     </View>
   );
 }
@@ -125,5 +130,9 @@ const styles = StyleSheet.create({
     borderColor: "#111"
   },
   buttonDisabled: { opacity: 0.5 },
-  buttonText: { fontWeight: "700" }
+  buttonText: { fontWeight: "700" },
+
+  // NEW
+  linkBtn: { marginTop: 14, alignItems: "center" },
+  linkText: { fontWeight: "700", textDecorationLine: "underline" }
 });

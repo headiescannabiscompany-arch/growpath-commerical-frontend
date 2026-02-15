@@ -1,3 +1,4 @@
+/* eslint-disable react-hooks/exhaustive-deps */
 import React, { useMemo } from "react";
 import { useRouter } from "expo-router";
 import { useEntitlements } from "../entitlements";

@@ -26,7 +26,9 @@ export default function ForumFilters({
                     style={[styles.filterChip, isActive && styles.filterChipActive]}
                     onPress={() => onToggleFilter(option, tier.id)}
                   >
-                    <Text style={[styles.filterText, isActive && styles.filterTextActive]}>
+                    <Text
+                      style={[styles.filterText, isActive && styles.filterTextActive]}
+                    >
                       {option}
                     </Text>
                   </TouchableOpacity>

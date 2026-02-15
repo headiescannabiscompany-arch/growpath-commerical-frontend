@@ -93,8 +93,9 @@ export default function FacilityHome() {
               You need to select a facility to access operations, rooms, tasks, and team
               management.
             </Text>
-            <Link href="/facilities" style={styles.link}>
-              Select Facility →
+
+            <Link href="/facilities" asChild>
+              <Text style={styles.link}>Select Facility →</Text>
             </Link>
           </AppCard>
         </View>
@@ -110,11 +111,9 @@ export default function FacilityHome() {
               <Text style={styles.cardDesc}>
                 Overview, metrics, alerts, and quick actions
               </Text>
-              <Link
-                href={`/facilities/${facility.selectedId}/dashboard`}
-                style={styles.link}
-              >
-                Open Dashboard →
+
+              <Link href={`/facilities/${facility.selectedId}/dashboard`} asChild>
+                <Text style={styles.link}>Open Dashboard →</Text>
               </Link>
             </AppCard>
 
@@ -123,8 +122,9 @@ export default function FacilityHome() {
               <Text style={styles.cardDesc}>
                 Manage grow rooms, zones, and environmental controls
               </Text>
-              <Link href={`/facilities/${facility.selectedId}/rooms`} style={styles.link}>
-                Manage Rooms →
+
+              <Link href={`/facilities/${facility.selectedId}/rooms`} asChild>
+                <Text style={styles.link}>Manage Rooms →</Text>
               </Link>
             </AppCard>
 
@@ -133,8 +133,9 @@ export default function FacilityHome() {
               <Text style={styles.cardDesc}>
                 Daily tasks, assignments, verification, and SOPs
               </Text>
-              <Link href={`/facilities/${facility.selectedId}/tasks`} style={styles.link}>
-                View Tasks →
+
+              <Link href={`/facilities/${facility.selectedId}/tasks`} asChild>
+                <Text style={styles.link}>View Tasks →</Text>
               </Link>
             </AppCard>
 
@@ -143,11 +144,9 @@ export default function FacilityHome() {
               <Text style={styles.cardDesc}>
                 Track inventory, supplies, and stock levels
               </Text>
-              <Link
-                href={`/facilities/${facility.selectedId}/inventory`}
-                style={styles.link}
-              >
-                Manage Inventory →
+
+              <Link href={`/facilities/${facility.selectedId}/inventory`} asChild>
+                <Text style={styles.link}>Manage Inventory →</Text>
               </Link>
             </AppCard>
           </View>
@@ -160,8 +159,9 @@ export default function FacilityHome() {
               <Text style={styles.cardDesc}>
                 Manage team members, roles, and permissions
               </Text>
-              <Link href={`/facilities/${facility.selectedId}/team`} style={styles.link}>
-                Manage Team →
+
+              <Link href={`/facilities/${facility.selectedId}/team`} asChild>
+                <Text style={styles.link}>Manage Team →</Text>
               </Link>
             </AppCard>
 
@@ -170,11 +170,9 @@ export default function FacilityHome() {
               <Text style={styles.cardDesc}>
                 Compliance tracking, audit logs, and reports
               </Text>
-              <Link
-                href={`/facilities/${facility.selectedId}/compliance`}
-                style={styles.link}
-              >
-                View Compliance →
+
+              <Link href={`/facilities/${facility.selectedId}/compliance`} asChild>
+                <Text style={styles.link}>View Compliance →</Text>
               </Link>
             </AppCard>
 
@@ -183,8 +181,9 @@ export default function FacilityHome() {
               <Text style={styles.cardDesc}>
                 Standard operating procedures and protocols
               </Text>
-              <Link href={`/facilities/${facility.selectedId}/sops`} style={styles.link}>
-                Manage SOPs →
+
+              <Link href={`/facilities/${facility.selectedId}/sops`} asChild>
+                <Text style={styles.link}>Manage SOPs →</Text>
               </Link>
             </AppCard>
           </View>
@@ -199,8 +198,9 @@ export default function FacilityHome() {
             <Text style={styles.cardDesc}>
               You have access to {facility.facilities.length} facilities
             </Text>
-            <Link href="/facilities" style={styles.link}>
-              Switch Facility →
+
+            <Link href="/facilities" asChild>
+              <Text style={styles.link}>Switch Facility →</Text>
             </Link>
           </AppCard>
         </View>
@@ -213,8 +213,9 @@ export default function FacilityHome() {
           <Text style={styles.cardDesc}>
             Account settings, preferences, notifications
           </Text>
-          <Link href="/profile" style={styles.link}>
-            Open Profile →
+
+          <Link href="/profile" asChild>
+            <Text style={styles.link}>Open Profile →</Text>
           </Link>
         </AppCard>
       </View>

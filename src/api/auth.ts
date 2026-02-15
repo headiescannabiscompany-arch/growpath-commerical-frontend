@@ -1,7 +1,7 @@
 // src/api/auth.ts
 // Contract-locked: every function returns canonical response type or throws ApiError with code/status.
 import { api } from "./client";
-import type { ApiError } from "./errors";
+// import type { ApiError } from "./errors"; // Removed as unused
 
 export type AuthUser = {
   id: string;

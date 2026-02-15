@@ -1,5 +1,4 @@
-import client from "./client";
-
+import apiClient from "./apiClient";
 export async function updateGrowInterests(growInterests: string[]) {
-  return client.patch("/api/user/interests", { growInterests });
+  return apiClient.patch("/api/user/interests", { growInterests });
 }

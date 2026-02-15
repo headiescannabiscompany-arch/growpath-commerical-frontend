@@ -1,49 +1,17 @@
 import React from "react";
-import { Text, TouchableOpacity, View } from "react-native";
-import ScreenContainer from "../components/ScreenContainer";
+import { View, Text, StyleSheet } from "react-native";
 
-// Placeholder screen to start AI Training Assistant; replace with real flow when available
-export default function TrainingScreen({ navigation }) {
-  function startDemo() {
-    const mockTraining = {
-      finalSummary: "Your plant is ready for gentle LST and a top at node 4.",
-      topRecommendation: {
-        shouldTop: true,
-        recommendedNode: 4,
-        reason: "Strong lower node spacing."
-      },
-      fimRecommendation: { shouldFIM: false, reason: "Apical growth not ideal for FIM." },
-      lst: { shouldTrain: true, branchesToBend: ["Main", "Secondary-left"] },
-      defoliation: {
-        shouldDefoliate: true,
-        leavesToRemoveCount: 3,
-        reason: "Lower leaves shaded."
-      }
-    };
-    navigation.navigate("TrainingResult", { photo: null, training: mockTraining });
-  }
-
+export default function TrainingScreen() {
   return (
-    <ScreenContainer>
-      <Text style={styles.header}>AI Training Assistant</Text>
-      <Text style={styles.sub}>
-        Capture plant structure and get topping/LST/defol recommendations.
-      </Text>
-
-      <View style={{ height: 16 }} />
-
-      <FeatureGate plan="pro" navigation={navigation}>
-        <TouchableOpacity style={styles.primary} onPress={startDemo}>
-          <Text style={styles.primaryText}>Run Demo Analysis</Text>
-        </TouchableOpacity>
-      </FeatureGate>
-    </ScreenContainer>
+    <View style={styles.container}>
+      <Text style={styles.title}>Training</Text>
+      <Text style={styles.body}>Temporarily stubbed (legacy FeatureGate undefined).</Text>
+    </View>
   );
 }
 
-const styles = {
-  header: { fontSize: 26, fontWeight: "700" },
-  sub: { color: "#777", marginTop: 6 },
-  primary: { marginTop: 24, backgroundColor: "#3498db", padding: 14, borderRadius: 10 },
-  primaryText: { color: "white", textAlign: "center", fontWeight: "700" }
-};
+const styles = StyleSheet.create({
+  container: { flex: 1, padding: 16 },
+  title: { fontSize: 20, fontWeight: "600", marginBottom: 8 },
+  body: { opacity: 0.8 }
+});

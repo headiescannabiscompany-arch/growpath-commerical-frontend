@@ -18,7 +18,10 @@ export default function InventoryItemDetailScreen() {
         {!facilityId ? (
           <Text>Select a facility first.</Text>
         ) : !itemId ? (
-          <InlineError title="Missing itemId" message="No inventory itemId was provided." />
+          <InlineError
+            title="Missing itemId"
+            message="No inventory itemId was provided."
+          />
         ) : (
           <>
             <Text style={{ opacity: 0.8 }}>Item ID: {String(itemId)}</Text>

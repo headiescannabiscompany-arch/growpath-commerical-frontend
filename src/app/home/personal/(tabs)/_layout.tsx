@@ -1,70 +1,23 @@
 import React from "react";
-import { Tabs } from "expo-router";
-import { Ionicons } from "@expo/vector-icons";
+import { Tabs, Redirect } from "expo-router";
+import { ActivityIndicator, View } from "react-native";
 
-function tabIcon(name: keyof typeof Ionicons.glyphMap) {
-  return ({ color, size }: { color: string; size: number }) => (
-    <Ionicons name={name} size={size} color={color} />
-  );
-}
+import { useEntitlements } from "@/entitlements";
 
 export default function PersonalTabsLayout() {
-  return (
-    <Tabs
-      screenOptions={{
-        headerShown: false,
-        tabBarHideOnKeyboard: true
-      }}
-    >
-      <Tabs.Screen
-        name="index"
-        options={{
-          title: "Home",
-          tabBarIcon: tabIcon("leaf-outline")
-        }}
-      />
-      <Tabs.Screen
-        name="grows"
-        options={{
-          title: "Grows",
-          tabBarIcon: tabIcon("flower-outline")
-        }}
-      />
-      <Tabs.Screen
-        name="tasks"
-        options={{
-          title: "Tasks",
-          tabBarIcon: tabIcon("checkmark-done-outline")
-        }}
-      />
-      <Tabs.Screen
-        name="logs"
-        options={{
-          title: "Logs",
-          tabBarIcon: tabIcon("document-text-outline")
-        }}
-      />
-      <Tabs.Screen
-        name="tools"
-        options={{
-          title: "Tools",
-          tabBarIcon: tabIcon("hammer-outline")
-        }}
-      />
-      <Tabs.Screen
-        name="profile"
-        options={{
-          title: "Profile",
-          tabBarIcon: tabIcon("person-outline")
-        }}
-      />
-      <Tabs.Screen
-        name="ai"
-        options={{
-          title: "AI",
-          tabBarIcon: tabIcon("sparkles-outline")
-        }}
-      />
-    </Tabs>
-  );
+  const ent = useEntitlements();
+
+  if (!ent?.ready) {
+    return (
+      <View style={{ flex: 1, alignItems: "center", justifyContent: "center" }}>
+        <ActivityIndicator />
+      </View>
+    );
+  }
+
+  if (ent.mode !== "personal") {
+    return <Redirect href="/home" />;
+  }
+
+  return <Tabs screenOptions={{ headerShown: true, tabBarHideOnKeyboard: true }} />;
 }

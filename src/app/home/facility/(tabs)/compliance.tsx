@@ -1,4 +1,4 @@
-import React, { useEffect, useState, useMemo } from "react";
+import React, { useEffect, useState } from "react";
 import {
   View,
   Text,
@@ -81,16 +81,16 @@ export default function ComplianceDashboard() {
 
         // Deviations
         const openDeviations = Array.isArray(deviations)
-          ? deviations.filter((d) => d.status !== "closed").length
+          ? deviations.filter((d: any) => d.status !== "closed").length
           : Array.isArray(deviations?.items)
-            ? deviations.items.filter((d) => d.status !== "closed").length
+            ? deviations.items.filter((d: any) => d.status !== "closed").length
             : 0;
 
         // Verifications
         const pendingVerifications = Array.isArray(verifications?.records)
-          ? verifications.records.filter((v) => v.status !== "approved").length
+          ? verifications.records.filter((v: any) => v.status !== "approved").length
           : Array.isArray(verifications)
-            ? verifications.filter((v) => v.status !== "approved").length
+            ? verifications.filter((v: any) => v.status !== "approved").length
             : 0;
 
         // Green Waste (trend)
@@ -103,10 +103,10 @@ export default function ComplianceDashboard() {
         const ms7d = 7 * 24 * 60 * 60 * 1000;
         const ms30d = 30 * 24 * 60 * 60 * 1000;
         const last7d = greenWasteLogs.filter(
-          (g) => g.date && now - new Date(g.date).getTime() <= ms7d
+          (g: any) => g.date && now - new Date(g.date).getTime() <= ms7d
         );
         const last30d = greenWasteLogs.filter(
-          (g) => g.date && now - new Date(g.date).getTime() <= ms30d
+          (g: any) => g.date && now - new Date(g.date).getTime() <= ms30d
         );
         const greenWaste7d = last7d.length;
         const greenWaste30dAvg = last30d.length ? last30d.length / 4.2857 : 0; // 30/7 ≈ 4.2857
@@ -134,10 +134,10 @@ export default function ComplianceDashboard() {
             ? auditLogs
             : [];
         const audit7d = auditItems.filter(
-          (a) => a.createdAt && now - new Date(a.createdAt).getTime() <= ms7d
+          (a: any) => a.createdAt && now - new Date(a.createdAt).getTime() <= ms7d
         ).length;
         const audit30d = auditItems.filter(
-          (a) => a.createdAt && now - new Date(a.createdAt).getTime() <= ms30d
+          (a: any) => a.createdAt && now - new Date(a.createdAt).getTime() <= ms30d
         ).length;
         const audit30dAvg = audit30d ? audit30d / 4.2857 : 0;
         const auditDelta = Math.round(audit7d - audit30dAvg);
@@ -167,7 +167,7 @@ export default function ComplianceDashboard() {
     return () => {
       mounted = false;
     };
-  }, [facilityId]);
+  }, [facilityId, handleApiError]);
 
   // --- UI ---
   if (loading) {

@@ -1,10 +1,11 @@
-import client from "./client.js";
-import ROUTES from "./routes.js";
+// src/api/adminReports.js
+import apiClient from "./client.js";
+import routes from "./routes.js";
 
 export const getReports = async (token) => {
-  return client.get(ROUTES.REPORTS.LIST, token);
+  return apiClient.get(routes.REPORTS.LIST, token);
 };
 
 export const resolveReport = async (id, token) => {
-  return client.patch(ROUTES.REPORTS.RESOLVE(id), {}, token);
+  return apiClient.patch(routes.REPORTS.RESOLVE(id), {}, token);
 };

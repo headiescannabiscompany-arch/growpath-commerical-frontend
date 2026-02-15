@@ -1,28 +1,28 @@
 import { client as api } from "./client.js";
-import ROUTES from "./routes.js";
+import apiRoutes from "./routes.js";
 
 export function listLives() {
-  return api(ROUTES.LIVES.LIST);
+  return api(apiRoutes.LIVES.LIST);
 }
 
 export function getLive(id) {
-  return api(ROUTES.LIVES.DETAIL(id));
+  return api(apiRoutes.LIVES.DETAIL(id));
 }
 
 export function createLive(data) {
-  return api(ROUTES.LIVES.CREATE, {
+  return api(apiRoutes.LIVES.CREATE, {
     method: "POST",
     body: JSON.stringify(data)
   });
 }
 
 export function updateLive(id, data) {
-  return api(ROUTES.LIVES.UPDATE(id), {
+  return api(apiRoutes.LIVES.UPDATE(id), {
     method: "PUT",
     body: JSON.stringify(data)
   });
 }
 
 export function deleteLive(id) {
-  return api(ROUTES.LIVES.DELETE(id), { method: "DELETE" });
+  return api(apiRoutes.LIVES.DELETE(id), { method: "DELETE" });
 }

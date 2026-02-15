@@ -1,2 +1,2 @@
-import client from "./client.js";
-export default client;
+import apiClient from "./apiClient.js";
+export default apiClient;

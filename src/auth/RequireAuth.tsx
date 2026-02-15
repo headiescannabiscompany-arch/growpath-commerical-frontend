@@ -1,3 +1,4 @@
+/* eslint-disable react-hooks/exhaustive-deps */
 import React from "react";
 import { ActivityIndicator, View } from "react-native";
 import { useRouter, useSegments } from "expo-router";

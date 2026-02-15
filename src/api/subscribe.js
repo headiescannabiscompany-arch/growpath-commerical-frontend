@@ -1,16 +1,16 @@
 import { client } from "./client.js";
-import ROUTES from "./routes.js";
+import apiRoutes from "./routes.js";
 
 export const startSubscription = async (type, token) => {
-  return client.post(ROUTES.SUBSCRIBE.START, { type }, token);
+  return client.post(apiRoutes.SUBSCRIBE.START, { type }, token);
 };
 
 export const cancelSubscription = async (token) => {
-  return client.post(ROUTES.SUBSCRIBE.CANCEL, {}, token);
+  return client.post(apiRoutes.SUBSCRIBE.CANCEL, {}, token);
 };
 
 export const getSubscriptionStatus = async (token) => {
-  return client.get(ROUTES.SUBSCRIBE.STATUS, token);
+  return client.get(apiRoutes.SUBSCRIBE.STATUS, token);
 };
 
 if (typeof module !== "undefined") {

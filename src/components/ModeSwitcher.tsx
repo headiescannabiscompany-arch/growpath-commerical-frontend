@@ -20,26 +20,23 @@ export function ModeSwitcher({
       <Text style={{ fontWeight: "600" }}>Mode</Text>
 
       {showSingle && (
-        <Pressable
-          onPress={() => switchTo("SINGLE_USER")}
-          disabled={mode === "SINGLE_USER"}
-        >
-          <Text style={{ opacity: mode === "SINGLE_USER" ? 0.5 : 1 }}>Personal</Text>
+        <Pressable onPress={() => switchTo("personal")} disabled={mode === "personal"}>
+          <Text style={{ opacity: mode === "personal" ? 0.5 : 1 }}>Personal</Text>
         </Pressable>
       )}
 
       {showCommercial && (
         <Pressable
-          onPress={() => switchTo("COMMERCIAL")}
-          disabled={mode === "COMMERCIAL"}
+          onPress={() => switchTo("commercial")}
+          disabled={mode === "commercial"}
         >
-          <Text style={{ opacity: mode === "COMMERCIAL" ? 0.5 : 1 }}>Commercial</Text>
+          <Text style={{ opacity: mode === "commercial" ? 0.5 : 1 }}>Commercial</Text>
         </Pressable>
       )}
 
       {showFacility && (
-        <Pressable onPress={() => switchTo("FACILITY")} disabled={mode === "FACILITY"}>
-          <Text style={{ opacity: mode === "FACILITY" ? 0.5 : 1 }}>Facility</Text>
+        <Pressable onPress={() => switchTo("facility")} disabled={mode === "facility"}>
+          <Text style={{ opacity: mode === "facility" ? 0.5 : 1 }}>Facility</Text>
         </Pressable>
       )}
     </View>

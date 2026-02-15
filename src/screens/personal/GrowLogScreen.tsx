@@ -3,7 +3,7 @@ import { View, ActivityIndicator, FlatList, Text } from "react-native";
 import { useNavigation, useRoute } from "@react-navigation/native";
 
 import EmptyState from "../../components/EmptyState";
-import InlineError from "../../components/InlineError";
+import { InlineError } from "../../components/InlineError";
 import { useApiErrorHandler } from "../../hooks/useApiErrorHandler";
 import { useGrowLogs } from "../../hooks/useGrowLogs";
 
@@ -56,7 +56,7 @@ export default function GrowLogScreen() {
       {logs.length === 0 ? (
         <EmptyState
           title="No log entries yet"
-          description="Record today’s log to start your habit."
+          description="Record todayâ€™s log to start your habit."
           actionLabel="Record Log"
           onAction={() => navigation.navigate("AddLog", { growId })}
         />
@@ -72,3 +72,4 @@ export default function GrowLogScreen() {
     </View>
   );
 }
+

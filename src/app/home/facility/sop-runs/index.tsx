@@ -155,7 +155,7 @@ export default function FacilitySopRunsListScreen() {
             <TouchableOpacity
               onPress={() => router.push("/home/facility/sop-runs/presets")}
             >
-              \<Text style={{ fontWeight: "900" }}>Presets</Text>
+              <Text style={{ fontWeight: "900" }}>Presets</Text>
             </TouchableOpacity>
 
             <View style={{ width: 14 }} />

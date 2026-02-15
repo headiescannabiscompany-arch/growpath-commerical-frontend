@@ -1,4 +1,4 @@
-﻿import React from "react";
+import React from "react";
 import { View, Text } from "react-native";
 import { useLocalSearchParams } from "expo-router";
 import { ScreenBoundary } from "@/components/ScreenBoundary";
@@ -14,9 +14,7 @@ export default function SopRunDetailScreen() {
         <Text style={{ fontSize: 20, fontWeight: "900" }}>SOP Run</Text>
         <Text>Facility: {facilityId || "none"}</Text>
         <Text>Run ID: {id || "missing"}</Text>
-        <Text style={{ opacity: 0.75 }}>
-          Safe-mount stub. Wire SOP run details next.
-        </Text>
+        <Text style={{ opacity: 0.75 }}>Safe-mount stub. Wire SOP run details next.</Text>
       </View>
     </ScreenBoundary>
   );

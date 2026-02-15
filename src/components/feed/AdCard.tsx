@@ -16,7 +16,9 @@ export default function AdCard({ title, body, cta }: AdCardProps) {
       <Text style={styles.title}>{title}</Text>
       <Text style={styles.body}>{body}</Text>
       <Link href="/tools" style={styles.link}>
-        {cta} →
+        <Text style={styles.link}>
+          {cta} {"\u2192"}
+        </Text>
       </Link>
     </AppCard>
   );

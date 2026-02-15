@@ -2,11 +2,11 @@ import React from "react";
 import {
   ScrollView,
   View,
-  Text,
   StyleSheet,
   useWindowDimensions,
   Platform
 } from "react-native";
+import { sanitizeViewChildren } from "@/components/layout/sanitizeViewChildren";
 import { useEntitlements } from "@/entitlements";
 import FeedRail from "@/components/feed/FeedRail";
 import ForumHighlights from "@/components/feed/ForumHighlights";
@@ -50,11 +50,17 @@ export default function AppPage({
 
   return (
     <ScrollView style={styles.page} contentContainerStyle={styles.pageContent}>
-      {header ? <View style={styles.header}>{header}</View> : null}
+      {header ? (
+        <View style={styles.header}>
+          {sanitizeViewChildren(header, "AppPage.header")}
+        </View>
+      ) : null}
       <View style={[styles.columns, isWide ? styles.columnsWide : styles.columnsNarrow]}>
-        <View style={styles.main}>{children}</View>
+        <View style={styles.main}>{sanitizeViewChildren(children, "AppPage.main")}</View>
         {rail ? (
-          <View style={[styles.rail, !isWide && styles.railNarrow]}>{rail}</View>
+          <View style={[styles.rail, !isWide && styles.railNarrow]}>
+            {sanitizeViewChildren(rail, "AppPage.rail")}
+          </View>
         ) : null}
       </View>
     </ScrollView>

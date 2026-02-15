@@ -3,7 +3,7 @@
  * Handles social platform connections and metrics
  */
 
-import client from "./client.js";
+import apiClient from "./apiClient.js";
 
 export const SOCIAL_ROUTES = {
   CONNECT: "/api/social/connect",
@@ -16,7 +16,7 @@ export const SOCIAL_ROUTES = {
 
 export const connectSocialAccount = async (platform, accessToken, apiKey) => {
   try {
-    const response = await client.post(SOCIAL_ROUTES.CONNECT, {
+    const response = await apiClient.post(SOCIAL_ROUTES.CONNECT, {
       platform,
       accessToken,
       apiKey
@@ -29,7 +29,7 @@ export const connectSocialAccount = async (platform, accessToken, apiKey) => {
 
 export const disconnectSocialAccount = async (platform) => {
   try {
-    const response = await client.post(SOCIAL_ROUTES.DISCONNECT, {
+    const response = await apiClient.post(SOCIAL_ROUTES.DISCONNECT, {
       platform
     });
     return response.data;
@@ -40,7 +40,7 @@ export const disconnectSocialAccount = async (platform) => {
 
 export const getSocialAccounts = async () => {
   try {
-    const response = await client.get(SOCIAL_ROUTES.GET_ACCOUNTS);
+    const response = await apiClient.get(SOCIAL_ROUTES.GET_ACCOUNTS);
     return response.data;
   } catch (error) {
     throw new Error(`Failed to fetch social accounts: ${error.message}`);
@@ -49,7 +49,7 @@ export const getSocialAccounts = async () => {
 
 export const getSocialMetrics = async (platform) => {
   try {
-    const response = await client.get(
+    const response = await apiClient.get(
       SOCIAL_ROUTES.GET_METRICS.replace(":platform", platform)
     );
     return response.data;
@@ -60,7 +60,7 @@ export const getSocialMetrics = async (platform) => {
 
 export const syncSocialData = async (platform) => {
   try {
-    const response = await client.post(
+    const response = await apiClient.post(
       SOCIAL_ROUTES.SYNC_DATA.replace(":platform", platform)
     );
     return response.data;
@@ -71,7 +71,7 @@ export const syncSocialData = async (platform) => {
 
 export const schedulePost = async (platforms, content, scheduledTime) => {
   try {
-    const response = await client.post(SOCIAL_ROUTES.POST_SCHEDULE, {
+    const response = await apiClient.post(SOCIAL_ROUTES.POST_SCHEDULE, {
       platforms,
       content,
       scheduledTime

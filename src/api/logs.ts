@@ -11,34 +11,15 @@ export interface PersonalLog {
   updatedAt: string;
 }
 
-interface PersonalLogsResponse {
-  ok: boolean;
-  data: {
-    logs: PersonalLog[];
-  };
-}
-
-/**
- * Fetch logs for the authenticated personal mode user.
- * Optionally filter by growId.
- */
 export async function listPersonalLogs(options?: {
   growId?: string;
 }): Promise<PersonalLog[]> {
-  try {
-    const query = options?.growId ? `?growId=${encodeURIComponent(options.growId)}` : "";
-    const res = await api.get(`/api/personal/logs${query}`);
+  const query = options?.growId ? `?growId=${encodeURIComponent(options.growId)}` : "";
 
-    if (
-      typeof res === "object" &&
-      res !== null &&
-      "data" in res &&
-      res.data &&
-      "logs" in res.data
-    ) {
-      return res.data.logs as PersonalLog[];
-    }
-    return [];
+  try {
+    const res: any = await api.get(`/api/personal/logs${query}`);
+    const logs = res?.data?.logs;
+    return Array.isArray(logs) ? (logs as PersonalLog[]) : [];
   } catch (err) {
     console.error("[listPersonalLogs] Error:", err);
     return [];

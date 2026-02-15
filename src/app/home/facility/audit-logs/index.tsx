@@ -141,7 +141,7 @@ export default function FacilityAuditLogsListScreen() {
 
           <View style={{ flexDirection: "row" }}>
             <TouchableOpacity onPress={() => router.push("/home/facility/select")}>
-              \<Text style={{ fontWeight: "900" }}>Change Facility</Text>
+              <Text style={{ fontWeight: "900" }}>Change Facility</Text>
             </TouchableOpacity>
 
             <View style={{ width: 14 }} />

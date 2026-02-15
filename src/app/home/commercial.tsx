@@ -1,7 +1,6 @@
-import { Redirect } from "expo-router";
+import { Redirect, Link } from "expo-router";
 import React from "react";
 import { View, Text, StyleSheet } from "react-native";
-import { Link } from "expo-router";
 import { useAuth } from "@/auth/AuthContext";
 import { useEntitlements } from "@/entitlements";
 import { useFacility } from "@/facility/FacilityProvider";
@@ -98,8 +97,9 @@ export default function CommercialHome() {
             <Text style={styles.cardDesc}>
               You have access to facilities. Select one to manage.
             </Text>
-            <Link href="/facilities" style={styles.link}>
-              Select Facility →
+
+            <Link href="/facilities" asChild>
+              <Text style={styles.link}>Select Facility →</Text>
             </Link>
           </AppCard>
         </View>
@@ -111,26 +111,29 @@ export default function CommercialHome() {
         <AppCard>
           <Text style={styles.cardTitle}>📱 Feed</Text>
           <Text style={styles.cardDesc}>
-            Your brand's content feed, engagement, and reach
+            Your brand{"'"}s content feed, engagement, and reach
           </Text>
-          <Link href="/feed" style={styles.link}>
-            View Feed →
+
+          <Link href="/feed" asChild>
+            <Text style={styles.link}>View Feed →</Text>
           </Link>
         </AppCard>
 
         <AppCard>
           <Text style={styles.cardTitle}>🎯 Campaigns</Text>
           <Text style={styles.cardDesc}>Create and manage marketing campaigns</Text>
-          <Link href="/campaigns" style={styles.link}>
-            Manage Campaigns →
+
+          <Link href="/campaigns" asChild>
+            <Text style={styles.link}>Manage Campaigns →</Text>
           </Link>
         </AppCard>
 
         <AppCard>
           <Text style={styles.cardTitle}>💰 Offers</Text>
           <Text style={styles.cardDesc}>Special offers, promotions, and deals</Text>
-          <Link href="/offers" style={styles.link}>
-            Manage Offers →
+
+          <Link href="/offers" asChild>
+            <Text style={styles.link}>Manage Offers →</Text>
           </Link>
         </AppCard>
       </View>
@@ -143,8 +146,9 @@ export default function CommercialHome() {
           <Text style={styles.cardDesc}>
             Manage your online storefront and product listings
           </Text>
-          <Link href="/storefront" style={styles.link}>
-            Manage Storefront →
+
+          <Link href="/storefront" asChild>
+            <Text style={styles.link}>Manage Storefront →</Text>
           </Link>
         </AppCard>
 
@@ -153,16 +157,18 @@ export default function CommercialHome() {
           <Text style={styles.cardDesc}>
             Track orders, fulfillment, and customer interactions
           </Text>
-          <Link href="/orders" style={styles.link}>
-            View Orders →
+
+          <Link href="/orders" asChild>
+            <Text style={styles.link}>View Orders →</Text>
           </Link>
         </AppCard>
 
         <AppCard>
           <Text style={styles.cardTitle}>📊 Inventory</Text>
           <Text style={styles.cardDesc}>Manage product inventory and stock levels</Text>
-          <Link href="/home/commercial/inventory" style={styles.link}>
-            Manage Inventory →
+
+          <Link href="/home/commercial/inventory" asChild>
+            <Text style={styles.link}>Manage Inventory →</Text>
           </Link>
         </AppCard>
       </View>
@@ -173,16 +179,18 @@ export default function CommercialHome() {
         <AppCard>
           <Text style={styles.cardTitle}>📚 Courses</Text>
           <Text style={styles.cardDesc}>Create and sell educational courses</Text>
-          <Link href="/courses" style={styles.link}>
-            Manage Courses →
+
+          <Link href="/courses" asChild>
+            <Text style={styles.link}>Manage Courses →</Text>
           </Link>
         </AppCard>
 
         <AppCard>
           <Text style={styles.cardTitle}>👥 Communities</Text>
           <Text style={styles.cardDesc}>Build and manage brand communities</Text>
-          <Link href="/communities" style={styles.link}>
-            Manage Communities →
+
+          <Link href="/communities" asChild>
+            <Text style={styles.link}>Manage Communities →</Text>
           </Link>
         </AppCard>
       </View>
@@ -192,8 +200,9 @@ export default function CommercialHome() {
         <AppCard>
           <Text style={styles.cardTitle}>⚙️ Profile & Settings</Text>
           <Text style={styles.cardDesc}>Account settings, team management, billing</Text>
-          <Link href="/profile" style={styles.link}>
-            Open Profile →
+
+          <Link href="/profile" asChild>
+            <Text style={styles.link}>Open Profile →</Text>
           </Link>
         </AppCard>
       </View>

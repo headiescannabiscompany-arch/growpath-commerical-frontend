@@ -7,8 +7,9 @@ export default defineConfig({
   retries: process.env.CI ? 2 : 0,
   fullyParallel: true,
   reporter: [["list"], ["html"]],
-  testIdAttribute: "data-testid",
+
   use: {
+    testIdAttribute: "data-testid",
     baseURL: "http://localhost:8081",
     trace: "on-first-retry",
     screenshot: "only-on-failure",
@@ -23,7 +24,8 @@ export default defineConfig({
   projects: [
     {
       name: "chromium",
-      use: { ...devices["Desktop Chrome"] }
+      use: {
+    testIdAttribute: "data-testid", ...devices["Desktop Chrome"] }
     }
   ]
 });

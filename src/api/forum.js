@@ -1,12 +1,12 @@
 import { client as api } from "./client.js";
-import ROUTES from "./routes.js";
+import apiRoutes from "./routes.js";
 
 export function listPosts() {
-  return api(ROUTES.FORUM.LIST);
+  return api(apiRoutes.FORUM.LIST);
 }
 
 export function getPost(id) {
-  return api(ROUTES.FORUM.DETAIL(id));
+  return api(apiRoutes.FORUM.DETAIL(id));
 }
 
 function buildForumFeedQuery(page = 1, tier1 = [], tags = []) {
@@ -18,21 +18,21 @@ function buildForumFeedQuery(page = 1, tier1 = [], tags = []) {
 
 export function getLatestPosts(page = 1, tier1 = [], tags = []) {
   const qs = buildForumFeedQuery(page, tier1, tags);
-  return api(`${ROUTES.FORUM.FEED_LATEST}?${qs}`);
+  return api(`${apiRoutes.FORUM.FEED_LATEST}?${qs}`);
 }
 
 export function getTrendingPosts(page = 1, tier1 = [], tags = []) {
   const qs = buildForumFeedQuery(page, tier1, tags);
-  return api(`${ROUTES.FORUM.FEED_TRENDING}?${qs}`);
+  return api(`${apiRoutes.FORUM.FEED_TRENDING}?${qs}`);
 }
 
 export function getFollowingPosts(page = 1, tier1 = [], tags = []) {
   const qs = buildForumFeedQuery(page, tier1, tags);
-  return api(`${ROUTES.FORUM.FEED_FOLLOWING}?${qs}`);
+  return api(`${apiRoutes.FORUM.FEED_FOLLOWING}?${qs}`);
 }
 
 export function createPost(payload) {
-  return api(ROUTES.FORUM.CREATE, {
+  return api(apiRoutes.FORUM.CREATE, {
     method: "POST",
     body: JSON.stringify(payload)
   });
@@ -48,56 +48,56 @@ export function createPostLegacy(title, body, photos, vipOnly = false) {
     photos.forEach((file) => form.append("photos", file));
   }
 
-  return api(ROUTES.FORUM.LEGACY_CREATE, {
+  return api(apiRoutes.FORUM.LEGACY_CREATE, {
     method: "POST",
     body: form
   });
 }
 
 export function likePost(id) {
-  return api(ROUTES.FORUM.LIKE(id), { method: "POST" });
+  return api(apiRoutes.FORUM.LIKE(id), { method: "POST" });
 }
 
 export function unlikePost(id) {
-  return api(ROUTES.FORUM.UNLIKE(id), { method: "POST" });
+  return api(apiRoutes.FORUM.UNLIKE(id), { method: "POST" });
 }
 
 export function addComment(id, text, parentId = null) {
-  return api(ROUTES.FORUM.COMMENT(id), {
+  return api(apiRoutes.FORUM.COMMENT(id), {
     method: "POST",
     body: JSON.stringify({ text, parentId })
   });
 }
 
 export function getComments(id) {
-  return api(ROUTES.FORUM.COMMENTS(id));
+  return api(apiRoutes.FORUM.COMMENTS(id));
 }
 
 export function deleteComment(commentId) {
-  return api(ROUTES.FORUM.COMMENT_DETAIL(commentId), { method: "DELETE" });
+  return api(apiRoutes.FORUM.COMMENT_DETAIL(commentId), { method: "DELETE" });
 }
 
 export function savePost(id) {
-  return api(ROUTES.FORUM.SAVE(id), { method: "POST" });
+  return api(apiRoutes.FORUM.SAVE(id), { method: "POST" });
 }
 
 export function unsavePost(id) {
-  return api(ROUTES.FORUM.UNSAVE(id), { method: "POST" });
+  return api(apiRoutes.FORUM.UNSAVE(id), { method: "POST" });
 }
 
 export function reportPost(id, reason = "No reason provided") {
-  return api(ROUTES.FORUM.REPORT(id), {
+  return api(apiRoutes.FORUM.REPORT(id), {
     method: "POST",
     body: JSON.stringify({ reason })
   });
 }
 
 export function savePostToGrowLog(id) {
-  return api(ROUTES.FORUM.TO_GROWLOG(id), { method: "POST" });
+  return api(apiRoutes.FORUM.TO_GROWLOG(id), { method: "POST" });
 }
 
 export function commentOnPost(postId, text) {
-  return api(ROUTES.FORUM.COMMENTS(postId), {
+  return api(apiRoutes.FORUM.COMMENTS(postId), {
     method: "POST",
     body: JSON.stringify({ text })
   });

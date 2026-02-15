@@ -1,75 +1,17 @@
-import React, { useEffect, useState } from "react";
-import { Text, FlatList, TouchableOpacity } from "react-native";
-import ScreenContainer from "../components/ScreenContainer";
-import { listTemplates } from "../api/templates";
-import { getCreatorName } from "../utils/creator";
+import React from "react";
+import { View, Text, StyleSheet } from "react-native";
 
-export default function TemplatesMarketplaceScreen({ navigation }) {
-  const [templates, setTemplates] = useState([]);
-
-  async function load() {
-    const res = await listTemplates();
-    const payload = res?.data ?? res ?? [];
-    setTemplates(Array.isArray(payload) ? payload : []);
-  }
-
-  useEffect(() => {
-    const unsubscribe = navigation.addListener("focus", load);
-    return unsubscribe;
-  }, [navigation]);
-
+export default function TemplatesMarketplaceScreen() {
   return (
-    <ScreenContainer>
-      <Text style={styles.header}>Grow Templates</Text>
-      <Text style={styles.sub}>Import ready-made grow schedules into your plants.</Text>
-
-      <FeatureGate
-        plan="pro"
-        navigation={navigation}
-        fallback={
-          <Text style={{ color: "#92400E", textAlign: "center", margin: 20 }}>
-            The Templates Marketplace is a Pro feature. Upgrade to Pro to access premium
-            grow templates.
-          </Text>
-        }
-      >
-        <FlatList
-          data={templates}
-          keyExtractor={(t) => t._id}
-          renderItem={({ item }) => (
-            <TouchableOpacity
-              style={styles.card}
-              onPress={() =>
-                navigation.navigate("TemplateDetail", { templateId: item._id })
-              }
-            >
-              <Text style={styles.title}>{item.title}</Text>
-              <Text style={styles.meta}>
-                {item.strain || "Any strain"} • {item.growMedium || "Any medium"}
-              </Text>
-              <Text style={styles.meta}>
-                {item.difficulty || ""} • {item.durationDays} days
-              </Text>
-              <Text style={styles.price}>
-                {item.price > 0 ? `$${item.price.toFixed(2)}` : "FREE"}
-              </Text>
-              {item.creator && (
-                <Text style={styles.creator}>By {getCreatorName(item.creator)}</Text>
-              )}
-            </TouchableOpacity>
-          )}
-        />
-      </FeatureGate>
-    </ScreenContainer>
+    <View style={styles.container}>
+      <Text style={styles.title}>Templates Marketplace</Text>
+      <Text style={styles.body}>Temporarily stubbed (legacy FeatureGate undefined).</Text>
+    </View>
   );
 }
 
-const styles = {
-  header: { fontSize: 26, fontWeight: "700", marginBottom: 4 },
-  sub: { color: "#777", marginBottom: 16 },
-  card: { backgroundColor: "white", padding: 14, borderRadius: 10, marginBottom: 12 },
-  title: { fontSize: 18, fontWeight: "700" },
-  meta: { fontSize: 13, color: "#555", marginTop: 2 },
-  price: { marginTop: 6, fontSize: 16, fontWeight: "700", color: "#2ecc71" },
-  creator: { fontSize: 12, color: "#777", marginTop: 6 }
-};
+const styles = StyleSheet.create({
+  container: { flex: 1, padding: 16 },
+  title: { fontSize: 20, fontWeight: "600", marginBottom: 8 },
+  body: { opacity: 0.8 }
+});

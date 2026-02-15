@@ -1,4 +1,4 @@
-import React, { useEffect } from "react";
+import React from "react";
 import { View, Text, TouchableOpacity, StyleSheet } from "react-native";
 import { colors } from "../theme/theme";
 
@@ -23,7 +23,7 @@ export default function GrowPlantSelector({
   return (
     <View style={styles.container}>
       <Text style={styles.label}>{label}</Text>
-      
+
       {loading ? (
         <Text style={styles.helperText}>Loading your grows…</Text>
       ) : grows.length === 0 ? (
@@ -33,38 +33,27 @@ export default function GrowPlantSelector({
       ) : (
         <View style={styles.pillRow}>
           <TouchableOpacity
-            style={[
-              styles.pill,
-              !selectedGrowId && styles.pillActive
-            ]}
+            style={[styles.pill, !selectedGrowId && styles.pillActive]}
             onPress={() => {
               if (onSelectGrow) onSelectGrow(null);
               if (onSelectPlants) onSelectPlants([]);
             }}
           >
-            <Text
-              style={[
-                styles.pillText,
-                !selectedGrowId && styles.pillTextActive
-              ]}
-            >
+            <Text style={[styles.pillText, !selectedGrowId && styles.pillTextActive]}>
               No Grow
             </Text>
           </TouchableOpacity>
           {grows.map((grow) => (
             <TouchableOpacity
               key={grow._id}
-              style={[
-                styles.pill,
-                selectedGrowId === grow._id && styles.pillActive
-              ]}
+              style={[styles.pill, selectedGrowId === grow._id && styles.pillActive]}
               onPress={() => {
                 if (onSelectGrow) {
-                   // Toggle off if same, or switch
-                   const next = selectedGrowId === grow._id ? null : grow._id;
-                   onSelectGrow(next);
-                   // Clear plants if grow changes/clears
-                   if (onSelectPlants) onSelectPlants([]);
+                  // Toggle off if same, or switch
+                  const next = selectedGrowId === grow._id ? null : grow._id;
+                  onSelectGrow(next);
+                  // Clear plants if grow changes/clears
+                  if (onSelectPlants) onSelectPlants([]);
                 }
               }}
             >
@@ -83,9 +72,7 @@ export default function GrowPlantSelector({
 
       {selectedGrowId && activeGrow ? (
         <>
-          <Text style={[styles.label, { marginTop: 10 }]}>
-            Attach a plant (optional)
-          </Text>
+          <Text style={[styles.label, { marginTop: 10 }]}>Attach a plant (optional)</Text>
           {(() => {
             if (!Array.isArray(activeGrow.plants) || activeGrow.plants.length === 0) {
               return (
@@ -120,10 +107,7 @@ export default function GrowPlantSelector({
                   return (
                     <TouchableOpacity
                       key={id}
-                      style={[
-                        styles.pill,
-                        isActive && styles.pillActive
-                      ]}
+                      style={[styles.pill, isActive && styles.pillActive]}
                       onPress={() => {
                         if (onSelectPlants) {
                           if (isActive) {
@@ -134,12 +118,7 @@ export default function GrowPlantSelector({
                         }
                       }}
                     >
-                      <Text
-                        style={[
-                          styles.pillText,
-                          isActive && styles.pillTextActive
-                        ]}
-                      >
+                      <Text style={[styles.pillText, isActive && styles.pillTextActive]}>
                         {plant.name || plant.strain || "Plant"}
                       </Text>
                     </TouchableOpacity>

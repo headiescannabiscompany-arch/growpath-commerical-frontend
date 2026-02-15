@@ -1,8 +1,6 @@
 // PAGE_REGISTRY_PERSONAL: Pages for Personal (Free + Pro) mode
 // Each entry: { name, label, icon, capabilityKey, component }
 
-import { Ionicons } from "@expo/vector-icons";
-
 export const PAGE_REGISTRY_PERSONAL = [
   {
     name: "Dashboard",

@@ -1,33 +1,29 @@
-import React, { useMemo } from "react";
-import { Tabs } from "expo-router";
-import { Ionicons } from "@expo/vector-icons";
+import React from "react";
+import { Tabs, Redirect } from "expo-router";
+import { ActivityIndicator, View } from "react-native";
 
-import { useAuth } from "@/auth/AuthContext";
-import { toEntContext } from "@/entitlements/toEntContext";
-import { uiGate } from "@/entitlements/uiGate";
-import { CAP } from "@/entitlements/screenMatrix";
-
-function tabIcon(name: keyof typeof Ionicons.glyphMap) {
-  return ({ color, size }: { color: string; size: number }) => (
-    <Ionicons name={name} size={size} color={color} />
-  );
-}
+import { useEntitlements } from "@/entitlements";
+import { useFacility } from "@/state/useFacility";
 
 export default function FacilityTabsLayout() {
-  const auth = useAuth();
-  const ent = useMemo(() => toEntContext(auth), [auth]);
+  const ent = useEntitlements();
+  const { selectedId } = useFacility();
 
-  // Ensure gating is computed deterministically
-  const teamGate = useMemo(
-    () =>
-      uiGate(ent, CAP.FAC_TEAM, {
-        behaviorMissingCap: "hidden",
-        behaviorMissingFacilityContext: "hidden",
-        behaviorMissingRole: "hidden",
-        allowedFacilityRoles: ["OWNER", "MANAGER"]
-      }),
-    [ent]
-  );
+  if (!ent?.ready) {
+    return (
+      <View style={{ flex: 1, alignItems: "center", justifyContent: "center" }}>
+        <ActivityIndicator />
+      </View>
+    );
+  }
+
+  if (ent.mode !== "facility") {
+    return <Redirect href="/home/personal" />;
+  }
+
+  if (!selectedId) {
+    return <Redirect href="/home/facility/select" />;
+  }
 
   return (
     <Tabs
@@ -37,70 +33,15 @@ export default function FacilityTabsLayout() {
         tabBarHideOnKeyboard: true
       }}
     >
-      <Tabs.Screen
-        name="dashboard"
-        options={{
-          title: "Dashboard",
-          tabBarIcon: tabIcon("speedometer-outline")
-        }}
-      />
-      <Tabs.Screen
-        name="grows"
-        options={{
-          title: "Grows",
-          tabBarIcon: tabIcon("flower-outline")
-        }}
-      />
-      <Tabs.Screen
-        name="plants"
-        options={{
-          title: "Plants",
-          tabBarIcon: tabIcon("leaf-outline")
-        }}
-      />
-      <Tabs.Screen
-        name="ai-tools"
-        options={{
-          title: "AI Tools",
-          tabBarIcon: tabIcon("sparkles-outline")
-        }}
-      />
-      <Tabs.Screen
-        name="tasks"
-        options={{
-          title: "Tasks",
-          tabBarIcon: tabIcon("checkmark-done-outline")
-        }}
-      />
-      <Tabs.Screen
-        name="logs"
-        options={{
-          title: "Logs",
-          tabBarIcon: tabIcon("document-text-outline")
-        }}
-      />
-      <Tabs.Screen
-        name="inventory"
-        options={{
-          title: "Inventory",
-          tabBarIcon: tabIcon("cube-outline")
-        }}
-      />
-      <Tabs.Screen
-        name="team"
-        options={{
-          title: "Team",
-          tabBarIcon: tabIcon("people-outline"),
-          href: teamGate === "enabled" ? undefined : null
-        }}
-      />
-      <Tabs.Screen
-        name="profile"
-        options={{
-          title: "Profile",
-          tabBarIcon: tabIcon("person-outline")
-        }}
-      />
+      <Tabs.Screen name="dashboard" options={{ title: "Dashboard" }} />
+      <Tabs.Screen name="grows" options={{ title: "Grows" }} />
+      <Tabs.Screen name="plants" options={{ title: "Plants" }} />
+      <Tabs.Screen name="tasks" options={{ title: "Tasks" }} />
+      <Tabs.Screen name="logs" options={{ title: "Logs" }} />
+      <Tabs.Screen name="inventory" options={{ title: "Inventory" }} />
+      <Tabs.Screen name="compliance" options={{ title: "Compliance" }} />
+      <Tabs.Screen name="team" options={{ title: "Team" }} />
+      <Tabs.Screen name="profile" options={{ title: "Profile" }} />
     </Tabs>
   );
 }

@@ -3,7 +3,7 @@
  * Handles content uploads, sales, and analytics
  */
 
-import client from "./client.js";
+import apiClient from "./apiClient.js";
 
 export const MARKETPLACE_ROUTES = {
   BROWSE: "/api/marketplace/content",
@@ -19,7 +19,7 @@ export const MARKETPLACE_ROUTES = {
 
 export const browseMarketplace = async (category, page = 1, limit = 20) => {
   try {
-    const response = await client.get(MARKETPLACE_ROUTES.BROWSE, {
+    const response = await apiClient.get(MARKETPLACE_ROUTES.BROWSE, {
       params: { category, page, limit }
     });
     return response.data;
@@ -30,7 +30,7 @@ export const browseMarketplace = async (category, page = 1, limit = 20) => {
 
 export const searchContent = async (query, category) => {
   try {
-    const response = await client.get(MARKETPLACE_ROUTES.SEARCH, {
+    const response = await apiClient.get(MARKETPLACE_ROUTES.SEARCH, {
       params: { q: query, category }
     });
     return response.data;
@@ -41,7 +41,7 @@ export const searchContent = async (query, category) => {
 
 export const uploadContent = async (formData) => {
   try {
-    const response = await client.post(MARKETPLACE_ROUTES.UPLOAD, formData, {
+    const response = await apiClient.post(MARKETPLACE_ROUTES.UPLOAD, formData, {
       headers: { "Content-Type": "multipart/form-data" }
     });
     return response.data;
@@ -52,7 +52,7 @@ export const uploadContent = async (formData) => {
 
 export const getMyUploads = async () => {
   try {
-    const response = await client.get(MARKETPLACE_ROUTES.MY_UPLOADS);
+    const response = await apiClient.get(MARKETPLACE_ROUTES.MY_UPLOADS);
     return response.data;
   } catch (error) {
     throw new Error(`Failed to fetch your uploads: ${error.message}`);
@@ -61,7 +61,7 @@ export const getMyUploads = async () => {
 
 export const getSalesData = async (period = "monthly") => {
   try {
-    const response = await client.get(MARKETPLACE_ROUTES.GET_SALES, {
+    const response = await apiClient.get(MARKETPLACE_ROUTES.GET_SALES, {
       params: { period }
     });
     return response.data;
@@ -72,7 +72,7 @@ export const getSalesData = async (period = "monthly") => {
 
 export const getContentAnalytics = async (contentId) => {
   try {
-    const response = await client.get(
+    const response = await apiClient.get(
       MARKETPLACE_ROUTES.GET_ANALYTICS.replace(":contentId", contentId)
     );
     return response.data;
@@ -83,7 +83,7 @@ export const getContentAnalytics = async (contentId) => {
 
 export const updateContentPricing = async (contentId, price) => {
   try {
-    const response = await client.put(
+    const response = await apiClient.put(
       MARKETPLACE_ROUTES.UPDATE_PRICING.replace(":contentId", contentId),
       { price }
     );
@@ -95,7 +95,7 @@ export const updateContentPricing = async (contentId, price) => {
 
 export const deleteContent = async (contentId) => {
   try {
-    const response = await client.delete(
+    const response = await apiClient.delete(
       MARKETPLACE_ROUTES.DELETE_CONTENT.replace(":contentId", contentId)
     );
     return response.data;
@@ -106,7 +106,7 @@ export const deleteContent = async (contentId) => {
 
 export const purchaseContent = async (contentId) => {
   try {
-    const response = await client.post(
+    const response = await apiClient.post(
       MARKETPLACE_ROUTES.PURCHASE.replace(":contentId", contentId)
     );
     return response.data;

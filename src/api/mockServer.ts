@@ -24,7 +24,7 @@ type MockProfile = {
     capabilities: Record<string, boolean>;
     limits: Record<string, number>;
   };
-  facilities: Array<Record<string, any>>;
+  facilities: Record<string, any>[];
 };
 
 const MOCK_PASSWORD = "password";

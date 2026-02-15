@@ -1,6 +1,6 @@
 import React, { forwardRef, useRef, useCallback } from "react";
 import { View, ScrollView, StyleSheet } from "react-native";
-import { colors } from "../theme/theme.js";
+// import { colors } from "../theme/theme.js"; // Removed as unused
 import useTabPressScrollReset from "../hooks/useTabPressScrollReset.js";
 
 /**

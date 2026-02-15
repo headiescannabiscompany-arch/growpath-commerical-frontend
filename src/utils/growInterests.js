@@ -1,7 +1,9 @@
 import { INTEREST_TIERS } from "../config/interests.js";
 
-const tierOneMetadata =
-  INTEREST_TIERS.find((tier) => tier.tier === 1) || { id: "crops", options: [] };
+const tierOneMetadata = INTEREST_TIERS.find((tier) => tier.tier === 1) || {
+  id: "crops",
+  options: []
+};
 
 const TAG_TO_TIER = {};
 const TIER_OPTION_ORDER = {};
@@ -46,7 +48,7 @@ export function ensureTier1Selection(selected = []) {
   const defaults = getTier1Options().filter(
     (option) =>
       option !==
-      (/* sensitive-ok: needed to reference the owner-approved taxonomy label while filtering defaults */ "Cannabis")
+      /* sensitive-ok: needed to reference the owner-approved taxonomy label while filtering defaults */ "Cannabis"
   );
   if (defaults.length > 0) {
     return defaults;
@@ -72,7 +74,12 @@ function defaultTagAccessor(entity) {
   return [];
 }
 
-export function filterPostsByInterests(items, tier1Set, otherSet, tagAccessor = defaultTagAccessor) {
+export function filterPostsByInterests(
+  items,
+  tier1Set,
+  otherSet,
+  tagAccessor = defaultTagAccessor
+) {
   if (!Array.isArray(items) || (!tier1Set?.size && !otherSet?.size)) return items || [];
   const pickTags = typeof tagAccessor === "function" ? tagAccessor : defaultTagAccessor;
   const tier1 = tier1Set instanceof Set ? tier1Set : new Set();

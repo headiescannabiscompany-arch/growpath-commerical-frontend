@@ -14,8 +14,8 @@ export function LegacyFacilityRouteShim({ section }: { section: LegacyFacilitySe
   const { selectedId, setSelectedId } = useFacility() as any;
 
   React.useEffect(() => {
-    if (mode !== "FACILITY") {
-      router.replace(mode === "COMMERCIAL" ? "/home/commercial" : "/home/personal");
+    if (mode !== "facility") {
+      router.replace(mode === "commercial" ? "/home/commercial" : "/home/personal");
       return;
     }
     const fid = String(facilityId || "").trim();

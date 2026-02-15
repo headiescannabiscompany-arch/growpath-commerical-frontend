@@ -1,10 +1,15 @@
 import React, { useState, useEffect } from "react";
-import { View, Text, TouchableOpacity, StyleSheet, ActivityIndicator, Alert } from "react-native";
+import {
+  View,
+  Text,
+  TouchableOpacity,
+  StyleSheet,
+  ActivityIndicator,
+  Alert
+} from "react-native";
 import { useFocusEffect } from "@react-navigation/native";
 import { INTEREST_TIERS } from "../config/interests";
 import { updateGrowInterests } from "../api/users";
-import { colors } from "../theme/theme";
-
 export default function GrowInterestsEditor({ initialInterests = {}, onSave }) {
   const [interests, setInterests] = useState(initialInterests);
   const [expanded, setExpanded] = useState(false);
@@ -42,7 +47,7 @@ export default function GrowInterestsEditor({ initialInterests = {}, onSave }) {
       if (onSave) onSave(interests);
       Alert.alert("Success", "Grow interests updated.");
       setExpanded(false);
-    } catch (err) {
+    } catch (_err) {
       Alert.alert("Error", "Failed to update interests.");
     } finally {
       setSaving(false);
@@ -51,10 +56,7 @@ export default function GrowInterestsEditor({ initialInterests = {}, onSave }) {
 
   if (!expanded) {
     return (
-      <TouchableOpacity
-        style={styles.expandButton}
-        onPress={() => setExpanded(true)}
-      >
+      <TouchableOpacity style={styles.expandButton} onPress={() => setExpanded(true)}>
         <Text style={styles.expandText}>Manage Grow Interests</Text>
       </TouchableOpacity>
     );
@@ -69,13 +71,14 @@ export default function GrowInterestsEditor({ initialInterests = {}, onSave }) {
         </TouchableOpacity>
       </View>
       <Text style={styles.subtitle}>
-        Select the topics that matter to you. This customizes your feed, AI advice, and recommendations.
+        Select the topics that matter to you. This customizes your feed, AI advice, and
+        recommendations.
       </Text>
 
       {INTEREST_TIERS.map((tier) => {
         const isTierOpen = activeTier === tier.id;
         const selectedCount = (interests[tier.id] || []).length;
-        
+
         return (
           <View key={tier.id} style={styles.tierContainer}>
             <TouchableOpacity
@@ -87,7 +90,7 @@ export default function GrowInterestsEditor({ initialInterests = {}, onSave }) {
                 <Text style={styles.tierBadgeText}>{selectedCount}</Text>
               </View>
             </TouchableOpacity>
-            
+
             {isTierOpen && (
               <View style={styles.optionsGrid}>
                 {tier.options.map((option) => {
@@ -98,7 +101,9 @@ export default function GrowInterestsEditor({ initialInterests = {}, onSave }) {
                       style={[styles.pill, isSelected && styles.pillActive]}
                       onPress={() => toggleInterest(tier.id, option)}
                     >
-                      <Text style={[styles.pillText, isSelected && styles.pillTextActive]}>
+                      <Text
+                        style={[styles.pillText, isSelected && styles.pillTextActive]}
+                      >
                         {option}
                       </Text>
                     </TouchableOpacity>
@@ -110,11 +115,7 @@ export default function GrowInterestsEditor({ initialInterests = {}, onSave }) {
         );
       })}
 
-      <TouchableOpacity
-        style={styles.saveButton}
-        onPress={handleSave}
-        disabled={saving}
-      >
+      <TouchableOpacity style={styles.saveButton} onPress={handleSave} disabled={saving}>
         {saving ? (
           <ActivityIndicator color="white" />
         ) : (

@@ -41,6 +41,14 @@ const styles = StyleSheet.create({
   }
 });
 
+function NavLink({ href, label }: { href: string; label: string }) {
+  return (
+    <Link href={href} asChild>
+      <Text style={styles.link}>{label}</Text>
+    </Link>
+  );
+}
+
 /**
  * Personal Home Screen (Tab: Home)
  *
@@ -59,9 +67,12 @@ export default function PersonalHomeTab() {
       header={
         <View>
           <Text style={styles.headerTitle}>Your Garden</Text>
-          <Text style={styles.headerSubtitle}>
-            {auth.user?.email} · {plan} plan
-          </Text>
+          {(() => {
+            const subtitle = [auth.user?.email, `${plan} plan`]
+              .filter(Boolean)
+              .join(" · ");
+            return <Text style={styles.headerSubtitle}>{subtitle}</Text>;
+          })()}
         </View>
       }
     >
@@ -73,9 +84,7 @@ export default function PersonalHomeTab() {
           <Text style={styles.cardDesc}>
             Track your grows, log activities, monitor plant health
           </Text>
-          <Link href="/home/personal/grows" style={styles.link}>
-            View Grows →
-          </Link>
+          <NavLink href="/home/personal/grows" label="View Grows →" />
         </AppCard>
 
         <AppCard>
@@ -83,9 +92,7 @@ export default function PersonalHomeTab() {
           <Text style={styles.cardDesc}>
             Daily notes, photos, measurements, and progress tracking
           </Text>
-          <Link href="/home/personal/logs" style={styles.link}>
-            Open Logs →
-          </Link>
+          <NavLink href="/home/personal/logs" label="Open Logs →" />
         </AppCard>
 
         <AppCard>
@@ -93,9 +100,7 @@ export default function PersonalHomeTab() {
           <Text style={styles.cardDesc}>
             AI-powered plant diagnosis and issue detection
           </Text>
-          <Link href="/home/personal/diagnose" style={styles.link}>
-            Diagnose Issues →
-          </Link>
+          <NavLink href="/home/personal/diagnose" label="Diagnose Issues →" />
         </AppCard>
       </View>
 
@@ -107,9 +112,7 @@ export default function PersonalHomeTab() {
           <Text style={styles.cardDesc}>
             Soil calc, NPK, VPD, feed scheduler, harvest estimator
           </Text>
-          <Link href="/home/personal/tools" style={styles.link}>
-            Open Tools →
-          </Link>
+          <NavLink href="/home/personal/tools" label="Open Tools →" />
         </AppCard>
       </View>
 
@@ -121,9 +124,7 @@ export default function PersonalHomeTab() {
           <Text style={styles.cardDesc}>
             Browse courses, track progress, earn certificates
           </Text>
-          <Link href="/home/personal/courses" style={styles.link}>
-            Browse Courses →
-          </Link>
+          <NavLink href="/home/personal/courses" label="Browse Courses →" />
         </AppCard>
 
         <AppCard>
@@ -131,9 +132,7 @@ export default function PersonalHomeTab() {
           <Text style={styles.cardDesc}>
             Connect with growers, ask questions, share knowledge
           </Text>
-          <Link href="/home/personal/forum" style={styles.link}>
-            Open Forum →
-          </Link>
+          <NavLink href="/home/personal/forum" label="Open Forum →" />
         </AppCard>
       </View>
 
@@ -144,9 +143,7 @@ export default function PersonalHomeTab() {
           <Text style={styles.cardDesc}>
             Account settings, preferences, plan management
           </Text>
-          <Link href="/home/personal/profile" style={styles.link}>
-            Open Profile →
-          </Link>
+          <NavLink href="/home/personal/profile" label="Open Profile →" />
         </AppCard>
       </View>
     </AppPage>

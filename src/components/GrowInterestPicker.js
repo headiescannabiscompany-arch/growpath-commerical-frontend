@@ -37,10 +37,11 @@ export default function GrowInterestPicker({
     () => normalizeInterestList(user?.growInterests?.[tierOneId]),
     [user?.growInterests, tierOneId]
   );
-  const appliedOverrides = useMemo(() => tierOptionsOverride || {}, [tierOptionsOverride]);
-  const [expanded, setExpanded] = useState(
-    collapsible ? Boolean(defaultExpanded) : true
+  const appliedOverrides = useMemo(
+    () => tierOptionsOverride || {},
+    [tierOptionsOverride]
   );
+  const [expanded, setExpanded] = useState(collapsible ? Boolean(defaultExpanded) : true);
 
   const toggleExpanded = useCallback(() => {
     if (!collapsible) return;
@@ -50,7 +51,9 @@ export default function GrowInterestPicker({
   const handleToggle = (tierId, option) => {
     const currentTier = Array.isArray(selections[tierId]) ? selections[tierId] : [];
     const exists = currentTier.includes(option);
-    const nextTier = exists ? currentTier.filter((tag) => tag !== option) : [...currentTier, option];
+    const nextTier = exists
+      ? currentTier.filter((tag) => tag !== option)
+      : [...currentTier, option];
     const nextSelections = { ...selections, [tierId]: nextTier };
     onChange?.(nextSelections);
   };
@@ -71,47 +74,52 @@ export default function GrowInterestPicker({
         ) : null}
       </TouchableOpacity>
 
-      {!expanded ? null : visibleTiers.map((tier) => {
-        let tierOptions =
-          (appliedOverrides[tier.id] && Array.isArray(appliedOverrides[tier.id])
-            ? appliedOverrides[tier.id]
-            : tier.options) || [];
+      {!expanded
+        ? null
+        : visibleTiers.map((tier) => {
+            let tierOptions =
+              (appliedOverrides[tier.id] && Array.isArray(appliedOverrides[tier.id])
+                ? appliedOverrides[tier.id]
+                : tier.options) || [];
 
-        if (tier.tier === 1) {
-          tierOptions = appliedOverrides[tier.id] ?? userTier1Selections;
-        }
+            if (tier.tier === 1) {
+              tierOptions = appliedOverrides[tier.id] ?? userTier1Selections;
+            }
 
-        if (!tierOptions || tierOptions.length === 0) {
-          return null;
-        }
+            if (!tierOptions || tierOptions.length === 0) {
+              return null;
+            }
 
-        return (
-          <View key={tier.id} style={styles.tierBlock}>
-            <View style={styles.tierHeader}>
-              <Text style={styles.tierLabel}>
-                Tier {tier.tier}: {tier.label}
-              </Text>
-              <Text style={styles.tierCount}>
-                {Array.isArray(selections[tier.id]) ? selections[tier.id].length : 0} selected
-              </Text>
-            </View>
-            <View style={styles.chipRow}>
-              {tierOptions.map((option) => {
-                const active = selections[tier.id]?.includes(option);
-                return (
-                  <TouchableOpacity
-                    key={option}
-                    style={[styles.chip, active && styles.chipActive]}
-                    onPress={() => handleToggle(tier.id, option)}
-                  >
-                    <Text style={[styles.chipText, active && styles.chipTextActive]}>{option}</Text>
-                  </TouchableOpacity>
-                );
-              })}
-            </View>
-          </View>
-        );
-      })}
+            return (
+              <View key={tier.id} style={styles.tierBlock}>
+                <View style={styles.tierHeader}>
+                  <Text style={styles.tierLabel}>
+                    Tier {tier.tier}: {tier.label}
+                  </Text>
+                  <Text style={styles.tierCount}>
+                    {Array.isArray(selections[tier.id]) ? selections[tier.id].length : 0}{" "}
+                    selected
+                  </Text>
+                </View>
+                <View style={styles.chipRow}>
+                  {tierOptions.map((option) => {
+                    const active = selections[tier.id]?.includes(option);
+                    return (
+                      <TouchableOpacity
+                        key={option}
+                        style={[styles.chip, active && styles.chipActive]}
+                        onPress={() => handleToggle(tier.id, option)}
+                      >
+                        <Text style={[styles.chipText, active && styles.chipTextActive]}>
+                          {option}
+                        </Text>
+                      </TouchableOpacity>
+                    );
+                  })}
+                </View>
+              </View>
+            );
+          })}
     </View>
   );
 }

@@ -13,9 +13,18 @@ export default function PersonalLayout() {
   if (ent.mode === "commercial") return <Redirect href="/home/commercial" />;
 
   return (
-    <Stack screenOptions={{ headerShown: false }}>
-      {/* Personal tabs live under /home/personal/(tabs), but (tabs) is NOT part of the URL */}
+    <Stack screenOptions={{ headerShown: true }}>
+      {/* Bottom tabs */}
       <Stack.Screen name="(tabs)" options={{ headerShown: false }} />
+
+      {/* “More” routes (wrappers around src/screens/*) */}
+      <Stack.Screen name="more/analytics" options={{ title: "Analytics" }} />
+      <Stack.Screen name="more/social-tools" options={{ title: "Social Tools" }} />
+      <Stack.Screen name="more/forum" options={{ title: "Forum" }} />
+      <Stack.Screen name="more/links" options={{ title: "Links" }} />
+      <Stack.Screen name="more/qa" options={{ title: "QA" }} />
+      <Stack.Screen name="more/tasks" options={{ title: "Tasks" }} />
+      <Stack.Screen name="more/team" options={{ title: "Team" }} />
     </Stack>
   );
 }

@@ -1,46 +1,80 @@
 import React from "react";
-import { Text, StyleSheet } from "react-native";
-import { Link } from "expo-router";
-import AppCard from "@/components/layout/AppCard";
+import { Pressable, StyleSheet, Text, View } from "react-native";
+import { useRouter } from "expo-router";
 
-type ForumThreadCardProps = {
-  title: string;
-  meta: string;
+/**
+ * Safe, crash-proof forum highlight card.
+ * (The previous version crashed because `styles` was referenced but never defined.)
+ */
+type Props = {
+  title?: string;
+  meta?: string;
+  href?: string;
+  onPress?: () => void;
+  thread?: any;
+  [key: string]: any;
 };
 
-export default function ForumThreadCard({ title, meta }: ForumThreadCardProps) {
+export default function ForumThreadCard(props: Props) {
+  const router = useRouter();
+
+  const title = props.title ?? props.thread?.title ?? "Forum thread";
+  const meta = props.meta ?? props.thread?.meta ?? props.thread?.subtitle ?? "";
+  const href =
+    props.href ??
+    props.thread?.href ??
+    props.thread?.url ??
+    props.thread?.link ??
+    undefined;
+
+  const handlePress = () => {
+    if (typeof props.onPress === "function") return props.onPress();
+    if (href) router.push(href as any);
+  };
+
   return (
-    <AppCard>
+    <Pressable onPress={handlePress} style={styles.card} accessibilityRole="button">
       <Text style={styles.label}>Forum</Text>
-      <Text style={styles.title}>{title}</Text>
-      <Text style={styles.meta}>{meta}</Text>
-      <Link href="/forum" style={styles.link}>
-        View thread →
-      </Link>
-    </AppCard>
+      <Text style={styles.title} numberOfLines={2}>
+        {title}
+      </Text>
+      {!!meta && (
+        <Text style={styles.meta} numberOfLines={1}>
+          {meta}
+        </Text>
+      )}
+      <View style={{ marginTop: 8 }}>
+        <Text style={styles.link}>View thread {"\u2192"}</Text>
+      </View>
+    </Pressable>
   );
 }
 
 const styles = StyleSheet.create({
+  card: {
+    padding: 12,
+    borderRadius: 12,
+    borderWidth: 1,
+    borderColor: "rgba(0,0,0,0.12)",
+    backgroundColor: "rgba(255,255,255,0.9)"
+  },
   label: {
     fontSize: 12,
-    fontWeight: "700",
-    color: "#10B981",
+    opacity: 0.7,
     marginBottom: 6
   },
   title: {
     fontSize: 16,
     fontWeight: "700",
-    marginBottom: 6
+    marginBottom: 4
   },
   meta: {
     fontSize: 13,
-    color: "#64748B",
-    marginBottom: 10
+    opacity: 0.75
   },
   link: {
-    fontSize: 14,
-    fontWeight: "700",
-    color: "#10B981"
+    fontSize: 13,
+    fontWeight: "600",
+    opacity: 0.85
   }
 });

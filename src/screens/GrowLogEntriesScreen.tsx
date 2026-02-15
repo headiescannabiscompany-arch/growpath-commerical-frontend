@@ -11,7 +11,7 @@ import {
 import ScreenContainer from "../components/ScreenContainer.js";
 import Card from "../components/Card.js";
 import PrimaryButton from "../components/PrimaryButton.js";
-import InlineError from "../components/InlineError";
+import { InlineError } from "../components/InlineError";
 import EmptyState from "../components/EmptyState";
 
 import { colors, spacing, radius } from "../theme/theme.js";
@@ -65,7 +65,7 @@ export default function GrowLogEntriesScreen() {
     setRawError(null);
 
     if (!facilityId) {
-      // No alerts — show inline, contract-style error object
+      // No alerts â€” show inline, contract-style error object
       setItems([]);
       setRawError({
         code: "FACILITY_REQUIRED",
@@ -172,7 +172,7 @@ export default function GrowLogEntriesScreen() {
         <TextInput
           value={title}
           onChangeText={setTitle}
-          placeholder="e.g., Day 21 — canopy dialed in"
+          placeholder="e.g., Day 21 â€” canopy dialed in"
           placeholderTextColor={colors.textSoft}
           style={styles.input}
         />
@@ -199,7 +199,7 @@ export default function GrowLogEntriesScreen() {
       </Card>
 
       {loading ? (
-        <Text style={{ color: colors.textSoft }}>Loading…</Text>
+        <Text style={{ color: colors.textSoft }}>Loadingâ€¦</Text>
       ) : items.length === 0 ? (
         <EmptyState
           title="No entries yet"
@@ -300,3 +300,4 @@ const styles = StyleSheet.create({
     fontWeight: "600"
   }
 });
+

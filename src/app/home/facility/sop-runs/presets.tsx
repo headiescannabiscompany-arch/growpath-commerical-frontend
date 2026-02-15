@@ -1,4 +1,4 @@
-import React, { useEffect, useState } from "react";
+import React, { useCallback, useEffect, useState } from "react";
 import { View, Text, FlatList, TouchableOpacity, ActivityIndicator } from "react-native";
 
 import { useFacility } from "@/state/useFacility";
@@ -20,7 +20,7 @@ export default function SOPRunComparePresetsScreen({ navigation }: any) {
   const [items, setItems] = useState<ComparisonPreset[]>([]);
   const [deletingId, setDeletingId] = useState<string | null>(null);
 
-  const load = async () => {
+  const load = useCallback(async () => {
     if (!facilityId) return;
     setLoading(true);
     setError(null);
@@ -34,11 +34,11 @@ export default function SOPRunComparePresetsScreen({ navigation }: any) {
     } finally {
       setLoading(false);
     }
-  };
+  }, [facilityId, handleApiError]);
 
   useEffect(() => {
     load();
-  }, [facilityId]);
+  }, [load]);
 
   const onDelete = async (presetId: string) => {
     if (!facilityId) return;

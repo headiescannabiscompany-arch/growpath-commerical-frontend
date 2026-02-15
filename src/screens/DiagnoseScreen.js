@@ -1,3 +1,4 @@
+/* eslint-disable react/no-unescaped-entities */
 import React, { useEffect, useState } from "react";
 import {
   View,
@@ -9,7 +10,7 @@ import {
   Alert,
   Pressable,
   Linking
-} from "react-native";
+, StyleSheet } from "react-native";
 import * as ImagePicker from "expo-image-picker";
 import AppShell from "../components/AppShell.js";
 import PrimaryButton from "../components/PrimaryButton.js";
@@ -17,6 +18,7 @@ import TokenBalanceWidget from "../components/TokenBalanceWidget.js";
 import { useDiagnose } from "../hooks/useDiagnose";
 import { useAuth } from "@/auth/AuthContext";
 import { FEATURES, getEntitlement } from "../utils/entitlements.js";
+
 
 // Move DiagnoseScreen function here, after styles
 
@@ -247,9 +249,9 @@ export default function DiagnoseScreen({ route, navigation }) {
           <View style={styles.advancedSection}>
             {/* LIGHT SECTION */}
             <View style={styles.envSection}>
-              <Text style={styles.envSectionTitle}>💡 Light Information</Text>
+              <Text style={styles.envSectionTitle}>ðŸ’¡ Light Information</Text>
               <View style={styles.infoBox}>
-                <Text style={styles.infoBoxTitle}>📱 Measure PPFD/DLI</Text>
+                <Text style={styles.infoBoxTitle}>ðŸ“± Measure PPFD/DLI</Text>
                 <Text style={styles.infoBoxText}>
                   For best results, use the free "Photone" app (iOS/Android) to measure
                   light intensity with your phone. Aim for 400-600 PPFD in veg, 600-900 in
@@ -290,7 +292,7 @@ export default function DiagnoseScreen({ route, navigation }) {
               </View>
               <View style={styles.row}>
                 <View style={styles.halfInput}>
-                  <Text style={styles.label}>PPFD (μmol/m²/s)</Text>
+                  <Text style={styles.label}>PPFD (Î¼mol/mÂ²/s)</Text>
                   <TextInput
                     style={styles.input}
                     value={lightPPFD}
@@ -300,7 +302,7 @@ export default function DiagnoseScreen({ route, navigation }) {
                   />
                 </View>
                 <View style={styles.halfInput}>
-                  <Text style={styles.label}>DLI (mol/m²/day)</Text>
+                  <Text style={styles.label}>DLI (mol/mÂ²/day)</Text>
                   <TextInput
                     style={styles.input}
                     value={lightDLI}
@@ -324,7 +326,7 @@ export default function DiagnoseScreen({ route, navigation }) {
                     ...prev,
                     {
                       sender: "user",
-                      text: `Light measured: PPFD ${lightPPFD || "-"} μmol/m²/s, DLI ${lightDLI || "-"} mol/m²/day.`
+                      text: `Light measured: PPFD ${lightPPFD || "-"} Î¼mol/mÂ²/s, DLI ${lightDLI || "-"} mol/mÂ²/day.`
                     }
                   ]);
                   Alert.alert(
@@ -367,7 +369,7 @@ export default function DiagnoseScreen({ route, navigation }) {
             </View>
             {/* WATER SECTION */}
             <View style={styles.envSection}>
-              <Text style={styles.envSectionTitle}>💧 Water Information</Text>
+              <Text style={styles.envSectionTitle}>ðŸ’§ Water Information</Text>
 
               <Text style={styles.label}>Water Source</Text>
               <View style={styles.buttonRow}>
@@ -444,16 +446,16 @@ export default function DiagnoseScreen({ route, navigation }) {
             </View>
             {/* AIR SECTION */}
             <View style={styles.envSection}>
-              <Text style={styles.envSectionTitle}>🌬️ Air & Climate</Text>
+              <Text style={styles.envSectionTitle}>ðŸŒ¬ï¸ Air & Climate</Text>
 
               <View style={styles.row}>
                 <View style={styles.halfInput}>
-                  <Text style={styles.label}>Temperature (°F)</Text>
+                  <Text style={styles.label}>Temperature (Â°F)</Text>
                   <TextInput
                     style={styles.input}
                     value={temperature}
                     onChangeText={setTemperature}
-                    placeholder="75-82°F"
+                    placeholder="75-82Â°F"
                     keyboardType="numeric"
                   />
                 </View>
@@ -493,7 +495,7 @@ export default function DiagnoseScreen({ route, navigation }) {
             </View>
             {/* NUTRIENTS SECTION */}
             <View style={styles.envSection}>
-              <Text style={styles.envSectionTitle}>🧪 Nutrients</Text>
+              <Text style={styles.envSectionTitle}>ðŸ§ª Nutrients</Text>
 
               <Text style={styles.label}>Nutrient Brand/Line</Text>
               <TextInput
@@ -521,7 +523,7 @@ export default function DiagnoseScreen({ route, navigation }) {
             </View>
             {/* SUBSTRATE SECTION */}
             <View style={styles.envSection}>
-              <Text style={styles.envSectionTitle}>🌱 Substrate/Medium</Text>
+              <Text style={styles.envSectionTitle}>ðŸŒ± Substrate/Medium</Text>
 
               <Text style={styles.label}>Substrate Type</Text>
               <TextInput
@@ -642,7 +644,7 @@ export default function DiagnoseScreen({ route, navigation }) {
                 <Text style={styles.sectionLabel}>Suggested Actions</Text>
                 {result.aiActions.map((step, idx) => (
                   <Text key={idx} style={styles.actionStep}>
-                    • {step}
+                    â€¢ {step}
                   </Text>
                 ))}
               </View>
@@ -660,7 +662,7 @@ export default function DiagnoseScreen({ route, navigation }) {
               onPress={() => navigation.navigate("DiagnosisHistory")}
               style={{ marginTop: 16 }}
             >
-              <Text style={{ color: "#3498db", fontWeight: "600" }}>View history →</Text>
+              <Text style={{ color: "#3498db", fontWeight: "600" }}>View history â†’</Text>
             </TouchableOpacity>
           </View>
         )}
@@ -668,7 +670,6 @@ export default function DiagnoseScreen({ route, navigation }) {
     </AppShell>
   );
 }
-import { StyleSheet } from "react-native";
 
 const styles = StyleSheet.create({
   input: {
@@ -883,3 +884,4 @@ const styles = StyleSheet.create({
     marginTop: 8
   }
 });
+

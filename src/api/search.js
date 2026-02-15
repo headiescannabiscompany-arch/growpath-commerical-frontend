@@ -1,6 +1,6 @@
 import { client as api } from "./client.js";
-import ROUTES from "./routes.js";
+import apiRoutes from "./routes.js";
 
 export function search(q) {
-  return api(`${ROUTES.SEARCH.GLOBAL}?q=${encodeURIComponent(q)}`);
+  return api(`${apiRoutes.SEARCH.GLOBAL}?q=${encodeURIComponent(q)}`);
 }

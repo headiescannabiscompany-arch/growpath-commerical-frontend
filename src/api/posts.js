@@ -1,5 +1,5 @@
 import { client } from "./client.js";
-import ROUTES from "./routes.js";
+import apiRoutes from "./routes.js";
 
 export function getFeed(page = 1, options) {
   let tier1 = [];
@@ -20,29 +20,29 @@ export function getFeed(page = 1, options) {
     qs.append("tags", tags.join(","));
   }
 
-  return client.get(`${ROUTES.POSTS.FEED}?${qs.toString()}`, token);
+  return client.get(`${apiRoutes.POSTS.FEED}?${qs.toString()}`, token);
 }
 
 export function getTrending(token) {
-  return client.get(ROUTES.POSTS.TRENDING, token);
+  return client.get(apiRoutes.POSTS.TRENDING, token);
 }
 
 export function createPost(formData, token) {
-  return client.post(ROUTES.POSTS.CREATE, formData, token);
+  return client.post(apiRoutes.POSTS.CREATE, formData, token);
 }
 
 export function likePost(id, token) {
-  return client.post(ROUTES.POSTS.LIKE(id), {}, token);
+  return client.post(apiRoutes.POSTS.LIKE(id), {}, token);
 }
 
 export function unlikePost(id, token) {
-  return client.post(ROUTES.POSTS.UNLIKE(id), {}, token);
+  return client.post(apiRoutes.POSTS.UNLIKE(id), {}, token);
 }
 
 export function getComments(id, token) {
-  return client.get(ROUTES.POSTS.COMMENTS(id), token);
+  return client.get(apiRoutes.POSTS.COMMENTS(id), token);
 }
 
 export function addComment(id, text, token) {
-  return client.post(ROUTES.POSTS.COMMENT(id), { text }, token);
+  return client.post(apiRoutes.POSTS.COMMENT(id), { text }, token);
 }

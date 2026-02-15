@@ -1,3 +1,4 @@
+/* eslint-disable react/no-unescaped-entities */
 import React from "react";
 import { View, Text, ScrollView, StyleSheet } from "react-native";
 import ScreenContainer from "../components/ScreenContainer";
@@ -6,7 +7,7 @@ export default function GuildCodeScreen() {
   return (
     <ScreenContainer>
       <ScrollView style={styles.container} contentContainerStyle={{ paddingBottom: 40 }}>
-        <Text style={styles.title}>🌱 The Growers Forum</Text>
+        <Text style={styles.title}>ðŸŒ± The Growers Forum</Text>
 
         <Text style={styles.heading}>What the Growers Forum Is</Text>
         <Text style={styles.body}>
@@ -20,23 +21,23 @@ export default function GuildCodeScreen() {
         </Text>
 
         <Text style={styles.subheading}>The Forum values:</Text>
-        <Text style={styles.bullet}>• Experience over opinion</Text>
-        <Text style={styles.bullet}>• Observation over assumption</Text>
-        <Text style={styles.bullet}>• Learning over posturing</Text>
+        <Text style={styles.bullet}>â€¢ Experience over opinion</Text>
+        <Text style={styles.bullet}>â€¢ Observation over assumption</Text>
+        <Text style={styles.bullet}>â€¢ Learning over posturing</Text>
 
         <Text style={styles.body}>
           If you grow plants and want to grow better, you belong here.
         </Text>
 
         <Text style={styles.heading}>What the Growers Forum Is Not</Text>
-        <Text style={styles.bullet}>• Not social media</Text>
-        <Text style={styles.bullet}>• Not a meme board</Text>
-        <Text style={styles.bullet}>• Not a place to flex yields or setups</Text>
-        <Text style={styles.bullet}>• Not a substitute for doing the work</Text>
+        <Text style={styles.bullet}>â€¢ Not social media</Text>
+        <Text style={styles.bullet}>â€¢ Not a meme board</Text>
+        <Text style={styles.bullet}>â€¢ Not a place to flex yields or setups</Text>
+        <Text style={styles.bullet}>â€¢ Not a substitute for doing the work</Text>
 
         <Text style={styles.body}>Posts are meant to add signal, not noise.</Text>
 
-        <Text style={styles.heading}>🧭 How the Forum Works</Text>
+        <Text style={styles.heading}>ðŸ§­ How the Forum Works</Text>
         <Text style={styles.body}>The Forum is progressively unlocked.</Text>
         <Text style={styles.body}>
           You may see Forum features before you can use them.{"\n"}
@@ -44,23 +45,23 @@ export default function GuildCodeScreen() {
         </Text>
 
         <Text style={styles.subheading}>Access is earned through:</Text>
-        <Text style={styles.bullet}>• Participation</Text>
-        <Text style={styles.bullet}>• Accuracy</Text>
-        <Text style={styles.bullet}>• Respect for fundamentals</Text>
-        <Text style={styles.bullet}>• Consistent engagement with your own grow</Text>
+        <Text style={styles.bullet}>â€¢ Participation</Text>
+        <Text style={styles.bullet}>â€¢ Accuracy</Text>
+        <Text style={styles.bullet}>â€¢ Respect for fundamentals</Text>
+        <Text style={styles.bullet}>â€¢ Consistent engagement with your own grow</Text>
 
         <Text style={styles.heading}>Entry State: Observer</Text>
         <Text style={styles.body}>All new users enter the Forum as Observers.</Text>
 
         <Text style={styles.subheading}>Observers can:</Text>
-        <Text style={styles.bullet}>• Read discussions</Text>
-        <Text style={styles.bullet}>• Learn from past threads</Text>
-        <Text style={styles.bullet}>• See how experienced growers communicate</Text>
-        <Text style={styles.bullet}>• Understand the standards before posting</Text>
+        <Text style={styles.bullet}>â€¢ Read discussions</Text>
+        <Text style={styles.bullet}>â€¢ Learn from past threads</Text>
+        <Text style={styles.bullet}>â€¢ See how experienced growers communicate</Text>
+        <Text style={styles.bullet}>â€¢ Understand the standards before posting</Text>
 
         <Text style={styles.body}>This keeps the Forum useful for everyone.</Text>
 
-        <Text style={styles.heading}>📜 Forum Code (Simple, Enforced)</Text>
+        <Text style={styles.heading}>ðŸ“œ Forum Code (Simple, Enforced)</Text>
 
         <View style={styles.rule}>
           <Text style={styles.ruleNumber}>1. Speak from experience</Text>
@@ -73,8 +74,8 @@ export default function GuildCodeScreen() {
         <View style={styles.rule}>
           <Text style={styles.ruleNumber}>2. Context matters</Text>
           <Text style={styles.ruleBody}>
-            Posts should include relevant context:{"\n"}• Stage of growth{"\n"}•
-            Environment{"\n"}• Medium{"\n"}• Constraints{"\n\n"}
+            Posts should include relevant context:{"\n"}â€¢ Stage of growth{"\n"}â€¢
+            Environment{"\n"}â€¢ Medium{"\n"}â€¢ Constraints{"\n\n"}
             Advice without context is noise.
           </Text>
         </View>
@@ -91,7 +92,7 @@ export default function GuildCodeScreen() {
           <Text style={styles.ruleNumber}>4. Respect the craft</Text>
           <Text style={styles.ruleBody}>
             Growing is learned over time.{"\n\n"}
-            There are no shortcuts here — and no shame in being early in the process.
+            There are no shortcuts here â€” and no shame in being early in the process.
           </Text>
         </View>
 
@@ -103,14 +104,14 @@ export default function GuildCodeScreen() {
           </Text>
         </View>
 
-        <Text style={styles.heading}>🏛️ Forum Roles & Trust Levels</Text>
+        <Text style={styles.heading}>ðŸ›ï¸ Forum Roles & Trust Levels</Text>
         <Text style={styles.body}>
           These are not titles for ego.{"\n"}
           They exist to protect the quality of discussion.
         </Text>
 
         <View style={styles.role}>
-          <Text style={styles.roleTitle}>👁️ Observer</Text>
+          <Text style={styles.roleTitle}>ðŸ‘ï¸ Observer</Text>
           <Text style={styles.roleDesc}>Default role</Text>
           <Text style={styles.roleDesc}>Read-only access</Text>
           <Text style={styles.roleDesc}>Can view all public Forum discussions</Text>
@@ -121,56 +122,56 @@ export default function GuildCodeScreen() {
         </View>
 
         <View style={styles.role}>
-          <Text style={styles.roleTitle}>🌿 Contributor</Text>
+          <Text style={styles.roleTitle}>ðŸŒ¿ Contributor</Text>
           <Text style={styles.roleDesc}>Unlocked after:</Text>
-          <Text style={styles.bullet}>• Active grow tracking</Text>
-          <Text style={styles.bullet}>• Demonstrated understanding of fundamentals</Text>
-          <Text style={styles.bullet}>• Time-based participation</Text>
+          <Text style={styles.bullet}>â€¢ Active grow tracking</Text>
+          <Text style={styles.bullet}>â€¢ Demonstrated understanding of fundamentals</Text>
+          <Text style={styles.bullet}>â€¢ Time-based participation</Text>
           <Text style={styles.roleDesc}>Can:</Text>
-          <Text style={styles.bullet}>• Ask questions</Text>
-          <Text style={styles.bullet}>• Share observations</Text>
-          <Text style={styles.bullet}>• Participate in guided discussions</Text>
+          <Text style={styles.bullet}>â€¢ Ask questions</Text>
+          <Text style={styles.bullet}>â€¢ Share observations</Text>
+          <Text style={styles.bullet}>â€¢ Participate in guided discussions</Text>
         </View>
 
         <View style={styles.role}>
-          <Text style={styles.roleTitle}>🌾 Cultivator</Text>
+          <Text style={styles.roleTitle}>ðŸŒ¾ Cultivator</Text>
           <Text style={styles.roleDesc}>Unlocked through:</Text>
-          <Text style={styles.bullet}>• Consistent, high-quality contributions</Text>
-          <Text style={styles.bullet}>• Helpful responses to others</Text>
-          <Text style={styles.bullet}>• Clear, experience-based insight</Text>
+          <Text style={styles.bullet}>â€¢ Consistent, high-quality contributions</Text>
+          <Text style={styles.bullet}>â€¢ Helpful responses to others</Text>
+          <Text style={styles.bullet}>â€¢ Clear, experience-based insight</Text>
           <Text style={styles.roleDesc}>Can:</Text>
-          <Text style={styles.bullet}>• Start new threads</Text>
-          <Text style={styles.bullet}>• Answer questions</Text>
-          <Text style={styles.bullet}>• Help guide discussions</Text>
+          <Text style={styles.bullet}>â€¢ Start new threads</Text>
+          <Text style={styles.bullet}>â€¢ Answer questions</Text>
+          <Text style={styles.bullet}>â€¢ Help guide discussions</Text>
         </View>
 
         <View style={styles.role}>
-          <Text style={styles.roleTitle}>🧠 Steward (Future / Limited)</Text>
+          <Text style={styles.roleTitle}>ðŸ§  Steward (Future / Limited)</Text>
           <Text style={styles.roleDesc}>Reserved for:</Text>
-          <Text style={styles.bullet}>• Trusted, long-term contributors</Text>
-          <Text style={styles.bullet}>• Subject-matter specialists</Text>
-          <Text style={styles.bullet}>• Moderation support</Text>
+          <Text style={styles.bullet}>â€¢ Trusted, long-term contributors</Text>
+          <Text style={styles.bullet}>â€¢ Subject-matter specialists</Text>
+          <Text style={styles.bullet}>â€¢ Moderation support</Text>
           <Text style={styles.rolePurpose}>Role is earned, not requested.</Text>
         </View>
 
-        <Text style={styles.heading}>🪴 Posting Philosophy</Text>
+        <Text style={styles.heading}>ðŸª´ Posting Philosophy</Text>
         <Text style={styles.body}>
           Before posting, ask:{"\n"}
           "Will this help someone grow better?"
         </Text>
-        <Text style={styles.body}>If the answer is no — don't post it.</Text>
+        <Text style={styles.body}>If the answer is no â€” don't post it.</Text>
 
         <Text style={styles.subheading}>Good posts:</Text>
-        <Text style={styles.bullet}>• Share observations</Text>
-        <Text style={styles.bullet}>• Ask specific questions</Text>
-        <Text style={styles.bullet}>• Document cause → effect</Text>
-        <Text style={styles.bullet}>• Teach something learned the hard way</Text>
+        <Text style={styles.bullet}>â€¢ Share observations</Text>
+        <Text style={styles.bullet}>â€¢ Ask specific questions</Text>
+        <Text style={styles.bullet}>â€¢ Document cause â†’ effect</Text>
+        <Text style={styles.bullet}>â€¢ Teach something learned the hard way</Text>
 
-        <Text style={styles.heading}>🌱 Final Note to Members</Text>
+        <Text style={styles.heading}>ðŸŒ± Final Note to Members</Text>
         <Text style={styles.body}>The Growers Forum exists because:</Text>
-        <Text style={styles.bullet}>• Good growers are tired of noise</Text>
-        <Text style={styles.bullet}>• Real learning happens slowly</Text>
-        <Text style={styles.bullet}>• Craft deserves respect</Text>
+        <Text style={styles.bullet}>â€¢ Good growers are tired of noise</Text>
+        <Text style={styles.bullet}>â€¢ Real learning happens slowly</Text>
+        <Text style={styles.bullet}>â€¢ Craft deserves respect</Text>
 
         <Text style={styles.finalNote}>
           There are no algorithms here.{"\n"}
@@ -276,3 +277,4 @@ const styles = StyleSheet.create({
     color: "#34495e"
   }
 });
+

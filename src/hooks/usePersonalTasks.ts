@@ -1,47 +1,33 @@
-import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
-import { getTasks, createCustomTask, completeTask } from "../api/tasks";
+import { useQuery, type UseQueryResult } from "@tanstack/react-query";
+import { apiRequest } from "@/api/apiRequest";
 
-export function usePersonalTasks() {
-  import * as React from "react";
-  import { apiRequest } from "../api/apiRequest";
+export type PersonalTask = {
+  id: string;
+  title: string;
+  status?: "open" | "done" | string;
+  dueAt?: string | null;
+  createdAt?: string;
+  updatedAt?: string;
+  [key: string]: any;
+};
 
-  type UsePersonalTasksResult<T = any> = {
-    data: T | null;
-    isLoading: boolean;
-    error: any;
-    refetch: () => Promise<void>;
-  };
+function normalizeTasks(res: any): PersonalTask[] {
+  if (Array.isArray(res)) return res as PersonalTask[];
+  if (Array.isArray(res?.items)) return res.items as PersonalTask[];
+  if (Array.isArray(res?.data?.items)) return res.data.items as PersonalTask[];
+  if (Array.isArray(res?.data?.tasks)) return res.data.tasks as PersonalTask[];
+  if (Array.isArray(res?.tasks)) return res.tasks as PersonalTask[];
+  return [];
+}
 
-  export function usePersonalTasks<T = any[]>(): UsePersonalTasksResult<T> {
-    const [data, setData] = React.useState<T | null>(null);
-    const [isLoading, setIsLoading] = React.useState(true);
-    const [error, setError] = React.useState<any>(null);
+export async function fetchPersonalTasks(): Promise<PersonalTask[]> {
+  const res = await apiRequest("/api/personal/tasks");
+  return normalizeTasks(res);
+}
 
-    const mountedRef = React.useRef(true);
-
-    const refetch = React.useCallback(async () => {
-      setIsLoading(true);
-      setError(null);
-
-      try {
-        // Personal tasks list
-        const out = await apiRequest<T>("/api/tasks", { method: "GET" });
-        if (mountedRef.current) setData(out);
-      } catch (e) {
-        if (mountedRef.current) setError(e);
-      } finally {
-        if (mountedRef.current) setIsLoading(false);
-      }
-    }, []);
-
-    React.useEffect(() => {
-      mountedRef.current = true;
-      void refetch();
-      return () => {
-        mountedRef.current = false;
-      };
-    }, [refetch]);
-
-    return { data, isLoading, error, refetch };
-  }
+export function usePersonalTasks(): UseQueryResult<PersonalTask[], unknown> {
+  return useQuery({
+    queryKey: ["personalTasks"],
+    queryFn: fetchPersonalTasks
+  });
 }
