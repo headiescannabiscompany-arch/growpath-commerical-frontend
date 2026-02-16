@@ -1,4 +1,4 @@
-import { apiRequest } from "@/api/client";
+﻿import { apiRequest } from "@/api/apiRequest";
 import { endpoints } from "@/api/endpoints";
 import type {
   DeviationsSummaryResponse,
@@ -26,7 +26,7 @@ export function normalizeDeviationsSummary(
     ? raw.recurringDeviations
     : [];
 
-  // 🔒 ALWAYS an array (never undefined)
+  // ðŸ”’ ALWAYS an array (never undefined)
   const open = Array.isArray(raw?.openDeviations) ? raw.openDeviations : [];
 
   return {
@@ -37,7 +37,7 @@ export function normalizeDeviationsSummary(
       .map((d: any) => ({
         code: String(d?.code ?? ""),
         label: String(d?.label ?? d?.code ?? ""),
-        // 🔒 Clamp count to >= 0
+        // ðŸ”’ Clamp count to >= 0
         count: Number.isFinite(d?.count) ? Math.max(0, Number(d.count)) : 0,
         lastSeenAt: String(d?.lastSeenAt ?? ""),
         severity: isSeverity(d?.severity) ? d.severity : "LOW"
@@ -97,3 +97,4 @@ export async function fetchSopsRecommended(
   });
   return normalizeSopsRecommended(raw, facilityId);
 }
+

@@ -1,6 +1,7 @@
 import React from "react";
 import { View, Text, StyleSheet, TouchableOpacity } from "react-native";
 
+import { sanitizeViewChildren } from "./sanitizeViewChildren";
 export type AppCardProps = {
   style?: any;
   title?: string;
@@ -14,7 +15,11 @@ export default function AppCard({ title, subtitle, children, onPress }: AppCardP
     <View style={styles.card}>
       {!!title && <Text style={styles.title}>{title}</Text>}
       {!!subtitle && <Text style={styles.subtitle}>{subtitle}</Text>}
-      {!!children && <View style={styles.content}>{children}</View>}
+      {!!children && (
+        <View style={styles.content}>
+          {sanitizeViewChildren(children, "AppCard.content")}
+        </View>
+      )}
     </View>
   );
 

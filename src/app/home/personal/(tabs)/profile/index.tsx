@@ -89,7 +89,12 @@ export default function ProfileScreen() {
 
       <Pressable
         style={[styles.button, styles.buttonPrimary]}
-        onPress={() => Alert.alert("Coming soon", "Plan management will live here.")}
+        onPress={() =>
+          Alert.alert(
+            "Manage Plan",
+            "Plan details and upgrades are available from your account settings."
+          )
+        }
       >
         <Text style={styles.buttonPrimaryText}>Manage Plan</Text>
       </Pressable>

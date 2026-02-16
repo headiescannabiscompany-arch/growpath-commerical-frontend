@@ -31,31 +31,22 @@ function safeJson(v: any) {
   }
 }
 
-async function fetchWithFallback(primary: string, fallback: string) {
-  try {
-    return await apiRequest(primary, { method: "GET" });
-  } catch {
-    return await apiRequest(fallback, { method: "GET" });
-  }
-}
-
-export default function CommercialLogDetailRoute() {
+export default function CommercialInventoryItemDetailRoute() {
   const router = useRouter();
   const { id } = useLocalSearchParams<{ id?: string }>();
-  const logId = typeof id === "string" ? id : "";
+  const itemId = typeof id === "string" ? id : "";
 
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<UiError | null>(null);
   const [data, setData] = useState<any>(null);
 
   const load = useCallback(async () => {
-    if (!logId) return;
+    if (!itemId) return;
     setError(null);
-    const primary = `/api/commercial/logs/${encodeURIComponent(logId)}`;
-    const fallback = `/api/logs/${encodeURIComponent(logId)}`;
-    const res = await fetchWithFallback(primary, fallback);
+    const url = `/api/commercial/inventory/${encodeURIComponent(itemId)}`;
+    const res = await apiRequest(url, { method: "GET" });
     setData(res);
-  }, [logId]);
+  }, [itemId]);
 
   useEffect(() => {
     let alive = true;
@@ -76,10 +67,10 @@ export default function CommercialLogDetailRoute() {
   }, [load]);
 
   return (
-    <ScreenBoundary name="commercial.logs.detail">
+    <ScreenBoundary name="home.commercial.inventoryItem.detail">
       <ScrollView contentContainerStyle={{ padding: 16, gap: 12 }}>
-        <Text style={{ fontSize: 20, fontWeight: "900" }}>Log Detail</Text>
-        <Text style={{ opacity: 0.8 }}>ID: {logId || "missing"}</Text>
+        <Text style={{ fontSize: 20, fontWeight: "900" }}>Inventory Item</Text>
+        <Text style={{ opacity: 0.8 }}>ID: {itemId || "missing"}</Text>
 
         <InlineError
           title={error?.title}

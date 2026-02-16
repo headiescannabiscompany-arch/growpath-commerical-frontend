@@ -13,7 +13,7 @@ export default function UpgradePrompt({ feature }: { feature: string }) {
       </Text>
       <Text style={{ marginBottom: 24 }}>
         Your current plan does not include{" "}
-        <Text style={{ fontWeight: "bold" }}>{feature}</Text>.
+        <Text style={{ fontWeight: "bold" }}>{feature}</Text>
       </Text>
       <Button title="View Plans" onPress={() => navigation.navigate("BillingHome")} />
     </View>

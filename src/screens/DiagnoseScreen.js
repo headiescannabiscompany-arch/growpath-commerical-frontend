@@ -9,8 +9,9 @@ import {
   TextInput,
   Alert,
   Pressable,
-  Linking
-, StyleSheet } from "react-native";
+  Linking,
+  StyleSheet
+} from "react-native";
 import * as ImagePicker from "expo-image-picker";
 import AppShell from "../components/AppShell.js";
 import PrimaryButton from "../components/PrimaryButton.js";
@@ -18,7 +19,6 @@ import TokenBalanceWidget from "../components/TokenBalanceWidget.js";
 import { useDiagnose } from "../hooks/useDiagnose";
 import { useAuth } from "@/auth/AuthContext";
 import { FEATURES, getEntitlement } from "../utils/entitlements.js";
-
 
 // Move DiagnoseScreen function here, after styles
 
@@ -662,7 +662,9 @@ export default function DiagnoseScreen({ route, navigation }) {
               onPress={() => navigation.navigate("DiagnosisHistory")}
               style={{ marginTop: 16 }}
             >
-              <Text style={{ color: "#3498db", fontWeight: "600" }}>View history â†’</Text>
+              <Text style={{ color: "#3498db", fontWeight: "600" }}>
+                View history â†’
+              </Text>
             </TouchableOpacity>
           </View>
         )}
@@ -884,4 +886,3 @@ const styles = StyleSheet.create({
     marginTop: 8
   }
 });
-

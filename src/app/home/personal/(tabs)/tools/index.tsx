@@ -42,13 +42,13 @@ export default function ToolsHubScreen() {
 
         <View style={styles.card}>
           <Text style={styles.cardTitle}>🧪 NPK Helper</Text>
-          <Text style={styles.cardDesc}>Coming next (stub).</Text>
+          <Text style={styles.cardDesc}>Planned feature.</Text>
           <Text style={styles.link}>Soon {"\u2192"}</Text>
         </View>
 
         <View style={styles.card}>
           <Text style={styles.cardTitle}>💧 Watering Tracker</Text>
-          <Text style={styles.cardDesc}>Coming next (stub).</Text>
+          <Text style={styles.cardDesc}>Planned feature.</Text>
           <Text style={styles.link}>Soon {"\u2192"}</Text>
         </View>
       </View>

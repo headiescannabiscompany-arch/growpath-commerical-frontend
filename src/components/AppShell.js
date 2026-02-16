@@ -3,6 +3,7 @@ import { View, ScrollView, StyleSheet } from "react-native";
 import CommercialBanner from "./CommercialBanner.js";
 import { useAuth } from "@/auth/AuthContext";
 
+import { sanitizeViewChildren } from "./layout/sanitizeViewChildren";
 // AppShell wraps every screen with the CommercialBanner and consistent scroll behavior
 export default function AppShell({
   children,
@@ -26,7 +27,7 @@ export default function AppShell({
           contentContainerStyle={[styles.content, contentContainerStyle]}
           keyboardShouldPersistTaps="handled"
         >
-          {children}
+          {sanitizeViewChildren(children, "AppShell.children")}
         </ScrollView>
       </View>
     );
@@ -38,7 +39,9 @@ export default function AppShell({
         capabilities={capabilities}
         contextBarProps={contextBarProps}
       />
-      <View style={[styles.content, style]}>{children}</View>
+      <View style={[styles.content, style]}>
+        {sanitizeViewChildren(children, "AppShell.content")}
+      </View>
     </View>
   );
 }

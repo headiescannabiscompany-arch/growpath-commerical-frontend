@@ -1,4 +1,4 @@
-import React from "react";
+﻿import React from "react";
 import { Text, TextInput, TouchableOpacity, View } from "react-native";
 import { InlineError } from "@/components/InlineError";
 
@@ -48,7 +48,7 @@ export function AiContextBlock(props: Props) {
           style={{ borderWidth: 1, borderRadius: 10, padding: 10 }}
         >
           <Text style={{ fontWeight: "900" }}>
-            {growId ? `Selected: ${growId}` : "Select grow (stub)"}
+            {growId ? `Selected: ${growId}` : "Select grow"}
           </Text>
           <Text style={{ opacity: 0.7, marginTop: 2 }}>
             Step 2B wires real grow dropdown.
@@ -63,7 +63,7 @@ export function AiContextBlock(props: Props) {
           style={{ borderWidth: 1, borderRadius: 10, padding: 10 }}
         >
           <Text style={{ fontWeight: "900" }}>
-            {roomId ? `Selected: ${roomId}` : "Select room (stub)"}
+            {roomId ? `Selected: ${roomId}` : "Select room"}
           </Text>
           <Text style={{ opacity: 0.7, marginTop: 2 }}>
             Step 2B wires real room dropdown.
@@ -81,7 +81,7 @@ export function AiContextBlock(props: Props) {
             {mediaLabel ? `Attached: ${mediaLabel}` : "Upload photo (stub picker)"}
           </Text>
           <Text style={{ opacity: 0.7, marginTop: 2 }}>
-            Step 2B wires real upload → mediaId.
+            Step 2B wires real upload â†’ mediaId.
           </Text>
         </TouchableOpacity>
       </View>
@@ -91,7 +91,7 @@ export function AiContextBlock(props: Props) {
         <TextInput
           value={notes}
           onChangeText={onChangeNotes}
-          placeholder="Optional notes (what you’re seeing, goals, constraints)…"
+          placeholder="Optional notes (what youâ€™re seeing, goals, constraints)â€¦"
           multiline
           style={{
             borderWidth: 1,
@@ -105,3 +105,5 @@ export function AiContextBlock(props: Props) {
     </View>
   );
 }
+
+

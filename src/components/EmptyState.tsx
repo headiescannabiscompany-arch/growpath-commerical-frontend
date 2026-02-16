@@ -1,6 +1,7 @@
 import React from "react";
 import { View, Text, Button, StyleSheet } from "react-native";
 
+import { sanitizeViewChildren } from "@/components/layout/sanitizeViewChildren";
 export type EmptyStateProps = {
   title: string;
   description?: string;
@@ -18,7 +19,9 @@ export default function EmptyState({
 }: EmptyStateProps) {
   return (
     <View style={styles.container}>
-      {icon && <View style={styles.icon}>{icon}</View>}
+      {icon && (
+        <View style={styles.icon}>{sanitizeViewChildren(icon, "EmptyState.icon")}</View>
+      )}
       <Text style={styles.title}>{title}</Text>
       {description && <Text style={styles.description}>{description}</Text>}
       {actionLabel && onAction && <Button title={actionLabel} onPress={onAction} />}

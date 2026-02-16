@@ -1,6 +1,7 @@
 import React from "react";
 import { View, Text, ScrollView, StyleSheet } from "react-native";
 
+import { sanitizeViewChildren } from "./layout/sanitizeViewChildren";
 export default function ScreenScaffold({
   title,
   subtitle,
@@ -28,7 +29,11 @@ export default function ScreenScaffold({
         </View>
       </View>
 
-      {children ? <View style={styles.body}>{children}</View> : null}
+      {children ? (
+        <View style={styles.body}>
+          {sanitizeViewChildren(children, "ScreenScaffold.body")}
+        </View>
+      ) : null}
 
       {debug ? (
         <View style={styles.debug}>
@@ -47,9 +52,15 @@ export function Section({ title, children, right }) {
     <View style={styles.section}>
       <View style={styles.sectionHeader}>
         <Text style={styles.sectionTitle}>{title}</Text>
-        {right ? <View style={styles.sectionRight}>{right}</View> : null}
+        {right ? (
+          <View style={styles.sectionRight}>
+            {sanitizeViewChildren(right, "ScreenScaffold.right")}
+          </View>
+        ) : null}
       </View>
-      <View style={styles.sectionBody}>{children}</View>
+      <View style={styles.sectionBody}>
+        {sanitizeViewChildren(children, "ScreenScaffold.sectionBody")}
+      </View>
     </View>
   );
 }
@@ -64,7 +75,7 @@ export function Card({ title, children, tone = "default" }) {
       ]}
     >
       {title ? <Text style={styles.cardTitle}>{title}</Text> : null}
-      {children}
+      {sanitizeViewChildren(children, "ScreenScaffold.children")}
     </View>
   );
 }

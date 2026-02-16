@@ -1,5 +1,5 @@
-import { useCallback, useState } from "react";
-import { apiRequest } from "@/api/client";
+﻿import { useCallback, useState } from "react";
+import { apiRequest } from "@/api/apiRequest";
 
 export type AICallBody = {
   tool: string;
@@ -49,3 +49,4 @@ export function useAICall(facilityId: string) {
 
   return { callAI, loading, last, error };
 }
+

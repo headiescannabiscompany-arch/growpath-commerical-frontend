@@ -1,4 +1,4 @@
-import React, { useEffect, useState } from "react";
+﻿import React, { useEffect, useState } from "react";
 import {
   View,
   Text,
@@ -7,7 +7,7 @@ import {
   ScrollView
 } from "react-native";
 import { useFacility } from "@/state/useFacility";
-import { apiRequest } from "@/api/client";
+import { apiRequest } from "@/api/apiRequest";
 import { endpoints } from "@/api/endpoints";
 import { useApiErrorHandler } from "@/hooks/useApiErrorHandler";
 import { InlineError } from "@/components/InlineError";
@@ -45,9 +45,9 @@ function getYellowStatus(isYellow: boolean) {
   return isYellow ? "yellow" : "green";
 }
 function trendArrow(delta: number) {
-  if (delta > 0) return "↑";
-  if (delta < 0) return "↓";
-  return "→";
+  if (delta > 0) return "â†‘";
+  if (delta < 0) return "â†“";
+  return "â†’";
 }
 
 // --- Main Dashboard ---
@@ -109,7 +109,7 @@ export default function ComplianceDashboard() {
           (g: any) => g.date && now - new Date(g.date).getTime() <= ms30d
         );
         const greenWaste7d = last7d.length;
-        const greenWaste30dAvg = last30d.length ? last30d.length / 4.2857 : 0; // 30/7 ≈ 4.2857
+        const greenWaste30dAvg = last30d.length ? last30d.length / 4.2857 : 0; // 30/7 â‰ˆ 4.2857
         const greenWasteDelta = Math.round(greenWaste7d - greenWaste30dAvg);
 
         // Inventory adjustments (trend)
@@ -267,3 +267,4 @@ export default function ComplianceDashboard() {
     </ScrollView>
   );
 }
+

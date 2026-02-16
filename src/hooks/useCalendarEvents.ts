@@ -1,5 +1,5 @@
-import { useCallback, useState } from "react";
-import { apiRequest } from "@/api/client";
+﻿import { useCallback, useState } from "react";
+import { apiRequest } from "@/api/apiRequest";
 
 export type CalendarEvent = {
   id: string;
@@ -56,3 +56,4 @@ export function useCalendarEvents(facilityId: string) {
 
   return { items, loading, error, fetchCalendar };
 }
+
