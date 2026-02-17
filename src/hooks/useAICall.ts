@@ -1,4 +1,4 @@
-﻿import { useCallback, useState } from "react";
+import { useCallback, useState } from "react";
 import { apiRequest } from "@/api/apiRequest";
 
 export type AICallBody = {
@@ -49,4 +49,3 @@ export function useAICall(facilityId: string) {
 
   return { callAI, loading, last, error };
 }
-

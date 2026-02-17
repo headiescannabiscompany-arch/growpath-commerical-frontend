@@ -2,176 +2,193 @@ import React, { useCallback, useEffect, useMemo, useState } from "react";
 import {
   ActivityIndicator,
   FlatList,
+  Pressable,
   RefreshControl,
+  StyleSheet,
   Text,
-  TouchableOpacity,
   View
 } from "react-native";
 import { useLocalSearchParams, useRouter } from "expo-router";
 
 import { ScreenBoundary } from "@/components/ScreenBoundary";
 import { InlineError } from "@/components/InlineError";
+import { useFacility } from "@/state/useFacility";
 import { apiRequest } from "@/api/apiRequest";
 import { endpoints } from "@/api/endpoints";
-import { useFacility } from "@/state/useFacility";
+import { useApiErrorHandler } from "@/hooks/useApiErrorHandler";
 
-type UiError = { title?: string; message?: string; requestId?: string };
+type AnyRec = Record<string, any>;
 
-function normalizeError(e: any): UiError {
-  const env = e?.error || e;
-  return {
-    title: env?.code ? String(env.code) : "REQUEST_FAILED",
-    message: String(env?.message || e?.message || e || "Unknown error"),
-    requestId: env?.requestId ? String(env.requestId) : undefined
-  };
+function asArray(res: any): AnyRec[] {
+  if (Array.isArray(res)) return res;
+  if (Array.isArray(res?.items)) return res.items;
+  if (Array.isArray(res?.data)) return res.data;
+  if (Array.isArray(res?.results)) return res.results;
+  if (Array.isArray(res?.logs)) return res.logs;
+  if (Array.isArray(res?.auditLogs)) return res.auditLogs;
+  return [];
 }
 
-function getId(x: any): string {
-  return String(x?.id || x?._id || x?.auditId || "");
+function getParam(params: Record<string, any>, key: string): string {
+  const raw = params?.[key];
+  if (Array.isArray(raw)) return String(raw[0] ?? "");
+  return String(raw ?? "");
 }
 
-export default function AuditLogsByEntityScreen() {
+function pickId(x: AnyRec): string {
+  return String(x?.id ?? x?._id ?? x?.auditLogId ?? x?.uuid ?? "");
+}
+
+function pickTitle(x: AnyRec): string {
+  const action = x?.action ?? x?.event ?? x?.type ?? "Audit Event";
+  const at = x?.createdAt ?? x?.at ?? x?.timestamp ?? "";
+  return at ? `${String(action)} • ${String(at)}` : String(action);
+}
+
+export default function FacilityAuditLogsByEntityRoute() {
   const router = useRouter();
+  const params = useLocalSearchParams();
+
+  const entity = getParam(params as any, "entity");
+  const entityId = getParam(params as any, "entityId");
+
   const { selectedId: facilityId } = useFacility();
-  const params = useLocalSearchParams<{ entity?: string; entityId?: string }>();
 
-  const entity = typeof params.entity === "string" ? params.entity : "";
-  const entityId = typeof params.entityId === "string" ? params.entityId : "";
+  const apiErr: any = useApiErrorHandler();
+  const resolved = useMemo(() => {
+    const error = apiErr?.error ?? apiErr?.[0] ?? null;
+    const handleApiError = apiErr?.handleApiError ?? apiErr?.[1] ?? ((_: any) => {});
+    const clearError = apiErr?.clearError ?? apiErr?.[2] ?? (() => {});
+    return { error, handleApiError, clearError };
+  }, [apiErr]);
 
-  const [items, setItems] = useState<any[]>([]);
+  const [items, setItems] = useState<AnyRec[]>([]);
   const [loading, setLoading] = useState(true);
   const [refreshing, setRefreshing] = useState(false);
-  const [error, setError] = useState<UiError | null>(null);
 
-  const fetchAll = useCallback(async () => {
-    if (!facilityId) return;
-    setError(null);
-    const raw = await apiRequest(endpoints.auditLogs(facilityId), { method: "GET" });
+  const load = useCallback(
+    async (opts?: { refresh?: boolean }) => {
+      if (!facilityId) return;
 
-    const list =
-      (Array.isArray(raw) && raw) ||
-      (Array.isArray((raw as any)?.items) && (raw as any).items) ||
-      (Array.isArray((raw as any)?.logs) && (raw as any).logs) ||
-      (Array.isArray((raw as any)?.data?.items) && (raw as any).data.items) ||
-      [];
+      if (opts?.refresh) setRefreshing(true);
+      else setLoading(true);
 
-    setItems(list);
-  }, [facilityId]);
+      try {
+        resolved.clearError();
+
+        // Most backends support filtering audit logs by query params.
+        const base = endpoints.auditLogs(facilityId);
+        const qs =
+          entity && entityId
+            ? `?entity=${encodeURIComponent(entity)}&entityId=${encodeURIComponent(entityId)}`
+            : "";
+        const res = await apiRequest(`${base}${qs}`, { method: "GET" });
+
+        setItems(asArray(res));
+      } catch (e) {
+        resolved.handleApiError(e);
+      } finally {
+        setLoading(false);
+        setRefreshing(false);
+      }
+    },
+    [entity, entityId, facilityId, resolved]
+  );
 
   useEffect(() => {
-    let alive = true;
-    (async () => {
-      try {
-        await fetchAll();
-      } catch (e) {
-        if (!alive) return;
-        setError(normalizeError(e));
-      } finally {
-        if (!alive) return;
-        setLoading(false);
-      }
-    })();
-    return () => {
-      alive = false;
-    };
-  }, [fetchAll]);
-
-  const onRefresh = useCallback(async () => {
-    if (!facilityId) return;
-    setRefreshing(true);
-    try {
-      await fetchAll();
-    } catch (e) {
-      setError(normalizeError(e));
-    } finally {
-      setRefreshing(false);
+    if (!facilityId) {
+      router.replace("/home/facility/select");
+      return;
     }
-  }, [facilityId, fetchAll]);
-
-  const filtered = useMemo(() => {
-    if (!entity && !entityId) return items;
-    return items.filter((x) => {
-      const e = String(x?.entity || x?.entityType || "");
-      const eid = String(x?.entityId || x?.targetId || x?.refId || "");
-      const okEntity = entity ? e === entity : true;
-      const okId = entityId ? eid === entityId : true;
-      return okEntity && okId;
-    });
-  }, [items, entity, entityId]);
+    load();
+  }, [facilityId, load, router]);
 
   return (
-    <ScreenBoundary name="facility.auditLogs.byEntity">
-      <View style={{ flex: 1, padding: 16, gap: 12 }}>
-        <Text style={{ fontSize: 20, fontWeight: "900" }}>Audit Logs</Text>
-        <Text style={{ opacity: 0.85 }}>Entity: {entity || "any"}</Text>
-        <Text style={{ opacity: 0.85 }}>Entity ID: {entityId || "any"}</Text>
+    <ScreenBoundary title="Audit Logs">
+      <View style={styles.container}>
+        {resolved.error ? <InlineError error={resolved.error} /> : null}
 
-        <InlineError
-          title={error?.title}
-          message={error?.message}
-          requestId={error?.requestId}
-        />
+        <View style={styles.headerRow}>
+          <Text style={styles.h1}>Audit Logs</Text>
+          <Text style={styles.muted}>
+            {entity ? String(entity) : "(entity)"} •{" "}
+            {entityId ? String(entityId) : "(id)"}
+          </Text>
+        </View>
 
-        {!facilityId ? (
-          <TouchableOpacity
-            onPress={() => router.replace("/home/facility/select")}
-            style={{ borderWidth: 1, borderRadius: 10, padding: 12 }}
-          >
-            <Text style={{ fontWeight: "900" }}>Go to Facility Select</Text>
-          </TouchableOpacity>
-        ) : loading ? (
-          <>
+        {loading ? (
+          <View style={styles.loading}>
             <ActivityIndicator />
-            <Text style={{ opacity: 0.75 }}>Loading…</Text>
-          </>
-        ) : (
-          <FlatList
-            data={filtered}
-            keyExtractor={(x, idx) => getId(x) || String(idx)}
-            refreshControl={
-              <RefreshControl refreshing={refreshing} onRefresh={onRefresh} />
-            }
-            ItemSeparatorComponent={() => <View style={{ height: 10 }} />}
-            ListEmptyComponent={
-              <Text style={{ opacity: 0.75 }}>No matching audit logs.</Text>
-            }
-            renderItem={({ item }) => {
-              const id = getId(item);
-              const title = String(
-                item?.action || item?.event || item?.type || "Audit Event"
-              );
-              const ts = String(item?.ts || item?.createdAt || "");
-              return (
-                <TouchableOpacity
-                  onPress={() =>
-                    id
-                      ? router.push(`/home/facility/audit-logs/${encodeURIComponent(id)}`)
-                      : undefined
-                  }
-                  disabled={!id}
-                  style={{
-                    borderWidth: 1,
-                    borderRadius: 12,
-                    padding: 12,
-                    opacity: id ? 1 : 0.5
-                  }}
-                >
-                  <Text style={{ fontWeight: "900" }}>{title}</Text>
-                  <Text style={{ opacity: 0.75 }}>{id || "missing id"}</Text>
-                  {ts ? <Text style={{ opacity: 0.75 }}>{ts}</Text> : null}
-                </TouchableOpacity>
-              );
-            }}
-          />
-        )}
+            <Text style={styles.muted}>Loading audit logs…</Text>
+          </View>
+        ) : null}
 
-        <TouchableOpacity
-          onPress={() => router.back()}
-          style={{ borderWidth: 1, borderRadius: 10, padding: 12 }}
-        >
-          <Text style={{ fontWeight: "900" }}>Back</Text>
-        </TouchableOpacity>
+        <FlatList
+          data={items}
+          keyExtractor={(it, idx) => pickId(it) || String(idx)}
+          refreshControl={
+            <RefreshControl
+              refreshing={refreshing}
+              onRefresh={() => load({ refresh: true })}
+            />
+          }
+          contentContainerStyle={styles.list}
+          ListEmptyComponent={
+            !loading ? (
+              <View style={styles.empty}>
+                <Text style={styles.emptyTitle}>No audit logs</Text>
+                <Text style={styles.muted}>No events found for this entity.</Text>
+              </View>
+            ) : null
+          }
+          renderItem={({ item }) => {
+            const id = pickId(item);
+            return (
+              <Pressable
+                onPress={() => {
+                  if (!id) return;
+                  router.push({
+                    pathname: "/home/facility/audit-logs/[id]",
+                    params: { id }
+                  });
+                }}
+                style={({ pressed }) => [styles.row, pressed && styles.rowPressed]}
+              >
+                <View style={{ flex: 1, gap: 4 }}>
+                  <Text style={styles.rowTitle} numberOfLines={1}>
+                    {pickTitle(item)}
+                  </Text>
+                </View>
+                <Text style={styles.chev}>›</Text>
+              </Pressable>
+            );
+          }}
+        />
       </View>
     </ScreenBoundary>
   );
 }
+
+const styles = StyleSheet.create({
+  container: { flex: 1, padding: 16, gap: 12 },
+  headerRow: { gap: 4 },
+  h1: { fontSize: 22, fontWeight: "900" },
+  muted: { opacity: 0.7 },
+  loading: { paddingVertical: 18, alignItems: "center", gap: 10 },
+  list: { paddingVertical: 6, gap: 10 },
+  row: {
+    flexDirection: "row",
+    alignItems: "center",
+    gap: 12,
+    padding: 14,
+    borderRadius: 14,
+    borderWidth: 1,
+    borderColor: "rgba(0,0,0,0.12)",
+    backgroundColor: "white"
+  },
+  rowPressed: { opacity: 0.85 },
+  rowTitle: { fontSize: 16, fontWeight: "800" },
+  chev: { fontSize: 22, opacity: 0.5, paddingLeft: 8 },
+  empty: { paddingVertical: 26, alignItems: "center", gap: 8 },
+  emptyTitle: { fontSize: 16, fontWeight: "800" }
+});

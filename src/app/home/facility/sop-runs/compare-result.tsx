@@ -1,177 +1,236 @@
 import React, { useCallback, useEffect, useMemo, useState } from "react";
 import {
   ActivityIndicator,
+  Pressable,
+  RefreshControl,
   ScrollView,
+  StyleSheet,
   Text,
-  TouchableOpacity,
   View
 } from "react-native";
 import { useLocalSearchParams, useRouter } from "expo-router";
 
 import { ScreenBoundary } from "@/components/ScreenBoundary";
 import { InlineError } from "@/components/InlineError";
+import { useFacility } from "@/state/useFacility";
 import { apiRequest } from "@/api/apiRequest";
 import { endpoints } from "@/api/endpoints";
-import { useFacility } from "@/state/useFacility";
+import { useApiErrorHandler } from "@/hooks/useApiErrorHandler";
 
-type UiError = { title?: string; message?: string; requestId?: string };
+type AnyRec = Record<string, any>;
 
-function normalizeError(e: any): UiError {
-  const env = e?.error || e;
-  return {
-    title: env?.code ? String(env.code) : "REQUEST_FAILED",
-    message: String(env?.message || e?.message || e || "Unknown error"),
-    requestId: env?.requestId ? String(env.requestId) : undefined
-  };
+function getParam(params: Record<string, any>, key: string): string {
+  const raw = params?.[key];
+  if (Array.isArray(raw)) return String(raw[0] ?? "");
+  return String(raw ?? "");
 }
 
-function safeJson(v: any) {
-  try {
-    return JSON.stringify(v, null, 2);
-  } catch {
-    return String(v);
-  }
+function pickCompareIds(params: Record<string, any>) {
+  const a =
+    getParam(params, "a") ||
+    getParam(params, "left") ||
+    getParam(params, "leftId") ||
+    getParam(params, "runA") ||
+    getParam(params, "runIdA");
+  const b =
+    getParam(params, "b") ||
+    getParam(params, "right") ||
+    getParam(params, "rightId") ||
+    getParam(params, "runB") ||
+    getParam(params, "runIdB");
+  return { a, b };
 }
 
-function shallowDiff(a: any, b: any) {
-  const A = a && typeof a === "object" ? a : {};
-  const B = b && typeof b === "object" ? b : {};
-  const keys = Array.from(new Set([...Object.keys(A), ...Object.keys(B)])).sort();
-
-  const diffs: { key: string; a: string; b: string }[] = [];
-  for (const k of keys) {
-    const av = A[k];
-    const bv = B[k];
-    const as = safeJson(av);
-    const bs = safeJson(bv);
-    if (as !== bs) diffs.push({ key: k, a: as, b: bs });
-  }
-  return diffs;
+function safeCountSteps(run: AnyRec | null): number | null {
+  if (!run) return null;
+  const steps = run?.steps ?? run?.items ?? run?.data?.steps;
+  if (Array.isArray(steps)) return steps.length;
+  return null;
 }
 
-export default function SopRunsCompareResultScreen() {
+export default function FacilitySopRunCompareResultRoute() {
   const router = useRouter();
+  const params = useLocalSearchParams();
+  const { a, b } = pickCompareIds(params as any);
+
   const { selectedId: facilityId } = useFacility();
-  const params = useLocalSearchParams<{ a?: string; b?: string }>();
 
-  const aId = typeof params.a === "string" ? params.a : "";
-  const bId = typeof params.b === "string" ? params.b : "";
+  const apiErr: any = useApiErrorHandler();
+  const resolved = useMemo(() => {
+    const error = apiErr?.error ?? apiErr?.[0] ?? null;
+    const handleApiError = apiErr?.handleApiError ?? apiErr?.[1] ?? ((_: any) => {});
+    const clearError = apiErr?.clearError ?? apiErr?.[2] ?? (() => {});
+    return { error, handleApiError, clearError };
+  }, [apiErr]);
 
+  const [runA, setRunA] = useState<AnyRec | null>(null);
+  const [runB, setRunB] = useState<AnyRec | null>(null);
   const [loading, setLoading] = useState(true);
-  const [error, setError] = useState<UiError | null>(null);
-  const [aRun, setARun] = useState<any>(null);
-  const [bRun, setBRun] = useState<any>(null);
+  const [refreshing, setRefreshing] = useState(false);
 
-  const fetchBoth = useCallback(async () => {
-    if (!facilityId || !aId || !bId) return;
-    setError(null);
+  const load = useCallback(
+    async (opts?: { refresh?: boolean }) => {
+      if (!facilityId) return;
 
-    const urlA = `${endpoints.sopRuns(facilityId)}/${encodeURIComponent(aId)}`;
-    const urlB = `${endpoints.sopRuns(facilityId)}/${encodeURIComponent(bId)}`;
+      if (opts?.refresh) setRefreshing(true);
+      else setLoading(true);
 
-    const [ra, rb] = await Promise.all([
-      apiRequest(urlA, { method: "GET" }),
-      apiRequest(urlB, { method: "GET" })
-    ]);
+      try {
+        resolved.clearError(); // This line remains unchanged
 
-    setARun(ra);
-    setBRun(rb);
-  }, [facilityId, aId, bId]);
+        const [ra, rb] = await Promise.all([
+          a
+            ? apiRequest(endpoints.sopRun(facilityId, a), { method: "GET" })
+            : Promise.resolve(null),
+          b
+            ? apiRequest(endpoints.sopRun(facilityId, b), { method: "GET" })
+            : Promise.resolve(null)
+        ]);
+
+        setRunA(ra ?? null);
+        setRunB(rb ?? null);
+      } catch (e) {
+        resolved.handleApiError(e); // This line remains unchanged
+      } finally {
+        setLoading(false);
+        setRefreshing(false);
+      }
+    },
+    [a, b, facilityId, resolved]
+  );
 
   useEffect(() => {
-    let alive = true;
-    (async () => {
-      try {
-        await fetchBoth();
-      } catch (e) {
-        if (!alive) return;
-        setError(normalizeError(e));
-      } finally {
-        if (!alive) return;
-        setLoading(false);
-      }
-    })();
-    return () => {
-      alive = false;
-    };
-  }, [fetchBoth]);
+    if (!facilityId) {
+      router.replace("/home/facility/select");
+      return;
+    }
+    load();
+  }, [facilityId, load, router]);
 
-  const diffs = useMemo(() => shallowDiff(aRun, bRun), [aRun, bRun]);
+  const aSteps = useMemo(() => safeCountSteps(runA), [runA]);
+  const bSteps = useMemo(() => safeCountSteps(runB), [runB]);
 
   return (
-    <ScreenBoundary name="facility.sopRuns.compareResult">
-      <ScrollView contentContainerStyle={{ padding: 16, gap: 12 }}>
-        <Text style={{ fontSize: 20, fontWeight: "900" }}>Compare Result</Text>
+    <ScreenBoundary title="Compare Result">
+      <ScrollView
+        contentContainerStyle={styles.container}
+        refreshControl={
+          <RefreshControl
+            refreshing={refreshing}
+            onRefresh={() => load({ refresh: true })}
+          />
+        }
+      >
+        {resolved.error ? <InlineError error={resolved.error} /> : null}
 
-        <Text style={{ opacity: 0.85 }}>Facility: {facilityId || "none"}</Text>
-        <Text style={{ opacity: 0.85 }}>A: {aId || "missing"}</Text>
-        <Text style={{ opacity: 0.85 }}>B: {bId || "missing"}</Text>
+        <View style={styles.headerRow}>
+          <Text style={styles.h1}>SOP Compare Result</Text>
+          <Text style={styles.muted}>
+            A: {a || "(missing)"} • B: {b || "(missing)"}
+          </Text>
+        </View>
 
-        <InlineError
-          title={error?.title}
-          message={error?.message}
-          requestId={error?.requestId}
-        />
-
-        {!facilityId ? (
-          <TouchableOpacity
-            onPress={() => router.replace("/home/facility/select")}
-            style={{ borderWidth: 1, borderRadius: 10, padding: 12 }}
-          >
-            <Text style={{ fontWeight: "900" }}>Go to Facility Select</Text>
-          </TouchableOpacity>
-        ) : loading ? (
-          <>
+        {loading ? (
+          <View style={styles.loading}>
             <ActivityIndicator />
-            <Text style={{ opacity: 0.75 }}>Loading runs…</Text>
-          </>
-        ) : (
-          <>
-            <View style={{ borderWidth: 1, borderRadius: 12, padding: 12, gap: 10 }}>
-              <Text style={{ fontWeight: "900" }}>Top-level differences</Text>
-              {diffs.length === 0 ? (
-                <Text style={{ opacity: 0.75 }}>No top-level differences detected.</Text>
-              ) : (
-                diffs.slice(0, 60).map((d) => (
-                  <View key={d.key} style={{ borderTopWidth: 1, paddingTop: 10, gap: 6 }}>
-                    <Text style={{ fontWeight: "900" }}>{d.key}</Text>
-                    <Text style={{ opacity: 0.75, fontFamily: "monospace" }}>
-                      A: {d.a}
-                    </Text>
-                    <Text style={{ opacity: 0.75, fontFamily: "monospace" }}>
-                      B: {d.b}
-                    </Text>
-                  </View>
-                ))
-              )}
-              {diffs.length > 60 ? (
-                <Text style={{ opacity: 0.75 }}>Showing first 60 diffs.</Text>
-              ) : null}
-            </View>
+            <Text style={styles.muted}>Loading runs…</Text>
+          </View>
+        ) : null}
 
-            <View style={{ borderWidth: 1, borderRadius: 12, padding: 12, gap: 10 }}>
-              <Text style={{ fontWeight: "900" }}>Raw A payload</Text>
-              <Text style={{ opacity: 0.75, fontFamily: "monospace" }}>
-                {safeJson(aRun)}
-              </Text>
-            </View>
+        <View style={styles.card}>
+          <Text style={styles.cardTitle}>Summary</Text>
+          <Text style={styles.muted}>
+            Steps — A: {aSteps ?? "?"} • B: {bSteps ?? "?"}
+          </Text>
 
-            <View style={{ borderWidth: 1, borderRadius: 12, padding: 12, gap: 10 }}>
-              <Text style={{ fontWeight: "900" }}>Raw B payload</Text>
-              <Text style={{ opacity: 0.75, fontFamily: "monospace" }}>
-                {safeJson(bRun)}
-              </Text>
-            </View>
-
-            <TouchableOpacity
-              onPress={() => router.back()}
-              style={{ borderWidth: 1, borderRadius: 10, padding: 12 }}
+          <View style={styles.rowBtns}>
+            <Pressable
+              onPress={() =>
+                a &&
+                router.push({
+                  pathname: "/home/facility/sop-runs/[id]",
+                  params: { id: a }
+                })
+              }
+              style={({ pressed }) => [
+                styles.btn,
+                pressed && styles.btnPressed,
+                !a && styles.btnDisabled
+              ]}
+              disabled={!a}
             >
-              <Text style={{ fontWeight: "900" }}>Back</Text>
-            </TouchableOpacity>
-          </>
-        )}
+              <Text style={styles.btnText}>Open Run A</Text>
+            </Pressable>
+
+            <Pressable
+              onPress={() =>
+                b &&
+                router.push({
+                  pathname: "/home/facility/sop-runs/[id]",
+                  params: { id: b }
+                })
+              }
+              style={({ pressed }) => [
+                styles.btn,
+                pressed && styles.btnPressed,
+                !b && styles.btnDisabled
+              ]}
+              disabled={!b}
+            >
+              <Text style={styles.btnText}>Open Run B</Text>
+            </Pressable>
+          </View>
+
+          <Pressable
+            onPress={() => router.push("/home/facility/sop-runs/presets")}
+            style={({ pressed }) => [styles.linkBtn, pressed && styles.btnPressed]}
+          >
+            <Text style={styles.linkText}>Go to Presets</Text>
+          </Pressable>
+        </View>
+
+        <Text onPress={() => router.back()} style={styles.backLink}>
+          ‹ Back
+        </Text>
       </ScrollView>
     </ScreenBoundary>
   );
 }
+
+const styles = StyleSheet.create({
+  container: { padding: 16, gap: 12 },
+  headerRow: { gap: 4 },
+  h1: { fontSize: 22, fontWeight: "900" },
+  muted: { opacity: 0.7 },
+  loading: { paddingVertical: 18, alignItems: "center", gap: 10 },
+  card: {
+    borderWidth: 1,
+    borderColor: "rgba(0,0,0,0.12)",
+    borderRadius: 14,
+    padding: 14,
+    backgroundColor: "white",
+    gap: 10
+  },
+  cardTitle: { fontSize: 16, fontWeight: "900" },
+  rowBtns: { flexDirection: "row", gap: 10, marginTop: 6 },
+  btn: {
+    flex: 1,
+    borderWidth: 1,
+    borderColor: "rgba(0,0,0,0.12)",
+    paddingVertical: 10,
+    borderRadius: 12,
+    alignItems: "center"
+  },
+  btnPressed: { opacity: 0.85 },
+  btnDisabled: { opacity: 0.5 },
+  btnText: { fontWeight: "800" },
+  linkBtn: {
+    marginTop: 8,
+    paddingVertical: 10,
+    borderRadius: 12,
+    alignItems: "center",
+    backgroundColor: "rgba(0,0,0,0.04)"
+  },
+  linkText: { fontWeight: "800" },
+  backLink: { fontWeight: "800", marginTop: 6 }
+});

@@ -2,10 +2,10 @@ import React, { useCallback, useEffect, useMemo, useState } from "react";
 import {
   ActivityIndicator,
   FlatList,
+  Pressable,
   RefreshControl,
+  StyleSheet,
   Text,
-  TextInput,
-  TouchableOpacity,
   View
 } from "react-native";
 import { useRouter } from "expo-router";
@@ -13,155 +13,183 @@ import { useRouter } from "expo-router";
 import { ScreenBoundary } from "@/components/ScreenBoundary";
 import { InlineError } from "@/components/InlineError";
 import { apiRequest } from "@/api/apiRequest";
+import { endpoints } from "@/api/endpoints";
+import { useApiErrorHandler } from "@/hooks/useApiErrorHandler";
 
-type UiError = { title?: string; message?: string; requestId?: string };
+type AnyRec = Record<string, any>;
 
-function normalizeError(e: any): UiError {
-  const env = e?.error || e;
-  return {
-    title: env?.code ? String(env.code) : "REQUEST_FAILED",
-    message: String(env?.message || e?.message || e || "Unknown error"),
-    requestId: env?.requestId ? String(env.requestId) : undefined
-  };
+function asArray(res: any): AnyRec[] {
+  if (Array.isArray(res)) return res;
+  if (Array.isArray(res?.items)) return res.items;
+  if (Array.isArray(res?.data)) return res.data;
+  if (Array.isArray(res?.results)) return res.results;
+  if (Array.isArray(res?.inventory)) return res.inventory;
+  return [];
 }
 
-function getId(x: any): string {
-  return String(x?.id || x?._id || x?.itemId || x?.sku || "");
+function pickId(x: AnyRec): string {
+  return String(x?.id ?? x?._id ?? x?.inventoryId ?? x?.uuid ?? "");
 }
 
-function getLabel(x: any): string {
-  return String(x?.name || x?.title || x?.sku || getId(x) || "Inventory Item");
+function pickTitle(x: AnyRec): string {
+  return String(x?.name ?? x?.title ?? x?.label ?? x?.sku ?? "Inventory Item");
+}
+
+function pickSubtitle(x: AnyRec): string {
+  const qty = x?.qty ?? x?.quantity ?? x?.onHand ?? x?.count;
+  const unit = x?.unit ?? x?.uom ?? "";
+  const cat = x?.category ?? x?.type ?? "";
+  const a =
+    qty !== undefined && qty !== null
+      ? `On hand: ${String(qty)}${unit ? ` ${unit}` : ""}`
+      : "";
+  const b = cat ? `Category: ${String(cat)}` : "";
+  return [a, b].filter(Boolean).join(" • ");
 }
 
 export default function CommercialInventoryRoute() {
   const router = useRouter();
 
-  const [items, setItems] = useState<any[]>([]);
-  const [q, setQ] = useState("");
+  const apiErr: any = useApiErrorHandler();
+  const resolved = useMemo(() => {
+    const error = apiErr?.error ?? apiErr?.[0] ?? null;
+    const handleApiError = apiErr?.handleApiError ?? apiErr?.[1] ?? ((_: any) => {});
+    const clearError = apiErr?.clearError ?? apiErr?.[2] ?? (() => {});
+    return { error, handleApiError, clearError };
+  }, [apiErr]);
+
+  const [items, setItems] = useState<AnyRec[]>([]);
   const [loading, setLoading] = useState(true);
   const [refreshing, setRefreshing] = useState(false);
-  const [error, setError] = useState<UiError | null>(null);
 
-  const fetchItems = useCallback(async () => {
-    setError(null);
-    const raw = await apiRequest("/api/commercial/inventory", { method: "GET" });
+  const load = useCallback(
+    async (opts?: { refresh?: boolean }) => {
+      if (opts?.refresh) setRefreshing(true);
+      else setLoading(true);
 
-    const list =
-      (Array.isArray(raw) && raw) ||
-      (Array.isArray((raw as any)?.items) && (raw as any).items) ||
-      (Array.isArray((raw as any)?.data?.items) && (raw as any).data.items) ||
-      [];
+      try {
+        resolved.clearError();
 
-    setItems(list);
-  }, []);
+        // Commercial inventory endpoints vary by backend; try known shapes, then fall back safely.
+        const path =
+          (endpoints as any)?.commercial?.inventory ??
+          (endpoints as any)?.inventoryGlobal ??
+          "/api/inventory";
+
+        const res = await apiRequest(path, { method: "GET" });
+        setItems(asArray(res));
+      } catch (e) {
+        resolved.handleApiError(e);
+      } finally {
+        setLoading(false);
+        setRefreshing(false);
+      }
+    },
+    [resolved]
+  );
 
   useEffect(() => {
-    let alive = true;
-    (async () => {
-      try {
-        await fetchItems();
-      } catch (e) {
-        if (!alive) return;
-        setError(normalizeError(e));
-      } finally {
-        if (!alive) return;
-        setLoading(false);
-      }
-    })();
-    return () => {
-      alive = false;
-    };
-  }, [fetchItems]);
-
-  const onRefresh = useCallback(async () => {
-    setRefreshing(true);
-    try {
-      await fetchItems();
-    } catch (e) {
-      setError(normalizeError(e));
-    } finally {
-      setRefreshing(false);
-    }
-  }, [fetchItems]);
-
-  const filtered = useMemo(() => {
-    const s = q.trim().toLowerCase();
-    if (!s) return items;
-    return items.filter((x) => {
-      const hay =
-        `${getLabel(x)} ${getId(x)} ${x?.vendor || ""} ${x?.category || ""}`.toLowerCase();
-      return hay.includes(s);
-    });
-  }, [items, q]);
+    load();
+  }, [load]);
 
   return (
-    <ScreenBoundary name="home.commercial.inventory">
-      <View style={{ flex: 1, padding: 16, gap: 12 }}>
-        <Text style={{ fontSize: 20, fontWeight: "900" }}>Commercial Inventory</Text>
+    <ScreenBoundary title="Inventory">
+      <View style={styles.container}>
+        {resolved.error ? <InlineError error={resolved.error} /> : null}
 
-        <TextInput
-          value={q}
-          onChangeText={setQ}
-          placeholder="Search name, SKU, vendor…"
-          style={{
-            borderWidth: 1,
-            borderRadius: 10,
-            paddingHorizontal: 12,
-            paddingVertical: 10
-          }}
-        />
-
-        <InlineError
-          title={error?.title}
-          message={error?.message}
-          requestId={error?.requestId}
-        />
+        <View style={styles.headerRow}>
+          <Text style={styles.h1}>Commercial Inventory</Text>
+          <Text style={styles.muted}>{items.length} items</Text>
+        </View>
 
         {loading ? (
-          <>
+          <View style={styles.loading}>
             <ActivityIndicator />
-            <Text style={{ opacity: 0.75 }}>Loading…</Text>
-          </>
-        ) : (
-          <FlatList
-            data={filtered}
-            keyExtractor={(x, idx) => getId(x) || String(idx)}
-            refreshControl={
-              <RefreshControl refreshing={refreshing} onRefresh={onRefresh} />
-            }
-            ItemSeparatorComponent={() => <View style={{ height: 10 }} />}
-            ListEmptyComponent={
-              <Text style={{ opacity: 0.75 }}>No inventory items found.</Text>
-            }
-            renderItem={({ item }) => {
-              const id = getId(item);
-              const label = getLabel(item);
+            <Text style={styles.muted}>Loading inventory…</Text>
+          </View>
+        ) : null}
 
-              return (
-                <TouchableOpacity
-                  onPress={() =>
-                    id
-                      ? router.push(
-                          `/home/commercial/inventory-item/${encodeURIComponent(id)}`
-                        )
-                      : undefined
-                  }
-                  disabled={!id}
-                  style={{
-                    borderWidth: 1,
-                    borderRadius: 12,
-                    padding: 12,
-                    opacity: id ? 1 : 0.5
-                  }}
-                >
-                  <Text style={{ fontWeight: "900" }}>{label}</Text>
-                  <Text style={{ opacity: 0.75 }}>{id || "missing id"}</Text>
-                </TouchableOpacity>
-              );
-            }}
-          />
-        )}
+        <FlatList
+          data={items}
+          keyExtractor={(it, idx) => pickId(it) || String(idx)}
+          refreshControl={
+            <RefreshControl
+              refreshing={refreshing}
+              onRefresh={() => load({ refresh: true })}
+            />
+          }
+          contentContainerStyle={styles.list}
+          ListEmptyComponent={
+            !loading ? (
+              <View style={styles.empty}>
+                <Text style={styles.emptyTitle}>No inventory yet</Text>
+                <Text style={styles.muted}>
+                  When inventory exists on the backend, it will show here.
+                </Text>
+              </View>
+            ) : null
+          }
+          renderItem={({ item }) => {
+            const id = pickId(item);
+            const title = pickTitle(item);
+            const subtitle = pickSubtitle(item);
+
+            return (
+              <Pressable
+                onPress={() => {
+                  if (!id) return;
+                  router.push({
+                    pathname: "/home/commercial/inventory-item/[id]",
+                    params: { id }
+                  });
+                }}
+                style={({ pressed }) => [styles.row, pressed && styles.rowPressed]}
+              >
+                <View style={{ flex: 1, gap: 4 }}>
+                  <Text style={styles.rowTitle} numberOfLines={1}>
+                    {title}
+                  </Text>
+                  {subtitle ? (
+                    <Text style={styles.rowSub} numberOfLines={1}>
+                      {subtitle}
+                    </Text>
+                  ) : null}
+                </View>
+                <Text style={styles.chev}>›</Text>
+              </Pressable>
+            );
+          }}
+        />
       </View>
     </ScreenBoundary>
   );
 }
+
+const styles = StyleSheet.create({
+  container: { flex: 1, padding: 16, gap: 12 },
+  headerRow: { gap: 4 },
+  h1: { fontSize: 22, fontWeight: "900" },
+  muted: { opacity: 0.7 },
+
+  loading: { paddingVertical: 18, alignItems: "center", gap: 10 },
+
+  list: { paddingVertical: 6, gap: 10 },
+
+  row: {
+    flexDirection: "row",
+    alignItems: "center",
+    gap: 12,
+    padding: 14,
+    borderRadius: 14,
+    borderWidth: 1,
+    borderColor: "rgba(0,0,0,0.12)",
+    backgroundColor: "white"
+  },
+  rowPressed: { opacity: 0.85 },
+  rowTitle: { fontSize: 16, fontWeight: "800" },
+  rowSub: { opacity: 0.7 },
+  chev: { fontSize: 22, opacity: 0.5, paddingLeft: 8 },
+
+  empty: { paddingVertical: 26, alignItems: "center", gap: 8 },
+  emptyTitle: { fontSize: 16, fontWeight: "800" }
+});
