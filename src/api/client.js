@@ -80,7 +80,6 @@ function normalizePath(path) {
   const seg = p.split("?")[0].split("#")[0].split("/").filter(Boolean)[0] || "";
   if (API_ROOTS.has(seg)) return `/api${p}`;
   // ...existing code...
-  export default api;
       if (typeof fetch !== "function") {
         throw new ApiError("fetch is not available", { status: null, code: "FETCH_MISSING" });
       }
@@ -220,4 +219,4 @@ export const put = api.put;
 export const del = api.del;
 export const postMultipart = api.postMultipart;
 
-  export default api;
+export default api;

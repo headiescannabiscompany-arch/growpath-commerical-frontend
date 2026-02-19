@@ -1,43 +1,8 @@
-/* eslint-disable */
-
-// Re-export JS client so TS imports and JS imports behave identically.
-// Re-export JS client so TS imports and JS imports behave identically.
+// Thin TypeScript wrapper around the canonical JS client.
+// Keep this file free of implementation logic to avoid redeclare/duplicate exports.
 export * from "./client.js";
-import api from "./client.js";
-export default api;
-/* eslint-disable */
-
-// Single-source-of-truth: re-export the JS client so TS imports and JS imports behave the same.
-// This section is redundant and can be removed.
-// The previous lines already handle the exports correctly.
-/* eslint-disable */
-
-export type ApiErrorMeta = {
-  status?: number | null;
-  data?: any;
-  code?: string;
-  requestId?: string | null;
-};
-
-let TOKEN_GETTER: null | (() => any | Promise<any>) = null;
-let AUTH_TOKEN: string | null = null;
-
-export function setTokenGetter(fn: any) {
-  TOKEN_GETTER = typeof fn === "function" ? fn : null;
-}
-
-export function setAuthToken(token: any) {
-  AUTH_TOKEN = token ? String(token) : null;
-}
-
-export function getAuthToken() {
-  return AUTH_TOKEN;
-}
-
-export class ApiError extends Error {
-  status: number | null;
-  data: any;
-  code?: string;
+export { default } from "./client.js";
+export { default as api } from "./client.js";
   requestId: string | null;
 
   constructor(message: any, arg2?: number | ApiErrorMeta, arg3?: any) {
