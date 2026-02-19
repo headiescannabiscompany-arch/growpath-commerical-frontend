@@ -1,0 +1,2082 @@
+[
+  {
+    "route_path": "/",
+    "file_path": "src/app/_layout.tsx",
+    "requires_auth": false,
+    "mode": "shared",
+    "is_tab": false,
+    "notes": ""
+  },
+  {
+    "route_path": "/",
+    "file_path": "src/app/index.tsx",
+    "requires_auth": false,
+    "mode": "shared",
+    "is_tab": false,
+    "notes": ""
+  },
+  {
+    "route_path": "/(commercial)",
+    "file_path": "src/app/(commercial)/_layout.tsx",
+    "requires_auth": true,
+    "mode": "shared",
+    "is_tab": false,
+    "notes": ""
+  },
+  {
+    "route_path": "/(commercial)/alerts/[id]",
+    "file_path": "src/app/(commercial)/alerts/[id].tsx",
+    "requires_auth": true,
+    "mode": "shared",
+    "is_tab": false,
+    "notes": ""
+  },
+  {
+    "route_path": "/(commercial)/feed",
+    "file_path": "src/app/(commercial)/feed/index.tsx",
+    "requires_auth": true,
+    "mode": "shared",
+    "is_tab": false,
+    "notes": ""
+  },
+  {
+    "route_path": "/(commercial)/logs/[id]",
+    "file_path": "src/app/(commercial)/logs/[id].tsx",
+    "requires_auth": true,
+    "mode": "shared",
+    "is_tab": false,
+    "notes": ""
+  },
+  {
+    "route_path": "/(commercial)/tasks/[id]",
+    "file_path": "src/app/(commercial)/tasks/[id].tsx",
+    "requires_auth": true,
+    "mode": "shared",
+    "is_tab": false,
+    "notes": ""
+  },
+  {
+    "route_path": "/campaigns",
+    "file_path": "src/app/campaigns/index.tsx",
+    "requires_auth": true,
+    "mode": "shared",
+    "is_tab": false,
+    "notes": ""
+  },
+  {
+    "route_path": "/communities",
+    "file_path": "src/app/communities/index.tsx",
+    "requires_auth": true,
+    "mode": "shared",
+    "is_tab": false,
+    "notes": ""
+  },
+  {
+    "route_path": "/courses",
+    "file_path": "src/app/courses/index.tsx",
+    "requires_auth": true,
+    "mode": "shared",
+    "is_tab": false,
+    "notes": ""
+  },
+  {
+    "route_path": "/create-post",
+    "file_path": "src/app/create-post.tsx",
+    "requires_auth": true,
+    "mode": "shared",
+    "is_tab": false,
+    "notes": ""
+  },
+  {
+    "route_path": "/dashboard",
+    "file_path": "src/app/dashboard.tsx",
+    "requires_auth": true,
+    "mode": "shared",
+    "is_tab": false,
+    "notes": ""
+  },
+  {
+    "route_path": "/debug",
+    "file_path": "src/app/debug.tsx",
+    "requires_auth": true,
+    "mode": "shared",
+    "is_tab": false,
+    "notes": ""
+  },
+  {
+    "route_path": "/diagnose",
+    "file_path": "src/app/diagnose/index.tsx",
+    "requires_auth": true,
+    "mode": "shared",
+    "is_tab": false,
+    "notes": ""
+  },
+  {
+    "route_path": "/facilities",
+    "file_path": "src/app/facilities/index.tsx",
+    "requires_auth": true,
+    "mode": "shared",
+    "is_tab": false,
+    "notes": ""
+  },
+  {
+    "route_path": "/facilities/[facilityId]/compliance",
+    "file_path": "src/app/facilities/[facilityId]/compliance.tsx",
+    "requires_auth": true,
+    "mode": "shared",
+    "is_tab": false,
+    "notes": ""
+  },
+  {
+    "route_path": "/facilities/[facilityId]/dashboard",
+    "file_path": "src/app/facilities/[facilityId]/dashboard.tsx",
+    "requires_auth": true,
+    "mode": "shared",
+    "is_tab": false,
+    "notes": ""
+  },
+  {
+    "route_path": "/facilities/[facilityId]/inventory",
+    "file_path": "src/app/facilities/[facilityId]/inventory.tsx",
+    "requires_auth": true,
+    "mode": "shared",
+    "is_tab": false,
+    "notes": ""
+  },
+  {
+    "route_path": "/facilities/[facilityId]/rooms",
+    "file_path": "src/app/facilities/[facilityId]/rooms.tsx",
+    "requires_auth": true,
+    "mode": "shared",
+    "is_tab": false,
+    "notes": ""
+  },
+  {
+    "route_path": "/facilities/[facilityId]/sops",
+    "file_path": "src/app/facilities/[facilityId]/sops.tsx",
+    "requires_auth": true,
+    "mode": "shared",
+    "is_tab": false,
+    "notes": ""
+  },
+  {
+    "route_path": "/facilities/[facilityId]/tasks",
+    "file_path": "src/app/facilities/[facilityId]/tasks.tsx",
+    "requires_auth": true,
+    "mode": "shared",
+    "is_tab": false,
+    "notes": ""
+  },
+  {
+    "route_path": "/facilities/[facilityId]/team",
+    "file_path": "src/app/facilities/[facilityId]/team.tsx",
+    "requires_auth": true,
+    "mode": "shared",
+    "is_tab": false,
+    "notes": ""
+  },
+  {
+    "route_path": "/feed",
+    "file_path": "src/app/feed/index.tsx",
+    "requires_auth": true,
+    "mode": "shared",
+    "is_tab": false,
+    "notes": ""
+  },
+  {
+    "route_path": "/forum",
+    "file_path": "src/app/forum/index.tsx",
+    "requires_auth": true,
+    "mode": "shared",
+    "is_tab": false,
+    "notes": ""
+  },
+  {
+    "route_path": "/home",
+    "file_path": "src/app/home/index.tsx",
+    "requires_auth": true,
+    "mode": "shared",
+    "is_tab": false,
+    "notes": ""
+  },
+  {
+    "route_path": "/home/_facility",
+    "file_path": "src/app/home/_facility.tsx",
+    "requires_auth": true,
+    "mode": "shared",
+    "is_tab": false,
+    "notes": ""
+  },
+  {
+    "route_path": "/home/_personal",
+    "file_path": "src/app/home/_personal.tsx",
+    "requires_auth": true,
+    "mode": "shared",
+    "is_tab": false,
+    "notes": ""
+  },
+  {
+    "route_path": "/home/commercial",
+    "file_path": "src/app/home/commercial.tsx",
+    "requires_auth": true,
+    "mode": "commercial",
+    "is_tab": false,
+    "notes": ""
+  },
+  {
+    "route_path": "/home/commercial/inventory",
+    "file_path": "src/app/home/commercial/inventory.tsx",
+    "requires_auth": true,
+    "mode": "commercial",
+    "is_tab": false,
+    "notes": ""
+  },
+  {
+    "route_path": "/home/commercial/inventory-item/[id]",
+    "file_path": "src/app/home/commercial/inventory-item/[id].tsx",
+    "requires_auth": true,
+    "mode": "commercial",
+    "is_tab": false,
+    "notes": ""
+  },
+  {
+    "route_path": "/home/facility",
+    "file_path": "src/app/home/facility/_layout.tsx",
+    "requires_auth": true,
+    "mode": "facility",
+    "is_tab": false,
+    "notes": ""
+  },
+  {
+    "route_path": "/home/facility",
+    "file_path": "src/app/home/facility/index.tsx",
+    "requires_auth": true,
+    "mode": "facility",
+    "is_tab": false,
+    "notes": ""
+  },
+  {
+    "route_path": "/home/facility/(tabs)",
+    "file_path": "src/app/home/facility/(tabs)/_layout.tsx",
+    "requires_auth": true,
+    "mode": "facility",
+    "is_tab": true,
+    "notes": ""
+  },
+  {
+    "route_path": "/home/facility/(tabs)/ai-tools",
+    "file_path": "src/app/home/facility/(tabs)/ai-tools.tsx",
+    "requires_auth": true,
+    "mode": "facility",
+    "is_tab": true,
+    "notes": ""
+  },
+  {
+    "route_path": "/home/facility/(tabs)/audit-logs",
+    "file_path": "src/app/home/facility/(tabs)/audit-logs.tsx",
+    "requires_auth": true,
+    "mode": "facility",
+    "is_tab": true,
+    "notes": ""
+  },
+  {
+    "route_path": "/home/facility/(tabs)/compliance",
+    "file_path": "src/app/home/facility/(tabs)/compliance.tsx",
+    "requires_auth": true,
+    "mode": "facility",
+    "is_tab": true,
+    "notes": ""
+  },
+  {
+    "route_path": "/home/facility/(tabs)/CreateInventoryItemScreen",
+    "file_path": "src/app/home/facility/(tabs)/CreateInventoryItemScreen.tsx",
+    "requires_auth": true,
+    "mode": "facility",
+    "is_tab": true,
+    "notes": ""
+  },
+  {
+    "route_path": "/home/facility/(tabs)/dashboard",
+    "file_path": "src/app/home/facility/(tabs)/dashboard.tsx",
+    "requires_auth": true,
+    "mode": "facility",
+    "is_tab": true,
+    "notes": ""
+  },
+  {
+    "route_path": "/home/facility/(tabs)/grows",
+    "file_path": "src/app/home/facility/(tabs)/grows.tsx",
+    "requires_auth": true,
+    "mode": "facility",
+    "is_tab": true,
+    "notes": ""
+  },
+  {
+    "route_path": "/home/facility/(tabs)/inventory",
+    "file_path": "src/app/home/facility/(tabs)/inventory.tsx",
+    "requires_auth": true,
+    "mode": "facility",
+    "is_tab": true,
+    "notes": ""
+  },
+  {
+    "route_path": "/home/facility/(tabs)/InventoryItemDetailScreen",
+    "file_path": "src/app/home/facility/(tabs)/InventoryItemDetailScreen.tsx",
+    "requires_auth": true,
+    "mode": "facility",
+    "is_tab": true,
+    "notes": ""
+  },
+  {
+    "route_path": "/home/facility/(tabs)/logs",
+    "file_path": "src/app/home/facility/(tabs)/logs.tsx",
+    "requires_auth": true,
+    "mode": "facility",
+    "is_tab": true,
+    "notes": ""
+  },
+  {
+    "route_path": "/home/facility/(tabs)/plants",
+    "file_path": "src/app/home/facility/(tabs)/plants.tsx",
+    "requires_auth": true,
+    "mode": "facility",
+    "is_tab": true,
+    "notes": ""
+  },
+  {
+    "route_path": "/home/facility/(tabs)/profile",
+    "file_path": "src/app/home/facility/(tabs)/profile.tsx",
+    "requires_auth": true,
+    "mode": "facility",
+    "is_tab": true,
+    "notes": ""
+  },
+  {
+    "route_path": "/home/facility/(tabs)/sop-runs",
+    "file_path": "src/app/home/facility/(tabs)/sop-runs.tsx",
+    "requires_auth": true,
+    "mode": "facility",
+    "is_tab": true,
+    "notes": ""
+  },
+  {
+    "route_path": "/home/facility/(tabs)/tasks",
+    "file_path": "src/app/home/facility/(tabs)/tasks.tsx",
+    "requires_auth": true,
+    "mode": "facility",
+    "is_tab": true,
+    "notes": ""
+  },
+  {
+    "route_path": "/home/facility/(tabs)/team",
+    "file_path": "src/app/home/facility/(tabs)/team.tsx",
+    "requires_auth": true,
+    "mode": "facility",
+    "is_tab": true,
+    "notes": ""
+  },
+  {
+    "route_path": "/home/facility/ai/ask",
+    "file_path": "src/app/home/facility/ai/ask.tsx",
+    "requires_auth": true,
+    "mode": "facility",
+    "is_tab": false,
+    "notes": ""
+  },
+  {
+    "route_path": "/home/facility/ai/diagnosis-photo",
+    "file_path": "src/app/home/facility/ai/diagnosis-photo.tsx",
+    "requires_auth": true,
+    "mode": "facility",
+    "is_tab": false,
+    "notes": ""
+  },
+  {
+    "route_path": "/home/facility/ai/template",
+    "file_path": "src/app/home/facility/ai/template.tsx",
+    "requires_auth": true,
+    "mode": "facility",
+    "is_tab": false,
+    "notes": ""
+  },
+  {
+    "route_path": "/home/facility/audit-logs",
+    "file_path": "src/app/home/facility/audit-logs/index.tsx",
+    "requires_auth": true,
+    "mode": "facility",
+    "is_tab": false,
+    "notes": ""
+  },
+  {
+    "route_path": "/home/facility/audit-logs/[entity]/[entityId]",
+    "file_path": "src/app/home/facility/audit-logs/[entity]/[entityId].tsx",
+    "requires_auth": true,
+    "mode": "facility",
+    "is_tab": false,
+    "notes": ""
+  },
+  {
+    "route_path": "/home/facility/audit-logs/[id]",
+    "file_path": "src/app/home/facility/audit-logs/[id].tsx",
+    "requires_auth": true,
+    "mode": "facility",
+    "is_tab": false,
+    "notes": ""
+  },
+  {
+    "route_path": "/home/facility/compliance/ai4.dashboard",
+    "file_path": "src/app/home/facility/compliance/ai4.dashboard.tsx",
+    "requires_auth": true,
+    "mode": "facility",
+    "is_tab": false,
+    "notes": ""
+  },
+  {
+    "route_path": "/home/facility/compliance/report-detail",
+    "file_path": "src/app/home/facility/compliance/report-detail.tsx",
+    "requires_auth": true,
+    "mode": "facility",
+    "is_tab": false,
+    "notes": ""
+  },
+  {
+    "route_path": "/home/facility/compliance/reports",
+    "file_path": "src/app/home/facility/compliance/reports.tsx",
+    "requires_auth": true,
+    "mode": "facility",
+    "is_tab": false,
+    "notes": ""
+  },
+  {
+    "route_path": "/home/facility/logs/[id]",
+    "file_path": "src/app/home/facility/logs/[id].tsx",
+    "requires_auth": true,
+    "mode": "facility",
+    "is_tab": false,
+    "notes": ""
+  },
+  {
+    "route_path": "/home/facility/plants/[id]",
+    "file_path": "src/app/home/facility/plants/[id].tsx",
+    "requires_auth": true,
+    "mode": "facility",
+    "is_tab": false,
+    "notes": ""
+  },
+  {
+    "route_path": "/home/facility/select",
+    "file_path": "src/app/home/facility/select.tsx",
+    "requires_auth": true,
+    "mode": "facility",
+    "is_tab": false,
+    "notes": ""
+  },
+  {
+    "route_path": "/home/facility/sop-runs",
+    "file_path": "src/app/home/facility/sop-runs/index.tsx",
+    "requires_auth": true,
+    "mode": "facility",
+    "is_tab": false,
+    "notes": ""
+  },
+  {
+    "route_path": "/home/facility/sop-runs/[id]",
+    "file_path": "src/app/home/facility/sop-runs/[id].tsx",
+    "requires_auth": true,
+    "mode": "facility",
+    "is_tab": false,
+    "notes": ""
+  },
+  {
+    "route_path": "/home/facility/sop-runs/compare",
+    "file_path": "src/app/home/facility/sop-runs/compare.tsx",
+    "requires_auth": true,
+    "mode": "facility",
+    "is_tab": false,
+    "notes": ""
+  },
+  {
+    "route_path": "/home/facility/sop-runs/compare-result",
+    "file_path": "src/app/home/facility/sop-runs/compare-result.tsx",
+    "requires_auth": true,
+    "mode": "facility",
+    "is_tab": false,
+    "notes": ""
+  },
+  {
+    "route_path": "/home/facility/sop-runs/presets",
+    "file_path": "src/app/home/facility/sop-runs/presets.tsx",
+    "requires_auth": false,
+    "mode": "facility",
+    "is_tab": false,
+    "notes": ""
+  },
+  {
+    "route_path": "/home/facility/sop-runs/start",
+    "file_path": "src/app/home/facility/sop-runs/start.tsx",
+    "requires_auth": true,
+    "mode": "facility",
+    "is_tab": false,
+    "notes": ""
+  },
+  {
+    "route_path": "/home/facility/tasks/[id]",
+    "file_path": "src/app/home/facility/tasks/[id].tsx",
+    "requires_auth": true,
+    "mode": "facility",
+    "is_tab": false,
+    "notes": ""
+  },
+  {
+    "route_path": "/home/personal",
+    "file_path": "src/app/home/personal/_layout.tsx",
+    "requires_auth": true,
+    "mode": "personal",
+    "is_tab": false,
+    "notes": ""
+  },
+  {
+    "route_path": "/home/personal/(tabs)",
+    "file_path": "src/app/home/personal/(tabs)/_layout.tsx",
+    "requires_auth": true,
+    "mode": "personal",
+    "is_tab": true,
+    "notes": ""
+  },
+  {
+    "route_path": "/home/personal/(tabs)",
+    "file_path": "src/app/home/personal/(tabs)/index.tsx",
+    "requires_auth": true,
+    "mode": "personal",
+    "is_tab": true,
+    "notes": ""
+  },
+  {
+    "route_path": "/home/personal/(tabs)/ai",
+    "file_path": "src/app/home/personal/(tabs)/ai/_layout.tsx",
+    "requires_auth": true,
+    "mode": "personal",
+    "is_tab": true,
+    "notes": ""
+  },
+  {
+    "route_path": "/home/personal/(tabs)/ai",
+    "file_path": "src/app/home/personal/(tabs)/ai/index.tsx",
+    "requires_auth": true,
+    "mode": "personal",
+    "is_tab": true,
+    "notes": ""
+  },
+  {
+    "route_path": "/home/personal/(tabs)/courses",
+    "file_path": "src/app/home/personal/(tabs)/courses.tsx",
+    "requires_auth": true,
+    "mode": "personal",
+    "is_tab": true,
+    "notes": ""
+  },
+  {
+    "route_path": "/home/personal/(tabs)/diagnose",
+    "file_path": "src/app/home/personal/(tabs)/diagnose.tsx",
+    "requires_auth": true,
+    "mode": "personal",
+    "is_tab": true,
+    "notes": ""
+  },
+  {
+    "route_path": "/home/personal/(tabs)/forum",
+    "file_path": "src/app/home/personal/(tabs)/forum.tsx",
+    "requires_auth": true,
+    "mode": "personal",
+    "is_tab": true,
+    "notes": ""
+  },
+  {
+    "route_path": "/home/personal/(tabs)/forum/code",
+    "file_path": "src/app/home/personal/(tabs)/forum/code.tsx",
+    "requires_auth": true,
+    "mode": "personal",
+    "is_tab": true,
+    "notes": ""
+  },
+  {
+    "route_path": "/home/personal/(tabs)/forum/new-post",
+    "file_path": "src/app/home/personal/(tabs)/forum/new-post.tsx",
+    "requires_auth": true,
+    "mode": "personal",
+    "is_tab": true,
+    "notes": ""
+  },
+  {
+    "route_path": "/home/personal/(tabs)/forum/post/[id]",
+    "file_path": "src/app/home/personal/(tabs)/forum/post/[id].tsx",
+    "requires_auth": true,
+    "mode": "personal",
+    "is_tab": true,
+    "notes": ""
+  },
+  {
+    "route_path": "/home/personal/(tabs)/grows",
+    "file_path": "src/app/home/personal/(tabs)/grows/_layout.tsx",
+    "requires_auth": true,
+    "mode": "personal",
+    "is_tab": true,
+    "notes": ""
+  },
+  {
+    "route_path": "/home/personal/(tabs)/grows",
+    "file_path": "src/app/home/personal/(tabs)/grows/index.tsx",
+    "requires_auth": true,
+    "mode": "personal",
+    "is_tab": true,
+    "notes": ""
+  },
+  {
+    "route_path": "/home/personal/(tabs)/grows/[growId]",
+    "file_path": "src/app/home/personal/(tabs)/grows/[growId].tsx",
+    "requires_auth": true,
+    "mode": "personal",
+    "is_tab": true,
+    "notes": ""
+  },
+  {
+    "route_path": "/home/personal/(tabs)/grows/new",
+    "file_path": "src/app/home/personal/(tabs)/grows/new.tsx",
+    "requires_auth": true,
+    "mode": "personal",
+    "is_tab": true,
+    "notes": ""
+  },
+  {
+    "route_path": "/home/personal/(tabs)/logs",
+    "file_path": "src/app/home/personal/(tabs)/logs/_layout.tsx",
+    "requires_auth": true,
+    "mode": "personal",
+    "is_tab": true,
+    "notes": ""
+  },
+  {
+    "route_path": "/home/personal/(tabs)/logs",
+    "file_path": "src/app/home/personal/(tabs)/logs/index.tsx",
+    "requires_auth": true,
+    "mode": "personal",
+    "is_tab": true,
+    "notes": ""
+  },
+  {
+    "route_path": "/home/personal/(tabs)/logs/[logId]",
+    "file_path": "src/app/home/personal/(tabs)/logs/[logId].tsx",
+    "requires_auth": true,
+    "mode": "personal",
+    "is_tab": true,
+    "notes": ""
+  },
+  {
+    "route_path": "/home/personal/(tabs)/logs/new",
+    "file_path": "src/app/home/personal/(tabs)/logs/new.tsx",
+    "requires_auth": true,
+    "mode": "personal",
+    "is_tab": true,
+    "notes": ""
+  },
+  {
+    "route_path": "/home/personal/(tabs)/profile",
+    "file_path": "src/app/home/personal/(tabs)/profile/_layout.tsx",
+    "requires_auth": true,
+    "mode": "personal",
+    "is_tab": true,
+    "notes": ""
+  },
+  {
+    "route_path": "/home/personal/(tabs)/profile",
+    "file_path": "src/app/home/personal/(tabs)/profile/index.tsx",
+    "requires_auth": true,
+    "mode": "personal",
+    "is_tab": true,
+    "notes": ""
+  },
+  {
+    "route_path": "/home/personal/(tabs)/tasks",
+    "file_path": "src/app/home/personal/(tabs)/tasks.tsx",
+    "requires_auth": true,
+    "mode": "personal",
+    "is_tab": true,
+    "notes": ""
+  },
+  {
+    "route_path": "/home/personal/(tabs)/tools",
+    "file_path": "src/app/home/personal/(tabs)/tools/_layout.tsx",
+    "requires_auth": true,
+    "mode": "personal",
+    "is_tab": true,
+    "notes": ""
+  },
+  {
+    "route_path": "/home/personal/(tabs)/tools",
+    "file_path": "src/app/home/personal/(tabs)/tools/index.tsx",
+    "requires_auth": true,
+    "mode": "personal",
+    "is_tab": true,
+    "notes": ""
+  },
+  {
+    "route_path": "/home/personal/(tabs)/tools/vpd",
+    "file_path": "src/app/home/personal/(tabs)/tools/vpd.tsx",
+    "requires_auth": true,
+    "mode": "personal",
+    "is_tab": true,
+    "notes": ""
+  },
+  {
+    "route_path": "/home/personal/more/analytics",
+    "file_path": "src/app/home/personal/more/analytics.tsx",
+    "requires_auth": true,
+    "mode": "personal",
+    "is_tab": false,
+    "notes": ""
+  },
+  {
+    "route_path": "/home/personal/more/forum",
+    "file_path": "src/app/home/personal/more/forum.tsx",
+    "requires_auth": true,
+    "mode": "personal",
+    "is_tab": false,
+    "notes": ""
+  },
+  {
+    "route_path": "/home/personal/more/links",
+    "file_path": "src/app/home/personal/more/links.tsx",
+    "requires_auth": true,
+    "mode": "personal",
+    "is_tab": false,
+    "notes": ""
+  },
+  {
+    "route_path": "/home/personal/more/qa",
+    "file_path": "src/app/home/personal/more/qa.tsx",
+    "requires_auth": true,
+    "mode": "personal",
+    "is_tab": false,
+    "notes": ""
+  },
+  {
+    "route_path": "/home/personal/more/social-tools",
+    "file_path": "src/app/home/personal/more/social-tools.tsx",
+    "requires_auth": true,
+    "mode": "personal",
+    "is_tab": false,
+    "notes": ""
+  },
+  {
+    "route_path": "/home/personal/more/tasks",
+    "file_path": "src/app/home/personal/more/tasks.tsx",
+    "requires_auth": true,
+    "mode": "personal",
+    "is_tab": false,
+    "notes": ""
+  },
+  {
+    "route_path": "/home/personal/more/team",
+    "file_path": "src/app/home/personal/more/team.tsx",
+    "requires_auth": true,
+    "mode": "personal",
+    "is_tab": false,
+    "notes": ""
+  },
+  {
+    "route_path": "/legacy/AddLessonScreen",
+    "file_path": "src/screens/AddLessonScreen.js",
+    "requires_auth": true,
+    "mode": "shared",
+    "is_tab": false,
+    "notes": "legacy screen file"
+  },
+  {
+    "route_path": "/legacy/AdminCoursesScreen",
+    "file_path": "src/screens/AdminCoursesScreen.js",
+    "requires_auth": true,
+    "mode": "shared",
+    "is_tab": false,
+    "notes": "legacy screen file"
+  },
+  {
+    "route_path": "/legacy/AdminPayoutsScreen",
+    "file_path": "src/screens/AdminPayoutsScreen.js",
+    "requires_auth": true,
+    "mode": "shared",
+    "is_tab": false,
+    "notes": "legacy screen file"
+  },
+  {
+    "route_path": "/legacy/AdminReportsScreen",
+    "file_path": "src/screens/AdminReportsScreen.js",
+    "requires_auth": true,
+    "mode": "shared",
+    "is_tab": false,
+    "notes": "legacy screen file"
+  },
+  {
+    "route_path": "/legacy/AdvertisingScreen",
+    "file_path": "src/screens/commercial/AdvertisingScreen.js",
+    "requires_auth": true,
+    "mode": "shared",
+    "is_tab": false,
+    "notes": "legacy screen file"
+  },
+  {
+    "route_path": "/legacy/AIToolsHomeScreen",
+    "file_path": "src/screens/facility/AIToolsHomeScreen.tsx",
+    "requires_auth": true,
+    "mode": "shared",
+    "is_tab": false,
+    "notes": "legacy screen file"
+  },
+  {
+    "route_path": "/legacy/AnalyticsScreen",
+    "file_path": "src/screens/AnalyticsScreen.js",
+    "requires_auth": true,
+    "mode": "shared",
+    "is_tab": false,
+    "notes": "legacy screen file"
+  },
+  {
+    "route_path": "/legacy/AnswerQuestionScreen",
+    "file_path": "src/screens/AnswerQuestionScreen.js",
+    "requires_auth": true,
+    "mode": "shared",
+    "is_tab": false,
+    "notes": "legacy screen file"
+  },
+  {
+    "route_path": "/legacy/AppIntroScreen",
+    "file_path": "src/screens/AppIntroScreen.js",
+    "requires_auth": true,
+    "mode": "shared",
+    "is_tab": false,
+    "notes": "legacy screen file"
+  },
+  {
+    "route_path": "/legacy/AuditLogScreen",
+    "file_path": "src/screens/facility/AuditLogScreen.js",
+    "requires_auth": true,
+    "mode": "shared",
+    "is_tab": false,
+    "notes": "legacy screen file"
+  },
+  {
+    "route_path": "/legacy/AutomationCenterScreen",
+    "file_path": "src/screens/facility/AutomationCenterScreen.tsx",
+    "requires_auth": true,
+    "mode": "shared",
+    "is_tab": false,
+    "notes": "legacy screen file"
+  },
+  {
+    "route_path": "/legacy/AutomationScreen",
+    "file_path": "src/screens/facility/AutomationScreen.tsx",
+    "requires_auth": true,
+    "mode": "shared",
+    "is_tab": false,
+    "notes": "legacy screen file"
+  },
+  {
+    "route_path": "/legacy/BillingAndReportingScreen",
+    "file_path": "src/screens/facility/BillingAndReportingScreen.js",
+    "requires_auth": true,
+    "mode": "shared",
+    "is_tab": false,
+    "notes": "legacy screen file"
+  },
+  {
+    "route_path": "/legacy/CalendarScreen",
+    "file_path": "src/screens/personal/CalendarScreen.tsx",
+    "requires_auth": true,
+    "mode": "shared",
+    "is_tab": false,
+    "notes": "legacy screen file"
+  },
+  {
+    "route_path": "/legacy/CategoryBrowserScreen",
+    "file_path": "src/screens/CategoryBrowserScreen.js",
+    "requires_auth": true,
+    "mode": "shared",
+    "is_tab": false,
+    "notes": "legacy screen file"
+  },
+  {
+    "route_path": "/legacy/CategoryCoursesScreen",
+    "file_path": "src/screens/CategoryCoursesScreen.js",
+    "requires_auth": true,
+    "mode": "shared",
+    "is_tab": false,
+    "notes": "legacy screen file"
+  },
+  {
+    "route_path": "/legacy/CertificateVerificationScreen",
+    "file_path": "src/screens/CertificateVerificationScreen.js",
+    "requires_auth": true,
+    "mode": "shared",
+    "is_tab": false,
+    "notes": "legacy screen file"
+  },
+  {
+    "route_path": "/legacy/CertificateViewer",
+    "file_path": "src/screens/CertificateViewer.js",
+    "requires_auth": true,
+    "mode": "shared",
+    "is_tab": false,
+    "notes": "legacy screen file"
+  },
+  {
+    "route_path": "/legacy/CommentsScreen",
+    "file_path": "src/screens/CommentsScreen.js",
+    "requires_auth": true,
+    "mode": "shared",
+    "is_tab": false,
+    "notes": "legacy screen file"
+  },
+  {
+    "route_path": "/legacy/CommercialDashboard",
+    "file_path": "src/screens/commercial/CommercialDashboard.tsx",
+    "requires_auth": true,
+    "mode": "shared",
+    "is_tab": false,
+    "notes": "legacy screen file"
+  },
+  {
+    "route_path": "/legacy/CommercialDashboardScreen",
+    "file_path": "src/screens/commercial/CommercialDashboardScreen.js",
+    "requires_auth": true,
+    "mode": "shared",
+    "is_tab": false,
+    "notes": "legacy screen file"
+  },
+  {
+    "route_path": "/legacy/CommercialInventoryScreen",
+    "file_path": "src/screens/CommercialInventoryScreen.js",
+    "requires_auth": true,
+    "mode": "shared",
+    "is_tab": false,
+    "notes": "legacy screen file"
+  },
+  {
+    "route_path": "/legacy/CommunitiesScreen",
+    "file_path": "src/screens/commercial/CommunitiesScreen.js",
+    "requires_auth": true,
+    "mode": "shared",
+    "is_tab": false,
+    "notes": "legacy screen file"
+  },
+  {
+    "route_path": "/legacy/ComplianceLogsScreen",
+    "file_path": "src/screens/facility/ComplianceLogsScreen.tsx",
+    "requires_auth": true,
+    "mode": "shared",
+    "is_tab": false,
+    "notes": "legacy screen file"
+  },
+  {
+    "route_path": "/legacy/ComputeVPDScreen",
+    "file_path": "src/screens/facility/ComputeVPDScreen.tsx",
+    "requires_auth": true,
+    "mode": "shared",
+    "is_tab": false,
+    "notes": "legacy screen file"
+  },
+  {
+    "route_path": "/legacy/ContentMarketplaceScreen",
+    "file_path": "src/screens/commercial/ContentMarketplaceScreen.js",
+    "requires_auth": true,
+    "mode": "shared",
+    "is_tab": false,
+    "notes": "legacy screen file"
+  },
+  {
+    "route_path": "/legacy/CoursesScreen",
+    "file_path": "src/screens/CoursesScreen.js",
+    "requires_auth": true,
+    "mode": "shared",
+    "is_tab": false,
+    "notes": "legacy screen file"
+  },
+  {
+    "route_path": "/legacy/CreatePlantScreen",
+    "file_path": "src/screens/CreatePlantScreen.js",
+    "requires_auth": true,
+    "mode": "shared",
+    "is_tab": false,
+    "notes": "legacy screen file"
+  },
+  {
+    "route_path": "/legacy/CreatePostScreen",
+    "file_path": "src/screens/CreatePostScreen.js",
+    "requires_auth": true,
+    "mode": "shared",
+    "is_tab": false,
+    "notes": "legacy screen file"
+  },
+  {
+    "route_path": "/legacy/CreateTaskScreen",
+    "file_path": "src/screens/CreateTaskScreen.js",
+    "requires_auth": true,
+    "mode": "shared",
+    "is_tab": false,
+    "notes": "legacy screen file"
+  },
+  {
+    "route_path": "/legacy/CreateVendorGuide",
+    "file_path": "src/screens/CreateVendorGuide.js",
+    "requires_auth": true,
+    "mode": "shared",
+    "is_tab": false,
+    "notes": "legacy screen file"
+  },
+  {
+    "route_path": "/legacy/CreatorAnalyticsScreen",
+    "file_path": "src/screens/CreatorAnalyticsScreen.js",
+    "requires_auth": true,
+    "mode": "shared",
+    "is_tab": false,
+    "notes": "legacy screen file"
+  },
+  {
+    "route_path": "/legacy/CreatorDashboard",
+    "file_path": "src/screens/CreatorDashboard.js",
+    "requires_auth": true,
+    "mode": "shared",
+    "is_tab": false,
+    "notes": "legacy screen file"
+  },
+  {
+    "route_path": "/legacy/CreatorDashboardScreen",
+    "file_path": "src/screens/CreatorDashboardScreen.js",
+    "requires_auth": true,
+    "mode": "shared",
+    "is_tab": false,
+    "notes": "legacy screen file"
+  },
+  {
+    "route_path": "/legacy/CreatorDashboardV2",
+    "file_path": "src/screens/CreatorDashboardV2.js",
+    "requires_auth": true,
+    "mode": "shared",
+    "is_tab": false,
+    "notes": "legacy screen file"
+  },
+  {
+    "route_path": "/legacy/CreatorPayoutScreen",
+    "file_path": "src/screens/CreatorPayoutScreen.js",
+    "requires_auth": true,
+    "mode": "shared",
+    "is_tab": false,
+    "notes": "legacy screen file"
+  },
+  {
+    "route_path": "/legacy/CreatorSignatureUpload",
+    "file_path": "src/screens/CreatorSignatureUpload.js",
+    "requires_auth": true,
+    "mode": "shared",
+    "is_tab": false,
+    "notes": "legacy screen file"
+  },
+  {
+    "route_path": "/legacy/DashboardScreen",
+    "file_path": "src/screens/DashboardScreen.js",
+    "requires_auth": true,
+    "mode": "shared",
+    "is_tab": false,
+    "notes": "legacy screen file"
+  },
+  {
+    "route_path": "/legacy/DashboardScreen",
+    "file_path": "src/screens/personal/DashboardScreen.tsx",
+    "requires_auth": true,
+    "mode": "shared",
+    "is_tab": false,
+    "notes": "legacy screen file"
+  },
+  {
+    "route_path": "/legacy/DebugScreen",
+    "file_path": "src/screens/DebugScreen.js",
+    "requires_auth": true,
+    "mode": "shared",
+    "is_tab": false,
+    "notes": "legacy screen file"
+  },
+  {
+    "route_path": "/legacy/DeviationHandlingScreen",
+    "file_path": "src/screens/facility/DeviationHandlingScreen.js",
+    "requires_auth": true,
+    "mode": "shared",
+    "is_tab": false,
+    "notes": "legacy screen file"
+  },
+  {
+    "route_path": "/legacy/DiagnoseResultScreen",
+    "file_path": "src/screens/DiagnoseResultScreen.js",
+    "requires_auth": true,
+    "mode": "shared",
+    "is_tab": false,
+    "notes": "legacy screen file"
+  },
+  {
+    "route_path": "/legacy/DiagnoseScreen",
+    "file_path": "src/screens/DiagnoseScreen.js",
+    "requires_auth": true,
+    "mode": "shared",
+    "is_tab": false,
+    "notes": "legacy screen file"
+  },
+  {
+    "route_path": "/legacy/DiagnosisHistoryScreen",
+    "file_path": "src/screens/DiagnosisHistoryScreen.js",
+    "requires_auth": true,
+    "mode": "shared",
+    "is_tab": false,
+    "notes": "legacy screen file"
+  },
+  {
+    "route_path": "/legacy/EarningsScreen",
+    "file_path": "src/screens/EarningsScreen.js",
+    "requires_auth": true,
+    "mode": "shared",
+    "is_tab": false,
+    "notes": "legacy screen file"
+  },
+  {
+    "route_path": "/legacy/ECRecommendScreen",
+    "file_path": "src/screens/facility/ECRecommendScreen.tsx",
+    "requires_auth": true,
+    "mode": "shared",
+    "is_tab": false,
+    "notes": "legacy screen file"
+  },
+  {
+    "route_path": "/legacy/EditLessonScreen",
+    "file_path": "src/screens/EditLessonScreen.js",
+    "requires_auth": true,
+    "mode": "shared",
+    "is_tab": false,
+    "notes": "legacy screen file"
+  },
+  {
+    "route_path": "/legacy/EnvironmentAssistantScreen",
+    "file_path": "src/screens/EnvironmentAssistantScreen.js",
+    "requires_auth": true,
+    "mode": "shared",
+    "is_tab": false,
+    "notes": "legacy screen file"
+  },
+  {
+    "route_path": "/legacy/FacilitiesScreen",
+    "file_path": "src/screens/FacilitiesScreen.js",
+    "requires_auth": true,
+    "mode": "shared",
+    "is_tab": false,
+    "notes": "legacy screen file"
+  },
+  {
+    "route_path": "/legacy/FacilityCommunityScreen",
+    "file_path": "src/screens/FacilityCommunityScreen.js",
+    "requires_auth": true,
+    "mode": "shared",
+    "is_tab": false,
+    "notes": "legacy screen file"
+  },
+  {
+    "route_path": "/legacy/FacilityDashboardScreen",
+    "file_path": "src/screens/facility/FacilityDashboardScreen.tsx",
+    "requires_auth": true,
+    "mode": "shared",
+    "is_tab": false,
+    "notes": "legacy screen file"
+  },
+  {
+    "route_path": "/legacy/FacilityFeedScreen",
+    "file_path": "src/screens/FacilityFeedScreen.js",
+    "requires_auth": true,
+    "mode": "shared",
+    "is_tab": false,
+    "notes": "legacy screen file"
+  },
+  {
+    "route_path": "/legacy/FacilityGuard",
+    "file_path": "src/screens/facility/FacilityGuard.tsx",
+    "requires_auth": true,
+    "mode": "shared",
+    "is_tab": false,
+    "notes": "legacy screen file"
+  },
+  {
+    "route_path": "/legacy/FacilityInventoryScreen",
+    "file_path": "src/screens/FacilityInventoryScreen.js",
+    "requires_auth": true,
+    "mode": "shared",
+    "is_tab": false,
+    "notes": "legacy screen file"
+  },
+  {
+    "route_path": "/legacy/FacilityPicker",
+    "file_path": "src/screens/facility/FacilityPicker.js",
+    "requires_auth": true,
+    "mode": "shared",
+    "is_tab": false,
+    "notes": "legacy screen file"
+  },
+  {
+    "route_path": "/legacy/FacilityProfileScreen",
+    "file_path": "src/screens/FacilityProfileScreen.js",
+    "requires_auth": true,
+    "mode": "shared",
+    "is_tab": false,
+    "notes": "legacy screen file"
+  },
+  {
+    "route_path": "/legacy/FacilityRoomsScreen",
+    "file_path": "src/screens/FacilityRoomsScreen.js",
+    "requires_auth": true,
+    "mode": "shared",
+    "is_tab": false,
+    "notes": "legacy screen file"
+  },
+  {
+    "route_path": "/legacy/FacilitySettingsScreen",
+    "file_path": "src/screens/facility/FacilitySettingsScreen.tsx",
+    "requires_auth": true,
+    "mode": "shared",
+    "is_tab": false,
+    "notes": "legacy screen file"
+  },
+  {
+    "route_path": "/legacy/FacilityTasks",
+    "file_path": "src/screens/facility/FacilityTasks.tsx",
+    "requires_auth": true,
+    "mode": "shared",
+    "is_tab": false,
+    "notes": "legacy screen file"
+  },
+  {
+    "route_path": "/legacy/FacilityTasksScreen",
+    "file_path": "src/screens/facility/FacilityTasksScreen.tsx",
+    "requires_auth": true,
+    "mode": "shared",
+    "is_tab": false,
+    "notes": "legacy screen file"
+  },
+  {
+    "route_path": "/legacy/FacilityTeamScreen",
+    "file_path": "src/screens/facility/FacilityTeamScreen.tsx",
+    "requires_auth": true,
+    "mode": "shared",
+    "is_tab": false,
+    "notes": "legacy screen file"
+  },
+  {
+    "route_path": "/legacy/FacilityTeamScreen",
+    "file_path": "src/screens/FacilityTeamScreen.js",
+    "requires_auth": true,
+    "mode": "shared",
+    "is_tab": false,
+    "notes": "legacy screen file"
+  },
+  {
+    "route_path": "/legacy/FeedingConfirmScreen",
+    "file_path": "src/screens/FeedingConfirmScreen.js",
+    "requires_auth": true,
+    "mode": "shared",
+    "is_tab": false,
+    "notes": "legacy screen file"
+  },
+  {
+    "route_path": "/legacy/FeedingLabelScreen",
+    "file_path": "src/screens/FeedingLabelScreen.js",
+    "requires_auth": true,
+    "mode": "shared",
+    "is_tab": false,
+    "notes": "legacy screen file"
+  },
+  {
+    "route_path": "/legacy/FeedingScheduleOptions",
+    "file_path": "src/screens/FeedingScheduleOptions.js",
+    "requires_auth": true,
+    "mode": "shared",
+    "is_tab": false,
+    "notes": "legacy screen file"
+  },
+  {
+    "route_path": "/legacy/FeedingScheduleResult",
+    "file_path": "src/screens/FeedingScheduleResult.js",
+    "requires_auth": true,
+    "mode": "shared",
+    "is_tab": false,
+    "notes": "legacy screen file"
+  },
+  {
+    "route_path": "/legacy/FeedScreen",
+    "file_path": "src/screens/FeedScreen.js",
+    "requires_auth": true,
+    "mode": "shared",
+    "is_tab": false,
+    "notes": "legacy screen file"
+  },
+  {
+    "route_path": "/legacy/ForumNewPostScreen",
+    "file_path": "src/screens/ForumNewPostScreen.js",
+    "requires_auth": true,
+    "mode": "shared",
+    "is_tab": false,
+    "notes": "legacy screen file"
+  },
+  {
+    "route_path": "/legacy/ForumPostDetailScreen",
+    "file_path": "src/screens/ForumPostDetailScreen.js",
+    "requires_auth": true,
+    "mode": "shared",
+    "is_tab": false,
+    "notes": "legacy screen file"
+  },
+  {
+    "route_path": "/legacy/ForumScreen",
+    "file_path": "src/screens/ForumScreen.js",
+    "requires_auth": true,
+    "mode": "shared",
+    "is_tab": false,
+    "notes": "legacy screen file"
+  },
+  {
+    "route_path": "/legacy/GreenWasteScreen",
+    "file_path": "src/screens/facility/GreenWasteScreen.js",
+    "requires_auth": true,
+    "mode": "shared",
+    "is_tab": false,
+    "notes": "legacy screen file"
+  },
+  {
+    "route_path": "/legacy/GrowAddPlantScreen",
+    "file_path": "src/screens/GrowAddPlantScreen.js",
+    "requires_auth": true,
+    "mode": "shared",
+    "is_tab": false,
+    "notes": "legacy screen file"
+  },
+  {
+    "route_path": "/legacy/GrowLogCalendarScreen",
+    "file_path": "src/screens/GrowLogCalendarScreen.js",
+    "requires_auth": true,
+    "mode": "shared",
+    "is_tab": false,
+    "notes": "legacy screen file"
+  },
+  {
+    "route_path": "/legacy/GrowLogDetailScreen",
+    "file_path": "src/screens/GrowLogDetailScreen.js",
+    "requires_auth": true,
+    "mode": "shared",
+    "is_tab": false,
+    "notes": "legacy screen file"
+  },
+  {
+    "route_path": "/legacy/GrowLogEntriesScreen",
+    "file_path": "src/screens/GrowLogEntriesScreen.tsx",
+    "requires_auth": true,
+    "mode": "shared",
+    "is_tab": false,
+    "notes": "legacy screen file"
+  },
+  {
+    "route_path": "/legacy/GrowLogEntryScreen",
+    "file_path": "src/screens/GrowLogEntryScreen.js",
+    "requires_auth": true,
+    "mode": "shared",
+    "is_tab": false,
+    "notes": "legacy screen file"
+  },
+  {
+    "route_path": "/legacy/GrowLogScreen",
+    "file_path": "src/screens/GrowLogScreen.js",
+    "requires_auth": true,
+    "mode": "shared",
+    "is_tab": false,
+    "notes": "legacy screen file"
+  },
+  {
+    "route_path": "/legacy/GrowLogScreen",
+    "file_path": "src/screens/personal/GrowLogScreen.tsx",
+    "requires_auth": true,
+    "mode": "shared",
+    "is_tab": false,
+    "notes": "legacy screen file"
+  },
+  {
+    "route_path": "/legacy/GrowLogsScreen",
+    "file_path": "src/screens/GrowLogsScreen.js",
+    "requires_auth": true,
+    "mode": "shared",
+    "is_tab": false,
+    "notes": "legacy screen file"
+  },
+  {
+    "route_path": "/legacy/GrowsScreen",
+    "file_path": "src/screens/GrowsScreen.js",
+    "requires_auth": true,
+    "mode": "shared",
+    "is_tab": false,
+    "notes": "legacy screen file"
+  },
+  {
+    "route_path": "/legacy/GuildCodeScreen",
+    "file_path": "src/screens/GuildCodeScreen.js",
+    "requires_auth": true,
+    "mode": "shared",
+    "is_tab": false,
+    "notes": "legacy screen file"
+  },
+  {
+    "route_path": "/legacy/HarvestAIMvpScreen",
+    "file_path": "src/screens/facility/HarvestAIMvpScreen.tsx",
+    "requires_auth": true,
+    "mode": "shared",
+    "is_tab": false,
+    "notes": "legacy screen file"
+  },
+  {
+    "route_path": "/legacy/HarvestEstimatorScreen",
+    "file_path": "src/screens/HarvestEstimatorScreen.js",
+    "requires_auth": true,
+    "mode": "shared",
+    "is_tab": false,
+    "notes": "legacy screen file"
+  },
+  {
+    "route_path": "/legacy/HarvestWindowScreen",
+    "file_path": "src/screens/facility/HarvestWindowScreen.tsx",
+    "requires_auth": true,
+    "mode": "shared",
+    "is_tab": false,
+    "notes": "legacy screen file"
+  },
+  {
+    "route_path": "/legacy/InfluencerDashboardScreen",
+    "file_path": "src/screens/commercial/InfluencerDashboardScreen.js",
+    "requires_auth": true,
+    "mode": "shared",
+    "is_tab": false,
+    "notes": "legacy screen file"
+  },
+  {
+    "route_path": "/legacy/InventoryScreen",
+    "file_path": "src/screens/facility/InventoryScreen.tsx",
+    "requires_auth": true,
+    "mode": "shared",
+    "is_tab": false,
+    "notes": "legacy screen file"
+  },
+  {
+    "route_path": "/legacy/LessonScreen",
+    "file_path": "src/screens/LessonScreen.js",
+    "requires_auth": true,
+    "mode": "shared",
+    "is_tab": false,
+    "notes": "legacy screen file"
+  },
+  {
+    "route_path": "/legacy/LightCalculatorScreen",
+    "file_path": "src/screens/LightCalculatorScreen.js",
+    "requires_auth": true,
+    "mode": "shared",
+    "is_tab": false,
+    "notes": "legacy screen file"
+  },
+  {
+    "route_path": "/legacy/LinksScreen",
+    "file_path": "src/screens/LinksScreen.js",
+    "requires_auth": true,
+    "mode": "shared",
+    "is_tab": false,
+    "notes": "legacy screen file"
+  },
+  {
+    "route_path": "/legacy/LiveSessionScreen",
+    "file_path": "src/screens/LiveSessionScreen.js",
+    "requires_auth": true,
+    "mode": "shared",
+    "is_tab": false,
+    "notes": "legacy screen file"
+  },
+  {
+    "route_path": "/legacy/LiveSessionsListScreen",
+    "file_path": "src/screens/LiveSessionsListScreen.js",
+    "requires_auth": true,
+    "mode": "shared",
+    "is_tab": false,
+    "notes": "legacy screen file"
+  },
+  {
+    "route_path": "/legacy/LiveSessionTwitchEmbed",
+    "file_path": "src/screens/LiveSessionTwitchEmbed.js",
+    "requires_auth": true,
+    "mode": "shared",
+    "is_tab": false,
+    "notes": "legacy screen file"
+  },
+  {
+    "route_path": "/legacy/LoginScreen",
+    "file_path": "src/screens/LoginScreen.js",
+    "requires_auth": false,
+    "mode": "shared",
+    "is_tab": false,
+    "notes": "legacy screen file"
+  },
+  {
+    "route_path": "/legacy/LogsScreen",
+    "file_path": "src/screens/LogsScreen.tsx",
+    "requires_auth": true,
+    "mode": "shared",
+    "is_tab": false,
+    "notes": "legacy screen file"
+  },
+  {
+    "route_path": "/legacy/MarketplaceIntegrationScreen",
+    "file_path": "src/screens/commercial/MarketplaceIntegrationScreen.js",
+    "requires_auth": true,
+    "mode": "shared",
+    "is_tab": false,
+    "notes": "legacy screen file"
+  },
+  {
+    "route_path": "/legacy/MarketplaceScreen",
+    "file_path": "src/screens/MarketplaceScreen.js",
+    "requires_auth": true,
+    "mode": "shared",
+    "is_tab": false,
+    "notes": "legacy screen file"
+  },
+  {
+    "route_path": "/legacy/NotEntitledScreen",
+    "file_path": "src/screens/common/NotEntitledScreen.tsx",
+    "requires_auth": true,
+    "mode": "shared",
+    "is_tab": false,
+    "notes": "legacy screen file"
+  },
+  {
+    "route_path": "/legacy/NotificationsCenterScreen",
+    "file_path": "src/screens/facility/NotificationsCenterScreen.tsx",
+    "requires_auth": true,
+    "mode": "shared",
+    "is_tab": false,
+    "notes": "legacy screen file"
+  },
+  {
+    "route_path": "/legacy/NutrientCalculatorScreen",
+    "file_path": "src/screens/NutrientCalculatorScreen.js",
+    "requires_auth": true,
+    "mode": "shared",
+    "is_tab": false,
+    "notes": "legacy screen file"
+  },
+  {
+    "route_path": "/legacy/NutrientToolsScreen",
+    "file_path": "src/screens/facility/NutrientToolsScreen.js",
+    "requires_auth": true,
+    "mode": "shared",
+    "is_tab": false,
+    "notes": "legacy screen file"
+  },
+  {
+    "route_path": "/legacy/OnboardingCarousel",
+    "file_path": "src/screens/OnboardingCarousel.js",
+    "requires_auth": false,
+    "mode": "shared",
+    "is_tab": false,
+    "notes": "legacy screen file"
+  },
+  {
+    "route_path": "/legacy/PaymentsScreen",
+    "file_path": "src/screens/PaymentsScreen.js",
+    "requires_auth": true,
+    "mode": "shared",
+    "is_tab": false,
+    "notes": "legacy screen file"
+  },
+  {
+    "route_path": "/legacy/PaywallScreen",
+    "file_path": "src/screens/PaywallScreen.js",
+    "requires_auth": true,
+    "mode": "shared",
+    "is_tab": false,
+    "notes": "legacy screen file"
+  },
+  {
+    "route_path": "/legacy/PestDiseaseIdentifierScreen",
+    "file_path": "src/screens/PestDiseaseIdentifierScreen.js",
+    "requires_auth": true,
+    "mode": "shared",
+    "is_tab": false,
+    "notes": "legacy screen file"
+  },
+  {
+    "route_path": "/legacy/PHECCalculatorScreen",
+    "file_path": "src/screens/PHECCalculatorScreen.js",
+    "requires_auth": true,
+    "mode": "shared",
+    "is_tab": false,
+    "notes": "legacy screen file"
+  },
+  {
+    "route_path": "/legacy/PlanFeatureMatrixScreen",
+    "file_path": "src/screens/PlanFeatureMatrixScreen.js",
+    "requires_auth": true,
+    "mode": "shared",
+    "is_tab": false,
+    "notes": "legacy screen file"
+  },
+  {
+    "route_path": "/legacy/PlantDetailScreen",
+    "file_path": "src/screens/PlantDetailScreen.js",
+    "requires_auth": true,
+    "mode": "shared",
+    "is_tab": false,
+    "notes": "legacy screen file"
+  },
+  {
+    "route_path": "/legacy/PlantForm",
+    "file_path": "src/screens/facility/PlantForm.js",
+    "requires_auth": true,
+    "mode": "shared",
+    "is_tab": false,
+    "notes": "legacy screen file"
+  },
+  {
+    "route_path": "/legacy/PlantsScreen",
+    "file_path": "src/screens/PlantsScreen.js",
+    "requires_auth": true,
+    "mode": "shared",
+    "is_tab": false,
+    "notes": "legacy screen file"
+  },
+  {
+    "route_path": "/legacy/PostDetailScreen",
+    "file_path": "src/screens/PostDetailScreen.js",
+    "requires_auth": true,
+    "mode": "shared",
+    "is_tab": false,
+    "notes": "legacy screen file"
+  },
+  {
+    "route_path": "/legacy/PricingMatrixScreen",
+    "file_path": "src/screens/PricingMatrixScreen.js",
+    "requires_auth": true,
+    "mode": "shared",
+    "is_tab": false,
+    "notes": "legacy screen file"
+  },
+  {
+    "route_path": "/legacy/PrivacyPolicyScreen",
+    "file_path": "src/screens/PrivacyPolicyScreen.js",
+    "requires_auth": true,
+    "mode": "shared",
+    "is_tab": false,
+    "notes": "legacy screen file"
+  },
+  {
+    "route_path": "/legacy/ProfileCertificatesScreen",
+    "file_path": "src/screens/ProfileCertificatesScreen.js",
+    "requires_auth": true,
+    "mode": "shared",
+    "is_tab": false,
+    "notes": "legacy screen file"
+  },
+  {
+    "route_path": "/legacy/QAScreen",
+    "file_path": "src/screens/QAScreen.js",
+    "requires_auth": true,
+    "mode": "shared",
+    "is_tab": false,
+    "notes": "legacy screen file"
+  },
+  {
+    "route_path": "/legacy/RoomsScreen",
+    "file_path": "src/screens/facility/RoomsScreen.tsx",
+    "requires_auth": true,
+    "mode": "shared",
+    "is_tab": false,
+    "notes": "legacy screen file"
+  },
+  {
+    "route_path": "/legacy/ScheduleScreen",
+    "file_path": "src/screens/ScheduleScreen.js",
+    "requires_auth": true,
+    "mode": "shared",
+    "is_tab": false,
+    "notes": "legacy screen file"
+  },
+  {
+    "route_path": "/legacy/SearchScreen",
+    "file_path": "src/screens/SearchScreen.js",
+    "requires_auth": true,
+    "mode": "shared",
+    "is_tab": false,
+    "notes": "legacy screen file"
+  },
+  {
+    "route_path": "/legacy/SelectFacilityScreen",
+    "file_path": "src/screens/common/SelectFacilityScreen.tsx",
+    "requires_auth": true,
+    "mode": "shared",
+    "is_tab": false,
+    "notes": "legacy screen file"
+  },
+  {
+    "route_path": "/legacy/SelectFacilityScreen",
+    "file_path": "src/screens/SelectFacilityScreen.tsx",
+    "requires_auth": true,
+    "mode": "shared",
+    "is_tab": false,
+    "notes": "legacy screen file"
+  },
+  {
+    "route_path": "/legacy/SelectGrowScreen",
+    "file_path": "src/screens/facility/SelectGrowScreen.tsx",
+    "requires_auth": true,
+    "mode": "shared",
+    "is_tab": false,
+    "notes": "legacy screen file"
+  },
+  {
+    "route_path": "/legacy/SettingsScreen",
+    "file_path": "src/screens/facility/SettingsScreen.js",
+    "requires_auth": true,
+    "mode": "shared",
+    "is_tab": false,
+    "notes": "legacy screen file"
+  },
+  {
+    "route_path": "/legacy/SocialMediaScreen",
+    "file_path": "src/screens/commercial/SocialMediaScreen.js",
+    "requires_auth": true,
+    "mode": "shared",
+    "is_tab": false,
+    "notes": "legacy screen file"
+  },
+  {
+    "route_path": "/legacy/SocialToolsScreen",
+    "file_path": "src/screens/SocialToolsScreen.js",
+    "requires_auth": true,
+    "mode": "shared",
+    "is_tab": false,
+    "notes": "legacy screen file"
+  },
+  {
+    "route_path": "/legacy/SOPTemplatesScreen",
+    "file_path": "src/screens/facility/SOPTemplatesScreen.js",
+    "requires_auth": true,
+    "mode": "shared",
+    "is_tab": false,
+    "notes": "legacy screen file"
+  },
+  {
+    "route_path": "/legacy/SplashScreen",
+    "file_path": "src/screens/SplashScreen.js",
+    "requires_auth": true,
+    "mode": "shared",
+    "is_tab": false,
+    "notes": "legacy screen file"
+  },
+  {
+    "route_path": "/legacy/StorefrontScreen",
+    "file_path": "src/screens/StorefrontScreen.js",
+    "requires_auth": true,
+    "mode": "shared",
+    "is_tab": false,
+    "notes": "legacy screen file"
+  },
+  {
+    "route_path": "/legacy/SubcategoryBrowserScreen",
+    "file_path": "src/screens/SubcategoryBrowserScreen.js",
+    "requires_auth": true,
+    "mode": "shared",
+    "is_tab": false,
+    "notes": "legacy screen file"
+  },
+  {
+    "route_path": "/legacy/SubscribeScreen",
+    "file_path": "src/screens/SubscribeScreen.js",
+    "requires_auth": true,
+    "mode": "shared",
+    "is_tab": false,
+    "notes": "legacy screen file"
+  },
+  {
+    "route_path": "/legacy/SubscriptionScreen",
+    "file_path": "src/screens/SubscriptionScreen.js",
+    "requires_auth": true,
+    "mode": "shared",
+    "is_tab": false,
+    "notes": "legacy screen file"
+  },
+  {
+    "route_path": "/legacy/SubscriptionStatusScreen",
+    "file_path": "src/screens/SubscriptionStatusScreen.js",
+    "requires_auth": true,
+    "mode": "shared",
+    "is_tab": false,
+    "notes": "legacy screen file"
+  },
+  {
+    "route_path": "/legacy/TasksScreen",
+    "file_path": "src/screens/TasksScreen.js",
+    "requires_auth": true,
+    "mode": "shared",
+    "is_tab": false,
+    "notes": "legacy screen file"
+  },
+  {
+    "route_path": "/legacy/TeamScreen",
+    "file_path": "src/screens/facility/TeamScreen.js",
+    "requires_auth": true,
+    "mode": "shared",
+    "is_tab": false,
+    "notes": "legacy screen file"
+  },
+  {
+    "route_path": "/legacy/TeamScreen",
+    "file_path": "src/screens/TeamScreen.js",
+    "requires_auth": true,
+    "mode": "shared",
+    "is_tab": false,
+    "notes": "legacy screen file"
+  },
+  {
+    "route_path": "/legacy/TokenInfoScreen",
+    "file_path": "src/screens/TokenInfoScreen.js",
+    "requires_auth": true,
+    "mode": "shared",
+    "is_tab": false,
+    "notes": "legacy screen file"
+  },
+  {
+    "route_path": "/legacy/ToolsScreen",
+    "file_path": "src/screens/ToolsScreen.js",
+    "requires_auth": true,
+    "mode": "shared",
+    "is_tab": false,
+    "notes": "legacy screen file"
+  },
+  {
+    "route_path": "/legacy/TrichomeAnalysisScreen",
+    "file_path": "src/screens/facility/TrichomeAnalysisScreen.tsx",
+    "requires_auth": true,
+    "mode": "shared",
+    "is_tab": false,
+    "notes": "legacy screen file"
+  },
+  {
+    "route_path": "/legacy/VendorAnalyticsScreen",
+    "file_path": "src/screens/commercial/VendorAnalyticsScreen.js",
+    "requires_auth": true,
+    "mode": "shared",
+    "is_tab": false,
+    "notes": "legacy screen file"
+  },
+  {
+    "route_path": "/legacy/VendorDashboardScreen",
+    "file_path": "src/screens/facility/VendorDashboardScreen.js",
+    "requires_auth": true,
+    "mode": "shared",
+    "is_tab": false,
+    "notes": "legacy screen file"
+  },
+  {
+    "route_path": "/legacy/VendorGuidesScreen",
+    "file_path": "src/screens/VendorGuidesScreen.js",
+    "requires_auth": true,
+    "mode": "shared",
+    "is_tab": false,
+    "notes": "legacy screen file"
+  },
+  {
+    "route_path": "/legacy/VendorMetricsScreen",
+    "file_path": "src/screens/commercial/VendorMetricsScreen.js",
+    "requires_auth": true,
+    "mode": "shared",
+    "is_tab": false,
+    "notes": "legacy screen file"
+  },
+  {
+    "route_path": "/legacy/VendorSignup",
+    "file_path": "src/screens/VendorSignup.js",
+    "requires_auth": false,
+    "mode": "shared",
+    "is_tab": false,
+    "notes": "legacy screen file"
+  },
+  {
+    "route_path": "/legacy/VerifyCertificateScreen",
+    "file_path": "src/screens/VerifyCertificateScreen.js",
+    "requires_auth": true,
+    "mode": "shared",
+    "is_tab": false,
+    "notes": "legacy screen file"
+  },
+  {
+    "route_path": "/legacy/VPDCalculatorScreen",
+    "file_path": "src/screens/VPDCalculatorScreen.js",
+    "requires_auth": true,
+    "mode": "shared",
+    "is_tab": false,
+    "notes": "legacy screen file"
+  },
+  {
+    "route_path": "/legacy/WateringSchedulerScreen",
+    "file_path": "src/screens/WateringSchedulerScreen.js",
+    "requires_auth": true,
+    "mode": "shared",
+    "is_tab": false,
+    "notes": "legacy screen file"
+  },
+  {
+    "route_path": "/legacy/WebhooksScreen",
+    "file_path": "src/screens/facility/WebhooksScreen.tsx",
+    "requires_auth": true,
+    "mode": "shared",
+    "is_tab": false,
+    "notes": "legacy screen file"
+  },
+  {
+    "route_path": "/legacy/WriteReviewScreen",
+    "file_path": "src/screens/WriteReviewScreen.js",
+    "requires_auth": true,
+    "mode": "shared",
+    "is_tab": false,
+    "notes": "legacy screen file"
+  },
+  {
+    "route_path": "/live-session",
+    "file_path": "src/app/live-session.tsx",
+    "requires_auth": true,
+    "mode": "shared",
+    "is_tab": false,
+    "notes": ""
+  },
+  {
+    "route_path": "/login",
+    "file_path": "src/app/login.tsx",
+    "requires_auth": false,
+    "mode": "shared",
+    "is_tab": false,
+    "notes": ""
+  },
+  {
+    "route_path": "/offers",
+    "file_path": "src/app/offers/index.tsx",
+    "requires_auth": true,
+    "mode": "shared",
+    "is_tab": false,
+    "notes": ""
+  },
+  {
+    "route_path": "/onboarding",
+    "file_path": "src/app/onboarding/index.tsx",
+    "requires_auth": false,
+    "mode": "shared",
+    "is_tab": false,
+    "notes": ""
+  },
+  {
+    "route_path": "/onboarding/assign-plants",
+    "file_path": "src/app/onboarding/assign-plants.tsx",
+    "requires_auth": false,
+    "mode": "shared",
+    "is_tab": false,
+    "notes": ""
+  },
+  {
+    "route_path": "/onboarding/create-facility",
+    "file_path": "src/app/onboarding/create-facility.tsx",
+    "requires_auth": false,
+    "mode": "shared",
+    "is_tab": false,
+    "notes": ""
+  },
+  {
+    "route_path": "/onboarding/first-setup",
+    "file_path": "src/app/onboarding/first-setup.tsx",
+    "requires_auth": false,
+    "mode": "shared",
+    "is_tab": false,
+    "notes": ""
+  },
+  {
+    "route_path": "/onboarding/join-facility",
+    "file_path": "src/app/onboarding/join-facility.tsx",
+    "requires_auth": false,
+    "mode": "shared",
+    "is_tab": false,
+    "notes": ""
+  },
+  {
+    "route_path": "/onboarding/pick-facility",
+    "file_path": "src/app/onboarding/pick-facility.tsx",
+    "requires_auth": false,
+    "mode": "shared",
+    "is_tab": false,
+    "notes": ""
+  },
+  {
+    "route_path": "/onboarding/start-grow",
+    "file_path": "src/app/onboarding/start-grow.tsx",
+    "requires_auth": false,
+    "mode": "shared",
+    "is_tab": false,
+    "notes": ""
+  },
+  {
+    "route_path": "/orders",
+    "file_path": "src/app/orders/index.tsx",
+    "requires_auth": true,
+    "mode": "shared",
+    "is_tab": false,
+    "notes": ""
+  },
+  {
+    "route_path": "/profile",
+    "file_path": "src/app/profile/index.tsx",
+    "requires_auth": true,
+    "mode": "shared",
+    "is_tab": false,
+    "notes": ""
+  },
+  {
+    "route_path": "/register",
+    "file_path": "src/app/register.tsx",
+    "requires_auth": true,
+    "mode": "shared",
+    "is_tab": false,
+    "notes": ""
+  },
+  {
+    "route_path": "/storefront",
+    "file_path": "src/app/storefront/index.tsx",
+    "requires_auth": true,
+    "mode": "shared",
+    "is_tab": false,
+    "notes": ""
+  },
+  {
+    "route_path": "/tools",
+    "file_path": "src/app/tools/index.tsx",
+    "requires_auth": true,
+    "mode": "shared",
+    "is_tab": false,
+    "notes": ""
+  },
+  {
+    "route_path": "/vendor-signup",
+    "file_path": "src/app/vendor-signup.tsx",
+    "requires_auth": false,
+    "mode": "shared",
+    "is_tab": false,
+    "notes": ""
+  }
+]

@@ -1,125 +1,3 @@
-import React, { useMemo } from "react";
-import { Pressable, StyleSheet, Text, View } from "react-native";
-import { useLocalSearchParams } from "expo-router";
-
-function getIsAdmin() {
-  try {
-    const u = global?.user || {};
-    const role = String(u.role || u.accountRole || "");
-    const cap = u.capabilities || {};
-    if (u.isAdmin === true) return true;
-    if (/admin|owner|manager/i.test(role)) return true;
-    if (cap.canModerateLiveSessions === true) return true;
-    if (cap.canOpenTwitchModeration === true) return true;
-    return false;
-  } catch {
-    return false;
-  }
-}
-
-export default function LiveSessionScreen() {
-  const params = (useLocalSearchParams && useLocalSearchParams()) || {};
-  const sessionId = useMemo(
-    () => String(params.sessionId || params.id || "session-1"),
-    [params.sessionId, params.id]
-  );
-
-  const isAdmin = getIsAdmin();
-
-  const found = sessionId === "session-1";
-  const title = found ? "Live Session 1" : "";
-
-  return (
-    <View style={styles.container}>
-      <Text style={styles.title}>Live Session</Text>
-
-      {!found ? (
-        <Text style={styles.error}>No session found</Text>
-      ) : (
-        <View style={styles.card}>
-          <Text style={styles.cardTitle}>{title}</Text>
-
-          {isAdmin ? (
-            <Pressable accessibilityRole="button" style={styles.btn}>
-              <Text style={styles.btnText}>Open Twitch Moderation</Text>
-            </Pressable>
-          ) : null}
-        </View>
-      )}
-    </View>
-  );
-}
-
-const styles = StyleSheet.create({
-  container: { flex: 1, padding: 14 },
-  title: { fontSize: 20, fontWeight: "800", marginBottom: 10 },
-  card: { paddingVertical: 10, borderBottomWidth: 1, borderBottomColor: "#ddd" },
-  cardTitle: { fontWeight: "800" },
-  btn: { marginTop: 10, paddingVertical: 10 },
-  btnText: { fontWeight: "900" },
-  error: { color: "crimson", marginBottom: 10 }
-});
-import React, { useMemo } from "react";
-import { Pressable, StyleSheet, Text, View } from "react-native";
-import { useLocalSearchParams } from "expo-router";
-
-function getIsAdmin() {
-  try {
-    const u = global?.user || {};
-    const role = String(u.role || u.accountRole || "");
-    const cap = u.capabilities || {};
-    if (u.isAdmin === true) return true;
-    if (/admin|owner|manager/i.test(role)) return true;
-    if (cap.canModerateLiveSessions === true) return true;
-    if (cap.canOpenTwitchModeration === true) return true;
-    return false;
-  } catch {
-    return false;
-  }
-}
-
-export default function LiveSessionScreen() {
-  const params = (useLocalSearchParams && useLocalSearchParams()) || {};
-  const sessionId = useMemo(
-    () => String(params.sessionId || params.id || "session-1"),
-    [params.sessionId, params.id]
-  );
-
-  const isAdmin = getIsAdmin();
-
-  const found = sessionId === "session-1";
-  const title = found ? "Live Session 1" : "";
-
-  return (
-    <View style={styles.container}>
-      <Text style={styles.title}>Live Session</Text>
-
-      {!found ? (
-        <Text style={styles.error}>No session found</Text>
-      ) : (
-        <View style={styles.card}>
-          <Text style={styles.cardTitle}>{title}</Text>
-
-          {isAdmin ? (
-            <Pressable accessibilityRole="button" style={styles.btn}>
-              <Text style={styles.btnText}>Open Twitch Moderation</Text>
-            </Pressable>
-          ) : null}
-        </View>
-      )}
-    </View>
-  );
-}
-
-const styles = StyleSheet.create({
-  container: { flex: 1, padding: 14 },
-  title: { fontSize: 20, fontWeight: "800", marginBottom: 10 },
-  card: { paddingVertical: 10, borderBottomWidth: 1, borderBottomColor: "#ddd" },
-  cardTitle: { fontWeight: "800" },
-  btn: { marginTop: 10, paddingVertical: 10 },
-  btnText: { fontWeight: "900" },
-  error: { color: "crimson", marginBottom: 10 }
-});
 import React, { useEffect, useMemo, useState } from "react";
 import {
   ActivityIndicator,
@@ -170,7 +48,6 @@ export default function LiveSessionScreen() {
       } catch (e) {
         const msg = String(e?.message || e || "No session found");
         if (!alive) return;
-        // Normalize for the QA assertion
         if (/no session found/i.test(msg)) setErr("No session found");
         else setErr(msg);
       } finally {
@@ -214,7 +91,9 @@ export default function LiveSessionScreen() {
               accessibilityRole="button"
               style={styles.btn}
               onPress={() => {
-                try { Linking.openURL(moderationUrl); } catch {}
+                try {
+                  Linking.openURL(moderationUrl);
+                } catch {}
               }}
             >
               <Text style={styles.btnText}>Open Twitch Moderation</Text>

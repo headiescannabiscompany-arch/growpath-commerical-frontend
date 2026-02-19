@@ -1,5 +1,4 @@
-// Re-export JS client so TS imports and JS imports behave identically.
+// Thin TypeScript wrapper around the canonical JS client.
+// Keep this file free of implementation logic to avoid redeclare/duplicate exports.
+export { default } from "./client.js";
 export * from "./client.js";
-import api from "./client.js";
-
-export default api;

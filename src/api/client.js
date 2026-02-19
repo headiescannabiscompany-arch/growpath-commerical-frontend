@@ -20,17 +20,9 @@ export function getAuthToken() {
 }
 
 export class ApiError extends Error {
-  constructor(message, arg2, arg3) {
+  constructor(message, meta = {}) {
     super(String(message || "API Error"));
     this.name = "ApiError";
-    if (typeof arg2 === "number") {
-      this.status = arg2;
-      this.data = arg3;
-      this.code = (arg3 && (arg3.code || arg3.errorCode)) || undefined;
-      this.requestId = (arg3 && arg3.requestId) || null;
-      return;
-    }
-    const meta = arg2 && typeof arg2 === "object" ? arg2 : {};
     this.status = meta.status ?? null;
     this.data = meta.data;
     this.code = meta.code;
@@ -44,6 +36,7 @@ export const API_URL = (() => {
   return cleaned || "http://localhost";
 })();
 
+// If the first path segment matches one of these, we auto-prefix with /api
 const API_ROOTS = new Set([
   "tasks",
   "grows",
@@ -71,75 +64,112 @@ function ensureLeadingSlash(p) {
   return s.startsWith("/") ? s : `/${s}`;
 }
 
-function normalizePath(path) {
-  const p0 = String(path || "");
-  if (!p0) return "/";
-  if (/^https?:\/\//i.test(p0)) return p0;
-  const p = ensureLeadingSlash(p0);
-  if (p.startsWith("/api/")) return p;
-  const seg = p.split("?")[0].split("#")[0].split("/").filter(Boolean)[0] || "";
-  if (API_ROOTS.has(seg)) return `/api${p}`;
-  return p;
+function isAbsoluteUrl(p) {
+  return /^https?:\/\//i.test(String(p || ""));
 }
 
 function joinUrl(base, path) {
   const b = String(base || "").replace(/\/+$/, "");
   const p = String(path || "");
   if (!b) return p;
-  if (/^https?:\/\//i.test(p)) return p;
-  return b + p;
+  if (!p) return b;
+  if (p.startsWith("/")) return `${b}${p}`;
+  return `${b}/${p}`;
+}
+
+function normalizePath(path) {
+  const p0 = String(path || "");
+  if (!p0) return "/";
+  if (isAbsoluteUrl(p0)) return p0;
+
+  const p = ensureLeadingSlash(p0);
+  if (p.startsWith("/api/")) return p;
+
+  const seg = p.split("?")[0].split("#")[0].split("/").filter(Boolean)[0] || "";
+  if (API_ROOTS.has(seg)) return `/api${p}`;
+  return p;
 }
 
 async function parseBody(res) {
-  const ct = res?.headers?.get ? res.headers.get("content-type") : "";
-  const text = await (res?.text ? res.text() : Promise.resolve(""));
-  if (!text) return null;
+  if (!res) return null;
+  const status = typeof res.status === "number" ? res.status : 0;
+  if (status === 204 || status === 205) return null;
 
-  const looksJson = (ct && ct.includes("application/json")) || /^[\s]*[\{\[]/.test(text);
-  if (!looksJson) return text;
+  const ct = (res.headers && res.headers.get && res.headers.get("content-type")) || "";
+  const isJson = /\bjson\b/i.test(ct);
 
   try {
-    return JSON.parse(text);
+    if (isJson && typeof res.json === "function") return await res.json();
   } catch {
-    return text;
+    // fall through
   }
+
+  try {
+    if (typeof res.text === "function") {
+      const t = await res.text();
+      if (!t) return null;
+      try {
+        return JSON.parse(t);
+      } catch {
+        return t;
+      }
+    }
+  } catch {
+    // fall through
+  }
+
+  return null;
+}
+
+async function resolveToken(options) {
+  let token = options.token ?? null;
+
+  if (!token && TOKEN_GETTER) {
+    try {
+      token = await TOKEN_GETTER();
+    } catch {
+      token = null;
+    }
+  }
+
+  if (!token) token = AUTH_TOKEN;
+  return token ? String(token) : null;
 }
 
 async function request(method, path, body, options = {}) {
-  const maxAttempts = Number(options.retries ?? 0) + 1;
-  const retryDelay = Number(options.retryDelay ?? 0);
+  if (typeof fetch !== "function") {
+    throw new ApiError("fetch is not available", { status: null, code: "FETCH_MISSING" });
+  }
+
+  const retries = Number.isFinite(options.retries) ? Number(options.retries) : 0;
+  const maxAttempts = 1 + Math.max(0, retries);
+  const retryDelay = Number.isFinite(options.retryDelay) ? Number(options.retryDelay) : 0;
 
   let lastErr = null;
 
-  for (let attempt = 1; attempt <= maxAttempts; attempt++) {
+  for (let attempt = 1; attempt <= maxAttempts; attempt += 1) {
     try {
-      if (typeof fetch !== "function") {
-        throw new ApiError("fetch is not available", { status: null, code: "FETCH_MISSING" });
-      }
-
-      let token = options.token ?? null;
-      if (!token && TOKEN_GETTER) {
-        try {
-          token = await TOKEN_GETTER();
-        } catch {
-          token = null;
-        }
-      }
-      if (!token) token = AUTH_TOKEN;
+      const token = await resolveToken(options);
 
       const headers = { ...(options.headers || {}) };
       if (token) headers.Authorization = `Bearer ${token}`;
 
       let payload = body;
+
       const isFormData = typeof FormData !== "undefined" && payload instanceof FormData;
 
-      if (payload && !isFormData && typeof payload === "object" && !(payload instanceof ArrayBuffer)) {
+      if (
+        payload &&
+        !isFormData &&
+        typeof payload === "object" &&
+        !(payload instanceof ArrayBuffer)
+      ) {
         headers["Content-Type"] = headers["Content-Type"] || "application/json";
         payload = JSON.stringify(payload);
       }
 
       const norm = normalizePath(path);
-      const url = joinUrl(API_URL, norm);
+      const url = isAbsoluteUrl(norm) ? norm : joinUrl(API_URL, norm);
 
       const init = {
         method,
@@ -168,7 +198,7 @@ async function request(method, path, body, options = {}) {
       }
 
       const requestId =
-        (res?.headers?.get?.("x-request-id") || res?.headers?.get?.("x-amzn-requestid")) || null;
+        (res.headers?.get?.("x-request-id") || res.headers?.get?.("x-amzn-requestid")) || null;
 
       const data = await parseBody(res);
 
@@ -176,10 +206,14 @@ async function request(method, path, body, options = {}) {
         const msg =
           (data && (data.message || data.error || data.title)) ||
           `Request failed with status ${res.status}`;
-
         const code = (data && (data.code || data.errorCode)) || undefined;
 
-        const err = new ApiError(String(msg), { status: res.status, data, code, requestId });
+        const err = new ApiError(String(msg), {
+          status: res.status,
+          data,
+          code,
+          requestId
+        });
 
         if (res.status >= 500 && res.status <= 599 && attempt < maxAttempts) {
           lastErr = err;
@@ -218,6 +252,7 @@ function normalizeBodyTokenOpts(tokenOrOpts, maybeOpts) {
   return { token: tokenOrOpts || null, opts: maybeOpts || {} };
 }
 
+// Canonical client API
 export const api = async (path, opts = {}) => {
   const method = String(opts.method || "GET").toUpperCase();
   return request(method, path, opts.body, opts);
