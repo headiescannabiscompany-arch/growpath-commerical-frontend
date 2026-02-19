@@ -79,15 +79,51 @@ function normalizePath(path) {
   if (p.startsWith("/api/")) return p;
   const seg = p.split("?")[0].split("#")[0].split("/").filter(Boolean)[0] || "";
   if (API_ROOTS.has(seg)) return `/api${p}`;
-  // ...existing code...
-  export default api;
+  return p;
+}
+
+function joinUrl(base, path) {
+  const b = String(base || "").replace(/\/+$/, "");
+  const p = String(path || "");
+  if (!b) return p;
+  if (/^https?:\/\//i.test(p)) return p;
+  return b + p;
+}
+
+async function parseBody(res) {
+  const ct = res?.headers?.get ? res.headers.get("content-type") : "";
+  const text = await (res?.text ? res.text() : Promise.resolve(""));
+  if (!text) return null;
+
+  const looksJson = (ct && ct.includes("application/json")) || /^[\s]*[\{\[]/.test(text);
+  if (!looksJson) return text;
+
+  try {
+    return JSON.parse(text);
+  } catch {
+    return text;
+  }
+}
+
+async function request(method, path, body, options = {}) {
+  const maxAttempts = Number(options.retries ?? 0) + 1;
+  const retryDelay = Number(options.retryDelay ?? 0);
+
+  let lastErr = null;
+
+  for (let attempt = 1; attempt <= maxAttempts; attempt++) {
+    try {
       if (typeof fetch !== "function") {
         throw new ApiError("fetch is not available", { status: null, code: "FETCH_MISSING" });
       }
 
       let token = options.token ?? null;
       if (!token && TOKEN_GETTER) {
-        try { token = await TOKEN_GETTER(); } catch { token = null; }
+        try {
+          token = await TOKEN_GETTER();
+        } catch {
+          token = null;
+        }
       }
       if (!token) token = AUTH_TOKEN;
 
@@ -112,24 +148,24 @@ function normalizePath(path) {
       };
 
       const res = await fetch(url, init);
-        // ✅ Support Jest "mock responder" shapes: { json: <payload>, status? }
-        // Some tests/tools return a plain object instead of a real fetch Response.
-        if (res && typeof res.ok !== "boolean" && Object.prototype.hasOwnProperty.call(res, "json")) {
-          const status = typeof res.status === "number" ? res.status : 200;
-          const data = typeof res.json === "function" ? await res.json() : res.json;
 
-          if (status >= 200 && status < 300) return data;
+      // Support Jest-style mock responders: { status?, json }
+      if (res && typeof res.ok !== "boolean" && Object.prototype.hasOwnProperty.call(res, "json")) {
+        const status = typeof res.status === "number" ? res.status : 200;
+        const data = typeof res.json === "function" ? await res.json() : res.json;
 
-          const msg =
-            (data && (data.message || data.error || data.title)) ||
-            `Request failed with status ${status}`;
-          const code = (data && (data.code || data.errorCode)) || undefined;
-          throw new ApiError(String(msg), { status, data, code, requestId: null });
-        }
+        if (status >= 200 && status < 300) return data;
 
-        if (!res || typeof res.ok !== "boolean") {
-          throw new ApiError("No response from fetch", { status: null, code: "FETCH_NO_RESPONSE" });
-        }
+        const msg =
+          (data && (data.message || data.error || data.title)) ||
+          `Request failed with status ${status}`;
+        const code = (data && (data.code || data.errorCode)) || undefined;
+        throw new ApiError(String(msg), { status, data, code, requestId: null });
+      }
+
+      if (!res || typeof res.ok !== "boolean") {
+        throw new ApiError("No response from fetch", { status: null, code: "FETCH_NO_RESPONSE" });
+      }
 
       const requestId =
         (res?.headers?.get?.("x-request-id") || res?.headers?.get?.("x-amzn-requestid")) || null;
@@ -220,4 +256,4 @@ export const put = api.put;
 export const del = api.del;
 export const postMultipart = api.postMultipart;
 
-  export default api;
+export default api;
