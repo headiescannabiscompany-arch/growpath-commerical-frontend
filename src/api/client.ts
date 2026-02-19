@@ -1,444 +1,287 @@
-import { config } from "../config/config";
-import { mockRequest } from "./mockServer";
-import { parseFetchError } from "@/utils/parseApiError";
+/* eslint-disable */
 
-let authToken: string | null = null;
-let onUnauthorized: null | (() => void | Promise<void>) = null;
+// Re-export JS client so TS imports and JS imports behave identically.
+// Re-export JS client so TS imports and JS imports behave identically.
+export * from "./client.js";
+import api from "./client.js";
+export default api;
+/* eslint-disable */
 
-// Single-flight deduplication map for idempotent GET requests
-const inflight = new Map<string, Promise<any>>();
+// Single-source-of-truth: re-export the JS client so TS imports and JS imports behave the same.
+// This section is redundant and can be removed.
+// The previous lines already handle the exports correctly.
+/* eslint-disable */
 
-function inflightKey(method: string, url: string) {
-  return `${method.toUpperCase()} ${url}`;
-}
-
-export function setAuthToken(token: string | null) {
-  authToken = token || null;
-}
-
-export function setOnUnauthorized(fn: null | (() => void | Promise<void>)) {
-  onUnauthorized = fn;
-}
-
-type RequestOptions = {
-  method?: "GET" | "POST" | "PATCH" | "PUT" | "DELETE";
-  body?: any;
-  headers?: Record<string, string>;
-  signal?: AbortSignal;
-  timeout?: number;
-  auth?: boolean; // default true; set to false to skip Authorization header
-  silent?: boolean; // default false; set to true to suppress console.error on failure
-  invalidateOn401?: boolean; // default true; set to false to opt out of global logout on 401
-  responseType?: "auto" | "json" | "text" | "blob" | "arrayBuffer";
+export type ApiErrorMeta = {
+  status?: number | null;
+  data?: any;
+  code?: string;
+  requestId?: string | null;
 };
 
-const DEFAULT_TIMEOUT = 10000;
+let TOKEN_GETTER: null | (() => any | Promise<any>) = null;
+let AUTH_TOKEN: string | null = null;
 
-const isMockEnabled =
-  typeof process !== "undefined" && process.env?.EXPO_PUBLIC_API_MOCK === "1";
-
-function isFormData(value: any) {
-  return typeof FormData !== "undefined" && value instanceof FormData;
+export function setTokenGetter(fn: any) {
+  TOKEN_GETTER = typeof fn === "function" ? fn : null;
 }
 
-function isBlob(value: any) {
-  return typeof Blob !== "undefined" && value instanceof Blob;
+export function setAuthToken(token: any) {
+  AUTH_TOKEN = token ? String(token) : null;
 }
 
-// Removed unused safeJson function
+export function getAuthToken() {
+  return AUTH_TOKEN;
+}
 
-async function request(path: string, options: RequestOptions = {}) {
-  const method = options.method || "GET";
-  const headers: Record<string, string> = { ...(options.headers || {}) };
+export class ApiError extends Error {
+  status: number | null;
+  data: any;
+  code?: string;
+  requestId: string | null;
 
-  // CONTRACT: facility context is only in the URL path (/api/facility/:facilityId/...)
-  // Do not inject X-Facility-Id headers.
-  const useAuth = options.auth !== false;
+  constructor(message: any, arg2?: number | ApiErrorMeta, arg3?: any) {
+    super(String(message || "API Error"));
+    this.name = "ApiError";
 
-  if (useAuth && authToken) {
-    headers["Authorization"] = `Bearer ${authToken}`;
-  }
-
-  // TEMPORARY: Debug log for Authorization header preview
-  if (path === "/api/me" || path.startsWith("/api/me") || path.includes("/grows")) {
-    const a = headers["Authorization"];
-    console.log(
-      "[API] Authorization preview:",
-      a ? `${a.slice(0, 18)}… (len=${a.length})` : "(none)"
-    );
-  }
-
-  if (isMockEnabled) {
-    return await mockRequest(path, method, options, headers, authToken);
-  }
-
-  // Debug: log if auth header is present
-  if (path.includes("/api/me") || path.includes("/api/facilities")) {
-    console.log(
-      "[API] Request to",
-      path,
-      "- Authorization header present:",
-      !!headers["Authorization"]
-    );
-  }
-
-  const hasBody = "body" in options && options.body !== undefined;
-  const bodyIsFD = hasBody && isFormData(options.body);
-  const bodyIsBlob = hasBody && isBlob(options.body);
-
-  if (hasBody && !bodyIsFD && !bodyIsBlob && !headers["Content-Type"]) {
-    headers["Content-Type"] = "application/json";
-  }
-
-  const timeout = options.timeout ?? DEFAULT_TIMEOUT;
-  const timeoutController = new AbortController();
-  const timeoutId = setTimeout(() => timeoutController.abort(), timeout);
-
-  // Merge timeout signal + caller signal so either can cancel fetch
-  const mergedSignal: AbortSignal = (() => {
-    const callerSignal = options.signal;
-
-    if (!callerSignal) return timeoutController.signal;
-
-    // Prefer native AbortSignal.any if available
-    const anyFn = (AbortSignal as any)?.any;
-    if (typeof anyFn === "function") {
-      return anyFn([callerSignal, timeoutController.signal]);
+    if (typeof arg2 === "number") {
+      this.status = arg2;
+      this.data = arg3;
+      this.code = (arg3 && (arg3.code || arg3.errorCode)) || undefined;
+      this.requestId = (arg3 && arg3.requestId) || null;
+      return;
     }
 
-    // Fallback merge (older runtimes)
-    const merged = new AbortController();
-    const onAbort = () => merged.abort();
+    const meta = arg2 && typeof arg2 === "object" ? (arg2 as ApiErrorMeta) : {};
+    this.status = meta.status ?? null;
+    this.data = meta.data;
+    this.code = meta.code;
+    this.requestId = meta.requestId ?? null;
+  }
+}
 
-    if (callerSignal.aborted || timeoutController.signal.aborted) {
-      merged.abort();
-      return merged.signal;
-    }
+export const API_URL = (() => {
+  const raw = (process.env as any)?.EXPO_PUBLIC_API_URL;
+  const cleaned = (raw && String(raw).replace(/\/+$/, "")) || "";
+  return cleaned || "http://localhost";
+})();
 
-    callerSignal.addEventListener("abort", onAbort, { once: true });
-    timeoutController.signal.addEventListener("abort", onAbort, { once: true });
+const API_ROOTS = new Set([
+  "tasks",
+  "grows",
+  "logs",
+  "growlogs",
+  "posts",
+  "forum",
+  "user",
+  "users",
+  "courses",
+  "diagnose",
+  "guilds",
+  "live",
+  "facility"
+]);
 
-    return merged.signal;
-  })();
+function sleep(ms: number) {
+  return new Promise((r) => setTimeout(r, ms));
+}
+
+function ensureLeadingSlash(p: any) {
+  const s = String(p || "");
+  if (!s) return "/";
+  return s.startsWith("/") ? s : `/${s}`;
+}
+
+function normalizePath(path: any) {
+  const p0 = String(path || "");
+  if (!p0) return "/";
+
+  if (/^https?:\/\//i.test(p0)) return p0;
+
+  let p = ensureLeadingSlash(p0);
+  if (p.startsWith("/api/")) return p;
+
+  const seg = p.split("?")[0].split("#")[0].split("/").filter(Boolean)[0] || "";
+  if (API_ROOTS.has(seg)) return `/api${p}`;
+  return p;
+}
+
+function joinUrl(base: any, path: any) {
+  const b = String(base || "").replace(/\/+$/, "");
+  const p = String(path || "");
+  if (!b) return p;
+  if (/^https?:\/\//i.test(p)) return p;
+  return b + p;
+}
+
+async function parseBody(res: any) {
+  const ct = res?.headers?.get ? res.headers.get("content-type") : "";
+  const text = await (res?.text ? res.text() : Promise.resolve(""));
+  if (!text) return null;
+
+  const looksJson = (ct && ct.includes("application/json")) || /^[\s]*[\{\[]/.test(text);
+  if (!looksJson) return text;
 
   try {
-    const url = path.startsWith("http")
-      ? path
-      : `${config.apiBaseUrl}${path.startsWith("/") ? "" : "/"}${path}`;
-
-    const body =
-      hasBody && !bodyIsFD && !bodyIsBlob && typeof options.body !== "string"
-        ? JSON.stringify(options.body)
-        : hasBody
-          ? options.body
-          : undefined;
-
-    const key = inflightKey(method, url);
-
-    // ✅ Dedupe ONLY safe idempotent reads (GET) — including /api/me
-    const shouldDedupe =
-      method === "GET" && (path === "/api/me" || path.startsWith("/api/me?"));
-
-    if (shouldDedupe) {
-      const existing = inflight.get(key);
-      if (existing) return await existing;
-    }
-
-    const p = (async () => {
-      let res: Response;
-      try {
-        res = await fetch(url, {
-          method,
-          headers,
-          body,
-          signal: mergedSignal,
-          credentials: "include"
-        });
-      } catch (e) {
-        // Network/offline error
-        return {
-          ok: false,
-          status: null,
-          code: "NETWORK_ERROR",
-          message: "Network request failed",
-          requestId: null,
-          raw: e
-        };
-      }
-
-      clearTimeout(timeoutId);
-
-      const requestId = (() => {
-        try {
-          return res.headers.get("x-request-id");
-        } catch {
-          return null;
-        }
-      })();
-
-      // Handle no-content
-      if (res.status === 204) {
-        return { ok: true, status: res.status, data: undefined, requestId };
-      }
-
-      // If error: let parseFetchError read the body (do NOT pre-consume with res.json()).
-      if (!res.ok) {
-        const parsed = await parseFetchError(res);
-
-        // Global unauthorized handling (opt-out supported)
-        if (
-          parsed?.status === 401 &&
-          options.invalidateOn401 !== false &&
-          onUnauthorized
-        ) {
-          try {
-            await onUnauthorized();
-          } catch {
-            // swallow: unauthorized handler should never crash request path
-          }
-        }
-
-        return {
-          ok: false,
-          status: parsed.status ?? res.status,
-          code: parsed.code ?? "UNKNOWN_ERROR",
-          message: parsed.message ?? "Something went wrong",
-          requestId: parsed.requestId ?? requestId,
-          raw: parsed.raw ?? res
-        };
-      }
-
-      // OK: parse according to responseType
-      const rt = options.responseType || "auto";
-
-      if (rt === "blob") {
-        const blob = await res.blob();
-        return { ok: true, status: res.status, data: blob, requestId };
-      }
-
-      if (rt === "arrayBuffer") {
-        const buf = await res.arrayBuffer();
-        return { ok: true, status: res.status, data: buf, requestId };
-      }
-
-      if (rt === "text") {
-        const text = await res.text();
-        return { ok: true, status: res.status, data: text, requestId };
-      }
-
-      // json OR auto
-      const text = await res.text();
-      if (!text) return { ok: true, status: res.status, data: null, requestId };
-
-      if (rt === "json") {
-        try {
-          return { ok: true, status: res.status, data: JSON.parse(text), requestId };
-        } catch {
-          return {
-            ok: false,
-            status: res.status,
-            code: "PARSE_ERROR",
-            message: "Invalid JSON server response.",
-            requestId,
-            raw: { raw: text.slice(0, 1000) }
-          };
-        }
-      }
-
-      // auto: try json, else return text
-      try {
-        return { ok: true, status: res.status, data: JSON.parse(text), requestId };
-      } catch {
-        return { ok: true, status: res.status, data: text, requestId };
-      }
-    })();
-
-    if (shouldDedupe) inflight.set(key, p);
-
-    try {
-      const out = await p;
-      return out;
-    } finally {
-      if (shouldDedupe) inflight.delete(key);
-    }
-  } catch (e: any) {
-    clearTimeout(timeoutId);
-    // Defensive: fallback error shape
-    return {
-      ok: false,
-      status: null,
-      code: "CLIENT_ERROR",
-      message: e?.message || "Client error",
-      requestId: null,
-      raw: e
-    };
+    return JSON.parse(text);
+  } catch {
+    return text;
   }
 }
 
-// --- Phase 2.2: Callable client adapter (supports legacy + modern call patterns) ---
+async function request(method: string, path: any, body: any, options: any = {}) {
+  const maxAttempts = Number(options.retries ?? 0) + 1;
+  const retryDelay = Number(options.retryDelay ?? 0);
 
-type HttpMethod = "GET" | "POST" | "PUT" | "PATCH" | "DELETE";
+  let lastErr: any = null;
 
-type ApiCallOptions = RequestOptions & {
-  method?: HttpMethod | string;
-  body?: any;
-};
+  for (let attempt = 1; attempt <= maxAttempts; attempt++) {
+    try {
+      if (typeof (globalThis as any).fetch !== "function") {
+        throw new ApiError("fetch is not available", {
+          status: null,
+          code: "FETCH_MISSING"
+        });
+      }
 
-type ClientCallable = {
-  // Pattern A: api<T>(url) => GET
-  <T = any>(path: string): Promise<T>;
+      let token = options.token ?? null;
+      if (!token && TOKEN_GETTER) {
+        try {
+          token = await TOKEN_GETTER();
+        } catch {
+          token = null;
+        }
+      }
+      if (!token) token = AUTH_TOKEN;
 
-  // Pattern A: api<T>(url, { method, body, ...opts })
-  <T = any>(path: string, options: ApiCallOptions): Promise<T>;
+      const headers: Record<string, string> = { ...(options.headers || {}) };
+      if (token) headers.Authorization = `Bearer ${token}`;
 
-  // Pattern B: client(method, url, body, options) legacy 4-arg
-  <T = any>(
-    method: HttpMethod | string,
-    path: string,
-    body?: any,
-    options?: RequestOptions
-  ): Promise<T>;
+      let payload = body;
+      const isFormData =
+        typeof (globalThis as any).FormData !== "undefined" &&
+        payload instanceof (globalThis as any).FormData;
 
-  // Pattern C: object methods
-  get<T = any>(path: string, options?: RequestOptions): Promise<T>;
-  // Phase 2.3.2: Compatibility overload for api.get(url, facilityId, options) legacy misuse
-  get<T = any>(
-    path: string,
-    facilityId: string | null,
-    options?: RequestOptions
-  ): Promise<T>;
-  delete<T = any>(path: string, options?: RequestOptions): Promise<T>;
-  // Phase 2.3.2: Compatibility overload for api.delete(url, facilityId, options) legacy misuse
-  delete<T = any>(
-    path: string,
-    facilityId: string | null,
-    options?: RequestOptions
-  ): Promise<T>;
-  del<T = any>(path: string, options?: RequestOptions): Promise<T>; // alias for delete
-  del<T = any>(
-    path: string,
-    facilityId: string | null,
-    options?: RequestOptions
-  ): Promise<T>; // alias with compat overload
-  // Phase 2.3.7: Overload for api.post(path) with empty body (e.g., auth actions)
-  post<T = any>(path: string): Promise<T>;
-  post<T = any>(path: string, data: any, options?: RequestOptions): Promise<T>;
-  // Phase 2.3.2: Compatibility overload for api.post(url, data, facilityId, options) legacy misuse
-  post<T = any>(
-    path: string,
-    data: any,
-    facilityId: string | null,
-    options?: RequestOptions
-  ): Promise<T>;
-  put<T = any>(path: string, data: any, options?: RequestOptions): Promise<T>;
-  // Phase 2.3.2: Compatibility overload for api.put(url, data, facilityId, options) legacy misuse
-  put<T = any>(
-    path: string,
-    data: any,
-    facilityId: string | null,
-    options?: RequestOptions
-  ): Promise<T>;
-  patch<T = any>(path: string, data: any, options?: RequestOptions): Promise<T>;
-  // Phase 2.3.2: Compatibility overload for api.patch(url, data, facilityId, options) legacy misuse
-  patch<T = any>(
-    path: string,
-    data: any,
-    facilityId: string | null,
-    options?: RequestOptions
-  ): Promise<T>;
-  postMultipart<T = any>(
-    path: string,
-    formData: FormData,
-    options?: RequestOptions
-  ): Promise<T>;
+      if (
+        payload &&
+        !isFormData &&
+        typeof payload === "object" &&
+        !(payload instanceof ArrayBuffer)
+      ) {
+        headers["Content-Type"] = headers["Content-Type"] || "application/json";
+        payload = JSON.stringify(payload);
+      }
 
-  // keep existing helper
-  setAuthToken: typeof setAuthToken;
-};
+      const norm = normalizePath(path);
+      const url = joinUrl(API_URL, norm);
 
-function normalizeMethod(m?: string): HttpMethod {
-  const up = (m || "GET").toUpperCase();
-  if (up === "GET" || up === "POST" || up === "PUT" || up === "PATCH" || up === "DELETE")
-    return up;
-  // if someone passes weird method, treat as GET default to avoid blowing up types
-  return "GET";
-}
+      const init: any = {
+        method,
+        headers,
+        body: method === "GET" || method === "HEAD" ? undefined : payload
+      };
 
-function makeClient(): ClientCallable {
-  const fn = (async (...args: any[]) => {
-    // Supports:
-    // 1) (path)
-    // 2) (path, options)
-    // 3) (method, path, body, options)
+      const res = await (globalThis as any).fetch(url, init);
+      if (!res || typeof res.ok !== "boolean") {
+        throw new ApiError("No response from fetch", {
+          status: null,
+          code: "FETCH_NO_RESPONSE"
+        });
+      }
 
-    // Case 3: legacy signature: (method, path, body, options)
-    if (
-      typeof args[0] === "string" &&
-      typeof args[1] === "string" &&
-      /^[A-Za-z]+$/.test(args[0])
-    ) {
-      const method = normalizeMethod(args[0]);
-      const path = args[1];
-      const body = args.length >= 3 ? args[2] : undefined;
-      const options: RequestOptions = args.length >= 4 ? args[3] || {} : {};
-      return request(path, { ...options, method, body });
+      const requestId =
+        res?.headers?.get?.("x-request-id") ||
+        res?.headers?.get?.("x-amzn-requestid") ||
+        null;
+
+      const data = await parseBody(res);
+
+      if (!res.ok) {
+        const msg =
+          (data && (data.message || data.error || data.title)) ||
+          `Request failed with status ${res.status}`;
+
+        const code = (data && (data.code || data.errorCode)) || undefined;
+
+        const err = new ApiError(String(msg), {
+          status: res.status,
+          data,
+          code,
+          requestId
+        });
+
+        if (res.status >= 500 && res.status <= 599 && attempt < maxAttempts) {
+          lastErr = err;
+          if (retryDelay) await sleep(retryDelay);
+          continue;
+        }
+
+        throw err;
+      }
+
+      return data;
+    } catch (e) {
+      if (attempt < maxAttempts) {
+        lastErr = e;
+        if (retryDelay) await sleep(retryDelay);
+        continue;
+      }
+      throw e;
     }
+  }
 
-    // Case 1/2: (path) or (path, options)
-    const path: string = args[0];
-    const options: ApiCallOptions = (args[1] || {}) as ApiCallOptions;
-    const method = normalizeMethod(options.method);
-    const body = (options as any).body;
-
-    // Remove method/body from options before passing down, since request() already takes method/body explicitly
-    const { method: _m, body: _b, ...rest } = options as any;
-
-    return request(path, { ...(rest as RequestOptions), method, body });
-  }) as unknown as ClientCallable;
-
-  // Pattern C methods
-  // Phase 2.3.2: Handle both get(path, options) and get(path, facilityId, options)
-  fn.get = (path: string, a?: any, b?: any) => {
-    // Supports:
-    // get(path, options)
-    // get(path, facilityId, options)  <-- ignore facilityId, use options
-    const options: RequestOptions =
-      typeof a === "string" || a == null ? b || {} : a || {};
-    return request(path, { ...options, method: "GET" });
-  };
-  fn.delete = (path: string, a?: any, b?: any) => {
-    const options: RequestOptions =
-      typeof a === "string" || a == null ? b || {} : a || {};
-    return request(path, { ...options, method: "DELETE" });
-  };
-  fn.del = fn.delete; // alias
-  // Phase 2.3.2: Handle both post(path, data, options) and post(path, data, facilityId, options)
-  fn.post = (path: string, data?: any, a?: any, b?: any) => {
-    const options: RequestOptions =
-      typeof a === "string" || a == null ? b || {} : a || {};
-    return request(path, { ...options, method: "POST", body: data });
-  };
-  fn.put = (path: string, data: any, a?: any, b?: any) => {
-    const options: RequestOptions =
-      typeof a === "string" || a == null ? b || {} : a || {};
-    return request(path, { ...options, method: "PUT", body: data });
-  };
-  fn.patch = (path: string, data: any, a?: any, b?: any) => {
-    const options: RequestOptions =
-      typeof a === "string" || a == null ? b || {} : a || {};
-    return request(path, { ...options, method: "PATCH", body: data });
-  };
-  fn.postMultipart = (path, formData, options = {}) =>
-    request(path, { ...options, method: "POST", body: formData });
-
-  // Keep existing helper
-  fn.setAuthToken = setAuthToken;
-
-  return fn;
+  throw lastErr || new ApiError("Unknown error", { status: null });
 }
 
-// Export shape (unchanged for consumers)
-export const client = makeClient();
-export const api = client;
-export const apiRequest = client;
-export default client;
+function normalizeTokenOpts(tokenOrOpts: any, maybeOpts: any) {
+  if (tokenOrOpts && typeof tokenOrOpts === "object" && !Array.isArray(tokenOrOpts)) {
+    return { token: null, opts: tokenOrOpts };
+  }
+  return { token: tokenOrOpts || null, opts: maybeOpts || {} };
+}
+
+function normalizeBodyTokenOpts(tokenOrOpts: any, maybeOpts: any) {
+  if (tokenOrOpts && typeof tokenOrOpts === "object" && !Array.isArray(tokenOrOpts)) {
+    return { token: null, opts: tokenOrOpts };
+  }
+  return { token: tokenOrOpts || null, opts: maybeOpts || {} };
+}
+
+export const api: any = async (path: any, opts: any = {}) => {
+  const method = String(opts.method || "GET").toUpperCase();
+  return request(method, path, opts.body, opts);
+};
+
+api.get = (path: any, tokenOrOpts?: any, maybeOpts?: any) => {
+  const { token, opts } = normalizeTokenOpts(tokenOrOpts, maybeOpts);
+  return request("GET", path, undefined, { ...opts, token });
+};
+
+api.post = (path: any, body: any, tokenOrOpts?: any, maybeOpts?: any) => {
+  const { token, opts } = normalizeBodyTokenOpts(tokenOrOpts, maybeOpts);
+  return request("POST", path, body, { ...opts, token });
+};
+
+api.put = (path: any, body: any, tokenOrOpts?: any, maybeOpts?: any) => {
+  const { token, opts } = normalizeBodyTokenOpts(tokenOrOpts, maybeOpts);
+  return request("PUT", path, body, { ...opts, token });
+};
+
+api.del = (path: any, tokenOrOpts?: any, maybeOpts?: any) => {
+  const { token, opts } = normalizeTokenOpts(tokenOrOpts, maybeOpts);
+  return request("DELETE", path, undefined, { ...opts, token });
+};
+
+api.postMultipart = (path: any, formData: any, tokenOrOpts?: any, maybeOpts?: any) => {
+  const { token, opts } = normalizeBodyTokenOpts(tokenOrOpts, maybeOpts);
+  return request("POST", path, formData, { ...opts, token });
+};
+
+export const client = api;
+export const get = api.get;
+export const post = api.post;
+export const put = api.put;
+export const del = api.del;
+export const postMultipart = api.postMultipart;
+
+export default api;

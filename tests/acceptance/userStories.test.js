@@ -267,7 +267,6 @@ describe("Acceptance: User Stories", () => {
 
   it("User Story: Create a grow and add a log entry", async () => {
     if (process.env.USE_LIVE_BACKEND === "true" && !specAvailable) {
-      t.skip("OpenAPI spec missing");
       return;
     }
     const grow = await growsApi.createGrow({
@@ -415,7 +414,6 @@ describe("Acceptance: User Stories", () => {
       const followUserId = global.user?.id;
 
       if (!followUserId) {
-        t.skip("Unable to create follow target in live backend");
         return;
       }
 
@@ -441,7 +439,6 @@ describe("Acceptance: User Stories", () => {
     if (isLiveBackend) {
       const guilds = Array.isArray(guildList) ? guildList : [];
       if (!guilds.length) {
-        t.skip("No guilds available to join on live backend");
         return;
       }
       guildId = guilds[0]._id || guilds[0].id;

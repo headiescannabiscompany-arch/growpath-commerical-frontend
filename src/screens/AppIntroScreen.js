@@ -123,7 +123,7 @@ export default function AppIntroScreen({ onDone }) {
       >
         {/* Step 0: Philosophy */}
         <View style={styles.introSection}>
-          <Text style={styles.headline}>Cannabis industry, united.</Text>
+          <Text style={styles.headline}>Cultivation community, united.</Text>
           <Text style={styles.body}>
             GrowPath Commercial connects cultivators, nutrient companies, equipment
             manufacturers, and soil suppliers.{"\n\n"}

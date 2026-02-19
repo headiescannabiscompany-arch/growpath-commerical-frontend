@@ -20,12 +20,21 @@ jest.mock("../src/api/client", () => ({
 jest.mock("../src/screens/LiveSessionTwitchEmbed", () => "LiveSessionTwitchEmbed");
 
 import LiveSessionScreen from "../src/screens/LiveSessionScreen.js";
+import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 
 function renderWithNav(params = { sessionId: "session-1" }) {
+  const queryClient = new QueryClient({
+    defaultOptions: {
+      queries: { retry: false },
+      mutations: { retry: false }
+    }
+  });
   return render(
-    <NavigationContainer>
-      <LiveSessionScreen route={{ params }} />
-    </NavigationContainer>
+    <QueryClientProvider client={queryClient}>
+      <NavigationContainer>
+        <LiveSessionScreen route={{ params }} />
+      </NavigationContainer>
+    </QueryClientProvider>
   );
 }
 

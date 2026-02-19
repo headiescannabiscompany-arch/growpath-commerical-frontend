@@ -1,19 +1,44 @@
-// 🔒 React Native / Expo global (required for Node/Jest)
-global.__DEV__ = false;
-// expo-constants is the usual first failure
-jest.mock("expo-constants", () => ({
-  default: {
-    manifest: {},
-    expoConfig: {},
-    deviceName: "jest",
-    platform: { ios: null, android: null, web: true }
-  }
+﻿/**
+ * Jest setup for Expo / React Native
+ */
+
+// Some RN versions don't ship this module path anymore.
+// Use a VIRTUAL mock so Jest never tries to resolve it on disk.
+jest.mock(
+  "react-native/Libraries/Animated/NativeAnimatedHelper",
+  () => ({}),
+  { virtual: true }
+);
+
+// AsyncStorage: required for any code importing tokenStore.ts
+jest.mock(
+  "@react-native-async-storage/async-storage",
+  () => require("@react-native-async-storage/async-storage/jest/async-storage-mock")
+);
+
+// SecureStore often used in Expo auth flows
+jest.mock("expo-secure-store", () => ({
+  getItemAsync: jest.fn(async () => null),
+  setItemAsync: jest.fn(async () => {}),
+  deleteItemAsync: jest.fn(async () => {})
 }));
 
-// If other expo modules pop up, add them here explicitly
-jest.mock("expo-file-system", () => ({}));
-jest.mock("expo-secure-store", () => ({}));
-jest.mock("expo-asset", () => ({}));
+// Safe-area-context mock (common in RN tests)
+jest.mock("react-native-safe-area-context", () => {
+  const React = require("react");
+  return {
+    SafeAreaProvider: ({ children }) => React.createElement(React.Fragment, null, children),
+    SafeAreaConsumer: ({ children }) => children({ top: 0, right: 0, bottom: 0, left: 0 }),
+    useSafeAreaInsets: () => ({ top: 0, right: 0, bottom: 0, left: 0 })
+  };
+});
 
-// React Native gesture handler sometimes leaks in
-jest.mock("react-native-gesture-handler", () => ({}));
+// Gesture handler mock (prevents a bunch of RN test crashes)
+try {
+  require("react-native-gesture-handler/jestSetup");
+} catch (e) {}
+
+// Reanimated mock (only if installed)
+try {
+  jest.mock("react-native-reanimated", () => require("react-native-reanimated/mock"));
+} catch (e) {}
