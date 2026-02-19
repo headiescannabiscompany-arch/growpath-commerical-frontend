@@ -26,3 +26,12 @@ powershell -ExecutionPolicy Bypass -File .\scripts\handoff.ps1 -SkipInstall
 2. `git diff`
 3. Source-only corruption scan (`src`, `tests`, `scripts`)
 4. Optional install/test sequence (`npm ci`, `npx jest --clearCache`, `npm test`)
+
+## Full path sweep bootstrap
+For account-type path coverage, generate route inventory and maintain role expectations:
+```powershell
+npm run qa:routes
+```
+Artifacts:
+- `docs/qa/route_inventory.json`
+- `docs/qa/mode_role_matrix.md`
