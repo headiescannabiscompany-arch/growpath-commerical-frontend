@@ -1,3 +1,4 @@
+<<<<<<< HEAD
 // Thin TypeScript wrapper around the canonical JS client.
 // Keep this file free of implementation logic to avoid redeclare/duplicate exports.
 export * from "./client.js";
@@ -248,5 +249,10 @@ export const post = api.post;
 export const put = api.put;
 export const del = api.del;
 export const postMultipart = api.postMultipart;
+=======
+// Re-export JS client so TS imports and JS imports behave identically.
+export * from "./client.js";
+import api from "./client.js";
+>>>>>>> bd7e43d5a6c735013f3bed7f5517d13b97c446c3
 
 export default api;
