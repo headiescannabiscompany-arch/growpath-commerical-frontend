@@ -1,0 +1,393 @@
+# Codebase triage
+
+Generated: 2026-02-20T06:17:56.735Z
+
+## Summary
+- Tracked files: 991
+- Route roots (src/app/**): 114
+- Structural issues found: 66
+- Orphan candidates (best-effort): 503
+- Duplicate content groups: 3
+
+## Fix-now structural issues (evidence)
+
+- **import-after-code** (1) — `scripts/check-sensitive-copy.js`
+- **import-after-code** (1) — `scripts/run-acceptance.js`
+- **import-after-code** (1) — `src/api/adminReports.js`
+- **import-after-code** (1) — `src/api/audit.js`
+- **import-after-code** (1) — `src/api/auth.ts`
+- **import-after-code** (1) — `src/api/commercialFeed.ts`
+- **import-after-code** (1) — `src/api/community.js`
+- **import-after-code** (1) — `src/api/courses.js`
+- **import-after-code** (1) — `src/api/deviation.js`
+- **import-after-code** (1) — `src/api/equipment.js`
+- **import-after-code** (1) — `src/api/events.ts`
+- **import-after-code** (1) — `src/api/grows.ts`
+- **import-after-code** (1) — `src/api/logs.ts`
+- **import-after-code** (1) — `src/api/marketplace.js`
+- **import-after-code** (1) — `src/api/me.ts`
+- **import-after-code** (1) — `src/api/socialMedia.js`
+- **import-after-code** (1) — `src/api/sop.js`
+- **import-after-code** (1) — `src/api/vendor.js`
+- **import-after-code** (1) — `src/api/vendorAnalytics.js`
+- **import-after-code** (1) — `src/api/vendorMetrics.js`
+- **import-after-code** (1) — `src/api/verification.js`
+- **import-after-code** (1) — `src/auth/AuthContext.tsx`
+- **import-after-code** (1) — `src/auth/RequireAuth.tsx`
+- **import-after-code** (1) — `src/auth/guards.ts`
+- **import-after-code** (1) — `src/capabilities/plans.js`
+- **import-after-code** (1) — `src/components/CommercialBanner.js`
+- **import-after-code** (1) — `src/components/FeatureGate.js`
+- **import-after-code** (1) — `src/config/capabilities.ts`
+- **import-after-code** (1) — `src/features/ai/components/AIResultCard.tsx`
+- **import-after-code** (1) — `src/features/billing/screens/BillingHome.tsx`
+- **import-after-code** (1) — `src/features/billing/screens/BillingSuccess.tsx`
+- **import-after-code** (1) — `src/features/compliance/ai4/dashboard/buildDashboardModel.ts`
+- **import-after-code** (1) — `src/features/facility/useFacilityGrows.ts`
+- **import-after-code** (1) — `src/features/facility/useFacilityRooms.ts`
+- **import-after-code** (1) — `src/features/feed/api/feedAdapter.ts`
+- **import-after-code** (1) — `src/features/feed/api/feedApi.ts`
+- **import-after-code** (1) — `src/features/feed/components/FeedEmptyState.tsx`
+- **import-after-code** (1) — `src/features/feed/components/FeedFiltersBar.tsx`
+- **import-after-code** (1) — `src/features/feed/components/FeedItemCard.tsx`
+- **import-after-code** (1) — `src/features/feed/components/FeedList.tsx`
+- **import-after-code** (1) — `src/features/feed/components/FeedSkeleton.tsx`
+- **import-after-code** (1) — `src/features/feed/hooks/useCommercialFeed.ts`
+- **import-after-code** (1) — `src/features/feed/hooks/useFeedFilters.ts`
+- **import-after-code** (1) — `src/guards/RequireEntitlement.tsx`
+- **import-after-code** (1) — `src/hooks/useCalendar.ts`
+- **import-after-code** (1) — `src/hooks/useGrows.ts`
+- **import-after-code** (1) — `src/hooks/useRooms.ts`
+- **import-after-code** (1) — `src/navigation/buildTabs.js`
+- **import-after-code** (1) — `src/navigation/pageRegistry.js`
+- **import-after-code** (1) — `src/notifications/useNotificationDeepLinks.ts`
+- **import-after-code** (1) — `src/screens/AdminPayoutsScreen.js`
+- **import-after-code** (1) — `src/screens/CreatorPayoutScreen.js`
+- **import-after-code** (1) — `src/screens/DiagnoseScreen.js`
+- **import-after-code** (1) — `src/screens/GrowLogEntryScreen.js`
+- **import-after-code** (1) — `src/screens/GuildCodeScreen.js`
+- **import-after-code** (1) — `src/screens/OnboardingCarousel.js`
+- **import-after-code** (1) — `src/screens/PaymentsScreen.js`
+- **import-after-code** (1) — `src/screens/commercial/AdvertisingScreen.js`
+- **import-after-code** (1) — `src/screens/facility/ComputeVPDScreen.tsx`
+- **import-after-code** (1) — `src/screens/facility/ECRecommendScreen.tsx`
+- **import-after-code** (1) — `tests/CoursesScreen.qa.test.js`
+- **import-after-code** (1) — `tests/ForumPostDetailScreen.qa.test.js`
+- **import-after-code** (1) — `tests/acceptance/dashboard_feed.test.js`
+- **import-after-code** (1) — `tests/acceptance/userStories.test.js`
+- **import-after-code** (1) — `tests/growLogs.spec.js`
+- **import-after-code** (1) — `tests/unit/forum-feed.test.js`
+
+## Orphan candidates (best-effort reachability)
+
+- `src/ai/toolRegistry.ts`
+- `src/api/adminReports.js`
+- `src/api/advertising.js`
+- `src/api/apiClient.js`
+- `src/api/apiRequest.ts`
+- `src/api/audit.js`
+- `src/api/audit.ts`
+- `src/api/auth.ts`
+- `src/api/automation.ts`
+- `src/api/billing.ts`
+- `src/api/calendar.ts`
+- `src/api/campaigns.js`
+- `src/api/campaigns.ts`
+- `src/api/certificates.js`
+- `src/api/commercialBilling.js`
+- `src/api/commercialFeed.ts`
+- `src/api/community.js`
+- `src/api/compliance.ts`
+- `src/api/complianceLogs.ts`
+- `src/api/courses.js`
+- `src/api/creator.js`
+- `src/api/debug.ts`
+- `src/api/deviation.js`
+- `src/api/deviations.ts`
+- `src/api/diagnose.js`
+- `src/api/earnings.js`
+- `src/api/environment.js`
+- `src/api/equipment.js`
+- `src/api/errors.ts`
+- `src/api/facility.js`
+- `src/api/facilityInventory.ts`
+- `src/api/facilitySettings.ts`
+- `src/api/facilityTasks.ts`
+- `src/api/feed.ts`
+- `src/api/feeding.js`
+- `src/api/forum.js`
+- `src/api/greenWaste.js`
+- `src/api/greenWaste.ts`
+- `src/api/growlog.js`
+- `src/api/growlog.ts`
+- `src/api/growlogs.ts`
+- `src/api/grows.js`
+- `src/api/grows.ts`
+- `src/api/guilds.js`
+- `src/api/hooks.ts`
+- `src/api/index.js`
+- `src/api/insights.ts`
+- `src/api/inventory.ts`
+- `src/api/links.js`
+- `src/api/links.ts`
+- `src/api/live.ts`
+- `src/api/lives.js`
+- `src/api/logs.ts`
+- `src/api/marketplace.js`
+- `src/api/mockServer.ts`
+- `src/api/notifications.ts`
+- `src/api/orders.ts`
+- `src/api/payments.js`
+- `src/api/plants.js`
+- `src/api/plants.ts`
+- `src/api/posts.js`
+- `src/api/products.js`
+- `src/api/products.ts`
+- `src/api/questions.js`
+- `src/api/reports.js`
+- `src/api/reports.ts`
+- `src/api/rooms.ts`
+- `src/api/search.js`
+- `src/api/socialMedia.js`
+- `src/api/sop.js`
+- `src/api/sop.ts`
+- `src/api/storefront.ts`
+- `src/api/subscribe.js`
+- `src/api/subscription.js`
+- `src/api/subscription.ts`
+- `src/api/tasks.js`
+- `src/api/tasks.ts`
+- `src/api/team.js`
+- `src/api/team.ts`
+- `src/api/templates.js`
+- `src/api/tokens.js`
+- `src/api/types.ts`
+- `src/api/uploads.js`
+- `src/api/uriToBlob.ts`
+- `src/api/user.ts`
+- `src/api/users.js`
+- `src/api/vendor.js`
+- `src/api/vendorAnalytics.js`
+- `src/api/vendorMetrics.js`
+- `src/api/vendorSignup.ts`
+- `src/api/vendors.ts`
+- `src/api/verification.js`
+- `src/api/verification.ts`
+- `src/api/webhooks.ts`
+- `src/auth/RequireAuth.tsx`
+- `src/auth/RequireAuthGate.tsx`
+- `src/auth/RequirePlan.tsx`
+- `src/auth/capabilities.js`
+- `src/auth/guards.ts`
+- `src/auth/initUnauthorized.ts`
+- `src/capabilities/keys.js`
+- `src/capabilities/plans.js`
+- `src/components/AppShell.js`
+- `src/components/AutomationRow.tsx`
+- `src/components/Card.js`
+- `src/components/CommercialBanner.js`
+- `src/components/ContextBar.js`
+- `src/components/EmptyState.js`
+- `src/components/EmptyState.tsx`
+- `src/components/EntriesTasksBlock.js`
+- `src/components/ErrorBoundary.js`
+- `src/components/ErrorState.js`
+- `src/components/FeatureGate.js`
+- `src/components/FeatureGate.tsx`
+- `src/components/FollowButton.js`
+- `src/components/ForumFilters.js`
+- `src/components/GrowInterestPicker.js`
+- `src/components/GrowInterestsEditor.js`
+- `src/components/GrowPlantSelector.js`
+- `src/components/InlineError.tsx`
+- `src/components/InventoryRow.tsx`
+- `src/components/LoadingSpinner.tsx`
+- `src/components/ModeSwitcher.tsx`
+- `src/components/PaymentHelpDialog.js`
+- `src/components/PlantCard.js`
+- `src/components/PlantSaveModal.js`
+- `src/components/PrimaryButton.js`
+- `src/components/ReportModal.js`
+- `src/components/RoomCard.tsx`
+- `src/components/ScreenBoundary.tsx`
+- `src/components/ScreenContainer.js`
+- `src/components/ScreenScaffold.js`
+- `src/components/SkeletonLoader.js`
+- `src/components/StageSlider.js`
+- `src/components/StubScreen.js`
+- `src/components/TaskCompleteModal.js`
+- `src/components/TaskRow.js`
+- `src/components/TokenBalanceWidget.js`
+- `src/components/commercial/CommercialFeedCard.tsx`
+- `src/components/feed/AdCard.tsx`
+- `src/components/feed/EducationPostCard.tsx`
+- `src/components/feed/FeedRail.tsx`
+- `src/components/feed/ForumHighlights.tsx`
+- `src/components/feed/ForumThreadCard.tsx`
+- `src/components/layout/AppCard.tsx`
+- `src/components/layout/AppPage.tsx`
+- `src/components/layout/sanitizeViewChildren.tsx`
+- `src/components/nav/BackButton.tsx`
+- `src/components/system/ErrorBoundary.tsx`
+- `src/config/capabilities.d.ts`
+- `src/config/capabilities.js`
+- `src/config/capabilities.ts`
+- `src/config/config.ts`
+- `src/config/interests.js`
+- `src/config/menuConfig.js`
+- `src/constants/growTaxonomy.ts`
+- `src/constants/pricing.js`
+- `src/constants/storageKeys.js`
+- `src/constants/userModes.js`
+- `src/context/FacilityContext.js`
+- `src/contracts/compliance/ai4.dashboard.contract.ts`
+- `src/core/accountMode/assertAccountMode.ts`
+- `src/entitlements/EntitlementsContext.ts`
+- `src/entitlements/LockedScreen.tsx`
+- `src/entitlements/screenMatrix.ts`
+- `src/entitlements/toEntContext.ts`
+- `src/entitlements/types.ts`
+- `src/entitlements/uiGate.ts`
+- `src/entitlements/useEntitlements.ts`
+- `src/facility/roleGates.ts`
+- `src/features/UpgradePrompt.tsx`
+- `src/features/ai/AiContextBlock.tsx`
+- `src/features/ai/aiFeatureMatrix.ts`
+- `src/features/ai/callAi.ts`
+- `src/features/ai/components/AIResultCard.tsx`
+- `src/features/ai/formatAi.ts`
+- `src/features/auth/PermissionInspector.tsx`
+- `src/features/billing/hooks.ts`
+- `src/features/billing/index.ts`
+- `src/features/billing/screens/BillingCancel.tsx`
+- `src/features/billing/screens/BillingHome.tsx`
+- `src/features/billing/screens/BillingSuccess.tsx`
+- `src/features/billing/screens/ManageSubscription.tsx`
+- `src/features/billing/screens/UpgradePlan.tsx`
+- `src/features/billing/screens/index.ts`
+- `src/features/compliance/ai3/comparisons/savedComparisonsStore.ts`
+- `src/features/compliance/ai4/dashboard/__tests__/buildDashboardModel.test.ts`
+- `src/features/compliance/ai4/dashboard/__tests__/complianceDashboardApi.normalizers.test.ts`
+- `src/features/compliance/ai4/dashboard/buildDashboardModel.ts`
+- `src/features/compliance/ai4/dashboard/complianceDashboardApi.contract.ts`
+- `src/features/compliance/ai4/dashboard/complianceDashboardApi.ts`
+- `src/features/dashboard/components/DashboardCard.tsx`
+- `src/features/dashboard/hooks.ts`
+- `src/features/dashboard/index.ts`
+- `src/features/dashboard/screens/FacilityDashboard.tsx`
+- `src/features/dashboard/screens/OperationsDashboard.tsx`
+- `src/features/facility/screens/AuditTrail.tsx`
+- `src/features/facility/screens/FacilitySettings.tsx`
+- `src/features/facility/useFacilityGrows.ts`
+- `src/features/facility/useFacilityRooms.ts`
+- `src/features/feed/api/feedAdapter.ts`
+- `src/features/feed/api/feedApi.ts`
+- `src/features/feed/components/FeedEmptyState.tsx`
+- `src/features/feed/components/FeedFiltersBar.tsx`
+- `src/features/feed/components/FeedItemCard.tsx`
+- `src/features/feed/components/FeedList.tsx`
+- `src/features/feed/components/FeedSkeleton.tsx`
+- `src/features/feed/hooks/useCommercialFeed.ts`
+- `src/features/feed/hooks/useFeedFilters.ts`
+- `src/features/feed/types/feed.ts`
+- `src/features/feed/utils/feedFormat.ts`
+- `src/features/feed/utils/feedIcons.ts`
+- `src/features/grows/screens/EndGrowFlow.tsx`
+- `src/features/grows/screens/GrowDetail.tsx`
+- `src/features/grows/screens/GrowsList.tsx`
+- `src/features/grows/screens/HarvestSummary.tsx`
+- `src/features/inventory/hooks.ts`
+- `src/features/inventory/screens/InventoryDetail.tsx`
+- `src/features/inventory/screens/InventoryEdit.tsx`
+- `src/features/inventory/types.ts`
+- `src/features/mode/switchAccountMode.ts`
+- `src/features/mode/useModeSwitcher.ts`
+- `src/features/plants/components/PlantCard.tsx`
+- `src/features/plants/components/PlantListSwipe.tsx`
+- `src/features/plants/screens/PlantDetail.tsx`
+- `src/features/plants/screens/PlantEdit.tsx`
+- `src/features/rooms/index.ts`
+- `src/features/rooms/screens/RoomDetail.tsx`
+- `src/features/rooms/screens/RoomEnvironment.tsx`
+- `src/features/rooms/screens/RoomPlants.tsx`
+- `src/features/rooms/screens/RoomsList.tsx`
+- `src/features/rooms/useBulkCreateRooms.ts`
+- `src/features/routing/LegacyFacilityRouteShim.tsx`
+- `src/features/routing/legacyFacilityRedirect.ts`
+- `src/features/tasks/components/TaskListSwipe.tsx`
+- `src/features/tasks/hooks/index.ts`
+- `src/features/team/DeepLinkHandler.tsx`
+- `src/features/team/components/BillingOwnerBadge.tsx`
+- `src/features/team/components/RoleBadge.tsx`
+- `src/features/team/hooks.ts`
+- `src/features/team/screens/AcceptInvite.tsx`
+- `src/features/team/screens/InviteMember.tsx`
+- `src/features/team/screens/JoinFacilityFlow.tsx`
+- `src/features/team/screens/TeamMemberDetail.tsx`
+- `src/features/team/types.ts`
+- `src/guards/FacilityGuard.js`
+- `src/guards/RequireEntitlement.tsx`
+- `src/hooks/useAICall.ts`
+- `src/hooks/useApiErrorHandler.ts`
+- `src/hooks/useAuditLogs.ts`
+- `src/hooks/useAutomationPolicies.ts`
+- `src/hooks/useAutomations.ts`
+- `src/hooks/useCalendar.ts`
+- `src/hooks/useCalendarEvents.ts`
+- `src/hooks/useCampaigns.ts`
+- `src/hooks/useComplianceLogs.ts`
+- `src/hooks/useCreatePost.ts`
+- `src/hooks/useDebugApi.ts`
+- `src/hooks/useDeviations.ts`
+- `src/hooks/useDiagnose.ts`
+- `src/hooks/useEquipmentTools.ts`
+- `src/hooks/useFacilities.ts`
+- `src/hooks/useFacilityBilling.ts`
+- `src/hooks/useFacilityReport.ts`
+- `src/hooks/useFacilitySettings.ts`
+- `src/hooks/useFacilityTasks.ts`
+- `src/hooks/useFacilityTeam.ts`
+- `src/hooks/useGreenWaste.ts`
+- `src/hooks/useGrowLogs.ts`
+- `src/hooks/useGrows.ts`
+- `src/hooks/useInsights.ts`
+- `src/hooks/useInventory.ts`
+- `src/hooks/useLinks.ts`
+- `src/hooks/useLiveSession.ts`
+- `src/hooks/useNotifications.js`
+- `src/hooks/useNotifications.ts`
+- `src/hooks/useOrders.ts`
+- `src/hooks/usePersonalTasks.ts`
+- `src/hooks/usePlants.ts`
+- `src/hooks/useProducts.ts`
+- `src/hooks/useRooms.ts`
+- `src/hooks/useSopTemplates.ts`
+- `src/hooks/useStorefront.ts`
+- `src/hooks/useSubscriptionStatus.ts`
+- `src/hooks/useTabPressScrollReset.js`
+- `src/hooks/useTasks.ts`
+- `src/hooks/useVendorSignup.ts`
+- `src/hooks/useVendors.ts`
+- `src/hooks/useVerification.ts`
+- `src/hooks/useWebhooks.tsx`
+- `src/layout/FacilityShell.js`
+- `src/navigation/AppNavigator.tsx`
+- `src/navigation/AuthNavigator.js`
+- `src/navigation/AuthStack.js`
+- `src/navigation/CommercialNavigator.tsx`
+- `src/navigation/CommercialStack.js`
+- `src/navigation/CommercialTabs.js`
+- `src/navigation/FacilityNavigator.tsx`
+- `src/navigation/FacilityStack.js`
+- `src/navigation/FacilityTabs.js`
+- …and 203 more
+
+## Duplicate content groups
+
+- `src/screens/SearchScreen.js`, `src/screens/SelectFacilityScreen.tsx`
+- `src/screens/facility/FacilityDashboardScreen.tsx`, `src/screens/facility/FacilityGuard.tsx`
+- `src/screens/facility/InventoryScreen.tsx`, `src/screens/facility/NotificationsCenterScreen.tsx`
+
+## Notes
+- Reachability is heuristic and based on static import parsing; dynamic requires and runtime routing can create false orphans.
+

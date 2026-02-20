@@ -1,0 +1,608 @@
+# Delete candidates (recommendations only)
+
+**No deletions should occur until approved.**
+
+## Candidates
+
+- Risk: **MED** — `src/ai/toolRegistry.ts`
+  - Evidence: unreachable via static imports from src/app/** roots
+  - Verify safely: search references via `rg -n "toolRegistry\.ts" src tests`
+- Risk: **MED** — `src/api/adminReports.js`
+  - Evidence: unreachable via static imports from src/app/** roots
+  - Verify safely: search references via `rg -n "adminReports\.js" src tests`
+- Risk: **MED** — `src/api/advertising.js`
+  - Evidence: unreachable via static imports from src/app/** roots
+  - Verify safely: search references via `rg -n "advertising\.js" src tests`
+- Risk: **MED** — `src/api/apiClient.js`
+  - Evidence: unreachable via static imports from src/app/** roots
+  - Verify safely: search references via `rg -n "apiClient\.js" src tests`
+- Risk: **MED** — `src/api/apiRequest.ts`
+  - Evidence: unreachable via static imports from src/app/** roots
+  - Verify safely: search references via `rg -n "apiRequest\.ts" src tests`
+- Risk: **MED** — `src/api/audit.js`
+  - Evidence: unreachable via static imports from src/app/** roots
+  - Verify safely: search references via `rg -n "audit\.js" src tests`
+- Risk: **MED** — `src/api/audit.ts`
+  - Evidence: unreachable via static imports from src/app/** roots
+  - Verify safely: search references via `rg -n "audit\.ts" src tests`
+- Risk: **MED** — `src/api/auth.ts`
+  - Evidence: unreachable via static imports from src/app/** roots
+  - Verify safely: search references via `rg -n "auth\.ts" src tests`
+- Risk: **MED** — `src/api/automation.ts`
+  - Evidence: unreachable via static imports from src/app/** roots
+  - Verify safely: search references via `rg -n "automation\.ts" src tests`
+- Risk: **MED** — `src/api/billing.ts`
+  - Evidence: unreachable via static imports from src/app/** roots
+  - Verify safely: search references via `rg -n "billing\.ts" src tests`
+- Risk: **MED** — `src/api/calendar.ts`
+  - Evidence: unreachable via static imports from src/app/** roots
+  - Verify safely: search references via `rg -n "calendar\.ts" src tests`
+- Risk: **MED** — `src/api/campaigns.js`
+  - Evidence: unreachable via static imports from src/app/** roots
+  - Verify safely: search references via `rg -n "campaigns\.js" src tests`
+- Risk: **MED** — `src/api/campaigns.ts`
+  - Evidence: unreachable via static imports from src/app/** roots
+  - Verify safely: search references via `rg -n "campaigns\.ts" src tests`
+- Risk: **MED** — `src/api/certificates.js`
+  - Evidence: unreachable via static imports from src/app/** roots
+  - Verify safely: search references via `rg -n "certificates\.js" src tests`
+- Risk: **MED** — `src/api/commercialBilling.js`
+  - Evidence: unreachable via static imports from src/app/** roots
+  - Verify safely: search references via `rg -n "commercialBilling\.js" src tests`
+- Risk: **MED** — `src/api/commercialFeed.ts`
+  - Evidence: unreachable via static imports from src/app/** roots
+  - Verify safely: search references via `rg -n "commercialFeed\.ts" src tests`
+- Risk: **MED** — `src/api/community.js`
+  - Evidence: unreachable via static imports from src/app/** roots
+  - Verify safely: search references via `rg -n "community\.js" src tests`
+- Risk: **MED** — `src/api/compliance.ts`
+  - Evidence: unreachable via static imports from src/app/** roots
+  - Verify safely: search references via `rg -n "compliance\.ts" src tests`
+- Risk: **MED** — `src/api/complianceLogs.ts`
+  - Evidence: unreachable via static imports from src/app/** roots
+  - Verify safely: search references via `rg -n "complianceLogs\.ts" src tests`
+- Risk: **MED** — `src/api/courses.js`
+  - Evidence: unreachable via static imports from src/app/** roots
+  - Verify safely: search references via `rg -n "courses\.js" src tests`
+- Risk: **MED** — `src/api/creator.js`
+  - Evidence: unreachable via static imports from src/app/** roots
+  - Verify safely: search references via `rg -n "creator\.js" src tests`
+- Risk: **MED** — `src/api/debug.ts`
+  - Evidence: unreachable via static imports from src/app/** roots
+  - Verify safely: search references via `rg -n "debug\.ts" src tests`
+- Risk: **MED** — `src/api/deviation.js`
+  - Evidence: unreachable via static imports from src/app/** roots
+  - Verify safely: search references via `rg -n "deviation\.js" src tests`
+- Risk: **MED** — `src/api/deviations.ts`
+  - Evidence: unreachable via static imports from src/app/** roots
+  - Verify safely: search references via `rg -n "deviations\.ts" src tests`
+- Risk: **MED** — `src/api/diagnose.js`
+  - Evidence: unreachable via static imports from src/app/** roots
+  - Verify safely: search references via `rg -n "diagnose\.js" src tests`
+- Risk: **MED** — `src/api/earnings.js`
+  - Evidence: unreachable via static imports from src/app/** roots
+  - Verify safely: search references via `rg -n "earnings\.js" src tests`
+- Risk: **MED** — `src/api/environment.js`
+  - Evidence: unreachable via static imports from src/app/** roots
+  - Verify safely: search references via `rg -n "environment\.js" src tests`
+- Risk: **MED** — `src/api/equipment.js`
+  - Evidence: unreachable via static imports from src/app/** roots
+  - Verify safely: search references via `rg -n "equipment\.js" src tests`
+- Risk: **MED** — `src/api/errors.ts`
+  - Evidence: unreachable via static imports from src/app/** roots
+  - Verify safely: search references via `rg -n "errors\.ts" src tests`
+- Risk: **MED** — `src/api/facility.js`
+  - Evidence: unreachable via static imports from src/app/** roots
+  - Verify safely: search references via `rg -n "facility\.js" src tests`
+- Risk: **MED** — `src/api/facilityInventory.ts`
+  - Evidence: unreachable via static imports from src/app/** roots
+  - Verify safely: search references via `rg -n "facilityInventory\.ts" src tests`
+- Risk: **MED** — `src/api/facilitySettings.ts`
+  - Evidence: unreachable via static imports from src/app/** roots
+  - Verify safely: search references via `rg -n "facilitySettings\.ts" src tests`
+- Risk: **MED** — `src/api/facilityTasks.ts`
+  - Evidence: unreachable via static imports from src/app/** roots
+  - Verify safely: search references via `rg -n "facilityTasks\.ts" src tests`
+- Risk: **MED** — `src/api/feed.ts`
+  - Evidence: unreachable via static imports from src/app/** roots
+  - Verify safely: search references via `rg -n "feed\.ts" src tests`
+- Risk: **MED** — `src/api/feeding.js`
+  - Evidence: unreachable via static imports from src/app/** roots
+  - Verify safely: search references via `rg -n "feeding\.js" src tests`
+- Risk: **MED** — `src/api/forum.js`
+  - Evidence: unreachable via static imports from src/app/** roots
+  - Verify safely: search references via `rg -n "forum\.js" src tests`
+- Risk: **MED** — `src/api/greenWaste.js`
+  - Evidence: unreachable via static imports from src/app/** roots
+  - Verify safely: search references via `rg -n "greenWaste\.js" src tests`
+- Risk: **MED** — `src/api/greenWaste.ts`
+  - Evidence: unreachable via static imports from src/app/** roots
+  - Verify safely: search references via `rg -n "greenWaste\.ts" src tests`
+- Risk: **MED** — `src/api/growlog.js`
+  - Evidence: unreachable via static imports from src/app/** roots
+  - Verify safely: search references via `rg -n "growlog\.js" src tests`
+- Risk: **MED** — `src/api/growlog.ts`
+  - Evidence: unreachable via static imports from src/app/** roots
+  - Verify safely: search references via `rg -n "growlog\.ts" src tests`
+- Risk: **MED** — `src/api/growlogs.ts`
+  - Evidence: unreachable via static imports from src/app/** roots
+  - Verify safely: search references via `rg -n "growlogs\.ts" src tests`
+- Risk: **MED** — `src/api/grows.js`
+  - Evidence: unreachable via static imports from src/app/** roots
+  - Verify safely: search references via `rg -n "grows\.js" src tests`
+- Risk: **MED** — `src/api/grows.ts`
+  - Evidence: unreachable via static imports from src/app/** roots
+  - Verify safely: search references via `rg -n "grows\.ts" src tests`
+- Risk: **MED** — `src/api/guilds.js`
+  - Evidence: unreachable via static imports from src/app/** roots
+  - Verify safely: search references via `rg -n "guilds\.js" src tests`
+- Risk: **MED** — `src/api/hooks.ts`
+  - Evidence: unreachable via static imports from src/app/** roots
+  - Verify safely: search references via `rg -n "hooks\.ts" src tests`
+- Risk: **MED** — `src/api/index.js`
+  - Evidence: unreachable via static imports from src/app/** roots
+  - Verify safely: search references via `rg -n "index\.js" src tests`
+- Risk: **MED** — `src/api/insights.ts`
+  - Evidence: unreachable via static imports from src/app/** roots
+  - Verify safely: search references via `rg -n "insights\.ts" src tests`
+- Risk: **MED** — `src/api/inventory.ts`
+  - Evidence: unreachable via static imports from src/app/** roots
+  - Verify safely: search references via `rg -n "inventory\.ts" src tests`
+- Risk: **MED** — `src/api/links.js`
+  - Evidence: unreachable via static imports from src/app/** roots
+  - Verify safely: search references via `rg -n "links\.js" src tests`
+- Risk: **MED** — `src/api/links.ts`
+  - Evidence: unreachable via static imports from src/app/** roots
+  - Verify safely: search references via `rg -n "links\.ts" src tests`
+- Risk: **MED** — `src/api/live.ts`
+  - Evidence: unreachable via static imports from src/app/** roots
+  - Verify safely: search references via `rg -n "live\.ts" src tests`
+- Risk: **MED** — `src/api/lives.js`
+  - Evidence: unreachable via static imports from src/app/** roots
+  - Verify safely: search references via `rg -n "lives\.js" src tests`
+- Risk: **MED** — `src/api/logs.ts`
+  - Evidence: unreachable via static imports from src/app/** roots
+  - Verify safely: search references via `rg -n "logs\.ts" src tests`
+- Risk: **MED** — `src/api/marketplace.js`
+  - Evidence: unreachable via static imports from src/app/** roots
+  - Verify safely: search references via `rg -n "marketplace\.js" src tests`
+- Risk: **MED** — `src/api/mockServer.ts`
+  - Evidence: unreachable via static imports from src/app/** roots
+  - Verify safely: search references via `rg -n "mockServer\.ts" src tests`
+- Risk: **MED** — `src/api/notifications.ts`
+  - Evidence: unreachable via static imports from src/app/** roots
+  - Verify safely: search references via `rg -n "notifications\.ts" src tests`
+- Risk: **MED** — `src/api/orders.ts`
+  - Evidence: unreachable via static imports from src/app/** roots
+  - Verify safely: search references via `rg -n "orders\.ts" src tests`
+- Risk: **MED** — `src/api/payments.js`
+  - Evidence: unreachable via static imports from src/app/** roots
+  - Verify safely: search references via `rg -n "payments\.js" src tests`
+- Risk: **MED** — `src/api/plants.js`
+  - Evidence: unreachable via static imports from src/app/** roots
+  - Verify safely: search references via `rg -n "plants\.js" src tests`
+- Risk: **MED** — `src/api/plants.ts`
+  - Evidence: unreachable via static imports from src/app/** roots
+  - Verify safely: search references via `rg -n "plants\.ts" src tests`
+- Risk: **MED** — `src/api/posts.js`
+  - Evidence: unreachable via static imports from src/app/** roots
+  - Verify safely: search references via `rg -n "posts\.js" src tests`
+- Risk: **MED** — `src/api/products.js`
+  - Evidence: unreachable via static imports from src/app/** roots
+  - Verify safely: search references via `rg -n "products\.js" src tests`
+- Risk: **MED** — `src/api/products.ts`
+  - Evidence: unreachable via static imports from src/app/** roots
+  - Verify safely: search references via `rg -n "products\.ts" src tests`
+- Risk: **MED** — `src/api/questions.js`
+  - Evidence: unreachable via static imports from src/app/** roots
+  - Verify safely: search references via `rg -n "questions\.js" src tests`
+- Risk: **MED** — `src/api/reports.js`
+  - Evidence: unreachable via static imports from src/app/** roots
+  - Verify safely: search references via `rg -n "reports\.js" src tests`
+- Risk: **MED** — `src/api/reports.ts`
+  - Evidence: unreachable via static imports from src/app/** roots
+  - Verify safely: search references via `rg -n "reports\.ts" src tests`
+- Risk: **MED** — `src/api/rooms.ts`
+  - Evidence: unreachable via static imports from src/app/** roots
+  - Verify safely: search references via `rg -n "rooms\.ts" src tests`
+- Risk: **MED** — `src/api/search.js`
+  - Evidence: unreachable via static imports from src/app/** roots
+  - Verify safely: search references via `rg -n "search\.js" src tests`
+- Risk: **MED** — `src/api/socialMedia.js`
+  - Evidence: unreachable via static imports from src/app/** roots
+  - Verify safely: search references via `rg -n "socialMedia\.js" src tests`
+- Risk: **MED** — `src/api/sop.js`
+  - Evidence: unreachable via static imports from src/app/** roots
+  - Verify safely: search references via `rg -n "sop\.js" src tests`
+- Risk: **MED** — `src/api/sop.ts`
+  - Evidence: unreachable via static imports from src/app/** roots
+  - Verify safely: search references via `rg -n "sop\.ts" src tests`
+- Risk: **MED** — `src/api/storefront.ts`
+  - Evidence: unreachable via static imports from src/app/** roots
+  - Verify safely: search references via `rg -n "storefront\.ts" src tests`
+- Risk: **MED** — `src/api/subscribe.js`
+  - Evidence: unreachable via static imports from src/app/** roots
+  - Verify safely: search references via `rg -n "subscribe\.js" src tests`
+- Risk: **MED** — `src/api/subscription.js`
+  - Evidence: unreachable via static imports from src/app/** roots
+  - Verify safely: search references via `rg -n "subscription\.js" src tests`
+- Risk: **MED** — `src/api/subscription.ts`
+  - Evidence: unreachable via static imports from src/app/** roots
+  - Verify safely: search references via `rg -n "subscription\.ts" src tests`
+- Risk: **MED** — `src/api/tasks.js`
+  - Evidence: unreachable via static imports from src/app/** roots
+  - Verify safely: search references via `rg -n "tasks\.js" src tests`
+- Risk: **MED** — `src/api/tasks.ts`
+  - Evidence: unreachable via static imports from src/app/** roots
+  - Verify safely: search references via `rg -n "tasks\.ts" src tests`
+- Risk: **MED** — `src/api/team.js`
+  - Evidence: unreachable via static imports from src/app/** roots
+  - Verify safely: search references via `rg -n "team\.js" src tests`
+- Risk: **MED** — `src/api/team.ts`
+  - Evidence: unreachable via static imports from src/app/** roots
+  - Verify safely: search references via `rg -n "team\.ts" src tests`
+- Risk: **MED** — `src/api/templates.js`
+  - Evidence: unreachable via static imports from src/app/** roots
+  - Verify safely: search references via `rg -n "templates\.js" src tests`
+- Risk: **MED** — `src/api/tokens.js`
+  - Evidence: unreachable via static imports from src/app/** roots
+  - Verify safely: search references via `rg -n "tokens\.js" src tests`
+- Risk: **MED** — `src/api/types.ts`
+  - Evidence: unreachable via static imports from src/app/** roots
+  - Verify safely: search references via `rg -n "types\.ts" src tests`
+- Risk: **MED** — `src/api/uploads.js`
+  - Evidence: unreachable via static imports from src/app/** roots
+  - Verify safely: search references via `rg -n "uploads\.js" src tests`
+- Risk: **MED** — `src/api/uriToBlob.ts`
+  - Evidence: unreachable via static imports from src/app/** roots
+  - Verify safely: search references via `rg -n "uriToBlob\.ts" src tests`
+- Risk: **MED** — `src/api/user.ts`
+  - Evidence: unreachable via static imports from src/app/** roots
+  - Verify safely: search references via `rg -n "user\.ts" src tests`
+- Risk: **MED** — `src/api/users.js`
+  - Evidence: unreachable via static imports from src/app/** roots
+  - Verify safely: search references via `rg -n "users\.js" src tests`
+- Risk: **MED** — `src/api/vendor.js`
+  - Evidence: unreachable via static imports from src/app/** roots
+  - Verify safely: search references via `rg -n "vendor\.js" src tests`
+- Risk: **MED** — `src/api/vendorAnalytics.js`
+  - Evidence: unreachable via static imports from src/app/** roots
+  - Verify safely: search references via `rg -n "vendorAnalytics\.js" src tests`
+- Risk: **MED** — `src/api/vendorMetrics.js`
+  - Evidence: unreachable via static imports from src/app/** roots
+  - Verify safely: search references via `rg -n "vendorMetrics\.js" src tests`
+- Risk: **MED** — `src/api/vendorSignup.ts`
+  - Evidence: unreachable via static imports from src/app/** roots
+  - Verify safely: search references via `rg -n "vendorSignup\.ts" src tests`
+- Risk: **MED** — `src/api/vendors.ts`
+  - Evidence: unreachable via static imports from src/app/** roots
+  - Verify safely: search references via `rg -n "vendors\.ts" src tests`
+- Risk: **MED** — `src/api/verification.js`
+  - Evidence: unreachable via static imports from src/app/** roots
+  - Verify safely: search references via `rg -n "verification\.js" src tests`
+- Risk: **MED** — `src/api/verification.ts`
+  - Evidence: unreachable via static imports from src/app/** roots
+  - Verify safely: search references via `rg -n "verification\.ts" src tests`
+- Risk: **MED** — `src/api/webhooks.ts`
+  - Evidence: unreachable via static imports from src/app/** roots
+  - Verify safely: search references via `rg -n "webhooks\.ts" src tests`
+- Risk: **MED** — `src/auth/RequireAuth.tsx`
+  - Evidence: unreachable via static imports from src/app/** roots
+  - Verify safely: search references via `rg -n "RequireAuth\.tsx" src tests`
+- Risk: **MED** — `src/auth/RequireAuthGate.tsx`
+  - Evidence: unreachable via static imports from src/app/** roots
+  - Verify safely: search references via `rg -n "RequireAuthGate\.tsx" src tests`
+- Risk: **MED** — `src/auth/RequirePlan.tsx`
+  - Evidence: unreachable via static imports from src/app/** roots
+  - Verify safely: search references via `rg -n "RequirePlan\.tsx" src tests`
+- Risk: **MED** — `src/auth/capabilities.js`
+  - Evidence: unreachable via static imports from src/app/** roots
+  - Verify safely: search references via `rg -n "capabilities\.js" src tests`
+- Risk: **MED** — `src/auth/guards.ts`
+  - Evidence: unreachable via static imports from src/app/** roots
+  - Verify safely: search references via `rg -n "guards\.ts" src tests`
+- Risk: **MED** — `src/auth/initUnauthorized.ts`
+  - Evidence: unreachable via static imports from src/app/** roots
+  - Verify safely: search references via `rg -n "initUnauthorized\.ts" src tests`
+- Risk: **MED** — `src/capabilities/keys.js`
+  - Evidence: unreachable via static imports from src/app/** roots
+  - Verify safely: search references via `rg -n "keys\.js" src tests`
+- Risk: **MED** — `src/capabilities/plans.js`
+  - Evidence: unreachable via static imports from src/app/** roots
+  - Verify safely: search references via `rg -n "plans\.js" src tests`
+- Risk: **MED** — `src/components/AppShell.js`
+  - Evidence: unreachable via static imports from src/app/** roots
+  - Verify safely: search references via `rg -n "AppShell\.js" src tests`
+- Risk: **MED** — `src/components/AutomationRow.tsx`
+  - Evidence: unreachable via static imports from src/app/** roots
+  - Verify safely: search references via `rg -n "AutomationRow\.tsx" src tests`
+- Risk: **MED** — `src/components/Card.js`
+  - Evidence: unreachable via static imports from src/app/** roots
+  - Verify safely: search references via `rg -n "Card\.js" src tests`
+- Risk: **MED** — `src/components/CommercialBanner.js`
+  - Evidence: unreachable via static imports from src/app/** roots
+  - Verify safely: search references via `rg -n "CommercialBanner\.js" src tests`
+- Risk: **MED** — `src/components/ContextBar.js`
+  - Evidence: unreachable via static imports from src/app/** roots
+  - Verify safely: search references via `rg -n "ContextBar\.js" src tests`
+- Risk: **MED** — `src/components/EmptyState.js`
+  - Evidence: unreachable via static imports from src/app/** roots
+  - Verify safely: search references via `rg -n "EmptyState\.js" src tests`
+- Risk: **MED** — `src/components/EmptyState.tsx`
+  - Evidence: unreachable via static imports from src/app/** roots
+  - Verify safely: search references via `rg -n "EmptyState\.tsx" src tests`
+- Risk: **MED** — `src/components/EntriesTasksBlock.js`
+  - Evidence: unreachable via static imports from src/app/** roots
+  - Verify safely: search references via `rg -n "EntriesTasksBlock\.js" src tests`
+- Risk: **MED** — `src/components/ErrorBoundary.js`
+  - Evidence: unreachable via static imports from src/app/** roots
+  - Verify safely: search references via `rg -n "ErrorBoundary\.js" src tests`
+- Risk: **MED** — `src/components/ErrorState.js`
+  - Evidence: unreachable via static imports from src/app/** roots
+  - Verify safely: search references via `rg -n "ErrorState\.js" src tests`
+- Risk: **MED** — `src/components/FeatureGate.js`
+  - Evidence: unreachable via static imports from src/app/** roots
+  - Verify safely: search references via `rg -n "FeatureGate\.js" src tests`
+- Risk: **MED** — `src/components/FeatureGate.tsx`
+  - Evidence: unreachable via static imports from src/app/** roots
+  - Verify safely: search references via `rg -n "FeatureGate\.tsx" src tests`
+- Risk: **MED** — `src/components/FollowButton.js`
+  - Evidence: unreachable via static imports from src/app/** roots
+  - Verify safely: search references via `rg -n "FollowButton\.js" src tests`
+- Risk: **MED** — `src/components/ForumFilters.js`
+  - Evidence: unreachable via static imports from src/app/** roots
+  - Verify safely: search references via `rg -n "ForumFilters\.js" src tests`
+- Risk: **MED** — `src/components/GrowInterestPicker.js`
+  - Evidence: unreachable via static imports from src/app/** roots
+  - Verify safely: search references via `rg -n "GrowInterestPicker\.js" src tests`
+- Risk: **MED** — `src/components/GrowInterestsEditor.js`
+  - Evidence: unreachable via static imports from src/app/** roots
+  - Verify safely: search references via `rg -n "GrowInterestsEditor\.js" src tests`
+- Risk: **MED** — `src/components/GrowPlantSelector.js`
+  - Evidence: unreachable via static imports from src/app/** roots
+  - Verify safely: search references via `rg -n "GrowPlantSelector\.js" src tests`
+- Risk: **MED** — `src/components/InlineError.tsx`
+  - Evidence: unreachable via static imports from src/app/** roots
+  - Verify safely: search references via `rg -n "InlineError\.tsx" src tests`
+- Risk: **MED** — `src/components/InventoryRow.tsx`
+  - Evidence: unreachable via static imports from src/app/** roots
+  - Verify safely: search references via `rg -n "InventoryRow\.tsx" src tests`
+- Risk: **MED** — `src/components/LoadingSpinner.tsx`
+  - Evidence: unreachable via static imports from src/app/** roots
+  - Verify safely: search references via `rg -n "LoadingSpinner\.tsx" src tests`
+- Risk: **MED** — `src/components/ModeSwitcher.tsx`
+  - Evidence: unreachable via static imports from src/app/** roots
+  - Verify safely: search references via `rg -n "ModeSwitcher\.tsx" src tests`
+- Risk: **MED** — `src/components/PaymentHelpDialog.js`
+  - Evidence: unreachable via static imports from src/app/** roots
+  - Verify safely: search references via `rg -n "PaymentHelpDialog\.js" src tests`
+- Risk: **MED** — `src/components/PlantCard.js`
+  - Evidence: unreachable via static imports from src/app/** roots
+  - Verify safely: search references via `rg -n "PlantCard\.js" src tests`
+- Risk: **MED** — `src/components/PlantSaveModal.js`
+  - Evidence: unreachable via static imports from src/app/** roots
+  - Verify safely: search references via `rg -n "PlantSaveModal\.js" src tests`
+- Risk: **MED** — `src/components/PrimaryButton.js`
+  - Evidence: unreachable via static imports from src/app/** roots
+  - Verify safely: search references via `rg -n "PrimaryButton\.js" src tests`
+- Risk: **MED** — `src/components/ReportModal.js`
+  - Evidence: unreachable via static imports from src/app/** roots
+  - Verify safely: search references via `rg -n "ReportModal\.js" src tests`
+- Risk: **MED** — `src/components/RoomCard.tsx`
+  - Evidence: unreachable via static imports from src/app/** roots
+  - Verify safely: search references via `rg -n "RoomCard\.tsx" src tests`
+- Risk: **MED** — `src/components/ScreenBoundary.tsx`
+  - Evidence: unreachable via static imports from src/app/** roots
+  - Verify safely: search references via `rg -n "ScreenBoundary\.tsx" src tests`
+- Risk: **MED** — `src/components/ScreenContainer.js`
+  - Evidence: unreachable via static imports from src/app/** roots
+  - Verify safely: search references via `rg -n "ScreenContainer\.js" src tests`
+- Risk: **MED** — `src/components/ScreenScaffold.js`
+  - Evidence: unreachable via static imports from src/app/** roots
+  - Verify safely: search references via `rg -n "ScreenScaffold\.js" src tests`
+- Risk: **MED** — `src/components/SkeletonLoader.js`
+  - Evidence: unreachable via static imports from src/app/** roots
+  - Verify safely: search references via `rg -n "SkeletonLoader\.js" src tests`
+- Risk: **MED** — `src/components/StageSlider.js`
+  - Evidence: unreachable via static imports from src/app/** roots
+  - Verify safely: search references via `rg -n "StageSlider\.js" src tests`
+- Risk: **MED** — `src/components/StubScreen.js`
+  - Evidence: unreachable via static imports from src/app/** roots
+  - Verify safely: search references via `rg -n "StubScreen\.js" src tests`
+- Risk: **MED** — `src/components/TaskCompleteModal.js`
+  - Evidence: unreachable via static imports from src/app/** roots
+  - Verify safely: search references via `rg -n "TaskCompleteModal\.js" src tests`
+- Risk: **MED** — `src/components/TaskRow.js`
+  - Evidence: unreachable via static imports from src/app/** roots
+  - Verify safely: search references via `rg -n "TaskRow\.js" src tests`
+- Risk: **MED** — `src/components/TokenBalanceWidget.js`
+  - Evidence: unreachable via static imports from src/app/** roots
+  - Verify safely: search references via `rg -n "TokenBalanceWidget\.js" src tests`
+- Risk: **MED** — `src/components/commercial/CommercialFeedCard.tsx`
+  - Evidence: unreachable via static imports from src/app/** roots
+  - Verify safely: search references via `rg -n "CommercialFeedCard\.tsx" src tests`
+- Risk: **MED** — `src/components/feed/AdCard.tsx`
+  - Evidence: unreachable via static imports from src/app/** roots
+  - Verify safely: search references via `rg -n "AdCard\.tsx" src tests`
+- Risk: **MED** — `src/components/feed/EducationPostCard.tsx`
+  - Evidence: unreachable via static imports from src/app/** roots
+  - Verify safely: search references via `rg -n "EducationPostCard\.tsx" src tests`
+- Risk: **MED** — `src/components/feed/FeedRail.tsx`
+  - Evidence: unreachable via static imports from src/app/** roots
+  - Verify safely: search references via `rg -n "FeedRail\.tsx" src tests`
+- Risk: **MED** — `src/components/feed/ForumHighlights.tsx`
+  - Evidence: unreachable via static imports from src/app/** roots
+  - Verify safely: search references via `rg -n "ForumHighlights\.tsx" src tests`
+- Risk: **MED** — `src/components/feed/ForumThreadCard.tsx`
+  - Evidence: unreachable via static imports from src/app/** roots
+  - Verify safely: search references via `rg -n "ForumThreadCard\.tsx" src tests`
+- Risk: **MED** — `src/components/layout/AppCard.tsx`
+  - Evidence: unreachable via static imports from src/app/** roots
+  - Verify safely: search references via `rg -n "AppCard\.tsx" src tests`
+- Risk: **MED** — `src/components/layout/AppPage.tsx`
+  - Evidence: unreachable via static imports from src/app/** roots
+  - Verify safely: search references via `rg -n "AppPage\.tsx" src tests`
+- Risk: **MED** — `src/components/layout/sanitizeViewChildren.tsx`
+  - Evidence: unreachable via static imports from src/app/** roots
+  - Verify safely: search references via `rg -n "sanitizeViewChildren\.tsx" src tests`
+- Risk: **MED** — `src/components/nav/BackButton.tsx`
+  - Evidence: unreachable via static imports from src/app/** roots
+  - Verify safely: search references via `rg -n "BackButton\.tsx" src tests`
+- Risk: **MED** — `src/components/system/ErrorBoundary.tsx`
+  - Evidence: unreachable via static imports from src/app/** roots
+  - Verify safely: search references via `rg -n "ErrorBoundary\.tsx" src tests`
+- Risk: **MED** — `src/config/capabilities.d.ts`
+  - Evidence: unreachable via static imports from src/app/** roots
+  - Verify safely: search references via `rg -n "capabilities\.d\.ts" src tests`
+- Risk: **MED** — `src/config/capabilities.js`
+  - Evidence: unreachable via static imports from src/app/** roots
+  - Verify safely: search references via `rg -n "capabilities\.js" src tests`
+- Risk: **MED** — `src/config/capabilities.ts`
+  - Evidence: unreachable via static imports from src/app/** roots
+  - Verify safely: search references via `rg -n "capabilities\.ts" src tests`
+- Risk: **MED** — `src/config/config.ts`
+  - Evidence: unreachable via static imports from src/app/** roots
+  - Verify safely: search references via `rg -n "config\.ts" src tests`
+- Risk: **MED** — `src/config/interests.js`
+  - Evidence: unreachable via static imports from src/app/** roots
+  - Verify safely: search references via `rg -n "interests\.js" src tests`
+- Risk: **MED** — `src/config/menuConfig.js`
+  - Evidence: unreachable via static imports from src/app/** roots
+  - Verify safely: search references via `rg -n "menuConfig\.js" src tests`
+- Risk: **MED** — `src/constants/growTaxonomy.ts`
+  - Evidence: unreachable via static imports from src/app/** roots
+  - Verify safely: search references via `rg -n "growTaxonomy\.ts" src tests`
+- Risk: **MED** — `src/constants/pricing.js`
+  - Evidence: unreachable via static imports from src/app/** roots
+  - Verify safely: search references via `rg -n "pricing\.js" src tests`
+- Risk: **MED** — `src/constants/storageKeys.js`
+  - Evidence: unreachable via static imports from src/app/** roots
+  - Verify safely: search references via `rg -n "storageKeys\.js" src tests`
+- Risk: **MED** — `src/constants/userModes.js`
+  - Evidence: unreachable via static imports from src/app/** roots
+  - Verify safely: search references via `rg -n "userModes\.js" src tests`
+- Risk: **MED** — `src/context/FacilityContext.js`
+  - Evidence: unreachable via static imports from src/app/** roots
+  - Verify safely: search references via `rg -n "FacilityContext\.js" src tests`
+- Risk: **MED** — `src/contracts/compliance/ai4.dashboard.contract.ts`
+  - Evidence: unreachable via static imports from src/app/** roots
+  - Verify safely: search references via `rg -n "ai4\.dashboard\.contract\.ts" src tests`
+- Risk: **MED** — `src/core/accountMode/assertAccountMode.ts`
+  - Evidence: unreachable via static imports from src/app/** roots
+  - Verify safely: search references via `rg -n "assertAccountMode\.ts" src tests`
+- Risk: **MED** — `src/entitlements/EntitlementsContext.ts`
+  - Evidence: unreachable via static imports from src/app/** roots
+  - Verify safely: search references via `rg -n "EntitlementsContext\.ts" src tests`
+- Risk: **MED** — `src/entitlements/LockedScreen.tsx`
+  - Evidence: unreachable via static imports from src/app/** roots
+  - Verify safely: search references via `rg -n "LockedScreen\.tsx" src tests`
+- Risk: **MED** — `src/entitlements/screenMatrix.ts`
+  - Evidence: unreachable via static imports from src/app/** roots
+  - Verify safely: search references via `rg -n "screenMatrix\.ts" src tests`
+- Risk: **MED** — `src/entitlements/toEntContext.ts`
+  - Evidence: unreachable via static imports from src/app/** roots
+  - Verify safely: search references via `rg -n "toEntContext\.ts" src tests`
+- Risk: **MED** — `src/entitlements/types.ts`
+  - Evidence: unreachable via static imports from src/app/** roots
+  - Verify safely: search references via `rg -n "types\.ts" src tests`
+- Risk: **MED** — `src/entitlements/uiGate.ts`
+  - Evidence: unreachable via static imports from src/app/** roots
+  - Verify safely: search references via `rg -n "uiGate\.ts" src tests`
+- Risk: **MED** — `src/entitlements/useEntitlements.ts`
+  - Evidence: unreachable via static imports from src/app/** roots
+  - Verify safely: search references via `rg -n "useEntitlements\.ts" src tests`
+- Risk: **MED** — `src/facility/roleGates.ts`
+  - Evidence: unreachable via static imports from src/app/** roots
+  - Verify safely: search references via `rg -n "roleGates\.ts" src tests`
+- Risk: **MED** — `src/features/UpgradePrompt.tsx`
+  - Evidence: unreachable via static imports from src/app/** roots
+  - Verify safely: search references via `rg -n "UpgradePrompt\.tsx" src tests`
+- Risk: **MED** — `src/features/ai/AiContextBlock.tsx`
+  - Evidence: unreachable via static imports from src/app/** roots
+  - Verify safely: search references via `rg -n "AiContextBlock\.tsx" src tests`
+- Risk: **MED** — `src/features/ai/aiFeatureMatrix.ts`
+  - Evidence: unreachable via static imports from src/app/** roots
+  - Verify safely: search references via `rg -n "aiFeatureMatrix\.ts" src tests`
+- Risk: **MED** — `src/features/ai/callAi.ts`
+  - Evidence: unreachable via static imports from src/app/** roots
+  - Verify safely: search references via `rg -n "callAi\.ts" src tests`
+- Risk: **MED** — `src/features/ai/components/AIResultCard.tsx`
+  - Evidence: unreachable via static imports from src/app/** roots
+  - Verify safely: search references via `rg -n "AIResultCard\.tsx" src tests`
+- Risk: **MED** — `src/features/ai/formatAi.ts`
+  - Evidence: unreachable via static imports from src/app/** roots
+  - Verify safely: search references via `rg -n "formatAi\.ts" src tests`
+- Risk: **MED** — `src/features/auth/PermissionInspector.tsx`
+  - Evidence: unreachable via static imports from src/app/** roots
+  - Verify safely: search references via `rg -n "PermissionInspector\.tsx" src tests`
+- Risk: **MED** — `src/features/billing/hooks.ts`
+  - Evidence: unreachable via static imports from src/app/** roots
+  - Verify safely: search references via `rg -n "hooks\.ts" src tests`
+- Risk: **MED** — `src/features/billing/index.ts`
+  - Evidence: unreachable via static imports from src/app/** roots
+  - Verify safely: search references via `rg -n "index\.ts" src tests`
+- Risk: **MED** — `src/features/billing/screens/BillingCancel.tsx`
+  - Evidence: unreachable via static imports from src/app/** roots
+  - Verify safely: search references via `rg -n "BillingCancel\.tsx" src tests`
+- Risk: **MED** — `src/features/billing/screens/BillingHome.tsx`
+  - Evidence: unreachable via static imports from src/app/** roots
+  - Verify safely: search references via `rg -n "BillingHome\.tsx" src tests`
+- Risk: **MED** — `src/features/billing/screens/BillingSuccess.tsx`
+  - Evidence: unreachable via static imports from src/app/** roots
+  - Verify safely: search references via `rg -n "BillingSuccess\.tsx" src tests`
+- Risk: **MED** — `src/features/billing/screens/ManageSubscription.tsx`
+  - Evidence: unreachable via static imports from src/app/** roots
+  - Verify safely: search references via `rg -n "ManageSubscription\.tsx" src tests`
+- Risk: **MED** — `src/features/billing/screens/UpgradePlan.tsx`
+  - Evidence: unreachable via static imports from src/app/** roots
+  - Verify safely: search references via `rg -n "UpgradePlan\.tsx" src tests`
+- Risk: **MED** — `src/features/billing/screens/index.ts`
+  - Evidence: unreachable via static imports from src/app/** roots
+  - Verify safely: search references via `rg -n "index\.ts" src tests`
+- Risk: **MED** — `src/features/compliance/ai3/comparisons/savedComparisonsStore.ts`
+  - Evidence: unreachable via static imports from src/app/** roots
+  - Verify safely: search references via `rg -n "savedComparisonsStore\.ts" src tests`
+- Risk: **MED** — `src/features/compliance/ai4/dashboard/__tests__/buildDashboardModel.test.ts`
+  - Evidence: unreachable via static imports from src/app/** roots
+  - Verify safely: search references via `rg -n "buildDashboardModel\.test\.ts" src tests`
+- Risk: **MED** — `src/features/compliance/ai4/dashboard/__tests__/complianceDashboardApi.normalizers.test.ts`
+  - Evidence: unreachable via static imports from src/app/** roots
+  - Verify safely: search references via `rg -n "complianceDashboardApi\.normalizers\.test\.ts" src tests`
+- Risk: **MED** — `src/features/compliance/ai4/dashboard/buildDashboardModel.ts`
+  - Evidence: unreachable via static imports from src/app/** roots
+  - Verify safely: search references via `rg -n "buildDashboardModel\.ts" src tests`
+- Risk: **MED** — `src/features/compliance/ai4/dashboard/complianceDashboardApi.contract.ts`
+  - Evidence: unreachable via static imports from src/app/** roots
+  - Verify safely: search references via `rg -n "complianceDashboardApi\.contract\.ts" src tests`
+- Risk: **MED** — `src/features/compliance/ai4/dashboard/complianceDashboardApi.ts`
+  - Evidence: unreachable via static imports from src/app/** roots
+  - Verify safely: search references via `rg -n "complianceDashboardApi\.ts" src tests`
+- Risk: **MED** — `src/features/dashboard/components/DashboardCard.tsx`
+  - Evidence: unreachable via static imports from src/app/** roots
+  - Verify safely: search references via `rg -n "DashboardCard\.tsx" src tests`
+- Risk: **MED** — `src/features/dashboard/hooks.ts`
+  - Evidence: unreachable via static imports from src/app/** roots
+  - Verify safely: search references via `rg -n "hooks\.ts" src tests`
+- Risk: **MED** — `src/features/dashboard/index.ts`
+  - Evidence: unreachable via static imports from src/app/** roots
+  - Verify safely: search references via `rg -n "index\.ts" src tests`
+- Risk: **MED** — `src/features/dashboard/screens/FacilityDashboard.tsx`
+  - Evidence: unreachable via static imports from src/app/** roots
+  - Verify safely: search references via `rg -n "FacilityDashboard\.tsx" src tests`
+- Risk: **MED** — `src/features/dashboard/screens/OperationsDashboard.tsx`
+  - Evidence: unreachable via static imports from src/app/** roots
+  - Verify safely: search references via `rg -n "OperationsDashboard\.tsx" src tests`
+- Risk: **MED** — `src/features/facility/screens/AuditTrail.tsx`
+  - Evidence: unreachable via static imports from src/app/** roots
+  - Verify safely: search references via `rg -n "AuditTrail\.tsx" src tests`
+- Risk: **MED** — `src/features/facility/screens/FacilitySettings.tsx`
+  - Evidence: unreachable via static imports from src/app/** roots
+  - Verify safely: search references via `rg -n "FacilitySettings\.tsx" src tests`
+- Risk: **MED** — `src/features/facility/useFacilityGrows.ts`
+  - Evidence: unreachable via static imports from src/app/** roots
+  - Verify safely: search references via `rg -n "useFacilityGrows\.ts" src tests`
+- Risk: **MED** — `src/features/facility/useFacilityRooms.ts`
+  - Evidence: unreachable via static imports from src/app/** roots
+  - Verify safely: search references via `rg -n "useFacilityRooms\.ts" src tests`
+- …and 303 more
+
