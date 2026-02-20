@@ -1,4 +1,5 @@
 // Thin TypeScript wrapper around the canonical JS client.
-// Keep this file free of implementation logic to avoid redeclare/duplicate exports.
-export { default } from "./client.js";
+// Keep this file implementation-free to avoid redeclare/parse issues in Jest/Babel.
 export * from "./client.js";
+export { default } from "./client.js";
+export { default as api } from "./client.js";
