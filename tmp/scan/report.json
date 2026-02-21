@@ -6,7 +6,7 @@
     "totalFiles": 691,
     "apiFiles": 102,
     "apiOrphans": 21,
-    "legacyClientCallers": 30,
+    "legacyClientCallers": 24,
     "jsTsTwins": 15,
     "bannedFindings": 2
   },
@@ -119,13 +119,7 @@
     "src/api/feeding.js",
     "src/api/grows.js",
     "src/api/users.js",
-    "src/auth/AuthContext.tsx",
-    "src/auth/initUnauthorized.ts",
-    "src/hooks/useInvites.ts",
-    "src/screens/LiveSessionScreen.js",
-    "src/screens/LiveSessionsListScreen.js",
-    "src/screens/SubscribeScreen.js",
-    "src/utils/images.js"
+    "src/auth/AuthContext.tsx"
   ],
   "bannedFindings": [
     {
