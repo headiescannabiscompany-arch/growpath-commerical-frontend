@@ -1,14 +1,14 @@
-import { client as api } from "./client.js";
+import { apiRequest } from "./apiRequest";
 import apiRoutes from "./routes.js";
 
 export function getMyCertificates() {
-  return api(apiRoutes.CERTIFICATES.MINE);
+  return apiRequest(apiRoutes.CERTIFICATES.MINE);
 }
 
 export function downloadCertificate(certificateId) {
-  return api(apiRoutes.CERTIFICATES.DETAIL(certificateId));
+  return apiRequest(apiRoutes.CERTIFICATES.DETAIL(certificateId));
 }
 
 export function verifyCertificate(certificateId) {
-  return api(apiRoutes.CERTIFICATES.VERIFY(certificateId));
+  return apiRequest(apiRoutes.CERTIFICATES.VERIFY(certificateId));
 }

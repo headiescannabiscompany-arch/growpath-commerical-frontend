@@ -1,11 +1,15 @@
 // src/api/adminReports.js
-import apiClient from "./client.js";
+import { apiRequest } from "./apiRequest";
 import routes from "./routes.js";
 
 export const getReports = async (token) => {
-  return apiClient.get(routes.REPORTS.LIST, token);
+  return apiRequest(routes.REPORTS.LIST, { auth: token ? true : false });
 };
 
 export const resolveReport = async (id, token) => {
-  return apiClient.patch(routes.REPORTS.RESOLVE(id), {}, token);
+  return apiRequest(routes.REPORTS.RESOLVE(id), {
+    method: "PATCH",
+    auth: token ? true : false,
+    body: {}
+  });
 };
