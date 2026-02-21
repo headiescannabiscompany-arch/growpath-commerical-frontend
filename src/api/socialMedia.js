@@ -5,12 +5,14 @@
 
 import apiClient from "./apiClient.js";
 
+const enc = (v) => encodeURIComponent(String(v ?? ""));
+
 export const SOCIAL_ROUTES = {
   CONNECT: "/api/social/connect",
   DISCONNECT: "/api/social/disconnect",
   GET_ACCOUNTS: "/api/social/accounts",
-  GET_METRICS: "/api/social/:platform/metrics",
-  SYNC_DATA: "/api/social/:platform/sync",
+  GET_METRICS: (platform) => `/api/social/${enc(platform)}/metrics`,
+  SYNC_DATA: (platform) => `/api/social/${enc(platform)}/sync`,
   POST_SCHEDULE: "/api/social/schedule-post"
 };
 
@@ -49,9 +51,7 @@ export const getSocialAccounts = async () => {
 
 export const getSocialMetrics = async (platform) => {
   try {
-    const response = await apiClient.get(
-      SOCIAL_ROUTES.GET_METRICS.replace(":platform", platform)
-    );
+    const response = await apiClient.get(SOCIAL_ROUTES.GET_METRICS(platform));
     return response.data;
   } catch (error) {
     throw new Error(`Failed to fetch ${platform} metrics: ${error.message}`);
@@ -60,9 +60,7 @@ export const getSocialMetrics = async (platform) => {
 
 export const syncSocialData = async (platform) => {
   try {
-    const response = await apiClient.post(
-      SOCIAL_ROUTES.SYNC_DATA.replace(":platform", platform)
-    );
+    const response = await apiClient.post(SOCIAL_ROUTES.SYNC_DATA(platform));
     return response.data;
   } catch (error) {
     throw new Error(`Failed to sync ${platform} data: ${error.message}`);
