@@ -1,4 +1,4 @@
-import { api } from "./client";
+import { apiRequest } from "./apiRequest";
 import { endpoints } from "./endpoints";
 
 export type Room = {
@@ -12,7 +12,7 @@ export type Room = {
 };
 
 export async function fetchRooms(facilityId: string): Promise<Room[]> {
-  const res = await api.get(endpoints.rooms(facilityId));
+  const res = await apiRequest(endpoints.rooms(facilityId));
   return res?.rooms ?? res?.data ?? res ?? [];
 }
 
@@ -20,6 +20,9 @@ export async function createRoom(
   facilityId: string,
   data: { name: string; roomType?: string; trackingMode?: string }
 ) {
-  const res = await api.post(endpoints.rooms(facilityId), data);
+  const res = await apiRequest(endpoints.rooms(facilityId), {
+    method: "POST",
+    body: data
+  });
   return res?.created ?? res?.room ?? res;
 }
