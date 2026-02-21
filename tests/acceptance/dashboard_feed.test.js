@@ -80,14 +80,15 @@ describe("Acceptance: Dashboard Feed", () => {
   });
 
   beforeEach(() => {
-    if (global.__FETCH_CALLS__) {
+    if (!global.__FETCH_CALLS__) {
+      global.__FETCH_CALLS__ = [];
+    } else {
       global.__FETCH_CALLS__.length = 0;
     }
 
     mockApiRequest.mockReset();
 
-    const record = (method, url) =>
-      (global.__FETCH_CALLS__ || []).push({ method, url });
+    const record = (method, url) => global.__FETCH_CALLS__.push({ method, url });
 
     const withParams = (base, params) => {
       if (!params || typeof params !== "object") return base;

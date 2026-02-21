@@ -1,11 +1,15 @@
-import { client as api } from "./client.ts";
+import { apiRequest } from "./apiRequest";
 import routes from "./routes.js";
 
 // Login
 export async function login(email, password) {
   try {
     console.log("[API] Login request:", { email, passwordLength: password?.length });
-    const data = await api.post(routes.AUTH.LOGIN, { email, password });
+    const data = await apiRequest(routes.AUTH.LOGIN, {
+      method: "POST",
+      auth: false,
+      body: { email, password }
+    });
     global.authToken = data.token;
     global.user = data.user;
     return { user: data.user, token: data.token };
@@ -25,7 +29,11 @@ export async function login(email, password) {
 export async function signup({ name, displayName, email, password }) {
   try {
     const payload = { name, displayName, email, password };
-    const data = await api.post(routes.AUTH.SIGNUP, payload);
+    const data = await apiRequest(routes.AUTH.SIGNUP, {
+      method: "POST",
+      auth: false,
+      body: payload
+    });
     global.authToken = data.token;
     global.user = data.user;
     return { user: data.user, token: data.token };
@@ -38,7 +46,11 @@ export async function signup({ name, displayName, email, password }) {
 export async function register({ name, displayName, email, password }) {
   try {
     const payload = { name, displayName, email, password };
-    const data = await api.post("/api/auth/register", payload);
+    const data = await apiRequest("/api/auth/register", {
+      method: "POST",
+      auth: false,
+      body: payload
+    });
     global.authToken = data.token;
     return { token: data.token };
   } catch (err) {
@@ -49,7 +61,10 @@ export async function register({ name, displayName, email, password }) {
 // Become Creator
 export async function becomeCreator() {
   try {
-    const data = await api.post(routes.AUTH.BECOME_CREATOR, {});
+    const data = await apiRequest(routes.AUTH.BECOME_CREATOR, {
+      method: "POST",
+      body: {}
+    });
     if (data.role) {
       if (global.user) global.user.role = data.role;
     }
@@ -62,7 +77,10 @@ export async function becomeCreator() {
 // Save Push Token
 export async function savePushToken(pushToken) {
   try {
-    const data = await api.post("/api/auth/save-push-token", { pushToken });
+    const data = await apiRequest("/api/auth/save-push-token", {
+      method: "POST",
+      body: { pushToken }
+    });
     return data;
   } catch (err) {
     throw err?.data?.message || err.message || "Save push token failed";
