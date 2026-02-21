@@ -8,13 +8,13 @@
  * - No top-level await.
  */
 
-import { apiRequest, API_URL, ApiError } from "./apiRequest";
+import { apiRequest, API_URL, ApiError, setOnUnauthorized } from "./apiRequest";
 
 // Legacy auth helpers (for tests / older callers)
 let _authToken = null;
 let _tokenGetter = null;
 
-export { API_URL, ApiError };
+export { API_URL, ApiError, setOnUnauthorized };
 
 export function setAuthToken(token) {
   _authToken = token ? String(token) : null;

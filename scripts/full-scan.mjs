@@ -148,15 +148,15 @@ const legacyClientCallers = allFiles
 
 const bannedFindings = [];
 const banned = [
-  { label: "fetch(", needle: "fetch(" },
-  { label: "axios", needle: "axios" },
-  { label: "/:id placeholder", needle: "/:" }
+  { label: "fetch(", regex: /\bfetch\s*\(/ },
+  { label: "axios", regex: /\baxios\b/ },
+  { label: "/:id placeholder", regex: /\/:/ }
 ];
 
 for (const f of allFiles) {
   const c = read(f);
   for (const b of banned) {
-    if (c.includes(b.needle)) bannedFindings.push({ file: rel(f), rule: b.label });
+    if (b.regex.test(c)) bannedFindings.push({ file: rel(f), rule: b.label });
   }
 }
 

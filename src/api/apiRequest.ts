@@ -33,6 +33,17 @@ export class ApiError extends Error {
   }
 }
 
+type UnauthorizedHandler = (() => void | Promise<void>) | null;
+let unauthorizedHandler: UnauthorizedHandler = null;
+
+export function setOnUnauthorized(handler: UnauthorizedHandler) {
+  unauthorizedHandler = typeof handler === "function" ? handler : null;
+}
+
+export function getOnUnauthorized() {
+  return unauthorizedHandler;
+}
+
 function toAbsoluteUrl(path: string) {
   if (!path) return API_URL;
   if (path.startsWith("http://") || path.startsWith("https://")) return path;
@@ -153,6 +164,13 @@ export async function apiRequest<T = any>(
 
       if (!res.ok) {
         const data = await parseResponse(res, opts.responseType ?? "auto");
+        if (res.status === 401 && opts.invalidateOn401 !== false) {
+          try {
+            if (unauthorizedHandler) await unauthorizedHandler();
+          } catch {
+            // ignore handler failures
+          }
+        }
         if (res.status >= 500 && attempt <= retries) {
           if (retryDelay) await sleep(retryDelay);
           continue;
