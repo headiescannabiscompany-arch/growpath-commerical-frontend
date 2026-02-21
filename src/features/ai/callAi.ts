@@ -3,7 +3,7 @@ import { endpoints } from "@/api/endpoints";
 
 /**
  * Contract: facility-scoped AI call.
- * Canonical backend path: POST /api/facility/:facilityId/ai/call
+ * Canonical backend path: POST /api/facility/{facilityId}/ai/call
  *
  * This helper prefers endpoints.* if present; otherwise falls back to the canonical path.
  */

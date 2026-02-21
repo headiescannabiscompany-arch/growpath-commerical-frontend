@@ -5,7 +5,7 @@ import { View, Text, TextInput, Pressable, StyleSheet, ScrollView } from "react-
  * TrichomeAnalysisScreen
  *
  * Minimal MVP: accept image URL(s) and submit
- * Calls POST /api/facility/:facilityId/ai/call (harvest.analyzeTrichomes)
+ * Calls POST /api/facility/{facilityId}/ai/call (harvest.analyzeTrichomes)
  *
  * Full implementation would:
  * - Use react-native-image-picker or Expo.ImagePicker

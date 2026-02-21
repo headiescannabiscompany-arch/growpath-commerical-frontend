@@ -24,9 +24,9 @@ type AIFunction = HarvestFn;
  *
  * Demonstrates end-to-end AI workflow:
  * 1. User provides trichome distribution + context
- * 2. POST /api/facility/:facilityId/ai/call (harvest.estimateHarvestWindow)
+ * 2. POST /api/facility/{facilityId}/ai/call (harvest.estimateHarvestWindow)
  * 3. Receives HarvestDecision + 3 CalendarEvent writes
- * 4. GET /api/facility/:facilityId/calendar to display created events
+ * 4. GET /api/facility/{facilityId}/calendar to display created events
  *
  * Props: facilityId, growId (both required)
  */

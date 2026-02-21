@@ -66,7 +66,7 @@ export function onboardCreator(refreshUrl, returnUrl) {
 }
 
 export function getUserPosts(userId, page = 1) {
-  // Assuming route structure /api/user/:id/posts?page=...
+  // Assuming route structure /api/user/{id}/posts?page=...
   // Since apiRoutes doesn't have it explicitly, I'll construct it or add to apiRoutes.
   // Using direct construction for now as it's cleaner than modifying apiRoutes file just for this if I don't have to.
   // Wait, api/routes.js is a centralized map. I should check if I should update that too.
