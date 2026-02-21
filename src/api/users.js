@@ -1,8 +1,9 @@
-import { client as api, postMultipart } from "./client.js";
+import { postMultipart } from "./client.js";
+import { apiRequest } from "./apiRequest";
 import routes from "./routes.js";
 
 export function getProfile(id) {
-  return api(routes.USER.PROFILE(id));
+  return apiRequest(routes.USER.PROFILE(id), { method: "GET" });
 }
 
 export function updateAvatar(formData, token) {
@@ -14,54 +15,54 @@ export function updateBanner(formData, token) {
 }
 
 export function updateBio(bio) {
-  return api(routes.USER.BIO, {
+  return apiRequest(routes.USER.BIO, {
     method: "POST",
-    body: JSON.stringify({ bio })
+    body: { bio }
   });
 }
 
 export function followUser(id) {
-  return api(routes.USER.FOLLOW(id), { method: "POST" });
+  return apiRequest(routes.USER.FOLLOW(id), { method: "POST" });
 }
 
 export function unfollowUser(id) {
-  return api(routes.USER.UNFOLLOW(id), { method: "POST" });
+  return apiRequest(routes.USER.UNFOLLOW(id), { method: "POST" });
 }
 
 export function isFollowing(id) {
-  return api(routes.USER.IS_FOLLOWING(id));
+  return apiRequest(routes.USER.IS_FOLLOWING(id), { method: "GET" });
 }
 
 export function getFollowers(id) {
-  return api(routes.USER.FOLLOWERS(id));
+  return apiRequest(routes.USER.FOLLOWERS(id), { method: "GET" });
 }
 
 export function getFollowing(id) {
-  return api(routes.USER.FOLLOWING(id));
+  return apiRequest(routes.USER.FOLLOWING(id), { method: "GET" });
 }
 
 export function updateNotificationPreferences(prefs) {
-  return api(routes.USER.NOTIFICATIONS, {
+  return apiRequest(routes.USER.NOTIFICATIONS, {
     method: "POST",
-    body: JSON.stringify(prefs)
+    body: prefs
   });
 }
 
 export function updateGrowInterests(growInterests) {
-  return api("/api/user/preferences/interests", {
+  return apiRequest("/api/user/preferences/interests", {
     method: "POST",
-    body: JSON.stringify({ growInterests })
+    body: { growInterests }
   });
 }
 
 export function getCertificates() {
-  return api(routes.USER.CERTIFICATES);
+  return apiRequest(routes.USER.CERTIFICATES, { method: "GET" });
 }
 
 export function onboardCreator(refreshUrl, returnUrl) {
-  return api(routes.USER.ONBOARD_CREATOR, {
+  return apiRequest(routes.USER.ONBOARD_CREATOR, {
     method: "POST",
-    body: JSON.stringify({ refreshUrl, returnUrl })
+    body: { refreshUrl, returnUrl }
   });
 }
 
@@ -71,9 +72,15 @@ export function getUserPosts(userId, page = 1) {
   // Using direct construction for now as it's cleaner than modifying apiRoutes file just for this if I don't have to.
   // Wait, api/routes.js is a centralized map. I should check if I should update that too.
   // For now, hardcoded path is fine if consistent with backend.
-  return api(`/api/user/${userId}/posts?page=${page}`);
+  return apiRequest(`/api/user/${userId}/posts`, {
+    method: "GET",
+    params: { page }
+  });
 }
 
 export function getUserGrowLogs(userId, page = 1) {
-  return api(`/api/user/${userId}/growlogs?page=${page}`);
+  return apiRequest(`/api/user/${userId}/growlogs`, {
+    method: "GET",
+    params: { page }
+  });
 }

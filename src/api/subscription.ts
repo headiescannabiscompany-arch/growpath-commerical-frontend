@@ -1,7 +1,7 @@
-import { api } from "./client";
+import { apiRequest } from "./apiRequest";
 import { endpoints } from "./endpoints";
 
 export async function getSubscriptionStatus() {
-  const res = await api.get(endpoints.subscriptionStatus);
+  const res = await apiRequest(endpoints.subscriptionStatus, { method: "GET" });
   return res?.data ?? res;
 }

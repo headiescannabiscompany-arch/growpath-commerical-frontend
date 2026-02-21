@@ -1,4 +1,4 @@
-import { api } from "./client";
+import { apiRequest } from "./apiRequest";
 import { endpoints } from "./endpoints";
 
 // Phase 2.3.7: Dual-mode helpers (personal + facility) with overloads
@@ -6,7 +6,7 @@ export function getTasks(): Promise<PersonalTask[]>;
 export function getTasks(facilityId: string): Promise<Task[]>;
 export async function getTasks(facilityId?: string): Promise<PersonalTask[] | Task[]> {
   if (facilityId) {
-    const res = await api.get(endpoints.tasks(facilityId));
+    const res = await apiRequest(endpoints.tasks(facilityId), { method: "GET" });
     // Contract: { tasks: [...] }
     return res?.tasks ?? [];
   }
@@ -19,7 +19,7 @@ export async function createCustomTask(a: any, b?: any): Promise<any> {
   if (typeof a === "string") {
     return createTask(a, b);
   }
-  const res = await api.post("/api/personal/tasks", a);
+  const res = await apiRequest("/api/personal/tasks", { method: "POST", body: a });
   return res?.task ?? res?.created ?? res;
 }
 
@@ -29,7 +29,10 @@ export async function completeTask(a: any, b?: any, c?: any): Promise<any> {
   if (arguments.length >= 2) {
     return updateTask(a, b, c ?? { completed: true });
   }
-  const res = await api.patch(`/api/personal/tasks/${a}`, { completed: true });
+  const res = await apiRequest(`/api/personal/tasks/${a}`, {
+    method: "PATCH",
+    body: { completed: true }
+  });
   return res?.task ?? res?.updated ?? res;
 }
 
@@ -44,7 +47,10 @@ export type Task = {
 // CONTRACT: facility-scoped resources must use endpoints.ts and canonical envelopes.
 
 export async function createTask(facilityId: string, data: any): Promise<Task> {
-  const res = await api.post(endpoints.tasks(facilityId), data);
+  const res = await apiRequest(endpoints.tasks(facilityId), {
+    method: "POST",
+    body: data
+  });
   return res?.created ?? res?.task ?? res;
 }
 
@@ -53,12 +59,15 @@ export async function updateTask(
   id: string,
   patch: any
 ): Promise<Task> {
-  const res = await api.patch(endpoints.task(facilityId, id), patch);
+  const res = await apiRequest(endpoints.task(facilityId, id), {
+    method: "PATCH",
+    body: patch
+  });
   return res?.updated ?? res?.task ?? res;
 }
 
 export async function deleteTask(facilityId: string, id: string) {
-  const res = await api.delete(endpoints.task(facilityId, id));
+  const res = await apiRequest(endpoints.task(facilityId, id), { method: "DELETE" });
   return res?.deleted ?? res?.ok ?? res;
 }
 
@@ -84,8 +93,10 @@ export async function listPersonalTasks(options?: {
   growId?: string;
 }): Promise<PersonalTask[]> {
   try {
-    const query = options?.growId ? `?growId=${encodeURIComponent(options.growId)}` : "";
-    const res = await api.get(`/api/personal/tasks${query}`);
+    const res = await apiRequest("/api/personal/tasks", {
+      method: "GET",
+      params: options?.growId ? { growId: options.growId } : undefined
+    });
 
     if (
       typeof res === "object" &&
