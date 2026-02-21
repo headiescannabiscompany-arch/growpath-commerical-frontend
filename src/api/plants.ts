@@ -1,4 +1,4 @@
-import { api } from "./client";
+import { apiRequest } from "./apiRequest";
 import { endpoints } from "./endpoints";
 
 export type Plant = {
@@ -12,13 +12,16 @@ export type Plant = {
 // and must return canonical envelopes.
 
 export async function getPlants(facilityId: string): Promise<Plant[]> {
-  const res = await api.get(endpoints.plants(facilityId));
+  const res = await apiRequest(endpoints.plants(facilityId));
   // Contract: { plants: [...] }
   return res?.plants ?? [];
 }
 
 export async function createPlant(facilityId: string, data: any): Promise<Plant> {
-  const res = await api.post(endpoints.plants(facilityId), data);
+  const res = await apiRequest(endpoints.plants(facilityId), {
+    method: "POST",
+    body: data
+  });
   // Contract options: { created } preferred; tolerate { plant } / raw
   return res?.created ?? res?.plant ?? res;
 }
@@ -28,11 +31,16 @@ export async function updatePlant(
   id: string,
   patch: any
 ): Promise<Plant> {
-  const res = await api.patch(endpoints.plant(facilityId, id), patch);
+  const res = await apiRequest(endpoints.plant(facilityId, id), {
+    method: "PATCH",
+    body: patch
+  });
   return res?.updated ?? res?.plant ?? res;
 }
 
 export async function deletePlant(facilityId: string, id: string) {
-  const res = await api.delete(endpoints.plant(facilityId, id));
+  const res = await apiRequest(endpoints.plant(facilityId, id), {
+    method: "DELETE"
+  });
   return res?.deleted ?? res?.ok ?? res;
 }

@@ -1,6 +1,6 @@
 // CONTRACT: All facility-scoped resources must use endpoints.ts (no hardcoded paths)
 // and must return canonical envelopes.
-import { api } from "./client";
+import { apiRequest } from "./apiRequest";
 import { endpoints } from "./endpoints";
 
 export type Grow = {
@@ -11,13 +11,16 @@ export type Grow = {
 };
 
 export async function listGrows(facilityId: string): Promise<Grow[]> {
-  const res = await api.get(endpoints.grows(facilityId));
+  const res = await apiRequest(endpoints.grows(facilityId));
   // Contract: { grows: [...] }
   return res?.grows ?? [];
 }
 
 export async function createGrow(facilityId: string, data: any): Promise<Grow> {
-  const res = await api.post(endpoints.grows(facilityId), data);
+  const res = await apiRequest(endpoints.grows(facilityId), {
+    method: "POST",
+    body: data
+  });
   // Contract options: { created: grow } (preferred) or { grow } or raw object
   return res?.created ?? res?.grow ?? res;
 }
@@ -27,12 +30,17 @@ export async function updateGrow(
   id: string,
   patch: any
 ): Promise<Grow> {
-  const res = await api.patch(endpoints.grow(facilityId, id), patch);
+  const res = await apiRequest(endpoints.grow(facilityId, id), {
+    method: "PATCH",
+    body: patch
+  });
   return res?.updated ?? res?.grow ?? res;
 }
 
 export async function deleteGrow(facilityId: string, id: string) {
-  const res = await api.delete(endpoints.grow(facilityId, id));
+  const res = await apiRequest(endpoints.grow(facilityId, id), {
+    method: "DELETE"
+  });
   return res?.deleted ?? res?.ok ?? res;
 }
 
@@ -54,7 +62,7 @@ export interface PersonalGrow extends Grow {
  */
 export async function listPersonalGrows(): Promise<PersonalGrow[]> {
   try {
-    const res = await api.get("/api/personal/grows");
+    const res = await apiRequest("/api/personal/grows");
     if (
       typeof res === "object" &&
       res !== null &&

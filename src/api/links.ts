@@ -1,4 +1,4 @@
-import { api } from "./client";
+import { apiRequest } from "./apiRequest";
 
 export type Link = {
   id: string;
@@ -9,17 +9,20 @@ export type Link = {
 };
 
 export async function fetchLinks(): Promise<Link[]> {
-  return api.get(`/commercial/links`);
+  return apiRequest(`/commercial/links`);
 }
 
 export async function createLink(data: Partial<Link>) {
-  return api.post(`/commercial/links`, data);
+  return apiRequest(`/commercial/links`, { method: "POST", body: data });
 }
 
 export async function updateLink(linkId: string, data: Partial<Link>) {
-  return api.patch(`/commercial/links/${linkId}`, data);
+  return apiRequest(`/commercial/links/${linkId}`, {
+    method: "PATCH",
+    body: data
+  });
 }
 
 export async function deleteLink(linkId: string) {
-  return api.del(`/commercial/links/${linkId}`);
+  return apiRequest(`/commercial/links/${linkId}`, { method: "DELETE" });
 }
