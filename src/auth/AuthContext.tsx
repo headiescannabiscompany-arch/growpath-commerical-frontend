@@ -16,7 +16,7 @@ import {
   type SignupBody
 } from "../api/auth";
 import { setToken as persistToken, getToken as readToken } from "./tokenStore";
-import { setAuthToken, setOnUnauthorized } from "../api/client";
+import { setOnUnauthorized } from "../api/apiRequest";
 import { apiMe } from "../api/me";
 
 type AuthState = {
@@ -82,8 +82,6 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
 
         if (t) {
           setToken(t);
-          setAuthToken(t); // keep api client in sync
-
           // Try to validate token with backend
           try {
             const me = await apiMe();
@@ -124,7 +122,6 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
     try {
       const res = await apiLogin({ email, password });
       setToken(res.token);
-      setAuthToken(res.token); // critical
       setUser(res.user);
       await persistToken(res.token);
     } catch (err: any) {
@@ -139,7 +136,6 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
     try {
       const res = await apiSignup(body);
       setToken(res.token);
-      setAuthToken(res.token); // critical
       setUser(res.user);
       await persistToken(res.token);
     } catch (err: any) {

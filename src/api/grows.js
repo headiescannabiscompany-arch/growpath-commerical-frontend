@@ -1,5 +1,4 @@
 import { apiRequest } from "./apiRequest";
-import { postMultipart } from "./client.js";
 import routes from "./routes.js";
 
 export function listGrows(filters = {}) {
@@ -24,7 +23,7 @@ export function uploadEntryPhoto(growId, file) {
   const form = new FormData();
   form.append("photo", file);
 
-  return postMultipart(routes.GROWS.ENTRY_PHOTO(growId), form);
+  return apiRequest(routes.GROWS.ENTRY_PHOTO(growId), { method: "POST", body: form });
 }
 
 export function addPlantToGrow(growId, plant) {

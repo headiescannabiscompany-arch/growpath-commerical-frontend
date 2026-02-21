@@ -1,5 +1,4 @@
 import { apiRequest } from "./apiRequest";
-import { postMultipart } from "./client.js";
 import apiRoutes from "./routes.js";
 export function markPayoutPaid(payoutId) {
   return apiRequest(`${apiRoutes.CREATOR.PAYOUT_HISTORY}/${payoutId}/mark-paid`, {
@@ -34,7 +33,7 @@ export function getPayoutHistory() {
 }
 
 export async function uploadSignature(formData) {
-  return postMultipart(apiRoutes.CREATOR.SIGNATURE, formData);
+  return apiRequest(apiRoutes.CREATOR.SIGNATURE, { method: "POST", body: formData });
 }
 
 export function getCourseAnalytics(courseId) {

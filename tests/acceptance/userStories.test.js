@@ -1,4 +1,5 @@
 const mockApiRequest = jest.fn();
+if (!global.__FETCH_CALLS__) global.__FETCH_CALLS__ = [];
 
 // Mock the API client to return canned responses for all endpoints
 jest.mock("../../src/api/client", () => {

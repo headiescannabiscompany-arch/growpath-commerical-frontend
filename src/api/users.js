@@ -1,17 +1,31 @@
-import { postMultipart } from "./client.js";
 import { apiRequest } from "./apiRequest";
 import routes from "./routes.js";
+
+function buildAuthHeaders(token) {
+  if (!token) return undefined;
+  const raw = String(token);
+  const normalized = raw.startsWith("Bearer ") ? raw : `Bearer ${raw}`;
+  return { Authorization: normalized };
+}
 
 export function getProfile(id) {
   return apiRequest(routes.USER.PROFILE(id), { method: "GET" });
 }
 
 export function updateAvatar(formData, token) {
-  return postMultipart(routes.USER.AVATAR, formData, token);
+  return apiRequest(routes.USER.AVATAR, {
+    method: "POST",
+    headers: buildAuthHeaders(token),
+    body: formData
+  });
 }
 
 export function updateBanner(formData, token) {
-  return postMultipart(routes.USER.BANNER, formData, token);
+  return apiRequest(routes.USER.BANNER, {
+    method: "POST",
+    headers: buildAuthHeaders(token),
+    body: formData
+  });
 }
 
 export function updateBio(bio) {

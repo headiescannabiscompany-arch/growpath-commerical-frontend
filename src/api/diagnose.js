@@ -1,5 +1,4 @@
 import { apiRequest } from "./apiRequest";
-import { postMultipart } from "./client.js";
 import apiRoutes from "./routes.js";
 
 export function analyzeDiagnosis(payload) {
@@ -22,12 +21,12 @@ export function diagnosePhoto(file, symptom) {
   if (file) form.append("photo", file);
   if (symptom) form.append("symptom", symptom);
 
-  return postMultipart(apiRoutes.DIAGNOSE.CREATE, form);
+  return apiRequest(apiRoutes.DIAGNOSE.CREATE, { method: "POST", body: form });
 }
 
 export function diagnoseImage(uri) {
   const form = new FormData();
   form.append("photo", { uri, name: "plant.jpg", type: "image/jpeg" });
 
-  return postMultipart(apiRoutes.DIAGNOSE.CREATE, form);
+  return apiRequest(apiRoutes.DIAGNOSE.CREATE, { method: "POST", body: form });
 }
