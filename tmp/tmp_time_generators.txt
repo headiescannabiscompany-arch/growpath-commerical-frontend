@@ -1,0 +1,628 @@
+﻿tests\CoursesScreen.qa.test.js:24:// Automated QA integration tests for CoursesScreen.js
+tests\acceptance\userStories.test.js:158:            { id: "t1", name: "Task 1" },
+tests\acceptance\userStories.test.js:159:            { id: "t2", name: "Task 2" }
+tests\acceptance\userStories.test.js:260:    await tasksApi.getTodayTasks(global.authToken);
+tests\ForumPostDetailScreen.qa.test.js:14:// Automated QA integration tests for ForumPostDetailScreen.js
+docs\AI_IMPLEMENTATION_READY.md:51:  - Stored object validation (TrichomeAnalysis, Task, Alert, etc.)
+docs\AI_IMPLEMENTATION_READY.md:52:  - Enum enforcement (rejects invalid Task.priority)
+docs\AI_IMPLEMENTATION_READY.md:99:  - `ec.recommendCorrection` (✅ FULL: with impact gate, creates Task)
+docs\AI_IMPLEMENTATION_READY.md:100:  - `tasks.generateDailyTasks` (stub: creates 2 mock tasks)
+docs\AI_IMPLEMENTATION_READY.md:106:  - Models: GrowNote, EventLog, Task, Alert (optional; gracefully skips if missing)
+docs\AI_IMPLEMENTATION_READY.md:116:  - EC correction within delta → 200 + Task write
+docs\AI_IMPLEMENTATION_READY.md:235:- tasks.generateDailyTasks
+docs\AI_IMPLEMENTATION_READY.md:285:- Examples: harvest.analyzeTrichomes (add real CV), tasks.generateDailyTasks (add stage-based checklist)
+docs\AI_IMPLEMENTATION_READY.md:296:- Wire GrowNote, EventLog, Task, Alert to your schema
+docs\AI_IMPLEMENTATION_READY.md:345:   - Task list renderer (render tasks[] from response)
+docs\AI_FEATURE_MATRIX.md:40:### Calendar Read
+docs\AI_FEATURE_MATRIX.md:80:| `harvest` | `estimateHarvestWindow` | Form card               | `daysSinceFlip`, `goal` (balanced\|yield\|potency), `distribution` ({clear, cloudy, amber}) | Display `recommendation`, `partialHarvestFlag`, `confidence`, window dates (min/ideal/max) | `HarvestDecision` + 3× `CalendarEvent` (HARVEST_WINDOW) | GET /calendar?growId=X&type=HARVEST_WINDOW | Spam guard: soft-delete old HARVEST_WINDOW before insert new | STAFF+       |
+docs\AI_FEATURE_MATRIX.md:89:| `ec`      | `recommendCorrection` | Alert + confirmation modal | `currentEC`, `targetEC`             | Display `deltaEC`, `recommendedAction` (text), `confidence`  | `Task` record (stub: type="EC_CORRECTION") | Later: GET /tasks?type=EC_CORRECTION | 409 gate: confirm before write              | STAFF+       |
+docs\AI_FEATURE_MATRIX.md:137:### Calendar Spam Guard
+docs\AI_FEATURE_MATRIX.md:139:- Before `HarvestDecision.create()` + `CalendarEvent.insertMany()`:
+docs\AI_FEATURE_MATRIX.md:141:  await CalendarEvent.updateMany(
+docs\AI_FEATURE_MATRIX.md:152:- Calendar read errors: 400 for bad query params, 500 for DB failures (caught by global middleware)
+docs\AI_FEATURE_MATRIX.md:153:- Frontend: Both hooks (`useAICall`, `useCalendarEvents`) handle envelope + network errors
+docs\AI_FEATURE_MATRIX.md:162:- ✅ Calendar read with filtering
+docs\AI_FEATURE_MATRIX.md:164:- ✅ Frontend hooks (useAICall, useCalendarEvents)
+docs\AI_FEATURE_MATRIX.md:178:- Light schedule optimizer
+docs\AI_CATALOG_ARCHITECTURE.md:51:    writes: ["HarvestDecision", "CalendarEvent"] // audit trail
+docs\AI_CATALOG_ARCHITECTURE.md:189:  writes: ["Task"]  // if persistence
+docs\ACCOUNT_MODE_CONTRACT.md:58:| Tasks          | ❌       | ❌           | ✅              |
+docs\AI_DETERMINISM_CHECKLIST.md:54:  writes: ["HarvestDecision", "CalendarEvent"],
+docs\AI_DETERMINISM_CHECKLIST.md:55:  writeCounts: { HarvestDecision: 1, CalendarEvent: 3 }  // ← explicit expectation
+docs\AI_DETERMINISM_CHECKLIST.md:118:3. ✅ If `feature.writeCounts` is set, audit can show "(expected: HarvestDecision ×1, CalendarEvent ×3)"
+docs\AI_DETERMINISM_CHECKLIST.md:149:  - [ ] AI response includes writes: [{ type: "HarvestDecision", id }, { type: "CalendarEvent", id }, ...]
+docs\AI_DELIVERY_SUMMARY.md:167:- tasks.generateDailyTasks → Add stage-based checklist generation
+docs\AI_DELIVERY_SUMMARY.md:179:- GrowNote, EventLog, Task, Alert (gracefully skip if missing)
+docs\AI_DELIVERY_SUMMARY.md:239:- Stored objects (TrichomeAnalysis, Task, Alert, etc.) ✅
+docs\AI_DELIVERY_SUMMARY.md:273:│ ├─ Task (generated)                     │
+docs\AI_DELIVERY_SUMMARY.md:305:- [ ] Implement tasks.generateDailyTasks (add stage-based logic)
+docs\AI_DELIVERY_SUMMARY.md:306:- [ ] Wire model persistence (GrowNote, Task, etc.)
+tests\core\calendar.facility.contract.test.js:15:describe("Calendar Facility Contract", () => {
+docs\automated-test-implementation-checklist.md:1:# Automated Test Implementation Checklist
+docs\automated-test-implementation-checklist.md:53:- [Automated Test Plan](automated-test-plan.md)
+tests\ai\ai.schema.drift.test.js:254:        name: "Task",
+tests\ai\ai.schema.drift.test.js:255:        file: "Task.json",
+tests\ai\ai.schema.drift.test.js:295:    test("Enum enforcement example: Task.priority rejects invalid value", () => {
+tests\ai\ai.schema.drift.test.js:296:      const validate = ajv.compile(readJson(path.join(objectsDir, "Task.json")));
+tests\api\endpoints.test.js:46:  describe("Tasks API with Shared Config", () => {
+tests\api\endpoints.test.js:47:    it("getTodayTasks uses ROUTES.TASKS.TODAY", async () => {
+tests\api\endpoints.test.js:48:      await tasksApi.getTodayTasks("token123");
+tests\api\endpoints.test.js:53:    it("completeTask uses ROUTES.TASKS.COMPLETE", async () => {
+tests\api\endpoints.test.js:54:      await tasksApi.completeTask("task_99", "token123");
+docs\CANONICAL_ROUTE_MATRIX.md:137:- `/tasks` → TasksScreen
+docs\CANONICAL_ROUTE_MATRIX.md:138:- `/tasks/[id]` → TaskDetailScreen
+docs\CANONICAL_ROUTE_MATRIX.md:316:- Tasks → `/tasks`
+docs\automated-test-plan.md:1:# Automated QA/Regression Test Plan
+docs\automated-test-plan.md:7:## 1. Automated Test Tools
+docs\CODEX_PROMPTS.md:4:Task:
+docs\CODEX_PROMPTS.md:13:Task:
+docs\CODEX_PROMPTS.md:20:Task:
+docs\CODEX_PROMPTS.md:30:Task:
+docs\contracts\CAPABILITY_KEYS.json:16:        "files":  "src\\screens\\personal\\CalendarScreen.tsx"
+docs\contracts\CAPABILITY_KEYS.json:90:        "capabilityKey":  "canUseTasks",
+docs\contracts\CAPABILITY_KEYS.md:12:| calendar | src\screens\personal\CalendarScreen.tsx |  |
+docs\contracts\CAPABILITY_KEYS.md:30:| canUseTasks | src\config\menuConfig.js |  |
+tests\unit\forum-feed.test.js:5:import { shouldAutoFetchMore } from "../../src/utils/forumFeed.js";
+tests\unit\forum-feed.test.js:17:    const decision = shouldAutoFetchMore({
+tests\unit\forum-feed.test.js:27:    const decision = shouldAutoFetchMore({
+tests\unit\forum-feed.test.js:37:    const decision = shouldAutoFetchMore({
+tests\unit\forum-feed.test.js:46:    const decision = shouldAutoFetchMore({
+tests\unit\forum-feed.test.js:56:    const decision = shouldAutoFetchMore({
+docs\contracts\TEMPORAL_CONTRACT.md:52:- Auto Grow Calendar
+docs\contracts\TEMPORAL_CONTRACT.md:53:- Daily Task Generator
+tests\playwright\tasks-live.spec.js:4: * Live integration test for Tasks CRUD
+tests\playwright\tasks-live.spec.js:15:test.describe("Tasks Management - Live API Integration", () => {
+tests\playwright\tasks-live.spec.js:70:    // Navigate to Tasks
+tests\playwright\tasks-live.spec.js:74:        globalThis.__NAV__?.navigate("TasksTab");
+tests\playwright\tasks-live.spec.js:83:      .getByText(/My Tasks|Tasks|Scheduled/i)
+tests\playwright\tasks-live.spec.js:86:    console.log(`✓ Tasks screen loaded: ${tasksVisible ? "with content" : "preparing"}`);
+tests\playwright\tasks-live.spec.js:100:        globalThis.__NAV__?.navigate("TasksTab");
+tests\playwright\tasks-live.spec.js:107:    const createBtn = page.getByText(/\+ Add|Create Task|New Task|Add Task/i).first();
+tests\playwright\tasks-live.spec.js:113:      const taskName = `Task ${Date.now()}`;
+tests\playwright\tasks-live.spec.js:114:      await page.getByPlaceholder(/Task|Title|Description/i).fill(taskName);
+tests\playwright\tasks-live.spec.js:122:      console.log("⚠ Task creation UI not yet implemented");
+tests\playwright\tasks-live.spec.js:137:        globalThis.__NAV__?.navigate("TasksTab");
+tests\playwright\tasks-live.spec.js:152:      console.log("✓ Task completion action triggered");
+tests\playwright\tasks-live.spec.js:154:      console.log("⚠ Task completion UI not found");
+src\entitlements\screenMatrix.ts:42:  Tasks: {
+src\entitlements\screenMatrix.ts:45:      createTask: { type: "facilityRole", allow: ["OWNER", "MANAGER", "STAFF"] },
+src\entitlements\screenMatrix.ts:46:      completeTask: { type: "facilityRole", allow: ["OWNER", "MANAGER", "STAFF"] }
+docs\GROWPATH_TOOL_FUNCTION_SPEC_V1.0.1_HARDENED.md:64:- **TaskStatus:** `"open" | "done" | "skipped"`
+docs\GROWPATH_TOOL_FUNCTION_SPEC_V1.0.1_HARDENED.md:469:  "schedule": [
+docs\GROWPATH_TOOL_FUNCTION_SPEC_V1.0.1_HARDENED.md:541:### 4.20 CalendarEvent
+docs\GROWPATH_TOOL_FUNCTION_SPEC_V1.0.1_HARDENED.md:573:### 4.22 Task (NEW)
+docs\GROWPATH_TOOL_FUNCTION_SPEC_V1.0.1_HARDENED.md:590:### 4.23 TaskList
+docs\GROWPATH_TOOL_FUNCTION_SPEC_V1.0.1_HARDENED.md:721:### Calendar
+docs\GROWPATH_TOOL_FUNCTION_SPEC_V1.0.1_HARDENED.md:723:- `calendar.generateCalendar`
+docs\GROWPATH_TOOL_FUNCTION_SPEC_V1.0.1_HARDENED.md:724:- `calendar.updateCalendarOnEvent`
+docs\GROWPATH_TOOL_FUNCTION_SPEC_V1.0.1_HARDENED.md:726:### Tasks
+docs\GROWPATH_TOOL_FUNCTION_SPEC_V1.0.1_HARDENED.md:728:- `tasks.generateDailyTasks`
+docs\GROWPATH_TOOL_FUNCTION_SPEC_V1.0.1_HARDENED.md:729:- `tasks.prioritizeTasks`
+docs\GROWPATH_TOOL_FUNCTION_SPEC_V1.0.1_HARDENED.md:788:**Writes:** `HarvestPlan`, `CalendarEvent`
+docs\GROWPATH_TOOL_FUNCTION_SPEC_V1.0.1_HARDENED.md:830:**Writes:** `IrrigationPlan`, `Task`
+docs\GROWPATH_TOOL_FUNCTION_SPEC_V1.0.1_HARDENED.md:910:**Writes:** `Task` (0..n)
+docs\GROWPATH_TOOL_FUNCTION_SPEC_V1.0.1_HARDENED.md:983:**Writes:** `Task`
+docs\GROWPATH_TOOL_FUNCTION_SPEC_V1.0.1_HARDENED.md:1024:**Writes:** `TopdressPlan`, `CalendarEvent`, `Task`
+docs\GROWPATH_TOOL_FUNCTION_SPEC_V1.0.1_HARDENED.md:1057:**Writes:** `Task`, `Alert` (optional)
+docs\GROWPATH_TOOL_FUNCTION_SPEC_V1.0.1_HARDENED.md:1102:#### calendar.generateCalendar
+docs\GROWPATH_TOOL_FUNCTION_SPEC_V1.0.1_HARDENED.md:1105:**Writes:** `SchedulePlan`, `CalendarEvent` (0..n), `Task` (0..n)
+docs\GROWPATH_TOOL_FUNCTION_SPEC_V1.0.1_HARDENED.md:1106:**Returns:** `{ schedulePlanId:"uuid" }`
+docs\GROWPATH_TOOL_FUNCTION_SPEC_V1.0.1_HARDENED.md:1108:#### calendar.updateCalendarOnEvent
+docs\GROWPATH_TOOL_FUNCTION_SPEC_V1.0.1_HARDENED.md:1111:**Writes:** `SchedulePlan` (update), `CalendarEvent` (optional)
+docs\GROWPATH_TOOL_FUNCTION_SPEC_V1.0.1_HARDENED.md:1112:**Returns:** `{ schedulePlanId:"uuid" }`
+docs\GROWPATH_TOOL_FUNCTION_SPEC_V1.0.1_HARDENED.md:1118:#### tasks.generateDailyTasks
+docs\GROWPATH_TOOL_FUNCTION_SPEC_V1.0.1_HARDENED.md:1121:**Writes:** `TaskList`, `Task` (0..n)
+docs\GROWPATH_TOOL_FUNCTION_SPEC_V1.0.1_HARDENED.md:1124:#### tasks.prioritizeTasks
+docs\GROWPATH_AI_BRAIN_SPEC_V1.md:51:- Writes stored objects (GrowNote, Alerts, Tasks, Plans)
+docs\GROWPATH_AI_BRAIN_SPEC_V1.md:69:  - Alert / Task objects
+docs\production-launch-checklist.md:34:- [ ] Ensure database and backend backups are scheduled and tested
+src\components\EntriesTasksBlock.js:4:export default function EntriesTasksBlock({ selectedKey, entriesAndTasks, styles }) {
+src\components\EntriesTasksBlock.js:6:  if (entriesAndTasks.length > 0) {
+src\components\EntriesTasksBlock.js:7:    return entriesAndTasks.map((item, idx) => (
+docs\frontend\contracts\tasks.md:1:# Tasks Contract
+docs\frontend\contracts\tasks.md:14:- TasksListScreen: GET /api/facility/:facilityId/tasks
+docs\frontend\contracts\tasks.md:15:- TaskEditScreen: PATCH /api/facility/:facilityId/tasks/:id
+docs\frontend\contracts\tasks.md:16:- TaskCreateScreen: POST /api/facility/:facilityId/tasks
+src\navigation\tabConfig.js:69:    key: "CalendarTab",
+src\navigation\tabConfig.js:70:    label: "Calendar",
+src\navigation\tabConfig.js:72:    routeName: "CalendarTab",
+src\navigation\tabConfig.js:74:    component: "GrowLogCalendarScreen"
+docs\PAGE_FEATURE_MATRIX.md:36:| Deviations Summary View  | /home/facility/compliance               |     ❌ |         ❌ |       ✅ |                 ✅ |              ❌ |        ✅ |           ✅ |                  ✅ | open/recurring + action queue ordering              |
+src\navigation\pageRegistry.personal.js:34:    name: "Calendar",
+src\navigation\pageRegistry.personal.js:35:    label: "Calendar",
+src\navigation\pageRegistry.personal.js:38:    component: require("../screens/CalendarScreen").default
+src\config\menuConfig.js:62:  // Tasks
+src\config\menuConfig.js:63:  if (capabilities.canUseTasks) {
+src\config\menuConfig.js:66:      label: "Tasks",
+src\config\menuConfig.js:68:      route: "TasksScreen"
+src\navigation\pageRegistry.facility.js:27:    name: "FacilityTasks",
+src\navigation\pageRegistry.facility.js:28:    label: "Tasks",
+src\navigation\pageRegistry.facility.js:31:    component: require("../screens/FacilityTasksScreen").default
+src\config\interests.js:95:      "Automation / Hands-Off"
+src\navigation\pageRegistry.commercial.js:76:    name: "Tasks",
+src\navigation\pageRegistry.commercial.js:77:    label: "Tasks",
+src\navigation\pageRegistry.commercial.js:80:    component: require("../screens/TasksScreen").default
+src\auth\capabilities.js:24:    canUseTasks: true,
+src\hooks\useAutomations.ts:2:import { fetchAutomations, toggleAutomation } from "../api/automation";
+src\hooks\useAutomations.ts:4:export function useAutomations() {
+src\hooks\useAutomations.ts:10:    queryFn: () => fetchAutomations(facilityId!),
+src\hooks\useAutomations.ts:14:    mutationFn: ({ id, enabled }: any) => toggleAutomation(facilityId!, id, enabled),
+src\hooks\useAutomations.ts:19:  return { ...query, toggleAutomation: toggle.mutateAsync };
+src\hooks\useAutomationPolicies.ts:5:import { listAutomationPolicies, setAutomationPolicyEnabled } from "../api/automation";
+src\hooks\useAutomationPolicies.ts:6:export function useAutomationPolicies() {
+src\hooks\useAutomationPolicies.ts:13:    queryFn: () => listAutomationPolicies(selectedFacilityId!),
+src\hooks\useAutomationPolicies.ts:21:      setAutomationPolicyEnabled(selectedFacilityId!, policyId, enabled),
+src\components\AutomationRow.tsx:4:export default function AutomationRow({
+docs\SCHEMA_EXTRACT_READY.md:21:│   ├── Task.json
+src\navigation\FacilityTabs.js:8:function FacilityTasksStub(props) {
+src\navigation\FacilityTabs.js:9:  return <StubScreen {...props} title="Facility Tasks" subtitle="Stub" />;
+src\navigation\FacilityTabs.js:24:      { name: "FacilityTasks", component: FacilityTasksStub, title: "Tasks" },
+src\navigation\FacilityNavigator.tsx:6:import FacilityTasksScreen from "../screens/facility/FacilityTasksScreen";
+src\navigation\FacilityNavigator.tsx:10:import AutomationCenterScreen from "../screens/facility/AutomationCenterScreen";
+src\navigation\FacilityNavigator.tsx:20:  FacilityTasks: undefined;
+src\navigation\FacilityNavigator.tsx:24:  AutomationCenter: undefined;
+src\navigation\FacilityNavigator.tsx:47:          name="FacilityTasks"
+src\navigation\FacilityNavigator.tsx:48:          component={FacilityTasksScreen}
+src\navigation\FacilityNavigator.tsx:49:          options={{ title: "Tasks" }}
+src\navigation\FacilityNavigator.tsx:67:          name="AutomationCenter"
+src\navigation\FacilityNavigator.tsx:68:          component={AutomationCenterScreen}
+src\navigation\FacilityNavigator.tsx:69:          options={{ title: "Automation" }}
+docs\schemas\README.md:37:    ├── CalendarEvent.json
+docs\schemas\README.md:39:    ├── Task.json
+docs\schemas\README.md:40:    ├── TaskList.json
+docs\schemas\README.md:150:## Automated Testing
+docs\ui\UI_ROUTE_MAP.md:160:- src\screens\CreateTaskScreen.js | type: screen
+docs\ui\UI_ROUTE_MAP.md:179:- src\screens\facility\AutomationCenterScreen.tsx | type: screen
+docs\ui\UI_ROUTE_MAP.md:180:- src\screens\facility\AutomationScreen.tsx | type: screen
+docs\ui\UI_ROUTE_MAP.md:190:- src\screens\facility\FacilityTasks.tsx | type: screen
+docs\ui\UI_ROUTE_MAP.md:191:- src\screens\facility\FacilityTasksScreen.tsx | type: screen
+docs\ui\UI_ROUTE_MAP.md:223:- src\screens\GrowLogCalendarScreen.js | type: screen
+docs\ui\UI_ROUTE_MAP.md:245:- src\screens\personal\CalendarScreen.tsx | type: screen
+docs\ui\UI_ROUTE_MAP.md:268:- src\screens\TasksScreen.js | type: screen
+src\hooks\useCalendarEvents.ts:4:export type CalendarEvent = {
+src\hooks\useCalendarEvents.ts:17:export function useCalendarEvents(facilityId: string) {
+src\hooks\useCalendarEvents.ts:18:  const [items, setItems] = useState<CalendarEvent[]>([]);
+src\hooks\useCalendarEvents.ts:22:  const fetchCalendar = useCallback(
+src\hooks\useCalendarEvents.ts:40:        const res = await apiRequest<{ calendarEvents: CalendarEvent[] }>(
+src\hooks\useCalendarEvents.ts:57:  return { items, loading, error, fetchCalendar };
+src\navigation\buildTabs.js:24:      "Tasks",
+src\navigation\buildTabs.js:28:      "Calendar",
+docs\ui\UI_ROUTE_MAP.json:241:        "file":  "src\\screens\\GrowLogCalendarScreen.js",
+docs\ui\UI_ROUTE_MAP.json:388:        "file":  "src\\screens\\TasksScreen.js",
+docs\ui\UI_ROUTE_MAP.json:717:        "file":  "src\\screens\\facility\\FacilityTasksScreen.tsx",
+docs\ui\UI_ROUTE_MAP.json:724:        "file":  "src\\screens\\facility\\FacilityTasks.tsx",
+docs\ui\UI_ROUTE_MAP.json:794:        "file":  "src\\screens\\facility\\AutomationScreen.tsx",
+docs\ui\UI_ROUTE_MAP.json:801:        "file":  "src\\screens\\facility\\AutomationCenterScreen.tsx",
+docs\ui\UI_ROUTE_MAP.json:878:        "file":  "src\\screens\\personal\\CalendarScreen.tsx",
+docs\ui\UI_ROUTE_MAP.json:1032:        "file":  "src\\screens\\CreateTaskScreen.js",
+src\utils\schedule.js:1:export function groupTasks(tasks) {
+src\hooks\useCalendar.ts:6:type UseCalendarResult<T = any> = {
+src\hooks\useCalendar.ts:13:export function useCalendar<T = any[]>(
+src\hooks\useCalendar.ts:16:): UseCalendarResult<T> {
+docs\ui\TOOL_SURFACE_MAP.md:36:- id: schedule
+src\contracts\compliance\ai4.dashboard.contract.ts:13:  type: "improvement" | "decline" | "recurring";
+src\contracts\compliance\ai4.dashboard.contract.ts:43:    { label: "Recurring deviation: EC drift", value: "Week 6", type: "recurring" }
+src\components\TaskRow.js:3:export default function TaskRow({ task, onPress }) {
+docs\ui\TOOL_SURFACE_MAP.json:43:        "id":  "schedule",
+src\components\TaskCompleteModal.js:4:export default function TaskCompleteModal({ visible, onClose }) {
+src\components\TaskCompleteModal.js:9:          <Text style={styles.title}>Task Complete!</Text>
+docs\qa\V1_SCOPE_LOCK.md:112:- Auto Grow Calendar AI optimization (beyond deterministic calendar)
+docs\production-launch-guide.md:44:- [ ] Ensure backend/database backups are scheduled and tested
+src\hooks\useFacilityTasks.ts:3:import { getFacilityTasks, createFacilityTask } from "../api/facilityTasks";
+src\hooks\useFacilityTasks.ts:7:export function useFacilityTasks() {
+src\hooks\useFacilityTasks.ts:13:    queryKey: ["facilityTasks", selectedFacilityId],
+src\hooks\useFacilityTasks.ts:14:    queryFn: () => getFacilityTasks(selectedFacilityId!),
+src\hooks\useFacilityTasks.ts:23:    mutationFn: (data: any) => createFacilityTask(selectedFacilityId!, data),
+src\hooks\useFacilityTasks.ts:25:      qc.invalidateQueries({ queryKey: ["facilityTasks", selectedFacilityId] });
+src\hooks\useFacilityTasks.ts:32:    createTask: create.mutateAsync,
+src\hooks\useFacilityTasks.ts:34:    // Phase 2.3.3: Stub for completeTask (implements updateTask with completed flag)
+src\hooks\useFacilityTasks.ts:35:    completeTask: async (id: string) => {
+src\hooks\useFacilityTasks.ts:36:      console.warn("completeTask not yet implemented for task:", id);
+src\utils\notifications.js:31:export async function scheduleTaskReminder(task) {
+src\utils\notifications.js:34:  return Notifications.scheduleNotificationAsync({
+src\utils\notifications.js:47:export async function cancelTaskReminder(notificationId) {
+src\utils\forumFeed.js:1:export function shouldAutoFetchMore({
+src\components\feed\FeedRail.tsx:52:    body: "Automate compliance logs with audit-ready exports.",
+src\hooks\usePersonalTasks.ts:4:export type PersonalTask = {
+src\hooks\usePersonalTasks.ts:14:function normalizeTasks(res: any): PersonalTask[] {
+src\hooks\usePersonalTasks.ts:15:  if (Array.isArray(res)) return res as PersonalTask[];
+src\hooks\usePersonalTasks.ts:16:  if (Array.isArray(res?.items)) return res.items as PersonalTask[];
+src\hooks\usePersonalTasks.ts:17:  if (Array.isArray(res?.data?.items)) return res.data.items as PersonalTask[];
+src\hooks\usePersonalTasks.ts:18:  if (Array.isArray(res?.data?.tasks)) return res.data.tasks as PersonalTask[];
+src\hooks\usePersonalTasks.ts:19:  if (Array.isArray(res?.tasks)) return res.tasks as PersonalTask[];
+src\hooks\usePersonalTasks.ts:23:export async function fetchPersonalTasks(): Promise<PersonalTask[]> {
+src\hooks\usePersonalTasks.ts:25:  return normalizeTasks(res);
+src\hooks\usePersonalTasks.ts:28:export function usePersonalTasks(): UseQueryResult<PersonalTask[], unknown> {
+src\hooks\usePersonalTasks.ts:30:    queryKey: ["personalTasks"],
+src\hooks\usePersonalTasks.ts:31:    queryFn: fetchPersonalTasks
+src\hooks\useTasks.ts:3:import { getTasks, createTask, updateTask, deleteTask } from "../api/tasks";
+src\hooks\useTasks.ts:6:export function useTasks() {
+src\hooks\useTasks.ts:12:    queryFn: () => getTasks(activeFacilityId!),
+src\hooks\useTasks.ts:16:  const createTaskMutation = useMutation({
+src\hooks\useTasks.ts:17:    mutationFn: (data: any) => createTask(activeFacilityId!, data),
+src\hooks\useTasks.ts:23:  const updateTaskMutation = useMutation({
+src\hooks\useTasks.ts:25:      updateTask(activeFacilityId!, args.id, args.patch),
+src\hooks\useTasks.ts:31:  const deleteTaskMutation = useMutation({
+src\hooks\useTasks.ts:32:    mutationFn: (id: string) => deleteTask(activeFacilityId!, id),
+src\hooks\useTasks.ts:41:    createTask: createTaskMutation.mutateAsync,
+src\hooks\useTasks.ts:42:    creating: createTaskMutation.isPending,
+src\hooks\useTasks.ts:44:    updateTask: updateTaskMutation.mutateAsync,
+src\hooks\useTasks.ts:45:    updating: updateTaskMutation.isPending,
+src\hooks\useTasks.ts:47:    deleteTask: deleteTaskMutation.mutateAsync,
+src\hooks\useTasks.ts:48:    deleting: deleteTaskMutation.isPending
+src\app\home\_facility.tsx:59: * - /tasks → Task management
+src\app\home\_facility.tsx:132:              <Text style={styles.cardTitle}>✅ Tasks</Text>
+src\app\home\_facility.tsx:134:                Daily tasks, assignments, verification, and SOPs
+src\app\home\_facility.tsx:138:                <Text style={styles.link}>View Tasks →</Text>
+src\types\facility.js:44:export const TaskStatus = {
+src\types\facility.js:54:export const TaskPriority = {
+src\types\facility.js:73:export const canVerifyTasks = (role) => {
+src\types\facility.js:117:export const canCompleteTasks = (role) => {
+src\types\facility.js:256: * @typedef {Object} TaskInstance
+src\types\facility.js:262: * @property {string} title - Task name
+src\types\facility.js:263: * @property {string} [description] - Task details
+src\types\facility.js:266: * @property {TaskStatus} status - Current task status
+src\types\facility.js:267: * @property {TaskPriority} [priority] - Task priority (default: NORMAL)
+src\types\facility.js:272: * @property {TaskInput[]} [requiredInputs] - Input fields + captured values
+src\types\facility.js:280: * @typedef {Object} TaskInput
+src\types\facility.js:296: * @property {TaskInput[]} requiredInputs
+src\types\facility.js:351: * @typedef {Object} TaskFilters
+src\types\facility.js:355: * @property {TaskStatus} [status] - Filter by status
+src\types\facility.js:356: * @property {TaskPriority} [priority] - Filter by priority
+src\types\facility.js:393:export const isValidTaskStatus = (status) => {
+src\types\facility.js:394:  return Object.values(TaskStatus).includes(status);
+src\types\facility.js:435:export const getTaskStatusDisplayName = (status) => {
+src\types\facility.js:437:    [TaskStatus.OPEN]: "Open",
+src\types\facility.js:438:    [TaskStatus.IN_PROGRESS]: "In Progress",
+src\types\facility.js:439:    [TaskStatus.COMPLETED]: "Completed",
+src\types\facility.js:440:    [TaskStatus.AWAITING_VERIFY]: "Awaiting Verification",
+src\types\facility.js:441:    [TaskStatus.VERIFIED]: "Verified",
+src\types\facility.js:442:    [TaskStatus.REJECTED]: "Rejected",
+src\types\facility.js:443:    [TaskStatus.CANCELED]: "Canceled"
+src\types\facility.js:448:export const getTaskPriorityDisplayName = (priority) => {
+src\types\facility.js:450:    [TaskPriority.LOW]: "Low",
+src\types\facility.js:451:    [TaskPriority.NORMAL]: "Normal",
+src\types\facility.js:452:    [TaskPriority.HIGH]: "High",
+src\types\facility.js:453:    [TaskPriority.URGENT]: "Urgent"
+src\types\facility.js:466:  TaskStatus,
+src\types\facility.js:467:  TaskPriority,
+src\types\facility.js:469:  canVerifyTasks,
+src\types\facility.js:473:  canCompleteTasks,
+src\types\facility.js:477:  isValidTaskStatus,
+src\types\facility.js:481:  getTaskStatusDisplayName,
+src\types\facility.js:482:  getTaskPriorityDisplayName
+src\types\contracts.ts:49:export type TaskStats = {
+src\types\automation.ts:1:export type AutomationType =
+src\types\automation.ts:7:export type AutomationPolicy = {
+src\types\automation.ts:10:  type: AutomationType;
+src\app\home\personal\_layout.tsx:26:      <Stack.Screen name="more/tasks" options={{ title: "Tasks" }} />
+src\features\dashboard\screens\OperationsDashboard.tsx:23:      <Text>Overdue Tasks: {tasks.overdue}</Text>
+src\features\dashboard\screens\OperationsDashboard.tsx:24:      <Text>Open Tasks: {tasks.open}</Text>
+src\features\dashboard\screens\OperationsDashboard.tsx:28:      <Text>Tasks Per Staff:</Text>
+src\permissions\actions.ts:2:  // Tasks
+src\features\dashboard\screens\FacilityDashboard.tsx:23:      <Text>Open Tasks: {tasks.open}</Text>
+src\app\(commercial)\tasks\[id].tsx:41:export default function CommercialTaskDetailRoute() {
+src\app\(commercial)\tasks\[id].tsx:86:    <ScreenBoundary title="Task">
+src\app\(commercial)\tasks\[id].tsx:99:          <Text style={styles.h1}>Task</Text>
+src\features\ai\aiFeatureMatrix.ts:19:  | "CalendarEvent"
+src\features\ai\aiFeatureMatrix.ts:20:  | "Task";
+src\features\ai\aiFeatureMatrix.ts:73:    writes: ["HarvestDecision", "CalendarEvent"],
+src\features\ai\aiFeatureMatrix.ts:74:    writeCounts: { HarvestDecision: 1, CalendarEvent: 3 }
+src\features\ai\aiFeatureMatrix.ts:99:    writes: ["Task"],
+src\features\ai\aiFeatureMatrix.ts:100:    writeCounts: { Task: 1 }
+src\features\dashboard\hooks.ts:2:import { useTasks } from "../tasks/hooks";
+src\features\dashboard\hooks.ts:9:  const tasks = useTasks();
+src\api\automation.ts:2:import type { AutomationPolicy } from "../types/automation";
+src\api\automation.ts:5:export const fetchAutomations = listAutomationPolicies;
+src\api\automation.ts:6:export const toggleAutomation = setAutomationPolicyEnabled;
+src\api\automation.ts:8:export function listAutomationPolicies(facilityId: string) {
+src\api\automation.ts:9:  return api<AutomationPolicy[]>(`/api/facilities/${facilityId}/automation/policies`);
+src\api\automation.ts:12:export function setAutomationPolicyEnabled(
+src\api\automation.ts:17:  return api<AutomationPolicy>(
+src\api\calendar.ts:3:export type CalendarEvent = {
+src\api\calendar.ts:12:export async function fetchCalendarEvents(
+src\api\calendar.ts:15:): Promise<CalendarEvent[]> {
+src\api\calendar.ts:22:export async function createCalendarEvent(data: Record<string, any>) {
+src\screens\CategoryBrowserScreen.js:16:  { key: "calendar", title: "Calendar", subtitle: "Tasks and events" },
+src\screens\CategoryBrowserScreen.js:39:      calendar: "Calendar",
+src\app\home\personal\more\tasks.tsx:1:import TasksScreen from "@/screens/TasksScreen";
+src\app\home\personal\more\tasks.tsx:2:export default TasksScreen;
+src\features\tasks\hooks\index.ts:3:export * from "../../../hooks/usePersonalTasks";
+src\features\tasks\hooks\index.ts:4:export * from "../../../hooks/useFacilityTasks";
+src\features\tasks\hooks\index.ts:5:export { useFacilityTasks as useTasks } from "../../../hooks/useFacilityTasks";
+src\features\tasks\components\TaskListSwipe.tsx:4:export default function TaskListSwipe(props: any) {
+src\api\environment.js:8:export function envToTasks(plantId, actions, token) {
+src\features\compliance\ai4\dashboard\buildDashboardModel.ts:97:  let recurringDeviations: {
+src\features\compliance\ai4\dashboard\buildDashboardModel.ts:106:    Array.isArray(deviationsSummary.recurringDeviations) &&
+src\features\compliance\ai4\dashboard\buildDashboardModel.ts:107:    deviationsSummary.recurringDeviations.length > 0
+src\features\compliance\ai4\dashboard\buildDashboardModel.ts:109:    recurringDeviations = deviationsSummary.recurringDeviations
+src\features\compliance\ai4\dashboard\buildDashboardModel.ts:138:    recurringDeviations = Object.values(deviationCounts)
+src\features\compliance\ai4\dashboard\buildDashboardModel.ts:183:  // Action Queue: open high severity deviations, then recurring, then SOPs
+src\features\compliance\ai4\dashboard\buildDashboardModel.ts:200:  recurringDeviations
+src\screens\CreateTaskScreen.js:4:import { createCustomTask } from "../api/tasks.js";
+src\screens\CreateTaskScreen.js:10:export default function CreateTaskScreen({ route }) {
+src\screens\CreateTaskScreen.js:60:    await createCustomTask(payload);
+src\screens\CreateTaskScreen.js:66:      <Text style={styles.header}>New Task</Text>
+src\screens\CreateTaskScreen.js:69:        placeholder="Task title"
+src\screens\CreateTaskScreen.js:107:            Task creation is a Pro feature. Upgrade to Pro to add and schedule custom
+src\screens\CreateTaskScreen.js:130:        <Text style={[styles.saveText, !isPro && { color: "#888" }]}>Create Task</Text>
+src\app\facilities\[facilityId]\tasks.tsx:4:export default function LegacyFacilityTasks() {
+src\features\plants\components\PlantCard.tsx:9:  onAddTask: () => void;
+src\features\plants\components\PlantCard.tsx:16:  onAddTask
+src\features\plants\components\PlantCard.tsx:55:          onPress={onAddTask}
+src\features\plants\components\PlantCard.tsx:58:          <Text>Add Task</Text>
+src\api\facilityTasks.ts:3:export type FacilityTask = {
+src\api\facilityTasks.ts:15:export function getFacilityTasks(facilityId: string) {
+src\api\facilityTasks.ts:16:  return api<FacilityTask[]>(`/api/facilities/${facilityId}/tasks`);
+src\api\facilityTasks.ts:19:export function createFacilityTask(facilityId: string, data: Partial<FacilityTask>) {
+src\api\facilityTasks.ts:20:  return api<FacilityTask>(`/api/facilities/${facilityId}/tasks`, {
+src\api\facilityTasks.ts:26:export function updateFacilityTask(
+src\api\facilityTasks.ts:29:  data: Partial<FacilityTask>
+src\api\facilityTasks.ts:31:  return api<FacilityTask>(`/api/facilities/${facilityId}/tasks/${taskId}`, {
+src\screens\commercial\SocialMediaScreen.js:368:        {/* Auto-posting Section */}
+src\screens\commercial\SocialMediaScreen.js:376:            <Text style={styles.autoPostTitle}>Auto-Posting</Text>
+src\screens\DashboardScreen.js:27:import { getTasks } from "../api/tasks.js";
+src\screens\DashboardScreen.js:54:function summarizeTasks(tasks = []) {
+src\features\compliance\ai4\dashboard\__tests__\complianceDashboardApi.normalizers.test.ts:11:    recurringDeviations: [
+src\features\compliance\ai4\dashboard\__tests__\complianceDashboardApi.normalizers.test.ts:56:      recurringDeviations: [
+src\features\compliance\ai4\dashboard\__tests__\complianceDashboardApi.normalizers.test.ts:69:    expect(Array.isArray(norm.recurringDeviations)).toBe(true);
+src\features\compliance\ai4\dashboard\__tests__\complianceDashboardApi.normalizers.test.ts:71:    expect(norm.recurringDeviations[0]).toEqual({
+src\features\compliance\ai4\dashboard\__tests__\complianceDashboardApi.normalizers.test.ts:78:    expect(norm.recurringDeviations[1]).toEqual({
+src\features\compliance\ai4\dashboard\__tests__\complianceDashboardApi.normalizers.test.ts:99:    expect(normA.recurringDeviations[0].severity).toBe("LOW");
+src\features\compliance\ai4\dashboard\__tests__\complianceDashboardApi.normalizers.test.ts:100:    expect(normA.recurringDeviations[0].count).toBe(0);
+src\app\home\personal\(tabs)\ai\index.tsx:6:import { listPersonalTasks } from "@/api/tasks";
+src\app\home\personal\(tabs)\ai\index.tsx:91:          listPersonalTasks()
+src\app\home\personal\(tabs)\ai\index.tsx:159:            <Text style={styles.contextText}>Tasks: {context.taskCount}</Text>
+src\features\compliance\ai4\dashboard\__tests__\buildDashboardModel.test.ts:4:  test("sort order is deterministic for openDeviations, recurringDeviations, recommendedSops", () => {
+src\features\compliance\ai4\dashboard\__tests__\buildDashboardModel.test.ts:14:        recurringDeviations: [
+src\features\compliance\ai4\dashboard\__tests__\buildDashboardModel.test.ts:84:    const recurring = model.actionQueue.filter((a: any) =>
+src\features\compliance\ai4\dashboard\__tests__\buildDashboardModel.test.ts:92:    // recurringDeviations: count desc, lastSeenAt desc, code asc
+src\features\compliance\ai4\dashboard\__tests__\buildDashboardModel.test.ts:93:    expect(recurring.map((x: any) => x.targetId)).toEqual(["C", "A", "B"]);
+src\features\compliance\ai4\dashboard\__tests__\buildDashboardModel.test.ts:109:        recurringDeviations: [],
+src\features\compliance\ai4\dashboard\complianceDashboardApi.ts:25:  const recurring = Array.isArray(raw?.recurringDeviations)
+src\features\compliance\ai4\dashboard\complianceDashboardApi.ts:26:    ? raw.recurringDeviations
+src\features\compliance\ai4\dashboard\complianceDashboardApi.ts:36:    recurringDeviations: recurring
+src\app\home\personal\(tabs)\tasks.tsx:6:export default function PersonalTasksRoute() {
+src\app\home\personal\(tabs)\tasks.tsx:11:        <Text style={{ fontSize: 20, fontWeight: "700", marginBottom: 8 }}>Tasks</Text>
+src\screens\commercial\InfluencerDashboardScreen.js:207:            <Text style={styles.metricGrowth}>Consistent schedule</Text>
+src\app\facilities\index.tsx:106:      // Auto-navigate after successful selection
+src\screens\FeedingScheduleResult.js:9:  const { schedule, nutrientData } = route.params;
+src\screens\FeedingScheduleResult.js:18:        schedule
+src\screens\FeedingScheduleResult.js:34:        data={schedule.schedule}
+src\app\home\facility\tasks\[id].tsx:22:  return String(x?.title ?? x?.name ?? x?.label ?? x?.type ?? "Task Detail");
+src\app\home\facility\tasks\[id].tsx:36:export default function FacilityTaskDetail() {
+src\app\home\facility\tasks\[id].tsx:89:  const title = useMemo(() => (item ? pickTitle(item) : "Task Detail"), [item]);
+src\screens\facility\ComplianceLogsScreen.tsx:10:  { label: "Daily Check", value: "DAILY_CHECK" },
+src\api\verification.js:18:export async function verifyTask(facilityId, taskId, data) {
+src\screens\ToolsScreen.js:14:  { id: "schedule", title: "Schedule Calculator", screen: "ScheduleCalculator" },
+src\screens\ToolsScreen.js:26:  schedule: "tools.stageTimeline",
+src\api\tasks.ts:5:export function getTasks(): Promise<PersonalTask[]>;
+src\api\tasks.ts:6:export function getTasks(facilityId: string): Promise<Task[]>;
+src\api\tasks.ts:7:export async function getTasks(facilityId?: string): Promise<PersonalTask[] | Task[]> {
+src\api\tasks.ts:13:  return listPersonalTasks();
+src\api\tasks.ts:16:export function createCustomTask(data: any): Promise<PersonalTask>;
+src\api\tasks.ts:17:export function createCustomTask(facilityId: string, data: any): Promise<Task>;
+src\api\tasks.ts:18:export async function createCustomTask(a: any, b?: any): Promise<any> {
+src\api\tasks.ts:20:    return createTask(a, b);
+src\api\tasks.ts:26:export function completeTask(id: string): Promise<PersonalTask>;
+src\api\tasks.ts:27:export function completeTask(facilityId: string, id: string, patch?: any): Promise<Task>;
+src\api\tasks.ts:28:export async function completeTask(a: any, b?: any, c?: any): Promise<any> {
+src\api\tasks.ts:30:    return updateTask(a, b, c ?? { completed: true });
+src\api\tasks.ts:36:export type Task = {
+src\api\tasks.ts:46:export async function createTask(facilityId: string, data: any): Promise<Task> {
+src\api\tasks.ts:51:export async function updateTask(
+src\api\tasks.ts:55:): Promise<Task> {
+src\api\tasks.ts:60:export async function deleteTask(facilityId: string, id: string) {
+src\api\tasks.ts:65:// ===== Personal Mode Tasks (User-Scoped) =====
+src\api\tasks.ts:67:export interface PersonalTask {
+src\api\tasks.ts:77:// Removed unused PersonalTasksResponse interface
+src\api\tasks.ts:83:export async function listPersonalTasks(options?: {
+src\api\tasks.ts:85:}): Promise<PersonalTask[]> {
+src\api\tasks.ts:97:      return res.data.tasks as PersonalTask[];
+src\api\tasks.ts:101:    console.error("[listPersonalTasks] Error:", err);
+src\screens\FeedingScheduleOptions.js:26:        if (!payload?.schedule) {
+src\screens\FeedingScheduleOptions.js:30:          schedule: payload.schedule,
+src\screens\FeedingScheduleOptions.js:34:        Alert.alert("Error", error?.message || "Failed to generate schedule");
+src\screens\facility\BillingAndReportingScreen.js:280:            <Text style={styles.usageLabel}>Tasks</Text>
+src\screens\facility\WebhooksScreen.tsx:7:  { label: "Task Assigned", value: "TASK_ASSIGNED" },
+src\screens\facility\WebhooksScreen.tsx:8:  { label: "Task Overdue", value: "TASK_OVERDUE" },
+src\screens\facility\WebhooksScreen.tsx:11:  { label: "Automation Triggered", value: "AUTOMATION_TRIGGERED" },
+src\features\compliance\ai4\dashboard\complianceDashboardApi.contract.ts:6:  recurringDeviations: {
+src\features\feed\hooks\useCommercialFeed.ts:50:  async function optimisticTaskStatus(id: string, status: "done" | "open") {
+src\features\feed\hooks\useCommercialFeed.ts:66:      const { patchTask } = await import("../api/feedApi");
+src\features\feed\hooks\useCommercialFeed.ts:67:      await patchTask(id, { status });
+src\features\feed\hooks\useCommercialFeed.ts:109:    optimisticTaskStatus,
+src\api\socialMedia.js:14:  POST_SCHEDULE: "/api/social/schedule-post"
+src\api\socialMedia.js:72:export const schedulePost = async (platforms, content, scheduledTime) => {
+src\api\socialMedia.js:77:      scheduledTime
+src\api\socialMedia.js:81:    throw new Error(`Failed to schedule post: ${error.message}`);
+src\screens\facility\AutomationScreen.tsx:3:import { useAutomations } from "../../hooks/useAutomations";
+src\screens\facility\AutomationScreen.tsx:8:import AutomationRow from "../../components/AutomationRow";
+src\screens\facility\AutomationScreen.tsx:10:export default function AutomationScreen() {
+src\screens\facility\AutomationScreen.tsx:11:  const { data, isLoading, error, toggleAutomation } = useAutomations();
+src\screens\facility\AutomationScreen.tsx:30:        <AutomationRow
+src\screens\facility\AutomationScreen.tsx:32:          onToggle={(enabled) => toggleAutomation({ id: item.id, enabled })}
+src\screens\TokenInfoScreen.js:102:                    ✨ Upgrade to Pro for 100 Daily Tokens
+src\screens\TokenInfoScreen.js:112:            <Text style={styles.bulletText}>• Auto-refresh every 24 hours</Text>
+src\api\tasks.js:4:export function getTodayTasks(token) {
+src\api\tasks.js:8:export function getUpcomingTasks(token) {
+src\api\tasks.js:12:export function getTasks(token) {
+src\api\tasks.js:16:export function completeTask(id, token) {
+src\api\tasks.js:20:export function reopenTask(id, token) {
+src\api\tasks.js:24:export function deleteTask(id, token) {
+src\api\tasks.js:28:export function createCustomTask(data, token) {
+src\screens\facility\HarvestWindowScreen.tsx:12:import { useCalendarEvents } from "@/hooks/useCalendarEvents";
+src\screens\facility\HarvestWindowScreen.tsx:28: * 3. Receives HarvestDecision + 3 CalendarEvent writes
+src\screens\facility\HarvestWindowScreen.tsx:43:    fetchCalendar,
+src\screens\facility\HarvestWindowScreen.tsx:45:  } = useCalendarEvents(facilityId);
+src\screens\facility\HarvestWindowScreen.tsx:83:      await fetchCalendar({ growId, type: "HARVEST_WINDOW", limit: 50 });
+src\screens\facility\HarvestWindowScreen.tsx:190:        <Text style={styles.h2}>Calendar (HARVEST_WINDOW)</Text>
+src\screens\facility\HarvestWindowScreen.tsx:192:          onPress={() => fetchCalendar({ growId, type: "HARVEST_WINDOW", limit: 50 })}
+src\screens\facility\HarvestWindowScreen.tsx:197:            {calLoading ? "Loading…" : "Refresh Calendar"}
+src\screens\PaywallScreen.js:81:          <Text style={styles.benefit}>✅ Task Management & Reminders</Text>
+src\screens\facility\AutomationCenterScreen.tsx:3:import { useAutomationPolicies } from "../../hooks/useAutomationPolicies";
+src\screens\facility\AutomationCenterScreen.tsx:9:      return "Overdue Task Escalation";
+src\screens\facility\AutomationCenterScreen.tsx:11:      return "Stale Task Reminders";
+src\screens\facility\AutomationCenterScreen.tsx:13:      return "Daily Compliance Required";
+src\screens\facility\AutomationCenterScreen.tsx:21:export default function AutomationCenterScreen() {
+src\screens\facility\AutomationCenterScreen.tsx:24:  const { data, isLoading, togglePolicy } = useAutomationPolicies();
+src\screens\facility\AutomationCenterScreen.tsx:31:        Automation Center
+src\screens\facility\NutrientToolsScreen.js:19: * - AI feeding schedule generation
+src\screens\facility\NutrientToolsScreen.js:38:      id: "feeding-schedule",
+src\screens\facility\NutrientToolsScreen.js:40:      description: "Generate AI-optimized feeding schedules for your nutrients",
+src\screens\facility\NutrientToolsScreen.js:95:            Manage NPK, feeding schedules, and plant diagnostics
+src\screens\facility\NutrientToolsScreen.js:164:            extracts NPK ratios and generates feeding schedules optimized for your growing
+src\app\home\personal\(tabs)\index.tsx:93:            Daily notes, photos, measurements, and progress tracking
+src\app\home\personal\(tabs)\index.tsx:113:            Soil calc, NPK, VPD, feed scheduler, harvest estimator
+src\api\routes.js:142:    SCHEDULE: `${PREFIX}/feeding/schedule`,
+src\api\routes.js:143:    TO_TEMPLATE: `${PREFIX}/feeding/schedule/to-template`
+src\screens\facility\HarvestAIMvpScreen.tsx:12:import { useCalendarEvents } from "@/hooks/useCalendarEvents";
+src\screens\facility\HarvestAIMvpScreen.tsx:20: * 3. Receives HarvestDecision + 3 CalendarEvent writes
+src\screens\facility\HarvestAIMvpScreen.tsx:33:    fetchCalendar,
+src\screens\facility\HarvestAIMvpScreen.tsx:35:  } = useCalendarEvents(facilityId);
+src\screens\facility\HarvestAIMvpScreen.tsx:70:      await fetchCalendar({ growId, type: "HARVEST_WINDOW", limit: 50 });
+src\screens\facility\HarvestAIMvpScreen.tsx:80:        Estimate harvest window → writes HarvestDecision + CalendarEvents
+src\screens\facility\HarvestAIMvpScreen.tsx:181:        <Text style={styles.h2}>Calendar (HARVEST_WINDOW)</Text>
+src\screens\facility\HarvestAIMvpScreen.tsx:183:          onPress={() => fetchCalendar({ growId, type: "HARVEST_WINDOW", limit: 50 })}
+src\screens\facility\HarvestAIMvpScreen.tsx:188:            {calLoading ? "Loading…" : "Refresh Calendar"}
+src\screens\TasksScreen.js:17:  getTasks,
+src\screens\TasksScreen.js:18:  createCustomTask,
+src\screens\TasksScreen.js:19:  completeTask,
+src\screens\TasksScreen.js:20:  reopenTask,
+src\screens\TasksScreen.js:21:  deleteTask
+src\screens\TasksScreen.js:25:export default function TasksScreen() {
+src\screens\TasksScreen.js:27:  const [tasks, setTasks] = useState([]);
+src\screens\TasksScreen.js:31:  const [editTask, setEditTask] = useState(null);
+src\screens\TasksScreen.js:38:    fetchTasks();
+src\screens\TasksScreen.js:42:  const fetchTasks = async () => {
+src\screens\TasksScreen.js:46:      const data = await getTasks(token);
+src\screens\TasksScreen.js:47:      setTasks(Array.isArray(data) ? data : data?.tasks || []);
+src\screens\TasksScreen.js:56:    setEditTask(null);
+src\screens\TasksScreen.js:63:    setEditTask(task);
+src\screens\TasksScreen.js:73:      if (editTask) {
+src\screens\TasksScreen.js:74:        // No direct updateTask API, so use complete/reopen for status, and delete+create for edit
+src\screens\TasksScreen.js:75:        if (editTask.completed !== completed) {
+src\screens\TasksScreen.js:76:          if (!editTask.id) {
+src\screens\TasksScreen.js:77:            Alert.alert("Error", "Task is missing an ID and cannot be updated.");
+src\screens\TasksScreen.js:82:            await completeTask(editTask.id, token);
+src\screens\TasksScreen.js:84:            await reopenTask(editTask.id, token);
+src\screens\TasksScreen.js:88:        if (editTask.title !== title) {
+src\screens\TasksScreen.js:89:          await deleteTask(editTask.id, token);
+src\screens\TasksScreen.js:90:          await createCustomTask({ title, completed }, token);
+src\screens\TasksScreen.js:93:        await createCustomTask({ title, completed }, token);
+src\screens\TasksScreen.js:96:      fetchTasks();
+src\screens\TasksScreen.js:105:    Alert.alert("Remove Task", `Are you sure you want to remove '${task.title}'?`, [
+src\screens\TasksScreen.js:112:            await deleteTask(task.id, token);
+src\screens\TasksScreen.js:113:            fetchTasks();
+src\screens\TasksScreen.js:124:      Alert.alert("Error", "Task is missing an ID and cannot be updated.");
+src\screens\TasksScreen.js:129:        await reopenTask(task.id, token);
+src\screens\TasksScreen.js:131:        await completeTask(task.id, token);
+src\screens\TasksScreen.js:133:      fetchTasks();
+src\screens\TasksScreen.js:139:  const filteredTasks = tasks.filter((t) =>
+src\screens\TasksScreen.js:145:      <Text style={styles.header}>Tasks</Text>
+src\screens\TasksScreen.js:169:          data={filteredTasks}
+src\screens\TasksScreen.js:195:        <Button title="Add Task" onPress={openAddModal} />
+src\screens\TasksScreen.js:206:            <Text style={styles.modalTitle}>{editTask ? "Edit Task" : "Add Task"}</Text>
+src\features\feed\api\feedApi.ts:41:export async function getTasks(params: Record<string, any>) {
+src\features\feed\api\feedApi.ts:46:export async function patchTask(id: string, body: Record<string, any>) {
+src\screens\facility\FacilityTasks.tsx:18:import { useTasks } from "../../hooks/useTasks";
+src\screens\facility\FacilityTasks.tsx:20:// Canonical Tasks screen:
+src\screens\facility\FacilityTasks.tsx:26:export default function FacilityTasks() {
+src\screens\facility\FacilityTasks.tsx:30:  const { data, isLoading, error, refetch, createTask, creating } = useTasks();
+src\screens\facility\FacilityTasks.tsx:59:        <Text style={styles.heading}>Tasks</Text>
+src\screens\facility\FacilityTasks.tsx:80:      await createTask({ title: t, description: description.trim() || undefined });
+src\screens\facility\FacilityTasks.tsx:89:  const pendingTasks = tasks.filter((t: any) => !t.completed);
+src\screens\facility\FacilityTasks.tsx:90:  const completedTasks = tasks.filter((t: any) => t.completed);
+src\screens\facility\FacilityTasks.tsx:92:  function renderTaskItem(item: any, section: "pending" | "completed") {
+src\screens\facility\FacilityTasks.tsx:159:        <Text style={styles.heading}>Tasks</Text>
+src\screens\facility\FacilityTasks.tsx:166:          <Text style={styles.createButtonText}>+ Add Task</Text>
+src\screens\facility\FacilityTasks.tsx:170:      {/* Task list or empty state */}
+src\screens\facility\FacilityTasks.tsx:182:              <Text style={styles.emptySubtext}>Tap + Add Task to create one</Text>
+src\screens\facility\FacilityTasks.tsx:187:            {pendingTasks.length > 0 && (
+src\screens\facility\FacilityTasks.tsx:189:                <Text style={styles.sectionTitle}>Pending ({pendingTasks.length})</Text>
+src\screens\facility\FacilityTasks.tsx:190:                {pendingTasks.map((task: any) => renderTaskItem(task, "pending"))}
+src\screens\facility\FacilityTasks.tsx:194:            {completedTasks.length > 0 && (
+src\screens\facility\FacilityTasks.tsx:197:                  Completed ({completedTasks.length})
+src\screens\facility\FacilityTasks.tsx:199:                {completedTasks.map((task: any) =>
+src\screens\facility\FacilityTasks.tsx:200:                  renderTaskItem({ ...task, title: `[✓] ${task.title}` }, "completed")
+src\screens\facility\FacilityTasks.tsx:217:            <Text style={styles.modalTitle}>Create New Task</Text>
+src\screens\facility\FacilityTasks.tsx:221:              placeholder="Task title"
+src\features\feed\components\FeedItemCard.tsx:41:  const { optimisticTaskStatus, optimisticAlertStatus } = useCommercialFeed({});
+src\features\feed\components\FeedItemCard.tsx:49:  const handleTaskAction = useCallback(async () => {
+src\features\feed\components\FeedItemCard.tsx:51:      await optimisticTaskStatus(item.id, item.status === "open" ? "done" : "open");
+src\features\feed\components\FeedItemCard.tsx:55:  }, [item, optimisticTaskStatus]);
+src\features\feed\components\FeedItemCard.tsx:87:            onPress={handleTaskAction}
+src\app\home\facility\ai\ask.tsx:205:                          <Text style={{ fontWeight: "900" }}>Create Task (Step 3)</Text>
+src\screens\SocialToolsScreen.js:16:import { getSocialAccounts, getSocialMetrics, schedulePost } from "../api/socialMedia.js";
+src\screens\SocialToolsScreen.js:29:  const [scheduledTime, setScheduledTime] = useState("");
+src\screens\SocialToolsScreen.js:82:      await schedulePost(selectedPlatforms, content, scheduledTime || undefined);
+src\screens\SocialToolsScreen.js:84:      Alert.alert("Success", "Post scheduled successfully.");
+src\screens\SocialToolsScreen.js:86:      Alert.alert("Error", err.message || "Failed to schedule post");
+src\screens\SocialToolsScreen.js:196:              value={scheduledTime}
+src\screens\GrowLogEntryScreen.js:252:        setFeedingSchedule(env.nutrients.schedule || "");
+src\screens\GrowLogEntryScreen.js:376:          schedule: feedingSchedule
+src\screens\GrowLogEntryScreen.js:403:  async function handleAutoTag() {
+src\screens\GrowLogEntryScreen.js:631:        {/* AI Auto-tag Button (edit mode only) */}
+src\screens\GrowLogEntryScreen.js:634:            onPress={handleAutoTag}
+src\screens\GrowLogEntryScreen.js:639:              {loading ? "Analyzing..." : "ðŸ¤– Auto-tag with AI"}
+src\screens\facility\FacilityTasksScreen.tsx:4:import { useFacilityTasks } from "../../hooks/useFacilityTasks";
+src\screens\facility\FacilityTasksScreen.tsx:9:function TaskRow({ task, onComplete }: { task: any; onComplete: () => void }) {
+src\screens\facility\FacilityTasksScreen.tsx:38:export default function FacilityTasksScreen() {
+src\screens\facility\FacilityTasksScreen.tsx:44:    createTask,
+src\screens\facility\FacilityTasksScreen.tsx:45:    completeTask,
+src\screens\facility\FacilityTasksScreen.tsx:47:  } = useFacilityTasks();
+src\screens\facility\FacilityTasksScreen.tsx:52:    await createTask({ title });
+src\screens\facility\FacilityTasksScreen.tsx:70:        actionLabel={creating ? "Creating..." : "Create Task"}
+src\screens\facility\FacilityTasksScreen.tsx:79:        Facility Tasks
+src\screens\facility\FacilityTasksScreen.tsx:99:          <TaskRow task={item} onComplete={() => completeTask(item.id)} />
+src\screens\GrowLogCalendarScreen.js:4:export default function GrowLogCalendarScreen() {
+src\screens\GrowLogCalendarScreen.js:14:      <Text style={styles.header}>Grow Log Calendar</Text>
+src\screens\ForumScreen.js:34:import { shouldAutoFetchMore } from "../utils/forumFeed.js";
+src\screens\PrivacyPolicyScreen.js:19:Automatically Collected Information: Usage Data, Device Information, Location Data (if permitted)
+src\screens\PricingMatrixScreen.js:38:      "Task assignment (staff-level)",
+src\app\home\facility\(tabs)\_layout.tsx:39:      <Tabs.Screen name="tasks" options={{ title: "Tasks" }} />
+src\features\feed\api\feedAdapter.ts:2:import { getTasks, getAlerts, getGrowLogs } from "./feedApi";
+src\features\feed\api\feedAdapter.ts:17:    getTasks(mergedParams),
+src\screens\PlanFeatureMatrixScreen.js:39:  ["Task Verification", "❌", "❌", "❌", "❌", "✅"],
+src\app\home\facility\(tabs)\dashboard.tsx:105:      { label: "Tasks", value: counts.tasks, to: "/home/facility/tasks" },
+src\screens\ScheduleScreen.js:4:import { groupTasks } from "../utils/schedule";
+src\screens\ScheduleScreen.js:5:import TaskRow from "../components/TaskRow";
+src\screens\ScheduleScreen.js:6:import { getTasks, completeTask } from "../api/tasks";
+src\screens\ScheduleScreen.js:13:  const [selectedTask, setSelectedTask] = useState(null);
+src\screens\ScheduleScreen.js:25:      const res = await getTasks();
+src\screens\ScheduleScreen.js:27:      setGroups(groupTasks(payload));
+src\screens\ScheduleScreen.js:29:      console.warn("Failed to load schedule:", err?.message || err);
+src\screens\ScheduleScreen.js:30:      setError("Unable to load schedule. Please try again.");
+src\screens\ScheduleScreen.js:40:  function handleSelectTask(task) {
+src\screens\ScheduleScreen.js:41:    setSelectedTask(task);
+src\screens\ScheduleScreen.js:47:    // Optional: Clear selectedTask after animation, but not strictly necessary if we just hide it.
+src\screens\ScheduleScreen.js:71:      Alert.alert("Error", "Task is missing an ID and cannot be completed.");
+src\screens\ScheduleScreen.js:75:      await completeTask(task._id);
+src\screens\ScheduleScreen.js:87:        <Text style={{ padding: 16 }}>Loading schedule…</Text>
+src\screens\ScheduleScreen.js:125:          Your schedule reflects intent, not obligation.
+src\screens\ScheduleScreen.js:128:          Tasks are reminders of what you planned — not commands you must follow. Your
+src\screens\ScheduleScreen.js:132:      <Section title="Overdue" tasks={groups.overdue} onSelect={handleSelectTask} />
+src\screens\ScheduleScreen.js:133:      <Section title="Today" tasks={groups.today} onSelect={handleSelectTask} />
+src\screens\ScheduleScreen.js:137:        onSelect={handleSelectTask}
+src\screens\ScheduleScreen.js:143:        onSelect={handleSelectTask}
+src\screens\ScheduleScreen.js:155:            <Text style={styles.modalTitle}>{selectedTask?.title}</Text>
+src\screens\ScheduleScreen.js:157:              {selectedTask?.plant && (
+src\screens\ScheduleScreen.js:158:                <Text style={styles.modalMeta}>🌱 {selectedTask.plant.name}</Text>
+src\screens\ScheduleScreen.js:160:              {selectedTask?.description ? (
+src\screens\ScheduleScreen.js:161:                <Text style={styles.modalBody}>{selectedTask.description}</Text>
+src\screens\ScheduleScreen.js:170:                {selectedTask?.dueDate
+src\screens\ScheduleScreen.js:171:                  ? new Date(selectedTask.dueDate).toLocaleDateString()
+src\screens\ScheduleScreen.js:174:              {selectedTask?.completed ? (
+src\screens\ScheduleScreen.js:178:                  Completed on {new Date(selectedTask.completedAt).toLocaleDateString()}
+src\screens\ScheduleScreen.js:183:                  onPress={() => handleComplete(selectedTask)}
+src\screens\ScheduleScreen.js:206:        <TaskRow key={task._id} task={task} onPress={() => onSelect(task)} />
+src\app\home\facility\(tabs)\tasks.tsx:36:  return String(x?.title ?? x?.name ?? x?.label ?? x?.type ?? "Task");
+src\app\home\facility\(tabs)\tasks.tsx:51:export default function FacilityTasksRoute() {
+src\app\home\facility\(tabs)\tasks.tsx:105:    <ScreenBoundary title="Tasks">
+src\app\home\facility\(tabs)\tasks.tsx:110:          <Text style={styles.h1}>Facility Tasks</Text>
+src\screens\personal\CalendarScreen.tsx:11:import { useCalendar } from "../../hooks/useCalendar";
+src\screens\personal\CalendarScreen.tsx:19:function CalendarScreenInner() {
+src\screens\personal\CalendarScreen.tsx:24:  const { data, isLoading, error, refetch } = useCalendar(startISO, endISO);
+src\screens\personal\CalendarScreen.tsx:54:          title="No schedule yet"
+src\screens\personal\CalendarScreen.tsx:72:export default function CalendarScreen() {
+src\screens\personal\CalendarScreen.tsx:79:  return <CalendarScreenInner />;

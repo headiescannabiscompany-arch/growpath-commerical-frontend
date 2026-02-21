@@ -1,0 +1,87 @@
+﻿tests\core\calendar.facility.contract.test.js:26:  const base = `/api/facility/${facilityId}/calendar`;
+tests\core\calendar.facility.contract.test.js:28:  test("STAFF can list calendar events (shape: { calendarEvents: [] })", async () => {
+tests\core\calendar.facility.contract.test.js:32:      calendarEvents: [
+tests\core\calendar.facility.contract.test.js:48:    expect(res.body).toHaveProperty("calendarEvents");
+tests\core\calendar.facility.contract.test.js:49:    expect(Array.isArray(res.body.calendarEvents)).toBe(true);
+tests\core\calendar.facility.contract.test.js:50:    expect(res.body.calendarEvents.length).toBe(1);
+tests\core\calendar.facility.contract.test.js:52:    const ev = res.body.calendarEvents[0];
+tests\core\calendar.facility.contract.test.js:65:      calendarEvents: [
+tests\core\calendar.facility.contract.test.js:86:    expect(res.body.calendarEvents.length).toBe(1);
+tests\core\calendar.facility.contract.test.js:87:    expect(res.body.calendarEvents[0].growId).toBe("grow_1");
+tests\core\calendar.facility.contract.test.js:94:      calendarEvents: [
+tests\core\calendar.facility.contract.test.js:115:    expect(res.body.calendarEvents.length).toBe(1);
+tests\core\calendar.facility.contract.test.js:116:    expect(res.body.calendarEvents[0].type).toBe("TOPDRESS");
+tests\core\calendar.facility.contract.test.js:123:      calendarEvents: [
+tests\core\calendar.facility.contract.test.js:144:    const dates = res.body.calendarEvents.map((e) => e.date);
+tests\core\calendar.facility.contract.test.js:162:      calendarEvents: many
+tests\core\calendar.facility.contract.test.js:170:    expect(res.body.calendarEvents.length).toBe(200);
+tests\core\calendar.facility.contract.test.js:177:      calendarEvents: [
+tests\core\calendar.facility.contract.test.js:204:    expect(res.body.calendarEvents.length).toBe(1);
+tests\core\calendar.facility.contract.test.js:205:    expect(res.body.calendarEvents[0].title).toBe("B");
+tests\core\calendar.facility.contract.test.js:212:      calendarEvents: [
+tests\core\calendar.facility.contract.test.js:235:    expect(res.body.calendarEvents.length).toBe(1);
+tests\core\calendar.facility.contract.test.js:236:    expect(res.body.calendarEvents[0].title).toBe("Alive");
+docs\AI_FEATURE_MATRIX.md:43:GET /api/facility/:facilityId/calendar
+docs\AI_FEATURE_MATRIX.md:44:GET /api/facilities/:facilityId/calendar (dual mount)
+docs\AI_FEATURE_MATRIX.md:55:  calendarEvents: [
+docs\AI_FEATURE_MATRIX.md:80:| `harvest` | `estimateHarvestWindow` | Form card               | `daysSinceFlip`, `goal` (balanced\|yield\|potency), `distribution` ({clear, cloudy, amber}) | Display `recommendation`, `partialHarvestFlag`, `confidence`, window dates (min/ideal/max) | `HarvestDecision` + 3× `CalendarEvent` (HARVEST_WINDOW) | GET /calendar?growId=X&type=HARVEST_WINDOW | Spam guard: soft-delete old HARVEST_WINDOW before insert new | STAFF+       |
+tests\unit\calendar-utils.test.js:2:import { groupItemsByDate, toDateKey } from "../../src/utils/calendar.js";
+tests\unit\calendar-utils.test.js:4:describe("calendar utils", () => {
+docs\CANONICAL_ROUTE_MATRIX.md:81:  - `/tools/timeline` → TimelinePlannerScreen
+src\api\calendar.ts:16:  // GET /api/calendar?start=...&end=...
+src\api\calendar.ts:18:    `/calendar?start=${encodeURIComponent(startISO)}&end=${encodeURIComponent(endISO)}`
+src\api\calendar.ts:23:  // POST /api/calendar
+src\api\calendar.ts:24:  return api.post(`/calendar`, data);
+docs\contracts\TEMPORAL_CONTRACT.md:3:This contract prevents drift in all time-based logic (tasks, calendars, AI tools, audit trails).
+docs\contracts\TEMPORAL_CONTRACT.md:22:Even simple tools receive `TimeContext` so the brain can reason over timelines consistently.
+docs\contracts\TEMPORAL_CONTRACT.md:31:- `anchors?: { vegStartIso?: string; flipDateIso?: string; flowerDay1Iso?: string }`
+docs\contracts\TEMPORAL_CONTRACT.md:39:  "anchors": { "flowerDay1Iso": "2026-01-05T05:00:00.000Z" },
+docs\contracts\TEMPORAL_CONTRACT.md:55:- Audit / compliance timelines
+docs\contracts\CAPABILITY_KEYS.md:12:| calendar | src\screens\personal\CalendarScreen.tsx |  |
+docs\contracts\CAPABILITY_KEYS.json:15:        "capabilityKey":  "calendar",
+docs\qa\V1_SCOPE_LOCK.md:112:- Auto Grow Calendar AI optimization (beyond deterministic calendar)
+docs\GROWPATH_TOOL_FUNCTION_SPEC_V1.0.1_HARDENED.md:107:  "tool": "harvest|steering|light|climate|risk|nutrients|fert|ec|soil|topdress|diagnosis|pheno|runs|calendar|tasks",
+docs\GROWPATH_TOOL_FUNCTION_SPEC_V1.0.1_HARDENED.md:723:- `calendar.generateCalendar`
+docs\GROWPATH_TOOL_FUNCTION_SPEC_V1.0.1_HARDENED.md:724:- `calendar.updateCalendarOnEvent`
+docs\GROWPATH_TOOL_FUNCTION_SPEC_V1.0.1_HARDENED.md:789:**Returns:** `{ harvestPlanId, calendarEventId }`
+docs\GROWPATH_TOOL_FUNCTION_SPEC_V1.0.1_HARDENED.md:1102:#### calendar.generateCalendar
+docs\GROWPATH_TOOL_FUNCTION_SPEC_V1.0.1_HARDENED.md:1108:#### calendar.updateCalendarOnEvent
+src\navigation\pageRegistry.personal.js:36:    icon: "calendar-outline",
+src\navigation\pageRegistry.personal.js:37:    capabilityKey: "personal.calendar",
+src\api\routes.js:195:    TIMELINE: `${PREFIX}/creator/enrollment-timeline`,
+src\api\routes.js:200:    REVENUE: `${PREFIX}/creator/revenue-timeline`
+src\hooks\useCalendarEvents.ts:40:        const res = await apiRequest<{ calendarEvents: CalendarEvent[] }>(
+src\hooks\useCalendarEvents.ts:41:          `/api/facility/${encodeURIComponent(facilityId)}/calendar?${qs.toString()}`
+src\hooks\useCalendarEvents.ts:44:        setItems(res.calendarEvents || []);
+src\hooks\useCalendarEvents.ts:45:        return res.calendarEvents || [];
+src\hooks\useCalendarEvents.ts:47:        setError(e?.message || "Failed to load calendar");
+src\screens\CategoryBrowserScreen.js:16:  { key: "calendar", title: "Calendar", subtitle: "Tasks and events" },
+src\screens\CategoryBrowserScreen.js:39:      calendar: "Calendar",
+src\hooks\useCalendar.ts:20:    queryKey: ["calendar", startISO, endISO],
+src\hooks\useCalendar.ts:26:      return await apiRequest<T>(`/api/calendar${qs}`, {
+src\screens\commercial\SocialMediaScreen.js:372:              name="calendar-clock"
+src\screens\commercial\AdvertisingScreen.js:283:                        name="calendar-outline"
+src\screens\CreatorDashboardV2.js:85:  // Convert timelines to chart data
+src\screens\GrowLogScreen.js:59:          <Text style={styles.li}>• Activity timeline</Text>
+src\screens\facility\HarvestAIMvpScreen.tsx:21: * 4. GET /api/facility/:facilityId/calendar to display created events
+src\screens\facility\HarvestAIMvpScreen.tsx:32:    items: calendarItems,
+src\screens\facility\HarvestAIMvpScreen.tsx:192:        {calendarItems.length === 0 ? (
+src\screens\facility\HarvestAIMvpScreen.tsx:195:          calendarItems.map((e) => (
+src\screens\facility\HarvestWindowScreen.tsx:29: * 4. GET /api/facility/:facilityId/calendar to display created events
+src\screens\facility\HarvestWindowScreen.tsx:42:    items: calendarItems,
+src\screens\facility\HarvestWindowScreen.tsx:201:        {calendarItems.length === 0 ? (
+src\screens\facility\HarvestWindowScreen.tsx:204:          calendarItems.map((e) => (
+src\screens\facility\NutrientToolsScreen.js:41:      icon: "calendar-check",
+src\screens\personal\CalendarScreen.tsx:77:  if (!capabilities.calendar) return <NotEntitledScreen />;
+src\screens\PricingMatrixScreen.js:43:      "Central calendar across rooms",
+src\screens\PlantDetailScreen.js:184:              style={styles.timelineScroll}
+src\screens\PlantDetailScreen.js:190:                    styles.timelineItem,
+src\screens\PlantDetailScreen.js:191:                    selectedLogIndex === index && styles.timelineItemActive
+src\screens\PlantDetailScreen.js:197:                      styles.timelineText,
+src\screens\PlantDetailScreen.js:198:                      selectedLogIndex === index && styles.timelineTextActive
+src\screens\PlantDetailScreen.js:433:  timelineScroll: {
+src\screens\PlantDetailScreen.js:436:  timelineItem: {
+src\screens\PlantDetailScreen.js:445:  timelineItemActive: {
+src\screens\PlantDetailScreen.js:448:  timelineText: {
+src\screens\PlantDetailScreen.js:453:  timelineTextActive: {
+src\screens\PlantsScreen.js:57:          {!locked && <Pill text="• Photo timeline per plant" />}

@@ -24,6 +24,7 @@ const fs = require("fs");
 const TrichomeAnalysis = require("../models/TrichomeAnalysis");
 const HarvestDecision = require("../models/HarvestDecision");
 const CalendarEvent = require("../models/CalendarEvent");
+const { computeEcCorrection } = require("../utils/ecCorrection");
 
 const router = express.Router({ mergeParams: true });
 
@@ -171,7 +172,15 @@ function handleClimateComputeVPD(args, ctx) {
  * Deterministic with impact gate (max delta = 0.2)
  */
 function handleECRecommendCorrection(args, ctx) {
-  const { currentEC, targetEC } = args;
+  const {
+    currentEC,
+    targetEC,
+    reservoirVolumeL,
+    ecPerMlPerL,
+    ecPerGramPerL,
+    tolerance,
+    timeContext
+  } = args;
   if (currentEC === undefined || targetEC === undefined) {
     return { error: "MISSING_REQUIRED_INPUTS", status: 400 };
   }
@@ -188,6 +197,22 @@ function handleECRecommendCorrection(args, ctx) {
   }
 
   const deltaEC = targetEC - currentEC;
+  const correction = computeEcCorrection({
+    currentEC,
+    targetEC,
+    reservoirVolumeL,
+    ecPerMlPerL,
+    ecPerGramPerL,
+    tolerance
+  });
+
+  const note =
+    correction.action === "dilute"
+      ? "Dilute reservoir to target EC"
+      : correction.action === "increase"
+        ? "Increase EC to target"
+        : "No EC change needed";
+
   const task = {
     id: `task_${Date.now()}`,
     type: "Task",
@@ -201,10 +226,18 @@ function handleECRecommendCorrection(args, ctx) {
       id: `ecfix_${Date.now()}`,
       tool: "ec",
       fn: "recommendCorrection",
-      input: { currentEC, targetEC },
-      result: { deltaEC, delta },
+      input: {
+        currentEC,
+        targetEC,
+        reservoirVolumeL,
+        ecPerMlPerL,
+        ecPerGramPerL,
+        tolerance
+      },
+      result: { deltaEC, delta, ...correction },
       confidence: 0.9,
-      recommendation: `Add ${deltaEC > 0 ? "nutrient" : "water"} to reach target EC`,
+      recommendation: note,
+      timeContext: timeContext || null,
       writes: [task]
     }
   };

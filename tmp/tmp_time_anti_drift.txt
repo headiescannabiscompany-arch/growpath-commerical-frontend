@@ -1,0 +1,153 @@
+﻿tests\acceptance\userStories.test.js:130:              createdAt: new Date().toISOString(),
+tests\acceptance\userStories.test.js:137:              createdAt: new Date().toISOString(),
+tests\acceptance\userStories.test.js:243:    const email = `test-${Date.now()}@example.com`;
+tests\acceptance\userStories.test.js:409:      const followEmail = `follow-${Date.now()}@example.com`;
+tests\acceptance\dashboard_feed.test.js:87:              createdAt: new Date().toISOString(),
+tests\acceptance\dashboard_feed.test.js:94:              createdAt: new Date().toISOString(),
+tests\acceptance\dashboard_feed.test.js:118:      const email = `test-feed-${Date.now()}@example.com`;
+tests\ForumPostDetailScreen.qa.test.js:28:  createdAt: new Date().toISOString(),
+tests\ai\ai.schema.drift.test.js:36:  return new Date().toISOString();
+docs\AI_FEATURE_MATRIX.md:143:    { deletedAt: new Date() }
+tests\fixtures\backend-test-setup.md:35:  createdAt: new Date(),
+tests\fixtures\backend-test-setup.md:36:  updatedAt: new Date()
+docs\contracts\TEMPORAL_CONTRACT.md:15:3) Deterministic logic must not call `Date.now()` directly
+docs\contracts\TEMPORAL_CONTRACT.md:16:- No raw `Date.now()` / `new Date()` inside deterministic engines (calculators, generators).
+docs\contracts\TEMPORAL_CONTRACT.md:18:  - Backend: `clock.nowIso()` (or equivalent)
+docs\contracts\TEMPORAL_CONTRACT.md:21:4) AI calls must include TimeContext
+docs\contracts\TEMPORAL_CONTRACT.md:22:Even simple tools receive `TimeContext` so the brain can reason over timelines consistently.
+docs\contracts\TEMPORAL_CONTRACT.md:24:## TimeContext Schema
+docs\contracts\TEMPORAL_CONTRACT.md:46:- If a function depends on current time, it must accept nowIso (directly or via TimeContext).
+docs\contracts\TEMPORAL_CONTRACT.md:47:- Snapshot tests must pass with the same outputs given the same TimeContext.
+tests\unit\calendar-utils.test.js:9:    const fromDate = toDateKey(new Date("2024-01-02T00:00:00.000Z"));
+tests\playwright\tasks-live.spec.js:113:      const taskName = `Task ${Date.now()}`;
+tests\playwright\rooms-live.spec.js:118:      const roomName = `Room ${Date.now()}`;
+tests\core\calendar.facility.contract.test.js:36:          date: new Date("2026-02-10T12:00:00.000Z"),
+tests\core\calendar.facility.contract.test.js:69:          date: new Date("2026-02-10Z"),
+tests\core\calendar.facility.contract.test.js:75:          date: new Date("2026-02-11Z"),
+tests\core\calendar.facility.contract.test.js:98:          date: new Date("2026-02-10Z"),
+tests\core\calendar.facility.contract.test.js:104:          date: new Date("2026-02-09Z"),
+tests\core\calendar.facility.contract.test.js:127:          date: new Date("2026-02-12Z"),
+tests\core\calendar.facility.contract.test.js:133:          date: new Date("2026-02-10Z"),
+tests\core\calendar.facility.contract.test.js:154:        date: new Date(Date.UTC(2026, 1, 1, 0, 0, i)),
+tests\core\calendar.facility.contract.test.js:181:          date: new Date("2026-02-01T00:00:00Z"),
+tests\core\calendar.facility.contract.test.js:187:          date: new Date("2026-02-10T00:00:00Z"),
+tests\core\calendar.facility.contract.test.js:193:          date: new Date("2026-02-20T00:00:00Z"),
+tests\core\calendar.facility.contract.test.js:216:          date: new Date("2026-02-10Z"),
+tests\core\calendar.facility.contract.test.js:223:          date: new Date("2026-02-11Z"),
+tests\core\calendar.facility.contract.test.js:225:          deletedAt: new Date()
+tests\playwright\plants.spec.js:68:        const newPlant = { _id: `plant-${Date.now()}`, ...payload };
+tests\playwright\plants-live.spec.js:120:      const testName = `Plant ${Date.now()}`;
+tests\playwright\grows.spec.js:79:          _id: `grow-${Date.now()}`,
+tests\playwright\equipment.spec.js:66:        const newEq = { _id: `eq-${Date.now()}`, ...payload };
+tests\playwright\equipment-live.spec.js:130:    const testName = `Test Equipment ${Date.now()}`;
+tests\playwright\equipment-live.spec.js:162:    const testName = `CRUD Test ${Date.now()}`;
+tests\playwright\dashboard-feed.spec.js:13:    createdAt: new Date().toISOString(),
+tests\playwright\dashboard-feed.spec.js:20:    createdAt: new Date().toISOString(),
+tests\playwright\compliance-live.spec.js:189:      const sopName = `SOP ${Date.now()}`;
+tests\playwright\commercial-live.spec.js:169:      const vendorName = `Vendor ${Date.now()}`;
+docs\qa\V1_SCOPE_LOCK.md:15:  - TimeContext (nowIso, timezone)
+docs\qa\V1_SCOPE_LOCK.md:39:  - TimeContext
+docs\qa\V1_SCOPE_LOCK.md:49:- Produces same window given same anchors + TimeContext
+docs\qa\V1_SCOPE_LOCK.md:61:  - TimeContext
+docs\qa\V1_SCOPE_LOCK.md:85:  - TimeContext
+src\utils\schedule.js:2:  const today = new Date();
+src\utils\schedule.js:18:    const due = new Date(task.dueDate);
+src\screens\AdminReportsScreen.js:81:                {new Date(item.createdAt).toLocaleString()}
+src\screens\AdminPayoutsScreen.js:68:                  {new Date(item.createdAt).toLocaleDateString()}
+src\utils\notifications.js:32:  const triggerDate = new Date(task.dueDate);
+src\utils\notifications.js:33:  if (triggerDate <= new Date()) return;
+src\screens\CreatorPayoutScreen.js:129:            const date = new Date(item.createdAt).toLocaleDateString();
+src\screens\DebugScreen.js:24:      ts: new Date().toISOString()
+src\screens\DashboardScreen.js:55:  const startOfDay = new Date();
+src\screens\DashboardScreen.js:57:  const endOfDay = new Date(startOfDay);
+src\screens\DashboardScreen.js:65:    const dueDate = task.dueDate ? new Date(task.dueDate) : null;
+src\screens\DashboardScreen.js:67:      const normalizedDue = new Date(dueDate);
+src\screens\DashboardScreen.js:77:      const completedAt = new Date(task.completedAt);
+src\screens\CreateTaskScreen.js:44:      finalDate = new Date(y, m - 1, d).toISOString();
+src\screens\EarningsScreen.js:177:                    {new Date(item.createdAt).toLocaleDateString()}
+src\utils\calendar.js:3:  const date = value instanceof Date ? value : new Date(value);
+src\screens\DiagnosisHistoryScreen.js:34:        <Text style={styles.sub}>{new Date(item.createdAt).toLocaleString()}</Text>
+src\screens\CreatePlantScreen.js:83:      formData.append("startDate", new Date().toISOString());
+src\screens\ForumPostDetailScreen.js:217:            {new Date(post.createdAt).toLocaleDateString()}
+src\features\feed\utils\feedFormat.ts:3:  const date = new Date(ts);
+src\screens\ForumScreen.js:165:              {new Date(item.createdAt).toLocaleDateString()}
+src\screens\commercial\InfluencerDashboardScreen.js:276:                      {item.platform} • {new Date(item.date).toLocaleDateString()}
+src\screens\facility\AuditLogScreen.js:137:                  {new Date(item.createdAt).toLocaleString()}
+src\screens\GrowLogCalendarScreen.js:6:  const today = new Date();
+src\screens\GrowLogCalendarScreen.js:9:  const daysInMonth = new Date(year, month + 1, 0).getDate();
+src\screens\GrowLogDetailScreen.js:131:  const dateLabel = entry.date ? new Date(entry.date).toLocaleString() : "";
+src\screens\GrowLogEntryScreen.js:49:    route.params?.date || new Date().toISOString().split("T")[0];
+src\screens\GrowLogEntryScreen.js:214:      setEntryDate(new Date(e.date).toISOString().split("T")[0]);
+src\screens\GrowLogEntryScreen.js:337:        finalDate = new Date(y, m - 1, d);
+src\screens\GrowLogEntryScreen.js:339:        finalDate = new Date(entryDate);
+src\screens\facility\DeviationHandlingScreen.js:149:                  Reported: {new Date(item.createdAt).toLocaleDateString()}
+src\screens\facility\DeviationHandlingScreen.js:154:                  Resolved: {new Date(item.resolvedAt).toLocaleDateString()}
+src\screens\facility\ComplianceLogsScreen.tsx:123:              {item.type} • {new Date(item.createdAt).toLocaleString()}
+src\screens\facility\BillingAndReportingScreen.js:129:    ? new Date(billing.graceUntil).toLocaleDateString()
+src\screens\facility\BillingAndReportingScreen.js:132:    ? new Date(billing.currentPeriodEnd).toLocaleDateString()
+src\screens\facility\FacilityTasks.tsx:105:              Due: {new Date(item.dueDate || item.dueAt).toLocaleDateString()}
+src\screens\facility\GreenWasteScreen.js:124:                  Logged: {new Date(item.createdAt).toLocaleDateString()}
+src\screens\facility\SOPTemplatesScreen.js:202:                  Created: {new Date(item.createdAt).toLocaleDateString()}
+src\screens\facility\TeamScreen.js:62:                  {new Date(member.joinedDate).toLocaleDateString()}
+src\screens\HarvestEstimatorScreen.js:18:    const planted = new Date(plantDate);
+src\screens\HarvestEstimatorScreen.js:23:    const harvest = new Date(planted);
+src\screens\LiveSessionsListScreen.js:51:              Start: {new Date(item.startsAt).toLocaleString()}
+src\features\feed\components\FeedItemCard.tsx:81:      <Text style={styles.timestamp}>{new Date(item.createdAt).toLocaleString()}</Text>
+src\api\events.ts:29:      ts: new Date().toISOString()
+src\screens\personal\CalendarScreen.tsx:14:  const start = new Date(date.getFullYear(), date.getMonth(), 1);
+src\screens\personal\CalendarScreen.tsx:15:  const end = new Date(date.getFullYear(), date.getMonth() + 1, 0, 23, 59, 59, 999);
+src\screens\personal\CalendarScreen.tsx:23:  const [startISO, endISO] = React.useMemo(() => getMonthRange(new Date()), []);
+src\screens\PlantDetailScreen.js:153:              {firstLog?.date ? new Date(firstLog.date).toLocaleDateString() : "N/A"}
+src\screens\PlantDetailScreen.js:172:                ? new Date(selectedLog.date).toLocaleDateString()
+src\screens\PlantDetailScreen.js:229:    ? Math.floor((new Date() - new Date(plant.startDate)) / (1000 * 60 * 60 * 24))
+src\screens\PlantDetailScreen.js:280:                    {log.date ? new Date(log.date).toLocaleDateString() : "N/A"}
+src\screens\ProfileCertificatesScreen.js:54:                    ✓ Completed {new Date(item.completedAt).toLocaleDateString()}
+src\features\feed\api\feedAdapter.ts:71:    (a, b) => new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime()
+src\screens\ScheduleScreen.js:171:                  ? new Date(selectedTask.dueDate).toLocaleDateString()
+src\screens\ScheduleScreen.js:178:                  Completed on {new Date(selectedTask.completedAt).toLocaleDateString()}
+src\api\me.ts:40:    Date.now() - lastFetchedAt < CACHE_WINDOW_MS
+src\api\me.ts:63:        lastFetchedAt = Date.now();
+src\screens\StorefrontScreen.js:154:        id: `tmp_${Date.now()}`,
+src\screens\SubscriptionStatusScreen.js:74:  const expiry = status?.expiry ? new Date(status.expiry).toLocaleDateString() : null;
+src\components\commercial\CommercialFeedCard.tsx:90:          {new Date(post.createdAt).toLocaleString()}
+src\screens\TokenInfoScreen.js:94:                    Next refresh: {new Date(balance.nextRefresh).toLocaleDateString()}
+src\screens\TokenInfoScreen.js:116:                Next refresh: {new Date(balance.nextRefresh).toLocaleDateString()}
+src\screens\VerifyCertificateScreen.js:77:            {new Date(cert.completedAt).toLocaleDateString()}
+src\screens\WateringSchedulerScreen.js:18:    const last = new Date(lastWatered);
+src\screens\WateringSchedulerScreen.js:20:    const next = new Date(last);
+src\app\home\facility\compliance\reports.tsx:104:                    Period: {new Date(item.periodStart).toLocaleDateString()} →{" "}
+src\app\home\facility\compliance\reports.tsx:105:                    {new Date(item.periodEnd).toLocaleDateString()}
+src\app\home\facility\compliance\reports.tsx:108:                    Saved: {new Date(item.createdAt).toLocaleString()}
+src\features\dashboard\hooks.ts:44:        (t: any) => t.dueDate && new Date(t.dueDate) < new Date() && t.status !== "DONE"
+src\features\dashboard\hooks.ts:48:        const d = new Date(t.completedAt);
+src\features\dashboard\hooks.ts:49:        const now = new Date();
+src\features\dashboard\hooks.ts:50:        const weekAgo = new Date(now.getFullYear(), now.getMonth(), now.getDate() - 7);
+src\features\dashboard\hooks.ts:73:          const start = new Date(g.startDate);
+src\features\dashboard\hooks.ts:74:          const now = new Date();
+src\app\home\facility\compliance\report-detail.tsx:78:            Period: {new Date(item.periodStart).toLocaleDateString()} →{" "}
+src\app\home\facility\compliance\report-detail.tsx:79:            {new Date(item.periodEnd).toLocaleDateString()}
+src\app\home\personal\(tabs)\ai\index.tsx:98:          loadedAt: new Date().toLocaleTimeString()
+src\app\home\facility\sop-runs\presets.tsx:110:                    {item.createdAt ? new Date(item.createdAt).toLocaleString() : ""}
+src\app\home\facility\sop-runs\index.tsx:38:  const t = new Date(x).getTime();
+src\app\home\facility\sop-runs\index.tsx:40:  return new Date(x).toLocaleString();
+src\app\home\facility\sop-runs\index.tsx:103:      const ta = new Date(a.createdAt || 0).getTime();
+src\app\home\facility\sop-runs\index.tsx:104:      const tb = new Date(b.createdAt || 0).getTime();
+src\app\home\facility\audit-logs\index.tsx:39:  const t = new Date(x).getTime();
+src\app\home\facility\audit-logs\index.tsx:41:  return new Date(x).toLocaleString();
+src\app\home\facility\audit-logs\index.tsx:93:      const ta = new Date(a.createdAt || 0).getTime();
+src\app\home\facility\audit-logs\index.tsx:94:      const tb = new Date(b.createdAt || 0).getTime();
+src\app\home\facility\(tabs)\compliance.tsx:102:        const now = Date.now();
+src\app\home\facility\(tabs)\compliance.tsx:106:          (g: any) => g.date && now - new Date(g.date).getTime() <= ms7d
+src\app\home\facility\(tabs)\compliance.tsx:109:          (g: any) => g.date && now - new Date(g.date).getTime() <= ms30d
+src\app\home\facility\(tabs)\compliance.tsx:122:          (a) => a.date && now - new Date(a.date).getTime() <= ms7d
+src\app\home\facility\(tabs)\compliance.tsx:125:          (a) => a.date && now - new Date(a.date).getTime() <= ms30d
+src\app\home\facility\(tabs)\compliance.tsx:137:          (a: any) => a.createdAt && now - new Date(a.createdAt).getTime() <= ms7d
+src\app\home\facility\(tabs)\compliance.tsx:140:          (a: any) => a.createdAt && now - new Date(a.createdAt).getTime() <= ms30d
+src\features\compliance\ai4\dashboard\buildDashboardModel.ts:3:// No Date.now(), no routing, no placeholder outputs
+src\features\compliance\ai4\dashboard\buildDashboardModel.ts:62:    const aTime = new Date(a.createdAt || a.weekStart || "1970-01-01").getTime();
+src\features\compliance\ai4\dashboard\buildDashboardModel.ts:63:    const bTime = new Date(b.createdAt || b.weekStart || "1970-01-01").getTime();
+src\features\compliance\ai4\dashboard\buildDashboardModel.ts:153:      (a, b) => new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime()
+src\features\compliance\ai4\dashboard\buildDashboardModel.ts:204:        new Date(b.lastSeenAt).getTime() - new Date(a.lastSeenAt).getTime()
+src\app\home\personal\(tabs)\grows\new.tsx:30:      router.replace(`/home/personal/grows?r=${Date.now()}`);
+src\app\home\facility\(tabs)\inventory.tsx:84:      const ta = new Date(a.updatedAt || 0).getTime();
+src\app\home\facility\(tabs)\inventory.tsx:85:      const tb = new Date(b.updatedAt || 0).getTime();
