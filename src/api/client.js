@@ -4,15 +4,17 @@
  * CONTRACT:
  * - apiRequest is the only network client.
  * - Keep this file for legacy imports: `import apiClient from "./client.js"`
- * - ALSO export named `client` + `api` for tests/legacy.
+ * - Also export named `client` + `api` for tests/legacy.
  * - No top-level await.
  */
 
-import { apiRequest } from "./apiRequest";
+import { apiRequest, API_URL, ApiError } from "./apiRequest";
 
-// Lightweight auth helpers for legacy/tests
+// Legacy auth helpers (for tests / older callers)
 let _authToken = null;
 let _tokenGetter = null;
+
+export { API_URL, ApiError };
 
 export function setAuthToken(token) {
   _authToken = token ? String(token) : null;
@@ -30,13 +32,20 @@ export function setTokenGetter(fn) {
   _tokenGetter = typeof fn === "function" ? fn : null;
 }
 
-async function applyLegacyAuth(options = {}) {
+function normalizeTokenArg(options, tokenArg) {
+  if (typeof options === "string" && !tokenArg) {
+    return { options: {}, token: options };
+  }
+  return { options: options || {}, token: tokenArg || null };
+}
+
+async function applyLegacyAuth(options = {}, tokenArg = null) {
   const opts = { ...(options || {}) };
   const headers = { ...(opts.headers || {}) };
 
-  // Prefer tokenGetter, fallback to setAuthToken()
-  let token = null;
-  if (_tokenGetter) {
+  let token = tokenArg || null;
+
+  if (!token && _tokenGetter) {
     try {
       token = await Promise.resolve(_tokenGetter());
     } catch (_e) {
@@ -53,41 +62,53 @@ async function applyLegacyAuth(options = {}) {
   return opts;
 }
 
-async function apiClient(path, options = {}, _tokenIgnored) {
-  const opts = await applyLegacyAuth(options);
+async function apiClient(path, options = {}, tokenArg = null) {
+  const opts = await applyLegacyAuth(options, tokenArg);
   return apiRequest(path, opts);
 }
 
 // Legacy helper aliases
-apiClient.request = (path, options = {}, _token) => apiClient(path, options, _token);
+apiClient.request = (path, options = {}, tokenArg) => apiClient(path, options, tokenArg);
 
-apiClient.get = (path, options = {}, _token) =>
-  apiClient(path, { ...(options || {}), method: "GET" }, _token);
-
-apiClient.delete = (path, options = {}, _token) =>
-  apiClient(path, { ...(options || {}), method: "DELETE" }, _token);
-
-apiClient.post = (path, body, options = {}, _token) => {
-  const opts = { ...(options || {}), method: "POST" };
-  if (body !== undefined) opts.body = body;
-  return apiClient(path, opts, _token);
+apiClient.get = (path, options = {}, tokenArg) => {
+  const norm = normalizeTokenArg(options, tokenArg);
+  return apiClient(path, { ...(norm.options || {}), method: "GET" }, norm.token);
 };
 
-apiClient.put = (path, body, options = {}, _token) => {
-  const opts = { ...(options || {}), method: "PUT" };
-  if (body !== undefined) opts.body = body;
-  return apiClient(path, opts, _token);
+apiClient.delete = (path, options = {}, tokenArg) => {
+  const norm = normalizeTokenArg(options, tokenArg);
+  return apiClient(path, { ...(norm.options || {}), method: "DELETE" }, norm.token);
 };
 
-apiClient.patch = (path, body, options = {}, _token) => {
-  const opts = { ...(options || {}), method: "PATCH" };
+apiClient.post = (path, body, options = {}, tokenArg) => {
+  const norm = normalizeTokenArg(options, tokenArg);
+  const opts = { ...(norm.options || {}), method: "POST" };
   if (body !== undefined) opts.body = body;
-  return apiClient(path, opts, _token);
+  return apiClient(path, opts, norm.token);
 };
 
-apiClient.postMultipart = (path, formData, options = {}, _token) => {
-  const opts = { ...(options || {}), method: "POST", body: formData };
-  return apiClient(path, opts, _token);
+apiClient.put = (path, body, options = {}, tokenArg) => {
+  const norm = normalizeTokenArg(options, tokenArg);
+  const opts = { ...(norm.options || {}), method: "PUT" };
+  if (body !== undefined) opts.body = body;
+  return apiClient(path, opts, norm.token);
+};
+
+apiClient.patch = (path, body, options = {}, tokenArg) => {
+  const norm = normalizeTokenArg(options, tokenArg);
+  const opts = { ...(norm.options || {}), method: "PATCH" };
+  if (body !== undefined) opts.body = body;
+  return apiClient(path, opts, norm.token);
+};
+
+apiClient.postMultipart = (path, formData, options = {}, tokenArg) => {
+  const norm = normalizeTokenArg(options, tokenArg);
+  const opts = { ...(norm.options || {}), method: "POST", body: formData };
+  const headers = { ...(opts.headers || {}) };
+  if (headers["Content-Type"]) delete headers["Content-Type"];
+  if (headers["content-type"]) delete headers["content-type"];
+  opts.headers = headers;
+  return apiClient(path, opts, norm.token);
 };
 
 // IMPORTANT: named exports for tests/legacy

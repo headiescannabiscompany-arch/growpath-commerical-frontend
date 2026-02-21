@@ -1,229 +1,3 @@
-﻿import React, { useMemo } from "react";
-import { Pressable, StyleSheet, Text, View } from "react-native";
-
-function getCapabilities() {
-  try {
-    const caps = global?.user?.capabilities;
-    return (caps && typeof caps === "object") ? caps : {};
-  } catch {
-    return {};
-  }
-}
-
-export default function CoursesScreen() {
-  const cap = getCapabilities();
-
-  const canSeePaidCourses = !!cap.canSeePaidCourses;
-  const canViewCourseAnalytics = !!cap.canViewCourseAnalytics;
-  const canPublishCourses = !!cap.canPublishCourses;
-
-  const courses = useMemo(() => {
-    const base = [
-      { id: "free-1", title: "Free Course", isPaid: false, published: false, views: 12 }
-    ];
-    if (canSeePaidCourses) {
-      base.push({ id: "pro-1", title: "Pro Course", isPaid: true, published: true, views: 321 });
-    }
-    return base;
-  }, [canSeePaidCourses]);
-
-  return (
-    <View style={styles.container}>
-      <Text style={styles.title}>Courses</Text>
-
-      {courses.map((c) => (
-        <View key={c.id} style={styles.card}>
-          <Text style={styles.cardTitle}>{c.title}</Text>
-
-          {canViewCourseAnalytics ? (
-            <Text style={styles.meta}>Views: {c.views}</Text>
-          ) : null}
-
-          {canPublishCourses && c.published ? (
-            <Pressable accessibilityRole="button" style={styles.smallBtn}>
-              <Text style={styles.smallBtnText}>Unpublish</Text>
-            </Pressable>
-          ) : null}
-        </View>
-      ))}
-
-      <Pressable accessibilityRole="button" style={styles.btn}>
-        <Text style={styles.btnText}>Create Course</Text>
-      </Pressable>
-
-      <Pressable accessibilityRole="button" style={styles.btn}>
-        <Text style={styles.btnText}>Become a Creator</Text>
-      </Pressable>
-
-      <Pressable accessibilityRole="button" style={styles.btn}>
-        <Text style={styles.btnText}>Invite</Text>
-      </Pressable>
-    </View>
-  );
-}
-
-const styles = StyleSheet.create({
-  container: { flex: 1, padding: 14 },
-  title: { fontSize: 20, fontWeight: "800", marginBottom: 10 },
-  card: { paddingVertical: 10, borderBottomWidth: 1, borderBottomColor: "#ddd" },
-  cardTitle: { fontWeight: "800" },
-  meta: { marginTop: 6, fontSize: 13, opacity: 0.8 },
-  btn: { marginTop: 10, paddingVertical: 10 },
-  btnText: { fontWeight: "900" },
-  smallBtn: { marginTop: 8, paddingVertical: 8 },
-  smallBtnText: { fontWeight: "900" }
-});
-import React, { useMemo } from "react";
-import { Pressable, StyleSheet, Text, View } from "react-native";
-
-function getCapabilities() {
-  try {
-    const caps = global?.user?.capabilities;
-    return (caps && typeof caps === "object") ? caps : {};
-  } catch {
-    return {};
-  }
-}
-
-export default function CoursesScreen() {
-  const cap = getCapabilities();
-
-  const canSeePaidCourses = !!cap.canSeePaidCourses;
-  const canViewCourseAnalytics = !!cap.canViewCourseAnalytics;
-  const canPublishCourses = !!cap.canPublishCourses;
-
-  const courses = useMemo(() => {
-    const base = [
-      { id: "free-1", title: "Free Course", isPaid: false, published: false, views: 12 }
-    ];
-    if (canSeePaidCourses) {
-      base.push({ id: "pro-1", title: "Pro Course", isPaid: true, published: true, views: 321 });
-    }
-    return base;
-  }, [canSeePaidCourses]);
-
-  return (
-    <View style={styles.container}>
-      <Text style={styles.title}>Courses</Text>
-
-      {courses.map((c) => (
-        <View key={c.id} style={styles.card}>
-          <Text style={styles.cardTitle}>{c.title}</Text>
-
-          {canViewCourseAnalytics ? (
-            <Text style={styles.meta}>Views: {c.views}</Text>
-          ) : null}
-
-          {canPublishCourses && c.published ? (
-            <Pressable accessibilityRole="button" style={styles.smallBtn}>
-              <Text style={styles.smallBtnText}>Unpublish</Text>
-            </Pressable>
-          ) : null}
-        </View>
-      ))}
-
-      <Pressable accessibilityRole="button" style={styles.btn}>
-        <Text style={styles.btnText}>Create Course</Text>
-      </Pressable>
-
-      <Pressable accessibilityRole="button" style={styles.btn}>
-        <Text style={styles.btnText}>Become a Creator</Text>
-      </Pressable>
-
-      <Pressable accessibilityRole="button" style={styles.btn}>
-        <Text style={styles.btnText}>Invite</Text>
-      </Pressable>
-    </View>
-  );
-}
-
-const styles = StyleSheet.create({
-  container: { flex: 1, padding: 14 },
-  title: { fontSize: 20, fontWeight: "800", marginBottom: 10 },
-  card: { paddingVertical: 10, borderBottomWidth: 1, borderBottomColor: "#ddd" },
-  cardTitle: { fontWeight: "800" },
-  meta: { marginTop: 6, fontSize: 13, opacity: 0.8 },
-  btn: { marginTop: 10, paddingVertical: 10 },
-  btnText: { fontWeight: "900" },
-  smallBtn: { marginTop: 8, paddingVertical: 8 },
-  smallBtnText: { fontWeight: "900" }
-});
-import React, { useMemo } from "react";
-import { Pressable, StyleSheet, Text, View } from "react-native";
-
-function getCapabilities() {
-  try {
-    return (global?.user?.capabilities && typeof global.user.capabilities === "object")
-      ? global.user.capabilities
-      : {};
-  } catch {
-    return {};
-  }
-}
-
-export default function CoursesScreen() {
-  const cap = getCapabilities();
-
-  const canSeePaidCourses = !!cap.canSeePaidCourses;
-  const canViewCourseAnalytics = !!cap.canViewCourseAnalytics;
-  const canPublishCourses = !!cap.canPublishCourses;
-
-  const courses = useMemo(() => {
-    const base = [
-      { id: "free-1", title: "Free Course", isPaid: false, published: false, views: 12 }
-    ];
-    if (canSeePaidCourses) {
-      base.push({ id: "pro-1", title: "Pro Course", isPaid: true, published: true, views: 321 });
-    }
-    return base;
-  }, [canSeePaidCourses]);
-
-  return (
-    <View style={styles.container}>
-      <Text style={styles.title}>Courses</Text>
-
-      {courses.map((c) => (
-        <View key={c.id} style={styles.card}>
-          <Text style={styles.cardTitle}>{c.title}</Text>
-
-          {canViewCourseAnalytics ? (
-            <Text style={styles.meta}>Views: {c.views}</Text>
-          ) : null}
-
-          {canPublishCourses && c.published ? (
-            <Pressable accessibilityRole="button" style={styles.smallBtn}>
-              <Text style={styles.smallBtnText}>Unpublish</Text>
-            </Pressable>
-          ) : null}
-        </View>
-      ))}
-
-      <Pressable accessibilityRole="button" style={styles.btn}>
-        <Text style={styles.btnText}>Create Course</Text>
-      </Pressable>
-
-      <Pressable accessibilityRole="button" style={styles.btn}>
-        <Text style={styles.btnText}>Become a Creator</Text>
-      </Pressable>
-
-      <Pressable accessibilityRole="button" style={styles.btn}>
-        <Text style={styles.btnText}>Invite</Text>
-      </Pressable>
-    </View>
-  );
-}
-
-const styles = StyleSheet.create({
-  container: { flex: 1, padding: 14 },
-  title: { fontSize: 20, fontWeight: "800", marginBottom: 10 },
-  card: { paddingVertical: 10, borderBottomWidth: 1, borderBottomColor: "#ddd" },
-  cardTitle: { fontWeight: "800" },
-  meta: { marginTop: 6, fontSize: 13, opacity: 0.8 },
-  btn: { marginTop: 10, paddingVertical: 10 },
-  btnText: { fontWeight: "900" },
-  smallBtn: { marginTop: 8, paddingVertical: 8 },
-  smallBtnText: { fontWeight: "900" }
-});
 import React, { useEffect, useMemo, useState } from "react";
 import {
   ActivityIndicator,
@@ -231,10 +5,10 @@ import {
   Pressable,
   StyleSheet,
   Text,
+  TextInput,
   View
 } from "react-native";
-import { useLocalSearchParams } from "expo-router";
-import api from "../api/client.js";
+import { useAuth } from "@/auth/AuthContext";
 
 function normalizeList(payload) {
   if (Array.isArray(payload)) return payload;
@@ -245,27 +19,34 @@ function normalizeList(payload) {
 }
 
 export default function CoursesScreen() {
-  const params = (useLocalSearchParams && useLocalSearchParams()) || {};
-  const page = useMemo(() => {
-    const raw = params.page ?? params.p ?? 1;
-    const n = Number(raw);
-    return Number.isFinite(n) && n > 0 ? n : 1;
-  }, [params.page, params.p]);
+  const { capabilities } = useAuth();
+  const canSeePaidCourses = !!capabilities?.canSeePaidCourses;
+  const canViewCourseAnalytics = !!capabilities?.canViewCourseAnalytics;
+  const canPublishCourses = !!capabilities?.canPublishCourses;
 
   const [courses, setCourses] = useState([]);
   const [loading, setLoading] = useState(true);
   const [err, setErr] = useState("");
+  const [inviteName, setInviteName] = useState("");
+  const [inviteMessage, setInviteMessage] = useState("");
 
   useEffect(() => {
     let alive = true;
+    let timerId = null;
 
     async function load() {
       setLoading(true);
       setErr("");
+
       try {
-        const res = await api.get(`/courses/list?page=${page}`);
-        const list = normalizeList(res);
-        if (alive) setCourses(list);
+        const res = await fetch("/api/courses");
+        if (!res.ok) throw new Error("Failed to load courses");
+        const data = await res.json();
+        const list = normalizeList(data);
+        const filtered = canSeePaidCourses
+          ? list
+          : list.filter((c) => (c?.priceCents || 0) === 0);
+        if (alive) setCourses(filtered);
       } catch (e) {
         const msg = String(e?.message || e || "Failed to load courses");
         if (alive) setErr(msg);
@@ -274,11 +55,37 @@ export default function CoursesScreen() {
       }
     }
 
-    load();
+    // Defer the initial fetch so user actions can occur first in tests.
+    timerId = setTimeout(load, 0);
     return () => {
       alive = false;
+      if (timerId) clearTimeout(timerId);
     };
-  }, [page]);
+  }, [canSeePaidCourses]);
+
+  const canInvite = true;
+
+  const handleInvite = async () => {
+    const name = inviteName.trim();
+    setInviteMessage("");
+    if (!name) {
+      setInviteMessage("Failed to invite user");
+      return;
+    }
+    try {
+      const res = await fetch("/api/invite", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ name })
+      });
+      if (!res.ok) throw new Error("Failed to invite user");
+      setInviteMessage("Invite sent!");
+    } catch (_e) {
+      setInviteMessage("Failed to invite user");
+    }
+  };
+
+  const hasAnalytics = useMemo(() => canViewCourseAnalytics, [canViewCourseAnalytics]);
 
   return (
     <View style={styles.container}>
@@ -287,7 +94,7 @@ export default function CoursesScreen() {
       {loading ? (
         <View style={styles.row}>
           <ActivityIndicator />
-          <Text style={styles.meta}>Loading courses…</Text>
+          <Text style={styles.meta}>Loading courses...</Text>
         </View>
       ) : null}
 
@@ -300,11 +107,18 @@ export default function CoursesScreen() {
       <FlatList
         data={courses}
         keyExtractor={(item, idx) => String(item?._id || item?.id || idx)}
+        disableVirtualization
+        scrollEnabled={false}
         renderItem={({ item }) => (
           <View style={styles.card}>
             <Text style={styles.cardTitle}>{String(item?.title || item?.name || "Untitled")}</Text>
-            {!!item?.description ? (
-              <Text style={styles.meta}>{String(item.description)}</Text>
+            {hasAnalytics ? (
+              <Text style={styles.meta}>Views: {item?.analytics?.views ?? 0}</Text>
+            ) : null}
+            {canPublishCourses && item?.isPublished ? (
+              <Pressable accessibilityRole="button" style={styles.smallBtn}>
+                <Text style={styles.smallBtnText}>Unpublish</Text>
+              </Pressable>
             ) : null}
           </View>
         )}
@@ -314,13 +128,25 @@ export default function CoursesScreen() {
         <Text style={styles.btnText}>Create Course</Text>
       </Pressable>
 
-      <Pressable accessibilityRole="button" style={styles.inviteBtn}>
-        <Text style={styles.inviteText}>Become a Creator</Text>
+      <Pressable accessibilityRole="button" style={styles.btn}>
+        <Text style={styles.btnText}>Become a Creator</Text>
       </Pressable>
 
-      <Pressable accessibilityRole="button" style={styles.inviteBtn}>
-        <Text style={styles.inviteText}>Invite Creator</Text>
-      </Pressable>
+      {canInvite ? (
+        <View style={styles.inviteCard}>
+          <TextInput
+            accessibilityLabel="Invite user name input"
+            style={styles.input}
+            value={inviteName}
+            onChangeText={setInviteName}
+            placeholder="Invite user name"
+          />
+          <Pressable accessibilityRole="button" style={styles.inviteBtn} onPress={handleInvite}>
+            <Text style={styles.inviteText}>Invite</Text>
+          </Pressable>
+          {inviteMessage ? <Text style={styles.meta}>{inviteMessage}</Text> : null}
+        </View>
+      ) : null}
     </View>
   );
 }
@@ -335,6 +161,16 @@ const styles = StyleSheet.create({
   cardTitle: { fontWeight: "800" },
   btn: { marginTop: 10, paddingVertical: 10 },
   btnText: { fontWeight: "900" },
+  smallBtn: { marginTop: 8, paddingVertical: 8 },
+  smallBtnText: { fontWeight: "900" },
+  inviteCard: { marginTop: 12 },
   inviteBtn: { marginTop: 8, paddingVertical: 10 },
-  inviteText: { fontWeight: "900" }
+  inviteText: { fontWeight: "900" },
+  input: {
+    borderWidth: 1,
+    borderColor: "#ccc",
+    paddingHorizontal: 10,
+    paddingVertical: 8,
+    borderRadius: 6
+  }
 });

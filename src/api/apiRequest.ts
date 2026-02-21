@@ -1,4 +1,3 @@
-import { api, setAuthToken } from "./client";
 import { getToken } from "../auth/tokenStore";
 
 export type ApiRequestOptions = {
@@ -8,32 +7,65 @@ export type ApiRequestOptions = {
   responseType?: "auto" | "json" | "text" | "blob" | "arrayBuffer";
   signal?: AbortSignal;
   timeoutMs?: number;
+  timeout?: number;
   auth?: boolean; // default true
   silent?: boolean;
   invalidateOn401?: boolean;
+  retries?: number;
+  retryDelay?: number;
 };
 
-// Best-effort token sync so apiRequest callers get auth even if some flows forgot setAuthToken()
-let lastSyncedToken: string | null | undefined = undefined;
+export const API_URL =
+  global.API_URL_OVERRIDE ||
+  process.env.EXPO_PUBLIC_API_URL ||
+  "http://localhost:5001";
 
-async function syncAuthTokenIfNeeded(authEnabled: boolean) {
-  if (!authEnabled) return;
+export class ApiError extends Error {
+  code: string;
+  status: number | null;
+  data: any;
 
+  constructor(code: string, status: number | null, data: any = null) {
+    super(code);
+    this.name = "ApiError";
+    this.code = code;
+    this.status = status ?? null;
+    this.data = data ?? null;
+  }
+}
+
+function toAbsoluteUrl(path: string) {
+  if (!path) return API_URL;
+  if (path.startsWith("http://") || path.startsWith("https://")) return path;
+  const base = String(API_URL || "").replace(/\/$/, "");
+  const suffix = path.startsWith("/") ? path : `/${path}`;
+  return `${base}${suffix}`;
+}
+
+function isFormData(body: any) {
+  return typeof FormData !== "undefined" && body instanceof FormData;
+}
+
+function sleep(ms: number) {
+  return new Promise((resolve) => setTimeout(resolve, ms));
+}
+
+async function parseResponse(res: Response, responseType: ApiRequestOptions["responseType"]) {
+  if (responseType === "arrayBuffer" && res.arrayBuffer) return res.arrayBuffer();
+  if (responseType === "blob" && res.blob) return res.blob();
+  if (responseType === "text") return res.text();
+
+  const text = await res.text();
+  if (responseType === "json") {
+    return text ? JSON.parse(text) : null;
+  }
+
+  // auto
+  if (!text) return null;
   try {
-    const t = await getToken();
-    const raw = t ? String(t) : "";
-    const normalized = raw
-      ? raw.startsWith("Bearer ")
-        ? raw.slice("Bearer ".length)
-        : raw
-      : null;
-
-    if (normalized !== lastSyncedToken) {
-      setAuthToken(normalized);
-      lastSyncedToken = normalized;
-    }
+    return JSON.parse(text);
   } catch {
-    // ignore token read errors; request() will proceed without auth
+    return text;
   }
 }
 
@@ -42,34 +74,84 @@ export async function apiRequest<T = any>(
   opts: ApiRequestOptions = {}
 ): Promise<T> {
   const useAuth = opts.auth !== false;
-  await syncAuthTokenIfNeeded(useAuth);
+  const retries = Math.max(0, Number(opts.retries || 0));
+  const retryDelay = Math.max(0, Number(opts.retryDelay || 0));
 
-  const out: any = await api(path, {
-    method: (opts.method as any) || "GET",
-    headers: opts.headers,
-    body: opts.body,
-    responseType: opts.responseType ?? "auto",
-    signal: opts.signal,
-    timeout: opts.timeoutMs,
-    auth: useAuth, // ✅ deterministic auth
-    silent: opts.silent,
-    invalidateOn401: opts.invalidateOn401
-  });
+  const url = toAbsoluteUrl(path);
 
-  // canonical client returns { ok, status, data, requestId, ... }
-  if (out && typeof out === "object" && "ok" in out) {
-    if (out.ok) return out.data as T;
+  let attempt = 0;
+  while (true) {
+    attempt += 1;
 
-    const err: any = new Error(out.message || "Request failed");
-    err.status = out.status ?? null;
-    err.code = out.code ?? "UNKNOWN_ERROR";
-    err.payload = out.raw;
-    err.url = path;
-    err.method = (opts.method || "GET").toUpperCase();
-    err.requestId = out.requestId ?? null;
-    throw err;
+    const headers: Record<string, string> = { ...(opts.headers || {}) };
+
+    if (useAuth && !headers.Authorization) {
+      try {
+        const t = await getToken();
+        const raw = t ? String(t) : "";
+        const normalized = raw.startsWith("Bearer ") ? raw.slice("Bearer ".length) : raw;
+        if (normalized) headers.Authorization = `Bearer ${normalized}`;
+      } catch {
+        // ignore token read errors
+      }
+    }
+
+    let body = opts.body;
+    if (body !== undefined && body !== null && !isFormData(body)) {
+      if (typeof body !== "string") {
+        body = JSON.stringify(body);
+      }
+      if (!headers["Content-Type"]) headers["Content-Type"] = "application/json";
+    }
+
+    const timeoutMs = opts.timeoutMs ?? opts.timeout ?? null;
+    let controller: AbortController | null = null;
+    let timeoutId: NodeJS.Timeout | null = null;
+
+    const signal = opts.signal;
+    if (!signal && timeoutMs && Number(timeoutMs) > 0 && typeof AbortController !== "undefined") {
+      controller = new AbortController();
+      timeoutId = setTimeout(() => controller?.abort(), Number(timeoutMs));
+    }
+
+    try {
+      const res = await fetch(url, {
+        method: opts.method || "GET",
+        headers,
+        body,
+        signal: signal || controller?.signal
+      } as any);
+
+      if (timeoutId) clearTimeout(timeoutId);
+
+      if (!res.ok) {
+        const data = await parseResponse(res, opts.responseType ?? "auto");
+        if (res.status >= 500 && attempt <= retries) {
+          if (retryDelay) await sleep(retryDelay);
+          continue;
+        }
+        throw new ApiError("HTTP_ERROR", res.status, data);
+      }
+
+      return (await parseResponse(res, opts.responseType ?? "auto")) as T;
+    } catch (err: any) {
+      if (timeoutId) clearTimeout(timeoutId);
+
+      const isAbort = err?.name === "AbortError";
+      if (isAbort) {
+        if (attempt <= retries) {
+          if (retryDelay) await sleep(retryDelay);
+          continue;
+        }
+        throw new Error("Request timeout");
+      }
+
+      if (attempt <= retries && err instanceof ApiError && err.status && err.status >= 500) {
+        if (retryDelay) await sleep(retryDelay);
+        continue;
+      }
+
+      throw err;
+    }
   }
-
-  // fallback (should not happen)
-  return out as T;
 }

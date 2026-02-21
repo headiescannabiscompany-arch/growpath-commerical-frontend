@@ -32,22 +32,19 @@ function rel(p) {
 }
 
 const importRe =
-  /\bimport\s+[^;]*?\s+from\s+["']([^"']+)["']|\brequire\s*\(\s*["']([^"']+)["']\s*\)/g;
+  /\bimport\s+[^;]*?\s+from\s+["']([^"']+)["']|\brequire\s*\(\s*["']([^"']+)["']\s*\)|\bexport\s+[^;]*?\s+from\s+["']([^"']+)["']|\bimport\s*\(\s*["']([^"']+)["']\s*\)/g;
 
 function extractImports(code) {
   const deps = [];
   let m;
   while ((m = importRe.exec(code))) {
-    const dep = m[1] || m[2];
+    const dep = m[1] || m[2] || m[3] || m[4];
     if (dep) deps.push(dep);
   }
   return deps;
 }
 
-function resolveRelative(fromFile, spec) {
-  if (!spec.startsWith(".")) return null;
-  const base = path.resolve(path.dirname(fromFile), spec);
-
+function resolveFileLike(base) {
   for (const ext of EXTS) {
     const p = base.endsWith(ext) ? base : base + ext;
     if (fs.existsSync(p) && fs.statSync(p).isFile()) return p;
@@ -56,6 +53,28 @@ function resolveRelative(fromFile, spec) {
   for (const ext of EXTS) {
     const p = path.join(base, "index" + ext);
     if (fs.existsSync(p) && fs.statSync(p).isFile()) return p;
+  }
+
+  return null;
+}
+
+function resolveRelative(fromFile, spec) {
+  if (!spec.startsWith(".")) return null;
+  const base = path.resolve(path.dirname(fromFile), spec);
+  return resolveFileLike(base);
+}
+
+function resolveSpec(fromFile, spec) {
+  if (spec.startsWith(".")) return resolveRelative(fromFile, spec);
+
+  if (spec.startsWith("@/")) {
+    const base = path.join(SRC, spec.slice(2));
+    return resolveFileLike(base);
+  }
+
+  if (spec.startsWith("src/")) {
+    const base = path.join(ROOT, spec);
+    return resolveFileLike(base);
   }
 
   return null;
@@ -83,7 +102,7 @@ for (const f of allFiles) {
   const specs = extractImports(code);
   const deps = [];
   for (const s of specs) {
-    const r = resolveRelative(f, s);
+    const r = resolveSpec(f, s);
     if (r) deps.push(r);
   }
   graph.set(f, deps);

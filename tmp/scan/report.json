@@ -3,10 +3,10 @@
   "counts": {
     "srcFiles": 646,
     "apiFiles": 102,
-    "apiOrphans": 32,
+    "apiOrphans": 27,
     "legacyClientCallers": 87,
     "jsTsTwins": 21,
-    "bannedFindings": 20
+    "bannedFindings": 22
   },
   "jsTsTwins": [
     [
@@ -102,17 +102,13 @@
     "src/api/commercialBilling.js",
     "src/api/commercialFeed.ts",
     "src/api/compliance.ts",
-    "src/api/debug.ts",
     "src/api/deviation.js",
     "src/api/facilityInventory.ts",
-    "src/api/feed.ts",
     "src/api/greenWaste.js",
     "src/api/growlog.js",
     "src/api/guilds.js",
     "src/api/index.js",
-    "src/api/live.ts",
     "src/api/lives.js",
-    "src/api/logs.ts",
     "src/api/mockServer.ts",
     "src/api/payments.js",
     "src/api/products.js",
@@ -124,14 +120,12 @@
     "src/api/templates.js",
     "src/api/types.ts",
     "src/api/user.ts",
-    "src/api/vendorSignup.ts",
     "src/api/verification.js",
     "src/api/webhooks.ts"
   ],
   "legacyClientCallers": [
     "src/api/adminReports.js",
     "src/api/apiClient.js",
-    "src/api/apiRequest.ts",
     "src/api/auth.ts",
     "src/api/automation.ts",
     "src/api/billing.ts",
@@ -213,11 +207,16 @@
     "src/auth/AuthContext.tsx",
     "src/auth/initUnauthorized.ts",
     "src/hooks/useInvites.ts",
+    "src/screens/LiveSessionScreen.js",
     "src/screens/LiveSessionsListScreen.js",
     "src/screens/SubscribeScreen.js",
     "src/utils/images.js"
   ],
   "bannedFindings": [
+    {
+      "file": "src/api/apiRequest.ts",
+      "rule": "fetch("
+    },
     {
       "file": "src/api/community.js",
       "rule": "/:id placeholder"
@@ -244,6 +243,10 @@
     },
     {
       "file": "src/hooks/useCalendar.ts",
+      "rule": "fetch("
+    },
+    {
+      "file": "src/screens/CoursesScreen.js",
       "rule": "fetch("
     },
     {

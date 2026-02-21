@@ -3,10 +3,10 @@
 ## Counts
 - src files: 646
 - api files: 102
-- api orphans: 32
+- api orphans: 27
 - legacy client callers: 87
 - js/ts twin modules: 21
-- banned findings: 20
+- banned findings: 22
 
 ## JS/TS Twins (same module name exists in both JS + TS)
 - src/api/audit.js , src/api/audit.ts
@@ -39,17 +39,13 @@
 - src/api/commercialBilling.js
 - src/api/commercialFeed.ts
 - src/api/compliance.ts
-- src/api/debug.ts
 - src/api/deviation.js
 - src/api/facilityInventory.ts
-- src/api/feed.ts
 - src/api/greenWaste.js
 - src/api/growlog.js
 - src/api/guilds.js
 - src/api/index.js
-- src/api/live.ts
 - src/api/lives.js
-- src/api/logs.ts
 - src/api/mockServer.ts
 - src/api/payments.js
 - src/api/products.js
@@ -61,14 +57,12 @@
 - src/api/templates.js
 - src/api/types.ts
 - src/api/user.ts
-- src/api/vendorSignup.ts
 - src/api/verification.js
 - src/api/webhooks.ts
 
 ## Legacy client callers
 - src/api/adminReports.js
 - src/api/apiClient.js
-- src/api/apiRequest.ts
 - src/api/auth.ts
 - src/api/automation.ts
 - src/api/billing.ts
@@ -150,11 +144,13 @@
 - src/auth/AuthContext.tsx
 - src/auth/initUnauthorized.ts
 - src/hooks/useInvites.ts
+- src/screens/LiveSessionScreen.js
 - src/screens/LiveSessionsListScreen.js
 - src/screens/SubscribeScreen.js
 - src/utils/images.js
 
 ## Banned findings
+- fetch(: src/api/apiRequest.ts
 - /:id placeholder: src/api/community.js
 - /:id placeholder: src/api/marketplace.js
 - /:id placeholder: src/api/socialMedia.js
@@ -162,6 +158,7 @@
 - /:id placeholder: src/api/users.js
 - /:id placeholder: src/features/ai/callAi.ts
 - fetch(: src/hooks/useCalendar.ts
+- fetch(: src/screens/CoursesScreen.js
 - fetch(: src/screens/facility/AuditLogScreen.js
 - fetch(: src/screens/facility/DeviationHandlingScreen.js
 - fetch(: src/screens/facility/FacilitySettingsScreen.tsx

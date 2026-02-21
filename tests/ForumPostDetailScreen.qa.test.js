@@ -20,6 +20,7 @@ import { ForumPostDetailScreen } from "../src/screens/ForumPostDetailScreen.js";
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import { Alert } from "react-native";
 import { NavigationContainer } from "@react-navigation/native";
+import * as forumApi from "../src/api/forum";
 
 const mockPost = {
   _id: "post1",
@@ -46,16 +47,16 @@ const plans = [
 ];
 
 jest.mock("../src/api/forum", () => ({
-  getPost: jest.fn(() => Promise.resolve(mockPost)),
-  getComments: jest.fn(() => Promise.resolve(mockComments)),
-  likePost: jest.fn(() => Promise.resolve({ likeCount: 1 })),
-  unlikePost: jest.fn(() => Promise.resolve({ likeCount: 0 })),
-  addComment: jest.fn(() => Promise.resolve({ success: true })),
-  deleteComment: jest.fn(() => Promise.resolve({ success: true })),
-  savePost: jest.fn(() => Promise.resolve({ success: true })),
-  unsavePost: jest.fn(() => Promise.resolve({ success: true })),
-  reportPost: jest.fn(() => Promise.resolve({ success: true })),
-  savePostToGrowLog: jest.fn(() => Promise.resolve({ success: true }))
+  getPost: jest.fn(),
+  getComments: jest.fn(),
+  likePost: jest.fn(),
+  unlikePost: jest.fn(),
+  addComment: jest.fn(),
+  deleteComment: jest.fn(),
+  savePost: jest.fn(),
+  unsavePost: jest.fn(),
+  reportPost: jest.fn(),
+  savePostToGrowLog: jest.fn()
 }));
 jest.mock("@react-native-async-storage/async-storage", () => ({
   setItem: jest.fn(),
@@ -78,13 +79,37 @@ jest.mock("../src/auth/AuthContext", () => ({
 }));
 
 describe("ForumPostDetailScreen QA", () => {
-  const queryClient = new QueryClient();
   const renderWithNav = (ui) =>
     render(
-      <QueryClientProvider client={queryClient}>
+      <QueryClientProvider
+        client={
+          new QueryClient({
+            defaultOptions: {
+              queries: {
+                retry: false,
+                staleTime: Infinity,
+                cacheTime: Infinity
+              }
+            }
+          })
+        }
+      >
         <NavigationContainer>{ui}</NavigationContainer>
       </QueryClientProvider>
     );
+
+  beforeEach(() => {
+    forumApi.getPost.mockResolvedValue(mockPost);
+    forumApi.getComments.mockResolvedValue(mockComments);
+    forumApi.likePost.mockResolvedValue({ likeCount: 1 });
+    forumApi.unlikePost.mockResolvedValue({ likeCount: 0 });
+    forumApi.addComment.mockResolvedValue({ success: true });
+    forumApi.deleteComment.mockResolvedValue({ success: true });
+    forumApi.savePost.mockResolvedValue({ success: true });
+    forumApi.unsavePost.mockResolvedValue({ success: true });
+    forumApi.reportPost.mockResolvedValue({ success: true });
+    forumApi.savePostToGrowLog.mockResolvedValue({ success: true });
+  });
 
   plans.forEach(({ name, capabilities }) => {
     it(`shows correct actions for ${name} plan (capability-driven)`, async () => {

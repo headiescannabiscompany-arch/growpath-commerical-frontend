@@ -28,7 +28,8 @@ module.exports = {
   ],
 
   setupFilesAfterEnv: [
-    "<rootDir>/tests/jest.setup.cjs"
+    "<rootDir>/tests/jest.setup.cjs",
+    "<rootDir>/tests/jest.teardown.js"
   ],
 
   transformIgnorePatterns: [
