@@ -3,6 +3,7 @@ import path from "path";
 
 const ROOT = process.cwd();
 const SRC = path.join(ROOT, "src");
+const TESTS = path.join(ROOT, "tests");
 
 const EXTS = [".ts", ".tsx", ".js", ".jsx", ".mjs", ".cjs"];
 const IGNORE_DIRS = new Set(["node_modules", ".git", "dist", "build", "coverage", ".expo", ".next"]);
@@ -92,7 +93,9 @@ function groupByBase(files) {
   return map;
 }
 
-const allFiles = fs.existsSync(SRC) ? walk(SRC).filter(isCodeFile) : [];
+const srcFiles = fs.existsSync(SRC) ? walk(SRC).filter(isCodeFile) : [];
+const testFiles = fs.existsSync(TESTS) ? walk(TESTS).filter(isCodeFile) : [];
+const allFiles = [...srcFiles, ...testFiles];
 
 const graph = new Map();
 const importers = new Map();
@@ -160,7 +163,9 @@ for (const f of allFiles) {
 const report = {
   root: ROOT,
   counts: {
-    srcFiles: allFiles.length,
+    srcFiles: srcFiles.length,
+    testFiles: testFiles.length,
+    totalFiles: allFiles.length,
     apiFiles: apiFiles.length,
     apiOrphans: apiOrphans.length,
     legacyClientCallers: legacyClientCallers.length,
@@ -181,6 +186,8 @@ fs.writeFileSync(path.join(outDir, "report.json"), JSON.stringify(report, null, 
 let md = `# Full Scan Report\n\n`;
 md += `## Counts\n`;
 md += `- src files: ${report.counts.srcFiles}\n`;
+md += `- test files: ${report.counts.testFiles}\n`;
+md += `- total files: ${report.counts.totalFiles}\n`;
 md += `- api files: ${report.counts.apiFiles}\n`;
 md += `- api orphans: ${report.counts.apiOrphans}\n`;
 md += `- legacy client callers: ${report.counts.legacyClientCallers}\n`;

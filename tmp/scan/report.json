@@ -2,11 +2,13 @@
   "root": "C:\\growpath-commercial\\frontend",
   "counts": {
     "srcFiles": 646,
+    "testFiles": 45,
+    "totalFiles": 691,
     "apiFiles": 102,
-    "apiOrphans": 27,
+    "apiOrphans": 21,
     "legacyClientCallers": 85,
     "jsTsTwins": 15,
-    "bannedFindings": 13
+    "bannedFindings": 14
   },
   "jsTsTwins": [
     [
@@ -91,13 +93,7 @@
     "src/api/_quarantine/types.ts",
     "src/api/_quarantine/user.ts",
     "src/api/_quarantine/verification.js",
-    "src/api/_quarantine/webhooks.ts",
-    "src/api/auth.js",
-    "src/api/growlog.js",
-    "src/api/guilds.js",
-    "src/api/lives.js",
-    "src/api/reports.js",
-    "src/api/subscription.js"
+    "src/api/_quarantine/webhooks.ts"
   ],
   "legacyClientCallers": [
     "src/api/_quarantine/calendar.ts",
@@ -238,6 +234,10 @@
     {
       "file": "src/screens/StorefrontScreen.js",
       "rule": "fetch("
+    },
+    {
+      "file": "tests/apiClient.test.js",
+      "rule": "axios"
     }
   ]
 }

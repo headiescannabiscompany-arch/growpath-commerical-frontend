@@ -2,11 +2,13 @@
 
 ## Counts
 - src files: 646
+- test files: 45
+- total files: 691
 - api files: 102
-- api orphans: 27
+- api orphans: 21
 - legacy client callers: 85
 - js/ts twin modules: 15
-- banned findings: 13
+- banned findings: 14
 
 ## JS/TS Twins (same module name exists in both JS + TS)
 - src/api/auth.js , src/api/auth.ts
@@ -47,12 +49,6 @@
 - src/api/_quarantine/user.ts
 - src/api/_quarantine/verification.js
 - src/api/_quarantine/webhooks.ts
-- src/api/auth.js
-- src/api/growlog.js
-- src/api/guilds.js
-- src/api/lives.js
-- src/api/reports.js
-- src/api/subscription.js
 
 ## Legacy client callers
 - src/api/_quarantine/calendar.ts
@@ -155,3 +151,4 @@
 - fetch(: src/screens/personal/CalendarScreen.tsx
 - fetch(: src/screens/personal/GrowLogScreen.tsx
 - fetch(: src/screens/StorefrontScreen.js
+- axios: tests/apiClient.test.js
