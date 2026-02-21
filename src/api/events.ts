@@ -1,5 +1,5 @@
 // src/api/events.ts
-import { api } from "./client";
+import { apiRequest } from "./apiRequest";
 
 export type CoreEventType =
   | "view_feed"
@@ -29,7 +29,10 @@ export async function logEvent(type: CoreEventType, metadata: Record<string, any
       ts: new Date().toISOString()
     };
 
-    await api.post("/api/events", payload);
+    await apiRequest("/api/events", {
+      method: "POST",
+      body: payload
+    });
   } catch {
     // swallow — analytics must never break UX
   }

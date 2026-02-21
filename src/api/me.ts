@@ -1,6 +1,6 @@
 // src/api/me.ts
 // Contract-locked: returns canonical { user, ctx } shape or throws ApiError.
-import { api } from "./client";
+import { apiRequest } from "./apiRequest";
 import { endpoints } from "./endpoints";
 import type { AuthUser } from "./auth";
 import { getToken } from "../auth/tokenStore";
@@ -53,7 +53,7 @@ export async function apiMe(options: { silent?: boolean } = {}): Promise<MeRespo
 
   inflightPromise = (async () => {
     try {
-      const result = await api.get(endpoints.me, {
+      const result = await apiRequest(endpoints.me, {
         ...options
       });
       const typed = result as MeResponse;
