@@ -129,34 +129,19 @@ describe("Acceptance: User Stories", () => {
     const record = (method, url) =>
       (global.__FETCH_CALLS__ || []).push({ method, url });
 
-    mockApiRequest.mockImplementation((url, options = {}) => {
+    mockApiRequest.mockImplementation(async (url, options = {}) => {
       const urlStr = typeof url === "string" ? url : String(url);
       const method = options.method ? String(options.method).toUpperCase() : "GET";
       record(method, urlStr);
 
-      if (urlStr.includes("/api/courses/list")) {
-        return Promise.resolve({ courses: [{ _id: "c1", title: "Masterclass" }] });
+      if (typeof globalThis.__MOCK_RESPONDER__ === "function") {
+        const res = await globalThis.__MOCK_RESPONDER__(urlStr, options);
+        if (res && Object.prototype.hasOwnProperty.call(res, "json")) return res.json;
+        if (res && Object.prototype.hasOwnProperty.call(res, "text")) return res.text;
+        return res;
       }
-      if (urlStr.includes("/api/courses/") && urlStr.includes("/enroll")) {
-        return Promise.resolve({ success: true });
-      }
-      if (
-        urlStr.includes("/api/courses") &&
-        method === "POST" &&
-        !urlStr.includes("/enroll")
-      ) {
-        return Promise.resolve({ _id: "c1", title: "Masterclass" });
-      }
-      if (urlStr.includes("/api/courses/")) {
-        return Promise.resolve({
-          course: {
-            _id: "c1",
-            title: "Masterclass",
-            creator: { name: "Test Creator" }
-          }
-        });
-      }
-      return Promise.resolve({ success: true });
+
+      return { success: true };
     });
 
     // Set up mock responder for non-live mode
