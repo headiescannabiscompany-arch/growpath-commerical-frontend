@@ -1,14 +1,22 @@
-import { client } from "./client.js";
+import { apiRequest } from "./apiRequest";
 import routes from "./routes.js";
 
 export function getTokenBalance(token) {
-  return client.get(routes.TOKENS.BALANCE, token);
+  return apiRequest(routes.TOKENS.BALANCE, { auth: token ? true : false });
 }
 
 export function consumeTokens(data, token) {
-  return client.post(routes.TOKENS.CONSUME, data, token);
+  return apiRequest(routes.TOKENS.CONSUME, {
+    method: "POST",
+    auth: token ? true : false,
+    body: data
+  });
 }
 
 export function grantTokens(data, token) {
-  return client.post(routes.TOKENS.GRANT, data, token);
+  return apiRequest(routes.TOKENS.GRANT, {
+    method: "POST",
+    auth: token ? true : false,
+    body: data
+  });
 }

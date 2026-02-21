@@ -1,4 +1,4 @@
-import { api } from "@/api/client";
+import { apiRequest } from "@/api/apiRequest";
 import { endpoints } from "@/api/endpoints";
 
 export interface VendorSignupData {
@@ -19,6 +19,9 @@ export interface VendorSignupResponse {
 export async function signupAsVendor(
   data: VendorSignupData
 ): Promise<VendorSignupResponse> {
-  const res = await api.post(endpoints.vendorSignup, data);
+  const res = await apiRequest(endpoints.vendorSignup, {
+    method: "POST",
+    body: data
+  });
   return res?.message ? res : (res?.data ?? res ?? { message: "Signup successful" });
 }
