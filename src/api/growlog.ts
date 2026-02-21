@@ -1,4 +1,4 @@
-import { api } from "./client";
+import { apiRequest } from "./apiRequest";
 
 export type GrowLogEntry = {
   id: string;
@@ -10,10 +10,13 @@ export type GrowLogEntry = {
 
 export async function fetchGrowLogs(growId: string): Promise<GrowLogEntry[]> {
   // Uses the backend contract: GET /api/growlog?grow=<growId>
-  return api.get(`/growlog?grow=${encodeURIComponent(growId)}`);
+  return apiRequest(`/growlog`, { params: { grow: growId } });
 }
 
 export async function createGrowLog(growId: string, data: Record<string, any>) {
   // POST /api/growlog with grow in body
-  return api.post(`/growlog`, { ...data, grow: growId });
+  return apiRequest(`/growlog`, {
+    method: "POST",
+    body: { ...data, grow: growId }
+  });
 }
