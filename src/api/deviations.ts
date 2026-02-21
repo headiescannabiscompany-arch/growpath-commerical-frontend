@@ -1,4 +1,4 @@
-import { api } from "./client";
+import { apiRequest } from "./apiRequest";
 import { endpoints } from "./endpoints";
 
 export type Deviation = {
@@ -12,11 +12,14 @@ export type Deviation = {
 };
 
 export async function getDeviations(facilityId: string): Promise<Deviation[]> {
-  const res = await api.get(endpoints.deviations(facilityId));
+  const res = await apiRequest(endpoints.deviations(facilityId));
   return res?.deviations ?? res?.logs ?? res?.data ?? [];
 }
 
 export async function createDeviation(facilityId: string, data: any): Promise<Deviation> {
-  const res = await api.post(endpoints.deviations(facilityId), data);
+  const res = await apiRequest(endpoints.deviations(facilityId), {
+    method: "POST",
+    body: data
+  });
   return res?.created ?? res?.deviation ?? res;
 }

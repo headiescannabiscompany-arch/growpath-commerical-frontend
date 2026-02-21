@@ -1,4 +1,4 @@
-import { api } from "./client";
+import { apiRequest } from "./apiRequest";
 import { endpoints } from "./endpoints";
 
 export type GreenWasteLog = {
@@ -16,7 +16,7 @@ export type GreenWasteLog = {
 };
 
 export async function getGreenWasteLogs(facilityId: string): Promise<GreenWasteLog[]> {
-  const res = await api.get(endpoints.greenWaste(facilityId));
+  const res = await apiRequest(endpoints.greenWaste(facilityId));
   return res?.logs ?? res?.data ?? [];
 }
 
@@ -24,6 +24,9 @@ export async function createGreenWasteLog(
   facilityId: string,
   data: any
 ): Promise<GreenWasteLog> {
-  const res = await api.post(endpoints.greenWaste(facilityId), data);
+  const res = await apiRequest(endpoints.greenWaste(facilityId), {
+    method: "POST",
+    body: data
+  });
   return res?.created ?? res?.log ?? res;
 }

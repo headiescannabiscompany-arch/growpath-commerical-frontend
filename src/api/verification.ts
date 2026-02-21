@@ -1,4 +1,4 @@
-import { api } from "./client";
+import { apiRequest } from "./apiRequest";
 import { endpoints } from "./endpoints";
 
 export type VerificationRecord = {
@@ -14,7 +14,7 @@ export type VerificationRecord = {
 export async function getVerifications(
   facilityId: string
 ): Promise<VerificationRecord[]> {
-  const res = await api.get(endpoints.verification(facilityId));
+  const res = await apiRequest(endpoints.verification(facilityId));
   return res?.records ?? res?.verifications ?? res?.data ?? res ?? [];
 }
 
@@ -22,9 +22,12 @@ export async function approveVerification(
   facilityId: string,
   recordId: string
 ): Promise<VerificationRecord> {
-  const res = await api.post(endpoints.verificationRecord(facilityId, recordId), {
-    verified: true,
-    status: "approved"
+  const res = await apiRequest(endpoints.verificationRecord(facilityId, recordId), {
+    method: "POST",
+    body: {
+      verified: true,
+      status: "approved"
+    }
   });
   return res?.updated ?? res?.record ?? res;
 }
@@ -34,10 +37,13 @@ export async function rejectVerification(
   recordId: string,
   reason?: string
 ): Promise<VerificationRecord> {
-  const res = await api.put(endpoints.verificationReject(facilityId, recordId), {
-    verified: false,
-    status: "rejected",
-    reason
+  const res = await apiRequest(endpoints.verificationReject(facilityId, recordId), {
+    method: "PUT",
+    body: {
+      verified: false,
+      status: "rejected",
+      reason
+    }
   });
   return res?.updated ?? res?.record ?? res;
 }
