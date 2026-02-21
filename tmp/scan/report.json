@@ -6,7 +6,7 @@
     "apiOrphans": 27,
     "legacyClientCallers": 85,
     "jsTsTwins": 15,
-    "bannedFindings": 22
+    "bannedFindings": 13
   },
   "jsTsTwins": [
     [
@@ -192,35 +192,11 @@
       "rule": "fetch("
     },
     {
-      "file": "src/api/community.js",
-      "rule": "/:id placeholder"
-    },
-    {
-      "file": "src/api/marketplace.js",
-      "rule": "/:id placeholder"
-    },
-    {
-      "file": "src/api/socialMedia.js",
-      "rule": "/:id placeholder"
-    },
-    {
       "file": "src/api/uriToBlob.ts",
       "rule": "fetch("
     },
     {
-      "file": "src/api/users.js",
-      "rule": "/:id placeholder"
-    },
-    {
-      "file": "src/features/ai/callAi.ts",
-      "rule": "/:id placeholder"
-    },
-    {
       "file": "src/hooks/useCalendar.ts",
-      "rule": "fetch("
-    },
-    {
-      "file": "src/screens/CoursesScreen.js",
       "rule": "fetch("
     },
     {
@@ -244,20 +220,8 @@
       "rule": "fetch("
     },
     {
-      "file": "src/screens/facility/HarvestAIMvpScreen.tsx",
-      "rule": "/:id placeholder"
-    },
-    {
-      "file": "src/screens/facility/HarvestWindowScreen.tsx",
-      "rule": "/:id placeholder"
-    },
-    {
       "file": "src/screens/facility/SOPTemplatesScreen.js",
       "rule": "fetch("
-    },
-    {
-      "file": "src/screens/facility/TrichomeAnalysisScreen.tsx",
-      "rule": "/:id placeholder"
     },
     {
       "file": "src/screens/facility/VendorDashboardScreen.js",

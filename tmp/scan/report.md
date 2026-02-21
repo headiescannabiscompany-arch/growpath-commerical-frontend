@@ -6,7 +6,7 @@
 - api orphans: 27
 - legacy client callers: 85
 - js/ts twin modules: 15
-- banned findings: 22
+- banned findings: 13
 
 ## JS/TS Twins (same module name exists in both JS + TS)
 - src/api/auth.js , src/api/auth.ts
@@ -143,23 +143,14 @@
 
 ## Banned findings
 - fetch(: src/api/apiRequest.ts
-- /:id placeholder: src/api/community.js
-- /:id placeholder: src/api/marketplace.js
-- /:id placeholder: src/api/socialMedia.js
 - fetch(: src/api/uriToBlob.ts
-- /:id placeholder: src/api/users.js
-- /:id placeholder: src/features/ai/callAi.ts
 - fetch(: src/hooks/useCalendar.ts
-- fetch(: src/screens/CoursesScreen.js
 - fetch(: src/screens/facility/AuditLogScreen.js
 - fetch(: src/screens/facility/DeviationHandlingScreen.js
 - fetch(: src/screens/facility/FacilitySettingsScreen.tsx
 - fetch(: src/screens/facility/FacilityTasks.tsx
 - fetch(: src/screens/facility/GreenWasteScreen.js
-- /:id placeholder: src/screens/facility/HarvestAIMvpScreen.tsx
-- /:id placeholder: src/screens/facility/HarvestWindowScreen.tsx
 - fetch(: src/screens/facility/SOPTemplatesScreen.js
-- /:id placeholder: src/screens/facility/TrichomeAnalysisScreen.tsx
 - fetch(: src/screens/facility/VendorDashboardScreen.js
 - fetch(: src/screens/personal/CalendarScreen.tsx
 - fetch(: src/screens/personal/GrowLogScreen.tsx
