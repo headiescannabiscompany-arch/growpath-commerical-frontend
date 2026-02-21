@@ -1,21 +1,21 @@
-import { client as api } from "./client.js";
+import { apiRequest } from "./apiRequest";
 import apiRoutes from "./routes.js";
 
 export function getMyEarnings() {
-  return api(apiRoutes.CREATOR.MINE);
+  return apiRequest(apiRoutes.CREATOR.MINE);
 }
 
 export function getEarningsByCourse() {
-  return api(apiRoutes.CREATOR.BY_COURSE);
+  return apiRequest(apiRoutes.CREATOR.BY_COURSE);
 }
 
 export function requestPayout(payoutMethod = "stripe") {
-  return api(apiRoutes.CREATOR.REQUEST_PAYOUT, {
+  return apiRequest(apiRoutes.CREATOR.REQUEST_PAYOUT, {
     method: "POST",
-    body: JSON.stringify({ payoutMethod })
+    body: { payoutMethod }
   });
 }
 
 export function getPlatformEarnings() {
-  return api(apiRoutes.CREATOR.PLATFORM_STATS);
+  return apiRequest(apiRoutes.CREATOR.PLATFORM_STATS);
 }

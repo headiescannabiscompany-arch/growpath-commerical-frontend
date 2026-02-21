@@ -1,4 +1,4 @@
-import { api } from "./client";
+import { apiRequest } from "./apiRequest";
 
 export type Order = {
   id: string;
@@ -10,5 +10,5 @@ export type Order = {
 };
 
 export async function fetchOrders(): Promise<Order[]> {
-  return api.get(`/commercial/orders`);
+  return apiRequest(`/commercial/orders`);
 }

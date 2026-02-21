@@ -1,4 +1,5 @@
-import { client, postMultipart } from "./client.js";
+import { apiRequest } from "./apiRequest";
+import { postMultipart } from "./client.js";
 import apiRoutes from "./routes.js";
 
 export function uploadLabel(uri, token) {
@@ -8,9 +9,17 @@ export function uploadLabel(uri, token) {
 }
 
 export function generateSchedule(data, token) {
-  return client.post(apiRoutes.FEEDING.SCHEDULE, data, token);
+  return apiRequest(apiRoutes.FEEDING.SCHEDULE, {
+    method: "POST",
+    auth: token ? true : false,
+    body: data
+  });
 }
 
 export function convertScheduleToTemplate(data, token) {
-  return client.post(apiRoutes.FEEDING.TO_TEMPLATE, data, token);
+  return apiRequest(apiRoutes.FEEDING.TO_TEMPLATE, {
+    method: "POST",
+    auth: token ? true : false,
+    body: data
+  });
 }
