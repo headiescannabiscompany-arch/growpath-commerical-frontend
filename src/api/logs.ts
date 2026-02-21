@@ -1,5 +1,5 @@
 // src/api/logs.ts
-import { api } from "./client";
+import { apiRequest } from "./apiRequest";
 
 export interface PersonalLog {
   id: string;
@@ -14,10 +14,10 @@ export interface PersonalLog {
 export async function listPersonalLogs(options?: {
   growId?: string;
 }): Promise<PersonalLog[]> {
-  const query = options?.growId ? `?growId=${encodeURIComponent(options.growId)}` : "";
-
   try {
-    const res: any = await api.get(`/api/personal/logs${query}`);
+    const res: any = await apiRequest(`/api/personal/logs`, {
+      params: options?.growId ? { growId: options.growId } : undefined
+    });
     const logs = res?.data?.logs;
     return Array.isArray(logs) ? (logs as PersonalLog[]) : [];
   } catch (err) {
