@@ -1,4 +1,4 @@
-import { api } from "./client";
+import { apiRequest } from "./apiRequest";
 
 export type FacilityMember = {
   id: string;
@@ -17,7 +17,7 @@ export type FacilityInvite = {
 };
 
 export function getFacilityMembers(facilityId: string) {
-  return api<FacilityMember[]>(`/api/facilities/${facilityId}/members`);
+  return apiRequest<FacilityMember[]>(`/api/facilities/${facilityId}/members`);
 }
 
 export function inviteFacilityMember(
@@ -27,7 +27,7 @@ export function inviteFacilityMember(
     role: FacilityMember["role"];
   }
 ) {
-  return api(`/api/facilities/${facilityId}/invites`, {
+  return apiRequest(`/api/facilities/${facilityId}/invites`, {
     method: "POST",
     body: data
   });
@@ -38,14 +38,14 @@ export function updateMemberRole(
   memberId: string,
   role: FacilityMember["role"]
 ) {
-  return api(`/api/facilities/${facilityId}/members/${memberId}`, {
+  return apiRequest(`/api/facilities/${facilityId}/members/${memberId}`, {
     method: "PATCH",
     body: { role }
   });
 }
 
 export function removeMember(facilityId: string, memberId: string) {
-  return api(`/api/facilities/${facilityId}/members/${memberId}`, {
+  return apiRequest(`/api/facilities/${facilityId}/members/${memberId}`, {
     method: "DELETE"
   });
 }

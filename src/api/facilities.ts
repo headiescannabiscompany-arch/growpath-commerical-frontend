@@ -1,6 +1,6 @@
-import { api } from "./client";
+import { apiRequest } from "./apiRequest";
 export function createFacility(data: { name: string }) {
-  return api.post("/api/facilities", data);
+  return apiRequest("/api/facilities", { method: "POST", body: data });
 }
 
 export type Facility = {
@@ -10,5 +10,5 @@ export type Facility = {
 };
 
 export function getFacilities() {
-  return api<Facility[]>("/api/facilities");
+  return apiRequest<Facility[]>("/api/facilities");
 }

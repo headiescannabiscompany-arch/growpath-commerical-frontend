@@ -1,4 +1,4 @@
-import { api } from "./client";
+import { apiRequest } from "./apiRequest";
 
 export type FacilityTask = {
   id: string;
@@ -13,11 +13,11 @@ export type FacilityTask = {
 };
 
 export function getFacilityTasks(facilityId: string) {
-  return api<FacilityTask[]>(`/api/facilities/${facilityId}/tasks`);
+  return apiRequest<FacilityTask[]>(`/api/facilities/${facilityId}/tasks`);
 }
 
 export function createFacilityTask(facilityId: string, data: Partial<FacilityTask>) {
-  return api<FacilityTask>(`/api/facilities/${facilityId}/tasks`, {
+  return apiRequest<FacilityTask>(`/api/facilities/${facilityId}/tasks`, {
     method: "POST",
     body: data
   });
@@ -28,7 +28,7 @@ export function updateFacilityTask(
   taskId: string,
   data: Partial<FacilityTask>
 ) {
-  return api<FacilityTask>(`/api/facilities/${facilityId}/tasks/${taskId}`, {
+  return apiRequest<FacilityTask>(`/api/facilities/${facilityId}/tasks/${taskId}`, {
     method: "PATCH",
     body: data
   });
