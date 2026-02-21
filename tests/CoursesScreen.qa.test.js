@@ -28,10 +28,16 @@ import { render, fireEvent, waitFor } from "@testing-library/react-native";
 import { NavigationContainer } from "@react-navigation/native";
 
 const mockUseAuth = jest.fn();
+const mockApiRequest = jest.fn();
 
 jest.mock("@/auth/AuthContext", () => ({
   __esModule: true,
   useAuth: () => mockUseAuth()
+}));
+
+jest.mock("@/api/apiRequest", () => ({
+  __esModule: true,
+  apiRequest: (...args) => mockApiRequest(...args)
 }));
 
 jest.mock("@react-native-async-storage/async-storage", () => ({
@@ -70,70 +76,27 @@ const mockCourses = [
 
 beforeEach(() => {
   mockUseAuth.mockReset();
-  global.fetch = jest.fn((url, options) => {
+  mockApiRequest.mockReset();
+  mockApiRequest.mockImplementation((url) => {
     const urlStr = typeof url === "string" ? url : String(url);
-    if (urlStr === "/api/courses") {
-      return Promise.resolve(
-        new Response(JSON.stringify(mockCourses), {
-          status: 200,
-          headers: { "Content-Type": "application/json" }
-        })
-      );
-    }
-    if (urlStr === "/api/invite") {
-      return Promise.resolve(
-        new Response(JSON.stringify({ success: true }), {
-          status: 200,
-          headers: { "Content-Type": "application/json" }
-        })
-      );
-    }
+    if (urlStr === "/api/courses") return Promise.resolve(mockCourses);
+    if (urlStr === "/api/invite") return Promise.resolve({ success: true });
     if (urlStr && urlStr.startsWith("/api/users/") && urlStr.endsWith("/role")) {
-      return Promise.resolve(
-        new Response(JSON.stringify({ success: true }), {
-          status: 200,
-          headers: { "Content-Type": "application/json" }
-        })
-      );
+      return Promise.resolve({ success: true });
     }
-    if (
-      urlStr &&
-      urlStr.startsWith("/api/users/") &&
-      options &&
-      options.method === "DELETE"
-    ) {
-      return Promise.resolve(
-        new Response(JSON.stringify({ success: true }), {
-          status: 200,
-          headers: { "Content-Type": "application/json" }
-        })
-      );
+    if (urlStr && urlStr.startsWith("/api/users/")) {
+      return Promise.resolve({ success: true });
     }
     if (urlStr && urlStr.startsWith("/api/compliance/export")) {
-      return Promise.resolve(new Response(null, { status: 200 }));
+      return Promise.resolve({ success: true });
     }
     if (urlStr && urlStr.includes("/publish")) {
-      return Promise.resolve(
-        new Response(JSON.stringify({ success: true }), {
-          status: 200,
-          headers: { "Content-Type": "application/json" }
-        })
-      );
+      return Promise.resolve({ success: true });
     }
     if (urlStr && urlStr.includes("/unpublish")) {
-      return Promise.resolve(
-        new Response(JSON.stringify({ success: true }), {
-          status: 200,
-          headers: { "Content-Type": "application/json" }
-        })
-      );
+      return Promise.resolve({ success: true });
     }
-    return Promise.resolve(
-      new Response(JSON.stringify({ error: "Not found" }), {
-        status: 404,
-        headers: { "Content-Type": "application/json" }
-      })
-    );
+    return Promise.resolve({ error: "Not found" });
   });
 });
 
@@ -216,10 +179,12 @@ describe("CoursesScreen QA (capability-driven)", () => {
       user: { _id: "user1" },
       capabilities: { canSeePaidCourses: true }
     });
-    // @ts-expect-error: mockImplementationOnce is available on jest.Mock
-    global.fetch.mockImplementationOnce(() =>
-      Promise.resolve({ ok: false, json: () => Promise.resolve({ error: "Failed" }) })
-    );
+    mockApiRequest.mockImplementation((url) => {
+      const urlStr = typeof url === "string" ? url : String(url);
+      if (urlStr === "/api/courses") return Promise.resolve(mockCourses);
+      if (urlStr === "/api/invite") return Promise.reject(new Error("Failed"));
+      return Promise.resolve({ success: true });
+    });
     const { getByText, findByText, queryByText } = await renderWithNav();
     if (!queryByText("Invite")) {
       console.warn("Invite button not rendered; skipping test");

@@ -9,6 +9,7 @@ import {
   View
 } from "react-native";
 import { useAuth } from "@/auth/AuthContext";
+import { apiRequest } from "@/api/apiRequest";
 
 function normalizeList(payload) {
   if (Array.isArray(payload)) return payload;
@@ -39,9 +40,7 @@ export default function CoursesScreen() {
       setErr("");
 
       try {
-        const res = await fetch("/api/courses");
-        if (!res.ok) throw new Error("Failed to load courses");
-        const data = await res.json();
+        const data = await apiRequest("/api/courses");
         const list = normalizeList(data);
         const filtered = canSeePaidCourses
           ? list
@@ -73,12 +72,10 @@ export default function CoursesScreen() {
       return;
     }
     try {
-      const res = await fetch("/api/invite", {
+      await apiRequest("/api/invite", {
         method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ name })
+        body: { name }
       });
-      if (!res.ok) throw new Error("Failed to invite user");
       setInviteMessage("Invite sent!");
     } catch (_e) {
       setInviteMessage("Failed to invite user");
