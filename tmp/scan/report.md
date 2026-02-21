@@ -4,27 +4,21 @@
 - src files: 646
 - api files: 102
 - api orphans: 27
-- legacy client callers: 87
-- js/ts twin modules: 21
+- legacy client callers: 85
+- js/ts twin modules: 15
 - banned findings: 22
 
 ## JS/TS Twins (same module name exists in both JS + TS)
-- src/api/audit.js , src/api/audit.ts
 - src/api/auth.js , src/api/auth.ts
-- src/api/campaigns.js , src/api/campaigns.ts
 - src/api/client.js , src/api/client.ts
-- src/api/greenWaste.js , src/api/greenWaste.ts
 - src/api/growlog.js , src/api/growlog.ts
 - src/api/grows.js , src/api/grows.ts
 - src/api/links.js , src/api/links.ts
 - src/api/plants.js , src/api/plants.ts
-- src/api/products.js , src/api/products.ts
 - src/api/reports.js , src/api/reports.ts
-- src/api/sop.js , src/api/sop.ts
 - src/api/subscription.js , src/api/subscription.ts
 - src/api/tasks.js , src/api/tasks.ts
 - src/api/team.js , src/api/team.ts
-- src/api/verification.js , src/api/verification.ts
 - src/components/EmptyState.js , src/components/EmptyState.tsx
 - src/components/FeatureGate.js , src/components/FeatureGate.tsx
 - src/config/capabilities.js , src/config/capabilities.ts
@@ -32,53 +26,63 @@
 - src/ui/handleApiError.js , src/ui/handleApiError.ts
 
 ## API Orphans (src/api files not imported anywhere)
-- src/api/audit.js
+- src/api/_quarantine/audit.js
+- src/api/_quarantine/calendar.ts
+- src/api/_quarantine/campaigns.js
+- src/api/_quarantine/commercialBilling.js
+- src/api/_quarantine/commercialFeed.ts
+- src/api/_quarantine/compliance.ts
+- src/api/_quarantine/deviation.js
+- src/api/_quarantine/facilityInventory.ts
+- src/api/_quarantine/greenWaste.js
+- src/api/_quarantine/index.js
+- src/api/_quarantine/mockServer.ts
+- src/api/_quarantine/payments.js
+- src/api/_quarantine/products.js
+- src/api/_quarantine/questions.js
+- src/api/_quarantine/search.js
+- src/api/_quarantine/sop.js
+- src/api/_quarantine/templates.js
+- src/api/_quarantine/types.ts
+- src/api/_quarantine/user.ts
+- src/api/_quarantine/verification.js
+- src/api/_quarantine/webhooks.ts
 - src/api/auth.js
-- src/api/calendar.ts
-- src/api/campaigns.js
-- src/api/commercialBilling.js
-- src/api/commercialFeed.ts
-- src/api/compliance.ts
-- src/api/deviation.js
-- src/api/facilityInventory.ts
-- src/api/greenWaste.js
 - src/api/growlog.js
 - src/api/guilds.js
-- src/api/index.js
 - src/api/lives.js
-- src/api/mockServer.ts
-- src/api/payments.js
-- src/api/products.js
-- src/api/questions.js
 - src/api/reports.js
-- src/api/search.js
-- src/api/sop.js
 - src/api/subscription.js
-- src/api/templates.js
-- src/api/types.ts
-- src/api/user.ts
-- src/api/verification.js
-- src/api/webhooks.ts
 
 ## Legacy client callers
+- src/api/_quarantine/calendar.ts
+- src/api/_quarantine/campaigns.js
+- src/api/_quarantine/commercialFeed.ts
+- src/api/_quarantine/compliance.ts
+- src/api/_quarantine/deviation.js
+- src/api/_quarantine/facilityInventory.ts
+- src/api/_quarantine/greenWaste.js
+- src/api/_quarantine/payments.js
+- src/api/_quarantine/products.js
+- src/api/_quarantine/questions.js
+- src/api/_quarantine/search.js
+- src/api/_quarantine/sop.js
+- src/api/_quarantine/templates.js
+- src/api/_quarantine/verification.js
+- src/api/_quarantine/webhooks.ts
 - src/api/adminReports.js
 - src/api/apiClient.js
 - src/api/auth.ts
 - src/api/automation.ts
 - src/api/billing.ts
-- src/api/calendar.ts
-- src/api/campaigns.js
 - src/api/campaigns.ts
 - src/api/certificates.js
 - src/api/client.js
 - src/api/client.ts
-- src/api/commercialFeed.ts
-- src/api/compliance.ts
 - src/api/complianceLogs.ts
 - src/api/courses.js
 - src/api/creator.js
 - src/api/debug.ts
-- src/api/deviation.js
 - src/api/deviations.ts
 - src/api/diagnose.js
 - src/api/earnings.js
@@ -87,13 +91,11 @@
 - src/api/events.ts
 - src/api/facilities.ts
 - src/api/facility.js
-- src/api/facilityInventory.ts
 - src/api/facilitySettings.ts
 - src/api/facilityTasks.ts
 - src/api/facilityTeam.ts
 - src/api/feeding.js
 - src/api/forum.js
-- src/api/greenWaste.js
 - src/api/greenWaste.ts
 - src/api/growlog.js
 - src/api/growlog.ts
@@ -103,7 +105,6 @@
 - src/api/guilds.js
 - src/api/insights.ts
 - src/api/inventory.ts
-- src/api/links.js
 - src/api/links.ts
 - src/api/live.ts
 - src/api/lives.js
@@ -111,16 +112,11 @@
 - src/api/me.ts
 - src/api/notifications.ts
 - src/api/orders.ts
-- src/api/payments.js
 - src/api/plants.ts
 - src/api/posts.js
-- src/api/products.js
 - src/api/products.ts
-- src/api/questions.js
 - src/api/reports.ts
 - src/api/rooms.ts
-- src/api/search.js
-- src/api/sop.js
 - src/api/sop.ts
 - src/api/storefront.ts
 - src/api/subscribe.js
@@ -128,9 +124,7 @@
 - src/api/subscription.ts
 - src/api/tasks.js
 - src/api/tasks.ts
-- src/api/team.js
 - src/api/team.ts
-- src/api/templates.js
 - src/api/tokens.js
 - src/api/users.js
 - src/api/vendor.js
@@ -138,9 +132,7 @@
 - src/api/vendorMetrics.js
 - src/api/vendorSignup.ts
 - src/api/vendors.ts
-- src/api/verification.js
 - src/api/verification.ts
-- src/api/webhooks.ts
 - src/auth/AuthContext.tsx
 - src/auth/initUnauthorized.ts
 - src/hooks/useInvites.ts

@@ -16,9 +16,7 @@ export type ApiRequestOptions = {
 };
 
 export const API_URL =
-  global.API_URL_OVERRIDE ||
-  process.env.EXPO_PUBLIC_API_URL ||
-  "http://localhost:5001";
+  global.API_URL_OVERRIDE || process.env.EXPO_PUBLIC_API_URL || "http://localhost:5001";
 
 export class ApiError extends Error {
   code: string;
@@ -50,7 +48,10 @@ function sleep(ms: number) {
   return new Promise((resolve) => setTimeout(resolve, ms));
 }
 
-async function parseResponse(res: Response, responseType: ApiRequestOptions["responseType"]) {
+async function parseResponse(
+  res: Response,
+  responseType: ApiRequestOptions["responseType"]
+) {
   if (responseType === "arrayBuffer" && res.arrayBuffer) return res.arrayBuffer();
   if (responseType === "blob" && res.blob) return res.blob();
   if (responseType === "text") return res.text();
@@ -109,7 +110,12 @@ export async function apiRequest<T = any>(
     let timeoutId: NodeJS.Timeout | null = null;
 
     const signal = opts.signal;
-    if (!signal && timeoutMs && Number(timeoutMs) > 0 && typeof AbortController !== "undefined") {
+    if (
+      !signal &&
+      timeoutMs &&
+      Number(timeoutMs) > 0 &&
+      typeof AbortController !== "undefined"
+    ) {
       controller = new AbortController();
       timeoutId = setTimeout(() => controller?.abort(), Number(timeoutMs));
     }
@@ -146,7 +152,12 @@ export async function apiRequest<T = any>(
         throw new Error("Request timeout");
       }
 
-      if (attempt <= retries && err instanceof ApiError && err.status && err.status >= 500) {
+      if (
+        attempt <= retries &&
+        err instanceof ApiError &&
+        err.status &&
+        err.status >= 500
+      ) {
         if (retryDelay) await sleep(retryDelay);
         continue;
       }
