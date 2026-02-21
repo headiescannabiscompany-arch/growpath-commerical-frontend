@@ -52,7 +52,6 @@ function warnUnknownCapsOnce(unknownKeys: string[]) {
   if (digest === lastUnknownCapsDigest) return;
   lastUnknownCapsDigest = digest;
 
-  // eslint-disable-next-line no-console
   console.warn("[ENT] Unknown capability keys (not canonical):", unknownKeys);
 }
 
