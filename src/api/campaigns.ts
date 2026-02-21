@@ -1,4 +1,4 @@
-import { api } from "./client";
+import { apiRequest } from "./apiRequest";
 
 export type Campaign = {
   id: string;
@@ -9,17 +9,20 @@ export type Campaign = {
 };
 
 export async function fetchCampaigns(): Promise<Campaign[]> {
-  return api.get(`/commercial/campaigns`);
+  return apiRequest(`/commercial/campaigns`);
 }
 
 export async function createCampaign(data: Partial<Campaign>) {
-  return api.post(`/commercial/campaigns`, data);
+  return apiRequest(`/commercial/campaigns`, { method: "POST", body: data });
 }
 
 export async function updateCampaign(campaignId: string, data: Partial<Campaign>) {
-  return api.patch(`/commercial/campaigns/${campaignId}`, data);
+  return apiRequest(`/commercial/campaigns/${campaignId}`, {
+    method: "PATCH",
+    body: data
+  });
 }
 
 export async function deleteCampaign(campaignId: string) {
-  return api.del(`/commercial/campaigns/${campaignId}`);
+  return apiRequest(`/commercial/campaigns/${campaignId}`, { method: "DELETE" });
 }

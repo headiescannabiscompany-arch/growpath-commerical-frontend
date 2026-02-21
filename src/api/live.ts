@@ -1,16 +1,16 @@
-import { api } from "@/api/client";
+import { apiRequest } from "@/api/apiRequest";
 import { endpoints } from "@/api/endpoints";
 
 export type LiveSession = any;
 
 export async function hostLiveSession(input: { displayName: string }) {
-  return api.post(endpoints.liveHost, input);
+  return apiRequest(endpoints.liveHost, { method: "POST", body: input });
 }
 
 export async function joinLiveSession(input: { code: string; displayName: string }) {
-  return api.post(endpoints.liveJoin, input);
+  return apiRequest(endpoints.liveJoin, { method: "POST", body: input });
 }
 
 export async function endLiveSession(input: { sessionId: string }) {
-  return api.post(endpoints.liveEnd, input);
+  return apiRequest(endpoints.liveEnd, { method: "POST", body: input });
 }

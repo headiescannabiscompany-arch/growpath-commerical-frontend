@@ -1,10 +1,10 @@
-import { api } from "@/api/client";
+import { apiRequest } from "@/api/apiRequest";
 import { endpoints } from "@/api/endpoints";
 
 export async function pingHealth() {
-  return api.get(endpoints.health);
+  return apiRequest(endpoints.health);
 }
 
 export async function getDebugInfo() {
-  return api.get(endpoints.debugInfo);
+  return apiRequest(endpoints.debugInfo);
 }
