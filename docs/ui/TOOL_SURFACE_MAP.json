@@ -1,0 +1,242 @@
+[
+    {
+        "id":  "vpd",
+        "routeOrScreen":  "VPDCalculator",
+        "location":  "ToolsScreen (legacy nav)",
+        "shell":  "personal",
+        "source":  "src/screens/ToolsScreen.js",
+        "label":  "VPD Calculator",
+        "status":  "enabled (cap-gated)",
+        "gatingCaps":  "tools.vpdCalc"
+    },
+    {
+        "id":  "light",
+        "routeOrScreen":  "LightCalculator",
+        "location":  "ToolsScreen (legacy nav)",
+        "shell":  "personal",
+        "source":  "src/screens/ToolsScreen.js",
+        "label":  "Light Calculator",
+        "status":  "enabled (cap-gated)",
+        "gatingCaps":  "tools.lightCalc"
+    },
+    {
+        "id":  "nutrient",
+        "routeOrScreen":  "NutrientCalculator",
+        "location":  "ToolsScreen (legacy nav)",
+        "shell":  "personal",
+        "source":  "src/screens/ToolsScreen.js",
+        "label":  "Nutrient Calculator",
+        "status":  "enabled (cap-gated)",
+        "gatingCaps":  "tools.npkCalc"
+    },
+    {
+        "id":  "watering",
+        "routeOrScreen":  "WateringScheduler",
+        "location":  "ToolsScreen (legacy nav)",
+        "shell":  "personal",
+        "source":  "src/screens/ToolsScreen.js",
+        "label":  "Watering Scheduler",
+        "status":  "enabled (cap-gated)",
+        "gatingCaps":  "tools.wateringScheduler"
+    },
+    {
+        "id":  "schedule",
+        "routeOrScreen":  "ScheduleCalculator",
+        "location":  "ToolsScreen (legacy nav)",
+        "shell":  "personal",
+        "source":  "src/screens/ToolsScreen.js",
+        "label":  "Schedule Calculator",
+        "status":  "enabled (cap-gated)",
+        "gatingCaps":  "tools.stageTimeline"
+    },
+    {
+        "id":  "ph_ec",
+        "routeOrScreen":  "PHECCalculator",
+        "location":  "ToolsScreen (legacy nav)",
+        "shell":  "personal",
+        "source":  "src/screens/ToolsScreen.js",
+        "label":  "pH/EC Calculator",
+        "status":  "enabled (cap-gated)",
+        "gatingCaps":  "tools.phEcCalc"
+    },
+    {
+        "id":  "growth",
+        "routeOrScreen":  "GrowthTracker",
+        "location":  "ToolsScreen (legacy nav)",
+        "shell":  "personal",
+        "source":  "src/screens/ToolsScreen.js",
+        "label":  "Growth Tracker",
+        "status":  "enabled (cap-gated)",
+        "gatingCaps":  "tools.growthTracker"
+    },
+    {
+        "id":  "pest",
+        "routeOrScreen":  "PestDiseaseIdentifier",
+        "location":  "ToolsScreen (legacy nav)",
+        "shell":  "personal",
+        "source":  "src/screens/ToolsScreen.js",
+        "label":  "Pest \u0026 Disease Identifier",
+        "status":  "enabled (cap-gated)",
+        "gatingCaps":  "tools.pestIdentifier"
+    },
+    {
+        "id":  "harvest",
+        "routeOrScreen":  "HarvestEstimator",
+        "location":  "ToolsScreen (legacy nav)",
+        "shell":  "personal",
+        "source":  "src/screens/ToolsScreen.js",
+        "label":  "Harvest Estimator",
+        "status":  "enabled (cap-gated)",
+        "gatingCaps":  "tools.harvestEstimator"
+    },
+    {
+        "id":  "tools-hub",
+        "routeOrScreen":  "/home/personal/tools",
+        "location":  "/home/personal/(tabs)/tools",
+        "shell":  "personal",
+        "source":  "src/app/home/personal/(tabs)/tools/index.tsx",
+        "label":  "Tools Hub",
+        "status":  "enabled",
+        "gatingCaps":  "(none)"
+    },
+    {
+        "id":  "vpd-tool",
+        "routeOrScreen":  "/home/personal/tools/vpd",
+        "location":  "Tools Hub card",
+        "shell":  "personal",
+        "source":  "src/app/home/personal/(tabs)/tools/index.tsx",
+        "label":  "VPD Calculator",
+        "status":  "enabled",
+        "gatingCaps":  "(none)"
+    },
+    {
+        "id":  "npk-helper",
+        "routeOrScreen":  "(no route; planned)",
+        "location":  "Tools Hub card",
+        "shell":  "personal",
+        "source":  "src/app/home/personal/(tabs)/tools/index.tsx",
+        "label":  "NPK Helper",
+        "status":  "coming-soon",
+        "gatingCaps":  "(none)"
+    },
+    {
+        "id":  "watering-tracker",
+        "routeOrScreen":  "(no route; planned)",
+        "location":  "Tools Hub card",
+        "shell":  "personal",
+        "source":  "src/app/home/personal/(tabs)/tools/index.tsx",
+        "label":  "Watering Tracker",
+        "status":  "coming-soon",
+        "gatingCaps":  "(none)"
+    },
+    {
+        "id":  "vpd-tool-screen",
+        "routeOrScreen":  "src/app/home/personal/(tabs)/tools/vpd.tsx",
+        "location":  "/home/personal/tools/vpd",
+        "shell":  "personal",
+        "source":  "src/app/home/personal/(tabs)/tools/vpd.tsx",
+        "label":  "VPD Calculator (tool screen)",
+        "status":  "enabled",
+        "gatingCaps":  "(none)"
+    },
+    {
+        "id":  "ai-chat",
+        "routeOrScreen":  "/home/personal/ai",
+        "location":  "/home/personal/(tabs)/ai",
+        "shell":  "personal",
+        "source":  "src/app/home/personal/(tabs)/ai/index.tsx",
+        "label":  "AI Chat (personal)",
+        "status":  "enabled",
+        "gatingCaps":  "(none)"
+    },
+    {
+        "id":  "calc_vpd",
+        "routeOrScreen":  "toolRegistry",
+        "location":  "AI chat command",
+        "shell":  "personal",
+        "source":  "src/ai/toolRegistry.ts",
+        "label":  "calc_vpd tool",
+        "status":  "enabled",
+        "gatingCaps":  "(none)"
+    },
+    {
+        "id":  "harvest-trichomes",
+        "routeOrScreen":  "TrichomeAnalysis",
+        "location":  "Facility AI Tools (matrix)",
+        "shell":  "facility",
+        "source":  "src/features/ai/aiFeatureMatrix.ts",
+        "label":  "Analyze Trichomes",
+        "status":  "enabled",
+        "gatingCaps":  "(feature.enabled + requires.growId)"
+    },
+    {
+        "id":  "harvest-window",
+        "routeOrScreen":  "HarvestWindow",
+        "location":  "Facility AI Tools (matrix)",
+        "shell":  "facility",
+        "source":  "src/features/ai/aiFeatureMatrix.ts",
+        "label":  "Estimate Harvest Window",
+        "status":  "enabled",
+        "gatingCaps":  "(feature.enabled + requires.growId)"
+    },
+    {
+        "id":  "climate-vpd",
+        "routeOrScreen":  "ComputeVPD",
+        "location":  "Facility AI Tools (matrix)",
+        "shell":  "facility",
+        "source":  "src/features/ai/aiFeatureMatrix.ts",
+        "label":  "Compute VPD",
+        "status":  "disabled",
+        "gatingCaps":  "(feature.enabled)"
+    },
+    {
+        "id":  "ec-recommend",
+        "routeOrScreen":  "ECRecommend",
+        "location":  "Facility AI Tools (matrix)",
+        "shell":  "facility",
+        "source":  "src/features/ai/aiFeatureMatrix.ts",
+        "label":  "EC Recommendation",
+        "status":  "disabled",
+        "gatingCaps":  "(feature.enabled)"
+    },
+    {
+        "id":  "facility-ai-ask",
+        "routeOrScreen":  "/home/facility/ai/ask",
+        "location":  "Facility AI Tools tab tile",
+        "shell":  "facility",
+        "source":  "src/app/home/facility/(tabs)/ai-tools.tsx",
+        "label":  "Ask AI",
+        "status":  "enabled",
+        "gatingCaps":  "(none)"
+    },
+    {
+        "id":  "facility-ai-diagnosis",
+        "routeOrScreen":  "/home/facility/ai/diagnosis-photo",
+        "location":  "Facility AI Tools tab tile",
+        "shell":  "facility",
+        "source":  "src/app/home/facility/(tabs)/ai-tools.tsx",
+        "label":  "Photo Diagnosis",
+        "status":  "enabled",
+        "gatingCaps":  "(none)"
+    },
+    {
+        "id":  "facility-ai-template",
+        "routeOrScreen":  "/home/facility/ai/template",
+        "location":  "Facility AI Tools tab tile",
+        "shell":  "facility",
+        "source":  "src/app/home/facility/(tabs)/ai-tools.tsx",
+        "label":  "SOP Template Assistant",
+        "status":  "enabled",
+        "gatingCaps":  "(none)"
+    },
+    {
+        "id":  "facility-ai4",
+        "routeOrScreen":  "/home/facility/compliance/ai4.dashboard",
+        "location":  "Facility AI Tools tab tile",
+        "shell":  "facility",
+        "source":  "src/app/home/facility/(tabs)/ai-tools.tsx",
+        "label":  "Compliance AI4 Dashboard",
+        "status":  "enabled",
+        "gatingCaps":  "(none)"
+    }
+]

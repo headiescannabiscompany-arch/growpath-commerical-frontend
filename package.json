@@ -9,6 +9,9 @@
     "npm": ">=10.8.0"
   },
   "scripts": {
+    "guard:contamination": "node scripts/guard-contamination.js",
+    "guard:client": "node scripts/guard-client-wrapper.js",
+    "guard": "npm run guard:contamination && npm run guard:client",
     "start": "expo start",
     "android": "expo start --android",
     "ios": "expo start --ios",

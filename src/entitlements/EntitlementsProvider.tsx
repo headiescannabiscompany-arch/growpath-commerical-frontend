@@ -8,6 +8,7 @@ import React, {
   useState
 } from "react";
 import { useAuth } from "../auth/AuthContext";
+import { normalizeCapabilities, resolveCapabilityKey } from "../capabilities/resolve";
 
 type EntitlementsMode = "personal" | "commercial" | "facility";
 
@@ -41,6 +42,20 @@ const EntitlementsContext = createContext<EntitlementsState>({
   refresh: () => {}
 });
 
+let lastUnknownCapsDigest = "";
+
+function warnUnknownCapsOnce(unknownKeys: string[]) {
+  if (!__DEV__) return;
+  if (!unknownKeys || unknownKeys.length === 0) return;
+
+  const digest = unknownKeys.slice().sort().join("|");
+  if (digest === lastUnknownCapsDigest) return;
+  lastUnknownCapsDigest = digest;
+
+  // eslint-disable-next-line no-console
+  console.warn("[ENT] Unknown capability keys (not canonical):", unknownKeys);
+}
+
 function safeStringify(v: any) {
   try {
     return JSON.stringify(v ?? null);
@@ -65,6 +80,8 @@ function applyServerCtx(
   const plan = userPlan ?? ctx?.plan ?? prev.plan ?? "free";
   const facilityId = ctx?.facilityId ?? null;
   const facilityRole = ctx?.facilityRole ?? null;
+  const { normalized, unknownKeys } = normalizeCapabilities(ctx?.capabilities);
+  warnUnknownCapsOnce(unknownKeys);
 
   return {
     ready: true,
@@ -73,8 +90,7 @@ function applyServerCtx(
     facilityId,
     selectedFacilityId: facilityId, // Alias
     facilityRole,
-    capabilities:
-      ctx?.capabilities && typeof ctx.capabilities === "object" ? ctx.capabilities : {},
+    capabilities: normalized,
     limits: ctx?.limits && typeof ctx.limits === "object" ? ctx.limits : {}
   };
 }
@@ -148,19 +164,29 @@ export function EntitlementsProvider({ children }: { children: React.ReactNode }
     const fn = (capability: string | string[]) => {
       if (!state.ready) return false;
       if (Array.isArray(capability)) {
-        return capability.every((cap) => state.capabilities[cap] === true);
+        return capability.every((cap) => {
+          const k = resolveCapabilityKey(cap);
+          return !!k && state.capabilities[k] === true;
+        });
       }
-      return state.capabilities[capability] === true;
+      const k = resolveCapabilityKey(capability);
+      return !!k && state.capabilities[k] === true;
     };
     return Object.assign(fn, state.capabilities);
   }, [state.ready, state.capabilities]);
 
   const refresh = useCallback((plan?: string, capabilities?: Record<string, any>) => {
+    let normalizedCaps: Record<string, any> | null = null;
+    if (capabilities !== undefined) {
+      const res = normalizeCapabilities(capabilities);
+      normalizedCaps = res.normalized;
+      warnUnknownCapsOnce(res.unknownKeys);
+    }
     setState((s) => ({
       ...s,
       ready: true,
       plan: plan ?? s.plan,
-      capabilities: capabilities ?? s.capabilities
+      capabilities: normalizedCaps ?? s.capabilities
     }));
   }, []);
 

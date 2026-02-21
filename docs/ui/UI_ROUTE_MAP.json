@@ -1,0 +1,1871 @@
+[
+    {
+        "file":  "src\\screens\\CommentsScreen.js",
+        "route":  null,
+        "shell":  null,
+        "type":  "screen",
+        "notes":  null
+    },
+    {
+        "file":  "src\\screens\\CertificateViewer.js",
+        "route":  null,
+        "shell":  null,
+        "type":  "screen",
+        "notes":  null
+    },
+    {
+        "file":  "src\\screens\\CertificateVerificationScreen.js",
+        "route":  null,
+        "shell":  null,
+        "type":  "screen",
+        "notes":  null
+    },
+    {
+        "file":  "src\\screens\\CategoryCoursesScreen.js",
+        "route":  null,
+        "shell":  null,
+        "type":  "screen",
+        "notes":  null
+    },
+    {
+        "file":  "src\\screens\\CategoryBrowserScreen.js",
+        "route":  null,
+        "shell":  null,
+        "type":  "screen",
+        "notes":  null
+    },
+    {
+        "file":  "src\\screens\\AppIntroScreen.js",
+        "route":  null,
+        "shell":  null,
+        "type":  "screen",
+        "notes":  null
+    },
+    {
+        "file":  "src\\screens\\AnswerQuestionScreen.js",
+        "route":  null,
+        "shell":  null,
+        "type":  "screen",
+        "notes":  null
+    },
+    {
+        "file":  "src\\screens\\AnalyticsScreen.js",
+        "route":  null,
+        "shell":  null,
+        "type":  "screen",
+        "notes":  null
+    },
+    {
+        "file":  "src\\screens\\AdminReportsScreen.js",
+        "route":  null,
+        "shell":  null,
+        "type":  "screen",
+        "notes":  null
+    },
+    {
+        "file":  "src\\screens\\AdminPayoutsScreen.js",
+        "route":  null,
+        "shell":  null,
+        "type":  "screen",
+        "notes":  null
+    },
+    {
+        "file":  "src\\screens\\AdminCoursesScreen.js",
+        "route":  null,
+        "shell":  null,
+        "type":  "screen",
+        "notes":  null
+    },
+    {
+        "file":  "src\\screens\\AddLessonScreen.js",
+        "route":  null,
+        "shell":  null,
+        "type":  "screen",
+        "notes":  null
+    },
+    {
+        "file":  "src\\screens\\CreatePostScreen.js",
+        "route":  null,
+        "shell":  null,
+        "type":  "screen",
+        "notes":  null
+    },
+    {
+        "file":  "src\\screens\\CreatePlantScreen.js",
+        "route":  null,
+        "shell":  null,
+        "type":  "screen",
+        "notes":  null
+    },
+    {
+        "file":  "src\\screens\\CoursesScreen.js",
+        "route":  null,
+        "shell":  null,
+        "type":  "screen",
+        "notes":  null
+    },
+    {
+        "file":  "src\\screens\\CommercialInventoryScreen.js",
+        "route":  null,
+        "shell":  null,
+        "type":  "screen",
+        "notes":  null
+    },
+    {
+        "file":  "src\\screens\\FacilityTeamScreen.js",
+        "route":  null,
+        "shell":  null,
+        "type":  "screen",
+        "notes":  null
+    },
+    {
+        "file":  "src\\screens\\FacilityRoomsScreen.js",
+        "route":  null,
+        "shell":  null,
+        "type":  "screen",
+        "notes":  null
+    },
+    {
+        "file":  "src\\screens\\FacilityProfileScreen.js",
+        "route":  null,
+        "shell":  null,
+        "type":  "screen",
+        "notes":  null
+    },
+    {
+        "file":  "src\\screens\\FacilityInventoryScreen.js",
+        "route":  null,
+        "shell":  null,
+        "type":  "screen",
+        "notes":  null
+    },
+    {
+        "file":  "src\\screens\\FacilityFeedScreen.js",
+        "route":  null,
+        "shell":  null,
+        "type":  "screen",
+        "notes":  null
+    },
+    {
+        "file":  "src\\screens\\FacilityCommunityScreen.js",
+        "route":  null,
+        "shell":  null,
+        "type":  "screen",
+        "notes":  null
+    },
+    {
+        "file":  "src\\screens\\common\\SelectFacilityScreen.tsx",
+        "route":  null,
+        "shell":  null,
+        "type":  "screen",
+        "notes":  null
+    },
+    {
+        "file":  "src\\screens\\common\\NotEntitledScreen.tsx",
+        "route":  null,
+        "shell":  null,
+        "type":  "screen",
+        "notes":  null
+    },
+    {
+        "file":  "src\\screens\\LightCalculatorScreen.js",
+        "route":  null,
+        "shell":  null,
+        "type":  "screen",
+        "notes":  null
+    },
+    {
+        "file":  "src\\screens\\LessonScreen.js",
+        "route":  null,
+        "shell":  null,
+        "type":  "screen",
+        "notes":  null
+    },
+    {
+        "file":  "src\\screens\\HarvestEstimatorScreen.js",
+        "route":  null,
+        "shell":  null,
+        "type":  "screen",
+        "notes":  null
+    },
+    {
+        "file":  "src\\screens\\GuildCodeScreen.js",
+        "route":  null,
+        "shell":  null,
+        "type":  "screen",
+        "notes":  null
+    },
+    {
+        "file":  "src\\screens\\GrowsScreen.js",
+        "route":  null,
+        "shell":  null,
+        "type":  "screen",
+        "notes":  null
+    },
+    {
+        "file":  "src\\screens\\GrowLogsScreen.js",
+        "route":  null,
+        "shell":  null,
+        "type":  "screen",
+        "notes":  null
+    },
+    {
+        "file":  "src\\screens\\GrowLogScreen.js",
+        "route":  null,
+        "shell":  null,
+        "type":  "screen",
+        "notes":  null
+    },
+    {
+        "file":  "src\\screens\\GrowLogEntryScreen.js",
+        "route":  null,
+        "shell":  null,
+        "type":  "screen",
+        "notes":  null
+    },
+    {
+        "file":  "src\\screens\\GrowLogEntriesScreen.tsx",
+        "route":  null,
+        "shell":  null,
+        "type":  "screen",
+        "notes":  null
+    },
+    {
+        "file":  "src\\screens\\GrowLogDetailScreen.js",
+        "route":  null,
+        "shell":  null,
+        "type":  "screen",
+        "notes":  null
+    },
+    {
+        "file":  "src\\screens\\GrowLogCalendarScreen.js",
+        "route":  null,
+        "shell":  null,
+        "type":  "screen",
+        "notes":  null
+    },
+    {
+        "file":  "src\\screens\\GrowAddPlantScreen.js",
+        "route":  null,
+        "shell":  null,
+        "type":  "screen",
+        "notes":  null
+    },
+    {
+        "file":  "src\\screens\\ForumScreen.js",
+        "route":  null,
+        "shell":  null,
+        "type":  "screen",
+        "notes":  null
+    },
+    {
+        "file":  "src\\screens\\ForumPostDetailScreen.js",
+        "route":  null,
+        "shell":  null,
+        "type":  "screen",
+        "notes":  null
+    },
+    {
+        "file":  "src\\screens\\ForumNewPostScreen.js",
+        "route":  null,
+        "shell":  null,
+        "type":  "screen",
+        "notes":  null
+    },
+    {
+        "file":  "src\\screens\\FeedScreen.js",
+        "route":  null,
+        "shell":  null,
+        "type":  "screen",
+        "notes":  null
+    },
+    {
+        "file":  "src\\screens\\FeedingScheduleResult.js",
+        "route":  null,
+        "shell":  null,
+        "type":  "screen",
+        "notes":  null
+    },
+    {
+        "file":  "src\\screens\\FeedingScheduleOptions.js",
+        "route":  null,
+        "shell":  null,
+        "type":  "screen",
+        "notes":  null
+    },
+    {
+        "file":  "src\\screens\\FeedingLabelScreen.js",
+        "route":  null,
+        "shell":  null,
+        "type":  "screen",
+        "notes":  null
+    },
+    {
+        "file":  "src\\screens\\FeedingConfirmScreen.js",
+        "route":  null,
+        "shell":  null,
+        "type":  "screen",
+        "notes":  null
+    },
+    {
+        "file":  "src\\screens\\PHECCalculatorScreen.js",
+        "route":  null,
+        "shell":  null,
+        "type":  "screen",
+        "notes":  null
+    },
+    {
+        "file":  "src\\screens\\PestDiseaseIdentifierScreen.js",
+        "route":  null,
+        "shell":  null,
+        "type":  "screen",
+        "notes":  null
+    },
+    {
+        "file":  "src\\screens\\WriteReviewScreen.js",
+        "route":  null,
+        "shell":  null,
+        "type":  "screen",
+        "notes":  null
+    },
+    {
+        "file":  "src\\screens\\WateringSchedulerScreen.js",
+        "route":  null,
+        "shell":  null,
+        "type":  "screen",
+        "notes":  null
+    },
+    {
+        "file":  "src\\screens\\VPDCalculatorScreen.js",
+        "route":  null,
+        "shell":  null,
+        "type":  "screen",
+        "notes":  null
+    },
+    {
+        "file":  "src\\screens\\VerifyCertificateScreen.js",
+        "route":  null,
+        "shell":  null,
+        "type":  "screen",
+        "notes":  null
+    },
+    {
+        "file":  "src\\screens\\VendorSignup.js",
+        "route":  null,
+        "shell":  null,
+        "type":  "screen",
+        "notes":  null
+    },
+    {
+        "file":  "src\\screens\\VendorGuidesScreen.js",
+        "route":  null,
+        "shell":  null,
+        "type":  "screen",
+        "notes":  null
+    },
+    {
+        "file":  "src\\screens\\ToolsScreen.js",
+        "route":  null,
+        "shell":  null,
+        "type":  "screen",
+        "notes":  null
+    },
+    {
+        "file":  "src\\screens\\TokenInfoScreen.js",
+        "route":  null,
+        "shell":  null,
+        "type":  "screen",
+        "notes":  null
+    },
+    {
+        "file":  "src\\screens\\TeamScreen.js",
+        "route":  null,
+        "shell":  null,
+        "type":  "screen",
+        "notes":  null
+    },
+    {
+        "file":  "src\\screens\\TasksScreen.js",
+        "route":  null,
+        "shell":  null,
+        "type":  "screen",
+        "notes":  null
+    },
+    {
+        "file":  "src\\screens\\SubscriptionStatusScreen.js",
+        "route":  null,
+        "shell":  null,
+        "type":  "screen",
+        "notes":  null
+    },
+    {
+        "file":  "src\\screens\\SubscriptionScreen.js",
+        "route":  null,
+        "shell":  null,
+        "type":  "screen",
+        "notes":  null
+    },
+    {
+        "file":  "src\\screens\\SubscribeScreen.js",
+        "route":  null,
+        "shell":  null,
+        "type":  "screen",
+        "notes":  null
+    },
+    {
+        "file":  "src\\screens\\SubcategoryBrowserScreen.js",
+        "route":  null,
+        "shell":  null,
+        "type":  "screen",
+        "notes":  null
+    },
+    {
+        "file":  "src\\screens\\StorefrontScreen.js",
+        "route":  null,
+        "shell":  null,
+        "type":  "screen",
+        "notes":  null
+    },
+    {
+        "file":  "src\\screens\\SplashScreen.js",
+        "route":  null,
+        "shell":  null,
+        "type":  "screen",
+        "notes":  null
+    },
+    {
+        "file":  "src\\screens\\SocialToolsScreen.js",
+        "route":  null,
+        "shell":  null,
+        "type":  "screen",
+        "notes":  null
+    },
+    {
+        "file":  "src\\screens\\SelectFacilityScreen.tsx",
+        "route":  null,
+        "shell":  null,
+        "type":  "screen",
+        "notes":  null
+    },
+    {
+        "file":  "src\\screens\\SearchScreen.js",
+        "route":  null,
+        "shell":  null,
+        "type":  "screen",
+        "notes":  null
+    },
+    {
+        "file":  "src\\screens\\ScheduleScreen.js",
+        "route":  null,
+        "shell":  null,
+        "type":  "screen",
+        "notes":  null
+    },
+    {
+        "file":  "src\\screens\\QAScreen.js",
+        "route":  null,
+        "shell":  null,
+        "type":  "screen",
+        "notes":  null
+    },
+    {
+        "file":  "src\\screens\\ProfileCertificatesScreen.js",
+        "route":  null,
+        "shell":  null,
+        "type":  "screen",
+        "notes":  null
+    },
+    {
+        "file":  "src\\screens\\PrivacyPolicyScreen.js",
+        "route":  null,
+        "shell":  null,
+        "type":  "screen",
+        "notes":  null
+    },
+    {
+        "file":  "src\\screens\\PricingMatrixScreen.js",
+        "route":  null,
+        "shell":  null,
+        "type":  "screen",
+        "notes":  null
+    },
+    {
+        "file":  "src\\screens\\PostDetailScreen.js",
+        "route":  null,
+        "shell":  null,
+        "type":  "screen",
+        "notes":  null
+    },
+    {
+        "file":  "src\\screens\\PlantsScreen.js",
+        "route":  null,
+        "shell":  null,
+        "type":  "screen",
+        "notes":  null
+    },
+    {
+        "file":  "src\\screens\\PlantDetailScreen.js",
+        "route":  null,
+        "shell":  null,
+        "type":  "screen",
+        "notes":  null
+    },
+    {
+        "file":  "src\\screens\\PlanFeatureMatrixScreen.js",
+        "route":  null,
+        "shell":  null,
+        "type":  "screen",
+        "notes":  null
+    },
+    {
+        "file":  "src\\screens\\commercial\\VendorMetricsScreen.js",
+        "route":  null,
+        "shell":  null,
+        "type":  "screen",
+        "notes":  null
+    },
+    {
+        "file":  "src\\screens\\commercial\\VendorAnalyticsScreen.js",
+        "route":  null,
+        "shell":  null,
+        "type":  "screen",
+        "notes":  null
+    },
+    {
+        "file":  "src\\screens\\commercial\\SocialMediaScreen.js",
+        "route":  null,
+        "shell":  null,
+        "type":  "screen",
+        "notes":  null
+    },
+    {
+        "file":  "src\\screens\\commercial\\MarketplaceIntegrationScreen.js",
+        "route":  null,
+        "shell":  null,
+        "type":  "screen",
+        "notes":  null
+    },
+    {
+        "file":  "src\\screens\\commercial\\InfluencerDashboardScreen.js",
+        "route":  null,
+        "shell":  null,
+        "type":  "screen",
+        "notes":  null
+    },
+    {
+        "file":  "src\\screens\\commercial\\ContentMarketplaceScreen.js",
+        "route":  null,
+        "shell":  null,
+        "type":  "screen",
+        "notes":  null
+    },
+    {
+        "file":  "src\\screens\\commercial\\CommunitiesScreen.js",
+        "route":  null,
+        "shell":  null,
+        "type":  "screen",
+        "notes":  null
+    },
+    {
+        "file":  "src\\screens\\commercial\\CommercialDashboardScreen.js",
+        "route":  null,
+        "shell":  null,
+        "type":  "screen",
+        "notes":  null
+    },
+    {
+        "file":  "src\\screens\\commercial\\CommercialDashboard.tsx",
+        "route":  null,
+        "shell":  null,
+        "type":  "screen",
+        "notes":  null
+    },
+    {
+        "file":  "src\\screens\\commercial\\AdvertisingScreen.js",
+        "route":  null,
+        "shell":  null,
+        "type":  "screen",
+        "notes":  null
+    },
+    {
+        "file":  "src\\app\\_layout.tsx",
+        "route":  null,
+        "shell":  null,
+        "type":  "layout",
+        "notes":  null
+    },
+    {
+        "file":  "src\\app\\vendor-signup.tsx",
+        "route":  null,
+        "shell":  null,
+        "type":  "screen",
+        "notes":  null
+    },
+    {
+        "file":  "src\\screens\\facility\\WebhooksScreen.tsx",
+        "route":  null,
+        "shell":  null,
+        "type":  "screen",
+        "notes":  null
+    },
+    {
+        "file":  "src\\screens\\facility\\VendorDashboardScreen.js",
+        "route":  null,
+        "shell":  null,
+        "type":  "screen",
+        "notes":  null
+    },
+    {
+        "file":  "src\\screens\\facility\\TrichomeAnalysisScreen.tsx",
+        "route":  null,
+        "shell":  null,
+        "type":  "screen",
+        "notes":  null
+    },
+    {
+        "file":  "src\\screens\\facility\\TeamScreen.js",
+        "route":  null,
+        "shell":  null,
+        "type":  "screen",
+        "notes":  null
+    },
+    {
+        "file":  "src\\screens\\facility\\SOPTemplatesScreen.js",
+        "route":  null,
+        "shell":  null,
+        "type":  "screen",
+        "notes":  null
+    },
+    {
+        "file":  "src\\screens\\facility\\SettingsScreen.js",
+        "route":  null,
+        "shell":  null,
+        "type":  "screen",
+        "notes":  null
+    },
+    {
+        "file":  "src\\screens\\facility\\SelectGrowScreen.tsx",
+        "route":  null,
+        "shell":  null,
+        "type":  "screen",
+        "notes":  null
+    },
+    {
+        "file":  "src\\screens\\facility\\RoomsScreen.tsx",
+        "route":  null,
+        "shell":  null,
+        "type":  "screen",
+        "notes":  null
+    },
+    {
+        "file":  "src\\screens\\facility\\PlantForm.js",
+        "route":  null,
+        "shell":  null,
+        "type":  "screen",
+        "notes":  null
+    },
+    {
+        "file":  "src\\screens\\facility\\NutrientToolsScreen.js",
+        "route":  null,
+        "shell":  null,
+        "type":  "screen",
+        "notes":  null
+    },
+    {
+        "file":  "src\\screens\\facility\\NotificationsCenterScreen.tsx",
+        "route":  null,
+        "shell":  null,
+        "type":  "screen",
+        "notes":  null
+    },
+    {
+        "file":  "src\\screens\\facility\\InventoryScreen.tsx",
+        "route":  null,
+        "shell":  null,
+        "type":  "screen",
+        "notes":  null
+    },
+    {
+        "file":  "src\\screens\\facility\\HarvestWindowScreen.tsx",
+        "route":  null,
+        "shell":  null,
+        "type":  "screen",
+        "notes":  null
+    },
+    {
+        "file":  "src\\screens\\facility\\HarvestAIMvpScreen.tsx",
+        "route":  null,
+        "shell":  null,
+        "type":  "screen",
+        "notes":  null
+    },
+    {
+        "file":  "src\\screens\\facility\\GreenWasteScreen.js",
+        "route":  null,
+        "shell":  null,
+        "type":  "screen",
+        "notes":  null
+    },
+    {
+        "file":  "src\\screens\\facility\\FacilityTeamScreen.tsx",
+        "route":  null,
+        "shell":  null,
+        "type":  "screen",
+        "notes":  null
+    },
+    {
+        "file":  "src\\screens\\facility\\FacilityTasksScreen.tsx",
+        "route":  null,
+        "shell":  null,
+        "type":  "screen",
+        "notes":  null
+    },
+    {
+        "file":  "src\\screens\\facility\\FacilityTasks.tsx",
+        "route":  null,
+        "shell":  null,
+        "type":  "screen",
+        "notes":  null
+    },
+    {
+        "file":  "src\\screens\\facility\\FacilitySettingsScreen.tsx",
+        "route":  null,
+        "shell":  null,
+        "type":  "screen",
+        "notes":  null
+    },
+    {
+        "file":  "src\\screens\\facility\\FacilityPicker.js",
+        "route":  null,
+        "shell":  null,
+        "type":  "screen",
+        "notes":  null
+    },
+    {
+        "file":  "src\\screens\\facility\\FacilityGuard.tsx",
+        "route":  null,
+        "shell":  null,
+        "type":  "screen",
+        "notes":  null
+    },
+    {
+        "file":  "src\\screens\\facility\\FacilityDashboardScreen.tsx",
+        "route":  null,
+        "shell":  null,
+        "type":  "screen",
+        "notes":  null
+    },
+    {
+        "file":  "src\\screens\\facility\\ECRecommendScreen.tsx",
+        "route":  null,
+        "shell":  null,
+        "type":  "screen",
+        "notes":  null
+    },
+    {
+        "file":  "src\\screens\\facility\\DeviationHandlingScreen.js",
+        "route":  null,
+        "shell":  null,
+        "type":  "screen",
+        "notes":  null
+    },
+    {
+        "file":  "src\\screens\\facility\\ComputeVPDScreen.tsx",
+        "route":  null,
+        "shell":  null,
+        "type":  "screen",
+        "notes":  null
+    },
+    {
+        "file":  "src\\screens\\facility\\ComplianceLogsScreen.tsx",
+        "route":  null,
+        "shell":  null,
+        "type":  "screen",
+        "notes":  null
+    },
+    {
+        "file":  "src\\screens\\facility\\BillingAndReportingScreen.js",
+        "route":  null,
+        "shell":  null,
+        "type":  "screen",
+        "notes":  null
+    },
+    {
+        "file":  "src\\screens\\facility\\AutomationScreen.tsx",
+        "route":  null,
+        "shell":  null,
+        "type":  "screen",
+        "notes":  null
+    },
+    {
+        "file":  "src\\screens\\facility\\AutomationCenterScreen.tsx",
+        "route":  null,
+        "shell":  null,
+        "type":  "screen",
+        "notes":  null
+    },
+    {
+        "file":  "src\\screens\\facility\\AuditLogScreen.js",
+        "route":  null,
+        "shell":  null,
+        "type":  "screen",
+        "notes":  null
+    },
+    {
+        "file":  "src\\screens\\facility\\AIToolsHomeScreen.tsx",
+        "route":  null,
+        "shell":  null,
+        "type":  "screen",
+        "notes":  null
+    },
+    {
+        "file":  "src\\screens\\FacilitiesScreen.js",
+        "route":  null,
+        "shell":  null,
+        "type":  "screen",
+        "notes":  null
+    },
+    {
+        "file":  "src\\screens\\EnvironmentAssistantScreen.js",
+        "route":  null,
+        "shell":  null,
+        "type":  "screen",
+        "notes":  null
+    },
+    {
+        "file":  "src\\screens\\EditLessonScreen.js",
+        "route":  null,
+        "shell":  null,
+        "type":  "screen",
+        "notes":  null
+    },
+    {
+        "file":  "src\\screens\\EarningsScreen.js",
+        "route":  null,
+        "shell":  null,
+        "type":  "screen",
+        "notes":  null
+    },
+    {
+        "file":  "src\\screens\\DiagnosisHistoryScreen.js",
+        "route":  null,
+        "shell":  null,
+        "type":  "screen",
+        "notes":  null
+    },
+    {
+        "file":  "src\\screens\\DiagnoseScreen.js",
+        "route":  null,
+        "shell":  null,
+        "type":  "screen",
+        "notes":  null
+    },
+    {
+        "file":  "src\\screens\\personal\\GrowLogScreen.tsx",
+        "route":  null,
+        "shell":  null,
+        "type":  "screen",
+        "notes":  null
+    },
+    {
+        "file":  "src\\screens\\personal\\DashboardScreen.tsx",
+        "route":  null,
+        "shell":  null,
+        "type":  "screen",
+        "notes":  null
+    },
+    {
+        "file":  "src\\screens\\personal\\CalendarScreen.tsx",
+        "route":  null,
+        "shell":  null,
+        "type":  "screen",
+        "notes":  null
+    },
+    {
+        "file":  "src\\screens\\PaywallScreen.js",
+        "route":  null,
+        "shell":  null,
+        "type":  "screen",
+        "notes":  null
+    },
+    {
+        "file":  "src\\screens\\PaymentsScreen.js",
+        "route":  null,
+        "shell":  null,
+        "type":  "screen",
+        "notes":  null
+    },
+    {
+        "file":  "src\\screens\\OnboardingCarousel.js",
+        "route":  null,
+        "shell":  null,
+        "type":  "screen",
+        "notes":  null
+    },
+    {
+        "file":  "src\\screens\\NutrientCalculatorScreen.js",
+        "route":  null,
+        "shell":  null,
+        "type":  "screen",
+        "notes":  null
+    },
+    {
+        "file":  "src\\screens\\MarketplaceScreen.js",
+        "route":  null,
+        "shell":  null,
+        "type":  "screen",
+        "notes":  null
+    },
+    {
+        "file":  "src\\screens\\LogsScreen.tsx",
+        "route":  null,
+        "shell":  null,
+        "type":  "screen",
+        "notes":  null
+    },
+    {
+        "file":  "src\\screens\\LoginScreen.js",
+        "route":  null,
+        "shell":  null,
+        "type":  "screen",
+        "notes":  null
+    },
+    {
+        "file":  "src\\screens\\LiveSessionTwitchEmbed.js",
+        "route":  null,
+        "shell":  null,
+        "type":  "screen",
+        "notes":  null
+    },
+    {
+        "file":  "src\\screens\\LiveSessionsListScreen.js",
+        "route":  null,
+        "shell":  null,
+        "type":  "screen",
+        "notes":  null
+    },
+    {
+        "file":  "src\\screens\\LiveSessionScreen.js",
+        "route":  null,
+        "shell":  null,
+        "type":  "screen",
+        "notes":  null
+    },
+    {
+        "file":  "src\\screens\\LinksScreen.js",
+        "route":  null,
+        "shell":  null,
+        "type":  "screen",
+        "notes":  null
+    },
+    {
+        "file":  "src\\screens\\DiagnoseResultScreen.js",
+        "route":  null,
+        "shell":  null,
+        "type":  "screen",
+        "notes":  null
+    },
+    {
+        "file":  "src\\screens\\DebugScreen.js",
+        "route":  null,
+        "shell":  null,
+        "type":  "screen",
+        "notes":  null
+    },
+    {
+        "file":  "src\\screens\\DashboardScreen.js",
+        "route":  null,
+        "shell":  null,
+        "type":  "screen",
+        "notes":  null
+    },
+    {
+        "file":  "src\\screens\\CreatorSignatureUpload.js",
+        "route":  null,
+        "shell":  null,
+        "type":  "screen",
+        "notes":  null
+    },
+    {
+        "file":  "src\\screens\\CreatorPayoutScreen.js",
+        "route":  null,
+        "shell":  null,
+        "type":  "screen",
+        "notes":  null
+    },
+    {
+        "file":  "src\\screens\\CreatorDashboardV2.js",
+        "route":  null,
+        "shell":  null,
+        "type":  "screen",
+        "notes":  null
+    },
+    {
+        "file":  "src\\screens\\CreatorDashboardScreen.js",
+        "route":  null,
+        "shell":  null,
+        "type":  "screen",
+        "notes":  null
+    },
+    {
+        "file":  "src\\screens\\CreatorDashboard.js",
+        "route":  null,
+        "shell":  null,
+        "type":  "screen",
+        "notes":  null
+    },
+    {
+        "file":  "src\\screens\\CreatorAnalyticsScreen.js",
+        "route":  null,
+        "shell":  null,
+        "type":  "screen",
+        "notes":  null
+    },
+    {
+        "file":  "src\\screens\\CreateVendorGuide.js",
+        "route":  null,
+        "shell":  null,
+        "type":  "screen",
+        "notes":  null
+    },
+    {
+        "file":  "src\\screens\\CreateTaskScreen.js",
+        "route":  null,
+        "shell":  null,
+        "type":  "screen",
+        "notes":  null
+    },
+    {
+        "file":  "src\\app\\courses\\index.tsx",
+        "route":  null,
+        "shell":  null,
+        "type":  "screen",
+        "notes":  null
+    },
+    {
+        "file":  "src\\app\\communities\\index.tsx",
+        "route":  null,
+        "shell":  null,
+        "type":  "screen",
+        "notes":  null
+    },
+    {
+        "file":  "src\\app\\tools\\index.tsx",
+        "route":  null,
+        "shell":  null,
+        "type":  "screen",
+        "notes":  null
+    },
+    {
+        "file":  "src\\app\\campaigns\\index.tsx",
+        "route":  null,
+        "shell":  null,
+        "type":  "screen",
+        "notes":  null
+    },
+    {
+        "file":  "src\\app\\home\\_personal.tsx",
+        "route":  null,
+        "shell":  null,
+        "type":  "screen",
+        "notes":  null
+    },
+    {
+        "file":  "src\\app\\home\\_facility.tsx",
+        "route":  null,
+        "shell":  null,
+        "type":  "screen",
+        "notes":  null
+    },
+    {
+        "file":  "src\\app\\dashboard.tsx",
+        "route":  null,
+        "shell":  null,
+        "type":  "screen",
+        "notes":  null
+    },
+    {
+        "file":  "src\\app\\create-post.tsx",
+        "route":  null,
+        "shell":  null,
+        "type":  "screen",
+        "notes":  null
+    },
+    {
+        "file":  "src\\app\\debug.tsx",
+        "route":  null,
+        "shell":  null,
+        "type":  "screen",
+        "notes":  null
+    },
+    {
+        "file":  "src\\app\\storefront\\index.tsx",
+        "route":  null,
+        "shell":  null,
+        "type":  "screen",
+        "notes":  null
+    },
+    {
+        "file":  "src\\app\\register.tsx",
+        "route":  null,
+        "shell":  null,
+        "type":  "screen",
+        "notes":  null
+    },
+    {
+        "file":  "src\\app\\home\\personal\\_layout.tsx",
+        "route":  null,
+        "shell":  null,
+        "type":  "layout",
+        "notes":  null
+    },
+    {
+        "file":  "src\\app\\(commercial)\\_layout.tsx",
+        "route":  null,
+        "shell":  null,
+        "type":  "layout",
+        "notes":  null
+    },
+    {
+        "file":  "src\\app\\home\\commercial\\inventory.tsx",
+        "route":  null,
+        "shell":  null,
+        "type":  "screen",
+        "notes":  null
+    },
+    {
+        "file":  "src\\app\\diagnose\\index.tsx",
+        "route":  null,
+        "shell":  null,
+        "type":  "screen",
+        "notes":  null
+    },
+    {
+        "file":  "src\\app\\feed\\index.tsx",
+        "route":  null,
+        "shell":  null,
+        "type":  "screen",
+        "notes":  null
+    },
+    {
+        "file":  "src\\app\\home\\commercial.tsx",
+        "route":  null,
+        "shell":  null,
+        "type":  "screen",
+        "notes":  null
+    },
+    {
+        "file":  "src\\app\\home\\index.tsx",
+        "route":  null,
+        "shell":  null,
+        "type":  "screen",
+        "notes":  null
+    },
+    {
+        "file":  "src\\app\\live-session.tsx",
+        "route":  null,
+        "shell":  null,
+        "type":  "screen",
+        "notes":  null
+    },
+    {
+        "file":  "src\\app\\index.tsx",
+        "route":  null,
+        "shell":  null,
+        "type":  "screen",
+        "notes":  null
+    },
+    {
+        "file":  "src\\app\\login.tsx",
+        "route":  null,
+        "shell":  null,
+        "type":  "screen",
+        "notes":  null
+    },
+    {
+        "file":  "src\\app\\profile\\index.tsx",
+        "route":  null,
+        "shell":  null,
+        "type":  "screen",
+        "notes":  null
+    },
+    {
+        "file":  "src\\app\\facilities\\index.tsx",
+        "route":  null,
+        "shell":  null,
+        "type":  "screen",
+        "notes":  null
+    },
+    {
+        "file":  "src\\app\\forum\\index.tsx",
+        "route":  null,
+        "shell":  null,
+        "type":  "screen",
+        "notes":  null
+    },
+    {
+        "file":  "src\\app\\offers\\index.tsx",
+        "route":  null,
+        "shell":  null,
+        "type":  "screen",
+        "notes":  null
+    },
+    {
+        "file":  "src\\app\\(commercial)\\tasks\\[id].tsx",
+        "route":  null,
+        "shell":  null,
+        "type":  "screen",
+        "notes":  null
+    },
+    {
+        "file":  "src\\app\\home\\commercial\\inventory-item\\[id].tsx",
+        "route":  null,
+        "shell":  null,
+        "type":  "screen",
+        "notes":  null
+    },
+    {
+        "file":  "src\\app\\home\\personal\\more\\team.tsx",
+        "route":  null,
+        "shell":  null,
+        "type":  "screen",
+        "notes":  null
+    },
+    {
+        "file":  "src\\app\\home\\personal\\more\\tasks.tsx",
+        "route":  null,
+        "shell":  null,
+        "type":  "screen",
+        "notes":  null
+    },
+    {
+        "file":  "src\\app\\home\\personal\\more\\social-tools.tsx",
+        "route":  null,
+        "shell":  null,
+        "type":  "screen",
+        "notes":  null
+    },
+    {
+        "file":  "src\\app\\home\\personal\\more\\qa.tsx",
+        "route":  null,
+        "shell":  null,
+        "type":  "screen",
+        "notes":  null
+    },
+    {
+        "file":  "src\\app\\home\\personal\\more\\links.tsx",
+        "route":  null,
+        "shell":  null,
+        "type":  "screen",
+        "notes":  null
+    },
+    {
+        "file":  "src\\app\\home\\personal\\more\\forum.tsx",
+        "route":  null,
+        "shell":  null,
+        "type":  "screen",
+        "notes":  null
+    },
+    {
+        "file":  "src\\app\\home\\personal\\more\\analytics.tsx",
+        "route":  null,
+        "shell":  null,
+        "type":  "screen",
+        "notes":  null
+    },
+    {
+        "file":  "src\\app\\home\\facility\\_layout.tsx",
+        "route":  null,
+        "shell":  null,
+        "type":  "layout",
+        "notes":  null
+    },
+    {
+        "file":  "src\\app\\(commercial)\\feed\\index.tsx",
+        "route":  null,
+        "shell":  null,
+        "type":  "screen",
+        "notes":  null
+    },
+    {
+        "file":  "src\\app\\home\\facility\\select.tsx",
+        "route":  null,
+        "shell":  null,
+        "type":  "screen",
+        "notes":  null
+    },
+    {
+        "file":  "src\\app\\home\\personal\\(tabs)\\_layout.tsx",
+        "route":  null,
+        "shell":  null,
+        "type":  "layout",
+        "notes":  null
+    },
+    {
+        "file":  "src\\app\\home\\personal\\(tabs)\\tools.tsx.bak",
+        "route":  null,
+        "shell":  null,
+        "type":  "screen",
+        "notes":  null
+    },
+    {
+        "file":  "src\\app\\orders\\index.tsx",
+        "route":  null,
+        "shell":  null,
+        "type":  "screen",
+        "notes":  null
+    },
+    {
+        "file":  "src\\app\\facilities\\[facilityId]\\team.tsx",
+        "route":  null,
+        "shell":  null,
+        "type":  "screen",
+        "notes":  null
+    },
+    {
+        "file":  "src\\app\\home\\facility\\index.tsx",
+        "route":  null,
+        "shell":  null,
+        "type":  "screen",
+        "notes":  null
+    },
+    {
+        "file":  "src\\app\\facilities\\[facilityId]\\tasks.tsx",
+        "route":  null,
+        "shell":  null,
+        "type":  "screen",
+        "notes":  null
+    },
+    {
+        "file":  "src\\app\\facilities\\[facilityId]\\sops.tsx",
+        "route":  null,
+        "shell":  null,
+        "type":  "screen",
+        "notes":  null
+    },
+    {
+        "file":  "src\\app\\facilities\\[facilityId]\\inventory.tsx",
+        "route":  null,
+        "shell":  null,
+        "type":  "screen",
+        "notes":  null
+    },
+    {
+        "file":  "src\\app\\facilities\\[facilityId]\\rooms.tsx",
+        "route":  null,
+        "shell":  null,
+        "type":  "screen",
+        "notes":  null
+    },
+    {
+        "file":  "src\\app\\facilities\\[facilityId]\\dashboard.tsx",
+        "route":  null,
+        "shell":  null,
+        "type":  "screen",
+        "notes":  null
+    },
+    {
+        "file":  "src\\app\\facilities\\[facilityId]\\compliance.tsx",
+        "route":  null,
+        "shell":  null,
+        "type":  "screen",
+        "notes":  null
+    },
+    {
+        "file":  "src\\app\\home\\personal\\(tabs)\\courses.tsx",
+        "route":  null,
+        "shell":  null,
+        "type":  "screen",
+        "notes":  null
+    },
+    {
+        "file":  "src\\app\\home\\personal\\(tabs)\\ai.tsx.bak",
+        "route":  null,
+        "shell":  null,
+        "type":  "screen",
+        "notes":  null
+    },
+    {
+        "file":  "src\\app\\(commercial)\\alerts\\[id].tsx",
+        "route":  null,
+        "shell":  null,
+        "type":  "screen",
+        "notes":  null
+    },
+    {
+        "file":  "src\\app\\(commercial)\\logs\\[id].tsx",
+        "route":  null,
+        "shell":  null,
+        "type":  "screen",
+        "notes":  null
+    },
+    {
+        "file":  "src\\app\\home\\personal\\(tabs)\\logs.tsx.bak",
+        "route":  null,
+        "shell":  null,
+        "type":  "screen",
+        "notes":  null
+    },
+    {
+        "file":  "src\\app\\home\\facility\\logs\\[id].tsx",
+        "route":  null,
+        "shell":  null,
+        "type":  "screen",
+        "notes":  null
+    },
+    {
+        "file":  "src\\app\\home\\personal\\(tabs)\\diagnose.tsx",
+        "route":  null,
+        "shell":  null,
+        "type":  "screen",
+        "notes":  null
+    },
+    {
+        "file":  "src\\app\\home\\personal\\(tabs)\\forum.tsx",
+        "route":  null,
+        "shell":  null,
+        "type":  "screen",
+        "notes":  null
+    },
+    {
+        "file":  "src\\app\\home\\personal\\(tabs)\\grows.tsx.bak",
+        "route":  null,
+        "shell":  null,
+        "type":  "screen",
+        "notes":  null
+    },
+    {
+        "file":  "src\\app\\home\\personal\\(tabs)\\index.tsx",
+        "route":  null,
+        "shell":  null,
+        "type":  "screen",
+        "notes":  null
+    },
+    {
+        "file":  "src\\app\\home\\personal\\(tabs)\\profile.tsx.bak",
+        "route":  null,
+        "shell":  null,
+        "type":  "screen",
+        "notes":  null
+    },
+    {
+        "file":  "src\\app\\home\\facility\\ai\\template.tsx",
+        "route":  null,
+        "shell":  null,
+        "type":  "screen",
+        "notes":  null
+    },
+    {
+        "file":  "src\\app\\home\\facility\\ai\\diagnosis-photo.tsx",
+        "route":  null,
+        "shell":  null,
+        "type":  "screen",
+        "notes":  null
+    },
+    {
+        "file":  "src\\app\\home\\facility\\ai\\ask.tsx",
+        "route":  null,
+        "shell":  null,
+        "type":  "screen",
+        "notes":  null
+    },
+    {
+        "file":  "src\\app\\home\\facility\\compliance\\ai4.dashboard.tsx",
+        "route":  null,
+        "shell":  null,
+        "type":  "screen",
+        "notes":  null
+    },
+    {
+        "file":  "src\\app\\home\\facility\\compliance\\reports.tsx",
+        "route":  null,
+        "shell":  null,
+        "type":  "screen",
+        "notes":  null
+    },
+    {
+        "file":  "src\\app\\home\\facility\\compliance\\report-detail.tsx",
+        "route":  null,
+        "shell":  null,
+        "type":  "screen",
+        "notes":  null
+    },
+    {
+        "file":  "src\\app\\home\\personal\\(tabs)\\tasks.tsx",
+        "route":  null,
+        "shell":  null,
+        "type":  "screen",
+        "notes":  null
+    },
+    {
+        "file":  "src\\app\\home\\facility\\tasks\\[id].tsx",
+        "route":  null,
+        "shell":  null,
+        "type":  "screen",
+        "notes":  null
+    },
+    {
+        "file":  "src\\app\\home\\facility\\plants\\[id].tsx",
+        "route":  null,
+        "shell":  null,
+        "type":  "screen",
+        "notes":  null
+    },
+    {
+        "file":  "src\\app\\home\\facility\\(tabs)\\compliance.tsx",
+        "route":  null,
+        "shell":  null,
+        "type":  "screen",
+        "notes":  null
+    },
+    {
+        "file":  "src\\app\\home\\facility\\(tabs)\\audit-logs.tsx",
+        "route":  null,
+        "shell":  null,
+        "type":  "screen",
+        "notes":  null
+    },
+    {
+        "file":  "src\\app\\home\\facility\\(tabs)\\ai-tools.tsx",
+        "route":  null,
+        "shell":  null,
+        "type":  "screen",
+        "notes":  null
+    },
+    {
+        "file":  "src\\app\\home\\facility\\(tabs)\\CreateInventoryItemScreen.tsx",
+        "route":  null,
+        "shell":  null,
+        "type":  "screen",
+        "notes":  null
+    },
+    {
+        "file":  "src\\app\\home\\facility\\(tabs)\\dashboard.tsx",
+        "route":  null,
+        "shell":  null,
+        "type":  "screen",
+        "notes":  null
+    },
+    {
+        "file":  "src\\app\\home\\personal\\(tabs)\\tools\\vpd.tsx",
+        "route":  null,
+        "shell":  null,
+        "type":  "screen",
+        "notes":  null
+    },
+    {
+        "file":  "src\\app\\home\\personal\\(tabs)\\tools\\index.tsx",
+        "route":  null,
+        "shell":  null,
+        "type":  "screen",
+        "notes":  null
+    },
+    {
+        "file":  "src\\app\\home\\facility\\(tabs)\\grows.tsx",
+        "route":  null,
+        "shell":  null,
+        "type":  "screen",
+        "notes":  null
+    },
+    {
+        "file":  "src\\app\\home\\personal\\(tabs)\\tools\\_layout.tsx",
+        "route":  null,
+        "shell":  null,
+        "type":  "layout",
+        "notes":  null
+    },
+    {
+        "file":  "src\\app\\home\\facility\\(tabs)\\profile.tsx",
+        "route":  null,
+        "shell":  null,
+        "type":  "screen",
+        "notes":  null
+    },
+    {
+        "file":  "src\\app\\home\\facility\\(tabs)\\plants.tsx",
+        "route":  null,
+        "shell":  null,
+        "type":  "screen",
+        "notes":  null
+    },
+    {
+        "file":  "src\\app\\home\\facility\\(tabs)\\logs.tsx",
+        "route":  null,
+        "shell":  null,
+        "type":  "screen",
+        "notes":  null
+    },
+    {
+        "file":  "src\\app\\home\\facility\\(tabs)\\InventoryItemDetailScreen.tsx",
+        "route":  null,
+        "shell":  null,
+        "type":  "screen",
+        "notes":  null
+    },
+    {
+        "file":  "src\\app\\home\\facility\\(tabs)\\inventory.tsx",
+        "route":  null,
+        "shell":  null,
+        "type":  "screen",
+        "notes":  null
+    },
+    {
+        "file":  "src\\app\\home\\facility\\(tabs)\\tasks.tsx",
+        "route":  null,
+        "shell":  null,
+        "type":  "screen",
+        "notes":  null
+    },
+    {
+        "file":  "src\\app\\home\\facility\\(tabs)\\sop-runs.tsx",
+        "route":  null,
+        "shell":  null,
+        "type":  "screen",
+        "notes":  null
+    },
+    {
+        "file":  "src\\app\\onboarding\\assign-plants.tsx",
+        "route":  null,
+        "shell":  null,
+        "type":  "screen",
+        "notes":  null
+    },
+    {
+        "file":  "src\\app\\home\\facility\\(tabs)\\team.tsx",
+        "route":  null,
+        "shell":  null,
+        "type":  "screen",
+        "notes":  null
+    },
+    {
+        "file":  "src\\app\\home\\facility\\(tabs)\\_layout.tsx",
+        "route":  null,
+        "shell":  null,
+        "type":  "layout",
+        "notes":  null
+    },
+    {
+        "file":  "src\\app\\home\\personal\\(tabs)\\grows\\index.tsx",
+        "route":  null,
+        "shell":  null,
+        "type":  "screen",
+        "notes":  null
+    },
+    {
+        "file":  "src\\app\\onboarding\\create-facility.tsx",
+        "route":  null,
+        "shell":  null,
+        "type":  "screen",
+        "notes":  null
+    },
+    {
+        "file":  "src\\app\\onboarding\\first-setup.tsx",
+        "route":  null,
+        "shell":  null,
+        "type":  "screen",
+        "notes":  null
+    },
+    {
+        "file":  "src\\app\\onboarding\\index.tsx",
+        "route":  null,
+        "shell":  null,
+        "type":  "screen",
+        "notes":  null
+    },
+    {
+        "file":  "src\\app\\onboarding\\start-grow.tsx",
+        "route":  null,
+        "shell":  null,
+        "type":  "screen",
+        "notes":  null
+    },
+    {
+        "file":  "src\\app\\onboarding\\pick-facility.tsx",
+        "route":  null,
+        "shell":  null,
+        "type":  "screen",
+        "notes":  null
+    },
+    {
+        "file":  "src\\app\\onboarding\\join-facility.tsx",
+        "route":  null,
+        "shell":  null,
+        "type":  "screen",
+        "notes":  null
+    },
+    {
+        "file":  "src\\app\\home\\personal\\(tabs)\\grows\\_layout.tsx",
+        "route":  null,
+        "shell":  null,
+        "type":  "layout",
+        "notes":  null
+    },
+    {
+        "file":  "src\\app\\home\\personal\\(tabs)\\grows\\[growId].tsx",
+        "route":  null,
+        "shell":  null,
+        "type":  "screen",
+        "notes":  null
+    },
+    {
+        "file":  "src\\app\\home\\personal\\(tabs)\\grows\\new.tsx",
+        "route":  null,
+        "shell":  null,
+        "type":  "screen",
+        "notes":  null
+    },
+    {
+        "file":  "src\\app\\home\\personal\\(tabs)\\ai\\index.tsx",
+        "route":  null,
+        "shell":  null,
+        "type":  "screen",
+        "notes":  null
+    },
+    {
+        "file":  "src\\app\\home\\personal\\(tabs)\\ai\\_layout.tsx",
+        "route":  null,
+        "shell":  null,
+        "type":  "layout",
+        "notes":  null
+    },
+    {
+        "file":  "src\\app\\home\\personal\\(tabs)\\profile\\_layout.tsx",
+        "route":  null,
+        "shell":  null,
+        "type":  "layout",
+        "notes":  null
+    },
+    {
+        "file":  "src\\app\\home\\personal\\(tabs)\\profile\\index.tsx",
+        "route":  null,
+        "shell":  null,
+        "type":  "screen",
+        "notes":  null
+    },
+    {
+        "file":  "src\\app\\home\\facility\\audit-logs\\[id].tsx",
+        "route":  null,
+        "shell":  null,
+        "type":  "screen",
+        "notes":  null
+    },
+    {
+        "file":  "src\\app\\home\\facility\\sop-runs\\[id].tsx",
+        "route":  null,
+        "shell":  null,
+        "type":  "screen",
+        "notes":  null
+    },
+    {
+        "file":  "src\\app\\home\\facility\\sop-runs\\start.tsx.bak",
+        "route":  null,
+        "shell":  null,
+        "type":  "screen",
+        "notes":  null
+    },
+    {
+        "file":  "src\\app\\home\\facility\\sop-runs\\start.tsx",
+        "route":  null,
+        "shell":  null,
+        "type":  "screen",
+        "notes":  null
+    },
+    {
+        "file":  "src\\app\\home\\facility\\sop-runs\\presets.tsx",
+        "route":  null,
+        "shell":  null,
+        "type":  "screen",
+        "notes":  null
+    },
+    {
+        "file":  "src\\app\\home\\facility\\sop-runs\\index.tsx",
+        "route":  null,
+        "shell":  null,
+        "type":  "screen",
+        "notes":  null
+    },
+    {
+        "file":  "src\\app\\home\\facility\\sop-runs\\compare.tsx.bak",
+        "route":  null,
+        "shell":  null,
+        "type":  "screen",
+        "notes":  null
+    },
+    {
+        "file":  "src\\app\\home\\facility\\sop-runs\\compare.tsx",
+        "route":  null,
+        "shell":  null,
+        "type":  "screen",
+        "notes":  null
+    },
+    {
+        "file":  "src\\app\\home\\facility\\sop-runs\\compare-result.tsx",
+        "route":  null,
+        "shell":  null,
+        "type":  "screen",
+        "notes":  null
+    },
+    {
+        "file":  "src\\app\\home\\personal\\(tabs)\\forum\\code.tsx",
+        "route":  null,
+        "shell":  null,
+        "type":  "screen",
+        "notes":  null
+    },
+    {
+        "file":  "src\\app\\home\\personal\\(tabs)\\forum\\new-post.tsx",
+        "route":  null,
+        "shell":  null,
+        "type":  "screen",
+        "notes":  null
+    },
+    {
+        "file":  "src\\app\\home\\personal\\(tabs)\\logs\\new.tsx",
+        "route":  null,
+        "shell":  null,
+        "type":  "screen",
+        "notes":  null
+    },
+    {
+        "file":  "src\\app\\home\\personal\\(tabs)\\logs\\index.tsx",
+        "route":  null,
+        "shell":  null,
+        "type":  "screen",
+        "notes":  null
+    },
+    {
+        "file":  "src\\app\\home\\personal\\(tabs)\\logs\\[logId].tsx",
+        "route":  null,
+        "shell":  null,
+        "type":  "screen",
+        "notes":  null
+    },
+    {
+        "file":  "src\\app\\home\\personal\\(tabs)\\logs\\_layout.tsx",
+        "route":  null,
+        "shell":  null,
+        "type":  "layout",
+        "notes":  null
+    },
+    {
+        "file":  "src\\app\\home\\facility\\audit-logs\\index.tsx",
+        "route":  null,
+        "shell":  null,
+        "type":  "screen",
+        "notes":  null
+    },
+    {
+        "file":  "src\\app\\home\\personal\\(tabs)\\forum\\post\\[id].tsx",
+        "route":  null,
+        "shell":  null,
+        "type":  "screen",
+        "notes":  null
+    },
+    {
+        "file":  "src\\app\\home\\facility\\audit-logs\\[entity]\\[entityId].tsx",
+        "route":  null,
+        "shell":  null,
+        "type":  "screen",
+        "notes":  null
+    }
+]

@@ -1,0 +1,513 @@
+[
+    {
+        "capabilityKey":  "analytics.advanced",
+        "files":  "src\\config\\capabilities.js"
+    },
+    {
+        "capabilityKey":  "analytics.basic",
+        "files":  "src\\config\\capabilities.js"
+    },
+    {
+        "capabilityKey":  "analytics.facility",
+        "files":  "src\\config\\capabilities.js"
+    },
+    {
+        "capabilityKey":  "calendar",
+        "files":  "src\\screens\\personal\\CalendarScreen.tsx"
+    },
+    {
+        "capabilityKey":  "canExportPdf",
+        "files":  "src\\components\\CommercialBanner.js"
+    },
+    {
+        "capabilityKey":  "canManageRoomsZones",
+        "files":  "src\\config\\menuConfig.js"
+    },
+    {
+        "capabilityKey":  "canManageTeam",
+        "files":  "src\\config\\menuConfig.js"
+    },
+    {
+        "capabilityKey":  "canPostForum",
+        "files":  "src\\screens\\ForumPostDetailScreen.js"
+    },
+    {
+        "capabilityKey":  "canUseAdsManager",
+        "files":  "src\\config\\menuConfig.js"
+    },
+    {
+        "capabilityKey":  "canUseCommercial",
+        "files":  "src\\config\\menuConfig.js"
+    },
+    {
+        "capabilityKey":  "canUseCommercialMetrics",
+        "files":  "src\\config\\menuConfig.js"
+    },
+    {
+        "capabilityKey":  "canUseComplianceAnalytics",
+        "files":  "src\\config\\menuConfig.js"
+    },
+    {
+        "capabilityKey":  "canUseCourses",
+        "files":  "src\\config\\menuConfig.js"
+    },
+    {
+        "capabilityKey":  "canUseFacility",
+        "files":  "src\\config\\menuConfig.js"
+    },
+    {
+        "capabilityKey":  "canUseFeed",
+        "files":  "src\\config\\menuConfig.js"
+    },
+    {
+        "capabilityKey":  "canUseForum",
+        "files":  [
+                      "src\\config\\menuConfig.js",
+                      "src\\screens\\ForumPostDetailScreen.js"
+                  ]
+    },
+    {
+        "capabilityKey":  "canUseGrowAreas",
+        "files":  "src\\config\\menuConfig.js"
+    },
+    {
+        "capabilityKey":  "canUseGrowLogs",
+        "files":  "src\\config\\menuConfig.js"
+    },
+    {
+        "capabilityKey":  "canUseMarketplace",
+        "files":  "src\\config\\menuConfig.js"
+    },
+    {
+        "capabilityKey":  "canUseMetrc",
+        "files":  "src\\config\\menuConfig.js"
+    },
+    {
+        "capabilityKey":  "canUsePlants",
+        "files":  "src\\config\\menuConfig.js"
+    },
+    {
+        "capabilityKey":  "canUseTasks",
+        "files":  "src\\config\\menuConfig.js"
+    },
+    {
+        "capabilityKey":  "canUseTimelinePlanner",
+        "files":  "src\\components\\CommercialBanner.js"
+    },
+    {
+        "capabilityKey":  "canUseToolsHub",
+        "files":  "src\\config\\menuConfig.js"
+    },
+    {
+        "capabilityKey":  "canUseVendorMetrics",
+        "files":  "src\\config\\menuConfig.js"
+    },
+    {
+        "capabilityKey":  "CAPABILITIES.AI_DIAGNOSE",
+        "files":  "src\\navigation\\tabConfig.js"
+    },
+    {
+        "capabilityKey":  "CAPABILITIES.DEBUG",
+        "files":  "src\\navigation\\tabConfig.js"
+    },
+    {
+        "capabilityKey":  "CAPABILITIES.EDIT_PROFILE",
+        "files":  "src\\capabilities\\plans.js"
+    },
+    {
+        "capabilityKey":  "CAPABILITIES.ENROLL_COURSE",
+        "files":  "src\\capabilities\\plans.js"
+    },
+    {
+        "capabilityKey":  "CAPABILITIES.MANAGE_ENROLLMENTS",
+        "files":  "src\\capabilities\\plans.js"
+    },
+    {
+        "capabilityKey":  "CAPABILITIES.MANAGE_FACILITY",
+        "files":  "src\\capabilities\\plans.js"
+    },
+    {
+        "capabilityKey":  "CAPABILITIES.MANAGE_PAYMENTS",
+        "files":  "src\\capabilities\\plans.js"
+    },
+    {
+        "capabilityKey":  "CAPABILITIES.MANAGE_USERS",
+        "files":  "src\\capabilities\\plans.js"
+    },
+    {
+        "capabilityKey":  "CAPABILITIES.POST_FORUM",
+        "files":  "src\\capabilities\\plans.js"
+    },
+    {
+        "capabilityKey":  "CAPABILITIES.SEARCH",
+        "files":  "src\\navigation\\tabConfig.js"
+    },
+    {
+        "capabilityKey":  "CAPABILITIES.VIEW_COURSES",
+        "files":  [
+                      "src\\capabilities\\plans.js",
+                      "src\\navigation\\pageRegistry.js",
+                      "src\\navigation\\tabConfig.js"
+                  ]
+    },
+    {
+        "capabilityKey":  "CAPABILITIES.VIEW_DASHBOARD",
+        "files":  [
+                      "src\\capabilities\\plans.js",
+                      "src\\navigation\\pageRegistry.js",
+                      "src\\navigation\\tabConfig.js"
+                  ]
+    },
+    {
+        "capabilityKey":  "CAPABILITIES.VIEW_FEED",
+        "files":  "src\\navigation\\tabConfig.js"
+    },
+    {
+        "capabilityKey":  "CAPABILITIES.VIEW_FORUM",
+        "files":  [
+                      "src\\capabilities\\plans.js",
+                      "src\\navigation\\pageRegistry.js",
+                      "src\\navigation\\tabConfig.js"
+                  ]
+    },
+    {
+        "capabilityKey":  "CAPABILITIES.VIEW_GROW_LOG",
+        "files":  "src\\navigation\\tabConfig.js"
+    },
+    {
+        "capabilityKey":  "CAPABILITIES.VIEW_PAYMENTS",
+        "files":  "src\\capabilities\\plans.js"
+    },
+    {
+        "capabilityKey":  "CAPABILITIES.VIEW_PLANTS",
+        "files":  "src\\navigation\\tabConfig.js"
+    },
+    {
+        "capabilityKey":  "CAPABILITIES.VIEW_PROFILE",
+        "files":  [
+                      "src\\capabilities\\plans.js",
+                      "src\\navigation\\pageRegistry.js",
+                      "src\\navigation\\tabConfig.js"
+                  ]
+    },
+    {
+        "capabilityKey":  "community.feedPost",
+        "files":  "src\\config\\capabilities.js"
+    },
+    {
+        "capabilityKey":  "community.feedRead",
+        "files":  "src\\config\\capabilities.js"
+    },
+    {
+        "capabilityKey":  "community.forumPost",
+        "files":  "src\\config\\capabilities.js"
+    },
+    {
+        "capabilityKey":  "community.forumRead",
+        "files":  "src\\config\\capabilities.js"
+    },
+    {
+        "capabilityKey":  "courses.create",
+        "files":  "src\\config\\capabilities.js"
+    },
+    {
+        "capabilityKey":  "courses.sell",
+        "files":  "src\\config\\capabilities.js"
+    },
+    {
+        "capabilityKey":  "d",
+        "files":  "src\\config\\capabilities.js"
+    },
+    {
+        "capabilityKey":  "edit_profile",
+        "files":  "src/capabilities/keys.js"
+    },
+    {
+        "capabilityKey":  "enroll_course",
+        "files":  "src/capabilities/keys.js"
+    },
+    {
+        "capabilityKey":  "every",
+        "files":  "src\\guards\\RequireEntitlement.tsx"
+    },
+    {
+        "capabilityKey":  "facility.audit",
+        "files":  "src\\entitlements\\screenMatrix.ts"
+    },
+    {
+        "capabilityKey":  "facility.auditLogs",
+        "files":  "src\\config\\capabilities.js"
+    },
+    {
+        "capabilityKey":  "facility.community",
+        "files":  "src\\navigation\\pageRegistry.facility.js"
+    },
+    {
+        "capabilityKey":  "facility.compliance",
+        "files":  "src\\entitlements\\screenMatrix.ts"
+    },
+    {
+        "capabilityKey":  "facility.complianceExports",
+        "files":  "src\\config\\capabilities.js"
+    },
+    {
+        "capabilityKey":  "facility.dashboard",
+        "files":  "src\\navigation\\pageRegistry.facility.js"
+    },
+    {
+        "capabilityKey":  "facility.feed",
+        "files":  "src\\navigation\\pageRegistry.facility.js"
+    },
+    {
+        "capabilityKey":  "facility.growlog",
+        "files":  "src\\screens\\GrowLogScreen.js"
+    },
+    {
+        "capabilityKey":  "facility.inventory",
+        "files":  "src\\navigation\\pageRegistry.facility.js"
+    },
+    {
+        "capabilityKey":  "facility.metrc",
+        "files":  "src\\entitlements\\screenMatrix.ts"
+    },
+    {
+        "capabilityKey":  "facility.multiGrow",
+        "files":  "src\\config\\capabilities.js"
+    },
+    {
+        "capabilityKey":  "facility.ops_analytics",
+        "files":  "src\\entitlements\\screenMatrix.ts"
+    },
+    {
+        "capabilityKey":  "facility.phenoTracking",
+        "files":  "src\\config\\capabilities.js"
+    },
+    {
+        "capabilityKey":  "facility.plants",
+        "files":  "src\\navigation\\pageRegistry.facility.js"
+    },
+    {
+        "capabilityKey":  "facility.profile",
+        "files":  "src\\navigation\\pageRegistry.facility.js"
+    },
+    {
+        "capabilityKey":  "facility.reports",
+        "files":  "src\\navigation\\pageRegistry.facility.js"
+    },
+    {
+        "capabilityKey":  "facility.rooms",
+        "files":  "src\\navigation\\pageRegistry.facility.js"
+    },
+    {
+        "capabilityKey":  "facility.sops",
+        "files":  "src\\entitlements\\screenMatrix.ts"
+    },
+    {
+        "capabilityKey":  "facility.task_verification",
+        "files":  "src\\entitlements\\screenMatrix.ts"
+    },
+    {
+        "capabilityKey":  "facility.tasks",
+        "files":  "src\\navigation\\pageRegistry.facility.js"
+    },
+    {
+        "capabilityKey":  "facility.tasksJobs",
+        "files":  "src\\config\\capabilities.js"
+    },
+    {
+        "capabilityKey":  "facility.team",
+        "files":  [
+                      "src\\entitlements\\screenMatrix.ts",
+                      "src\\navigation\\pageRegistry.facility.js"
+                  ]
+    },
+    {
+        "capabilityKey":  "facility.users",
+        "files":  "src\\config\\capabilities.js"
+    },
+    {
+        "capabilityKey":  "facilityCommunity",
+        "files":  "src\\screens\\FacilityCommunityScreen.js"
+    },
+    {
+        "capabilityKey":  "facilityFeed",
+        "files":  "src\\screens\\FacilityFeedScreen.js"
+    },
+    {
+        "capabilityKey":  "facilityInventory",
+        "files":  "src\\screens\\FacilityInventoryScreen.js"
+    },
+    {
+        "capabilityKey":  "facilityProfile",
+        "files":  "src\\screens\\FacilityProfileScreen.js"
+    },
+    {
+        "capabilityKey":  "facilityRooms",
+        "files":  "src\\screens\\FacilityRoomsScreen.js"
+    },
+    {
+        "capabilityKey":  "facilityTeam",
+        "files":  "src\\screens\\FacilityTeamScreen.js"
+    },
+    {
+        "capabilityKey":  "includes",
+        "files":  "src\\entitlements\\uiGate.ts"
+    },
+    {
+        "capabilityKey":  "js",
+        "files":  "src\\auth\\capabilities.js"
+    },
+    {
+        "capabilityKey":  "length",
+        "files":  "src\\guards\\RequireEntitlement.tsx"
+    },
+    {
+        "capabilityKey":  "manage_enrollments",
+        "files":  "src/capabilities/keys.js"
+    },
+    {
+        "capabilityKey":  "manage_facility",
+        "files":  "src/capabilities/keys.js"
+    },
+    {
+        "capabilityKey":  "manage_payments",
+        "files":  "src/capabilities/keys.js"
+    },
+    {
+        "capabilityKey":  "manage_users",
+        "files":  "src/capabilities/keys.js"
+    },
+    {
+        "capabilityKey":  "maxGrows",
+        "files":  "src\\config\\capabilities.ts"
+    },
+    {
+        "capabilityKey":  "maxPlants",
+        "files":  "src\\config\\capabilities.ts"
+    },
+    {
+        "capabilityKey":  "mode",
+        "files":  "src\\navigation\\filterRegistry.js"
+    },
+    {
+        "capabilityKey":  "personalGrows",
+        "files":  "src\\screens\\GrowsScreen.js"
+    },
+    {
+        "capabilityKey":  "personalPlants",
+        "files":  "src\\screens\\PlantsScreen.js"
+    },
+    {
+        "capabilityKey":  "post_forum",
+        "files":  "src/capabilities/keys.js"
+    },
+    {
+        "capabilityKey":  "seller.campaigns",
+        "files":  "src\\config\\capabilities.js"
+    },
+    {
+        "capabilityKey":  "seller.clickTracking",
+        "files":  "src\\config\\capabilities.js"
+    },
+    {
+        "capabilityKey":  "seller.links",
+        "files":  "src\\config\\capabilities.js"
+    },
+    {
+        "capabilityKey":  "seller.products",
+        "files":  "src\\config\\capabilities.js"
+    },
+    {
+        "capabilityKey":  "seller.socialComposer",
+        "files":  "src\\config\\capabilities.js"
+    },
+    {
+        "capabilityKey":  "seller.storefront",
+        "files":  "src\\config\\capabilities.js"
+    },
+    {
+        "capabilityKey":  "tools.growthTracker",
+        "files":  "src\\screens\\ToolsScreen.js"
+    },
+    {
+        "capabilityKey":  "tools.harvest_estimator",
+        "files":  "src\\entitlements\\screenMatrix.ts"
+    },
+    {
+        "capabilityKey":  "tools.harvestEstimator",
+        "files":  "src\\screens\\ToolsScreen.js"
+    },
+    {
+        "capabilityKey":  "tools.lightCalc",
+        "files":  "src\\screens\\ToolsScreen.js"
+    },
+    {
+        "capabilityKey":  "tools.npkCalc",
+        "files":  [
+                      "src\\config\\capabilities.js",
+                      "src\\screens\\ToolsScreen.js"
+                  ]
+    },
+    {
+        "capabilityKey":  "tools.pestIdentifier",
+        "files":  "src\\screens\\ToolsScreen.js"
+    },
+    {
+        "capabilityKey":  "tools.phEcCalc",
+        "files":  "src\\screens\\ToolsScreen.js"
+    },
+    {
+        "capabilityKey":  "tools.pheno_matrix",
+        "files":  "src\\entitlements\\screenMatrix.ts"
+    },
+    {
+        "capabilityKey":  "tools.phenoMatrix",
+        "files":  "src\\config\\capabilities.js"
+    },
+    {
+        "capabilityKey":  "tools.soilCalc",
+        "files":  "src\\config\\capabilities.js"
+    },
+    {
+        "capabilityKey":  "tools.stageTimeline",
+        "files":  [
+                      "src\\config\\capabilities.js",
+                      "src\\screens\\ToolsScreen.js"
+                  ]
+    },
+    {
+        "capabilityKey":  "tools.vpd",
+        "files":  "src\\entitlements\\screenMatrix.ts"
+    },
+    {
+        "capabilityKey":  "tools.vpdCalc",
+        "files":  [
+                      "src\\config\\capabilities.js",
+                      "src\\screens\\ToolsScreen.js"
+                  ]
+    },
+    {
+        "capabilityKey":  "tools.wateringScheduler",
+        "files":  "src\\screens\\ToolsScreen.js"
+    },
+    {
+        "capabilityKey":  "view_courses",
+        "files":  "src/capabilities/keys.js"
+    },
+    {
+        "capabilityKey":  "view_dashboard",
+        "files":  "src/capabilities/keys.js"
+    },
+    {
+        "capabilityKey":  "view_forum",
+        "files":  "src/capabilities/keys.js"
+    },
+    {
+        "capabilityKey":  "view_payments",
+        "files":  "src/capabilities/keys.js"
+    },
+    {
+        "capabilityKey":  "view_profile",
+        "files":  "src/capabilities/keys.js"
+    }
+]
