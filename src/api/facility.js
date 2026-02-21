@@ -1,18 +1,11 @@
-import { api } from "./client";
-
-const buildQuery = (params = {}) => {
-  const entries = Object.entries(params).filter(([, v]) => v !== undefined && v !== null);
-  if (entries.length === 0) return "";
-  const qs = entries
-    .map(([k, v]) => `${encodeURIComponent(k)}=${encodeURIComponent(String(v))}`)
-    .join("&");
-  return `?${qs}`;
-};
+import { apiRequest } from "./apiRequest";
 
 // List rooms for a facility
 export const listRooms = async (facilityId) => {
   try {
-    const response = await api.get(`/rooms${buildQuery({ facility: facilityId })}`);
+    const response = await apiRequest("/rooms", {
+      params: { facility: facilityId }
+    });
     return {
       success: true,
       data: response?.rooms ?? response?.data ?? response
@@ -28,7 +21,7 @@ export const listRooms = async (facilityId) => {
 // Get room detail
 export const getRoom = async (roomId) => {
   try {
-    const response = await api.get(`/rooms/${roomId}`);
+    const response = await apiRequest(`/rooms/${roomId}`);
     return {
       success: true,
       data: response?.room ?? response?.data ?? response
@@ -44,9 +37,12 @@ export const getRoom = async (roomId) => {
 // Create a new room
 export const createRoom = async (facilityId, roomData) => {
   try {
-    const response = await api.post("/rooms", {
-      facilityId,
-      ...roomData
+    const response = await apiRequest("/rooms", {
+      method: "POST",
+      body: {
+        facilityId,
+        ...roomData
+      }
     });
     return {
       success: true,
@@ -63,7 +59,10 @@ export const createRoom = async (facilityId, roomData) => {
 // Update room
 export const updateRoom = async (roomId, roomData) => {
   try {
-    const response = await api.patch(`/rooms/${roomId}`, roomData);
+    const response = await apiRequest(`/rooms/${roomId}`, {
+      method: "PATCH",
+      body: roomData
+    });
     return {
       success: true,
       data: response?.updated ?? response?.room ?? response
@@ -79,7 +78,7 @@ export const updateRoom = async (roomId, roomData) => {
 // Delete room (soft delete)
 export const deleteRoom = async (roomId) => {
   try {
-    const response = await api.delete(`/rooms/${roomId}`);
+    const response = await apiRequest(`/rooms/${roomId}`, { method: "DELETE" });
     return {
       success: true,
       data: response?.deleted ?? response?.ok ?? response
@@ -95,7 +94,7 @@ export const deleteRoom = async (roomId) => {
 // Get facility details
 export const getFacilityDetail = async (facilityId) => {
   try {
-    const response = await api.get(`/facilities/${facilityId}`);
+    const response = await apiRequest(`/facilities/${facilityId}`);
     return {
       success: true,
       data: response?.facility ?? response?.data ?? response
@@ -111,9 +110,9 @@ export const getFacilityDetail = async (facilityId) => {
 // Facility Plan billing: get status
 export const getFacilityBillingStatus = async (facilityId) => {
   try {
-    const response = await api.get(
-      `/facility-billing/status${buildQuery({ facility: facilityId })}`
-    );
+    const response = await apiRequest("/facility-billing/status", {
+      params: { facility: facilityId }
+    });
     return { success: true, data: response?.data ?? response };
   } catch (error) {
     return {
@@ -126,8 +125,9 @@ export const getFacilityBillingStatus = async (facilityId) => {
 // Facility Plan billing: start checkout session
 export const startFacilityCheckout = async (facilityId) => {
   try {
-    const response = await api.post(`/facility-billing/checkout-session`, {
-      facilityId
+    const response = await apiRequest("/facility-billing/checkout-session", {
+      method: "POST",
+      body: { facilityId }
     });
     return { success: true, data: response?.data ?? response };
   } catch (error) {
@@ -141,7 +141,10 @@ export const startFacilityCheckout = async (facilityId) => {
 // Facility Plan billing: cancel at period end
 export const cancelFacilityPlan = async (facilityId) => {
   try {
-    const response = await api.post(`/facility-billing/cancel`, { facilityId });
+    const response = await apiRequest("/facility-billing/cancel", {
+      method: "POST",
+      body: { facilityId }
+    });
     return { success: true, data: response?.data ?? response };
   } catch (error) {
     return {
@@ -154,7 +157,7 @@ export const cancelFacilityPlan = async (facilityId) => {
 // Metrc credentials management
 export const getMetrcCredentials = async (facilityId) => {
   try {
-    const response = await api.get(`/metrc/credentials/${facilityId}`);
+    const response = await apiRequest(`/metrc/credentials/${facilityId}`);
     return { success: true, data: response?.data ?? response };
   } catch (error) {
     return {
@@ -166,9 +169,9 @@ export const getMetrcCredentials = async (facilityId) => {
 
 export const saveMetrcCredentials = async (facilityId, vendorKey, userKey) => {
   try {
-    const response = await api.post(`/metrc/credentials/${facilityId}`, {
-      vendorKey,
-      userKey
+    const response = await apiRequest(`/metrc/credentials/${facilityId}`, {
+      method: "POST",
+      body: { vendorKey, userKey }
     });
     return { success: true, data: response?.data ?? response };
   } catch (error) {
@@ -181,7 +184,7 @@ export const saveMetrcCredentials = async (facilityId, vendorKey, userKey) => {
 
 export const deleteMetrcCredentials = async (facilityId) => {
   try {
-    await api.delete(`/metrc/credentials/${facilityId}`);
+    await apiRequest(`/metrc/credentials/${facilityId}`, { method: "DELETE" });
     return { success: true };
   } catch (error) {
     return {
@@ -193,7 +196,7 @@ export const deleteMetrcCredentials = async (facilityId) => {
 
 export const verifyMetrcCredentials = async (facilityId) => {
   try {
-    const response = await api.get(`/metrc/credentials/${facilityId}/verify`);
+    const response = await apiRequest(`/metrc/credentials/${facilityId}/verify`);
     return { success: true, data: response?.data ?? response };
   } catch (error) {
     return {
@@ -205,7 +208,9 @@ export const verifyMetrcCredentials = async (facilityId) => {
 
 export const triggerMetrcSync = async (facilityId) => {
   try {
-    const response = await api.post(`/metrc/sync/${facilityId}`);
+    const response = await apiRequest(`/metrc/sync/${facilityId}`, {
+      method: "POST"
+    });
     return { success: true, data: response?.data ?? response };
   } catch (error) {
     return {
@@ -217,7 +222,7 @@ export const triggerMetrcSync = async (facilityId) => {
 
 export const getMetrcSyncStatus = async (facilityId) => {
   try {
-    const response = await api.get(`/metrc/sync/${facilityId}/status`);
+    const response = await apiRequest(`/metrc/sync/${facilityId}/status`);
     return { success: true, data: response?.data ?? response };
   } catch (error) {
     return {
@@ -230,7 +235,10 @@ export const getMetrcSyncStatus = async (facilityId) => {
 // Update facility (including trackingMode)
 export const updateFacility = async (facilityId, updates) => {
   try {
-    const response = await api.patch(`/facilities/${facilityId}`, updates);
+    const response = await apiRequest(`/facilities/${facilityId}`, {
+      method: "PATCH",
+      body: updates
+    });
     return {
       success: true,
       data: response?.updated ?? response?.facility ?? response
@@ -246,9 +254,9 @@ export const updateFacility = async (facilityId, updates) => {
 // BatchCycle endpoints
 export const listBatchCycles = async (facilityId, roomId) => {
   try {
-    const response = await api.get(
-      `/batch-cycles${buildQuery({ facility: facilityId, room: roomId })}`
-    );
+    const response = await apiRequest("/batch-cycles", {
+      params: { facility: facilityId, room: roomId }
+    });
     return {
       success: true,
       data: response?.data ?? response
@@ -263,10 +271,9 @@ export const listBatchCycles = async (facilityId, roomId) => {
 
 export const createBatchCycle = async (facilityId, roomId, batchData) => {
   try {
-    const response = await api.post("/batch-cycles", {
-      facilityId,
-      roomId,
-      ...batchData
+    const response = await apiRequest("/batch-cycles", {
+      method: "POST",
+      body: { facilityId, roomId, ...batchData }
     });
     return {
       success: true,
@@ -282,7 +289,7 @@ export const createBatchCycle = async (facilityId, roomId, batchData) => {
 
 export const getBatchCycle = async (batchId) => {
   try {
-    const response = await api.get(`/batch-cycles/${batchId}`);
+    const response = await apiRequest(`/batch-cycles/${batchId}`);
     return {
       success: true,
       data: response?.data ?? response
@@ -297,7 +304,10 @@ export const getBatchCycle = async (batchId) => {
 
 export const updateBatchCycle = async (batchId, updates) => {
   try {
-    const response = await api.patch(`/batch-cycles/${batchId}`, updates);
+    const response = await apiRequest(`/batch-cycles/${batchId}`, {
+      method: "PATCH",
+      body: updates
+    });
     return {
       success: true,
       data: response?.updated ?? response?.data ?? response
@@ -312,7 +322,9 @@ export const updateBatchCycle = async (batchId, updates) => {
 
 export const deleteBatchCycle = async (batchId) => {
   try {
-    const response = await api.delete(`/batch-cycles/${batchId}`);
+    const response = await apiRequest(`/batch-cycles/${batchId}`, {
+      method: "DELETE"
+    });
     return {
       success: true,
       data: response?.deleted ?? response?.ok ?? response
@@ -328,7 +340,7 @@ export const deleteBatchCycle = async (batchId) => {
 // Zone endpoints (for greenhouse operations)
 export const listZones = async (roomId) => {
   try {
-    const response = await api.get(`/zones${buildQuery({ room: roomId })}`);
+    const response = await apiRequest("/zones", { params: { room: roomId } });
     return {
       success: true,
       data: response?.data ?? response
@@ -343,9 +355,9 @@ export const listZones = async (roomId) => {
 
 export const createZone = async (roomId, zoneData) => {
   try {
-    const response = await api.post("/zones", {
-      roomId,
-      ...zoneData
+    const response = await apiRequest("/zones", {
+      method: "POST",
+      body: { roomId, ...zoneData }
     });
     return {
       success: true,
@@ -361,7 +373,10 @@ export const createZone = async (roomId, zoneData) => {
 
 export const updateZone = async (zoneId, updates) => {
   try {
-    const response = await api.patch(`/zones/${zoneId}`, updates);
+    const response = await apiRequest(`/zones/${zoneId}`, {
+      method: "PATCH",
+      body: updates
+    });
     return {
       success: true,
       data: response?.updated ?? response?.data ?? response
@@ -376,7 +391,9 @@ export const updateZone = async (zoneId, updates) => {
 
 export const deleteZone = async (zoneId) => {
   try {
-    const response = await api.delete(`/zones/${zoneId}`);
+    const response = await apiRequest(`/zones/${zoneId}`, {
+      method: "DELETE"
+    });
     return {
       success: true,
       data: response?.deleted ?? response?.ok ?? response
