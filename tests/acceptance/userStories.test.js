@@ -1,3 +1,5 @@
+const mockApiRequest = jest.fn();
+
 // Mock the API client to return canned responses for all endpoints
 jest.mock("../../src/api/client", () => {
   if (!global.__FETCH_CALLS__) global.__FETCH_CALLS__ = [];
@@ -61,6 +63,11 @@ jest.mock("../../src/api/client", () => {
     postMultipart: canned.postMultipart
   };
 });
+
+jest.mock("../../src/api/apiRequest", () => ({
+  __esModule: true,
+  apiRequest: (...args) => mockApiRequest(...args)
+}));
 import { getEntitlements } from "../../src/utils/entitlements.js";
 // Mock getSpec to always return null to bypass OpenAPI spec requirement
 jest.mock("../contract_utils.js", () => ({
@@ -117,6 +124,40 @@ describe("Acceptance: User Stories", () => {
     if (global.__FETCH_CALLS__) {
       global.__FETCH_CALLS__.length = 0;
     }
+    mockApiRequest.mockReset();
+
+    const record = (method, url) =>
+      (global.__FETCH_CALLS__ || []).push({ method, url });
+
+    mockApiRequest.mockImplementation((url, options = {}) => {
+      const urlStr = typeof url === "string" ? url : String(url);
+      const method = options.method ? String(options.method).toUpperCase() : "GET";
+      record(method, urlStr);
+
+      if (urlStr.includes("/api/courses/list")) {
+        return Promise.resolve({ courses: [{ _id: "c1", title: "Masterclass" }] });
+      }
+      if (urlStr.includes("/api/courses/") && urlStr.includes("/enroll")) {
+        return Promise.resolve({ success: true });
+      }
+      if (
+        urlStr.includes("/api/courses") &&
+        method === "POST" &&
+        !urlStr.includes("/enroll")
+      ) {
+        return Promise.resolve({ _id: "c1", title: "Masterclass" });
+      }
+      if (urlStr.includes("/api/courses/")) {
+        return Promise.resolve({
+          course: {
+            _id: "c1",
+            title: "Masterclass",
+            creator: { name: "Test Creator" }
+          }
+        });
+      }
+      return Promise.resolve({ success: true });
+    });
 
     // Set up mock responder for non-live mode
     // Set up universal mock responder for any /api/ endpoint
