@@ -4,6 +4,7 @@ export type ApiRequestOptions = {
   method?: string;
   headers?: Record<string, string>;
   body?: any;
+  params?: Record<string, any>;
   responseType?: "auto" | "json" | "text" | "blob" | "arrayBuffer";
   signal?: AbortSignal;
   timeoutMs?: number;
@@ -38,6 +39,26 @@ function toAbsoluteUrl(path: string) {
   const base = String(API_URL || "").replace(/\/$/, "");
   const suffix = path.startsWith("/") ? path : `/${path}`;
   return `${base}${suffix}`;
+}
+
+function appendParams(url: string, params: Record<string, any> | undefined) {
+  if (!params || typeof params !== "object") return url;
+  const entries = Object.entries(params).flatMap(([key, value]) => {
+    if (value === undefined || value === null) return [];
+    if (Array.isArray(value)) return value.map((v) => [key, v]);
+    return [[key, value]];
+  });
+  if (!entries.length) return url;
+
+  const qs = entries
+    .map(([key, value]) => {
+      const v = typeof value === "string" ? value : String(value);
+      return `${encodeURIComponent(String(key))}=${encodeURIComponent(v)}`;
+    })
+    .join("&");
+
+  const glue = url.includes("?") ? "&" : "?";
+  return `${url}${glue}${qs}`;
 }
 
 function isFormData(body: any) {
@@ -78,7 +99,7 @@ export async function apiRequest<T = any>(
   const retries = Math.max(0, Number(opts.retries || 0));
   const retryDelay = Math.max(0, Number(opts.retryDelay || 0));
 
-  const url = toAbsoluteUrl(path);
+  const url = appendParams(toAbsoluteUrl(path), opts.params);
 
   let attempt = 0;
   while (true) {
