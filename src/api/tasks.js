@@ -1,30 +1,45 @@
-import { client } from "./client.js";
+import { apiRequest } from "./apiRequest";
 import routes from "./routes.js";
 
 export function getTodayTasks(token) {
-  return client.get(routes.TASKS.TODAY, token);
+  return apiRequest(routes.TASKS.TODAY, { auth: token ? true : false });
 }
 
 export function getUpcomingTasks(token) {
-  return client.get(routes.TASKS.UPCOMING, token);
+  return apiRequest(routes.TASKS.UPCOMING, { auth: token ? true : false });
 }
 
 export function getTasks(token) {
-  return client.get(routes.TASKS.LIST, token);
+  return apiRequest(routes.TASKS.LIST, { auth: token ? true : false });
 }
 
 export function completeTask(id, token) {
-  return client.put(routes.TASKS.COMPLETE(id), {}, token);
+  return apiRequest(routes.TASKS.COMPLETE(id), {
+    method: "PUT",
+    auth: token ? true : false,
+    body: {}
+  });
 }
 
 export function reopenTask(id, token) {
-  return client.put(routes.TASKS.REOPEN(id), {}, token);
+  return apiRequest(routes.TASKS.REOPEN(id), {
+    method: "PUT",
+    auth: token ? true : false,
+    body: {}
+  });
 }
 
 export function deleteTask(id, token) {
-  return client.delete(routes.TASKS.DELETE(id), token);
+  return apiRequest(routes.TASKS.DELETE(id), {
+    method: "DELETE",
+    auth: token ? true : false
+  });
 }
 
 export function createCustomTask(data, token) {
-  return client.post(routes.TASKS.LIST, data, token);
+  return apiRequest(routes.TASKS.LIST, {
+    method: "POST",
+    auth: token ? true : false,
+    body: data
+  });
 }

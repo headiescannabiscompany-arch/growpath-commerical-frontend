@@ -129,8 +129,27 @@ describe("Acceptance: User Stories", () => {
     const record = (method, url) =>
       (global.__FETCH_CALLS__ || []).push({ method, url });
 
+    const withParams = (base, params) => {
+      if (!params || typeof params !== "object") return base;
+      const entries = Object.entries(params).flatMap(([key, value]) => {
+        if (value === undefined || value === null) return [];
+        if (Array.isArray(value)) return value.map((v) => [key, v]);
+        return [[key, value]];
+      });
+      if (!entries.length) return base;
+      const qs = entries
+        .map(([key, value]) => {
+          const v = typeof value === "string" ? value : String(value);
+          return `${encodeURIComponent(String(key))}=${encodeURIComponent(v)}`;
+        })
+        .join("&");
+      const glue = base.includes("?") ? "&" : "?";
+      return `${base}${glue}${qs}`;
+    };
+
     mockApiRequest.mockImplementation(async (url, options = {}) => {
-      const urlStr = typeof url === "string" ? url : String(url);
+      const base = typeof url === "string" ? url : String(url);
+      const urlStr = withParams(base, options.params);
       const method = options.method ? String(options.method).toUpperCase() : "GET";
       record(method, urlStr);
 

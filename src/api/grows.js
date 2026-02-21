@@ -1,33 +1,22 @@
-import { client as api, postMultipart } from "./client.js";
+import { apiRequest } from "./apiRequest";
+import { postMultipart } from "./client.js";
 import routes from "./routes.js";
 
-function buildQuery(filters = {}) {
-  const params = new URLSearchParams();
-  Object.entries(filters).forEach(([key, value]) => {
-    if (value !== undefined && value !== null && value !== "") {
-      params.append(key, value);
-    }
-  });
-  const qs = params.toString();
-  return qs ? `${routes.GROWS.LIST}?${qs}` : routes.GROWS.LIST;
-}
-
 export function listGrows(filters = {}) {
-  const path = buildQuery(filters);
-  return api(path);
+  return apiRequest(routes.GROWS.LIST, { params: filters });
 }
 
 export function createGrow(growData) {
-  return api(routes.GROWS.CREATE, {
+  return apiRequest(routes.GROWS.CREATE, {
     method: "POST",
-    body: JSON.stringify(growData)
+    body: growData
   });
 }
 
 export function addEntry(growId, data = {}) {
-  return api(routes.GROWS.ENTRIES(growId), {
+  return apiRequest(routes.GROWS.ENTRIES(growId), {
     method: "POST",
-    body: JSON.stringify(data)
+    body: data
   });
 }
 
@@ -39,8 +28,8 @@ export function uploadEntryPhoto(growId, file) {
 }
 
 export function addPlantToGrow(growId, plant) {
-  return api(routes.GROWS.ADD_PLANT(growId), {
+  return apiRequest(routes.GROWS.ADD_PLANT(growId), {
     method: "POST",
-    body: JSON.stringify(plant)
+    body: plant
   });
 }
