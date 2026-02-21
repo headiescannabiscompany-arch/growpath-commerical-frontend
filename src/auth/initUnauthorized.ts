@@ -1,7 +1,7 @@
 import { Platform } from "react-native";
 import { router } from "expo-router";
 
-import { setOnUnauthorized } from "@/api/client";
+import { setOnUnauthorized } from "@/api/apiRequest";
 import { clearToken } from "@/auth/tokenStore";
 
 let didInit = false;

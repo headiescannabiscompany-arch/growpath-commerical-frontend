@@ -1,6 +1,6 @@
 import { useQuery } from "@tanstack/react-query";
 import { useEntitlements } from "../entitlements";
-import { api } from "../api/client";
+import { apiRequest } from "../api/apiRequest";
 import { FacilityInvite } from "../api/facilityTeam";
 
 export function useInvites() {
@@ -8,7 +8,7 @@ export function useInvites() {
   const facilityId = ent.facilityId;
   return useQuery<FacilityInvite[]>({
     queryKey: ["invites", facilityId],
-    queryFn: () => api(`/api/facilities/${facilityId}/invites`),
+    queryFn: () => apiRequest(`/api/facilities/${facilityId}/invites`, { method: "GET" }),
     enabled: !!facilityId
   });
 }

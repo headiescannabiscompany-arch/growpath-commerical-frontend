@@ -5,7 +5,14 @@ import Card from "../components/Card";
 import PrimaryButton from "../components/PrimaryButton";
 import { colors, spacing } from "../theme/theme";
 import { initIAP, buySubscription } from "../utils/iap";
-import { client } from "../api/client";
+import { apiRequest } from "../api/apiRequest";
+
+function buildAuthHeaders(token) {
+  if (!token) return undefined;
+  const raw = String(token);
+  const normalized = raw.startsWith("Bearer ") ? raw : `Bearer ${raw}`;
+  return { Authorization: normalized };
+}
 
 export default function SubscribeScreen({ navigation }) {
   const [status, setStatus] = useState(null);
@@ -13,7 +20,10 @@ export default function SubscribeScreen({ navigation }) {
 
   async function load() {
     try {
-      const s = await client.get("/api/subscription/me", global.authToken);
+      const s = await apiRequest("/api/subscription/me", {
+        method: "GET",
+        headers: buildAuthHeaders(global.authToken)
+      });
       setStatus(s);
     } catch (err) {
       Alert.alert("Error", err.message);
@@ -35,14 +45,14 @@ export default function SubscribeScreen({ navigation }) {
         // Native IAP
         const purchase = await buySubscription();
 
-        const data = await client.post(
-          "/api/iap/verify",
-          {
+        const data = await apiRequest("/api/iap/verify", {
+          method: "POST",
+          headers: buildAuthHeaders(global.authToken),
+          body: {
             receipt: purchase.transactionReceipt,
             platform: Platform.OS
-          },
-          global.authToken
-        );
+          }
+        });
 
         if (data.ok) {
           Alert.alert("Success", "You are now Pro!");

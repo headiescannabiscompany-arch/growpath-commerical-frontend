@@ -8,7 +8,7 @@ import {
   StyleSheet
 } from "react-native";
 import { useNavigation } from "@react-navigation/native";
-import { client } from "../api/client";
+import { apiRequest } from "../api/apiRequest";
 
 export default function LiveSessionsListScreen() {
   const [sessions, setSessions] = useState([]);
@@ -19,7 +19,7 @@ export default function LiveSessionsListScreen() {
   useEffect(() => {
     async function fetchSessions() {
       try {
-        const data = await client("/api/lives");
+        const data = await apiRequest("/api/lives", { method: "GET" });
         setSessions(data);
       } catch (err) {
         setError(err.message || "Failed to load sessions");

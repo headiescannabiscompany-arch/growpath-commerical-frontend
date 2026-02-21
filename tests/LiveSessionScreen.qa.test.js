@@ -4,16 +4,16 @@ import { NavigationContainer } from "@react-navigation/native";
 
 // Mocks
 const mockUseAuth = jest.fn();
-const mockClient = jest.fn();
+const mockApiRequest = jest.fn();
 
 jest.mock("@/auth/AuthContext", () => ({
   __esModule: true,
   useAuth: () => mockUseAuth()
 }));
 
-jest.mock("../src/api/client", () => ({
+jest.mock("../src/api/apiRequest", () => ({
   __esModule: true,
-  client: (...args) => mockClient(...args)
+  apiRequest: (...args) => mockApiRequest(...args)
 }));
 
 // Avoid rendering the real embed in tests
@@ -41,7 +41,7 @@ function renderWithNav(params = { sessionId: "session-1" }) {
 describe("LiveSessionScreen QA", () => {
   beforeEach(() => {
     mockUseAuth.mockReset();
-    mockClient.mockReset();
+    mockApiRequest.mockReset();
   });
 
   it("renders moderation UI for admin", async () => {
@@ -50,7 +50,7 @@ describe("LiveSessionScreen QA", () => {
       capabilities: { canManageLiveSessions: true }
     });
 
-    mockClient.mockResolvedValueOnce({
+    mockApiRequest.mockResolvedValueOnce({
       twitchChannel: "mychannel",
       title: "Session 1"
     });
@@ -68,7 +68,7 @@ describe("LiveSessionScreen QA", () => {
       capabilities: { canManageLiveSessions: false }
     });
 
-    mockClient.mockResolvedValueOnce({
+    mockApiRequest.mockResolvedValueOnce({
       twitchChannel: "mychannel",
       title: "Session 1"
     });
@@ -86,7 +86,7 @@ describe("LiveSessionScreen QA", () => {
       capabilities: { canManageLiveSessions: false }
     });
 
-    mockClient.mockRejectedValueOnce(new Error("No session found"));
+    mockApiRequest.mockRejectedValueOnce(new Error("No session found"));
 
     const { queryByText } = renderWithNav();
 

@@ -9,7 +9,7 @@ import {
 } from "react-native";
 import { useLocalSearchParams } from "expo-router";
 import { useAuth } from "@/auth/AuthContext";
-import { client } from "../api/client";
+import { apiRequest } from "../api/apiRequest";
 
 function getIsAdmin(user, capabilities) {
   const role = String(user?.role || user?.accountRole || user?.planRole || "");
@@ -47,7 +47,9 @@ export default function LiveSessionScreen({ route }) {
       setSession(null);
 
       try {
-        const res = await client(`/live/sessions/${encodeURIComponent(sessionId)}`);
+        const res = await apiRequest(`/live/sessions/${encodeURIComponent(sessionId)}`, {
+          method: "GET"
+        });
         if (!alive) return;
         setSession(res || null);
       } catch (e) {
