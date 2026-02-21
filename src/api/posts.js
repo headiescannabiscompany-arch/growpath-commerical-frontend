@@ -1,4 +1,4 @@
-import { client } from "./client.js";
+import { apiRequest } from "./apiRequest";
 import apiRoutes from "./routes.js";
 
 export function getFeed(page = 1, options) {
@@ -12,37 +12,52 @@ export function getFeed(page = 1, options) {
     ({ tier1 = [], tags = [], token } = options);
   }
 
-  const qs = new URLSearchParams({ page });
-  if (Array.isArray(tier1) && tier1.length) {
-    qs.append("tier1", tier1.join(","));
-  }
-  if (Array.isArray(tags) && tags.length) {
-    qs.append("tags", tags.join(","));
-  }
-
-  return client.get(`${apiRoutes.POSTS.FEED}?${qs.toString()}`, token);
+  return apiRequest(apiRoutes.POSTS.FEED, {
+    auth: token ? true : false,
+    params: {
+      page,
+      tier1: Array.isArray(tier1) && tier1.length ? tier1.join(",") : undefined,
+      tags: Array.isArray(tags) && tags.length ? tags.join(",") : undefined
+    }
+  });
 }
 
 export function getTrending(token) {
-  return client.get(apiRoutes.POSTS.TRENDING, token);
+  return apiRequest(apiRoutes.POSTS.TRENDING, { auth: token ? true : false });
 }
 
 export function createPost(formData, token) {
-  return client.post(apiRoutes.POSTS.CREATE, formData, token);
+  return apiRequest(apiRoutes.POSTS.CREATE, {
+    method: "POST",
+    auth: token ? true : false,
+    body: formData
+  });
 }
 
 export function likePost(id, token) {
-  return client.post(apiRoutes.POSTS.LIKE(id), {}, token);
+  return apiRequest(apiRoutes.POSTS.LIKE(id), {
+    method: "POST",
+    auth: token ? true : false,
+    body: {}
+  });
 }
 
 export function unlikePost(id, token) {
-  return client.post(apiRoutes.POSTS.UNLIKE(id), {}, token);
+  return apiRequest(apiRoutes.POSTS.UNLIKE(id), {
+    method: "POST",
+    auth: token ? true : false,
+    body: {}
+  });
 }
 
 export function getComments(id, token) {
-  return client.get(apiRoutes.POSTS.COMMENTS(id), token);
+  return apiRequest(apiRoutes.POSTS.COMMENTS(id), { auth: token ? true : false });
 }
 
 export function addComment(id, text, token) {
-  return client.post(apiRoutes.POSTS.COMMENT(id), { text }, token);
+  return apiRequest(apiRoutes.POSTS.COMMENT(id), {
+    method: "POST",
+    auth: token ? true : false,
+    body: { text }
+  });
 }

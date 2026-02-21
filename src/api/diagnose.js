@@ -1,19 +1,20 @@
-import { client as api, postMultipart } from "./client.js";
+import { apiRequest } from "./apiRequest";
+import { postMultipart } from "./client.js";
 import apiRoutes from "./routes.js";
 
 export function analyzeDiagnosis(payload) {
-  return api(apiRoutes.DIAGNOSE.ANALYZE, {
+  return apiRequest(apiRoutes.DIAGNOSE.ANALYZE, {
     method: "POST",
-    body: JSON.stringify(payload)
+    body: payload
   });
 }
 
 export function getDiagnosisHistory() {
-  return api(apiRoutes.DIAGNOSE.HISTORY);
+  return apiRequest(apiRoutes.DIAGNOSE.HISTORY);
 }
 
 export function getDiagnosis(id) {
-  return api(apiRoutes.DIAGNOSE.DETAIL(id));
+  return apiRequest(apiRoutes.DIAGNOSE.DETAIL(id));
 }
 
 export function diagnosePhoto(file, symptom) {

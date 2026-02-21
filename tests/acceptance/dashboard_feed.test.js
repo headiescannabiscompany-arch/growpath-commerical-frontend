@@ -1,3 +1,5 @@
+const mockApiRequest = jest.fn();
+
 // Mock the API client to return canned responses for all endpoints
 jest.mock("../../src/api/client", () => {
   if (!global.__FETCH_CALLS__) global.__FETCH_CALLS__ = [];
@@ -58,6 +60,11 @@ jest.mock("../../src/api/client", () => {
     postMultipart: canned.postMultipart
   };
 });
+
+jest.mock("../../src/api/apiRequest", () => ({
+  __esModule: true,
+  apiRequest: (...args) => mockApiRequest(...args)
+}));
 import { describe, it, beforeAll, beforeEach } from "@jest/globals";
 let authApi, postsApi;
 global.API_URL_OVERRIDE = process.env.EXPO_PUBLIC_API_URL || "http://127.0.0.1:5001";
@@ -76,6 +83,45 @@ describe("Acceptance: Dashboard Feed", () => {
     if (global.__FETCH_CALLS__) {
       global.__FETCH_CALLS__.length = 0;
     }
+
+    mockApiRequest.mockReset();
+
+    const record = (method, url) =>
+      (global.__FETCH_CALLS__ || []).push({ method, url });
+
+    const withParams = (base, params) => {
+      if (!params || typeof params !== "object") return base;
+      const entries = Object.entries(params).flatMap(([key, value]) => {
+        if (value === undefined || value === null) return [];
+        if (Array.isArray(value)) return value.map((v) => [key, v]);
+        return [[key, value]];
+      });
+      if (!entries.length) return base;
+      const qs = entries
+        .map(([key, value]) => {
+          const v = typeof value === "string" ? value : String(value);
+          return `${encodeURIComponent(String(key))}=${encodeURIComponent(v)}`;
+        })
+        .join("&");
+      const glue = base.includes("?") ? "&" : "?";
+      return `${base}${glue}${qs}`;
+    };
+
+    mockApiRequest.mockImplementation(async (url, options = {}) => {
+      const base = typeof url === "string" ? url : String(url);
+      const urlStr = withParams(base, options.params);
+      const method = options.method ? String(options.method).toUpperCase() : "GET";
+      record(method, urlStr);
+
+      if (typeof globalThis.__MOCK_RESPONDER__ === "function") {
+        const res = await globalThis.__MOCK_RESPONDER__(urlStr, options);
+        if (res && Object.prototype.hasOwnProperty.call(res, "json")) return res.json;
+        if (res && Object.prototype.hasOwnProperty.call(res, "text")) return res.text;
+        return res;
+      }
+
+      return { success: true };
+    });
 
     globalThis.__MOCK_RESPONDER__ = async (url) => {
       if (url.includes("/api/posts/feed")) {
