@@ -3,5 +3,3 @@
 // and to ensure Jest/Babel parses it consistently.
 export * from "./client.js";
 export { default } from "./client.js";
-
-export default api;

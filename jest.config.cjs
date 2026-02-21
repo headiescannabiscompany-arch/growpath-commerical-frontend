@@ -36,6 +36,7 @@ module.exports = {
   ],
 
   moduleNameMapper: {
+    "^expo/src/winter$": "<rootDir>/tests/__mocks__/expo-winter.js",
     "^@/(.*)$": "<rootDir>/src/$1",
     "\\.(png|jpg|jpeg|gif|webp|svg)$": "<rootDir>/tests/__mocks__/fileMock.js",
     "\\.(css|less|scss)$": "<rootDir>/tests/__mocks__/styleMock.js"
