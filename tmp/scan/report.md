@@ -6,7 +6,7 @@
 - total files: 691
 - api files: 102
 - api orphans: 21
-- legacy client callers: 24
+- legacy client callers: 18
 - js/ts twin modules: 15
 - banned findings: 2
 
@@ -69,12 +69,6 @@
 - src/api/apiClient.js
 - src/api/client.js
 - src/api/client.ts
-- src/api/creator.js
-- src/api/diagnose.js
-- src/api/feeding.js
-- src/api/grows.js
-- src/api/users.js
-- src/auth/AuthContext.tsx
 
 ## Banned findings
 - fetch(: src/api/apiRequest.ts

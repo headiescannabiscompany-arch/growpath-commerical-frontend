@@ -6,7 +6,7 @@
     "totalFiles": 691,
     "apiFiles": 102,
     "apiOrphans": 21,
-    "legacyClientCallers": 24,
+    "legacyClientCallers": 18,
     "jsTsTwins": 15,
     "bannedFindings": 2
   },
@@ -113,13 +113,7 @@
     "src/api/_quarantine/webhooks.ts",
     "src/api/apiClient.js",
     "src/api/client.js",
-    "src/api/client.ts",
-    "src/api/creator.js",
-    "src/api/diagnose.js",
-    "src/api/feeding.js",
-    "src/api/grows.js",
-    "src/api/users.js",
-    "src/auth/AuthContext.tsx"
+    "src/api/client.ts"
   ],
   "bannedFindings": [
     {
