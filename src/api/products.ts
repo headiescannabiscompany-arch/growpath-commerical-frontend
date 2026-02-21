@@ -1,4 +1,4 @@
-import { api } from "./client";
+import { apiRequest } from "./apiRequest";
 
 export type Product = {
   id: string;
@@ -11,17 +11,20 @@ export type Product = {
 };
 
 export async function fetchProducts(): Promise<Product[]> {
-  return api.get(`/commercial/products`);
+  return apiRequest(`/commercial/products`);
 }
 
 export async function createProduct(data: Partial<Product>) {
-  return api.post(`/commercial/products`, data);
+  return apiRequest(`/commercial/products`, { method: "POST", body: data });
 }
 
 export async function updateProduct(productId: string, data: Partial<Product>) {
-  return api.patch(`/commercial/products/${productId}`, data);
+  return apiRequest(`/commercial/products/${productId}`, {
+    method: "PATCH",
+    body: data
+  });
 }
 
 export async function deleteProduct(productId: string) {
-  return api.del(`/commercial/products/${productId}`);
+  return apiRequest(`/commercial/products/${productId}`, { method: "DELETE" });
 }
