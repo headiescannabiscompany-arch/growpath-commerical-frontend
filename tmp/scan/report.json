@@ -1,0 +1,302 @@
+{
+  "root": "C:\\growpath-commercial\\frontend",
+  "counts": {
+    "srcFiles": 646,
+    "apiFiles": 102,
+    "apiOrphans": 32,
+    "legacyClientCallers": 87,
+    "jsTsTwins": 21,
+    "bannedFindings": 20
+  },
+  "jsTsTwins": [
+    [
+      "src/api/audit.js",
+      "src/api/audit.ts"
+    ],
+    [
+      "src/api/auth.js",
+      "src/api/auth.ts"
+    ],
+    [
+      "src/api/campaigns.js",
+      "src/api/campaigns.ts"
+    ],
+    [
+      "src/api/client.js",
+      "src/api/client.ts"
+    ],
+    [
+      "src/api/greenWaste.js",
+      "src/api/greenWaste.ts"
+    ],
+    [
+      "src/api/growlog.js",
+      "src/api/growlog.ts"
+    ],
+    [
+      "src/api/grows.js",
+      "src/api/grows.ts"
+    ],
+    [
+      "src/api/links.js",
+      "src/api/links.ts"
+    ],
+    [
+      "src/api/plants.js",
+      "src/api/plants.ts"
+    ],
+    [
+      "src/api/products.js",
+      "src/api/products.ts"
+    ],
+    [
+      "src/api/reports.js",
+      "src/api/reports.ts"
+    ],
+    [
+      "src/api/sop.js",
+      "src/api/sop.ts"
+    ],
+    [
+      "src/api/subscription.js",
+      "src/api/subscription.ts"
+    ],
+    [
+      "src/api/tasks.js",
+      "src/api/tasks.ts"
+    ],
+    [
+      "src/api/team.js",
+      "src/api/team.ts"
+    ],
+    [
+      "src/api/verification.js",
+      "src/api/verification.ts"
+    ],
+    [
+      "src/components/EmptyState.js",
+      "src/components/EmptyState.tsx"
+    ],
+    [
+      "src/components/FeatureGate.js",
+      "src/components/FeatureGate.tsx"
+    ],
+    [
+      "src/config/capabilities.js",
+      "src/config/capabilities.ts"
+    ],
+    [
+      "src/hooks/useNotifications.js",
+      "src/hooks/useNotifications.ts"
+    ],
+    [
+      "src/ui/handleApiError.js",
+      "src/ui/handleApiError.ts"
+    ]
+  ],
+  "apiOrphans": [
+    "src/api/audit.js",
+    "src/api/auth.js",
+    "src/api/calendar.ts",
+    "src/api/campaigns.js",
+    "src/api/commercialBilling.js",
+    "src/api/commercialFeed.ts",
+    "src/api/compliance.ts",
+    "src/api/debug.ts",
+    "src/api/deviation.js",
+    "src/api/facilityInventory.ts",
+    "src/api/feed.ts",
+    "src/api/greenWaste.js",
+    "src/api/growlog.js",
+    "src/api/guilds.js",
+    "src/api/index.js",
+    "src/api/live.ts",
+    "src/api/lives.js",
+    "src/api/logs.ts",
+    "src/api/mockServer.ts",
+    "src/api/payments.js",
+    "src/api/products.js",
+    "src/api/questions.js",
+    "src/api/reports.js",
+    "src/api/search.js",
+    "src/api/sop.js",
+    "src/api/subscription.js",
+    "src/api/templates.js",
+    "src/api/types.ts",
+    "src/api/user.ts",
+    "src/api/vendorSignup.ts",
+    "src/api/verification.js",
+    "src/api/webhooks.ts"
+  ],
+  "legacyClientCallers": [
+    "src/api/adminReports.js",
+    "src/api/apiClient.js",
+    "src/api/apiRequest.ts",
+    "src/api/auth.ts",
+    "src/api/automation.ts",
+    "src/api/billing.ts",
+    "src/api/calendar.ts",
+    "src/api/campaigns.js",
+    "src/api/campaigns.ts",
+    "src/api/certificates.js",
+    "src/api/client.js",
+    "src/api/client.ts",
+    "src/api/commercialFeed.ts",
+    "src/api/compliance.ts",
+    "src/api/complianceLogs.ts",
+    "src/api/courses.js",
+    "src/api/creator.js",
+    "src/api/debug.ts",
+    "src/api/deviation.js",
+    "src/api/deviations.ts",
+    "src/api/diagnose.js",
+    "src/api/earnings.js",
+    "src/api/environment.js",
+    "src/api/equipment.js",
+    "src/api/events.ts",
+    "src/api/facilities.ts",
+    "src/api/facility.js",
+    "src/api/facilityInventory.ts",
+    "src/api/facilitySettings.ts",
+    "src/api/facilityTasks.ts",
+    "src/api/facilityTeam.ts",
+    "src/api/feeding.js",
+    "src/api/forum.js",
+    "src/api/greenWaste.js",
+    "src/api/greenWaste.ts",
+    "src/api/growlog.js",
+    "src/api/growlog.ts",
+    "src/api/growlogs.ts",
+    "src/api/grows.js",
+    "src/api/grows.ts",
+    "src/api/guilds.js",
+    "src/api/insights.ts",
+    "src/api/inventory.ts",
+    "src/api/links.js",
+    "src/api/links.ts",
+    "src/api/live.ts",
+    "src/api/lives.js",
+    "src/api/logs.ts",
+    "src/api/me.ts",
+    "src/api/notifications.ts",
+    "src/api/orders.ts",
+    "src/api/payments.js",
+    "src/api/plants.ts",
+    "src/api/posts.js",
+    "src/api/products.js",
+    "src/api/products.ts",
+    "src/api/questions.js",
+    "src/api/reports.ts",
+    "src/api/rooms.ts",
+    "src/api/search.js",
+    "src/api/sop.js",
+    "src/api/sop.ts",
+    "src/api/storefront.ts",
+    "src/api/subscribe.js",
+    "src/api/subscription.js",
+    "src/api/subscription.ts",
+    "src/api/tasks.js",
+    "src/api/tasks.ts",
+    "src/api/team.js",
+    "src/api/team.ts",
+    "src/api/templates.js",
+    "src/api/tokens.js",
+    "src/api/users.js",
+    "src/api/vendor.js",
+    "src/api/vendorAnalytics.js",
+    "src/api/vendorMetrics.js",
+    "src/api/vendorSignup.ts",
+    "src/api/vendors.ts",
+    "src/api/verification.js",
+    "src/api/verification.ts",
+    "src/api/webhooks.ts",
+    "src/auth/AuthContext.tsx",
+    "src/auth/initUnauthorized.ts",
+    "src/hooks/useInvites.ts",
+    "src/screens/LiveSessionsListScreen.js",
+    "src/screens/SubscribeScreen.js",
+    "src/utils/images.js"
+  ],
+  "bannedFindings": [
+    {
+      "file": "src/api/community.js",
+      "rule": "/:id placeholder"
+    },
+    {
+      "file": "src/api/marketplace.js",
+      "rule": "/:id placeholder"
+    },
+    {
+      "file": "src/api/socialMedia.js",
+      "rule": "/:id placeholder"
+    },
+    {
+      "file": "src/api/uriToBlob.ts",
+      "rule": "fetch("
+    },
+    {
+      "file": "src/api/users.js",
+      "rule": "/:id placeholder"
+    },
+    {
+      "file": "src/features/ai/callAi.ts",
+      "rule": "/:id placeholder"
+    },
+    {
+      "file": "src/hooks/useCalendar.ts",
+      "rule": "fetch("
+    },
+    {
+      "file": "src/screens/facility/AuditLogScreen.js",
+      "rule": "fetch("
+    },
+    {
+      "file": "src/screens/facility/DeviationHandlingScreen.js",
+      "rule": "fetch("
+    },
+    {
+      "file": "src/screens/facility/FacilitySettingsScreen.tsx",
+      "rule": "fetch("
+    },
+    {
+      "file": "src/screens/facility/FacilityTasks.tsx",
+      "rule": "fetch("
+    },
+    {
+      "file": "src/screens/facility/GreenWasteScreen.js",
+      "rule": "fetch("
+    },
+    {
+      "file": "src/screens/facility/HarvestAIMvpScreen.tsx",
+      "rule": "/:id placeholder"
+    },
+    {
+      "file": "src/screens/facility/HarvestWindowScreen.tsx",
+      "rule": "/:id placeholder"
+    },
+    {
+      "file": "src/screens/facility/SOPTemplatesScreen.js",
+      "rule": "fetch("
+    },
+    {
+      "file": "src/screens/facility/TrichomeAnalysisScreen.tsx",
+      "rule": "/:id placeholder"
+    },
+    {
+      "file": "src/screens/facility/VendorDashboardScreen.js",
+      "rule": "fetch("
+    },
+    {
+      "file": "src/screens/personal/CalendarScreen.tsx",
+      "rule": "fetch("
+    },
+    {
+      "file": "src/screens/personal/GrowLogScreen.tsx",
+      "rule": "fetch("
+    },
+    {
+      "file": "src/screens/StorefrontScreen.js",
+      "rule": "fetch("
+    }
+  ]
+}

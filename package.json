@@ -23,7 +23,7 @@
     "audit:ci": "npm audit --omit=dev --audit-level=high",
     "check:sensitive-copy": "node scripts/check-sensitive-copy.js",
     "drift:scan": "powershell -NoProfile -ExecutionPolicy Bypass -Command \"Get-ChildItem .\\src -Recurse -File -Include *.js,*.jsx,*.ts,*.tsx | Where-Object { $_.FullName -notlike '*\\src\\api\\uriToBlob.ts' } | Select-String -Pattern '\\bfetch\\s*\\(|\\baxios\\b|\\bXMLHttpRequest\\b' | Where-Object { $_.Path -notlike '*\\src\\api\\client.ts' -and $_.Path -notlike '*\\src\\api\\apiRequest.ts' } | Where-Object { $_.Line -notmatch '\\bapiRequest\\b' } | Select-Object Path,LineNumber,Line | Sort-Object Path,LineNumber\"",
-    "test": "jest --config ./jest.config.cjs",
+    "test": "jest --runInBand",
     "test:live": "node scripts/test-live.js",
     "backend:start": "node scripts/start-backend.js",
     "acceptance": "node scripts/run-acceptance.js",
