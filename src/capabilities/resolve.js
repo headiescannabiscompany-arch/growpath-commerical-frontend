@@ -67,7 +67,7 @@ export function resolveCapabilityKey(rawKey) {
 }
 
 export function normalizeCapabilities(raw) {
-  const normalized = {};
+  const normalizedCaps = {};
   const unknownSet = new Set();
 
   const add = (k, v = true) => {
@@ -75,7 +75,7 @@ export function normalizeCapabilities(raw) {
     if (!resolved) return;
 
     const boolVal = Boolean(v);
-    normalized[resolved] = Boolean(normalized[resolved]) || boolVal;
+    normalizedCaps[resolved] = Boolean(normalizedCaps[resolved]) || boolVal;
 
     if (!CANONICAL_SET.has(resolved)) {
       unknownSet.add(`${String(k)} => ${resolved}`);
@@ -84,13 +84,13 @@ export function normalizeCapabilities(raw) {
 
   if (Array.isArray(raw)) {
     for (const k of raw) add(k, true);
-    return { normalized, unknownKeys: Array.from(unknownSet) };
+    return { normalized: normalizedCaps, unknownKeys: Array.from(unknownSet) };
   }
 
   if (raw && typeof raw === "object") {
     for (const [k, v] of Object.entries(raw)) add(k, v);
-    return { normalized, unknownKeys: Array.from(unknownSet) };
+    return { normalized: normalizedCaps, unknownKeys: Array.from(unknownSet) };
   }
 
-  return { normalized, unknownKeys: [] };
+  return { normalized: normalizedCaps, unknownKeys: [] };
 }

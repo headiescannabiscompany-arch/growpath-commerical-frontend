@@ -119,11 +119,22 @@ export default function FacilityProfileRoute() {
 
   const facilityKeys = useMemo(() => {
     if (!facility) return [];
-    const preferred = ["id", "_id", "name", "legalName", "license", "state", "createdAt"];
-    const rest = Object.keys(facility)
-      .filter((k) => !preferred.includes(k))
+    const facilityPreferred = [
+      "id",
+      "_id",
+      "name",
+      "legalName",
+      "license",
+      "state",
+      "createdAt"
+    ];
+    const facilityRest = Object.keys(facility)
+      .filter((k) => !facilityPreferred.includes(k))
       .sort();
-    return [...preferred.filter((k) => k in facility), ...rest];
+    return [
+      ...facilityPreferred.filter((k) => k in facility),
+      ...facilityRest
+    ];
   }, [facility]);
 
   return (

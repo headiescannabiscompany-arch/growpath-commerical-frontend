@@ -39,28 +39,31 @@ export default function OnboardingRouter() {
 }
 
 function OnboardingRouterAuthed() {
-  const router = useRouter();
+  const onboardingRouter = useRouter();
   const facility = useFacility();
   const state = useOnboarding();
 
   React.useEffect(() => {
     if (state === "loading") return;
 
-    if (state === "join-facility") router.replace("/onboarding/join-facility" as any);
+    if (state === "join-facility")
+      onboardingRouter.replace("/onboarding/join-facility" as any);
     else if (state === "create-facility")
-      router.replace("/onboarding/create-facility" as any);
+      onboardingRouter.replace("/onboarding/create-facility" as any);
     else if (state === "pick-facility")
-      router.replace("/onboarding/pick-facility" as any);
-    else if (state === "first-setup") router.replace("/onboarding/first-setup" as any);
-    else if (state === "start-grow") router.replace("/onboarding/start-grow" as any);
+      onboardingRouter.replace("/onboarding/pick-facility" as any);
+    else if (state === "first-setup")
+      onboardingRouter.replace("/onboarding/first-setup" as any);
+    else if (state === "start-grow")
+      onboardingRouter.replace("/onboarding/start-grow" as any);
     else if (state === "dashboard") {
       if (facility?.selectedId) {
-        router.replace(`/facilities/${facility.selectedId}/dashboard` as any);
+        onboardingRouter.replace(`/facilities/${facility.selectedId}/dashboard` as any);
       } else {
-        router.replace("/facilities" as any);
+        onboardingRouter.replace("/facilities" as any);
       }
     }
-  }, [state, facility?.selectedId, router]);
+  }, [state, facility?.selectedId, onboardingRouter]);
 
   return <Splash />;
 }

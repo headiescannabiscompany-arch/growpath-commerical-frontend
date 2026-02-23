@@ -19,13 +19,13 @@ export function useGrows() {
 
 export function useGrow(id: string) {
   const { token } = useAuth();
-  const facility = useFacility();
-  const facilityId = facility?.facilityId || null;
+  const facilityState = useFacility();
+  const facilityIdValue = facilityState?.facilityId || null;
 
   return useQuery<Grow>({
-    queryKey: ["grow", facilityId, id],
-    queryFn: () => api.get(`${endpoints.grows(facilityId!)}/${id}`, token),
-    enabled: !!facilityId && !!token && !!id
+    queryKey: ["grow", facilityIdValue, id],
+    queryFn: () => api.get(`${endpoints.grows(facilityIdValue!)}/${id}`, token),
+    enabled: !!facilityIdValue && !!token && !!id
   });
 }
 
@@ -42,13 +42,13 @@ export function useCreateGrow() {
 }
 
 export function useUpdateGrow() {
-  const qc = useQueryClient();
+  const updateQc = useQueryClient();
   const { facilityId } = useFacility();
   return useMutation({
     mutationFn: ({ id, ...data }: any) =>
       api.patch(`${endpoints.grows(facilityId!)}/${id}`, data),
     onSuccess: () => {
-      qc.invalidateQueries({ queryKey: ["grows", facilityId] });
+      updateQc.invalidateQueries({ queryKey: ["grows", facilityId] });
     }
   });
 }

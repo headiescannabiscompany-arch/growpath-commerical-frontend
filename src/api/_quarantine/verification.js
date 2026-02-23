@@ -5,10 +5,10 @@ import { endpoints } from "./endpoints";
 
 export async function listVerifications(facilityId) {
   try {
-    const res = await api.get(endpoints.verification(facilityId));
+    const listRes = await api.get(endpoints.verification(facilityId));
     return {
       success: true,
-      data: res?.records ?? res?.verifications ?? res?.data ?? res
+      data: listRes?.records ?? listRes?.verifications ?? listRes?.data ?? listRes
     };
   } catch (e) {
     return { success: false, message: e?.message || "Failed to load verifications" };
@@ -17,8 +17,8 @@ export async function listVerifications(facilityId) {
 
 export async function verifyTask(facilityId, taskId, data) {
   try {
-    const res = await api.post(endpoints.verificationRecord(facilityId, taskId), data);
-    return { success: true, data: res?.updated ?? res?.record ?? res };
+    const verifyRes = await api.post(endpoints.verificationRecord(facilityId, taskId), data);
+    return { success: true, data: verifyRes?.updated ?? verifyRes?.record ?? verifyRes };
   } catch (e) {
     return { success: false, message: e?.message || "Failed to verify record" };
   }

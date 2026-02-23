@@ -17,16 +17,16 @@ export function getDiagnosis(id) {
 }
 
 export function diagnosePhoto(file, symptom) {
-  const form = new FormData();
-  if (file) form.append("photo", file);
-  if (symptom) form.append("symptom", symptom);
+  const formDataPhoto = new FormData();
+  if (file) formDataPhoto.append("photo", file);
+  if (symptom) formDataPhoto.append("symptom", symptom);
 
-  return apiRequest(apiRoutes.DIAGNOSE.CREATE, { method: "POST", body: form });
+  return apiRequest(apiRoutes.DIAGNOSE.CREATE, { method: "POST", body: formDataPhoto });
 }
 
 export function diagnoseImage(uri) {
-  const form = new FormData();
-  form.append("photo", { uri, name: "plant.jpg", type: "image/jpeg" });
+  const formDataImage = new FormData();
+  formDataImage.append("photo", { uri, name: "plant.jpg", type: "image/jpeg" });
 
-  return apiRequest(apiRoutes.DIAGNOSE.CREATE, { method: "POST", body: form });
+  return apiRequest(apiRoutes.DIAGNOSE.CREATE, { method: "POST", body: formDataImage });
 }

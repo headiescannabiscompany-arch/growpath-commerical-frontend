@@ -101,15 +101,15 @@ export default function FacilityTeamTab() {
     if (!canInvite) return;
     if (!facilityId) return;
 
-    const email = inviteEmail.trim();
-    if (!email) return;
+    const inviteEmailValue = inviteEmail.trim();
+    if (!inviteEmailValue) return;
 
     setInviting(true);
     try {
       clearError();
       await apiRequest(endpoints.teamInvite(facilityId), {
         method: "POST",
-        body: { email }
+        body: { email: inviteEmailValue }
       });
       setInviteEmail("");
       await load({ refresh: true });

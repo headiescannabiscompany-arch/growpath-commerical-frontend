@@ -214,12 +214,12 @@ export function EntitlementsProvider({ children }: { children: React.ReactNode }
       if (!state.ready) return false;
       if (Array.isArray(capability)) {
         return capability.every((cap) => {
-          const k = resolveCapabilityKey(cap);
-          return !!k && state.capabilities[k] === true;
+          const capabilityKey = resolveCapabilityKey(cap);
+          return !!capabilityKey && state.capabilities[capabilityKey] === true;
         });
       }
-      const k = resolveCapabilityKey(capability);
-      return !!k && state.capabilities[k] === true;
+      const capabilityKeySingle = resolveCapabilityKey(capability);
+      return !!capabilityKeySingle && state.capabilities[capabilityKeySingle] === true;
     };
     return Object.assign(fn, state.capabilities);
   }, [state.ready, state.capabilities]);

@@ -4,8 +4,8 @@ import { apiRequest } from "./apiRequest";
 
 export async function listEquipment(facilityId) {
   try {
-    const res = await apiRequest(`/facilities/${facilityId}/equipment`);
-    return { success: true, data: res?.data ?? res };
+    const listRes = await apiRequest(`/facilities/${facilityId}/equipment`);
+    return { success: true, data: listRes?.data ?? listRes };
   } catch (e) {
     return { success: false, message: e.message };
   }
@@ -13,11 +13,11 @@ export async function listEquipment(facilityId) {
 
 export async function createEquipment(facilityId, data) {
   try {
-    const res = await apiRequest(`/facilities/${facilityId}/equipment`, {
+    const createRes = await apiRequest(`/facilities/${facilityId}/equipment`, {
       method: "POST",
       body: data
     });
-    return { success: true, data: res?.data ?? res };
+    return { success: true, data: createRes?.data ?? createRes };
   } catch (e) {
     return { success: false, message: e.message };
   }
@@ -25,11 +25,11 @@ export async function createEquipment(facilityId, data) {
 
 export async function updateEquipment(facilityId, equipmentId, data) {
   try {
-    const res = await apiRequest(`/facilities/${facilityId}/equipment/${equipmentId}`, {
+    const updateRes = await apiRequest(`/facilities/${facilityId}/equipment/${equipmentId}`, {
       method: "PUT",
       body: data
     });
-    return { success: true, data: res?.data ?? res };
+    return { success: true, data: updateRes?.data ?? updateRes };
   } catch (e) {
     return { success: false, message: e.message };
   }
@@ -37,10 +37,10 @@ export async function updateEquipment(facilityId, equipmentId, data) {
 
 export async function deleteEquipment(facilityId, equipmentId) {
   try {
-    const res = await apiRequest(`/facilities/${facilityId}/equipment/${equipmentId}`, {
+    const deleteRes = await apiRequest(`/facilities/${facilityId}/equipment/${equipmentId}`, {
       method: "DELETE"
     });
-    return { success: true, data: res?.data ?? res };
+    return { success: true, data: deleteRes?.data ?? deleteRes };
   } catch (e) {
     return { success: false, message: e.message };
   }

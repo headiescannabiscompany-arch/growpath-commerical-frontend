@@ -97,10 +97,10 @@ describe("buildDashboardModel (drift-stopper)", () => {
   });
 
   test("golden snapshot: model output is stable", () => {
-    const nowISO = "2026-02-08T12:00:00.000Z";
-    const model = buildDashboardModel({
+    const nowISO2 = "2026-02-08T12:00:00.000Z";
+    const model2 = buildDashboardModel({
       facilityId: "FAC_A",
-      nowISO,
+      nowISO: nowISO2,
       reports: [],
       comparisons: [],
       deviationsSummary: {
@@ -115,6 +115,6 @@ describe("buildDashboardModel (drift-stopper)", () => {
         recommendedSops: []
       }
     } as any);
-    expect(model).toMatchSnapshot();
+    expect(model2).toMatchSnapshot();
   });
 });

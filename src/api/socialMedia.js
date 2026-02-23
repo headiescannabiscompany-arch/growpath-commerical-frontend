@@ -18,12 +18,12 @@ export const SOCIAL_ROUTES = {
 
 export const connectSocialAccount = async (platform, accessToken, apiKey) => {
   try {
-    const response = await apiClient.post(SOCIAL_ROUTES.CONNECT, {
+    const connectRes = await apiClient.post(SOCIAL_ROUTES.CONNECT, {
       platform,
       accessToken,
       apiKey
     });
-    return response.data;
+    return connectRes.data;
   } catch (error) {
     throw new Error(`Failed to connect ${platform}: ${error.message}`);
   }
@@ -31,10 +31,10 @@ export const connectSocialAccount = async (platform, accessToken, apiKey) => {
 
 export const disconnectSocialAccount = async (platform) => {
   try {
-    const response = await apiClient.post(SOCIAL_ROUTES.DISCONNECT, {
+    const disconnectRes = await apiClient.post(SOCIAL_ROUTES.DISCONNECT, {
       platform
     });
-    return response.data;
+    return disconnectRes.data;
   } catch (error) {
     throw new Error(`Failed to disconnect ${platform}: ${error.message}`);
   }
@@ -42,8 +42,8 @@ export const disconnectSocialAccount = async (platform) => {
 
 export const getSocialAccounts = async () => {
   try {
-    const response = await apiClient.get(SOCIAL_ROUTES.GET_ACCOUNTS);
-    return response.data;
+    const accountsRes = await apiClient.get(SOCIAL_ROUTES.GET_ACCOUNTS);
+    return accountsRes.data;
   } catch (error) {
     throw new Error(`Failed to fetch social accounts: ${error.message}`);
   }
@@ -51,8 +51,8 @@ export const getSocialAccounts = async () => {
 
 export const getSocialMetrics = async (platform) => {
   try {
-    const response = await apiClient.get(SOCIAL_ROUTES.GET_METRICS(platform));
-    return response.data;
+    const metricsRes = await apiClient.get(SOCIAL_ROUTES.GET_METRICS(platform));
+    return metricsRes.data;
   } catch (error) {
     throw new Error(`Failed to fetch ${platform} metrics: ${error.message}`);
   }
@@ -60,8 +60,8 @@ export const getSocialMetrics = async (platform) => {
 
 export const syncSocialData = async (platform) => {
   try {
-    const response = await apiClient.post(SOCIAL_ROUTES.SYNC_DATA(platform));
-    return response.data;
+    const syncRes = await apiClient.post(SOCIAL_ROUTES.SYNC_DATA(platform));
+    return syncRes.data;
   } catch (error) {
     throw new Error(`Failed to sync ${platform} data: ${error.message}`);
   }
@@ -69,12 +69,12 @@ export const syncSocialData = async (platform) => {
 
 export const schedulePost = async (platforms, content, scheduledTime) => {
   try {
-    const response = await apiClient.post(SOCIAL_ROUTES.POST_SCHEDULE, {
+    const scheduleRes = await apiClient.post(SOCIAL_ROUTES.POST_SCHEDULE, {
       platforms,
       content,
       scheduledTime
     });
-    return response.data;
+    return scheduleRes.data;
   } catch (error) {
     throw new Error(`Failed to schedule post: ${error.message}`);
   }

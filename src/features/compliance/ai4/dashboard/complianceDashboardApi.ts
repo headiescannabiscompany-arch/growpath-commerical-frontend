@@ -63,11 +63,13 @@ export function normalizeSopsRecommended(
   rawAny: any,
   facilityId: string
 ): SopsRecommendedResponse {
-  const raw = unwrapPayload(rawAny);
-  const sops = Array.isArray(raw?.recommendedSops) ? raw.recommendedSops : [];
+  const rawPayload = unwrapPayload(rawAny);
+  const sops = Array.isArray(rawPayload?.recommendedSops)
+    ? rawPayload.recommendedSops
+    : [];
   return {
     success: true,
-    facilityId: String(raw?.facilityId ?? facilityId),
+    facilityId: String(rawPayload?.facilityId ?? facilityId),
     recommendedSops: sops
       .map((s: any) => ({
         sopId: String(s?.sopId ?? ""),
@@ -75,26 +77,29 @@ export function normalizeSopsRecommended(
         reason: String(s?.reason ?? "")
       }))
       .filter((s: any) => s.sopId && s.title),
-    generatedAt: raw?.generatedAt ? String(raw.generatedAt) : undefined,
-    window: raw?.window ? String(raw.window) : undefined
+    generatedAt: rawPayload?.generatedAt ? String(rawPayload.generatedAt) : undefined,
+    window: rawPayload?.window ? String(rawPayload.window) : undefined
   };
 }
 
 export async function fetchDeviationsSummary(
   facilityId: string
 ): Promise<DeviationsSummaryResponse> {
-  const raw = await apiRequest(endpoints.compliance.deviationsSummary(facilityId), {
+  const deviationsRes = await apiRequest(
+    endpoints.compliance.deviationsSummary(facilityId),
+    {
     method: "GET"
-  });
-  return normalizeDeviationsSummary(raw, facilityId);
+    }
+  );
+  return normalizeDeviationsSummary(deviationsRes, facilityId);
 }
 
 export async function fetchSopsRecommended(
   facilityId: string
 ): Promise<SopsRecommendedResponse> {
-  const raw = await apiRequest(endpoints.compliance.sopsRecommended(facilityId), {
+  const sopsRes = await apiRequest(endpoints.compliance.sopsRecommended(facilityId), {
     method: "GET"
   });
-  return normalizeSopsRecommended(raw, facilityId);
+  return normalizeSopsRecommended(sopsRes, facilityId);
 }
 

@@ -71,8 +71,10 @@ export function useFacilityDashboard() {
         .filter((g: any) => !g.endDate)
         .map((g: any) => {
           const start = new Date(g.startDate);
-          const now = new Date();
-          return Math.floor((now.getTime() - start.getTime()) / (1000 * 60 * 60 * 24));
+          const cycleNow = new Date();
+          return Math.floor(
+            (cycleNow.getTime() - start.getTime()) / (1000 * 60 * 60 * 24)
+          );
         }),
       completed: growList.filter((g: any) => g.endDate).length,
       yieldPerCycle: growList

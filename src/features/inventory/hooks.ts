@@ -42,7 +42,7 @@ export function useCreateInventoryItem() {
 }
 
 export function useUpdateInventoryItem(id: string) {
-  const qc = useQueryClient();
+  const updateQc = useQueryClient();
   const { token } = useAuth();
   const { facilityId } = useFacility();
 
@@ -50,21 +50,21 @@ export function useUpdateInventoryItem(id: string) {
     mutationFn: (data: Partial<InventoryItem>) =>
       api.patch(`${endpoints.inventory(facilityId!)}/${id}`, data, token),
     onSuccess: () => {
-      qc.invalidateQueries({ queryKey: ["inventory", facilityId] });
-      qc.invalidateQueries({ queryKey: ["inventoryItem", facilityId, id] });
+      updateQc.invalidateQueries({ queryKey: ["inventory", facilityId] });
+      updateQc.invalidateQueries({ queryKey: ["inventoryItem", facilityId, id] });
     }
   });
 }
 
 export function useDeleteInventoryItem(id: string) {
-  const qc = useQueryClient();
+  const deleteQc = useQueryClient();
   const { token } = useAuth();
   const { facilityId } = useFacility();
 
   return useMutation({
     mutationFn: () => api.del(`${endpoints.inventory(facilityId!)}/${id}`, token),
     onSuccess: () => {
-      qc.invalidateQueries({ queryKey: ["inventory", facilityId] });
+      deleteQc.invalidateQueries({ queryKey: ["inventory", facilityId] });
     }
   });
 }

@@ -16,17 +16,17 @@ export type GreenWasteLog = {
 };
 
 export async function getGreenWasteLogs(facilityId: string): Promise<GreenWasteLog[]> {
-  const res = await apiRequest(endpoints.greenWaste(facilityId));
-  return res?.logs ?? res?.data ?? [];
+  const listRes = await apiRequest(endpoints.greenWaste(facilityId));
+  return listRes?.logs ?? listRes?.data ?? [];
 }
 
 export async function createGreenWasteLog(
   facilityId: string,
   data: any
 ): Promise<GreenWasteLog> {
-  const res = await apiRequest(endpoints.greenWaste(facilityId), {
+  const createRes = await apiRequest(endpoints.greenWaste(facilityId), {
     method: "POST",
     body: data
   });
-  return res?.created ?? res?.log ?? res;
+  return createRes?.created ?? createRes?.log ?? createRes;
 }

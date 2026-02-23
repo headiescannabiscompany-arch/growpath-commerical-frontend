@@ -23,8 +23,8 @@ function normalizeCreatedLog(res) {
 }
 
 export async function listAuditLogs(facilityId) {
-  const res = await apiRequest(endpoints.auditLogs(facilityId), { method: "GET" });
-  return { success: true, data: normalizeAuditLogs(res) };
+  const listRes = await apiRequest(endpoints.auditLogs(facilityId), { method: "GET" });
+  return { success: true, data: normalizeAuditLogs(listRes) };
 }
 
 // Supports BOTH:
@@ -39,19 +39,19 @@ export async function createAuditLog(facilityId, a, b) {
           ...(a?.details ? { details: String(a.details) } : {})
         };
 
-  const res = await apiRequest(endpoints.auditLogs(facilityId), {
+  const createRes = await apiRequest(endpoints.auditLogs(facilityId), {
     method: "POST",
     body: payload
   });
 
-  return { success: true, log: normalizeCreatedLog(res) };
+  return { success: true, log: normalizeCreatedLog(createRes) };
 }
 
 export async function reconcileAudit(facilityId, data) {
-  const res = await apiRequest(`${endpoints.auditLogs(facilityId)}/reconcile`, {
+  const reconcileRes = await apiRequest(`${endpoints.auditLogs(facilityId)}/reconcile`, {
     method: "POST",
     body: data
   });
 
-  return { success: true, data: res };
+  return { success: true, data: reconcileRes };
 }

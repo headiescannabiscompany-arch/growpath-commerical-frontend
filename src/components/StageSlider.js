@@ -45,7 +45,7 @@ export default function StageSlider({
       </View>
       <View style={styles.labelRow}>
         {options.map((option, index) => {
-          const isActive = index === currentIndex;
+          const isActiveLabel = index === currentIndex;
           return (
             <TouchableOpacity
               key={option}
@@ -56,7 +56,7 @@ export default function StageSlider({
               <Text
                 style={[
                   styles.label,
-                  isActive && styles.labelActive,
+                  isActiveLabel && styles.labelActive,
                   disabled && styles.labelDisabled
                 ]}
                 numberOfLines={1}

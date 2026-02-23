@@ -40,12 +40,12 @@ function pickTitle(x: AnyRec): string {
 
 function pickSubtitle(x: AnyRec): string {
   const at = x?.createdAt ?? x?.at ?? x?.ts ?? x?.timestamp;
-  const entity = x?.entity ?? x?.entityType ?? x?.collection ?? "";
-  const entityId = x?.entityId ?? x?.targetId ?? x?.docId ?? "";
+  const subtitleEntity = x?.entity ?? x?.entityType ?? x?.collection ?? "";
+  const subtitleEntityId = x?.entityId ?? x?.targetId ?? x?.docId ?? "";
   const parts = [
     at ? `At: ${String(at)}` : "",
-    entity ? `Entity: ${String(entity)}` : "",
-    entityId ? `Id: ${String(entityId)}` : ""
+    subtitleEntity ? `Entity: ${String(subtitleEntity)}` : "",
+    subtitleEntityId ? `Id: ${String(subtitleEntityId)}` : ""
   ].filter(Boolean);
   return parts.join(" • ");
 }

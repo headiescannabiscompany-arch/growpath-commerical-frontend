@@ -40,8 +40,8 @@ function normalizeTokenArg(options, tokenArg) {
 }
 
 async function applyLegacyAuth(options = {}, tokenArg = null) {
-  const opts = { ...(options || {}) };
-  const headers = { ...(opts.headers || {}) };
+  const legacyOpts = { ...(options || {}) };
+  const legacyHeaders = { ...(legacyOpts.headers || {}) };
 
   let token = tokenArg || null;
 
@@ -54,12 +54,12 @@ async function applyLegacyAuth(options = {}, tokenArg = null) {
   }
   if (!token) token = _authToken;
 
-  if (token && !headers.Authorization) {
-    headers.Authorization = `Bearer ${token}`;
+  if (token && !legacyHeaders.Authorization) {
+    legacyHeaders.Authorization = `Bearer ${token}`;
   }
 
-  opts.headers = headers;
-  return opts;
+  legacyOpts.headers = legacyHeaders;
+  return legacyOpts;
 }
 
 async function apiClient(path, options = {}, tokenArg = null) {
@@ -71,44 +71,44 @@ async function apiClient(path, options = {}, tokenArg = null) {
 apiClient.request = (path, options = {}, tokenArg) => apiClient(path, options, tokenArg);
 
 apiClient.get = (path, options = {}, tokenArg) => {
-  const norm = normalizeTokenArg(options, tokenArg);
-  return apiClient(path, { ...(norm.options || {}), method: "GET" }, norm.token);
+  const normGet = normalizeTokenArg(options, tokenArg);
+  return apiClient(path, { ...(normGet.options || {}), method: "GET" }, normGet.token);
 };
 
 apiClient.delete = (path, options = {}, tokenArg) => {
-  const norm = normalizeTokenArg(options, tokenArg);
-  return apiClient(path, { ...(norm.options || {}), method: "DELETE" }, norm.token);
+  const normDelete = normalizeTokenArg(options, tokenArg);
+  return apiClient(path, { ...(normDelete.options || {}), method: "DELETE" }, normDelete.token);
 };
 
 apiClient.post = (path, body, options = {}, tokenArg) => {
-  const norm = normalizeTokenArg(options, tokenArg);
-  const opts = { ...(norm.options || {}), method: "POST" };
-  if (body !== undefined) opts.body = body;
-  return apiClient(path, opts, norm.token);
+  const normPost = normalizeTokenArg(options, tokenArg);
+  const postOpts = { ...(normPost.options || {}), method: "POST" };
+  if (body !== undefined) postOpts.body = body;
+  return apiClient(path, postOpts, normPost.token);
 };
 
 apiClient.put = (path, body, options = {}, tokenArg) => {
-  const norm = normalizeTokenArg(options, tokenArg);
-  const opts = { ...(norm.options || {}), method: "PUT" };
-  if (body !== undefined) opts.body = body;
-  return apiClient(path, opts, norm.token);
+  const normPut = normalizeTokenArg(options, tokenArg);
+  const putOpts = { ...(normPut.options || {}), method: "PUT" };
+  if (body !== undefined) putOpts.body = body;
+  return apiClient(path, putOpts, normPut.token);
 };
 
 apiClient.patch = (path, body, options = {}, tokenArg) => {
-  const norm = normalizeTokenArg(options, tokenArg);
-  const opts = { ...(norm.options || {}), method: "PATCH" };
-  if (body !== undefined) opts.body = body;
-  return apiClient(path, opts, norm.token);
+  const normPatch = normalizeTokenArg(options, tokenArg);
+  const patchOpts = { ...(normPatch.options || {}), method: "PATCH" };
+  if (body !== undefined) patchOpts.body = body;
+  return apiClient(path, patchOpts, normPatch.token);
 };
 
 apiClient.postMultipart = (path, formData, options = {}, tokenArg) => {
-  const norm = normalizeTokenArg(options, tokenArg);
-  const opts = { ...(norm.options || {}), method: "POST", body: formData };
-  const headers = { ...(opts.headers || {}) };
-  if (headers["Content-Type"]) delete headers["Content-Type"];
-  if (headers["content-type"]) delete headers["content-type"];
-  opts.headers = headers;
-  return apiClient(path, opts, norm.token);
+  const normMultipart = normalizeTokenArg(options, tokenArg);
+  const multipartOpts = { ...(normMultipart.options || {}), method: "POST", body: formData };
+  const multipartHeaders = { ...(multipartOpts.headers || {}) };
+  if (multipartHeaders["Content-Type"]) delete multipartHeaders["Content-Type"];
+  if (multipartHeaders["content-type"]) delete multipartHeaders["content-type"];
+  multipartOpts.headers = multipartHeaders;
+  return apiClient(path, multipartOpts, normMultipart.token);
 };
 
 // IMPORTANT: named exports for tests/legacy

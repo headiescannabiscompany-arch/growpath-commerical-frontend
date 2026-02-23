@@ -5,15 +5,15 @@ import { apiRequest } from "./apiRequest";
 export async function runInsights(
   facilityId: string
 ): Promise<{ created: number; updated: number }> {
-  const res = await apiRequest(`/facilities/${facilityId}/insights/run`, {
+  const runRes = await apiRequest(`/facilities/${facilityId}/insights/run`, {
     method: "POST"
   });
-  return res?.data ?? res;
+  return runRes?.data ?? runRes;
 }
 
 export async function fetchInsights(facilityId: string): Promise<Insight[]> {
-  const res = await apiRequest(`/facilities/${facilityId}/insights`);
-  return res?.data ?? res;
+  const fetchRes = await apiRequest(`/facilities/${facilityId}/insights`);
+  return fetchRes?.data ?? fetchRes;
 }
 
 export async function resolveInsight(

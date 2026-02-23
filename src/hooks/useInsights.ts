@@ -26,21 +26,21 @@ export function useInsights(facilityId: string) {
 }
 
 export function useResolveInsight(facilityId: string) {
-  const queryClient = useQueryClient();
+  const resolveQueryClient = useQueryClient();
   return useMutation({
     mutationFn: (insightId: string) => resolveInsight(facilityId, insightId),
     onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ["insights", facilityId] });
+      resolveQueryClient.invalidateQueries({ queryKey: ["insights", facilityId] });
     }
   });
 }
 
 export function useSnoozeInsight(facilityId: string) {
-  const queryClient = useQueryClient();
+  const snoozeQueryClient = useQueryClient();
   return useMutation({
     mutationFn: (insightId: string) => snoozeInsight(facilityId, insightId),
     onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ["insights", facilityId] });
+      snoozeQueryClient.invalidateQueries({ queryKey: ["insights", facilityId] });
     }
   });
 }

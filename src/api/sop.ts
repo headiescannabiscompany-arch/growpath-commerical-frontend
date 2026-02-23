@@ -11,19 +11,19 @@ export type SOPTemplate = {
 };
 
 export async function getSOPTemplates(facilityId: string): Promise<SOPTemplate[]> {
-  const res = await apiRequest(endpoints.sopTemplates(facilityId));
-  return res?.templates ?? res?.data ?? res ?? [];
+  const listRes = await apiRequest(endpoints.sopTemplates(facilityId));
+  return listRes?.templates ?? listRes?.data ?? listRes ?? [];
 }
 
 export async function createSOPTemplate(
   facilityId: string,
   data: any
 ): Promise<SOPTemplate> {
-  const res = await apiRequest(endpoints.sopTemplates(facilityId), {
+  const createRes = await apiRequest(endpoints.sopTemplates(facilityId), {
     method: "POST",
     body: data
   });
-  return res?.created ?? res?.template ?? res;
+  return createRes?.created ?? createRes?.template ?? createRes;
 }
 
 export async function updateSOPTemplate(
@@ -31,16 +31,16 @@ export async function updateSOPTemplate(
   id: string,
   data: any
 ): Promise<SOPTemplate> {
-  const res = await apiRequest(endpoints.sopTemplate(facilityId, id), {
+  const updateRes = await apiRequest(endpoints.sopTemplate(facilityId, id), {
     method: "PUT",
     body: data
   });
-  return res?.updated ?? res?.template ?? res;
+  return updateRes?.updated ?? updateRes?.template ?? updateRes;
 }
 
 export async function deleteSOPTemplate(facilityId: string, id: string): Promise<any> {
-  const res = await apiRequest(endpoints.sopTemplate(facilityId, id), {
+  const deleteRes = await apiRequest(endpoints.sopTemplate(facilityId, id), {
     method: "DELETE"
   });
-  return res?.deleted ?? res?.ok ?? res;
+  return deleteRes?.deleted ?? deleteRes?.ok ?? deleteRes;
 }

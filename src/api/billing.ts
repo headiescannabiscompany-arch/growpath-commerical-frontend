@@ -2,24 +2,24 @@ import { apiRequest } from "./apiRequest";
 import { endpoints } from "./endpoints";
 
 export async function getFacilityBillingStatus(facilityId: string) {
-  const res = await apiRequest(endpoints.facilityBillingStatus, {
+  const statusRes = await apiRequest(endpoints.facilityBillingStatus, {
     params: { facility: facilityId }
   });
-  return res?.data ?? res;
+  return statusRes?.data ?? statusRes;
 }
 
 export async function startFacilityCheckout(facilityId: string) {
-  const res = await apiRequest(endpoints.facilityBillingCheckout, {
+  const checkoutRes = await apiRequest(endpoints.facilityBillingCheckout, {
     method: "POST",
     body: { facilityId }
   });
-  return res?.data ?? res;
+  return checkoutRes?.data ?? checkoutRes;
 }
 
 export async function cancelFacilityPlan(facilityId: string) {
-  const res = await apiRequest(endpoints.facilityBillingCancel, {
+  const cancelRes = await apiRequest(endpoints.facilityBillingCancel, {
     method: "POST",
     body: { facilityId }
   });
-  return res?.data ?? res;
+  return cancelRes?.data ?? cancelRes;
 }

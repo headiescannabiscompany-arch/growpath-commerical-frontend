@@ -56,11 +56,12 @@ export function parseApiError(input, opts = {}) {
       null;
 
     const data = resp.data;
-    const code = data?.error?.code ?? data?.code;
-    const message = data?.error?.message ?? data?.message;
+    const respCode = data?.error?.code ?? data?.code;
+    const respMessage = data?.error?.message ?? data?.message;
 
-    if (typeof code === "string" && code.trim()) base.code = code;
-    if (typeof message === "string" && message.trim()) base.message = message;
+    if (typeof respCode === "string" && respCode.trim()) base.code = respCode;
+    if (typeof respMessage === "string" && respMessage.trim())
+      base.message = respMessage;
 
     base.raw = data ?? input;
     return base;
@@ -68,11 +69,12 @@ export function parseApiError(input, opts = {}) {
 
   // 3) Already-parsed backend error envelope
   if (input && typeof input === "object") {
-    const code = input?.error?.code ?? input?.code;
-    const message = input?.error?.message ?? input?.message;
+    const parsedCode = input?.error?.code ?? input?.code;
+    const parsedMessage = input?.error?.message ?? input?.message;
 
-    if (typeof code === "string" && code.trim()) base.code = code;
-    if (typeof message === "string" && message.trim()) base.message = message;
+    if (typeof parsedCode === "string" && parsedCode.trim()) base.code = parsedCode;
+    if (typeof parsedMessage === "string" && parsedMessage.trim())
+      base.message = parsedMessage;
 
     if (typeof input?.requestId === "string") base.requestId = input.requestId;
     if (typeof input?.status === "number") base.status = input.status;

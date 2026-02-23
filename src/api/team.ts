@@ -12,9 +12,9 @@ export type TeamMember = {
 };
 
 export async function listTeamMembers(facilityId: string): Promise<TeamMember[]> {
-  const res = await apiRequest(endpoints.teamMembers(facilityId));
+  const listRes = await apiRequest(endpoints.teamMembers(facilityId));
   // Contract: { members: [...] }
-  const members = res?.members ?? [];
+  const members = listRes?.members ?? [];
   return members.map((m: any) => ({
     ...m,
     id: String(m.id ?? m.userId ?? m._id ?? "")
@@ -25,11 +25,11 @@ export async function inviteTeamMember(
   facilityId: string,
   data: { email: string; role: FacilityRole }
 ) {
-  const res = await apiRequest(endpoints.teamInvite(facilityId), {
+  const inviteRes = await apiRequest(endpoints.teamInvite(facilityId), {
     method: "POST",
     body: data
   });
-  return res?.invited ?? res;
+  return inviteRes?.invited ?? inviteRes;
 }
 
 export async function updateTeamMemberRole(
@@ -37,16 +37,16 @@ export async function updateTeamMemberRole(
   userId: string,
   data: { role: FacilityRole }
 ) {
-  const res = await apiRequest(endpoints.teamMember(facilityId, userId), {
+  const updateRes = await apiRequest(endpoints.teamMember(facilityId, userId), {
     method: "PATCH",
     body: data
   });
-  return res?.updated ?? res;
+  return updateRes?.updated ?? updateRes;
 }
 
 export async function removeTeamMember(facilityId: string, userId: string) {
-  const res = await apiRequest(endpoints.teamMember(facilityId, userId), {
+  const removeRes = await apiRequest(endpoints.teamMember(facilityId, userId), {
     method: "DELETE"
   });
-  return res?.deleted ?? res?.ok ?? res;
+  return removeRes?.deleted ?? removeRes?.ok ?? removeRes;
 }

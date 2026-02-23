@@ -3,8 +3,8 @@ import { endpoints } from "./endpoints";
 
 export const listGreenWasteEvents = async (facilityId) => {
   try {
-    const response = await api.get(endpoints.greenWaste(facilityId));
-    return { success: true, data: response?.logs ?? response?.data ?? response };
+    const listRes = await api.get(endpoints.greenWaste(facilityId));
+    return { success: true, data: listRes?.logs ?? listRes?.data ?? listRes };
   } catch (error) {
     return { success: false, message: error?.message || "Failed to load green waste" };
   }
@@ -12,8 +12,8 @@ export const listGreenWasteEvents = async (facilityId) => {
 
 export const createGreenWasteEvent = async (facilityId, eventData) => {
   try {
-    const response = await api.post(endpoints.greenWaste(facilityId), eventData);
-    return { success: true, data: response?.created ?? response?.log ?? response };
+    const createRes = await api.post(endpoints.greenWaste(facilityId), eventData);
+    return { success: true, data: createRes?.created ?? createRes?.log ?? createRes };
   } catch (error) {
     return { success: false, message: error?.message || "Failed to create event" };
   }

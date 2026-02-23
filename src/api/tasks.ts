@@ -6,9 +6,9 @@ export function getTasks(): Promise<PersonalTask[]>;
 export function getTasks(facilityId: string): Promise<Task[]>;
 export async function getTasks(facilityId?: string): Promise<PersonalTask[] | Task[]> {
   if (facilityId) {
-    const res = await apiRequest(endpoints.tasks(facilityId), { method: "GET" });
+    const listRes = await apiRequest(endpoints.tasks(facilityId), { method: "GET" });
     // Contract: { tasks: [...] }
-    return res?.tasks ?? [];
+    return listRes?.tasks ?? [];
   }
   return listPersonalTasks();
 }
@@ -19,8 +19,8 @@ export async function createCustomTask(a: any, b?: any): Promise<any> {
   if (typeof a === "string") {
     return createTask(a, b);
   }
-  const res = await apiRequest("/api/personal/tasks", { method: "POST", body: a });
-  return res?.task ?? res?.created ?? res;
+  const personalCreateRes = await apiRequest("/api/personal/tasks", { method: "POST", body: a });
+  return personalCreateRes?.task ?? personalCreateRes?.created ?? personalCreateRes;
 }
 
 export function completeTask(id: string): Promise<PersonalTask>;
@@ -29,11 +29,11 @@ export async function completeTask(a: any, b?: any, c?: any): Promise<any> {
   if (arguments.length >= 2) {
     return updateTask(a, b, c ?? { completed: true });
   }
-  const res = await apiRequest(`/api/personal/tasks/${a}`, {
+  const completeRes = await apiRequest(`/api/personal/tasks/${a}`, {
     method: "PATCH",
     body: { completed: true }
   });
-  return res?.task ?? res?.updated ?? res;
+  return completeRes?.task ?? completeRes?.updated ?? completeRes;
 }
 
 export type Task = {
@@ -47,11 +47,11 @@ export type Task = {
 // CONTRACT: facility-scoped resources must use endpoints.ts and canonical envelopes.
 
 export async function createTask(facilityId: string, data: any): Promise<Task> {
-  const res = await apiRequest(endpoints.tasks(facilityId), {
+  const createRes = await apiRequest(endpoints.tasks(facilityId), {
     method: "POST",
     body: data
   });
-  return res?.created ?? res?.task ?? res;
+  return createRes?.created ?? createRes?.task ?? createRes;
 }
 
 export async function updateTask(
@@ -59,16 +59,16 @@ export async function updateTask(
   id: string,
   patch: any
 ): Promise<Task> {
-  const res = await apiRequest(endpoints.task(facilityId, id), {
+  const updateRes = await apiRequest(endpoints.task(facilityId, id), {
     method: "PATCH",
     body: patch
   });
-  return res?.updated ?? res?.task ?? res;
+  return updateRes?.updated ?? updateRes?.task ?? updateRes;
 }
 
 export async function deleteTask(facilityId: string, id: string) {
-  const res = await apiRequest(endpoints.task(facilityId, id), { method: "DELETE" });
-  return res?.deleted ?? res?.ok ?? res;
+  const deleteRes = await apiRequest(endpoints.task(facilityId, id), { method: "DELETE" });
+  return deleteRes?.deleted ?? deleteRes?.ok ?? deleteRes;
 }
 
 // ===== Personal Mode Tasks (User-Scoped) =====
@@ -93,19 +93,19 @@ export async function listPersonalTasks(options?: {
   growId?: string;
 }): Promise<PersonalTask[]> {
   try {
-    const res = await apiRequest("/api/personal/tasks", {
+    const listPersonalRes = await apiRequest("/api/personal/tasks", {
       method: "GET",
       params: options?.growId ? { growId: options.growId } : undefined
     });
 
     if (
-      typeof res === "object" &&
-      res !== null &&
-      "data" in res &&
-      res.data &&
-      "tasks" in res.data
+      typeof listPersonalRes === "object" &&
+      listPersonalRes !== null &&
+      "data" in listPersonalRes &&
+      listPersonalRes.data &&
+      "tasks" in listPersonalRes.data
     ) {
-      return res.data.tasks as PersonalTask[];
+      return listPersonalRes.data.tasks as PersonalTask[];
     }
     return [];
   } catch (err) {

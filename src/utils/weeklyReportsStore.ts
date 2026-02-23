@@ -44,16 +44,16 @@ export async function deleteWeeklyReport(
   facilityId: string,
   id: string
 ): Promise<SavedWeeklyReport[]> {
-  const existing = await listWeeklyReports(facilityId);
-  const next = existing.filter((x) => x.id !== id);
-  await AsyncStorage.setItem(keyForFacility(facilityId), JSON.stringify(next));
-  return next;
+  const deleteExisting = await listWeeklyReports(facilityId);
+  const deleteNext = deleteExisting.filter((x) => x.id !== id);
+  await AsyncStorage.setItem(keyForFacility(facilityId), JSON.stringify(deleteNext));
+  return deleteNext;
 }
 
 export async function getWeeklyReport(
   facilityId: string,
   id: string
 ): Promise<SavedWeeklyReport | null> {
-  const existing = await listWeeklyReports(facilityId);
-  return existing.find((x) => x.id === id) || null;
+  const reportList = await listWeeklyReports(facilityId);
+  return reportList.find((x) => x.id === id) || null;
 }

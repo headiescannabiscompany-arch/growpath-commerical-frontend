@@ -18,7 +18,7 @@ export async function getCommercialFeed(
   params: GetCommercialFeedParams
 ): Promise<FeedResponse> {
   // Contract: GET /api/feed?mode=commercial&facilityId=...&cursor=...&limit=...&types=...&status=...&assignedTo=...&from=...&to=...
-  const search = new URLSearchParams({
+  const commercialSearch = new URLSearchParams({
     mode: "commercial",
     facilityId: params.facilityId,
     ...(params.cursor ? { cursor: params.cursor } : {}),
@@ -30,7 +30,7 @@ export async function getCommercialFeed(
     ...(params.to ? { to: params.to } : {})
   });
 
-  return api.get(`${endpoints.feed}?${search.toString()}`);
+  return api.get(`${endpoints.feed}?${commercialSearch.toString()}`);
 }
 
 // ------------------------------
@@ -39,8 +39,8 @@ export async function getCommercialFeed(
 // ------------------------------
 
 export async function getTasks(params: Record<string, any>) {
-  const search = new URLSearchParams(params as Record<string, string>);
-  return api.get(`${endpoints.tasksGlobal}?${search.toString()}`);
+  const tasksSearch = new URLSearchParams(params as Record<string, string>);
+  return api.get(`${endpoints.tasksGlobal}?${tasksSearch.toString()}`);
 }
 
 export async function patchTask(id: string, body: Record<string, any>) {
@@ -48,8 +48,8 @@ export async function patchTask(id: string, body: Record<string, any>) {
 }
 
 export async function getAlerts(params: Record<string, any>) {
-  const search = new URLSearchParams(params as Record<string, string>);
-  return api.get(`${endpoints.alertsGlobal}?${search.toString()}`);
+  const alertsSearch = new URLSearchParams(params as Record<string, string>);
+  return api.get(`${endpoints.alertsGlobal}?${alertsSearch.toString()}`);
 }
 
 export async function patchAlert(id: string, body: Record<string, any>) {
@@ -57,6 +57,6 @@ export async function patchAlert(id: string, body: Record<string, any>) {
 }
 
 export async function getGrowLogs(params: Record<string, any>) {
-  const search = new URLSearchParams(params as Record<string, string>);
-  return api.get(`${endpoints.growlogLegacy}?${search.toString()}`);
+  const growLogsSearch = new URLSearchParams(params as Record<string, string>);
+  return api.get(`${endpoints.growlogLegacy}?${growLogsSearch.toString()}`);
 }

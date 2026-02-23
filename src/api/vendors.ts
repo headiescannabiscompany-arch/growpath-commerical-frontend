@@ -11,31 +11,31 @@ export type Vendor = {
 };
 
 export async function getVendors(facilityId: string): Promise<Vendor[]> {
-  const res = await apiRequest(endpoints.vendors, {
+  const listRes = await apiRequest(endpoints.vendors, {
     params: { facilityId }
   });
-  return res?.vendors ?? res?.data ?? res ?? [];
+  return listRes?.vendors ?? listRes?.data ?? listRes ?? [];
 }
 
 export async function createVendor(facilityId: string, data: any): Promise<Vendor> {
-  const res = await apiRequest(endpoints.vendors, {
+  const createRes = await apiRequest(endpoints.vendors, {
     method: "POST",
     body: { facilityId, ...data }
   });
-  return res?.created ?? res?.vendor ?? res;
+  return createRes?.created ?? createRes?.vendor ?? createRes;
 }
 
 export async function updateVendor(id: string, data: any): Promise<Vendor> {
-  const res = await apiRequest(endpoints.vendor(id), {
+  const updateRes = await apiRequest(endpoints.vendor(id), {
     method: "PUT",
     body: data
   });
-  return res?.updated ?? res?.vendor ?? res;
+  return updateRes?.updated ?? updateRes?.vendor ?? updateRes;
 }
 
 export async function deleteVendor(id: string) {
-  const res = await apiRequest(endpoints.vendor(id), {
+  const deleteRes = await apiRequest(endpoints.vendor(id), {
     method: "DELETE"
   });
-  return res?.deleted ?? res?.ok ?? res;
+  return deleteRes?.deleted ?? deleteRes?.ok ?? deleteRes;
 }

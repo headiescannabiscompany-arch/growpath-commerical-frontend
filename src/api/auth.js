@@ -5,14 +5,14 @@ import routes from "./routes.js";
 export async function login(email, password) {
   try {
     console.log("[API] Login request:", { email, passwordLength: password?.length });
-    const data = await apiRequest(routes.AUTH.LOGIN, {
+    const loginData = await apiRequest(routes.AUTH.LOGIN, {
       method: "POST",
       auth: false,
       body: { email, password }
     });
-    global.authToken = data.token;
-    global.user = data.user;
-    return { user: data.user, token: data.token };
+    global.authToken = loginData.token;
+    global.user = loginData.user;
+    return { user: loginData.user, token: loginData.token };
   } catch (err) {
     console.error("[API] Login error:", {
       error: err,
@@ -28,15 +28,15 @@ export async function login(email, password) {
 // Signup
 export async function signup({ name, displayName, email, password }) {
   try {
-    const payload = { name, displayName, email, password };
-    const data = await apiRequest(routes.AUTH.SIGNUP, {
+    const signupPayload = { name, displayName, email, password };
+    const signupData = await apiRequest(routes.AUTH.SIGNUP, {
       method: "POST",
       auth: false,
-      body: payload
+      body: signupPayload
     });
-    global.authToken = data.token;
-    global.user = data.user;
-    return { user: data.user, token: data.token };
+    global.authToken = signupData.token;
+    global.user = signupData.user;
+    return { user: signupData.user, token: signupData.token };
   } catch (err) {
     throw err?.data?.message || err.message || "Signup failed";
   }
@@ -45,14 +45,14 @@ export async function signup({ name, displayName, email, password }) {
 // Register
 export async function register({ name, displayName, email, password }) {
   try {
-    const payload = { name, displayName, email, password };
-    const data = await apiRequest("/api/auth/register", {
+    const registerPayload = { name, displayName, email, password };
+    const registerData = await apiRequest("/api/auth/register", {
       method: "POST",
       auth: false,
-      body: payload
+      body: registerPayload
     });
-    global.authToken = data.token;
-    return { token: data.token };
+    global.authToken = registerData.token;
+    return { token: registerData.token };
   } catch (err) {
     throw err?.data?.message || err.message || "Register failed";
   }
@@ -61,14 +61,14 @@ export async function register({ name, displayName, email, password }) {
 // Become Creator
 export async function becomeCreator() {
   try {
-    const data = await apiRequest(routes.AUTH.BECOME_CREATOR, {
+    const creatorData = await apiRequest(routes.AUTH.BECOME_CREATOR, {
       method: "POST",
       body: {}
     });
-    if (data.role) {
-      if (global.user) global.user.role = data.role;
+    if (creatorData.role) {
+      if (global.user) global.user.role = creatorData.role;
     }
-    return data;
+    return creatorData;
   } catch (err) {
     throw err?.data?.message || err.message || "Become creator failed";
   }
@@ -77,11 +77,11 @@ export async function becomeCreator() {
 // Save Push Token
 export async function savePushToken(pushToken) {
   try {
-    const data = await apiRequest("/api/auth/save-push-token", {
+    const pushTokenData = await apiRequest("/api/auth/save-push-token", {
       method: "POST",
       body: { pushToken }
     });
-    return data;
+    return pushTokenData;
   } catch (err) {
     throw err?.data?.message || err.message || "Save push token failed";
   }

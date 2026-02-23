@@ -36,8 +36,8 @@ function normalizeCreatedLog(res: any): AuditLog {
 export async function listAuditLogs(
   facilityId: string
 ): Promise<{ success: boolean; data: AuditLog[] }> {
-  const res = await apiRequest<any>(endpoints.auditLogs(facilityId), { method: "GET" });
-  return { success: true, data: normalizeAuditLogs(res) };
+  const listRes = await apiRequest<any>(endpoints.auditLogs(facilityId), { method: "GET" });
+  return { success: true, data: normalizeAuditLogs(listRes) };
 }
 
 // Overloads for TS callers + legacy callers
@@ -63,12 +63,12 @@ export async function createAuditLog(
           ...(a?.details ? { details: String(a.details) } : {})
         };
 
-  const res = await apiRequest<any>(endpoints.auditLogs(facilityId), {
+  const createRes = await apiRequest<any>(endpoints.auditLogs(facilityId), {
     method: "POST",
     body: payload
   });
 
-  return { success: true, log: normalizeCreatedLog(res) };
+  return { success: true, log: normalizeCreatedLog(createRes) };
 }
 
 export async function reconcileAudit(facilityId: string, data: any) {

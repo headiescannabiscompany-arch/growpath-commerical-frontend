@@ -24,8 +24,8 @@ export function useNotificationDeepLinks() {
 
     // 2) If user taps notification while app is running/backgrounded
     const sub = Notifications.addNotificationResponseReceivedListener((resp) => {
-      const postId = extractPostId(resp?.notification?.request?.content?.data);
-      if (postId) router.push(`/(app)/post/${postId}`);
+      const postIdFromTap = extractPostId(resp?.notification?.request?.content?.data);
+      if (postIdFromTap) router.push(`/(app)/post/${postIdFromTap}`);
     });
 
     return () => sub.remove();

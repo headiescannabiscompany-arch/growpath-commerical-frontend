@@ -25,17 +25,17 @@ export const savedComparisonsStore = {
     }
   },
   async save(comparison: SavedComparison): Promise<void> {
-    const all = await savedComparisonsStore.list();
-    const next = [comparison, ...all.filter((c) => c.id !== comparison.id)];
-    await AsyncStorage.setItem(STORE_KEY, JSON.stringify(next));
+    const saveAll = await savedComparisonsStore.list();
+    const saveNext = [comparison, ...saveAll.filter((c) => c.id !== comparison.id)];
+    await AsyncStorage.setItem(STORE_KEY, JSON.stringify(saveNext));
   },
   async remove(id: string): Promise<void> {
-    const all = await savedComparisonsStore.list();
-    const next = all.filter((c) => c.id !== id);
-    await AsyncStorage.setItem(STORE_KEY, JSON.stringify(next));
+    const removeAll = await savedComparisonsStore.list();
+    const removeNext = removeAll.filter((c) => c.id !== id);
+    await AsyncStorage.setItem(STORE_KEY, JSON.stringify(removeNext));
   },
   async get(id: string): Promise<SavedComparison | undefined> {
-    const all = await savedComparisonsStore.list();
-    return all.find((c) => c.id === id);
+    const getAll = await savedComparisonsStore.list();
+    return getAll.find((c) => c.id === id);
   }
 };

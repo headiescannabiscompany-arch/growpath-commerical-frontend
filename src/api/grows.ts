@@ -11,18 +11,18 @@ export type Grow = {
 };
 
 export async function listGrows(facilityId: string): Promise<Grow[]> {
-  const res = await apiRequest(endpoints.grows(facilityId));
+  const listRes = await apiRequest(endpoints.grows(facilityId));
   // Contract: { grows: [...] }
-  return res?.grows ?? [];
+  return listRes?.grows ?? [];
 }
 
 export async function createGrow(facilityId: string, data: any): Promise<Grow> {
-  const res = await apiRequest(endpoints.grows(facilityId), {
+  const createRes = await apiRequest(endpoints.grows(facilityId), {
     method: "POST",
     body: data
   });
   // Contract options: { created: grow } (preferred) or { grow } or raw object
-  return res?.created ?? res?.grow ?? res;
+  return createRes?.created ?? createRes?.grow ?? createRes;
 }
 
 export async function updateGrow(
@@ -30,18 +30,18 @@ export async function updateGrow(
   id: string,
   patch: any
 ): Promise<Grow> {
-  const res = await apiRequest(endpoints.grow(facilityId, id), {
+  const updateRes = await apiRequest(endpoints.grow(facilityId, id), {
     method: "PATCH",
     body: patch
   });
-  return res?.updated ?? res?.grow ?? res;
+  return updateRes?.updated ?? updateRes?.grow ?? updateRes;
 }
 
 export async function deleteGrow(facilityId: string, id: string) {
-  const res = await apiRequest(endpoints.grow(facilityId, id), {
+  const deleteRes = await apiRequest(endpoints.grow(facilityId, id), {
     method: "DELETE"
   });
-  return res?.deleted ?? res?.ok ?? res;
+  return deleteRes?.deleted ?? deleteRes?.ok ?? deleteRes;
 }
 
 // ===== Personal Mode Grows (User-Scoped) =====
@@ -62,15 +62,15 @@ export interface PersonalGrow extends Grow {
  */
 export async function listPersonalGrows(): Promise<PersonalGrow[]> {
   try {
-    const res = await apiRequest("/api/personal/grows");
+    const personalRes = await apiRequest("/api/personal/grows");
     if (
-      typeof res === "object" &&
-      res !== null &&
-      "data" in res &&
-      res.data &&
-      "grows" in res.data
+      typeof personalRes === "object" &&
+      personalRes !== null &&
+      "data" in personalRes &&
+      personalRes.data &&
+      "grows" in personalRes.data
     ) {
-      return res.data.grows as PersonalGrow[];
+      return personalRes.data.grows as PersonalGrow[];
     }
     return [];
   } catch (err) {

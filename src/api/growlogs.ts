@@ -12,17 +12,17 @@ export type Growlog = {
 // CONTRACT: facility-scoped resources must use endpoints.ts and canonical envelopes.
 
 export async function getGrowlogs(facilityId: string): Promise<Growlog[]> {
-  const res = await apiRequest(endpoints.growlogs(facilityId));
+  const listRes = await apiRequest(endpoints.growlogs(facilityId));
   // Contract: { growlogs: [...] }
-  return res?.growlogs ?? [];
+  return listRes?.growlogs ?? [];
 }
 
 export async function createGrowlog(facilityId: string, data: any): Promise<Growlog> {
-  const res = await apiRequest(endpoints.growlogs(facilityId), {
+  const createRes = await apiRequest(endpoints.growlogs(facilityId), {
     method: "POST",
     body: data
   });
-  return res?.created ?? res?.growlog ?? res;
+  return createRes?.created ?? createRes?.growlog ?? createRes;
 }
 
 export async function updateGrowlog(
@@ -30,16 +30,16 @@ export async function updateGrowlog(
   id: string,
   patch: any
 ): Promise<Growlog> {
-  const res = await apiRequest(endpoints.growlog(facilityId, id), {
+  const updateRes = await apiRequest(endpoints.growlog(facilityId, id), {
     method: "PATCH",
     body: patch
   });
-  return res?.updated ?? res?.growlog ?? res;
+  return updateRes?.updated ?? updateRes?.growlog ?? updateRes;
 }
 
 export async function deleteGrowlog(facilityId: string, id: string) {
-  const res = await apiRequest(endpoints.growlog(facilityId, id), {
+  const deleteRes = await apiRequest(endpoints.growlog(facilityId, id), {
     method: "DELETE"
   });
-  return res?.deleted ?? res?.ok ?? res;
+  return deleteRes?.deleted ?? deleteRes?.ok ?? deleteRes;
 }

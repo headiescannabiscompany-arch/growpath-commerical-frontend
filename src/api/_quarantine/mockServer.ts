@@ -159,28 +159,28 @@ export async function mockRequest(
   const body = parseBody(options.body);
 
   if (path === "/api/auth/login" && method === "POST") {
-    const email = normalizeMockEmail(body?.email);
-    const password = body?.password;
-    const profile = MOCK_PROFILES[email];
-    if (!profile || password !== MOCK_PASSWORD) {
+    const loginEmail = normalizeMockEmail(body?.email);
+    const loginPassword = body?.password;
+    const loginProfile = MOCK_PROFILES[loginEmail];
+    if (!loginProfile || loginPassword !== MOCK_PASSWORD) {
       throwMockError(401, "INVALID_CREDENTIALS", "Invalid email or password");
     }
-    const token = makeMockToken(email);
-    return { token, user: profile.user };
+    const loginToken = makeMockToken(loginEmail);
+    return { token: loginToken, user: loginProfile.user };
   }
 
   if (path === "/api/auth/signup" && method === "POST") {
-    const email = normalizeMockEmail(body?.email);
-    const profile = MOCK_PROFILES[email] || MOCK_PROFILES["free@dev.com"];
-    const token = makeMockToken(profile.user.email);
-    return { token, user: profile.user };
+    const signupEmail = normalizeMockEmail(body?.email);
+    const signupProfile = MOCK_PROFILES[signupEmail] || MOCK_PROFILES["free@dev.com"];
+    const signupToken = makeMockToken(signupProfile.user.email);
+    return { token: signupToken, user: signupProfile.user };
   }
 
   if (path === "/api/auth/register" && method === "POST") {
-    const email = normalizeMockEmail(body?.email);
-    const profile = MOCK_PROFILES[email] || MOCK_PROFILES["free@dev.com"];
-    const token = makeMockToken(profile.user.email);
-    return { token };
+    const registerEmail = normalizeMockEmail(body?.email);
+    const registerProfile = MOCK_PROFILES[registerEmail] || MOCK_PROFILES["free@dev.com"];
+    const registerToken = makeMockToken(registerProfile.user.email);
+    return { token: registerToken };
   }
 
   if (path === "/api/auth/save-push-token" && method === "POST") {
@@ -196,40 +196,40 @@ export async function mockRequest(
   }
 
   if (path === "/api/me" && method === "GET") {
-    const headerToken = headers["Authorization"]?.replace("Bearer ", "");
-    const token = authToken || headerToken || null;
-    const profile = getMockProfileFromToken(token);
-    if (!profile) {
+    const meHeaderToken = headers["Authorization"]?.replace("Bearer ", "");
+    const meToken = authToken || meHeaderToken || null;
+    const meProfile = getMockProfileFromToken(meToken);
+    if (!meProfile) {
       throwMockError(401, "UNAUTHORIZED", "Missing or invalid token");
       return { user: null, session: null, entitlements: null } as any;
     }
     return {
-      user: profile.user,
-      session: profile.session,
-      entitlements: profile.entitlements
+      user: meProfile.user,
+      session: meProfile.session,
+      entitlements: meProfile.entitlements
     };
   }
 
   if (path === "/api/entitlements" && method === "GET") {
-    const headerToken = headers["Authorization"]?.replace("Bearer ", "");
-    const token = authToken || headerToken || null;
-    const profile = getMockProfileFromToken(token);
-    if (!profile) {
+    const entitlementsHeaderToken = headers["Authorization"]?.replace("Bearer ", "");
+    const entitlementsToken = authToken || entitlementsHeaderToken || null;
+    const entitlementsProfile = getMockProfileFromToken(entitlementsToken);
+    if (!entitlementsProfile) {
       throwMockError(401, "UNAUTHORIZED", "Missing or invalid token");
       return { entitlements: null } as any;
     }
-    return { entitlements: profile.entitlements };
+    return { entitlements: entitlementsProfile.entitlements };
   }
 
   if (path === "/api/facilities" && method === "GET") {
-    const headerToken = headers["Authorization"]?.replace("Bearer ", "");
-    const token = authToken || headerToken || null;
-    const profile = getMockProfileFromToken(token);
-    if (!profile) {
+    const facilitiesHeaderToken = headers["Authorization"]?.replace("Bearer ", "");
+    const facilitiesToken = authToken || facilitiesHeaderToken || null;
+    const facilitiesProfile = getMockProfileFromToken(facilitiesToken);
+    if (!facilitiesProfile) {
       throwMockError(401, "UNAUTHORIZED", "Missing or invalid token");
       return [] as any;
     }
-    return profile.facilities;
+    return facilitiesProfile.facilities;
   }
 
   if (path === "/api/health" && method === "GET") {

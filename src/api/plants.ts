@@ -12,18 +12,18 @@ export type Plant = {
 // and must return canonical envelopes.
 
 export async function getPlants(facilityId: string): Promise<Plant[]> {
-  const res = await apiRequest(endpoints.plants(facilityId));
+  const listRes = await apiRequest(endpoints.plants(facilityId));
   // Contract: { plants: [...] }
-  return res?.plants ?? [];
+  return listRes?.plants ?? [];
 }
 
 export async function createPlant(facilityId: string, data: any): Promise<Plant> {
-  const res = await apiRequest(endpoints.plants(facilityId), {
+  const createRes = await apiRequest(endpoints.plants(facilityId), {
     method: "POST",
     body: data
   });
   // Contract options: { created } preferred; tolerate { plant } / raw
-  return res?.created ?? res?.plant ?? res;
+  return createRes?.created ?? createRes?.plant ?? createRes;
 }
 
 export async function updatePlant(
@@ -31,16 +31,16 @@ export async function updatePlant(
   id: string,
   patch: any
 ): Promise<Plant> {
-  const res = await apiRequest(endpoints.plant(facilityId, id), {
+  const updateRes = await apiRequest(endpoints.plant(facilityId, id), {
     method: "PATCH",
     body: patch
   });
-  return res?.updated ?? res?.plant ?? res;
+  return updateRes?.updated ?? updateRes?.plant ?? updateRes;
 }
 
 export async function deletePlant(facilityId: string, id: string) {
-  const res = await apiRequest(endpoints.plant(facilityId, id), {
+  const deleteRes = await apiRequest(endpoints.plant(facilityId, id), {
     method: "DELETE"
   });
-  return res?.deleted ?? res?.ok ?? res;
+  return deleteRes?.deleted ?? deleteRes?.ok ?? deleteRes;
 }

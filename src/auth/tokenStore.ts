@@ -15,11 +15,11 @@ function normalizeToken(t: any): string | null {
 export async function getToken(): Promise<string | null> {
   try {
     if (Platform.OS === "web") {
-      const v = await AsyncStorage.getItem(KEY);
-      return normalizeToken(v);
+      const webToken = await AsyncStorage.getItem(KEY);
+      return normalizeToken(webToken);
     }
-    const v = await SecureStore.getItemAsync(KEY);
-    return normalizeToken(v);
+    const nativeToken = await SecureStore.getItemAsync(KEY);
+    return normalizeToken(nativeToken);
   } catch {
     return null;
   }

@@ -6,13 +6,13 @@ export const extractCourses = (response) => {
 };
 
 export const extractHasMore = (response) => {
-  const payload = response?.data ?? response ?? {};
-  if (Array.isArray(payload)) return payload.length > 0;
-  if (Array.isArray(payload.courses)) {
-    if (typeof payload.hasMore === "boolean") return payload.hasMore;
-    return payload.courses.length > 0;
+  const payloadValue = response?.data ?? response ?? {};
+  if (Array.isArray(payloadValue)) return payloadValue.length > 0;
+  if (Array.isArray(payloadValue.courses)) {
+    if (typeof payloadValue.hasMore === "boolean") return payloadValue.hasMore;
+    return payloadValue.courses.length > 0;
   }
-  return payload.hasMore !== false;
+  return payloadValue.hasMore !== false;
 };
 
 if (typeof module !== "undefined") {

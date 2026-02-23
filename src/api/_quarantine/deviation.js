@@ -5,8 +5,8 @@ import { endpoints } from "./endpoints";
 
 export async function listDeviations(facilityId) {
   try {
-    const res = await api.get(endpoints.deviations(facilityId));
-    return { success: true, data: res?.deviations ?? res?.logs ?? res?.data ?? res };
+    const listRes = await api.get(endpoints.deviations(facilityId));
+    return { success: true, data: listRes?.deviations ?? listRes?.logs ?? listRes?.data ?? listRes };
   } catch (e) {
     return { success: false, message: e?.message || "Failed to load deviations" };
   }
@@ -14,8 +14,8 @@ export async function listDeviations(facilityId) {
 
 export async function createDeviation(facilityId, data) {
   try {
-    const res = await api.post(endpoints.deviations(facilityId), data);
-    return { success: true, data: res?.created ?? res?.deviation ?? res };
+    const createRes = await api.post(endpoints.deviations(facilityId), data);
+    return { success: true, data: createRes?.created ?? createRes?.deviation ?? createRes };
   } catch (e) {
     return { success: false, message: e?.message || "Failed to create deviation" };
   }

@@ -16,12 +16,12 @@ export function useRooms() {
 }
 
 export function useRoom(roomId: string) {
-  const facility = useFacility();
-  const facilityId = facility?.facilityId || null;
+  const facilityState = useFacility();
+  const facilityIdValue = facilityState?.facilityId || null;
   return useQuery({
-    queryKey: ["room", facilityId, roomId],
+    queryKey: ["room", facilityIdValue, roomId],
     queryFn: () =>
-      api.get(endpoints.room(requireString(facilityId, "facilityId"), roomId)),
-    enabled: !!facilityId && !!roomId
+      api.get(endpoints.room(requireString(facilityIdValue, "facilityId"), roomId)),
+    enabled: !!facilityIdValue && !!roomId
   });
 }

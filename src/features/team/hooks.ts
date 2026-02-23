@@ -17,7 +17,7 @@ export function useTeam() {
 }
 
 export function useUpdateMember(id: string) {
-  const qc = useQueryClient();
+  const updateQc = useQueryClient();
   const { token } = useAuth();
   const { facilityId } = useFacility();
 
@@ -25,26 +25,26 @@ export function useUpdateMember(id: string) {
     mutationFn: (data: Partial<TeamMember>) =>
       api.patch(`${endpoints.team(facilityId!)}/${id}`, data, token),
     onSuccess: () => {
-      qc.invalidateQueries({ queryKey: ["team", facilityId] });
+      updateQc.invalidateQueries({ queryKey: ["team", facilityId] });
     }
   });
 }
 
 export function useRemoveMember(id: string) {
-  const qc = useQueryClient();
+  const removeQc = useQueryClient();
   const { token } = useAuth();
   const { facilityId } = useFacility();
 
   return useMutation({
     mutationFn: () => api.del(`${endpoints.team(facilityId!)}/${id}`, token),
     onSuccess: () => {
-      qc.invalidateQueries({ queryKey: ["team", facilityId] });
+      removeQc.invalidateQueries({ queryKey: ["team", facilityId] });
     }
   });
 }
 
 export function useInviteMember() {
-  const qc = useQueryClient();
+  const inviteQc = useQueryClient();
   const { token } = useAuth();
   const { facilityId } = useFacility();
 
@@ -52,7 +52,7 @@ export function useInviteMember() {
     mutationFn: (data: { email: string; role: string }) =>
       api.post(`${endpoints.team(facilityId!)}/invite`, data, token),
     onSuccess: () => {
-      qc.invalidateQueries({ queryKey: ["team", facilityId] });
+      inviteQc.invalidateQueries({ queryKey: ["team", facilityId] });
     }
   });
 }

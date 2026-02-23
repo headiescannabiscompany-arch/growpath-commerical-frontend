@@ -28,8 +28,8 @@ function extractToken(payload: any): string | null {
   if (!raw) return null;
 
   const t = raw.startsWith("Bearer ") ? raw.slice("Bearer ".length) : raw;
-  const out = t.trim();
-  return out ? out : null;
+  const tokenValue = t.trim();
+  return tokenValue ? tokenValue : null;
 }
 
 export default function LoginScreen() {
@@ -49,13 +49,13 @@ export default function LoginScreen() {
     setSubmitting(true);
 
     try {
-      const out = await apiRequest<any>("/api/auth/login", {
+      const loginRes = await apiRequest<any>("/api/auth/login", {
         method: "POST",
         body: { email: email.trim(), password },
         auth: false
       });
 
-      const token = extractToken(out);
+      const token = extractToken(loginRes);
       if (!token) throw new Error("Login response missing token.");
 
       await setToken(token);

@@ -73,7 +73,7 @@ export function useCommercialFeed({
   }
 
   async function optimisticAlertStatus(id: string, status: "ack" | "closed") {
-    const prev = queryClient.getQueryData<any[]>(queryKey);
+    const prevAlert = queryClient.getQueryData<any[]>(queryKey);
     queryClient.setQueryData(queryKey, (old: any) => {
       if (!old || !old.pages) return old;
       return {
@@ -90,7 +90,7 @@ export function useCommercialFeed({
       const { patchAlert } = await import("../api/feedApi");
       await patchAlert(id, { status });
     } catch (e) {
-      queryClient.setQueryData(queryKey, prev);
+      queryClient.setQueryData(queryKey, prevAlert);
       throw e;
     }
   }

@@ -12,17 +12,17 @@ export type FacilitySettings = {
 };
 
 export async function getFacilityDetail(facilityId: string): Promise<FacilitySettings> {
-  const res = await apiRequest(`${endpoints.facilities}/${facilityId}`);
-  return res?.facility ?? res?.data ?? res;
+  const detailRes = await apiRequest(`${endpoints.facilities}/${facilityId}`);
+  return detailRes?.facility ?? detailRes?.data ?? detailRes;
 }
 
 export async function updateFacilityDetail(
   facilityId: string,
   payload: any
 ): Promise<FacilitySettings> {
-  const res = await apiRequest(`${endpoints.facilities}/${facilityId}`, {
+  const updateRes = await apiRequest(`${endpoints.facilities}/${facilityId}`, {
     method: "PATCH",
     body: payload
   });
-  return res?.updated ?? res?.facility ?? res;
+  return updateRes?.updated ?? updateRes?.facility ?? updateRes;
 }

@@ -13,9 +13,9 @@ export type InventoryItem = {
 // CONTRACT: facility-scoped resources must use endpoints.ts and canonical envelopes.
 
 export async function getInventory(facilityId: string): Promise<InventoryItem[]> {
-  const res = await apiRequest(endpoints.inventory(facilityId));
+  const listRes = await apiRequest(endpoints.inventory(facilityId));
   // Contract: { inventory: [...] }
-  const items = res?.inventory ?? [];
+  const items = listRes?.inventory ?? [];
   return items.map((i: any) => ({
     ...i,
     name: i.name ?? "Unnamed Item",
@@ -27,11 +27,11 @@ export async function createInventoryItem(
   facilityId: string,
   data: any
 ): Promise<InventoryItem> {
-  const res = await apiRequest(endpoints.inventory(facilityId), {
+  const createRes = await apiRequest(endpoints.inventory(facilityId), {
     method: "POST",
     body: data
   });
-  return res?.created ?? res?.item ?? res;
+  return createRes?.created ?? createRes?.item ?? createRes;
 }
 
 export async function updateInventoryItem(
@@ -39,16 +39,16 @@ export async function updateInventoryItem(
   id: string,
   patch: any
 ): Promise<InventoryItem> {
-  const res = await apiRequest(endpoints.inventoryItem(facilityId, id), {
+  const updateRes = await apiRequest(endpoints.inventoryItem(facilityId, id), {
     method: "PATCH",
     body: patch
   });
-  return res?.updated ?? res?.item ?? res;
+  return updateRes?.updated ?? updateRes?.item ?? updateRes;
 }
 
 export async function deleteInventoryItem(facilityId: string, id: string) {
-  const res = await apiRequest(endpoints.inventoryItem(facilityId, id), {
+  const deleteRes = await apiRequest(endpoints.inventoryItem(facilityId, id), {
     method: "DELETE"
   });
-  return res?.deleted ?? res?.ok ?? res;
+  return deleteRes?.deleted ?? deleteRes?.ok ?? deleteRes;
 }

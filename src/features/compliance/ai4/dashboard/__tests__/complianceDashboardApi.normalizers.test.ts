@@ -101,17 +101,17 @@ describe("complianceDashboardApi normalizers", () => {
   });
 
   test("Envelope unwrapping: raw, {data}, {ok:true,data} normalize identically (sops)", () => {
-    const payload = baseSopsPayload();
-    const facilityId = "FAC_OVERRIDE";
-    const rawA = payload;
-    const rawB = { data: payload };
-    const rawC = { ok: true, data: payload };
-    const normA = normalizeSopsRecommended(rawA, facilityId);
-    const normB = normalizeSopsRecommended(rawB, facilityId);
-    const normC = normalizeSopsRecommended(rawC, facilityId);
-    expect(normA).toEqual(normB);
-    expect(normA).toEqual(normC);
-    expect(Array.isArray(normA.recommendedSops)).toBe(true);
+    const sopsPayload = baseSopsPayload();
+    const sopsFacilityId = "FAC_OVERRIDE";
+    const sopsRawA = sopsPayload;
+    const sopsRawB = { data: sopsPayload };
+    const sopsRawC = { ok: true, data: sopsPayload };
+    const sopsNormA = normalizeSopsRecommended(sopsRawA, sopsFacilityId);
+    const sopsNormB = normalizeSopsRecommended(sopsRawB, sopsFacilityId);
+    const sopsNormC = normalizeSopsRecommended(sopsRawC, sopsFacilityId);
+    expect(sopsNormA).toEqual(sopsNormB);
+    expect(sopsNormA).toEqual(sopsNormC);
+    expect(Array.isArray(sopsNormA.recommendedSops)).toBe(true);
   });
 
   test("normalizeSopsRecommended returns empty array for missing input", () => {

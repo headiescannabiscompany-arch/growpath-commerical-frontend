@@ -14,22 +14,22 @@ export type VerificationRecord = {
 export async function getVerifications(
   facilityId: string
 ): Promise<VerificationRecord[]> {
-  const res = await apiRequest(endpoints.verification(facilityId));
-  return res?.records ?? res?.verifications ?? res?.data ?? res ?? [];
+  const listRes = await apiRequest(endpoints.verification(facilityId));
+  return listRes?.records ?? listRes?.verifications ?? listRes?.data ?? listRes ?? [];
 }
 
 export async function approveVerification(
   facilityId: string,
   recordId: string
 ): Promise<VerificationRecord> {
-  const res = await apiRequest(endpoints.verificationRecord(facilityId, recordId), {
+  const approveRes = await apiRequest(endpoints.verificationRecord(facilityId, recordId), {
     method: "POST",
     body: {
       verified: true,
       status: "approved"
     }
   });
-  return res?.updated ?? res?.record ?? res;
+  return approveRes?.updated ?? approveRes?.record ?? approveRes;
 }
 
 export async function rejectVerification(
@@ -37,7 +37,7 @@ export async function rejectVerification(
   recordId: string,
   reason?: string
 ): Promise<VerificationRecord> {
-  const res = await apiRequest(endpoints.verificationReject(facilityId, recordId), {
+  const rejectRes = await apiRequest(endpoints.verificationReject(facilityId, recordId), {
     method: "PUT",
     body: {
       verified: false,
@@ -45,5 +45,5 @@ export async function rejectVerification(
       reason
     }
   });
-  return res?.updated ?? res?.record ?? res;
+  return rejectRes?.updated ?? rejectRes?.record ?? rejectRes;
 }

@@ -13,9 +13,9 @@ export function useEquipmentTools(facilityId: string | null) {
     queryKey: ["equipment", facilityId],
     queryFn: async () => {
       if (!facilityId) return [];
-      const res = await listEquipment(facilityId);
-      if (res?.success) return res.data ?? [];
-      throw new Error(res?.message || "Failed to load equipment");
+      const listRes = await listEquipment(facilityId);
+      if (listRes?.success) return listRes.data ?? [];
+      throw new Error(listRes?.message || "Failed to load equipment");
     },
     enabled: !!facilityId,
     refetchOnWindowFocus: false
@@ -24,9 +24,9 @@ export function useEquipmentTools(facilityId: string | null) {
   const createMutation = useMutation({
     mutationFn: async (data: any) => {
       if (!facilityId) throw new Error("No facility selected");
-      const res = await createEquipment(facilityId, data);
-      if (res?.success) return res.data;
-      throw new Error(res?.message || "Failed to add equipment");
+      const createRes = await createEquipment(facilityId, data);
+      if (createRes?.success) return createRes.data;
+      throw new Error(createRes?.message || "Failed to add equipment");
     },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ["equipment", facilityId] });
@@ -36,9 +36,9 @@ export function useEquipmentTools(facilityId: string | null) {
   const updateMutation = useMutation({
     mutationFn: async (args: { id: string; patch: any }) => {
       if (!facilityId) throw new Error("No facility selected");
-      const res = await updateEquipment(facilityId, args.id, args.patch);
-      if (res?.success) return res.data;
-      throw new Error(res?.message || "Failed to update equipment");
+      const updateRes = await updateEquipment(facilityId, args.id, args.patch);
+      if (updateRes?.success) return updateRes.data;
+      throw new Error(updateRes?.message || "Failed to update equipment");
     },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ["equipment", facilityId] });
@@ -48,9 +48,9 @@ export function useEquipmentTools(facilityId: string | null) {
   const deleteMutation = useMutation({
     mutationFn: async (id: string) => {
       if (!facilityId) throw new Error("No facility selected");
-      const res = await deleteEquipment(facilityId, id);
-      if (res?.success) return res.data;
-      throw new Error(res?.message || "Failed to delete equipment");
+      const deleteRes = await deleteEquipment(facilityId, id);
+      if (deleteRes?.success) return deleteRes.data;
+      throw new Error(deleteRes?.message || "Failed to delete equipment");
     },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ["equipment", facilityId] });

@@ -28,8 +28,8 @@ function extractToken(payload: any): string | null {
   if (!raw) return null;
 
   const t = raw.startsWith("Bearer ") ? raw.slice("Bearer ".length) : raw;
-  const out = t.trim();
-  return out ? out : null;
+  const tokenValue = t.trim();
+  return tokenValue ? tokenValue : null;
 }
 
 export default function RegisterScreen() {
@@ -56,13 +56,13 @@ export default function RegisterScreen() {
     setSubmitting(true);
 
     try {
-      const out = await apiRequest<any>("/api/auth/register", {
+      const registerRes = await apiRequest<any>("/api/auth/register", {
         method: "POST",
         body: { name: name.trim(), email: email.trim(), password },
         auth: false
       });
 
-      const token = extractToken(out);
+      const token = extractToken(registerRes);
       if (!token) throw new Error("Register response missing token.");
 
       await setToken(token);

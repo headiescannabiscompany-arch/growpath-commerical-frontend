@@ -17,15 +17,15 @@ function unwrapOrThrow(res: any, fallbackMessage: string) {
 export function useDebugApi() {
   const ping = useMutation({
     mutationFn: async () => {
-      const res = await pingHealth();
-      return unwrapOrThrow(res, "Could not reach server.");
+      const pingRes = await pingHealth();
+      return unwrapOrThrow(pingRes, "Could not reach server.");
     }
   });
 
   const info = useMutation({
     mutationFn: async () => {
-      const res = await getDebugInfo();
-      return unwrapOrThrow(res, "Could not load debug info.");
+      const infoRes = await getDebugInfo();
+      return unwrapOrThrow(infoRes, "Could not load debug info.");
     }
   });
 

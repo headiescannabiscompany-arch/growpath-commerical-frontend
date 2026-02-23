@@ -27,16 +27,16 @@ export function useLiveSession() {
 
   const join = useMutation({
     mutationFn: async (input: { code: string; displayName: string }) => {
-      const res = await joinLiveSession(input);
-      const data = unwrapOrThrow(res, "Could not join session.");
-      return data?.session || data;
+      const joinRes = await joinLiveSession(input);
+      const joinData = unwrapOrThrow(joinRes, "Could not join session.");
+      return joinData?.session || joinData;
     }
   });
 
   const end = useMutation({
     mutationFn: async (input: { sessionId: string }) => {
-      const res = await endLiveSession(input);
-      return unwrapOrThrow(res, "Could not end session.");
+      const endRes = await endLiveSession(input);
+      return unwrapOrThrow(endRes, "Could not end session.");
     }
   });
 

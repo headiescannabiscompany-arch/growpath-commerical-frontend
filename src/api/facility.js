@@ -3,12 +3,12 @@ import { apiRequest } from "./apiRequest";
 // List rooms for a facility
 export const listRooms = async (facilityId) => {
   try {
-    const response = await apiRequest("/rooms", {
+    const listRoomsRes = await apiRequest("/rooms", {
       params: { facility: facilityId }
     });
     return {
       success: true,
-      data: response?.rooms ?? response?.data ?? response
+      data: listRoomsRes?.rooms ?? listRoomsRes?.data ?? listRoomsRes
     };
   } catch (error) {
     return {
@@ -21,10 +21,10 @@ export const listRooms = async (facilityId) => {
 // Get room detail
 export const getRoom = async (roomId) => {
   try {
-    const response = await apiRequest(`/rooms/${roomId}`);
+    const getRoomRes = await apiRequest(`/rooms/${roomId}`);
     return {
       success: true,
-      data: response?.room ?? response?.data ?? response
+      data: getRoomRes?.room ?? getRoomRes?.data ?? getRoomRes
     };
   } catch (error) {
     return {
@@ -37,7 +37,7 @@ export const getRoom = async (roomId) => {
 // Create a new room
 export const createRoom = async (facilityId, roomData) => {
   try {
-    const response = await apiRequest("/rooms", {
+    const createRoomRes = await apiRequest("/rooms", {
       method: "POST",
       body: {
         facilityId,
@@ -46,7 +46,7 @@ export const createRoom = async (facilityId, roomData) => {
     });
     return {
       success: true,
-      data: response?.created ?? response?.room ?? response
+      data: createRoomRes?.created ?? createRoomRes?.room ?? createRoomRes
     };
   } catch (error) {
     return {
@@ -59,13 +59,13 @@ export const createRoom = async (facilityId, roomData) => {
 // Update room
 export const updateRoom = async (roomId, roomData) => {
   try {
-    const response = await apiRequest(`/rooms/${roomId}`, {
+    const updateRoomRes = await apiRequest(`/rooms/${roomId}`, {
       method: "PATCH",
       body: roomData
     });
     return {
       success: true,
-      data: response?.updated ?? response?.room ?? response
+      data: updateRoomRes?.updated ?? updateRoomRes?.room ?? updateRoomRes
     };
   } catch (error) {
     return {
@@ -78,10 +78,10 @@ export const updateRoom = async (roomId, roomData) => {
 // Delete room (soft delete)
 export const deleteRoom = async (roomId) => {
   try {
-    const response = await apiRequest(`/rooms/${roomId}`, { method: "DELETE" });
+    const deleteRoomRes = await apiRequest(`/rooms/${roomId}`, { method: "DELETE" });
     return {
       success: true,
-      data: response?.deleted ?? response?.ok ?? response
+      data: deleteRoomRes?.deleted ?? deleteRoomRes?.ok ?? deleteRoomRes
     };
   } catch (error) {
     return {
@@ -94,10 +94,10 @@ export const deleteRoom = async (roomId) => {
 // Get facility details
 export const getFacilityDetail = async (facilityId) => {
   try {
-    const response = await apiRequest(`/facilities/${facilityId}`);
+    const facilityDetailRes = await apiRequest(`/facilities/${facilityId}`);
     return {
       success: true,
-      data: response?.facility ?? response?.data ?? response
+      data: facilityDetailRes?.facility ?? facilityDetailRes?.data ?? facilityDetailRes
     };
   } catch (error) {
     return {
@@ -110,10 +110,10 @@ export const getFacilityDetail = async (facilityId) => {
 // Facility Plan billing: get status
 export const getFacilityBillingStatus = async (facilityId) => {
   try {
-    const response = await apiRequest("/facility-billing/status", {
+    const billingStatusRes = await apiRequest("/facility-billing/status", {
       params: { facility: facilityId }
     });
-    return { success: true, data: response?.data ?? response };
+    return { success: true, data: billingStatusRes?.data ?? billingStatusRes };
   } catch (error) {
     return {
       success: false,
@@ -125,11 +125,11 @@ export const getFacilityBillingStatus = async (facilityId) => {
 // Facility Plan billing: start checkout session
 export const startFacilityCheckout = async (facilityId) => {
   try {
-    const response = await apiRequest("/facility-billing/checkout-session", {
+    const checkoutRes = await apiRequest("/facility-billing/checkout-session", {
       method: "POST",
       body: { facilityId }
     });
-    return { success: true, data: response?.data ?? response };
+    return { success: true, data: checkoutRes?.data ?? checkoutRes };
   } catch (error) {
     return {
       success: false,
@@ -141,11 +141,11 @@ export const startFacilityCheckout = async (facilityId) => {
 // Facility Plan billing: cancel at period end
 export const cancelFacilityPlan = async (facilityId) => {
   try {
-    const response = await apiRequest("/facility-billing/cancel", {
+    const cancelRes = await apiRequest("/facility-billing/cancel", {
       method: "POST",
       body: { facilityId }
     });
-    return { success: true, data: response?.data ?? response };
+    return { success: true, data: cancelRes?.data ?? cancelRes };
   } catch (error) {
     return {
       success: false,
@@ -157,8 +157,8 @@ export const cancelFacilityPlan = async (facilityId) => {
 // Metrc credentials management
 export const getMetrcCredentials = async (facilityId) => {
   try {
-    const response = await apiRequest(`/metrc/credentials/${facilityId}`);
-    return { success: true, data: response?.data ?? response };
+    const metrcCredentialsRes = await apiRequest(`/metrc/credentials/${facilityId}`);
+    return { success: true, data: metrcCredentialsRes?.data ?? metrcCredentialsRes };
   } catch (error) {
     return {
       success: false,
@@ -169,11 +169,11 @@ export const getMetrcCredentials = async (facilityId) => {
 
 export const saveMetrcCredentials = async (facilityId, vendorKey, userKey) => {
   try {
-    const response = await apiRequest(`/metrc/credentials/${facilityId}`, {
+    const saveMetrcRes = await apiRequest(`/metrc/credentials/${facilityId}`, {
       method: "POST",
       body: { vendorKey, userKey }
     });
-    return { success: true, data: response?.data ?? response };
+    return { success: true, data: saveMetrcRes?.data ?? saveMetrcRes };
   } catch (error) {
     return {
       success: false,
@@ -196,8 +196,8 @@ export const deleteMetrcCredentials = async (facilityId) => {
 
 export const verifyMetrcCredentials = async (facilityId) => {
   try {
-    const response = await apiRequest(`/metrc/credentials/${facilityId}/verify`);
-    return { success: true, data: response?.data ?? response };
+    const verifyMetrcRes = await apiRequest(`/metrc/credentials/${facilityId}/verify`);
+    return { success: true, data: verifyMetrcRes?.data ?? verifyMetrcRes };
   } catch (error) {
     return {
       success: false,
@@ -208,10 +208,10 @@ export const verifyMetrcCredentials = async (facilityId) => {
 
 export const triggerMetrcSync = async (facilityId) => {
   try {
-    const response = await apiRequest(`/metrc/sync/${facilityId}`, {
+    const triggerSyncRes = await apiRequest(`/metrc/sync/${facilityId}`, {
       method: "POST"
     });
-    return { success: true, data: response?.data ?? response };
+    return { success: true, data: triggerSyncRes?.data ?? triggerSyncRes };
   } catch (error) {
     return {
       success: false,
@@ -222,8 +222,8 @@ export const triggerMetrcSync = async (facilityId) => {
 
 export const getMetrcSyncStatus = async (facilityId) => {
   try {
-    const response = await apiRequest(`/metrc/sync/${facilityId}/status`);
-    return { success: true, data: response?.data ?? response };
+    const syncStatusRes = await apiRequest(`/metrc/sync/${facilityId}/status`);
+    return { success: true, data: syncStatusRes?.data ?? syncStatusRes };
   } catch (error) {
     return {
       success: false,
@@ -235,13 +235,13 @@ export const getMetrcSyncStatus = async (facilityId) => {
 // Update facility (including trackingMode)
 export const updateFacility = async (facilityId, updates) => {
   try {
-    const response = await apiRequest(`/facilities/${facilityId}`, {
+    const updateFacilityRes = await apiRequest(`/facilities/${facilityId}`, {
       method: "PATCH",
       body: updates
     });
     return {
       success: true,
-      data: response?.updated ?? response?.facility ?? response
+      data: updateFacilityRes?.updated ?? updateFacilityRes?.facility ?? updateFacilityRes
     };
   } catch (error) {
     return {
@@ -254,12 +254,12 @@ export const updateFacility = async (facilityId, updates) => {
 // BatchCycle endpoints
 export const listBatchCycles = async (facilityId, roomId) => {
   try {
-    const response = await apiRequest("/batch-cycles", {
+    const listBatchCyclesRes = await apiRequest("/batch-cycles", {
       params: { facility: facilityId, room: roomId }
     });
     return {
       success: true,
-      data: response?.data ?? response
+      data: listBatchCyclesRes?.data ?? listBatchCyclesRes
     };
   } catch (error) {
     return {
@@ -271,13 +271,13 @@ export const listBatchCycles = async (facilityId, roomId) => {
 
 export const createBatchCycle = async (facilityId, roomId, batchData) => {
   try {
-    const response = await apiRequest("/batch-cycles", {
+    const createBatchCycleRes = await apiRequest("/batch-cycles", {
       method: "POST",
       body: { facilityId, roomId, ...batchData }
     });
     return {
       success: true,
-      data: response?.created ?? response?.data ?? response
+      data: createBatchCycleRes?.created ?? createBatchCycleRes?.data ?? createBatchCycleRes
     };
   } catch (error) {
     return {
@@ -289,10 +289,10 @@ export const createBatchCycle = async (facilityId, roomId, batchData) => {
 
 export const getBatchCycle = async (batchId) => {
   try {
-    const response = await apiRequest(`/batch-cycles/${batchId}`);
+    const getBatchCycleRes = await apiRequest(`/batch-cycles/${batchId}`);
     return {
       success: true,
-      data: response?.data ?? response
+      data: getBatchCycleRes?.data ?? getBatchCycleRes
     };
   } catch (error) {
     return {
@@ -304,13 +304,13 @@ export const getBatchCycle = async (batchId) => {
 
 export const updateBatchCycle = async (batchId, updates) => {
   try {
-    const response = await apiRequest(`/batch-cycles/${batchId}`, {
+    const updateBatchCycleRes = await apiRequest(`/batch-cycles/${batchId}`, {
       method: "PATCH",
       body: updates
     });
     return {
       success: true,
-      data: response?.updated ?? response?.data ?? response
+      data: updateBatchCycleRes?.updated ?? updateBatchCycleRes?.data ?? updateBatchCycleRes
     };
   } catch (error) {
     return {
@@ -322,12 +322,12 @@ export const updateBatchCycle = async (batchId, updates) => {
 
 export const deleteBatchCycle = async (batchId) => {
   try {
-    const response = await apiRequest(`/batch-cycles/${batchId}`, {
+    const deleteBatchCycleRes = await apiRequest(`/batch-cycles/${batchId}`, {
       method: "DELETE"
     });
     return {
       success: true,
-      data: response?.deleted ?? response?.ok ?? response
+      data: deleteBatchCycleRes?.deleted ?? deleteBatchCycleRes?.ok ?? deleteBatchCycleRes
     };
   } catch (error) {
     return {
@@ -340,10 +340,10 @@ export const deleteBatchCycle = async (batchId) => {
 // Zone endpoints (for greenhouse operations)
 export const listZones = async (roomId) => {
   try {
-    const response = await apiRequest("/zones", { params: { room: roomId } });
+    const listZonesRes = await apiRequest("/zones", { params: { room: roomId } });
     return {
       success: true,
-      data: response?.data ?? response
+      data: listZonesRes?.data ?? listZonesRes
     };
   } catch (error) {
     return {
@@ -355,13 +355,13 @@ export const listZones = async (roomId) => {
 
 export const createZone = async (roomId, zoneData) => {
   try {
-    const response = await apiRequest("/zones", {
+    const createZoneRes = await apiRequest("/zones", {
       method: "POST",
       body: { roomId, ...zoneData }
     });
     return {
       success: true,
-      data: response?.created ?? response?.data ?? response
+      data: createZoneRes?.created ?? createZoneRes?.data ?? createZoneRes
     };
   } catch (error) {
     return {
@@ -373,13 +373,13 @@ export const createZone = async (roomId, zoneData) => {
 
 export const updateZone = async (zoneId, updates) => {
   try {
-    const response = await apiRequest(`/zones/${zoneId}`, {
+    const updateZoneRes = await apiRequest(`/zones/${zoneId}`, {
       method: "PATCH",
       body: updates
     });
     return {
       success: true,
-      data: response?.updated ?? response?.data ?? response
+      data: updateZoneRes?.updated ?? updateZoneRes?.data ?? updateZoneRes
     };
   } catch (error) {
     return {
@@ -391,12 +391,12 @@ export const updateZone = async (zoneId, updates) => {
 
 export const deleteZone = async (zoneId) => {
   try {
-    const response = await apiRequest(`/zones/${zoneId}`, {
+    const deleteZoneRes = await apiRequest(`/zones/${zoneId}`, {
       method: "DELETE"
     });
     return {
       success: true,
-      data: response?.deleted ?? response?.ok ?? response
+      data: deleteZoneRes?.deleted ?? deleteZoneRes?.ok ?? deleteZoneRes
     };
   } catch (error) {
     return {

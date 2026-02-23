@@ -42,36 +42,36 @@ export function useCreatePlant() {
 }
 
 export function useUpdatePlant(id?: string) {
-  const qc = useQueryClient();
+  const updateQc = useQueryClient();
   const { token } = useAuth();
   const { facilityId } = useFacility();
 
   return useMutation({
     mutationFn: (data: Partial<Plant> & { id?: string }) => {
-      const plantId = id ?? data.id;
-      if (!plantId) throw new Error("Plant id required");
-      return api.patch(endpoints.plant(facilityId!, plantId), data, token);
+      const plantIdValue = id ?? data.id;
+      if (!plantIdValue) throw new Error("Plant id required");
+      return api.patch(endpoints.plant(facilityId!, plantIdValue), data, token);
     },
     onSuccess: (_data, variables) => {
-      qc.invalidateQueries({ queryKey: ["plants", facilityId] });
-      const plantId = id ?? (variables as any)?.id;
-      if (plantId) {
-        qc.invalidateQueries({ queryKey: ["plant", facilityId, plantId] });
+      updateQc.invalidateQueries({ queryKey: ["plants", facilityId] });
+      const resolvedPlantId = id ?? (variables as any)?.id;
+      if (resolvedPlantId) {
+        updateQc.invalidateQueries({ queryKey: ["plant", facilityId, resolvedPlantId] });
       }
     }
   });
 }
 
 export function useDeletePlant(id: string) {
-  const qc = useQueryClient();
+  const deleteQc = useQueryClient();
   const { token } = useAuth();
   const { facilityId } = useFacility();
 
   return useMutation({
     mutationFn: () => api.del(endpoints.plant(facilityId!, id), token),
     onSuccess: () => {
-      qc.invalidateQueries({ queryKey: ["plants", facilityId] });
-      qc.invalidateQueries({ queryKey: ["plant", facilityId, id] });
+      deleteQc.invalidateQueries({ queryKey: ["plants", facilityId] });
+      deleteQc.invalidateQueries({ queryKey: ["plant", facilityId, id] });
     }
   });
 }
