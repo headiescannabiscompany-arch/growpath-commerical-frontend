@@ -1,5 +1,4 @@
 
-import { ScreenBoundary } from "@/components/ScreenBoundary";
 import { InlineError } from "@/components/InlineError";
 import { useFacility } from "@/state/useFacility";
 import { apiRequest } from "@/api/apiRequest";
@@ -16,7 +15,6 @@ import {
   View
 } from "react-native";
 
-import { ScreenBoundary } from "@/components/ScreenBoundary";
 import { InlineError } from "@/components/InlineError";
 import { useFacility } from "@/state/useFacility";
 import { apiRequest } from "@/api/apiRequest";
