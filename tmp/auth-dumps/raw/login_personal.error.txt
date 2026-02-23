@@ -1,1 +1,1 @@
-﻿The remote server returned an error: (401) Unauthorized.
+﻿Unable to connect to the remote server
