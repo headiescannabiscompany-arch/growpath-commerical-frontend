@@ -14,6 +14,7 @@ import { InlineError } from "@/components/InlineError";
 import { apiRequest } from "@/api/apiRequest";
 import { endpoints } from "@/api/endpoints";
 import { useApiErrorHandler } from "@/hooks/useApiErrorHandler";
+import { useEntitlements } from "@/entitlements";
 
 type AnyRec = Record<string, any>;
 
@@ -40,8 +41,15 @@ function renderKV(obj: AnyRec | null, key: string) {
 
 export default function CommercialInventoryItemDetailRoute() {
   const router = useRouter();
+  const ent = useEntitlements();
   const params = useLocalSearchParams();
   const id = safeId(params as any);
+
+  if (!ent?.ready) return null;
+  if (ent.mode !== "commercial") {
+    router.replace("/home" as any);
+    return null;
+  }
 
   const apiErr: any = useApiErrorHandler();
   const resolved = useMemo(() => {

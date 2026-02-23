@@ -13,6 +13,8 @@ import { useRouter } from "expo-router";
 
 import { ScreenBoundary } from "@/components/ScreenBoundary";
 import { InlineError } from "@/components/InlineError";
+import { useEntitlements } from "@/entitlements";
+import { can } from "@/facility/roleGates";
 import { useFacility } from "@/state/useFacility";
 import { apiRequest } from "@/api/apiRequest";
 import { endpoints } from "@/api/endpoints";
@@ -43,12 +45,15 @@ function pickSubtitle(x: AnyRec): string {
   const parts = [role ? `Role: ${String(role)}` : "", email ? String(email) : ""].filter(
     Boolean
   );
-  return parts.join(" • ");
+  return parts.join(" - ");
 }
 
 export default function FacilityTeamTab() {
   const router = useRouter();
   const { selectedId: facilityId } = useFacility();
+  const ent = useEntitlements();
+  const facilityRole = (ent.facilityRole as any) ?? null;
+  const canInvite = can(facilityRole, "TEAM_INVITE");
 
   const apiErr: any = useApiErrorHandler();
   const error = apiErr?.error ?? apiErr?.[0] ?? null;
@@ -93,6 +98,7 @@ export default function FacilityTeamTab() {
   );
 
   const sendInvite = useCallback(async () => {
+    if (!canInvite) return;
     if (!facilityId) return;
 
     const email = inviteEmail.trim();
@@ -112,7 +118,7 @@ export default function FacilityTeamTab() {
     } finally {
       setInviting(false);
     }
-  }, [facilityId, inviteEmail, clearError, handleApiError, load]);
+  }, [canInvite, facilityId, inviteEmail, clearError, handleApiError, load]);
 
   useEffect(() => {
     if (!facilityId) {
@@ -147,25 +153,31 @@ export default function FacilityTeamTab() {
             autoCapitalize="none"
             keyboardType="email-address"
             style={styles.input}
+            editable={canInvite}
           />
 
           <Pressable
             onPress={sendInvite}
-            disabled={inviting || !inviteEmail.trim()}
+            disabled={inviting || !inviteEmail.trim() || !canInvite}
             style={({ pressed }) => [
               styles.btn,
-              (inviting || !inviteEmail.trim()) && styles.btnDisabled,
+              (inviting || !inviteEmail.trim() || !canInvite) && styles.btnDisabled,
               pressed && styles.pressed
             ]}
           >
-            <Text style={styles.btnText}>{inviting ? "Sending…" : "Send invite"}</Text>
+            <Text style={styles.btnText}>{inviting ? "Sending..." : "Send invite"}</Text>
           </Pressable>
+          {!canInvite ? (
+            <Text style={styles.muted}>
+              Only facility owners and managers can invite team members.
+            </Text>
+          ) : null}
         </View>
 
         {loading ? (
           <View style={styles.loading}>
             <ActivityIndicator />
-            <Text style={styles.muted}>Loading team…</Text>
+            <Text style={styles.muted}>Loading team...</Text>
           </View>
         ) : null}
 
@@ -266,3 +278,4 @@ const styles = StyleSheet.create({
   empty: { paddingVertical: 26, alignItems: "center" },
   emptyTitle: { fontSize: 16, fontWeight: "900", marginBottom: 6 }
 });
+

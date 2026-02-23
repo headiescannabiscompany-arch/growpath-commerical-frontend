@@ -9,6 +9,11 @@ import React, {
 } from "react";
 import { useAuth } from "../auth/AuthContext";
 import { normalizeCapabilities, resolveCapabilityKey } from "../capabilities/resolve";
+import {
+  getPreferredMode as loadPreferredMode,
+  setPreferredMode as persistPreferredMode,
+  type PreferredMode
+} from "../auth/modeStore";
 
 type EntitlementsMode = "personal" | "commercial" | "facility";
 
@@ -23,6 +28,8 @@ export type EntitlementsState = {
   limits: Record<string, any>;
   can: ((capability: string | string[]) => boolean) & Record<string, boolean>;
   refresh?: (plan?: string, capabilities?: Record<string, any>) => void;
+  preferredMode?: PreferredMode | null;
+  setPreferredMode?: (mode: PreferredMode | null) => void;
 };
 
 const DEFAULT_STATE: Omit<EntitlementsState, "can"> = {
@@ -69,14 +76,43 @@ function pickMode(ctxMode: any): EntitlementsMode {
   return "personal";
 }
 
+function hasFacilityAccess(ctx: any, plan: any) {
+  return !!(ctx?.facilityId || ctx?.facilityRole || plan === "facility");
+}
+
+function hasCommercialAccess(ctx: any, plan: any) {
+  return plan === "commercial" || plan === "facility" || ctx?.mode === "commercial";
+}
+
+function resolveMode(
+  ctx: any,
+  plan: any,
+  preferredMode: PreferredMode | null
+): EntitlementsMode {
+  const baseMode = pickMode(ctx?.mode);
+  const canFacility = hasFacilityAccess(ctx, plan);
+  const canCommercial = hasCommercialAccess(ctx, plan);
+
+  if (preferredMode === "facility" && canFacility) return "facility";
+  if (preferredMode === "commercial" && canCommercial) return "commercial";
+  if (preferredMode === "personal") return "personal";
+
+  if (baseMode === "facility" && !canFacility && canCommercial) return "commercial";
+  if (baseMode === "commercial" && !canCommercial && canFacility) return "facility";
+  if (!canFacility && !canCommercial) return "personal";
+
+  return baseMode;
+}
+
 // Pure "apply" function (no side effects other than returning next state)
 function applyServerCtx(
   prev: Omit<EntitlementsState, "can">,
   ctx: any,
-  userPlan: any
+  userPlan: any,
+  preferredMode: PreferredMode | null
 ): Omit<EntitlementsState, "can"> {
-  const mode = pickMode(ctx?.mode);
   const plan = userPlan ?? ctx?.plan ?? prev.plan ?? "free";
+  const mode = resolveMode(ctx, plan, preferredMode);
   const facilityId = ctx?.facilityId ?? null;
   const facilityRole = ctx?.facilityRole ?? null;
   const { normalized, unknownKeys } = normalizeCapabilities(ctx?.capabilities);
@@ -99,6 +135,7 @@ export function EntitlementsProvider({ children }: { children: React.ReactNode }
   const { token, isHydrating, logout } = auth;
 
   const [state, setState] = useState<Omit<EntitlementsState, "can">>(DEFAULT_STATE);
+  const [preferredMode, setPreferredModeState] = useState<PreferredMode | null>(null);
 
   // Guard: prevent re-applying the same server ctx over and over
   const lastAppliedRef = useRef<string>("");
@@ -131,6 +168,7 @@ export function EntitlementsProvider({ children }: { children: React.ReactNode }
         capabilities: {},
         limits: {}
       });
+      setPreferredModeState(null);
       lastAppliedRef.current = "NO_TOKEN";
       lastFetchedTokenRef.current = null;
       return () => {};
@@ -151,14 +189,26 @@ export function EntitlementsProvider({ children }: { children: React.ReactNode }
     // Only apply if changed
     if (fingerprint !== lastAppliedRef.current) {
       lastAppliedRef.current = fingerprint;
-      setState((prev) => applyServerCtx(prev, ctx, userPlan));
+      setState((prev) => applyServerCtx(prev, ctx, userPlan, preferredMode));
     } else {
       // Ensure ready is true even if ctx unchanged
       setState((prev) => (prev.ready ? prev : { ...prev, ready: true }));
     }
 
     return () => {};
-  }, [isHydrating, token, auth.ctx, auth.user]);
+  }, [isHydrating, token, auth.ctx, auth.user, preferredMode]);
+
+  useEffect(() => {
+    let alive = true;
+    if (!token) return () => {};
+    (async () => {
+      const pref = await loadPreferredMode();
+      if (alive) setPreferredModeState(pref);
+    })();
+    return () => {
+      alive = false;
+    };
+  }, [token]);
   const can = useMemo(() => {
     const fn = (capability: string | string[]) => {
       if (!state.ready) return false;
@@ -189,7 +239,15 @@ export function EntitlementsProvider({ children }: { children: React.ReactNode }
     }));
   }, []);
 
-  const value = useMemo(() => ({ ...state, can, refresh }), [state, can, refresh]);
+  const setPreferredMode = useCallback(async (mode: PreferredMode | null) => {
+    setPreferredModeState(mode);
+    await persistPreferredMode(mode);
+  }, []);
+
+  const value = useMemo(
+    () => ({ ...state, can, refresh, preferredMode, setPreferredMode }),
+    [state, can, refresh, preferredMode, setPreferredMode]
+  );
 
   return (
     <EntitlementsContext.Provider value={value}>{children}</EntitlementsContext.Provider>

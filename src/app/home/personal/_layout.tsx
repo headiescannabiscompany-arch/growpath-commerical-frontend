@@ -23,8 +23,6 @@ export default function PersonalLayout() {
       <Stack.Screen name="more/forum" options={{ title: "Forum" }} />
       <Stack.Screen name="more/links" options={{ title: "Links" }} />
       <Stack.Screen name="more/qa" options={{ title: "QA" }} />
-      <Stack.Screen name="more/tasks" options={{ title: "Tasks" }} />
-      <Stack.Screen name="more/team" options={{ title: "Team" }} />
     </Stack>
   );
 }

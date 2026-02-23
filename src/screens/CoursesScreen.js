@@ -8,7 +8,7 @@ import {
   TextInput,
   View
 } from "react-native";
-import { useAuth } from "@/auth/AuthContext";
+import { useEntitlements } from "@/entitlements";
 import { apiRequest } from "@/api/apiRequest";
 
 function normalizeList(payload) {
@@ -20,10 +20,12 @@ function normalizeList(payload) {
 }
 
 export default function CoursesScreen() {
-  const { capabilities } = useAuth();
-  const canSeePaidCourses = !!capabilities?.canSeePaidCourses;
-  const canViewCourseAnalytics = !!capabilities?.canViewCourseAnalytics;
-  const canPublishCourses = !!capabilities?.canPublishCourses;
+  const ent = useEntitlements();
+  const canSeePaidCourses = !!ent.can?.("SEE_PAID_COURSES");
+  const canViewCourseAnalytics = !!ent.can?.("VIEW_COURSE_ANALYTICS");
+  const canPublishCourses = !!ent.can?.("PUBLISH_COURSES");
+  const canCreateCourses = ent.mode === "commercial";
+  const canInvite = ent.mode === "commercial";
 
   const [courses, setCourses] = useState([]);
   const [loading, setLoading] = useState(true);
@@ -61,8 +63,6 @@ export default function CoursesScreen() {
       if (timerId) clearTimeout(timerId);
     };
   }, [canSeePaidCourses]);
-
-  const canInvite = true;
 
   const handleInvite = async () => {
     const name = inviteName.trim();
@@ -121,13 +121,17 @@ export default function CoursesScreen() {
         )}
       />
 
-      <Pressable accessibilityRole="button" style={styles.btn}>
-        <Text style={styles.btnText}>Create Course</Text>
-      </Pressable>
+      {canCreateCourses ? (
+        <Pressable accessibilityRole="button" style={styles.btn}>
+          <Text style={styles.btnText}>Create Course</Text>
+        </Pressable>
+      ) : null}
 
-      <Pressable accessibilityRole="button" style={styles.btn}>
-        <Text style={styles.btnText}>Become a Creator</Text>
-      </Pressable>
+      {canCreateCourses ? (
+        <Pressable accessibilityRole="button" style={styles.btn}>
+          <Text style={styles.btnText}>Become a Creator</Text>
+        </Pressable>
+      ) : null}
 
       {canInvite ? (
         <View style={styles.inviteCard}>

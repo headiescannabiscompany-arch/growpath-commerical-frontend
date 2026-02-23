@@ -45,7 +45,7 @@ function pickSubtitle(x: AnyRec): string {
     phase ? `Phase: ${String(phase)}` : "",
     started ? `Start: ${String(started)}` : ""
   ].filter(Boolean);
-  return parts.join(" • ");
+  return parts.join(" - ");
 }
 
 export default function FacilityGrowsTab() {
@@ -114,7 +114,7 @@ export default function FacilityGrowsTab() {
         {loading ? (
           <View style={styles.loading}>
             <ActivityIndicator />
-            <Text style={styles.muted}>Loading grows…</Text>
+            <Text style={styles.muted}>Loading grows...</Text>
           </View>
         ) : null}
 
@@ -134,7 +134,7 @@ export default function FacilityGrowsTab() {
               <View style={styles.empty}>
                 <Text style={styles.emptyTitle}>No grows yet</Text>
                 <Text style={styles.muted}>
-                  When grows exist on the backend, they’ll show up here.
+                  When grows exist on the backend, they'll show up here.
                 </Text>
               </View>
             ) : null
@@ -163,7 +163,7 @@ export default function FacilityGrowsTab() {
                     </Text>
                   ) : null}
                 </View>
-                <Text style={styles.chev}>›</Text>
+                <Text style={styles.chev}>></Text>
               </Pressable>
             );
           }}
@@ -199,3 +199,4 @@ const styles = StyleSheet.create({
   empty: { paddingVertical: 26, alignItems: "center" },
   emptyTitle: { fontSize: 16, fontWeight: "900", marginBottom: 6 }
 });
+
