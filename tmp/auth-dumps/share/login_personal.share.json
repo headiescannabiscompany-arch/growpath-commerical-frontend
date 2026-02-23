@@ -1,0 +1,11 @@
+﻿{
+    "token":  "\u003credacted\u003e",
+    "user":  {
+                 "id":  "\u003cid\u003e",
+                 "email":  "\u003cemail\u003e",
+                 "displayName":  "",
+                 "role":  "user",
+                 "plan":  "free",
+                 "subscriptionStatus":  "inactive"
+             }
+}

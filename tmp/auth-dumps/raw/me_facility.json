@@ -1,0 +1,20 @@
+﻿{
+    "user":  {
+                 "id":  "699b407de0da46cf63787a08",
+                 "email":  null,
+                 "plan":  null
+             },
+    "ctx":  {
+                "userId":  "699b407de0da46cf63787a08",
+                "plan":  "free",
+                "mode":  "personal",
+                "facilityId":  null,
+                "facilityRole":  null,
+                "capabilities":  {
+
+                                 },
+                "limits":  {
+
+                           }
+            }
+}

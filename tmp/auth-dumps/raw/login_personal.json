@@ -1,0 +1,11 @@
+﻿{
+    "token":  "\u003credacted\u003e",
+    "user":  {
+                 "id":  "699b407de0da46cf63787a06",
+                 "email":  "single@growpath.com",
+                 "displayName":  "",
+                 "role":  "user",
+                 "plan":  "free",
+                 "subscriptionStatus":  "inactive"
+             }
+}
