@@ -49,7 +49,6 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
     isLoggingOutRef.current = true;
 
     try {
-      setAuthToken(null);
       setToken(null);
       setUser(null);
       setCtx(null);

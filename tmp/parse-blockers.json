@@ -1,0 +1,1214 @@
+[
+  {
+    "type": "duplicate-identifier",
+    "file": "C:\\growpath-commercial\\frontend\\src\\api\\audit.ts",
+    "name": "res",
+    "lines": [
+      39,
+      66
+    ]
+  },
+  {
+    "type": "duplicate-identifier",
+    "file": "C:\\growpath-commercial\\frontend\\src\\api\\auth.js",
+    "name": "data",
+    "lines": [
+      8,
+      32,
+      49,
+      64,
+      80
+    ]
+  },
+  {
+    "type": "duplicate-identifier",
+    "file": "C:\\growpath-commercial\\frontend\\src\\api\\auth.js",
+    "name": "payload",
+    "lines": [
+      31,
+      48
+    ]
+  },
+  {
+    "type": "duplicate-identifier",
+    "file": "C:\\growpath-commercial\\frontend\\src\\api\\billing.ts",
+    "name": "res",
+    "lines": [
+      5,
+      12,
+      20
+    ]
+  },
+  {
+    "type": "duplicate-identifier",
+    "file": "C:\\growpath-commercial\\frontend\\src\\api\\client.js",
+    "name": "opts",
+    "lines": [
+      43,
+      66,
+      85,
+      92,
+      99,
+      106
+    ]
+  },
+  {
+    "type": "duplicate-identifier",
+    "file": "C:\\growpath-commercial\\frontend\\src\\api\\client.js",
+    "name": "headers",
+    "lines": [
+      44,
+      107
+    ]
+  },
+  {
+    "type": "duplicate-identifier",
+    "file": "C:\\growpath-commercial\\frontend\\src\\api\\client.js",
+    "name": "norm",
+    "lines": [
+      74,
+      79,
+      84,
+      91,
+      98,
+      105
+    ]
+  },
+  {
+    "type": "duplicate-identifier",
+    "file": "C:\\growpath-commercial\\frontend\\src\\api\\community.js",
+    "name": "response",
+    "lines": [
+      27,
+      38,
+      47,
+      61,
+      70,
+      79,
+      90,
+      102,
+      113,
+      125
+    ]
+  },
+  {
+    "type": "duplicate-identifier",
+    "file": "C:\\growpath-commercial\\frontend\\src\\api\\deviations.ts",
+    "name": "res",
+    "lines": [
+      15,
+      20
+    ]
+  },
+  {
+    "type": "duplicate-identifier",
+    "file": "C:\\growpath-commercial\\frontend\\src\\api\\diagnose.js",
+    "name": "form",
+    "lines": [
+      20,
+      28
+    ]
+  },
+  {
+    "type": "duplicate-identifier",
+    "file": "C:\\growpath-commercial\\frontend\\src\\api\\equipment.js",
+    "name": "res",
+    "lines": [
+      7,
+      16,
+      28,
+      40
+    ]
+  },
+  {
+    "type": "duplicate-identifier",
+    "file": "C:\\growpath-commercial\\frontend\\src\\api\\facility.js",
+    "name": "response",
+    "lines": [
+      6,
+      24,
+      40,
+      62,
+      81,
+      97,
+      113,
+      128,
+      144,
+      160,
+      172,
+      199,
+      211,
+      225,
+      238,
+      257,
+      274,
+      292,
+      307,
+      325,
+      343,
+      358,
+      376,
+      394
+    ]
+  },
+  {
+    "type": "duplicate-identifier",
+    "file": "C:\\growpath-commercial\\frontend\\src\\api\\facilitySettings.ts",
+    "name": "res",
+    "lines": [
+      15,
+      23
+    ]
+  },
+  {
+    "type": "duplicate-identifier",
+    "file": "C:\\growpath-commercial\\frontend\\src\\api\\greenWaste.ts",
+    "name": "res",
+    "lines": [
+      19,
+      27
+    ]
+  },
+  {
+    "type": "duplicate-identifier",
+    "file": "C:\\growpath-commercial\\frontend\\src\\api\\growlogs.ts",
+    "name": "res",
+    "lines": [
+      15,
+      21,
+      33,
+      41
+    ]
+  },
+  {
+    "type": "duplicate-identifier",
+    "file": "C:\\growpath-commercial\\frontend\\src\\api\\grows.ts",
+    "name": "res",
+    "lines": [
+      14,
+      20,
+      33,
+      41,
+      65
+    ]
+  },
+  {
+    "type": "duplicate-identifier",
+    "file": "C:\\growpath-commercial\\frontend\\src\\api\\insights.ts",
+    "name": "res",
+    "lines": [
+      8,
+      15
+    ]
+  },
+  {
+    "type": "duplicate-identifier",
+    "file": "C:\\growpath-commercial\\frontend\\src\\api\\inventory.ts",
+    "name": "res",
+    "lines": [
+      16,
+      30,
+      42,
+      50
+    ]
+  },
+  {
+    "type": "duplicate-identifier",
+    "file": "C:\\growpath-commercial\\frontend\\src\\api\\marketplace.js",
+    "name": "response",
+    "lines": [
+      24,
+      35,
+      46,
+      57,
+      66,
+      77,
+      86,
+      97,
+      106
+    ]
+  },
+  {
+    "type": "duplicate-identifier",
+    "file": "C:\\growpath-commercial\\frontend\\src\\api\\plants.ts",
+    "name": "res",
+    "lines": [
+      15,
+      21,
+      34,
+      42
+    ]
+  },
+  {
+    "type": "duplicate-identifier",
+    "file": "C:\\growpath-commercial\\frontend\\src\\api\\rooms.ts",
+    "name": "res",
+    "lines": [
+      15,
+      23
+    ]
+  },
+  {
+    "type": "duplicate-identifier",
+    "file": "C:\\growpath-commercial\\frontend\\src\\api\\socialMedia.js",
+    "name": "response",
+    "lines": [
+      21,
+      34,
+      45,
+      54,
+      63,
+      72
+    ]
+  },
+  {
+    "type": "duplicate-identifier",
+    "file": "C:\\growpath-commercial\\frontend\\src\\api\\sop.ts",
+    "name": "res",
+    "lines": [
+      14,
+      22,
+      34,
+      42
+    ]
+  },
+  {
+    "type": "duplicate-identifier",
+    "file": "C:\\growpath-commercial\\frontend\\src\\api\\tasks.ts",
+    "name": "res",
+    "lines": [
+      9,
+      22,
+      32,
+      50,
+      62,
+      70,
+      96
+    ]
+  },
+  {
+    "type": "duplicate-identifier",
+    "file": "C:\\growpath-commercial\\frontend\\src\\api\\team.ts",
+    "name": "res",
+    "lines": [
+      15,
+      28,
+      40,
+      48
+    ]
+  },
+  {
+    "type": "duplicate-identifier",
+    "file": "C:\\growpath-commercial\\frontend\\src\\api\\vendor.js",
+    "name": "res",
+    "lines": [
+      8,
+      19,
+      31,
+      43
+    ]
+  },
+  {
+    "type": "duplicate-identifier",
+    "file": "C:\\growpath-commercial\\frontend\\src\\api\\vendorAnalytics.js",
+    "name": "res",
+    "lines": [
+      7,
+      16
+    ]
+  },
+  {
+    "type": "duplicate-identifier",
+    "file": "C:\\growpath-commercial\\frontend\\src\\api\\vendorMetrics.js",
+    "name": "res",
+    "lines": [
+      7,
+      16,
+      25,
+      37
+    ]
+  },
+  {
+    "type": "duplicate-identifier",
+    "file": "C:\\growpath-commercial\\frontend\\src\\api\\vendors.ts",
+    "name": "res",
+    "lines": [
+      14,
+      21,
+      29,
+      37
+    ]
+  },
+  {
+    "type": "duplicate-identifier",
+    "file": "C:\\growpath-commercial\\frontend\\src\\api\\verification.ts",
+    "name": "res",
+    "lines": [
+      17,
+      25,
+      40
+    ]
+  },
+  {
+    "type": "duplicate-identifier",
+    "file": "C:\\growpath-commercial\\frontend\\src\\api\\_quarantine\\audit.js",
+    "name": "res",
+    "lines": [
+      26,
+      42,
+      51
+    ]
+  },
+  {
+    "type": "duplicate-identifier",
+    "file": "C:\\growpath-commercial\\frontend\\src\\api\\_quarantine\\deviation.js",
+    "name": "res",
+    "lines": [
+      8,
+      17
+    ]
+  },
+  {
+    "type": "duplicate-identifier",
+    "file": "C:\\growpath-commercial\\frontend\\src\\api\\_quarantine\\greenWaste.js",
+    "name": "response",
+    "lines": [
+      6,
+      15
+    ]
+  },
+  {
+    "type": "duplicate-identifier",
+    "file": "C:\\growpath-commercial\\frontend\\src\\api\\_quarantine\\mockServer.ts",
+    "name": "email",
+    "lines": [
+      127,
+      162,
+      173,
+      180
+    ]
+  },
+  {
+    "type": "duplicate-identifier",
+    "file": "C:\\growpath-commercial\\frontend\\src\\api\\_quarantine\\mockServer.ts",
+    "name": "profile",
+    "lines": [
+      164,
+      174,
+      181,
+      201,
+      216,
+      227
+    ]
+  },
+  {
+    "type": "duplicate-identifier",
+    "file": "C:\\growpath-commercial\\frontend\\src\\api\\_quarantine\\mockServer.ts",
+    "name": "token",
+    "lines": [
+      168,
+      175,
+      182,
+      200,
+      215,
+      226
+    ]
+  },
+  {
+    "type": "duplicate-identifier",
+    "file": "C:\\growpath-commercial\\frontend\\src\\api\\_quarantine\\mockServer.ts",
+    "name": "headerToken",
+    "lines": [
+      199,
+      214,
+      225
+    ]
+  },
+  {
+    "type": "duplicate-identifier",
+    "file": "C:\\growpath-commercial\\frontend\\src\\api\\_quarantine\\sop.js",
+    "name": "res",
+    "lines": [
+      8,
+      17,
+      26,
+      35
+    ]
+  },
+  {
+    "type": "duplicate-identifier",
+    "file": "C:\\growpath-commercial\\frontend\\src\\api\\_quarantine\\verification.js",
+    "name": "res",
+    "lines": [
+      8,
+      20
+    ]
+  },
+  {
+    "type": "duplicate-identifier",
+    "file": "C:\\growpath-commercial\\frontend\\src\\app\\home\\facility\\(tabs)\\audit-logs.tsx",
+    "name": "entity",
+    "lines": [
+      43,
+      150
+    ]
+  },
+  {
+    "type": "duplicate-identifier",
+    "file": "C:\\growpath-commercial\\frontend\\src\\app\\home\\facility\\(tabs)\\audit-logs.tsx",
+    "name": "entityId",
+    "lines": [
+      44,
+      151
+    ]
+  },
+  {
+    "type": "duplicate-identifier",
+    "file": "C:\\growpath-commercial\\frontend\\src\\app\\home\\facility\\(tabs)\\profile.tsx",
+    "name": "preferred",
+    "lines": [
+      104,
+      122
+    ]
+  },
+  {
+    "type": "duplicate-identifier",
+    "file": "C:\\growpath-commercial\\frontend\\src\\app\\home\\facility\\(tabs)\\profile.tsx",
+    "name": "rest",
+    "lines": [
+      114,
+      123
+    ]
+  },
+  {
+    "type": "duplicate-identifier",
+    "file": "C:\\growpath-commercial\\frontend\\src\\app\\home\\facility\\(tabs)\\team.tsx",
+    "name": "email",
+    "lines": [
+      42,
+      98
+    ]
+  },
+  {
+    "type": "duplicate-identifier",
+    "file": "C:\\growpath-commercial\\frontend\\src\\app\\login.tsx",
+    "name": "out",
+    "lines": [
+      31,
+      52
+    ]
+  },
+  {
+    "type": "duplicate-identifier",
+    "file": "C:\\growpath-commercial\\frontend\\src\\app\\onboarding\\index.tsx",
+    "name": "router",
+    "lines": [
+      24,
+      42
+    ]
+  },
+  {
+    "type": "duplicate-identifier",
+    "file": "C:\\growpath-commercial\\frontend\\src\\app\\register.tsx",
+    "name": "out",
+    "lines": [
+      31,
+      59
+    ]
+  },
+  {
+    "type": "duplicate-identifier",
+    "file": "C:\\growpath-commercial\\frontend\\src\\auth\\AuthContext.tsx",
+    "name": "res",
+    "lines": [
+      122,
+      136
+    ]
+  },
+  {
+    "type": "duplicate-identifier",
+    "file": "C:\\growpath-commercial\\frontend\\src\\auth\\tokenStore.ts",
+    "name": "v",
+    "lines": [
+      18,
+      21
+    ]
+  },
+  {
+    "type": "duplicate-identifier",
+    "file": "C:\\growpath-commercial\\frontend\\src\\capabilities\\resolve.js",
+    "name": "normalized",
+    "lines": [
+      62,
+      70
+    ]
+  },
+  {
+    "type": "duplicate-identifier",
+    "file": "C:\\growpath-commercial\\frontend\\src\\components\\StageSlider.js",
+    "name": "isActive",
+    "lines": [
+      23,
+      48
+    ]
+  },
+  {
+    "type": "duplicate-identifier",
+    "file": "C:\\growpath-commercial\\frontend\\src\\entitlements\\EntitlementsProvider.tsx",
+    "name": "k",
+    "lines": [
+      167,
+      171
+    ]
+  },
+  {
+    "type": "duplicate-identifier",
+    "file": "C:\\growpath-commercial\\frontend\\src\\features\\compliance\\ai3\\comparisons\\savedComparisonsStore.ts",
+    "name": "all",
+    "lines": [
+      28,
+      33,
+      38
+    ]
+  },
+  {
+    "type": "duplicate-identifier",
+    "file": "C:\\growpath-commercial\\frontend\\src\\features\\compliance\\ai3\\comparisons\\savedComparisonsStore.ts",
+    "name": "next",
+    "lines": [
+      29,
+      34
+    ]
+  },
+  {
+    "type": "duplicate-identifier",
+    "file": "C:\\growpath-commercial\\frontend\\src\\features\\compliance\\ai4\\dashboard\\complianceDashboardApi.ts",
+    "name": "raw",
+    "lines": [
+      23,
+      66,
+      86,
+      95
+    ]
+  },
+  {
+    "type": "duplicate-identifier",
+    "file": "C:\\growpath-commercial\\frontend\\src\\features\\compliance\\ai4\\dashboard\\__tests__\\buildDashboardModel.test.ts",
+    "name": "nowISO",
+    "lines": [
+      5,
+      100
+    ]
+  },
+  {
+    "type": "duplicate-identifier",
+    "file": "C:\\growpath-commercial\\frontend\\src\\features\\compliance\\ai4\\dashboard\\__tests__\\buildDashboardModel.test.ts",
+    "name": "model",
+    "lines": [
+      6,
+      101
+    ]
+  },
+  {
+    "type": "duplicate-identifier",
+    "file": "C:\\growpath-commercial\\frontend\\src\\features\\compliance\\ai4\\dashboard\\__tests__\\complianceDashboardApi.normalizers.test.ts",
+    "name": "payload",
+    "lines": [
+      89,
+      104
+    ]
+  },
+  {
+    "type": "duplicate-identifier",
+    "file": "C:\\growpath-commercial\\frontend\\src\\features\\compliance\\ai4\\dashboard\\__tests__\\complianceDashboardApi.normalizers.test.ts",
+    "name": "facilityId",
+    "lines": [
+      90,
+      105
+    ]
+  },
+  {
+    "type": "duplicate-identifier",
+    "file": "C:\\growpath-commercial\\frontend\\src\\features\\compliance\\ai4\\dashboard\\__tests__\\complianceDashboardApi.normalizers.test.ts",
+    "name": "rawA",
+    "lines": [
+      91,
+      106
+    ]
+  },
+  {
+    "type": "duplicate-identifier",
+    "file": "C:\\growpath-commercial\\frontend\\src\\features\\compliance\\ai4\\dashboard\\__tests__\\complianceDashboardApi.normalizers.test.ts",
+    "name": "rawB",
+    "lines": [
+      92,
+      107
+    ]
+  },
+  {
+    "type": "duplicate-identifier",
+    "file": "C:\\growpath-commercial\\frontend\\src\\features\\compliance\\ai4\\dashboard\\__tests__\\complianceDashboardApi.normalizers.test.ts",
+    "name": "rawC",
+    "lines": [
+      93,
+      108
+    ]
+  },
+  {
+    "type": "duplicate-identifier",
+    "file": "C:\\growpath-commercial\\frontend\\src\\features\\compliance\\ai4\\dashboard\\__tests__\\complianceDashboardApi.normalizers.test.ts",
+    "name": "normA",
+    "lines": [
+      94,
+      109
+    ]
+  },
+  {
+    "type": "duplicate-identifier",
+    "file": "C:\\growpath-commercial\\frontend\\src\\features\\compliance\\ai4\\dashboard\\__tests__\\complianceDashboardApi.normalizers.test.ts",
+    "name": "normB",
+    "lines": [
+      95,
+      110
+    ]
+  },
+  {
+    "type": "duplicate-identifier",
+    "file": "C:\\growpath-commercial\\frontend\\src\\features\\compliance\\ai4\\dashboard\\__tests__\\complianceDashboardApi.normalizers.test.ts",
+    "name": "normC",
+    "lines": [
+      96,
+      111
+    ]
+  },
+  {
+    "type": "duplicate-identifier",
+    "file": "C:\\growpath-commercial\\frontend\\src\\features\\dashboard\\hooks.ts",
+    "name": "now",
+    "lines": [
+      49,
+      74
+    ]
+  },
+  {
+    "type": "duplicate-identifier",
+    "file": "C:\\growpath-commercial\\frontend\\src\\features\\feed\\api\\feedApi.ts",
+    "name": "search",
+    "lines": [
+      21,
+      42,
+      51,
+      60
+    ]
+  },
+  {
+    "type": "duplicate-identifier",
+    "file": "C:\\growpath-commercial\\frontend\\src\\features\\feed\\hooks\\useCommercialFeed.ts",
+    "name": "prev",
+    "lines": [
+      52,
+      76
+    ]
+  },
+  {
+    "type": "duplicate-identifier",
+    "file": "C:\\growpath-commercial\\frontend\\src\\features\\grows\\hooks.ts",
+    "name": "facility",
+    "lines": [
+      10,
+      22
+    ]
+  },
+  {
+    "type": "duplicate-identifier",
+    "file": "C:\\growpath-commercial\\frontend\\src\\features\\grows\\hooks.ts",
+    "name": "facilityId",
+    "lines": [
+      11,
+      23
+    ]
+  },
+  {
+    "type": "duplicate-identifier",
+    "file": "C:\\growpath-commercial\\frontend\\src\\features\\grows\\hooks.ts",
+    "name": "qc",
+    "lines": [
+      34,
+      45
+    ]
+  },
+  {
+    "type": "duplicate-identifier",
+    "file": "C:\\growpath-commercial\\frontend\\src\\features\\inventory\\hooks.ts",
+    "name": "qc",
+    "lines": [
+      31,
+      45,
+      60
+    ]
+  },
+  {
+    "type": "duplicate-identifier",
+    "file": "C:\\growpath-commercial\\frontend\\src\\features\\plants\\hooks.ts",
+    "name": "qc",
+    "lines": [
+      31,
+      45,
+      66
+    ]
+  },
+  {
+    "type": "duplicate-identifier",
+    "file": "C:\\growpath-commercial\\frontend\\src\\features\\plants\\hooks.ts",
+    "name": "plantId",
+    "lines": [
+      51,
+      57
+    ]
+  },
+  {
+    "type": "duplicate-identifier",
+    "file": "C:\\growpath-commercial\\frontend\\src\\features\\rooms\\hooks.ts",
+    "name": "facility",
+    "lines": [
+      9,
+      19
+    ]
+  },
+  {
+    "type": "duplicate-identifier",
+    "file": "C:\\growpath-commercial\\frontend\\src\\features\\rooms\\hooks.ts",
+    "name": "facilityId",
+    "lines": [
+      10,
+      20
+    ]
+  },
+  {
+    "type": "duplicate-identifier",
+    "file": "C:\\growpath-commercial\\frontend\\src\\features\\team\\hooks.ts",
+    "name": "qc",
+    "lines": [
+      20,
+      34,
+      47
+    ]
+  },
+  {
+    "type": "duplicate-identifier",
+    "file": "C:\\growpath-commercial\\frontend\\src\\hooks\\useDebugApi.ts",
+    "name": "res",
+    "lines": [
+      20,
+      27
+    ]
+  },
+  {
+    "type": "duplicate-identifier",
+    "file": "C:\\growpath-commercial\\frontend\\src\\hooks\\useEquipmentTools.ts",
+    "name": "res",
+    "lines": [
+      16,
+      27,
+      39,
+      51
+    ]
+  },
+  {
+    "type": "duplicate-identifier",
+    "file": "C:\\growpath-commercial\\frontend\\src\\hooks\\useInsights.ts",
+    "name": "queryClient",
+    "lines": [
+      11,
+      29,
+      39
+    ]
+  },
+  {
+    "type": "duplicate-identifier",
+    "file": "C:\\growpath-commercial\\frontend\\src\\hooks\\useLiveSession.ts",
+    "name": "res",
+    "lines": [
+      22,
+      30,
+      38
+    ]
+  },
+  {
+    "type": "duplicate-identifier",
+    "file": "C:\\growpath-commercial\\frontend\\src\\hooks\\useLiveSession.ts",
+    "name": "data",
+    "lines": [
+      23,
+      31
+    ]
+  },
+  {
+    "type": "duplicate-identifier",
+    "file": "C:\\growpath-commercial\\frontend\\src\\notifications\\useNotificationDeepLinks.ts",
+    "name": "postId",
+    "lines": [
+      9,
+      20,
+      27
+    ]
+  },
+  {
+    "type": "duplicate-identifier",
+    "file": "C:\\growpath-commercial\\frontend\\src\\screens\\AddLessonScreen.js",
+    "name": "result",
+    "lines": [
+      36,
+      52,
+      67,
+      82
+    ]
+  },
+  {
+    "type": "duplicate-identifier",
+    "file": "C:\\growpath-commercial\\frontend\\src\\screens\\AppIntroScreen.js",
+    "name": "interests",
+    "lines": [
+      54,
+      68
+    ]
+  },
+  {
+    "type": "duplicate-identifier",
+    "file": "C:\\growpath-commercial\\frontend\\src\\screens\\commercial\\SocialMediaScreen.js",
+    "name": "platform",
+    "lines": [
+      118,
+      150
+    ]
+  },
+  {
+    "type": "duplicate-identifier",
+    "file": "C:\\growpath-commercial\\frontend\\src\\screens\\CreatePlantScreen.js",
+    "name": "perm",
+    "lines": [
+      30,
+      50
+    ]
+  },
+  {
+    "type": "duplicate-identifier",
+    "file": "C:\\growpath-commercial\\frontend\\src\\screens\\CreatePlantScreen.js",
+    "name": "result",
+    "lines": [
+      36,
+      56
+    ]
+  },
+  {
+    "type": "duplicate-identifier",
+    "file": "C:\\growpath-commercial\\frontend\\src\\screens\\CreatePlantScreen.js",
+    "name": "filename",
+    "lines": [
+      87,
+      92
+    ]
+  },
+  {
+    "type": "duplicate-identifier",
+    "file": "C:\\growpath-commercial\\frontend\\src\\screens\\CreatorAnalyticsScreen.js",
+    "name": "res",
+    "lines": [
+      18,
+      31
+    ]
+  },
+  {
+    "type": "duplicate-identifier",
+    "file": "C:\\growpath-commercial\\frontend\\src\\screens\\CreatorDashboardV2.js",
+    "name": "analyticsRes",
+    "lines": [
+      49,
+      67
+    ]
+  },
+  {
+    "type": "duplicate-identifier",
+    "file": "C:\\growpath-commercial\\frontend\\src\\screens\\CreatorSignatureUpload.js",
+    "name": "res",
+    "lines": [
+      13,
+      43
+    ]
+  },
+  {
+    "type": "duplicate-identifier",
+    "file": "C:\\growpath-commercial\\frontend\\src\\screens\\DebugScreen.js",
+    "name": "data",
+    "lines": [
+      31,
+      42
+    ]
+  },
+  {
+    "type": "duplicate-identifier",
+    "file": "C:\\growpath-commercial\\frontend\\src\\screens\\DiagnoseScreen.js",
+    "name": "res",
+    "lines": [
+      114,
+      130
+    ]
+  },
+  {
+    "type": "duplicate-identifier",
+    "file": "C:\\growpath-commercial\\frontend\\src\\screens\\EarningsScreen.js",
+    "name": "result",
+    "lines": [
+      22,
+      55
+    ]
+  },
+  {
+    "type": "duplicate-identifier",
+    "file": "C:\\growpath-commercial\\frontend\\src\\screens\\FeedScreen.js",
+    "name": "list",
+    "lines": [
+      122,
+      131,
+      160,
+      176
+    ]
+  },
+  {
+    "type": "duplicate-identifier",
+    "file": "C:\\growpath-commercial\\frontend\\src\\screens\\GrowAddPlantScreen.js",
+    "name": "payload",
+    "lines": [
+      23,
+      94
+    ]
+  },
+  {
+    "type": "duplicate-identifier",
+    "file": "C:\\growpath-commercial\\frontend\\src\\screens\\GrowLogEntryScreen.js",
+    "name": "grow",
+    "lines": [
+      141,
+      153,
+      187,
+      444
+    ]
+  },
+  {
+    "type": "duplicate-identifier",
+    "file": "C:\\growpath-commercial\\frontend\\src\\screens\\GrowLogEntryScreen.js",
+    "name": "summary",
+    "lines": [
+      168,
+      176,
+      472,
+      558
+    ]
+  },
+  {
+    "type": "duplicate-identifier",
+    "file": "C:\\growpath-commercial\\frontend\\src\\screens\\GrowLogEntryScreen.js",
+    "name": "normalized",
+    "lines": [
+      178,
+      564
+    ]
+  },
+  {
+    "type": "duplicate-identifier",
+    "file": "C:\\growpath-commercial\\frontend\\src\\screens\\GrowLogEntryScreen.js",
+    "name": "payload",
+    "lines": [
+      343,
+      429
+    ]
+  },
+  {
+    "type": "duplicate-identifier",
+    "file": "C:\\growpath-commercial\\frontend\\src\\screens\\MarketplaceScreen.js",
+    "name": "res",
+    "lines": [
+      34,
+      63,
+      78,
+      97,
+      107
+    ]
+  },
+  {
+    "type": "duplicate-identifier",
+    "file": "C:\\growpath-commercial\\frontend\\src\\screens\\MarketplaceScreen.js",
+    "name": "payload",
+    "lines": [
+      64,
+      79,
+      98,
+      108
+    ]
+  },
+  {
+    "type": "duplicate-identifier",
+    "file": "C:\\growpath-commercial\\frontend\\src\\screens\\PaywallScreen.js",
+    "name": "result",
+    "lines": [
+      23,
+      44
+    ]
+  },
+  {
+    "type": "duplicate-identifier",
+    "file": "C:\\growpath-commercial\\frontend\\src\\screens\\PostDetailScreen.js",
+    "name": "res",
+    "lines": [
+      36,
+      66
+    ]
+  },
+  {
+    "type": "duplicate-identifier",
+    "file": "C:\\growpath-commercial\\frontend\\src\\screens\\SocialToolsScreen.js",
+    "name": "data",
+    "lines": [
+      40,
+      56
+    ]
+  },
+  {
+    "type": "duplicate-identifier",
+    "file": "C:\\growpath-commercial\\frontend\\src\\screens\\StorefrontScreen.js",
+    "name": "current",
+    "lines": [
+      138,
+      183
+    ]
+  },
+  {
+    "type": "duplicate-identifier",
+    "file": "C:\\growpath-commercial\\frontend\\src\\screens\\StorefrontScreen.js",
+    "name": "next",
+    "lines": [
+      141,
+      186
+    ]
+  },
+  {
+    "type": "duplicate-identifier",
+    "file": "C:\\growpath-commercial\\frontend\\src\\screens\\StorefrontScreen.js",
+    "name": "vendorPayload",
+    "lines": [
+      161,
+      188
+    ]
+  },
+  {
+    "type": "duplicate-identifier",
+    "file": "C:\\growpath-commercial\\frontend\\src\\screens\\SubscriptionStatusScreen.js",
+    "name": "result",
+    "lines": [
+      28,
+      50
+    ]
+  },
+  {
+    "type": "duplicate-identifier",
+    "file": "C:\\growpath-commercial\\frontend\\src\\screens\\VendorGuidesScreen.js",
+    "name": "path",
+    "lines": [
+      68,
+      86
+    ]
+  },
+  {
+    "type": "duplicate-identifier",
+    "file": "C:\\growpath-commercial\\frontend\\src\\screens\\VendorGuidesScreen.js",
+    "name": "res",
+    "lines": [
+      69,
+      87
+    ]
+  },
+  {
+    "type": "duplicate-identifier",
+    "file": "C:\\growpath-commercial\\frontend\\src\\screens\\VendorGuidesScreen.js",
+    "name": "norm",
+    "lines": [
+      70,
+      88
+    ]
+  },
+  {
+    "type": "duplicate-identifier",
+    "file": "C:\\growpath-commercial\\frontend\\src\\types\\facility.js",
+    "name": "names",
+    "lines": [
+      410,
+      424,
+      436,
+      449
+    ]
+  },
+  {
+    "type": "duplicate-identifier",
+    "file": "C:\\growpath-commercial\\frontend\\src\\utils\\comparisonPresets.ts",
+    "name": "existing",
+    "lines": [
+      34,
+      47
+    ]
+  },
+  {
+    "type": "duplicate-identifier",
+    "file": "C:\\growpath-commercial\\frontend\\src\\utils\\comparisonPresets.ts",
+    "name": "next",
+    "lines": [
+      35,
+      48
+    ]
+  },
+  {
+    "type": "duplicate-identifier",
+    "file": "C:\\growpath-commercial\\frontend\\src\\utils\\marketplaceTransforms.js",
+    "name": "payload",
+    "lines": [
+      2,
+      9
+    ]
+  },
+  {
+    "type": "duplicate-identifier",
+    "file": "C:\\growpath-commercial\\frontend\\src\\utils\\parseApiError.js",
+    "name": "code",
+    "lines": [
+      59,
+      71
+    ]
+  },
+  {
+    "type": "duplicate-identifier",
+    "file": "C:\\growpath-commercial\\frontend\\src\\utils\\parseApiError.js",
+    "name": "message",
+    "lines": [
+      60,
+      72
+    ]
+  },
+  {
+    "type": "duplicate-identifier",
+    "file": "C:\\growpath-commercial\\frontend\\src\\utils\\weeklyReportsStore.ts",
+    "name": "existing",
+    "lines": [
+      34,
+      47,
+      57
+    ]
+  },
+  {
+    "type": "duplicate-identifier",
+    "file": "C:\\growpath-commercial\\frontend\\src\\utils\\weeklyReportsStore.ts",
+    "name": "next",
+    "lines": [
+      35,
+      48
+    ]
+  }
+]
