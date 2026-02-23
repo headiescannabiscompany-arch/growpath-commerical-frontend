@@ -1,4 +1,3 @@
-import { useRouter } from "expo-router";
 
 import { ScreenBoundary } from "@/components/ScreenBoundary";
 import { InlineError } from "@/components/InlineError";
@@ -16,7 +15,6 @@ import {
   Text,
   View
 } from "react-native";
-import { useRouter } from "expo-router";
 
 import { ScreenBoundary } from "@/components/ScreenBoundary";
 import { InlineError } from "@/components/InlineError";
