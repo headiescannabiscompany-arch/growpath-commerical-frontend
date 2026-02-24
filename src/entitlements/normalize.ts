@@ -19,9 +19,7 @@ export function normalizeCapabilityKey(key?: string | null): string | null {
   const upper = raw.toUpperCase();
   if (CAPABILITY_ALIASES[upper]) return CAPABILITY_ALIASES[upper];
 
-  const normalized = upper
-    .replace(/[.\s-]+/g, "_")
-    .replace(/__+/g, "_");
+  const normalized = upper.replace(/[.\s-]+/g, "_").replace(/__+/g, "_");
 
   return CAPABILITY_ALIASES[normalized] || normalized;
 }

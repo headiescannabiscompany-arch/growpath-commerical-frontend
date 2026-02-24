@@ -12,5 +12,5 @@
     },
     "forceConsistentCasingInFileNames": true
   },
-  "exclude": ["node_modules", "backend", "src/screens/**" ]
+  "exclude": ["node_modules", "backend", "src/screens/**", "src/api/_quarantine/**"]
 }

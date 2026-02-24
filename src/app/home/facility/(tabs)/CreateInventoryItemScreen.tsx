@@ -40,8 +40,18 @@ export default function FacilityCreateInventoryItemScreen() {
   return (
     <View style={styles.container}>
       <Text style={styles.h1}>Create Inventory Item</Text>
-      <TextInput value={name} onChangeText={setName} placeholder="Name" style={styles.input} />
-      <TextInput value={sku} onChangeText={setSku} placeholder="SKU (optional)" style={styles.input} />
+      <TextInput
+        value={name}
+        onChangeText={setName}
+        placeholder="Name"
+        style={styles.input}
+      />
+      <TextInput
+        value={sku}
+        onChangeText={setSku}
+        placeholder="SKU (optional)"
+        style={styles.input}
+      />
       <TextInput
         value={quantity}
         onChangeText={setQuantity}

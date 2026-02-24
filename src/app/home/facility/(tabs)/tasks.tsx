@@ -139,14 +139,10 @@ export default function FacilityTasksRoute() {
     <ScreenBoundary title="Tasks">
       <View style={styles.container}>
         {error ? <InlineError error={error} /> : null}
-
-        
         <View style={styles.card}>
           <Text style={styles.cardTitle}>Create Task</Text>
           {!canWrite ? (
-            <Text style={styles.muted}>
-              You do not have permission to create tasks.
-            </Text>
+            <Text style={styles.muted}>You do not have permission to create tasks.</Text>
           ) : (
             <View style={styles.form}>
               <Text style={styles.label}>Title</Text>
@@ -180,13 +176,14 @@ export default function FacilityTasksRoute() {
               </TouchableOpacity>
             </View>
           )}
-        </View>\n        {loading ? (
+        </View>
+        \n{" "}
+        {loading ? (
           <View style={styles.loading}>
             <ActivityIndicator />
             <Text style={styles.muted}>Loading tasks...</Text>
           </View>
         ) : null}
-
         <FlatList
           data={items}
           keyExtractor={(it, idx) => pickId(it) || String(idx)}
@@ -203,7 +200,7 @@ export default function FacilityTasksRoute() {
               <View style={styles.empty}>
                 <Text style={styles.emptyTitle}>No tasks yet</Text>
                 <Text style={styles.muted}>
-                  When tasks exist on the backend, they'll show up here.
+                  When tasks exist on the backend, they will show up here.
                 </Text>
               </View>
             ) : null
@@ -297,5 +294,3 @@ const styles = StyleSheet.create({
   empty: { paddingVertical: 26, alignItems: "center" },
   emptyTitle: { fontSize: 16, fontWeight: "800", marginBottom: 6 }
 });
-
-

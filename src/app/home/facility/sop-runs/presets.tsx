@@ -16,7 +16,8 @@ function getErrorMessage(e: unknown, fallback: string) {
 
 export default function FacilitySopRunsPresetsRoute() {
   const { selectedId: facilityId } = useFacility();
-  const { templates, isLoading, createTemplate, creating, refetch } = useSopTemplates(facilityId);
+  const { templates, isLoading, createTemplate, creating, refetch } =
+    useSopTemplates(facilityId);
   const [title, setTitle] = useState("");
   const [content, setContent] = useState("");
   const [msg, setMsg] = useState<string | null>(null);
@@ -44,7 +45,12 @@ export default function FacilitySopRunsPresetsRoute() {
   return (
     <View style={styles.container}>
       <Text style={styles.h1}>SOP Presets</Text>
-      <TextInput style={styles.input} placeholder="Template title" value={title} onChangeText={setTitle} />
+      <TextInput
+        style={styles.input}
+        placeholder="Template title"
+        value={title}
+        onChangeText={setTitle}
+      />
       <TextInput
         style={[styles.input, styles.notes]}
         placeholder="Template content"
@@ -74,12 +80,30 @@ export default function FacilitySopRunsPresetsRoute() {
 const styles = StyleSheet.create({
   container: { flex: 1, padding: 16, gap: 8 },
   h1: { fontSize: 22, fontWeight: "900" },
-  input: { borderWidth: 1, borderColor: "#e5e7eb", borderRadius: 10, padding: 10, backgroundColor: "#fff" },
+  input: {
+    borderWidth: 1,
+    borderColor: "#e5e7eb",
+    borderRadius: 10,
+    padding: 10,
+    backgroundColor: "#fff"
+  },
   notes: { minHeight: 80, textAlignVertical: "top" },
-  btn: { backgroundColor: "#16a34a", borderRadius: 10, padding: 10, alignItems: "center" },
+  btn: {
+    backgroundColor: "#16a34a",
+    borderRadius: 10,
+    padding: 10,
+    alignItems: "center"
+  },
   btnText: { color: "#fff", fontWeight: "800" },
   msg: { color: "#b91c1c", fontWeight: "700" },
-  card: { borderWidth: 1, borderColor: "#e5e7eb", borderRadius: 10, padding: 10, backgroundColor: "#fff", marginTop: 10 },
+  card: {
+    borderWidth: 1,
+    borderColor: "#e5e7eb",
+    borderRadius: 10,
+    padding: 10,
+    backgroundColor: "#fff",
+    marginTop: 10
+  },
   title: { fontWeight: "800" },
   sub: { opacity: 0.75 }
 });

@@ -63,14 +63,13 @@ export default function FacilityDashboardTab() {
       try {
         clearError();
 
-        const [growsRes, plantsRes, tasksRes, inventoryRes, logsRes] =
-          await Promise.all([
-            apiRequest(endpoints.grows(facilityId)),
-            apiRequest(endpoints.plants(facilityId)),
-            apiRequest(endpoints.tasks(facilityId)),
-            apiRequest(endpoints.inventory(facilityId)),
-            apiRequest(endpoints.growlogs(facilityId))
-          ]);
+        const [growsRes, plantsRes, tasksRes, inventoryRes, logsRes] = await Promise.all([
+          apiRequest(endpoints.grows(facilityId)),
+          apiRequest(endpoints.plants(facilityId)),
+          apiRequest(endpoints.tasks(facilityId)),
+          apiRequest(endpoints.inventory(facilityId)),
+          apiRequest(endpoints.growlogs(facilityId))
+        ]);
 
         setCounts({
           grows: asArray(growsRes).length,
@@ -151,11 +150,17 @@ export default function FacilityDashboardTab() {
 
         <View style={styles.card}>
           <Text style={styles.cardTitle}>Actions</Text>
-          <Pressable onPress={() => router.push("/home/facility/ai/ask" as any)} style={styles.row}>
+          <Pressable
+            onPress={() => router.push("/home/facility/ai/ask" as any)}
+            style={styles.row}
+          >
             <Text style={styles.rowTitle}>Open AI tools</Text>
             <Text style={styles.link}>Open</Text>
           </Pressable>
-          <Pressable onPress={() => router.push("/home/facility/compliance/reports" as any)} style={styles.row}>
+          <Pressable
+            onPress={() => router.push("/home/facility/compliance/reports" as any)}
+            style={styles.row}
+          >
             <Text style={styles.rowTitle}>Open compliance reports</Text>
             <Text style={styles.link}>Open</Text>
           </Pressable>
@@ -163,23 +168,38 @@ export default function FacilityDashboardTab() {
 
         <View style={styles.card}>
           <Text style={styles.cardTitle}>Operational Modules</Text>
-          <Pressable onPress={() => router.push("/home/facility/plants" as any)} style={styles.row}>
+          <Pressable
+            onPress={() => router.push("/home/facility/plants" as any)}
+            style={styles.row}
+          >
             <Text style={styles.rowTitle}>Rooms</Text>
             <Text style={styles.link}>Plants</Text>
           </Pressable>
-          <Pressable onPress={() => router.push("/home/facility/compliance/reports" as any)} style={styles.row}>
+          <Pressable
+            onPress={() => router.push("/home/facility/compliance/reports" as any)}
+            style={styles.row}
+          >
             <Text style={styles.rowTitle}>Compliance</Text>
             <Text style={styles.link}>Open</Text>
           </Pressable>
-          <Pressable onPress={() => router.push("/home/facility/audit-logs" as any)} style={styles.row}>
+          <Pressable
+            onPress={() => router.push("/home/facility/audit-logs" as any)}
+            style={styles.row}
+          >
             <Text style={styles.rowTitle}>Audit Logs</Text>
             <Text style={styles.link}>Open</Text>
           </Pressable>
-          <Pressable onPress={() => router.push("/home/facility/sop-runs" as any)} style={styles.row}>
+          <Pressable
+            onPress={() => router.push("/home/facility/sop-runs" as any)}
+            style={styles.row}
+          >
             <Text style={styles.rowTitle}>SOP Runs</Text>
             <Text style={styles.link}>Open</Text>
           </Pressable>
-          <Pressable onPress={() => router.push("/home/facility/ai/template" as any)} style={styles.row}>
+          <Pressable
+            onPress={() => router.push("/home/facility/ai/template" as any)}
+            style={styles.row}
+          >
             <Text style={styles.rowTitle}>Facility AI Tools</Text>
             <Text style={styles.link}>Open</Text>
           </Pressable>

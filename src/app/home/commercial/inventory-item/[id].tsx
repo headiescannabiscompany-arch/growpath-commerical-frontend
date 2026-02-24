@@ -299,4 +299,3 @@ const styles = StyleSheet.create({
 
   backLink: { fontWeight: "800", marginTop: 6 }
 });
-

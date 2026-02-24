@@ -128,7 +128,7 @@ function applyServerCtx(
           unknownKeys.push(String(raw));
           continue;
         }
-        if (!KNOWN_CAPS.has(key)) {
+        if (!(KNOWN_CAPS as Set<string>).has(key)) {
           unknownKeys.push(String(raw));
           continue;
         }
@@ -141,7 +141,7 @@ function applyServerCtx(
           unknownKeys.push(String(raw));
           continue;
         }
-        if (!KNOWN_CAPS.has(key)) {
+        if (!(KNOWN_CAPS as Set<string>).has(key)) {
           unknownKeys.push(String(raw));
           continue;
         }
@@ -262,7 +262,7 @@ export function EntitlementsProvider({ children }: { children: React.ReactNode }
             unknownKeys.push(String(raw));
             continue;
           }
-          if (!KNOWN_CAPS.has(key)) {
+          if (!(KNOWN_CAPS as Set<string>).has(key)) {
             unknownKeys.push(String(raw));
             continue;
           }
@@ -275,7 +275,7 @@ export function EntitlementsProvider({ children }: { children: React.ReactNode }
             unknownKeys.push(String(raw));
             continue;
           }
-          if (!KNOWN_CAPS.has(key)) {
+          if (!(KNOWN_CAPS as Set<string>).has(key)) {
             unknownKeys.push(String(raw));
             continue;
           }

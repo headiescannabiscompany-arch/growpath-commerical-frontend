@@ -121,7 +121,7 @@ export default function CommercialFeedCard({ post }: Props) {
         </Pressable>
 
         <Text style={{ opacity: 0.7 }}>
-          {likeCount} likes  -  {post.commentCount || 0} comments
+          {likeCount} likes - {post.commentCount || 0} comments
         </Text>
       </View>
 

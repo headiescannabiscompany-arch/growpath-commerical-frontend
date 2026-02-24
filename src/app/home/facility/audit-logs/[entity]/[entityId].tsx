@@ -28,9 +28,16 @@ function getErrorMessage(e: unknown, fallback: string) {
 }
 
 export default function FacilityAuditLogEntityRoute() {
-  const params = useLocalSearchParams<{ entity?: string | string[]; entityId?: string | string[] }>();
-  const entity = String(Array.isArray(params.entity) ? params.entity[0] : params.entity || "");
-  const entityId = String(Array.isArray(params.entityId) ? params.entityId[0] : params.entityId || "");
+  const params = useLocalSearchParams<{
+    entity?: string | string[];
+    entityId?: string | string[];
+  }>();
+  const entity = String(
+    Array.isArray(params.entity) ? params.entity[0] : params.entity || ""
+  );
+  const entityId = String(
+    Array.isArray(params.entityId) ? params.entityId[0] : params.entityId || ""
+  );
   const { selectedId } = useFacility();
   const { logs, isLoading, error } = useAuditLogs(selectedId);
 
@@ -46,10 +53,30 @@ export default function FacilityAuditLogEntityRoute() {
     });
   }, [logs, entity, entityId]);
 
-  if (isLoading) return <View style={styles.container}><Text>Loading audit logs...</Text></View>;
-  if (!selectedId) return <View style={styles.container}><Text>Select a facility first.</Text></View>;
-  if (!entity || !entityId) return <View style={styles.container}><Text>Missing entity route params.</Text></View>;
-  if (error) return <View style={styles.container}><Text>{getErrorMessage(error, "Failed to load audit logs.")}</Text></View>;
+  if (isLoading)
+    return (
+      <View style={styles.container}>
+        <Text>Loading audit logs...</Text>
+      </View>
+    );
+  if (!selectedId)
+    return (
+      <View style={styles.container}>
+        <Text>Select a facility first.</Text>
+      </View>
+    );
+  if (!entity || !entityId)
+    return (
+      <View style={styles.container}>
+        <Text>Missing entity route params.</Text>
+      </View>
+    );
+  if (error)
+    return (
+      <View style={styles.container}>
+        <Text>{getErrorMessage(error, "Failed to load audit logs.")}</Text>
+      </View>
+    );
 
   return (
     <FlatList
@@ -68,9 +95,14 @@ export default function FacilityAuditLogEntityRoute() {
         const id = pickId(item, index);
         return (
           <View style={styles.card}>
-            <Text style={styles.title}>{String(item?.action || item?.type || "Event")}</Text>
+            <Text style={styles.title}>
+              {String(item?.action || item?.type || "Event")}
+            </Text>
             <Text style={styles.sub}>{String(item?.details || item?.message || "")}</Text>
-            <Link href={{ pathname: "/home/facility/audit-logs/[id]", params: { id } }} style={styles.link}>
+            <Link
+              href={{ pathname: "/home/facility/audit-logs/[id]", params: { id } }}
+              style={styles.link}
+            >
               Open Detail
             </Link>
           </View>
@@ -87,6 +119,14 @@ const styles = StyleSheet.create({
   h1: { fontSize: 22, fontWeight: "900" },
   title: { fontWeight: "800" },
   sub: { opacity: 0.75 },
-  card: { borderWidth: 1, borderColor: "#e5e7eb", borderRadius: 12, padding: 12, marginBottom: 10, backgroundColor: "#fff", gap: 4 },
+  card: {
+    borderWidth: 1,
+    borderColor: "#e5e7eb",
+    borderRadius: 12,
+    padding: 12,
+    marginBottom: 10,
+    backgroundColor: "#fff",
+    gap: 4
+  },
   link: { color: "#2563eb", fontWeight: "700" }
 });

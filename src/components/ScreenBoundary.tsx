@@ -2,7 +2,8 @@ import React from "react";
 import { Text, ScrollView } from "react-native";
 
 type Props = {
-  name: string;
+  name?: string;
+  title?: string;
   children: React.ReactNode;
 };
 
@@ -17,7 +18,8 @@ export class ScreenBoundary extends React.PureComponent<Props, State> {
 
   componentDidCatch(error: Error, info: any) {
     // Deterministic, visible logging
-    console.error(`[SCREEN_CRASH] ${this.props.name}`, error, info);
+    const label = this.props.name || this.props.title || "UnknownScreen";
+    console.error(`[SCREEN_CRASH] ${label}`, error, info);
   }
 
   render() {
@@ -26,7 +28,7 @@ export class ScreenBoundary extends React.PureComponent<Props, State> {
     return (
       <ScrollView contentContainerStyle={{ padding: 16 }}>
         <Text style={{ fontSize: 18, fontWeight: "700", marginBottom: 8 }}>
-          Screen crashed: {this.props.name}
+          Screen crashed: {this.props.name || this.props.title || "UnknownScreen"}
         </Text>
         <Text style={{ marginBottom: 12 }}>
           {String(this.state.error?.message || this.state.error)}

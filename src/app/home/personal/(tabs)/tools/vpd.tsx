@@ -50,7 +50,8 @@ export default function VpdToolScreen() {
   const model = useMemo<VpdModel>(() => {
     const t = Number(tempText);
     const rh = Number(rhText);
-    if (!Number.isFinite(t) || !Number.isFinite(rh)) return { valid: false, vpd: null, tempC: null };
+    if (!Number.isFinite(t) || !Number.isFinite(rh))
+      return { valid: false, vpd: null, tempC: null };
     if (rh < 0 || rh > 100) return { valid: false, vpd: null, tempC: null };
     const result = calcVpdFromTemp(t, unit, rh);
     return { valid: true, vpd: result.vpdKpa, tempC: result.tempC };
@@ -65,10 +66,16 @@ export default function VpdToolScreen() {
       </Text>
 
       <View style={styles.row}>
-        <Pressable style={[styles.pill, unit === "F" && styles.pillOn]} onPress={() => setUnit("F")}>
+        <Pressable
+          style={[styles.pill, unit === "F" && styles.pillOn]}
+          onPress={() => setUnit("F")}
+        >
           <Text style={[styles.pillTxt, unit === "F" && styles.pillTxtOn]}>degF</Text>
         </Pressable>
-        <Pressable style={[styles.pill, unit === "C" && styles.pillOn]} onPress={() => setUnit("C")}>
+        <Pressable
+          style={[styles.pill, unit === "C" && styles.pillOn]}
+          onPress={() => setUnit("C")}
+        >
           <Text style={[styles.pillTxt, unit === "C" && styles.pillTxtOn]}>degC</Text>
         </Pressable>
       </View>
@@ -95,7 +102,9 @@ export default function VpdToolScreen() {
         {model.valid ? (
           <>
             <Text style={styles.result}>VPD: {model.vpd.toFixed(2)} kPa</Text>
-            <Text style={styles.hint}>Internal temp: {model.tempC.toFixed(1)} degC (converted)</Text>
+            <Text style={styles.hint}>
+              Internal temp: {model.tempC.toFixed(1)} degC (converted)
+            </Text>
           </>
         ) : (
           <>

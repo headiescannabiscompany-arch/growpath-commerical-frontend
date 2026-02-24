@@ -229,4 +229,3 @@ const styles = StyleSheet.create({
   empty: { paddingVertical: 26, alignItems: "center", gap: 8 },
   emptyTitle: { fontSize: 16, fontWeight: "800" }
 });
-

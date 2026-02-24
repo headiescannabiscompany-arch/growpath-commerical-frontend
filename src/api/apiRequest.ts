@@ -4,6 +4,7 @@ export type ApiRequestOptions = {
   method?: string;
   headers?: Record<string, string>;
   body?: any;
+  data?: any;
   params?: Record<string, any>;
   responseType?: "auto" | "json" | "text" | "blob" | "arrayBuffer";
   signal?: AbortSignal;
@@ -17,7 +18,9 @@ export type ApiRequestOptions = {
 };
 
 export const API_URL =
-  global.API_URL_OVERRIDE || process.env.EXPO_PUBLIC_API_URL || "http://localhost:5001";
+  (globalThis as any).API_URL_OVERRIDE ||
+  process.env.EXPO_PUBLIC_API_URL ||
+  "http://localhost:5001";
 
 export class ApiError extends Error {
   code: string;
@@ -129,7 +132,7 @@ export async function apiRequest<T = any>(
       }
     }
 
-    let body = opts.body;
+    let body = opts.body ?? opts.data;
     if (body !== undefined && body !== null && !isFormData(body)) {
       if (typeof body !== "string") {
         body = JSON.stringify(body);
@@ -139,7 +142,7 @@ export async function apiRequest<T = any>(
 
     const timeoutMs = opts.timeoutMs ?? opts.timeout ?? null;
     let controller: AbortController | null = null;
-    let timeoutId: NodeJS.Timeout | null = null;
+    let timeoutId: ReturnType<typeof setTimeout> | null = null;
 
     const signal = opts.signal;
     if (

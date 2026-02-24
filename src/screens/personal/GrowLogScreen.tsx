@@ -11,7 +11,7 @@ export default function GrowLogScreen() {
   const navigation = useNavigation<any>();
   const route = useRoute<any>();
 
-  const growId: string | null = route?.params?.growId ?? null;
+  const growId: string | undefined = route?.params?.growId ?? undefined;
 
   // Always call hook; it self-disables when growId is missing
   const { data, isLoading, error, refetch } = useGrowLogs(growId);

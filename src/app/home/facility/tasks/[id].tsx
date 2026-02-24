@@ -160,14 +160,12 @@ export default function FacilityTaskDetail() {
         }
       >
         {error ? <InlineError error={error} /> : null}
-
         {loading ? (
           <View style={styles.loading}>
             <ActivityIndicator />
             <Text style={styles.muted}>Loading task...</Text>
           </View>
         ) : null}
-
         {!loading && !item ? (
           <View style={styles.empty}>
             <Text style={styles.emptyTitle}>Not found</Text>
@@ -193,7 +191,9 @@ export default function FacilityTaskDetail() {
                       placeholder="user id"
                     />
                     <TouchableOpacity
-                      onPress={() => updateTask({ assignedTo: assignedTo.trim() || null })}
+                      onPress={() =>
+                        updateTask({ assignedTo: assignedTo.trim() || null })
+                      }
                       disabled={saving}
                       style={[styles.primaryBtn, saving && styles.primaryBtnDisabled]}
                     >
@@ -223,7 +223,8 @@ export default function FacilityTaskDetail() {
               </View>
             )}
           </View>
-        ) : null}      </ScrollView>
+        ) : null}{" "}
+      </ScrollView>
     </ScreenBoundary>
   );
 }
@@ -282,5 +283,3 @@ const styles = StyleSheet.create({
   empty: { paddingVertical: 26, alignItems: "center", gap: 8 },
   emptyTitle: { fontSize: 16, fontWeight: "800" }
 });
-
-

@@ -3,6 +3,16 @@ import { useMemo, useSyncExternalStore } from "react";
 export type Facility = {
   id: string;
   name: string;
+  tier?: string;
+  licenseNumber?: string;
+  state?: string;
+  ownerId?: string;
+  ownerName?: string;
+  createdAt?: string;
+  plan?: string;
+  stripeStatus?: string;
+  type?: string;
+  [key: string]: unknown;
 };
 
 type Store = {
@@ -37,10 +47,29 @@ export function useFacility() {
     () => ({
       selectedId: snap.selectedId,
       selected: snap.selected,
+      facilityId: snap.selectedId,
+      activeFacilityId: snap.selectedId,
+      facility: snap.selected,
+      facilityRole: null as string | null,
+      facilities: snap.selected ? [snap.selected] : [],
+      isLoading: false,
+      isReady: true,
+      error: null as string | null,
       setSelected: (facility: Facility | null) => {
         store = {
           selectedId: facility?.id ?? null,
           selected: facility
+        };
+        emit();
+      },
+      selectFacility: (facility: Facility | string | null) => {
+        const normalized =
+          typeof facility === "string"
+            ? ({ id: facility, name: facility } as Facility)
+            : facility;
+        store = {
+          selectedId: normalized?.id ?? null,
+          selected: normalized
         };
         emit();
       },

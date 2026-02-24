@@ -39,16 +39,33 @@ export default function WateringToolScreen() {
       <Text style={styles.subtitle}>Estimate watering volume and schedule.</Text>
 
       <Text style={styles.label}>Pot size (L)</Text>
-      <TextInput style={styles.input} value={potLiters} onChangeText={setPotLiters} keyboardType="numeric" />
+      <TextInput
+        style={styles.input}
+        value={potLiters}
+        onChangeText={setPotLiters}
+        keyboardType="numeric"
+      />
 
       <Text style={styles.label}>Runoff target (%)</Text>
-      <TextInput style={styles.input} value={runoffPct} onChangeText={setRunoffPct} keyboardType="numeric" />
+      <TextInput
+        style={styles.input}
+        value={runoffPct}
+        onChangeText={setRunoffPct}
+        keyboardType="numeric"
+      />
 
       <Text style={styles.label}>Water every (days)</Text>
-      <TextInput style={styles.input} value={intervalDays} onChangeText={setIntervalDays} keyboardType="numeric" />
+      <TextInput
+        style={styles.input}
+        value={intervalDays}
+        onChangeText={setIntervalDays}
+        keyboardType="numeric"
+      />
 
       <View style={styles.card}>
-        <Text style={styles.result}>Target volume: {model.targetLiters} L per watering</Text>
+        <Text style={styles.result}>
+          Target volume: {model.targetLiters} L per watering
+        </Text>
         <Text style={styles.line}>Estimated weekly total: {model.perWeekLiters} L</Text>
         <Text style={styles.line}>Next watering date: {model.nextWaterDate}</Text>
       </View>
@@ -61,8 +78,22 @@ const styles = StyleSheet.create({
   title: { fontSize: 22, fontWeight: "700" },
   subtitle: { fontSize: 13, color: "#64748B", marginBottom: 8 },
   label: { fontWeight: "700", marginTop: 6 },
-  input: { borderWidth: 1, borderColor: "#E2E8F0", borderRadius: 10, padding: 12, backgroundColor: "#fff" },
-  card: { borderWidth: 1, borderColor: "#E2E8F0", borderRadius: 12, padding: 16, backgroundColor: "#F8FAFC", marginTop: 10, gap: 4 },
+  input: {
+    borderWidth: 1,
+    borderColor: "#E2E8F0",
+    borderRadius: 10,
+    padding: 12,
+    backgroundColor: "#fff"
+  },
+  card: {
+    borderWidth: 1,
+    borderColor: "#E2E8F0",
+    borderRadius: 12,
+    padding: 16,
+    backgroundColor: "#F8FAFC",
+    marginTop: 10,
+    gap: 4
+  },
   result: { fontSize: 18, fontWeight: "800" },
   line: { color: "#334155" }
 });

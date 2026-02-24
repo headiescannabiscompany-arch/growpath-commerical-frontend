@@ -38,7 +38,9 @@ export default function FacilitySopRunDetailRoute() {
     }
     setLoading(true);
     try {
-      const res = await apiRequest<SopRunDetailResponse>(endpoints.sopRun(facilityId, String(id)));
+      const res = await apiRequest<SopRunDetailResponse>(
+        endpoints.sopRun(facilityId, String(id))
+      );
       setRun(res?.run ?? res?.data ?? res);
       setMessage(null);
     } catch (e: unknown) {
@@ -56,7 +58,9 @@ export default function FacilitySopRunDetailRoute() {
     if (!facilityId || !id) return;
     setMessage(null);
     try {
-      await apiRequest(endpoints.sopRunComplete(facilityId, String(id)), { method: "POST" });
+      await apiRequest(endpoints.sopRunComplete(facilityId, String(id)), {
+        method: "POST"
+      });
       setMessage("Run marked complete.");
       await load();
     } catch (e: unknown) {
@@ -64,8 +68,18 @@ export default function FacilitySopRunDetailRoute() {
     }
   };
 
-  if (!id) return <View style={styles.container}><Text>Missing run id.</Text></View>;
-  if (loading) return <View style={styles.container}><Text>Loading...</Text></View>;
+  if (!id)
+    return (
+      <View style={styles.container}>
+        <Text>Missing run id.</Text>
+      </View>
+    );
+  if (loading)
+    return (
+      <View style={styles.container}>
+        <Text>Loading...</Text>
+      </View>
+    );
 
   return (
     <View style={styles.container}>
@@ -77,7 +91,9 @@ export default function FacilitySopRunDetailRoute() {
       </Pressable>
       {message ? <Text style={styles.msg}>{message}</Text> : null}
       <View style={styles.card}>
-        <Text selectable style={styles.json}>{JSON.stringify(run, null, 2)}</Text>
+        <Text selectable style={styles.json}>
+          {JSON.stringify(run, null, 2)}
+        </Text>
       </View>
     </View>
   );
@@ -87,9 +103,20 @@ const styles = StyleSheet.create({
   container: { flex: 1, padding: 16, gap: 8 },
   h1: { fontSize: 22, fontWeight: "900" },
   sub: { opacity: 0.75 },
-  btn: { backgroundColor: "#2563eb", borderRadius: 10, padding: 10, alignItems: "center" },
+  btn: {
+    backgroundColor: "#2563eb",
+    borderRadius: 10,
+    padding: 10,
+    alignItems: "center"
+  },
   btnText: { color: "#fff", fontWeight: "800" },
   msg: { fontWeight: "700" },
-  card: { borderWidth: 1, borderColor: "#e5e7eb", borderRadius: 12, padding: 10, backgroundColor: "#fff" },
+  card: {
+    borderWidth: 1,
+    borderColor: "#e5e7eb",
+    borderRadius: 12,
+    padding: 10,
+    backgroundColor: "#fff"
+  },
   json: { fontFamily: "monospace", fontSize: 12 }
 });

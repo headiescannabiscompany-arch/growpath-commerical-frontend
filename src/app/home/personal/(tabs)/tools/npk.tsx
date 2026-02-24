@@ -38,9 +38,27 @@ export default function NpkToolScreen() {
       <Text style={styles.subtitle}>Enter label N-P-K and your dose target.</Text>
 
       <View style={styles.row}>
-        <TextInput style={styles.input} value={nText} onChangeText={setNText} placeholder="N" keyboardType="numeric" />
-        <TextInput style={styles.input} value={pText} onChangeText={setPText} placeholder="P" keyboardType="numeric" />
-        <TextInput style={styles.input} value={kText} onChangeText={setKText} placeholder="K" keyboardType="numeric" />
+        <TextInput
+          style={styles.input}
+          value={nText}
+          onChangeText={setNText}
+          placeholder="N"
+          keyboardType="numeric"
+        />
+        <TextInput
+          style={styles.input}
+          value={pText}
+          onChangeText={setPText}
+          placeholder="P"
+          keyboardType="numeric"
+        />
+        <TextInput
+          style={styles.input}
+          value={kText}
+          onChangeText={setKText}
+          placeholder="K"
+          keyboardType="numeric"
+        />
       </View>
 
       <Text style={styles.label}>Dose</Text>
@@ -53,11 +71,19 @@ export default function NpkToolScreen() {
       />
 
       <View style={styles.row}>
-        <Pressable style={[styles.pill, unit === "ml/L" && styles.pillOn]} onPress={() => setUnit("ml/L")}>
+        <Pressable
+          style={[styles.pill, unit === "ml/L" && styles.pillOn]}
+          onPress={() => setUnit("ml/L")}
+        >
           <Text style={[styles.pillTxt, unit === "ml/L" && styles.pillTxtOn]}>ml/L</Text>
         </Pressable>
-        <Pressable style={[styles.pill, unit === "ml/gal" && styles.pillOn]} onPress={() => setUnit("ml/gal")}>
-          <Text style={[styles.pillTxt, unit === "ml/gal" && styles.pillTxtOn]}>ml/gal</Text>
+        <Pressable
+          style={[styles.pill, unit === "ml/gal" && styles.pillOn]}
+          onPress={() => setUnit("ml/gal")}
+        >
+          <Text style={[styles.pillTxt, unit === "ml/gal" && styles.pillTxtOn]}>
+            ml/gal
+          </Text>
         </Pressable>
       </View>
 
@@ -66,7 +92,9 @@ export default function NpkToolScreen() {
         <Text style={styles.line}>N share: {result.nShare}%</Text>
         <Text style={styles.line}>P share: {result.pShare}%</Text>
         <Text style={styles.line}>K share: {result.kShare}%</Text>
-        <Text style={styles.line}>Approx N concentration: {result.concentration} ({unit})</Text>
+        <Text style={styles.line}>
+          Approx N concentration: {result.concentration} ({unit})
+        </Text>
       </View>
     </View>
   );
@@ -77,14 +105,41 @@ const styles = StyleSheet.create({
   title: { fontSize: 22, fontWeight: "700" },
   subtitle: { fontSize: 13, color: "#64748B" },
   row: { flexDirection: "row", gap: 10, alignItems: "center" },
-  input: { flex: 1, borderWidth: 1, borderColor: "#E2E8F0", borderRadius: 10, padding: 12, backgroundColor: "#fff" },
+  input: {
+    flex: 1,
+    borderWidth: 1,
+    borderColor: "#E2E8F0",
+    borderRadius: 10,
+    padding: 12,
+    backgroundColor: "#fff"
+  },
   label: { fontWeight: "700", marginTop: 4 },
-  fullInput: { borderWidth: 1, borderColor: "#E2E8F0", borderRadius: 10, padding: 12, backgroundColor: "#fff" },
-  pill: { paddingVertical: 8, paddingHorizontal: 12, borderRadius: 999, borderWidth: 1, borderColor: "#E2E8F0" },
+  fullInput: {
+    borderWidth: 1,
+    borderColor: "#E2E8F0",
+    borderRadius: 10,
+    padding: 12,
+    backgroundColor: "#fff"
+  },
+  pill: {
+    paddingVertical: 8,
+    paddingHorizontal: 12,
+    borderRadius: 999,
+    borderWidth: 1,
+    borderColor: "#E2E8F0"
+  },
   pillOn: { backgroundColor: "#16A34A", borderColor: "#16A34A" },
   pillTxt: { fontWeight: "800" },
   pillTxtOn: { color: "#fff" },
-  card: { borderWidth: 1, borderColor: "#E2E8F0", borderRadius: 12, padding: 16, backgroundColor: "#F8FAFC", marginTop: 4, gap: 4 },
+  card: {
+    borderWidth: 1,
+    borderColor: "#E2E8F0",
+    borderRadius: 12,
+    padding: 16,
+    backgroundColor: "#F8FAFC",
+    marginTop: 4,
+    gap: 4
+  },
   result: { fontSize: 18, fontWeight: "800" },
   line: { color: "#334155" }
 });

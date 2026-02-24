@@ -76,9 +76,21 @@ export default function FacilitySopRunsCompareRoute() {
     <View style={styles.container}>
       <Text style={styles.h1}>Compare SOP Runs</Text>
       {error ? <Text style={styles.err}>{error}</Text> : null}
-      <TextInput style={styles.input} placeholder="Left run ID" value={leftId} onChangeText={setLeftId} />
-      <TextInput style={styles.input} placeholder="Right run ID" value={rightId} onChangeText={setRightId} />
-      <Pressable onPress={go} style={styles.btn}><Text style={styles.btnText}>Compare</Text></Pressable>
+      <TextInput
+        style={styles.input}
+        placeholder="Left run ID"
+        value={leftId}
+        onChangeText={setLeftId}
+      />
+      <TextInput
+        style={styles.input}
+        placeholder="Right run ID"
+        value={rightId}
+        onChangeText={setRightId}
+      />
+      <Pressable onPress={go} style={styles.btn}>
+        <Text style={styles.btnText}>Compare</Text>
+      </Pressable>
 
       <FlatList
         data={runs}
@@ -87,11 +99,17 @@ export default function FacilitySopRunsCompareRoute() {
           const id = pickId(item, index);
           return (
             <View style={styles.card}>
-              <Text style={styles.title}>{String(item?.title || item?.name || "SOP Run")}</Text>
+              <Text style={styles.title}>
+                {String(item?.title || item?.name || "SOP Run")}
+              </Text>
               <Text style={styles.sub}>id: {id}</Text>
               <View style={styles.row}>
-                <Pressable onPress={() => setLeftId(id)}><Text style={styles.link}>Set Left</Text></Pressable>
-                <Pressable onPress={() => setRightId(id)}><Text style={styles.link}>Set Right</Text></Pressable>
+                <Pressable onPress={() => setLeftId(id)}>
+                  <Text style={styles.link}>Set Left</Text>
+                </Pressable>
+                <Pressable onPress={() => setRightId(id)}>
+                  <Text style={styles.link}>Set Right</Text>
+                </Pressable>
               </View>
             </View>
           );
@@ -104,10 +122,28 @@ export default function FacilitySopRunsCompareRoute() {
 const styles = StyleSheet.create({
   container: { flex: 1, padding: 16, gap: 8 },
   h1: { fontSize: 22, fontWeight: "900" },
-  input: { borderWidth: 1, borderColor: "#e5e7eb", borderRadius: 10, padding: 10, backgroundColor: "#fff" },
-  btn: { backgroundColor: "#2563eb", borderRadius: 10, padding: 10, alignItems: "center" },
+  input: {
+    borderWidth: 1,
+    borderColor: "#e5e7eb",
+    borderRadius: 10,
+    padding: 10,
+    backgroundColor: "#fff"
+  },
+  btn: {
+    backgroundColor: "#2563eb",
+    borderRadius: 10,
+    padding: 10,
+    alignItems: "center"
+  },
   btnText: { color: "#fff", fontWeight: "800" },
-  card: { borderWidth: 1, borderColor: "#e5e7eb", borderRadius: 10, padding: 10, marginTop: 10, backgroundColor: "#fff" },
+  card: {
+    borderWidth: 1,
+    borderColor: "#e5e7eb",
+    borderRadius: 10,
+    padding: 10,
+    marginTop: 10,
+    backgroundColor: "#fff"
+  },
   title: { fontWeight: "800" },
   sub: { opacity: 0.75 },
   row: { flexDirection: "row", gap: 12, marginTop: 6 },

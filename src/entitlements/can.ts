@@ -8,13 +8,15 @@ export function buildCan(
   const set = new Set<string>();
 
   if (capabilities) {
-    if (typeof (capabilities as Record<string, boolean>)[Symbol.iterator] === "function") {
+    if (typeof (capabilities as any)[Symbol.iterator] === "function") {
       for (const entry of capabilities as Iterable<string>) {
         const normalized = normalizeCapabilityKey(entry);
         if (normalized) set.add(normalized);
       }
     } else {
-      for (const [key, enabled] of Object.entries(capabilities as Record<string, boolean>)) {
+      for (const [key, enabled] of Object.entries(
+        capabilities as Record<string, boolean>
+      )) {
         if (!enabled) continue;
         const normalized = normalizeCapabilityKey(key);
         if (normalized) set.add(normalized);
@@ -35,4 +37,3 @@ export function buildCan(
 
   return can;
 }
-

@@ -41,11 +41,36 @@ export default function FacilityAuditLogDetailRoute() {
   const entity = String(item?.entity ?? item?.entityType ?? "");
   const entityId = String(item?.entityId ?? item?.targetId ?? "");
 
-  if (isLoading) return <View style={styles.container}><Text>Loading audit log...</Text></View>;
-  if (!selectedId) return <View style={styles.container}><Text>Select a facility first.</Text></View>;
-  if (!id) return <View style={styles.container}><Text>Missing audit log id.</Text></View>;
-  if (error) return <View style={styles.container}><Text>{getErrorMessage(error, "Failed to load audit log detail.")}</Text></View>;
-  if (!item) return <View style={styles.container}><Text>Audit log not found.</Text></View>;
+  if (isLoading)
+    return (
+      <View style={styles.container}>
+        <Text>Loading audit log...</Text>
+      </View>
+    );
+  if (!selectedId)
+    return (
+      <View style={styles.container}>
+        <Text>Select a facility first.</Text>
+      </View>
+    );
+  if (!id)
+    return (
+      <View style={styles.container}>
+        <Text>Missing audit log id.</Text>
+      </View>
+    );
+  if (error)
+    return (
+      <View style={styles.container}>
+        <Text>{getErrorMessage(error, "Failed to load audit log detail.")}</Text>
+      </View>
+    );
+  if (!item)
+    return (
+      <View style={styles.container}>
+        <Text>Audit log not found.</Text>
+      </View>
+    );
 
   return (
     <View style={styles.container}>
@@ -53,14 +78,19 @@ export default function FacilityAuditLogDetailRoute() {
       <Text style={styles.sub}>id: {String(id || "")}</Text>
       {entity && entityId ? (
         <Link
-          href={{ pathname: "/home/facility/audit-logs/[entity]/[entityId]", params: { entity, entityId } }}
+          href={{
+            pathname: "/home/facility/audit-logs/[entity]/[entityId]",
+            params: { entity, entityId }
+          }}
           style={styles.link}
         >
           View all for this entity
         </Link>
       ) : null}
       <View style={styles.card}>
-        <Text selectable style={styles.json}>{JSON.stringify(item, null, 2)}</Text>
+        <Text selectable style={styles.json}>
+          {JSON.stringify(item, null, 2)}
+        </Text>
       </View>
     </View>
   );
@@ -70,7 +100,13 @@ const styles = StyleSheet.create({
   container: { flex: 1, padding: 16, gap: 8 },
   h1: { fontSize: 22, fontWeight: "900" },
   sub: { opacity: 0.75 },
-  card: { borderWidth: 1, borderColor: "#e5e7eb", borderRadius: 12, padding: 10, backgroundColor: "#fff" },
+  card: {
+    borderWidth: 1,
+    borderColor: "#e5e7eb",
+    borderRadius: 12,
+    padding: 10,
+    backgroundColor: "#fff"
+  },
   json: { fontFamily: "monospace", fontSize: 12 },
   link: { color: "#2563eb", fontWeight: "700" }
 });

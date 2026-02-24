@@ -1,6 +1,13 @@
 import React, { useCallback, useEffect, useState } from "react";
 import { Link, useRouter } from "expo-router";
-import { ActivityIndicator, FlatList, Pressable, StyleSheet, Text, View } from "react-native";
+import {
+  ActivityIndicator,
+  FlatList,
+  Pressable,
+  StyleSheet,
+  Text,
+  View
+} from "react-native";
 
 import { apiRequest } from "@/api/apiRequest";
 import { normalizeApiError } from "@/api/errors";
@@ -47,21 +54,24 @@ export default function FacilitySopRunsIndexRoute() {
   const [refreshing, setRefreshing] = useState(false);
   const [error, setError] = useState<string | null>(null);
 
-  const load = useCallback(async (opts?: { refresh?: boolean }) => {
-    if (!facilityId) return;
-    if (opts?.refresh) setRefreshing(true);
-    else setLoading(true);
-    setError(null);
-    try {
-      const res = await apiRequest(endpoints.sopRuns(facilityId));
-      setItems(asArray(res));
-    } catch (e: unknown) {
-      setError(getErrorMessage(e, "Failed to load SOP runs"));
-    } finally {
-      setLoading(false);
-      setRefreshing(false);
-    }
-  }, [facilityId]);
+  const load = useCallback(
+    async (opts?: { refresh?: boolean }) => {
+      if (!facilityId) return;
+      if (opts?.refresh) setRefreshing(true);
+      else setLoading(true);
+      setError(null);
+      try {
+        const res = await apiRequest(endpoints.sopRuns(facilityId));
+        setItems(asArray(res));
+      } catch (e: unknown) {
+        setError(getErrorMessage(e, "Failed to load SOP runs"));
+      } finally {
+        setLoading(false);
+        setRefreshing(false);
+      }
+    },
+    [facilityId]
+  );
 
   useEffect(() => {
     if (!facilityId) return;
@@ -69,11 +79,19 @@ export default function FacilitySopRunsIndexRoute() {
   }, [facilityId, load]);
 
   if (!facilityId) {
-    return <View style={styles.center}><Text>Select a facility first.</Text></View>;
+    return (
+      <View style={styles.center}>
+        <Text>Select a facility first.</Text>
+      </View>
+    );
   }
 
   if (loading) {
-    return <View style={styles.center}><ActivityIndicator /></View>;
+    return (
+      <View style={styles.center}>
+        <ActivityIndicator />
+      </View>
+    );
   }
 
   return (
@@ -87,9 +105,15 @@ export default function FacilitySopRunsIndexRoute() {
         <View style={styles.header}>
           <Text style={styles.h1}>SOP Runs</Text>
           <View style={styles.links}>
-            <Link href="/home/facility/sop-runs/start" style={styles.link}>Start Run</Link>
-            <Link href="/home/facility/sop-runs/presets" style={styles.link}>Presets</Link>
-            <Link href="/home/facility/sop-runs/compare" style={styles.link}>Compare</Link>
+            <Link href="/home/facility/sop-runs/start" style={styles.link}>
+              Start Run
+            </Link>
+            <Link href="/home/facility/sop-runs/presets" style={styles.link}>
+              Presets
+            </Link>
+            <Link href="/home/facility/sop-runs/compare" style={styles.link}>
+              Compare
+            </Link>
           </View>
           {error ? <Text style={styles.err}>{error}</Text> : null}
         </View>
@@ -104,7 +128,9 @@ export default function FacilitySopRunsIndexRoute() {
             }
             style={styles.card}
           >
-            <Text style={styles.title}>{String(item?.title || item?.name || "SOP Run")}</Text>
+            <Text style={styles.title}>
+              {String(item?.title || item?.name || "SOP Run")}
+            </Text>
             <Text style={styles.sub}>status: {String(item?.status || "unknown")}</Text>
           </Pressable>
         );

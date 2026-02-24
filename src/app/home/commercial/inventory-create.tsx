@@ -13,7 +13,10 @@ export default function CommercialInventoryCreateRoute() {
   const [saving, setSaving] = useState(false);
 
   const path = useMemo(
-    () => (endpoints as any)?.commercial?.inventory ?? (endpoints as any)?.inventoryGlobal ?? "/api/inventory",
+    () =>
+      (endpoints as any)?.commercial?.inventory ??
+      (endpoints as any)?.inventoryGlobal ??
+      "/api/inventory",
     []
   );
 
@@ -25,7 +28,11 @@ export default function CommercialInventoryCreateRoute() {
     try {
       await apiRequest(path, {
         method: "POST",
-        body: { name: name.trim(), sku: sku.trim() || undefined, quantity: Number(qty) || 0 }
+        body: {
+          name: name.trim(),
+          sku: sku.trim() || undefined,
+          quantity: Number(qty) || 0
+        }
       });
       router.replace("/home/commercial/inventory");
     } catch (e: any) {
@@ -38,8 +45,18 @@ export default function CommercialInventoryCreateRoute() {
   return (
     <View style={styles.container}>
       <Text style={styles.h1}>Create Inventory Item</Text>
-      <TextInput value={name} onChangeText={setName} placeholder="Name" style={styles.input} />
-      <TextInput value={sku} onChangeText={setSku} placeholder="SKU (optional)" style={styles.input} />
+      <TextInput
+        value={name}
+        onChangeText={setName}
+        placeholder="Name"
+        style={styles.input}
+      />
+      <TextInput
+        value={sku}
+        onChangeText={setSku}
+        placeholder="SKU (optional)"
+        style={styles.input}
+      />
       <TextInput
         value={qty}
         onChangeText={setQty}
@@ -47,7 +64,11 @@ export default function CommercialInventoryCreateRoute() {
         keyboardType="numeric"
         style={styles.input}
       />
-      <Pressable onPress={create} disabled={!canSave} style={[styles.button, !canSave && styles.disabled]}>
+      <Pressable
+        onPress={create}
+        disabled={!canSave}
+        style={[styles.button, !canSave && styles.disabled]}
+      >
         <Text style={styles.buttonText}>{saving ? "Saving..." : "Create Item"}</Text>
       </Pressable>
     </View>
@@ -57,8 +78,20 @@ export default function CommercialInventoryCreateRoute() {
 const styles = StyleSheet.create({
   container: { flex: 1, padding: 16, gap: 10 },
   h1: { fontSize: 22, fontWeight: "900", marginBottom: 4 },
-  input: { borderWidth: 1, borderColor: "#d1d5db", borderRadius: 10, paddingHorizontal: 12, paddingVertical: 10 },
-  button: { marginTop: 6, backgroundColor: "#2563eb", borderRadius: 10, paddingVertical: 12, alignItems: "center" },
+  input: {
+    borderWidth: 1,
+    borderColor: "#d1d5db",
+    borderRadius: 10,
+    paddingHorizontal: 12,
+    paddingVertical: 10
+  },
+  button: {
+    marginTop: 6,
+    backgroundColor: "#2563eb",
+    borderRadius: 10,
+    paddingVertical: 12,
+    alignItems: "center"
+  },
   disabled: { opacity: 0.55 },
   buttonText: { color: "#fff", fontWeight: "800" }
 });

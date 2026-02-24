@@ -18,7 +18,10 @@ function getErrorMessage(e: unknown, fallback: string) {
 }
 
 export default function FacilitySopRunsCompareResultRoute() {
-  const params = useLocalSearchParams<{ leftId?: string | string[]; rightId?: string | string[] }>();
+  const params = useLocalSearchParams<{
+    leftId?: string | string[];
+    rightId?: string | string[];
+  }>();
   const leftId = Array.isArray(params.leftId) ? params.leftId[0] : params.leftId;
   const rightId = Array.isArray(params.rightId) ? params.rightId[0] : params.rightId;
   const { selectedId: facilityId } = useFacility();
@@ -68,15 +71,21 @@ export default function FacilitySopRunsCompareResultRoute() {
       {error ? <Text style={styles.err}>{error}</Text> : null}
 
       <View style={styles.card}>
-        <Text selectable style={styles.json}>{JSON.stringify(summary, null, 2)}</Text>
+        <Text selectable style={styles.json}>
+          {JSON.stringify(summary, null, 2)}
+        </Text>
       </View>
       <View style={styles.card}>
         <Text style={styles.title}>Left run</Text>
-        <Text selectable style={styles.json}>{JSON.stringify(left, null, 2)}</Text>
+        <Text selectable style={styles.json}>
+          {JSON.stringify(left, null, 2)}
+        </Text>
       </View>
       <View style={styles.card}>
         <Text style={styles.title}>Right run</Text>
-        <Text selectable style={styles.json}>{JSON.stringify(right, null, 2)}</Text>
+        <Text selectable style={styles.json}>
+          {JSON.stringify(right, null, 2)}
+        </Text>
       </View>
     </View>
   );
@@ -87,7 +96,13 @@ const styles = StyleSheet.create({
   h1: { fontSize: 22, fontWeight: "900" },
   sub: { opacity: 0.75 },
   err: { color: "#b91c1c", fontWeight: "700" },
-  card: { borderWidth: 1, borderColor: "#e5e7eb", borderRadius: 10, padding: 10, backgroundColor: "#fff" },
+  card: {
+    borderWidth: 1,
+    borderColor: "#e5e7eb",
+    borderRadius: 10,
+    padding: 10,
+    backgroundColor: "#fff"
+  },
   title: { fontWeight: "800" },
   json: { fontFamily: "monospace", fontSize: 12 }
 });

@@ -13,10 +13,14 @@ type Deps = {
   logout?: (reason?: string) => void;
 };
 
+type ApiErrorMapper = ((err: any) => UiErrorState | null) & {
+  toInlineError: (err: any) => UiErrorState | null;
+};
+
 export function useApiErrorHandler(deps: Deps = {}) {
   const router = useRouter();
 
-  return useCallback(
+  const mapper = useCallback(
     (err: any): UiErrorState | null => {
       const action = handleApiError(err, {
         showToast: undefined,
@@ -39,4 +43,6 @@ export function useApiErrorHandler(deps: Deps = {}) {
     },
     [deps, router]
   );
+
+  return Object.assign(mapper, { toInlineError: mapper }) as ApiErrorMapper;
 }

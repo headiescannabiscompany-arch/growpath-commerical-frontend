@@ -61,7 +61,12 @@ export default function FacilitySopRunsStartRoute() {
   return (
     <View style={styles.container}>
       <Text style={styles.h1}>Start SOP Run</Text>
-      <TextInput style={styles.input} placeholder="Run title" value={title} onChangeText={setTitle} />
+      <TextInput
+        style={styles.input}
+        placeholder="Run title"
+        value={title}
+        onChangeText={setTitle}
+      />
       <TextInput
         style={styles.input}
         placeholder="Template ID (optional)"
@@ -86,9 +91,20 @@ export default function FacilitySopRunsStartRoute() {
 const styles = StyleSheet.create({
   container: { flex: 1, padding: 16, gap: 10 },
   h1: { fontSize: 22, fontWeight: "900" },
-  input: { borderWidth: 1, borderColor: "#e5e7eb", borderRadius: 10, padding: 10, backgroundColor: "#fff" },
+  input: {
+    borderWidth: 1,
+    borderColor: "#e5e7eb",
+    borderRadius: 10,
+    padding: 10,
+    backgroundColor: "#fff"
+  },
   notes: { minHeight: 90, textAlignVertical: "top" },
-  btn: { backgroundColor: "#16a34a", borderRadius: 10, padding: 12, alignItems: "center" },
+  btn: {
+    backgroundColor: "#16a34a",
+    borderRadius: 10,
+    padding: 12,
+    alignItems: "center"
+  },
   btnText: { color: "#fff", fontWeight: "800" },
   msg: { color: "#b91c1c", fontWeight: "700" }
 });
