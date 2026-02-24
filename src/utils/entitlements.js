@@ -13,4 +13,3 @@ export function getEntitlements(user = {}) {
     isEntitled
   };
 }
-

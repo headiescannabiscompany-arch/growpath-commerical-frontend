@@ -1,0 +1,8 @@
+
+> growpath-commercial-frontend@1.0.0 verify:delivery
+> node scripts/verify-delivery.mjs
+
+[ok] placeholder scan: no findings
+[ok] corruption scan: no findings
+[ok] export sanity: passed
+verify:delivery complete

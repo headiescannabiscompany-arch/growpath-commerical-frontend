@@ -4,7 +4,6 @@ import routes from "./routes.js";
 // Login
 export async function login(email, password) {
   try {
-    console.log("[API] Login request:", { email, passwordLength: password?.length });
     const loginData = await apiRequest(routes.AUTH.LOGIN, {
       method: "POST",
       auth: false,

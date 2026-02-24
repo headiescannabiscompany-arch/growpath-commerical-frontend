@@ -1,0 +1,4 @@
+
+> growpath-commercial-frontend@1.0.0 check:sensitive-copy
+> node scripts/check-sensitive-copy.js
+

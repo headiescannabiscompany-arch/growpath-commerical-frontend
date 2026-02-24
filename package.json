@@ -26,6 +26,8 @@
     "normalize:mojibake": "node scripts/normalize-mojibake.mjs",
     "verify:delivery": "node scripts/verify-delivery.mjs",
     "test": "jest --runInBand",
+    "test:ci": "jest --runInBand --forceExit",
+    "nightly": "powershell -NoProfile -ExecutionPolicy Bypass -File scripts/nightly.ps1",
     "test:live": "node scripts/test-live.js",
     "backend:start": "node scripts/start-backend.js",
     "acceptance": "node scripts/run-acceptance.js",
