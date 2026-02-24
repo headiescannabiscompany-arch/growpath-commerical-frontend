@@ -16,7 +16,7 @@
     "android": "expo start --android",
     "ios": "expo start --ios",
     "web": "expo start --web",
-    "lint": "eslint \"src/{app,api,auth,components,entitlements,hooks,ui,utils}/**/*.{js,jsx,ts,tsx}\"",
+    "lint": "eslint \"src/{app,api,auth,components,entitlements,hooks,ui,utils}/**/*.{js,jsx,ts,tsx}\" --ignore-pattern \"src/api/_quarantine/**\"",
     "lint:ci": "eslint \"src/{app,api,auth,components,entitlements,hooks,ui,utils}/**/*.{js,jsx,ts,tsx}\" --max-warnings 0",
     "lint:fix": "eslint \"src/{app,api,auth,components,entitlements,hooks,ui,utils}/**/*.{js,jsx,ts,tsx}\" --fix",
     "format": "prettier --write \"**/*.{js,jsx,ts,tsx,json}\"",

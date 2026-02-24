@@ -1,0 +1,487 @@
+﻿src\app\(commercial)\alerts\[id].tsx:120:        <Text onPress={() => router.back()} style={styles.backLink}>
+src\app\(commercial)\tasks\[id].tsx:120:        <Text onPress={() => router.back()} style={styles.backLink}>
+src\app\(commercial)\feed\index.tsx:22:          onPress={() => router.push("/(commercial)")}
+src\app\(commercial)\logs\[id].tsx:126:        <Text onPress={() => router.back()} style={styles.backLink}>
+src\app\login.tsx:94:        onPress={onSubmit}
+src\app\login.tsx:106:      <Pressable onPress={() => router.push("/register")} style={styles.linkBtn}>
+src\app\facilities\index.tsx:158:              onPress={() => handleSelectFacility(fac.id)}
+src\app\register.tsx:108:        onPress={onSubmit}
+src\app\register.tsx:119:      <Pressable onPress={() => router.replace("/login")} style={styles.linkBtn}>
+src\app\onboarding\create-facility.tsx:74:        onPress={handleCreate}
+src\entitlements\LockedScreen.tsx:21:          onPress={onAction}
+src\components\EmptyState.tsx:27:      {actionLabel && onAction && <Button title={actionLabel} onPress={onAction} />}
+src\components\ContextBar.js:13:          <TouchableOpacity key={idx} style={styles.actionBtn} onPress={action.onPress}>
+src\features\UpgradePrompt.tsx:18:      <Button title="View Plans" onPress={() => navigation.navigate("BillingHome")} />
+src\screens\CategoryBrowserScreen.js:67:          <Pressable style={styles.item} onPress={() => go(item.key)}>
+src\screens\AppIntroScreen.js:99:              onPress={() => toggleSelection(selected, setSelected, option)}
+src\screens\AppIntroScreen.js:110:        <TouchableOpacity style={styles.nextButton} onPress={onNext}>
+src\screens\AppIntroScreen.js:139:              onPress={handleStart}
+src\screens\AppIntroScreen.js:144:            <TouchableOpacity style={styles.skipButton} onPress={handleSkip}>
+src\components\commercial\CommercialFeedCard.tsx:106:          onPress={handleLikeToggle}
+src\screens\AnswerQuestionScreen.js:17:      <Button title="Submit" onPress={() => alert("Submitted")} />
+src\screens\AdminReportsScreen.js:87:                onPress={() => handleResolve(item._id)}
+src\screens\AdminPayoutsScreen.js:76:                onPress={() => handleMarkPaid(item._id)}
+src\screens\AdminCoursesScreen.js:89:      onPress={() => setFilter(value)}
+src\screens\AdminCoursesScreen.js:180:                    onPress={() => handleReject(item._id)}
+src\screens\AdminCoursesScreen.js:186:                    onPress={() => handleApprove(item._id)}
+src\screens\AdminCoursesScreen.js:203:              onPress={() => navigation.navigate("CourseDetail", { course: item })}
+src\screens\AddLessonScreen.js:146:      <TouchableOpacity style={styles.uploadBtn} onPress={pickVideo}>
+src\screens\AddLessonScreen.js:159:      <TouchableOpacity style={styles.uploadBtn} onPress={pickPDF}>
+src\screens\AddLessonScreen.js:172:      <TouchableOpacity style={styles.uploadBtn} onPress={pickAudio}>
+src\screens\AddLessonScreen.js:179:      <TouchableOpacity style={styles.uploadBtn} onPress={pickImages}>
+src\screens\AddLessonScreen.js:198:      <TouchableOpacity style={styles.btn} onPress={submit}>
+src\screens\CreatePlantScreen.js:118:          <TouchableOpacity style={styles.uploadButton} onPress={pickPhotos}>
+src\screens\CreatePlantScreen.js:131:          <TouchableOpacity style={styles.uploadButton} onPress={pickVideo}>
+src\screens\CreatePlantScreen.js:174:                onPress={() => setGrowMedium(option)}
+src\screens\CreatePlantScreen.js:206:          onPress={handleCreate}
+src\screens\CoursesScreen.js:145:          <Pressable accessibilityRole="button" style={styles.inviteBtn} onPress={handleInvite}>
+src\app\home\personal\(tabs)\tools\vpd.tsx:73:          onPress={() => setUnit("F")}
+src\app\home\personal\(tabs)\tools\vpd.tsx:80:          onPress={() => setUnit("C")}
+src\features\ai\AiContextBlock.tsx:47:          onPress={() => onChangeGrowId(growId ? null : "GROW_STUB")}
+src\features\ai\AiContextBlock.tsx:62:          onPress={() => onChangeRoomId(roomId ? null : "ROOM_STUB")}
+src\features\ai\AiContextBlock.tsx:77:          onPress={onPickPhoto}
+src\app\home\personal\(tabs)\tasks.tsx:21:          onPress={() => router.push("/home/facility" as any)}
+src\features\team\screens\TeamMemberDetail.tsx:11:      <Button title="Make Manager" onPress={() => update.mutate({ role: "MANAGER" })} />
+src\features\team\screens\TeamMemberDetail.tsx:12:      <Button title="Remove" onPress={() => remove.mutate()} />
+src\features\team\screens\JoinFacilityFlow.tsx:11:      <Button title="Back to Home" onPress={() => navigation.navigate("Home")} />
+src\components\TokenBalanceWidget.js:70:      onPress={onPress || (() => navigation.navigate("TokenInfo"))}
+src\features\team\screens\InviteMember.tsx:14:        onPress={() =>
+src\components\TaskRow.js:6:      onPress={onPress}
+src\features\team\screens\AcceptInvite.tsx:56:      <Button title="Accept" onPress={handleAccept} />
+src\features\team\screens\AcceptInvite.tsx:57:      <Button title="Decline" onPress={handleDecline} />
+src\components\TaskCompleteModal.js:18:          <TouchableOpacity style={styles.button} onPress={onClose}>
+src\app\home\personal\(tabs)\profile\index.tsx:120:            onPress={async () => {
+src\app\home\personal\(tabs)\profile\index.tsx:142:            onPress={async () => {
+src\app\home\personal\(tabs)\profile\index.tsx:166:        onPress={() =>
+src\app\home\personal\(tabs)\profile\index.tsx:176:      <Pressable style={[styles.button, styles.buttonDanger]} onPress={handleLogout}>
+src\screens\CommercialInventoryScreen.js:84:        <Pressable style={styles.btn} onPress={load}>
+src\components\StageSlider.js:28:                onPress={() => !disabled && onChange?.(option)}
+src\components\StageSlider.js:53:              onPress={() => !disabled && onChange?.(option)}
+src\app\home\personal\(tabs)\logs\new.tsx:51:      <Pressable style={styles.cta} onPress={() => router.back()}>
+src\components\RoomCard.tsx:12:    <TouchableOpacity style={styles.card} onPress={onPress}>
+src\components\ReportModal.js:45:            <Button title="Cancel" onPress={onClose} disabled={loading} />
+src\components\ReportModal.js:48:              onPress={handleSubmit}
+src\components\PrimaryButton.js:18:      onPress={onPress}
+src\features\inventory\screens\InventoryEdit.tsx:19:        onPress={() =>
+src\components\PlantSaveModal.js:20:          <TouchableOpacity style={styles.button} onPress={onConfirm}>
+src\features\inventory\screens\InventoryDetail.tsx:16:      <Button title="Edit" onPress={() => navigation.navigate("InventoryEdit", { id })} />
+src\features\inventory\screens\InventoryDetail.tsx:17:      <Button title="Delete" onPress={() => del.mutate()} />
+src\components\PlantCard.js:69:            <TouchableOpacity onPress={onRemove}>
+src\components\PlantCard.js:133:            onPress={onAddPhoto}
+src\components\PaymentHelpDialog.js:73:          <TouchableOpacity style={styles.emailButton} onPress={openEmail}>
+src\components\PaymentHelpDialog.js:78:          <TouchableOpacity style={styles.closeButton} onPress={onClose}>
+src\screens\commercial\VendorMetricsScreen.js:228:                onPress={handleAddMix}
+src\screens\commercial\CommercialDashboardScreen.js:33:  <TouchableOpacity style={styles.actionTile} onPress={onPress}>
+src\screens\commercial\CommercialDashboardScreen.js:159:            onPress={handleCreateEducationPost}
+src\screens\commercial\CommercialDashboardScreen.js:169:            onPress={handlePublishCourse}
+src\screens\commercial\CommercialDashboardScreen.js:179:            onPress={handleOpenTools}
+src\screens\commercial\CommercialDashboardScreen.js:189:            onPress={handleOpenReports}
+src\screens\commercial\CommercialDashboardScreen.js:248:              onPress={() => navigation.navigate("CommercialProfile")}
+src\screens\commercial\CommercialDashboardScreen.js:258:              onPress={() => navigation.navigate("CommercialProfile")}
+src\screens\commercial\SocialMediaScreen.js:249:                onPress={() =>
+src\screens\commercial\SocialMediaScreen.js:313:                          onPress={() => handleDisconnect(platform.id)}
+src\screens\commercial\SocialMediaScreen.js:324:                          onPress={() =>
+src\screens\commercial\SocialMediaScreen.js:354:                          onPress={() => handleConnect(platform.id)}
+src\screens\commercial\SocialMediaScreen.js:383:            onPress={() =>
+src\screens\commercial\SocialMediaScreen.js:403:            onPress={() =>
+src\screens\commercial\AdvertisingScreen.js:122:            onPress={() => setActiveTab("campaigns")}
+src\screens\commercial\AdvertisingScreen.js:141:            onPress={() => setActiveTab("analytics")}
+src\screens\commercial\AdvertisingScreen.js:160:            onPress={() => setActiveTab("budget")}
+src\screens\commercial\AdvertisingScreen.js:199:                  onPress={() => setShowCreateCampaignModal(true)}
+src\screens\commercial\AdvertisingScreen.js:262:                      onPress={() => toggleCampaignStatus(campaign.id)}
+src\screens\commercial\AdvertisingScreen.js:584:              <TouchableOpacity onPress={() => setShowCreateCampaignModal(false)}>
+src\screens\commercial\AdvertisingScreen.js:629:                onPress={handleCreateCampaign}
+src\app\home\personal\(tabs)\grows\new.tsx:71:        onPress={onCreate}
+src\features\billing\screens\UpgradePlan.tsx:18:      <Button title="Upgrade to Pro" onPress={() => handleUpgrade("price_pro")} />
+src\features\billing\screens\UpgradePlan.tsx:21:        onPress={() => handleUpgrade("price_commercial")}
+src\features\billing\screens\UpgradePlan.tsx:25:        onPress={() => handleUpgrade("price_facility")}
+src\app\home\personal\(tabs)\grows\index.tsx:96:            onPress={() => {
+src\features\billing\screens\ManageSubscription.tsx:18:      <Button title="Open Stripe Portal" onPress={handlePortal} />
+src\components\nav\BackButton.tsx:20:    <Pressable style={styles.btn} onPress={() => router.back()}>
+src\screens\commercial\ContentMarketplaceScreen.js:93:              onPress={() => setActiveTab(tab.id)}
+src\screens\commercial\ContentMarketplaceScreen.js:141:                    onPress={() => setSelectedCategory(item.id)}
+src\screens\commercial\ContentMarketplaceScreen.js:230:                  onPress={() => setShowUploadModal(true)}
+src\screens\commercial\ContentMarketplaceScreen.js:408:              <TouchableOpacity onPress={() => setShowUploadModal(false)}>
+src\screens\commercial\ContentMarketplaceScreen.js:439:                    onPress={() => Alert.alert("Selected", cat)}
+src\screens\commercial\ContentMarketplaceScreen.js:453:                onPress={() => {
+src\screens\CertificateVerificationScreen.js:16:      <Button title="Verify" onPress={() => alert("Valid")} />
+src\components\ModeSwitcher.tsx:23:        <Pressable onPress={() => switchTo("personal")} disabled={mode === "personal"}>
+src\components\ModeSwitcher.tsx:30:          onPress={() => switchTo("commercial")}
+src\components\ModeSwitcher.tsx:38:        <Pressable onPress={() => switchTo("facility")} disabled={mode === "facility"}>
+src\screens\commercial\CommunitiesScreen.js:124:            onPress={() => setActiveTab("browse")}
+src\screens\commercial\CommunitiesScreen.js:140:            onPress={() => setActiveTab("joined")}
+src\screens\commercial\CommunitiesScreen.js:156:            onPress={() => setActiveTab("messages")}
+src\screens\commercial\CommunitiesScreen.js:230:                          onPress={() => handleJoinGuild(guild.id, guild.name)}
+src\screens\commercial\CommunitiesScreen.js:257:                        onPress={() => handleJoinGuild(guild.id, guild.name)}
+src\screens\commercial\CommunitiesScreen.js:275:                  onPress={() => setShowCreateGuildModal(true)}
+src\screens\commercial\CommunitiesScreen.js:423:              <TouchableOpacity onPress={() => setShowCreateGuildModal(false)}>
+src\screens\commercial\CommunitiesScreen.js:482:              <TouchableOpacity style={styles.createGuildBtn} onPress={handleCreateGuild}>
+src\screens\CategoryCoursesScreen.js:65:                  onPress={() => {
+src\features\billing\screens\BillingHome.tsx:22:      <Button title="Upgrade" onPress={() => billing.createCheckout("price_pro")} />
+src\features\billing\screens\BillingHome.tsx:23:      <Button title="Manage" onPress={() => billing.openPortal()} />
+src\screens\CreatorSignatureUpload.js:65:          onPress={pickImage}
+src\screens\CreatorSignatureUpload.js:92:        onPress={saveSignature}
+src\screens\CreatorPayoutScreen.js:106:            onPress={handleRequestPayout}
+src\screens\CreatorDashboardV2.js:129:            onPress={() => navigation.navigate("CreatorPayouts")}
+src\screens\CreatorDashboardV2.js:201:                  onPress={() => changeCourse(c.id)}
+src\screens\CreatorDashboard.js:8:      <Button title="Create Course" onPress={() => navigation.navigate("Courses")} />
+src\screens\CreatorDashboard.js:9:      <Button title="Campaigns" onPress={() => navigation.navigate("Campaigns")} />
+src\screens\CreatorDashboard.js:10:      <Button title="Certificates" onPress={() => navigation.navigate("Certificates")} />
+src\app\home\personal\(tabs)\forum\post\[id].tsx:125:        <Text onPress={() => router.back()} style={styles.backLink}>
+src\features\grows\screens\StartGrowWizard.tsx:46:          onPress={() => toggleRoom(room.id)}
+src\features\grows\screens\StartGrowWizard.tsx:51:        onPress={handleStart}
+src\screens\CreatorAnalyticsScreen.js:49:              <Text style={styles.courseItem} onPress={() => handleSelectCourse(item)}>
+src\app\home\personal\(tabs)\forum\new-post.tsx:82:          onPress={submit}
+src\app\home\personal\(tabs)\forum\new-post.tsx:99:          onPress={() => router.back()}
+src\components\ForumFilters.js:27:                    onPress={() => onToggleFilter(option, tier.id)}
+src\screens\CreateVendorGuide.js:16:      <Button title="Save Guide" onPress={() => alert("Saved")} />
+src\features\grows\screens\GrowsList.tsx:18:              onPress={() => navigation.navigate("Grow", { id: g.id })}
+src\components\FollowButton.js:40:      onPress={toggle}
+src\screens\CreateTaskScreen.js:117:            onPress={() => navigation.navigate("Subscription")}
+src\screens\CreateTaskScreen.js:127:        onPress={isPro ? save : undefined}
+src\components\ErrorState.js:35:        <TouchableOpacity style={styles.retryBtn} onPress={onRetry}>
+src\screens\CreatePostScreen.js:159:                  onPress={() => setPostType(type)}
+src\screens\CreatePostScreen.js:207:        onPress={pickImage}
+src\screens\CreatePostScreen.js:236:        onPress={submit}
+src\features\grows\screens\EndGrowFlow.tsx:41:      <Button title="End Grow" onPress={handleEnd} disabled={!endDate} />
+src\components\layout\AppCard.tsx:28:      <TouchableOpacity onPress={onPress} activeOpacity={0.85}>
+src\features\grows\screens\AssignPlantsToGrow.tsx:34:          onPress={() => toggle(plant.id)}
+src\features\grows\screens\AssignPlantsToGrow.tsx:39:        onPress={handleAssign}
+src\components\InventoryRow.tsx:20:        <Pressable style={styles.editBtn} onPress={onEdit}>
+src\screens\EnvironmentAssistantScreen.js:142:      <TouchableOpacity style={styles.btn} onPress={run}>
+src\components\ErrorBoundary.js:50:          <TouchableOpacity style={styles.resetBtn} onPress={this.handleReset}>
+src\components\InlineError.tsx:59:          onPress={props.onRetry}
+src\components\GrowPlantSelector.js:37:            onPress={() => {
+src\components\GrowPlantSelector.js:50:              onPress={() => {
+src\components\GrowPlantSelector.js:91:                  onPress={() => {
+src\components\GrowPlantSelector.js:111:                      onPress={() => {
+src\screens\EditLessonScreen.js:101:      <TouchableOpacity style={styles.btn} onPress={submit}>
+src\components\GrowInterestsEditor.js:59:      <TouchableOpacity style={styles.expandButton} onPress={() => setExpanded(true)}>
+src\components\GrowInterestsEditor.js:69:        <TouchableOpacity onPress={() => setExpanded(false)}>
+src\components\GrowInterestsEditor.js:86:              onPress={() => setActiveTier(isTierOpen ? null : tier.id)}
+src\components\GrowInterestsEditor.js:102:                      onPress={() => toggleInterest(tier.id, option)}
+src\components\GrowInterestsEditor.js:118:      <TouchableOpacity style={styles.saveButton} onPress={handleSave} disabled={saving}>
+src\components\feed\EducationPostCard.tsx:25:      <TouchableOpacity onPress={onPress} activeOpacity={0.85}>
+src\screens\EarningsScreen.js:120:          onPress={handleRequestPayout}
+src\screens\EarningsScreen.js:154:              onPress={() => navigation.navigate("CreateCourse")}
+src\components\GrowInterestPicker.js:66:        onPress={toggleExpanded}
+src\components\GrowInterestPicker.js:111:                        onPress={() => handleToggle(tier.id, option)}
+src\app\home\personal\(tabs)\ai\index.tsx:182:          onPress={send}
+src\screens\DiagnosisHistoryScreen.js:26:        onPress={() =>
+src\components\feed\ForumThreadCard.tsx:31:    if (typeof props.onPress === "function") return props.onPress();
+src\components\feed\ForumThreadCard.tsx:36:    <Pressable onPress={handlePress} style={styles.card} accessibilityRole="button">
+src\app\home\commercial\inventory.tsx:148:                onPress={() => {
+src\screens\DiagnoseScreen.js:164:                onPress={() => aiEnt === "enabled" && setNotes(prompt)}
+src\screens\DiagnoseScreen.js:234:          onPress={advEnt === "enabled" ? openAdvancedPicker : undefined}
+src\screens\DiagnoseScreen.js:262:                  onPress={() => {
+src\screens\DiagnoseScreen.js:317:                onPress={() => {
+src\screens\DiagnoseScreen.js:383:                    onPress={() => setWaterSource(src)}
+src\screens\DiagnoseScreen.js:409:                    onPress={() => setWaterTreatment(opt.key)}
+src\screens\DiagnoseScreen.js:483:                    onPress={() => setAirflow(flow)}
+src\screens\DiagnoseScreen.js:550:          onPress={async () => {
+src\screens\DiagnoseScreen.js:591:            onPress={async () => {
+src\screens\DiagnoseScreen.js:662:              onPress={() => navigation.navigate("DiagnosisHistory")}
+src\screens\DebugScreen.js:59:            onPress={doPing}
+src\screens\DebugScreen.js:67:            onPress={loadInfo}
+src\features\rooms\screens\RoomsList.tsx:24:            onPress={() => (navigation as any).navigate("RoomDetail", { id: room.id })}
+src\app\home\commercial\inventory-item\[id].tsx:137:        <Text onPress={() => router.back()} style={styles.backLink}>
+src\screens\facility\ECRecommendScreen.tsx:71:          onPress={onRun}
+src\features\rooms\screens\RoomPlants.tsx:23:            onPress={() => (navigation as any).navigate("MovePlant", { id: plant.id })}
+src\screens\facility\DeviationHandlingScreen.js:101:        onPress={() => {
+src\screens\facility\DeviationHandlingScreen.js:203:                onPress={closeModal}
+src\screens\facility\DeviationHandlingScreen.js:213:                onPress={handleSubmit}
+src\features\rooms\screens\RoomDetail.tsx:15:        <Button title="Plants" onPress={() => setTab("plants")} />
+src\features\rooms\screens\RoomDetail.tsx:16:        <Button title="Environment" onPress={() => setTab("environment")} />
+src\features\rooms\screens\FirstSetupRooms.tsx:126:              onPress={() => handleRemoveRoom(index)}
+src\features\rooms\screens\FirstSetupRooms.tsx:136:            onPress={handleAddRoom}
+src\features\rooms\screens\FirstSetupRooms.tsx:156:        onPress={handleCreateRooms}
+src\features\rooms\screens\FirstSetupRooms.tsx:161:        onPress={handleSkip}
+src\screens\facility\ComputeVPDScreen.tsx:64:          onPress={onRun}
+src\features\plants\screens\PlantEdit.tsx:19:        onPress={() => update.mutate({ name }, { onSuccess: () => navigation.goBack() })}
+src\screens\facility\ComplianceLogsScreen.tsx:66:              onPress={() => setType(t.value)}
+src\screens\facility\ComplianceLogsScreen.tsx:100:        onPress={submit}
+src\features\plants\screens\PlantDetail.tsx:16:      <Button title="Edit" onPress={() => navigation.navigate("PlantEdit", { id })} />
+src\features\plants\screens\PlantDetail.tsx:17:      <Button title="Delete" onPress={() => del.mutate()} />
+src\screens\facility\BillingAndReportingScreen.js:195:                onPress={handleCancel}
+src\screens\facility\BillingAndReportingScreen.js:209:                onPress={handleSubscribe}
+src\screens\facility\BillingAndReportingScreen.js:258:          onPress={() =>
+src\screens\facility\AuditLogScreen.js:97:        onPress={() => {
+src\screens\facility\AuditLogScreen.js:172:                  onPress={() => setAction(a)}
+src\screens\facility\AuditLogScreen.js:198:                onPress={closeModal}
+src\screens\facility\AuditLogScreen.js:209:                onPress={handleAddLog}
+src\features\feed\components\FeedItemCard.tsx:43:  const onPress = () => {
+src\features\feed\components\FeedItemCard.tsx:66:    <Pressable style={styles.card} onPress={onPress} android_ripple={{ color: "#eee" }}>
+src\features\feed\components\FeedItemCard.tsx:87:            onPress={handleTaskAction}
+src\features\feed\components\FeedItemCard.tsx:93:          <Button title="Acknowledge" onPress={handleAlertAck} />
+src\screens\facility\AutomationCenterScreen.tsx:54:                onPress={() =>
+src\screens\facility\AIToolsHomeScreen.tsx:38:        <Pressable onPress={onSelectGrow} style={styles.selectGrowBtn}>
+src\screens\facility\AIToolsHomeScreen.tsx:82:      onPress={handlePress}
+src\features\feed\components\FeedFiltersBar.tsx:34:            onPress={() => onSelectType(type)}
+src\features\feed\components\FeedFiltersBar.tsx:49:            onPress={() => onSelectStatus(s)}
+src\features\facility\screens\FacilitySettings.tsx:23:          onPress={() => {
+src\screens\facility\FacilityTasksScreen.tsx:28:          onPress={onComplete}
+src\screens\facility\FacilityTasksScreen.tsx:89:          onPress={submit}
+src\screens\facility\HarvestWindowScreen.tsx:109:              onPress={() => setGoal(g)}
+src\screens\facility\HarvestWindowScreen.tsx:154:          onPress={runEstimate}
+src\screens\facility\HarvestWindowScreen.tsx:192:          onPress={() => fetchCalendar({ growId, type: "HARVEST_WINDOW", limit: 50 })}
+src\screens\facility\FacilityTasks.tsx:120:              onPress={() =>
+src\screens\facility\FacilityTasks.tsx:131:              onPress={() =>
+src\screens\facility\FacilityTasks.tsx:142:              onPress={() =>
+src\screens\facility\FacilityTasks.tsx:160:        <Button title="Refresh" onPress={() => refetch()} />
+src\screens\facility\FacilityTasks.tsx:165:        <Pressable style={styles.createButton} onPress={() => setShowCreateModal(true)}>
+src\screens\facility\FacilityTasks.tsx:240:                onPress={() => {
+src\screens\facility\FacilityTasks.tsx:255:                onPress={onCreate}
+src\screens\facility\HarvestAIMvpScreen.tsx:98:              onPress={() => setGoal(g)}
+src\screens\facility\HarvestAIMvpScreen.tsx:143:          onPress={runEstimate}
+src\screens\facility\HarvestAIMvpScreen.tsx:183:          onPress={() => fetchCalendar({ growId, type: "HARVEST_WINDOW", limit: 50 })}
+src\screens\facility\WebhooksScreen.tsx:47:            onPress={() =>
+src\screens\facility\WebhooksScreen.tsx:66:        onPress={submit}
+src\screens\facility\WebhooksScreen.tsx:94:                  onPress={() => {
+src\screens\facility\FacilityPicker.js:66:            onPress={() => handleSelectFacility(item._id)}
+src\screens\facility\FacilitySettingsScreen.tsx:123:        <Pressable style={styles.btn} onPress={load}>
+src\screens\facility\FacilitySettingsScreen.tsx:148:              onPress={() => setComplianceMode("basic")}
+src\screens\facility\FacilitySettingsScreen.tsx:161:              onPress={() => setComplianceMode("strict")}
+src\screens\facility\FacilitySettingsScreen.tsx:186:              onPress={save}
+src\screens\facility\FacilityTeamScreen.tsx:73:          onPress={submitInvite}
+src\screens\facility\FacilityTeamScreen.tsx:110:              <Pressable onPress={() => remove(item.id)} style={{ marginLeft: 8 }}>
+src\screens\facility\GreenWasteScreen.js:87:        onPress={() => {
+src\screens\facility\GreenWasteScreen.js:168:                  onPress={() => setMethod(m)}
+src\screens\facility\GreenWasteScreen.js:194:                onPress={closeModal}
+src\screens\facility\GreenWasteScreen.js:204:                onPress={handleAddEvent}
+src\screens\facility\VendorDashboardScreen.js:152:          onPress={handleSave}
+src\screens\facility\VendorDashboardScreen.js:162:            onPress={() => {
+src\screens\facility\VendorDashboardScreen.js:190:                  onPress={() => handleEdit(item)}
+src\screens\facility\VendorDashboardScreen.js:196:                  onPress={() => handleDelete(item)}
+src\features\plants\components\PlantCard.tsx:33:          onPress={onStageChange}
+src\features\plants\components\PlantCard.tsx:44:          onPress={onMoveRoom}
+src\features\plants\components\PlantCard.tsx:55:          onPress={onAddTask}
+src\screens\facility\SelectGrowScreen.tsx:45:          onPress={() => onSelect(trimmed)}
+src\screens\facility\SelectGrowScreen.tsx:51:        <Pressable onPress={() => onSelect("")} style={styles.linkBtn}>
+src\screens\facility\NutrientToolsScreen.js:118:            <TouchableOpacity key={tool.id} onPress={tool.action} activeOpacity={0.7}>
+src\screens\facility\SOPTemplatesScreen.js:154:        onPress={() => {
+src\screens\facility\SOPTemplatesScreen.js:208:                  onPress={() => handleEdit(item)}
+src\screens\facility\SOPTemplatesScreen.js:214:                  onPress={() => handleDelete(item)}
+src\screens\facility\SOPTemplatesScreen.js:267:                onPress={closeModal}
+src\screens\facility\SOPTemplatesScreen.js:277:                onPress={handleSave}
+src\screens\facility\PlantForm.js:63:          <TouchableOpacity onPress={onClose}>
+src\screens\facility\PlantForm.js:67:          <TouchableOpacity onPress={handleSave} disabled={!name.trim()}>
+src\screens\facility\PlantForm.js:92:            onPress={() => setStage(s)}
+src\screens\facility\RoomsScreen.tsx:35:          onPress={() => navigation.navigate("RoomDetail", { roomId: item.id })}
+src\screens\facility\SettingsScreen.js:81:            onPress={() => navigation.navigate("TeamScreen")}
+src\screens\facility\SettingsScreen.js:88:            onPress={() => navigation.navigate("TeamScreen")}
+src\screens\facility\SettingsScreen.js:104:          onPress={() => navigation.navigate("Verification")}
+src\screens\facility\SettingsScreen.js:119:          onPress={() => navigation.navigate("BillingAndReporting")}
+src\screens\facility\SettingsScreen.js:131:          onPress={() => navigation.navigate("SOPTemplates")}
+src\screens\facility\SettingsScreen.js:138:          onPress={() => navigation.navigate("AuditLog")}
+src\screens\facility\SettingsScreen.js:145:          onPress={() => navigation.navigate("BillingAndReporting")}
+src\screens\facility\SettingsScreen.js:154:        onPress={handleLogout}
+src\screens\facility\TrichomeAnalysisScreen.tsx:61:        <Pressable onPress={handleSubmit} style={[styles.cta]}>
+src\screens\facility\TeamScreen.js:48:      <TouchableOpacity style={styles.addButton} onPress={() => setShowInviteModal(true)}>
+src\screens\facility\TeamScreen.js:114:                  onPress={() => setInviteRole(role)}
+src\screens\facility\TeamScreen.js:130:                onPress={() => {
+src\screens\facility\TeamScreen.js:144:                onPress={handleInvite}
+src\screens\PHECCalculatorScreen.js:58:        <TouchableOpacity style={styles.button} onPress={handleCalculate}>
+src\screens\PostDetailScreen.js:57:            onPress={() => navigation.navigate("Subscription")}
+src\screens\PostDetailScreen.js:147:        <TouchableOpacity onPress={handleLike} style={styles.likeBtn}>
+src\screens\PostDetailScreen.js:179:          <PrimaryButton title="Post" onPress={handleComment} />
+src\screens\LoginScreen.js:194:            onPress={() => setSelectedMode("personal")}
+src\screens\LoginScreen.js:208:            onPress={() => setSelectedMode("facility")}
+src\screens\LoginScreen.js:222:            onPress={() => setSelectedMode("commercial")}
+src\screens\LoginScreen.js:270:          onPress={handleAuth}
+src\screens\LoginScreen.js:278:          onPress={() => setAuthMode(authMode === "login" ? "signup" : "login")}
+src\screens\LoginScreen.js:289:          <TouchableOpacity onPress={() => navigation.navigate("PrivacyPolicy")}>
+src\screens\ProfileCertificatesScreen.js:65:                  onPress={() => navigation.navigate("CertificateViewer", { cert: item })}
+src\screens\ProfileCertificatesScreen.js:72:                  onPress={() =>
+src\screens\SubscribeScreen.js:99:              onPress={handleUpgrade}
+src\screens\SubscribeScreen.js:104:              onPress={() => navigation.navigate("PricingMatrix")}
+src\screens\FeedingScheduleOptions.js:57:      <TouchableOpacity style={styles.nextBtn} onPress={next}>
+src\app\home\facility\(tabs)\team.tsx:160:            onPress={sendInvite}
+src\screens\PestDiseaseIdentifierScreen.js:61:        <TouchableOpacity style={styles.button} onPress={handleIdentify}>
+src\screens\SocialToolsScreen.js:137:                  onPress={() => handleShowMetrics(item.platform)}
+src\screens\SocialToolsScreen.js:151:        <Button title="Schedule Post" onPress={openScheduleModal} />
+src\screens\SocialToolsScreen.js:181:                  onPress={() => handleTogglePlatform(acc.platform)}
+src\screens\SocialToolsScreen.js:202:                onPress={handleSchedule}
+src\screens\SocialToolsScreen.js:211:                onPress={() => setModalVisible(false)}
+src\screens\FeedingLabelScreen.js:51:        onPress={pick}
+src\screens\FeedingLabelScreen.js:71:          onPress={extract}
+src\screens\SubcategoryBrowserScreen.js:30:            onPress={() =>
+src\app\home\facility\(tabs)\tasks.tsx:149:                onPress={() => {
+src\screens\PlantDetailScreen.js:193:                  onPress={() => setSelectedLogIndex(index)}
+src\screens\PlantDetailScreen.js:292:          <PrimaryButton title="Add Log Entry" onPress={handleAddLog} />
+src\screens\PlantDetailScreen.js:293:          <TouchableOpacity style={styles.exportButton} onPress={handleExportPDF}>
+src\app\home\facility\(tabs)\sop-runs.tsx:118:            onPress={() => router.push("/home/facility/sop-runs")}
+src\app\home\facility\(tabs)\sop-runs.tsx:125:            onPress={() => router.push("/home/facility/sop-runs/presets")}
+src\app\home\facility\(tabs)\sop-runs.tsx:132:            onPress={() => router.push("/home/facility/sop-runs/start")}
+src\app\home\facility\(tabs)\sop-runs.tsx:139:            onPress={() => router.push("/home/facility/sop-runs/compare")}
+src\app\home\facility\(tabs)\sop-runs.tsx:179:                onPress={() => {
+src\screens\GrowLogEntryScreen.js:523:          <TouchableOpacity onPress={addPhoto} style={styles.addPhotoBox}>
+src\screens\GrowLogEntryScreen.js:622:              onPress={() => toggleTag(t)}
+src\screens\GrowLogEntryScreen.js:634:            onPress={handleAutoTag}
+src\screens\GrowLogEntryScreen.js:647:          onPress={() => setShowAdvanced(!showAdvanced)}
+src\screens\GrowLogEntryScreen.js:737:                    onPress={() => setWaterSource(src)}
+src\screens\GrowLogEntryScreen.js:763:                    onPress={() => setWaterTreatment(opt.key)}
+src\screens\GrowLogEntryScreen.js:840:                    onPress={() => setAirflow(flow)}
+src\screens\GrowLogEntryScreen.js:909:          onPress={handleSave}
+src\screens\GrowLogEntryScreen.js:932:              <TouchableOpacity style={[styles.modalButton, styles.modalButtonSecondary]} onPress={cancelStageUpdate}>
+src\screens\GrowLogEntryScreen.js:935:              <TouchableOpacity style={[styles.modalButton, styles.modalButtonPrimary]} onPress={confirmStageUpdate}>
+src\screens\PlanFeatureMatrixScreen.js:67:        onPress={() => navigation?.navigate?.("RegisterScreen")}
+src\screens\FeedingConfirmScreen.js:32:        onPress={() =>
+src\screens\ToolsScreen.js:48:              onPress={() => enabled && navigation.navigate(tool.screen)}
+src\screens\StorefrontScreen.js:249:        <Pressable style={styles.button} onPress={() => vendorsQuery.refetch()}>
+src\screens\StorefrontScreen.js:278:                onPress={() => setSelectedVendorId(vid)}
+src\screens\StorefrontScreen.js:292:        <Pressable style={styles.button} onPress={openAdd}>
+src\screens\StorefrontScreen.js:322:                  onPress={() => openEdit(item)}
+src\screens\StorefrontScreen.js:328:                  onPress={() => confirmDelete(item)}
+src\screens\StorefrontScreen.js:391:                onPress={() => {
+src\screens\StorefrontScreen.js:402:                onPress={saveProduct}
+src\screens\ScheduleScreen.js:108:            onPress={load}
+src\screens\ScheduleScreen.js:183:                  onPress={() => handleComplete(selectedTask)}
+src\screens\ScheduleScreen.js:189:            <TouchableOpacity style={styles.closeBtn} onPress={handleCloseModal}>
+src\screens\ScheduleScreen.js:206:        <TaskRow key={task._id} task={task} onPress={() => onSelect(task)} />
+src\screens\GrowLogEntriesScreen.tsx:192:          onPress={onCreate}
+src\screens\GrowLogEntriesScreen.tsx:227:                  onPress={() => onDelete(String(item.id))}
+src\screens\WriteReviewScreen.js:32:            onPress={() => setRating(num)}
+src\screens\WriteReviewScreen.js:48:      <TouchableOpacity style={styles.btn} onPress={submit}>
+src\app\home\facility\(tabs)\compliance.tsx:22:      onPress={onPress}
+src\app\home\facility\(tabs)\compliance.tsx:198:        onPress={() => router.push("/app/home/facility/(tabs)/deviations")}
+src\app\home\facility\(tabs)\compliance.tsx:211:        onPress={() => router.push("/app/home/facility/(tabs)/verifications")}
+src\app\home\facility\(tabs)\compliance.tsx:226:        onPress={() => router.push("/app/home/facility/(tabs)/green-waste")}
+src\app\home\facility\(tabs)\compliance.tsx:241:        onPress={() => router.push("/app/home/facility/inventory")}
+src\app\home\facility\(tabs)\compliance.tsx:256:        onPress={() => router.push("/app/home/facility/(tabs)/audit-logs")}
+src\app\home\facility\(tabs)\compliance.tsx:265:        onPress={() => router.push("/app/home/facility/(tabs)/sop-templates")}
+src\app\home\facility\(tabs)\grows.tsx:148:                onPress={() => {
+src\screens\LiveSessionsListScreen.js:45:            onPress={() => navigation.navigate("LiveSession", { sessionId: item._id })}
+src\screens\TokenInfoScreen.js:99:                  onPress={() => navigation.navigate("Subscription")}
+src\app\home\facility\(tabs)\plants.tsx:149:                onPress={() => {
+src\screens\GrowLogDetailScreen.js:145:            onPress={() => navigation.navigate("GrowLogEntry", { id: entry._id })}
+src\screens\GrowLogDetailScreen.js:152:            onPress={confirmDelete}
+src\screens\GrowLogDetailScreen.js:177:          onPress={() =>
+src\screens\GrowLogDetailScreen.js:193:          onPress={handleShareToForum}
+src\screens\LiveSessionScreen.js:100:              onPress={() => {
+src\screens\VendorSignup.js:153:          onPress={handleSignup}
+src\app\home\facility\(tabs)\logs.tsx:149:                onPress={() => {
+src\screens\TeamScreen.js:120:                <Button title="Edit" onPress={() => openEditModal(item)} />
+src\screens\TeamScreen.js:124:                  onPress={() => handleDelete(item)}
+src\screens\TeamScreen.js:133:        <Button title="Add Member" onPress={openAddModal} />
+src\screens\TeamScreen.js:163:                onPress={handleSave}
+src\screens\TeamScreen.js:170:                onPress={() => setModalVisible(false)}
+src\screens\SubscriptionStatusScreen.js:116:        <TouchableOpacity style={styles.refreshButton} onPress={loadStatus}>
+src\screens\SubscriptionStatusScreen.js:121:          <TouchableOpacity style={styles.cancelButton} onPress={handleCancel}>
+src\screens\SubscriptionStatusScreen.js:129:            onPress={() => navigation.navigate("Paywall")}
+src\app\home\facility\sop-runs\[id].tsx:130:        <Text onPress={() => router.back()} style={styles.backLink}>
+src\screens\ForumPostDetailScreen.js:242:          <TouchableOpacity onPress={toggleLike} style={styles.likeButton}>
+src\screens\ForumPostDetailScreen.js:253:          <TouchableOpacity onPress={handleSave}>
+src\screens\ForumPostDetailScreen.js:259:          <TouchableOpacity onPress={handleGrowLogImport}>
+src\screens\ForumPostDetailScreen.js:265:          <TouchableOpacity onPress={handleReport}>
+src\screens\ForumPostDetailScreen.js:295:                <TouchableOpacity onPress={() => handleDelete(item._id)}>
+src\screens\ForumPostDetailScreen.js:313:          <TouchableOpacity onPress={submitComment} disabled={commentMutation.isPending}>
+src\screens\VendorGuidesScreen.js:119:          onPress={() =>
+src\screens\SubscriptionScreen.js:23:        <TouchableOpacity onPress={() => navigation.goBack()} style={{ padding: 10 }}>
+src\screens\SubscriptionScreen.js:135:          onPress={handleSubscribe}
+src\screens\SubscriptionScreen.js:146:          onPress={() => navigation.navigate("PricingMatrix")}
+src\screens\PaywallScreen.js:95:              onPress={handleStartTrial}
+src\screens\PaywallScreen.js:102:              onPress={handleSubscribe}
+src\screens\PaywallScreen.js:109:              onPress={() => navigation.navigate("PricingMatrix")}
+src\screens\PaywallScreen.js:115:              onPress={() => navigation.goBack()}
+src\app\home\facility\(tabs)\audit-logs.tsx:155:                onPress={() => {
+src\app\home\facility\(tabs)\audit-logs.tsx:176:                      onPress={() =>
+src\app\home\facility\(tabs)\dashboard.tsx:147:                onPress={() => router.push(q.to as any)}
+src\app\home\facility\(tabs)\dashboard.tsx:161:            onPress={() => router.push("/home/facility/ai/ask")}
+src\app\home\facility\(tabs)\dashboard.tsx:169:            onPress={() => router.push("/home/facility/ai/diagnosis-photo")}
+src\app\home\facility\(tabs)\dashboard.tsx:177:            onPress={() => router.push("/home/facility/compliance/ai4.dashboard")}
+src\screens\WateringSchedulerScreen.js:61:        <TouchableOpacity style={styles.button} onPress={handleCalculate}>
+src\screens\LinksScreen.js:144:                <Button title="Open" onPress={() => Linking.openURL(item.url)} />
+src\screens\LinksScreen.js:145:                <Button title="Edit" onPress={() => openEditModal(item)} />
+src\screens\LinksScreen.js:149:                  onPress={() => handleDelete(item)}
+src\screens\LinksScreen.js:158:        <Button title="Add Link" onPress={openAddModal} />
+src\screens\LinksScreen.js:188:                onPress={handleSave}
+src\screens\LinksScreen.js:195:                onPress={() => setModalVisible(false)}
+src\screens\GrowLogCalendarScreen.js:20:            onPress={() => setSelectedDate(day)}
+src\app\home\facility\(tabs)\InventoryItemDetailScreen.tsx:163:            onPress={adjust}
+src\screens\TasksScreen.js:149:          onPress={() => setFilter("all")}
+src\screens\TasksScreen.js:154:          onPress={() => setFilter("pending")}
+src\screens\TasksScreen.js:159:          onPress={() => setFilter("done")}
+src\screens\TasksScreen.js:173:              <TouchableOpacity onPress={() => handleToggleComplete(item)}>
+src\screens\TasksScreen.js:182:                <Button title="Edit" onPress={() => openEditModal(item)} />
+src\screens\TasksScreen.js:186:                  onPress={() => handleDelete(item)}
+src\screens\TasksScreen.js:195:        <Button title="Add Task" onPress={openAddModal} />
+src\screens\TasksScreen.js:221:                onPress={handleSave}
+src\screens\TasksScreen.js:228:                onPress={() => setModalVisible(false)}
+src\app\home\facility\compliance\reports.tsx:73:        <TouchableOpacity onPress={load}>
+src\app\home\facility\compliance\reports.tsx:97:                  onPress={() =>
+src\app\home\facility\compliance\reports.tsx:113:                  onPress={() => onDelete(String(item.id))}
+src\app\home\facility\(tabs)\inventory.tsx:101:            onPress={() => router.push("/home/facility/select")}
+src\app\home\facility\(tabs)\inventory.tsx:135:            <TouchableOpacity onPress={() => router.push("/home/facility/select")}>
+src\app\home\facility\(tabs)\inventory.tsx:141:            <TouchableOpacity onPress={load}>
+src\screens\ForumNewPostScreen.js:188:            onPress={() => setCategory(cat.key)}
+src\screens\ForumNewPostScreen.js:213:                onPress={() => setPostType(type)}
+src\screens\ForumNewPostScreen.js:269:        <TouchableOpacity style={styles.addPhotoBox} onPress={addPhotos}>
+src\screens\ForumNewPostScreen.js:277:        onPress={handleSubmit}
+src\screens\VPDCalculatorScreen.js:58:        <TouchableOpacity style={styles.button} onPress={handleCalculate}>
+src\app\home\facility\sop-runs\compare-result.tsx:148:              onPress={() =>
+src\app\home\facility\sop-runs\compare-result.tsx:166:              onPress={() =>
+src\app\home\facility\sop-runs\compare-result.tsx:185:            onPress={() => router.push("/home/facility/sop-runs/presets")}
+src\app\home\facility\sop-runs\compare-result.tsx:192:        <Text onPress={() => router.back()} style={styles.backLink}>
+src\screens\LessonScreen.js:17:          onPress={() => Linking.openURL(lesson.videoUrl)}
+src\screens\LessonScreen.js:33:          onPress={() => Linking.openURL(lesson.pdfUrl)}
+src\screens\LessonScreen.js:47:          onPress={async () => {
+src\app\home\facility\(tabs)\ai-tools.tsx:19:      onPress={onPress}
+src\app\home\facility\(tabs)\ai-tools.tsx:50:          onPress={() => router.push("/home/facility/ai/ask")}
+src\app\home\facility\(tabs)\ai-tools.tsx:55:          onPress={() => router.push("/home/facility/ai/diagnosis-photo")}
+src\app\home\facility\(tabs)\ai-tools.tsx:60:          onPress={() => router.push("/home/facility/ai/template")}
+src\app\home\facility\(tabs)\ai-tools.tsx:65:          onPress={() => router.push("/home/facility/compliance/ai4.dashboard")}
+src\app\home\facility\compliance\report-detail.tsx:65:        <TouchableOpacity onPress={() => navigation.goBack()}>
+src\app\home\facility\compliance\report-detail.tsx:131:                  onPress={() =>
+src\app\home\facility\sop-runs\presets.tsx:80:        <TouchableOpacity onPress={load}>
+src\app\home\facility\sop-runs\presets.tsx:104:                <TouchableOpacity onPress={() => openPreset(item)} disabled={busy}>
+src\app\home\facility\sop-runs\presets.tsx:115:                  onPress={() => onDelete(String(item.id))}
+src\screens\OnboardingCarousel.js:49:          onPress={() => navigation.navigate("PricingMatrix")}
+src\screens\OnboardingCarousel.js:58:          onPress={() => setIndex(index + 1)}
+src\screens\OnboardingCarousel.js:68:          onPress={onDone}
+src\app\home\facility\audit-logs\[id].tsx:131:        <Text onPress={() => router.back()} style={styles.backLink}>
+src\screens\GrowAddPlantScreen.js:133:      <PrimaryButton title={saving ? "Adding..." : "Add Plant"} onPress={handleSave} disabled={saving} />
+src\screens\HarvestEstimatorScreen.js:64:        <TouchableOpacity style={styles.button} onPress={handleEstimate}>
+src\screens\FeedScreen.js:235:          onPress={isPro ? openCreatePost : () => navigation.navigate("Subscription")}
+src\screens\FeedScreen.js:245:          onPress={() => setShowFilters((prev) => !prev)}
+src\screens\FeedScreen.js:283:        <TouchableOpacity onPress={navigateToDetail} activeOpacity={0.8}>
+src\screens\FeedScreen.js:297:            onPress={isPro ? () => toggleLike(item) : undefined}
+src\screens\FeedScreen.js:313:            onPress={
+src\screens\FeedScreen.js:332:              onPress={() => navigation.navigate("Subscription")}
+src\app\home\facility\sop-runs\index.tsx:120:              onPress={() => router.push("/home/facility/select")}
+src\app\home\facility\sop-runs\index.tsx:156:              onPress={() => router.push("/home/facility/sop-runs/presets")}
+src\app\home\facility\sop-runs\index.tsx:163:            <TouchableOpacity onPress={load}>
+src\app\home\facility\sop-runs\index.tsx:197:                  onPress={() => router.push(`/home/facility/sop-runs/${item._id}`)}
+src\screens\MarketplaceScreen.js:119:        onPress={() => navigation.navigate("Course", { id: item._id })}
+src\screens\MarketplaceScreen.js:149:          onPress={() => navigation.navigate("CategoryBrowser")}
+src\screens\MarketplaceScreen.js:170:        <TouchableOpacity style={styles.filterBtn} onPress={() => handleFilter("rating")}>
+src\screens\MarketplaceScreen.js:176:          onPress={() => handleFilter("students")}
+src\screens\MarketplaceScreen.js:181:        <TouchableOpacity style={styles.filterBtn} onPress={() => handleFilter("newest")}>
+src\screens\MarketplaceScreen.js:185:        <TouchableOpacity style={styles.filterBtn} onPress={() => load(1)}>
+src\screens\MarketplaceScreen.js:198:            <TouchableOpacity key={t} style={styles.tag} onPress={() => handleSearch(t)}>
+src\screens\MarketplaceScreen.js:219:                onPress={() => navigation.navigate("Course", { id: item._id })}
+src\screens\FeedingScheduleResult.js:46:      <TouchableOpacity style={styles.saveBtn} onPress={saveTemplate}>
+src\screens\ForumScreen.js:153:        onPress={() => rootNavigation.navigate("ForumPostDetail", { id: item._id })}
+src\screens\ForumScreen.js:254:                    onPress={() => rootNavigation.navigate("GuildCode")}
+src\screens\ForumScreen.js:264:                    onPress={() => changeMode("latest")}
+src\screens\ForumScreen.js:274:                    onPress={() => changeMode("trending")}
+src\screens\ForumScreen.js:287:                    onPress={() => changeMode("following")}
+src\screens\ForumScreen.js:303:                    onPress={() => setShowFilters(!showFilters)}
+src\screens\ForumScreen.js:311:                  <TouchableOpacity onPress={handleCreatePost} style={styles.createBtn}>
+src\app\home\facility\audit-logs\index.tsx:109:            onPress={() => router.push("/home/facility/select")}
+src\app\home\facility\audit-logs\index.tsx:143:            <TouchableOpacity onPress={() => router.push("/home/facility/select")}>
+src\app\home\facility\audit-logs\index.tsx:149:            <TouchableOpacity onPress={load}>
+src\app\home\facility\audit-logs\index.tsx:172:                  onPress={() => router.push(`/home/facility/audit-logs/${item._id}`)}
+src\app\home\facility\select.tsx:133:                onPress={() => {
+src\screens\GrowLogsScreen.js:191:          onPress={handlePickPhoto}
+src\screens\GrowLogsScreen.js:207:          onPress={() => setShowAdvanced((v) => !v)}
+src\screens\GrowLogsScreen.js:344:          onPress={handleAddGrow}
+src\screens\GrowLogsScreen.js:377:            onPress={handleAddGrow}
+src\screens\GrowLogsScreen.js:392:            <TouchableOpacity onPress={() => openGrow(item)}>
+src\screens\NutrientCalculatorScreen.js:57:        <TouchableOpacity style={styles.button} onPress={handleCalculate}>
+src\app\home\facility\audit-logs\[entity]\[entityId].tsx:148:                onPress={() => {
+src\app\home\facility\ai\template.tsx:107:                  onPress={() => setTarget("soil")}
+src\app\home\facility\ai\template.tsx:118:                  onPress={() => setTarget("npk")}
+src\app\home\facility\ai\template.tsx:172:                onPress={addRow}
+src\app\home\facility\ai\template.tsx:188:              onPress={run}
+src\app\home\facility\ai\ask.tsx:111:              onPress={run}
+src\app\home\facility\ai\diagnosis-photo.tsx:88:              onPress={run}

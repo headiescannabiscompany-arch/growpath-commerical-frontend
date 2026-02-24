@@ -1,0 +1,64 @@
+﻿src\entitlements\types.ts:6:  | "TASKS_VIEW"
+src\entitlements\types.ts:7:  | "TASKS_EDIT"
+src\entitlements\types.ts:10:  | "GROWS_VIEW"
+src\entitlements\types.ts:11:  | "GROWS_EDIT"
+src\entitlements\types.ts:14:  | "TEAM_VIEW"
+src\entitlements\types.ts:15:  | "TEAM_MANAGE"
+src\utils\entitlements.js:35:  DIAGNOSE_AI: "diagnose_ai",
+src\utils\entitlements.js:36:  DIAGNOSE_ADVANCED: "diagnose_advanced",
+src\utils\entitlements.js:37:  DIAGNOSE_EXPORT: "diagnose_export",
+src\utils\entitlements.js:38:  COURSES_CREATE: "courses_create",
+src\utils\entitlements.js:39:  COURSES_ANALYTICS: "courses_analytics",
+src\utils\entitlements.js:40:  COURSES_AFFILIATE: "courses_affiliate",
+src\utils\entitlements.js:98:  [FEATURES.DIAGNOSE_AI]: {
+src\utils\entitlements.js:105:  [FEATURES.DIAGNOSE_ADVANCED]: {
+src\utils\entitlements.js:112:  [FEATURES.DIAGNOSE_EXPORT]: {
+src\utils\entitlements.js:119:  [FEATURES.COURSES_CREATE]: {
+src\utils\entitlements.js:126:  [FEATURES.COURSES_ANALYTICS]: {
+src\utils\entitlements.js:133:  [FEATURES.COURSES_AFFILIATE]: {
+src\types\notification.ts:4:  | "COMPLIANCE_REQUIRED"
+src\types\notification.ts:5:  | "COMPLIANCE_MISSED"
+src\types\notification.ts:7:  | "TEAM_INVITE";
+src\types\automation.ts:4:  | "COMPLIANCE_DAILY_REQUIRED"
+src\types\automation.ts:5:  | "COMPLIANCE_WEEKLY_REQUIRED";
+src\screens\CoursesScreen.js:24:  const canSeePaidCourses = !!ent.can?.("SEE_PAID_COURSES");
+src\screens\facility\WebhooksScreen.tsx:9:  { label: "Compliance Required", value: "COMPLIANCE_REQUIRED" },
+src\screens\facility\WebhooksScreen.tsx:10:  { label: "Compliance Missed", value: "COMPLIANCE_MISSED" },
+src\screens\facility\WebhooksScreen.tsx:12:  { label: "Team Invite", value: "TEAM_INVITE" }
+src\screens\facility\SettingsScreen.js:41:  const allowTeamInvite = can(facilityRole, "TEAM_INVITE");
+src\screens\facility\FacilityTasks.tsx:70:  const allowCreate = can(facilityRole, "TASKS_CREATE");
+src\screens\facility\FacilityTasks.tsx:71:  const allowDelete = can(facilityRole, "TASKS_DELETE");
+src\screens\facility\FacilityTasks.tsx:72:  const allowUpdate = can(facilityRole, "TASKS_UPDATE");
+src\screens\facility\FacilityTasks.tsx:73:  const allowComplete = can(facilityRole, "TASKS_UPDATE"); // Complete is an update action
+src\screens\facility\AutomationCenterScreen.tsx:12:    case "COMPLIANCE_DAILY_REQUIRED":
+src\screens\facility\AutomationCenterScreen.tsx:14:    case "COMPLIANCE_WEEKLY_REQUIRED":
+src\app\home\personal\(tabs)\grows\new.tsx:6:const GROWS_CREATE_PATH = "/api/grows";
+src\app\home\personal\(tabs)\grows\new.tsx:25:      await apiRequest(GROWS_CREATE_PATH, {
+src\screens\DiagnoseScreen.js:43:  const aiEnt = getEntitlement(FEATURES.DIAGNOSE_AI, user?.role);
+src\screens\DiagnoseScreen.js:44:  const advEnt = getEntitlement(FEATURES.DIAGNOSE_ADVANCED, user?.role);
+src\features\feed\components\FeedItemCard.tsx:84:        <FeatureGate capability="TASKS_EDIT">
+src\app\home\facility\(tabs)\team.tsx:56:  const canInvite = can(facilityRole, "TEAM_INVITE");
+src\facility\roleGates.ts:4:  | "GROWS_CREATE"
+src\facility\roleGates.ts:5:  | "GROWS_UPDATE"
+src\facility\roleGates.ts:6:  | "GROWS_DELETE"
+src\facility\roleGates.ts:10:  | "TASKS_CREATE"
+src\facility\roleGates.ts:11:  | "TASKS_UPDATE"
+src\facility\roleGates.ts:12:  | "TASKS_DELETE"
+src\facility\roleGates.ts:13:  | "INVENTORY_CREATE"
+src\facility\roleGates.ts:14:  | "INVENTORY_UPDATE"
+src\facility\roleGates.ts:15:  | "INVENTORY_DELETE"
+src\facility\roleGates.ts:22:  | "TEAM_INVITE"
+src\facility\roleGates.ts:23:  | "TEAM_UPDATE_ROLE"
+src\facility\roleGates.ts:24:  | "TEAM_REMOVE";
+src\facility\roleGates.ts:42:    case "GROWS_CREATE":
+src\facility\roleGates.ts:44:    case "GROWS_UPDATE":
+src\facility\roleGates.ts:46:    case "GROWS_DELETE":
+src\facility\roleGates.ts:56:    case "TASKS_CREATE":
+src\facility\roleGates.ts:58:    case "TASKS_UPDATE":
+src\facility\roleGates.ts:60:    case "TASKS_DELETE":
+src\facility\roleGates.ts:63:    case "INVENTORY_CREATE":
+src\facility\roleGates.ts:65:    case "INVENTORY_UPDATE":
+src\facility\roleGates.ts:67:    case "INVENTORY_DELETE":
+src\facility\roleGates.ts:84:    case "TEAM_INVITE":
+src\facility\roleGates.ts:86:    case "TEAM_UPDATE_ROLE":
+src\facility\roleGates.ts:88:    case "TEAM_REMOVE":

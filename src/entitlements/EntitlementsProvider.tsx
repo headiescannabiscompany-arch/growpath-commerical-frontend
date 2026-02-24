@@ -8,7 +8,9 @@ import React, {
   useState
 } from "react";
 import { useAuth } from "../auth/AuthContext";
-import { normalizeCapabilities, resolveCapabilityKey } from "../capabilities/resolve";
+import { buildCan } from "./can";
+import { KNOWN_CAPS } from "./capabilityKeys";
+import { normalizeCapabilityKey, normalizeFacilityRole } from "./normalize";
 import {
   getPreferredMode as loadPreferredMode,
   setPreferredMode as persistPreferredMode,
@@ -114,8 +116,39 @@ function applyServerCtx(
   const plan = userPlan ?? ctx?.plan ?? prev.plan ?? "free";
   const mode = resolveMode(ctx, plan, preferredMode);
   const facilityId = ctx?.facilityId ?? null;
-  const facilityRole = ctx?.facilityRole ?? null;
-  const { normalized, unknownKeys } = normalizeCapabilities(ctx?.capabilities);
+  const facilityRole = normalizeFacilityRole(ctx?.facilityRole);
+
+  const normalized: Record<string, boolean> = {};
+  const unknownKeys: string[] = [];
+  if (ctx?.capabilities) {
+    if (Array.isArray(ctx.capabilities)) {
+      for (const raw of ctx.capabilities) {
+        const key = normalizeCapabilityKey(raw);
+        if (!key) {
+          unknownKeys.push(String(raw));
+          continue;
+        }
+        if (!KNOWN_CAPS.has(key)) {
+          unknownKeys.push(String(raw));
+          continue;
+        }
+        normalized[key] = true;
+      }
+    } else if (typeof ctx.capabilities === "object") {
+      for (const [raw, v] of Object.entries(ctx.capabilities)) {
+        const key = normalizeCapabilityKey(raw);
+        if (!key) {
+          unknownKeys.push(String(raw));
+          continue;
+        }
+        if (!KNOWN_CAPS.has(key)) {
+          unknownKeys.push(String(raw));
+          continue;
+        }
+        normalized[key] = normalized[key] || Boolean(v);
+      }
+    }
+  }
   warnUnknownCapsOnce(unknownKeys);
 
   return {
@@ -210,26 +243,47 @@ export function EntitlementsProvider({ children }: { children: React.ReactNode }
     };
   }, [token]);
   const can = useMemo(() => {
-    const fn = (capability: string | string[]) => {
-      if (!state.ready) return false;
-      if (Array.isArray(capability)) {
-        return capability.every((cap) => {
-          const capabilityKey = resolveCapabilityKey(cap);
-          return !!capabilityKey && state.capabilities[capabilityKey] === true;
-        });
-      }
-      const capabilityKeySingle = resolveCapabilityKey(capability);
-      return !!capabilityKeySingle && state.capabilities[capabilityKeySingle] === true;
-    };
-    return Object.assign(fn, state.capabilities);
+    const fn = buildCan(state.capabilities);
+    return Object.assign(
+      (capability: string | string[]) => (state.ready ? fn(capability) : false),
+      state.capabilities
+    );
   }, [state.ready, state.capabilities]);
 
   const refresh = useCallback((plan?: string, capabilities?: Record<string, any>) => {
     let normalizedCaps: Record<string, any> | null = null;
     if (capabilities !== undefined) {
-      const res = normalizeCapabilities(capabilities);
-      normalizedCaps = res.normalized;
-      warnUnknownCapsOnce(res.unknownKeys);
+      const nextCaps: Record<string, boolean> = {};
+      const unknownKeys: string[] = [];
+      if (Array.isArray(capabilities)) {
+        for (const raw of capabilities) {
+          const key = normalizeCapabilityKey(raw);
+          if (!key) {
+            unknownKeys.push(String(raw));
+            continue;
+          }
+          if (!KNOWN_CAPS.has(key)) {
+            unknownKeys.push(String(raw));
+            continue;
+          }
+          nextCaps[key] = true;
+        }
+      } else if (capabilities && typeof capabilities === "object") {
+        for (const [raw, v] of Object.entries(capabilities)) {
+          const key = normalizeCapabilityKey(raw);
+          if (!key) {
+            unknownKeys.push(String(raw));
+            continue;
+          }
+          if (!KNOWN_CAPS.has(key)) {
+            unknownKeys.push(String(raw));
+            continue;
+          }
+          nextCaps[key] = nextCaps[key] || Boolean(v);
+        }
+      }
+      warnUnknownCapsOnce(unknownKeys);
+      normalizedCaps = nextCaps;
     }
     setState((s) => ({
       ...s,

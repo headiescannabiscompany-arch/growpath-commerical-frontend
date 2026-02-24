@@ -1,0 +1,101 @@
+﻿src\auth\RequirePlan.tsx:20:      router.replace("/(app)/upgrade");
+src\auth\RequireAuth.tsx:16:        if (!inAuthGroup) router.replace("/(auth)/login");
+src\auth\RequireAuth.tsx:19:      if (inAuthGroup) router.replace("/(app)/home");
+src\auth\initUnauthorized.ts:24:      router.replace("/login");
+src\components\feed\ForumThreadCard.tsx:32:    if (href) router.push(href as any);
+src\navigation\nav.ts:12:    router.push([path, params] as any);
+src\navigation\nav.ts:14:    router.push(path);
+src\app\register.tsx:69:      router.replace("/");
+src\app\register.tsx:119:      <Pressable onPress={() => router.replace("/login")} style={styles.linkBtn}>
+src\hooks\useApiErrorHandler.ts:25:          router.replace("/login");
+src\hooks\useApiErrorHandler.ts:27:        navigateReplace: (href) => router.replace(href)
+src\app\onboarding\index.tsx:32:    router.replace("/login" as any);
+src\app\onboarding\create-facility.tsx:47:          router.replace("/onboarding/first-setup");
+src\app\login.tsx:62:      router.replace("/");
+src\app\login.tsx:106:      <Pressable onPress={() => router.push("/register")} style={styles.linkBtn}>
+src\notifications\useNotificationDeepLinks.ts:21:        if (postId) router.push(`/(app)/post/${postId}`);
+src\notifications\useNotificationDeepLinks.ts:28:      if (postIdFromTap) router.push(`/(app)/post/${postIdFromTap}`);
+src\app\index.tsx:119:    router.replace(decision.href as any);
+src\app\facilities\index.tsx:108:        router.push(`/facilities/${facilityId}/dashboard`);
+src\app\home\_personal.tsx:15:    router.replace("/home/personal/(tabs)" as any);
+src\app\(commercial)\feed\index.tsx:22:          onPress={() => router.push("/(commercial)")}
+src\app\home\commercial\inventory.tsx:95:      router.replace("/home" as any);
+src\app\home\commercial\inventory.tsx:150:                  router.push({
+src\app\home\facility\audit-logs\[id].tsx:85:      router.replace("/home/facility/select");
+src\app\home\commercial\inventory-item\[id].tsx:89:      router.replace("/home" as any);
+src\app\home\facility\_layout.tsx:32:    router.replace(redirectTarget);
+src\features\team\DeepLinkHandler.tsx:23:        router.push(`/${path}`);
+src\app\home\facility\audit-logs\[entity]\[entityId].tsx:100:      router.replace("/home/facility/select");
+src\app\home\facility\audit-logs\[entity]\[entityId].tsx:150:                  router.push({
+src\app\home\facility\tasks\[id].tsx:79:      router.replace("/home/facility/select");
+src\app\home\facility\(tabs)\compliance.tsx:198:        onPress={() => router.push("/app/home/facility/(tabs)/deviations")}
+src\app\home\facility\(tabs)\compliance.tsx:211:        onPress={() => router.push("/app/home/facility/(tabs)/verifications")}
+src\app\home\facility\(tabs)\compliance.tsx:226:        onPress={() => router.push("/app/home/facility/(tabs)/green-waste")}
+src\app\home\facility\(tabs)\compliance.tsx:241:        onPress={() => router.push("/app/home/facility/inventory")}
+src\app\home\facility\(tabs)\compliance.tsx:256:        onPress={() => router.push("/app/home/facility/(tabs)/audit-logs")}
+src\app\home\facility\(tabs)\compliance.tsx:265:        onPress={() => router.push("/app/home/facility/(tabs)/sop-templates")}
+src\app\home\facility\(tabs)\audit-logs.tsx:96:      router.replace("/home/facility/select");
+src\app\home\facility\(tabs)\audit-logs.tsx:157:                  router.push({
+src\app\home\facility\(tabs)\audit-logs.tsx:177:                        router.push({
+src\app\home\personal\(tabs)\tasks.tsx:21:          onPress={() => router.push("/home/facility" as any)}
+src\app\home\facility\(tabs)\ai-tools.tsx:35:      router.replace("/home/facility/select");
+src\app\home\facility\(tabs)\ai-tools.tsx:50:          onPress={() => router.push("/home/facility/ai/ask")}
+src\app\home\facility\(tabs)\ai-tools.tsx:55:          onPress={() => router.push("/home/facility/ai/diagnosis-photo")}
+src\app\home\facility\(tabs)\ai-tools.tsx:60:          onPress={() => router.push("/home/facility/ai/template")}
+src\app\home\facility\(tabs)\ai-tools.tsx:65:          onPress={() => router.push("/home/facility/compliance/ai4.dashboard")}
+src\app\home\facility\(tabs)\logs.tsx:93:      router.replace("/home/facility/select");
+src\app\home\facility\(tabs)\logs.tsx:151:                  router.push({ pathname: "/home/facility/logs/[id]", params: { id } });
+src\app\home\facility\(tabs)\InventoryItemDetailScreen.tsx:110:      router.replace("/home/facility/select");
+src\app\home\facility\(tabs)\inventory.tsx:101:            onPress={() => router.push("/home/facility/select")}
+src\app\home\facility\(tabs)\inventory.tsx:135:            <TouchableOpacity onPress={() => router.push("/home/facility/select")}>
+src\app\home\facility\(tabs)\grows.tsx:92:      router.replace("/home/facility/select");
+src\app\home\facility\(tabs)\grows.tsx:151:                  router.push({ pathname: "/home/facility/grows/[id]", params: { id } });
+src\app\home\facility\audit-logs\index.tsx:109:            onPress={() => router.push("/home/facility/select")}
+src\app\home\facility\audit-logs\index.tsx:143:            <TouchableOpacity onPress={() => router.push("/home/facility/select")}>
+src\app\home\facility\audit-logs\index.tsx:172:                  onPress={() => router.push(`/home/facility/audit-logs/${item._id}`)}
+src\app\home\facility\(tabs)\dashboard.tsx:97:      router.replace("/home/facility/select");
+src\app\home\facility\(tabs)\dashboard.tsx:147:                onPress={() => router.push(q.to as any)}
+src\app\home\facility\(tabs)\dashboard.tsx:161:            onPress={() => router.push("/home/facility/ai/ask")}
+src\app\home\facility\(tabs)\dashboard.tsx:169:            onPress={() => router.push("/home/facility/ai/diagnosis-photo")}
+src\app\home\facility\(tabs)\dashboard.tsx:177:            onPress={() => router.push("/home/facility/compliance/ai4.dashboard")}
+src\app\home\facility\(tabs)\profile.tsx:96:      router.replace("/home/facility/select");
+src\app\home\facility\(tabs)\sop-runs.tsx:95:      router.replace("/home/facility/select");
+src\app\home\facility\(tabs)\sop-runs.tsx:118:            onPress={() => router.push("/home/facility/sop-runs")}
+src\app\home\facility\(tabs)\sop-runs.tsx:125:            onPress={() => router.push("/home/facility/sop-runs/presets")}
+src\app\home\facility\(tabs)\sop-runs.tsx:132:            onPress={() => router.push("/home/facility/sop-runs/start")}
+src\app\home\facility\(tabs)\sop-runs.tsx:139:            onPress={() => router.push("/home/facility/sop-runs/compare")}
+src\app\home\facility\(tabs)\sop-runs.tsx:181:                  router.push({
+src\app\home\facility\(tabs)\team.tsx:125:      router.replace("/home/facility/select");
+src\app\home\facility\(tabs)\plants.tsx:93:      router.replace("/home/facility/select");
+src\app\home\facility\(tabs)\plants.tsx:151:                  router.push({ pathname: "/home/facility/plants/[id]", params: { id } });
+src\app\home\facility\sop-runs\[id].tsx:87:      router.replace("/home/facility/select");
+src\app\home\facility\select.tsx:136:                  router.replace("/home/facility");
+src\app\home\facility\sop-runs\index.tsx:120:              onPress={() => router.push("/home/facility/select")}
+src\app\home\facility\sop-runs\index.tsx:156:              onPress={() => router.push("/home/facility/sop-runs/presets")}
+src\app\home\facility\sop-runs\index.tsx:197:                  onPress={() => router.push(`/home/facility/sop-runs/${item._id}`)}
+src\app\home\facility\index.tsx:14:      router.replace("/home/facility/select" as any);
+src\app\home\facility\index.tsx:17:    router.replace("/home/facility/dashboard" as any);
+src\app\home\personal\(tabs)\profile\index.tsx:82:            router.replace("/login" as any);
+src\app\home\personal\(tabs)\profile\index.tsx:123:              router.replace("/home" as any);
+src\app\home\personal\(tabs)\profile\index.tsx:145:              router.replace("/home" as any);
+src\app\home\facility\(tabs)\tasks.tsx:93:      router.replace("/home/facility/select");
+src\app\home\facility\(tabs)\tasks.tsx:151:                  router.push({ pathname: "/home/facility/tasks/[id]", params: { id } });
+src\app\home\facility\sop-runs\compare-result.tsx:104:      router.replace("/home/facility/select");
+src\app\home\facility\sop-runs\compare-result.tsx:150:                router.push({
+src\app\home\facility\sop-runs\compare-result.tsx:168:                router.push({
+src\app\home\facility\sop-runs\compare-result.tsx:185:            onPress={() => router.push("/home/facility/sop-runs/presets")}
+src\app\home\facility\plants\[id].tsx:81:      router.replace("/home/facility/select");
+src\app\home\facility\logs\[id].tsx:79:      router.replace("/home/facility/select");
+src\app\home\personal\(tabs)\grows\new.tsx:30:      router.replace(`/home/personal/grows?r=${Date.now()}`);
+src\features\routing\LegacyFacilityRouteShim.tsx:18:      router.replace(mode === "commercial" ? "/home/commercial" : "/home/personal");
+src\features\routing\LegacyFacilityRouteShim.tsx:23:      router.replace("/home/facility/select");
+src\features\routing\LegacyFacilityRouteShim.tsx:29:    router.replace(legacyFacilitySectionToRoute(section));
+src\features\rooms\screens\FirstSetupRooms.tsx:96:      router.replace("/onboarding/start-grow");
+src\features\rooms\screens\FirstSetupRooms.tsx:101:    router.replace("/rooms?onboarding=1");
+src\features\rooms\screens\FirstSetupRooms.tsx:106:    router.replace("/onboarding/start-grow");
+src\features\mode\switchAccountMode.ts:26:  router.replace(href);
+src\features\feed\components\FeedItemCard.tsx:45:    if (route) router.push(route);
+src\screens\LoginScreen.js:43:        router.replace("/");
+src\screens\LoginScreen.js:45:        router.replace("/");
+src\screens\LoginScreen.js:47:        router.replace("/");
+src\screens\LoginScreen.js:50:        router.replace("/");

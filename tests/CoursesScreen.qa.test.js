@@ -28,17 +28,13 @@ import { render, fireEvent, waitFor } from "@testing-library/react-native";
 import { NavigationContainer } from "@react-navigation/native";
 
 const mockUseEntitlements = jest.fn();
-const mockApiRequest = jest.fn();
 
 jest.mock("@/entitlements", () => ({
   __esModule: true,
   useEntitlements: () => mockUseEntitlements()
 }));
 
-jest.mock("@/api/apiRequest", () => ({
-  __esModule: true,
-  apiRequest: (...args) => mockApiRequest(...args)
-}));
+let inviteOk = true;
 
 jest.mock("@react-native-async-storage/async-storage", () => ({
   setItem: jest.fn(),
@@ -76,27 +72,23 @@ const mockCourses = [
 
 beforeEach(() => {
   mockUseEntitlements.mockReset();
-  mockApiRequest.mockReset();
-  mockApiRequest.mockImplementation((url) => {
-    const urlStr = typeof url === "string" ? url : String(url);
-    if (urlStr === "/api/courses") return Promise.resolve(mockCourses);
-    if (urlStr === "/api/invite") return Promise.resolve({ success: true });
-    if (urlStr && urlStr.startsWith("/api/users/") && urlStr.endsWith("/role")) {
-      return Promise.resolve({ success: true });
+  inviteOk = true;
+  global.fetch = jest.fn(async (url) => {
+    const u = String(url || "");
+    if (u.includes("/api/courses")) {
+      return {
+        ok: true,
+        status: 200,
+        text: async () => JSON.stringify(mockCourses)
+      };
     }
-    if (urlStr && urlStr.startsWith("/api/users/")) {
-      return Promise.resolve({ success: true });
+    if (u.includes("/api/invite")) {
+      if (inviteOk) {
+        return { ok: true, status: 200, text: async () => JSON.stringify({ success: true }) };
+      }
+      return { ok: false, status: 400, text: async () => JSON.stringify({ error: "Failed" }) };
     }
-    if (urlStr && urlStr.startsWith("/api/compliance/export")) {
-      return Promise.resolve({ success: true });
-    }
-    if (urlStr && urlStr.includes("/publish")) {
-      return Promise.resolve({ success: true });
-    }
-    if (urlStr && urlStr.includes("/unpublish")) {
-      return Promise.resolve({ success: true });
-    }
-    return Promise.resolve({ error: "Not found" });
+    return { ok: true, status: 200, text: async () => JSON.stringify({ success: true }) };
   });
 });
 
@@ -167,6 +159,7 @@ describe("CoursesScreen QA (capability-driven)", () => {
       mode: "commercial",
       can: (cap) => cap === "SEE_PAID_COURSES"
     });
+    inviteOk = true;
     const { getByLabelText, getByText, findByText, queryByText } = await renderWithNav();
     // Defensive: skip if Invite button is not rendered
     if (!queryByText("Invite")) {
@@ -185,12 +178,7 @@ describe("CoursesScreen QA (capability-driven)", () => {
       mode: "commercial",
       can: (cap) => cap === "SEE_PAID_COURSES"
     });
-    mockApiRequest.mockImplementation((url) => {
-      const urlStr = typeof url === "string" ? url : String(url);
-      if (urlStr === "/api/courses") return Promise.resolve(mockCourses);
-      if (urlStr === "/api/invite") return Promise.reject(new Error("Failed"));
-      return Promise.resolve({ success: true });
-    });
+    inviteOk = false;
     const { getByText, findByText, queryByText } = await renderWithNav();
     if (!queryByText("Invite")) {
       console.warn("Invite button not rendered; skipping test");
