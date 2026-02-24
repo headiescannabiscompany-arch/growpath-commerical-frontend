@@ -134,7 +134,6 @@ export default function DiagnoseScreen({ route, navigation }) {
     }
   }
   function severityLabel(severity) {
-    // TODO: Implement severity label logic
     return ["Low", "Medium", "High", "Very High", "Critical"][severity - 1] || "Unknown";
   }
 

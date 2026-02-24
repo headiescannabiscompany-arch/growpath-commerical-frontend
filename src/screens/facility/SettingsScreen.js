@@ -9,15 +9,15 @@ const SettingsScreen = ({ navigation }) => {
   const handlers = useMemo(
     () => ({
       onAuthRequired: () => {
-        // TODO: logout + route to login
-        console.log("AUTH_REQUIRED: route to login");
+        if (typeof resetFacility === "function") resetFacility();
+        navigation?.reset?.({ index: 0, routes: [{ name: "Login" }] });
       },
       onFacilityDenied: () => {
         Alert.alert("No Access", "You don't have access to this facility.");
       },
       toast: (msg) => Alert.alert("Notice", msg)
     }),
-    []
+    [navigation, resetFacility]
   );
 
   // Facility not selected

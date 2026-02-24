@@ -87,7 +87,7 @@ function GrowLogsScreen() {
 
     try {
       setRawError(null);
-      // TODO: build real payload from your state fields
+
       const created = await createGrow({
         name,
         genetics,

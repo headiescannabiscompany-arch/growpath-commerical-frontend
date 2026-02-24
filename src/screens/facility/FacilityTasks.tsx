@@ -3,8 +3,8 @@ import {
   View,
   Text,
   Button,
+  Alert,
   ActivityIndicator,
-  FlatList,
   TextInput,
   Pressable,
   Modal,
@@ -12,6 +12,7 @@ import {
   ScrollView,
   RefreshControl
 } from "react-native";
+import { useNavigation } from "@react-navigation/native";
 import { useFacility } from "../../facility/FacilityProvider";
 import { can, type FacilityRole } from "../../facility/roleGates";
 import { handleApiError } from "../../ui/handleApiError";
@@ -25,34 +26,41 @@ import { useTasks } from "../../hooks/useTasks";
 
 export default function FacilityTasks() {
   const { activeFacilityId, facilityRole: rawRole } = useFacility();
-  // Phase 2.3.2: Cast string | null to FacilityRole | null
+  const navigation = useNavigation<any>();
   const facilityRole = rawRole as FacilityRole | null;
-  const { data, isLoading, error, refetch, createTask, creating } = useTasks();
+  const {
+    data,
+    isLoading,
+    error,
+    refetch,
+    createTask,
+    creating,
+    updateTask,
+    updating,
+    deleteTask,
+    deleting
+  } = useTasks();
 
-  // Minimal local UI state for creating tasks
   const [title, setTitle] = useState("");
   const [description, setDescription] = useState("");
   const [showCreateModal, setShowCreateModal] = useState(false);
+  const [deniedMessage, setDeniedMessage] = useState<string | null>(null);
 
   const handlers = useMemo(
     () => ({
       onAuthRequired: () => {
-        // TODO: call your logout + navigate to login
-        console.log("AUTH_REQUIRED: route to login");
+        navigation.reset({ index: 0, routes: [{ name: "Login" }] });
       },
       onFacilityDenied: () => {
-        // TODO: route to a "No access to this facility" screen, or show inline state
-        console.log("FACILITY_ACCESS_DENIED: show no-access state");
+        setDeniedMessage("You do not have access to perform this task action.");
       },
       toast: (msg: string) => {
-        // TODO: replace with your toast implementation
-        console.log(msg);
+        Alert.alert("Notice", msg);
       }
     }),
-    []
+    [navigation]
   );
 
-  // Facility not selected yet
   if (!activeFacilityId) {
     return (
       <View style={styles.container}>
@@ -62,7 +70,6 @@ export default function FacilityTasks() {
     );
   }
 
-  // Standardized error handling
   if (error) handleApiError(error, "Failed to load tasks");
 
   const tasks = Array.isArray(data) ? data : [];
@@ -70,10 +77,13 @@ export default function FacilityTasks() {
   const allowCreate = can(facilityRole, "TASKS_CREATE");
   const allowDelete = can(facilityRole, "TASKS_DELETE");
   const allowUpdate = can(facilityRole, "TASKS_UPDATE");
-  const allowComplete = can(facilityRole, "TASKS_UPDATE"); // Complete is an update action
+  const allowComplete = can(facilityRole, "TASKS_UPDATE");
 
   async function onCreate() {
-    if (!allowCreate) return handlers.toast("You don't have permission to create tasks.");
+    if (!allowCreate) {
+      handlers.onFacilityDenied();
+      return;
+    }
     const t = title.trim();
     if (!t) return handlers.toast("Enter a task title.");
     try {
@@ -81,9 +91,51 @@ export default function FacilityTasks() {
       setTitle("");
       setDescription("");
       setShowCreateModal(false);
-    } catch (e) {
+    } catch (e: any) {
+      if (e?.status === 401) return handlers.onAuthRequired();
+      if (e?.status === 403) return handlers.onFacilityDenied();
       handleApiError(e, "Failed to create task");
     }
+  }
+
+  async function onMarkComplete(taskId: string) {
+    if (!allowComplete) {
+      handlers.onFacilityDenied();
+      return;
+    }
+    if (!taskId) return;
+    try {
+      await updateTask({ id: taskId, patch: { completed: true } });
+    } catch (e: any) {
+      if (e?.status === 401) return handlers.onAuthRequired();
+      if (e?.status === 403) return handlers.onFacilityDenied();
+      handleApiError(e, "Failed to mark task complete");
+    }
+  }
+
+  async function onDelete(taskId: string) {
+    if (!allowDelete) {
+      handlers.onFacilityDenied();
+      return;
+    }
+    if (!taskId) return;
+
+    Alert.alert("Delete Task", "This action cannot be undone.", [
+      { text: "Cancel", style: "cancel" },
+      {
+        text: "Delete",
+        style: "destructive",
+        onPress: async () => {
+          try {
+            await deleteTask(taskId);
+          } catch (e: any) {
+            if (e?.status === 401) return handlers.onAuthRequired();
+            if (e?.status === 403) return handlers.onFacilityDenied();
+            handleApiError(e, "Failed to delete task");
+          }
+        }
+      }
+    ]);
   }
 
   const pendingTasks = tasks.filter((t: any) => !t.completed);
@@ -107,44 +159,35 @@ export default function FacilityTasks() {
           ) : null}
           {item?.assignedTo ? (
             <Text style={styles.taskMeta}>
-              Assigned to:{" "}
-              {item.assignedTo.displayName || item.assignedTo.email || item.assignedTo}
+              Assigned to: {item.assignedTo.displayName || item.assignedTo.email || item.assignedTo}
             </Text>
           ) : null}
         </View>
 
-        {/* Action row */}
         <View style={styles.actionRow}>
           {section === "pending" && allowComplete ? (
             <Pressable
-              onPress={() =>
-                handlers.toast(`Mark as complete for ${taskId} (hook mutation needed)`)
-              }
+              onPress={() => onMarkComplete(taskId)}
+              disabled={updating}
               style={styles.actionButton}
             >
-              <Text style={styles.actionButtonText}>✓</Text>
+              <Text style={styles.actionButtonText}>{updating ? "..." : "Complete"}</Text>
             </Pressable>
           ) : null}
 
           {allowUpdate ? (
-            <Pressable
-              onPress={() =>
-                handlers.toast(`Edit flow for ${taskId} (modal/navigation needed)`)
-              }
-              style={styles.actionButton}
-            >
-              <Text style={styles.actionButtonText}>✎</Text>
+            <Pressable disabled style={[styles.actionButton, styles.disabledActionButton]}>
+              <Text style={styles.disabledActionText}>Edit (Unavailable in v1)</Text>
             </Pressable>
           ) : null}
 
           {allowDelete ? (
             <Pressable
-              onPress={() =>
-                handlers.toast(`Delete flow for ${taskId} (hook mutation needed)`)
-              }
+              onPress={() => onDelete(taskId)}
+              disabled={deleting}
               style={styles.actionButton}
             >
-              <Text style={styles.actionButtonText}>×</Text>
+              <Text style={styles.actionButtonText}>{deleting ? "..." : "Delete"}</Text>
             </Pressable>
           ) : null}
         </View>
@@ -154,20 +197,23 @@ export default function FacilityTasks() {
 
   return (
     <View style={styles.container}>
-      {/* Header with refresh */}
       <View style={styles.header}>
         <Text style={styles.heading}>Tasks</Text>
         <Button title="Refresh" onPress={() => refetch()} />
       </View>
 
-      {/* Create button */}
+      {deniedMessage ? (
+        <View style={styles.warningBanner}>
+          <Text style={styles.warningText}>{deniedMessage}</Text>
+        </View>
+      ) : null}
+
       {allowCreate ? (
         <Pressable style={styles.createButton} onPress={() => setShowCreateModal(true)}>
           <Text style={styles.createButtonText}>+ Add Task</Text>
         </Pressable>
       ) : null}
 
-      {/* Task list or empty state */}
       <ScrollView
         style={styles.listContainer}
         refreshControl={<RefreshControl refreshing={isLoading} onRefresh={refetch} />}
@@ -176,7 +222,6 @@ export default function FacilityTasks() {
           <ActivityIndicator style={{ marginTop: 20 }} />
         ) : tasks.length === 0 ? (
           <View style={styles.emptyState}>
-            <Text style={styles.emptyIcon}>📋</Text>
             <Text style={styles.emptyText}>No tasks yet</Text>
             {allowCreate && (
               <Text style={styles.emptySubtext}>Tap + Add Task to create one</Text>
@@ -193,11 +238,9 @@ export default function FacilityTasks() {
 
             {completedTasks.length > 0 && (
               <View style={styles.section}>
-                <Text style={styles.sectionTitle}>
-                  Completed ({completedTasks.length})
-                </Text>
+                <Text style={styles.sectionTitle}>Completed ({completedTasks.length})</Text>
                 {completedTasks.map((task: any) =>
-                  renderTaskItem({ ...task, title: `[✓] ${task.title}` }, "completed")
+                  renderTaskItem({ ...task, title: `[Done] ${task.title}` }, "completed")
                 )}
               </View>
             )}
@@ -205,7 +248,6 @@ export default function FacilityTasks() {
         )}
       </ScrollView>
 
-      {/* Create task modal */}
       <Modal
         visible={showCreateModal}
         transparent
@@ -255,9 +297,7 @@ export default function FacilityTasks() {
                 onPress={onCreate}
                 disabled={creating}
               >
-                <Text style={styles.confirmButtonText}>
-                  {creating ? "Creating..." : "Create"}
-                </Text>
+                <Text style={styles.confirmButtonText}>{creating ? "Creating..." : "Create"}</Text>
               </Pressable>
             </View>
           </View>
@@ -355,18 +395,22 @@ const styles = StyleSheet.create({
     justifyContent: "center"
   },
   actionButtonText: {
-    fontSize: 16,
+    fontSize: 13,
     color: "#374151",
+    fontWeight: "500"
+  },
+  disabledActionButton: {
+    opacity: 0.55
+  },
+  disabledActionText: {
+    fontSize: 13,
+    color: "#6b7280",
     fontWeight: "500"
   },
   emptyState: {
     justifyContent: "center",
     alignItems: "center",
     paddingVertical: 60
-  },
-  emptyIcon: {
-    fontSize: 48,
-    marginBottom: 12
   },
   emptyText: {
     fontSize: 18,
@@ -382,6 +426,19 @@ const styles = StyleSheet.create({
     fontSize: 14,
     color: "#9ca3af",
     marginTop: 12
+  },
+  warningBanner: {
+    marginHorizontal: 16,
+    marginBottom: 8,
+    borderRadius: 8,
+    borderWidth: 1,
+    borderColor: "#fecaca",
+    backgroundColor: "#fef2f2",
+    padding: 10
+  },
+  warningText: {
+    color: "#991b1b",
+    fontSize: 13
   },
   modalOverlay: {
     flex: 1,
