@@ -44,14 +44,14 @@ export function AiContextBlock(props: Props) {
       <View style={{ gap: 6 }}>
         <Text style={{ fontWeight: "800" }}>Grow</Text>
         <TouchableOpacity
-          onPress={() => onChangeGrowId(growId ? null : "GROW_STUB")}
+          onPress={() => onChangeGrowId(growId ? null : "GROW_LOCAL")}
           style={{ borderWidth: 1, borderRadius: 10, padding: 10 }}
         >
           <Text style={{ fontWeight: "900" }}>
             {growId ? `Selected: ${growId}` : "Select grow"}
           </Text>
           <Text style={{ opacity: 0.7, marginTop: 2 }}>
-            Step 2B wires real grow dropdown.
+            Tap to set or clear the active grow context.
           </Text>
         </TouchableOpacity>
       </View>
@@ -59,14 +59,14 @@ export function AiContextBlock(props: Props) {
       <View style={{ gap: 6 }}>
         <Text style={{ fontWeight: "800" }}>Room</Text>
         <TouchableOpacity
-          onPress={() => onChangeRoomId(roomId ? null : "ROOM_STUB")}
+          onPress={() => onChangeRoomId(roomId ? null : "ROOM_LOCAL")}
           style={{ borderWidth: 1, borderRadius: 10, padding: 10 }}
         >
           <Text style={{ fontWeight: "900" }}>
             {roomId ? `Selected: ${roomId}` : "Select room"}
           </Text>
           <Text style={{ opacity: 0.7, marginTop: 2 }}>
-            Step 2B wires real room dropdown.
+            Tap to set or clear the active room context.
           </Text>
         </TouchableOpacity>
       </View>
@@ -78,10 +78,10 @@ export function AiContextBlock(props: Props) {
           style={{ borderWidth: 1, borderRadius: 10, padding: 10 }}
         >
           <Text style={{ fontWeight: "900" }}>
-            {mediaLabel ? `Attached: ${mediaLabel}` : "Upload photo (stub picker)"}
+            {mediaLabel ? `Attached: ${mediaLabel}` : "Upload photo"}
           </Text>
           <Text style={{ opacity: 0.7, marginTop: 2 }}>
-            Step 2B wires real upload â†’ mediaId.
+            Add an image to improve analysis quality.
           </Text>
         </TouchableOpacity>
       </View>

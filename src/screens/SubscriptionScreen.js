@@ -103,7 +103,7 @@ export default function SubscriptionScreen({ navigation }) {
             description="Get instant help from our AI assistant"
           />
           <Feature
-            icon="�"
+            icon="💬"
             title="Community Access"
             description="Post, comment, and connect with growers"
           />

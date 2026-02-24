@@ -13,6 +13,7 @@ import { useFacility } from "../../facility/FacilityProvider";
 import { handleApiError } from "../../ui/handleApiError";
 import { useFacilityBilling } from "../../hooks/useFacilityBilling";
 import { useSubscriptionStatus } from "../../hooks/useSubscriptionStatus";
+import { useFacilityReport } from "../../hooks/useFacilityReport";
 
 export default function BillingAndReportingScreen() {
   const [refreshing, setRefreshing] = useState(false);
@@ -35,6 +36,11 @@ export default function BillingAndReportingScreen() {
     error: subscriptionError,
     refetch: refetchSubscription
   } = useSubscriptionStatus();
+  const {
+    data: facilityReport,
+    refetch: refetchFacilityReport,
+    isFetching: fetchingReport
+  } = useFacilityReport();
 
   const handlers = useMemo(
     () => ({
@@ -131,6 +137,24 @@ export default function BillingAndReportingScreen() {
   const renewDate = billing?.currentPeriodEnd
     ? new Date(billing.currentPeriodEnd).toLocaleDateString()
     : null;
+
+  const handleDownloadReport = async () => {
+    try {
+      const res = await refetchFacilityReport();
+      const report = res?.data ?? facilityReport;
+      if (!report) {
+        Alert.alert("No report data", "No report data available for this facility.");
+        return;
+      }
+      const generatedAt = report?.generatedAt
+        ? new Date(report.generatedAt).toLocaleString()
+        : "now";
+      Alert.alert("Report Ready", `Facility report generated at ${generatedAt}.`);
+    } catch (e) {
+      handleApiError(e, handlers);
+      Alert.alert("Report failed", "Could not generate state report.");
+    }
+  };
 
   return (
     <ScrollView
@@ -254,12 +278,13 @@ export default function BillingAndReportingScreen() {
           Generate and download required reports for your state
         </Text>
         <TouchableOpacity
-          style={[styles.button, styles.reportButton]}
-          onPress={() =>
-            Alert.alert("Coming Soon", "State report generation coming soon.")
-          }
+          style={[styles.button, styles.reportButton, fetchingReport && styles.disabled]}
+          disabled={fetchingReport}
+          onPress={handleDownloadReport}
         >
-          <Text style={styles.reportButtonText}>Download State Report</Text>
+          <Text style={styles.reportButtonText}>
+            {fetchingReport ? "Generating..." : "Download State Report"}
+          </Text>
         </TouchableOpacity>
       </View>
 

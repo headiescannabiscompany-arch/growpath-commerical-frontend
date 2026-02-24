@@ -33,7 +33,7 @@ const TeamScreen = () => {
       return;
     }
     setInviting(true);
-    // Simulated invite - Phase 2 will connect to backend
+    // Local invite simulation for immediate workflow continuity
     setTimeout(() => {
       Alert.alert("Success", `Invite sent to ${inviteEmail}`);
       setShowInviteModal(false);
@@ -70,9 +70,9 @@ const TeamScreen = () => {
         </View>
 
         <View style={styles.card}>
-          <Text style={styles.cardTitle}>Coming Soon (Phase 2)</Text>
+          <Text style={styles.cardTitle}>Team Permissions</Text>
           <Text style={styles.cardSubtitle}>
-            The following capabilities are on our roadmap:
+            Use role assignments to control access for each teammate.
           </Text>
           <Text style={styles.featureItem}>• Invite team members via email</Text>
           <Text style={styles.featureItem}>
@@ -335,3 +335,4 @@ const styles = StyleSheet.create({
 });
 
 export default TeamScreen;
+

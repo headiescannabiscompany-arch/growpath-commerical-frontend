@@ -1,36 +1,32 @@
-import React, { useMemo } from "react";
+import React from "react";
 import { createBottomTabNavigator } from "@react-navigation/bottom-tabs";
-import StubScreen from "../components/StubScreen";
+
+import StorefrontScreen from "../screens/StorefrontScreen";
+import CommercialToolsScreen from "../screens/commercial/CommercialToolsScreen";
+import CommercialReportsScreen from "../screens/commercial/CommercialReportsScreen";
+import CommercialProfileScreen from "../screens/commercial/CommercialProfileScreen";
 
 const Tab = createBottomTabNavigator();
 
-function makeTabStub(title) {
-  return function Screen(props) {
-    return <StubScreen {...props} title={title} subtitle="Commercial tab stub" />;
-  };
-}
-
 export default function CommercialTabs() {
-  const tabs = useMemo(
-    () => [
-      { name: "Storefront", title: "Storefront" },
-      { name: "CommercialTools", title: "Tools" },
-      { name: "CommercialReports", title: "Reports" },
-      { name: "CommercialProfile", title: "Profile" }
-    ],
-    []
-  );
-
   return (
     <Tab.Navigator screenOptions={{ headerShown: true }}>
-      {tabs.map((t) => (
-        <Tab.Screen
-          key={t.name}
-          name={t.name}
-          component={makeTabStub(t.title)}
-          options={{ title: t.title }}
-        />
-      ))}
+      <Tab.Screen name="Storefront" component={StorefrontScreen} options={{ title: "Storefront" }} />
+      <Tab.Screen
+        name="CommercialTools"
+        component={CommercialToolsScreen}
+        options={{ title: "Tools" }}
+      />
+      <Tab.Screen
+        name="CommercialReports"
+        component={CommercialReportsScreen}
+        options={{ title: "Reports" }}
+      />
+      <Tab.Screen
+        name="CommercialProfile"
+        component={CommercialProfileScreen}
+        options={{ title: "Profile" }}
+      />
     </Tab.Navigator>
   );
 }

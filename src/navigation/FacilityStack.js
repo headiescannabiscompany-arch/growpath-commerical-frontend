@@ -1,32 +1,29 @@
 import React from "react";
 import { createNativeStackNavigator } from "@react-navigation/native-stack";
+
 import FacilityTabs from "./FacilityTabs";
-import StubScreen from "../components/StubScreen";
+import GuildCodeScreen from "../screens/GuildCodeScreen";
+import SubscriptionScreen from "../screens/SubscriptionScreen";
+import PricingMatrixScreen from "../screens/PricingMatrixScreen";
+import ForumNewPostScreen from "../screens/ForumNewPostScreen";
+import { ForumPostDetailScreen } from "../screens/ForumPostDetailScreen";
 
 const Stack = createNativeStackNavigator();
-
-function makeStub(title) {
-  return function Screen(props) {
-    return <StubScreen {...props} title={title} subtitle="Facility stub" />;
-  };
-}
 
 export default function FacilityStack() {
   return (
     <Stack.Navigator screenOptions={{ headerShown: true }}>
-      {/* Root */}
       <Stack.Screen
         name="FacilityTabs"
         component={FacilityTabs}
         options={{ title: "Facility" }}
       />
-      {/* Common “missing” screens you were navigating to */}
-      <Stack.Screen name="GuildCode" component={makeStub("Guild Code")} />
-      <Stack.Screen name="Subscription" component={makeStub("Subscription")} />
-      <Stack.Screen name="PricingMatrix" component={makeStub("Pricing Matrix")} />
-      {/* Forum-related */}
-      <Stack.Screen name="ForumNewPost" component={makeStub("Forum: New Post")} />
-      <Stack.Screen name="ForumPost" component={makeStub("Forum: Post")} />
+      <Stack.Screen name="GuildCode" component={GuildCodeScreen} />
+      <Stack.Screen name="Subscription" component={SubscriptionScreen} />
+      <Stack.Screen name="PricingMatrix" component={PricingMatrixScreen} />
+      <Stack.Screen name="ForumNewPost" component={ForumNewPostScreen} />
+      <Stack.Screen name="ForumPostDetail" component={ForumPostDetailScreen} />
+      <Stack.Screen name="ForumPost" component={ForumPostDetailScreen} />
     </Stack.Navigator>
   );
 }

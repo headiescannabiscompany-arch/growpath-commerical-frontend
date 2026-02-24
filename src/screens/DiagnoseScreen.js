@@ -82,7 +82,7 @@ export default function DiagnoseScreen({ route, navigation }) {
     useDiagnose();
   const [result, setResult] = useState(null);
 
-  // --- Add missing handler stubs ---
+  // Core diagnosis handlers
   async function handleDiagnose() {
     try {
       const payload = {

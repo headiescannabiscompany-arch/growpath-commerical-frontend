@@ -163,7 +163,7 @@ export default function VendorGuidesScreen({ navigation, route }) {
           <Text style={styles.emptySubtext}>
             {vendorType
               ? `Check back soon for ${title}`
-              : "Featured vendor guides coming soon"}
+              : "Featured vendor guides are being updated"}
           </Text>
         </View>
       }

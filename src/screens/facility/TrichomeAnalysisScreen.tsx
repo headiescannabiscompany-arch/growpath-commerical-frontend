@@ -1,43 +1,39 @@
-import React from "react";
-import { View, Text, TextInput, Pressable, StyleSheet, ScrollView } from "react-native";
+import React, { useMemo, useState } from "react";
+import { Pressable, ScrollView, StyleSheet, Text, TextInput, View } from "react-native";
 
-/**
- * TrichomeAnalysisScreen
- *
- * Minimal MVP: accept image URL(s) and submit
- * Calls POST /api/facility/{facilityId}/ai/call (harvest.analyzeTrichomes)
- *
- * Full implementation would:
- * - Use react-native-image-picker or Expo.ImagePicker
- * - Upload images to storage backend
- * - Display distribution results + confidence
- *
- * For now: stub with manual image URL input for web demo
- */
+import { useAICall } from "@/hooks/useAICall";
+import { AIResultCard } from "@/features/ai/components/AIResultCard";
+
 export default function TrichomeAnalysisScreen({
   facilityId,
-  growId,
-  onNavigateBack
+  growId
 }: {
   facilityId: string;
   growId: string;
-  onNavigateBack?: () => void;
 }) {
-  const [imageUrl, setImageUrl] = React.useState("");
-  const [notes, setNotes] = React.useState("");
+  const { callAI, loading, error, last } = useAICall(facilityId);
+  const [imageUrl, setImageUrl] = useState("");
+  const [notes, setNotes] = useState("");
 
-  const handleSubmit = () => {
-    // TODO: Call useAICall hook with harvest.analyzeTrichomes
-    // Post-MVP: accept images from picker, upload, then call AI
-    console.log("Submit trichome analysis", { imageUrl, notes, growId });
+  const canRun = useMemo(
+    () => !!facilityId && !!growId && imageUrl.trim().length > 0,
+    [facilityId, growId, imageUrl]
+  );
+
+  const runAnalysis = async () => {
+    if (!canRun) return;
+    await callAI({
+      tool: "harvest",
+      fn: "analyzeTrichomes",
+      args: { images: [imageUrl.trim()], notes: notes.trim() || undefined },
+      context: { growId }
+    });
   };
 
   return (
     <ScrollView contentContainerStyle={styles.container}>
       <Text style={styles.h1}>Analyze Trichomes</Text>
-      <Text style={styles.sub}>
-        (MVP: paste image URL. Later: capture from camera or upload)
-      </Text>
+      <Text style={styles.sub}>Submit trichome imagery for harvest signal analysis.</Text>
 
       <View style={styles.card}>
         <Text style={styles.label}>Image URL</Text>
@@ -45,7 +41,7 @@ export default function TrichomeAnalysisScreen({
           value={imageUrl}
           onChangeText={setImageUrl}
           style={styles.input}
-          placeholder="https://example.com/image.jpg"
+          placeholder="https://example.com/trichomes.jpg"
           multiline
         />
 
@@ -54,21 +50,26 @@ export default function TrichomeAnalysisScreen({
           value={notes}
           onChangeText={setNotes}
           style={[styles.input, { minHeight: 80 }]}
-          placeholder="Lighting conditions, lens used, etc."
+          placeholder="Lens details, lighting, or grow context"
           multiline
         />
 
-        <Pressable onPress={handleSubmit} style={[styles.cta]}>
-          <Text style={styles.ctaText}>Analyze</Text>
+        <Pressable
+          onPress={runAnalysis}
+          disabled={!canRun || loading}
+          style={[styles.cta, (!canRun || loading) && styles.ctaDisabled]}
+        >
+          <Text style={styles.ctaText}>{loading ? "Analyzing..." : "Analyze"}</Text>
         </Pressable>
+
+        {!!error && (
+          <Text style={styles.error}>
+            {error.code}: {error.message}
+          </Text>
+        )}
       </View>
 
-      <View style={styles.card}>
-        <Text style={styles.info}>
-          ℹ️ Full camera/upload support coming soon. For now, use a URL to a trichome
-          image.
-        </Text>
-      </View>
+      {!!last?.data && <AIResultCard title="Trichome Analysis" data={last.data as any} />}
     </ScrollView>
   );
 }
@@ -101,6 +102,7 @@ const styles = StyleSheet.create({
     borderRadius: 10,
     alignItems: "center"
   },
+  ctaDisabled: { opacity: 0.6 },
   ctaText: { fontWeight: "700", color: "#fff", fontSize: 14 },
-  info: { fontSize: 13, color: "#0073E6", lineHeight: 18 }
+  error: { color: "#DC2626", fontWeight: "600", fontSize: 12, marginTop: 8 }
 });

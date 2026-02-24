@@ -1,43 +1,24 @@
-import React, { useMemo } from "react";
+import React from "react";
 import { createBottomTabNavigator } from "@react-navigation/bottom-tabs";
-import StubScreen from "../components/StubScreen";
 
-function FacilityHomeStub(props) {
-  return <StubScreen {...props} title="Facility Home" subtitle="Stub" />;
-}
-function FacilityTasksStub(props) {
-  return <StubScreen {...props} title="Facility Tasks" subtitle="Stub" />;
-}
-function FacilityReportsStub(props) {
-  return <StubScreen {...props} title="Facility Reports" subtitle="Stub" />;
-}
-function FacilityProfileStub(props) {
-  return <StubScreen {...props} title="Facility Profile" subtitle="Stub" />;
-}
+import VendorDashboardScreen from "../screens/facility/VendorDashboardScreen";
+import FacilityTasksScreen from "../screens/facility/FacilityTasksScreen";
+import AuditLogScreen from "../screens/facility/AuditLogScreen";
+import FacilitySettingsScreen from "../screens/facility/FacilitySettingsScreen";
 
 const Tab = createBottomTabNavigator();
 
 export default function FacilityTabs() {
-  const tabs = useMemo(
-    () => [
-      { name: "FacilityHome", component: FacilityHomeStub, title: "Home" },
-      { name: "FacilityTasks", component: FacilityTasksStub, title: "Tasks" },
-      { name: "FacilityReports", component: FacilityReportsStub, title: "Reports" },
-      { name: "FacilityProfile", component: FacilityProfileStub, title: "Profile" }
-    ],
-    []
-  );
-
   return (
     <Tab.Navigator screenOptions={{ headerShown: true }}>
-      {tabs.map((t) => (
-        <Tab.Screen
-          key={t.name}
-          name={t.name}
-          component={t.component}
-          options={{ title: t.title }}
-        />
-      ))}
+      <Tab.Screen name="FacilityHome" component={VendorDashboardScreen} options={{ title: "Home" }} />
+      <Tab.Screen name="FacilityTasks" component={FacilityTasksScreen} options={{ title: "Tasks" }} />
+      <Tab.Screen name="FacilityReports" component={AuditLogScreen} options={{ title: "Reports" }} />
+      <Tab.Screen
+        name="FacilityProfile"
+        component={FacilitySettingsScreen}
+        options={{ title: "Profile" }}
+      />
     </Tab.Navigator>
   );
 }

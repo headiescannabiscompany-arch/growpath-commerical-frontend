@@ -81,7 +81,7 @@ export const AI_FEATURES: AIFeature[] = [
     description: "Calculate vapor pressure deficit from temp & RH",
     tool: "climate",
     fn: "computeVPD",
-    enabled: false,
+    enabled: true,
     ui: "metric",
     screen: "ComputeVPD",
     requires: { facilityId: true, growId: false }
@@ -92,7 +92,7 @@ export const AI_FEATURES: AIFeature[] = [
     description: "Suggest EC correction (may require confirmation gate)",
     tool: "ec",
     fn: "recommendCorrection",
-    enabled: false,
+    enabled: true,
     ui: "form",
     screen: "ECRecommend",
     requires: { facilityId: true, growId: false },

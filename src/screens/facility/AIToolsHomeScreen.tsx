@@ -7,7 +7,7 @@ import { AI_FEATURES, type AIFeature } from "@/features/ai/aiFeatureMatrix";
  *
  * Card list showing all AI tools from the feature matrix.
  * Enabled cards: tappable, navigate to detail screen
- * Disabled cards: "Coming Soon" label
+ * Unavailable cards: "Unavailable" label
  *
  * Single source of truth: AI_FEATURES (aiFeatureMatrix.ts)
  * Add a new tool there → it appears here automatically.
@@ -88,7 +88,7 @@ function ToolCard({
           <Text style={styles.label}>{feature.label}</Text>
           <Text style={styles.desc}>{feature.description}</Text>
         </View>
-        {!feature.enabled && <Text style={styles.badge}>Coming Soon</Text>}
+        {!feature.enabled && <Text style={styles.badge}>Unavailable</Text>}
         {feature.enabled && feature.requires.growId && !growId && (
           <Text style={styles.badge}>Select Grow</Text>
         )}

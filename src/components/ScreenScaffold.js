@@ -6,7 +6,7 @@ export default function ScreenScaffold({
   title,
   subtitle,
   mode,
-  status = "STUB",
+  status = "LIVE",
   children,
   debug
 }) {

@@ -4,8 +4,7 @@ import {
   Text,
   StyleSheet,
   ScrollView,
-  TouchableOpacity,
-  Alert
+  TouchableOpacity
 } from "react-native";
 import { MaterialCommunityIcons } from "@expo/vector-icons";
 import Card from "../../components/Card.js";
@@ -58,8 +57,7 @@ const NutrientToolsScreen = ({ navigation }) => {
       description: "Search database of certified nutrient brands and suppliers",
       icon: "database-search",
       color: "#FFF3E0",
-      action: () =>
-        Alert.alert("Coming Soon", "Certified products database will be available soon"),
+      action: () => navigation.navigate("VendorGuides"),
       badge: "Premium"
     },
     {
@@ -68,8 +66,7 @@ const NutrientToolsScreen = ({ navigation }) => {
       description: "Visual guide to identify & fix nutrient deficiencies",
       icon: "book-open-variant",
       color: "#F3E5F5",
-      action: () =>
-        Alert.alert("Coming Soon", "Interactive deficiency guide coming soon"),
+      action: () => navigation.navigate("Diagnose"),
       badge: "Reference"
     },
     {
@@ -78,8 +75,7 @@ const NutrientToolsScreen = ({ navigation }) => {
       description: "Calculate nutrient quantities for your tank size & strength",
       icon: "flask-beaker",
       color: "#E0F2F1",
-      action: () =>
-        Alert.alert("Coming Soon", "Mixing calculator will be available soon"),
+      action: () => navigation.navigate("NutrientCalculator"),
       badge: "Utility"
     }
   ];

@@ -1,12 +1,6 @@
-/**
- * ECRecommendScreen
- *
- * Phase 1.1: EC nutrient recommendation (can gate on 409 confirmation).
- * Safe to include in nav even if disabled in matrix — just won't be reachable.
- */
-
 import React, { useMemo, useState } from "react";
-import { View, Text, TextInput, Pressable, StyleSheet, ScrollView } from "react-native";
+import { Pressable, ScrollView, StyleSheet, Text, TextInput, View } from "react-native";
+
 import { useAICall } from "@/hooks/useAICall";
 import { AIResultCard } from "@/features/ai/components/AIResultCard";
 
@@ -14,25 +8,22 @@ export default function ECRecommendScreen({ facilityId }: { facilityId: string }
   const { callAI, loading, error, last } = useAICall(facilityId);
   const [currentEC, setCurrentEC] = useState("1.4");
   const [targetEC, setTargetEC] = useState("1.6");
+  const [confirm, setConfirm] = useState(false);
 
   const canRun = useMemo(
     () => facilityId && currentEC.length > 0 && targetEC.length > 0,
     [facilityId, currentEC, targetEC]
   );
 
-  const onRun = async () => {
+  const onRun = async (forceConfirm?: boolean) => {
     const cec = Number(currentEC);
     const tec = Number(targetEC);
-    if (!Number.isFinite(cec) || !Number.isFinite(tec)) {
-      return;
-    }
+    if (!Number.isFinite(cec) || !Number.isFinite(tec)) return;
+
     await callAI({
       tool: "ec",
       fn: "recommendCorrection",
-      args: {
-        currentEC: cec,
-        targetEC: tec
-      },
+      args: { currentEC: cec, targetEC: tec, confirm: forceConfirm ?? confirm },
       context: {}
     });
   };
@@ -68,21 +59,27 @@ export default function ECRecommendScreen({ facilityId }: { facilityId: string }
         />
 
         <Pressable
-          onPress={onRun}
+          onPress={() => onRun(false)}
           disabled={!canRun || loading}
           style={[styles.cta, (!canRun || loading) && styles.ctaDisabled]}
         >
-          <Text style={styles.ctaText}>
-            {loading ? "Running…" : "Get Recommendation"}
-          </Text>
+          <Text style={styles.ctaText}>{loading ? "Running..." : "Get Recommendation"}</Text>
         </Pressable>
 
-        {!!needsConfirm && (
-          <Text style={styles.warn}>
-            ⚠️ Confirmation required: {last?.error?.message}
-            {"\n"}
-            (Implement confirmation modal + re-call with args.confirm=true in next phase)
-          </Text>
+        {needsConfirm && (
+          <>
+            <Text style={styles.warn}>Confirmation required: {last?.error?.message}</Text>
+            <Pressable
+              onPress={() => {
+                setConfirm(true);
+                onRun(true);
+              }}
+              disabled={loading}
+              style={[styles.confirmBtn, loading && styles.ctaDisabled]}
+            >
+              <Text style={styles.confirmBtnText}>Confirm and Apply Recommendation</Text>
+            </Pressable>
+          </>
         )}
 
         {!!error && !needsConfirm && (
@@ -128,12 +125,14 @@ const styles = StyleSheet.create({
   },
   ctaDisabled: { opacity: 0.6 },
   ctaText: { fontWeight: "700", color: "#fff", fontSize: 14 },
-  warn: {
-    color: "#92400E",
-    fontWeight: "600",
-    fontSize: 12,
+  warn: { color: "#92400E", fontWeight: "600", fontSize: 12, marginTop: 8 },
+  error: { color: "#DC2626", fontWeight: "600", fontSize: 12, marginTop: 8 },
+  confirmBtn: {
     marginTop: 8,
-    lineHeight: 16
+    backgroundColor: "#92400E",
+    paddingVertical: 10,
+    borderRadius: 10,
+    alignItems: "center"
   },
-  error: { color: "#DC2626", fontWeight: "600", fontSize: 12, marginTop: 8 }
+  confirmBtnText: { color: "#fff", fontWeight: "700", fontSize: 13 }
 });

@@ -43,6 +43,14 @@ export default function ForumScreen() {
   const listRef = useRef(null);
   const pendingScrollToTop = useRef(false);
 
+  const canNavigateByName = useCallback(
+    (name) => {
+      const routeNames = rootNavigation?.getState?.()?.routeNames;
+      return Array.isArray(routeNames) ? routeNames.includes(name) : false;
+    },
+    [rootNavigation]
+  );
+
   const tierOneConfig = getTier1Metadata();
   const TIER1_TAGS = new Set(tierOneConfig?.options || []);
 
@@ -138,8 +146,15 @@ export default function ForumScreen() {
 
   const handleCreatePost = useCallback(() => {
     pendingScrollToTop.current = true;
-    rootNavigation.navigate("ForumNewPost");
-  }, [rootNavigation]);
+    if (canNavigateByName("new-post")) {
+      rootNavigation.navigate("new-post");
+      return;
+    }
+    if (canNavigateByName("ForumNewPost")) {
+      rootNavigation.navigate("ForumNewPost");
+      return;
+    }
+  }, [canNavigateByName, rootNavigation]);
 
   function renderPost({ item }) {
     const authorType = item.authorType || item.user?.type || "user";
@@ -149,7 +164,16 @@ export default function ForumScreen() {
     return (
       <TouchableOpacity
         style={styles.card}
-        onPress={() => rootNavigation.navigate("ForumPostDetail", { id: item._id })}
+        onPress={() => {
+          if (canNavigateByName("post/[id]")) {
+            rootNavigation.navigate("post/[id]", { id: item._id });
+            return;
+          }
+          if (canNavigateByName("ForumPostDetail")) {
+            rootNavigation.navigate("ForumPostDetail", { id: item._id });
+            return;
+          }
+        }}
       >
         <View style={styles.userRow}>
           <Image
@@ -250,7 +274,16 @@ export default function ForumScreen() {
                     </Text>
                   </View>
                   <TouchableOpacity
-                    onPress={() => rootNavigation.navigate("GuildCode")}
+                    onPress={() => {
+                      if (canNavigateByName("code")) {
+                        rootNavigation.navigate("code");
+                        return;
+                      }
+                      if (canNavigateByName("GuildCode")) {
+                        rootNavigation.navigate("GuildCode");
+                        return;
+                      }
+                    }}
                     style={styles.codeButton}
                   >
                     <Text style={styles.codeButtonText}>📜 Forum Code</Text>

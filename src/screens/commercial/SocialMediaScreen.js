@@ -16,7 +16,8 @@ import {
   getSocialAccounts,
   connectSocialAccount,
   disconnectSocialAccount,
-  syncSocialData
+  syncSocialData,
+  schedulePost
 } from "../../api/socialMedia.js";
 import SkeletonLoader from "../../components/SkeletonLoader.js";
 import EmptyState from "../../components/EmptyState.js";
@@ -184,6 +185,44 @@ const SocialMediaScreen = ({ navigation }) => {
     setPlatforms(
       platforms.map((p) => (p.id === platformId ? { ...p, [field]: value } : p))
     );
+  };
+
+  const handleCreatePostSchedule = async () => {
+    const connected = platforms.filter((p) => p.connected).map((p) => p.id);
+    if (!connected.length) {
+      Alert.alert("No connected platforms", "Connect at least one platform first.");
+      return;
+    }
+
+    try {
+      setIsLoading(true);
+      const scheduledTime = new Date(Date.now() + 60 * 60 * 1000).toISOString();
+      await schedulePost(connected, "Scheduled post from Growpath", scheduledTime);
+      Alert.alert("Scheduled", "Your post schedule was created successfully.");
+    } catch (e) {
+      Alert.alert("Schedule failed", e?.message || "Failed to create schedule.");
+    } finally {
+      setIsLoading(false);
+    }
+  };
+
+  const handleViewDetailedAnalytics = async () => {
+    const connected = platforms.filter((p) => p.connected).map((p) => p.id);
+    if (!connected.length) {
+      Alert.alert("No connected platforms", "Connect at least one platform first.");
+      return;
+    }
+
+    try {
+      setIsLoading(true);
+      await Promise.all(connected.map((platformId) => syncSocialData(platformId)));
+      await loadSocialAccounts();
+      Alert.alert("Analytics updated", "Latest social analytics have been synced.");
+    } catch (e) {
+      Alert.alert("Sync failed", e?.message || "Failed to refresh analytics.");
+    } finally {
+      setIsLoading(false);
+    }
   };
 
   return (
@@ -380,12 +419,7 @@ const SocialMediaScreen = ({ navigation }) => {
           </Text>
           <TouchableOpacity
             style={[styles.btn, styles.btnPrimary]}
-            onPress={() =>
-              Alert.alert(
-                "Coming Soon",
-                "Post scheduling will be available in a future update."
-              )
-            }
+            onPress={handleCreatePostSchedule}
           >
             <MaterialCommunityIcons name="plus" size={18} color="#FFF" />
             <Text style={styles.btnTextPrimary}>Create Post Schedule</Text>
@@ -400,12 +434,7 @@ const SocialMediaScreen = ({ navigation }) => {
           </View>
           <TouchableOpacity
             style={[styles.btn, styles.btnSecondary]}
-            onPress={() =>
-              Alert.alert(
-                "Coming Soon",
-                "Detailed analytics will be available in a future update."
-              )
-            }
+            onPress={handleViewDetailedAnalytics}
           >
             <MaterialCommunityIcons
               name="database-search"
