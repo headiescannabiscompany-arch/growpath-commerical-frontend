@@ -2,6 +2,7 @@
 
 import React, { useCallback } from "react";
 import { FeatureGate } from "../../../components/FeatureGate";
+import { CAPABILITY_KEYS } from "@/entitlements";
 import { Pressable, Button, View, Text, StyleSheet, Alert } from "react-native";
 import { useCommercialFeed } from "../hooks/useCommercialFeed";
 import type { FeedItem } from "../types/feed";
@@ -81,7 +82,7 @@ export const FeedItemCard = React.memo(function FeedItemCard({
       <Text style={styles.timestamp}>{new Date(item.createdAt).toLocaleString()}</Text>
       {/* Optimistic actions for tasks and alerts, gated by entitlements */}
       {item.type === "task" && (
-        <FeatureGate capability="TASKS_EDIT">
+        <FeatureGate capability={CAPABILITY_KEYS.TASKS_WRITE}>
           <Button
             title={item.status === "open" ? "Complete" : "Reopen"}
             onPress={handleTaskAction}
@@ -89,7 +90,7 @@ export const FeedItemCard = React.memo(function FeedItemCard({
         </FeatureGate>
       )}
       {item.type === "alert" && item.status === "open" && (
-        <FeatureGate capability="ALERTS_ACK">
+        <FeatureGate capability={CAPABILITY_KEYS.ALERTS_ACK}>
           <Button title="Acknowledge" onPress={handleAlertAck} />
         </FeatureGate>
       )}

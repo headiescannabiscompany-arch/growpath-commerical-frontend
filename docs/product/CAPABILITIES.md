@@ -12,6 +12,9 @@
 ## Canonical capability keys (minimum set for v1)
 ### Cross-mode (used for Single + Commercial)
 - AI_ASSISTANT
+- FEED_VIEW
+- ALERTS_VIEW
+- ALERTS_ACK
 - DIAGNOSE_BASIC
 - DIAGNOSE_AI
 - DIAGNOSE_ADVANCED

@@ -1,6 +1,6 @@
 import React from "react";
 import { useEntitlements } from "@/entitlements";
-import { CapabilityKey } from "../entitlements/types";
+import type { CapabilityKey } from "../entitlements/capabilityKeys";
 export function FeatureGate({
   capability,
   children,

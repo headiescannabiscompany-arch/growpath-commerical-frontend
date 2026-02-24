@@ -1,20 +1,7 @@
 export type Plan = "free" | "pro" | "commercial" | "facility";
 export type Mode = "personal" | "commercial" | "facility";
-export type FacilityRole = "OWNER" | "MANAGER" | "TECH" | "VIEWER";
-export type CapabilityKey =
-  | "FEED_VIEW"
-  | "TASKS_VIEW"
-  | "TASKS_EDIT"
-  | "ALERTS_VIEW"
-  | "ALERTS_ACK"
-  | "GROWS_VIEW"
-  | "GROWS_EDIT"
-  | "PLANTS_VIEW"
-  | "PLANTS_EDIT"
-  | "TEAM_VIEW"
-  | "TEAM_MANAGE"
-  | "EXPORT_COMPLIANCE"
-  | "AI_ASSISTANT";
+export type FacilityRole = "OWNER" | "MANAGER" | "STAFF" | "VIEWER" | "TECH";
+export type CapabilityKey = import("./capabilityKeys").CapabilityKey;
 export type LimitKey =
   | "maxPlants"
   | "maxGrows"
