@@ -67,7 +67,7 @@ export default function CreatorPayoutScreen({ navigation }) {
   if (!summary) {
     return (
       <ScreenContainer>
-        <Text>Loadingâ€¦</Text>
+        <Text>Loading...</Text>
       </ScreenContainer>
     );
   }

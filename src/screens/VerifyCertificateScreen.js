@@ -29,7 +29,7 @@ export default function VerifyCertificateScreen({ route }) {
       <ScreenContainer>
         <View style={styles.center}>
           <ActivityIndicator size="large" color="#3498db" />
-          <Text style={styles.loadingText}>Verifying certificateâ€¦</Text>
+          <Text style={styles.loadingText}>Verifying certificate...</Text>
         </View>
       </ScreenContainer>
     );

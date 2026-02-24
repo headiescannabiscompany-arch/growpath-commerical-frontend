@@ -42,14 +42,18 @@ export default function ToolsHubScreen() {
 
         <View style={styles.card}>
           <Text style={styles.cardTitle}>🧪 NPK Helper</Text>
-          <Text style={styles.cardDesc}>Planned feature.</Text>
-          <Text style={styles.link}>Soon {"\u2192"}</Text>
+          <Text style={styles.cardDesc}>Calculate ratios and dilution targets from N-P-K values.</Text>
+          <Link href="/home/personal/tools/npk" style={styles.link} asChild>
+            <Text>Open NPK {"\u2192"}</Text>
+          </Link>
         </View>
 
         <View style={styles.card}>
           <Text style={styles.cardTitle}>💧 Watering Tracker</Text>
-          <Text style={styles.cardDesc}>Planned feature.</Text>
-          <Text style={styles.link}>Soon {"\u2192"}</Text>
+          <Text style={styles.cardDesc}>Plan watering cadence and next watering date.</Text>
+          <Link href="/home/personal/tools/watering" style={styles.link} asChild>
+            <Text>Open Watering {"\u2192"}</Text>
+          </Link>
         </View>
       </View>
     </View>

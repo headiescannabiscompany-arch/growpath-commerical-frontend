@@ -46,7 +46,7 @@ function pickSubtitle(x: AnyRec): string {
       ? `On hand: ${String(qty)}${unit ? ` ${unit}` : ""}`
       : "";
   const b = cat ? `Category: ${String(cat)}` : "";
-  return [a, b].filter(Boolean).join(" â€¢ ");
+  return [a, b].filter(Boolean).join(" -  ");
 }
 
 export default function CommercialInventoryRoute() {
@@ -117,7 +117,7 @@ export default function CommercialInventoryRoute() {
                 onPress={() => router.push("/home/commercial/inventory-create")}
                 style={styles.createBtn}
               >
-                <Text style={styles.createBtnText}>Create (Planned)</Text>
+                <Text style={styles.createBtnText}>Create</Text>
               </TouchableOpacity>
             ) : null}
           </View>
@@ -126,7 +126,7 @@ export default function CommercialInventoryRoute() {
         {loading ? (
           <View style={styles.loading}>
             <ActivityIndicator />
-            <Text style={styles.muted}>Loading inventoryâ€¦</Text>
+            <Text style={styles.muted}>Loading inventory...</Text>
           </View>
         ) : null}
 
@@ -176,7 +176,7 @@ export default function CommercialInventoryRoute() {
                     </Text>
                   ) : null}
                 </View>
-                <Text style={styles.chev}>â€º</Text>
+                <Text style={styles.chev}>></Text>
               </Pressable>
             );
           }}
@@ -229,3 +229,4 @@ const styles = StyleSheet.create({
   empty: { paddingVertical: 26, alignItems: "center", gap: 8 },
   emptyTitle: { fontSize: 16, fontWeight: "800" }
 });
+

@@ -150,7 +150,7 @@ export default function FacilityProfileRoute() {
         {loading ? (
           <View style={styles.loading}>
             <ActivityIndicator />
-            <Text style={styles.muted}>Loading profileâ€¦</Text>
+            <Text style={styles.muted}>Loading profile...</Text>
           </View>
         ) : null}
 

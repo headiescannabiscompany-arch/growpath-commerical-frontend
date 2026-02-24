@@ -56,7 +56,7 @@ export default function GrowLogScreen() {
       {logs.length === 0 ? (
         <EmptyState
           title="No log entries yet"
-          description="Record todayâ€™s log to start your habit."
+          description="Record today's log to start your habit."
           actionLabel="Record Log"
           onAction={() => navigation.navigate("AddLog", { growId })}
         />

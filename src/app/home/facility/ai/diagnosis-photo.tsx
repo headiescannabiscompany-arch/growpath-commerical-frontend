@@ -1,11 +1,18 @@
 import React from "react";
-import { PlannedScreen } from "@/components/PlannedScreen";
+import { useLocalSearchParams } from "expo-router";
 
-export default function FacilityAiDiagnosisPlanned() {
+import { useFacility } from "@/state/useFacility";
+import TrichomeAnalysisScreen from "@/screens/facility/TrichomeAnalysisScreen";
+
+export default function FacilityAiDiagnosisPhotoRoute() {
+  const { selectedId: facilityId } = useFacility();
+  const params = useLocalSearchParams<{ growId?: string | string[] }>();
+  const growId = Array.isArray(params.growId) ? params.growId[0] : params.growId;
+
   return (
-    <PlannedScreen
-      title="Facility AI (Planned)"
-      message="Facility AI tools are planned for a future release."
+    <TrichomeAnalysisScreen
+      facilityId={String(facilityId || "")}
+      growId={String(growId || "unknown-grow")}
     />
   );
 }

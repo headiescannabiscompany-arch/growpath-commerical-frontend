@@ -251,7 +251,7 @@ function GrowLogsScreen() {
               <TextInput
                 value={temperature}
                 onChangeText={setTemperature}
-                placeholder="e.g., 75Â°F or 24Â°C"
+                placeholder="e.g., 75degF or 24degC"
                 style={styles.input}
                 placeholderTextColor={colors.textSoft}
                 editable={advancedEnt === "enabled"}
@@ -370,8 +370,8 @@ function GrowLogsScreen() {
           <Text
             style={{ fontSize: 15, color: "#444", textAlign: "center", marginBottom: 18 }}
           >
-            Start a log when you want to track your plantâ€™s journey.{"\n"}
-            Sometimes, observation is enoughâ€”logging is here when you need it.
+            Start a log when you want to track your plant's journey.{"\n"}
+            Sometimes, observation is enough-logging is here when you need it.
           </Text>
 
           <PrimaryButton

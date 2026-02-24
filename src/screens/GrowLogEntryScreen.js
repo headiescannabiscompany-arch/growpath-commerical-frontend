@@ -491,7 +491,7 @@ export default function GrowLogEntryScreen({ route, navigation }) {
           style={styles.input}
           value={title}
           onChangeText={setTitle}
-          placeholder="Day 21 - Heavy stretch todayâ€¦"
+          placeholder="Day 21 - Heavy stretch today..."
         />
 
         {/* Notes */}
@@ -668,7 +668,7 @@ export default function GrowLogEntryScreen({ route, navigation }) {
 
               <View style={styles.row}>
                 <View style={{ flex: 1 }}>
-                  <Text style={styles.label}>PPFD (Î¼mol/mÂ²/s)</Text>
+                  <Text style={styles.label}>PPFD (umol/m2/s)</Text>
                   <TextInput
                     style={styles.input}
                     value={lightPPFD}
@@ -679,7 +679,7 @@ export default function GrowLogEntryScreen({ route, navigation }) {
                 </View>
                 <View style={{ width: 12 }} />
                 <View style={{ flex: 1 }}>
-                  <Text style={styles.label}>DLI (mol/mÂ²/day)</Text>
+                  <Text style={styles.label}>DLI (mol/m2/day)</Text>
                   <TextInput
                     style={styles.input}
                     value={lightDLI}
@@ -806,12 +806,12 @@ export default function GrowLogEntryScreen({ route, navigation }) {
 
               <View style={styles.row}>
                 <View style={{ flex: 1 }}>
-                  <Text style={styles.label}>Temperature (Â°F)</Text>
+                  <Text style={styles.label}>Temperature (degF)</Text>
                   <TextInput
                     style={styles.input}
                     value={temperature}
                     onChangeText={setTemperature}
-                    placeholder="75-82Â°F"
+                    placeholder="75-82degF"
                     keyboardType="numeric"
                   />
                 </View>

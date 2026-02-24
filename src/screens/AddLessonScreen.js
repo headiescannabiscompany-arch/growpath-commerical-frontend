@@ -136,7 +136,7 @@ export default function AddLessonScreen({ route, navigation }) {
       <Text style={styles.label}>Text Content (optional)</Text>
       <TextInput
         style={[styles.input, styles.textBox]}
-        placeholder="Write the lesson notes hereâ€¦"
+        placeholder="Write the lesson notes here..."
         value={content}
         onChangeText={setContent}
         multiline

@@ -77,7 +77,7 @@ export const FeedItemCard = React.memo(function FeedItemCard({
         </View>
       </View>
       <Text style={styles.secondary}>
-        {item.actor.name} â€¢ {item.scope.facilityId}
+        {item.actor.name} -  {item.scope.facilityId}
       </Text>
       <Text style={styles.timestamp}>{new Date(item.createdAt).toLocaleString()}</Text>
       {/* Optimistic actions for tasks and alerts, gated by entitlements */}

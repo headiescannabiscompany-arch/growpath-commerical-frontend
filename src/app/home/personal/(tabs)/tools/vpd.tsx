@@ -3,13 +3,15 @@ import { View, Text, StyleSheet, TextInput, Pressable } from "react-native";
 import BackButton from "@/components/nav/BackButton";
 import { calcVpdFromTemp, type TempUnit } from "@/tools/vpd";
 
+type VpdModel =
+  | { valid: false; vpd: null; tempC: null }
+  | { valid: true; vpd: number; tempC: number };
+
 const styles = StyleSheet.create({
   container: { flex: 1, padding: 20, backgroundColor: "#fff" },
   title: { fontSize: 22, fontWeight: "700", marginBottom: 8 },
   subtitle: { fontSize: 13, color: "#64748B", marginBottom: 16 },
-
   row: { flexDirection: "row", gap: 10, alignItems: "center", flexWrap: "wrap" },
-
   pill: {
     paddingVertical: 8,
     paddingHorizontal: 12,
@@ -20,7 +22,6 @@ const styles = StyleSheet.create({
   pillOn: { backgroundColor: "#16A34A", borderColor: "#16A34A" },
   pillTxt: { fontWeight: "800" },
   pillTxtOn: { color: "#fff" },
-
   label: { fontSize: 14, fontWeight: "600", marginTop: 12 },
   input: {
     marginTop: 8,
@@ -29,7 +30,6 @@ const styles = StyleSheet.create({
     borderRadius: 10,
     padding: 12
   },
-
   card: {
     marginTop: 18,
     padding: 16,
@@ -43,20 +43,17 @@ const styles = StyleSheet.create({
 });
 
 export default function VpdToolScreen() {
-  const [unit, setUnit] = useState<TempUnit>("F"); // defaulting to F
+  const [unit, setUnit] = useState<TempUnit>("F");
   const [tempText, setTempText] = useState("77");
   const [rhText, setRhText] = useState("60");
 
-  const { vpd, valid, tempC } = useMemo(() => {
+  const model = useMemo<VpdModel>(() => {
     const t = Number(tempText);
     const rh = Number(rhText);
-
-    if (!Number.isFinite(t) || !Number.isFinite(rh))
-      return { vpd: null, valid: false, tempC: null as any };
-    if (rh < 0 || rh > 100) return { vpd: null, valid: false, tempC: null as any };
-
+    if (!Number.isFinite(t) || !Number.isFinite(rh)) return { valid: false, vpd: null, tempC: null };
+    if (rh < 0 || rh > 100) return { valid: false, vpd: null, tempC: null };
     const result = calcVpdFromTemp(t, unit, rh);
-    return { vpd: result.vpdKpa, valid: true, tempC: result.tempC };
+    return { valid: true, vpd: result.vpdKpa, tempC: result.tempC };
   }, [tempText, rhText, unit]);
 
   return (
@@ -64,26 +61,19 @@ export default function VpdToolScreen() {
       <BackButton />
       <Text style={styles.title}>VPD Calculator</Text>
       <Text style={styles.subtitle}>
-        Enter temperature ({unit === "F" ? "°F" : "°C"}) and RH (%).
+        Enter temperature ({unit === "F" ? "degF" : "degC"}) and RH (%).
       </Text>
 
       <View style={styles.row}>
-        <Pressable
-          style={[styles.pill, unit === "F" && styles.pillOn]}
-          onPress={() => setUnit("F")}
-        >
-          <Text style={[styles.pillTxt, unit === "F" && styles.pillTxtOn]}>°F</Text>
+        <Pressable style={[styles.pill, unit === "F" && styles.pillOn]} onPress={() => setUnit("F")}>
+          <Text style={[styles.pillTxt, unit === "F" && styles.pillTxtOn]}>degF</Text>
         </Pressable>
-
-        <Pressable
-          style={[styles.pill, unit === "C" && styles.pillOn]}
-          onPress={() => setUnit("C")}
-        >
-          <Text style={[styles.pillTxt, unit === "C" && styles.pillTxtOn]}>°C</Text>
+        <Pressable style={[styles.pill, unit === "C" && styles.pillOn]} onPress={() => setUnit("C")}>
+          <Text style={[styles.pillTxt, unit === "C" && styles.pillTxtOn]}>degC</Text>
         </Pressable>
       </View>
 
-      <Text style={styles.label}>Temperature ({unit === "F" ? "°F" : "°C"})</Text>
+      <Text style={styles.label}>Temperature ({unit === "F" ? "degF" : "degC"})</Text>
       <TextInput
         style={styles.input}
         value={tempText}
@@ -102,17 +92,15 @@ export default function VpdToolScreen() {
       />
 
       <View style={styles.card}>
-        {valid ? (
+        {model.valid ? (
           <>
-            <Text style={styles.result}>VPD: {vpd!.toFixed(2)} kPa</Text>
-            <Text style={styles.hint}>
-              Internal temp: {tempC.toFixed(1)}°C (converted)
-            </Text>
+            <Text style={styles.result}>VPD: {model.vpd.toFixed(2)} kPa</Text>
+            <Text style={styles.hint}>Internal temp: {model.tempC.toFixed(1)} degC (converted)</Text>
           </>
         ) : (
           <>
-            <Text style={styles.result}>VPD: —</Text>
-            <Text style={styles.hint}>Enter valid numbers (RH must be 0–100).</Text>
+            <Text style={styles.result}>VPD: -</Text>
+            <Text style={styles.hint}>Enter valid numbers (RH must be 0-100).</Text>
           </>
         )}
       </View>

@@ -292,7 +292,7 @@ export default function DiagnoseScreen({ route, navigation }) {
               </View>
               <View style={styles.row}>
                 <View style={styles.halfInput}>
-                  <Text style={styles.label}>PPFD (Î¼mol/mÂ²/s)</Text>
+                  <Text style={styles.label}>PPFD (umol/m2/s)</Text>
                   <TextInput
                     style={styles.input}
                     value={lightPPFD}
@@ -302,7 +302,7 @@ export default function DiagnoseScreen({ route, navigation }) {
                   />
                 </View>
                 <View style={styles.halfInput}>
-                  <Text style={styles.label}>DLI (mol/mÂ²/day)</Text>
+                  <Text style={styles.label}>DLI (mol/m2/day)</Text>
                   <TextInput
                     style={styles.input}
                     value={lightDLI}
@@ -326,7 +326,7 @@ export default function DiagnoseScreen({ route, navigation }) {
                     ...prev,
                     {
                       sender: "user",
-                      text: `Light measured: PPFD ${lightPPFD || "-"} Î¼mol/mÂ²/s, DLI ${lightDLI || "-"} mol/mÂ²/day.`
+                      text: `Light measured: PPFD ${lightPPFD || "-"} umol/m2/s, DLI ${lightDLI || "-"} mol/m2/day.`
                     }
                   ]);
                   Alert.alert(
@@ -450,12 +450,12 @@ export default function DiagnoseScreen({ route, navigation }) {
 
               <View style={styles.row}>
                 <View style={styles.halfInput}>
-                  <Text style={styles.label}>Temperature (Â°F)</Text>
+                  <Text style={styles.label}>Temperature (degF)</Text>
                   <TextInput
                     style={styles.input}
                     value={temperature}
                     onChangeText={setTemperature}
-                    placeholder="75-82Â°F"
+                    placeholder="75-82degF"
                     keyboardType="numeric"
                   />
                 </View>
@@ -644,7 +644,7 @@ export default function DiagnoseScreen({ route, navigation }) {
                 <Text style={styles.sectionLabel}>Suggested Actions</Text>
                 {result.aiActions.map((step, idx) => (
                   <Text key={idx} style={styles.actionStep}>
-                    â€¢ {step}
+                    -  {step}
                   </Text>
                 ))}
               </View>
@@ -663,7 +663,7 @@ export default function DiagnoseScreen({ route, navigation }) {
               style={{ marginTop: 16 }}
             >
               <Text style={{ color: "#3498db", fontWeight: "600" }}>
-                View history â†’
+                View history ->
               </Text>
             </TouchableOpacity>
           </View>

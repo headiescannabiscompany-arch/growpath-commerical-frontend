@@ -9,9 +9,9 @@
     "npm": ">=10.8.0"
   },
   "scripts": {
-    "guard:contamination": "node scripts/guard-contamination.js",
-    "guard:client": "node scripts/guard-client-wrapper.js",
-    "guard": "npm run guard:contamination && npm run guard:client",
+    "guard:contamination": "node scripts/guard-contamination.cjs",
+    "guard:client": "node scripts/guard-client-wrapper.cjs",
+    "guard": "npm run guard:contamination && npm run guard:client && npm run verify:delivery",
     "start": "expo start",
     "android": "expo start --android",
     "ios": "expo start --ios",
@@ -23,6 +23,8 @@
     "audit:ci": "npm audit --omit=dev --audit-level=high",
     "check:sensitive-copy": "node scripts/check-sensitive-copy.js",
     "drift:scan": "powershell -NoProfile -ExecutionPolicy Bypass -Command \"Get-ChildItem .\\src -Recurse -File -Include *.js,*.jsx,*.ts,*.tsx | Where-Object { $_.FullName -notlike '*\\src\\api\\uriToBlob.ts' } | Select-String -Pattern '\\bfetch\\s*\\(|\\baxios\\b|\\bXMLHttpRequest\\b' | Where-Object { $_.Path -notlike '*\\src\\api\\client.ts' -and $_.Path -notlike '*\\src\\api\\apiRequest.ts' } | Where-Object { $_.Line -notmatch '\\bapiRequest\\b' } | Select-Object Path,LineNumber,Line | Sort-Object Path,LineNumber\"",
+    "normalize:mojibake": "node scripts/normalize-mojibake.mjs",
+    "verify:delivery": "node scripts/verify-delivery.mjs",
     "test": "jest --runInBand",
     "test:live": "node scripts/test-live.js",
     "backend:start": "node scripts/start-backend.js",

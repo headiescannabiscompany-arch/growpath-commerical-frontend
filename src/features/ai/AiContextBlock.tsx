@@ -91,7 +91,7 @@ export function AiContextBlock(props: Props) {
         <TextInput
           value={notes}
           onChangeText={onChangeNotes}
-          placeholder="Optional notes (what youâ€™re seeing, goals, constraints)â€¦"
+          placeholder="Optional notes (what you're seeing, goals, constraints)..."
           multiline
           style={{
             borderWidth: 1,

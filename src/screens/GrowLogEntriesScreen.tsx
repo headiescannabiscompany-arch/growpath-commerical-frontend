@@ -65,7 +65,7 @@ export default function GrowLogEntriesScreen() {
     setRawError(null);
 
     if (!facilityId) {
-      // No alerts â€” show inline, contract-style error object
+      // No alerts - show inline, contract-style error object
       setItems([]);
       setRawError({
         code: "FACILITY_REQUIRED",
@@ -172,7 +172,7 @@ export default function GrowLogEntriesScreen() {
         <TextInput
           value={title}
           onChangeText={setTitle}
-          placeholder="e.g., Day 21 â€” canopy dialed in"
+          placeholder="e.g., Day 21 - canopy dialed in"
           placeholderTextColor={colors.textSoft}
           style={styles.input}
         />
@@ -199,7 +199,7 @@ export default function GrowLogEntriesScreen() {
       </Card>
 
       {loading ? (
-        <Text style={{ color: colors.textSoft }}>Loadingâ€¦</Text>
+        <Text style={{ color: colors.textSoft }}>Loading...</Text>
       ) : items.length === 0 ? (
         <EmptyState
           title="No entries yet"

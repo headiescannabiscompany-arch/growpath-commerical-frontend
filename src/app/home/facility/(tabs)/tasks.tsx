@@ -1,4 +1,4 @@
-﻿import React, { useCallback, useEffect, useMemo, useState } from "react";
+import React, { useCallback, useEffect, useMemo, useState } from "react";
 import {
   ActivityIndicator,
   FlatList,
@@ -48,7 +48,7 @@ function pickSubtitle(x: AnyRec): string {
   const b = status ? `Status: ${String(status)}` : "";
   const c = assignee ? `Assignee: ${String(assignee)}` : "";
 
-  return [a, b, c].filter(Boolean).join(" â€¢ ");
+  return [a, b, c].filter(Boolean).join(" -  ");
 }
 
 export default function FacilityTasksRoute() {
@@ -183,7 +183,7 @@ export default function FacilityTasksRoute() {
         </View>\n        {loading ? (
           <View style={styles.loading}>
             <ActivityIndicator />
-            <Text style={styles.muted}>Loading tasksâ€¦</Text>
+            <Text style={styles.muted}>Loading tasks...</Text>
           </View>
         ) : null}
 
@@ -203,7 +203,7 @@ export default function FacilityTasksRoute() {
               <View style={styles.empty}>
                 <Text style={styles.emptyTitle}>No tasks yet</Text>
                 <Text style={styles.muted}>
-                  When tasks exist on the backend, theyâ€™ll show up here.
+                  When tasks exist on the backend, they'll show up here.
                 </Text>
               </View>
             ) : null
@@ -231,7 +231,7 @@ export default function FacilityTasksRoute() {
                     </Text>
                   ) : null}
                 </View>
-                <Text style={styles.chev}>â€º</Text>
+                <Text style={styles.chev}>></Text>
               </Pressable>
             );
           }}
@@ -297,4 +297,5 @@ const styles = StyleSheet.create({
   empty: { paddingVertical: 26, alignItems: "center" },
   emptyTitle: { fontSize: 16, fontWeight: "800", marginBottom: 6 }
 });
+
 

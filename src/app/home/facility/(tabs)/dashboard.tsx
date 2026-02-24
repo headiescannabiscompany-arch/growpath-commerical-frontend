@@ -151,34 +151,38 @@ export default function FacilityDashboardTab() {
 
         <View style={styles.card}>
           <Text style={styles.cardTitle}>Actions</Text>
-          <View style={styles.row}>
-            <Text style={styles.rowTitle}>AI tools and compliance dashboards</Text>
-            <Text style={styles.muted}>Planned</Text>
-          </View>
+          <Pressable onPress={() => router.push("/home/facility/ai/ask" as any)} style={styles.row}>
+            <Text style={styles.rowTitle}>Open AI tools</Text>
+            <Text style={styles.link}>Open</Text>
+          </Pressable>
+          <Pressable onPress={() => router.push("/home/facility/compliance/reports" as any)} style={styles.row}>
+            <Text style={styles.rowTitle}>Open compliance reports</Text>
+            <Text style={styles.link}>Open</Text>
+          </Pressable>
         </View>
 
         <View style={styles.card}>
-          <Text style={styles.cardTitle}>Planned Modules</Text>
-          <View style={styles.row}>
+          <Text style={styles.cardTitle}>Operational Modules</Text>
+          <Pressable onPress={() => router.push("/home/facility/plants" as any)} style={styles.row}>
             <Text style={styles.rowTitle}>Rooms</Text>
-            <Text style={styles.muted}>Planned</Text>
-          </View>
-          <View style={styles.row}>
+            <Text style={styles.link}>Plants</Text>
+          </Pressable>
+          <Pressable onPress={() => router.push("/home/facility/compliance/reports" as any)} style={styles.row}>
             <Text style={styles.rowTitle}>Compliance</Text>
-            <Text style={styles.muted}>Planned</Text>
-          </View>
-          <View style={styles.row}>
+            <Text style={styles.link}>Open</Text>
+          </Pressable>
+          <Pressable onPress={() => router.push("/home/facility/audit-logs" as any)} style={styles.row}>
             <Text style={styles.rowTitle}>Audit Logs</Text>
-            <Text style={styles.muted}>Planned</Text>
-          </View>
-          <View style={styles.row}>
+            <Text style={styles.link}>Open</Text>
+          </Pressable>
+          <Pressable onPress={() => router.push("/home/facility/sop-runs" as any)} style={styles.row}>
             <Text style={styles.rowTitle}>SOP Runs</Text>
-            <Text style={styles.muted}>Planned</Text>
-          </View>
-          <View style={styles.row}>
+            <Text style={styles.link}>Open</Text>
+          </Pressable>
+          <Pressable onPress={() => router.push("/home/facility/ai/template" as any)} style={styles.row}>
             <Text style={styles.rowTitle}>Facility AI Tools</Text>
-            <Text style={styles.muted}>Planned</Text>
-          </View>
+            <Text style={styles.link}>Open</Text>
+          </Pressable>
         </View>
       </ScrollView>
     </ScreenBoundary>
@@ -223,5 +227,6 @@ const styles = StyleSheet.create({
     borderTopWidth: 1,
     borderTopColor: "rgba(0,0,0,0.06)"
   },
-  rowTitle: { flex: 1, fontWeight: "800" }
+  rowTitle: { flex: 1, fontWeight: "800" },
+  link: { color: "#2563eb", fontWeight: "800" }
 });
