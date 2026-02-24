@@ -9,21 +9,21 @@ PASS tests/LiveSessionScreen.qa.test.js
 PASS tests/api/resilience.test.js
 PASS tests/check-sensitive-copy.test.js
 PASS tests/api/wrappers.test.js
-PASS tests/entitlements.normalization.test.js
 PASS tests/apiClient.test.js
-PASS tests/unit/creator-utils.test.js
-PASS tests/unit/posts-utils.test.js
-PASS tests/api/endpoints.test.js
-PASS src/features/compliance/ai4/dashboard/__tests__/buildDashboardModel.test.ts
-PASS src/features/compliance/ai4/dashboard/__tests__/complianceDashboardApi.normalizers.test.ts
-PASS tests/unit/forum-feed.test.js
 PASS tests/unit/grow-interests.test.js
-PASS tests/unit/calendar-utils.test.js
+PASS tests/unit/creator-utils.test.js
+PASS tests/unit/forum-feed.test.js
 PASS tests/acceptance/dashboard_feed.test.js
+PASS src/features/compliance/ai4/dashboard/__tests__/buildDashboardModel.test.ts
+PASS tests/api/endpoints.test.js
+PASS tests/unit/posts-utils.test.js
+PASS src/features/compliance/ai4/dashboard/__tests__/complianceDashboardApi.normalizers.test.ts
+PASS tests/entitlements.normalization.test.js
+PASS tests/unit/calendar-utils.test.js
 
 Test Suites: 1 skipped, 18 passed, 18 of 19 total
 Tests:       19 skipped, 78 passed, 97 total
 Snapshots:   1 passed, 1 total
-Time:        5.288 s
+Time:        5.329 s
 Ran all test suites.
 Force exiting Jest: Have you considered using `--detectOpenHandles` to detect async operations that kept running after all tests finished?
