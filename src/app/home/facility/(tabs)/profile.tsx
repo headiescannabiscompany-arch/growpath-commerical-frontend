@@ -131,10 +131,7 @@ export default function FacilityProfileRoute() {
     const facilityRest = Object.keys(facility)
       .filter((k) => !facilityPreferred.includes(k))
       .sort();
-    return [
-      ...facilityPreferred.filter((k) => k in facility),
-      ...facilityRest
-    ];
+    return [...facilityPreferred.filter((k) => k in facility), ...facilityRest];
   }, [facility]);
 
   return (
@@ -153,7 +150,7 @@ export default function FacilityProfileRoute() {
         {loading ? (
           <View style={styles.loading}>
             <ActivityIndicator />
-            <Text style={styles.muted}>Loading profile…</Text>
+            <Text style={styles.muted}>Loading profileâ€¦</Text>
           </View>
         ) : null}
 

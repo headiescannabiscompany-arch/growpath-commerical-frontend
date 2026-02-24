@@ -19,7 +19,10 @@ export async function createCustomTask(a: any, b?: any): Promise<any> {
   if (typeof a === "string") {
     return createTask(a, b);
   }
-  const personalCreateRes = await apiRequest("/api/personal/tasks", { method: "POST", body: a });
+  const personalCreateRes = await apiRequest("/api/personal/tasks", {
+    method: "POST",
+    body: a
+  });
   return personalCreateRes?.task ?? personalCreateRes?.created ?? personalCreateRes;
 }
 
@@ -67,7 +70,9 @@ export async function updateTask(
 }
 
 export async function deleteTask(facilityId: string, id: string) {
-  const deleteRes = await apiRequest(endpoints.task(facilityId, id), { method: "DELETE" });
+  const deleteRes = await apiRequest(endpoints.task(facilityId, id), {
+    method: "DELETE"
+  });
   return deleteRes?.deleted ?? deleteRes?.ok ?? deleteRes;
 }
 

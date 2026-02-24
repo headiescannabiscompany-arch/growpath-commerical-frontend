@@ -25,10 +25,13 @@ export async function createEquipment(facilityId, data) {
 
 export async function updateEquipment(facilityId, equipmentId, data) {
   try {
-    const updateRes = await apiRequest(`/facilities/${facilityId}/equipment/${equipmentId}`, {
-      method: "PUT",
-      body: data
-    });
+    const updateRes = await apiRequest(
+      `/facilities/${facilityId}/equipment/${equipmentId}`,
+      {
+        method: "PUT",
+        body: data
+      }
+    );
     return { success: true, data: updateRes?.data ?? updateRes };
   } catch (e) {
     return { success: false, message: e.message };
@@ -37,9 +40,12 @@ export async function updateEquipment(facilityId, equipmentId, data) {
 
 export async function deleteEquipment(facilityId, equipmentId) {
   try {
-    const deleteRes = await apiRequest(`/facilities/${facilityId}/equipment/${equipmentId}`, {
-      method: "DELETE"
-    });
+    const deleteRes = await apiRequest(
+      `/facilities/${facilityId}/equipment/${equipmentId}`,
+      {
+        method: "DELETE"
+      }
+    );
     return { success: true, data: deleteRes?.data ?? deleteRes };
   } catch (e) {
     return { success: false, message: e.message };

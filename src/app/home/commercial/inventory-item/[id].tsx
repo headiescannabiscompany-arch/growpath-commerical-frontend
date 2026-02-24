@@ -45,12 +45,6 @@ export default function CommercialInventoryItemDetailRoute() {
   const params = useLocalSearchParams();
   const id = safeId(params as any);
 
-  if (!ent?.ready) return null;
-  if (ent.mode !== "commercial") {
-    router.replace("/home" as any);
-    return null;
-  }
-
   const apiErr: any = useApiErrorHandler();
   const resolved = useMemo(() => {
     const error = apiErr?.error ?? apiErr?.[0] ?? null;
@@ -91,10 +85,17 @@ export default function CommercialInventoryItemDetailRoute() {
   );
 
   useEffect(() => {
+    if (ent?.ready && ent.mode !== "commercial") {
+      router.replace("/home" as any);
+      return;
+    }
     load();
-  }, [load]);
+  }, [ent?.ready, ent?.mode, load, router]);
 
   const keys = useMemo(() => (item ? Object.keys(item).sort() : []), [item]);
+
+  if (!ent?.ready) return null;
+  if (ent.mode !== "commercial") return null;
 
   return (
     <ScreenBoundary title="Inventory Item">

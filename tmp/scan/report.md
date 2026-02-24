@@ -1,9 +1,9 @@
 # Full Scan Report
 
 ## Counts
-- src files: 646
+- src files: 647
 - test files: 45
-- total files: 691
+- total files: 692
 - api files: 102
 - api orphans: 21
 - legacy client callers: 18
@@ -73,3 +73,5 @@
 ## Banned findings
 - fetch(: src/api/apiRequest.ts
 - fetch(: src/api/uriToBlob.ts
+
+

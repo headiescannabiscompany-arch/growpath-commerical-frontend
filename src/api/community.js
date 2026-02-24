@@ -76,9 +76,12 @@ export const leaveGuild = async (guildId) => {
 
 export const getGuildDiscussions = async (guildId, page = 1) => {
   try {
-    const discussionsRes = await apiClient.get(COMMUNITY_ROUTES.GET_DISCUSSIONS(guildId), {
-      params: { page }
-    });
+    const discussionsRes = await apiClient.get(
+      COMMUNITY_ROUTES.GET_DISCUSSIONS(guildId),
+      {
+        params: { page }
+      }
+    );
     return discussionsRes.data;
   } catch (error) {
     throw new Error(`Failed to fetch discussions: ${error.message}`);
@@ -90,9 +93,9 @@ export const createDiscussion = async (guildId, title, content) => {
     const createDiscussionRes = await apiClient.post(
       COMMUNITY_ROUTES.CREATE_DISCUSSION(guildId),
       {
-      title,
-      content
-    }
+        title,
+        content
+      }
     );
     return createDiscussionRes.data;
   } catch (error) {

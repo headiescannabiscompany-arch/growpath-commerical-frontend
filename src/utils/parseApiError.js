@@ -60,8 +60,7 @@ export function parseApiError(input, opts = {}) {
     const respMessage = data?.error?.message ?? data?.message;
 
     if (typeof respCode === "string" && respCode.trim()) base.code = respCode;
-    if (typeof respMessage === "string" && respMessage.trim())
-      base.message = respMessage;
+    if (typeof respMessage === "string" && respMessage.trim()) base.message = respMessage;
 
     base.raw = data ?? input;
     return base;

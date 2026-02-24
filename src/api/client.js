@@ -77,7 +77,11 @@ apiClient.get = (path, options = {}, tokenArg) => {
 
 apiClient.delete = (path, options = {}, tokenArg) => {
   const normDelete = normalizeTokenArg(options, tokenArg);
-  return apiClient(path, { ...(normDelete.options || {}), method: "DELETE" }, normDelete.token);
+  return apiClient(
+    path,
+    { ...(normDelete.options || {}), method: "DELETE" },
+    normDelete.token
+  );
 };
 
 apiClient.post = (path, body, options = {}, tokenArg) => {
@@ -103,7 +107,11 @@ apiClient.patch = (path, body, options = {}, tokenArg) => {
 
 apiClient.postMultipart = (path, formData, options = {}, tokenArg) => {
   const normMultipart = normalizeTokenArg(options, tokenArg);
-  const multipartOpts = { ...(normMultipart.options || {}), method: "POST", body: formData };
+  const multipartOpts = {
+    ...(normMultipart.options || {}),
+    method: "POST",
+    body: formData
+  };
   const multipartHeaders = { ...(multipartOpts.headers || {}) };
   if (multipartHeaders["Content-Type"]) delete multipartHeaders["Content-Type"];
   if (multipartHeaders["content-type"]) delete multipartHeaders["content-type"];

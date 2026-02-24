@@ -27,12 +27,12 @@ import React from "react";
 import { render, fireEvent, waitFor } from "@testing-library/react-native";
 import { NavigationContainer } from "@react-navigation/native";
 
-const mockUseAuth = jest.fn();
+const mockUseEntitlements = jest.fn();
 const mockApiRequest = jest.fn();
 
-jest.mock("@/auth/AuthContext", () => ({
+jest.mock("@/entitlements", () => ({
   __esModule: true,
-  useAuth: () => mockUseAuth()
+  useEntitlements: () => mockUseEntitlements()
 }));
 
 jest.mock("@/api/apiRequest", () => ({
@@ -75,7 +75,7 @@ const mockCourses = [
 ];
 
 beforeEach(() => {
-  mockUseAuth.mockReset();
+  mockUseEntitlements.mockReset();
   mockApiRequest.mockReset();
   mockApiRequest.mockImplementation((url) => {
     const urlStr = typeof url === "string" ? url : String(url);
@@ -111,9 +111,10 @@ describe("CoursesScreen QA (capability-driven)", () => {
   };
 
   it("shows only free courses if cannot see paid courses", async () => {
-    mockUseAuth.mockReturnValue({
-      user: { _id: "user1" },
-      capabilities: { canSeePaidCourses: false }
+    mockUseEntitlements.mockReturnValue({
+      ready: true,
+      mode: "personal",
+      can: () => false
     });
     const { getByText, queryByText } = await renderWithNav();
     await waitFor(() => {
@@ -123,9 +124,10 @@ describe("CoursesScreen QA (capability-driven)", () => {
   });
 
   it("shows all courses if canSeePaidCourses is true", async () => {
-    mockUseAuth.mockReturnValue({
-      user: { _id: "user1" },
-      capabilities: { canSeePaidCourses: true }
+    mockUseEntitlements.mockReturnValue({
+      ready: true,
+      mode: "personal",
+      can: (cap) => cap === "SEE_PAID_COURSES"
     });
     const { getByText } = await renderWithNav();
     await waitFor(() => {
@@ -135,9 +137,10 @@ describe("CoursesScreen QA (capability-driven)", () => {
   });
 
   it("shows analytics if canViewCourseAnalytics is true", async () => {
-    mockUseAuth.mockReturnValue({
-      user: { _id: "user1" },
-      capabilities: { canSeePaidCourses: true, canViewCourseAnalytics: true }
+    mockUseEntitlements.mockReturnValue({
+      ready: true,
+      mode: "personal",
+      can: (cap) => cap === "SEE_PAID_COURSES" || cap === "VIEW_COURSE_ANALYTICS"
     });
     const { getAllByText } = await renderWithNav();
     await waitFor(() => {
@@ -147,9 +150,10 @@ describe("CoursesScreen QA (capability-driven)", () => {
   });
 
   it("shows publish controls if canPublishCourses is true and course is published", async () => {
-    mockUseAuth.mockReturnValue({
-      user: { _id: "user1" },
-      capabilities: { canSeePaidCourses: true, canPublishCourses: true }
+    mockUseEntitlements.mockReturnValue({
+      ready: true,
+      mode: "personal",
+      can: (cap) => cap === "SEE_PAID_COURSES" || cap === "PUBLISH_COURSES"
     });
     const { getByText } = await renderWithNav();
     await waitFor(() => {
@@ -158,9 +162,10 @@ describe("CoursesScreen QA (capability-driven)", () => {
   });
 
   it("invites a user and shows feedback", async () => {
-    mockUseAuth.mockReturnValue({
-      user: { _id: "user1" },
-      capabilities: { canSeePaidCourses: true }
+    mockUseEntitlements.mockReturnValue({
+      ready: true,
+      mode: "commercial",
+      can: (cap) => cap === "SEE_PAID_COURSES"
     });
     const { getByLabelText, getByText, findByText, queryByText } = await renderWithNav();
     // Defensive: skip if Invite button is not rendered
@@ -175,9 +180,10 @@ describe("CoursesScreen QA (capability-driven)", () => {
   });
 
   it("shows error feedback on failed API call", async () => {
-    mockUseAuth.mockReturnValue({
-      user: { _id: "user1" },
-      capabilities: { canSeePaidCourses: true }
+    mockUseEntitlements.mockReturnValue({
+      ready: true,
+      mode: "commercial",
+      can: (cap) => cap === "SEE_PAID_COURSES"
     });
     mockApiRequest.mockImplementation((url) => {
       const urlStr = typeof url === "string" ? url : String(url);

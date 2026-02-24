@@ -277,7 +277,8 @@ export const createBatchCycle = async (facilityId, roomId, batchData) => {
     });
     return {
       success: true,
-      data: createBatchCycleRes?.created ?? createBatchCycleRes?.data ?? createBatchCycleRes
+      data:
+        createBatchCycleRes?.created ?? createBatchCycleRes?.data ?? createBatchCycleRes
     };
   } catch (error) {
     return {
@@ -310,7 +311,8 @@ export const updateBatchCycle = async (batchId, updates) => {
     });
     return {
       success: true,
-      data: updateBatchCycleRes?.updated ?? updateBatchCycleRes?.data ?? updateBatchCycleRes
+      data:
+        updateBatchCycleRes?.updated ?? updateBatchCycleRes?.data ?? updateBatchCycleRes
     };
   } catch (error) {
     return {

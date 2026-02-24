@@ -1,9 +1,9 @@
 {
   "root": "C:\\growpath-commercial\\frontend",
   "counts": {
-    "srcFiles": 646,
+    "srcFiles": 647,
     "testFiles": 45,
-    "totalFiles": 691,
+    "totalFiles": 692,
     "apiFiles": 102,
     "apiOrphans": 21,
     "legacyClientCallers": 18,
@@ -126,3 +126,4 @@
     }
   ]
 }
+

@@ -15,7 +15,10 @@ export async function listSOPTemplates(facilityId) {
 export async function createSOPTemplate(facilityId, data) {
   try {
     const createRes = await api.post(endpoints.sopTemplates(facilityId), data);
-    return { success: true, data: createRes?.created ?? createRes?.template ?? createRes };
+    return {
+      success: true,
+      data: createRes?.created ?? createRes?.template ?? createRes
+    };
   } catch (e) {
     return { success: false, message: e?.message || "Failed to create SOP" };
   }
@@ -24,7 +27,10 @@ export async function createSOPTemplate(facilityId, data) {
 export async function updateSOPTemplate(facilityId, sopId, data) {
   try {
     const updateRes = await api.put(endpoints.sopTemplate(facilityId, sopId), data);
-    return { success: true, data: updateRes?.updated ?? updateRes?.template ?? updateRes };
+    return {
+      success: true,
+      data: updateRes?.updated ?? updateRes?.template ?? updateRes
+    };
   } catch (e) {
     return { success: false, message: e?.message || "Failed to update SOP" };
   }

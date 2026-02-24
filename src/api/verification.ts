@@ -22,13 +22,16 @@ export async function approveVerification(
   facilityId: string,
   recordId: string
 ): Promise<VerificationRecord> {
-  const approveRes = await apiRequest(endpoints.verificationRecord(facilityId, recordId), {
-    method: "POST",
-    body: {
-      verified: true,
-      status: "approved"
+  const approveRes = await apiRequest(
+    endpoints.verificationRecord(facilityId, recordId),
+    {
+      method: "POST",
+      body: {
+        verified: true,
+        status: "approved"
+      }
     }
-  });
+  );
   return approveRes?.updated ?? approveRes?.record ?? approveRes;
 }
 

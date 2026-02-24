@@ -46,9 +46,6 @@ export async function deleteComparisonPreset(
 ): Promise<ComparisonPreset[]> {
   const existingPresets = await listComparisonPresets(facilityId);
   const nextPresets = existingPresets.filter((p) => p.id !== presetId);
-  await AsyncStorage.setItem(
-    keyForFacility(facilityId),
-    JSON.stringify(nextPresets)
-  );
+  await AsyncStorage.setItem(keyForFacility(facilityId), JSON.stringify(nextPresets));
   return nextPresets;
 }

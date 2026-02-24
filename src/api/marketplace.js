@@ -94,7 +94,9 @@ export const updateContentPricing = async (contentId, price) => {
 
 export const deleteContent = async (contentId) => {
   try {
-    const deleteRes = await apiClient.delete(MARKETPLACE_ROUTES.DELETE_CONTENT(contentId));
+    const deleteRes = await apiClient.delete(
+      MARKETPLACE_ROUTES.DELETE_CONTENT(contentId)
+    );
     return deleteRes.data;
   } catch (error) {
     throw new Error(`Failed to delete content: ${error.message}`);

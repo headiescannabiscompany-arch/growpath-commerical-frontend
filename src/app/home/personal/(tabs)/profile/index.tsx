@@ -157,9 +157,7 @@ export default function ProfileScreen() {
           </Pressable>
         </View>
         {!hasFacilityAccess ? (
-          <Text style={styles.mutedText}>
-            Facility access requires a Facility plan.
-          </Text>
+          <Text style={styles.mutedText}>Facility access requires a Facility plan.</Text>
         ) : null}
       </View>
 

@@ -1,4 +1,3 @@
-
 import { apiRequest } from "@/api/apiRequest";
 import { endpoints } from "@/api/endpoints";
 import { InlineError } from "@/components/InlineError";
@@ -134,7 +133,7 @@ export default function FacilityGrowsTab() {
               <View style={styles.empty}>
                 <Text style={styles.emptyTitle}>No grows yet</Text>
                 <Text style={styles.muted}>
-                  When grows exist on the backend, they'll show up here.
+                  {"When grows exist on the backend, they'll show up here."}
                 </Text>
               </View>
             ) : null
@@ -163,7 +162,7 @@ export default function FacilityGrowsTab() {
                     </Text>
                   ) : null}
                 </View>
-                <Text style={styles.chev}>></Text>
+                <Text style={styles.chev}>{">"}</Text>
               </Pressable>
             );
           }}
@@ -199,4 +198,3 @@ const styles = StyleSheet.create({
   empty: { paddingVertical: 26, alignItems: "center" },
   emptyTitle: { fontSize: 16, fontWeight: "900", marginBottom: 6 }
 });
-

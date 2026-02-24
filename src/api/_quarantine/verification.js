@@ -17,7 +17,10 @@ export async function listVerifications(facilityId) {
 
 export async function verifyTask(facilityId, taskId, data) {
   try {
-    const verifyRes = await api.post(endpoints.verificationRecord(facilityId, taskId), data);
+    const verifyRes = await api.post(
+      endpoints.verificationRecord(facilityId, taskId),
+      data
+    );
     return { success: true, data: verifyRes?.updated ?? verifyRes?.record ?? verifyRes };
   } catch (e) {
     return { success: false, message: e?.message || "Failed to verify record" };

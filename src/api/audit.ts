@@ -36,7 +36,9 @@ function normalizeCreatedLog(res: any): AuditLog {
 export async function listAuditLogs(
   facilityId: string
 ): Promise<{ success: boolean; data: AuditLog[] }> {
-  const listRes = await apiRequest<any>(endpoints.auditLogs(facilityId), { method: "GET" });
+  const listRes = await apiRequest<any>(endpoints.auditLogs(facilityId), {
+    method: "GET"
+  });
   return { success: true, data: normalizeAuditLogs(listRes) };
 }
 

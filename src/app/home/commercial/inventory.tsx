@@ -45,18 +45,12 @@ function pickSubtitle(x: AnyRec): string {
       ? `On hand: ${String(qty)}${unit ? ` ${unit}` : ""}`
       : "";
   const b = cat ? `Category: ${String(cat)}` : "";
-  return [a, b].filter(Boolean).join(" • ");
+  return [a, b].filter(Boolean).join(" â€¢ ");
 }
 
 export default function CommercialInventoryRoute() {
   const router = useRouter();
   const ent = useEntitlements();
-
-  if (!ent?.ready) return null;
-  if (ent.mode !== "commercial") {
-    router.replace("/home" as any);
-    return null;
-  }
 
   const apiErr: any = useApiErrorHandler();
   const resolved = useMemo(() => {
@@ -97,8 +91,15 @@ export default function CommercialInventoryRoute() {
   );
 
   useEffect(() => {
+    if (ent?.ready && ent.mode !== "commercial") {
+      router.replace("/home" as any);
+      return;
+    }
     load();
-  }, [load]);
+  }, [ent?.ready, ent?.mode, load, router]);
+
+  if (!ent?.ready) return null;
+  if (ent.mode !== "commercial") return null;
 
   return (
     <ScreenBoundary title="Inventory">
@@ -113,7 +114,7 @@ export default function CommercialInventoryRoute() {
         {loading ? (
           <View style={styles.loading}>
             <ActivityIndicator />
-            <Text style={styles.muted}>Loading inventory…</Text>
+            <Text style={styles.muted}>Loading inventoryâ€¦</Text>
           </View>
         ) : null}
 
@@ -163,7 +164,7 @@ export default function CommercialInventoryRoute() {
                     </Text>
                   ) : null}
                 </View>
-                <Text style={styles.chev}>›</Text>
+                <Text style={styles.chev}>â€º</Text>
               </Pressable>
             );
           }}
