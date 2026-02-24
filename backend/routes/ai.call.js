@@ -245,50 +245,14 @@ function handleECRecommendCorrection(args, ctx) {
 
 /**
  * harvest.analyzeTrichomes
- * STEP A: Real persistence + writes tracking
- * TODO: Replace mock CV with real image analysis
+ * v1 contract behavior: explicit non-shipping response.
+ * This avoids returning mock-success CV results in production flows.
  */
 async function handleHarvestAnalyzeTrichomes(args, ctx) {
-  const { images = [], zones = [], notes = "" } = args;
-
-  if (!images || images.length === 0) {
-    return { error: "MISSING_REQUIRED_INPUTS", status: 400 };
-  }
-  if (!ctx.growId) {
-    return {
-      error: "MISSING_REQUIRED_INPUTS",
-      message: "context.growId required",
-      status: 400
-    };
-  }
-
-  // TODO: real CV analysis - for now, mock distribution
-  const distribution = { clear: 0.25, cloudy: 0.65, amber: 0.1 };
-  const confidence = 0.75;
-
-  // Persist to MongoDB
-  const doc = await TrichomeAnalysis.create({
-    facilityId: ctx.facilityId,
-    growId: ctx.growId,
-    images,
-    zones,
-    distribution,
-    confidence,
-    notes
-  });
-
-  const result = serializeTrichomeAnalysis(doc);
-
   return {
-    data: {
-      tool: "harvest",
-      fn: "analyzeTrichomes",
-      input: { images, zones, notes },
-      result,
-      confidence,
-      confidence_reason: "Mock CV (replace with real image analysis)",
-      writes: [{ type: "TrichomeAnalysis", id: String(doc._id) }]
-    }
+    error: "AI_NOT_IMPLEMENTED",
+    message: "harvest.analyzeTrichomes is not enabled in v1",
+    status: 501
   };
 }
 
