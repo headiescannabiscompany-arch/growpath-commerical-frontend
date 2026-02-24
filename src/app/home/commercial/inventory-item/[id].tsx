@@ -1,4 +1,4 @@
-﻿import React, { useCallback, useEffect, useMemo, useState } from "react";
+import React, { useCallback, useEffect, useMemo, useState } from "react";
 import {
   ActivityIndicator,
   RefreshControl,
@@ -177,7 +177,7 @@ export default function CommercialInventoryItemDetailRoute() {
         {loading ? (
           <View style={styles.loading}>
             <ActivityIndicator />
-            <Text style={styles.muted}>Loading itemâ€¦</Text>
+            <Text style={styles.muted}>Loading item...</Text>
           </View>
         ) : null}
 
@@ -191,7 +191,8 @@ export default function CommercialInventoryItemDetailRoute() {
                 : "Missing inventory item id in route params."}
             </Text>
           )}
-        </View>\n        {item ? (
+        </View>
+        {item ? (
           <View style={styles.card}>
             <Text style={styles.sectionTitle}>Update Item</Text>
             {!canEdit ? (
@@ -247,8 +248,9 @@ export default function CommercialInventoryItemDetailRoute() {
           </View>
         ) : null}
 
-          â€¹ Back
-        </Text>
+        <TouchableOpacity onPress={() => router.back()}>
+          <Text style={styles.backLink}>{"< Back"}</Text>
+        </TouchableOpacity>
       </ScrollView>
     </ScreenBoundary>
   );

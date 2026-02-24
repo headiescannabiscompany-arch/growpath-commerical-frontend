@@ -70,7 +70,7 @@ export default function PersonalHomeTab() {
           {(() => {
             const subtitle = [auth.user?.email, `${plan} plan`]
               .filter(Boolean)
-              .join(" · ");
+              .join(" \u00b7 ");
             return <Text style={styles.headerSubtitle}>{subtitle}</Text>;
           })()}
         </View>

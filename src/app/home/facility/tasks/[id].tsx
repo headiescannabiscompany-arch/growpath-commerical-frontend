@@ -76,6 +76,9 @@ export default function FacilityTaskDetail() {
         setLoading(false);
         setRefreshing(false);
       }
+    },
+    [facilityId, id, clearError, handleApiError]
+  );
   const canWrite = !!ent?.can?.(CAPABILITY_KEYS.TASKS_WRITE);
   const canAssign =
     canWrite && (ent?.facilityRole === "OWNER" || ent?.facilityRole === "MANAGER");
@@ -161,7 +164,7 @@ export default function FacilityTaskDetail() {
         {loading ? (
           <View style={styles.loading}>
             <ActivityIndicator />
-            <Text style={styles.muted}>Loading taskâ€¦</Text>
+            <Text style={styles.muted}>Loading task...</Text>
           </View>
         ) : null}
 

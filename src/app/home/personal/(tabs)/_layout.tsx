@@ -4,6 +4,13 @@ import { ActivityIndicator, View } from "react-native";
 
 import { useEntitlements } from "@/entitlements";
 
+// Hide subroutes from tab bar
+const HIDDEN_TAB: any = {
+  tabBarButton: () => null,
+  tabBarItemStyle: { display: "none" },
+  href: null
+};
+
 export default function PersonalTabsLayout() {
   const ent = useEntitlements();
 
@@ -30,6 +37,10 @@ export default function PersonalTabsLayout() {
       <Tabs.Screen name="diagnose" options={{ title: "Diagnose" }} />
       <Tabs.Screen name="profile" options={{ title: "Profile" }} />
       <Tabs.Screen name="ai" options={{ title: "AI" }} />
+      {/* Hidden forum subroutes */}
+      <Tabs.Screen name="forum/code" options={HIDDEN_TAB} />
+      <Tabs.Screen name="forum/new-post" options={HIDDEN_TAB} />
+      <Tabs.Screen name="forum/post/[id]" options={HIDDEN_TAB} />
     </Tabs>
   );
 }
