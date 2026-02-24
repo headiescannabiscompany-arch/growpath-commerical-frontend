@@ -42,7 +42,7 @@ Facility is a role-based, multi-user ops app. Permissions come from OWNER/MANAGE
 - Assignable: yes
 - Required fields: `title`
 - Optional fields: `dueAt`, `assignedToUserId`, `priority`, `notes`, `photo`
-- Statuses: `OPEN` -> `IN_PROGRESS` -> `DONE` (optional `CANCELED`)
+- Statuses: `OPEN` -> `IN_PROGRESS` -> `DONE` (backend-supported)
 - Actions:
   - Create task: OWNER/MANAGER/STAFF
   - Assign/reassign: OWNER/MANAGER

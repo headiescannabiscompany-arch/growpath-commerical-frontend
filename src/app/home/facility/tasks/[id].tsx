@@ -203,7 +203,7 @@ export default function FacilityTaskDetail() {
 
                 <View style={styles.statusRow}>
                   <TouchableOpacity
-                    onPress={() => updateTask({ status: "OPEN" })}
+                    onPress={() => updateTask({ status: "IN_PROGRESS" })}
                     disabled={saving}
                     style={[styles.secondaryBtn, saving && styles.primaryBtnDisabled]}
                   >

@@ -16,7 +16,7 @@ import { InlineError } from "@/components/InlineError";
 import { apiRequest } from "@/api/apiRequest";
 import { endpoints } from "@/api/endpoints";
 import { useApiErrorHandler } from "@/hooks/useApiErrorHandler";
-import { useEntitlements } from "@/entitlements";
+import { CAPABILITY_KEYS, useEntitlements } from "@/entitlements";
 
 type AnyRec = Record<string, any>;
 
@@ -52,6 +52,7 @@ function pickSubtitle(x: AnyRec): string {
 export default function CommercialInventoryRoute() {
   const router = useRouter();
   const ent = useEntitlements();
+  const canCreate = !!ent?.can?.(CAPABILITY_KEYS.COMMERCIAL_INVENTORY_WRITE);
 
   const apiErr: any = useApiErrorHandler();
   const resolved = useMemo(() => {
@@ -111,12 +112,14 @@ export default function CommercialInventoryRoute() {
           <Text style={styles.h1}>Commercial Inventory</Text>
           <View style={styles.headerActions}>
             <Text style={styles.muted}>{items.length} items</Text>
-            <TouchableOpacity
-              onPress={() => router.push("/home/commercial/inventory-create")}
-              style={styles.createBtn}
-            >
-              <Text style={styles.createBtnText}>Create (Planned)</Text>
-            </TouchableOpacity>
+            {canCreate ? (
+              <TouchableOpacity
+                onPress={() => router.push("/home/commercial/inventory-create")}
+                style={styles.createBtn}
+              >
+                <Text style={styles.createBtnText}>Create (Planned)</Text>
+              </TouchableOpacity>
+            ) : null}
           </View>
         </View>
 
