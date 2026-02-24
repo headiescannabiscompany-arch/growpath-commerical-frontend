@@ -1,0 +1,167 @@
+{
+  "root": "C:\\\\growpathai-facilities",
+  "type": "unknown",
+  "hitCount": 40,
+  "hits": [
+    {
+      "file": "backend\\app.js",
+      "needle": "/api/facilities"
+    },
+    {
+      "file": "backend\\middleware\\facilityAuth.js",
+      "needle": "facilityRole"
+    },
+    {
+      "file": "backend\\models\\UserFacilityRole.js",
+      "needle": "facilityRole"
+    },
+    {
+      "file": "backend\\node_modules\\googleapis\\build\\src\\apis\\adexchangebuyer\\v1.4.d.ts",
+      "needle": "invite"
+    },
+    {
+      "file": "backend\\node_modules\\googleapis\\build\\src\\apis\\adexchangebuyer2\\v2beta1.d.ts",
+      "needle": "invite"
+    },
+    {
+      "file": "backend\\node_modules\\googleapis\\build\\src\\apis\\authorizedbuyersmarketplace\\v1.d.ts",
+      "needle": "invite"
+    },
+    {
+      "file": "backend\\node_modules\\googleapis\\build\\src\\apis\\calendar\\v3.d.ts",
+      "needle": "invite"
+    },
+    {
+      "file": "backend\\node_modules\\googleapis\\build\\src\\apis\\chat\\v1.d.ts",
+      "needle": "invite"
+    },
+    {
+      "file": "backend\\node_modules\\googleapis\\build\\src\\apis\\classroom\\v1.d.ts",
+      "needle": "invite"
+    },
+    {
+      "file": "backend\\node_modules\\googleapis\\build\\src\\apis\\cloudchannel\\v1.d.ts",
+      "needle": "invite"
+    },
+    {
+      "file": "backend\\node_modules\\googleapis\\build\\src\\apis\\cloudidentity\\v1.d.ts",
+      "needle": "invite"
+    },
+    {
+      "file": "backend\\node_modules\\googleapis\\build\\src\\apis\\cloudidentity\\v1beta1.d.ts",
+      "needle": "invite"
+    },
+    {
+      "file": "backend\\node_modules\\googleapis\\build\\src\\apis\\cloudresourcemanager\\v1.d.ts",
+      "needle": "invite"
+    },
+    {
+      "file": "backend\\node_modules\\googleapis\\build\\src\\apis\\cloudresourcemanager\\v1beta1.d.ts",
+      "needle": "invite"
+    },
+    {
+      "file": "backend\\node_modules\\googleapis\\build\\src\\apis\\cloudresourcemanager\\v3.d.ts",
+      "needle": "invite"
+    },
+    {
+      "file": "backend\\node_modules\\googleapis\\build\\src\\apis\\cloudsearch\\v1.d.ts",
+      "needle": "invite"
+    },
+    {
+      "file": "backend\\node_modules\\googleapis\\build\\src\\apis\\contentwarehouse\\v1.d.ts",
+      "needle": "invite"
+    },
+    {
+      "file": "backend\\node_modules\\googleapis\\build\\src\\apis\\doubleclickbidmanager\\v1.1.d.ts",
+      "needle": "invite"
+    },
+    {
+      "file": "backend\\node_modules\\googleapis\\build\\src\\apis\\firebaseappdistribution\\v1.d.ts",
+      "needle": "invite"
+    },
+    {
+      "file": "backend\\node_modules\\googleapis\\build\\src\\apis\\firebasedynamiclinks\\v1.d.ts",
+      "needle": "invite"
+    },
+    {
+      "file": "backend\\node_modules\\googleapis\\build\\src\\apis\\gmail\\v1.d.ts",
+      "needle": "invite"
+    },
+    {
+      "file": "backend\\node_modules\\googleapis\\build\\src\\apis\\gmail\\v1.d.ts",
+      "needle": "invites"
+    },
+    {
+      "file": "backend\\node_modules\\googleapis\\build\\src\\apis\\groupssettings\\v1.d.ts",
+      "needle": "invite"
+    },
+    {
+      "file": "backend\\node_modules\\googleapis\\build\\src\\apis\\mybusinessaccountmanagement\\v1.d.ts",
+      "needle": "invite"
+    },
+    {
+      "file": "backend\\node_modules\\googleapis\\build\\src\\apis\\mybusinessaccountmanagement\\v1.d.ts",
+      "needle": "invites"
+    },
+    {
+      "file": "backend\\node_modules\\googleapis\\build\\src\\apis\\reseller\\v1.d.ts",
+      "needle": "invite"
+    },
+    {
+      "file": "backend\\node_modules\\mime-db\\db.json",
+      "needle": "invite"
+    },
+    {
+      "file": "backend\\routes\\auditLogs.js",
+      "needle": "facilityRole"
+    },
+    {
+      "file": "backend\\routes\\auth.js",
+      "needle": "facilityRole"
+    },
+    {
+      "file": "backend\\routes\\facilities.js",
+      "needle": "facilityRole"
+    },
+    {
+      "file": "backend\\routes\\facilityBilling.js",
+      "needle": "facilityRole"
+    },
+    {
+      "file": "backend\\routes\\inventoryReconciliations.js",
+      "needle": "facilityRole"
+    },
+    {
+      "file": "backend\\routes\\metrc.js",
+      "needle": "facilityRole"
+    },
+    {
+      "file": "backend\\routes\\rooms.js",
+      "needle": "facilityRole"
+    },
+    {
+      "file": "backend\\routes\\sops.js",
+      "needle": "facilityRole"
+    },
+    {
+      "file": "backend\\routes\\zones.js",
+      "needle": "facilityRole"
+    },
+    {
+      "file": "frontend\\node_modules\\mime-db\\db.json",
+      "needle": "invite"
+    },
+    {
+      "file": "frontend\\node_modules\\mime-types\\node_modules\\mime-db\\db.json",
+      "needle": "invite"
+    },
+    {
+      "file": "frontend\\src\\screens\\facility\\CreateFacility.js",
+      "needle": "/api/facilities"
+    },
+    {
+      "file": "frontend\\src\\types\\facility.js",
+      "needle": "facilityRole"
+    }
+  ]
+}

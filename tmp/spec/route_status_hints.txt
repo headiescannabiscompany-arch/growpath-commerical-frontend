@@ -1,43 +1,43 @@
 ﻿src\screens\commercial\SocialMediaScreen.js:385:                "Coming Soon",
 src\screens\commercial\SocialMediaScreen.js:405:                "Coming Soon",
-src\screens\DashboardScreen.js:524:                : "Analytics (Locked)"}
-src\screens\DashboardScreen.js:537:                : "Export (Locked)"}
-src\screens\DashboardScreen.js:550:                : "Team Tools (Locked)"}
-src\screens\DashboardScreen.js:563:                : "Add Plant (Locked)"}
 src\screens\DiagnoseScreen.js:183:                : "Diagnosis (Locked)"}
 src\screens\DiagnoseScreen.js:244:                  : "Advanced (Locked)"}
 src\screens\DiagnoseScreen.js:579:                    : "Diagnosis (Locked)"}
 src\screens\DiagnoseScreen.js:584:            {aiEnt === "cta" ? "Upgrade to run diagnosis" : "Diagnosis (Locked)"}
 src\screens\DiagnoseScreen.js:604:                    : "AI Vision (Locked)"}
 src\screens\DiagnoseScreen.js:618:            {aiEnt === "cta" ? "Upgrade to use AI Vision" : "AI Vision (Locked)"}
+src\screens\DashboardScreen.js:529:                : "Analytics (Locked)"}
+src\screens\DashboardScreen.js:542:                : "Export (Locked)"}
+src\screens\DashboardScreen.js:555:                : "Team Tools (Locked)"}
+src\screens\DashboardScreen.js:568:                : "Add Plant (Locked)"}
+src\screens\FacilityInventoryScreen.js:17:          <Pill text="Locked: Your plan does not include Inventory." tone="locked" />
+src\screens\FacilityInventoryScreen.js:26:      <Section title="Planned features">
 src\screens\FacilityCommunityScreen.js:16:          <Pill text="Locked: Your plan does not include Community." tone="locked" />
 src\screens\FacilityCommunityScreen.js:25:      <Section title="Planned features">
 src\screens\FacilityFeedScreen.js:17:          <Pill text="Locked: Your plan does not include Feed." tone="locked" />
 src\screens\FacilityFeedScreen.js:26:      <Section title="Planned features">
-src\screens\FacilityInventoryScreen.js:17:          <Pill text="Locked: Your plan does not include Inventory." tone="locked" />
-src\screens\FacilityInventoryScreen.js:26:      <Section title="Planned features">
+src\screens\FacilityTeamScreen.js:17:            text="Locked: Your plan does not include Team management."
+src\screens\FacilityTeamScreen.js:28:      <Section title="Planned features">
 src\screens\FacilityRoomsScreen.js:16:          <Pill text="Locked: Your plan does not include Rooms." tone="locked" />
 src\screens\FacilityRoomsScreen.js:22:      <Section title="Planned features">
 src\screens\FacilityProfileScreen.js:16:          <Pill text="Locked: Your plan does not include Profile." tone="locked" />
 src\screens\FacilityProfileScreen.js:25:      <Section title="Planned features">
-src\screens\FacilityTeamScreen.js:17:            text="Locked: Your plan does not include Team management."
-src\screens\FacilityTeamScreen.js:28:      <Section title="Planned features">
-src\screens\GrowLogsScreen.js:354:                : "Grow (Locked)"}
-src\screens\GrowLogScreen.js:18:function LockedCard({ capabilityKey }) {
-src\screens\GrowLogScreen.js:21:      <Text style={styles.lockedTitle}>Locked</Text>
-src\screens\GrowLogScreen.js:51:        <LockedCard capabilityKey={capabilityKey} />
-src\screens\GrowLogScreen.js:56:          <Text style={styles.cardTitle}>Planned content</Text>
-src\screens\GrowsScreen.js:16:          <Pill text="Locked: Your plan does not include Grows." tone="locked" />
-src\screens\GrowsScreen.js:26:            text={locked ? "Locked" : "Batch / Stage / Strain (todo)"}
-src\screens\GrowsScreen.js:48:      <Section title="Planned features">
+src\app\home\personal\(tabs)\tasks.tsx:13:          Personal tasks are not enabled yet. In v1, operational tasks live under Facility
+src\screens\facility\AIToolsHomeScreen.tsx:10: * Disabled cards: "Coming Soon" label
+src\screens\facility\AIToolsHomeScreen.tsx:91:        {!feature.enabled && <Text style={styles.badge}>Coming Soon</Text>}
 src\app\home\personal\(tabs)\tools\index.tsx:45:          <Text style={styles.cardDesc}>Planned feature.</Text>
 src\app\home\personal\(tabs)\tools\index.tsx:46:          <Text style={styles.link}>Soon {"\u2192"}</Text>
 src\app\home\personal\(tabs)\tools\index.tsx:51:          <Text style={styles.cardDesc}>Planned feature.</Text>
 src\app\home\personal\(tabs)\tools\index.tsx:52:          <Text style={styles.link}>Soon {"\u2192"}</Text>
-src\app\home\personal\(tabs)\tasks.tsx:13:          Personal tasks are not enabled yet. In v1, operational tasks live under Facility
+src\screens\GrowLogScreen.js:18:function LockedCard({ capabilityKey }) {
+src\screens\GrowLogScreen.js:21:      <Text style={styles.lockedTitle}>Locked</Text>
+src\screens\GrowLogScreen.js:51:        <LockedCard capabilityKey={capabilityKey} />
+src\screens\GrowLogScreen.js:56:          <Text style={styles.cardTitle}>Planned content</Text>
 src\screens\facility\BillingAndReportingScreen.js:259:            Alert.alert("Coming Soon", "State report generation coming soon.")
-src\screens\facility\AIToolsHomeScreen.tsx:10: * Disabled cards: "Coming Soon" label
-src\screens\facility\AIToolsHomeScreen.tsx:91:        {!feature.enabled && <Text style={styles.badge}>Coming Soon</Text>}
+src\screens\GrowsScreen.js:16:          <Pill text="Locked: Your plan does not include Grows." tone="locked" />
+src\screens\GrowsScreen.js:26:            text={locked ? "Locked" : "Batch / Stage / Strain (todo)"}
+src\screens\GrowsScreen.js:48:      <Section title="Planned features">
+src\screens\GrowLogsScreen.js:356:                : "Grow (Locked)"}
 src\screens\facility\NutrientToolsScreen.js:62:        Alert.alert("Coming Soon", "Certified products database will be available soon"),
 src\screens\facility\NutrientToolsScreen.js:72:        Alert.alert("Coming Soon", "Interactive deficiency guide coming soon"),
 src\screens\facility\NutrientToolsScreen.js:82:        Alert.alert("Coming Soon", "Mixing calculator will be available soon"),

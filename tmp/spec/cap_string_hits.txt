@@ -1,44 +1,4 @@
-﻿src\entitlements\types.ts:6:  | "TASKS_VIEW"
-src\entitlements\types.ts:7:  | "TASKS_EDIT"
-src\entitlements\types.ts:10:  | "GROWS_VIEW"
-src\entitlements\types.ts:11:  | "GROWS_EDIT"
-src\entitlements\types.ts:14:  | "TEAM_VIEW"
-src\entitlements\types.ts:15:  | "TEAM_MANAGE"
-src\utils\entitlements.js:35:  DIAGNOSE_AI: "diagnose_ai",
-src\utils\entitlements.js:36:  DIAGNOSE_ADVANCED: "diagnose_advanced",
-src\utils\entitlements.js:37:  DIAGNOSE_EXPORT: "diagnose_export",
-src\utils\entitlements.js:38:  COURSES_CREATE: "courses_create",
-src\utils\entitlements.js:39:  COURSES_ANALYTICS: "courses_analytics",
-src\utils\entitlements.js:40:  COURSES_AFFILIATE: "courses_affiliate",
-src\utils\entitlements.js:98:  [FEATURES.DIAGNOSE_AI]: {
-src\utils\entitlements.js:105:  [FEATURES.DIAGNOSE_ADVANCED]: {
-src\utils\entitlements.js:112:  [FEATURES.DIAGNOSE_EXPORT]: {
-src\utils\entitlements.js:119:  [FEATURES.COURSES_CREATE]: {
-src\utils\entitlements.js:126:  [FEATURES.COURSES_ANALYTICS]: {
-src\utils\entitlements.js:133:  [FEATURES.COURSES_AFFILIATE]: {
-src\types\notification.ts:4:  | "COMPLIANCE_REQUIRED"
-src\types\notification.ts:5:  | "COMPLIANCE_MISSED"
-src\types\notification.ts:7:  | "TEAM_INVITE";
-src\types\automation.ts:4:  | "COMPLIANCE_DAILY_REQUIRED"
-src\types\automation.ts:5:  | "COMPLIANCE_WEEKLY_REQUIRED";
-src\screens\CoursesScreen.js:24:  const canSeePaidCourses = !!ent.can?.("SEE_PAID_COURSES");
-src\screens\facility\WebhooksScreen.tsx:9:  { label: "Compliance Required", value: "COMPLIANCE_REQUIRED" },
-src\screens\facility\WebhooksScreen.tsx:10:  { label: "Compliance Missed", value: "COMPLIANCE_MISSED" },
-src\screens\facility\WebhooksScreen.tsx:12:  { label: "Team Invite", value: "TEAM_INVITE" }
-src\screens\facility\SettingsScreen.js:41:  const allowTeamInvite = can(facilityRole, "TEAM_INVITE");
-src\screens\facility\FacilityTasks.tsx:70:  const allowCreate = can(facilityRole, "TASKS_CREATE");
-src\screens\facility\FacilityTasks.tsx:71:  const allowDelete = can(facilityRole, "TASKS_DELETE");
-src\screens\facility\FacilityTasks.tsx:72:  const allowUpdate = can(facilityRole, "TASKS_UPDATE");
-src\screens\facility\FacilityTasks.tsx:73:  const allowComplete = can(facilityRole, "TASKS_UPDATE"); // Complete is an update action
-src\screens\facility\AutomationCenterScreen.tsx:12:    case "COMPLIANCE_DAILY_REQUIRED":
-src\screens\facility\AutomationCenterScreen.tsx:14:    case "COMPLIANCE_WEEKLY_REQUIRED":
-src\app\home\personal\(tabs)\grows\new.tsx:6:const GROWS_CREATE_PATH = "/api/grows";
-src\app\home\personal\(tabs)\grows\new.tsx:25:      await apiRequest(GROWS_CREATE_PATH, {
-src\screens\DiagnoseScreen.js:43:  const aiEnt = getEntitlement(FEATURES.DIAGNOSE_AI, user?.role);
-src\screens\DiagnoseScreen.js:44:  const advEnt = getEntitlement(FEATURES.DIAGNOSE_ADVANCED, user?.role);
-src\features\feed\components\FeedItemCard.tsx:84:        <FeatureGate capability="TASKS_EDIT">
-src\app\home\facility\(tabs)\team.tsx:56:  const canInvite = can(facilityRole, "TEAM_INVITE");
-src\facility\roleGates.ts:4:  | "GROWS_CREATE"
+﻿src\facility\roleGates.ts:4:  | "GROWS_CREATE"
 src\facility\roleGates.ts:5:  | "GROWS_UPDATE"
 src\facility\roleGates.ts:6:  | "GROWS_DELETE"
 src\facility\roleGates.ts:10:  | "TASKS_CREATE"
@@ -62,3 +22,87 @@ src\facility\roleGates.ts:67:    case "INVENTORY_DELETE":
 src\facility\roleGates.ts:84:    case "TEAM_INVITE":
 src\facility\roleGates.ts:86:    case "TEAM_UPDATE_ROLE":
 src\facility\roleGates.ts:88:    case "TEAM_REMOVE":
+src\entitlements\capabilityKeys.ts:11:  DIAGNOSE_BASIC: "DIAGNOSE_BASIC",
+src\entitlements\capabilityKeys.ts:12:  DIAGNOSE_AI: "DIAGNOSE_AI",
+src\entitlements\capabilityKeys.ts:13:  DIAGNOSE_ADVANCED: "DIAGNOSE_ADVANCED",
+src\entitlements\capabilityKeys.ts:14:  DIAGNOSE_EXPORT: "DIAGNOSE_EXPORT",
+src\entitlements\capabilityKeys.ts:15:  COURSES_VIEW: "COURSES_VIEW",
+src\entitlements\capabilityKeys.ts:16:  SEE_PAID_COURSES: "SEE_PAID_COURSES",
+src\entitlements\capabilityKeys.ts:17:  COURSES_CREATE: "COURSES_CREATE",
+src\entitlements\capabilityKeys.ts:18:  COURSES_ANALYTICS: "COURSES_ANALYTICS",
+src\entitlements\capabilityKeys.ts:19:  COURSES_AFFILIATE: "COURSES_AFFILIATE",
+src\entitlements\capabilityKeys.ts:23:  GROWS_PERSONAL_VIEW: "GROWS_PERSONAL_VIEW",
+src\entitlements\capabilityKeys.ts:24:  GROWS_PERSONAL_WRITE: "GROWS_PERSONAL_WRITE",
+src\entitlements\capabilityKeys.ts:33:  COMMERCIAL_INVENTORY_VIEW: "COMMERCIAL_INVENTORY_VIEW",
+src\entitlements\capabilityKeys.ts:34:  COMMERCIAL_INVENTORY_WRITE: "COMMERCIAL_INVENTORY_WRITE",
+src\entitlements\capabilityKeys.ts:37:  COMMERCIAL_TASKS_VIEW: "COMMERCIAL_TASKS_VIEW",
+src\entitlements\capabilityKeys.ts:45:  TEAM_VIEW: "TEAM_VIEW",
+src\entitlements\capabilityKeys.ts:46:  TEAM_INVITE: "TEAM_INVITE",
+src\entitlements\capabilityKeys.ts:47:  TEAM_UPDATE_ROLE: "TEAM_UPDATE_ROLE",
+src\entitlements\capabilityKeys.ts:48:  TEAM_REMOVE: "TEAM_REMOVE",
+src\entitlements\capabilityKeys.ts:49:  TASKS_READ: "TASKS_READ",
+src\entitlements\capabilityKeys.ts:50:  TASKS_WRITE: "TASKS_WRITE",
+src\entitlements\capabilityKeys.ts:51:  GROWS_READ: "GROWS_READ",
+src\entitlements\capabilityKeys.ts:52:  GROWS_WRITE: "GROWS_WRITE",
+src\entitlements\capabilityKeys.ts:61:  INVENTORY_READ: "INVENTORY_READ",
+src\entitlements\capabilityKeys.ts:62:  INVENTORY_WRITE: "INVENTORY_WRITE",
+src\entitlements\capabilityKeys.ts:63:  COMPLIANCE_READ: "COMPLIANCE_READ",
+src\entitlements\capabilityKeys.ts:64:  COMPLIANCE_WRITE: "COMPLIANCE_WRITE",
+src\entitlements\capabilityAliases.ts:9:  DIAGNOSE_AI: "DIAGNOSE_AI",
+src\entitlements\capabilityAliases.ts:10:  DIAGNOSE_ADVANCED: "DIAGNOSE_ADVANCED",
+src\entitlements\capabilityAliases.ts:11:  DIAGNOSE_EXPORT: "DIAGNOSE_EXPORT",
+src\entitlements\capabilityAliases.ts:12:  COURSES_ANALYTICS: "COURSES_ANALYTICS",
+src\entitlements\capabilityAliases.ts:13:  COURSES_CREATE: "COURSES_CREATE",
+src\entitlements\capabilityAliases.ts:14:  COURSES_AFFILIATE: "COURSES_AFFILIATE",
+src\entitlements\capabilityAliases.ts:19:  TEAM_INVITE: "TEAM_INVITE",
+src\entitlements\capabilityAliases.ts:20:  TEAM_UPDATE_ROLE: "TEAM_UPDATE_ROLE",
+src\entitlements\capabilityAliases.ts:22:  GROWS_VIEW: "GROWS_READ",
+src\entitlements\capabilityAliases.ts:23:  GROWS_EDIT: "GROWS_WRITE",
+src\entitlements\capabilityAliases.ts:24:  TASKS_VIEW: "TASKS_READ",
+src\entitlements\capabilityAliases.ts:25:  TASKS_EDIT: "TASKS_WRITE",
+src\entitlements\capabilityAliases.ts:28:  TEAM_MANAGE: "TEAM_INVITE",
+src\entitlements\capabilityAliases.ts:29:  TEAM_VIEW: "TEAM_VIEW"
+src\features\feed\components\FeedItemCard.tsx:85:        <FeatureGate capability={CAPABILITY_KEYS.TASKS_WRITE}>
+src\permissions\rolePolicy.ts:8:  K.TEAM_VIEW,
+src\permissions\rolePolicy.ts:9:  K.TEAM_INVITE,
+src\permissions\rolePolicy.ts:10:  K.TEAM_UPDATE_ROLE,
+src\permissions\rolePolicy.ts:11:  K.TEAM_REMOVE,
+src\permissions\rolePolicy.ts:12:  K.TASKS_READ,
+src\permissions\rolePolicy.ts:13:  K.TASKS_WRITE,
+src\permissions\rolePolicy.ts:14:  K.GROWS_READ,
+src\permissions\rolePolicy.ts:15:  K.GROWS_WRITE,
+src\permissions\rolePolicy.ts:20:  K.INVENTORY_READ,
+src\permissions\rolePolicy.ts:21:  K.INVENTORY_WRITE,
+src\permissions\rolePolicy.ts:22:  K.COMPLIANCE_READ,
+src\permissions\rolePolicy.ts:23:  K.COMPLIANCE_WRITE,
+src\permissions\rolePolicy.ts:37:  K.TASKS_READ,
+src\permissions\rolePolicy.ts:38:  K.TASKS_WRITE,
+src\permissions\rolePolicy.ts:39:  K.GROWS_READ,
+src\permissions\rolePolicy.ts:40:  K.GROWS_WRITE,
+src\permissions\rolePolicy.ts:45:  K.INVENTORY_READ,
+src\permissions\rolePolicy.ts:46:  K.INVENTORY_WRITE
+src\permissions\rolePolicy.ts:51:  K.TASKS_READ,
+src\permissions\rolePolicy.ts:52:  K.GROWS_READ,
+src\permissions\rolePolicy.ts:55:  K.INVENTORY_READ,
+src\permissions\rolePolicy.ts:56:  K.COMPLIANCE_READ,
+src\types\notification.ts:4:  | "COMPLIANCE_REQUIRED"
+src\types\notification.ts:5:  | "COMPLIANCE_MISSED"
+src\types\notification.ts:7:  | "TEAM_INVITE";
+src\types\automation.ts:4:  | "COMPLIANCE_DAILY_REQUIRED"
+src\types\automation.ts:5:  | "COMPLIANCE_WEEKLY_REQUIRED";
+src\screens\CoursesScreen.js:24:  const canSeePaidCourses = !!ent.can?.("SEE_PAID_COURSES");
+src\screens\DiagnoseScreen.js:41:  const aiEnabled = ent.can(CAPABILITY_KEYS.DIAGNOSE_AI);
+src\screens\DiagnoseScreen.js:42:  const advEnabled = ent.can(CAPABILITY_KEYS.DIAGNOSE_ADVANCED);
+src\app\home\personal\(tabs)\grows\new.tsx:6:const GROWS_CREATE_PATH = "/api/grows";
+src\app\home\personal\(tabs)\grows\new.tsx:25:      await apiRequest(GROWS_CREATE_PATH, {
+src\screens\facility\AutomationCenterScreen.tsx:12:    case "COMPLIANCE_DAILY_REQUIRED":
+src\screens\facility\AutomationCenterScreen.tsx:14:    case "COMPLIANCE_WEEKLY_REQUIRED":
+src\app\home\facility\(tabs)\team.tsx:56:  const canInvite = can(facilityRole, "TEAM_INVITE");
+src\screens\facility\FacilityTasks.tsx:70:  const allowCreate = can(facilityRole, "TASKS_CREATE");
+src\screens\facility\FacilityTasks.tsx:71:  const allowDelete = can(facilityRole, "TASKS_DELETE");
+src\screens\facility\FacilityTasks.tsx:72:  const allowUpdate = can(facilityRole, "TASKS_UPDATE");
+src\screens\facility\FacilityTasks.tsx:73:  const allowComplete = can(facilityRole, "TASKS_UPDATE"); // Complete is an update action
+src\screens\facility\SettingsScreen.js:41:  const allowTeamInvite = can(facilityRole, "TEAM_INVITE");
+src\screens\facility\WebhooksScreen.tsx:9:  { label: "Compliance Required", value: "COMPLIANCE_REQUIRED" },
+src\screens\facility\WebhooksScreen.tsx:10:  { label: "Compliance Missed", value: "COMPLIANCE_MISSED" },
+src\screens\facility\WebhooksScreen.tsx:12:  { label: "Team Invite", value: "TEAM_INVITE" }

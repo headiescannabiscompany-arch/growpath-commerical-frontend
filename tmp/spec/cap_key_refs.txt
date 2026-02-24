@@ -1,0 +1,14 @@
+﻿src\screens\DiagnoseScreen.js:41:  const aiEnabled = ent.can(CAPABILITY_KEYS.DIAGNOSE_AI);
+src\screens\DiagnoseScreen.js:42:  const advEnabled = ent.can(CAPABILITY_KEYS.DIAGNOSE_ADVANCED);
+src\screens\DashboardScreen.js:501:  const analyticsEnabled = ent.can(CAPABILITY_KEYS.DASHBOARD_ANALYTICS);
+src\screens\DashboardScreen.js:502:  const exportEnabled = ent.can(CAPABILITY_KEYS.DASHBOARD_EXPORT);
+src\screens\DashboardScreen.js:503:  const teamToolsEnabled = ent.can(CAPABILITY_KEYS.ROOMS_EQUIPMENT_STAFF);
+src\screens\DashboardScreen.js:504:  const addPlantEnabled = ent.can(CAPABILITY_KEYS.GROWLOGS_MULTI);
+src\features\feed\components\FeedItemCard.tsx:85:        <FeatureGate capability={CAPABILITY_KEYS.TASKS_WRITE}>
+src\features\feed\components\FeedItemCard.tsx:93:        <FeatureGate capability={CAPABILITY_KEYS.ALERTS_ACK}>
+src\screens\GrowLogsScreen.js:47:  const multiGrowEnabled = ent.can(CAPABILITY_KEYS.GROWLOGS_MULTI);
+src\screens\GrowLogsScreen.js:48:  const photoEnabled = ent.can(CAPABILITY_KEYS.GROWLOGS_EXPORT);
+src\screens\GrowLogsScreen.js:49:  const advancedEnabled = ent.can(CAPABILITY_KEYS.GROWLOGS_BATCH);
+src\screens\facility\AutomationCenterScreen.tsx:23:  const canEdit = ent.can(CAPABILITY_KEYS.FACILITY_SETTINGS_EDIT);
+src\screens\SelectFacilityScreen.tsx:20:  const searchEnabled = ent.can(CAPABILITY_KEYS.SEARCH);
+src\screens\SearchScreen.js:20:  const searchEnabled = ent.can(CAPABILITY_KEYS.SEARCH);

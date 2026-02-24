@@ -47,44 +47,45 @@ Owner root:
 ---
 
 ## Group B: Commercial (paid overlays)
-- `/home/commercial.tsx`  Functional (commercial shell entry)
-- `/home/commercial/inventory.tsx`  Functional
-- `/home/commercial/inventory-item/[id].tsx`  Functional
-- `/(commercial)/feed/index.tsx`  Functional (if still used)
-- `/(commercial)/alerts/[id].tsx`  Functional
-- `/(commercial)/tasks/[id].tsx`  Functional
-- `/(commercial)/logs/[id].tsx`  Functional
+- `/home/commercial.tsx`  Functional (Unverified) (commercial shell entry)
+- `/home/commercial/inventory.tsx`  Functional (Unverified)
+- `/home/commercial/inventory-item/[id].tsx`  Functional (Unverified)
+- `/(commercial)/feed/index.tsx`  Functional (Unverified) (read-only allowed)
+- `/(commercial)/alerts/[id].tsx`  Functional (Unverified) (read-only allowed)
+- `/(commercial)/tasks/[id].tsx`  Functional (Unverified)
+- `/(commercial)/logs/[id].tsx`  Functional (Unverified)
 
 Commercial rule:
 - Commercial must look like Pro Single + overlays. If a route duplicates single-user pages, it should redirect or share UI.
+- Planned in v1 (if routes exist): Courses creator/publishing, Storefront/products/orders/links, Earnings/Payouts, Compliance.
 
 ---
 
 ## Group B: Facility (paid role-based)
 Core:
-- `/home/facility/index.tsx`  Functional (routes to select or dashboard)
-- `/home/facility/select.tsx`  Functional (choose facility context)
-- `/home/facility/(tabs)/dashboard.tsx`  Functional
-- `/home/facility/(tabs)/tasks.tsx`  Functional (role-gated mutations)
-- `/home/facility/tasks/[id].tsx`  Functional
-- `/home/facility/(tabs)/grows.tsx`  Functional
-- `/home/facility/grows/[id]`  Planned unless verified
-- `/home/facility/(tabs)/plants.tsx`  Functional
-- `/home/facility/plants/[id].tsx`  Functional
-- `/home/facility/(tabs)/logs.tsx`  Functional
-- `/home/facility/logs/[id].tsx`  Functional
-- `/home/facility/(tabs)/team.tsx`  Functional (OWNER/MANAGER invite only)
-- `/home/facility/(tabs)/inventory.tsx`  Functional
-- `/home/facility/(tabs)/InventoryItemDetailScreen.tsx`  Functional
-- `/home/facility/(tabs)/CreateInventoryItemScreen.tsx`  Planned unless verified
+- `/home/facility/index.tsx`  Functional (Unverified) (routes to select or dashboard)
+- `/home/facility/select.tsx`  Functional (Unverified) (choose facility context)
+- `/home/facility/(tabs)/dashboard.tsx`  Functional (Unverified)
+- `/home/facility/(tabs)/tasks.tsx`  Functional (Unverified) (role-gated mutations)
+- `/home/facility/tasks/[id].tsx`  Functional (Unverified)
+- `/home/facility/(tabs)/grows.tsx`  Functional (Unverified)
+- `/home/facility/grows/[id]`  Functional (Unverified)
+- `/home/facility/(tabs)/plants.tsx`  Functional (Unverified)
+- `/home/facility/plants/[id].tsx`  Functional (Unverified)
+- `/home/facility/(tabs)/logs.tsx`  Functional (Unverified)
+- `/home/facility/logs/[id].tsx`  Functional (Unverified)
+- `/home/facility/(tabs)/team.tsx`  Functional (Unverified) (OWNER/MANAGER invite only)
+- `/home/facility/(tabs)/inventory.tsx`  Functional (Unverified)
+- `/home/facility/(tabs)/InventoryItemDetailScreen.tsx`  Functional (Unverified)
+- `/home/facility/(tabs)/CreateInventoryItemScreen.tsx`  Planned
 
 Compliance/audit/SOP/AI:
-- `/home/facility/(tabs)/compliance.tsx`  Planned unless verified end-to-end
-- `/home/facility/(tabs)/audit-logs.tsx`  Planned unless verified end-to-end
-- `/home/facility/audit-logs/*`  Planned unless verified
-- `/home/facility/(tabs)/sop-runs.tsx`  Planned unless verified
-- `/home/facility/sop-runs/*`  Planned unless verified
-- `/home/facility/(tabs)/ai-tools.tsx`  Planned unless verified
+- `/home/facility/(tabs)/compliance.tsx`  Planned
+- `/home/facility/(tabs)/audit-logs.tsx`  Planned
+- `/home/facility/audit-logs/*`  Planned
+- `/home/facility/(tabs)/sop-runs.tsx`  Planned
+- `/home/facility/sop-runs/*`  Planned
+- `/home/facility/(tabs)/ai-tools.tsx`  Planned
 
 ---
 

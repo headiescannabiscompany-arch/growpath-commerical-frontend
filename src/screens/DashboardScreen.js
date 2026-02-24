@@ -13,6 +13,7 @@ import {
 import AppShell from "../components/AppShell.js";
 import { colors, spacing, radius, Typography } from "../theme/theme.js";
 import { useAuth } from "@/auth/AuthContext";
+import { useEntitlements, CAPABILITY_KEYS } from "@/entitlements";
 import { useNavigation, useFocusEffect } from "@react-navigation/native";
 import { getPlants } from "../api/plants.js";
 import { listGrows } from "../api/grows.js";
@@ -25,7 +26,6 @@ import {
   getTier1Metadata
 } from "../utils/growInterests.js";
 import { getTasks } from "../api/tasks.js";
-import { FEATURES, getEntitlement } from "../utils/entitlements.js";
 
 const { width } = Dimensions.get("window");
 const tierOneConfig = getTier1Metadata();
@@ -497,10 +497,15 @@ const styles = StyleSheet.create({
 export default function DashboardScreen() {
   const { user, mode } = useAuth();
   // Entitlement checks for dashboard actions
-  const analyticsEnt = getEntitlement(FEATURES.DASHBOARD_ANALYTICS, user?.role || "free");
-  const exportEnt = getEntitlement(FEATURES.DASHBOARD_EXPORT, user?.role || "free");
-  const teamToolsEnt = getEntitlement("rooms_equipment_staff", user?.role || "free");
-  const addPlantEnt = getEntitlement(FEATURES.GROWLOGS_MULTI, user?.role || "free");
+  const ent = useEntitlements();
+  const analyticsEnabled = ent.can(CAPABILITY_KEYS.DASHBOARD_ANALYTICS);
+  const exportEnabled = ent.can(CAPABILITY_KEYS.DASHBOARD_EXPORT);
+  const teamToolsEnabled = ent.can(CAPABILITY_KEYS.ROOMS_EQUIPMENT_STAFF);
+  const addPlantEnabled = ent.can(CAPABILITY_KEYS.GROWLOGS_MULTI);
+  const analyticsEnt = analyticsEnabled ? "enabled" : ent.plan === "free" ? "cta" : "disabled";
+  const exportEnt = exportEnabled ? "enabled" : ent.plan === "free" ? "cta" : "disabled";
+  const teamToolsEnt = teamToolsEnabled ? "enabled" : ent.plan === "free" ? "cta" : "disabled";
+  const addPlantEnt = addPlantEnabled ? "enabled" : ent.plan === "free" ? "cta" : "disabled";
 
   return (
     <AppShell style={styles.container} contentContainerStyle={null}>

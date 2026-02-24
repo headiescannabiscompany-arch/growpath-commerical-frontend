@@ -1,47 +1,26 @@
-﻿src\screens\CoursesScreen.js:45:        const data = await apiRequest("/api/courses");
-src\screens\CoursesScreen.js:75:      await apiRequest("/api/invite", {
-src\app\(commercial)\tasks\[id].tsx:67:        const res = await apiRequest(endpoints.taskGlobal(id), { method: "GET" });
-src\app\(commercial)\logs\[id].tsx:73:        const res = await apiRequest(path, { method: "GET" });
-src\screens\CommercialInventoryScreen.js:64:      const res = await apiRequest("/api/commercial/inventory", { method: "GET" });
-src\app\(commercial)\alerts\[id].tsx:67:        const res = await apiRequest(endpoints.alertGlobal(id), { method: "GET" });
-src\components\commercial\CommercialFeedCard.tsx:62:        await api.post(`/api/commercial/unlike/${post.id}`);
-src\components\commercial\CommercialFeedCard.tsx:64:        await api.post(`/api/commercial/like/${post.id}`);
-src\hooks\usePushRegistration.ts:24:        // like: await api.post('/push/register', { token, userId });
-src\hooks\usePlants.ts:39:  const res = await apiRequest(`${base}${query}`);
-src\hooks\usePersonalTasks.ts:24:  const res = await apiRequest("/api/personal/tasks");
-src\hooks\useInvites.ts:11:    queryFn: () => apiRequest(`/api/facilities/${facilityId}/invites`, { method: "GET" }),
-src\screens\LiveSessionsListScreen.js:22:        const data = await apiRequest("/api/lives", { method: "GET" });
-src\screens\LiveSessionScreen.js:50:        const res = await apiRequest(`/live/sessions/${encodeURIComponent(sessionId)}`, {
-src\api\environment.js:5:  return apiRequest(apiRoutes.ENVIRONMENT.ANALYZE, {
-src\api\environment.js:13:  return apiRequest(apiRoutes.ENVIRONMENT.TO_TASKS(plantId), {
-src\api\facilityTeam.ts:30:  return apiRequest(`/api/facilities/${facilityId}/invites`, {
-src\api\facilityTeam.ts:41:  return apiRequest(`/api/facilities/${facilityId}/members/${memberId}`, {
-src\api\facilityTeam.ts:48:  return apiRequest(`/api/facilities/${facilityId}/members/${memberId}`, {
-src\api\deviations.ts:15:  const listRes = await apiRequest(endpoints.deviations(facilityId));
-src\api\deviations.ts:20:  const createRes = await apiRequest(endpoints.deviations(facilityId), {
-src\api\debug.ts:5:  return apiRequest(endpoints.health);
-src\api\debug.ts:9:  return apiRequest(endpoints.debugInfo);
-src\api\earnings.js:5:  return apiRequest(apiRoutes.CREATOR.MINE);
-src\api\earnings.js:9:  return apiRequest(apiRoutes.CREATOR.BY_COURSE);
-src\api\earnings.js:13:  return apiRequest(apiRoutes.CREATOR.REQUEST_PAYOUT, {
-src\api\earnings.js:20:  return apiRequest(apiRoutes.CREATOR.PLATFORM_STATS);
-src\api\creator.js:4:  return apiRequest(`${apiRoutes.CREATOR.PAYOUT_HISTORY}/${payoutId}/mark-paid`, {
-src\api\creator.js:9:  return apiRequest(apiRoutes.CREATOR.REQUEST_PAYOUT, { method: "POST" });
-src\api\creator.js:16:  return apiRequest(`${apiRoutes.CREATOR.REVENUE}/../earnings`); // Fallback if no specific apiRoutes entry
-src\api\creator.js:20:  return apiRequest(apiRoutes.CREATOR.PERFORMANCE);
-src\api\creator.js:24:  return apiRequest(apiRoutes.CREATOR.TIMELINE);
-src\api\creator.js:28:  return apiRequest(apiRoutes.CREATOR.PAYOUT_SUMMARY);
-src\api\creator.js:32:  return apiRequest(apiRoutes.CREATOR.PAYOUT_HISTORY);
-src\api\creator.js:36:  return apiRequest(apiRoutes.CREATOR.SIGNATURE, { method: "POST", body: formData });
-src\api\creator.js:40:  return apiRequest(apiRoutes.CREATOR.ANALYTICS(courseId));
-src\api\creator.js:44:  return apiRequest(apiRoutes.CREATOR.REVENUE);
-src\api\facilitySettings.ts:15:  const detailRes = await apiRequest(`${endpoints.facilities}/${facilityId}`);
-src\api\facilitySettings.ts:23:  const updateRes = await apiRequest(`${endpoints.facilities}/${facilityId}`, {
-src\api\diagnose.js:5:  return apiRequest(apiRoutes.DIAGNOSE.ANALYZE, {
-src\api\diagnose.js:12:  return apiRequest(apiRoutes.DIAGNOSE.HISTORY);
-src\api\diagnose.js:16:  return apiRequest(apiRoutes.DIAGNOSE.DETAIL(id));
-src\api\diagnose.js:24:  return apiRequest(apiRoutes.DIAGNOSE.CREATE, { method: "POST", body: formDataPhoto });
-src\api\diagnose.js:31:  return apiRequest(apiRoutes.DIAGNOSE.CREATE, { method: "POST", body: formDataImage });
+﻿src\api\adminReports.js:6:  return apiRequest(routes.REPORTS.LIST, { auth: token ? true : false });
+src\api\adminReports.js:10:  return apiRequest(routes.REPORTS.RESOLVE(id), {
+src\api\auth.ts:39:  return apiRequest("/api/auth/login", {
+src\api\auth.ts:48:  return apiRequest("/api/auth/signup", {
+src\api\auth.ts:57:  return apiRequest("/api/auth/register", {
+src\api\auth.ts:66:  return apiRequest("/api/auth/become-creator", {
+src\api\auth.ts:73:  return apiRequest("/api/auth/save-push-token", {
+src\api\billing.ts:5:  const statusRes = await apiRequest(endpoints.facilityBillingStatus, {
+src\api\billing.ts:12:  const checkoutRes = await apiRequest(endpoints.facilityBillingCheckout, {
+src\api\billing.ts:20:  const cancelRes = await apiRequest(endpoints.facilityBillingCancel, {
+src\api\auth.js:8:    const loginData = await apiRequest(routes.AUTH.LOGIN, {
+src\api\auth.js:32:    const signupData = await apiRequest(routes.AUTH.SIGNUP, {
+src\api\auth.js:49:    const registerData = await apiRequest("/api/auth/register", {
+src\api\auth.js:64:    const creatorData = await apiRequest(routes.AUTH.BECOME_CREATOR, {
+src\api\auth.js:80:    const pushTokenData = await apiRequest("/api/auth/save-push-token", {
+src\api\certificates.js:5:  return apiRequest(apiRoutes.CERTIFICATES.MINE);
+src\api\certificates.js:9:  return apiRequest(apiRoutes.CERTIFICATES.DETAIL(certificateId));
+src\api\certificates.js:13:  return apiRequest(apiRoutes.CERTIFICATES.VERIFY(certificateId));
+src\api\campaigns.ts:12:  return apiRequest(`/commercial/campaigns`);
+src\api\campaigns.ts:16:  return apiRequest(`/commercial/campaigns`, { method: "POST", body: data });
+src\api\campaigns.ts:20:  return apiRequest(`/commercial/campaigns/${campaignId}`, {
+src\api\campaigns.ts:27:  return apiRequest(`/commercial/campaigns/${campaignId}`, { method: "DELETE" });
+src\api\client.js:67:  return apiRequest(path, opts);
 src\api\courses.js:6:  return apiRequest(`/api/courses/${courseId}/buy`, {
 src\api\courses.js:13:  return apiRequest(apiRoutes.COURSES.MINE);
 src\api\courses.js:17:  return apiRequest(apiRoutes.COURSES.CREATE, {
@@ -75,10 +54,37 @@ src\api\courses.js:174:  return apiRequest(apiRoutes.COURSES.SUBMIT_REVIEW(cours
 src\api\courses.js:180:  return apiRequest(apiRoutes.COURSES.APPROVE(courseId), {
 src\api\courses.js:186:  return apiRequest(apiRoutes.COURSES.REJECT(courseId), {
 src\api\courses.js:193:  return apiRequest(apiRoutes.COURSES.ADMIN_PENDING, {
+src\api\creator.js:4:  return apiRequest(`${apiRoutes.CREATOR.PAYOUT_HISTORY}/${payoutId}/mark-paid`, {
+src\api\creator.js:9:  return apiRequest(apiRoutes.CREATOR.REQUEST_PAYOUT, { method: "POST" });
+src\api\creator.js:16:  return apiRequest(`${apiRoutes.CREATOR.REVENUE}/../earnings`); // Fallback if no specific apiRoutes entry
+src\api\creator.js:20:  return apiRequest(apiRoutes.CREATOR.PERFORMANCE);
+src\api\creator.js:24:  return apiRequest(apiRoutes.CREATOR.TIMELINE);
+src\api\creator.js:28:  return apiRequest(apiRoutes.CREATOR.PAYOUT_SUMMARY);
+src\api\creator.js:32:  return apiRequest(apiRoutes.CREATOR.PAYOUT_HISTORY);
+src\api\creator.js:36:  return apiRequest(apiRoutes.CREATOR.SIGNATURE, { method: "POST", body: formData });
+src\api\creator.js:40:  return apiRequest(apiRoutes.CREATOR.ANALYTICS(courseId));
+src\api\creator.js:44:  return apiRequest(apiRoutes.CREATOR.REVENUE);
+src\api\debug.ts:5:  return apiRequest(endpoints.health);
+src\api\debug.ts:9:  return apiRequest(endpoints.debugInfo);
+src\api\deviations.ts:15:  const listRes = await apiRequest(endpoints.deviations(facilityId));
+src\api\deviations.ts:20:  const createRes = await apiRequest(endpoints.deviations(facilityId), {
+src\api\diagnose.js:5:  return apiRequest(apiRoutes.DIAGNOSE.ANALYZE, {
+src\api\diagnose.js:12:  return apiRequest(apiRoutes.DIAGNOSE.HISTORY);
+src\api\diagnose.js:16:  return apiRequest(apiRoutes.DIAGNOSE.DETAIL(id));
+src\api\diagnose.js:24:  return apiRequest(apiRoutes.DIAGNOSE.CREATE, { method: "POST", body: formDataPhoto });
+src\api\diagnose.js:31:  return apiRequest(apiRoutes.DIAGNOSE.CREATE, { method: "POST", body: formDataImage });
+src\api\earnings.js:5:  return apiRequest(apiRoutes.CREATOR.MINE);
+src\api\earnings.js:9:  return apiRequest(apiRoutes.CREATOR.BY_COURSE);
+src\api\earnings.js:13:  return apiRequest(apiRoutes.CREATOR.REQUEST_PAYOUT, {
+src\api\earnings.js:20:  return apiRequest(apiRoutes.CREATOR.PLATFORM_STATS);
+src\api\environment.js:5:  return apiRequest(apiRoutes.ENVIRONMENT.ANALYZE, {
+src\api\environment.js:13:  return apiRequest(apiRoutes.ENVIRONMENT.TO_TASKS(plantId), {
 src\api\equipment.js:7:    const listRes = await apiRequest(`/facilities/${facilityId}/equipment`);
 src\api\equipment.js:16:    const createRes = await apiRequest(`/facilities/${facilityId}/equipment`, {
 src\api\equipment.js:28:    const updateRes = await apiRequest(
 src\api\equipment.js:43:    const deleteRes = await apiRequest(
+src\api\events.ts:32:    await apiRequest("/api/events", {
+src\api\facilities.ts:3:  return apiRequest("/api/facilities", { method: "POST", body: data });
 src\api\facility.js:6:    const listRoomsRes = await apiRequest("/rooms", {
 src\api\facility.js:24:    const getRoomRes = await apiRequest(`/rooms/${roomId}`);
 src\api\facility.js:40:    const createRoomRes = await apiRequest("/rooms", {
@@ -104,20 +110,42 @@ src\api\facility.js:345:    const listZonesRes = await apiRequest("/zones", { pa
 src\api\facility.js:360:    const createZoneRes = await apiRequest("/zones", {
 src\api\facility.js:378:    const updateZoneRes = await apiRequest(`/zones/${zoneId}`, {
 src\api\facility.js:396:    const deleteZoneRes = await apiRequest(`/zones/${zoneId}`, {
-src\api\facilities.ts:3:  return apiRequest("/api/facilities", { method: "POST", body: data });
-src\api\events.ts:32:    await apiRequest("/api/events", {
-src\api\notifications.ts:9:  return apiRequest(`/api/facilities/${facilityId}/notifications/${notificationId}`, {
-src\api\client.js:67:  return apiRequest(path, opts);
-src\api\me.ts:56:      const result = await apiRequest(endpoints.me, {
+src\components\commercial\CommercialFeedCard.tsx:62:        await api.post(`/api/commercial/unlike/${post.id}`);
+src\components\commercial\CommercialFeedCard.tsx:64:        await api.post(`/api/commercial/like/${post.id}`);
+src\features\ai\callAi.ts:36:  return apiRequest(url, { method: "POST", body: payload });
+src\features\billing\hooks.ts:13:      api.post(`/api/facility/${facilityId}/billing/checkout`, { priceId }, token),
+src\features\billing\hooks.ts:15:    openPortal: () => api.post(`/api/facility/${facilityId}/billing/portal`, {}, token)
+src\hooks\useInvites.ts:11:    queryFn: () => apiRequest(`/api/facilities/${facilityId}/invites`, { method: "GET" }),
+src\features\facility\useFacilityRooms.ts:31:        const res = await apiRequest(url, { method: "GET" });
+src\hooks\usePlants.ts:39:  const res = await apiRequest(`${base}${query}`);
+src\features\facility\useFacilityGrows.ts:38:        const res = await apiRequest(url, { method: "GET" });
+src\hooks\usePersonalTasks.ts:24:  const res = await apiRequest("/api/personal/tasks");
+src\features\team\screens\AcceptInvite.tsx:25:      await api.post(`/api/invites/${token}/accept`);
+src\features\team\screens\AcceptInvite.tsx:37:      await api.post(`/api/invites/${token}/decline`);
+src\features\team\hooks.ts:26:      api.patch(`${endpoints.team(facilityId!)}/${id}`, data, token),
+src\features\team\hooks.ts:39:    mutationFn: () => api.del(`${endpoints.team(facilityId!)}/${id}`, token),
+src\features\team\hooks.ts:53:      api.post(`${endpoints.team(facilityId!)}/invite`, data, token),
+src\hooks\usePushRegistration.ts:24:        // like: await api.post('/push/register', { token, userId });
+src\features\inventory\hooks.ts:37:      api.post(endpoints.inventory(facilityId!), data, token),
+src\features\inventory\hooks.ts:51:      api.patch(`${endpoints.inventory(facilityId!)}/${id}`, data, token),
+src\features\inventory\hooks.ts:65:    mutationFn: () => api.del(`${endpoints.inventory(facilityId!)}/${id}`, token),
+src\api\plants.ts:15:  const listRes = await apiRequest(endpoints.plants(facilityId));
+src\api\plants.ts:21:  const createRes = await apiRequest(endpoints.plants(facilityId), {
+src\api\plants.ts:34:  const updateRes = await apiRequest(endpoints.plant(facilityId, id), {
+src\api\plants.ts:42:  const deleteRes = await apiRequest(endpoints.plant(facilityId, id), {
+src\api\tasks.ts:9:    const listRes = await apiRequest(endpoints.tasks(facilityId), { method: "GET" });
+src\api\tasks.ts:22:  const personalCreateRes = await apiRequest("/api/personal/tasks", {
+src\api\tasks.ts:35:  const completeRes = await apiRequest(`/api/personal/tasks/${a}`, {
+src\api\tasks.ts:53:  const createRes = await apiRequest(endpoints.tasks(facilityId), {
+src\api\tasks.ts:65:  const updateRes = await apiRequest(endpoints.task(facilityId, id), {
+src\api\tasks.ts:73:  const deleteRes = await apiRequest(endpoints.task(facilityId, id), {
+src\api\tasks.ts:101:    const listPersonalRes = await apiRequest("/api/personal/tasks", {
 src\api\guilds.js:5:  return apiRequest(apiRoutes.GUILDS.LIST);
 src\api\guilds.js:9:  return apiRequest(apiRoutes.GUILDS.DETAIL(id));
 src\api\guilds.js:13:  return apiRequest(apiRoutes.GUILDS.CREATE, {
 src\api\guilds.js:20:  return apiRequest(apiRoutes.GUILDS.JOIN(id), { method: "POST" });
 src\api\guilds.js:24:  return apiRequest(apiRoutes.GUILDS.LEAVE(id), { method: "POST" });
 src\api\guilds.js:28:  return apiRequest(apiRoutes.GUILDS.DELETE(id), { method: "DELETE" });
-src\api\certificates.js:5:  return apiRequest(apiRoutes.CERTIFICATES.MINE);
-src\api\certificates.js:9:  return apiRequest(apiRoutes.CERTIFICATES.DETAIL(certificateId));
-src\api\certificates.js:13:  return apiRequest(apiRoutes.CERTIFICATES.VERIFY(certificateId));
 src\api\tasks.js:5:  return apiRequest(routes.TASKS.TODAY, { auth: token ? true : false });
 src\api\tasks.js:9:  return apiRequest(routes.TASKS.UPCOMING, { auth: token ? true : false });
 src\api\tasks.js:13:  return apiRequest(routes.TASKS.LIST, { auth: token ? true : false });
@@ -125,6 +153,31 @@ src\api\tasks.js:17:  return apiRequest(routes.TASKS.COMPLETE(id), {
 src\api\tasks.js:25:  return apiRequest(routes.TASKS.REOPEN(id), {
 src\api\tasks.js:33:  return apiRequest(routes.TASKS.DELETE(id), {
 src\api\tasks.js:40:  return apiRequest(routes.TASKS.LIST, {
+src\api\grows.ts:14:  const listRes = await apiRequest(endpoints.grows(facilityId));
+src\api\grows.ts:20:  const createRes = await apiRequest(endpoints.grows(facilityId), {
+src\api\grows.ts:33:  const updateRes = await apiRequest(endpoints.grow(facilityId, id), {
+src\api\grows.ts:41:  const deleteRes = await apiRequest(endpoints.grow(facilityId, id), {
+src\api\grows.ts:65:    const personalRes = await apiRequest("/api/personal/grows");
+src\api\orders.ts:13:  return apiRequest(`/commercial/orders`);
+src\api\subscription.ts:5:  const res = await apiRequest(endpoints.subscriptionStatus, { method: "GET" });
+src\api\grows.js:5:  return apiRequest(routes.GROWS.LIST, { params: filters });
+src\api\grows.js:9:  return apiRequest(routes.GROWS.CREATE, {
+src\api\grows.js:16:  return apiRequest(routes.GROWS.ENTRIES(growId), {
+src\api\grows.js:26:  return apiRequest(routes.GROWS.ENTRY_PHOTO(growId), { method: "POST", body: form });
+src\api\grows.js:30:  return apiRequest(routes.GROWS.ADD_PLANT(growId), {
+src\api\notifications.ts:9:  return apiRequest(`/api/facilities/${facilityId}/notifications/${notificationId}`, {
+src\api\subscription.js:5:  return apiRequest(apiRoutes.SUBSCRIBE.ME);
+src\api\subscription.js:9:  return apiRequest(apiRoutes.SUBSCRIBE.CREATE_CHECKOUT_SESSION, {
+src\api\growlogs.ts:15:  const listRes = await apiRequest(endpoints.growlogs(facilityId));
+src\api\growlogs.ts:21:  const createRes = await apiRequest(endpoints.growlogs(facilityId), {
+src\api\growlogs.ts:33:  const updateRes = await apiRequest(endpoints.growlog(facilityId, id), {
+src\api\growlogs.ts:41:  const deleteRes = await apiRequest(endpoints.growlog(facilityId, id), {
+src\api\me.ts:56:      const result = await apiRequest(endpoints.me, {
+src\api\subscribe.js:5:  return apiRequest(apiRoutes.SUBSCRIBE.START, {
+src\api\subscribe.js:13:  return apiRequest(apiRoutes.SUBSCRIBE.CANCEL, {
+src\api\subscribe.js:21:  return apiRequest(apiRoutes.SUBSCRIBE.STATUS, { auth: token ? true : false });
+src\api\growlog.ts:13:  return apiRequest(`/growlog`, { params: { grow: growId } });
+src\api\growlog.ts:18:  return apiRequest(`/growlog`, {
 src\api\growlog.js:5:  return apiRequest(routes.GROWLOG.LIST, { params: filters });
 src\api\growlog.js:9:  return apiRequest(routes.GROWLOG.DETAIL(id));
 src\api\growlog.js:13:  return apiRequest(routes.GROWLOG.CREATE, {
@@ -132,43 +185,22 @@ src\api\growlog.js:20:  return apiRequest(routes.GROWLOG.DETAIL(id), {
 src\api\growlog.js:27:  return apiRequest(routes.GROWLOG.DETAIL(id), { method: "DELETE" });
 src\api\growlog.js:31:  return apiRequest(routes.GROWLOG.AUTO_TAG(id), {
 src\api\growlog.js:37:  return apiRequest(routes.PLANTS.LIST);
-src\api\feeding.js:14:  return apiRequest(apiRoutes.FEEDING.LABEL, {
-src\api\feeding.js:22:  return apiRequest(apiRoutes.FEEDING.SCHEDULE, {
-src\api\feeding.js:30:  return apiRequest(apiRoutes.FEEDING.TO_TEMPLATE, {
-src\api\campaigns.ts:12:  return apiRequest(`/commercial/campaigns`);
-src\api\campaigns.ts:16:  return apiRequest(`/commercial/campaigns`, { method: "POST", body: data });
-src\api\campaigns.ts:20:  return apiRequest(`/commercial/campaigns/${campaignId}`, {
-src\api\campaigns.ts:27:  return apiRequest(`/commercial/campaigns/${campaignId}`, { method: "DELETE" });
-src\api\subscription.ts:5:  const res = await apiRequest(endpoints.subscriptionStatus, { method: "GET" });
-src\api\grows.ts:14:  const listRes = await apiRequest(endpoints.grows(facilityId));
-src\api\grows.ts:20:  const createRes = await apiRequest(endpoints.grows(facilityId), {
-src\api\grows.ts:33:  const updateRes = await apiRequest(endpoints.grow(facilityId, id), {
-src\api\grows.ts:41:  const deleteRes = await apiRequest(endpoints.grow(facilityId, id), {
-src\api\grows.ts:65:    const personalRes = await apiRequest("/api/personal/grows");
+src\api\storefront.ts:14:  const res = await apiRequest(`/commercial/storefront`);
+src\api\storefront.ts:21:  return apiRequest(`/commercial/storefront`, {
+src\api\storefront.ts:28:  return apiRequest(`/commercial/storefront`, {
 src\api\logs.ts:18:    const res: any = await apiRequest(`/api/personal/logs`, {
+src\features\rooms\useBulkCreateRooms.ts:17:          await api.post(endpoints.rooms(requireString(facilityId, "facilityId")), room);
 src\api\greenWaste.ts:19:  const listRes = await apiRequest(endpoints.greenWaste(facilityId));
 src\api\greenWaste.ts:27:  const createRes = await apiRequest(endpoints.greenWaste(facilityId), {
-src\api\billing.ts:5:  const statusRes = await apiRequest(endpoints.facilityBillingStatus, {
-src\api\billing.ts:12:  const checkoutRes = await apiRequest(endpoints.facilityBillingCheckout, {
-src\api\billing.ts:20:  const cancelRes = await apiRequest(endpoints.facilityBillingCancel, {
-src\api\subscription.js:5:  return apiRequest(apiRoutes.SUBSCRIBE.ME);
-src\api\subscription.js:9:  return apiRequest(apiRoutes.SUBSCRIBE.CREATE_CHECKOUT_SESSION, {
-src\api\grows.js:5:  return apiRequest(routes.GROWS.LIST, { params: filters });
-src\api\grows.js:9:  return apiRequest(routes.GROWS.CREATE, {
-src\api\grows.js:16:  return apiRequest(routes.GROWS.ENTRIES(growId), {
-src\api\grows.js:26:  return apiRequest(routes.GROWS.ENTRY_PHOTO(growId), { method: "POST", body: form });
-src\api\grows.js:30:  return apiRequest(routes.GROWS.ADD_PLANT(growId), {
-src\api\growlog.ts:13:  return apiRequest(`/growlog`, { params: { grow: growId } });
-src\api\growlog.ts:18:  return apiRequest(`/growlog`, {
-src\api\subscribe.js:5:  return apiRequest(apiRoutes.SUBSCRIBE.START, {
-src\api\subscribe.js:13:  return apiRequest(apiRoutes.SUBSCRIBE.CANCEL, {
-src\api\subscribe.js:21:  return apiRequest(apiRoutes.SUBSCRIBE.STATUS, { auth: token ? true : false });
-src\api\growlogs.ts:15:  const listRes = await apiRequest(endpoints.growlogs(facilityId));
-src\api\growlogs.ts:21:  const createRes = await apiRequest(endpoints.growlogs(facilityId), {
-src\api\growlogs.ts:33:  const updateRes = await apiRequest(endpoints.growlog(facilityId, id), {
-src\api\growlogs.ts:41:  const deleteRes = await apiRequest(endpoints.growlog(facilityId, id), {
-src\api\rooms.ts:15:  const listRes = await apiRequest(endpoints.rooms(facilityId));
-src\api\rooms.ts:23:  const createRes = await apiRequest(endpoints.rooms(facilityId), {
+src\api\sop.ts:14:  const listRes = await apiRequest(endpoints.sopTemplates(facilityId));
+src\api\sop.ts:22:  const createRes = await apiRequest(endpoints.sopTemplates(facilityId), {
+src\api\sop.ts:34:  const updateRes = await apiRequest(endpoints.sopTemplate(facilityId, id), {
+src\api\sop.ts:42:  const deleteRes = await apiRequest(endpoints.sopTemplate(facilityId, id), {
+src\api\lives.js:5:  return apiRequest(apiRoutes.LIVES.LIST);
+src\api\lives.js:9:  return apiRequest(apiRoutes.LIVES.DETAIL(id));
+src\api\lives.js:13:  return apiRequest(apiRoutes.LIVES.CREATE, {
+src\api\lives.js:20:  return apiRequest(apiRoutes.LIVES.UPDATE(id), {
+src\api\lives.js:27:  return apiRequest(apiRoutes.LIVES.DELETE(id), { method: "DELETE" });
 src\api\forum.js:5:  return apiRequest(apiRoutes.FORUM.LIST);
 src\api\forum.js:9:  return apiRequest(apiRoutes.FORUM.DETAIL(id));
 src\api\forum.js:13:  return apiRequest(apiRoutes.FORUM.FEED_LATEST, {
@@ -186,53 +218,37 @@ src\api\forum.js:93:  return apiRequest(apiRoutes.FORUM.UNSAVE(id), { method: "P
 src\api\forum.js:97:  return apiRequest(apiRoutes.FORUM.REPORT(id), {
 src\api\forum.js:104:  return apiRequest(apiRoutes.FORUM.TO_GROWLOG(id), { method: "POST" });
 src\api\forum.js:108:  return apiRequest(apiRoutes.FORUM.COMMENTS(postId), {
-src\api\auth.ts:39:  return apiRequest("/api/auth/login", {
-src\api\auth.ts:48:  return apiRequest("/api/auth/signup", {
-src\api\auth.ts:57:  return apiRequest("/api/auth/register", {
-src\api\auth.ts:66:  return apiRequest("/api/auth/become-creator", {
-src\api\auth.ts:73:  return apiRequest("/api/auth/save-push-token", {
-src\api\storefront.ts:14:  const res = await apiRequest(`/commercial/storefront`);
-src\api\storefront.ts:21:  return apiRequest(`/commercial/storefront`, {
-src\api\storefront.ts:28:  return apiRequest(`/commercial/storefront`, {
-src\api\lives.js:5:  return apiRequest(apiRoutes.LIVES.LIST);
-src\api\lives.js:9:  return apiRequest(apiRoutes.LIVES.DETAIL(id));
-src\api\lives.js:13:  return apiRequest(apiRoutes.LIVES.CREATE, {
-src\api\lives.js:20:  return apiRequest(apiRoutes.LIVES.UPDATE(id), {
-src\api\lives.js:27:  return apiRequest(apiRoutes.LIVES.DELETE(id), { method: "DELETE" });
-src\api\inventory.ts:16:  const listRes = await apiRequest(endpoints.inventory(facilityId));
-src\api\inventory.ts:30:  const createRes = await apiRequest(endpoints.inventory(facilityId), {
-src\api\inventory.ts:42:  const updateRes = await apiRequest(endpoints.inventoryItem(facilityId, id), {
-src\api\inventory.ts:50:  const deleteRes = await apiRequest(endpoints.inventoryItem(facilityId, id), {
-src\app\home\personal\(tabs)\forum\post\[id].tsx:63:        const res = await apiRequest(path, { method: "GET" });
+src\api\live.ts:7:  return apiRequest(endpoints.liveHost, { method: "POST", body: input });
+src\api\live.ts:11:  return apiRequest(endpoints.liveJoin, { method: "POST", body: input });
+src\api\live.ts:15:  return apiRequest(endpoints.liveEnd, { method: "POST", body: input });
+src\features\grows\hooks.ts:37:    mutationFn: (data: any) => api.post(endpoints.grows(facilityId!), data),
+src\features\grows\hooks.ts:49:      api.patch(`${endpoints.grows(facilityId!)}/${id}`, data),
+src\api\feeding.js:14:  return apiRequest(apiRoutes.FEEDING.LABEL, {
+src\api\feeding.js:22:  return apiRequest(apiRoutes.FEEDING.SCHEDULE, {
+src\api\feeding.js:30:  return apiRequest(apiRoutes.FEEDING.TO_TEMPLATE, {
 src\api\links.ts:12:  return apiRequest(`/commercial/links`);
 src\api\links.ts:16:  return apiRequest(`/commercial/links`, { method: "POST", body: data });
 src\api\links.ts:20:  return apiRequest(`/commercial/links/${linkId}`, {
 src\api\links.ts:27:  return apiRequest(`/commercial/links/${linkId}`, { method: "DELETE" });
-src\api\auth.js:8:    const loginData = await apiRequest(routes.AUTH.LOGIN, {
-src\api\auth.js:32:    const signupData = await apiRequest(routes.AUTH.SIGNUP, {
-src\api\auth.js:49:    const registerData = await apiRequest("/api/auth/register", {
-src\api\auth.js:64:    const creatorData = await apiRequest(routes.AUTH.BECOME_CREATOR, {
-src\api\auth.js:80:    const pushTokenData = await apiRequest("/api/auth/save-push-token", {
-src\api\sop.ts:14:  const listRes = await apiRequest(endpoints.sopTemplates(facilityId));
-src\api\sop.ts:22:  const createRes = await apiRequest(endpoints.sopTemplates(facilityId), {
-src\api\sop.ts:34:  const updateRes = await apiRequest(endpoints.sopTemplate(facilityId, id), {
-src\api\sop.ts:42:  const deleteRes = await apiRequest(endpoints.sopTemplate(facilityId, id), {
-src\api\live.ts:7:  return apiRequest(endpoints.liveHost, { method: "POST", body: input });
-src\api\live.ts:11:  return apiRequest(endpoints.liveJoin, { method: "POST", body: input });
-src\api\live.ts:15:  return apiRequest(endpoints.liveEnd, { method: "POST", body: input });
+src\api\rooms.ts:15:  const listRes = await apiRequest(endpoints.rooms(facilityId));
+src\api\rooms.ts:23:  const createRes = await apiRequest(endpoints.rooms(facilityId), {
+src\api\facilityTeam.ts:30:  return apiRequest(`/api/facilities/${facilityId}/invites`, {
+src\api\facilityTeam.ts:41:  return apiRequest(`/api/facilities/${facilityId}/members/${memberId}`, {
+src\api\facilityTeam.ts:48:  return apiRequest(`/api/facilities/${facilityId}/members/${memberId}`, {
+src\api\inventory.ts:16:  const listRes = await apiRequest(endpoints.inventory(facilityId));
+src\api\inventory.ts:30:  const createRes = await apiRequest(endpoints.inventory(facilityId), {
+src\api\inventory.ts:42:  const updateRes = await apiRequest(endpoints.inventoryItem(facilityId, id), {
+src\api\inventory.ts:50:  const deleteRes = await apiRequest(endpoints.inventoryItem(facilityId, id), {
 src\api\insights.ts:8:  const runRes = await apiRequest(`/facilities/${facilityId}/insights/run`, {
 src\api\insights.ts:15:  const fetchRes = await apiRequest(`/facilities/${facilityId}/insights`);
 src\api\insights.ts:23:  await apiRequest(`/facilities/${facilityId}/insights/${insightId}/resolve`, {
 src\api\insights.ts:32:  await apiRequest(`/facilities/${facilityId}/insights/${insightId}/snooze`, {
-src\app\home\personal\(tabs)\forum\new-post.tsx:33:      await apiRequest("/api/forum/posts", { method: "POST", body: payload });
+src\api\facilitySettings.ts:15:  const detailRes = await apiRequest(`${endpoints.facilities}/${facilityId}`);
+src\api\facilitySettings.ts:23:  const updateRes = await apiRequest(`${endpoints.facilities}/${facilityId}`, {
 src\api\products.ts:14:  return apiRequest(`/commercial/products`);
 src\api\products.ts:18:  return apiRequest(`/commercial/products`, { method: "POST", body: data });
 src\api\products.ts:22:  return apiRequest(`/commercial/products/${productId}`, {
 src\api\products.ts:29:  return apiRequest(`/commercial/products/${productId}`, { method: "DELETE" });
-src\api\plants.ts:15:  const listRes = await apiRequest(endpoints.plants(facilityId));
-src\api\plants.ts:21:  const createRes = await apiRequest(endpoints.plants(facilityId), {
-src\api\plants.ts:34:  const updateRes = await apiRequest(endpoints.plant(facilityId, id), {
-src\api\plants.ts:42:  const deleteRes = await apiRequest(endpoints.plant(facilityId, id), {
 src\api\posts.js:15:  return apiRequest(apiRoutes.POSTS.FEED, {
 src\api\posts.js:26:  return apiRequest(apiRoutes.POSTS.TRENDING, { auth: token ? true : false });
 src\api\posts.js:30:  return apiRequest(apiRoutes.POSTS.CREATE, {
@@ -240,6 +256,17 @@ src\api\posts.js:38:  return apiRequest(apiRoutes.POSTS.LIKE(id), {
 src\api\posts.js:46:  return apiRequest(apiRoutes.POSTS.UNLIKE(id), {
 src\api\posts.js:54:  return apiRequest(apiRoutes.POSTS.COMMENTS(id), { auth: token ? true : false });
 src\api\posts.js:58:  return apiRequest(apiRoutes.POSTS.COMMENT(id), {
+src\api\_quarantine\calendar.ts:24:  return api.post(`/calendar`, data);
+src\api\_quarantine\compliance.ts:8:  return api.post(`/facilities/${facilityId}/compliance/logs`, data);
+src\api\_quarantine\audit.js:26:  const listRes = await apiRequest(endpoints.auditLogs(facilityId), { method: "GET" });
+src\api\_quarantine\audit.js:42:  const createRes = await apiRequest(endpoints.auditLogs(facilityId), {
+src\api\_quarantine\audit.js:51:  const reconcileRes = await apiRequest(`${endpoints.auditLogs(facilityId)}/reconcile`, {
+src\api\verification.ts:17:  const listRes = await apiRequest(endpoints.verification(facilityId));
+src\api\verification.ts:25:  const approveRes = await apiRequest(
+src\api\verification.ts:43:  const rejectRes = await apiRequest(endpoints.verificationReject(facilityId, recordId), {
+src\api\_quarantine\verification.js:20:    const verifyRes = await api.post(
+src\api\_quarantine\deviation.js:20:    const createRes = await api.post(endpoints.deviations(facilityId), data);
+src\api\vendorSignup.ts:22:  const res = await apiRequest(endpoints.vendorSignup, {
 src\api\users.js:12:  return apiRequest(routes.USER.PROFILE(id), { method: "GET" });
 src\api\users.js:16:  return apiRequest(routes.USER.AVATAR, {
 src\api\users.js:24:  return apiRequest(routes.USER.BANNER, {
@@ -255,116 +282,89 @@ src\api\users.js:73:  return apiRequest(routes.USER.CERTIFICATES, { method: "GET
 src\api\users.js:77:  return apiRequest(routes.USER.ONBOARD_CREATOR, {
 src\api\users.js:89:  return apiRequest(`/api/user/${userId}/posts`, {
 src\api\users.js:96:  return apiRequest(`/api/user/${userId}/growlogs`, {
-src\api\adminReports.js:6:  return apiRequest(routes.REPORTS.LIST, { auth: token ? true : false });
-src\api\adminReports.js:10:  return apiRequest(routes.REPORTS.RESOLVE(id), {
-src\api\orders.ts:13:  return apiRequest(`/commercial/orders`);
-src\screens\SubscribeScreen.js:23:      const s = await apiRequest("/api/subscription/me", {
-src\screens\SubscribeScreen.js:48:        const data = await apiRequest("/api/iap/verify", {
-src\api\uploads.js:39:  return apiRequest("/api/uploads/image", {
-src\screens\VendorGuidesScreen.js:69:      const res = await apiRequest(path, { method: "GET" });
-src\screens\VendorGuidesScreen.js:87:      const res = await apiRequest(path, { method: "GET" });
-src\api\tokens.js:5:  return apiRequest(routes.TOKENS.BALANCE, { auth: token ? true : false });
-src\api\tokens.js:9:  return apiRequest(routes.TOKENS.CONSUME, {
-src\api\tokens.js:17:  return apiRequest(routes.TOKENS.GRANT, {
-src\api\tasks.ts:9:    const listRes = await apiRequest(endpoints.tasks(facilityId), { method: "GET" });
-src\api\tasks.ts:22:  const personalCreateRes = await apiRequest("/api/personal/tasks", {
-src\api\tasks.ts:35:  const completeRes = await apiRequest(`/api/personal/tasks/${a}`, {
-src\api\tasks.ts:53:  const createRes = await apiRequest(endpoints.tasks(facilityId), {
-src\api\tasks.ts:65:  const updateRes = await apiRequest(endpoints.task(facilityId, id), {
-src\api\tasks.ts:73:  const deleteRes = await apiRequest(endpoints.task(facilityId, id), {
-src\api\tasks.ts:101:    const listPersonalRes = await apiRequest("/api/personal/tasks", {
-src\api\team.ts:15:  const listRes = await apiRequest(endpoints.teamMembers(facilityId));
-src\api\team.ts:28:  const inviteRes = await apiRequest(endpoints.teamInvite(facilityId), {
-src\api\team.ts:40:  const updateRes = await apiRequest(endpoints.teamMember(facilityId, userId), {
-src\api\team.ts:48:  const removeRes = await apiRequest(endpoints.teamMember(facilityId, userId), {
-src\api\verification.ts:17:  const listRes = await apiRequest(endpoints.verification(facilityId));
-src\api\verification.ts:25:  const approveRes = await apiRequest(
-src\api\verification.ts:43:  const rejectRes = await apiRequest(endpoints.verificationReject(facilityId, recordId), {
-src\api\vendorMetrics.js:7:    const metricsRes = await apiRequest(`/vendors/${vendorId}/metrics`);
-src\api\vendorMetrics.js:16:    const soilMixesRes = await apiRequest(`/vendors/${vendorId}/soil-mixes`);
-src\api\vendorMetrics.js:25:    const createSoilMixRes = await apiRequest(`/vendors/${vendorId}/soil-mixes`, {
-src\api\vendorMetrics.js:37:    const equipmentRes = await apiRequest(`/vendors/${vendorId}/equipment`);
-src\api\vendor.js:8:    const listRes = await apiRequest(endpoints.vendors, {
-src\api\vendor.js:19:    const createRes = await apiRequest(endpoints.vendors, {
-src\api\vendor.js:31:    const updateRes = await apiRequest(endpoints.vendor(vendorId), {
-src\api\vendor.js:43:    const deleteRes = await apiRequest(endpoints.vendor(vendorId), {
-src\api\vendorAnalytics.js:7:    const analyticsRes = await apiRequest(`/vendors/${vendorId}/analytics`);
-src\api\vendorAnalytics.js:16:    const ordersRes = await apiRequest(`/vendors/${vendorId}/orders`);
-src\api\vendorSignup.ts:22:  const res = await apiRequest(endpoints.vendorSignup, {
+src\api\_quarantine\facilityInventory.ts:15:  return api.post(`/facilities/${facilityId}/inventory`, data);
+src\api\_quarantine\facilityInventory.ts:19:  return api.patch(`/facilities/${facilityId}/inventory/${itemId}`, data);
 src\api\vendors.ts:14:  const listRes = await apiRequest(endpoints.vendors, {
 src\api\vendors.ts:21:  const createRes = await apiRequest(endpoints.vendors, {
 src\api\vendors.ts:29:  const updateRes = await apiRequest(endpoints.vendor(id), {
 src\api\vendors.ts:37:  const deleteRes = await apiRequest(endpoints.vendor(id), {
-src\api\_quarantine\audit.js:26:  const listRes = await apiRequest(endpoints.auditLogs(facilityId), { method: "GET" });
-src\api\_quarantine\audit.js:42:  const createRes = await apiRequest(endpoints.auditLogs(facilityId), {
-src\api\_quarantine\audit.js:51:  const reconcileRes = await apiRequest(`${endpoints.auditLogs(facilityId)}/reconcile`, {
-src\app\home\personal\(tabs)\grows\new.tsx:25:      await apiRequest(GROWS_CREATE_PATH, {
-src\features\team\screens\AcceptInvite.tsx:25:      await api.post(`/api/invites/${token}/accept`);
-src\features\team\screens\AcceptInvite.tsx:37:      await api.post(`/api/invites/${token}/decline`);
-src\api\_quarantine\compliance.ts:8:  return api.post(`/facilities/${facilityId}/compliance/logs`, data);
-src\api\_quarantine\verification.js:20:    const verifyRes = await api.post(
 src\api\_quarantine\greenWaste.js:15:    const createRes = await api.post(endpoints.greenWaste(facilityId), eventData);
-src\app\home\facility\tasks\[id].tsx:65:        const res = await apiRequest(endpoints.task(facilityId, String(id)));
-src\api\_quarantine\calendar.ts:24:  return api.post(`/calendar`, data);
-src\api\_quarantine\deviation.js:20:    const createRes = await api.post(endpoints.deviations(facilityId), data);
-src\features\team\hooks.ts:26:      api.patch(`${endpoints.team(facilityId!)}/${id}`, data, token),
-src\features\team\hooks.ts:39:    mutationFn: () => api.del(`${endpoints.team(facilityId!)}/${id}`, token),
-src\features\team\hooks.ts:53:      api.post(`${endpoints.team(facilityId!)}/invite`, data, token),
+src\api\vendorMetrics.js:7:    const metricsRes = await apiRequest(`/vendors/${vendorId}/metrics`);
+src\api\vendorMetrics.js:16:    const soilMixesRes = await apiRequest(`/vendors/${vendorId}/soil-mixes`);
+src\api\vendorMetrics.js:25:    const createSoilMixRes = await apiRequest(`/vendors/${vendorId}/soil-mixes`, {
+src\api\vendorMetrics.js:37:    const equipmentRes = await apiRequest(`/vendors/${vendorId}/equipment`);
+src\api\uploads.js:39:  return apiRequest("/api/uploads/image", {
+src\api\vendorAnalytics.js:7:    const analyticsRes = await apiRequest(`/vendors/${vendorId}/analytics`);
+src\api\vendorAnalytics.js:16:    const ordersRes = await apiRequest(`/vendors/${vendorId}/orders`);
+src\api\tokens.js:5:  return apiRequest(routes.TOKENS.BALANCE, { auth: token ? true : false });
+src\api\tokens.js:9:  return apiRequest(routes.TOKENS.CONSUME, {
+src\api\tokens.js:17:  return apiRequest(routes.TOKENS.GRANT, {
 src\api\_quarantine\sop.js:17:    const createRes = await api.post(endpoints.sopTemplates(facilityId), data);
 src\api\_quarantine\sop.js:29:    const updateRes = await api.put(endpoints.sopTemplate(facilityId, sopId), data);
-src\api\_quarantine\facilityInventory.ts:15:  return api.post(`/facilities/${facilityId}/inventory`, data);
-src\api\_quarantine\facilityInventory.ts:19:  return api.patch(`/facilities/${facilityId}/inventory/${itemId}`, data);
-src\app\home\facility\logs\[id].tsx:65:        const res = await apiRequest(endpoints.growlog(facilityId, String(id)));
-src\app\home\facility\audit-logs\index.tsx:57:    const res = await apiRequest(endpoints.auditLogs(facilityId));
+src\api\vendor.js:8:    const listRes = await apiRequest(endpoints.vendors, {
+src\api\vendor.js:19:    const createRes = await apiRequest(endpoints.vendors, {
+src\api\vendor.js:31:    const updateRes = await apiRequest(endpoints.vendor(vendorId), {
+src\api\vendor.js:43:    const deleteRes = await apiRequest(endpoints.vendor(vendorId), {
+src\api\team.ts:15:  const listRes = await apiRequest(endpoints.teamMembers(facilityId));
+src\api\team.ts:28:  const inviteRes = await apiRequest(endpoints.teamInvite(facilityId), {
+src\api\team.ts:40:  const updateRes = await apiRequest(endpoints.teamMember(facilityId, userId), {
+src\api\team.ts:48:  const removeRes = await apiRequest(endpoints.teamMember(facilityId, userId), {
+src\screens\CoursesScreen.js:45:        const data = await apiRequest("/api/courses");
+src\screens\CoursesScreen.js:75:      await apiRequest("/api/invite", {
+src\features\plants\hooks.ts:37:      api.post(endpoints.plants(facilityId!), data, token),
+src\features\plants\hooks.ts:53:      return api.patch(endpoints.plant(facilityId!, plantIdValue), data, token);
+src\features\plants\hooks.ts:71:    mutationFn: () => api.del(endpoints.plant(facilityId!, id), token),
+src\screens\CommercialInventoryScreen.js:64:      const res = await apiRequest("/api/commercial/inventory", { method: "GET" });
+src\features\compliance\ai4\dashboard\complianceDashboardApi.ts:88:  const deviationsRes = await apiRequest(
+src\features\compliance\ai4\dashboard\complianceDashboardApi.ts:100:  const sopsRes = await apiRequest(endpoints.compliance.sopsRecommended(facilityId), {
+src\screens\LiveSessionScreen.js:50:        const res = await apiRequest(`/live/sessions/${encodeURIComponent(sessionId)}`, {
+src\screens\LiveSessionsListScreen.js:22:        const data = await apiRequest("/api/lives", { method: "GET" });
+src\features\feed\api\feedApi.ts:47:  return api.patch(endpoints.taskGlobal(id), body);
+src\features\feed\api\feedApi.ts:56:  return api.patch(endpoints.alertGlobal(id), body);
 src\app\home\commercial\inventory.tsx:81:        const res = await apiRequest(path, { method: "GET" });
-src\app\home\facility\audit-logs\[id].tsx:71:        const res = await apiRequest(path, { method: "GET" });
-src\app\home\facility\plants\[id].tsx:67:        const res = await apiRequest(endpoints.plant(facilityId, String(id)));
-src\app\home\facility\(tabs)\audit-logs.tsx:82:        const res = await apiRequest(endpoints.auditLogs(facilityId), { method: "GET" });
-src\app\home\facility\sop-runs\[id].tsx:73:        const res = await apiRequest(path, { method: "GET" });
-src\app\home\facility\(tabs)\team.tsx:86:        const res = await apiRequest(endpoints.teamMembers(facilityId), {
-src\app\home\facility\(tabs)\team.tsx:110:      await apiRequest(endpoints.teamInvite(facilityId), {
+src\screens\SubscribeScreen.js:23:      const s = await apiRequest("/api/subscription/me", {
+src\screens\SubscribeScreen.js:48:        const data = await apiRequest("/api/iap/verify", {
 src\app\home\commercial\inventory-item\[id].tsx:75:        const res = await apiRequest(path, { method: "GET" });
-src\app\home\facility\sop-runs\index.tsx:63:    const res = await apiRequest(endpoints.sopRuns(facilityId));
-src\app\home\facility\(tabs)\InventoryItemDetailScreen.tsx:73:        const res = await apiRequest(endpoints.inventoryItem(facilityId, itemId));
-src\app\home\facility\(tabs)\InventoryItemDetailScreen.tsx:94:      await apiRequest(endpoints.inventoryAdjust(facilityId, itemId), {
-src\app\home\facility\(tabs)\profile.tsx:73:          apiRequest(endpoints.me, { method: "GET" }),
-src\app\home\facility\(tabs)\profile.tsx:74:          apiRequest(endpoints.facilities, { method: "GET" })
-src\app\home\facility\sop-runs\compare-result.tsx:83:            ? apiRequest(endpoints.sopRun(facilityId, a), { method: "GET" })
-src\app\home\facility\sop-runs\compare-result.tsx:86:            ? apiRequest(endpoints.sopRun(facilityId, b), { method: "GET" })
+src\app\home\personal\(tabs)\grows\new.tsx:25:      await apiRequest(GROWS_CREATE_PATH, {
+src\app\(commercial)\tasks\[id].tsx:67:        const res = await apiRequest(endpoints.taskGlobal(id), { method: "GET" });
+src\app\home\facility\(tabs)\audit-logs.tsx:82:        const res = await apiRequest(endpoints.auditLogs(facilityId), { method: "GET" });
+src\screens\VendorGuidesScreen.js:69:      const res = await apiRequest(path, { method: "GET" });
+src\screens\VendorGuidesScreen.js:87:      const res = await apiRequest(path, { method: "GET" });
+src\app\home\facility\(tabs)\compliance.tsx:75:            apiRequest(endpoints.deviations(facilityId)),
+src\app\home\facility\(tabs)\compliance.tsx:76:            apiRequest(endpoints.verification(facilityId)),
+src\app\home\facility\(tabs)\compliance.tsx:77:            apiRequest(endpoints.greenWaste(facilityId)),
+src\app\home\facility\(tabs)\compliance.tsx:78:            apiRequest(endpoints.auditLogs(facilityId)),
+src\app\home\facility\(tabs)\compliance.tsx:79:            apiRequest(endpoints.inventory(facilityId))
+src\app\home\facility\(tabs)\grows.tsx:78:        const res = await apiRequest(endpoints.grows(facilityId));
 src\app\home\facility\(tabs)\dashboard.tsx:69:            apiRequest(endpoints.grows(facilityId)),
 src\app\home\facility\(tabs)\dashboard.tsx:70:            apiRequest(endpoints.plants(facilityId)),
 src\app\home\facility\(tabs)\dashboard.tsx:71:            apiRequest(endpoints.tasks(facilityId)),
 src\app\home\facility\(tabs)\dashboard.tsx:72:            apiRequest(endpoints.inventory(facilityId)),
 src\app\home\facility\(tabs)\dashboard.tsx:73:            apiRequest(endpoints.growlogs(facilityId)),
 src\app\home\facility\(tabs)\dashboard.tsx:74:            apiRequest(endpoints.auditLogs(facilityId))
-src\app\home\facility\(tabs)\tasks.tsx:79:        const res = await apiRequest(endpoints.tasks(facilityId), { method: "GET" });
-src\app\home\facility\(tabs)\inventory.tsx:48:    const res = await apiRequest(endpoints.inventory(facilityId));
+src\app\(commercial)\logs\[id].tsx:73:        const res = await apiRequest(path, { method: "GET" });
+src\app\home\facility\(tabs)\InventoryItemDetailScreen.tsx:73:        const res = await apiRequest(endpoints.inventoryItem(facilityId, itemId));
+src\app\home\facility\(tabs)\InventoryItemDetailScreen.tsx:94:      await apiRequest(endpoints.inventoryAdjust(facilityId, itemId), {
+src\app\home\personal\(tabs)\forum\new-post.tsx:33:      await apiRequest("/api/forum/posts", { method: "POST", body: payload });
 src\app\home\facility\(tabs)\plants.tsx:79:        const res = await apiRequest(endpoints.plants(facilityId));
-src\app\home\facility\select.tsx:68:        const res = await apiRequest(path, { method: "GET" });
-src\app\home\facility\audit-logs\[entity]\[entityId].tsx:85:        const res = await apiRequest(`${base}${qs}`, { method: "GET" });
-src\app\home\facility\(tabs)\sop-runs.tsx:80:        const res = await apiRequest(endpoints.sopRuns(facilityId));
+src\app\(commercial)\alerts\[id].tsx:67:        const res = await apiRequest(endpoints.alertGlobal(id), { method: "GET" });
+src\app\home\facility\(tabs)\inventory.tsx:48:    const res = await apiRequest(endpoints.inventory(facilityId));
+src\app\home\facility\tasks\[id].tsx:65:        const res = await apiRequest(endpoints.task(facilityId, String(id)));
 src\app\home\facility\(tabs)\logs.tsx:79:        const res = await apiRequest(endpoints.growlogs(facilityId));
-src\app\home\facility\(tabs)\grows.tsx:78:        const res = await apiRequest(endpoints.grows(facilityId));
-src\app\home\facility\(tabs)\compliance.tsx:75:            apiRequest(endpoints.deviations(facilityId)),
-src\app\home\facility\(tabs)\compliance.tsx:76:            apiRequest(endpoints.verification(facilityId)),
-src\app\home\facility\(tabs)\compliance.tsx:77:            apiRequest(endpoints.greenWaste(facilityId)),
-src\app\home\facility\(tabs)\compliance.tsx:78:            apiRequest(endpoints.auditLogs(facilityId)),
-src\app\home\facility\(tabs)\compliance.tsx:79:            apiRequest(endpoints.inventory(facilityId))
-src\features\facility\useFacilityRooms.ts:31:        const res = await apiRequest(url, { method: "GET" });
-src\features\feed\api\feedApi.ts:47:  return api.patch(endpoints.taskGlobal(id), body);
-src\features\feed\api\feedApi.ts:56:  return api.patch(endpoints.alertGlobal(id), body);
-src\features\ai\callAi.ts:36:  return apiRequest(url, { method: "POST", body: payload });
-src\features\billing\hooks.ts:13:      api.post(`/api/facility/${facilityId}/billing/checkout`, { priceId }, token),
-src\features\billing\hooks.ts:15:    openPortal: () => api.post(`/api/facility/${facilityId}/billing/portal`, {}, token)
-src\features\facility\useFacilityGrows.ts:38:        const res = await apiRequest(url, { method: "GET" });
-src\features\grows\hooks.ts:37:    mutationFn: (data: any) => api.post(endpoints.grows(facilityId!), data),
-src\features\grows\hooks.ts:49:      api.patch(`${endpoints.grows(facilityId!)}/${id}`, data),
-src\features\inventory\hooks.ts:37:      api.post(endpoints.inventory(facilityId!), data, token),
-src\features\inventory\hooks.ts:51:      api.patch(`${endpoints.inventory(facilityId!)}/${id}`, data, token),
-src\features\inventory\hooks.ts:65:    mutationFn: () => api.del(`${endpoints.inventory(facilityId!)}/${id}`, token),
-src\features\rooms\useBulkCreateRooms.ts:17:          await api.post(endpoints.rooms(requireString(facilityId, "facilityId")), room);
-src\features\plants\hooks.ts:37:      api.post(endpoints.plants(facilityId!), data, token),
-src\features\plants\hooks.ts:53:      return api.patch(endpoints.plant(facilityId!, plantIdValue), data, token);
-src\features\plants\hooks.ts:71:    mutationFn: () => api.del(endpoints.plant(facilityId!, id), token),
-src\features\compliance\ai4\dashboard\complianceDashboardApi.ts:88:  const deviationsRes = await apiRequest(
-src\features\compliance\ai4\dashboard\complianceDashboardApi.ts:100:  const sopsRes = await apiRequest(endpoints.compliance.sopsRecommended(facilityId), {
+src\app\home\facility\(tabs)\sop-runs.tsx:80:        const res = await apiRequest(endpoints.sopRuns(facilityId));
+src\app\home\facility\audit-logs\index.tsx:57:    const res = await apiRequest(endpoints.auditLogs(facilityId));
+src\app\home\facility\(tabs)\team.tsx:86:        const res = await apiRequest(endpoints.teamMembers(facilityId), {
+src\app\home\facility\(tabs)\team.tsx:110:      await apiRequest(endpoints.teamInvite(facilityId), {
+src\app\home\facility\(tabs)\profile.tsx:73:          apiRequest(endpoints.me, { method: "GET" }),
+src\app\home\facility\(tabs)\profile.tsx:74:          apiRequest(endpoints.facilities, { method: "GET" })
+src\app\home\facility\(tabs)\tasks.tsx:79:        const res = await apiRequest(endpoints.tasks(facilityId), { method: "GET" });
+src\app\home\facility\select.tsx:68:        const res = await apiRequest(path, { method: "GET" });
+src\app\home\facility\audit-logs\[id].tsx:71:        const res = await apiRequest(path, { method: "GET" });
+src\app\home\personal\(tabs)\forum\post\[id].tsx:63:        const res = await apiRequest(path, { method: "GET" });
+src\app\home\facility\audit-logs\[entity]\[entityId].tsx:85:        const res = await apiRequest(`${base}${qs}`, { method: "GET" });
+src\app\home\facility\plants\[id].tsx:67:        const res = await apiRequest(endpoints.plant(facilityId, String(id)));
+src\app\home\facility\sop-runs\compare-result.tsx:83:            ? apiRequest(endpoints.sopRun(facilityId, a), { method: "GET" })
+src\app\home\facility\sop-runs\compare-result.tsx:86:            ? apiRequest(endpoints.sopRun(facilityId, b), { method: "GET" })
+src\app\home\facility\logs\[id].tsx:65:        const res = await apiRequest(endpoints.growlog(facilityId, String(id)));
+src\app\home\facility\sop-runs\index.tsx:63:    const res = await apiRequest(endpoints.sopRuns(facilityId));
+src\app\home\facility\sop-runs\[id].tsx:73:        const res = await apiRequest(path, { method: "GET" });

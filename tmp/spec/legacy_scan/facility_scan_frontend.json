@@ -1,0 +1,519 @@
+{
+  "root": "C:\\\\growpath-commercial\\\\frontend",
+  "type": "expo-router",
+  "hitCount": 128,
+  "hits": [
+    {
+      "file": "src\\api\\automation.ts",
+      "needle": "/api/facilities"
+    },
+    {
+      "file": "src\\api\\complianceLogs.ts",
+      "needle": "/api/facilities"
+    },
+    {
+      "file": "src\\api\\endpoints.ts",
+      "needle": "invite"
+    },
+    {
+      "file": "src\\api\\endpoints.ts",
+      "needle": "teamInvite"
+    },
+    {
+      "file": "src\\api\\facilities.ts",
+      "needle": "/api/facilities"
+    },
+    {
+      "file": "src\\api\\facilityTasks.ts",
+      "needle": "/api/facilities"
+    },
+    {
+      "file": "src\\api\\facilityTeam.ts",
+      "needle": "invite"
+    },
+    {
+      "file": "src\\api\\facilityTeam.ts",
+      "needle": "invites"
+    },
+    {
+      "file": "src\\api\\facilityTeam.ts",
+      "needle": "FacilityMember"
+    },
+    {
+      "file": "src\\api\\facilityTeam.ts",
+      "needle": "/api/facilities"
+    },
+    {
+      "file": "src\\api\\me.ts",
+      "needle": "facilityRole"
+    },
+    {
+      "file": "src\\api\\notifications.ts",
+      "needle": "/api/facilities"
+    },
+    {
+      "file": "src\\api\\reports.ts",
+      "needle": "/api/facilities"
+    },
+    {
+      "file": "src\\api\\team.ts",
+      "needle": "invite"
+    },
+    {
+      "file": "src\\api\\team.ts",
+      "needle": "teamInvite"
+    },
+    {
+      "file": "src\\api\\team.ts",
+      "needle": "facilityRole"
+    },
+    {
+      "file": "src\\api\\_quarantine\\mockServer.ts",
+      "needle": "facilityRole"
+    },
+    {
+      "file": "src\\api\\_quarantine\\mockServer.ts",
+      "needle": "/api/facilities"
+    },
+    {
+      "file": "src\\api\\_quarantine\\webhooks.ts",
+      "needle": "/api/facilities"
+    },
+    {
+      "file": "src\\app\\home\\facility\\(tabs)\\ai-tools.tsx",
+      "needle": "home/facility"
+    },
+    {
+      "file": "src\\app\\home\\facility\\(tabs)\\audit-logs.tsx",
+      "needle": "home/facility"
+    },
+    {
+      "file": "src\\app\\home\\facility\\(tabs)\\compliance.tsx",
+      "needle": "home/facility"
+    },
+    {
+      "file": "src\\app\\home\\facility\\(tabs)\\dashboard.tsx",
+      "needle": "home/facility"
+    },
+    {
+      "file": "src\\app\\home\\facility\\(tabs)\\grows.tsx",
+      "needle": "home/facility"
+    },
+    {
+      "file": "src\\app\\home\\facility\\(tabs)\\inventory.tsx",
+      "needle": "home/facility"
+    },
+    {
+      "file": "src\\app\\home\\facility\\(tabs)\\InventoryItemDetailScreen.tsx",
+      "needle": "home/facility"
+    },
+    {
+      "file": "src\\app\\home\\facility\\(tabs)\\logs.tsx",
+      "needle": "home/facility"
+    },
+    {
+      "file": "src\\app\\home\\facility\\(tabs)\\plants.tsx",
+      "needle": "home/facility"
+    },
+    {
+      "file": "src\\app\\home\\facility\\(tabs)\\profile.tsx",
+      "needle": "/api/facilities"
+    },
+    {
+      "file": "src\\app\\home\\facility\\(tabs)\\profile.tsx",
+      "needle": "home/facility"
+    },
+    {
+      "file": "src\\app\\home\\facility\\(tabs)\\sop-runs.tsx",
+      "needle": "home/facility"
+    },
+    {
+      "file": "src\\app\\home\\facility\\(tabs)\\tasks.tsx",
+      "needle": "home/facility"
+    },
+    {
+      "file": "src\\app\\home\\facility\\(tabs)\\team.tsx",
+      "needle": "invite"
+    },
+    {
+      "file": "src\\app\\home\\facility\\(tabs)\\team.tsx",
+      "needle": "teamInvite"
+    },
+    {
+      "file": "src\\app\\home\\facility\\(tabs)\\team.tsx",
+      "needle": "facilityRole"
+    },
+    {
+      "file": "src\\app\\home\\facility\\(tabs)\\team.tsx",
+      "needle": "TEAM_INVITE"
+    },
+    {
+      "file": "src\\app\\home\\facility\\(tabs)\\team.tsx",
+      "needle": "home/facility"
+    },
+    {
+      "file": "src\\app\\home\\facility\\(tabs)\\_layout.tsx",
+      "needle": "home/facility"
+    },
+    {
+      "file": "src\\app\\home\\facility\\audit-logs\\index.tsx",
+      "needle": "home/facility"
+    },
+    {
+      "file": "src\\app\\home\\facility\\audit-logs\\[entity]\\[entityId].tsx",
+      "needle": "home/facility"
+    },
+    {
+      "file": "src\\app\\home\\facility\\audit-logs\\[id].tsx",
+      "needle": "home/facility"
+    },
+    {
+      "file": "src\\app\\home\\facility\\index.tsx",
+      "needle": "home/facility"
+    },
+    {
+      "file": "src\\app\\home\\facility\\logs\\[id].tsx",
+      "needle": "home/facility"
+    },
+    {
+      "file": "src\\app\\home\\facility\\plants\\[id].tsx",
+      "needle": "home/facility"
+    },
+    {
+      "file": "src\\app\\home\\facility\\select.tsx",
+      "needle": "/api/facilities"
+    },
+    {
+      "file": "src\\app\\home\\facility\\select.tsx",
+      "needle": "home/facility"
+    },
+    {
+      "file": "src\\app\\home\\facility\\sop-runs\\compare-result.tsx",
+      "needle": "home/facility"
+    },
+    {
+      "file": "src\\app\\home\\facility\\sop-runs\\index.tsx",
+      "needle": "home/facility"
+    },
+    {
+      "file": "src\\app\\home\\facility\\sop-runs\\[id].tsx",
+      "needle": "home/facility"
+    },
+    {
+      "file": "src\\app\\home\\facility\\tasks\\[id].tsx",
+      "needle": "home/facility"
+    },
+    {
+      "file": "src\\app\\home\\facility\\_layout.tsx",
+      "needle": "home/facility"
+    },
+    {
+      "file": "src\\app\\home\\index.tsx",
+      "needle": "home/facility"
+    },
+    {
+      "file": "src\\app\\home\\personal\\(tabs)\\profile\\index.tsx",
+      "needle": "facilityRole"
+    },
+    {
+      "file": "src\\app\\home\\personal\\(tabs)\\tasks.tsx",
+      "needle": "home/facility"
+    },
+    {
+      "file": "src\\app\\home\\personal\\_layout.tsx",
+      "needle": "home/facility"
+    },
+    {
+      "file": "src\\app\\onboarding\\index.tsx",
+      "needle": "join-facility"
+    },
+    {
+      "file": "src\\app\\onboarding\\index.tsx",
+      "needle": "onboarding/create-facility"
+    },
+    {
+      "file": "src\\app\\onboarding\\index.tsx",
+      "needle": "onboarding/join-facility"
+    },
+    {
+      "file": "src\\auth\\capabilities.js",
+      "needle": "facilityRole"
+    },
+    {
+      "file": "src\\core\\accountMode\\assertAccountMode.ts",
+      "needle": "home/facility"
+    },
+    {
+      "file": "src\\entitlements\\capabilityAliases.ts",
+      "needle": "invite"
+    },
+    {
+      "file": "src\\entitlements\\capabilityAliases.ts",
+      "needle": "TEAM_INVITE"
+    },
+    {
+      "file": "src\\entitlements\\capabilityAliases.ts",
+      "needle": "TEAM_UPDATE_ROLE"
+    },
+    {
+      "file": "src\\entitlements\\capabilityAliases.ts",
+      "needle": "facility.settings.edit"
+    },
+    {
+      "file": "src\\entitlements\\capabilityKeys.ts",
+      "needle": "invite"
+    },
+    {
+      "file": "src\\entitlements\\capabilityKeys.ts",
+      "needle": "TEAM_INVITE"
+    },
+    {
+      "file": "src\\entitlements\\capabilityKeys.ts",
+      "needle": "TEAM_UPDATE_ROLE"
+    },
+    {
+      "file": "src\\entitlements\\EntitlementsProvider.tsx",
+      "needle": "facilityRole"
+    },
+    {
+      "file": "src\\entitlements\\index.ts",
+      "needle": "facilityRole"
+    },
+    {
+      "file": "src\\entitlements\\normalize.ts",
+      "needle": "facilityRole"
+    },
+    {
+      "file": "src\\entitlements\\screenMatrix.ts",
+      "needle": "invite"
+    },
+    {
+      "file": "src\\entitlements\\screenMatrix.ts",
+      "needle": "facilityRole"
+    },
+    {
+      "file": "src\\entitlements\\toEntContext.ts",
+      "needle": "facilityRole"
+    },
+    {
+      "file": "src\\entitlements\\types.ts",
+      "needle": "facilityRole"
+    },
+    {
+      "file": "src\\entitlements\\uiGate.ts",
+      "needle": "facilityRole"
+    },
+    {
+      "file": "src\\facility\\roleGates.ts",
+      "needle": "invite"
+    },
+    {
+      "file": "src\\facility\\roleGates.ts",
+      "needle": "facilityRole"
+    },
+    {
+      "file": "src\\facility\\roleGates.ts",
+      "needle": "TEAM_INVITE"
+    },
+    {
+      "file": "src\\facility\\roleGates.ts",
+      "needle": "TEAM_UPDATE_ROLE"
+    },
+    {
+      "file": "src\\features\\mode\\switchAccountMode.ts",
+      "needle": "home/facility"
+    },
+    {
+      "file": "src\\features\\routing\\legacyFacilityRedirect.ts",
+      "needle": "home/facility"
+    },
+    {
+      "file": "src\\features\\routing\\legacyFacilityRedirect.ts",
+      "needle": "facility/(tabs)/team"
+    },
+    {
+      "file": "src\\features\\routing\\LegacyFacilityRouteShim.tsx",
+      "needle": "home/facility"
+    },
+    {
+      "file": "src\\features\\team\\DeepLinkHandler.tsx",
+      "needle": "invite"
+    },
+    {
+      "file": "src\\features\\team\\DeepLinkHandler.tsx",
+      "needle": "invites"
+    },
+    {
+      "file": "src\\features\\team\\hooks.ts",
+      "needle": "invite"
+    },
+    {
+      "file": "src\\features\\team\\screens\\AcceptInvite.tsx",
+      "needle": "invite"
+    },
+    {
+      "file": "src\\features\\team\\screens\\AcceptInvite.tsx",
+      "needle": "invites"
+    },
+    {
+      "file": "src\\features\\team\\screens\\AcceptInvite.tsx",
+      "needle": "AcceptInvite"
+    },
+    {
+      "file": "src\\features\\team\\screens\\AcceptInvite.tsx",
+      "needle": "/api/invites"
+    },
+    {
+      "file": "src\\features\\team\\screens\\InviteMember.tsx",
+      "needle": "invite"
+    },
+    {
+      "file": "src\\features\\team\\screens\\JoinFacilityFlow.tsx",
+      "needle": "invite"
+    },
+    {
+      "file": "src\\guards\\RequireEntitlement.tsx",
+      "needle": "facilityRole"
+    },
+    {
+      "file": "src\\hooks\\useCreateFacility.ts",
+      "needle": "/api/facilities"
+    },
+    {
+      "file": "src\\hooks\\useFacilities.ts",
+      "needle": "/api/facilities"
+    },
+    {
+      "file": "src\\hooks\\useFacilityTeam.ts",
+      "needle": "invite"
+    },
+    {
+      "file": "src\\hooks\\useFacilityTeam.ts",
+      "needle": "facilityRole"
+    },
+    {
+      "file": "src\\hooks\\useInvites.ts",
+      "needle": "invite"
+    },
+    {
+      "file": "src\\hooks\\useInvites.ts",
+      "needle": "invites"
+    },
+    {
+      "file": "src\\hooks\\useInvites.ts",
+      "needle": "/api/facilities"
+    },
+    {
+      "file": "src\\onboarding\\useOnboarding.ts",
+      "needle": "invite"
+    },
+    {
+      "file": "src\\onboarding\\useOnboarding.ts",
+      "needle": "invites"
+    },
+    {
+      "file": "src\\onboarding\\useOnboarding.ts",
+      "needle": "join-facility"
+    },
+    {
+      "file": "src\\permissions\\rolePolicy.ts",
+      "needle": "invite"
+    },
+    {
+      "file": "src\\permissions\\rolePolicy.ts",
+      "needle": "facilityRole"
+    },
+    {
+      "file": "src\\permissions\\rolePolicy.ts",
+      "needle": "TEAM_INVITE"
+    },
+    {
+      "file": "src\\permissions\\rolePolicy.ts",
+      "needle": "TEAM_UPDATE_ROLE"
+    },
+    {
+      "file": "src\\permissions\\useFacilityPermissions.ts",
+      "needle": "facilityRole"
+    },
+    {
+      "file": "src\\screens\\commercial\\CommunitiesScreen.js",
+      "needle": "invite"
+    },
+    {
+      "file": "src\\screens\\CoursesScreen.js",
+      "needle": "invite"
+    },
+    {
+      "file": "src\\screens\\facility\\FacilityTasks.tsx",
+      "needle": "facilityRole"
+    },
+    {
+      "file": "src\\screens\\facility\\FacilityTeamScreen.tsx",
+      "needle": "invite"
+    },
+    {
+      "file": "src\\screens\\facility\\FacilityTeamScreen.tsx",
+      "needle": "facilityRole"
+    },
+    {
+      "file": "src\\screens\\facility\\SettingsScreen.js",
+      "needle": "invite"
+    },
+    {
+      "file": "src\\screens\\facility\\SettingsScreen.js",
+      "needle": "teamInvite"
+    },
+    {
+      "file": "src\\screens\\facility\\SettingsScreen.js",
+      "needle": "facilityRole"
+    },
+    {
+      "file": "src\\screens\\facility\\SettingsScreen.js",
+      "needle": "TEAM_INVITE"
+    },
+    {
+      "file": "src\\screens\\facility\\SOPTemplatesScreen.js",
+      "needle": "facilityRole"
+    },
+    {
+      "file": "src\\screens\\facility\\TeamScreen.js",
+      "needle": "invite"
+    },
+    {
+      "file": "src\\screens\\facility\\WebhooksScreen.tsx",
+      "needle": "invite"
+    },
+    {
+      "file": "src\\screens\\facility\\WebhooksScreen.tsx",
+      "needle": "TEAM_INVITE"
+    },
+    {
+      "file": "src\\screens\\FacilityTeamScreen.js",
+      "needle": "invite"
+    },
+    {
+      "file": "src\\session\\index.ts",
+      "needle": "facilityRole"
+    },
+    {
+      "file": "src\\session\\SessionProvider.tsx",
+      "needle": "facilityRole"
+    },
+    {
+      "file": "src\\types\\contracts.ts",
+      "needle": "facilityRole"
+    },
+    {
+      "file": "src\\types\\facility.js",
+      "needle": "facilityRole"
+    },
+    {
+      "file": "src\\types\\notification.ts",
+      "needle": "invite"
+    },
+    {
+      "file": "src\\types\\notification.ts",
+      "needle": "TEAM_INVITE"
+    }
+  ]
+}

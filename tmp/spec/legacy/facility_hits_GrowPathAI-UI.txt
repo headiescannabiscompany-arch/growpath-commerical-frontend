@@ -1,0 +1,44 @@
+﻿C:\GrowPathAI-UI\src\api\auth.js:31:  if (data.role) {
+C:\GrowPathAI-UI\src\api\auth.js:32:    global.user.role = data.role;
+C:\GrowPathAI-UI\src\utils\notifications.js:52:  return user.role === "paid" || user.role === "guild";
+C:\GrowPathAI-UI\src\components\TokenBalanceWidget.js:59:    ? "Pro members receive 100 AI tokens every day."
+C:\GrowPathAI-UI\src\screens\CreatePlantScreen.js:32:      Alert.alert("Permission needed", "Photo library permission required");
+C:\GrowPathAI-UI\src\screens\CreatePlantScreen.js:52:      Alert.alert("Permission needed", "Photo library permission required");
+C:\GrowPathAI-UI\src\screens\DiagnoseScreen.js:82:      Alert.alert("Permission needed", "Camera permission is required to take photos.");
+C:\GrowPathAI-UI\src\screens\DiagnoseScreen.js:102:      Alert.alert("Permission needed", "Photo library permission is required.");
+C:\GrowPathAI-UI\src\screens\DiagnoseScreen.js:131:        "AI tools are here to help you learn and grow as a cultivator. Upgrade to PRO to unlock daily AI tokens and deepen your understanding with every diagnosis. Remember: your own observations and experience are always your most valuable tools—AI is just a guide on your path.",
+C:\GrowPathAI-UI\src\screens\ForumPostDetailScreen.js:186:        "Thank you. Our team will review this post shortly."
+C:\GrowPathAI-UI\src\screens\ForumScreen.js:312:                offer insights, and remember: every experience helps the community grow
+C:\GrowPathAI-UI\src\screens\GuideScreen.js:44:        "This post is exclusive to Pro members.",
+C:\GrowPathAI-UI\src\screens\GuildCodeScreen.js:112:        <View style={styles.role}>
+C:\GrowPathAI-UI\src\screens\GuildCodeScreen.js:113:          <Text style={styles.roleTitle}>👁️ Observer</Text>
+C:\GrowPathAI-UI\src\screens\GuildCodeScreen.js:114:          <Text style={styles.roleDesc}>Default role</Text>
+C:\GrowPathAI-UI\src\screens\GuildCodeScreen.js:115:          <Text style={styles.roleDesc}>Read-only access</Text>
+C:\GrowPathAI-UI\src\screens\GuildCodeScreen.js:116:          <Text style={styles.roleDesc}>Can view all public Forum discussions</Text>
+C:\GrowPathAI-UI\src\screens\GuildCodeScreen.js:117:          <Text style={styles.roleDesc}>No posting or commenting</Text>
+C:\GrowPathAI-UI\src\screens\GuildCodeScreen.js:118:          <Text style={styles.rolePurpose}>
+C:\GrowPathAI-UI\src\screens\GuildCodeScreen.js:123:        <View style={styles.role}>
+C:\GrowPathAI-UI\src\screens\GuildCodeScreen.js:124:          <Text style={styles.roleTitle}>🌿 Contributor</Text>
+C:\GrowPathAI-UI\src\screens\GuildCodeScreen.js:125:          <Text style={styles.roleDesc}>Unlocked after:</Text>
+C:\GrowPathAI-UI\src\screens\GuildCodeScreen.js:129:          <Text style={styles.roleDesc}>Can:</Text>
+C:\GrowPathAI-UI\src\screens\GuildCodeScreen.js:135:        <View style={styles.role}>
+C:\GrowPathAI-UI\src\screens\GuildCodeScreen.js:136:          <Text style={styles.roleTitle}>🌾 Cultivator</Text>
+C:\GrowPathAI-UI\src\screens\GuildCodeScreen.js:137:          <Text style={styles.roleDesc}>Unlocked through:</Text>
+C:\GrowPathAI-UI\src\screens\GuildCodeScreen.js:141:          <Text style={styles.roleDesc}>Can:</Text>
+C:\GrowPathAI-UI\src\screens\GuildCodeScreen.js:147:        <View style={styles.role}>
+C:\GrowPathAI-UI\src\screens\GuildCodeScreen.js:148:          <Text style={styles.roleTitle}>🧠 Steward (Future / Limited)</Text>
+C:\GrowPathAI-UI\src\screens\GuildCodeScreen.js:149:          <Text style={styles.roleDesc}>Reserved for:</Text>
+C:\GrowPathAI-UI\src\screens\GuildCodeScreen.js:153:          <Text style={styles.rolePurpose}>Role is earned, not requested.</Text>
+C:\GrowPathAI-UI\src\screens\GuildCodeScreen.js:244:  role: {
+C:\GrowPathAI-UI\src\screens\GuildCodeScreen.js:252:  roleTitle: {
+C:\GrowPathAI-UI\src\screens\GuildCodeScreen.js:258:  roleDesc: {
+C:\GrowPathAI-UI\src\screens\GuildCodeScreen.js:263:  rolePurpose: {
+C:\GrowPathAI-UI\src\screens\LiveSessionScreen.js:36:  // Check if user is admin (assume global.user.role === 'admin')
+C:\GrowPathAI-UI\src\screens\LiveSessionScreen.js:37:  const isAdmin = global.user && global.user.role === "admin";
+C:\GrowPathAI-UI\src\screens\ManageCourseScreen.js:61:      "Your course will be reviewed by our team before going live. This usually takes 1-2 business days.",
+C:\GrowPathAI-UI\src\screens\PostDetailScreen.js:54:            This post is only available to Pro members and forum participants.
+C:\GrowPathAI-UI\src\screens\TasksTodayScreen.js:24:  const [permissionGranted, setPermissionGranted] = useState(false);
+C:\GrowPathAI-UI\src\screens\TasksTodayScreen.js:32:    const user = global.user || { role: "free" }; // Replace with your actual user context
+C:\GrowPathAI-UI\src\screens\TasksTodayScreen.js:39:    if (Platform.OS !== "web" && canUseReminders(user) && permissionGranted) {
+C:\GrowPathAI-UI\src\screens\TasksTodayScreen.js:46:  }, [permissionGranted]);
+C:\GrowPathAI-UI\src\screens\TokenInfoScreen.js:84:                ✨ As a <Text style={styles.boldText}>Pro member</Text>, you get:

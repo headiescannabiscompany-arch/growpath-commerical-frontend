@@ -47,7 +47,8 @@ Every visible button must be one of:
 ### Facility
 1) Invite team member
 - Where: /home/facility/(tabs)/team
-- Action: POST endpoints.teamInvite(facilityId) (pick canonical endpoint)
+- Action: POST endpoints.teamInvite(facilityId) (returns invite token/link)
+- Delivery: manual copy/paste (v1)
 - Gating: role OWNER/MANAGER + TEAM_INVITE
 - Status: Functional
 
@@ -60,7 +61,7 @@ Every visible button must be one of:
 3) Tasks list + task detail
 - Where: /home/facility/(tabs)/tasks, /home/facility/tasks/[id]
 - Action: GET endpoints.tasks(facilityId) + GET endpoints.task(...)
-- Mutations: complete/ack/etc where present
+- Mutations: create task; assign/reassign; mark IN_PROGRESS; mark DONE
 - Gating: TASKS_READ / TASKS_WRITE (role)
 - Status: Functional
 
@@ -73,11 +74,17 @@ Every visible button must be one of:
 - Gating: COMMERCIAL_INVENTORY_VIEW
 - Status: Functional
 
-2) Like/Unlike feed item
-- Where: CommercialFeedCard
-- Action: POST /api/commercial/like/:id, /api/commercial/unlike/:id
-- Gating: COMMERCIAL_FEED_VIEW
-- Status: Functional (note: still legacy api client; candidate to unify)
+2) Inventory update (v1)
+- Where: /home/commercial/inventory-item/[id]
+- Action: PATCH/PUT /api/commercial/inventory/:id
+- Gating: COMMERCIAL_INVENTORY_WRITE
+- Status: Functional
+
+3) Feed/Alerts (read-only ok)
+- Where: /(commercial)/feed, /(commercial)/alerts/[id]
+- Action: GET read-only endpoints
+- Gating: COMMERCIAL_FEED_VIEW / COMMERCIAL_ALERTS_VIEW
+- Status: Functional (read-only)
 
 ---
 
@@ -88,4 +95,3 @@ Every visible button must be one of:
   - assign gating (mode/plan/role/capability)
   - mark Functional/Disabled/Planned
 - Stop when every visible button has an entry.
-

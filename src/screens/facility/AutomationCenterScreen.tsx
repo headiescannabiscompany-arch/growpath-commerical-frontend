@@ -1,7 +1,7 @@
 import React from "react";
 import { View, Text, FlatList, Pressable } from "react-native";
 import { useAutomationPolicies } from "../../hooks/useAutomationPolicies";
-import { useFacilityPermissions } from "../../permissions/useFacilityPermissions";
+import { useEntitlements, CAPABILITY_KEYS } from "@/entitlements";
 
 function label(type: string) {
   switch (type) {
@@ -19,8 +19,8 @@ function label(type: string) {
 }
 
 export default function AutomationCenterScreen() {
-  const { can } = useFacilityPermissions();
-  const canEdit = can("facility.settings.edit");
+  const ent = useEntitlements();
+  const canEdit = ent.can(CAPABILITY_KEYS.FACILITY_SETTINGS_EDIT);
   const { data, isLoading, togglePolicy } = useAutomationPolicies();
 
   const policies = Array.isArray(data) ? data : [];

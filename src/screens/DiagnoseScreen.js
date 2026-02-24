@@ -17,8 +17,7 @@ import AppShell from "../components/AppShell.js";
 import PrimaryButton from "../components/PrimaryButton.js";
 import TokenBalanceWidget from "../components/TokenBalanceWidget.js";
 import { useDiagnose } from "../hooks/useDiagnose";
-import { useAuth } from "@/auth/AuthContext";
-import { FEATURES, getEntitlement } from "../utils/entitlements.js";
+import { useEntitlements, CAPABILITY_KEYS } from "@/entitlements";
 
 // Move DiagnoseScreen function here, after styles
 
@@ -38,10 +37,11 @@ export default function DiagnoseScreen({ route, navigation }) {
       { text: showAdvanced ? "Hide" : "Show", onPress: () => setShowAdvanced((v) => !v) }
     ]);
   };
-  const { user } = useAuth();
-  // Entitlement logic
-  const aiEnt = getEntitlement(FEATURES.DIAGNOSE_AI, user?.role);
-  const advEnt = getEntitlement(FEATURES.DIAGNOSE_ADVANCED, user?.role);
+  const ent = useEntitlements();
+  const aiEnabled = ent.can(CAPABILITY_KEYS.DIAGNOSE_AI);
+  const advEnabled = ent.can(CAPABILITY_KEYS.DIAGNOSE_ADVANCED);
+  const aiEnt = aiEnabled ? "enabled" : ent.plan === "free" ? "cta" : "disabled";
+  const advEnt = advEnabled ? "enabled" : ent.plan === "free" ? "cta" : "disabled";
   // Vision and export can be added similarly if needed
 
   const [photos, setPhotos] = useState([]);

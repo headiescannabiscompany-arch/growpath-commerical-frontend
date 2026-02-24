@@ -15,6 +15,10 @@
 - FEED_VIEW
 - ALERTS_VIEW
 - ALERTS_ACK
+- DASHBOARD_ANALYTICS
+- DASHBOARD_EXPORT
+- ROOMS_EQUIPMENT_STAFF
+- SEARCH
 - DIAGNOSE_BASIC
 - DIAGNOSE_AI
 - DIAGNOSE_ADVANCED
@@ -87,7 +91,7 @@ Feature-key aliases (snake/lower -> canonical)
 - diagnose_export -> DIAGNOSE_EXPORT
 - courses_analytics -> COURSES_ANALYTICS
 - courses_create -> COURSES_CREATE
-- growlogs_export -> EXPORT_COMPLIANCE
+- growlogs_export -> GROWLOGS_EXPORT
 - forum_brand -> FORUM_VIEW (or FORUM_BRAND if you keep it separate)
 
 Entitlements/types.ts style aliases (if present)

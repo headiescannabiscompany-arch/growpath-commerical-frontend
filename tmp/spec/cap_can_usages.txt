@@ -1,0 +1,24 @@
+﻿src\components\FeatureGate.tsx:15:  return ent.can(capability) ? <>{children}</> : <>{fallback}</>;
+src\app\home\facility\(tabs)\team.tsx:56:  const canInvite = can(facilityRole, "TEAM_INVITE");
+src\guards\RequireEntitlement.tsx:50:    if (caps.length && !caps.every((c) => ent.can(c))) return false;
+src\facility\roleGates.ts:38:export function can(role: FacilityRole | null | undefined, action: Action): boolean {
+src\entitlements\uiGate.ts:8: * Mirrors backend can():
+src\permissions\RequireFacilityAction.tsx:15:  if (!can(action)) {
+src\screens\DashboardScreen.js:501:  const analyticsEnabled = ent.can(CAPABILITY_KEYS.DASHBOARD_ANALYTICS);
+src\screens\DashboardScreen.js:502:  const exportEnabled = ent.can(CAPABILITY_KEYS.DASHBOARD_EXPORT);
+src\screens\DashboardScreen.js:503:  const teamToolsEnabled = ent.can(CAPABILITY_KEYS.ROOMS_EQUIPMENT_STAFF);
+src\screens\DashboardScreen.js:504:  const addPlantEnabled = ent.can(CAPABILITY_KEYS.GROWLOGS_MULTI);
+src\screens\DiagnoseScreen.js:41:  const aiEnabled = ent.can(CAPABILITY_KEYS.DIAGNOSE_AI);
+src\screens\DiagnoseScreen.js:42:  const advEnabled = ent.can(CAPABILITY_KEYS.DIAGNOSE_ADVANCED);
+src\screens\facility\AutomationCenterScreen.tsx:23:  const canEdit = ent.can(CAPABILITY_KEYS.FACILITY_SETTINGS_EDIT);
+src\screens\facility\FacilityTasks.tsx:23:// - Role gating via can()
+src\screens\facility\FacilityTasks.tsx:70:  const allowCreate = can(facilityRole, "TASKS_CREATE");
+src\screens\facility\FacilityTasks.tsx:71:  const allowDelete = can(facilityRole, "TASKS_DELETE");
+src\screens\facility\FacilityTasks.tsx:72:  const allowUpdate = can(facilityRole, "TASKS_UPDATE");
+src\screens\facility\FacilityTasks.tsx:73:  const allowComplete = can(facilityRole, "TASKS_UPDATE"); // Complete is an update action
+src\screens\GrowLogsScreen.js:47:  const multiGrowEnabled = ent.can(CAPABILITY_KEYS.GROWLOGS_MULTI);
+src\screens\GrowLogsScreen.js:48:  const photoEnabled = ent.can(CAPABILITY_KEYS.GROWLOGS_EXPORT);
+src\screens\GrowLogsScreen.js:49:  const advancedEnabled = ent.can(CAPABILITY_KEYS.GROWLOGS_BATCH);
+src\screens\facility\SettingsScreen.js:41:  const allowTeamInvite = can(facilityRole, "TEAM_INVITE");
+src\screens\SelectFacilityScreen.tsx:20:  const searchEnabled = ent.can(CAPABILITY_KEYS.SEARCH);
+src\screens\SearchScreen.js:20:  const searchEnabled = ent.can(CAPABILITY_KEYS.SEARCH);

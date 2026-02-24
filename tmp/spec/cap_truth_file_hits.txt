@@ -1,45 +1,4 @@
-﻿src\capabilities\resolve.js:1:import CAPABILITIES from "./keys";
-src\capabilities\resolve.js:3:const CANONICAL_SET = new Set(Object.values(CAPABILITIES).map((v) => String(v)));
-src\capabilities\resolve.js:6:// IMPORTANT: map legacy -> canonical VALUE (one of Object.values(CAPABILITIES))
-src\capabilities\resolve.js:33:  // Allow passing CAPABILITIES constant NAME (e.g. "TOOLS_VPD") instead of VALUE.
-src\capabilities\resolve.js:34:  if (Object.prototype.hasOwnProperty.call(CAPABILITIES, key)) {
-src\capabilities\resolve.js:35:    return CAPABILITIES[key];
-src\capabilities\plans.js:1:// Canonical mapping of plans/modes to capabilities
-src\capabilities\plans.js:2:// Update as new plans or capabilities are added
-src\capabilities\plans.js:3:import { CAPABILITIES } from "./keys.js";
-src\capabilities\plans.js:7:    CAPABILITIES.VIEW_DASHBOARD,
-src\capabilities\plans.js:8:    CAPABILITIES.VIEW_PROFILE,
-src\capabilities\plans.js:9:    CAPABILITIES.EDIT_PROFILE,
-src\capabilities\plans.js:10:    CAPABILITIES.VIEW_COURSES,
-src\capabilities\plans.js:11:    CAPABILITIES.ENROLL_COURSE,
-src\capabilities\plans.js:12:    CAPABILITIES.VIEW_FORUM,
-src\capabilities\plans.js:13:    CAPABILITIES.POST_FORUM
-src\capabilities\plans.js:16:    CAPABILITIES.VIEW_DASHBOARD,
-src\capabilities\plans.js:17:    CAPABILITIES.VIEW_PROFILE,
-src\capabilities\plans.js:18:    CAPABILITIES.EDIT_PROFILE,
-src\capabilities\plans.js:19:    CAPABILITIES.VIEW_COURSES,
-src\capabilities\plans.js:20:    CAPABILITIES.ENROLL_COURSE,
-src\capabilities\plans.js:21:    CAPABILITIES.MANAGE_ENROLLMENTS,
-src\capabilities\plans.js:22:    CAPABILITIES.VIEW_FORUM,
-src\capabilities\plans.js:23:    CAPABILITIES.POST_FORUM,
-src\capabilities\plans.js:24:    CAPABILITIES.MANAGE_USERS,
-src\capabilities\plans.js:25:    CAPABILITIES.VIEW_PAYMENTS
-src\capabilities\plans.js:28:    CAPABILITIES.VIEW_DASHBOARD,
-src\capabilities\plans.js:29:    CAPABILITIES.VIEW_PROFILE,
-src\capabilities\plans.js:30:    CAPABILITIES.EDIT_PROFILE,
-src\capabilities\plans.js:31:    CAPABILITIES.VIEW_COURSES,
-src\capabilities\plans.js:32:    CAPABILITIES.ENROLL_COURSE,
-src\capabilities\plans.js:33:    CAPABILITIES.MANAGE_ENROLLMENTS,
-src\capabilities\plans.js:34:    CAPABILITIES.VIEW_FORUM,
-src\capabilities\plans.js:35:    CAPABILITIES.POST_FORUM,
-src\capabilities\plans.js:36:    CAPABILITIES.MANAGE_USERS,
-src\capabilities\plans.js:37:    CAPABILITIES.MANAGE_FACILITY,
-src\capabilities\plans.js:38:    CAPABILITIES.VIEW_PAYMENTS,
-src\capabilities\plans.js:39:    CAPABILITIES.MANAGE_PAYMENTS
-src\capabilities\keys.js:1:// Canonical list of capability keys for all app features
-src\capabilities\keys.js:4:export const CAPABILITIES = {
-src\capabilities\keys.js:20:export default CAPABILITIES;
-backend\entitlements\capabilityPolicy.js:1:// backend/entitlements/capabilityPolicy.js
+﻿backend\entitlements\capabilityPolicy.js:1:// backend/entitlements/capabilityPolicy.js
 backend\entitlements\capabilityPolicy.js:3:// Base capability maps for each plan/mode
 backend\entitlements.js:2:// Central contract: plan + mode + facilityRole -> capabilities + limits
 backend\entitlements.js:177:      capabilities: Object.values(CAP),
@@ -54,51 +13,7 @@ backend\entitlements.js:215:  function can(ent, capability) {
 backend\entitlements.js:216:    if (!hasCap(ent, capability)) return false;
 backend\entitlements.js:218:    const isFacilityCap = String(capability).startsWith("facility.");
 backend\entitlements.js:223:    return canInFacilityRole(capability, ent.facilityRole);
-src\entitlements\uiGate.ts:4:  return Array.isArray(ent?.capabilities) && ent.capabilities.includes(cap);
-src\entitlements\types.ts:26:  capabilities: Record<string, boolean>;
-src\entitlements\types.ts:27:  limits: Record<string, number>;
-src\entitlements\toEntContext.ts:9:    capabilities: ent?.capabilities ?? source?.capabilities ?? [],
-src\entitlements\toEntContext.ts:10:    limits: ent?.limits ?? source?.limits ?? {}
-src\auth\capabilities.js:1:// src/auth/capabilities.js
-src\auth\capabilities.js:2:// Centralized capability resolver for user roles/modes/plans
-src\guards\RequireEntitlement.tsx:11:  capability?: CapabilityKey | CapabilityKey[];
-src\guards\RequireEntitlement.tsx:25:  capability,
-src\guards\RequireEntitlement.tsx:37:    const caps = asArray(capability);
-src\guards\RequireEntitlement.tsx:61:    capability,
-src\entitlements\EntitlementsProvider.tsx:11:import { normalizeCapabilities, resolveCapabilityKey } from "../capabilities/resolve";
-src\entitlements\EntitlementsProvider.tsx:27:  capabilities: Record<string, any>;
-src\entitlements\EntitlementsProvider.tsx:28:  limits: Record<string, any>;
-src\entitlements\EntitlementsProvider.tsx:29:  can: ((capability: string | string[]) => boolean) & Record<string, boolean>;
-src\entitlements\EntitlementsProvider.tsx:30:  refresh?: (plan?: string, capabilities?: Record<string, any>) => void;
-src\entitlements\EntitlementsProvider.tsx:42:  capabilities: {},
-src\entitlements\EntitlementsProvider.tsx:43:  limits: {}
-src\entitlements\EntitlementsProvider.tsx:48:  can: Object.assign(((capability: string | string[]) => false) as any, {}),
-src\entitlements\EntitlementsProvider.tsx:62:  console.warn("[ENT] Unknown capability keys (not canonical):", unknownKeys);
-src\entitlements\EntitlementsProvider.tsx:118:  const { normalized, unknownKeys } = normalizeCapabilities(ctx?.capabilities);
-src\entitlements\EntitlementsProvider.tsx:128:    capabilities: normalized,
-src\entitlements\EntitlementsProvider.tsx:129:    limits: ctx?.limits && typeof ctx.limits === "object" ? ctx.limits : {}
-src\entitlements\EntitlementsProvider.tsx:168:        capabilities: {},
-src\entitlements\EntitlementsProvider.tsx:169:        limits: {}
-src\entitlements\EntitlementsProvider.tsx:213:    const fn = (capability: string | string[]) => {
-src\entitlements\EntitlementsProvider.tsx:215:      if (Array.isArray(capability)) {
-src\entitlements\EntitlementsProvider.tsx:216:        return capability.every((cap) => {
-src\entitlements\EntitlementsProvider.tsx:217:          const capabilityKey = resolveCapabilityKey(cap);
-src\entitlements\EntitlementsProvider.tsx:218:          return !!capabilityKey && state.capabilities[capabilityKey] === true;
-src\entitlements\EntitlementsProvider.tsx:221:      const capabilityKeySingle = resolveCapabilityKey(capability);
-src\entitlements\EntitlementsProvider.tsx:222:      return !!capabilityKeySingle && state.capabilities[capabilityKeySingle] === true;
-src\entitlements\EntitlementsProvider.tsx:224:    return Object.assign(fn, state.capabilities);
-src\entitlements\EntitlementsProvider.tsx:225:  }, [state.ready, state.capabilities]);
-src\entitlements\EntitlementsProvider.tsx:227:  const refresh = useCallback((plan?: string, capabilities?: Record<string, any>) => {
-src\entitlements\EntitlementsProvider.tsx:229:    if (capabilities !== undefined) {
-src\entitlements\EntitlementsProvider.tsx:230:      const res = normalizeCapabilities(capabilities);
-src\entitlements\EntitlementsProvider.tsx:238:      capabilities: normalizedCaps ?? s.capabilities
-backend\routes\user.js:47:const { resolveCapabilities } = require("../entitlements/capabilityPolicy");
-backend\routes\user.js:62:    // Canonical capability resolution
-backend\routes\user.js:63:    const capabilities = resolveCapabilities(user);
-backend\routes\user.js:64:    // Example limits (could be expanded)
-backend\routes\user.js:65:    const limits = { maxRooms: 5, maxTeam: 10 };
-backend\routes\user.js:79:        capabilities,
-backend\routes\user.js:80:        limits
+src\config\capabilities.d.ts:1:// TypeScript type for capabilities object for GrowPath
 src\config\menuConfig.js:1:// Menu config driven by capabilities, not role/mode
 src\config\menuConfig.js:2:// Usage: getMenuItems({ capabilities, mode })
 src\config\menuConfig.js:4:export function getMenuItems({ capabilities, mode }) {
@@ -134,7 +49,69 @@ src\config\capabilities.ts:40:  if (typeof limits.maxGrows === "number") caps.ma
 src\config\capabilities.ts:41:  if (typeof limits.maxPlants === "number") caps.maxPlants = limits.maxPlants;
 src\config\capabilities.ts:45:export const CAPABILITY_KEYS = Object.values(CAPABILITIES);
 src\config\capabilities.js:1:export * from "./capabilities.ts";
-src\config\capabilities.d.ts:1:// TypeScript type for capabilities object for GrowPath
+backend\routes\user.js:47:const { resolveCapabilities } = require("../entitlements/capabilityPolicy");
+backend\routes\user.js:62:    // Canonical capability resolution
+backend\routes\user.js:63:    const capabilities = resolveCapabilities(user);
+backend\routes\user.js:64:    // Example limits (could be expanded)
+backend\routes\user.js:65:    const limits = { maxRooms: 5, maxTeam: 10 };
+backend\routes\user.js:79:        capabilities,
+backend\routes\user.js:80:        limits
+src\entitlements\capabilityKeys.ts:1:export const CAPABILITY_KEYS = Object.freeze({
+src\entitlements\capabilityKeys.ts:72:export type CapabilityKey = (typeof CAPABILITY_KEYS)[keyof typeof CAPABILITY_KEYS];
+src\entitlements\capabilityKeys.ts:74:export const KNOWN_CAPS = new Set(Object.values(CAPABILITY_KEYS));
+src\entitlements\capabilityAliases.ts:6:export const CAPABILITY_ALIASES: Record<string, string> = Object.freeze({
+src\entitlements\can.ts:6:  capabilities: Iterable<string> | Record<string, boolean> | null | undefined
+src\entitlements\can.ts:10:  if (capabilities) {
+src\entitlements\can.ts:11:    if (typeof (capabilities as Record<string, boolean>)[Symbol.iterator] === "function") {
+src\entitlements\can.ts:12:      for (const entry of capabilities as Iterable<string>) {
+src\entitlements\can.ts:17:      for (const [key, enabled] of Object.entries(capabilities as Record<string, boolean>)) {
+src\entitlements\can.ts:25:  const can = (capability: CapInput) => {
+src\entitlements\can.ts:26:    if (Array.isArray(capability)) {
+src\entitlements\can.ts:27:      return capability.every((cap) => {
+src\entitlements\can.ts:32:    const normalized = normalizeCapabilityKey(capability);
+src\entitlements\EntitlementsProvider.tsx:12:import { KNOWN_CAPS } from "./capabilityKeys";
+src\entitlements\EntitlementsProvider.tsx:29:  capabilities: Record<string, any>;
+src\entitlements\EntitlementsProvider.tsx:30:  limits: Record<string, any>;
+src\entitlements\EntitlementsProvider.tsx:31:  can: ((capability: string | string[]) => boolean) & Record<string, boolean>;
+src\entitlements\EntitlementsProvider.tsx:32:  refresh?: (plan?: string, capabilities?: Record<string, any>) => void;
+src\entitlements\EntitlementsProvider.tsx:44:  capabilities: {},
+src\entitlements\EntitlementsProvider.tsx:45:  limits: {}
+src\entitlements\EntitlementsProvider.tsx:50:  can: Object.assign(((capability: string | string[]) => false) as any, {}),
+src\entitlements\EntitlementsProvider.tsx:64:  console.warn("[ENT] Unknown capability keys (not canonical):", unknownKeys);
+src\entitlements\EntitlementsProvider.tsx:123:  if (ctx?.capabilities) {
+src\entitlements\EntitlementsProvider.tsx:124:    if (Array.isArray(ctx.capabilities)) {
+src\entitlements\EntitlementsProvider.tsx:125:      for (const raw of ctx.capabilities) {
+src\entitlements\EntitlementsProvider.tsx:137:    } else if (typeof ctx.capabilities === "object") {
+src\entitlements\EntitlementsProvider.tsx:138:      for (const [raw, v] of Object.entries(ctx.capabilities)) {
+src\entitlements\EntitlementsProvider.tsx:161:    capabilities: normalized,
+src\entitlements\EntitlementsProvider.tsx:162:    limits: ctx?.limits && typeof ctx.limits === "object" ? ctx.limits : {}
+src\entitlements\EntitlementsProvider.tsx:201:        capabilities: {},
+src\entitlements\EntitlementsProvider.tsx:202:        limits: {}
+src\entitlements\EntitlementsProvider.tsx:246:    const fn = buildCan(state.capabilities);
+src\entitlements\EntitlementsProvider.tsx:248:      (capability: string | string[]) => (state.ready ? fn(capability) : false),
+src\entitlements\EntitlementsProvider.tsx:249:      state.capabilities
+src\entitlements\EntitlementsProvider.tsx:251:  }, [state.ready, state.capabilities]);
+src\entitlements\EntitlementsProvider.tsx:253:  const refresh = useCallback((plan?: string, capabilities?: Record<string, any>) => {
+src\entitlements\EntitlementsProvider.tsx:255:    if (capabilities !== undefined) {
+src\entitlements\EntitlementsProvider.tsx:258:      if (Array.isArray(capabilities)) {
+src\entitlements\EntitlementsProvider.tsx:259:        for (const raw of capabilities) {
+src\entitlements\EntitlementsProvider.tsx:271:      } else if (capabilities && typeof capabilities === "object") {
+src\entitlements\EntitlementsProvider.tsx:272:        for (const [raw, v] of Object.entries(capabilities)) {
+src\entitlements\EntitlementsProvider.tsx:292:      capabilities: normalizedCaps ?? s.capabilities
+src\permissions\useFacilityPermissions.ts:20:  const capabilities = useMemo(() => roleCapabilities(role), [role]);
+src\permissions\useFacilityPermissions.ts:21:  return { role, can, capabilities };
+src\entitlements\index.ts:5:export { CAPABILITY_KEYS } from "./capabilityKeys";
+src\entitlements\normalize.ts:1:import { CAPABILITY_ALIASES, ROLE_ALIASES } from "./capabilityAliases";
+src\entitlements\normalize.ts:20:  if (CAPABILITY_ALIASES[upper]) return CAPABILITY_ALIASES[upper];
+src\entitlements\normalize.ts:26:  return CAPABILITY_ALIASES[normalized] || normalized;
+src\entitlements\toEntContext.ts:9:    capabilities: ent?.capabilities ?? source?.capabilities ?? [],
+src\entitlements\toEntContext.ts:10:    limits: ent?.limits ?? source?.limits ?? {}
+src\entitlements\uiGate.ts:4:  return Array.isArray(ent?.capabilities) && ent.capabilities.includes(cap);
+src\entitlements\types.ts:4:export type CapabilityKey = import("./capabilityKeys").CapabilityKey;
+src\entitlements\types.ts:13:  capabilities: Record<string, boolean>;
+src\entitlements\types.ts:14:  limits: Record<string, number>;
+src\permissions\rolePolicy.ts:2:import { CAPABILITY_KEYS as K, normalizeFacilityRole } from "@/entitlements";
+src\permissions\actions.ts:1:import type { CapabilityKey } from "@/entitlements/capabilityKeys";
 src\navigation\tabConfig.js:1:import { CAPABILITIES } from "../capabilities/keys";
 src\navigation\tabConfig.js:9:    requiredCaps: [CAPABILITIES.VIEW_DASHBOARD],
 src\navigation\tabConfig.js:17:    requiredCaps: [CAPABILITIES.VIEW_PLANTS],
@@ -149,6 +126,11 @@ src\navigation\tabConfig.js:81:    requiredCaps: [CAPABILITIES.DEBUG],
 src\navigation\tabConfig.js:87:// Bulletproof capability check: supports both canonical and camelCase keys
 src\navigation\tabConfig.js:88:export function canAccess(requiredCaps = [], capabilities = {}) {
 src\navigation\tabConfig.js:89:  const caps = capabilities || {};
+src\api\me.ts:10:  capabilities: Record<string, boolean>;
+src\api\me.ts:11:  limits: Record<string, number>;
+src\features\feed\components\FeedItemCard.tsx:5:import { CAPABILITY_KEYS } from "@/entitlements";
+src\features\feed\components\FeedItemCard.tsx:85:        <FeatureGate capability={CAPABILITY_KEYS.TASKS_WRITE}>
+src\features\feed\components\FeedItemCard.tsx:93:        <FeatureGate capability={CAPABILITY_KEYS.ALERTS_ACK}>
 src\navigation\pageRegistry.personal.js:2:// Each entry: { name, label, icon, capabilityKey, component }
 src\navigation\pageRegistry.personal.js:9:    capabilityKey: "personal.dashboard",
 src\navigation\pageRegistry.personal.js:16:    capabilityKey: "personal.grows",
@@ -162,10 +144,6 @@ src\navigation\pageRegistry.personal.js:65:    capabilityKey: "view.community.fo
 src\navigation\pageRegistry.personal.js:72:    capabilityKey: "view.community.feed",
 src\navigation\pageRegistry.personal.js:79:    capabilityKey: "view.courses",
 src\navigation\pageRegistry.personal.js:86:    capabilityKey: "view.profile",
-src\utils\entitlements.js:1:// Universal entitlement gating helper (futureproof, capabilities-first)
-src\utils\entitlements.js:11:// Compatibility: requirePro is just a shortcut for the pro capability bundle
-src\utils\entitlements.js:48:export const ENTITLEMENT_MATRIX = {
-src\utils\entitlements.js:187:  const matrix = ENTITLEMENT_MATRIX[feature];
 src\navigation\pageRegistry.js:1:// Central page registry for all app screens, with capability requirements and navigation config
 src\navigation\pageRegistry.js:2:// Update this file to add/remove screens or change capability gating
 src\navigation\pageRegistry.js:4:import { CAPABILITIES } from "../capabilities/keys";
@@ -208,12 +186,63 @@ src\navigation\buildTabs.js:9:export function buildVisibleTabs(capabilities, { m
 src\navigation\buildTabs.js:10:  const visible = PAGE_REGISTRY.filter((p) => hasCap(capabilities, p.capability));
 src\navigation\buildTabs.js:15:      ["nav.dashboard", "nav.profile"].includes(p.capability)
 src\navigation\buildTabs.js:19:  // Optional: mode-based preference ordering (does not override capability)
-src\hooks\useWebhooks.tsx:7:  capabilities: Record<string, boolean>;
-src\hooks\useWebhooks.tsx:14:  const [capabilities, setCapabilities] = useState({});
-src\hooks\useWebhooks.tsx:22:        setCapabilities(parsed.capabilities);
-src\hooks\useWebhooks.tsx:28:    <EntitlementsContext.Provider value={{ plan, capabilities }}>
-src\features\feed\components\FeedItemCard.tsx:84:        <FeatureGate capability="TASKS_EDIT">
-src\features\feed\components\FeedItemCard.tsx:92:        <FeatureGate capability="ALERTS_ACK">
+src\guards\RequireEntitlement.tsx:11:  capability?: CapabilityKey | CapabilityKey[];
+src\guards\RequireEntitlement.tsx:25:  capability,
+src\guards\RequireEntitlement.tsx:37:    const caps = asArray(capability);
+src\guards\RequireEntitlement.tsx:61:    capability,
+src\components\AppShell.js:14:  const { user, mode, capabilities, limits } = useAuth();
+src\components\AppShell.js:16:  const contextBarProps = { user, mode, capabilities, limits };
+src\components\AppShell.js:22:          capabilities={capabilities}
+src\components\AppShell.js:39:        capabilities={capabilities}
+src\components\CommercialBanner.js:13:  capabilities = defaultCapabilities,
+src\components\CommercialBanner.js:24:  if (!capabilities.canUseTimelinePlanner || !capabilities.canExportPdf) {
+src\auth\capabilities.js:1:// src/auth/capabilities.js
+src\auth\capabilities.js:2:// Centralized capability resolver for user roles/modes/plans
+src\capabilities\resolve.js:1:import CAPABILITIES from "./keys";
+src\capabilities\resolve.js:3:const CANONICAL_SET = new Set(Object.values(CAPABILITIES).map((v) => String(v)));
+src\capabilities\resolve.js:6:// IMPORTANT: map legacy -> canonical VALUE (one of Object.values(CAPABILITIES))
+src\capabilities\resolve.js:33:  // Allow passing CAPABILITIES constant NAME (e.g. "TOOLS_VPD") instead of VALUE.
+src\capabilities\resolve.js:34:  if (Object.prototype.hasOwnProperty.call(CAPABILITIES, key)) {
+src\capabilities\resolve.js:35:    return CAPABILITIES[key];
+src\capabilities\plans.js:1:// Canonical mapping of plans/modes to capabilities
+src\capabilities\plans.js:2:// Update as new plans or capabilities are added
+src\capabilities\plans.js:3:import { CAPABILITIES } from "./keys.js";
+src\capabilities\plans.js:7:    CAPABILITIES.VIEW_DASHBOARD,
+src\capabilities\plans.js:8:    CAPABILITIES.VIEW_PROFILE,
+src\capabilities\plans.js:9:    CAPABILITIES.EDIT_PROFILE,
+src\capabilities\plans.js:10:    CAPABILITIES.VIEW_COURSES,
+src\capabilities\plans.js:11:    CAPABILITIES.ENROLL_COURSE,
+src\capabilities\plans.js:12:    CAPABILITIES.VIEW_FORUM,
+src\capabilities\plans.js:13:    CAPABILITIES.POST_FORUM
+src\capabilities\plans.js:16:    CAPABILITIES.VIEW_DASHBOARD,
+src\capabilities\plans.js:17:    CAPABILITIES.VIEW_PROFILE,
+src\capabilities\plans.js:18:    CAPABILITIES.EDIT_PROFILE,
+src\capabilities\plans.js:19:    CAPABILITIES.VIEW_COURSES,
+src\capabilities\plans.js:20:    CAPABILITIES.ENROLL_COURSE,
+src\capabilities\plans.js:21:    CAPABILITIES.MANAGE_ENROLLMENTS,
+src\capabilities\plans.js:22:    CAPABILITIES.VIEW_FORUM,
+src\capabilities\plans.js:23:    CAPABILITIES.POST_FORUM,
+src\capabilities\plans.js:24:    CAPABILITIES.MANAGE_USERS,
+src\capabilities\plans.js:25:    CAPABILITIES.VIEW_PAYMENTS
+src\capabilities\plans.js:28:    CAPABILITIES.VIEW_DASHBOARD,
+src\capabilities\plans.js:29:    CAPABILITIES.VIEW_PROFILE,
+src\capabilities\plans.js:30:    CAPABILITIES.EDIT_PROFILE,
+src\capabilities\plans.js:31:    CAPABILITIES.VIEW_COURSES,
+src\capabilities\plans.js:32:    CAPABILITIES.ENROLL_COURSE,
+src\capabilities\plans.js:33:    CAPABILITIES.MANAGE_ENROLLMENTS,
+src\capabilities\plans.js:34:    CAPABILITIES.VIEW_FORUM,
+src\capabilities\plans.js:35:    CAPABILITIES.POST_FORUM,
+src\capabilities\plans.js:36:    CAPABILITIES.MANAGE_USERS,
+src\capabilities\plans.js:37:    CAPABILITIES.MANAGE_FACILITY,
+src\capabilities\plans.js:38:    CAPABILITIES.VIEW_PAYMENTS,
+src\capabilities\plans.js:39:    CAPABILITIES.MANAGE_PAYMENTS
+src\capabilities\keys.js:1:// Canonical list of capability keys for all app features
+src\capabilities\keys.js:4:export const CAPABILITIES = {
+src\capabilities\keys.js:20:export default CAPABILITIES;
+src\components\FeatureGate.tsx:3:import type { CapabilityKey } from "../entitlements/capabilityKeys";
+src\components\FeatureGate.tsx:5:  capability,
+src\components\FeatureGate.tsx:9:  capability: CapabilityKey | CapabilityKey[];
+src\components\FeatureGate.tsx:15:  return ent.can(capability) ? <>{children}</> : <>{fallback}</>;
 src\api\_quarantine\mockServer.ts:24:    capabilities: Record<string, boolean>;
 src\api\_quarantine\mockServer.ts:25:    limits: Record<string, number>;
 src\api\_quarantine\mockServer.ts:50:      capabilities: {},
@@ -222,25 +251,30 @@ src\api\_quarantine\mockServer.ts:72:      capabilities: {},
 src\api\_quarantine\mockServer.ts:73:      limits: { maxPlants: 50, maxGrows: 10 }
 src\api\_quarantine\mockServer.ts:102:      capabilities: {},
 src\api\_quarantine\mockServer.ts:103:      limits: { maxPlants: 200, maxGrows: 25 }
-src\api\me.ts:10:  capabilities: Record<string, boolean>;
-src\api\me.ts:11:  limits: Record<string, number>;
-src\components\FeatureGate.tsx:5:  capability,
-src\components\FeatureGate.tsx:9:  capability: CapabilityKey | CapabilityKey[];
-src\components\FeatureGate.tsx:15:  return ent.can(capability) ? <>{children}</> : <>{fallback}</>;
-src\components\CommercialBanner.js:13:  capabilities = defaultCapabilities,
-src\components\CommercialBanner.js:24:  if (!capabilities.canUseTimelinePlanner || !capabilities.canExportPdf) {
-src\screens\FacilityTeamScreen.js:6:  const { capabilities } = useAuth();
-src\screens\FacilityTeamScreen.js:7:  const locked = !capabilities?.facilityTeam;
-src\screens\FacilityInventoryScreen.js:7:  const { capabilities } = useAuth();
-src\screens\FacilityInventoryScreen.js:8:  const locked = !capabilities?.facilityInventory;
-src\screens\FacilityRoomsScreen.js:6:  const { capabilities } = useAuth();
-src\screens\FacilityRoomsScreen.js:7:  const locked = !capabilities?.facilityRooms;
-src\screens\FacilityProfileScreen.js:6:  const { capabilities } = useAuth();
-src\screens\FacilityProfileScreen.js:7:  const locked = !capabilities?.facilityProfile;
-src\screens\FacilityFeedScreen.js:7:  const { capabilities } = useAuth();
-src\screens\FacilityFeedScreen.js:8:  const locked = !capabilities?.facilityFeed;
+src\hooks\useWebhooks.tsx:7:  capabilities: Record<string, boolean>;
+src\hooks\useWebhooks.tsx:14:  const [capabilities, setCapabilities] = useState({});
+src\hooks\useWebhooks.tsx:22:        setCapabilities(parsed.capabilities);
+src\hooks\useWebhooks.tsx:28:    <EntitlementsContext.Provider value={{ plan, capabilities }}>
+src\screens\DashboardScreen.js:16:import { useEntitlements, CAPABILITY_KEYS } from "@/entitlements";
+src\screens\DashboardScreen.js:501:  const analyticsEnabled = ent.can(CAPABILITY_KEYS.DASHBOARD_ANALYTICS);
+src\screens\DashboardScreen.js:502:  const exportEnabled = ent.can(CAPABILITY_KEYS.DASHBOARD_EXPORT);
+src\screens\DashboardScreen.js:503:  const teamToolsEnabled = ent.can(CAPABILITY_KEYS.ROOMS_EQUIPMENT_STAFF);
+src\screens\DashboardScreen.js:504:  const addPlantEnabled = ent.can(CAPABILITY_KEYS.GROWLOGS_MULTI);
+src\screens\DiagnoseScreen.js:20:import { useEntitlements, CAPABILITY_KEYS } from "@/entitlements";
+src\screens\DiagnoseScreen.js:41:  const aiEnabled = ent.can(CAPABILITY_KEYS.DIAGNOSE_AI);
+src\screens\DiagnoseScreen.js:42:  const advEnabled = ent.can(CAPABILITY_KEYS.DIAGNOSE_ADVANCED);
 src\screens\FacilityCommunityScreen.js:6:  const { capabilities } = useAuth();
 src\screens\FacilityCommunityScreen.js:7:  const locked = !capabilities?.facilityCommunity;
+src\screens\FacilityInventoryScreen.js:7:  const { capabilities } = useAuth();
+src\screens\FacilityInventoryScreen.js:8:  const locked = !capabilities?.facilityInventory;
+src\screens\FacilityFeedScreen.js:7:  const { capabilities } = useAuth();
+src\screens\FacilityFeedScreen.js:8:  const locked = !capabilities?.facilityFeed;
+src\screens\FacilityProfileScreen.js:6:  const { capabilities } = useAuth();
+src\screens\FacilityProfileScreen.js:7:  const locked = !capabilities?.facilityProfile;
+src\screens\FacilityRoomsScreen.js:6:  const { capabilities } = useAuth();
+src\screens\FacilityRoomsScreen.js:7:  const locked = !capabilities?.facilityRooms;
+src\screens\facility\AutomationCenterScreen.tsx:4:import { useEntitlements, CAPABILITY_KEYS } from "@/entitlements";
+src\screens\facility\AutomationCenterScreen.tsx:23:  const canEdit = ent.can(CAPABILITY_KEYS.FACILITY_SETTINGS_EDIT);
 src\screens\ForumPostDetailScreen.js:34:  const { user: authUser, capabilities } = useAuth();
 src\screens\ForumPostDetailScreen.js:241:        {capabilities?.canUseForum && (
 src\screens\ForumPostDetailScreen.js:252:        {capabilities?.canUseForum && (
@@ -248,18 +282,12 @@ src\screens\ForumPostDetailScreen.js:258:        {capabilities?.canUseForum && (
 src\screens\ForumPostDetailScreen.js:264:        {capabilities?.canUseForum && (
 src\screens\ForumPostDetailScreen.js:294:              capabilities?.canPostForum && (
 src\screens\ForumPostDetailScreen.js:303:      {capabilities?.canPostForum && (
-src\components\AppShell.js:14:  const { user, mode, capabilities, limits } = useAuth();
-src\components\AppShell.js:16:  const contextBarProps = { user, mode, capabilities, limits };
-src\components\AppShell.js:22:          capabilities={capabilities}
-src\components\AppShell.js:39:        capabilities={capabilities}
-src\screens\GrowsScreen.js:6:  const { capabilities } = useAuth();
-src\screens\GrowsScreen.js:7:  const locked = !capabilities?.personalGrows;
-src\screens\LiveSessionScreen.js:14:function getIsAdmin(user, capabilities) {
-src\screens\LiveSessionScreen.js:18:    capabilities?.canManageLiveSessions === true ||
-src\screens\LiveSessionScreen.js:19:    capabilities?.canModerateLiveSessions === true ||
-src\screens\LiveSessionScreen.js:20:    capabilities?.canOpenTwitchModeration === true
-src\screens\LiveSessionScreen.js:34:  const { user, capabilities } = useAuth();
-src\screens\LiveSessionScreen.js:35:  const isAdmin = getIsAdmin(user, capabilities);
+src\screens\FacilityTeamScreen.js:6:  const { capabilities } = useAuth();
+src\screens\FacilityTeamScreen.js:7:  const locked = !capabilities?.facilityTeam;
+src\screens\GrowLogsScreen.js:2:import { useEntitlements, CAPABILITY_KEYS } from "@/entitlements";
+src\screens\GrowLogsScreen.js:47:  const multiGrowEnabled = ent.can(CAPABILITY_KEYS.GROWLOGS_MULTI);
+src\screens\GrowLogsScreen.js:48:  const photoEnabled = ent.can(CAPABILITY_KEYS.GROWLOGS_EXPORT);
+src\screens\GrowLogsScreen.js:49:  const advancedEnabled = ent.can(CAPABILITY_KEYS.GROWLOGS_BATCH);
 src\screens\GrowLogScreen.js:18:function LockedCard({ capabilityKey }) {
 src\screens\GrowLogScreen.js:25:      <Text style={styles.lockedMeta}>Requires: {capabilityKey}</Text>
 src\screens\GrowLogScreen.js:31:  const { user, mode, facilityId, capabilities } = useAuth();
@@ -268,10 +296,22 @@ src\screens\GrowLogScreen.js:34:    if (!capabilities) return true;
 src\screens\GrowLogScreen.js:35:    return !!capabilities[capabilityKey];
 src\screens\GrowLogScreen.js:36:  }, [capabilities]);
 src\screens\GrowLogScreen.js:51:        <LockedCard capabilityKey={capabilityKey} />
-src\screens\personal\CalendarScreen.tsx:75:  const capabilities = ent.capabilities || {};
-src\screens\personal\CalendarScreen.tsx:77:  if (!capabilities.calendar) return <NotEntitledScreen />;
+src\screens\LiveSessionScreen.js:14:function getIsAdmin(user, capabilities) {
+src\screens\LiveSessionScreen.js:18:    capabilities?.canManageLiveSessions === true ||
+src\screens\LiveSessionScreen.js:19:    capabilities?.canModerateLiveSessions === true ||
+src\screens\LiveSessionScreen.js:20:    capabilities?.canOpenTwitchModeration === true
+src\screens\LiveSessionScreen.js:34:  const { user, capabilities } = useAuth();
+src\screens\LiveSessionScreen.js:35:  const isAdmin = getIsAdmin(user, capabilities);
+src\screens\GrowsScreen.js:6:  const { capabilities } = useAuth();
+src\screens\GrowsScreen.js:7:  const locked = !capabilities?.personalGrows;
+src\screens\facility\TeamScreen.js:75:            The following capabilities are on our roadmap:
 src\screens\PlantsScreen.js:6:  const { capabilities } = useAuth();
 src\screens\PlantsScreen.js:7:  const locked = !capabilities?.personalPlants;
-src\screens\facility\TeamScreen.js:75:            The following capabilities are on our roadmap:
+src\screens\personal\CalendarScreen.tsx:75:  const capabilities = ent.capabilities || {};
+src\screens\personal\CalendarScreen.tsx:77:  if (!capabilities.calendar) return <NotEntitledScreen />;
+src\screens\SearchScreen.js:4:import { useEntitlements, CAPABILITY_KEYS } from "@/entitlements";
+src\screens\SearchScreen.js:20:  const searchEnabled = ent.can(CAPABILITY_KEYS.SEARCH);
+src\screens\SelectFacilityScreen.tsx:4:import { useEntitlements, CAPABILITY_KEYS } from "@/entitlements";
+src\screens\SelectFacilityScreen.tsx:20:  const searchEnabled = ent.can(CAPABILITY_KEYS.SEARCH);
 src\screens\ToolsScreen.js:35:  const { capabilities } = useAuth();
 src\screens\ToolsScreen.js:43:          const enabled = capabilities[capKey];

@@ -1,8 +1,7 @@
 import React from "react";
 import { View, Text, StyleSheet } from "react-native";
 import AppShell from "../components/AppShell.js";
-import { useAuth } from "@/auth/AuthContext";
-import { FEATURES, getEntitlement } from "../utils/entitlements.js";
+import { useEntitlements, CAPABILITY_KEYS } from "@/entitlements";
 
 const styles = StyleSheet.create({
   container: { flex: 1, justifyContent: "center", alignItems: "center" },
@@ -17,10 +16,10 @@ const styles = StyleSheet.create({
 });
 
 const SearchScreen = () => {
-  const { user } = useAuth();
-  // Determine entitlement for search (example: advanced search feature)
-  const searchEntitlement = getEntitlement(FEATURES.SEARCH, user?.role || "free");
-  // For demo, fallback to always enabled if not in matrix
+  const ent = useEntitlements();
+  const searchEnabled = ent.can(CAPABILITY_KEYS.SEARCH);
+  const searchEntitlement =
+    searchEnabled ? "enabled" : ent.plan === "free" ? "cta" : "disabled";
   const isDisabled = searchEntitlement === "disabled";
   const isCta = searchEntitlement === "cta";
 

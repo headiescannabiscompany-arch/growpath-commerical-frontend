@@ -1,5 +1,5 @@
 import React, { useEffect, useMemo, useState } from "react";
-import { useAuth } from "@/auth/AuthContext";
+import { useEntitlements, CAPABILITY_KEYS } from "@/entitlements";
 import {
   View,
   Text,
@@ -18,10 +18,9 @@ import { useApiErrorHandler } from "../hooks/useApiErrorHandler";
 
 import { colors, spacing, radius } from "../theme/theme.js";
 import { createGrow, listGrows } from "../api/grows.js";
-import { FEATURES, getEntitlement } from "../utils/entitlements.js";
 
 function GrowLogsScreen() {
-  const { user } = useAuth();
+  const ent = useEntitlements();
 
   const [grows, setGrows] = useState([]);
   const [loading, setLoading] = useState(true);
@@ -45,9 +44,12 @@ function GrowLogsScreen() {
   const [substratePH, setSubstratePH] = useState("");
 
   // Entitlements
-  const multiGrowEnt = getEntitlement(FEATURES.MULTIPLE_GROWS, user?.role);
-  const photoEnt = getEntitlement(FEATURES.GROW_PHOTO, user?.role);
-  const advancedEnt = getEntitlement(FEATURES.GROW_ADVANCED, user?.role);
+  const multiGrowEnabled = ent.can(CAPABILITY_KEYS.GROWLOGS_MULTI);
+  const photoEnabled = ent.can(CAPABILITY_KEYS.GROWLOGS_EXPORT);
+  const advancedEnabled = ent.can(CAPABILITY_KEYS.GROWLOGS_BATCH);
+  const multiGrowEnt = multiGrowEnabled ? "enabled" : ent.plan === "free" ? "cta" : "disabled";
+  const photoEnt = photoEnabled ? "enabled" : ent.plan === "free" ? "cta" : "disabled";
+  const advancedEnt = advancedEnabled ? "enabled" : ent.plan === "free" ? "cta" : "disabled";
 
   const { toInlineError } = useApiErrorHandler();
   const inlineError = useMemo(

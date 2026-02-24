@@ -22,7 +22,7 @@ Free users cannot access:
 
 2) Commercial Ops
 - Commercial inventory management
-- Commercial operational dashboards (campaigns/orders/products/links/storefront) if not part of single-user baseline
+- Commercial operational dashboards (campaigns/orders/products/links/storefront)
 
 3) Creator/Monetization Admin
 - Earnings/payout requests/creator revenue dashboards
@@ -32,8 +32,8 @@ Free users cannot access:
 - Compliance exports (EXPORT_COMPLIANCE)
 - Bulk/batch export tooling (if present)
 
-5) Advanced Diagnose (optional lock; decide by capability)
-- Diagnosis export / AI vision export (basic diagnosis may remain available with limits)
+5) Advanced Diagnose (locked)
+- Diagnosis export / AI vision export (basic diagnosis remains available with limits)
 
 Everything else remains available on Free WITH LIMITS:
 - Grows / plants / logs
@@ -44,24 +44,24 @@ Everything else remains available on Free WITH LIMITS:
 
 ---
 
-## Limits (Free vs Pro)  must be numbers (v1 placeholders)
-These are placeholders until you set exact numbers:
+## Limits (Free vs Pro)
+These are locked for v1.
 
 ### Free limits
-- grows: ___
-- plants per grow: ___
-- logs per grow: ___
-- photo uploads: ___/month
-- AI calls: ___/day
-- retention: ___ days
+- grows: 3
+- plants per grow: 12
+- logs per grow: 200
+- photo uploads: 30 / month
+- AI calls: 10 / day
+- retention: 90 days
 
 ### Pro limits
-- grows: ___
-- plants per grow: ___
-- logs per grow: ___
-- photo uploads: ___/month
-- AI calls: ___/day
-- retention: ___ days
+- grows: 50
+- plants per grow: 200
+- logs per grow: 10,000
+- photo uploads: 300 / month
+- AI calls: 100 / day
+- retention: 730 days
 
 Rule: Free and Pro share features; Pro increases limits and unlocks a small list (paid course visibility, analytics, advanced diagnose) if you want.
 
@@ -71,4 +71,3 @@ Rule: Free and Pro share features; Pro increases limits and unlocks a small list
 - Commercial and Facility are paid account types.
 - Commercial adds business overlays; Facility adds multi-user role-based operations.
 - No free then upgrade to facility flow (facility accounts are separate).
-
