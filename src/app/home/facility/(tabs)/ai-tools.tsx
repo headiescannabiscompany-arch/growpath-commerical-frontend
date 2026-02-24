@@ -31,6 +31,16 @@ export default function FacilityAiToolsRoute() {
           Open
         </Link>
       </View>
+
+      <View style={styles.card}>
+        <Text style={styles.title}>AI Validation Lab</Text>
+        <Text style={styles.desc}>
+          Verify, compare, feedback, and export endpoint checks.
+        </Text>
+        <Link href="/home/facility/ai/validation" style={styles.link}>
+          Open
+        </Link>
+      </View>
     </View>
   );
 }
