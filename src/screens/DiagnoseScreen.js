@@ -663,7 +663,7 @@ export default function DiagnoseScreen({ route, navigation }) {
               style={{ marginTop: 16 }}
             >
               <Text style={{ color: "#3498db", fontWeight: "600" }}>
-                View history ->
+                View history {"->"}
               </Text>
             </TouchableOpacity>
           </View>

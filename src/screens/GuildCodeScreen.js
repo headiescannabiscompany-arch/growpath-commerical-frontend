@@ -164,7 +164,7 @@ export default function GuildCodeScreen() {
         <Text style={styles.subheading}>Good posts:</Text>
         <Text style={styles.bullet}>-  Share observations</Text>
         <Text style={styles.bullet}>-  Ask specific questions</Text>
-        <Text style={styles.bullet}>-  Document cause -> effect</Text>
+        <Text style={styles.bullet}>-  Document cause {"->"} effect</Text>
         <Text style={styles.bullet}>-  Teach something learned the hard way</Text>
 
         <Text style={styles.heading}>ðŸŒ± Final Note to Members</Text>

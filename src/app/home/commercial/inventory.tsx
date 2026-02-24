@@ -176,7 +176,7 @@ export default function CommercialInventoryRoute() {
                     </Text>
                   ) : null}
                 </View>
-                <Text style={styles.chev}>></Text>
+                <Text style={styles.chev}>{">"}</Text>
               </Pressable>
             );
           }}
