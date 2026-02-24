@@ -80,7 +80,13 @@ Every visible button must be one of:
 - Gating: COMMERCIAL_INVENTORY_WRITE
 - Status: Functional
 
-3) Feed/Alerts (read-only ok)
+3) Inventory create (v1.1 planned)
+- Where: /home/commercial/inventory-create
+- Action: Planned screen (no mutation in v1)
+- Gating: COMMERCIAL_INVENTORY_WRITE
+- Status: Planned
+
+4) Feed/Alerts (read-only ok)
 - Where: /(commercial)/feed, /(commercial)/alerts/[id]
 - Action: GET read-only endpoints
 - Gating: COMMERCIAL_FEED_VIEW / COMMERCIAL_ALERTS_VIEW

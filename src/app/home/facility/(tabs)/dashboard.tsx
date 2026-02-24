@@ -1,12 +1,12 @@
 import React, { useCallback, useEffect, useMemo, useState } from "react";
 import {
   ActivityIndicator,
+  Pressable,
   RefreshControl,
   ScrollView,
   StyleSheet,
   Text,
-  View,
-  Pressable
+  View
 } from "react-native";
 import { useRouter } from "expo-router";
 
@@ -50,8 +50,7 @@ export default function FacilityDashboardTab() {
     plants: 0,
     tasks: 0,
     inventory: 0,
-    logs: 0,
-    auditLogs: 0
+    logs: 0
   });
 
   const load = useCallback(
@@ -64,14 +63,13 @@ export default function FacilityDashboardTab() {
       try {
         clearError();
 
-        const [growsRes, plantsRes, tasksRes, inventoryRes, logsRes, auditRes] =
+        const [growsRes, plantsRes, tasksRes, inventoryRes, logsRes] =
           await Promise.all([
             apiRequest(endpoints.grows(facilityId)),
             apiRequest(endpoints.plants(facilityId)),
             apiRequest(endpoints.tasks(facilityId)),
             apiRequest(endpoints.inventory(facilityId)),
-            apiRequest(endpoints.growlogs(facilityId)),
-            apiRequest(endpoints.auditLogs(facilityId))
+            apiRequest(endpoints.growlogs(facilityId))
           ]);
 
         setCounts({
@@ -79,8 +77,7 @@ export default function FacilityDashboardTab() {
           plants: asArray(plantsRes).length,
           tasks: asArray(tasksRes).length,
           inventory: asArray(inventoryRes).length,
-          logs: asArray(logsRes).length,
-          auditLogs: asArray(auditRes).length
+          logs: asArray(logsRes).length
         });
       } catch (e) {
         handleApiError(e);
@@ -105,9 +102,7 @@ export default function FacilityDashboardTab() {
       { label: "Tasks", value: counts.tasks, to: "/home/facility/tasks" },
       { label: "Plants", value: counts.plants, to: "/home/facility/plants" },
       { label: "Logs", value: counts.logs, to: "/home/facility/logs" },
-      { label: "Inventory", value: counts.inventory, to: "/home/facility/inventory" },
-      { label: "SOP Runs", value: 0, to: "/home/facility/sop-runs" },
-      { label: "Audit Logs", value: counts.auditLogs, to: "/home/facility/audit-logs" }
+      { label: "Inventory", value: counts.inventory, to: "/home/facility/inventory" }
     ],
     [counts]
   );
@@ -133,7 +128,7 @@ export default function FacilityDashboardTab() {
         {loading ? (
           <View style={styles.loading}>
             <ActivityIndicator />
-            <Text style={styles.muted}>Loading…</Text>
+            <Text style={styles.muted}>Loading...</Text>
           </View>
         ) : null}
 
@@ -156,30 +151,34 @@ export default function FacilityDashboardTab() {
 
         <View style={styles.card}>
           <Text style={styles.cardTitle}>Actions</Text>
+          <View style={styles.row}>
+            <Text style={styles.rowTitle}>AI tools and compliance dashboards</Text>
+            <Text style={styles.muted}>Planned</Text>
+          </View>
+        </View>
 
-          <Pressable
-            onPress={() => router.push("/home/facility/ai/ask")}
-            style={({ pressed }) => [styles.row, pressed && styles.pressed]}
-          >
-            <Text style={styles.rowTitle}>Ask AI</Text>
-            <Text style={styles.chev}>›</Text>
-          </Pressable>
-
-          <Pressable
-            onPress={() => router.push("/home/facility/ai/diagnosis-photo")}
-            style={({ pressed }) => [styles.row, pressed && styles.pressed]}
-          >
-            <Text style={styles.rowTitle}>Photo Diagnosis</Text>
-            <Text style={styles.chev}>›</Text>
-          </Pressable>
-
-          <Pressable
-            onPress={() => router.push("/home/facility/compliance/ai4.dashboard")}
-            style={({ pressed }) => [styles.row, pressed && styles.pressed]}
-          >
-            <Text style={styles.rowTitle}>Compliance AI4 Dashboard</Text>
-            <Text style={styles.chev}>›</Text>
-          </Pressable>
+        <View style={styles.card}>
+          <Text style={styles.cardTitle}>Planned Modules</Text>
+          <View style={styles.row}>
+            <Text style={styles.rowTitle}>Rooms</Text>
+            <Text style={styles.muted}>Planned</Text>
+          </View>
+          <View style={styles.row}>
+            <Text style={styles.rowTitle}>Compliance</Text>
+            <Text style={styles.muted}>Planned</Text>
+          </View>
+          <View style={styles.row}>
+            <Text style={styles.rowTitle}>Audit Logs</Text>
+            <Text style={styles.muted}>Planned</Text>
+          </View>
+          <View style={styles.row}>
+            <Text style={styles.rowTitle}>SOP Runs</Text>
+            <Text style={styles.muted}>Planned</Text>
+          </View>
+          <View style={styles.row}>
+            <Text style={styles.rowTitle}>Facility AI Tools</Text>
+            <Text style={styles.muted}>Planned</Text>
+          </View>
         </View>
       </ScrollView>
     </ScreenBoundary>
@@ -224,6 +223,5 @@ const styles = StyleSheet.create({
     borderTopWidth: 1,
     borderTopColor: "rgba(0,0,0,0.06)"
   },
-  rowTitle: { flex: 1, fontWeight: "800" },
-  chev: { fontSize: 22, opacity: 0.5 }
+  rowTitle: { flex: 1, fontWeight: "800" }
 });

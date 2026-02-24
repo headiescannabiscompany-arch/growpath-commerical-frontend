@@ -1,10 +1,12 @@
-import React, { useCallback, useEffect, useMemo, useState } from "react";
+﻿import React, { useCallback, useEffect, useMemo, useState } from "react";
 import {
   ActivityIndicator,
   RefreshControl,
   ScrollView,
   StyleSheet,
   Text,
+  TextInput,
+  TouchableOpacity,
   View
 } from "react-native";
 import { useLocalSearchParams, useRouter } from "expo-router";
@@ -15,6 +17,7 @@ import { useFacility } from "@/state/useFacility";
 import { apiRequest } from "@/api/apiRequest";
 import { endpoints } from "@/api/endpoints";
 import { useApiErrorHandler } from "@/hooks/useApiErrorHandler";
+import { CAPABILITY_KEYS, useEntitlements } from "@/entitlements";
 
 type AnyRec = Record<string, any>;
 
@@ -35,6 +38,7 @@ function renderKV(obj: AnyRec, key: string) {
 
 export default function FacilityTaskDetail() {
   const router = useRouter();
+  const ent = useEntitlements();
   const { id } = useLocalSearchParams<{ id: string }>();
   const { selectedId: facilityId } = useFacility();
 
@@ -52,6 +56,8 @@ export default function FacilityTaskDetail() {
   const [item, setItem] = useState<AnyRec | null>(null);
   const [loading, setLoading] = useState(true);
   const [refreshing, setRefreshing] = useState(false);
+  const [saving, setSaving] = useState(false);
+  const [assignedTo, setAssignedTo] = useState("");
 
   const load = useCallback(
     async (opts?: { refresh?: boolean }) => {
@@ -70,8 +76,39 @@ export default function FacilityTaskDetail() {
         setLoading(false);
         setRefreshing(false);
       }
+  const canWrite = !!ent?.can?.(CAPABILITY_KEYS.TASKS_WRITE);
+  const canAssign =
+    canWrite && (ent?.facilityRole === "OWNER" || ent?.facilityRole === "MANAGER");
+
+  useEffect(() => {
+    if (!item) return;
+    const current =
+      item.assignedTo?.id ??
+      item.assignedTo?._id ??
+      item.assignedTo ??
+      item.assignee ??
+      "";
+    setAssignedTo(current ? String(current) : "");
+  }, [item]);
+
+  const updateTask = useCallback(
+    async (patch: AnyRec) => {
+      if (!facilityId || !id || !canWrite) return;
+      setSaving(true);
+      try {
+        clearError();
+        const res = await apiRequest(endpoints.task(facilityId, String(id)), {
+          method: "PATCH",
+          data: patch
+        });
+        setItem(res ?? item);
+      } catch (e) {
+        handleApiError(e);
+      } finally {
+        setSaving(false);
+      }
     },
-    [facilityId, id, clearError, handleApiError]
+    [facilityId, id, canWrite, clearError, handleApiError, item]
   );
 
   useEffect(() => {
@@ -124,7 +161,7 @@ export default function FacilityTaskDetail() {
         {loading ? (
           <View style={styles.loading}>
             <ActivityIndicator />
-            <Text style={styles.muted}>Loading task…</Text>
+            <Text style={styles.muted}>Loading taskâ€¦</Text>
           </View>
         ) : null}
 
@@ -134,15 +171,56 @@ export default function FacilityTaskDetail() {
             <Text style={styles.muted}>This task could not be loaded.</Text>
           </View>
         ) : null}
-
         {item ? (
           <View style={styles.card}>
-            <Text style={styles.h1}>{pickTitle(item)}</Text>
-            <Text style={styles.muted}>ID: {String(id)}</Text>
-            <View style={styles.kvWrap}>{keys.map((k) => renderKV(item, k))}</View>
+            <Text style={styles.sectionTitle}>Update Task</Text>
+            {!canWrite ? (
+              <Text style={styles.muted}>
+                You do not have permission to update tasks.
+              </Text>
+            ) : (
+              <View style={styles.form}>
+                {canAssign ? (
+                  <View style={styles.formGroup}>
+                    <Text style={styles.label}>Assign to (user id)</Text>
+                    <TextInput
+                      value={assignedTo}
+                      onChangeText={setAssignedTo}
+                      style={styles.input}
+                      placeholder="user id"
+                    />
+                    <TouchableOpacity
+                      onPress={() => updateTask({ assignedTo: assignedTo.trim() || null })}
+                      disabled={saving}
+                      style={[styles.primaryBtn, saving && styles.primaryBtnDisabled]}
+                    >
+                      <Text style={styles.primaryBtnText}>
+                        {saving ? "Saving..." : "Assign"}
+                      </Text>
+                    </TouchableOpacity>
+                  </View>
+                ) : null}
+
+                <View style={styles.statusRow}>
+                  <TouchableOpacity
+                    onPress={() => updateTask({ status: "OPEN" })}
+                    disabled={saving}
+                    style={[styles.secondaryBtn, saving && styles.primaryBtnDisabled]}
+                  >
+                    <Text style={styles.secondaryBtnText}>Mark In Progress</Text>
+                  </TouchableOpacity>
+                  <TouchableOpacity
+                    onPress={() => updateTask({ status: "DONE" })}
+                    disabled={saving}
+                    style={[styles.primaryBtn, saving && styles.primaryBtnDisabled]}
+                  >
+                    <Text style={styles.primaryBtnText}>Mark Done</Text>
+                  </TouchableOpacity>
+                </View>
+              </View>
+            )}
           </View>
-        ) : null}
-      </ScrollView>
+        ) : null}      </ScrollView>
     </ScreenBoundary>
   );
 }
@@ -162,6 +240,37 @@ const styles = StyleSheet.create({
   },
   h1: { fontSize: 18, fontWeight: "900" },
 
+  sectionTitle: { fontSize: 16, fontWeight: "900", marginBottom: 8 },
+  form: { gap: 12 },
+  formGroup: { gap: 8 },
+  label: { fontSize: 12, opacity: 0.7 },
+  input: {
+    borderWidth: 1,
+    borderColor: "rgba(0,0,0,0.12)",
+    borderRadius: 10,
+    padding: 10,
+    backgroundColor: "white"
+  },
+  statusRow: { flexDirection: "row", gap: 10, alignItems: "center" },
+  primaryBtn: {
+    backgroundColor: "#0f172a",
+    borderRadius: 10,
+    paddingVertical: 12,
+    paddingHorizontal: 14,
+    alignItems: "center"
+  },
+  secondaryBtn: {
+    borderWidth: 1,
+    borderColor: "rgba(0,0,0,0.18)",
+    borderRadius: 10,
+    paddingVertical: 12,
+    paddingHorizontal: 14,
+    alignItems: "center"
+  },
+  primaryBtnDisabled: { opacity: 0.6 },
+  primaryBtnText: { color: "white", fontWeight: "800" },
+  secondaryBtnText: { fontWeight: "800" },
+
   kvWrap: { gap: 10, marginTop: 8 },
   kv: { gap: 4 },
   k: { fontSize: 12, opacity: 0.7 },
@@ -170,3 +279,5 @@ const styles = StyleSheet.create({
   empty: { paddingVertical: 26, alignItems: "center", gap: 8 },
   emptyTitle: { fontSize: 16, fontWeight: "800" }
 });
+
+

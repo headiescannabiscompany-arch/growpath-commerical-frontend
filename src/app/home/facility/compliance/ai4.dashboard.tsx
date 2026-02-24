@@ -1,23 +1,11 @@
 import React from "react";
-import { StyleSheet, Text, View } from "react-native";
+import { PlannedScreen } from "@/components/PlannedScreen";
 
-import { ScreenBoundary } from "@/components/ScreenBoundary";
-
-export default function Ai4DashboardRoute() {
+export default function FacilityComplianceAiPlanned() {
   return (
-    <ScreenBoundary title="AI4 Dashboard">
-      <View style={styles.container}>
-        <Text style={styles.h1}>AI4 Compliance Dashboard</Text>
-        <Text style={styles.muted}>
-          Placeholder screen (lint-safe). Add your AI insights panels here.
-        </Text>
-      </View>
-    </ScreenBoundary>
+    <PlannedScreen
+      title="Compliance AI Dashboard (Planned)"
+      message="Compliance dashboards are planned for a future release."
+    />
   );
 }
-
-const styles = StyleSheet.create({
-  container: { padding: 16, gap: 10 },
-  h1: { fontSize: 20, fontWeight: "900" },
-  muted: { opacity: 0.7 }
-});

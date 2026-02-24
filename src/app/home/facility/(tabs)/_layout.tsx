@@ -39,7 +39,6 @@ export default function FacilityTabsLayout() {
       <Tabs.Screen name="tasks" options={{ title: "Tasks" }} />
       <Tabs.Screen name="logs" options={{ title: "Logs" }} />
       <Tabs.Screen name="inventory" options={{ title: "Inventory" }} />
-      <Tabs.Screen name="compliance" options={{ title: "Compliance" }} />
       <Tabs.Screen name="team" options={{ title: "Team" }} />
       <Tabs.Screen name="profile" options={{ title: "Profile" }} />
     </Tabs>

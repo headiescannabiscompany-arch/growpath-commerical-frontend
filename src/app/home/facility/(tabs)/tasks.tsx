@@ -1,4 +1,4 @@
-import React, { useCallback, useEffect, useMemo, useState } from "react";
+﻿import React, { useCallback, useEffect, useMemo, useState } from "react";
 import {
   ActivityIndicator,
   FlatList,
@@ -6,6 +6,8 @@ import {
   RefreshControl,
   StyleSheet,
   Text,
+  TextInput,
+  TouchableOpacity,
   View
 } from "react-native";
 import { useRouter } from "expo-router";
@@ -16,6 +18,7 @@ import { useFacility } from "@/state/useFacility";
 import { apiRequest } from "@/api/apiRequest";
 import { endpoints } from "@/api/endpoints";
 import { useApiErrorHandler } from "@/hooks/useApiErrorHandler";
+import { CAPABILITY_KEYS, useEntitlements } from "@/entitlements";
 
 type AnyRec = Record<string, any>;
 
@@ -45,11 +48,12 @@ function pickSubtitle(x: AnyRec): string {
   const b = status ? `Status: ${String(status)}` : "";
   const c = assignee ? `Assignee: ${String(assignee)}` : "";
 
-  return [a, b, c].filter(Boolean).join(" • ");
+  return [a, b, c].filter(Boolean).join(" â€¢ ");
 }
 
 export default function FacilityTasksRoute() {
   const router = useRouter();
+  const ent = useEntitlements();
   const { selectedId: facilityId } = useFacility();
 
   const apiErr: any = useApiErrorHandler();
@@ -66,6 +70,9 @@ export default function FacilityTasksRoute() {
   const [items, setItems] = useState<AnyRec[]>([]);
   const [loading, setLoading] = useState(true);
   const [refreshing, setRefreshing] = useState(false);
+  const [creating, setCreating] = useState(false);
+  const [newTitle, setNewTitle] = useState("");
+  const [newNotes, setNewNotes] = useState("");
 
   const load = useCallback(
     async (opts?: { refresh?: boolean }) => {
@@ -96,6 +103,33 @@ export default function FacilityTasksRoute() {
     load();
   }, [facilityId, load, router]);
 
+  const canWrite = !!ent?.can?.(CAPABILITY_KEYS.TASKS_WRITE);
+
+  const createTask = useCallback(async () => {
+    if (!facilityId || !canWrite) return;
+    const title = newTitle.trim();
+    if (!title) return;
+    setCreating(true);
+    try {
+      clearError();
+      await apiRequest(endpoints.tasks(facilityId), {
+        method: "POST",
+        data: {
+          title,
+          notes: newNotes.trim() || undefined,
+          scope: "facility"
+        }
+      });
+      setNewTitle("");
+      setNewNotes("");
+      await load({ refresh: true });
+    } catch (e) {
+      handleApiError(e);
+    } finally {
+      setCreating(false);
+    }
+  }, [facilityId, canWrite, newTitle, newNotes, clearError, handleApiError, load]);
+
   const header = useMemo(() => {
     const n = items.length;
     return n === 1 ? "1 task" : `${n} tasks`;
@@ -106,15 +140,50 @@ export default function FacilityTasksRoute() {
       <View style={styles.container}>
         {error ? <InlineError error={error} /> : null}
 
-        <View style={styles.headerRow}>
-          <Text style={styles.h1}>Facility Tasks</Text>
-          <Text style={styles.muted}>{header}</Text>
-        </View>
+        
+        <View style={styles.card}>
+          <Text style={styles.cardTitle}>Create Task</Text>
+          {!canWrite ? (
+            <Text style={styles.muted}>
+              You do not have permission to create tasks.
+            </Text>
+          ) : (
+            <View style={styles.form}>
+              <Text style={styles.label}>Title</Text>
+              <TextInput
+                value={newTitle}
+                onChangeText={setNewTitle}
+                style={styles.input}
+                placeholder="Task title"
+              />
 
-        {loading ? (
+              <Text style={styles.label}>Notes (optional)</Text>
+              <TextInput
+                value={newNotes}
+                onChangeText={setNewNotes}
+                style={[styles.input, styles.inputMultiline]}
+                placeholder="Notes"
+                multiline
+              />
+
+              <TouchableOpacity
+                onPress={createTask}
+                disabled={creating || !newTitle.trim()}
+                style={[
+                  styles.primaryBtn,
+                  (creating || !newTitle.trim()) && styles.primaryBtnDisabled
+                ]}
+              >
+                <Text style={styles.primaryBtnText}>
+                  {creating ? "Creating..." : "Create Task"}
+                </Text>
+              </TouchableOpacity>
+            </View>
+          )}
+        </View>\n        {loading ? (
           <View style={styles.loading}>
             <ActivityIndicator />
-            <Text style={styles.muted}>Loading tasks…</Text>
+            <Text style={styles.muted}>Loading tasksâ€¦</Text>
           </View>
         ) : null}
 
@@ -134,7 +203,7 @@ export default function FacilityTasksRoute() {
               <View style={styles.empty}>
                 <Text style={styles.emptyTitle}>No tasks yet</Text>
                 <Text style={styles.muted}>
-                  When tasks exist on the backend, they’ll show up here.
+                  When tasks exist on the backend, theyâ€™ll show up here.
                 </Text>
               </View>
             ) : null
@@ -162,7 +231,7 @@ export default function FacilityTasksRoute() {
                     </Text>
                   ) : null}
                 </View>
-                <Text style={styles.chev}>›</Text>
+                <Text style={styles.chev}>â€º</Text>
               </Pressable>
             );
           }}
@@ -177,6 +246,35 @@ const styles = StyleSheet.create({
   headerRow: { marginBottom: 12 },
   h1: { fontSize: 22, fontWeight: "800", marginBottom: 4 },
   muted: { opacity: 0.7 },
+
+  card: {
+    borderWidth: 1,
+    borderColor: "rgba(0,0,0,0.12)",
+    borderRadius: 14,
+    padding: 14,
+    backgroundColor: "white",
+    marginBottom: 12
+  },
+  cardTitle: { fontSize: 16, fontWeight: "900", marginBottom: 8 },
+  form: { gap: 8 },
+  label: { fontSize: 12, opacity: 0.7 },
+  input: {
+    borderWidth: 1,
+    borderColor: "rgba(0,0,0,0.12)",
+    borderRadius: 10,
+    padding: 10,
+    backgroundColor: "white"
+  },
+  inputMultiline: { minHeight: 64, textAlignVertical: "top" },
+  primaryBtn: {
+    marginTop: 8,
+    backgroundColor: "#0f172a",
+    borderRadius: 10,
+    paddingVertical: 12,
+    alignItems: "center"
+  },
+  primaryBtnDisabled: { opacity: 0.6 },
+  primaryBtnText: { color: "white", fontWeight: "800" },
 
   loading: { paddingVertical: 18, alignItems: "center" },
 
@@ -199,3 +297,4 @@ const styles = StyleSheet.create({
   empty: { paddingVertical: 26, alignItems: "center" },
   emptyTitle: { fontSize: 16, fontWeight: "800", marginBottom: 6 }
 });
+

@@ -50,6 +50,7 @@ Owner root:
 - `/home/commercial.tsx`  Functional (Unverified) (commercial shell entry)
 - `/home/commercial/inventory.tsx`  Functional (Unverified)
 - `/home/commercial/inventory-item/[id].tsx`  Functional (Unverified)
+- `/home/commercial/inventory-create.tsx`  Planned
 - `/(commercial)/feed/index.tsx`  Functional (Unverified) (read-only allowed)
 - `/(commercial)/alerts/[id].tsx`  Functional (Unverified) (read-only allowed)
 - `/(commercial)/tasks/[id].tsx`  Functional (Unverified)

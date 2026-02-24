@@ -6,6 +6,7 @@ import {
   RefreshControl,
   StyleSheet,
   Text,
+  TouchableOpacity,
   View
 } from "react-native";
 import { useRouter } from "expo-router";
@@ -108,7 +109,15 @@ export default function CommercialInventoryRoute() {
 
         <View style={styles.headerRow}>
           <Text style={styles.h1}>Commercial Inventory</Text>
-          <Text style={styles.muted}>{items.length} items</Text>
+          <View style={styles.headerActions}>
+            <Text style={styles.muted}>{items.length} items</Text>
+            <TouchableOpacity
+              onPress={() => router.push("/home/commercial/inventory-create")}
+              style={styles.createBtn}
+            >
+              <Text style={styles.createBtnText}>Create (Planned)</Text>
+            </TouchableOpacity>
+          </View>
         </View>
 
         {loading ? (
@@ -179,6 +188,21 @@ const styles = StyleSheet.create({
   headerRow: { gap: 4 },
   h1: { fontSize: 22, fontWeight: "900" },
   muted: { opacity: 0.7 },
+
+  headerActions: {
+    flexDirection: "row",
+    alignItems: "center",
+    gap: 10,
+    justifyContent: "space-between"
+  },
+  createBtn: {
+    borderWidth: 1,
+    borderColor: "rgba(0,0,0,0.2)",
+    borderRadius: 10,
+    paddingHorizontal: 10,
+    paddingVertical: 6
+  },
+  createBtnText: { fontWeight: "800" },
 
   loading: { paddingVertical: 18, alignItems: "center", gap: 10 },
 

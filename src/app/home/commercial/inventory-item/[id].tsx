@@ -1,10 +1,12 @@
-import React, { useCallback, useEffect, useMemo, useState } from "react";
+﻿import React, { useCallback, useEffect, useMemo, useState } from "react";
 import {
   ActivityIndicator,
   RefreshControl,
   ScrollView,
   StyleSheet,
   Text,
+  TextInput,
+  TouchableOpacity,
   View
 } from "react-native";
 import { useLocalSearchParams, useRouter } from "expo-router";
@@ -14,7 +16,7 @@ import { InlineError } from "@/components/InlineError";
 import { apiRequest } from "@/api/apiRequest";
 import { endpoints } from "@/api/endpoints";
 import { useApiErrorHandler } from "@/hooks/useApiErrorHandler";
-import { useEntitlements } from "@/entitlements";
+import { CAPABILITY_KEYS, useEntitlements } from "@/entitlements";
 
 type AnyRec = Record<string, any>;
 
@@ -56,6 +58,13 @@ export default function CommercialInventoryItemDetailRoute() {
   const [item, setItem] = useState<AnyRec | null>(null);
   const [loading, setLoading] = useState(true);
   const [refreshing, setRefreshing] = useState(false);
+  const [saving, setSaving] = useState(false);
+  const [draft, setDraft] = useState({
+    name: "",
+    sku: "",
+    quantity: "",
+    unit: ""
+  });
 
   const load = useCallback(
     async (opts?: { refresh?: boolean }) => {
@@ -93,6 +102,56 @@ export default function CommercialInventoryItemDetailRoute() {
   }, [ent?.ready, ent?.mode, load, router]);
 
   const keys = useMemo(() => (item ? Object.keys(item).sort() : []), [item]);
+  const canEdit = !!ent?.can?.(CAPABILITY_KEYS.COMMERCIAL_INVENTORY_WRITE);
+
+  useEffect(() => {
+    if (!item) return;
+    setDraft({
+      name: String(item.name ?? ""),
+      sku: String(item.sku ?? ""),
+      quantity:
+        item.quantity === undefined || item.quantity === null
+          ? ""
+          : String(item.quantity),
+      unit: String(item.unit ?? "")
+    });
+  }, [item]);
+
+  const save = useCallback(async () => {
+    if (!id) return;
+    if (!canEdit) return;
+    setSaving(true);
+    try {
+      resolved.clearError();
+      const path =
+        (endpoints as any)?.commercial?.inventoryItem?.(id) ??
+        (endpoints as any)?.inventoryItemGlobal?.(id) ??
+        `/api/inventory/${encodeURIComponent(id)}`;
+
+      const payload: AnyRec = {
+        name: draft.name.trim() || undefined,
+        sku: draft.sku.trim() || undefined,
+        unit: draft.unit.trim() || undefined
+      };
+
+      const q = draft.quantity.trim();
+      if (q !== "") {
+        const n = Number(q);
+        if (!Number.isNaN(n)) payload.quantity = n;
+      }
+
+      const res = await apiRequest(path, {
+        method: "PATCH",
+        data: payload
+      });
+
+      setItem(res ?? item);
+    } catch (e) {
+      resolved.handleApiError(e);
+    } finally {
+      setSaving(false);
+    }
+  }, [id, canEdit, draft, item, resolved]);
 
   if (!ent?.ready) return null;
   if (ent.mode !== "commercial") return null;
@@ -118,7 +177,7 @@ export default function CommercialInventoryItemDetailRoute() {
         {loading ? (
           <View style={styles.loading}>
             <ActivityIndicator />
-            <Text style={styles.muted}>Loading item…</Text>
+            <Text style={styles.muted}>Loading itemâ€¦</Text>
           </View>
         ) : null}
 
@@ -132,10 +191,63 @@ export default function CommercialInventoryItemDetailRoute() {
                 : "Missing inventory item id in route params."}
             </Text>
           )}
-        </View>
+        </View>\n        {item ? (
+          <View style={styles.card}>
+            <Text style={styles.sectionTitle}>Update Item</Text>
+            {!canEdit ? (
+              <Text style={styles.muted}>
+                You do not have permission to update inventory items.
+              </Text>
+            ) : (
+              <View style={styles.form}>
+                <Text style={styles.label}>Name</Text>
+                <TextInput
+                  value={draft.name}
+                  onChangeText={(v) => setDraft((d) => ({ ...d, name: v }))}
+                  style={styles.input}
+                  placeholder="Item name"
+                />
 
-        <Text onPress={() => router.back()} style={styles.backLink}>
-          ‹ Back
+                <Text style={styles.label}>SKU</Text>
+                <TextInput
+                  value={draft.sku}
+                  onChangeText={(v) => setDraft((d) => ({ ...d, sku: v }))}
+                  style={styles.input}
+                  placeholder="SKU"
+                />
+
+                <Text style={styles.label}>Quantity</Text>
+                <TextInput
+                  value={draft.quantity}
+                  onChangeText={(v) => setDraft((d) => ({ ...d, quantity: v }))}
+                  style={styles.input}
+                  placeholder="0"
+                  keyboardType="numeric"
+                />
+
+                <Text style={styles.label}>Unit</Text>
+                <TextInput
+                  value={draft.unit}
+                  onChangeText={(v) => setDraft((d) => ({ ...d, unit: v }))}
+                  style={styles.input}
+                  placeholder="e.g., lbs"
+                />
+
+                <TouchableOpacity
+                  onPress={save}
+                  disabled={saving}
+                  style={[styles.primaryBtn, saving && styles.primaryBtnDisabled]}
+                >
+                  <Text style={styles.primaryBtnText}>
+                    {saving ? "Saving..." : "Save Changes"}
+                  </Text>
+                </TouchableOpacity>
+              </View>
+            )}
+          </View>
+        ) : null}
+
+          â€¹ Back
         </Text>
       </ScrollView>
     </ScreenBoundary>
@@ -163,5 +275,26 @@ const styles = StyleSheet.create({
   k: { fontSize: 12, opacity: 0.7 },
   v: { fontSize: 14 },
 
+  sectionTitle: { fontSize: 16, fontWeight: "900", marginBottom: 8 },
+  form: { gap: 8 },
+  label: { fontSize: 12, opacity: 0.7 },
+  input: {
+    borderWidth: 1,
+    borderColor: "rgba(0,0,0,0.12)",
+    borderRadius: 10,
+    padding: 10,
+    backgroundColor: "white"
+  },
+  primaryBtn: {
+    marginTop: 8,
+    backgroundColor: "#0f172a",
+    borderRadius: 10,
+    paddingVertical: 12,
+    alignItems: "center"
+  },
+  primaryBtnDisabled: { opacity: 0.6 },
+  primaryBtnText: { color: "white", fontWeight: "800" },
+
   backLink: { fontWeight: "800", marginTop: 6 }
 });
+

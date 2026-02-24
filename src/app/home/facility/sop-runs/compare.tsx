@@ -1,10 +1,11 @@
 import React from "react";
-import { View, Text } from "react-native";
+import { PlannedScreen } from "@/components/PlannedScreen";
 
-export default function CompareScreen() {
+export default function FacilitySopRunsComparePlanned() {
   return (
-    <View style={{ padding: 16 }}>
-      <Text>Compare SOP Runs</Text>
-    </View>
+    <PlannedScreen
+      title="SOP Compare (Planned)"
+      message="SOP runs are planned for a future release."
+    />
   );
 }

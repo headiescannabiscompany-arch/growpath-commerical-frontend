@@ -1,10 +1,11 @@
 import React from "react";
-import { View, Text } from "react-native";
+import { PlannedScreen } from "@/components/PlannedScreen";
 
-export default function StartSopRunScreen() {
+export default function FacilitySopRunsStartPlanned() {
   return (
-    <View style={{ padding: 16 }}>
-      <Text>Start SOP Run</Text>
-    </View>
+    <PlannedScreen
+      title="SOP Start (Planned)"
+      message="SOP runs are planned for a future release."
+    />
   );
 }
