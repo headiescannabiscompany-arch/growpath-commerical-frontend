@@ -1,7 +1,6 @@
 import React, { useEffect, useMemo, useState } from "react";
 import {
   ActivityIndicator,
-  FlatList,
   Pressable,
   StyleSheet,
   Text,
@@ -35,7 +34,6 @@ export default function CoursesScreen() {
 
   useEffect(() => {
     let alive = true;
-    let timerId = null;
 
     async function load() {
       setLoading(true);
@@ -56,11 +54,9 @@ export default function CoursesScreen() {
       }
     }
 
-    // Defer the initial fetch so user actions can occur first in tests.
-    timerId = setTimeout(load, 0);
+    load();
     return () => {
       alive = false;
-      if (timerId) clearTimeout(timerId);
     };
   }, [canSeePaidCourses]);
 
@@ -101,25 +97,17 @@ export default function CoursesScreen() {
         <Text style={styles.meta}>No courses found</Text>
       ) : null}
 
-      <FlatList
-        data={courses}
-        keyExtractor={(item, idx) => String(item?._id || item?.id || idx)}
-        disableVirtualization
-        scrollEnabled={false}
-        renderItem={({ item }) => (
-          <View style={styles.card}>
-            <Text style={styles.cardTitle}>{String(item?.title || item?.name || "Untitled")}</Text>
-            {hasAnalytics ? (
-              <Text style={styles.meta}>Views: {item?.analytics?.views ?? 0}</Text>
-            ) : null}
-            {canPublishCourses && item?.isPublished ? (
-              <Pressable accessibilityRole="button" style={styles.smallBtn}>
-                <Text style={styles.smallBtnText}>Unpublish</Text>
-              </Pressable>
-            ) : null}
-          </View>
-        )}
-      />
+      {courses.map((item, idx) => (
+        <View key={String(item?._id || item?.id || idx)} style={styles.card}>
+          <Text style={styles.cardTitle}>{String(item?.title || item?.name || "Untitled")}</Text>
+          {hasAnalytics ? <Text style={styles.meta}>Views: {item?.analytics?.views ?? 0}</Text> : null}
+          {canPublishCourses && item?.isPublished ? (
+            <Pressable accessibilityRole="button" style={styles.smallBtn}>
+              <Text style={styles.smallBtnText}>Unpublish</Text>
+            </Pressable>
+          ) : null}
+        </View>
+      ))}
 
       {canCreateCourses ? (
         <Pressable accessibilityRole="button" style={styles.btn}>
