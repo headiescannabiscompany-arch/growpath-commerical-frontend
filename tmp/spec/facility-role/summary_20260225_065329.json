@@ -1,0 +1,42 @@
+﻿[
+    {
+        "role":  "owner",
+        "loginStatus":  0,
+        "mode":  "",
+        "facilityId":  "",
+        "facilityRole":  "",
+        "probeStatus":  "",
+        "pass":  "NO",
+        "note":  "login failed"
+    },
+    {
+        "role":  "manager",
+        "loginStatus":  0,
+        "mode":  "",
+        "facilityId":  "",
+        "facilityRole":  "",
+        "probeStatus":  "",
+        "pass":  "NO",
+        "note":  "login failed"
+    },
+    {
+        "role":  "staff",
+        "loginStatus":  0,
+        "mode":  "",
+        "facilityId":  "",
+        "facilityRole":  "",
+        "probeStatus":  "",
+        "pass":  "NO",
+        "note":  "login failed"
+    },
+    {
+        "role":  "viewer",
+        "loginStatus":  0,
+        "mode":  "",
+        "facilityId":  "",
+        "facilityRole":  "",
+        "probeStatus":  "",
+        "pass":  "NO",
+        "note":  "login failed"
+    }
+]

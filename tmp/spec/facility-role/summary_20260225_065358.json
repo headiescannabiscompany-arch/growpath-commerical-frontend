@@ -1,0 +1,42 @@
+﻿[
+    {
+        "role":  "owner",
+        "loginStatus":  200,
+        "mode":  "facility",
+        "facilityId":  "",
+        "facilityRole":  "",
+        "probeStatus":  "",
+        "pass":  "NO",
+        "note":  "identity only"
+    },
+    {
+        "role":  "manager",
+        "loginStatus":  200,
+        "mode":  "facility",
+        "facilityId":  "",
+        "facilityRole":  "",
+        "probeStatus":  "",
+        "pass":  "NO",
+        "note":  "identity only"
+    },
+    {
+        "role":  "staff",
+        "loginStatus":  200,
+        "mode":  "facility",
+        "facilityId":  "",
+        "facilityRole":  "",
+        "probeStatus":  "",
+        "pass":  "NO",
+        "note":  "restricted probe expects 403"
+    },
+    {
+        "role":  "viewer",
+        "loginStatus":  200,
+        "mode":  "facility",
+        "facilityId":  "",
+        "facilityRole":  "",
+        "probeStatus":  "",
+        "pass":  "NO",
+        "note":  "restricted probe expects 403"
+    }
+]

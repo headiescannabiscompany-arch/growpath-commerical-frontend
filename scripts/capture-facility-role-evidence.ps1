@@ -36,7 +36,7 @@ function Invoke-JsonRequest {
   if ($Body -ne $null) { $jsonBody = ($Body | ConvertTo-Json -Depth 20) }
 
   try {
-    $response = Invoke-WebRequest -Uri $Url -Method $Method -Headers $Headers -ContentType "application/json" -Body $jsonBody
+    $response = Invoke-WebRequest -Uri $Url -Method $Method -Headers $Headers -ContentType "application/json" -Body $jsonBody -UseBasicParsing
     $status = [int]$response.StatusCode
     $text = $response.Content
   } catch {

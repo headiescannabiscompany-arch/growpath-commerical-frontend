@@ -1,0 +1,30 @@
+﻿{
+    "status":  200,
+    "body":  {
+                 "ok":  true,
+                 "accountType":  "facility",
+                 "plan":  "facility",
+                 "facilityId":  null,
+                 "facilityRole":  null,
+                 "user":  {
+                              "id":  "699e95c83b2c57ded2e7564e",
+                              "email":  "staff@triplebaggenetics.com",
+                              "name":  "",
+                              "plan":  "facility"
+                          },
+                 "ctx":  {
+                             "userId":  "699e95c83b2c57ded2e7564e",
+                             "plan":  "facility",
+                             "mode":  "facility",
+                             "facilityId":  null,
+                             "facilityRole":  null,
+                             "capabilities":  {
+
+                                              },
+                             "limits":  {
+
+                                        }
+                         }
+             },
+    "raw":  "{\"ok\":true,\"accountType\":\"facility\",\"plan\":\"facility\",\"facilityId\":null,\"facilityRole\":null,\"user\":{\"id\":\"699e95c83b2c57ded2e7564e\",\"email\":\"staff@triplebaggenetics.com\",\"name\":\"\",\"plan\":\"facility\"},\"ctx\":{\"userId\":\"699e95c83b2c57ded2e7564e\",\"plan\":\"facility\",\"mode\":\"facility\",\"facilityId\":null,\"facilityRole\":null,\"capabilities\":{},\"limits\":{}}}"
+}
