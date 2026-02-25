@@ -1,15 +1,7 @@
 ﻿{
-    "status":  200,
+    "status":  0,
     "body":  {
-                 "token":  "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJ1c2VyIjp7ImlkIjoiNjk5ZTk1YzgzYjJjNTdkZWQyZTc1NjRkIn0sImlhdCI6MTc3MjAyMDQzNywiZXhwIjoxNzcyNjI1MjM3fQ.KLEn-euXGVJ4pQ63zUKoahRZkVEYQCGbnpPio-MF2UA",
-                 "user":  {
-                              "id":  "699e95c83b2c57ded2e7564d",
-                              "email":  "manager@triplebaggenetics.com",
-                              "displayName":  "",
-                              "role":  "user",
-                              "plan":  "facility",
-                              "subscriptionStatus":  "inactive"
-                          }
+                 "raw":  "Unable to connect to the remote server"
              },
-    "raw":  "{\"token\":\"eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJ1c2VyIjp7ImlkIjoiNjk5ZTk1YzgzYjJjNTdkZWQyZTc1NjRkIn0sImlhdCI6MTc3MjAyMDQzNywiZXhwIjoxNzcyNjI1MjM3fQ.KLEn-euXGVJ4pQ63zUKoahRZkVEYQCGbnpPio-MF2UA\",\"user\":{\"id\":\"699e95c83b2c57ded2e7564d\",\"email\":\"manager@triplebaggenetics.com\",\"displayName\":\"\",\"role\":\"user\",\"plan\":\"facility\",\"subscriptionStatus\":\"inactive\"}}"
+    "raw":  "Unable to connect to the remote server"
 }
