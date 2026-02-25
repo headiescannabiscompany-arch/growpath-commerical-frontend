@@ -25,18 +25,20 @@ Result: role evidence set is NOT DONE.
 
 ## Required manual capture (execute exactly)
 
-1. Open 4 isolated sessions: OWNER, MANAGER, STAFF, VIEWER.
-2. In each session, capture GET `/api/me` response in DevTools network.
+1. Run scripted capture:
+   - `powershell -NoProfile -ExecutionPolicy Bypass -File scripts/capture-facility-role-evidence.ps1`
+2. Provide credentials for OWNER, MANAGER, STAFF, VIEWER when prompted.
 3. Verify and record:
    - `mode === "facility"`
    - `facilityId` matches selected facility
    - `facilityRole` matches session role
-4. Force one restricted action per blocked role and capture `403` response.
-5. Save screenshots/response snippets under:
+4. Script will run restricted probe for STAFF/VIEWER (`team/invite`) and record status.
+5. Artifacts are written under:
    - `tmp/spec/facility-role/owner/`
    - `tmp/spec/facility-role/manager/`
    - `tmp/spec/facility-role/staff/`
    - `tmp/spec/facility-role/viewer/`
+   - `tmp/spec/facility-role/summary_*.json`
 
 ## Pass matrix (fill)
 
