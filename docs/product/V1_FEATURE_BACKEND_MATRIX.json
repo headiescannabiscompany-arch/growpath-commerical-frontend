@@ -5430,7 +5430,7 @@
       "verification": "Unverified",
       "ui": {
         "mode": "commercial",
-        "route": "/commercial/alerts/[id]",
+        "route": "/alerts/[id]",
         "actions": [
           "open page"
         ]
@@ -5452,7 +5452,7 @@
       "verification": "Unverified",
       "ui": {
         "mode": "commercial",
-        "route": "/commercial/feed",
+        "route": "/home/commercial",
         "actions": [
           "open page"
         ]
@@ -5474,7 +5474,7 @@
       "verification": "Unverified",
       "ui": {
         "mode": "commercial",
-        "route": "/commercial/logs/[id]",
+        "route": "/logs/[id]",
         "actions": [
           "open page"
         ]
@@ -5496,7 +5496,7 @@
       "verification": "Unverified",
       "ui": {
         "mode": "commercial",
-        "route": "/commercial/tasks/[id]",
+        "route": "/tasks/[id]",
         "actions": [
           "open page"
         ]

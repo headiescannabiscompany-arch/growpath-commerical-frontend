@@ -46,10 +46,9 @@
       "routes": [
         "/home/commercial",
         "/home/commercial/inventory",
-        "/commercial/feed",
-        "/commercial/tasks/[id]",
-        "/commercial/logs/[id]",
-        "/commercial/alerts/[id]"
+        "/tasks/[id]",
+        "/logs/[id]",
+        "/alerts/[id]"
       ],
       "outOfNavRoutes": ["/home/commercial/inventory-item/[id]", "/home/commercial/inventory-create"]
     }
