@@ -1,4 +1,6 @@
-# Automated Test Implementation Checklist
+Facility membership has been seeded for all four users. Each now has the correct role and is attached to Triple Bag Genetics.
+
+You can now re-run your evidence capture script to verify /api/me returns the correct facilityId and facilityRole for each user. This will unblock SOP-VERIFY-FACILITY-001 and allow you to finalize the checklist. Let me know if you need any further backend changes or want to confirm the /api/me output for each user.# Automated Test Implementation Checklist
 
 This checklist will help you implement and integrate automated tests for your app using Playwright (web/Expo web) and Detox (React Native mobile). Adjust for your stack as needed.
 
@@ -15,6 +17,7 @@ This checklist will help you implement and integrate automated tests for your ap
 - [ ] Add `tests/` (for Playwright) and `e2e/` (for Detox) folders to your project
 - [ ] Add example test files (see docs/automated-test-plan.md)
 - [ ] Add test scripts to `package.json`:
+
   ```json
   "scripts": {
     "test:playwright": "playwright test",
