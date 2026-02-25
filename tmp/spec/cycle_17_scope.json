@@ -1,0 +1,37 @@
+{
+  "cycle": "2026-02-25 / 17",
+  "repo": "backend",
+  "batchType": "auto.read.low-risk",
+  "maxPromotions": 10,
+  "featureIds": [
+    "auto.get.followers.param",
+    "auto.get.following.param",
+    "auto.get.is.following.param",
+    "auto.get.profile.param",
+    "auto.get.health",
+    "auto.get.health.2",
+    "auto.get.ready",
+    "auto.get.facilities",
+    "auto.get.facilities.param",
+    "auto.get.facilities.ping"
+  ],
+  "expectedEndpoints": [
+    "GET /api/followers/:id",
+    "GET /api/following/:id",
+    "GET /api/is-following/:id",
+    "GET /api/profile/:id",
+    "GET /api/health",
+    "GET /health",
+    "GET /ready",
+    "GET /api/facilities",
+    "GET /api/facilities/:id",
+    "GET /api/facilities/__ping"
+  ],
+  "promotionRule": "Promote only if endpoint is mounted in /api/__debug/routes, guards are verified, and tests include happy + forbidden/invalid path. Otherwise keep Planned.",
+  "artifactsRequired": [
+    "tmp/spec/cycle_17_scope.json",
+    "tmp/spec/backend-routes.cycle17.json",
+    "gate command outputs",
+    "promoted/rejected list with reasons"
+  ]
+}
