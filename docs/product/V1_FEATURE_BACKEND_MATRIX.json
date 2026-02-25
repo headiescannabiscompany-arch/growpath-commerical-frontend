@@ -1,0 +1,5430 @@
+{
+  "version": "v1",
+  "policy": {
+    "plannedEndpointsAllowed": true,
+    "ciFailCondition": "Functional features must have API mappings present in /api/__debug/routes and test evidence files that exist on disk"
+  },
+  "features": [
+    {
+      "featureId": "ai.public.read",
+      "status": "Functional",
+      "ui": {
+        "mode": "personal",
+        "route": "/home/personal/ai",
+        "actions": [
+          "open ai hub"
+        ]
+      },
+      "api": [
+        {
+          "method": "GET",
+          "path": "/api/ai"
+        }
+      ],
+      "guards": {
+        "auth": true,
+        "facilityScope": false,
+        "rolesAllowed": [
+          "ANY_AUTHENTICATED"
+        ]
+      },
+      "evidence": {
+        "tests": [
+          "backend/tests/routes/ai.test.js"
+        ]
+      }
+    },
+    {
+      "featureId": "ai.facility.call",
+      "status": "Functional",
+      "ui": {
+        "mode": "facility",
+        "route": "/home/facility/ai/ask",
+        "actions": [
+          "run ai call"
+        ]
+      },
+      "api": [
+        {
+          "method": "POST",
+          "path": "/api/facility/:facilityId/ai/call"
+        }
+      ],
+      "guards": {
+        "auth": true,
+        "facilityScope": true,
+        "rolesAllowed": [
+          "OWNER",
+          "MANAGER",
+          "STAFF",
+          "VIEWER"
+        ]
+      },
+      "evidence": {
+        "tests": [
+          "backend/tests/core/ai.call.test.js"
+        ]
+      }
+    },
+    {
+      "featureId": "ai.verify.endpoint",
+      "status": "Planned",
+      "ui": {
+        "mode": "facility",
+        "route": "/home/facility/ai/validation",
+        "actions": [
+          "verify ai output",
+          "export training data"
+        ]
+      },
+      "api": [
+        {
+          "method": "POST",
+          "path": "/api/ai/verify"
+        }
+      ],
+      "guards": {
+        "auth": true,
+        "facilityScope": false,
+        "rolesAllowed": [
+          "OWNER",
+          "MANAGER"
+        ]
+      },
+      "evidence": {
+        "tests": []
+      }
+    },
+    {
+      "featureId": "tools.workspace",
+      "status": "Functional",
+      "ui": {
+        "mode": "personal",
+        "route": "/home/personal/tools",
+        "actions": [
+          "list tools",
+          "create tool config"
+        ]
+      },
+      "api": [
+        {
+          "method": "GET",
+          "path": "/api/tools"
+        },
+        {
+          "method": "POST",
+          "path": "/api/tools"
+        }
+      ],
+      "guards": {
+        "auth": true,
+        "facilityScope": false,
+        "rolesAllowed": [
+          "ANY_AUTHENTICATED"
+        ]
+      },
+      "evidence": {
+        "tests": [
+          "backend/tests/routes/tools.test.js"
+        ]
+      }
+    },
+    {
+      "featureId": "facility.tasks.core",
+      "status": "Functional",
+      "ui": {
+        "mode": "facility",
+        "route": "/home/facility/tasks",
+        "actions": [
+          "list tasks",
+          "create task",
+          "update task",
+          "delete task"
+        ]
+      },
+      "api": [
+        {
+          "method": "GET",
+          "path": "/api/facility/:facilityId/tasks"
+        },
+        {
+          "method": "POST",
+          "path": "/api/facility/:facilityId/tasks"
+        },
+        {
+          "method": "PATCH",
+          "path": "/api/facility/:facilityId/tasks/:taskId"
+        },
+        {
+          "method": "DELETE",
+          "path": "/api/facility/:facilityId/tasks/:taskId"
+        }
+      ],
+      "guards": {
+        "auth": true,
+        "facilityScope": true,
+        "rolesAllowed": [
+          "OWNER",
+          "MANAGER",
+          "STAFF"
+        ],
+        "viewerIsReadOnly": true
+      },
+      "evidence": {
+        "tests": [
+          "backend/tests/core/tasks.behavior.contract.test.js"
+        ]
+      }
+    },
+    {
+      "featureId": "facility.team.core",
+      "status": "Functional",
+      "ui": {
+        "mode": "facility",
+        "route": "/home/facility/team",
+        "actions": [
+          "list team",
+          "invite member"
+        ]
+      },
+      "api": [
+        {
+          "method": "GET",
+          "path": "/api/facility/:facilityId/team"
+        },
+        {
+          "method": "POST",
+          "path": "/api/facility/:facilityId/team/invite"
+        }
+      ],
+      "guards": {
+        "auth": true,
+        "facilityScope": true,
+        "rolesAllowed": [
+          "OWNER",
+          "MANAGER"
+        ],
+        "viewerIsReadOnly": true
+      },
+      "evidence": {
+        "tests": [
+          "backend/tests/core/facilityTeam.contract.test.js"
+        ]
+      }
+    },
+    {
+      "featureId": "auto.delete.courses.param.answers.param",
+      "status": "Planned",
+      "ui": {
+        "mode": "unknown",
+        "route": null,
+        "actions": [
+          "DELETE /api/courses/:id/answers/:answerId"
+        ]
+      },
+      "api": [
+        {
+          "method": "DELETE",
+          "path": "/api/courses/:id/answers/:answerId"
+        }
+      ],
+      "guards": {
+        "auth": null,
+        "facilityScope": null,
+        "rolesAllowed": []
+      },
+      "evidence": {
+        "tests": []
+      },
+      "verification": "Unverified",
+      "autoGenerated": true,
+      "generatedFrom": "DELETE /api/courses/:id/answers/:answerId"
+    },
+    {
+      "featureId": "auto.delete.courses.param.questions.param",
+      "status": "Planned",
+      "ui": {
+        "mode": "unknown",
+        "route": null,
+        "actions": [
+          "DELETE /api/courses/:id/questions/:questionId"
+        ]
+      },
+      "api": [
+        {
+          "method": "DELETE",
+          "path": "/api/courses/:id/questions/:questionId"
+        }
+      ],
+      "guards": {
+        "auth": null,
+        "facilityScope": null,
+        "rolesAllowed": []
+      },
+      "evidence": {
+        "tests": []
+      },
+      "verification": "Unverified",
+      "autoGenerated": true,
+      "generatedFrom": "DELETE /api/courses/:id/questions/:questionId"
+    },
+    {
+      "featureId": "auto.delete.courses.param.review",
+      "status": "Planned",
+      "ui": {
+        "mode": "unknown",
+        "route": null,
+        "actions": [
+          "DELETE /api/courses/:id/review"
+        ]
+      },
+      "api": [
+        {
+          "method": "DELETE",
+          "path": "/api/courses/:id/review"
+        }
+      ],
+      "guards": {
+        "auth": null,
+        "facilityScope": null,
+        "rolesAllowed": []
+      },
+      "evidence": {
+        "tests": []
+      },
+      "verification": "Unverified",
+      "autoGenerated": true,
+      "generatedFrom": "DELETE /api/courses/:id/review"
+    },
+    {
+      "featureId": "auto.delete.courses.lesson.param",
+      "status": "Planned",
+      "ui": {
+        "mode": "unknown",
+        "route": null,
+        "actions": [
+          "DELETE /api/courses/lesson/:lessonId"
+        ]
+      },
+      "api": [
+        {
+          "method": "DELETE",
+          "path": "/api/courses/lesson/:lessonId"
+        }
+      ],
+      "guards": {
+        "auth": null,
+        "facilityScope": null,
+        "rolesAllowed": []
+      },
+      "evidence": {
+        "tests": []
+      },
+      "verification": "Unverified",
+      "autoGenerated": true,
+      "generatedFrom": "DELETE /api/courses/lesson/:lessonId"
+    },
+    {
+      "featureId": "auto.delete.facility.param.growlogs.param",
+      "status": "Planned",
+      "ui": {
+        "mode": "unknown",
+        "route": null,
+        "actions": [
+          "DELETE /api/facility/:facilityId/growlogs/:id"
+        ]
+      },
+      "api": [
+        {
+          "method": "DELETE",
+          "path": "/api/facility/:facilityId/growlogs/:id"
+        }
+      ],
+      "guards": {
+        "auth": null,
+        "facilityScope": null,
+        "rolesAllowed": []
+      },
+      "evidence": {
+        "tests": []
+      },
+      "verification": "Unverified",
+      "autoGenerated": true,
+      "generatedFrom": "DELETE /api/facilities/:facilityId/growlogs/:id"
+    },
+    {
+      "featureId": "auto.delete.facility.param.grows.param",
+      "status": "Planned",
+      "ui": {
+        "mode": "unknown",
+        "route": null,
+        "actions": [
+          "DELETE /api/facility/:facilityId/grows/:growId"
+        ]
+      },
+      "api": [
+        {
+          "method": "DELETE",
+          "path": "/api/facility/:facilityId/grows/:growId"
+        }
+      ],
+      "guards": {
+        "auth": null,
+        "facilityScope": null,
+        "rolesAllowed": []
+      },
+      "evidence": {
+        "tests": []
+      },
+      "verification": "Unverified",
+      "autoGenerated": true,
+      "generatedFrom": "DELETE /api/facilities/:facilityId/grows/:growId"
+    },
+    {
+      "featureId": "auto.delete.facility.param.inventory.param",
+      "status": "Planned",
+      "ui": {
+        "mode": "unknown",
+        "route": null,
+        "actions": [
+          "DELETE /api/facility/:facilityId/inventory/:sku"
+        ]
+      },
+      "api": [
+        {
+          "method": "DELETE",
+          "path": "/api/facility/:facilityId/inventory/:sku"
+        }
+      ],
+      "guards": {
+        "auth": null,
+        "facilityScope": null,
+        "rolesAllowed": []
+      },
+      "evidence": {
+        "tests": []
+      },
+      "verification": "Unverified",
+      "autoGenerated": true,
+      "generatedFrom": "DELETE /api/facilities/:facilityId/inventory/:sku"
+    },
+    {
+      "featureId": "auto.delete.facility.param.plants.param",
+      "status": "Planned",
+      "ui": {
+        "mode": "unknown",
+        "route": null,
+        "actions": [
+          "DELETE /api/facility/:facilityId/plants/:plantId"
+        ]
+      },
+      "api": [
+        {
+          "method": "DELETE",
+          "path": "/api/facility/:facilityId/plants/:plantId"
+        }
+      ],
+      "guards": {
+        "auth": null,
+        "facilityScope": null,
+        "rolesAllowed": []
+      },
+      "evidence": {
+        "tests": []
+      },
+      "verification": "Unverified",
+      "autoGenerated": true,
+      "generatedFrom": "DELETE /api/facilities/:facilityId/plants/:plantId"
+    },
+    {
+      "featureId": "auto.delete.facility.param.rooms.param",
+      "status": "Planned",
+      "ui": {
+        "mode": "unknown",
+        "route": null,
+        "actions": [
+          "DELETE /api/facility/:facilityId/rooms/:roomId"
+        ]
+      },
+      "api": [
+        {
+          "method": "DELETE",
+          "path": "/api/facility/:facilityId/rooms/:roomId"
+        }
+      ],
+      "guards": {
+        "auth": null,
+        "facilityScope": null,
+        "rolesAllowed": []
+      },
+      "evidence": {
+        "tests": []
+      },
+      "verification": "Unverified",
+      "autoGenerated": true,
+      "generatedFrom": "DELETE /api/facilities/:facilityId/rooms/:roomId"
+    },
+    {
+      "featureId": "auto.delete.facility.param.team.param.members.param",
+      "status": "Planned",
+      "ui": {
+        "mode": "unknown",
+        "route": null,
+        "actions": [
+          "DELETE /api/facility/:facilityId/team/:userId,/members/:userId"
+        ]
+      },
+      "api": [
+        {
+          "method": "DELETE",
+          "path": "/api/facility/:facilityId/team/:userId,/members/:userId"
+        }
+      ],
+      "guards": {
+        "auth": null,
+        "facilityScope": null,
+        "rolesAllowed": []
+      },
+      "evidence": {
+        "tests": []
+      },
+      "verification": "Unverified",
+      "autoGenerated": true,
+      "generatedFrom": "DELETE /api/facilities/:facilityId/team/:userId,/members/:userId"
+    },
+    {
+      "featureId": "auto.delete.facility.param.team.invites.param",
+      "status": "Planned",
+      "ui": {
+        "mode": "unknown",
+        "route": null,
+        "actions": [
+          "DELETE /api/facility/:facilityId/team/invites/:inviteId"
+        ]
+      },
+      "api": [
+        {
+          "method": "DELETE",
+          "path": "/api/facility/:facilityId/team/invites/:inviteId"
+        }
+      ],
+      "guards": {
+        "auth": null,
+        "facilityScope": null,
+        "rolesAllowed": []
+      },
+      "evidence": {
+        "tests": []
+      },
+      "verification": "Unverified",
+      "autoGenerated": true,
+      "generatedFrom": "DELETE /api/facilities/:facilityId/team/invites/:inviteId"
+    },
+    {
+      "featureId": "auto.delete.facilities.param.members.param",
+      "status": "Planned",
+      "ui": {
+        "mode": "unknown",
+        "route": null,
+        "actions": [
+          "DELETE /api/facilities/:id/members/:userId"
+        ]
+      },
+      "api": [
+        {
+          "method": "DELETE",
+          "path": "/api/facilities/:id/members/:userId"
+        }
+      ],
+      "guards": {
+        "auth": null,
+        "facilityScope": null,
+        "rolesAllowed": []
+      },
+      "evidence": {
+        "tests": []
+      },
+      "verification": "Unverified",
+      "autoGenerated": true,
+      "generatedFrom": "DELETE /api/facilities/:id/members/:userId"
+    },
+    {
+      "featureId": "auto.delete.facility.param.growlogs.param.2",
+      "status": "Planned",
+      "ui": {
+        "mode": "unknown",
+        "route": null,
+        "actions": [
+          "DELETE /api/facility/:facilityId/growlogs/:id"
+        ]
+      },
+      "api": [
+        {
+          "method": "DELETE",
+          "path": "/api/facility/:facilityId/growlogs/:id"
+        }
+      ],
+      "guards": {
+        "auth": null,
+        "facilityScope": null,
+        "rolesAllowed": []
+      },
+      "evidence": {
+        "tests": []
+      },
+      "verification": "Unverified",
+      "autoGenerated": true,
+      "generatedFrom": "DELETE /api/facility/:facilityId/growlogs/:id"
+    },
+    {
+      "featureId": "auto.delete.facility.param.grows.param.2",
+      "status": "Planned",
+      "ui": {
+        "mode": "unknown",
+        "route": null,
+        "actions": [
+          "DELETE /api/facility/:facilityId/grows/:growId"
+        ]
+      },
+      "api": [
+        {
+          "method": "DELETE",
+          "path": "/api/facility/:facilityId/grows/:growId"
+        }
+      ],
+      "guards": {
+        "auth": null,
+        "facilityScope": null,
+        "rolesAllowed": []
+      },
+      "evidence": {
+        "tests": []
+      },
+      "verification": "Unverified",
+      "autoGenerated": true,
+      "generatedFrom": "DELETE /api/facility/:facilityId/grows/:growId"
+    },
+    {
+      "featureId": "auto.delete.facility.param.inventory.param.2",
+      "status": "Planned",
+      "ui": {
+        "mode": "unknown",
+        "route": null,
+        "actions": [
+          "DELETE /api/facility/:facilityId/inventory/:sku"
+        ]
+      },
+      "api": [
+        {
+          "method": "DELETE",
+          "path": "/api/facility/:facilityId/inventory/:sku"
+        }
+      ],
+      "guards": {
+        "auth": null,
+        "facilityScope": null,
+        "rolesAllowed": []
+      },
+      "evidence": {
+        "tests": []
+      },
+      "verification": "Unverified",
+      "autoGenerated": true,
+      "generatedFrom": "DELETE /api/facility/:facilityId/inventory/:sku"
+    },
+    {
+      "featureId": "auto.delete.facility.param.plants.param.2",
+      "status": "Planned",
+      "ui": {
+        "mode": "unknown",
+        "route": null,
+        "actions": [
+          "DELETE /api/facility/:facilityId/plants/:plantId"
+        ]
+      },
+      "api": [
+        {
+          "method": "DELETE",
+          "path": "/api/facility/:facilityId/plants/:plantId"
+        }
+      ],
+      "guards": {
+        "auth": null,
+        "facilityScope": null,
+        "rolesAllowed": []
+      },
+      "evidence": {
+        "tests": []
+      },
+      "verification": "Unverified",
+      "autoGenerated": true,
+      "generatedFrom": "DELETE /api/facility/:facilityId/plants/:plantId"
+    },
+    {
+      "featureId": "auto.delete.facility.param.rooms.param.2",
+      "status": "Planned",
+      "ui": {
+        "mode": "unknown",
+        "route": null,
+        "actions": [
+          "DELETE /api/facility/:facilityId/rooms/:roomId"
+        ]
+      },
+      "api": [
+        {
+          "method": "DELETE",
+          "path": "/api/facility/:facilityId/rooms/:roomId"
+        }
+      ],
+      "guards": {
+        "auth": null,
+        "facilityScope": null,
+        "rolesAllowed": []
+      },
+      "evidence": {
+        "tests": []
+      },
+      "verification": "Unverified",
+      "autoGenerated": true,
+      "generatedFrom": "DELETE /api/facility/:facilityId/rooms/:roomId"
+    },
+    {
+      "featureId": "auto.delete.facility.param.team.param.members.param.2",
+      "status": "Planned",
+      "ui": {
+        "mode": "unknown",
+        "route": null,
+        "actions": [
+          "DELETE /api/facility/:facilityId/team/:userId,/members/:userId"
+        ]
+      },
+      "api": [
+        {
+          "method": "DELETE",
+          "path": "/api/facility/:facilityId/team/:userId,/members/:userId"
+        }
+      ],
+      "guards": {
+        "auth": null,
+        "facilityScope": null,
+        "rolesAllowed": []
+      },
+      "evidence": {
+        "tests": []
+      },
+      "verification": "Unverified",
+      "autoGenerated": true,
+      "generatedFrom": "DELETE /api/facility/:facilityId/team/:userId,/members/:userId"
+    },
+    {
+      "featureId": "auto.delete.facility.param.team.invites.param.2",
+      "status": "Planned",
+      "ui": {
+        "mode": "unknown",
+        "route": null,
+        "actions": [
+          "DELETE /api/facility/:facilityId/team/invites/:inviteId"
+        ]
+      },
+      "api": [
+        {
+          "method": "DELETE",
+          "path": "/api/facility/:facilityId/team/invites/:inviteId"
+        }
+      ],
+      "guards": {
+        "auth": null,
+        "facilityScope": null,
+        "rolesAllowed": []
+      },
+      "evidence": {
+        "tests": []
+      },
+      "verification": "Unverified",
+      "autoGenerated": true,
+      "generatedFrom": "DELETE /api/facility/:facilityId/team/invites/:inviteId"
+    },
+    {
+      "featureId": "auto.delete.growlogs.param",
+      "status": "Planned",
+      "ui": {
+        "mode": "unknown",
+        "route": null,
+        "actions": [
+          "DELETE /api/growlogs/:id"
+        ]
+      },
+      "api": [
+        {
+          "method": "DELETE",
+          "path": "/api/growlogs/:id"
+        }
+      ],
+      "guards": {
+        "auth": null,
+        "facilityScope": null,
+        "rolesAllowed": []
+      },
+      "evidence": {
+        "tests": []
+      },
+      "verification": "Unverified",
+      "autoGenerated": true,
+      "generatedFrom": "DELETE /api/growlogs/:id"
+    },
+    {
+      "featureId": "auto.delete.inventory.param",
+      "status": "Planned",
+      "ui": {
+        "mode": "unknown",
+        "route": null,
+        "actions": [
+          "DELETE /api/inventory/:sku"
+        ]
+      },
+      "api": [
+        {
+          "method": "DELETE",
+          "path": "/api/inventory/:sku"
+        }
+      ],
+      "guards": {
+        "auth": null,
+        "facilityScope": null,
+        "rolesAllowed": []
+      },
+      "evidence": {
+        "tests": []
+      },
+      "verification": "Unverified",
+      "autoGenerated": true,
+      "generatedFrom": "DELETE /api/inventory/:sku"
+    },
+    {
+      "featureId": "auto.delete.rooms.param",
+      "status": "Planned",
+      "ui": {
+        "mode": "unknown",
+        "route": null,
+        "actions": [
+          "DELETE /api/rooms/:roomId"
+        ]
+      },
+      "api": [
+        {
+          "method": "DELETE",
+          "path": "/api/rooms/:roomId"
+        }
+      ],
+      "guards": {
+        "auth": null,
+        "facilityScope": null,
+        "rolesAllowed": []
+      },
+      "evidence": {
+        "tests": []
+      },
+      "verification": "Unverified",
+      "autoGenerated": true,
+      "generatedFrom": "DELETE /api/rooms/:roomId"
+    },
+    {
+      "featureId": "auto.get.certificates",
+      "status": "Planned",
+      "ui": {
+        "mode": "unknown",
+        "route": null,
+        "actions": [
+          "GET /api/certificates"
+        ]
+      },
+      "api": [
+        {
+          "method": "GET",
+          "path": "/api/certificates"
+        }
+      ],
+      "guards": {
+        "auth": null,
+        "facilityScope": null,
+        "rolesAllowed": []
+      },
+      "evidence": {
+        "tests": []
+      },
+      "verification": "Unverified",
+      "autoGenerated": true,
+      "generatedFrom": "GET /api/certificates"
+    },
+    {
+      "featureId": "auto.get.courses",
+      "status": "Planned",
+      "ui": {
+        "mode": "unknown",
+        "route": null,
+        "actions": [
+          "GET /api/courses"
+        ]
+      },
+      "api": [
+        {
+          "method": "GET",
+          "path": "/api/courses"
+        }
+      ],
+      "guards": {
+        "auth": null,
+        "facilityScope": null,
+        "rolesAllowed": []
+      },
+      "evidence": {
+        "tests": []
+      },
+      "verification": "Unverified",
+      "autoGenerated": true,
+      "generatedFrom": "GET /api/courses"
+    },
+    {
+      "featureId": "auto.get.courses.param",
+      "status": "Planned",
+      "ui": {
+        "mode": "unknown",
+        "route": null,
+        "actions": [
+          "GET /api/courses/:id"
+        ]
+      },
+      "api": [
+        {
+          "method": "GET",
+          "path": "/api/courses/:id"
+        }
+      ],
+      "guards": {
+        "auth": null,
+        "facilityScope": null,
+        "rolesAllowed": []
+      },
+      "evidence": {
+        "tests": []
+      },
+      "verification": "Unverified",
+      "autoGenerated": true,
+      "generatedFrom": "GET /api/courses/:id"
+    },
+    {
+      "featureId": "auto.get.courses.param.recommendations",
+      "status": "Planned",
+      "ui": {
+        "mode": "unknown",
+        "route": null,
+        "actions": [
+          "GET /api/courses/:id/recommendations"
+        ]
+      },
+      "api": [
+        {
+          "method": "GET",
+          "path": "/api/courses/:id/recommendations"
+        }
+      ],
+      "guards": {
+        "auth": null,
+        "facilityScope": null,
+        "rolesAllowed": []
+      },
+      "evidence": {
+        "tests": []
+      },
+      "verification": "Unverified",
+      "autoGenerated": true,
+      "generatedFrom": "GET /api/courses/:id/recommendations"
+    },
+    {
+      "featureId": "auto.get.courses.param.enrollment.status",
+      "status": "Planned",
+      "ui": {
+        "mode": "unknown",
+        "route": null,
+        "actions": [
+          "GET /api/courses/:id/enrollment-status"
+        ]
+      },
+      "api": [
+        {
+          "method": "GET",
+          "path": "/api/courses/:id/enrollment-status"
+        }
+      ],
+      "guards": {
+        "auth": null,
+        "facilityScope": null,
+        "rolesAllowed": []
+      },
+      "evidence": {
+        "tests": []
+      },
+      "verification": "Unverified",
+      "autoGenerated": true,
+      "generatedFrom": "GET /api/courses/:id/enrollment-status"
+    },
+    {
+      "featureId": "auto.get.courses.param.questions",
+      "status": "Planned",
+      "ui": {
+        "mode": "unknown",
+        "route": null,
+        "actions": [
+          "GET /api/courses/:id/questions"
+        ]
+      },
+      "api": [
+        {
+          "method": "GET",
+          "path": "/api/courses/:id/questions"
+        }
+      ],
+      "guards": {
+        "auth": null,
+        "facilityScope": null,
+        "rolesAllowed": []
+      },
+      "evidence": {
+        "tests": []
+      },
+      "verification": "Unverified",
+      "autoGenerated": true,
+      "generatedFrom": "GET /api/courses/:id/questions"
+    },
+    {
+      "featureId": "auto.get.courses.param.reviews",
+      "status": "Planned",
+      "ui": {
+        "mode": "unknown",
+        "route": null,
+        "actions": [
+          "GET /api/courses/:id/reviews"
+        ]
+      },
+      "api": [
+        {
+          "method": "GET",
+          "path": "/api/courses/:id/reviews"
+        }
+      ],
+      "guards": {
+        "auth": null,
+        "facilityScope": null,
+        "rolesAllowed": []
+      },
+      "evidence": {
+        "tests": []
+      },
+      "verification": "Unverified",
+      "autoGenerated": true,
+      "generatedFrom": "GET /api/courses/:id/reviews"
+    },
+    {
+      "featureId": "auto.get.courses.categories",
+      "status": "Planned",
+      "ui": {
+        "mode": "unknown",
+        "route": null,
+        "actions": [
+          "GET /api/courses/categories"
+        ]
+      },
+      "api": [
+        {
+          "method": "GET",
+          "path": "/api/courses/categories"
+        }
+      ],
+      "guards": {
+        "auth": null,
+        "facilityScope": null,
+        "rolesAllowed": []
+      },
+      "evidence": {
+        "tests": []
+      },
+      "verification": "Unverified",
+      "autoGenerated": true,
+      "generatedFrom": "GET /api/courses/categories"
+    },
+    {
+      "featureId": "auto.get.courses.category.param",
+      "status": "Planned",
+      "ui": {
+        "mode": "unknown",
+        "route": null,
+        "actions": [
+          "GET /api/courses/category/:category"
+        ]
+      },
+      "api": [
+        {
+          "method": "GET",
+          "path": "/api/courses/category/:category"
+        }
+      ],
+      "guards": {
+        "auth": null,
+        "facilityScope": null,
+        "rolesAllowed": []
+      },
+      "evidence": {
+        "tests": []
+      },
+      "verification": "Unverified",
+      "autoGenerated": true,
+      "generatedFrom": "GET /api/courses/category/:category"
+    },
+    {
+      "featureId": "auto.get.courses.filter",
+      "status": "Planned",
+      "ui": {
+        "mode": "unknown",
+        "route": null,
+        "actions": [
+          "GET /api/courses/filter"
+        ]
+      },
+      "api": [
+        {
+          "method": "GET",
+          "path": "/api/courses/filter"
+        }
+      ],
+      "guards": {
+        "auth": null,
+        "facilityScope": null,
+        "rolesAllowed": []
+      },
+      "evidence": {
+        "tests": []
+      },
+      "verification": "Unverified",
+      "autoGenerated": true,
+      "generatedFrom": "GET /api/courses/filter"
+    },
+    {
+      "featureId": "auto.get.courses.list",
+      "status": "Planned",
+      "ui": {
+        "mode": "unknown",
+        "route": null,
+        "actions": [
+          "GET /api/courses/list"
+        ]
+      },
+      "api": [
+        {
+          "method": "GET",
+          "path": "/api/courses/list"
+        }
+      ],
+      "guards": {
+        "auth": null,
+        "facilityScope": null,
+        "rolesAllowed": []
+      },
+      "evidence": {
+        "tests": []
+      },
+      "verification": "Unverified",
+      "autoGenerated": true,
+      "generatedFrom": "GET /api/courses/list"
+    },
+    {
+      "featureId": "auto.get.courses.mine",
+      "status": "Planned",
+      "ui": {
+        "mode": "unknown",
+        "route": null,
+        "actions": [
+          "GET /api/courses/mine"
+        ]
+      },
+      "api": [
+        {
+          "method": "GET",
+          "path": "/api/courses/mine"
+        }
+      ],
+      "guards": {
+        "auth": null,
+        "facilityScope": null,
+        "rolesAllowed": []
+      },
+      "evidence": {
+        "tests": []
+      },
+      "verification": "Unverified",
+      "autoGenerated": true,
+      "generatedFrom": "GET /api/courses/mine"
+    },
+    {
+      "featureId": "auto.get.courses.recommendations",
+      "status": "Planned",
+      "ui": {
+        "mode": "unknown",
+        "route": null,
+        "actions": [
+          "GET /api/courses/recommendations"
+        ]
+      },
+      "api": [
+        {
+          "method": "GET",
+          "path": "/api/courses/recommendations"
+        }
+      ],
+      "guards": {
+        "auth": null,
+        "facilityScope": null,
+        "rolesAllowed": []
+      },
+      "evidence": {
+        "tests": []
+      },
+      "verification": "Unverified",
+      "autoGenerated": true,
+      "generatedFrom": "GET /api/courses/recommendations"
+    },
+    {
+      "featureId": "auto.get.courses.recommended",
+      "status": "Planned",
+      "ui": {
+        "mode": "unknown",
+        "route": null,
+        "actions": [
+          "GET /api/courses/recommended"
+        ]
+      },
+      "api": [
+        {
+          "method": "GET",
+          "path": "/api/courses/recommended"
+        }
+      ],
+      "guards": {
+        "auth": null,
+        "facilityScope": null,
+        "rolesAllowed": []
+      },
+      "evidence": {
+        "tests": []
+      },
+      "verification": "Unverified",
+      "autoGenerated": true,
+      "generatedFrom": "GET /api/courses/recommended"
+    },
+    {
+      "featureId": "auto.get.courses.search",
+      "status": "Planned",
+      "ui": {
+        "mode": "unknown",
+        "route": null,
+        "actions": [
+          "GET /api/courses/search"
+        ]
+      },
+      "api": [
+        {
+          "method": "GET",
+          "path": "/api/courses/search"
+        }
+      ],
+      "guards": {
+        "auth": null,
+        "facilityScope": null,
+        "rolesAllowed": []
+      },
+      "evidence": {
+        "tests": []
+      },
+      "verification": "Unverified",
+      "autoGenerated": true,
+      "generatedFrom": "GET /api/courses/search"
+    },
+    {
+      "featureId": "auto.get.courses.subcategories.param",
+      "status": "Planned",
+      "ui": {
+        "mode": "unknown",
+        "route": null,
+        "actions": [
+          "GET /api/courses/subcategories/:category"
+        ]
+      },
+      "api": [
+        {
+          "method": "GET",
+          "path": "/api/courses/subcategories/:category"
+        }
+      ],
+      "guards": {
+        "auth": null,
+        "facilityScope": null,
+        "rolesAllowed": []
+      },
+      "evidence": {
+        "tests": []
+      },
+      "verification": "Unverified",
+      "autoGenerated": true,
+      "generatedFrom": "GET /api/courses/subcategories/:category"
+    },
+    {
+      "featureId": "auto.get.courses.trending.tags",
+      "status": "Planned",
+      "ui": {
+        "mode": "unknown",
+        "route": null,
+        "actions": [
+          "GET /api/courses/trending-tags"
+        ]
+      },
+      "api": [
+        {
+          "method": "GET",
+          "path": "/api/courses/trending-tags"
+        }
+      ],
+      "guards": {
+        "auth": null,
+        "facilityScope": null,
+        "rolesAllowed": []
+      },
+      "evidence": {
+        "tests": []
+      },
+      "verification": "Unverified",
+      "autoGenerated": true,
+      "generatedFrom": "GET /api/courses/trending-tags"
+    },
+    {
+      "featureId": "auto.get.courses.user.certificates",
+      "status": "Planned",
+      "ui": {
+        "mode": "unknown",
+        "route": null,
+        "actions": [
+          "GET /api/courses/user/certificates"
+        ]
+      },
+      "api": [
+        {
+          "method": "GET",
+          "path": "/api/courses/user/certificates"
+        }
+      ],
+      "guards": {
+        "auth": null,
+        "facilityScope": null,
+        "rolesAllowed": []
+      },
+      "evidence": {
+        "tests": []
+      },
+      "verification": "Unverified",
+      "autoGenerated": true,
+      "generatedFrom": "GET /api/courses/user/certificates"
+    },
+    {
+      "featureId": "auto.get.courses.verify.param",
+      "status": "Planned",
+      "ui": {
+        "mode": "unknown",
+        "route": null,
+        "actions": [
+          "GET /api/courses/verify/:certificateId"
+        ]
+      },
+      "api": [
+        {
+          "method": "GET",
+          "path": "/api/courses/verify/:certificateId"
+        }
+      ],
+      "guards": {
+        "auth": null,
+        "facilityScope": null,
+        "rolesAllowed": []
+      },
+      "evidence": {
+        "tests": []
+      },
+      "verification": "Unverified",
+      "autoGenerated": true,
+      "generatedFrom": "GET /api/courses/verify/:certificateId"
+    },
+    {
+      "featureId": "auto.get.debug.info",
+      "status": "Planned",
+      "ui": {
+        "mode": "unknown",
+        "route": null,
+        "actions": [
+          "GET /api/debug/info"
+        ]
+      },
+      "api": [
+        {
+          "method": "GET",
+          "path": "/api/debug/info"
+        }
+      ],
+      "guards": {
+        "auth": null,
+        "facilityScope": null,
+        "rolesAllowed": []
+      },
+      "evidence": {
+        "tests": []
+      },
+      "verification": "Unverified",
+      "autoGenerated": true,
+      "generatedFrom": "GET /api/debug/info"
+    },
+    {
+      "featureId": "auto.get.facilities",
+      "status": "Planned",
+      "ui": {
+        "mode": "unknown",
+        "route": null,
+        "actions": [
+          "GET /api/facilities"
+        ]
+      },
+      "api": [
+        {
+          "method": "GET",
+          "path": "/api/facilities"
+        }
+      ],
+      "guards": {
+        "auth": null,
+        "facilityScope": null,
+        "rolesAllowed": []
+      },
+      "evidence": {
+        "tests": []
+      },
+      "verification": "Unverified",
+      "autoGenerated": true,
+      "generatedFrom": "GET /api/facilities"
+    },
+    {
+      "featureId": "auto.get.facility.param",
+      "status": "Planned",
+      "ui": {
+        "mode": "unknown",
+        "route": null,
+        "actions": [
+          "GET /api/facility/:facilityId"
+        ]
+      },
+      "api": [
+        {
+          "method": "GET",
+          "path": "/api/facility/:facilityId"
+        }
+      ],
+      "guards": {
+        "auth": null,
+        "facilityScope": null,
+        "rolesAllowed": []
+      },
+      "evidence": {
+        "tests": []
+      },
+      "verification": "Unverified",
+      "autoGenerated": true,
+      "generatedFrom": "GET /api/facilities/:facilityId"
+    },
+    {
+      "featureId": "auto.get.facility.param.compliance.deviations.summary",
+      "status": "Planned",
+      "ui": {
+        "mode": "unknown",
+        "route": null,
+        "actions": [
+          "GET /api/facility/:facilityId/compliance/deviations/summary"
+        ]
+      },
+      "api": [
+        {
+          "method": "GET",
+          "path": "/api/facility/:facilityId/compliance/deviations/summary"
+        }
+      ],
+      "guards": {
+        "auth": null,
+        "facilityScope": null,
+        "rolesAllowed": []
+      },
+      "evidence": {
+        "tests": []
+      },
+      "verification": "Unverified",
+      "autoGenerated": true,
+      "generatedFrom": "GET /api/facilities/:facilityId/compliance/deviations/summary"
+    },
+    {
+      "featureId": "auto.get.facility.param.compliance.sops.recommended",
+      "status": "Planned",
+      "ui": {
+        "mode": "unknown",
+        "route": null,
+        "actions": [
+          "GET /api/facility/:facilityId/compliance/sops/recommended"
+        ]
+      },
+      "api": [
+        {
+          "method": "GET",
+          "path": "/api/facility/:facilityId/compliance/sops/recommended"
+        }
+      ],
+      "guards": {
+        "auth": null,
+        "facilityScope": null,
+        "rolesAllowed": []
+      },
+      "evidence": {
+        "tests": []
+      },
+      "verification": "Unverified",
+      "autoGenerated": true,
+      "generatedFrom": "GET /api/facilities/:facilityId/compliance/sops/recommended"
+    },
+    {
+      "featureId": "auto.get.facility.param.growlogs",
+      "status": "Planned",
+      "ui": {
+        "mode": "unknown",
+        "route": null,
+        "actions": [
+          "GET /api/facility/:facilityId/growlogs"
+        ]
+      },
+      "api": [
+        {
+          "method": "GET",
+          "path": "/api/facility/:facilityId/growlogs"
+        }
+      ],
+      "guards": {
+        "auth": null,
+        "facilityScope": null,
+        "rolesAllowed": []
+      },
+      "evidence": {
+        "tests": []
+      },
+      "verification": "Unverified",
+      "autoGenerated": true,
+      "generatedFrom": "GET /api/facilities/:facilityId/growlogs"
+    },
+    {
+      "featureId": "auto.get.facility.param.growlogs.param",
+      "status": "Planned",
+      "ui": {
+        "mode": "unknown",
+        "route": null,
+        "actions": [
+          "GET /api/facility/:facilityId/growlogs/:id"
+        ]
+      },
+      "api": [
+        {
+          "method": "GET",
+          "path": "/api/facility/:facilityId/growlogs/:id"
+        }
+      ],
+      "guards": {
+        "auth": null,
+        "facilityScope": null,
+        "rolesAllowed": []
+      },
+      "evidence": {
+        "tests": []
+      },
+      "verification": "Unverified",
+      "autoGenerated": true,
+      "generatedFrom": "GET /api/facilities/:facilityId/growlogs/:id"
+    },
+    {
+      "featureId": "auto.get.facility.param.grows",
+      "status": "Planned",
+      "ui": {
+        "mode": "unknown",
+        "route": null,
+        "actions": [
+          "GET /api/facility/:facilityId/grows"
+        ]
+      },
+      "api": [
+        {
+          "method": "GET",
+          "path": "/api/facility/:facilityId/grows"
+        }
+      ],
+      "guards": {
+        "auth": null,
+        "facilityScope": null,
+        "rolesAllowed": []
+      },
+      "evidence": {
+        "tests": []
+      },
+      "verification": "Unverified",
+      "autoGenerated": true,
+      "generatedFrom": "GET /api/facilities/:facilityId/grows"
+    },
+    {
+      "featureId": "auto.get.facility.param.inventory",
+      "status": "Planned",
+      "ui": {
+        "mode": "unknown",
+        "route": null,
+        "actions": [
+          "GET /api/facility/:facilityId/inventory"
+        ]
+      },
+      "api": [
+        {
+          "method": "GET",
+          "path": "/api/facility/:facilityId/inventory"
+        }
+      ],
+      "guards": {
+        "auth": null,
+        "facilityScope": null,
+        "rolesAllowed": []
+      },
+      "evidence": {
+        "tests": []
+      },
+      "verification": "Unverified",
+      "autoGenerated": true,
+      "generatedFrom": "GET /api/facilities/:facilityId/inventory"
+    },
+    {
+      "featureId": "auto.get.facility.param.inventory.param",
+      "status": "Planned",
+      "ui": {
+        "mode": "unknown",
+        "route": null,
+        "actions": [
+          "GET /api/facility/:facilityId/inventory/:itemId"
+        ]
+      },
+      "api": [
+        {
+          "method": "GET",
+          "path": "/api/facility/:facilityId/inventory/:itemId"
+        }
+      ],
+      "guards": {
+        "auth": null,
+        "facilityScope": null,
+        "rolesAllowed": []
+      },
+      "evidence": {
+        "tests": []
+      },
+      "verification": "Unverified",
+      "autoGenerated": true,
+      "generatedFrom": "GET /api/facilities/:facilityId/inventory/:itemId"
+    },
+    {
+      "featureId": "auto.get.facility.param.plants",
+      "status": "Planned",
+      "ui": {
+        "mode": "unknown",
+        "route": null,
+        "actions": [
+          "GET /api/facility/:facilityId/plants"
+        ]
+      },
+      "api": [
+        {
+          "method": "GET",
+          "path": "/api/facility/:facilityId/plants"
+        }
+      ],
+      "guards": {
+        "auth": null,
+        "facilityScope": null,
+        "rolesAllowed": []
+      },
+      "evidence": {
+        "tests": []
+      },
+      "verification": "Unverified",
+      "autoGenerated": true,
+      "generatedFrom": "GET /api/facilities/:facilityId/plants"
+    },
+    {
+      "featureId": "auto.get.facility.param.rooms",
+      "status": "Planned",
+      "ui": {
+        "mode": "unknown",
+        "route": null,
+        "actions": [
+          "GET /api/facility/:facilityId/rooms"
+        ]
+      },
+      "api": [
+        {
+          "method": "GET",
+          "path": "/api/facility/:facilityId/rooms"
+        }
+      ],
+      "guards": {
+        "auth": null,
+        "facilityScope": null,
+        "rolesAllowed": []
+      },
+      "evidence": {
+        "tests": []
+      },
+      "verification": "Unverified",
+      "autoGenerated": true,
+      "generatedFrom": "GET /api/facilities/:facilityId/rooms"
+    },
+    {
+      "featureId": "auto.get.facility.param.settings",
+      "status": "Planned",
+      "ui": {
+        "mode": "unknown",
+        "route": null,
+        "actions": [
+          "GET /api/facility/:facilityId/settings"
+        ]
+      },
+      "api": [
+        {
+          "method": "GET",
+          "path": "/api/facility/:facilityId/settings"
+        }
+      ],
+      "guards": {
+        "auth": null,
+        "facilityScope": null,
+        "rolesAllowed": []
+      },
+      "evidence": {
+        "tests": []
+      },
+      "verification": "Unverified",
+      "autoGenerated": true,
+      "generatedFrom": "GET /api/facilities/:facilityId/settings"
+    },
+    {
+      "featureId": "auto.get.facility.param.tasks.param",
+      "status": "Planned",
+      "ui": {
+        "mode": "unknown",
+        "route": null,
+        "actions": [
+          "GET /api/facility/:facilityId/tasks/:taskId"
+        ]
+      },
+      "api": [
+        {
+          "method": "GET",
+          "path": "/api/facility/:facilityId/tasks/:taskId"
+        }
+      ],
+      "guards": {
+        "auth": null,
+        "facilityScope": null,
+        "rolesAllowed": []
+      },
+      "evidence": {
+        "tests": []
+      },
+      "verification": "Unverified",
+      "autoGenerated": true,
+      "generatedFrom": "GET /api/facilities/:facilityId/tasks/:taskId"
+    },
+    {
+      "featureId": "auto.get.facility.param.team.invites",
+      "status": "Planned",
+      "ui": {
+        "mode": "unknown",
+        "route": null,
+        "actions": [
+          "GET /api/facility/:facilityId/team/invites"
+        ]
+      },
+      "api": [
+        {
+          "method": "GET",
+          "path": "/api/facility/:facilityId/team/invites"
+        }
+      ],
+      "guards": {
+        "auth": null,
+        "facilityScope": null,
+        "rolesAllowed": []
+      },
+      "evidence": {
+        "tests": []
+      },
+      "verification": "Unverified",
+      "autoGenerated": true,
+      "generatedFrom": "GET /api/facilities/:facilityId/team/invites"
+    },
+    {
+      "featureId": "auto.get.facility.param.team.members",
+      "status": "Planned",
+      "ui": {
+        "mode": "unknown",
+        "route": null,
+        "actions": [
+          "GET /api/facility/:facilityId/team/members"
+        ]
+      },
+      "api": [
+        {
+          "method": "GET",
+          "path": "/api/facility/:facilityId/team/members"
+        }
+      ],
+      "guards": {
+        "auth": null,
+        "facilityScope": null,
+        "rolesAllowed": []
+      },
+      "evidence": {
+        "tests": []
+      },
+      "verification": "Unverified",
+      "autoGenerated": true,
+      "generatedFrom": "GET /api/facilities/:facilityId/team/members"
+    },
+    {
+      "featureId": "auto.get.facilities.param",
+      "status": "Planned",
+      "ui": {
+        "mode": "unknown",
+        "route": null,
+        "actions": [
+          "GET /api/facilities/:id"
+        ]
+      },
+      "api": [
+        {
+          "method": "GET",
+          "path": "/api/facilities/:id"
+        }
+      ],
+      "guards": {
+        "auth": null,
+        "facilityScope": null,
+        "rolesAllowed": []
+      },
+      "evidence": {
+        "tests": []
+      },
+      "verification": "Unverified",
+      "autoGenerated": true,
+      "generatedFrom": "GET /api/facilities/:id"
+    },
+    {
+      "featureId": "auto.get.facilities.ping",
+      "status": "Planned",
+      "ui": {
+        "mode": "unknown",
+        "route": null,
+        "actions": [
+          "GET /api/facilities/__ping"
+        ]
+      },
+      "api": [
+        {
+          "method": "GET",
+          "path": "/api/facilities/__ping"
+        }
+      ],
+      "guards": {
+        "auth": null,
+        "facilityScope": null,
+        "rolesAllowed": []
+      },
+      "evidence": {
+        "tests": []
+      },
+      "verification": "Unverified",
+      "autoGenerated": true,
+      "generatedFrom": "GET /api/facilities/__ping"
+    },
+    {
+      "featureId": "auto.get.facilities.settings",
+      "status": "Planned",
+      "ui": {
+        "mode": "unknown",
+        "route": null,
+        "actions": [
+          "GET /api/facilities/settings"
+        ]
+      },
+      "api": [
+        {
+          "method": "GET",
+          "path": "/api/facilities/settings"
+        }
+      ],
+      "guards": {
+        "auth": null,
+        "facilityScope": null,
+        "rolesAllowed": []
+      },
+      "evidence": {
+        "tests": []
+      },
+      "verification": "Unverified",
+      "autoGenerated": true,
+      "generatedFrom": "GET /api/facilities/settings"
+    },
+    {
+      "featureId": "auto.get.facility.param.2",
+      "status": "Planned",
+      "ui": {
+        "mode": "unknown",
+        "route": null,
+        "actions": [
+          "GET /api/facility/:facilityId"
+        ]
+      },
+      "api": [
+        {
+          "method": "GET",
+          "path": "/api/facility/:facilityId"
+        }
+      ],
+      "guards": {
+        "auth": null,
+        "facilityScope": null,
+        "rolesAllowed": []
+      },
+      "evidence": {
+        "tests": []
+      },
+      "verification": "Unverified",
+      "autoGenerated": true,
+      "generatedFrom": "GET /api/facility/:facilityId"
+    },
+    {
+      "featureId": "auto.get.facility.param.compliance.deviations.summary.2",
+      "status": "Planned",
+      "ui": {
+        "mode": "unknown",
+        "route": null,
+        "actions": [
+          "GET /api/facility/:facilityId/compliance/deviations/summary"
+        ]
+      },
+      "api": [
+        {
+          "method": "GET",
+          "path": "/api/facility/:facilityId/compliance/deviations/summary"
+        }
+      ],
+      "guards": {
+        "auth": null,
+        "facilityScope": null,
+        "rolesAllowed": []
+      },
+      "evidence": {
+        "tests": []
+      },
+      "verification": "Unverified",
+      "autoGenerated": true,
+      "generatedFrom": "GET /api/facility/:facilityId/compliance/deviations/summary"
+    },
+    {
+      "featureId": "auto.get.facility.param.compliance.sops.recommended.2",
+      "status": "Planned",
+      "ui": {
+        "mode": "unknown",
+        "route": null,
+        "actions": [
+          "GET /api/facility/:facilityId/compliance/sops/recommended"
+        ]
+      },
+      "api": [
+        {
+          "method": "GET",
+          "path": "/api/facility/:facilityId/compliance/sops/recommended"
+        }
+      ],
+      "guards": {
+        "auth": null,
+        "facilityScope": null,
+        "rolesAllowed": []
+      },
+      "evidence": {
+        "tests": []
+      },
+      "verification": "Unverified",
+      "autoGenerated": true,
+      "generatedFrom": "GET /api/facility/:facilityId/compliance/sops/recommended"
+    },
+    {
+      "featureId": "auto.get.facility.param.growlogs.2",
+      "status": "Planned",
+      "ui": {
+        "mode": "unknown",
+        "route": null,
+        "actions": [
+          "GET /api/facility/:facilityId/growlogs"
+        ]
+      },
+      "api": [
+        {
+          "method": "GET",
+          "path": "/api/facility/:facilityId/growlogs"
+        }
+      ],
+      "guards": {
+        "auth": null,
+        "facilityScope": null,
+        "rolesAllowed": []
+      },
+      "evidence": {
+        "tests": []
+      },
+      "verification": "Unverified",
+      "autoGenerated": true,
+      "generatedFrom": "GET /api/facility/:facilityId/growlogs"
+    },
+    {
+      "featureId": "auto.get.facility.param.growlogs.param.2",
+      "status": "Planned",
+      "ui": {
+        "mode": "unknown",
+        "route": null,
+        "actions": [
+          "GET /api/facility/:facilityId/growlogs/:id"
+        ]
+      },
+      "api": [
+        {
+          "method": "GET",
+          "path": "/api/facility/:facilityId/growlogs/:id"
+        }
+      ],
+      "guards": {
+        "auth": null,
+        "facilityScope": null,
+        "rolesAllowed": []
+      },
+      "evidence": {
+        "tests": []
+      },
+      "verification": "Unverified",
+      "autoGenerated": true,
+      "generatedFrom": "GET /api/facility/:facilityId/growlogs/:id"
+    },
+    {
+      "featureId": "auto.get.facility.param.grows.2",
+      "status": "Planned",
+      "ui": {
+        "mode": "unknown",
+        "route": null,
+        "actions": [
+          "GET /api/facility/:facilityId/grows"
+        ]
+      },
+      "api": [
+        {
+          "method": "GET",
+          "path": "/api/facility/:facilityId/grows"
+        }
+      ],
+      "guards": {
+        "auth": null,
+        "facilityScope": null,
+        "rolesAllowed": []
+      },
+      "evidence": {
+        "tests": []
+      },
+      "verification": "Unverified",
+      "autoGenerated": true,
+      "generatedFrom": "GET /api/facility/:facilityId/grows"
+    },
+    {
+      "featureId": "auto.get.facility.param.inventory.2",
+      "status": "Planned",
+      "ui": {
+        "mode": "unknown",
+        "route": null,
+        "actions": [
+          "GET /api/facility/:facilityId/inventory"
+        ]
+      },
+      "api": [
+        {
+          "method": "GET",
+          "path": "/api/facility/:facilityId/inventory"
+        }
+      ],
+      "guards": {
+        "auth": null,
+        "facilityScope": null,
+        "rolesAllowed": []
+      },
+      "evidence": {
+        "tests": []
+      },
+      "verification": "Unverified",
+      "autoGenerated": true,
+      "generatedFrom": "GET /api/facility/:facilityId/inventory"
+    },
+    {
+      "featureId": "auto.get.facility.param.inventory.param.2",
+      "status": "Planned",
+      "ui": {
+        "mode": "unknown",
+        "route": null,
+        "actions": [
+          "GET /api/facility/:facilityId/inventory/:itemId"
+        ]
+      },
+      "api": [
+        {
+          "method": "GET",
+          "path": "/api/facility/:facilityId/inventory/:itemId"
+        }
+      ],
+      "guards": {
+        "auth": null,
+        "facilityScope": null,
+        "rolesAllowed": []
+      },
+      "evidence": {
+        "tests": []
+      },
+      "verification": "Unverified",
+      "autoGenerated": true,
+      "generatedFrom": "GET /api/facility/:facilityId/inventory/:itemId"
+    },
+    {
+      "featureId": "auto.get.facility.param.plants.2",
+      "status": "Planned",
+      "ui": {
+        "mode": "unknown",
+        "route": null,
+        "actions": [
+          "GET /api/facility/:facilityId/plants"
+        ]
+      },
+      "api": [
+        {
+          "method": "GET",
+          "path": "/api/facility/:facilityId/plants"
+        }
+      ],
+      "guards": {
+        "auth": null,
+        "facilityScope": null,
+        "rolesAllowed": []
+      },
+      "evidence": {
+        "tests": []
+      },
+      "verification": "Unverified",
+      "autoGenerated": true,
+      "generatedFrom": "GET /api/facility/:facilityId/plants"
+    },
+    {
+      "featureId": "auto.get.facility.param.rooms.2",
+      "status": "Planned",
+      "ui": {
+        "mode": "unknown",
+        "route": null,
+        "actions": [
+          "GET /api/facility/:facilityId/rooms"
+        ]
+      },
+      "api": [
+        {
+          "method": "GET",
+          "path": "/api/facility/:facilityId/rooms"
+        }
+      ],
+      "guards": {
+        "auth": null,
+        "facilityScope": null,
+        "rolesAllowed": []
+      },
+      "evidence": {
+        "tests": []
+      },
+      "verification": "Unverified",
+      "autoGenerated": true,
+      "generatedFrom": "GET /api/facility/:facilityId/rooms"
+    },
+    {
+      "featureId": "auto.get.facility.param.settings.2",
+      "status": "Planned",
+      "ui": {
+        "mode": "unknown",
+        "route": null,
+        "actions": [
+          "GET /api/facility/:facilityId/settings"
+        ]
+      },
+      "api": [
+        {
+          "method": "GET",
+          "path": "/api/facility/:facilityId/settings"
+        }
+      ],
+      "guards": {
+        "auth": null,
+        "facilityScope": null,
+        "rolesAllowed": []
+      },
+      "evidence": {
+        "tests": []
+      },
+      "verification": "Unverified",
+      "autoGenerated": true,
+      "generatedFrom": "GET /api/facility/:facilityId/settings"
+    },
+    {
+      "featureId": "auto.get.facility.param.tasks.param.2",
+      "status": "Planned",
+      "ui": {
+        "mode": "unknown",
+        "route": null,
+        "actions": [
+          "GET /api/facility/:facilityId/tasks/:taskId"
+        ]
+      },
+      "api": [
+        {
+          "method": "GET",
+          "path": "/api/facility/:facilityId/tasks/:taskId"
+        }
+      ],
+      "guards": {
+        "auth": null,
+        "facilityScope": null,
+        "rolesAllowed": []
+      },
+      "evidence": {
+        "tests": []
+      },
+      "verification": "Unverified",
+      "autoGenerated": true,
+      "generatedFrom": "GET /api/facility/:facilityId/tasks/:taskId"
+    },
+    {
+      "featureId": "auto.get.facility.param.team.invites.2",
+      "status": "Planned",
+      "ui": {
+        "mode": "unknown",
+        "route": null,
+        "actions": [
+          "GET /api/facility/:facilityId/team/invites"
+        ]
+      },
+      "api": [
+        {
+          "method": "GET",
+          "path": "/api/facility/:facilityId/team/invites"
+        }
+      ],
+      "guards": {
+        "auth": null,
+        "facilityScope": null,
+        "rolesAllowed": []
+      },
+      "evidence": {
+        "tests": []
+      },
+      "verification": "Unverified",
+      "autoGenerated": true,
+      "generatedFrom": "GET /api/facility/:facilityId/team/invites"
+    },
+    {
+      "featureId": "auto.get.facility.param.team.members.2",
+      "status": "Planned",
+      "ui": {
+        "mode": "unknown",
+        "route": null,
+        "actions": [
+          "GET /api/facility/:facilityId/team/members"
+        ]
+      },
+      "api": [
+        {
+          "method": "GET",
+          "path": "/api/facility/:facilityId/team/members"
+        }
+      ],
+      "guards": {
+        "auth": null,
+        "facilityScope": null,
+        "rolesAllowed": []
+      },
+      "evidence": {
+        "tests": []
+      },
+      "verification": "Unverified",
+      "autoGenerated": true,
+      "generatedFrom": "GET /api/facility/:facilityId/team/members"
+    },
+    {
+      "featureId": "auto.get.followers.param",
+      "status": "Planned",
+      "ui": {
+        "mode": "unknown",
+        "route": null,
+        "actions": [
+          "GET /api/followers/:id"
+        ]
+      },
+      "api": [
+        {
+          "method": "GET",
+          "path": "/api/followers/:id"
+        }
+      ],
+      "guards": {
+        "auth": null,
+        "facilityScope": null,
+        "rolesAllowed": []
+      },
+      "evidence": {
+        "tests": []
+      },
+      "verification": "Unverified",
+      "autoGenerated": true,
+      "generatedFrom": "GET /api/followers/:id"
+    },
+    {
+      "featureId": "auto.get.following.param",
+      "status": "Planned",
+      "ui": {
+        "mode": "unknown",
+        "route": null,
+        "actions": [
+          "GET /api/following/:id"
+        ]
+      },
+      "api": [
+        {
+          "method": "GET",
+          "path": "/api/following/:id"
+        }
+      ],
+      "guards": {
+        "auth": null,
+        "facilityScope": null,
+        "rolesAllowed": []
+      },
+      "evidence": {
+        "tests": []
+      },
+      "verification": "Unverified",
+      "autoGenerated": true,
+      "generatedFrom": "GET /api/following/:id"
+    },
+    {
+      "featureId": "auto.get.growlogs",
+      "status": "Planned",
+      "ui": {
+        "mode": "unknown",
+        "route": null,
+        "actions": [
+          "GET /api/growlogs"
+        ]
+      },
+      "api": [
+        {
+          "method": "GET",
+          "path": "/api/growlogs"
+        }
+      ],
+      "guards": {
+        "auth": null,
+        "facilityScope": null,
+        "rolesAllowed": []
+      },
+      "evidence": {
+        "tests": []
+      },
+      "verification": "Unverified",
+      "autoGenerated": true,
+      "generatedFrom": "GET /api/growlogs"
+    },
+    {
+      "featureId": "auto.get.growlogs.param",
+      "status": "Planned",
+      "ui": {
+        "mode": "unknown",
+        "route": null,
+        "actions": [
+          "GET /api/growlogs/:id"
+        ]
+      },
+      "api": [
+        {
+          "method": "GET",
+          "path": "/api/growlogs/:id"
+        }
+      ],
+      "guards": {
+        "auth": null,
+        "facilityScope": null,
+        "rolesAllowed": []
+      },
+      "evidence": {
+        "tests": []
+      },
+      "verification": "Unverified",
+      "autoGenerated": true,
+      "generatedFrom": "GET /api/growlogs/:id"
+    },
+    {
+      "featureId": "auto.get.health",
+      "status": "Planned",
+      "ui": {
+        "mode": "unknown",
+        "route": null,
+        "actions": [
+          "GET /api/health"
+        ]
+      },
+      "api": [
+        {
+          "method": "GET",
+          "path": "/api/health"
+        }
+      ],
+      "guards": {
+        "auth": null,
+        "facilityScope": null,
+        "rolesAllowed": []
+      },
+      "evidence": {
+        "tests": []
+      },
+      "verification": "Unverified",
+      "autoGenerated": true,
+      "generatedFrom": "GET /api/health"
+    },
+    {
+      "featureId": "auto.get.inventory",
+      "status": "Planned",
+      "ui": {
+        "mode": "unknown",
+        "route": null,
+        "actions": [
+          "GET /api/inventory"
+        ]
+      },
+      "api": [
+        {
+          "method": "GET",
+          "path": "/api/inventory"
+        }
+      ],
+      "guards": {
+        "auth": null,
+        "facilityScope": null,
+        "rolesAllowed": []
+      },
+      "evidence": {
+        "tests": []
+      },
+      "verification": "Unverified",
+      "autoGenerated": true,
+      "generatedFrom": "GET /api/inventory"
+    },
+    {
+      "featureId": "auto.get.inventory.param",
+      "status": "Planned",
+      "ui": {
+        "mode": "unknown",
+        "route": null,
+        "actions": [
+          "GET /api/inventory/:itemId"
+        ]
+      },
+      "api": [
+        {
+          "method": "GET",
+          "path": "/api/inventory/:itemId"
+        }
+      ],
+      "guards": {
+        "auth": null,
+        "facilityScope": null,
+        "rolesAllowed": []
+      },
+      "evidence": {
+        "tests": []
+      },
+      "verification": "Unverified",
+      "autoGenerated": true,
+      "generatedFrom": "GET /api/inventory/:itemId"
+    },
+    {
+      "featureId": "auto.get.is.following.param",
+      "status": "Planned",
+      "ui": {
+        "mode": "unknown",
+        "route": null,
+        "actions": [
+          "GET /api/is-following/:id"
+        ]
+      },
+      "api": [
+        {
+          "method": "GET",
+          "path": "/api/is-following/:id"
+        }
+      ],
+      "guards": {
+        "auth": null,
+        "facilityScope": null,
+        "rolesAllowed": []
+      },
+      "evidence": {
+        "tests": []
+      },
+      "verification": "Unverified",
+      "autoGenerated": true,
+      "generatedFrom": "GET /api/is-following/:id"
+    },
+    {
+      "featureId": "auto.get.me",
+      "status": "Planned",
+      "ui": {
+        "mode": "unknown",
+        "route": null,
+        "actions": [
+          "GET /api/me"
+        ]
+      },
+      "api": [
+        {
+          "method": "GET",
+          "path": "/api/me"
+        }
+      ],
+      "guards": {
+        "auth": null,
+        "facilityScope": null,
+        "rolesAllowed": []
+      },
+      "evidence": {
+        "tests": []
+      },
+      "verification": "Unverified",
+      "autoGenerated": true,
+      "generatedFrom": "GET /api/me"
+    },
+    {
+      "featureId": "auto.get.profile.param",
+      "status": "Planned",
+      "ui": {
+        "mode": "unknown",
+        "route": null,
+        "actions": [
+          "GET /api/profile/:id"
+        ]
+      },
+      "api": [
+        {
+          "method": "GET",
+          "path": "/api/profile/:id"
+        }
+      ],
+      "guards": {
+        "auth": null,
+        "facilityScope": null,
+        "rolesAllowed": []
+      },
+      "evidence": {
+        "tests": []
+      },
+      "verification": "Unverified",
+      "autoGenerated": true,
+      "generatedFrom": "GET /api/profile/:id"
+    },
+    {
+      "featureId": "auto.get.rooms",
+      "status": "Planned",
+      "ui": {
+        "mode": "unknown",
+        "route": null,
+        "actions": [
+          "GET /api/rooms"
+        ]
+      },
+      "api": [
+        {
+          "method": "GET",
+          "path": "/api/rooms"
+        }
+      ],
+      "guards": {
+        "auth": null,
+        "facilityScope": null,
+        "rolesAllowed": []
+      },
+      "evidence": {
+        "tests": []
+      },
+      "verification": "Unverified",
+      "autoGenerated": true,
+      "generatedFrom": "GET /api/rooms"
+    },
+    {
+      "featureId": "auto.get.user.certificates",
+      "status": "Planned",
+      "ui": {
+        "mode": "unknown",
+        "route": null,
+        "actions": [
+          "GET /api/user/certificates"
+        ]
+      },
+      "api": [
+        {
+          "method": "GET",
+          "path": "/api/user/certificates"
+        }
+      ],
+      "guards": {
+        "auth": null,
+        "facilityScope": null,
+        "rolesAllowed": []
+      },
+      "evidence": {
+        "tests": []
+      },
+      "verification": "Unverified",
+      "autoGenerated": true,
+      "generatedFrom": "GET /api/user/certificates"
+    },
+    {
+      "featureId": "auto.get.user.followers.param",
+      "status": "Planned",
+      "ui": {
+        "mode": "unknown",
+        "route": null,
+        "actions": [
+          "GET /api/user/followers/:id"
+        ]
+      },
+      "api": [
+        {
+          "method": "GET",
+          "path": "/api/user/followers/:id"
+        }
+      ],
+      "guards": {
+        "auth": null,
+        "facilityScope": null,
+        "rolesAllowed": []
+      },
+      "evidence": {
+        "tests": []
+      },
+      "verification": "Unverified",
+      "autoGenerated": true,
+      "generatedFrom": "GET /api/user/followers/:id"
+    },
+    {
+      "featureId": "auto.get.user.following.param",
+      "status": "Planned",
+      "ui": {
+        "mode": "unknown",
+        "route": null,
+        "actions": [
+          "GET /api/user/following/:id"
+        ]
+      },
+      "api": [
+        {
+          "method": "GET",
+          "path": "/api/user/following/:id"
+        }
+      ],
+      "guards": {
+        "auth": null,
+        "facilityScope": null,
+        "rolesAllowed": []
+      },
+      "evidence": {
+        "tests": []
+      },
+      "verification": "Unverified",
+      "autoGenerated": true,
+      "generatedFrom": "GET /api/user/following/:id"
+    },
+    {
+      "featureId": "auto.get.user.is.following.param",
+      "status": "Planned",
+      "ui": {
+        "mode": "unknown",
+        "route": null,
+        "actions": [
+          "GET /api/user/is-following/:id"
+        ]
+      },
+      "api": [
+        {
+          "method": "GET",
+          "path": "/api/user/is-following/:id"
+        }
+      ],
+      "guards": {
+        "auth": null,
+        "facilityScope": null,
+        "rolesAllowed": []
+      },
+      "evidence": {
+        "tests": []
+      },
+      "verification": "Unverified",
+      "autoGenerated": true,
+      "generatedFrom": "GET /api/user/is-following/:id"
+    },
+    {
+      "featureId": "auto.get.user.profile.param",
+      "status": "Planned",
+      "ui": {
+        "mode": "unknown",
+        "route": null,
+        "actions": [
+          "GET /api/user/profile/:id"
+        ]
+      },
+      "api": [
+        {
+          "method": "GET",
+          "path": "/api/user/profile/:id"
+        }
+      ],
+      "guards": {
+        "auth": null,
+        "facilityScope": null,
+        "rolesAllowed": []
+      },
+      "evidence": {
+        "tests": []
+      },
+      "verification": "Unverified",
+      "autoGenerated": true,
+      "generatedFrom": "GET /api/user/profile/:id"
+    },
+    {
+      "featureId": "auto.get.user.certificates.2",
+      "status": "Planned",
+      "ui": {
+        "mode": "unknown",
+        "route": null,
+        "actions": [
+          "GET /api/user/certificates"
+        ]
+      },
+      "api": [
+        {
+          "method": "GET",
+          "path": "/api/user/certificates"
+        }
+      ],
+      "guards": {
+        "auth": null,
+        "facilityScope": null,
+        "rolesAllowed": []
+      },
+      "evidence": {
+        "tests": []
+      },
+      "verification": "Unverified",
+      "autoGenerated": true,
+      "generatedFrom": "GET /api/users/certificates"
+    },
+    {
+      "featureId": "auto.get.user.followers.param.2",
+      "status": "Planned",
+      "ui": {
+        "mode": "unknown",
+        "route": null,
+        "actions": [
+          "GET /api/user/followers/:id"
+        ]
+      },
+      "api": [
+        {
+          "method": "GET",
+          "path": "/api/user/followers/:id"
+        }
+      ],
+      "guards": {
+        "auth": null,
+        "facilityScope": null,
+        "rolesAllowed": []
+      },
+      "evidence": {
+        "tests": []
+      },
+      "verification": "Unverified",
+      "autoGenerated": true,
+      "generatedFrom": "GET /api/users/followers/:id"
+    },
+    {
+      "featureId": "auto.get.user.following.param.2",
+      "status": "Planned",
+      "ui": {
+        "mode": "unknown",
+        "route": null,
+        "actions": [
+          "GET /api/user/following/:id"
+        ]
+      },
+      "api": [
+        {
+          "method": "GET",
+          "path": "/api/user/following/:id"
+        }
+      ],
+      "guards": {
+        "auth": null,
+        "facilityScope": null,
+        "rolesAllowed": []
+      },
+      "evidence": {
+        "tests": []
+      },
+      "verification": "Unverified",
+      "autoGenerated": true,
+      "generatedFrom": "GET /api/users/following/:id"
+    },
+    {
+      "featureId": "auto.get.user.is.following.param.2",
+      "status": "Planned",
+      "ui": {
+        "mode": "unknown",
+        "route": null,
+        "actions": [
+          "GET /api/user/is-following/:id"
+        ]
+      },
+      "api": [
+        {
+          "method": "GET",
+          "path": "/api/user/is-following/:id"
+        }
+      ],
+      "guards": {
+        "auth": null,
+        "facilityScope": null,
+        "rolesAllowed": []
+      },
+      "evidence": {
+        "tests": []
+      },
+      "verification": "Unverified",
+      "autoGenerated": true,
+      "generatedFrom": "GET /api/users/is-following/:id"
+    },
+    {
+      "featureId": "auto.get.user.profile.param.2",
+      "status": "Planned",
+      "ui": {
+        "mode": "unknown",
+        "route": null,
+        "actions": [
+          "GET /api/user/profile/:id"
+        ]
+      },
+      "api": [
+        {
+          "method": "GET",
+          "path": "/api/user/profile/:id"
+        }
+      ],
+      "guards": {
+        "auth": null,
+        "facilityScope": null,
+        "rolesAllowed": []
+      },
+      "evidence": {
+        "tests": []
+      },
+      "verification": "Unverified",
+      "autoGenerated": true,
+      "generatedFrom": "GET /api/users/profile/:id"
+    },
+    {
+      "featureId": "auto.get.health.2",
+      "status": "Planned",
+      "ui": {
+        "mode": "unknown",
+        "route": null,
+        "actions": [
+          "GET /health"
+        ]
+      },
+      "api": [
+        {
+          "method": "GET",
+          "path": "/health"
+        }
+      ],
+      "guards": {
+        "auth": null,
+        "facilityScope": null,
+        "rolesAllowed": []
+      },
+      "evidence": {
+        "tests": []
+      },
+      "verification": "Unverified",
+      "autoGenerated": true,
+      "generatedFrom": "GET /health"
+    },
+    {
+      "featureId": "auto.get.ready",
+      "status": "Planned",
+      "ui": {
+        "mode": "unknown",
+        "route": null,
+        "actions": [
+          "GET /ready"
+        ]
+      },
+      "api": [
+        {
+          "method": "GET",
+          "path": "/ready"
+        }
+      ],
+      "guards": {
+        "auth": null,
+        "facilityScope": null,
+        "rolesAllowed": []
+      },
+      "evidence": {
+        "tests": []
+      },
+      "verification": "Unverified",
+      "autoGenerated": true,
+      "generatedFrom": "GET /ready"
+    },
+    {
+      "featureId": "auto.patch.facility.param.growlogs.param",
+      "status": "Planned",
+      "ui": {
+        "mode": "unknown",
+        "route": null,
+        "actions": [
+          "PATCH /api/facility/:facilityId/growlogs/:id"
+        ]
+      },
+      "api": [
+        {
+          "method": "PATCH",
+          "path": "/api/facility/:facilityId/growlogs/:id"
+        }
+      ],
+      "guards": {
+        "auth": null,
+        "facilityScope": null,
+        "rolesAllowed": []
+      },
+      "evidence": {
+        "tests": []
+      },
+      "verification": "Unverified",
+      "autoGenerated": true,
+      "generatedFrom": "PATCH /api/facilities/:facilityId/growlogs/:id"
+    },
+    {
+      "featureId": "auto.patch.facility.param.grows.param",
+      "status": "Planned",
+      "ui": {
+        "mode": "unknown",
+        "route": null,
+        "actions": [
+          "PATCH /api/facility/:facilityId/grows/:growId"
+        ]
+      },
+      "api": [
+        {
+          "method": "PATCH",
+          "path": "/api/facility/:facilityId/grows/:growId"
+        }
+      ],
+      "guards": {
+        "auth": null,
+        "facilityScope": null,
+        "rolesAllowed": []
+      },
+      "evidence": {
+        "tests": []
+      },
+      "verification": "Unverified",
+      "autoGenerated": true,
+      "generatedFrom": "PATCH /api/facilities/:facilityId/grows/:growId"
+    },
+    {
+      "featureId": "auto.patch.facility.param.inventory.param",
+      "status": "Planned",
+      "ui": {
+        "mode": "unknown",
+        "route": null,
+        "actions": [
+          "PATCH /api/facility/:facilityId/inventory/:sku"
+        ]
+      },
+      "api": [
+        {
+          "method": "PATCH",
+          "path": "/api/facility/:facilityId/inventory/:sku"
+        }
+      ],
+      "guards": {
+        "auth": null,
+        "facilityScope": null,
+        "rolesAllowed": []
+      },
+      "evidence": {
+        "tests": []
+      },
+      "verification": "Unverified",
+      "autoGenerated": true,
+      "generatedFrom": "PATCH /api/facilities/:facilityId/inventory/:sku"
+    },
+    {
+      "featureId": "auto.patch.facility.param.plants.param",
+      "status": "Planned",
+      "ui": {
+        "mode": "unknown",
+        "route": null,
+        "actions": [
+          "PATCH /api/facility/:facilityId/plants/:plantId"
+        ]
+      },
+      "api": [
+        {
+          "method": "PATCH",
+          "path": "/api/facility/:facilityId/plants/:plantId"
+        }
+      ],
+      "guards": {
+        "auth": null,
+        "facilityScope": null,
+        "rolesAllowed": []
+      },
+      "evidence": {
+        "tests": []
+      },
+      "verification": "Unverified",
+      "autoGenerated": true,
+      "generatedFrom": "PATCH /api/facilities/:facilityId/plants/:plantId"
+    },
+    {
+      "featureId": "auto.patch.facility.param.rooms.param",
+      "status": "Planned",
+      "ui": {
+        "mode": "unknown",
+        "route": null,
+        "actions": [
+          "PATCH /api/facility/:facilityId/rooms/:roomId"
+        ]
+      },
+      "api": [
+        {
+          "method": "PATCH",
+          "path": "/api/facility/:facilityId/rooms/:roomId"
+        }
+      ],
+      "guards": {
+        "auth": null,
+        "facilityScope": null,
+        "rolesAllowed": []
+      },
+      "evidence": {
+        "tests": []
+      },
+      "verification": "Unverified",
+      "autoGenerated": true,
+      "generatedFrom": "PATCH /api/facilities/:facilityId/rooms/:roomId"
+    },
+    {
+      "featureId": "auto.patch.facility.param.team.param.members.param",
+      "status": "Planned",
+      "ui": {
+        "mode": "unknown",
+        "route": null,
+        "actions": [
+          "PATCH /api/facility/:facilityId/team/:userId,/members/:userId"
+        ]
+      },
+      "api": [
+        {
+          "method": "PATCH",
+          "path": "/api/facility/:facilityId/team/:userId,/members/:userId"
+        }
+      ],
+      "guards": {
+        "auth": null,
+        "facilityScope": null,
+        "rolesAllowed": []
+      },
+      "evidence": {
+        "tests": []
+      },
+      "verification": "Unverified",
+      "autoGenerated": true,
+      "generatedFrom": "PATCH /api/facilities/:facilityId/team/:userId,/members/:userId"
+    },
+    {
+      "featureId": "auto.patch.facility.param.growlogs.param.2",
+      "status": "Planned",
+      "ui": {
+        "mode": "unknown",
+        "route": null,
+        "actions": [
+          "PATCH /api/facility/:facilityId/growlogs/:id"
+        ]
+      },
+      "api": [
+        {
+          "method": "PATCH",
+          "path": "/api/facility/:facilityId/growlogs/:id"
+        }
+      ],
+      "guards": {
+        "auth": null,
+        "facilityScope": null,
+        "rolesAllowed": []
+      },
+      "evidence": {
+        "tests": []
+      },
+      "verification": "Unverified",
+      "autoGenerated": true,
+      "generatedFrom": "PATCH /api/facility/:facilityId/growlogs/:id"
+    },
+    {
+      "featureId": "auto.patch.facility.param.grows.param.2",
+      "status": "Planned",
+      "ui": {
+        "mode": "unknown",
+        "route": null,
+        "actions": [
+          "PATCH /api/facility/:facilityId/grows/:growId"
+        ]
+      },
+      "api": [
+        {
+          "method": "PATCH",
+          "path": "/api/facility/:facilityId/grows/:growId"
+        }
+      ],
+      "guards": {
+        "auth": null,
+        "facilityScope": null,
+        "rolesAllowed": []
+      },
+      "evidence": {
+        "tests": []
+      },
+      "verification": "Unverified",
+      "autoGenerated": true,
+      "generatedFrom": "PATCH /api/facility/:facilityId/grows/:growId"
+    },
+    {
+      "featureId": "auto.patch.facility.param.inventory.param.2",
+      "status": "Planned",
+      "ui": {
+        "mode": "unknown",
+        "route": null,
+        "actions": [
+          "PATCH /api/facility/:facilityId/inventory/:sku"
+        ]
+      },
+      "api": [
+        {
+          "method": "PATCH",
+          "path": "/api/facility/:facilityId/inventory/:sku"
+        }
+      ],
+      "guards": {
+        "auth": null,
+        "facilityScope": null,
+        "rolesAllowed": []
+      },
+      "evidence": {
+        "tests": []
+      },
+      "verification": "Unverified",
+      "autoGenerated": true,
+      "generatedFrom": "PATCH /api/facility/:facilityId/inventory/:sku"
+    },
+    {
+      "featureId": "auto.patch.facility.param.plants.param.2",
+      "status": "Planned",
+      "ui": {
+        "mode": "unknown",
+        "route": null,
+        "actions": [
+          "PATCH /api/facility/:facilityId/plants/:plantId"
+        ]
+      },
+      "api": [
+        {
+          "method": "PATCH",
+          "path": "/api/facility/:facilityId/plants/:plantId"
+        }
+      ],
+      "guards": {
+        "auth": null,
+        "facilityScope": null,
+        "rolesAllowed": []
+      },
+      "evidence": {
+        "tests": []
+      },
+      "verification": "Unverified",
+      "autoGenerated": true,
+      "generatedFrom": "PATCH /api/facility/:facilityId/plants/:plantId"
+    },
+    {
+      "featureId": "auto.patch.facility.param.rooms.param.2",
+      "status": "Planned",
+      "ui": {
+        "mode": "unknown",
+        "route": null,
+        "actions": [
+          "PATCH /api/facility/:facilityId/rooms/:roomId"
+        ]
+      },
+      "api": [
+        {
+          "method": "PATCH",
+          "path": "/api/facility/:facilityId/rooms/:roomId"
+        }
+      ],
+      "guards": {
+        "auth": null,
+        "facilityScope": null,
+        "rolesAllowed": []
+      },
+      "evidence": {
+        "tests": []
+      },
+      "verification": "Unverified",
+      "autoGenerated": true,
+      "generatedFrom": "PATCH /api/facility/:facilityId/rooms/:roomId"
+    },
+    {
+      "featureId": "auto.patch.facility.param.team.param.members.param.2",
+      "status": "Planned",
+      "ui": {
+        "mode": "unknown",
+        "route": null,
+        "actions": [
+          "PATCH /api/facility/:facilityId/team/:userId,/members/:userId"
+        ]
+      },
+      "api": [
+        {
+          "method": "PATCH",
+          "path": "/api/facility/:facilityId/team/:userId,/members/:userId"
+        }
+      ],
+      "guards": {
+        "auth": null,
+        "facilityScope": null,
+        "rolesAllowed": []
+      },
+      "evidence": {
+        "tests": []
+      },
+      "verification": "Unverified",
+      "autoGenerated": true,
+      "generatedFrom": "PATCH /api/facility/:facilityId/team/:userId,/members/:userId"
+    },
+    {
+      "featureId": "auto.patch.growlogs.param",
+      "status": "Planned",
+      "ui": {
+        "mode": "unknown",
+        "route": null,
+        "actions": [
+          "PATCH /api/growlogs/:id"
+        ]
+      },
+      "api": [
+        {
+          "method": "PATCH",
+          "path": "/api/growlogs/:id"
+        }
+      ],
+      "guards": {
+        "auth": null,
+        "facilityScope": null,
+        "rolesAllowed": []
+      },
+      "evidence": {
+        "tests": []
+      },
+      "verification": "Unverified",
+      "autoGenerated": true,
+      "generatedFrom": "PATCH /api/growlogs/:id"
+    },
+    {
+      "featureId": "auto.patch.inventory.param",
+      "status": "Planned",
+      "ui": {
+        "mode": "unknown",
+        "route": null,
+        "actions": [
+          "PATCH /api/inventory/:sku"
+        ]
+      },
+      "api": [
+        {
+          "method": "PATCH",
+          "path": "/api/inventory/:sku"
+        }
+      ],
+      "guards": {
+        "auth": null,
+        "facilityScope": null,
+        "rolesAllowed": []
+      },
+      "evidence": {
+        "tests": []
+      },
+      "verification": "Unverified",
+      "autoGenerated": true,
+      "generatedFrom": "PATCH /api/inventory/:sku"
+    },
+    {
+      "featureId": "auto.patch.rooms.param",
+      "status": "Planned",
+      "ui": {
+        "mode": "unknown",
+        "route": null,
+        "actions": [
+          "PATCH /api/rooms/:roomId"
+        ]
+      },
+      "api": [
+        {
+          "method": "PATCH",
+          "path": "/api/rooms/:roomId"
+        }
+      ],
+      "guards": {
+        "auth": null,
+        "facilityScope": null,
+        "rolesAllowed": []
+      },
+      "evidence": {
+        "tests": []
+      },
+      "verification": "Unverified",
+      "autoGenerated": true,
+      "generatedFrom": "PATCH /api/rooms/:roomId"
+    },
+    {
+      "featureId": "auto.post.param.follow",
+      "status": "Planned",
+      "ui": {
+        "mode": "unknown",
+        "route": null,
+        "actions": [
+          "POST /api/:id/follow"
+        ]
+      },
+      "api": [
+        {
+          "method": "POST",
+          "path": "/api/:id/follow"
+        }
+      ],
+      "guards": {
+        "auth": null,
+        "facilityScope": null,
+        "rolesAllowed": []
+      },
+      "evidence": {
+        "tests": []
+      },
+      "verification": "Unverified",
+      "autoGenerated": true,
+      "generatedFrom": "POST /api/:id/follow"
+    },
+    {
+      "featureId": "auto.post.param.unfollow",
+      "status": "Planned",
+      "ui": {
+        "mode": "unknown",
+        "route": null,
+        "actions": [
+          "POST /api/:id/unfollow"
+        ]
+      },
+      "api": [
+        {
+          "method": "POST",
+          "path": "/api/:id/unfollow"
+        }
+      ],
+      "guards": {
+        "auth": null,
+        "facilityScope": null,
+        "rolesAllowed": []
+      },
+      "evidence": {
+        "tests": []
+      },
+      "verification": "Unverified",
+      "autoGenerated": true,
+      "generatedFrom": "POST /api/:id/unfollow"
+    },
+    {
+      "featureId": "auto.post.auth.become.creator",
+      "status": "Planned",
+      "ui": {
+        "mode": "unknown",
+        "route": null,
+        "actions": [
+          "POST /api/auth/become-creator"
+        ]
+      },
+      "api": [
+        {
+          "method": "POST",
+          "path": "/api/auth/become-creator"
+        }
+      ],
+      "guards": {
+        "auth": null,
+        "facilityScope": null,
+        "rolesAllowed": []
+      },
+      "evidence": {
+        "tests": []
+      },
+      "verification": "Unverified",
+      "autoGenerated": true,
+      "generatedFrom": "POST /api/auth/become-creator"
+    },
+    {
+      "featureId": "auto.post.auth.login",
+      "status": "Planned",
+      "ui": {
+        "mode": "unknown",
+        "route": null,
+        "actions": [
+          "POST /api/auth/login"
+        ]
+      },
+      "api": [
+        {
+          "method": "POST",
+          "path": "/api/auth/login"
+        }
+      ],
+      "guards": {
+        "auth": null,
+        "facilityScope": null,
+        "rolesAllowed": []
+      },
+      "evidence": {
+        "tests": []
+      },
+      "verification": "Unverified",
+      "autoGenerated": true,
+      "generatedFrom": "POST /api/auth/login"
+    },
+    {
+      "featureId": "auto.post.auth.register",
+      "status": "Planned",
+      "ui": {
+        "mode": "unknown",
+        "route": null,
+        "actions": [
+          "POST /api/auth/register"
+        ]
+      },
+      "api": [
+        {
+          "method": "POST",
+          "path": "/api/auth/register"
+        }
+      ],
+      "guards": {
+        "auth": null,
+        "facilityScope": null,
+        "rolesAllowed": []
+      },
+      "evidence": {
+        "tests": []
+      },
+      "verification": "Unverified",
+      "autoGenerated": true,
+      "generatedFrom": "POST /api/auth/register"
+    },
+    {
+      "featureId": "auto.post.auth.save.push.token",
+      "status": "Planned",
+      "ui": {
+        "mode": "unknown",
+        "route": null,
+        "actions": [
+          "POST /api/auth/save-push-token"
+        ]
+      },
+      "api": [
+        {
+          "method": "POST",
+          "path": "/api/auth/save-push-token"
+        }
+      ],
+      "guards": {
+        "auth": null,
+        "facilityScope": null,
+        "rolesAllowed": []
+      },
+      "evidence": {
+        "tests": []
+      },
+      "verification": "Unverified",
+      "autoGenerated": true,
+      "generatedFrom": "POST /api/auth/save-push-token"
+    },
+    {
+      "featureId": "auto.post.auth.signup",
+      "status": "Planned",
+      "ui": {
+        "mode": "unknown",
+        "route": null,
+        "actions": [
+          "POST /api/auth/signup"
+        ]
+      },
+      "api": [
+        {
+          "method": "POST",
+          "path": "/api/auth/signup"
+        }
+      ],
+      "guards": {
+        "auth": null,
+        "facilityScope": null,
+        "rolesAllowed": []
+      },
+      "evidence": {
+        "tests": []
+      },
+      "verification": "Unverified",
+      "autoGenerated": true,
+      "generatedFrom": "POST /api/auth/signup"
+    },
+    {
+      "featureId": "auto.post.avatar",
+      "status": "Planned",
+      "ui": {
+        "mode": "unknown",
+        "route": null,
+        "actions": [
+          "POST /api/avatar"
+        ]
+      },
+      "api": [
+        {
+          "method": "POST",
+          "path": "/api/avatar"
+        }
+      ],
+      "guards": {
+        "auth": null,
+        "facilityScope": null,
+        "rolesAllowed": []
+      },
+      "evidence": {
+        "tests": []
+      },
+      "verification": "Unverified",
+      "autoGenerated": true,
+      "generatedFrom": "POST /api/avatar"
+    },
+    {
+      "featureId": "auto.post.banner",
+      "status": "Planned",
+      "ui": {
+        "mode": "unknown",
+        "route": null,
+        "actions": [
+          "POST /api/banner"
+        ]
+      },
+      "api": [
+        {
+          "method": "POST",
+          "path": "/api/banner"
+        }
+      ],
+      "guards": {
+        "auth": null,
+        "facilityScope": null,
+        "rolesAllowed": []
+      },
+      "evidence": {
+        "tests": []
+      },
+      "verification": "Unverified",
+      "autoGenerated": true,
+      "generatedFrom": "POST /api/banner"
+    },
+    {
+      "featureId": "auto.post.bio",
+      "status": "Planned",
+      "ui": {
+        "mode": "unknown",
+        "route": null,
+        "actions": [
+          "POST /api/bio"
+        ]
+      },
+      "api": [
+        {
+          "method": "POST",
+          "path": "/api/bio"
+        }
+      ],
+      "guards": {
+        "auth": null,
+        "facilityScope": null,
+        "rolesAllowed": []
+      },
+      "evidence": {
+        "tests": []
+      },
+      "verification": "Unverified",
+      "autoGenerated": true,
+      "generatedFrom": "POST /api/bio"
+    },
+    {
+      "featureId": "auto.post.courses",
+      "status": "Planned",
+      "ui": {
+        "mode": "unknown",
+        "route": null,
+        "actions": [
+          "POST /api/courses"
+        ]
+      },
+      "api": [
+        {
+          "method": "POST",
+          "path": "/api/courses"
+        }
+      ],
+      "guards": {
+        "auth": null,
+        "facilityScope": null,
+        "rolesAllowed": []
+      },
+      "evidence": {
+        "tests": []
+      },
+      "verification": "Unverified",
+      "autoGenerated": true,
+      "generatedFrom": "POST /api/courses"
+    },
+    {
+      "featureId": "auto.post.courses.param.buy",
+      "status": "Planned",
+      "ui": {
+        "mode": "unknown",
+        "route": null,
+        "actions": [
+          "POST /api/courses/:id/buy"
+        ]
+      },
+      "api": [
+        {
+          "method": "POST",
+          "path": "/api/courses/:id/buy"
+        }
+      ],
+      "guards": {
+        "auth": null,
+        "facilityScope": null,
+        "rolesAllowed": []
+      },
+      "evidence": {
+        "tests": []
+      },
+      "verification": "Unverified",
+      "autoGenerated": true,
+      "generatedFrom": "POST /api/courses/:id/buy"
+    },
+    {
+      "featureId": "auto.post.courses.param.checkout",
+      "status": "Planned",
+      "ui": {
+        "mode": "unknown",
+        "route": null,
+        "actions": [
+          "POST /api/courses/:id/checkout"
+        ]
+      },
+      "api": [
+        {
+          "method": "POST",
+          "path": "/api/courses/:id/checkout"
+        }
+      ],
+      "guards": {
+        "auth": null,
+        "facilityScope": null,
+        "rolesAllowed": []
+      },
+      "evidence": {
+        "tests": []
+      },
+      "verification": "Unverified",
+      "autoGenerated": true,
+      "generatedFrom": "POST /api/courses/:id/checkout"
+    },
+    {
+      "featureId": "auto.post.courses.param.enroll",
+      "status": "Planned",
+      "ui": {
+        "mode": "unknown",
+        "route": null,
+        "actions": [
+          "POST /api/courses/:id/enroll"
+        ]
+      },
+      "api": [
+        {
+          "method": "POST",
+          "path": "/api/courses/:id/enroll"
+        }
+      ],
+      "guards": {
+        "auth": null,
+        "facilityScope": null,
+        "rolesAllowed": []
+      },
+      "evidence": {
+        "tests": []
+      },
+      "verification": "Unverified",
+      "autoGenerated": true,
+      "generatedFrom": "POST /api/courses/:id/enroll"
+    },
+    {
+      "featureId": "auto.post.courses.param.lesson",
+      "status": "Planned",
+      "ui": {
+        "mode": "unknown",
+        "route": null,
+        "actions": [
+          "POST /api/courses/:id/lesson"
+        ]
+      },
+      "api": [
+        {
+          "method": "POST",
+          "path": "/api/courses/:id/lesson"
+        }
+      ],
+      "guards": {
+        "auth": null,
+        "facilityScope": null,
+        "rolesAllowed": []
+      },
+      "evidence": {
+        "tests": []
+      },
+      "verification": "Unverified",
+      "autoGenerated": true,
+      "generatedFrom": "POST /api/courses/:id/lesson"
+    },
+    {
+      "featureId": "auto.post.courses.param.questions",
+      "status": "Planned",
+      "ui": {
+        "mode": "unknown",
+        "route": null,
+        "actions": [
+          "POST /api/courses/:id/questions"
+        ]
+      },
+      "api": [
+        {
+          "method": "POST",
+          "path": "/api/courses/:id/questions"
+        }
+      ],
+      "guards": {
+        "auth": null,
+        "facilityScope": null,
+        "rolesAllowed": []
+      },
+      "evidence": {
+        "tests": []
+      },
+      "verification": "Unverified",
+      "autoGenerated": true,
+      "generatedFrom": "POST /api/courses/:id/questions"
+    },
+    {
+      "featureId": "auto.post.courses.param.questions.param.answer",
+      "status": "Planned",
+      "ui": {
+        "mode": "unknown",
+        "route": null,
+        "actions": [
+          "POST /api/courses/:id/questions/:questionId/answer"
+        ]
+      },
+      "api": [
+        {
+          "method": "POST",
+          "path": "/api/courses/:id/questions/:questionId/answer"
+        }
+      ],
+      "guards": {
+        "auth": null,
+        "facilityScope": null,
+        "rolesAllowed": []
+      },
+      "evidence": {
+        "tests": []
+      },
+      "verification": "Unverified",
+      "autoGenerated": true,
+      "generatedFrom": "POST /api/courses/:id/questions/:questionId/answer"
+    },
+    {
+      "featureId": "auto.post.courses.param.review",
+      "status": "Planned",
+      "ui": {
+        "mode": "unknown",
+        "route": null,
+        "actions": [
+          "POST /api/courses/:id/review"
+        ]
+      },
+      "api": [
+        {
+          "method": "POST",
+          "path": "/api/courses/:id/review"
+        }
+      ],
+      "guards": {
+        "auth": null,
+        "facilityScope": null,
+        "rolesAllowed": []
+      },
+      "evidence": {
+        "tests": []
+      },
+      "verification": "Unverified",
+      "autoGenerated": true,
+      "generatedFrom": "POST /api/courses/:id/review"
+    },
+    {
+      "featureId": "auto.post.courses.create",
+      "status": "Planned",
+      "ui": {
+        "mode": "unknown",
+        "route": null,
+        "actions": [
+          "POST /api/courses/create"
+        ]
+      },
+      "api": [
+        {
+          "method": "POST",
+          "path": "/api/courses/create"
+        }
+      ],
+      "guards": {
+        "auth": null,
+        "facilityScope": null,
+        "rolesAllowed": []
+      },
+      "evidence": {
+        "tests": []
+      },
+      "verification": "Unverified",
+      "autoGenerated": true,
+      "generatedFrom": "POST /api/courses/create"
+    },
+    {
+      "featureId": "auto.post.courses.lesson.param.complete",
+      "status": "Planned",
+      "ui": {
+        "mode": "unknown",
+        "route": null,
+        "actions": [
+          "POST /api/courses/lesson/:lessonId/complete"
+        ]
+      },
+      "api": [
+        {
+          "method": "POST",
+          "path": "/api/courses/lesson/:lessonId/complete"
+        }
+      ],
+      "guards": {
+        "auth": null,
+        "facilityScope": null,
+        "rolesAllowed": []
+      },
+      "evidence": {
+        "tests": []
+      },
+      "verification": "Unverified",
+      "autoGenerated": true,
+      "generatedFrom": "POST /api/courses/lesson/:lessonId/complete"
+    },
+    {
+      "featureId": "auto.post.courses.lesson.param.dropoff",
+      "status": "Planned",
+      "ui": {
+        "mode": "unknown",
+        "route": null,
+        "actions": [
+          "POST /api/courses/lesson/:lessonId/dropoff"
+        ]
+      },
+      "api": [
+        {
+          "method": "POST",
+          "path": "/api/courses/lesson/:lessonId/dropoff"
+        }
+      ],
+      "guards": {
+        "auth": null,
+        "facilityScope": null,
+        "rolesAllowed": []
+      },
+      "evidence": {
+        "tests": []
+      },
+      "verification": "Unverified",
+      "autoGenerated": true,
+      "generatedFrom": "POST /api/courses/lesson/:lessonId/dropoff"
+    },
+    {
+      "featureId": "auto.post.courses.lessons.param.complete",
+      "status": "Planned",
+      "ui": {
+        "mode": "unknown",
+        "route": null,
+        "actions": [
+          "POST /api/courses/lessons/:lessonId/complete"
+        ]
+      },
+      "api": [
+        {
+          "method": "POST",
+          "path": "/api/courses/lessons/:lessonId/complete"
+        }
+      ],
+      "guards": {
+        "auth": null,
+        "facilityScope": null,
+        "rolesAllowed": []
+      },
+      "evidence": {
+        "tests": []
+      },
+      "verification": "Unverified",
+      "autoGenerated": true,
+      "generatedFrom": "POST /api/courses/lessons/:lessonId/complete"
+    },
+    {
+      "featureId": "auto.post.courses.lessons.param.dropoff",
+      "status": "Planned",
+      "ui": {
+        "mode": "unknown",
+        "route": null,
+        "actions": [
+          "POST /api/courses/lessons/:lessonId/dropoff"
+        ]
+      },
+      "api": [
+        {
+          "method": "POST",
+          "path": "/api/courses/lessons/:lessonId/dropoff"
+        }
+      ],
+      "guards": {
+        "auth": null,
+        "facilityScope": null,
+        "rolesAllowed": []
+      },
+      "evidence": {
+        "tests": []
+      },
+      "verification": "Unverified",
+      "autoGenerated": true,
+      "generatedFrom": "POST /api/courses/lessons/:lessonId/dropoff"
+    },
+    {
+      "featureId": "auto.post.courses.lessons.param.view",
+      "status": "Planned",
+      "ui": {
+        "mode": "unknown",
+        "route": null,
+        "actions": [
+          "POST /api/courses/lessons/:lessonId/view"
+        ]
+      },
+      "api": [
+        {
+          "method": "POST",
+          "path": "/api/courses/lessons/:lessonId/view"
+        }
+      ],
+      "guards": {
+        "auth": null,
+        "facilityScope": null,
+        "rolesAllowed": []
+      },
+      "evidence": {
+        "tests": []
+      },
+      "verification": "Unverified",
+      "autoGenerated": true,
+      "generatedFrom": "POST /api/courses/lessons/:lessonId/view"
+    },
+    {
+      "featureId": "auto.post.courses.lessons.param.watch",
+      "status": "Planned",
+      "ui": {
+        "mode": "unknown",
+        "route": null,
+        "actions": [
+          "POST /api/courses/lessons/:lessonId/watch"
+        ]
+      },
+      "api": [
+        {
+          "method": "POST",
+          "path": "/api/courses/lessons/:lessonId/watch"
+        }
+      ],
+      "guards": {
+        "auth": null,
+        "facilityScope": null,
+        "rolesAllowed": []
+      },
+      "evidence": {
+        "tests": []
+      },
+      "verification": "Unverified",
+      "autoGenerated": true,
+      "generatedFrom": "POST /api/courses/lessons/:lessonId/watch"
+    },
+    {
+      "featureId": "auto.post.creator.onboard",
+      "status": "Planned",
+      "ui": {
+        "mode": "unknown",
+        "route": null,
+        "actions": [
+          "POST /api/creator/onboard"
+        ]
+      },
+      "api": [
+        {
+          "method": "POST",
+          "path": "/api/creator/onboard"
+        }
+      ],
+      "guards": {
+        "auth": null,
+        "facilityScope": null,
+        "rolesAllowed": []
+      },
+      "evidence": {
+        "tests": []
+      },
+      "verification": "Unverified",
+      "autoGenerated": true,
+      "generatedFrom": "POST /api/creator/onboard"
+    },
+    {
+      "featureId": "auto.post.events",
+      "status": "Planned",
+      "ui": {
+        "mode": "unknown",
+        "route": null,
+        "actions": [
+          "POST /api/events"
+        ]
+      },
+      "api": [
+        {
+          "method": "POST",
+          "path": "/api/events"
+        }
+      ],
+      "guards": {
+        "auth": null,
+        "facilityScope": null,
+        "rolesAllowed": []
+      },
+      "evidence": {
+        "tests": []
+      },
+      "verification": "Unverified",
+      "autoGenerated": true,
+      "generatedFrom": "POST /api/events"
+    },
+    {
+      "featureId": "auto.post.facilities",
+      "status": "Planned",
+      "ui": {
+        "mode": "unknown",
+        "route": null,
+        "actions": [
+          "POST /api/facilities"
+        ]
+      },
+      "api": [
+        {
+          "method": "POST",
+          "path": "/api/facilities"
+        }
+      ],
+      "guards": {
+        "auth": null,
+        "facilityScope": null,
+        "rolesAllowed": []
+      },
+      "evidence": {
+        "tests": []
+      },
+      "verification": "Unverified",
+      "autoGenerated": true,
+      "generatedFrom": "POST /api/facilities"
+    },
+    {
+      "featureId": "auto.post.facility.param.growlogs",
+      "status": "Planned",
+      "ui": {
+        "mode": "unknown",
+        "route": null,
+        "actions": [
+          "POST /api/facility/:facilityId/growlogs"
+        ]
+      },
+      "api": [
+        {
+          "method": "POST",
+          "path": "/api/facility/:facilityId/growlogs"
+        }
+      ],
+      "guards": {
+        "auth": null,
+        "facilityScope": null,
+        "rolesAllowed": []
+      },
+      "evidence": {
+        "tests": []
+      },
+      "verification": "Unverified",
+      "autoGenerated": true,
+      "generatedFrom": "POST /api/facilities/:facilityId/growlogs"
+    },
+    {
+      "featureId": "auto.post.facility.param.grows",
+      "status": "Planned",
+      "ui": {
+        "mode": "unknown",
+        "route": null,
+        "actions": [
+          "POST /api/facility/:facilityId/grows"
+        ]
+      },
+      "api": [
+        {
+          "method": "POST",
+          "path": "/api/facility/:facilityId/grows"
+        }
+      ],
+      "guards": {
+        "auth": null,
+        "facilityScope": null,
+        "rolesAllowed": []
+      },
+      "evidence": {
+        "tests": []
+      },
+      "verification": "Unverified",
+      "autoGenerated": true,
+      "generatedFrom": "POST /api/facilities/:facilityId/grows"
+    },
+    {
+      "featureId": "auto.post.facility.param.inventory",
+      "status": "Planned",
+      "ui": {
+        "mode": "unknown",
+        "route": null,
+        "actions": [
+          "POST /api/facility/:facilityId/inventory"
+        ]
+      },
+      "api": [
+        {
+          "method": "POST",
+          "path": "/api/facility/:facilityId/inventory"
+        }
+      ],
+      "guards": {
+        "auth": null,
+        "facilityScope": null,
+        "rolesAllowed": []
+      },
+      "evidence": {
+        "tests": []
+      },
+      "verification": "Unverified",
+      "autoGenerated": true,
+      "generatedFrom": "POST /api/facilities/:facilityId/inventory"
+    },
+    {
+      "featureId": "auto.post.facility.param.plants",
+      "status": "Planned",
+      "ui": {
+        "mode": "unknown",
+        "route": null,
+        "actions": [
+          "POST /api/facility/:facilityId/plants"
+        ]
+      },
+      "api": [
+        {
+          "method": "POST",
+          "path": "/api/facility/:facilityId/plants"
+        }
+      ],
+      "guards": {
+        "auth": null,
+        "facilityScope": null,
+        "rolesAllowed": []
+      },
+      "evidence": {
+        "tests": []
+      },
+      "verification": "Unverified",
+      "autoGenerated": true,
+      "generatedFrom": "POST /api/facilities/:facilityId/plants"
+    },
+    {
+      "featureId": "auto.post.facility.param.rooms",
+      "status": "Planned",
+      "ui": {
+        "mode": "unknown",
+        "route": null,
+        "actions": [
+          "POST /api/facility/:facilityId/rooms"
+        ]
+      },
+      "api": [
+        {
+          "method": "POST",
+          "path": "/api/facility/:facilityId/rooms"
+        }
+      ],
+      "guards": {
+        "auth": null,
+        "facilityScope": null,
+        "rolesAllowed": []
+      },
+      "evidence": {
+        "tests": []
+      },
+      "verification": "Unverified",
+      "autoGenerated": true,
+      "generatedFrom": "POST /api/facilities/:facilityId/rooms"
+    },
+    {
+      "featureId": "auto.post.facility.param.team.transfer.ownership.transfer.ownership.param.transfer.param",
+      "status": "Planned",
+      "ui": {
+        "mode": "unknown",
+        "route": null,
+        "actions": [
+          "POST /api/facility/:facilityId/team/transfer-ownership,/transfer-ownership/:userId,/transfer/:userId"
+        ]
+      },
+      "api": [
+        {
+          "method": "POST",
+          "path": "/api/facility/:facilityId/team/transfer-ownership,/transfer-ownership/:userId,/transfer/:userId"
+        }
+      ],
+      "guards": {
+        "auth": null,
+        "facilityScope": null,
+        "rolesAllowed": []
+      },
+      "evidence": {
+        "tests": []
+      },
+      "verification": "Unverified",
+      "autoGenerated": true,
+      "generatedFrom": "POST /api/facilities/:facilityId/team/transfer-ownership,/transfer-ownership/:userId,/transfer/:userId"
+    },
+    {
+      "featureId": "auto.post.facilities.param.members",
+      "status": "Planned",
+      "ui": {
+        "mode": "unknown",
+        "route": null,
+        "actions": [
+          "POST /api/facilities/:id/members"
+        ]
+      },
+      "api": [
+        {
+          "method": "POST",
+          "path": "/api/facilities/:id/members"
+        }
+      ],
+      "guards": {
+        "auth": null,
+        "facilityScope": null,
+        "rolesAllowed": []
+      },
+      "evidence": {
+        "tests": []
+      },
+      "verification": "Unverified",
+      "autoGenerated": true,
+      "generatedFrom": "POST /api/facilities/:id/members"
+    },
+    {
+      "featureId": "auto.post.facility.param.growlogs.2",
+      "status": "Planned",
+      "ui": {
+        "mode": "unknown",
+        "route": null,
+        "actions": [
+          "POST /api/facility/:facilityId/growlogs"
+        ]
+      },
+      "api": [
+        {
+          "method": "POST",
+          "path": "/api/facility/:facilityId/growlogs"
+        }
+      ],
+      "guards": {
+        "auth": null,
+        "facilityScope": null,
+        "rolesAllowed": []
+      },
+      "evidence": {
+        "tests": []
+      },
+      "verification": "Unverified",
+      "autoGenerated": true,
+      "generatedFrom": "POST /api/facility/:facilityId/growlogs"
+    },
+    {
+      "featureId": "auto.post.facility.param.grows.2",
+      "status": "Planned",
+      "ui": {
+        "mode": "unknown",
+        "route": null,
+        "actions": [
+          "POST /api/facility/:facilityId/grows"
+        ]
+      },
+      "api": [
+        {
+          "method": "POST",
+          "path": "/api/facility/:facilityId/grows"
+        }
+      ],
+      "guards": {
+        "auth": null,
+        "facilityScope": null,
+        "rolesAllowed": []
+      },
+      "evidence": {
+        "tests": []
+      },
+      "verification": "Unverified",
+      "autoGenerated": true,
+      "generatedFrom": "POST /api/facility/:facilityId/grows"
+    },
+    {
+      "featureId": "auto.post.facility.param.inventory.2",
+      "status": "Planned",
+      "ui": {
+        "mode": "unknown",
+        "route": null,
+        "actions": [
+          "POST /api/facility/:facilityId/inventory"
+        ]
+      },
+      "api": [
+        {
+          "method": "POST",
+          "path": "/api/facility/:facilityId/inventory"
+        }
+      ],
+      "guards": {
+        "auth": null,
+        "facilityScope": null,
+        "rolesAllowed": []
+      },
+      "evidence": {
+        "tests": []
+      },
+      "verification": "Unverified",
+      "autoGenerated": true,
+      "generatedFrom": "POST /api/facility/:facilityId/inventory"
+    },
+    {
+      "featureId": "auto.post.facility.param.plants.2",
+      "status": "Planned",
+      "ui": {
+        "mode": "unknown",
+        "route": null,
+        "actions": [
+          "POST /api/facility/:facilityId/plants"
+        ]
+      },
+      "api": [
+        {
+          "method": "POST",
+          "path": "/api/facility/:facilityId/plants"
+        }
+      ],
+      "guards": {
+        "auth": null,
+        "facilityScope": null,
+        "rolesAllowed": []
+      },
+      "evidence": {
+        "tests": []
+      },
+      "verification": "Unverified",
+      "autoGenerated": true,
+      "generatedFrom": "POST /api/facility/:facilityId/plants"
+    },
+    {
+      "featureId": "auto.post.facility.param.rooms.2",
+      "status": "Planned",
+      "ui": {
+        "mode": "unknown",
+        "route": null,
+        "actions": [
+          "POST /api/facility/:facilityId/rooms"
+        ]
+      },
+      "api": [
+        {
+          "method": "POST",
+          "path": "/api/facility/:facilityId/rooms"
+        }
+      ],
+      "guards": {
+        "auth": null,
+        "facilityScope": null,
+        "rolesAllowed": []
+      },
+      "evidence": {
+        "tests": []
+      },
+      "verification": "Unverified",
+      "autoGenerated": true,
+      "generatedFrom": "POST /api/facility/:facilityId/rooms"
+    },
+    {
+      "featureId": "auto.post.facility.param.team.transfer.ownership.transfer.ownership.param.transfer.param.2",
+      "status": "Planned",
+      "ui": {
+        "mode": "unknown",
+        "route": null,
+        "actions": [
+          "POST /api/facility/:facilityId/team/transfer-ownership,/transfer-ownership/:userId,/transfer/:userId"
+        ]
+      },
+      "api": [
+        {
+          "method": "POST",
+          "path": "/api/facility/:facilityId/team/transfer-ownership,/transfer-ownership/:userId,/transfer/:userId"
+        }
+      ],
+      "guards": {
+        "auth": null,
+        "facilityScope": null,
+        "rolesAllowed": []
+      },
+      "evidence": {
+        "tests": []
+      },
+      "verification": "Unverified",
+      "autoGenerated": true,
+      "generatedFrom": "POST /api/facility/:facilityId/team/transfer-ownership,/transfer-ownership/:userId,/transfer/:userId"
+    },
+    {
+      "featureId": "auto.post.follow.param",
+      "status": "Planned",
+      "ui": {
+        "mode": "unknown",
+        "route": null,
+        "actions": [
+          "POST /api/follow/:id"
+        ]
+      },
+      "api": [
+        {
+          "method": "POST",
+          "path": "/api/follow/:id"
+        }
+      ],
+      "guards": {
+        "auth": null,
+        "facilityScope": null,
+        "rolesAllowed": []
+      },
+      "evidence": {
+        "tests": []
+      },
+      "verification": "Unverified",
+      "autoGenerated": true,
+      "generatedFrom": "POST /api/follow/:id"
+    },
+    {
+      "featureId": "auto.post.growlogs",
+      "status": "Planned",
+      "ui": {
+        "mode": "unknown",
+        "route": null,
+        "actions": [
+          "POST /api/growlogs"
+        ]
+      },
+      "api": [
+        {
+          "method": "POST",
+          "path": "/api/growlogs"
+        }
+      ],
+      "guards": {
+        "auth": null,
+        "facilityScope": null,
+        "rolesAllowed": []
+      },
+      "evidence": {
+        "tests": []
+      },
+      "verification": "Unverified",
+      "autoGenerated": true,
+      "generatedFrom": "POST /api/growlogs"
+    },
+    {
+      "featureId": "auto.post.inventory",
+      "status": "Planned",
+      "ui": {
+        "mode": "unknown",
+        "route": null,
+        "actions": [
+          "POST /api/inventory"
+        ]
+      },
+      "api": [
+        {
+          "method": "POST",
+          "path": "/api/inventory"
+        }
+      ],
+      "guards": {
+        "auth": null,
+        "facilityScope": null,
+        "rolesAllowed": []
+      },
+      "evidence": {
+        "tests": []
+      },
+      "verification": "Unverified",
+      "autoGenerated": true,
+      "generatedFrom": "POST /api/inventory"
+    },
+    {
+      "featureId": "auto.post.preferences.notifications",
+      "status": "Planned",
+      "ui": {
+        "mode": "unknown",
+        "route": null,
+        "actions": [
+          "POST /api/preferences/notifications"
+        ]
+      },
+      "api": [
+        {
+          "method": "POST",
+          "path": "/api/preferences/notifications"
+        }
+      ],
+      "guards": {
+        "auth": null,
+        "facilityScope": null,
+        "rolesAllowed": []
+      },
+      "evidence": {
+        "tests": []
+      },
+      "verification": "Unverified",
+      "autoGenerated": true,
+      "generatedFrom": "POST /api/preferences/notifications"
+    },
+    {
+      "featureId": "auto.post.rooms",
+      "status": "Planned",
+      "ui": {
+        "mode": "unknown",
+        "route": null,
+        "actions": [
+          "POST /api/rooms"
+        ]
+      },
+      "api": [
+        {
+          "method": "POST",
+          "path": "/api/rooms"
+        }
+      ],
+      "guards": {
+        "auth": null,
+        "facilityScope": null,
+        "rolesAllowed": []
+      },
+      "evidence": {
+        "tests": []
+      },
+      "verification": "Unverified",
+      "autoGenerated": true,
+      "generatedFrom": "POST /api/rooms"
+    },
+    {
+      "featureId": "auto.post.unfollow.param",
+      "status": "Planned",
+      "ui": {
+        "mode": "unknown",
+        "route": null,
+        "actions": [
+          "POST /api/unfollow/:id"
+        ]
+      },
+      "api": [
+        {
+          "method": "POST",
+          "path": "/api/unfollow/:id"
+        }
+      ],
+      "guards": {
+        "auth": null,
+        "facilityScope": null,
+        "rolesAllowed": []
+      },
+      "evidence": {
+        "tests": []
+      },
+      "verification": "Unverified",
+      "autoGenerated": true,
+      "generatedFrom": "POST /api/unfollow/:id"
+    },
+    {
+      "featureId": "auto.post.user.param.follow",
+      "status": "Planned",
+      "ui": {
+        "mode": "unknown",
+        "route": null,
+        "actions": [
+          "POST /api/user/:id/follow"
+        ]
+      },
+      "api": [
+        {
+          "method": "POST",
+          "path": "/api/user/:id/follow"
+        }
+      ],
+      "guards": {
+        "auth": null,
+        "facilityScope": null,
+        "rolesAllowed": []
+      },
+      "evidence": {
+        "tests": []
+      },
+      "verification": "Unverified",
+      "autoGenerated": true,
+      "generatedFrom": "POST /api/user/:id/follow"
+    },
+    {
+      "featureId": "auto.post.user.param.unfollow",
+      "status": "Planned",
+      "ui": {
+        "mode": "unknown",
+        "route": null,
+        "actions": [
+          "POST /api/user/:id/unfollow"
+        ]
+      },
+      "api": [
+        {
+          "method": "POST",
+          "path": "/api/user/:id/unfollow"
+        }
+      ],
+      "guards": {
+        "auth": null,
+        "facilityScope": null,
+        "rolesAllowed": []
+      },
+      "evidence": {
+        "tests": []
+      },
+      "verification": "Unverified",
+      "autoGenerated": true,
+      "generatedFrom": "POST /api/user/:id/unfollow"
+    },
+    {
+      "featureId": "auto.post.user.avatar",
+      "status": "Planned",
+      "ui": {
+        "mode": "unknown",
+        "route": null,
+        "actions": [
+          "POST /api/user/avatar"
+        ]
+      },
+      "api": [
+        {
+          "method": "POST",
+          "path": "/api/user/avatar"
+        }
+      ],
+      "guards": {
+        "auth": null,
+        "facilityScope": null,
+        "rolesAllowed": []
+      },
+      "evidence": {
+        "tests": []
+      },
+      "verification": "Unverified",
+      "autoGenerated": true,
+      "generatedFrom": "POST /api/user/avatar"
+    },
+    {
+      "featureId": "auto.post.user.banner",
+      "status": "Planned",
+      "ui": {
+        "mode": "unknown",
+        "route": null,
+        "actions": [
+          "POST /api/user/banner"
+        ]
+      },
+      "api": [
+        {
+          "method": "POST",
+          "path": "/api/user/banner"
+        }
+      ],
+      "guards": {
+        "auth": null,
+        "facilityScope": null,
+        "rolesAllowed": []
+      },
+      "evidence": {
+        "tests": []
+      },
+      "verification": "Unverified",
+      "autoGenerated": true,
+      "generatedFrom": "POST /api/user/banner"
+    },
+    {
+      "featureId": "auto.post.user.bio",
+      "status": "Planned",
+      "ui": {
+        "mode": "unknown",
+        "route": null,
+        "actions": [
+          "POST /api/user/bio"
+        ]
+      },
+      "api": [
+        {
+          "method": "POST",
+          "path": "/api/user/bio"
+        }
+      ],
+      "guards": {
+        "auth": null,
+        "facilityScope": null,
+        "rolesAllowed": []
+      },
+      "evidence": {
+        "tests": []
+      },
+      "verification": "Unverified",
+      "autoGenerated": true,
+      "generatedFrom": "POST /api/user/bio"
+    },
+    {
+      "featureId": "auto.post.user.creator.onboard",
+      "status": "Planned",
+      "ui": {
+        "mode": "unknown",
+        "route": null,
+        "actions": [
+          "POST /api/user/creator/onboard"
+        ]
+      },
+      "api": [
+        {
+          "method": "POST",
+          "path": "/api/user/creator/onboard"
+        }
+      ],
+      "guards": {
+        "auth": null,
+        "facilityScope": null,
+        "rolesAllowed": []
+      },
+      "evidence": {
+        "tests": []
+      },
+      "verification": "Unverified",
+      "autoGenerated": true,
+      "generatedFrom": "POST /api/user/creator/onboard"
+    },
+    {
+      "featureId": "auto.post.user.follow.param",
+      "status": "Planned",
+      "ui": {
+        "mode": "unknown",
+        "route": null,
+        "actions": [
+          "POST /api/user/follow/:id"
+        ]
+      },
+      "api": [
+        {
+          "method": "POST",
+          "path": "/api/user/follow/:id"
+        }
+      ],
+      "guards": {
+        "auth": null,
+        "facilityScope": null,
+        "rolesAllowed": []
+      },
+      "evidence": {
+        "tests": []
+      },
+      "verification": "Unverified",
+      "autoGenerated": true,
+      "generatedFrom": "POST /api/user/follow/:id"
+    },
+    {
+      "featureId": "auto.post.user.preferences.notifications",
+      "status": "Planned",
+      "ui": {
+        "mode": "unknown",
+        "route": null,
+        "actions": [
+          "POST /api/user/preferences/notifications"
+        ]
+      },
+      "api": [
+        {
+          "method": "POST",
+          "path": "/api/user/preferences/notifications"
+        }
+      ],
+      "guards": {
+        "auth": null,
+        "facilityScope": null,
+        "rolesAllowed": []
+      },
+      "evidence": {
+        "tests": []
+      },
+      "verification": "Unverified",
+      "autoGenerated": true,
+      "generatedFrom": "POST /api/user/preferences/notifications"
+    },
+    {
+      "featureId": "auto.post.user.unfollow.param",
+      "status": "Planned",
+      "ui": {
+        "mode": "unknown",
+        "route": null,
+        "actions": [
+          "POST /api/user/unfollow/:id"
+        ]
+      },
+      "api": [
+        {
+          "method": "POST",
+          "path": "/api/user/unfollow/:id"
+        }
+      ],
+      "guards": {
+        "auth": null,
+        "facilityScope": null,
+        "rolesAllowed": []
+      },
+      "evidence": {
+        "tests": []
+      },
+      "verification": "Unverified",
+      "autoGenerated": true,
+      "generatedFrom": "POST /api/user/unfollow/:id"
+    },
+    {
+      "featureId": "auto.post.user.param.follow.2",
+      "status": "Planned",
+      "ui": {
+        "mode": "unknown",
+        "route": null,
+        "actions": [
+          "POST /api/user/:id/follow"
+        ]
+      },
+      "api": [
+        {
+          "method": "POST",
+          "path": "/api/user/:id/follow"
+        }
+      ],
+      "guards": {
+        "auth": null,
+        "facilityScope": null,
+        "rolesAllowed": []
+      },
+      "evidence": {
+        "tests": []
+      },
+      "verification": "Unverified",
+      "autoGenerated": true,
+      "generatedFrom": "POST /api/users/:id/follow"
+    },
+    {
+      "featureId": "auto.post.user.param.unfollow.2",
+      "status": "Planned",
+      "ui": {
+        "mode": "unknown",
+        "route": null,
+        "actions": [
+          "POST /api/user/:id/unfollow"
+        ]
+      },
+      "api": [
+        {
+          "method": "POST",
+          "path": "/api/user/:id/unfollow"
+        }
+      ],
+      "guards": {
+        "auth": null,
+        "facilityScope": null,
+        "rolesAllowed": []
+      },
+      "evidence": {
+        "tests": []
+      },
+      "verification": "Unverified",
+      "autoGenerated": true,
+      "generatedFrom": "POST /api/users/:id/unfollow"
+    },
+    {
+      "featureId": "auto.post.user.avatar.2",
+      "status": "Planned",
+      "ui": {
+        "mode": "unknown",
+        "route": null,
+        "actions": [
+          "POST /api/user/avatar"
+        ]
+      },
+      "api": [
+        {
+          "method": "POST",
+          "path": "/api/user/avatar"
+        }
+      ],
+      "guards": {
+        "auth": null,
+        "facilityScope": null,
+        "rolesAllowed": []
+      },
+      "evidence": {
+        "tests": []
+      },
+      "verification": "Unverified",
+      "autoGenerated": true,
+      "generatedFrom": "POST /api/users/avatar"
+    },
+    {
+      "featureId": "auto.post.user.banner.2",
+      "status": "Planned",
+      "ui": {
+        "mode": "unknown",
+        "route": null,
+        "actions": [
+          "POST /api/user/banner"
+        ]
+      },
+      "api": [
+        {
+          "method": "POST",
+          "path": "/api/user/banner"
+        }
+      ],
+      "guards": {
+        "auth": null,
+        "facilityScope": null,
+        "rolesAllowed": []
+      },
+      "evidence": {
+        "tests": []
+      },
+      "verification": "Unverified",
+      "autoGenerated": true,
+      "generatedFrom": "POST /api/users/banner"
+    },
+    {
+      "featureId": "auto.post.user.bio.2",
+      "status": "Planned",
+      "ui": {
+        "mode": "unknown",
+        "route": null,
+        "actions": [
+          "POST /api/user/bio"
+        ]
+      },
+      "api": [
+        {
+          "method": "POST",
+          "path": "/api/user/bio"
+        }
+      ],
+      "guards": {
+        "auth": null,
+        "facilityScope": null,
+        "rolesAllowed": []
+      },
+      "evidence": {
+        "tests": []
+      },
+      "verification": "Unverified",
+      "autoGenerated": true,
+      "generatedFrom": "POST /api/users/bio"
+    },
+    {
+      "featureId": "auto.post.user.creator.onboard.2",
+      "status": "Planned",
+      "ui": {
+        "mode": "unknown",
+        "route": null,
+        "actions": [
+          "POST /api/user/creator/onboard"
+        ]
+      },
+      "api": [
+        {
+          "method": "POST",
+          "path": "/api/user/creator/onboard"
+        }
+      ],
+      "guards": {
+        "auth": null,
+        "facilityScope": null,
+        "rolesAllowed": []
+      },
+      "evidence": {
+        "tests": []
+      },
+      "verification": "Unverified",
+      "autoGenerated": true,
+      "generatedFrom": "POST /api/users/creator/onboard"
+    },
+    {
+      "featureId": "auto.post.user.follow.param.2",
+      "status": "Planned",
+      "ui": {
+        "mode": "unknown",
+        "route": null,
+        "actions": [
+          "POST /api/user/follow/:id"
+        ]
+      },
+      "api": [
+        {
+          "method": "POST",
+          "path": "/api/user/follow/:id"
+        }
+      ],
+      "guards": {
+        "auth": null,
+        "facilityScope": null,
+        "rolesAllowed": []
+      },
+      "evidence": {
+        "tests": []
+      },
+      "verification": "Unverified",
+      "autoGenerated": true,
+      "generatedFrom": "POST /api/users/follow/:id"
+    },
+    {
+      "featureId": "auto.post.user.preferences.notifications.2",
+      "status": "Planned",
+      "ui": {
+        "mode": "unknown",
+        "route": null,
+        "actions": [
+          "POST /api/user/preferences/notifications"
+        ]
+      },
+      "api": [
+        {
+          "method": "POST",
+          "path": "/api/user/preferences/notifications"
+        }
+      ],
+      "guards": {
+        "auth": null,
+        "facilityScope": null,
+        "rolesAllowed": []
+      },
+      "evidence": {
+        "tests": []
+      },
+      "verification": "Unverified",
+      "autoGenerated": true,
+      "generatedFrom": "POST /api/users/preferences/notifications"
+    },
+    {
+      "featureId": "auto.post.user.unfollow.param.2",
+      "status": "Planned",
+      "ui": {
+        "mode": "unknown",
+        "route": null,
+        "actions": [
+          "POST /api/user/unfollow/:id"
+        ]
+      },
+      "api": [
+        {
+          "method": "POST",
+          "path": "/api/user/unfollow/:id"
+        }
+      ],
+      "guards": {
+        "auth": null,
+        "facilityScope": null,
+        "rolesAllowed": []
+      },
+      "evidence": {
+        "tests": []
+      },
+      "verification": "Unverified",
+      "autoGenerated": true,
+      "generatedFrom": "POST /api/users/unfollow/:id"
+    },
+    {
+      "featureId": "auto.put.courses.param.publish",
+      "status": "Planned",
+      "ui": {
+        "mode": "unknown",
+        "route": null,
+        "actions": [
+          "PUT /api/courses/:id/publish"
+        ]
+      },
+      "api": [
+        {
+          "method": "PUT",
+          "path": "/api/courses/:id/publish"
+        }
+      ],
+      "guards": {
+        "auth": null,
+        "facilityScope": null,
+        "rolesAllowed": []
+      },
+      "evidence": {
+        "tests": []
+      },
+      "verification": "Unverified",
+      "autoGenerated": true,
+      "generatedFrom": "PUT /api/courses/:id/publish"
+    },
+    {
+      "featureId": "auto.put.courses.lesson.param",
+      "status": "Planned",
+      "ui": {
+        "mode": "unknown",
+        "route": null,
+        "actions": [
+          "PUT /api/courses/lesson/:lessonId"
+        ]
+      },
+      "api": [
+        {
+          "method": "PUT",
+          "path": "/api/courses/lesson/:lessonId"
+        }
+      ],
+      "guards": {
+        "auth": null,
+        "facilityScope": null,
+        "rolesAllowed": []
+      },
+      "evidence": {
+        "tests": []
+      },
+      "verification": "Unverified",
+      "autoGenerated": true,
+      "generatedFrom": "PUT /api/courses/lesson/:lessonId"
+    },
+    {
+      "featureId": "auto.put.facility.param.tasks.param",
+      "status": "Planned",
+      "ui": {
+        "mode": "unknown",
+        "route": null,
+        "actions": [
+          "PUT /api/facility/:facilityId/tasks/:taskId"
+        ]
+      },
+      "api": [
+        {
+          "method": "PUT",
+          "path": "/api/facility/:facilityId/tasks/:taskId"
+        }
+      ],
+      "guards": {
+        "auth": null,
+        "facilityScope": null,
+        "rolesAllowed": []
+      },
+      "evidence": {
+        "tests": []
+      },
+      "verification": "Unverified",
+      "autoGenerated": true,
+      "generatedFrom": "PUT /api/facilities/:facilityId/tasks/:taskId"
+    },
+    {
+      "featureId": "auto.put.facilities.param",
+      "status": "Planned",
+      "ui": {
+        "mode": "unknown",
+        "route": null,
+        "actions": [
+          "PUT /api/facilities/:id"
+        ]
+      },
+      "api": [
+        {
+          "method": "PUT",
+          "path": "/api/facilities/:id"
+        }
+      ],
+      "guards": {
+        "auth": null,
+        "facilityScope": null,
+        "rolesAllowed": []
+      },
+      "evidence": {
+        "tests": []
+      },
+      "verification": "Unverified",
+      "autoGenerated": true,
+      "generatedFrom": "PUT /api/facilities/:id"
+    },
+    {
+      "featureId": "auto.put.facilities.param.active",
+      "status": "Planned",
+      "ui": {
+        "mode": "unknown",
+        "route": null,
+        "actions": [
+          "PUT /api/facilities/:id/active"
+        ]
+      },
+      "api": [
+        {
+          "method": "PUT",
+          "path": "/api/facilities/:id/active"
+        }
+      ],
+      "guards": {
+        "auth": null,
+        "facilityScope": null,
+        "rolesAllowed": []
+      },
+      "evidence": {
+        "tests": []
+      },
+      "verification": "Unverified",
+      "autoGenerated": true,
+      "generatedFrom": "PUT /api/facilities/:id/active"
+    },
+    {
+      "featureId": "auto.put.facility.param.tasks.param.2",
+      "status": "Planned",
+      "ui": {
+        "mode": "unknown",
+        "route": null,
+        "actions": [
+          "PUT /api/facility/:facilityId/tasks/:taskId"
+        ]
+      },
+      "api": [
+        {
+          "method": "PUT",
+          "path": "/api/facility/:facilityId/tasks/:taskId"
+        }
+      ],
+      "guards": {
+        "auth": null,
+        "facilityScope": null,
+        "rolesAllowed": []
+      },
+      "evidence": {
+        "tests": []
+      },
+      "verification": "Unverified",
+      "autoGenerated": true,
+      "generatedFrom": "PUT /api/facility/:facilityId/tasks/:taskId"
+    },
+    {
+      "featureId": "auto.put.profile",
+      "status": "Planned",
+      "ui": {
+        "mode": "unknown",
+        "route": null,
+        "actions": [
+          "PUT /api/profile"
+        ]
+      },
+      "api": [
+        {
+          "method": "PUT",
+          "path": "/api/profile"
+        }
+      ],
+      "guards": {
+        "auth": null,
+        "facilityScope": null,
+        "rolesAllowed": []
+      },
+      "evidence": {
+        "tests": []
+      },
+      "verification": "Unverified",
+      "autoGenerated": true,
+      "generatedFrom": "PUT /api/profile"
+    },
+    {
+      "featureId": "auto.put.user.profile",
+      "status": "Planned",
+      "ui": {
+        "mode": "unknown",
+        "route": null,
+        "actions": [
+          "PUT /api/user/profile"
+        ]
+      },
+      "api": [
+        {
+          "method": "PUT",
+          "path": "/api/user/profile"
+        }
+      ],
+      "guards": {
+        "auth": null,
+        "facilityScope": null,
+        "rolesAllowed": []
+      },
+      "evidence": {
+        "tests": []
+      },
+      "verification": "Unverified",
+      "autoGenerated": true,
+      "generatedFrom": "PUT /api/user/profile"
+    },
+    {
+      "featureId": "auto.put.user.profile.2",
+      "status": "Planned",
+      "ui": {
+        "mode": "unknown",
+        "route": null,
+        "actions": [
+          "PUT /api/user/profile"
+        ]
+      },
+      "api": [
+        {
+          "method": "PUT",
+          "path": "/api/user/profile"
+        }
+      ],
+      "guards": {
+        "auth": null,
+        "facilityScope": null,
+        "rolesAllowed": []
+      },
+      "evidence": {
+        "tests": []
+      },
+      "verification": "Unverified",
+      "autoGenerated": true,
+      "generatedFrom": "PUT /api/users/profile"
+    }
+  ],
+  "generatedAt": "2026-02-25T14:29:12.585Z",
+  "autoExpansion": {
+    "source": "/api/__debug/routes",
+    "pruneAutoGenerated": true,
+    "appendedRows": 186
+  }
+}

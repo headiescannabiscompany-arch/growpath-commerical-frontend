@@ -41,8 +41,6 @@ export default function StorefrontScreen() {
     auth?.selectedFacilityId ??
     null;
 
-  // Debug log for facilityId mapping
-  console.log("[Storefront] facilityId:", facilityId, "user:", user);
 
   const [selectedVendorId, setSelectedVendorId] = useState(null);
 
@@ -64,16 +62,6 @@ export default function StorefrontScreen() {
   });
 
   const vendors = vendorsQuery.data ?? [];
-
-  // Prints a real vendor object to console so you can paste it back here
-  useEffect(() => {
-    if (vendors?.length) {
-      console.log(
-        "[Storefront DEBUG vendor sample]",
-        JSON.stringify(vendors[0], null, 2)
-      );
-    }
-  }, [vendors]);
 
   const selectedVendor = useMemo(() => {
     if (!vendors.length) return null;

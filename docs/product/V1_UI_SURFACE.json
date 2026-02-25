@@ -1,0 +1,66 @@
+{
+  "version": "v1",
+  "updatedAt": "2026-02-25",
+  "modes": {
+    "personal": {
+      "nav": ["Home", "Grows", "Logs", "Tools", "Courses", "Forum", "Diagnose", "Profile", "AI"],
+      "routes": [
+        "/home/personal",
+        "/home/personal/grows",
+        "/home/personal/logs",
+        "/home/personal/tools",
+        "/home/personal/courses",
+        "/home/personal/forum",
+        "/home/personal/diagnose",
+        "/home/personal/profile",
+        "/home/personal/ai"
+      ],
+      "outOfNavRoutes": ["/home/personal/tasks"]
+    },
+    "facility": {
+      "nav": ["Dashboard", "Grows", "Plants", "Tasks", "Logs", "Inventory", "Team", "Profile"],
+      "routes": [
+        "/home/facility",
+        "/home/facility/select",
+        "/home/facility/dashboard",
+        "/home/facility/grows",
+        "/home/facility/plants",
+        "/home/facility/tasks",
+        "/home/facility/logs",
+        "/home/facility/inventory",
+        "/home/facility/team",
+        "/home/facility/profile"
+      ],
+      "outOfNavRoutes": [
+        "/home/facility/ai/ask",
+        "/home/facility/ai/diagnosis-photo",
+        "/home/facility/ai/template",
+        "/home/facility/ai/validation",
+        "/home/facility/sop-runs",
+        "/home/facility/compliance/reports",
+        "/home/facility/audit-logs"
+      ]
+    },
+    "commercial": {
+      "nav": ["Dashboard", "Inventory", "Tasks", "Logs", "Alerts", "Feed"],
+      "routes": [
+        "/home/commercial",
+        "/home/commercial/inventory",
+        "/commercial/feed",
+        "/commercial/tasks/[id]",
+        "/commercial/logs/[id]",
+        "/commercial/alerts/[id]"
+      ],
+      "outOfNavRoutes": ["/home/commercial/inventory-item/[id]", "/home/commercial/inventory-create"]
+    }
+  },
+  "statusPolicy": {
+    "requiredStatuses": [
+      "Functional (Verified)",
+      "Functional (Unverified)",
+      "Planned",
+      "Disabled"
+    ],
+    "rule": "Every reachable route in nav must be assigned exactly one required status."
+  }
+}

@@ -3,17 +3,14 @@ import { useInfiniteQuery, useQueryClient } from "@tanstack/react-query";
 import { fetchUnifiedFeed } from "../api/feedAdapter";
 import { FeedItem, FeedFilters, FeedPage } from "../types/feed";
 
-// Hardcoded for now; replace with real facilityId source
-const DEFAULT_FACILITY_ID = "facility-1";
-
 export interface UseCommercialFeedOptions {
-  facilityId?: string;
+  facilityId?: string | null;
   filters?: FeedFilters;
   pageSize?: number;
 }
 
 export function useCommercialFeed({
-  facilityId = DEFAULT_FACILITY_ID,
+  facilityId = null,
   filters = {},
   pageSize = 20
 }: UseCommercialFeedOptions = {}) {
@@ -33,13 +30,14 @@ export function useCommercialFeed({
     queryKey,
     queryFn: ({ pageParam }) =>
       fetchUnifiedFeed({
-        facilityId,
+        facilityId: String(facilityId),
         filters,
         cursor: pageParam as string | undefined,
         limit: pageSize
       }),
     getNextPageParam: (lastPage) => lastPage.nextCursor ?? undefined,
-    initialPageParam: undefined
+    initialPageParam: undefined,
+    enabled: !!facilityId
   });
 
   // Flatten all items
