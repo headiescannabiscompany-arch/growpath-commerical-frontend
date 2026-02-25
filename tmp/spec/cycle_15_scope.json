@@ -1,20 +1,20 @@
-{
-  "cycle": "2026-02-25 / 15",
-  "repo": "backend",
-  "batchType": "auto.read.aliases",
-  "maxPromotions": 10,
-  "featureIds": [
-    "auto.get.user.profile.param",
-    "auto.get.user.profile.param.2",
-    "auto.get.user.followers.param",
-    "auto.get.user.followers.param.2",
-    "auto.get.user.following.param",
-    "auto.get.user.following.param.2",
-    "auto.get.user.is.following.param",
-    "auto.get.user.is.following.param.2",
-    "auto.get.user.certificates",
-    "auto.get.user.certificates.2"
-  ],
-  "promotionRule": "Promote only if endpoint is mounted (appears in /api/__debug/routes), guards exist, and tests cover happy + forbidden/invalid. Otherwise keep Planned.",
-  "notes": "Goal: promote read-only alias pairs (user/users) with deterministic tests and matrix evidence updates."
+﻿{
+    "promotionRule":  "Promote only if endpoint is mounted, auth guard enforced, and tests cover happy + forbidden/invalid.",
+    "maxPromotions":  10,
+    "batchType":  "auto.read.courses",
+    "featureIds":  [
+                       "auto.get.courses",
+                       "auto.get.courses.list",
+                       "auto.get.courses.search",
+                       "auto.get.courses.filter",
+                       "auto.get.courses.categories",
+                       "auto.get.courses.recommended",
+                       "auto.get.courses.recommendations",
+                       "auto.get.courses.param",
+                       "auto.get.courses.param.questions",
+                       "auto.get.courses.param.reviews"
+                   ],
+    "repo":  "backend",
+    "cycle":  "2026-02-25 / 15",
+    "notes":  "Cycle 15 adjusted from duplicate user-read set to real Planned courses-read set."
 }
