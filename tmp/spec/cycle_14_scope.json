@@ -1,0 +1,99 @@
+{
+  "cycle": "2026-02-25 / 14",
+  "sourceCommit": "ff09c72",
+  "generatedAt": "2026-02-25T19:21:02.328Z",
+  "selectionMode": "mounted-endpoints-high-confidence",
+  "selectedCount": 10,
+  "selectedFeatureIds": [
+    "auto.post.user.param.follow",
+    "auto.post.user.param.follow.2",
+    "auto.post.user.param.unfollow",
+    "auto.post.user.param.unfollow.2",
+    "auto.post.user.follow.param",
+    "auto.post.user.follow.param.2",
+    "auto.post.user.unfollow.param",
+    "auto.post.user.unfollow.param.2",
+    "auto.put.user.profile",
+    "auto.put.user.profile.2"
+  ],
+  "selectedEndpoints": [
+    "POST /api/user/:id/follow",
+    "POST /api/user/:id/unfollow",
+    "POST /api/user/follow/:id",
+    "POST /api/user/unfollow/:id",
+    "PUT /api/user/profile"
+  ],
+  "selectedRows": [
+    {
+      "featureId": "auto.post.user.param.follow",
+      "api": [
+        "POST /api/user/:id/follow"
+      ],
+      "uiRoute": null
+    },
+    {
+      "featureId": "auto.post.user.param.follow.2",
+      "api": [
+        "POST /api/user/:id/follow"
+      ],
+      "uiRoute": null
+    },
+    {
+      "featureId": "auto.post.user.param.unfollow",
+      "api": [
+        "POST /api/user/:id/unfollow"
+      ],
+      "uiRoute": null
+    },
+    {
+      "featureId": "auto.post.user.param.unfollow.2",
+      "api": [
+        "POST /api/user/:id/unfollow"
+      ],
+      "uiRoute": null
+    },
+    {
+      "featureId": "auto.post.user.follow.param",
+      "api": [
+        "POST /api/user/follow/:id"
+      ],
+      "uiRoute": null
+    },
+    {
+      "featureId": "auto.post.user.follow.param.2",
+      "api": [
+        "POST /api/user/follow/:id"
+      ],
+      "uiRoute": null
+    },
+    {
+      "featureId": "auto.post.user.unfollow.param",
+      "api": [
+        "POST /api/user/unfollow/:id"
+      ],
+      "uiRoute": null
+    },
+    {
+      "featureId": "auto.post.user.unfollow.param.2",
+      "api": [
+        "POST /api/user/unfollow/:id"
+      ],
+      "uiRoute": null
+    },
+    {
+      "featureId": "auto.put.user.profile",
+      "api": [
+        "PUT /api/user/profile"
+      ],
+      "uiRoute": null
+    },
+    {
+      "featureId": "auto.put.user.profile.2",
+      "api": [
+        "PUT /api/user/profile"
+      ],
+      "uiRoute": null
+    }
+  ],
+  "note": "Backend must prove guards and add happy+forbidden/invalid tests before promotion"
+}
