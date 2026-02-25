@@ -1,0 +1,89 @@
+{
+  "cycle": "2026-02-25 / 13",
+  "sourceCommit": "9422b0d",
+  "generatedAt": "2026-02-25T19:07:15.454Z",
+  "selectionMode": "mounted-endpoints-high-confidence",
+  "selectedCount": 10,
+  "selectedFeatureIds": [
+    "auto.get.user.certificates",
+    "auto.get.user.certificates.2",
+    "auto.get.user.followers.param",
+    "auto.get.user.followers.param.2",
+    "auto.get.user.following.param",
+    "auto.get.user.following.param.2",
+    "auto.get.user.is.following.param",
+    "auto.get.user.is.following.param.2",
+    "auto.get.user.profile.param",
+    "auto.get.user.profile.param.2"
+  ],
+  "selectedEndpoints": [
+    "GET /api/user/certificates",
+    "GET /api/user/followers/:id",
+    "GET /api/user/following/:id",
+    "GET /api/user/is-following/:id",
+    "GET /api/user/profile/:id"
+  ],
+  "selectedRows": [
+    {
+      "featureId": "auto.get.user.certificates",
+      "api": [
+        "GET /api/user/certificates"
+      ]
+    },
+    {
+      "featureId": "auto.get.user.certificates.2",
+      "api": [
+        "GET /api/user/certificates"
+      ]
+    },
+    {
+      "featureId": "auto.get.user.followers.param",
+      "api": [
+        "GET /api/user/followers/:id"
+      ]
+    },
+    {
+      "featureId": "auto.get.user.followers.param.2",
+      "api": [
+        "GET /api/user/followers/:id"
+      ]
+    },
+    {
+      "featureId": "auto.get.user.following.param",
+      "api": [
+        "GET /api/user/following/:id"
+      ]
+    },
+    {
+      "featureId": "auto.get.user.following.param.2",
+      "api": [
+        "GET /api/user/following/:id"
+      ]
+    },
+    {
+      "featureId": "auto.get.user.is.following.param",
+      "api": [
+        "GET /api/user/is-following/:id"
+      ]
+    },
+    {
+      "featureId": "auto.get.user.is.following.param.2",
+      "api": [
+        "GET /api/user/is-following/:id"
+      ]
+    },
+    {
+      "featureId": "auto.get.user.profile.param",
+      "api": [
+        "GET /api/user/profile/:id"
+      ]
+    },
+    {
+      "featureId": "auto.get.user.profile.param.2",
+      "api": [
+        "GET /api/user/profile/:id"
+      ]
+    }
+  ],
+  "note": "Evidence/guard proofs must be added by backend before promotion"
+}
