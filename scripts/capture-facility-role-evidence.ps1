@@ -1,5 +1,6 @@
 param(
-  [string]$ApiBase = $env:EXPO_PUBLIC_API_URL
+  [string]$ApiBase = $env:EXPO_PUBLIC_API_URL,
+  [string]$CredsFile = ""
 )
 
 if ([string]::IsNullOrWhiteSpace($ApiBase)) { $ApiBase = "http://localhost:5001" }
@@ -7,6 +8,14 @@ $ApiBase = $ApiBase.TrimEnd("/")
 
 $root = ".\tmp\spec\facility-role"
 New-Item -ItemType Directory -Force $root | Out-Null
+
+$creds = $null
+if (-not [string]::IsNullOrWhiteSpace($CredsFile)) {
+  if (-not (Test-Path $CredsFile)) {
+    throw "CredsFile not found: $CredsFile"
+  }
+  $creds = Get-Content $CredsFile -Raw | ConvertFrom-Json
+}
 
 function Read-PlainPassword([string]$prompt) {
   $sec = Read-Host -AsSecureString $prompt
@@ -74,8 +83,17 @@ foreach ($role in $roles) {
 
   Write-Host ""
   Write-Host "=== $($key.ToUpper()) ==="
-  $email = Read-Host "Email for $key"
-  $password = Read-PlainPassword "Password for $key"
+  $email = $null
+  $password = $null
+
+  if ($creds -and $creds.$key) {
+    $email = [string]$creds.$key.email
+    $password = [string]$creds.$key.password
+    Write-Host "Using credentials from creds file for $key"
+  } else {
+    $email = Read-Host "Email for $key"
+    $password = Read-PlainPassword "Password for $key"
+  }
 
   $login = Invoke-JsonRequest -Url "$ApiBase/api/auth/login" -Method "POST" -Body @{
     email = $email

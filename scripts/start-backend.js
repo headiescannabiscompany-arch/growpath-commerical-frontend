@@ -1,7 +1,8 @@
 #!/usr/bin/env node
-const { spawn } = require("child_process");
-const fs = require("fs");
-const path = require("path");
+import { spawn } from "node:child_process";
+import fs from "node:fs";
+import path from "node:path";
+import dotenv from "dotenv";
 
 const projectRoot = process.cwd();
 const envFile =
@@ -11,7 +12,7 @@ const envFile =
 
 if (fs.existsSync(envFile)) {
   try {
-    require("dotenv").config({ path: envFile });
+    dotenv.config({ path: envFile });
   } catch (err) {
     console.warn(`Unable to load ${envFile}: ${err.message}`);
   }
@@ -25,6 +26,7 @@ const toAbsolute = (p) => {
 const candidates = [];
 if (process.env.BACKEND_DIR) candidates.push(toAbsolute(process.env.BACKEND_DIR));
 candidates.push(path.resolve(projectRoot, "..", "growpath-backend"));
+candidates.push(path.resolve(projectRoot, "..", "backend"));
 candidates.push(path.join(projectRoot, "backend"));
 
 const uniqueCandidates = candidates.filter(
