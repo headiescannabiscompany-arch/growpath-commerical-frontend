@@ -1,18 +1,18 @@
 {
     "owner":  {
                   "email":  "owner@triplebaggenetics.com",
-                  "password":  "temp123"
+                  "password":  ""
               },
     "manager":  {
                     "email":  "manager@triplebaggenetics.com",
-                    "password":  "temp123"
+                    "password":  ""
                 },
     "staff":  {
                   "email":  "staff@triplebaggenetics.com",
-                  "password":  "temp123"
+                  "password":  ""
               },
     "viewer":  {
                    "email":  "viewer@triplebaggenetics.com",
-                   "password":  "temp123"
+                   "password":  ""
                }
 }
