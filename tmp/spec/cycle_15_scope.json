@@ -1,0 +1,20 @@
+{
+  "cycle": "2026-02-25 / 15",
+  "repo": "backend",
+  "batchType": "auto.read.aliases",
+  "maxPromotions": 10,
+  "featureIds": [
+    "auto.get.user.profile.param",
+    "auto.get.user.profile.param.2",
+    "auto.get.user.followers.param",
+    "auto.get.user.followers.param.2",
+    "auto.get.user.following.param",
+    "auto.get.user.following.param.2",
+    "auto.get.user.is.following.param",
+    "auto.get.user.is.following.param.2",
+    "auto.get.user.certificates",
+    "auto.get.user.certificates.2"
+  ],
+  "promotionRule": "Promote only if endpoint is mounted (appears in /api/__debug/routes), guards exist, and tests cover happy + forbidden/invalid. Otherwise keep Planned.",
+  "notes": "Goal: promote read-only alias pairs (user/users) with deterministic tests and matrix evidence updates."
+}
