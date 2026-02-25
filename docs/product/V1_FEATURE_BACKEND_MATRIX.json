@@ -5435,7 +5435,12 @@
           "open page"
         ]
       },
-      "api": [],
+      "api": [
+        {
+          "method": "GET",
+          "path": "/api/alerts/:id"
+        }
+      ],
       "guards": {
         "auth": null,
         "facilityScope": null,
@@ -5459,7 +5464,12 @@
           "open page"
         ]
       },
-      "api": [],
+      "api": [
+        {
+          "method": "GET",
+          "path": "/api/me"
+        }
+      ],
       "guards": {
         "auth": null,
         "facilityScope": null,
@@ -5483,7 +5493,12 @@
           "open page"
         ]
       },
-      "api": [],
+      "api": [
+        {
+          "method": "GET",
+          "path": "/api/logs/:id"
+        }
+      ],
       "guards": {
         "auth": null,
         "facilityScope": null,
@@ -5507,7 +5522,12 @@
           "open page"
         ]
       },
-      "api": [],
+      "api": [
+        {
+          "method": "GET",
+          "path": "/api/tasks/:id"
+        }
+      ],
       "guards": {
         "auth": null,
         "facilityScope": null,
@@ -5531,7 +5551,12 @@
           "open page"
         ]
       },
-      "api": [],
+      "api": [
+        {
+          "method": "GET",
+          "path": "/api/me"
+        }
+      ],
       "guards": {
         "auth": null,
         "facilityScope": null,
@@ -5647,7 +5672,12 @@
           "open page"
         ]
       },
-      "api": [],
+      "api": [
+        {
+          "method": "GET",
+          "path": "/api/me"
+        }
+      ],
       "guards": {
         "auth": null,
         "facilityScope": null,
