@@ -1,5 +1,7 @@
 # Button Registry (v1)
 
+Last updated: 2026-02-25
+
 ## Rule (locked)
 Every visible button must be one of:
 - Functional (navigates or mutates successfully)
@@ -65,6 +67,16 @@ Every visible button must be one of:
 - Gating: TASKS_READ / TASKS_WRITE (role)
 - Status: Functional
 
+4) AI Validation Lab actions
+- Where: /home/facility/ai/validation
+- Action:
+  - POST /api/ai/verify
+  - POST /api/ai/compare
+  - POST /api/ai/feedback
+  - POST /api/ai/training/export
+- Gating: Facility mode selected; endpoint auth required
+- Status: Functional (Unverified)
+
 ---
 
 ### Commercial
@@ -101,3 +113,7 @@ Every visible button must be one of:
   - assign gating (mode/plan/role/capability)
   - mark Functional/Disabled/Planned
 - Stop when every visible button has an entry.
+
+Current evidence:
+- Nightly delivery checks (placeholder/corruption/export): `tmp/overnight/verify_night.txt`
+- Navigation/action scrape inputs: `tmp/spec/nav_actions.txt`, `tmp/spec/onpress_hits.txt`

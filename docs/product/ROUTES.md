@@ -1,5 +1,7 @@
 # Routes (v1)
 
+Last updated: 2026-02-25
+
 ## Status legend (locked)
 - Functional (Verified): route works end-to-end and passed SOP clicklist
 - Functional (Unverified): route is implemented but has not passed SOP clicklist
@@ -86,7 +88,15 @@ Compliance/audit/SOP/AI:
 - `/home/facility/audit-logs/*`  Planned
 - `/home/facility/(tabs)/sop-runs.tsx`  Planned
 - `/home/facility/sop-runs/*`  Planned
-- `/home/facility/(tabs)/ai-tools.tsx`  Planned
+- `/home/facility/(tabs)/ai-tools.tsx`  Functional (Unverified)
+- `/home/facility/ai/ask.tsx`  Functional (Unverified)
+- `/home/facility/ai/diagnosis-photo.tsx`  Functional (Unverified)
+- `/home/facility/ai/template.tsx`  Functional (Unverified)
+- `/home/facility/ai/validation.tsx`  Functional (Unverified)
+
+Verification evidence:
+- Nightly gate pass: `tmp/overnight/summary_night.txt`
+- Delivery checks: `tmp/overnight/verify_night.txt`
 
 ---
 
