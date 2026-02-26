@@ -1,0 +1,57 @@
+{
+  "cycle": "2026-02-26 / 25",
+  "repo": "backend",
+  "batchType": "auto.mixed.low-risk",
+  "maxPromotions": 10,
+  "excluded": [
+    "auto.get.facilities.ping",
+    "auto.get.facilities.settings",
+    "auto.patch.growlogs.param",
+    "auto.patch.rooms.param",
+    "auto.get.growlogs.param",
+    "auto.post.growlogs",
+    "auto.post.rooms",
+    "auto.patch.inventory.param",
+    "auto.post.inventory",
+    "auto.get.inventory.param",
+    "auto.delete.courses.param.questions.param",
+    "auto.delete.courses.param.review",
+    "auto.delete.courses.lesson.param",
+    "auto.post.courses.param.lesson",
+    "auto.post.courses.create",
+    "auto.post.courses.lessons.param.complete",
+    "auto.post.courses.lessons.param.dropoff"
+  ],
+  "selectedCount": 10,
+  "featureIds": [
+    "auto.post.courses.lessons.param.view",
+    "auto.post.courses.lessons.param.watch",
+    "auto.put.courses.lesson.param",
+    "auto.post.courses.param.buy",
+    "auto.post.courses.param.checkout",
+    "auto.post.courses.param.enroll",
+    "auto.post.courses.param.questions.param.answer",
+    "auto.put.profile",
+    "auto.post.user.creator.onboard",
+    "auto.post.user.preferences.notifications"
+  ],
+  "expectedEndpoints": [
+    "POST /api/courses/lessons/:lessonId/view",
+    "POST /api/courses/lessons/:lessonId/watch",
+    "PUT /api/courses/lesson/:lessonId",
+    "POST /api/courses/:id/buy",
+    "POST /api/courses/:id/checkout",
+    "POST /api/courses/:id/enroll",
+    "POST /api/courses/:id/questions/:questionId/answer",
+    "PUT /api/profile",
+    "POST /api/user/creator/onboard",
+    "POST /api/user/preferences/notifications"
+  ],
+  "promotionRule": "Promote only if endpoint is mounted in /api/__debug/routes, guards are verified, and tests include happy + forbidden/invalid path. Otherwise keep Planned.",
+  "artifactsRequired": [
+    "tmp/spec/cycle_25_scope.json",
+    "tmp/spec/backend-routes.cycle25.json",
+    "gate command outputs",
+    "promoted/rejected list with reasons"
+  ]
+}
