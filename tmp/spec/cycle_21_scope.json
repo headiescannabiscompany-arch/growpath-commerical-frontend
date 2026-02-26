@@ -1,0 +1,40 @@
+{
+  "cycle": "2026-02-26 / 21",
+  "repo": "backend",
+  "batchType": "auto.mixed.low-risk",
+  "maxPromotions": 10,
+  "excluded": [
+    "auto.get.facilities.ping"
+  ],
+  "selectedCount": 10,
+  "featureIds": [
+    "auto.post.facilities",
+    "auto.post.facilities.param.members",
+    "auto.put.facilities.param",
+    "auto.put.facilities.param.active",
+    "auto.get.facilities.settings",
+    "auto.get.facility.param.settings",
+    "auto.get.facility.param.settings.2",
+    "auto.post.events",
+    "auto.post.creator.onboard",
+    "auto.post.user.creator.onboard"
+  ],
+  "expectedEndpoints": [
+    "POST /api/facilities",
+    "POST /api/facilities/:id/members",
+    "PUT /api/facilities/:id",
+    "PUT /api/facilities/:id/active",
+    "GET /api/facilities/settings",
+    "GET /api/facility/:facilityId/settings",
+    "POST /api/events",
+    "POST /api/creator/onboard",
+    "POST /api/user/creator/onboard"
+  ],
+  "promotionRule": "Promote only if endpoint is mounted in /api/__debug/routes, guards are verified, and tests include happy + forbidden/invalid path. Otherwise keep Planned.",
+  "artifactsRequired": [
+    "tmp/spec/cycle_21_scope.json",
+    "tmp/spec/backend-routes.cycle21.json",
+    "gate command outputs",
+    "promoted/rejected list with reasons"
+  ]
+}
