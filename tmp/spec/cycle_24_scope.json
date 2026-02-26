@@ -1,0 +1,47 @@
+{
+  "cycle": "2026-02-26 / 24",
+  "repo": "backend",
+  "batchType": "auto.mixed.low-risk",
+  "maxPromotions": 10,
+  "excluded": [
+    "auto.get.facilities.ping",
+    "auto.get.facilities.settings",
+    "auto.patch.growlogs.param",
+    "auto.patch.rooms.param",
+    "auto.get.growlogs.param",
+    "auto.post.growlogs",
+    "auto.post.rooms"
+  ],
+  "selectedCount": 10,
+  "featureIds": [
+    "auto.patch.inventory.param",
+    "auto.post.inventory",
+    "auto.get.inventory.param",
+    "auto.delete.courses.param.questions.param",
+    "auto.delete.courses.param.review",
+    "auto.delete.courses.lesson.param",
+    "auto.post.courses.param.lesson",
+    "auto.post.courses.create",
+    "auto.post.courses.lessons.param.complete",
+    "auto.post.courses.lessons.param.dropoff"
+  ],
+  "expectedEndpoints": [
+    "PATCH /api/inventory/:sku",
+    "POST /api/inventory",
+    "GET /api/inventory/:itemId",
+    "DELETE /api/courses/:id/questions/:questionId",
+    "DELETE /api/courses/:id/review",
+    "DELETE /api/courses/lesson/:lessonId",
+    "POST /api/courses/:id/lesson",
+    "POST /api/courses/create",
+    "POST /api/courses/lessons/:lessonId/complete",
+    "POST /api/courses/lessons/:lessonId/dropoff"
+  ],
+  "promotionRule": "Promote only if endpoint is mounted in /api/__debug/routes, guards are verified, and tests include happy + forbidden/invalid path. Otherwise keep Planned.",
+  "artifactsRequired": [
+    "tmp/spec/cycle_24_scope.json",
+    "tmp/spec/backend-routes.cycle24.json",
+    "gate command outputs",
+    "promoted/rejected list with reasons"
+  ]
+}
