@@ -1,0 +1,40 @@
+{
+  "cycle": "2026-02-25 / 18",
+  "repo": "backend",
+  "batchType": "auto.courses.mutations",
+  "maxPromotions": 10,
+  "decision": {
+    "auto.get.facilities.ping": "Keep Planned until route precedence is fixed (/api/facilities/__ping shadowed by /api/facilities/:id)."
+  },
+  "featureIds": [
+    "auto.post.courses",
+    "auto.post.courses.param.buy",
+    "auto.post.courses.param.checkout",
+    "auto.post.courses.param.enroll",
+    "auto.post.courses.param.questions",
+    "auto.post.courses.param.questions.param.answer",
+    "auto.post.courses.param.review",
+    "auto.put.courses.param.publish",
+    "auto.post.courses.lesson.param.complete",
+    "auto.post.courses.lesson.param.dropoff"
+  ],
+  "expectedEndpoints": [
+    "POST /api/courses",
+    "POST /api/courses/:id/buy",
+    "POST /api/courses/:id/checkout",
+    "POST /api/courses/:id/enroll",
+    "POST /api/courses/:id/questions",
+    "POST /api/courses/:id/questions/:questionId/answer",
+    "POST /api/courses/:id/review",
+    "PUT /api/courses/:id/publish",
+    "POST /api/courses/lesson/:lessonId/complete",
+    "POST /api/courses/lesson/:lessonId/dropoff"
+  ],
+  "promotionRule": "Promote only if endpoint is mounted in /api/__debug/routes, guards are verified, and tests include happy + forbidden/invalid path. Otherwise keep Planned.",
+  "artifactsRequired": [
+    "tmp/spec/cycle_18_scope.json",
+    "tmp/spec/backend-routes.cycle18.json",
+    "gate command outputs",
+    "promoted/rejected list with reasons"
+  ]
+}
