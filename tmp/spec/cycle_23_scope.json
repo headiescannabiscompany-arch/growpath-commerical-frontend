@@ -1,0 +1,43 @@
+{
+  "cycle": "2026-02-26 / 23",
+  "repo": "backend",
+  "batchType": "auto.mixed.low-risk",
+  "maxPromotions": 10,
+  "excluded": [
+    "auto.get.facilities.ping",
+    "auto.get.facilities.settings",
+    "auto.patch.growlogs.param",
+    "auto.patch.rooms.param",
+    "auto.get.growlogs.param"
+  ],
+  "selectedCount": 10,
+  "featureIds": [
+    "auto.patch.facility.param.growlogs.param",
+    "auto.patch.facility.param.growlogs.param.2",
+    "auto.patch.facility.param.team.param.members.param",
+    "auto.patch.facility.param.team.param.members.param.2",
+    "auto.patch.inventory.param",
+    "auto.post.growlogs",
+    "auto.post.inventory",
+    "auto.post.rooms",
+    "auto.get.inventory.param",
+    "auto.delete.courses.param.answers.param"
+  ],
+  "expectedEndpoints": [
+    "PATCH /api/facility/:facilityId/growlogs/:id",
+    "PATCH /api/facility/:facilityId/team/:userId,/members/:userId",
+    "PATCH /api/inventory/:sku",
+    "POST /api/growlogs",
+    "POST /api/inventory",
+    "POST /api/rooms",
+    "GET /api/inventory/:itemId",
+    "DELETE /api/courses/:id/answers/:answerId"
+  ],
+  "promotionRule": "Promote only if endpoint is mounted in /api/__debug/routes, guards are verified, and tests include happy + forbidden/invalid path. Otherwise keep Planned.",
+  "artifactsRequired": [
+    "tmp/spec/cycle_23_scope.json",
+    "tmp/spec/backend-routes.cycle23.json",
+    "gate command outputs",
+    "promoted/rejected list with reasons"
+  ]
+}
