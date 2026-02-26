@@ -1,0 +1,40 @@
+{
+  "cycle": "2026-02-26 / 22",
+  "repo": "backend",
+  "batchType": "auto.mixed.low-risk",
+  "maxPromotions": 10,
+  "excluded": [
+    "auto.get.facilities.ping",
+    "auto.get.facilities.settings"
+  ],
+  "selectedCount": 10,
+  "featureIds": [
+    "auto.post.user.preferences.notifications",
+    "auto.post.user.preferences.notifications.2",
+    "auto.post.preferences.notifications",
+    "auto.post.user.creator.onboard.2",
+    "auto.post.facility.param.growlogs",
+    "auto.post.facility.param.growlogs.2",
+    "auto.patch.growlogs.param",
+    "auto.patch.inventory.param",
+    "auto.patch.rooms.param",
+    "auto.get.growlogs.param"
+  ],
+  "expectedEndpoints": [
+    "POST /api/user/preferences/notifications",
+    "POST /api/preferences/notifications",
+    "POST /api/user/creator/onboard",
+    "POST /api/facility/:facilityId/growlogs",
+    "PATCH /api/growlogs/:id",
+    "PATCH /api/inventory/:sku",
+    "PATCH /api/rooms/:roomId",
+    "GET /api/growlogs/:id"
+  ],
+  "promotionRule": "Promote only if endpoint is mounted in /api/__debug/routes, guards are verified, and tests include happy + forbidden/invalid path. Otherwise keep Planned.",
+  "artifactsRequired": [
+    "tmp/spec/cycle_22_scope.json",
+    "tmp/spec/backend-routes.cycle22.json",
+    "gate command outputs",
+    "promoted/rejected list with reasons"
+  ]
+}
