@@ -153,6 +153,7 @@ apiClient.postMultipart = (
 };
 
 export const client = apiClient;
-export const api = apiClient;
+export { apiClient as api };
 apiClient.del = apiClient.delete;
-export default apiClient;
+const defaultClientExport = apiClient;
+export default defaultClientExport;
