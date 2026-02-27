@@ -7,7 +7,7 @@ export default function GuildCodeScreen() {
   return (
     <ScreenContainer>
       <ScrollView style={styles.container} contentContainerStyle={{ paddingBottom: 40 }}>
-        <Text style={styles.title}>ðŸŒ± The Growers Forum</Text>
+        <Text style={styles.title}>The Growers Forum</Text>
 
         <Text style={styles.heading}>What the Growers Forum Is</Text>
         <Text style={styles.body}>
@@ -37,7 +37,7 @@ export default function GuildCodeScreen() {
 
         <Text style={styles.body}>Posts are meant to add signal, not noise.</Text>
 
-        <Text style={styles.heading}>ðŸ§­ How the Forum Works</Text>
+        <Text style={styles.heading}>How the Forum Works</Text>
         <Text style={styles.body}>The Forum is progressively unlocked.</Text>
         <Text style={styles.body}>
           You may see Forum features before you can use them.{"\n"}
@@ -50,7 +50,7 @@ export default function GuildCodeScreen() {
         <Text style={styles.bullet}>-  Respect for fundamentals</Text>
         <Text style={styles.bullet}>-  Consistent engagement with your own grow</Text>
 
-        <Text style={styles.heading}>Entry State: Observer</Text>
+        <Text style={styles.heading}>Observer</Text>
         <Text style={styles.body}>All new users enter the Forum as Observers.</Text>
 
         <Text style={styles.subheading}>Observers can:</Text>
@@ -61,7 +61,7 @@ export default function GuildCodeScreen() {
 
         <Text style={styles.body}>This keeps the Forum useful for everyone.</Text>
 
-        <Text style={styles.heading}>ðŸ“œ Forum Code (Simple, Enforced)</Text>
+        <Text style={styles.heading}>Forum Code (Simple, Enforced)</Text>
 
         <View style={styles.rule}>
           <Text style={styles.ruleNumber}>1. Speak from experience</Text>
@@ -104,14 +104,14 @@ export default function GuildCodeScreen() {
           </Text>
         </View>
 
-        <Text style={styles.heading}>ðŸ›ï¸ Forum Roles & Trust Levels</Text>
+        <Text style={styles.heading}>Forum Roles & Trust Levels</Text>
         <Text style={styles.body}>
           These are not titles for ego.{"\n"}
           They exist to protect the quality of discussion.
         </Text>
 
         <View style={styles.role}>
-          <Text style={styles.roleTitle}>ðŸ‘ï¸ Observer</Text>
+          <Text style={styles.roleTitle}>Observer</Text>
           <Text style={styles.roleDesc}>Default role</Text>
           <Text style={styles.roleDesc}>Read-only access</Text>
           <Text style={styles.roleDesc}>Can view all public Forum discussions</Text>
@@ -122,7 +122,7 @@ export default function GuildCodeScreen() {
         </View>
 
         <View style={styles.role}>
-          <Text style={styles.roleTitle}>ðŸŒ¿ Contributor</Text>
+          <Text style={styles.roleTitle}>Contributor</Text>
           <Text style={styles.roleDesc}>Unlocked after:</Text>
           <Text style={styles.bullet}>-  Active grow tracking</Text>
           <Text style={styles.bullet}>-  Demonstrated understanding of fundamentals</Text>
@@ -134,7 +134,7 @@ export default function GuildCodeScreen() {
         </View>
 
         <View style={styles.role}>
-          <Text style={styles.roleTitle}>ðŸŒ¾ Cultivator</Text>
+          <Text style={styles.roleTitle}>Cultivator</Text>
           <Text style={styles.roleDesc}>Unlocked through:</Text>
           <Text style={styles.bullet}>-  Consistent, high-quality contributions</Text>
           <Text style={styles.bullet}>-  Helpful responses to others</Text>
@@ -146,7 +146,7 @@ export default function GuildCodeScreen() {
         </View>
 
         <View style={styles.role}>
-          <Text style={styles.roleTitle}>ðŸ§  Steward (Future / Limited)</Text>
+          <Text style={styles.roleTitle}>Steward (Future / Limited)</Text>
           <Text style={styles.roleDesc}>Reserved for:</Text>
           <Text style={styles.bullet}>-  Trusted, long-term contributors</Text>
           <Text style={styles.bullet}>-  Subject-matter specialists</Text>
@@ -154,7 +154,7 @@ export default function GuildCodeScreen() {
           <Text style={styles.rolePurpose}>Role is earned, not requested.</Text>
         </View>
 
-        <Text style={styles.heading}>ðŸª´ Posting Philosophy</Text>
+        <Text style={styles.heading}>Posting Philosophy</Text>
         <Text style={styles.body}>
           Before posting, ask:{"\n"}
           "Will this help someone grow better?"
@@ -167,7 +167,7 @@ export default function GuildCodeScreen() {
         <Text style={styles.bullet}>-  Document cause {"->"} effect</Text>
         <Text style={styles.bullet}>-  Teach something learned the hard way</Text>
 
-        <Text style={styles.heading}>ðŸŒ± Final Note to Members</Text>
+        <Text style={styles.heading}>Final Note to Members</Text>
         <Text style={styles.body}>The Growers Forum exists because:</Text>
         <Text style={styles.bullet}>-  Good growers are tired of noise</Text>
         <Text style={styles.bullet}>-  Real learning happens slowly</Text>
@@ -277,4 +277,3 @@ const styles = StyleSheet.create({
     color: "#34495e"
   }
 });
-

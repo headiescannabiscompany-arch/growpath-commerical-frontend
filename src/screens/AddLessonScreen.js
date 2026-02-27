@@ -145,7 +145,7 @@ export default function AddLessonScreen({ route, navigation }) {
       <Text style={styles.label}>Video</Text>
       <TouchableOpacity style={styles.uploadBtn} onPress={pickVideo}>
         <Text style={styles.uploadBtnText}>
-          {videoFile ? "âœ… Video Selected" : "ðŸ“¹ Upload Video File"}
+          {videoFile ? "Video Selected" : "Upload Video File"}
         </Text>
       </TouchableOpacity>
       <TextInput
@@ -158,7 +158,7 @@ export default function AddLessonScreen({ route, navigation }) {
       <Text style={styles.label}>PDF Document</Text>
       <TouchableOpacity style={styles.uploadBtn} onPress={pickPDF}>
         <Text style={styles.uploadBtnText}>
-          {pdfFile ? `âœ… ${pdfFile.name || "PDF Selected"}` : "ðŸ“„ Upload PDF"}
+          {pdfFile ? `${pdfFile.name || "PDF Selected"}` : "Upload PDF"}
         </Text>
       </TouchableOpacity>
       <TextInput
@@ -171,13 +171,13 @@ export default function AddLessonScreen({ route, navigation }) {
       <Text style={styles.label}>Audio (Optional)</Text>
       <TouchableOpacity style={styles.uploadBtn} onPress={pickAudio}>
         <Text style={styles.uploadBtnText}>
-          {audioFile ? `âœ… ${audioFile.name || "Audio Selected"}` : "ðŸŽµ Upload Audio"}
+          {audioFile ? `${audioFile.name || "Audio Selected"}` : "Upload Audio"}
         </Text>
       </TouchableOpacity>
 
       <Text style={styles.label}>Images (Optional)</Text>
       <TouchableOpacity style={styles.uploadBtn} onPress={pickImages}>
-        <Text style={styles.uploadBtnText}>ðŸ“· Add Images</Text>
+        <Text style={styles.uploadBtnText}>Add Images</Text>
       </TouchableOpacity>
       {images.length > 0 && (
         <View style={styles.imageGrid}>
@@ -200,7 +200,7 @@ export default function AddLessonScreen({ route, navigation }) {
       </TouchableOpacity>
 
       <Text style={styles.helpText}>
-        ðŸ’¡ Files will be uploaded when you save. For large videos, consider hosting on
+        Files will be uploaded when you save. For large videos, consider hosting on
         YouTube or Vimeo and pasting the URL.
       </Text>
     </ScreenContainer>
@@ -263,4 +263,3 @@ const styles = StyleSheet.create({
     paddingHorizontal: 20
   }
 });
-

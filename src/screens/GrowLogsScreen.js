@@ -222,7 +222,7 @@ function GrowLogsScreen() {
           >
             {/* Water */}
             <View style={styles.envSection}>
-              <Text style={styles.envSectionTitle}>ðŸ’§ Water</Text>
+              <Text style={styles.envSectionTitle}>Water</Text>
               <Text style={styles.fieldLabel}>Water pH</Text>
               <TextInput
                 value={waterPH}
@@ -246,7 +246,7 @@ function GrowLogsScreen() {
 
             {/* Air */}
             <View style={styles.envSection}>
-              <Text style={styles.envSectionTitle}>ðŸŒ¬ï¸ Air & Climate</Text>
+              <Text style={styles.envSectionTitle}>Air & Climate</Text>
               <Text style={styles.fieldLabel}>Temperature</Text>
               <TextInput
                 value={temperature}
@@ -279,7 +279,7 @@ function GrowLogsScreen() {
 
             {/* Nutrients */}
             <View style={styles.envSection}>
-              <Text style={styles.envSectionTitle}>ðŸ§ª Nutrients</Text>
+              <Text style={styles.envSectionTitle}>Nutrients</Text>
               <Text style={styles.fieldLabel}>Nutrient Brand/Line</Text>
               <TextInput
                 value={nutrientBrand}
@@ -311,7 +311,7 @@ function GrowLogsScreen() {
 
             {/* Substrate */}
             <View style={styles.envSection}>
-              <Text style={styles.envSectionTitle}>ðŸŒ± Growing Medium</Text>
+              <Text style={styles.envSectionTitle}>Growing Medium</Text>
               <Text style={styles.fieldLabel}>Substrate Type</Text>
               <TextInput
                 value={substrateType}
@@ -558,4 +558,3 @@ const styles = StyleSheet.create({
     fontWeight: "600"
   }
 });
-

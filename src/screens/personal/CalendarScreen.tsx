@@ -70,7 +70,7 @@ function CalendarScreenInner() {
 }
 
 export default function CalendarScreen() {
-  // âœ… Entitlement gate in outer component avoids conditional hooks
+  // Entitlement gate in outer component avoids conditional hooks
   const ent = useEntitlements() || {};
   const capabilities = ent.capabilities || {};
 
@@ -78,4 +78,3 @@ export default function CalendarScreen() {
 
   return <CalendarScreenInner />;
 }
-

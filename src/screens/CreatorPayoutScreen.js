@@ -136,7 +136,7 @@ export default function CreatorPayoutScreen({ navigation }) {
                 </View>
                 <View style={{ alignItems: "flex-end" }}>
                   <Text style={item.paidOut ? styles.paid : styles.unpaid}>
-                    {item.paidOut ? "âœ“ Paid" : "â³ Pending"}
+                    {item.paidOut ? "Paid" : "Pending"}
                   </Text>
                   {item.platformFee > 0 && (
                     <Text style={styles.fee}>Fee: ${item.platformFee.toFixed(2)}</Text>
@@ -263,4 +263,3 @@ const styles = StyleSheet.create({
     fontSize: 16
   }
 });
-

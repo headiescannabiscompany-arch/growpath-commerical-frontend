@@ -39,7 +39,7 @@ export default function VerifyCertificateScreen({ route }) {
     return (
       <ScreenContainer>
         <View style={styles.center}>
-          <Text style={styles.errorIcon}>âŒ</Text>
+          <Text style={styles.errorIcon}>X</Text>
           <Text style={styles.errorTitle}>Invalid Certificate</Text>
           <Text style={styles.errorText}>
             {error || "This certificate could not be verified"}
@@ -52,7 +52,7 @@ export default function VerifyCertificateScreen({ route }) {
   return (
     <ScreenContainer scroll>
       <View style={styles.header}>
-        <Text style={styles.icon}>âœ“</Text>
+        <Text style={styles.icon}>OK</Text>
         <Text style={styles.title}>Certificate Verified</Text>
       </View>
 
@@ -87,7 +87,7 @@ export default function VerifyCertificateScreen({ route }) {
       </View>
 
       <View style={styles.validationBadge}>
-        <Text style={styles.validationIcon}>ðŸ”</Text>
+        <Text style={styles.validationIcon}>Verified</Text>
         <Text style={styles.validationText}>This certificate is authentic</Text>
       </View>
     </ScreenContainer>
@@ -189,4 +189,3 @@ const styles = {
     color: "#27ae60"
   }
 };
-

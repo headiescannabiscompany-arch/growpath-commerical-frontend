@@ -116,7 +116,7 @@ export default function CommercialFeedCard({ post }: Props) {
           {loading ? (
             <ActivityIndicator size="small" />
           ) : (
-            <Text>{liked ? "â™¥ Liked" : "â™¡ Like"}</Text>
+            <Text>{liked ? "Liked" : "Like"}</Text>
           )}
         </Pressable>
 

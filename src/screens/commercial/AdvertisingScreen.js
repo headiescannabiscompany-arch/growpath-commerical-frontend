@@ -393,7 +393,7 @@ const AdvertisingScreen = ({ navigation }) => {
 
               {/* Overall Performance */}
               <Card style={styles.analyticsCard}>
-                <Text style={styles.chartTitle}>ðŸ“Š Overall Performance</Text>
+                <Text style={styles.chartTitle}>Overall Performance</Text>
                 <View style={styles.analyticsGrid}>
                   <View style={styles.analyticsItem}>
                     <Text style={styles.analyticsLabel}>Total Spend</Text>
@@ -421,7 +421,7 @@ const AdvertisingScreen = ({ navigation }) => {
 
               {/* Performance by Platform */}
               <Card style={styles.analyticsCard}>
-                <Text style={styles.chartTitle}>ðŸ“± Performance by Platform</Text>
+                <Text style={styles.chartTitle}>Performance by Platform</Text>
                 {["Instagram", "Facebook", "TikTok"].map((platform) => {
                   const platformCampaigns = campaigns.filter(
                     (c) => c.platform === platform
@@ -456,7 +456,7 @@ const AdvertisingScreen = ({ navigation }) => {
 
               {/* Conversion Trends */}
               <Card style={styles.analyticsCard}>
-                <Text style={styles.chartTitle}>ðŸ“ˆ Conversion Trends</Text>
+                <Text style={styles.chartTitle}>Conversion Trends</Text>
                 <View style={styles.trendChart}>
                   {[
                     { week: "Week 1", conversions: 120, color: "#0ea5e9" },
@@ -490,7 +490,7 @@ const AdvertisingScreen = ({ navigation }) => {
 
               {/* Monthly Budget Overview */}
               <Card style={styles.budgetCard}>
-                <Text style={styles.chartTitle}>ðŸ’° Monthly Budget</Text>
+                <Text style={styles.chartTitle}>Monthly Budget</Text>
                 <View style={styles.budgetOverview}>
                   <View style={styles.budgetItem}>
                     <Text style={styles.budgetLabel}>Monthly Budget</Text>
@@ -1127,4 +1127,3 @@ const styles = StyleSheet.create({
 });
 
 export default AdvertisingScreen;
-

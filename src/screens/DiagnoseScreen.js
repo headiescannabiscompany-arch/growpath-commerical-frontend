@@ -248,9 +248,9 @@ export default function DiagnoseScreen({ route, navigation }) {
           <View style={styles.advancedSection}>
             {/* LIGHT SECTION */}
             <View style={styles.envSection}>
-              <Text style={styles.envSectionTitle}>ðŸ’¡ Light Information</Text>
+              <Text style={styles.envSectionTitle}>Light Information</Text>
               <View style={styles.infoBox}>
-                <Text style={styles.infoBoxTitle}>ðŸ“± Measure PPFD/DLI</Text>
+                <Text style={styles.infoBoxTitle}>Measure PPFD/DLI</Text>
                 <Text style={styles.infoBoxText}>
                   For best results, use the free "Photone" app (iOS/Android) to measure
                   light intensity with your phone. Aim for 400-600 PPFD in veg, 600-900 in
@@ -368,7 +368,7 @@ export default function DiagnoseScreen({ route, navigation }) {
             </View>
             {/* WATER SECTION */}
             <View style={styles.envSection}>
-              <Text style={styles.envSectionTitle}>ðŸ’§ Water Information</Text>
+              <Text style={styles.envSectionTitle}>Water Information</Text>
 
               <Text style={styles.label}>Water Source</Text>
               <View style={styles.buttonRow}>
@@ -445,7 +445,7 @@ export default function DiagnoseScreen({ route, navigation }) {
             </View>
             {/* AIR SECTION */}
             <View style={styles.envSection}>
-              <Text style={styles.envSectionTitle}>ðŸŒ¬ï¸ Air & Climate</Text>
+              <Text style={styles.envSectionTitle}>Air & Climate</Text>
 
               <View style={styles.row}>
                 <View style={styles.halfInput}>
@@ -494,7 +494,7 @@ export default function DiagnoseScreen({ route, navigation }) {
             </View>
             {/* NUTRIENTS SECTION */}
             <View style={styles.envSection}>
-              <Text style={styles.envSectionTitle}>ðŸ§ª Nutrients</Text>
+              <Text style={styles.envSectionTitle}>Nutrients</Text>
 
               <Text style={styles.label}>Nutrient Brand/Line</Text>
               <TextInput
@@ -522,7 +522,7 @@ export default function DiagnoseScreen({ route, navigation }) {
             </View>
             {/* SUBSTRATE SECTION */}
             <View style={styles.envSection}>
-              <Text style={styles.envSectionTitle}>ðŸŒ± Substrate/Medium</Text>
+              <Text style={styles.envSectionTitle}>Substrate/Medium</Text>
 
               <Text style={styles.label}>Substrate Type</Text>
               <TextInput
