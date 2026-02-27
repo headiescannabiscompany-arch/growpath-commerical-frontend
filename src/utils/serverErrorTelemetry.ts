@@ -1,4 +1,4 @@
-// src/utils/telemetry.ts
+// src/utils/serverErrorTelemetry.ts
 
 export function logServerError(
   err: { code: string; message: string; status: number | null; requestId: string | null },

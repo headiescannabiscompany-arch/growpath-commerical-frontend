@@ -1,5 +1,5 @@
 import { mapApiErrorToAction, type ApiErrorLike } from "@/utils/errorActions";
-import { logServerError } from "@/utils/telemetry";
+import { logServerError } from "@/utils/serverErrorTelemetry";
 
 // Deps: Provide these from your app layer
 export type Deps = {
