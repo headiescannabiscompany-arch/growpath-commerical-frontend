@@ -25,7 +25,7 @@ import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 function renderWithNav(params = { sessionId: "session-1" }) {
   const queryClient = new QueryClient({
     defaultOptions: {
-      queries: { retry: false },
+      queries: { retry: false, gcTime: 0 },
       mutations: { retry: false }
     }
   });

@@ -88,7 +88,7 @@ describe("ForumPostDetailScreen QA", () => {
               queries: {
                 retry: false,
                 staleTime: Infinity,
-                cacheTime: Infinity
+                gcTime: 0
               }
             }
           })
