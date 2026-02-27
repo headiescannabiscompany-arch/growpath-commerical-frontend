@@ -10,3 +10,7 @@ export function createCheckoutSession() {
     method: "POST"
   });
 }
+
+export function getSubscriptionStatus() {
+  return apiRequest(apiRoutes.SUBSCRIBE.STATUS, { method: "GET" });
+}

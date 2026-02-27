@@ -50,3 +50,7 @@ export const exportCourseSales = async ({
     token
   );
 };
+
+export function getFacilityReport(facilityId) {
+  return apiClient.get(`/api/facilities/${facilityId}/reports/summary`);
+}
