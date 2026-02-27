@@ -1,6 +1,9 @@
 import React, { useMemo, useState } from "react";
-import { View, Text, StyleSheet, TextInput, Pressable } from "react-native";
+import { useLocalSearchParams } from "expo-router";
+import { Pressable, StyleSheet, Text, TextInput, View } from "react-native";
+
 import BackButton from "@/components/nav/BackButton";
+import { createToolRun } from "@/api/toolRuns";
 import { calcVpdFromTemp, type TempUnit } from "@/tools/vpd";
 
 type VpdModel =
@@ -8,9 +11,10 @@ type VpdModel =
   | { valid: true; vpd: number; tempC: number };
 
 const styles = StyleSheet.create({
-  container: { flex: 1, padding: 20, backgroundColor: "#fff" },
+  container: { flex: 1, padding: 20, backgroundColor: "#FFFFFF" },
   title: { fontSize: 22, fontWeight: "700", marginBottom: 8 },
-  subtitle: { fontSize: 13, color: "#64748B", marginBottom: 16 },
+  subtitle: { fontSize: 13, color: "#64748B", marginBottom: 12 },
+  context: { marginBottom: 8, color: "#166534", fontWeight: "700" },
   row: { flexDirection: "row", gap: 10, alignItems: "center", flexWrap: "wrap" },
   pill: {
     paddingVertical: 8,
@@ -21,7 +25,7 @@ const styles = StyleSheet.create({
   },
   pillOn: { backgroundColor: "#16A34A", borderColor: "#16A34A" },
   pillTxt: { fontWeight: "800" },
-  pillTxtOn: { color: "#fff" },
+  pillTxtOn: { color: "#FFFFFF" },
   label: { fontSize: 14, fontWeight: "600", marginTop: 12 },
   input: {
     marginTop: 8,
@@ -39,19 +43,41 @@ const styles = StyleSheet.create({
     backgroundColor: "#F8FAFC"
   },
   result: { fontSize: 18, fontWeight: "800" },
-  hint: { marginTop: 6, fontSize: 12, color: "#64748B" }
+  hint: { marginTop: 6, fontSize: 12, color: "#64748B" },
+  saveButton: {
+    marginTop: 12,
+    alignSelf: "flex-start",
+    paddingHorizontal: 12,
+    paddingVertical: 8,
+    borderRadius: 8,
+    borderWidth: 1,
+    borderColor: "#166534",
+    backgroundColor: "#166534"
+  },
+  saveButtonText: { color: "#FFFFFF", fontWeight: "700" }
 });
 
+function coerceParam(value?: string | string[]) {
+  if (typeof value === "string") return value;
+  if (Array.isArray(value)) return value[0] || "";
+  return "";
+}
+
 export default function VpdToolScreen() {
+  const { growId: rawGrowId } = useLocalSearchParams<{ growId?: string | string[] }>();
+  const growId = coerceParam(rawGrowId);
+
   const [unit, setUnit] = useState<TempUnit>("F");
   const [tempText, setTempText] = useState("77");
   const [rhText, setRhText] = useState("60");
+  const [saveFeedback, setSaveFeedback] = useState("");
 
   const model = useMemo<VpdModel>(() => {
     const t = Number(tempText);
     const rh = Number(rhText);
-    if (!Number.isFinite(t) || !Number.isFinite(rh))
+    if (!Number.isFinite(t) || !Number.isFinite(rh)) {
       return { valid: false, vpd: null, tempC: null };
+    }
     if (rh < 0 || rh > 100) return { valid: false, vpd: null, tempC: null };
     const result = calcVpdFromTemp(t, unit, rh);
     return { valid: true, vpd: result.vpdKpa, tempC: result.tempC };
@@ -64,6 +90,7 @@ export default function VpdToolScreen() {
       <Text style={styles.subtitle}>
         Enter temperature ({unit === "F" ? "degF" : "degC"}) and RH (%).
       </Text>
+      {growId ? <Text style={styles.context}>Grow context: {growId}</Text> : null}
 
       <View style={styles.row}>
         <Pressable
@@ -113,6 +140,29 @@ export default function VpdToolScreen() {
           </>
         )}
       </View>
+
+      {model.valid ? (
+        <Pressable
+          style={styles.saveButton}
+          onPress={async () => {
+            const created = await createToolRun({
+              toolType: "vpd",
+              growId: growId || undefined,
+              input: { temp: Number(tempText), unit, rh: Number(rhText) },
+              output: { vpdKpa: model.vpd, tempC: model.tempC }
+            });
+            if (created) {
+              setSaveFeedback("Saved tool run.");
+            } else {
+              setSaveFeedback("Unable to save tool run.");
+            }
+          }}
+        >
+          <Text style={styles.saveButtonText}>Save run {growId ? "to grow" : ""}</Text>
+        </Pressable>
+      ) : null}
+
+      {saveFeedback ? <Text style={styles.hint}>{saveFeedback}</Text> : null}
     </View>
   );
 }

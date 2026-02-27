@@ -1,4 +1,4 @@
-import { apiRequest } from "./apiRequest";
+import { ApiError, apiRequest } from "./apiRequest";
 import apiRoutes from "./routes.js";
 
 export function listPosts() {
@@ -36,6 +36,12 @@ export function getFollowingPosts(page = 1, tier1 = [], tags = []) {
       tier1: tier1 && tier1.length ? tier1.join(",") : undefined,
       tags: tags && tags.length ? tags.join(",") : undefined
     }
+  }).catch((err) => {
+    if (err instanceof ApiError && err.status === 500) {
+      // Keep forum usable when following feed is misconfigured server-side.
+      return { posts: [], hasMore: false, page };
+    }
+    throw err;
   });
 }
 

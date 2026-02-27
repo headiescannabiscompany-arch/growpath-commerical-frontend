@@ -1,0 +1,70 @@
+{
+  "version": "2026-02-27",
+  "personal": {
+    "tabsLayoutFile": "src/app/home/personal/(tabs)/_layout.tsx",
+    "visibleTabs": ["index", "grows", "tools", "community", "profile"],
+    "hiddenTabs": ["ai", "forum", "logs", "courses", "diagnose", "tasks"],
+    "requiredRoutes": [
+      "/home/personal",
+      "/home/personal/grows",
+      "/home/personal/tools",
+      "/home/personal/community",
+      "/home/personal/profile"
+    ],
+    "legacyRedirects": [
+      {
+        "file": "src/app/home/personal/(tabs)/logs/index.tsx",
+        "mustContain": "Redirect href=\"/home/personal/grows\""
+      },
+      {
+        "file": "src/app/home/personal/(tabs)/tasks.tsx",
+        "mustContain": "Redirect href=\"/home/personal/grows\""
+      }
+    ]
+  },
+  "tools": {
+    "requiredRoutes": [
+      {
+        "id": "vpd",
+        "route": "/home/personal/tools/vpd",
+        "file": "src/app/home/personal/(tabs)/tools/vpd.tsx"
+      },
+      {
+        "id": "npk_preview",
+        "route": "/home/personal/tools/npk",
+        "file": "src/app/home/personal/(tabs)/tools/npk.tsx"
+      },
+      {
+        "id": "watering",
+        "route": "/home/personal/tools/watering",
+        "file": "src/app/home/personal/(tabs)/tools/watering.tsx"
+      }
+    ],
+    "safetyAssertions": [
+      {
+        "file": "src/app/home/personal/(tabs)/tools/npk.tsx",
+        "mustContain": "NPK Label Ratio (Preview)"
+      },
+      {
+        "file": "src/app/home/personal/(tabs)/tools/_layout.tsx",
+        "mustContain": "NPK Label Ratio (Preview)"
+      }
+    ]
+  },
+  "capabilities": {
+    "sourceFile": "src/entitlements/capabilityKeys.ts",
+    "requiredKeys": [
+      "COURSES_VIEW",
+      "COURSES_CREATE",
+      "PUBLISH_COURSES",
+      "FORUM_VIEW",
+      "FORUM_POST",
+      "GROWS_PERSONAL_VIEW",
+      "GROWS_PERSONAL_WRITE",
+      "LOGS_PERSONAL_VIEW",
+      "LOGS_PERSONAL_WRITE",
+      "DIAGNOSE_BASIC",
+      "DIAGNOSE_AI"
+    ]
+  }
+}

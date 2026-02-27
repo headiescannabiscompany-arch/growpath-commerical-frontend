@@ -1,8 +1,8 @@
 {
-  "generatedAt": "2026-02-26T14:24:24.135Z",
+  "generatedAt": "2026-02-27T16:19:11.986Z",
   "appDir": "src/app",
-  "routeCount": 104,
-  "fileCount": 117,
+  "routeCount": 110,
+  "fileCount": 124,
   "routes": [
     "/",
     "/alerts/[id]",
@@ -65,6 +65,7 @@
     "/home/facility/team",
     "/home/personal",
     "/home/personal/ai",
+    "/home/personal/community",
     "/home/personal/courses",
     "/home/personal/diagnose",
     "/home/personal/forum",
@@ -73,6 +74,11 @@
     "/home/personal/forum/post/[id]",
     "/home/personal/grows",
     "/home/personal/grows/[growId]",
+    "/home/personal/grows/[growId]/compare",
+    "/home/personal/grows/[growId]/journal",
+    "/home/personal/grows/[growId]/tasks",
+    "/home/personal/grows/[growId]/tools",
+    "/home/personal/grows/[growId]/utils",
     "/home/personal/grows/new",
     "/home/personal/logs",
     "/home/personal/logs/[logId]",
@@ -456,6 +462,11 @@
       "kind": "screen"
     },
     {
+      "file": "src/app/home/personal/(tabs)/community.tsx",
+      "route": "/home/personal/community",
+      "kind": "screen"
+    },
+    {
       "file": "src/app/home/personal/(tabs)/courses.tsx",
       "route": "/home/personal/courses",
       "kind": "screen"
@@ -501,8 +512,38 @@
       "kind": "screen"
     },
     {
-      "file": "src/app/home/personal/(tabs)/grows/[growId].tsx",
+      "file": "src/app/home/personal/(tabs)/grows/[growId]/_layout.tsx",
       "route": "/home/personal/grows/[growId]",
+      "kind": "layout"
+    },
+    {
+      "file": "src/app/home/personal/(tabs)/grows/[growId]/index.tsx",
+      "route": "/home/personal/grows/[growId]",
+      "kind": "screen"
+    },
+    {
+      "file": "src/app/home/personal/(tabs)/grows/[growId]/compare.tsx",
+      "route": "/home/personal/grows/[growId]/compare",
+      "kind": "screen"
+    },
+    {
+      "file": "src/app/home/personal/(tabs)/grows/[growId]/journal.tsx",
+      "route": "/home/personal/grows/[growId]/journal",
+      "kind": "screen"
+    },
+    {
+      "file": "src/app/home/personal/(tabs)/grows/[growId]/tasks.tsx",
+      "route": "/home/personal/grows/[growId]/tasks",
+      "kind": "screen"
+    },
+    {
+      "file": "src/app/home/personal/(tabs)/grows/[growId]/tools.tsx",
+      "route": "/home/personal/grows/[growId]/tools",
+      "kind": "screen"
+    },
+    {
+      "file": "src/app/home/personal/(tabs)/grows/[growId]/utils.ts",
+      "route": "/home/personal/grows/[growId]/utils",
       "kind": "screen"
     },
     {

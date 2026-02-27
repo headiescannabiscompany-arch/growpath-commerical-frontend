@@ -7,23 +7,6 @@ import { SessionProvider } from "../session/SessionProvider";
 import { EntitlementsProvider } from "../entitlements/EntitlementsProvider";
 import { FacilityProvider } from "../facility/FacilityProvider";
 
-/* __gpTextNodeTraceInstalled */
-if (process.env.NODE_ENV !== "production") {
-  const anyConsole = console as any;
-  if (!anyConsole.__gpTextNodeTraceInstalled) {
-    anyConsole.__gpTextNodeTraceInstalled = true;
-    const origError = console.error.bind(console);
-    console.error = (...args: any[]) => {
-      origError(...args);
-      try {
-        const first = args?.[0];
-        if (typeof first === "string" && first.includes("Unexpected text node: .")) {
-          console.trace("[TRACE] Unexpected '.' text node (raw text inside <View>)");
-        }
-      } catch {}
-    };
-  }
-}
 initUnauthorizedHandler();
 
 const queryClient = new QueryClient({

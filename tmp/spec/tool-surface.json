@@ -1,0 +1,48 @@
+{
+  "generatedAt": "2026-02-27T16:19:28.492Z",
+  "requiredTools": [
+    {
+      "id": "vpd",
+      "route": "/home/personal/tools/vpd",
+      "file": "src/app/home/personal/(tabs)/tools/vpd.tsx",
+      "routeExists": true,
+      "fileExists": true
+    },
+    {
+      "id": "npk_preview",
+      "route": "/home/personal/tools/npk",
+      "file": "src/app/home/personal/(tabs)/tools/npk.tsx",
+      "routeExists": true,
+      "fileExists": true
+    },
+    {
+      "id": "watering",
+      "route": "/home/personal/tools/watering",
+      "file": "src/app/home/personal/(tabs)/tools/watering.tsx",
+      "routeExists": true,
+      "fileExists": true
+    }
+  ],
+  "discoveredPersonalToolRoutes": [
+    {
+      "file": "src/app/home/personal/(tabs)/tools/index.tsx",
+      "route": "/home/personal/tools"
+    },
+    {
+      "file": "src/app/home/personal/(tabs)/tools/_layout.tsx",
+      "route": "/home/personal/tools"
+    },
+    {
+      "file": "src/app/home/personal/(tabs)/tools/npk.tsx",
+      "route": "/home/personal/tools/npk"
+    },
+    {
+      "file": "src/app/home/personal/(tabs)/tools/vpd.tsx",
+      "route": "/home/personal/tools/vpd"
+    },
+    {
+      "file": "src/app/home/personal/(tabs)/tools/watering.tsx",
+      "route": "/home/personal/tools/watering"
+    }
+  ]
+}

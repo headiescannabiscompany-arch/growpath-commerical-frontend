@@ -118,3 +118,35 @@ export async function listPersonalTasks(options?: {
     return [];
   }
 }
+
+export async function createPersonalTask(data: {
+  growId: string;
+  title: string;
+  description?: string;
+  dueDate?: string;
+}): Promise<PersonalTask | null> {
+  try {
+    const res: any = await apiRequest("/api/personal/tasks", {
+      method: "POST",
+      body: data
+    });
+    return (res?.task ?? res?.created ?? res?.data?.task ?? res) as PersonalTask;
+  } catch (_err) {
+    return null;
+  }
+}
+
+export async function updatePersonalTask(
+  id: string,
+  patch: Partial<Pick<PersonalTask, "title" | "description" | "dueDate" | "completed">>
+): Promise<PersonalTask | null> {
+  try {
+    const res: any = await apiRequest(`/api/personal/tasks/${id}`, {
+      method: "PATCH",
+      body: patch
+    });
+    return (res?.task ?? res?.updated ?? res?.data?.task ?? res) as PersonalTask;
+  } catch (_err) {
+    return null;
+  }
+}

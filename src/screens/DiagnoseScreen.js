@@ -18,6 +18,7 @@ import PrimaryButton from "../components/PrimaryButton.js";
 import TokenBalanceWidget from "../components/TokenBalanceWidget.js";
 import { useDiagnose } from "../hooks/useDiagnose";
 import { useEntitlements, CAPABILITY_KEYS } from "@/entitlements";
+import { sanitizeViewChildren } from "@/components/layout/sanitizeViewChildren";
 
 // Move DiagnoseScreen function here, after styles
 
@@ -81,6 +82,8 @@ export default function DiagnoseScreen({ route, navigation }) {
   const { analyze, analyzing, analyzeError, diagnosePhoto, diagnosing, diagnoseError } =
     useDiagnose();
   const [result, setResult] = useState(null);
+  const renderSafeChildren = (children) =>
+    sanitizeViewChildren(children, "DiagnoseScreen.ScrollView");
 
   // Core diagnosis handlers
   async function handleDiagnose() {
@@ -144,6 +147,8 @@ export default function DiagnoseScreen({ route, navigation }) {
         contentContainerStyle={{ paddingBottom: 32 }}
         keyboardShouldPersistTaps="handled"
       >
+        {renderSafeChildren(
+          <>
         {/* Chat-style input and prompt suggestions */}
         <View style={{ marginBottom: 12 }}>
           <Text style={styles.label}>Describe your plant issue</Text>
@@ -666,6 +671,8 @@ export default function DiagnoseScreen({ route, navigation }) {
               </Text>
             </TouchableOpacity>
           </View>
+        )}
+          </>
         )}
       </ScrollView>
     </AppShell>

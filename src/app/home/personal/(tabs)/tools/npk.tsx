@@ -1,41 +1,56 @@
 import React, { useMemo, useState } from "react";
+import { useLocalSearchParams } from "expo-router";
 import { Pressable, StyleSheet, Text, TextInput, View } from "react-native";
 
+import { createToolRun } from "@/api/toolRuns";
 import BackButton from "@/components/nav/BackButton";
 
-function num(v: string) {
-  const n = Number(v);
-  return Number.isFinite(n) ? n : 0;
+function num(value: string) {
+  const parsed = Number(value);
+  return Number.isFinite(parsed) ? parsed : 0;
 }
 
 export default function NpkToolScreen() {
+  const { growId } = useLocalSearchParams<{ growId?: string | string[] }>();
+  const growContext = typeof growId === "string" ? growId : Array.isArray(growId) ? growId[0] : "";
   const [nText, setNText] = useState("10");
   const [pText, setPText] = useState("5");
   const [kText, setKText] = useState("5");
   const [doseText, setDoseText] = useState("5");
   const [unit, setUnit] = useState<"ml/L" | "ml/gal">("ml/L");
+  const [saveFeedback, setSaveFeedback] = useState("");
 
   const result = useMemo(() => {
     const n = num(nText);
     const p = num(pText);
     const k = num(kText);
     const dose = num(doseText);
-    const sum = n + p + k;
-    const safeSum = sum <= 0 ? 1 : sum;
+    const sum = Math.max(n + p + k, 1);
     return {
       ratio: `${n}:${p}:${k}`,
-      nShare: ((n / safeSum) * 100).toFixed(1),
-      pShare: ((p / safeSum) * 100).toFixed(1),
-      kShare: ((k / safeSum) * 100).toFixed(1),
-      concentration: (dose * (n / 100)).toFixed(2)
+      nShare: ((n / sum) * 100).toFixed(1),
+      pShare: ((p / sum) * 100).toFixed(1),
+      kShare: ((k / sum) * 100).toFixed(1),
+      dose
     };
-  }, [nText, pText, kText, doseText]);
+  }, [doseText, kText, nText, pText]);
 
   return (
     <View style={styles.container}>
       <BackButton />
-      <Text style={styles.title}>NPK Helper</Text>
-      <Text style={styles.subtitle}>Enter label N-P-K and your dose target.</Text>
+      <Text style={styles.title}>NPK Label Ratio (Preview)</Text>
+      <Text style={styles.subtitle}>
+        Label share preview only. This does not calculate nutrient ppm targets.
+      </Text>
+      {growContext ? <Text style={styles.context}>Grow context: {growContext}</Text> : null}
+
+      <View style={styles.notice}>
+        <Text style={styles.noticeTitle}>Important</Text>
+        <Text style={styles.noticeText}>
+          Use this page for quick ratio orientation only. Full recipe and ppm math belongs
+          to the upcoming NPK Calculator.
+        </Text>
+      </View>
 
       <View style={styles.row}>
         <TextInput
@@ -61,7 +76,7 @@ export default function NpkToolScreen() {
         />
       </View>
 
-      <Text style={styles.label}>Dose</Text>
+      <Text style={styles.label}>Dose (for reference)</Text>
       <TextInput
         style={styles.fullInput}
         value={doseText}
@@ -88,22 +103,57 @@ export default function NpkToolScreen() {
       </View>
 
       <View style={styles.card}>
-        <Text style={styles.result}>Ratio: {result.ratio}</Text>
+        <Text style={styles.result}>Label ratio: {result.ratio}</Text>
         <Text style={styles.line}>N share: {result.nShare}%</Text>
         <Text style={styles.line}>P share: {result.pShare}%</Text>
         <Text style={styles.line}>K share: {result.kShare}%</Text>
         <Text style={styles.line}>
-          Approx N concentration: {result.concentration} ({unit})
+          Reference dose: {result.dose} {unit}
         </Text>
       </View>
+      <Pressable
+        style={styles.saveButton}
+        onPress={async () => {
+          const created = await createToolRun({
+            toolType: "npk_label_ratio_preview",
+            growId: growContext || undefined,
+            input: {
+              n: Number(nText),
+              p: Number(pText),
+              k: Number(kText),
+              dose: Number(doseText),
+              unit
+            },
+            output: result
+          });
+          if (created) {
+            setSaveFeedback("Saved preview run.");
+          } else {
+            setSaveFeedback("Unable to save preview run.");
+          }
+        }}
+      >
+        <Text style={styles.saveButtonText}>Save preview run {growContext ? "to grow" : ""}</Text>
+      </Pressable>
+      {saveFeedback ? <Text style={styles.feedback}>{saveFeedback}</Text> : null}
     </View>
   );
 }
 
 const styles = StyleSheet.create({
-  container: { flex: 1, padding: 20, backgroundColor: "#fff", gap: 10 },
+  container: { flex: 1, padding: 20, backgroundColor: "#FFFFFF", gap: 10 },
   title: { fontSize: 22, fontWeight: "700" },
   subtitle: { fontSize: 13, color: "#64748B" },
+  context: { color: "#166534", fontWeight: "700" },
+  notice: {
+    borderWidth: 1,
+    borderColor: "#FDE68A",
+    borderRadius: 12,
+    backgroundColor: "#FEFCE8",
+    padding: 12
+  },
+  noticeTitle: { fontSize: 14, fontWeight: "700", marginBottom: 4 },
+  noticeText: { fontSize: 13, color: "#854D0E" },
   row: { flexDirection: "row", gap: 10, alignItems: "center" },
   input: {
     flex: 1,
@@ -111,7 +161,7 @@ const styles = StyleSheet.create({
     borderColor: "#E2E8F0",
     borderRadius: 10,
     padding: 12,
-    backgroundColor: "#fff"
+    backgroundColor: "#FFFFFF"
   },
   label: { fontWeight: "700", marginTop: 4 },
   fullInput: {
@@ -119,7 +169,7 @@ const styles = StyleSheet.create({
     borderColor: "#E2E8F0",
     borderRadius: 10,
     padding: 12,
-    backgroundColor: "#fff"
+    backgroundColor: "#FFFFFF"
   },
   pill: {
     paddingVertical: 8,
@@ -128,9 +178,9 @@ const styles = StyleSheet.create({
     borderWidth: 1,
     borderColor: "#E2E8F0"
   },
-  pillOn: { backgroundColor: "#16A34A", borderColor: "#16A34A" },
+  pillOn: { backgroundColor: "#166534", borderColor: "#166534" },
   pillTxt: { fontWeight: "800" },
-  pillTxtOn: { color: "#fff" },
+  pillTxtOn: { color: "#FFFFFF" },
   card: {
     borderWidth: 1,
     borderColor: "#E2E8F0",
@@ -141,5 +191,17 @@ const styles = StyleSheet.create({
     gap: 4
   },
   result: { fontSize: 18, fontWeight: "800" },
-  line: { color: "#334155" }
+  line: { color: "#334155" },
+  saveButton: {
+    marginTop: 10,
+    alignSelf: "flex-start",
+    paddingHorizontal: 12,
+    paddingVertical: 8,
+    borderRadius: 8,
+    borderWidth: 1,
+    borderColor: "#166534",
+    backgroundColor: "#166534"
+  },
+  saveButtonText: { color: "#FFFFFF", fontWeight: "700" },
+  feedback: { fontSize: 12, color: "#64748B" }
 });

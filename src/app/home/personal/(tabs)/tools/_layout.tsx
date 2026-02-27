@@ -6,7 +6,7 @@ export default function ToolsLayout() {
     <Stack>
       <Stack.Screen name="index" options={{ title: "Tools" }} />
       <Stack.Screen name="vpd" options={{ title: "VPD Calculator" }} />
-      <Stack.Screen name="npk" options={{ title: "NPK Helper" }} />
+      <Stack.Screen name="npk" options={{ title: "NPK Label Ratio (Preview)" }} />
       <Stack.Screen name="watering" options={{ title: "Watering Planner" }} />
     </Stack>
   );

@@ -115,3 +115,27 @@ export async function listPersonalTasks(options = {}) {
     return [];
   }
 }
+
+export async function createPersonalTask(data) {
+  try {
+    const res = await apiRequest("/api/personal/tasks", {
+      method: "POST",
+      body: data
+    });
+    return res?.task ?? res?.created ?? res?.data?.task ?? res;
+  } catch (_err) {
+    return null;
+  }
+}
+
+export async function updatePersonalTask(id, patch) {
+  try {
+    const res = await apiRequest(`/api/personal/tasks/${id}`, {
+      method: "PATCH",
+      body: patch
+    });
+    return res?.task ?? res?.updated ?? res?.data?.task ?? res;
+  } catch (_err) {
+    return null;
+  }
+}

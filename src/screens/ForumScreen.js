@@ -116,7 +116,10 @@ export default function ForumScreen() {
   // Flatten posts for FlatList
   const filteredPosts = useMemo(() => {
     if (!data?.pages) return [];
-    return data.pages.flatMap((page) => page?.posts || []);
+    return data.pages.flatMap((page) => {
+      if (Array.isArray(page)) return page;
+      return Array.isArray(page?.posts) ? page.posts : [];
+    });
   }, [data]);
 
   // Toggle filter handler
