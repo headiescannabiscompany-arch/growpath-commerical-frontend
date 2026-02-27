@@ -33,17 +33,17 @@ const DASHBOARD_TIER1_TAGS = new Set(tierOneConfig?.options || []);
 
 function getCategoryIcon(category) {
   const icons = {
-    nutrients: "💧",
-    lighting: "💡",
-    water: "💦",
-    substrate: "🌱",
-    soil: "🪴",
-    hydro: "🌊",
-    training: "✂️",
-    harvest: "🏆",
-    diagnosis: "🔍"
+    nutrients: "NUT",
+    lighting: "LGT",
+    water: "H2O",
+    substrate: "SUB",
+    soil: "SOL",
+    hydro: "HYD",
+    training: "TRN",
+    harvest: "HAR",
+    diagnosis: "DIA"
   };
-  return icons[category?.toLowerCase()] || "📝";
+  return icons[category?.toLowerCase()] || "GEN";
 }
 
 function getCategoryColor(index) {
@@ -572,3 +572,4 @@ export default function DashboardScreen() {
     </AppShell>
   );
 }
+

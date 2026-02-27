@@ -116,7 +116,7 @@ export default function CreatePlantScreen({ navigation }) {
         <View style={styles.section}>
           <Text style={styles.label}>Photos (Optional)</Text>
           <TouchableOpacity style={styles.uploadButton} onPress={pickPhotos}>
-            <Text style={styles.uploadButtonText}>📷 Add Photos</Text>
+            <Text style={styles.uploadButtonText}>Add Photos</Text>
           </TouchableOpacity>
           {photos.length > 0 && (
             <View style={styles.photoGrid}>

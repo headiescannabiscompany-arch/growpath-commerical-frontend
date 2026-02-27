@@ -84,7 +84,7 @@ export default function ScheduleScreen() {
   if (!groups) {
     return (
       <ScreenContainer>
-        <Text style={{ padding: 16 }}>Loading schedule…</Text>
+        <Text style={{ padding: 16 }}>Loading schedule...</Text>
       </ScreenContainer>
     );
   }
@@ -125,7 +125,7 @@ export default function ScheduleScreen() {
           Your schedule reflects intent, not obligation.
         </Text>
         <Text style={{ color: "#222", fontSize: 13 }}>
-          Tasks are reminders of what you planned — not commands you must follow. Your
+          Tasks are reminders of what you planned - not commands you must follow. Your
           plants decide the pace.
         </Text>
       </View>
@@ -155,7 +155,7 @@ export default function ScheduleScreen() {
             <Text style={styles.modalTitle}>{selectedTask?.title}</Text>
             <ScrollView style={{ maxHeight: 300 }}>
               {selectedTask?.plant && (
-                <Text style={styles.modalMeta}>🌱 {selectedTask.plant.name}</Text>
+                <Text style={styles.modalMeta}>Plant: {selectedTask.plant.name}</Text>
               )}
               {selectedTask?.description ? (
                 <Text style={styles.modalBody}>{selectedTask.description}</Text>
@@ -280,3 +280,4 @@ const styles = {
     fontSize: 16
   }
 };
+

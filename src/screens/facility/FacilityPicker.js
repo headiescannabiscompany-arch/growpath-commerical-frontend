@@ -73,7 +73,7 @@ const FacilityPicker = ({ navigation }) => {
             </View>
             <Text style={styles.facilityInfo}>{item.address || "No address"}</Text>
             {item.licenseNumber && <Text style={styles.facilityInfo}>License: {item.licenseNumber}</Text>}
-            <Text style={styles.planBadge}>{item.planType === 'premium' ? '💎 Premium' : '✅ Free'}</Text>
+            <Text style={styles.planBadge}>{item.planType === 'premium' ? 'Premium' : 'Free'}</Text>
           </TouchableOpacity>
         )}
         ListEmptyComponent={
@@ -163,3 +163,4 @@ const styles = StyleSheet.create({
 });
 
 export default FacilityPicker;
+

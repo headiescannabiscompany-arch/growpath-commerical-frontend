@@ -116,7 +116,7 @@ export default function LinksScreen() {
             borderColor: "#FCA5A5"
           }}
         >
-          <Text style={{ fontSize: 32, color: "#B91C1C", marginBottom: 8 }}>🚫</Text>
+          <Text style={{ fontSize: 32, color: "#B91C1C", marginBottom: 8 }}>X</Text>
           <Text
             style={{
               color: "#B91C1C",
