@@ -8,9 +8,11 @@ import {
   createTelemetrySource,
   getTelemetryPoints,
   listTelemetrySources,
-  pullPulseWindow
+  listPulseDevices,
+  pullPulseWindow,
+  verifyPulseApiKey
 } from "@/api/telemetry";
-import type { TelemetryPoint, TelemetrySource } from "@/types/telemetry";
+import type { PulseDevice, TelemetryPoint, TelemetrySource } from "@/types/telemetry";
 
 function asString(v: string | string[] | undefined) {
   return Array.isArray(v) ? v[0] : v;
@@ -35,6 +37,12 @@ function deltaFToC(d: number) {
 
 function deltaCToF(d: number) {
   return d * (9 / 5);
+}
+
+function formatApiError(err: any): string {
+  const code = String(err?.code || "").trim();
+  const msg = String(err?.message || "Request failed").trim();
+  return code ? `${code}: ${msg}` : msg;
 }
 
 function dewPointC(tempC: number, rhPct: number) {
@@ -200,6 +208,11 @@ export default function DewPointGuardTool() {
   const [loadingSources, setLoadingSources] = useState(false);
   const [creatingSource, setCreatingSource] = useState(false);
   const [selectedSourceId, setSelectedSourceId] = useState("");
+  const [pulseApiKey, setPulseApiKey] = useState("");
+  const [verifyingPulse, setVerifyingPulse] = useState(false);
+  const [loadingPulseDevices, setLoadingPulseDevices] = useState(false);
+  const [pulseDevices, setPulseDevices] = useState<PulseDevice[]>([]);
+  const [selectedPulseDeviceId, setSelectedPulseDeviceId] = useState("");
 
   const [windowMode, setWindowMode] = useState<"lastNight" | "last24h" | "custom">("lastNight");
   const defaults = useMemo(() => defaultWindow(windowMode === "custom" ? "last24h" : windowMode), [windowMode]);
@@ -271,7 +284,7 @@ export default function DewPointGuardTool() {
       setSources(list);
       if (!selectedSourceId && list.length) setSelectedSourceId(list[0].id);
     } catch (e: any) {
-      Alert.alert("Failed to load sources", String(e?.message || e));
+      Alert.alert("Failed to load sources", formatApiError(e));
     } finally {
       setLoadingSources(false);
     }
@@ -293,7 +306,65 @@ export default function DewPointGuardTool() {
       setSelectedSourceId(created.id);
       Alert.alert("Source created", `${created.name} (${created.type})`);
     } catch (e: any) {
-      Alert.alert("Failed to create source", String(e?.message || e));
+      Alert.alert("Failed to create source", formatApiError(e));
+    } finally {
+      setCreatingSource(false);
+    }
+  }
+
+  async function verifyPulseAndLoadDevices() {
+    const apiKey = String(pulseApiKey || "").trim();
+    if (!apiKey) return Alert.alert("Missing API key", "Enter your Pulse API key.");
+
+    setVerifyingPulse(true);
+    try {
+      await verifyPulseApiKey(apiKey);
+      Alert.alert("Pulse verified", "API key verified successfully.");
+    } catch (e: any) {
+      Alert.alert("Pulse verify failed", formatApiError(e));
+      return;
+    } finally {
+      setVerifyingPulse(false);
+    }
+
+    setLoadingPulseDevices(true);
+    try {
+      const devices = await listPulseDevices(apiKey);
+      setPulseDevices(devices);
+      if (!selectedPulseDeviceId && devices.length) {
+        setSelectedPulseDeviceId(String(devices[0].id || ""));
+      }
+      if (!devices.length) {
+        Alert.alert("No devices", "No Pulse devices returned for this API key.");
+      }
+    } catch (e: any) {
+      Alert.alert("Load devices failed", formatApiError(e));
+    } finally {
+      setLoadingPulseDevices(false);
+    }
+  }
+
+  async function createPulseSourceInline() {
+    if (!growId) return Alert.alert("Missing growId", "A growId is required to create a telemetry source.");
+    const apiKey = String(pulseApiKey || "").trim();
+    if (!apiKey) return Alert.alert("Missing API key", "Enter your Pulse API key.");
+    if (!selectedPulseDeviceId) return Alert.alert("Missing device", "Select a Pulse device first.");
+
+    setCreatingSource(true);
+    try {
+      const selected = pulseDevices.find((d) => String(d.id) === selectedPulseDeviceId);
+      const created = await createTelemetrySource({
+        growId,
+        type: "pulse",
+        name: selected?.name ? `Pulse ${selected.name}` : "Pulse Telemetry",
+        timezone: "America/New_York",
+        config: { pulse: { apiKey, deviceId: selectedPulseDeviceId } }
+      });
+      setSources((prev) => [created, ...prev.filter((p) => p.id !== created.id)]);
+      setSelectedSourceId(created.id);
+      Alert.alert("Pulse source created", `${created.name} (${created.type})`);
+    } catch (e: any) {
+      Alert.alert("Failed to create pulse source", formatApiError(e));
     } finally {
       setCreatingSource(false);
     }
@@ -333,7 +404,7 @@ export default function DewPointGuardTool() {
         Alert.alert("No telemetry points found", "Try a larger window or ingest/pull data first.");
       }
     } catch (e: any) {
-      Alert.alert("Failed to fetch points", String(e?.message || e));
+      Alert.alert("Failed to fetch points", formatApiError(e));
     } finally {
       setFetchingPoints(false);
     }
@@ -355,7 +426,11 @@ export default function DewPointGuardTool() {
       setIngestStatus(`Ingested=${res.ingested} Updated=${res.updated} Skipped=${res.skipped}`);
       await fetchWindowPoints();
     } catch (e: any) {
-      Alert.alert("Ingest failed", String(e?.message || e));
+      if (String(e?.code || "") === "SOURCE_NOT_INGESTABLE") {
+        Alert.alert("Ingest blocked", "This source type cannot accept manual ingest. Use pull for pulse sources.");
+      } else {
+        Alert.alert("Ingest failed", formatApiError(e));
+      }
     } finally {
       setIngesting(false);
     }
@@ -463,9 +538,25 @@ export default function DewPointGuardTool() {
             <Pressable onPress={() => createSourceInline("manual")} disabled={creatingSource} style={{ opacity: creatingSource ? 0.6 : 1, borderWidth: 1, borderColor: "#ddd", borderRadius: 10, paddingVertical: 10, paddingHorizontal: 12, marginRight: 8, marginBottom: 8 }}>
               <Text style={{ fontWeight: "800" }}>{creatingSource ? "Creating..." : "Create Manual Source"}</Text>
             </Pressable>
-            <Pressable onPress={() => createSourceInline("upload")} disabled={creatingSource} style={{ opacity: creatingSource ? 0.6 : 1, borderWidth: 1, borderColor: "#ddd", borderRadius: 10, paddingVertical: 10, paddingHorizontal: 12, marginBottom: 8 }}>
+            <Pressable onPress={() => createSourceInline("upload")} disabled={creatingSource} style={{ opacity: creatingSource ? 0.6 : 1, borderWidth: 1, borderColor: "#ddd", borderRadius: 10, paddingVertical: 10, paddingHorizontal: 12, marginRight: 8, marginBottom: 8 }}>
               <Text style={{ fontWeight: "800" }}>{creatingSource ? "Creating..." : "Create Upload Source"}</Text>
             </Pressable>
+            <Pressable onPress={createPulseSourceInline} disabled={creatingSource || !selectedPulseDeviceId || !String(pulseApiKey || "").trim()} style={{ opacity: creatingSource || !selectedPulseDeviceId || !String(pulseApiKey || "").trim() ? 0.6 : 1, borderWidth: 1, borderColor: "#ddd", borderRadius: 10, paddingVertical: 10, paddingHorizontal: 12, marginBottom: 8 }}>
+              <Text style={{ fontWeight: "800" }}>{creatingSource ? "Creating..." : "Create Pulse Source"}</Text>
+            </Pressable>
+          </View>
+
+          <View style={{ marginBottom: 10 }}>
+            <Field label="Pulse API key" value={pulseApiKey} onChangeText={setPulseApiKey} keyboardType="default" />
+            <Pressable onPress={verifyPulseAndLoadDevices} disabled={verifyingPulse || loadingPulseDevices} style={{ opacity: verifyingPulse || loadingPulseDevices ? 0.6 : 1, borderWidth: 1, borderColor: "#ddd", borderRadius: 10, paddingVertical: 10, paddingHorizontal: 12, marginBottom: 8, alignItems: "center" }}>
+              <Text style={{ fontWeight: "800" }}>{verifyingPulse ? "Verifying..." : loadingPulseDevices ? "Loading devices..." : "Verify + Load Pulse Devices"}</Text>
+            </Pressable>
+            {pulseDevices.length ? pulseDevices.map((d) => (
+              <Pressable key={String(d.id)} onPress={() => setSelectedPulseDeviceId(String(d.id))} style={{ padding: 10, borderRadius: 10, borderWidth: 1, borderColor: String(d.id) === selectedPulseDeviceId ? "#111" : "#ddd", marginBottom: 8 }}>
+                <Text style={{ fontWeight: "800" }}>{d.name || String(d.id)}</Text>
+                <Text style={{ color: "#444" }}>{d.model || "Pulse device"}  {String(d.id)}</Text>
+              </Pressable>
+            )) : null}
           </View>
 
           {sources.length ? sources.map((s) => (
