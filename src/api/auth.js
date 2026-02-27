@@ -1,9 +1,15 @@
 import { apiRequest } from "./apiRequest";
 import routes from "./routes.js";
 
+function normalizeAuthArgs(a, b) {
+  if (typeof a === "object" && a !== null) return a;
+  return { email: a, password: b };
+}
+
 // Login
-export async function login(email, password) {
+export async function login(a, b) {
   try {
+    const { email, password } = normalizeAuthArgs(a, b);
     const loginData = await apiRequest(routes.AUTH.LOGIN, {
       method: "POST",
       auth: false,
@@ -25,8 +31,9 @@ export async function login(email, password) {
 }
 
 // Signup
-export async function signup({ name, displayName, email, password }) {
+export async function signup(payload) {
   try {
+    const { name, displayName, email, password } = payload || {};
     const signupPayload = { name, displayName, email, password };
     const signupData = await apiRequest(routes.AUTH.SIGNUP, {
       method: "POST",
@@ -42,8 +49,9 @@ export async function signup({ name, displayName, email, password }) {
 }
 
 // Register
-export async function register({ name, displayName, email, password }) {
+export async function register(payload) {
   try {
+    const { name, displayName, email, password } = payload || {};
     const registerPayload = { name, displayName, email, password };
     const registerData = await apiRequest("/api/auth/register", {
       method: "POST",

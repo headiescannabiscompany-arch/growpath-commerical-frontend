@@ -36,3 +36,12 @@ export function autoTagEntry(id) {
 export function getPlants() {
   return apiRequest(routes.PLANTS.LIST);
 }
+
+// TS-compatible names for mixed import resolution.
+export async function fetchGrowLogs(growId) {
+  return getEntries({ grow: growId });
+}
+
+export async function createGrowLog(growId, data = {}) {
+  return createEntry({ ...data, grow: growId });
+}

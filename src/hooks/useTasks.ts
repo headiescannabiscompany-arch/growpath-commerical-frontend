@@ -1,6 +1,11 @@
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { useFacility } from "../facility/FacilityProvider";
-import { getTasks, createTask, updateTask, deleteTask } from "../api/tasks";
+import {
+  getFacilityTasks,
+  createTask,
+  updateTask,
+  deleteFacilityTask
+} from "../api/tasks";
 
 // CONTRACT: facility context comes from FacilityProvider only.
 export function useTasks() {
@@ -9,7 +14,7 @@ export function useTasks() {
 
   const tasksQuery = useQuery({
     queryKey: ["tasks", activeFacilityId],
-    queryFn: () => getTasks(activeFacilityId!),
+    queryFn: () => getFacilityTasks(activeFacilityId!),
     enabled: !!activeFacilityId
   });
 
@@ -29,7 +34,7 @@ export function useTasks() {
   });
 
   const deleteTaskMutation = useMutation({
-    mutationFn: (id: string) => deleteTask(activeFacilityId!, id),
+    mutationFn: (id: string) => deleteFacilityTask(activeFacilityId!, id),
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ["tasks", activeFacilityId] });
     }
