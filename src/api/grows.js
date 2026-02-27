@@ -3,12 +3,23 @@ import routes from "./routes.js";
 import { endpoints } from "./endpoints";
 
 function normalizeGrowList(res) {
-  if (Array.isArray(res)) return res;
-  return res?.grows ?? res?.data ?? [];
+  const raw = Array.isArray(res) ? res : res?.grows ?? res?.data ?? [];
+  return Array.isArray(raw)
+    ? raw.map((grow) => {
+        if (!grow || typeof grow !== "object") return grow;
+        if (grow.id && !grow._id) return { ...grow, _id: grow.id };
+        if (grow._id && !grow.id) return { ...grow, id: grow._id };
+        return grow;
+      })
+    : [];
 }
 
 function normalizeGrowEntity(res) {
-  return res?.created ?? res?.updated ?? res?.grow ?? res;
+  const grow = res?.created ?? res?.updated ?? res?.grow ?? res;
+  if (!grow || typeof grow !== "object") return grow;
+  if (grow.id && !grow._id) return { ...grow, _id: grow.id };
+  if (grow._id && !grow.id) return { ...grow, id: grow._id };
+  return grow;
 }
 
 function isPlainObject(value) {

@@ -3,12 +3,28 @@ import routes from "./routes.js";
 import { endpoints } from "./endpoints";
 
 function normalizeTaskList(res) {
-  if (Array.isArray(res)) return res;
-  return res?.tasks ?? res?.data ?? [];
+  const raw = Array.isArray(res) ? res : res?.tasks ?? res?.data ?? [];
+  return Array.isArray(raw)
+    ? raw.map((task) => {
+        if (!task || typeof task !== "object") return task;
+        if (task.id && !task._id) return { ...task, _id: task.id };
+        if (task._id && !task.id) return { ...task, id: task._id };
+        return task;
+      })
+    : [];
 }
 
 function normalizeTaskEntity(res) {
-  return res?.created ?? res?.updated ?? res?.task ?? res;
+  const task = res?.created ?? res?.updated ?? res?.task ?? res;
+  if (!task || typeof task !== "object") return task;
+  if (task.id && !task._id) return { ...task, _id: task.id };
+  if (task._id && !task.id) return { ...task, id: task._id };
+  return task;
+}
+
+function toTaskId(value) {
+  if (value && typeof value === "object") return value.id || value._id || null;
+  return value || null;
 }
 
 export function getTodayTasks(token) {
@@ -29,7 +45,8 @@ export async function getFacilityTasks(facilityId) {
 }
 
 export function completeTask(id, token) {
-  return apiRequest(routes.TASKS.COMPLETE(id), {
+  const taskId = toTaskId(id);
+  return apiRequest(routes.TASKS.COMPLETE(taskId), {
     method: "PUT",
     auth: token ? true : false,
     body: {}
@@ -37,7 +54,8 @@ export function completeTask(id, token) {
 }
 
 export function reopenTask(id, token) {
-  return apiRequest(routes.TASKS.REOPEN(id), {
+  const taskId = toTaskId(id);
+  return apiRequest(routes.TASKS.REOPEN(taskId), {
     method: "PUT",
     auth: token ? true : false,
     body: {}
@@ -45,7 +63,8 @@ export function reopenTask(id, token) {
 }
 
 export function deleteTask(id, token) {
-  return apiRequest(routes.TASKS.DELETE(id), {
+  const taskId = toTaskId(id);
+  return apiRequest(routes.TASKS.DELETE(taskId), {
     method: "DELETE",
     auth: token ? true : false
   });
