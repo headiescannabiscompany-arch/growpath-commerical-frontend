@@ -37,6 +37,14 @@ function main() {
   }
 
   const telemetryRaw = fs.readFileSync(TELEMETRY_API_FILE, "utf8");
+  const expectedRoutes = {
+    SOURCES: "/api/telemetry/sources",
+    POINTS_BULK: "/api/telemetry/points:bulk",
+    POINTS: "/api/telemetry/points",
+    PULSE_VERIFY: "/api/telemetry/pulse/verify",
+    PULSE_DEVICES: "/api/telemetry/pulse/devices",
+    PULSE_PULL: "/api/telemetry/pulse/pull"
+  };
 
   if (/\bfetch\s*\(/.test(telemetryRaw)) {
     failures.push("src/api/telemetry.ts must not use fetch(); use apiRequest()");
@@ -52,6 +60,15 @@ function main() {
 
   if (!/delete\s+config\.pulse\.apiKey\s*;/.test(telemetryRaw)) {
     failures.push("src/api/telemetry.ts must strip config.pulse.apiKey during source normalization");
+  }
+  for (const [key, route] of Object.entries(expectedRoutes)) {
+    const keyPattern = new RegExp(`\\b${key}\\s*:\\s*["'\`]${route.replace(/[.*+?^${}()|[\]\\]/g, "\\$&")}["'\`]`);
+    if (!keyPattern.test(telemetryRaw)) {
+      failures.push(`src/api/telemetry.ts missing TELEMETRY_ROUTES.${key} = "${route}"`);
+    }
+  }
+  if (!/err\.code\s*=\s*res\?\.(error\?\.)?code/.test(telemetryRaw)) {
+    failures.push("src/api/telemetry.ts must preserve backend error code on thrown errors in unwrapData");
   }
 
   const allFiles = walkFiles(SRC_DIR);

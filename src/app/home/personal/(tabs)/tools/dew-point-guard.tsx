@@ -1,6 +1,8 @@
-import React, { useMemo, useState } from "react";
+import React, { useEffect, useMemo, useState } from "react";
 import { Alert, Pressable, ScrollView, Text, TextInput, View } from "react-native";
 import { useLocalSearchParams, useRouter } from "expo-router";
+import * as DocumentPicker from "expo-document-picker";
+import AsyncStorage from "@react-native-async-storage/async-storage";
 
 import { saveToolRunAndOpenJournal } from "@/features/personal/tools/saveToolRunAndOpenJournal";
 import {
@@ -13,6 +15,17 @@ import {
   verifyPulseApiKey
 } from "@/api/telemetry";
 import type { PulseDevice, TelemetryPoint, TelemetrySource } from "@/types/telemetry";
+import {
+  cToF,
+  computeTelemetryRisk,
+  CsvMapping,
+  deltaCToF,
+  deltaFToC,
+  dewPointC,
+  fToC,
+  mapCsvToPoints,
+  parseCsvText
+} from "@/features/personal/tools/dewPointGuard/engine";
 
 function asString(v: string | string[] | undefined) {
   return Array.isArray(v) ? v[0] : v;
@@ -23,35 +36,21 @@ function toNum(v: string) {
   return Number.isFinite(n) ? n : NaN;
 }
 
-function fToC(f: number) {
-  return (f - 32) * (5 / 9);
-}
-
-function cToF(c: number) {
-  return c * (9 / 5) + 32;
-}
-
-function deltaFToC(d: number) {
-  return d * (5 / 9);
-}
-
-function deltaCToF(d: number) {
-  return d * (9 / 5);
-}
-
 function formatApiError(err: any): string {
   const code = String(err?.code || "").trim();
   const msg = String(err?.message || "Request failed").trim();
   return code ? `${code}: ${msg}` : msg;
 }
 
-function dewPointC(tempC: number, rhPct: number) {
-  if (!Number.isFinite(tempC) || !Number.isFinite(rhPct)) return NaN;
-  const rh = Math.max(1, Math.min(100, rhPct));
-  const a = 17.62;
-  const b = 243.12;
-  const gamma = (a * tempC) / (b + tempC) + Math.log(rh / 100);
-  return (b * gamma) / (a - gamma);
+function telemetryAuthMessage(err: any): string | null {
+  const status =
+    err?.status ??
+    err?.response?.status ??
+    err?.details?.status ??
+    err?.cause?.status;
+  if (status === 401) return "You are not signed in. Please log in again.";
+  if (status === 403) return "You do not have access to this grow's telemetry.";
+  return null;
 }
 
 function defaultWindow(mode: "lastNight" | "last24h") {
@@ -82,11 +81,13 @@ function Field(props: {
   onChangeText: (v: string) => void;
   placeholder?: string;
   keyboardType?: "default" | "numeric";
+  testID?: string;
 }) {
   return (
     <View style={{ marginBottom: 12 }}>
       <Text style={{ fontSize: 14, fontWeight: "600", marginBottom: 6 }}>{props.label}</Text>
       <TextInput
+        testID={props.testID}
         value={props.value}
         onChangeText={props.onChangeText}
         placeholder={props.placeholder}
@@ -103,9 +104,20 @@ function Field(props: {
   );
 }
 
-function Chip({ label, active, onPress }: { label: string; active: boolean; onPress: () => void }) {
+function Chip({
+  label,
+  active,
+  onPress,
+  testID
+}: {
+  label: string;
+  active: boolean;
+  onPress: () => void;
+  testID?: string;
+}) {
   return (
     <Pressable
+      testID={testID}
       onPress={onPress}
       style={{
         paddingHorizontal: 10,
@@ -123,68 +135,37 @@ function Chip({ label, active, onPress }: { label: string; active: boolean; onPr
   );
 }
 
-function computeTelemetryRisk(points: TelemetryPoint[], assumedLeafAirDeltaC: number, marginCThreshold: number) {
-  const cleaned = (points || [])
-    .filter((p) => p?.ts)
-    .map((p) => ({
-      tsMs: Date.parse(String(p.ts)),
-      airTempC: Number(p.airTempC),
-      rh: Number(p.rh),
-      dewPointC: Number.isFinite(Number(p.dewPointC)) ? Number(p.dewPointC) : dewPointC(Number(p.airTempC), Number(p.rh))
-    }))
-    .filter((p) => Number.isFinite(p.tsMs) && Number.isFinite(p.airTempC) && Number.isFinite(p.rh) && Number.isFinite(p.dewPointC))
-    .sort((a, b) => a.tsMs - b.tsMs);
-
-  if (!cleaned.length) return null;
-
-  let minAirTempC = cleaned[0].airTempC;
-  let maxRh = cleaned[0].rh;
-  let maxDewPointC = cleaned[0].dewPointC;
-  let minMarginC = Infinity;
-  let minMarginAtIso = "";
-  let timeAtRiskMinutes = 0;
-
-  for (let i = 0; i < cleaned.length; i++) {
-    const p = cleaned[i];
-    minAirTempC = Math.min(minAirTempC, p.airTempC);
-    maxRh = Math.max(maxRh, p.rh);
-    maxDewPointC = Math.max(maxDewPointC, p.dewPointC);
-
-    const marginC = (p.airTempC - assumedLeafAirDeltaC) - p.dewPointC;
-    if (marginC < minMarginC) {
-      minMarginC = marginC;
-      minMarginAtIso = new Date(p.tsMs).toISOString();
-    }
-
-    if (i < cleaned.length - 1) {
-      const dtMin = Math.max(0, Math.min(120, (cleaned[i + 1].tsMs - p.tsMs) / 60000));
-      if (marginC <= marginCThreshold) timeAtRiskMinutes += dtMin;
-    }
+function bestHeader(headers: string[], candidates: string[]): string {
+  const norm = headers.map((h) => ({ raw: h, n: h.toLowerCase() }));
+  for (const c of candidates) {
+    const hit = norm.find((h) => h.n === c || h.n.includes(c));
+    if (hit) return hit.raw;
   }
+  return headers[0] ?? "";
+}
 
-  const riskBand: "low" | "medium" | "high" =
-    minMarginC <= 0 ? "high" : minMarginC <= marginCThreshold ? "medium" : "low";
-
-  const recommendations =
-    riskBand === "low"
-      ? [{ code: "MAINTAIN", message: "Telemetry window looks safe. Keep monitoring lights-off transitions." }]
-      : [
-          { code: "LOWER_NIGHT_RH", message: "Lower night RH (or add dehumidification capacity) to increase dew point margin." },
-          { code: "INCREASE_AIR_MOVEMENT", message: "Increase canopy air movement during lights-off to reduce microclimate saturation." },
-          { code: "RAMP_LIGHTS_OFF", message: "Reduce the temperature drop rate at lights-off (gentle ramp, HVAC staging, or heat support)." }
-        ];
-
-  return {
-    riskBand,
-    pointsAnalyzed: cleaned.length,
-    extremes: { minAirTempC, maxRh, maxDewPointC, minCondensationMarginC: minMarginC },
-    timeAtRiskMinutes: Math.round(timeAtRiskMinutes),
-    minMarginAtIso,
-    recommendations
-  };
+function headerIndex(headers: string[], key: string): number {
+  return headers.findIndex((h) => h === key);
 }
 
 type PendingReading = { ts: string; tempF: number; rh: number };
+const CSV_MAX_ROWS = 5000;
+
+function hasTimezoneInfo(ts: string): boolean {
+  return /(?:Z|[+-]\d{2}:\d{2})$/i.test(ts);
+}
+
+function normalizeCsvTimestampToIso(tsRaw: string, sourceTimezone: string): string | null {
+  const raw = String(tsRaw || "").trim();
+  if (!raw) return null;
+  // v1 deterministic rule: explicit offset/Z respected; naive timestamps are treated as UTC.
+  // Keep this consistent until timezone-aware parsing is introduced.
+  void sourceTimezone;
+  const normalized = hasTimezoneInfo(raw) ? raw : `${raw}Z`;
+  const ms = Date.parse(normalized);
+  if (!Number.isFinite(ms)) return null;
+  return new Date(ms).toISOString();
+}
 
 export default function DewPointGuardTool() {
   const router = useRouter();
@@ -227,11 +208,54 @@ export default function DewPointGuardTool() {
   const [pendingReadings, setPendingReadings] = useState<PendingReading[]>([]);
   const [ingesting, setIngesting] = useState(false);
   const [ingestStatus, setIngestStatus] = useState("");
+  const [csvText, setCsvText] = useState("");
+  const [csvHeaders, setCsvHeaders] = useState<string[]>([]);
+  const [csvRows, setCsvRows] = useState<string[][]>([]);
+  const [csvTsHeader, setCsvTsHeader] = useState("");
+  const [csvTempHeader, setCsvTempHeader] = useState("");
+  const [csvRhHeader, setCsvRhHeader] = useState("");
+  const [csvTempUnit, setCsvTempUnit] = useState<"F" | "C">("F");
+  const [parsingCsv, setParsingCsv] = useState(false);
+  const [csvLimitNotice, setCsvLimitNotice] = useState("");
+  const [activeCsvMapTarget, setActiveCsvMapTarget] = useState<"ts" | "temp" | "rh">("ts");
 
   const selectedSource = useMemo(
     () => sources.find((s) => s.id === selectedSourceId),
     [sources, selectedSourceId]
   );
+  const csvMappingStorageKey = selectedSourceId
+    ? `dew_point_guard_csv_mapping:${selectedSourceId}`
+    : "";
+
+  function applyCsvColumnByIndex(idx: number) {
+    const h = csvHeaders[idx];
+    if (h == null) return;
+    if (activeCsvMapTarget === "ts") setCsvTsHeader(h);
+    if (activeCsvMapTarget === "temp") setCsvTempHeader(h);
+    if (activeCsvMapTarget === "rh") setCsvRhHeader(h);
+  }
+
+  useEffect(() => {
+    let alive = true;
+    async function loadSavedMapping() {
+      if (!csvMappingStorageKey) return;
+      try {
+        const raw = await AsyncStorage.getItem(csvMappingStorageKey);
+        if (!alive || !raw) return;
+        const saved = JSON.parse(raw);
+        if (saved?.tsCol != null) setCsvTsHeader(String(saved.tsCol));
+        if (saved?.tempCol != null) setCsvTempHeader(String(saved.tempCol));
+        if (saved?.rhCol != null) setCsvRhHeader(String(saved.rhCol));
+        if (saved?.unit === "F" || saved?.unit === "C") setCsvTempUnit(saved.unit);
+      } catch {
+        // ignore mapping cache failures
+      }
+    }
+    loadSavedMapping();
+    return () => {
+      alive = false;
+    };
+  }, [csvMappingStorageKey]);
 
   const computedManual = useMemo(() => {
     const tOffF = toNum(lightsOffTempF);
@@ -273,7 +297,17 @@ export default function DewPointGuardTool() {
 
   const computedSource = useMemo(() => {
     const deltaF = toNum(assumedLeafAirDeltaF);
-    return computeTelemetryRisk(telemetryPoints, Number.isFinite(deltaF) ? deltaFToC(deltaF) : 0.5, 0.5);
+    const summary = computeTelemetryRisk(telemetryPoints, Number.isFinite(deltaF) ? deltaFToC(deltaF) : 0.5, 0.5);
+    if (!summary) return null;
+    const recommendations =
+      summary.riskBand === "low"
+        ? [{ code: "MAINTAIN", message: "Telemetry window looks safe. Keep monitoring lights-off transitions." }]
+        : [
+            { code: "LOWER_NIGHT_RH", message: "Lower night RH (or add dehumidification capacity) to increase dew point margin." },
+            { code: "INCREASE_AIR_MOVEMENT", message: "Increase canopy air movement during lights-off to reduce microclimate saturation." },
+            { code: "RAMP_LIGHTS_OFF", message: "Reduce the temperature drop rate at lights-off (gentle ramp, HVAC staging, or heat support)." }
+          ];
+    return { ...summary, recommendations };
   }, [telemetryPoints, assumedLeafAirDeltaF]);
 
   async function loadSources() {
@@ -284,7 +318,8 @@ export default function DewPointGuardTool() {
       setSources(list);
       if (!selectedSourceId && list.length) setSelectedSourceId(list[0].id);
     } catch (e: any) {
-      Alert.alert("Failed to load sources", formatApiError(e));
+      const auth = telemetryAuthMessage(e);
+      Alert.alert("Failed to load sources", auth || formatApiError(e));
     } finally {
       setLoadingSources(false);
     }
@@ -306,7 +341,8 @@ export default function DewPointGuardTool() {
       setSelectedSourceId(created.id);
       Alert.alert("Source created", `${created.name} (${created.type})`);
     } catch (e: any) {
-      Alert.alert("Failed to create source", formatApiError(e));
+      const auth = telemetryAuthMessage(e);
+      Alert.alert("Failed to create source", auth || formatApiError(e));
     } finally {
       setCreatingSource(false);
     }
@@ -321,7 +357,8 @@ export default function DewPointGuardTool() {
       await verifyPulseApiKey(apiKey);
       Alert.alert("Pulse verified", "API key verified successfully.");
     } catch (e: any) {
-      Alert.alert("Pulse verify failed", formatApiError(e));
+      const auth = telemetryAuthMessage(e);
+      Alert.alert("Pulse verify failed", auth || formatApiError(e));
       return;
     } finally {
       setVerifyingPulse(false);
@@ -338,7 +375,8 @@ export default function DewPointGuardTool() {
         Alert.alert("No devices", "No Pulse devices returned for this API key.");
       }
     } catch (e: any) {
-      Alert.alert("Load devices failed", formatApiError(e));
+      const auth = telemetryAuthMessage(e);
+      Alert.alert("Load devices failed", auth || formatApiError(e));
     } finally {
       setLoadingPulseDevices(false);
     }
@@ -364,10 +402,60 @@ export default function DewPointGuardTool() {
       setSelectedSourceId(created.id);
       Alert.alert("Pulse source created", `${created.name} (${created.type})`);
     } catch (e: any) {
-      Alert.alert("Failed to create pulse source", formatApiError(e));
+      const auth = telemetryAuthMessage(e);
+      Alert.alert("Failed to create pulse source", auth || formatApiError(e));
     } finally {
       setCreatingSource(false);
     }
+  }
+
+  function applyParsedCsv(text: string) {
+    const parsed = parseCsvText(text);
+    if (!parsed.headers.length || !parsed.rows.length) {
+      Alert.alert("CSV parse failed", "Need a header row and at least one data row.");
+      return;
+    }
+    setCsvText(text);
+    setCsvHeaders(parsed.headers);
+    setCsvRows(parsed.rows);
+    setCsvTsHeader(bestHeader(parsed.headers, ["timestamp", "time", "ts", "date"]));
+    setCsvTempHeader(bestHeader(parsed.headers, ["tempf", "tempc", "temperature", "temp", "airtemp"]));
+    setCsvRhHeader(bestHeader(parsed.headers, ["rh", "humidity", "relative humidity"]));
+    setCsvLimitNotice("");
+  }
+
+  async function pickCsvFile() {
+    setParsingCsv(true);
+    try {
+      const result = await DocumentPicker.getDocumentAsync({
+        type: ["text/csv", "text/comma-separated-values", "application/vnd.ms-excel", "*/*"],
+        multiple: false,
+        copyToCacheDirectory: true
+      });
+      if (result.canceled) return;
+      const asset = result.assets?.[0];
+      if (!asset) return;
+
+      const maybeFile = (asset as any).file;
+      if (maybeFile && typeof maybeFile.text === "function") {
+        const text = await maybeFile.text();
+        applyParsedCsv(text);
+        return;
+      }
+
+      Alert.alert(
+        "Cannot read file directly",
+        "This runtime cannot read picked file text. Paste CSV below and use Parse Pasted CSV."
+      );
+    } catch (e: any) {
+      Alert.alert("CSV pick failed", formatApiError(e));
+    } finally {
+      setParsingCsv(false);
+    }
+  }
+
+  function parsePastedCsv() {
+    applyParsedCsv(csvText);
   }
 
   function addReadingToQueue() {
@@ -391,23 +479,43 @@ export default function DewPointGuardTool() {
     setEndIsoText(window.endIso);
     setFetchingPoints(true);
     try {
-      if (selectedSource?.type === "pulse") {
-        try {
-          await pullPulseWindow(selectedSourceId, window.startIso, window.endIso);
-        } catch {
-          // optional contract-first endpoint
-        }
-      }
       const res = await getTelemetryPoints({ sourceId: selectedSourceId, startIso: window.startIso, endIso: window.endIso, limit: 5000 });
       setTelemetryPoints(res.points || []);
       if (!(res.points || []).length) {
         Alert.alert("No telemetry points found", "Try a larger window or ingest/pull data first.");
       }
     } catch (e: any) {
-      Alert.alert("Failed to fetch points", formatApiError(e));
+      const auth = telemetryAuthMessage(e);
+      Alert.alert("Failed to fetch points", auth || formatApiError(e));
     } finally {
       setFetchingPoints(false);
     }
+  }
+
+  async function pullAndFetchWindowPoints() {
+    if (!selectedSourceId) return Alert.alert("Select a source", "Choose a telemetry source first.");
+    if (selectedSource?.type !== "pulse") {
+      return Alert.alert("Source type", "Pull is only available for Pulse sources.");
+    }
+    const window = windowMode === "custom"
+      ? { startIso: String(startIsoText || "").trim(), endIso: String(endIsoText || "").trim() }
+      : defaultWindow(windowMode);
+
+    setFetchingPoints(true);
+    try {
+      await pullPulseWindow(selectedSourceId, window.startIso, window.endIso);
+    } catch (e: any) {
+      if (String(e?.code || "") === "SOURCE_NOT_PULSE") {
+        Alert.alert("Pull blocked", "Selected source is not a pulse source.");
+      } else {
+        const auth = telemetryAuthMessage(e);
+        Alert.alert("Pulse pull failed", auth || formatApiError(e));
+      }
+      setFetchingPoints(false);
+      return;
+    }
+    setFetchingPoints(false);
+    await fetchWindowPoints();
   }
 
   async function ingestQueuedReadings() {
@@ -429,12 +537,106 @@ export default function DewPointGuardTool() {
       if (String(e?.code || "") === "SOURCE_NOT_INGESTABLE") {
         Alert.alert("Ingest blocked", "This source type cannot accept manual ingest. Use pull for pulse sources.");
       } else {
-        Alert.alert("Ingest failed", formatApiError(e));
+        const auth = telemetryAuthMessage(e);
+        Alert.alert("Ingest failed", auth || formatApiError(e));
       }
     } finally {
       setIngesting(false);
     }
   }
+
+  async function ingestCsvRows() {
+    if (!selectedSource) return Alert.alert("Select a source", "Choose or create a telemetry source first.");
+    if (selectedSource.type === "pulse") {
+      return Alert.alert("Ingest blocked", "CSV/manual ingest is disabled for Pulse sources.");
+    }
+    if (!csvRows.length) return Alert.alert("No CSV rows", "Upload or paste CSV first.");
+    if (!csvTsHeader || !csvTempHeader || !csvRhHeader) {
+      return Alert.alert("Mapping incomplete", "Select timestamp, temperature, and RH headers.");
+    }
+
+    setIngesting(true);
+    setIngestStatus("");
+    try {
+      const mapping: CsvMapping = {
+        tsCol: headerIndex(csvHeaders, csvTsHeader),
+        tempCol: headerIndex(csvHeaders, csvTempHeader),
+        rhCol: headerIndex(csvHeaders, csvRhHeader),
+        tempUnit: csvTempUnit
+      };
+      if (mapping.tsCol < 0 || mapping.tempCol < 0 || mapping.rhCol < 0) {
+        Alert.alert("Mapping invalid", "Selected CSV columns are not present in headers.");
+        return;
+      }
+
+      const parsedPoints = mapCsvToPoints({ headers: csvHeaders, rows: csvRows }, mapping)
+        .map((p) => ({ ...p, ts: normalizeCsvTimestampToIso(p.ts, selectedSource.timezone) || p.ts }))
+        .filter((p) => !!p.ts)
+        .map((p, idx) => ({ ts: p.ts, airTempC: p.airTempC, rh: p.rh, _idx: idx }));
+
+      if (!parsedPoints.length) {
+        Alert.alert("No valid points", "CSV rows could not be converted using current mapping.");
+        return;
+      }
+
+      const sorted = [...parsedPoints].sort((a, b) => Date.parse(a.ts) - Date.parse(b.ts));
+      const clipped = sorted.length > CSV_MAX_ROWS ? sorted.slice(sorted.length - CSV_MAX_ROWS) : sorted;
+      setCsvLimitNotice(
+        sorted.length > CSV_MAX_ROWS
+          ? `CSV capped to most recent ${CSV_MAX_ROWS} rows (from ${sorted.length}).`
+          : ""
+      );
+      const points = clipped.map((p) => ({ ts: p.ts, airTempC: p.airTempC, rh: p.rh }));
+
+      const res = await bulkIngestTelemetryPoints({
+        sourceId: selectedSource.id,
+        mode: "upsert",
+        points
+      });
+      if (csvMappingStorageKey) {
+        await AsyncStorage.setItem(
+          csvMappingStorageKey,
+          JSON.stringify({
+            tsCol: csvTsHeader,
+            tempCol: csvTempHeader,
+            rhCol: csvRhHeader,
+            unit: csvTempUnit
+          })
+        );
+      }
+      setIngestStatus(`Ingested=${res.ingested} Updated=${res.updated} Skipped=${res.skipped}`);
+      await fetchWindowPoints();
+    } catch (e: any) {
+      if (String(e?.code || "") === "SOURCE_NOT_INGESTABLE") {
+        Alert.alert("Ingest blocked", "This source type cannot accept manual ingest. Use pull for pulse sources.");
+      } else {
+        const auth = telemetryAuthMessage(e);
+        Alert.alert("CSV ingest failed", auth || formatApiError(e));
+      }
+    } finally {
+      setIngesting(false);
+    }
+  }
+  const csvPreviewRows = useMemo(() => {
+    if (!csvRows.length || !csvTsHeader || !csvTempHeader || !csvRhHeader) return [];
+    const tsIdx = headerIndex(csvHeaders, csvTsHeader);
+    const tempIdx = headerIndex(csvHeaders, csvTempHeader);
+    const rhIdx = headerIndex(csvHeaders, csvRhHeader);
+    if (tsIdx < 0 || tempIdx < 0 || rhIdx < 0) return [];
+    const out: Array<{ ts: string; temp: string; rh: string; valid: boolean }> = [];
+    for (let i = 0; i < csvRows.length && out.length < 5; i++) {
+      const row = csvRows[i];
+      const tsRaw = String(row[tsIdx] ?? "").trim();
+      const tempRaw = String(row[tempIdx] ?? "").trim();
+      const rhRaw = String(row[rhIdx] ?? "").trim();
+      const tsIso = normalizeCsvTimestampToIso(tsRaw, selectedSource?.timezone || "America/New_York");
+      const tempN = Number(tempRaw);
+      const rhN = Number(rhRaw);
+      const valid = !!tsIso && Number.isFinite(tempN) && Number.isFinite(rhN) && rhN >= 0 && rhN <= 100;
+      out.push({ ts: tsIso || tsRaw, temp: tempRaw, rh: rhRaw, valid });
+    }
+    return out;
+  }, [csvRows, csvHeaders, csvTsHeader, csvTempHeader, csvRhHeader, selectedSource?.timezone]);
 
   async function onSaveAndOpen() {
     if (savingAndOpening) return;
@@ -524,15 +726,15 @@ export default function DewPointGuardTool() {
 
       <Text style={{ fontWeight: "800", marginBottom: 8 }}>Data mode</Text>
       <View style={{ flexDirection: "row", flexWrap: "wrap", marginBottom: 10 }}>
-        <Chip label="Manual" active={mode === "manual"} onPress={() => setMode("manual")} />
-        <Chip label="Telemetry Source" active={mode === "source"} onPress={() => setMode("source")} />
+        <Chip testID="dpg-mode-manual" label="Manual" active={mode === "manual"} onPress={() => setMode("manual")} />
+        <Chip testID="dpg-mode-source" label="Telemetry Source" active={mode === "source"} onPress={() => setMode("source")} />
       </View>
 
       {mode === "source" ? (
         <View style={{ marginBottom: 16, padding: 12, borderWidth: 1, borderColor: "#eee", borderRadius: 12 }}>
           <Text style={{ fontWeight: "800", marginBottom: 8 }}>Telemetry source</Text>
           <View style={{ flexDirection: "row", flexWrap: "wrap", marginBottom: 10 }}>
-            <Pressable onPress={loadSources} disabled={loadingSources} style={{ opacity: loadingSources ? 0.6 : 1, borderWidth: 1, borderColor: "#ddd", borderRadius: 10, paddingVertical: 10, paddingHorizontal: 12, marginRight: 8, marginBottom: 8 }}>
+            <Pressable testID="dpg-load-sources" onPress={loadSources} disabled={loadingSources} style={{ opacity: loadingSources ? 0.6 : 1, borderWidth: 1, borderColor: "#ddd", borderRadius: 10, paddingVertical: 10, paddingHorizontal: 12, marginRight: 8, marginBottom: 8 }}>
               <Text style={{ fontWeight: "800" }}>{loadingSources ? "Loading..." : "Load Sources"}</Text>
             </Pressable>
             <Pressable onPress={() => createSourceInline("manual")} disabled={creatingSource} style={{ opacity: creatingSource ? 0.6 : 1, borderWidth: 1, borderColor: "#ddd", borderRadius: 10, paddingVertical: 10, paddingHorizontal: 12, marginRight: 8, marginBottom: 8 }}>
@@ -560,13 +762,105 @@ export default function DewPointGuardTool() {
           </View>
 
           {sources.length ? sources.map((s) => (
-            <Pressable key={s.id} onPress={() => setSelectedSourceId(s.id)} style={{ padding: 10, borderRadius: 10, borderWidth: 1, borderColor: s.id === selectedSourceId ? "#111" : "#ddd", marginBottom: 8 }}>
+            <Pressable testID={`dpg-source-${s.id}`} key={s.id} onPress={() => setSelectedSourceId(s.id)} style={{ padding: 10, borderRadius: 10, borderWidth: 1, borderColor: s.id === selectedSourceId ? "#111" : "#ddd", marginBottom: 8 }}>
               <Text style={{ fontWeight: "800" }}>{s.name || s.id}</Text>
               <Text style={{ color: "#444" }}>{s.type}  {s.timezone}</Text>
             </Pressable>
           )) : <Text style={{ color: "#444", marginBottom: 10 }}>No sources loaded yet. Create one before using telemetry mode.</Text>}
 
           <View style={{ marginTop: 8, marginBottom: 10, paddingTop: 8, borderTopWidth: 1, borderTopColor: "#eee" }}>
+            <Text style={{ fontWeight: "800", marginBottom: 8 }}>CSV upload / paste (ingest)</Text>
+            <View style={{ flexDirection: "row", flexWrap: "wrap", marginBottom: 8 }}>
+              <Pressable onPress={pickCsvFile} disabled={parsingCsv} style={{ opacity: parsingCsv ? 0.6 : 1, borderWidth: 1, borderColor: "#ddd", borderRadius: 10, paddingVertical: 10, paddingHorizontal: 12, marginRight: 8, marginBottom: 8 }}>
+                <Text style={{ fontWeight: "800" }}>{parsingCsv ? "Loading CSV..." : "Pick CSV File"}</Text>
+              </Pressable>
+              <Pressable testID="dpg-csv-parse" onPress={parsePastedCsv} style={{ borderWidth: 1, borderColor: "#ddd", borderRadius: 10, paddingVertical: 10, paddingHorizontal: 12, marginBottom: 8 }}>
+                <Text style={{ fontWeight: "800" }}>Parse Pasted CSV</Text>
+              </Pressable>
+            </View>
+            <TextInput
+              testID="dpg-csv-paste"
+              value={csvText}
+              onChangeText={setCsvText}
+              placeholder={"timestamp,temp,rh\n2026-02-27T03:00:00.000Z,70.2,58"}
+              multiline
+              style={{
+                borderWidth: 1,
+                borderColor: "#ddd",
+                borderRadius: 10,
+                paddingHorizontal: 12,
+                paddingVertical: 10,
+                minHeight: 90,
+                marginBottom: 8
+              }}
+            />
+            {csvHeaders.length ? (
+              <View style={{ marginBottom: 10 }}>
+                <Text style={{ fontWeight: "700", marginBottom: 4 }}>Map timestamp column</Text>
+                <View style={{ flexDirection: "row", flexWrap: "wrap" }}>
+                  {csvHeaders.map((h) => (
+                    <Chip key={`ts-${h}`} label={h} active={csvTsHeader === h} onPress={() => setCsvTsHeader(h)} />
+                  ))}
+                </View>
+                <Text style={{ fontWeight: "700", marginBottom: 4 }}>Map temperature column</Text>
+                <View style={{ flexDirection: "row", flexWrap: "wrap" }}>
+                  {csvHeaders.map((h) => (
+                    <Chip key={`temp-${h}`} label={h} active={csvTempHeader === h} onPress={() => setCsvTempHeader(h)} />
+                  ))}
+                </View>
+                <Text style={{ fontWeight: "700", marginBottom: 4 }}>Map RH column</Text>
+                <View style={{ flexDirection: "row", flexWrap: "wrap" }}>
+                  {csvHeaders.map((h) => (
+                    <Chip key={`rh-${h}`} label={h} active={csvRhHeader === h} onPress={() => setCsvRhHeader(h)} />
+                  ))}
+                </View>
+                <Text style={{ fontWeight: "700", marginBottom: 4 }}>Temperature unit</Text>
+                <View style={{ flexDirection: "row", flexWrap: "wrap" }}>
+                  <Chip testID="dpg-unit-f" label="F" active={csvTempUnit === "F"} onPress={() => setCsvTempUnit("F")} />
+                  <Chip testID="dpg-unit-c" label="C" active={csvTempUnit === "C"} onPress={() => setCsvTempUnit("C")} />
+                </View>
+                <Text style={{ color: "#444", marginBottom: 8 }}>
+                  Parsed rows: <Text testID="dpg-csv-preview-count" style={{ fontWeight: "800" }}>{csvRows.length}</Text>
+                </Text>
+                <View style={{ flexDirection: "row", flexWrap: "wrap", marginBottom: 8 }}>
+                  <Chip testID="dpg-map-ts" label="Map TS" active={activeCsvMapTarget === "ts"} onPress={() => setActiveCsvMapTarget("ts")} />
+                  <Chip testID="dpg-map-temp" label="Map Temp" active={activeCsvMapTarget === "temp"} onPress={() => setActiveCsvMapTarget("temp")} />
+                  <Chip testID="dpg-map-rh" label="Map RH" active={activeCsvMapTarget === "rh"} onPress={() => setActiveCsvMapTarget("rh")} />
+                </View>
+                <View style={{ flexDirection: "row", flexWrap: "wrap", marginBottom: 8 }}>
+                  {csvHeaders.map((_, idx) => (
+                    <Chip
+                      key={`map-col-${idx}`}
+                      testID={`dpg-col-${idx}`}
+                      label={`Col ${idx}`}
+                      active={
+                        (activeCsvMapTarget === "ts" && headerIndex(csvHeaders, csvTsHeader) === idx) ||
+                        (activeCsvMapTarget === "temp" && headerIndex(csvHeaders, csvTempHeader) === idx) ||
+                        (activeCsvMapTarget === "rh" && headerIndex(csvHeaders, csvRhHeader) === idx)
+                      }
+                      onPress={() => applyCsvColumnByIndex(idx)}
+                    />
+                  ))}
+                </View>
+                {csvPreviewRows.length ? (
+                  <View style={{ marginBottom: 8 }}>
+                    <Text style={{ fontWeight: "700", marginBottom: 4 }}>Preview (first 5 mapped rows)</Text>
+                    {csvPreviewRows.map((r, idx) => (
+                      <Text key={`preview-${idx}`} style={{ color: r.valid ? "#444" : "#b00020", marginBottom: 2 }}>
+                        {r.ts} | {r.temp}{csvTempUnit} | {r.rh}% {r.valid ? "" : "(invalid)"}
+                      </Text>
+                    ))}
+                  </View>
+                ) : null}
+                <Pressable testID="dpg-csv-ingest" onPress={ingestCsvRows} disabled={ingesting || !csvRows.length} style={{ opacity: ingesting || !csvRows.length ? 0.6 : 1, backgroundColor: "#111", borderRadius: 12, paddingVertical: 12, alignItems: "center" }}>
+                  <Text style={{ color: "white", fontWeight: "800" }}>{ingesting ? "Ingesting..." : "Ingest CSV Rows"}</Text>
+                </Pressable>
+                {csvLimitNotice ? (
+                  <Text style={{ color: "#444", marginTop: 6 }}>{csvLimitNotice}</Text>
+                ) : null}
+              </View>
+            ) : null}
+
             <Text style={{ fontWeight: "800", marginBottom: 8 }}>Manual readings (ingest)</Text>
             <View style={{ flexDirection: "row", flexWrap: "wrap", marginBottom: 8 }}>
               <Pressable onPress={() => setReadingTs(new Date().toISOString())} style={{ borderWidth: 1, borderColor: "#ddd", borderRadius: 10, paddingVertical: 10, paddingHorizontal: 12, marginRight: 8, marginBottom: 8 }}>
@@ -607,9 +901,14 @@ export default function DewPointGuardTool() {
           ) : (
             <Text style={{ color: "#444", marginBottom: 10 }}>Window preview: {defaultWindow(windowMode).startIso}  {defaultWindow(windowMode).endIso}</Text>
           )}
-          <Pressable onPress={fetchWindowPoints} disabled={fetchingPoints || !selectedSourceId} style={{ opacity: fetchingPoints || !selectedSourceId ? 0.6 : 1, backgroundColor: "#111", borderRadius: 12, paddingVertical: 12, alignItems: "center" }}>
+          <Pressable onPress={fetchWindowPoints} disabled={fetchingPoints || !selectedSourceId} style={{ opacity: fetchingPoints || !selectedSourceId ? 0.6 : 1, backgroundColor: "#111", borderRadius: 12, paddingVertical: 12, alignItems: "center", marginBottom: selectedSource?.type === "pulse" ? 8 : 0 }}>
             <Text style={{ color: "white", fontWeight: "800" }}>{fetchingPoints ? "Fetching..." : "Fetch Telemetry Window"}</Text>
           </Pressable>
+          {selectedSource?.type === "pulse" ? (
+            <Pressable onPress={pullAndFetchWindowPoints} disabled={fetchingPoints || !selectedSourceId} style={{ opacity: fetchingPoints || !selectedSourceId ? 0.6 : 1, borderWidth: 1, borderColor: "#ddd", borderRadius: 12, paddingVertical: 12, alignItems: "center" }}>
+              <Text style={{ color: "#111", fontWeight: "800" }}>{fetchingPoints ? "Pulling..." : "Pull + Fetch Window"}</Text>
+            </Pressable>
+          ) : null}
           <Text style={{ marginTop: 10, color: "#444" }}>Loaded points: <Text style={{ fontWeight: "800" }}>{telemetryPoints.length}</Text></Text>
         </View>
       ) : null}
