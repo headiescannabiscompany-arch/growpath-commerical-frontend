@@ -1,9 +1,10 @@
 import React, { useMemo, useState } from "react";
-import { useLocalSearchParams } from "expo-router";
+import { useLocalSearchParams, useRouter } from "expo-router";
 import { Pressable, StyleSheet, Text, TextInput, View } from "react-native";
 
 import { createToolRun } from "@/api/toolRuns";
 import BackButton from "@/components/nav/BackButton";
+import { saveToolRunAndOpenJournal } from "@/features/personal/tools/saveToolRunAndOpenJournal";
 
 function num(value: string) {
   const parsed = Number(value);
@@ -11,6 +12,7 @@ function num(value: string) {
 }
 
 export default function NpkToolScreen() {
+  const router = useRouter();
   const { growId } = useLocalSearchParams<{ growId?: string | string[] }>();
   const growContext = typeof growId === "string" ? growId : Array.isArray(growId) ? growId[0] : "";
   const [nText, setNText] = useState("10");
@@ -19,6 +21,7 @@ export default function NpkToolScreen() {
   const [doseText, setDoseText] = useState("5");
   const [unit, setUnit] = useState<"ml/L" | "ml/gal">("ml/L");
   const [saveFeedback, setSaveFeedback] = useState("");
+  const [savingAndOpening, setSavingAndOpening] = useState(false);
 
   const result = useMemo(() => {
     const n = num(nText);
@@ -115,7 +118,7 @@ export default function NpkToolScreen() {
         style={styles.saveButton}
         onPress={async () => {
           const created = await createToolRun({
-            toolType: "npk_label_ratio_preview",
+            toolType: "npk",
             growId: growContext || undefined,
             input: {
               n: Number(nText),
@@ -136,6 +139,35 @@ export default function NpkToolScreen() {
         <Text style={styles.saveButtonText}>Save preview run {growContext ? "to grow" : ""}</Text>
       </Pressable>
       {saveFeedback ? <Text style={styles.feedback}>{saveFeedback}</Text> : null}
+      {growContext ? (
+        <Pressable
+          style={[styles.saveButton, savingAndOpening ? { opacity: 0.7 } : null]}
+          disabled={savingAndOpening}
+          onPress={async () => {
+            if (savingAndOpening) return;
+            setSavingAndOpening(true);
+            const saveResult = await saveToolRunAndOpenJournal({
+              router,
+              growId: growContext,
+              toolKey: "npk",
+              input: {
+                n: Number(nText),
+                p: Number(pText),
+                k: Number(kText),
+                dose: Number(doseText),
+                unit
+              },
+              output: result
+            });
+            if (!saveResult.ok) setSaveFeedback(saveResult.error);
+            setSavingAndOpening(false);
+          }}
+        >
+          <Text style={styles.saveButtonText}>
+            {savingAndOpening ? "Saving..." : "Save and Open Journal"}
+          </Text>
+        </Pressable>
+      ) : null}
     </View>
   );
 }

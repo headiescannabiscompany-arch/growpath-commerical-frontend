@@ -1,10 +1,11 @@
 import React, { useMemo, useState } from "react";
-import { useLocalSearchParams } from "expo-router";
+import { useLocalSearchParams, useRouter } from "expo-router";
 import { Pressable, StyleSheet, Text, TextInput, View } from "react-native";
 
 import BackButton from "@/components/nav/BackButton";
 import { apiRequest } from "@/api/apiRequest";
 import { createToolRun } from "@/api/toolRuns";
+import { saveToolRunAndOpenJournal } from "@/features/personal/tools/saveToolRunAndOpenJournal";
 
 function toNum(value: string, fallback: number) {
   const parsed = Number(value);
@@ -24,6 +25,7 @@ function coerceParam(value?: string | string[]) {
 }
 
 export default function WateringToolScreen() {
+  const router = useRouter();
   const { growId: rawGrowId } = useLocalSearchParams<{ growId?: string | string[] }>();
   const growId = coerceParam(rawGrowId);
 
@@ -31,6 +33,7 @@ export default function WateringToolScreen() {
   const [runoffPct, setRunoffPct] = useState("10");
   const [intervalDays, setIntervalDays] = useState("2");
   const [saveFeedback, setSaveFeedback] = useState("");
+  const [savingAndOpening, setSavingAndOpening] = useState(false);
 
   const model = useMemo(() => {
     const liters = Math.max(0, toNum(potLiters, 0));
@@ -87,7 +90,7 @@ export default function WateringToolScreen() {
           style={styles.saveButton}
           onPress={async () => {
             const created = await createToolRun({
-              toolType: "watering_planner",
+              toolType: "watering",
               growId: growId || undefined,
               input: {
                 potLiters: Number(potLiters),
@@ -105,6 +108,34 @@ export default function WateringToolScreen() {
         >
           <Text style={styles.saveButtonText}>Save run {growId ? "to grow" : ""}</Text>
         </Pressable>
+
+        {growId ? (
+          <Pressable
+            style={[styles.secondaryButton, savingAndOpening ? { opacity: 0.7 } : null]}
+            disabled={savingAndOpening}
+            onPress={async () => {
+              if (savingAndOpening) return;
+              setSavingAndOpening(true);
+              const result = await saveToolRunAndOpenJournal({
+                router,
+                growId,
+                toolKey: "watering",
+                input: {
+                  potLiters: Number(potLiters),
+                  runoffPct: Number(runoffPct),
+                  intervalDays: Number(intervalDays)
+                },
+                output: model
+              });
+              if (!result.ok) setSaveFeedback(result.error);
+              setSavingAndOpening(false);
+            }}
+          >
+            <Text style={styles.secondaryButtonText}>
+              {savingAndOpening ? "Saving..." : "Save and Open Journal"}
+            </Text>
+          </Pressable>
+        ) : null}
 
         {growId ? (
           <Pressable

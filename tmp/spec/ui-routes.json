@@ -1,8 +1,8 @@
 {
-  "generatedAt": "2026-02-27T16:19:11.986Z",
+  "generatedAt": "2026-02-27T17:23:15.212Z",
   "appDir": "src/app",
-  "routeCount": 110,
-  "fileCount": 124,
+  "routeCount": 114,
+  "fileCount": 128,
   "routes": [
     "/",
     "/alerts/[id]",
@@ -93,7 +93,11 @@
     "/home/personal/profile",
     "/home/personal/tasks",
     "/home/personal/tools",
+    "/home/personal/tools/bud-rot-risk",
+    "/home/personal/tools/crop-steering",
+    "/home/personal/tools/dew-point-guard",
     "/home/personal/tools/npk",
+    "/home/personal/tools/ppfd",
     "/home/personal/tools/vpd",
     "/home/personal/tools/watering",
     "/live-session",
@@ -632,8 +636,28 @@
       "kind": "screen"
     },
     {
+      "file": "src/app/home/personal/(tabs)/tools/bud-rot-risk.tsx",
+      "route": "/home/personal/tools/bud-rot-risk",
+      "kind": "screen"
+    },
+    {
+      "file": "src/app/home/personal/(tabs)/tools/crop-steering.tsx",
+      "route": "/home/personal/tools/crop-steering",
+      "kind": "screen"
+    },
+    {
+      "file": "src/app/home/personal/(tabs)/tools/dew-point-guard.tsx",
+      "route": "/home/personal/tools/dew-point-guard",
+      "kind": "screen"
+    },
+    {
       "file": "src/app/home/personal/(tabs)/tools/npk.tsx",
       "route": "/home/personal/tools/npk",
+      "kind": "screen"
+    },
+    {
+      "file": "src/app/home/personal/(tabs)/tools/ppfd.tsx",
+      "route": "/home/personal/tools/ppfd",
       "kind": "screen"
     },
     {

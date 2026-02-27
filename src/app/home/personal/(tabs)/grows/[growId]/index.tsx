@@ -7,6 +7,7 @@ import { listPersonalGrows, type PersonalGrow } from "@/api/grows";
 import { listPersonalLogs } from "@/api/logs";
 import { listPersonalTasks } from "@/api/tasks";
 import { listToolRuns } from "@/api/toolRuns";
+import GrowWorkspaceNav from "@/components/personal/GrowWorkspaceNav";
 import { coerceParam, findGrowById, fmtDate } from "./utils";
 
 const styles = StyleSheet.create({
@@ -32,16 +33,16 @@ const styles = StyleSheet.create({
   },
   statLabel: { color: "#64748B", fontSize: 12 },
   statValue: { fontSize: 18, fontWeight: "800", color: "#0F172A" },
-  sectionRow: { flexDirection: "row", gap: 10, marginTop: 14, flexWrap: "wrap" },
-  pill: {
+  quickRow: { flexDirection: "row", gap: 10, marginTop: 8, flexWrap: "wrap" },
+  action: {
     borderWidth: 1,
     borderColor: "#CBD5E1",
-    borderRadius: 999,
+    borderRadius: 8,
     paddingVertical: 8,
-    paddingHorizontal: 12,
+    paddingHorizontal: 10,
     backgroundColor: "#FFFFFF"
   },
-  pillText: { fontWeight: "700", color: "#0F172A" },
+  actionText: { fontWeight: "700", color: "#0F172A" },
   error: { color: "#B91C1C", marginTop: 8 }
 });
 
@@ -106,6 +107,7 @@ export default function GrowOverviewScreen() {
       <Text style={styles.subtitle}>
         Status: {grow?.status || "active"} | Updated: {fmtDate(grow?.updatedAt)}
       </Text>
+      <GrowWorkspaceNav growId={growId} active="overview" />
 
       <View style={styles.panel}>
         <Text style={styles.subtitle}>
@@ -127,25 +129,20 @@ export default function GrowOverviewScreen() {
         </View>
       </View>
 
-      <View style={styles.sectionRow}>
-        <Link href={`/home/personal/grows/${growId}/journal`} asChild>
-          <Pressable style={styles.pill}>
-            <Text style={styles.pillText}>Journal</Text>
-          </Pressable>
-        </Link>
-        <Link href={`/home/personal/grows/${growId}/tasks`} asChild>
-          <Pressable style={styles.pill}>
-            <Text style={styles.pillText}>Tasks</Text>
+      <View style={styles.quickRow}>
+        <Link href={`/home/personal/logs/new?growId=${encodeURIComponent(growId)}`} asChild>
+          <Pressable style={styles.action}>
+            <Text style={styles.actionText}>+ Journal Entry</Text>
           </Pressable>
         </Link>
         <Link href={`/home/personal/grows/${growId}/tools`} asChild>
-          <Pressable style={styles.pill}>
-            <Text style={styles.pillText}>Tools</Text>
+          <Pressable style={styles.action}>
+            <Text style={styles.actionText}>Run Tool</Text>
           </Pressable>
         </Link>
-        <Link href={`/home/personal/grows/${growId}/compare`} asChild>
-          <Pressable style={styles.pill}>
-            <Text style={styles.pillText}>Compare</Text>
+        <Link href={`/home/personal/grows/${growId}/tasks`} asChild>
+          <Pressable style={styles.action}>
+            <Text style={styles.actionText}>Add Task</Text>
           </Pressable>
         </Link>
       </View>

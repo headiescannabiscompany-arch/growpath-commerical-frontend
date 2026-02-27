@@ -12,6 +12,7 @@ import {
 } from "react-native";
 
 import { createPersonalTask, listPersonalTasks, updatePersonalTask } from "@/api/tasks";
+import GrowWorkspaceNav from "@/components/personal/GrowWorkspaceNav";
 import { coerceParam, fmtDate, getRowId } from "./utils";
 
 const styles = StyleSheet.create({
@@ -92,6 +93,7 @@ export default function GrowTasksScreen() {
     <ScrollView style={styles.container}>
       <Text style={styles.title}>Tasks</Text>
       <Text style={styles.subtitle}>Personal grow tasks linked to this grow.</Text>
+      <GrowWorkspaceNav growId={growId} active="tasks" />
 
       <View style={styles.row}>
         <TextInput

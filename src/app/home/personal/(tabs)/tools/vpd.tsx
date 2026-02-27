@@ -1,10 +1,11 @@
 import React, { useMemo, useState } from "react";
-import { useLocalSearchParams } from "expo-router";
+import { useLocalSearchParams, useRouter } from "expo-router";
 import { Pressable, StyleSheet, Text, TextInput, View } from "react-native";
 
 import BackButton from "@/components/nav/BackButton";
 import { createToolRun } from "@/api/toolRuns";
 import { calcVpdFromTemp, type TempUnit } from "@/tools/vpd";
+import { saveToolRunAndOpenJournal } from "@/features/personal/tools/saveToolRunAndOpenJournal";
 
 type VpdModel =
   | { valid: false; vpd: null; tempC: null }
@@ -64,6 +65,7 @@ function coerceParam(value?: string | string[]) {
 }
 
 export default function VpdToolScreen() {
+  const router = useRouter();
   const { growId: rawGrowId } = useLocalSearchParams<{ growId?: string | string[] }>();
   const growId = coerceParam(rawGrowId);
 
@@ -71,6 +73,7 @@ export default function VpdToolScreen() {
   const [tempText, setTempText] = useState("77");
   const [rhText, setRhText] = useState("60");
   const [saveFeedback, setSaveFeedback] = useState("");
+  const [savingAndOpening, setSavingAndOpening] = useState(false);
 
   const model = useMemo<VpdModel>(() => {
     const t = Number(tempText);
@@ -161,8 +164,30 @@ export default function VpdToolScreen() {
           <Text style={styles.saveButtonText}>Save run {growId ? "to grow" : ""}</Text>
         </Pressable>
       ) : null}
-
       {saveFeedback ? <Text style={styles.hint}>{saveFeedback}</Text> : null}
+      {model.valid && growId ? (
+        <Pressable
+          style={[styles.saveButton, savingAndOpening ? { opacity: 0.7 } : null]}
+          disabled={savingAndOpening}
+          onPress={async () => {
+            if (savingAndOpening) return;
+            setSavingAndOpening(true);
+            const result = await saveToolRunAndOpenJournal({
+              router,
+              growId,
+              toolKey: "vpd",
+              input: { temp: Number(tempText), unit, rh: Number(rhText) },
+              output: { vpdKpa: model.vpd, tempC: model.tempC }
+            });
+            if (!result.ok) setSaveFeedback(result.error);
+            setSavingAndOpening(false);
+          }}
+        >
+          <Text style={styles.saveButtonText}>
+            {savingAndOpening ? "Saving..." : "Save and Open Journal"}
+          </Text>
+        </Pressable>
+      ) : null}
     </View>
   );
 }

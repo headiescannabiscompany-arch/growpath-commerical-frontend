@@ -1,7 +1,10 @@
-import React, { useMemo } from "react";
+import React, { useCallback, useMemo, useState } from "react";
+import { useFocusEffect } from "@react-navigation/native";
 import { Link, useLocalSearchParams } from "expo-router";
 import { Pressable, StyleSheet, Text, View } from "react-native";
 
+import { listToolRuns } from "@/api/toolRuns";
+import GrowWorkspaceNav from "@/components/personal/GrowWorkspaceNav";
 import { coerceParam } from "./utils";
 
 const styles = StyleSheet.create({
@@ -28,7 +31,9 @@ const styles = StyleSheet.create({
     paddingVertical: 7,
     paddingHorizontal: 10
   },
-  actionText: { fontWeight: "700", color: "#0F172A" }
+  actionText: { fontWeight: "700", color: "#0F172A" },
+  recentTitle: { marginTop: 12, fontWeight: "700", color: "#0F172A" },
+  recentRow: { marginTop: 6, fontSize: 12, color: "#475569" }
 });
 
 function withGrow(path: string, growId: string) {
@@ -38,11 +43,27 @@ function withGrow(path: string, growId: string) {
 export default function GrowToolsScreen() {
   const { growId: rawGrowId } = useLocalSearchParams<{ growId?: string | string[] }>();
   const growId = useMemo(() => coerceParam(rawGrowId), [rawGrowId]);
+  const [recent, setRecent] = useState<any[]>([]);
+
+  useFocusEffect(
+    useCallback(() => {
+      let mounted = true;
+      (async () => {
+        const rows = await listToolRuns({ growId });
+        if (!mounted) return;
+        setRecent(Array.isArray(rows) ? rows.slice(0, 4) : []);
+      })();
+      return () => {
+        mounted = false;
+      };
+    }, [growId])
+  );
 
   return (
     <View style={styles.container}>
       <Text style={styles.title}>Grow Tools</Text>
       <Text style={styles.subtitle}>Run tools in this grow context and save outputs.</Text>
+      <GrowWorkspaceNav growId={growId} active="tools" />
 
       <View style={styles.card}>
         <Text style={styles.cardTitle}>Open full tools hub</Text>
@@ -74,6 +95,16 @@ export default function GrowToolsScreen() {
             </Pressable>
           </Link>
         </View>
+        <Text style={styles.recentTitle}>Recent tool runs</Text>
+        {recent.length === 0 ? (
+          <Text style={styles.recentRow}>No saved runs yet.</Text>
+        ) : (
+          recent.map((run) => (
+            <Text key={String(run?._id || run?.id || Math.random())} style={styles.recentRow}>
+              {run?.toolType || "tool"} | {String(run?.createdAt || "").slice(0, 10)}
+            </Text>
+          ))
+        )}
       </View>
     </View>
   );

@@ -5,6 +5,7 @@ import { ActivityIndicator, Pressable, ScrollView, StyleSheet, Text, View } from
 
 import { listPersonalLogs } from "@/api/logs";
 import { listToolRuns } from "@/api/toolRuns";
+import GrowWorkspaceNav from "@/components/personal/GrowWorkspaceNav";
 import { coerceParam, fmtDate, getRowId } from "./utils";
 
 const styles = StyleSheet.create({
@@ -30,7 +31,19 @@ const styles = StyleSheet.create({
   },
   cardTitle: { fontWeight: "700", color: "#0F172A" },
   cardMeta: { color: "#64748B", marginTop: 4, fontSize: 12 },
-  empty: { marginTop: 14, color: "#64748B" }
+  empty: { marginTop: 14, color: "#64748B" },
+  chipsRow: { flexDirection: "row", gap: 8, flexWrap: "wrap", marginTop: 10 },
+  chip: {
+    borderWidth: 1,
+    borderColor: "#CBD5E1",
+    borderRadius: 999,
+    paddingVertical: 6,
+    paddingHorizontal: 10,
+    backgroundColor: "#FFFFFF"
+  },
+  chipOn: { borderColor: "#166534", backgroundColor: "#166534" },
+  chipText: { fontSize: 12, fontWeight: "700", color: "#0F172A" },
+  chipTextOn: { color: "#FFFFFF" }
 });
 
 export default function GrowJournalScreen() {
@@ -39,6 +52,9 @@ export default function GrowJournalScreen() {
 
   const [items, setItems] = useState<any[]>([]);
   const [loading, setLoading] = useState(true);
+  const [filter, setFilter] = useState<
+    "all" | "log" | "run" | "watering" | "feed" | "training" | "environment" | "issues" | "harvest"
+  >("all");
 
   const load = useCallback(async () => {
     if (!growId) {
@@ -60,6 +76,7 @@ export default function GrowJournalScreen() {
               at: log.date || log.createdAt,
               title: log.title || "Journal entry",
               subtitle: log.notes || "",
+              logType: String(log?.type || "other").toLowerCase(),
               raw: log
             }))
           : []),
@@ -92,10 +109,19 @@ export default function GrowJournalScreen() {
     }, [load])
   );
 
+  const filteredItems = useMemo(() => {
+    if (filter === "all") return items;
+    if (filter === "log" || filter === "run") {
+      return items.filter((item) => item.kind === filter);
+    }
+    return items.filter((item) => item.kind === "log" && item.logType === filter);
+  }, [filter, items]);
+
   return (
     <ScrollView style={styles.container}>
       <Text style={styles.title}>Journal</Text>
       <Text style={styles.subtitle}>Timeline of logs and tool runs for this grow.</Text>
+      <GrowWorkspaceNav growId={growId} active="journal" />
 
       <Link href={`/home/personal/logs/new?growId=${encodeURIComponent(growId)}`} asChild>
         <Pressable style={styles.cta}>
@@ -103,19 +129,45 @@ export default function GrowJournalScreen() {
         </Pressable>
       </Link>
 
+      <View style={styles.chipsRow}>
+        {[
+          "all",
+          "log",
+          "run",
+          "watering",
+          "feed",
+          "training",
+          "environment",
+          "issues",
+          "harvest"
+        ].map((key) => {
+          const active = filter === key;
+          return (
+            <Pressable
+              key={key}
+              style={[styles.chip, active && styles.chipOn]}
+              onPress={() => setFilter(key as any)}
+            >
+              <Text style={[styles.chipText, active && styles.chipTextOn]}>{key}</Text>
+            </Pressable>
+          );
+        })}
+      </View>
+
       {loading ? (
         <View style={styles.card}>
           <ActivityIndicator />
         </View>
-      ) : items.length === 0 ? (
+      ) : filteredItems.length === 0 ? (
         <Text style={styles.empty}>No journal activity yet.</Text>
       ) : (
-        items.map((item) => (
+        filteredItems.map((item) => (
           <View key={`${item.kind}-${item.id}`} style={styles.card}>
             <Text style={styles.cardTitle}>{item.title}</Text>
             {item.subtitle ? <Text>{item.subtitle}</Text> : null}
             <Text style={styles.cardMeta}>
-              {item.kind.toUpperCase()} | {fmtDate(item.at)}
+              {item.kind.toUpperCase()}
+              {item.logType ? ` (${item.logType})` : ""} | {fmtDate(item.at)}
             </Text>
           </View>
         ))

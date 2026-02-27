@@ -67,6 +67,30 @@ export default function ToolsHubScreen() {
         </View>
 
         <View style={styles.card}>
+          <Text style={styles.cardTitle}>Environment: Dew Point Guard</Text>
+          <Text style={styles.cardDesc}>
+            Estimate lights-off dew point spike risk and save mitigation recommendations.
+          </Text>
+          <Link
+            href={hrefWithGrow("/home/personal/tools/dew-point-guard", growId)}
+            style={styles.link}
+            asChild
+          >
+            <Text>Open Dew Point Guard -&gt;</Text>
+          </Link>
+        </View>
+
+        <View style={styles.card}>
+          <Text style={styles.cardTitle}>Environment: PPFD / DLI Planner</Text>
+          <Text style={styles.cardDesc}>
+            Estimate PPFD requirements from target DLI and photoperiod.
+          </Text>
+          <Link href={hrefWithGrow("/home/personal/tools/ppfd", growId)} style={styles.link} asChild>
+            <Text>Open PPFD / DLI -&gt;</Text>
+          </Link>
+        </View>
+
+        <View style={styles.card}>
           <Text style={styles.cardTitle}>Water/Nutrients: NPK Label Ratio (Preview)</Text>
           <Text style={styles.cardDesc}>
             Preview label ratio only. This is not a full nutrient ppm calculator.
@@ -87,6 +111,34 @@ export default function ToolsHubScreen() {
             asChild
           >
             <Text>Open Watering -&gt;</Text>
+          </Link>
+        </View>
+
+        <View style={styles.card}>
+          <Text style={styles.cardTitle}>Environment: Bud Rot Risk</Text>
+          <Text style={styles.cardDesc}>
+            Snapshot mold pressure from RH, airflow score, and wet events.
+          </Text>
+          <Link
+            href={hrefWithGrow("/home/personal/tools/bud-rot-risk", growId)}
+            style={styles.link}
+            asChild
+          >
+            <Text>Open Bud Rot Risk -&gt;</Text>
+          </Link>
+        </View>
+
+        <View style={styles.card}>
+          <Text style={styles.cardTitle}>Ops/Planning: Crop Steering</Text>
+          <Text style={styles.cardDesc}>
+            Basic steering scaffold for runoff and irrigation shot planning.
+          </Text>
+          <Link
+            href={hrefWithGrow("/home/personal/tools/crop-steering", growId)}
+            style={styles.link}
+            asChild
+          >
+            <Text>Open Crop Steering -&gt;</Text>
           </Link>
         </View>
 
