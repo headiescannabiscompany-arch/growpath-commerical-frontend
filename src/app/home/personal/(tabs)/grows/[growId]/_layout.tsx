@@ -1,6 +1,6 @@
 import React from "react";
 import { Stack, useLocalSearchParams } from "expo-router";
-import { coerceParam } from "./utils";
+import { coerceParam } from "@/features/grows/routeUtils";
 
 export default function GrowWorkspaceLayout() {
   const { growId: rawGrowId } = useLocalSearchParams<{ growId?: string | string[] }>();

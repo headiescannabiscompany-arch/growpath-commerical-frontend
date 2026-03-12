@@ -5,7 +5,7 @@ import { Pressable, StyleSheet, Text, View } from "react-native";
 
 import { listToolRuns } from "@/api/toolRuns";
 import GrowWorkspaceNav from "@/components/personal/GrowWorkspaceNav";
-import { coerceParam } from "./utils";
+import { coerceParam } from "@/features/grows/routeUtils";
 
 const styles = StyleSheet.create({
   container: { flex: 1, padding: 20, backgroundColor: "#FFFFFF" },

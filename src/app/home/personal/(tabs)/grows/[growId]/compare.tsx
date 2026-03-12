@@ -5,7 +5,7 @@ import { ActivityIndicator, Pressable, ScrollView, StyleSheet, Text, View } from
 
 import { listToolRuns } from "@/api/toolRuns";
 import GrowWorkspaceNav from "@/components/personal/GrowWorkspaceNav";
-import { coerceParam, fmtDate } from "./utils";
+import { coerceParam, fmtDate } from "@/features/grows/routeUtils";
 
 const styles = StyleSheet.create({
   container: { flex: 1, padding: 20, backgroundColor: "#FFFFFF" },

@@ -8,7 +8,7 @@ import { listPersonalLogs } from "@/api/logs";
 import { listPersonalTasks } from "@/api/tasks";
 import { listToolRuns } from "@/api/toolRuns";
 import GrowWorkspaceNav from "@/components/personal/GrowWorkspaceNav";
-import { coerceParam, findGrowById, fmtDate } from "./utils";
+import { coerceParam, findGrowById, fmtDate } from "@/features/grows/routeUtils";
 
 const styles = StyleSheet.create({
   container: { flex: 1, padding: 20, backgroundColor: "#FFFFFF" },

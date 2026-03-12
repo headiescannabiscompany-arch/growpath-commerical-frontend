@@ -13,7 +13,7 @@ import {
 
 import { createPersonalTask, listPersonalTasks, updatePersonalTask } from "@/api/tasks";
 import GrowWorkspaceNav from "@/components/personal/GrowWorkspaceNav";
-import { coerceParam, fmtDate, getRowId } from "./utils";
+import { coerceParam, fmtDate, getRowId } from "@/features/grows/routeUtils";
 
 const styles = StyleSheet.create({
   container: { flex: 1, padding: 20, backgroundColor: "#FFFFFF" },
