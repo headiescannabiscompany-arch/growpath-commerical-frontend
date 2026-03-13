@@ -63,14 +63,12 @@ export interface PersonalGrow extends Grow {
 export async function listPersonalGrows(): Promise<PersonalGrow[]> {
   try {
     const personalRes = await apiRequest("/api/personal/grows");
-    if (
-      typeof personalRes === "object" &&
-      personalRes !== null &&
-      "data" in personalRes &&
-      personalRes.data &&
-      "grows" in personalRes.data
-    ) {
-      return personalRes.data.grows as PersonalGrow[];
+    if (Array.isArray(personalRes)) return personalRes as PersonalGrow[];
+    if (personalRes && typeof personalRes === "object") {
+      const topLevel = (personalRes as any).grows;
+      if (Array.isArray(topLevel)) return topLevel as PersonalGrow[];
+      const nested = (personalRes as any).data?.grows;
+      if (Array.isArray(nested)) return nested as PersonalGrow[];
     }
     return [];
   } catch (err) {

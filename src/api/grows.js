@@ -69,8 +69,14 @@ export async function deleteGrow(facilityId, id) {
 export async function listPersonalGrows() {
   try {
     const personalRes = await apiRequest("/api/personal/grows");
-    if (isPlainObject(personalRes) && isPlainObject(personalRes.data)) {
-      return personalRes.data.grows ?? [];
+    if (Array.isArray(personalRes)) {
+      return personalRes;
+    }
+    if (isPlainObject(personalRes)) {
+      if (Array.isArray(personalRes.grows)) return personalRes.grows;
+      if (isPlainObject(personalRes.data) && Array.isArray(personalRes.data.grows)) {
+        return personalRes.data.grows;
+      }
     }
     return [];
   } catch (_err) {

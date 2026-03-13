@@ -70,5 +70,26 @@ describe("API Configuration & Endpoints", () => {
       expect(parsed.searchParams.get("stage")).toBe("veg");
       expect(parsed.searchParams.get("search")).toBe("blue dream");
     });
+
+    it("listPersonalGrows accepts top-level grows envelope", async () => {
+      const originalFetch = global.fetch;
+      global.fetch = async (url, options) => {
+        fetchCalls.push({ url, options });
+        return {
+          ok: true,
+          text: async () => JSON.stringify({ success: true, grows: [{ id: "g1", name: "Grow 1" }] }),
+          json: async () => ({ success: true, grows: [{ id: "g1", name: "Grow 1" }] })
+        };
+      };
+
+      try {
+        const grows = await growsApi.listPersonalGrows();
+        expect(fetchCalls[0].url.includes("/api/personal/grows")).toBe(true);
+        expect(grows).toHaveLength(1);
+        expect(grows[0].id).toBe("g1");
+      } finally {
+        global.fetch = originalFetch;
+      }
+    });
   });
 });
