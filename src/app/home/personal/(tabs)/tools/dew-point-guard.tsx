@@ -569,8 +569,13 @@ export default function DewPointGuardTool() {
         return;
       }
 
-      const parsedPoints = mapCsvToPoints({ headers: csvHeaders, rows: csvRows }, mapping)
-        .map((p) => ({ ...p, ts: normalizeCsvTimestampToIso(p.ts, selectedSource.timezone) || p.ts }))
+      const parsedPoints = mapCsvToPoints(
+        { headers: csvHeaders, rows: csvRows },
+        mapping,
+        {
+          normalizeTimestamp: (tsRaw) => normalizeCsvTimestampToIso(tsRaw, selectedSource.timezone)
+        }
+      )
         .filter((p) => !!p.ts)
         .map((p, idx) => ({ ts: p.ts, airTempC: p.airTempC, rh: p.rh, _idx: idx }));
 

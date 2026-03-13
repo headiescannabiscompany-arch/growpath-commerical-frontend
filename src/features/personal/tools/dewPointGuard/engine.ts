@@ -75,16 +75,27 @@ export type TelemetryPointLike = {
   dewPointC?: number;
 };
 
-export function mapCsvToPoints(parsed: ParsedCsv, mapping: CsvMapping): TelemetryPointLike[] {
+export type MapCsvToPointsOptions = {
+  normalizeTimestamp?: (tsRaw: string) => string | null;
+};
+
+export function mapCsvToPoints(
+  parsed: ParsedCsv,
+  mapping: CsvMapping,
+  options?: MapCsvToPointsOptions
+): TelemetryPointLike[] {
   const pts: TelemetryPointLike[] = [];
 
   for (const row of parsed.rows) {
     const tsRaw = String(row[mapping.tsCol] ?? "").trim();
     const tempRaw = Number(String(row[mapping.tempCol] ?? "").trim());
     const rhRaw = Number(String(row[mapping.rhCol] ?? "").trim());
+    const normalizedTs = options?.normalizeTimestamp
+      ? options.normalizeTimestamp(tsRaw)
+      : tsRaw;
 
-    if (!tsRaw) continue;
-    const t = new Date(tsRaw);
+    if (!normalizedTs) continue;
+    const t = new Date(normalizedTs);
     if (!Number.isFinite(t.getTime())) continue;
     if (!Number.isFinite(tempRaw)) continue;
     if (!Number.isFinite(rhRaw) || rhRaw < 0 || rhRaw > 100) continue;

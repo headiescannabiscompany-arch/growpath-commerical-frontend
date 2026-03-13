@@ -62,7 +62,7 @@ describe("Dew Point Guard CSV flow", () => {
       points: []
     });
 
-    mockBulkIngestTelemetryPoints.mockResolvedValue({ ingested: 2, updated: 0, skipped: 0 });
+    mockBulkIngestTelemetryPoints.mockResolvedValue({ ingested: 3, updated: 0, skipped: 0 });
     mockPullPulseWindow.mockResolvedValue({ sourceId: "s-upload", pulled: 0, updated: 0, startIso: "", endIso: "" });
     mockVerifyPulseApiKey.mockResolvedValue({ ok: true });
     mockListPulseDevices.mockResolvedValue([]);
@@ -80,7 +80,8 @@ describe("Dew Point Guard CSV flow", () => {
     const csv =
       "ts,tempF,rh\n" +
       "2026-02-27T05:00:00.000Z,70,60\n" +
-      "2026-02-27T05:10:00.000Z,69,62\n";
+      "2026-02-27T05:10:00.000Z,69,62\n" +
+      "2026-02-27T05:20:00,68,61\n";
 
     fireEvent.changeText(getByTestId("dpg-csv-paste"), csv);
     fireEvent.press(getByTestId("dpg-csv-parse"));
@@ -101,12 +102,12 @@ describe("Dew Point Guard CSV flow", () => {
 
     const call = mockBulkIngestTelemetryPoints.mock.calls[0][0];
     expect(call.sourceId).toBe("s-upload");
-    expect(call.points).toHaveLength(2);
+    expect(call.points).toHaveLength(3);
     expect(call.points[0].ts).toBe("2026-02-27T05:00:00.000Z");
     expect(call.points[0].rh).toBe(60);
     expect(Math.abs(call.points[0].airTempC - 21.1111)).toBeLessThan(0.02);
+    expect(call.points[2].ts).toBe("2026-02-27T05:20:00.000Z");
 
     await waitFor(() => expect(mockGetTelemetryPoints).toHaveBeenCalled());
   });
 });
-
