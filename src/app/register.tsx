@@ -9,7 +9,7 @@ import {
 } from "react-native";
 import { useRouter } from "expo-router";
 
-import { apiRequest } from "@/api/apiRequest";
+import { ApiError, apiRequest } from "@/api/apiRequest";
 import { setToken } from "@/auth/tokenStore";
 
 function extractToken(payload: any): string | null {
@@ -56,9 +56,10 @@ export default function RegisterScreen() {
     setSubmitting(true);
 
     try {
+      const normalizedEmail = email.trim().toLowerCase();
       const registerRes = await apiRequest<any>("/api/auth/register", {
         method: "POST",
-        body: { name: name.trim(), email: email.trim(), password },
+        body: { name: name.trim(), email: normalizedEmail, password },
         auth: false
       });
 
@@ -68,7 +69,13 @@ export default function RegisterScreen() {
       await setToken(token);
       router.replace("/");
     } catch (e: any) {
-      setErrMsg(e?.message || "Registration failed");
+      if (e instanceof ApiError) {
+        const backendMessage =
+          e.data?.error?.message || e.data?.message || "Registration failed";
+        setErrMsg(backendMessage);
+      } else {
+        setErrMsg(e?.message || "Registration failed");
+      }
     } finally {
       setSubmitting(false);
     }

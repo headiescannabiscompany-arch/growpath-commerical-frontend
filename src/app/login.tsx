@@ -9,7 +9,7 @@ import {
 } from "react-native";
 import { useRouter } from "expo-router";
 
-import { apiRequest } from "@/api/apiRequest";
+import { ApiError, apiRequest } from "@/api/apiRequest";
 import { setToken } from "@/auth/tokenStore";
 
 function extractToken(payload: any): string | null {
@@ -49,9 +49,10 @@ export default function LoginScreen() {
     setSubmitting(true);
 
     try {
+      const normalizedEmail = email.trim().toLowerCase();
       const loginRes = await apiRequest<any>("/api/auth/login", {
         method: "POST",
-        body: { email: email.trim(), password },
+        body: { email: normalizedEmail, password },
         auth: false
       });
 
@@ -61,7 +62,13 @@ export default function LoginScreen() {
       await setToken(token);
       router.replace("/");
     } catch (e: any) {
-      setErrMsg(e?.message || "Login failed");
+      if (e instanceof ApiError) {
+        const backendMessage =
+          e.data?.error?.message || e.data?.message || "Invalid email or password";
+        setErrMsg(backendMessage);
+      } else {
+        setErrMsg(e?.message || "Login failed");
+      }
     } finally {
       setSubmitting(false);
     }
