@@ -97,7 +97,7 @@ POST /api/facilities/:facilityId/ai/call
 ### 1.2 Auth / Scope
 
 - Must pass standard auth (JWT) OR test headers (dev only), per backend contract.
-- Facility scope comes from `:facilityId` param AND/OR your canonical `X-Facility-Id` handling (implementation-defined).
+- Facility scope is derived from `:facilityId` path param (canonical). Do not derive facility context from request headers.
 - Backend MUST enforce facility membership/role as applicable per tool.
 
 ### 1.3 Request Contract

@@ -1,5 +1,5 @@
 import React, { useEffect, useMemo, useRef, useState } from "react";
-import { ActivityIndicator, View, Text } from "react-native";
+import { ActivityIndicator, View, Text, Pressable } from "react-native";
 import { useRouter } from "expo-router";
 import { useAuth } from "@/auth/AuthContext";
 import { useEntitlements } from "@/entitlements";
@@ -17,6 +17,39 @@ function Center({ label }: { label: string }) {
     >
       <ActivityIndicator size="large" />
       <Text style={{ marginTop: 16 }}>{label}</Text>
+    </View>
+  );
+}
+
+function BootstrapError({
+  label,
+  onRetry
+}: {
+  label: string;
+  onRetry: () => void;
+}) {
+  return (
+    <View
+      style={{
+        flex: 1,
+        justifyContent: "center",
+        alignItems: "center",
+        backgroundColor: "#fff",
+        paddingHorizontal: 20
+      }}
+    >
+      <Text style={{ textAlign: "center", marginBottom: 14 }}>{label}</Text>
+      <Pressable
+        onPress={onRetry}
+        style={{
+          backgroundColor: "#111",
+          paddingHorizontal: 14,
+          paddingVertical: 10,
+          borderRadius: 10
+        }}
+      >
+        <Text style={{ color: "#fff", fontWeight: "700" }}>Retry /api/me</Text>
+      </Pressable>
     </View>
   );
 }
@@ -53,6 +86,19 @@ export default function Index() {
 
     // Deterministic: ensure entitlements settle before routing decisions
     if (!ent.ready) {
+      if (auth.token && ent.bootstrapError) {
+        return {
+          kind: "render" as const,
+          node: (
+            <BootstrapError
+              label={ent.bootstrapError}
+              onRetry={() => {
+                void auth.retryMe();
+              }}
+            />
+          )
+        };
+      }
       return {
         kind: "render" as const,
         node: <Center label="Loading entitlements..." />
@@ -104,6 +150,7 @@ export default function Index() {
     settled,
     auth.token,
     ent.ready,
+    ent.bootstrapError,
     ent.mode,
     ent.plan,
     facility?.isReady,

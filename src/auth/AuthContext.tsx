@@ -23,11 +23,14 @@ type AuthState = {
   token: string | null;
   user: AuthUser | null;
   ctx: any | null;
+  meStatus: "idle" | "loading" | "ready" | "error";
+  meError: string | null;
   isHydrating: boolean;
   isAuthed: boolean;
   login: (email: string, password: string) => Promise<void>;
   signup: (body: SignupBody) => Promise<void>;
   logout: () => Promise<void>;
+  retryMe: () => Promise<void>;
 };
 
 const AuthContext = createContext<AuthState | null>(null);
@@ -36,6 +39,8 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
   const [token, setToken] = useState<string | null>(null);
   const [user, setUser] = useState<AuthUser | null>(null);
   const [ctx, setCtx] = useState<any | null>(null);
+  const [meStatus, setMeStatus] = useState<"idle" | "loading" | "ready" | "error">("idle");
+  const [meError, setMeError] = useState<string | null>(null);
   const [isHydrating, setIsHydrating] = useState(true);
 
   // Prevent rehydration loops - hydrate only once
@@ -52,11 +57,35 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
       setToken(null);
       setUser(null);
       setCtx(null);
+      setMeStatus("idle");
+      setMeError(null);
       await persistToken(null);
     } finally {
       isLoggingOutRef.current = false;
     }
   };
+
+  async function loadMeForToken() {
+    setMeStatus("loading");
+    setMeError(null);
+    try {
+      const me = await apiMe();
+      setUser(me.user);
+      setCtx(me.ctx ?? null);
+      setMeStatus("ready");
+      setMeError(null);
+    } catch (e: any) {
+      if (e?.status === 401) {
+        console.log("[AUTH] Token rejected by server (401), clearing");
+        await hardLogout();
+        return;
+      }
+      // Keep token for retry, but do not let routing silently fall back.
+      setMeStatus("error");
+      setMeError("Unable to verify session from /api/me. Check backend connectivity and retry.");
+      console.error("[AUTH] Failed to load /api/me:", e);
+    }
+  }
 
   // Wire global 401 invalidation: any 401 from any endpoint (except login/signup) triggers hardLogout
   useEffect(() => {
@@ -81,24 +110,12 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
 
         if (t) {
           setToken(t);
-          // Try to validate token with backend
-          try {
-            const me = await apiMe();
-            if (mounted) {
-              setUser(me.user);
-              setCtx(me.ctx ?? null);
-            }
-          } catch (e: any) {
-            // Only hardLogout on 401 (token is invalid)
-            if (e?.status === 401) {
-              console.log("[AUTH] Token rejected by server (401), clearing");
-              await hardLogout();
-              return;
-            }
-            // Network/server errors: keep token, user stays null until backend recovers
-            console.error("[AUTH] Failed to hydrate user (non-401):", e);
-            // do NOT hardLogout - let app work offline or retry
+          if (mounted) {
+            await loadMeForToken();
           }
+        } else {
+          setMeStatus("idle");
+          setMeError(null);
         }
       } finally {
         if (mounted) setIsHydrating(false);
@@ -123,6 +140,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
       setToken(loginRes.token);
       setUser(loginRes.user);
       await persistToken(loginRes.token);
+      await loadMeForToken();
     } catch (err: any) {
       // Pass through normalized errors so UI can branch on code/status
       throw err;
@@ -137,6 +155,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
       setToken(signupRes.token);
       setUser(signupRes.user);
       await persistToken(signupRes.token);
+      await loadMeForToken();
     } catch (err: any) {
       // Pass through normalized errors so UI can branch on code/status
       throw err;
@@ -149,18 +168,26 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
     await hardLogout();
   }
 
+  async function retryMe() {
+    if (!token) return;
+    await loadMeForToken();
+  }
+
   const value = useMemo<AuthState>(
     () => ({
       token,
       user,
       ctx,
+      meStatus,
+      meError,
       isHydrating,
       isAuthed: !!token,
       login,
       signup,
-      logout
+      logout,
+      retryMe
     }),
-    [token, user, ctx, isHydrating]
+    [token, user, ctx, meStatus, meError, isHydrating]
   );
 
   return <AuthContext.Provider value={value}>{children}</AuthContext.Provider>;

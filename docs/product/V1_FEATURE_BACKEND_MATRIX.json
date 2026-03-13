@@ -1,4 +1,4 @@
-{
+﻿{
   "version": "v1",
   "policy": {
     "plannedEndpointsAllowed": true,
@@ -6832,11 +6832,11 @@
       "api": [
         {
           "method": "GET",
-          "path": "/api/grows"
+          "path": "/api/personal/grows"
         },
         {
           "method": "POST",
-          "path": "/api/grows"
+          "path": "/api/personal/grows"
         }
       ],
       "guards": {
@@ -7121,3 +7121,4 @@
     "addedRows": 29
   }
 }
+

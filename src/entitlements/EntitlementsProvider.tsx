@@ -21,6 +21,7 @@ type EntitlementsMode = "personal" | "commercial" | "facility";
 
 export type EntitlementsState = {
   ready: boolean;
+  bootstrapError: string | null;
   mode: EntitlementsMode;
   plan: string | null;
   facilityId: string | null;
@@ -36,6 +37,7 @@ export type EntitlementsState = {
 
 const DEFAULT_STATE: Omit<EntitlementsState, "can"> = {
   ready: false,
+  bootstrapError: null,
   mode: "personal",
   plan: null,
   facilityId: null,
@@ -153,6 +155,7 @@ function applyServerCtx(
 
   return {
     ready: true,
+    bootstrapError: null,
     mode,
     plan,
     facilityId,
@@ -165,7 +168,7 @@ function applyServerCtx(
 
 export function EntitlementsProvider({ children }: { children: React.ReactNode }) {
   const auth = useAuth();
-  const { token, isHydrating, logout } = auth;
+  const { token, isHydrating, logout, meStatus, meError } = auth;
 
   const [state, setState] = useState<Omit<EntitlementsState, "can">>(DEFAULT_STATE);
   const [preferredMode, setPreferredModeState] = useState<PreferredMode | null>(null);
@@ -193,6 +196,7 @@ export function EntitlementsProvider({ children }: { children: React.ReactNode }
     if (!token) {
       setState({
         ready: true,
+        bootstrapError: null,
         selectedFacilityId: null,
         facilityRole: null,
         mode: "personal",
@@ -204,6 +208,25 @@ export function EntitlementsProvider({ children }: { children: React.ReactNode }
       setPreferredModeState(null);
       lastAppliedRef.current = "NO_TOKEN";
       lastFetchedTokenRef.current = null;
+      return () => {};
+    }
+
+    // Token exists but /api/me is not yet confirmed: keep bootstrap blocked.
+    if (meStatus === "loading" || meStatus === "idle") {
+      setState((s) => ({
+        ...s,
+        ready: false,
+        bootstrapError: null
+      }));
+      return () => {};
+    }
+
+    if (meStatus === "error") {
+      setState((s) => ({
+        ...s,
+        ready: false,
+        bootstrapError: meError || "Failed to load /api/me."
+      }));
       return () => {};
     }
 
@@ -225,11 +248,11 @@ export function EntitlementsProvider({ children }: { children: React.ReactNode }
       setState((prev) => applyServerCtx(prev, ctx, userPlan, preferredMode));
     } else {
       // Ensure ready is true even if ctx unchanged
-      setState((prev) => (prev.ready ? prev : { ...prev, ready: true }));
+      setState((prev) => (prev.ready ? prev : { ...prev, ready: true, bootstrapError: null }));
     }
 
     return () => {};
-  }, [isHydrating, token, auth.ctx, auth.user, preferredMode]);
+  }, [isHydrating, token, auth.ctx, auth.user, preferredMode, meStatus, meError]);
 
   useEffect(() => {
     let alive = true;
@@ -288,6 +311,7 @@ export function EntitlementsProvider({ children }: { children: React.ReactNode }
     setState((s) => ({
       ...s,
       ready: true,
+      bootstrapError: null,
       plan: plan ?? s.plan,
       capabilities: normalizedCaps ?? s.capabilities
     }));

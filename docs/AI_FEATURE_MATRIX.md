@@ -10,7 +10,7 @@ Source of truth for AI tools catalog, UI surfaces, and contracts.
 
 ```
 POST /api/facility/:facilityId/ai/call
-POST /api/facilities/:facilityId/ai/call (dual mount)
+POST /api/facilities/:facilityId/ai/call (compatibility alias; canonical is singular `/api/facility`)
 
 Request body:
 {
@@ -41,7 +41,7 @@ Response:
 
 ```
 GET /api/facility/:facilityId/calendar
-GET /api/facilities/:facilityId/calendar (dual mount)
+GET /api/facilities/:facilityId/calendar (compatibility alias; canonical is singular `/api/facility`)
 
 Query params:
 - growId: string (required for filtering)

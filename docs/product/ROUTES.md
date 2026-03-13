@@ -31,20 +31,21 @@ Owner root:
 - `/home/personal/(tabs)/index.tsx`  Functional (dashboard)
 - `/home/personal/(tabs)/grows/index.tsx`  Functional (grows list)
 - `/home/personal/(tabs)/grows/new.tsx`  Functional (create grow)
-- `/home/personal/(tabs)/grows/[growId].tsx`  Functional (grow detail; must contain plants+logs entry points)
-- `/home/personal/(tabs)/logs/index.tsx`  Functional (logs list)
+- `/home/personal/(tabs)/grows/[growId]/index.tsx`  Functional (grow detail; must contain plants+logs entry points)
+- `/home/personal/(tabs)/logs/index.tsx`  Deprecated Redirect -> `/home/personal/grows`
 - `/home/personal/(tabs)/logs/new.tsx`  Functional (create log)
 - `/home/personal/(tabs)/logs/[logId].tsx`  Functional (log detail)
 - `/home/personal/(tabs)/tools/index.tsx`  Functional (tools list)
 - `/home/personal/(tabs)/tools/vpd.tsx`  Functional (VPD)
-- `/home/personal/(tabs)/forum`  Functional (forum list)
+- `/home/personal/(tabs)/community.tsx`  Functional (visible community tab entry)
+- `/home/personal/(tabs)/forum`  Functional (forum routes are hidden-tab surfaces)
 - `/home/personal/(tabs)/forum/post/[id].tsx`  Functional (requires id)
 - `/home/personal/(tabs)/forum/new-post.tsx`  Functional or Disabled (pick one; must not error)
 - `/home/personal/(tabs)/courses.tsx`  Functional (courses list)
 - `/home/personal/(tabs)/diagnose.tsx`  Functional or Disabled (capability-gated)
 - `/home/personal/(tabs)/ai/index.tsx`  Functional (AI assistant UI)
 - `/home/personal/(tabs)/profile/index.tsx`  Functional
-- `/home/personal/(tabs)/tasks.tsx`  Disabled (reason: personal tasks not enabled; facility tasks live in facility mode)
+- `/home/personal/(tabs)/tasks.tsx`  Deprecated Redirect -> `/home/personal/grows` (personal tasks are grow-scoped in v1)
 
 ---
 
@@ -103,7 +104,7 @@ Verification evidence:
 ## Legacy root routes (must not be standalone)
 These exist outside the shells and must be Deprecated -> redirect into /home based on /api/me:
 - `/feed`
-- `/forum`
+- `/forum` (legacy alias; canonical personal tab label is `community`)
 - `/courses`
 - `/diagnose`
 - `/dashboard`
