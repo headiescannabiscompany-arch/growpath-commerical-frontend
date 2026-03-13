@@ -39,12 +39,12 @@ async function waitForApiResponse(
   }
 }
 
-async function loginIfNeeded(page: any) {
-  const needsLogin = page.url().includes("/login") || page.url().includes("/auth");
-  if (!needsLogin) return;
-
+async function loginSeedUser(page: any) {
   const email = process.env.E2E_EMAIL || "free@growpath.com";
   const password = process.env.E2E_PASSWORD || "Test1234!";
+
+  await page.goto("/login", { waitUntil: "domcontentloaded" });
+  await expect(page.getByPlaceholder("Email")).toBeVisible({ timeout: 10000 });
 
   await page.getByPlaceholder("Email").fill(email);
   await page.getByPlaceholder("Password").fill(password);
@@ -104,8 +104,7 @@ test("Personal Grows: list -> create -> open", async ({ page }) => {
     });
   });
 
-  await goToPersonalGrows(page);
-  await loginIfNeeded(page);
+  await loginSeedUser(page);
   await goToPersonalGrows(page);
 
   const createFirst = page.getByTestId("btn-create-first-grow");
