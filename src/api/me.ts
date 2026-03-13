@@ -19,6 +19,26 @@ export type MeResponse = {
   ctx: MeCtx;
 };
 
+function normalizeMeResponse(result: any): MeResponse {
+  if (result && typeof result === "object") {
+    const directUser = (result as any).user;
+    const directCtx = (result as any).ctx;
+    if (directUser && directCtx) {
+      return { user: directUser as AuthUser, ctx: directCtx as MeCtx };
+    }
+
+    const nested = (result as any).data;
+    if (nested && typeof nested === "object") {
+      const nestedUser = (nested as any).user;
+      const nestedCtx = (nested as any).ctx;
+      if (nestedUser && nestedCtx) {
+        return { user: nestedUser as AuthUser, ctx: nestedCtx as MeCtx };
+      }
+    }
+  }
+  throw new Error("INVALID_ME_RESPONSE_SHAPE");
+}
+
 // Module-level single-flight: only one /api/me in flight at a time
 let inflightPromise: Promise<MeResponse> | null = null;
 let inflightToken: string | null = null;
@@ -56,7 +76,7 @@ export async function apiMe(options: { silent?: boolean } = {}): Promise<MeRespo
       const result = await apiRequest(endpoints.me, {
         ...options
       });
-      const typed = result as MeResponse;
+      const typed = normalizeMeResponse(result);
       if (token) {
         lastToken = token;
         lastResult = typed;
