@@ -76,7 +76,7 @@ export default function GrowsListScreen() {
   );
 
   return (
-    <View style={styles.container}>
+    <View testID="screen-personal-grows" style={styles.container}>
       <View style={styles.header}>
         <Text style={styles.title}>Grows</Text>
         <Text style={styles.subtitle}>
@@ -97,7 +97,7 @@ export default function GrowsListScreen() {
           </Text>
           {error ? <Text style={[styles.panelText, { marginTop: 8 }]}>{error}</Text> : null}
           <Link href="/home/personal/grows/new" asChild>
-            <Pressable style={styles.cta}>
+            <Pressable testID="btn-create-first-grow" style={styles.cta}>
               <Text style={styles.ctaText}>+ New Grow</Text>
             </Pressable>
           </Link>
@@ -138,7 +138,7 @@ export default function GrowsListScreen() {
           })}
 
           <Link href="/home/personal/grows/new" asChild>
-            <Pressable style={styles.cta}>
+            <Pressable testID="btn-new-grow" style={styles.cta}>
               <Text style={styles.ctaText}>+ New Grow</Text>
             </Pressable>
           </Link>

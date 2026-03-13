@@ -10,25 +10,29 @@ test("Personal Grows: list → create → open", async ({ page }) => {
     );
   }
 
-  await page.waitForResponse((r) => r.url().includes("/api/grows") && r.status() === 200);
-
   const createFirst = page.getByTestId("btn-create-first-grow");
   const newGrow = page.getByTestId("btn-new-grow");
+  const createGrowLink = page.getByRole("link", { name: /\+ New Grow/i });
 
   if (await createFirst.isVisible().catch(() => false)) {
     await createFirst.click();
-  } else {
+  } else if (await newGrow.isVisible().catch(() => false)) {
     await newGrow.click();
+  } else {
+    await createGrowLink.click();
   }
 
-  await expect(page.getByText("New grow")).toBeVisible();
+  await expect(page.getByRole("heading", { name: "New Grow" })).toBeVisible();
 
   const growName = `E2E Grow ${Date.now()}`;
   await page.getByTestId("input-grow-name").fill(growName);
+  await page.getByTestId("input-grow-anchor-date").fill("2026-03-01");
 
   await Promise.all([
     page.waitForResponse(
-      (r) => r.url().includes("/api/grows") && (r.status() === 200 || r.status() === 201)
+      (r) =>
+        r.url().includes("/api/personal/grows") &&
+        (r.status() === 200 || r.status() === 201)
     ),
     page.getByTestId("btn-save-grow").click()
   ]);

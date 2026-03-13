@@ -166,6 +166,7 @@ export default function NewGrowScreen() {
 
       <Text style={{ fontWeight: "700" }}>Anchor date (YYYY-MM-DD)</Text>
       <TextInput
+        testID="input-grow-anchor-date"
         value={anchorDate}
         onChangeText={setAnchorDate}
         placeholder="2026-02-27"
