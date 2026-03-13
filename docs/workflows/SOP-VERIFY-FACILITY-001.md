@@ -15,8 +15,8 @@ B) Backend enforcement truth (one forced 403 per restricted role)
   - Backend response is 403 (Network response or backend logs)
 
 ## Setup
-- Backend running on :5001
-- Frontend uses `EXPO_PUBLIC_API_URL=http://localhost:5001`
+- Backend running on :5002
+- Frontend uses `EXPO_PUBLIC_API_URL=http://localhost:5002`
 - Create 4 separate sessions (browser profiles/incognito):
   OWNER / MANAGER / STAFF / VIEWER
 
