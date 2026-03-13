@@ -20,7 +20,7 @@ export type ApiRequestOptions = {
 export const API_URL =
   (globalThis as any).API_URL_OVERRIDE ||
   process.env.EXPO_PUBLIC_API_URL ||
-  "http://localhost:5001";
+  "http://localhost:5002";
 
 export class ApiError extends Error {
   code: string;
