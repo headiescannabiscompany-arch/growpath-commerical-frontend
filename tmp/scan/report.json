@@ -1,12 +1,12 @@
 {
   "root": "C:\\growpath-commercial\\frontend",
   "counts": {
-    "srcFiles": 647,
-    "testFiles": 45,
-    "totalFiles": 692,
-    "apiFiles": 102,
-    "apiOrphans": 21,
-    "legacyClientCallers": 18,
+    "srcFiles": 669,
+    "testFiles": 48,
+    "totalFiles": 717,
+    "apiFiles": 84,
+    "apiOrphans": 0,
+    "legacyClientCallers": 2,
     "jsTsTwins": 15,
     "bannedFindings": 2
   },
@@ -72,48 +72,10 @@
       "src/ui/handleApiError.ts"
     ]
   ],
-  "apiOrphans": [
-    "src/api/_quarantine/audit.js",
-    "src/api/_quarantine/calendar.ts",
-    "src/api/_quarantine/campaigns.js",
-    "src/api/_quarantine/commercialBilling.js",
-    "src/api/_quarantine/commercialFeed.ts",
-    "src/api/_quarantine/compliance.ts",
-    "src/api/_quarantine/deviation.js",
-    "src/api/_quarantine/facilityInventory.ts",
-    "src/api/_quarantine/greenWaste.js",
-    "src/api/_quarantine/index.js",
-    "src/api/_quarantine/mockServer.ts",
-    "src/api/_quarantine/payments.js",
-    "src/api/_quarantine/products.js",
-    "src/api/_quarantine/questions.js",
-    "src/api/_quarantine/search.js",
-    "src/api/_quarantine/sop.js",
-    "src/api/_quarantine/templates.js",
-    "src/api/_quarantine/types.ts",
-    "src/api/_quarantine/user.ts",
-    "src/api/_quarantine/verification.js",
-    "src/api/_quarantine/webhooks.ts"
-  ],
+  "apiOrphans": [],
   "legacyClientCallers": [
-    "src/api/_quarantine/calendar.ts",
-    "src/api/_quarantine/campaigns.js",
-    "src/api/_quarantine/commercialFeed.ts",
-    "src/api/_quarantine/compliance.ts",
-    "src/api/_quarantine/deviation.js",
-    "src/api/_quarantine/facilityInventory.ts",
-    "src/api/_quarantine/greenWaste.js",
-    "src/api/_quarantine/payments.js",
-    "src/api/_quarantine/products.js",
-    "src/api/_quarantine/questions.js",
-    "src/api/_quarantine/search.js",
-    "src/api/_quarantine/sop.js",
-    "src/api/_quarantine/templates.js",
-    "src/api/_quarantine/verification.js",
-    "src/api/_quarantine/webhooks.ts",
     "src/api/apiClient.js",
-    "src/api/client.js",
-    "src/api/client.ts"
+    "src/api/client.js"
   ],
   "bannedFindings": [
     {
@@ -126,4 +88,3 @@
     }
   ]
 }
-

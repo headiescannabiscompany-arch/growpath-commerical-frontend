@@ -1,12 +1,12 @@
 # Full Scan Report
 
 ## Counts
-- src files: 647
-- test files: 45
-- total files: 692
-- api files: 102
-- api orphans: 21
-- legacy client callers: 18
+- src files: 669
+- test files: 48
+- total files: 717
+- api files: 84
+- api orphans: 0
+- legacy client callers: 2
 - js/ts twin modules: 15
 - banned findings: 2
 
@@ -28,50 +28,12 @@
 - src/ui/handleApiError.js , src/ui/handleApiError.ts
 
 ## API Orphans (src/api files not imported anywhere)
-- src/api/_quarantine/audit.js
-- src/api/_quarantine/calendar.ts
-- src/api/_quarantine/campaigns.js
-- src/api/_quarantine/commercialBilling.js
-- src/api/_quarantine/commercialFeed.ts
-- src/api/_quarantine/compliance.ts
-- src/api/_quarantine/deviation.js
-- src/api/_quarantine/facilityInventory.ts
-- src/api/_quarantine/greenWaste.js
-- src/api/_quarantine/index.js
-- src/api/_quarantine/mockServer.ts
-- src/api/_quarantine/payments.js
-- src/api/_quarantine/products.js
-- src/api/_quarantine/questions.js
-- src/api/_quarantine/search.js
-- src/api/_quarantine/sop.js
-- src/api/_quarantine/templates.js
-- src/api/_quarantine/types.ts
-- src/api/_quarantine/user.ts
-- src/api/_quarantine/verification.js
-- src/api/_quarantine/webhooks.ts
+- none
 
 ## Legacy client callers
-- src/api/_quarantine/calendar.ts
-- src/api/_quarantine/campaigns.js
-- src/api/_quarantine/commercialFeed.ts
-- src/api/_quarantine/compliance.ts
-- src/api/_quarantine/deviation.js
-- src/api/_quarantine/facilityInventory.ts
-- src/api/_quarantine/greenWaste.js
-- src/api/_quarantine/payments.js
-- src/api/_quarantine/products.js
-- src/api/_quarantine/questions.js
-- src/api/_quarantine/search.js
-- src/api/_quarantine/sop.js
-- src/api/_quarantine/templates.js
-- src/api/_quarantine/verification.js
-- src/api/_quarantine/webhooks.ts
 - src/api/apiClient.js
 - src/api/client.js
-- src/api/client.ts
 
 ## Banned findings
 - fetch(: src/api/apiRequest.ts
 - fetch(: src/api/uriToBlob.ts
-
-
