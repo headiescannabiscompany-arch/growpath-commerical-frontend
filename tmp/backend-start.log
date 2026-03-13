@@ -1,0 +1,27 @@
+
+> growpath-commercial-backend@1.0.1 start
+> node server.js
+
+[BACKEND_BOOT] C:\growpath-commercial\backend\server.js ts= 2026-03-13T19:31:45.798Z nodeEnv= development
+[BACKEND_BOOT] C:\growpath-commercial\backend\app.js ts= 2026-03-13T19:31:46.027Z nodeEnv= development
+[db] Using live collection names
+[BACKEND_FINGERPRINT] growpath-backend|git=dev|ts=2026-03-13T19:31:46.456Z
+[UPLOAD LOAD] uploadUserMedia.js loaded fingerprint=users-upload-A
+[MOUNT] facilities mounted
+[ROUTER LOAD] growlogs.facility.js TOP {
+  file: 'C:\\growpath-commercial\\backend\\routes\\growlogs.facility.js',
+  nodeEnv: 'development'
+}
+[ROUTER LOAD] growlogs.facility.js BOTTOM {
+  file: 'C:\\growpath-commercial\\backend\\routes\\growlogs.facility.js',
+  stackRoutes: [
+    { path: '/', methods: [Array] },
+    { path: '/:id', methods: [Array] },
+    { path: '/', methods: [Array] },
+    { path: '/:id', methods: [Array] },
+    { path: '/:id', methods: [Array] }
+  ]
+}
+[ROUTER LOAD] growlogs.facility EXPORT TYPE function
+[BOOT] HTTP server listening on 5002 { nodeEnv: 'development', render: false }
+GET /health 200 98 - 4.419 ms

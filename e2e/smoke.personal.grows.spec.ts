@@ -57,7 +57,7 @@ async function loginSeedUser(page: any) {
     { timeout: 30000 }
   );
 
-  await page.getByRole("button", { name: "Sign in" }).click();
+  await page.getByText("Sign in").first().click();
   const loginResponse = await loginResponsePromise;
   const loginStatus = loginResponse.status();
   let loginBody = "";
