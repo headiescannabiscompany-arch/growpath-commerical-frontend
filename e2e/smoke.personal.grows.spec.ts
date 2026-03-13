@@ -39,10 +39,49 @@ async function waitForApiResponse(
   }
 }
 
+async function loginIfNeeded(page: any) {
+  const needsLogin = page.url().includes("/login") || page.url().includes("/auth");
+  if (!needsLogin) return;
+
+  const email = process.env.E2E_EMAIL || "free@growpath.com";
+  const password = process.env.E2E_PASSWORD || "Test1234!";
+
+  await page.getByPlaceholder("Email").fill(email);
+  await page.getByPlaceholder("Password").fill(password);
+
+  const loginResponsePromise = page.waitForResponse(
+    (r) =>
+      r.request().method() === "POST" &&
+      r.url().includes("/api/auth/login") &&
+      (r.status() === 200 || r.status() === 201 || r.status() === 401 || r.status() === 403),
+    { timeout: 30000 }
+  );
+
+  await page.getByRole("button", { name: "Sign in" }).click();
+  const loginResponse = await loginResponsePromise;
+  const loginStatus = loginResponse.status();
+  let loginBody = "";
+  try {
+    loginBody = (await loginResponse.text()).replace(/\s+/g, " ").slice(0, 300);
+  } catch {
+    // ignore
+  }
+
+  if (loginStatus >= 400) {
+    throw new Error(
+      `Login failed with status ${loginStatus} for ${email}. Response: ${loginBody || "(empty)"}`
+    );
+  }
+
+  await page.waitForURL((url: URL) => !/\/(\(auth\)\/)?(login|auth)(\/|$)/.test(url.pathname), {
+    timeout: 30000
+  });
+}
+
 test("Personal Grows: list -> create -> open", async ({ page }) => {
   const apiTrace: ApiTraceEntry[] = [];
   const isTrackedApi = (url: string) =>
-    url.includes("/api/me") || url.includes("/api/personal/grows");
+    url.includes("/api/me") || url.includes("/api/personal/grows") || url.includes("/api/auth/login");
 
   page.on("response", async (resp) => {
     const url = resp.url();
@@ -66,12 +105,8 @@ test("Personal Grows: list -> create -> open", async ({ page }) => {
   });
 
   await goToPersonalGrows(page);
-
-  if (page.url().includes("/login") || page.url().includes("/auth")) {
-    throw new Error(
-      "E2E hit login screen. Either run with a pre-authenticated session, or add login testIDs so we can automate login."
-    );
-  }
+  await loginIfNeeded(page);
+  await goToPersonalGrows(page);
 
   const createFirst = page.getByTestId("btn-create-first-grow");
   const newGrow = page.getByTestId("btn-new-grow");

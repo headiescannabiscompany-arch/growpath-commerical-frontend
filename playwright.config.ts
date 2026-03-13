@@ -16,10 +16,14 @@ export default defineConfig({
     video: "retain-on-failure"
   },
   webServer: {
-    command: "npx expo start --web --port 8081",
+    command: "npx expo start --web --port 8081 --clear",
     url: "http://localhost:8081",
-    reuseExistingServer: !process.env.CI,
-    timeout: 180_000
+    reuseExistingServer: false,
+    timeout: 180_000,
+    env: {
+      ...process.env,
+      EXPO_PUBLIC_API_URL: process.env.EXPO_PUBLIC_API_URL || "http://localhost:5002"
+    }
   },
   projects: [
     {

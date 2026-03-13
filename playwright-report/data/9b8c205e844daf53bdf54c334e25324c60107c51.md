@@ -14,9 +14,9 @@
       - generic [ref=e24]:
         - generic [ref=e25]: New Grow
         - generic [ref=e26]: Set required anchors so logs, tools, and tasks can map to this grow correctly.
-        - generic [ref=e28]: Failed to fetch
+        - generic [ref=e28]: HTTP_ERROR
         - generic [ref=e29]: Grow name
-        - textbox "Blueberry Muffin Run 3" [ref=e30]: E2E Grow 1773405751095
+        - textbox "Blueberry Muffin Run 3" [ref=e30]: E2E Grow 1773425494261
         - generic [ref=e31]: System preset
         - generic [ref=e32]:
           - generic [ref=e34] [cursor=pointer]: soil
