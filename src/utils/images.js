@@ -13,7 +13,7 @@ export function resolveImageUrl(uri) {
   if (uri.startsWith("/")) {
     // Remove trailing slash from API_URL if present to avoid double slash,
     // though usually API_URL doesn't have it, and uri has it.
-    // API_URL is typically "http://localhost:5001"
+    // API_URL is typically "http://localhost:5002"
     const baseUrl = API_URL.replace(/\/$/, "");
     return `${baseUrl}${uri}`;
   }

@@ -12,7 +12,7 @@ db.users.find(
     email: {
       $in: [
         "free@growpath.com",
-        "pro@growpath.com",
+        "single@growpath.com",
         "commercial@growpath.com",
         "facility@growpath.com"
       ]
@@ -44,13 +44,3 @@ db.users.find(
 // 5) Quick counts
 print("users:", db.users.countDocuments({}));
 print("grows:", db.grows.countDocuments({}));
-use("growpath");
-db.users
-  .find(
-    {},
-    { email: 1, plan: 1, mode: 1, facilityId: 1, facilitiesAccess: 1, createdAt: 1 }
-  )
-  .limit(20);
-use("growpath");
-db.users.countDocuments({});
-rs.countDocuments({});
