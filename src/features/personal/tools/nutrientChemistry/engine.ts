@@ -31,6 +31,13 @@ export type PHImpact = "raises_pH" | "lowers_pH" | "neutral" | "buffers_pH" | "d
 export type ECImpact = "low" | "medium" | "high";
 export type Mobility = "mobile" | "moderately_mobile" | "immobile" | "variable";
 export type SourceConfidence = "low" | "medium" | "high";
+export type EvidenceClass =
+  | "verified_label"
+  | "user_entered"
+  | "typical_estimate"
+  | "manufacturer_source"
+  | "extension_backed_estimate"
+  | "lab_tested";
 export type ReleaseMechanism =
   | "water_soluble"
   | "microbial_mineralization"
@@ -85,6 +92,12 @@ export type NutrientIngredient = {
   warnings: string[];
   sourceType: "user_entered" | "verified" | "extension_reference" | "manufacturer";
   confidence: SourceConfidence;
+  /** Evidence classification is normalized for display and persisted tool runs. */
+  evidence?: {
+    classification: EvidenceClass;
+    sourceName: string;
+    reference?: string;
+  };
   intentTags: NutrientIntent[];
   nutrientTags: NutrientKey[];
 };
@@ -103,6 +116,25 @@ export type IngredientRecommendation = {
   timing: ReleaseCurveRow[];
 };
 
+export type ReleaseWindowKey = "0_3d" | "3_14d" | "14_45d" | "45_120d" | "120d_plus";
+
+export type ReleaseTimelineEntry = {
+  ingredientId: string;
+  ingredientName: string;
+  nutrient: string;
+  chemicalForm: string;
+  releaseClass: ReleaseClass;
+  adjustedReleaseDays: { min: number; max: number };
+};
+
+export type ReleaseTimelineWindow = {
+  key: ReleaseWindowKey;
+  label: string;
+  startDay: number;
+  endDay: number | null;
+  entries: ReleaseTimelineEntry[];
+};
+
 export const nutrientOptions: { key: NutrientKey; label: string }[] = [
   { key: "calcium", label: "Calcium" },
   { key: "nitrogen", label: "Nitrogen" },
@@ -115,7 +147,11 @@ export const nutrientOptions: { key: NutrientKey; label: string }[] = [
 export const intentOptions: { key: NutrientIntent; label: string; hint: string }[] = [
   { key: "fast_fix", label: "Fast fix", hint: "Immediate correction or rescue input" },
   { key: "long_term_soil", label: "Soil building", hint: "Slow background amendment" },
-  { key: "without_raising_ph", label: "No liming", hint: "Add nutrient without pushing pH up" },
+  {
+    key: "without_raising_ph",
+    label: "No liming",
+    hint: "Add nutrient without pushing pH up"
+  },
   { key: "raise_ph", label: "Raise pH", hint: "Buffer or lift acidic media" },
   {
     key: "calcium_plus_magnesium",
@@ -124,7 +160,11 @@ export const intentOptions: { key: NutrientIntent; label: string; hint: string }
   },
   { key: "high_pH_iron", label: "High-pH iron", hint: "Stable iron above neutral pH" },
   { key: "nitrogen_support", label: "N support", hint: "Quick to slow nitrogen sources" },
-  { key: "phosphorus_support", label: "P support", hint: "Phosphorus with release timing in mind" }
+  {
+    key: "phosphorus_support",
+    label: "P support",
+    hint: "Phosphorus with release timing in mind"
+  }
 ];
 
 export const stageOptions: { key: NutrientStage; label: string }[] = [
@@ -210,7 +250,11 @@ export const ingredientLibrary: NutrientIngredient[] = [
       }
     ],
     bestUseCases: ["rapid calcium correction", "foliar or targeted short-term use"],
-    badUseCases: ["chloride-sensitive crops", "broad soil building", "phosphate concentrates"],
+    badUseCases: [
+      "chloride-sensitive crops",
+      "broad soil building",
+      "phosphate concentrates"
+    ],
     warnings: ["Watch chloride accumulation and foliar burn."],
     sourceType: "extension_reference",
     confidence: "medium",
@@ -534,7 +578,7 @@ export const ingredientLibrary: NutrientIngredient[] = [
         pHEffect: "lowers_pH",
         ecImpact: "high",
         mobility: "moderately_mobile",
-        notes: "Fast N plus sulfur, acidifying over time." 
+        notes: "Fast N plus sulfur, acidifying over time."
       },
       {
         nutrient: "sulfur",
@@ -549,7 +593,11 @@ export const ingredientLibrary: NutrientIngredient[] = [
         notes: "Sulfur is immediately available as sulfate."
       }
     ],
-    bestUseCases: ["fast nitrogen support", "sulfur support", "acidifying saline programs"],
+    bestUseCases: [
+      "fast nitrogen support",
+      "sulfur support",
+      "acidifying saline programs"
+    ],
     badUseCases: ["pH raising", "sensitive root zones"],
     warnings: ["Check EC and acidification pressure."],
     sourceType: "verified",
@@ -666,28 +714,54 @@ function releaseClassFromDays(days: number): ReleaseClass {
 function nutrientIntentHints(intent: NutrientIntent): string[] {
   switch (intent) {
     case "fast_fix":
-      return ["Immediate correction or rescue inputs", "Prioritize soluble or chelated sources"];
+      return [
+        "Immediate correction or rescue inputs",
+        "Prioritize soluble or chelated sources"
+      ];
     case "long_term_soil":
-      return ["Background feeding and pre-mix inputs", "Prioritize biological or mineral-release sources"];
+      return [
+        "Background feeding and pre-mix inputs",
+        "Prioritize biological or mineral-release sources"
+      ];
     case "without_raising_ph":
-      return ["Avoid carbonate liming materials", "Favor neutral or slightly acidifying sources"];
+      return [
+        "Avoid carbonate liming materials",
+        "Favor neutral or slightly acidifying sources"
+      ];
     case "raise_ph":
-      return ["Favor carbonate or buffering materials", "Do not use this for fast rescue"];
+      return [
+        "Favor carbonate or buffering materials",
+        "Do not use this for fast rescue"
+      ];
     case "calcium_plus_magnesium":
-      return ["Select a source that contributes both Ca and Mg", "Dolomitic lime is the common soil example"];
+      return [
+        "Select a source that contributes both Ca and Mg",
+        "Dolomitic lime is the common soil example"
+      ];
     case "high_pH_iron":
-      return ["Choose chelated iron with stronger high-pH stability", "EDDHA is the safest starter choice"];
+      return [
+        "Choose chelated iron with stronger high-pH stability",
+        "EDDHA is the safest starter choice"
+      ];
     case "nitrogen_support":
-      return ["Fast N can come from salts; slow N from meals", "Release timing matters more than the label"];
+      return [
+        "Fast N can come from salts; slow N from meals",
+        "Release timing matters more than the label"
+      ];
     case "phosphorus_support":
-      return ["Phosphorus availability is often biology-dependent", "Check whether the need is immediate or soil-building"];
+      return [
+        "Phosphorus availability is often biology-dependent",
+        "Check whether the need is immediate or soil-building"
+      ];
     default:
       return [];
   }
 }
 
 export function getIngredientsForNutrient(nutrient: NutrientKey) {
-  return ingredientLibrary.filter((ingredient) => ingredient.nutrientTags.includes(nutrient));
+  return ingredientLibrary.filter((ingredient) =>
+    ingredient.nutrientTags.includes(nutrient)
+  );
 }
 
 export function estimateReleaseCurve(
@@ -698,7 +772,10 @@ export function estimateReleaseCurve(
     let factor = 1;
 
     if (form.releaseMechanism === "water_soluble") factor *= 1.55;
-    if (form.releaseMechanism === "microbial_mineralization" || form.releaseMechanism === "organic_matrix") {
+    if (
+      form.releaseMechanism === "microbial_mineralization" ||
+      form.releaseMechanism === "organic_matrix"
+    ) {
       if (environment.livingSoil) factor *= 1.12;
       if (environment.microbialActivity === "high") factor *= 1.18;
       if (environment.microbialActivity === "low") factor *= 0.72;
@@ -714,12 +791,19 @@ export function estimateReleaseCurve(
       if (environment.pH != null && environment.pH < 6.5) factor *= 1.15;
       if (environment.pH != null && environment.pH > 7.2) factor *= 0.82;
     }
-    if (form.releaseMechanism === "chelated" && environment.pH != null && environment.pH >= 7) {
+    if (
+      form.releaseMechanism === "chelated" &&
+      environment.pH != null &&
+      environment.pH >= 7
+    ) {
       factor *= 1.15;
     }
 
     const adjustedMin = Math.max(0, Math.round(form.estimatedReleaseDays.min / factor));
-    const adjustedMax = Math.max(adjustedMin, Math.round(form.estimatedReleaseDays.max / factor));
+    const adjustedMax = Math.max(
+      adjustedMin,
+      Math.round(form.estimatedReleaseDays.max / factor)
+    );
 
     let fitLabel = form.availabilityClass;
     if (adjustedMin <= 1) fitLabel = "immediate";
@@ -728,7 +812,11 @@ export function estimateReleaseCurve(
     else if (adjustedMin <= 60) fitLabel = "slow";
     else fitLabel = "very_slow";
 
-    return { ...form, adjustedReleaseDays: { min: adjustedMin, max: adjustedMax }, fitLabel };
+    return {
+      ...form,
+      adjustedReleaseDays: { min: adjustedMin, max: adjustedMax },
+      fitLabel
+    };
   });
 }
 
@@ -752,6 +840,63 @@ export function stageTimingWarning(stage: NutrientStage, rows: ReleaseCurveRow[]
     return "Fast products can patch a problem, but slower sources usually fit soil building better.";
   }
   return null;
+}
+
+const RELEASE_WINDOWS: Omit<ReleaseTimelineWindow, "entries">[] = [
+  { key: "0_3d", label: "0-3 days", startDay: 0, endDay: 3 },
+  { key: "3_14d", label: "3-14 days", startDay: 3, endDay: 14 },
+  { key: "14_45d", label: "14-45 days", startDay: 14, endDay: 45 },
+  { key: "45_120d", label: "45-120 days", startDay: 45, endDay: 120 },
+  { key: "120d_plus", label: "120+ days", startDay: 120, endDay: null }
+];
+
+/** Groups adjusted release ranges into every time band they overlap. */
+export function buildReleaseTimeline(
+  ingredients: NutrientIngredient[],
+  environment: NutrientEnvironment
+): ReleaseTimelineWindow[] {
+  const entries = ingredients.flatMap((ingredient) =>
+    estimateReleaseCurve(ingredient, environment).map((form) => ({
+      ingredientId: ingredient.id,
+      ingredientName: ingredient.name,
+      nutrient: form.nutrient,
+      chemicalForm: form.chemicalName,
+      releaseClass: form.fitLabel as ReleaseClass,
+      adjustedReleaseDays: form.adjustedReleaseDays
+    }))
+  );
+
+  return RELEASE_WINDOWS.map((window) => ({
+    ...window,
+    entries: entries.filter((entry) => {
+      const end = window.endDay ?? Number.POSITIVE_INFINITY;
+      return (
+        entry.adjustedReleaseDays.min <= end &&
+        entry.adjustedReleaseDays.max >= window.startDay
+      );
+    })
+  }));
+}
+
+export function getIngredientEvidence(
+  ingredient: NutrientIngredient
+): NonNullable<NutrientIngredient["evidence"]> {
+  if (ingredient.evidence) return ingredient.evidence;
+  const classification: EvidenceClass =
+    ingredient.sourceType === "verified"
+      ? "verified_label"
+      : ingredient.sourceType === "manufacturer"
+        ? "manufacturer_source"
+        : ingredient.sourceType === "extension_reference"
+          ? "extension_backed_estimate"
+          : "user_entered";
+  return {
+    classification,
+    sourceName:
+      classification === "extension_backed_estimate"
+        ? "Extension reference"
+        : classification.replaceAll("_", " ")
+  };
 }
 
 export function recommendIngredients(
@@ -779,12 +924,25 @@ export function recommendIngredients(
         if (slowest >= 60) score += 10;
       }
       if (intent === "without_raising_ph") {
-        if (timing.some((row) => row.pHEffect === "neutral" || row.pHEffect === "lowers_pH")) score += 18;
+        if (
+          timing.some((row) => row.pHEffect === "neutral" || row.pHEffect === "lowers_pH")
+        )
+          score += 18;
       }
       if (intent === "raise_ph") {
-        if (timing.some((row) => row.pHEffect === "raises_pH" || row.pHEffect === "buffers_pH")) score += 18;
+        if (
+          timing.some(
+            (row) => row.pHEffect === "raises_pH" || row.pHEffect === "buffers_pH"
+          )
+        )
+          score += 18;
       }
-      if (intent === "calcium_plus_magnesium" && ingredient.elemental.Ca && ingredient.elemental.Mg) score += 32;
+      if (
+        intent === "calcium_plus_magnesium" &&
+        ingredient.elemental.Ca &&
+        ingredient.elemental.Mg
+      )
+        score += 32;
       if (intent === "high_pH_iron") {
         if (ingredient.id.includes("eddha")) score += 30;
         else if (ingredient.id.includes("dtpa")) score += 20;
@@ -795,13 +953,24 @@ export function recommendIngredients(
       }
       if (environment.pH != null && environment.pH > 7) {
         if (timing.some((row) => row.pHEffect === "raises_pH")) score -= 12;
-        if (timing.some((row) => row.nutrient === "iron" && row.releaseMechanism === "chelated")) score += 8;
+        if (
+          timing.some(
+            (row) => row.nutrient === "iron" && row.releaseMechanism === "chelated"
+          )
+        )
+          score += 8;
       }
-      if (environment.microbialActivity === "low" && timing.some((row) => row.releaseMechanism === "microbial_mineralization")) {
+      if (
+        environment.microbialActivity === "low" &&
+        timing.some((row) => row.releaseMechanism === "microbial_mineralization")
+      ) {
         score -= 14;
         reasons.push("Low biological activity may slow microbe-released sources.");
       }
-      if (environment.moisture === "dry" && timing.some((row) => row.releaseMechanism === "microbial_mineralization")) {
+      if (
+        environment.moisture === "dry" &&
+        timing.some((row) => row.releaseMechanism === "microbial_mineralization")
+      ) {
         score -= 10;
         reasons.push("Dry media slows microbial mineralization.");
       }
@@ -828,7 +997,10 @@ export function recommendIngredients(
     .sort((a, b) => b.score - a.score);
 }
 
-export function checkCompatibility(ingredients: NutrientIngredient[], environment: NutrientEnvironment) {
+export function checkCompatibility(
+  ingredients: NutrientIngredient[],
+  environment: NutrientEnvironment
+) {
   const warnings: string[] = [];
   const totals = ingredients.reduce(
     (acc, ingredient) => ({
@@ -851,26 +1023,64 @@ export function checkCompatibility(ingredients: NutrientIngredient[], environmen
   );
 
   if (environment.isConcentrate && hasCalciumSalt && hasPhosphate) {
-    warnings.push("Calcium salts and phosphate sources can precipitate in concentrated stock solutions. Separate A/B stock if needed.");
+    warnings.push(
+      "Calcium salts and phosphate sources can precipitate in concentrated stock solutions. Separate A/B stock if needed."
+    );
   }
   if (totals.Ca > 0 && totals.K > totals.Ca * 2.5) {
-    warnings.push("High potassium relative to calcium may contribute to Ca/Mg uptake imbalance.");
+    warnings.push(
+      "High potassium relative to calcium may contribute to Ca/Mg uptake imbalance."
+    );
   }
-  if (environment.pH != null && environment.pH > 7 && ingredients.some((ingredient) => ingredient.bestUseCases.some((use) => use.toLowerCase().includes("raise pH")))) {
-    warnings.push("Lime or buffering materials may worsen already high-pH media and reduce micronutrient availability.");
+  if (totals.Mg > 0 && totals.K > totals.Mg * 3) {
+    warnings.push(
+      "High potassium relative to magnesium may suppress Mg uptake; verify the complete feed ratio before increasing K."
+    );
   }
-  if (environment.stage === "late_flower" && ingredients.some((ingredient) => ingredient.intentTags.includes("long_term_soil"))) {
-    warnings.push("Long-horizon soil-building inputs may not move fast enough for late flower correction.");
+  const highEcForms = ingredients.flatMap((ingredient) =>
+    ingredient.nutrientForms.filter((form) => form.ecImpact === "high")
+  );
+  if (highEcForms.length >= 2 || (highEcForms.length >= 1 && environment.isConcentrate)) {
+    warnings.push(
+      "High-EC soluble inputs are combined here. Confirm final dilution and root-zone EC before application."
+    );
+  }
+  if (
+    environment.pH != null &&
+    environment.pH > 7 &&
+    ingredients.some((ingredient) =>
+      ingredient.bestUseCases.some((use) => use.toLowerCase().includes("raise pH"))
+    )
+  ) {
+    warnings.push(
+      "Lime or buffering materials may worsen already high-pH media and reduce micronutrient availability."
+    );
+  }
+  if (
+    environment.stage === "late_flower" &&
+    ingredients.some((ingredient) => ingredient.intentTags.includes("long_term_soil"))
+  ) {
+    warnings.push(
+      "Long-horizon soil-building inputs may not move fast enough for late flower correction."
+    );
   }
   return Array.from(new Set(warnings));
 }
 
-export function compareIngredientsBySpeed(nutrient: NutrientKey, intent: NutrientIntent, environment: NutrientEnvironment) {
+export function compareIngredientsBySpeed(
+  nutrient: NutrientKey,
+  intent: NutrientIntent,
+  environment: NutrientEnvironment
+) {
   const ranked = recommendIngredients(nutrient, intent, environment);
   return {
-    fast: ranked.filter((row) => row.fitLabel === "immediate" || row.fitLabel === "fast").slice(0, 3),
+    fast: ranked
+      .filter((row) => row.fitLabel === "immediate" || row.fitLabel === "fast")
+      .slice(0, 3),
     medium: ranked.filter((row) => row.fitLabel === "medium").slice(0, 3),
-    slow: ranked.filter((row) => row.fitLabel === "slow" || row.fitLabel === "very_slow").slice(0, 3)
+    slow: ranked
+      .filter((row) => row.fitLabel === "slow" || row.fitLabel === "very_slow")
+      .slice(0, 3)
   };
 }
 

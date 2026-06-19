@@ -1,30 +1,51 @@
 import React, { useMemo } from "react";
-import { Link, useLocalSearchParams } from "expo-router";
-import { StyleSheet, Text, View } from "react-native";
+import { Href, Link, useLocalSearchParams } from "expo-router";
+import { ScrollView, StyleSheet, Text, View } from "react-native";
+
+import {
+  FeatureArea,
+  FeatureDefinition,
+  getNavigablePersonalTools
+} from "@/config/featureStatus";
 
 const styles = StyleSheet.create({
-  container: { flex: 1, padding: 20, backgroundColor: "#FFFFFF" },
+  container: { flex: 1, backgroundColor: "#FFFFFF" },
+  content: { padding: 20, paddingBottom: 40 },
   header: { marginBottom: 16 },
   title: { fontSize: 24, fontWeight: "700", marginBottom: 6 },
   subtitle: { fontSize: 14, color: "#64748B" },
   context: {
     borderWidth: 1,
     borderColor: "#DCFCE7",
-    borderRadius: 10,
+    borderRadius: 8,
     backgroundColor: "#F0FDF4",
     padding: 10,
     marginTop: 12
   },
   contextText: { color: "#166534", fontWeight: "700" },
-  grid: { gap: 12, marginTop: 12 },
+  section: { marginTop: 24 },
+  sectionTitle: {
+    fontSize: 13,
+    fontWeight: "700",
+    color: "#475569",
+    textTransform: "uppercase"
+  },
+  grid: { gap: 10, marginTop: 10 },
   card: {
     padding: 16,
     borderWidth: 1,
     borderColor: "#E2E8F0",
-    borderRadius: 12,
+    borderRadius: 8,
     backgroundColor: "#F8FAFC"
   },
-  cardTitle: { fontSize: 16, fontWeight: "700", marginBottom: 6 },
+  cardHeader: {
+    flexDirection: "row",
+    alignItems: "center",
+    justifyContent: "space-between",
+    gap: 12
+  },
+  cardTitle: { flex: 1, fontSize: 16, fontWeight: "700" },
+  beta: { fontSize: 12, color: "#92400E", fontWeight: "700" },
   cardDesc: { fontSize: 14, color: "#475569" },
   link: { marginTop: 10, fontSize: 14, fontWeight: "700", color: "#166534" }
 });
@@ -39,14 +60,49 @@ function hrefWithGrow(path: string, growId: string) {
   return growId ? `${path}?growId=${encodeURIComponent(growId)}` : path;
 }
 
+const AREA_ORDER: FeatureArea[] = [
+  "environment",
+  "water_nutrients",
+  "ai",
+  "integrations"
+];
+
+const AREA_LABELS: Record<FeatureArea, string> = {
+  personal_navigation: "Navigation",
+  environment: "Environment",
+  water_nutrients: "Water & Nutrients",
+  ai: "AI",
+  integrations: "Integrations"
+};
+
+function ToolCard({ tool, growId }: { tool: FeatureDefinition; growId: string }) {
+  const href = tool.acceptsGrowContext
+    ? hrefWithGrow(tool.href || "", growId)
+    : tool.href || "";
+
+  return (
+    <View style={styles.card}>
+      <View style={styles.cardHeader}>
+        <Text style={styles.cardTitle}>{tool.title}</Text>
+        {tool.status === "beta" ? <Text style={styles.beta}>Beta</Text> : null}
+      </View>
+      <Text style={styles.cardDesc}>{tool.description}</Text>
+      <Link href={href as Href} style={styles.link} asChild>
+        <Text>Open</Text>
+      </Link>
+    </View>
+  );
+}
+
 export default function ToolsHubScreen() {
   const { growId: rawGrowId } = useLocalSearchParams<{ growId?: string | string[] }>();
   const growId = useMemo(() => coerceParam(rawGrowId), [rawGrowId]);
+  const tools = useMemo(() => getNavigablePersonalTools(), []);
 
   return (
-    <View style={styles.container}>
+    <ScrollView style={styles.container} contentContainerStyle={styles.content}>
       <View style={styles.header}>
-        <Text style={styles.title}>Tools</Text>
+        <Text style={styles.title}>Tools / AI</Text>
         <Text style={styles.subtitle}>
           Run calculators, get recommendations, and save outputs to a grow.
         </Text>
@@ -57,139 +113,21 @@ export default function ToolsHubScreen() {
         ) : null}
       </View>
 
-      <View style={styles.grid}>
-        <View style={styles.card}>
-          <Text style={styles.cardTitle}>Data Integrations</Text>
-          <Text style={styles.cardDesc}>
-            Connect Pulse, TrolMaster, AROYA, Growlink, SensorPush, Aranet, UbiBot,
-            ZENTRA, HOBOlink, Monnit, OpenSprinkler, and Agrowtek.
-          </Text>
-          <Link href="/home/personal/tools/integrations" style={styles.link} asChild>
-            <Text>Manage integrations -&gt;</Text>
-          </Link>
-        </View>
+      {AREA_ORDER.map((area) => {
+        const areaTools = tools.filter((tool) => tool.area === area);
+        if (!areaTools.length) return null;
 
-        <View style={styles.card}>
-          <Text style={styles.cardTitle}>Environment: VPD Calculator</Text>
-          <Text style={styles.cardDesc}>Estimate VPD from temperature and humidity.</Text>
-          <Link
-            href={hrefWithGrow("/home/personal/tools/vpd", growId)}
-            style={styles.link}
-            asChild
-          >
-            <Text>Open VPD -&gt;</Text>
-          </Link>
-        </View>
-
-        <View style={styles.card}>
-          <Text style={styles.cardTitle}>Pulse Grow / Dew Point Guard</Text>
-          <Text style={styles.cardDesc}>
-            Connect Pulse Pro devices, import environmental readings, and analyze
-            lights-off dew point risk.
-          </Text>
-          <Link
-            href={hrefWithGrow("/home/personal/tools/dew-point-guard", growId)}
-            style={styles.link}
-            asChild
-          >
-            <Text>Connect Pulse Grow -&gt;</Text>
-          </Link>
-        </View>
-
-        <View style={styles.card}>
-          <Text style={styles.cardTitle}>Environment: PPFD / DLI Planner</Text>
-          <Text style={styles.cardDesc}>
-            Estimate PPFD requirements from target DLI and photoperiod.
-          </Text>
-          <Link
-            href={hrefWithGrow("/home/personal/tools/ppfd", growId)}
-            style={styles.link}
-            asChild
-          >
-            <Text>Open PPFD / DLI -&gt;</Text>
-          </Link>
-        </View>
-
-        <View style={styles.card}>
-          <Text style={styles.cardTitle}>Water/Nutrients: NPK Label Ratio (Preview)</Text>
-          <Text style={styles.cardDesc}>
-            Preview label ratio only. This is not a full nutrient ppm calculator.
-          </Text>
-          <Link
-            href={hrefWithGrow("/home/personal/tools/npk", growId)}
-            style={styles.link}
-            asChild
-          >
-            <Text>Open NPK Preview -&gt;</Text>
-          </Link>
-        </View>
-
-        <View style={styles.card}>
-          <Text style={styles.cardTitle}>Water/Nutrients: Nutrient Chemistry Engine</Text>
-          <Text style={styles.cardDesc}>
-            Compare source forms, release speed, pH effect, and fast-vs-slow use cases.
-          </Text>
-          <Link
-            href={hrefWithGrow("/home/personal/tools/nutrient-chemistry", growId)}
-            style={styles.link}
-            asChild
-          >
-            <Text>Open Nutrient Chemistry -&gt;</Text>
-          </Link>
-        </View>
-
-        <View style={styles.card}>
-          <Text style={styles.cardTitle}>Ops/Planning: Watering Planner</Text>
-          <Text style={styles.cardDesc}>
-            Plan watering cadence and estimate next watering volume.
-          </Text>
-          <Link
-            href={hrefWithGrow("/home/personal/tools/watering", growId)}
-            style={styles.link}
-            asChild
-          >
-            <Text>Open Watering -&gt;</Text>
-          </Link>
-        </View>
-
-        <View style={styles.card}>
-          <Text style={styles.cardTitle}>Environment: Bud Rot Risk</Text>
-          <Text style={styles.cardDesc}>
-            Snapshot mold pressure from RH, airflow score, and wet events.
-          </Text>
-          <Link
-            href={hrefWithGrow("/home/personal/tools/bud-rot-risk", growId)}
-            style={styles.link}
-            asChild
-          >
-            <Text>Open Bud Rot Risk -&gt;</Text>
-          </Link>
-        </View>
-
-        <View style={styles.card}>
-          <Text style={styles.cardTitle}>Ops/Planning: Crop Steering</Text>
-          <Text style={styles.cardDesc}>
-            Basic steering scaffold for runoff and irrigation shot planning.
-          </Text>
-          <Link
-            href={hrefWithGrow("/home/personal/tools/crop-steering", growId)}
-            style={styles.link}
-            asChild
-          >
-            <Text>Open Crop Steering -&gt;</Text>
-          </Link>
-        </View>
-
-        <View style={styles.card}>
-          <Text style={styles.cardTitle}>AI: Issue Diagnosis</Text>
-          <Text style={styles.cardDesc}>
-            Diagnose issues from text and photos as part of the tools workflow.
-          </Text>
-          <Link href="/home/personal/diagnose" style={styles.link} asChild>
-            <Text>Open Diagnose -&gt;</Text>
-          </Link>
-        </View>
-      </View>
-    </View>
+        return (
+          <View key={area} style={styles.section}>
+            <Text style={styles.sectionTitle}>{AREA_LABELS[area]}</Text>
+            <View style={styles.grid}>
+              {areaTools.map((tool) => (
+                <ToolCard key={tool.key} tool={tool} growId={growId} />
+              ))}
+            </View>
+          </View>
+        );
+      })}
+    </ScrollView>
   );
 }

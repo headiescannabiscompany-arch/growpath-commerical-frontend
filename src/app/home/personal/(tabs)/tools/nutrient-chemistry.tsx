@@ -5,9 +5,11 @@ import { Pressable, ScrollView, StyleSheet, Text, TextInput, View } from "react-
 import BackButton from "@/components/nav/BackButton";
 import { saveToolRunAndOpenJournal } from "@/features/personal/tools/saveToolRunAndOpenJournal";
 import {
+  buildReleaseTimeline,
   checkCompatibility,
   compareIngredientsBySpeed,
   getIngredientById,
+  getIngredientEvidence,
   intentOptions,
   moistureOptions,
   nutrientOptions,
@@ -46,7 +48,8 @@ export default function NutrientChemistryToolScreen() {
   const [intent, setIntent] = useState<NutrientIntent>("fast_fix");
   const [stage, setStage] = useState<NutrientStage>("veg");
   const [moisture, setMoisture] = useState<MoistureState>("moderate");
-  const [microbialActivity, setMicrobialActivity] = useState<MicrobialActivity>("moderate");
+  const [microbialActivity, setMicrobialActivity] =
+    useState<MicrobialActivity>("moderate");
   const [soilTempC, setSoilTempC] = useState("22");
   const [pH, setPH] = useState("6.4");
   const [daysUntilNeed, setDaysUntilNeed] = useState("7");
@@ -67,17 +70,51 @@ export default function NutrientChemistryToolScreen() {
       livingSoil,
       isConcentrate
     }),
-    [stage, soilTempC, moisture, microbialActivity, pH, daysUntilNeed, livingSoil, isConcentrate]
+    [
+      stage,
+      soilTempC,
+      moisture,
+      microbialActivity,
+      pH,
+      daysUntilNeed,
+      livingSoil,
+      isConcentrate
+    ]
   );
 
-  const recommendations = useMemo(() => recommendIngredients(nutrient, intent, environment), [nutrient, intent, environment]);
-  const activeRecommendation = recommendations.find((row) => row.ingredient.id === compareIds[0]) || recommendations[0];
+  const recommendations = useMemo(
+    () => recommendIngredients(nutrient, intent, environment),
+    [nutrient, intent, environment]
+  );
+  const activeRecommendation =
+    recommendations.find((row) => row.ingredient.id === compareIds[0]) ||
+    recommendations[0];
   const compareIngredients = useMemo(
-    () => compareIds.map((id) => getIngredientById(id)).filter(Boolean) as NonNullable<ReturnType<typeof getIngredientById>>[],
+    () =>
+      compareIds.map((id) => getIngredientById(id)).filter(Boolean) as NonNullable<
+        ReturnType<typeof getIngredientById>
+      >[],
     [compareIds]
   );
-  const compatibilityWarnings = useMemo(() => checkCompatibility(compareIngredients, environment), [compareIngredients, environment]);
-  const compareGroups = useMemo(() => compareIngredientsBySpeed(nutrient, intent, environment), [nutrient, intent, environment]);
+  const timelineIngredients = useMemo(() => {
+    if (compareIngredients.length) return compareIngredients;
+    return activeRecommendation ? [activeRecommendation.ingredient] : [];
+  }, [activeRecommendation, compareIngredients]);
+  const compatibilityWarnings = useMemo(
+    () => checkCompatibility(timelineIngredients, environment),
+    [timelineIngredients, environment]
+  );
+  const compareGroups = useMemo(
+    () => compareIngredientsBySpeed(nutrient, intent, environment),
+    [nutrient, intent, environment]
+  );
+  const releaseTimeline = useMemo(
+    () => buildReleaseTimeline(timelineIngredients, environment),
+    [timelineIngredients, environment]
+  );
+  const activeEvidence = activeRecommendation
+    ? getIngredientEvidence(activeRecommendation.ingredient)
+    : null;
 
   function toggleCompare(id: string) {
     setCompareIds((current) => {
@@ -94,10 +131,30 @@ export default function NutrientChemistryToolScreen() {
       router,
       growId,
       toolKey: "nutrient-chemistry",
-      input: { nutrient, intent, stage, moisture, microbialActivity, soilTempC: toNumber(soilTempC), pH: toNumber(pH), daysUntilNeed: toNumber(daysUntilNeed), livingSoil, isConcentrate, compareIds },
+      input: {
+        nutrient,
+        intent,
+        stage,
+        moisture,
+        microbialActivity,
+        soilTempC: toNumber(soilTempC),
+        pH: toNumber(pH),
+        daysUntilNeed: toNumber(daysUntilNeed),
+        livingSoil,
+        isConcentrate,
+        compareIds
+      },
       output: {
         activeIngredient: activeRecommendation.ingredient,
-        rankedIngredients: recommendations.slice(0, 8).map((row) => ({ id: row.ingredient.id, name: row.ingredient.name, score: row.score, fitLabel: row.fitLabel, releaseSummary: row.releaseSummary, reasons: row.reasons })),
+        rankedIngredients: recommendations.slice(0, 8).map((row) => ({
+          id: row.ingredient.id,
+          name: row.ingredient.name,
+          score: row.score,
+          fitLabel: row.fitLabel,
+          releaseSummary: row.releaseSummary,
+          reasons: row.reasons
+        })),
+        releaseTimeline,
         compatibilityWarnings,
         compareGroups
       }
@@ -110,15 +167,31 @@ export default function NutrientChemistryToolScreen() {
     <ScrollView style={styles.container} contentContainerStyle={styles.content}>
       <BackButton />
       <Text style={styles.title}>Nutrient Chemistry</Text>
-      <Text style={styles.subtitle}>Classify source form, release speed, pH effect, and fast vs slow use case.</Text>
+      <Text style={styles.subtitle}>
+        Classify source form, release speed, pH effect, and fast vs slow use case.
+      </Text>
       {growId ? <Text style={styles.context}>Grow context: {growId}</Text> : null}
 
       <View style={styles.panel}>
         <Text style={styles.sectionTitle}>Nutrient</Text>
         <View style={styles.wrap}>
           {nutrientOptions.map((option) => (
-            <Pressable key={option.key} style={pillStyle(nutrient === option.key)} onPress={() => { setNutrient(option.key); setCompareIds([]); }}>
-              <Text style={[styles.pillText, nutrient === option.key ? styles.pillTextOn : null]}>{option.label}</Text>
+            <Pressable
+              key={option.key}
+              style={pillStyle(nutrient === option.key)}
+              onPress={() => {
+                setNutrient(option.key);
+                setCompareIds([]);
+              }}
+            >
+              <Text
+                style={[
+                  styles.pillText,
+                  nutrient === option.key ? styles.pillTextOn : null
+                ]}
+              >
+                {option.label}
+              </Text>
             </Pressable>
           ))}
         </View>
@@ -126,8 +199,22 @@ export default function NutrientChemistryToolScreen() {
         <Text style={styles.sectionTitle}>Use case</Text>
         <View style={styles.wrap}>
           {intentOptions.map((option) => (
-            <Pressable key={option.key} style={pillStyle(intent === option.key)} onPress={() => { setIntent(option.key); setCompareIds([]); }}>
-              <Text style={[styles.pillText, intent === option.key ? styles.pillTextOn : null]}>{option.label}</Text>
+            <Pressable
+              key={option.key}
+              style={pillStyle(intent === option.key)}
+              onPress={() => {
+                setIntent(option.key);
+                setCompareIds([]);
+              }}
+            >
+              <Text
+                style={[
+                  styles.pillText,
+                  intent === option.key ? styles.pillTextOn : null
+                ]}
+              >
+                {option.label}
+              </Text>
             </Pressable>
           ))}
         </View>
@@ -135,33 +222,113 @@ export default function NutrientChemistryToolScreen() {
         <Text style={styles.sectionTitle}>Stage</Text>
         <View style={styles.wrap}>
           {stageOptions.map((option) => (
-            <Pressable key={option.key} style={pillStyle(stage === option.key)} onPress={() => setStage(option.key)}>
-              <Text style={[styles.pillText, stage === option.key ? styles.pillTextOn : null]}>{option.label}</Text>
+            <Pressable
+              key={option.key}
+              style={pillStyle(stage === option.key)}
+              onPress={() => setStage(option.key)}
+            >
+              <Text
+                style={[styles.pillText, stage === option.key ? styles.pillTextOn : null]}
+              >
+                {option.label}
+              </Text>
             </Pressable>
           ))}
         </View>
 
         <Text style={styles.sectionTitle}>Environment</Text>
         <View style={styles.inlineRow}>
-          <View style={styles.flex1}><Text style={styles.label}>Soil temp (C)</Text><TextInput style={styles.input} value={soilTempC} onChangeText={setSoilTempC} keyboardType="numeric" /></View>
-          <View style={styles.flex1}><Text style={styles.label}>pH</Text><TextInput style={styles.input} value={pH} onChangeText={setPH} keyboardType="numeric" /></View>
-          <View style={styles.flex1}><Text style={styles.label}>Days until need</Text><TextInput style={styles.input} value={daysUntilNeed} onChangeText={setDaysUntilNeed} keyboardType="numeric" /></View>
+          <View style={styles.flex1}>
+            <Text style={styles.label}>Soil temp (C)</Text>
+            <TextInput
+              style={styles.input}
+              value={soilTempC}
+              onChangeText={setSoilTempC}
+              keyboardType="numeric"
+            />
+          </View>
+          <View style={styles.flex1}>
+            <Text style={styles.label}>pH</Text>
+            <TextInput
+              style={styles.input}
+              value={pH}
+              onChangeText={setPH}
+              keyboardType="numeric"
+            />
+          </View>
+          <View style={styles.flex1}>
+            <Text style={styles.label}>Days until need</Text>
+            <TextInput
+              style={styles.input}
+              value={daysUntilNeed}
+              onChangeText={setDaysUntilNeed}
+              keyboardType="numeric"
+            />
+          </View>
         </View>
 
         <View style={styles.inlineRow}>
           <View style={styles.flex1}>
             <Text style={styles.label}>Moisture</Text>
-            <View style={styles.wrap}>{moistureOptions.map((option) => (<Pressable key={option.key} style={pillStyle(moisture === option.key)} onPress={() => setMoisture(option.key)}><Text style={[styles.pillText, moisture === option.key ? styles.pillTextOn : null]}>{option.label}</Text></Pressable>))}</View>
+            <View style={styles.wrap}>
+              {moistureOptions.map((option) => (
+                <Pressable
+                  key={option.key}
+                  style={pillStyle(moisture === option.key)}
+                  onPress={() => setMoisture(option.key)}
+                >
+                  <Text
+                    style={[
+                      styles.pillText,
+                      moisture === option.key ? styles.pillTextOn : null
+                    ]}
+                  >
+                    {option.label}
+                  </Text>
+                </Pressable>
+              ))}
+            </View>
           </View>
           <View style={styles.flex1}>
             <Text style={styles.label}>Microbial activity</Text>
-            <View style={styles.wrap}>{microbialOptions.map((option) => (<Pressable key={option.key} style={pillStyle(microbialActivity === option.key)} onPress={() => setMicrobialActivity(option.key)}><Text style={[styles.pillText, microbialActivity === option.key ? styles.pillTextOn : null]}>{option.label}</Text></Pressable>))}</View>
+            <View style={styles.wrap}>
+              {microbialOptions.map((option) => (
+                <Pressable
+                  key={option.key}
+                  style={pillStyle(microbialActivity === option.key)}
+                  onPress={() => setMicrobialActivity(option.key)}
+                >
+                  <Text
+                    style={[
+                      styles.pillText,
+                      microbialActivity === option.key ? styles.pillTextOn : null
+                    ]}
+                  >
+                    {option.label}
+                  </Text>
+                </Pressable>
+              ))}
+            </View>
           </View>
         </View>
 
         <View style={styles.toggleRow}>
-          <Pressable style={[styles.toggle, livingSoil ? styles.toggleOn : null]} onPress={() => setLivingSoil((current) => !current)}><Text style={[styles.toggleText, livingSoil ? styles.toggleTextOn : null]}>Living soil</Text></Pressable>
-          <Pressable style={[styles.toggle, isConcentrate ? styles.toggleOn : null]} onPress={() => setIsConcentrate((current) => !current)}><Text style={[styles.toggleText, isConcentrate ? styles.toggleTextOn : null]}>Concentrate mix</Text></Pressable>
+          <Pressable
+            style={[styles.toggle, livingSoil ? styles.toggleOn : null]}
+            onPress={() => setLivingSoil((current) => !current)}
+          >
+            <Text style={[styles.toggleText, livingSoil ? styles.toggleTextOn : null]}>
+              Living soil
+            </Text>
+          </Pressable>
+          <Pressable
+            style={[styles.toggle, isConcentrate ? styles.toggleOn : null]}
+            onPress={() => setIsConcentrate((current) => !current)}
+          >
+            <Text style={[styles.toggleText, isConcentrate ? styles.toggleTextOn : null]}>
+              Concentrate mix
+            </Text>
+          </Pressable>
         </View>
       </View>
 
@@ -169,9 +336,18 @@ export default function NutrientChemistryToolScreen() {
         <View style={styles.summaryCard}>
           <Text style={styles.cardTitle}>Best current fit</Text>
           <Text style={styles.summaryName}>{activeRecommendation.ingredient.name}</Text>
-          <Text style={styles.summaryMeta}>{activeRecommendation.fitLabel.toUpperCase()} | {activeRecommendation.releaseSummary}</Text>
-          <Text style={styles.summaryText}>{activeRecommendation.ingredient.bestUseCases.join(" · ")}</Text>
-          {compatibilityWarnings.map((warning) => <Text key={warning} style={styles.warning}>{warning}</Text>)}
+          <Text style={styles.summaryMeta}>
+            {activeRecommendation.fitLabel.toUpperCase()} |{" "}
+            {activeRecommendation.releaseSummary}
+          </Text>
+          <Text style={styles.summaryText}>
+            {activeRecommendation.ingredient.bestUseCases.join(" · ")}
+          </Text>
+          {compatibilityWarnings.map((warning) => (
+            <Text key={warning} style={styles.warning}>
+              {warning}
+            </Text>
+          ))}
         </View>
       ) : null}
 
@@ -180,12 +356,38 @@ export default function NutrientChemistryToolScreen() {
         {recommendations.slice(0, 6).map((row) => {
           const selected = compareIds.includes(row.ingredient.id);
           return (
-            <Pressable key={row.ingredient.id} style={[styles.recommendationCard, selected ? styles.recommendationCardOn : null]} onPress={() => setCompareIds([row.ingredient.id])}>
+            <Pressable
+              key={row.ingredient.id}
+              style={[
+                styles.recommendationCard,
+                selected ? styles.recommendationCardOn : null
+              ]}
+              onPress={() => setCompareIds([row.ingredient.id])}
+            >
               <View style={styles.recommendationHeader}>
-                <View style={styles.flex1}><Text style={styles.recommendationTitle}>{row.ingredient.name}</Text><Text style={styles.recommendationMeta}>{row.fitLabel.toUpperCase()} · {row.releaseSummary}</Text></View>
-                <Pressable style={[styles.compareButton, selected ? styles.compareButtonOn : null]} onPress={() => toggleCompare(row.ingredient.id)}><Text style={[styles.compareButtonText, selected ? styles.compareButtonTextOn : null]}>{selected ? "Compared" : "+ Compare"}</Text></Pressable>
+                <View style={styles.flex1}>
+                  <Text style={styles.recommendationTitle}>{row.ingredient.name}</Text>
+                  <Text style={styles.recommendationMeta}>
+                    {row.fitLabel.toUpperCase()} · {row.releaseSummary}
+                  </Text>
+                </View>
+                <Pressable
+                  style={[styles.compareButton, selected ? styles.compareButtonOn : null]}
+                  onPress={() => toggleCompare(row.ingredient.id)}
+                >
+                  <Text
+                    style={[
+                      styles.compareButtonText,
+                      selected ? styles.compareButtonTextOn : null
+                    ]}
+                  >
+                    {selected ? "Compared" : "+ Compare"}
+                  </Text>
+                </Pressable>
               </View>
-              <Text style={styles.recommendationBody}>{row.reasons.slice(0, 3).join(" · ")}</Text>
+              <Text style={styles.recommendationBody}>
+                {row.reasons.slice(0, 3).join(" · ")}
+              </Text>
             </Pressable>
           );
         })}
@@ -193,17 +395,70 @@ export default function NutrientChemistryToolScreen() {
 
       <View style={styles.panel}>
         <Text style={styles.sectionTitle}>Release windows</Text>
-        <Text style={styles.helperText}>Fast / medium / slow groupings help separate quick correction from soil-building inputs.</Text>
-        <View style={styles.releaseGroup}><Text style={styles.releaseLabel}>Fast</Text><Text style={styles.releaseItems}>{compareGroups.fast.map((row) => row.ingredient.name).join(" · ") || "None"}</Text></View>
-        <View style={styles.releaseGroup}><Text style={styles.releaseLabel}>Medium</Text><Text style={styles.releaseItems}>{compareGroups.medium.map((row) => row.ingredient.name).join(" · ") || "None"}</Text></View>
-        <View style={styles.releaseGroup}><Text style={styles.releaseLabel}>Slow</Text><Text style={styles.releaseItems}>{compareGroups.slow.map((row) => row.ingredient.name).join(" · ") || "None"}</Text></View>
+        <Text style={styles.helperText}>
+          Fast / medium / slow groupings help separate quick correction from soil-building
+          inputs.
+        </Text>
+        <View style={styles.releaseGroup}>
+          <Text style={styles.releaseLabel}>Fast</Text>
+          <Text style={styles.releaseItems}>
+            {compareGroups.fast.map((row) => row.ingredient.name).join(" · ") || "None"}
+          </Text>
+        </View>
+        <View style={styles.releaseGroup}>
+          <Text style={styles.releaseLabel}>Medium</Text>
+          <Text style={styles.releaseItems}>
+            {compareGroups.medium.map((row) => row.ingredient.name).join(" · ") || "None"}
+          </Text>
+        </View>
+        <View style={styles.releaseGroup}>
+          <Text style={styles.releaseLabel}>Slow</Text>
+          <Text style={styles.releaseItems}>
+            {compareGroups.slow.map((row) => row.ingredient.name).join(" · ") || "None"}
+          </Text>
+        </View>
+      </View>
+
+      <View style={styles.panel}>
+        <Text style={styles.sectionTitle}>Time-release timeline</Text>
+        <Text style={styles.helperText}>
+          Adjusted for the selected temperature, moisture, biology, and pH. A form appears
+          in each band its estimated range overlaps.
+        </Text>
+        {releaseTimeline.map((window) => (
+          <View key={window.key} style={styles.releaseGroup}>
+            <Text style={styles.releaseLabel}>{window.label}</Text>
+            <Text style={styles.releaseItems}>
+              {window.entries
+                .map((entry) => `${entry.ingredientName}: ${entry.chemicalForm}`)
+                .join(" · ") || "No expected release"}
+            </Text>
+          </View>
+        ))}
       </View>
 
       {compareIngredients.length > 0 ? (
         <View style={styles.panel}>
           <Text style={styles.sectionTitle}>Compatibility check</Text>
-          {compareIngredients.map((ingredient) => (<View key={ingredient.id} style={styles.compareRow}><Text style={styles.compareName}>{ingredient.name}</Text><Text style={styles.compareMeta}>{ingredient.bestUseCases[0] || ingredient.category}</Text></View>))}
-          {compatibilityWarnings.length > 0 ? compatibilityWarnings.map((warning) => <Text key={warning} style={styles.warning}>{warning}</Text>) : <Text style={styles.helperText}>No compatibility warning from this starter set.</Text>}
+          {compareIngredients.map((ingredient) => (
+            <View key={ingredient.id} style={styles.compareRow}>
+              <Text style={styles.compareName}>{ingredient.name}</Text>
+              <Text style={styles.compareMeta}>
+                {ingredient.bestUseCases[0] || ingredient.category}
+              </Text>
+            </View>
+          ))}
+          {compatibilityWarnings.length > 0 ? (
+            compatibilityWarnings.map((warning) => (
+              <Text key={warning} style={styles.warning}>
+                {warning}
+              </Text>
+            ))
+          ) : (
+            <Text style={styles.helperText}>
+              No compatibility warning from this starter set.
+            </Text>
+          )}
         </View>
       ) : null}
 
@@ -212,22 +467,73 @@ export default function NutrientChemistryToolScreen() {
         {activeRecommendation ? (
           <>
             <Text style={styles.detailName}>{activeRecommendation.ingredient.name}</Text>
-            <Text style={styles.detailMeta}>Category: {activeRecommendation.ingredient.category} · Confidence: {activeRecommendation.ingredient.confidence}</Text>
-            <Text style={styles.helperText}>{activeRecommendation.ingredient.warnings.join(" ")}</Text>
+            <Text style={styles.detailMeta}>
+              Category: {activeRecommendation.ingredient.category} · Confidence:{" "}
+              {activeRecommendation.ingredient.confidence}
+            </Text>
+            {activeEvidence ? (
+              <Text style={styles.evidenceText}>
+                Evidence: {activeEvidence.classification.replaceAll("_", " ")} · Source:{" "}
+                {activeEvidence.sourceName}
+              </Text>
+            ) : null}
+            <Text style={styles.helperText}>
+              {activeRecommendation.ingredient.warnings.join(" ")}
+            </Text>
             <Text style={styles.detailSubhead}>Forms</Text>
-            {activeRecommendation.timing.map((form) => (<View key={`${form.nutrient}-${form.form}-${form.chemicalName}`} style={styles.formCard}><Text style={styles.formTitle}>{form.nutrient.toUpperCase()} · {form.chemicalName}</Text><Text style={styles.formMeta}>{form.availabilityClass} → {form.adjustedReleaseDays.min}-{form.adjustedReleaseDays.max} days</Text><Text style={styles.formMeta}>pH: {form.pHEffect} · EC: {form.ecImpact} · Mobility: {form.mobility}</Text><Text style={styles.formNotes}>{form.notes}</Text></View>))}
+            {activeRecommendation.timing.map((form) => (
+              <View
+                key={`${form.nutrient}-${form.form}-${form.chemicalName}`}
+                style={styles.formCard}
+              >
+                <Text style={styles.formTitle}>
+                  {form.nutrient.toUpperCase()} · {form.chemicalName}
+                </Text>
+                <Text style={styles.formMeta}>
+                  {form.availabilityClass} → {form.adjustedReleaseDays.min}-
+                  {form.adjustedReleaseDays.max} days
+                </Text>
+                <Text style={styles.formMeta}>
+                  pH: {form.pHEffect} · EC: {form.ecImpact} · Mobility: {form.mobility}
+                </Text>
+                <Text style={styles.formNotes}>{form.notes}</Text>
+              </View>
+            ))}
             <Text style={styles.detailSubhead}>Best use</Text>
-            <Text style={styles.helperText}>{activeRecommendation.ingredient.bestUseCases.join(" · ")}</Text>
+            <Text style={styles.helperText}>
+              {activeRecommendation.ingredient.bestUseCases.join(" · ")}
+            </Text>
             <Text style={styles.detailSubhead}>Not for</Text>
-            <Text style={styles.helperText}>{activeRecommendation.ingredient.badUseCases.join(" · ")}</Text>
+            <Text style={styles.helperText}>
+              {activeRecommendation.ingredient.badUseCases.join(" · ")}
+            </Text>
           </>
-        ) : <Text style={styles.helperText}>No ingredient selected yet.</Text>}
+        ) : (
+          <Text style={styles.helperText}>No ingredient selected yet.</Text>
+        )}
       </View>
 
       <View style={styles.panel}>
         <Text style={styles.sectionTitle}>Save</Text>
-        <Text style={styles.helperText}>Saving records the current chemistry recommendation, timing, and compatibility check into the grow journal.</Text>
-        {growId ? <Pressable style={[styles.primaryButton, saving ? styles.disabled : null]} onPress={save} disabled={saving}><Text style={styles.primaryButtonText}>{saving ? "Saving..." : "Save and Open Journal"}</Text></Pressable> : <Text style={styles.helperText}>Add a grow context to save this recommendation.</Text>}
+        <Text style={styles.helperText}>
+          Saving records the current chemistry recommendation, timing, and compatibility
+          check into the grow journal.
+        </Text>
+        {growId ? (
+          <Pressable
+            style={[styles.primaryButton, saving ? styles.disabled : null]}
+            onPress={save}
+            disabled={saving}
+          >
+            <Text style={styles.primaryButtonText}>
+              {saving ? "Saving..." : "Save and Open Journal"}
+            </Text>
+          </Pressable>
+        ) : (
+          <Text style={styles.helperText}>
+            Add a grow context to save this recommendation.
+          </Text>
+        )}
         {savedMessage ? <Text style={styles.helperText}>{savedMessage}</Text> : null}
       </View>
     </ScrollView>
@@ -239,54 +545,148 @@ const styles = StyleSheet.create({
   content: { padding: 20, paddingBottom: 34, gap: 12 },
   title: { fontSize: 24, fontWeight: "800", color: "#0F172A" },
   subtitle: { fontSize: 14, color: "#475569", lineHeight: 20 },
-  context: { color: "#166534", fontWeight: "700", backgroundColor: "#F0FDF4", borderWidth: 1, borderColor: "#BBF7D0", borderRadius: 10, padding: 10 },
-  panel: { borderWidth: 1, borderColor: "#E2E8F0", borderRadius: 16, backgroundColor: "#F8FAFC", padding: 14, gap: 10 },
+  context: {
+    color: "#166534",
+    fontWeight: "700",
+    backgroundColor: "#F0FDF4",
+    borderWidth: 1,
+    borderColor: "#BBF7D0",
+    borderRadius: 10,
+    padding: 10
+  },
+  panel: {
+    borderWidth: 1,
+    borderColor: "#E2E8F0",
+    borderRadius: 16,
+    backgroundColor: "#F8FAFC",
+    padding: 14,
+    gap: 10
+  },
   sectionTitle: { fontSize: 16, fontWeight: "800", color: "#0F172A" },
   wrap: { flexDirection: "row", flexWrap: "wrap", gap: 8 },
-  pill: { borderWidth: 1, borderColor: "#CBD5E1", borderRadius: 999, paddingVertical: 8, paddingHorizontal: 12, backgroundColor: "#FFFFFF" },
+  pill: {
+    borderWidth: 1,
+    borderColor: "#CBD5E1",
+    borderRadius: 999,
+    paddingVertical: 8,
+    paddingHorizontal: 12,
+    backgroundColor: "#FFFFFF"
+  },
   pillOn: { backgroundColor: "#14532D", borderColor: "#14532D" },
   pillText: { color: "#334155", fontWeight: "700", fontSize: 12 },
   pillTextOn: { color: "#FFFFFF" },
   inlineRow: { flexDirection: "row", gap: 10, alignItems: "flex-start" },
   flex1: { flex: 1, gap: 6 },
   label: { fontSize: 12, fontWeight: "700", color: "#334155" },
-  input: { borderWidth: 1, borderColor: "#CBD5E1", borderRadius: 10, paddingHorizontal: 12, paddingVertical: 10, backgroundColor: "#FFFFFF" },
+  input: {
+    borderWidth: 1,
+    borderColor: "#CBD5E1",
+    borderRadius: 10,
+    paddingHorizontal: 12,
+    paddingVertical: 10,
+    backgroundColor: "#FFFFFF"
+  },
   toggleRow: { flexDirection: "row", flexWrap: "wrap", gap: 8 },
-  toggle: { borderWidth: 1, borderColor: "#CBD5E1", borderRadius: 10, paddingHorizontal: 12, paddingVertical: 10, backgroundColor: "#FFFFFF" },
+  toggle: {
+    borderWidth: 1,
+    borderColor: "#CBD5E1",
+    borderRadius: 10,
+    paddingHorizontal: 12,
+    paddingVertical: 10,
+    backgroundColor: "#FFFFFF"
+  },
   toggleOn: { backgroundColor: "#DCFCE7", borderColor: "#86EFAC" },
   toggleText: { fontWeight: "700", color: "#334155" },
   toggleTextOn: { color: "#14532D" },
-  summaryCard: { borderWidth: 1, borderColor: "#BBF7D0", borderRadius: 16, backgroundColor: "#ECFDF5", padding: 14, gap: 6 },
+  summaryCard: {
+    borderWidth: 1,
+    borderColor: "#BBF7D0",
+    borderRadius: 16,
+    backgroundColor: "#ECFDF5",
+    padding: 14,
+    gap: 6
+  },
   cardTitle: { fontSize: 16, fontWeight: "800", color: "#14532D" },
   summaryName: { fontSize: 20, fontWeight: "800", color: "#052E16" },
   summaryMeta: { color: "#166534", fontWeight: "700" },
   summaryText: { color: "#14532D", lineHeight: 20 },
-  warning: { color: "#9A3412", backgroundColor: "#FFF7ED", padding: 10, borderRadius: 10 },
-  recommendationCard: { borderWidth: 1, borderColor: "#E2E8F0", borderRadius: 14, backgroundColor: "#FFFFFF", padding: 12, gap: 8 },
+  warning: {
+    color: "#9A3412",
+    backgroundColor: "#FFF7ED",
+    padding: 10,
+    borderRadius: 10
+  },
+  recommendationCard: {
+    borderWidth: 1,
+    borderColor: "#E2E8F0",
+    borderRadius: 14,
+    backgroundColor: "#FFFFFF",
+    padding: 12,
+    gap: 8
+  },
   recommendationCardOn: { borderColor: "#86EFAC", backgroundColor: "#F0FDF4" },
   recommendationHeader: { flexDirection: "row", gap: 10, alignItems: "center" },
   recommendationTitle: { fontSize: 15, fontWeight: "800", color: "#0F172A" },
   recommendationMeta: { fontSize: 12, color: "#64748B", marginTop: 2 },
   recommendationBody: { color: "#475569", lineHeight: 19 },
-  compareButton: { borderWidth: 1, borderColor: "#CBD5E1", borderRadius: 999, paddingVertical: 8, paddingHorizontal: 10, backgroundColor: "#FFFFFF" },
+  compareButton: {
+    borderWidth: 1,
+    borderColor: "#CBD5E1",
+    borderRadius: 999,
+    paddingVertical: 8,
+    paddingHorizontal: 10,
+    backgroundColor: "#FFFFFF"
+  },
   compareButtonOn: { backgroundColor: "#14532D", borderColor: "#14532D" },
   compareButtonText: { color: "#334155", fontWeight: "800", fontSize: 12 },
   compareButtonTextOn: { color: "#FFFFFF" },
-  releaseGroup: { borderWidth: 1, borderColor: "#E2E8F0", borderRadius: 12, padding: 10, backgroundColor: "#FFFFFF" },
+  releaseGroup: {
+    borderWidth: 1,
+    borderColor: "#E2E8F0",
+    borderRadius: 12,
+    padding: 10,
+    backgroundColor: "#FFFFFF"
+  },
   releaseLabel: { fontSize: 12, fontWeight: "800", color: "#14532D" },
   releaseItems: { color: "#334155", marginTop: 4, lineHeight: 18 },
   helperText: { color: "#64748B", lineHeight: 19 },
-  compareRow: { flexDirection: "row", justifyContent: "space-between", gap: 10, paddingVertical: 6, borderBottomWidth: 1, borderBottomColor: "#E2E8F0" },
+  compareRow: {
+    flexDirection: "row",
+    justifyContent: "space-between",
+    gap: 10,
+    paddingVertical: 6,
+    borderBottomWidth: 1,
+    borderBottomColor: "#E2E8F0"
+  },
   compareName: { fontWeight: "800", color: "#0F172A", flex: 1 },
   compareMeta: { color: "#64748B", flex: 1, textAlign: "right" },
   detailName: { fontSize: 18, fontWeight: "800", color: "#0F172A" },
   detailMeta: { color: "#64748B" },
+  evidenceText: {
+    color: "#166534",
+    backgroundColor: "#F0FDF4",
+    borderRadius: 8,
+    padding: 8,
+    textTransform: "capitalize"
+  },
   detailSubhead: { fontSize: 13, fontWeight: "800", color: "#334155", marginTop: 6 },
-  formCard: { borderWidth: 1, borderColor: "#E2E8F0", borderRadius: 12, backgroundColor: "#FFFFFF", padding: 10, gap: 4 },
+  formCard: {
+    borderWidth: 1,
+    borderColor: "#E2E8F0",
+    borderRadius: 12,
+    backgroundColor: "#FFFFFF",
+    padding: 10,
+    gap: 4
+  },
   formTitle: { fontWeight: "800", color: "#0F172A" },
   formMeta: { color: "#64748B", fontSize: 12 },
   formNotes: { color: "#334155", fontSize: 13, lineHeight: 18 },
-  primaryButton: { borderRadius: 12, backgroundColor: "#14532D", paddingVertical: 12, alignItems: "center" },
+  primaryButton: {
+    borderRadius: 12,
+    backgroundColor: "#14532D",
+    paddingVertical: 12,
+    alignItems: "center"
+  },
   primaryButtonText: { color: "#FFFFFF", fontWeight: "800" },
   disabled: { opacity: 0.6 }
 });

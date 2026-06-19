@@ -12,8 +12,11 @@ export interface ToolRun {
   output?: Record<string, any>;
   summary?: string;
   recommendations?: string[];
+  warnings?: string[];
+  confidence?: string | null;
   linkedLogId?: string | null;
   linkedTaskId?: string | null;
+  linkedRecipeId?: string | null;
   createdAt?: string;
 }
 
