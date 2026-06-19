@@ -59,24 +59,40 @@ export default function ToolsHubScreen() {
 
       <View style={styles.grid}>
         <View style={styles.card}>
+          <Text style={styles.cardTitle}>Data Integrations</Text>
+          <Text style={styles.cardDesc}>
+            Connect Pulse, TrolMaster, AROYA, Growlink, SensorPush, Aranet, UbiBot,
+            ZENTRA, HOBOlink, Monnit, OpenSprinkler, and Agrowtek.
+          </Text>
+          <Link href="/home/personal/tools/integrations" style={styles.link} asChild>
+            <Text>Manage integrations -&gt;</Text>
+          </Link>
+        </View>
+
+        <View style={styles.card}>
           <Text style={styles.cardTitle}>Environment: VPD Calculator</Text>
           <Text style={styles.cardDesc}>Estimate VPD from temperature and humidity.</Text>
-          <Link href={hrefWithGrow("/home/personal/tools/vpd", growId)} style={styles.link} asChild>
+          <Link
+            href={hrefWithGrow("/home/personal/tools/vpd", growId)}
+            style={styles.link}
+            asChild
+          >
             <Text>Open VPD -&gt;</Text>
           </Link>
         </View>
 
         <View style={styles.card}>
-          <Text style={styles.cardTitle}>Environment: Dew Point Guard</Text>
+          <Text style={styles.cardTitle}>Pulse Grow / Dew Point Guard</Text>
           <Text style={styles.cardDesc}>
-            Estimate lights-off dew point spike risk and save mitigation recommendations.
+            Connect Pulse Pro devices, import environmental readings, and analyze
+            lights-off dew point risk.
           </Text>
           <Link
             href={hrefWithGrow("/home/personal/tools/dew-point-guard", growId)}
             style={styles.link}
             asChild
           >
-            <Text>Open Dew Point Guard -&gt;</Text>
+            <Text>Connect Pulse Grow -&gt;</Text>
           </Link>
         </View>
 
@@ -85,7 +101,11 @@ export default function ToolsHubScreen() {
           <Text style={styles.cardDesc}>
             Estimate PPFD requirements from target DLI and photoperiod.
           </Text>
-          <Link href={hrefWithGrow("/home/personal/tools/ppfd", growId)} style={styles.link} asChild>
+          <Link
+            href={hrefWithGrow("/home/personal/tools/ppfd", growId)}
+            style={styles.link}
+            asChild
+          >
             <Text>Open PPFD / DLI -&gt;</Text>
           </Link>
         </View>
@@ -95,7 +115,11 @@ export default function ToolsHubScreen() {
           <Text style={styles.cardDesc}>
             Preview label ratio only. This is not a full nutrient ppm calculator.
           </Text>
-          <Link href={hrefWithGrow("/home/personal/tools/npk", growId)} style={styles.link} asChild>
+          <Link
+            href={hrefWithGrow("/home/personal/tools/npk", growId)}
+            style={styles.link}
+            asChild
+          >
             <Text>Open NPK Preview -&gt;</Text>
           </Link>
         </View>

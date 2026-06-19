@@ -31,7 +31,7 @@ export default function CommunityTab() {
         <Pressable style={styles.card}>
           <Text style={styles.cardTitle}>Learn</Text>
           <Text style={styles.cardText}>Browse creator courses and learning tracks.</Text>
-          <Text style={styles.cta}>Open Courses -></Text>
+          <Text style={styles.cta}>Open Courses {"->"}</Text>
         </Pressable>
       </Link>
 
@@ -41,7 +41,7 @@ export default function CommunityTab() {
           <Text style={styles.cardText}>
             Discuss grows, trade notes, and share progress with the community.
           </Text>
-          <Text style={styles.cta}>Open Forum -></Text>
+          <Text style={styles.cta}>Open Forum {"->"}</Text>
         </Pressable>
       </Link>
     </View>

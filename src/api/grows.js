@@ -3,7 +3,7 @@ import routes from "./routes.js";
 import { endpoints } from "./endpoints";
 
 function normalizeGrowList(res) {
-  const raw = Array.isArray(res) ? res : res?.grows ?? res?.data ?? [];
+  const raw = Array.isArray(res) ? res : (res?.grows ?? res?.data ?? []);
   return Array.isArray(raw)
     ? raw.map((grow) => {
         if (!grow || typeof grow !== "object") return grow;
@@ -28,10 +28,14 @@ function isPlainObject(value) {
 
 export async function listGrows(filtersOrFacilityId = {}) {
   if (typeof filtersOrFacilityId === "string" && filtersOrFacilityId) {
-    const facilityRes = await apiRequest(endpoints.grows(filtersOrFacilityId), { method: "GET" });
+    const facilityRes = await apiRequest(endpoints.grows(filtersOrFacilityId), {
+      method: "GET"
+    });
     return normalizeGrowList(facilityRes);
   }
-  const listRes = await apiRequest(routes.GROWS.LIST, { params: filtersOrFacilityId || {} });
+  const listRes = await apiRequest(routes.GROWS.LIST, {
+    params: filtersOrFacilityId || {}
+  });
   return normalizeGrowList(listRes);
 }
 

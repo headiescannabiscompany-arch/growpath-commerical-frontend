@@ -49,10 +49,20 @@ export default function CropSteeringToolScreen() {
       {growId ? <Text style={styles.context}>Grow context: {growId}</Text> : null}
 
       <Text style={styles.label}>Phase (generative or vegetative)</Text>
-      <TextInput style={styles.input} value={phase} onChangeText={setPhase} placeholder="generative" />
+      <TextInput
+        style={styles.input}
+        value={phase}
+        onChangeText={setPhase}
+        placeholder="generative"
+      />
 
       <Text style={styles.label}>Substrate</Text>
-      <TextInput style={styles.input} value={substrate} onChangeText={setSubstrate} placeholder="coco" />
+      <TextInput
+        style={styles.input}
+        value={substrate}
+        onChangeText={setSubstrate}
+        placeholder="coco"
+      />
 
       <Text style={styles.label}>Target runoff (%)</Text>
       <TextInput
@@ -85,7 +95,9 @@ export default function CropSteeringToolScreen() {
         <Text style={styles.cardTitle}>Estimated Output</Text>
         <Text style={styles.cardLine}>
           Total irrigation:{" "}
-          <Text style={styles.cardValue}>{computed ? `${computed.totalMl} mL/day` : "-"}</Text>
+          <Text style={styles.cardValue}>
+            {computed ? `${computed.totalMl} mL/day` : "-"}
+          </Text>
         </Text>
         <Text style={styles.cardLine}>
           Target runoff:{" "}
@@ -125,7 +137,9 @@ export default function CropSteeringToolScreen() {
           </Text>
         </Pressable>
       ) : (
-        <Text style={styles.hint}>Select a grow context to save this run to journal.</Text>
+        <Text style={styles.hint}>
+          Select a grow context to save this run to journal.
+        </Text>
       )}
 
       {feedback ? <Text style={styles.hint}>{feedback}</Text> : null}

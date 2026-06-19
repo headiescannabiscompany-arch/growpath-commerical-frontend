@@ -80,7 +80,9 @@ export default function WateringToolScreen() {
       />
 
       <View style={styles.card}>
-        <Text style={styles.result}>Target volume: {model.targetLiters} L per watering</Text>
+        <Text style={styles.result}>
+          Target volume: {model.targetLiters} L per watering
+        </Text>
         <Text style={styles.line}>Estimated weekly total: {model.perWeekLiters} L</Text>
         <Text style={styles.line}>Next watering date: {model.nextWaterDate}</Text>
       </View>

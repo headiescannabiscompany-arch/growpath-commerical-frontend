@@ -50,7 +50,7 @@ async function loginSeedUser(page: any) {
   await page.getByPlaceholder("Password").fill(password);
 
   const loginResponsePromise = page.waitForResponse(
-    (r) =>
+    (r: any) =>
       r.request().method() === "POST" &&
       r.url().includes("/api/auth/login") &&
       (r.status() === 200 || r.status() === 201 || r.status() === 401 || r.status() === 403),

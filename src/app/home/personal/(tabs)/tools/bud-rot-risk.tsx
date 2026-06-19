@@ -132,7 +132,9 @@ export default function BudRotRiskToolScreen() {
           </Text>
         </Pressable>
       ) : (
-        <Text style={styles.hint}>Select a grow context to save this run to journal.</Text>
+        <Text style={styles.hint}>
+          Select a grow context to save this run to journal.
+        </Text>
       )}
 
       {feedback ? <Text style={styles.hint}>{feedback}</Text> : null}

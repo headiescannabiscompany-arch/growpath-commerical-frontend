@@ -24,6 +24,11 @@ export type TelemetryPoint = {
   canopyRh?: number | null;
   dewPointC?: number;
   vpdKpa?: number | null;
+  co2Ppm?: number | null;
+  lightLux?: number | null;
+  ppfd?: number | null;
+  airPressureHpa?: number | null;
+  voc?: number | null;
 };
 
 export type CreateTelemetrySourceInput = {
@@ -85,7 +90,9 @@ export type PulseVerifyResult = {
 export type PulsePullResult = {
   sourceId: string;
   pulled: number;
+  ingested?: number;
   updated: number;
+  skipped?: number;
   startIso: string;
   endIso: string;
   lastPointIso?: string;

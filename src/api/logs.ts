@@ -4,6 +4,7 @@ import { apiRequest } from "./apiRequest";
 export interface PersonalLog {
   id: string;
   growId: string;
+  type?: string;
   date: string;
   title: string;
   notes: string;
@@ -18,7 +19,7 @@ export async function listPersonalLogs(options?: {
     const res: any = await apiRequest(`/api/personal/logs`, {
       params: options?.growId ? { growId: options.growId } : undefined
     });
-    const logs = res?.data?.logs;
+    const logs = res?.data?.logs ?? res?.logs ?? res?.items;
     return Array.isArray(logs) ? (logs as PersonalLog[]) : [];
   } catch (err) {
     console.error("[listPersonalLogs] Error:", err);

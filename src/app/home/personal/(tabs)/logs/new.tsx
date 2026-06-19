@@ -49,10 +49,10 @@ const styles = StyleSheet.create({
 
 export default function NewLogScreen() {
   const router = useRouter();
-  const {
-    growId: growIdParam,
-    toolRunId: toolRunIdParam
-  } = useLocalSearchParams<{ growId?: string | string[]; toolRunId?: string | string[] }>();
+  const { growId: growIdParam, toolRunId: toolRunIdParam } = useLocalSearchParams<{
+    growId?: string | string[];
+    toolRunId?: string | string[];
+  }>();
   const growId =
     typeof growIdParam === "string"
       ? growIdParam
@@ -152,7 +152,12 @@ export default function NewLogScreen() {
       />
 
       <Text style={styles.label}>Date (YYYY-MM-DD)</Text>
-      <TextInput placeholder="2026-02-27" style={styles.input} value={date} onChangeText={setDate} />
+      <TextInput
+        placeholder="2026-02-27"
+        style={styles.input}
+        value={date}
+        onChangeText={setDate}
+      />
 
       <Text style={styles.label}>Type</Text>
       <View style={styles.chipsRow}>
@@ -201,14 +206,20 @@ export default function NewLogScreen() {
                   style={[styles.chip, active && styles.chipOn]}
                 >
                   <Text style={[styles.chipText, active && styles.chipTextOn]}>
-                    {String(run?.toolType || "tool")} {String(run?.createdAt || "").slice(5, 10)}
+                    {String(run?.toolType || "tool")}{" "}
+                    {String(run?.createdAt || "").slice(5, 10)}
                   </Text>
                 </Pressable>
               );
             })}
             {selectedToolRunId &&
-            !toolRuns.some((run) => String(run?._id || run?.id || "") === selectedToolRunId) ? (
-              <Pressable style={[styles.chip, styles.chipOn]} onPress={() => setSelectedToolRunId("")}>
+            !toolRuns.some(
+              (run) => String(run?._id || run?.id || "") === selectedToolRunId
+            ) ? (
+              <Pressable
+                style={[styles.chip, styles.chipOn]}
+                onPress={() => setSelectedToolRunId("")}
+              >
                 <Text style={[styles.chipText, styles.chipTextOn]}>selected run</Text>
               </Pressable>
             ) : null}

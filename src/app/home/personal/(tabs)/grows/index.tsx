@@ -95,7 +95,9 @@ export default function GrowsListScreen() {
           <Text style={styles.panelText}>
             Create your first grow to unlock grow-linked logs, tools, and tasks.
           </Text>
-          {error ? <Text style={[styles.panelText, { marginTop: 8 }]}>{error}</Text> : null}
+          {error ? (
+            <Text style={[styles.panelText, { marginTop: 8 }]}>{error}</Text>
+          ) : null}
           <Link href="/home/personal/grows/new" asChild>
             <Pressable testID="btn-create-first-grow" style={styles.cta}>
               <Text style={styles.ctaText}>+ New Grow</Text>

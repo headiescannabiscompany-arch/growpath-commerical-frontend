@@ -1,0 +1,95 @@
+
+> growpath-commercial-frontend@1.0.0 web
+> expo start --web --port 8081
+
+env: load .env.development .env
+env: export EXPO_PUBLIC_API_URL
+Starting project at C:\growpathai\growpath-commerical-frontend
+Using src/app as the root directory for Expo Router.
+Starting Metro Bundler
+Waiting on http://localhost:8081
+Logs for your project will appear below.
+Web .\index.js ░░░░░░░░░░░░░░░░  1.0% (1/1)
+Web .\index.js ▓▓▓▓▓▓░░░░░░░░░░ 42.9% (403/615)
+Web .\index.js ▓▓▓▓▓▓▓▓▓▓▓▓▓▓░░ 87.5% (1053/1126)
+Web Bundled 8490ms index.js (1162 modules)
+ LOG  [web] Logs will appear in the browser console
+Web .\index.js ░░░░░░░░░░░░░░░░  0.0% (0/1)
+Web Bundled 29ms index.js (1 module)
+ LOG  [web] Logs will appear in the browser console
+Web .\index.js ░░░░░░░░░░░░░░░░  0.0% (0/1)
+Web Bundled 405ms index.js (1 module)
+ LOG  [web] Logs will appear in the browser console
+Web .\index.js ░░░░░░░░░░░░░░░░  0.0% (0/1)
+Web Bundled 28ms index.js (1 module)
+ LOG  [web] Logs will appear in the browser console
+Web Bundled 19ms index.js (1 module)
+ LOG  [web] Logs will appear in the browser console
+Web Bundled 19ms index.js (1 module)
+ LOG  [web] Logs will appear in the browser console
+Web Bundled 19ms index.js (1 module)
+ LOG  [web] Logs will appear in the browser console
+Web Bundled 20ms index.js (1 module)
+ LOG  [web] Logs will appear in the browser console
+Web Bundled 20ms index.js (1 module)
+ LOG  [web] Logs will appear in the browser console
+Web Bundled 20ms index.js (1 module)
+ LOG  [web] Logs will appear in the browser console
+Web Bundled 19ms index.js (1 module)
+ LOG  [web] Logs will appear in the browser console
+Web Bundled 18ms index.js (1 module)
+ LOG  [web] Logs will appear in the browser console
+Web Bundled 22ms index.js (1 module)
+ LOG  [web] Logs will appear in the browser console
+Web Bundled 18ms index.js (1 module)
+ LOG  [web] Logs will appear in the browser console
+Web Bundled 18ms index.js (1 module)
+ LOG  [web] Logs will appear in the browser console
+Web Bundled 19ms index.js (1 module)
+ LOG  [web] Logs will appear in the browser console
+Web Bundled 18ms index.js (1 module)
+ LOG  [web] Logs will appear in the browser console
+Web Bundled 18ms index.js (1 module)
+ LOG  [web] Logs will appear in the browser console
+Web Bundled 18ms index.js (1 module)
+ LOG  [web] Logs will appear in the browser console
+Web Bundled 19ms index.js (1 module)
+ LOG  [web] Logs will appear in the browser console
+Web .\index.js ░░░░░░░░░░░░░░░░  0.0% (0/1)
+Web Bundled 65ms index.js (1 module)
+ LOG  [web] Logs will appear in the browser console
+Web Bundled 18ms index.js (1 module)
+ LOG  [web] Logs will appear in the browser console
+Web Bundled 19ms index.js (1 module)
+ LOG  [web] Logs will appear in the browser console
+Web Bundled 18ms index.js (1 module)
+ LOG  [web] Logs will appear in the browser console
+Web Bundled 18ms index.js (1 module)
+ LOG  [web] Logs will appear in the browser console
+Web Bundled 18ms index.js (1 module)
+ LOG  [web] Logs will appear in the browser console
+Web Bundled 18ms index.js (1 module)
+ LOG  [web] Logs will appear in the browser console
+Web Bundled 18ms index.js (1 module)
+ LOG  [web] Logs will appear in the browser console
+Web Bundled 18ms index.js (1 module)
+ LOG  [web] Logs will appear in the browser console
+Web Bundled 18ms index.js (1 module)
+ LOG  [web] Logs will appear in the browser console
+Web Bundled 18ms index.js (1 module)
+ LOG  [web] Logs will appear in the browser console
+Web Bundled 18ms index.js (1 module)
+ LOG  [web] Logs will appear in the browser console
+Web Bundled 18ms index.js (1 module)
+Web .\index.js ░░░░░░░░░░░░░░░░  0.0% (0/1)
+ LOG  [web] Logs will appear in the browser console
+Web Bundled 18ms index.js (1 module)
+ LOG  [web] Logs will appear in the browser console
+Web Bundled 18ms index.js (1 module)
+ LOG  [web] Logs will appear in the browser console
+Web Bundled 18ms index.js (1 module)
+ LOG  [web] Logs will appear in the browser console
+Web Bundled 17ms index.js (1 module)
+ LOG  [web] Logs will appear in the browser console
+Web Bundled 18ms index.js (1 module)
+ LOG  [web] Logs will appear in the browser console

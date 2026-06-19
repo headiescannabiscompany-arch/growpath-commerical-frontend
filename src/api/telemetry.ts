@@ -79,9 +79,10 @@ function normalizeSource(raw: any): TelemetrySource {
   const isActive = raw?.isActive === false ? false : true;
 
   const config = { ...(raw?.config ?? {}) };
-  if (config?.pulse?.apiKey) {
+  if (config?.pulse?.apiKey || config?.pulse?.apiKeyEncrypted) {
     config.pulse = { ...config.pulse };
     delete config.pulse.apiKey;
+    delete config.pulse.apiKeyEncrypted;
   }
 
   return {
@@ -111,7 +112,12 @@ function normalizePoint(raw: any): TelemetryPoint {
     canopyTempC: raw?.canopyTempC ?? null,
     canopyRh: raw?.canopyRh ?? null,
     dewPointC: raw?.dewPointC,
-    vpdKpa: raw?.vpdKpa ?? null
+    vpdKpa: raw?.vpdKpa ?? null,
+    co2Ppm: raw?.co2Ppm ?? null,
+    lightLux: raw?.lightLux ?? null,
+    ppfd: raw?.ppfd ?? null,
+    airPressureHpa: raw?.airPressureHpa ?? null,
+    voc: raw?.voc ?? null
   };
 }
 
@@ -173,7 +179,8 @@ export async function getTelemetryPoints(
   const res = await apiRequest(path, { method: "GET" });
   const data = unwrapData(res);
 
-  const pointsRaw = data?.points ?? data?.items ?? data?.data?.points ?? data?.data?.items ?? [];
+  const pointsRaw =
+    data?.points ?? data?.items ?? data?.data?.points ?? data?.data?.items ?? [];
   const points = Array.isArray(pointsRaw) ? pointsRaw.map(normalizePoint) : [];
 
   return {
@@ -194,8 +201,10 @@ export async function verifyPulseApiKey(apiKey: string): Promise<PulseVerifyResu
 }
 
 export async function listPulseDevices(apiKey: string): Promise<PulseDevice[]> {
-  const path = `${TELEMETRY_ROUTES.PULSE_DEVICES}${qs({ apiKey })}`;
-  const res = await apiRequest(path, { method: "GET" });
+  const res = await apiRequest(TELEMETRY_ROUTES.PULSE_DEVICES, {
+    method: "POST",
+    body: { apiKey }
+  });
   const list = unwrapList(res);
   return list.map((d: any) => ({ id: normId(d) || String(d?.deviceId ?? ""), ...d }));
 }

@@ -3,7 +3,7 @@ import routes from "./routes.js";
 import { endpoints } from "./endpoints";
 
 function normalizeTaskList(res) {
-  const raw = Array.isArray(res) ? res : res?.tasks ?? res?.data ?? [];
+  const raw = Array.isArray(res) ? res : (res?.tasks ?? res?.data ?? []);
   return Array.isArray(raw)
     ? raw.map((task) => {
         if (!task || typeof task !== "object") return task;

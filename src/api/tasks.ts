@@ -13,6 +13,10 @@ export async function getTasks(facilityId?: string): Promise<PersonalTask[] | Ta
   return listPersonalTasks();
 }
 
+export function getFacilityTasks(facilityId: string): Promise<Task[]> {
+  return getTasks(facilityId);
+}
+
 export function createCustomTask(data: any): Promise<PersonalTask>;
 export function createCustomTask(facilityId: string, data: any): Promise<Task>;
 export async function createCustomTask(a: any, b?: any): Promise<any> {
@@ -76,6 +80,10 @@ export async function deleteTask(facilityId: string, id: string) {
   return deleteRes?.deleted ?? deleteRes?.ok ?? deleteRes;
 }
 
+export function deleteFacilityTask(facilityId: string, id: string) {
+  return deleteTask(facilityId, id);
+}
+
 // ===== Personal Mode Tasks (User-Scoped) =====
 
 export interface PersonalTask {
@@ -112,7 +120,8 @@ export async function listPersonalTasks(options?: {
     ) {
       return listPersonalRes.data.tasks as PersonalTask[];
     }
-    return [];
+    const tasks = listPersonalRes?.tasks ?? listPersonalRes?.items;
+    return Array.isArray(tasks) ? (tasks as PersonalTask[]) : [];
   } catch (err) {
     console.error("[listPersonalTasks] Error:", err);
     return [];

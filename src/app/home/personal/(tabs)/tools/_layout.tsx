@@ -7,6 +7,7 @@ export default function ToolsLayout() {
       <Stack.Screen name="index" options={{ title: "Tools" }} />
       <Stack.Screen name="vpd" options={{ title: "VPD Calculator" }} />
       <Stack.Screen name="dew-point-guard" options={{ title: "Dew Point Guard" }} />
+      <Stack.Screen name="integrations" options={{ title: "Data Integrations" }} />
       <Stack.Screen name="ppfd" options={{ title: "PPFD / DLI Planner" }} />
       <Stack.Screen name="bud-rot-risk" options={{ title: "Bud Rot Risk" }} />
       <Stack.Screen name="crop-steering" options={{ title: "Crop Steering" }} />

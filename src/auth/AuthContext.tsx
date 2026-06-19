@@ -39,7 +39,9 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
   const [token, setToken] = useState<string | null>(null);
   const [user, setUser] = useState<AuthUser | null>(null);
   const [ctx, setCtx] = useState<any | null>(null);
-  const [meStatus, setMeStatus] = useState<"idle" | "loading" | "ready" | "error">("idle");
+  const [meStatus, setMeStatus] = useState<"idle" | "loading" | "ready" | "error">(
+    "idle"
+  );
   const [meError, setMeError] = useState<string | null>(null);
   const [isHydrating, setIsHydrating] = useState(true);
 
@@ -82,7 +84,9 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
       }
       // Keep token for retry, but do not let routing silently fall back.
       setMeStatus("error");
-      setMeError("Unable to verify session from /api/me. Check backend connectivity and retry.");
+      setMeError(
+        "Unable to verify session from /api/me. Check backend connectivity and retry."
+      );
       console.error("[AUTH] Failed to load /api/me:", e);
     }
   }

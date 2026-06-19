@@ -248,7 +248,9 @@ export function EntitlementsProvider({ children }: { children: React.ReactNode }
       setState((prev) => applyServerCtx(prev, ctx, userPlan, preferredMode));
     } else {
       // Ensure ready is true even if ctx unchanged
-      setState((prev) => (prev.ready ? prev : { ...prev, ready: true, bootstrapError: null }));
+      setState((prev) =>
+        prev.ready ? prev : { ...prev, ready: true, bootstrapError: null }
+      );
     }
 
     return () => {};

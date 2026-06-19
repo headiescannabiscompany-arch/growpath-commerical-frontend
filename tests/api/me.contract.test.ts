@@ -1,16 +1,18 @@
 import { beforeEach, describe, expect, it, jest } from "@jest/globals";
+import { apiRequest } from "../../src/api/apiRequest";
+import { getToken } from "../../src/auth/tokenStore";
 import { apiMe } from "../../src/api/me";
 
-const mockApiRequest = jest.fn();
-const mockGetToken = jest.fn();
-
 jest.mock("../../src/api/apiRequest", () => ({
-  apiRequest: (...args: any[]) => mockApiRequest(...args)
+  apiRequest: jest.fn()
 }));
 
 jest.mock("../../src/auth/tokenStore", () => ({
-  getToken: (...args: any[]) => mockGetToken(...args)
+  getToken: jest.fn()
 }));
+
+const mockApiRequest = jest.mocked(apiRequest);
+const mockGetToken = jest.mocked(getToken);
 
 describe("apiMe contract normalization", () => {
   let tokenSeq = 0;

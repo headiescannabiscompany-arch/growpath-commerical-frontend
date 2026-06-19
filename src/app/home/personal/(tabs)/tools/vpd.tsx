@@ -3,7 +3,12 @@ import { useLocalSearchParams, useRouter } from "expo-router";
 import { Pressable, StyleSheet, Text, TextInput, View } from "react-native";
 
 import BackButton from "@/components/nav/BackButton";
-import { createToolRun } from "@/api/toolRuns";
+import {
+  createTaskFromToolRun,
+  runCalculator,
+  saveToolRunToLog,
+  type ToolRun
+} from "@/api/toolRuns";
 import { calcVpdFromTemp, type TempUnit } from "@/tools/vpd";
 import { saveToolRunAndOpenJournal } from "@/features/personal/tools/saveToolRunAndOpenJournal";
 
@@ -72,6 +77,11 @@ export default function VpdToolScreen() {
   const [unit, setUnit] = useState<TempUnit>("F");
   const [tempText, setTempText] = useState("77");
   const [rhText, setRhText] = useState("60");
+  const [leafOffsetText, setLeafOffsetText] = useState("-2");
+  const [stage, setStage] = useState("veg");
+  const [serverResult, setServerResult] = useState<any>(null);
+  const [serverRun, setServerRun] = useState<ToolRun | null>(null);
+  const [running, setRunning] = useState(false);
   const [saveFeedback, setSaveFeedback] = useState("");
   const [savingAndOpening, setSavingAndOpening] = useState(false);
 
@@ -128,13 +138,46 @@ export default function VpdToolScreen() {
         placeholder="e.g. 60"
       />
 
+      <Text style={styles.label}>Leaf temperature offset (degC)</Text>
+      <TextInput
+        style={styles.input}
+        value={leafOffsetText}
+        onChangeText={setLeafOffsetText}
+        keyboardType="numeric"
+        placeholder="e.g. -2"
+      />
+
+      <Text style={styles.label}>Growth stage</Text>
+      <View style={styles.row}>
+        {["seedling", "veg", "flower", "late_flower"].map((value) => (
+          <Pressable
+            key={value}
+            style={[styles.pill, stage === value && styles.pillOn]}
+            onPress={() => setStage(value)}
+          >
+            <Text style={[styles.pillTxt, stage === value && styles.pillTxtOn]}>
+              {value.replace("_", " ")}
+            </Text>
+          </Pressable>
+        ))}
+      </View>
+
       <View style={styles.card}>
         {model.valid ? (
           <>
-            <Text style={styles.result}>VPD: {model.vpd.toFixed(2)} kPa</Text>
-            <Text style={styles.hint}>
-              Internal temp: {model.tempC.toFixed(1)} degC (converted)
+            <Text style={styles.result}>
+              VPD: {(serverResult?.vpdKpa ?? model.vpd).toFixed(2)} kPa
             </Text>
+            <Text style={styles.hint}>
+              {serverResult
+                ? `${serverResult.status.toUpperCase()} | target ${serverResult.target.min}-${serverResult.target.max} kPa | leaf ${serverResult.leafTempC} degC`
+                : `Air temperature: ${model.tempC.toFixed(1)} degC`}
+            </Text>
+            {serverResult?.recommendations?.map((item: string) => (
+              <Text key={item} style={styles.hint}>
+                {item}
+              </Text>
+            ))}
           </>
         ) : (
           <>
@@ -148,23 +191,56 @@ export default function VpdToolScreen() {
         <Pressable
           style={styles.saveButton}
           onPress={async () => {
-            const created = await createToolRun({
-              toolType: "vpd",
-              growId: growId || undefined,
-              input: { temp: Number(tempText), unit, rh: Number(rhText) },
-              output: { vpdKpa: model.vpd, tempC: model.tempC }
-            });
-            if (created) {
-              setSaveFeedback("Saved tool run.");
-            } else {
-              setSaveFeedback("Unable to save tool run.");
+            if (running) return;
+            setRunning(true);
+            setSaveFeedback("");
+            try {
+              const response = await runCalculator<any>("vpd", {
+                growId: growId || undefined,
+                airTemp: Number(tempText),
+                tempUnit: unit,
+                rh: Number(rhText),
+                leafTempOffsetC: Number(leafOffsetText),
+                stage
+              });
+              setServerRun(response.toolRun);
+              setServerResult(response.outputs);
+              setSaveFeedback("Calculated and saved.");
+            } catch (error: any) {
+              setSaveFeedback(error?.message || "Unable to calculate VPD.");
+            } finally {
+              setRunning(false);
             }
           }}
         >
-          <Text style={styles.saveButtonText}>Save run {growId ? "to grow" : ""}</Text>
+          <Text style={styles.saveButtonText}>
+            {running ? "Calculating..." : "Calculate and save"}
+          </Text>
         </Pressable>
       ) : null}
       {saveFeedback ? <Text style={styles.hint}>{saveFeedback}</Text> : null}
+      {serverRun?._id && growId ? (
+        <View style={styles.row}>
+          <Pressable
+            style={styles.saveButton}
+            onPress={async () => {
+              await saveToolRunToLog(serverRun._id!);
+              setSaveFeedback("Saved to grow journal.");
+            }}
+          >
+            <Text style={styles.saveButtonText}>Save to Grow Log</Text>
+          </Pressable>
+          <Pressable
+            style={styles.saveButton}
+            onPress={async () => {
+              await createTaskFromToolRun(serverRun._id!);
+              setSaveFeedback("Follow-up task created.");
+            }}
+          >
+            <Text style={styles.saveButtonText}>Create Task</Text>
+          </Pressable>
+        </View>
+      ) : null}
       {model.valid && growId ? (
         <Pressable
           style={[styles.saveButton, savingAndOpening ? { opacity: 0.7 } : null]}

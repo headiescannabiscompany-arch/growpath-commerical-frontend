@@ -3,7 +3,13 @@ import { Link } from "expo-router";
 import { Pressable, StyleSheet, Text, View } from "react-native";
 
 const styles = StyleSheet.create({
-  row: { flexDirection: "row", flexWrap: "wrap", gap: 8, marginTop: 10, marginBottom: 12 },
+  row: {
+    flexDirection: "row",
+    flexWrap: "wrap",
+    gap: 8,
+    marginTop: 10,
+    marginBottom: 12
+  },
   pill: {
     borderWidth: 1,
     borderColor: "#CBD5E1",
@@ -51,7 +57,9 @@ export default function GrowWorkspaceNav({
         return (
           <Link key={tab.key} href={hrefFor(growId, tab.key)} asChild>
             <Pressable style={[styles.pill, isActive && styles.pillActive]}>
-              <Text style={[styles.text, isActive && styles.textActive]}>{tab.label}</Text>
+              <Text style={[styles.text, isActive && styles.textActive]}>
+                {tab.label}
+              </Text>
             </Pressable>
           </Link>
         );

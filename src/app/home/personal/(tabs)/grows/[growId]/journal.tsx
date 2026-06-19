@@ -1,7 +1,14 @@
 import React, { useCallback, useMemo, useState } from "react";
 import { useFocusEffect } from "@react-navigation/native";
 import { Link, useLocalSearchParams } from "expo-router";
-import { ActivityIndicator, Pressable, ScrollView, StyleSheet, Text, View } from "react-native";
+import {
+  ActivityIndicator,
+  Pressable,
+  ScrollView,
+  StyleSheet,
+  Text,
+  View
+} from "react-native";
 
 import { listPersonalLogs } from "@/api/logs";
 import { listToolRuns } from "@/api/toolRuns";
@@ -53,7 +60,15 @@ export default function GrowJournalScreen() {
   const [items, setItems] = useState<any[]>([]);
   const [loading, setLoading] = useState(true);
   const [filter, setFilter] = useState<
-    "all" | "log" | "run" | "watering" | "feed" | "training" | "environment" | "issues" | "harvest"
+    | "all"
+    | "log"
+    | "run"
+    | "watering"
+    | "feed"
+    | "training"
+    | "environment"
+    | "issues"
+    | "harvest"
   >("all");
 
   const load = useCallback(async () => {

@@ -10,8 +10,20 @@ export interface ToolRun {
   input?: Record<string, any>;
   result?: Record<string, any>;
   output?: Record<string, any>;
+  summary?: string;
+  recommendations?: string[];
+  linkedLogId?: string | null;
+  linkedTaskId?: string | null;
   createdAt?: string;
 }
+
+export type CalculatorTool =
+  | "vpd"
+  | "ppfd-dli"
+  | "dew-point-guard"
+  | "watering"
+  | "bud-rot-risk"
+  | "npk-recipe";
 
 function normalizeToolRun(row: any): ToolRun {
   if (!row || typeof row !== "object") return {};
@@ -25,14 +37,70 @@ function normalizeToolRun(row: any): ToolRun {
   }
 
   // Backend canonical naming (toolName/params/result) with frontend aliases.
-  normalized.toolName = String(row?.toolName || row?.toolType || normalized.toolName || "");
-  normalized.toolType = String(row?.toolType || row?.toolName || normalized.toolType || "");
-  normalized.params = (row?.params ?? row?.input ?? normalized.params ?? {}) as Record<string, any>;
-  normalized.input = (row?.input ?? row?.params ?? normalized.input ?? {}) as Record<string, any>;
-  normalized.result = (row?.result ?? row?.output ?? normalized.result ?? {}) as Record<string, any>;
-  normalized.output = (row?.output ?? row?.result ?? normalized.output ?? {}) as Record<string, any>;
+  normalized.toolName = String(
+    row?.toolName || row?.toolType || normalized.toolName || ""
+  );
+  normalized.toolType = String(
+    row?.toolType || row?.toolName || normalized.toolType || ""
+  );
+  normalized.params = (row?.params ?? row?.input ?? normalized.params ?? {}) as Record<
+    string,
+    any
+  >;
+  normalized.input = (row?.input ?? row?.params ?? normalized.input ?? {}) as Record<
+    string,
+    any
+  >;
+  normalized.result = (row?.result ?? row?.output ?? normalized.result ?? {}) as Record<
+    string,
+    any
+  >;
+  normalized.output = (row?.output ?? row?.result ?? normalized.output ?? {}) as Record<
+    string,
+    any
+  >;
 
   return normalized;
+}
+
+export async function runCalculator<TOutput extends Record<string, any>>(
+  tool: CalculatorTool,
+  payload: Record<string, any>
+): Promise<{ toolRun: ToolRun; outputs: TOutput }> {
+  const res: any = await apiRequest(`/api/tools/${tool}`, {
+    method: "POST",
+    body: payload
+  });
+  const body = res?.data ?? res;
+  return {
+    toolRun: normalizeToolRun(body?.toolRun),
+    outputs: (body?.outputs ?? {}) as TOutput
+  };
+}
+
+export async function saveToolRunToLog(
+  toolRunId: string,
+  payload: { title?: string; notes?: string } = {}
+) {
+  return apiRequest(`/api/tools/runs/${encodeURIComponent(toolRunId)}/save-log`, {
+    method: "POST",
+    body: payload
+  });
+}
+
+export async function createTaskFromToolRun(
+  toolRunId: string,
+  payload: {
+    title?: string;
+    description?: string;
+    priority?: "low" | "medium" | "high";
+    dueDate?: string;
+  } = {}
+) {
+  return apiRequest(`/api/tools/runs/${encodeURIComponent(toolRunId)}/create-task`, {
+    method: "POST",
+    body: payload
+  });
 }
 
 export async function listToolRuns(options?: { growId?: string }): Promise<ToolRun[]> {
@@ -45,13 +113,13 @@ export async function listToolRuns(options?: { growId?: string }): Promise<ToolR
       ? res
       : Array.isArray(res?.items)
         ? res.items
-      : Array.isArray(res?.tools)
-        ? res.tools
-        : Array.isArray(res?.data?.tools)
-          ? res.data.tools
-          : Array.isArray(res?.data?.items)
-            ? res.data.items
-          : [];
+        : Array.isArray(res?.tools)
+          ? res.tools
+          : Array.isArray(res?.data?.tools)
+            ? res.data.tools
+            : Array.isArray(res?.data?.items)
+              ? res.data.items
+              : [];
     return rows.map(normalizeToolRun);
   } catch (_err) {
     return [];

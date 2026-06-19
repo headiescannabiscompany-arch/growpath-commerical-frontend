@@ -18,7 +18,9 @@ function asLegacyTokenOptions(token) {
 // Dual-mode: facility-scoped when facilityId is provided, personal/global otherwise.
 export async function getPlants(facilityIdOrToken) {
   if (facilityIdOrToken) {
-    const facilityRes = await apiRequest(endpoints.plants(facilityIdOrToken), { method: "GET" });
+    const facilityRes = await apiRequest(endpoints.plants(facilityIdOrToken), {
+      method: "GET"
+    });
     return normalizePlantList(facilityRes);
   }
   const listRes = await apiRequest(routes.PLANTS.LIST);

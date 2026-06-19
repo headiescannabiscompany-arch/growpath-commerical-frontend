@@ -1,4 +1,4 @@
-import React, { useEffect, useMemo, useRef, useState } from "react";
+import React, { useEffect, useRef, useState } from "react";
 import { ActivityIndicator, View, Text, Pressable } from "react-native";
 import { useRouter } from "expo-router";
 import { useAuth } from "@/auth/AuthContext";
@@ -21,13 +21,7 @@ function Center({ label }: { label: string }) {
   );
 }
 
-function BootstrapError({
-  label,
-  onRetry
-}: {
-  label: string;
-  onRetry: () => void;
-}) {
+function BootstrapError({ label, onRetry }: { label: string; onRetry: () => void }) {
   return (
     <View
       style={{
@@ -79,7 +73,7 @@ export default function Index() {
   }, [auth.isHydrating, auth.token, ent.ready]);
 
   // Decide what to do (render vs navigate)
-  const decision = useMemo(() => {
+  const decision = (() => {
     if (auth.isHydrating || !settled) {
       return { kind: "render" as const, node: <Center label="Loading auth..." /> };
     }
@@ -107,7 +101,7 @@ export default function Index() {
 
     // After entitlements are ready, decide login vs app
     if (!auth.token) {
-      console.log("[INDEX] No token after settle → route to /login");
+      console.log("[INDEX] No token after settle -> route to /login");
       return { kind: "nav" as const, href: "/login" };
     }
 
@@ -125,12 +119,12 @@ export default function Index() {
       }
 
       if (!facility?.selectedId) {
-        console.log("[INDEX] No facility selected → /facilities");
+        console.log("[INDEX] No facility selected -> /facilities");
         return { kind: "nav" as const, href: "/facilities" };
       }
 
       if (ent.mode === "facility") {
-        console.log("[INDEX] Facility mode → facility dashboard");
+        console.log("[INDEX] Facility mode -> facility dashboard");
         return {
           kind: "nav" as const,
           href: `/facilities/${facility.selectedId}/dashboard`
@@ -138,24 +132,14 @@ export default function Index() {
       }
 
       if (ent.mode === "commercial") {
-        console.log("[INDEX] Commercial mode → /feed");
+        console.log("[INDEX] Commercial mode -> /feed");
         return { kind: "nav" as const, href: "/feed" };
       }
     }
 
-    console.log("[INDEX] Personal default → /home/personal");
+    console.log("[INDEX] Personal default -> /home/personal");
     return { kind: "nav" as const, href: "/home/personal" };
-  }, [
-    auth.isHydrating,
-    settled,
-    auth.token,
-    ent.ready,
-    ent.bootstrapError,
-    ent.mode,
-    ent.plan,
-    facility?.isReady,
-    facility?.selectedId
-  ]);
+  })();
 
   // Navigate in an effect (never during render)
   const lastHrefRef = useRef<string | null>(null);

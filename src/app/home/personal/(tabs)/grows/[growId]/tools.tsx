@@ -62,12 +62,16 @@ export default function GrowToolsScreen() {
   return (
     <View style={styles.container}>
       <Text style={styles.title}>Grow Tools</Text>
-      <Text style={styles.subtitle}>Run tools in this grow context and save outputs.</Text>
+      <Text style={styles.subtitle}>
+        Run tools in this grow context and save outputs.
+      </Text>
       <GrowWorkspaceNav growId={growId} active="tools" />
 
       <View style={styles.card}>
         <Text style={styles.cardTitle}>Open full tools hub</Text>
-        <Text style={styles.cardText}>All tool groups are available with this grow pre-selected.</Text>
+        <Text style={styles.cardText}>
+          All tool groups are available with this grow pre-selected.
+        </Text>
         <Link href={withGrow("/home/personal/tools", growId)} asChild>
           <Pressable style={styles.action}>
             <Text style={styles.actionText}>Open tools hub</Text>
@@ -99,8 +103,11 @@ export default function GrowToolsScreen() {
         {recent.length === 0 ? (
           <Text style={styles.recentRow}>No saved runs yet.</Text>
         ) : (
-          recent.map((run) => (
-            <Text key={String(run?._id || run?.id || Math.random())} style={styles.recentRow}>
+          recent.map((run, index) => (
+            <Text
+              key={String(run?._id || run?.id || `${run?.toolType || "tool"}-${index}`)}
+              style={styles.recentRow}
+            >
               {run?.toolType || "tool"} | {String(run?.createdAt || "").slice(0, 10)}
             </Text>
           ))

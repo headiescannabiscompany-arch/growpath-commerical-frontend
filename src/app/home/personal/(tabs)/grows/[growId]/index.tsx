@@ -111,7 +111,8 @@ export default function GrowOverviewScreen() {
 
       <View style={styles.panel}>
         <Text style={styles.subtitle}>
-          Grow is the parent object. Journal entries, tool runs, and personal tasks attach here.
+          Grow is the parent object. Journal entries, tool runs, and personal tasks attach
+          here.
         </Text>
         <View style={styles.stats}>
           <View style={styles.stat}>
@@ -130,7 +131,10 @@ export default function GrowOverviewScreen() {
       </View>
 
       <View style={styles.quickRow}>
-        <Link href={`/home/personal/logs/new?growId=${encodeURIComponent(growId)}`} asChild>
+        <Link
+          href={`/home/personal/logs/new?growId=${encodeURIComponent(growId)}`}
+          asChild
+        >
           <Pressable style={styles.action}>
             <Text style={styles.actionText}>+ Journal Entry</Text>
           </Pressable>
