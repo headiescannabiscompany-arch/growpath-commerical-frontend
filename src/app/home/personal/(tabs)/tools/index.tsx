@@ -125,6 +125,20 @@ export default function ToolsHubScreen() {
         </View>
 
         <View style={styles.card}>
+          <Text style={styles.cardTitle}>Water/Nutrients: Nutrient Chemistry Engine</Text>
+          <Text style={styles.cardDesc}>
+            Compare source forms, release speed, pH effect, and fast-vs-slow use cases.
+          </Text>
+          <Link
+            href={hrefWithGrow("/home/personal/tools/nutrient-chemistry", growId)}
+            style={styles.link}
+            asChild
+          >
+            <Text>Open Nutrient Chemistry -&gt;</Text>
+          </Link>
+        </View>
+
+        <View style={styles.card}>
           <Text style={styles.cardTitle}>Ops/Planning: Watering Planner</Text>
           <Text style={styles.cardDesc}>
             Plan watering cadence and estimate next watering volume.
