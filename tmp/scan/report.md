@@ -2,8 +2,8 @@
 
 ## Counts
 - src files: 669
-- test files: 48
-- total files: 717
+- test files: 49
+- total files: 718
 - api files: 84
 - api orphans: 0
 - legacy client callers: 2
