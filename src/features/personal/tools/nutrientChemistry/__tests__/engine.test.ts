@@ -4,6 +4,7 @@ import {
   checkCompatibility,
   estimateReleaseCurve,
   getIngredientById,
+  getIngredientEvidence,
   recommendIngredients,
   type NutrientEnvironment,
   type NutrientIngredient
@@ -47,12 +48,37 @@ describe("nutrient chemistry release timeline", () => {
 
 describe("nutrient chemistry compatibility", () => {
   it("warns about calcium and phosphate precipitation in concentrate", () => {
+    const ingredients = [ingredient("calcium-nitrate"), ingredient("bone-meal")];
+    const concentrateEnvironment = { ...environment, isConcentrate: true };
+    const warnings = checkCompatibility(ingredients, concentrateEnvironment);
+    const issue = analyzeCompatibility(ingredients, concentrateEnvironment).issues.find(
+      (row) => row.code === "concentrate_precipitation"
+    );
+
+    expect(warnings.some((warning) => warning.includes("precipitate"))).toBe(true);
+    expect(issue).toEqual({
+      code: "concentrate_precipitation",
+      severity: "high",
+      message:
+        "Calcium salts and phosphate sources can precipitate in concentrated stock solutions.",
+      remediation: "Separate incompatible materials into A/B stock solutions.",
+      ingredientIds: ["calcium-nitrate", "bone-meal"]
+    });
+  });
+
+  it("retains the legacy warning API for structured compatibility issues", () => {
     const warnings = checkCompatibility(
       [ingredient("calcium-nitrate"), ingredient("bone-meal")],
       { ...environment, isConcentrate: true }
     );
 
-    expect(warnings.some((warning) => warning.includes("precipitate"))).toBe(true);
+    expect(warnings).toEqual(
+      expect.arrayContaining([
+        expect.stringContaining(
+          "Separate incompatible materials into A/B stock solutions"
+        )
+      ])
+    );
   });
 
   it("warns when multiple high-EC soluble inputs are combined", () => {
@@ -90,6 +116,31 @@ describe("nutrient chemistry compatibility", () => {
         expect.stringContaining("calcium-weighted")
       ])
     );
+  });
+
+  it("uses lab analysis overrides in rate-weighted nutrient loads", () => {
+    const analysis = analyzeCompatibility(
+      [ingredient("calcium-nitrate")],
+      environment,
+      { "calcium-nitrate": 1 },
+      { "calcium-nitrate": { Ca: 10, N: 12 } }
+    );
+
+    expect(analysis.nutrientLoadsGPerL?.Ca).toBeCloseTo(0.1);
+    expect(analysis.nutrientLoadsGPerL?.N).toBeCloseTo(0.12);
+    expect(analysis.appliedLabOverrides["calcium-nitrate"]).toEqual({
+      Ca: 10,
+      N: 12
+    });
+  });
+
+  it("attaches a supplied manufacturer or reference URL to evidence", () => {
+    const evidence = getIngredientEvidence(
+      ingredient("calcium-nitrate"),
+      "https://example.test/calcium-nitrate-analysis"
+    );
+
+    expect(evidence.reference).toBe("https://example.test/calcium-nitrate-analysis");
   });
 });
 

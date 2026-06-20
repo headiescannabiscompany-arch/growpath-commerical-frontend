@@ -1,6 +1,14 @@
 import React, { useMemo, useState } from "react";
 import { useLocalSearchParams, useRouter } from "expo-router";
-import { Pressable, ScrollView, StyleSheet, Text, TextInput, View } from "react-native";
+import {
+  Linking,
+  Pressable,
+  ScrollView,
+  StyleSheet,
+  Text,
+  TextInput,
+  View
+} from "react-native";
 
 import BackButton from "@/components/nav/BackButton";
 import { saveToolRunAndOpenJournal } from "@/features/personal/tools/saveToolRunAndOpenJournal";
@@ -18,6 +26,7 @@ import {
   microbialOptions,
   type MoistureState,
   type MicrobialActivity,
+  type LabResultOverrides,
   type NutrientIntent,
   type NutrientKey,
   type NutrientStage,
@@ -39,6 +48,11 @@ function toPositiveNumber(value: string) {
   if (!value.trim()) return null;
   const parsed = Number(value);
   return Number.isFinite(parsed) && parsed >= 0 ? parsed : null;
+}
+
+function toReferenceUrl(value: string) {
+  const trimmed = value.trim();
+  return /^https?:\/\/\S+$/i.test(trimmed) ? trimmed : null;
 }
 
 function pillStyle(active: boolean) {
@@ -63,6 +77,10 @@ export default function NutrientChemistryToolScreen() {
   const [isConcentrate, setIsConcentrate] = useState(false);
   const [compareIds, setCompareIds] = useState<string[]>([]);
   const [rateInputs, setRateInputs] = useState<Record<string, string>>({});
+  const [referenceInputs, setReferenceInputs] = useState<Record<string, string>>({});
+  const [labResultInputs, setLabResultInputs] = useState<
+    Record<string, Record<string, string>>
+  >({});
   const [savedMessage, setSavedMessage] = useState("");
   const [saving, setSaving] = useState(false);
 
@@ -122,9 +140,39 @@ export default function NutrientChemistryToolScreen() {
       ),
     [timelineIngredients, rateInputs]
   );
+  const labOverrides = useMemo(
+    () =>
+      Object.fromEntries(
+        timelineIngredients.map((ingredient) => {
+          const entries = Object.entries(labResultInputs[ingredient.id] || {})
+            .map(([element, value]) => [element, toPositiveNumber(value)] as const)
+            .filter((entry): entry is readonly [string, number] => {
+              const value = entry[1];
+              return value != null && value <= 100;
+            });
+          return [ingredient.id, Object.fromEntries(entries) as LabResultOverrides];
+        })
+      ) as Record<string, LabResultOverrides>,
+    [timelineIngredients, labResultInputs]
+  );
+  const referenceUrls = useMemo(
+    () =>
+      Object.fromEntries(
+        Object.entries(referenceInputs)
+          .map(([ingredientId, value]) => [ingredientId, toReferenceUrl(value)] as const)
+          .filter((entry): entry is readonly [string, string] => entry[1] != null)
+      ),
+    [referenceInputs]
+  );
   const compatibilityAnalysis = useMemo(
-    () => analyzeCompatibility(timelineIngredients, environment, applicationRates),
-    [timelineIngredients, environment, applicationRates]
+    () =>
+      analyzeCompatibility(
+        timelineIngredients,
+        environment,
+        applicationRates,
+        labOverrides
+      ),
+    [timelineIngredients, environment, applicationRates, labOverrides]
   );
   const compatibilityWarnings = compatibilityAnalysis.warnings;
   const compareGroups = useMemo(
@@ -136,7 +184,10 @@ export default function NutrientChemistryToolScreen() {
     [timelineIngredients, environment]
   );
   const activeEvidence = activeRecommendation
-    ? getIngredientEvidence(activeRecommendation.ingredient)
+    ? getIngredientEvidence(
+        activeRecommendation.ingredient,
+        referenceUrls[activeRecommendation.ingredient.id]
+      )
     : null;
 
   function toggleCompare(id: string) {
@@ -166,7 +217,9 @@ export default function NutrientChemistryToolScreen() {
         livingSoil,
         isConcentrate,
         compareIds,
-        applicationRatesGPerL: applicationRates
+        applicationRatesGPerL: applicationRates,
+        labResultOverrides: labOverrides,
+        referenceUrls
       },
       output: {
         activeIngredient: activeRecommendation.ingredient,
@@ -492,6 +545,47 @@ export default function NutrientChemistryToolScreen() {
                     keyboardType="decimal-pad"
                   />
                 ) : null}
+                <TextInput
+                  accessibilityLabel={`${ingredient.name} manufacturer or reference URL`}
+                  style={styles.referenceInput}
+                  value={referenceInputs[ingredient.id] || ""}
+                  onChangeText={(value) =>
+                    setReferenceInputs((current) => ({
+                      ...current,
+                      [ingredient.id]: value
+                    }))
+                  }
+                  placeholder="Manufacturer/reference URL"
+                  autoCapitalize="none"
+                  keyboardType="url"
+                />
+                <View style={styles.labRow}>
+                  {Object.keys(ingredient.elemental).map((element) => (
+                    <View key={element} style={styles.labField}>
+                      <Text style={styles.label}>Lab {element} %</Text>
+                      <TextInput
+                        accessibilityLabel={`${ingredient.name} lab ${element} percent`}
+                        style={styles.labInput}
+                        value={labResultInputs[ingredient.id]?.[element] || ""}
+                        onChangeText={(value) =>
+                          setLabResultInputs((current) => ({
+                            ...current,
+                            [ingredient.id]: {
+                              ...current[ingredient.id],
+                              [element]: value
+                            }
+                          }))
+                        }
+                        placeholder={String(
+                          ingredient.elemental[
+                            element as keyof typeof ingredient.elemental
+                          ]
+                        )}
+                        keyboardType="decimal-pad"
+                      />
+                    </View>
+                  ))}
+                </View>
               </View>
             );
           })}
@@ -501,11 +595,30 @@ export default function NutrientChemistryToolScreen() {
               {compatibilityAnalysis.estimatedEcContribution.toFixed(2)} mS/cm
             </Text>
           ) : null}
-          {compatibilityWarnings.length > 0 ? (
-            compatibilityWarnings.map((warning) => (
-              <Text key={warning} style={styles.warning}>
-                {warning}
-              </Text>
+          {compatibilityAnalysis.issues.length > 0 ? (
+            compatibilityAnalysis.issues.map((issue) => (
+              <View
+                key={`${issue.code}-${issue.message}`}
+                style={styles.compatibilityIssue}
+              >
+                <View style={styles.issueHeader}>
+                  <Text
+                    style={[
+                      styles.severityBadge,
+                      issue.severity === "high"
+                        ? styles.severityHigh
+                        : issue.severity === "medium"
+                          ? styles.severityMedium
+                          : styles.severityLow
+                    ]}
+                  >
+                    {issue.severity.toUpperCase()}
+                  </Text>
+                  <Text style={styles.issueCode}>{issue.code.replaceAll("_", " ")}</Text>
+                </View>
+                <Text style={styles.issueMessage}>{issue.message}</Text>
+                <Text style={styles.issueRemediation}>Action: {issue.remediation}</Text>
+              </View>
             ))
           ) : (
             <Text style={styles.helperText}>
@@ -525,10 +638,21 @@ export default function NutrientChemistryToolScreen() {
               {activeRecommendation.ingredient.confidence}
             </Text>
             {activeEvidence ? (
-              <Text style={styles.evidenceText}>
-                Evidence: {activeEvidence.classification.replaceAll("_", " ")} · Source:{" "}
-                {activeEvidence.sourceName}
-              </Text>
+              <>
+                <Text style={styles.evidenceText}>
+                  Evidence: {activeEvidence.classification.replaceAll("_", " ")} · Source:{" "}
+                  {activeEvidence.sourceName}
+                </Text>
+                {activeEvidence.reference ? (
+                  <Pressable
+                    onPress={() => Linking.openURL(activeEvidence.reference || "")}
+                  >
+                    <Text style={styles.referenceLink}>
+                      Open manufacturer/reference source
+                    </Text>
+                  </Pressable>
+                ) : null}
+              </>
             ) : null}
             <Text style={styles.helperText}>
               {activeRecommendation.ingredient.warnings.join(" ")}
@@ -686,6 +810,29 @@ const styles = StyleSheet.create({
     padding: 10,
     borderRadius: 10
   },
+  compatibilityIssue: {
+    borderWidth: 1,
+    borderColor: "#FED7AA",
+    borderRadius: 10,
+    backgroundColor: "#FFF7ED",
+    padding: 10,
+    gap: 6
+  },
+  issueHeader: { flexDirection: "row", alignItems: "center", gap: 8 },
+  severityBadge: {
+    borderRadius: 999,
+    paddingHorizontal: 8,
+    paddingVertical: 3,
+    fontSize: 11,
+    fontWeight: "800",
+    overflow: "hidden"
+  },
+  severityHigh: { color: "#991B1B", backgroundColor: "#FEE2E2" },
+  severityMedium: { color: "#9A3412", backgroundColor: "#FFEDD5" },
+  severityLow: { color: "#365314", backgroundColor: "#ECFCCB" },
+  issueCode: { color: "#7C2D12", fontSize: 12, fontWeight: "800" },
+  issueMessage: { color: "#7C2D12", lineHeight: 19 },
+  issueRemediation: { color: "#9A3412", lineHeight: 19, fontWeight: "700" },
   recommendationCard: {
     borderWidth: 1,
     borderColor: "#E2E8F0",
@@ -730,6 +877,7 @@ const styles = StyleSheet.create({
   },
   rateRow: {
     flexDirection: "row",
+    flexWrap: "wrap",
     alignItems: "center",
     gap: 10,
     paddingVertical: 6,
@@ -746,6 +894,26 @@ const styles = StyleSheet.create({
     backgroundColor: "#FFFFFF",
     textAlign: "right"
   },
+  referenceInput: {
+    width: "100%",
+    borderWidth: 1,
+    borderColor: "#CBD5E1",
+    borderRadius: 10,
+    paddingHorizontal: 10,
+    paddingVertical: 8,
+    backgroundColor: "#FFFFFF"
+  },
+  labRow: { width: "100%", flexDirection: "row", flexWrap: "wrap", gap: 8 },
+  labField: { width: 92, gap: 4 },
+  labInput: {
+    borderWidth: 1,
+    borderColor: "#CBD5E1",
+    borderRadius: 10,
+    paddingHorizontal: 10,
+    paddingVertical: 8,
+    backgroundColor: "#FFFFFF"
+  },
+  referenceLink: { color: "#166534", fontWeight: "700", textDecorationLine: "underline" },
   compareName: { fontWeight: "800", color: "#0F172A", flex: 1 },
   compareMeta: { color: "#64748B", flex: 1, textAlign: "right" },
   detailName: { fontSize: 18, fontWeight: "800", color: "#0F172A" },

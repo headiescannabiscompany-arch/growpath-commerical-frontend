@@ -105,21 +105,25 @@ export type NutrientForm = FormIntelligence & {
   notes: string;
 };
 
+export type ElementalAnalysis = {
+  N?: number;
+  P?: number;
+  K?: number;
+  Ca?: number;
+  Mg?: number;
+  S?: number;
+  Fe?: number;
+};
+
+export type LabResultOverrides = Partial<ElementalAnalysis>;
+
 export type NutrientIngredient = {
   id: string;
   name: string;
   brand?: string;
   category: string;
   labelNPK: { N?: number; P?: number; K?: number };
-  elemental: {
-    N?: number;
-    P?: number;
-    K?: number;
-    Ca?: number;
-    Mg?: number;
-    S?: number;
-    Fe?: number;
-  };
+  elemental: ElementalAnalysis;
   applicationGuide?: {
     /** Starter rate for the final diluted solution, not a concentrate stock. */
     typicalRateGPerL: number;
@@ -168,10 +172,32 @@ export type NutrientLoads = {
   Fe: number;
 };
 
+export type CompatibilityIssueCode =
+  | "rate_ceiling"
+  | "estimated_ec"
+  | "concentrate_precipitation"
+  | "potassium_calcium_imbalance"
+  | "potassium_magnesium_imbalance"
+  | "calcium_magnesium_imbalance"
+  | "high_ec_inputs"
+  | "alkaline_buffering"
+  | "nitrogen_risk"
+  | "late_stage_timing";
+
+export type CompatibilityIssue = {
+  code: CompatibilityIssueCode;
+  severity: RiskSeverity;
+  message: string;
+  remediation: string;
+  ingredientIds: string[];
+};
+
 export type CompatibilityAnalysis = {
+  issues: CompatibilityIssue[];
   warnings: string[];
   nutrientLoadsGPerL: NutrientLoads | null;
   estimatedEcContribution: number | null;
+  appliedLabOverrides: Record<string, LabResultOverrides>;
 };
 
 export type ReleaseWindowKey = "0_3d" | "3_14d" | "14_45d" | "45_120d" | "120d_plus";
@@ -1101,9 +1127,15 @@ export function buildReleaseTimeline(
 }
 
 export function getIngredientEvidence(
-  ingredient: NutrientIngredient
+  ingredient: NutrientIngredient,
+  referenceUrl?: string
 ): NonNullable<NutrientIngredient["evidence"]> {
-  if (ingredient.evidence) return ingredient.evidence;
+  if (ingredient.evidence) {
+    return {
+      ...ingredient.evidence,
+      reference: referenceUrl || ingredient.evidence.reference
+    };
+  }
   const classification: EvidenceClass =
     ingredient.sourceType === "verified"
       ? "verified_label"
@@ -1117,7 +1149,8 @@ export function getIngredientEvidence(
     sourceName:
       classification === "extension_backed_estimate"
         ? "Extension reference"
-        : classification.replaceAll("_", " ")
+        : classification.replaceAll("_", " "),
+    reference: referenceUrl
   };
 }
 
@@ -1236,9 +1269,26 @@ export function recommendIngredients(
 export function analyzeCompatibility(
   ingredients: NutrientIngredient[],
   environment: NutrientEnvironment,
-  ratesGPerL: Record<string, number | null> = {}
+  ratesGPerL: Record<string, number | null> = {},
+  labOverrides: Record<string, LabResultOverrides> = {}
 ): CompatibilityAnalysis {
-  const warnings: string[] = [];
+  const issues: CompatibilityIssue[] = [];
+  const addIssue = (issue: CompatibilityIssue) => {
+    const existing = issues.find(
+      (row) => row.code === issue.code && row.message === issue.message
+    );
+    if (existing) {
+      existing.ingredientIds = Array.from(
+        new Set([...existing.ingredientIds, ...issue.ingredientIds])
+      );
+    } else {
+      issues.push({
+        ...issue,
+        ingredientIds: Array.from(new Set(issue.ingredientIds))
+      });
+    }
+  };
+  const ingredientIds = ingredients.map((ingredient) => ingredient.id);
   const hasRateInputs = ingredients.some(
     (ingredient) =>
       Object.prototype.hasOwnProperty.call(ratesGPerL, ingredient.id) &&
@@ -1248,14 +1298,26 @@ export function analyzeCompatibility(
     (acc, ingredient) => {
       const rate = ratesGPerL[ingredient.id];
       const multiplier = hasRateInputs ? (rate != null ? Math.max(0, rate) / 100 : 0) : 1;
+      const override = labOverrides[ingredient.id] || {};
+      const elemental = Object.fromEntries(
+        Object.entries({ ...ingredient.elemental, ...override }).map(([key, value]) => [
+          key,
+          typeof value === "number" &&
+          Number.isFinite(value) &&
+          value >= 0 &&
+          value <= 100
+            ? value
+            : ingredient.elemental[key as keyof ElementalAnalysis]
+        ])
+      ) as ElementalAnalysis;
       return {
-        N: acc.N + (ingredient.elemental.N || 0) * multiplier,
-        P: acc.P + (ingredient.elemental.P || 0) * multiplier,
-        K: acc.K + (ingredient.elemental.K || 0) * multiplier,
-        Ca: acc.Ca + (ingredient.elemental.Ca || 0) * multiplier,
-        Mg: acc.Mg + (ingredient.elemental.Mg || 0) * multiplier,
-        S: acc.S + (ingredient.elemental.S || 0) * multiplier,
-        Fe: acc.Fe + (ingredient.elemental.Fe || 0) * multiplier
+        N: acc.N + (elemental.N || 0) * multiplier,
+        P: acc.P + (elemental.P || 0) * multiplier,
+        K: acc.K + (elemental.K || 0) * multiplier,
+        Ca: acc.Ca + (elemental.Ca || 0) * multiplier,
+        Mg: acc.Mg + (elemental.Mg || 0) * multiplier,
+        S: acc.S + (elemental.S || 0) * multiplier,
+        Fe: acc.Fe + (elemental.Fe || 0) * multiplier
       };
     },
     { N: 0, P: 0, K: 0, Ca: 0, Mg: 0, S: 0, Fe: 0 } as NutrientLoads
@@ -1274,15 +1336,23 @@ export function analyzeCompatibility(
       const rate = ratesGPerL[ingredient.id];
       const guide = ingredient.applicationGuide;
       if (rate != null && guide && rate > guide.maxRateGPerL) {
-        warnings.push(
-          `${ingredient.name} is entered at ${rate} g/L, above this model's ${guide.maxRateGPerL} g/L screening ceiling. Verify the product label and crop tolerance.`
-        );
+        addIssue({
+          code: "rate_ceiling",
+          severity: "high",
+          message: `${ingredient.name} is entered at ${rate} g/L, above this model's ${guide.maxRateGPerL} g/L screening ceiling.`,
+          remediation: "Verify the product label and crop tolerance before application.",
+          ingredientIds: [ingredient.id]
+        });
       }
     }
     if (estimatedEcContribution != null && estimatedEcContribution >= 2.5) {
-      warnings.push(
-        `Entered rates contribute approximately ${estimatedEcContribution.toFixed(2)} mS/cm EC before source water and other inputs. Confirm the complete solution with a calibrated EC meter.`
-      );
+      addIssue({
+        code: "estimated_ec",
+        severity: "high",
+        message: `Entered rates contribute approximately ${estimatedEcContribution.toFixed(2)} mS/cm EC before source water and other inputs.`,
+        remediation: "Confirm the complete solution with a calibrated EC meter.",
+        ingredientIds
+      });
     }
   }
 
@@ -1296,37 +1366,63 @@ export function analyzeCompatibility(
   );
 
   if (environment.isConcentrate && hasCalciumSalt && hasPhosphate) {
-    warnings.push(
-      "Calcium salts and phosphate sources can precipitate in concentrated stock solutions. Separate A/B stock if needed."
-    );
+    addIssue({
+      code: "concentrate_precipitation",
+      severity: "high",
+      message:
+        "Calcium salts and phosphate sources can precipitate in concentrated stock solutions.",
+      remediation: "Separate incompatible materials into A/B stock solutions.",
+      ingredientIds
+    });
   }
   if (totals.Ca > 0 && totals.K > totals.Ca * 2.5) {
-    warnings.push(
-      "High potassium relative to calcium may contribute to Ca/Mg uptake imbalance."
-    );
+    addIssue({
+      code: "potassium_calcium_imbalance",
+      severity: "medium",
+      message:
+        "High potassium relative to calcium may contribute to Ca/Mg uptake imbalance.",
+      remediation: "Verify the complete feed ratio before increasing potassium.",
+      ingredientIds
+    });
   }
   if (totals.Mg > 0 && totals.K > totals.Mg * 3) {
-    warnings.push(
-      "High potassium relative to magnesium may suppress Mg uptake; verify the complete feed ratio before increasing K."
-    );
+    addIssue({
+      code: "potassium_magnesium_imbalance",
+      severity: "medium",
+      message: "High potassium relative to magnesium may suppress Mg uptake.",
+      remediation: "Verify the complete feed ratio before increasing potassium.",
+      ingredientIds
+    });
   }
   if (hasRateInputs && totals.Ca > 0 && totals.Mg > 0 && totals.Ca > totals.Mg * 8) {
-    warnings.push(
-      "Entered rates are heavily calcium-weighted relative to magnesium. Verify the complete Ca:Mg target before application."
-    );
+    addIssue({
+      code: "calcium_magnesium_imbalance",
+      severity: "medium",
+      message: "Entered rates are heavily calcium-weighted relative to magnesium.",
+      remediation: "Verify the complete Ca:Mg target before application.",
+      ingredientIds
+    });
   }
   if (hasRateInputs && totals.Ca > 0 && totals.Mg > totals.Ca * 2) {
-    warnings.push(
-      "Entered rates are heavily magnesium-weighted relative to calcium. Verify the complete Ca:Mg target before application."
-    );
+    addIssue({
+      code: "calcium_magnesium_imbalance",
+      severity: "medium",
+      message: "Entered rates are heavily magnesium-weighted relative to calcium.",
+      remediation: "Verify the complete Ca:Mg target before application.",
+      ingredientIds
+    });
   }
   const highEcForms = ingredients.flatMap((ingredient) =>
     ingredient.nutrientForms.filter((form) => form.ecImpact === "high")
   );
   if (highEcForms.length >= 2 || (highEcForms.length >= 1 && environment.isConcentrate)) {
-    warnings.push(
-      "High-EC soluble inputs are combined here. Confirm final dilution and root-zone EC before application."
-    );
+    addIssue({
+      code: "high_ec_inputs",
+      severity: "high",
+      message: "High-EC soluble inputs are combined here.",
+      remediation: "Confirm final dilution and root-zone EC before application.",
+      ingredientIds
+    });
   }
   if (
     environment.pH != null &&
@@ -1337,40 +1433,63 @@ export function analyzeCompatibility(
       )
     )
   ) {
-    warnings.push(
-      "Lime or buffering materials may worsen already high-pH media and reduce micronutrient availability."
-    );
+    addIssue({
+      code: "alkaline_buffering",
+      severity: "high",
+      message:
+        "Lime or buffering materials may worsen already high-pH media and reduce micronutrient availability.",
+      remediation: "Avoid additional buffering until pH and alkalinity are confirmed.",
+      ingredientIds
+    });
   }
-  for (const risk of ingredients.flatMap((ingredient) =>
-    estimateReleaseCurve(ingredient, environment).flatMap(
+  for (const ingredient of ingredients) {
+    for (const risk of estimateReleaseCurve(ingredient, environment).flatMap(
       (form) => form.activeNitrogenRisks
-    )
-  )) {
-    warnings.push(
-      `Nitrogen risk (${risk.severity}): ${risk.summary} Mitigation: ${risk.mitigation}`
-    );
+    )) {
+      addIssue({
+        code: "nitrogen_risk",
+        severity: risk.severity,
+        message: `Nitrogen risk (${risk.severity}): ${risk.summary}`,
+        remediation: risk.mitigation,
+        ingredientIds: [ingredient.id]
+      });
+    }
   }
   if (
     environment.stage === "late_flower" &&
     ingredients.some((ingredient) => ingredient.intentTags.includes("long_term_soil"))
   ) {
-    warnings.push(
-      "Long-horizon soil-building inputs may not move fast enough for late flower correction."
-    );
+    addIssue({
+      code: "late_stage_timing",
+      severity: "medium",
+      message:
+        "Long-horizon soil-building inputs may not move fast enough for late flower correction.",
+      remediation:
+        "Use a faster source for the current run or reserve this input for the next cycle.",
+      ingredientIds
+    });
   }
   return {
-    warnings: Array.from(new Set(warnings)),
+    issues,
+    warnings: issues.map((issue) => `${issue.message} ${issue.remediation}`),
     nutrientLoadsGPerL: hasRateInputs ? totals : null,
-    estimatedEcContribution
+    estimatedEcContribution,
+    appliedLabOverrides: Object.fromEntries(
+      Object.entries(labOverrides).filter(
+        ([, override]) => Object.keys(override).length > 0
+      )
+    )
   };
 }
 
 export function checkCompatibility(
   ingredients: NutrientIngredient[],
   environment: NutrientEnvironment,
-  ratesGPerL: Record<string, number | null> = {}
+  ratesGPerL: Record<string, number | null> = {},
+  labOverrides: Record<string, LabResultOverrides> = {}
 ) {
-  return analyzeCompatibility(ingredients, environment, ratesGPerL).warnings;
+  return analyzeCompatibility(ingredients, environment, ratesGPerL, labOverrides)
+    .warnings;
 }
 
 export function compareIngredientsBySpeed(
