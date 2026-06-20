@@ -5,13 +5,12 @@ type SaveAndOpenArgs = {
   growId?: string;
   toolKey?: string;
   toolType?: string;
+  toolRunId?: string;
   input: Record<string, any>;
   output: Record<string, any>;
 };
 
-type SaveAndOpenResult =
-  | { ok: true; toolRunId: string }
-  | { ok: false; error: string };
+type SaveAndOpenResult = { ok: true; toolRunId: string } | { ok: false; error: string };
 
 export async function saveToolRunAndOpenJournal(
   args: SaveAndOpenArgs
@@ -25,14 +24,16 @@ export async function saveToolRunAndOpenJournal(
     return { ok: false, error: "A tool key is required to save a run." };
   }
 
-  const created = await createToolRun({
-    toolType,
-    growId,
-    input: args.input,
-    output: args.output
-  });
-
-  const toolRunId = String(created?._id || created?.id || "").trim();
+  let toolRunId = String(args.toolRunId || "").trim();
+  if (!toolRunId) {
+    const created = await createToolRun({
+      toolType,
+      growId,
+      input: args.input,
+      output: args.output
+    });
+    toolRunId = String(created?._id || created?.id || "").trim();
+  }
   if (!toolRunId) {
     return { ok: false, error: "Unable to save tool run." };
   }

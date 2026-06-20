@@ -9,6 +9,7 @@ export default function GrowWorkspaceLayout() {
   return (
     <Stack>
       <Stack.Screen name="index" options={{ title: `Grow ${growId || ""}`.trim() }} />
+      <Stack.Screen name="plants" options={{ title: "Plants" }} />
       <Stack.Screen name="journal" options={{ title: "Journal" }} />
       <Stack.Screen name="tasks" options={{ title: "Tasks" }} />
       <Stack.Screen name="tools" options={{ title: "Tools" }} />

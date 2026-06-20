@@ -1,10 +1,13 @@
 import React, { useMemo, useState } from "react";
 import { useLocalSearchParams, useRouter } from "expo-router";
-import { Pressable, StyleSheet, Text, TextInput, View } from "react-native";
+import { ScrollView, StyleSheet, Text, TextInput } from "react-native";
 
-import BackButton from "@/components/nav/BackButton";
 import { apiRequest } from "@/api/apiRequest";
 import { createToolRun } from "@/api/toolRuns";
+import BackButton from "@/components/nav/BackButton";
+import ToolResultSurface, {
+  type ToolResultAction
+} from "@/features/personal/tools/ToolResultSurface";
 import { saveToolRunAndOpenJournal } from "@/features/personal/tools/saveToolRunAndOpenJournal";
 
 function toNum(value: string, fallback: number) {
@@ -13,9 +16,9 @@ function toNum(value: string, fallback: number) {
 }
 
 function nextDate(days: number) {
-  const d = new Date();
-  d.setDate(d.getDate() + days);
-  return d.toISOString().slice(0, 10);
+  const date = new Date();
+  date.setDate(date.getDate() + days);
+  return date.toISOString().slice(0, 10);
 }
 
 function coerceParam(value?: string | string[]) {
@@ -32,8 +35,8 @@ export default function WateringToolScreen() {
   const [potLiters, setPotLiters] = useState("11");
   const [runoffPct, setRunoffPct] = useState("10");
   const [intervalDays, setIntervalDays] = useState("2");
-  const [saveFeedback, setSaveFeedback] = useState("");
-  const [savingAndOpening, setSavingAndOpening] = useState(false);
+  const [savedRunId, setSavedRunId] = useState("");
+  const [feedback, setFeedback] = useState("");
 
   const model = useMemo(() => {
     const liters = Math.max(0, toNum(potLiters, 0));
@@ -48,8 +51,74 @@ export default function WateringToolScreen() {
     };
   }, [potLiters, runoffPct, intervalDays]);
 
+  const input = {
+    potLiters: Number(potLiters),
+    runoffPct: Number(runoffPct),
+    intervalDays: Number(intervalDays)
+  };
+  const actions: ToolResultAction[] = [
+    {
+      key: "save-run",
+      label: savedRunId ? "Run Saved" : "Save Tool Run",
+      pendingLabel: "Saving...",
+      disabled: Boolean(savedRunId),
+      onPress: async () => {
+        setFeedback("");
+        const created = await createToolRun({
+          toolType: "watering",
+          growId: growId || undefined,
+          input,
+          output: model
+        });
+        const id = String(created?._id || created?.id || "");
+        if (!id) throw new Error("Unable to save tool run.");
+        setSavedRunId(id);
+        setFeedback("Saved tool run.");
+      }
+    }
+  ];
+
+  if (growId) {
+    actions.push(
+      {
+        key: "open-journal",
+        label: "Open Journal Entry",
+        variant: "secondary",
+        pendingLabel: "Opening...",
+        onPress: async () => {
+          const result = await saveToolRunAndOpenJournal({
+            router,
+            growId,
+            toolKey: "watering",
+            toolRunId: savedRunId || undefined,
+            input,
+            output: model
+          });
+          if (!result.ok) throw new Error(result.error);
+        }
+      },
+      {
+        key: "create-task",
+        label: "Create Watering Task",
+        variant: "secondary",
+        onPress: async () => {
+          await apiRequest("/api/personal/tasks", {
+            method: "POST",
+            body: {
+              growId,
+              title: "Water plants",
+              description: `Target ${model.targetLiters} L with ${runoffPct}% runoff`,
+              dueDate: model.nextWaterDate
+            }
+          });
+          setFeedback("Created grow task.");
+        }
+      }
+    );
+  }
+
   return (
-    <View style={styles.container}>
+    <ScrollView contentContainerStyle={styles.container}>
       <BackButton />
       <Text style={styles.title}>Watering Planner</Text>
       <Text style={styles.subtitle}>Estimate watering volume and schedule.</Text>
@@ -59,158 +128,79 @@ export default function WateringToolScreen() {
       <TextInput
         style={styles.input}
         value={potLiters}
-        onChangeText={setPotLiters}
+        onChangeText={(value) => {
+          setPotLiters(value);
+          setSavedRunId("");
+        }}
         keyboardType="numeric"
       />
-
       <Text style={styles.label}>Runoff target (%)</Text>
       <TextInput
         style={styles.input}
         value={runoffPct}
-        onChangeText={setRunoffPct}
+        onChangeText={(value) => {
+          setRunoffPct(value);
+          setSavedRunId("");
+        }}
         keyboardType="numeric"
       />
-
       <Text style={styles.label}>Water every (days)</Text>
       <TextInput
         style={styles.input}
         value={intervalDays}
-        onChangeText={setIntervalDays}
+        onChangeText={(value) => {
+          setIntervalDays(value);
+          setSavedRunId("");
+        }}
         keyboardType="numeric"
       />
 
-      <View style={styles.card}>
-        <Text style={styles.result}>
-          Target volume: {model.targetLiters} L per watering
-        </Text>
-        <Text style={styles.line}>Estimated weekly total: {model.perWeekLiters} L</Text>
-        <Text style={styles.line}>Next watering date: {model.nextWaterDate}</Text>
-      </View>
-
-      <View style={styles.row}>
-        <Pressable
-          style={styles.saveButton}
-          onPress={async () => {
-            const created = await createToolRun({
-              toolType: "watering",
-              growId: growId || undefined,
-              input: {
-                potLiters: Number(potLiters),
-                runoffPct: Number(runoffPct),
-                intervalDays: Number(intervalDays)
-              },
-              output: model
-            });
-            if (created) {
-              setSaveFeedback("Saved tool run.");
-            } else {
-              setSaveFeedback("Unable to save tool run.");
-            }
-          }}
-        >
-          <Text style={styles.saveButtonText}>Save run {growId ? "to grow" : ""}</Text>
-        </Pressable>
-
-        {growId ? (
-          <Pressable
-            style={[styles.secondaryButton, savingAndOpening ? { opacity: 0.7 } : null]}
-            disabled={savingAndOpening}
-            onPress={async () => {
-              if (savingAndOpening) return;
-              setSavingAndOpening(true);
-              const result = await saveToolRunAndOpenJournal({
-                router,
-                growId,
-                toolKey: "watering",
-                input: {
-                  potLiters: Number(potLiters),
-                  runoffPct: Number(runoffPct),
-                  intervalDays: Number(intervalDays)
-                },
-                output: model
-              });
-              if (!result.ok) setSaveFeedback(result.error);
-              setSavingAndOpening(false);
-            }}
-          >
-            <Text style={styles.secondaryButtonText}>
-              {savingAndOpening ? "Saving..." : "Save and Open Journal"}
-            </Text>
-          </Pressable>
-        ) : null}
-
-        {growId ? (
-          <Pressable
-            style={styles.secondaryButton}
-            onPress={async () => {
-              try {
-                await apiRequest("/api/personal/tasks", {
-                  method: "POST",
-                  body: {
-                    growId,
-                    title: "Water plants",
-                    description: `Target ${model.targetLiters} L with ${runoffPct}% runoff`,
-                    dueDate: model.nextWaterDate
-                  }
-                });
-                setSaveFeedback("Created grow task.");
-              } catch {
-                setSaveFeedback("Unable to create task.");
-              }
-            }}
-          >
-            <Text style={styles.secondaryButtonText}>Create task</Text>
-          </Pressable>
-        ) : null}
-      </View>
-
-      {saveFeedback ? <Text style={styles.hint}>{saveFeedback}</Text> : null}
-    </View>
+      <ToolResultSurface
+        title="Watering estimate"
+        status="HEURISTIC"
+        metrics={[
+          {
+            key: "target-volume",
+            label: "Target per watering",
+            value: `${model.targetLiters} L`
+          },
+          {
+            key: "weekly-volume",
+            label: "Estimated weekly total",
+            value: `${model.perWeekLiters} L`
+          },
+          {
+            key: "next-date",
+            label: "Next planned date",
+            value: model.nextWaterDate
+          }
+        ]}
+        assumptions={[
+          "The estimate uses pot volume, runoff target, and a fixed base-volume heuristic.",
+          "Plant size, medium water retention, dryback, climate, and recent watering history are not yet modeled.",
+          "Inspect root-zone moisture and plant condition before watering."
+        ]}
+        actions={actions}
+        feedback={feedback}
+        contextMessage={
+          !growId ? "Select a grow to enable journal and task actions." : undefined
+        }
+      />
+    </ScrollView>
   );
 }
 
 const styles = StyleSheet.create({
-  container: { flex: 1, padding: 20, backgroundColor: "#FFFFFF", gap: 8 },
+  container: { padding: 20, paddingBottom: 36, backgroundColor: "#FFFFFF", gap: 8 },
   title: { fontSize: 22, fontWeight: "700" },
-  subtitle: { fontSize: 13, color: "#64748B", marginBottom: 6 },
-  context: { color: "#166534", fontWeight: "700", marginBottom: 4 },
-  label: { fontWeight: "700", marginTop: 6 },
+  subtitle: { fontSize: 13, color: "#64748B", marginBottom: 4 },
+  context: { color: "#166534", fontWeight: "700" },
+  label: { fontWeight: "700", marginTop: 4 },
   input: {
     borderWidth: 1,
     borderColor: "#E2E8F0",
     borderRadius: 10,
     padding: 12,
     backgroundColor: "#FFFFFF"
-  },
-  card: {
-    borderWidth: 1,
-    borderColor: "#E2E8F0",
-    borderRadius: 12,
-    padding: 16,
-    backgroundColor: "#F8FAFC",
-    marginTop: 10,
-    gap: 4
-  },
-  result: { fontSize: 18, fontWeight: "800" },
-  line: { color: "#334155" },
-  row: { flexDirection: "row", gap: 8, flexWrap: "wrap", marginTop: 8 },
-  saveButton: {
-    paddingHorizontal: 12,
-    paddingVertical: 8,
-    borderRadius: 8,
-    borderWidth: 1,
-    borderColor: "#166534",
-    backgroundColor: "#166534"
-  },
-  saveButtonText: { color: "#FFFFFF", fontWeight: "700" },
-  secondaryButton: {
-    paddingHorizontal: 12,
-    paddingVertical: 8,
-    borderRadius: 8,
-    borderWidth: 1,
-    borderColor: "#CBD5E1",
-    backgroundColor: "#FFFFFF"
-  },
-  secondaryButtonText: { color: "#0F172A", fontWeight: "700" },
-  hint: { marginTop: 6, fontSize: 12, color: "#64748B" }
+  }
 });

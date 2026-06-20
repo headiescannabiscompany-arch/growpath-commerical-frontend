@@ -3,6 +3,7 @@ import { useLocalSearchParams, useRouter } from "expo-router";
 import { Pressable, ScrollView, StyleSheet, Text, TextInput, View } from "react-native";
 
 import BackButton from "@/components/nav/BackButton";
+import ToolResultSurface from "@/features/personal/tools/ToolResultSurface";
 import { saveToolRunAndOpenJournal } from "@/features/personal/tools/saveToolRunAndOpenJournal";
 
 function coerceParam(value?: string | string[]) {
@@ -25,7 +26,6 @@ export default function PpfdToolScreen() {
   const [photoperiodHours, setPhotoperiodHours] = useState("12");
   const [ppfdAtCanopy, setPpfdAtCanopy] = useState("");
   const [fixturePercent, setFixturePercent] = useState("100");
-  const [savingAndOpening, setSavingAndOpening] = useState(false);
   const [feedback, setFeedback] = useState("");
 
   const computed = useMemo(() => {
@@ -81,51 +81,53 @@ export default function PpfdToolScreen() {
         placeholder="100"
       />
 
-      <View style={styles.card}>
-        <Text style={styles.cardTitle}>Estimated Output</Text>
-        <Text style={styles.cardLine}>
-          Required PPFD:{" "}
-          <Text style={styles.cardValue}>
-            {computed ? `${computed.requiredPpfd} umol/m2/s` : "-"}
-          </Text>
-        </Text>
-      </View>
-
-      {growId ? (
-        <Pressable
-          style={[styles.button, savingAndOpening ? { opacity: 0.7 } : null]}
-          disabled={savingAndOpening}
-          onPress={async () => {
-            if (savingAndOpening) return;
-            setSavingAndOpening(true);
-            setFeedback("");
-            const result = await saveToolRunAndOpenJournal({
-              router,
-              growId,
-              toolKey: "ppfd",
-              input: {
-                dliTarget: Number(dliTarget),
-                photoperiodHours: Number(photoperiodHours),
-                ppfdAtCanopy: ppfdAtCanopy ? Number(ppfdAtCanopy) : null,
-                fixturePercent: Number(fixturePercent)
-              },
-              output: computed ?? {}
-            });
-            if (!result.ok) setFeedback(result.error);
-            setSavingAndOpening(false);
-          }}
-        >
-          <Text style={styles.buttonText}>
-            {savingAndOpening ? "Saving..." : "Save and Open Journal"}
-          </Text>
-        </Pressable>
-      ) : (
-        <Text style={styles.hint}>
-          Select a grow context to save this run to journal.
-        </Text>
-      )}
-
-      {feedback ? <Text style={styles.hint}>{feedback}</Text> : null}
+      <ToolResultSurface
+        title="PPFD / DLI result"
+        status={computed ? "CALCULATED" : "NEEDS INPUT"}
+        metrics={[
+          {
+            key: "required-ppfd",
+            label: "Required canopy PPFD",
+            value: computed ? `${computed.requiredPpfd} µmol/m²/s` : "—",
+            detail: `${photoperiodHours || "—"} hour photoperiod`
+          }
+        ]}
+        assumptions={[
+          "This calculation converts target DLI and photoperiod; it does not estimate fixture output from wattage.",
+          "Use a calibrated PAR meter and canopy sampling for measured PPFD."
+        ]}
+        actions={
+          computed && growId
+            ? [
+                {
+                  key: "save-journal",
+                  label: "Save and Open Journal",
+                  pendingLabel: "Saving...",
+                  onPress: async () => {
+                    setFeedback("");
+                    const result = await saveToolRunAndOpenJournal({
+                      router,
+                      growId,
+                      toolKey: "ppfd",
+                      input: {
+                        dliTarget: Number(dliTarget),
+                        photoperiodHours: Number(photoperiodHours),
+                        ppfdAtCanopy: ppfdAtCanopy ? Number(ppfdAtCanopy) : null,
+                        fixturePercent: Number(fixturePercent)
+                      },
+                      output: computed
+                    });
+                    if (!result.ok) throw new Error(result.error);
+                  }
+                }
+              ]
+            : []
+        }
+        feedback={feedback}
+        contextMessage={
+          !growId ? "Select a grow context to save this result." : undefined
+        }
+      />
     </ScrollView>
   );
 }
@@ -143,24 +145,5 @@ const styles = StyleSheet.create({
     padding: 12,
     backgroundColor: "#FFFFFF"
   },
-  card: {
-    marginTop: 8,
-    borderWidth: 1,
-    borderColor: "#E2E8F0",
-    borderRadius: 12,
-    backgroundColor: "#F8FAFC",
-    padding: 12
-  },
-  cardTitle: { fontWeight: "700", marginBottom: 4 },
-  cardLine: { color: "#334155" },
-  cardValue: { fontWeight: "800", color: "#0F172A" },
-  button: {
-    marginTop: 8,
-    backgroundColor: "#111827",
-    borderRadius: 10,
-    paddingVertical: 12,
-    alignItems: "center"
-  },
-  buttonText: { color: "#FFFFFF", fontWeight: "800" },
   hint: { fontSize: 12, color: "#64748B", marginTop: 6 }
 });

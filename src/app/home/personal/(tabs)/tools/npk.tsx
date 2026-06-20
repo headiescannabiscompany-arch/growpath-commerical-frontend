@@ -4,6 +4,7 @@ import { Pressable, ScrollView, StyleSheet, Text, TextInput, View } from "react-
 import { Picker } from "@react-native-picker/picker";
 
 import BackButton from "@/components/nav/BackButton";
+import ToolResultSurface from "@/features/personal/tools/ToolResultSurface";
 import {
   createTaskFromToolRun,
   runCalculator,
@@ -538,69 +539,74 @@ export default function NpkToolScreen() {
       ) : null}
 
       {result ? (
-        <View style={styles.resultCard}>
-          <Text style={styles.resultTitle}>Elemental ppm</Text>
-          <View style={styles.resultGrid}>
-            {Object.entries(result.totals || {}).map(([key, value]) => (
-              <View key={key} style={styles.resultMetric}>
-                <Text style={styles.metricLabel}>{key.replace("ppm", "")}</Text>
-                <Text style={styles.metricValue}>{String(value)}</Text>
-              </View>
-            ))}
-          </View>
-          <Text style={styles.fieldHint}>{result.formula}</Text>
-          <Text style={styles.fieldHint}>{result.releaseDisclaimer}</Text>
-          <Text style={styles.resultTitle}>Release timing</Text>
-          {Object.entries(result.releaseTimeline || {}).map(
-            ([window, entries]: [string, any]) =>
-              entries.length ? (
-                <View key={window} style={styles.timelineRow}>
-                  <Text style={styles.timelineLabel}>{window.replaceAll("_", "-")}</Text>
-                  <Text style={styles.recommendation}>
-                    {entries
-                      .map(
-                        (entry: any) =>
-                          `${entry.name}: ${entry.form} (${entry.confidence})`
-                      )
-                      .join("; ")}
-                  </Text>
-                </View>
-              ) : null
-          )}
-          {result.warnings?.map((warning: string) => (
-            <Text key={warning} style={styles.warning}>
-              {warning}
-            </Text>
-          ))}
-          {result.recommendations?.map((item: string) => (
-            <Text key={item} style={styles.recommendation}>
-              {item}
-            </Text>
-          ))}
-        </View>
-      ) : null}
-
-      {toolRun?._id && growContext ? (
-        <View style={styles.row}>
-          <Pressable
-            style={styles.primaryButton}
-            onPress={async () => {
-              await saveToolRunToLog(toolRun._id!);
-              setFeedback("Saved to grow journal.");
-            }}
-          >
-            <Text style={styles.primaryButtonText}>Save to Grow Log</Text>
-          </Pressable>
-          <Pressable
-            style={styles.secondaryButton}
-            onPress={async () => {
-              await createTaskFromToolRun(toolRun._id!);
-              setFeedback("Follow-up task created.");
-            }}
-          >
-            <Text style={styles.secondaryButtonText}>Create Task</Text>
-          </Pressable>
-        </View>
+        <ToolResultSurface
+          title="NPK recipe result"
+          status="CALCULATED"
+          summary={result.formula}
+          metrics={Object.entries(result.totals || {}).map(([key, value]) => ({
+            key,
+            label: key.replace("ppm", ""),
+            value: String(value),
+            detail: "ppm elemental"
+          }))}
+          notices={(result.warnings || []).map((warning: string, index: number) => ({
+            key: `warning-${index}`,
+            severity: "medium" as const,
+            message: warning
+          }))}
+          recommendations={result.recommendations || []}
+          assumptions={[result.releaseDisclaimer].filter(Boolean)}
+          details={
+            <>
+              <Text style={styles.resultTitle}>Release timing</Text>
+              {Object.entries(result.releaseTimeline || {}).map(
+                ([window, entries]: [string, any]) =>
+                  entries.length ? (
+                    <View key={window} style={styles.timelineRow}>
+                      <Text style={styles.timelineLabel}>
+                        {window.replaceAll("_", "-")}
+                      </Text>
+                      <Text style={styles.recommendation}>
+                        {entries
+                          .map(
+                            (entry: any) =>
+                              `${entry.name}: ${entry.form} (${entry.confidence})`
+                          )
+                          .join("; ")}
+                      </Text>
+                    </View>
+                  ) : null
+              )}
+            </>
+          }
+          actions={
+            toolRun?._id && growContext
+              ? [
+                  {
+                    key: "save-log",
+                    label: "Save to Grow Log",
+                    onPress: async () => {
+                      await saveToolRunToLog(toolRun._id!);
+                      setFeedback("Saved to grow journal.");
+                    }
+                  },
+                  {
+                    key: "create-task",
+                    label: "Create Task",
+                    variant: "secondary",
+                    onPress: async () => {
+                      await createTaskFromToolRun(toolRun._id!);
+                      setFeedback("Follow-up task created.");
+                    }
+                  }
+                ]
+              : []
+          }
+          feedback={feedback}
+          contextMessage={
+            !growContext ? "Select a grow to enable journal and task actions." : undefined
+          }
+        />
       ) : null}
     </ScrollView>
   );

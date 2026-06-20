@@ -8,8 +8,14 @@ export interface ToolRun {
   toolType?: string;
   params?: Record<string, any>;
   input?: Record<string, any>;
+  inputs?: Record<string, any>;
   result?: Record<string, any>;
   output?: Record<string, any>;
+  outputs?: Record<string, any>;
+  schemaVersion?: number;
+  calculatorVersion?: string;
+  sourceType?: string;
+  sourceObjectId?: string | null;
   summary?: string;
   recommendations?: string[];
   warnings?: string[];
@@ -28,7 +34,7 @@ export type CalculatorTool =
   | "bud-rot-risk"
   | "npk-recipe";
 
-function normalizeToolRun(row: any): ToolRun {
+export function normalizeToolRun(row: any): ToolRun {
   if (!row || typeof row !== "object") return {};
 
   const normalized: ToolRun = { ...row };
@@ -46,22 +52,21 @@ function normalizeToolRun(row: any): ToolRun {
   normalized.toolType = String(
     row?.toolType || row?.toolName || normalized.toolType || ""
   );
-  normalized.params = (row?.params ?? row?.input ?? normalized.params ?? {}) as Record<
+  const inputs = (row?.inputs ?? row?.input ?? row?.params ?? {}) as Record<string, any>;
+  const outputs = (row?.outputs ?? row?.output ?? row?.result ?? {}) as Record<
     string,
     any
   >;
-  normalized.input = (row?.input ?? row?.params ?? normalized.input ?? {}) as Record<
-    string,
-    any
-  >;
-  normalized.result = (row?.result ?? row?.output ?? normalized.result ?? {}) as Record<
-    string,
-    any
-  >;
-  normalized.output = (row?.output ?? row?.result ?? normalized.output ?? {}) as Record<
-    string,
-    any
-  >;
+  normalized.inputs = inputs;
+  normalized.input = inputs;
+  normalized.params = inputs;
+  normalized.outputs = outputs;
+  normalized.output = outputs;
+  normalized.result = outputs;
+  normalized.schemaVersion = Number.isFinite(Number(row?.schemaVersion))
+    ? Number(row.schemaVersion)
+    : 1;
+  normalized.calculatorVersion = String(row?.calculatorVersion || "legacy");
 
   return normalized;
 }
@@ -134,6 +139,9 @@ export async function createToolRun(payload: {
   growId?: string;
   input: Record<string, any>;
   output: Record<string, any>;
+  calculatorVersion?: string;
+  sourceType?: string;
+  sourceObjectId?: string;
 }): Promise<ToolRun | null> {
   try {
     const body = {
@@ -141,6 +149,12 @@ export async function createToolRun(payload: {
       toolName: payload.toolType,
       params: payload.input,
       result: payload.output,
+      inputs: payload.input,
+      outputs: payload.output,
+      schemaVersion: 1,
+      calculatorVersion: payload.calculatorVersion || "1",
+      sourceType: payload.sourceType || "manual_tool_run",
+      sourceObjectId: payload.sourceObjectId || null,
       // Frontend/backward compatibility aliases
       toolType: payload.toolType,
       input: payload.input,
