@@ -47,6 +47,40 @@ export type ReleaseMechanism =
   | "mineral_weathering"
   | "organic_matrix";
 
+export type NitrogenForm = "nitrate" | "ammonium" | "urea" | "organic_protein";
+export type ChelatingAgent = "EDTA" | "DTPA" | "EDDHA";
+export type RiskSeverity = "low" | "medium" | "high";
+export type NitrogenRiskCode =
+  | "leaching"
+  | "volatilization"
+  | "acidification"
+  | "slow_mineralization";
+export type NitrogenRiskCondition =
+  | "always"
+  | "wet_media"
+  | "dry_media"
+  | "low_microbes"
+  | "cool_media"
+  | "high_ph";
+
+export type NitrogenRisk = {
+  code: NitrogenRiskCode;
+  severity: RiskSeverity;
+  condition: NitrogenRiskCondition;
+  summary: string;
+  mitigation: string;
+};
+
+export type FormIntelligence = {
+  nitrogenForm?: NitrogenForm;
+  nitrogenRisks?: NitrogenRisk[];
+  chelate?: {
+    agent: ChelatingAgent;
+    /** Approximate upper pH where the chelate remains dependable. */
+    stableThroughPH: number;
+  };
+};
+
 export type NutrientEnvironment = {
   stage: NutrientStage;
   soilTempC: number | null;
@@ -58,7 +92,7 @@ export type NutrientEnvironment = {
   isConcentrate: boolean;
 };
 
-export type NutrientForm = {
+export type NutrientForm = FormIntelligence & {
   nutrient: NutrientKey | string;
   form: string;
   chemicalName: string;
@@ -86,6 +120,13 @@ export type NutrientIngredient = {
     S?: number;
     Fe?: number;
   };
+  applicationGuide?: {
+    /** Starter rate for the final diluted solution, not a concentrate stock. */
+    typicalRateGPerL: number;
+    maxRateGPerL: number;
+    /** Approximate EC contribution in mS/cm for each g/L of product. */
+    estimatedEcPerGPerL: number;
+  };
   nutrientForms: NutrientForm[];
   bestUseCases: string[];
   badUseCases: string[];
@@ -105,6 +146,7 @@ export type NutrientIngredient = {
 export type ReleaseCurveRow = NutrientForm & {
   adjustedReleaseDays: { min: number; max: number };
   fitLabel: string;
+  activeNitrogenRisks: NitrogenRisk[];
 };
 
 export type IngredientRecommendation = {
@@ -114,6 +156,22 @@ export type IngredientRecommendation = {
   fitLabel: string;
   releaseSummary: string;
   timing: ReleaseCurveRow[];
+};
+
+export type NutrientLoads = {
+  N: number;
+  P: number;
+  K: number;
+  Ca: number;
+  Mg: number;
+  S: number;
+  Fe: number;
+};
+
+export type CompatibilityAnalysis = {
+  warnings: string[];
+  nutrientLoadsGPerL: NutrientLoads | null;
+  estimatedEcContribution: number | null;
 };
 
 export type ReleaseWindowKey = "0_3d" | "3_14d" | "14_45d" | "45_120d" | "120d_plus";
@@ -195,6 +253,11 @@ export const ingredientLibrary: NutrientIngredient[] = [
     category: "salt",
     labelNPK: { N: 15.5 },
     elemental: { N: 15.5, Ca: 19 },
+    applicationGuide: {
+      typicalRateGPerL: 1,
+      maxRateGPerL: 2,
+      estimatedEcPerGPerL: 0.85
+    },
     nutrientForms: [
       {
         nutrient: "calcium",
@@ -211,6 +274,17 @@ export const ingredientLibrary: NutrientIngredient[] = [
       {
         nutrient: "nitrogen",
         form: "nitrate",
+        nitrogenForm: "nitrate",
+        nitrogenRisks: [
+          {
+            code: "leaching",
+            severity: "high",
+            condition: "wet_media",
+            summary: "Mobile nitrate can leach from saturated or over-irrigated media.",
+            mitigation:
+              "Use smaller split applications and correct drainage or irrigation first."
+          }
+        ],
         chemicalName: "nitrate nitrogen",
         availabilityClass: "immediate",
         estimatedReleaseDays: { min: 0, max: 3 },
@@ -235,6 +309,11 @@ export const ingredientLibrary: NutrientIngredient[] = [
     category: "salt",
     labelNPK: {},
     elemental: { Ca: 36 },
+    applicationGuide: {
+      typicalRateGPerL: 0.5,
+      maxRateGPerL: 1,
+      estimatedEcPerGPerL: 0.9
+    },
     nutrientForms: [
       {
         nutrient: "calcium",
@@ -267,6 +346,11 @@ export const ingredientLibrary: NutrientIngredient[] = [
     category: "salt",
     labelNPK: {},
     elemental: { Ca: 19 },
+    applicationGuide: {
+      typicalRateGPerL: 0.5,
+      maxRateGPerL: 1,
+      estimatedEcPerGPerL: 0.6
+    },
     nutrientForms: [
       {
         nutrient: "calcium",
@@ -487,6 +571,25 @@ export const ingredientLibrary: NutrientIngredient[] = [
       {
         nutrient: "nitrogen",
         form: "organic protein",
+        nitrogenForm: "organic_protein",
+        nitrogenRisks: [
+          {
+            code: "slow_mineralization",
+            severity: "medium",
+            condition: "low_microbes",
+            summary: "Low microbial activity can delay organic nitrogen release.",
+            mitigation:
+              "Use a faster nitrogen source when the crop cannot wait for biology."
+          },
+          {
+            code: "slow_mineralization",
+            severity: "medium",
+            condition: "cool_media",
+            summary: "Cool media can delay organic nitrogen mineralization.",
+            mitigation:
+              "Allow a longer release window or use a faster supplemental source."
+          }
+        ],
         chemicalName: "proteinaceous nitrogen",
         availabilityClass: "slow",
         estimatedReleaseDays: { min: 28, max: 180 },
@@ -515,6 +618,36 @@ export const ingredientLibrary: NutrientIngredient[] = [
       {
         nutrient: "nitrogen",
         form: "organic protein",
+        nitrogenForm: "organic_protein",
+        nitrogenRisks: [
+          {
+            code: "slow_mineralization",
+            severity: "high",
+            condition: "low_microbes",
+            summary:
+              "Low microbial activity can substantially delay feather-meal nitrogen.",
+            mitigation:
+              "Reserve it for pre-mix or use a faster source for current deficiencies."
+          },
+          {
+            code: "slow_mineralization",
+            severity: "medium",
+            condition: "cool_media",
+            summary:
+              "Cool media can extend feather-meal release beyond the expected window.",
+            mitigation:
+              "Apply earlier or choose a source that does not require mineralization."
+          },
+          {
+            code: "slow_mineralization",
+            severity: "medium",
+            condition: "dry_media",
+            summary:
+              "Dry media suppresses the biology needed to release feather-meal nitrogen.",
+            mitigation:
+              "Restore suitable root-zone moisture before relying on this source."
+          }
+        ],
         chemicalName: "keratin protein nitrogen",
         availabilityClass: "slow",
         estimatedReleaseDays: { min: 120, max: 180 },
@@ -539,10 +672,26 @@ export const ingredientLibrary: NutrientIngredient[] = [
     category: "salt",
     labelNPK: { N: 46 },
     elemental: { N: 46 },
+    applicationGuide: {
+      typicalRateGPerL: 0.5,
+      maxRateGPerL: 1,
+      estimatedEcPerGPerL: 0.4
+    },
     nutrientForms: [
       {
         nutrient: "nitrogen",
         form: "urea",
+        nitrogenForm: "urea",
+        nitrogenRisks: [
+          {
+            code: "volatilization",
+            severity: "high",
+            condition: "high_ph",
+            summary: "Urea has elevated ammonia-loss risk in alkaline media.",
+            mitigation:
+              "Incorporate or water it in promptly and avoid unverified surface rates."
+          }
+        ],
         chemicalName: "urea nitrogen",
         availabilityClass: "fast",
         estimatedReleaseDays: { min: 1, max: 7 },
@@ -567,10 +716,25 @@ export const ingredientLibrary: NutrientIngredient[] = [
     category: "salt",
     labelNPK: { N: 21 },
     elemental: { N: 21, S: 24 },
+    applicationGuide: {
+      typicalRateGPerL: 0.5,
+      maxRateGPerL: 1.5,
+      estimatedEcPerGPerL: 0.95
+    },
     nutrientForms: [
       {
         nutrient: "nitrogen",
         form: "ammonium",
+        nitrogenForm: "ammonium",
+        nitrogenRisks: [
+          {
+            code: "acidification",
+            severity: "medium",
+            condition: "always",
+            summary: "Repeated ammonium use can acidify the root zone over time.",
+            mitigation: "Track root-zone pH and balance the complete nitrogen program."
+          }
+        ],
         chemicalName: "ammonium nitrogen",
         availabilityClass: "fast",
         estimatedReleaseDays: { min: 1, max: 7 },
@@ -611,6 +775,11 @@ export const ingredientLibrary: NutrientIngredient[] = [
     category: "salt",
     labelNPK: {},
     elemental: { Mg: 10, S: 13 },
+    applicationGuide: {
+      typicalRateGPerL: 0.5,
+      maxRateGPerL: 1.5,
+      estimatedEcPerGPerL: 0.65
+    },
     nutrientForms: [
       {
         nutrient: "magnesium",
@@ -646,6 +815,37 @@ export const ingredientLibrary: NutrientIngredient[] = [
     nutrientTags: ["magnesium", "sulfur"]
   },
   {
+    id: "fe-edta",
+    name: "Iron EDTA",
+    category: "chelate",
+    labelNPK: {},
+    elemental: { Fe: 13 },
+    nutrientForms: [
+      {
+        nutrient: "iron",
+        form: "chelate",
+        chemicalName: "iron EDTA",
+        chelate: { agent: "EDTA", stableThroughPH: 6.5 },
+        availabilityClass: "fast",
+        estimatedReleaseDays: { min: 1, max: 14 },
+        releaseMechanism: "chelated",
+        pHEffect: "neutral",
+        ecImpact: "low",
+        mobility: "variable",
+        notes: "Economical soluble iron for acidic to near-neutral root zones."
+      }
+    ],
+    bestUseCases: ["iron correction below pH 6.5", "acidic media"],
+    badUseCases: ["alkaline media", "high pH iron correction"],
+    warnings: [
+      "Iron availability falls quickly when EDTA is used above its stable pH range."
+    ],
+    sourceType: "extension_reference",
+    confidence: "high",
+    intentTags: ["fast_fix", "without_raising_ph"],
+    nutrientTags: ["iron"]
+  },
+  {
     id: "fe-dtpa",
     name: "Iron DTPA",
     category: "chelate",
@@ -656,6 +856,7 @@ export const ingredientLibrary: NutrientIngredient[] = [
         nutrient: "iron",
         form: "chelate",
         chemicalName: "iron DTPA",
+        chelate: { agent: "DTPA", stableThroughPH: 7.5 },
         availabilityClass: "fast",
         estimatedReleaseDays: { min: 1, max: 14 },
         releaseMechanism: "chelated",
@@ -684,6 +885,7 @@ export const ingredientLibrary: NutrientIngredient[] = [
         nutrient: "iron",
         form: "chelate",
         chemicalName: "iron EDDHA",
+        chelate: { agent: "EDDHA", stableThroughPH: 9 },
         availabilityClass: "fast",
         estimatedReleaseDays: { min: 1, max: 14 },
         releaseMechanism: "chelated",
@@ -764,6 +966,28 @@ export function getIngredientsForNutrient(nutrient: NutrientKey) {
   );
 }
 
+export function getActiveNitrogenRisks(
+  form: NutrientForm,
+  environment: NutrientEnvironment
+): NitrogenRisk[] {
+  return (form.nitrogenRisks || []).filter((risk) => {
+    switch (risk.condition) {
+      case "always":
+        return true;
+      case "wet_media":
+        return environment.moisture === "wet";
+      case "dry_media":
+        return environment.moisture === "dry";
+      case "low_microbes":
+        return environment.microbialActivity === "low";
+      case "cool_media":
+        return environment.soilTempC != null && environment.soilTempC < 15;
+      case "high_ph":
+        return environment.pH != null && environment.pH >= 7.5;
+    }
+  });
+}
+
 export function estimateReleaseCurve(
   ingredient: NutrientIngredient,
   environment: NutrientEnvironment
@@ -791,12 +1015,9 @@ export function estimateReleaseCurve(
       if (environment.pH != null && environment.pH < 6.5) factor *= 1.15;
       if (environment.pH != null && environment.pH > 7.2) factor *= 0.82;
     }
-    if (
-      form.releaseMechanism === "chelated" &&
-      environment.pH != null &&
-      environment.pH >= 7
-    ) {
-      factor *= 1.15;
+    if (form.chelate && environment.pH != null) {
+      if (environment.pH <= form.chelate.stableThroughPH) factor *= 1.15;
+      else factor *= 0.65;
     }
 
     const adjustedMin = Math.max(0, Math.round(form.estimatedReleaseDays.min / factor));
@@ -815,7 +1036,8 @@ export function estimateReleaseCurve(
     return {
       ...form,
       adjustedReleaseDays: { min: adjustedMin, max: adjustedMax },
-      fitLabel
+      fitLabel,
+      activeNitrogenRisks: getActiveNitrogenRisks(form, environment)
     };
   });
 }
@@ -944,8 +1166,16 @@ export function recommendIngredients(
       )
         score += 32;
       if (intent === "high_pH_iron") {
-        if (ingredient.id.includes("eddha")) score += 30;
-        else if (ingredient.id.includes("dtpa")) score += 20;
+        const chelate = timing.find((row) => row.chelate)?.chelate;
+        if (chelate && environment.pH != null) {
+          if (environment.pH <= chelate.stableThroughPH) score += 30;
+          else {
+            score -= 30;
+            reasons.push(
+              `${chelate.agent} is not dependable above approximately pH ${chelate.stableThroughPH}.`
+            );
+          }
+        }
       }
       if (environment.daysUntilNeed != null) {
         if (fastest <= environment.daysUntilNeed) score += 12;
@@ -982,6 +1212,12 @@ export function recommendIngredients(
         if (hasCalciumSalt && hasPhosphate) score -= 24;
       }
 
+      const activeNitrogenRisks = timing.flatMap((row) => row.activeNitrogenRisks);
+      for (const risk of activeNitrogenRisks) {
+        score -= risk.severity === "high" ? 12 : risk.severity === "medium" ? 6 : 2;
+        reasons.push(`${risk.summary} Mitigation: ${risk.mitigation}`);
+      }
+
       if (!reasons.length) reasons.push(...intentHints.slice(0, 2));
       if (ingredient.warnings.length) reasons.push(...ingredient.warnings);
 
@@ -997,21 +1233,58 @@ export function recommendIngredients(
     .sort((a, b) => b.score - a.score);
 }
 
-export function checkCompatibility(
+export function analyzeCompatibility(
   ingredients: NutrientIngredient[],
-  environment: NutrientEnvironment
-) {
+  environment: NutrientEnvironment,
+  ratesGPerL: Record<string, number | null> = {}
+): CompatibilityAnalysis {
   const warnings: string[] = [];
-  const totals = ingredients.reduce(
-    (acc, ingredient) => ({
-      Ca: acc.Ca + (ingredient.elemental.Ca || 0),
-      Mg: acc.Mg + (ingredient.elemental.Mg || 0),
-      K: acc.K + (ingredient.elemental.K || 0),
-      P: acc.P + (ingredient.elemental.P || 0),
-      N: acc.N + (ingredient.elemental.N || 0)
-    }),
-    { Ca: 0, Mg: 0, K: 0, P: 0, N: 0 }
+  const hasRateInputs = ingredients.some(
+    (ingredient) =>
+      Object.prototype.hasOwnProperty.call(ratesGPerL, ingredient.id) &&
+      ratesGPerL[ingredient.id] != null
   );
+  const totals = ingredients.reduce(
+    (acc, ingredient) => {
+      const rate = ratesGPerL[ingredient.id];
+      const multiplier = hasRateInputs ? (rate != null ? Math.max(0, rate) / 100 : 0) : 1;
+      return {
+        N: acc.N + (ingredient.elemental.N || 0) * multiplier,
+        P: acc.P + (ingredient.elemental.P || 0) * multiplier,
+        K: acc.K + (ingredient.elemental.K || 0) * multiplier,
+        Ca: acc.Ca + (ingredient.elemental.Ca || 0) * multiplier,
+        Mg: acc.Mg + (ingredient.elemental.Mg || 0) * multiplier,
+        S: acc.S + (ingredient.elemental.S || 0) * multiplier,
+        Fe: acc.Fe + (ingredient.elemental.Fe || 0) * multiplier
+      };
+    },
+    { N: 0, P: 0, K: 0, Ca: 0, Mg: 0, S: 0, Fe: 0 } as NutrientLoads
+  );
+
+  const estimatedEcContribution = hasRateInputs
+    ? ingredients.reduce((total, ingredient) => {
+        const rate = ratesGPerL[ingredient.id];
+        const coefficient = ingredient.applicationGuide?.estimatedEcPerGPerL;
+        return total + (rate != null && coefficient != null ? rate * coefficient : 0);
+      }, 0)
+    : null;
+
+  if (hasRateInputs) {
+    for (const ingredient of ingredients) {
+      const rate = ratesGPerL[ingredient.id];
+      const guide = ingredient.applicationGuide;
+      if (rate != null && guide && rate > guide.maxRateGPerL) {
+        warnings.push(
+          `${ingredient.name} is entered at ${rate} g/L, above this model's ${guide.maxRateGPerL} g/L screening ceiling. Verify the product label and crop tolerance.`
+        );
+      }
+    }
+    if (estimatedEcContribution != null && estimatedEcContribution >= 2.5) {
+      warnings.push(
+        `Entered rates contribute approximately ${estimatedEcContribution.toFixed(2)} mS/cm EC before source water and other inputs. Confirm the complete solution with a calibrated EC meter.`
+      );
+    }
+  }
 
   const hasCalciumSalt = ingredients.some((ingredient) =>
     ingredient.nutrientForms.some(
@@ -1037,6 +1310,16 @@ export function checkCompatibility(
       "High potassium relative to magnesium may suppress Mg uptake; verify the complete feed ratio before increasing K."
     );
   }
+  if (hasRateInputs && totals.Ca > 0 && totals.Mg > 0 && totals.Ca > totals.Mg * 8) {
+    warnings.push(
+      "Entered rates are heavily calcium-weighted relative to magnesium. Verify the complete Ca:Mg target before application."
+    );
+  }
+  if (hasRateInputs && totals.Ca > 0 && totals.Mg > totals.Ca * 2) {
+    warnings.push(
+      "Entered rates are heavily magnesium-weighted relative to calcium. Verify the complete Ca:Mg target before application."
+    );
+  }
   const highEcForms = ingredients.flatMap((ingredient) =>
     ingredient.nutrientForms.filter((form) => form.ecImpact === "high")
   );
@@ -1049,11 +1332,22 @@ export function checkCompatibility(
     environment.pH != null &&
     environment.pH > 7 &&
     ingredients.some((ingredient) =>
-      ingredient.bestUseCases.some((use) => use.toLowerCase().includes("raise pH"))
+      ingredient.nutrientForms.some(
+        (form) => form.pHEffect === "raises_pH" || form.pHEffect === "buffers_pH"
+      )
     )
   ) {
     warnings.push(
       "Lime or buffering materials may worsen already high-pH media and reduce micronutrient availability."
+    );
+  }
+  for (const risk of ingredients.flatMap((ingredient) =>
+    estimateReleaseCurve(ingredient, environment).flatMap(
+      (form) => form.activeNitrogenRisks
+    )
+  )) {
+    warnings.push(
+      `Nitrogen risk (${risk.severity}): ${risk.summary} Mitigation: ${risk.mitigation}`
     );
   }
   if (
@@ -1064,7 +1358,19 @@ export function checkCompatibility(
       "Long-horizon soil-building inputs may not move fast enough for late flower correction."
     );
   }
-  return Array.from(new Set(warnings));
+  return {
+    warnings: Array.from(new Set(warnings)),
+    nutrientLoadsGPerL: hasRateInputs ? totals : null,
+    estimatedEcContribution
+  };
+}
+
+export function checkCompatibility(
+  ingredients: NutrientIngredient[],
+  environment: NutrientEnvironment,
+  ratesGPerL: Record<string, number | null> = {}
+) {
+  return analyzeCompatibility(ingredients, environment, ratesGPerL).warnings;
 }
 
 export function compareIngredientsBySpeed(

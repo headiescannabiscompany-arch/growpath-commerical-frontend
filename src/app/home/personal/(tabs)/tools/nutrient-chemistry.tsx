@@ -5,8 +5,8 @@ import { Pressable, ScrollView, StyleSheet, Text, TextInput, View } from "react-
 import BackButton from "@/components/nav/BackButton";
 import { saveToolRunAndOpenJournal } from "@/features/personal/tools/saveToolRunAndOpenJournal";
 import {
+  analyzeCompatibility,
   buildReleaseTimeline,
-  checkCompatibility,
   compareIngredientsBySpeed,
   getIngredientById,
   getIngredientEvidence,
@@ -35,6 +35,12 @@ function toNumber(value: string) {
   return Number.isFinite(parsed) ? parsed : null;
 }
 
+function toPositiveNumber(value: string) {
+  if (!value.trim()) return null;
+  const parsed = Number(value);
+  return Number.isFinite(parsed) && parsed >= 0 ? parsed : null;
+}
+
 function pillStyle(active: boolean) {
   return [styles.pill, active ? styles.pillOn : null];
 }
@@ -56,6 +62,7 @@ export default function NutrientChemistryToolScreen() {
   const [livingSoil, setLivingSoil] = useState(true);
   const [isConcentrate, setIsConcentrate] = useState(false);
   const [compareIds, setCompareIds] = useState<string[]>([]);
+  const [rateInputs, setRateInputs] = useState<Record<string, string>>({});
   const [savedMessage, setSavedMessage] = useState("");
   const [saving, setSaving] = useState(false);
 
@@ -100,10 +107,26 @@ export default function NutrientChemistryToolScreen() {
     if (compareIngredients.length) return compareIngredients;
     return activeRecommendation ? [activeRecommendation.ingredient] : [];
   }, [activeRecommendation, compareIngredients]);
-  const compatibilityWarnings = useMemo(
-    () => checkCompatibility(timelineIngredients, environment),
-    [timelineIngredients, environment]
+  const applicationRates = useMemo(
+    () =>
+      Object.fromEntries(
+        timelineIngredients
+          .filter((ingredient) => ingredient.applicationGuide)
+          .map((ingredient) => [
+            ingredient.id,
+            toPositiveNumber(
+              rateInputs[ingredient.id] ??
+                String(ingredient.applicationGuide?.typicalRateGPerL ?? "")
+            )
+          ])
+      ),
+    [timelineIngredients, rateInputs]
   );
+  const compatibilityAnalysis = useMemo(
+    () => analyzeCompatibility(timelineIngredients, environment, applicationRates),
+    [timelineIngredients, environment, applicationRates]
+  );
+  const compatibilityWarnings = compatibilityAnalysis.warnings;
   const compareGroups = useMemo(
     () => compareIngredientsBySpeed(nutrient, intent, environment),
     [nutrient, intent, environment]
@@ -142,7 +165,8 @@ export default function NutrientChemistryToolScreen() {
         daysUntilNeed: toNumber(daysUntilNeed),
         livingSoil,
         isConcentrate,
-        compareIds
+        compareIds,
+        applicationRatesGPerL: applicationRates
       },
       output: {
         activeIngredient: activeRecommendation.ingredient,
@@ -156,6 +180,7 @@ export default function NutrientChemistryToolScreen() {
         })),
         releaseTimeline,
         compatibilityWarnings,
+        compatibilityAnalysis,
         compareGroups
       }
     });
@@ -440,14 +465,42 @@ export default function NutrientChemistryToolScreen() {
       {compareIngredients.length > 0 ? (
         <View style={styles.panel}>
           <Text style={styles.sectionTitle}>Compatibility check</Text>
-          {compareIngredients.map((ingredient) => (
-            <View key={ingredient.id} style={styles.compareRow}>
-              <Text style={styles.compareName}>{ingredient.name}</Text>
-              <Text style={styles.compareMeta}>
-                {ingredient.bestUseCases[0] || ingredient.category}
-              </Text>
-            </View>
-          ))}
+          <Text style={styles.helperText}>
+            Rates are grams of product per liter of final diluted solution. EC values are
+            screening estimates; verify the complete mix with a meter.
+          </Text>
+          {compareIngredients.map((ingredient) => {
+            const guide = ingredient.applicationGuide;
+            return (
+              <View key={ingredient.id} style={styles.rateRow}>
+                <View style={styles.flex1}>
+                  <Text style={styles.compareName}>{ingredient.name}</Text>
+                  <Text style={styles.compareMeta}>
+                    {guide
+                      ? `Starter ${guide.typicalRateGPerL} g/L · screen ceiling ${guide.maxRateGPerL} g/L`
+                      : "No soluble-rate model for this amendment"}
+                  </Text>
+                </View>
+                {guide ? (
+                  <TextInput
+                    accessibilityLabel={`${ingredient.name} rate in grams per liter`}
+                    style={styles.rateInput}
+                    value={rateInputs[ingredient.id] ?? String(guide.typicalRateGPerL)}
+                    onChangeText={(value) =>
+                      setRateInputs((current) => ({ ...current, [ingredient.id]: value }))
+                    }
+                    keyboardType="decimal-pad"
+                  />
+                ) : null}
+              </View>
+            );
+          })}
+          {compatibilityAnalysis.estimatedEcContribution != null ? (
+            <Text style={styles.detailMeta}>
+              Estimated product EC contribution:{" "}
+              {compatibilityAnalysis.estimatedEcContribution.toFixed(2)} mS/cm
+            </Text>
+          ) : null}
           {compatibilityWarnings.length > 0 ? (
             compatibilityWarnings.map((warning) => (
               <Text key={warning} style={styles.warning}>
@@ -496,6 +549,23 @@ export default function NutrientChemistryToolScreen() {
                 <Text style={styles.formMeta}>
                   pH: {form.pHEffect} · EC: {form.ecImpact} · Mobility: {form.mobility}
                 </Text>
+                {form.nitrogenForm ? (
+                  <Text style={styles.formMeta}>
+                    Nitrogen form: {form.nitrogenForm.replaceAll("_", " ")}
+                  </Text>
+                ) : null}
+                {form.activeNitrogenRisks.map((risk) => (
+                  <Text key={`${risk.code}-${risk.condition}`} style={styles.warning}>
+                    {risk.severity.toUpperCase()} {risk.code.replaceAll("_", " ")}:{" "}
+                    {risk.summary} {risk.mitigation}
+                  </Text>
+                ))}
+                {form.chelate ? (
+                  <Text style={styles.formMeta}>
+                    Chelate: {form.chelate.agent} · stable through about pH{" "}
+                    {form.chelate.stableThroughPH}
+                  </Text>
+                ) : null}
                 <Text style={styles.formNotes}>{form.notes}</Text>
               </View>
             ))}
@@ -657,6 +727,24 @@ const styles = StyleSheet.create({
     paddingVertical: 6,
     borderBottomWidth: 1,
     borderBottomColor: "#E2E8F0"
+  },
+  rateRow: {
+    flexDirection: "row",
+    alignItems: "center",
+    gap: 10,
+    paddingVertical: 6,
+    borderBottomWidth: 1,
+    borderBottomColor: "#E2E8F0"
+  },
+  rateInput: {
+    width: 78,
+    borderWidth: 1,
+    borderColor: "#CBD5E1",
+    borderRadius: 10,
+    paddingHorizontal: 10,
+    paddingVertical: 8,
+    backgroundColor: "#FFFFFF",
+    textAlign: "right"
   },
   compareName: { fontWeight: "800", color: "#0F172A", flex: 1 },
   compareMeta: { color: "#64748B", flex: 1, textAlign: "right" },

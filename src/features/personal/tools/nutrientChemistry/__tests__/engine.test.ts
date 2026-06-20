@@ -1,7 +1,10 @@
 import {
+  analyzeCompatibility,
   buildReleaseTimeline,
   checkCompatibility,
+  estimateReleaseCurve,
   getIngredientById,
+  recommendIngredients,
   type NutrientEnvironment,
   type NutrientIngredient
 } from "../engine";
@@ -59,5 +62,85 @@ describe("nutrient chemistry compatibility", () => {
     );
 
     expect(warnings.some((warning) => warning.includes("High-EC"))).toBe(true);
+  });
+
+  it("warns when lime is selected for already alkaline media", () => {
+    const warnings = checkCompatibility([ingredient("calcitic-lime")], {
+      ...environment,
+      pH: 7.6
+    });
+
+    expect(warnings.some((warning) => warning.includes("already high-pH"))).toBe(true);
+  });
+
+  it("uses entered product rates for EC and antagonism screening", () => {
+    const analysis = analyzeCompatibility(
+      [ingredient("calcium-nitrate"), ingredient("epsom-salt")],
+      environment,
+      { "calcium-nitrate": 3, "epsom-salt": 0.1 }
+    );
+
+    expect(analysis.estimatedEcContribution).toBeCloseTo(2.615);
+    expect(analysis.nutrientLoadsGPerL?.Ca).toBeCloseTo(0.57);
+    expect(analysis.nutrientLoadsGPerL?.Mg).toBeCloseTo(0.01);
+    expect(analysis.warnings).toEqual(
+      expect.arrayContaining([
+        expect.stringContaining("above this model's 2 g/L"),
+        expect.stringContaining("approximately 2.61 mS/cm"),
+        expect.stringContaining("calcium-weighted")
+      ])
+    );
+  });
+});
+
+describe("nutrient chemistry form intelligence", () => {
+  it("prefers a chelate whose stability covers the selected alkaline pH", () => {
+    const ranked = recommendIngredients("iron", "high_pH_iron", {
+      ...environment,
+      pH: 8
+    });
+
+    expect(ranked[0].ingredient.id).toBe("fe-eddha");
+    expect(ranked.find((row) => row.ingredient.id === "fe-edta")?.reasons).toEqual(
+      expect.arrayContaining([expect.stringContaining("not dependable")])
+    );
+  });
+
+  it("exposes explicit nitrogen and chelate metadata", () => {
+    expect(ingredient("urea").nutrientForms[0].nitrogenForm).toBe("urea");
+    expect(ingredient("fe-dtpa").nutrientForms[0].chelate).toEqual({
+      agent: "DTPA",
+      stableThroughPH: 7.5
+    });
+  });
+
+  it("activates structured nitrogen risks from the selected environment", () => {
+    const wetNitrate = estimateReleaseCurve(ingredient("calcium-nitrate"), {
+      ...environment,
+      moisture: "wet"
+    }).find((form) => form.nitrogenForm === "nitrate");
+    const alkalineUrea = estimateReleaseCurve(ingredient("urea"), {
+      ...environment,
+      pH: 7.8
+    })[0];
+
+    expect(wetNitrate?.activeNitrogenRisks).toEqual([
+      expect.objectContaining({ code: "leaching", severity: "high" })
+    ]);
+    expect(alkalineUrea.activeNitrogenRisks).toEqual([
+      expect.objectContaining({ code: "volatilization", condition: "high_ph" })
+    ]);
+  });
+
+  it("surfaces active nitrogen risk mitigation in compatibility output", () => {
+    const warnings = checkCompatibility([ingredient("ammonium-sulfate")], environment);
+
+    expect(
+      warnings.some(
+        (warning) =>
+          warning.includes("Nitrogen risk (medium)") &&
+          warning.includes("Track root-zone pH")
+      )
+    ).toBe(true);
   });
 });
