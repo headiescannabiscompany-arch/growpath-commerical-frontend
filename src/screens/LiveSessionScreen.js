@@ -8,18 +8,8 @@ import {
   View
 } from "react-native";
 import { useLocalSearchParams } from "expo-router";
-import { useAuth } from "@/auth/AuthContext";
+import { CAPABILITY_KEYS, useEntitlements } from "@/entitlements";
 import { apiRequest } from "../api/apiRequest";
-
-function getIsAdmin(user, capabilities) {
-  const role = String(user?.role || user?.accountRole || user?.planRole || "");
-  if (/admin|owner|manager/i.test(role)) return true;
-  return (
-    capabilities?.canManageLiveSessions === true ||
-    capabilities?.canModerateLiveSessions === true ||
-    capabilities?.canOpenTwitchModeration === true
-  );
-}
 
 export default function LiveSessionScreen({ route }) {
   const routerParams = (useLocalSearchParams && useLocalSearchParams()) || {};
@@ -31,8 +21,8 @@ export default function LiveSessionScreen({ route }) {
     return String(raw || "session-1");
   }, [params.sessionId, params.id]);
 
-  const { user, capabilities } = useAuth();
-  const isAdmin = getIsAdmin(user, capabilities);
+  const entitlements = useEntitlements();
+  const canModerate = entitlements.can(CAPABILITY_KEYS.LIVE_SESSION_MODERATE);
 
   const [loading, setLoading] = useState(true);
   const [session, setSession] = useState(null);
@@ -88,12 +78,14 @@ export default function LiveSessionScreen({ route }) {
 
       {session ? (
         <View style={styles.card}>
-          <Text style={styles.cardTitle}>{String(session.title || "Untitled Session")}</Text>
+          <Text style={styles.cardTitle}>
+            {String(session.title || "Untitled Session")}
+          </Text>
           {session.twitchChannel ? (
             <Text style={styles.meta}>Channel: {String(session.twitchChannel)}</Text>
           ) : null}
 
-          {isAdmin ? (
+          {canModerate ? (
             <Pressable
               accessibilityRole="button"
               style={styles.btn}

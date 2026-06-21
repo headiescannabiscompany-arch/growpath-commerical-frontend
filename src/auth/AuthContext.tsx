@@ -141,9 +141,9 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
   async function login(email: string, password: string) {
     try {
       const loginRes = await apiLogin({ email, password });
+      await persistToken(loginRes.token);
       setToken(loginRes.token);
       setUser(loginRes.user);
-      await persistToken(loginRes.token);
       await loadMeForToken();
     } catch (err: any) {
       // Pass through normalized errors so UI can branch on code/status
@@ -156,9 +156,9 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
   async function signup(body: SignupBody) {
     try {
       const signupRes = await apiSignup(body);
+      await persistToken(signupRes.token);
       setToken(signupRes.token);
       setUser(signupRes.user);
-      await persistToken(signupRes.token);
       await loadMeForToken();
     } catch (err: any) {
       // Pass through normalized errors so UI can branch on code/status

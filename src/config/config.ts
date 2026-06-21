@@ -1,4 +1,5 @@
 import Constants from "expo-constants";
+import { API_URL } from "../api/apiRequest";
 
 type Extra = {
   API_BASE_URL?: string;
@@ -11,9 +12,7 @@ function _readExtra(): Extra {
 
 export const config = {
   env: __DEV__ ? "dev" : "prod",
-  apiBaseUrl:
-    process.env.EXPO_PUBLIC_API_URL ||
-    (__DEV__ ? "http://localhost:5002" : "https://api.growpath.ai")
+  apiBaseUrl: API_URL
 };
 
 void _readExtra;

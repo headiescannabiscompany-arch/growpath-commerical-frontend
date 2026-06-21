@@ -3,10 +3,13 @@ import { View, Text, TextInput, TouchableOpacity, StyleSheet } from "react-nativ
 import ScreenContainer from "../components/ScreenContainer";
 import { analyzeEnvironment } from "../api/environment";
 import { useAuth } from "@/auth/AuthContext";
-import { requirePro, handleApiError } from "../utils/proHelper";
+import { CAPABILITY_KEYS, useEntitlements } from "@/entitlements";
+import { requireCapabilityAccess, handleApiError } from "../utils/proHelper";
 
 export default function EnvironmentAssistantScreen({ navigation }) {
-  const { isPro, token } = useAuth();
+  const { token } = useAuth();
+  const entitlements = useEntitlements();
+  const canAnalyze = entitlements.can(CAPABILITY_KEYS.AI_ASSISTANT);
   const [stage, setStage] = useState("Veg");
   const [tempDayC, setTempDayC] = useState("");
   const [tempNightC, setTempNightC] = useState("");
@@ -20,7 +23,7 @@ export default function EnvironmentAssistantScreen({ navigation }) {
   const [loading, setLoading] = useState(false);
 
   async function run() {
-    requirePro(navigation, isPro, async () => {
+    requireCapabilityAccess(navigation, canAnalyze, async () => {
       try {
         setLoading(true);
         setResult(null);

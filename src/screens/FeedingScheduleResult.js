@@ -2,15 +2,16 @@ import React from "react";
 import { Text, FlatList, TouchableOpacity, StyleSheet, View, Alert } from "react-native";
 import ScreenContainer from "../components/ScreenContainer";
 import { convertScheduleToTemplate } from "../api/feeding";
-import { useAuth } from "@/auth/AuthContext";
-import { requirePro } from "../utils/proHelper";
+import { CAPABILITY_KEYS, useEntitlements } from "@/entitlements";
+import { requireCapabilityAccess } from "../utils/proHelper";
 
 export default function FeedingScheduleResult({ route, navigation }) {
   const { schedule, nutrientData } = route.params;
-  const { isPro } = useAuth();
+  const entitlements = useEntitlements();
+  const canUseSchedule = entitlements.can(CAPABILITY_KEYS.FEEDING_SCHEDULE);
 
   async function saveTemplate() {
-    requirePro(navigation, isPro, async () => {
+    requireCapabilityAccess(navigation, canUseSchedule, async () => {
       const res = await convertScheduleToTemplate({
         title: `${nutrientData.productName} Feeding Plan`,
         strain: "",

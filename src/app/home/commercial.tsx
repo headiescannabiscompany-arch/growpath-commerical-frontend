@@ -6,6 +6,7 @@ import { useEntitlements } from "@/entitlements";
 import { useFacility } from "@/facility/FacilityProvider";
 import AppPage from "@/components/layout/AppPage";
 import AppCard from "@/components/layout/AppCard";
+import { canAccessRoute } from "@/navigation/routeAccess";
 
 const styles = StyleSheet.create({
   headerTitle: {
@@ -65,6 +66,12 @@ export default function CommercialHome() {
   const ent = useEntitlements();
   const facility = useFacility();
   const plan = ent.plan || "commercial";
+  const canOpen = (pathname: string) =>
+    canAccessRoute(pathname, {
+      ready: ent.ready,
+      mode: ent.mode,
+      capabilities: ent.capabilities
+    });
 
   if (!ent?.ready) return null;
   if (ent.mode !== "commercial") {
@@ -108,69 +115,81 @@ export default function CommercialHome() {
       <View style={styles.section}>
         <Text style={styles.sectionTitle}>Marketing & Sales</Text>
 
-        <AppCard>
-          <Text style={styles.cardTitle}>📱 Feed</Text>
-          <Text style={styles.cardDesc}>
-            Your brand{"'"}s content feed, engagement, and reach
-          </Text>
+        {canOpen("/feed") ? (
+          <AppCard>
+            <Text style={styles.cardTitle}>📱 Feed</Text>
+            <Text style={styles.cardDesc}>
+              Your brand{"'"}s content feed, engagement, and reach
+            </Text>
 
-          <Link href="/feed" asChild>
-            <Text style={styles.link}>View Feed →</Text>
-          </Link>
-        </AppCard>
+            <Link href="/feed" asChild>
+              <Text style={styles.link}>View Feed →</Text>
+            </Link>
+          </AppCard>
+        ) : null}
 
-        <AppCard>
-          <Text style={styles.cardTitle}>🎯 Campaigns</Text>
-          <Text style={styles.cardDesc}>Create and manage marketing campaigns</Text>
+        {canOpen("/campaigns") ? (
+          <AppCard>
+            <Text style={styles.cardTitle}>🎯 Campaigns</Text>
+            <Text style={styles.cardDesc}>Create and manage marketing campaigns</Text>
 
-          <Link href="/campaigns" asChild>
-            <Text style={styles.link}>Manage Campaigns →</Text>
-          </Link>
-        </AppCard>
+            <Link href="/campaigns" asChild>
+              <Text style={styles.link}>Manage Campaigns →</Text>
+            </Link>
+          </AppCard>
+        ) : null}
 
-        <AppCard>
-          <Text style={styles.cardTitle}>💰 Offers</Text>
-          <Text style={styles.cardDesc}>Special offers, promotions, and deals</Text>
+        {canOpen("/offers") ? (
+          <AppCard>
+            <Text style={styles.cardTitle}>💰 Offers</Text>
+            <Text style={styles.cardDesc}>Special offers, promotions, and deals</Text>
 
-          <Link href="/offers" asChild>
-            <Text style={styles.link}>Manage Offers →</Text>
-          </Link>
-        </AppCard>
+            <Link href="/offers" asChild>
+              <Text style={styles.link}>Manage Offers →</Text>
+            </Link>
+          </AppCard>
+        ) : null}
       </View>
 
       <View style={styles.section}>
         <Text style={styles.sectionTitle}>Commerce</Text>
 
-        <AppCard>
-          <Text style={styles.cardTitle}>🏪 Storefront</Text>
-          <Text style={styles.cardDesc}>
-            Manage your online storefront and product listings
-          </Text>
+        {canOpen("/storefront") ? (
+          <AppCard>
+            <Text style={styles.cardTitle}>🏪 Storefront</Text>
+            <Text style={styles.cardDesc}>
+              Manage your online storefront and product listings
+            </Text>
 
-          <Link href="/storefront" asChild>
-            <Text style={styles.link}>Manage Storefront →</Text>
-          </Link>
-        </AppCard>
+            <Link href="/storefront" asChild>
+              <Text style={styles.link}>Manage Storefront →</Text>
+            </Link>
+          </AppCard>
+        ) : null}
 
-        <AppCard>
-          <Text style={styles.cardTitle}>📦 Orders</Text>
-          <Text style={styles.cardDesc}>
-            Track orders, fulfillment, and customer interactions
-          </Text>
+        {canOpen("/orders") ? (
+          <AppCard>
+            <Text style={styles.cardTitle}>📦 Orders</Text>
+            <Text style={styles.cardDesc}>
+              Track orders, fulfillment, and customer interactions
+            </Text>
 
-          <Link href="/orders" asChild>
-            <Text style={styles.link}>View Orders →</Text>
-          </Link>
-        </AppCard>
+            <Link href="/orders" asChild>
+              <Text style={styles.link}>View Orders →</Text>
+            </Link>
+          </AppCard>
+        ) : null}
 
-        <AppCard>
-          <Text style={styles.cardTitle}>📊 Inventory</Text>
-          <Text style={styles.cardDesc}>Manage product inventory and stock levels</Text>
+        {canOpen("/home/commercial/inventory") ? (
+          <AppCard>
+            <Text style={styles.cardTitle}>📊 Inventory</Text>
+            <Text style={styles.cardDesc}>Manage product inventory and stock levels</Text>
 
-          <Link href="/home/commercial/inventory" asChild>
-            <Text style={styles.link}>Manage Inventory →</Text>
-          </Link>
-        </AppCard>
+            <Link href="/home/commercial/inventory" asChild>
+              <Text style={styles.link}>Manage Inventory →</Text>
+            </Link>
+          </AppCard>
+        ) : null}
       </View>
 
       <View style={styles.section}>

@@ -3,23 +3,24 @@ import { Text, TouchableOpacity, Image, ActivityIndicator, Alert } from "react-n
 import * as ImagePicker from "expo-image-picker";
 import ScreenContainer from "../components/ScreenContainer";
 import { uploadLabel } from "../api/feeding";
-import { useAuth } from "@/auth/AuthContext";
-import { requirePro } from "../utils/proHelper";
+import { CAPABILITY_KEYS, useEntitlements } from "@/entitlements";
+import { requireCapabilityAccess } from "../utils/proHelper";
 
 export default function FeedingLabelScreen({ navigation }) {
   const [photo, setPhoto] = useState(null);
   const [loading, setLoading] = useState(false);
-  const { isPro } = useAuth();
+  const entitlements = useEntitlements();
+  const canUseSchedule = entitlements.can(CAPABILITY_KEYS.FEEDING_SCHEDULE);
 
   async function pick() {
-    requirePro(navigation, isPro, async () => {
+    requireCapabilityAccess(navigation, canUseSchedule, async () => {
       const result = await ImagePicker.launchImageLibraryAsync({ quality: 1 });
       if (!result.canceled) setPhoto(result.assets[0].uri);
     });
   }
 
   async function extract() {
-    requirePro(navigation, isPro, async () => {
+    requireCapabilityAccess(navigation, canUseSchedule, async () => {
       try {
         setLoading(true);
         const res = await uploadLabel(photo);

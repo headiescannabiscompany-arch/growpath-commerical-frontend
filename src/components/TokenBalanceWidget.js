@@ -2,12 +2,10 @@ import React, { useEffect, useState, useMemo } from "react";
 import { View, Text, TouchableOpacity, StyleSheet } from "react-native";
 import { useNavigation } from "@react-navigation/native";
 import { getTokenBalance } from "../api/tokens";
-import { useAuth } from "@/auth/AuthContext";
 
 const clamp = (value, min, max) => Math.max(min, Math.min(max, value));
 
 export default function TokenBalanceWidget({ onPress }) {
-  const { isPro } = useAuth();
   const navigation = useNavigation();
   const [balance, setBalance] = useState(null);
   const [loading, setLoading] = useState(true);
@@ -56,9 +54,8 @@ export default function TokenBalanceWidget({ onPress }) {
     }
   }, [balance, missingMax]);
 
-  const refillCopy = isPro
-    ? "Pro members receive 100 AI tokens every day."
-    : "Free accounts receive 10 AI tokens each week.";
+  const refillCopy =
+    balance?.refillDescription || "Token refills are managed by your account limits.";
   const usageCopy =
     "Use tokens for Diagnose (1–2), Training Coach (1), and Environment Assistant (1).";
 

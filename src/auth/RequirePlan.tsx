@@ -1,28 +1,26 @@
-import React, { useEffect } from "react";
-import { useRouter } from "expo-router";
-import { useAuth } from "./AuthContext";
-import { logEvent } from "../api/events";
+import React from "react";
+import { useEntitlements } from "../entitlements";
+import type { CapabilityKey } from "../entitlements/types";
+import { LockedScreen } from "../entitlements/LockedScreen";
 
-export default function RequirePlan({
-  children,
-  allow
-}: {
+type Props = {
   children: React.ReactNode;
-  allow: string[];
-}) {
-  const { user } = useAuth();
-  const router = useRouter();
-  const hasAccess = user && user.plan && allow.includes(user.plan);
+  capability: CapabilityKey | CapabilityKey[];
+};
 
-  useEffect(() => {
-    if (!hasAccess) {
-      logEvent("PAYWALL_VIEW");
-      router.replace("/(app)/upgrade");
-    }
-  }, [hasAccess, router]);
+/** @deprecated Use RequireEntitlement with canonical capabilities. */
+export default function RequirePlan({ children, capability }: Props) {
+  const entitlements = useEntitlements();
+  const required = Array.isArray(capability) ? capability : [capability];
 
-  if (!hasAccess) {
-    return null;
+  if (!entitlements.ready) return null;
+  if (!required.every((key) => entitlements.can(key))) {
+    return (
+      <LockedScreen
+        title="Locked"
+        message="Your account does not have access to this feature."
+      />
+    );
   }
   return <>{children}</>;
 }

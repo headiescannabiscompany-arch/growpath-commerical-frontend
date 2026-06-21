@@ -1,204 +1,143 @@
-# GrowPath Frontend Integration Contract (Runtime Truth)
+# GrowPath Frontend Integration Contract
 
 > Status: CANONICAL
 > Owner: Product/Engineering
-> Last reviewed: 2026-01-24
-> Source of truth for: Frontend-backend contract, navigation, gating, and authority
+> Last reviewed: 2026-06-20
+> Source of truth for: Session bootstrap, shell selection, capability gating, and
+> frontend authority
 
----
+## Session Bootstrap
 
-## 0) Single Source of Truth (Required First Call)
+Every authenticated frontend session begins with:
 
-Every frontend session MUST begin with:
-
-    GET /api/auth/me
-
-This response defines reality:
-
+```http
+GET /api/auth/me
+Authorization: Bearer <token>
 ```
+
+The canonical response is:
+
+```json
 {
-  userId,
-  mode: "personal" | "commercial" | "facility",
-  plan: "free" | "pro" | "creator_plus" | "commercial" | "facility",
-  capabilities: {
-    [key: string]: boolean
+  "user": {
+    "id": "user_123",
+    "email": "user@example.com",
+    "displayName": "Example User",
+    "role": "user",
+    "plan": "pro",
+    "subscriptionStatus": "active"
   },
-  limits: {
-    maxPaidCourses,
-    maxLessonsPerCourse,
-    requiresApprovalForFirstCourse,
-    ...
-  },
-  facilitiesAccess: [
-    {
-      facilityId,
-      role: "OWNER" | "MANAGER" | "STAFF"
-    }
-  ]
+  "ctx": {
+    "mode": "personal",
+    "capabilities": {
+      "GROWS_PERSONAL_VIEW": true,
+      "LOGS_PERSONAL_WRITE": true
+    },
+    "limits": {},
+    "facilityId": null,
+    "facilityRole": null,
+    "facilityFeaturesEnabled": false
+  }
 }
 ```
 
-Nothing in the UI should be inferred.
-No plan checks. No role hacks. No “if (commercial)”.
-If it’s not in /auth/me, it doesn’t exist.
+The API client also accepts the same payload inside the standard success
+envelope:
 
----
-
-## 1) Shell Selection (Mode Drives Navigation Root)
-
-- mode: personal → Load: PersonalStack
-- mode: commercial → Load: CommercialStack
-- mode: facility → Load: FacilityStack
-
-Shells are not features. They are different operating contexts.
-You never “unlock Facility features”. You enter Facility mode.
-
----
-
-## 2) Capability Gating (Screens & Tools)
-
-Every screen requires a capability:
-
-    if (!capabilities["tasks"]) hide(TaskScreen)
-    if (!capabilities["courses_create"]) hide(CreateCourseScreen)
-    if (!capabilities["ops_analytics"]) hide(OperationalAnalyticsScreen)
-
-Plans do not gate features directly. Plans only determine which capabilities are granted.
-
----
-
-## 3) Limits (Numeric, Not Boolean)
-
-Limits come from /auth/me:
-
-- limits.maxPaidCourses
-- limits.maxLessonsPerCourse
-- limits.maxFacilities
-- limits.maxBatchCycles
-
-UI never hardcodes numbers. No “Pro = 5 courses” logic in frontend.
-
----
-
-## 4) Authority (Facility Role)
-
-Inside Facility mode:
-
-    role = facilitiesAccess.find(f => f.facilityId === activeFacility).role
-
-Role gates actions, not screens:
-
-| Action              | Requires |
-| ------------------- | -------- |
-| Assign task         | MANAGER+ |
-| Verify task         | MANAGER+ |
-| Publish SOP         | OWNER    |
-| Resolve deviation   | MANAGER+ |
-| Change trackingMode | OWNER    |
-
-Capability grants tool access. Role grants authority.
-
----
-
-## 5) Deletion & Mutation Rules (Hard Contracts)
-
-Frontend must respect:
-
-| Resource     | Can Delete |
-| ------------ | ---------- |
-| Task         | Soft only  |
-| SOP          | Never      |
-| AuditLog     | Never      |
-| Verification | Never      |
-| Deviation    | Never      |
-| GreenWaste   | Never      |
-| Vendor       | Soft only  |
-
-If backend allows hard delete here, that’s a bug.
-
----
-
-## 6) Error Handling (Platform-Grade)
-
-All errors return:
-
-```
+```json
 {
-  "error": true,
-  "message": "Human readable",
-  "status": 403
+  "success": true,
+  "data": {
+    "user": {},
+    "ctx": {}
+  }
 }
 ```
 
-Frontend rules:
+No other response shape is valid. In particular, `{ user, session,
+entitlements }` is not accepted. Invalid responses fail bootstrap with
+`INVALID_ME_RESPONSE_SHAPE` instead of silently selecting a shell.
 
-- Never swallow compliance errors
-- Never replace with generic “Something went wrong”
-- Show real backend message for:
-  - permission denied
-  - facility access
-  - compliance state violations
+## Field Authority
 
----
+- `user.plan` is display and billing context. It must not directly gate UI.
+- `ctx.mode` selects the Personal, Commercial, or Facility shell.
+- `ctx.capabilities` controls visible and reachable features.
+- `ctx.limits` provides server-owned numeric limits. The frontend must not
+  derive limits from a plan name.
+- `ctx.facilityId` and `ctx.facilityRole` describe the active facility context.
+  Facility requests must still be authorized by the backend.
+- `ctx.facilityFeaturesEnabled` is optional transitional metadata. It does not
+  replace capability checks.
 
-## 7) CORS / Environment
+The canonical capability names are defined in
+`src/entitlements/capabilityKeys.ts` and documented in
+`docs/contracts/CAPABILITY_KEYS.md`. Unknown keys are ignored and reported in
+development.
 
-Base URL is just a transport detail.
-What actually matters:
+## Shell Selection
 
-- All requests must include JWT
-- All writes must produce audit logs
-- All facility routes must validate:
-  - mode === facility
-  - facility membership
-  - role authority
+| `ctx.mode` | Shell |
+| --- | --- |
+| `personal` | Personal |
+| `commercial` | Commercial |
+| `facility` | Facility |
 
----
+An authenticated session must not route until `/api/auth/me` succeeds. Network
+or server errors keep bootstrap blocked and expose a retry action. A `401`
+clears the rejected token and returns to authentication.
 
-## 8) Testing Reality Check
+User preference may select another mode only when the server response proves
+the user has access to it. Preference never creates access.
 
-Your E2E tests should validate:
+## Capability And Role Rules
 
-- /auth/me drives navigation
-- Capabilities hide screens
-- Limits enforce UI constraints
-- Role blocks restricted actions
-- Facility context cannot be bypassed
-- Audit logs appear for all writes
+Screens, routes, and actions use canonical capabilities. Hiding a navigation
+item is insufficient; direct route entry must enforce the same capability.
 
-Not just “does the screen render”.
+Facility capabilities grant feature access. `ctx.facilityRole` grants authority
+within the active facility. The backend remains authoritative for every
+facility-scoped mutation and must reject cross-facility access.
 
----
+## Errors
 
-## Why This Matters
+API failures must provide an HTTP status and a stable error code where clients
+need to branch. The frontend preserves backend messages for authentication,
+permission, facility-access, and compliance failures. Request IDs should be
+included when available.
 
-Your original handoff lets a frontend dev build:
+Expected session behavior:
 
-- direct API calls
-- hardcoded plan logic
-- fake feature gating
-- silent permission failures
+| Condition | Frontend behavior |
+| --- | --- |
+| `401` | Clear token and route to authentication |
+| `403` | Preserve session and show the permission error |
+| Network, timeout, or `5xx` | Keep bootstrap blocked and allow retry |
+| Invalid success payload | Fail with `INVALID_ME_RESPONSE_SHAPE` |
 
-And everything looks like it works.
+## Mutation Rules
 
-This corrected contract forces:
+The frontend must not offer destructive behavior where the backend contract
+requires immutable history. Tasks and vendors are soft-deleted; SOPs, audit
+logs, verifications, deviations, and compliance records are not hard-deleted.
 
-- shell separation
-- capability truth
-- authority enforcement
-- irreversible history
-- real operational semantics
+All facility writes must include facility context in the route and must be
+authorized for membership, role, and capability by the backend.
 
-Which is the difference between:
+## Verification Requirements
 
-- a SaaS demo
-- and an actual platform people can run real operations on.
+Automated coverage must prove:
 
----
+- direct and enveloped canonical responses bootstrap successfully;
+- invalid response shapes fail closed;
+- `/api/auth/me` drives shell selection;
+- disabled capabilities hide UI and block direct route access;
+- limits come from `ctx.limits`;
+- facility roles restrict actions;
+- one facility cannot access another facility's resources;
+- authenticated `401` responses invalidate the session globally.
 
-## Final Rule (This One Line Prevents Drift)
+## Final Rule
 
-Frontend never decides reality.
-It renders the reality returned by /auth/me.
-
-Everything else is just plumbing.
+The frontend does not decide access. It renders and enforces the context returned
+by `/api/auth/me`, while the backend independently authorizes every request.

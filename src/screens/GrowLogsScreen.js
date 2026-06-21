@@ -47,9 +47,9 @@ function GrowLogsScreen() {
   const multiGrowEnabled = ent.can(CAPABILITY_KEYS.GROWLOGS_MULTI);
   const photoEnabled = ent.can(CAPABILITY_KEYS.GROWLOGS_EXPORT);
   const advancedEnabled = ent.can(CAPABILITY_KEYS.GROWLOGS_BATCH);
-  const multiGrowEnt = multiGrowEnabled ? "enabled" : ent.plan === "free" ? "cta" : "disabled";
-  const photoEnt = photoEnabled ? "enabled" : ent.plan === "free" ? "cta" : "disabled";
-  const advancedEnt = advancedEnabled ? "enabled" : ent.plan === "free" ? "cta" : "disabled";
+  const multiGrowEnt = multiGrowEnabled ? "enabled" : "disabled";
+  const photoEnt = photoEnabled ? "enabled" : "disabled";
+  const advancedEnt = advancedEnabled ? "enabled" : "disabled";
 
   const { toInlineError } = useApiErrorHandler();
   const inlineError = useMemo(
@@ -73,7 +73,6 @@ function GrowLogsScreen() {
 
   useEffect(() => {
     loadGrows();
-     
   }, []);
 
   const handleAddGrow = async () => {

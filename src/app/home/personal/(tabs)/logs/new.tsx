@@ -1,113 +1,87 @@
-import React from "react";
+import React, { useCallback, useEffect, useMemo, useState } from "react";
 import { useLocalSearchParams, useRouter } from "expo-router";
-import { Pressable, StyleSheet, Text, TextInput, View } from "react-native";
-import { apiRequest } from "@/api/apiRequest";
-import { listToolRuns } from "@/api/toolRuns";
+import { Pressable, ScrollView, StyleSheet, Text, TextInput, View } from "react-native";
 
-const styles = StyleSheet.create({
-  container: { flex: 1, padding: 20, backgroundColor: "#FFFFFF" },
-  title: { fontSize: 22, fontWeight: "700", marginBottom: 8 },
-  subtitle: { color: "#475569", marginBottom: 12 },
-  label: { fontSize: 14, fontWeight: "700", marginTop: 10 },
-  input: {
-    marginTop: 8,
-    borderWidth: 1,
-    borderColor: "#E2E8F0",
-    borderRadius: 10,
-    padding: 12
-  },
-  chipsRow: { flexDirection: "row", gap: 8, flexWrap: "wrap", marginTop: 8 },
-  chip: {
-    borderWidth: 1,
-    borderColor: "#CBD5E1",
-    borderRadius: 999,
-    paddingVertical: 7,
-    paddingHorizontal: 10,
-    backgroundColor: "#FFFFFF"
-  },
-  chipOn: { borderColor: "#166534", backgroundColor: "#166534" },
-  chipText: { fontWeight: "700", color: "#0F172A", fontSize: 12 },
-  chipTextOn: { color: "#FFFFFF" },
-  cta: {
-    marginTop: 20,
-    backgroundColor: "#166534",
-    paddingVertical: 12,
-    borderRadius: 10,
-    alignItems: "center"
-  },
-  ctaText: { color: "#FFFFFF", fontWeight: "700" },
-  errorBox: {
-    marginTop: 10,
-    borderWidth: 1,
-    borderColor: "#FCA5A5",
-    backgroundColor: "#FEF2F2",
-    borderRadius: 10,
-    padding: 10
-  },
-  errorText: { color: "#7F1D1D", fontWeight: "700" }
-});
+import { apiRequest } from "@/api/apiRequest";
+import { suggestLogInsights } from "@/api/logInsights";
+import { listToolRuns } from "@/api/toolRuns";
+import { CAPABILITY_KEYS, useEntitlements } from "@/entitlements";
+import {
+  normalizeLogInsightSuggestions,
+  type LogInsightSuggestions
+} from "@/features/personal/logs/normalizeLogInsights";
+
+function param(value?: string | string[]) {
+  return typeof value === "string" ? value : Array.isArray(value) ? value[0] || "" : "";
+}
 
 export default function NewLogScreen() {
   const router = useRouter();
-  const { growId: growIdParam, toolRunId: toolRunIdParam } = useLocalSearchParams<{
+  const params = useLocalSearchParams<{
     growId?: string | string[];
     toolRunId?: string | string[];
   }>();
-  const growId =
-    typeof growIdParam === "string"
-      ? growIdParam
-      : Array.isArray(growIdParam)
-        ? growIdParam[0]
-        : "";
-  const [title, setTitle] = React.useState("");
-  const [date, setDate] = React.useState("");
-  const [notes, setNotes] = React.useState("");
-  const [logType, setLogType] = React.useState("other");
-  const [error, setError] = React.useState("");
-  const [saving, setSaving] = React.useState(false);
-  const [toolRuns, setToolRuns] = React.useState<any[]>([]);
-  const [selectedToolRunId, setSelectedToolRunId] = React.useState("");
-  const logTypes = React.useMemo(
+  const growId = param(params.growId);
+  const queryToolRunId = param(params.toolRunId);
+  const entitlements = useEntitlements();
+
+  const [title, setTitle] = useState("");
+  const [date, setDate] = useState(new Date().toISOString().slice(0, 10));
+  const [notes, setNotes] = useState("");
+  const [logType, setLogType] = useState("other");
+  const [error, setError] = useState("");
+  const [saving, setSaving] = useState(false);
+  const [analyzing, setAnalyzing] = useState(false);
+  const [toolRuns, setToolRuns] = useState<any[]>([]);
+  const [selectedToolRunId, setSelectedToolRunId] = useState(queryToolRunId);
+  const [suggestions, setSuggestions] = useState<LogInsightSuggestions | null>(null);
+  const [acceptedTags, setAcceptedTags] = useState<string[]>([]);
+  const [rejectedTags, setRejectedTags] = useState<string[]>([]);
+  const logTypes = useMemo(
     () => ["watering", "feed", "training", "environment", "issues", "harvest", "other"],
     []
   );
 
-  const queryToolRunId =
-    typeof toolRunIdParam === "string"
-      ? toolRunIdParam
-      : Array.isArray(toolRunIdParam)
-        ? toolRunIdParam[0] || ""
-        : "";
-
-  React.useEffect(() => {
-    if (queryToolRunId) setSelectedToolRunId(queryToolRunId);
-  }, [queryToolRunId]);
-
-  React.useEffect(() => {
-    let mounted = true;
-    (async () => {
-      if (!growId) return;
-      const rows = await listToolRuns({ growId });
-      if (!mounted) return;
-      setToolRuns(Array.isArray(rows) ? rows.slice(0, 8) : []);
-    })();
-    return () => {
-      mounted = false;
-    };
+  useEffect(() => {
+    if (!growId) return;
+    listToolRuns({ growId })
+      .then((rows) => setToolRuns(rows.slice(0, 8)))
+      .catch(() => setToolRuns([]));
   }, [growId]);
 
-  const canSave = growId.length > 0 && title.trim().length > 0 && date.trim().length > 0;
+  const canSave = Boolean(growId && title.trim() && date.trim());
 
-  const onSave = React.useCallback(async () => {
-    if (!growId) {
-      setError("A grow is required. Open this screen from a grow.");
-      return;
+  const analyzeDraft = useCallback(async () => {
+    if (!growId || analyzing || !notes.trim()) return;
+    setAnalyzing(true);
+    setError("");
+    try {
+      const normalized = normalizeLogInsightSuggestions(
+        await suggestLogInsights({
+          growId,
+          title: title.trim(),
+          notes: notes.trim(),
+          logType
+        })
+      );
+      setSuggestions(normalized);
+      setAcceptedTags([]);
+      setRejectedTags([]);
+      if (!normalized.tags.length && !normalized.summary) {
+        setError("The analysis provider returned no usable log suggestions.");
+      }
+    } catch (failure: any) {
+      setError(failure?.message || "Unable to analyze this draft log.");
+    } finally {
+      setAnalyzing(false);
     }
+  }, [analyzing, growId, logType, notes, title]);
+
+  const save = useCallback(async () => {
     if (!canSave) {
-      setError("Title and date are required.");
+      setError("A grow, title, and date are required.");
       return;
     }
-
     setSaving(true);
     setError("");
     try {
@@ -119,75 +93,178 @@ export default function NewLogScreen() {
           date: date.trim(),
           notes: notes.trim(),
           type: logType,
-          toolRunId: selectedToolRunId || undefined
+          toolRunId: selectedToolRunId || undefined,
+          tags: acceptedTags,
+          rejectedTags,
+          aiInsight: suggestions
+            ? {
+                summary: suggestions.summary,
+                missingData: suggestions.missingData,
+                suggestedTask: suggestions.suggestedTask,
+                source: suggestions.source,
+                acceptedTags,
+                rejectedTags
+              }
+            : undefined
         }
       });
       router.replace(`/home/personal/grows/${growId}/journal`);
-    } catch (err: any) {
-      setError(err?.message ?? "Failed to create log.");
+    } catch (failure: any) {
+      setError(failure?.message || "Failed to create log.");
     } finally {
       setSaving(false);
     }
-  }, [canSave, date, growId, logType, notes, router, selectedToolRunId, title]);
+  }, [
+    acceptedTags,
+    canSave,
+    date,
+    growId,
+    logType,
+    notes,
+    rejectedTags,
+    router,
+    selectedToolRunId,
+    suggestions,
+    title
+  ]);
+
+  function reviewTag(tag: string, decision: "accept" | "reject") {
+    if (decision === "accept") {
+      setAcceptedTags((current) =>
+        current.includes(tag) ? current.filter((item) => item !== tag) : [...current, tag]
+      );
+      setRejectedTags((current) => current.filter((item) => item !== tag));
+    } else {
+      setRejectedTags((current) =>
+        current.includes(tag) ? current.filter((item) => item !== tag) : [...current, tag]
+      );
+      setAcceptedTags((current) => current.filter((item) => item !== tag));
+    }
+  }
+
+  function invalidateSuggestions() {
+    setSuggestions(null);
+    setAcceptedTags([]);
+    setRejectedTags([]);
+  }
 
   return (
-    <View style={styles.container}>
+    <ScrollView style={styles.container} contentContainerStyle={styles.content}>
       <Text style={styles.title}>New Journal Entry</Text>
       <Text style={styles.subtitle}>
         {growId ? `Grow context: ${growId}` : "No grow selected"}
       </Text>
-
-      {error ? (
-        <View style={styles.errorBox}>
-          <Text style={styles.errorText}>{error}</Text>
-        </View>
-      ) : null}
+      {error ? <Text style={styles.error}>{error}</Text> : null}
 
       <Text style={styles.label}>Title</Text>
       <TextInput
-        placeholder="Day 12 - Defoliation"
         style={styles.input}
         value={title}
-        onChangeText={setTitle}
+        onChangeText={(value) => {
+          setTitle(value);
+          invalidateSuggestions();
+        }}
+        placeholder="Day 12 - Defoliation"
       />
-
-      <Text style={styles.label}>Date (YYYY-MM-DD)</Text>
+      <Text style={styles.label}>Date</Text>
       <TextInput
-        placeholder="2026-02-27"
         style={styles.input}
         value={date}
         onChangeText={setDate}
+        placeholder="YYYY-MM-DD"
       />
-
       <Text style={styles.label}>Type</Text>
-      <View style={styles.chipsRow}>
-        {logTypes.map((type) => {
-          const active = logType === type;
-          return (
-            <Pressable
-              key={type}
-              onPress={() => setLogType(type)}
-              style={[styles.chip, active && styles.chipOn]}
-            >
-              <Text style={[styles.chipText, active && styles.chipTextOn]}>{type}</Text>
-            </Pressable>
-          );
-        })}
+      <View style={styles.row}>
+        {logTypes.map((type) => (
+          <Pressable
+            key={type}
+            onPress={() => {
+              setLogType(type);
+              invalidateSuggestions();
+            }}
+            style={[styles.chip, logType === type && styles.chipOn]}
+          >
+            <Text style={[styles.chipText, logType === type && styles.chipTextOn]}>
+              {type}
+            </Text>
+          </Pressable>
+        ))}
       </View>
-
       <Text style={styles.label}>Notes</Text>
       <TextInput
-        placeholder="What happened today?"
-        style={[styles.input, { height: 120, textAlignVertical: "top" }]}
-        multiline
+        style={styles.notes}
         value={notes}
-        onChangeText={setNotes}
+        onChangeText={(value) => {
+          setNotes(value);
+          invalidateSuggestions();
+        }}
+        multiline
+        placeholder="What changed today?"
       />
 
-      {toolRuns.length > 0 ? (
+      <Pressable
+        style={[styles.secondaryButton, (!notes.trim() || analyzing) && styles.disabled]}
+        disabled={
+          !notes.trim() || analyzing || !entitlements.can(CAPABILITY_KEYS.DIAGNOSE_AI)
+        }
+        onPress={analyzeDraft}
+      >
+        <Text style={styles.secondaryButtonText}>
+          {analyzing ? "Analyzing..." : "Suggest Tags and Summary"}
+        </Text>
+      </Pressable>
+      {!entitlements.can(CAPABILITY_KEYS.DIAGNOSE_AI) ? (
+        <Text style={styles.helper}>AI suggestions are unavailable for this plan.</Text>
+      ) : null}
+
+      {suggestions ? (
+        <View style={styles.insightCard}>
+          <Text style={styles.insightTitle}>Suggestions · {suggestions.source}</Text>
+          {suggestions.source === "unverified" ? (
+            <Text style={styles.warning}>
+              Provider provenance is missing. Review carefully.
+            </Text>
+          ) : null}
+          {suggestions.summary ? (
+            <Text style={styles.helper}>{suggestions.summary}</Text>
+          ) : null}
+          <View style={styles.row}>
+            {suggestions.tags.map((tag) => (
+              <View key={tag} style={styles.tagReview}>
+                <Text style={styles.tagName}>{tag}</Text>
+                <Pressable
+                  style={[
+                    styles.reviewButton,
+                    acceptedTags.includes(tag) && styles.accepted
+                  ]}
+                  onPress={() => reviewTag(tag, "accept")}
+                >
+                  <Text style={styles.reviewText}>Accept</Text>
+                </Pressable>
+                <Pressable
+                  style={[
+                    styles.reviewButton,
+                    rejectedTags.includes(tag) && styles.rejected
+                  ]}
+                  onPress={() => reviewTag(tag, "reject")}
+                >
+                  <Text style={styles.reviewText}>Reject</Text>
+                </Pressable>
+              </View>
+            ))}
+          </View>
+          {suggestions.missingData.map((item) => (
+            <Text key={item} style={styles.helper}>
+              Missing context: {item}
+            </Text>
+          ))}
+        </View>
+      ) : null}
+
+      {toolRuns.length ? (
         <>
-          <Text style={styles.label}>Attach recent tool run (optional)</Text>
-          <View style={styles.chipsRow}>
+          <Text style={styles.label}>Attach recent tool result</Text>
+          <View style={styles.row}>
             <Pressable
               onPress={() => setSelectedToolRunId("")}
               style={[styles.chip, !selectedToolRunId && styles.chipOn]}
@@ -196,40 +273,122 @@ export default function NewLogScreen() {
                 none
               </Text>
             </Pressable>
-            {toolRuns.map((run, idx) => {
-              const id = String(run?._id || run?.id || "");
-              const active = selectedToolRunId === id;
+            {toolRuns.map((run, index) => {
+              const id = String(run?._id || run?.id || `run-${index}`);
               return (
                 <Pressable
-                  key={id || `run-${idx}`}
+                  key={id}
                   onPress={() => setSelectedToolRunId(id)}
-                  style={[styles.chip, active && styles.chipOn]}
+                  style={[styles.chip, selectedToolRunId === id && styles.chipOn]}
                 >
-                  <Text style={[styles.chipText, active && styles.chipTextOn]}>
-                    {String(run?.toolType || "tool")}{" "}
-                    {String(run?.createdAt || "").slice(5, 10)}
+                  <Text
+                    style={[
+                      styles.chipText,
+                      selectedToolRunId === id && styles.chipTextOn
+                    ]}
+                  >
+                    {run?.toolType || run?.toolName || "tool"}
                   </Text>
                 </Pressable>
               );
             })}
-            {selectedToolRunId &&
-            !toolRuns.some(
-              (run) => String(run?._id || run?.id || "") === selectedToolRunId
-            ) ? (
-              <Pressable
-                style={[styles.chip, styles.chipOn]}
-                onPress={() => setSelectedToolRunId("")}
-              >
-                <Text style={[styles.chipText, styles.chipTextOn]}>selected run</Text>
-              </Pressable>
-            ) : null}
           </View>
         </>
       ) : null}
 
-      <Pressable style={styles.cta} disabled={!canSave || saving} onPress={onSave}>
-        <Text style={styles.ctaText}>{saving ? "Saving..." : "Create Log"}</Text>
+      <Pressable
+        style={[styles.primaryButton, (!canSave || saving) && styles.disabled]}
+        disabled={!canSave || saving}
+        onPress={save}
+      >
+        <Text style={styles.primaryButtonText}>
+          {saving ? "Saving..." : "Create Log"}
+        </Text>
       </Pressable>
-    </View>
+    </ScrollView>
   );
 }
+
+const styles = StyleSheet.create({
+  container: { flex: 1, backgroundColor: "#FFFFFF" },
+  content: { padding: 20, paddingBottom: 40, gap: 9 },
+  title: { fontSize: 22, fontWeight: "800", color: "#0F172A" },
+  subtitle: { color: "#64748B" },
+  label: { color: "#334155", fontWeight: "800", marginTop: 4 },
+  input: { borderWidth: 1, borderColor: "#CBD5E1", borderRadius: 9, padding: 10 },
+  notes: {
+    minHeight: 110,
+    borderWidth: 1,
+    borderColor: "#CBD5E1",
+    borderRadius: 9,
+    padding: 10,
+    textAlignVertical: "top"
+  },
+  row: { flexDirection: "row", flexWrap: "wrap", gap: 7 },
+  chip: {
+    borderWidth: 1,
+    borderColor: "#CBD5E1",
+    borderRadius: 999,
+    paddingHorizontal: 9,
+    paddingVertical: 6
+  },
+  chipOn: { backgroundColor: "#166534", borderColor: "#166534" },
+  chipText: { color: "#334155", fontWeight: "700", fontSize: 12 },
+  chipTextOn: { color: "#FFFFFF" },
+  primaryButton: {
+    marginTop: 8,
+    backgroundColor: "#166534",
+    borderRadius: 9,
+    padding: 11,
+    alignItems: "center"
+  },
+  primaryButtonText: { color: "#FFFFFF", fontWeight: "800" },
+  secondaryButton: {
+    alignSelf: "flex-start",
+    borderWidth: 1,
+    borderColor: "#166534",
+    borderRadius: 9,
+    paddingHorizontal: 11,
+    paddingVertical: 8
+  },
+  secondaryButtonText: { color: "#166534", fontWeight: "800" },
+  disabled: { opacity: 0.5 },
+  error: {
+    color: "#991B1B",
+    backgroundColor: "#FEE2E2",
+    borderRadius: 9,
+    padding: 9,
+    fontWeight: "700"
+  },
+  warning: { color: "#9A3412", backgroundColor: "#FFEDD5", borderRadius: 8, padding: 8 },
+  helper: { color: "#64748B", lineHeight: 19 },
+  insightCard: {
+    borderWidth: 1,
+    borderColor: "#CBD5E1",
+    borderRadius: 12,
+    backgroundColor: "#F8FAFC",
+    padding: 11,
+    gap: 7
+  },
+  insightTitle: { color: "#0F172A", fontWeight: "800" },
+  tagReview: {
+    flexDirection: "row",
+    alignItems: "center",
+    gap: 4,
+    borderWidth: 1,
+    borderColor: "#E2E8F0",
+    borderRadius: 9,
+    padding: 5,
+    backgroundColor: "#FFFFFF"
+  },
+  tagName: { color: "#334155", fontWeight: "700" },
+  reviewButton: {
+    borderRadius: 6,
+    paddingHorizontal: 6,
+    paddingVertical: 4,
+    backgroundColor: "#E2E8F0"
+  },
+  accepted: { backgroundColor: "#BBF7D0" },
+  rejected: { backgroundColor: "#FECACA" },
+  reviewText: { color: "#0F172A", fontSize: 11, fontWeight: "800" }
+});

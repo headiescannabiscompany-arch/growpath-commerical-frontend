@@ -2,18 +2,19 @@ import React, { useState } from "react";
 import { Text, TextInput, TouchableOpacity, StyleSheet, Alert } from "react-native";
 import ScreenContainer from "../components/ScreenContainer";
 import { generateSchedule } from "../api/feeding";
-import { useAuth } from "@/auth/AuthContext";
-import { requirePro } from "../utils/proHelper";
+import { CAPABILITY_KEYS, useEntitlements } from "@/entitlements";
+import { requireCapabilityAccess } from "../utils/proHelper";
 
 export default function FeedingScheduleOptions({ navigation, route }) {
   const { nutrientData } = route.params;
   const [medium, setMedium] = useState("Soil");
   const [strain, setStrain] = useState("Photoperiod");
   const [weeks, setWeeks] = useState("12");
-  const { isPro } = useAuth();
+  const entitlements = useEntitlements();
+  const canUseSchedule = entitlements.can(CAPABILITY_KEYS.FEEDING_SCHEDULE);
 
   async function next() {
-    requirePro(navigation, isPro, async () => {
+    requireCapabilityAccess(navigation, canUseSchedule, async () => {
       try {
         const res = await generateSchedule({
           nutrientData,

@@ -14,16 +14,22 @@ import PrimaryButton from "../components/PrimaryButton";
 import { colors, spacing, radius } from "../theme/theme";
 import { likePost, addComment, getComments } from "../api/posts";
 import { useAuth } from "@/auth/AuthContext";
+import { CAPABILITY_KEYS, useEntitlements } from "@/entitlements";
 
 export default function PostDetailScreen({ route, navigation }) {
-  const { isEntitled, isPro, user } = useAuth();
+  const { user } = useAuth();
+  const entitlements = useEntitlements();
+  const canViewVipContent = entitlements.can(CAPABILITY_KEYS.VIP_CONTENT_VIEW);
   const { post, refreshFeed } = route.params;
 
-  const initialLikeCount = typeof post.likeCount === "number"
-    ? post.likeCount
-    : Array.isArray(post.likes)
-      ? post.likes.length
-      : (typeof post.likes === "number" ? post.likes : 0);
+  const initialLikeCount =
+    typeof post.likeCount === "number"
+      ? post.likeCount
+      : Array.isArray(post.likes)
+        ? post.likes.length
+        : typeof post.likes === "number"
+          ? post.likes
+          : 0;
 
   const [likes, setLikes] = useState(initialLikeCount);
   const [comments, setComments] = useState([]);
@@ -44,13 +50,13 @@ export default function PostDetailScreen({ route, navigation }) {
   }, [post._id]);
 
   // VIP Lock
-  if (post.vipOnly && !isPro) {
+  if (post.vipOnly && !canViewVipContent) {
     return (
       <ScreenContainer>
         <Card>
           <Text style={styles.lockTitle}>EXCLUSIVE CONTENT</Text>
           <Text style={styles.lockText}>
-            This post is only available to Pro members and forum participants.
+            Your account does not have access to this post.
           </Text>
           <PrimaryButton
             title="View Plans"
@@ -86,13 +92,13 @@ export default function PostDetailScreen({ route, navigation }) {
       // But we might need to re-fetch comments or append.
       // Let's check api/posts addComment response.
       const newComment = await addComment(post._id, commentText);
-      
+
       // Manually populate user for display since backend returns ID only
       const populatedComment = {
         ...newComment,
         user: user || { username: "You" }
       };
-      
+
       // So I should append.
       setComments([...comments, populatedComment]);
       setCommentText("");
@@ -153,9 +159,7 @@ export default function PostDetailScreen({ route, navigation }) {
       <Card>
         <Text style={styles.commentHeader}>Comments</Text>
 
-        {comments.length === 0 && (
-          <Text style={styles.noComments}>No comments yet</Text>
-        )}
+        {comments.length === 0 && <Text style={styles.noComments}>No comments yet</Text>}
 
         {comments.map((c, idx) => (
           <View key={idx} style={styles.commentItem}>

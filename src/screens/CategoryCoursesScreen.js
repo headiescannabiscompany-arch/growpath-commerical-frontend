@@ -10,8 +10,10 @@ import {
 import ScreenContainer from "../components/ScreenContainer";
 import { getCategoryCourses } from "../api/courses";
 import { getCreatorName } from "../utils/creator";
+import { CAPABILITY_KEYS, useEntitlements } from "@/entitlements";
 
 export default function CategoryCoursesScreen({ route, navigation }) {
+  const entitlements = useEntitlements();
   const { category } = route.params;
   const [courses, setCourses] = useState([]);
   const [loading, setLoading] = useState(true);
@@ -43,9 +45,7 @@ export default function CategoryCoursesScreen({ route, navigation }) {
     );
   }
 
-  // Example entitlement logic: Only Pro users can access paid courses
-  const { user } = require("@/auth/AuthContext").useAuth();
-  const isPro = user?.plan === "pro" || user?.role === "admin";
+  const canViewPaidCourses = entitlements.can(CAPABILITY_KEYS.SEE_PAID_COURSES);
 
   return (
     <ScreenContainer scroll={false}>
@@ -57,7 +57,7 @@ export default function CategoryCoursesScreen({ route, navigation }) {
           contentContainerStyle={styles.listContent}
           renderItem={({ item }) => {
             const isPaid = item.price > 0;
-            const disabled = isPaid && !isPro;
+            const disabled = isPaid && !canViewPaidCourses;
             return (
               <>
                 <TouchableOpacity

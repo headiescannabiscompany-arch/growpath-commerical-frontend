@@ -5,14 +5,15 @@ import { groupTasks } from "../utils/schedule";
 import TaskRow from "../components/TaskRow";
 import { getTasks, completeTask } from "../api/tasks";
 import ScreenContainer from "../components/ScreenContainer";
-import { useAuth } from "@/auth/AuthContext";
+import { CAPABILITY_KEYS, useEntitlements } from "@/entitlements";
 
 export default function ScheduleScreen() {
   const [groups, setGroups] = useState(null);
   const [error, setError] = useState(null);
   const [selectedTask, setSelectedTask] = useState(null);
   const [modalVisible, setModalVisible] = useState(false);
-  const { isPro } = useAuth();
+  const entitlements = useEntitlements();
+  const canCompleteTasks = entitlements.can(CAPABILITY_KEYS.TASKS_WRITE);
   const navigation = useNavigation();
 
   useEffect(() => {
@@ -49,10 +50,10 @@ export default function ScheduleScreen() {
   }
 
   async function handleComplete(task) {
-    if (!isPro) {
+    if (!canCompleteTasks) {
       Alert.alert(
-        "Pro Feature",
-        "Marking tasks as complete is a Pro feature. Upgrade to track your progress!",
+        "Permission required",
+        "Your account does not have permission to complete tasks.",
         [
           { text: "Cancel", style: "cancel" },
           {
@@ -280,4 +281,3 @@ const styles = {
     fontSize: 16
   }
 };
-

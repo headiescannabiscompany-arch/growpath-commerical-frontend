@@ -1,7 +1,5 @@
-// src/utils/errorActions.ts
-
 export type ApiErrorLike = {
-  ok: false;
+  ok?: false;
   status: number | null;
   code: string;
   message: string;
@@ -15,7 +13,6 @@ export type ErrorAction =
   | { kind: "none" };
 
 export function mapApiErrorToAction(err: ApiErrorLike): ErrorAction {
-  // Auth/session
   if (err.code === "UNAUTHENTICATED" || err.status === 401) {
     return { kind: "auth/logout", reason: "Session expired" };
   }
@@ -24,11 +21,10 @@ export function mapApiErrorToAction(err: ApiErrorLike): ErrorAction {
     return {
       kind: "toast",
       title: "Permission denied",
-      message: "You don’t have access to do that."
+      message: err.message || "You don't have permission to do that."
     };
   }
 
-  // Validation / input
   if (err.code === "BAD_REQUEST" || err.status === 400) {
     return {
       kind: "toast",
@@ -37,16 +33,14 @@ export function mapApiErrorToAction(err: ApiErrorLike): ErrorAction {
     };
   }
 
-  // Not found
   if (err.code === "NOT_FOUND" || err.status === 404) {
     return {
       kind: "toast",
       title: "Not found",
-      message: "That resource doesn’t exist (or was removed)."
+      message: err.message || "That resource doesn't exist (or was removed)."
     };
   }
 
-  // Server side
   if ((err.status ?? 0) >= 500 || err.code === "INTERNAL_ERROR") {
     const suffix = err.requestId ? ` (ref: ${err.requestId})` : "";
     return {
@@ -56,7 +50,6 @@ export function mapApiErrorToAction(err: ApiErrorLike): ErrorAction {
     };
   }
 
-  // Default
   return {
     kind: "toast",
     title: "Error",

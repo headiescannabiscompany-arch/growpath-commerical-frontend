@@ -14,6 +14,7 @@ import ScreenContainer from "../components/ScreenContainer.js";
 import ForumFilters from "../components/ForumFilters";
 import { getFeed, likePost, unlikePost } from "../api/posts.js";
 import { useAuth } from "@/auth/AuthContext";
+import { CAPABILITY_KEYS, useEntitlements } from "@/entitlements";
 import { applyLikeMetadata, normalizePostList, userHasLiked } from "../utils/posts.js";
 import useTabPressScrollReset from "../hooks/useTabPressScrollReset";
 import {
@@ -31,7 +32,9 @@ const TIER1_TAGS = new Set(tierOneConfig?.options || []);
 
 export default function FeedScreen() {
   const navigation = useNavigation();
-  const { isPro, user } = useAuth();
+  const { user } = useAuth();
+  const entitlements = useEntitlements();
+  const canInteract = entitlements.can(CAPABILITY_KEYS.FORUM_POST);
   const flatListRef = useRef(null);
   const userId = user?._id || null;
   const [posts, setPosts] = useState([]);
@@ -102,9 +105,13 @@ export default function FeedScreen() {
       let next = exists ? prev.filter((t) => t !== tag) : [...prev, tag];
 
       if (tierId === TIER1_ID && userTier1Selections.length > 0) {
-        const hasTier1Selected = next.some((value) => userTier1Selections.includes(value));
+        const hasTier1Selected = next.some((value) =>
+          userTier1Selections.includes(value)
+        );
         if (!hasTier1Selected) {
-          const withoutTier1 = next.filter((value) => !userTier1Selections.includes(value));
+          const withoutTier1 = next.filter(
+            (value) => !userTier1Selections.includes(value)
+          );
           next = Array.from(new Set([...withoutTier1, ...userTier1Selections]));
         }
       }
@@ -196,12 +203,13 @@ export default function FeedScreen() {
 
   const toggleLike = useCallback(
     async (post) => {
-      if (!isPro || !userId) return;
+      if (!canInteract || !userId) return;
       const liked = userHasLiked(post, userId);
       try {
         const apiFn = liked ? unlikePost : likePost;
         const result = await apiFn(post._id);
-        const nextCount = typeof result?.likeCount === "number" ? result.likeCount : undefined;
+        const nextCount =
+          typeof result?.likeCount === "number" ? result.likeCount : undefined;
         setPosts((prev) =>
           prev.map((item) =>
             item._id === post._id
@@ -213,7 +221,7 @@ export default function FeedScreen() {
         console.error("Failed to toggle like:", err);
       }
     },
-    [isPro, userId]
+    [canInteract, userId]
   );
 
   const renderHeader = () => (
@@ -230,12 +238,14 @@ export default function FeedScreen() {
           accessibilityRole="button"
           style={[
             styles.createBtn,
-            { backgroundColor: isPro ? "#10B981" : "#d1d5db" }
+            { backgroundColor: canInteract ? "#10B981" : "#d1d5db" }
           ]}
-          onPress={isPro ? openCreatePost : () => navigation.navigate("Subscription")}
+          onPress={
+            canInteract ? openCreatePost : () => navigation.navigate("Subscription")
+          }
         >
-          <Text style={[styles.createBtnText, !isPro && { color: "#666" }]}>
-            {isPro ? "+ New Post" : "Go Pro to Post"}
+          <Text style={[styles.createBtnText, !canInteract && { color: "#666" }]}>
+            {canInteract ? "+ New Post" : "Posting unavailable"}
           </Text>
         </TouchableOpacity>
       </View>
@@ -294,15 +304,15 @@ export default function FeedScreen() {
 
         <View style={styles.actions}>
           <TouchableOpacity
-            onPress={isPro ? () => toggleLike(item) : undefined}
-            disabled={!isPro}
+            onPress={canInteract ? () => toggleLike(item) : undefined}
+            disabled={!canInteract}
             accessibilityRole="button"
           >
             <Text
               style={[
                 styles.like,
                 likedByMe && { color: "#ef4444" },
-                !isPro && { color: "#bbb" }
+                !canInteract && { color: "#bbb" }
               ]}
             >
               ❤️ {item.likeCount || 0}
@@ -311,28 +321,30 @@ export default function FeedScreen() {
 
           <TouchableOpacity
             onPress={
-              isPro
+              canInteract
                 ? () => navigation.navigate("Comments", { postId: item._id })
                 : undefined
             }
-            disabled={!isPro}
+            disabled={!canInteract}
             accessibilityRole="button"
           >
-            <Text style={[styles.comment, !isPro && { color: "#bbb" }]}>💬 Comments</Text>
+            <Text style={[styles.comment, !canInteract && { color: "#bbb" }]}>
+              💬 Comments
+            </Text>
           </TouchableOpacity>
         </View>
 
-        {!isPro && (
+        {!canInteract && (
           <View style={styles.proUpsell}>
             <Text style={styles.proUpsellText}>
-              Liking, commenting, and posting are Pro features.
+              Your account does not have permission to interact with posts.
             </Text>
             <TouchableOpacity
               style={styles.upsellButton}
               onPress={() => navigation.navigate("Subscription")}
               accessibilityRole="button"
             >
-              <Text style={styles.upsellButtonText}>Upgrade to Pro</Text>
+              <Text style={styles.upsellButtonText}>View account options</Text>
             </TouchableOpacity>
           </View>
         )}
@@ -382,7 +394,11 @@ export default function FeedScreen() {
         ListFooterComponent={listFooter}
         contentContainerStyle={{ padding: 12, paddingBottom: 24 }}
         refreshControl={
-          <RefreshControl refreshing={refreshing} onRefresh={handleRefresh} tintColor="#10B981" />
+          <RefreshControl
+            refreshing={refreshing}
+            onRefresh={handleRefresh}
+            tintColor="#10B981"
+          />
         }
       />
     </ScreenContainer>

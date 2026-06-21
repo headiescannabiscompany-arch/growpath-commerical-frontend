@@ -9,7 +9,7 @@ import React, {
 } from "react";
 import { useAuth } from "../auth/AuthContext";
 import { buildCan } from "./can";
-import { KNOWN_CAPS } from "./capabilityKeys";
+import { CAPABILITY_KEYS, KNOWN_CAPS } from "./capabilityKeys";
 import { normalizeCapabilityKey, normalizeFacilityRole } from "./normalize";
 import {
   getPreferredMode as loadPreferredMode,
@@ -80,22 +80,39 @@ function pickMode(ctxMode: any): EntitlementsMode {
   return "personal";
 }
 
-function hasFacilityAccess(ctx: any, plan: any) {
-  return !!(ctx?.facilityId || ctx?.facilityRole || plan === "facility");
+function ctxHasCapability(ctx: any, capability: string) {
+  if (Array.isArray(ctx?.capabilities)) {
+    return ctx.capabilities.some(
+      (raw: unknown) => normalizeCapabilityKey(String(raw)) === capability
+    );
+  }
+  if (ctx?.capabilities && typeof ctx.capabilities === "object") {
+    return Object.entries(ctx.capabilities).some(
+      ([raw, enabled]) => enabled && normalizeCapabilityKey(raw) === capability
+    );
+  }
+  return false;
 }
 
-function hasCommercialAccess(ctx: any, plan: any) {
-  return plan === "commercial" || plan === "facility" || ctx?.mode === "commercial";
+function hasFacilityAccess(ctx: any) {
+  return !!(
+    ctx?.facilityId ||
+    ctx?.facilityRole ||
+    ctxHasCapability(ctx, CAPABILITY_KEYS.FACILITY_ACCESS)
+  );
 }
 
-function resolveMode(
+function hasCommercialAccess(ctx: any) {
+  return ctxHasCapability(ctx, CAPABILITY_KEYS.COMMERCIAL_HOME);
+}
+
+export function resolveEntitlementsMode(
   ctx: any,
-  plan: any,
   preferredMode: PreferredMode | null
 ): EntitlementsMode {
   const baseMode = pickMode(ctx?.mode);
-  const canFacility = hasFacilityAccess(ctx, plan);
-  const canCommercial = hasCommercialAccess(ctx, plan);
+  const canFacility = hasFacilityAccess(ctx);
+  const canCommercial = hasCommercialAccess(ctx);
 
   if (preferredMode === "facility" && canFacility) return "facility";
   if (preferredMode === "commercial" && canCommercial) return "commercial";
@@ -116,7 +133,7 @@ function applyServerCtx(
   preferredMode: PreferredMode | null
 ): Omit<EntitlementsState, "can"> {
   const plan = userPlan ?? ctx?.plan ?? prev.plan ?? "free";
-  const mode = resolveMode(ctx, plan, preferredMode);
+  const mode = resolveEntitlementsMode(ctx, preferredMode);
   const facilityId = ctx?.facilityId ?? null;
   const facilityRole = normalizeFacilityRole(ctx?.facilityRole);
 

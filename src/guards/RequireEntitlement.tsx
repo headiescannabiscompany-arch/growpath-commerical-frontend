@@ -2,12 +2,11 @@
 import React, { useMemo } from "react";
 import { useRouter } from "expo-router";
 import { useEntitlements } from "../entitlements";
-import { CapabilityKey, FacilityRole, Mode, Plan } from "../entitlements/types";
+import { CapabilityKey, FacilityRole, Mode } from "../entitlements/types";
 import { LockedScreen } from "../entitlements/LockedScreen";
 type Props = {
   children: React.ReactNode;
   mode?: Mode | Mode[];
-  plan?: Plan | Plan[];
   capability?: CapabilityKey | CapabilityKey[];
   facilityRole?: FacilityRole | FacilityRole[];
   requireFacility?: boolean;
@@ -21,7 +20,6 @@ function asArray<T>(v?: T | T[]): T[] {
 export function RequireEntitlement({
   children,
   mode,
-  plan,
   capability,
   facilityRole,
   requireFacility = true,
@@ -33,12 +31,9 @@ export function RequireEntitlement({
   const ok = useMemo(() => {
     if (!ent.ready) return false;
     const modes = asArray(mode);
-    const plans = asArray(plan);
     const caps = asArray(capability);
     const roles = asArray(facilityRole);
     if (modes.length && !modes.includes(ent.mode)) return false;
-    // Phase 2.3.2: Cast plan and facilityRole for type checking
-    if (plans.length && !plans.includes(ent.plan as Plan)) return false;
     if (
       roles.length &&
       (!ent.facilityRole || !roles.includes(ent.facilityRole as FacilityRole))
@@ -52,12 +47,10 @@ export function RequireEntitlement({
   }, [
     ent.ready,
     ent.mode,
-    ent.plan,
     ent.facilityRole,
     ent.facilityId,
     ent,
     mode,
-    plan,
     capability,
     facilityRole,
     requireFacility
@@ -69,7 +62,7 @@ export function RequireEntitlement({
         title={lockedTitle ?? "Locked"}
         message={
           lockedMessage ??
-          "This area requires a different plan, mode, or role. If you believe this is a mistake, refresh your session or check your facility selection."
+          "Your session does not grant access to this area. Refresh your session or check your facility selection."
         }
         onAction={() => router.back()}
         actionLabel="Go back"

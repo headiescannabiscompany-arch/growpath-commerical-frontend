@@ -12,7 +12,6 @@ import {
 } from "react-native";
 import AppShell from "../components/AppShell.js";
 import { colors, spacing, radius, Typography } from "../theme/theme.js";
-import { useAuth } from "@/auth/AuthContext";
 import { useEntitlements, CAPABILITY_KEYS } from "@/entitlements";
 import { useNavigation, useFocusEffect } from "@react-navigation/native";
 import { getPlants } from "../api/plants.js";
@@ -495,17 +494,16 @@ const styles = StyleSheet.create({
 });
 
 export default function DashboardScreen() {
-  const { user, mode } = useAuth();
   // Entitlement checks for dashboard actions
   const ent = useEntitlements();
   const analyticsEnabled = ent.can(CAPABILITY_KEYS.DASHBOARD_ANALYTICS);
   const exportEnabled = ent.can(CAPABILITY_KEYS.DASHBOARD_EXPORT);
   const teamToolsEnabled = ent.can(CAPABILITY_KEYS.ROOMS_EQUIPMENT_STAFF);
   const addPlantEnabled = ent.can(CAPABILITY_KEYS.GROWLOGS_MULTI);
-  const analyticsEnt = analyticsEnabled ? "enabled" : ent.plan === "free" ? "cta" : "disabled";
-  const exportEnt = exportEnabled ? "enabled" : ent.plan === "free" ? "cta" : "disabled";
-  const teamToolsEnt = teamToolsEnabled ? "enabled" : ent.plan === "free" ? "cta" : "disabled";
-  const addPlantEnt = addPlantEnabled ? "enabled" : ent.plan === "free" ? "cta" : "disabled";
+  const analyticsEnt = analyticsEnabled ? "enabled" : "disabled";
+  const exportEnt = exportEnabled ? "enabled" : "disabled";
+  const teamToolsEnt = teamToolsEnabled ? "enabled" : "disabled";
+  const addPlantEnt = addPlantEnabled ? "enabled" : "disabled";
 
   return (
     <AppShell style={styles.container} contentContainerStyle={null}>
@@ -572,4 +570,3 @@ export default function DashboardScreen() {
     </AppShell>
   );
 }
-

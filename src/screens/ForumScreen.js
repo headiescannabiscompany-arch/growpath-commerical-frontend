@@ -34,7 +34,6 @@ import { shouldAutoFetchMore } from "../utils/forumFeed.js";
 
 export default function ForumScreen() {
   const { user } = useAuth();
-  const userRole = user?.role || "free";
   const [mode, setMode] = useState("latest");
   const [activeFilters, setActiveFilters] = useState([]);
   const [showFilters, setShowFilters] = useState(false);

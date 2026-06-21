@@ -127,8 +127,7 @@ describe("Acceptance: User Stories", () => {
     }
     mockApiRequest.mockReset();
 
-    const record = (method, url) =>
-      (global.__FETCH_CALLS__ || []).push({ method, url });
+    const record = (method, url) => (global.__FETCH_CALLS__ || []).push({ method, url });
 
     const withParams = (base, params) => {
       if (!params || typeof params !== "object") return base;
@@ -508,7 +507,12 @@ describe("Acceptance: User Stories", () => {
         return {
           json: {
             token: "guild-token",
-            user: { id: "u-guild", subscriptionStatus: "free", guilds: ["guild1"] }
+            user: {
+              id: "u-guild",
+              subscriptionStatus: "free",
+              guilds: ["guild1"],
+              capabilities: { DIAGNOSE_AI: true }
+            }
           }
         };
       return { json: { success: true } };
@@ -529,7 +533,7 @@ describe("Acceptance: User Stories", () => {
       // eslint-disable-next-line no-console
       console.error("Entitlements undefined for user:", global.user);
     }
-    expect(entitlements && entitlements.isPro).toBe(false);
     expect(entitlements && entitlements.isEntitled).toBe(true);
+    expect(entitlements.can("DIAGNOSE_AI")).toBe(true);
   });
 });

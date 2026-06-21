@@ -18,12 +18,14 @@ export type UserMeResponse = {
     id: string;
     email: string;
     name?: string;
+    plan?: Plan | string | null;
   };
-  session: {
+  ctx: {
     mode: Mode;
-    plan: Plan;
-    facilityId?: string;
-    facilityRole?: FacilityRole | string;
+    capabilities: Record<string, boolean>;
+    limits: Record<string, number>;
+    facilityId?: string | null;
+    facilityRole?: FacilityRole | string | null;
+    facilityFeaturesEnabled?: boolean;
   };
-  entitlements: EntitlementsPayload;
 };

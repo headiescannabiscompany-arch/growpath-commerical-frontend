@@ -1,11 +1,14 @@
 import { initUnauthorizedHandler } from "@/auth/initUnauthorized";
 import React, { useEffect } from "react";
 import { Slot } from "expo-router";
+import { View } from "react-native";
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import { AuthProvider } from "../auth/AuthContext";
 import { SessionProvider } from "../session/SessionProvider";
 import { EntitlementsProvider } from "../entitlements/EntitlementsProvider";
 import { FacilityProvider } from "../facility/FacilityProvider";
+import { GlobalApiStatusBanner } from "../components/GlobalApiStatusBanner";
+import { RouteAccessGuard } from "../navigation/RouteAccessGuard";
 
 initUnauthorizedHandler();
 
@@ -30,7 +33,14 @@ export default function RootLayout() {
         <SessionProvider>
           <EntitlementsProvider>
             <FacilityProvider>
-              <Slot />
+              <View style={{ flex: 1 }}>
+                <GlobalApiStatusBanner />
+                <View style={{ flex: 1 }}>
+                  <RouteAccessGuard>
+                    <Slot />
+                  </RouteAccessGuard>
+                </View>
+              </View>
             </FacilityProvider>
           </EntitlementsProvider>
         </SessionProvider>

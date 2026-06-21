@@ -11,9 +11,9 @@ import { API_URL } from "../api/apiRequest";
 export function resolveImageUrl(uri) {
   if (!uri) return null;
   if (uri.startsWith("/")) {
-    // Remove trailing slash from API_URL if present to avoid double slash,
-    // though usually API_URL doesn't have it, and uri has it.
-    // API_URL is typically "http://localhost:5002"
+    if (!API_URL) {
+      throw new Error("API_URL_NOT_CONFIGURED");
+    }
     const baseUrl = API_URL.replace(/\/$/, "");
     return `${baseUrl}${uri}`;
   }

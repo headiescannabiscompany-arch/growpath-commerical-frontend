@@ -41,8 +41,8 @@ export default function DiagnoseScreen({ route, navigation }) {
   const ent = useEntitlements();
   const aiEnabled = ent.can(CAPABILITY_KEYS.DIAGNOSE_AI);
   const advEnabled = ent.can(CAPABILITY_KEYS.DIAGNOSE_ADVANCED);
-  const aiEnt = aiEnabled ? "enabled" : ent.plan === "free" ? "cta" : "disabled";
-  const advEnt = advEnabled ? "enabled" : ent.plan === "free" ? "cta" : "disabled";
+  const aiEnt = aiEnabled ? "enabled" : "disabled";
+  const advEnt = advEnabled ? "enabled" : "disabled";
   // Vision and export can be added similarly if needed
 
   const [photos, setPhotos] = useState([]);
@@ -149,529 +149,533 @@ export default function DiagnoseScreen({ route, navigation }) {
       >
         {renderSafeChildren(
           <>
-        {/* Chat-style input and prompt suggestions */}
-        <View style={{ marginBottom: 12 }}>
-          <Text style={styles.label}>Describe your plant issue</Text>
-          <View style={{ flexDirection: "row", flexWrap: "wrap", marginBottom: 8 }}>
-            {suggestedPrompts.map((prompt) => (
-              <TouchableOpacity
-                key={prompt}
-                style={{
-                  backgroundColor: "#334155",
-                  borderRadius: 16,
-                  paddingHorizontal: 12,
-                  paddingVertical: 6,
-                  marginRight: 8,
-                  marginBottom: 6,
-                  opacity: aiEnt === "enabled" ? 1 : 0.5
-                }}
-                onPress={() => aiEnt === "enabled" && setNotes(prompt)}
-                disabled={aiEnt !== "enabled"}
-              >
-                <Text style={{ color: "#e5e7eb", fontSize: 13 }}>{prompt}</Text>
-              </TouchableOpacity>
-            ))}
-          </View>
-          <TextInput
-            style={[styles.input, { height: 80, textAlignVertical: "top" }]}
-            multiline
-            value={notes}
-            onChangeText={setNotes}
-            placeholder="Describe symptoms: yellowing leaves, curled tips, drooping, brown spots, etc. (e.g. tomato, basil, lettuce, pepper)"
-            editable={aiEnt === "enabled"}
-          />
-          {aiEnt !== "enabled" && (
-            <Text style={{ color: "gray", fontSize: 12, marginTop: 4 }}>
-              {aiEnt === "cta"
-                ? "Upgrade to use AI diagnosis features"
-                : "Diagnosis (Locked)"}
-            </Text>
-          )}
-        </View>
-
-        {/* Chat history (conversational flow) */}
-        {chatHistory.length > 0 && (
-          <View style={{ marginBottom: 12 }}>
-            {chatHistory.map((msg, idx) => (
-              <View
-                key={idx}
-                style={{
-                  alignSelf: msg.sender === "user" ? "flex-end" : "flex-start",
-                  backgroundColor: msg.sender === "user" ? "#22c55e" : "#334155",
-                  borderRadius: 14,
-                  padding: 10,
-                  marginBottom: 6,
-                  maxWidth: "80%"
-                }}
-              >
-                {typeof msg.text === "string" ? (
-                  <Text style={{ color: msg.sender === "user" ? "#0f172a" : "#e5e7eb" }}>
-                    {msg.text}
-                  </Text>
-                ) : null}
-              </View>
-            ))}
-          </View>
-        )}
-
-        {/* Follow-up question input */}
-        {followUp && (
-          <View style={{ marginBottom: 12 }}>
-            <Text style={styles.label}>Follow-up</Text>
-            <TextInput
-              style={[styles.input, { height: 40 }]}
-              value={followUp}
-              editable={false}
-            />
-            <TextInput
-              style={[styles.input, { height: 60, marginTop: 6 }]}
-              placeholder="Type your answer about your plant..."
-              onChangeText={(txt) => setNotes(txt)}
-              value={notes}
-              multiline
-            />
-          </View>
-        )}
-        {/* Advanced Environment Data Toggle */}
-        <Pressable
-          style={[styles.advancedToggle, advEnt !== "enabled" && { opacity: 0.5 }]}
-          onPress={advEnt === "enabled" ? openAdvancedPicker : undefined}
-          disabled={advEnt !== "enabled"}
-        >
-          <Text style={styles.advancedToggleText}>
-            {showAdvanced
-              ? "Hide advanced"
-              : advEnt === "cta"
-                ? "Upgrade for Advanced"
-                : advEnt === "enabled"
-                  ? "Show advanced"
-                  : "Advanced (Locked)"}
-          </Text>
-        </Pressable>
-        {/* Advanced LAWNS fields */}
-        {showAdvanced && advEnt === "enabled" && (
-          <View style={styles.advancedSection}>
-            {/* LIGHT SECTION */}
-            <View style={styles.envSection}>
-              <Text style={styles.envSectionTitle}>Light Information</Text>
-              <View style={styles.infoBox}>
-                <Text style={styles.infoBoxTitle}>Measure PPFD/DLI</Text>
-                <Text style={styles.infoBoxText}>
-                  For best results, use the free "Photone" app (iOS/Android) to measure
-                  light intensity with your phone. Aim for 400-600 PPFD in veg, 600-900 in
-                  flower.
-                </Text>
-                <PrimaryButton
-                  title="How to Measure with Photone"
-                  onPress={() => {
-                    Alert.alert(
-                      "How to Measure Light",
-                      "1. Download the Photone app from the App Store or Google Play.\n2. Open the app and select the 'PAR/PPFD' mode.\n3. Hold your phone at canopy level, sensor facing the light.\n4. Enter the PPFD and DLI values below.\n\nPhotone for iOS: https://apps.apple.com/app/photone/id1255474625\nPhotone for Android: https://play.google.com/store/apps/details?id=com.lisisoft.photone",
-                      [
-                        {
-                          text: "Open Photone (iOS)",
-                          onPress: () => {
-                            Linking.openURL(
-                              "https://apps.apple.com/app/photone/id1255474625"
-                            );
-                          }
-                        },
-                        {
-                          text: "Open Photone (Android)",
-                          onPress: () => {
-                            Linking.openURL(
-                              "https://play.google.com/store/apps/details?id=com.lisisoft.photone"
-                            );
-                          }
-                        },
-                        { text: "OK" }
-                      ]
-                    );
-                  }}
-                  style={{ marginTop: 8, marginBottom: 4 }}
-                  disabled={false}
-                >
-                  <Text>How to Measure with Photone</Text>
-                </PrimaryButton>
-              </View>
-              <View style={styles.row}>
-                <View style={styles.halfInput}>
-                  <Text style={styles.label}>PPFD (umol/m2/s)</Text>
-                  <TextInput
-                    style={styles.input}
-                    value={lightPPFD}
-                    onChangeText={setLightPPFD}
-                    placeholder="650"
-                    keyboardType="numeric"
-                  />
-                </View>
-                <View style={styles.halfInput}>
-                  <Text style={styles.label}>DLI (mol/m2/day)</Text>
-                  <TextInput
-                    style={styles.input}
-                    value={lightDLI}
-                    onChangeText={setLightDLI}
-                    placeholder="35"
-                    keyboardType="numeric"
-                  />
-                </View>
-              </View>
-              <PrimaryButton
-                title="Confirm Light Measurement"
-                onPress={() => {
-                  if (!lightPPFD && !lightDLI) {
-                    Alert.alert(
-                      "Missing Data",
-                      "Please enter at least one value for PPFD or DLI."
-                    );
-                    return;
-                  }
-                  setChatHistory((prev) => [
-                    ...prev,
-                    {
-                      sender: "user",
-                      text: `Light measured: PPFD ${lightPPFD || "-"} umol/m2/s, DLI ${lightDLI || "-"} mol/m2/day.`
-                    }
-                  ]);
-                  Alert.alert(
-                    "Saved!",
-                    "Your light measurement has been added to the diagnosis context."
-                  );
-                }}
-                style={{ marginTop: 8 }}
-                disabled={false}
-              >
-                <Text>Confirm Light Measurement</Text>
-              </PrimaryButton>
-              <Text style={styles.label}>Light Model/Brand</Text>
-              <TextInput
-                style={styles.input}
-                value={lightModel}
-                onChangeText={setLightModel}
-                placeholder="Spider Farmer SF-4000, HLG 650R, etc."
-              />
-              <View style={styles.row}>
-                <View style={styles.halfInput}>
-                  <Text style={styles.label}>Distance from canopy</Text>
-                  <TextInput
-                    style={styles.input}
-                    value={lightDistance}
-                    onChangeText={setLightDistance}
-                    placeholder='18" or 45cm'
-                  />
-                </View>
-                <View style={styles.halfInput}>
-                  <Text style={styles.label}>Spectrum</Text>
-                  <TextInput
-                    style={styles.input}
-                    value={lightSpectrum}
-                    onChangeText={setLightSpectrum}
-                    placeholder="Full, Veg, Bloom"
-                  />
-                </View>
-              </View>
-            </View>
-            {/* WATER SECTION */}
-            <View style={styles.envSection}>
-              <Text style={styles.envSectionTitle}>Water Information</Text>
-
-              <Text style={styles.label}>Water Source</Text>
-              <View style={styles.buttonRow}>
-                {["tap", "well", "city"].map((src) => (
+            {/* Chat-style input and prompt suggestions */}
+            <View style={{ marginBottom: 12 }}>
+              <Text style={styles.label}>Describe your plant issue</Text>
+              <View style={{ flexDirection: "row", flexWrap: "wrap", marginBottom: 8 }}>
+                {suggestedPrompts.map((prompt) => (
                   <TouchableOpacity
-                    key={src}
-                    style={[
-                      styles.optionButton,
-                      waterSource === src && styles.optionButtonActive
-                    ]}
-                    onPress={() => setWaterSource(src)}
+                    key={prompt}
+                    style={{
+                      backgroundColor: "#334155",
+                      borderRadius: 16,
+                      paddingHorizontal: 12,
+                      paddingVertical: 6,
+                      marginRight: 8,
+                      marginBottom: 6,
+                      opacity: aiEnt === "enabled" ? 1 : 0.5
+                    }}
+                    onPress={() => aiEnt === "enabled" && setNotes(prompt)}
+                    disabled={aiEnt !== "enabled"}
                   >
-                    <Text
-                      style={
-                        waterSource === src ? styles.optionTextActive : styles.optionText
-                      }
-                    >
-                      {src}
-                    </Text>
+                    <Text style={{ color: "#e5e7eb", fontSize: 13 }}>{prompt}</Text>
                   </TouchableOpacity>
                 ))}
               </View>
-
-              <Text style={styles.label}>Water Treatment</Text>
-              <View style={styles.buttonRow}>
-                {[
-                  { key: "straight", label: "Straight from tap" },
-                  { key: "bubbled", label: "Bubbled/Aged" },
-                  { key: "ro", label: "RO Filtered" }
-                ].map((opt) => (
-                  <TouchableOpacity
-                    key={opt.key}
-                    style={[
-                      styles.optionButton,
-                      waterTreatment === opt.key && styles.optionButtonActive
-                    ]}
-                    onPress={() => setWaterTreatment(opt.key)}
-                  >
-                    <Text
-                      style={
-                        waterTreatment === opt.key
-                          ? styles.optionTextActive
-                          : styles.optionText
-                      }
-                    >
-                      {opt.label}
-                    </Text>
-                  </TouchableOpacity>
-                ))}
-              </View>
-
-              <View style={styles.row}>
-                <View style={styles.halfInput}>
-                  <Text style={styles.label}>Water pH</Text>
-                  <TextInput
-                    style={styles.input}
-                    value={waterPH}
-                    onChangeText={setWaterPH}
-                    placeholder="6.0-6.5"
-                    keyboardType="numeric"
-                  />
-                </View>
-                <View style={styles.halfInput}>
-                  <Text style={styles.label}>PPM/EC</Text>
-                  <TextInput
-                    style={styles.input}
-                    value={waterPPM}
-                    onChangeText={setWaterPPM}
-                    placeholder="800 ppm"
-                    keyboardType="numeric"
-                  />
-                </View>
-              </View>
-            </View>
-            {/* AIR SECTION */}
-            <View style={styles.envSection}>
-              <Text style={styles.envSectionTitle}>Air & Climate</Text>
-
-              <View style={styles.row}>
-                <View style={styles.halfInput}>
-                  <Text style={styles.label}>Temperature (degF)</Text>
-                  <TextInput
-                    style={styles.input}
-                    value={temperature}
-                    onChangeText={setTemperature}
-                    placeholder="75-82degF"
-                    keyboardType="numeric"
-                  />
-                </View>
-                <View style={styles.halfInput}>
-                  <Text style={styles.label}>Humidity (%)</Text>
-                  <TextInput
-                    style={styles.input}
-                    value={humidity}
-                    onChangeText={setHumidity}
-                    placeholder="50-60%"
-                    keyboardType="numeric"
-                  />
-                </View>
-              </View>
-
-              <Text style={styles.label}>Airflow</Text>
-              <View style={styles.buttonRow}>
-                {["poor", "moderate", "good", "excellent"].map((flow) => (
-                  <TouchableOpacity
-                    key={flow}
-                    style={[
-                      styles.optionButton,
-                      airflow === flow && styles.optionButtonActive
-                    ]}
-                    onPress={() => setAirflow(flow)}
-                  >
-                    <Text
-                      style={
-                        airflow === flow ? styles.optionTextActive : styles.optionText
-                      }
-                    >
-                      {flow}
-                    </Text>
-                  </TouchableOpacity>
-                ))}
-              </View>
-            </View>
-            {/* NUTRIENTS SECTION */}
-            <View style={styles.envSection}>
-              <Text style={styles.envSectionTitle}>Nutrients</Text>
-
-              <Text style={styles.label}>Nutrient Brand/Line</Text>
               <TextInput
-                style={styles.input}
-                value={nutrientBrand}
-                onChangeText={setNutrientBrand}
-                placeholder="General Hydroponics, Fox Farm, etc."
+                style={[styles.input, { height: 80, textAlignVertical: "top" }]}
+                multiline
+                value={notes}
+                onChangeText={setNotes}
+                placeholder="Describe symptoms: yellowing leaves, curled tips, drooping, brown spots, etc. (e.g. tomato, basil, lettuce, pepper)"
+                editable={aiEnt === "enabled"}
               />
-
-              <Text style={styles.label}>Feeding Strength</Text>
-              <TextInput
-                style={styles.input}
-                value={nutrientStrength}
-                onChangeText={setNutrientStrength}
-                placeholder="Half strength, full strength, etc."
-              />
-
-              <Text style={styles.label}>Feeding Schedule</Text>
-              <TextInput
-                style={styles.input}
-                value={feedingSchedule}
-                onChangeText={setFeedingSchedule}
-                placeholder="Feed-feed-water, every watering, etc."
-              />
-            </View>
-            {/* SUBSTRATE SECTION */}
-            <View style={styles.envSection}>
-              <Text style={styles.envSectionTitle}>Substrate/Medium</Text>
-
-              <Text style={styles.label}>Substrate Type</Text>
-              <TextInput
-                style={styles.input}
-                value={substrateType}
-                onChangeText={setSubstrateType}
-                placeholder="Soil, Coco coir, Hydro, Perlite mix, etc."
-              />
-
-              <Text style={styles.label}>Substrate pH</Text>
-              <TextInput
-                style={styles.input}
-                value={substratePH}
-                onChangeText={setSubstratePH}
-                placeholder="6.0-6.5 (soil), 5.5-6.0 (hydro)"
-                keyboardType="numeric"
-              />
-            </View>
-          </View>
-        )}
-
-        <PrimaryButton
-          title={analyzing ? "Analyzing..." : followUp ? "Send" : "Run Diagnosis"}
-          onPress={async () => {
-            if (aiEnt !== "enabled") return;
-            if (followUp) {
-              setChatHistory((prev) => [
-                ...prev,
-                { sender: "user", text: notes },
-                {
-                  sender: "ai",
-                  text: "Thank you! We'll use this info for a more accurate diagnosis."
-                }
-              ]);
-              setFollowUp("");
-              setNotes("");
-            } else {
-              await handleDiagnose();
-            }
-          }}
-          disabled={analyzing || (!notes && !followUp) || aiEnt !== "enabled"}
-          style={{ marginTop: 20, opacity: aiEnt === "enabled" ? 1 : 0.5 }}
-        >
-          <Text>
-            {analyzing
-              ? "Analyzing..."
-              : followUp
-                ? "Send"
-                : aiEnt === "cta"
-                  ? "Upgrade to Run Diagnosis"
-                  : aiEnt === "enabled"
-                    ? "Run Diagnosis"
+              {aiEnt !== "enabled" && (
+                <Text style={{ color: "gray", fontSize: 12, marginTop: 4 }}>
+                  {aiEnt === "cta"
+                    ? "Upgrade to use AI diagnosis features"
                     : "Diagnosis (Locked)"}
-          </Text>
-        </PrimaryButton>
-        {aiEnt !== "enabled" && (
-          <Text style={{ color: "gray", fontSize: 12, marginTop: 4 }}>
-            {aiEnt === "cta" ? "Upgrade to run diagnosis" : "Diagnosis (Locked)"}
-          </Text>
-        )}
+                </Text>
+              )}
+            </View>
 
-        {photos.length > 0 && (
-          <PrimaryButton
-            title={diagnosing ? "Analyzing..." : "AI Vision Analyze"}
-            onPress={async () => {
-              if (aiEnt === "enabled") await runVision();
-            }}
-            disabled={diagnosing || aiEnt !== "enabled"}
-            style={{ marginTop: 10, opacity: aiEnt === "enabled" ? 1 : 0.5 }}
-          >
-            <Text>
-              {diagnosing
-                ? "Analyzing..."
-                : aiEnt === "cta"
-                  ? "Upgrade for AI Vision"
-                  : aiEnt === "enabled"
-                    ? "AI Vision Analyze"
-                    : "AI Vision (Locked)"}
-            </Text>
-          </PrimaryButton>
-        )}
-        {/* Error display */}
-        {(analyzeError || diagnoseError) && (
-          <Text style={{ color: "#ef4444", marginTop: 8 }}>
-            {analyzeError?.message ||
-              diagnoseError?.message ||
-              "An error occurred during diagnosis."}
-          </Text>
-        )}
-        {photos.length > 0 && aiEnt !== "enabled" && (
-          <Text style={{ color: "gray", fontSize: 12, marginTop: 4 }}>
-            {aiEnt === "cta" ? "Upgrade to use AI Vision" : "AI Vision (Locked)"}
-          </Text>
-        )}
-
-        {/* Result */}
-        {result && (
-          <View style={styles.resultCard}>
-            <Text style={styles.resultTitle}>{result.issueSummary}</Text>
-            <Text style={styles.severity}>
-              Severity: {severityLabel(result.severity)} ({result.severity}/5)
-            </Text>
-
-            {/* Tags */}
-            {result.tags && result.tags.length > 0 && (
-              <View style={styles.tagsRow}>
-                {result.tags.map((t) => (
-                  <View key={t} style={styles.tag}>
-                    <Text style={styles.tagText}>{t}</Text>
+            {/* Chat history (conversational flow) */}
+            {chatHistory.length > 0 && (
+              <View style={{ marginBottom: 12 }}>
+                {chatHistory.map((msg, idx) => (
+                  <View
+                    key={idx}
+                    style={{
+                      alignSelf: msg.sender === "user" ? "flex-end" : "flex-start",
+                      backgroundColor: msg.sender === "user" ? "#22c55e" : "#334155",
+                      borderRadius: 14,
+                      padding: 10,
+                      marginBottom: 6,
+                      maxWidth: "80%"
+                    }}
+                  >
+                    {typeof msg.text === "string" ? (
+                      <Text
+                        style={{ color: msg.sender === "user" ? "#0f172a" : "#e5e7eb" }}
+                      >
+                        {msg.text}
+                      </Text>
+                    ) : null}
                   </View>
                 ))}
               </View>
             )}
 
-            {/* Actions */}
-            {result.aiActions && result.aiActions.length > 0 && (
-              <View style={{ marginTop: 10 }}>
-                <Text style={styles.sectionLabel}>Suggested Actions</Text>
-                {result.aiActions.map((step, idx) => (
-                  <Text key={idx} style={styles.actionStep}>
-                    -  {step}
-                  </Text>
-                ))}
+            {/* Follow-up question input */}
+            {followUp && (
+              <View style={{ marginBottom: 12 }}>
+                <Text style={styles.label}>Follow-up</Text>
+                <TextInput
+                  style={[styles.input, { height: 40 }]}
+                  value={followUp}
+                  editable={false}
+                />
+                <TextInput
+                  style={[styles.input, { height: 60, marginTop: 6 }]}
+                  placeholder="Type your answer about your plant..."
+                  onChangeText={(txt) => setNotes(txt)}
+                  value={notes}
+                  multiline
+                />
               </View>
             )}
-
-            {/* Explanation */}
-            {result.aiExplanation && (
-              <View style={{ marginTop: 10 }}>
-                <Text style={styles.sectionLabel}>Notes</Text>
-                <Text style={styles.explanation}>{result.aiExplanation}</Text>
-              </View>
-            )}
-
-            <TouchableOpacity
-              onPress={() => navigation.navigate("DiagnosisHistory")}
-              style={{ marginTop: 16 }}
+            {/* Advanced Environment Data Toggle */}
+            <Pressable
+              style={[styles.advancedToggle, advEnt !== "enabled" && { opacity: 0.5 }]}
+              onPress={advEnt === "enabled" ? openAdvancedPicker : undefined}
+              disabled={advEnt !== "enabled"}
             >
-              <Text style={{ color: "#3498db", fontWeight: "600" }}>
-                View history {"->"}
+              <Text style={styles.advancedToggleText}>
+                {showAdvanced
+                  ? "Hide advanced"
+                  : advEnt === "cta"
+                    ? "Upgrade for Advanced"
+                    : advEnt === "enabled"
+                      ? "Show advanced"
+                      : "Advanced (Locked)"}
               </Text>
-            </TouchableOpacity>
-          </View>
-        )}
+            </Pressable>
+            {/* Advanced LAWNS fields */}
+            {showAdvanced && advEnt === "enabled" && (
+              <View style={styles.advancedSection}>
+                {/* LIGHT SECTION */}
+                <View style={styles.envSection}>
+                  <Text style={styles.envSectionTitle}>Light Information</Text>
+                  <View style={styles.infoBox}>
+                    <Text style={styles.infoBoxTitle}>Measure PPFD/DLI</Text>
+                    <Text style={styles.infoBoxText}>
+                      For best results, use the free "Photone" app (iOS/Android) to
+                      measure light intensity with your phone. Aim for 400-600 PPFD in
+                      veg, 600-900 in flower.
+                    </Text>
+                    <PrimaryButton
+                      title="How to Measure with Photone"
+                      onPress={() => {
+                        Alert.alert(
+                          "How to Measure Light",
+                          "1. Download the Photone app from the App Store or Google Play.\n2. Open the app and select the 'PAR/PPFD' mode.\n3. Hold your phone at canopy level, sensor facing the light.\n4. Enter the PPFD and DLI values below.\n\nPhotone for iOS: https://apps.apple.com/app/photone/id1255474625\nPhotone for Android: https://play.google.com/store/apps/details?id=com.lisisoft.photone",
+                          [
+                            {
+                              text: "Open Photone (iOS)",
+                              onPress: () => {
+                                Linking.openURL(
+                                  "https://apps.apple.com/app/photone/id1255474625"
+                                );
+                              }
+                            },
+                            {
+                              text: "Open Photone (Android)",
+                              onPress: () => {
+                                Linking.openURL(
+                                  "https://play.google.com/store/apps/details?id=com.lisisoft.photone"
+                                );
+                              }
+                            },
+                            { text: "OK" }
+                          ]
+                        );
+                      }}
+                      style={{ marginTop: 8, marginBottom: 4 }}
+                      disabled={false}
+                    >
+                      <Text>How to Measure with Photone</Text>
+                    </PrimaryButton>
+                  </View>
+                  <View style={styles.row}>
+                    <View style={styles.halfInput}>
+                      <Text style={styles.label}>PPFD (umol/m2/s)</Text>
+                      <TextInput
+                        style={styles.input}
+                        value={lightPPFD}
+                        onChangeText={setLightPPFD}
+                        placeholder="650"
+                        keyboardType="numeric"
+                      />
+                    </View>
+                    <View style={styles.halfInput}>
+                      <Text style={styles.label}>DLI (mol/m2/day)</Text>
+                      <TextInput
+                        style={styles.input}
+                        value={lightDLI}
+                        onChangeText={setLightDLI}
+                        placeholder="35"
+                        keyboardType="numeric"
+                      />
+                    </View>
+                  </View>
+                  <PrimaryButton
+                    title="Confirm Light Measurement"
+                    onPress={() => {
+                      if (!lightPPFD && !lightDLI) {
+                        Alert.alert(
+                          "Missing Data",
+                          "Please enter at least one value for PPFD or DLI."
+                        );
+                        return;
+                      }
+                      setChatHistory((prev) => [
+                        ...prev,
+                        {
+                          sender: "user",
+                          text: `Light measured: PPFD ${lightPPFD || "-"} umol/m2/s, DLI ${lightDLI || "-"} mol/m2/day.`
+                        }
+                      ]);
+                      Alert.alert(
+                        "Saved!",
+                        "Your light measurement has been added to the diagnosis context."
+                      );
+                    }}
+                    style={{ marginTop: 8 }}
+                    disabled={false}
+                  >
+                    <Text>Confirm Light Measurement</Text>
+                  </PrimaryButton>
+                  <Text style={styles.label}>Light Model/Brand</Text>
+                  <TextInput
+                    style={styles.input}
+                    value={lightModel}
+                    onChangeText={setLightModel}
+                    placeholder="Spider Farmer SF-4000, HLG 650R, etc."
+                  />
+                  <View style={styles.row}>
+                    <View style={styles.halfInput}>
+                      <Text style={styles.label}>Distance from canopy</Text>
+                      <TextInput
+                        style={styles.input}
+                        value={lightDistance}
+                        onChangeText={setLightDistance}
+                        placeholder='18" or 45cm'
+                      />
+                    </View>
+                    <View style={styles.halfInput}>
+                      <Text style={styles.label}>Spectrum</Text>
+                      <TextInput
+                        style={styles.input}
+                        value={lightSpectrum}
+                        onChangeText={setLightSpectrum}
+                        placeholder="Full, Veg, Bloom"
+                      />
+                    </View>
+                  </View>
+                </View>
+                {/* WATER SECTION */}
+                <View style={styles.envSection}>
+                  <Text style={styles.envSectionTitle}>Water Information</Text>
+
+                  <Text style={styles.label}>Water Source</Text>
+                  <View style={styles.buttonRow}>
+                    {["tap", "well", "city"].map((src) => (
+                      <TouchableOpacity
+                        key={src}
+                        style={[
+                          styles.optionButton,
+                          waterSource === src && styles.optionButtonActive
+                        ]}
+                        onPress={() => setWaterSource(src)}
+                      >
+                        <Text
+                          style={
+                            waterSource === src
+                              ? styles.optionTextActive
+                              : styles.optionText
+                          }
+                        >
+                          {src}
+                        </Text>
+                      </TouchableOpacity>
+                    ))}
+                  </View>
+
+                  <Text style={styles.label}>Water Treatment</Text>
+                  <View style={styles.buttonRow}>
+                    {[
+                      { key: "straight", label: "Straight from tap" },
+                      { key: "bubbled", label: "Bubbled/Aged" },
+                      { key: "ro", label: "RO Filtered" }
+                    ].map((opt) => (
+                      <TouchableOpacity
+                        key={opt.key}
+                        style={[
+                          styles.optionButton,
+                          waterTreatment === opt.key && styles.optionButtonActive
+                        ]}
+                        onPress={() => setWaterTreatment(opt.key)}
+                      >
+                        <Text
+                          style={
+                            waterTreatment === opt.key
+                              ? styles.optionTextActive
+                              : styles.optionText
+                          }
+                        >
+                          {opt.label}
+                        </Text>
+                      </TouchableOpacity>
+                    ))}
+                  </View>
+
+                  <View style={styles.row}>
+                    <View style={styles.halfInput}>
+                      <Text style={styles.label}>Water pH</Text>
+                      <TextInput
+                        style={styles.input}
+                        value={waterPH}
+                        onChangeText={setWaterPH}
+                        placeholder="6.0-6.5"
+                        keyboardType="numeric"
+                      />
+                    </View>
+                    <View style={styles.halfInput}>
+                      <Text style={styles.label}>PPM/EC</Text>
+                      <TextInput
+                        style={styles.input}
+                        value={waterPPM}
+                        onChangeText={setWaterPPM}
+                        placeholder="800 ppm"
+                        keyboardType="numeric"
+                      />
+                    </View>
+                  </View>
+                </View>
+                {/* AIR SECTION */}
+                <View style={styles.envSection}>
+                  <Text style={styles.envSectionTitle}>Air & Climate</Text>
+
+                  <View style={styles.row}>
+                    <View style={styles.halfInput}>
+                      <Text style={styles.label}>Temperature (degF)</Text>
+                      <TextInput
+                        style={styles.input}
+                        value={temperature}
+                        onChangeText={setTemperature}
+                        placeholder="75-82degF"
+                        keyboardType="numeric"
+                      />
+                    </View>
+                    <View style={styles.halfInput}>
+                      <Text style={styles.label}>Humidity (%)</Text>
+                      <TextInput
+                        style={styles.input}
+                        value={humidity}
+                        onChangeText={setHumidity}
+                        placeholder="50-60%"
+                        keyboardType="numeric"
+                      />
+                    </View>
+                  </View>
+
+                  <Text style={styles.label}>Airflow</Text>
+                  <View style={styles.buttonRow}>
+                    {["poor", "moderate", "good", "excellent"].map((flow) => (
+                      <TouchableOpacity
+                        key={flow}
+                        style={[
+                          styles.optionButton,
+                          airflow === flow && styles.optionButtonActive
+                        ]}
+                        onPress={() => setAirflow(flow)}
+                      >
+                        <Text
+                          style={
+                            airflow === flow ? styles.optionTextActive : styles.optionText
+                          }
+                        >
+                          {flow}
+                        </Text>
+                      </TouchableOpacity>
+                    ))}
+                  </View>
+                </View>
+                {/* NUTRIENTS SECTION */}
+                <View style={styles.envSection}>
+                  <Text style={styles.envSectionTitle}>Nutrients</Text>
+
+                  <Text style={styles.label}>Nutrient Brand/Line</Text>
+                  <TextInput
+                    style={styles.input}
+                    value={nutrientBrand}
+                    onChangeText={setNutrientBrand}
+                    placeholder="General Hydroponics, Fox Farm, etc."
+                  />
+
+                  <Text style={styles.label}>Feeding Strength</Text>
+                  <TextInput
+                    style={styles.input}
+                    value={nutrientStrength}
+                    onChangeText={setNutrientStrength}
+                    placeholder="Half strength, full strength, etc."
+                  />
+
+                  <Text style={styles.label}>Feeding Schedule</Text>
+                  <TextInput
+                    style={styles.input}
+                    value={feedingSchedule}
+                    onChangeText={setFeedingSchedule}
+                    placeholder="Feed-feed-water, every watering, etc."
+                  />
+                </View>
+                {/* SUBSTRATE SECTION */}
+                <View style={styles.envSection}>
+                  <Text style={styles.envSectionTitle}>Substrate/Medium</Text>
+
+                  <Text style={styles.label}>Substrate Type</Text>
+                  <TextInput
+                    style={styles.input}
+                    value={substrateType}
+                    onChangeText={setSubstrateType}
+                    placeholder="Soil, Coco coir, Hydro, Perlite mix, etc."
+                  />
+
+                  <Text style={styles.label}>Substrate pH</Text>
+                  <TextInput
+                    style={styles.input}
+                    value={substratePH}
+                    onChangeText={setSubstratePH}
+                    placeholder="6.0-6.5 (soil), 5.5-6.0 (hydro)"
+                    keyboardType="numeric"
+                  />
+                </View>
+              </View>
+            )}
+
+            <PrimaryButton
+              title={analyzing ? "Analyzing..." : followUp ? "Send" : "Run Diagnosis"}
+              onPress={async () => {
+                if (aiEnt !== "enabled") return;
+                if (followUp) {
+                  setChatHistory((prev) => [
+                    ...prev,
+                    { sender: "user", text: notes },
+                    {
+                      sender: "ai",
+                      text: "Thank you! We'll use this info for a more accurate diagnosis."
+                    }
+                  ]);
+                  setFollowUp("");
+                  setNotes("");
+                } else {
+                  await handleDiagnose();
+                }
+              }}
+              disabled={analyzing || (!notes && !followUp) || aiEnt !== "enabled"}
+              style={{ marginTop: 20, opacity: aiEnt === "enabled" ? 1 : 0.5 }}
+            >
+              <Text>
+                {analyzing
+                  ? "Analyzing..."
+                  : followUp
+                    ? "Send"
+                    : aiEnt === "cta"
+                      ? "Upgrade to Run Diagnosis"
+                      : aiEnt === "enabled"
+                        ? "Run Diagnosis"
+                        : "Diagnosis (Locked)"}
+              </Text>
+            </PrimaryButton>
+            {aiEnt !== "enabled" && (
+              <Text style={{ color: "gray", fontSize: 12, marginTop: 4 }}>
+                {aiEnt === "cta" ? "Upgrade to run diagnosis" : "Diagnosis (Locked)"}
+              </Text>
+            )}
+
+            {photos.length > 0 && (
+              <PrimaryButton
+                title={diagnosing ? "Analyzing..." : "AI Vision Analyze"}
+                onPress={async () => {
+                  if (aiEnt === "enabled") await runVision();
+                }}
+                disabled={diagnosing || aiEnt !== "enabled"}
+                style={{ marginTop: 10, opacity: aiEnt === "enabled" ? 1 : 0.5 }}
+              >
+                <Text>
+                  {diagnosing
+                    ? "Analyzing..."
+                    : aiEnt === "cta"
+                      ? "Upgrade for AI Vision"
+                      : aiEnt === "enabled"
+                        ? "AI Vision Analyze"
+                        : "AI Vision (Locked)"}
+                </Text>
+              </PrimaryButton>
+            )}
+            {/* Error display */}
+            {(analyzeError || diagnoseError) && (
+              <Text style={{ color: "#ef4444", marginTop: 8 }}>
+                {analyzeError?.message ||
+                  diagnoseError?.message ||
+                  "An error occurred during diagnosis."}
+              </Text>
+            )}
+            {photos.length > 0 && aiEnt !== "enabled" && (
+              <Text style={{ color: "gray", fontSize: 12, marginTop: 4 }}>
+                {aiEnt === "cta" ? "Upgrade to use AI Vision" : "AI Vision (Locked)"}
+              </Text>
+            )}
+
+            {/* Result */}
+            {result && (
+              <View style={styles.resultCard}>
+                <Text style={styles.resultTitle}>{result.issueSummary}</Text>
+                <Text style={styles.severity}>
+                  Severity: {severityLabel(result.severity)} ({result.severity}/5)
+                </Text>
+
+                {/* Tags */}
+                {result.tags && result.tags.length > 0 && (
+                  <View style={styles.tagsRow}>
+                    {result.tags.map((t) => (
+                      <View key={t} style={styles.tag}>
+                        <Text style={styles.tagText}>{t}</Text>
+                      </View>
+                    ))}
+                  </View>
+                )}
+
+                {/* Actions */}
+                {result.aiActions && result.aiActions.length > 0 && (
+                  <View style={{ marginTop: 10 }}>
+                    <Text style={styles.sectionLabel}>Suggested Actions</Text>
+                    {result.aiActions.map((step, idx) => (
+                      <Text key={idx} style={styles.actionStep}>
+                        - {step}
+                      </Text>
+                    ))}
+                  </View>
+                )}
+
+                {/* Explanation */}
+                {result.aiExplanation && (
+                  <View style={{ marginTop: 10 }}>
+                    <Text style={styles.sectionLabel}>Notes</Text>
+                    <Text style={styles.explanation}>{result.aiExplanation}</Text>
+                  </View>
+                )}
+
+                <TouchableOpacity
+                  onPress={() => navigation.navigate("DiagnosisHistory")}
+                  style={{ marginTop: 16 }}
+                >
+                  <Text style={{ color: "#3498db", fontWeight: "600" }}>
+                    View history {"->"}
+                  </Text>
+                </TouchableOpacity>
+              </View>
+            )}
           </>
         )}
       </ScrollView>

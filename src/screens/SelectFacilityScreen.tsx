@@ -18,8 +18,7 @@ const styles = StyleSheet.create({
 const SearchScreen = () => {
   const ent = useEntitlements();
   const searchEnabled = ent.can(CAPABILITY_KEYS.SEARCH);
-  const searchEntitlement =
-    searchEnabled ? "enabled" : ent.plan === "free" ? "cta" : "disabled";
+  const searchEntitlement = searchEnabled ? "enabled" : "disabled";
   const isDisabled = searchEntitlement === "disabled";
   const isCta = searchEntitlement === "cta";
 

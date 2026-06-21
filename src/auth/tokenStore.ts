@@ -28,18 +28,14 @@ export async function getToken(): Promise<string | null> {
 export async function setToken(token: string | null): Promise<void> {
   const t = normalizeToken(token);
 
-  try {
-    if (Platform.OS === "web") {
-      if (!t) await AsyncStorage.removeItem(KEY);
-      else await AsyncStorage.setItem(KEY, t);
-      return;
-    }
-
-    if (!t) await SecureStore.deleteItemAsync(KEY);
-    else await SecureStore.setItemAsync(KEY, t);
-  } catch {
-    // ignore
+  if (Platform.OS === "web") {
+    if (!t) await AsyncStorage.removeItem(KEY);
+    else await AsyncStorage.setItem(KEY, t);
+    return;
   }
+
+  if (!t) await SecureStore.deleteItemAsync(KEY);
+  else await SecureStore.setItemAsync(KEY, t);
 }
 
 export async function clearToken(): Promise<void> {

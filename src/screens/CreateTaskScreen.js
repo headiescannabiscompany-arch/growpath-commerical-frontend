@@ -3,7 +3,7 @@ import { Text, TextInput, TouchableOpacity, StyleSheet, View, Alert } from "reac
 import ScreenContainer from "../components/ScreenContainer.js";
 import { createCustomTask } from "../api/tasks.js";
 import { listGrows } from "../api/grows.js";
-import { useAuth } from "@/auth/AuthContext";
+import { CAPABILITY_KEYS, useEntitlements } from "@/entitlements";
 import { useNavigation } from "@react-navigation/native";
 import GrowPlantSelector from "../components/GrowPlantSelector.js";
 
@@ -16,7 +16,8 @@ export default function CreateTaskScreen({ route }) {
   const [title, setTitle] = useState("");
   const [desc, setDesc] = useState("");
   const [date, setDate] = useState(route?.params?.dueDate || "");
-  const { isPro } = useAuth();
+  const entitlements = useEntitlements();
+  const canCreateTask = entitlements.can(CAPABILITY_KEYS.TASKS_WRITE);
   const navigation = useNavigation();
 
   useEffect(() => {
@@ -94,7 +95,7 @@ export default function CreateTaskScreen({ route }) {
         label="Assign to a Grow (optional)"
       />
 
-      {!isPro && (
+      {!canCreateTask && (
         <View
           style={{
             marginTop: 10,
@@ -104,8 +105,7 @@ export default function CreateTaskScreen({ route }) {
           }}
         >
           <Text style={{ color: "#92400E", textAlign: "center", fontSize: 14 }}>
-            Task creation is a Pro feature. Upgrade to Pro to add and schedule custom
-            tasks for your grow.
+            Your account does not have permission to create tasks.
           </Text>
           <TouchableOpacity
             style={{
@@ -117,17 +117,19 @@ export default function CreateTaskScreen({ route }) {
             onPress={() => navigation.navigate("Subscription")}
           >
             <Text style={{ color: "white", textAlign: "center", fontWeight: "700" }}>
-              Upgrade to Pro
+              View account options
             </Text>
           </TouchableOpacity>
         </View>
       )}
       <TouchableOpacity
-        style={[styles.saveBtn, !isPro && { backgroundColor: "#ccc" }]}
-        onPress={isPro ? save : undefined}
-        disabled={!isPro}
+        style={[styles.saveBtn, !canCreateTask && { backgroundColor: "#ccc" }]}
+        onPress={canCreateTask ? save : undefined}
+        disabled={!canCreateTask}
       >
-        <Text style={[styles.saveText, !isPro && { color: "#888" }]}>Create Task</Text>
+        <Text style={[styles.saveText, !canCreateTask && { color: "#888" }]}>
+          Create Task
+        </Text>
       </TouchableOpacity>
     </ScreenContainer>
   );

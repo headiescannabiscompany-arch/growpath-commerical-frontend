@@ -48,6 +48,6 @@ export async function cancelTaskReminder(notificationId) {
   await Notifications.cancelScheduledNotificationAsync(notificationId);
 }
 
-export function canUseReminders(user) {
-  return user.role === "paid" || user.role === "guild";
+export function canUseReminders(capabilities) {
+  return capabilities?.TASK_REMINDERS === true;
 }

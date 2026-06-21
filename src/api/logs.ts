@@ -26,3 +26,27 @@ export async function listPersonalLogs(options?: {
     return [];
   }
 }
+
+export async function createPersonalLog(data: {
+  growId: string;
+  plantId?: string;
+  diagnosisId?: string;
+  type?: string;
+  date?: string;
+  title: string;
+  notes?: string;
+  tags?: string[];
+}): Promise<PersonalLog | null> {
+  try {
+    const response: any = await apiRequest("/api/personal/logs", {
+      method: "POST",
+      body: data
+    });
+    return (response?.created ??
+      response?.log ??
+      response?.data?.log ??
+      response) as PersonalLog;
+  } catch (_error) {
+    return null;
+  }
+}

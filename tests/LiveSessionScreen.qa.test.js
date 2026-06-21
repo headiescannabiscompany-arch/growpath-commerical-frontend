@@ -4,11 +4,18 @@ import { NavigationContainer } from "@react-navigation/native";
 
 // Mocks
 const mockUseAuth = jest.fn();
+const mockUseEntitlements = jest.fn();
 const mockApiRequest = jest.fn();
 
 jest.mock("@/auth/AuthContext", () => ({
   __esModule: true,
   useAuth: () => mockUseAuth()
+}));
+
+jest.mock("@/entitlements", () => ({
+  __esModule: true,
+  CAPABILITY_KEYS: { LIVE_SESSION_MODERATE: "LIVE_SESSION_MODERATE" },
+  useEntitlements: () => mockUseEntitlements()
 }));
 
 jest.mock("../src/api/apiRequest", () => ({
@@ -41,13 +48,14 @@ function renderWithNav(params = { sessionId: "session-1" }) {
 describe("LiveSessionScreen QA", () => {
   beforeEach(() => {
     mockUseAuth.mockReset();
+    mockUseEntitlements.mockReset();
     mockApiRequest.mockReset();
   });
 
   it("renders moderation UI for admin", async () => {
-    mockUseAuth.mockReturnValue({
-      user: { _id: "admin" },
-      capabilities: { canManageLiveSessions: true }
+    mockUseAuth.mockReturnValue({ user: { _id: "admin" } });
+    mockUseEntitlements.mockReturnValue({
+      can: (key) => key === "LIVE_SESSION_MODERATE"
     });
 
     mockApiRequest.mockResolvedValueOnce({
@@ -63,10 +71,8 @@ describe("LiveSessionScreen QA", () => {
   });
 
   it("hides moderation UI for non-admin", async () => {
-    mockUseAuth.mockReturnValue({
-      user: { _id: "user1" },
-      capabilities: { canManageLiveSessions: false }
-    });
+    mockUseAuth.mockReturnValue({ user: { _id: "user1" } });
+    mockUseEntitlements.mockReturnValue({ can: () => false });
 
     mockApiRequest.mockResolvedValueOnce({
       twitchChannel: "mychannel",
@@ -81,10 +87,8 @@ describe("LiveSessionScreen QA", () => {
   });
 
   it("shows error if session not found", async () => {
-    mockUseAuth.mockReturnValue({
-      user: { _id: "user1" },
-      capabilities: { canManageLiveSessions: false }
-    });
+    mockUseAuth.mockReturnValue({ user: { _id: "user1" } });
+    mockUseEntitlements.mockReturnValue({ can: () => false });
 
     mockApiRequest.mockRejectedValueOnce(new Error("No session found"));
 

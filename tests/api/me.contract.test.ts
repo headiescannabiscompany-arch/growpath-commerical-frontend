@@ -56,4 +56,14 @@ describe("apiMe contract normalization", () => {
 
     await expect(apiMe()).rejects.toThrow("INVALID_ME_RESPONSE_SHAPE");
   });
+
+  it("rejects the obsolete { user, session, entitlements } shape", async () => {
+    mockApiRequest.mockResolvedValue({
+      user: { id: "u3", email: "u3@example.com" },
+      session: { mode: "commercial", plan: "commercial" },
+      entitlements: { capabilities: {}, limits: {} }
+    });
+
+    await expect(apiMe()).rejects.toThrow("INVALID_ME_RESPONSE_SHAPE");
+  });
 });

@@ -1,12 +1,13 @@
 import React from "react";
 import { Text, TouchableOpacity, StyleSheet } from "react-native";
 import ScreenContainer from "../components/ScreenContainer";
-import { useAuth } from "@/auth/AuthContext";
-import { requirePro } from "../utils/proHelper";
+import { CAPABILITY_KEYS, useEntitlements } from "@/entitlements";
+import { requireCapabilityAccess } from "../utils/proHelper";
 
 export default function FeedingConfirmScreen({ route, navigation }) {
   const { nutrientData } = route.params;
-  const { isPro } = useAuth();
+  const entitlements = useEntitlements();
+  const canUseSchedule = entitlements.can(CAPABILITY_KEYS.FEEDING_SCHEDULE);
 
   return (
     <ScreenContainer scroll>
@@ -30,7 +31,7 @@ export default function FeedingConfirmScreen({ route, navigation }) {
       <TouchableOpacity
         style={styles.nextBtn}
         onPress={() =>
-          requirePro(navigation, isPro, () =>
+          requireCapabilityAccess(navigation, canUseSchedule, () =>
             navigation.navigate("FeedingScheduleOptions", { nutrientData })
           )
         }

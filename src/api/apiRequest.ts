@@ -17,22 +17,57 @@ export type ApiRequestOptions = {
   retryDelay?: number;
 };
 
-export const API_URL =
-  (globalThis as any).API_URL_OVERRIDE ||
-  process.env.EXPO_PUBLIC_API_URL ||
-  "http://localhost:5002";
+const configuredApiUrl =
+  (globalThis as any).API_URL_OVERRIDE || process.env.EXPO_PUBLIC_API_URL;
+
+// Local development has a deterministic default. Production must provide an
+// explicit URL so a release cannot silently target a development service.
+export const API_URL = String(
+  configuredApiUrl ||
+    (process.env.NODE_ENV !== "production" ? "http://localhost:5002" : "")
+).replace(/\/$/, "");
 
 export class ApiError extends Error {
   code: string;
   status: number | null;
   data: any;
+  requestId: string | null;
 
-  constructor(code: string, status: number | null, data: any = null) {
+  constructor(
+    code: string,
+    status: number | null,
+    data: any = null,
+    requestId: string | null = null
+  ) {
     super(code);
     this.name = "ApiError";
     this.code = code;
     this.status = status ?? null;
     this.data = data ?? null;
+    this.requestId = requestId;
+  }
+}
+
+export type ApiTransportEvent =
+  | { type: "error"; error: ApiError }
+  | { type: "recovered" };
+
+const transportListeners = new Set<(event: ApiTransportEvent) => void>();
+
+export function subscribeToApiTransport(listener: (event: ApiTransportEvent) => void) {
+  transportListeners.add(listener);
+  return () => {
+    transportListeners.delete(listener);
+  };
+}
+
+function emitTransportEvent(event: ApiTransportEvent) {
+  for (const listener of transportListeners) {
+    try {
+      listener(event);
+    } catch {
+      // Transport behavior must not depend on observers.
+    }
   }
 }
 
@@ -48,9 +83,14 @@ export function getOnUnauthorized() {
 }
 
 function toAbsoluteUrl(path: string) {
+  if (path && (path.startsWith("http://") || path.startsWith("https://"))) return path;
+  if (!API_URL) {
+    throw new ApiError("API_URL_NOT_CONFIGURED", null, {
+      message: "EXPO_PUBLIC_API_URL is required in production."
+    });
+  }
   if (!path) return API_URL;
-  if (path.startsWith("http://") || path.startsWith("https://")) return path;
-  const base = String(API_URL || "").replace(/\/$/, "");
+  const base = API_URL;
   const suffix = path.startsWith("/") ? path : `/${path}`;
   return `${base}${suffix}`;
 }
@@ -105,6 +145,31 @@ async function parseResponse(
   }
 }
 
+function toHttpError(status: number, data: any, requestId: string | null) {
+  const nested = data?.error && typeof data.error === "object" ? data.error : null;
+  const fallbackCode =
+    status === 401 ? "UNAUTHENTICATED" : status === 403 ? "FORBIDDEN" : "HTTP_ERROR";
+  const code = String(nested?.code || data?.code || fallbackCode);
+  const message = String(
+    nested?.message || data?.message || (typeof data === "string" ? data : code)
+  );
+  const error = new ApiError(code, status, data, requestId || data?.requestId || null);
+  error.message = message;
+  return error;
+}
+
+function toNetworkError(error: any) {
+  const offline =
+    typeof navigator !== "undefined" && navigator && navigator.onLine === false;
+  const normalized = new ApiError(offline ? "OFFLINE" : "NETWORK_ERROR", null, {
+    cause: error
+  });
+  normalized.message = offline
+    ? "You appear to be offline."
+    : "Unable to reach the server.";
+  return normalized;
+}
+
 export async function apiRequest<T = any>(
   path: string,
   opts: ApiRequestOptions = {}
@@ -121,7 +186,10 @@ export async function apiRequest<T = any>(
 
     const headers: Record<string, string> = { ...(opts.headers || {}) };
 
-    if (useAuth && !headers.Authorization) {
+    const hasAuthorization = Object.keys(headers).some(
+      (header) => header.toLowerCase() === "authorization"
+    );
+    if (useAuth && !hasAuthorization) {
       try {
         const t = await getToken();
         const raw = t ? String(t) : "";
@@ -167,6 +235,7 @@ export async function apiRequest<T = any>(
 
       if (!res.ok) {
         const data = await parseResponse(res, opts.responseType ?? "auto");
+        const requestId = res.headers?.get?.("x-request-id") || null;
         if (res.status === 401 && opts.invalidateOn401 !== false) {
           try {
             if (unauthorizedHandler) await unauthorizedHandler();
@@ -178,10 +247,12 @@ export async function apiRequest<T = any>(
           if (retryDelay) await sleep(retryDelay);
           continue;
         }
-        throw new ApiError("HTTP_ERROR", res.status, data);
+        throw toHttpError(res.status, data, requestId);
       }
 
-      return (await parseResponse(res, opts.responseType ?? "auto")) as T;
+      const result = (await parseResponse(res, opts.responseType ?? "auto")) as T;
+      emitTransportEvent({ type: "recovered" });
+      return result;
     } catch (err: any) {
       if (timeoutId) clearTimeout(timeoutId);
 
@@ -191,7 +262,10 @@ export async function apiRequest<T = any>(
           if (retryDelay) await sleep(retryDelay);
           continue;
         }
-        throw new Error("Request timeout");
+        const timeoutError = new ApiError("TIMEOUT", null, { cause: err });
+        timeoutError.message = "The request timed out.";
+        emitTransportEvent({ type: "error", error: timeoutError });
+        throw timeoutError;
       }
 
       if (
@@ -204,7 +278,9 @@ export async function apiRequest<T = any>(
         continue;
       }
 
-      throw err;
+      const normalized = err instanceof ApiError ? err : toNetworkError(err);
+      emitTransportEvent({ type: "error", error: normalized });
+      throw normalized;
     }
   }
 }

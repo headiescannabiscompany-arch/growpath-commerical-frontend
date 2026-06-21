@@ -3,10 +3,8 @@ import { View, Text, TouchableOpacity, ScrollView } from "react-native";
 import ScreenContainer from "../components/ScreenContainer";
 import { getTokenBalance } from "../api/tokens";
 import FeatureGate from "../components/FeatureGate";
-import { useAuth } from "@/auth/AuthContext";
 
 export default function TokenInfoScreen({ navigation }) {
-  const { isPro } = useAuth();
   const [balance, setBalance] = useState(null);
   const [loading, setLoading] = useState(true);
 

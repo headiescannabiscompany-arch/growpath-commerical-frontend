@@ -23,7 +23,10 @@ describe("API Resilience & Network Failures", () => {
       throw new Error("fetch failed");
     };
 
-    await expect(client.get("/any")).rejects.toThrow("fetch failed");
+    await expect(client.get("/any")).rejects.toMatchObject({
+      code: "NETWORK_ERROR",
+      message: "Unable to reach the server."
+    });
   });
 
   it("handles request timeouts correctly", async () => {
@@ -37,9 +40,10 @@ describe("API Resilience & Network Failures", () => {
       });
     };
 
-    await expect(client("/timeout-test", { timeout: 10 })).rejects.toThrow(
-      /Request timeout/
-    );
+    await expect(client("/timeout-test", { timeout: 10 })).rejects.toMatchObject({
+      code: "TIMEOUT",
+      message: "The request timed out."
+    });
   });
 
   it("retries on 500 errors and eventually succeeds", async () => {
@@ -77,9 +81,9 @@ describe("API Resilience & Network Failures", () => {
       });
     };
 
-    await expect(client("/retry-timeout", { retries: 2, timeout: 10 })).rejects.toThrow(
-      /Request timeout/
-    );
+    await expect(
+      client("/retry-timeout", { retries: 2, timeout: 10 })
+    ).rejects.toMatchObject({ code: "TIMEOUT" });
     expect(attempts).toBe(3);
   });
 });

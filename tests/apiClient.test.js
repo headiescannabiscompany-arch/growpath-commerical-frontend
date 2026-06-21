@@ -6,7 +6,11 @@ import {
   setAuthToken,
   setTokenGetter
 } from "../src/api/client.js";
-import { handleApiError, isPro403Error, requirePro } from "../src/utils/proHelper.js";
+import {
+  handleApiError,
+  isAccessDeniedError,
+  requireCapabilityAccess
+} from "../src/utils/proHelper.js";
 import { extractCourses, extractHasMore } from "../src/utils/marketplaceTransforms.js";
 
 let previousFetch;
@@ -117,16 +121,16 @@ it("Marketplace transforms handle array and nested payload shapes", () => {
   expect(extractHasMore(bare)).toBe(true);
 });
 
-it("requirePro executes the action for Pro users", () => {
+it("requireCapabilityAccess executes an allowed action", () => {
   const navigation = { navigate: () => {} };
   let called = false;
-  requirePro(navigation, true, () => {
+  requireCapabilityAccess(navigation, true, () => {
     called = true;
   });
   expect(called).toBe(true);
 });
 
-it("requirePro navigates to Paywall for free users", () => {
+it("requireCapabilityAccess navigates to Paywall when access is denied", () => {
   const navigation = {
     screen: null,
     navigate(s) {
@@ -134,19 +138,19 @@ it("requirePro navigates to Paywall for free users", () => {
     }
   };
   let called = false;
-  requirePro(navigation, false, () => {
+  requireCapabilityAccess(navigation, false, () => {
     called = true;
   });
   expect(called).toBe(false);
   expect(navigation.screen).toBe("Paywall");
 });
 
-it("isPro403Error detects errors with status/data and Axios-style response objects", () => {
+it("isAccessDeniedError detects 403 errors", () => {
   const apiError = new ApiError("PRO", 403, { message: "PRO required" });
-  expect(isPro403Error(apiError)).toBe(true);
+  expect(isAccessDeniedError(apiError)).toBe(true);
   const axiosError = { response: { status: 403, data: { message: "PRO required" } } };
-  expect(isPro403Error(axiosError)).toBe(true);
-  expect(isPro403Error(new Error("Other"))).toBe(false);
+  expect(isAccessDeniedError(axiosError)).toBe(true);
+  expect(isAccessDeniedError(new Error("Other"))).toBe(false);
 });
 
 it("handleApiError navigates only when error requires PRO", () => {
