@@ -1,6 +1,7 @@
 import React from "react";
 import { createBottomTabNavigator } from "@react-navigation/bottom-tabs";
 
+import CommercialDashboardScreen from "../screens/commercial/CommercialDashboardScreen";
 import StorefrontScreen from "../screens/StorefrontScreen";
 import CommercialToolsScreen from "../screens/commercial/CommercialToolsScreen";
 import CommercialReportsScreen from "../screens/commercial/CommercialReportsScreen";
@@ -11,6 +12,11 @@ const Tab = createBottomTabNavigator();
 export default function CommercialTabs() {
   return (
     <Tab.Navigator screenOptions={{ headerShown: true }}>
+      <Tab.Screen
+        name="CommercialDashboard"
+        component={CommercialDashboardScreen}
+        options={{ title: "Dashboard" }}
+      />
       <Tab.Screen name="Storefront" component={StorefrontScreen} options={{ title: "Storefront" }} />
       <Tab.Screen
         name="CommercialTools"

@@ -20,6 +20,7 @@ module.exports = {
     "<rootDir>/tests/playwright/",
     "<rootDir>/e2e/",
     "<rootDir>/backend/",
+    "<rootDir>/tmp/",
     "<rootDir>/tests/growLogs.spec.js"
   ],
 

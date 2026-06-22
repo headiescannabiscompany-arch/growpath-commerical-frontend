@@ -1,4 +1,5 @@
-import React, { useEffect, useMemo, useState } from "react";
+import React, { useCallback, useEffect, useMemo, useState } from "react";
+import { useLocalSearchParams } from "expo-router";
 import {
   ActivityIndicator,
   Alert,
@@ -19,12 +20,35 @@ import {
   type IntegrationConnection,
   type IntegrationProvider
 } from "@/api/integrations";
+import {
+  createTelemetrySource,
+  listGrowlinkControllers,
+  listTelemetrySources,
+  pullGrowlinkCurrentReadings,
+  verifyGrowlinkCredentials
+} from "@/api/telemetry";
+import type { GrowlinkController, TelemetrySource } from "@/types/telemetry";
 
 function message(error: any) {
   return String(error?.message || error?.error?.message || "Request failed");
 }
 
+function paramString(value: string | string[] | undefined) {
+  return Array.isArray(value) ? value[0] : value || "";
+}
+
+function controllerLabel(controller: GrowlinkController) {
+  const moduleCount = Array.isArray(controller.modules) ? controller.modules.length : 0;
+  const details = [
+    controller.serialNumber ? `SN ${controller.serialNumber}` : "",
+    controller.timeZoneId || "",
+    moduleCount ? `${moduleCount} modules` : ""
+  ].filter(Boolean);
+  return details.join(" / ");
+}
+
 export default function DataIntegrationsScreen() {
+  const params = useLocalSearchParams<{ growId?: string }>();
   const [providers, setProviders] = useState<IntegrationProvider[]>([]);
   const [connections, setConnections] = useState<IntegrationConnection[]>([]);
   const [selected, setSelected] = useState<IntegrationProvider | null>(null);
@@ -33,10 +57,46 @@ export default function DataIntegrationsScreen() {
   const [requestDraft, setRequestDraft] = useState("");
   const [busy, setBusy] = useState(false);
   const [loading, setLoading] = useState(true);
+  const [growId, setGrowId] = useState(() => paramString(params.growId));
+  const [growlinkUserName, setGrowlinkUserName] = useState("");
+  const [growlinkPassword, setGrowlinkPassword] = useState("");
+  const [growlinkControllers, setGrowlinkControllers] = useState<GrowlinkController[]>(
+    []
+  );
+  const [selectedGrowlinkControllerId, setSelectedGrowlinkControllerId] = useState("");
+  const [growlinkSourceName, setGrowlinkSourceName] = useState("Growlink Telemetry");
+  const [growlinkSources, setGrowlinkSources] = useState<TelemetrySource[]>([]);
+  const [growlinkStatus, setGrowlinkStatus] = useState("");
+  const [growlinkBusy, setGrowlinkBusy] = useState(false);
+  const [loadingGrowlinkSources, setLoadingGrowlinkSources] = useState(false);
 
   const byProvider = useMemo(
     () => new Map(connections.map((connection) => [connection.provider, connection])),
     [connections]
+  );
+
+  const selectedGrowlinkController = useMemo(
+    () =>
+      growlinkControllers.find(
+        (controller) => controller.id === selectedGrowlinkControllerId
+      ),
+    [growlinkControllers, selectedGrowlinkControllerId]
+  );
+
+  const loadGrowlinkSources = useCallback(
+    async (nextGrowId = growId.trim(), showError = true) => {
+      if (!nextGrowId) return;
+      setLoadingGrowlinkSources(true);
+      try {
+        const sources = await listTelemetrySources(nextGrowId);
+        setGrowlinkSources(sources.filter((source) => source.type === "growlink"));
+      } catch (error) {
+        if (showError) Alert.alert("Growlink sources unavailable", message(error));
+      } finally {
+        setLoadingGrowlinkSources(false);
+      }
+    },
+    [growId]
   );
 
   async function load() {
@@ -58,6 +118,15 @@ export default function DataIntegrationsScreen() {
   useEffect(() => {
     void load();
   }, []);
+
+  useEffect(() => {
+    const nextGrowId = paramString(params.growId);
+    if (nextGrowId && nextGrowId !== growId) setGrowId(nextGrowId);
+  }, [growId, params.growId]);
+
+  useEffect(() => {
+    if (growId.trim()) void loadGrowlinkSources(growId.trim(), false);
+  }, [growId, loadGrowlinkSources]);
 
   async function saveConnection() {
     if (!selected) return;
@@ -115,6 +184,98 @@ export default function DataIntegrationsScreen() {
     }
   }
 
+  async function verifyGrowlinkAndLoadControllers() {
+    const userName = growlinkUserName.trim();
+    const password = growlinkPassword.trim();
+    if (!userName || !password) {
+      return Alert.alert(
+        "Growlink credentials required",
+        "Enter the customer's Growlink email and password."
+      );
+    }
+
+    setGrowlinkBusy(true);
+    setGrowlinkStatus("");
+    try {
+      await verifyGrowlinkCredentials({ userName, password });
+      const controllers = await listGrowlinkControllers({ userName, password });
+      setGrowlinkControllers(controllers);
+      const firstControllerId = controllers[0]?.id || "";
+      setSelectedGrowlinkControllerId((current) => current || firstControllerId);
+      if (!controllers.length) {
+        setGrowlinkStatus(
+          "Growlink account verified. No controllers were returned, so a telemetry source cannot be created until hardware is attached or API access includes a controller."
+        );
+      } else {
+        setGrowlinkStatus(
+          `Growlink account verified. ${controllers.length} controller${controllers.length === 1 ? "" : "s"} available.`
+        );
+      }
+    } catch (error) {
+      setGrowlinkStatus("");
+      Alert.alert("Growlink verify failed", message(error));
+    } finally {
+      setGrowlinkBusy(false);
+    }
+  }
+
+  async function createGrowlinkSource() {
+    const nextGrowId = growId.trim();
+    const userName = growlinkUserName.trim();
+    const password = growlinkPassword.trim();
+    const controllerId = selectedGrowlinkControllerId.trim();
+    if (!nextGrowId) return Alert.alert("Grow ID required", "Enter the grow ID.");
+    if (!userName || !password) {
+      return Alert.alert(
+        "Growlink credentials required",
+        "Enter the customer's Growlink email and password."
+      );
+    }
+    if (!controllerId) {
+      return Alert.alert(
+        "Controller required",
+        "Verify Growlink and select a controller first."
+      );
+    }
+
+    setGrowlinkBusy(true);
+    try {
+      const created = await createTelemetrySource({
+        growId: nextGrowId,
+        type: "growlink",
+        name: growlinkSourceName.trim() || "Growlink Telemetry",
+        timezone: selectedGrowlinkController?.timeZoneId || "America/New_York",
+        config: { growlink: { userName, password, controllerId } }
+      });
+      setGrowlinkSources((rows) => [
+        created,
+        ...rows.filter((source) => source.id !== created.id)
+      ]);
+      setGrowlinkPassword("");
+      Alert.alert(
+        "Growlink source created",
+        "Credentials were encrypted. GrowPath AI will only read telemetry data."
+      );
+      setGrowlinkStatus("Growlink source created. Current readings can be pulled now.");
+    } catch (error) {
+      Alert.alert("Create Growlink source failed", message(error));
+    } finally {
+      setGrowlinkBusy(false);
+    }
+  }
+
+  async function pullGrowlinkNow(source: TelemetrySource) {
+    setGrowlinkBusy(true);
+    try {
+      const result = await pullGrowlinkCurrentReadings(source.id);
+      Alert.alert("Growlink pull complete", `Pulled ${result.pulled} current readings.`);
+    } catch (error) {
+      Alert.alert("Growlink pull failed", message(error));
+    } finally {
+      setGrowlinkBusy(false);
+    }
+  }
+
   if (loading) {
     return (
       <View style={styles.center}>
@@ -129,6 +290,117 @@ export default function DataIntegrationsScreen() {
       <Text style={styles.subtitle}>
         Connect grow sensors, controllers, irrigation, and environmental data.
       </Text>
+
+      <View style={styles.growlinkPanel}>
+        <View style={styles.row}>
+          <View style={styles.titleBlock}>
+            <Text style={styles.sectionTitle}>Growlink read-only telemetry</Text>
+            <Text style={styles.meta}>
+              Imports controllers, sensors, devices, and current readings. No setpoint,
+              rule, or equipment control actions are exposed.
+            </Text>
+          </View>
+          <Text style={styles.readOnlyBadge}>READ ONLY</Text>
+        </View>
+        <TextInput
+          style={styles.input}
+          value={growId}
+          onChangeText={setGrowId}
+          placeholder="Grow ID"
+          autoCapitalize="none"
+        />
+        <TextInput
+          style={styles.input}
+          value={growlinkSourceName}
+          onChangeText={setGrowlinkSourceName}
+          placeholder="Source name"
+        />
+        <TextInput
+          style={styles.input}
+          value={growlinkUserName}
+          onChangeText={setGrowlinkUserName}
+          placeholder="Growlink email"
+          autoCapitalize="none"
+          keyboardType="email-address"
+        />
+        <TextInput
+          style={styles.input}
+          value={growlinkPassword}
+          onChangeText={setGrowlinkPassword}
+          placeholder="Growlink password"
+          secureTextEntry
+          autoCapitalize="none"
+        />
+        <View style={styles.actions}>
+          <Pressable
+            style={[styles.button, growlinkBusy ? styles.disabledButton : null]}
+            onPress={verifyGrowlinkAndLoadControllers}
+            disabled={growlinkBusy}
+          >
+            <Text style={styles.buttonText}>
+              {growlinkBusy ? "Working..." : "Verify + load controllers"}
+            </Text>
+          </Pressable>
+          <Pressable
+            style={[styles.primaryButton, growlinkBusy ? styles.disabledButton : null]}
+            onPress={createGrowlinkSource}
+            disabled={growlinkBusy}
+          >
+            <Text style={styles.primaryText}>Create source</Text>
+          </Pressable>
+        </View>
+
+        {growlinkStatus ? <Text style={styles.notice}>{growlinkStatus}</Text> : null}
+
+        {growlinkControllers.length ? (
+          <View style={styles.controllerList}>
+            {growlinkControllers.map((controller) => {
+              const selectedController = controller.id === selectedGrowlinkControllerId;
+              return (
+                <Pressable
+                  key={controller.id}
+                  style={[
+                    styles.controllerOption,
+                    selectedController ? styles.controllerSelected : null
+                  ]}
+                  onPress={() => setSelectedGrowlinkControllerId(controller.id)}
+                >
+                  <Text style={styles.controllerName}>
+                    {controller.name || "Unnamed controller"}
+                  </Text>
+                  <Text style={styles.meta}>{controllerLabel(controller)}</Text>
+                </Pressable>
+              );
+            })}
+          </View>
+        ) : null}
+
+        {growlinkSources.length || loadingGrowlinkSources ? (
+          <View style={styles.sourceList}>
+            <View style={styles.row}>
+              <Text style={styles.sourceListTitle}>Existing Growlink sources</Text>
+              {loadingGrowlinkSources ? <ActivityIndicator size="small" /> : null}
+            </View>
+            {growlinkSources.map((source) => (
+              <View key={source.id} style={styles.sourceRow}>
+                <View style={styles.titleBlock}>
+                  <Text style={styles.sourceName}>{source.name}</Text>
+                  <Text style={styles.meta}>
+                    {source.config?.growlink?.controllerId || "Controller configured"}
+                  </Text>
+                </View>
+                <Pressable
+                  style={[styles.button, growlinkBusy ? styles.disabledButton : null]}
+                  onPress={() => pullGrowlinkNow(source)}
+                  disabled={growlinkBusy}
+                >
+                  <Text style={styles.buttonText}>Pull now</Text>
+                </Pressable>
+              </View>
+            ))}
+          </View>
+        ) : null}
+      </View>
 
       {providers.map((provider) => {
         const connection = byProvider.get(provider.id);
@@ -147,7 +419,7 @@ export default function DataIntegrationsScreen() {
                 {connection?.status || provider.contractStatus}
               </Text>
             </View>
-            <Text style={styles.meta}>{provider.capabilities.join(" · ")}</Text>
+            <Text style={styles.meta}>{provider.capabilities.join(" / ")}</Text>
             <View style={styles.actions}>
               {connection && provider.contractStatus === "implemented" ? (
                 <Pressable
@@ -226,6 +498,26 @@ const styles = StyleSheet.create({
   providerName: { flex: 1, fontSize: 16, fontWeight: "700" },
   status: { color: "#166534", fontSize: 12, textTransform: "uppercase" },
   meta: { color: "#64748B", marginTop: 6 },
+  titleBlock: { flex: 1 },
+  sectionTitle: { fontSize: 18, fontWeight: "700", marginBottom: 4 },
+  growlinkPanel: {
+    borderWidth: 1,
+    borderColor: "#C7D2FE",
+    borderRadius: 8,
+    padding: 14,
+    marginBottom: 16,
+    backgroundColor: "#F8FAFC"
+  },
+  readOnlyBadge: {
+    alignSelf: "flex-start",
+    backgroundColor: "#DCFCE7",
+    color: "#166534",
+    fontSize: 11,
+    fontWeight: "700",
+    paddingHorizontal: 8,
+    paddingVertical: 4,
+    borderRadius: 999
+  },
   actions: { flexDirection: "row", gap: 8, marginTop: 10 },
   button: {
     borderWidth: 1,
@@ -235,6 +527,40 @@ const styles = StyleSheet.create({
     paddingVertical: 8
   },
   buttonText: { fontWeight: "700" },
+  disabledButton: { opacity: 0.6 },
+  notice: {
+    backgroundColor: "#ECFDF5",
+    borderColor: "#BBF7D0",
+    borderRadius: 6,
+    borderWidth: 1,
+    color: "#166534",
+    marginTop: 12,
+    padding: 10
+  },
+  controllerList: { gap: 8, marginTop: 12 },
+  controllerOption: {
+    borderWidth: 1,
+    borderColor: "#CBD5E1",
+    borderRadius: 6,
+    padding: 10,
+    backgroundColor: "#FFFFFF"
+  },
+  controllerSelected: { borderColor: "#166534", backgroundColor: "#F0FDF4" },
+  controllerName: { fontWeight: "700" },
+  sourceList: {
+    borderTopWidth: 1,
+    borderTopColor: "#E2E8F0",
+    marginTop: 14,
+    paddingTop: 12
+  },
+  sourceListTitle: { fontWeight: "700" },
+  sourceRow: {
+    flexDirection: "row",
+    alignItems: "center",
+    gap: 12,
+    paddingVertical: 10
+  },
+  sourceName: { fontWeight: "700" },
   editor: { borderTopWidth: 1, borderTopColor: "#E2E8F0", marginTop: 12, paddingTop: 16 },
   editorTitle: { fontSize: 18, fontWeight: "700", marginBottom: 10 },
   input: {

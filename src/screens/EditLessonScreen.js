@@ -3,9 +3,13 @@ import { Text, TextInput, TouchableOpacity, StyleSheet, Alert } from "react-nati
 import ScreenContainer from "../components/ScreenContainer";
 import GrowInterestPicker from "../components/GrowInterestPicker";
 import { updateLesson } from "../api/courses";
+import { useEntitlements } from "@/entitlements";
+import { getLearningAccess } from "@/features/learning/learningAccess";
 import { buildEmptyTierSelection, flattenTierSelections, groupTagsByTier } from "../utils/growInterests";
 
 export default function EditLessonScreen({ route, navigation }) {
+  const entitlements = useEntitlements();
+  const access = getLearningAccess(entitlements);
   const { lessonId } = route.params;
 
   const [lesson, setLesson] = useState(null);
@@ -35,6 +39,9 @@ export default function EditLessonScreen({ route, navigation }) {
   }, []);
 
   async function submit() {
+    if (!access.canCreateCourses) {
+      return Alert.alert("Unavailable", "Editing lessons requires COURSES_CREATE.");
+    }
     await updateLesson(lessonId, {
       title,
       order: order ? Number(order) : 1,
@@ -52,12 +59,20 @@ export default function EditLessonScreen({ route, navigation }) {
   return (
     <ScreenContainer scroll>
       <Text style={styles.header}>Edit Lesson</Text>
+      {!access.canCreateCourses ? (
+        <Text style={styles.helpText}>This account does not have COURSES_CREATE.</Text>
+      ) : null}
+      <Text style={styles.helpText}>
+        Lesson limit per course:{" "}
+        {access.maxLessonsPerCourse === null ? "unlimited" : access.maxLessonsPerCourse}
+      </Text>
 
       <TextInput
         style={styles.input}
         placeholder="Title"
         value={title}
         onChangeText={setTitle}
+        editable={access.canCreateCourses}
       />
 
       <TextInput
@@ -66,6 +81,7 @@ export default function EditLessonScreen({ route, navigation }) {
         value={order}
         onChangeText={setOrder}
         keyboardType="numeric"
+        editable={access.canCreateCourses}
       />
 
       <Text style={styles.label}>Text Content</Text>
@@ -74,6 +90,7 @@ export default function EditLessonScreen({ route, navigation }) {
         value={content}
         onChangeText={setContent}
         multiline
+        editable={access.canCreateCourses}
       />
 
       <Text style={styles.label}>Video URL</Text>
@@ -81,6 +98,7 @@ export default function EditLessonScreen({ route, navigation }) {
         style={styles.input}
         value={videoUrl}
         onChangeText={setVideoUrl}
+        editable={access.canCreateCourses}
       />
 
       <Text style={styles.label}>PDF URL</Text>
@@ -88,6 +106,7 @@ export default function EditLessonScreen({ route, navigation }) {
         style={styles.input}
         value={pdfUrl}
         onChangeText={setPdfUrl}
+        editable={access.canCreateCourses}
       />
 
       <GrowInterestPicker
@@ -98,7 +117,11 @@ export default function EditLessonScreen({ route, navigation }) {
         defaultExpanded
       />
 
-      <TouchableOpacity style={styles.btn} onPress={submit}>
+      <TouchableOpacity
+        style={[styles.btn, !access.canCreateCourses && styles.disabled]}
+        onPress={submit}
+        disabled={!access.canCreateCourses}
+      >
         <Text style={styles.btnText}>Save Changes</Text>
       </TouchableOpacity>
     </ScreenContainer>
@@ -130,4 +153,6 @@ const styles = StyleSheet.create({
     fontWeight: "700",
     fontSize: 16,
   },
+  helpText: { color: "#64748b", fontSize: 12, marginBottom: 8 },
+  disabled: { opacity: 0.5 },
 });

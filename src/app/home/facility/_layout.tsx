@@ -1,10 +1,9 @@
-import React, { useEffect, useMemo } from "react";
-import { Stack, usePathname, useRouter } from "expo-router";
+import React, { useMemo } from "react";
+import { Redirect, Stack, usePathname } from "expo-router";
 import { useAccountMode } from "@/state/useAccountMode";
 import { useFacility } from "@/state/useFacility";
 
 export default function FacilityLayout() {
-  const router = useRouter();
   const pathname = usePathname();
 
   const { mode } = useAccountMode();
@@ -27,12 +26,7 @@ export default function FacilityLayout() {
     return null;
   }, [mode, pathname, selectedId]);
 
-  useEffect(() => {
-    if (!redirectTarget) return;
-    router.replace(redirectTarget);
-  }, [router, redirectTarget]);
-
-  if (redirectTarget) return null;
+  if (redirectTarget) return <Redirect href={redirectTarget as any} />;
 
   return <Stack screenOptions={{ headerShown: false }} />;
 }

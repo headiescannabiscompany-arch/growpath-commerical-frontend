@@ -3,13 +3,14 @@
  * Handles content uploads, sales, and analytics
  */
 
-import apiClient from "./apiClient.js";
+import { apiRequest } from "./apiRequest";
 
 const enc = (v) => encodeURIComponent(String(v ?? ""));
 
 export const MARKETPLACE_ROUTES = {
   BROWSE: "/api/marketplace/content",
   SEARCH: "/api/marketplace/search",
+  DETAIL: (contentId) => `/api/marketplace/${enc(contentId)}`,
   UPLOAD: "/api/marketplace/upload",
   MY_UPLOADS: "/api/marketplace/my-uploads",
   GET_SALES: "/api/marketplace/sales",
@@ -21,10 +22,11 @@ export const MARKETPLACE_ROUTES = {
 
 export const browseMarketplace = async (category, page = 1, limit = 20) => {
   try {
-    const browseRes = await apiClient.get(MARKETPLACE_ROUTES.BROWSE, {
+    const browseRes = await apiRequest(MARKETPLACE_ROUTES.BROWSE, {
+      method: "GET",
       params: { category, page, limit }
     });
-    return browseRes.data;
+    return browseRes;
   } catch (error) {
     throw new Error(`Failed to browse marketplace: ${error.message}`);
   }
@@ -32,21 +34,34 @@ export const browseMarketplace = async (category, page = 1, limit = 20) => {
 
 export const searchContent = async (query, category) => {
   try {
-    const searchRes = await apiClient.get(MARKETPLACE_ROUTES.SEARCH, {
+    const searchRes = await apiRequest(MARKETPLACE_ROUTES.SEARCH, {
+      method: "GET",
       params: { q: query, category }
     });
-    return searchRes.data;
+    return searchRes;
   } catch (error) {
     throw new Error(`Failed to search content: ${error.message}`);
   }
 };
 
+export const getMarketplaceContent = async (contentId) => {
+  try {
+    const detailRes = await apiRequest(MARKETPLACE_ROUTES.DETAIL(contentId), {
+      method: "GET"
+    });
+    return detailRes?.content ?? detailRes?.data?.content ?? detailRes?.data ?? detailRes;
+  } catch (error) {
+    throw new Error(`Failed to load marketplace content: ${error.message}`);
+  }
+};
+
 export const uploadContent = async (formData) => {
   try {
-    const uploadRes = await apiClient.post(MARKETPLACE_ROUTES.UPLOAD, formData, {
-      headers: { "Content-Type": "multipart/form-data" }
+    const uploadRes = await apiRequest(MARKETPLACE_ROUTES.UPLOAD, {
+      method: "POST",
+      body: formData
     });
-    return uploadRes.data;
+    return uploadRes;
   } catch (error) {
     throw new Error(`Failed to upload content: ${error.message}`);
   }
@@ -54,8 +69,8 @@ export const uploadContent = async (formData) => {
 
 export const getMyUploads = async () => {
   try {
-    const myUploadsRes = await apiClient.get(MARKETPLACE_ROUTES.MY_UPLOADS);
-    return myUploadsRes.data;
+    const myUploadsRes = await apiRequest(MARKETPLACE_ROUTES.MY_UPLOADS, { method: "GET" });
+    return myUploadsRes;
   } catch (error) {
     throw new Error(`Failed to fetch your uploads: ${error.message}`);
   }
@@ -63,10 +78,11 @@ export const getMyUploads = async () => {
 
 export const getSalesData = async (period = "monthly") => {
   try {
-    const salesRes = await apiClient.get(MARKETPLACE_ROUTES.GET_SALES, {
+    const salesRes = await apiRequest(MARKETPLACE_ROUTES.GET_SALES, {
+      method: "GET",
       params: { period }
     });
-    return salesRes.data;
+    return salesRes;
   } catch (error) {
     throw new Error(`Failed to fetch sales data: ${error.message}`);
   }
@@ -74,8 +90,10 @@ export const getSalesData = async (period = "monthly") => {
 
 export const getContentAnalytics = async (contentId) => {
   try {
-    const analyticsRes = await apiClient.get(MARKETPLACE_ROUTES.GET_ANALYTICS(contentId));
-    return analyticsRes.data;
+    const analyticsRes = await apiRequest(MARKETPLACE_ROUTES.GET_ANALYTICS(contentId), {
+      method: "GET"
+    });
+    return analyticsRes;
   } catch (error) {
     throw new Error(`Failed to fetch analytics: ${error.message}`);
   }
@@ -83,10 +101,11 @@ export const getContentAnalytics = async (contentId) => {
 
 export const updateContentPricing = async (contentId, price) => {
   try {
-    const pricingRes = await apiClient.put(MARKETPLACE_ROUTES.UPDATE_PRICING(contentId), {
-      price
+    const pricingRes = await apiRequest(MARKETPLACE_ROUTES.UPDATE_PRICING(contentId), {
+      method: "PUT",
+      body: { price }
     });
-    return pricingRes.data;
+    return pricingRes;
   } catch (error) {
     throw new Error(`Failed to update pricing: ${error.message}`);
   }
@@ -94,10 +113,10 @@ export const updateContentPricing = async (contentId, price) => {
 
 export const deleteContent = async (contentId) => {
   try {
-    const deleteRes = await apiClient.delete(
-      MARKETPLACE_ROUTES.DELETE_CONTENT(contentId)
-    );
-    return deleteRes.data;
+    const deleteRes = await apiRequest(MARKETPLACE_ROUTES.DELETE_CONTENT(contentId), {
+      method: "DELETE"
+    });
+    return deleteRes;
   } catch (error) {
     throw new Error(`Failed to delete content: ${error.message}`);
   }
@@ -105,8 +124,10 @@ export const deleteContent = async (contentId) => {
 
 export const purchaseContent = async (contentId) => {
   try {
-    const purchaseRes = await apiClient.post(MARKETPLACE_ROUTES.PURCHASE(contentId));
-    return purchaseRes.data;
+    const purchaseRes = await apiRequest(MARKETPLACE_ROUTES.PURCHASE(contentId), {
+      method: "POST"
+    });
+    return purchaseRes;
   } catch (error) {
     throw new Error(`Failed to purchase content: ${error.message}`);
   }

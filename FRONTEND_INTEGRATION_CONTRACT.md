@@ -11,9 +11,12 @@
 Every authenticated frontend session begins with:
 
 ```http
-GET /api/auth/me
+GET /api/me
 Authorization: Bearer <token>
 ```
+
+Test mocks may continue to accept `GET /api/auth/me` as a legacy alias, but new
+frontend work should target `/api/me`.
 
 The canonical response is:
 
@@ -83,7 +86,7 @@ development.
 | `commercial` | Commercial |
 | `facility` | Facility |
 
-An authenticated session must not route until `/api/auth/me` succeeds. Network
+An authenticated session must not route until `/api/me` succeeds. Network
 or server errors keep bootstrap blocked and expose a retry action. A `401`
 clears the rejected token and returns to authentication.
 
@@ -124,13 +127,30 @@ logs, verifications, deviations, and compliance records are not hard-deleted.
 All facility writes must include facility context in the route and must be
 authorized for membership, role, and capability by the backend.
 
+## Payment Authority
+
+Stripe Checkout, native in-app purchase callbacks, and free-trial requests are
+not entitlement sources. The frontend may start checkout, submit an IAP receipt,
+or request a trial, then it must refresh backend subscription or enrollment
+status before showing access as unlocked.
+
+Subscription features unlock from backend-confirmed status only:
+
+- `GET /api/subscribe/status`
+- `GET /api/subscription/me`
+- the canonical `/api/me` capability context after refresh
+
+Course access unlocks from backend-confirmed enrollment and payment status
+only. Frontend success callbacks must route users to a status or confirmation
+screen rather than granting course, plan, or capability access locally.
+
 ## Verification Requirements
 
 Automated coverage must prove:
 
 - direct and enveloped canonical responses bootstrap successfully;
 - invalid response shapes fail closed;
-- `/api/auth/me` drives shell selection;
+- `/api/me` drives shell selection;
 - disabled capabilities hide UI and block direct route access;
 - limits come from `ctx.limits`;
 - facility roles restrict actions;
@@ -140,4 +160,4 @@ Automated coverage must prove:
 ## Final Rule
 
 The frontend does not decide access. It renders and enforces the context returned
-by `/api/auth/me`, while the backend independently authorizes every request.
+by `/api/me`, while the backend independently authorizes every request.

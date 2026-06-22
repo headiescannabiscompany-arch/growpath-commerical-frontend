@@ -14,6 +14,11 @@ import * as tokensApi from "../../src/api/tokens.js";
 import * as reportsApi from "../../src/api/reports.js";
 import * as earningsApi from "../../src/api/earnings.js";
 import * as certificatesApi from "../../src/api/certificates.js";
+import * as campaignsApi from "../../src/api/campaigns";
+import * as linksApi from "../../src/api/links.js";
+import * as ordersApi from "../../src/api/orders";
+import * as productsApi from "../../src/api/products";
+import * as storefrontApi from "../../src/api/storefront";
 import ROUTES from "../../src/api/routes.js";
 
 // Setup minimal fetch spy
@@ -66,10 +71,64 @@ describe("API Wrappers Unit Tests", () => {
     expect(fetchCalls[0].url.endsWith(ROUTES.COURSES.ENROLL("c1"))).toBe(true);
   });
 
-  it("Courses API: buyCourse uses POST", async () => {
+  it("Courses API: buyCourse starts checkout via POST", async () => {
     await coursesApi.buyCourse("c1");
     expect(fetchCalls[0].options.method).toBe("POST");
-    expect(fetchCalls[0].url.endsWith(ROUTES.COURSES.BUY("c1"))).toBe(true);
+    expect(fetchCalls[0].url.endsWith(ROUTES.PAYMENTS.CHECKOUT("c1"))).toBe(true);
+  });
+
+  it("Subscription API: createCheckoutSession starts Stripe checkout via POST", async () => {
+    await subscriptionApi.createCheckoutSession();
+    expect(fetchCalls[0].options.method).toBe("POST");
+    expect(fetchCalls[0].url.endsWith(ROUTES.SUBSCRIBE.CREATE_CHECKOUT_SESSION)).toBe(
+      true
+    );
+  });
+
+  it("Subscription API: verifyIapReceipt posts platform receipt to backend", async () => {
+    await subscriptionApi.verifyIapReceipt({
+      receipt: "receipt-1",
+      platform: "ios",
+      productId: "pro-monthly",
+      transactionId: "txn-1"
+    });
+
+    expect(fetchCalls[0].options.method).toBe("POST");
+    expect(fetchCalls[0].url.endsWith(ROUTES.SUBSCRIBE.VERIFY_IAP)).toBe(true);
+    expect(JSON.parse(fetchCalls[0].options.body)).toEqual({
+      receipt: "receipt-1",
+      platform: "ios",
+      productId: "pro-monthly",
+      transactionId: "txn-1"
+    });
+  });
+
+  it("Commercial API: storefront uses canonical commercial endpoints", async () => {
+    await storefrontApi.fetchStorefront();
+    expect(fetchCalls[0].url.endsWith("/api/commercial/storefront")).toBe(true);
+
+    await storefrontApi.updateStorefront({ name: "Shop" });
+    expect(fetchCalls[1].options.method).toBe("PATCH");
+    expect(fetchCalls[1].url.endsWith("/api/commercial/storefront")).toBe(true);
+  });
+
+  it("Commercial API: products use canonical commercial endpoints", async () => {
+    await productsApi.fetchProducts();
+    expect(fetchCalls[0].url.endsWith("/api/commercial/products")).toBe(true);
+
+    await productsApi.updateProduct("p 1", { name: "Product" });
+    expect(fetchCalls[1].options.method).toBe("PATCH");
+    expect(fetchCalls[1].url.endsWith("/api/commercial/products/p%201")).toBe(true);
+  });
+
+  it("Commercial API: links campaigns and orders use canonical endpoints", async () => {
+    await linksApi.fetchLinks();
+    await campaignsApi.fetchCampaigns();
+    await ordersApi.fetchOrders();
+
+    expect(fetchCalls[0].url.endsWith("/api/commercial/links")).toBe(true);
+    expect(fetchCalls[1].url.endsWith("/api/commercial/campaigns")).toBe(true);
+    expect(fetchCalls[2].url.endsWith("/api/commercial/orders")).toBe(true);
   });
 
   it("Forum API: createPost uses POST", async () => {

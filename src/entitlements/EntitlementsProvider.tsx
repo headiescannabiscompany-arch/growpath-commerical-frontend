@@ -119,7 +119,7 @@ export function resolveEntitlementsMode(
   if (preferredMode === "personal") return "personal";
 
   if (baseMode === "facility" && !canFacility && canCommercial) return "commercial";
-  if (baseMode === "commercial" && !canCommercial && canFacility) return "facility";
+  if (baseMode === "commercial") return "commercial";
   if (!canFacility && !canCommercial) return "personal";
 
   return baseMode;

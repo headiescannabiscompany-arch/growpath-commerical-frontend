@@ -60,6 +60,7 @@ describe("LiveSessionScreen QA", () => {
 
     mockApiRequest.mockResolvedValueOnce({
       twitchChannel: "mychannel",
+      twitchModerationUrl: "https://twitch.tv/moderator/mychannel",
       title: "Session 1"
     });
 
@@ -82,6 +83,25 @@ describe("LiveSessionScreen QA", () => {
     const { queryByText } = renderWithNav();
 
     await waitFor(() => {
+      expect(queryByText(/Open Twitch Moderation/i)).toBeNull();
+    });
+  });
+
+  it("hides moderation UI when no moderation URL is available", async () => {
+    mockUseAuth.mockReturnValue({ user: { _id: "admin" } });
+    mockUseEntitlements.mockReturnValue({
+      can: (key) => key === "LIVE_SESSION_MODERATE"
+    });
+
+    mockApiRequest.mockResolvedValueOnce({
+      twitchChannel: "mychannel",
+      title: "Session 1"
+    });
+
+    const { queryByText } = renderWithNav();
+
+    await waitFor(() => {
+      expect(queryByText(/Session 1/i)).toBeTruthy();
       expect(queryByText(/Open Twitch Moderation/i)).toBeNull();
     });
   });

@@ -3,6 +3,7 @@ import { useLocalSearchParams, useRouter } from "expo-router";
 import { Pressable, ScrollView, StyleSheet, Text, TextInput, View } from "react-native";
 
 import BackButton from "@/components/nav/BackButton";
+import { CAPABILITY_KEYS, useEntitlements } from "@/entitlements";
 import ToolResultSurface from "@/features/personal/tools/ToolResultSurface";
 import { saveToolRunAndOpenJournal } from "@/features/personal/tools/saveToolRunAndOpenJournal";
 
@@ -21,6 +22,8 @@ export default function BudRotRiskToolScreen() {
   const router = useRouter();
   const { growId: rawGrowId } = useLocalSearchParams<{ growId?: string | string[] }>();
   const growId = coerceParam(rawGrowId);
+  const entitlements = useEntitlements();
+  const enabled = entitlements.can(CAPABILITY_KEYS.DIAGNOSE_ADVANCED);
 
   const [tempF, setTempF] = useState("75");
   const [rh, setRh] = useState("55");
@@ -47,6 +50,21 @@ export default function BudRotRiskToolScreen() {
     const band = score >= 70 ? "High" : score >= 40 ? "Medium" : "Low";
     return { score, band };
   }, [tempF, rh, airflowScore, wetEventsPerWeek]);
+
+  if (!enabled) {
+    return (
+      <ScrollView contentContainerStyle={styles.container}>
+        <BackButton />
+        <Text style={styles.title}>Bud Rot Risk</Text>
+        <View style={styles.lockedCard}>
+          <Text style={styles.lockedTitle}>Tool unavailable</Text>
+          <Text style={styles.subtitle}>
+            This account does not have `DIAGNOSE_ADVANCED`.
+          </Text>
+        </View>
+      </ScrollView>
+    );
+  }
 
   return (
     <ScrollView contentContainerStyle={styles.container}>
@@ -169,5 +187,13 @@ const styles = StyleSheet.create({
     padding: 12,
     backgroundColor: "#FFFFFF"
   },
-  hint: { fontSize: 12, color: "#64748B", marginTop: 6 }
+  hint: { fontSize: 12, color: "#64748B", marginTop: 6 },
+  lockedCard: {
+    borderWidth: 1,
+    borderColor: "#E2E8F0",
+    borderRadius: 10,
+    padding: 12,
+    backgroundColor: "#F8FAFC"
+  },
+  lockedTitle: { fontWeight: "800", color: "#0F172A" }
 });

@@ -3,13 +3,20 @@ import type {
   BulkIngestTelemetryPointsInput,
   BulkIngestTelemetryPointsResult,
   CreateTelemetrySourceInput,
+  GrowlinkController,
+  GrowlinkPullResult,
+  GrowlinkVerifyResult,
   PulseDevice,
   PulsePullResult,
   PulseVerifyResult,
   TelemetryPoint,
   TelemetryPointsQuery,
   TelemetryPointsWindowResult,
-  TelemetrySource
+  TelemetrySource,
+  UbiBotChannel,
+  UbiBotMqttSettingsResult,
+  UbiBotPullResult,
+  UbiBotVerifyResult
 } from "@/types/telemetry";
 
 export const TELEMETRY_ROUTES = {
@@ -18,7 +25,15 @@ export const TELEMETRY_ROUTES = {
   POINTS: "/api/telemetry/points",
   PULSE_VERIFY: "/api/telemetry/pulse/verify",
   PULSE_DEVICES: "/api/telemetry/pulse/devices",
-  PULSE_PULL: "/api/telemetry/pulse/pull"
+  PULSE_PULL: "/api/telemetry/pulse/pull",
+  UBIBOT_VERIFY: "/api/telemetry/ubibot/verify",
+  UBIBOT_CHANNELS: "/api/telemetry/ubibot/channels",
+  UBIBOT_PULL: "/api/telemetry/ubibot/pull",
+  UBIBOT_MQTT_SETTINGS: "/api/telemetry/ubibot/mqtt-settings",
+  GROWLINK_VERIFY: "/api/telemetry/growlink/verify",
+  GROWLINK_CONTROLLERS: "/api/telemetry/growlink/controllers",
+  GROWLINK_CURRENT: "/api/telemetry/growlink/current",
+  GROWLINK_PULL: "/api/telemetry/growlink/pull"
 } as const;
 
 function normId(x: any): string {
@@ -56,6 +71,8 @@ function unwrapList(res: any): any[] {
   if (data?.data?.tools && Array.isArray(data.data.tools)) return data.data.tools;
   if (data?.sources && Array.isArray(data.sources)) return data.sources;
   if (data?.devices && Array.isArray(data.devices)) return data.devices;
+  if (data?.channels && Array.isArray(data.channels)) return data.channels;
+  if (data?.controllers && Array.isArray(data.controllers)) return data.controllers;
   return [];
 }
 
@@ -83,6 +100,30 @@ function normalizeSource(raw: any): TelemetrySource {
     config.pulse = { ...config.pulse };
     delete config.pulse.apiKey;
     delete config.pulse.apiKeyEncrypted;
+  }
+  if (
+    config?.ubibot?.apiKey ||
+    config?.ubibot?.accountKey ||
+    config?.ubibot?.apiKeyEncrypted ||
+    config?.ubibot?.accountKeyEncrypted
+  ) {
+    config.ubibot = { ...config.ubibot };
+    delete config.ubibot.apiKey;
+    delete config.ubibot.accountKey;
+    delete config.ubibot.apiKeyEncrypted;
+    delete config.ubibot.accountKeyEncrypted;
+  }
+  if (
+    config?.growlink?.password ||
+    config?.growlink?.passwordEncrypted ||
+    config?.growlink?.accessToken ||
+    config?.growlink?.accessTokenEncrypted
+  ) {
+    config.growlink = { ...config.growlink };
+    delete config.growlink.password;
+    delete config.growlink.passwordEncrypted;
+    delete config.growlink.accessToken;
+    delete config.growlink.accessTokenEncrypted;
   }
 
   return {
@@ -224,6 +265,145 @@ export async function pullPulseWindow(
     sourceId: String(data?.sourceId ?? sourceId),
     pulled: Number(data?.pulled ?? 0),
     updated: Number(data?.updated ?? 0),
+    startIso: String(data?.startIso ?? startIso),
+    endIso: String(data?.endIso ?? endIso),
+    lastPointIso: data?.lastPointIso ? String(data.lastPointIso) : undefined
+  };
+}
+
+export async function verifyUbiBotCredentials(input: {
+  accountKey?: string;
+  apiKey?: string;
+  userId?: string;
+}): Promise<UbiBotVerifyResult> {
+  const res = await apiRequest(TELEMETRY_ROUTES.UBIBOT_VERIFY, {
+    method: "POST",
+    body: input
+  });
+  const data = unwrapData(res);
+  return { ok: true, ...(data ?? {}) };
+}
+
+export async function listUbiBotChannels(input: {
+  accountKey?: string;
+  apiKey?: string;
+}): Promise<UbiBotChannel[]> {
+  const res = await apiRequest(TELEMETRY_ROUTES.UBIBOT_CHANNELS, {
+    method: "POST",
+    body: input
+  });
+  const list = unwrapList(res);
+  return list.map((channel: any) => ({
+    id: normId(channel) || String(channel?.channel_id ?? channel?.channelId ?? ""),
+    ...channel
+  }));
+}
+
+export async function pullUbiBotWindow(
+  sourceId: string,
+  startIso: string,
+  endIso: string
+): Promise<UbiBotPullResult> {
+  const res = await apiRequest(TELEMETRY_ROUTES.UBIBOT_PULL, {
+    method: "POST",
+    body: { sourceId, startIso, endIso }
+  });
+  const data = unwrapData(res);
+
+  return {
+    sourceId: String(data?.sourceId ?? sourceId),
+    pulled: Number(data?.pulled ?? 0),
+    ingested: data?.ingested === undefined ? undefined : Number(data.ingested),
+    updated: Number(data?.updated ?? 0),
+    skipped: data?.skipped === undefined ? undefined : Number(data.skipped),
+    startIso: String(data?.startIso ?? startIso),
+    endIso: String(data?.endIso ?? endIso),
+    lastPointIso: data?.lastPointIso ? String(data.lastPointIso) : undefined
+  };
+}
+
+export async function getUbiBotMqttSettings(sourceId: string): Promise<UbiBotMqttSettingsResult> {
+  const res = await apiRequest(TELEMETRY_ROUTES.UBIBOT_MQTT_SETTINGS, {
+    method: "POST",
+    body: { sourceId }
+  });
+  const data = unwrapData(res);
+
+  return {
+    host: String(data?.host ?? ""),
+    port: Number(data?.port ?? 1883),
+    username: String(data?.username ?? ""),
+    password: data?.password ? String(data.password) : undefined,
+    topic: String(data?.topic ?? ""),
+    heartbeatUrl: data?.heartbeatUrl ? String(data.heartbeatUrl) : undefined,
+    heartbeatIntervalMs:
+      data?.heartbeatIntervalMs === undefined
+        ? undefined
+        : Number(data.heartbeatIntervalMs)
+  };
+}
+
+export async function verifyGrowlinkCredentials(input: {
+  userName: string;
+  password: string;
+}): Promise<GrowlinkVerifyResult> {
+  const res = await apiRequest(TELEMETRY_ROUTES.GROWLINK_VERIFY, {
+    method: "POST",
+    body: input
+  });
+  const data = unwrapData(res);
+  return { ok: true, ...(data ?? {}) };
+}
+
+export async function listGrowlinkControllers(input: {
+  userName: string;
+  password: string;
+}): Promise<GrowlinkController[]> {
+  const res = await apiRequest(TELEMETRY_ROUTES.GROWLINK_CONTROLLERS, {
+    method: "POST",
+    body: input
+  });
+  const list = unwrapList(res);
+  return list.map((controller: any) => ({
+    id: normId(controller),
+    ...controller
+  }));
+}
+
+export async function pullGrowlinkCurrentReadings(sourceId: string): Promise<GrowlinkPullResult> {
+  const res = await apiRequest(TELEMETRY_ROUTES.GROWLINK_CURRENT, {
+    method: "POST",
+    body: { sourceId }
+  });
+  const data = unwrapData(res);
+
+  return {
+    sourceId: String(data?.sourceId ?? sourceId),
+    pulled: Number(data?.pulled ?? 0),
+    ingested: data?.ingested === undefined ? undefined : Number(data.ingested),
+    updated: Number(data?.updated ?? 0),
+    skipped: data?.skipped === undefined ? undefined : Number(data.skipped),
+    lastPointIso: data?.lastPointIso ? String(data.lastPointIso) : undefined
+  };
+}
+
+export async function pullGrowlinkHistoricalWindow(
+  sourceId: string,
+  startIso: string,
+  endIso: string
+): Promise<GrowlinkPullResult> {
+  const res = await apiRequest(TELEMETRY_ROUTES.GROWLINK_PULL, {
+    method: "POST",
+    body: { sourceId, startIso, endIso }
+  });
+  const data = unwrapData(res);
+
+  return {
+    sourceId: String(data?.sourceId ?? sourceId),
+    pulled: Number(data?.pulled ?? 0),
+    ingested: data?.ingested === undefined ? undefined : Number(data.ingested),
+    updated: Number(data?.updated ?? 0),
+    skipped: data?.skipped === undefined ? undefined : Number(data.skipped),
     startIso: String(data?.startIso ?? startIso),
     endIso: String(data?.endIso ?? endIso),
     lastPointIso: data?.lastPointIso ? String(data.lastPointIso) : undefined

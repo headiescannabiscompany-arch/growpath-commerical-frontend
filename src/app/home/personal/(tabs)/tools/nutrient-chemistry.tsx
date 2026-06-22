@@ -11,6 +11,7 @@ import {
 } from "react-native";
 
 import BackButton from "@/components/nav/BackButton";
+import { CAPABILITY_KEYS, useEntitlements } from "@/entitlements";
 import { saveToolRunAndOpenJournal } from "@/features/personal/tools/saveToolRunAndOpenJournal";
 import {
   analyzeCompatibility,
@@ -63,6 +64,8 @@ export default function NutrientChemistryToolScreen() {
   const router = useRouter();
   const { growId: rawGrowId } = useLocalSearchParams<{ growId?: string | string[] }>();
   const growId = coerceParam(rawGrowId);
+  const entitlements = useEntitlements();
+  const enabled = entitlements.can(CAPABILITY_KEYS.TOOL_NPK);
 
   const [nutrient, setNutrient] = useState<NutrientKey>("calcium");
   const [intent, setIntent] = useState<NutrientIntent>("fast_fix");
@@ -239,6 +242,19 @@ export default function NutrientChemistryToolScreen() {
     });
     setSavedMessage(result.ok ? "Saved to grow journal." : result.error);
     setSaving(false);
+  }
+
+  if (!enabled) {
+    return (
+      <ScrollView style={styles.container} contentContainerStyle={styles.content}>
+        <BackButton />
+        <Text style={styles.title}>Nutrient Chemistry</Text>
+        <View style={styles.panel}>
+          <Text style={styles.sectionTitle}>Tool unavailable</Text>
+          <Text style={styles.helperText}>This account does not have `TOOL_NPK`.</Text>
+        </View>
+      </ScrollView>
+    );
   }
 
   return (

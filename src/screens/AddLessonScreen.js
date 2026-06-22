@@ -13,9 +13,13 @@ import * as ImagePicker from "expo-image-picker";
 import ScreenContainer from "../components/ScreenContainer";
 import GrowInterestPicker from "../components/GrowInterestPicker";
 import { addLesson } from "../api/courses";
+import { useEntitlements } from "@/entitlements";
+import { getLearningAccess } from "@/features/learning/learningAccess";
 import { buildEmptyTierSelection, flattenTierSelections } from "../utils/growInterests";
 
 export default function AddLessonScreen({ route, navigation }) {
+  const entitlements = useEntitlements();
+  const access = getLearningAccess(entitlements);
   const { courseId } = route.params;
 
   const [title, setTitle] = useState("");
@@ -94,6 +98,9 @@ export default function AddLessonScreen({ route, navigation }) {
   }
 
   async function submit() {
+    if (!access.canCreateCourses) {
+      return Alert.alert("Unavailable", "Adding lessons requires COURSES_CREATE.");
+    }
     if (!title.trim()) {
       return Alert.alert("Missing title", "Please add a lesson title.");
     }
@@ -117,12 +124,23 @@ export default function AddLessonScreen({ route, navigation }) {
   return (
     <ScreenContainer scroll>
       <Text style={styles.header}>Add Lesson</Text>
+      {!access.canCreateCourses ? (
+        <View style={styles.lockedCard}>
+          <Text style={styles.lockedTitle}>Lesson authoring unavailable</Text>
+          <Text style={styles.helpText}>This account does not have COURSES_CREATE.</Text>
+        </View>
+      ) : null}
+      <Text style={styles.helpText}>
+        Lesson limit per course:{" "}
+        {access.maxLessonsPerCourse === null ? "unlimited" : access.maxLessonsPerCourse}
+      </Text>
 
       <TextInput
         style={styles.input}
         placeholder="Title"
         value={title}
         onChangeText={setTitle}
+        editable={access.canCreateCourses}
       />
 
       <TextInput
@@ -131,6 +149,7 @@ export default function AddLessonScreen({ route, navigation }) {
         value={order}
         onChangeText={setOrder}
         keyboardType="numeric"
+        editable={access.canCreateCourses}
       />
 
       <Text style={styles.label}>Text Content (optional)</Text>
@@ -140,10 +159,15 @@ export default function AddLessonScreen({ route, navigation }) {
         value={content}
         onChangeText={setContent}
         multiline
+        editable={access.canCreateCourses}
       />
 
       <Text style={styles.label}>Video</Text>
-      <TouchableOpacity style={styles.uploadBtn} onPress={pickVideo}>
+      <TouchableOpacity
+        style={[styles.uploadBtn, !access.canCreateCourses && styles.disabled]}
+        onPress={pickVideo}
+        disabled={!access.canCreateCourses}
+      >
         <Text style={styles.uploadBtnText}>
           {videoFile ? "Video Selected" : "Upload Video File"}
         </Text>
@@ -153,10 +177,15 @@ export default function AddLessonScreen({ route, navigation }) {
         placeholder="Or paste video URL (YouTube, Vimeo, etc.)"
         value={videoUrl}
         onChangeText={setVideoUrl}
+        editable={access.canCreateCourses}
       />
 
       <Text style={styles.label}>PDF Document</Text>
-      <TouchableOpacity style={styles.uploadBtn} onPress={pickPDF}>
+      <TouchableOpacity
+        style={[styles.uploadBtn, !access.canCreateCourses && styles.disabled]}
+        onPress={pickPDF}
+        disabled={!access.canCreateCourses}
+      >
         <Text style={styles.uploadBtnText}>
           {pdfFile ? `${pdfFile.name || "PDF Selected"}` : "Upload PDF"}
         </Text>
@@ -166,17 +195,26 @@ export default function AddLessonScreen({ route, navigation }) {
         placeholder="Or paste PDF URL"
         value={pdfUrl}
         onChangeText={setPdfUrl}
+        editable={access.canCreateCourses}
       />
 
       <Text style={styles.label}>Audio (Optional)</Text>
-      <TouchableOpacity style={styles.uploadBtn} onPress={pickAudio}>
+      <TouchableOpacity
+        style={[styles.uploadBtn, !access.canCreateCourses && styles.disabled]}
+        onPress={pickAudio}
+        disabled={!access.canCreateCourses}
+      >
         <Text style={styles.uploadBtnText}>
           {audioFile ? `${audioFile.name || "Audio Selected"}` : "Upload Audio"}
         </Text>
       </TouchableOpacity>
 
       <Text style={styles.label}>Images (Optional)</Text>
-      <TouchableOpacity style={styles.uploadBtn} onPress={pickImages}>
+      <TouchableOpacity
+        style={[styles.uploadBtn, !access.canCreateCourses && styles.disabled]}
+        onPress={pickImages}
+        disabled={!access.canCreateCourses}
+      >
         <Text style={styles.uploadBtnText}>Add Images</Text>
       </TouchableOpacity>
       {images.length > 0 && (
@@ -195,7 +233,11 @@ export default function AddLessonScreen({ route, navigation }) {
         defaultExpanded={false}
       />
 
-      <TouchableOpacity style={styles.btn} onPress={submit}>
+      <TouchableOpacity
+        style={[styles.btn, !access.canCreateCourses && styles.disabled]}
+        onPress={submit}
+        disabled={!access.canCreateCourses}
+      >
         <Text style={styles.btnText}>Save Lesson</Text>
       </TouchableOpacity>
 
@@ -261,5 +303,15 @@ const styles = StyleSheet.create({
     marginTop: 16,
     textAlign: "center",
     paddingHorizontal: 20
-  }
+  },
+  lockedCard: {
+    borderWidth: 1,
+    borderColor: "#ddd",
+    borderRadius: 8,
+    padding: 12,
+    marginBottom: 10,
+    backgroundColor: "#f8fafc"
+  },
+  lockedTitle: { fontWeight: "700" },
+  disabled: { opacity: 0.5 }
 });

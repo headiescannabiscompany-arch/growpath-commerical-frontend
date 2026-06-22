@@ -27,6 +27,11 @@ describe("buildPersonalHomeModel", () => {
         { id: "wrong", growId: "older", date: "2026-06-20", title: "Wrong" },
         { id: "right", growId: "active", date: "2026-06-19", title: "Right" }
       ] as any,
+      plants: [
+        { id: "plant-1", growId: "active", name: "A" },
+        { id: "plant-2", growId: "active", name: "B" },
+        { id: "plant-3", growId: "older", name: "C" }
+      ] as any,
       tasks: [
         {
           id: "task-2",
@@ -41,6 +46,13 @@ describe("buildPersonalHomeModel", () => {
           title: "Sooner",
           dueDate: "2026-06-21",
           completed: false
+        },
+        {
+          id: "task-3",
+          growId: "active",
+          title: "Done",
+          dueDate: "2026-06-20",
+          completed: true
         }
       ] as any,
       toolRuns: [
@@ -53,5 +65,15 @@ describe("buildPersonalHomeModel", () => {
     expect(model.nextTask?.id).toBe("task-1");
     expect(model.openTaskCount).toBe(2);
     expect(model.latestToolRun?.toolType).toBe("vpd");
+    expect(model.stats).toMatchObject({
+      totalGrows: 3,
+      activeGrowCount: 2,
+      plantCount: 2,
+      logCount: 1,
+      taskCount: 3,
+      openTaskCount: 2,
+      completedTaskCount: 1,
+      toolRunCount: 1
+    });
   });
 });

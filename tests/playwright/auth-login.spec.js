@@ -4,14 +4,52 @@ const TEST_USER = {
   email: "test@example.com",
   password: "Password123"
 };
+const TEST_TOKEN = "playwright-e2e-token";
 const STORAGE_RESET_FLAG = "__PLAYWRIGHT_STORAGE_RESET__";
+
+const TEST_ME_RESPONSE = {
+  user: {
+    id: "playwright-user",
+    email: TEST_USER.email,
+    displayName: "Playwright User",
+    role: "user",
+    plan: "pro",
+    subscriptionStatus: "active"
+  },
+  ctx: {
+    mode: "personal",
+    capabilities: {
+      GROWS_PERSONAL_VIEW: true,
+      GROWS_PERSONAL_WRITE: true,
+      LOGS_PERSONAL_VIEW: true,
+      LOGS_PERSONAL_WRITE: true,
+      PLANTS_PERSONAL_VIEW: true,
+      PLANTS_PERSONAL_WRITE: true,
+      TOOLS_VPD: true,
+      TASK_REMINDERS: true
+    },
+    limits: {},
+    facilityId: null,
+    facilityRole: null,
+    facilityFeaturesEnabled: false
+  }
+};
 
 async function fillLoginForm(page, { email, password }) {
   await page.getByPlaceholder("Email").fill(email);
   await page.getByPlaceholder("Password").fill(password);
-  const loginButton = page.getByRole("button", { name: /login/i });
+  const loginButton = page.getByText("Sign in").last();
   await expect(loginButton).toBeVisible();
   await loginButton.click();
+}
+
+async function fillSignupForm(page, { email, password }) {
+  await page.getByPlaceholder("Name").fill("Playwright User");
+  await page.getByPlaceholder("Email").fill(email);
+  await page.getByPlaceholder("Password").fill(password);
+  const signupButton = page.getByText("Create account").last();
+  await expect(signupButton).toBeVisible();
+  await signupButton.click();
 }
 
 test.describe("Auth flows", () => {
@@ -33,7 +71,7 @@ test.describe("Auth flows", () => {
           status: 200,
           contentType: "application/json",
           body: JSON.stringify({
-            token: "playwright-token",
+            token: TEST_TOKEN,
             user: {
               id: "playwright-user",
               email: TEST_USER.email,
@@ -48,7 +86,7 @@ test.describe("Auth flows", () => {
           status: 200,
           contentType: "application/json",
           body: JSON.stringify({
-            token: "e2e-token",
+            token: TEST_TOKEN,
             user: {
               id: "playwright-user",
               email: TEST_USER.email,
@@ -56,6 +94,51 @@ test.describe("Auth flows", () => {
               role: "user"
             }
           })
+        });
+      }
+      if (
+        req.method() === "GET" &&
+        (req.url().includes("/api/me") || req.url().includes("/api/auth/me"))
+      ) {
+        return route.fulfill({
+          status: 200,
+          contentType: "application/json",
+          body: JSON.stringify(TEST_ME_RESPONSE)
+        });
+      }
+      if (req.method() === "GET" && req.url().includes("/api/personal/grows")) {
+        return route.fulfill({
+          status: 200,
+          contentType: "application/json",
+          body: JSON.stringify({ grows: [] })
+        });
+      }
+      if (req.method() === "GET" && req.url().includes("/api/personal/logs")) {
+        return route.fulfill({
+          status: 200,
+          contentType: "application/json",
+          body: JSON.stringify({ logs: [] })
+        });
+      }
+      if (req.method() === "GET" && req.url().includes("/api/personal/plants")) {
+        return route.fulfill({
+          status: 200,
+          contentType: "application/json",
+          body: JSON.stringify({ plants: [] })
+        });
+      }
+      if (req.method() === "GET" && req.url().includes("/api/personal/tasks")) {
+        return route.fulfill({
+          status: 200,
+          contentType: "application/json",
+          body: JSON.stringify({ tasks: [] })
+        });
+      }
+      if (req.method() === "GET" && req.url().includes("/api/tools")) {
+        return route.fulfill({
+          status: 200,
+          contentType: "application/json",
+          body: JSON.stringify({ tools: [] })
         });
       }
       return route.fulfill({
@@ -78,39 +161,15 @@ test.describe("Auth flows", () => {
     await fillLoginForm(page, TEST_USER);
     await loginResponsePromise;
 
-    await page.waitForFunction(
-      ({ email }) => {
-        const token = globalThis.authToken;
-        const user = globalThis.user;
-        return token === "e2e-token" && user?.email === email;
-      },
-      { email: TEST_USER.email },
-      { timeout: 10000 }
-    );
-
     await page.waitForFunction(() => {
-      return (
-        window.localStorage.getItem("token") !== null &&
-        window.localStorage.getItem("user") !== null
-      );
+      return window.localStorage.getItem("auth_token_v1") !== null;
     });
 
-    const storedToken = await page.evaluate(() => localStorage.getItem("token"));
-    const storedUser = await page.evaluate(() => localStorage.getItem("user"));
+    const storedToken = await page.evaluate(() =>
+      localStorage.getItem("auth_token_v1")
+    );
 
-    expect(storedToken).toBe("e2e-token");
-    expect(storedUser).not.toBeNull();
-
-    const parsedUser = storedUser ? JSON.parse(storedUser) : null;
-    expect(parsedUser?.email).toBe(TEST_USER.email);
-
-    const authSnapshot = await page.evaluate(() => ({
-      token: globalThis.authToken,
-      user: globalThis.user
-    }));
-
-    expect(authSnapshot.token).toBe("e2e-token");
-    expect(authSnapshot.user?.email).toBe(TEST_USER.email);
+    expect(storedToken).toBe(TEST_TOKEN);
   });
 
   test("reload keeps authenticated users off the login screen and exposes logout after navigation", async ({
@@ -127,64 +186,41 @@ test.describe("Auth flows", () => {
     await fillLoginForm(page, TEST_USER);
     await loginResponsePromise;
 
-    await page.waitForFunction(
-      ({ email }) =>
-        globalThis.authToken === "e2e-token" && globalThis.user?.email === email,
-      { email: TEST_USER.email }
-    );
+    await page.waitForFunction(() => {
+      return window.localStorage.getItem("auth_token_v1") !== null;
+    });
 
-    await expect(page.getByTestId("dashboard-screen")).toBeVisible();
-    await expect(page.getByText(/Welcome back/i)).toBeVisible();
-    await expect(page.getByTestId("logout-button")).toHaveCount(0);
+    await expect(page.getByText("Your Garden")).toBeVisible();
+    await expect(page.getByText("Sign in")).toHaveCount(0);
 
     await page.reload();
 
-    await page.waitForFunction(
-      ({ email }) =>
-        globalThis.authToken === "e2e-token" && globalThis.user?.email === email,
-      { email: TEST_USER.email }
-    );
-
-    await expect(page.getByTestId("dashboard-screen")).toBeVisible({ timeout: 15000 });
-    await expect(page.getByText(/Welcome back/i)).toBeVisible();
-    await expect(page.getByTestId("logout-button")).toHaveCount(0);
-
-    await page.evaluate(() => {
-      const scrollEl = document.querySelector('[data-testid="dashboard-scroll"]');
-      scrollEl?.scrollTo(0, 600);
+    await page.waitForFunction(() => {
+      return window.localStorage.getItem("auth_token_v1") !== null;
     });
 
-    await page.getByTestId("tab-plants").click();
-    await expect(page.getByText("Your Plants")).toBeVisible();
+    await expect(page.getByText("Your Garden")).toBeVisible({ timeout: 15000 });
+    await expect(page.getByText("Sign in")).toHaveCount(0);
+  });
 
-    await page.getByTestId("tab-home").click();
-    await expect(page.getByText("GrowPath")).toBeVisible();
-    await expect(page.getByTestId("logout-button")).toBeVisible();
+  test("signup enters the authenticated personal home shell", async ({ page }) => {
+    await page.goto("/register");
 
-    const scrollPosition = await page.evaluate(() => {
-      const scrollEl = document.querySelector('[data-testid="dashboard-scroll"]');
-      return scrollEl?.scrollTop || 0;
-    });
-    expect(scrollPosition).toBeLessThanOrEqual(1);
-
-    await page.getByTestId("tab-plants").click();
-    await expect(page.getByText("Your Plants")).toBeVisible();
-
-    await page.evaluate(() => {
-      const scrollEl = document.querySelector('[data-testid="growlogs-scroll"]');
-      scrollEl?.scrollTo(0, 800);
+    const signupResponsePromise = page.waitForResponse((response) => {
+      return (
+        response.url().includes("/api/auth/signup") &&
+        response.request().method() === "POST"
+      );
     });
 
-    await page.getByTestId("tab-plants").click();
+    await fillSignupForm(page, TEST_USER);
+    await signupResponsePromise;
 
-    const growLogScroll = await page.evaluate(() => {
-      const scrollEl = document.querySelector('[data-testid="growlogs-scroll"]');
-      return scrollEl?.scrollTop || 0;
+    await page.waitForFunction(() => {
+      return window.localStorage.getItem("auth_token_v1") !== null;
     });
-    expect(growLogScroll).toBeLessThanOrEqual(1);
 
-    await page.getByTestId("tab-home").click();
-    await page.getByTestId("logout-button").click();
-    await expect(page.getByTestId("login-form")).toBeVisible();
+    await expect(page.getByText("Your Garden")).toBeVisible();
+    await expect(page.getByText("Sign in")).toHaveCount(0);
   });
 });

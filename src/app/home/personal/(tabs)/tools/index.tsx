@@ -7,6 +7,7 @@ import {
   FeatureDefinition,
   getNavigablePersonalTools
 } from "@/config/featureStatus";
+import { useEntitlements } from "@/entitlements";
 
 const styles = StyleSheet.create({
   container: { flex: 1, backgroundColor: "#FFFFFF" },
@@ -38,6 +39,7 @@ const styles = StyleSheet.create({
     borderRadius: 8,
     backgroundColor: "#F8FAFC"
   },
+  cardLocked: { opacity: 0.65 },
   cardHeader: {
     flexDirection: "row",
     alignItems: "center",
@@ -46,8 +48,10 @@ const styles = StyleSheet.create({
   },
   cardTitle: { flex: 1, fontSize: 16, fontWeight: "700" },
   beta: { fontSize: 12, color: "#92400E", fontWeight: "700" },
+  locked: { fontSize: 12, color: "#991B1B", fontWeight: "700" },
   cardDesc: { fontSize: 14, color: "#475569" },
-  link: { marginTop: 10, fontSize: 14, fontWeight: "700", color: "#166534" }
+  link: { marginTop: 10, fontSize: 14, fontWeight: "700", color: "#166534" },
+  lockedText: { marginTop: 10, fontSize: 14, fontWeight: "700", color: "#991B1B" }
 });
 
 function coerceParam(value?: string | string[]) {
@@ -75,21 +79,34 @@ const AREA_LABELS: Record<FeatureArea, string> = {
   integrations: "Integrations"
 };
 
-function ToolCard({ tool, growId }: { tool: FeatureDefinition; growId: string }) {
+function ToolCard({
+  tool,
+  growId,
+  enabled
+}: {
+  tool: FeatureDefinition;
+  growId: string;
+  enabled: boolean;
+}) {
   const href = tool.acceptsGrowContext
     ? hrefWithGrow(tool.href || "", growId)
     : tool.href || "";
 
   return (
-    <View style={styles.card}>
+    <View style={[styles.card, !enabled && styles.cardLocked]}>
       <View style={styles.cardHeader}>
         <Text style={styles.cardTitle}>{tool.title}</Text>
         {tool.status === "beta" ? <Text style={styles.beta}>Beta</Text> : null}
+        {!enabled ? <Text style={styles.locked}>Locked</Text> : null}
       </View>
       <Text style={styles.cardDesc}>{tool.description}</Text>
-      <Link href={href as Href} style={styles.link} asChild>
-        <Text>Open</Text>
-      </Link>
+      {enabled ? (
+        <Link href={href as Href} style={styles.link} asChild>
+          <Text>Open</Text>
+        </Link>
+      ) : (
+        <Text style={styles.lockedText}>Upgrade or enable capability</Text>
+      )}
     </View>
   );
 }
@@ -98,6 +115,7 @@ export default function ToolsHubScreen() {
   const { growId: rawGrowId } = useLocalSearchParams<{ growId?: string | string[] }>();
   const growId = useMemo(() => coerceParam(rawGrowId), [rawGrowId]);
   const tools = useMemo(() => getNavigablePersonalTools(), []);
+  const entitlements = useEntitlements();
 
   return (
     <ScrollView style={styles.container} contentContainerStyle={styles.content}>
@@ -122,7 +140,12 @@ export default function ToolsHubScreen() {
             <Text style={styles.sectionTitle}>{AREA_LABELS[area]}</Text>
             <View style={styles.grid}>
               {areaTools.map((tool) => (
-                <ToolCard key={tool.key} tool={tool} growId={growId} />
+                <ToolCard
+                  key={tool.key}
+                  tool={tool}
+                  growId={growId}
+                  enabled={!tool.capabilityKey || entitlements.can(tool.capabilityKey)}
+                />
               ))}
             </View>
           </View>

@@ -2,4 +2,8 @@
 *.bak
 node_modules
 .expo/
-tmp/spec/
+tmp/
+test-results/
+playwright-report/
+service-account-key.json
+*.p8

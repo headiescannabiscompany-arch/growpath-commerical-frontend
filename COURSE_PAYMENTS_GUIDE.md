@@ -1,5 +1,20 @@
 # Course Purchase & Creator Payments - How It Works
 
+## Frontend Payment Authority
+
+The frontend never grants course or subscription access from a local payment
+success callback. Stripe Checkout, native in-app purchase callbacks, and free
+trial requests only start or submit payment work.
+
+Access is shown as unlocked only after the backend confirms status through the
+course enrollment/payment endpoints, subscription status endpoints, or the
+canonical `/api/auth/me` capability context after refresh.
+
+Frontend payment screens should send users to a confirmation/status screen
+after checkout or receipt submission. They must not mutate local capabilities,
+plans, enrollments, or course access based on browser redirects or native IAP
+purchase objects.
+
 ## 💰 Revenue Split: 70/30
 
 When a user buys a course for $10:
@@ -186,22 +201,22 @@ If no:
 
 ---
 
-## 💡 Current Status
+## Current Status
 
-✅ **What's Working:**
+**Implemented contract:**
 
-- Course purchase flow
-- Enrollment creation
-- Earning records (70/30 split)
-- Creator earnings dashboard
-- Payout request system
+- Course and subscription access must come from backend-confirmed status.
+- Enrollment, earning, refund, dispute, and payout state must be idempotent and
+  webhook-authoritative where payment processors are involved.
+- Frontend checkout or IAP success callbacks route to status/confirmation and
+  then refresh backend state.
 
-⚠️ **What's Manual:**
+**Manual operations:**
 
 - Actual payout to creator (you send via PayPal/etc)
 - Marking payouts as complete
 
-🔮 **Future Enhancement:**
+**Future enhancement:**
 
 - Integrate Stripe Connect
 - Automatic payouts
@@ -236,11 +251,11 @@ If no:
 
 ---
 
-## 🚀 Next Steps
+## Next Steps
 
-1. ✅ Revenue split fixed to 70/30
-2. Test course purchase flow
-3. Test earnings dashboard
-4. Test payout request
-5. Document manual payout process for yourself
-6. (Optional) Add Stripe Connect later for automation
+1. Keep frontend access gated by backend-confirmed enrollment and capability
+   state.
+2. Test course purchase, earnings dashboard, payout request, refund, and dispute
+   flows in a payment-provider test environment.
+3. Document the manual payout operating process before production launch.
+4. Add Stripe Connect later if automatic payouts become required.

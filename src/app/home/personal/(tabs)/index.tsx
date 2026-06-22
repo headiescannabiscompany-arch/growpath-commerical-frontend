@@ -5,6 +5,7 @@ import { ActivityIndicator, Pressable, StyleSheet, Text, View } from "react-nati
 
 import { listPersonalGrows } from "@/api/grows";
 import { listPersonalLogs } from "@/api/logs";
+import { listPersonalPlants } from "@/api/plants";
 import { listPersonalTasks } from "@/api/tasks";
 import { listToolRuns } from "@/api/toolRuns";
 import { useAuth } from "@/auth/AuthContext";
@@ -37,13 +38,14 @@ export default function PersonalHomeTab() {
     setLoading(true);
     setError("");
     try {
-      const [grows, logs, tasks, toolRuns] = await Promise.all([
+      const [grows, logs, plants, tasks, toolRuns] = await Promise.all([
         listPersonalGrows(),
         listPersonalLogs(),
+        listPersonalPlants(),
         listPersonalTasks(),
         listToolRuns()
       ]);
-      setModel(buildPersonalHomeModel({ grows, logs, tasks, toolRuns }));
+      setModel(buildPersonalHomeModel({ grows, logs, plants, tasks, toolRuns }));
     } catch {
       setError("Unable to refresh your grow overview.");
     } finally {
@@ -94,16 +96,24 @@ export default function PersonalHomeTab() {
           <AppCard>
             <Text style={styles.cardTitle}>{model.activeGrow.name || "Active grow"}</Text>
             <Text style={styles.cardDescription}>
-              {model.activeGrow.status} · Updated {fmtDate(model.activeGrow.updatedAt)}
+              {model.activeGrow.status} | Updated {fmtDate(model.activeGrow.updatedAt)}
             </Text>
             <View style={styles.metrics}>
+              <View style={styles.metric}>
+                <Text style={styles.metricValue}>{model.stats.plantCount}</Text>
+                <Text style={styles.metricLabel}>Plants</Text>
+              </View>
+              <View style={styles.metric}>
+                <Text style={styles.metricValue}>{model.stats.logCount}</Text>
+                <Text style={styles.metricLabel}>Journal entries</Text>
+              </View>
               <View style={styles.metric}>
                 <Text style={styles.metricValue}>{model.openTaskCount}</Text>
                 <Text style={styles.metricLabel}>Open tasks</Text>
               </View>
               <View style={styles.metric}>
                 <Text style={styles.metricValue}>
-                  {model.latestToolRun?.toolType || model.latestToolRun?.toolName || "—"}
+                  {model.latestToolRun?.toolType || model.latestToolRun?.toolName || "None"}
                 </Text>
                 <Text style={styles.metricLabel}>Latest tool</Text>
               </View>
@@ -130,7 +140,7 @@ export default function PersonalHomeTab() {
             <Text style={styles.cardTitle}>Next task</Text>
             <Text style={styles.cardDescription}>
               {model.nextTask
-                ? `${model.nextTask.title} · ${fmtDate(model.nextTask.dueDate)}`
+                ? `${model.nextTask.title} | ${fmtDate(model.nextTask.dueDate)}`
                 : "No open task is scheduled for this grow."}
             </Text>
             <ActionLink href={`${growHref}/tasks`} label="View Tasks" />
@@ -139,10 +149,27 @@ export default function PersonalHomeTab() {
             <Text style={styles.cardTitle}>Recent journal activity</Text>
             <Text style={styles.cardDescription}>
               {model.latestLog
-                ? `${model.latestLog.title} · ${fmtDate(model.latestLog.date)}`
+                ? `${model.latestLog.title} | ${fmtDate(model.latestLog.date)}`
                 : "No journal entries have been recorded yet."}
             </Text>
             <ActionLink href={`${growHref}/journal`} label="Open Journal" />
+          </AppCard>
+          <AppCard>
+            <Text style={styles.cardTitle}>Garden statistics</Text>
+            <View style={styles.metrics}>
+              <View style={styles.metric}>
+                <Text style={styles.metricValue}>{model.stats.activeGrowCount}</Text>
+                <Text style={styles.metricLabel}>Active grows</Text>
+              </View>
+              <View style={styles.metric}>
+                <Text style={styles.metricValue}>{model.stats.completedTaskCount}</Text>
+                <Text style={styles.metricLabel}>Completed tasks</Text>
+              </View>
+              <View style={styles.metric}>
+                <Text style={styles.metricValue}>{model.stats.toolRunCount}</Text>
+                <Text style={styles.metricLabel}>Tool runs</Text>
+              </View>
+            </View>
           </AppCard>
         </View>
       ) : null}

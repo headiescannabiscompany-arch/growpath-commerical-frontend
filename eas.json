@@ -34,18 +34,5 @@
         "NODE_ENV": "production"
       }
     }
-  },
-  "submit": {
-    "production": {
-      "ios": {
-        "appleId": "YOUR_APPLE_ID",
-        "ascAppId": "YOUR_ASC_APP_ID",
-        "appleTeamId": "YOUR_APPLE_TEAM_ID"
-      },
-      "android": {
-        "serviceAccountKeyPath": "./service-account-key.json",
-        "track": "production"
-      }
-    }
   }
 }

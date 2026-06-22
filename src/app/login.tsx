@@ -1,7 +1,10 @@
 import React, { useMemo, useState } from "react";
 import {
   ActivityIndicator,
+  Image,
+  ImageBackground,
   Pressable,
+  ScrollView,
   StyleSheet,
   Text,
   TextInput,
@@ -9,31 +12,12 @@ import {
 } from "react-native";
 import { useRouter } from "expo-router";
 
-import { ApiError, apiRequest } from "@/api/apiRequest";
-import { setToken } from "@/auth/tokenStore";
-
-function extractToken(payload: any): string | null {
-  if (!payload) return null;
-
-  const candidates = [
-    payload.token,
-    payload?.data?.token,
-    payload?.data?.accessToken,
-    payload?.accessToken,
-    payload?.jwt,
-    payload?.data?.jwt
-  ];
-
-  const raw = candidates.find((x) => typeof x === "string" && x.length > 10);
-  if (!raw) return null;
-
-  const t = raw.startsWith("Bearer ") ? raw.slice("Bearer ".length) : raw;
-  const tokenValue = t.trim();
-  return tokenValue ? tokenValue : null;
-}
+import { ApiError } from "@/api/apiRequest";
+import { useAuth } from "@/auth/AuthContext";
 
 export default function LoginScreen() {
   const router = useRouter();
+  const auth = useAuth();
 
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
@@ -50,16 +34,7 @@ export default function LoginScreen() {
 
     try {
       const normalizedEmail = email.trim().toLowerCase();
-      const loginRes = await apiRequest<any>("/api/auth/login", {
-        method: "POST",
-        body: { email: normalizedEmail, password },
-        auth: false
-      });
-
-      const token = extractToken(loginRes);
-      if (!token) throw new Error("Login response missing token.");
-
-      await setToken(token);
+      await auth.login(normalizedEmail, password);
       router.replace("/");
     } catch (e: any) {
       if (e instanceof ApiError) {
@@ -75,71 +50,146 @@ export default function LoginScreen() {
   }
 
   return (
-    <View style={styles.root}>
-      <Text style={styles.title}>Login</Text>
-
-      <TextInput
-        style={styles.input}
-        autoCapitalize="none"
-        autoCorrect={false}
-        placeholder="Email"
-        value={email}
-        onChangeText={setEmail}
-      />
-
-      <TextInput
-        style={styles.input}
-        placeholder="Password"
-        secureTextEntry
-        value={password}
-        onChangeText={setPassword}
-      />
-
-      {errMsg ? <Text style={styles.error}>{errMsg}</Text> : null}
-
-      <Pressable
-        onPress={onSubmit}
-        disabled={!canSubmit}
-        style={[styles.button, !canSubmit && styles.buttonDisabled]}
+    <ScrollView
+      style={styles.root}
+      contentContainerStyle={styles.content}
+      keyboardShouldPersistTaps="handled"
+    >
+      <ImageBackground
+        source={require("../../assets/banner.png")}
+        style={styles.banner}
+        imageStyle={styles.bannerImage}
+        resizeMode="cover"
       >
-        {submitting ? (
-          <ActivityIndicator />
-        ) : (
-          <Text style={styles.buttonText}>Sign in</Text>
-        )}
-      </Pressable>
+        <View style={styles.bannerShade}>
+          <View style={styles.logoMark}>
+            <Image
+              source={require("../../assets/icon-white.png")}
+              style={styles.logo}
+              resizeMode="contain"
+            />
+          </View>
+          <Text style={styles.brand}>GrowPath AI</Text>
+          <Text style={styles.tagline}>Commercial growing intelligence</Text>
+        </View>
+      </ImageBackground>
 
-      {/* NEW: Create account link */}
-      <Pressable onPress={() => router.push("/register")} style={styles.linkBtn}>
-        <Text style={styles.linkText}>Create account</Text>
-      </Pressable>
-    </View>
+      <View style={styles.form}>
+        <Text style={styles.title}>Sign in</Text>
+
+        <TextInput
+          style={styles.input}
+          autoCapitalize="none"
+          autoCorrect={false}
+          keyboardType="email-address"
+          placeholder="Email"
+          placeholderTextColor="#6b7280"
+          value={email}
+          onChangeText={setEmail}
+        />
+
+        <TextInput
+          style={styles.input}
+          placeholder="Password"
+          placeholderTextColor="#6b7280"
+          secureTextEntry
+          value={password}
+          onChangeText={setPassword}
+          onSubmitEditing={onSubmit}
+          returnKeyType="go"
+        />
+
+        {errMsg ? <Text style={styles.error}>{errMsg}</Text> : null}
+
+        <Pressable
+          onPress={onSubmit}
+          disabled={!canSubmit}
+          style={[styles.button, !canSubmit && styles.buttonDisabled]}
+        >
+          {submitting ? (
+            <ActivityIndicator color="#ffffff" />
+          ) : (
+            <Text style={styles.buttonText}>Sign in</Text>
+          )}
+        </Pressable>
+
+        <Pressable onPress={() => router.push("/register")} style={styles.linkBtn}>
+          <Text style={styles.linkText}>Create account</Text>
+        </Pressable>
+      </View>
+    </ScrollView>
   );
 }
 
 const styles = StyleSheet.create({
-  root: { flex: 1, padding: 16, justifyContent: "center" },
-  title: { fontSize: 22, fontWeight: "700", marginBottom: 16 },
+  root: { flex: 1, backgroundColor: "#f8fafc" },
+  content: {
+    flexGrow: 1,
+    justifyContent: "center",
+    padding: 16
+  },
+  banner: {
+    minHeight: 260,
+    overflow: "hidden",
+    borderRadius: 8,
+    backgroundColor: "#111827"
+  },
+  bannerImage: {
+    opacity: 0.92
+  },
+  bannerShade: {
+    flex: 1,
+    justifyContent: "flex-end",
+    padding: 24,
+    backgroundColor: "rgba(17, 24, 39, 0.32)"
+  },
+  logoMark: {
+    width: 72,
+    height: 72,
+    borderRadius: 8,
+    alignItems: "center",
+    justifyContent: "center",
+    marginBottom: 16,
+    backgroundColor: "rgba(17, 24, 39, 0.68)"
+  },
+  logo: {
+    width: 58,
+    height: 58
+  },
+  brand: {
+    color: "#ffffff",
+    fontSize: 32,
+    fontWeight: "800"
+  },
+  tagline: {
+    color: "#e5e7eb",
+    fontSize: 15,
+    fontWeight: "600",
+    marginTop: 6
+  },
+  form: {
+    paddingTop: 24
+  },
+  title: { fontSize: 24, fontWeight: "800", marginBottom: 16, color: "#111827" },
   input: {
     borderWidth: 1,
-    borderColor: "#ccc",
+    borderColor: "#d1d5db",
+    backgroundColor: "#ffffff",
+    color: "#111827",
     paddingHorizontal: 12,
-    paddingVertical: 10,
+    paddingVertical: 12,
     borderRadius: 8,
     marginBottom: 12
   },
-  error: { color: "#b00020", marginBottom: 12 },
+  error: { color: "#b91c1c", marginBottom: 12, fontWeight: "600" },
   button: {
     paddingVertical: 12,
-    borderRadius: 10,
+    borderRadius: 8,
     alignItems: "center",
-    borderWidth: 1,
-    borderColor: "#111"
+    backgroundColor: "#166534"
   },
   buttonDisabled: { opacity: 0.5 },
-  buttonText: { fontWeight: "700" },
-
-  // NEW
+  buttonText: { fontWeight: "800", color: "#ffffff" },
   linkBtn: { marginTop: 14, alignItems: "center" },
-  linkText: { fontWeight: "700", textDecorationLine: "underline" }
+  linkText: { fontWeight: "800", color: "#166534" }
 });

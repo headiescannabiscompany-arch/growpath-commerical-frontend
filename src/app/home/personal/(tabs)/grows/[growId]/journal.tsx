@@ -71,6 +71,7 @@ export default function GrowJournalScreen() {
     | "training"
     | "environment"
     | "issues"
+    | "diagnosis"
     | "harvest"
   >("all");
 
@@ -140,6 +141,7 @@ export default function GrowJournalScreen() {
           "training",
           "environment",
           "issues",
+          "diagnosis",
           "harvest"
         ].map((key) => {
           const active = filter === key;
@@ -162,18 +164,38 @@ export default function GrowJournalScreen() {
       ) : filteredItems.length === 0 ? (
         <Text style={styles.empty}>No journal activity yet.</Text>
       ) : (
-        filteredItems.map((item) => (
-          <View key={`${item.kind}-${item.id}`} style={styles.card}>
-            <Text style={styles.cardTitle}>{item.title}</Text>
-            {item.subtitle ? <Text>{item.subtitle}</Text> : null}
-            <Text style={styles.cardMeta}>
-              {item.kind.toUpperCase()}
-              {item.category ? ` (${item.category})` : ""} |{" "}
-              {fmtDate(item.at || undefined)}
-              {item.kind === "task" ? (item.completed ? " | COMPLETE" : " | OPEN") : ""}
-            </Text>
-          </View>
-        ))
+        filteredItems.map((item) => {
+          const content = (
+            <>
+              <Text style={styles.cardTitle}>{item.title}</Text>
+              {item.subtitle ? <Text>{item.subtitle}</Text> : null}
+              <Text style={styles.cardMeta}>
+                {item.kind.toUpperCase()}
+                {item.category ? ` (${item.category})` : ""} |{" "}
+                {fmtDate(item.at || undefined)}
+                {item.kind === "task" ? (item.completed ? " | COMPLETE" : " | OPEN") : ""}
+              </Text>
+            </>
+          );
+
+          if (item.kind !== "log") {
+            return (
+              <View key={`${item.kind}-${item.id}`} style={styles.card}>
+                {content}
+              </View>
+            );
+          }
+
+          return (
+            <Link
+              key={`${item.kind}-${item.id}`}
+              href={`/home/personal/logs/${encodeURIComponent(item.id)}`}
+              asChild
+            >
+              <Pressable style={styles.card}>{content}</Pressable>
+            </Link>
+          );
+        })
       )}
     </ScrollView>
   );

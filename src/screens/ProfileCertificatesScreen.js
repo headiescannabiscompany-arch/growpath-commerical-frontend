@@ -1,32 +1,63 @@
 import React, { useEffect, useState } from "react";
-import { View, Text, TouchableOpacity, FlatList, Alert } from "react-native";
-import ScreenContainer from "../components/ScreenContainer";
+import { Alert, FlatList, Text, TouchableOpacity, View } from "react-native";
+
 import { getMyCertificates } from "../api/certificates";
+import ScreenContainer from "../components/ScreenContainer";
+import { useEntitlements } from "@/entitlements";
+import { getLearningAccess } from "@/features/learning/learningAccess";
+
+function normalizeCertificates(response) {
+  if (Array.isArray(response)) return response;
+  if (Array.isArray(response?.data)) return response.data;
+  if (Array.isArray(response?.certificates)) return response.certificates;
+  return [];
+}
 
 export default function ProfileCertificatesScreen({ navigation }) {
+  const entitlements = useEntitlements();
+  const access = getLearningAccess(entitlements);
   const [certs, setCerts] = useState([]);
   const [loading, setLoading] = useState(true);
 
   async function load() {
+    if (!access.canUseCertificates) {
+      setCerts([]);
+      setLoading(false);
+      return;
+    }
     try {
       const res = await getMyCertificates();
-      setCerts(res.data || res);
-      setLoading(false);
+      setCerts(normalizeCertificates(res));
     } catch (err) {
       console.log("Error loading certificates:", err.message);
       Alert.alert("Error", "Failed to load certificates");
+    } finally {
       setLoading(false);
     }
   }
 
   useEffect(() => {
     load();
-  }, []);
+  }, [access.canUseCertificates]);
 
   if (loading) {
     return (
       <ScreenContainer>
-        <Text>Loading certificates…</Text>
+        <Text>Loading certificates...</Text>
+      </ScreenContainer>
+    );
+  }
+
+  if (!access.canUseCertificates) {
+    return (
+      <ScreenContainer>
+        <Text style={styles.header}>My Certificates</Text>
+        <View style={styles.emptyContainer}>
+          <Text style={styles.emptyText}>Certificates unavailable</Text>
+          <Text style={styles.emptySubtext}>
+            This account does not have COURSES_CERTIFICATES.
+          </Text>
+        </View>
       </ScreenContainer>
     );
   }
@@ -34,6 +65,9 @@ export default function ProfileCertificatesScreen({ navigation }) {
   return (
     <ScreenContainer scroll>
       <Text style={styles.header}>My Certificates</Text>
+      {access.maxCertificates !== null ? (
+        <Text style={styles.limitText}>Certificate limit: {access.maxCertificates}</Text>
+      ) : null}
 
       {certs.length === 0 ? (
         <View style={styles.emptyContainer}>
@@ -44,14 +78,14 @@ export default function ProfileCertificatesScreen({ navigation }) {
         <FlatList
           scrollEnabled={false}
           data={certs}
-          keyExtractor={(item) => item._id}
+          keyExtractor={(item) => String(item._id || item.id || item.certificateId)}
           renderItem={({ item }) => (
             <View style={styles.card}>
               <View style={styles.cardHeader}>
                 <View style={{ flex: 1 }}>
-                  <Text style={styles.course}>{item.course.title}</Text>
+                  <Text style={styles.course}>{item.course?.title || item.courseTitle}</Text>
                   <Text style={styles.date}>
-                    ✓ Completed {new Date(item.completedAt).toLocaleDateString()}
+                    Completed {new Date(item.completedAt).toLocaleDateString()}
                   </Text>
                 </View>
                 <View style={styles.badge}>
@@ -64,7 +98,7 @@ export default function ProfileCertificatesScreen({ navigation }) {
                   style={styles.btn}
                   onPress={() => navigation.navigate("CertificateViewer", { cert: item })}
                 >
-                  <Text style={styles.btnText}>📄 View Certificate</Text>
+                  <Text style={styles.btnText}>View Certificate</Text>
                 </TouchableOpacity>
 
                 <TouchableOpacity
@@ -75,7 +109,7 @@ export default function ProfileCertificatesScreen({ navigation }) {
                     })
                   }
                 >
-                  <Text style={styles.verifyText}>🔐 Verify</Text>
+                  <Text style={styles.verifyText}>Verify</Text>
                 </TouchableOpacity>
               </View>
             </View>
@@ -92,6 +126,11 @@ const styles = {
     fontWeight: "700",
     marginBottom: 20,
     color: "#2c3e50"
+  },
+  limitText: {
+    color: "#64748b",
+    fontSize: 13,
+    marginBottom: 12
   },
   emptyContainer: {
     alignItems: "center",

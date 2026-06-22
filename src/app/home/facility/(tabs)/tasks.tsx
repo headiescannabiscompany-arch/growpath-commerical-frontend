@@ -15,10 +15,10 @@ import { useRouter } from "expo-router";
 import { ScreenBoundary } from "@/components/ScreenBoundary";
 import { InlineError } from "@/components/InlineError";
 import { useFacility } from "@/state/useFacility";
-import { apiRequest } from "@/api/apiRequest";
-import { endpoints } from "@/api/endpoints";
+import { createTask as createFacilityTask, getFacilityTasks } from "@/api/tasks";
 import { useApiErrorHandler } from "@/hooks/useApiErrorHandler";
-import { CAPABILITY_KEYS, useEntitlements } from "@/entitlements";
+import { useEntitlements } from "@/entitlements";
+import { getFacilityTaskAccess } from "@/features/facility/taskAccess";
 
 type AnyRec = Record<string, any>;
 
@@ -73,6 +73,8 @@ export default function FacilityTasksRoute() {
   const [creating, setCreating] = useState(false);
   const [newTitle, setNewTitle] = useState("");
   const [newNotes, setNewNotes] = useState("");
+  const [newDueDate, setNewDueDate] = useState("");
+  const [newAssignedTo, setNewAssignedTo] = useState("");
 
   const load = useCallback(
     async (opts?: { refresh?: boolean }) => {
@@ -83,7 +85,7 @@ export default function FacilityTasksRoute() {
 
       try {
         clearError();
-        const res = await apiRequest(endpoints.tasks(facilityId), { method: "GET" });
+        const res = await getFacilityTasks(facilityId);
         setItems(asArray(res));
       } catch (e) {
         handleApiError(e);
@@ -103,7 +105,12 @@ export default function FacilityTasksRoute() {
     load();
   }, [facilityId, load, router]);
 
-  const canWrite = !!ent?.can?.(CAPABILITY_KEYS.TASKS_WRITE);
+  const taskAccess = getFacilityTaskAccess({
+    can: ent?.can,
+    facilityRole: ent?.facilityRole
+  });
+  const canWrite = taskAccess.canCreateTask;
+  const canAssign = taskAccess.canAssignTask;
 
   const createTask = useCallback(async () => {
     if (!facilityId || !canWrite) return;
@@ -112,23 +119,35 @@ export default function FacilityTasksRoute() {
     setCreating(true);
     try {
       clearError();
-      await apiRequest(endpoints.tasks(facilityId), {
-        method: "POST",
-        data: {
-          title,
-          notes: newNotes.trim() || undefined,
-          scope: "facility"
-        }
+      await createFacilityTask(facilityId, {
+        title,
+        notes: newNotes.trim() || undefined,
+        dueDate: newDueDate.trim() || undefined,
+        assignedTo: canAssign ? newAssignedTo.trim() || undefined : undefined,
+        scope: "facility"
       });
       setNewTitle("");
       setNewNotes("");
+      setNewDueDate("");
+      setNewAssignedTo("");
       await load({ refresh: true });
     } catch (e) {
       handleApiError(e);
     } finally {
       setCreating(false);
     }
-  }, [facilityId, canWrite, newTitle, newNotes, clearError, handleApiError, load]);
+  }, [
+    facilityId,
+    canWrite,
+    canAssign,
+    newTitle,
+    newNotes,
+    newDueDate,
+    newAssignedTo,
+    clearError,
+    handleApiError,
+    load
+  ]);
 
   const header = useMemo(() => {
     const n = items.length;
@@ -142,7 +161,7 @@ export default function FacilityTasksRoute() {
         <View style={styles.card}>
           <Text style={styles.cardTitle}>Create Task</Text>
           {!canWrite ? (
-            <Text style={styles.muted}>You do not have permission to create tasks.</Text>
+            <Text style={styles.muted}>{taskAccess.hiddenCreateReason}</Text>
           ) : (
             <View style={styles.form}>
               <Text style={styles.label}>Title</Text>
@@ -162,6 +181,30 @@ export default function FacilityTasksRoute() {
                 multiline
               />
 
+              <Text style={styles.label}>Due date (optional)</Text>
+              <TextInput
+                value={newDueDate}
+                onChangeText={setNewDueDate}
+                style={styles.input}
+                placeholder="YYYY-MM-DD"
+              />
+
+              {canAssign ? (
+                <>
+                  <Text style={styles.label}>Assign to user id (optional)</Text>
+                  <TextInput
+                    value={newAssignedTo}
+                    onChangeText={setNewAssignedTo}
+                    style={styles.input}
+                    placeholder="user id"
+                  />
+                </>
+              ) : (
+                <Text style={styles.muted}>
+                  Only owners and managers can assign facility tasks.
+                </Text>
+              )}
+
               <TouchableOpacity
                 onPress={createTask}
                 disabled={creating || !newTitle.trim()}
@@ -177,7 +220,6 @@ export default function FacilityTasksRoute() {
             </View>
           )}
         </View>
-        \n{" "}
         {loading ? (
           <View style={styles.loading}>
             <ActivityIndicator />

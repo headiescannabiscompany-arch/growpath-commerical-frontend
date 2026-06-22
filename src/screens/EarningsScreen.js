@@ -1,28 +1,70 @@
-import React, { useEffect, useState } from "react";
+import React, { useEffect, useMemo, useState } from "react";
 import {
-  View,
-  Text,
-  ScrollView,
-  TouchableOpacity,
-  StyleSheet,
+  ActivityIndicator,
   Alert,
-  FlatList
+  FlatList,
+  ScrollView,
+  StyleSheet,
+  Text,
+  TouchableOpacity,
+  View
 } from "react-native";
+
+import { CAPABILITY_KEYS, useEntitlements } from "@/entitlements";
+import { getEarningsByCourse, getMyEarnings, requestPayout } from "../api/earnings";
 import ScreenContainer from "../components/ScreenContainer";
 import { spacing } from "../theme/theme";
-import { getMyEarnings, requestPayout } from "../api/earnings";
+
+function normalize(payload) {
+  const data = payload?.data ?? payload ?? {};
+  return {
+    earnings: Array.isArray(data.earnings)
+      ? data.earnings
+      : Array.isArray(data.items)
+        ? data.items
+        : [],
+    stats: data.stats || data.summary || data,
+    courses: Array.isArray(data.courses) ? data.courses : []
+  };
+}
+
+function money(value) {
+  return `$${Number(value || 0).toFixed(2)}`;
+}
 
 export default function EarningsScreen({ navigation }) {
+  const entitlements = useEntitlements();
+  const canView = entitlements.can(CAPABILITY_KEYS.CREATOR_EARNINGS_VIEW);
+  const canRequest = entitlements.can(CAPABILITY_KEYS.CREATOR_PAYOUT_REQUEST);
   const [data, setData] = useState(null);
+  const [byCourse, setByCourse] = useState([]);
   const [loading, setLoading] = useState(true);
+  const [requesting, setRequesting] = useState(false);
+  const [feedback, setFeedback] = useState("");
+
+  const stats = data?.stats || {};
+  const earnings = data?.earnings || [];
+  const pendingAmount = Number(
+    stats.pendingPayout ?? stats.availableForPayout ?? stats.pending ?? 0
+  );
 
   async function loadEarnings() {
+    if (!canView) {
+      setLoading(false);
+      return;
+    }
+    setLoading(true);
+    setFeedback("");
     try {
-      setLoading(true);
-      const result = await getMyEarnings();
-      setData(result);
-    } catch (err) {
-      Alert.alert("Error", err.message || "Failed to load earnings");
+      const [earningsResult, courseResult] = await Promise.all([
+        getMyEarnings(),
+        getEarningsByCourse().catch(() => [])
+      ]);
+      setData(normalize(earningsResult));
+      const coursePayload = courseResult?.data ?? courseResult;
+      setByCourse(Array.isArray(coursePayload) ? coursePayload : coursePayload?.courses || []);
+    } catch (error) {
+      setFeedback(error?.message || "Failed to load earnings.");
     } finally {
       setLoading(false);
     }
@@ -30,128 +72,129 @@ export default function EarningsScreen({ navigation }) {
 
   useEffect(() => {
     loadEarnings();
-  }, []);
+  }, [canView]);
 
-  const handleRequestPayout = async () => {
-    const pendingAmount = parseFloat(data?.stats?.pendingPayout || 0);
-
-    if (pendingAmount < 50) {
-      Alert.alert(
-        "Minimum Not Met",
-        `You need at least $50 to request a payout. Current balance: $${pendingAmount.toFixed(2)}`
-      );
-      return;
+  async function handleRequestPayout() {
+    if (!canRequest || pendingAmount <= 0) return;
+    setRequesting(true);
+    setFeedback("");
+    try {
+      await requestPayout("stripe");
+      setFeedback("Payout request submitted. Status updates after backend processing.");
+      await loadEarnings();
+    } catch (error) {
+      Alert.alert("Error", error?.message || "Failed to request payout");
+    } finally {
+      setRequesting(false);
     }
+  }
 
-    Alert.alert(
-      "Request Payout",
-      `Request payout of $${pendingAmount.toFixed(2)} via Stripe?`,
-      [
-        { text: "Cancel", style: "cancel" },
-        {
-          text: "Request",
-          onPress: async () => {
-            try {
-              const result = await requestPayout("stripe");
-              Alert.alert("Success!", result.message);
-              loadEarnings(); // Refresh
-            } catch (err) {
-              Alert.alert("Error", err.message || "Failed to request payout");
-            }
-          }
-        }
-      ]
+  const totals = useMemo(
+    () => ({
+      totalEarned: stats.totalEarned ?? stats.total ?? 0,
+      totalSales: stats.totalSales ?? stats.sales ?? earnings.length,
+      totalPaidOut: stats.totalPaidOut ?? stats.paidOut ?? 0,
+      pendingPayout: pendingAmount
+    }),
+    [earnings.length, pendingAmount, stats]
+  );
+
+  if (!canView) {
+    return (
+      <ScreenContainer>
+        <View style={styles.locked}>
+          <Text style={styles.title}>Creator Earnings</Text>
+          <Text style={styles.subtitle}>
+            This account does not have `CREATOR_EARNINGS_VIEW`.
+          </Text>
+        </View>
+      </ScreenContainer>
     );
-  };
+  }
 
   if (loading || !data) {
     return (
       <ScreenContainer>
         <View style={styles.loadingContainer}>
+          <ActivityIndicator />
           <Text style={styles.loadingText}>Loading earnings...</Text>
         </View>
       </ScreenContainer>
     );
   }
 
-  const { earnings, stats } = data;
-
   return (
     <ScreenContainer>
       <ScrollView style={styles.container} contentContainerStyle={styles.content}>
         <Text style={styles.title}>Creator Earnings</Text>
-        <Text style={styles.subtitle}>Track your course revenue</Text>
+        <Text style={styles.subtitle}>Track course sales, earnings, and payouts.</Text>
+        {feedback ? <Text style={styles.feedback}>{feedback}</Text> : null}
 
-        {/* Stats Cards */}
         <View style={styles.statsRow}>
           <View style={[styles.statCard, styles.statCardPrimary]}>
-            <Text style={styles.statIcon}>💰</Text>
-            <Text style={styles.statValue}>${stats.totalEarned}</Text>
+            <Text style={styles.statValue}>{money(totals.totalEarned)}</Text>
             <Text style={styles.statLabel}>Total Earned</Text>
           </View>
-
           <View style={styles.statCard}>
-            <Text style={styles.statIcon}>📊</Text>
-            <Text style={styles.statValue}>{stats.totalSales}</Text>
+            <Text style={styles.statValue}>{totals.totalSales}</Text>
             <Text style={styles.statLabel}>Total Sales</Text>
           </View>
         </View>
 
         <View style={styles.statsRow}>
           <View style={styles.statCard}>
-            <Text style={styles.statIcon}>✅</Text>
-            <Text style={styles.statValue}>${stats.totalPaidOut}</Text>
+            <Text style={styles.statValue}>{money(totals.totalPaidOut)}</Text>
             <Text style={styles.statLabel}>Paid Out</Text>
           </View>
-
           <View style={[styles.statCard, styles.statCardPending]}>
-            <Text style={styles.statIcon}>⏳</Text>
-            <Text style={styles.statValue}>${stats.pendingPayout}</Text>
+            <Text style={styles.statValue}>{money(totals.pendingPayout)}</Text>
             <Text style={styles.statLabel}>Pending</Text>
           </View>
         </View>
 
-        {/* Payout Button */}
         <TouchableOpacity
           style={[
             styles.payoutBtn,
-            parseFloat(stats.pendingPayout) < 50 && styles.payoutBtnDisabled
+            (!canRequest || totals.pendingPayout <= 0 || requesting) &&
+              styles.payoutBtnDisabled
           ]}
           onPress={handleRequestPayout}
-          disabled={parseFloat(stats.pendingPayout) < 50}
+          disabled={!canRequest || totals.pendingPayout <= 0 || requesting}
         >
           <Text style={styles.payoutBtnText}>
-            Request Payout{" "}
-            {parseFloat(stats.pendingPayout) >= 50
-              ? `($${stats.pendingPayout})`
-              : "(Min $50)"}
+            {requesting ? "Requesting..." : `Request Payout (${money(totals.pendingPayout)})`}
           </Text>
         </TouchableOpacity>
-
-        {/* Revenue Split Info */}
-        <View style={styles.infoCard}>
-          <Text style={styles.infoTitle}>💡 Revenue Split</Text>
-          <Text style={styles.infoText}>
-            You earn <Text style={styles.infoBold}>85%</Text> of every course sale.
+        {!canRequest ? (
+          <Text style={styles.subtitle}>
+            Payout requests require `CREATOR_PAYOUT_REQUEST`.
           </Text>
-          <Text style={styles.infoText}>
-            Platform takes 15% for hosting, payment processing, and infrastructure.
-          </Text>
-        </View>
+        ) : null}
 
-        {/* Recent Sales */}
+        <Text style={styles.sectionTitle}>Sales by Course</Text>
+        {byCourse.length ? (
+          byCourse.map((course) => (
+            <View key={String(course._id || course.id || course.courseId)} style={styles.saleCard}>
+              <Text style={styles.saleTitle}>{course.title || course.courseTitle || "Course"}</Text>
+              <Text style={styles.saleFooter}>
+                {course.sales || course.totalSales || 0} sales | {money(course.earnings || course.totalEarned)}
+              </Text>
+            </View>
+          ))
+        ) : (
+          <Text style={styles.emptyText}>No course sales returned.</Text>
+        )}
+
         <Text style={styles.sectionTitle}>Recent Sales</Text>
-
         {earnings.length === 0 ? (
           <View style={styles.emptyState}>
-            <Text style={styles.emptyIcon}>💸</Text>
             <Text style={styles.emptyTitle}>No sales yet</Text>
             <Text style={styles.emptyText}>
-              Create courses and start earning when students enroll
+              Create courses and start earning when students enroll.
             </Text>
             <TouchableOpacity
               style={styles.createCourseBtn}
-              onPress={() => navigation.navigate("CreateCourse")}
+              onPress={() => navigation?.navigate?.("CreateCourse")}
             >
               <Text style={styles.createCourseBtnText}>Create a Course</Text>
             </TouchableOpacity>
@@ -160,28 +203,26 @@ export default function EarningsScreen({ navigation }) {
           <FlatList
             data={earnings}
             scrollEnabled={false}
-            keyExtractor={(item) => item._id}
+            keyExtractor={(item) => String(item._id || item.id || item.createdAt)}
             renderItem={({ item }) => (
               <View style={styles.saleCard}>
                 <View style={styles.saleHeader}>
                   <Text style={styles.saleTitle} numberOfLines={1}>
-                    {item.course?.title || "Course"}
+                    {item.course?.title || item.courseTitle || "Course"}
                   </Text>
                   <Text style={styles.saleAmount}>
-                    +${item.creatorEarning.toFixed(2)}
+                    {money(item.creatorEarning ?? item.amount)}
                   </Text>
                 </View>
-                <View style={styles.saleFooter}>
-                  <Text style={styles.saleBuyer}>{item.buyer?.name || "Student"}</Text>
-                  <Text style={styles.saleDate}>
-                    {new Date(item.createdAt).toLocaleDateString()}
+                <View style={styles.saleFooterRow}>
+                  <Text style={styles.saleFooter}>{item.buyer?.name || "Student"}</Text>
+                  <Text style={styles.saleFooter}>
+                    {item.createdAt ? new Date(item.createdAt).toLocaleDateString() : ""}
                   </Text>
                 </View>
-                {item.paidOut && (
-                  <View style={styles.paidBadge}>
-                    <Text style={styles.paidBadgeText}>Paid Out</Text>
-                  </View>
-                )}
+                <Text style={item.paidOut ? styles.paid : styles.pending}>
+                  {item.paidOut ? "Paid out" : item.status || "Pending payout"}
+                </Text>
               </View>
             )}
           />
@@ -192,39 +233,14 @@ export default function EarningsScreen({ navigation }) {
 }
 
 const styles = StyleSheet.create({
-  container: {
-    flex: 1
-  },
-  content: {
-    padding: spacing(4),
-    paddingBottom: 100
-  },
-  loadingContainer: {
-    flex: 1,
-    alignItems: "center",
-    justifyContent: "center",
-    padding: 40
-  },
-  loadingText: {
-    fontSize: 16,
-    color: "#6B7280"
-  },
-  title: {
-    fontSize: 28,
-    fontWeight: "800",
-    color: "#111827",
-    marginBottom: 4
-  },
-  subtitle: {
-    fontSize: 14,
-    color: "#6B7280",
-    marginBottom: 24
-  },
-  statsRow: {
-    flexDirection: "row",
-    gap: 12,
-    marginBottom: 12
-  },
+  container: { flex: 1 },
+  content: { padding: spacing(4), paddingBottom: 100 },
+  locked: { padding: spacing(4) },
+  loadingContainer: { flex: 1, alignItems: "center", justifyContent: "center", padding: 40 },
+  loadingText: { fontSize: 16, color: "#6B7280", marginTop: 8 },
+  title: { fontSize: 28, fontWeight: "800", color: "#111827", marginBottom: 4 },
+  subtitle: { fontSize: 14, color: "#6B7280", marginBottom: 16 },
+  statsRow: { flexDirection: "row", gap: 12, marginBottom: 12 },
   statCard: {
     flex: 1,
     backgroundColor: "#FFFFFF",
@@ -234,29 +250,10 @@ const styles = StyleSheet.create({
     padding: spacing(3),
     alignItems: "center"
   },
-  statCardPrimary: {
-    backgroundColor: "#ECFDF5",
-    borderColor: "#10B981"
-  },
-  statCardPending: {
-    backgroundColor: "#FEF3C7",
-    borderColor: "#F59E0B"
-  },
-  statIcon: {
-    fontSize: 32,
-    marginBottom: 8
-  },
-  statValue: {
-    fontSize: 24,
-    fontWeight: "800",
-    color: "#111827",
-    marginBottom: 4
-  },
-  statLabel: {
-    fontSize: 12,
-    color: "#6B7280",
-    fontWeight: "600"
-  },
+  statCardPrimary: { backgroundColor: "#ECFDF5", borderColor: "#10B981" },
+  statCardPending: { backgroundColor: "#FEF3C7", borderColor: "#F59E0B" },
+  statValue: { fontSize: 24, fontWeight: "800", color: "#111827", marginBottom: 4 },
+  statLabel: { fontSize: 12, color: "#6B7280", fontWeight: "600" },
   payoutBtn: {
     backgroundColor: "#10B981",
     borderRadius: 12,
@@ -264,42 +261,9 @@ const styles = StyleSheet.create({
     alignItems: "center",
     marginVertical: 16
   },
-  payoutBtnDisabled: {
-    backgroundColor: "#9CA3AF"
-  },
-  payoutBtnText: {
-    color: "#FFFFFF",
-    fontSize: 16,
-    fontWeight: "700"
-  },
-  infoCard: {
-    backgroundColor: "#F3F4F6",
-    borderRadius: 12,
-    padding: spacing(3),
-    marginBottom: 24
-  },
-  infoTitle: {
-    fontSize: 15,
-    fontWeight: "700",
-    color: "#111827",
-    marginBottom: 8
-  },
-  infoText: {
-    fontSize: 14,
-    color: "#4B5563",
-    lineHeight: 20,
-    marginBottom: 4
-  },
-  infoBold: {
-    fontWeight: "700",
-    color: "#10B981"
-  },
-  sectionTitle: {
-    fontSize: 18,
-    fontWeight: "700",
-    color: "#111827",
-    marginBottom: 16
-  },
+  payoutBtnDisabled: { backgroundColor: "#9CA3AF" },
+  payoutBtnText: { color: "#FFFFFF", fontSize: 16, fontWeight: "700" },
+  sectionTitle: { fontSize: 18, fontWeight: "700", color: "#111827", marginBottom: 12 },
   saleCard: {
     backgroundColor: "#FFFFFF",
     borderWidth: 1,
@@ -308,81 +272,33 @@ const styles = StyleSheet.create({
     padding: spacing(3),
     marginBottom: 12
   },
-  saleHeader: {
+  saleHeader: { flexDirection: "row", justifyContent: "space-between", gap: 12 },
+  saleTitle: { flex: 1, fontSize: 15, fontWeight: "700", color: "#111827" },
+  saleAmount: { fontSize: 16, fontWeight: "800", color: "#10B981" },
+  saleFooterRow: {
     flexDirection: "row",
     justifyContent: "space-between",
     alignItems: "center",
-    marginBottom: 8
+    marginTop: 8
   },
-  saleTitle: {
-    flex: 1,
-    fontSize: 15,
-    fontWeight: "600",
-    color: "#111827",
-    marginRight: 12
-  },
-  saleAmount: {
-    fontSize: 16,
-    fontWeight: "700",
-    color: "#10B981"
-  },
-  saleFooter: {
-    flexDirection: "row",
-    justifyContent: "space-between",
-    alignItems: "center"
-  },
-  saleBuyer: {
-    fontSize: 13,
-    color: "#6B7280"
-  },
-  saleDate: {
-    fontSize: 12,
-    color: "#9CA3AF"
-  },
-  paidBadge: {
-    marginTop: 8,
-    alignSelf: "flex-start",
-    backgroundColor: "#ECFDF5",
-    borderWidth: 1,
-    borderColor: "#10B981",
-    paddingHorizontal: 8,
-    paddingVertical: 4,
-    borderRadius: 6
-  },
-  paidBadgeText: {
-    fontSize: 11,
-    fontWeight: "600",
-    color: "#10B981"
-  },
-  emptyState: {
-    alignItems: "center",
-    paddingVertical: 40
-  },
-  emptyIcon: {
-    fontSize: 64,
-    marginBottom: 16
-  },
-  emptyTitle: {
-    fontSize: 18,
-    fontWeight: "700",
-    color: "#111827",
-    marginBottom: 8
-  },
-  emptyText: {
-    fontSize: 14,
-    color: "#6B7280",
-    textAlign: "center",
-    marginBottom: 24
-  },
+  saleFooter: { fontSize: 13, color: "#6B7280" },
+  paid: { marginTop: 8, color: "#10B981", fontWeight: "700" },
+  pending: { marginTop: 8, color: "#B45309", fontWeight: "700" },
+  emptyState: { alignItems: "center", paddingVertical: 32 },
+  emptyTitle: { fontSize: 18, fontWeight: "700", color: "#111827", marginBottom: 8 },
+  emptyText: { fontSize: 14, color: "#6B7280", textAlign: "center", marginBottom: 20 },
   createCourseBtn: {
     backgroundColor: "#10B981",
     paddingHorizontal: 24,
     paddingVertical: 12,
     borderRadius: 8
   },
-  createCourseBtnText: {
-    color: "#FFFFFF",
-    fontSize: 15,
-    fontWeight: "600"
+  createCourseBtnText: { color: "#FFFFFF", fontSize: 15, fontWeight: "700" },
+  feedback: {
+    color: "#334155",
+    backgroundColor: "#F1F5F9",
+    borderRadius: 8,
+    padding: 8,
+    marginBottom: 10
   }
 });

@@ -4,14 +4,30 @@ import { createNativeStackNavigator } from "@react-navigation/native-stack";
 import CommercialTabs from "./CommercialTabs";
 import GuildCodeScreen from "../screens/GuildCodeScreen";
 import SubscriptionScreen from "../screens/SubscriptionScreen";
+import SubscriptionStatusScreen from "../screens/SubscriptionStatusScreen";
+import PaywallScreen from "../screens/PaywallScreen";
 import PricingMatrixScreen from "../screens/PricingMatrixScreen";
 import ForumNewPostScreen from "../screens/ForumNewPostScreen";
 import { ForumPostDetailScreen } from "../screens/ForumPostDetailScreen";
 import CreateCourseScreen from "../screens/commercial/CreateCourseScreen";
+import CourseDetailScreen from "../screens/CourseDetailScreen";
+import LessonScreen from "../screens/LessonScreen";
+import AddLessonScreen from "../screens/AddLessonScreen";
+import EditLessonScreen from "../screens/EditLessonScreen";
+import CoursesScreen from "../screens/CoursesScreen";
+import LinksScreen from "../screens/LinksScreen";
+import CampaignsScreen from "../screens/CampaignsScreen";
+import CommercialOrdersScreen from "../screens/CommercialOrdersScreen";
+import CommercialInventoryScreen from "../screens/CommercialInventoryScreen";
+import EarningsScreen from "../screens/EarningsScreen";
+import CreatorPayoutScreen from "../screens/CreatorPayoutScreen";
+import AdminPayoutsScreen from "../screens/AdminPayoutsScreen";
 import CommercialToolsScreen from "../screens/commercial/CommercialToolsScreen";
 import CommercialReportsScreen from "../screens/commercial/CommercialReportsScreen";
 import CommercialProfileScreen from "../screens/commercial/CommercialProfileScreen";
 import SocialToolsScreen from "../screens/SocialToolsScreen";
+import MarketplaceScreen from "../screens/MarketplaceScreen";
+import MarketplaceDetailScreen from "../screens/MarketplaceDetailScreen";
 import MarketplaceIntegrationScreen from "../screens/commercial/MarketplaceIntegrationScreen";
 import AdvertisingScreen from "../screens/commercial/AdvertisingScreen";
 
@@ -28,10 +44,26 @@ export default function CommercialStack() {
       <Stack.Screen name="ForumNewPost" component={ForumNewPostScreen} />
       <Stack.Screen name="ForumPostDetail" component={ForumPostDetailScreen} />
       <Stack.Screen name="CreateCourse" component={CreateCourseScreen} />
+      <Stack.Screen name="CourseDetail" component={CourseDetailScreen} />
+      <Stack.Screen name="Course" component={CourseDetailScreen} />
+      <Stack.Screen name="Courses" component={CoursesScreen} />
+      <Stack.Screen name="Lesson" component={LessonScreen} />
+      <Stack.Screen name="AddLesson" component={AddLessonScreen} />
+      <Stack.Screen name="EditLesson" component={EditLessonScreen} />
+      <Stack.Screen name="Links" component={LinksScreen} />
+      <Stack.Screen name="Campaigns" component={CampaignsScreen} />
+      <Stack.Screen name="CommercialOrders" component={CommercialOrdersScreen} />
+      <Stack.Screen name="CommercialInventory" component={CommercialInventoryScreen} />
+      <Stack.Screen name="Earnings" component={EarningsScreen} />
+      <Stack.Screen name="CreatorPayouts" component={CreatorPayoutScreen} />
+      <Stack.Screen name="AdminPayouts" component={AdminPayoutsScreen} />
       <Stack.Screen name="CommercialTools" component={CommercialToolsScreen} />
       <Stack.Screen name="CommercialReports" component={CommercialReportsScreen} />
       <Stack.Screen name="CommercialProfile" component={CommercialProfileScreen} />
       <Stack.Screen name="SocialTools" component={SocialToolsScreen} />
+      <Stack.Screen name="Marketplace" component={MarketplaceScreen} />
+      <Stack.Screen name="MarketplaceScreen" component={MarketplaceScreen} />
+      <Stack.Screen name="MarketplaceDetail" component={MarketplaceDetailScreen} />
       <Stack.Screen
         name="MarketplaceIntegration"
         component={MarketplaceIntegrationScreen}
@@ -39,6 +71,8 @@ export default function CommercialStack() {
       <Stack.Screen name="Advertising" component={AdvertisingScreen} />
       <Stack.Screen name="GuildCode" component={GuildCodeScreen} />
       <Stack.Screen name="Subscription" component={SubscriptionScreen} />
+      <Stack.Screen name="SubscriptionStatus" component={SubscriptionStatusScreen} />
+      <Stack.Screen name="Paywall" component={PaywallScreen} />
       <Stack.Screen name="PricingMatrix" component={PricingMatrixScreen} />
     </Stack.Navigator>
   );

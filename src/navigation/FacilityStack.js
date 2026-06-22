@@ -4,6 +4,8 @@ import { createNativeStackNavigator } from "@react-navigation/native-stack";
 import FacilityTabs from "./FacilityTabs";
 import GuildCodeScreen from "../screens/GuildCodeScreen";
 import SubscriptionScreen from "../screens/SubscriptionScreen";
+import SubscriptionStatusScreen from "../screens/SubscriptionStatusScreen";
+import PaywallScreen from "../screens/PaywallScreen";
 import PricingMatrixScreen from "../screens/PricingMatrixScreen";
 import ForumNewPostScreen from "../screens/ForumNewPostScreen";
 import { ForumPostDetailScreen } from "../screens/ForumPostDetailScreen";
@@ -20,6 +22,8 @@ export default function FacilityStack() {
       />
       <Stack.Screen name="GuildCode" component={GuildCodeScreen} />
       <Stack.Screen name="Subscription" component={SubscriptionScreen} />
+      <Stack.Screen name="SubscriptionStatus" component={SubscriptionStatusScreen} />
+      <Stack.Screen name="Paywall" component={PaywallScreen} />
       <Stack.Screen name="PricingMatrix" component={PricingMatrixScreen} />
       <Stack.Screen name="ForumNewPost" component={ForumNewPostScreen} />
       <Stack.Screen name="ForumPostDetail" component={ForumPostDetailScreen} />

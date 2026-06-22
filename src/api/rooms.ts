@@ -26,3 +26,22 @@ export async function createRoom(
   });
   return createRes?.created ?? createRes?.room ?? createRes;
 }
+
+export async function updateRoom(
+  facilityId: string,
+  id: string,
+  patch: Partial<Pick<Room, "name" | "roomType" | "trackingMode" | "stage">>
+): Promise<Room> {
+  const updateRes = await apiRequest(endpoints.room(facilityId, id), {
+    method: "PATCH",
+    body: patch
+  });
+  return updateRes?.updated ?? updateRes?.room ?? updateRes;
+}
+
+export async function deleteRoom(facilityId: string, id: string) {
+  const deleteRes = await apiRequest(endpoints.room(facilityId, id), {
+    method: "DELETE"
+  });
+  return deleteRes?.deleted ?? deleteRes?.ok ?? deleteRes;
+}

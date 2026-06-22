@@ -12,17 +12,34 @@ import {
 import ScreenContainer from "../components/ScreenContainer";
 import { spacing } from "../theme/theme";
 import { getPendingCourses, approveCourse, rejectCourse } from "../api/courses";
+import { useEntitlements } from "@/entitlements";
+import { getLearningAccess } from "@/features/learning/learningAccess";
+
+function normalizeCourses(payload) {
+  if (Array.isArray(payload)) return payload;
+  if (Array.isArray(payload?.courses)) return payload.courses;
+  if (Array.isArray(payload?.data?.courses)) return payload.data.courses;
+  if (Array.isArray(payload?.data)) return payload.data;
+  return [];
+}
 
 export default function AdminCoursesScreen({ navigation }) {
+  const entitlements = useEntitlements();
+  const access = getLearningAccess(entitlements);
   const [courses, setCourses] = useState([]);
   const [loading, setLoading] = useState(true);
   const [filter, setFilter] = useState("pending");
 
   async function loadCourses() {
+    if (!access.canPublishCourses) {
+      setCourses([]);
+      setLoading(false);
+      return;
+    }
     try {
       setLoading(true);
       const data = await getPendingCourses(filter);
-      setCourses(data || []);
+      setCourses(normalizeCourses(data));
     } catch (err) {
       Alert.alert("Error", err.message || "Failed to load courses");
     } finally {
@@ -32,7 +49,7 @@ export default function AdminCoursesScreen({ navigation }) {
 
   useEffect(() => {
     loadCourses();
-  }, [filter]);
+  }, [filter, access.canPublishCourses]);
 
   const handleApprove = async (courseId) => {
     Alert.alert(
@@ -122,16 +139,23 @@ export default function AdminCoursesScreen({ navigation }) {
         </View>
       </View>
 
+      {!access.canPublishCourses ? (
+        <View style={styles.lockedCard}>
+          <Text style={styles.courseTitle}>Course moderation unavailable</Text>
+          <Text style={styles.metaText}>This account does not have `PUBLISH_COURSES`.</Text>
+        </View>
+      ) : null}
+
       {/* Filter Tabs */}
-      <View style={styles.filterRow}>
+      {access.canPublishCourses ? <View style={styles.filterRow}>
         {renderFilterButton("pending", "Pending")}
         {renderFilterButton("approved", "Approved")}
         {renderFilterButton("rejected", "Rejected")}
         {renderFilterButton("draft", "Draft")}
-      </View>
+      </View> : null}
 
       {/* Courses List */}
-      <FlatList
+      {access.canPublishCourses ? <FlatList
         data={courses}
         contentContainerStyle={styles.listContent}
         keyExtractor={(c) => c._id}
@@ -221,7 +245,7 @@ export default function AdminCoursesScreen({ navigation }) {
         }
         refreshing={loading}
         onRefresh={loadCourses}
-      />
+      /> : null}
     </ScreenContainer>
   );
 }

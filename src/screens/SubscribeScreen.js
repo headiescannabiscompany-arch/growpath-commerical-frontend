@@ -1,17 +1,23 @@
-import React, { useState, useEffect } from "react";
-import { Text, Alert, Platform } from "react-native";
-import ScreenContainer from "../components/ScreenContainer";
+import React, { useEffect, useState } from "react";
+import { Alert, Linking, Platform, Text } from "react-native";
+
+import {
+  createCheckoutSession,
+  getSubscription,
+  verifyIapReceipt
+} from "../api/subscription";
 import Card from "../components/Card";
 import PrimaryButton from "../components/PrimaryButton";
+import ScreenContainer from "../components/ScreenContainer";
 import { colors, spacing } from "../theme/theme";
-import { initIAP, buySubscription } from "../utils/iap";
-import { apiRequest } from "../api/apiRequest";
+import { buySubscription, initIAP } from "../utils/iap";
 
-function buildAuthHeaders(token) {
-  if (!token) return undefined;
-  const raw = String(token);
-  const normalized = raw.startsWith("Bearer ") ? raw : `Bearer ${raw}`;
-  return { Authorization: normalized };
+function isNativePurchasePlatform() {
+  return Platform.OS === "ios" || Platform.OS === "android";
+}
+
+function isActiveSubscription(status) {
+  return status?.subscriptionStatus === "active" || status?.status === "active";
 }
 
 export default function SubscribeScreen({ navigation }) {
@@ -20,49 +26,69 @@ export default function SubscribeScreen({ navigation }) {
 
   async function load() {
     try {
-      const s = await apiRequest("/api/subscription/me", {
-        method: "GET",
-        headers: buildAuthHeaders(global.authToken)
-      });
-      setStatus(s);
+      setStatus(await getSubscription());
     } catch (err) {
-      Alert.alert("Error", err.message);
+      Alert.alert("Error", err?.message || "Unable to load subscription.");
     }
   }
 
   useEffect(() => {
     load();
-    if (Platform.OS === "ios" || Platform.OS === "android") {
-      initIAP();
-    }
+    if (isNativePurchasePlatform()) initIAP();
   }, []);
+
+  async function goToStatus() {
+    await load();
+    if (navigation?.navigate) navigation.navigate("SubscriptionStatus");
+  }
+
+  async function openStripeCheckout() {
+    const checkout = await createCheckoutSession();
+    const url = checkout?.url || checkout?.checkoutUrl || checkout?.data?.url;
+    if (!url) {
+      Alert.alert("Error", "Could not create checkout session.");
+      return;
+    }
+
+    const supported = await Linking.canOpenURL(url);
+    if (!supported) {
+      Alert.alert("Error", "Unable to open payment page.");
+      return;
+    }
+
+    await Linking.openURL(url);
+    Alert.alert(
+      "Checkout opened",
+      "Complete payment in the browser. Access unlocks only after backend confirmation.",
+      [{ text: "Check Status", onPress: goToStatus }]
+    );
+  }
+
+  async function verifyNativePurchase() {
+    const purchase = await buySubscription();
+    await verifyIapReceipt({
+      receipt: purchase.transactionReceipt,
+      platform: Platform.OS,
+      productId: purchase.productId,
+      transactionId: purchase.transactionId
+    });
+    Alert.alert(
+      "Verification submitted",
+      "Access unlocks after the backend confirms subscription status.",
+      [{ text: "Check Status", onPress: goToStatus }]
+    );
+  }
 
   async function handleUpgrade() {
     try {
       setLoading(true);
-
-      if (Platform.OS === "ios" || Platform.OS === "android") {
-        // Native IAP
-        const purchase = await buySubscription();
-
-        const data = await apiRequest("/api/iap/verify", {
-          method: "POST",
-          headers: buildAuthHeaders(global.authToken),
-          body: {
-            receipt: purchase.transactionReceipt,
-            platform: Platform.OS
-          }
-        });
-
-        if (data.ok) {
-          Alert.alert("Success", "You are now Pro!");
-          load();
-        } else {
-          Alert.alert("Error", data.error || "Verification failed");
-        }
+      if (isNativePurchasePlatform()) {
+        await verifyNativePurchase();
+      } else {
+        await openStripeCheckout();
       }
     } catch (err) {
-      Alert.alert("Error", err.message);
+      Alert.alert("Error", err?.message || "Unable to start payment.");
     } finally {
       setLoading(false);
     }
@@ -77,21 +103,21 @@ export default function SubscribeScreen({ navigation }) {
       <Card>
         <Text style={styles.desc}>Unlock all premium features:</Text>
 
-        <Text style={styles.item}>✔ Full AI Diagnose with Vision</Text>
-        <Text style={styles.item}>✔ Unlimited plants & photo uploads</Text>
-        <Text style={styles.item}>✔ Growers Forum access & community</Text>
-        <Text style={styles.item}>✔ Create & sell courses (earn 85%)</Text>
-        <Text style={styles.item}>✔ Advanced grow analytics</Text>
+        <Text style={styles.item}>Full AI Diagnose with Vision</Text>
+        <Text style={styles.item}>Unlimited plants and photo uploads</Text>
+        <Text style={styles.item}>Growers Forum access and community</Text>
+        <Text style={styles.item}>Create and sell courses</Text>
+        <Text style={styles.item}>Advanced grow analytics</Text>
 
         <Text style={styles.note}>
-          * Courses are sold separately by creators. Subscription unlocks platform
-          features.
+          Courses are sold separately by creators. Subscription unlocks platform
+          features only after backend confirmation.
         </Text>
 
         <Text style={styles.price}>$9.99 / month</Text>
 
-        {status.subscriptionStatus === "active" ? (
-          <Text style={styles.active}>You are already a Pro user 🎉</Text>
+        {isActiveSubscription(status) ? (
+          <Text style={styles.active}>Subscription confirmed by backend</Text>
         ) : (
           <>
             <PrimaryButton

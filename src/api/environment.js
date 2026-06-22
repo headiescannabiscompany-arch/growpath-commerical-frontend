@@ -1,10 +1,17 @@
 import { apiRequest } from "./apiRequest";
 import apiRoutes from "./routes.js";
 
+function buildAuthHeaders(token) {
+  if (!token) return undefined;
+  const raw = String(token);
+  const normalized = raw.startsWith("Bearer ") ? raw : `Bearer ${raw}`;
+  return { Authorization: normalized };
+}
+
 export function analyzeEnvironment(data, token) {
   return apiRequest(apiRoutes.ENVIRONMENT.ANALYZE, {
     method: "POST",
-    auth: token ? true : false,
+    headers: buildAuthHeaders(token),
     body: data
   });
 }
@@ -12,7 +19,7 @@ export function analyzeEnvironment(data, token) {
 export function envToTasks(plantId, actions, token) {
   return apiRequest(apiRoutes.ENVIRONMENT.TO_TASKS(plantId), {
     method: "POST",
-    auth: token ? true : false,
+    headers: buildAuthHeaders(token),
     body: { actions }
   });
 }

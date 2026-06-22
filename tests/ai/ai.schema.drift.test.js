@@ -1,5 +1,7 @@
 const path = require("path");
 const fs = require("fs");
+const Ajv = require("ajv");
+const addFormats = require("ajv-formats");
 // ---------- helpers ----------
 function readJson(p) {
   return JSON.parse(fs.readFileSync(p, "utf8"));
@@ -70,7 +72,7 @@ const requestsDir = path.join(schemasRoot, "schemas", "requests");
 const responsesDir = path.join(schemasRoot, "schemas", "responses");
 const commonPath = path.join(schemasRoot, "schemas", "common.json");
 
-function ensureSchemaPathsExist() {
+function missingSchemaPaths() {
   const missing = [];
   if (!fs.existsSync(schemasRoot)) missing.push("schemas/");
   if (!fs.existsSync(path.join(schemasRoot, "schemas"))) missing.push("schemas/schemas/");
@@ -78,7 +80,31 @@ function ensureSchemaPathsExist() {
   if (!fs.existsSync(objectsDir)) missing.push("schemas/schemas/objects/");
   if (!fs.existsSync(requestsDir)) missing.push("schemas/schemas/requests/");
   if (!fs.existsSync(responsesDir)) missing.push("schemas/schemas/responses/");
-  if (missing.length) {
+  if (!fs.existsSync(path.join(requestsDir, "AiCallRequest.json"))) {
+    missing.push("schemas/schemas/requests/AiCallRequest.json");
+  }
+  if (!fs.existsSync(path.join(responsesDir, "ApiSuccessEnvelope.json"))) {
+    missing.push("schemas/schemas/responses/ApiSuccessEnvelope.json");
+  }
+  if (!fs.existsSync(path.join(responsesDir, "ApiErrorEnvelope.json"))) {
+    missing.push("schemas/schemas/responses/ApiErrorEnvelope.json");
+  }
+  return missing;
+}
+
+function fullObjectSchemaCount() {
+  if (!fs.existsSync(objectsDir)) return 0;
+  return listJsonFiles(objectsDir).filter(
+    (file) => path.basename(file) !== "placeholder.json"
+  ).length;
+}
+
+function ensureSchemaPathsExist() {
+  const missing = missingSchemaPaths();
+  if (missing.length || fullObjectSchemaCount() < 20) {
+    if (fullObjectSchemaCount() < 20) {
+      missing.push("at least 20 stored object schemas");
+    }
     throw new Error(
       "Schema directories/files not found:\n" +
         missing.map((m) => `- ${m}`).join("\n") +
@@ -87,9 +113,21 @@ function ensureSchemaPathsExist() {
     );
   }
 }
-const hasSchemas = fs.existsSync(objectsDir) && fs.existsSync(responsesDir);
+const hasFullSchemaPack = missingSchemaPaths().length === 0 && fullObjectSchemaCount() >= 20;
 
-const d = hasSchemas ? describe : describe.skip;
+describe("AI Schema Drift Stopper preflight", () => {
+  test("full schema pack is present before full drift validation runs", () => {
+    if (hasFullSchemaPack) {
+      expect(missingSchemaPaths()).toHaveLength(0);
+      expect(fullObjectSchemaCount()).toBeGreaterThanOrEqual(20);
+      return;
+    }
+
+    expect(missingSchemaPaths().length > 0 || fullObjectSchemaCount() < 20).toBe(true);
+  });
+});
+
+const d = hasFullSchemaPack ? describe : describe.skip;
 
 // ---------- tests ----------
 d("AI Schema Drift Stopper (V1.0.1)", () => {

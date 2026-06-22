@@ -1,5 +1,7 @@
 import { apiRequest } from "./apiRequest";
 
+const STOREFRONT_BASE = "/api/commercial/storefront";
+
 export type Storefront = {
   id: string;
   name: string;
@@ -10,22 +12,19 @@ export type Storefront = {
 };
 
 export async function fetchStorefront(): Promise<Storefront | null> {
-  // Return null if none exists yet
-  const res = await apiRequest(`/commercial/storefront`);
-  // Normalize: if API returns {storefront: ...}, unwrap here
-  if (res && res.storefront !== undefined) return res.storefront;
-  return res || null;
+  const res = await apiRequest(STOREFRONT_BASE);
+  return res?.storefront ?? res?.data?.storefront ?? res?.data ?? res ?? null;
 }
 
 export async function createStorefront(data: { name: string }) {
-  return apiRequest(`/commercial/storefront`, {
+  return apiRequest(STOREFRONT_BASE, {
     method: "POST",
     body: data
   });
 }
 
 export async function updateStorefront(data: Partial<Storefront>) {
-  return apiRequest(`/commercial/storefront`, {
+  return apiRequest(STOREFRONT_BASE, {
     method: "PATCH",
     body: data
   });

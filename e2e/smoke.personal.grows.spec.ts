@@ -57,7 +57,7 @@ async function loginSeedUser(page: any) {
     { timeout: 30000 }
   );
 
-  await page.getByText("Sign in").first().click();
+  await page.getByText("Sign in").last().click();
   const loginResponse = await loginResponsePromise;
   const loginStatus = loginResponse.status();
   let loginBody = "";
@@ -152,9 +152,12 @@ test("Personal Grows: list -> create -> open", async ({ page }) => {
     expect(createJson.success).toBe(true);
   }
 
-  await expect(page.getByText("Grows")).toBeVisible();
+  await expect(page.getByRole("heading", { name: "Grows" }).first()).toBeVisible();
   await expect(page.getByText(growName)).toBeVisible();
 
   await page.getByText(growName).click();
-  await expect(page.getByText("Grow")).toBeVisible();
+  await page.waitForURL(/\/home\/personal\/grows\/[^/?#]+/, { timeout: 15000 });
+  const openedGrowId = page.url().split("/home/personal/grows/")[1]?.split(/[?#]/)[0];
+  expect(openedGrowId).toBeTruthy();
+  await expect(page.getByText(`Grow ${openedGrowId}`).first()).toBeVisible();
 });

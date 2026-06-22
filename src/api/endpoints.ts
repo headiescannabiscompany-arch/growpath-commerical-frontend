@@ -47,6 +47,16 @@ export const endpoints = {
   rooms: (facilityId: string) => facilityPath(facilityId, "/rooms"),
   room: (facilityId: string, id: string) => facilityPath(facilityId, `/rooms/${id}`),
 
+  // equipment
+  equipment: (facilityId: string) => facilityPath(facilityId, "/equipment"),
+  equipmentItem: (facilityId: string, id: string) =>
+    facilityPath(facilityId, `/equipment/${id}`),
+
+  // batch cycles
+  batchCycles: (facilityId: string) => facilityPath(facilityId, "/batch-cycles"),
+  batchCycle: (facilityId: string, id: string) =>
+    facilityPath(facilityId, `/batch-cycles/${id}`),
+
   // deviations
   deviations: (facilityId: string) => facilityPath(facilityId, "/deviations"),
   deviation: (facilityId: string, id: string) =>

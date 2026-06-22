@@ -38,7 +38,8 @@ const CAP = {
   FAC_AUDIT: "facility.audit",
   FAC_METRC: "facility.metrc",
   FAC_TASK_VERIFY: "facility.task_verification",
-  FAC_OPS_ANALYTICS: "facility.ops_analytics"
+  FAC_OPS_ANALYTICS: "facility.ops_analytics",
+  TASKS_WRITE: "TASKS_WRITE"
 };
 
 const LIMITS_BY_PLAN = {
@@ -153,6 +154,7 @@ const MODE_REQUIRED_CAPS = {
 };
 
 const FACILITY_ROLE_GATES = {
+  [CAP.TASKS_WRITE]: ["OWNER", "MANAGER", "STAFF"],
   [CAP.FAC_SOPS]: ["OWNER", "MANAGER"],
   [CAP.FAC_TASK_VERIFY]: ["OWNER", "MANAGER"],
   [CAP.FAC_COMPLIANCE]: ["OWNER", "MANAGER", "AUDITOR"],
@@ -206,22 +208,45 @@ function canInFacilityRole(capability, facilityRole) {
   if (!allowed) return true;
   if (!facilityRole) return false;
   return allowed.includes(facilityRole);
+}
 
-  // Helpers for consistent server authorization checks
-  function hasCap(ent, capability) {
-    return Array.isArray(ent?.capabilities) && ent.capabilities.includes(capability);
-  }
+// Helpers for consistent server authorization checks
+function hasCap(ent, capability) {
+  return Array.isArray(ent?.capabilities) && ent.capabilities.includes(capability);
+}
 
-  function can(ent, capability) {
-    if (!hasCap(ent, capability)) return false;
+function can(ent, capability) {
+  if (!hasCap(ent, capability)) return false;
 
-    const isFacilityCap = String(capability).startsWith("facility.");
-    if (!isFacilityCap) return true;
-
-    // Facility caps require facility context (role must be present) + role gates
+  if (FACILITY_ROLE_GATES[capability]) {
     if (!ent?.facilityRole) return false;
     return canInFacilityRole(capability, ent.facilityRole);
   }
+
+  const isFacilityCap = String(capability).startsWith("facility.");
+  if (!isFacilityCap) return true;
+
+  // Facility caps require facility context (role must be present) + role gates.
+  if (!ent?.facilityRole) return false;
+  return canInFacilityRole(capability, ent.facilityRole);
+}
+
+function requireCapability(ent, capability) {
+  if (can(ent, capability)) return null;
+  const err = new Error(`Missing capability: ${capability}`);
+  err.code = "CAPABILITY_REQUIRED";
+  err.statusCode = 403;
+  err.capability = capability;
+  return err;
+}
+
+function requireCapabilityMiddleware(capability) {
+  return function capabilityMiddleware(req, res, next) {
+    const ent = req.entitlements || req.ctx?.entitlements || req.ctx || {};
+    const err = requireCapability(ent, capability);
+    if (err) return next(err);
+    return next();
+  };
 }
 
 module.exports = {
@@ -230,6 +255,8 @@ module.exports = {
   canInFacilityRole,
   hasCap,
   can,
+  requireCapability,
+  requireCapabilityMiddleware,
   PLANS,
   MODES,
   FACILITY_ROLES

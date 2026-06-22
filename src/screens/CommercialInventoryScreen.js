@@ -88,7 +88,7 @@ export default function CommercialInventoryScreen() {
 
       <View style={styles.card}>
         <TextInput
-          placeholder="Search SKU, vendor, name…"
+          placeholder="Search SKU, vendor, name..."
           value={q}
           onChangeText={setQ}
           style={styles.input}
@@ -98,7 +98,7 @@ export default function CommercialInventoryScreen() {
       {loading ? (
         <View style={styles.center}>
           <ActivityIndicator />
-          <Text style={styles.muted}>Loading…</Text>
+          <Text style={styles.muted}>Loading...</Text>
         </View>
       ) : (
         <FlatList
@@ -112,7 +112,7 @@ export default function CommercialInventoryScreen() {
 
                 <Text style={styles.muted}>
                   {item?.sku ? `SKU ${item.sku}` : "No SKU"}{" "}
-                  {item?.vendor ? `• ${item.vendor}` : ""}
+                  {item?.vendor ? ` - ${item.vendor}` : ""}
                 </Text>
 
                 <Text style={styles.muted}>

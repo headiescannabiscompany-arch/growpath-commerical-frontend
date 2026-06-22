@@ -1,6 +1,15 @@
 import React from "react";
-import { View, StyleSheet, Dimensions } from "react-native";
+import { View, StyleSheet, Dimensions, Text } from "react-native";
 import { WebView } from "react-native-webview";
+
+function getTwitchParentHost() {
+  const configured = process.env.EXPO_PUBLIC_TWITCH_PARENT_HOST;
+  if (configured)
+    return String(configured)
+      .replace(/^https?:\/\//, "")
+      .split("/")[0];
+  return process.env.NODE_ENV !== "production" ? "localhost" : "";
+}
 
 export default function LiveSessionTwitchEmbed({
   twitchChannel,
@@ -8,12 +17,27 @@ export default function LiveSessionTwitchEmbed({
   chatEnabled = false
 }) {
   if (!twitchChannel) return null;
+  const parentHost = getTwitchParentHost();
+
+  if (!parentHost) {
+    return (
+      <View style={[styles.container, styles.unconfigured]}>
+        <Text style={styles.unconfiguredText}>
+          Twitch embed host is not configured for this build.
+        </Text>
+      </View>
+    );
+  }
+
+  const parent = encodeURIComponent(parentHost);
+  const channel = encodeURIComponent(String(twitchChannel));
+
   // For VOD, you would use video={vodId} instead
   const playerUrl =
     embedType === "vod"
-      ? `https://player.twitch.tv/?video=${twitchChannel}&parent=localhost&autoplay=true`
-      : `https://player.twitch.tv/?channel=${twitchChannel}&parent=localhost&autoplay=true`;
-  const chatUrl = `https://www.twitch.tv/embed/${twitchChannel}/chat?parent=localhost`;
+      ? `https://player.twitch.tv/?video=${channel}&parent=${parent}&autoplay=true`
+      : `https://player.twitch.tv/?channel=${channel}&parent=${parent}&autoplay=true`;
+  const chatUrl = `https://www.twitch.tv/embed/${channel}/chat?parent=${parent}`;
 
   return (
     <View style={styles.container}>
@@ -53,5 +77,15 @@ const styles = StyleSheet.create({
     minHeight: 200,
     width: Dimensions.get("window").width - 32,
     alignSelf: "center"
+  },
+  unconfigured: {
+    alignItems: "center",
+    justifyContent: "center",
+    padding: 16
+  },
+  unconfiguredText: {
+    color: "#fff",
+    fontWeight: "700",
+    textAlign: "center"
   }
 });

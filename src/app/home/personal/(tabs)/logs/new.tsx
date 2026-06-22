@@ -2,8 +2,8 @@ import React, { useCallback, useEffect, useMemo, useState } from "react";
 import { useLocalSearchParams, useRouter } from "expo-router";
 import { Pressable, ScrollView, StyleSheet, Text, TextInput, View } from "react-native";
 
-import { apiRequest } from "@/api/apiRequest";
 import { suggestLogInsights } from "@/api/logInsights";
+import { createPersonalLog } from "@/api/logs";
 import { listToolRuns } from "@/api/toolRuns";
 import { CAPABILITY_KEYS, useEntitlements } from "@/entitlements";
 import {
@@ -85,29 +85,27 @@ export default function NewLogScreen() {
     setSaving(true);
     setError("");
     try {
-      await apiRequest("/api/personal/logs", {
-        method: "POST",
-        body: {
-          growId,
-          title: title.trim(),
-          date: date.trim(),
-          notes: notes.trim(),
-          type: logType,
-          toolRunId: selectedToolRunId || undefined,
-          tags: acceptedTags,
-          rejectedTags,
-          aiInsight: suggestions
-            ? {
-                summary: suggestions.summary,
-                missingData: suggestions.missingData,
-                suggestedTask: suggestions.suggestedTask,
-                source: suggestions.source,
-                acceptedTags,
-                rejectedTags
-              }
-            : undefined
-        }
+      const created = await createPersonalLog({
+        growId,
+        title: title.trim(),
+        date: date.trim(),
+        notes: notes.trim(),
+        type: logType,
+        toolRunId: selectedToolRunId || undefined,
+        tags: acceptedTags,
+        rejectedTags,
+        aiInsight: suggestions
+          ? {
+              summary: suggestions.summary,
+              missingData: suggestions.missingData,
+              suggestedTask: suggestions.suggestedTask,
+              source: suggestions.source,
+              acceptedTags,
+              rejectedTags
+            }
+          : undefined
       });
+      if (!created) throw new Error("Failed to create log.");
       router.replace(`/home/personal/grows/${growId}/journal`);
     } catch (failure: any) {
       setError(failure?.message || "Failed to create log.");
@@ -219,7 +217,7 @@ export default function NewLogScreen() {
 
       {suggestions ? (
         <View style={styles.insightCard}>
-          <Text style={styles.insightTitle}>Suggestions · {suggestions.source}</Text>
+          <Text style={styles.insightTitle}>Suggestions | {suggestions.source}</Text>
           {suggestions.source === "unverified" ? (
             <Text style={styles.warning}>
               Provider provenance is missing. Review carefully.

@@ -156,12 +156,18 @@ const REGISTRY = {
 
 ## Roadmap
 
+> Current verification note: this matrix is not proof of completed end-to-end
+> workflow coverage. Playwright workflow verification against a live backend is
+> still pending.
+
 **Phase MVP (Now)**
 
-- ✅ Harvest window estimator (end-to-end write + read)
-- ✅ Calendar read with filtering
-- ✅ Backend contract tests (17 passing)
-- ✅ Frontend hooks (useAICall, useCalendarEvents)
+- Harvest window estimator has backend write paths for `HarvestDecision` and
+  `CalendarEvent`.
+- Calendar read filtering exists in the backend/frontend surface.
+- Frontend hooks exist for AI calls and calendar events.
+- Full end-to-end workflow verification is still pending Playwright/browser
+  availability and a live backend run.
 
 **Phase 1.1 (Next)**
 

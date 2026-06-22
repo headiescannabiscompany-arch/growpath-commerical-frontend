@@ -8,15 +8,45 @@ const commercial = (capabilities: Record<string, boolean>) => ({
   capabilities
 });
 
+const facility = (capabilities: Record<string, boolean>) => ({
+  ready: true,
+  mode: "facility" as const,
+  capabilities
+});
+
+const COMMERCIAL_ONLY_ROUTES = [
+  "/home/commercial",
+  "/home/commercial/inventory",
+  "/home/commercial/inventory-create",
+  "/home/commercial/inventory-item/item-1",
+  "/feed",
+  "/alerts",
+  "/tasks",
+  "/storefront",
+  "/campaigns",
+  "/offers",
+  "/orders",
+  "/logs"
+];
+
 describe("route access policy", () => {
-  it("blocks Facility mode from Commercial routes", () => {
-    expect(
-      canAccessRoute("/storefront", {
-        ready: true,
-        mode: "facility",
-        capabilities: { [CAPABILITY_KEYS.STORE_FRONT_VIEW]: true }
-      })
-    ).toBe(false);
+  it("blocks Facility mode from every Commercial-only route", () => {
+    const allCommercialCaps = Object.fromEntries(
+      [
+        CAPABILITY_KEYS.COMMERCIAL_HOME,
+        CAPABILITY_KEYS.COMMERCIAL_INVENTORY_VIEW,
+        CAPABILITY_KEYS.COMMERCIAL_INVENTORY_WRITE,
+        CAPABILITY_KEYS.COMMERCIAL_FEED_VIEW,
+        CAPABILITY_KEYS.COMMERCIAL_ALERTS_VIEW,
+        CAPABILITY_KEYS.COMMERCIAL_TASKS_VIEW,
+        CAPABILITY_KEYS.STORE_FRONT_VIEW
+      ].map((capability) => [capability, true])
+    );
+
+    for (const route of COMMERCIAL_ONLY_ROUTES) {
+      expect(getRoutePolicy(route)).not.toBeNull();
+      expect(canAccessRoute(route, facility(allCommercialCaps))).toBe(false);
+    }
   });
 
   it("blocks direct entry when the required capability is absent", () => {

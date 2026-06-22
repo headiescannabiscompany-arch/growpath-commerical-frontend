@@ -1,4 +1,9 @@
-export type TelemetrySourceType = "pulse" | "upload" | "manual";
+export type TelemetrySourceType =
+  | "pulse"
+  | "ubibot"
+  | "growlink"
+  | "upload"
+  | "manual";
 
 export type TelemetrySource = {
   id: string;
@@ -95,5 +100,64 @@ export type PulsePullResult = {
   skipped?: number;
   startIso: string;
   endIso: string;
+  lastPointIso?: string;
+};
+
+export type UbiBotChannel = {
+  id: string;
+  name?: string;
+  [k: string]: any;
+};
+
+export type UbiBotVerifyResult = {
+  ok: boolean;
+  [k: string]: any;
+};
+
+export type UbiBotMqttSettingsResult = {
+  host: string;
+  port: number;
+  username: string;
+  password?: string;
+  topic: string;
+  heartbeatUrl?: string;
+  heartbeatIntervalMs?: number;
+};
+
+export type UbiBotPullResult = {
+  sourceId: string;
+  pulled: number;
+  ingested?: number;
+  updated: number;
+  skipped?: number;
+  startIso: string;
+  endIso: string;
+  lastPointIso?: string;
+};
+
+export type GrowlinkController = {
+  id: string;
+  name?: string;
+  serialNumber?: string;
+  timeZoneId?: string;
+  modules?: any[];
+  [k: string]: any;
+};
+
+export type GrowlinkVerifyResult = {
+  ok: boolean;
+  expiresIn?: number;
+  tokenType?: string;
+  [k: string]: any;
+};
+
+export type GrowlinkPullResult = {
+  sourceId: string;
+  pulled: number;
+  ingested?: number;
+  updated: number;
+  skipped?: number;
+  startIso?: string;
+  endIso?: string;
   lastPointIso?: string;
 };

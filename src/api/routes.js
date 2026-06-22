@@ -123,7 +123,10 @@ export const ROUTES = {
     GLOBAL: `${PREFIX}/search`
   },
   PAYMENTS: {
-    CHECKOUT: (courseId) => `${PREFIX}/payments/checkout/${courseId}`
+    CHECKOUT: (courseId) => `${PREFIX}/payments/checkout/${courseId}`,
+    COURSE_STATUS: (courseId) => `${PREFIX}/payments/course/${courseId}/status`,
+    REFUND_REQUEST: (courseId) => `${PREFIX}/payments/course/${courseId}/refund-request`,
+    DISPUTE: (courseId) => `${PREFIX}/payments/course/${courseId}/dispute`
   },
   DIAGNOSE: {
     ANALYZE: `${PREFIX}/diagnose/analyze`,
@@ -195,6 +198,8 @@ export const ROUTES = {
     TIMELINE: `${PREFIX}/creator/enrollment-timeline`,
     PAYOUT_SUMMARY: `${PREFIX}/creator/payout-summary`,
     PAYOUT_HISTORY: `${PREFIX}/creator/payout-history`,
+    PAYOUT_MARK_PAID: (payoutId) =>
+      `${PREFIX}/creator/payout-history/${encodeURIComponent(payoutId)}/mark-paid`,
     SIGNATURE: `${PREFIX}/creator/signature`,
     ANALYTICS: (id) => `${PREFIX}/creator/course/${id}/analytics`,
     REVENUE: `${PREFIX}/creator/revenue-timeline`

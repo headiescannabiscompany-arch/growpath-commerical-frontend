@@ -11,24 +11,50 @@ export type TeamMember = {
   name?: string;
 };
 
+function normalizeMembers(res: any): TeamMember[] {
+  const rows = Array.isArray(res)
+    ? res
+    : (res?.members ?? res?.team ?? res?.items ?? res?.data?.members ?? res?.data ?? []);
+  return Array.isArray(rows)
+    ? rows.map((m: any) => ({
+        ...m,
+        id: String(m.id ?? m.userId ?? m._id ?? "")
+      }))
+    : [];
+}
+
 export async function listTeamMembers(facilityId: string): Promise<TeamMember[]> {
-  const listRes = await apiRequest(endpoints.teamMembers(facilityId));
-  // Contract: { members: [...] }
-  const members = listRes?.members ?? [];
-  return members.map((m: any) => ({
-    ...m,
-    id: String(m.id ?? m.userId ?? m._id ?? "")
-  }));
+  try {
+    const listRes = await apiRequest(endpoints.teamMembers(facilityId), {
+      method: "GET"
+    });
+    return normalizeMembers(listRes);
+  } catch (err: any) {
+    if (err?.status !== 404) throw err;
+    const fallback = await apiRequest(`/api/facilities/${facilityId}/members`, {
+      method: "GET"
+    });
+    return normalizeMembers(fallback);
+  }
 }
 
 export async function inviteTeamMember(
   facilityId: string,
   data: { email: string; role: FacilityRole }
 ) {
-  const inviteRes = await apiRequest(endpoints.teamInvite(facilityId), {
-    method: "POST",
-    body: data
-  });
+  let inviteRes;
+  try {
+    inviteRes = await apiRequest(endpoints.teamInvite(facilityId), {
+      method: "POST",
+      body: data
+    });
+  } catch (err: any) {
+    if (err?.status !== 404) throw err;
+    inviteRes = await apiRequest(`/api/facilities/${facilityId}/invites`, {
+      method: "POST",
+      body: data
+    });
+  }
   return inviteRes?.invited ?? inviteRes;
 }
 

@@ -9,31 +9,12 @@ import {
 } from "react-native";
 import { useRouter } from "expo-router";
 
-import { ApiError, apiRequest } from "@/api/apiRequest";
-import { setToken } from "@/auth/tokenStore";
-
-function extractToken(payload: any): string | null {
-  if (!payload) return null;
-
-  const candidates = [
-    payload.token,
-    payload?.data?.token,
-    payload?.data?.accessToken,
-    payload?.accessToken,
-    payload?.jwt,
-    payload?.data?.jwt
-  ];
-
-  const raw = candidates.find((x) => typeof x === "string" && x.length > 10);
-  if (!raw) return null;
-
-  const t = raw.startsWith("Bearer ") ? raw.slice("Bearer ".length) : raw;
-  const tokenValue = t.trim();
-  return tokenValue ? tokenValue : null;
-}
+import { ApiError } from "@/api/apiRequest";
+import { useAuth } from "@/auth/AuthContext";
 
 export default function RegisterScreen() {
   const router = useRouter();
+  const auth = useAuth();
 
   const [name, setName] = useState("");
   const [email, setEmail] = useState("");
@@ -57,16 +38,7 @@ export default function RegisterScreen() {
 
     try {
       const normalizedEmail = email.trim().toLowerCase();
-      const registerRes = await apiRequest<any>("/api/auth/register", {
-        method: "POST",
-        body: { name: name.trim(), email: normalizedEmail, password },
-        auth: false
-      });
-
-      const token = extractToken(registerRes);
-      if (!token) throw new Error("Register response missing token.");
-
-      await setToken(token);
+      await auth.signup({ name: name.trim(), email: normalizedEmail, password });
       router.replace("/");
     } catch (e: any) {
       if (e instanceof ApiError) {

@@ -78,9 +78,11 @@ This document anchors all production-ready ("locked") surfaces in the frontend. 
 
 ---
 
-## Status: Production Ready
+## Status: Scoped Contract Lock
 
-All locked surfaces have been verified via:
+The listed locked surfaces were verified for contract drift in their scoped
+batch. This is not a whole-product production-readiness claim. Verification
+included:
 
 - Scoped drift scans (no /api literals, no fetch in screens)
 - Pattern consistency checks (all screens follow canonical structure)

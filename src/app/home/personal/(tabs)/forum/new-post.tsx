@@ -1,107 +1,145 @@
 import React, { useCallback, useState } from "react";
-import { ActivityIndicator, Text, TextInput, TouchableOpacity, View } from "react-native";
+import {
+  ActivityIndicator,
+  ScrollView,
+  StyleSheet,
+  Text,
+  TextInput,
+  Pressable,
+  View
+} from "react-native";
 import { useRouter } from "expo-router";
 
+import { createForumPost } from "@/api/communitySocial";
 import { ScreenBoundary } from "@/components/ScreenBoundary";
-import { InlineError } from "@/components/InlineError";
-import { apiRequest } from "@/api/apiRequest";
-
-type UiError = { title?: string; message?: string; requestId?: string };
-
-function normalizeError(e: any): UiError {
-  const env = e?.error || e;
-  return {
-    title: env?.code ? String(env.code) : "REQUEST_FAILED",
-    message: String(env?.message || e?.message || e || "Unknown error"),
-    requestId: env?.requestId ? String(env.requestId) : undefined
-  };
-}
+import { CAPABILITY_KEYS, useEntitlements } from "@/entitlements";
 
 export default function ForumNewPostRoute() {
   const router = useRouter();
+  const entitlements = useEntitlements();
+  const canPost = entitlements.can(CAPABILITY_KEYS.FORUM_POST);
 
   const [title, setTitle] = useState("");
   const [body, setBody] = useState("");
   const [submitting, setSubmitting] = useState(false);
-  const [error, setError] = useState<UiError | null>(null);
+  const [feedback, setFeedback] = useState("");
 
   const submit = useCallback(async () => {
+    if (!canPost) return;
+    const nextTitle = title.trim();
+    const nextBody = body.trim();
+    if (!nextTitle || !nextBody) return;
+
     setSubmitting(true);
-    setError(null);
+    setFeedback("");
     try {
-      const payload = { title: title.trim(), body: body.trim() };
-      await apiRequest("/api/forum/posts", { method: "POST", body: payload });
-      router.back();
-    } catch (e) {
-      setError(normalizeError(e));
+      await createForumPost({ title: nextTitle, body: nextBody });
+      router.replace("/home/personal/forum");
+    } catch (error: any) {
+      setFeedback(error?.message || "Unable to create discussion.");
     } finally {
       setSubmitting(false);
     }
-  }, [title, body, router]);
+  }, [body, canPost, router, title]);
 
-  const disabled = !title.trim() || !body.trim() || submitting;
+  const disabled = !title.trim() || !body.trim() || submitting || !canPost;
 
   return (
     <ScreenBoundary name="personal.forum.newPost">
-      <View style={{ flex: 1, padding: 16, gap: 12 }}>
-        <Text style={{ fontSize: 20, fontWeight: "900" }}>New Post</Text>
+      <ScrollView style={styles.container} contentContainerStyle={styles.content}>
+        <View>
+          <Text style={styles.title}>New Discussion</Text>
+          <Text style={styles.subtitle}>Create a forum post for the community feed.</Text>
+        </View>
 
-        <InlineError
-          title={error?.title}
-          message={error?.message}
-          requestId={error?.requestId}
-        />
+        {!canPost ? (
+          <View style={styles.card}>
+            <Text style={styles.cardTitle}>Posting unavailable</Text>
+            <Text style={styles.cardText}>This account does not have `FORUM_POST`.</Text>
+          </View>
+        ) : null}
+
+        {feedback ? <Text style={styles.feedback}>{feedback}</Text> : null}
 
         <TextInput
           value={title}
           onChangeText={setTitle}
           placeholder="Title"
-          style={{
-            borderWidth: 1,
-            borderRadius: 10,
-            paddingHorizontal: 12,
-            paddingVertical: 10
-          }}
+          editable={!submitting && canPost}
+          style={styles.input}
         />
         <TextInput
           value={body}
           onChangeText={setBody}
-          placeholder="Write your update…"
+          placeholder="Write your update..."
           multiline
-          style={{
-            borderWidth: 1,
-            borderRadius: 10,
-            paddingHorizontal: 12,
-            paddingVertical: 10,
-            minHeight: 140,
-            textAlignVertical: "top"
-          }}
+          editable={!submitting && canPost}
+          style={[styles.input, styles.bodyInput]}
         />
 
-        <TouchableOpacity
-          onPress={submit}
-          disabled={disabled}
-          style={{
-            borderWidth: 1,
-            borderRadius: 10,
-            padding: 12,
-            opacity: disabled ? 0.5 : 1
-          }}
-        >
+        <Pressable onPress={submit} disabled={disabled} style={[styles.primaryBtn, disabled && styles.disabled]}>
           {submitting ? (
-            <ActivityIndicator />
+            <ActivityIndicator color="#FFFFFF" />
           ) : (
-            <Text style={{ fontWeight: "900" }}>Post</Text>
+            <Text style={styles.primaryText}>Post</Text>
           )}
-        </TouchableOpacity>
+        </Pressable>
 
-        <TouchableOpacity
-          onPress={() => router.back()}
-          style={{ borderWidth: 1, borderRadius: 10, padding: 12 }}
-        >
-          <Text style={{ fontWeight: "900" }}>Cancel</Text>
-        </TouchableOpacity>
-      </View>
+        <Pressable onPress={() => router.back()} style={styles.secondaryBtn}>
+          <Text style={styles.secondaryText}>Cancel</Text>
+        </Pressable>
+      </ScrollView>
     </ScreenBoundary>
   );
 }
+
+const styles = StyleSheet.create({
+  container: { flex: 1, backgroundColor: "#FFFFFF" },
+  content: { padding: 20, paddingBottom: 36, gap: 12 },
+  title: { fontSize: 24, fontWeight: "800", color: "#0F172A" },
+  subtitle: { color: "#64748B", marginTop: 4 },
+  input: {
+    borderWidth: 1,
+    borderColor: "#CBD5E1",
+    borderRadius: 10,
+    paddingHorizontal: 12,
+    paddingVertical: 10,
+    backgroundColor: "#FFFFFF"
+  },
+  bodyInput: { minHeight: 150, textAlignVertical: "top" },
+  card: {
+    borderWidth: 1,
+    borderColor: "#E2E8F0",
+    borderRadius: 12,
+    padding: 14,
+    backgroundColor: "#F8FAFC",
+    gap: 6
+  },
+  cardTitle: { fontSize: 16, fontWeight: "800", color: "#0F172A" },
+  cardText: { color: "#475569", lineHeight: 20 },
+  primaryBtn: {
+    alignItems: "center",
+    backgroundColor: "#166534",
+    borderRadius: 9,
+    paddingHorizontal: 12,
+    paddingVertical: 11
+  },
+  primaryText: { color: "#FFFFFF", fontWeight: "800" },
+  secondaryBtn: {
+    alignItems: "center",
+    borderWidth: 1,
+    borderColor: "#CBD5E1",
+    borderRadius: 9,
+    paddingHorizontal: 12,
+    paddingVertical: 11
+  },
+  secondaryText: { color: "#0F172A", fontWeight: "800" },
+  disabled: { opacity: 0.5 },
+  feedback: {
+    color: "#334155",
+    backgroundColor: "#F1F5F9",
+    borderRadius: 9,
+    padding: 9,
+    fontWeight: "700"
+  }
+});

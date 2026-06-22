@@ -1,431 +1,407 @@
-import React, { useMemo } from "react";
-import { View, Text, StyleSheet, TouchableOpacity } from "react-native";
+import React, { useCallback, useEffect, useMemo, useState } from "react";
+import {
+  ActivityIndicator,
+  Pressable,
+  RefreshControl,
+  ScrollView,
+  StyleSheet,
+  Text,
+  View
+} from "react-native";
 import { useNavigation } from "@react-navigation/native";
-import { MaterialCommunityIcons } from "@expo/vector-icons";
-import ScreenContainer from "../../components/ScreenContainer.js";
-import Card from "../../components/Card.js";
-import EmptyState from "../../components/EmptyState.js";
-import PrimaryButton from "../../components/PrimaryButton.js";
-import { Colors, Typography, Spacing } from "../../theme/theme.js";
-import { useAuth } from "@/auth/AuthContext";
 
-const ChecklistItem = ({ label, done }) => {
+import { apiRequest } from "../../api/apiRequest";
+import { fetchCampaigns } from "../../api/campaigns";
+import { getMyCourses } from "../../api/courses";
+import { fetchLinks } from "../../api/links";
+import { fetchOrders } from "../../api/orders";
+import { fetchProducts } from "../../api/products";
+import { fetchStorefront } from "../../api/storefront";
+import ScreenContainer from "../../components/ScreenContainer";
+
+function rows(payload, key) {
+  if (Array.isArray(payload)) return payload;
+  if (Array.isArray(payload?.[key])) return payload[key];
+  if (Array.isArray(payload?.items)) return payload.items;
+  if (Array.isArray(payload?.data)) return payload.data;
+  if (Array.isArray(payload?.data?.[key])) return payload.data[key];
+  if (Array.isArray(payload?.data?.items)) return payload.data.items;
+  return [];
+}
+
+function money(value) {
+  const n = Number(value || 0);
+  if (!n) return "$0.00";
+  return `$${n.toFixed(2)}`;
+}
+
+async function fetchInventory() {
+  const res = await apiRequest("/api/commercial/inventory", { method: "GET" });
+  return rows(res, "inventory");
+}
+
+function isPublished(item) {
+  return item?.status === "published" || item?.isPublished === true;
+}
+
+function StatCard({ label, value, detail, route, navigation }) {
   return (
-    <View style={styles.checklistRow}>
-      <MaterialCommunityIcons
-        name={done ? "check-circle" : "checkbox-blank-circle-outline"}
-        size={20}
-        color={done ? Colors.primary : Colors.textSecondary}
-      />
-      <Text style={[styles.checklistLabel, done && styles.checklistDone]}>{label}</Text>
-    </View>
+    <Pressable
+      accessibilityRole="button"
+      style={styles.statCard}
+      onPress={() => route && navigation.navigate(route)}
+    >
+      <Text style={styles.statValue}>{value}</Text>
+      <Text style={styles.statLabel}>{label}</Text>
+      {detail ? <Text style={styles.statDetail}>{detail}</Text> : null}
+    </Pressable>
   );
-};
+}
 
-const StatPill = ({ label, value, muted }) => (
-  <View style={[styles.statPill, muted && styles.statPillMuted]}>
-    <Text style={styles.statValue}>{value}</Text>
-    <Text style={[styles.statLabel, muted && styles.statLabelMuted]}>{label}</Text>
-  </View>
-);
-
-const ActionTile = ({ icon, title, subtitle, onPress }) => (
-  <TouchableOpacity style={styles.actionTile} onPress={onPress}>
-    <View style={styles.actionIconWrap}>
-      <MaterialCommunityIcons name={icon} size={22} color={Colors.primary} />
-    </View>
-    <View style={styles.actionTextWrap}>
-      <Text style={styles.actionTitle}>{title}</Text>
-      <Text style={styles.actionSubtitle}>{subtitle}</Text>
-    </View>
-    <MaterialCommunityIcons name="chevron-right" size={20} color={Colors.textSecondary} />
-  </TouchableOpacity>
-);
+function ActionRow({ title, subtitle, route, navigation }) {
+  return (
+    <Pressable
+      accessibilityRole="button"
+      style={styles.actionRow}
+      onPress={() => navigation.navigate(route)}
+    >
+      <View style={styles.actionText}>
+        <Text style={styles.actionTitle}>{title}</Text>
+        <Text style={styles.actionSubtitle}>{subtitle}</Text>
+      </View>
+      <Text style={styles.actionArrow}>Open</Text>
+    </Pressable>
+  );
+}
 
 export default function CommercialDashboardScreen() {
   const navigation = useNavigation();
-  const { user } = useAuth();
+  const [loading, setLoading] = useState(true);
+  const [refreshing, setRefreshing] = useState(false);
+  const [error, setError] = useState("");
+  const [model, setModel] = useState({
+    storefront: null,
+    products: [],
+    courses: [],
+    links: [],
+    campaigns: [],
+    orders: [],
+    inventory: []
+  });
 
-  const businessName =
-    user?.business?.name ||
-    user?.businessName ||
-    user?.companyName ||
-    "Commercial workspace";
-  const businessType =
-    user?.business?.type || user?.businessType || user?.companyType || "Business";
-  const hasLogo = Boolean(user?.business?.logoUrl || user?.profileImage || user?.avatar);
-  const hasContact = Boolean(
-    user?.business?.contactEmail || user?.email || user?.business?.phone
-  );
-  const hasDescription = Boolean(user?.business?.description || user?.bio);
-  const educationPosts =
-    user?.metrics?.educationPosts || user?.stats?.educationPosts || user?.postCount || 0;
-  const coursesCreated =
-    user?.metrics?.coursesCreated || user?.stats?.coursesCreated || 0;
-  const toolsRuns = user?.metrics?.toolsRuns || user?.stats?.toolsRuns || 0;
+  const load = useCallback(async (opts = {}) => {
+    if (opts.refresh) setRefreshing(true);
+    else setLoading(true);
+    setError("");
+    try {
+      const [
+        storefront,
+        products,
+        coursesRes,
+        links,
+        campaigns,
+        orders,
+        inventory
+      ] = await Promise.all([
+        fetchStorefront(),
+        fetchProducts(),
+        getMyCourses(),
+        fetchLinks(),
+        fetchCampaigns(),
+        fetchOrders(),
+        fetchInventory()
+      ]);
 
-  const checklist = useMemo(
-    () => [
-      {
-        id: "profile",
-        label: "Add business name, type, and logo",
-        done: Boolean(businessName && businessType && hasLogo)
-      },
-      {
-        id: "story",
-        label: "Add a description and contact so buyers can reach you",
-        done: Boolean(hasDescription && hasContact)
-      },
-      {
-        id: "post",
-        label: "Publish one education post",
-        done: educationPosts > 0
-      },
-      {
-        id: "course",
-        label: "Submit a course for approval",
-        done: coursesCreated > 0
-      },
-      {
-        id: "tools",
-        label: "Run any commercial tool once",
-        done: toolsRuns > 0
-      }
-    ],
-    [
-      businessName,
-      businessType,
-      hasLogo,
-      hasDescription,
-      hasContact,
-      educationPosts,
-      coursesCreated,
-      toolsRuns
-    ]
-  );
+      setModel({
+        storefront,
+        products,
+        courses: rows(coursesRes, "courses"),
+        links,
+        campaigns,
+        orders,
+        inventory
+      });
+    } catch (err) {
+      setError(err?.message || "Unable to load commercial dashboard.");
+    } finally {
+      setLoading(false);
+      setRefreshing(false);
+    }
+  }, []);
 
-  const completionCount = checklist.filter((item) => item.done).length;
-  const completionPct = Math.round((completionCount / checklist.length) * 100) || 0;
+  useEffect(() => {
+    load();
+  }, [load]);
 
-  const handleCreateEducationPost = () => {
-    navigation.navigate("ForumNewPost", {
-      postType: "education",
-      workspace: "commercial"
-    });
-  };
+  const summary = useMemo(() => {
+    const publishedProducts = model.products.filter(isPublished).length;
+    const activeCampaigns = model.campaigns.filter((c) => c?.status === "active").length;
+    const openOrders = model.orders.filter((o) =>
+      !["complete", "completed", "fulfilled", "cancelled"].includes(
+        String(o?.status || "").toLowerCase()
+      )
+    ).length;
+    const revenue = model.orders.reduce(
+      (sum, order) => sum + Number(order?.total || order?.totalAmount || 0),
+      0
+    );
+    const lowStock = model.inventory.filter((item) => {
+      const qty = Number(item?.qty ?? item?.quantity ?? item?.onHand ?? 0);
+      const reorder = Number(item?.reorderPoint ?? item?.lowStockThreshold ?? 0);
+      return reorder > 0 && qty <= reorder;
+    }).length;
 
-  const handlePublishCourse = () => {
-    navigation.navigate("CreateCourse", {
-      workspace: "commercial"
-    });
-  };
-
-  const handleOpenTools = () => {
-    navigation.navigate("CommercialTools");
-  };
-  const handleOpenReports = () => {
-    navigation.navigate("CommercialReports");
-  };
-
-  const hasProfileBasics = Boolean(businessName && businessType);
-  const hasCourses = coursesCreated > 0;
-  const hasEducationPosts = educationPosts > 0;
+    return {
+      publishedProducts,
+      activeCampaigns,
+      openOrders,
+      revenue,
+      lowStock
+    };
+  }, [model]);
 
   return (
-    <ScreenContainer scroll contentContainerStyle={styles.scrollContent}>
-      <Card style={styles.heroCard}>
-        <View style={styles.heroHeader}>
+    <ScreenContainer scroll={false}>
+      <ScrollView
+        refreshControl={
+          <RefreshControl refreshing={refreshing} onRefresh={() => load({ refresh: true })} />
+        }
+        contentContainerStyle={styles.content}
+      >
+        <View style={styles.headerRow}>
           <View>
-            <Text style={styles.heroLabel}>Commercial Workspace</Text>
-            <Text style={styles.heroTitle}>{businessName}</Text>
-            <Text style={styles.heroSubtitle}>{businessType}</Text>
+            <Text style={styles.eyebrow}>Commercial</Text>
+            <Text style={styles.header}>Dashboard</Text>
+            <Text style={styles.subtitle}>
+              Storefront, products, courses, links, campaigns, orders, and inventory.
+            </Text>
           </View>
-          <StatPill label="Completed" value={`${completionCount}/5`} muted={false} />
+          <Pressable style={styles.refreshButton} onPress={() => load({ refresh: true })}>
+            <Text style={styles.refreshText}>Refresh</Text>
+          </Pressable>
         </View>
-        <View style={styles.progressBarTrack}>
-          <View style={[styles.progressBarFill, { width: `${completionPct}%` }]} />
-        </View>
-        <Text style={styles.progressHint}>
-          Stay honest: finish the checklist and focus on education posts, clear offers,
-          and tools that buyers actually need.
-        </Text>
-      </Card>
 
-      <Card style={styles.ctaCard}>
-        <Text style={styles.sectionTitle}>Quick actions</Text>
-        <View style={styles.ctaRow}>
-          <PrimaryButton
-            title="Create education post"
-            onPress={handleCreateEducationPost}
-            style={styles.ctaButton}
-            textStyle={styles.ctaButtonText}
-            accessibilityRole="button"
-            disabled={false}
-          >
-            <Text>Create education post</Text>
-          </PrimaryButton>
-          <PrimaryButton
-            title="Publish course"
-            onPress={handlePublishCourse}
-            style={styles.ctaButton}
-            textStyle={styles.ctaButtonText}
-            accessibilityRole="button"
-            disabled={false}
-          >
-            <Text>Publish course</Text>
-          </PrimaryButton>
-          <PrimaryButton
-            title="Open tools"
-            onPress={handleOpenTools}
-            style={styles.ctaButton}
-            textStyle={styles.ctaButtonText}
-            accessibilityRole="button"
-            disabled={false}
-          >
-            <Text>Open tools</Text>
-          </PrimaryButton>
-          <PrimaryButton
-            title="Reports"
-            onPress={handleOpenReports}
-            style={styles.ctaButton}
-            textStyle={styles.ctaButtonText}
-            accessibilityRole="button"
-            disabled={false}
-          >
-            <Text>Reports</Text>
-          </PrimaryButton>
-        </View>
-      </Card>
+        {error ? <Text style={styles.error}>{error}</Text> : null}
 
-      <Card style={styles.checklistCard}>
-        <Text style={styles.sectionTitle}>Profile completion</Text>
-        <View style={styles.checklistWrap}>
-          {checklist.map((item, idx) => (
-            <ChecklistItem key={item.id || idx} label={item.label} done={item.done} />
-          ))}
-        </View>
-      </Card>
-
-      <Card style={styles.statusCard}>
-        <Text style={styles.sectionTitle}>Content and offers</Text>
-        <View style={styles.statusRow}>
-          <StatPill
-            label="Education posts"
-            value={educationPosts || 0}
-            muted={!hasEducationPosts}
-          />
-          <StatPill label="Courses" value={coursesCreated || 0} muted={!hasCourses} />
-          <StatPill label="Tools runs" value={toolsRuns || 0} muted={!toolsRuns} />
-        </View>
-        {!hasEducationPosts && (
-          <EmptyState
-            icon="book-outline"
-            title="No education posts yet"
-            subtitle="Share a how-to or lesson before pitching offers."
-            actionLabel="Create education post"
-            onAction={handleCreateEducationPost}
-          />
-        )}
-        {!hasCourses && (
-          <EmptyState
-            icon="school-outline"
-            title="No courses submitted"
-            subtitle="Submit a course for approval with price and outline."
-            actionLabel="Publish a course"
-            onAction={handlePublishCourse}
-          />
-        )}
-      </Card>
-
-      <Card style={styles.profileCard}>
-        <Text style={styles.sectionTitle}>Business profile</Text>
-        {hasProfileBasics ? (
-          <View style={styles.profileDetails}>
-            <ActionTile
-              icon="account-tie"
-              title="Business basics"
-              subtitle={`${businessName} · ${businessType}`}
-              onPress={() => navigation.navigate("CommercialProfile")}
-            />
-            <ActionTile
-              icon="card-text-outline"
-              title="Story & contact"
-              subtitle={
-                hasDescription && hasContact
-                  ? "Ready for buyers"
-                  : "Add description and contact"
-              }
-              onPress={() => navigation.navigate("CommercialProfile")}
-            />
+        {loading ? (
+          <View style={styles.loading}>
+            <ActivityIndicator />
+            <Text style={styles.meta}>Loading commercial modules...</Text>
           </View>
         ) : (
-          <EmptyState
-            icon="briefcase-outline"
-            title="Profile is missing"
-            subtitle="Add your business name, type, logo, and contact details."
-            actionLabel="Complete profile"
-            onAction={() => navigation.navigate("CommercialProfile")}
-          />
+          <>
+            <View style={styles.hero}>
+              <Text style={styles.heroTitle}>
+                {model.storefront?.name || "Storefront not configured"}
+              </Text>
+              <Text style={styles.meta}>
+                {model.storefront?.slug
+                  ? `/${model.storefront.slug}`
+                  : "Add storefront name and slug before publishing products."}
+              </Text>
+              <View style={styles.heroActions}>
+                <Pressable
+                  style={styles.primaryButton}
+                  onPress={() => navigation.navigate("Storefront")}
+                >
+                  <Text style={styles.primaryButtonText}>Manage Storefront</Text>
+                </Pressable>
+                <Pressable
+                  style={styles.secondaryButton}
+                  onPress={() => navigation.navigate("CreateCourse")}
+                >
+                  <Text style={styles.secondaryButtonText}>Create Course</Text>
+                </Pressable>
+              </View>
+            </View>
+
+            <View style={styles.grid}>
+              <StatCard
+                label="Products"
+                value={model.products.length}
+                detail={`${summary.publishedProducts} published`}
+                route="Storefront"
+                navigation={navigation}
+              />
+              <StatCard
+                label="Courses"
+                value={model.courses.length}
+                detail="creator catalog"
+                route="Courses"
+                navigation={navigation}
+              />
+              <StatCard
+                label="Links"
+                value={model.links.length}
+                detail="public destinations"
+                route="Links"
+                navigation={navigation}
+              />
+              <StatCard
+                label="Campaigns"
+                value={model.campaigns.length}
+                detail={`${summary.activeCampaigns} active`}
+                route="Campaigns"
+                navigation={navigation}
+              />
+              <StatCard
+                label="Orders"
+                value={model.orders.length}
+                detail={`${summary.openOrders} open`}
+                route="CommercialOrders"
+                navigation={navigation}
+              />
+              <StatCard
+                label="Inventory"
+                value={model.inventory.length}
+                detail={`${summary.lowStock} low stock`}
+                route="CommercialInventory"
+                navigation={navigation}
+              />
+            </View>
+
+            <View style={styles.panel}>
+              <Text style={styles.sectionTitle}>Revenue</Text>
+              <Text style={styles.revenue}>{money(summary.revenue)}</Text>
+              <Text style={styles.meta}>Based on commercial order totals returned by the API.</Text>
+            </View>
+
+            <View style={styles.panel}>
+              <Text style={styles.sectionTitle}>Workflows</Text>
+              <ActionRow
+                title="Storefront and products"
+                subtitle="Edit storefront identity, add products, and publish listings."
+                route="Storefront"
+                navigation={navigation}
+              />
+              <ActionRow
+                title="Courses"
+                subtitle="Create, edit, moderate, and review commercial courses."
+                route="Courses"
+                navigation={navigation}
+              />
+              <ActionRow
+                title="Links"
+                subtitle="Maintain public links for campaigns, offers, and education."
+                route="Links"
+                navigation={navigation}
+              />
+              <ActionRow
+                title="Campaigns"
+                subtitle="Create drafts and manage active promotional work."
+                route="Campaigns"
+                navigation={navigation}
+              />
+              <ActionRow
+                title="Orders"
+                subtitle="Review order status and fulfillment queue."
+                route="CommercialOrders"
+                navigation={navigation}
+              />
+              <ActionRow
+                title="Basic inventory"
+                subtitle="Search stock, SKU, vendor, and quantity data."
+                route="CommercialInventory"
+                navigation={navigation}
+              />
+            </View>
+          </>
         )}
-      </Card>
+      </ScrollView>
     </ScreenContainer>
   );
 }
 
 const styles = StyleSheet.create({
-  scrollContent: {
-    paddingBottom: Spacing.xl
-  },
-  heroCard: {
-    gap: Spacing.md
-  },
-  heroHeader: {
-    flexDirection: "row",
+  content: { paddingBottom: 80 },
+  headerRow: {
     alignItems: "center",
-    justifyContent: "space-between"
-  },
-  heroLabel: {
-    fontSize: Typography.size.caption,
-    color: Colors.textSecondary,
-    fontWeight: 600
-  },
-  heroTitle: {
-    fontSize: Typography.size.h2,
-    fontWeight: 700,
-    color: Colors.text,
-    marginTop: Spacing.xs
-  },
-  heroSubtitle: {
-    fontSize: Typography.size.body,
-    color: Colors.textSecondary,
-    marginTop: Spacing.xs
-  },
-  progressBarTrack: {
-    height: 10,
-    borderRadius: 6,
-    backgroundColor: Colors.accentSoft,
-    overflow: "hidden"
-  },
-  progressBarFill: {
-    height: "100%",
-    backgroundColor: Colors.primary,
-    borderRadius: 6
-  },
-  progressHint: {
-    fontSize: Typography.size.caption,
-    color: Colors.textSecondary
-  },
-  ctaCard: {
-    marginTop: Spacing.lg,
-    gap: Spacing.sm
-  },
-  sectionTitle: {
-    fontSize: Typography.size.subtitle,
-    fontWeight: 600,
-    color: Colors.text
-  },
-  ctaRow: {
     flexDirection: "row",
-    gap: Spacing.sm,
-    flexWrap: "wrap"
+    justifyContent: "space-between",
+    marginBottom: 14
   },
-  ctaButton: {
+  eyebrow: {
+    color: "#166534",
+    fontSize: 12,
+    fontWeight: "800",
+    textTransform: "uppercase"
+  },
+  header: { color: "#111827", fontSize: 28, fontWeight: "900" },
+  subtitle: { color: "#64748B", marginTop: 4, maxWidth: 620 },
+  refreshButton: {
+    backgroundColor: "#F1F5F9",
+    borderRadius: 8,
+    paddingHorizontal: 12,
+    paddingVertical: 10
+  },
+  refreshText: { color: "#334155", fontWeight: "800" },
+  error: {
+    backgroundColor: "#FEE2E2",
+    borderRadius: 8,
+    color: "#991B1B",
+    marginBottom: 10,
+    padding: 10
+  },
+  loading: { alignItems: "center", gap: 8, padding: 32 },
+  hero: {
+    backgroundColor: "#FFFFFF",
+    borderColor: "#E2E8F0",
+    borderRadius: 8,
+    borderWidth: 1,
+    marginBottom: 14,
+    padding: 16
+  },
+  heroTitle: { color: "#111827", fontSize: 20, fontWeight: "900" },
+  heroActions: { flexDirection: "row", flexWrap: "wrap", gap: 10, marginTop: 14 },
+  primaryButton: {
+    backgroundColor: "#166534",
+    borderRadius: 8,
+    paddingHorizontal: 14,
+    paddingVertical: 10
+  },
+  primaryButtonText: { color: "#FFFFFF", fontWeight: "800" },
+  secondaryButton: {
+    backgroundColor: "#F1F5F9",
+    borderRadius: 8,
+    paddingHorizontal: 14,
+    paddingVertical: 10
+  },
+  secondaryButtonText: { color: "#334155", fontWeight: "800" },
+  grid: { flexDirection: "row", flexWrap: "wrap", gap: 10, marginBottom: 14 },
+  statCard: {
+    backgroundColor: "#FFFFFF",
+    borderColor: "#E2E8F0",
+    borderRadius: 8,
+    borderWidth: 1,
+    flexBasis: "31%",
     flexGrow: 1,
-    minWidth: 120,
-    paddingVertical: Spacing.md,
-    paddingHorizontal: Spacing.lg,
-    borderRadius: 14
+    minWidth: 150,
+    padding: 14
   },
-  ctaButtonText: {
-    fontSize: Typography.size.caption,
-    fontWeight: 600
+  statValue: { color: "#111827", fontSize: 26, fontWeight: "900" },
+  statLabel: { color: "#334155", fontWeight: "800", marginTop: 4 },
+  statDetail: { color: "#64748B", marginTop: 4 },
+  panel: {
+    backgroundColor: "#FFFFFF",
+    borderColor: "#E2E8F0",
+    borderRadius: 8,
+    borderWidth: 1,
+    marginBottom: 14,
+    padding: 14
   },
-  checklistCard: {
-    marginTop: Spacing.lg
-  },
-  checklistWrap: {
-    marginTop: Spacing.sm,
-    gap: Spacing.sm
-  },
-  checklistRow: {
-    flexDirection: "row",
+  sectionTitle: { color: "#111827", fontSize: 18, fontWeight: "900" },
+  revenue: { color: "#166534", fontSize: 28, fontWeight: "900", marginTop: 6 },
+  actionRow: {
     alignItems: "center",
-    gap: Spacing.sm
-  },
-  checklistLabel: {
-    color: Colors.text,
-    fontSize: Typography.size.body
-  },
-  checklistDone: {
-    color: Colors.textSecondary,
-    textDecorationLine: "line-through"
-  },
-  statusCard: {
-    marginTop: Spacing.lg,
-    gap: Spacing.md
-  },
-  statusRow: {
+    borderTopColor: "#E2E8F0",
+    borderTopWidth: 1,
     flexDirection: "row",
-    gap: Spacing.sm,
-    flexWrap: "wrap"
+    gap: 10,
+    paddingVertical: 12
   },
-  statPill: {
-    paddingVertical: Spacing.sm,
-    paddingHorizontal: Spacing.md,
-    backgroundColor: Colors.accentSoft,
-    borderRadius: 12,
-    minWidth: 110
-  },
-  statPillMuted: {
-    backgroundColor: "#F4F6F8"
-  },
-  statValue: {
-    fontSize: Typography.size.h3,
-    fontWeight: 700,
-    color: Colors.text
-  },
-  statLabel: {
-    fontSize: Typography.size.caption,
-    color: Colors.textSecondary,
-    marginTop: 2
-  },
-  statLabelMuted: {
-    color: "#9BA4A8"
-  },
-  profileCard: {
-    marginTop: Spacing.lg,
-    gap: Spacing.md
-  },
-  profileDetails: {
-    gap: Spacing.xs
-  },
-  actionTile: {
-    flexDirection: "row",
-    alignItems: "center",
-    paddingVertical: Spacing.md,
-    borderBottomWidth: 1,
-    borderBottomColor: Colors.border
-  },
-  actionIconWrap: {
-    width: 36,
-    height: 36,
-    borderRadius: 18,
-    backgroundColor: Colors.accentSoft,
-    alignItems: "center",
-    justifyContent: "center",
-    marginRight: Spacing.md
-  },
-  actionTextWrap: {
-    flex: 1
-  },
-  actionTitle: {
-    fontSize: Typography.size.body,
-    fontWeight: 600,
-    color: Colors.text
-  },
-  actionSubtitle: {
-    fontSize: Typography.size.caption,
-    color: Colors.textSecondary,
-    marginTop: 2
-  }
+  actionText: { flex: 1 },
+  actionTitle: { color: "#111827", fontWeight: "900" },
+  actionSubtitle: { color: "#64748B", marginTop: 3 },
+  actionArrow: { color: "#166534", fontWeight: "900" },
+  meta: { color: "#64748B", marginTop: 4 }
 });

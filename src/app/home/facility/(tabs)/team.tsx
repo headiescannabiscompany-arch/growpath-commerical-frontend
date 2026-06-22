@@ -1,4 +1,4 @@
-import React, { useCallback, useEffect, useMemo, useState } from "react";
+import React, { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import {
   ActivityIndicator,
   FlatList,
@@ -16,8 +16,7 @@ import { InlineError } from "@/components/InlineError";
 import { useEntitlements } from "@/entitlements";
 import { can } from "@/facility/roleGates";
 import { useFacility } from "@/state/useFacility";
-import { apiRequest } from "@/api/apiRequest";
-import { endpoints } from "@/api/endpoints";
+import { inviteTeamMember, listTeamMembers } from "@/api/team";
 import { useApiErrorHandler } from "@/hooks/useApiErrorHandler";
 
 type AnyRec = Record<string, any>;
@@ -55,17 +54,10 @@ export default function FacilityTeamTab() {
   const facilityRole = (ent.facilityRole as any) ?? null;
   const canInvite = can(facilityRole, "TEAM_INVITE");
 
-  const apiErr: any = useApiErrorHandler();
-  const error = apiErr?.error ?? apiErr?.[0] ?? null;
-
-  const handleApiError = useMemo(
-    () => apiErr?.handleApiError ?? apiErr?.[1] ?? ((_: any) => {}),
-    [apiErr]
-  );
-  const clearError = useMemo(
-    () => apiErr?.clearError ?? apiErr?.[2] ?? (() => {}),
-    [apiErr]
-  );
+  const mapApiError = useApiErrorHandler();
+  const mapApiErrorRef = useRef(mapApiError);
+  mapApiErrorRef.current = mapApiError;
+  const [error, setError] = useState<any>(null);
 
   const [items, setItems] = useState<AnyRec[]>([]);
   const [loading, setLoading] = useState(true);
@@ -82,19 +74,17 @@ export default function FacilityTeamTab() {
       else setLoading(true);
 
       try {
-        clearError();
-        const res = await apiRequest(endpoints.teamMembers(facilityId), {
-          method: "GET"
-        });
+        setError(null);
+        const res = await listTeamMembers(facilityId);
         setItems(asArray(res));
       } catch (e) {
-        handleApiError(e);
+        setError(mapApiErrorRef.current.toInlineError(e));
       } finally {
         setLoading(false);
         setRefreshing(false);
       }
     },
-    [facilityId, clearError, handleApiError]
+    [facilityId]
   );
 
   const sendInvite = useCallback(async () => {
@@ -106,19 +96,19 @@ export default function FacilityTeamTab() {
 
     setInviting(true);
     try {
-      clearError();
-      await apiRequest(endpoints.teamInvite(facilityId), {
-        method: "POST",
-        body: { email: inviteEmailValue }
+      setError(null);
+      await inviteTeamMember(facilityId, {
+        email: inviteEmailValue,
+        role: "STAFF"
       });
       setInviteEmail("");
       await load({ refresh: true });
     } catch (e) {
-      handleApiError(e);
+      setError(mapApiErrorRef.current.toInlineError(e));
     } finally {
       setInviting(false);
     }
-  }, [canInvite, facilityId, inviteEmail, clearError, handleApiError, load]);
+  }, [canInvite, facilityId, inviteEmail, load]);
 
   useEffect(() => {
     if (!facilityId) {

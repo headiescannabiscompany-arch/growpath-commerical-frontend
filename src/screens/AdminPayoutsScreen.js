@@ -1,30 +1,55 @@
-/* eslint-disable no-unused-expressions */
-import React, { useEffect, useState } from "react";
+import React, { useEffect, useMemo, useState } from "react";
 import {
-  View,
-  Text,
+  ActivityIndicator,
+  Alert,
   FlatList,
   StyleSheet,
+  Text,
   TouchableOpacity,
-  Alert,
-  ActivityIndicator
+  View
 } from "react-native";
-import ScreenContainer from "../components/ScreenContainer.js";
-import FeatureGate from "../components/FeatureGate.js";
-import { getPayoutHistory, markPayoutPaid } from "../api/creator.js";
 
-export default function AdminPayoutsScreen({ navigation }) {
+import { CAPABILITY_KEYS, useEntitlements } from "@/entitlements";
+import { getPayoutHistory, markPayoutPaid } from "../api/creator.js";
+import ScreenContainer from "../components/ScreenContainer.js";
+
+function rows(payload) {
+  if (Array.isArray(payload)) return payload;
+  if (Array.isArray(payload?.items)) return payload.items;
+  if (Array.isArray(payload?.payouts)) return payload.payouts;
+  if (Array.isArray(payload?.history)) return payload.history;
+  return [];
+}
+
+function money(value) {
+  return `$${Number(value || 0).toFixed(2)}`;
+}
+
+export default function AdminPayoutsScreen() {
+  const entitlements = useEntitlements();
+  const canAdmin = entitlements.can(CAPABILITY_KEYS.CREATOR_PAYOUT_ADMIN);
   const [history, setHistory] = useState([]);
   const [loading, setLoading] = useState(true);
   const [marking, setMarking] = useState(null);
+  const [feedback, setFeedback] = useState("");
+
+  const pending = useMemo(
+    () => history.filter((item) => !item.paidOut && item.status !== "paid"),
+    [history]
+  );
 
   async function load() {
+    if (!canAdmin) {
+      setLoading(false);
+      return;
+    }
     setLoading(true);
+    setFeedback("");
     try {
-      const h = await getPayoutHistory();
-      setHistory(h.data || h);
-    } catch (err) {
-      Alert.alert("Error", err.message || "Failed to load payouts");
+      const next = await getPayoutHistory();
+      setHistory(rows(next));
+    } catch (error) {
+      setFeedback(error?.message || "Failed to load payouts.");
     } finally {
       setLoading(false);
     }
@@ -32,73 +57,87 @@ export default function AdminPayoutsScreen({ navigation }) {
 
   useEffect(() => {
     load();
-  }, []);
+  }, [canAdmin]);
 
-  const handleMarkPaid = async (payoutId) => {
+  async function handleMarkPaid(payoutId) {
     setMarking(payoutId);
+    setFeedback("");
     try {
-      const res = await markPayoutPaid(payoutId);
-      if (res.success) {
-        Alert.alert("Marked as Paid", "Payout marked as paid.");
-        load();
-      } else {
-        Alert.alert("Error", res.message || "Failed to mark as paid");
-      }
-    } catch (err) {
-      Alert.alert("Error", err.message || "Failed to mark as paid");
+      await markPayoutPaid(payoutId);
+      setFeedback("Payout marked paid. Backend payout history refreshed.");
+      await load();
+    } catch (error) {
+      Alert.alert("Error", error?.message || "Failed to mark as paid");
     } finally {
       setMarking(null);
     }
-  };
+  }
 
-  <FeatureGate plan="commercial" navigation={navigation} fallback={null}>
+  if (!canAdmin) {
+    return (
+      <ScreenContainer>
+        <View style={styles.locked}>
+          <Text style={styles.header}>Admin payouts unavailable</Text>
+          <Text style={styles.meta}>This account does not have `CREATOR_PAYOUT_ADMIN`.</Text>
+        </View>
+      </ScreenContainer>
+    );
+  }
+
+  return (
     <ScreenContainer scroll>
       <Text style={styles.header}>Admin: Payout Requests</Text>
+      {feedback ? <Text style={styles.feedback}>{feedback}</Text> : null}
       {loading ? (
         <ActivityIndicator size="large" />
       ) : (
         <FlatList
-          data={history.filter((p) => !p.paidOut)}
-          keyExtractor={(item) => item._id}
-          renderItem={({ item }) => (
-            <View style={styles.row}>
-              <View style={{ flex: 1 }}>
-                <Text style={styles.amount}>${item.amount.toFixed(2)}</Text>
-                <Text style={styles.date}>
-                  {new Date(item.createdAt).toLocaleDateString()}
-                </Text>
-                <Text style={styles.creator}>
-                  Creator: {item.creatorName || item.creatorId}
-                </Text>
+          scrollEnabled={false}
+          data={pending}
+          keyExtractor={(item) => String(item._id || item.id || item.createdAt)}
+          renderItem={({ item }) => {
+            const id = String(item._id || item.id || "");
+            return (
+              <View style={styles.row}>
+                <View style={{ flex: 1 }}>
+                  <Text style={styles.amount}>{money(item.amount)}</Text>
+                  <Text style={styles.date}>
+                    {item.createdAt ? new Date(item.createdAt).toLocaleDateString() : ""}
+                  </Text>
+                  <Text style={styles.creator}>
+                    Creator: {item.creatorName || item.creatorId || item.creator?.name || "Unknown"}
+                  </Text>
+                  <Text style={styles.meta}>Status: {item.status || "pending"}</Text>
+                </View>
+                <TouchableOpacity
+                  style={[styles.markBtn, marking === id && styles.disabled]}
+                  onPress={() => handleMarkPaid(id)}
+                  disabled={!id || marking === id}
+                >
+                  {marking === id ? (
+                    <ActivityIndicator color="#fff" />
+                  ) : (
+                    <Text style={styles.markBtnText}>Mark as Paid</Text>
+                  )}
+                </TouchableOpacity>
               </View>
-              <TouchableOpacity
-                style={styles.markBtn}
-                onPress={() => handleMarkPaid(item._id)}
-                disabled={marking === item._id}
-              >
-                {marking === item._id ? (
-                  <ActivityIndicator color="#fff" />
-                ) : (
-                  <Text style={styles.markBtnText}>Mark as Paid</Text>
-                )}
-              </TouchableOpacity>
-            </View>
-          )}
-          ListEmptyComponent={
-            <Text style={styles.empty}>No pending payout requests.</Text>
-          }
+            );
+          }}
+          ListEmptyComponent={<Text style={styles.empty}>No pending payout requests.</Text>}
         />
       )}
     </ScreenContainer>
-  </FeatureGate>;
+  );
 }
 
 const styles = StyleSheet.create({
-  header: {
-    fontSize: 22,
-    fontWeight: "bold",
-    marginVertical: 16,
-    textAlign: "center"
+  header: { fontSize: 22, fontWeight: "bold", marginVertical: 16, textAlign: "center" },
+  locked: {
+    borderWidth: 1,
+    borderColor: "#e5e7eb",
+    borderRadius: 10,
+    padding: 14,
+    backgroundColor: "#f8fafc"
   },
   row: {
     flexDirection: "row",
@@ -110,21 +149,10 @@ const styles = StyleSheet.create({
     borderBottomWidth: 1,
     borderBottomColor: "#eee"
   },
-  amount: {
-    fontWeight: "700",
-    fontSize: 16,
-    color: "#2c3e50"
-  },
-  date: {
-    color: "#999",
-    fontSize: 12,
-    marginTop: 4
-  },
-  creator: {
-    color: "#34495e",
-    fontSize: 13,
-    marginTop: 2
-  },
+  amount: { fontWeight: "700", fontSize: 16, color: "#2c3e50" },
+  date: { color: "#999", fontSize: 12, marginTop: 4 },
+  creator: { color: "#34495e", fontSize: 13, marginTop: 2 },
+  meta: { color: "#64748B", fontSize: 13, marginTop: 4 },
   markBtn: {
     backgroundColor: "#27ae60",
     paddingVertical: 10,
@@ -132,15 +160,14 @@ const styles = StyleSheet.create({
     borderRadius: 8,
     marginLeft: 12
   },
-  markBtnText: {
-    color: "#fff",
-    fontWeight: "700",
-    fontSize: 15
+  markBtnText: { color: "#fff", fontWeight: "700", fontSize: 15 },
+  empty: { textAlign: "center", color: "#888", marginTop: 40 },
+  feedback: {
+    color: "#334155",
+    backgroundColor: "#F1F5F9",
+    borderRadius: 8,
+    padding: 8,
+    marginBottom: 10
   },
-  empty: {
-    textAlign: "center",
-    color: "#888",
-    marginTop: 40
-  }
+  disabled: { opacity: 0.6 }
 });
-

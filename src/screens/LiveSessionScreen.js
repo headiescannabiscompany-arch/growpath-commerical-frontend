@@ -58,10 +58,7 @@ export default function LiveSessionScreen({ route }) {
     };
   }, [sessionId]);
 
-  const moderationUrl =
-    session?.twitchModerationUrl ||
-    session?.moderationUrl ||
-    "https://twitch.tv/moderator";
+  const moderationUrl = session?.twitchModerationUrl || session?.moderationUrl || "";
 
   return (
     <View style={styles.container}>
@@ -85,7 +82,7 @@ export default function LiveSessionScreen({ route }) {
             <Text style={styles.meta}>Channel: {String(session.twitchChannel)}</Text>
           ) : null}
 
-          {canModerate ? (
+          {canModerate && moderationUrl ? (
             <Pressable
               accessibilityRole="button"
               style={styles.btn}

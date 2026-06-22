@@ -18,9 +18,10 @@ export type Facility = {
 type Store = {
   selectedId: string | null;
   selected: Facility | null;
+  facilities: Facility[];
 };
 
-let store: Store = { selectedId: null, selected: null };
+let store: Store = { selectedId: null, selected: null, facilities: [] };
 const listeners = new Set<() => void>();
 
 function emit() {
@@ -51,33 +52,64 @@ export function useFacility() {
       activeFacilityId: snap.selectedId,
       facility: snap.selected,
       facilityRole: null as string | null,
-      facilities: snap.selected ? [snap.selected] : [],
+      facilities: snap.facilities,
       isLoading: false,
       isReady: true,
       error: null as string | null,
+      setFacilities: (facilities: Facility[]) => {
+        const rows = Array.isArray(facilities) ? facilities : [];
+        const sameRows =
+          rows.length === store.facilities.length &&
+          rows.every((row, index) => {
+            const current = store.facilities[index];
+            return current?.id === row.id && current?.name === row.name;
+          });
+        if (sameRows) return;
+        const selected =
+          store.selectedId && rows.length
+            ? rows.find((facility) => facility.id === store.selectedId) || store.selected
+            : store.selected;
+        store = {
+          ...store,
+          facilities: rows,
+          selected
+        };
+        emit();
+      },
       setSelected: (facility: Facility | null) => {
+        const facilities =
+          facility && !store.facilities.some((row) => row.id === facility.id)
+            ? [facility, ...store.facilities]
+            : store.facilities;
         store = {
           selectedId: facility?.id ?? null,
-          selected: facility
+          selected: facility,
+          facilities
         };
         emit();
       },
       selectFacility: (facility: Facility | string | null) => {
         const normalized =
           typeof facility === "string"
-            ? ({ id: facility, name: facility } as Facility)
+            ? store.facilities.find((row) => row.id === facility) ||
+              ({ id: facility, name: facility } as Facility)
             : facility;
+        const facilities =
+          normalized && !store.facilities.some((row) => row.id === normalized.id)
+            ? [normalized, ...store.facilities]
+            : store.facilities;
         store = {
           selectedId: normalized?.id ?? null,
-          selected: normalized
+          selected: normalized,
+          facilities
         };
         emit();
       },
       clearSelected: () => {
-        store = { selectedId: null, selected: null };
+        store = { ...store, selectedId: null, selected: null };
         emit();
       }
     }),
-    [snap.selectedId, snap.selected]
+    [snap.selectedId, snap.selected, snap.facilities]
   );
 }

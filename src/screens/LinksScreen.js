@@ -1,167 +1,160 @@
-import React, { useEffect, useState } from "react";
+import React, { useCallback, useEffect, useState } from "react";
 import {
-  View,
-  Text,
-  FlatList,
-  StyleSheet,
-  Button,
-  TextInput,
-  Modal,
-  TouchableOpacity,
   ActivityIndicator,
   Alert,
+  FlatList,
   Linking,
-  Platform
+  Modal,
+  Pressable,
+  StyleSheet,
+  Text,
+  TextInput,
+  View
 } from "react-native";
-import { getLinks, addLink, updateLink, removeLink } from "../api/links.js";
-import { useAuth } from "@/auth/AuthContext";
+
+import { addLink, getLinks, removeLink, updateLink } from "../api/links.js";
+
+function linkId(link, idx = 0) {
+  return String(link?.id || link?._id || link?.linkId || `link-${idx}`);
+}
 
 export default function LinksScreen() {
-  const { token } = useAuth();
   const [links, setLinks] = useState([]);
   const [loading, setLoading] = useState(true);
-  const [error, setError] = useState(null);
+  const [saving, setSaving] = useState(false);
+  const [error, setError] = useState("");
   const [modalVisible, setModalVisible] = useState(false);
   const [editLink, setEditLink] = useState(null);
   const [label, setLabel] = useState("");
   const [url, setUrl] = useState("");
-  const [saving, setSaving] = useState(false);
 
-  useEffect(() => {
-    fetchLinks();
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [token]);
-
-  const fetchLinks = async () => {
+  const fetchLinks = useCallback(async () => {
     setLoading(true);
-    setError(null);
+    setError("");
     try {
-      const data = await getLinks(token);
-      setLinks(Array.isArray(data) ? data : data?.links || []);
+      setLinks(await getLinks());
     } catch (err) {
-      let details = err.message || "Error loading links";
-      if (err.status || err.data) {
-        details = `API Error${err.status ? ` (${err.status})` : ""}${err.data?.endpoint ? ` – ${err.data.endpoint}` : ""}${err.data?.message ? ` – ${err.data.message}` : ""}`;
-      }
-      setError(details);
+      setError(err?.message || "Unable to load links.");
     } finally {
       setLoading(false);
     }
-  };
+  }, []);
 
-  const openAddModal = () => {
+  useEffect(() => {
+    fetchLinks();
+  }, [fetchLinks]);
+
+  function openAddModal() {
     setEditLink(null);
     setLabel("");
     setUrl("");
     setModalVisible(true);
-  };
+  }
 
-  const openEditModal = (link) => {
+  function openEditModal(link) {
     setEditLink(link);
-    setLabel(link.label);
-    setUrl(link.url);
+    setLabel(link?.label || "");
+    setUrl(link?.url || "");
     setModalVisible(true);
-  };
+  }
 
-  const handleSave = async () => {
-    if (!label.trim() || !url.trim()) return;
+  async function handleSave() {
+    const nextLabel = label.trim();
+    const nextUrl = url.trim();
+    if (!nextLabel || !nextUrl) {
+      Alert.alert("Links", "Label and URL are required.");
+      return;
+    }
+
     setSaving(true);
     try {
       if (editLink) {
-        await updateLink(editLink.id, { label, url }, token);
+        await updateLink(linkId(editLink), { label: nextLabel, url: nextUrl });
       } else {
-        await addLink({ label, url }, token);
+        await addLink({ label: nextLabel, url: nextUrl });
       }
       setModalVisible(false);
-      fetchLinks();
+      await fetchLinks();
     } catch (err) {
-      Alert.alert("Error", err.message || "Failed to save link");
+      Alert.alert("Links", err?.message || "Unable to save link.");
     } finally {
       setSaving(false);
     }
-  };
+  }
 
-  const handleDelete = async (link) => {
-    Alert.alert("Remove Link", `Are you sure you want to remove '${link.label}'?`, [
+  function handleDelete(link) {
+    Alert.alert("Remove link?", `Remove "${link?.label || "this link"}"?`, [
       { text: "Cancel", style: "cancel" },
       {
         text: "Remove",
         style: "destructive",
         onPress: async () => {
           try {
-            await removeLink(link.id, token);
-            fetchLinks();
+            await removeLink(linkId(link));
+            await fetchLinks();
           } catch (err) {
-            Alert.alert("Error", err.message || "Failed to remove link");
+            Alert.alert("Links", err?.message || "Unable to remove link.");
           }
         }
       }
     ]);
-  };
+  }
 
   return (
     <View style={styles.container}>
-      <Text style={styles.header}>Links</Text>
+      <View style={styles.headerRow}>
+        <View>
+          <Text style={styles.header}>Links</Text>
+          <Text style={styles.subtitle}>Manage public links for the commercial profile.</Text>
+        </View>
+        <Pressable style={styles.button} onPress={openAddModal}>
+          <Text style={styles.buttonText}>Add Link</Text>
+        </Pressable>
+      </View>
+
+      {error ? <Text style={styles.error}>{error}</Text> : null}
+
       {loading ? (
-        <ActivityIndicator size="small" color="#10B981" style={{ marginTop: 40 }} />
-      ) : error ? (
-        <View
-          style={{
-            marginTop: 40,
-            padding: 24,
-            borderRadius: 12,
-            backgroundColor: "#FEE2E2",
-            alignItems: "center",
-            borderWidth: 1,
-            borderColor: "#FCA5A5"
-          }}
-        >
-          <Text style={{ fontSize: 32, color: "#B91C1C", marginBottom: 8 }}>X</Text>
-          <Text
-            style={{
-              color: "#B91C1C",
-              fontWeight: "bold",
-              fontSize: 18,
-              marginBottom: 4
-            }}
-          >
-            {error.includes("403")
-              ? "Access Denied"
-              : error.includes("404")
-                ? "Not Found"
-                : "API Error"}
-          </Text>
-          <Text style={{ color: "#B91C1C", textAlign: "center" }}>{error}</Text>
+        <View style={styles.center}>
+          <ActivityIndicator />
+          <Text style={styles.meta}>Loading links...</Text>
         </View>
       ) : (
         <FlatList
           data={links}
-          keyExtractor={(item) => item.id}
+          keyExtractor={(item, idx) => linkId(item, idx)}
+          ListEmptyComponent={<Text style={styles.empty}>No links yet.</Text>}
           renderItem={({ item }) => (
             <View style={styles.linkRow}>
-              <Text style={styles.linkLabel}>{item.label}</Text>
-              <View style={{ flexDirection: "row", gap: 8 }}>
-                <Button title="Open" onPress={() => Linking.openURL(item.url)} />
-                <Button title="Edit" onPress={() => openEditModal(item)} />
-                <Button
-                  title="Remove"
-                  color="#ef4444"
-                  onPress={() => handleDelete(item)}
-                />
+              <View style={styles.linkText}>
+                <Text style={styles.linkLabel}>{item?.label || "Untitled link"}</Text>
+                <Text style={styles.meta} numberOfLines={1}>
+                  {item?.url || "No URL"}
+                </Text>
+              </View>
+              <View style={styles.actions}>
+                <Pressable
+                  style={styles.secondaryButton}
+                  onPress={() => item?.url && Linking.openURL(item.url)}
+                >
+                  <Text style={styles.secondaryButtonText}>Open</Text>
+                </Pressable>
+                <Pressable style={styles.secondaryButton} onPress={() => openEditModal(item)}>
+                  <Text style={styles.secondaryButtonText}>Edit</Text>
+                </Pressable>
+                <Pressable style={styles.dangerButton} onPress={() => handleDelete(item)}>
+                  <Text style={styles.buttonText}>Remove</Text>
+                </Pressable>
               </View>
             </View>
           )}
-          ListEmptyComponent={<Text>No links available.</Text>}
         />
       )}
-      <View style={styles.actions}>
-        <Button title="Add Link" onPress={openAddModal} />
-      </View>
 
       <Modal
         visible={modalVisible}
         transparent
-        animationType="slide"
+        animationType="fade"
         onRequestClose={() => setModalVisible(false)}
       >
         <View style={styles.modalOverlay}>
@@ -170,32 +163,30 @@ export default function LinksScreen() {
             <TextInput
               style={styles.input}
               placeholder="Label"
+              placeholderTextColor="#94A3B8"
               value={label}
               onChangeText={setLabel}
-              autoFocus
             />
             <TextInput
               style={styles.input}
-              placeholder="URL (e.g. https://...)"
+              placeholder="URL, for example https://example.com"
+              placeholderTextColor="#94A3B8"
               value={url}
               onChangeText={setUrl}
               autoCapitalize="none"
               keyboardType="url"
             />
-            <View style={{ flexDirection: "row", gap: 12, marginTop: 20 }}>
-              <TouchableOpacity
-                style={styles.saveBtn}
-                onPress={handleSave}
+            <View style={styles.modalActions}>
+              <Pressable
+                style={styles.secondaryButton}
+                onPress={() => setModalVisible(false)}
                 disabled={saving}
               >
-                <Text style={styles.saveBtnText}>{saving ? "Saving..." : "Save"}</Text>
-              </TouchableOpacity>
-              <TouchableOpacity
-                style={styles.cancelBtn}
-                onPress={() => setModalVisible(false)}
-              >
-                <Text style={styles.cancelBtnText}>Cancel</Text>
-              </TouchableOpacity>
+                <Text style={styles.secondaryButtonText}>Cancel</Text>
+              </Pressable>
+              <Pressable style={styles.button} onPress={handleSave} disabled={saving}>
+                <Text style={styles.buttonText}>{saving ? "Saving..." : "Save"}</Text>
+              </Pressable>
             </View>
           </View>
         </View>
@@ -205,66 +196,78 @@ export default function LinksScreen() {
 }
 
 const styles = StyleSheet.create({
-  container: { flex: 1, padding: 16, backgroundColor: "#fff" },
-  header: { fontSize: 24, fontWeight: "bold", marginBottom: 16 },
-  linkRow: {
-    flexDirection: "row",
+  container: { backgroundColor: "#fff", flex: 1, padding: 16 },
+  headerRow: {
     alignItems: "center",
-    justifyContent: "space-between",
-    paddingVertical: 12,
-    borderBottomWidth: 1,
-    borderColor: "#eee"
-  },
-  linkLabel: { fontSize: 18 },
-  actions: {
     flexDirection: "row",
-    justifyContent: "flex-end",
-    marginTop: 24
+    justifyContent: "space-between",
+    marginBottom: 16
+  },
+  header: { color: "#111827", fontSize: 24, fontWeight: "800" },
+  subtitle: { color: "#64748B", marginTop: 4 },
+  error: {
+    backgroundColor: "#FEE2E2",
+    borderRadius: 8,
+    color: "#991B1B",
+    marginBottom: 10,
+    padding: 10
+  },
+  center: { alignItems: "center", gap: 8, padding: 32 },
+  meta: { color: "#64748B" },
+  empty: { color: "#64748B", paddingTop: 8 },
+  linkRow: {
+    alignItems: "center",
+    borderBottomColor: "#E2E8F0",
+    borderBottomWidth: 1,
+    flexDirection: "row",
+    gap: 10,
+    paddingVertical: 12
+  },
+  linkText: { flex: 1 },
+  linkLabel: { color: "#111827", fontSize: 16, fontWeight: "800" },
+  actions: { flexDirection: "row", flexWrap: "wrap", gap: 8, justifyContent: "flex-end" },
+  button: {
+    backgroundColor: "#166534",
+    borderRadius: 8,
+    paddingHorizontal: 12,
+    paddingVertical: 10
+  },
+  buttonText: { color: "#FFFFFF", fontWeight: "800" },
+  secondaryButton: {
+    backgroundColor: "#F1F5F9",
+    borderRadius: 8,
+    paddingHorizontal: 12,
+    paddingVertical: 10
+  },
+  secondaryButtonText: { color: "#334155", fontWeight: "800" },
+  dangerButton: {
+    backgroundColor: "#991B1B",
+    borderRadius: 8,
+    paddingHorizontal: 12,
+    paddingVertical: 10
   },
   modalOverlay: {
+    alignItems: "center",
+    backgroundColor: "rgba(15,23,42,0.5)",
     flex: 1,
-    backgroundColor: "rgba(0,0,0,0.3)",
     justifyContent: "center",
-    alignItems: "center"
+    padding: 16
   },
   modalContent: {
     backgroundColor: "#fff",
-    borderRadius: 10,
-    padding: 24,
-    width: 300,
-    alignItems: "center",
-    elevation: 4,
-    ...(Platform.OS === "web"
-      ? { boxShadow: "0px 6px 24px rgba(0,0,0,0.18)" }
-      : {
-          shadowColor: "#000",
-          shadowOffset: { width: 0, height: 6 },
-          shadowOpacity: 0.18,
-          shadowRadius: 12
-        })
-  },
-  modalTitle: { fontSize: 18, fontWeight: "bold", color: "#222", marginBottom: 12 },
-  input: {
+    borderRadius: 8,
+    gap: 12,
+    padding: 16,
     width: "100%",
+    maxWidth: 420
+  },
+  modalTitle: { color: "#111827", fontSize: 20, fontWeight: "800" },
+  input: {
+    borderColor: "#CBD5E1",
+    borderRadius: 8,
     borderWidth: 1,
-    borderColor: "#ddd",
-    borderRadius: 6,
-    padding: 10,
-    marginBottom: 12,
-    fontSize: 16
+    color: "#111827",
+    padding: 10
   },
-  saveBtn: {
-    backgroundColor: "#10B981",
-    borderRadius: 6,
-    paddingHorizontal: 18,
-    paddingVertical: 10
-  },
-  saveBtnText: { color: "white", fontWeight: "bold", fontSize: 15 },
-  cancelBtn: {
-    backgroundColor: "#ddd",
-    borderRadius: 6,
-    paddingHorizontal: 18,
-    paddingVertical: 10
-  },
-  cancelBtnText: { color: "#333", fontWeight: "bold", fontSize: 15 }
+  modalActions: { flexDirection: "row", gap: 10, justifyContent: "flex-end" }
 });

@@ -1,22 +1,37 @@
 import React from "react";
-import { View, Text, Linking, TouchableOpacity, StyleSheet, Alert } from "react-native";
-import ScreenContainer from "../components/ScreenContainer";
+import { Alert, Linking, StyleSheet, Text, TouchableOpacity, View } from "react-native";
+
 import { completeLesson } from "../api/courses";
+import ScreenContainer from "../components/ScreenContainer";
+import { useEntitlements } from "@/entitlements";
+import { getLearningAccess } from "@/features/learning/learningAccess";
 
 export default function LessonScreen({ route, navigation }) {
+  const entitlements = useEntitlements();
+  const access = getLearningAccess(entitlements);
   const { lesson, courseId } = route.params;
+
+  if (!access.canViewCourses) {
+    return (
+      <ScreenContainer>
+        <View style={styles.lockedCard}>
+          <Text style={styles.title}>Lesson unavailable</Text>
+          <Text>This account does not have COURSES_VIEW.</Text>
+        </View>
+      </ScreenContainer>
+    );
+  }
 
   return (
     <ScreenContainer scroll>
       <Text style={styles.title}>{lesson.title}</Text>
 
-      {/* VIDEO */}
       {lesson.videoUrl ? (
         <TouchableOpacity
           style={styles.videoLink}
           onPress={() => Linking.openURL(lesson.videoUrl)}
         >
-          <Text style={styles.videoIcon}>▶️</Text>
+          <Text style={styles.videoIcon}>Play</Text>
           <View style={{ flex: 1 }}>
             <Text style={styles.videoTitle}>Watch Video Lesson</Text>
             <Text numberOfLines={1} style={styles.videoSubtitle}>
@@ -26,28 +41,21 @@ export default function LessonScreen({ route, navigation }) {
         </TouchableOpacity>
       ) : null}
 
-      {/* PDF */}
       {lesson.pdfUrl ? (
-        <Text
-          style={styles.link}
-          onPress={() => Linking.openURL(lesson.pdfUrl)}
-        >
-          📄 Open PDF Lesson
+        <Text style={styles.link} onPress={() => Linking.openURL(lesson.pdfUrl)}>
+          Open PDF Lesson
         </Text>
       ) : null}
 
-      {/* TEXT */}
-      {lesson.content ? (
-        <Text style={styles.content}>{lesson.content}</Text>
-      ) : null}
+      {lesson.content ? <Text style={styles.content}>{lesson.content}</Text> : null}
 
-      {courseId && (
+      {courseId ? (
         <TouchableOpacity
           style={styles.completeBtn}
           onPress={async () => {
             try {
               await completeLesson(lesson._id, courseId);
-              Alert.alert("Completed!", "Lesson marked as complete.");
+              Alert.alert("Completed", "Lesson marked as complete.");
               navigation.goBack();
             } catch (err) {
               Alert.alert("Error", err.message || "Failed to mark complete");
@@ -56,7 +64,7 @@ export default function LessonScreen({ route, navigation }) {
         >
           <Text style={styles.completeText}>Mark as Complete</Text>
         </TouchableOpacity>
-      )}
+      ) : null}
     </ScreenContainer>
   );
 }
@@ -71,7 +79,7 @@ const styles = StyleSheet.create({
     borderRadius: 12,
     marginBottom: 20
   },
-  videoIcon: { fontSize: 24, marginRight: 12 },
+  videoIcon: { color: "#fff", fontWeight: "800", marginRight: 12 },
   videoTitle: { color: "#fff", fontWeight: "700", marginBottom: 4 },
   videoSubtitle: { color: "rgba(255,255,255,0.7)", fontSize: 12 },
   link: { color: "#3498db", marginBottom: 20, fontWeight: "600" },
@@ -80,11 +88,17 @@ const styles = StyleSheet.create({
     backgroundColor: "#2ecc71",
     padding: 12,
     borderRadius: 8,
-    marginTop: 20,
+    marginTop: 20
   },
   completeText: {
     color: "white",
     fontWeight: "700",
-    textAlign: "center",
+    textAlign: "center"
   },
+  lockedCard: {
+    borderWidth: 1,
+    borderColor: "#ddd",
+    borderRadius: 8,
+    padding: 12
+  }
 });

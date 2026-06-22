@@ -31,6 +31,16 @@ const mockUseEntitlements = jest.fn();
 
 jest.mock("@/entitlements", () => ({
   __esModule: true,
+  CAPABILITY_KEYS: {
+    COURSES_VIEW: "COURSES_VIEW",
+    SEE_PAID_COURSES: "SEE_PAID_COURSES",
+    COURSES_CREATE: "COURSES_CREATE",
+    COURSES_SELL_PAID: "COURSES_SELL_PAID",
+    COURSES_CERTIFICATES: "COURSES_CERTIFICATES",
+    COURSES_ANALYTICS: "COURSES_ANALYTICS",
+    PUBLISH_COURSES: "PUBLISH_COURSES",
+    COMMERCIAL_HOME: "COMMERCIAL_HOME"
+  },
   useEntitlements: () => mockUseEntitlements()
 }));
 
@@ -106,7 +116,8 @@ describe("CoursesScreen QA (capability-driven)", () => {
     mockUseEntitlements.mockReturnValue({
       ready: true,
       mode: "personal",
-      can: () => false
+      limits: {},
+      can: (cap) => cap === "COURSES_VIEW"
     });
     const { getByText, queryByText } = await renderWithNav();
     await waitFor(() => {
@@ -119,7 +130,8 @@ describe("CoursesScreen QA (capability-driven)", () => {
     mockUseEntitlements.mockReturnValue({
       ready: true,
       mode: "personal",
-      can: (cap) => cap === "SEE_PAID_COURSES"
+      limits: {},
+      can: (cap) => cap === "COURSES_VIEW" || cap === "SEE_PAID_COURSES"
     });
     const { getByText } = await renderWithNav();
     await waitFor(() => {
@@ -132,7 +144,11 @@ describe("CoursesScreen QA (capability-driven)", () => {
     mockUseEntitlements.mockReturnValue({
       ready: true,
       mode: "personal",
-      can: (cap) => cap === "SEE_PAID_COURSES" || cap === "VIEW_COURSE_ANALYTICS"
+      limits: {},
+      can: (cap) =>
+        cap === "COURSES_VIEW" ||
+        cap === "SEE_PAID_COURSES" ||
+        cap === "COURSES_ANALYTICS"
     });
     const { getAllByText } = await renderWithNav();
     await waitFor(() => {
@@ -145,7 +161,11 @@ describe("CoursesScreen QA (capability-driven)", () => {
     mockUseEntitlements.mockReturnValue({
       ready: true,
       mode: "personal",
-      can: (cap) => cap === "SEE_PAID_COURSES" || cap === "PUBLISH_COURSES"
+      limits: {},
+      can: (cap) =>
+        cap === "COURSES_VIEW" ||
+        cap === "SEE_PAID_COURSES" ||
+        cap === "PUBLISH_COURSES"
     });
     const { getByText } = await renderWithNav();
     await waitFor(() => {
@@ -157,7 +177,11 @@ describe("CoursesScreen QA (capability-driven)", () => {
     mockUseEntitlements.mockReturnValue({
       ready: true,
       mode: "commercial",
-      can: (cap) => cap === "SEE_PAID_COURSES"
+      limits: {},
+      can: (cap) =>
+        cap === "COURSES_VIEW" ||
+        cap === "SEE_PAID_COURSES" ||
+        cap === "COMMERCIAL_HOME"
     });
     inviteOk = true;
     const { getByLabelText, getByText, findByText, queryByText } = await renderWithNav();
@@ -176,7 +200,11 @@ describe("CoursesScreen QA (capability-driven)", () => {
     mockUseEntitlements.mockReturnValue({
       ready: true,
       mode: "commercial",
-      can: (cap) => cap === "SEE_PAID_COURSES"
+      limits: {},
+      can: (cap) =>
+        cap === "COURSES_VIEW" ||
+        cap === "SEE_PAID_COURSES" ||
+        cap === "COMMERCIAL_HOME"
     });
     inviteOk = false;
     const { getByText, findByText, queryByText } = await renderWithNav();

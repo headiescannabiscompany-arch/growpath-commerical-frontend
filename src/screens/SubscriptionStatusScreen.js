@@ -1,40 +1,46 @@
-import React, { useState, useEffect, useCallback } from "react";
-import { View, Text, TouchableOpacity, ActivityIndicator, Alert } from "react-native";
+import React, { useCallback, useEffect, useState } from "react";
+import { ActivityIndicator, Alert, Text, TouchableOpacity, View } from "react-native";
 import { useFocusEffect } from "@react-navigation/native";
+
 import { useAuth } from "@/auth/AuthContext";
-import { getSubscriptionStatus, cancelSubscription } from "../api/subscribe";
+import { cancelSubscription, getSubscriptionStatus } from "../api/subscribe";
 import ScreenContainer from "../components/ScreenContainer";
+
+function subscriptionState(status) {
+  return status?.status || status?.subscriptionStatus || "free";
+}
+
+function isConfirmedPro(status) {
+  const state = subscriptionState(status);
+  return Boolean(status?.isPro) || state === "active" || state === "trial";
+}
 
 export default function SubscriptionStatusScreen({ navigation }) {
   const { token } = useAuth();
   const [loading, setLoading] = useState(true);
   const [status, setStatus] = useState(null);
 
-  // Refresh on mount
-  useEffect(() => {
-    loadStatus();
-  }, []);
-
-  // Refresh on screen focus (after returning from Stripe)
-  useFocusEffect(
-    useCallback(() => {
-      loadStatus();
-    }, [])
-  );
-
-  const loadStatus = async () => {
+  const loadStatus = useCallback(async () => {
     setLoading(true);
     try {
       const result = await getSubscriptionStatus(token);
-      if (result.success) {
-        setStatus(result);
-      }
+      setStatus(result?.data ?? result);
     } catch (error) {
       Alert.alert("Error", "Failed to load subscription status");
     } finally {
       setLoading(false);
     }
-  };
+  }, [token]);
+
+  useEffect(() => {
+    loadStatus();
+  }, [loadStatus]);
+
+  useFocusEffect(
+    useCallback(() => {
+      loadStatus();
+    }, [loadStatus])
+  );
 
   const handleCancel = async () => {
     Alert.alert(
@@ -47,11 +53,9 @@ export default function SubscriptionStatusScreen({ navigation }) {
           style: "destructive",
           onPress: async () => {
             try {
-              const result = await cancelSubscription(token);
-              if (result.success) {
-                Alert.alert("Cancelled", "Your subscription has been cancelled.");
-                loadStatus();
-              }
+              await cancelSubscription(token);
+              Alert.alert("Cancellation submitted", "Status updates after backend confirmation.");
+              loadStatus();
             } catch (error) {
               Alert.alert("Error", "Failed to cancel subscription");
             }
@@ -69,8 +73,8 @@ export default function SubscriptionStatusScreen({ navigation }) {
     );
   }
 
-  const isPro = status?.isPro;
-  const subscriptionStatus = status?.status || "free";
+  const isPro = isConfirmedPro(status);
+  const currentStatus = subscriptionState(status);
   const expiry = status?.expiry ? new Date(status.expiry).toLocaleDateString() : null;
   const trialUsed = status?.trialUsed;
 
@@ -83,54 +87,58 @@ export default function SubscriptionStatusScreen({ navigation }) {
           <View style={styles.statusRow}>
             <Text style={styles.label}>Status:</Text>
             <Text style={[styles.value, isPro && styles.proBadge]}>
-              {isPro ? "✅ PRO" : "🔓 Free"}
+              {isPro ? "PRO confirmed" : "Free"}
             </Text>
           </View>
 
           <View style={styles.statusRow}>
             <Text style={styles.label}>Plan:</Text>
             <Text style={styles.value}>
-              {subscriptionStatus === "trial" && "Free Trial"}
-              {subscriptionStatus === "active" && "PRO Subscription"}
-              {subscriptionStatus === "free" && "Free Plan"}
-              {subscriptionStatus === "expired" && "Expired"}
+              {currentStatus === "trial" && "Free Trial"}
+              {currentStatus === "active" && "PRO Subscription"}
+              {currentStatus === "free" && "Free Plan"}
+              {currentStatus === "expired" && "Expired"}
+              {!["trial", "active", "free", "expired"].includes(currentStatus) &&
+                currentStatus}
             </Text>
           </View>
 
-          {expiry && (
+          {expiry ? (
             <View style={styles.statusRow}>
               <Text style={styles.label}>Expires:</Text>
               <Text style={styles.value}>{expiry}</Text>
             </View>
-          )}
+          ) : null}
 
-          {!trialUsed && !isPro && (
+          {!trialUsed && !isPro ? (
             <View style={styles.trialNotice}>
-              <Text style={styles.trialText}>
-                🎁 You have a 7-day free trial available!
-              </Text>
+              <Text style={styles.trialText}>You have a 7-day free trial available.</Text>
             </View>
-          )}
+          ) : null}
+
+          <Text style={styles.confirmationText}>
+            Features unlock only from this backend-confirmed status.
+          </Text>
         </View>
 
         <TouchableOpacity style={styles.refreshButton} onPress={loadStatus}>
-          <Text style={styles.refreshButtonText}>🔄 Refresh Status</Text>
+          <Text style={styles.refreshButtonText}>Refresh Status</Text>
         </TouchableOpacity>
 
-        {isPro && (
+        {isPro ? (
           <TouchableOpacity style={styles.cancelButton} onPress={handleCancel}>
             <Text style={styles.cancelButtonText}>Cancel Subscription</Text>
           </TouchableOpacity>
-        )}
+        ) : null}
 
-        {!isPro && (
+        {!isPro ? (
           <TouchableOpacity
             style={styles.upgradeButton}
             onPress={() => navigation.navigate("Paywall")}
           >
             <Text style={styles.upgradeButtonText}>Upgrade to PRO</Text>
           </TouchableOpacity>
-        )}
+        ) : null}
       </View>
     </ScreenContainer>
   );
@@ -188,6 +196,12 @@ const styles = {
     fontSize: 14,
     color: "#856404",
     textAlign: "center"
+  },
+  confirmationText: {
+    color: "#666",
+    fontSize: 13,
+    lineHeight: 18,
+    marginTop: 12
   },
   refreshButton: {
     backgroundColor: "#E0E0E0",

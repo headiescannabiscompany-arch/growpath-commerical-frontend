@@ -9,6 +9,7 @@ import {
   type ToolRun
 } from "@/api/toolRuns";
 import BackButton from "@/components/nav/BackButton";
+import { CAPABILITY_KEYS, useEntitlements } from "@/entitlements";
 import ToolResultSurface, {
   type ToolResultAction
 } from "@/features/personal/tools/ToolResultSurface";
@@ -29,6 +30,8 @@ export default function VpdToolScreen() {
   const router = useRouter();
   const { growId: rawGrowId } = useLocalSearchParams<{ growId?: string | string[] }>();
   const growId = coerceParam(rawGrowId);
+  const entitlements = useEntitlements();
+  const enabled = entitlements.can(CAPABILITY_KEYS.TOOLS_VPD);
 
   const [unit, setUnit] = useState<TempUnit>("F");
   const [tempText, setTempText] = useState("77");
@@ -110,6 +113,19 @@ export default function VpdToolScreen() {
         if (!result.ok) throw new Error(result.error);
       }
     });
+  }
+
+  if (!enabled) {
+    return (
+      <View style={styles.container}>
+        <BackButton />
+        <Text style={styles.title}>VPD Calculator</Text>
+        <View style={styles.lockedCard}>
+          <Text style={styles.lockedTitle}>Tool unavailable</Text>
+          <Text style={styles.subtitle}>This account does not have `TOOLS_VPD`.</Text>
+        </View>
+      </View>
+    );
   }
 
   return (
@@ -254,5 +270,13 @@ const styles = StyleSheet.create({
     borderColor: "#E2E8F0",
     borderRadius: 10,
     padding: 12
-  }
+  },
+  lockedCard: {
+    borderWidth: 1,
+    borderColor: "#E2E8F0",
+    borderRadius: 10,
+    padding: 12,
+    backgroundColor: "#F8FAFC"
+  },
+  lockedTitle: { fontWeight: "800", color: "#0F172A" }
 });

@@ -1,5 +1,6 @@
 import type { PersonalGrow } from "@/api/grows";
 import type { PersonalLog } from "@/api/logs";
+import type { PersonalPlant } from "@/api/plants";
 import type { PersonalTask } from "@/api/tasks";
 import type { ToolRun } from "@/api/toolRuns";
 
@@ -15,14 +16,17 @@ function growId(row: any) {
 export function buildPersonalHomeModel({
   grows,
   logs,
+  plants = [],
   tasks,
   toolRuns
 }: {
   grows: PersonalGrow[];
   logs: PersonalLog[];
+  plants?: PersonalPlant[];
   tasks: PersonalTask[];
   toolRuns: ToolRun[];
 }) {
+  const activeGrows = grows.filter((grow) => grow.status !== "harvested");
   const activeGrow = [...grows]
     .filter((grow) => grow.status !== "harvested")
     .sort(
@@ -31,6 +35,7 @@ export function buildPersonalHomeModel({
         timestamp(left.updatedAt || left.createdAt)
     )[0];
   const activeGrowId = growId(activeGrow);
+  const growPlants = plants.filter((plant) => !activeGrowId || plant.growId === activeGrowId);
   const growTasks = tasks.filter((task) => !activeGrowId || task.growId === activeGrowId);
   const openTasks = growTasks
     .filter((task) => !task.completed)
@@ -48,6 +53,17 @@ export function buildPersonalHomeModel({
   return {
     activeGrow: activeGrow || null,
     activeGrowId,
+    stats: {
+      totalGrows: grows.length,
+      activeGrowCount: activeGrows.length,
+      plantCount: growPlants.length,
+      logCount: logs.filter((log) => !activeGrowId || log.growId === activeGrowId).length,
+      taskCount: growTasks.length,
+      openTaskCount: openTasks.length,
+      completedTaskCount: growTasks.filter((task) => task.completed).length,
+      toolRunCount: toolRuns.filter((run) => !activeGrowId || run.growId === activeGrowId).length
+    },
+    plants: growPlants,
     openTaskCount: openTasks.length,
     nextTask: openTasks[0] || null,
     latestLog: latestLog || null,

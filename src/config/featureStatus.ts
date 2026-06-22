@@ -15,6 +15,7 @@ export type FeatureDefinition = {
   status: FeatureStatus;
   href?: string;
   acceptsGrowContext?: boolean;
+  capabilityKey?: string;
   internalNote: string;
 };
 
@@ -84,7 +85,7 @@ export const personalToolFeatures = [
     status: "beta",
     href: "/home/personal/tools/integrations",
     internalNote:
-      "Pulse is implemented. Other providers require contracts, credentials, or adapters."
+      "Pulse is implemented. Growlink is viable for read-only user-authorized data ingestion and awaits backend endpoints plus real credentials/hardware. UbiBot is parked until Developer Membership, credentials, and a real device/channel are available. Other providers require contracts, credentials, or adapters."
   },
   {
     key: "tools.vpd",
@@ -94,6 +95,7 @@ export const personalToolFeatures = [
     status: "implemented",
     href: "/home/personal/tools/vpd",
     acceptsGrowContext: true,
+    capabilityKey: "TOOLS_VPD",
     internalNote: "Working calculator with grow log and task actions."
   },
   {
@@ -125,6 +127,7 @@ export const personalToolFeatures = [
     status: "beta",
     href: "/home/personal/tools/bud-rot-risk",
     acceptsGrowContext: true,
+    capabilityKey: "DIAGNOSE_ADVANCED",
     internalNote: "Heuristic screen, not a validated predictive model."
   },
   {
@@ -135,6 +138,7 @@ export const personalToolFeatures = [
     status: "beta",
     href: "/home/personal/tools/npk",
     acceptsGrowContext: true,
+    capabilityKey: "TOOL_NPK",
     internalNote:
       "Twenty-row recipe foundation exists; chemistry and measured-EC work remains."
   },
@@ -146,6 +150,7 @@ export const personalToolFeatures = [
     status: "beta",
     href: "/home/personal/tools/nutrient-chemistry",
     acceptsGrowContext: true,
+    capabilityKey: "TOOL_NPK",
     internalNote:
       "Starter library requires complete source provenance and wider validation."
   },
@@ -160,6 +165,76 @@ export const personalToolFeatures = [
     internalNote: "Heuristic estimate; history and substrate measurements remain."
   },
   {
+    key: "tools.environment_analysis",
+    title: "AI Environment Analysis",
+    description: "Send temperature, humidity, VPD, PPFD, DLI, and CO2 context to the environment analysis endpoint.",
+    area: "environment",
+    status: "beta",
+    href: "/home/personal/tools/environment-analysis",
+    acceptsGrowContext: true,
+    capabilityKey: "AI_ASSISTANT",
+    internalNote: "Endpoint-backed analysis; task conversion depends on backend environment result ids."
+  },
+  {
+    key: "tools.feeding_schedule",
+    title: "AI Feeding Schedule",
+    description: "Generate a stage-aware feeding schedule from nutrient and grow-medium context.",
+    area: "water_nutrients",
+    status: "beta",
+    href: "/home/personal/tools/feeding-schedule",
+    acceptsGrowContext: true,
+    capabilityKey: "FEEDING_SCHEDULE",
+    internalNote: "Uses the backend feeding schedule endpoint; template persistence is endpoint-dependent."
+  },
+  {
+    key: "tools.harvest_estimator",
+    title: "Harvest Estimator",
+    description: "Estimate harvest windows from flowering day, cultivar timing, and maturity signals.",
+    area: "ai",
+    status: "beta",
+    href: "/home/personal/tools/harvest-estimator",
+    acceptsGrowContext: true,
+    capabilityKey: "TOOL_HARVEST_ESTIMATOR",
+    internalNote:
+      "Local estimator with tool-run and journal save paths; not a lab-grade harvest prediction."
+  },
+  {
+    key: "tools.timeline_planner",
+    title: "Timeline Planner",
+    description: "Plan grow milestones across veg, flower, drying, and cure windows.",
+    area: "ai",
+    status: "beta",
+    href: "/home/personal/tools/timeline-planner",
+    acceptsGrowContext: true,
+    capabilityKey: "TOOL_TIMELINE_PLANNER",
+    internalNote:
+      "Local milestone builder can create grow tasks when grow context is present."
+  },
+  {
+    key: "tools.pdf_export",
+    title: "PDF / Export",
+    description: "Prepare grow records, plants, tasks, and tool runs for export.",
+    area: "integrations",
+    status: "beta",
+    href: "/home/personal/tools/pdf-export",
+    acceptsGrowContext: true,
+    capabilityKey: "TOOL_PDF_EXPORT",
+    internalNote:
+      "CSV package supports browser download and native share. Rendered PDF remains tracked separately."
+  },
+  {
+    key: "tools.pheno_matrix",
+    title: "Pheno Matrix",
+    description: "Score phenotype candidates, weight traits, and rank keeper selections.",
+    area: "ai",
+    status: "beta",
+    href: "/home/personal/tools/pheno-matrix",
+    acceptsGrowContext: true,
+    capabilityKey: "TOOL_PHENO_MATRIX",
+    internalNote:
+      "Local weighted scoring matrix is implemented; persistence/export can follow endpoint support."
+  },
+  {
     key: "tools.ai_diagnosis",
     title: "Plant Issue Diagnosis",
     description: "Use photos and grow context for cautious plant-health triage.",
@@ -167,6 +242,7 @@ export const personalToolFeatures = [
     status: "beta",
     href: "/home/personal/diagnose",
     acceptsGrowContext: true,
+    capabilityKey: "DIAGNOSE_AI",
     internalNote:
       "Vision path works when configured; full ETGU intake and follow-up remain."
   },
@@ -191,5 +267,5 @@ export function isFeatureNavigable(feature: Pick<FeatureDefinition, "status" | "
 }
 
 export function getNavigablePersonalTools() {
-  return personalToolFeatures.filter(isFeatureNavigable);
+  return personalToolFeatures.filter(isFeatureNavigable) as FeatureDefinition[];
 }

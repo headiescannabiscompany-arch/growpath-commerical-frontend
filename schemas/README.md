@@ -1,63 +1,91 @@
-# GrowPath JSON Schemas (V1.0.1)
+# GrowPath JSON Schemas
 
-These schemas are contract-lock "drift stoppers" for:
+> Status: PARTIAL
+> Owner: Product/Engineering
+> Last reviewed: 2026-06-21
 
-- Stored objects (`schemas/objects/*.json`)
-- AI call request (`schemas/requests/AiCallRequest.json`)
-- Response envelopes (`schemas/responses/*.json`)
-- Shared enums/defs (`schemas/common.json`)
+This directory is reserved for backend/API schema contracts used by the AI call
+router and schema drift tests.
 
-## Where to put them
+## Current Repository State
 
-Extract the schema zip into the repo root like this:
+The full V1 schema pack is not present in this workspace. The only checked-in
+schema file currently under `schemas/schemas/` is:
 
-```
-<repoRoot>/
-└── schemas/
-    └── schemas/
-        ├── common.json
-        ├── objects/
-        │   ├── TrichomeAnalysis.json
-        │   ├── HarvestDecision.json
-        │   ├── Task.json
-        │   ├── Alert.json
-        │   ├── EventLog.json
-        │   └── ... (25 total)
-        ├── requests/
-        │   └── AiCallRequest.json
-        └── responses/
-            ├── ApiSuccessEnvelope.json
-            └── ApiErrorEnvelope.json
+```text
+schemas/schemas/objects/placeholder.json
 ```
 
-## Validate in Jest
+That placeholder is not enough to validate the AI request, response envelopes,
+or stored object schemas. Do not claim schema drift coverage is complete until
+the full pack is restored and the schema tests pass.
+
+## Expected Full Pack Layout
+
+When available, the schema pack should be extracted to:
+
+```text
+schemas/
+  schemas/
+    common.json
+    objects/
+      TrichomeAnalysis.json
+      HarvestDecision.json
+      Task.json
+      Alert.json
+      EventLog.json
+      ...
+    requests/
+      AiCallRequest.json
+    responses/
+      ApiSuccessEnvelope.json
+      ApiErrorEnvelope.json
+```
+
+The AI call router looks for request schemas at:
+
+```text
+schemas/schemas/requests/<name>.json
+```
+
+If schemas are missing, route-level schema loading must fail closed only where
+that behavior is explicitly implemented. Current setup docs still treat full
+schema extraction as required release work.
+
+## Validation
+
+Run the schema-pack preflight before release validation:
+
+```bash
+npm run schema:preflight
+```
+
+This command fails until the authoritative schema pack is restored. It requires:
+
+- `schemas/schemas/common.json`
+- `schemas/schemas/requests/AiCallRequest.json`
+- `schemas/schemas/responses/ApiSuccessEnvelope.json`
+- `schemas/schemas/responses/ApiErrorEnvelope.json`
+- at least 20 non-placeholder stored object schemas under `schemas/schemas/objects/`
+
+The schema drift test now includes a lightweight preflight that passes when the
+full pack is absent and skips full drift validation. After restoring the full
+schema pack and dependencies, run:
 
 ```bash
 npm test -- tests/ai/ai.schema.drift.test.js
 ```
 
-## Ajv usage (manual)
+The schema drift test expects:
 
-```bash
-npm i -D ajv ajv-formats
-```
+- `schemas/schemas/common.json`
+- `schemas/schemas/objects/*.json`
+- `schemas/schemas/requests/AiCallRequest.json`
+- `schemas/schemas/responses/ApiSuccessEnvelope.json`
+- `schemas/schemas/responses/ApiErrorEnvelope.json`
+- at least 20 stored object schemas
 
-```javascript
-const Ajv = require("ajv");
-const addFormats = require("ajv-formats");
+## Notes
 
-const ajv = new Ajv({ allErrors: true, strict: true });
-addFormats(ajv);
-
-const schema = require("./schemas/schemas/objects/TrichomeAnalysis.json");
-const validate = ajv.compile(schema);
-
-const ok = validate({
-  /* object */
-});
-if (!ok) console.log(validate.errors);
-```
-
-## Important note
-
-Cross-field constraints like "trichome distribution sums to ~1.0" are enforced in code/tests, not JSON Schema (unless you add a custom keyword).
+Cross-field constraints such as trichome distribution totals are enforced in
+code/tests, not plain JSON Schema unless a custom keyword is added.

@@ -47,4 +47,27 @@ describe("buildGrowTimeline", () => {
       "tool-run-0"
     ]);
   });
+
+  it("keeps saved diagnosis logs visible as diagnosis journal entries", () => {
+    const timeline = buildGrowTimeline({
+      logs: [
+        {
+          id: "diagnosis-log",
+          date: "2026-06-21T10:00:00.000Z",
+          title: "Nitrogen deficiency likely",
+          type: "diagnosis",
+          diagnosisId: "diagnosis-1"
+        }
+      ]
+    });
+
+    expect(timeline[0]).toEqual(
+      expect.objectContaining({
+        kind: "log",
+        id: "diagnosis-log",
+        category: "diagnosis",
+        title: "Nitrogen deficiency likely"
+      })
+    );
+  });
 });

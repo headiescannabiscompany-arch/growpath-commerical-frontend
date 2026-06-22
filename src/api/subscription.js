@@ -11,6 +11,18 @@ export function createCheckoutSession() {
   });
 }
 
+export function verifyIapReceipt({ receipt, platform, productId, transactionId }) {
+  return apiRequest(apiRoutes.SUBSCRIBE.VERIFY_IAP, {
+    method: "POST",
+    body: {
+      receipt,
+      platform,
+      productId,
+      transactionId
+    }
+  });
+}
+
 export function getSubscriptionStatus() {
   return apiRequest(apiRoutes.SUBSCRIBE.STATUS, { method: "GET" });
 }

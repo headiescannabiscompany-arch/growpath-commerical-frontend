@@ -1,37 +1,123 @@
-# App Store / Deployment Prep TODO List
+# App Store / Deployment Prep TODO
 
-## Assets
+> Status: BLOCKED FOR SUBMISSION
+> Last reviewed: 2026-06-21
 
-- [ ] Gather and export all required screenshots for iOS and Android
-- [ ] Generate app icons in all required resolutions
-- [ ] Create feature graphics for Google Play
-- [ ] Draft and finalize app descriptions (short and long)
-- [ ] Research and select keywords for App Store Optimization
-- [ ] Prepare privacy policy and support/contact URLs
+Store submission must wait until production-mode validation evidence exists.
+Current known blockers:
 
-## Metadata & Configuration
+- Playwright workflow coverage for Personal, Commercial, and Facility users has
+  not run successfully end to end. The bundled Chromium install is blocked, but
+  `PLAYWRIGHT_USE_SYSTEM_CHROME=1` can launch installed Chrome, and static Expo
+  web validation now passes for auth, `/api/me` shell selection, capability
+  gating, and Free/Pro grow-limit behavior. Full workflow validation still needs
+  a live backend run.
+- The full AI schema pack is missing; only
+  `schemas/schemas/objects/placeholder.json` is present.
+- `eas.json` no longer stores placeholder submit credentials. Real Apple and
+  Google submit credentials still need to be supplied outside source control.
+- Production iOS/Android builds and real-device smoke validation have not been
+  attached as evidence.
 
-- [ ] Review and complete app.json (name, slug, version, orientation, icon, splash, platforms, privacy, etc.)
-- [ ] Set bundle identifiers (iOS) and package names (Android)
-- [ ] Configure all required permissions (camera, notifications, etc.)
-- [ ] Add privacy policy to app and store listing
+## 1. Release Gate
 
-## Production Builds
+- NOT DONE: Production-mode validation for required P0/P1 workflows.
+- Owner: QA + Engineering
+- Next action: Run Personal, Commercial, and Facility workflows against a live
+  backend. Use `PLAYWRIGHT_USE_SYSTEM_CHROME=1` if bundled Playwright browsers
+  are unavailable. For static web validation, export with `npx expo export
+--platform web --output-dir tmp\expo-web-export`, serve the export, set
+  `PLAYWRIGHT_SKIP_WEBSERVER=1`, and point `PLAYWRIGHT_BASE_URL` at that server.
+- Current evidence: static web Playwright passed `tests/playwright/auth-login.spec.js`
+  (3 tests), `e2e/auth-shell-capabilities.spec.ts` (3 tests), and
+  `tests/growLogs.spec.js` (2 tests) using installed Chrome.
+- Evidence target: `tmp/spec/production_workflow_validation_2026-06-21.md`
 
-- [ ] Run EAS build for iOS (production profile)
-- [ ] Run EAS build for Android (production profile)
-- [ ] Download and test builds on real devices
-- [ ] Validate all features and entitlements in production mode
+- NOT DONE: Backend schema and AI release evidence.
+- Owner: Backend Engineering
+- Next action: Restore the full schema pack, update stale AI route tests, and
+  run `npm run schema:preflight` plus schema/provider/route tests in CI.
+- Evidence target: `tmp/spec/backend_schema_ai_validation_2026-06-21.md`
 
-## Store Submission
+## 2. Assets
 
-- [ ] Complete all app store forms (App Store Connect, Google Play Console)
-- [ ] Upload production builds
-- [ ] Add release notes and version info
-- [ ] Submit for review
+- NOT DONE: Required screenshots for iOS and Android device classes.
+- Owner: Product Marketing
+- Next action: Capture final screenshots from production builds after workflow
+  validation passes.
+- Evidence target: `tmp/spec/store_assets_2026-06-21/screenshots/`
 
-## Post-Submission
+- NOT DONE: Final icon and feature graphic package.
+- Owner: Design
+- Next action: Export App Store and Google Play asset sizes from approved brand
+  files.
+- Evidence target: `tmp/spec/store_assets_2026-06-21/graphics/`
 
-- [ ] Monitor for approval or feedback
-- [ ] Prepare for hotfixes or resubmission if needed
-- [ ] Announce launch to users
+- NOT DONE: Store descriptions, keywords, privacy URL, and support URL.
+- Owner: Product + Legal
+- Next action: Finalize listing copy and verify public URLs.
+- Evidence target: `tmp/spec/store_assets_2026-06-21/metadata.md`
+
+## 3. Metadata And Configuration
+
+- NOT DONE: `app.json` release metadata sign-off.
+- Owner: Mobile Engineering
+- Current values: `name` is `GrowPath Commercial`, `slug` is
+  `growpath-commercial`, `version` is `1.0.0`, iOS bundle identifier and Android
+  package are both `com.growpathai.app`. Android verified App Links are not
+  configured because the final public domain and hosted verification files are
+  not confirmed; the app currently uses its custom scheme only. Twitch embeds
+  require `EXPO_PUBLIC_TWITCH_PARENT_HOST` for production builds.
+- Next action: Confirm final app name, identifiers, version/build numbers,
+  permissions, public deep-link domain, Twitch parent host, privacy strings, and
+  splash/icon assets.
+- Evidence target: `tmp/spec/release_config_2026-06-21.md`
+
+- NOT DONE: EAS submit configuration.
+- Owner: Release Engineering
+- Current state: Source-controlled placeholder submit values were removed from
+  `eas.json`. Local service account JSON and Apple API key files are ignored by
+  git. See `docs/eas-submit-runbook.md`.
+- Next action: Store real Apple/Google submit values in a trusted release
+  machine or protected CI secrets and confirm credential access.
+- Evidence target: `tmp/spec/eas_submit_config_2026-06-21.md`
+
+## 4. Production Builds
+
+- NOT DONE: iOS production build artifact.
+- Owner: Release Engineering
+- Next action: Run `eas build --profile production --platform ios`.
+- Evidence target: `tmp/spec/release_builds_2026-06-21.md`
+
+- NOT DONE: Android production build artifact.
+- Owner: Release Engineering
+- Next action: Run `eas build --profile production --platform android`.
+- Evidence target: `tmp/spec/release_builds_2026-06-21.md`
+
+- NOT DONE: Real-device smoke validation.
+- Owner: QA
+- Next action: Validate authentication, Personal, Commercial, Facility, payments
+  status, permissions, image upload, notifications, offline/error states, and
+  logout on physical devices.
+- Evidence target: `tmp/spec/release_device_smoke_2026-06-21.md`
+
+## 5. Store Submission
+
+- NOT DONE: App Store Connect and Google Play Console forms.
+- Owner: Release Manager
+- Next action: Complete listing, privacy, data safety, age rating, pricing,
+  compliance, and review notes after production builds are validated.
+- Evidence target: `tmp/spec/store_submission_2026-06-21.md`
+
+- NOT DONE: Release notes and version information.
+- Owner: Product
+- Next action: Finalize changelog from verified functionality only.
+- Evidence target: `tmp/spec/store_submission_2026-06-21.md`
+
+## 6. Post-Submission
+
+- NOT DONE: Review monitoring and hotfix plan.
+- Owner: Release Manager + Support
+- Next action: Define review-response SLA, crash monitoring owner, support
+  escalation path, rollback/hotfix process, and launch announcement timing.
+- Evidence target: `tmp/spec/post_submission_plan_2026-06-21.md`

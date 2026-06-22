@@ -1,5 +1,7 @@
 import { apiRequest } from "./apiRequest";
 
+const PRODUCTS_BASE = "/api/commercial/products";
+
 export type Product = {
   id: string;
   name: string;
@@ -11,20 +13,29 @@ export type Product = {
 };
 
 export async function fetchProducts(): Promise<Product[]> {
-  return apiRequest(`/commercial/products`);
+  const res = await apiRequest(PRODUCTS_BASE);
+  if (Array.isArray(res)) return res;
+  if (Array.isArray(res?.products)) return res.products;
+  if (Array.isArray(res?.items)) return res.items;
+  if (Array.isArray(res?.data)) return res.data;
+  if (Array.isArray(res?.data?.products)) return res.data.products;
+  if (Array.isArray(res?.data?.items)) return res.data.items;
+  return [];
 }
 
 export async function createProduct(data: Partial<Product>) {
-  return apiRequest(`/commercial/products`, { method: "POST", body: data });
+  return apiRequest(PRODUCTS_BASE, { method: "POST", body: data });
 }
 
 export async function updateProduct(productId: string, data: Partial<Product>) {
-  return apiRequest(`/commercial/products/${productId}`, {
+  return apiRequest(`${PRODUCTS_BASE}/${encodeURIComponent(productId)}`, {
     method: "PATCH",
     body: data
   });
 }
 
 export async function deleteProduct(productId: string) {
-  return apiRequest(`/commercial/products/${productId}`, { method: "DELETE" });
+  return apiRequest(`${PRODUCTS_BASE}/${encodeURIComponent(productId)}`, {
+    method: "DELETE"
+  });
 }

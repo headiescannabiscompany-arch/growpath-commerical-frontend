@@ -1,33 +1,36 @@
 import React, { useState } from "react";
 import {
-  View,
-  Text,
-  TouchableOpacity,
   ActivityIndicator,
   Alert,
-  Linking
+  Linking,
+  Text,
+  TouchableOpacity,
+  View
 } from "react-native";
+
 import { useAuth } from "@/auth/AuthContext";
 import { startSubscription } from "../api/subscribe";
-import ScreenContainer from "../components/ScreenContainer";
-import PrimaryButton from "../components/PrimaryButton";
 import { createCheckoutSession } from "../api/subscription";
+import PrimaryButton from "../components/PrimaryButton";
+import ScreenContainer from "../components/ScreenContainer";
 
 export default function PaywallScreen({ navigation }) {
   const { token } = useAuth();
   const [loading, setLoading] = useState(false);
 
+  function goToStatus() {
+    navigation.navigate("SubscriptionStatus");
+  }
+
   const handleStartTrial = async () => {
     setLoading(true);
     try {
-      const result = await startSubscription("trial", token);
-      if (result.success) {
-        Alert.alert("Success", "7-day free trial started!", [
-          { text: "OK", onPress: () => navigation.goBack() }
-        ]);
-      } else {
-        Alert.alert("Error", result.message || "Failed to start trial");
-      }
+      await startSubscription("trial", token);
+      Alert.alert(
+        "Trial request submitted",
+        "Access unlocks only after backend subscription status confirms the trial.",
+        [{ text: "Check Status", onPress: goToStatus }]
+      );
     } catch (error) {
       Alert.alert(
         "Error",
@@ -42,23 +45,18 @@ export default function PaywallScreen({ navigation }) {
     setLoading(true);
     try {
       const result = await createCheckoutSession();
-      if (result.url) {
-        // Open the Stripe Checkout page in the system browser
-        Linking.openURL(result.url);
-        Alert.alert(
-          "Complete Payment",
-          "After completing payment in your browser, return to the app and refresh your subscription status.",
-          [
-            {
-              text: "Go to Status",
-              onPress: () => navigation.navigate("SubscriptionStatus")
-            },
-            { text: "OK" }
-          ]
-        );
-      } else {
-        Alert.alert("Error", "Could not create checkout session");
+      const url = result?.url || result?.checkoutUrl || result?.data?.url;
+      if (!url) {
+        Alert.alert("Error", "Could not create checkout session.");
+        return;
       }
+
+      await Linking.openURL(url);
+      Alert.alert(
+        "Complete Payment",
+        "After completing payment in your browser, return to the app and refresh subscription status. Access unlocks only after backend confirmation.",
+        [{ text: "Go to Status", onPress: goToStatus }, { text: "OK" }]
+      );
     } catch (error) {
       Alert.alert(
         "Error",
@@ -72,18 +70,18 @@ export default function PaywallScreen({ navigation }) {
   return (
     <ScreenContainer style={styles.container}>
       <View style={styles.content}>
-        <Text style={styles.title}>🚀 Upgrade to PRO</Text>
+        <Text style={styles.title}>Upgrade to PRO</Text>
 
         <View style={styles.benefitsSection}>
           <Text style={styles.subtitle}>Unlock Premium Features:</Text>
-          <Text style={styles.benefit}>✅ Unlimited Plants & Grows</Text>
-          <Text style={styles.benefit}>✅ Social Feed (Post, Like, Comment)</Text>
-          <Text style={styles.benefit}>✅ Task Management & Reminders</Text>
-          <Text style={styles.benefit}>✅ AI Plant Diagnosis</Text>
-          <Text style={styles.benefit}>✅ AI Feeding Assistant</Text>
-          <Text style={styles.benefit}>✅ Environment Optimizer</Text>
-          <Text style={styles.benefit}>✅ Grow Templates & Marketplace</Text>
-          <Text style={styles.benefit}>✅ Advanced Training Guides</Text>
+          <Text style={styles.benefit}>Unlimited Plants and Grows</Text>
+          <Text style={styles.benefit}>Social Feed: post, like, and comment</Text>
+          <Text style={styles.benefit}>Task Management and reminders</Text>
+          <Text style={styles.benefit}>AI Plant Diagnosis</Text>
+          <Text style={styles.benefit}>AI Feeding Assistant</Text>
+          <Text style={styles.benefit}>Environment Optimizer</Text>
+          <Text style={styles.benefit}>Grow Templates and Marketplace</Text>
+          <Text style={styles.benefit}>Advanced Training Guides</Text>
         </View>
 
         {loading ? (

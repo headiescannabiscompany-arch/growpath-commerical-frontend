@@ -21,7 +21,7 @@ export function uploadLabel(uri, token) {
 export function generateSchedule(data, token) {
   return apiRequest(apiRoutes.FEEDING.SCHEDULE, {
     method: "POST",
-    auth: token ? true : false,
+    headers: buildAuthHeaders(token),
     body: data
   });
 }
@@ -29,7 +29,7 @@ export function generateSchedule(data, token) {
 export function convertScheduleToTemplate(data, token) {
   return apiRequest(apiRoutes.FEEDING.TO_TEMPLATE, {
     method: "POST",
-    auth: token ? true : false,
+    headers: buildAuthHeaders(token),
     body: data
   });
 }

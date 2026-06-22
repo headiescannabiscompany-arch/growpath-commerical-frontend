@@ -4,7 +4,9 @@ import { endpoints } from "./endpoints";
 export type Deviation = {
   id?: string;
   _id?: string;
+  title?: string;
   description?: string;
+  severity?: string;
   status?: string;
   assignedTo?: string;
   createdAt?: string;
@@ -22,4 +24,16 @@ export async function createDeviation(facilityId: string, data: any): Promise<De
     body: data
   });
   return createRes?.created ?? createRes?.deviation ?? createRes;
+}
+
+export async function resolveDeviation(
+  facilityId: string,
+  id: string,
+  data: { resolution?: string } = {}
+): Promise<Deviation> {
+  const resolveRes = await apiRequest(`${endpoints.deviation(facilityId, id)}/resolve`, {
+    method: "PUT",
+    body: { status: "resolved", ...data }
+  });
+  return resolveRes?.updated ?? resolveRes?.deviation ?? resolveRes;
 }

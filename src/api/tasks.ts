@@ -46,7 +46,12 @@ export async function completeTask(a: any, b?: any, c?: any): Promise<any> {
 export type Task = {
   id: string;
   title?: string;
+  description?: string;
+  notes?: string;
   dueAt?: string;
+  dueDate?: string;
+  status?: string;
+  assignedTo?: string | { id?: string; _id?: string };
   createdAt?: string;
   // Add fields later as backend schema stabilizes
 };
@@ -61,6 +66,11 @@ export async function createTask(facilityId: string, data: any): Promise<Task> {
   return createRes?.created ?? createRes?.task ?? createRes;
 }
 
+export async function getTask(facilityId: string, id: string): Promise<Task | null> {
+  const detailRes = await apiRequest(endpoints.task(facilityId, id), { method: "GET" });
+  return detailRes?.task ?? detailRes?.item ?? detailRes?.data?.task ?? detailRes;
+}
+
 export async function updateTask(
   facilityId: string,
   id: string,
@@ -71,6 +81,18 @@ export async function updateTask(
     body: patch
   });
   return updateRes?.updated ?? updateRes?.task ?? updateRes;
+}
+
+export async function completeFacilityTask(
+  facilityId: string,
+  id: string,
+  completed = true
+): Promise<Task> {
+  return updateTask(facilityId, id, {
+    completed,
+    status: completed ? "DONE" : "OPEN",
+    completedAt: completed ? new Date().toISOString() : null
+  });
 }
 
 export async function deleteTask(facilityId: string, id: string) {

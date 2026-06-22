@@ -1,4 +1,4 @@
-﻿import React, { useCallback, useEffect, useMemo, useState } from "react";
+import React, { useCallback, useEffect, useMemo, useState } from "react";
 import {
   ActivityIndicator,
   RefreshControl,
@@ -14,8 +14,12 @@ import { useLocalSearchParams, useRouter } from "expo-router";
 import { ScreenBoundary } from "@/components/ScreenBoundary";
 import { InlineError } from "@/components/InlineError";
 import { useFacility } from "@/state/useFacility";
-import { apiRequest } from "@/api/apiRequest";
-import { endpoints } from "@/api/endpoints";
+import {
+  completeFacilityTask,
+  deleteTask,
+  getTask,
+  updateTask
+} from "@/api/tasks";
 import { useApiErrorHandler } from "@/hooks/useApiErrorHandler";
 import { CAPABILITY_KEYS, useEntitlements } from "@/entitlements";
 
@@ -23,6 +27,29 @@ type AnyRec = Record<string, any>;
 
 function pickTitle(x: AnyRec): string {
   return String(x?.title ?? x?.name ?? x?.label ?? x?.type ?? "Task Detail");
+}
+
+function pickId(value: unknown) {
+  if (!value) return "";
+  if (typeof value === "object") {
+    const row = value as AnyRec;
+    return String(row.id ?? row._id ?? "");
+  }
+  return String(value);
+}
+
+function isComplete(item: AnyRec | null) {
+  if (!item) return false;
+  const status = String(item.status ?? item.state ?? "").toUpperCase();
+  return Boolean(item.completed) || status === "DONE" || status === "COMPLETE";
+}
+
+function dateOnly(value: unknown) {
+  return typeof value === "string" ? value.slice(0, 10) : "";
+}
+
+function canManageRole(role: unknown) {
+  return role === "OWNER" || role === "MANAGER";
 }
 
 function renderKV(obj: AnyRec, key: string) {
@@ -57,7 +84,18 @@ export default function FacilityTaskDetail() {
   const [loading, setLoading] = useState(true);
   const [refreshing, setRefreshing] = useState(false);
   const [saving, setSaving] = useState(false);
-  const [assignedTo, setAssignedTo] = useState("");
+  const [deleting, setDeleting] = useState(false);
+  const [feedback, setFeedback] = useState("");
+  const [form, setForm] = useState({
+    title: "",
+    notes: "",
+    dueDate: "",
+    assignedTo: ""
+  });
+
+  const canWrite = !!ent?.can?.(CAPABILITY_KEYS.TASKS_WRITE);
+  const canAssign = canWrite && canManageRole(ent?.facilityRole);
+  const canDelete = canWrite && canManageRole(ent?.facilityRole);
 
   const load = useCallback(
     async (opts?: { refresh?: boolean }) => {
@@ -68,8 +106,9 @@ export default function FacilityTaskDetail() {
 
       try {
         clearError();
-        const res = await apiRequest(endpoints.task(facilityId, String(id)));
-        setItem(res ?? null);
+        setFeedback("");
+        const res = await getTask(facilityId, String(id));
+        setItem((res as AnyRec) ?? null);
       } catch (e) {
         handleApiError(e);
       } finally {
@@ -79,32 +118,27 @@ export default function FacilityTaskDetail() {
     },
     [facilityId, id, clearError, handleApiError]
   );
-  const canWrite = !!ent?.can?.(CAPABILITY_KEYS.TASKS_WRITE);
-  const canAssign =
-    canWrite && (ent?.facilityRole === "OWNER" || ent?.facilityRole === "MANAGER");
 
   useEffect(() => {
     if (!item) return;
-    const current =
-      item.assignedTo?.id ??
-      item.assignedTo?._id ??
-      item.assignedTo ??
-      item.assignee ??
-      "";
-    setAssignedTo(current ? String(current) : "");
+    setForm({
+      title: String(item.title ?? item.name ?? ""),
+      notes: String(item.notes ?? item.description ?? ""),
+      dueDate: dateOnly(item.dueDate ?? item.dueAt ?? item.due),
+      assignedTo: pickId(item.assignedTo ?? item.assignee)
+    });
   }, [item]);
 
-  const updateTask = useCallback(
-    async (patch: AnyRec) => {
+  const update = useCallback(
+    async (patch: AnyRec, message = "Task updated.") => {
       if (!facilityId || !id || !canWrite) return;
       setSaving(true);
+      setFeedback("");
       try {
         clearError();
-        const res = await apiRequest(endpoints.task(facilityId, String(id)), {
-          method: "PATCH",
-          data: patch
-        });
-        setItem(res ?? item);
+        const res = await updateTask(facilityId, String(id), patch);
+        setItem((res as AnyRec) ?? item);
+        setFeedback(message);
       } catch (e) {
         handleApiError(e);
       } finally {
@@ -113,6 +147,58 @@ export default function FacilityTaskDetail() {
     },
     [facilityId, id, canWrite, clearError, handleApiError, item]
   );
+
+  async function saveDetails() {
+    await update(
+      {
+        title: form.title.trim(),
+        notes: form.notes.trim() || undefined,
+        description: form.notes.trim() || undefined,
+        dueDate: form.dueDate.trim() || undefined
+      },
+      "Task details saved."
+    );
+  }
+
+  async function saveAssignment() {
+    if (!canAssign) return;
+    await update(
+      { assignedTo: form.assignedTo.trim() || null },
+      form.assignedTo.trim() ? "Task assigned." : "Assignment cleared."
+    );
+  }
+
+  async function toggleComplete() {
+    if (!facilityId || !id || !canWrite) return;
+    setSaving(true);
+    setFeedback("");
+    try {
+      clearError();
+      const nextCompleted = !isComplete(item);
+      const res = await completeFacilityTask(facilityId, String(id), nextCompleted);
+      setItem((res as AnyRec) ?? item);
+      setFeedback(nextCompleted ? "Task completed." : "Task reopened.");
+    } catch (e) {
+      handleApiError(e);
+    } finally {
+      setSaving(false);
+    }
+  }
+
+  async function remove() {
+    if (!facilityId || !id || !canDelete) return;
+    setDeleting(true);
+    setFeedback("");
+    try {
+      clearError();
+      await deleteTask(facilityId, String(id));
+      router.replace("/home/facility/tasks");
+    } catch (e) {
+      handleApiError(e);
+    } finally {
+      setDeleting(false);
+    }
+  }
 
   useEffect(() => {
     if (!facilityId) {
@@ -127,6 +213,7 @@ export default function FacilityTaskDetail() {
   }, [facilityId, id, load, router]);
 
   const title = useMemo(() => (item ? pickTitle(item) : "Task Detail"), [item]);
+  const complete = isComplete(item);
 
   const keys = useMemo(() => {
     if (!item) return [];
@@ -135,12 +222,15 @@ export default function FacilityTaskDetail() {
       "_id",
       "title",
       "status",
+      "completed",
       "dueAt",
       "dueDate",
+      "assignedTo",
       "assignee",
       "createdAt",
       "updatedAt",
-      "notes"
+      "notes",
+      "description"
     ];
     const rest = Object.keys(item)
       .filter((k) => !preferred.includes(k))
@@ -160,6 +250,7 @@ export default function FacilityTaskDetail() {
         }
       >
         {error ? <InlineError error={error} /> : null}
+        {feedback ? <Text style={styles.feedback}>{feedback}</Text> : null}
         {loading ? (
           <View style={styles.loading}>
             <ActivityIndicator />
@@ -173,57 +264,116 @@ export default function FacilityTaskDetail() {
           </View>
         ) : null}
         {item ? (
-          <View style={styles.card}>
-            <Text style={styles.sectionTitle}>Update Task</Text>
-            {!canWrite ? (
-              <Text style={styles.muted}>
-                You do not have permission to update tasks.
-              </Text>
-            ) : (
-              <View style={styles.form}>
-                {canAssign ? (
-                  <View style={styles.formGroup}>
-                    <Text style={styles.label}>Assign to (user id)</Text>
-                    <TextInput
-                      value={assignedTo}
-                      onChangeText={setAssignedTo}
-                      style={styles.input}
-                      placeholder="user id"
-                    />
+          <>
+            <View style={styles.card}>
+              <Text style={styles.sectionTitle}>Task Workflow</Text>
+              {!canWrite ? (
+                <Text style={styles.muted}>You do not have permission to update tasks.</Text>
+              ) : (
+                <View style={styles.form}>
+                  <Text style={styles.label}>Title</Text>
+                  <TextInput
+                    value={form.title}
+                    onChangeText={(titleText) =>
+                      setForm((current) => ({ ...current, title: titleText }))
+                    }
+                    style={styles.input}
+                    placeholder="Task title"
+                  />
+
+                  <Text style={styles.label}>Notes</Text>
+                  <TextInput
+                    value={form.notes}
+                    onChangeText={(notes) =>
+                      setForm((current) => ({ ...current, notes }))
+                    }
+                    style={[styles.input, styles.inputMultiline]}
+                    placeholder="Task notes"
+                    multiline
+                  />
+
+                  <Text style={styles.label}>Due date</Text>
+                  <TextInput
+                    value={form.dueDate}
+                    onChangeText={(dueDate) =>
+                      setForm((current) => ({ ...current, dueDate }))
+                    }
+                    style={styles.input}
+                    placeholder="YYYY-MM-DD"
+                  />
+
+                  <TouchableOpacity
+                    onPress={saveDetails}
+                    disabled={saving || !form.title.trim()}
+                    style={[
+                      styles.primaryBtn,
+                      (saving || !form.title.trim()) && styles.primaryBtnDisabled
+                    ]}
+                  >
+                    <Text style={styles.primaryBtnText}>
+                      {saving ? "Saving..." : "Save Details"}
+                    </Text>
+                  </TouchableOpacity>
+
+                  {canAssign ? (
+                    <View style={styles.formGroup}>
+                      <Text style={styles.label}>Assign to user id</Text>
+                      <TextInput
+                        value={form.assignedTo}
+                        onChangeText={(assignedTo) =>
+                          setForm((current) => ({ ...current, assignedTo }))
+                        }
+                        style={styles.input}
+                        placeholder="user id"
+                      />
+                      <TouchableOpacity
+                        onPress={saveAssignment}
+                        disabled={saving}
+                        style={[styles.secondaryBtn, saving && styles.primaryBtnDisabled]}
+                      >
+                        <Text style={styles.secondaryBtnText}>
+                          {saving ? "Saving..." : "Save Assignment"}
+                        </Text>
+                      </TouchableOpacity>
+                    </View>
+                  ) : (
+                    <Text style={styles.muted}>
+                      Only owners and managers can assign facility tasks.
+                    </Text>
+                  )}
+
+                  <View style={styles.statusRow}>
                     <TouchableOpacity
-                      onPress={() =>
-                        updateTask({ assignedTo: assignedTo.trim() || null })
-                      }
+                      onPress={toggleComplete}
                       disabled={saving}
                       style={[styles.primaryBtn, saving && styles.primaryBtnDisabled]}
                     >
                       <Text style={styles.primaryBtnText}>
-                        {saving ? "Saving..." : "Assign"}
+                        {complete ? "Reopen Task" : "Complete Task"}
                       </Text>
                     </TouchableOpacity>
+                    {canDelete ? (
+                      <TouchableOpacity
+                        onPress={remove}
+                        disabled={deleting}
+                        style={[styles.dangerBtn, deleting && styles.primaryBtnDisabled]}
+                      >
+                        <Text style={styles.dangerBtnText}>
+                          {deleting ? "Deleting..." : "Delete Task"}
+                        </Text>
+                      </TouchableOpacity>
+                    ) : null}
                   </View>
-                ) : null}
-
-                <View style={styles.statusRow}>
-                  <TouchableOpacity
-                    onPress={() => updateTask({ status: "IN_PROGRESS" })}
-                    disabled={saving}
-                    style={[styles.secondaryBtn, saving && styles.primaryBtnDisabled]}
-                  >
-                    <Text style={styles.secondaryBtnText}>Mark In Progress</Text>
-                  </TouchableOpacity>
-                  <TouchableOpacity
-                    onPress={() => updateTask({ status: "DONE" })}
-                    disabled={saving}
-                    style={[styles.primaryBtn, saving && styles.primaryBtnDisabled]}
-                  >
-                    <Text style={styles.primaryBtnText}>Mark Done</Text>
-                  </TouchableOpacity>
                 </View>
-              </View>
-            )}
-          </View>
-        ) : null}{" "}
+              )}
+            </View>
+
+            <View style={styles.card}>
+              <Text style={styles.sectionTitle}>Task Details</Text>
+              <View style={styles.kvWrap}>{keys.map((key) => renderKV(item, key))}</View>
+            </View>
+          </>
+        ) : null}
       </ScrollView>
     </ScreenBoundary>
   );
@@ -242,7 +392,6 @@ const styles = StyleSheet.create({
     backgroundColor: "white",
     gap: 10
   },
-  h1: { fontSize: 18, fontWeight: "900" },
 
   sectionTitle: { fontSize: 16, fontWeight: "900", marginBottom: 8 },
   form: { gap: 12 },
@@ -255,7 +404,8 @@ const styles = StyleSheet.create({
     padding: 10,
     backgroundColor: "white"
   },
-  statusRow: { flexDirection: "row", gap: 10, alignItems: "center" },
+  inputMultiline: { minHeight: 72, textAlignVertical: "top" },
+  statusRow: { flexDirection: "row", gap: 10, alignItems: "center", flexWrap: "wrap" },
   primaryBtn: {
     backgroundColor: "#0f172a",
     borderRadius: 10,
@@ -271,9 +421,18 @@ const styles = StyleSheet.create({
     paddingHorizontal: 14,
     alignItems: "center"
   },
+  dangerBtn: {
+    borderWidth: 1,
+    borderColor: "#B91C1C",
+    borderRadius: 10,
+    paddingVertical: 12,
+    paddingHorizontal: 14,
+    alignItems: "center"
+  },
   primaryBtnDisabled: { opacity: 0.6 },
   primaryBtnText: { color: "white", fontWeight: "800" },
   secondaryBtnText: { fontWeight: "800" },
+  dangerBtnText: { color: "#B91C1C", fontWeight: "800" },
 
   kvWrap: { gap: 10, marginTop: 8 },
   kv: { gap: 4 },
@@ -281,5 +440,12 @@ const styles = StyleSheet.create({
   v: { fontSize: 14 },
 
   empty: { paddingVertical: 26, alignItems: "center", gap: 8 },
-  emptyTitle: { fontSize: 16, fontWeight: "800" }
+  emptyTitle: { fontSize: 16, fontWeight: "800" },
+  feedback: {
+    color: "#334155",
+    backgroundColor: "#F1F5F9",
+    borderRadius: 9,
+    padding: 9,
+    fontWeight: "700"
+  }
 });

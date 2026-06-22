@@ -31,6 +31,77 @@ Pulse Grow is the first implemented cloud adapter. Other providers can be config
 draft connections without exposing their credentials, but return `ADAPTER_NOT_AVAILABLE`
 until their adapters are implemented.
 
+## Provider notes
+
+### Growlink
+
+Growlink confirmed by email on 2026-06-22 that customers can request API access
+and use the developer portal after creating a Growlink account. There is no
+sandbox; validation requires either a Growlink R&D system or a beta customer
+with API access enabled.
+
+Reference links supplied by Growlink:
+
+- Developer portal: `https://developer.growlink.com`
+- API signup: `https://developer.growlink.com/signup`
+- API catalog: `https://developer.growlink.com/apis`
+
+Read-only ingestion scope:
+
+- Auth token: `POST https://api.developer.growlink.com/V1/api/auth/token`
+- Controller/module/sensor/device discovery:
+  `GET https://api.developer.growlink.com/hardware/v1/api/controllers`
+- Current readings:
+  `GET https://api.developer.growlink.com/v1/v1/api/equipment/interaction/data/device/{controllerId}`
+- Historical reporting: Growlink Reporting API, with reported 10 minute delay.
+
+Do not use Rules, Setpoints, or equipment-control endpoints for GrowPath's first
+integration. GrowPath should import Growlink data for dashboards, grow logs,
+alerts, crop steering, and reports only; it must not modify Growlink hardware,
+rules, recipes, devices, or setpoints.
+
+Current status: viable / read-only shell added / account-auth can be validated
+without hardware. `src/integrations/growlink.ts` records dependency-free contract
+helpers for auth request construction, controller/current-reading URLs,
+read-only authorization/unit headers, controller normalization, and
+current-reading normalization. `src/api/telemetry.ts` defines frontend API calls
+for credential verification, controller listing, current-reading pull, and
+historical reporting pull. The app's Data Integrations screen lets a user verify
+their Growlink account and reports the no-hardware state clearly when no
+controllers are returned. A telemetry source still requires a controller id.
+The backend has read-only telemetry endpoints for credential verification,
+controller listing, encrypted source storage, and current-reading fetch.
+Historical reporting ingestion intentionally returns an explicit not-implemented
+error until Growlink report query mapping is finalized. Keep Growlink out of
+`implemented` status until a real customer/R&D controller is available and
+controller mapping, current/historical pull jobs, rate limits, unit
+normalization, and real hardware tests pass.
+
+### UbiBot
+
+UbiBot confirmed by email on 2026-06-22 that third-party integrations are
+available through Developer Membership and that the public platform supports API
+and MQTT functions.
+
+Reference links supplied by UbiBot:
+
+- Developer Membership: `https://www.ubibot.com/ubibot-developer-membership/`
+- Channel feed summaries API:
+  `https://www.ubibot.com/platform-api/2735/get-channel-feed-summaries/`
+- MQTT real-time feed topics:
+  `https://www.ubibot.com/platform-api/6966/mqtt-real-time-feed-topics/`
+
+Current status: parked. API/MQTT access paths are confirmed, but GrowPath should
+not spend more implementation time until a paid/approved Developer Membership,
+test credentials, and at least one real UbiBot channel/device are available.
+`src/integrations/ubibot.ts` records dependency-free contract helpers for
+feed-summary URLs, MQTT settings, heartbeat URLs, and feed-summary normalization.
+`src/api/telemetry.ts` defines the future frontend API calls for credential
+verification, channel listing, feed-summary pull, and MQTT settings. Keep UbiBot
+out of `implemented` status until backend endpoints, credentials, channel/device
+discovery, live feed summary retrieval, MQTT topic handling, rate limits,
+timestamp/unit normalization, and real-device tests pass.
+
 ## Backend API
 
 - `GET /api/integrations/providers`
@@ -82,4 +153,3 @@ vendor applications.
 5. Add contract tests for authentication failure, pagination, rate limiting, malformed data,
    and secret redaction.
 6. Map the normalized readings into GrowPath telemetry and source-selection workflows.
-

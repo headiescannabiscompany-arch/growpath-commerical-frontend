@@ -3,23 +3,32 @@ import { CAPABILITY_KEYS } from "../../src/entitlements/capabilityKeys";
 import { resolveEntitlementsMode } from "../../src/entitlements/EntitlementsProvider";
 
 describe("entitlement mode access", () => {
-  it("does not grant Commercial mode from a plan name", () => {
+  it("does not grant Commercial mode from a plan name alone", () => {
     expect(
       resolveEntitlementsMode(
-        { mode: "commercial", plan: "commercial", capabilities: {} },
+        { mode: "personal", plan: "commercial", capabilities: {} },
         null
       )
     ).toBe("personal");
   });
 
-  it("grants Commercial mode from the canonical capability", () => {
+  it("grants Commercial mode from backend ctx.mode", () => {
+    expect(
+      resolveEntitlementsMode(
+        { mode: "commercial", plan: "commercial", capabilities: {} },
+        null
+      )
+    ).toBe("commercial");
+  });
+
+  it("grants preferred Commercial mode from the canonical capability", () => {
     expect(
       resolveEntitlementsMode(
         {
-          mode: "commercial",
+          mode: "personal",
           capabilities: { [CAPABILITY_KEYS.COMMERCIAL_HOME]: true }
         },
-        null
+        "commercial"
       )
     ).toBe("commercial");
   });

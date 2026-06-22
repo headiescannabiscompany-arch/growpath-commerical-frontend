@@ -14,7 +14,7 @@
  * - Registry enforcement (20 canonical functions)
  * - Two-gate guardrails (quality + impact)
  * - Writes tracking (persisted objects)
- * - External validator stub (ready for GPT/Claude)
+ * - External validator integration for gray-zone confidence decisions
  */
 
 const express = require("express");
@@ -24,6 +24,11 @@ const fs = require("fs");
 const TrichomeAnalysis = require("../models/TrichomeAnalysis");
 const HarvestDecision = require("../models/HarvestDecision");
 const CalendarEvent = require("../models/CalendarEvent");
+const {
+  applyExternalConfidence,
+  externalValidate,
+  shouldUseExternalValidator
+} = require("../llm/provider");
 const { computeEcCorrection } = require("../utils/ecCorrection");
 
 const router = express.Router({ mergeParams: true });
@@ -77,7 +82,7 @@ function loadSchema(name) {
   return null; // Graceful fallback
 }
 
-// ---- Serialization Helpers (Mongo → AI Contract) ----
+// ---- Serialization Helpers (Mongo -> AI Contract) ----
 function toIso(d) {
   return d ? new Date(d).toISOString() : null;
 }
@@ -129,6 +134,29 @@ function serializeCalendarEvent(doc) {
     createdAt: toIso(doc.createdAt),
     updatedAt: toIso(doc.updatedAt),
     deletedAt: toIso(doc.deletedAt)
+  };
+}
+
+async function attachExternalValidation(data, { tool, fn, ctx }) {
+  if (!data || !shouldUseExternalValidator(data.confidence)) {
+    return data;
+  }
+
+  const external = await externalValidate({
+    fn: `${tool}.${fn}`,
+    packet: {
+      ctx,
+      computedMetrics: data.result || null,
+      proposal: data.recommendation || data.result || null,
+      assumptions: data.confidence_reason ? [data.confidence_reason] : [],
+      requestedCritique: true
+    }
+  });
+
+  return {
+    ...data,
+    confidence: applyExternalConfidence(data.confidence, external),
+    external
   };
 }
 
@@ -484,8 +512,10 @@ router.post("/call", async (req, res) => {
       return fail(res, result.error, result.message, result.status);
     }
 
+    const data = await attachExternalValidation(result.data, { tool, fn, ctx });
+
     // Success: Return envelope (writes are inside data)
-    return ok(res, result.data);
+    return ok(res, data);
   } catch (err) {
     const errorId = `ai_${Date.now()}_${Math.random().toString(16).slice(2)}`;
     console.error("[AI_CALL_INTERNAL_ERROR]", {
@@ -516,5 +546,15 @@ router.post("/call", async (req, res) => {
     return fail(res, "INTERNAL_ERROR", "AI handler failed", 500);
   }
 });
+
+router.__testables = {
+  REGISTRY,
+  attachExternalValidation,
+  handleClimateComputeVPD,
+  handleECRecommendCorrection,
+  handleHarvestAnalyzeTrichomes,
+  handleHarvestEstimateWindow,
+  serializeHarvestDecision
+};
 
 module.exports = router;

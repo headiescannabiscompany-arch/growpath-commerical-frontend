@@ -1,35 +1,40 @@
 import { apiRequest } from "./apiRequest";
 import apiRoutes from "./routes.js";
+
+function data(response) {
+  return response?.data ?? response;
+}
+
 export function markPayoutPaid(payoutId) {
-  return apiRequest(`${apiRoutes.CREATOR.PAYOUT_HISTORY}/${payoutId}/mark-paid`, {
+  return apiRequest(apiRoutes.CREATOR.PAYOUT_MARK_PAID(payoutId), {
     method: "POST"
   });
 }
-export function requestPayout() {
-  return apiRequest(apiRoutes.CREATOR.REQUEST_PAYOUT, { method: "POST" });
+export function requestPayout(payoutMethod = "stripe") {
+  return apiRequest(apiRoutes.CREATOR.REQUEST_PAYOUT, {
+    method: "POST",
+    body: { payoutMethod }
+  });
 }
 
 export function getEarnings() {
-  // Note: This matches GET /api/creator/earnings in backend
-  // but apiRoutes.CREATOR.MINE matches GET /api/earnings/mine.
-  // Standardizing on apiRoutes.CREATOR structure.
-  return apiRequest(`${apiRoutes.CREATOR.REVENUE}/../earnings`); // Fallback if no specific apiRoutes entry
+  return apiRequest(apiRoutes.CREATOR.MINE).then(data);
 }
 
 export function getCreatorCourses() {
-  return apiRequest(apiRoutes.CREATOR.PERFORMANCE);
+  return apiRequest(apiRoutes.CREATOR.PERFORMANCE).then(data);
 }
 
 export function getEnrollmentTimeline() {
-  return apiRequest(apiRoutes.CREATOR.TIMELINE);
+  return apiRequest(apiRoutes.CREATOR.TIMELINE).then(data);
 }
 
 export function getPayoutSummary() {
-  return apiRequest(apiRoutes.CREATOR.PAYOUT_SUMMARY);
+  return apiRequest(apiRoutes.CREATOR.PAYOUT_SUMMARY).then(data);
 }
 
 export function getPayoutHistory() {
-  return apiRequest(apiRoutes.CREATOR.PAYOUT_HISTORY);
+  return apiRequest(apiRoutes.CREATOR.PAYOUT_HISTORY).then(data);
 }
 
 export async function uploadSignature(formData) {
@@ -37,9 +42,9 @@ export async function uploadSignature(formData) {
 }
 
 export function getCourseAnalytics(courseId) {
-  return apiRequest(apiRoutes.CREATOR.ANALYTICS(courseId));
+  return apiRequest(apiRoutes.CREATOR.ANALYTICS(courseId)).then(data);
 }
 
 export function getRevenueTimeline() {
-  return apiRequest(apiRoutes.CREATOR.REVENUE);
+  return apiRequest(apiRoutes.CREATOR.REVENUE).then(data);
 }

@@ -1,4 +1,4 @@
-import React, { useCallback, useEffect, useMemo, useState } from "react";
+import React, { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import {
   ActivityIndicator,
   Pressable,
@@ -15,6 +15,12 @@ import { InlineError } from "@/components/InlineError";
 import { useFacility } from "@/state/useFacility";
 import { apiRequest } from "@/api/apiRequest";
 import { endpoints } from "@/api/endpoints";
+import { listAuditLogs } from "@/api/audit";
+import { listBatchCycles } from "@/api/facilityWorkflows";
+import { getFacilityReport } from "@/api/reports";
+import { getSOPTemplates } from "@/api/sop";
+import { listTeamMembers } from "@/api/team";
+import { getVerifications } from "@/api/verification";
 import { useApiErrorHandler } from "@/hooks/useApiErrorHandler";
 
 type AnyRec = Record<string, any>;
@@ -31,16 +37,10 @@ export default function FacilityDashboardTab() {
   const router = useRouter();
   const { selectedId: facilityId } = useFacility();
 
-  const apiErr: any = useApiErrorHandler();
-  const error = apiErr?.error ?? apiErr?.[0] ?? null;
-  const handleApiError = useMemo(
-    () => apiErr?.handleApiError ?? apiErr?.[1] ?? ((_: any) => {}),
-    [apiErr]
-  );
-  const clearError = useMemo(
-    () => apiErr?.clearError ?? apiErr?.[2] ?? (() => {}),
-    [apiErr]
-  );
+  const mapApiError = useApiErrorHandler();
+  const mapApiErrorRef = useRef(mapApiError);
+  mapApiErrorRef.current = mapApiError;
+  const [error, setError] = useState<any>(null);
 
   const [loading, setLoading] = useState(true);
   const [refreshing, setRefreshing] = useState(false);
@@ -48,9 +48,16 @@ export default function FacilityDashboardTab() {
   const [counts, setCounts] = useState({
     grows: 0,
     plants: 0,
+    rooms: 0,
+    batchCycles: 0,
     tasks: 0,
     inventory: 0,
-    logs: 0
+    logs: 0,
+    team: 0,
+    sops: 0,
+    auditLogs: 0,
+    verifications: 0,
+    reports: 0
   });
 
   const load = useCallback(
@@ -61,31 +68,73 @@ export default function FacilityDashboardTab() {
       else setLoading(true);
 
       try {
-        clearError();
+        setError(null);
 
-        const [growsRes, plantsRes, tasksRes, inventoryRes, logsRes] = await Promise.all([
+        const optional = async <T,>(fn: () => Promise<T>, fallback: T): Promise<T> => {
+          try {
+            return await fn();
+          } catch {
+            return fallback;
+          }
+        };
+
+        const [
+          growsRes,
+          plantsRes,
+          roomsRes,
+          batchCyclesRes,
+          tasksRes,
+          inventoryRes,
+          logsRes,
+          teamRes,
+          sopRows,
+          auditRes,
+          verificationRows,
+          reportRes
+        ] = await Promise.all([
           apiRequest(endpoints.grows(facilityId)),
           apiRequest(endpoints.plants(facilityId)),
+          apiRequest(endpoints.rooms(facilityId)),
+          optional(() => listBatchCycles(facilityId), []),
           apiRequest(endpoints.tasks(facilityId)),
           apiRequest(endpoints.inventory(facilityId)),
-          apiRequest(endpoints.growlogs(facilityId))
+          apiRequest(endpoints.growlogs(facilityId)),
+          optional(() => listTeamMembers(facilityId), []),
+          optional(() => getSOPTemplates(facilityId), []),
+          optional(() => listAuditLogs(facilityId), { success: true, data: [] }),
+          optional(() => getVerifications(facilityId), []),
+          optional(() => getFacilityReport(facilityId), null)
         ]);
 
         setCounts({
           grows: asArray(growsRes).length,
           plants: asArray(plantsRes).length,
+          rooms: asArray(roomsRes).length,
+          batchCycles: asArray(batchCyclesRes).length,
           tasks: asArray(tasksRes).length,
           inventory: asArray(inventoryRes).length,
-          logs: asArray(logsRes).length
+          logs: asArray(logsRes).length,
+          team: asArray(teamRes).length,
+          sops: asArray(sopRows).length,
+          auditLogs: Array.isArray(auditRes?.data)
+            ? auditRes.data.length
+            : asArray(auditRes).length,
+          verifications: asArray(verificationRows).filter((record) => {
+            const status = String(
+              record?.status || record?.state || "pending"
+            ).toLowerCase();
+            return status === "pending" || status === "open" || status === "requested";
+          }).length,
+          reports: reportRes ? 1 : 0
         });
       } catch (e) {
-        handleApiError(e);
+        setError(mapApiErrorRef.current.toInlineError(e));
       } finally {
         setLoading(false);
         setRefreshing(false);
       }
     },
-    [facilityId, clearError, handleApiError]
+    [facilityId]
   );
 
   useEffect(() => {
@@ -99,9 +148,20 @@ export default function FacilityDashboardTab() {
   const quick = useMemo(
     () => [
       { label: "Tasks", value: counts.tasks, to: "/home/facility/tasks" },
+      { label: "Rooms", value: counts.rooms, to: "/home/facility/rooms" },
+      { label: "Batches", value: counts.batchCycles, to: "/home/facility/rooms" },
       { label: "Plants", value: counts.plants, to: "/home/facility/plants" },
       { label: "Logs", value: counts.logs, to: "/home/facility/logs" },
-      { label: "Inventory", value: counts.inventory, to: "/home/facility/inventory" }
+      { label: "Inventory", value: counts.inventory, to: "/home/facility/inventory" },
+      { label: "Team", value: counts.team, to: "/home/facility/team" },
+      { label: "SOPs", value: counts.sops, to: "/home/facility/sop-runs" },
+      { label: "Audit", value: counts.auditLogs, to: "/home/facility/audit-logs" },
+      {
+        label: "Verifications",
+        value: counts.verifications,
+        to: "/home/facility/compliance"
+      },
+      { label: "Reports", value: counts.reports, to: "/home/facility/reports" }
     ],
     [counts]
   );
@@ -158,10 +218,10 @@ export default function FacilityDashboardTab() {
             <Text style={styles.link}>Open</Text>
           </Pressable>
           <Pressable
-            onPress={() => router.push("/home/facility/compliance/reports" as any)}
+            onPress={() => router.push("/home/facility/reports" as any)}
             style={styles.row}
           >
-            <Text style={styles.rowTitle}>Open compliance reports</Text>
+            <Text style={styles.rowTitle}>Open facility reports</Text>
             <Text style={styles.link}>Open</Text>
           </Pressable>
         </View>
@@ -169,17 +229,31 @@ export default function FacilityDashboardTab() {
         <View style={styles.card}>
           <Text style={styles.cardTitle}>Operational Modules</Text>
           <Pressable
-            onPress={() => router.push("/home/facility/plants" as any)}
+            onPress={() => router.push("/home/facility/rooms" as any)}
             style={styles.row}
           >
             <Text style={styles.rowTitle}>Rooms</Text>
-            <Text style={styles.link}>Plants</Text>
+            <Text style={styles.link}>Open</Text>
           </Pressable>
           <Pressable
-            onPress={() => router.push("/home/facility/compliance/reports" as any)}
+            onPress={() => router.push("/home/facility/compliance" as any)}
             style={styles.row}
           >
             <Text style={styles.rowTitle}>Compliance</Text>
+            <Text style={styles.link}>Open</Text>
+          </Pressable>
+          <Pressable
+            onPress={() => router.push("/home/facility/team" as any)}
+            style={styles.row}
+          >
+            <Text style={styles.rowTitle}>Team Roles</Text>
+            <Text style={styles.link}>Open</Text>
+          </Pressable>
+          <Pressable
+            onPress={() => router.push("/home/facility/reports" as any)}
+            style={styles.row}
+          >
+            <Text style={styles.rowTitle}>Reports</Text>
             <Text style={styles.link}>Open</Text>
           </Pressable>
           <Pressable
@@ -194,6 +268,13 @@ export default function FacilityDashboardTab() {
             style={styles.row}
           >
             <Text style={styles.rowTitle}>SOP Runs</Text>
+            <Text style={styles.link}>Open</Text>
+          </Pressable>
+          <Pressable
+            onPress={() => router.push("/home/facility/compliance" as any)}
+            style={styles.row}
+          >
+            <Text style={styles.rowTitle}>Task Verification</Text>
             <Text style={styles.link}>Open</Text>
           </Pressable>
           <Pressable

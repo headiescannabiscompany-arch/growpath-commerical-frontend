@@ -4,6 +4,7 @@ import { Pressable, ScrollView, StyleSheet, Text, TextInput, View } from "react-
 import { Picker } from "@react-native-picker/picker";
 
 import BackButton from "@/components/nav/BackButton";
+import { CAPABILITY_KEYS, useEntitlements } from "@/entitlements";
 import ToolResultSurface from "@/features/personal/tools/ToolResultSurface";
 import {
   createTaskFromToolRun,
@@ -87,6 +88,8 @@ function newRow(index: number): ProductRow {
 
 export default function NpkToolScreen() {
   const { growId } = useLocalSearchParams<{ growId?: string | string[] }>();
+  const entitlements = useEntitlements();
+  const enabled = entitlements.can(CAPABILITY_KEYS.TOOL_NPK);
   const growContext =
     typeof growId === "string" ? growId : Array.isArray(growId) ? growId[0] : "";
   const [batchVolume, setBatchVolume] = useState("5");
@@ -224,6 +227,19 @@ export default function NpkToolScreen() {
     } finally {
       setRunning(false);
     }
+  }
+
+  if (!enabled) {
+    return (
+      <ScrollView style={styles.container} contentContainerStyle={styles.content}>
+        <BackButton />
+        <Text style={styles.title}>Nutrient Recipe Mixer</Text>
+        <View style={styles.lockedCard}>
+          <Text style={styles.productTitle}>Tool unavailable</Text>
+          <Text style={styles.fieldHint}>This account does not have `TOOL_NPK`.</Text>
+        </View>
+      </ScrollView>
+    );
   }
 
   return (
@@ -713,5 +729,12 @@ const styles = StyleSheet.create({
   savedRecipe: { borderWidth: 1, borderColor: "#CBD5E1", borderRadius: 8, padding: 10 },
   savedRecipeOn: { borderColor: "#166534", backgroundColor: "#F0FDF4" },
   timelineRow: { borderTopWidth: 1, borderColor: "#E2E8F0", paddingTop: 8, gap: 4 },
+  lockedCard: {
+    borderWidth: 1,
+    borderColor: "#E2E8F0",
+    borderRadius: 10,
+    padding: 12,
+    backgroundColor: "#F8FAFC"
+  },
   timelineLabel: { fontWeight: "700", color: "#166534" }
 });

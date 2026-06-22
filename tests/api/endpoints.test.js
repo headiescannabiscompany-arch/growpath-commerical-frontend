@@ -2,6 +2,14 @@ import { describe, it, beforeEach, expect } from "@jest/globals";
 import * as tasksApi from "../../src/api/tasks.js";
 import * as growsApi from "../../src/api/grows.js";
 import * as postsApi from "../../src/api/posts.js";
+import { listBatchCycles } from "../../src/api/facilityWorkflows";
+import { getFacilityReport } from "../../src/api/reports";
+import { createSOPTemplate, getSOPTemplates } from "../../src/api/sop";
+import {
+  approveVerification,
+  getVerifications,
+  rejectVerification
+} from "../../src/api/verification";
 import { ROUTES } from "../../src/api/routes.js";
 
 // Mock global fetch
@@ -90,6 +98,43 @@ describe("API Configuration & Endpoints", () => {
       } finally {
         global.fetch = originalFetch;
       }
+    });
+  });
+
+  describe("Facility P2 workflow endpoints", () => {
+    it("facility report summary uses the facility-scoped reports endpoint", async () => {
+      await getFacilityReport("facility 1");
+      expect(fetchCalls[0].url.endsWith("/api/facilities/facility%201/reports/summary")).toBe(
+        true
+      );
+    });
+
+    it("SOP templates use facility-scoped endpoints", async () => {
+      await getSOPTemplates("f1");
+      expect(fetchCalls[0].url.endsWith("/api/facilities/f1/sop-templates")).toBe(true);
+
+      await createSOPTemplate("f1", { title: "Opening", content: "Steps" });
+      expect(fetchCalls[1].options.method).toBe("POST");
+      expect(fetchCalls[1].url.endsWith("/api/facilities/f1/sop-templates")).toBe(true);
+    });
+
+    it("verification queue uses facility-scoped approve and reject endpoints", async () => {
+      await getVerifications("f1");
+      expect(fetchCalls[0].url.endsWith("/api/facilities/f1/verification")).toBe(true);
+
+      await approveVerification("f1", "v1");
+      expect(fetchCalls[1].options.method).toBe("POST");
+      expect(fetchCalls[1].url.endsWith("/api/facilities/f1/verification/v1")).toBe(true);
+
+      await rejectVerification("f1", "v1", "Missing image");
+      expect(fetchCalls[2].options.method).toBe("PUT");
+      expect(fetchCalls[2].url.endsWith("/api/facilities/f1/verification/v1/reject")).toBe(true);
+      expect(JSON.parse(fetchCalls[2].options.body).reason).toBe("Missing image");
+    });
+
+    it("batch cycles use facility-scoped workflow endpoint", async () => {
+      await listBatchCycles("f1");
+      expect(fetchCalls[0].url.endsWith("/api/facility/f1/batch-cycles")).toBe(true);
     });
   });
 });

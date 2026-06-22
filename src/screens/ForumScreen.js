@@ -163,6 +163,8 @@ export default function ForumScreen() {
     const workspace = item.workspaceContext || item.workspace || "personal";
     const identityLabel = authorType === "business" ? "Business" : "Member";
     const workspaceLabel = workspace === "commercial" ? "Commercial" : workspace;
+    const avatarUri = resolveImageUrl(item.user?.avatar);
+    const displayName = item.user?.name || "Anonymous";
     return (
       <TouchableOpacity
         style={styles.card}
@@ -178,14 +180,17 @@ export default function ForumScreen() {
         }}
       >
         <View style={styles.userRow}>
-          <Image
-            source={{
-              uri: resolveImageUrl(item.user?.avatar) || "https://via.placeholder.com/100"
-            }}
-            style={styles.avatar}
-          />
+          {avatarUri ? (
+            <Image source={{ uri: avatarUri }} style={styles.avatar} />
+          ) : (
+            <View style={[styles.avatar, styles.avatarFallback]}>
+              <Text style={styles.avatarFallbackText}>
+                {displayName.slice(0, 1).toUpperCase()}
+              </Text>
+            </View>
+          )}
           <View style={{ flex: 1 }}>
-            <Text style={styles.username}>{item.user?.name || "Anonymous"}</Text>
+            <Text style={styles.username}>{displayName}</Text>
             <Text style={styles.timestamp}>
               {new Date(item.createdAt).toLocaleDateString()}
             </Text>
@@ -222,10 +227,10 @@ export default function ForumScreen() {
         )}
         <View style={styles.footer}>
           <Text style={styles.footerText}>
-            ❤️ {Array.isArray(item.likes) ? item.likes.length : item.likes || 0}
+            Likes {Array.isArray(item.likes) ? item.likes.length : item.likes || 0}
           </Text>
           <Text style={styles.footerText}>
-            💬 {item.commentCount || item.comments?.length || 0}
+            Comments {item.commentCount || item.comments?.length || 0}
           </Text>
         </View>
       </TouchableOpacity>
@@ -258,11 +263,11 @@ export default function ForumScreen() {
                     marginBottom: 2
                   }}
                 >
-                  🌱 Community & Shared Wisdom
+                  Community & Shared Wisdom
                 </Text>
                 <Text style={{ color: "#222", fontSize: 13 }}>
                   The Growers Forum is a space for learning, sharing, and supporting each
-                  other. There are no experts—only fellow growers on their own journeys.
+                  other. There are no experts, only fellow growers on their own journeys.
                   Ask questions, offer insights, and remember: every experience helps the
                   community grow stronger.
                 </Text>
@@ -270,7 +275,7 @@ export default function ForumScreen() {
               <View style={styles.guildHeader}>
                 <View style={styles.guildTitleRow}>
                   <View style={styles.guildTitleContainer}>
-                    <Text style={styles.guildTitle}>🌱 The Growers Forum</Text>
+                    <Text style={styles.guildTitle}>The Growers Forum</Text>
                     <Text style={styles.guildSubtitle}>
                       Experience. Observation. Learning.
                     </Text>
@@ -288,7 +293,7 @@ export default function ForumScreen() {
                     }}
                     style={styles.codeButton}
                   >
-                    <Text style={styles.codeButtonText}>📜 Forum Code</Text>
+                    <Text style={styles.codeButtonText}>Forum Code</Text>
                   </TouchableOpacity>
                 </View>
               </View>
@@ -339,7 +344,7 @@ export default function ForumScreen() {
                     <Text style={styles.filterToggleText}>
                       Filters{" "}
                       {activeFilters.length > 0 ? `(${activeFilters.length})` : ""}{" "}
-                      {showFilters ? "▲" : "▼"}
+                      {showFilters ? "Up" : "Down"}
                     </Text>
                   </TouchableOpacity>
                   <TouchableOpacity onPress={handleCreatePost} style={styles.createBtn}>
@@ -456,6 +461,16 @@ const styles = StyleSheet.create({
     height: 48,
     borderRadius: 24,
     marginRight: 12
+  },
+  avatarFallback: {
+    alignItems: "center",
+    justifyContent: "center",
+    backgroundColor: "#d1fae5"
+  },
+  avatarFallbackText: {
+    color: "#047857",
+    fontSize: 18,
+    fontWeight: "700"
   },
   username: {
     fontSize: 16,

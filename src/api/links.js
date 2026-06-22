@@ -1,10 +1,15 @@
 import { apiRequest } from "./apiRequest";
 
-const LINKS_BASE = "/commercial/links";
+const LINKS_BASE = "/api/commercial/links";
 
 function normalizeLinksList(res) {
   if (Array.isArray(res)) return res;
-  return res?.links ?? res?.data ?? [];
+  if (Array.isArray(res?.links)) return res.links;
+  if (Array.isArray(res?.items)) return res.items;
+  if (Array.isArray(res?.data)) return res.data;
+  if (Array.isArray(res?.data?.links)) return res.data.links;
+  if (Array.isArray(res?.data?.items)) return res.data.items;
+  return [];
 }
 
 export async function fetchLinks() {

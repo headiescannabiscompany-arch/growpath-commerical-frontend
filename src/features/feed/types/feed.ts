@@ -45,6 +45,11 @@ export interface FeedResponse {
 export type FeedFilters = {
   facilityId?: string;
   type?: string;
+  types?: string;
+  status?: string;
+  assignedTo?: string;
+  from?: string;
+  to?: string;
 };
 
 export type FeedPage<T = any> = {

@@ -58,23 +58,10 @@ If schemas are not present, the router will warn and skip Ajv validation until t
 npm test -- backend/routes/ai.call.test.js
 ```
 
-Expected output:
-
-```
-PASS backend/routes/ai.call.test.js
-  AI Call Router (ai.call.js)
-    POST /api/facility/:facilityId/ai/call
-      ✓ Rejects request without tool (XX ms)
-      ✓ Rejects unregistered function (XX ms)
-      ✓ harvest.analyzeTrichomes with valid images returns result + TrichomeAnalysis write (XX ms)
-      ✓ climate.computeVPD (deterministic) returns confidence 1.0 (XX ms)
-      ✓ ec.recommendCorrection with small drift → success (XX ms)
-      ✓ ec.recommendCorrection with large drift → 409 USER_CONFIRMATION_REQUIRED (XX ms)
-      ✓ Missing images in harvest.analyzeTrichomes → 400 MISSING_REQUIRED_INPUTS (XX ms)
-      ✓ Context facilityId mismatch → 400 VALIDATION_ERROR (XX ms)
-
-Tests: 8 passed
-```
+Current note: this legacy route test file contains stale expectations for
+`harvest.analyzeTrichomes`. The v1 route currently returns `AI_NOT_IMPLEMENTED`
+for that handler. Update the test or implement the handler before treating this
+suite as release evidence.
 
 ## Implementation Checklist
 
@@ -95,7 +82,7 @@ Tests: 8 passed
   - [ ] `Task` (generated tasks)
   - [ ] `TrichomeAnalysis` (harvest analysis result)
   - [ ] `Alert` (risk/diagnostic alerts)
-- [ ] Integrate external validator (stub, ready for GPT/Claude/local)
+- [x] Integrate external validator (OpenAI-compatible provider, disabled when provider/API key are not configured)
 
 ## Request Contract
 
@@ -215,14 +202,25 @@ async "tool.functionName"(ctx, args, writes) {
 }
 ```
 
-## Extending with External Validation
+## External Validation
 
-The router has a stub `externalValidate()` function ready for LLM integration:
+The router uses `backend/llm/provider.js` for gray-zone confidence validation.
+Configure the OpenAI-compatible provider with environment variables:
+
+```bash
+LLM_PROVIDER=openai
+OPENAI_API_KEY=...
+OPENAI_MODEL=gpt-4o-mini
+# Optional for compatible gateways:
+OPENAI_BASE_URL=https://api.openai.com/v1
+```
+
+Provider contract:
 
 ```javascript
 async function externalValidate({ fn, packet }) {
   // packet = { ctx, computedMetrics, proposal, assumptions, requestedCritique }
-  // TODO: Call GPT / Claude / local model
+  // Calls the configured OpenAI-compatible provider when enabled
   // Return: { outcome, critique, suggestions, confidenceDelta }
   // confidenceDelta must be bounded: max ±0.10
 }
@@ -233,6 +231,8 @@ Current behavior:
 - Only eligible functions call external validator (Brain Spec V1, Section 6.1)
 - Confidence must be in gray zone (0.60–0.85) to trigger external call
 - External response NEVER overrides decision (only adjusts confidence)
+- If no provider or API key is configured, validation returns `INSUFFICIENT`
+  with `confidenceDelta: 0`
 
 ## Audit & Observability
 
@@ -263,7 +263,7 @@ Logs are prefixed `[AI.CALL]` for easy filtering.
 
 3. **Add facility role gates** (e.g., require STAFF for high-impact functions)
 
-4. **Integrate external validator** (GPT/Claude endpoint)
+4. **Add alternate external validators** (Claude/local endpoints) if needed
 
 5. **Add /api/facility/:facilityId/ai/history** (fetch recent AI calls + decisions)
 

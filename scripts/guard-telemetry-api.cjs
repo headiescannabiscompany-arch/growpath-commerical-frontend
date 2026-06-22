@@ -43,7 +43,15 @@ function main() {
     POINTS: "/api/telemetry/points",
     PULSE_VERIFY: "/api/telemetry/pulse/verify",
     PULSE_DEVICES: "/api/telemetry/pulse/devices",
-    PULSE_PULL: "/api/telemetry/pulse/pull"
+    PULSE_PULL: "/api/telemetry/pulse/pull",
+    UBIBOT_VERIFY: "/api/telemetry/ubibot/verify",
+    UBIBOT_CHANNELS: "/api/telemetry/ubibot/channels",
+    UBIBOT_PULL: "/api/telemetry/ubibot/pull",
+    UBIBOT_MQTT_SETTINGS: "/api/telemetry/ubibot/mqtt-settings",
+    GROWLINK_VERIFY: "/api/telemetry/growlink/verify",
+    GROWLINK_CONTROLLERS: "/api/telemetry/growlink/controllers",
+    GROWLINK_CURRENT: "/api/telemetry/growlink/current",
+    GROWLINK_PULL: "/api/telemetry/growlink/pull"
   };
 
   if (/\bfetch\s*\(/.test(telemetryRaw)) {
@@ -60,6 +68,18 @@ function main() {
 
   if (!/delete\s+config\.pulse\.apiKey\s*;/.test(telemetryRaw)) {
     failures.push("src/api/telemetry.ts must strip config.pulse.apiKey during source normalization");
+  }
+  if (!/delete\s+config\.ubibot\.accountKey\s*;/.test(telemetryRaw)) {
+    failures.push("src/api/telemetry.ts must strip config.ubibot.accountKey during source normalization");
+  }
+  if (!/delete\s+config\.ubibot\.apiKey\s*;/.test(telemetryRaw)) {
+    failures.push("src/api/telemetry.ts must strip config.ubibot.apiKey during source normalization");
+  }
+  if (!/delete\s+config\.growlink\.password\s*;/.test(telemetryRaw)) {
+    failures.push("src/api/telemetry.ts must strip config.growlink.password during source normalization");
+  }
+  if (!/delete\s+config\.growlink\.accessToken\s*;/.test(telemetryRaw)) {
+    failures.push("src/api/telemetry.ts must strip config.growlink.accessToken during source normalization");
   }
   for (const [key, route] of Object.entries(expectedRoutes)) {
     const keyPattern = new RegExp(`\\b${key}\\s*:\\s*["'\`]${route.replace(/[.*+?^${}()|[\]\\]/g, "\\$&")}["'\`]`);
