@@ -6,6 +6,7 @@ import {
   TouchableOpacity,
   ActivityIndicator,
   Alert,
+  Linking,
   ScrollView,
   RefreshControl
 } from "react-native";
@@ -82,11 +83,7 @@ export default function BillingAndReportingScreen() {
       const res = await startCheckout();
       const checkoutUrl = res?.checkoutUrl ?? res?.url;
       if (checkoutUrl) {
-        if (typeof window !== "undefined" && window.open) {
-          window.open(checkoutUrl, "_blank");
-        } else {
-          Alert.alert("Checkout", "Open the checkout URL in a browser.");
-        }
+        await Linking.openURL(checkoutUrl);
       } else {
         Alert.alert("Error", "Failed to start subscription");
       }

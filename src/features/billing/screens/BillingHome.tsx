@@ -1,26 +1,59 @@
-/* eslint-disable react-hooks/exhaustive-deps */
 import React, { useEffect, useState } from "react";
-import { View, Text, Button } from "react-native";
-import { useBilling } from "../hooks";
+import { Alert, Linking, Pressable, StyleSheet, Text, View } from "react-native";
+import { createCheckoutSession, getSubscription } from "../../../api/subscription";
 
 export default function BillingHome() {
-  const billing = useBilling();
   const [plan, setPlan] = useState<any>(null);
+  const [loading, setLoading] = useState(false);
 
   useEffect(() => {
-    billing.getPlan().then(setPlan);
+    getSubscription()
+      .then(setPlan)
+      .catch(() => setPlan(null));
   }, []);
 
+  async function startUpgrade() {
+    setLoading(true);
+    try {
+      const checkout = await createCheckoutSession({ plan: "pro", interval: "monthly" });
+      const url = checkout?.url || checkout?.checkoutUrl || checkout?.data?.url;
+      if (!url) {
+        Alert.alert("Checkout unavailable", "The backend did not return a checkout URL.");
+        return;
+      }
+      await Linking.openURL(url);
+    } catch (error: any) {
+      Alert.alert("Checkout failed", error?.message || "Unable to start checkout.");
+    } finally {
+      setLoading(false);
+    }
+  }
+
   return (
-    <View style={{ padding: 24 }}>
-      <Text style={{ fontSize: 20, fontWeight: "bold" }}>
-        Current Plan: {plan?.plan || "Loading..."}
-      </Text>
-      <Text style={{ marginVertical: 12 }}>
-        Features: {JSON.stringify(plan?.features || {}, null, 2)}
-      </Text>
-      <Button title="Upgrade" onPress={() => billing.createCheckout("price_pro")} />
-      <Button title="Manage" onPress={() => billing.openPortal()} />
+    <View style={styles.container}>
+      <Text style={styles.title}>Current Plan: {plan?.plan || "Loading..."}</Text>
+      <Text style={styles.meta}>Status: {plan?.subscriptionStatus || "unknown"}</Text>
+      <Pressable
+        style={[styles.button, loading && styles.buttonDisabled]}
+        onPress={startUpgrade}
+        disabled={loading}
+      >
+        <Text style={styles.buttonText}>{loading ? "Opening..." : "Upgrade"}</Text>
+      </Pressable>
     </View>
   );
 }
+
+const styles = StyleSheet.create({
+  container: { gap: 12, padding: 24 },
+  title: { fontSize: 20, fontWeight: "bold" },
+  meta: { color: "#475569" },
+  button: {
+    backgroundColor: "#166534",
+    borderRadius: 8,
+    paddingHorizontal: 16,
+    paddingVertical: 12
+  },
+  buttonDisabled: { opacity: 0.6 },
+  buttonText: { color: "#FFFFFF", fontWeight: "800", textAlign: "center" }
+});
