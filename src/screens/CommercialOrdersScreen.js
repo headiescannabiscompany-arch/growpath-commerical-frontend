@@ -1,7 +1,15 @@
 import React, { useMemo } from "react";
-import { ActivityIndicator, FlatList, StyleSheet, Text, View } from "react-native";
+import {
+  ActivityIndicator,
+  Alert,
+  FlatList,
+  Pressable,
+  StyleSheet,
+  Text,
+  View
+} from "react-native";
 
-import { useOrders } from "@/hooks/useOrders";
+import { useOrders, useUpdateOrderFulfillment } from "@/hooks/useOrders";
 
 function orderId(item, idx) {
   return String(item?.id || item?._id || `order-${idx}`);
@@ -9,7 +17,21 @@ function orderId(item, idx) {
 
 export default function CommercialOrdersScreen() {
   const { data, isLoading, error, refetch, isRefetching } = useOrders();
+  const updateFulfillment = useUpdateOrderFulfillment();
   const orders = useMemo(() => (Array.isArray(data) ? data : []), [data]);
+
+  async function markFulfilled(item) {
+    const id = orderId(item, 0);
+    if (!id) return;
+    try {
+      await updateFulfillment.mutateAsync({
+        orderId: id,
+        fulfillmentStatus: "fulfilled"
+      });
+    } catch (err) {
+      Alert.alert("Order update failed", err?.message || "Unable to update order.");
+    }
+  }
 
   if (isLoading) {
     return (
@@ -28,7 +50,9 @@ export default function CommercialOrdersScreen() {
       refreshing={isRefetching}
       ListHeaderComponent={<Text style={styles.title}>Orders</Text>}
       ListEmptyComponent={
-        <Text style={styles.empty}>{error ? "Failed to load orders." : "No orders yet."}</Text>
+        <Text style={styles.empty}>
+          {error ? "Failed to load orders." : "No orders yet."}
+        </Text>
       }
       renderItem={({ item }) => (
         <View style={styles.card}>
@@ -36,12 +60,37 @@ export default function CommercialOrdersScreen() {
             <Text style={styles.label}>Order:</Text> {item?.id || item?._id || "unknown"}
           </Text>
           <Text style={styles.row}>
+            <Text style={styles.label}>Product:</Text>{" "}
+            {item?.productName || "Storefront product"}
+          </Text>
+          <Text style={styles.row}>
+            <Text style={styles.label}>Customer:</Text> {item?.customerName || "Customer"}
+          </Text>
+          <Text style={styles.row}>
             <Text style={styles.label}>Status:</Text> {item?.status || "pending"}
           </Text>
           <Text style={styles.row}>
-            <Text style={styles.label}>Total:</Text>{" "}
-            {item?.total != null ? `${item.total} ${item?.currency || "USD"}` : "N/A"}
+            <Text style={styles.label}>Fulfillment:</Text>{" "}
+            {item?.fulfillmentStatus || "unfulfilled"}
           </Text>
+          <Text style={styles.row}>
+            <Text style={styles.label}>Total:</Text>{" "}
+            {item?.total != null
+              ? `$${Number(item.total).toFixed(2)} ${item?.currency || "USD"}`
+              : "N/A"}
+          </Text>
+          {item?.fulfillmentStatus !== "fulfilled" ? (
+            <Pressable
+              style={[
+                styles.button,
+                updateFulfillment.isPending && styles.buttonDisabled
+              ]}
+              disabled={updateFulfillment.isPending}
+              onPress={() => markFulfilled(item)}
+            >
+              <Text style={styles.buttonText}>Mark Fulfilled</Text>
+            </Pressable>
+          ) : null}
         </View>
       )}
     />
@@ -62,5 +111,15 @@ const styles = StyleSheet.create({
   },
   row: { fontSize: 14, marginBottom: 4 },
   label: { fontWeight: "700" },
+  button: {
+    alignSelf: "flex-start",
+    backgroundColor: "#166534",
+    borderRadius: 8,
+    marginTop: 8,
+    paddingHorizontal: 12,
+    paddingVertical: 8
+  },
+  buttonDisabled: { opacity: 0.6 },
+  buttonText: { color: "#FFFFFF", fontWeight: "800" },
   empty: { opacity: 0.7, paddingTop: 8 }
 });

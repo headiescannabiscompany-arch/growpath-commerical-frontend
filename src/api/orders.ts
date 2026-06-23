@@ -5,10 +5,14 @@ const ORDERS_BASE = "/api/commercial/orders";
 export type Order = {
   id: string;
   status: string;
+  fulfillmentStatus?: "unfulfilled" | "fulfilled" | "canceled";
   total?: number;
+  amountCents?: number;
   currency?: string;
   createdAt?: string;
   customerName?: string;
+  customerEmail?: string;
+  productName?: string;
 };
 
 export async function fetchOrders(): Promise<Order[]> {
@@ -20,4 +24,14 @@ export async function fetchOrders(): Promise<Order[]> {
   if (Array.isArray(res?.data?.orders)) return res.data.orders;
   if (Array.isArray(res?.data?.items)) return res.data.items;
   return [];
+}
+
+export async function updateOrderFulfillment(
+  orderId: string,
+  fulfillmentStatus: "unfulfilled" | "fulfilled" | "canceled"
+) {
+  return apiRequest(`${ORDERS_BASE}/${encodeURIComponent(orderId)}`, {
+    method: "PATCH",
+    body: { fulfillmentStatus }
+  });
 }
