@@ -39,3 +39,9 @@ export async function deleteProduct(productId: string) {
     method: "DELETE"
   });
 }
+
+export async function checkoutProduct(productId: string) {
+  return apiRequest(`${PRODUCTS_BASE}/${encodeURIComponent(productId)}/checkout`, {
+    method: "POST"
+  });
+}
