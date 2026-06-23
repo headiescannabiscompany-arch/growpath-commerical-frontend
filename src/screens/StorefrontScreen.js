@@ -5,6 +5,7 @@ import {
   FlatList,
   Modal,
   Pressable,
+  ScrollView,
   StyleSheet,
   Switch,
   Text,
@@ -58,11 +59,16 @@ export default function StorefrontScreen() {
 
   const [storeName, setStoreName] = useState("");
   const [storeSlug, setStoreSlug] = useState("");
+  const [storePublished, setStorePublished] = useState(false);
 
   const [modalVisible, setModalVisible] = useState(false);
   const [editingProduct, setEditingProduct] = useState(null);
   const [productName, setProductName] = useState("");
+  const [productSku, setProductSku] = useState("");
+  const [productDescription, setProductDescription] = useState("");
+  const [productImageUrl, setProductImageUrl] = useState("");
   const [productPriceValue, setProductPriceValue] = useState("");
+  const [productInventoryCount, setProductInventoryCount] = useState("");
   const [productPublished, setProductPublished] = useState(false);
 
   const load = useCallback(async () => {
@@ -76,6 +82,7 @@ export default function StorefrontScreen() {
       setStorefront(nextStorefront);
       setStoreName(nextStorefront?.name || "");
       setStoreSlug(nextStorefront?.slug || "");
+      setStorePublished(Boolean(nextStorefront?.isPublished));
       setProducts(nextProducts);
     } catch (err) {
       setError(err?.message || "Unable to load storefront.");
@@ -102,7 +109,11 @@ export default function StorefrontScreen() {
   function openAddProduct() {
     setEditingProduct(null);
     setProductName("");
+    setProductSku("");
+    setProductDescription("");
+    setProductImageUrl("");
     setProductPriceValue("");
+    setProductInventoryCount("");
     setProductPublished(false);
     setModalVisible(true);
   }
@@ -110,7 +121,15 @@ export default function StorefrontScreen() {
   function openEditProduct(product) {
     setEditingProduct(product);
     setProductName(product?.name || "");
+    setProductSku(product?.sku || "");
+    setProductDescription(product?.description || "");
+    setProductImageUrl(product?.imageUrl || "");
     setProductPriceValue(centsToInput(product?.priceCents ?? product?.price));
+    setProductInventoryCount(
+      product?.inventoryCount === undefined || product?.inventoryCount === null
+        ? ""
+        : String(product.inventoryCount)
+    );
     setProductPublished(product?.status === "published" || product?.isPublished === true);
     setModalVisible(true);
   }
@@ -124,12 +143,17 @@ export default function StorefrontScreen() {
     setSaving(true);
     setError("");
     try {
-      const payload = { name, slug: storeSlug.trim() || undefined };
+      const payload = {
+        name,
+        slug: storeSlug.trim() || undefined,
+        isPublished: storePublished
+      };
       const result = storefront ? await updateStorefront(payload) : await createStorefront(payload);
       const next = result?.storefront || result?.data?.storefront || result?.data || result;
       setStorefront(next);
       setStoreName(next?.name || name);
       setStoreSlug(next?.slug || payload.slug || "");
+      setStorePublished(Boolean(next?.isPublished ?? storePublished));
     } catch (err) {
       setError(err?.message || "Unable to save storefront.");
     } finally {
@@ -148,8 +172,15 @@ export default function StorefrontScreen() {
     try {
       const payload = {
         name,
+        sku: productSku.trim(),
+        description: productDescription.trim(),
+        imageUrl: productImageUrl.trim(),
         priceCents: inputToCents(productPriceValue),
-        status: productPublished ? "published" : "draft"
+        status: productPublished ? "published" : "draft",
+        inventoryCount:
+          productInventoryCount.trim() === ""
+            ? null
+            : Math.max(0, Number(productInventoryCount) || 0)
       };
       if (editingProduct) {
         await updateProduct(idOf(editingProduct), payload);
@@ -221,6 +252,10 @@ export default function StorefrontScreen() {
           <Text style={styles.meta}>
             Status: {storefront?.isPublished ? "published" : "draft"}
           </Text>
+          <View style={styles.inlineSwitch}>
+            <Text style={styles.label}>Publish</Text>
+            <Switch value={storePublished} onValueChange={setStorePublished} />
+          </View>
           <Pressable style={styles.button} onPress={saveStorefront} disabled={saving}>
             <Text style={styles.buttonText}>{saving ? "Saving..." : "Save storefront"}</Text>
           </Pressable>
@@ -262,7 +297,22 @@ export default function StorefrontScreen() {
               <View style={styles.cardBody}>
                 <Text style={styles.productName}>{item?.name || "Unnamed product"}</Text>
                 <Text style={styles.meta}>{productPrice(item)}</Text>
-                <Text style={styles.meta}>Status: {item?.status || "draft"}</Text>
+                <Text style={styles.meta}>
+                  {[item?.sku ? `SKU ${item.sku}` : "", item?.status || "draft"]
+                    .filter(Boolean)
+                    .join(" - ")}
+                </Text>
+                <Text style={styles.meta}>
+                  Inventory:{" "}
+                  {item?.inventoryCount === null || item?.inventoryCount === undefined
+                    ? "not tracked"
+                    : item.inventoryCount}
+                </Text>
+                {item?.description ? (
+                  <Text style={styles.description} numberOfLines={2}>
+                    {item.description}
+                  </Text>
+                ) : null}
               </View>
               <View style={styles.actions}>
                 <Pressable style={styles.secondaryButton} onPress={() => openEditProduct(item)}>
@@ -279,7 +329,7 @@ export default function StorefrontScreen() {
 
       <Modal transparent visible={modalVisible} animationType="fade">
         <View style={styles.modalOverlay}>
-          <View style={styles.modal}>
+          <ScrollView style={styles.modalShell} contentContainerStyle={styles.modal}>
             <Text style={styles.modalTitle}>
               {editingProduct ? "Edit Product" : "Add Product"}
             </Text>
@@ -291,11 +341,44 @@ export default function StorefrontScreen() {
               style={styles.input}
             />
             <TextInput
+              value={productSku}
+              onChangeText={setProductSku}
+              placeholder="SKU"
+              placeholderTextColor="#94A3B8"
+              autoCapitalize="characters"
+              style={styles.input}
+            />
+            <TextInput
+              value={productDescription}
+              onChangeText={setProductDescription}
+              placeholder="Description"
+              placeholderTextColor="#94A3B8"
+              multiline
+              style={[styles.input, styles.textArea]}
+            />
+            <TextInput
+              value={productImageUrl}
+              onChangeText={setProductImageUrl}
+              placeholder="Image URL"
+              placeholderTextColor="#94A3B8"
+              autoCapitalize="none"
+              keyboardType="url"
+              style={styles.input}
+            />
+            <TextInput
               value={productPriceValue}
               onChangeText={setProductPriceValue}
               placeholder="Price, for example 19.99"
               placeholderTextColor="#94A3B8"
               keyboardType="decimal-pad"
+              style={styles.input}
+            />
+            <TextInput
+              value={productInventoryCount}
+              onChangeText={setProductInventoryCount}
+              placeholder="Inventory count"
+              placeholderTextColor="#94A3B8"
+              keyboardType="numeric"
               style={styles.input}
             />
             <View style={styles.rowBetween}>
@@ -314,7 +397,7 @@ export default function StorefrontScreen() {
                 <Text style={styles.buttonText}>{saving ? "Saving..." : "Save"}</Text>
               </Pressable>
             </View>
-          </View>
+          </ScrollView>
         </View>
       </Modal>
     </ScreenContainer>
@@ -327,6 +410,11 @@ const styles = StyleSheet.create({
     flexDirection: "row",
     justifyContent: "space-between",
     marginBottom: 12
+  },
+  inlineSwitch: {
+    alignItems: "center",
+    flexDirection: "row",
+    gap: 8
   },
   header: { color: "#111827", fontSize: 26, fontWeight: "800" },
   subtitle: { color: "#64748B", marginTop: 4 },
@@ -402,6 +490,7 @@ const styles = StyleSheet.create({
   cardBody: { flex: 1 },
   productName: { color: "#111827", fontSize: 16, fontWeight: "800" },
   meta: { color: "#64748B", marginTop: 4 },
+  description: { color: "#475569", marginTop: 6 },
   actions: { gap: 8 },
   center: { alignItems: "center", gap: 8, padding: 24 },
   empty: {
@@ -423,6 +512,12 @@ const styles = StyleSheet.create({
     gap: 12,
     padding: 16
   },
+  modalShell: {
+    backgroundColor: "#FFFFFF",
+    borderRadius: 8,
+    maxHeight: "92%"
+  },
+  textArea: { minHeight: 82, textAlignVertical: "top" },
   modalTitle: { color: "#111827", fontSize: 20, fontWeight: "800" },
   label: { color: "#334155", fontWeight: "800" },
   modalActions: {
