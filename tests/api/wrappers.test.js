@@ -1,5 +1,6 @@
 import * as usersApi from "../../src/api/users.js";
 import * as coursesApi from "../../src/api/courses.js";
+import * as coursePaymentsApi from "../../src/api/coursePayments";
 import * as forumApi from "../../src/api/forum.js";
 import * as tasksApi from "../../src/api/tasks.js";
 import * as environmentApi from "../../src/api/environment.js";
@@ -19,6 +20,7 @@ import * as linksApi from "../../src/api/links.js";
 import * as ordersApi from "../../src/api/orders";
 import * as productsApi from "../../src/api/products";
 import * as storefrontApi from "../../src/api/storefront";
+import * as marketplaceApi from "../../src/api/marketplace.js";
 import ROUTES from "../../src/api/routes.js";
 
 // Setup minimal fetch spy
@@ -78,11 +80,49 @@ describe("API Wrappers Unit Tests", () => {
   });
 
   it("Subscription API: createCheckoutSession starts Stripe checkout via POST", async () => {
-    await subscriptionApi.createCheckoutSession();
+    await subscriptionApi.createCheckoutSession({
+      plan: "commercial",
+      interval: "yearly"
+    });
     expect(fetchCalls[0].options.method).toBe("POST");
     expect(fetchCalls[0].url.endsWith(ROUTES.SUBSCRIBE.CREATE_CHECKOUT_SESSION)).toBe(
       true
     );
+    expect(JSON.parse(fetchCalls[0].options.body)).toEqual({
+      plan: "commercial",
+      interval: "yearly"
+    });
+  });
+
+  it("Subscription API: createCheckoutSession defaults legacy callers to pro monthly", async () => {
+    await subscriptionApi.createCheckoutSession();
+    expect(fetchCalls[0].options.method).toBe("POST");
+    expect(JSON.parse(fetchCalls[0].options.body)).toEqual({
+      plan: "pro",
+      interval: "monthly"
+    });
+  });
+
+  it("Course payments API: startCourseCheckout uses canonical Stripe checkout", async () => {
+    await coursePaymentsApi.startCourseCheckout("course 1");
+    expect(fetchCalls[0].options.method).toBe("POST");
+    expect(fetchCalls[0].url.endsWith(ROUTES.PAYMENTS.CHECKOUT("course 1"))).toBe(true);
+  });
+
+  it("Marketplace API: purchaseContent starts marketplace checkout", async () => {
+    await marketplaceApi.purchaseContent("content 1");
+    expect(fetchCalls[0].options.method).toBe("POST");
+    expect(fetchCalls[0].url.endsWith("/api/marketplace/content%201/purchase")).toBe(
+      true
+    );
+  });
+
+  it("Commercial API: checkoutProduct starts storefront product checkout", async () => {
+    await productsApi.checkoutProduct("product 1");
+    expect(fetchCalls[0].options.method).toBe("POST");
+    expect(
+      fetchCalls[0].url.endsWith("/api/commercial/products/product%201/checkout")
+    ).toBe(true);
   });
 
   it("Subscription API: verifyIapReceipt posts platform receipt to backend", async () => {
