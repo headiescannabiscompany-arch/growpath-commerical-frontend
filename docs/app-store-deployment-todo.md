@@ -55,9 +55,12 @@ Current known blockers:
 
 - PARTIAL: Store descriptions, keywords, privacy URL, and support URL.
 - Owner: Product + Legal
-- Current evidence: `tmp/spec/store_assets_2026-06-21/metadata.md`
-  summarizes source values, listing draft sources, screenshot targets, and
-  required release-owner/legal decisions.
+- Current evidence: `APP_STORE_LISTING.md` now contains clean ASCII,
+  policy-safe draft listing copy, screenshot targets, age-rating guidance, and
+  review notes. `APP_STORE_CHECKLIST.md` tracks release evidence and submission
+  blockers. `tmp/spec/store_assets_2026-06-21/metadata.md` summarizes source
+  values, listing draft sources, screenshot targets, and required
+  release-owner/legal decisions.
 - Next action: Confirm final app name, legally approved cannabis language, age
   rating, privacy URL, support URL, and final listing copy.
 - Evidence target: `tmp/spec/store_assets_2026-06-21/metadata.md`

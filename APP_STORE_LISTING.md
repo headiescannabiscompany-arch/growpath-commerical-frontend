@@ -1,298 +1,133 @@
-# App Store Listing Materials for GrowPath
+# App Store Listing Materials For GrowPath
 
-## App Store Connect (iOS) & Google Play Console (Android)
+> Status: Draft pending legal, release-owner, and store-console sign-off.
+> Last reviewed: 2026-06-23
 
-### App Name
+## App Name
 
-**GrowPath**
+GrowPath
 
-### Subtitle (iOS) / Short Description (Android)
+## Subtitle / Short Description
 
-Smart Cannabis Cultivation Tracking & Education
+Grow Journal And Facility Tracking
 
----
+## Full Description
 
-## App Description
+GrowPath is a cultivation journal, education, and operations app for documenting plant growth in legal jurisdictions. It helps personal growers, educators, and commercial teams track activity, monitor environments, organize records, and learn from structured content.
 
-### Full Description (4000 characters max)
+GrowPath is for documentation and education only. It does not facilitate the sale, purchase, or distribution of controlled substances.
 
-**Master Cannabis Cultivation with AI-Powered Guidance**
+### Grow Journal And Tracking
 
-GrowPath is the ultimate companion for cannabis growers of all skill levels. Whether you're a beginner starting your first grow or an experienced cultivator optimizing your yields, our comprehensive platform provides everything you need to succeed.
+- Log grow cycles, plants, stages, tasks, and outcomes.
+- Track environment data including PPFD, DLI, pH, PPM, temperature, humidity, and nutrients.
+- Upload photos to document plant progress over time.
+- Maintain history across multiple grows or crop cycles.
+- Export records for review and analysis.
 
-**🌱 COMPREHENSIVE GROW TRACKING**
-• Document every stage of your grow journey with detailed logs
-• Track advanced environment data: lighting (PPFD, DLI, spectrum), water quality (pH, PPM), air conditions (temperature, humidity, airflow), nutrients, and growing medium
-• Upload photos to visualize plant development over time
-• Monitor multiple grows simultaneously
-• Set reminders for watering, feeding, and maintenance tasks
+### AI-Assisted Plant Insights
 
-**🔬 AI-POWERED PLANT DIAGNOSTICS**
-• Instantly diagnose plant health issues with AI analysis
-• Get expert recommendations for treating deficiencies, pests, and diseases
-• Learn to identify problems before they become serious
-• Access a comprehensive library of common issues and solutions
+- Analyze plant photos and grow context for possible health indicators.
+- Review structured recommendations and next steps.
+- Compare current issues with historical grow records.
+- Use insights as educational guidance, not as a substitute for professional compliance or agronomy advice.
 
-**📚 PROFESSIONAL EDUCATION PLATFORM**
-• Learn from expert growers through structured courses
-• Master cultivation techniques: seed to harvest, training methods, nutrient management
-• Specialized courses on hydroponics, organics, breeding, and extraction
-• Earn certificates to showcase your growing expertise
-• Ask questions and get answers from experienced cultivators
+### Education And Community
 
-**👥 THRIVING COMMUNITY**
-• Share your grows and learn from thousands of growers worldwide
-• Get feedback and advice from the community
-• Follow experienced growers and stay inspired
-• Participate in forums on strains, techniques, and equipment
-• Connect with other growers in your area (where legal)
+- Browse courses and learning materials from cultivation educators.
+- Track enrollment, lessons, and certificates.
+- Participate in community discussions and knowledge sharing.
+- Keep education and documentation workflows in one app.
 
-**⭐ PRO FEATURES**
-• Unlimited grows and advanced tracking fields
-• Priority AI diagnostics with detailed analysis
-• Access to premium courses and exclusive content
-• Ad-free experience
-• Export your grow data for analysis
-• Advanced analytics and yield predictions
-• Custom templates for repeated grows
+### Commercial And Facility Tools
 
-**🔒 PRIVACY & LEGAL COMPLIANCE**
-• Your data is encrypted and secure
-• Discreet app design for privacy
-• Legal disclaimer and age verification
-• Compliance tools for legal growing operations
+- Manage commercial storefront, product, course, link, campaign, order, and inventory workflows.
+- Track facility rooms, batch cycles, tasks, SOPs, audit logs, reports, equipment, and team roles.
+- Use capability-based access controls for plan, mode, and facility permissions.
 
-**💡 PERFECT FOR:**
-• Home growers tracking personal plants
-• Commercial cultivators managing multiple facilities
-• Cannabis educators teaching cultivation
-• Dispensary consultants advising customers
-• Anyone passionate about cannabis cultivation
+### Privacy And Compliance
 
-**IMPORTANT LEGAL NOTICE:**
-This app is intended for educational purposes and for use only in jurisdictions where cannabis cultivation is legal. Users must be 21+ (or 18+ where applicable) and are responsible for complying with all local, state, and federal laws. GrowPath does not encourage or facilitate illegal activity.
+- Designed around secure account access and permission-based workflows.
+- Includes tools for record keeping, facility context, and operational review.
+- Supports legal-use disclaimers and age-gated release positioning.
 
-Download GrowPath today and take your growing skills to the next level! 🌿
+## Important Legal Notice
 
----
+GrowPath is intended for educational, documentation, and operational use only in jurisdictions where cultivation is legal. Users are responsible for complying with all applicable local, state, provincial, and federal laws. GrowPath does not encourage or facilitate illegal activity.
 
-### Keywords (100 characters max for iOS)
+## Keywords
 
-cannabis,grow,cultivation,hydroponics,marijuana,weed,plant,tracking,grow log,gardening
+cultivation, plant tracker, grow journal, horticulture, agriculture, greenhouse, hydroponics, analytics, compliance, cannabis
 
----
+## Categories
 
-### Categories
+- iOS primary category: Education
+- iOS secondary category: Productivity
+- Android primary category: Education
+- Android secondary category: Productivity
 
-**Primary Category:**
+## URLs
 
-- iOS: Education
-- Android: Education
+- Support URL: https://www.growpathai.com/support
+- Marketing URL: https://www.growpathai.com
+- Privacy Policy URL: https://www.growpathai.com/privacy
 
-**Secondary Category:**
+## Promotional Text
 
-- iOS: Productivity
-- Android: Lifestyle
+Document grows, track environment data, review AI-assisted plant insights, and organize cultivation records from one app.
 
----
+## What's New
 
-### Support URL
+Initial release of GrowPath, including grow journals, environment tracking, photo documentation, AI-assisted plant insights, courses, community workflows, commercial tools, and facility operations features.
 
-https://www.growpathai.com/support
+## Screenshot Targets
 
-### Marketing URL
+### iPhone 6.7 Inch
 
-https://www.growpathai.com
+- Login or legal acknowledgement screen.
+- Personal dashboard with grow summaries.
+- Grow log detail with photos and environment data.
+- AI-assisted plant insight screen.
+- Course marketplace or lesson screen.
+- Community or forum feed.
+- Facility or commercial dashboard, if included in the submitted build.
 
-### Privacy Policy URL
+### iPhone 6.5 Inch
 
-https://www.growpathai.com/privacy
+Use the same story arc as the 6.7 inch set, captured on the required device class.
 
----
+### iPad 12.9 Inch
 
-## Promotional Text (iOS - 170 characters)
+Use tablet layouts for the same core workflows.
 
-Track your grows with precision! New: Advanced environment monitoring with PPFD, DLI, pH, and nutrient tracking. Join thousands of growers improving their craft! 🌱
+### Android Phone And Tablet
 
----
+Use the same core workflow set required for Google Play listing assets.
 
-## What's New (Version 1.0.0)
+## App Preview Video Draft
 
-Welcome to GrowPath! 🎉
+1. Open the app and acknowledge legal-use positioning.
+2. View the personal dashboard.
+3. Open or create a grow log.
+4. Add environment data and a plant photo.
+5. Review AI-assisted plant insights.
+6. Browse a course or community discussion.
+7. End on the GrowPath brand screen.
 
-This is our initial release featuring:
-• Comprehensive grow tracking with advanced environment data
-• AI-powered plant diagnostics and health monitoring
-• Professional courses taught by expert growers
-• Community forums and social features
-• Pro subscription with unlimited grows and premium content
+## Age Rating Guidance
 
-We're excited to help you grow better! Share your feedback at support@growpathai.com
+- iOS: 17+ recommended because the app references cannabis where legal.
+- Google Play: Mature 17+ recommended because the app references cannabis where legal.
+- Final rating answers must be confirmed by legal and the release owner in the store consoles.
 
----
+## Review Notes Draft
 
-## App Store Screenshots (Required Sizes)
+GrowPath is an education, journaling, and operations tool for legal cultivation documentation. It does not enable controlled-substance transactions. Cannabis-related functionality is positioned for legal jurisdictions only and includes user responsibility language.
 
-### iPhone 6.7" (Required for App Store)
+## Submission Dependencies
 
-- Screenshot 1: Login screen with custom background
-- Screenshot 2: Grow logs list showing multiple grows
-- Screenshot 3: Create grow with advanced environment fields
-- Screenshot 4: AI plant diagnostics feature
-- Screenshot 5: Course marketplace
-- Screenshot 6: Community/Forum feed
-- Screenshot 7: Profile with certificates
-
-### iPhone 6.5" (Required for older devices)
-
-[Same as above]
-
-### iPhone 5.5" (Optional)
-
-[Same as above]
-
-### iPad Pro 12.9" (2nd gen) (Required for iPad)
-
-[Same as above in iPad layout]
-
-### Android Phone
-
-[Same as above]
-
-### Android Tablet
-
-[Same as above in tablet layout]
-
----
-
-## App Preview Video (Optional but Recommended)
-
-**Duration:** 15-30 seconds
-
-**Script:**
-
-1. Open on login screen → Sign in
-2. Dashboard with grow logs
-3. Create new grow → Fill in advanced fields
-4. Take photo of plant
-5. Run AI diagnostics
-6. Browse courses
-7. View community posts
-8. End with logo and "GrowPath - Grow Smarter"
-
----
-
-## Age Rating
-
-### iOS
-
-**Rating:** 17+
-
-- Frequent/Intense Realistic Violence: NO
-- Frequent/Intense Cartoon or Fantasy Violence: NO
-- Frequent/Intense Sexual Content or Nudity: NO
-- Frequent/Intense Profanity or Crude Humor: NO
-- Frequent/Intense Alcohol, Tobacco, or Drug Use or References: YES ✓
-- Frequent/Intense Mature/Suggestive Themes: NO
-- Frequent/Intense Horror/Fear Themes: NO
-- Gambling: NO
-- Unrestricted Web Access: NO
-
-### Android
-
-**Content Rating:** Mature 17+
-
-- Drug Reference: Yes
-
----
-
-## Contact Information
-
-**Support Email:** support@growpathai.com
-**Website:** https://www.growpathai.com
-**Developer:** GrowPath, Inc.
-
----
-
-## App Store Optimization (ASO) Strategy
-
-### Target Keywords
-
-- Primary: cannabis grow, grow tracker, plant diary
-- Secondary: hydroponics, cultivation, grow log
-- Long-tail: cannabis growing app, marijuana cultivation tracker
-
-### Competitor Analysis
-
-- Similar apps: Grow Buddy, Jane Grow Tracker
-- Differentiation: AI diagnostics, professional courses, advanced environment tracking
-
----
-
-## Pre-Launch Checklist
-
-- [ ] All screenshots prepared (6.7", 6.5", iPad)
-- [ ] App preview video created
-- [ ] Privacy policy hosted and URL added
-- [ ] Terms of service accepted
-- [ ] Support URL active
-- [ ] Age rating set correctly
-- [ ] App icon 1024x1024 uploaded
-- [ ] All localizations complete (if applicable)
-- [ ] In-app purchases configured
-- [ ] TestFlight beta testing complete (iOS)
-- [ ] Internal testing complete (Android)
-- [ ] Legal review completed
-- [ ] All required metadata entered
-- [ ] App binary uploaded and processed
-
----
-
-## Post-Launch Strategy
-
-### Marketing
-
-- Social media campaign (#GrowPathAI)
-- Reddit communities (r/microgrowery, r/cannabiscultivation)
-- Cannabis forums and blogs
-- Influencer partnerships with grow YouTubers
-- Email marketing to beta testers
-
-### User Acquisition
-
-- App Store Optimization (ASO)
-- Search ads (where legal)
-- Content marketing (grow guides, blog)
-- Referral program
-
-### Retention
-
-- Push notifications for grow reminders
-- Weekly tips and educational content
-- Community engagement features
-- Regular content updates (new courses)
-
----
-
-## Notes for Submission
-
-### Apple App Store
-
-- Emphasize educational purpose
-- Include age gate and legal disclaimer
-- Reference local laws compliance
-- May require additional review time due to cannabis content
-- Be prepared to explain legal use cases
-
-### Google Play
-
-- Similar considerations as Apple
-- May have stricter policies in some regions
-- Consider geographic restrictions if needed
-- Ensure mature content rating
-
-### Amazon Appstore
-
-- Similar submission requirements
-- May have different content policies
-- Consider as additional distribution channel
+- Legal approval for final cannabis-related language.
+- Production privacy and support URLs confirmed live.
+- Store-console records confirmed for `com.growpathai.app`.
+- Final screenshots captured from production builds.
+- Real-device smoke evidence attached to the release checklist.
