@@ -6,6 +6,22 @@ export type Product = {
   id: string;
   name: string;
   price?: number;
+  priceCents?: number;
+  sku?: string;
+  description?: string;
+  imageUrl?: string;
+  inventoryCount?: number | null;
+  inventoryItemId?: string | null;
+  inventoryItem?: {
+    id?: string;
+    _id?: string;
+    name?: string;
+    sku?: string;
+    quantity?: number;
+    qty?: number;
+    unit?: string;
+    status?: string;
+  } | null;
   currency?: string;
   status?: "draft" | "published";
   createdAt?: string;

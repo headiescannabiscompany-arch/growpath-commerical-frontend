@@ -167,6 +167,19 @@ describe("API Wrappers Unit Tests", () => {
     await productsApi.updateProduct("p 1", { name: "Product" });
     expect(fetchCalls[1].options.method).toBe("PATCH");
     expect(fetchCalls[1].url.endsWith("/api/commercial/products/p%201")).toBe(true);
+
+    await productsApi.createProduct({
+      name: "Linked Product",
+      inventoryItemId: "inv 1",
+      inventoryCount: null
+    });
+    expect(fetchCalls[2].options.method).toBe("POST");
+    expect(fetchCalls[2].url.endsWith("/api/commercial/products")).toBe(true);
+    expect(JSON.parse(fetchCalls[2].options.body)).toEqual({
+      name: "Linked Product",
+      inventoryItemId: "inv 1",
+      inventoryCount: null
+    });
   });
 
   it("Commercial API: links campaigns and orders use canonical endpoints", async () => {

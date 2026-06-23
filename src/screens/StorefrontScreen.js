@@ -13,17 +13,15 @@ import {
   View
 } from "react-native";
 
-import {
-  createStorefront,
-  fetchStorefront,
-  updateStorefront
-} from "../api/storefront";
+import { createStorefront, fetchStorefront, updateStorefront } from "../api/storefront";
 import {
   createProduct,
   deleteProduct,
   fetchProducts,
   updateProduct
 } from "../api/products";
+import { apiRequest } from "../api/apiRequest";
+import { endpoints } from "../api/endpoints";
 import ScreenContainer from "../components/ScreenContainer";
 
 function idOf(item) {
@@ -49,9 +47,28 @@ function productPrice(product) {
   return price > 0 ? `$${price.toFixed(2)}` : "No price";
 }
 
+function rows(payload, key) {
+  if (Array.isArray(payload)) return payload;
+  if (Array.isArray(payload?.[key])) return payload[key];
+  if (Array.isArray(payload?.items)) return payload.items;
+  if (Array.isArray(payload?.data)) return payload.data;
+  if (Array.isArray(payload?.data?.[key])) return payload.data[key];
+  if (Array.isArray(payload?.data?.items)) return payload.data.items;
+  return [];
+}
+
+function inventoryLabel(item) {
+  if (!item) return "Manual stock";
+  const qty = item?.quantity ?? item?.qty ?? item?.onHand ?? item?.count ?? 0;
+  const unit = item?.unit || "ea";
+  const sku = item?.sku ? ` - ${item.sku}` : "";
+  return `${item?.name || "Inventory item"}${sku} (${qty} ${unit})`;
+}
+
 export default function StorefrontScreen() {
   const [storefront, setStorefront] = useState(null);
   const [products, setProducts] = useState([]);
+  const [inventoryItems, setInventoryItems] = useState([]);
   const [loading, setLoading] = useState(true);
   const [saving, setSaving] = useState(false);
   const [error, setError] = useState("");
@@ -69,21 +86,24 @@ export default function StorefrontScreen() {
   const [productImageUrl, setProductImageUrl] = useState("");
   const [productPriceValue, setProductPriceValue] = useState("");
   const [productInventoryCount, setProductInventoryCount] = useState("");
+  const [productInventoryItemId, setProductInventoryItemId] = useState("");
   const [productPublished, setProductPublished] = useState(false);
 
   const load = useCallback(async () => {
     setLoading(true);
     setError("");
     try {
-      const [nextStorefront, nextProducts] = await Promise.all([
+      const [nextStorefront, nextProducts, nextInventory] = await Promise.all([
         fetchStorefront(),
-        fetchProducts()
+        fetchProducts(),
+        apiRequest(endpoints.commercial.inventory, { method: "GET" })
       ]);
       setStorefront(nextStorefront);
       setStoreName(nextStorefront?.name || "");
       setStoreSlug(nextStorefront?.slug || "");
       setStorePublished(Boolean(nextStorefront?.isPublished));
       setProducts(nextProducts);
+      setInventoryItems(rows(nextInventory, "inventory"));
     } catch (err) {
       setError(err?.message || "Unable to load storefront.");
       setProducts([]);
@@ -114,6 +134,7 @@ export default function StorefrontScreen() {
     setProductImageUrl("");
     setProductPriceValue("");
     setProductInventoryCount("");
+    setProductInventoryItemId("");
     setProductPublished(false);
     setModalVisible(true);
   }
@@ -129,6 +150,14 @@ export default function StorefrontScreen() {
       product?.inventoryCount === undefined || product?.inventoryCount === null
         ? ""
         : String(product.inventoryCount)
+    );
+    setProductInventoryItemId(
+      String(
+        product?.inventoryItemId ||
+          product?.inventoryItem?._id ||
+          product?.inventoryItem?.id ||
+          ""
+      )
     );
     setProductPublished(product?.status === "published" || product?.isPublished === true);
     setModalVisible(true);
@@ -148,8 +177,11 @@ export default function StorefrontScreen() {
         slug: storeSlug.trim() || undefined,
         isPublished: storePublished
       };
-      const result = storefront ? await updateStorefront(payload) : await createStorefront(payload);
-      const next = result?.storefront || result?.data?.storefront || result?.data || result;
+      const result = storefront
+        ? await updateStorefront(payload)
+        : await createStorefront(payload);
+      const next =
+        result?.storefront || result?.data?.storefront || result?.data || result;
       setStorefront(next);
       setStoreName(next?.name || name);
       setStoreSlug(next?.slug || payload.slug || "");
@@ -177,8 +209,9 @@ export default function StorefrontScreen() {
         imageUrl: productImageUrl.trim(),
         priceCents: inputToCents(productPriceValue),
         status: productPublished ? "published" : "draft",
+        inventoryItemId: productInventoryItemId || null,
         inventoryCount:
-          productInventoryCount.trim() === ""
+          productInventoryItemId || productInventoryCount.trim() === ""
             ? null
             : Math.max(0, Number(productInventoryCount) || 0)
       };
@@ -222,7 +255,9 @@ export default function StorefrontScreen() {
       <View style={styles.headerRow}>
         <View>
           <Text style={styles.header}>Storefront</Text>
-          <Text style={styles.subtitle}>Manage storefront settings and sellable products.</Text>
+          <Text style={styles.subtitle}>
+            Manage storefront settings and sellable products.
+          </Text>
         </View>
         <Pressable style={styles.button} onPress={load} disabled={loading || saving}>
           <Text style={styles.buttonText}>Refresh</Text>
@@ -257,7 +292,9 @@ export default function StorefrontScreen() {
             <Switch value={storePublished} onValueChange={setStorePublished} />
           </View>
           <Pressable style={styles.button} onPress={saveStorefront} disabled={saving}>
-            <Text style={styles.buttonText}>{saving ? "Saving..." : "Save storefront"}</Text>
+            <Text style={styles.buttonText}>
+              {saving ? "Saving..." : "Save storefront"}
+            </Text>
           </Pressable>
         </View>
       </View>
@@ -289,7 +326,9 @@ export default function StorefrontScreen() {
           ListEmptyComponent={
             <View style={styles.empty}>
               <Text style={styles.emptyTitle}>No products yet.</Text>
-              <Text style={styles.meta}>Create your first product to populate the storefront.</Text>
+              <Text style={styles.meta}>
+                Create your first product to populate the storefront.
+              </Text>
             </View>
           }
           renderItem={({ item }) => (
@@ -304,9 +343,11 @@ export default function StorefrontScreen() {
                 </Text>
                 <Text style={styles.meta}>
                   Inventory:{" "}
-                  {item?.inventoryCount === null || item?.inventoryCount === undefined
-                    ? "not tracked"
-                    : item.inventoryCount}
+                  {item?.inventoryItem
+                    ? inventoryLabel(item.inventoryItem)
+                    : item?.inventoryCount === null || item?.inventoryCount === undefined
+                      ? "not tracked"
+                      : item.inventoryCount}
                 </Text>
                 {item?.description ? (
                   <Text style={styles.description} numberOfLines={2}>
@@ -315,10 +356,16 @@ export default function StorefrontScreen() {
                 ) : null}
               </View>
               <View style={styles.actions}>
-                <Pressable style={styles.secondaryButton} onPress={() => openEditProduct(item)}>
+                <Pressable
+                  style={styles.secondaryButton}
+                  onPress={() => openEditProduct(item)}
+                >
                   <Text style={styles.secondaryButtonText}>Edit</Text>
                 </Pressable>
-                <Pressable style={styles.dangerButton} onPress={() => confirmDelete(item)}>
+                <Pressable
+                  style={styles.dangerButton}
+                  onPress={() => confirmDelete(item)}
+                >
                   <Text style={styles.buttonText}>Delete</Text>
                 </Pressable>
               </View>
@@ -376,11 +423,47 @@ export default function StorefrontScreen() {
             <TextInput
               value={productInventoryCount}
               onChangeText={setProductInventoryCount}
-              placeholder="Inventory count"
+              editable={!productInventoryItemId}
+              placeholder={
+                productInventoryItemId
+                  ? "Synced from linked inventory item"
+                  : "Manual inventory count"
+              }
               placeholderTextColor="#94A3B8"
               keyboardType="numeric"
-              style={styles.input}
+              style={[styles.input, productInventoryItemId ? styles.disabledInput : null]}
             />
+            <View style={styles.inventoryPicker}>
+              <Text style={styles.label}>Inventory source</Text>
+              <Pressable
+                style={[
+                  styles.inventoryOption,
+                  !productInventoryItemId && styles.inventoryOptionActive
+                ]}
+                onPress={() => setProductInventoryItemId("")}
+              >
+                <Text style={styles.inventoryOptionText}>Manual stock count</Text>
+              </Pressable>
+              {inventoryItems.map((item) => {
+                const id = idOf(item);
+                const active = id && id === productInventoryItemId;
+                return (
+                  <Pressable
+                    key={id || inventoryLabel(item)}
+                    style={[
+                      styles.inventoryOption,
+                      active && styles.inventoryOptionActive
+                    ]}
+                    onPress={() => {
+                      setProductInventoryItemId(id);
+                      setProductInventoryCount(String(item?.quantity ?? item?.qty ?? 0));
+                    }}
+                  >
+                    <Text style={styles.inventoryOptionText}>{inventoryLabel(item)}</Text>
+                  </Pressable>
+                );
+              })}
+            </View>
             <View style={styles.rowBetween}>
               <Text style={styles.label}>Published</Text>
               <Switch value={productPublished} onValueChange={setProductPublished} />
@@ -435,6 +518,23 @@ const styles = StyleSheet.create({
     color: "#111827",
     padding: 10
   },
+  disabledInput: {
+    backgroundColor: "#F1F5F9",
+    color: "#64748B"
+  },
+  inventoryPicker: { gap: 8 },
+  inventoryOption: {
+    borderColor: "#CBD5E1",
+    borderRadius: 8,
+    borderWidth: 1,
+    paddingHorizontal: 10,
+    paddingVertical: 9
+  },
+  inventoryOptionActive: {
+    backgroundColor: "#DCFCE7",
+    borderColor: "#166534"
+  },
+  inventoryOptionText: { color: "#111827", fontWeight: "700" },
   search: {
     borderColor: "#CBD5E1",
     borderRadius: 8,
