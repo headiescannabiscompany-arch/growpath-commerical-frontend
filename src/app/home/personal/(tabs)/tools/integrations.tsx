@@ -254,7 +254,7 @@ export default function DataIntegrationsScreen() {
       setGrowlinkPassword("");
       Alert.alert(
         "Growlink source created",
-        "Credentials were encrypted. GrowPath AI will only read telemetry data."
+        "Credentials were encrypted. GrowPath will only read telemetry data."
       );
       setGrowlinkStatus("Growlink source created. Current readings can be pulled now.");
     } catch (error) {

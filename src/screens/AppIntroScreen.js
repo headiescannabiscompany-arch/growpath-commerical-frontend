@@ -125,7 +125,7 @@ export default function AppIntroScreen({ onDone }) {
         <View style={styles.introSection}>
           <Text style={styles.headline}>Cultivation community, united.</Text>
           <Text style={styles.body}>
-            GrowPath Commercial connects cultivators, nutrient companies, equipment
+            GrowPath connects cultivators, nutrient companies, equipment
             manufacturers, and soil suppliers.{"\n\n"}
             Cultivators manage operations and compliance. Industry partners build
             credibility and reach customers.

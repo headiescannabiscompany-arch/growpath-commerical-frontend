@@ -53,7 +53,7 @@ const FacilityPicker = ({ navigation }) => {
   return (
     <View style={styles.container}>
       <View style={styles.header}>
-        <Text style={styles.headerTitle}>GrowPath Commercial</Text>
+        <Text style={styles.headerTitle}>GrowPath</Text>
         <Text style={styles.headerSubtitle}>Select your business</Text>
       </View>
       <Text style={styles.title}>Available Businesses</Text>

@@ -4,11 +4,11 @@ import ScreenContainer from "../components/ScreenContainer";
 
 // You can update this content if the policy changes
 const PRIVACY_POLICY = `
-GrowPath AI Privacy Policy
+GrowPath Privacy Policy
 
 Last Updated: December 12, 2025
 
-GrowPath AI ("we", "our", or "us") respects your privacy and is committed to protecting your personal data. This privacy policy explains how we collect, use, and safeguard your information when you use our mobile application.
+GrowPath ("we", "our", or "us") respects your privacy and is committed to protecting your personal data. This privacy policy explains how we collect, use, and safeguard your information when you use our mobile application.
 
 Information We Collect
 
@@ -20,7 +20,7 @@ Automatically Collected Information: Usage Data, Device Information, Location Da
 
 How We Use Your Information
 
-- Provide and maintain the GrowPath AI service
+- Provide and maintain the GrowPath service
 - Personalize your experience and recommend relevant content
 - Process payments and manage subscriptions
 - Send notifications about your account and app updates

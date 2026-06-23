@@ -63,7 +63,7 @@ Current known blockers:
 
 - PARTIAL: `app.json` release metadata sign-off.
 - Owner: Mobile Engineering
-- Current values: `name` is `GrowPath Commercial`, `slug` is
+- Current values: `name` is `GrowPath`, `slug` is
   `growpath-commercial`, `version` is `1.0.0`, iOS bundle identifier and Android
   package are both `com.growpathai.app`. Android verified App Links are not
   configured because the final public domain and hosted verification files are
@@ -72,9 +72,9 @@ Current known blockers:
 - Current evidence: source-config review captured in
   `docs/release-config-evidence-2026-06-21.md`; base app icon is 1024x1024 and the
   configured splash/icon assets exist.
-- Next action: Release owner must confirm final store-facing app name,
-  identifiers, public deep-link domain, Twitch parent host, and App Store/Play
-  Console records before production builds.
+- Next action: Release owner must confirm identifiers, public deep-link domain,
+  Twitch parent host, and App Store/Play Console records before production
+  builds.
 - Evidence target: `docs/release-config-evidence-2026-06-21.md`
 
 - PARTIAL: EAS submit configuration.

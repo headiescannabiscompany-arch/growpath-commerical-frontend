@@ -65,7 +65,7 @@ export async function testIntegrationConnection(
 export async function createIntegrationAccessRequest(provider: string) {
   const response = await apiRequest("/api/integrations/access-requests", {
     method: "POST",
-    body: { provider, organization: "GrowPath AI" }
+    body: { provider, organization: "GrowPath" }
   });
   return dataOf(response);
 }

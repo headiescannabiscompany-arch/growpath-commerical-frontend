@@ -28,7 +28,7 @@ Repository: growpath-commerical-frontend
 
 ## Release And Store Gaps
 
-- Final store-facing app name remains unconfirmed: `app.json` says `GrowPath Commercial`, while listing copy says `GrowPath AI`.
+- Final store-facing app name is confirmed as `GrowPath`.
 - Final iOS bundle identifier and Android package must be confirmed in App Store Connect and Google Play Console.
 - Production public domain ownership must be confirmed before enabling Android App Links or iOS Associated Domains.
 - `EXPO_PUBLIC_TWITCH_PARENT_HOST` must be set for production builds if Twitch embeds ship.

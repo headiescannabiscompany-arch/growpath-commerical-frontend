@@ -5,7 +5,7 @@ Repository: growpath-commerical-frontend
 
 ## Confirmed In Source
 
-- App display name: `GrowPath Commercial`
+- App display name: `GrowPath`
 - Slug: `growpath-commercial`
 - Version: `1.0.0`
 - iOS bundle identifier: `com.growpathai.app`
@@ -43,7 +43,7 @@ Repository: growpath-commerical-frontend
 
 ## External Confirmation Still Required
 
-- Confirm whether the store-facing app name should remain `GrowPath Commercial` or be changed to `GrowPath AI` before production build submission.
+- Store-facing app name is confirmed as `GrowPath`.
 - Confirm whether `com.growpathai.app` is the final iOS bundle identifier and Android package.
 - Confirm production public domain ownership before enabling Android App Links or iOS Associated Domains.
 - Confirm production value for `EXPO_PUBLIC_TWITCH_PARENT_HOST` if Twitch embeds remain in the production build.

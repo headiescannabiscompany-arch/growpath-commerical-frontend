@@ -1,10 +1,10 @@
-# App Store Listing Materials for GrowPath AI
+# App Store Listing Materials for GrowPath
 
 ## App Store Connect (iOS) & Google Play Console (Android)
 
 ### App Name
 
-**GrowPath AI**
+**GrowPath**
 
 ### Subtitle (iOS) / Short Description (Android)
 
@@ -18,7 +18,7 @@ Smart Cannabis Cultivation Tracking & Education
 
 **Master Cannabis Cultivation with AI-Powered Guidance**
 
-GrowPath AI is the ultimate companion for cannabis growers of all skill levels. Whether you're a beginner starting your first grow or an experienced cultivator optimizing your yields, our comprehensive platform provides everything you need to succeed.
+GrowPath is the ultimate companion for cannabis growers of all skill levels. Whether you're a beginner starting your first grow or an experienced cultivator optimizing your yields, our comprehensive platform provides everything you need to succeed.
 
 **🌱 COMPREHENSIVE GROW TRACKING**
 • Document every stage of your grow journey with detailed logs
@@ -70,9 +70,9 @@ GrowPath AI is the ultimate companion for cannabis growers of all skill levels. 
 • Anyone passionate about cannabis cultivation
 
 **IMPORTANT LEGAL NOTICE:**
-This app is intended for educational purposes and for use only in jurisdictions where cannabis cultivation is legal. Users must be 21+ (or 18+ where applicable) and are responsible for complying with all local, state, and federal laws. GrowPath AI does not encourage or facilitate illegal activity.
+This app is intended for educational purposes and for use only in jurisdictions where cannabis cultivation is legal. Users must be 21+ (or 18+ where applicable) and are responsible for complying with all local, state, and federal laws. GrowPath does not encourage or facilitate illegal activity.
 
-Download GrowPath AI today and take your growing skills to the next level! 🌿
+Download GrowPath today and take your growing skills to the next level! 🌿
 
 ---
 
@@ -118,7 +118,7 @@ Track your grows with precision! New: Advanced environment monitoring with PPFD,
 
 ## What's New (Version 1.0.0)
 
-Welcome to GrowPath AI! 🎉
+Welcome to GrowPath! 🎉
 
 This is our initial release featuring:
 • Comprehensive grow tracking with advanced environment data
@@ -178,7 +178,7 @@ We're excited to help you grow better! Share your feedback at support@growpathai
 5. Run AI diagnostics
 6. Browse courses
 7. View community posts
-8. End with logo and "GrowPath AI - Grow Smarter"
+8. End with logo and "GrowPath - Grow Smarter"
 
 ---
 
@@ -210,7 +210,7 @@ We're excited to help you grow better! Share your feedback at support@growpathai
 
 **Support Email:** support@growpathai.com
 **Website:** https://www.growpathai.com
-**Developer:** GrowPath AI, Inc.
+**Developer:** GrowPath, Inc.
 
 ---
 

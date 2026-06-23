@@ -1,6 +1,6 @@
 {
   "expo": {
-    "name": "GrowPath Commercial",
+    "name": "GrowPath",
     "slug": "growpath-commercial",
     "version": "1.0.0",
     "orientation": "portrait",
@@ -19,9 +19,9 @@
       "icon": "./assets/icon.png",
       "buildNumber": "1",
       "infoPlist": {
-        "NSPhotoLibraryUsageDescription": "GrowPath AI needs access to your photo library to let you upload grow photos, diagnose plant issues, and share your growing journey.",
-        "NSCameraUsageDescription": "GrowPath AI needs access to your camera to take photos of your plants for tracking growth and diagnosing issues.",
-        "NSPhotoLibraryAddUsageDescription": "GrowPath AI needs permission to save photos to your library."
+        "NSPhotoLibraryUsageDescription": "GrowPath needs access to your photo library to let you upload grow photos, diagnose plant issues, and share your growing journey.",
+        "NSCameraUsageDescription": "GrowPath needs access to your camera to take photos of your plants for tracking growth and diagnosing issues.",
+        "NSPhotoLibraryAddUsageDescription": "GrowPath needs permission to save photos to your library."
       }
     },
     "android": {
@@ -45,8 +45,8 @@
       [
         "expo-image-picker",
         {
-          "photosPermission": "GrowPath AI needs access to your photos to upload grow images and track your plant progress.",
-          "cameraPermission": "GrowPath AI needs camera access to capture plant photos for diagnostics and grow logs."
+          "photosPermission": "GrowPath needs access to your photos to upload grow images and track your plant progress.",
+          "cameraPermission": "GrowPath needs camera access to capture plant photos for diagnostics and grow logs."
         }
       ],
       "expo-router",

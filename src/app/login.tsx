@@ -69,7 +69,7 @@ export default function LoginScreen() {
               resizeMode="contain"
             />
           </View>
-          <Text style={styles.brand}>GrowPath AI</Text>
+          <Text style={styles.brand}>GrowPath</Text>
           <Text style={styles.tagline}>Commercial growing intelligence</Text>
         </View>
       </ImageBackground>
