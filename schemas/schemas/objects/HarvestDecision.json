@@ -1,0 +1,35 @@
+{
+  "title": "HarvestDecision",
+  "type": "object",
+  "additionalProperties": true,
+  "required": ["id", "facilityId", "growId", "window", "recommendation", "partialHarvest", "confidence", "createdAt", "updatedAt"],
+  "properties": {
+    "id": { "type": "string", "minLength": 1 },
+    "facilityId": { "type": "string", "minLength": 1 },
+    "growId": { "type": "string", "minLength": 1 },
+    "window": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["min", "ideal", "max"],
+      "properties": {
+        "min": { "type": "string", "format": "date-time" },
+        "ideal": { "type": "string", "format": "date-time" },
+        "max": { "type": "string", "format": "date-time" }
+      }
+    },
+    "recommendation": {
+      "type": "string",
+      "enum": ["HARVEST_NOW", "WAIT_1_2_DAYS", "WAIT_3_5_DAYS", "WAIT_7_DAYS"]
+    },
+    "partialHarvest": { "type": "boolean" },
+    "confidence": { "type": "number", "minimum": 0, "maximum": 1 },
+    "createdAt": { "type": "string", "format": "date-time" },
+    "updatedAt": { "type": "string", "format": "date-time" },
+    "deletedAt": {
+      "anyOf": [
+        { "type": "string", "format": "date-time" },
+        { "type": "null" }
+      ]
+    }
+  }
+}

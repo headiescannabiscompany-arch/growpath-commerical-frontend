@@ -1,0 +1,15 @@
+{
+  "title": "GrowLogEntry",
+  "type": "object",
+  "additionalProperties": true,
+  "required": ["id", "title", "date", "createdAt", "updatedAt"],
+  "properties": {
+    "id": { "type": "string", "minLength": 1 },
+    "growId": { "type": "string" },
+    "title": { "type": "string", "minLength": 1 },
+    "notes": { "type": "string" },
+    "date": { "type": "string" },
+    "createdAt": { "type": "string", "format": "date-time" },
+    "updatedAt": { "type": "string", "format": "date-time" }
+  }
+}

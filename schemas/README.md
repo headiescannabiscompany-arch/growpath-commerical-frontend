@@ -1,28 +1,37 @@
 # GrowPath JSON Schemas
 
-> Status: PARTIAL
+> Status: LOCAL V1 PACK PRESENT
 > Owner: Product/Engineering
-> Last reviewed: 2026-06-21
+> Last reviewed: 2026-06-23
 
 This directory is reserved for backend/API schema contracts used by the AI call
 router and schema drift tests.
 
 ## Current Repository State
 
-The full V1 schema pack is not present in this workspace. The only checked-in
-schema file currently under `schemas/schemas/` is:
+This workspace now contains a local V1 schema pack under `schemas/schemas/`.
+It includes the AI request contract, response envelopes, a master AI response
+object, feature-specific AI output objects, and stored object schemas used by
+the schema drift tests.
+
+The master AI contract is:
 
 ```text
-schemas/schemas/objects/placeholder.json
+schemas/schemas/objects/GrowPathAIResponse.json
 ```
 
-That placeholder is not enough to validate the AI request, response envelopes,
-or stored object schemas. Do not claim schema drift coverage is complete until
-the full pack is restored and the schema tests pass.
+Feature-specific AI output schemas include:
+
+- `AIDiagnosisOutput.json`
+- `GrowAwareAIOutput.json`
+- `AutoTagOutput.json`
+- `PlantDiagnosisOutput.json`
+- `AIPhenoSummaryOutput.json`
+- `AIStressSummaryOutput.json`
 
 ## Expected Full Pack Layout
 
-When available, the schema pack should be extracted to:
+The schema pack layout is:
 
 ```text
 schemas/
@@ -34,6 +43,13 @@ schemas/
       Task.json
       Alert.json
       EventLog.json
+      GrowPathAIResponse.json
+      AIDiagnosisOutput.json
+      GrowAwareAIOutput.json
+      AutoTagOutput.json
+      PlantDiagnosisOutput.json
+      AIPhenoSummaryOutput.json
+      AIStressSummaryOutput.json
       ...
     requests/
       AiCallRequest.json
@@ -60,7 +76,7 @@ Run the schema-pack preflight before release validation:
 npm run schema:preflight
 ```
 
-This command fails until the authoritative schema pack is restored. It requires:
+This command requires:
 
 - `schemas/schemas/common.json`
 - `schemas/schemas/requests/AiCallRequest.json`
@@ -68,9 +84,7 @@ This command fails until the authoritative schema pack is restored. It requires:
 - `schemas/schemas/responses/ApiErrorEnvelope.json`
 - at least 20 non-placeholder stored object schemas under `schemas/schemas/objects/`
 
-The schema drift test now includes a lightweight preflight that passes when the
-full pack is absent and skips full drift validation. After restoring the full
-schema pack and dependencies, run:
+Run the active schema drift test with:
 
 ```bash
 npm test -- tests/ai/ai.schema.drift.test.js

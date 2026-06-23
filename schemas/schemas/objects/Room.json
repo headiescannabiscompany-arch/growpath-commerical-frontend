@@ -1,0 +1,15 @@
+{
+  "title": "Room",
+  "type": "object",
+  "additionalProperties": true,
+  "required": ["id", "facilityId", "name", "createdAt", "updatedAt"],
+  "properties": {
+    "id": { "type": "string", "minLength": 1 },
+    "facilityId": { "type": "string", "minLength": 1 },
+    "name": { "type": "string", "minLength": 1 },
+    "roomType": { "type": "string" },
+    "trackingMode": { "type": "string", "enum": ["batch", "individual"] },
+    "createdAt": { "type": "string", "format": "date-time" },
+    "updatedAt": { "type": "string", "format": "date-time" }
+  }
+}

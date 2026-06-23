@@ -93,10 +93,10 @@ product backlogs.
 - [x] Add `supertest` and backend runtime dependencies required by the backend
       route test suite.
 - [x] Run `npm run test:backend:all` and keep it passing in CI.
-- [ ] Restore the full AI schema pack with
+- [x] Restore the full AI schema pack with
       `npm run schema:install -- <schema-pack.zip|extracted-directory>` and make
       `npm run schema:preflight` pass.
-- [ ] Run schema drift validation with the full schema pack present so skipped
+- [x] Run schema drift validation with the full schema pack present so skipped
       schema tests become active coverage.
 - [x] Add partial release validation evidence for TypeScript, backend tests,
       frontend-targeted Jest suites, corruption scans, and export sanity.
@@ -128,8 +128,9 @@ product backlogs.
 - [ ] UbiBot adapter is deferred. Resume only with a paid/approved Developer
       Membership, test credentials, at least one real channel/device, and permission
       to validate feed summaries and MQTT behavior.
-- [ ] Full AI schema pack restoration is blocked until the authoritative schema
-      source is available. Do not replace it with hand-authored placeholder schemas.
+- [x] Full AI schema pack restoration is complete for the local V1 release
+      gate. Local schemas are now present, including the master AI response
+      schema and feature-specific AI output schemas.
 
 ## Documentation And Release
 

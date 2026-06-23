@@ -10,8 +10,7 @@ Current known blockers:
   passed against the static Expo web export and live backend on 2026-06-23.
   The bundled Chromium install is blocked, but `PLAYWRIGHT_USE_SYSTEM_CHROME=1`
   can launch installed Chrome.
-- The full AI schema pack is missing; only
-  `schemas/schemas/objects/placeholder.json` is present.
+- The local V1 AI schema pack is present and schema drift validation passes.
 - `eas.json` no longer stores placeholder submit credentials. Real Apple and
   Google submit credentials still need to be supplied outside source control.
 - Production iOS/Android builds and real-device smoke validation have not been
@@ -30,10 +29,11 @@ Current known blockers:
   `e2e/smoke.personal.grows.spec.ts`.
 - Evidence target: `tmp/spec/production_workflow_validation_2026-06-21.md`
 
-- NOT DONE: Backend schema and AI release evidence.
+- DONE: Backend schema and AI release evidence.
 - Owner: Backend Engineering
-- Next action: Restore the full schema pack, update stale AI route tests, and
-  run `npm run schema:preflight` plus schema/provider/route tests in CI.
+- Current evidence: `npm run schema:preflight` passes and
+  `npx jest tests\ai\ai.schema.drift.test.js --runInBand` passes with 20 active
+  tests.
 - Evidence target: `tmp/spec/backend_schema_ai_validation_2026-06-21.md`
 
 ## 2. Assets

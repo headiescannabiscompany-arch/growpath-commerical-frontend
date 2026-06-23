@@ -1,0 +1,14 @@
+{
+  "title": "Facility",
+  "type": "object",
+  "additionalProperties": true,
+  "required": ["id", "name", "createdAt", "updatedAt"],
+  "properties": {
+    "id": { "type": "string", "minLength": 1 },
+    "name": { "type": "string", "minLength": 1 },
+    "licenseNumber": { "type": "string" },
+    "state": { "type": "string" },
+    "createdAt": { "type": "string", "format": "date-time" },
+    "updatedAt": { "type": "string", "format": "date-time" }
+  }
+}

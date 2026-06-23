@@ -1,0 +1,27 @@
+{
+  "title": "AIStressSummaryOutput",
+  "type": "object",
+  "additionalProperties": false,
+  "required": [
+    "summary",
+    "strengthsUnderStress",
+    "weaknessesUnderStress",
+    "likelyBestUseCase",
+    "keeperImpact",
+    "breedingValueImpact",
+    "recommendedRetest",
+    "warnings",
+    "tags"
+  ],
+  "properties": {
+    "summary": { "type": "string", "minLength": 1 },
+    "strengthsUnderStress": { "type": "array", "items": { "type": "string" } },
+    "weaknessesUnderStress": { "type": "array", "items": { "type": "string" } },
+    "likelyBestUseCase": { "type": "string" },
+    "keeperImpact": { "type": "string" },
+    "breedingValueImpact": { "type": "string" },
+    "recommendedRetest": { "type": "string" },
+    "warnings": { "type": "array", "items": { "type": "string" } },
+    "tags": { "type": "array", "items": { "type": "string" } }
+  }
+}

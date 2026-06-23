@@ -1,7 +1,7 @@
 # Release Validation Evidence - 2026-06-22
 
-Status: partial. Local code checks and static-web live workflow validation pass,
-but release remains blocked by the missing schema pack and external store/build
+Status: partial. Local code checks, static-web live workflow validation, and
+schema drift validation pass. Release remains blocked by external store/build
 evidence.
 
 ## Passing Checks
@@ -34,16 +34,14 @@ Result: passed. 5 suites, 35 tests.
 npx.cmd jest tests\ai\ai.schema.drift.test.js --runInBand
 ```
 
-Result: passed only the preflight sentinel. Full schema drift tests skipped
-because the authoritative schema pack is absent.
+Result: passed. 20 active schema drift tests passed.
 
 ```text
 npm.cmd test -- --runInBand
 ```
 
-Result: passed. 46 suites passed, 189 tests passed, 19 schema-pack tests skipped,
-1 snapshot passed. The skipped tests are the full schema drift checks that only
-activate after the authoritative schema pack is installed.
+Result after local schema-pack restoration: passed. 46 suites passed, 208 tests
+passed, 1 snapshot passed. Schema drift tests are active.
 
 ```text
 npm.cmd run guard
@@ -78,37 +76,18 @@ Covered:
 - Personal, Commercial, and Facility seeded live shell routing.
 - Facility auto-select, room creation, and task creation workflow.
 
-## Known Failing Gate
+## Schema Validation
 
 ```text
 npm.cmd run schema:preflight
 ```
 
-Result: failed as expected because the full AI schema pack is not present.
-Missing:
-
-- `schemas/schemas/common.json`
-- `schemas/schemas/requests/AiCallRequest.json`
-- `schemas/schemas/responses/ApiSuccessEnvelope.json`
-- `schemas/schemas/responses/ApiErrorEnvelope.json`
-- `schemas/schemas/requests/`
-- `schemas/schemas/responses/`
-- at least 20 stored object schemas
+Result: passed. The local V1 schema pack includes `common.json`,
+`requests/AiCallRequest.json`, response envelopes, the master
+`GrowPathAIResponse.json`, feature-specific AI output schemas, and at least 20
+stored object schemas.
 
 ## Next Required Actions
 
-1. Install the authoritative schema pack:
-
-```text
-npm run schema:install -- <schema-pack.zip|extracted-directory>
-```
-
-2. Re-run:
-
-```text
-npm run schema:preflight
-npm test -- tests/ai/ai.schema.drift.test.js
-```
-
-3. Capture app-store metadata, screenshots, production builds, and real-device
+1. Capture app-store metadata, screenshots, production builds, and real-device
    smoke evidence.

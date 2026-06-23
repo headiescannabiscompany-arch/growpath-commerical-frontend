@@ -1,0 +1,17 @@
+{
+  "title": "NutrientRecipe",
+  "type": "object",
+  "additionalProperties": true,
+  "required": ["id", "name", "ingredients", "createdAt", "updatedAt"],
+  "properties": {
+    "id": { "type": "string", "minLength": 1 },
+    "name": { "type": "string", "minLength": 1 },
+    "ingredients": {
+      "type": "array",
+      "items": { "type": "object", "additionalProperties": true }
+    },
+    "targetStage": { "type": "string" },
+    "createdAt": { "type": "string", "format": "date-time" },
+    "updatedAt": { "type": "string", "format": "date-time" }
+  }
+}

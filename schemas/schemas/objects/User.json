@@ -1,0 +1,14 @@
+{
+  "title": "User",
+  "type": "object",
+  "additionalProperties": true,
+  "required": ["id", "email", "plan", "createdAt", "updatedAt"],
+  "properties": {
+    "id": { "type": "string", "minLength": 1 },
+    "email": { "type": "string", "format": "email" },
+    "name": { "type": "string" },
+    "plan": { "type": "string", "enum": ["free", "pro", "commercial", "facility"] },
+    "createdAt": { "type": "string", "format": "date-time" },
+    "updatedAt": { "type": "string", "format": "date-time" }
+  }
+}

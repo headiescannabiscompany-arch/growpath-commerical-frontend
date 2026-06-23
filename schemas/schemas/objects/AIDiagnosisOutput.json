@@ -1,0 +1,47 @@
+{
+  "title": "AIDiagnosisOutput",
+  "type": "object",
+  "additionalProperties": false,
+  "required": [
+    "overallHealth",
+    "likelyIssues",
+    "recommendations",
+    "tags",
+    "tasksToCreate",
+    "disclaimer"
+  ],
+  "properties": {
+    "overallHealth": { "type": "string", "enum": ["good", "watch", "concern", "urgent"] },
+    "likelyIssues": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "additionalProperties": false,
+        "required": ["issue", "category", "confidence", "evidence", "nextChecks"],
+        "properties": {
+          "issue": { "type": "string", "minLength": 1 },
+          "category": { "type": "string", "minLength": 1 },
+          "confidence": { "type": "number", "minimum": 0, "maximum": 1 },
+          "evidence": { "type": "array", "items": { "type": "string" } },
+          "nextChecks": { "type": "array", "items": { "type": "string" } }
+        }
+      }
+    },
+    "recommendations": { "type": "array", "items": { "type": "string" } },
+    "tags": { "type": "array", "items": { "type": "string" } },
+    "tasksToCreate": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "additionalProperties": true,
+        "required": ["title"],
+        "properties": {
+          "title": { "type": "string", "minLength": 1 },
+          "notes": { "type": "string" },
+          "priority": { "type": "string", "enum": ["low", "medium", "high"] }
+        }
+      }
+    },
+    "disclaimer": { "type": "string", "minLength": 1 }
+  }
+}

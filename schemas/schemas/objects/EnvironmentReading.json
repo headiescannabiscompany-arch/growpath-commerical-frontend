@@ -1,0 +1,18 @@
+{
+  "title": "EnvironmentReading",
+  "type": "object",
+  "additionalProperties": true,
+  "required": ["id", "facilityId", "recordedAt", "createdAt", "updatedAt"],
+  "properties": {
+    "id": { "type": "string", "minLength": 1 },
+    "facilityId": { "type": "string", "minLength": 1 },
+    "roomId": { "type": "string" },
+    "temperature": { "type": "number" },
+    "humidity": { "type": "number", "minimum": 0, "maximum": 100 },
+    "vpd": { "type": "number", "minimum": 0 },
+    "co2": { "type": "number", "minimum": 0 },
+    "recordedAt": { "type": "string", "format": "date-time" },
+    "createdAt": { "type": "string", "format": "date-time" },
+    "updatedAt": { "type": "string", "format": "date-time" }
+  }
+}

@@ -1,0 +1,19 @@
+{
+  "title": "AutoTagOutput",
+  "type": "object",
+  "additionalProperties": false,
+  "required": [
+    "suggestedTags",
+    "aiInsights",
+    "confidence",
+    "evidence",
+    "userApprovalRequired"
+  ],
+  "properties": {
+    "suggestedTags": { "type": "array", "items": { "type": "string" } },
+    "aiInsights": { "type": "array", "items": { "type": "string" } },
+    "confidence": { "type": "number", "minimum": 0, "maximum": 1 },
+    "evidence": { "type": "array", "items": { "type": "string" } },
+    "userApprovalRequired": { "type": "boolean" }
+  }
+}

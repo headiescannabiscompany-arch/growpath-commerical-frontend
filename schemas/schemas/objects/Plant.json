@@ -1,0 +1,15 @@
+{
+  "title": "Plant",
+  "type": "object",
+  "additionalProperties": true,
+  "required": ["id", "name", "status", "createdAt", "updatedAt"],
+  "properties": {
+    "id": { "type": "string", "minLength": 1 },
+    "growId": { "type": "string" },
+    "name": { "type": "string", "minLength": 1 },
+    "strain": { "type": "string" },
+    "status": { "type": "string", "enum": ["seedling", "vegetating", "flowering", "harvested", "archived"] },
+    "createdAt": { "type": "string", "format": "date-time" },
+    "updatedAt": { "type": "string", "format": "date-time" }
+  }
+}

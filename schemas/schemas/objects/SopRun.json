@@ -1,0 +1,14 @@
+{
+  "title": "SopRun",
+  "type": "object",
+  "additionalProperties": true,
+  "required": ["id", "facilityId", "title", "status", "createdAt", "updatedAt"],
+  "properties": {
+    "id": { "type": "string", "minLength": 1 },
+    "facilityId": { "type": "string", "minLength": 1 },
+    "title": { "type": "string", "minLength": 1 },
+    "status": { "type": "string", "enum": ["not_started", "in_progress", "complete", "blocked"] },
+    "createdAt": { "type": "string", "format": "date-time" },
+    "updatedAt": { "type": "string", "format": "date-time" }
+  }
+}

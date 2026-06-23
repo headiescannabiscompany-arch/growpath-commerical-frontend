@@ -1,0 +1,20 @@
+{
+  "title": "ApiErrorEnvelope",
+  "type": "object",
+  "additionalProperties": false,
+  "required": ["success", "data", "error"],
+  "properties": {
+    "success": { "const": false },
+    "data": { "type": "null" },
+    "error": {
+      "type": "object",
+      "additionalProperties": true,
+      "required": ["code", "message"],
+      "properties": {
+        "code": { "type": "string", "minLength": 1 },
+        "message": { "type": "string", "minLength": 1 },
+        "details": {}
+      }
+    }
+  }
+}

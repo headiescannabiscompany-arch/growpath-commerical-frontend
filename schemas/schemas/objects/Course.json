@@ -1,0 +1,14 @@
+{
+  "title": "Course",
+  "type": "object",
+  "additionalProperties": true,
+  "required": ["id", "title", "status", "createdAt", "updatedAt"],
+  "properties": {
+    "id": { "type": "string", "minLength": 1 },
+    "title": { "type": "string", "minLength": 1 },
+    "status": { "type": "string", "enum": ["draft", "published", "archived"] },
+    "priceCents": { "type": "integer", "minimum": 0 },
+    "createdAt": { "type": "string", "format": "date-time" },
+    "updatedAt": { "type": "string", "format": "date-time" }
+  }
+}

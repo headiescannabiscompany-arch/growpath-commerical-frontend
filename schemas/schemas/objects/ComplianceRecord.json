@@ -1,0 +1,14 @@
+{
+  "title": "ComplianceRecord",
+  "type": "object",
+  "additionalProperties": true,
+  "required": ["id", "facilityId", "type", "status", "createdAt", "updatedAt"],
+  "properties": {
+    "id": { "type": "string", "minLength": 1 },
+    "facilityId": { "type": "string", "minLength": 1 },
+    "type": { "type": "string", "minLength": 1 },
+    "status": { "type": "string", "enum": ["open", "review", "resolved", "archived"] },
+    "createdAt": { "type": "string", "format": "date-time" },
+    "updatedAt": { "type": "string", "format": "date-time" }
+  }
+}

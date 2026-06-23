@@ -1,0 +1,31 @@
+{
+  "title": "GrowPath Common Schema Definitions",
+  "type": "object",
+  "description": "Shared primitive contract notes for the GrowPath AI schema pack.",
+  "$defs": {
+    "id": {
+      "type": "string",
+      "minLength": 1
+    },
+    "isoDateTime": {
+      "type": "string",
+      "format": "date-time"
+    },
+    "nullableIsoDateTime": {
+      "anyOf": [
+        {
+          "type": "string",
+          "format": "date-time"
+        },
+        {
+          "type": "null"
+        }
+      ]
+    },
+    "confidence": {
+      "type": "number",
+      "minimum": 0,
+      "maximum": 1
+    }
+  }
+}

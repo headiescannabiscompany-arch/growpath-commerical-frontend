@@ -1,0 +1,14 @@
+{
+  "title": "ApiSuccessEnvelope",
+  "type": "object",
+  "additionalProperties": false,
+  "required": ["success", "data", "error"],
+  "properties": {
+    "success": { "const": true },
+    "data": {
+      "type": "object",
+      "additionalProperties": true
+    },
+    "error": { "type": "null" }
+  }
+}

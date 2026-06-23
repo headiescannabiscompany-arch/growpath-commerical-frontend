@@ -1,0 +1,41 @@
+{
+  "title": "AiCallRequest",
+  "type": "object",
+  "additionalProperties": false,
+  "required": ["tool", "fn", "args", "context"],
+  "properties": {
+    "tool": {
+      "type": "string",
+      "enum": [
+        "harvest",
+        "diagnosis",
+        "environment",
+        "feeding",
+        "nutrients",
+        "compliance",
+        "planner"
+      ]
+    },
+    "fn": {
+      "type": "string",
+      "minLength": 3
+    },
+    "args": {
+      "type": "object",
+      "additionalProperties": true
+    },
+    "context": {
+      "type": "object",
+      "additionalProperties": true,
+      "required": ["date"],
+      "properties": {
+        "facilityId": { "type": "string", "minLength": 1 },
+        "growId": { "type": "string", "minLength": 1 },
+        "plantId": { "type": "string", "minLength": 1 },
+        "stage": { "type": "string", "minLength": 1 },
+        "goal": { "type": "string", "minLength": 1 },
+        "date": { "type": "string", "format": "date-time" }
+      }
+    }
+  }
+}

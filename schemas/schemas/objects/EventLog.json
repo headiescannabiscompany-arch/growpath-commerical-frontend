@@ -1,0 +1,21 @@
+{
+  "title": "EventLog",
+  "type": "object",
+  "additionalProperties": true,
+  "required": ["id", "facilityId", "growId", "type", "payload", "createdAt", "updatedAt"],
+  "properties": {
+    "id": { "type": "string", "minLength": 1 },
+    "facilityId": { "type": "string", "minLength": 1 },
+    "growId": { "type": "string", "minLength": 1 },
+    "type": { "type": "string", "minLength": 1 },
+    "payload": { "type": "object", "additionalProperties": true },
+    "createdAt": { "type": "string", "format": "date-time" },
+    "updatedAt": { "type": "string", "format": "date-time" },
+    "deletedAt": {
+      "anyOf": [
+        { "type": "string", "format": "date-time" },
+        { "type": "null" }
+      ]
+    }
+  }
+}

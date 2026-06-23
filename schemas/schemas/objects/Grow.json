@@ -1,0 +1,15 @@
+{
+  "title": "Grow",
+  "type": "object",
+  "additionalProperties": true,
+  "required": ["id", "name", "status", "createdAt", "updatedAt"],
+  "properties": {
+    "id": { "type": "string", "minLength": 1 },
+    "facilityId": { "type": "string" },
+    "name": { "type": "string", "minLength": 1 },
+    "stage": { "type": "string" },
+    "status": { "type": "string", "enum": ["planned", "active", "harvested", "archived"] },
+    "createdAt": { "type": "string", "format": "date-time" },
+    "updatedAt": { "type": "string", "format": "date-time" }
+  }
+}
