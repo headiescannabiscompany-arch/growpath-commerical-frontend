@@ -13,6 +13,9 @@ Current known blockers:
 - The local V1 AI schema pack is present and schema drift validation passes.
 - `eas.json` no longer stores placeholder submit credentials. Real Apple and
   Google submit credentials still need to be supplied outside source control.
+- `eas.json` production builds now use
+  `EXPO_PUBLIC_API_URL=https://api.growpathai.com`, but DNS/backend health is
+  not verified yet.
 - Production iOS/Android builds and real-device smoke validation have not been
   attached as evidence. Local handoff checklists now exist under `tmp/spec/`.
 
@@ -73,9 +76,9 @@ Current known blockers:
 - Current evidence: source-config review captured in
   `docs/release-config-evidence-2026-06-21.md`; base app icon is 1024x1024 and the
   configured splash/icon assets exist.
-- Next action: Release owner must confirm identifiers, public deep-link domain,
-  production API URL, and App Store/Play Console records before production
-  builds.
+- Next action: Release owner must confirm DNS/backend health for
+  `https://api.growpathai.com`, public deep-link domain, and App Store/Play
+  Console records before production builds.
 - Evidence target: `docs/release-config-evidence-2026-06-21.md`
 
 - PARTIAL: EAS submit configuration.

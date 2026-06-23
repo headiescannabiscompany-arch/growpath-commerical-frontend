@@ -17,6 +17,7 @@ Repository: growpath-commerical-frontend
 - Android verified App Links: not configured
 - iOS Associated Domains: not configured
 - Production EAS profile: store distribution, Release build configuration, Android App Bundle
+- Production API URL: `https://api.growpathai.com`
 - Submit credentials: intentionally not stored in `eas.json`; see `docs/eas-submit-runbook.md`
 
 ## Confirmed Assets
@@ -44,9 +45,9 @@ Repository: growpath-commerical-frontend
 ## External Confirmation Still Required
 
 - Store-facing app name is confirmed as `GrowPath`.
-- Confirm whether `com.growpathai.app` is the final iOS bundle identifier and Android package.
+- iOS bundle identifier and Android package are confirmed as `com.growpathai.app`.
 - Confirm production public domain ownership before enabling Android App Links or iOS Associated Domains.
-- Confirm production value for `EXPO_PUBLIC_API_URL` before production builds.
+- Confirm `https://api.growpathai.com` DNS and backend health before production builds. Current verification attempt failed because `api.growpathai.com` did not resolve.
 - `EXPO_PUBLIC_TWITCH_PARENT_HOST` is optional for V1 because live sessions open Twitch externally; set it only if embedded Twitch playback ships.
 - Confirm App Store Connect and Google Play Console records match the identifiers above.
 - Confirm legal approval for cannabis-related listing language, age rating, and jurisdiction disclaimer.
