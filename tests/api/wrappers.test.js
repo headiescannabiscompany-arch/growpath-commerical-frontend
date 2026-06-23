@@ -152,6 +152,14 @@ describe("API Wrappers Unit Tests", () => {
     expect(fetchCalls[1].url.endsWith("/api/commercial/storefront")).toBe(true);
   });
 
+  it("Commercial API: public storefront fetch uses slug endpoint", async () => {
+    await storefrontApi.fetchPublicStorefront("seller store");
+    expect(fetchCalls[0].options.method).toBe("GET");
+    expect(
+      fetchCalls[0].url.endsWith("/api/commercial/storefront/public/seller%20store")
+    ).toBe(true);
+  });
+
   it("Commercial API: products use canonical commercial endpoints", async () => {
     await productsApi.fetchProducts();
     expect(fetchCalls[0].url.endsWith("/api/commercial/products")).toBe(true);

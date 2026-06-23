@@ -29,3 +29,9 @@ export async function updateStorefront(data: Partial<Storefront>) {
     body: data
   });
 }
+
+export async function fetchPublicStorefront(slug: string) {
+  return apiRequest(`${STOREFRONT_BASE}/public/${encodeURIComponent(slug)}`, {
+    method: "GET"
+  });
+}
