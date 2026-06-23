@@ -174,6 +174,8 @@ describe("API Wrappers Unit Tests", () => {
     await campaignsApi.fetchCampaigns();
     await ordersApi.fetchOrders();
     await ordersApi.updateOrderFulfillment("order 1", "fulfilled");
+    await linksApi.updateLink("link 1", { label: "Updated" });
+    await campaignsApi.updateCampaign("campaign 1", { status: "active" });
 
     expect(fetchCalls[0].url.endsWith("/api/commercial/links")).toBe(true);
     expect(fetchCalls[1].url.endsWith("/api/commercial/campaigns")).toBe(true);
@@ -183,6 +185,12 @@ describe("API Wrappers Unit Tests", () => {
     expect(JSON.parse(fetchCalls[3].options.body)).toEqual({
       fulfillmentStatus: "fulfilled"
     });
+    expect(fetchCalls[4].options.method).toBe("PATCH");
+    expect(fetchCalls[4].url.endsWith("/api/commercial/links/link%201")).toBe(true);
+    expect(fetchCalls[5].options.method).toBe("PATCH");
+    expect(fetchCalls[5].url.endsWith("/api/commercial/campaigns/campaign%201")).toBe(
+      true
+    );
   });
 
   it("Forum API: createPost uses POST", async () => {

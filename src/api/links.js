@@ -22,11 +22,14 @@ export async function createLink(data) {
 }
 
 export async function updateLink(linkId, data) {
-  return apiRequest(`${LINKS_BASE}/${linkId}`, { method: "PATCH", body: data });
+  return apiRequest(`${LINKS_BASE}/${encodeURIComponent(linkId)}`, {
+    method: "PATCH",
+    body: data
+  });
 }
 
 export async function deleteLink(linkId) {
-  return apiRequest(`${LINKS_BASE}/${linkId}`, { method: "DELETE" });
+  return apiRequest(`${LINKS_BASE}/${encodeURIComponent(linkId)}`, { method: "DELETE" });
 }
 
 // Legacy JS names kept for existing screens.
