@@ -13,7 +13,15 @@ const EVENT_OPTIONS: { label: string; value: NotificationType }[] = [
 ];
 
 export default function WebhooksScreen() {
-  const { data, isLoading, createWebhook, updateWebhook, deleteWebhook } = useWebhooks();
+  const {
+    data,
+    isLoading,
+    error,
+    createWebhook,
+    updateWebhook,
+    deleteWebhook,
+    isSaving
+  } = useWebhooks();
   const [url, setUrl] = useState("");
   const [events, setEvents] = useState<NotificationType[]>([]);
 
@@ -64,18 +72,30 @@ export default function WebhooksScreen() {
       </View>
       <Pressable
         onPress={submit}
-        style={{ padding: 10, borderWidth: 1, borderRadius: 8, marginBottom: 16 }}
+        disabled={isSaving || !url.trim() || events.length === 0}
+        style={{
+          padding: 10,
+          borderWidth: 1,
+          borderRadius: 8,
+          marginBottom: 16,
+          opacity: isSaving || !url.trim() || events.length === 0 ? 0.5 : 1
+        }}
       >
-        <Text>Add Webhook</Text>
+        <Text>{isSaving ? "Saving..." : "Add Webhook"}</Text>
       </Pressable>
 
-      {isLoading ? (
+      {error ? (
+        <Text style={{ color: "#b91c1c", marginBottom: 12 }}>
+          Unable to load webhooks. Check the backend webhook endpoint.
+        </Text>
+      ) : isLoading ? (
         <Text>Loading...</Text>
       ) : (
         <FlatList
           data={webhooks}
           keyExtractor={(w) => w.id}
           contentContainerStyle={{ paddingBottom: 24 }}
+          ListEmptyComponent={<Text>No webhooks configured yet.</Text>}
           renderItem={({ item }) => (
             <View
               style={{ borderWidth: 1, borderRadius: 12, padding: 12, marginBottom: 10 }}

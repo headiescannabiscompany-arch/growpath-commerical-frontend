@@ -10,40 +10,61 @@ import {
   ActivityIndicator,
   Alert
 } from "react-native";
-// import { getVendorMetrics, listVendorSoilMixes, createVendorSoilMix, listVendorEquipment } from "../../api/vendorMetrics";
+import {
+  createVendorSoilMix,
+  getVendorMetrics,
+  listVendorEquipment,
+  listVendorSoilMixes
+} from "../../api/vendorMetrics";
+
+const normalizeList = (value) => {
+  const list =
+    value?.items ||
+    value?.results ||
+    value?.soilMixes ||
+    value?.equipment ||
+    value?.data ||
+    value ||
+    [];
+  return Array.isArray(list) ? list : [];
+};
+
+const normalizeMetrics = (value) => value?.metrics || value?.data || value || {};
 
 function BarChart({ data, label }) {
-  const max = Math.max(...data.map((d) => d.value), 1);
+  const rows = Array.isArray(data) ? data : [];
+  const max = Math.max(...rows.map((d) => Number(d.value || 0)), 1);
+
   return (
     <View style={styles.chartContainer}>
       <Text style={styles.chartLabel}>{label}</Text>
-      {data.map((d, i) => (
-        <View key={d.id || d.label || i} style={styles.barRow}>
-          <Text style={styles.barLabel}>{d.label}</Text>
-          <Text style={styles.barBlock}>
-            {"█".repeat(Math.round((d.value / max) * 20))}
-          </Text>
-          <Text style={styles.barValue}>{d.value}</Text>
-        </View>
-      ))}
+      {rows.length ? (
+        rows.map((d, i) => (
+          <View key={d.id || d.label || i} style={styles.barRow}>
+            <Text style={styles.barLabel}>{d.label}</Text>
+            <Text style={styles.barBlock}>
+              {"#".repeat(Math.max(1, Math.round((Number(d.value || 0) / max) * 20)))}
+            </Text>
+            <Text style={styles.barValue}>{d.value}</Text>
+          </View>
+        ))
+      ) : (
+        <Text style={styles.emptyText}>No metric history available yet.</Text>
+      )}
     </View>
   );
 }
 
 export default function VendorMetricsScreen() {
-  // In a real app, vendorId would come from auth/user context
-  const vendorId = "demo-vendor-1";
-  const [metrics, setMetrics] = useState(null);
+  const vendorId = "me";
+  const [metrics, setMetrics] = useState({});
   const [soilMixes, setSoilMixes] = useState([]);
   const [equipment, setEquipment] = useState([]);
   const [loading, setLoading] = useState(true);
+  const [error, setError] = useState("");
   const [mixName, setMixName] = useState("");
   const [mixNotes, setMixNotes] = useState("");
   const [submitting, setSubmitting] = useState(false);
-  const [cecValue, setCecValue] = useState("15");
-  const [phValue, setPhValue] = useState("6.5");
-  const [ecValue, setEcValue] = useState("1.8");
-  const [soilComposition, setSoilComposition] = useState("");
 
   useEffect(() => {
     loadData();
@@ -51,161 +72,71 @@ export default function VendorMetricsScreen() {
 
   const loadData = async () => {
     setLoading(true);
-    // Placeholder: use static data for now
-    setMetrics({
-      yieldByMonth: [
-        { label: "Jan", value: 120 },
-        { label: "Feb", value: 140 },
-        { label: "Mar", value: 110 },
-        { label: "Apr", value: 150 }
-      ],
-      avgSoilPH: 6.5,
-      avgNutrientEC: 1.8
-    });
-    setSoilMixes([
-      { id: 1, name: "Mix A", notes: "Coco + Perlite, 70/30" },
-      { id: 2, name: "Mix B", notes: "Peat + Vermiculite, 60/40" }
-    ]);
-    setEquipment([
-      { id: 1, name: "LED Grow Light", notes: "500W, 2025 install" },
-      { id: 2, name: "Irrigation Pump", notes: "Replaced 2026-01" }
-    ]);
-    setLoading(false);
+    setError("");
+    try {
+      const [metricRes, mixesRes, equipmentRes] = await Promise.all([
+        getVendorMetrics(vendorId),
+        listVendorSoilMixes(vendorId),
+        listVendorEquipment(vendorId)
+      ]);
+      if (!metricRes.success) throw new Error(metricRes.message || "Failed to load metrics");
+      if (!mixesRes.success) throw new Error(mixesRes.message || "Failed to load soil mixes");
+      if (!equipmentRes.success) throw new Error(equipmentRes.message || "Failed to load equipment");
+      setMetrics(normalizeMetrics(metricRes.data));
+      setSoilMixes(normalizeList(mixesRes.data));
+      setEquipment(normalizeList(equipmentRes.data));
+    } catch (err) {
+      setMetrics({});
+      setSoilMixes([]);
+      setEquipment([]);
+      setError(err?.message || "Failed to load vendor metrics.");
+    } finally {
+      setLoading(false);
+    }
   };
 
   const handleAddMix = async () => {
-    if (!mixName) {
+    if (!mixName.trim()) {
       Alert.alert("Missing info", "Mix name required");
       return;
     }
     setSubmitting(true);
-    // Placeholder: would call createVendorSoilMix
-    setSoilMixes([...soilMixes, { id: Math.random(), name: mixName, notes: mixNotes }]);
-    setMixName("");
-    setMixNotes("");
-    setSubmitting(false);
+    try {
+      const res = await createVendorSoilMix(vendorId, {
+        name: mixName.trim(),
+        notes: mixNotes.trim()
+      });
+      if (!res.success) throw new Error(res.message || "Failed to add mix");
+      setMixName("");
+      setMixNotes("");
+      await loadData();
+    } catch (err) {
+      Alert.alert("Error", err?.message || "Failed to add mix");
+    } finally {
+      setSubmitting(false);
+    }
   };
 
   return (
     <ScrollView style={styles.container}>
       <Text style={styles.header}>Vendor Metrics & Tracking</Text>
       <Text style={styles.info}>
-        Track advanced metrics, soil/nutrient mixes, and equipment for your vendor
-        account.
+        Track metrics, soil and nutrient mixes, and equipment for your vendor account.
       </Text>
 
       {loading ? (
         <ActivityIndicator color="#0ea5e9" />
+      ) : error ? (
+        <View style={styles.card}>
+          <Text style={styles.emptyText}>{error}</Text>
+        </View>
       ) : (
         <>
-          <BarChart data={metrics.yieldByMonth} label="Yield by Month (kg)" />
+          <BarChart data={metrics?.yieldByMonth || []} label="Yield by Month (kg)" />
           <View style={styles.metricsRow}>
-            <Text style={styles.metricBox}>Avg. Soil pH: {metrics.avgSoilPH}</Text>
-            <Text style={styles.metricBox}>Avg. EC: {metrics.avgNutrientEC}</Text>
-          </View>
-
-          {/* Soil Health Tracking Section */}
-          <View style={styles.card}>
-            <Text style={styles.sectionHeader}>🌱 Soil Health Metrics</Text>
-            <View style={styles.metricsGrid}>
-              <View style={styles.metricInput}>
-                <Text style={styles.metricLabel}>pH Level</Text>
-                <TextInput
-                  style={styles.numberInput}
-                  value={phValue}
-                  onChangeText={setPhValue}
-                  placeholder="6.5"
-                  keyboardType="decimal-pad"
-                />
-                <Text style={styles.metricUnit}>6.0 - 7.0 Optimal</Text>
-              </View>
-              <View style={styles.metricInput}>
-                <Text style={styles.metricLabel}>EC (Conductivity)</Text>
-                <TextInput
-                  style={styles.numberInput}
-                  value={ecValue}
-                  onChangeText={setEcValue}
-                  placeholder="1.8"
-                  keyboardType="decimal-pad"
-                />
-                <Text style={styles.metricUnit}>1.0 - 2.0 Range</Text>
-              </View>
-              <View style={styles.metricInput}>
-                <Text style={styles.metricLabel}>CEC (meq/100g)</Text>
-                <TextInput
-                  style={styles.numberInput}
-                  value={cecValue}
-                  onChangeText={setCecValue}
-                  placeholder="15"
-                  keyboardType="decimal-pad"
-                />
-                <Text style={styles.metricUnit}>12 - 20 Ideal</Text>
-              </View>
-            </View>
-
-            <Text style={styles.compositionLabel}>Soil Composition</Text>
-            <TextInput
-              style={[styles.input, { marginTop: 8, minHeight: 60 }]}
-              value={soilComposition}
-              onChangeText={setSoilComposition}
-              placeholder="e.g., Coco: 40%, Perlite: 30%, Compost: 30%"
-              multiline
-            />
-
-            {/* Nutrient Availability Chart */}
-            <View style={styles.phCurveContainer}>
-              <Text style={styles.curveLabel}>📊 Nutrient Availability by pH</Text>
-              <View style={styles.curveVisualization}>
-                <View style={styles.nutrientBar}>
-                  <Text style={styles.nutrientLabel}>N</Text>
-                  <View
-                    style={[
-                      styles.availabilityBar,
-                      { width: "75%", backgroundColor: "#10b981" }
-                    ]}
-                  />
-                </View>
-                <View style={styles.nutrientBar}>
-                  <Text style={styles.nutrientLabel}>P</Text>
-                  <View
-                    style={[
-                      styles.availabilityBar,
-                      { width: "85%", backgroundColor: "#f59e0b" }
-                    ]}
-                  />
-                </View>
-                <View style={styles.nutrientBar}>
-                  <Text style={styles.nutrientLabel}>K</Text>
-                  <View
-                    style={[
-                      styles.availabilityBar,
-                      { width: "80%", backgroundColor: "#3b82f6" }
-                    ]}
-                  />
-                </View>
-                <View style={styles.nutrientBar}>
-                  <Text style={styles.nutrientLabel}>Ca</Text>
-                  <View
-                    style={[
-                      styles.availabilityBar,
-                      { width: "70%", backgroundColor: "#8b5cf6" }
-                    ]}
-                  />
-                </View>
-                <View style={styles.nutrientBar}>
-                  <Text style={styles.nutrientLabel}>Mg</Text>
-                  <View
-                    style={[
-                      styles.availabilityBar,
-                      { width: "65%", backgroundColor: "#ec4899" }
-                    ]}
-                  />
-                </View>
-              </View>
-              <Text style={styles.curveNote}>
-                Availability varies with soil pH - optimal range 6.0-7.0
-              </Text>
-            </View>
+            <Text style={styles.metricBox}>Avg. Soil pH: {metrics?.avgSoilPH ?? "-"}</Text>
+            <Text style={styles.metricBox}>Avg. EC: {metrics?.avgNutrientEC ?? "-"}</Text>
+            <Text style={styles.metricBox}>Open Mixes: {soilMixes.length}</Text>
           </View>
 
           <View style={styles.card}>
@@ -224,22 +155,20 @@ export default function VendorMetricsScreen() {
                 placeholder="Notes"
               />
               <TouchableOpacity
-                style={styles.addBtn}
+                style={[styles.addBtn, submitting && styles.disabled]}
                 onPress={handleAddMix}
                 disabled={submitting}
               >
-                <Text style={styles.addBtnText}>
-                  {submitting ? "Adding..." : "Add Mix"}
-                </Text>
+                <Text style={styles.addBtnText}>{submitting ? "Adding..." : "Add Mix"}</Text>
               </TouchableOpacity>
             </View>
             <FlatList
               data={soilMixes}
-              keyExtractor={(item) => item.id.toString()}
+              keyExtractor={(item, index) => String(item?._id || item?.id || index)}
               renderItem={({ item }) => (
                 <View style={styles.mixRow}>
-                  <Text style={styles.mixName}>{item.name}</Text>
-                  <Text style={styles.mixNotes}>{item.notes}</Text>
+                  <Text style={styles.mixName}>{item.name || "Untitled mix"}</Text>
+                  <Text style={styles.mixNotes}>{item.notes || item.description || "-"}</Text>
                 </View>
               )}
               ListEmptyComponent={<Text style={styles.emptyText}>No mixes yet</Text>}
@@ -250,11 +179,11 @@ export default function VendorMetricsScreen() {
             <Text style={styles.sectionHeader}>Equipment</Text>
             <FlatList
               data={equipment}
-              keyExtractor={(item) => item.id.toString()}
+              keyExtractor={(item, index) => String(item?._id || item?.id || index)}
               renderItem={({ item }) => (
                 <View style={styles.eqRow}>
-                  <Text style={styles.eqName}>{item.name}</Text>
-                  <Text style={styles.eqNotes}>{item.notes}</Text>
+                  <Text style={styles.eqName}>{item.name || "Equipment"}</Text>
+                  <Text style={styles.eqNotes}>{item.notes || item.type || "-"}</Text>
                 </View>
               )}
               ListEmptyComponent={<Text style={styles.emptyText}>No equipment yet</Text>}
@@ -275,15 +204,14 @@ const styles = StyleSheet.create({
     borderRadius: 8,
     padding: 16,
     marginBottom: 24,
-    // Web: use boxShadow instead of shadow*
     boxShadow: "0px 1px 4px rgba(0,0,0,0.08)",
     elevation: 2
   },
   chartLabel: { fontSize: 16, fontWeight: "bold", marginBottom: 8 },
   barRow: { flexDirection: "row", alignItems: "center", marginBottom: 6 },
-  barLabel: { width: 60, fontSize: 14 },
+  barLabel: { width: 80, fontSize: 14 },
   barBlock: { fontFamily: "monospace", color: "#0ea5e9", marginHorizontal: 4 },
-  barValue: { width: 32, textAlign: "right", fontSize: 14 },
+  barValue: { width: 48, textAlign: "right", fontSize: 14 },
   metricsRow: { flexDirection: "row", justifyContent: "space-between", marginBottom: 16 },
   metricBox: {
     backgroundColor: "#fff",
@@ -295,7 +223,6 @@ const styles = StyleSheet.create({
     marginRight: 8,
     flex: 1,
     textAlign: "center",
-    // Web: use boxShadow instead of shadow*
     boxShadow: "0px 1px 3px rgba(0,0,0,0.06)",
     elevation: 2
   },
@@ -304,7 +231,6 @@ const styles = StyleSheet.create({
     borderRadius: 8,
     padding: 16,
     marginBottom: 24,
-    // Web: use boxShadow instead of shadow*
     boxShadow: "0px 1px 6px rgba(0,0,0,0.1)",
     elevation: 2
   },
@@ -332,89 +258,10 @@ const styles = StyleSheet.create({
   eqName: { fontWeight: "bold", fontSize: 15 },
   eqNotes: { fontSize: 14, color: "#374151" },
   emptyText: {
-    color: "#9ca3af",
+    color: "#6b7280",
     fontStyle: "italic",
     textAlign: "center",
     marginTop: 16
   },
-  metricsGrid: {
-    flexDirection: "row",
-    justifyContent: "space-between",
-    marginBottom: 16,
-    gap: 8
-  },
-  metricInput: {
-    flex: 1,
-    backgroundColor: "#f3f4f6",
-    borderRadius: 8,
-    padding: 10
-  },
-  metricLabel: {
-    fontSize: 13,
-    fontWeight: "bold",
-    color: "#374151",
-    marginBottom: 4
-  },
-  numberInput: {
-    borderWidth: 1,
-    borderColor: "#e5e7eb",
-    borderRadius: 6,
-    padding: 8,
-    fontSize: 14,
-    backgroundColor: "#fff"
-  },
-  metricUnit: {
-    fontSize: 12,
-    color: "#9ca3af",
-    marginTop: 4
-  },
-  compositionLabel: {
-    fontSize: 14,
-    fontWeight: "bold",
-    color: "#374151",
-    marginTop: 12,
-    marginBottom: 4
-  },
-  phCurveContainer: {
-    backgroundColor: "#f0f9ff",
-    borderRadius: 8,
-    padding: 12,
-    marginTop: 16,
-    borderLeftWidth: 4,
-    borderLeftColor: "#0ea5e9"
-  },
-  curveLabel: {
-    fontSize: 14,
-    fontWeight: "bold",
-    color: "#0c4a6e",
-    marginBottom: 12
-  },
-  curveVisualization: {
-    backgroundColor: "#fff",
-    borderRadius: 6,
-    padding: 10,
-    marginBottom: 8
-  },
-  nutrientBar: {
-    flexDirection: "row",
-    alignItems: "center",
-    marginBottom: 8
-  },
-  nutrientLabel: {
-    width: 30,
-    fontWeight: "bold",
-    fontSize: 12,
-    color: "#374151"
-  },
-  availabilityBar: {
-    height: 20,
-    borderRadius: 4,
-    marginLeft: 8
-  },
-  curveNote: {
-    fontSize: 12,
-    color: "#9ca3af",
-    fontStyle: "italic",
-    textAlign: "center"
-  }
+  disabled: { opacity: 0.6 }
 });

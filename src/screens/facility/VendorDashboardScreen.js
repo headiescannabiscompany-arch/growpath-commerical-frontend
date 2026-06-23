@@ -13,14 +13,6 @@ import { useFacility } from "../../facility/FacilityProvider";
 import { handleApiError } from "../../ui/handleApiError";
 import { useVendors } from "../../hooks/useVendors";
 
-// Placeholder analytics data for future management
-const sampleAnalytics = [
-  { label: "Total Vendors", value: 12 },
-  { label: "Active Orders", value: 5 },
-  { label: "Avg. Order Value", value: "$1,200" },
-  { label: "Top Vendor", value: "GrowSupply Inc." }
-];
-
 export default function VendorDashboardScreen() {
   const { activeFacilityId } = useFacility();
   const facilityId = activeFacilityId;
@@ -60,13 +52,32 @@ export default function VendorDashboardScreen() {
 
   const canInteract = useMemo(() => Boolean(facilityId), [facilityId]);
   const submitting = adding || updating || deleting;
+  const analytics = useMemo(() => {
+    const active = vendors.filter((vendor) => vendor?.status !== "inactive");
+    const withContact = vendors.filter((vendor) => vendor?.contact || vendor?.contactEmail);
+    const lastUpdated = vendors
+      .map((vendor) => vendor?.updatedAt || vendor?.createdAt)
+      .filter(Boolean)
+      .sort()
+      .pop();
+
+    return [
+      { label: "Total Vendors", value: String(vendors.length) },
+      { label: "Active Vendors", value: String(active.length) },
+      { label: "With Contact", value: String(withContact.length) },
+      {
+        label: "Last Updated",
+        value: lastUpdated ? new Date(lastUpdated).toLocaleDateString() : "-"
+      }
+    ];
+  }, [vendors]);
 
   const handleSave = async () => {
     if (!canInteract) {
       Alert.alert("No Facility", "Select a facility to continue.");
       return;
     }
-    if (!name) {
+    if (!name.trim()) {
       Alert.alert("Missing info", "Vendor name is required.");
       return;
     }
@@ -87,8 +98,8 @@ export default function VendorDashboardScreen() {
   };
 
   const handleEdit = (vendor) => {
-    setName(vendor.name);
-    setContact(vendor.contact);
+    setName(vendor.name || "");
+    setContact(vendor.contact || vendor.contactEmail || "");
     setEditingId(vendor._id || vendor.id);
   };
 
@@ -118,13 +129,10 @@ export default function VendorDashboardScreen() {
   return (
     <View style={styles.container}>
       <Text style={styles.header}>Vendor Dashboard</Text>
-      <Text style={styles.info}>
-        View vendor analytics, orders, and performance metrics.
-      </Text>
+      <Text style={styles.info}>Manage facility vendors and supplier contacts.</Text>
 
-      {/* Analytics Widgets */}
       <View style={styles.analyticsContainer}>
-        {sampleAnalytics.map((a, i) => (
+        {analytics.map((a, i) => (
           <View key={i} style={styles.analyticsWidget}>
             <Text style={styles.analyticsValue}>{a.value}</Text>
             <Text style={styles.analyticsLabel}>{a.label}</Text>
@@ -148,7 +156,7 @@ export default function VendorDashboardScreen() {
           placeholder="Contact Info"
         />
         <TouchableOpacity
-          style={styles.addBtn}
+          style={[styles.addBtn, (submitting || !canInteract) && styles.disabled]}
           onPress={handleSave}
           disabled={submitting || !canInteract}
         >
@@ -182,23 +190,18 @@ export default function VendorDashboardScreen() {
           renderItem={({ item }) => (
             <View style={styles.vendorRow}>
               <Text style={styles.vendorName}>{item?.name || "Vendor"}</Text>
-              {item?.contact ? (
-                <Text style={styles.vendorContact}>{item.contact}</Text>
+              {item?.contact || item?.contactEmail ? (
+                <Text style={styles.vendorContact}>{item.contact || item.contactEmail}</Text>
               ) : null}
               <View style={styles.vendorActions}>
-                <TouchableOpacity
-                  onPress={() => handleEdit(item)}
-                  style={styles.vendorActionBtn}
-                >
+                <TouchableOpacity onPress={() => handleEdit(item)} style={styles.vendorActionBtn}>
                   <Text style={styles.vendorActionText}>Edit</Text>
                 </TouchableOpacity>
                 <TouchableOpacity
                   onPress={() => handleDelete(item)}
                   style={styles.vendorActionBtn}
                 >
-                  <Text style={[styles.vendorActionText, { color: "#ef4444" }]}>
-                    Delete
-                  </Text>
+                  <Text style={[styles.vendorActionText, { color: "#ef4444" }]}>Delete</Text>
                 </TouchableOpacity>
               </View>
             </View>
@@ -269,5 +272,6 @@ const styles = StyleSheet.create({
   vendorActions: { flexDirection: "row", marginTop: 8 },
   vendorActionBtn: { marginRight: 16 },
   vendorActionText: { color: "#0ea5e9", fontWeight: "bold" },
-  emptyText: { color: "#9ca3af", fontStyle: "italic", textAlign: "center", marginTop: 16 }
+  emptyText: { color: "#9ca3af", fontStyle: "italic", textAlign: "center", marginTop: 16 },
+  disabled: { opacity: 0.55 }
 });

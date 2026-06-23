@@ -1,56 +1,57 @@
-import React, { createContext, useContext, useEffect, useState } from "react";
-import AsyncStorage from "@react-native-async-storage/async-storage";
+import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
+import {
+  createWebhook,
+  deleteWebhook,
+  listWebhooks,
+  updateWebhook,
+  type Webhook
+} from "../api/webhooks";
 
-type Plan = "free" | "pro" | "commercial" | "facility";
-type Entitlements = {
-  plan: Plan;
-  capabilities: Record<string, boolean>;
-};
+export type { Webhook };
 
-const EntitlementsContext = createContext<Entitlements | null>(null);
-
-export function EntitlementsProvider({ children }: { children: React.ReactNode }) {
-  const [plan, setPlan] = useState<Plan>("free");
-  const [capabilities, setCapabilities] = useState({});
-
-  useEffect(() => {
-    (async () => {
-      const stored = await AsyncStorage.getItem("entitlements");
-      if (stored) {
-        const parsed = JSON.parse(stored);
-        setPlan(parsed.plan);
-        setCapabilities(parsed.capabilities);
-      }
-    })();
-  }, []);
-
-  return (
-    <EntitlementsContext.Provider value={{ plan, capabilities }}>
-      {children}
-    </EntitlementsContext.Provider>
-  );
-}
-
-export function useEntitlements() {
-  const ctx = useContext(EntitlementsContext);
-  if (!ctx) throw new Error("useEntitlements outside provider");
-  return ctx;
-}
-
-export type Webhook = {
-  id: string;
-  url: string;
-  events: string[];
-  enabled: boolean;
-};
-
-// Stub for Phase 2.3 compilation (webhooks not implemented yet)
 export function useWebhooks() {
+  const queryClient = useQueryClient();
+  const queryKey = ["webhooks"];
+
+  const webhooksQuery = useQuery({
+    queryKey,
+    queryFn: listWebhooks,
+    refetchOnWindowFocus: false
+  });
+
+  const createMutation = useMutation({
+    mutationFn: createWebhook,
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey });
+    }
+  });
+
+  const updateMutation = useMutation({
+    mutationFn: ({ id, data }: { id: string; data: Partial<Webhook> }) =>
+      updateWebhook(id, data),
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey });
+    }
+  });
+
+  const deleteMutation = useMutation({
+    mutationFn: deleteWebhook,
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey });
+    }
+  });
+
   return {
-    data: [] as Webhook[],
-    isLoading: false,
-    createWebhook: async (_data: any) => {},
-    updateWebhook: async (_id: string, _data: any) => {},
-    deleteWebhook: async (_id: string) => {}
+    data: webhooksQuery.data ?? [],
+    isLoading: webhooksQuery.isLoading,
+    isRefreshing: webhooksQuery.isRefetching,
+    error: webhooksQuery.error,
+    refetch: webhooksQuery.refetch,
+    createWebhook: createMutation.mutateAsync,
+    updateWebhook: (id: string, data: Partial<Webhook>) =>
+      updateMutation.mutateAsync({ id, data }),
+    deleteWebhook: deleteMutation.mutateAsync,
+    isSaving:
+      createMutation.isPending || updateMutation.isPending || deleteMutation.isPending
   };
 }

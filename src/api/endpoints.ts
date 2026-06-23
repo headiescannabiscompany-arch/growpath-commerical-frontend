@@ -91,6 +91,10 @@ export const endpoints = {
   vendors: `${BASE}/vendors`,
   vendor: (id: string) => `${BASE}/vendors/${id}`,
 
+  // webhooks
+  webhooks: `${BASE}/webhooks`,
+  webhook: (id: string) => `${BASE}/webhooks/${id}`,
+
   // vendor signup (public endpoint)
   vendorSignup: `${BASE}/vendors/signup`,
 

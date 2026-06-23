@@ -122,6 +122,33 @@ product backlogs.
       APIs.
 - [x] Re-run placeholder/dead-end scans after each cleanup batch and add any
       confirmed production-route findings here.
+- [x] Replace the `useWebhooks` compile stub with shared-client API calls and
+      runtime loading/error/empty/save states.
+- [x] Replace static demo vendor analytics, vendor metrics, and facility vendor
+      dashboard cards with API-backed or derived runtime data.
+- [ ] Finish Content Marketplace sales and analytics tabs by removing static
+      earnings/download/rating/sales/chart examples and normalizing
+      `getSalesData()` into runtime summary, monthly series, recent sales, and
+      per-upload analytics.
+- [ ] Finish the Content Marketplace upload modal with real controlled form
+      state, file selection, validation, `uploadContent` submission, error
+      handling, and upload refresh after success.
+- [ ] Provide backend webhook endpoints for `/api/webhooks` and
+      `/api/webhooks/:id`, including auth, facility scoping, event validation,
+      secret/signature handling, delivery retries, and audit logs.
+- [ ] Provide or confirm vendor analytics/metrics backend contracts for
+      `/api/vendors/me/analytics`, `/api/vendors/me/orders`,
+      `/api/vendors/me/metrics`, `/api/vendors/me/soil-mixes`, and
+      `/api/vendors/me/equipment`.
+- [ ] Remove production wiring to source-controlled backend demo/stub routes:
+      `backend/stubbedRoutes.js`, `backend/routes/personal.js`,
+      `backend/routes/commercial.js`, and `backend/fanoutNotifications.js`.
+- [ ] Remove or archive `backend/routes/ai.call.backup.js` after confirming it is
+      excluded from runtime and tests.
+- [ ] Replace or delete old Detox `e2e/growLogs.e2e.js` login TODO coverage if
+      Playwright remains the canonical E2E suite.
+- [x] Record the 2026-06-23 stub/placeholder audit in
+      `docs/stub-placeholder-audit-2026-06-23.md`.
 
 ## Parked Or Blocked
 
