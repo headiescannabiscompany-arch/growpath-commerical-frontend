@@ -1,6 +1,7 @@
 import React from "react";
 import { render, waitFor } from "@testing-library/react-native";
 import { NavigationContainer } from "@react-navigation/native";
+import { Linking } from "react-native";
 
 // Mocks
 const mockUseAuth = jest.fn();
@@ -50,6 +51,11 @@ describe("LiveSessionScreen QA", () => {
     mockUseAuth.mockReset();
     mockUseEntitlements.mockReset();
     mockApiRequest.mockReset();
+    jest.spyOn(Linking, "openURL").mockResolvedValue(undefined);
+  });
+
+  afterEach(() => {
+    jest.restoreAllMocks();
   });
 
   it("renders moderation UI for admin", async () => {
@@ -64,11 +70,15 @@ describe("LiveSessionScreen QA", () => {
       title: "Session 1"
     });
 
-    const { queryByText } = renderWithNav();
+    const { getByText, queryByText } = renderWithNav({ sessionId: "abc123" });
 
     await waitFor(() => {
       expect(queryByText(/Open Twitch Moderation/i)).toBeTruthy();
     });
+    expect(mockApiRequest).toHaveBeenCalledWith("/api/lives/abc123", {
+      method: "GET"
+    });
+    expect(getByText(/Watch on Twitch/i)).toBeTruthy();
   });
 
   it("hides moderation UI for non-admin", async () => {

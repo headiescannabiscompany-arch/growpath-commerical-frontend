@@ -37,7 +37,7 @@ export default function LiveSessionScreen({ route }) {
       setSession(null);
 
       try {
-        const res = await apiRequest(`/live/sessions/${encodeURIComponent(sessionId)}`, {
+        const res = await apiRequest(`/api/lives/${encodeURIComponent(sessionId)}`, {
           method: "GET"
         });
         if (!alive) return;
@@ -58,6 +58,8 @@ export default function LiveSessionScreen({ route }) {
     };
   }, [sessionId]);
 
+  const twitchChannel = session?.twitchChannel ? String(session.twitchChannel) : "";
+  const watchUrl = twitchChannel ? `https://www.twitch.tv/${twitchChannel}` : "";
   const moderationUrl = session?.twitchModerationUrl || session?.moderationUrl || "";
 
   return (
@@ -80,6 +82,18 @@ export default function LiveSessionScreen({ route }) {
           </Text>
           {session.twitchChannel ? (
             <Text style={styles.meta}>Channel: {String(session.twitchChannel)}</Text>
+          ) : null}
+
+          {watchUrl ? (
+            <Pressable
+              accessibilityRole="button"
+              style={styles.btn}
+              onPress={() => {
+                Linking.openURL(watchUrl).catch(() => {});
+              }}
+            >
+              <Text style={styles.btnText}>Watch on Twitch</Text>
+            </Pressable>
           ) : null}
 
           {canModerate && moderationUrl ? (

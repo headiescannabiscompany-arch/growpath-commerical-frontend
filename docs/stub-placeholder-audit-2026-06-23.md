@@ -31,7 +31,7 @@ Repository: growpath-commerical-frontend
 - Final store-facing app name is confirmed as `GrowPath`.
 - Final iOS bundle identifier and Android package must be confirmed in App Store Connect and Google Play Console.
 - Production public domain ownership must be confirmed before enabling Android App Links or iOS Associated Domains.
-- `EXPO_PUBLIC_TWITCH_PARENT_HOST` must be set for production builds if Twitch embeds ship.
+- `EXPO_PUBLIC_TWITCH_PARENT_HOST` is optional for V1 live cards because Twitch opens externally; set it only if embeds ship.
 - Real Apple and Google submit credentials must be provided outside source control.
 - Production EAS iOS and Android builds must be created and attached as evidence.
 - iOS and Android screenshots, feature graphics, privacy URL, support URL, release notes, age rating, data safety, pricing, and review notes need release-owner/legal sign-off.

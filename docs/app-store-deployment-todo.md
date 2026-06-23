@@ -67,13 +67,14 @@ Current known blockers:
   `growpath`, `version` is `1.0.0`, iOS bundle identifier and Android
   package are both `com.growpathai.app`. Android verified App Links are not
   configured because the final public domain and hosted verification files are
-  not confirmed; the app currently uses its custom scheme only. Twitch embeds
-  require `EXPO_PUBLIC_TWITCH_PARENT_HOST` for production builds.
+  not confirmed; the app currently uses its custom scheme only. Twitch V1 uses
+  live cards and external Twitch links; `EXPO_PUBLIC_TWITCH_PARENT_HOST` is only
+  required if embedded Twitch playback ships in the production build.
 - Current evidence: source-config review captured in
   `docs/release-config-evidence-2026-06-21.md`; base app icon is 1024x1024 and the
   configured splash/icon assets exist.
 - Next action: Release owner must confirm identifiers, public deep-link domain,
-  Twitch parent host, and App Store/Play Console records before production
+  production API URL, and App Store/Play Console records before production
   builds.
 - Evidence target: `docs/release-config-evidence-2026-06-21.md`
 

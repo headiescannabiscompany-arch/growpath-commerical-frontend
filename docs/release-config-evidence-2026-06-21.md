@@ -46,6 +46,7 @@ Repository: growpath-commerical-frontend
 - Store-facing app name is confirmed as `GrowPath`.
 - Confirm whether `com.growpathai.app` is the final iOS bundle identifier and Android package.
 - Confirm production public domain ownership before enabling Android App Links or iOS Associated Domains.
-- Confirm production value for `EXPO_PUBLIC_TWITCH_PARENT_HOST` if Twitch embeds remain in the production build.
+- Confirm production value for `EXPO_PUBLIC_API_URL` before production builds.
+- `EXPO_PUBLIC_TWITCH_PARENT_HOST` is optional for V1 because live sessions open Twitch externally; set it only if embedded Twitch playback ships.
 - Confirm App Store Connect and Google Play Console records match the identifiers above.
 - Confirm legal approval for cannabis-related listing language, age rating, and jurisdiction disclaimer.
