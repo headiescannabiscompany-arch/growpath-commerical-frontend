@@ -1,5 +1,5 @@
 import React, { useCallback, useEffect, useMemo, useState } from "react";
-import { ActivityIndicator, Pressable, StyleSheet, Text, View } from "react-native";
+import { ActivityIndicator, Linking, Pressable, StyleSheet, Text, View } from "react-native";
 
 import { getMarketplaceContent, purchaseContent } from "../api/marketplace";
 import ScreenContainer from "../components/ScreenContainer";
@@ -50,7 +50,12 @@ export default function MarketplaceDetailScreen({ route, navigation }) {
     setFeedback("");
     try {
       const purchase = unwrapPurchase(await purchaseContent(id));
-      setFeedback(purchase?.message || "Purchase request submitted.");
+      if (purchase?.url) {
+        await Linking.openURL(purchase.url);
+        setFeedback("Checkout opened. Complete payment to unlock this item.");
+      } else {
+        setFeedback(purchase?.message || "Marketplace item added.");
+      }
       await load();
     } catch (error) {
       setFeedback(error?.message || "Unable to purchase this marketplace item.");
