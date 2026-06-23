@@ -7,7 +7,6 @@ import {
   Alert,
   ActivityIndicator,
   Image,
-  ImageBackground,
   StyleSheet
 } from "react-native";
 import AsyncStorage from "@react-native-async-storage/async-storage";
@@ -127,113 +126,83 @@ function LoginScreen() {
   }
 
   return (
-    <>
-      {__DEV__ && DEBUG_LAYOUT ? (
-        <Text
-          style={{
-            color: "black",
-            fontSize: 24,
-            fontWeight: "bold",
-            backgroundColor: "yellow",
-            padding: 8,
-            textAlign: "center"
-          }}
-        >
-          {null}
-        </Text>
-      ) : (
-        <Text
-          style={{
-            color: "black",
-            fontSize: 24,
-            fontWeight: "bold",
-            padding: 8,
-            textAlign: "center"
-          }}
-        >
-          {null}
-        </Text>
-      )}
-      <ScreenContainer testID="login-form" scroll={true}>
-        {/* Banner Image */}
-        <ImageBackground
-          // @ts-ignore
-          source={require("../../assets/banner.png")}
-          style={styles.headerBackground}
-          imageStyle={styles.headerImageStyle}
-          resizeMode="contain"
-        />
+    <ScreenContainer
+      testID="login-form"
+      scroll={true}
+      style={styles.screen}
+      contentContainerStyle={styles.content}
+    >
+      <Image
+        // @ts-ignore
+        source={require("../../assets/banner.png")}
+        style={styles.heroImage}
+        resizeMode="contain"
+      />
 
-        {/* Logo and Text Below Banner */}
+      <View style={styles.authShell}>
         <View style={styles.logoContainer}>
-          <View style={styles.logoCircle}>
-            {/* @ts-ignore: Metro/JS false positive for PNG import */}
-            <Image
-              // @ts-ignore
-              source={require("../../assets/icon-white.png")}
-              style={styles.logoImage}
-              resizeMode="contain"
-            />
-          </View>
           <Text style={styles.appName}>GrowPath AI</Text>
           <Text style={styles.tagline}>Your grow companion for every plant</Text>
-        </View>
-
-        {/* Mode Selector */}
-        <View
-          style={{ flexDirection: "row", justifyContent: "center", marginVertical: 16 }}
-        >
-          <TouchableOpacity
-            style={{
-              backgroundColor: selectedMode === "personal" ? "#0ea5e9" : "#e5e7eb",
-              paddingVertical: 8,
-              paddingHorizontal: 18,
-              borderRadius: 8,
-              marginHorizontal: 4
-            }}
-            onPress={() => setSelectedMode("personal")}
-          >
-            <Text style={{ color: selectedMode === "personal" ? "white" : "#222" }}>
-              Single User
-            </Text>
-          </TouchableOpacity>
-          <TouchableOpacity
-            style={{
-              backgroundColor: selectedMode === "facility" ? "#0ea5e9" : "#e5e7eb",
-              paddingVertical: 8,
-              paddingHorizontal: 18,
-              borderRadius: 8,
-              marginHorizontal: 4
-            }}
-            onPress={() => setSelectedMode("facility")}
-          >
-            <Text style={{ color: selectedMode === "facility" ? "white" : "#222" }}>
-              Facility
-            </Text>
-          </TouchableOpacity>
-          <TouchableOpacity
-            style={{
-              backgroundColor: selectedMode === "commercial" ? "#0ea5e9" : "#e5e7eb",
-              paddingVertical: 8,
-              paddingHorizontal: 18,
-              borderRadius: 8,
-              marginHorizontal: 4
-            }}
-            onPress={() => setSelectedMode("commercial")}
-          >
-            <Text style={{ color: selectedMode === "commercial" ? "white" : "#222" }}>
-              Commercial
-            </Text>
-          </TouchableOpacity>
         </View>
 
         <Text style={styles.title}>
           {authMode === "login"
             ? hasLoggedInBefore
               ? "Welcome Back"
-              : " "
+              : "Log in"
             : "Create Account"}
         </Text>
+
+        <View style={styles.modeSelector}>
+          <TouchableOpacity
+            style={[
+              styles.modeButton,
+              selectedMode === "personal" && styles.modeButtonSelected
+            ]}
+            onPress={() => setSelectedMode("personal")}
+          >
+            <Text
+              style={[
+                styles.modeText,
+                selectedMode === "personal" && styles.modeTextSelected
+              ]}
+            >
+              Single User
+            </Text>
+          </TouchableOpacity>
+          <TouchableOpacity
+            style={[
+              styles.modeButton,
+              selectedMode === "facility" && styles.modeButtonSelected
+            ]}
+            onPress={() => setSelectedMode("facility")}
+          >
+            <Text
+              style={[
+                styles.modeText,
+                selectedMode === "facility" && styles.modeTextSelected
+              ]}
+            >
+              Facility
+            </Text>
+          </TouchableOpacity>
+          <TouchableOpacity
+            style={[
+              styles.modeButton,
+              selectedMode === "commercial" && styles.modeButtonSelected
+            ]}
+            onPress={() => setSelectedMode("commercial")}
+          >
+            <Text
+              style={[
+                styles.modeText,
+                selectedMode === "commercial" && styles.modeTextSelected
+              ]}
+            >
+              Commercial
+            </Text>
+          </TouchableOpacity>
+        </View>
 
         {authMode === "signup" && (
           <TextInput
@@ -286,7 +255,14 @@ function LoginScreen() {
         </TouchableOpacity>
         {/* Privacy Policy link for onboarding */}
         <View style={{ alignItems: "center", marginTop: 30, marginBottom: 10 }}>
-          <TouchableOpacity onPress={() => navigation.navigate("PrivacyPolicy")}>
+          <TouchableOpacity
+            onPress={() =>
+              Alert.alert(
+                "Privacy Policy",
+                "Privacy policy screen routing is not connected in this build yet."
+              )
+            }
+          >
             <Text
               style={{ color: "#3498db", fontSize: 15, textDecorationLine: "underline" }}
             >
@@ -294,65 +270,79 @@ function LoginScreen() {
             </Text>
           </TouchableOpacity>
         </View>
-      </ScreenContainer>
-    </>
+      </View>
+    </ScreenContainer>
   );
 }
 
 export default LoginScreen;
 
 const styles = StyleSheet.create({
-  headerBackground: {
-    width: "100%",
-    height: 420,
-    marginBottom: spacing(6)
+  screen: {
+    backgroundColor: "#F8FAFC",
+    paddingHorizontal: 0,
+    paddingTop: 0
   },
-  headerImageStyle: {
-    opacity: 1
-  },
-  overlay: {
-    flex: 1,
-    backgroundColor: "rgba(0, 0, 0, 0.4)",
-    justifyContent: "center",
+  content: {
     alignItems: "center",
-    position: "relative",
-    zIndex: 1
+    paddingBottom: 40
+  },
+  heroImage: {
+    width: "100%",
+    maxWidth: 520,
+    aspectRatio: 1,
+    marginTop: spacing(3)
+  },
+  authShell: {
+    width: "100%",
+    maxWidth: 460,
+    paddingHorizontal: 20
   },
   logoContainer: {
     alignItems: "center",
-    paddingVertical: spacing(8)
-  },
-  logoCircle: {
-    width: 160,
-    height: 160,
-    borderRadius: 80,
-    backgroundColor: "transparent",
-    justifyContent: "center",
-    alignItems: "center",
-    marginBottom: spacing(4)
-  },
-  logoImage: {
-    width: 160,
-    height: 160
+    paddingTop: spacing(2),
+    paddingBottom: spacing(5)
   },
   appName: {
-    fontSize: 48,
+    fontSize: 42,
     fontWeight: "800",
-    color: "#ffffff",
+    color: colors.text,
     marginBottom: spacing(2)
   },
   tagline: {
-    fontSize: 18,
-    color: "#e5e7eb",
+    fontSize: 16,
+    color: colors.textSoft,
     fontStyle: "italic",
     fontWeight: "600"
   },
   title: {
-    fontSize: 32,
+    fontSize: 26,
     fontWeight: "700",
-    marginBottom: spacing(8),
+    marginBottom: spacing(4),
     color: colors.text,
     textAlign: "center"
+  },
+  modeSelector: {
+    flexDirection: "row",
+    justifyContent: "center",
+    marginBottom: spacing(5)
+  },
+  modeButton: {
+    backgroundColor: "#E5E7EB",
+    paddingVertical: 8,
+    paddingHorizontal: 14,
+    borderRadius: 8,
+    marginHorizontal: 4
+  },
+  modeButtonSelected: {
+    backgroundColor: "#166534"
+  },
+  modeText: {
+    color: "#222",
+    fontWeight: "700"
+  },
+  modeTextSelected: {
+    color: "white"
   },
   input: {
     padding: spacing(5),

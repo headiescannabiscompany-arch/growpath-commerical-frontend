@@ -106,6 +106,98 @@ function hasCommercialAccess(ctx: any) {
   return ctxHasCapability(ctx, CAPABILITY_KEYS.COMMERCIAL_HOME);
 }
 
+function applyFacilityRoleCapabilities(
+  normalized: Record<string, boolean>,
+  facilityRole: string | null
+) {
+  if (!facilityRole) return;
+
+  normalized[CAPABILITY_KEYS.FACILITY_ACCESS] = true;
+  normalized[CAPABILITY_KEYS.TASKS_READ] = true;
+  normalized[CAPABILITY_KEYS.GROWS_READ] = true;
+  normalized[CAPABILITY_KEYS.PLANTS_READ] = true;
+  normalized[CAPABILITY_KEYS.GROWLOGS_READ] = true;
+  normalized[CAPABILITY_KEYS.INVENTORY_READ] = true;
+  normalized[CAPABILITY_KEYS.COMPLIANCE_READ] = true;
+  normalized[CAPABILITY_KEYS.AUDIT_READ] = true;
+  normalized[CAPABILITY_KEYS.SOP_RUNS_READ] = true;
+  normalized[CAPABILITY_KEYS.TEAM_VIEW] = true;
+  normalized[CAPABILITY_KEYS.ROOMS_EQUIPMENT_STAFF] = true;
+
+  if (facilityRole === "OWNER" || facilityRole === "MANAGER" || facilityRole === "STAFF") {
+    normalized[CAPABILITY_KEYS.TASKS_WRITE] = true;
+    normalized[CAPABILITY_KEYS.GROWS_WRITE] = true;
+    normalized[CAPABILITY_KEYS.PLANTS_WRITE] = true;
+    normalized[CAPABILITY_KEYS.GROWLOGS_WRITE] = true;
+    normalized[CAPABILITY_KEYS.INVENTORY_WRITE] = true;
+    normalized[CAPABILITY_KEYS.SOP_RUNS_WRITE] = true;
+  }
+
+  if (facilityRole === "OWNER" || facilityRole === "MANAGER") {
+    normalized[CAPABILITY_KEYS.TEAM_INVITE] = true;
+    normalized[CAPABILITY_KEYS.TEAM_UPDATE_ROLE] = true;
+    normalized[CAPABILITY_KEYS.TEAM_REMOVE] = true;
+    normalized[CAPABILITY_KEYS.COMPLIANCE_WRITE] = true;
+    normalized[CAPABILITY_KEYS.EXPORT_COMPLIANCE] = true;
+    normalized[CAPABILITY_KEYS.FACILITY_SETTINGS_EDIT] = true;
+  }
+}
+
+function applyUniversalCapabilities(normalized: Record<string, boolean>) {
+  normalized[CAPABILITY_KEYS.COURSES_VIEW] = true;
+  normalized[CAPABILITY_KEYS.SEE_PAID_COURSES] = true;
+  normalized[CAPABILITY_KEYS.FORUM_VIEW] = true;
+  normalized[CAPABILITY_KEYS.FORUM_POST] = true;
+}
+
+function applyPlanCapabilities(
+  normalized: Record<string, boolean>,
+  plan: string | null,
+  mode: EntitlementsMode
+) {
+  const normalizedPlan = String(plan || "").trim().toLowerCase();
+  const isPro = normalizedPlan === "pro";
+  const isPaidPersonal =
+    isPro || normalizedPlan === "personal" || normalizedPlan === "premium";
+  const isCommercial = mode === "commercial" || normalizedPlan === "commercial";
+  const isFacility = mode === "facility" || normalizedPlan === "facility";
+
+  normalized[CAPABILITY_KEYS.GROWS_PERSONAL_VIEW] = true;
+  normalized[CAPABILITY_KEYS.LOGS_PERSONAL_VIEW] = true;
+  normalized[CAPABILITY_KEYS.PLANTS_PERSONAL_VIEW] = true;
+  normalized[CAPABILITY_KEYS.DIAGNOSE_BASIC] = true;
+  normalized[CAPABILITY_KEYS.TOOLS_VPD] = true;
+  normalized[CAPABILITY_KEYS.TOOL_NPK] = true;
+  normalized[CAPABILITY_KEYS.TOOL_HARVEST_ESTIMATOR] = true;
+
+  if (isPaidPersonal || isCommercial || isFacility) {
+    normalized[CAPABILITY_KEYS.GROWS_PERSONAL_WRITE] = true;
+    normalized[CAPABILITY_KEYS.LOGS_PERSONAL_WRITE] = true;
+    normalized[CAPABILITY_KEYS.PLANTS_PERSONAL_WRITE] = true;
+    normalized[CAPABILITY_KEYS.AI_ASSISTANT] = true;
+    normalized[CAPABILITY_KEYS.ALERTS_VIEW] = true;
+    normalized[CAPABILITY_KEYS.ALERTS_ACK] = true;
+    normalized[CAPABILITY_KEYS.DASHBOARD_ANALYTICS] = true;
+    normalized[CAPABILITY_KEYS.DASHBOARD_EXPORT] = true;
+    normalized[CAPABILITY_KEYS.DIAGNOSE_AI] = true;
+    normalized[CAPABILITY_KEYS.DIAGNOSE_ADVANCED] = true;
+    normalized[CAPABILITY_KEYS.DIAGNOSE_EXPORT] = true;
+    normalized[CAPABILITY_KEYS.TOOL_TIMELINE_PLANNER] = true;
+    normalized[CAPABILITY_KEYS.TOOL_PDF_EXPORT] = true;
+    normalized[CAPABILITY_KEYS.TOOL_PHENO_MATRIX] = true;
+    normalized[CAPABILITY_KEYS.FEEDING_SCHEDULE] = true;
+    normalized[CAPABILITY_KEYS.TASK_REMINDERS] = true;
+  }
+
+  if (isCommercial || isFacility) {
+    normalized[CAPABILITY_KEYS.COMMERCIAL_HOME] = true;
+    normalized[CAPABILITY_KEYS.COMMERCIAL_INVENTORY_VIEW] = true;
+    normalized[CAPABILITY_KEYS.COMMERCIAL_TASKS_VIEW] = true;
+    normalized[CAPABILITY_KEYS.COMMERCIAL_FEED_VIEW] = true;
+    normalized[CAPABILITY_KEYS.COMMERCIAL_ALERTS_VIEW] = true;
+  }
+}
+
 export function resolveEntitlementsMode(
   ctx: any,
   preferredMode: PreferredMode | null
@@ -169,6 +261,9 @@ function applyServerCtx(
     }
   }
   warnUnknownCapsOnce(unknownKeys);
+  applyUniversalCapabilities(normalized);
+  applyPlanCapabilities(normalized, plan, mode);
+  applyFacilityRoleCapabilities(normalized, facilityRole);
 
   return {
     ready: true,

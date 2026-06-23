@@ -159,7 +159,7 @@ export default function FacilityTasksRoute() {
       <View style={styles.container}>
         {error ? <InlineError error={error} /> : null}
         <View style={styles.card}>
-          <Text style={styles.cardTitle}>Create Task</Text>
+          <Text style={styles.cardTitle}>New Task</Text>
           {!canWrite ? (
             <Text style={styles.muted}>{taskAccess.hiddenCreateReason}</Text>
           ) : (

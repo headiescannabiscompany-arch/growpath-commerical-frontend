@@ -23,7 +23,7 @@ test("Facility workflow: auto-select facility, create room, create task", async 
   await page.getByPlaceholder("Room name").fill(roomName);
   await page.getByText("Create Room").click();
   await expect(page.getByText("Room created.")).toBeVisible({ timeout: 30000 });
-  await expect(page.getByText(roomName)).toBeVisible();
+  await expect(page.getByText(roomName).first()).toBeVisible();
 
   await page.getByRole("tab", { name: /Tasks/ }).click();
   await expect(page.getByRole("heading", { name: "Tasks" })).toBeVisible({

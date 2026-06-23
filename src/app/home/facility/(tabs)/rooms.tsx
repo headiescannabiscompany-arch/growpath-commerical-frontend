@@ -95,15 +95,18 @@ export default function FacilityRoomsTab() {
       if (!facilityId) return;
       if (opts?.refresh) setRefreshing(true);
       else setLoading(true);
-      setFeedback("");
-
       try {
         clearError();
-        const [roomRows, equipmentRows, cycleRows] = await Promise.all([
+        const [roomResult, equipmentResult, cycleResult] = await Promise.allSettled([
           fetchRooms(facilityId),
           listEquipment(facilityId),
           listBatchCycles(facilityId)
         ]);
+        if (roomResult.status === "rejected") throw roomResult.reason;
+        const roomRows = roomResult.value;
+        const equipmentRows =
+          equipmentResult.status === "fulfilled" ? equipmentResult.value : [];
+        const cycleRows = cycleResult.status === "fulfilled" ? cycleResult.value : [];
         setRooms(roomRows);
         setEquipment(equipmentRows);
         setCycles(cycleRows);
@@ -276,7 +279,7 @@ export default function FacilityRoomsTab() {
         </View>
 
         <View style={styles.card}>
-          <Text style={styles.cardTitle}>Create Room</Text>
+          <Text style={styles.cardTitle}>New Room</Text>
           {!canWrite ? (
             <Text style={styles.muted}>{roomAccess.hiddenManageReason}</Text>
           ) : (
