@@ -64,7 +64,7 @@ Current known blockers:
 - PARTIAL: `app.json` release metadata sign-off.
 - Owner: Mobile Engineering
 - Current values: `name` is `GrowPath`, `slug` is
-  `growpath-commercial`, `version` is `1.0.0`, iOS bundle identifier and Android
+  `growpath`, `version` is `1.0.0`, iOS bundle identifier and Android
   package are both `com.growpathai.app`. Android verified App Links are not
   configured because the final public domain and hosted verification files are
   not confirmed; the app currently uses its custom scheme only. Twitch embeds

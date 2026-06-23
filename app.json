@@ -1,12 +1,12 @@
 {
   "expo": {
     "name": "GrowPath",
-    "slug": "growpath-commercial",
+    "slug": "growpath",
     "version": "1.0.0",
     "orientation": "portrait",
     "icon": "./assets/icon.png",
     "userInterfaceStyle": "automatic",
-    "scheme": "growpathcommercial",
+    "scheme": "growpath",
     "splash": {
       "image": "./assets/icon-white.png",
       "resizeMode": "contain",

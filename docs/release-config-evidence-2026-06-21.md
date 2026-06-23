@@ -6,13 +6,13 @@ Repository: growpath-commerical-frontend
 ## Confirmed In Source
 
 - App display name: `GrowPath`
-- Slug: `growpath-commercial`
+- Slug: `growpath`
 - Version: `1.0.0`
 - iOS bundle identifier: `com.growpathai.app`
 - iOS build number: `1`
 - Android package: `com.growpathai.app`
 - Android version code: `1`
-- Custom URL scheme: `growpathcommercial`
+- Custom URL scheme: `growpath`
 - iOS tablet support: enabled
 - Android verified App Links: not configured
 - iOS Associated Domains: not configured
