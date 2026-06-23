@@ -144,7 +144,10 @@ product backlogs.
 - [x] Remove wildcard Android App Link configuration until the production public
       domain and hosted verification files are confirmed.
 - [ ] Complete `docs/app-store-deployment-todo.md` after P0 and required P1
-      workflows pass production-mode validation.
+      workflows pass production-mode validation. Current release-config evidence
+      is recorded in `docs/release-config-evidence-2026-06-21.md`; remaining items
+      need store/build credentials, production artifacts, screenshots, and
+      release-owner sign-off.
 - [ ] Finalize App Store / Google Play metadata, privacy URL, support URL,
       screenshots, release notes, production builds, and real-device smoke evidence.
 

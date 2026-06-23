@@ -57,7 +57,7 @@ Current known blockers:
 
 ## 3. Metadata And Configuration
 
-- NOT DONE: `app.json` release metadata sign-off.
+- PARTIAL: `app.json` release metadata sign-off.
 - Owner: Mobile Engineering
 - Current values: `name` is `GrowPath Commercial`, `slug` is
   `growpath-commercial`, `version` is `1.0.0`, iOS bundle identifier and Android
@@ -65,10 +65,13 @@ Current known blockers:
   configured because the final public domain and hosted verification files are
   not confirmed; the app currently uses its custom scheme only. Twitch embeds
   require `EXPO_PUBLIC_TWITCH_PARENT_HOST` for production builds.
-- Next action: Confirm final app name, identifiers, version/build numbers,
-  permissions, public deep-link domain, Twitch parent host, privacy strings, and
-  splash/icon assets.
-- Evidence target: `tmp/spec/release_config_2026-06-21.md`
+- Current evidence: source-config review captured in
+  `docs/release-config-evidence-2026-06-21.md`; base app icon is 1024x1024 and the
+  configured splash/icon assets exist.
+- Next action: Release owner must confirm final store-facing app name,
+  identifiers, public deep-link domain, Twitch parent host, and App Store/Play
+  Console records before production builds.
+- Evidence target: `docs/release-config-evidence-2026-06-21.md`
 
 - NOT DONE: EAS submit configuration.
 - Owner: Release Engineering
