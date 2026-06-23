@@ -30,7 +30,8 @@ export default function FacilityTabsLayout() {
       initialRouteName="dashboard"
       screenOptions={{
         headerShown: true,
-        tabBarHideOnKeyboard: true
+        tabBarHideOnKeyboard: true,
+        tabBarIcon: () => null
       }}
     >
       <Tabs.Screen name="dashboard" options={{ title: "Dashboard" }} />
@@ -46,6 +47,9 @@ export default function FacilityTabsLayout() {
       <Tabs.Screen name="audit-logs" options={{ title: "Audit" }} />
       <Tabs.Screen name="team" options={{ title: "Team" }} />
       <Tabs.Screen name="profile" options={{ title: "Profile" }} />
+      <Tabs.Screen name="ai-tools" options={{ href: null }} />
+      <Tabs.Screen name="CreateInventoryItemScreen" options={{ href: null }} />
+      <Tabs.Screen name="InventoryItemDetailScreen" options={{ href: null }} />
     </Tabs>
   );
 }

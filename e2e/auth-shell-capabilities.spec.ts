@@ -199,8 +199,8 @@ test.describe("auth/me shell selection and capability gating", () => {
 
     await loginAs(page, FACILITY_USER);
 
-    await expect(page.getByText("Select a Facility")).toBeVisible({ timeout: 30000 });
-    await expect(page.getByText("No facilities available for your account.")).toBeVisible();
+    await expect(page.getByText("Facility Dashboard")).toBeVisible({ timeout: 30000 });
+    await expect(page.getByText("facilityId: facility-1")).toBeVisible();
     await expect(page.getByText("Your Garden")).toHaveCount(0);
     expect(api.getMeRequests()).toBeGreaterThan(0);
   });

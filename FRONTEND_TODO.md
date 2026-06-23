@@ -86,7 +86,7 @@ product backlogs.
 - [x] Prove Commercial-only routes are unreachable from the Facility shell.
 - [x] Prove a disabled capability hides the UI action and the backend rejects the
       corresponding request.
-- [ ] Run Playwright workflow coverage for Personal, Commercial, and Facility
+- [x] Run Playwright workflow coverage for Personal, Commercial, and Facility
       users against the live backend.
 - [x] Add a backend Node Jest runner and make backend unit/route tests runnable
       outside the Expo Jest config.
@@ -100,7 +100,7 @@ product backlogs.
       schema tests become active coverage.
 - [x] Add partial release validation evidence for TypeScript, backend tests,
       frontend-targeted Jest suites, corruption scans, and export sanity.
-- [ ] Add live workflow validation evidence after Personal, Commercial, and
+- [x] Add live workflow validation evidence after Personal, Commercial, and
       Facility runs complete against a live backend.
 
 ## Known Code TODOs

@@ -20,7 +20,13 @@ export default function PersonalTabsLayout() {
   }
 
   return (
-    <Tabs screenOptions={{ headerShown: true, tabBarHideOnKeyboard: true }}>
+    <Tabs
+      screenOptions={{
+        headerShown: true,
+        tabBarHideOnKeyboard: true,
+        tabBarIcon: () => null
+      }}
+    >
       <Tabs.Screen name="index" options={{ title: "Home" }} />
       <Tabs.Screen name="grows" options={{ title: "Grows" }} />
       <Tabs.Screen name="tools" options={{ title: "Tools" }} />

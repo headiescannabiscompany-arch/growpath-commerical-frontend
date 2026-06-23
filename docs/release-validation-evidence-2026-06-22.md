@@ -1,7 +1,8 @@
 # Release Validation Evidence - 2026-06-22
 
-Status: partial. Local code checks pass, but release remains blocked by missing
-schema pack and live workflow validation.
+Status: partial. Local code checks and static-web live workflow validation pass,
+but release remains blocked by the missing schema pack and external store/build
+evidence.
 
 ## Passing Checks
 
@@ -44,6 +45,39 @@ Result: passed. 46 suites passed, 189 tests passed, 19 schema-pack tests skipped
 1 snapshot passed. The skipped tests are the full schema drift checks that only
 activate after the authoritative schema pack is installed.
 
+```text
+npm.cmd run guard
+```
+
+Result: passed.
+
+```text
+EXPO_PUBLIC_API_URL=http://127.0.0.1:5002 npx.cmd expo export --platform web --output-dir tmp\expo-web-export
+```
+
+Result: passed.
+
+```text
+PLAYWRIGHT_USE_SYSTEM_CHROME=1
+PLAYWRIGHT_DISABLE_VIDEO=1
+PLAYWRIGHT_SKIP_WEBSERVER=1
+PLAYWRIGHT_BASE_URL=http://127.0.0.1:8084
+EXPO_PUBLIC_API_URL=http://127.0.0.1:5002
+npx.cmd playwright test --reporter=list
+```
+
+Result: passed. 10 Playwright tests passed against the static web export served
+from `tmp\expo-web-export` on `127.0.0.1:8084` and the live backend on
+`127.0.0.1:5002`.
+
+Covered:
+
+- `/api/me` shell selection and capability gating.
+- Free/Pro grow-limit behavior.
+- Personal grows list/create/open workflow.
+- Personal, Commercial, and Facility seeded live shell routing.
+- Facility auto-select, room creation, and task creation workflow.
+
 ## Known Failing Gate
 
 ```text
@@ -76,8 +110,5 @@ npm run schema:preflight
 npm test -- tests/ai/ai.schema.drift.test.js
 ```
 
-3. Run live Personal, Commercial, and Facility workflow validation against a
-   live backend.
-
-4. Capture app-store metadata, screenshots, production builds, and real-device
+3. Capture app-store metadata, screenshots, production builds, and real-device
    smoke evidence.

@@ -6,12 +6,10 @@
 Store submission must wait until production-mode validation evidence exists.
 Current known blockers:
 
-- Playwright workflow coverage for Personal, Commercial, and Facility users has
-  not run successfully end to end. The bundled Chromium install is blocked, but
-  `PLAYWRIGHT_USE_SYSTEM_CHROME=1` can launch installed Chrome, and static Expo
-  web validation now passes for auth, `/api/me` shell selection, capability
-  gating, and Free/Pro grow-limit behavior. Full workflow validation still needs
-  a live backend run.
+- Playwright workflow coverage for Personal, Commercial, and Facility users
+  passed against the static Expo web export and live backend on 2026-06-23.
+  The bundled Chromium install is blocked, but `PLAYWRIGHT_USE_SYSTEM_CHROME=1`
+  can launch installed Chrome.
 - The full AI schema pack is missing; only
   `schemas/schemas/objects/placeholder.json` is present.
 - `eas.json` no longer stores placeholder submit credentials. Real Apple and
@@ -21,16 +19,15 @@ Current known blockers:
 
 ## 1. Release Gate
 
-- NOT DONE: Production-mode validation for required P0/P1 workflows.
+- DONE: Static-web validation for required P0/P1 workflows against the live
+  backend.
 - Owner: QA + Engineering
-- Next action: Run Personal, Commercial, and Facility workflows against a live
-  backend. Use `PLAYWRIGHT_USE_SYSTEM_CHROME=1` if bundled Playwright browsers
-  are unavailable. For static web validation, export with `npx expo export
---platform web --output-dir tmp\expo-web-export`, serve the export, set
-  `PLAYWRIGHT_SKIP_WEBSERVER=1`, and point `PLAYWRIGHT_BASE_URL` at that server.
-- Current evidence: static web Playwright passed `tests/playwright/auth-login.spec.js`
-  (3 tests), `e2e/auth-shell-capabilities.spec.ts` (3 tests), and
-  `tests/growLogs.spec.js` (2 tests) using installed Chrome.
+- Current evidence: static web Playwright passed 10 tests using installed
+  Chrome, static export at `127.0.0.1:8084`, and live backend at
+  `127.0.0.1:5002`: `e2e/auth-shell-capabilities.spec.ts`,
+  `tests/growLogs.spec.js`, `e2e/live-shells.spec.ts`,
+  `e2e/live-facility-workflows.spec.ts`, and
+  `e2e/smoke.personal.grows.spec.ts`.
 - Evidence target: `tmp/spec/production_workflow_validation_2026-06-21.md`
 
 - NOT DONE: Backend schema and AI release evidence.
