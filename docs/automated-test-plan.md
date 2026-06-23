@@ -33,7 +33,7 @@ test("Free user cannot add multiple grows", async ({ page }) => {
 ## 3. Example Detox Test (React Native Mobile)
 
 ```js
-// e2e/growLogs.e2e.js
+// tests/growLogs.spec.js
 describe("GrowLogsScreen", () => {
   beforeAll(async () => {
     await device.launchApp({ newInstance: true });
@@ -61,7 +61,6 @@ describe("GrowLogsScreen", () => {
 ## 5. How to Run
 
 - For Playwright: `npx playwright test`
-- For Detox: `detox test`
 
 ---
 

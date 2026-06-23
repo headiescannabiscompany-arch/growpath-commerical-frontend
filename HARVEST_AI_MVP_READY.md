@@ -112,7 +112,6 @@ Display 3 harvest dates in calendar list
 
 - `src/navigation/FacilityTabs.js` — Added AI tab
 - `backend/routes/ai.call.js` — Added calendar spam guard (updateMany soft-delete)
-- `backend/stubbedRoutes.js` — Mounted calendar router
 - `backend/models/CalendarEvent.js` — New model (already in repo)
 - `backend/routes/calendar.facility.js` — New endpoint (already tested)
 - `backend/routes/calendar.facility.test.js` — Contract tests (already passing)

@@ -11,16 +11,20 @@ Repository: growpath-commerical-frontend
 - Replaced static demo data in `VendorMetricsScreen` with API-backed metrics, soil mixes, equipment, and mix creation.
 - Replaced fake facility vendor dashboard analytics with values derived from real facility vendor records.
 - Fixed vendor analytics and metrics API paths so they call `/api/vendors/...`.
+- Removed dead frontend-repo backend shim files that contained demo/stub routes and old backup AI handlers.
+- Replaced Content Marketplace static sales, analytics, and upload success flows with API-backed runtime state.
+- Mounted and verified the backend `/api/marketplace` surface for browse, create, publish, analytics, download, and purchase counters.
+- Added backend webhook endpoint coverage for list, create, update, and delete.
+- Replaced the backend guild browse stub with DB-backed canonical `/api/guilds` routes and membership synchronization.
+- Mounted subscription, legacy subscribe-status/trial, IAP verification, and facility-billing routers used by the frontend.
+- Blocked direct fake paid subscription activation; paid access now requires checkout webhook or verified in-app purchase.
 
 ## Active Product Gaps Still To Finish
 
-- Content marketplace sales and analytics tabs still contain hardcoded example earnings, downloads, ratings, sales rows, and chart rows. Finish by normalizing `getSalesData()` into summary, monthly series, recent sales, and per-upload analytics; remove all static money/download/rating values.
-- Marketplace upload modal still behaves like a local success flow. Finish by collecting real form state, validating title/description/category/price/files, calling `uploadContent`, showing upload errors, and refreshing uploads after success.
-- Backend webhook endpoints are not present in this frontend repo. The frontend now calls `/api/webhooks` and `/api/webhooks/:id`; backend must provide list, create, update, delete, auth, facility scoping, event validation, signature secret handling, delivery retries, and audit logs.
-- Vendor analytics/metrics backend endpoints must support `/api/vendors/me/analytics`, `/api/vendors/me/orders`, `/api/vendors/me/metrics`, `/api/vendors/me/soil-mixes`, and `/api/vendors/me/equipment`, or the frontend route should be updated to the final authenticated-vendor contract.
-- Source-controlled backend shim files still include demo/stub routes: `backend/stubbedRoutes.js`, `backend/routes/personal.js`, `backend/routes/commercial.js`, and `backend/fanoutNotifications.js`. These should be deleted from production wiring or replaced with database-backed route modules in the backend repository.
-- `backend/routes/ai.call.backup.js` contains old TODO-backed AI handlers. Confirm it is excluded from runtime and tests, then remove it or archive it outside production source.
-- Old Detox file `e2e/growLogs.e2e.js` still contains login TODO comments. Replace with real test-user login setup or remove it if Playwright is the canonical E2E suite.
+- Marketplace upload still accepts URL-based assets only. If native file uploads are required before release, add picker/storage integration and backend media validation.
+- Webhook delivery execution is still a release-hardening gap: retry policy, delivery logs, secret rotation UX, and audit views should be completed before exposing webhooks broadly.
+- Vendor analytics/metrics endpoints are now present for the frontend contract, but need seeded/live vendor data validation before calling the vendor portal release-ready.
+- Store submission remains blocked on external credentials, production builds, screenshots, legal sign-off, and final app-name/identifier confirmation.
 
 ## Release And Store Gaps
 

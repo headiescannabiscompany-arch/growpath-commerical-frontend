@@ -6,16 +6,15 @@ The integration catalog currently includes:
 
 1. Pulse Grow
 2. TrolMaster
-3. AROYA
-4. Growlink
-5. SensorPush
-6. Aranet Cloud
-7. UbiBot
-8. METER Group / ZENTRA Cloud
-9. HOBOlink / LI-COR Cloud
-10. Monnit / iMonnit
-11. OpenSprinkler
-12. Agrowtek
+3. Growlink
+4. SensorPush
+5. Aranet Cloud
+6. UbiBot
+7. METER Group / ZENTRA Cloud
+8. HOBOlink / LI-COR Cloud
+9. Monnit / iMonnit
+10. OpenSprinkler
+11. Agrowtek
 
 Provider availability is reported by the backend. The UI must display that status and
 must not describe a provider as connected until its adapter test succeeds.

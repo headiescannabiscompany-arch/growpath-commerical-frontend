@@ -1,7 +1,7 @@
 # App Store / Deployment Prep TODO
 
 > Status: BLOCKED FOR SUBMISSION
-> Last reviewed: 2026-06-21
+> Last reviewed: 2026-06-23
 
 Store submission must wait until production-mode validation evidence exists.
 Current known blockers:
@@ -14,7 +14,7 @@ Current known blockers:
 - `eas.json` no longer stores placeholder submit credentials. Real Apple and
   Google submit credentials still need to be supplied outside source control.
 - Production iOS/Android builds and real-device smoke validation have not been
-  attached as evidence.
+  attached as evidence. Local handoff checklists now exist under `tmp/spec/`.
 
 ## 1. Release Gate
 
@@ -50,9 +50,13 @@ Current known blockers:
   files.
 - Evidence target: `tmp/spec/store_assets_2026-06-21/graphics/`
 
-- NOT DONE: Store descriptions, keywords, privacy URL, and support URL.
+- PARTIAL: Store descriptions, keywords, privacy URL, and support URL.
 - Owner: Product + Legal
-- Next action: Finalize listing copy and verify public URLs.
+- Current evidence: `tmp/spec/store_assets_2026-06-21/metadata.md`
+  summarizes source values, listing draft sources, screenshot targets, and
+  required release-owner/legal decisions.
+- Next action: Confirm final app name, legally approved cannabis language, age
+  rating, privacy URL, support URL, and final listing copy.
 - Evidence target: `tmp/spec/store_assets_2026-06-21/metadata.md`
 
 ## 3. Metadata And Configuration
@@ -73,11 +77,12 @@ Current known blockers:
   Console records before production builds.
 - Evidence target: `docs/release-config-evidence-2026-06-21.md`
 
-- NOT DONE: EAS submit configuration.
+- PARTIAL: EAS submit configuration.
 - Owner: Release Engineering
 - Current state: Source-controlled placeholder submit values were removed from
   `eas.json`. Local service account JSON and Apple API key files are ignored by
-  git. See `docs/eas-submit-runbook.md`.
+  git. See `docs/eas-submit-runbook.md` and
+  `tmp/spec/eas_submit_config_2026-06-21.md`.
 - Next action: Store real Apple/Google submit values in a trusted release
   machine or protected CI secrets and confirm credential access.
 - Evidence target: `tmp/spec/eas_submit_config_2026-06-21.md`
@@ -118,6 +123,7 @@ Current known blockers:
 
 - NOT DONE: Review monitoring and hotfix plan.
 - Owner: Release Manager + Support
-- Next action: Define review-response SLA, crash monitoring owner, support
-  escalation path, rollback/hotfix process, and launch announcement timing.
+- Current evidence: `tmp/spec/post_submission_plan_2026-06-21.md` defines the
+  review monitoring, crash/support monitoring, hotfix, and launch-comms plan.
+- Next action: Assign named release, support, QA, and crash-monitoring owners.
 - Evidence target: `tmp/spec/post_submission_plan_2026-06-21.md`

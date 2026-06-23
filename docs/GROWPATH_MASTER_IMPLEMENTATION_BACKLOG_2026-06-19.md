@@ -648,7 +648,7 @@ Source status: vendor information supplied by the user; exact API contracts stil
 
 ## 16. Remaining Provider Program
 
-For TrolMaster, AROYA, SensorPush, Aranet, UbiBot, ZENTRA, HOBOlink/LI-COR, OpenSprinkler, and Agrowtek:
+For TrolMaster, SensorPush, Aranet, UbiBot, ZENTRA, HOBOlink/LI-COR, OpenSprinkler, and Agrowtek:
 
 - Assign provider owner and outreach status.
 - Obtain written commercial permission and data-storage terms.
