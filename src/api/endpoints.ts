@@ -141,5 +141,11 @@ export const endpoints = {
       `/api/facility/${encodeURIComponent(facilityId)}/compliance/deviations/summary`,
     sopsRecommended: (facilityId: string) =>
       `/api/facility/${encodeURIComponent(facilityId)}/compliance/sops/recommended`
+  },
+
+  commercial: {
+    inventory: `${BASE}/commercial/inventory`,
+    inventoryItem: (id: string) =>
+      `${BASE}/commercial/inventory/${encodeURIComponent(id)}`
   }
 };
