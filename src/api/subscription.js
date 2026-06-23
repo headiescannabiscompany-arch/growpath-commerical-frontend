@@ -5,9 +5,15 @@ export function getSubscription() {
   return apiRequest(apiRoutes.SUBSCRIBE.ME);
 }
 
-export function createCheckoutSession() {
+export function createCheckoutSession(options = {}) {
+  const body = {
+    plan: options.plan || "pro",
+    interval: options.interval || "monthly"
+  };
+
   return apiRequest(apiRoutes.SUBSCRIBE.CREATE_CHECKOUT_SESSION, {
-    method: "POST"
+    method: "POST",
+    body
   });
 }
 
