@@ -77,7 +77,8 @@
 - [ ] Confirm Apple and Google submit credentials are available only through trusted release machines or protected CI secrets.
 - [ ] Confirm privacy policy and terms are hosted and accessible.
 - [ ] Confirm account deletion and data export support path.
-- [ ] Confirm no production secrets are committed.
+- [x] Confirm no production secrets are committed. Evidence:
+      `docs/release-secret-scan-evidence-2026-06-23.md`.
 - [ ] Confirm crash reporting and support monitoring owners.
 - [ ] Confirm geographic, legal, and age-rating decisions for cannabis references.
 
