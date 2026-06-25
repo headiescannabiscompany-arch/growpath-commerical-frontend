@@ -12,6 +12,27 @@ const absoluteOutputDir = path.resolve(ROOT, outputDir);
 const productionApiUrl =
   process.env.EXPO_PUBLIC_API_URL || "https://api.growpathai.com";
 
+let parsedProductionApiUrl;
+try {
+  parsedProductionApiUrl = new URL(productionApiUrl);
+} catch {
+  console.error(
+    `Invalid EXPO_PUBLIC_API_URL for production export: ${productionApiUrl}`
+  );
+  process.exit(1);
+}
+
+if (
+  parsedProductionApiUrl.protocol !== "https:" ||
+  parsedProductionApiUrl.hostname !== "api.growpathai.com"
+) {
+  console.error(
+    "Production web export requires EXPO_PUBLIC_API_URL=https://api.growpathai.com"
+  );
+  console.error(`Received: ${productionApiUrl}`);
+  process.exit(1);
+}
+
 const env = {
   ...process.env,
   NODE_ENV: "production",
