@@ -2,7 +2,6 @@ import React, { useMemo, useState } from "react";
 import {
   ActivityIndicator,
   Image,
-  ImageBackground,
   Pressable,
   ScrollView,
   StyleSheet,
@@ -55,24 +54,25 @@ export default function LoginScreen() {
       contentContainerStyle={styles.content}
       keyboardShouldPersistTaps="handled"
     >
-      <ImageBackground
-        source={require("../../assets/banner.png")}
-        style={styles.banner}
-        imageStyle={styles.bannerImage}
-        resizeMode="cover"
-      >
-        <View style={styles.bannerShade}>
-          <View style={styles.logoMark}>
-            <Image
-              source={require("../../assets/icon-white.png")}
-              style={styles.logo}
-              resizeMode="contain"
-            />
-          </View>
-          <Text style={styles.brand}>GrowPath</Text>
-          <Text style={styles.tagline}>Commercial growing intelligence</Text>
+      <View style={styles.bannerFrame}>
+        <Image
+          source={require("../../assets/banner.png")}
+          style={styles.bannerImage}
+          resizeMode="contain"
+        />
+      </View>
+
+      <View style={styles.brandBlock}>
+        <View style={styles.logoMark}>
+          <Image
+            source={require("../../assets/icon.png")}
+            style={styles.logo}
+            resizeMode="contain"
+          />
         </View>
-      </ImageBackground>
+        <Text style={styles.brand}>GrowPath</Text>
+        <Text style={styles.tagline}>Commercial growing intelligence</Text>
+      </View>
 
       <View style={styles.form}>
         <Text style={styles.title}>Sign in</Text>
@@ -128,20 +128,23 @@ const styles = StyleSheet.create({
     justifyContent: "center",
     padding: 16
   },
-  banner: {
-    minHeight: 260,
-    overflow: "hidden",
+  bannerFrame: {
+    width: "100%",
+    maxWidth: 720,
+    aspectRatio: 1.5,
+    alignSelf: "center",
     borderRadius: 8,
-    backgroundColor: "#111827"
+    overflow: "hidden",
+    backgroundColor: "#eef2f7"
   },
   bannerImage: {
-    opacity: 0.92
+    width: "100%",
+    height: "100%"
   },
-  bannerShade: {
-    flex: 1,
-    justifyContent: "flex-end",
-    padding: 24,
-    backgroundColor: "rgba(17, 24, 39, 0.32)"
+  brandBlock: {
+    alignItems: "center",
+    paddingTop: 18,
+    paddingBottom: 8
   },
   logoMark: {
     width: 72,
@@ -149,20 +152,22 @@ const styles = StyleSheet.create({
     borderRadius: 8,
     alignItems: "center",
     justifyContent: "center",
-    marginBottom: 16,
-    backgroundColor: "rgba(17, 24, 39, 0.68)"
+    marginBottom: 10,
+    backgroundColor: "#ffffff",
+    borderWidth: 1,
+    borderColor: "#d1d5db"
   },
   logo: {
     width: 58,
     height: 58
   },
   brand: {
-    color: "#ffffff",
+    color: "#111827",
     fontSize: 32,
     fontWeight: "800"
   },
   tagline: {
-    color: "#e5e7eb",
+    color: "#475569",
     fontSize: 15,
     fontWeight: "600",
     marginTop: 6
