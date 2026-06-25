@@ -233,7 +233,7 @@ export default function NpkToolScreen() {
     return (
       <ScrollView style={styles.container} contentContainerStyle={styles.content}>
         <BackButton />
-        <Text style={styles.title}>Nutrient Recipe Mixer</Text>
+        <Text style={styles.title}>NPK Label Ratio (Preview)</Text>
         <View style={styles.lockedCard}>
           <Text style={styles.productTitle}>Tool unavailable</Text>
           <Text style={styles.fieldHint}>This account does not have `TOOL_NPK`.</Text>
@@ -245,7 +245,7 @@ export default function NpkToolScreen() {
   return (
     <ScrollView style={styles.container} contentContainerStyle={styles.content}>
       <BackButton />
-      <Text style={styles.title}>Nutrient Recipe Mixer</Text>
+      <Text style={styles.title}>NPK Label Ratio (Preview)</Text>
       <Text style={styles.subtitle}>
         Build up to 20 product rows. Fertilizer label P and K are converted from P2O5 and
         K2O to elemental ppm.
