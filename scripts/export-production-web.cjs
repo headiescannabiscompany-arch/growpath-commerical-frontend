@@ -68,6 +68,33 @@ if (exportResult.status !== 0) {
   process.exit(exportResult.status || 1);
 }
 
+const fallbackRoutes = [
+  "login",
+  "register",
+  "courses",
+  "storefront",
+  "facilities",
+  "onboarding",
+  "onboarding/create-facility",
+  "home",
+  "home/personal",
+  "home/personal/courses",
+  "home/personal/profile",
+  "home/personal/community",
+  "home/personal/grows",
+  "home/personal/tools",
+  "home/facility",
+  "home/facility/select",
+  "home/commercial"
+];
+const indexHtml = path.join(absoluteOutputDir, "index.html");
+
+for (const route of fallbackRoutes) {
+  const routeDir = path.join(absoluteOutputDir, route);
+  fs.mkdirSync(routeDir, { recursive: true });
+  fs.copyFileSync(indexHtml, path.join(routeDir, "index.html"));
+}
+
 function walk(dir) {
   const files = [];
   for (const entry of fs.readdirSync(dir, { withFileTypes: true })) {
