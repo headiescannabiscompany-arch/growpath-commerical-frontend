@@ -17,6 +17,8 @@ export type SignupBody = {
   displayName?: string;
   email: string;
   password: string;
+  plan?: "free" | "pro" | "commercial" | "facility";
+  mode?: "personal" | "commercial" | "facility";
 };
 
 export type LoginBody = {
