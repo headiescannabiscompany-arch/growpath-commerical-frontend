@@ -6,6 +6,7 @@ import {
   ScrollView,
   StyleSheet,
   Text,
+  useWindowDimensions,
   View
 } from "react-native";
 import { useRouter } from "expo-router";
@@ -24,6 +25,7 @@ import { getVerifications } from "@/api/verification";
 import { useApiErrorHandler } from "@/hooks/useApiErrorHandler";
 
 type AnyRec = Record<string, any>;
+type Tone = "green" | "amber" | "blue" | "violet" | "red" | "slate" | "cyan" | "orange";
 
 function asArray(res: any): AnyRec[] {
   if (Array.isArray(res)) return res;
@@ -33,9 +35,51 @@ function asArray(res: any): AnyRec[] {
   return [];
 }
 
+function tileToneStyle(tone: Tone) {
+  switch (tone) {
+    case "green":
+      return styles.tile_green;
+    case "amber":
+      return styles.tile_amber;
+    case "blue":
+      return styles.tile_blue;
+    case "violet":
+      return styles.tile_violet;
+    case "red":
+      return styles.tile_red;
+    case "cyan":
+      return styles.tile_cyan;
+    case "orange":
+      return styles.tile_orange;
+    case "slate":
+    default:
+      return styles.tile_slate;
+  }
+}
+
+function dotToneStyle(tone: Tone) {
+  switch (tone) {
+    case "green":
+      return styles.dot_green;
+    case "amber":
+      return styles.dot_amber;
+    case "red":
+      return styles.dot_red;
+    case "blue":
+      return styles.dot_blue;
+    case "slate":
+    default:
+      return styles.dot_slate;
+  }
+}
+
 export default function FacilityDashboardTab() {
   const router = useRouter();
   const { selectedId: facilityId } = useFacility();
+  const { width } = useWindowDimensions();
+  const isTablet = width >= 760;
+  const isDesktop = width >= 1040;
+  const isTv = width >= 1600;
 
   const mapApiError = useApiErrorHandler();
   const mapApiErrorRef = useRef(mapApiError);
@@ -147,29 +191,124 @@ export default function FacilityDashboardTab() {
 
   const quick = useMemo(
     () => [
-      { label: "Tasks", value: counts.tasks, to: "/home/facility/tasks" },
-      { label: "Rooms", value: counts.rooms, to: "/home/facility/rooms" },
-      { label: "Batches", value: counts.batchCycles, to: "/home/facility/rooms" },
-      { label: "Plants", value: counts.plants, to: "/home/facility/plants" },
-      { label: "Logs", value: counts.logs, to: "/home/facility/logs" },
-      { label: "Inventory", value: counts.inventory, to: "/home/facility/inventory" },
-      { label: "Team", value: counts.team, to: "/home/facility/team" },
-      { label: "SOPs", value: counts.sops, to: "/home/facility/sop-runs" },
-      { label: "Audit", value: counts.auditLogs, to: "/home/facility/audit-logs" },
+      {
+        label: "Open tasks",
+        value: counts.tasks,
+        to: "/home/facility/tasks",
+        tone: "amber" as Tone,
+        hint: "Work queue"
+      },
+      {
+        label: "Plants",
+        value: counts.plants,
+        to: "/home/facility/plants",
+        tone: "green" as Tone,
+        hint: `${counts.grows} grows`
+      },
+      {
+        label: "Rooms",
+        value: counts.rooms,
+        to: "/home/facility/rooms",
+        tone: "blue" as Tone,
+        hint: `${counts.batchCycles} batches`
+      },
+      {
+        label: "Inventory",
+        value: counts.inventory,
+        to: "/home/facility/inventory",
+        tone: "violet" as Tone,
+        hint: "Tracked items"
+      },
       {
         label: "Verifications",
         value: counts.verifications,
-        to: "/home/facility/compliance"
+        to: "/home/facility/compliance",
+        tone: (counts.verifications ? "red" : "green") as Tone,
+        hint: counts.verifications ? "Needs review" : "Clear"
       },
-      { label: "Reports", value: counts.reports, to: "/home/facility/reports" }
+      {
+        label: "Audit events",
+        value: counts.auditLogs,
+        to: "/home/facility/audit-logs",
+        tone: "slate" as Tone,
+        hint: "Evidence trail"
+      },
+      {
+        label: "SOPs",
+        value: counts.sops,
+        to: "/home/facility/sop-runs",
+        tone: "cyan" as Tone,
+        hint: "Procedures"
+      },
+      {
+        label: "Team",
+        value: counts.team,
+        to: "/home/facility/team",
+        tone: "orange" as Tone,
+        hint: "Members"
+      }
     ],
     [counts]
   );
 
+  const statusRows = useMemo(
+    () => [
+      {
+        label: "Compliance posture",
+        value: counts.verifications
+          ? `${counts.verifications} pending`
+          : "No pending checks",
+        tone: (counts.verifications ? "red" : "green") as Tone,
+        to: "/home/facility/compliance"
+      },
+      {
+        label: "Audit readiness",
+        value: `${counts.auditLogs} events captured`,
+        tone: (counts.auditLogs ? "blue" : "amber") as Tone,
+        to: "/home/facility/audit-logs"
+      },
+      {
+        label: "Operational load",
+        value: `${counts.tasks} tasks / ${counts.logs} logs`,
+        tone: (counts.tasks ? "amber" : "slate") as Tone,
+        to: "/home/facility/tasks"
+      }
+    ],
+    [counts]
+  );
+
+  const actionRows = useMemo(
+    () => [
+      { label: "AI command", detail: "Ask facility AI", to: "/home/facility/ai/ask" },
+      {
+        label: "Export packet",
+        detail: "Reports and audit evidence",
+        to: "/home/facility/reports"
+      },
+      {
+        label: "SOP operations",
+        detail: "Run and compare procedures",
+        to: "/home/facility/sop-runs"
+      },
+      {
+        label: "Room board",
+        detail: "Rooms, batches, and access",
+        to: "/home/facility/rooms"
+      }
+    ],
+    []
+  );
+
+  const tileBasis = isTv ? "23.5%" : isDesktop ? "31.7%" : isTablet ? "48.5%" : "100%";
+
   return (
     <ScreenBoundary title="Dashboard">
       <ScrollView
-        contentContainerStyle={styles.container}
+        style={styles.page}
+        contentContainerStyle={[
+          styles.container,
+          isTv ? styles.containerTv : isDesktop ? styles.containerDesktop : null
+        ]}
         refreshControl={
           <RefreshControl
             refreshing={refreshing}
@@ -179,10 +318,29 @@ export default function FacilityDashboardTab() {
       >
         {error ? <InlineError error={error} /> : null}
 
-        <Text style={styles.h1}>Facility Dashboard</Text>
-        <Text style={styles.muted}>
-          facilityId: {facilityId ? String(facilityId) : "(none)"}
-        </Text>
+        <View style={[styles.hero, isTv ? styles.heroTv : null]}>
+          <View style={styles.heroCopy}>
+            <Text style={[styles.kicker, isTv ? styles.kickerTv : null]}>
+              Facility command
+            </Text>
+            <Text style={[styles.h1, isTv ? styles.h1Tv : null]}>Operations Live</Text>
+            <Text style={[styles.muted, isTv ? styles.mutedTv : null]}>
+              {facilityId ? String(facilityId) : "(none)"}
+            </Text>
+          </View>
+          <View style={styles.heroStats}>
+            <View style={styles.pulse}>
+              <Text style={styles.pulseValue}>
+                {counts.verifications ? "Review" : "Clear"}
+              </Text>
+              <Text style={styles.pulseLabel}>Compliance</Text>
+            </View>
+            <View style={styles.pulse}>
+              <Text style={styles.pulseValue}>{String(counts.tasks)}</Text>
+              <Text style={styles.pulseLabel}>Tasks</Text>
+            </View>
+          </View>
+        </View>
 
         {loading ? (
           <View style={styles.loading}>
@@ -191,99 +349,77 @@ export default function FacilityDashboardTab() {
           </View>
         ) : null}
 
-        <View style={styles.card}>
-          <Text style={styles.cardTitle}>At a glance</Text>
-
-          <View style={styles.grid}>
-            {quick.map((q) => (
+        <View style={[styles.contentGrid, isDesktop ? styles.contentGridWide : null]}>
+          <View style={styles.mainColumn}>
+            <View style={styles.sectionHeader}>
+              <Text style={styles.sectionTitle}>At a glance</Text>
               <Pressable
-                key={q.label}
-                onPress={() => router.push(q.to as any)}
-                style={({ pressed }) => [styles.tile, pressed && styles.pressed]}
+                onPress={() => load({ refresh: true })}
+                style={styles.refreshButton}
               >
-                <Text style={styles.tileValue}>{String(q.value)}</Text>
-                <Text style={styles.tileLabel}>{q.label}</Text>
+                <Text style={styles.refreshText}>Refresh</Text>
               </Pressable>
-            ))}
+            </View>
+            <View style={styles.grid}>
+              {quick.map((q) => (
+                <Pressable
+                  key={q.label}
+                  onPress={() => router.push(q.to as any)}
+                  style={({ pressed }) => [
+                    styles.tile,
+                    { width: tileBasis },
+                    tileToneStyle(q.tone),
+                    pressed && styles.pressed
+                  ]}
+                >
+                  <View>
+                    <Text style={[styles.tileValue, isTv ? styles.tileValueTv : null]}>
+                      {String(q.value)}
+                    </Text>
+                    <Text style={styles.tileLabel}>{q.label}</Text>
+                  </View>
+                  <Text style={styles.tileHint}>{q.hint}</Text>
+                </Pressable>
+              ))}
+            </View>
           </View>
-        </View>
 
-        <View style={styles.card}>
-          <Text style={styles.cardTitle}>Actions</Text>
-          <Pressable
-            onPress={() => router.push("/home/facility/ai/ask" as any)}
-            style={styles.row}
-          >
-            <Text style={styles.rowTitle}>Open AI tools</Text>
-            <Text style={styles.link}>Open</Text>
-          </Pressable>
-          <Pressable
-            onPress={() => router.push("/home/facility/reports" as any)}
-            style={styles.row}
-          >
-            <Text style={styles.rowTitle}>Open facility reports</Text>
-            <Text style={styles.link}>Open</Text>
-          </Pressable>
-        </View>
+          <View style={[styles.sideColumn, isDesktop ? styles.sideColumnWide : null]}>
+            <View style={styles.panel}>
+              <Text style={styles.cardTitle}>Priority status</Text>
+              {statusRows.map((row) => (
+                <Pressable
+                  key={row.label}
+                  onPress={() => router.push(row.to as any)}
+                  style={({ pressed }) => [styles.statusRow, pressed && styles.pressed]}
+                >
+                  <View style={[styles.statusDot, dotToneStyle(row.tone)]} />
+                  <View style={styles.statusText}>
+                    <Text style={styles.rowTitle}>{row.label}</Text>
+                    <Text style={styles.rowMeta}>{row.value}</Text>
+                  </View>
+                  <Text style={styles.link}>Open</Text>
+                </Pressable>
+              ))}
+            </View>
 
-        <View style={styles.card}>
-          <Text style={styles.cardTitle}>Operational Modules</Text>
-          <Pressable
-            onPress={() => router.push("/home/facility/rooms" as any)}
-            style={styles.row}
-          >
-            <Text style={styles.rowTitle}>Rooms</Text>
-            <Text style={styles.link}>Open</Text>
-          </Pressable>
-          <Pressable
-            onPress={() => router.push("/home/facility/compliance" as any)}
-            style={styles.row}
-          >
-            <Text style={styles.rowTitle}>Compliance</Text>
-            <Text style={styles.link}>Open</Text>
-          </Pressable>
-          <Pressable
-            onPress={() => router.push("/home/facility/team" as any)}
-            style={styles.row}
-          >
-            <Text style={styles.rowTitle}>Team Roles</Text>
-            <Text style={styles.link}>Open</Text>
-          </Pressable>
-          <Pressable
-            onPress={() => router.push("/home/facility/reports" as any)}
-            style={styles.row}
-          >
-            <Text style={styles.rowTitle}>Reports</Text>
-            <Text style={styles.link}>Open</Text>
-          </Pressable>
-          <Pressable
-            onPress={() => router.push("/home/facility/audit-logs" as any)}
-            style={styles.row}
-          >
-            <Text style={styles.rowTitle}>Audit Logs</Text>
-            <Text style={styles.link}>Open</Text>
-          </Pressable>
-          <Pressable
-            onPress={() => router.push("/home/facility/sop-runs" as any)}
-            style={styles.row}
-          >
-            <Text style={styles.rowTitle}>SOP Runs</Text>
-            <Text style={styles.link}>Open</Text>
-          </Pressable>
-          <Pressable
-            onPress={() => router.push("/home/facility/compliance" as any)}
-            style={styles.row}
-          >
-            <Text style={styles.rowTitle}>Task Verification</Text>
-            <Text style={styles.link}>Open</Text>
-          </Pressable>
-          <Pressable
-            onPress={() => router.push("/home/facility/ai/template" as any)}
-            style={styles.row}
-          >
-            <Text style={styles.rowTitle}>Facility AI Tools</Text>
-            <Text style={styles.link}>Open</Text>
-          </Pressable>
+            <View style={styles.panel}>
+              <Text style={styles.cardTitle}>Command actions</Text>
+              {actionRows.map((row) => (
+                <Pressable
+                  key={row.label}
+                  onPress={() => router.push(row.to as any)}
+                  style={({ pressed }) => [styles.actionRow, pressed && styles.pressed]}
+                >
+                  <View>
+                    <Text style={styles.rowTitle}>{row.label}</Text>
+                    <Text style={styles.rowMeta}>{row.detail}</Text>
+                  </View>
+                  <Text style={styles.link}>Open</Text>
+                </Pressable>
+              ))}
+            </View>
+          </View>
         </View>
       </ScrollView>
     </ScreenBoundary>
@@ -291,43 +427,131 @@ export default function FacilityDashboardTab() {
 }
 
 const styles = StyleSheet.create({
+  page: { backgroundColor: "#f4f6f3" },
   container: { padding: 16, paddingBottom: 28 },
-  h1: { fontSize: 22, fontWeight: "900", marginBottom: 4 },
-  muted: { opacity: 0.7, marginBottom: 12 },
-
-  loading: { paddingVertical: 18, alignItems: "center" },
-
-  card: {
-    borderWidth: 1,
-    borderColor: "rgba(0,0,0,0.12)",
-    borderRadius: 14,
-    padding: 14,
-    backgroundColor: "white",
-    marginTop: 12
+  containerDesktop: { alignSelf: "center", maxWidth: 1280, width: "100%" },
+  containerTv: { alignSelf: "center", maxWidth: 1840, padding: 28, width: "100%" },
+  hero: {
+    alignItems: "stretch",
+    backgroundColor: "#0b1220",
+    borderRadius: 8,
+    flexDirection: "row",
+    gap: 16,
+    justifyContent: "space-between",
+    marginBottom: 14,
+    minHeight: 138,
+    padding: 18
   },
-  cardTitle: { fontSize: 16, fontWeight: "900", marginBottom: 10 },
-
-  grid: { flexDirection: "row", flexWrap: "wrap" },
-  tile: {
-    width: "48%",
-    marginRight: "4%",
-    marginBottom: 10,
+  heroTv: { minHeight: 180, padding: 28 },
+  heroCopy: { flex: 1, justifyContent: "center" },
+  kicker: {
+    color: "#93c5fd",
+    fontSize: 12,
+    fontWeight: "900",
+    marginBottom: 6,
+    textTransform: "uppercase"
+  },
+  kickerTv: { fontSize: 16 },
+  h1: { color: "white", fontSize: 30, fontWeight: "900", marginBottom: 6 },
+  h1Tv: { fontSize: 54 },
+  muted: { color: "#cbd5e1", fontWeight: "700", marginBottom: 0 },
+  mutedTv: { fontSize: 20 },
+  heroStats: {
+    flexDirection: "row",
+    flexWrap: "wrap",
+    gap: 10,
+    justifyContent: "flex-end"
+  },
+  pulse: {
+    backgroundColor: "rgba(255,255,255,0.08)",
+    borderColor: "rgba(255,255,255,0.16)",
+    borderRadius: 8,
     borderWidth: 1,
-    borderColor: "rgba(0,0,0,0.10)",
-    borderRadius: 14,
+    minWidth: 118,
     padding: 12
   },
-  tileValue: { fontSize: 22, fontWeight: "900", marginBottom: 2 },
-  tileLabel: { opacity: 0.75, fontWeight: "700" },
+  pulseValue: { color: "white", fontSize: 20, fontWeight: "900" },
+  pulseLabel: { color: "#a7f3d0", fontSize: 12, fontWeight: "800", marginTop: 3 },
+
+  loading: { paddingVertical: 18, alignItems: "center" },
+  contentGrid: { gap: 14 },
+  contentGridWide: { alignItems: "flex-start", flexDirection: "row" },
+  mainColumn: { flex: 1, minWidth: 0 },
+  sideColumn: { gap: 14, width: "100%" },
+  sideColumnWide: { width: 360 },
+  sectionHeader: {
+    alignItems: "center",
+    flexDirection: "row",
+    justifyContent: "space-between",
+    marginBottom: 10
+  },
+  sectionTitle: { color: "#111827", fontSize: 18, fontWeight: "900" },
+  refreshButton: {
+    backgroundColor: "#111827",
+    borderRadius: 8,
+    paddingHorizontal: 12,
+    paddingVertical: 8
+  },
+  refreshText: { color: "white", fontSize: 12, fontWeight: "900" },
+  panel: {
+    backgroundColor: "white",
+    borderColor: "#d7ddd2",
+    borderRadius: 8,
+    borderWidth: 1,
+    padding: 14
+  },
+  cardTitle: { color: "#111827", fontSize: 15, fontWeight: "900", marginBottom: 10 },
+
+  grid: { flexDirection: "row", flexWrap: "wrap", gap: 10 },
+  tile: {
+    aspectRatio: 1.9,
+    backgroundColor: "white",
+    borderWidth: 1,
+    borderRadius: 8,
+    justifyContent: "space-between",
+    minHeight: 118,
+    padding: 14
+  },
+  tile_green: { borderColor: "#9bd2a8" },
+  tile_amber: { borderColor: "#e0be6b" },
+  tile_blue: { borderColor: "#9bb8e8" },
+  tile_violet: { borderColor: "#b9a6e8" },
+  tile_red: { borderColor: "#e5a1a1" },
+  tile_slate: { borderColor: "#aeb7c3" },
+  tile_cyan: { borderColor: "#8ecbd3" },
+  tile_orange: { borderColor: "#e3ad80" },
+  tileValue: { color: "#111827", fontSize: 30, fontWeight: "900", marginBottom: 2 },
+  tileValueTv: { fontSize: 48 },
+  tileLabel: { color: "#1f2937", fontWeight: "900" },
+  tileHint: { color: "#5b6472", fontSize: 12, fontWeight: "800" },
   pressed: { opacity: 0.85 },
 
-  row: {
+  statusRow: {
     flexDirection: "row",
     alignItems: "center",
-    paddingVertical: 12,
+    gap: 10,
+    minHeight: 56,
+    paddingVertical: 10,
     borderTopWidth: 1,
     borderTopColor: "rgba(0,0,0,0.06)"
   },
+  actionRow: {
+    alignItems: "center",
+    borderTopColor: "rgba(0,0,0,0.06)",
+    borderTopWidth: 1,
+    flexDirection: "row",
+    justifyContent: "space-between",
+    minHeight: 58,
+    paddingVertical: 10
+  },
+  statusDot: { borderRadius: 5, height: 10, width: 10 },
+  dot_green: { backgroundColor: "#22c55e" },
+  dot_amber: { backgroundColor: "#f59e0b" },
+  dot_red: { backgroundColor: "#dc2626" },
+  dot_blue: { backgroundColor: "#2563eb" },
+  dot_slate: { backgroundColor: "#64748b" },
+  statusText: { flex: 1 },
   rowTitle: { flex: 1, fontWeight: "800" },
-  link: { color: "#2563eb", fontWeight: "800" }
+  rowMeta: { color: "#64748b", fontSize: 12, fontWeight: "700", marginTop: 2 },
+  link: { color: "#2563eb", fontWeight: "900" }
 });
