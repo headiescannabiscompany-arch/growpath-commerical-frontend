@@ -33,6 +33,7 @@ export const ROUTES = {
   },
   USER: {
     PROFILE: (id) => `${PREFIX}/user/profile/${id}`,
+    UPDATE_PROFILE: `${PREFIX}/user/profile`,
     AVATAR: `${PREFIX}/user/avatar`,
     BANNER: `${PREFIX}/user/banner`,
     BIO: `${PREFIX}/user/bio`,

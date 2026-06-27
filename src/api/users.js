@@ -12,6 +12,13 @@ export function getProfile(id) {
   return apiRequest(routes.USER.PROFILE(id), { method: "GET" });
 }
 
+export function updateProfile(updates) {
+  return apiRequest(routes.USER.UPDATE_PROFILE, {
+    method: "PUT",
+    body: updates
+  });
+}
+
 export function updateAvatar(formData, token) {
   return apiRequest(routes.USER.AVATAR, {
     method: "POST",

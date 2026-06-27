@@ -1,8 +1,9 @@
-import React from "react";
-import { View, Text, StyleSheet, Pressable, Alert } from "react-native";
+import React, { useEffect, useState } from "react";
+import { View, Text, StyleSheet, Pressable, Alert, TextInput } from "react-native";
 import { useRouter } from "expo-router";
 import { useAuth } from "@/auth/AuthContext";
 import { useEntitlements } from "@/entitlements";
+import { updateProfile } from "@/api/users";
 
 const styles = StyleSheet.create({
   container: { flex: 1, padding: 20, backgroundColor: "#fff" },
@@ -19,6 +20,18 @@ const styles = StyleSheet.create({
   },
   rowLabel: { fontSize: 12, color: "#64748B" },
   rowValue: { marginTop: 4, fontSize: 15, fontWeight: "700" },
+  input: {
+    marginTop: 8,
+    borderWidth: 1,
+    borderColor: "#CBD5E1",
+    borderRadius: 8,
+    paddingHorizontal: 12,
+    paddingVertical: 10,
+    fontSize: 15,
+    backgroundColor: "#FFFFFF"
+  },
+  feedback: { marginTop: 8, fontSize: 12, color: "#047857", fontWeight: "700" },
+  error: { marginTop: 8, fontSize: 12, color: "#DC2626", fontWeight: "700" },
 
   button: {
     marginTop: 14,
@@ -53,8 +66,39 @@ export default function ProfileScreen() {
   const ent = useEntitlements();
 
   const email = auth.user?.email || "unknown";
+  const [emailDraft, setEmailDraft] = useState(email === "unknown" ? "" : email);
+  const [savingEmail, setSavingEmail] = useState(false);
+  const [emailFeedback, setEmailFeedback] = useState("");
+  const [emailError, setEmailError] = useState("");
   const mode = ent.mode || "personal";
   const plan = ent.plan || "free";
+
+  useEffect(() => {
+    setEmailDraft(email === "unknown" ? "" : email);
+  }, [email]);
+
+  const handleSaveEmail = async () => {
+    const nextEmail = emailDraft.trim().toLowerCase();
+    if (!nextEmail || nextEmail === email) return;
+    setSavingEmail(true);
+    setEmailFeedback("");
+    setEmailError("");
+    try {
+      await updateProfile({ email: nextEmail });
+      await auth.retryMe();
+      setEmailFeedback("Email updated.");
+    } catch (e: any) {
+      const message =
+        e?.data?.error?.message ||
+        e?.data?.message ||
+        e?.message ||
+        "Failed to update email";
+      setEmailError(message);
+    } finally {
+      setSavingEmail(false);
+    }
+  };
+
   const handleLogout = () => {
     Alert.alert("Log out?", "You'll be returned to the login screen.", [
       { text: "Cancel", style: "cancel" },
@@ -85,7 +129,36 @@ export default function ProfileScreen() {
 
       <View style={styles.card}>
         <Text style={styles.rowLabel}>Email</Text>
-        <Text style={styles.rowValue}>{email}</Text>
+        <TextInput
+          style={styles.input}
+          autoCapitalize="none"
+          autoCorrect={false}
+          keyboardType="email-address"
+          placeholder="email@example.com"
+          value={emailDraft}
+          onChangeText={(value) => {
+            setEmailDraft(value);
+            setEmailFeedback("");
+            setEmailError("");
+          }}
+        />
+        {emailFeedback ? <Text style={styles.feedback}>{emailFeedback}</Text> : null}
+        {emailError ? <Text style={styles.error}>{emailError}</Text> : null}
+        <Pressable
+          style={[
+            styles.button,
+            styles.buttonPrimary,
+            (savingEmail || emailDraft.trim().toLowerCase() === email) && {
+              opacity: 0.55
+            }
+          ]}
+          disabled={savingEmail || emailDraft.trim().toLowerCase() === email}
+          onPress={handleSaveEmail}
+        >
+          <Text style={styles.buttonPrimaryText}>
+            {savingEmail ? "Saving..." : "Update Email"}
+          </Text>
+        </Pressable>
       </View>
 
       <View style={styles.card}>
