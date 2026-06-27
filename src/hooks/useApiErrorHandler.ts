@@ -12,12 +12,13 @@ export type UiErrorState = {
 type Deps = {
   logout?: (reason?: string) => void;
 };
+const EMPTY_DEPS: Deps = {};
 
 type ApiErrorMapper = ((err: any) => UiErrorState | null) & {
   toInlineError: (err: any) => UiErrorState | null;
 };
 
-export function useApiErrorHandler(deps: Deps = {}) {
+export function useApiErrorHandler(deps: Deps = EMPTY_DEPS) {
   const router = useRouter();
 
   const mapper = useCallback(
