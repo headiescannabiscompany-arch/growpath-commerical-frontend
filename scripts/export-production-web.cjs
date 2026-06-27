@@ -107,10 +107,10 @@ const fallbackRoutes = [
   "home/personal/diagnose",
   "home/facility",
   "home/facility/select",
-  "home/facility/ai/ask",
-  "home/facility/ai/diagnosis-photo",
-  "home/facility/ai/template",
-  "home/facility/ai/validation",
+  "home/facility/ai-ask",
+  "home/facility/ai-diagnosis-photo",
+  "home/facility/ai-template",
+  "home/facility/ai-validation",
   "home/commercial"
 ];
 const indexHtml = path.join(absoluteOutputDir, "index.html");
