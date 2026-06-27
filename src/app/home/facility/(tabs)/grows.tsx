@@ -147,7 +147,6 @@ export default function FacilityGrowsTab() {
               <Pressable
                 onPress={() => {
                   if (!id) return;
-                  // If you add a grow detail route later, this will just start working.
                   router.push({ pathname: "/home/facility/grows/[id]", params: { id } });
                 }}
                 style={({ pressed }) => [styles.row, pressed && styles.pressed]}
