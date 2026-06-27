@@ -11,8 +11,9 @@ export function useCreateFacility() {
       facilityStore.selectFacility?.(facility);
       qc.setQueryData(["facilities"], (existing: any) => {
         const rows = Array.isArray(existing) ? existing : [];
-        if (rows.some((row: any) => row?.id === facility.id)) return rows;
-        return [facility, ...rows];
+        const current = rows.find((row: any) => row?.id === facility.id) || facility;
+        if (current) return [current];
+        return [facility];
       });
       qc.invalidateQueries({ queryKey: ["facilities"] });
     }

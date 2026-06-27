@@ -38,6 +38,20 @@ const styles = StyleSheet.create({
     textAlign: "center",
     marginTop: 16
   },
+  primaryButton: {
+    alignItems: "center",
+    alignSelf: "center",
+    backgroundColor: "#111827",
+    borderRadius: 8,
+    marginTop: 18,
+    paddingHorizontal: 18,
+    paddingVertical: 12
+  },
+  primaryButtonText: {
+    color: "#fff",
+    fontSize: 14,
+    fontWeight: "800"
+  },
   facilitiesList: {
     marginBottom: 32
   },
@@ -125,11 +139,14 @@ export default function FacilitiesScreen() {
   }
 
   const { facilities, selectedId, error } = facility;
+  const accountFacility = facilities[0] || null;
 
   return (
     <ScrollView style={styles.container} contentContainerStyle={{ flexGrow: 1 }}>
-      <Text style={styles.title}>Select a Facility</Text>
-      <Text style={styles.subtitle}>Choose which facility you want to manage</Text>
+      <Text style={styles.title}>Your Facility</Text>
+      <Text style={styles.subtitle}>
+        Manage the single facility attached to this account
+      </Text>
 
       {error && (
         <View style={styles.errorContainer}>
@@ -143,35 +160,47 @@ export default function FacilitiesScreen() {
             No facilities available for your account.
           </Text>
           <Text style={styles.emptyMessage} numberOfLines={3}>
-            Contact your administrator if you think this is incorrect.
+            Create your first facility to start rooms, grows, compliance, and team setup.
           </Text>
+          <TouchableOpacity
+            style={styles.primaryButton}
+            onPress={() => router.push("/onboarding/create-facility")}
+          >
+            <Text style={styles.primaryButtonText}>Create Facility</Text>
+          </TouchableOpacity>
         </View>
       ) : (
         <View style={styles.facilitiesList}>
-          {facilities.map((fac) => (
+          {accountFacility && (
             <TouchableOpacity
-              key={fac.id}
+              key={accountFacility.id}
               style={[
                 styles.facilityCard,
-                selectedId === fac.id && styles.facilityCardSelected
+                selectedId === accountFacility.id && styles.facilityCardSelected
               ]}
-              onPress={() => handleSelectFacility(fac.id)}
+              onPress={() => handleSelectFacility(accountFacility.id)}
               disabled={actionLoading}
               activeOpacity={0.7}
             >
-              <Text style={styles.facilityName}>{fac.name}</Text>
-              <Text style={styles.facilityDetail}>Tier: {fac.tier || "N/A"}</Text>
-              {fac.licenseNumber && (
-                <Text style={styles.facilityDetail}>License: {fac.licenseNumber}</Text>
+              <Text style={styles.facilityName}>{accountFacility.name}</Text>
+              <Text style={styles.facilityDetail}>
+                Tier: {accountFacility.tier || "N/A"}
+              </Text>
+              {accountFacility.licenseNumber && (
+                <Text style={styles.facilityDetail}>
+                  License: {accountFacility.licenseNumber}
+                </Text>
               )}
-              {fac.state && <Text style={styles.facilityDetail}>State: {fac.state}</Text>}
-              {selectedId === fac.id && (
+              {accountFacility.state && (
+                <Text style={styles.facilityDetail}>State: {accountFacility.state}</Text>
+              )}
+              {selectedId === accountFacility.id && (
                 <View style={styles.selectedBadge}>
-                  <Text style={styles.selectedBadgeText}>✓ Selected</Text>
+                  <Text style={styles.selectedBadgeText}>Active</Text>
                 </View>
               )}
             </TouchableOpacity>
-          ))}
+          )}
         </View>
       )}
 
