@@ -2,7 +2,7 @@ import React, { useState } from "react";
 import { View, Text, TextInput, Button } from "react-native";
 import { useRooms } from "../../rooms/hooks";
 import { useCreateGrow } from "../hooks";
-import { useNavigation } from "@react-navigation/native";
+import { useRouter } from "expo-router";
 
 export default function StartGrowWizard() {
   const [name, setName] = useState("");
@@ -10,7 +10,7 @@ export default function StartGrowWizard() {
   const [selectedRooms, setSelectedRooms] = useState<string[]>([]);
   const { data: rooms } = useRooms();
   const createGrow = useCreateGrow();
-  const navigation = useNavigation();
+  const router = useRouter();
 
   const toggleRoom = (id: string) => {
     setSelectedRooms((prev) =>
@@ -20,7 +20,10 @@ export default function StartGrowWizard() {
 
   const handleStart = async () => {
     const grow = await createGrow.mutateAsync({ name, startDate, rooms: selectedRooms });
-    (navigation as any).navigate("AssignPlantsToGrow", { growId: grow.id });
+    router.replace({
+      pathname: "/onboarding/assign-plants",
+      params: { growId: grow.id }
+    });
   };
 
   return (

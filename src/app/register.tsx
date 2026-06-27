@@ -39,7 +39,7 @@ const ACCOUNT_CHOICES: AccountChoice[] = [
     title: "Pro grower",
     label: "Pro",
     description: "Use advanced personal tools, AI workflows, and export paths.",
-    afterSignup: "/offers"
+    afterSignup: "/onboarding/walkthroughs"
   },
   {
     key: "commercial",
@@ -47,7 +47,7 @@ const ACCOUNT_CHOICES: AccountChoice[] = [
     title: "Commercial brand",
     label: "Commercial",
     description: "Manage storefront, marketplace, creator, and business surfaces.",
-    afterSignup: "/facilities"
+    afterSignup: "/onboarding/walkthroughs"
   },
   {
     key: "facility",
@@ -55,7 +55,7 @@ const ACCOUNT_CHOICES: AccountChoice[] = [
     title: "Facility operator",
     label: "Facility",
     description: "Run operations, compliance, team, audit, rooms, SOPs, and AI.",
-    afterSignup: "/onboarding/create-facility"
+    afterSignup: "/onboarding/walkthroughs"
   }
 ];
 
@@ -99,7 +99,7 @@ export default function RegisterScreen() {
       await auth.signup(payload);
       router.replace({
         pathname: "/onboarding/guilds",
-        params: { next: choice.afterSignup, mode: choice.mode }
+        params: { next: choice.afterSignup, mode: choice.mode, plan: choice.key }
       } as any);
     } catch (e: any) {
       if (e instanceof ApiError) {

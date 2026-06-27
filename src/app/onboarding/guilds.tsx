@@ -38,9 +38,11 @@ export default function GuildOnboardingScreen() {
   const params = useLocalSearchParams<{
     next?: string | string[];
     mode?: string | string[];
+    plan?: string | string[];
   }>();
   const next = singleParam(params.next) || "/";
   const mode = singleParam(params.mode);
+  const plan = singleParam(params.plan);
   const { width } = useWindowDimensions();
   const isWide = width >= 900;
 
@@ -102,7 +104,14 @@ export default function GuildOnboardingScreen() {
       for (const id of selectedGuildIds) {
         await joinGuild(id);
       }
-      router.replace(next as any);
+      if (next === "/onboarding/walkthroughs") {
+        router.replace({
+          pathname: "/onboarding/walkthroughs",
+          params: { mode, plan }
+        } as any);
+      } else {
+        router.replace(next as any);
+      }
     } catch (e: any) {
       setError(e?.message || "Unable to save guild selections.");
     } finally {
