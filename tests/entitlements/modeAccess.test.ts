@@ -1,8 +1,23 @@
 import { describe, expect, it } from "@jest/globals";
 import { CAPABILITY_KEYS } from "../../src/entitlements/capabilityKeys";
-import { resolveEntitlementsMode } from "../../src/entitlements/EntitlementsProvider";
+import {
+  getEffectivePlan,
+  resolveEntitlementsMode
+} from "../../src/entitlements/EntitlementsProvider";
 
 describe("entitlement mode access", () => {
+  it("treats inactive paid signup intent as free effective access", () => {
+    expect(getEffectivePlan("pro", "inactive")).toBe("free");
+    expect(getEffectivePlan("commercial", "inactive")).toBe("free");
+    expect(getEffectivePlan("facility", "inactive")).toBe("free");
+  });
+
+  it("keeps paid effective access for active and trialing subscriptions", () => {
+    expect(getEffectivePlan("pro", "active")).toBe("pro");
+    expect(getEffectivePlan("commercial", "trialing")).toBe("commercial");
+    expect(getEffectivePlan("facility", "trial")).toBe("facility");
+  });
+
   it("does not grant Commercial mode from a plan name alone", () => {
     expect(
       resolveEntitlementsMode(

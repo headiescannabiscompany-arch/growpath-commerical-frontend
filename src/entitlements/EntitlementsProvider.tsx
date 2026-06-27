@@ -18,6 +18,7 @@ import {
 } from "../auth/modeStore";
 
 type EntitlementsMode = "personal" | "commercial" | "facility";
+const ACTIVE_SUBSCRIPTION_STATUSES = new Set(["active", "trial", "trialing"]);
 
 export type EntitlementsState = {
   ready: boolean;
@@ -106,6 +107,21 @@ function hasCommercialAccess(ctx: any) {
   return ctxHasCapability(ctx, CAPABILITY_KEYS.COMMERCIAL_HOME);
 }
 
+export function hasActiveSubscriptionStatus(status: any) {
+  const normalized = String(status || "")
+    .trim()
+    .toLowerCase();
+  return normalized === "free" || ACTIVE_SUBSCRIPTION_STATUSES.has(normalized);
+}
+
+export function getEffectivePlan(plan: string | null, subscriptionStatus: any) {
+  const normalizedPlan = String(plan || "free")
+    .trim()
+    .toLowerCase();
+  if (normalizedPlan === "free") return "free";
+  return hasActiveSubscriptionStatus(subscriptionStatus) ? normalizedPlan : "free";
+}
+
 function applyFacilityRoleCapabilities(
   normalized: Record<string, boolean>,
   facilityRole: string | null
@@ -124,7 +140,11 @@ function applyFacilityRoleCapabilities(
   normalized[CAPABILITY_KEYS.TEAM_VIEW] = true;
   normalized[CAPABILITY_KEYS.ROOMS_EQUIPMENT_STAFF] = true;
 
-  if (facilityRole === "OWNER" || facilityRole === "MANAGER" || facilityRole === "STAFF") {
+  if (
+    facilityRole === "OWNER" ||
+    facilityRole === "MANAGER" ||
+    facilityRole === "STAFF"
+  ) {
     normalized[CAPABILITY_KEYS.TASKS_WRITE] = true;
     normalized[CAPABILITY_KEYS.GROWS_WRITE] = true;
     normalized[CAPABILITY_KEYS.PLANTS_WRITE] = true;
@@ -155,7 +175,9 @@ function applyPlanCapabilities(
   plan: string | null,
   mode: EntitlementsMode
 ) {
-  const normalizedPlan = String(plan || "").trim().toLowerCase();
+  const normalizedPlan = String(plan || "")
+    .trim()
+    .toLowerCase();
   const isPro = normalizedPlan === "pro";
   const isPaidPersonal =
     isPro || normalizedPlan === "personal" || normalizedPlan === "premium";
@@ -224,8 +246,18 @@ function applyServerCtx(
   userPlan: any,
   preferredMode: PreferredMode | null
 ): Omit<EntitlementsState, "can"> {
-  const plan = userPlan ?? ctx?.plan ?? prev.plan ?? "free";
-  const mode = resolveEntitlementsMode(ctx, preferredMode);
+  const requestedPlan = userPlan ?? ctx?.plan ?? prev.plan ?? "free";
+  const subscriptionStatus = ctx?.subscriptionStatus ?? ctx?.user?.subscriptionStatus;
+  const plan = getEffectivePlan(requestedPlan, subscriptionStatus);
+  const resolvedMode = resolveEntitlementsMode(ctx, preferredMode);
+  const mode =
+    plan === "facility"
+      ? "facility"
+      : plan === "commercial"
+        ? "commercial"
+        : resolvedMode === "facility" || resolvedMode === "commercial"
+          ? "personal"
+          : resolvedMode;
   const facilityId = ctx?.facilityId ?? null;
   const facilityRole = normalizeFacilityRole(ctx?.facilityRole);
 
@@ -263,7 +295,9 @@ function applyServerCtx(
   warnUnknownCapsOnce(unknownKeys);
   applyUniversalCapabilities(normalized);
   applyPlanCapabilities(normalized, plan, mode);
-  applyFacilityRoleCapabilities(normalized, facilityRole);
+  if (plan === "facility") {
+    applyFacilityRoleCapabilities(normalized, facilityRole);
+  }
 
   return {
     ready: true,
