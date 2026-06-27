@@ -15,7 +15,7 @@ export default function FacilityAiTemplateRoute() {
         <Text style={styles.desc}>
           Estimate harvest window from trichome distribution.
         </Text>
-        <Link href="/home/facility/ai/ask" style={styles.link}>
+        <Link href="/home/facility/ai-ask" style={styles.link}>
           Run Template
         </Link>
       </View>
@@ -23,7 +23,7 @@ export default function FacilityAiTemplateRoute() {
       <View style={styles.card}>
         <Text style={styles.title}>Photo Diagnosis</Text>
         <Text style={styles.desc}>Analyze trichome imagery and capture context.</Text>
-        <Link href="/home/facility/ai/diagnosis-photo" style={styles.link}>
+        <Link href="/home/facility/ai-diagnosis-photo" style={styles.link}>
           Run Template
         </Link>
       </View>

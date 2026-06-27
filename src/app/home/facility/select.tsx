@@ -81,11 +81,12 @@ export default function FacilitySelectRoute() {
     load();
   }, [load]);
 
-  const setSelectedId: (id: string) => void =
+  const selectFacility: (facility: AnyRec | string) => void =
+    store?.selectFacility ??
+    store?.setSelected ??
     store?.setSelectedId ??
     store?.setFacilityId ??
-    store?.selectFacility ??
-    ((_: string) => {});
+    ((_: AnyRec | string) => {});
 
   return (
     <ScreenBoundary title="Select Facility">
@@ -132,7 +133,7 @@ export default function FacilitySelectRoute() {
               <Pressable
                 onPress={() => {
                   if (!id) return;
-                  setSelectedId(id);
+                  selectFacility({ ...item, id, name });
                   router.replace("/home/facility");
                 }}
                 style={({ pressed }) => [styles.row, pressed && styles.rowPressed]}

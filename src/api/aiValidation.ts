@@ -1,49 +1,45 @@
 import { apiRequest } from "./apiRequest";
 
 export type AiVerifyRequest = {
-  inferenceRunId: string;
-  tool: string;
-  fn: string;
-  normalizedInput: Record<string, unknown>;
+  prediction: Record<string, unknown>;
+  observed: Record<string, unknown>;
 };
 
 export type AiVerifyResponse = {
-  verifierRunId: string;
-  provider: string;
-  modelVersion: string;
-  output: Record<string, unknown>;
+  success: boolean;
+  status: string;
   confidence: number;
+  checks: Array<Record<string, unknown>>;
 };
 
 export type AiCompareRequest = {
-  inferenceRunId: string;
-  verifierRunId: string;
+  baseline: Record<string, unknown>;
+  candidate: Record<string, unknown>;
 };
 
 export type AiCompareResponse = {
-  agreementScore: number;
-  divergenceType: string;
-  escalationRequired: boolean;
-  normalizedComparison: Record<string, unknown>;
+  success: boolean;
+  summary: Record<string, unknown>;
+  comparisons: Array<Record<string, unknown>>;
 };
 
 export type AiFeedbackRequest = {
-  inferenceRunId: string;
-  userDecision: "accepted" | "modified" | "rejected";
-  actualAction: string;
-  observedOutcome: string;
-  notes?: string;
+  targetType: string;
+  targetId: string;
+  rating: number;
+  comment?: string;
+  labels?: string[];
 };
 
 export type AiFeedbackResponse = {
-  ok: boolean;
+  success: boolean;
   feedbackId: string;
+  queueStatus: string;
+  received: Record<string, unknown>;
 };
 
 export type AiTrainingExportRequest = {
-  facilityId?: string;
-  startDate?: string;
-  endDate?: string;
+  format?: "json" | "csv";
 };
 
 export function aiVerify(payload: AiVerifyRequest) {
@@ -68,8 +64,6 @@ export function aiFeedback(payload: AiFeedbackRequest) {
 }
 
 export function aiTrainingExport(payload: AiTrainingExportRequest = {}) {
-  return apiRequest<Record<string, unknown>>("/api/ai/training/export", {
-    method: "POST",
-    body: payload
-  });
+  const format = payload.format ? `?format=${encodeURIComponent(payload.format)}` : "";
+  return apiRequest<Record<string, unknown>>(`/api/ai/training/export${format}`);
 }

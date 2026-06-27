@@ -1,34 +1,39 @@
 import React, { useState } from "react";
 import { Pressable, ScrollView, StyleSheet, Text, TextInput, View } from "react-native";
 
-import { useFacility } from "@/state/useFacility";
 import { aiCompare, aiFeedback, aiTrainingExport, aiVerify } from "@/api/aiValidation";
 
 export default function FacilityAiValidationRoute() {
-  const { selectedId: facilityId } = useFacility();
-
-  const [inferenceRunId, setInferenceRunId] = useState("");
-  const [verifierRunId, setVerifierRunId] = useState("");
-  const [tool, setTool] = useState("harvest");
-  const [fn, setFn] = useState("estimateHarvestWindow");
-  const [normalizedInputJson, setNormalizedInputJson] = useState("{}");
-  const [feedbackDecision, setFeedbackDecision] = useState<
-    "accepted" | "modified" | "rejected"
-  >("accepted");
-  const [actualAction, setActualAction] = useState("");
-  const [observedOutcome, setObservedOutcome] = useState("");
-  const [notes, setNotes] = useState("");
+  const [predictionJson, setPredictionJson] = useState(
+    JSON.stringify({ humidity: 80, dewPointSpread: 1.4 }, null, 2)
+  );
+  const [observedJson, setObservedJson] = useState(
+    JSON.stringify({ humidity: 79.9, dewPointSpread: 1.5 }, null, 2)
+  );
+  const [baselineJson, setBaselineJson] = useState(
+    JSON.stringify({ confidence: 0.72, risk: 0.6 }, null, 2)
+  );
+  const [candidateJson, setCandidateJson] = useState(
+    JSON.stringify({ confidence: 0.82, risk: 0.55 }, null, 2)
+  );
+  const [targetType, setTargetType] = useState("ai_call");
+  const [targetId, setTargetId] = useState("smoke-run");
+  const [rating, setRating] = useState("4");
+  const [comment, setComment] = useState("");
+  const [labels, setLabels] = useState("facility,qa");
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState("");
   const [lastResponse, setLastResponse] = useState<Record<string, unknown> | null>(null);
 
-  function parseInput() {
+  function parseJsonObject(value: string, label: string) {
     try {
-      const parsed = JSON.parse(normalizedInputJson || "{}");
-      if (!parsed || typeof parsed !== "object" || Array.isArray(parsed)) return {};
+      const parsed = JSON.parse(value || "{}");
+      if (!parsed || typeof parsed !== "object" || Array.isArray(parsed)) {
+        throw new Error(`${label} must be a JSON object`);
+      }
       return parsed as Record<string, unknown>;
-    } catch {
-      throw new Error("normalizedInput must be valid JSON object");
+    } catch (e: any) {
+      throw new Error(e?.message || `${label} must be valid JSON`);
     }
   }
 
@@ -52,87 +57,80 @@ export default function FacilityAiValidationRoute() {
         Verify, compare, feedback, and training export endpoint smoke checks.
       </Text>
 
+      <Text style={styles.label}>Verify prediction vs observed</Text>
       <TextInput
-        value={inferenceRunId}
-        onChangeText={setInferenceRunId}
-        style={styles.input}
-        placeholder="Inference Run ID"
-      />
-      <TextInput
-        value={verifierRunId}
-        onChangeText={setVerifierRunId}
-        style={styles.input}
-        placeholder="Verifier Run ID (for compare)"
-      />
-      <TextInput
-        value={tool}
-        onChangeText={setTool}
-        style={styles.input}
-        placeholder="Tool"
-      />
-      <TextInput
-        value={fn}
-        onChangeText={setFn}
-        style={styles.input}
-        placeholder="Function"
-      />
-      <TextInput
-        value={normalizedInputJson}
-        onChangeText={setNormalizedInputJson}
+        value={predictionJson}
+        onChangeText={setPredictionJson}
         style={[styles.input, styles.code]}
-        placeholder="Normalized Input JSON"
+        placeholder="Prediction JSON"
+        multiline
+      />
+      <TextInput
+        value={observedJson}
+        onChangeText={setObservedJson}
+        style={[styles.input, styles.code]}
+        placeholder="Observed JSON"
         multiline
       />
 
-      <Text style={styles.label}>Feedback Decision</Text>
-      <View style={styles.choiceRow}>
-        {(["accepted", "modified", "rejected"] as const).map((item) => (
-          <Pressable
-            key={item}
-            onPress={() => setFeedbackDecision(item)}
-            style={[styles.choice, feedbackDecision === item && styles.choiceActive]}
-          >
-            <Text
-              style={
-                feedbackDecision === item ? styles.choiceTextActive : styles.choiceText
-              }
-            >
-              {item}
-            </Text>
-          </Pressable>
-        ))}
-      </View>
+      <Text style={styles.label}>Compare baseline vs candidate</Text>
+      <TextInput
+        value={baselineJson}
+        onChangeText={setBaselineJson}
+        style={[styles.input, styles.code]}
+        placeholder="Baseline JSON"
+        multiline
+      />
+      <TextInput
+        value={candidateJson}
+        onChangeText={setCandidateJson}
+        style={[styles.input, styles.code]}
+        placeholder="Candidate JSON"
+        multiline
+      />
 
+      <Text style={styles.label}>Feedback</Text>
       <TextInput
-        value={actualAction}
-        onChangeText={setActualAction}
+        value={targetType}
+        onChangeText={setTargetType}
         style={styles.input}
-        placeholder="Actual Action"
+        placeholder="Target Type"
       />
       <TextInput
-        value={observedOutcome}
-        onChangeText={setObservedOutcome}
+        value={targetId}
+        onChangeText={setTargetId}
         style={styles.input}
-        placeholder="Observed Outcome"
+        placeholder="Target ID"
       />
       <TextInput
-        value={notes}
-        onChangeText={setNotes}
+        value={rating}
+        onChangeText={setRating}
         style={styles.input}
-        placeholder="Feedback Notes (optional)"
+        placeholder="Rating 1-5"
+        keyboardType="numeric"
+      />
+      <TextInput
+        value={comment}
+        onChangeText={setComment}
+        style={styles.input}
+        placeholder="Comment"
+      />
+      <TextInput
+        value={labels}
+        onChangeText={setLabels}
+        style={styles.input}
+        placeholder="Labels, comma separated"
       />
 
       <View style={styles.buttonGrid}>
         <Pressable
           style={[styles.button, styles.buttonPrimary, loading && styles.disabled]}
-          disabled={loading || !inferenceRunId.trim()}
+          disabled={loading}
           onPress={() =>
             run(() =>
               aiVerify({
-                inferenceRunId: inferenceRunId.trim(),
-                tool: tool.trim(),
-                fn: fn.trim(),
-                normalizedInput: parseInput()
+                prediction: parseJsonObject(predictionJson, "prediction"),
+                observed: parseJsonObject(observedJson, "observed")
               })
             )
           }
@@ -142,12 +140,12 @@ export default function FacilityAiValidationRoute() {
 
         <Pressable
           style={[styles.button, styles.buttonPrimary, loading && styles.disabled]}
-          disabled={loading || !inferenceRunId.trim() || !verifierRunId.trim()}
+          disabled={loading}
           onPress={() =>
             run(() =>
               aiCompare({
-                inferenceRunId: inferenceRunId.trim(),
-                verifierRunId: verifierRunId.trim()
+                baseline: parseJsonObject(baselineJson, "baseline"),
+                candidate: parseJsonObject(candidateJson, "candidate")
               })
             )
           }
@@ -157,15 +155,18 @@ export default function FacilityAiValidationRoute() {
 
         <Pressable
           style={[styles.button, styles.buttonPrimary, loading && styles.disabled]}
-          disabled={loading || !inferenceRunId.trim()}
+          disabled={loading || !targetType.trim() || !targetId.trim() || !rating.trim()}
           onPress={() =>
             run(() =>
               aiFeedback({
-                inferenceRunId: inferenceRunId.trim(),
-                userDecision: feedbackDecision,
-                actualAction: actualAction.trim(),
-                observedOutcome: observedOutcome.trim(),
-                notes: notes.trim() || undefined
+                targetType: targetType.trim(),
+                targetId: targetId.trim(),
+                rating: Number(rating),
+                comment: comment.trim() || undefined,
+                labels: labels
+                  .split(",")
+                  .map((item) => item.trim())
+                  .filter(Boolean)
               })
             )
           }
@@ -176,11 +177,9 @@ export default function FacilityAiValidationRoute() {
         <Pressable
           style={[styles.button, styles.buttonSecondary, loading && styles.disabled]}
           disabled={loading}
-          onPress={() =>
-            run(() => aiTrainingExport({ facilityId: String(facilityId || "") }))
-          }
+          onPress={() => run(() => aiTrainingExport({ format: "json" }))}
         >
-          <Text style={styles.buttonText}>POST /ai/training/export</Text>
+          <Text style={styles.buttonText}>GET /ai/training/export</Text>
         </Pressable>
       </View>
 

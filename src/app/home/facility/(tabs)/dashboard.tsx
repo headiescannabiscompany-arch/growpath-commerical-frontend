@@ -279,7 +279,7 @@ export default function FacilityDashboardTab() {
 
   const actionRows = useMemo(
     () => [
-      { label: "AI command", detail: "Ask facility AI", to: "/home/facility/ai/ask" },
+      { label: "AI command", detail: "Ask facility AI", to: "/home/facility/ai-ask" },
       {
         label: "Export packet",
         detail: "Reports and audit evidence",

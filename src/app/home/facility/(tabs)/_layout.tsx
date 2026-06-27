@@ -48,6 +48,10 @@ export default function FacilityTabsLayout() {
       <Tabs.Screen name="team" options={{ title: "Team" }} />
       <Tabs.Screen name="profile" options={{ title: "Profile" }} />
       <Tabs.Screen name="ai-tools" options={{ href: null }} />
+      <Tabs.Screen name="ai-ask" options={{ title: "AI" }} />
+      <Tabs.Screen name="ai-diagnosis-photo" options={{ tabBarButton: () => null }} />
+      <Tabs.Screen name="ai-template" options={{ tabBarButton: () => null }} />
+      <Tabs.Screen name="ai-validation" options={{ title: "AI QA" }} />
       <Tabs.Screen name="CreateInventoryItemScreen" options={{ href: null }} />
       <Tabs.Screen name="InventoryItemDetailScreen" options={{ href: null }} />
     </Tabs>
