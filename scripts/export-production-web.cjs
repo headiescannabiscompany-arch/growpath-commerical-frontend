@@ -72,6 +72,8 @@ const fallbackRoutes = [
   "login",
   "register",
   "courses",
+  "store",
+  "marketplace",
   "storefront",
   "facilities",
   "onboarding",
