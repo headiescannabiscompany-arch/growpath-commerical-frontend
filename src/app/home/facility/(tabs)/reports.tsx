@@ -10,6 +10,7 @@ import {
 } from "react-native";
 import { useRouter } from "expo-router";
 
+import { getFacilityComplianceExport } from "@/api/complianceExport";
 import { getFacilityReport } from "@/api/reports";
 import { InlineError } from "@/components/InlineError";
 import { ScreenBoundary } from "@/components/ScreenBoundary";
@@ -17,7 +18,15 @@ import { useApiErrorHandler } from "@/hooks/useApiErrorHandler";
 import { useFacility } from "@/state/useFacility";
 import type { FacilityReport } from "@/types/report";
 
-function StatTile({ label, value, detail }: { label: string; value: number | string; detail?: string }) {
+function StatTile({
+  label,
+  value,
+  detail
+}: {
+  label: string;
+  value: number | string;
+  detail?: string;
+}) {
   return (
     <View style={styles.tile}>
       <Text style={styles.tileValue}>{String(value)}</Text>
@@ -44,6 +53,8 @@ export default function FacilityReportsTab() {
   const [report, setReport] = useState<FacilityReport | null>(null);
   const [loading, setLoading] = useState(true);
   const [refreshing, setRefreshing] = useState(false);
+  const [exporting, setExporting] = useState(false);
+  const [exportFeedback, setExportFeedback] = useState("");
 
   const load = useCallback(
     async (opts?: { refresh?: boolean }) => {
@@ -72,12 +83,48 @@ export default function FacilityReportsTab() {
     load();
   }, [facilityId, load, router]);
 
+  async function exportCompliancePacket() {
+    if (!facilityId || exporting) return;
+    setExporting(true);
+    setExportFeedback("");
+    try {
+      clearError();
+      const packet = await getFacilityComplianceExport(facilityId);
+      const filename = `facility-${facilityId}-compliance-export.json`;
+      const json = JSON.stringify(packet, null, 2);
+
+      if (typeof document !== "undefined") {
+        const blob = new Blob([json], { type: "application/json" });
+        const url = URL.createObjectURL(blob);
+        const a = document.createElement("a");
+        a.href = url;
+        a.download = filename;
+        document.body.appendChild(a);
+        a.click();
+        a.remove();
+        URL.revokeObjectURL(url);
+        setExportFeedback(`Export ready: ${filename}`);
+      } else {
+        setExportFeedback(
+          `Export ready with ${Object.values(packet.counts || {}).reduce((sum, value) => sum + Number(value || 0), 0)} records.`
+        );
+      }
+    } catch (e) {
+      handleApiError(e);
+    } finally {
+      setExporting(false);
+    }
+  }
+
   return (
     <ScreenBoundary title="Reports">
       <ScrollView
         contentContainerStyle={styles.container}
         refreshControl={
-          <RefreshControl refreshing={refreshing} onRefresh={() => load({ refresh: true })} />
+          <RefreshControl
+            refreshing={refreshing}
+            onRefresh={() => load({ refresh: true })}
+          />
         }
       >
         {error ? <InlineError error={error} /> : null}
@@ -87,10 +134,22 @@ export default function FacilityReportsTab() {
             <Text style={styles.h1}>Facility Reports</Text>
             <Text style={styles.muted}>Summary from the facility reports endpoint.</Text>
           </View>
-          <Pressable style={styles.button} onPress={() => load({ refresh: true })}>
-            <Text style={styles.buttonText}>Refresh</Text>
-          </Pressable>
+          <View style={styles.actions}>
+            <Pressable style={styles.button} onPress={() => load({ refresh: true })}>
+              <Text style={styles.buttonText}>Refresh</Text>
+            </Pressable>
+            <Pressable
+              style={[styles.button, exporting ? styles.buttonDisabled : null]}
+              disabled={exporting}
+              onPress={exportCompliancePacket}
+            >
+              <Text style={styles.buttonText}>
+                {exporting ? "Exporting..." : "Export"}
+              </Text>
+            </Pressable>
+          </View>
         </View>
+        {exportFeedback ? <Text style={styles.success}>{exportFeedback}</Text> : null}
 
         {loading ? (
           <View style={styles.loading}>
@@ -156,7 +215,10 @@ export default function FacilityReportsTab() {
             <View style={styles.card}>
               <Text style={styles.cardTitle}>Automation</Text>
               <View style={styles.grid}>
-                <StatTile label="Policies" value={report.automation?.policiesEnabled ?? 0} />
+                <StatTile
+                  label="Policies"
+                  value={report.automation?.policiesEnabled ?? 0}
+                />
                 <StatTile
                   label="Triggers"
                   value={report.automation?.triggersLast7d ?? 0}
@@ -174,8 +236,9 @@ export default function FacilityReportsTab() {
 const styles = StyleSheet.create({
   container: { padding: 16, paddingBottom: 32 },
   headerRow: {
-    alignItems: "center",
+    alignItems: "flex-start",
     flexDirection: "row",
+    gap: 12,
     justifyContent: "space-between",
     marginBottom: 12
   },
@@ -187,7 +250,10 @@ const styles = StyleSheet.create({
     paddingHorizontal: 12,
     paddingVertical: 10
   },
+  buttonDisabled: { opacity: 0.6 },
   buttonText: { color: "white", fontWeight: "900" },
+  actions: { flexDirection: "row", flexWrap: "wrap", gap: 8, justifyContent: "flex-end" },
+  success: { color: "#166534", fontWeight: "800", marginBottom: 8 },
   loading: { alignItems: "center", paddingVertical: 24 },
   card: {
     backgroundColor: "white",

@@ -24,34 +24,21 @@ describe("personal feature status manifest", () => {
     );
   });
 
-  test("gates endpoint-backed AI tools with canonical capabilities", () => {
-    expect(
-      personalToolFeatures.find((feature) => feature.key === "tools.ai_diagnosis")
-        ?.capabilityKey
-    ).toBe("DIAGNOSE_AI");
-    expect(
-      personalToolFeatures.find((feature) => feature.key === "tools.feeding_schedule")
-        ?.capabilityKey
-    ).toBe("FEEDING_SCHEDULE");
-    expect(
-      personalToolFeatures.find((feature) => feature.key === "tools.environment_analysis")
-        ?.capabilityKey
-    ).toBe("AI_ASSISTANT");
-    expect(
-      personalToolFeatures.find((feature) => feature.key === "tools.pheno_matrix")
-        ?.capabilityKey
-    ).toBe("TOOL_PHENO_MATRIX");
-    expect(
-      personalToolFeatures.find((feature) => feature.key === "tools.harvest_estimator")
-        ?.capabilityKey
-    ).toBe("TOOL_HARVEST_ESTIMATOR");
-    expect(
-      personalToolFeatures.find((feature) => feature.key === "tools.timeline_planner")
-        ?.capabilityKey
-    ).toBe("TOOL_TIMELINE_PLANNER");
-    expect(
-      personalToolFeatures.find((feature) => feature.key === "tools.pdf_export")
-        ?.capabilityKey
-    ).toBe("TOOL_PDF_EXPORT");
+  test("keeps navigable personal tools open at the catalog level", () => {
+    const broadlyUsefulTools = [
+      "tools.ai_diagnosis",
+      "tools.feeding_schedule",
+      "tools.environment_analysis",
+      "tools.pheno_matrix",
+      "tools.harvest_estimator",
+      "tools.timeline_planner",
+      "tools.pdf_export"
+    ];
+
+    for (const key of broadlyUsefulTools) {
+      const feature = personalToolFeatures.find((item) => item.key === key);
+      expect(feature).toBeTruthy();
+      expect(feature && "capabilityKey" in feature).toBe(false);
+    }
   });
 });

@@ -95,7 +95,6 @@ export const personalToolFeatures = [
     status: "implemented",
     href: "/home/personal/tools/vpd",
     acceptsGrowContext: true,
-    capabilityKey: "TOOLS_VPD",
     internalNote: "Working calculator with grow log and task actions."
   },
   {
@@ -127,7 +126,6 @@ export const personalToolFeatures = [
     status: "beta",
     href: "/home/personal/tools/bud-rot-risk",
     acceptsGrowContext: true,
-    capabilityKey: "DIAGNOSE_ADVANCED",
     internalNote: "Heuristic screen, not a validated predictive model."
   },
   {
@@ -138,7 +136,6 @@ export const personalToolFeatures = [
     status: "beta",
     href: "/home/personal/tools/npk",
     acceptsGrowContext: true,
-    capabilityKey: "TOOL_NPK",
     internalNote:
       "Twenty-row recipe foundation exists; chemistry and measured-EC work remains."
   },
@@ -150,7 +147,6 @@ export const personalToolFeatures = [
     status: "beta",
     href: "/home/personal/tools/nutrient-chemistry",
     acceptsGrowContext: true,
-    capabilityKey: "TOOL_NPK",
     internalNote:
       "Starter library requires complete source provenance and wider validation."
   },
@@ -172,8 +168,8 @@ export const personalToolFeatures = [
     status: "beta",
     href: "/home/personal/tools/environment-analysis",
     acceptsGrowContext: true,
-    capabilityKey: "AI_ASSISTANT",
-    internalNote: "Endpoint-backed analysis; task conversion depends on backend environment result ids."
+    internalNote:
+      "Endpoint-backed analysis when AI is enabled; local heuristic fallback keeps the tool useful for every account."
   },
   {
     key: "tools.feeding_schedule",
@@ -183,8 +179,8 @@ export const personalToolFeatures = [
     status: "beta",
     href: "/home/personal/tools/feeding-schedule",
     acceptsGrowContext: true,
-    capabilityKey: "FEEDING_SCHEDULE",
-    internalNote: "Uses the backend feeding schedule endpoint; template persistence is endpoint-dependent."
+    internalNote:
+      "Uses the backend feeding schedule endpoint when available and local stage-aware planning otherwise."
   },
   {
     key: "tools.harvest_estimator",
@@ -194,7 +190,6 @@ export const personalToolFeatures = [
     status: "beta",
     href: "/home/personal/tools/harvest-estimator",
     acceptsGrowContext: true,
-    capabilityKey: "TOOL_HARVEST_ESTIMATOR",
     internalNote:
       "Local estimator with tool-run and journal save paths; not a lab-grade harvest prediction."
   },
@@ -206,7 +201,6 @@ export const personalToolFeatures = [
     status: "beta",
     href: "/home/personal/tools/timeline-planner",
     acceptsGrowContext: true,
-    capabilityKey: "TOOL_TIMELINE_PLANNER",
     internalNote:
       "Local milestone builder can create grow tasks when grow context is present."
   },
@@ -218,7 +212,6 @@ export const personalToolFeatures = [
     status: "beta",
     href: "/home/personal/tools/pdf-export",
     acceptsGrowContext: true,
-    capabilityKey: "TOOL_PDF_EXPORT",
     internalNote:
       "CSV package supports browser download and native share. Rendered PDF remains tracked separately."
   },
@@ -230,7 +223,6 @@ export const personalToolFeatures = [
     status: "beta",
     href: "/home/personal/tools/pheno-matrix",
     acceptsGrowContext: true,
-    capabilityKey: "TOOL_PHENO_MATRIX",
     internalNote:
       "Local weighted scoring matrix is implemented; persistence/export can follow endpoint support."
   },
@@ -242,7 +234,6 @@ export const personalToolFeatures = [
     status: "beta",
     href: "/home/personal/diagnose",
     acceptsGrowContext: true,
-    capabilityKey: "DIAGNOSE_AI",
     internalNote:
       "Vision path works when configured; full ETGU intake and follow-up remain."
   },
