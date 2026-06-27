@@ -7,6 +7,7 @@ import {
   StyleSheet,
   Text,
   TextInput,
+  useWindowDimensions,
   View
 } from "react-native";
 import { useRouter } from "expo-router";
@@ -17,6 +18,8 @@ import { useAuth } from "@/auth/AuthContext";
 export default function LoginScreen() {
   const router = useRouter();
   const auth = useAuth();
+  const { width } = useWindowDimensions();
+  const isWide = width >= 900;
 
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
@@ -54,68 +57,72 @@ export default function LoginScreen() {
       contentContainerStyle={styles.content}
       keyboardShouldPersistTaps="handled"
     >
-      <View style={styles.bannerFrame}>
-        <Image
-          source={require("../../assets/banner.png")}
-          style={styles.bannerImage}
-          resizeMode="contain"
-        />
-      </View>
-
-      <View style={styles.brandBlock}>
-        <View style={styles.logoMark}>
-          <Image
-            source={require("../../assets/icon.png")}
-            style={styles.logo}
-            resizeMode="contain"
-          />
+      <View style={[styles.shell, isWide ? styles.shellWide : null]}>
+        <View style={[styles.visualPanel, isWide ? styles.visualPanelWide : null]}>
+          <View style={styles.bannerFrame}>
+            <Image
+              source={require("../../assets/banner.png")}
+              style={styles.bannerImage}
+              resizeMode="cover"
+            />
+          </View>
         </View>
-        <Text style={styles.brand}>GrowPath</Text>
-        <Text style={styles.tagline}>Commercial growing intelligence</Text>
-      </View>
 
-      <View style={styles.form}>
-        <Text style={styles.title}>Sign in</Text>
+        <View style={[styles.formCard, isWide ? styles.formCardWide : null]}>
+          <View style={styles.brandBlock}>
+            <View style={styles.logoMark}>
+              <Image
+                source={require("../../assets/icon.png")}
+                style={styles.logo}
+                resizeMode="contain"
+              />
+            </View>
+            <Text style={styles.brand}>GrowPath</Text>
+            <Text style={styles.tagline}>Commercial growing intelligence</Text>
+          </View>
 
-        <TextInput
-          style={styles.input}
-          autoCapitalize="none"
-          autoCorrect={false}
-          keyboardType="email-address"
-          placeholder="Email"
-          placeholderTextColor="#6b7280"
-          value={email}
-          onChangeText={setEmail}
-        />
+          <Text style={styles.title}>Sign in</Text>
 
-        <TextInput
-          style={styles.input}
-          placeholder="Password"
-          placeholderTextColor="#6b7280"
-          secureTextEntry
-          value={password}
-          onChangeText={setPassword}
-          onSubmitEditing={onSubmit}
-          returnKeyType="go"
-        />
+          <TextInput
+            style={styles.input}
+            autoCapitalize="none"
+            autoCorrect={false}
+            keyboardType="email-address"
+            placeholder="Email"
+            placeholderTextColor="#6b7280"
+            value={email}
+            onChangeText={setEmail}
+          />
 
-        {errMsg ? <Text style={styles.error}>{errMsg}</Text> : null}
+          <TextInput
+            style={styles.input}
+            placeholder="Password"
+            placeholderTextColor="#6b7280"
+            secureTextEntry
+            value={password}
+            onChangeText={setPassword}
+            onSubmitEditing={onSubmit}
+            returnKeyType="go"
+          />
 
-        <Pressable
-          onPress={onSubmit}
-          disabled={!canSubmit}
-          style={[styles.button, !canSubmit && styles.buttonDisabled]}
-        >
-          {submitting ? (
-            <ActivityIndicator color="#ffffff" />
-          ) : (
-            <Text style={styles.buttonText}>Sign in</Text>
-          )}
-        </Pressable>
+          {errMsg ? <Text style={styles.error}>{errMsg}</Text> : null}
 
-        <Pressable onPress={() => router.push("/register")} style={styles.linkBtn}>
-          <Text style={styles.linkText}>Create account</Text>
-        </Pressable>
+          <Pressable
+            onPress={onSubmit}
+            disabled={!canSubmit}
+            style={[styles.button, !canSubmit && styles.buttonDisabled]}
+          >
+            {submitting ? (
+              <ActivityIndicator color="#ffffff" />
+            ) : (
+              <Text style={styles.buttonText}>Sign in</Text>
+            )}
+          </Pressable>
+
+          <Pressable onPress={() => router.push("/register")} style={styles.linkBtn}>
+            <Text style={styles.linkText}>Create account</Text>
+          </Pressable>
+        </View>
       </View>
     </ScrollView>
   );
@@ -124,14 +131,27 @@ export default function LoginScreen() {
 const styles = StyleSheet.create({
   root: { flex: 1, backgroundColor: "#f8fafc" },
   content: {
+    alignItems: "center",
     flexGrow: 1,
     justifyContent: "center",
     padding: 16
   },
+  shell: {
+    alignItems: "stretch",
+    gap: 18,
+    maxWidth: 1120,
+    width: "100%"
+  },
+  shellWide: {
+    alignItems: "center",
+    flexDirection: "row",
+    gap: 28
+  },
+  visualPanel: { width: "100%" },
+  visualPanelWide: { flex: 1.25 },
   bannerFrame: {
     width: "100%",
-    maxWidth: 720,
-    aspectRatio: 1.5,
+    aspectRatio: 1.42,
     alignSelf: "center",
     borderRadius: 8,
     overflow: "hidden",
@@ -143,8 +163,7 @@ const styles = StyleSheet.create({
   },
   brandBlock: {
     alignItems: "center",
-    paddingTop: 18,
-    paddingBottom: 8
+    paddingBottom: 18
   },
   logoMark: {
     width: 72,
@@ -172,8 +191,17 @@ const styles = StyleSheet.create({
     fontWeight: "600",
     marginTop: 6
   },
-  form: {
-    paddingTop: 24
+  formCard: {
+    backgroundColor: "transparent",
+    width: "100%"
+  },
+  formCardWide: {
+    backgroundColor: "#ffffff",
+    borderColor: "#d8ded6",
+    borderRadius: 8,
+    borderWidth: 1,
+    padding: 24,
+    width: 420
   },
   title: { fontSize: 24, fontWeight: "800", marginBottom: 16, color: "#111827" },
   input: {
