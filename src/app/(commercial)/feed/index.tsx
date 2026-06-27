@@ -19,7 +19,7 @@ export default function CommercialFeedScreen() {
           Commercial feed is locked. Select a facility to continue.
         </Text>
         <Pressable
-          onPress={() => router.push("/(commercial)")}
+          onPress={() => router.push("/home/commercial")}
           style={{
             paddingHorizontal: 14,
             paddingVertical: 10,

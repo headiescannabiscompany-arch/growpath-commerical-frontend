@@ -3,16 +3,15 @@ import { ActivityIndicator, View } from "react-native";
 import { useRouter } from "expo-router";
 
 /**
- * Personal Home Redirect
+ * Personal home redirect.
  *
- * This route exists to forward /home/personal → /home/personal/(tabs)
- * so the tab layout always renders.
+ * This route exists to forward legacy personal entry points into tabs.
  */
 export default function PersonalHomeRedirect() {
   const router = useRouter();
 
   useEffect(() => {
-    router.replace("/home/personal/(tabs)" as any);
+    router.replace("/home/personal" as any);
   }, [router]);
 
   return (
