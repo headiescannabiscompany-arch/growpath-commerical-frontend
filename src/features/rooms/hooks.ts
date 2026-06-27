@@ -1,6 +1,7 @@
 import { useQuery } from "@tanstack/react-query";
 import { api } from "../../api/client";
 import { endpoints } from "../../api/endpoints";
+import { fetchRooms } from "../../api/rooms";
 import { useFacility } from "../../facility/FacilityProvider";
 import { requireString } from "../../utils/require";
 export { useBulkCreateRooms } from "./useBulkCreateRooms";
@@ -10,7 +11,7 @@ export function useRooms() {
   const facilityId = facility?.facilityId || null;
   return useQuery({
     queryKey: ["rooms", facilityId],
-    queryFn: () => api.get(endpoints.rooms(requireString(facilityId, "facilityId"))),
+    queryFn: () => fetchRooms(requireString(facilityId, "facilityId")),
     enabled: !!facilityId
   });
 }
