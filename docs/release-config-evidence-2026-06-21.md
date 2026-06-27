@@ -1,6 +1,6 @@
 # Release Config Evidence
 
-Date reviewed: 2026-06-23
+Date reviewed: 2026-06-27
 Repository: growpath-commerical-frontend
 
 ## Confirmed In Source
@@ -42,12 +42,22 @@ Repository: growpath-commerical-frontend
 - Listing source: `APP_STORE_LISTING.md`
 - Asset/copy draft source: `docs/app-store-asset-drafts.md`
 
+## Production API Verification
+
+- DNS: `api.growpathai.com` resolves to `growpath-api.onrender.com`, then to
+  Render's Cloudflare-backed origin.
+- Health endpoint: `https://api.growpathai.com/health` returned HTTP 200 on
+  2026-06-27.
+- Readiness endpoint: `https://api.growpathai.com/ready` returned HTTP 200 on
+  2026-06-27.
+- API health endpoint: `https://api.growpathai.com/api/health` returned HTTP 200
+  on 2026-06-27.
+
 ## External Confirmation Still Required
 
 - Store-facing app name is confirmed as `GrowPath`.
 - iOS bundle identifier and Android package are confirmed as `com.growpathai.app`.
 - Confirm production public domain ownership before enabling Android App Links or iOS Associated Domains.
-- Confirm `https://api.growpathai.com` DNS and backend health before production builds. Current verification attempt failed because `api.growpathai.com` did not resolve.
 - `EXPO_PUBLIC_TWITCH_PARENT_HOST` is optional for V1 because live sessions open Twitch externally; set it only if embedded Twitch playback ships.
 - Confirm App Store Connect and Google Play Console records match the identifiers above.
 - Confirm legal approval for cannabis-related listing language, age rating, and jurisdiction disclaimer.

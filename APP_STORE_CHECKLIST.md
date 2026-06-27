@@ -1,7 +1,7 @@
 # App Store And Production Launch Checklist
 
 > Status: Blocked for submission until external release evidence is complete.
-> Last reviewed: 2026-06-23
+> Last reviewed: 2026-06-27
 
 ## 1. Release Gate
 
@@ -9,7 +9,7 @@
 - [x] Backend schema and AI drift validation evidence recorded.
 - [x] Source-controlled placeholder EAS submit credentials removed.
 - [x] Production EAS profile points at `https://api.growpathai.com`.
-- [ ] Confirm production DNS and backend health for `https://api.growpathai.com`.
+- [x] Confirm production DNS and backend health for `https://api.growpathai.com`.
 - [ ] Confirm no critical or high release-blocking bugs remain open.
 
 ## 2. Store Configuration

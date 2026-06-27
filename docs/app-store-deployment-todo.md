@@ -1,7 +1,7 @@
 # App Store / Deployment Prep TODO
 
 > Status: BLOCKED FOR SUBMISSION
-> Last reviewed: 2026-06-23
+> Last reviewed: 2026-06-27
 
 Store submission must wait until production-mode validation evidence exists.
 Current known blockers:
@@ -13,9 +13,9 @@ Current known blockers:
 - The local V1 AI schema pack is present and schema drift validation passes.
 - `eas.json` no longer stores placeholder submit credentials. Real Apple and
   Google submit credentials still need to be supplied outside source control.
-- `eas.json` production builds now use
-  `EXPO_PUBLIC_API_URL=https://api.growpathai.com`, but DNS/backend health is
-  not verified yet.
+- `eas.json` production builds use
+  `EXPO_PUBLIC_API_URL=https://api.growpathai.com`. DNS resolves to the Render
+  backend and production health checks returned 200 on 2026-06-27.
 - Production iOS/Android builds and real-device smoke validation have not been
   attached as evidence. Local handoff checklists now exist under `tmp/spec/`.
 
@@ -38,6 +38,14 @@ Current known blockers:
   `npx jest tests\ai\ai.schema.drift.test.js --runInBand` passes with 20 active
   tests.
 - Evidence target: `tmp/spec/backend_schema_ai_validation_2026-06-21.md`
+
+- DONE: Production DNS and backend health.
+- Owner: Release Engineering
+- Current evidence: `api.growpathai.com` resolves through `growpath-api.onrender.com`
+  to Render/Cloudflare addresses. `https://api.growpathai.com/health`,
+  `https://api.growpathai.com/ready`, and
+  `https://api.growpathai.com/api/health` returned HTTP 200 on 2026-06-27.
+- Evidence target: `docs/release-config-evidence-2026-06-21.md`
 
 ## 2. Assets
 
@@ -79,9 +87,8 @@ Current known blockers:
 - Current evidence: source-config review captured in
   `docs/release-config-evidence-2026-06-21.md`; base app icon is 1024x1024 and the
   configured splash/icon assets exist.
-- Next action: Release owner must confirm DNS/backend health for
-  `https://api.growpathai.com`, public deep-link domain, and App Store/Play
-  Console records before production builds.
+- Next action: Release owner must confirm the public deep-link domain and App
+  Store/Play Console records before production builds.
 - Evidence target: `docs/release-config-evidence-2026-06-21.md`
 
 - PARTIAL: EAS submit configuration.
