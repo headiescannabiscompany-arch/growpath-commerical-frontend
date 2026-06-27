@@ -62,7 +62,7 @@ const COMMERCIAL_RULES: RouteRule[] = [
     mode: "commercial",
     capabilities: [CAPABILITY_KEYS.STORE_FRONT_VIEW]
   },
-  ...["/campaigns", "/offers", "/orders", "/logs"].map((prefix) => ({
+  ...["/campaigns", "/orders", "/logs"].map((prefix) => ({
     matches: startsWith(prefix),
     mode: "commercial" as const,
     capabilities: [CAPABILITY_KEYS.COMMERCIAL_HOME]
