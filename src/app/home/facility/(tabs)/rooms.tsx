@@ -301,6 +301,8 @@ export default function FacilityRoomsTab() {
                   <Pressable
                     key={mode}
                     onPress={() => setRoomTrackingMode(mode)}
+                    accessibilityRole="button"
+                    accessibilityLabel={`Set new room tracking mode to ${mode}`}
                     style={[
                       styles.pill,
                       roomTrackingMode === mode && styles.pillSelected
@@ -320,6 +322,8 @@ export default function FacilityRoomsTab() {
               <Pressable
                 onPress={addRoom}
                 disabled={saving || !roomName.trim()}
+                accessibilityRole="button"
+                accessibilityLabel="Create Room"
                 style={[
                   styles.primaryBtn,
                   (saving || !roomName.trim()) && styles.disabled
@@ -344,6 +348,8 @@ export default function FacilityRoomsTab() {
                   <Pressable
                     key={id || room.name}
                     onPress={() => setActiveRoomId(id)}
+                    accessibilityRole="button"
+                    accessibilityLabel={`Select room ${room.name || "Room"}`}
                     style={[styles.pill, selected && styles.pillSelected]}
                   >
                     <Text style={[styles.pillText, selected && styles.pillTextSelected]}>
@@ -370,6 +376,8 @@ export default function FacilityRoomsTab() {
                     key={mode}
                     onPress={() => saveTrackingMode(mode)}
                     disabled={!canWrite || saving}
+                    accessibilityRole="button"
+                    accessibilityLabel={`Set room tracking mode to ${mode}`}
                     style={[
                       styles.pill,
                       (activeRoom.trackingMode || "batch") === mode && styles.pillSelected
@@ -391,6 +399,8 @@ export default function FacilityRoomsTab() {
                 <Pressable
                   onPress={removeRoom}
                   disabled={saving}
+                  accessibilityRole="button"
+                  accessibilityLabel="Delete Room"
                   style={[styles.dangerBtn, saving && styles.disabled]}
                 >
                   <Text style={styles.dangerText}>Delete Room</Text>
@@ -421,6 +431,8 @@ export default function FacilityRoomsTab() {
                   <Pressable
                     onPress={addEquipment}
                     disabled={saving || !equipmentName.trim()}
+                    accessibilityRole="button"
+                    accessibilityLabel="Add Equipment"
                     style={[
                       styles.primaryBtn,
                       (saving || !equipmentName.trim()) && styles.disabled
@@ -470,6 +482,8 @@ export default function FacilityRoomsTab() {
                   <Pressable
                     onPress={addCycle}
                     disabled={saving || !cycleName.trim()}
+                    accessibilityRole="button"
+                    accessibilityLabel="Create Batch Cycle"
                     style={[
                       styles.primaryBtn,
                       (saving || !cycleName.trim()) && styles.disabled
@@ -493,6 +507,8 @@ export default function FacilityRoomsTab() {
                         <Pressable
                           onPress={() => removeCycle(id)}
                           disabled={saving}
+                          accessibilityRole="button"
+                          accessibilityLabel={`Delete batch cycle ${cycle.name || id}`}
                           style={styles.inlineDanger}
                         >
                           <Text style={styles.dangerText}>Delete</Text>
