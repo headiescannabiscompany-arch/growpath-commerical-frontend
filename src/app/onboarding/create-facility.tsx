@@ -1,108 +1,185 @@
 import React, { useState } from "react";
 import {
-  View,
+  ActivityIndicator,
+  Pressable,
+  StyleSheet,
   Text,
   TextInput,
-  Button,
-  ActivityIndicator,
-  StyleSheet
+  View
 } from "react-native";
-import { useCreateFacility } from "../../hooks/useCreateFacility";
-import { useRouter, Redirect } from "expo-router";
+import { Redirect, useRouter } from "expo-router";
+
 import { useAuth } from "@/auth/AuthContext";
+import AppCard from "@/components/layout/AppCard";
+import AppPage from "@/components/layout/AppPage";
+import { useCreateFacility } from "@/hooks/useCreateFacility";
 
 export default function CreateFacilityScreen() {
   const [name, setName] = useState("");
   const [touched, setTouched] = useState(false);
+  const [createdName, setCreatedName] = useState("");
   const createFacility = useCreateFacility();
   const router = useRouter();
   const auth = useAuth();
 
-  // Wait for auth to hydrate
   if (auth.isHydrating) {
     return (
-      <View style={styles.container}>
+      <View style={styles.centered}>
         <ActivityIndicator size="large" />
       </View>
     );
   }
 
-  // 🔒 Not logged in → redirect to login
   if (!auth.token) {
     return <Redirect href="/login" />;
   }
 
-  const handleCreate = async () => {
+  const trimmedName = name.trim();
+  const canCreate = trimmedName.length > 1 && !createFacility.isPending;
+
+  function handleCreate() {
     setTouched(true);
-    if (!name.trim()) return;
-    if (!auth.token) {
-      // Extra safety check
-      alert("Please log in to create a facility.");
-      return;
-    }
+    if (!canCreate) return;
     createFacility.mutate(
-      { name: name.trim() },
+      { name: trimmedName },
       {
-        onSuccess: () => {
+        onSuccess: (facility: any) => {
+          setCreatedName(String(facility?.name || trimmedName));
           router.replace("/onboarding/first-setup");
         }
       }
     );
-  };
+  }
 
   return (
-    <View style={styles.container}>
-      <Text style={styles.title}>Create Your First Facility</Text>
-      <TextInput
-        style={styles.input}
-        placeholder="Facility Name"
-        value={name}
-        onChangeText={setName}
-        onBlur={() => setTouched(true)}
-        autoFocus
-      />
-      {touched && !name.trim() && (
-        <Text style={styles.error}>Facility name is required.</Text>
-      )}
-      {createFacility.isError && (
-        <Text style={styles.error}>
-          {createFacility.error?.message || "Failed to create facility."}
-        </Text>
-      )}
-      <Button
-        title={createFacility.isPending ? "Creating..." : "Create Facility"}
-        onPress={handleCreate}
-        disabled={!name.trim() || createFacility.isPending}
-      />
-      {createFacility.isPending && <ActivityIndicator style={{ marginTop: 16 }} />}
-    </View>
+    <AppPage
+      routeKey="create-facility"
+      railOverride={null}
+      header={
+        <View style={styles.header}>
+          <Text style={styles.kicker}>Facility setup</Text>
+          <Text style={styles.title}>Create your facility</Text>
+          <Text style={styles.subtitle}>
+            Each account is limited to one facility. If one already exists, GrowPath
+            returns that facility instead of creating a duplicate.
+          </Text>
+        </View>
+      }
+    >
+      <AppCard>
+        <View style={styles.form}>
+          <Text style={styles.label}>Facility name</Text>
+          <TextInput
+            style={styles.input}
+            placeholder="Facility name"
+            placeholderTextColor="#64748b"
+            value={name}
+            onChangeText={setName}
+            onBlur={() => setTouched(true)}
+            autoFocus
+            returnKeyType="done"
+            onSubmitEditing={handleCreate}
+          />
+          {touched && !trimmedName ? (
+            <Text style={styles.error}>Facility name is required.</Text>
+          ) : null}
+          {createFacility.isError ? (
+            <Text style={styles.error}>
+              {createFacility.error?.message || "Failed to create facility."}
+            </Text>
+          ) : null}
+          {createdName ? (
+            <Text style={styles.feedback}>Facility ready: {createdName}</Text>
+          ) : null}
+
+          <Pressable
+            onPress={handleCreate}
+            disabled={!canCreate}
+            accessibilityRole="button"
+            accessibilityLabel="Create facility"
+            style={[styles.primaryButton, !canCreate && styles.disabledButton]}
+          >
+            {createFacility.isPending ? (
+              <ActivityIndicator color="#ffffff" />
+            ) : (
+              <Text style={styles.primaryButtonText}>Create facility</Text>
+            )}
+          </Pressable>
+
+          <Pressable
+            onPress={() => router.replace("/facilities")}
+            accessibilityRole="button"
+            accessibilityLabel="Back to facilities"
+            style={styles.secondaryButton}
+          >
+            <Text style={styles.secondaryButtonText}>Back to facilities</Text>
+          </Pressable>
+        </View>
+      </AppCard>
+    </AppPage>
   );
 }
 
 const styles = StyleSheet.create({
-  container: {
-    flex: 1,
-    justifyContent: "center",
+  centered: {
     alignItems: "center",
-    backgroundColor: "#fff",
-    padding: 24
+    backgroundColor: "#ffffff",
+    flex: 1,
+    justifyContent: "center"
+  },
+  header: { gap: 6 },
+  kicker: {
+    color: "#166534",
+    fontSize: 12,
+    fontWeight: "900",
+    textTransform: "uppercase"
   },
   title: {
-    fontSize: 22,
-    fontWeight: "bold",
-    marginBottom: 24
+    color: "#111827",
+    fontSize: 30,
+    fontWeight: "900"
+  },
+  subtitle: {
+    color: "#64748b",
+    fontSize: 14,
+    fontWeight: "700",
+    lineHeight: 20,
+    maxWidth: 760
+  },
+  form: { gap: 12 },
+  label: {
+    color: "#334155",
+    fontSize: 13,
+    fontWeight: "900",
+    textTransform: "uppercase"
   },
   input: {
-    width: 260,
-    borderWidth: 1,
-    borderColor: "#ccc",
+    backgroundColor: "#ffffff",
+    borderColor: "#cbd5e1",
     borderRadius: 8,
-    padding: 12,
+    borderWidth: 1,
+    color: "#111827",
     fontSize: 16,
-    marginBottom: 12
+    paddingHorizontal: 12,
+    paddingVertical: 12
   },
-  error: {
-    color: "#c00",
-    marginBottom: 8
-  }
+  error: { color: "#b91c1c", fontWeight: "800" },
+  feedback: { color: "#047857", fontWeight: "800" },
+  primaryButton: {
+    alignItems: "center",
+    backgroundColor: "#166534",
+    borderRadius: 8,
+    paddingVertical: 12
+  },
+  disabledButton: { opacity: 0.55 },
+  primaryButtonText: { color: "#ffffff", fontWeight: "900" },
+  secondaryButton: {
+    alignItems: "center",
+    backgroundColor: "#ffffff",
+    borderColor: "#cbd5e1",
+    borderRadius: 8,
+    borderWidth: 1,
+    paddingVertical: 12
+  },
+  secondaryButtonText: { color: "#111827", fontWeight: "900" }
 });

@@ -3,7 +3,7 @@ import {
   View,
   Text,
   ScrollView,
-  TouchableOpacity,
+  Pressable,
   ActivityIndicator,
   StyleSheet,
   Alert
@@ -162,17 +162,19 @@ export default function FacilitiesScreen() {
           <Text style={styles.emptyMessage} numberOfLines={3}>
             Create your first facility to start rooms, grows, compliance, and team setup.
           </Text>
-          <TouchableOpacity
+          <Pressable
             style={styles.primaryButton}
             onPress={() => router.push("/onboarding/create-facility")}
+            accessibilityRole="button"
+            accessibilityLabel="Create facility"
           >
             <Text style={styles.primaryButtonText}>Create Facility</Text>
-          </TouchableOpacity>
+          </Pressable>
         </View>
       ) : (
         <View style={styles.facilitiesList}>
           {accountFacility && (
-            <TouchableOpacity
+            <Pressable
               key={accountFacility.id}
               style={[
                 styles.facilityCard,
@@ -180,7 +182,8 @@ export default function FacilitiesScreen() {
               ]}
               onPress={() => handleSelectFacility(accountFacility.id)}
               disabled={actionLoading}
-              activeOpacity={0.7}
+              accessibilityRole="button"
+              accessibilityLabel={`Select facility ${accountFacility.name}`}
             >
               <Text style={styles.facilityName}>{accountFacility.name}</Text>
               <Text style={styles.facilityDetail}>
@@ -199,7 +202,7 @@ export default function FacilitiesScreen() {
                   <Text style={styles.selectedBadgeText}>Active</Text>
                 </View>
               )}
-            </TouchableOpacity>
+            </Pressable>
           )}
         </View>
       )}
