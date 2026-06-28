@@ -24,9 +24,10 @@ function normalizePlantsResponse(raw: any): Plant[] {
   return items.map(normalizePlant);
 }
 
-export function usePlants() {
+export function usePlants(facilityIdOverride?: string | null) {
   const { token } = useAuth();
-  const { facilityId } = useFacility();
+  const facility = useFacility();
+  const facilityId = facilityIdOverride || facility.facilityId;
 
   return useQuery<Plant[]>({
     queryKey: ["plants", facilityId],
@@ -36,9 +37,10 @@ export function usePlants() {
   });
 }
 
-export function usePlant(id: string) {
+export function usePlant(id: string, facilityIdOverride?: string | null) {
   const { token } = useAuth();
-  const { facilityId } = useFacility();
+  const facility = useFacility();
+  const facilityId = facilityIdOverride || facility.facilityId;
 
   return useQuery<Plant>({
     queryKey: ["plant", facilityId, id],
@@ -48,31 +50,38 @@ export function usePlant(id: string) {
   });
 }
 
-export function useCreatePlant() {
+export function useCreatePlant(facilityIdOverride?: string | null) {
   const qc = useQueryClient();
   const { token } = useAuth();
-  const { facilityId } = useFacility();
+  const facility = useFacility();
+  const facilityId = facilityIdOverride || facility.facilityId;
 
   return useMutation({
-    mutationFn: async (data: Partial<Plant>) =>
-      normalizePlantResponse(await api.post(endpoints.plants(facilityId!), data, token)),
+    mutationFn: async (data: Partial<Plant>) => {
+      if (!facilityId) throw new Error("facilityId required");
+      return normalizePlantResponse(
+        await api.post(endpoints.plants(facilityId), data, token)
+      );
+    },
     onSuccess: () => {
       qc.invalidateQueries({ queryKey: ["plants", facilityId] });
     }
   });
 }
 
-export function useUpdatePlant(id?: string) {
+export function useUpdatePlant(id?: string, facilityIdOverride?: string | null) {
   const updateQc = useQueryClient();
   const { token } = useAuth();
-  const { facilityId } = useFacility();
+  const facility = useFacility();
+  const facilityId = facilityIdOverride || facility.facilityId;
 
   return useMutation({
     mutationFn: (data: Partial<Plant> & { id?: string }) => {
       const plantIdValue = id ?? data.id;
       if (!plantIdValue) throw new Error("Plant id required");
+      if (!facilityId) throw new Error("facilityId required");
       return api
-        .patch(endpoints.plant(facilityId!, plantIdValue), data, token)
+        .patch(endpoints.plant(facilityId, plantIdValue), data, token)
         .then(normalizePlantResponse);
     },
     onSuccess: (_data, variables) => {
@@ -85,13 +94,17 @@ export function useUpdatePlant(id?: string) {
   });
 }
 
-export function useDeletePlant(id: string) {
+export function useDeletePlant(id: string, facilityIdOverride?: string | null) {
   const deleteQc = useQueryClient();
   const { token } = useAuth();
-  const { facilityId } = useFacility();
+  const facility = useFacility();
+  const facilityId = facilityIdOverride || facility.facilityId;
 
   return useMutation({
-    mutationFn: () => api.del(endpoints.plant(facilityId!, id), token),
+    mutationFn: () => {
+      if (!facilityId) throw new Error("facilityId required");
+      return api.del(endpoints.plant(facilityId, id), token);
+    },
     onSuccess: () => {
       deleteQc.invalidateQueries({ queryKey: ["plants", facilityId] });
       deleteQc.invalidateQueries({ queryKey: ["plant", facilityId, id] });

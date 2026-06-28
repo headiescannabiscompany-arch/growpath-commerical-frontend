@@ -10,6 +10,7 @@ import {
 } from "react-native";
 import { useLocalSearchParams, useRouter } from "expo-router";
 
+import { useEntitlements } from "@/entitlements";
 import { useCreatePlant, usePlants, useUpdatePlant } from "../../plants/hooks";
 
 function param(value?: string | string[]) {
@@ -26,11 +27,16 @@ function plantName(plant: any) {
 
 export default function AssignPlantsToGrow() {
   const router = useRouter();
-  const params = useLocalSearchParams<{ growId?: string | string[] }>();
+  const entitlements = useEntitlements();
+  const params = useLocalSearchParams<{
+    facilityId?: string | string[];
+    growId?: string | string[];
+  }>();
   const growId = param(params.growId);
-  const { data: plants, isLoading, refetch } = usePlants();
-  const createPlant = useCreatePlant();
-  const updatePlant = useUpdatePlant();
+  const facilityId = param(params.facilityId) || entitlements.facilityId || null;
+  const { data: plants, isLoading, refetch } = usePlants(facilityId);
+  const createPlant = useCreatePlant(facilityId);
+  const updatePlant = useUpdatePlant(undefined, facilityId);
 
   const [selected, setSelected] = useState<string[]>([]);
   const [plantDraft, setPlantDraft] = useState("");
@@ -63,7 +69,9 @@ export default function AssignPlantsToGrow() {
         growId: growId || undefined
       });
       const id = plantId(created?.plant || created?.created || created);
-      if (id) setSelected((current) => [...new Set([...current, id])]);
+      if (id && !(created as any)?.growId) {
+        setSelected((current) => [...new Set([...current, id])]);
+      }
       setPlantDraft("");
       await refetch();
       setFeedback("Plant added to this grow.");
