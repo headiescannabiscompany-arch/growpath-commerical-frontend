@@ -1,44 +1,322 @@
-import React from "react";
-import { View, Text, StyleSheet } from "react-native";
-import AppPage from "@/components/layout/AppPage";
-import AppCard from "@/components/layout/AppCard";
+import React, { useEffect, useMemo, useState } from "react";
+import {
+  ActivityIndicator,
+  Pressable,
+  StyleSheet,
+  Text,
+  TextInput,
+  View
+} from "react-native";
+import { useRouter } from "expo-router";
 
-const styles = StyleSheet.create({
-  headerTitle: {
-    fontSize: 22,
-    fontWeight: "700",
-    marginBottom: 4
-  },
-  headerSubtitle: {
-    fontSize: 14,
-    color: "#64748B"
-  },
-  cardTitle: {
-    fontSize: 16,
-    fontWeight: "700",
-    marginBottom: 6
-  },
-  cardDesc: {
-    fontSize: 14,
-    color: "#475569"
-  }
-});
+import { updateProfile } from "@/api/users";
+import { useAuth } from "@/auth/AuthContext";
+import AppCard from "@/components/layout/AppCard";
+import AppPage from "@/components/layout/AppPage";
+import { useEntitlements } from "@/entitlements";
+
+function normalizeStatus(value: unknown) {
+  const status = String(value || "inactive").toLowerCase();
+  if (["active", "trial", "trialing"].includes(status)) return status;
+  return status || "inactive";
+}
 
 export default function Profile() {
+  const router = useRouter();
+  const auth = useAuth();
+  const ent = useEntitlements();
+
+  const email = auth.user?.email || "";
+  const [emailDraft, setEmailDraft] = useState(email);
+  const [savingEmail, setSavingEmail] = useState(false);
+  const [emailFeedback, setEmailFeedback] = useState("");
+  const [emailError, setEmailError] = useState("");
+  const [loggingOut, setLoggingOut] = useState(false);
+
+  useEffect(() => {
+    setEmailDraft(email);
+  }, [email]);
+
+  const subscriptionStatus = normalizeStatus(auth.user?.subscriptionStatus);
+  const requestedPlan = auth.user?.plan || "free";
+  const activePlan = ent.plan || "free";
+  const mode = ent.mode || "personal";
+  const emailChanged = emailDraft.trim().toLowerCase() !== email.toLowerCase();
+  const canSaveEmail = emailDraft.trim().length > 3 && emailChanged && !savingEmail;
+
+  const planNote = useMemo(() => {
+    if (requestedPlan === activePlan && subscriptionStatus !== "inactive") {
+      return "Your subscription is active for this account.";
+    }
+    if (requestedPlan !== "free" && activePlan === "free") {
+      return "Checkout has not completed, so this account currently uses free access.";
+    }
+    return "Use Manage Plan to start or change checkout.";
+  }, [activePlan, requestedPlan, subscriptionStatus]);
+
+  async function handleSaveEmail() {
+    if (!canSaveEmail) return;
+    const nextEmail = emailDraft.trim().toLowerCase();
+    setSavingEmail(true);
+    setEmailFeedback("");
+    setEmailError("");
+    try {
+      await updateProfile({ email: nextEmail });
+      await auth.retryMe();
+      setEmailFeedback("Email updated.");
+    } catch (e: any) {
+      setEmailError(
+        e?.data?.error?.message ||
+          e?.data?.message ||
+          e?.message ||
+          "Failed to update email."
+      );
+    } finally {
+      setSavingEmail(false);
+    }
+  }
+
+  async function handleLogout() {
+    setLoggingOut(true);
+    try {
+      await auth.logout();
+      router.replace("/login");
+    } finally {
+      setLoggingOut(false);
+    }
+  }
+
   return (
     <AppPage
       routeKey="profile"
       header={
-        <View>
+        <View style={styles.header}>
+          <Text style={styles.kicker}>Account</Text>
           <Text style={styles.headerTitle}>Profile</Text>
-          <Text style={styles.headerSubtitle}>Account settings and preferences</Text>
+          <Text style={styles.headerSubtitle}>
+            Manage sign-in, plan status, and account access.
+          </Text>
         </View>
       }
     >
-      <AppCard>
-        <Text style={styles.cardTitle}>Account Details</Text>
-        <Text style={styles.cardDesc}>Stub screen</Text>
-      </AppCard>
+      <View style={styles.grid}>
+        <AppCard style={styles.card}>
+          <Text style={styles.cardTitle}>Sign-in email</Text>
+          <Text style={styles.cardText}>
+            This is the email used for login and account recovery.
+          </Text>
+          <TextInput
+            style={styles.input}
+            autoCapitalize="none"
+            autoCorrect={false}
+            keyboardType="email-address"
+            placeholder="email@example.com"
+            placeholderTextColor="#64748b"
+            value={emailDraft}
+            onChangeText={(value) => {
+              setEmailDraft(value);
+              setEmailFeedback("");
+              setEmailError("");
+            }}
+          />
+          {emailFeedback ? (
+            <Text style={styles.feedbackText}>{emailFeedback}</Text>
+          ) : null}
+          {emailError ? <Text style={styles.errorText}>{emailError}</Text> : null}
+          <Pressable
+            onPress={handleSaveEmail}
+            disabled={!canSaveEmail}
+            accessibilityRole="button"
+            accessibilityLabel="Update email"
+            style={[styles.primaryButton, !canSaveEmail && styles.disabledButton]}
+          >
+            {savingEmail ? (
+              <ActivityIndicator color="#ffffff" />
+            ) : (
+              <Text style={styles.primaryButtonText}>Update email</Text>
+            )}
+          </Pressable>
+        </AppCard>
+
+        <AppCard style={styles.card}>
+          <Text style={styles.cardTitle}>Plan status</Text>
+          <View style={styles.factGrid}>
+            <View style={styles.fact}>
+              <Text style={styles.factLabel}>Mode</Text>
+              <Text style={styles.factValue}>{mode}</Text>
+            </View>
+            <View style={styles.fact}>
+              <Text style={styles.factLabel}>Access plan</Text>
+              <Text style={styles.factValue}>{activePlan}</Text>
+            </View>
+            <View style={styles.fact}>
+              <Text style={styles.factLabel}>Requested plan</Text>
+              <Text style={styles.factValue}>{requestedPlan}</Text>
+            </View>
+            <View style={styles.fact}>
+              <Text style={styles.factLabel}>Subscription</Text>
+              <Text style={styles.factValue}>{subscriptionStatus}</Text>
+            </View>
+          </View>
+          <Text style={styles.cardText}>{planNote}</Text>
+          <Pressable
+            onPress={() => router.push("/offers")}
+            accessibilityRole="button"
+            accessibilityLabel="Manage plan"
+            style={styles.primaryButton}
+          >
+            <Text style={styles.primaryButtonText}>Manage plan</Text>
+          </Pressable>
+        </AppCard>
+
+        <AppCard style={styles.card}>
+          <Text style={styles.cardTitle}>Account type</Text>
+          <Text style={styles.cardText}>
+            Free, Pro, Commercial, and Facility accounts keep separate workflows so each
+            account only sees the grow interests and business tools it needs.
+          </Text>
+          <View style={styles.actionRow}>
+            <Pressable
+              onPress={() => router.push("/register")}
+              accessibilityRole="button"
+              accessibilityLabel="Create another account type"
+              style={styles.secondaryButton}
+            >
+              <Text style={styles.secondaryButtonText}>Create account</Text>
+            </Pressable>
+            <Pressable
+              onPress={() => router.push("/onboarding/guilds")}
+              accessibilityRole="button"
+              accessibilityLabel="Edit grow interests"
+              style={styles.secondaryButton}
+            >
+              <Text style={styles.secondaryButtonText}>Grow interests</Text>
+            </Pressable>
+          </View>
+        </AppCard>
+
+        <AppCard style={styles.card}>
+          <Text style={styles.cardTitle}>Session</Text>
+          <Text style={styles.cardText}>
+            Sign out before switching to a different account type or business.
+          </Text>
+          <Pressable
+            onPress={handleLogout}
+            disabled={loggingOut}
+            accessibilityRole="button"
+            accessibilityLabel="Log out"
+            style={[styles.dangerButton, loggingOut && styles.disabledButton]}
+          >
+            <Text style={styles.dangerButtonText}>
+              {loggingOut ? "Logging out..." : "Log out"}
+            </Text>
+          </Pressable>
+        </AppCard>
+      </View>
     </AppPage>
   );
 }
+
+const styles = StyleSheet.create({
+  header: { gap: 6 },
+  kicker: {
+    color: "#166534",
+    fontSize: 12,
+    fontWeight: "900",
+    textTransform: "uppercase"
+  },
+  headerTitle: {
+    color: "#111827",
+    fontSize: 30,
+    fontWeight: "900"
+  },
+  headerSubtitle: {
+    color: "#64748b",
+    fontSize: 14,
+    fontWeight: "700"
+  },
+  grid: { gap: 12 },
+  card: { gap: 12 },
+  cardTitle: {
+    color: "#111827",
+    fontSize: 18,
+    fontWeight: "900"
+  },
+  cardText: {
+    color: "#475569",
+    fontSize: 14,
+    fontWeight: "700",
+    lineHeight: 20
+  },
+  input: {
+    backgroundColor: "#ffffff",
+    borderColor: "#cbd5e1",
+    borderRadius: 8,
+    borderWidth: 1,
+    color: "#111827",
+    fontSize: 15,
+    paddingHorizontal: 12,
+    paddingVertical: 11
+  },
+  feedbackText: { color: "#047857", fontSize: 13, fontWeight: "800" },
+  errorText: { color: "#b91c1c", fontSize: 13, fontWeight: "800" },
+  factGrid: {
+    flexDirection: "row",
+    flexWrap: "wrap",
+    gap: 10
+  },
+  fact: {
+    backgroundColor: "#f8fafc",
+    borderColor: "#e2e8f0",
+    borderRadius: 8,
+    borderWidth: 1,
+    minWidth: 150,
+    padding: 10
+  },
+  factLabel: {
+    color: "#64748b",
+    fontSize: 12,
+    fontWeight: "900",
+    textTransform: "uppercase"
+  },
+  factValue: {
+    color: "#111827",
+    fontSize: 15,
+    fontWeight: "900",
+    marginTop: 4,
+    textTransform: "capitalize"
+  },
+  actionRow: {
+    flexDirection: "row",
+    flexWrap: "wrap",
+    gap: 10
+  },
+  primaryButton: {
+    alignItems: "center",
+    backgroundColor: "#166534",
+    borderRadius: 8,
+    paddingVertical: 12
+  },
+  disabledButton: { opacity: 0.55 },
+  primaryButtonText: { color: "#ffffff", fontWeight: "900" },
+  secondaryButton: {
+    alignItems: "center",
+    backgroundColor: "#ffffff",
+    borderColor: "#cbd5e1",
+    borderRadius: 8,
+    borderWidth: 1,
+    flexGrow: 1,
+    paddingHorizontal: 12,
+    paddingVertical: 11
+  },
+  secondaryButtonText: { color: "#111827", fontWeight: "900" },
+  dangerButton: {
+    alignItems: "center",
+    backgroundColor: "#ffffff",
+    borderColor: "#fecaca",
+    borderRadius: 8,
+    borderWidth: 1,
+    paddingVertical: 12
+  },
+  dangerButtonText: { color: "#b91c1c", fontWeight: "900" }
+});
