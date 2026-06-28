@@ -256,6 +256,10 @@ export function resolveWorkspaceMode(
   return "personal";
 }
 
+export function shouldApplyFacilityRoleCapabilities(mode: EntitlementsMode) {
+  return mode === "facility";
+}
+
 // Pure "apply" function (no side effects other than returning next state)
 function applyServerCtx(
   prev: Omit<EntitlementsState, "can">,
@@ -305,7 +309,7 @@ function applyServerCtx(
   warnUnknownCapsOnce(unknownKeys);
   applyUniversalCapabilities(normalized);
   applyPlanCapabilities(normalized, plan, mode);
-  if (plan === "facility") {
+  if (shouldApplyFacilityRoleCapabilities(mode)) {
     applyFacilityRoleCapabilities(normalized, facilityRole);
   }
 

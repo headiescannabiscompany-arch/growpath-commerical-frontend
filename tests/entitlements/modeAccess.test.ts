@@ -3,7 +3,8 @@ import { CAPABILITY_KEYS } from "../../src/entitlements/capabilityKeys";
 import {
   getEffectivePlan,
   resolveEntitlementsMode,
-  resolveWorkspaceMode
+  resolveWorkspaceMode,
+  shouldApplyFacilityRoleCapabilities
 } from "../../src/entitlements/EntitlementsProvider";
 
 describe("entitlement mode access", () => {
@@ -62,5 +63,11 @@ describe("entitlement mode access", () => {
     expect(resolveWorkspaceMode("facility", "personal")).toBe("facility");
     expect(resolveWorkspaceMode("commercial", "personal")).toBe("commercial");
     expect(resolveWorkspaceMode("pro", "personal")).toBe("personal");
+  });
+
+  it("applies facility role capabilities by workspace mode, not paid plan", () => {
+    expect(shouldApplyFacilityRoleCapabilities("facility")).toBe(true);
+    expect(shouldApplyFacilityRoleCapabilities("commercial")).toBe(false);
+    expect(shouldApplyFacilityRoleCapabilities("personal")).toBe(false);
   });
 });
