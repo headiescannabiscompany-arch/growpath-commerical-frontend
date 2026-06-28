@@ -7,7 +7,7 @@ export type RouteAccessSnapshot = {
 };
 
 export type RoutePolicy = {
-  mode: RouteAccessSnapshot["mode"];
+  mode: RouteAccessSnapshot["mode"] | RouteAccessSnapshot["mode"][];
   capabilities: string[];
 };
 
@@ -44,7 +44,7 @@ const COMMERCIAL_RULES: RouteRule[] = [
   },
   {
     matches: startsWith("/feed"),
-    mode: "commercial",
+    mode: ["commercial", "facility"],
     capabilities: [CAPABILITY_KEYS.COMMERCIAL_FEED_VIEW]
   },
   {
@@ -79,7 +79,8 @@ export function getRoutePolicy(pathname: string): RoutePolicy | null {
 export function canAccessRoute(pathname: string, snapshot: RouteAccessSnapshot): boolean {
   const policy = getRoutePolicy(pathname);
   if (!policy) return true;
-  if (!snapshot.ready || snapshot.mode !== policy.mode) return false;
+  const modes = Array.isArray(policy.mode) ? policy.mode : [policy.mode];
+  if (!snapshot.ready || !modes.includes(snapshot.mode)) return false;
   return policy.capabilities.every(
     (capability) => snapshot.capabilities?.[capability] === true
   );

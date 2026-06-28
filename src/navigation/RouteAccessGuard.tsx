@@ -26,13 +26,14 @@ export function RouteAccessGuard({ children }: { children: React.ReactNode }) {
   });
 
   if (!allowed) {
-    const wrongMode = entitlements.mode !== policy.mode;
+    const modes = Array.isArray(policy.mode) ? policy.mode : [policy.mode];
+    const wrongMode = !modes.includes(entitlements.mode);
     return (
       <View accessibilityRole="alert" style={styles.centered}>
         <Text style={styles.title}>Access denied</Text>
         <Text style={styles.message}>
           {wrongMode
-            ? `This page is only available in ${policy.mode} mode.`
+            ? `This page is only available in ${modes.join(" or ")} mode.`
             : "Your account does not have access to this page."}
         </Text>
       </View>
