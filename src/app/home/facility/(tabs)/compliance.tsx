@@ -79,7 +79,7 @@ export default function FacilityComplianceTab() {
   const [feedback, setFeedback] = useState("");
 
   const [deviationTitle, setDeviationTitle] = useState("");
-  const [deviationSeverity, setDeviationSeverity] = useState("medium");
+  const [deviationSeverity, setDeviationSeverity] = useState("minor");
   const [deviationDescription, setDeviationDescription] = useState("");
   const [sopTitle, setSopTitle] = useState("");
   const [sopContent, setSopContent] = useState("");
@@ -97,7 +97,6 @@ export default function FacilityComplianceTab() {
       if (!facilityId) return;
       if (opts?.refresh) setRefreshing(true);
       else setLoading(true);
-      setFeedback("");
 
       try {
         clearError();
@@ -176,7 +175,9 @@ export default function FacilityComplianceTab() {
     setSaving(true);
     setFeedback("");
     try {
-      await resolveDeviation(facilityId, id, { resolution: "Resolved from compliance tab." });
+      await resolveDeviation(facilityId, id, {
+        resolution: "Resolved from compliance tab."
+      });
       await writeAudit(
         "COMPLIANCE_DEVIATION_RESOLVED",
         `Deviation ${id} resolved in facility ${facilityId}`
@@ -266,7 +267,10 @@ export default function FacilityComplianceTab() {
       <ScrollView
         contentContainerStyle={styles.container}
         refreshControl={
-          <RefreshControl refreshing={refreshing} onRefresh={() => load({ refresh: true })} />
+          <RefreshControl
+            refreshing={refreshing}
+            onRefresh={() => load({ refresh: true })}
+          />
         }
       >
         {error ? <InlineError error={error} /> : null}
@@ -276,7 +280,8 @@ export default function FacilityComplianceTab() {
           <View>
             <Text style={styles.h1}>Compliance</Text>
             <Text style={styles.muted}>
-              Facility-scoped primitives for deviations, SOPs, verification, and audit events.
+              Facility-scoped primitives for deviations, SOPs, verification, and audit
+              events.
             </Text>
             <Text style={styles.ownerLine}>Facility: {facilityId || "none"}</Text>
           </View>
@@ -287,7 +292,8 @@ export default function FacilityComplianceTab() {
           <View style={styles.card}>
             <Text style={styles.cardTitle}>No Compliance Access</Text>
             <Text style={styles.muted}>
-              This account does not have the `COMPLIANCE_READ` capability for the selected facility.
+              This account does not have the `COMPLIANCE_READ` capability for the selected
+              facility.
             </Text>
           </View>
         ) : null}
@@ -343,7 +349,10 @@ export default function FacilityComplianceTab() {
                   <Pressable
                     onPress={addDeviation}
                     disabled={saving || !deviationTitle.trim()}
-                    style={[styles.primaryBtn, (saving || !deviationTitle.trim()) && styles.disabled]}
+                    style={[
+                      styles.primaryBtn,
+                      (saving || !deviationTitle.trim()) && styles.disabled
+                    ]}
                   >
                     <Text style={styles.primaryText}>Create Deviation</Text>
                   </Pressable>
@@ -358,12 +367,18 @@ export default function FacilityComplianceTab() {
                   const id = rowId(item);
                   return (
                     <View key={id || item.title} style={styles.row}>
-                      <Text style={styles.rowTitle}>{item.title || item.description || "Deviation"}</Text>
+                      <Text style={styles.rowTitle}>
+                        {item.title || item.description || "Deviation"}
+                      </Text>
                       <Text style={styles.rowMeta}>
                         {item.severity || "severity n/a"} | {item.status || "open"}
                       </Text>
                       {canResolveCompliance && id ? (
-                        <Pressable onPress={() => resolve(id)} disabled={saving} style={styles.secondaryBtn}>
+                        <Pressable
+                          onPress={() => resolve(id)}
+                          disabled={saving}
+                          style={styles.secondaryBtn}
+                        >
                           <Text style={styles.secondaryText}>Resolve</Text>
                         </Pressable>
                       ) : null}
@@ -389,14 +404,24 @@ export default function FacilityComplianceTab() {
                     const id = rowId(record);
                     return (
                       <View key={id || record.name} style={styles.row}>
-                        <Text style={styles.rowTitle}>{record.name || record.description || "Verification record"}</Text>
+                        <Text style={styles.rowTitle}>
+                          {record.name || record.description || "Verification record"}
+                        </Text>
                         <Text style={styles.rowMeta}>{record.status || "pending"}</Text>
                         {canWriteCompliance && id ? (
                           <View style={styles.buttonRow}>
-                            <Pressable onPress={() => verify(id)} disabled={saving} style={styles.primaryBtn}>
+                            <Pressable
+                              onPress={() => verify(id)}
+                              disabled={saving}
+                              style={styles.primaryBtn}
+                            >
                               <Text style={styles.primaryText}>Approve</Text>
                             </Pressable>
-                            <Pressable onPress={() => reject(id)} disabled={saving} style={styles.dangerBtn}>
+                            <Pressable
+                              onPress={() => reject(id)}
+                              disabled={saving}
+                              style={styles.dangerBtn}
+                            >
                               <Text style={styles.dangerText}>Reject</Text>
                             </Pressable>
                           </View>
@@ -430,7 +455,10 @@ export default function FacilityComplianceTab() {
                   <Pressable
                     onPress={addSop}
                     disabled={saving || !sopTitle.trim()}
-                    style={[styles.primaryBtn, (saving || !sopTitle.trim()) && styles.disabled]}
+                    style={[
+                      styles.primaryBtn,
+                      (saving || !sopTitle.trim()) && styles.disabled
+                    ]}
                   >
                     <Text style={styles.primaryText}>Create SOP</Text>
                   </Pressable>
@@ -451,15 +479,22 @@ export default function FacilityComplianceTab() {
             <View style={styles.card}>
               <View style={styles.cardHeader}>
                 <Text style={styles.cardTitle}>Audit Events</Text>
-                <Pressable onPress={() => router.push("/home/facility/audit-logs" as any)}>
+                <Pressable
+                  onPress={() => router.push("/home/facility/audit-logs" as any)}
+                >
                   <Text style={styles.link}>Open audit logs</Text>
                 </Pressable>
               </View>
               {canReadAudit ? (
                 auditLogs.slice(0, 5).map((log, index) => (
-                  <View key={`${log.timestamp || index}-${log.action}`} style={styles.row}>
+                  <View
+                    key={`${log.timestamp || index}-${log.action}`}
+                    style={styles.row}
+                  >
                     <Text style={styles.rowTitle}>{log.action || "Audit event"}</Text>
-                    <Text style={styles.rowMeta}>{log.details || log.timestamp || ""}</Text>
+                    <Text style={styles.rowMeta}>
+                      {log.details || log.timestamp || ""}
+                    </Text>
                   </View>
                 ))
               ) : (
@@ -542,5 +577,11 @@ const styles = StyleSheet.create({
   dangerText: { color: "#B91C1C", fontWeight: "800" },
   disabled: { opacity: 0.55 },
   link: { color: "#2563eb", fontWeight: "800" },
-  feedback: { color: "#334155", backgroundColor: "#F1F5F9", borderRadius: 9, padding: 9, fontWeight: "700" }
+  feedback: {
+    color: "#334155",
+    backgroundColor: "#F1F5F9",
+    borderRadius: 9,
+    padding: 9,
+    fontWeight: "700"
+  }
 });

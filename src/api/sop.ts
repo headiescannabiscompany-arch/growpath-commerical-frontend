@@ -6,13 +6,25 @@ export type SOPTemplate = {
   _id?: string;
   title?: string;
   content?: string;
+  description?: string;
+  category?: string;
+  isActive?: boolean;
   version?: number;
   createdAt?: string;
 };
 
+function normalizeSOPList(value: any): SOPTemplate[] {
+  const rows = value?.templates ?? value?.items ?? value?.sops ?? value?.data ?? value;
+  return Array.isArray(rows) ? rows : [];
+}
+
+function normalizeSOP(value: any): SOPTemplate {
+  return value?.created ?? value?.template ?? value?.sop ?? value?.item ?? value;
+}
+
 export async function getSOPTemplates(facilityId: string): Promise<SOPTemplate[]> {
   const listRes = await apiRequest(endpoints.sopTemplates(facilityId));
-  return listRes?.templates ?? listRes?.data ?? listRes ?? [];
+  return normalizeSOPList(listRes);
 }
 
 export async function createSOPTemplate(
@@ -23,7 +35,7 @@ export async function createSOPTemplate(
     method: "POST",
     body: data
   });
-  return createRes?.created ?? createRes?.template ?? createRes;
+  return normalizeSOP(createRes);
 }
 
 export async function updateSOPTemplate(
@@ -35,7 +47,7 @@ export async function updateSOPTemplate(
     method: "PUT",
     body: data
   });
-  return updateRes?.updated ?? updateRes?.template ?? updateRes;
+  return normalizeSOP(updateRes?.updated ?? updateRes);
 }
 
 export async function deleteSOPTemplate(facilityId: string, id: string): Promise<any> {
