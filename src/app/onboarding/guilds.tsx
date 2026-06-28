@@ -142,6 +142,8 @@ export default function GuildOnboardingScreen() {
                       onPress={() =>
                         setInterests((prev) => toggle(prev, "crops", option))
                       }
+                      accessibilityRole="button"
+                      accessibilityLabel={`${active ? "Remove" : "Select"} ${option}`}
                       style={[styles.chip, active && styles.chipActive]}
                     >
                       <Text style={[styles.chipText, active && styles.chipTextActive]}>
@@ -166,6 +168,8 @@ export default function GuildOnboardingScreen() {
                       onPress={() =>
                         setInterests((prev) => toggle(prev, tier.id, option))
                       }
+                      accessibilityRole="button"
+                      accessibilityLabel={`${active ? "Remove" : "Select"} ${option}`}
                       style={[styles.chip, active && styles.chipActive]}
                     >
                       <Text style={[styles.chipText, active && styles.chipTextActive]}>
@@ -204,6 +208,10 @@ export default function GuildOnboardingScreen() {
                 <Pressable
                   key={id || guild.name}
                   onPress={() => id && toggleGuild(id)}
+                  accessibilityRole="button"
+                  accessibilityLabel={`${active ? "Leave" : "Join"} ${
+                    guild.name || "guild"
+                  }`}
                   style={[styles.guildRow, active && styles.guildRowActive]}
                 >
                   <Text style={styles.guildTitle}>{guild.name || "Guild"}</Text>
@@ -221,6 +229,8 @@ export default function GuildOnboardingScreen() {
           <Pressable
             onPress={save}
             disabled={!canContinue}
+            accessibilityRole="button"
+            accessibilityLabel="Continue after selecting guilds"
             style={[styles.button, !canContinue && styles.buttonDisabled]}
           >
             {saving ? (

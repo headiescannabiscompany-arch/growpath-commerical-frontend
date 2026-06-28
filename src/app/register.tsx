@@ -136,6 +136,8 @@ export default function RegisterScreen() {
                 <Pressable
                   key={item.key}
                   onPress={() => setChoice(item)}
+                  accessibilityRole="button"
+                  accessibilityLabel={`Select ${item.label} account`}
                   style={({ pressed }) => [
                     styles.choice,
                     active && styles.choiceActive,
@@ -193,6 +195,8 @@ export default function RegisterScreen() {
           <Pressable
             onPress={onSubmit}
             disabled={!canSubmit}
+            accessibilityRole="button"
+            accessibilityLabel={`Create ${choice.label} account`}
             style={[styles.button, !canSubmit && styles.buttonDisabled]}
           >
             {submitting ? (
@@ -202,7 +206,12 @@ export default function RegisterScreen() {
             )}
           </Pressable>
 
-          <Pressable onPress={() => router.replace("/login")} style={styles.linkBtn}>
+          <Pressable
+            onPress={() => router.replace("/login")}
+            accessibilityRole="button"
+            accessibilityLabel="Back to login"
+            style={styles.linkBtn}
+          >
             <Text style={styles.linkText}>Back to login</Text>
           </Pressable>
         </View>
