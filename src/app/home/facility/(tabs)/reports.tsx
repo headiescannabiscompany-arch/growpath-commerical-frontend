@@ -135,10 +135,17 @@ export default function FacilityReportsTab() {
             <Text style={styles.muted}>Summary from the facility reports endpoint.</Text>
           </View>
           <View style={styles.actions}>
-            <Pressable style={styles.button} onPress={() => load({ refresh: true })}>
+            <Pressable
+              accessibilityRole="button"
+              accessibilityLabel="Refresh facility reports"
+              style={styles.button}
+              onPress={() => load({ refresh: true })}
+            >
               <Text style={styles.buttonText}>Refresh</Text>
             </Pressable>
             <Pressable
+              accessibilityRole="button"
+              accessibilityLabel="Export compliance packet"
               style={[styles.button, exporting ? styles.buttonDisabled : null]}
               disabled={exporting}
               onPress={exportCompliancePacket}
