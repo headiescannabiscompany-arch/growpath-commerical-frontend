@@ -115,6 +115,10 @@ export default function Offers() {
                 <Pressable
                   key={item}
                   onPress={() => setInterval(item)}
+                  accessibilityRole="button"
+                  accessibilityLabel={
+                    item === "monthly" ? "Monthly billing" : "Yearly billing"
+                  }
                   style={[styles.segmentButton, active && styles.segmentButtonActive]}
                 >
                   <Text style={[styles.segmentText, active && styles.segmentTextActive]}>
@@ -162,6 +166,8 @@ export default function Offers() {
               <Pressable
                 onPress={() => startCheckout(plan.key)}
                 disabled={loading}
+                accessibilityRole="button"
+                accessibilityLabel={`Start ${plan.title} checkout`}
                 style={[styles.button, loading && styles.buttonDisabled]}
               >
                 <Text style={styles.buttonText}>
