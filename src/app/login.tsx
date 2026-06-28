@@ -110,6 +110,8 @@ export default function LoginScreen() {
           <Pressable
             onPress={onSubmit}
             disabled={!canSubmit}
+            accessibilityRole="button"
+            accessibilityLabel="Sign in"
             style={[styles.button, !canSubmit && styles.buttonDisabled]}
           >
             {submitting ? (
@@ -119,7 +121,12 @@ export default function LoginScreen() {
             )}
           </Pressable>
 
-          <Pressable onPress={() => router.push("/register")} style={styles.linkBtn}>
+          <Pressable
+            onPress={() => router.push("/register")}
+            accessibilityRole="button"
+            accessibilityLabel="Create account"
+            style={styles.linkBtn}
+          >
             <Text style={styles.linkText}>Create account</Text>
           </Pressable>
         </View>
