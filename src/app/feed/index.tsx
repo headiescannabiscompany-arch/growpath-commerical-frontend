@@ -1,4 +1,4 @@
-import React, { useMemo, useState } from "react";
+import React, { useCallback, useEffect, useMemo, useState } from "react";
 import {
   ActivityIndicator,
   Pressable,
@@ -6,126 +6,158 @@ import {
   ScrollView,
   StyleSheet,
   Text,
+  TextInput,
   View
 } from "react-native";
-import { Link, Redirect } from "expo-router";
+import { Redirect } from "expo-router";
 
 import { InlineError } from "@/components/InlineError";
+import {
+  createCommercialFeedPost,
+  listCommercialFeedPosts,
+  type CommercialFeedPost,
+  type CommercialFeedPostType
+} from "@/api/commercialFeed";
 import { useEntitlements } from "@/entitlements";
-import { useCommercialFeed } from "@/features/feed/hooks/useCommercialFeed";
-import type { FeedItem } from "@/features/feed/types/feed";
-import { useFacility } from "@/facility/FacilityProvider";
-import { canAccessRoute } from "@/navigation/routeAccess";
 
-const TYPE_FILTERS = ["all", "task", "alert", "log"] as const;
-const STATUS_FILTERS = ["all", "open", "done", "ack", "closed", "info"] as const;
+const COMMERCIAL_TYPES: CommercialFeedPostType[] = [
+  "update",
+  "listing",
+  "iso",
+  "drop",
+  "question",
+  "education"
+];
+const FACILITY_TYPES: CommercialFeedPostType[] = ["education"];
 
-function itemId(item: Partial<FeedItem>, index: number) {
-  return String((item as any)?.id ?? `${(item as any)?.type ?? "item"}-${index}`);
+function authorLabel(post: CommercialFeedPost) {
+  return post.author?.displayName || post.author?.email || "GrowPath member";
 }
 
-function itemTitle(item: Partial<FeedItem>) {
-  const raw = item as any;
-  return String(
-    raw?.title ??
-      raw?.metadata?.title ??
-      raw?.metadata?.name ??
-      raw?.metadata?.action ??
-      `${raw?.type ?? "Activity"} update`
-  );
+function postMeta(post: CommercialFeedPost) {
+  const created = post.createdAt ? new Date(post.createdAt).toLocaleString() : "";
+  return [authorLabel(post), created, post.location].filter(Boolean).join(" - ");
 }
 
-function itemBody(item: Partial<FeedItem>) {
-  const raw = item as any;
-  return String(raw?.body ?? raw?.metadata?.body ?? raw?.metadata?.message ?? "");
-}
-
-function itemMeta(item: Partial<FeedItem>) {
-  const raw = item as any;
-  const actor = raw?.actor?.name ? `By ${raw.actor.name}` : "";
-  const created = raw?.createdAt ? new Date(raw.createdAt).toLocaleString() : "";
-  return [actor, created].filter(Boolean).join(" - ");
-}
-
-function statusLabel(item: Partial<FeedItem>) {
-  return String((item as any)?.status ?? "info");
+function splitTags(value: string) {
+  return value
+    .split(",")
+    .map((tag) => tag.trim())
+    .filter(Boolean);
 }
 
 export default function CommercialFeedRoute() {
   const ent = useEntitlements();
-  const facility = useFacility();
-  const facilityId = facility.selectedId ?? null;
-  const [type, setType] = useState<(typeof TYPE_FILTERS)[number]>("all");
-  const [status, setStatus] = useState<(typeof STATUS_FILTERS)[number]>("all");
+  const isFacility = ent.mode === "facility";
+  const isCommercial = ent.mode === "commercial";
+  const allowedTypes = isFacility ? FACILITY_TYPES : COMMERCIAL_TYPES;
 
-  const filters = useMemo(
-    () => ({
-      ...(type !== "all" ? { types: type } : {}),
-      ...(status !== "all" ? { status } : {})
-    }),
-    [status, type]
+  const [items, setItems] = useState<CommercialFeedPost[]>([]);
+  const [type, setType] = useState<CommercialFeedPostType>(allowedTypes[0]);
+  const [filterType, setFilterType] = useState<string>("all");
+  const [q, setQ] = useState("");
+  const [title, setTitle] = useState("");
+  const [body, setBody] = useState("");
+  const [tags, setTags] = useState("");
+  const [location, setLocation] = useState("");
+  const [loading, setLoading] = useState(false);
+  const [refreshing, setRefreshing] = useState(false);
+  const [creating, setCreating] = useState(false);
+  const [error, setError] = useState<any>(null);
+  const [feedback, setFeedback] = useState("");
+
+  useEffect(() => {
+    if (!allowedTypes.includes(type)) setType(allowedTypes[0]);
+  }, [allowedTypes, type]);
+
+  const canAccess = ent.ready && (isCommercial || isFacility);
+  const canCreate = body.trim().length > 0 && !creating;
+
+  const helper = useMemo(
+    () =>
+      isFacility
+        ? "Facility posts are education-only. Share training, SOP, IPM, safety, cultivation, and compliance lessons. Sales listings are blocked."
+        : "Share updates, listings, ISO requests, drops, questions, or educational content with the commercial network.",
+    [isFacility]
   );
 
-  const access = canAccessRoute("/feed", {
-    ready: ent.ready,
-    mode: ent.mode,
-    capabilities: ent.capabilities
-  });
+  const load = useCallback(
+    async (opts?: { refresh?: boolean }) => {
+      if (!canAccess) return;
+      if (opts?.refresh) setRefreshing(true);
+      else setLoading(true);
+      setError(null);
+      try {
+        const res = await listCommercialFeedPosts({
+          type: filterType,
+          q: q.trim(),
+          limit: 30
+        });
+        setItems(res.items);
+      } catch (e) {
+        setError(e);
+      } finally {
+        setLoading(false);
+        setRefreshing(false);
+      }
+    },
+    [canAccess, filterType, q]
+  );
 
-  const {
-    items,
-    isLoading,
-    isRefreshing,
-    isFetchingNextPage,
-    refetch,
-    fetchNextPage,
-    hasNextPage,
-    error
-  } = useCommercialFeed({
-    facilityId,
-    filters
-  });
+  useEffect(() => {
+    void load();
+  }, [load]);
+
+  async function createPost() {
+    if (!canCreate) return;
+    setCreating(true);
+    setError(null);
+    setFeedback("");
+    try {
+      await createCommercialFeedPost({
+        type,
+        title: title.trim(),
+        body: body.trim(),
+        tags: splitTags(tags),
+        location: location.trim()
+      });
+      setTitle("");
+      setBody("");
+      setTags("");
+      setLocation("");
+      setFeedback(isFacility ? "Educational post published." : "Feed post published.");
+      await load({ refresh: true });
+    } catch (e) {
+      setError(e);
+    } finally {
+      setCreating(false);
+    }
+  }
 
   if (!ent.ready) return null;
-  if (!access) return <Redirect href="/home/personal" />;
+  if (!canAccess) return <Redirect href="/home/personal" />;
 
   return (
     <ScrollView
       contentContainerStyle={styles.container}
       refreshControl={
         <RefreshControl
-          refreshing={isRefreshing}
-          onRefresh={() => {
-            void refetch();
-          }}
+          refreshing={refreshing}
+          onRefresh={() => void load({ refresh: true })}
         />
       }
     >
       <View style={styles.header}>
-        <Text style={styles.title}>Commercial Feed</Text>
-        <Text style={styles.subtitle}>
-          Tasks, alerts, and grow-log activity for the active facility.
+        <Text style={styles.title}>
+          {isFacility ? "Facility Education Feed" : "Commercial Feed"}
         </Text>
+        <Text style={styles.subtitle}>{helper}</Text>
       </View>
 
-      {!facilityId ? (
-        <View style={styles.card}>
-          <Text style={styles.cardTitle}>Select a facility</Text>
-          <Text style={styles.muted}>
-            Commercial feed activity is scoped to a facility.
-          </Text>
-          <Link href="/facilities" asChild>
-            <Text style={styles.link}>Choose Facility</Text>
-          </Link>
-        </View>
-      ) : null}
-
-      {error ? <InlineError error={error} /> : null}
-
-      <View style={styles.filters}>
-        <Text style={styles.filterLabel}>Type</Text>
+      <View style={styles.card}>
+        <Text style={styles.cardTitle}>Create Post</Text>
         <View style={styles.chipRow}>
-          {TYPE_FILTERS.map((option) => (
+          {allowedTypes.map((option) => (
             <Pressable
               key={option}
               onPress={() => setType(option)}
@@ -137,155 +169,205 @@ export default function CommercialFeedRoute() {
             </Pressable>
           ))}
         </View>
+        <TextInput
+          value={title}
+          onChangeText={setTitle}
+          style={styles.input}
+          placeholder={isFacility ? "Educational topic" : "Title"}
+        />
+        <TextInput
+          value={body}
+          onChangeText={setBody}
+          style={[styles.input, styles.bodyInput]}
+          placeholder={
+            isFacility
+              ? "Teach something useful: SOP notes, scouting lesson, compliance tip..."
+              : "What do you want to share?"
+          }
+          multiline
+        />
+        <TextInput
+          value={tags}
+          onChangeText={setTags}
+          style={styles.input}
+          placeholder="Tags, comma separated"
+        />
+        <TextInput
+          value={location}
+          onChangeText={setLocation}
+          style={styles.input}
+          placeholder="Location (optional)"
+        />
+        <Pressable
+          onPress={createPost}
+          disabled={!canCreate}
+          style={[styles.primaryButton, !canCreate && styles.disabled]}
+        >
+          <Text style={styles.primaryButtonText}>
+            {creating
+              ? "Publishing..."
+              : isFacility
+                ? "Publish Education"
+                : "Publish Post"}
+          </Text>
+        </Pressable>
+        {feedback ? <Text style={styles.feedback}>{feedback}</Text> : null}
+      </View>
 
-        <Text style={styles.filterLabel}>Status</Text>
+      {error ? <InlineError error={error} /> : null}
+
+      <View style={styles.filters}>
+        <Text style={styles.filterLabel}>Filter</Text>
         <View style={styles.chipRow}>
-          {STATUS_FILTERS.map((option) => (
+          {["all", ...COMMERCIAL_TYPES].map((option) => (
             <Pressable
               key={option}
-              onPress={() => setStatus(option)}
-              style={[styles.chip, status === option && styles.chipSelected]}
+              onPress={() => setFilterType(option)}
+              style={[styles.chip, filterType === option && styles.chipSelected]}
             >
               <Text
-                style={[styles.chipText, status === option && styles.chipTextSelected]}
+                style={[
+                  styles.chipText,
+                  filterType === option && styles.chipTextSelected
+                ]}
               >
                 {option}
               </Text>
             </Pressable>
           ))}
         </View>
+        <TextInput
+          value={q}
+          onChangeText={setQ}
+          style={styles.input}
+          placeholder="Search feed"
+          autoCapitalize="none"
+        />
       </View>
 
-      {isLoading && items.length === 0 ? (
+      {loading ? (
         <View style={styles.loading}>
           <ActivityIndicator />
-          <Text style={styles.muted}>Loading activity...</Text>
+          <Text style={styles.muted}>Loading feed...</Text>
         </View>
       ) : null}
 
-      {!isLoading && facilityId && items.length === 0 ? (
+      {!loading && items.length === 0 ? (
         <View style={styles.card}>
-          <Text style={styles.cardTitle}>No activity yet</Text>
+          <Text style={styles.cardTitle}>No posts yet</Text>
           <Text style={styles.muted}>
-            Facility tasks, alerts, and grow-log updates will appear here as they are
-            created.
+            Publish the first {isFacility ? "educational" : "commercial"} post.
           </Text>
         </View>
       ) : null}
 
-      {items.map((item, index) => {
-        const meta = itemMeta(item);
-        const body = itemBody(item);
-
-        return (
-          <View key={itemId(item, index)} style={styles.item}>
-            <View style={styles.itemHeader}>
-              <Text style={styles.itemType}>{String((item as any)?.type ?? "item")}</Text>
-              <Text style={styles.itemStatus}>{statusLabel(item)}</Text>
-            </View>
-            <Text style={styles.itemTitle}>{itemTitle(item)}</Text>
-            {body ? <Text style={styles.itemBody}>{body}</Text> : null}
-            {meta ? <Text style={styles.itemMeta}>{meta}</Text> : null}
+      {items.map((post) => (
+        <View key={post.id} style={styles.post}>
+          <View style={styles.postHeader}>
+            <Text style={styles.typePill}>{post.type}</Text>
+            <Text style={styles.likes}>{Number(post.likeCount || 0)} likes</Text>
           </View>
-        );
-      })}
-
-      {hasNextPage ? (
-        <Pressable
-          onPress={() => {
-            void fetchNextPage();
-          }}
-          disabled={isFetchingNextPage}
-          style={[styles.loadMore, isFetchingNextPage && styles.disabled]}
-        >
-          <Text style={styles.loadMoreText}>
-            {isFetchingNextPage ? "Loading..." : "Load More"}
-          </Text>
-        </Pressable>
-      ) : null}
+          <Text style={styles.postTitle}>{post.title || "Feed update"}</Text>
+          <Text style={styles.postBody}>{post.body}</Text>
+          {post.tags.length ? (
+            <Text style={styles.tags}>{post.tags.map((tag) => `#${tag}`).join(" ")}</Text>
+          ) : null}
+          <Text style={styles.meta}>{postMeta(post)}</Text>
+        </View>
+      ))}
     </ScrollView>
   );
 }
 
 const styles = StyleSheet.create({
   container: {
-    padding: 16,
-    paddingBottom: 32,
+    backgroundColor: "#F8FAFC",
     gap: 12,
-    backgroundColor: "#F8FAFC"
+    padding: 16,
+    paddingBottom: 32
   },
-  header: { gap: 4 },
-  title: { fontSize: 24, fontWeight: "900", color: "#0F172A" },
-  subtitle: { color: "#475569", lineHeight: 20 },
+  header: { gap: 5 },
+  title: { color: "#0F172A", fontSize: 25, fontWeight: "900" },
+  subtitle: { color: "#475569", fontWeight: "700", lineHeight: 21, maxWidth: 860 },
   card: {
-    borderWidth: 1,
+    backgroundColor: "white",
     borderColor: "#CBD5E1",
     borderRadius: 8,
-    padding: 14,
-    backgroundColor: "white",
-    gap: 8
-  },
-  cardTitle: { fontSize: 16, fontWeight: "900", color: "#0F172A" },
-  muted: { color: "#64748B", lineHeight: 20 },
-  link: { color: "#2563EB", fontWeight: "800" },
-  filters: {
     borderWidth: 1,
+    gap: 10,
+    padding: 14
+  },
+  cardTitle: { color: "#0F172A", fontSize: 16, fontWeight: "900" },
+  input: {
+    backgroundColor: "white",
     borderColor: "#CBD5E1",
     borderRadius: 8,
-    padding: 12,
-    backgroundColor: "white",
-    gap: 8
+    borderWidth: 1,
+    color: "#0F172A",
+    paddingHorizontal: 12,
+    paddingVertical: 10
   },
-  filterLabel: { fontSize: 12, fontWeight: "900", color: "#475569" },
+  bodyInput: { minHeight: 110, textAlignVertical: "top" },
   chipRow: { flexDirection: "row", flexWrap: "wrap", gap: 8 },
   chip: {
-    borderWidth: 1,
+    backgroundColor: "white",
     borderColor: "#CBD5E1",
     borderRadius: 999,
+    borderWidth: 1,
     paddingHorizontal: 11,
-    paddingVertical: 7,
-    backgroundColor: "white"
+    paddingVertical: 7
   },
   chipSelected: { backgroundColor: "#0F766E", borderColor: "#0F766E" },
   chipText: { color: "#0F172A", fontWeight: "800", textTransform: "capitalize" },
   chipTextSelected: { color: "white" },
-  loading: { alignItems: "center", paddingVertical: 24, gap: 8 },
-  item: {
-    borderWidth: 1,
+  primaryButton: {
+    alignItems: "center",
+    backgroundColor: "#166534",
+    borderRadius: 8,
+    paddingVertical: 12
+  },
+  primaryButtonText: { color: "white", fontWeight: "900" },
+  disabled: { opacity: 0.55 },
+  feedback: { color: "#166534", fontWeight: "800" },
+  filters: {
+    backgroundColor: "white",
     borderColor: "#CBD5E1",
     borderRadius: 8,
-    padding: 14,
+    borderWidth: 1,
+    gap: 9,
+    padding: 12
+  },
+  filterLabel: {
+    color: "#475569",
+    fontSize: 12,
+    fontWeight: "900",
+    textTransform: "uppercase"
+  },
+  loading: { alignItems: "center", gap: 8, paddingVertical: 20 },
+  muted: { color: "#64748B", fontWeight: "700", lineHeight: 20 },
+  post: {
     backgroundColor: "white",
-    gap: 6
+    borderColor: "#CBD5E1",
+    borderRadius: 8,
+    borderWidth: 1,
+    gap: 7,
+    padding: 14
   },
-  itemHeader: {
-    flexDirection: "row",
-    justifyContent: "space-between",
+  postHeader: {
     alignItems: "center",
-    gap: 8
+    flexDirection: "row",
+    gap: 8,
+    justifyContent: "space-between"
   },
-  itemType: {
+  typePill: {
     color: "#0F766E",
     fontSize: 12,
     fontWeight: "900",
     textTransform: "uppercase"
   },
-  itemStatus: {
-    color: "#334155",
-    fontSize: 12,
-    fontWeight: "800",
-    textTransform: "capitalize"
-  },
-  itemTitle: { color: "#0F172A", fontSize: 16, fontWeight: "900" },
-  itemBody: { color: "#334155", lineHeight: 20 },
-  itemMeta: { color: "#64748B", fontSize: 12 },
-  loadMore: {
-    alignSelf: "center",
-    borderRadius: 8,
-    backgroundColor: "#0F172A",
-    paddingHorizontal: 14,
-    paddingVertical: 10
-  },
-  loadMoreText: { color: "white", fontWeight: "900" },
-  disabled: { opacity: 0.6 }
+  likes: { color: "#64748B", fontSize: 12, fontWeight: "800" },
+  postTitle: { color: "#0F172A", fontSize: 17, fontWeight: "900" },
+  postBody: { color: "#334155", fontWeight: "600", lineHeight: 21 },
+  tags: { color: "#2563EB", fontSize: 12, fontWeight: "800" },
+  meta: { color: "#64748B", fontSize: 12, fontWeight: "700" }
 });
