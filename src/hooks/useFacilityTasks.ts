@@ -1,6 +1,10 @@
 import { useEffect } from "react";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
-import { getFacilityTasks, createFacilityTask } from "../api/facilityTasks";
+import {
+  getFacilityTasks,
+  createFacilityTask,
+  updateFacilityTask
+} from "../api/facilityTasks";
 import { useEntitlements } from "@/entitlements";
 import { useApiGuards } from "../api/hooks";
 
@@ -27,13 +31,24 @@ export function useFacilityTasks() {
     onError
   });
 
+  const complete = useMutation({
+    mutationFn: (id: string) =>
+      updateFacilityTask(selectedFacilityId!, id, {
+        status: "done",
+        completed: true,
+        completedAt: new Date().toISOString()
+      } as any),
+    onSuccess: () => {
+      qc.invalidateQueries({ queryKey: ["facilityTasks", selectedFacilityId] });
+    },
+    onError
+  });
+
   return {
     ...query,
     createTask: create.mutateAsync,
     creating: create.isPending,
-    // Phase 2.3.3: Stub for completeTask (implements updateTask with completed flag)
-    completeTask: async (id: string) => {
-      console.warn("completeTask not yet implemented for task:", id);
-    }
+    completeTask: complete.mutateAsync,
+    completing: complete.isPending
   };
 }

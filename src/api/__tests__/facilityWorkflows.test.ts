@@ -1,5 +1,10 @@
 import { createRoom, fetchRooms } from "../rooms";
 import { createTask, getFacilityTasks } from "../tasks";
+import {
+  createFacilityTask,
+  getFacilityTasks as getLegacyFacilityTasks,
+  updateFacilityTask
+} from "../facilityTasks";
 import { apiRequest } from "../apiRequest";
 
 jest.mock("../apiRequest", () => ({
@@ -89,22 +94,62 @@ describe("facility workflow API wrappers", () => {
       scope: "facility"
     });
 
-    expect(mockApiRequest).toHaveBeenNthCalledWith(
-      1,
-      "/api/facility/facility-1/tasks",
-      { method: "GET" }
-    );
+    expect(mockApiRequest).toHaveBeenNthCalledWith(1, "/api/facility/facility-1/tasks", {
+      method: "GET"
+    });
+    expect(mockApiRequest).toHaveBeenNthCalledWith(2, "/api/facility/facility-1/tasks", {
+      method: "POST",
+      body: {
+        title: "Water plants",
+        notes: "Check dryback first",
+        dueDate: "2026-06-23",
+        scope: "facility"
+      }
+    });
+  });
+
+  it("normalizes legacy facility task envelopes and completes tasks", async () => {
+    mockApiRequest
+      .mockResolvedValueOnce({
+        tasks: [{ _id: "task-1", title: "Scout room", status: "OPEN" }]
+      })
+      .mockResolvedValueOnce({
+        created: { _id: "task-2", title: "Clean tray", status: "OPEN" }
+      })
+      .mockResolvedValueOnce({
+        task: { _id: "task-1", title: "Scout room", status: "DONE" }
+      });
+
+    await expect(getLegacyFacilityTasks("facility-1")).resolves.toEqual([
+      expect.objectContaining({ id: "task-1", status: "open" })
+    ]);
+
+    await expect(
+      createFacilityTask("facility-1", { title: "Clean tray" })
+    ).resolves.toEqual(expect.objectContaining({ id: "task-2", status: "open" }));
+
+    await expect(
+      updateFacilityTask("facility-1", "task-1", {
+        status: "done",
+        completed: true
+      } as any)
+    ).resolves.toEqual(expect.objectContaining({ id: "task-1", status: "done" }));
+
+    expect(mockApiRequest).toHaveBeenNthCalledWith(1, "/api/facilities/facility-1/tasks");
     expect(mockApiRequest).toHaveBeenNthCalledWith(
       2,
-      "/api/facility/facility-1/tasks",
+      "/api/facilities/facility-1/tasks",
       {
         method: "POST",
-        body: {
-          title: "Water plants",
-          notes: "Check dryback first",
-          dueDate: "2026-06-23",
-          scope: "facility"
-        }
+        body: { title: "Clean tray" }
+      }
+    );
+    expect(mockApiRequest).toHaveBeenNthCalledWith(
+      3,
+      "/api/facilities/facility-1/tasks/task-1",
+      {
+        method: "PATCH",
+        body: { status: "done", completed: true }
       }
     );
   });

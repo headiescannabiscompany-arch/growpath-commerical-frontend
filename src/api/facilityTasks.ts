@@ -12,15 +12,34 @@ export type FacilityTask = {
   createdAt: string;
 };
 
+function asTask(row: any): FacilityTask {
+  return {
+    ...row,
+    id: String(row?.id || row?._id || ""),
+    status: String(row?.status || "open").toLowerCase() as FacilityTask["status"]
+  };
+}
+
+function taskFromEnvelope(res: any): FacilityTask {
+  return asTask(res?.task ?? res?.updated ?? res?.created ?? res?.data?.task ?? res);
+}
+
+function tasksFromEnvelope(res: any): FacilityTask[] {
+  const rows = Array.isArray(res)
+    ? res
+    : (res?.tasks ?? res?.items ?? res?.data?.tasks ?? []);
+  return Array.isArray(rows) ? rows.map(asTask) : [];
+}
+
 export function getFacilityTasks(facilityId: string) {
-  return apiRequest<FacilityTask[]>(`/api/facilities/${facilityId}/tasks`);
+  return apiRequest(`/api/facilities/${facilityId}/tasks`).then(tasksFromEnvelope);
 }
 
 export function createFacilityTask(facilityId: string, data: Partial<FacilityTask>) {
-  return apiRequest<FacilityTask>(`/api/facilities/${facilityId}/tasks`, {
+  return apiRequest(`/api/facilities/${facilityId}/tasks`, {
     method: "POST",
     body: data
-  });
+  }).then(taskFromEnvelope);
 }
 
 export function updateFacilityTask(
@@ -28,8 +47,8 @@ export function updateFacilityTask(
   taskId: string,
   data: Partial<FacilityTask>
 ) {
-  return apiRequest<FacilityTask>(`/api/facilities/${facilityId}/tasks/${taskId}`, {
+  return apiRequest(`/api/facilities/${facilityId}/tasks/${taskId}`, {
     method: "PATCH",
     body: data
-  });
+  }).then(taskFromEnvelope);
 }
