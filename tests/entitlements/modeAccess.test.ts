@@ -2,7 +2,8 @@ import { describe, expect, it } from "@jest/globals";
 import { CAPABILITY_KEYS } from "../../src/entitlements/capabilityKeys";
 import {
   getEffectivePlan,
-  resolveEntitlementsMode
+  resolveEntitlementsMode,
+  resolveWorkspaceMode
 } from "../../src/entitlements/EntitlementsProvider";
 
 describe("entitlement mode access", () => {
@@ -55,5 +56,11 @@ describe("entitlement mode access", () => {
         null
       )
     ).toBe("facility");
+  });
+
+  it("keeps inactive paid account intent in the workspace mode", () => {
+    expect(resolveWorkspaceMode("facility", "personal")).toBe("facility");
+    expect(resolveWorkspaceMode("commercial", "personal")).toBe("commercial");
+    expect(resolveWorkspaceMode("pro", "personal")).toBe("personal");
   });
 });

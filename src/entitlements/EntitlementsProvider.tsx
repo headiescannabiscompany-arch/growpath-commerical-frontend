@@ -173,7 +173,7 @@ function applyUniversalCapabilities(normalized: Record<string, boolean>) {
 function applyPlanCapabilities(
   normalized: Record<string, boolean>,
   plan: string | null,
-  mode: EntitlementsMode
+  _mode: EntitlementsMode
 ) {
   const normalizedPlan = String(plan || "")
     .trim()
@@ -181,8 +181,8 @@ function applyPlanCapabilities(
   const isPro = normalizedPlan === "pro";
   const isPaidPersonal =
     isPro || normalizedPlan === "personal" || normalizedPlan === "premium";
-  const isCommercial = mode === "commercial" || normalizedPlan === "commercial";
-  const isFacility = mode === "facility" || normalizedPlan === "facility";
+  const isCommercial = normalizedPlan === "commercial";
+  const isFacility = normalizedPlan === "facility";
 
   normalized[CAPABILITY_KEYS.GROWS_PERSONAL_VIEW] = true;
   normalized[CAPABILITY_KEYS.LOGS_PERSONAL_VIEW] = true;
@@ -239,6 +239,23 @@ export function resolveEntitlementsMode(
   return baseMode;
 }
 
+export function resolveWorkspaceMode(
+  requestedPlan: any,
+  resolvedMode: EntitlementsMode
+): EntitlementsMode {
+  const requestedPlanKey = String(requestedPlan || "free")
+    .trim()
+    .toLowerCase();
+
+  if (requestedPlanKey === "facility" || resolvedMode === "facility") {
+    return "facility";
+  }
+  if (requestedPlanKey === "commercial" || resolvedMode === "commercial") {
+    return "commercial";
+  }
+  return "personal";
+}
+
 // Pure "apply" function (no side effects other than returning next state)
 function applyServerCtx(
   prev: Omit<EntitlementsState, "can">,
@@ -250,14 +267,7 @@ function applyServerCtx(
   const subscriptionStatus = ctx?.subscriptionStatus ?? ctx?.user?.subscriptionStatus;
   const plan = getEffectivePlan(requestedPlan, subscriptionStatus);
   const resolvedMode = resolveEntitlementsMode(ctx, preferredMode);
-  const mode =
-    plan === "facility"
-      ? "facility"
-      : plan === "commercial"
-        ? "commercial"
-        : resolvedMode === "facility" || resolvedMode === "commercial"
-          ? "personal"
-          : resolvedMode;
+  const mode = resolveWorkspaceMode(requestedPlan, resolvedMode);
   const facilityId = ctx?.facilityId ?? null;
   const facilityRole = normalizeFacilityRole(ctx?.facilityRole);
 
