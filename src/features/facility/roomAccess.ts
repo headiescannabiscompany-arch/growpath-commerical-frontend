@@ -6,17 +6,23 @@ export type FacilityRoomAccessInput = {
 };
 
 export type FacilityRoomAccess = {
-  canManageRooms: boolean;
+  canCreateRooms: boolean;
+  canManageEquipmentCycles: boolean;
   canDeleteRooms: boolean;
   hiddenManageReason: string | null;
+  hiddenRoomReason: string | null;
 };
 
-function canOperate(role: unknown) {
+function canOperateInRoom(role: unknown) {
   return role === "OWNER" || role === "MANAGER" || role === "STAFF";
 }
 
-function canDelete(role: unknown) {
+function canCreateRoom(role: unknown) {
   return role === "OWNER" || role === "MANAGER";
+}
+
+function canDeleteRoom(role: unknown) {
+  return role === "OWNER";
 }
 
 export function getFacilityRoomAccess({
@@ -24,14 +30,18 @@ export function getFacilityRoomAccess({
   facilityRole
 }: FacilityRoomAccessInput): FacilityRoomAccess {
   const hasCapability = Boolean(can?.(CAPABILITY_KEYS.ROOMS_EQUIPMENT_STAFF));
-  const roleCanOperate = canOperate(facilityRole);
-  const canManageRooms = roleCanOperate && hasCapability;
+  const canManageEquipmentCycles = canOperateInRoom(facilityRole) && hasCapability;
+  const canCreateRooms = canCreateRoom(facilityRole) && hasCapability;
 
   return {
-    canManageRooms,
-    canDeleteRooms: canManageRooms && canDelete(facilityRole),
-    hiddenManageReason: canManageRooms
+    canCreateRooms,
+    canManageEquipmentCycles,
+    canDeleteRooms: canDeleteRoom(facilityRole) && hasCapability,
+    hiddenManageReason: canManageEquipmentCycles
       ? null
-      : "You do not have permission to manage rooms and equipment."
+      : "You do not have permission to manage rooms and equipment.",
+    hiddenRoomReason: canCreateRooms
+      ? null
+      : "Only facility owners and managers can create rooms."
   };
 }

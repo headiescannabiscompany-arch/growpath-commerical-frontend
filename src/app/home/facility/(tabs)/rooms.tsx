@@ -79,8 +79,9 @@ export default function FacilityRoomsTab() {
     can: ent?.can,
     facilityRole: ent?.facilityRole
   });
-  const canWrite = roomAccess.canManageRooms;
-  const canRemove = roomAccess.canDeleteRooms;
+  const canEditRooms = roomAccess.canCreateRooms;
+  const canManageEquipmentCycles = roomAccess.canManageEquipmentCycles;
+  const canDeleteRooms = roomAccess.canDeleteRooms;
 
   const activeRoom = rooms.find((room) => rowId(room) === activeRoomId) || null;
   const roomEquipment = equipment.filter(
@@ -141,7 +142,7 @@ export default function FacilityRoomsTab() {
   }, [activeRoom]);
 
   async function addRoom() {
-    if (!facilityId || !canWrite || !roomName.trim()) return;
+    if (!facilityId || !canEditRooms || !roomName.trim()) return;
     setSaving(true);
     setFeedback("");
     try {
@@ -161,7 +162,7 @@ export default function FacilityRoomsTab() {
   }
 
   async function saveTrackingMode(mode: "batch" | "individual") {
-    if (!facilityId || !activeRoomId || !canWrite) return;
+    if (!facilityId || !activeRoomId || !canEditRooms) return;
     setSaving(true);
     setFeedback("");
     try {
@@ -177,7 +178,7 @@ export default function FacilityRoomsTab() {
   }
 
   async function removeRoom() {
-    if (!facilityId || !activeRoomId || !canRemove) return;
+    if (!facilityId || !activeRoomId || !canDeleteRooms) return;
     setSaving(true);
     setFeedback("");
     try {
@@ -193,7 +194,13 @@ export default function FacilityRoomsTab() {
   }
 
   async function addEquipment() {
-    if (!facilityId || !activeRoomId || !canWrite || !equipmentName.trim()) return;
+    if (
+      !facilityId ||
+      !activeRoomId ||
+      !canManageEquipmentCycles ||
+      !equipmentName.trim()
+    )
+      return;
     setSaving(true);
     setFeedback("");
     try {
@@ -214,7 +221,8 @@ export default function FacilityRoomsTab() {
   }
 
   async function addCycle() {
-    if (!facilityId || !activeRoomId || !canWrite || !cycleName.trim()) return;
+    if (!facilityId || !activeRoomId || !canManageEquipmentCycles || !cycleName.trim())
+      return;
     setSaving(true);
     setFeedback("");
     try {
@@ -240,7 +248,7 @@ export default function FacilityRoomsTab() {
   }
 
   async function removeCycle(id: string) {
-    if (!facilityId || !id || !canRemove) return;
+    if (!facilityId || !id || !canManageEquipmentCycles) return;
     setSaving(true);
     setFeedback("");
     try {
@@ -280,8 +288,8 @@ export default function FacilityRoomsTab() {
 
         <View style={styles.card}>
           <Text style={styles.cardTitle}>New Room</Text>
-          {!canWrite ? (
-            <Text style={styles.muted}>{roomAccess.hiddenManageReason}</Text>
+          {!canEditRooms ? (
+            <Text style={styles.muted}>{roomAccess.hiddenRoomReason}</Text>
           ) : (
             <View style={styles.form}>
               <TextInput
@@ -377,7 +385,7 @@ export default function FacilityRoomsTab() {
                   <Pressable
                     key={mode}
                     onPress={() => saveTrackingMode(mode)}
-                    disabled={!canWrite || saving}
+                    disabled={!canEditRooms || saving}
                     accessibilityRole="button"
                     accessibilityLabel={`Set room tracking mode to ${mode}`}
                     style={[
@@ -397,7 +405,7 @@ export default function FacilityRoomsTab() {
                   </Pressable>
                 ))}
               </View>
-              {canRemove ? (
+              {canDeleteRooms ? (
                 <Pressable
                   onPress={removeRoom}
                   disabled={saving}
@@ -416,7 +424,7 @@ export default function FacilityRoomsTab() {
           <>
             <View style={styles.card}>
               <Text style={styles.cardTitle}>Equipment</Text>
-              {canWrite ? (
+              {canManageEquipmentCycles ? (
                 <View style={styles.form}>
                   <TextInput
                     value={equipmentName}
@@ -462,7 +470,7 @@ export default function FacilityRoomsTab() {
 
             <View style={styles.card}>
               <Text style={styles.cardTitle}>Batch Cycles</Text>
-              {canWrite ? (
+              {canManageEquipmentCycles ? (
                 <View style={styles.form}>
                   <TextInput
                     value={cycleName}
@@ -510,7 +518,7 @@ export default function FacilityRoomsTab() {
                         {cycle.stage || "stage n/a"} | {cycle.status || "status n/a"} |{" "}
                         {cycle.estimatedPlantCount ?? 0} plants
                       </Text>
-                      {canRemove && id ? (
+                      {canManageEquipmentCycles && id ? (
                         <Pressable
                           onPress={() => removeCycle(id)}
                           disabled={saving}
