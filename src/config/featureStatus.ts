@@ -128,6 +128,7 @@ export const personalToolFeatures = [
     status: "beta",
     href: "/home/personal/tools/bud-rot-risk",
     acceptsGrowContext: true,
+    capabilityKey: CAPABILITY_KEYS.DIAGNOSE_ADVANCED,
     internalNote: "Heuristic screen, not a validated predictive model."
   },
   {
@@ -173,7 +174,7 @@ export const personalToolFeatures = [
     status: "beta",
     href: "/home/personal/tools/environment-analysis",
     acceptsGrowContext: true,
-    capabilityKey: CAPABILITY_KEYS.DIAGNOSE_AI,
+    capabilityKey: CAPABILITY_KEYS.AI_ASSISTANT,
     internalNote:
       "Endpoint-backed analysis when AI is enabled; local heuristic fallback keeps the tool useful for every account."
   },
