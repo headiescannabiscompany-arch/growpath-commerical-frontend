@@ -82,6 +82,24 @@ const PRESETS: Preset[] = [
     summary: "Compare measured PPFD against stage target DLI and light schedule."
   },
   {
+    key: "bud-rot-risk",
+    title: "Bud rot risk",
+    audience: "Cultivation / IPM",
+    tool: "risk",
+    fn: "computeBudRotRisk",
+    args: {
+      airTemp: 68,
+      rh: 82,
+      wetHours: 5,
+      canopyDensity: 5,
+      airflow: 1,
+      stage: "late_flower",
+      tempUnit: "F"
+    },
+    summary:
+      "Score flower-zone risk from humidity, wet windows, canopy density, and airflow."
+  },
+  {
     key: "harvest",
     title: "Harvest window",
     audience: "Cultivation",
