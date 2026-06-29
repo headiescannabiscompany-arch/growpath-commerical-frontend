@@ -37,6 +37,17 @@ function today() {
 }
 
 const TRACKING_MODES = ["batch", "individual"] as const;
+const CYCLE_STAGES = ["clone", "veg", "flower", "dry", "cure", "complete"] as const;
+const CYCLE_STATUSES = ["planned", "active", "paused", "complete"] as const;
+
+function normalizedCycleStatus(cycle: BatchCycle) {
+  return String(cycle.status || "active").toLowerCase();
+}
+
+function isActiveCycle(cycle: BatchCycle) {
+  const status = normalizedCycleStatus(cycle);
+  return status !== "complete" && status !== "cancelled";
+}
 
 export default function FacilityRoomsTab() {
   const router = useRouter();
@@ -73,6 +84,7 @@ export default function FacilityRoomsTab() {
 
   const [cycleName, setCycleName] = useState("");
   const [cycleStage, setCycleStage] = useState("flower");
+  const [cycleStatus, setCycleStatus] = useState("active");
   const [estimatedPlantCount, setEstimatedPlantCount] = useState("");
 
   const roomAccess = getFacilityRoomAccess({
@@ -89,6 +101,14 @@ export default function FacilityRoomsTab() {
   );
   const roomCycles = cycles.filter(
     (cycle) => !activeRoomId || String(cycle.roomId || "") === activeRoomId
+  );
+  const activeCycles = roomCycles.filter(isActiveCycle).length;
+  const completedCycles = roomCycles.filter(
+    (cycle) => normalizedCycleStatus(cycle) === "complete"
+  ).length;
+  const estimatedPlants = roomCycles.reduce(
+    (sum, cycle) => sum + Number(cycle.estimatedPlantCount || 0),
+    0
   );
 
   const load = useCallback(
@@ -230,7 +250,7 @@ export default function FacilityRoomsTab() {
         name: cycleName.trim(),
         roomId: activeRoomId,
         stage: cycleStage.trim() || undefined,
-        status: "active",
+        status: cycleStatus.trim() || "active",
         estimatedPlantCount: estimatedPlantCount
           ? Number(estimatedPlantCount)
           : undefined,
@@ -470,6 +490,20 @@ export default function FacilityRoomsTab() {
 
             <View style={styles.card}>
               <Text style={styles.cardTitle}>Batch Cycles</Text>
+              <View style={styles.summaryCard}>
+                <View>
+                  <Text style={styles.summaryValue}>{activeCycles}</Text>
+                  <Text style={styles.summaryLabel}>active cycles</Text>
+                </View>
+                <View>
+                  <Text style={styles.summaryValue}>{completedCycles}</Text>
+                  <Text style={styles.summaryLabel}>complete cycles</Text>
+                </View>
+                <View>
+                  <Text style={styles.summaryValue}>{estimatedPlants}</Text>
+                  <Text style={styles.summaryLabel}>estimated plants</Text>
+                </View>
+              </View>
               {canManageEquipmentCycles ? (
                 <View style={styles.form}>
                   <TextInput
@@ -486,6 +520,49 @@ export default function FacilityRoomsTab() {
                     accessibilityLabel="Batch cycle stage"
                     placeholder="Stage"
                   />
+                  <View style={styles.pillRow}>
+                    {CYCLE_STAGES.map((stage) => (
+                      <Pressable
+                        key={stage}
+                        onPress={() => setCycleStage(stage)}
+                        accessibilityRole="button"
+                        accessibilityLabel={`Set batch cycle stage to ${stage}`}
+                        style={[styles.pill, cycleStage === stage && styles.pillSelected]}
+                      >
+                        <Text
+                          style={[
+                            styles.pillText,
+                            cycleStage === stage && styles.pillTextSelected
+                          ]}
+                        >
+                          {stage}
+                        </Text>
+                      </Pressable>
+                    ))}
+                  </View>
+                  <View style={styles.pillRow}>
+                    {CYCLE_STATUSES.map((status) => (
+                      <Pressable
+                        key={status}
+                        onPress={() => setCycleStatus(status)}
+                        accessibilityRole="button"
+                        accessibilityLabel={`Set batch cycle status to ${status}`}
+                        style={[
+                          styles.pill,
+                          cycleStatus === status && styles.pillSelected
+                        ]}
+                      >
+                        <Text
+                          style={[
+                            styles.pillText,
+                            cycleStatus === status && styles.pillTextSelected
+                          ]}
+                        >
+                          {status}
+                        </Text>
+                      </Pressable>
+                    ))}
+                  </View>
                   <TextInput
                     value={estimatedPlantCount}
                     onChangeText={setEstimatedPlantCount}
@@ -518,6 +595,25 @@ export default function FacilityRoomsTab() {
                         {cycle.stage || "stage n/a"} | {cycle.status || "status n/a"} |{" "}
                         {cycle.estimatedPlantCount ?? 0} plants
                       </Text>
+                      <View style={styles.statusLine}>
+                        <Text
+                          style={[
+                            styles.statusPill,
+                            isActiveCycle(cycle)
+                              ? styles.statusActive
+                              : styles.statusComplete
+                          ]}
+                        >
+                          {isActiveCycle(cycle)
+                            ? "counts as active inventory"
+                            : "completion evidence"}
+                        </Text>
+                        {cycle.startedAt ? (
+                          <Text style={styles.rowMeta}>
+                            Started {String(cycle.startedAt).slice(0, 10)}
+                          </Text>
+                        ) : null}
+                      </View>
                       {canManageEquipmentCycles && id ? (
                         <Pressable
                           onPress={() => removeCycle(id)}
@@ -610,6 +706,29 @@ const styles = StyleSheet.create({
   },
   rowTitle: { fontWeight: "900" },
   rowMeta: { opacity: 0.7 },
+  summaryCard: {
+    borderWidth: 1,
+    borderColor: "#d1fae5",
+    borderRadius: 12,
+    padding: 12,
+    backgroundColor: "#ecfdf5",
+    flexDirection: "row",
+    flexWrap: "wrap",
+    gap: 16
+  },
+  summaryValue: { color: "#065f46", fontSize: 20, fontWeight: "900" },
+  summaryLabel: { color: "#047857", fontSize: 12, fontWeight: "800" },
+  statusLine: { flexDirection: "row", flexWrap: "wrap", gap: 8, marginTop: 4 },
+  statusPill: {
+    borderRadius: 999,
+    overflow: "hidden",
+    paddingHorizontal: 8,
+    paddingVertical: 3,
+    fontSize: 12,
+    fontWeight: "900"
+  },
+  statusActive: { color: "#92400e", backgroundColor: "#fef3c7" },
+  statusComplete: { color: "#065f46", backgroundColor: "#d1fae5" },
   feedback: {
     color: "#334155",
     backgroundColor: "#F1F5F9",
