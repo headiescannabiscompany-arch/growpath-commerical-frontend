@@ -266,8 +266,8 @@ const styles = StyleSheet.create({
     borderRadius: 8,
     borderWidth: 1,
     color: "#111827",
-    fontSize: 15,
-    paddingHorizontal: 12,
+    fontSize: 13,
+    paddingHorizontal: 10,
     paddingVertical: 11
   },
   feedbackText: { color: "#047857", fontSize: 13, fontWeight: "800" },
