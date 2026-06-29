@@ -21,6 +21,10 @@ type SopRunListItem = {
   title?: string;
   name?: string;
   status?: string;
+  steps?: SopRunStep[];
+};
+type SopRunStep = {
+  status?: string;
 };
 type UnknownRecord = Record<string, unknown>;
 
@@ -40,6 +44,24 @@ function asArray(res: unknown): SopRunListItem[] {
 
 function pickId(x: SopRunListItem, idx: number) {
   return String(x?.id ?? x?._id ?? x?.runId ?? `run-${idx}`);
+}
+
+function stepsOf(run: SopRunListItem) {
+  return Array.isArray(run.steps) ? run.steps : [];
+}
+
+function runStats(run: SopRunListItem) {
+  const steps = stepsOf(run);
+  const done = steps.filter((step) => step.status === "done").length;
+  const skipped = steps.filter((step) => step.status === "skipped").length;
+  const reviewed = done + skipped;
+  const pending = Math.max(steps.length - reviewed, 0);
+  return { total: steps.length, done, skipped, reviewed, pending };
+}
+
+function isComplete(run: SopRunListItem) {
+  const status = String(run.status || "").toLowerCase();
+  return status === "completed" || status === "complete" || status === "done";
 }
 
 function getErrorMessage(e: unknown, fallback: string) {
@@ -94,6 +116,13 @@ export default function FacilitySopRunsIndexRoute() {
     );
   }
 
+  const totalRuns = items.length;
+  const completedRuns = items.filter(isComplete).length;
+  const totalSteps = items.reduce((sum, item) => sum + runStats(item).total, 0);
+  const reviewedSteps = items.reduce((sum, item) => sum + runStats(item).reviewed, 0);
+  const pendingSteps = items.reduce((sum, item) => sum + runStats(item).pending, 0);
+  const runsMissingSteps = items.filter((item) => runStats(item).total === 0).length;
+
   return (
     <FlatList
       style={styles.list}
@@ -130,12 +159,44 @@ export default function FacilitySopRunsIndexRoute() {
               Compare
             </Link>
           </View>
+          <View style={styles.summaryCard}>
+            <View>
+              <Text style={styles.summaryValue}>
+                {completedRuns}/{totalRuns}
+              </Text>
+              <Text style={styles.summaryLabel}>completed runs</Text>
+            </View>
+            <View>
+              <Text style={styles.summaryValue}>
+                {reviewedSteps}/{totalSteps}
+              </Text>
+              <Text style={styles.summaryLabel}>reviewed steps</Text>
+            </View>
+            <View>
+              <Text style={[styles.summaryValue, pendingSteps ? styles.warnText : null]}>
+                {pendingSteps}
+              </Text>
+              <Text style={styles.summaryLabel}>pending steps</Text>
+            </View>
+          </View>
+          {runsMissingSteps ? (
+            <View style={styles.alertCard}>
+              <Text style={styles.alertTitle}>Checklist evidence missing</Text>
+              <Text style={styles.alertText}>
+                {runsMissingSteps} SOP run(s) have no checklist steps. Add evidence before
+                exporting an inspection packet.
+              </Text>
+            </View>
+          ) : null}
           {error ? <Text style={styles.err}>{error}</Text> : null}
         </View>
       }
       ListEmptyComponent={<Text style={styles.empty}>No SOP runs found.</Text>}
       renderItem={({ item, index }) => {
         const id = pickId(item, index);
+        const stats = runStats(item);
+        const missingEvidence = stats.total === 0;
+        const needsReview = !missingEvidence && stats.pending > 0;
         return (
           <Pressable
             accessibilityRole="button"
@@ -149,6 +210,25 @@ export default function FacilitySopRunsIndexRoute() {
               {String(item?.title || item?.name || "SOP Run")}
             </Text>
             <Text style={styles.sub}>status: {String(item?.status || "unknown")}</Text>
+            <View style={styles.progressRow}>
+              <Text style={styles.progressText}>
+                Evidence: {stats.reviewed}/{stats.total} reviewed
+              </Text>
+              <Text
+                style={[
+                  styles.badge,
+                  missingEvidence && styles.badgeDanger,
+                  needsReview && styles.badgeWarn,
+                  !missingEvidence && !needsReview && styles.badgeOk
+                ]}
+              >
+                {missingEvidence
+                  ? "missing checklist"
+                  : needsReview
+                    ? `${stats.pending} pending`
+                    : "ready"}
+              </Text>
+            </View>
           </Pressable>
         );
       }}
@@ -163,6 +243,28 @@ const styles = StyleSheet.create({
   h1: { fontSize: 22, fontWeight: "900" },
   links: { flexDirection: "row", gap: 12, flexWrap: "wrap" },
   link: { color: "#2563eb", fontWeight: "800" },
+  summaryCard: {
+    borderWidth: 1,
+    borderColor: "#dbeafe",
+    borderRadius: 12,
+    padding: 12,
+    backgroundColor: "#eff6ff",
+    flexDirection: "row",
+    flexWrap: "wrap",
+    gap: 16
+  },
+  summaryValue: { color: "#1e3a8a", fontSize: 20, fontWeight: "900" },
+  summaryLabel: { color: "#1e40af", fontSize: 12, fontWeight: "800" },
+  warnText: { color: "#b45309" },
+  alertCard: {
+    borderWidth: 1,
+    borderColor: "#fca5a5",
+    borderRadius: 12,
+    padding: 12,
+    backgroundColor: "#fef2f2"
+  },
+  alertTitle: { color: "#991b1b", fontWeight: "900" },
+  alertText: { color: "#7f1d1d", fontWeight: "700", lineHeight: 18 },
   card: {
     borderWidth: 1,
     borderColor: "#e5e7eb",
@@ -173,6 +275,25 @@ const styles = StyleSheet.create({
   },
   title: { fontWeight: "800" },
   sub: { opacity: 0.75 },
+  progressRow: {
+    flexDirection: "row",
+    flexWrap: "wrap",
+    gap: 8,
+    justifyContent: "space-between",
+    marginTop: 8
+  },
+  progressText: { color: "#334155", fontWeight: "800" },
+  badge: {
+    borderRadius: 999,
+    overflow: "hidden",
+    paddingHorizontal: 8,
+    paddingVertical: 3,
+    fontSize: 12,
+    fontWeight: "900"
+  },
+  badgeOk: { color: "#065f46", backgroundColor: "#d1fae5" },
+  badgeWarn: { color: "#92400e", backgroundColor: "#fef3c7" },
+  badgeDanger: { color: "#991b1b", backgroundColor: "#fee2e2" },
   empty: { opacity: 0.7 },
   err: { color: "#b91c1c", fontWeight: "700" }
 });
