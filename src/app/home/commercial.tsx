@@ -12,25 +12,21 @@ import { canAccessRoute } from "@/navigation/routeAccess";
 type ActionCardProps = {
   title: string;
   description: string;
-  href?: string;
+  href: string;
   status?: string;
 };
 
 function ActionCard({ title, description, href, status }: ActionCardProps) {
   return (
-    <AppCard style={!href ? styles.disabledCard : undefined}>
+    <AppCard>
       <View style={styles.cardHeader}>
         <Text style={styles.cardTitle}>{title}</Text>
         {status ? <Text style={styles.statusPill}>{status}</Text> : null}
       </View>
       <Text style={styles.cardDesc}>{description}</Text>
-      {href ? (
-        <Link href={href as any} asChild>
-          <Text style={styles.link}>Open {title}</Text>
-        </Link>
-      ) : (
-        <Text style={styles.disabledText}>Queued for buildout</Text>
-      )}
+      <Link href={href as any} asChild>
+        <Text style={styles.link}>Open {title}</Text>
+      </Link>
     </AppCard>
   );
 }
@@ -204,15 +200,6 @@ const styles = StyleSheet.create({
   warningCard: {
     backgroundColor: "#FEF3C7",
     borderColor: "#F59E0B"
-  },
-  disabledCard: {
-    backgroundColor: "#F8FAFC"
-  },
-  disabledText: {
-    color: "#64748B",
-    fontSize: 13,
-    fontWeight: "800",
-    marginTop: 10
   },
   statusPill: {
     backgroundColor: "#D1FAE5",
