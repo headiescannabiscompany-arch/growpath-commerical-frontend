@@ -8,10 +8,24 @@ export async function getFacilityBillingStatus(facilityId: string) {
   return statusRes?.data ?? statusRes;
 }
 
+function currentOrigin() {
+  const location = (globalThis as any)?.window?.location;
+  return typeof location?.origin === "string" ? location.origin : "";
+}
+
 export async function startFacilityCheckout(facilityId: string) {
+  const origin = currentOrigin();
   const checkoutRes = await apiRequest(endpoints.facilityBillingCheckout, {
     method: "POST",
-    body: { facilityId }
+    body: {
+      facilityId,
+      ...(origin
+        ? {
+            successUrl: `${origin}/home/facility?facilityPlan=success`,
+            cancelUrl: `${origin}/home/facility?facilityPlan=cancel`
+          }
+        : {})
+    }
   });
   return checkoutRes?.data ?? checkoutRes;
 }

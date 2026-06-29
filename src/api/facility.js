@@ -122,12 +122,26 @@ export const getFacilityBillingStatus = async (facilityId) => {
   }
 };
 
+function currentOrigin() {
+  const location = globalThis?.window?.location;
+  return typeof location?.origin === "string" ? location.origin : "";
+}
+
 // Facility Plan billing: start checkout session
 export const startFacilityCheckout = async (facilityId) => {
   try {
+    const origin = currentOrigin();
     const checkoutRes = await apiRequest("/facility-billing/checkout-session", {
       method: "POST",
-      body: { facilityId }
+      body: {
+        facilityId,
+        ...(origin
+          ? {
+              successUrl: `${origin}/home/facility?facilityPlan=success`,
+              cancelUrl: `${origin}/home/facility?facilityPlan=cancel`
+            }
+          : {})
+      }
     });
     return { success: true, data: checkoutRes?.data ?? checkoutRes };
   } catch (error) {

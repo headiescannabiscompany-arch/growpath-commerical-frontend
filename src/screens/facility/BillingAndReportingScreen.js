@@ -7,6 +7,7 @@ import {
   ActivityIndicator,
   Alert,
   Linking,
+  Platform,
   ScrollView,
   RefreshControl
 } from "react-native";
@@ -15,6 +16,14 @@ import { handleApiError } from "../../ui/handleApiError";
 import { useFacilityBilling } from "../../hooks/useFacilityBilling";
 import { useSubscriptionStatus } from "../../hooks/useSubscriptionStatus";
 import { useFacilityReport } from "../../hooks/useFacilityReport";
+
+async function openCheckoutUrl(url) {
+  if (Platform.OS === "web" && typeof window !== "undefined" && window.location) {
+    window.location.href = url;
+    return;
+  }
+  await Linking.openURL(url);
+}
 
 export default function BillingAndReportingScreen() {
   const [refreshing, setRefreshing] = useState(false);
@@ -83,7 +92,7 @@ export default function BillingAndReportingScreen() {
       const res = await startCheckout();
       const checkoutUrl = res?.checkoutUrl ?? res?.url;
       if (checkoutUrl) {
-        await Linking.openURL(checkoutUrl);
+        await openCheckoutUrl(checkoutUrl);
       } else {
         Alert.alert("Error", "Failed to start subscription");
       }
