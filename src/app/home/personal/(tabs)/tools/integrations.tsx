@@ -25,6 +25,7 @@ import {
   listGrowlinkControllers,
   listTelemetrySources,
   pullGrowlinkCurrentReadings,
+  pullGrowlinkHistoricalWindow,
   verifyGrowlinkCredentials
 } from "@/api/telemetry";
 import type { GrowlinkController, TelemetrySource } from "@/types/telemetry";
@@ -45,6 +46,21 @@ function controllerLabel(controller: GrowlinkController) {
     moduleCount ? `${moduleCount} modules` : ""
   ].filter(Boolean);
   return details.join(" / ");
+}
+
+function defaultHistoryWindow() {
+  const end = new Date();
+  const start = new Date(end.getTime() - 24 * 60 * 60 * 1000);
+  return {
+    startIso: start.toISOString(),
+    endIso: end.toISOString()
+  };
+}
+
+function isValidHistoryWindow(startIso: string, endIso: string) {
+  const startMs = Date.parse(startIso);
+  const endMs = Date.parse(endIso);
+  return Number.isFinite(startMs) && Number.isFinite(endMs) && endMs > startMs;
 }
 
 export default function DataIntegrationsScreen() {
@@ -69,6 +85,12 @@ export default function DataIntegrationsScreen() {
   const [growlinkStatus, setGrowlinkStatus] = useState("");
   const [growlinkBusy, setGrowlinkBusy] = useState(false);
   const [loadingGrowlinkSources, setLoadingGrowlinkSources] = useState(false);
+  const [growlinkHistoryStartIso, setGrowlinkHistoryStartIso] = useState(
+    () => defaultHistoryWindow().startIso
+  );
+  const [growlinkHistoryEndIso, setGrowlinkHistoryEndIso] = useState(
+    () => defaultHistoryWindow().endIso
+  );
 
   const byProvider = useMemo(
     () => new Map(connections.map((connection) => [connection.provider, connection])),
@@ -276,6 +298,33 @@ export default function DataIntegrationsScreen() {
     }
   }
 
+  async function pullGrowlinkHistory(source: TelemetrySource) {
+    const startIso = growlinkHistoryStartIso.trim();
+    const endIso = growlinkHistoryEndIso.trim();
+    if (!isValidHistoryWindow(startIso, endIso)) {
+      return Alert.alert(
+        "Invalid history window",
+        "Enter valid start and end ISO timestamps, with end after start."
+      );
+    }
+
+    setGrowlinkBusy(true);
+    try {
+      const result = await pullGrowlinkHistoricalWindow(source.id, startIso, endIso);
+      const saved =
+        Number(result.ingested === undefined ? 0 : result.ingested) +
+        Number(result.updated || 0);
+      Alert.alert(
+        "Growlink history pull complete",
+        `Pulled ${result.pulled} readings. Saved ${saved} telemetry points.`
+      );
+    } catch (error) {
+      Alert.alert("Growlink history pull failed", message(error));
+    } finally {
+      setGrowlinkBusy(false);
+    }
+  }
+
   if (loading) {
     return (
       <View style={styles.center}>
@@ -381,6 +430,22 @@ export default function DataIntegrationsScreen() {
               <Text style={styles.sourceListTitle}>Existing Growlink sources</Text>
               {loadingGrowlinkSources ? <ActivityIndicator size="small" /> : null}
             </View>
+            <View style={styles.historyWindow}>
+              <TextInput
+                style={[styles.input, styles.historyInput]}
+                value={growlinkHistoryStartIso}
+                onChangeText={setGrowlinkHistoryStartIso}
+                placeholder="History start ISO"
+                autoCapitalize="none"
+              />
+              <TextInput
+                style={[styles.input, styles.historyInput]}
+                value={growlinkHistoryEndIso}
+                onChangeText={setGrowlinkHistoryEndIso}
+                placeholder="History end ISO"
+                autoCapitalize="none"
+              />
+            </View>
             {growlinkSources.map((source) => (
               <View key={source.id} style={styles.sourceRow}>
                 <View style={styles.titleBlock}>
@@ -395,6 +460,13 @@ export default function DataIntegrationsScreen() {
                   disabled={growlinkBusy}
                 >
                   <Text style={styles.buttonText}>Pull now</Text>
+                </Pressable>
+                <Pressable
+                  style={[styles.button, growlinkBusy ? styles.disabledButton : null]}
+                  onPress={() => pullGrowlinkHistory(source)}
+                  disabled={growlinkBusy}
+                >
+                  <Text style={styles.buttonText}>Pull history</Text>
                 </Pressable>
               </View>
             ))}
@@ -557,9 +629,12 @@ const styles = StyleSheet.create({
   sourceRow: {
     flexDirection: "row",
     alignItems: "center",
+    flexWrap: "wrap",
     gap: 12,
     paddingVertical: 10
   },
+  historyWindow: { flexDirection: "row", gap: 8, marginTop: 10 },
+  historyInput: { flex: 1, marginBottom: 0 },
   sourceName: { fontWeight: "700" },
   editor: { borderTopWidth: 1, borderTopColor: "#E2E8F0", marginTop: 12, paddingTop: 16 },
   editorTitle: { fontSize: 18, fontWeight: "700", marginBottom: 10 },

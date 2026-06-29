@@ -17,7 +17,8 @@ const mockCreateIntegrationAccessRequest = jest.fn();
 jest.mock("@/api/integrations", () => ({
   listIntegrationProviders: (...args: any[]) => mockListIntegrationProviders(...args),
   listIntegrationConnections: (...args: any[]) => mockListIntegrationConnections(...args),
-  createIntegrationConnection: (...args: any[]) => mockCreateIntegrationConnection(...args),
+  createIntegrationConnection: (...args: any[]) =>
+    mockCreateIntegrationConnection(...args),
   testIntegrationConnection: (...args: any[]) => mockTestIntegrationConnection(...args),
   createIntegrationAccessRequest: (...args: any[]) =>
     mockCreateIntegrationAccessRequest(...args)
@@ -27,6 +28,7 @@ const mockCreateTelemetrySource = jest.fn();
 const mockListGrowlinkControllers = jest.fn();
 const mockListTelemetrySources = jest.fn();
 const mockPullGrowlinkCurrentReadings = jest.fn();
+const mockPullGrowlinkHistoricalWindow = jest.fn();
 const mockVerifyGrowlinkCredentials = jest.fn();
 
 jest.mock("@/api/telemetry", () => ({
@@ -35,6 +37,8 @@ jest.mock("@/api/telemetry", () => ({
   listTelemetrySources: (...args: any[]) => mockListTelemetrySources(...args),
   pullGrowlinkCurrentReadings: (...args: any[]) =>
     mockPullGrowlinkCurrentReadings(...args),
+  pullGrowlinkHistoricalWindow: (...args: any[]) =>
+    mockPullGrowlinkHistoricalWindow(...args),
   verifyGrowlinkCredentials: (...args: any[]) => mockVerifyGrowlinkCredentials(...args)
 }));
 
@@ -80,16 +84,30 @@ describe("Data Integrations Growlink flow", () => {
       pulled: 4,
       updated: 0
     });
+    mockPullGrowlinkHistoricalWindow.mockResolvedValue({
+      sourceId: "source-existing",
+      pulled: 6,
+      ingested: 4,
+      updated: 2,
+      skipped: 0,
+      startIso: "2026-06-22T00:00:00.000Z",
+      endIso: "2026-06-22T14:00:00.000Z"
+    });
   });
 
-  it("verifies credentials, lists controllers, creates a read-only Growlink source, and pulls current readings", async () => {
+  it("verifies credentials, lists controllers, creates a read-only Growlink source, and pulls readings", async () => {
     const screen = render(<DataIntegrationsScreen />);
 
-    await waitFor(() => expect(screen.getByText("Growlink read-only telemetry")).toBeTruthy());
+    await waitFor(() =>
+      expect(screen.getByText("Growlink read-only telemetry")).toBeTruthy()
+    );
     await waitFor(() => expect(mockListTelemetrySources).toHaveBeenCalledWith("grow-1"));
 
     fireEvent.changeText(screen.getByPlaceholderText("Source name"), "Growlink Flower A");
-    fireEvent.changeText(screen.getByPlaceholderText("Growlink email"), "grower@example.com");
+    fireEvent.changeText(
+      screen.getByPlaceholderText("Growlink email"),
+      "grower@example.com"
+    );
     fireEvent.changeText(screen.getByPlaceholderText("Growlink password"), "secret");
 
     fireEvent.press(screen.getByText("Verify + load controllers"));
@@ -125,6 +143,24 @@ describe("Data Integrations Growlink flow", () => {
     await waitFor(() =>
       expect(mockPullGrowlinkCurrentReadings).toHaveBeenCalledWith("source-new")
     );
+
+    fireEvent.changeText(
+      screen.getByPlaceholderText("History start ISO"),
+      "2026-06-22T00:00:00.000Z"
+    );
+    fireEvent.changeText(
+      screen.getByPlaceholderText("History end ISO"),
+      "2026-06-22T14:00:00.000Z"
+    );
+    fireEvent.press(screen.getAllByText("Pull history")[0]);
+
+    await waitFor(() =>
+      expect(mockPullGrowlinkHistoricalWindow).toHaveBeenCalledWith(
+        "source-new",
+        "2026-06-22T00:00:00.000Z",
+        "2026-06-22T14:00:00.000Z"
+      )
+    );
   });
 
   it("allows Growlink account verification to succeed when no hardware controllers exist yet", async () => {
@@ -133,14 +169,21 @@ describe("Data Integrations Growlink flow", () => {
 
     const screen = render(<DataIntegrationsScreen />);
 
-    await waitFor(() => expect(screen.getByText("Growlink read-only telemetry")).toBeTruthy());
+    await waitFor(() =>
+      expect(screen.getByText("Growlink read-only telemetry")).toBeTruthy()
+    );
 
-    fireEvent.changeText(screen.getByPlaceholderText("Growlink email"), "grower@example.com");
+    fireEvent.changeText(
+      screen.getByPlaceholderText("Growlink email"),
+      "grower@example.com"
+    );
     fireEvent.changeText(screen.getByPlaceholderText("Growlink password"), "secret");
     fireEvent.press(screen.getByText("Verify + load controllers"));
 
     await waitFor(() =>
-      expect(screen.getByText(/Growlink account verified\. No controllers were returned/)).toBeTruthy()
+      expect(
+        screen.getByText(/Growlink account verified\. No controllers were returned/)
+      ).toBeTruthy()
     );
 
     expect(mockCreateTelemetrySource).not.toHaveBeenCalled();
