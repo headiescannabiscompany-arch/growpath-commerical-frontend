@@ -170,7 +170,7 @@ function applyUniversalCapabilities(normalized: Record<string, boolean>) {
   normalized[CAPABILITY_KEYS.FORUM_POST] = true;
 }
 
-function applyPlanCapabilities(
+export function applyPlanCapabilities(
   normalized: Record<string, boolean>,
   plan: string | null,
   _mode: EntitlementsMode
@@ -214,6 +214,7 @@ function applyPlanCapabilities(
   if (isCommercial || isFacility) {
     normalized[CAPABILITY_KEYS.COMMERCIAL_HOME] = true;
     normalized[CAPABILITY_KEYS.COMMERCIAL_INVENTORY_VIEW] = true;
+    normalized[CAPABILITY_KEYS.COMMERCIAL_INVENTORY_WRITE] = true;
     normalized[CAPABILITY_KEYS.COMMERCIAL_TASKS_VIEW] = true;
     normalized[CAPABILITY_KEYS.COMMERCIAL_FEED_VIEW] = true;
     normalized[CAPABILITY_KEYS.COMMERCIAL_ALERTS_VIEW] = true;

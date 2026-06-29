@@ -1,4 +1,4 @@
-import React, { useCallback, useEffect, useMemo, useState } from "react";
+import React, { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import {
   ActivityIndicator,
   FlatList,
@@ -75,6 +75,7 @@ export default function FacilityInventoryTab() {
   );
 
   const [items, setItems] = useState<InventoryItem[]>([]);
+  const itemCountRef = useRef(0);
   const [loading, setLoading] = useState(true);
   const [refreshing, setRefreshing] = useState(false);
   const [error, setError] = useState<any>(null);
@@ -83,7 +84,10 @@ export default function FacilityInventoryTab() {
     if (!facilityId) return;
     setError(null);
     const res = await apiRequest(endpoints.inventory(facilityId));
-    setItems(normalizeInventory(res));
+    const nextItems = normalizeInventory(res);
+    itemCountRef.current = nextItems.length;
+    setItems(nextItems);
+    setError(null);
   }, [facilityId]);
 
   const load = useCallback(async () => {
@@ -122,7 +126,10 @@ export default function FacilityInventoryTab() {
   useFocusEffect(
     useCallback(() => {
       if (facilityId) {
-        void fetchItems().catch((e) => setError(handleApiError(e)));
+        void fetchItems().catch((e) => {
+          if (!itemCountRef.current) setError(handleApiError(e));
+          else handleApiError(e);
+        });
       }
     }, [facilityId, fetchItems, handleApiError])
   );

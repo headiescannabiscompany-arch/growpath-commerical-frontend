@@ -1,6 +1,7 @@
 import { describe, expect, it } from "@jest/globals";
 import { CAPABILITY_KEYS } from "../../src/entitlements/capabilityKeys";
 import {
+  applyPlanCapabilities,
   getEffectivePlan,
   resolveEntitlementsMode,
   resolveWorkspaceMode,
@@ -73,5 +74,15 @@ describe("entitlement mode access", () => {
     expect(shouldApplyFacilityRoleCapabilities("facility", "free")).toBe(false);
     expect(shouldApplyFacilityRoleCapabilities("commercial", "facility")).toBe(false);
     expect(shouldApplyFacilityRoleCapabilities("personal", "facility")).toBe(false);
+  });
+
+  it("grants commercial inventory write to active commercial workspaces", () => {
+    const normalized: Record<string, boolean> = {};
+
+    applyPlanCapabilities(normalized, "commercial", "commercial");
+
+    expect(normalized[CAPABILITY_KEYS.COMMERCIAL_HOME]).toBe(true);
+    expect(normalized[CAPABILITY_KEYS.COMMERCIAL_INVENTORY_VIEW]).toBe(true);
+    expect(normalized[CAPABILITY_KEYS.COMMERCIAL_INVENTORY_WRITE]).toBe(true);
   });
 });
