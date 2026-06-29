@@ -3,6 +3,7 @@ import {
   ActivityIndicator,
   Alert,
   Linking,
+  Platform,
   Pressable,
   StyleSheet,
   Text,
@@ -25,6 +26,14 @@ function productId(product: any) {
   return String(product?.id || product?._id || product?.productId || "");
 }
 
+async function openCheckoutUrl(url: string) {
+  if (Platform.OS === "web" && typeof window !== "undefined" && window.location) {
+    window.location.href = url;
+    return;
+  }
+  await Linking.openURL(url);
+}
+
 export default function PublicStorefrontRoute() {
   const params = useLocalSearchParams<{ slug?: string }>();
   const slug = useMemo(() => String(params.slug || "").trim(), [params.slug]);
@@ -33,6 +42,7 @@ export default function PublicStorefrontRoute() {
   const [storefront, setStorefront] = useState<any>(null);
   const [products, setProducts] = useState<any[]>([]);
   const [error, setError] = useState("");
+  const [feedback, setFeedback] = useState("");
 
   const load = useCallback(async () => {
     if (!slug) return;
@@ -57,15 +67,19 @@ export default function PublicStorefrontRoute() {
     const id = productId(product);
     if (!id) return;
     setBusyId(id);
+    setFeedback("");
     try {
       const checkout: any = await checkoutProduct(id);
       const url = checkout?.url || checkout?.checkoutUrl || checkout?.data?.url;
       if (!url) {
+        setFeedback("Checkout unavailable. The backend did not return a checkout URL.");
         Alert.alert("Checkout unavailable", "The backend did not return a checkout URL.");
         return;
       }
-      await Linking.openURL(url);
+      await openCheckoutUrl(url);
+      setFeedback("Checkout started.");
     } catch (err: any) {
+      setFeedback(err?.message || "Unable to start checkout.");
       Alert.alert("Checkout failed", err?.message || "Unable to start checkout.");
     } finally {
       setBusyId("");
@@ -92,29 +106,33 @@ export default function PublicStorefrontRoute() {
       ) : error ? (
         <Text style={styles.error}>{error}</Text>
       ) : products.length ? (
-        products.map((product) => {
-          const id = productId(product);
-          return (
-            <View key={id || product?.name} style={styles.product}>
-              <View style={styles.productBody}>
-                <Text style={styles.productName}>{product?.name || "Product"}</Text>
-                {product?.description ? (
-                  <Text style={styles.meta}>{product.description}</Text>
-                ) : null}
-                <Text style={styles.price}>{money(product)}</Text>
+        <>
+          {feedback ? <Text style={styles.feedback}>{feedback}</Text> : null}
+          {products.map((product) => {
+            const id = productId(product);
+            return (
+              <View key={id || product?.name} style={styles.product}>
+                <View style={styles.productBody}>
+                  <Text style={styles.productName}>{product?.name || "Product"}</Text>
+                  {product?.description ? (
+                    <Text style={styles.meta}>{product.description}</Text>
+                  ) : null}
+                  <Text style={styles.price}>{money(product)}</Text>
+                </View>
+                <Pressable
+                  accessibilityLabel={`Buy ${product?.name || "product"}`}
+                  style={[styles.button, busyId === id && styles.disabled]}
+                  disabled={busyId === id}
+                  onPress={() => buy(product)}
+                >
+                  <Text style={styles.buttonText}>
+                    {busyId === id ? "Opening..." : "Buy"}
+                  </Text>
+                </Pressable>
               </View>
-              <Pressable
-                style={[styles.button, busyId === id && styles.disabled]}
-                disabled={busyId === id}
-                onPress={() => buy(product)}
-              >
-                <Text style={styles.buttonText}>
-                  {busyId === id ? "Opening..." : "Buy"}
-                </Text>
-              </Pressable>
-            </View>
-          );
-        })
+            );
+          })}
+        </>
       ) : (
         <Text style={styles.meta}>No published products.</Text>
       )}
@@ -127,6 +145,13 @@ const styles = StyleSheet.create({
   subtitle: { color: "#64748B", marginTop: 4 },
   center: { alignItems: "center", gap: 8, justifyContent: "center", minHeight: 180 },
   error: { color: "#B91C1C", fontWeight: "700" },
+  feedback: {
+    backgroundColor: "#F1F5F9",
+    borderRadius: 8,
+    color: "#334155",
+    marginBottom: 10,
+    padding: 8
+  },
   meta: { color: "#64748B" },
   product: {
     alignItems: "center",

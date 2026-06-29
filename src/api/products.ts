@@ -56,8 +56,24 @@ export async function deleteProduct(productId: string) {
   });
 }
 
+function currentOrigin() {
+  const location = (globalThis as any)?.window?.location;
+  return typeof location?.origin === "string" ? location.origin : "";
+}
+
 export async function checkoutProduct(productId: string) {
+  const origin = currentOrigin();
   return apiRequest(`${PRODUCTS_BASE}/${encodeURIComponent(productId)}/checkout`, {
-    method: "POST"
+    method: "POST",
+    body: origin
+      ? {
+          successUrl: `${origin}/storefront?checkout=success&product=${encodeURIComponent(
+            productId
+          )}`,
+          cancelUrl: `${origin}/storefront?checkout=canceled&product=${encodeURIComponent(
+            productId
+          )}`
+        }
+      : {}
   });
 }
