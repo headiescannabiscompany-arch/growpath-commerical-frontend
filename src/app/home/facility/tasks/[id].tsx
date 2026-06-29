@@ -14,12 +14,7 @@ import { useLocalSearchParams, useRouter } from "expo-router";
 import { ScreenBoundary } from "@/components/ScreenBoundary";
 import { InlineError } from "@/components/InlineError";
 import { useFacility } from "@/state/useFacility";
-import {
-  completeFacilityTask,
-  deleteTask,
-  getTask,
-  updateTask
-} from "@/api/tasks";
+import { completeFacilityTask, deleteTask, getTask, updateTask } from "@/api/tasks";
 import { useApiErrorHandler } from "@/hooks/useApiErrorHandler";
 import { CAPABILITY_KEYS, useEntitlements } from "@/entitlements";
 
@@ -268,11 +263,14 @@ export default function FacilityTaskDetail() {
             <View style={styles.card}>
               <Text style={styles.sectionTitle}>Task Workflow</Text>
               {!canWrite ? (
-                <Text style={styles.muted}>You do not have permission to update tasks.</Text>
+                <Text style={styles.muted}>
+                  You do not have permission to update tasks.
+                </Text>
               ) : (
                 <View style={styles.form}>
                   <Text style={styles.label}>Title</Text>
                   <TextInput
+                    accessibilityLabel="Task detail title"
                     value={form.title}
                     onChangeText={(titleText) =>
                       setForm((current) => ({ ...current, title: titleText }))
@@ -283,6 +281,7 @@ export default function FacilityTaskDetail() {
 
                   <Text style={styles.label}>Notes</Text>
                   <TextInput
+                    accessibilityLabel="Task detail notes"
                     value={form.notes}
                     onChangeText={(notes) =>
                       setForm((current) => ({ ...current, notes }))
@@ -294,6 +293,7 @@ export default function FacilityTaskDetail() {
 
                   <Text style={styles.label}>Due date</Text>
                   <TextInput
+                    accessibilityLabel="Task detail due date"
                     value={form.dueDate}
                     onChangeText={(dueDate) =>
                       setForm((current) => ({ ...current, dueDate }))
@@ -303,6 +303,8 @@ export default function FacilityTaskDetail() {
                   />
 
                   <TouchableOpacity
+                    accessibilityRole="button"
+                    accessibilityLabel="Save task details"
                     onPress={saveDetails}
                     disabled={saving || !form.title.trim()}
                     style={[
@@ -319,6 +321,7 @@ export default function FacilityTaskDetail() {
                     <View style={styles.formGroup}>
                       <Text style={styles.label}>Assign to user id</Text>
                       <TextInput
+                        accessibilityLabel="Task detail assignee"
                         value={form.assignedTo}
                         onChangeText={(assignedTo) =>
                           setForm((current) => ({ ...current, assignedTo }))
@@ -327,6 +330,8 @@ export default function FacilityTaskDetail() {
                         placeholder="user id"
                       />
                       <TouchableOpacity
+                        accessibilityRole="button"
+                        accessibilityLabel="Save task assignment"
                         onPress={saveAssignment}
                         disabled={saving}
                         style={[styles.secondaryBtn, saving && styles.primaryBtnDisabled]}
@@ -344,6 +349,8 @@ export default function FacilityTaskDetail() {
 
                   <View style={styles.statusRow}>
                     <TouchableOpacity
+                      accessibilityRole="button"
+                      accessibilityLabel={complete ? "Reopen task" : "Complete task"}
                       onPress={toggleComplete}
                       disabled={saving}
                       style={[styles.primaryBtn, saving && styles.primaryBtnDisabled]}
@@ -354,6 +361,8 @@ export default function FacilityTaskDetail() {
                     </TouchableOpacity>
                     {canDelete ? (
                       <TouchableOpacity
+                        accessibilityRole="button"
+                        accessibilityLabel="Delete task"
                         onPress={remove}
                         disabled={deleting}
                         style={[styles.dangerBtn, deleting && styles.primaryBtnDisabled]}

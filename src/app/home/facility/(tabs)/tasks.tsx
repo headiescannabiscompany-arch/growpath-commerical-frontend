@@ -166,6 +166,7 @@ export default function FacilityTasksRoute() {
             <View style={styles.form}>
               <Text style={styles.label}>Title</Text>
               <TextInput
+                accessibilityLabel="Facility task title"
                 value={newTitle}
                 onChangeText={setNewTitle}
                 style={styles.input}
@@ -174,6 +175,7 @@ export default function FacilityTasksRoute() {
 
               <Text style={styles.label}>Notes (optional)</Text>
               <TextInput
+                accessibilityLabel="Facility task notes"
                 value={newNotes}
                 onChangeText={setNewNotes}
                 style={[styles.input, styles.inputMultiline]}
@@ -183,6 +185,7 @@ export default function FacilityTasksRoute() {
 
               <Text style={styles.label}>Due date (optional)</Text>
               <TextInput
+                accessibilityLabel="Facility task due date"
                 value={newDueDate}
                 onChangeText={setNewDueDate}
                 style={styles.input}
@@ -193,6 +196,7 @@ export default function FacilityTasksRoute() {
                 <>
                   <Text style={styles.label}>Assign to user id (optional)</Text>
                   <TextInput
+                    accessibilityLabel="Facility task assignee"
                     value={newAssignedTo}
                     onChangeText={setNewAssignedTo}
                     style={styles.input}
