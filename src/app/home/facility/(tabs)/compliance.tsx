@@ -328,18 +328,21 @@ export default function FacilityComplianceTab() {
               ) : (
                 <View style={styles.form}>
                   <TextInput
+                    accessibilityLabel="Deviation title"
                     value={deviationTitle}
                     onChangeText={setDeviationTitle}
                     style={styles.input}
                     placeholder="Deviation title"
                   />
                   <TextInput
+                    accessibilityLabel="Deviation severity"
                     value={deviationSeverity}
                     onChangeText={setDeviationSeverity}
                     style={styles.input}
                     placeholder="Severity"
                   />
                   <TextInput
+                    accessibilityLabel="Deviation description"
                     value={deviationDescription}
                     onChangeText={setDeviationDescription}
                     style={[styles.input, styles.multiline]}
@@ -347,6 +350,8 @@ export default function FacilityComplianceTab() {
                     placeholder="Description"
                   />
                   <Pressable
+                    accessibilityRole="button"
+                    accessibilityLabel="Create compliance deviation"
                     onPress={addDeviation}
                     disabled={saving || !deviationTitle.trim()}
                     style={[
@@ -375,6 +380,8 @@ export default function FacilityComplianceTab() {
                       </Text>
                       {canResolveCompliance && id ? (
                         <Pressable
+                          accessibilityRole="button"
+                          accessibilityLabel={`Resolve deviation ${item.title || id}`}
                           onPress={() => resolve(id)}
                           disabled={saving}
                           style={styles.secondaryBtn}
@@ -395,6 +402,7 @@ export default function FacilityComplianceTab() {
               {pendingVerifications.length ? (
                 <>
                   <TextInput
+                    accessibilityLabel="Verification reject reason"
                     value={rejectReason}
                     onChangeText={setRejectReason}
                     style={styles.input}
@@ -411,6 +419,8 @@ export default function FacilityComplianceTab() {
                         {canWriteCompliance && id ? (
                           <View style={styles.buttonRow}>
                             <Pressable
+                              accessibilityRole="button"
+                              accessibilityLabel={`Approve verification ${record.name || id}`}
                               onPress={() => verify(id)}
                               disabled={saving}
                               style={styles.primaryBtn}
@@ -418,6 +428,8 @@ export default function FacilityComplianceTab() {
                               <Text style={styles.primaryText}>Approve</Text>
                             </Pressable>
                             <Pressable
+                              accessibilityRole="button"
+                              accessibilityLabel={`Reject verification ${record.name || id}`}
                               onPress={() => reject(id)}
                               disabled={saving}
                               style={styles.dangerBtn}
@@ -440,12 +452,14 @@ export default function FacilityComplianceTab() {
               {canWriteCompliance ? (
                 <View style={styles.form}>
                   <TextInput
+                    accessibilityLabel="SOP title"
                     value={sopTitle}
                     onChangeText={setSopTitle}
                     style={styles.input}
                     placeholder="SOP title"
                   />
                   <TextInput
+                    accessibilityLabel="SOP procedure summary"
                     value={sopContent}
                     onChangeText={setSopContent}
                     style={[styles.input, styles.multiline]}
@@ -453,6 +467,8 @@ export default function FacilityComplianceTab() {
                     placeholder="Procedure summary"
                   />
                   <Pressable
+                    accessibilityRole="button"
+                    accessibilityLabel="Create SOP template"
                     onPress={addSop}
                     disabled={saving || !sopTitle.trim()}
                     style={[
@@ -480,6 +496,8 @@ export default function FacilityComplianceTab() {
               <View style={styles.cardHeader}>
                 <Text style={styles.cardTitle}>Audit Events</Text>
                 <Pressable
+                  accessibilityRole="button"
+                  accessibilityLabel="Open audit logs"
                   onPress={() => router.push("/home/facility/audit-logs" as any)}
                 >
                   <Text style={styles.link}>Open audit logs</Text>

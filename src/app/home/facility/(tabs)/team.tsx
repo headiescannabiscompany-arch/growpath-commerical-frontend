@@ -137,6 +137,7 @@ export default function FacilityTeamTab() {
           <Text style={styles.cardTitle}>Invite member</Text>
 
           <TextInput
+            accessibilityLabel="Invite team member email"
             value={inviteEmail}
             onChangeText={setInviteEmail}
             placeholder="email@company.com"
@@ -147,6 +148,8 @@ export default function FacilityTeamTab() {
           />
 
           <Pressable
+            accessibilityRole="button"
+            accessibilityLabel="Send team invite"
             onPress={sendInvite}
             disabled={inviting || !inviteEmail.trim() || !canInvite}
             style={({ pressed }) => [

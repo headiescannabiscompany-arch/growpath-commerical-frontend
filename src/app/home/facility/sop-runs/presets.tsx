@@ -46,19 +46,26 @@ export default function FacilitySopRunsPresetsRoute() {
     <View style={styles.container}>
       <Text style={styles.h1}>SOP Presets</Text>
       <TextInput
+        accessibilityLabel="SOP preset title"
         style={styles.input}
         placeholder="Template title"
         value={title}
         onChangeText={setTitle}
       />
       <TextInput
+        accessibilityLabel="SOP preset content"
         style={[styles.input, styles.notes]}
         placeholder="Template content"
         value={content}
         onChangeText={setContent}
         multiline
       />
-      <Pressable onPress={create} style={styles.btn}>
+      <Pressable
+        accessibilityRole="button"
+        accessibilityLabel="Create SOP preset"
+        onPress={create}
+        style={styles.btn}
+      >
         <Text style={styles.btnText}>{creating ? "Saving..." : "Create Preset"}</Text>
       </Pressable>
       {msg ? <Text style={styles.msg}>{msg}</Text> : null}

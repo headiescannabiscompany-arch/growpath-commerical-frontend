@@ -62,25 +62,33 @@ export default function FacilitySopRunsStartRoute() {
     <View style={styles.container}>
       <Text style={styles.h1}>Start SOP Run</Text>
       <TextInput
+        accessibilityLabel="SOP run title"
         style={styles.input}
         placeholder="Run title"
         value={title}
         onChangeText={setTitle}
       />
       <TextInput
+        accessibilityLabel="SOP template id"
         style={styles.input}
         placeholder="Template ID (optional)"
         value={templateId}
         onChangeText={setTemplateId}
       />
       <TextInput
+        accessibilityLabel="SOP run notes"
         style={[styles.input, styles.notes]}
         placeholder="Notes"
         value={notes}
         onChangeText={setNotes}
         multiline
       />
-      <Pressable onPress={submit} style={styles.btn}>
+      <Pressable
+        accessibilityRole="button"
+        accessibilityLabel="Start SOP run"
+        onPress={submit}
+        style={styles.btn}
+      >
         <Text style={styles.btnText}>{saving ? "Starting..." : "Start Run"}</Text>
       </Pressable>
       {msg ? <Text style={styles.msg}>{msg}</Text> : null}

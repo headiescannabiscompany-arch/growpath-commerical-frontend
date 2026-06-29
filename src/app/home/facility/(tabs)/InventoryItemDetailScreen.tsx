@@ -146,6 +146,7 @@ export default function InventoryItemDetailScreen() {
           </Text>
 
           <TextInput
+            accessibilityLabel="Inventory adjustment quantity"
             value={delta}
             onChangeText={setDelta}
             placeholder="e.g. 10 or -2"
@@ -153,6 +154,7 @@ export default function InventoryItemDetailScreen() {
             style={styles.input}
           />
           <TextInput
+            accessibilityLabel="Inventory adjustment reason"
             value={reason}
             onChangeText={setReason}
             placeholder="Reason (optional)"
@@ -160,6 +162,8 @@ export default function InventoryItemDetailScreen() {
           />
 
           <Pressable
+            accessibilityRole="button"
+            accessibilityLabel="Save inventory adjustment"
             onPress={adjust}
             disabled={saving}
             style={({ pressed }) => [

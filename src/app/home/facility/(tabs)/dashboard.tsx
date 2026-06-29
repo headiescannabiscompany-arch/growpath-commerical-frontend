@@ -354,6 +354,8 @@ export default function FacilityDashboardTab() {
             <View style={styles.sectionHeader}>
               <Text style={styles.sectionTitle}>At a glance</Text>
               <Pressable
+                accessibilityRole="button"
+                accessibilityLabel="Refresh facility dashboard"
                 onPress={() => load({ refresh: true })}
                 style={styles.refreshButton}
               >
@@ -364,6 +366,8 @@ export default function FacilityDashboardTab() {
               {quick.map((q) => (
                 <Pressable
                   key={q.label}
+                  accessibilityRole="button"
+                  accessibilityLabel={`Open ${q.label}`}
                   onPress={() => router.push(q.to as any)}
                   style={({ pressed }) => [
                     styles.tile,
@@ -390,6 +394,8 @@ export default function FacilityDashboardTab() {
               {statusRows.map((row) => (
                 <Pressable
                   key={row.label}
+                  accessibilityRole="button"
+                  accessibilityLabel={`Open ${row.label}`}
                   onPress={() => router.push(row.to as any)}
                   style={({ pressed }) => [styles.statusRow, pressed && styles.pressed]}
                 >
@@ -408,6 +414,8 @@ export default function FacilityDashboardTab() {
               {actionRows.map((row) => (
                 <Pressable
                   key={row.label}
+                  accessibilityRole="button"
+                  accessibilityLabel={`Open ${row.label}`}
                   onPress={() => router.push(row.to as any)}
                   style={({ pressed }) => [styles.actionRow, pressed && styles.pressed]}
                 >

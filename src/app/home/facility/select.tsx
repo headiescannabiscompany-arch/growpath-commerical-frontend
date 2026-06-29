@@ -36,6 +36,12 @@ function pickName(x: AnyRec): string {
   return String(x?.name ?? x?.facilityName ?? x?.title ?? pickId(x) ?? "Facility");
 }
 
+function uniquePaths(paths: unknown[]): string[] {
+  return Array.from(
+    new Set(paths.filter((path): path is string => typeof path === "string" && !!path))
+  );
+}
+
 export default function FacilitySelectRoute() {
   const router = useRouter();
   const store: any = useFacility();
@@ -60,13 +66,30 @@ export default function FacilitySelectRoute() {
       try {
         resolved.clearError();
 
-        const path =
-          (endpoints as any)?.facilitiesMine?.() ??
-          (endpoints as any)?.facilities?.() ??
-          "/api/facilities";
+        const paths = uniquePaths([
+          typeof (endpoints as any)?.facilitiesMine === "function"
+            ? (endpoints as any).facilitiesMine()
+            : (endpoints as any)?.facilitiesMine,
+          (endpoints as any)?.facilities,
+          "/api/facilities"
+        ]);
 
-        const res = await apiRequest(path, { method: "GET" });
-        setItems(asArray(res));
+        let lastError: unknown = null;
+        let nextItems: AnyRec[] = [];
+
+        for (const path of paths) {
+          try {
+            const res = await apiRequest(path, { method: "GET" });
+            nextItems = asArray(res);
+            if (nextItems.length > 0) break;
+          } catch (e) {
+            lastError = e;
+          }
+        }
+
+        if (nextItems.length === 0 && lastError) throw lastError;
+
+        setItems(nextItems);
       } catch (e) {
         resolved.handleApiError(e);
       } finally {
@@ -131,10 +154,12 @@ export default function FacilitySelectRoute() {
 
             return (
               <Pressable
+                accessibilityRole="button"
+                accessibilityLabel={`Select facility ${name}`}
                 onPress={() => {
                   if (!id) return;
                   selectFacility({ ...item, id, name });
-                  router.replace("/home/facility");
+                  router.replace("/home/facility/dashboard");
                 }}
                 style={({ pressed }) => [styles.row, pressed && styles.rowPressed]}
               >

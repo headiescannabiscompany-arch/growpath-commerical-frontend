@@ -1,4 +1,4 @@
-import React, { useMemo } from "react";
+import React, { useEffect, useMemo } from "react";
 import { Redirect, Stack, usePathname } from "expo-router";
 import { ActivityIndicator, View } from "react-native";
 import { useEntitlements } from "@/entitlements";
@@ -8,7 +8,8 @@ export default function FacilityLayout() {
   const pathname = usePathname();
 
   const ent = useEntitlements();
-  const { selectedId } = useFacility();
+  const facilityStore: any = useFacility();
+  const { selectedId } = facilityStore;
 
   const redirectTarget = useMemo(() => {
     if (!ent.ready) return null;
@@ -29,6 +30,23 @@ export default function FacilityLayout() {
     return null;
   }, [ent.facilityId, ent.mode, ent.ready, pathname, selectedId]);
 
+  useEffect(() => {
+    if (!ent.ready || ent.mode !== "facility" || !ent.facilityId || selectedId) return;
+
+    const selectFacility =
+      facilityStore?.selectFacility ??
+      facilityStore?.setSelected ??
+      facilityStore?.setSelectedId ??
+      facilityStore?.setFacilityId;
+
+    if (typeof selectFacility === "function") {
+      selectFacility({
+        id: ent.facilityId,
+        name: String(ent.facilityId)
+      });
+    }
+  }, [ent.facilityId, ent.mode, ent.ready, facilityStore, selectedId]);
+
   if (!ent.ready) {
     return (
       <View style={{ flex: 1, alignItems: "center", justifyContent: "center" }}>
@@ -38,6 +56,14 @@ export default function FacilityLayout() {
   }
 
   if (redirectTarget) return <Redirect href={redirectTarget as any} />;
+
+  if (ent.mode === "facility" && ent.facilityId && !selectedId) {
+    return (
+      <View style={{ flex: 1, alignItems: "center", justifyContent: "center" }}>
+        <ActivityIndicator />
+      </View>
+    );
+  }
 
   return <Stack screenOptions={{ headerShown: false }} />;
 }

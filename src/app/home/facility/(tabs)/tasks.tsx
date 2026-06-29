@@ -206,6 +206,8 @@ export default function FacilityTasksRoute() {
               )}
 
               <TouchableOpacity
+                accessibilityRole="button"
+                accessibilityLabel="Create facility task"
                 onPress={createTask}
                 disabled={creating || !newTitle.trim()}
                 style={[
@@ -254,6 +256,8 @@ export default function FacilityTasksRoute() {
 
             return (
               <Pressable
+                accessibilityRole="button"
+                accessibilityLabel={`Open task ${title}`}
                 onPress={() => {
                   if (!id) return;
                   router.push({ pathname: "/home/facility/tasks/[id]", params: { id } });

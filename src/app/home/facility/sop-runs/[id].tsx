@@ -86,7 +86,12 @@ export default function FacilitySopRunDetailRoute() {
       <Text style={styles.h1}>SOP Run Detail</Text>
       <Text style={styles.sub}>runId: {String(id)}</Text>
       <Text style={styles.sub}>status: {String(run?.status || "unknown")}</Text>
-      <Pressable onPress={completeRun} style={styles.btn}>
+      <Pressable
+        accessibilityRole="button"
+        accessibilityLabel="Mark SOP run complete"
+        onPress={completeRun}
+        style={styles.btn}
+      >
         <Text style={styles.btnText}>Mark Complete</Text>
       </Pressable>
       {message ? <Text style={styles.msg}>{message}</Text> : null}

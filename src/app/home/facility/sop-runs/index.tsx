@@ -105,13 +105,28 @@ export default function FacilitySopRunsIndexRoute() {
         <View style={styles.header}>
           <Text style={styles.h1}>SOP Runs</Text>
           <View style={styles.links}>
-            <Link href="/home/facility/sop-runs/start" style={styles.link}>
+            <Link
+              accessibilityRole="button"
+              accessibilityLabel="Start SOP run"
+              href="/home/facility/sop-runs/start"
+              style={styles.link}
+            >
               Start Run
             </Link>
-            <Link href="/home/facility/sop-runs/presets" style={styles.link}>
+            <Link
+              accessibilityRole="button"
+              accessibilityLabel="Open SOP presets"
+              href="/home/facility/sop-runs/presets"
+              style={styles.link}
+            >
               Presets
             </Link>
-            <Link href="/home/facility/sop-runs/compare" style={styles.link}>
+            <Link
+              accessibilityRole="button"
+              accessibilityLabel="Compare SOP runs"
+              href="/home/facility/sop-runs/compare"
+              style={styles.link}
+            >
               Compare
             </Link>
           </View>
@@ -123,6 +138,8 @@ export default function FacilitySopRunsIndexRoute() {
         const id = pickId(item, index);
         return (
           <Pressable
+            accessibilityRole="button"
+            accessibilityLabel={`Open SOP run ${String(item?.title || item?.name || id)}`}
             onPress={() =>
               router.push({ pathname: "/home/facility/sop-runs/[id]", params: { id } })
             }
