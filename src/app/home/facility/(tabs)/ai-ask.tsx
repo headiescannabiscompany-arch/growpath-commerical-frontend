@@ -183,7 +183,6 @@ export default function FacilityAiAskRoute() {
     () => !!facilityId && tool.trim() && fn.trim() && argsJson.trim() && !loading,
     [argsJson, facilityId, fn, loading, tool]
   );
-  const canRunSelected = canRun && (!selected.requiresGrow || !!growId.trim());
 
   function selectPreset(preset: Preset) {
     setSelected(preset);
@@ -346,10 +345,10 @@ export default function FacilityAiAskRoute() {
               accessibilityRole="button"
               accessibilityLabel={`Run ${selected.title} AI workflow`}
               onPress={() => run(undefined, Boolean(selected.requiresGrow))}
-              disabled={!canRunSelected}
+              disabled={!canRun}
               style={({ pressed }) => [
                 styles.button,
-                !canRunSelected && styles.disabled,
+                !canRun && styles.disabled,
                 pressed && styles.pressed
               ]}
             >
