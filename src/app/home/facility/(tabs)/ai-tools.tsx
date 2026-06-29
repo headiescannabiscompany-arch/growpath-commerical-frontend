@@ -11,7 +11,12 @@ export default function FacilityAiToolsRoute() {
       <View style={styles.card}>
         <Text style={styles.title}>Ask AI</Text>
         <Text style={styles.desc}>Run a structured tool/function call.</Text>
-        <Link href="/home/facility/ai-ask" style={styles.link}>
+        <Link
+          accessibilityRole="button"
+          accessibilityLabel="Open Ask AI"
+          href="/home/facility/ai-ask"
+          style={styles.link}
+        >
           Open
         </Link>
       </View>
@@ -19,7 +24,12 @@ export default function FacilityAiToolsRoute() {
       <View style={styles.card}>
         <Text style={styles.title}>Trichome Analysis</Text>
         <Text style={styles.desc}>Analyze photos and estimate harvest readiness.</Text>
-        <Link href="/home/facility/ai-diagnosis-photo" style={styles.link}>
+        <Link
+          accessibilityRole="button"
+          accessibilityLabel="Open trichome analysis"
+          href="/home/facility/ai-diagnosis-photo"
+          style={styles.link}
+        >
           Open
         </Link>
       </View>
@@ -27,7 +37,12 @@ export default function FacilityAiToolsRoute() {
       <View style={styles.card}>
         <Text style={styles.title}>AI Templates</Text>
         <Text style={styles.desc}>Use prebuilt AI workflows for common tasks.</Text>
-        <Link href="/home/facility/ai-template" style={styles.link}>
+        <Link
+          accessibilityRole="button"
+          accessibilityLabel="Open AI templates"
+          href="/home/facility/ai-template"
+          style={styles.link}
+        >
           Open
         </Link>
       </View>
@@ -37,7 +52,12 @@ export default function FacilityAiToolsRoute() {
         <Text style={styles.desc}>
           Verify, compare, feedback, and export endpoint checks.
         </Text>
-        <Link href="/home/facility/ai-validation" style={styles.link}>
+        <Link
+          accessibilityRole="button"
+          accessibilityLabel="Open AI validation lab"
+          href="/home/facility/ai-validation"
+          style={styles.link}
+        >
           Open
         </Link>
       </View>

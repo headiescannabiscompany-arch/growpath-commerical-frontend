@@ -59,6 +59,7 @@ export default function FacilityAiValidationRoute() {
 
       <Text style={styles.label}>Verify prediction vs observed</Text>
       <TextInput
+        accessibilityLabel="AI verify prediction JSON"
         value={predictionJson}
         onChangeText={setPredictionJson}
         style={[styles.input, styles.code]}
@@ -66,6 +67,7 @@ export default function FacilityAiValidationRoute() {
         multiline
       />
       <TextInput
+        accessibilityLabel="AI verify observed JSON"
         value={observedJson}
         onChangeText={setObservedJson}
         style={[styles.input, styles.code]}
@@ -75,6 +77,7 @@ export default function FacilityAiValidationRoute() {
 
       <Text style={styles.label}>Compare baseline vs candidate</Text>
       <TextInput
+        accessibilityLabel="AI compare baseline JSON"
         value={baselineJson}
         onChangeText={setBaselineJson}
         style={[styles.input, styles.code]}
@@ -82,6 +85,7 @@ export default function FacilityAiValidationRoute() {
         multiline
       />
       <TextInput
+        accessibilityLabel="AI compare candidate JSON"
         value={candidateJson}
         onChangeText={setCandidateJson}
         style={[styles.input, styles.code]}
@@ -91,18 +95,21 @@ export default function FacilityAiValidationRoute() {
 
       <Text style={styles.label}>Feedback</Text>
       <TextInput
+        accessibilityLabel="AI feedback target type"
         value={targetType}
         onChangeText={setTargetType}
         style={styles.input}
         placeholder="Target Type"
       />
       <TextInput
+        accessibilityLabel="AI feedback target id"
         value={targetId}
         onChangeText={setTargetId}
         style={styles.input}
         placeholder="Target ID"
       />
       <TextInput
+        accessibilityLabel="AI feedback rating"
         value={rating}
         onChangeText={setRating}
         style={styles.input}
@@ -110,12 +117,14 @@ export default function FacilityAiValidationRoute() {
         keyboardType="numeric"
       />
       <TextInput
+        accessibilityLabel="AI feedback comment"
         value={comment}
         onChangeText={setComment}
         style={styles.input}
         placeholder="Comment"
       />
       <TextInput
+        accessibilityLabel="AI feedback labels"
         value={labels}
         onChangeText={setLabels}
         style={styles.input}
@@ -124,6 +133,8 @@ export default function FacilityAiValidationRoute() {
 
       <View style={styles.buttonGrid}>
         <Pressable
+          accessibilityRole="button"
+          accessibilityLabel="Verify AI prediction"
           style={[styles.button, styles.buttonPrimary, loading && styles.disabled]}
           disabled={loading}
           onPress={() =>
@@ -139,6 +150,8 @@ export default function FacilityAiValidationRoute() {
         </Pressable>
 
         <Pressable
+          accessibilityRole="button"
+          accessibilityLabel="Compare AI candidates"
           style={[styles.button, styles.buttonPrimary, loading && styles.disabled]}
           disabled={loading}
           onPress={() =>
@@ -154,6 +167,8 @@ export default function FacilityAiValidationRoute() {
         </Pressable>
 
         <Pressable
+          accessibilityRole="button"
+          accessibilityLabel="Submit AI feedback"
           style={[styles.button, styles.buttonPrimary, loading && styles.disabled]}
           disabled={loading || !targetType.trim() || !targetId.trim() || !rating.trim()}
           onPress={() =>
@@ -175,6 +190,8 @@ export default function FacilityAiValidationRoute() {
         </Pressable>
 
         <Pressable
+          accessibilityRole="button"
+          accessibilityLabel="Export AI training feedback"
           style={[styles.button, styles.buttonSecondary, loading && styles.disabled]}
           disabled={loading}
           onPress={() => run(() => aiTrainingExport({ format: "json" }))}

@@ -21,13 +21,12 @@ export default function FacilityTabsLayout() {
     return <Redirect href="/home/personal" />;
   }
 
-  if (!selectedId) {
+  if (!selectedId && !ent.facilityId) {
     return <Redirect href="/home/facility/select" />;
   }
 
   return (
     <Tabs
-      initialRouteName="dashboard"
       screenOptions={{
         headerShown: true,
         tabBarHideOnKeyboard: true,

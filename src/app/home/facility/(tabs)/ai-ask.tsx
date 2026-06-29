@@ -1,4 +1,4 @@
-import React, { useMemo, useState } from "react";
+import React, { useEffect, useMemo, useState } from "react";
 import {
   Pressable,
   ScrollView,
@@ -8,6 +8,7 @@ import {
   useWindowDimensions,
   View
 } from "react-native";
+import { useLocalSearchParams } from "expo-router";
 
 import { useFacility } from "@/state/useFacility";
 import { AICallBody, useAICall } from "@/hooks/useAICall";
@@ -86,17 +87,22 @@ function pretty(value: unknown) {
 }
 
 export default function FacilityAiAskRoute() {
+  const params = useLocalSearchParams<{ preset?: string }>();
   const { selectedId: facilityId } = useFacility();
   const { callAI, loading, error, last } = useAICall(String(facilityId || ""));
   const { width } = useWindowDimensions();
   const isWide = width >= 960;
   const presetWidth = isWide ? "48.5%" : "100%";
+  const initialPreset = useMemo(
+    () => PRESETS.find((preset) => preset.key === params.preset) || PRESETS[0],
+    [params.preset]
+  );
 
-  const [selected, setSelected] = useState<Preset>(PRESETS[0]);
+  const [selected, setSelected] = useState<Preset>(initialPreset);
   const [growId, setGrowId] = useState("");
-  const [tool, setTool] = useState(PRESETS[0].tool);
-  const [fn, setFn] = useState(PRESETS[0].fn);
-  const [argsJson, setArgsJson] = useState(pretty(PRESETS[0].args));
+  const [tool, setTool] = useState(initialPreset.tool);
+  const [fn, setFn] = useState(initialPreset.fn);
+  const [argsJson, setArgsJson] = useState(pretty(initialPreset.args));
   const [localError, setLocalError] = useState("");
 
   const canRun = useMemo(
@@ -111,6 +117,10 @@ export default function FacilityAiAskRoute() {
     setArgsJson(pretty(preset.args));
     setLocalError("");
   }
+
+  useEffect(() => {
+    selectPreset(initialPreset);
+  }, [initialPreset]);
 
   async function run(body?: Partial<AICallBody>, requiresGrow = false) {
     if (!canRun) return;
@@ -162,6 +172,8 @@ export default function FacilityAiAskRoute() {
               return (
                 <Pressable
                   key={preset.key}
+                  accessibilityRole="button"
+                  accessibilityLabel={`Select ${preset.title} AI workflow`}
                   onPress={() => selectPreset(preset)}
                   style={({ pressed }) => [
                     styles.preset,
@@ -184,6 +196,7 @@ export default function FacilityAiAskRoute() {
 
             {selected.requiresGrow ? (
               <TextInput
+                accessibilityLabel="AI grow id"
                 value={growId}
                 onChangeText={setGrowId}
                 style={styles.input}
@@ -193,6 +206,7 @@ export default function FacilityAiAskRoute() {
             ) : null}
 
             <TextInput
+              accessibilityLabel="AI args JSON"
               value={argsJson}
               onChangeText={setArgsJson}
               style={[styles.input, styles.code]}
@@ -201,6 +215,8 @@ export default function FacilityAiAskRoute() {
             />
 
             <Pressable
+              accessibilityRole="button"
+              accessibilityLabel={`Run ${selected.title} AI workflow`}
               onPress={() => run(undefined, Boolean(selected.requiresGrow))}
               disabled={!canRun}
               style={({ pressed }) => [
@@ -223,6 +239,7 @@ export default function FacilityAiAskRoute() {
               Keep this for advanced users and support checks.
             </Text>
             <TextInput
+              accessibilityLabel="Custom AI tool"
               value={tool}
               onChangeText={setTool}
               style={styles.input}
@@ -230,6 +247,7 @@ export default function FacilityAiAskRoute() {
               autoCapitalize="none"
             />
             <TextInput
+              accessibilityLabel="Custom AI function"
               value={fn}
               onChangeText={setFn}
               style={styles.input}
@@ -237,6 +255,7 @@ export default function FacilityAiAskRoute() {
               autoCapitalize="none"
             />
             <TextInput
+              accessibilityLabel="Custom AI grow id"
               value={growId}
               onChangeText={setGrowId}
               style={styles.input}
@@ -244,6 +263,8 @@ export default function FacilityAiAskRoute() {
               autoCapitalize="none"
             />
             <Pressable
+              accessibilityRole="button"
+              accessibilityLabel="Run custom AI call"
               onPress={() => run()}
               disabled={!canRun}
               style={({ pressed }) => [
