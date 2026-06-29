@@ -2,6 +2,7 @@ import React, { useState } from "react";
 import { Pressable, ScrollView, StyleSheet, Text, TextInput, View } from "react-native";
 
 import { aiCompare, aiFeedback, aiTrainingExport, aiVerify } from "@/api/aiValidation";
+import { buildFeedbackPayload, parseJsonObject } from "@/utils/aiValidationLab";
 
 export default function FacilityAiValidationRoute() {
   const [predictionJson, setPredictionJson] = useState(
@@ -24,18 +25,6 @@ export default function FacilityAiValidationRoute() {
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState("");
   const [lastResponse, setLastResponse] = useState<Record<string, unknown> | null>(null);
-
-  function parseJsonObject(value: string, label: string) {
-    try {
-      const parsed = JSON.parse(value || "{}");
-      if (!parsed || typeof parsed !== "object" || Array.isArray(parsed)) {
-        throw new Error(`${label} must be a JSON object`);
-      }
-      return parsed as Record<string, unknown>;
-    } catch (e: any) {
-      throw new Error(e?.message || `${label} must be valid JSON`);
-    }
-  }
 
   async function run<T>(work: () => Promise<T>) {
     setLoading(true);
@@ -173,16 +162,15 @@ export default function FacilityAiValidationRoute() {
           disabled={loading || !targetType.trim() || !targetId.trim() || !rating.trim()}
           onPress={() =>
             run(() =>
-              aiFeedback({
-                targetType: targetType.trim(),
-                targetId: targetId.trim(),
-                rating: Number(rating),
-                comment: comment.trim() || undefined,
-                labels: labels
-                  .split(",")
-                  .map((item) => item.trim())
-                  .filter(Boolean)
-              })
+              aiFeedback(
+                buildFeedbackPayload({
+                  targetType,
+                  targetId,
+                  rating,
+                  comment,
+                  labels
+                })
+              )
             )
           }
         >
