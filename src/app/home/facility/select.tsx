@@ -124,7 +124,7 @@ export default function FacilitySelectRoute() {
         {loading ? (
           <View style={styles.loading}>
             <ActivityIndicator />
-            <Text style={styles.muted}>Loading facilities…</Text>
+            <Text style={styles.muted}>Loading facilities...</Text>
           </View>
         ) : null}
 
@@ -171,7 +171,7 @@ export default function FacilitySelectRoute() {
                     {id}
                   </Text>
                 </View>
-                <Text style={styles.chev}>›</Text>
+                <Text style={styles.chev}>{">"}</Text>
               </Pressable>
             );
           }}

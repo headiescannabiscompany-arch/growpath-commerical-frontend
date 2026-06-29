@@ -6,7 +6,7 @@ type Store = {
   mode: AccountMode;
 };
 
-let store: Store = { mode: "commercial" };
+let store: Store = { mode: "personal" };
 const listeners = new Set<() => void>();
 
 function emit() {
@@ -23,8 +23,7 @@ function getSnapshot() {
 }
 
 /**
- * Minimal web-safe account mode store.
- * Replace later with your real auth/entitlements-driven mode.
+ * Web-safe account mode store. Entitlements hydrate it after auth is ready.
  */
 export function useAccountMode() {
   const snap = useSyncExternalStore(subscribe, getSnapshot, getSnapshot);

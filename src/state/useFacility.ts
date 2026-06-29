@@ -38,8 +38,8 @@ function getSnapshot() {
 }
 
 /**
- * Minimal web-safe facility selection store.
- * Replace later with persistent storage + facility list fetch.
+ * Web-safe facility selection store. Facility layout hydrates it from entitlement
+ * context when the account owns or belongs to a single facility.
  */
 export function useFacility() {
   const snap = useSyncExternalStore(subscribe, getSnapshot, getSnapshot);
