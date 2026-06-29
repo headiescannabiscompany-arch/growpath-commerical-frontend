@@ -163,6 +163,7 @@ export default function NewLogScreen() {
           invalidateSuggestions();
         }}
         placeholder="Day 12 - Defoliation"
+        accessibilityLabel="Log title"
       />
       <Text style={styles.label}>Date</Text>
       <TextInput
@@ -170,6 +171,7 @@ export default function NewLogScreen() {
         value={date}
         onChangeText={setDate}
         placeholder="YYYY-MM-DD"
+        accessibilityLabel="Log date"
       />
       <Text style={styles.label}>Type</Text>
       <View style={styles.row}>
@@ -180,6 +182,8 @@ export default function NewLogScreen() {
               setLogType(type);
               invalidateSuggestions();
             }}
+            accessibilityRole="button"
+            accessibilityLabel={`Log type ${type}`}
             style={[styles.chip, logType === type && styles.chipOn]}
           >
             <Text style={[styles.chipText, logType === type && styles.chipTextOn]}>
@@ -198,6 +202,7 @@ export default function NewLogScreen() {
         }}
         multiline
         placeholder="What changed today?"
+        accessibilityLabel="Log notes"
       />
 
       <Pressable
@@ -206,6 +211,8 @@ export default function NewLogScreen() {
           !notes.trim() || analyzing || !entitlements.can(CAPABILITY_KEYS.DIAGNOSE_AI)
         }
         onPress={analyzeDraft}
+        accessibilityRole="button"
+        accessibilityLabel="Suggest tags and summary"
       >
         <Text style={styles.secondaryButtonText}>
           {analyzing ? "Analyzing..." : "Suggest Tags and Summary"}
@@ -236,6 +243,8 @@ export default function NewLogScreen() {
                     acceptedTags.includes(tag) && styles.accepted
                   ]}
                   onPress={() => reviewTag(tag, "accept")}
+                  accessibilityRole="button"
+                  accessibilityLabel={`Accept tag ${tag}`}
                 >
                   <Text style={styles.reviewText}>Accept</Text>
                 </Pressable>
@@ -245,6 +254,8 @@ export default function NewLogScreen() {
                     rejectedTags.includes(tag) && styles.rejected
                   ]}
                   onPress={() => reviewTag(tag, "reject")}
+                  accessibilityRole="button"
+                  accessibilityLabel={`Reject tag ${tag}`}
                 >
                   <Text style={styles.reviewText}>Reject</Text>
                 </Pressable>
@@ -265,6 +276,8 @@ export default function NewLogScreen() {
           <View style={styles.row}>
             <Pressable
               onPress={() => setSelectedToolRunId("")}
+              accessibilityRole="button"
+              accessibilityLabel="Attach no tool result"
               style={[styles.chip, !selectedToolRunId && styles.chipOn]}
             >
               <Text style={[styles.chipText, !selectedToolRunId && styles.chipTextOn]}>
@@ -277,6 +290,8 @@ export default function NewLogScreen() {
                 <Pressable
                   key={id}
                   onPress={() => setSelectedToolRunId(id)}
+                  accessibilityRole="button"
+                  accessibilityLabel={`Attach tool result ${run?.toolType || run?.toolName || "tool"}`}
                   style={[styles.chip, selectedToolRunId === id && styles.chipOn]}
                 >
                   <Text
@@ -298,6 +313,8 @@ export default function NewLogScreen() {
         style={[styles.primaryButton, (!canSave || saving) && styles.disabled]}
         disabled={!canSave || saving}
         onPress={save}
+        accessibilityRole="button"
+        accessibilityLabel="Create log"
       >
         <Text style={styles.primaryButtonText}>
           {saving ? "Saving..." : "Create Log"}

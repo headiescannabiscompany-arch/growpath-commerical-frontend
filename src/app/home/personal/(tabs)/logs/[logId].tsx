@@ -121,7 +121,9 @@ export default function LogDetailScreen() {
     }
     const growId = log?.growId;
     router.replace(
-      growId ? `/home/personal/grows/${encodeURIComponent(growId)}/journal` : "/home/personal/grows"
+      growId
+        ? `/home/personal/grows/${encodeURIComponent(growId)}/journal`
+        : "/home/personal/grows"
     );
   }
 
@@ -149,6 +151,7 @@ export default function LogDetailScreen() {
             style={styles.input}
             value={form.title}
             onChangeText={(title) => setForm((current) => ({ ...current, title }))}
+            accessibilityLabel="Edit log title"
           />
           <Text style={styles.label}>Date</Text>
           <TextInput
@@ -156,12 +159,14 @@ export default function LogDetailScreen() {
             value={form.date}
             onChangeText={(date) => setForm((current) => ({ ...current, date }))}
             placeholder="YYYY-MM-DD"
+            accessibilityLabel="Edit log date"
           />
           <Text style={styles.label}>Type</Text>
           <TextInput
             style={styles.input}
             value={form.type}
             onChangeText={(type) => setForm((current) => ({ ...current, type }))}
+            accessibilityLabel="Edit log type"
           />
           <Text style={styles.label}>Notes</Text>
           <TextInput
@@ -169,6 +174,7 @@ export default function LogDetailScreen() {
             value={form.notes}
             onChangeText={(notes) => setForm((current) => ({ ...current, notes }))}
             multiline
+            accessibilityLabel="Edit log notes"
           />
           <Text style={styles.label}>Tags</Text>
           <TextInput
@@ -176,18 +182,26 @@ export default function LogDetailScreen() {
             value={form.tags}
             onChangeText={(tags) => setForm((current) => ({ ...current, tags }))}
             placeholder="watering, deficiency, follow-up"
+            accessibilityLabel="Edit log tags"
           />
           <View style={styles.row}>
             <Pressable
               style={[styles.primaryButton, saving && styles.disabled]}
               disabled={saving}
               onPress={save}
+              accessibilityRole="button"
+              accessibilityLabel="Save log changes"
             >
               <Text style={styles.primaryButtonText}>
                 {saving ? "Saving..." : "Save Changes"}
               </Text>
             </Pressable>
-            <Pressable style={styles.secondaryButton} onPress={() => setEditing(false)}>
+            <Pressable
+              style={styles.secondaryButton}
+              onPress={() => setEditing(false)}
+              accessibilityRole="button"
+              accessibilityLabel="Cancel log editing"
+            >
               <Text style={styles.secondaryButtonText}>Cancel</Text>
             </Pressable>
           </View>
@@ -213,7 +227,9 @@ export default function LogDetailScreen() {
             <Text style={styles.linkMeta}>Grow: {log.growId || "Unlinked"}</Text>
             <Text style={styles.linkMeta}>Plant: {log.plantId || "Whole grow"}</Text>
             <Text style={styles.linkMeta}>
-              Diagnosis: {log.diagnosisId || (log.type === "diagnosis" ? "Saved diagnosis log" : "None")}
+              Diagnosis:{" "}
+              {log.diagnosisId ||
+                (log.type === "diagnosis" ? "Saved diagnosis log" : "None")}
             </Text>
             <Text style={styles.linkMeta}>Tool result: {log.toolRunId || "None"}</Text>
           </View>
@@ -224,7 +240,9 @@ export default function LogDetailScreen() {
               {log.aiInsight.summary ? (
                 <Text style={styles.notes}>{log.aiInsight.summary}</Text>
               ) : null}
-              <Text style={styles.linkMeta}>Source: {log.aiInsight.source || "unknown"}</Text>
+              <Text style={styles.linkMeta}>
+                Source: {log.aiInsight.source || "unknown"}
+              </Text>
               {log.aiInsight.missingData?.map((item) => (
                 <Text key={item} style={styles.linkMeta}>
                   Missing context: {item}
@@ -234,13 +252,20 @@ export default function LogDetailScreen() {
           ) : null}
 
           <View style={styles.row}>
-            <Pressable style={styles.primaryButton} onPress={() => setEditing(true)}>
+            <Pressable
+              style={styles.primaryButton}
+              onPress={() => setEditing(true)}
+              accessibilityRole="button"
+              accessibilityLabel="Edit log entry"
+            >
               <Text style={styles.primaryButtonText}>Edit Entry</Text>
             </Pressable>
             <Pressable
               style={[styles.dangerButton, deleting && styles.disabled]}
               disabled={deleting}
               onPress={remove}
+              accessibilityRole="button"
+              accessibilityLabel="Delete log entry"
             >
               <Text style={styles.dangerButtonText}>
                 {deleting ? "Deleting..." : "Delete"}
