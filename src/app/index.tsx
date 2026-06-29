@@ -110,7 +110,12 @@ export default function Index() {
     console.log("[INDEX] facility.isReady:", facility?.isReady);
     console.log("[INDEX] facility.selectedId:", facility?.selectedId);
 
-    if (ent.mode === "facility" || ent.mode === "commercial") {
+    if (ent.mode === "commercial") {
+      console.log("[INDEX] Commercial mode -> /home/commercial");
+      return { kind: "nav" as const, href: "/home/commercial" };
+    }
+
+    if (ent.mode === "facility") {
       if (!facility?.isReady) {
         return {
           kind: "render" as const,
@@ -129,11 +134,6 @@ export default function Index() {
           kind: "nav" as const,
           href: `/facilities/${facility.selectedId}/dashboard`
         };
-      }
-
-      if (ent.mode === "commercial") {
-        console.log("[INDEX] Commercial mode -> /feed");
-        return { kind: "nav" as const, href: "/feed" };
       }
     }
 

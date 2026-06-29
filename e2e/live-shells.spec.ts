@@ -48,7 +48,7 @@ test.describe("live seeded shell routing", () => {
 
       await expect(page.getByText("Your Garden")).toHaveCount(0);
       if (user.expectedMode === "facility") {
-        await expect(page.getByText("Facility Dashboard")).toBeVisible({
+        await expect(page.getByText("Operations Live")).toBeVisible({
           timeout: 30000
         });
         return;

@@ -1,6 +1,6 @@
 import { expect, test } from "@playwright/test";
 
-type Mode = "personal" | "facility";
+type Mode = "personal" | "commercial" | "facility";
 
 const PERSONAL_USER = {
   id: "personal-user",
@@ -18,6 +18,14 @@ const FACILITY_USER = {
   mode: "facility" as Mode
 };
 
+const COMMERCIAL_USER = {
+  id: "commercial-user",
+  email: "commercial-shell@example.com",
+  password: "Password123",
+  plan: "commercial",
+  mode: "commercial" as Mode
+};
+
 const ACTIVE_GROW = {
   id: "grow-shell-1",
   name: "Auth Shell Grow",
@@ -25,7 +33,9 @@ const ACTIVE_GROW = {
   updatedAt: "2026-03-01T00:00:00.000Z"
 };
 
-function mePayload(user: typeof PERSONAL_USER | typeof FACILITY_USER) {
+type ShellUser = typeof PERSONAL_USER | typeof COMMERCIAL_USER | typeof FACILITY_USER;
+
+function mePayload(user: ShellUser) {
   const personalCapabilities = {
     GROWS_PERSONAL_VIEW: true,
     GROWS_PERSONAL_WRITE: true,
@@ -41,12 +51,18 @@ function mePayload(user: typeof PERSONAL_USER | typeof FACILITY_USER) {
     user: {
       id: user.id,
       email: user.email,
-      displayName: user.mode === "facility" ? "Facility Operator" : "Personal Grower",
+      displayName:
+        user.mode === "facility"
+          ? "Facility Operator"
+          : user.mode === "commercial"
+            ? "Commercial Operator"
+            : "Personal Grower",
       plan: user.plan
     },
     ctx: {
       mode: user.mode,
       plan: user.plan,
+      subscriptionStatus: user.plan === "free" ? "free" : "active",
       facilityId: user.mode === "facility" ? "facility-1" : null,
       facilityRole: user.mode === "facility" ? "MANAGER" : null,
       capabilities:
@@ -57,16 +73,20 @@ function mePayload(user: typeof PERSONAL_USER | typeof FACILITY_USER) {
               GROWS_READ: true,
               COMPLIANCE_READ: true
             }
-          : personalCapabilities,
+          : user.mode === "commercial"
+            ? {
+                COMMERCIAL_HOME: true,
+                COMMERCIAL_INVENTORY_VIEW: true,
+                COMMERCIAL_FEED_VIEW: true,
+                STORE_FRONT_VIEW: true
+              }
+            : personalCapabilities,
       limits: user.mode === "facility" ? {} : { maxGrows: 1, maxPlants: 3 }
     }
   };
 }
 
-async function installAuthMeMocks(
-  page: any,
-  user: typeof PERSONAL_USER | typeof FACILITY_USER
-) {
+async function installAuthMeMocks(page: any, user: ShellUser) {
   let meRequests = 0;
   const token = `${user.mode}-shell-e2e-auth-token`;
 
@@ -158,7 +178,7 @@ async function installAuthMeMocks(
   };
 }
 
-async function loginAs(page: any, user: typeof PERSONAL_USER | typeof FACILITY_USER) {
+async function loginAs(page: any, user: ShellUser) {
   await page.goto("/login", { waitUntil: "domcontentloaded" });
   await page.getByPlaceholder("Email").fill(user.email);
   await page.getByPlaceholder("Password").fill(user.password);
@@ -206,6 +226,21 @@ test.describe("auth/me shell selection and capability gating", () => {
 
     await expect(page.getByText("Operations Live")).toBeVisible({ timeout: 30000 });
     await expect(page.getByText("facility-1")).toBeVisible();
+    await expect(page.getByText("Your Garden")).toHaveCount(0);
+    expect(api.getMeRequests()).toBeGreaterThan(0);
+  });
+
+  test("commercial /api/me selects Commercial shell instead of Personal shell", async ({
+    page
+  }) => {
+    const api = await installAuthMeMocks(page, COMMERCIAL_USER);
+
+    await loginAs(page, COMMERCIAL_USER);
+
+    await expect(page.getByText("Brand Dashboard")).toBeVisible({ timeout: 30000 });
+    await expect(
+      page.getByText(/commercial-shell@example\.com \| commercial plan/i)
+    ).toBeVisible();
     await expect(page.getByText("Your Garden")).toHaveCount(0);
     expect(api.getMeRequests()).toBeGreaterThan(0);
   });
