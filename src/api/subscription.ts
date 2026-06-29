@@ -11,6 +11,11 @@ export async function getSubscription() {
   return res?.data ?? res;
 }
 
+function currentOrigin() {
+  const location = (globalThis as any)?.window?.location;
+  return typeof location?.origin === "string" ? location.origin : "";
+}
+
 export async function createCheckoutSession(
   data: {
     plan: string;
@@ -18,9 +23,16 @@ export async function createCheckoutSession(
     billingInterval?: string;
   } = { plan: "pro", interval: "monthly" }
 ) {
+  const origin = currentOrigin();
   const body = {
     plan: data.plan || "pro",
-    interval: data.interval || data.billingInterval || "monthly"
+    interval: data.interval || data.billingInterval || "monthly",
+    ...(origin
+      ? {
+          successUrl: `${origin}/offers?subscription=success`,
+          cancelUrl: `${origin}/offers?subscription=canceled`
+        }
+      : {})
   };
   const res = await apiRequest("/api/subscription/create-checkout-session", {
     method: "POST",

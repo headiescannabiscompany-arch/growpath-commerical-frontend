@@ -1,6 +1,7 @@
 import React, { useMemo, useState } from "react";
 import {
   Linking,
+  Platform,
   Pressable,
   StyleSheet,
   Text,
@@ -63,6 +64,14 @@ function checkoutUrlFromResponse(response: any) {
   );
 }
 
+async function openCheckoutUrl(url: string) {
+  if (Platform.OS === "web" && typeof window !== "undefined" && window.location) {
+    window.location.href = url;
+    return;
+  }
+  await Linking.openURL(url);
+}
+
 export default function Offers() {
   const auth = useAuth();
   const ent = useEntitlements();
@@ -88,7 +97,7 @@ export default function Offers() {
         setFeedback("Checkout is unavailable. The backend did not return a URL.");
         return;
       }
-      await Linking.openURL(url);
+      await openCheckoutUrl(url);
       setFeedback("Checkout opened in a new tab. Close it anytime before payment.");
     } catch (e: any) {
       setFeedback(e?.message || "Unable to start checkout.");
