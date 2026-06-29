@@ -3,9 +3,13 @@ import { endpoints } from "./endpoints";
 
 export type InventoryItem = {
   id: string;
+  _id?: string;
   name: string;
+  sku?: string;
   qty?: number;
   quantity: number;
+  quantityOnHand?: number;
+  reorderPoint?: number;
   unit?: string;
   createdAt?: string;
 };
@@ -14,12 +18,11 @@ export type InventoryItem = {
 
 export async function getInventory(facilityId: string): Promise<InventoryItem[]> {
   const listRes = await apiRequest(endpoints.inventory(facilityId));
-  // Contract: { inventory: [...] }
-  const items = listRes?.inventory ?? [];
+  const items = listRes?.items ?? listRes?.inventory ?? listRes?.data?.items ?? [];
   return items.map((i: any) => ({
     ...i,
     name: i.name ?? "Unnamed Item",
-    quantity: i.quantity ?? i.qty ?? 0
+    quantity: i.quantity ?? i.quantityOnHand ?? i.qty ?? 0
   }));
 }
 

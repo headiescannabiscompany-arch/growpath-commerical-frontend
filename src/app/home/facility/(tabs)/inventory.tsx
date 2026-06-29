@@ -2,43 +2,76 @@ import React, { useCallback, useEffect, useMemo, useState } from "react";
 import {
   ActivityIndicator,
   FlatList,
+  Pressable,
   RefreshControl,
+  StyleSheet,
   Text,
-  TouchableOpacity,
   View
 } from "react-native";
 import { useRouter } from "expo-router";
 
-import { ScreenBoundary } from "@/components/ScreenBoundary";
-import { useFacility } from "@/state/useFacility";
 import { apiRequest } from "@/api/apiRequest";
 import { endpoints } from "@/api/endpoints";
-import { useApiErrorHandler } from "@/hooks/useApiErrorHandler";
 import { InlineError } from "@/components/InlineError";
+import { ScreenBoundary } from "@/components/ScreenBoundary";
 import { CAPABILITY_KEYS, useEntitlements } from "@/entitlements";
+import { useApiErrorHandler } from "@/hooks/useApiErrorHandler";
+import { useFacility } from "@/state/useFacility";
 
 type InventoryItem = {
-  _id: string;
+  _id?: string;
   id?: string;
   name?: string;
   sku?: string;
   quantity?: number;
+  quantityOnHand?: number;
+  reorderPoint?: number;
   unit?: string;
   updatedAt?: string;
+  createdAt?: string;
 };
 
 function normalizeInventory(res: any): InventoryItem[] {
   if (Array.isArray(res?.items)) return res.items;
   if (Array.isArray(res?.inventory)) return res.inventory;
+  if (Array.isArray(res?.data?.items)) return res.data.items;
+  if (Array.isArray(res?.data?.inventory)) return res.data.inventory;
   if (Array.isArray(res)) return res;
   return [];
+}
+
+function itemId(item: InventoryItem) {
+  return String(item.id ?? item._id ?? item.sku ?? "");
+}
+
+function quantityOf(item: InventoryItem) {
+  const value = item.quantity ?? item.quantityOnHand ?? 0;
+  const number = Number(value);
+  return Number.isFinite(number) ? number : 0;
+}
+
+function reorderPointOf(item: InventoryItem) {
+  const number = Number(item.reorderPoint ?? 0);
+  return Number.isFinite(number) ? number : 0;
+}
+
+function stockStatus(item: InventoryItem) {
+  const quantity = quantityOf(item);
+  const reorderPoint = reorderPointOf(item);
+  if (quantity <= 0) return "out";
+  if (reorderPoint > 0 && quantity <= reorderPoint) return "low";
+  return "ok";
 }
 
 export default function FacilityInventoryTab() {
   const router = useRouter();
   const { selectedId: facilityId } = useFacility();
   const ent = useEntitlements();
-  const handleApiError = useApiErrorHandler();
+  const apiErr: any = useApiErrorHandler();
+  const handleApiError = useMemo(
+    () => apiErr?.handleApiError ?? apiErr?.[1] ?? ((_: any) => {}),
+    [apiErr]
+  );
 
   const [items, setItems] = useState<InventoryItem[]>([]);
   const [loading, setLoading] = useState(true);
@@ -78,46 +111,36 @@ export default function FacilityInventoryTab() {
   }, [facilityId, fetchItems, handleApiError]);
 
   useEffect(() => {
+    if (!facilityId) {
+      router.replace("/home/facility/select");
+      return;
+    }
     load();
-  }, [load]);
+  }, [facilityId, load, router]);
 
   const sorted = useMemo(() => {
     const copy = [...items];
     copy.sort((a, b) => {
-      const ta = new Date(a.updatedAt || 0).getTime();
-      const tb = new Date(b.updatedAt || 0).getTime();
-      const aOk = Number.isFinite(ta) ? ta : 0;
-      const bOk = Number.isFinite(tb) ? tb : 0;
-      return bOk - aOk;
+      const statusRank = { out: 0, low: 1, ok: 2 } as const;
+      const riskDelta = statusRank[stockStatus(a)] - statusRank[stockStatus(b)];
+      if (riskDelta !== 0) return riskDelta;
+      const ta = new Date(a.updatedAt || a.createdAt || 0).getTime();
+      const tb = new Date(b.updatedAt || b.createdAt || 0).getTime();
+      return (Number.isFinite(tb) ? tb : 0) - (Number.isFinite(ta) ? ta : 0);
     });
     return copy;
   }, [items]);
+
   const canWriteInventory = Boolean(ent?.can?.(CAPABILITY_KEYS.INVENTORY_WRITE));
-
-  if (!facilityId) {
-    return (
-      <ScreenBoundary name="facility.inventory.tab">
-        <View style={{ flex: 1, padding: 16, gap: 12 }}>
-          <Text style={{ fontSize: 20, fontWeight: "900" }}>Inventory</Text>
-          <Text>Select a facility first.</Text>
-
-          <TouchableOpacity
-            accessibilityRole="button"
-            accessibilityLabel="Go to facility select"
-            onPress={() => router.push("/home/facility/select")}
-            style={{ borderWidth: 1, borderRadius: 10, padding: 12 }}
-          >
-            <Text style={{ fontWeight: "900" }}>Go to Facility Select</Text>
-          </TouchableOpacity>
-        </View>
-      </ScreenBoundary>
-    );
-  }
+  const outOfStock = items.filter((item) => stockStatus(item) === "out").length;
+  const lowStock = items.filter((item) => stockStatus(item) === "low").length;
+  const missingSku = items.filter((item) => !item.sku).length;
+  const totalQuantity = items.reduce((sum, item) => sum + quantityOf(item), 0);
 
   if (loading) {
     return (
-      <ScreenBoundary name="facility.inventory.tab">
-        <View style={{ flex: 1, alignItems: "center", justifyContent: "center" }}>
+      <ScreenBoundary title="Inventory">
+        <View style={styles.center}>
           <ActivityIndicator />
         </View>
       </ScreenBoundary>
@@ -125,74 +148,92 @@ export default function FacilityInventoryTab() {
   }
 
   return (
-    <ScreenBoundary name="facility.inventory.tab">
-      <View style={{ flex: 1, padding: 16 }}>
-        <View
-          style={{
-            flexDirection: "row",
-            alignItems: "center",
-            justifyContent: "space-between",
-            marginBottom: 12
-          }}
-        >
-          <Text style={{ fontSize: 20, fontWeight: "900" }}>Inventory</Text>
+    <ScreenBoundary title="Inventory">
+      <View style={styles.container}>
+        <InlineError error={error} />
 
-          <View style={{ flexDirection: "row" }}>
-            <TouchableOpacity
-              accessibilityRole="button"
-              accessibilityLabel="Change facility"
-              onPress={() => router.push("/home/facility/select")}
-            >
-              <Text style={{ fontWeight: "900" }}>Change Facility</Text>
-            </TouchableOpacity>
-
-            <View style={{ width: 14 }} />
-
-            <TouchableOpacity
+        <View style={styles.headerRow}>
+          <View>
+            <Text style={styles.h1}>Inventory</Text>
+            <Text style={styles.muted}>
+              {items.length} items | {totalQuantity} units on hand
+            </Text>
+          </View>
+          <View style={styles.actions}>
+            <Pressable
               accessibilityRole="button"
               accessibilityLabel="Reload inventory"
               onPress={load}
+              style={styles.ghostButton}
             >
-              <Text style={{ fontWeight: "900" }}>Reload</Text>
-            </TouchableOpacity>
-
-            <View style={{ width: 14 }} />
-
-            <TouchableOpacity
+              <Text style={styles.ghostText}>Reload</Text>
+            </Pressable>
+            <Pressable
               accessibilityRole="button"
-              accessibilityLabel="Create inventory item"
-              disabled={!canWriteInventory}
-              onPress={() => router.push("/home/facility/CreateInventoryItemScreen")}
-              style={!canWriteInventory ? { opacity: 0.5 } : undefined}
+              accessibilityLabel="Open inventory AI risk"
+              onPress={() => router.push("/home/facility/ai-ask?preset=inventory" as any)}
+              style={styles.ghostButton}
             >
-              <Text style={{ fontWeight: "900" }}>Create Item</Text>
-            </TouchableOpacity>
+              <Text style={styles.ghostText}>AI risk</Text>
+            </Pressable>
           </View>
         </View>
 
-        <InlineError error={error} />
+        <View style={styles.summaryCard}>
+          <View>
+            <Text style={[styles.summaryValue, outOfStock ? styles.dangerText : null]}>
+              {outOfStock}
+            </Text>
+            <Text style={styles.summaryLabel}>out of stock</Text>
+          </View>
+          <View>
+            <Text style={[styles.summaryValue, lowStock ? styles.warnText : null]}>
+              {lowStock}
+            </Text>
+            <Text style={styles.summaryLabel}>low stock</Text>
+          </View>
+          <View>
+            <Text style={[styles.summaryValue, missingSku ? styles.warnText : null]}>
+              {missingSku}
+            </Text>
+            <Text style={styles.summaryLabel}>missing SKU</Text>
+          </View>
+        </View>
+
         {!canWriteInventory ? (
-          <Text style={{ opacity: 0.7, marginBottom: 10 }}>
+          <Text style={styles.lockedText}>
             Inventory changes unlock after facility checkout is active.
           </Text>
-        ) : null}
+        ) : (
+          <Pressable
+            accessibilityRole="button"
+            accessibilityLabel="Create inventory item"
+            onPress={() => router.push("/home/facility/CreateInventoryItemScreen")}
+            style={styles.primaryButton}
+          >
+            <Text style={styles.primaryText}>Create Item</Text>
+          </Pressable>
+        )}
 
         {sorted.length === 0 ? (
-          <Text>No inventory items yet.</Text>
+          <Text style={styles.empty}>No inventory items yet.</Text>
         ) : (
           <FlatList
             data={sorted}
-            keyExtractor={(i) => String(i._id)}
+            keyExtractor={(item, index) => itemId(item) || String(index)}
             refreshControl={
               <RefreshControl refreshing={refreshing} onRefresh={onRefresh} />
             }
+            contentContainerStyle={styles.list}
+            ItemSeparatorComponent={() => <View style={{ height: 10 }} />}
             renderItem={({ item }) => {
-              const id = String(item.id ?? item._id ?? "");
-              const qty = typeof item.quantity === "number" ? String(item.quantity) : "—";
+              const id = itemId(item);
+              const qty = quantityOf(item);
               const unit = item.unit ? ` ${item.unit}` : "";
+              const status = stockStatus(item);
 
               return (
-                <TouchableOpacity
+                <Pressable
                   accessibilityRole="button"
                   accessibilityLabel={`Open inventory item ${item.name || item.sku || id}`}
                   onPress={() => {
@@ -202,20 +243,36 @@ export default function FacilityInventoryTab() {
                       params: { id }
                     });
                   }}
-                  style={{
-                    paddingVertical: 12,
-                    borderBottomWidth: 1,
-                    borderBottomColor: "#e5e7eb"
-                  }}
+                  style={({ pressed }) => [styles.row, pressed && styles.pressed]}
                 >
-                  <Text style={{ fontWeight: "900" }}>
-                    {item.name || item.sku || "Inventory Item"}
-                  </Text>
-                  <Text style={{ opacity: 0.75, marginTop: 2 }}>
-                    Qty: {qty}
-                    {unit}
-                  </Text>
-                </TouchableOpacity>
+                  <View style={styles.rowMain}>
+                    <Text style={styles.rowTitle}>{item.name || "Inventory Item"}</Text>
+                    <Text style={styles.rowSub}>
+                      SKU: {item.sku || "missing"} | Qty: {qty}
+                      {unit}
+                    </Text>
+                    <View style={styles.badgeRow}>
+                      <Text
+                        style={[
+                          styles.badge,
+                          status === "ok" && styles.badgeOk,
+                          status === "low" && styles.badgeWarn,
+                          status === "out" && styles.badgeDanger
+                        ]}
+                      >
+                        {status === "ok"
+                          ? "stock ok"
+                          : status === "low"
+                            ? "low stock"
+                            : "out of stock"}
+                      </Text>
+                      {!item.sku ? (
+                        <Text style={[styles.badge, styles.badgeWarn]}>missing SKU</Text>
+                      ) : null}
+                    </View>
+                  </View>
+                  <Text style={styles.chev}>{">"}</Text>
+                </Pressable>
               );
             }}
           />
@@ -224,3 +281,78 @@ export default function FacilityInventoryTab() {
     </ScreenBoundary>
   );
 }
+
+const styles = StyleSheet.create({
+  container: { flex: 1, padding: 16 },
+  center: { flex: 1, alignItems: "center", justifyContent: "center" },
+  headerRow: {
+    flexDirection: "row",
+    gap: 12,
+    justifyContent: "space-between",
+    marginBottom: 12
+  },
+  h1: { fontSize: 22, fontWeight: "900", marginBottom: 4 },
+  muted: { color: "#475569", fontWeight: "700" },
+  actions: { flexDirection: "row", flexWrap: "wrap", gap: 8 },
+  ghostButton: {
+    borderWidth: 1,
+    borderColor: "rgba(0,0,0,0.14)",
+    borderRadius: 10,
+    paddingHorizontal: 10,
+    paddingVertical: 8
+  },
+  ghostText: { color: "#0f172a", fontWeight: "900" },
+  summaryCard: {
+    borderWidth: 1,
+    borderColor: "#dbeafe",
+    borderRadius: 12,
+    padding: 12,
+    backgroundColor: "#eff6ff",
+    flexDirection: "row",
+    flexWrap: "wrap",
+    gap: 16,
+    marginBottom: 12
+  },
+  summaryValue: { color: "#1e3a8a", fontSize: 20, fontWeight: "900" },
+  summaryLabel: { color: "#1e40af", fontSize: 12, fontWeight: "800" },
+  warnText: { color: "#b45309" },
+  dangerText: { color: "#991b1b" },
+  lockedText: { color: "#92400e", fontWeight: "800", marginBottom: 12 },
+  primaryButton: {
+    alignSelf: "flex-start",
+    backgroundColor: "#0f172a",
+    borderRadius: 10,
+    paddingHorizontal: 14,
+    paddingVertical: 10,
+    marginBottom: 12
+  },
+  primaryText: { color: "white", fontWeight: "900" },
+  empty: { color: "#64748b", fontWeight: "700" },
+  list: { paddingBottom: 24 },
+  row: {
+    flexDirection: "row",
+    alignItems: "center",
+    borderWidth: 1,
+    borderColor: "rgba(0,0,0,0.12)",
+    borderRadius: 14,
+    padding: 14,
+    backgroundColor: "white"
+  },
+  rowMain: { flex: 1 },
+  rowTitle: { color: "#0f172a", fontSize: 16, fontWeight: "900" },
+  rowSub: { color: "#475569", fontWeight: "700", marginTop: 4 },
+  badgeRow: { flexDirection: "row", flexWrap: "wrap", gap: 8, marginTop: 8 },
+  badge: {
+    borderRadius: 999,
+    overflow: "hidden",
+    paddingHorizontal: 8,
+    paddingVertical: 3,
+    fontSize: 12,
+    fontWeight: "900"
+  },
+  badgeOk: { color: "#065f46", backgroundColor: "#d1fae5" },
+  badgeWarn: { color: "#92400e", backgroundColor: "#fef3c7" },
+  badgeDanger: { color: "#991b1b", backgroundColor: "#fee2e2" },
+  chev: { fontSize: 22, opacity: 0.5, paddingLeft: 10 },
+  pressed: { opacity: 0.85 }
+});

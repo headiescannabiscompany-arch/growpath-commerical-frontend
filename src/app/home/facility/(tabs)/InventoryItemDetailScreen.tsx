@@ -137,6 +137,14 @@ export default function InventoryItemDetailScreen() {
   }, [facilityId, itemId, load, router]);
 
   const keys = useMemo(() => (item ? Object.keys(item).sort() : []), [item]);
+  const quantity = Number(item?.quantity ?? item?.quantityOnHand ?? 0);
+  const reorderPoint = Number(item?.reorderPoint ?? 0);
+  const stockLabel =
+    quantity <= 0
+      ? "out of stock"
+      : reorderPoint > 0 && quantity <= reorderPoint
+        ? "low stock"
+        : "stock ok";
 
   return (
     <ScreenBoundary title="Inventory Item">
@@ -157,7 +165,27 @@ export default function InventoryItemDetailScreen() {
         {loading ? (
           <View style={styles.loading}>
             <ActivityIndicator />
-            <Text style={styles.muted}>Loading item…</Text>
+            <Text style={styles.muted}>Loading item...</Text>
+          </View>
+        ) : null}
+
+        {item ? (
+          <View style={styles.summaryCard}>
+            <Text
+              style={[
+                styles.stockPill,
+                stockLabel === "stock ok" && styles.stockOk,
+                stockLabel === "low stock" && styles.stockWarn,
+                stockLabel === "out of stock" && styles.stockDanger
+              ]}
+            >
+              {stockLabel}
+            </Text>
+            <Text style={styles.summaryText}>
+              Qty {Number.isFinite(quantity) ? quantity : 0}
+              {item.unit ? ` ${item.unit}` : ""} | Reorder at{" "}
+              {Number.isFinite(reorderPoint) ? reorderPoint : 0}
+            </Text>
           </View>
         ) : null}
 
@@ -201,7 +229,7 @@ export default function InventoryItemDetailScreen() {
               pressed && styles.pressed
             ]}
           >
-            <Text style={styles.btnText}>{saving ? "Saving…" : "Save adjustment"}</Text>
+            <Text style={styles.btnText}>{saving ? "Saving..." : "Save adjustment"}</Text>
           </Pressable>
         </View>
 
@@ -234,6 +262,28 @@ const styles = StyleSheet.create({
     marginBottom: 12
   },
   cardTitle: { fontSize: 16, fontWeight: "900", marginBottom: 10 },
+  summaryCard: {
+    borderWidth: 1,
+    borderColor: "rgba(0,0,0,0.12)",
+    borderRadius: 14,
+    padding: 14,
+    backgroundColor: "white",
+    marginBottom: 12,
+    gap: 8
+  },
+  summaryText: { color: "#334155", fontWeight: "800" },
+  stockPill: {
+    alignSelf: "flex-start",
+    borderRadius: 999,
+    overflow: "hidden",
+    paddingHorizontal: 8,
+    paddingVertical: 3,
+    fontSize: 12,
+    fontWeight: "900"
+  },
+  stockOk: { color: "#065f46", backgroundColor: "#d1fae5" },
+  stockWarn: { color: "#92400e", backgroundColor: "#fef3c7" },
+  stockDanger: { color: "#991b1b", backgroundColor: "#fee2e2" },
 
   input: {
     borderWidth: 1,

@@ -13,7 +13,9 @@ export default function FacilityTabsLayout() {
     pathname.includes("/ai-ask") ||
     pathname.includes("/ai-diagnosis-photo") ||
     pathname.includes("/ai-template") ||
-    pathname.includes("/ai-validation");
+    pathname.includes("/ai-validation") ||
+    pathname.includes("/CreateInventoryItemScreen") ||
+    pathname.includes("/InventoryItemDetailScreen");
 
   if (!ent?.ready) {
     return (
@@ -58,8 +60,14 @@ export default function FacilityTabsLayout() {
       <Tabs.Screen name="ai-diagnosis-photo" options={{ tabBarButton: () => null }} />
       <Tabs.Screen name="ai-template" options={{ tabBarButton: () => null }} />
       <Tabs.Screen name="ai-validation" options={{ title: "AI QA" }} />
-      <Tabs.Screen name="CreateInventoryItemScreen" options={{ href: null }} />
-      <Tabs.Screen name="InventoryItemDetailScreen" options={{ href: null }} />
+      <Tabs.Screen
+        name="CreateInventoryItemScreen"
+        options={{ href: null, title: "Create Inventory Item" }}
+      />
+      <Tabs.Screen
+        name="InventoryItemDetailScreen"
+        options={{ href: null, title: "Inventory Item" }}
+      />
     </Tabs>
   );
 }
