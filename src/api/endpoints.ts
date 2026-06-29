@@ -146,6 +146,8 @@ export const endpoints = {
   commercial: {
     inventory: `${BASE}/commercial/inventory`,
     inventoryItem: (id: string) =>
-      `${BASE}/commercial/inventory/${encodeURIComponent(id)}`
+      `${BASE}/commercial/inventory/${encodeURIComponent(id)}`,
+    orders: `${BASE}/commercial/orders`,
+    order: (id: string) => `${BASE}/commercial/orders/${encodeURIComponent(id)}`
   }
 };

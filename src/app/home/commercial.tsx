@@ -105,7 +105,9 @@ export default function CommercialHome() {
         ) : null}
         <ActionCard
           title="Orders"
-          description="Fulfillment views are backed by the API and are next in the UI queue."
+          description="Review paid storefront orders, track revenue, and update fulfillment."
+          href="/orders"
+          status="Live"
         />
       </View>
 
