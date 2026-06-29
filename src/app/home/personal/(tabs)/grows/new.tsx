@@ -1,5 +1,12 @@
 import React from "react";
-import { ActivityIndicator, Pressable, Text, TextInput, View } from "react-native";
+import {
+  ActivityIndicator,
+  Pressable,
+  ScrollView,
+  Text,
+  TextInput,
+  View
+} from "react-native";
 import { useRouter } from "expo-router";
 import { apiRequest } from "@/api/apiRequest";
 
@@ -80,7 +87,10 @@ export default function NewGrowScreen() {
   ]);
 
   return (
-    <View style={{ flex: 1, padding: 16, gap: 10 }}>
+    <ScrollView
+      style={{ flex: 1, backgroundColor: "#FFFFFF" }}
+      contentContainerStyle={{ padding: 16, gap: 10, paddingBottom: 32 }}
+    >
       <Text style={{ fontSize: 22, fontWeight: "700" }}>New Grow</Text>
       <Text style={{ color: "#475569" }}>
         Set required anchors so logs, tools, and tasks can map to this grow correctly.
@@ -106,6 +116,7 @@ export default function NewGrowScreen() {
         value={name}
         onChangeText={setName}
         placeholder="Blueberry Muffin Run 3"
+        accessibilityLabel="Grow name"
         style={{
           borderWidth: 1,
           borderColor: "#E2E8F0",
@@ -121,6 +132,8 @@ export default function NewGrowScreen() {
           <Pressable
             key={preset}
             onPress={() => setSystemPreset(preset)}
+            accessibilityRole="button"
+            accessibilityLabel={`System preset ${preset}`}
             style={{
               paddingVertical: 8,
               paddingHorizontal: 12,
@@ -148,6 +161,8 @@ export default function NewGrowScreen() {
           <Pressable
             key={opt.key}
             onPress={() => setAnchorDateType(opt.key)}
+            accessibilityRole="button"
+            accessibilityLabel={`Anchor type ${opt.label}`}
             style={{
               paddingVertical: 8,
               paddingHorizontal: 12,
@@ -170,6 +185,7 @@ export default function NewGrowScreen() {
         value={anchorDate}
         onChangeText={setAnchorDate}
         placeholder="2026-02-27"
+        accessibilityLabel="Anchor date"
         style={{
           borderWidth: 1,
           borderColor: "#E2E8F0",
@@ -184,6 +200,7 @@ export default function NewGrowScreen() {
         value={timeZone}
         onChangeText={setTimeZone}
         placeholder="America/New_York"
+        accessibilityLabel="Timezone"
         style={{
           borderWidth: 1,
           borderColor: "#E2E8F0",
@@ -195,6 +212,10 @@ export default function NewGrowScreen() {
 
       <Pressable
         onPress={() => setShowAdvanced((prev) => !prev)}
+        accessibilityRole="button"
+        accessibilityLabel={
+          showAdvanced ? "Hide advanced fields" : "Show advanced fields"
+        }
         style={{
           marginTop: 8,
           borderWidth: 1,
@@ -215,6 +236,7 @@ export default function NewGrowScreen() {
             value={flipDate}
             onChangeText={setFlipDate}
             placeholder="YYYY-MM-DD"
+            accessibilityLabel="Flip date"
             style={{
               borderWidth: 1,
               borderColor: "#E2E8F0",
@@ -229,6 +251,7 @@ export default function NewGrowScreen() {
             value={potSize}
             onChangeText={setPotSize}
             placeholder="5 gal"
+            accessibilityLabel="Pot size"
             style={{
               borderWidth: 1,
               borderColor: "#E2E8F0",
@@ -244,6 +267,7 @@ export default function NewGrowScreen() {
             onChangeText={setPotCount}
             placeholder="4"
             keyboardType="numeric"
+            accessibilityLabel="Pot count"
             style={{
               borderWidth: 1,
               borderColor: "#E2E8F0",
@@ -258,6 +282,7 @@ export default function NewGrowScreen() {
             value={cultivar}
             onChangeText={setCultivar}
             placeholder="Blue Dream"
+            accessibilityLabel="Cultivar"
             style={{
               borderWidth: 1,
               borderColor: "#E2E8F0",
@@ -272,6 +297,7 @@ export default function NewGrowScreen() {
             value={targetVpdBand}
             onChangeText={setTargetVpdBand}
             placeholder="0.9-1.2 kPa"
+            accessibilityLabel="Target VPD band"
             style={{
               borderWidth: 1,
               borderColor: "#E2E8F0",
@@ -287,6 +313,7 @@ export default function NewGrowScreen() {
             onChangeText={setNotes}
             placeholder="Any setup notes"
             multiline
+            accessibilityLabel="Grow notes"
             style={{
               borderWidth: 1,
               borderColor: "#E2E8F0",
@@ -304,6 +331,8 @@ export default function NewGrowScreen() {
         testID="btn-save-grow"
         onPress={onCreate}
         disabled={saving || !isValid}
+        accessibilityRole="button"
+        accessibilityLabel="Create grow"
         style={{
           marginTop: 16,
           paddingVertical: 12,
@@ -322,6 +351,6 @@ export default function NewGrowScreen() {
           <Text style={{ color: "#FFFFFF", fontWeight: "700" }}>Create grow</Text>
         )}
       </Pressable>
-    </View>
+    </ScrollView>
   );
 }

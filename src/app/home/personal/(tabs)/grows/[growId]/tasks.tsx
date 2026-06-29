@@ -63,6 +63,7 @@ export default function GrowTasksScreen() {
 
   const [tasks, setTasks] = useState<any[]>([]);
   const [loading, setLoading] = useState(true);
+  const [creating, setCreating] = useState(false);
   const [newTitle, setNewTitle] = useState("");
   const [feedback, setFeedback] = useState("");
 
@@ -101,25 +102,34 @@ export default function GrowTasksScreen() {
           placeholder="Add task title"
           value={newTitle}
           onChangeText={setNewTitle}
+          accessibilityLabel="Task title"
         />
         <Pressable
-          style={styles.addBtn}
+          style={[styles.addBtn, (!newTitle.trim() || creating) && { opacity: 0.55 }]}
+          disabled={!newTitle.trim() || creating}
+          accessibilityRole="button"
+          accessibilityLabel="Add task"
           onPress={async () => {
-            if (!growId || !newTitle.trim()) return;
-            const created = await createPersonalTask({
-              growId,
-              title: newTitle.trim()
-            });
-            if (created) {
-              setNewTitle("");
-              setFeedback("Task created.");
-              await load();
-            } else {
-              setFeedback("Unable to create task.");
+            if (!growId || !newTitle.trim() || creating) return;
+            setCreating(true);
+            try {
+              const created = await createPersonalTask({
+                growId,
+                title: newTitle.trim()
+              });
+              if (created) {
+                setNewTitle("");
+                setFeedback("Task created.");
+                await load();
+              } else {
+                setFeedback("Unable to create task.");
+              }
+            } finally {
+              setCreating(false);
             }
           }}
         >
-          <Text style={styles.addBtnText}>Add</Text>
+          <Text style={styles.addBtnText}>{creating ? "Adding..." : "Add"}</Text>
         </Pressable>
       </View>
 
@@ -148,6 +158,8 @@ export default function GrowTasksScreen() {
                 {id ? (
                   <Pressable
                     style={styles.actionBtn}
+                    accessibilityRole="button"
+                    accessibilityLabel={done ? "Reopen task" : "Complete task"}
                     onPress={async () => {
                       const updated = await updatePersonalTask(id, { completed: !done });
                       if (updated) {

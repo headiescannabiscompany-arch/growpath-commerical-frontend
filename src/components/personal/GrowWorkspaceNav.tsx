@@ -57,8 +57,12 @@ export default function GrowWorkspaceNav({
         const isActive = tab.key === active;
         return (
           <Link key={tab.key} href={hrefFor(growId, tab.key)} asChild>
-            <Pressable style={[styles.pill, isActive && styles.pillActive]}>
-              <Text style={[styles.text, isActive && styles.textActive]}>
+            <Pressable
+              style={StyleSheet.flatten([styles.pill, isActive && styles.pillActive])}
+            >
+              <Text
+                style={StyleSheet.flatten([styles.text, isActive && styles.textActive])}
+              >
                 {tab.label}
               </Text>
             </Pressable>

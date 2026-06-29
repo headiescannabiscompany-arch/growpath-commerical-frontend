@@ -38,8 +38,14 @@ export default function GrowPlantsScreen() {
       return;
     }
     setLoading(true);
-    setPlants(await listPersonalPlants({ growId }));
-    setLoading(false);
+    try {
+      setPlants(await listPersonalPlants({ growId }));
+    } catch {
+      setPlants([]);
+      setFeedback("Unable to load plants.");
+    } finally {
+      setLoading(false);
+    }
   }, [growId]);
 
   useFocusEffect(
@@ -82,6 +88,8 @@ export default function GrowPlantsScreen() {
       <Pressable
         style={styles.primaryButton}
         onPress={() => setShowForm((value) => !value)}
+        accessibilityRole="button"
+        accessibilityLabel={showForm ? "Cancel adding plant" : "Add plant"}
       >
         <Text style={styles.primaryButtonText}>
           {showForm ? "Cancel" : "+ Add Plant"}
@@ -96,6 +104,7 @@ export default function GrowPlantsScreen() {
             value={name}
             onChangeText={setName}
             placeholder="Plant 1"
+            accessibilityLabel="Plant name"
           />
           <Text style={styles.label}>Cultivar / strain</Text>
           <TextInput
@@ -103,6 +112,7 @@ export default function GrowPlantsScreen() {
             value={cultivar}
             onChangeText={setCultivar}
             placeholder="Optional"
+            accessibilityLabel="Cultivar or strain"
           />
           <Text style={styles.label}>Medium</Text>
           <TextInput
@@ -110,11 +120,14 @@ export default function GrowPlantsScreen() {
             value={medium}
             onChangeText={setMedium}
             placeholder="Soil, coco, hydro..."
+            accessibilityLabel="Plant medium"
           />
           <Pressable
             style={[styles.primaryButton, (!name.trim() || creating) && styles.disabled]}
             disabled={!name.trim() || creating}
             onPress={create}
+            accessibilityRole="button"
+            accessibilityLabel="Add plant to grow"
           >
             <Text style={styles.primaryButtonText}>
               {creating ? "Adding..." : "Add to Grow"}
@@ -138,7 +151,7 @@ export default function GrowPlantsScreen() {
           <View key={getRowId(plant) || `plant-${index}`} style={styles.card}>
             <Text style={styles.cardTitle}>{plant.name || "Untitled plant"}</Text>
             <Text style={styles.subtitle}>
-              {plant.cultivar || plant.strain || "Unknown cultivar"} ·{" "}
+              {plant.cultivar || plant.strain || "Unknown cultivar"} -{" "}
               {plant.stage || plant.status || "stage not set"}
             </Text>
             {plant.medium ? (
