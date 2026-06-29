@@ -61,6 +61,10 @@ export default function InventoryItemDetailScreen() {
   const [delta, setDelta] = useState("");
   const [reason, setReason] = useState("");
   const [saving, setSaving] = useState(false);
+  const [editName, setEditName] = useState("");
+  const [editUnit, setEditUnit] = useState("");
+  const [editReorderPoint, setEditReorderPoint] = useState("");
+  const [savingDetails, setSavingDetails] = useState(false);
   const canWriteInventory = Boolean(ent?.can?.(CAPABILITY_KEYS.INVENTORY_WRITE));
 
   const load = useCallback(
@@ -127,6 +131,48 @@ export default function InventoryItemDetailScreen() {
     load
   ]);
 
+  const saveDetails = useCallback(async () => {
+    if (!facilityId || !itemId || !item || !canWriteInventory) return;
+
+    const sku = String(item?.sku ?? "");
+    if (!sku) return;
+
+    const reorderPointNumber = Number(editReorderPoint);
+    const body = {
+      name: editName.trim() || item.name,
+      unit: editUnit.trim() || undefined,
+      reorderPoint:
+        editReorderPoint.trim() && Number.isFinite(reorderPointNumber)
+          ? reorderPointNumber
+          : 0
+    };
+
+    setSavingDetails(true);
+    try {
+      clearError();
+      await apiRequest(endpoints.inventoryItem(facilityId, sku), {
+        method: "PATCH",
+        body
+      });
+      await load({ refresh: true });
+    } catch (e) {
+      handleApiError(e);
+    } finally {
+      setSavingDetails(false);
+    }
+  }, [
+    facilityId,
+    itemId,
+    item,
+    canWriteInventory,
+    editName,
+    editUnit,
+    editReorderPoint,
+    clearError,
+    handleApiError,
+    load
+  ]);
+
   useEffect(() => {
     if (!facilityId) {
       router.replace("/home/facility/select");
@@ -135,6 +181,13 @@ export default function InventoryItemDetailScreen() {
     if (!itemId) return;
     load();
   }, [facilityId, itemId, load, router]);
+
+  useEffect(() => {
+    if (!item) return;
+    setEditName(String(item.name ?? ""));
+    setEditUnit(String(item.unit ?? ""));
+    setEditReorderPoint(String(item.reorderPoint ?? 0));
+  }, [item]);
 
   const keys = useMemo(() => (item ? Object.keys(item).sort() : []), [item]);
   const quantity = Number(item?.quantity ?? item?.quantityOnHand ?? 0);
@@ -188,6 +241,55 @@ export default function InventoryItemDetailScreen() {
             </Text>
           </View>
         ) : null}
+
+        <View style={styles.card}>
+          <Text style={styles.cardTitle}>Item details</Text>
+          {!canWriteInventory ? (
+            <Text style={styles.lockedText}>
+              Inventory changes unlock after facility checkout is active.
+            </Text>
+          ) : null}
+          <TextInput
+            accessibilityLabel="Inventory detail item name"
+            value={editName}
+            onChangeText={setEditName}
+            placeholder="Item name"
+            editable={canWriteInventory}
+            style={styles.input}
+          />
+          <TextInput
+            accessibilityLabel="Inventory detail item unit"
+            value={editUnit}
+            onChangeText={setEditUnit}
+            placeholder="Unit"
+            editable={canWriteInventory}
+            style={styles.input}
+          />
+          <TextInput
+            accessibilityLabel="Inventory detail reorder point"
+            value={editReorderPoint}
+            onChangeText={setEditReorderPoint}
+            placeholder="Reorder point"
+            keyboardType="numeric"
+            editable={canWriteInventory}
+            style={styles.input}
+          />
+          <Pressable
+            accessibilityRole="button"
+            accessibilityLabel="Save inventory details"
+            onPress={saveDetails}
+            disabled={savingDetails || !canWriteInventory}
+            style={({ pressed }) => [
+              styles.btn,
+              (savingDetails || !canWriteInventory) && styles.btnDisabled,
+              pressed && styles.pressed
+            ]}
+          >
+            <Text style={styles.btnText}>
+              {savingDetails ? "Saving..." : "Save item details"}
+            </Text>
+          </Pressable>
+        </View>
 
         <View style={styles.card}>
           <Text style={styles.cardTitle}>Adjust quantity</Text>
