@@ -183,12 +183,16 @@ export default function FacilityAiAskRoute() {
     () => !!facilityId && tool.trim() && fn.trim() && argsJson.trim() && !loading,
     [argsJson, facilityId, fn, loading, tool]
   );
+  const canRunSelected = canRun && (!selected.requiresGrow || !!growId.trim());
 
   function selectPreset(preset: Preset) {
     setSelected(preset);
     setTool(preset.tool);
     setFn(preset.fn);
     setArgsJson(pretty(preset.args));
+    if (!preset.requiresGrow) {
+      setGrowId("");
+    }
     setLocalError("");
   }
 
@@ -342,10 +346,10 @@ export default function FacilityAiAskRoute() {
               accessibilityRole="button"
               accessibilityLabel={`Run ${selected.title} AI workflow`}
               onPress={() => run(undefined, Boolean(selected.requiresGrow))}
-              disabled={!canRun}
+              disabled={!canRunSelected}
               style={({ pressed }) => [
                 styles.button,
-                (!canRun || (selected.requiresGrow && !growId.trim())) && styles.disabled,
+                !canRunSelected && styles.disabled,
                 pressed && styles.pressed
               ]}
             >
