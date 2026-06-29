@@ -19,6 +19,10 @@ import {
   type CommercialFeedPostType
 } from "@/api/commercialFeed";
 import { useEntitlements } from "@/entitlements";
+import {
+  facilitySalesPolicyText,
+  hasFacilitySalesLanguage
+} from "@/utils/commercialFeedPolicy";
 
 const COMMERCIAL_TYPES: CommercialFeedPostType[] = [
   "update",
@@ -113,13 +117,22 @@ export default function CommercialFeedRoute() {
     setCreating(true);
     setError(null);
     setFeedback("");
+    const cleanTitle = title.trim();
+    const cleanBody = body.trim();
+    const cleanTags = splitTags(tags);
+    const cleanLocation = location.trim();
+    if (isFacility && hasFacilitySalesLanguage([cleanTitle, cleanBody, ...cleanTags])) {
+      setCreating(false);
+      setFeedback(facilitySalesPolicyText());
+      return;
+    }
     try {
       await createCommercialFeedPost({
-        type,
-        title: title.trim(),
-        body: body.trim(),
-        tags: splitTags(tags),
-        location: location.trim()
+        type: isFacility ? "education" : type,
+        title: cleanTitle,
+        body: cleanBody,
+        tags: cleanTags,
+        location: cleanLocation
       });
       setTitle("");
       setBody("");
@@ -161,6 +174,7 @@ export default function CommercialFeedRoute() {
             <Pressable
               key={option}
               onPress={() => setType(option)}
+              accessibilityLabel={`Select ${option} feed post type`}
               style={[styles.chip, type === option && styles.chipSelected]}
             >
               <Text style={[styles.chipText, type === option && styles.chipTextSelected]}>
@@ -174,6 +188,7 @@ export default function CommercialFeedRoute() {
           onChangeText={setTitle}
           style={styles.input}
           placeholder={isFacility ? "Educational topic" : "Title"}
+          accessibilityLabel="Feed post title"
         />
         <TextInput
           value={body}
@@ -185,22 +200,26 @@ export default function CommercialFeedRoute() {
               : "What do you want to share?"
           }
           multiline
+          accessibilityLabel="Feed post body"
         />
         <TextInput
           value={tags}
           onChangeText={setTags}
           style={styles.input}
           placeholder="Tags, comma separated"
+          accessibilityLabel="Feed post tags"
         />
         <TextInput
           value={location}
           onChangeText={setLocation}
           style={styles.input}
           placeholder="Location (optional)"
+          accessibilityLabel="Feed post location"
         />
         <Pressable
           onPress={createPost}
           disabled={!canCreate}
+          accessibilityLabel={isFacility ? "Publish education post" : "Publish feed post"}
           style={[styles.primaryButton, !canCreate && styles.disabled]}
         >
           <Text style={styles.primaryButtonText}>
@@ -223,6 +242,7 @@ export default function CommercialFeedRoute() {
             <Pressable
               key={option}
               onPress={() => setFilterType(option)}
+              accessibilityLabel={`Filter feed by ${option}`}
               style={[styles.chip, filterType === option && styles.chipSelected]}
             >
               <Text
@@ -242,6 +262,7 @@ export default function CommercialFeedRoute() {
           style={styles.input}
           placeholder="Search feed"
           autoCapitalize="none"
+          accessibilityLabel="Search feed"
         />
       </View>
 

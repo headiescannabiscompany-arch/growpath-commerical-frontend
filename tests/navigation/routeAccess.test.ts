@@ -19,18 +19,16 @@ const COMMERCIAL_ONLY_ROUTES = [
   "/home/commercial/inventory",
   "/home/commercial/inventory-create",
   "/home/commercial/inventory-item/item-1",
-  "/feed",
   "/alerts",
   "/tasks",
   "/storefront",
   "/campaigns",
-  "/offers",
   "/orders",
   "/logs"
 ];
 
 describe("route access policy", () => {
-  it("blocks Facility mode from every Commercial-only route", () => {
+  it("blocks Facility mode from commercial-only routes", () => {
     const allCommercialCaps = Object.fromEntries(
       [
         CAPABILITY_KEYS.COMMERCIAL_HOME,
@@ -47,6 +45,12 @@ describe("route access policy", () => {
       expect(getRoutePolicy(route)).not.toBeNull();
       expect(canAccessRoute(route, facility(allCommercialCaps))).toBe(false);
     }
+  });
+
+  it("allows Facility mode into the education feed", () => {
+    expect(
+      canAccessRoute("/feed", facility({ [CAPABILITY_KEYS.COMMERCIAL_FEED_VIEW]: true }))
+    ).toBe(true);
   });
 
   it("blocks direct entry when the required capability is absent", () => {
