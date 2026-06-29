@@ -31,4 +31,35 @@ describe("normalizeDiagnosisResponse", () => {
       "unverified"
     );
   });
+
+  it("normalizes legacy analyze details envelope", () => {
+    const result = normalizeDiagnosisResponse({
+      id: "d2",
+      issueSummary: "Yellowing or chlorosis",
+      sourceType: "heuristic",
+      severity: 2,
+      details: {
+        likelyIssues: [
+          {
+            evidence: ["Lower leaves are yellow."],
+            nextChecks: ["Check runoff pH."]
+          }
+        ],
+        recommendations: ["Verify pH before changing feed."],
+        suggestedTasks: [{ title: "Check runoff pH." }],
+        disclaimer: "Heuristic text triage only."
+      }
+    });
+
+    expect(result).toEqual(
+      expect.objectContaining({
+        id: "d2",
+        source: "heuristic",
+        evidence: ["Lower leaves are yellow."],
+        missingData: ["Check runoff pH."],
+        actions: ["Verify pH before changing feed."],
+        followUp: "Check runoff pH."
+      })
+    );
+  });
 });

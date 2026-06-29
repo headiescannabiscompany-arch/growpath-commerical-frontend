@@ -42,6 +42,11 @@ export function normalizeDiagnosisResponse(response: any): NormalizedDiagnosis {
     response?.data ??
     response ??
     {};
+  const details = response?.details ?? row?.details ?? {};
+  const likelyIssues = Array.isArray(details?.likelyIssues) ? details.likelyIssues : [];
+  const evidence = strings(row?.evidenceObserved ?? row?.evidence);
+  const missingData = strings(row?.missingData);
+  const actions = strings(row?.suggestedActions ?? row?.aiActions ?? row?.actions);
   return {
     id: String(row?._id || row?.id || ""),
     issueSummary: String(
@@ -52,12 +57,20 @@ export function normalizeDiagnosisResponse(response: any): NormalizedDiagnosis {
     ),
     confidence: band(row?.confidence ?? row?.confidenceLevel),
     severity: band(row?.severity ?? row?.severityLevel),
-    evidence: strings(row?.evidenceObserved ?? row?.evidence),
-    missingData: strings(row?.missingData),
-    actions: strings(row?.suggestedActions ?? row?.aiActions ?? row?.actions),
-    tags: strings(row?.tags),
-    explanation: String(row?.aiExplanation || row?.explanation || ""),
-    followUp: String(row?.followUp || row?.followUpQuestion || ""),
+    evidence: evidence.length
+      ? evidence
+      : strings(likelyIssues.flatMap((issue: any) => issue?.evidence || [])),
+    missingData: missingData.length
+      ? missingData
+      : strings(likelyIssues.flatMap((issue: any) => issue?.nextChecks || [])),
+    actions: actions.length ? actions : strings(details?.recommendations),
+    tags: strings(row?.tags ?? details?.tags),
+    explanation: String(
+      row?.aiExplanation || row?.explanation || details?.disclaimer || ""
+    ),
+    followUp: String(
+      row?.followUp || row?.followUpQuestion || details?.suggestedTasks?.[0]?.title || ""
+    ),
     source: String(
       row?.provider || row?.analysisProvider || row?.sourceType || "unverified"
     )

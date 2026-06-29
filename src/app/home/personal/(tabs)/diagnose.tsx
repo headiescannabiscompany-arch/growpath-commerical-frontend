@@ -173,6 +173,8 @@ export default function DiagnoseRoute() {
             <Pressable
               style={[styles.pill, !plantId && styles.pillOn]}
               onPress={() => setPlantId("")}
+              accessibilityRole="button"
+              accessibilityLabel="Diagnose whole grow"
             >
               <Text style={[styles.pillText, !plantId && styles.pillTextOn]}>
                 Whole grow
@@ -185,6 +187,8 @@ export default function DiagnoseRoute() {
                   key={id}
                   style={[styles.pill, plantId === id && styles.pillOn]}
                   onPress={() => setPlantId(id)}
+                  accessibilityRole="button"
+                  accessibilityLabel={`Diagnose plant ${plant.name || `Plant ${index + 1}`}`}
                 >
                   <Text style={[styles.pillText, plantId === id && styles.pillTextOn]}>
                     {plant.name || `Plant ${index + 1}`}
@@ -203,6 +207,8 @@ export default function DiagnoseRoute() {
             key={value}
             style={[styles.pill, stage === value && styles.pillOn]}
             onPress={() => setStage(value)}
+            accessibilityRole="button"
+            accessibilityLabel={`Diagnosis stage ${value.replace("_", " ")}`}
           >
             <Text style={[styles.pillText, stage === value && styles.pillTextOn]}>
               {value.replace("_", " ")}
@@ -218,16 +224,27 @@ export default function DiagnoseRoute() {
         onChangeText={setNotes}
         multiline
         placeholder="Describe location, spread, recent watering/feed, pH/EC, and environmental changes."
+        accessibilityLabel="Diagnosis notes"
       />
 
       <View style={styles.row}>
-        <Pressable style={styles.secondaryButton} onPress={choosePhoto}>
+        <Pressable
+          style={styles.secondaryButton}
+          onPress={choosePhoto}
+          accessibilityRole="button"
+          accessibilityLabel={photoUri ? "Change diagnosis photo" : "Add diagnosis photo"}
+        >
           <Text style={styles.secondaryButtonText}>
             {photoUri ? "Change Photo" : "Add Photo"}
           </Text>
         </Pressable>
         {photoUri ? (
-          <Pressable style={styles.secondaryButton} onPress={() => setPhotoUri("")}>
+          <Pressable
+            style={styles.secondaryButton}
+            onPress={() => setPhotoUri("")}
+            accessibilityRole="button"
+            accessibilityLabel="Remove diagnosis photo"
+          >
             <Text style={styles.secondaryButtonText}>Remove Photo</Text>
           </Pressable>
         ) : null}
@@ -246,6 +263,8 @@ export default function DiagnoseRoute() {
           (!enabled || running || (!notes.trim() && !photoUri)) && styles.disabled
         ]}
         onPress={runDiagnosis}
+        accessibilityRole="button"
+        accessibilityLabel="Run diagnosis"
       >
         <Text style={styles.primaryButtonText}>
           {running ? "Analyzing..." : "Run Diagnosis"}
@@ -320,6 +339,7 @@ export default function DiagnoseRoute() {
                 onChangeText={setFollowUpAnswer}
                 multiline
                 placeholder="Add the requested observation or measurement."
+                accessibilityLabel="Diagnosis follow-up answer"
               />
               <Pressable
                 disabled={!followUpAnswer.trim() || running}
@@ -328,6 +348,8 @@ export default function DiagnoseRoute() {
                   (!followUpAnswer.trim() || running) && styles.disabled
                 ]}
                 onPress={submitFollowUp}
+                accessibilityRole="button"
+                accessibilityLabel="Refine diagnosis"
               >
                 <Text style={styles.primaryButtonText}>
                   {running ? "Submitting..." : "Refine Diagnosis"}
