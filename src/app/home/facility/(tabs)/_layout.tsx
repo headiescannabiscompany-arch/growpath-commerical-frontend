@@ -10,10 +10,8 @@ export default function FacilityTabsLayout() {
   const { selectedId } = useFacility();
   const pathname = usePathname();
   const hideTabBar =
-    pathname.includes("/ai-ask") ||
     pathname.includes("/ai-diagnosis-photo") ||
     pathname.includes("/ai-template") ||
-    pathname.includes("/ai-validation") ||
     pathname.includes("/CreateInventoryItemScreen") ||
     pathname.includes("/InventoryItemDetailScreen");
 
