@@ -5,7 +5,19 @@ const CAMPAIGNS_BASE = "/api/commercial/campaigns";
 export type Campaign = {
   id: string;
   name: string;
-  status?: "draft" | "active" | "paused" | "ended";
+  description?: string;
+  objective?: "awareness" | "reach" | "engagement" | "conversions" | "traffic";
+  platform?: "instagram" | "tiktok" | "twitter" | "youtube" | "multi";
+  status?: "draft" | "scheduled" | "active" | "paused" | "ended";
+  total?: number;
+  spent?: number;
+  budget?: {
+    totalBudget?: number;
+    dailyBudget?: number;
+    spent?: number;
+    remaining?: number;
+  };
+  creative?: Record<string, any>;
   createdAt?: string;
   updatedAt?: string;
 };

@@ -123,7 +123,9 @@ export default function CommercialHome() {
         ) : null}
         <ActionCard
           title="Campaigns"
-          description="Campaign management endpoints exist and need the next operator UI pass."
+          description="Plan campaigns, manage budgets, and update promotional status."
+          href="/campaigns"
+          status="Live"
         />
       </View>
 

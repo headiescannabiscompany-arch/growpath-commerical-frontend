@@ -148,6 +148,8 @@ export const endpoints = {
     inventoryItem: (id: string) =>
       `${BASE}/commercial/inventory/${encodeURIComponent(id)}`,
     orders: `${BASE}/commercial/orders`,
-    order: (id: string) => `${BASE}/commercial/orders/${encodeURIComponent(id)}`
+    order: (id: string) => `${BASE}/commercial/orders/${encodeURIComponent(id)}`,
+    campaigns: `${BASE}/commercial/campaigns`,
+    campaign: (id: string) => `${BASE}/commercial/campaigns/${encodeURIComponent(id)}`
   }
 };
