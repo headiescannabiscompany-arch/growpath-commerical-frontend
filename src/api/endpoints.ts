@@ -105,6 +105,10 @@ export const endpoints = {
   tasksGlobal: `${BASE}/tasks`,
   taskGlobal: (id: string) => `${BASE}/tasks/${id}`,
 
+  // logs (global, non facility-scoped)
+  logsGlobal: `${BASE}/logs`,
+  logGlobal: (id: string) => `${BASE}/logs/${id}`,
+
   // alerts (global, non facility-scoped)
   alertsGlobal: `${BASE}/alerts`,
   alertGlobal: (id: string) => `${BASE}/alerts/${id}`,

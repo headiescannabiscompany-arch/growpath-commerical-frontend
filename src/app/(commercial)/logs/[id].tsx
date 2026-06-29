@@ -65,13 +65,8 @@ export default function CommercialLogDetailRoute() {
       try {
         resolved.clearError();
 
-        const path =
-          (endpoints as any)?.logGlobal?.(id) ??
-          (endpoints as any)?.logsGlobal?.(id) ??
-          `/api/logs/${encodeURIComponent(id)}`;
-
-        const res = await apiRequest(path, { method: "GET" });
-        setItem(res ?? null);
+        const res = await apiRequest(endpoints.logGlobal(id), { method: "GET" });
+        setItem(res?.log ?? res?.item ?? res ?? null);
       } catch (e) {
         resolved.handleApiError(e);
       } finally {

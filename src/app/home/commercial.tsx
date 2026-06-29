@@ -132,6 +132,12 @@ export default function CommercialHome() {
       <View style={styles.section}>
         <Text style={styles.sectionTitle}>Content & Account</Text>
         <ActionCard
+          title="Logs"
+          description="Review saved notes, AI/tool records, tagged work, and diagnosis links."
+          href="/logs"
+          status="Live"
+        />
+        <ActionCard
           title="Courses"
           description="Open the course catalog and commercial education surfaces."
           href="/courses"
