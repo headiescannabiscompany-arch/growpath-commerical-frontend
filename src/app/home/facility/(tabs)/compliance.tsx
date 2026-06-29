@@ -137,10 +137,14 @@ export default function FacilityComplianceTab() {
 
   async function writeAudit(action: string, details: string) {
     if (!facilityId || !canReadAudit) return;
-    await createAuditLog(facilityId, {
-      action,
-      details
-    });
+    try {
+      await createAuditLog(facilityId, {
+        action,
+        details
+      });
+    } catch {
+      // Audit writes are best-effort; the primary compliance action already succeeded.
+    }
   }
 
   async function addDeviation() {
