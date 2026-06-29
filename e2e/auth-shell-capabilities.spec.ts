@@ -63,7 +63,10 @@ function mePayload(user: typeof PERSONAL_USER | typeof FACILITY_USER) {
   };
 }
 
-async function installAuthMeMocks(page: any, user: typeof PERSONAL_USER | typeof FACILITY_USER) {
+async function installAuthMeMocks(
+  page: any,
+  user: typeof PERSONAL_USER | typeof FACILITY_USER
+) {
   let meRequests = 0;
   const token = `${user.mode}-shell-e2e-auth-token`;
 
@@ -171,7 +174,9 @@ test.describe("auth/me shell selection and capability gating", () => {
     await loginAs(page, PERSONAL_USER);
 
     await expect(page.getByText("Your Garden")).toBeVisible({ timeout: 30000 });
-    await expect(page.getByText(/personal-shell@example\.com \| free plan/i)).toBeVisible();
+    await expect(
+      page.getByText(/personal-shell@example\.com \| free plan/i)
+    ).toBeVisible();
     await expect(page.getByText(ACTIVE_GROW.name)).toBeVisible();
     await expect(page.getByText("Water plants")).toBeVisible();
     await expect(page.getByText(/Canopy check/)).toBeVisible();
@@ -199,8 +204,8 @@ test.describe("auth/me shell selection and capability gating", () => {
 
     await loginAs(page, FACILITY_USER);
 
-    await expect(page.getByText("Facility Dashboard")).toBeVisible({ timeout: 30000 });
-    await expect(page.getByText("facilityId: facility-1")).toBeVisible();
+    await expect(page.getByText("Operations Live")).toBeVisible({ timeout: 30000 });
+    await expect(page.getByText("facility-1")).toBeVisible();
     await expect(page.getByText("Your Garden")).toHaveCount(0);
     expect(api.getMeRequests()).toBeGreaterThan(0);
   });

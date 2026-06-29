@@ -189,8 +189,6 @@ function applyPlanCapabilities(
   normalized[CAPABILITY_KEYS.PLANTS_PERSONAL_VIEW] = true;
   normalized[CAPABILITY_KEYS.DIAGNOSE_BASIC] = true;
   normalized[CAPABILITY_KEYS.TOOLS_VPD] = true;
-  normalized[CAPABILITY_KEYS.TOOL_NPK] = true;
-  normalized[CAPABILITY_KEYS.TOOL_HARVEST_ESTIMATOR] = true;
 
   if (isPaidPersonal || isCommercial || isFacility) {
     normalized[CAPABILITY_KEYS.GROWS_PERSONAL_WRITE] = true;
@@ -204,6 +202,8 @@ function applyPlanCapabilities(
     normalized[CAPABILITY_KEYS.DIAGNOSE_AI] = true;
     normalized[CAPABILITY_KEYS.DIAGNOSE_ADVANCED] = true;
     normalized[CAPABILITY_KEYS.DIAGNOSE_EXPORT] = true;
+    normalized[CAPABILITY_KEYS.TOOL_NPK] = true;
+    normalized[CAPABILITY_KEYS.TOOL_HARVEST_ESTIMATOR] = true;
     normalized[CAPABILITY_KEYS.TOOL_TIMELINE_PLANNER] = true;
     normalized[CAPABILITY_KEYS.TOOL_PDF_EXPORT] = true;
     normalized[CAPABILITY_KEYS.TOOL_PHENO_MATRIX] = true;

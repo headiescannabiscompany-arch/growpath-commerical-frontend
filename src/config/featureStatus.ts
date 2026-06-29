@@ -1,3 +1,5 @@
+import { CAPABILITY_KEYS } from "@/entitlements/capabilityKeys";
+
 export type FeatureStatus = "implemented" | "beta" | "coming_soon" | "hidden";
 
 export type FeatureArea =
@@ -136,6 +138,7 @@ export const personalToolFeatures = [
     status: "beta",
     href: "/home/personal/tools/npk",
     acceptsGrowContext: true,
+    capabilityKey: CAPABILITY_KEYS.TOOL_NPK,
     internalNote:
       "Twenty-row recipe foundation exists; chemistry and measured-EC work remains."
   },
@@ -147,6 +150,7 @@ export const personalToolFeatures = [
     status: "beta",
     href: "/home/personal/tools/nutrient-chemistry",
     acceptsGrowContext: true,
+    capabilityKey: CAPABILITY_KEYS.TOOL_NPK,
     internalNote:
       "Starter library requires complete source provenance and wider validation."
   },
@@ -163,33 +167,39 @@ export const personalToolFeatures = [
   {
     key: "tools.environment_analysis",
     title: "AI Environment Analysis",
-    description: "Send temperature, humidity, VPD, PPFD, DLI, and CO2 context to the environment analysis endpoint.",
+    description:
+      "Send temperature, humidity, VPD, PPFD, DLI, and CO2 context to the environment analysis endpoint.",
     area: "environment",
     status: "beta",
     href: "/home/personal/tools/environment-analysis",
     acceptsGrowContext: true,
+    capabilityKey: CAPABILITY_KEYS.DIAGNOSE_AI,
     internalNote:
       "Endpoint-backed analysis when AI is enabled; local heuristic fallback keeps the tool useful for every account."
   },
   {
     key: "tools.feeding_schedule",
     title: "AI Feeding Schedule",
-    description: "Generate a stage-aware feeding schedule from nutrient and grow-medium context.",
+    description:
+      "Generate a stage-aware feeding schedule from nutrient and grow-medium context.",
     area: "water_nutrients",
     status: "beta",
     href: "/home/personal/tools/feeding-schedule",
     acceptsGrowContext: true,
+    capabilityKey: CAPABILITY_KEYS.FEEDING_SCHEDULE,
     internalNote:
       "Uses the backend feeding schedule endpoint when available and local stage-aware planning otherwise."
   },
   {
     key: "tools.harvest_estimator",
     title: "Harvest Estimator",
-    description: "Estimate harvest windows from flowering day, cultivar timing, and maturity signals.",
+    description:
+      "Estimate harvest windows from flowering day, cultivar timing, and maturity signals.",
     area: "ai",
     status: "beta",
     href: "/home/personal/tools/harvest-estimator",
     acceptsGrowContext: true,
+    capabilityKey: CAPABILITY_KEYS.TOOL_HARVEST_ESTIMATOR,
     internalNote:
       "Local estimator with tool-run and journal save paths; not a lab-grade harvest prediction."
   },
@@ -201,6 +211,7 @@ export const personalToolFeatures = [
     status: "beta",
     href: "/home/personal/tools/timeline-planner",
     acceptsGrowContext: true,
+    capabilityKey: CAPABILITY_KEYS.TOOL_TIMELINE_PLANNER,
     internalNote:
       "Local milestone builder can create grow tasks when grow context is present."
   },
@@ -212,6 +223,7 @@ export const personalToolFeatures = [
     status: "beta",
     href: "/home/personal/tools/pdf-export",
     acceptsGrowContext: true,
+    capabilityKey: CAPABILITY_KEYS.TOOL_PDF_EXPORT,
     internalNote:
       "CSV package supports browser download and native share. Rendered PDF remains tracked separately."
   },
@@ -223,6 +235,7 @@ export const personalToolFeatures = [
     status: "beta",
     href: "/home/personal/tools/pheno-matrix",
     acceptsGrowContext: true,
+    capabilityKey: CAPABILITY_KEYS.TOOL_PHENO_MATRIX,
     internalNote:
       "Local weighted scoring matrix is implemented; persistence/export can follow endpoint support."
   },
@@ -234,6 +247,7 @@ export const personalToolFeatures = [
     status: "beta",
     href: "/home/personal/diagnose",
     acceptsGrowContext: true,
+    capabilityKey: CAPABILITY_KEYS.DIAGNOSE_AI,
     internalNote:
       "Vision path works when configured; full ETGU intake and follow-up remain."
   },
