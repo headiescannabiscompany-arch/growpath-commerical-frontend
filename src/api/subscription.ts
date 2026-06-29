@@ -11,14 +11,20 @@ export async function getSubscription() {
   return res?.data ?? res;
 }
 
-export async function createCheckoutSession(data: {
-  plan: string;
-  interval?: string;
-  billingInterval?: string;
-}) {
+export async function createCheckoutSession(
+  data: {
+    plan: string;
+    interval?: string;
+    billingInterval?: string;
+  } = { plan: "pro", interval: "monthly" }
+) {
+  const body = {
+    plan: data.plan || "pro",
+    interval: data.interval || data.billingInterval || "monthly"
+  };
   const res = await apiRequest("/api/subscription/create-checkout-session", {
     method: "POST",
-    body: data
+    body
   });
   return res?.data ?? res;
 }

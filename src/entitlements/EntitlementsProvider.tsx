@@ -267,11 +267,13 @@ export function shouldApplyFacilityRoleCapabilities(
 function applyServerCtx(
   prev: Omit<EntitlementsState, "can">,
   ctx: any,
-  userPlan: any,
+  user: any,
   preferredMode: PreferredMode | null
 ): Omit<EntitlementsState, "can"> {
-  const requestedPlan = userPlan ?? ctx?.plan ?? prev.plan ?? "free";
-  const subscriptionStatus = ctx?.subscriptionStatus ?? ctx?.user?.subscriptionStatus;
+  const requestedPlan =
+    user?.plan ?? ctx?.requestedPlan ?? ctx?.plan ?? prev.plan ?? "free";
+  const subscriptionStatus =
+    ctx?.subscriptionStatus ?? ctx?.user?.subscriptionStatus ?? user?.subscriptionStatus;
   const plan = getEffectivePlan(requestedPlan, subscriptionStatus);
   const resolvedMode = resolveEntitlementsMode(ctx, preferredMode);
   const mode = resolveWorkspaceMode(requestedPlan, resolvedMode);
@@ -401,14 +403,14 @@ export function EntitlementsProvider({ children }: { children: React.ReactNode }
 
     // Read ctx and user from AuthContext (no duplicate fetch)
     const ctx = auth.ctx ?? null;
-    const userPlan = auth.user?.plan ?? null;
+    const user = auth.user ?? null;
 
-    const fingerprint = safeStringify({ ctx, userPlan });
+    const fingerprint = safeStringify({ ctx, user });
 
     // Only apply if changed
     if (fingerprint !== lastAppliedRef.current) {
       lastAppliedRef.current = fingerprint;
-      setState((prev) => applyServerCtx(prev, ctx, userPlan, preferredMode));
+      setState((prev) => applyServerCtx(prev, ctx, user, preferredMode));
     } else {
       // Ensure ready is true even if ctx unchanged
       setState((prev) =>

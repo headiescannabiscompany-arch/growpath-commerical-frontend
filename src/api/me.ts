@@ -7,6 +7,9 @@ import { getToken } from "../auth/tokenStore";
 
 export type MeCtx = {
   mode: "personal" | "commercial" | "facility";
+  plan?: string | null;
+  requestedPlan?: string | null;
+  subscriptionStatus?: string | null;
   capabilities: Record<string, boolean>;
   limits: Record<string, number>;
   facilityId?: string | null;
