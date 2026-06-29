@@ -71,7 +71,7 @@ export default function InventoryItemDetailScreen() {
       try {
         clearError();
         const res = await apiRequest(endpoints.inventoryItem(facilityId, itemId));
-        setItem(res ?? null);
+        setItem((res as AnyRec)?.item ?? (res as AnyRec)?.updated ?? res ?? null);
       } catch (e) {
         handleApiError(e);
       } finally {
@@ -83,17 +83,26 @@ export default function InventoryItemDetailScreen() {
   );
 
   const adjust = useCallback(async () => {
-    if (!facilityId || !itemId) return;
+    if (!facilityId || !itemId || !item) return;
 
     const n = Number(delta);
     if (!Number.isFinite(n) || n === 0) return;
 
+    const sku = String(item?.sku ?? "");
+    if (!sku) return;
+
+    const current = Number(item?.quantity ?? item?.quantityOnHand ?? 0);
+    const nextQuantity = (Number.isFinite(current) ? current : 0) + n;
+
     setSaving(true);
     try {
       clearError();
-      await apiRequest(endpoints.inventoryAdjust(facilityId, itemId), {
-        method: "POST",
-        body: { delta: n, reason: reason.trim() || undefined }
+      await apiRequest(endpoints.inventoryItem(facilityId, sku), {
+        method: "PATCH",
+        body: {
+          quantity: nextQuantity,
+          adjustmentReason: reason.trim() || undefined
+        }
       });
       setDelta("");
       setReason("");
@@ -103,7 +112,7 @@ export default function InventoryItemDetailScreen() {
     } finally {
       setSaving(false);
     }
-  }, [facilityId, itemId, delta, reason, clearError, handleApiError, load]);
+  }, [facilityId, itemId, item, delta, reason, clearError, handleApiError, load]);
 
   useEffect(() => {
     if (!facilityId) {

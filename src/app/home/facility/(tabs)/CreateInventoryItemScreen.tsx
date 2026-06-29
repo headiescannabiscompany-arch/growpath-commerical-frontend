@@ -43,18 +43,21 @@ export default function FacilityCreateInventoryItemScreen() {
       <TextInput
         value={name}
         onChangeText={setName}
+        accessibilityLabel="Inventory item name"
         placeholder="Name"
         style={styles.input}
       />
       <TextInput
         value={sku}
         onChangeText={setSku}
+        accessibilityLabel="Inventory item SKU"
         placeholder="SKU (optional)"
         style={styles.input}
       />
       <TextInput
         value={quantity}
         onChangeText={setQuantity}
+        accessibilityLabel="Inventory item quantity"
         placeholder="Quantity"
         keyboardType="numeric"
         style={styles.input}
@@ -62,6 +65,8 @@ export default function FacilityCreateInventoryItemScreen() {
       <Pressable
         onPress={createItem}
         disabled={!canSave}
+        accessibilityRole="button"
+        accessibilityLabel="Create inventory item"
         style={[styles.button, !canSave && styles.disabled]}
       >
         <Text style={styles.buttonText}>{saving ? "Saving..." : "Create Item"}</Text>

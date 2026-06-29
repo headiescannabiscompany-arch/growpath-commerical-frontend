@@ -18,6 +18,7 @@ import { InlineError } from "@/components/InlineError";
 
 type InventoryItem = {
   _id: string;
+  id?: string;
   name?: string;
   sku?: string;
   quantity?: number;
@@ -98,6 +99,8 @@ export default function FacilityInventoryTab() {
           <Text>Select a facility first.</Text>
 
           <TouchableOpacity
+            accessibilityRole="button"
+            accessibilityLabel="Go to facility select"
             onPress={() => router.push("/home/facility/select")}
             style={{ borderWidth: 1, borderRadius: 10, padding: 12 }}
           >
@@ -132,14 +135,32 @@ export default function FacilityInventoryTab() {
           <Text style={{ fontSize: 20, fontWeight: "900" }}>Inventory</Text>
 
           <View style={{ flexDirection: "row" }}>
-            <TouchableOpacity onPress={() => router.push("/home/facility/select")}>
+            <TouchableOpacity
+              accessibilityRole="button"
+              accessibilityLabel="Change facility"
+              onPress={() => router.push("/home/facility/select")}
+            >
               <Text style={{ fontWeight: "900" }}>Change Facility</Text>
             </TouchableOpacity>
 
             <View style={{ width: 14 }} />
 
-            <TouchableOpacity onPress={load}>
+            <TouchableOpacity
+              accessibilityRole="button"
+              accessibilityLabel="Reload inventory"
+              onPress={load}
+            >
               <Text style={{ fontWeight: "900" }}>Reload</Text>
+            </TouchableOpacity>
+
+            <View style={{ width: 14 }} />
+
+            <TouchableOpacity
+              accessibilityRole="button"
+              accessibilityLabel="Create inventory item"
+              onPress={() => router.push("/home/facility/CreateInventoryItemScreen")}
+            >
+              <Text style={{ fontWeight: "900" }}>Create Item</Text>
             </TouchableOpacity>
           </View>
         </View>
@@ -156,11 +177,21 @@ export default function FacilityInventoryTab() {
               <RefreshControl refreshing={refreshing} onRefresh={onRefresh} />
             }
             renderItem={({ item }) => {
+              const id = String(item.id ?? item._id ?? "");
               const qty = typeof item.quantity === "number" ? String(item.quantity) : "—";
               const unit = item.unit ? ` ${item.unit}` : "";
 
               return (
-                <View
+                <TouchableOpacity
+                  accessibilityRole="button"
+                  accessibilityLabel={`Open inventory item ${item.name || item.sku || id}`}
+                  onPress={() => {
+                    if (!id) return;
+                    router.push({
+                      pathname: "/home/facility/InventoryItemDetailScreen",
+                      params: { id }
+                    });
+                  }}
                   style={{
                     paddingVertical: 12,
                     borderBottomWidth: 1,
@@ -174,7 +205,7 @@ export default function FacilityInventoryTab() {
                     Qty: {qty}
                     {unit}
                   </Text>
-                </View>
+                </TouchableOpacity>
               );
             }}
           />

@@ -288,12 +288,14 @@ export default function FacilityRoomsTab() {
                 value={roomName}
                 onChangeText={setRoomName}
                 style={styles.input}
+                accessibilityLabel="New room name"
                 placeholder="Room name"
               />
               <TextInput
                 value={roomType}
                 onChangeText={setRoomType}
                 style={styles.input}
+                accessibilityLabel="New room type"
                 placeholder="Room type"
               />
               <View style={styles.pillRow}>
@@ -420,12 +422,14 @@ export default function FacilityRoomsTab() {
                     value={equipmentName}
                     onChangeText={setEquipmentName}
                     style={styles.input}
+                    accessibilityLabel="Equipment name"
                     placeholder="Equipment name"
                   />
                   <TextInput
                     value={equipmentType}
                     onChangeText={setEquipmentType}
                     style={styles.input}
+                    accessibilityLabel="Equipment type"
                     placeholder="Equipment type"
                   />
                   <Pressable
@@ -464,18 +468,21 @@ export default function FacilityRoomsTab() {
                     value={cycleName}
                     onChangeText={setCycleName}
                     style={styles.input}
+                    accessibilityLabel="Batch cycle name"
                     placeholder="Cycle name"
                   />
                   <TextInput
                     value={cycleStage}
                     onChangeText={setCycleStage}
                     style={styles.input}
+                    accessibilityLabel="Batch cycle stage"
                     placeholder="Stage"
                   />
                   <TextInput
                     value={estimatedPlantCount}
                     onChangeText={setEstimatedPlantCount}
                     style={styles.input}
+                    accessibilityLabel="Batch cycle estimated plant count"
                     placeholder="Estimated plant count"
                     keyboardType="numeric"
                   />
