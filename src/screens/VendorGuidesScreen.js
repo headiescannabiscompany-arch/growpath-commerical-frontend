@@ -146,7 +146,7 @@ export default function VendorGuidesScreen({ navigation, route }) {
                 <Text style={styles.stat}>{item.enrollments} enrolled</Text>
               ) : null}
               {Number(item?.rating || 0) > 0 ? (
-                <Text style={styles.stat}>⭐ {item.rating.toFixed(1)}</Text>
+                <Text style={styles.stat}>Rating {item.rating.toFixed(1)}</Text>
               ) : null}
             </View>
             {item?.targetAudience ? (
