@@ -42,7 +42,7 @@ export default function FacilityCreateInventoryItemScreen() {
               : undefined
         }
       });
-      router.back();
+      router.replace("/home/facility/inventory");
     } catch (e: any) {
       Alert.alert("Create failed", String(e?.message || e || "Unknown error"));
     } finally {

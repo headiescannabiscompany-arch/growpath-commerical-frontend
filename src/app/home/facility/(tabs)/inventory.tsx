@@ -8,6 +8,7 @@ import {
   Text,
   View
 } from "react-native";
+import { useFocusEffect } from "@react-navigation/native";
 import { useRouter } from "expo-router";
 
 import { apiRequest } from "@/api/apiRequest";
@@ -117,6 +118,14 @@ export default function FacilityInventoryTab() {
     }
     load();
   }, [facilityId, load, router]);
+
+  useFocusEffect(
+    useCallback(() => {
+      if (facilityId) {
+        void fetchItems().catch((e) => setError(handleApiError(e)));
+      }
+    }, [facilityId, fetchItems, handleApiError])
+  );
 
   const sorted = useMemo(() => {
     const copy = [...items];
