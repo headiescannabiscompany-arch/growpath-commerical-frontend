@@ -15,6 +15,8 @@ export default function FacilityCreateInventoryItemScreen() {
   const [name, setName] = useState("");
   const [sku, setSku] = useState("");
   const [quantity, setQuantity] = useState("0");
+  const [unit, setUnit] = useState("");
+  const [reorderPoint, setReorderPoint] = useState("");
   const [saving, setSaving] = useState(false);
 
   const canWriteInventory = Boolean(ent?.can?.(CAPABILITY_KEYS.INVENTORY_WRITE));
@@ -22,6 +24,9 @@ export default function FacilityCreateInventoryItemScreen() {
 
   const createItem = async () => {
     if (!canSave || !facilityId) return;
+    const quantityNumber = Number(quantity);
+    const reorderPointNumber = Number(reorderPoint);
+
     setSaving(true);
     try {
       await apiRequest(endpoints.inventory(facilityId), {
@@ -29,7 +34,12 @@ export default function FacilityCreateInventoryItemScreen() {
         body: {
           name: name.trim(),
           sku: sku.trim() || undefined,
-          quantity: Number(quantity) || 0
+          quantity: Number.isFinite(quantityNumber) ? quantityNumber : 0,
+          unit: unit.trim() || undefined,
+          reorderPoint:
+            reorderPoint.trim() && Number.isFinite(reorderPointNumber)
+              ? reorderPointNumber
+              : undefined
         }
       });
       router.back();
@@ -67,6 +77,21 @@ export default function FacilityCreateInventoryItemScreen() {
         onChangeText={setQuantity}
         accessibilityLabel="Inventory item quantity"
         placeholder="Quantity"
+        keyboardType="numeric"
+        style={styles.input}
+      />
+      <TextInput
+        value={unit}
+        onChangeText={setUnit}
+        accessibilityLabel="Inventory item unit"
+        placeholder="Unit (bags, bottles, grams)"
+        style={styles.input}
+      />
+      <TextInput
+        value={reorderPoint}
+        onChangeText={setReorderPoint}
+        accessibilityLabel="Inventory item reorder point"
+        placeholder="Reorder point"
         keyboardType="numeric"
         style={styles.input}
       />
