@@ -141,6 +141,7 @@ export default function ToolResultSurface({
               <Pressable
                 key={action.key}
                 accessibilityRole="button"
+                accessibilityLabel={action.label}
                 disabled={Boolean(activeAction) || action.disabled}
                 onPress={() => runAction(action)}
                 style={[

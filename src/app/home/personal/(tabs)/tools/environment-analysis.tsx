@@ -21,7 +21,10 @@ function numeric(value: string) {
 
 function list(value: any): string[] {
   return Array.isArray(value)
-    ? value.map(String).map((item) => item.trim()).filter(Boolean)
+    ? value
+        .map(String)
+        .map((item) => item.trim())
+        .filter(Boolean)
     : [];
 }
 
@@ -36,7 +39,11 @@ function actionList(result: any): string[] {
     .map((action) =>
       typeof action === "string"
         ? action
-        : [action?.title, action?.details, action?.priority ? `Priority: ${action.priority}` : ""]
+        : [
+            action?.title,
+            action?.details,
+            action?.priority ? `Priority: ${action.priority}` : ""
+          ]
             .filter(Boolean)
             .join(" - ")
     )
@@ -132,11 +139,17 @@ export default function EnvironmentAnalysisToolScreen() {
       {growId ? <Text style={styles.context}>Grow context: {growId}</Text> : null}
 
       <Text style={styles.label}>Stage</Text>
-      <TextInput style={styles.input} value={stage} onChangeText={setStage} />
+      <TextInput
+        accessibilityLabel="Environment stage"
+        style={styles.input}
+        value={stage}
+        onChangeText={setStage}
+      />
       <View style={styles.grid}>
         <View style={styles.field}>
           <Text style={styles.label}>Day temp C</Text>
           <TextInput
+            accessibilityLabel="Environment day temperature Celsius"
             style={styles.input}
             value={tempDayC}
             onChangeText={setTempDayC}
@@ -146,6 +159,7 @@ export default function EnvironmentAnalysisToolScreen() {
         <View style={styles.field}>
           <Text style={styles.label}>Night temp C</Text>
           <TextInput
+            accessibilityLabel="Environment night temperature Celsius"
             style={styles.input}
             value={tempNightC}
             onChangeText={setTempNightC}
@@ -155,6 +169,7 @@ export default function EnvironmentAnalysisToolScreen() {
         <View style={styles.field}>
           <Text style={styles.label}>Humidity %</Text>
           <TextInput
+            accessibilityLabel="Environment humidity percent"
             style={styles.input}
             value={humidity}
             onChangeText={setHumidity}
@@ -164,6 +179,7 @@ export default function EnvironmentAnalysisToolScreen() {
         <View style={styles.field}>
           <Text style={styles.label}>VPD kPa</Text>
           <TextInput
+            accessibilityLabel="Environment VPD kPa"
             style={styles.input}
             value={vpd}
             onChangeText={setVpd}
@@ -173,6 +189,7 @@ export default function EnvironmentAnalysisToolScreen() {
         <View style={styles.field}>
           <Text style={styles.label}>PPFD</Text>
           <TextInput
+            accessibilityLabel="Environment PPFD"
             style={styles.input}
             value={ppfd}
             onChangeText={setPpfd}
@@ -182,6 +199,7 @@ export default function EnvironmentAnalysisToolScreen() {
         <View style={styles.field}>
           <Text style={styles.label}>DLI</Text>
           <TextInput
+            accessibilityLabel="Environment DLI"
             style={styles.input}
             value={dli}
             onChangeText={setDli}
@@ -191,6 +209,7 @@ export default function EnvironmentAnalysisToolScreen() {
         <View style={styles.field}>
           <Text style={styles.label}>CO2 ppm</Text>
           <TextInput
+            accessibilityLabel="Environment CO2 ppm"
             style={styles.input}
             value={co2}
             onChangeText={setCo2}
@@ -200,6 +219,7 @@ export default function EnvironmentAnalysisToolScreen() {
         <View style={styles.field}>
           <Text style={styles.label}>Light hours</Text>
           <TextInput
+            accessibilityLabel="Environment light hours"
             style={styles.input}
             value={lightHours}
             onChangeText={setLightHours}
@@ -212,6 +232,8 @@ export default function EnvironmentAnalysisToolScreen() {
         <Text style={styles.locked}>Environment AI is unavailable for this plan.</Text>
       ) : null}
       <Pressable
+        accessibilityRole="button"
+        accessibilityLabel="Analyze environment"
         style={[styles.button, (!enabled || running) && styles.disabled]}
         disabled={!enabled || running}
         onPress={run}
@@ -223,12 +245,28 @@ export default function EnvironmentAnalysisToolScreen() {
 
       <ToolResultSurface
         title="Environment analysis"
-        status={result ? String(assessment.status || "AI ENDPOINT").toUpperCase() : "READY"}
-        summary={result?.data?.notes || result?.notes || "Run the endpoint to analyze readings."}
+        status={
+          result ? String(assessment.status || "AI ENDPOINT").toUpperCase() : "READY"
+        }
+        summary={
+          result?.data?.notes || result?.notes || "Run the endpoint to analyze readings."
+        }
         metrics={[
-          { key: "day-temp", label: "Target day temp", value: targetValue(result, "tempDayC") },
-          { key: "rh-min", label: "Target RH min", value: targetValue(result, "humidityMin") },
-          { key: "rh-max", label: "Target RH max", value: targetValue(result, "humidityMax") },
+          {
+            key: "day-temp",
+            label: "Target day temp",
+            value: targetValue(result, "tempDayC")
+          },
+          {
+            key: "rh-min",
+            label: "Target RH min",
+            value: targetValue(result, "humidityMin")
+          },
+          {
+            key: "rh-max",
+            label: "Target RH max",
+            value: targetValue(result, "humidityMax")
+          },
           { key: "vpd", label: "Ideal VPD", value: targetValue(result, "vpdIdeal") }
         ]}
         notices={[

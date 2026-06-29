@@ -75,9 +75,15 @@ export default function TimelinePlannerScreen() {
       ) : (
         <>
           <Text style={styles.label}>Start date</Text>
-          <TextInput style={styles.input} value={startDate} onChangeText={setStartDate} />
+          <TextInput
+            accessibilityLabel="Timeline start date"
+            style={styles.input}
+            value={startDate}
+            onChangeText={setStartDate}
+          />
           <Text style={styles.label}>Veg weeks</Text>
           <TextInput
+            accessibilityLabel="Timeline veg weeks"
             style={styles.input}
             value={vegWeeks}
             onChangeText={setVegWeeks}
@@ -85,6 +91,7 @@ export default function TimelinePlannerScreen() {
           />
           <Text style={styles.label}>Flower weeks</Text>
           <TextInput
+            accessibilityLabel="Timeline flower weeks"
             style={styles.input}
             value={flowerWeeks}
             onChangeText={setFlowerWeeks}
@@ -92,6 +99,7 @@ export default function TimelinePlannerScreen() {
           />
           <Text style={styles.label}>Dry days</Text>
           <TextInput
+            accessibilityLabel="Timeline dry days"
             style={styles.input}
             value={dryDays}
             onChangeText={setDryDays}
@@ -99,6 +107,7 @@ export default function TimelinePlannerScreen() {
           />
           <Text style={styles.label}>Cure weeks</Text>
           <TextInput
+            accessibilityLabel="Timeline cure weeks"
             style={styles.input}
             value={cureWeeks}
             onChangeText={setCureWeeks}
@@ -114,7 +123,8 @@ export default function TimelinePlannerScreen() {
               {
                 key: "harvest",
                 label: "Harvest window",
-                value: milestones.find((item) => item.key === "harvest-window")?.date || ""
+                value:
+                  milestones.find((item) => item.key === "harvest-window")?.date || ""
               },
               { key: "count", label: "Milestones", value: String(milestones.length) }
             ]}
@@ -139,7 +149,9 @@ export default function TimelinePlannerScreen() {
               }
             ]}
             feedback={feedback}
-            contextMessage={!growId ? "Select a grow to create timeline tasks." : undefined}
+            contextMessage={
+              !growId ? "Select a grow to create timeline tasks." : undefined
+            }
           />
         </>
       )}

@@ -1,11 +1,14 @@
 import React from "react";
-import { Tabs, Redirect } from "expo-router";
+import { Tabs, Redirect, usePathname } from "expo-router";
 import { ActivityIndicator, View } from "react-native";
 
 import { useEntitlements } from "@/entitlements";
 
 export default function PersonalTabsLayout() {
   const ent = useEntitlements();
+  const pathname = usePathname();
+  const hideTabBar =
+    pathname.startsWith("/home/personal/tools/") && pathname !== "/home/personal/tools";
 
   if (!ent?.ready) {
     return (
@@ -24,7 +27,8 @@ export default function PersonalTabsLayout() {
       screenOptions={{
         headerShown: true,
         tabBarHideOnKeyboard: true,
-        tabBarIcon: () => null
+        tabBarIcon: () => null,
+        tabBarStyle: hideTabBar ? { display: "none" } : undefined
       }}
     >
       <Tabs.Screen name="index" options={{ title: "Home" }} />

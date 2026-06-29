@@ -126,6 +126,7 @@ export default function WateringToolScreen() {
 
       <Text style={styles.label}>Pot size (L)</Text>
       <TextInput
+        accessibilityLabel="Watering pot size liters"
         style={styles.input}
         value={potLiters}
         onChangeText={(value) => {
@@ -136,6 +137,7 @@ export default function WateringToolScreen() {
       />
       <Text style={styles.label}>Runoff target (%)</Text>
       <TextInput
+        accessibilityLabel="Watering runoff target percent"
         style={styles.input}
         value={runoffPct}
         onChangeText={(value) => {
@@ -146,6 +148,7 @@ export default function WateringToolScreen() {
       />
       <Text style={styles.label}>Water every (days)</Text>
       <TextInput
+        accessibilityLabel="Watering interval days"
         style={styles.input}
         value={intervalDays}
         onChangeText={(value) => {

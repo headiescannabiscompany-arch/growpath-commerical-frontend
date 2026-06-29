@@ -143,6 +143,8 @@ export default function VpdToolScreen() {
             key={value}
             style={[styles.pill, unit === value && styles.pillOn]}
             onPress={() => setUnit(value)}
+            accessibilityRole="button"
+            accessibilityLabel={`Use ${value} temperature unit`}
           >
             <Text style={[styles.pillText, unit === value && styles.pillTextOn]}>
               °{value}
@@ -153,6 +155,7 @@ export default function VpdToolScreen() {
 
       <Text style={styles.label}>Temperature (°{unit})</Text>
       <TextInput
+        accessibilityLabel="VPD temperature"
         style={styles.input}
         value={tempText}
         onChangeText={setTempText}
@@ -161,6 +164,7 @@ export default function VpdToolScreen() {
       />
       <Text style={styles.label}>Relative humidity (%)</Text>
       <TextInput
+        accessibilityLabel="VPD relative humidity"
         style={styles.input}
         value={rhText}
         onChangeText={setRhText}
@@ -169,6 +173,7 @@ export default function VpdToolScreen() {
       />
       <Text style={styles.label}>Leaf temperature offset (°C)</Text>
       <TextInput
+        accessibilityLabel="VPD leaf temperature offset"
         style={styles.input}
         value={leafOffsetText}
         onChangeText={setLeafOffsetText}
@@ -183,6 +188,8 @@ export default function VpdToolScreen() {
             key={value}
             style={[styles.pill, stage === value && styles.pillOn]}
             onPress={() => setStage(value)}
+            accessibilityRole="button"
+            accessibilityLabel={`Set VPD growth stage to ${value.replace("_", " ")}`}
           >
             <Text style={[styles.pillText, stage === value && styles.pillTextOn]}>
               {value.replace("_", " ")}

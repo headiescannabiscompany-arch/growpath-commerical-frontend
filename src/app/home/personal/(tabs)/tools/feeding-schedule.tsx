@@ -112,15 +112,36 @@ export default function FeedingScheduleToolScreen() {
       {growId ? <Text style={styles.context}>Grow context: {growId}</Text> : null}
 
       <Text style={styles.label}>Product or nutrient line</Text>
-      <TextInput style={styles.input} value={productName} onChangeText={setProductName} />
+      <TextInput
+        accessibilityLabel="Feeding product or nutrient line"
+        style={styles.input}
+        value={productName}
+        onChangeText={setProductName}
+      />
       <Text style={styles.label}>Grow medium</Text>
-      <TextInput style={styles.input} value={medium} onChangeText={setMedium} />
+      <TextInput
+        accessibilityLabel="Feeding grow medium"
+        style={styles.input}
+        value={medium}
+        onChangeText={setMedium}
+      />
       <Text style={styles.label}>Strain type</Text>
-      <TextInput style={styles.input} value={strainType} onChangeText={setStrainType} />
+      <TextInput
+        accessibilityLabel="Feeding strain type"
+        style={styles.input}
+        value={strainType}
+        onChangeText={setStrainType}
+      />
       <Text style={styles.label}>Experience</Text>
-      <TextInput style={styles.input} value={experience} onChangeText={setExperience} />
+      <TextInput
+        accessibilityLabel="Feeding experience"
+        style={styles.input}
+        value={experience}
+        onChangeText={setExperience}
+      />
       <Text style={styles.label}>Total weeks</Text>
       <TextInput
+        accessibilityLabel="Feeding total weeks"
         style={styles.input}
         value={weeks}
         onChangeText={setWeeks}
@@ -135,6 +156,8 @@ export default function FeedingScheduleToolScreen() {
         />
       ) : null}
       <Pressable
+        accessibilityRole="button"
+        accessibilityLabel="Generate feeding schedule"
         style={[styles.button, (!enabled || running) && styles.disabled]}
         disabled={!enabled || running}
         onPress={run}
