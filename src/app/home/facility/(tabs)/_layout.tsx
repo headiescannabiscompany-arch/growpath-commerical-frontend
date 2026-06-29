@@ -1,6 +1,6 @@
 import React from "react";
 import { Tabs, Redirect, usePathname } from "expo-router";
-import { ActivityIndicator, View } from "react-native";
+import { ActivityIndicator, useWindowDimensions, View } from "react-native";
 
 import { useEntitlements } from "@/entitlements";
 import { useFacility } from "@/state/useFacility";
@@ -9,11 +9,18 @@ export default function FacilityTabsLayout() {
   const ent = useEntitlements();
   const { selectedId } = useFacility();
   const pathname = usePathname();
+  const { width } = useWindowDimensions();
+  const compactTabs = width < 700;
   const hideTabBar =
     pathname.includes("/ai-diagnosis-photo") ||
     pathname.includes("/ai-template") ||
     pathname.includes("/CreateInventoryItemScreen") ||
     pathname.includes("/InventoryItemDetailScreen");
+  const tabBarStyle = hideTabBar
+    ? { display: "none" as const }
+    : compactTabs
+      ? { height: 72, paddingBottom: 22, paddingTop: 4 }
+      : undefined;
 
   if (!ent?.ready) {
     return (
@@ -37,27 +44,67 @@ export default function FacilityTabsLayout() {
         headerShown: true,
         tabBarHideOnKeyboard: true,
         tabBarIcon: () => null,
-        tabBarStyle: hideTabBar ? { display: "none" } : undefined
+        tabBarLabelStyle: { fontSize: compactTabs ? 11 : 10, fontWeight: "700" },
+        tabBarStyle
       }}
     >
-      <Tabs.Screen name="dashboard" options={{ title: "Dashboard" }} />
-      <Tabs.Screen name="grows" options={{ title: "Grows" }} />
-      <Tabs.Screen name="plants" options={{ title: "Plants" }} />
+      <Tabs.Screen
+        name="dashboard"
+        options={{ title: "Dashboard", tabBarLabel: compactTabs ? "Dash" : "Dashboard" }}
+      />
+      <Tabs.Screen
+        name="grows"
+        options={{ title: "Grows", href: compactTabs ? null : undefined }}
+      />
+      <Tabs.Screen
+        name="plants"
+        options={{ title: "Plants", href: compactTabs ? null : undefined }}
+      />
       <Tabs.Screen name="rooms" options={{ title: "Rooms" }} />
       <Tabs.Screen name="tasks" options={{ title: "Tasks" }} />
-      <Tabs.Screen name="logs" options={{ title: "Logs" }} />
-      <Tabs.Screen name="inventory" options={{ title: "Inventory" }} />
-      <Tabs.Screen name="reports" options={{ title: "Reports" }} />
-      <Tabs.Screen name="compliance" options={{ title: "Compliance" }} />
-      <Tabs.Screen name="sop-runs" options={{ title: "SOPs" }} />
-      <Tabs.Screen name="audit-logs" options={{ title: "Audit" }} />
-      <Tabs.Screen name="team" options={{ title: "Team" }} />
-      <Tabs.Screen name="profile" options={{ title: "Profile" }} />
+      <Tabs.Screen
+        name="logs"
+        options={{ title: "Logs", href: compactTabs ? null : undefined }}
+      />
+      <Tabs.Screen
+        name="inventory"
+        options={{ title: "Inventory", href: compactTabs ? null : undefined }}
+      />
+      <Tabs.Screen
+        name="reports"
+        options={{ title: "Reports", href: compactTabs ? null : undefined }}
+      />
+      <Tabs.Screen
+        name="compliance"
+        options={{
+          title: "Compliance",
+          tabBarLabel: compactTabs ? "Comp" : "Compliance"
+        }}
+      />
+      <Tabs.Screen
+        name="sop-runs"
+        options={{ title: "SOPs", href: compactTabs ? null : undefined }}
+      />
+      <Tabs.Screen
+        name="audit-logs"
+        options={{ title: "Audit", href: compactTabs ? null : undefined }}
+      />
+      <Tabs.Screen
+        name="team"
+        options={{ title: "Team", href: compactTabs ? null : undefined }}
+      />
+      <Tabs.Screen
+        name="profile"
+        options={{ title: "Profile", href: compactTabs ? null : undefined }}
+      />
       <Tabs.Screen name="ai-tools" options={{ href: null }} />
       <Tabs.Screen name="ai-ask" options={{ title: "AI" }} />
       <Tabs.Screen name="ai-diagnosis-photo" options={{ tabBarButton: () => null }} />
       <Tabs.Screen name="ai-template" options={{ tabBarButton: () => null }} />
-      <Tabs.Screen name="ai-validation" options={{ title: "AI QA" }} />
+      <Tabs.Screen
+        name="ai-validation"
+        options={{ title: "AI QA", href: compactTabs ? null : undefined }}
+      />
       <Tabs.Screen
         name="CreateInventoryItemScreen"
         options={{ href: null, title: "Create Inventory Item" }}

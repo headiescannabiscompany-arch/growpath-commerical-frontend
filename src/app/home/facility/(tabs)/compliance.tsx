@@ -281,7 +281,7 @@ export default function FacilityComplianceTab() {
         {feedback ? <Text style={styles.feedback}>{feedback}</Text> : null}
 
         <View style={styles.headerRow}>
-          <View>
+          <View style={styles.headerText}>
             <Text style={styles.h1}>Compliance</Text>
             <Text style={styles.muted}>
               Facility-scoped primitives for deviations, SOPs, verification, and audit
@@ -594,10 +594,11 @@ export default function FacilityComplianceTab() {
 }
 
 const styles = StyleSheet.create({
-  container: { padding: 16, paddingBottom: 32, gap: 12 },
+  container: { padding: 16, paddingBottom: 120, gap: 12 },
   headerRow: { flexDirection: "row", justifyContent: "space-between", gap: 12 },
+  headerText: { flex: 1, minWidth: 0 },
   h1: { fontSize: 22, fontWeight: "900" },
-  muted: { opacity: 0.7, lineHeight: 19 },
+  muted: { flexShrink: 1, opacity: 0.7, lineHeight: 19 },
   ownerLine: { color: "#166534", fontWeight: "800", marginTop: 4 },
   grid: { flexDirection: "row", flexWrap: "wrap", gap: 10 },
   tile: {
