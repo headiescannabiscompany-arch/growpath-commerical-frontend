@@ -16,11 +16,27 @@ function idempotencyKey(prefix: string, courseId: string) {
   return `${prefix}:${courseId}:${Date.now()}`;
 }
 
-export async function startCourseCheckout(courseId: string) {
-  return apiRequest(apiRoutes.PAYMENTS.CHECKOUT(courseId), { method: "POST" });
+function currentOrigin() {
+  const location = (globalThis as any)?.window?.location;
+  return typeof location?.origin === "string" ? location.origin : "";
 }
 
-export async function getCoursePaymentStatus(courseId: string): Promise<CoursePaymentStatus> {
+export async function startCourseCheckout(courseId: string) {
+  const origin = currentOrigin();
+  return apiRequest(apiRoutes.PAYMENTS.CHECKOUT(courseId), {
+    method: "POST",
+    body: origin
+      ? {
+          successUrl: `${origin}/courses?checkout=success`,
+          cancelUrl: `${origin}/courses?checkout=canceled`
+        }
+      : {}
+  });
+}
+
+export async function getCoursePaymentStatus(
+  courseId: string
+): Promise<CoursePaymentStatus> {
   const response = await apiRequest(apiRoutes.PAYMENTS.COURSE_STATUS(courseId), {
     method: "GET"
   });

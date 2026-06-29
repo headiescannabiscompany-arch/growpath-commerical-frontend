@@ -1,8 +1,8 @@
 import React, { useCallback, useEffect, useMemo, useState } from "react";
 import {
   ActivityIndicator,
-  Alert,
   Linking,
+  Platform,
   Pressable,
   ScrollView,
   StyleSheet,
@@ -64,6 +64,14 @@ function lessonTitle(lesson, index) {
   return String(lesson?.title || `Lesson ${index + 1}`);
 }
 
+async function openCheckoutUrl(url) {
+  if (Platform.OS === "web" && typeof window !== "undefined" && window.location) {
+    window.location.href = url;
+    return;
+  }
+  await Linking.openURL(url);
+}
+
 export default function CourseDetailScreen({ route, navigation }) {
   const entitlements = useEntitlements();
   const access = getLearningAccess(entitlements);
@@ -88,9 +96,9 @@ export default function CourseDetailScreen({ route, navigation }) {
   const lessons = useMemo(() => normalizeList(course?.lessons, "lessons"), [course]);
   const enrolled = Boolean(
     enrollment?.enrolled ||
-      enrollment?.isEnrolled ||
-      course?.isEnrolled ||
-      course?.enrolled
+    enrollment?.isEnrolled ||
+    course?.isEnrolled ||
+    course?.enrolled
   );
   const isPaidCourse = Number(course?.priceCents || course?.price || 0) > 0;
   const paymentStatus =
@@ -158,7 +166,11 @@ export default function CourseDetailScreen({ route, navigation }) {
       if (isPaidCourse) {
         const checkout = await startCourseCheckout(loadedCourseId);
         const url = checkout?.url || checkout?.checkoutUrl || checkout?.data?.url;
-        if (url) await Linking.openURL(url);
+        if (!url) {
+          setFeedback("Checkout unavailable. The backend did not return a checkout URL.");
+          return;
+        }
+        await openCheckoutUrl(url);
         setFeedback(
           "Checkout started. Access unlocks only after the backend confirms the webhook and enrollment status."
         );
@@ -269,7 +281,9 @@ export default function CourseDetailScreen({ route, navigation }) {
     try {
       await requestCourseRefund(loadedCourseId, refundReason.trim());
       setRefundReason("");
-      setFeedback("Refund request submitted. Final state comes from backend payment status.");
+      setFeedback(
+        "Refund request submitted. Final state comes from backend payment status."
+      );
       await refreshPaymentStatus();
     } catch (error) {
       setFeedback(error?.message || "Unable to request refund.");
@@ -297,7 +311,10 @@ export default function CourseDetailScreen({ route, navigation }) {
     if (!loadedCourseId) return;
     setSaving(true);
     try {
-      const response = await exportCourseSales({ range: salesRange, courseId: loadedCourseId });
+      const response = await exportCourseSales({
+        range: salesRange,
+        courseId: loadedCourseId
+      });
       const url = response?.url || response?.data?.url;
       if (url) await Linking.openURL(url);
       setFeedback("Course sales report requested.");
@@ -341,7 +358,8 @@ export default function CourseDetailScreen({ route, navigation }) {
     <ScrollView style={styles.container} contentContainerStyle={styles.content}>
       <Text style={styles.title}>{course?.title || course?.name || "Course"}</Text>
       <Text style={styles.meta}>
-        {coursePrice(course)} | {course?.status || (course?.isPublished ? "published" : "draft")}
+        {coursePrice(course)} |{" "}
+        {course?.status || (course?.isPublished ? "published" : "draft")}
       </Text>
       {course?.summary || course?.description ? (
         <Text style={styles.body}>{course.summary || course.description}</Text>
@@ -370,7 +388,11 @@ export default function CourseDetailScreen({ route, navigation }) {
         <Text style={styles.meta}>
           Earnings: {String(enrollment?.earningsStatus || "pending_webhook")}
         </Text>
-        <Pressable disabled={saving} onPress={refreshPaymentStatus} style={styles.secondaryBtn}>
+        <Pressable
+          disabled={saving}
+          onPress={refreshPaymentStatus}
+          style={styles.secondaryBtn}
+        >
           <Text style={styles.secondaryText}>Refresh Status</Text>
         </Pressable>
       </View>
@@ -408,10 +430,15 @@ export default function CourseDetailScreen({ route, navigation }) {
         {lessons.map((lesson, index) => (
           <View key={rowId(lesson) || lessonTitle(lesson, index)} style={styles.row}>
             <Text style={styles.rowTitle}>{lessonTitle(lesson, index)}</Text>
-            <Text style={styles.meta}>{lesson.content ? "Text" : ""} {lesson.videoUrl ? "Video" : ""} {lesson.pdfUrl ? "PDF" : ""}</Text>
+            <Text style={styles.meta}>
+              {lesson.content ? "Text" : ""} {lesson.videoUrl ? "Video" : ""}{" "}
+              {lesson.pdfUrl ? "PDF" : ""}
+            </Text>
             <View style={styles.actions}>
               <Pressable
-                disabled={!enrolled && Number(course?.priceCents || course?.price || 0) > 0}
+                disabled={
+                  !enrolled && Number(course?.priceCents || course?.price || 0) > 0
+                }
                 onPress={() => openLesson(lesson)}
                 style={styles.secondaryBtn}
               >
@@ -441,7 +468,9 @@ export default function CourseDetailScreen({ route, navigation }) {
               <Text style={styles.link}>Open PDF lesson</Text>
             </Pressable>
           ) : null}
-          {activeLesson.content ? <Text style={styles.body}>{activeLesson.content}</Text> : null}
+          {activeLesson.content ? (
+            <Text style={styles.body}>{activeLesson.content}</Text>
+          ) : null}
           <Pressable
             disabled={saving}
             onPress={() => markLessonComplete(activeLesson)}
@@ -467,7 +496,9 @@ export default function CourseDetailScreen({ route, navigation }) {
         {reviews.slice(0, 5).map((review) => (
           <View key={rowId(review) || review.text} style={styles.row}>
             <Text style={styles.rowTitle}>{review.rating || 0}/5</Text>
-            <Text style={styles.body}>{review.text || review.comment || "No review text."}</Text>
+            <Text style={styles.body}>
+              {review.text || review.comment || "No review text."}
+            </Text>
           </View>
         ))}
         {!reviews.length ? <Text style={styles.meta}>No reviews yet.</Text> : null}
@@ -484,7 +515,10 @@ export default function CourseDetailScreen({ route, navigation }) {
         <Pressable
           disabled={saving || !reportReason.trim()}
           onPress={reportCourse}
-          style={[styles.secondaryBtn, (!reportReason.trim() || saving) && styles.disabled]}
+          style={[
+            styles.secondaryBtn,
+            (!reportReason.trim() || saving) && styles.disabled
+          ]}
         >
           <Text style={styles.secondaryText}>Submit Report</Text>
         </Pressable>
@@ -502,7 +536,10 @@ export default function CourseDetailScreen({ route, navigation }) {
           <Pressable
             disabled={saving || !refundReason.trim()}
             onPress={submitRefund}
-            style={[styles.secondaryBtn, (!refundReason.trim() || saving) && styles.disabled]}
+            style={[
+              styles.secondaryBtn,
+              (!refundReason.trim() || saving) && styles.disabled
+            ]}
           >
             <Text style={styles.secondaryText}>Request Refund</Text>
           </Pressable>
@@ -515,7 +552,10 @@ export default function CourseDetailScreen({ route, navigation }) {
           <Pressable
             disabled={saving || !disputeReason.trim()}
             onPress={submitDispute}
-            style={[styles.secondaryBtn, (!disputeReason.trim() || saving) && styles.disabled]}
+            style={[
+              styles.secondaryBtn,
+              (!disputeReason.trim() || saving) && styles.disabled
+            ]}
           >
             <Text style={styles.secondaryText}>Open Dispute</Text>
           </Pressable>
@@ -526,7 +566,11 @@ export default function CourseDetailScreen({ route, navigation }) {
         <View style={styles.card}>
           <Text style={styles.cardTitle}>Creator and Moderation</Text>
           {access.canCreateCourses ? (
-            <Pressable disabled={saving} onPress={submitReview} style={styles.secondaryBtn}>
+            <Pressable
+              disabled={saving}
+              onPress={submitReview}
+              style={styles.secondaryBtn}
+            >
               <Text style={styles.secondaryText}>Submit for Review</Text>
             </Pressable>
           ) : null}
@@ -544,7 +588,10 @@ export default function CourseDetailScreen({ route, navigation }) {
               <Pressable
                 disabled={saving || !rejectReason.trim()}
                 onPress={reject}
-                style={[styles.secondaryBtn, (!rejectReason.trim() || saving) && styles.disabled]}
+                style={[
+                  styles.secondaryBtn,
+                  (!rejectReason.trim() || saving) && styles.disabled
+                ]}
               >
                 <Text style={styles.secondaryText}>Reject Course</Text>
               </Pressable>
