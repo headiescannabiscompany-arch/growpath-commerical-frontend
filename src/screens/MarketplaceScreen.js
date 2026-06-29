@@ -14,6 +14,7 @@ import {
 import {
   browseMarketplace,
   getMarketplaceContent,
+  purchaseContent,
   searchContent
 } from "../api/marketplace";
 import ScreenContainer from "../components/ScreenContainer";
@@ -57,6 +58,7 @@ export default function MarketplaceScreen({ navigation }) {
   const [refreshing, setRefreshing] = useState(false);
   const [feedback, setFeedback] = useState("");
   const [selected, setSelected] = useState(null);
+  const [purchasingId, setPurchasingId] = useState("");
 
   const load = useCallback(
     async (nextPage = 1, opts = {}) => {
@@ -110,7 +112,40 @@ export default function MarketplaceScreen({ navigation }) {
         <Pressable onPress={() => setSelected(null)}>
           <Text style={styles.link}>Back to marketplace</Text>
         </Pressable>
-        <MarketplaceDetailContent item={selected} />
+        {feedback ? <Text style={styles.feedback}>{feedback}</Text> : null}
+        <MarketplaceDetailContent
+          item={selected}
+          purchasing={purchasingId === rowId(selected)}
+          onPurchase={async () => {
+            const id = rowId(selected);
+            if (!id) return;
+            setPurchasingId(id);
+            setFeedback("");
+            try {
+              const response = await purchaseContent(id);
+              if (response?.url) {
+                setFeedback("Checkout created.");
+                if (typeof window !== "undefined" && window.location) {
+                  window.location.href = response.url;
+                } else {
+                  setFeedback("Checkout created.");
+                }
+              } else {
+                setSelected((current) => ({
+                  ...current,
+                  downloads: response?.downloads ?? current?.downloads,
+                  sales: response?.sales ?? current?.sales,
+                  revenue: response?.revenue ?? current?.revenue
+                }));
+                setFeedback("Added to your library.");
+              }
+            } catch (error) {
+              setFeedback(error?.message || "Unable to start checkout.");
+            } finally {
+              setPurchasingId("");
+            }
+          }}
+        />
       </ScreenContainer>
     );
   }
@@ -120,7 +155,9 @@ export default function MarketplaceScreen({ navigation }) {
       <View style={styles.headerRow}>
         <View>
           <Text style={styles.header}>Marketplace</Text>
-          <Text style={styles.subtitle}>Browse creator content from marketplace endpoints.</Text>
+          <Text style={styles.subtitle}>
+            Browse creator content from marketplace endpoints.
+          </Text>
         </View>
       </View>
 
@@ -134,7 +171,11 @@ export default function MarketplaceScreen({ navigation }) {
         onSubmitEditing={() => load(1)}
       />
 
-      <ScrollView horizontal showsHorizontalScrollIndicator={false} style={styles.filters}>
+      <ScrollView
+        horizontal
+        showsHorizontalScrollIndicator={false}
+        style={styles.filters}
+      >
         {["", "courses", "guides", "templates", "tools"].map((value) => (
           <Pressable
             key={value || "all"}
@@ -173,8 +214,12 @@ export default function MarketplaceScreen({ navigation }) {
                 </Text>
                 <Text style={styles.price}>{priceLabel(item)}</Text>
               </View>
-              <Text style={styles.creator}>By {getCreatorName(item.creator || item.author)}</Text>
-              {item.category ? <Text style={styles.category}>{item.category}</Text> : null}
+              <Text style={styles.creator}>
+                By {getCreatorName(item.creator || item.author)}
+              </Text>
+              {item.category ? (
+                <Text style={styles.category}>{item.category}</Text>
+              ) : null}
               {item.description || item.summary ? (
                 <Text style={styles.body} numberOfLines={2}>
                   {item.description || item.summary}
@@ -184,7 +229,10 @@ export default function MarketplaceScreen({ navigation }) {
             </Pressable>
           )}
           refreshControl={
-            <RefreshControl refreshing={refreshing} onRefresh={() => load(1, { refresh: true })} />
+            <RefreshControl
+              refreshing={refreshing}
+              onRefresh={() => load(1, { refresh: true })}
+            />
           }
           onEndReached={() => {
             if (more && !loading && !query.trim()) load(page + 1);
@@ -197,11 +245,14 @@ export default function MarketplaceScreen({ navigation }) {
   );
 }
 
-export function MarketplaceDetailContent({ item }) {
+export function MarketplaceDetailContent({ item, onPurchase, purchasing }) {
+  const paid = Number(item?.priceCents || 0) > 0 || Number(item?.price || 0) > 0;
   return (
     <View style={styles.detail}>
       <Text style={styles.header}>{item?.title || item?.name || "Marketplace item"}</Text>
-      <Text style={styles.creator}>By {getCreatorName(item?.creator || item?.author)}</Text>
+      <Text style={styles.creator}>
+        By {getCreatorName(item?.creator || item?.author)}
+      </Text>
       <Text style={styles.price}>{priceLabel(item)}</Text>
       {item?.category ? <Text style={styles.category}>{item.category}</Text> : null}
       {item?.description || item?.summary ? (
@@ -209,10 +260,30 @@ export function MarketplaceDetailContent({ item }) {
       ) : null}
       {item?.included || item?.contents ? (
         <Text style={styles.detailBody}>
-          Included: {Array.isArray(item.included || item.contents)
+          Included:{" "}
+          {Array.isArray(item.included || item.contents)
             ? (item.included || item.contents).join(", ")
             : item.included || item.contents}
         </Text>
+      ) : null}
+      {onPurchase ? (
+        <Pressable
+          accessibilityRole="button"
+          accessibilityLabel={
+            paid ? "Start marketplace checkout" : "Get marketplace item"
+          }
+          disabled={purchasing}
+          onPress={onPurchase}
+          style={[styles.purchaseButton, purchasing && styles.purchaseButtonDisabled]}
+        >
+          {purchasing ? (
+            <ActivityIndicator color="#FFFFFF" />
+          ) : (
+            <Text style={styles.purchaseText}>
+              {paid ? "Start Checkout" : "Get Item"}
+            </Text>
+          )}
+        </Pressable>
       ) : null}
       <Text style={styles.meta}>Status: {item?.status || "available"}</Text>
     </View>
@@ -280,5 +351,17 @@ const styles = StyleSheet.create({
   emptyState: { alignItems: "center", justifyContent: "center", minHeight: 200, gap: 8 },
   emptyText: { fontSize: 16, color: "#64748B", fontWeight: "700" },
   detail: { gap: 8 },
-  detailBody: { color: "#334155", lineHeight: 21, marginTop: 8 }
+  detailBody: { color: "#334155", lineHeight: 21, marginTop: 8 },
+  purchaseButton: {
+    alignItems: "center",
+    backgroundColor: "#166534",
+    borderRadius: 8,
+    justifyContent: "center",
+    marginTop: 12,
+    minHeight: 44,
+    paddingHorizontal: 14,
+    paddingVertical: 11
+  },
+  purchaseButtonDisabled: { opacity: 0.6 },
+  purchaseText: { color: "#FFFFFF", fontWeight: "900" }
 });
