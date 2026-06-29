@@ -1005,6 +1005,7 @@ export default function DewPointGuardTool() {
               </Text>
             </Pressable>
             <Pressable
+              testID="dpg-create-pulse-source"
               onPress={createPulseSourceInline}
               disabled={
                 creatingSource ||
@@ -1038,8 +1039,10 @@ export default function DewPointGuardTool() {
               value={pulseApiKey}
               onChangeText={setPulseApiKey}
               keyboardType="default"
+              testID="dpg-pulse-api-key"
             />
             <Pressable
+              testID="dpg-pulse-verify-devices"
               onPress={verifyPulseAndLoadDevices}
               disabled={verifyingPulse || loadingPulseDevices}
               style={{
@@ -1064,6 +1067,7 @@ export default function DewPointGuardTool() {
             {pulseDevices.length
               ? pulseDevices.map((d) => (
                   <Pressable
+                    testID={`dpg-pulse-device-${String(d.id)}`}
                     key={String(d.id)}
                     onPress={() => setSelectedPulseDeviceId(String(d.id))}
                     style={{

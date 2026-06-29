@@ -62,10 +62,29 @@ describe("Dew Point Guard CSV flow", () => {
       points: []
     });
 
-    mockBulkIngestTelemetryPoints.mockResolvedValue({ ingested: 3, updated: 0, skipped: 0 });
-    mockPullPulseWindow.mockResolvedValue({ sourceId: "s-upload", pulled: 0, updated: 0, startIso: "", endIso: "" });
+    mockBulkIngestTelemetryPoints.mockResolvedValue({
+      ingested: 3,
+      updated: 0,
+      skipped: 0
+    });
+    mockPullPulseWindow.mockResolvedValue({
+      sourceId: "s-upload",
+      pulled: 0,
+      updated: 0,
+      startIso: "",
+      endIso: ""
+    });
     mockVerifyPulseApiKey.mockResolvedValue({ ok: true });
     mockListPulseDevices.mockResolvedValue([]);
+    mockCreateTelemetrySource.mockResolvedValue({
+      id: "s-pulse",
+      growId: "g1",
+      type: "pulse",
+      name: "Pulse Flower Room",
+      timezone: "America/New_York",
+      isActive: true,
+      config: { pulse: { deviceId: "pulse-1" } }
+    });
   });
 
   it("parses pasted CSV, maps columns, ingests, and refreshes window", async () => {
@@ -109,5 +128,38 @@ describe("Dew Point Guard CSV flow", () => {
     expect(call.points[2].ts).toBe("2026-02-27T05:20:00.000Z");
 
     await waitFor(() => expect(mockGetTelemetryPoints).toHaveBeenCalled());
+  });
+
+  it("verifies Pulse credentials, loads devices, and creates a Pulse telemetry source", async () => {
+    mockListPulseDevices.mockResolvedValue([
+      { id: "pulse-1", name: "Flower Room", model: "Pulse Pro" }
+    ]);
+
+    const { getByTestId, getByText } = render(<DewPointGuard />);
+
+    fireEvent.press(getByTestId("dpg-mode-source"));
+    fireEvent.changeText(getByTestId("dpg-pulse-api-key"), "PULSE-SECRET");
+    fireEvent.press(getByTestId("dpg-pulse-verify-devices"));
+
+    await waitFor(() =>
+      expect(mockVerifyPulseApiKey).toHaveBeenCalledWith("PULSE-SECRET")
+    );
+    await waitFor(() =>
+      expect(mockListPulseDevices).toHaveBeenCalledWith("PULSE-SECRET")
+    );
+    await waitFor(() => expect(getByText("Flower Room")).toBeTruthy());
+
+    fireEvent.press(getByTestId("dpg-pulse-device-pulse-1"));
+    fireEvent.press(getByTestId("dpg-create-pulse-source"));
+
+    await waitFor(() =>
+      expect(mockCreateTelemetrySource).toHaveBeenCalledWith({
+        growId: "g1",
+        type: "pulse",
+        name: "Pulse Flower Room",
+        timezone: "America/New_York",
+        config: { pulse: { apiKey: "PULSE-SECRET", deviceId: "pulse-1" } }
+      })
+    );
   });
 });
