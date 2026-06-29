@@ -320,6 +320,50 @@ export default function FacilityComplianceTab() {
             </View>
 
             <View style={styles.card}>
+              <Text style={styles.cardTitle}>Inspection workflow</Text>
+              <Text style={styles.muted}>
+                Use the current compliance counts to export evidence, run AI readiness,
+                and keep SOP run proof current.
+              </Text>
+              <View style={styles.actionGrid}>
+                <Pressable
+                  accessibilityRole="button"
+                  accessibilityLabel="Open compliance export reports"
+                  onPress={() => router.push("/home/facility/reports" as any)}
+                  style={styles.actionBtn}
+                >
+                  <Text style={styles.actionText}>Export packet</Text>
+                </Pressable>
+                <Pressable
+                  accessibilityRole="button"
+                  accessibilityLabel="Open AI inspection readiness"
+                  onPress={() =>
+                    router.push("/home/facility/ai-ask?preset=compliance" as any)
+                  }
+                  style={styles.actionBtn}
+                >
+                  <Text style={styles.actionText}>AI readiness</Text>
+                </Pressable>
+                <Pressable
+                  accessibilityRole="button"
+                  accessibilityLabel="Open SOP runs"
+                  onPress={() => router.push("/home/facility/sop-runs" as any)}
+                  style={styles.actionBtn}
+                >
+                  <Text style={styles.actionText}>SOP runs</Text>
+                </Pressable>
+                <Pressable
+                  accessibilityRole="button"
+                  accessibilityLabel="Start new SOP run"
+                  onPress={() => router.push("/home/facility/sop-runs/start" as any)}
+                  style={styles.actionBtn}
+                >
+                  <Text style={styles.actionText}>Start SOP run</Text>
+                </Pressable>
+              </View>
+            </View>
+
+            <View style={styles.card}>
               <Text style={styles.cardTitle}>Create Deviation</Text>
               {!canWriteCompliance ? (
                 <Text style={styles.muted}>
@@ -481,12 +525,31 @@ export default function FacilityComplianceTab() {
                 </View>
               ) : null}
               {sops.length ? (
-                sops.slice(0, 8).map((sop) => (
-                  <View key={rowId(sop) || sop.title} style={styles.row}>
-                    <Text style={styles.rowTitle}>{sop.title || "SOP"}</Text>
-                    <Text style={styles.rowMeta}>Version {sop.version || 1}</Text>
-                  </View>
-                ))
+                sops.slice(0, 8).map((sop) => {
+                  const id = rowId(sop);
+                  const title = sop.title || "SOP";
+                  return (
+                    <View key={id || title} style={styles.row}>
+                      <Text style={styles.rowTitle}>{title}</Text>
+                      <Text style={styles.rowMeta}>Version {sop.version || 1}</Text>
+                      {id ? (
+                        <Pressable
+                          accessibilityRole="button"
+                          accessibilityLabel={`Start SOP run from ${title}`}
+                          onPress={() =>
+                            router.push({
+                              pathname: "/home/facility/sop-runs/start",
+                              params: { templateId: id, templateTitle: title }
+                            } as any)
+                          }
+                          style={styles.secondaryBtn}
+                        >
+                          <Text style={styles.secondaryText}>Start run</Text>
+                        </Pressable>
+                      ) : null}
+                    </View>
+                  );
+                })
               ) : (
                 <Text style={styles.muted}>No SOP templates yet.</Text>
               )}
@@ -554,6 +617,14 @@ const styles = StyleSheet.create({
   },
   cardHeader: { flexDirection: "row", justifyContent: "space-between", gap: 12 },
   cardTitle: { fontSize: 16, fontWeight: "900" },
+  actionGrid: { flexDirection: "row", flexWrap: "wrap", gap: 8 },
+  actionBtn: {
+    backgroundColor: "#0f172a",
+    borderRadius: 10,
+    paddingHorizontal: 12,
+    paddingVertical: 10
+  },
+  actionText: { color: "white", fontWeight: "900" },
   form: { gap: 8 },
   input: {
     borderWidth: 1,
