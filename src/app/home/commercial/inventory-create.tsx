@@ -10,6 +10,11 @@ export default function CommercialInventoryCreateRoute() {
   const [name, setName] = useState("");
   const [sku, setSku] = useState("");
   const [qty, setQty] = useState("0");
+  const [unit, setUnit] = useState("ea");
+  const [reorderPoint, setReorderPoint] = useState("");
+  const [vendor, setVendor] = useState("");
+  const [category, setCategory] = useState("");
+  const [notes, setNotes] = useState("");
   const [saving, setSaving] = useState(false);
 
   const path = useMemo(
@@ -24,6 +29,9 @@ export default function CommercialInventoryCreateRoute() {
 
   const create = async () => {
     if (!canSave) return;
+    const quantityNumber = Number(qty);
+    const reorderPointNumber = Number(reorderPoint);
+
     setSaving(true);
     try {
       await apiRequest(path, {
@@ -31,7 +39,15 @@ export default function CommercialInventoryCreateRoute() {
         body: {
           name: name.trim(),
           sku: sku.trim() || undefined,
-          quantity: Number(qty) || 0
+          quantity: Number.isFinite(quantityNumber) ? quantityNumber : 0,
+          unit: unit.trim() || "ea",
+          reorderPoint:
+            reorderPoint.trim() && Number.isFinite(reorderPointNumber)
+              ? reorderPointNumber
+              : 0,
+          vendor: vendor.trim() || undefined,
+          category: category.trim() || undefined,
+          notes: notes.trim() || undefined
         }
       });
       router.replace("/home/commercial/inventory");
@@ -48,25 +64,67 @@ export default function CommercialInventoryCreateRoute() {
       <TextInput
         value={name}
         onChangeText={setName}
+        accessibilityLabel="Commercial inventory item name"
         placeholder="Name"
         style={styles.input}
       />
       <TextInput
         value={sku}
         onChangeText={setSku}
+        accessibilityLabel="Commercial inventory item SKU"
         placeholder="SKU (optional)"
         style={styles.input}
       />
       <TextInput
         value={qty}
         onChangeText={setQty}
+        accessibilityLabel="Commercial inventory item quantity"
         placeholder="Quantity"
         keyboardType="numeric"
         style={styles.input}
       />
+      <TextInput
+        value={unit}
+        onChangeText={setUnit}
+        accessibilityLabel="Commercial inventory item unit"
+        placeholder="Unit"
+        style={styles.input}
+      />
+      <TextInput
+        value={reorderPoint}
+        onChangeText={setReorderPoint}
+        accessibilityLabel="Commercial inventory item reorder point"
+        placeholder="Reorder point"
+        keyboardType="numeric"
+        style={styles.input}
+      />
+      <TextInput
+        value={vendor}
+        onChangeText={setVendor}
+        accessibilityLabel="Commercial inventory item vendor"
+        placeholder="Vendor"
+        style={styles.input}
+      />
+      <TextInput
+        value={category}
+        onChangeText={setCategory}
+        accessibilityLabel="Commercial inventory item category"
+        placeholder="Category"
+        style={styles.input}
+      />
+      <TextInput
+        value={notes}
+        onChangeText={setNotes}
+        accessibilityLabel="Commercial inventory item notes"
+        placeholder="Notes"
+        multiline
+        style={[styles.input, styles.notesInput]}
+      />
       <Pressable
         onPress={create}
         disabled={!canSave}
+        accessibilityRole="button"
+        accessibilityLabel="Create commercial inventory item"
         style={[styles.button, !canSave && styles.disabled]}
       >
         <Text style={styles.buttonText}>{saving ? "Saving..." : "Create Item"}</Text>
@@ -85,6 +143,7 @@ const styles = StyleSheet.create({
     paddingHorizontal: 12,
     paddingVertical: 10
   },
+  notesInput: { minHeight: 78, textAlignVertical: "top" },
   button: {
     marginTop: 6,
     backgroundColor: "#2563eb",

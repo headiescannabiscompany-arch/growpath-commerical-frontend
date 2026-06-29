@@ -9,6 +9,7 @@ import {
   TouchableOpacity,
   View
 } from "react-native";
+import { useFocusEffect } from "@react-navigation/native";
 import { useRouter } from "expo-router";
 
 import { ScreenBoundary } from "@/components/ScreenBoundary";
@@ -38,15 +39,35 @@ function pickTitle(x: AnyRec): string {
 }
 
 function pickSubtitle(x: AnyRec): string {
-  const qty = x?.qty ?? x?.quantity ?? x?.onHand ?? x?.count;
+  const qty = quantityOf(x);
   const unit = x?.unit ?? x?.uom ?? "";
   const cat = x?.category ?? x?.type ?? "";
-  const a =
-    qty !== undefined && qty !== null
-      ? `On hand: ${String(qty)}${unit ? ` ${unit}` : ""}`
-      : "";
+  const a = `On hand: ${String(qty)}${unit ? ` ${unit}` : ""}`;
   const b = cat ? `Category: ${String(cat)}` : "";
   return [a, b].filter(Boolean).join(" -  ");
+}
+
+function quantityOf(x: AnyRec): number {
+  const value = x?.qty ?? x?.quantity ?? x?.onHand ?? x?.count ?? 0;
+  const number = Number(value);
+  return Number.isFinite(number) ? number : 0;
+}
+
+function reorderPointOf(x: AnyRec): number {
+  const number = Number(x?.reorderPoint ?? 0);
+  return Number.isFinite(number) ? number : 0;
+}
+
+function stockStatus(x: AnyRec): "out" | "low" | "ok" {
+  const explicit = String(x?.status || "").toLowerCase();
+  if (explicit === "out_of_stock") return "out";
+  if (explicit === "low_stock") return "low";
+
+  const quantity = quantityOf(x);
+  const reorderPoint = reorderPointOf(x);
+  if (quantity <= 0) return "out";
+  if (reorderPoint > 0 && quantity <= reorderPoint) return "low";
+  return "ok";
 }
 
 export default function CommercialInventoryRoute() {
@@ -100,6 +121,22 @@ export default function CommercialInventoryRoute() {
     load();
   }, [ent?.ready, ent?.mode, load, router]);
 
+  useFocusEffect(
+    useCallback(() => {
+      if (ent?.ready && ent.mode === "commercial") {
+        void load({ refresh: true });
+      }
+    }, [ent?.ready, ent?.mode, load])
+  );
+
+  const sorted = useMemo(() => {
+    const rank = { out: 0, low: 1, ok: 2 } as const;
+    return [...items].sort((a, b) => rank[stockStatus(a)] - rank[stockStatus(b)]);
+  }, [items]);
+  const outOfStock = items.filter((item) => stockStatus(item) === "out").length;
+  const lowStock = items.filter((item) => stockStatus(item) === "low").length;
+  const totalQuantity = items.reduce((sum, item) => sum + quantityOf(item), 0);
+
   if (!ent?.ready) return null;
   if (ent.mode !== "commercial") return null;
 
@@ -130,8 +167,27 @@ export default function CommercialInventoryRoute() {
           </View>
         ) : null}
 
+        <View style={styles.summaryCard}>
+          <View>
+            <Text style={[styles.summaryValue, outOfStock ? styles.dangerText : null]}>
+              {outOfStock}
+            </Text>
+            <Text style={styles.summaryLabel}>out of stock</Text>
+          </View>
+          <View>
+            <Text style={[styles.summaryValue, lowStock ? styles.warnText : null]}>
+              {lowStock}
+            </Text>
+            <Text style={styles.summaryLabel}>low stock</Text>
+          </View>
+          <View>
+            <Text style={styles.summaryValue}>{totalQuantity}</Text>
+            <Text style={styles.summaryLabel}>units on hand</Text>
+          </View>
+        </View>
+
         <FlatList
-          data={items}
+          data={sorted}
           keyExtractor={(it, idx) => pickId(it) || String(idx)}
           refreshControl={
             <RefreshControl
@@ -154,9 +210,12 @@ export default function CommercialInventoryRoute() {
             const id = pickId(item);
             const title = pickTitle(item);
             const subtitle = pickSubtitle(item);
+            const status = stockStatus(item);
 
             return (
               <Pressable
+                accessibilityRole="button"
+                accessibilityLabel={`Open commercial inventory item ${title}`}
                 onPress={() => {
                   if (!id) return;
                   router.push({
@@ -175,6 +234,22 @@ export default function CommercialInventoryRoute() {
                       {subtitle}
                     </Text>
                   ) : null}
+                  <View style={styles.badgeRow}>
+                    <Text
+                      style={[
+                        styles.badge,
+                        status === "ok" && styles.badgeOk,
+                        status === "low" && styles.badgeWarn,
+                        status === "out" && styles.badgeDanger
+                      ]}
+                    >
+                      {status === "ok"
+                        ? "stock ok"
+                        : status === "low"
+                          ? "low stock"
+                          : "out of stock"}
+                    </Text>
+                  </View>
                 </View>
                 <Text style={styles.chev}>{">"}</Text>
               </Pressable>
@@ -209,6 +284,21 @@ const styles = StyleSheet.create({
 
   loading: { paddingVertical: 18, alignItems: "center", gap: 10 },
 
+  summaryCard: {
+    borderWidth: 1,
+    borderColor: "#dbeafe",
+    borderRadius: 12,
+    padding: 12,
+    backgroundColor: "#eff6ff",
+    flexDirection: "row",
+    flexWrap: "wrap",
+    gap: 16
+  },
+  summaryValue: { color: "#1e3a8a", fontSize: 20, fontWeight: "900" },
+  summaryLabel: { color: "#1e40af", fontSize: 12, fontWeight: "800" },
+  warnText: { color: "#b45309" },
+  dangerText: { color: "#991b1b" },
+
   list: { paddingVertical: 6, gap: 10 },
 
   row: {
@@ -224,6 +314,18 @@ const styles = StyleSheet.create({
   rowPressed: { opacity: 0.85 },
   rowTitle: { fontSize: 16, fontWeight: "800" },
   rowSub: { opacity: 0.7 },
+  badgeRow: { flexDirection: "row", flexWrap: "wrap", gap: 8, marginTop: 4 },
+  badge: {
+    borderRadius: 999,
+    overflow: "hidden",
+    paddingHorizontal: 8,
+    paddingVertical: 3,
+    fontSize: 12,
+    fontWeight: "900"
+  },
+  badgeOk: { color: "#065f46", backgroundColor: "#d1fae5" },
+  badgeWarn: { color: "#92400e", backgroundColor: "#fef3c7" },
+  badgeDanger: { color: "#991b1b", backgroundColor: "#fee2e2" },
   chev: { fontSize: 22, opacity: 0.5, paddingLeft: 8 },
 
   empty: { paddingVertical: 26, alignItems: "center", gap: 8 },
