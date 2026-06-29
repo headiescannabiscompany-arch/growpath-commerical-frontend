@@ -1,5 +1,5 @@
 import React from "react";
-import { Tabs, Redirect } from "expo-router";
+import { Tabs, Redirect, usePathname } from "expo-router";
 import { ActivityIndicator, View } from "react-native";
 
 import { useEntitlements } from "@/entitlements";
@@ -8,6 +8,12 @@ import { useFacility } from "@/state/useFacility";
 export default function FacilityTabsLayout() {
   const ent = useEntitlements();
   const { selectedId } = useFacility();
+  const pathname = usePathname();
+  const hideTabBar =
+    pathname.includes("/ai-ask") ||
+    pathname.includes("/ai-diagnosis-photo") ||
+    pathname.includes("/ai-template") ||
+    pathname.includes("/ai-validation");
 
   if (!ent?.ready) {
     return (
@@ -30,7 +36,8 @@ export default function FacilityTabsLayout() {
       screenOptions={{
         headerShown: true,
         tabBarHideOnKeyboard: true,
-        tabBarIcon: () => null
+        tabBarIcon: () => null,
+        tabBarStyle: hideTabBar ? { display: "none" } : undefined
       }}
     >
       <Tabs.Screen name="dashboard" options={{ title: "Dashboard" }} />

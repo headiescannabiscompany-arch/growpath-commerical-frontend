@@ -14,30 +14,94 @@ export default function TrichomeAnalysisScreen({
   const { callAI, loading, error, last } = useAICall(facilityId);
   const [imageUrl, setImageUrl] = useState("");
   const [notes, setNotes] = useState("");
+  const [daysSinceFlip, setDaysSinceFlip] = useState("65");
+  const [clear, setClear] = useState("0.2");
+  const [cloudy, setCloudy] = useState("0.7");
+  const [amber, setAmber] = useState("0.1");
 
   const canRun = useMemo(
-    () => !!facilityId && !!growId && imageUrl.trim().length > 0,
-    [facilityId, growId, imageUrl]
+    () => !!facilityId && !!growId && Number.isFinite(Number(daysSinceFlip)),
+    [daysSinceFlip, facilityId, growId]
   );
 
   const runAnalysis = async () => {
     if (!canRun) return;
     await callAI({
       tool: "harvest",
-      fn: "analyzeTrichomes",
-      args: { images: [imageUrl.trim()], notes: notes.trim() || undefined },
+      fn: "estimateHarvestWindow",
+      args: {
+        daysSinceFlip: Number(daysSinceFlip),
+        goal: "balanced",
+        distribution: {
+          clear: Number(clear) || 0,
+          cloudy: Number(cloudy) || 0,
+          amber: Number(amber) || 0
+        },
+        imageUrl: imageUrl.trim() || undefined,
+        notes: notes.trim() || undefined
+      },
       context: { growId }
     });
   };
 
   return (
     <ScrollView contentContainerStyle={styles.container}>
-      <Text style={styles.h1}>Analyze Trichomes</Text>
-      <Text style={styles.sub}>Submit trichome imagery for harvest signal analysis.</Text>
+      <Text style={styles.h1}>Trichome Harvest Estimate</Text>
+      <Text style={styles.sub}>
+        Estimate harvest timing from trichome distribution and optional photo context.
+      </Text>
 
       <View style={styles.card}>
-        <Text style={styles.label}>Image URL</Text>
+        <Text style={styles.label}>Days since flip</Text>
         <TextInput
+          accessibilityLabel="Trichome days since flip"
+          value={daysSinceFlip}
+          onChangeText={setDaysSinceFlip}
+          keyboardType="numeric"
+          style={styles.input}
+          placeholder="65"
+        />
+
+        <Text style={[styles.label, { marginTop: 12 }]}>Trichome distribution</Text>
+        <View style={styles.row}>
+          <View style={styles.col}>
+            <Text style={styles.small}>Clear</Text>
+            <TextInput
+              accessibilityLabel="Clear trichome ratio"
+              value={clear}
+              onChangeText={setClear}
+              keyboardType="numeric"
+              style={styles.inputSm}
+              placeholder="0.2"
+            />
+          </View>
+          <View style={styles.col}>
+            <Text style={styles.small}>Cloudy</Text>
+            <TextInput
+              accessibilityLabel="Cloudy trichome ratio"
+              value={cloudy}
+              onChangeText={setCloudy}
+              keyboardType="numeric"
+              style={styles.inputSm}
+              placeholder="0.7"
+            />
+          </View>
+          <View style={styles.col}>
+            <Text style={styles.small}>Amber</Text>
+            <TextInput
+              accessibilityLabel="Amber trichome ratio"
+              value={amber}
+              onChangeText={setAmber}
+              keyboardType="numeric"
+              style={styles.inputSm}
+              placeholder="0.1"
+            />
+          </View>
+        </View>
+
+        <Text style={[styles.label, { marginTop: 12 }]}>Image URL (optional)</Text>
+        <TextInput
+          accessibilityLabel="Trichome image URL"
           value={imageUrl}
           onChangeText={setImageUrl}
           style={styles.input}
@@ -47,6 +111,7 @@ export default function TrichomeAnalysisScreen({
 
         <Text style={[styles.label, { marginTop: 12 }]}>Notes (optional)</Text>
         <TextInput
+          accessibilityLabel="Trichome analysis notes"
           value={notes}
           onChangeText={setNotes}
           style={[styles.input, { minHeight: 80 }]}
@@ -57,9 +122,12 @@ export default function TrichomeAnalysisScreen({
         <Pressable
           onPress={runAnalysis}
           disabled={!canRun || loading}
+          accessibilityLabel="Estimate trichome harvest window"
           style={[styles.cta, (!canRun || loading) && styles.ctaDisabled]}
         >
-          <Text style={styles.ctaText}>{loading ? "Analyzing..." : "Analyze"}</Text>
+          <Text style={styles.ctaText}>
+            {loading ? "Estimating..." : "Estimate Harvest Window"}
+          </Text>
         </Pressable>
 
         {!!error && (
@@ -69,7 +137,9 @@ export default function TrichomeAnalysisScreen({
         )}
       </View>
 
-      {!!last?.data && <AIResultCard title="Trichome Analysis" data={last.data as any} />}
+      {!!last?.data && (
+        <AIResultCard title="Trichome Harvest Estimate" data={last.data as any} />
+      )}
     </ScrollView>
   );
 }
@@ -87,12 +157,23 @@ const styles = StyleSheet.create({
     backgroundColor: "#fff"
   },
   label: { fontWeight: "700", fontSize: 14, marginBottom: 4 },
+  small: { fontSize: 12, opacity: 0.7, marginBottom: 4 },
+  row: { flexDirection: "row", flexWrap: "wrap", gap: 8 },
+  col: { gap: 0 },
   input: {
     borderWidth: 1,
     borderColor: "#E5E7EB",
     borderRadius: 10,
     padding: 10,
     fontSize: 14
+  },
+  inputSm: {
+    borderWidth: 1,
+    borderColor: "#E5E7EB",
+    borderRadius: 10,
+    minWidth: 82,
+    padding: 10,
+    fontSize: 13
   },
   cta: {
     marginTop: 10,
