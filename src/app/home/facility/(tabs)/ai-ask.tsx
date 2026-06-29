@@ -100,6 +100,19 @@ const PRESETS: Preset[] = [
       "Score flower-zone risk from humidity, wet windows, canopy density, and airflow."
   },
   {
+    key: "delivered-npk",
+    title: "Delivered NPK",
+    audience: "Cultivation / fertigation",
+    tool: "nutrients",
+    fn: "computeDeliveredNPK",
+    args: {
+      volume: 10,
+      volumeUnit: "L",
+      products: [{ name: "Base", amount: 10, unit: "g", N: 10, P: 10, K: 10 }]
+    },
+    summary: "Convert product labels and dose amounts into delivered elemental ppm."
+  },
+  {
     key: "harvest",
     title: "Harvest window",
     audience: "Cultivation",
