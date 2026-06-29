@@ -217,6 +217,7 @@ function applyPlanCapabilities(
     normalized[CAPABILITY_KEYS.COMMERCIAL_TASKS_VIEW] = true;
     normalized[CAPABILITY_KEYS.COMMERCIAL_FEED_VIEW] = true;
     normalized[CAPABILITY_KEYS.COMMERCIAL_ALERTS_VIEW] = true;
+    normalized[CAPABILITY_KEYS.STORE_FRONT_VIEW] = true;
   }
 }
 

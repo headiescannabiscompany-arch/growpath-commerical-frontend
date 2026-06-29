@@ -10,9 +10,15 @@ export type AppCardProps = {
   onPress?: () => void;
 };
 
-export default function AppCard({ title, subtitle, children, onPress }: AppCardProps) {
+export default function AppCard({
+  title,
+  subtitle,
+  children,
+  onPress,
+  style
+}: AppCardProps) {
   const Inner = (
-    <View style={styles.card}>
+    <View style={[styles.card, style]}>
       {!!title && <Text style={styles.title}>{title}</Text>}
       {!!subtitle && <Text style={styles.subtitle}>{subtitle}</Text>}
       {!!children && (

@@ -1,66 +1,40 @@
 import { Redirect, Link } from "expo-router";
 import React from "react";
 import { View, Text, StyleSheet } from "react-native";
+
+import AppCard from "@/components/layout/AppCard";
+import AppPage from "@/components/layout/AppPage";
 import { useAuth } from "@/auth/AuthContext";
 import { useEntitlements } from "@/entitlements";
 import { useFacility } from "@/facility/FacilityProvider";
-import AppPage from "@/components/layout/AppPage";
-import AppCard from "@/components/layout/AppCard";
 import { canAccessRoute } from "@/navigation/routeAccess";
 
-const styles = StyleSheet.create({
-  headerTitle: {
-    fontSize: 28,
-    fontWeight: "700",
-    marginBottom: 4
-  },
-  headerSubtitle: {
-    fontSize: 14,
-    color: "#64748B"
-  },
-  section: {
-    gap: 12
-  },
-  sectionTitle: {
-    fontSize: 18,
-    fontWeight: "700",
-    color: "#0F172A"
-  },
-  cardTitle: {
-    fontSize: 16,
-    fontWeight: "700",
-    marginBottom: 6
-  },
-  cardDesc: {
-    fontSize: 14,
-    color: "#475569",
-    marginBottom: 10
-  },
-  link: {
-    fontSize: 14,
-    fontWeight: "700",
-    color: "#2563EB"
-  },
-  warningCard: {
-    backgroundColor: "#FEF3C7",
-    borderColor: "#F59E0B"
-  }
-});
+type ActionCardProps = {
+  title: string;
+  description: string;
+  href?: string;
+  status?: string;
+};
 
-/**
- * Commercial Home Screen
- *
- * Landing page for commercial mode users (brands, sellers, marketers).
- * Shows brand dashboard, campaigns, offers, storefront management.
- *
- * Users navigate from here to:
- * - /feed → Commercial feed
- * - /campaigns → Marketing campaigns
- * - /offers → Offers management
- * - /storefront → Storefront settings
- * - /courses → Create/sell courses
- * - /profile → Account settings
- */
+function ActionCard({ title, description, href, status }: ActionCardProps) {
+  return (
+    <AppCard style={!href ? styles.disabledCard : undefined}>
+      <View style={styles.cardHeader}>
+        <Text style={styles.cardTitle}>{title}</Text>
+        {status ? <Text style={styles.statusPill}>{status}</Text> : null}
+      </View>
+      <Text style={styles.cardDesc}>{description}</Text>
+      {href ? (
+        <Link href={href as any} asChild>
+          <Text style={styles.link}>Open {title}</Text>
+        </Link>
+      ) : (
+        <Text style={styles.disabledText}>Queued for buildout</Text>
+      )}
+    </AppCard>
+  );
+}
+
 export default function CommercialHome() {
   const auth = useAuth();
   const ent = useEntitlements();
@@ -85,7 +59,7 @@ export default function CommercialHome() {
         <View>
           <Text style={styles.headerTitle}>Brand Dashboard</Text>
           <Text style={styles.headerSubtitle}>
-            {auth.user?.email} · {plan} plan
+            {auth.user?.email} | {plan} plan
           </Text>
           {facility.selectedId ? (
             <Text style={styles.headerSubtitle}>
@@ -98,133 +72,140 @@ export default function CommercialHome() {
     >
       {!facility.selectedId && facility.facilities.length > 0 ? (
         <View style={styles.section}>
-          <Text style={styles.sectionTitle}>⚠️ Action Required</Text>
+          <Text style={styles.sectionTitle}>Action Required</Text>
           <AppCard style={styles.warningCard}>
             <Text style={styles.cardTitle}>Select a Facility</Text>
             <Text style={styles.cardDesc}>
-              You have access to facilities. Select one to manage.
+              You have access to facilities. Select one to manage facility-specific work.
             </Text>
-
             <Link href="/facilities" asChild>
-              <Text style={styles.link}>Select Facility →</Text>
+              <Text style={styles.link}>Select Facility</Text>
             </Link>
           </AppCard>
         </View>
       ) : null}
 
       <View style={styles.section}>
-        <Text style={styles.sectionTitle}>Marketing & Sales</Text>
-
-        {canOpen("/feed") ? (
-          <AppCard>
-            <Text style={styles.cardTitle}>📱 Feed</Text>
-            <Text style={styles.cardDesc}>
-              Your brand{"'"}s content feed, engagement, and reach
-            </Text>
-
-            <Link href="/feed" asChild>
-              <Text style={styles.link}>View Feed →</Text>
-            </Link>
-          </AppCard>
-        ) : null}
-
-        {canOpen("/campaigns") ? (
-          <AppCard>
-            <Text style={styles.cardTitle}>🎯 Campaigns</Text>
-            <Text style={styles.cardDesc}>Create and manage marketing campaigns</Text>
-
-            <Link href="/campaigns" asChild>
-              <Text style={styles.link}>Manage Campaigns →</Text>
-            </Link>
-          </AppCard>
-        ) : null}
-
-        {canOpen("/offers") ? (
-          <AppCard>
-            <Text style={styles.cardTitle}>💰 Offers</Text>
-            <Text style={styles.cardDesc}>Special offers, promotions, and deals</Text>
-
-            <Link href="/offers" asChild>
-              <Text style={styles.link}>Manage Offers →</Text>
-            </Link>
-          </AppCard>
-        ) : null}
-      </View>
-
-      <View style={styles.section}>
         <Text style={styles.sectionTitle}>Commerce</Text>
-
-        {canOpen("/storefront") ? (
-          <AppCard>
-            <Text style={styles.cardTitle}>🏪 Storefront</Text>
-            <Text style={styles.cardDesc}>
-              Manage your online storefront and product listings
-            </Text>
-
-            <Link href="/storefront" asChild>
-              <Text style={styles.link}>Manage Storefront →</Text>
-            </Link>
-          </AppCard>
-        ) : null}
-
-        {canOpen("/orders") ? (
-          <AppCard>
-            <Text style={styles.cardTitle}>📦 Orders</Text>
-            <Text style={styles.cardDesc}>
-              Track orders, fulfillment, and customer interactions
-            </Text>
-
-            <Link href="/orders" asChild>
-              <Text style={styles.link}>View Orders →</Text>
-            </Link>
-          </AppCard>
-        ) : null}
-
         {canOpen("/home/commercial/inventory") ? (
-          <AppCard>
-            <Text style={styles.cardTitle}>📊 Inventory</Text>
-            <Text style={styles.cardDesc}>Manage product inventory and stock levels</Text>
-
-            <Link href="/home/commercial/inventory" asChild>
-              <Text style={styles.link}>Manage Inventory →</Text>
-            </Link>
-          </AppCard>
+          <ActionCard
+            title="Inventory"
+            description="Track stock, reorder points, vendors, categories, and item status."
+            href="/home/commercial/inventory"
+            status="Live"
+          />
         ) : null}
+        {canOpen("/storefront") ? (
+          <ActionCard
+            title="Storefront"
+            description="Manage public storefront settings and product listings."
+            href="/storefront"
+            status="Live"
+          />
+        ) : null}
+        <ActionCard
+          title="Orders"
+          description="Fulfillment views are backed by the API and are next in the UI queue."
+        />
       </View>
 
       <View style={styles.section}>
-        <Text style={styles.sectionTitle}>Content & Community</Text>
-
-        <AppCard>
-          <Text style={styles.cardTitle}>📚 Courses</Text>
-          <Text style={styles.cardDesc}>Create and sell educational courses</Text>
-
-          <Link href="/courses" asChild>
-            <Text style={styles.link}>Manage Courses →</Text>
-          </Link>
-        </AppCard>
-
-        <AppCard>
-          <Text style={styles.cardTitle}>👥 Communities</Text>
-          <Text style={styles.cardDesc}>Build and manage brand communities</Text>
-
-          <Link href="/communities" asChild>
-            <Text style={styles.link}>Manage Communities →</Text>
-          </Link>
-        </AppCard>
+        <Text style={styles.sectionTitle}>Marketing & Community</Text>
+        {canOpen("/feed") ? (
+          <ActionCard
+            title="Feed"
+            description="Publish updates, listings, ISO requests, drops, questions, and education."
+            href="/feed"
+            status="Live"
+          />
+        ) : null}
+        <ActionCard
+          title="Campaigns"
+          description="Campaign management endpoints exist and need the next operator UI pass."
+        />
       </View>
 
       <View style={styles.section}>
-        <Text style={styles.sectionTitle}>Account</Text>
-        <AppCard>
-          <Text style={styles.cardTitle}>⚙️ Profile & Settings</Text>
-          <Text style={styles.cardDesc}>Account settings, team management, billing</Text>
-
-          <Link href="/profile" asChild>
-            <Text style={styles.link}>Open Profile →</Text>
-          </Link>
-        </AppCard>
+        <Text style={styles.sectionTitle}>Content & Account</Text>
+        <ActionCard
+          title="Courses"
+          description="Open the course catalog and commercial education surfaces."
+          href="/courses"
+          status="Live"
+        />
+        <ActionCard
+          title="Profile & Billing"
+          description="Manage account settings, workspace mode, and checkout state."
+          href="/profile"
+          status="Live"
+        />
       </View>
     </AppPage>
   );
 }
+
+const styles = StyleSheet.create({
+  headerTitle: {
+    fontSize: 28,
+    fontWeight: "800",
+    marginBottom: 4
+  },
+  headerSubtitle: {
+    fontSize: 14,
+    color: "#64748B"
+  },
+  section: {
+    gap: 12
+  },
+  sectionTitle: {
+    color: "#0F172A",
+    fontSize: 18,
+    fontWeight: "800"
+  },
+  cardHeader: {
+    alignItems: "center",
+    flexDirection: "row",
+    gap: 8,
+    justifyContent: "space-between"
+  },
+  cardTitle: {
+    color: "#0F172A",
+    fontSize: 16,
+    fontWeight: "800"
+  },
+  cardDesc: {
+    color: "#475569",
+    fontSize: 14,
+    lineHeight: 20,
+    marginTop: 6
+  },
+  link: {
+    color: "#2563EB",
+    fontSize: 14,
+    fontWeight: "800",
+    marginTop: 10
+  },
+  warningCard: {
+    backgroundColor: "#FEF3C7",
+    borderColor: "#F59E0B"
+  },
+  disabledCard: {
+    backgroundColor: "#F8FAFC"
+  },
+  disabledText: {
+    color: "#64748B",
+    fontSize: 13,
+    fontWeight: "800",
+    marginTop: 10
+  },
+  statusPill: {
+    backgroundColor: "#D1FAE5",
+    borderRadius: 999,
+    color: "#065F46",
+    fontSize: 12,
+    fontWeight: "900",
+    overflow: "hidden",
+    paddingHorizontal: 8,
+    paddingVertical: 3
+  }
+});
