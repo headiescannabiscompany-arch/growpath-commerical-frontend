@@ -12,6 +12,18 @@ export type FacilityComplianceExport = {
     maxRowsPerCollection?: number;
   };
   counts: Record<string, number>;
+  evidenceSummary?: {
+    sopRuns?: {
+      totalRuns: number;
+      completedRuns: number;
+      inProgressRuns: number;
+      totalSteps: number;
+      doneSteps: number;
+      skippedSteps: number;
+      pendingSteps: number;
+      runsMissingSteps: number;
+    };
+  };
   collections: Record<string, unknown>;
 };
 

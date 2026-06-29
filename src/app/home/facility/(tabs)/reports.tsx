@@ -44,6 +44,16 @@ type ExportSummary = {
   generatedAt: string;
   totalRecords: number;
   counts: Record<string, number>;
+  sopEvidence?: {
+    totalRuns: number;
+    completedRuns: number;
+    inProgressRuns: number;
+    totalSteps: number;
+    doneSteps: number;
+    skippedSteps: number;
+    pendingSteps: number;
+    runsMissingSteps: number;
+  };
 };
 
 function StatTile({
@@ -131,7 +141,8 @@ export default function FacilityReportsTab() {
         filename,
         generatedAt: packet.generatedAt,
         totalRecords,
-        counts
+        counts,
+        sopEvidence: packet.evidenceSummary?.sopRuns
       });
 
       if (typeof document !== "undefined") {
@@ -218,6 +229,36 @@ export default function FacilityReportsTab() {
                 />
               ))}
             </View>
+            {exportSummary.sopEvidence ? (
+              <View style={styles.evidencePanel}>
+                <Text style={styles.evidenceTitle}>SOP evidence readiness</Text>
+                <View style={styles.grid}>
+                  <StatTile
+                    label="Completed runs"
+                    value={exportSummary.sopEvidence.completedRuns}
+                    detail={`${exportSummary.sopEvidence.totalRuns} total`}
+                  />
+                  <StatTile
+                    label="Done steps"
+                    value={exportSummary.sopEvidence.doneSteps}
+                    detail={`${exportSummary.sopEvidence.totalSteps} total`}
+                  />
+                  <StatTile
+                    label="Skipped"
+                    value={exportSummary.sopEvidence.skippedSteps}
+                  />
+                  <StatTile
+                    label="Pending"
+                    value={exportSummary.sopEvidence.pendingSteps}
+                  />
+                  <StatTile
+                    label="Missing steps"
+                    value={exportSummary.sopEvidence.runsMissingSteps}
+                    detail="runs without checklist evidence"
+                  />
+                </View>
+              </View>
+            ) : null}
           </View>
         ) : null}
 
@@ -337,6 +378,13 @@ const styles = StyleSheet.create({
     fontSize: 12,
     fontWeight: "800"
   },
+  evidencePanel: {
+    borderTopColor: "rgba(0,0,0,0.08)",
+    borderTopWidth: 1,
+    marginTop: 12,
+    paddingTop: 12
+  },
+  evidenceTitle: { color: "#0f172a", fontWeight: "900", marginBottom: 10 },
   loading: { alignItems: "center", paddingVertical: 24 },
   card: {
     backgroundColor: "white",
