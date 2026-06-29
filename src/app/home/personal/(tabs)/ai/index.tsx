@@ -1,6 +1,8 @@
 import React, { useMemo, useState, useEffect } from "react";
 import { View, Text, StyleSheet, TextInput, Pressable, ScrollView } from "react-native";
+import { useRouter } from "expo-router";
 import { runTool } from "@/ai/toolRegistry";
+import { apiRequest } from "@/api/apiRequest";
 import { listPersonalGrows } from "@/api/grows";
 import { listPersonalLogs } from "@/api/logs";
 import { listPersonalTasks } from "@/api/tasks";
@@ -16,6 +18,23 @@ const styles = StyleSheet.create({
     marginBottom: 10,
     backgroundColor: "#F8FAFC"
   },
+  actionCard: {
+    padding: 12,
+    borderWidth: 1,
+    borderColor: "#BBF7D0",
+    borderRadius: 12,
+    marginBottom: 10,
+    backgroundColor: "#F0FDF4"
+  },
+  actionButton: {
+    alignSelf: "flex-start",
+    backgroundColor: "#166534",
+    borderRadius: 8,
+    marginTop: 6,
+    paddingHorizontal: 12,
+    paddingVertical: 8
+  },
+  actionButtonText: { color: "white", fontWeight: "800" },
   contextText: { fontSize: 12, color: "#64748B", marginBottom: 4 },
   contextTitle: { fontWeight: "700", color: "#0F172A" },
   msg: {
@@ -41,6 +60,7 @@ const styles = StyleSheet.create({
 });
 
 type Msg = { role: "user" | "assistant"; text: string };
+type AssistantAction = { label: string; href: string };
 
 interface ContextData {
   growCount: number;
@@ -174,13 +194,19 @@ function buildContextReply(text: string, context: ContextData | null) {
 }
 
 export default function AiScreen() {
+  const router = useRouter();
   const [draft, setDraft] = useState("");
   const [messages, setMessages] = useState<Msg[]>([
-    { role: "assistant", text: "Ask me something. Try: vpd 78f 60" }
+    {
+      role: "assistant",
+      text: "Ask about your next task, recent journal, diagnosis, dew point risk, feeding, watering, or try: vpd 78f 60"
+    }
   ]);
   const [context, setContext] = useState<ContextData | null>(null);
+  const [actions, setActions] = useState<AssistantAction[]>([]);
+  const [sending, setSending] = useState(false);
 
-  const canSend = useMemo(() => draft.trim().length > 0, [draft]);
+  const canSend = useMemo(() => draft.trim().length > 0 && !sending, [draft, sending]);
 
   // Fetch context (grows, logs, tasks) on mount
   useEffect(() => {
@@ -218,11 +244,40 @@ export default function AiScreen() {
     loadContext();
   }, []);
 
-  function send() {
+  async function askBackend(text: string) {
+    const res = await apiRequest<{
+      success: boolean;
+      reply?: string;
+      actions?: AssistantAction[];
+    }>("/api/ai/assistant/personal", {
+      method: "POST",
+      body: {
+        message: text,
+        context: context || {
+          growCount: 0,
+          logCount: 0,
+          taskCount: 0,
+          grows: [],
+          logs: [],
+          tasks: []
+        }
+      }
+    });
+
+    if (!res?.success || !res.reply) {
+      throw new Error("Personal assistant did not return a reply.");
+    }
+
+    setActions(Array.isArray(res.actions) ? res.actions : []);
+    return res.reply;
+  }
+
+  async function send() {
     const text = draft.trim();
-    if (!text) return;
+    if (!text || sending) return;
 
     setDraft("");
+    setSending(true);
     setMessages((m) => [...m, { role: "user", text }]);
 
     const cmd = parseVpdCommand(text);
@@ -243,13 +298,27 @@ export default function AiScreen() {
           { role: "assistant", text: `Error: ${res.error.message}` }
         ]);
       }
+      setSending(false);
       return;
     }
 
-    setMessages((m) => [
-      ...m,
-      { role: "assistant", text: buildContextReply(text, context) }
-    ]);
+    try {
+      const reply = await askBackend(text);
+      setMessages((m) => [...m, { role: "assistant", text: reply }]);
+    } catch (err: any) {
+      setActions([]);
+      setMessages((m) => [
+        ...m,
+        {
+          role: "assistant",
+          text: `${buildContextReply(text, context)}\n\nAPI fallback: ${
+            err?.message || "Unable to reach assistant endpoint."
+          }`
+        }
+      ]);
+    } finally {
+      setSending(false);
+    }
   }
 
   return (
@@ -270,6 +339,24 @@ export default function AiScreen() {
             <Text style={styles.msgText}>{m.text}</Text>
           </View>
         ))}
+        {actions.length ? (
+          <View style={styles.actionCard}>
+            <Text style={[styles.contextText, styles.contextTitle]}>
+              Suggested actions
+            </Text>
+            {actions.map((action) => (
+              <Pressable
+                key={`${action.label}-${action.href}`}
+                accessibilityRole="button"
+                accessibilityLabel={action.label}
+                onPress={() => router.push(action.href as any)}
+                style={styles.actionButton}
+              >
+                <Text style={styles.actionButtonText}>{action.label}</Text>
+              </Pressable>
+            ))}
+          </View>
+        ) : null}
       </ScrollView>
 
       <View style={styles.composer}>
@@ -285,7 +372,7 @@ export default function AiScreen() {
           disabled={!canSend}
           onPress={send}
         >
-          <Text style={styles.sendText}>Send</Text>
+          <Text style={styles.sendText}>{sending ? "Thinking..." : "Send"}</Text>
         </Pressable>
         <Text style={styles.hint}>Commands: vpd 78f 60 | vpd 25c 60</Text>
       </View>
