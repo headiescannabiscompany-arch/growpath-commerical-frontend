@@ -137,6 +137,8 @@ export default function WalkthroughsScreen() {
           </Text>
           <Pressable
             onPress={() => router.replace("/offers")}
+            accessibilityRole="button"
+            accessibilityLabel={ctaLabel}
             style={({ pressed }) => [styles.button, pressed && styles.pressed]}
           >
             <Text style={styles.buttonText}>{ctaLabel}</Text>

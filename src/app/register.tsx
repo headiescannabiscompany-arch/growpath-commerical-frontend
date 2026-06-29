@@ -161,6 +161,7 @@ export default function RegisterScreen() {
           <Text style={styles.formSub}>{choice.description}</Text>
 
           <TextInput
+            accessibilityLabel="Register name"
             style={styles.input}
             placeholder="Name"
             placeholderTextColor="#6b7280"
@@ -169,6 +170,7 @@ export default function RegisterScreen() {
           />
 
           <TextInput
+            accessibilityLabel="Register email"
             style={styles.input}
             autoCapitalize="none"
             autoCorrect={false}
@@ -180,6 +182,7 @@ export default function RegisterScreen() {
           />
 
           <TextInput
+            accessibilityLabel="Register password"
             style={styles.input}
             placeholder="Password"
             placeholderTextColor="#6b7280"
