@@ -87,6 +87,36 @@ function pretty(value: unknown) {
   return JSON.stringify(value, null, 2);
 }
 
+function complianceResultFromLast(last: any) {
+  const data = last?.data;
+  if (data?.tool !== "compliance" || data?.fn !== "buildReadinessChecklist") {
+    return null;
+  }
+  const result = data?.result;
+  if (!result || typeof result !== "object") return null;
+  return result as {
+    readinessScore?: number;
+    status?: string;
+    issues?: string[];
+    checklist?: Array<{
+      label?: string;
+      done?: boolean;
+      status?: string;
+      count?: number;
+    }>;
+    evidenceSummary?: {
+      sopRuns?: {
+        totalRuns?: number;
+        totalSteps?: number;
+        doneSteps?: number;
+        skippedSteps?: number;
+        pendingSteps?: number;
+        runsMissingSteps?: number;
+      };
+    };
+  };
+}
+
 function readinessArgsFromCounts(
   counts: Record<string, number>,
   evidenceSummary?: { sopRuns?: Record<string, number> }
@@ -147,6 +177,7 @@ export default function FacilityAiAskRoute() {
   const [localError, setLocalError] = useState("");
   const [loadingExport, setLoadingExport] = useState(false);
   const [exportSummary, setExportSummary] = useState("");
+  const complianceResult = complianceResultFromLast(last);
 
   const canRun = useMemo(
     () => !!facilityId && tool.trim() && fn.trim() && argsJson.trim() && !loading,
@@ -381,6 +412,68 @@ export default function FacilityAiAskRoute() {
           {last ? (
             <View style={styles.resultPanel}>
               <Text style={styles.resultTitle}>Last response</Text>
+              {complianceResult ? (
+                <View style={styles.readinessCard}>
+                  <View style={styles.readinessHeader}>
+                    <View>
+                      <Text style={styles.readinessLabel}>Inspection readiness</Text>
+                      <Text style={styles.readinessStatus}>
+                        {String(complianceResult.status || "unknown")}
+                      </Text>
+                    </View>
+                    <Text style={styles.readinessScore}>
+                      {String(complianceResult.readinessScore ?? "--")}
+                    </Text>
+                  </View>
+                  {complianceResult.evidenceSummary?.sopRuns ? (
+                    <View style={styles.evidenceGrid}>
+                      <Text style={styles.evidenceText}>
+                        SOP runs:{" "}
+                        {complianceResult.evidenceSummary.sopRuns.totalRuns ?? 0}
+                      </Text>
+                      <Text style={styles.evidenceText}>
+                        Done steps:{" "}
+                        {complianceResult.evidenceSummary.sopRuns.doneSteps ?? 0}/
+                        {complianceResult.evidenceSummary.sopRuns.totalSteps ?? 0}
+                      </Text>
+                      <Text style={styles.evidenceText}>
+                        Pending:{" "}
+                        {complianceResult.evidenceSummary.sopRuns.pendingSteps ?? 0}
+                      </Text>
+                      <Text style={styles.evidenceText}>
+                        Missing:{" "}
+                        {complianceResult.evidenceSummary.sopRuns.runsMissingSteps ?? 0}
+                      </Text>
+                    </View>
+                  ) : null}
+                  {Array.isArray(complianceResult.issues) &&
+                  complianceResult.issues.length ? (
+                    <View style={styles.readinessSection}>
+                      <Text style={styles.readinessSectionTitle}>Gaps</Text>
+                      {complianceResult.issues.map((issue, idx) => (
+                        <Text key={`${issue}-${idx}`} style={styles.issueText}>
+                          {issue}
+                        </Text>
+                      ))}
+                    </View>
+                  ) : null}
+                  {Array.isArray(complianceResult.checklist) &&
+                  complianceResult.checklist.length ? (
+                    <View style={styles.readinessSection}>
+                      <Text style={styles.readinessSectionTitle}>Checklist</Text>
+                      {complianceResult.checklist.map((item, idx) => (
+                        <Text
+                          key={`${item.label || idx}-${idx}`}
+                          style={styles.checkText}
+                        >
+                          {item.done === false ? "Open" : "Done"}:{" "}
+                          {String(item.label || item.status || `Item ${idx + 1}`)}
+                        </Text>
+                      ))}
+                    </View>
+                  ) : null}
+                </View>
+              ) : null}
               <Text selectable style={styles.codeText}>
                 {pretty(last)}
               </Text>
@@ -496,5 +589,36 @@ const styles = StyleSheet.create({
     marginBottom: 8,
     textTransform: "uppercase"
   },
+  readinessCard: {
+    backgroundColor: "#f8fafc",
+    borderRadius: 8,
+    gap: 10,
+    marginBottom: 10,
+    padding: 10
+  },
+  readinessHeader: {
+    alignItems: "flex-start",
+    flexDirection: "row",
+    justifyContent: "space-between",
+    gap: 10
+  },
+  readinessLabel: { color: "#475569", fontSize: 12, fontWeight: "900" },
+  readinessStatus: { color: "#111827", fontSize: 18, fontWeight: "900" },
+  readinessScore: { color: "#166534", fontSize: 34, fontWeight: "900" },
+  evidenceGrid: { flexDirection: "row", flexWrap: "wrap", gap: 8 },
+  evidenceText: {
+    backgroundColor: "#e0f2fe",
+    borderRadius: 6,
+    color: "#075985",
+    fontSize: 12,
+    fontWeight: "900",
+    overflow: "hidden",
+    paddingHorizontal: 8,
+    paddingVertical: 5
+  },
+  readinessSection: { gap: 4 },
+  readinessSectionTitle: { color: "#334155", fontSize: 12, fontWeight: "900" },
+  issueText: { color: "#991b1b", fontSize: 12, fontWeight: "800" },
+  checkText: { color: "#334155", fontSize: 12, fontWeight: "800" },
   codeText: { color: "white", fontFamily: "monospace", fontSize: 12 }
 });
