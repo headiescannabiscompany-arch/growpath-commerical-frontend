@@ -87,7 +87,10 @@ function pretty(value: unknown) {
   return JSON.stringify(value, null, 2);
 }
 
-function readinessArgsFromCounts(counts: Record<string, number>) {
+function readinessArgsFromCounts(
+  counts: Record<string, number>,
+  evidenceSummary?: { sopRuns?: Record<string, number> }
+) {
   return {
     counts: {
       pendingVerifications: counts.verifications ?? 0,
@@ -110,6 +113,16 @@ function readinessArgsFromCounts(counts: Record<string, number>) {
       metrcPlants: counts.metrcPlants ?? 0,
       metrcPackages: counts.metrcPackages ?? 0,
       metrcTransfers: counts.metrcTransfers ?? 0
+    },
+    evidenceSummary: {
+      sopRuns: {
+        totalRuns: evidenceSummary?.sopRuns?.totalRuns ?? counts.sopRuns ?? 0,
+        totalSteps: evidenceSummary?.sopRuns?.totalSteps ?? 0,
+        doneSteps: evidenceSummary?.sopRuns?.doneSteps ?? 0,
+        skippedSteps: evidenceSummary?.sopRuns?.skippedSteps ?? 0,
+        pendingSteps: evidenceSummary?.sopRuns?.pendingSteps ?? 0,
+        runsMissingSteps: evidenceSummary?.sopRuns?.runsMissingSteps ?? 0
+      }
     }
   };
 }
@@ -193,7 +206,7 @@ export default function FacilityAiAskRoute() {
       setSelected(PRESETS.find((preset) => preset.key === "compliance") || selected);
       setTool("compliance");
       setFn("buildReadinessChecklist");
-      setArgsJson(pretty(readinessArgsFromCounts(counts)));
+      setArgsJson(pretty(readinessArgsFromCounts(counts, packet.evidenceSummary)));
       const total = Object.values(counts).reduce(
         (sum, value) => sum + Number(value || 0),
         0
