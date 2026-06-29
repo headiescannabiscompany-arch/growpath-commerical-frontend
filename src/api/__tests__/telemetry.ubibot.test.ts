@@ -66,11 +66,7 @@ describe("telemetry UbiBot API", () => {
     });
 
     await expect(
-      pullUbiBotWindow(
-        "source_1",
-        "2026-06-22T00:00:00.000Z",
-        "2026-06-22T06:00:00.000Z"
-      )
+      pullUbiBotWindow("source_1", "2026-06-22T00:00:00.000Z", "2026-06-22T06:00:00.000Z")
     ).resolves.toEqual({
       sourceId: "source_1",
       pulled: 10,
@@ -113,13 +109,10 @@ describe("telemetry UbiBot API", () => {
       heartbeatIntervalMs: 240000
     });
 
-    expect(mockApiRequest).toHaveBeenCalledWith(
-      TELEMETRY_ROUTES.UBIBOT_MQTT_SETTINGS,
-      {
-        method: "POST",
-        body: { sourceId: "source_1" }
-      }
-    );
+    expect(mockApiRequest).toHaveBeenCalledWith(TELEMETRY_ROUTES.UBIBOT_MQTT_SETTINGS, {
+      method: "POST",
+      body: { sourceId: "source_1" }
+    });
   });
 
   test("redacts UbiBot credentials when normalizing telemetry sources", async () => {

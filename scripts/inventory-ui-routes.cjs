@@ -6,7 +6,7 @@ const path = require("path");
 const ROOT = path.resolve(__dirname, "..");
 const APP_DIR = path.join(ROOT, "src", "app");
 const OUT_DIR = path.join(ROOT, "tmp", "spec");
-const OUT_FILE = path.join(OUT_DIR, "ui-routes.json");
+const OUT_FILE = process.env.UI_ROUTES_OUT_FILE || path.join(OUT_DIR, "ui-routes.json");
 const EXTS = new Set([".ts", ".tsx", ".js", ".jsx"]);
 
 function walk(dir, out = []) {
@@ -63,9 +63,25 @@ function main() {
     files: rows
   };
 
-  fs.mkdirSync(OUT_DIR, { recursive: true });
-  fs.writeFileSync(OUT_FILE, JSON.stringify(payload, null, 2) + "\n", "utf8");
-  console.log(`Wrote ${OUT_FILE}`);
+  fs.mkdirSync(path.dirname(OUT_FILE), { recursive: true });
+  let writtenFile = OUT_FILE;
+  try {
+    fs.writeFileSync(OUT_FILE, JSON.stringify(payload, null, 2) + "\n", "utf8");
+  } catch (error) {
+    if (!["EPERM", "EACCES"].includes(error?.code)) throw error;
+    writtenFile = path.join(OUT_DIR, `ui-routes.${process.pid}.json`);
+    try {
+      fs.writeFileSync(writtenFile, JSON.stringify(payload, null, 2) + "\n", "utf8");
+      console.warn(`Could not write ${OUT_FILE} (${error.code}); wrote ${writtenFile}`);
+    } catch (fallbackError) {
+      if (!["EPERM", "EACCES"].includes(fallbackError?.code)) throw fallbackError;
+      writtenFile = null;
+      console.warn(
+        `Could not write route inventory files (${error.code}/${fallbackError.code}); continuing with computed route count.`
+      );
+    }
+  }
+  if (writtenFile) console.log(`Wrote ${writtenFile}`);
   console.log(`Routes: ${routes.length} | Files: ${rows.length}`);
 }
 

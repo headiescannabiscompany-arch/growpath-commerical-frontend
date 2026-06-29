@@ -58,7 +58,12 @@ export function buildSalesSummary(uploads = []) {
         ? upload.reviews.length
         : Number(upload?.reviewCount || 0);
       const key = monthKey(upload?.updatedAt || upload?.createdAt);
-      const month = monthlyMap.get(key) || { month: key, earnings: 0, sales: 0, downloads: 0 };
+      const month = monthlyMap.get(key) || {
+        month: key,
+        earnings: 0,
+        sales: 0,
+        downloads: 0
+      };
       month.earnings += revenue;
       month.sales += sales;
       month.downloads += downloads;
@@ -97,7 +102,9 @@ export function buildSalesSummary(uploads = []) {
       totalSales: summary.totalSales,
       averageRating: summary.ratingWeight ? summary.ratingSum / summary.ratingWeight : 0
     },
-    monthly: Array.from(monthlyMap.values()).sort((a, b) => a.month.localeCompare(b.month)),
+    monthly: Array.from(monthlyMap.values()).sort((a, b) =>
+      a.month.localeCompare(b.month)
+    ),
     recentSales: recentSales.slice(0, 20),
     uploads
   };
@@ -152,7 +159,9 @@ export const uploadContent = async (formData) => {
 
 export const getMyUploads = async () => {
   try {
-    const myUploadsRes = await apiRequest(MARKETPLACE_ROUTES.MY_UPLOADS, { method: "GET" });
+    const myUploadsRes = await apiRequest(MARKETPLACE_ROUTES.MY_UPLOADS, {
+      method: "GET"
+    });
     return normalizeList(myUploadsRes);
   } catch (error) {
     throw new Error(`Failed to fetch your uploads: ${error.message}`);

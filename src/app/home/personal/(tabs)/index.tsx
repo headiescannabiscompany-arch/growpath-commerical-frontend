@@ -113,7 +113,9 @@ export default function PersonalHomeTab() {
               </View>
               <View style={styles.metric}>
                 <Text style={styles.metricValue}>
-                  {model.latestToolRun?.toolType || model.latestToolRun?.toolName || "None"}
+                  {model.latestToolRun?.toolType ||
+                    model.latestToolRun?.toolName ||
+                    "None"}
                 </Text>
                 <Text style={styles.metricLabel}>Latest tool</Text>
               </View>

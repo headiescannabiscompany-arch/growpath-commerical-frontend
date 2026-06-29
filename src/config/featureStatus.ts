@@ -174,7 +174,6 @@ export const personalToolFeatures = [
     status: "beta",
     href: "/home/personal/tools/environment-analysis",
     acceptsGrowContext: true,
-    capabilityKey: CAPABILITY_KEYS.AI_ASSISTANT,
     internalNote:
       "Endpoint-backed analysis when AI is enabled; local heuristic fallback keeps the tool useful for every account."
   },
@@ -187,7 +186,6 @@ export const personalToolFeatures = [
     status: "beta",
     href: "/home/personal/tools/feeding-schedule",
     acceptsGrowContext: true,
-    capabilityKey: CAPABILITY_KEYS.FEEDING_SCHEDULE,
     internalNote:
       "Uses the backend feeding schedule endpoint when available and local stage-aware planning otherwise."
   },
@@ -200,7 +198,6 @@ export const personalToolFeatures = [
     status: "beta",
     href: "/home/personal/tools/harvest-estimator",
     acceptsGrowContext: true,
-    capabilityKey: CAPABILITY_KEYS.TOOL_HARVEST_ESTIMATOR,
     internalNote:
       "Local estimator with tool-run and journal save paths; not a lab-grade harvest prediction."
   },
@@ -212,7 +209,6 @@ export const personalToolFeatures = [
     status: "beta",
     href: "/home/personal/tools/timeline-planner",
     acceptsGrowContext: true,
-    capabilityKey: CAPABILITY_KEYS.TOOL_TIMELINE_PLANNER,
     internalNote:
       "Local milestone builder can create grow tasks when grow context is present."
   },
@@ -224,7 +220,6 @@ export const personalToolFeatures = [
     status: "beta",
     href: "/home/personal/tools/pdf-export",
     acceptsGrowContext: true,
-    capabilityKey: CAPABILITY_KEYS.TOOL_PDF_EXPORT,
     internalNote:
       "CSV package supports browser download and native share. Rendered PDF remains tracked separately."
   },
@@ -236,7 +231,6 @@ export const personalToolFeatures = [
     status: "beta",
     href: "/home/personal/tools/pheno-matrix",
     acceptsGrowContext: true,
-    capabilityKey: CAPABILITY_KEYS.TOOL_PHENO_MATRIX,
     internalNote:
       "Local weighted scoring matrix is implemented; persistence/export can follow endpoint support."
   },
@@ -248,7 +242,6 @@ export const personalToolFeatures = [
     status: "beta",
     href: "/home/personal/diagnose",
     acceptsGrowContext: true,
-    capabilityKey: CAPABILITY_KEYS.DIAGNOSE_AI,
     internalNote:
       "Vision path works when configured; full ETGU intake and follow-up remain."
   },

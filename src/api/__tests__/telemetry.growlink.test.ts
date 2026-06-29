@@ -58,18 +58,20 @@ describe("telemetry Growlink API", () => {
       { id: "controller-2", _id: "controller-2", name: "Veg" }
     ]);
 
-    expect(mockApiRequest).toHaveBeenCalledWith(
-      TELEMETRY_ROUTES.GROWLINK_CONTROLLERS,
-      {
-        method: "POST",
-        body: { userName: "grower@example.com", password: "secret" }
-      }
-    );
+    expect(mockApiRequest).toHaveBeenCalledWith(TELEMETRY_ROUTES.GROWLINK_CONTROLLERS, {
+      method: "POST",
+      body: { userName: "grower@example.com", password: "secret" }
+    });
   });
 
   test("pulls Growlink current readings by telemetry source", async () => {
     mockApiRequest.mockResolvedValueOnce({
-      data: { pulled: "5", ingested: "4", updated: "1", lastPointIso: "2026-06-22T13:00:00Z" }
+      data: {
+        pulled: "5",
+        ingested: "4",
+        updated: "1",
+        lastPointIso: "2026-06-22T13:00:00Z"
+      }
     });
 
     await expect(pullGrowlinkCurrentReadings("source_1")).resolves.toEqual({

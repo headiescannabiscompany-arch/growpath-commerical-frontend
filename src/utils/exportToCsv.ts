@@ -34,7 +34,6 @@ type CsvExportDeps = {
 function optionalExpoFileSystem(): CsvExportDeps["fileSystem"] {
   try {
     // expo-file-system is available in native Expo apps but is optional for web/unit tests.
-    // eslint-disable-next-line @typescript-eslint/no-var-requires
     return typeof require === "function" ? require("expo-file-system") : null;
   } catch {
     return null;
@@ -68,7 +67,8 @@ async function shareNativeCsv(
 ): Promise<CsvExportResult> {
   const sharing = deps.sharing ?? Sharing;
   const share = deps.share ?? Share;
-  const fileSystem = deps.fileSystem === undefined ? optionalExpoFileSystem() : deps.fileSystem;
+  const fileSystem =
+    deps.fileSystem === undefined ? optionalExpoFileSystem() : deps.fileSystem;
 
   if (fileSystem?.cacheDirectory && (await sharing.isAvailableAsync())) {
     const uri = `${fileSystem.cacheDirectory}${filename}.csv`;
@@ -103,7 +103,8 @@ export async function exportToCsv(
 
   const csvContent = buildCsvContent(rows, columns);
   const platformOS = deps.platformOS ?? Platform.OS;
-  const documentRef = deps.document ?? (typeof document !== "undefined" ? document : undefined);
+  const documentRef =
+    deps.document ?? (typeof document !== "undefined" ? document : undefined);
   const urlRef = deps.url ?? (typeof URL !== "undefined" ? URL : undefined);
   const blobRef = deps.blob ?? (typeof Blob !== "undefined" ? Blob : undefined);
 

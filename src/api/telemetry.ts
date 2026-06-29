@@ -322,7 +322,9 @@ export async function pullUbiBotWindow(
   };
 }
 
-export async function getUbiBotMqttSettings(sourceId: string): Promise<UbiBotMqttSettingsResult> {
+export async function getUbiBotMqttSettings(
+  sourceId: string
+): Promise<UbiBotMqttSettingsResult> {
   const res = await apiRequest(TELEMETRY_ROUTES.UBIBOT_MQTT_SETTINGS, {
     method: "POST",
     body: { sourceId }
@@ -370,7 +372,9 @@ export async function listGrowlinkControllers(input: {
   }));
 }
 
-export async function pullGrowlinkCurrentReadings(sourceId: string): Promise<GrowlinkPullResult> {
+export async function pullGrowlinkCurrentReadings(
+  sourceId: string
+): Promise<GrowlinkPullResult> {
   const res = await apiRequest(TELEMETRY_ROUTES.GROWLINK_CURRENT, {
     method: "POST",
     body: { sourceId }

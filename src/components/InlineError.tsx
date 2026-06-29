@@ -42,7 +42,9 @@ function pickRequestId(p: InlineErrorProps) {
 }
 
 export function InlineError(props: InlineErrorProps) {
-  const hasSource = Boolean(props.error || props.title || props.message || props.requestId);
+  const hasSource = Boolean(
+    props.error || props.title || props.message || props.requestId
+  );
   if (!hasSource) return null;
 
   const title = pickTitle(props);

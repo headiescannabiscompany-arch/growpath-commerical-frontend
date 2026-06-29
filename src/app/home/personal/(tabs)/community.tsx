@@ -55,30 +55,33 @@ export default function CommunityTab() {
     [notifications]
   );
 
-  const load = useCallback(async (opts?: { refresh?: boolean }) => {
-    if (!canView) {
-      setLoading(false);
-      return;
-    }
-    if (opts?.refresh) setRefreshing(true);
-    else setLoading(true);
-    setFeedback("");
-    try {
-      const [postRows, guildRows, notificationRows] = await Promise.all([
-        listForumPosts(),
-        listGuilds(),
-        listNotifications()
-      ]);
-      setPosts(postRows);
-      setGuilds(guildRows);
-      setNotifications(notificationRows);
-    } catch (error: any) {
-      setFeedback(error?.message || "Unable to load community data.");
-    } finally {
-      setLoading(false);
-      setRefreshing(false);
-    }
-  }, [canView]);
+  const load = useCallback(
+    async (opts?: { refresh?: boolean }) => {
+      if (!canView) {
+        setLoading(false);
+        return;
+      }
+      if (opts?.refresh) setRefreshing(true);
+      else setLoading(true);
+      setFeedback("");
+      try {
+        const [postRows, guildRows, notificationRows] = await Promise.all([
+          listForumPosts(),
+          listGuilds(),
+          listNotifications()
+        ]);
+        setPosts(postRows);
+        setGuilds(guildRows);
+        setNotifications(notificationRows);
+      } catch (error: any) {
+        setFeedback(error?.message || "Unable to load community data.");
+      } finally {
+        setLoading(false);
+        setRefreshing(false);
+      }
+    },
+    [canView]
+  );
 
   useEffect(() => {
     load();
@@ -138,7 +141,10 @@ export default function CommunityTab() {
       style={styles.container}
       contentContainerStyle={styles.content}
       refreshControl={
-        <RefreshControl refreshing={refreshing} onRefresh={() => load({ refresh: true })} />
+        <RefreshControl
+          refreshing={refreshing}
+          onRefresh={() => load({ refresh: true })}
+        />
       }
     >
       <Text style={styles.title}>Community</Text>
@@ -213,7 +219,8 @@ export default function CommunityTab() {
                 <View key={rowId(guild) || guild.name} style={styles.row}>
                   <Text style={styles.rowTitle}>{guild.name || "Guild"}</Text>
                   <Text style={styles.rowMeta}>
-                    {guild.description || "No description"} | {guild.memberCount || 0} members
+                    {guild.description || "No description"} | {guild.memberCount || 0}{" "}
+                    members
                   </Text>
                   <Pressable
                     disabled={saving}
@@ -225,7 +232,9 @@ export default function CommunityTab() {
                 </View>
               );
             })}
-            {!guilds.length ? <Text style={styles.cardText}>No guilds returned.</Text> : null}
+            {!guilds.length ? (
+              <Text style={styles.cardText}>No guilds returned.</Text>
+            ) : null}
           </View>
 
           <View style={styles.card}>
@@ -240,7 +249,9 @@ export default function CommunityTab() {
             <Text style={styles.cardText}>{unreadCount} unread notifications</Text>
             {notifications.slice(0, 5).map((notification) => (
               <View key={rowId(notification) || notification.title} style={styles.row}>
-                <Text style={styles.rowTitle}>{notification.title || "Notification"}</Text>
+                <Text style={styles.rowTitle}>
+                  {notification.title || "Notification"}
+                </Text>
                 <Text style={styles.rowMeta}>{notification.message || ""}</Text>
                 {!notification.read ? (
                   <Pressable
@@ -306,5 +317,11 @@ const styles = StyleSheet.create({
   },
   secondaryText: { color: "#0F172A", fontWeight: "800" },
   cta: { color: "#166534", fontWeight: "800" },
-  feedback: { color: "#334155", backgroundColor: "#F1F5F9", borderRadius: 9, padding: 9, fontWeight: "700" }
+  feedback: {
+    color: "#334155",
+    backgroundColor: "#F1F5F9",
+    borderRadius: 9,
+    padding: 9,
+    fontWeight: "700"
+  }
 });

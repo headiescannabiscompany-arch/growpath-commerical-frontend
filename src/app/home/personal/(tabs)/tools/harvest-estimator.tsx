@@ -78,8 +78,8 @@ export default function HarvestEstimatorScreen() {
       <BackButton />
       <Text style={styles.title}>Harvest Estimator</Text>
       <Text style={styles.subtitle}>
-        Estimate a harvest window from flowering day, breeder timing, trichomes,
-        pistils, and cultivar speed.
+        Estimate a harvest window from flowering day, breeder timing, trichomes, pistils,
+        and cultivar speed.
       </Text>
       {growId ? <Text style={styles.context}>Grow context: {growId}</Text> : null}
 
@@ -148,7 +148,11 @@ export default function HarvestEstimatorScreen() {
             status={result.readiness.toUpperCase()}
             summary={result.summary}
             metrics={[
-              { key: "remaining", label: "Days remaining", value: String(result.daysRemaining) },
+              {
+                key: "remaining",
+                label: "Days remaining",
+                value: String(result.daysRemaining)
+              },
               { key: "target", label: "Target day", value: String(result.targetDay) },
               {
                 key: "window",

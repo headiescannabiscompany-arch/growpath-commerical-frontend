@@ -82,11 +82,7 @@ export default function PhenoMatrixScreen() {
     [candidates, weights]
   );
 
-  function updateCandidate(
-    id: string,
-    key: keyof PhenoCandidateInput,
-    value: string
-  ) {
+  function updateCandidate(id: string, key: keyof PhenoCandidateInput, value: string) {
     setCandidates((current) =>
       current.map((candidate) =>
         candidate.id === id

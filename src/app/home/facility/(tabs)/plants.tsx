@@ -303,7 +303,7 @@ export default function FacilityPlantsTab() {
               <View style={styles.empty}>
                 <Text style={styles.emptyTitle}>No plants yet</Text>
                 <Text style={styles.muted}>
-                  When plants exist on the backend, they'll show up here.
+                  When plants exist on the backend, they will show up here.
                 </Text>
               </View>
             ) : null

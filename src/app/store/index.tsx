@@ -21,8 +21,7 @@ export default function StoreIndex() {
       <AppCard>
         <Text style={styles.cardTitle}>Commercial storefront</Text>
         <Text style={styles.cardText}>
-          Storefront setup and product management are available to commercial
-          accounts.
+          Storefront setup and product management are available to commercial accounts.
         </Text>
         <Link href="/storefront" asChild>
           <Pressable style={styles.primaryButton}>

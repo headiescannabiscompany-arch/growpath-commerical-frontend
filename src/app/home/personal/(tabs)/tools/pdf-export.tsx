@@ -100,7 +100,10 @@ export default function PdfExportScreen() {
             rows.length ? (
               <View style={styles.preview}>
                 {rows.slice(0, 8).map((row, index) => (
-                  <View key={`${row.type}-${row.date}-${index}`} style={styles.previewRow}>
+                  <View
+                    key={`${row.type}-${row.date}-${index}`}
+                    style={styles.previewRow}
+                  >
                     <Text style={styles.previewTitle}>
                       {row.date || "No date"} | {row.type} | {row.title}
                     </Text>
