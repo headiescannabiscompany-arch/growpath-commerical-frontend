@@ -122,6 +122,12 @@ export default function CommercialHome() {
           />
         ) : null}
         <ActionCard
+          title="Communities"
+          description="Join the right guilds so feed, courses, and recommendations stay relevant."
+          href="/communities"
+          status="Live"
+        />
+        <ActionCard
           title="Campaigns"
           description="Plan campaigns, manage budgets, and update promotional status."
           href="/campaigns"
