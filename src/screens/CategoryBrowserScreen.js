@@ -8,7 +8,6 @@ import {
   TextInput,
   View
 } from "react-native";
-import { router } from "expo-router";
 
 const DEFAULT_CATEGORIES = [
   { key: "inventory", title: "Inventory", subtitle: "Track supplies and stock" },
@@ -32,13 +31,12 @@ export default function CategoryBrowserScreen({ navigation }) {
   }, [q]);
 
   function go(key) {
-    // Map keys to your real routes
     const routeMap = {
       inventory: "Inventory",
       light: "LightCalculator",
       calendar: "Calendar",
       courses: "Courses",
-      certificates: "CertificateViewer",
+      certificates: "CertificateVerification",
       campaigns: "Campaigns",
       live: "LiveSession"
     };
@@ -52,7 +50,7 @@ export default function CategoryBrowserScreen({ navigation }) {
 
       <View style={styles.card}>
         <TextInput
-          placeholder="Search categories…"
+          placeholder="Search categories..."
           value={q}
           onChangeText={setQ}
           style={styles.input}
@@ -69,7 +67,7 @@ export default function CategoryBrowserScreen({ navigation }) {
               <Text style={styles.itemTitle}>{item.title}</Text>
               <Text style={styles.muted}>{item.subtitle}</Text>
             </View>
-            <Text style={styles.arrow}>›</Text>
+            <Text style={styles.arrow}>{">"}</Text>
           </Pressable>
         )}
       />
@@ -108,5 +106,5 @@ const styles = StyleSheet.create({
   },
   itemTitle: { fontSize: 16, fontWeight: "900" },
   muted: { color: "#6B7280", marginTop: 4 },
-  arrow: { fontSize: 28, color: "#111827", paddingHorizontal: 6 }
+  arrow: { fontSize: 20, color: "#111827", fontWeight: "900", paddingHorizontal: 6 }
 });
