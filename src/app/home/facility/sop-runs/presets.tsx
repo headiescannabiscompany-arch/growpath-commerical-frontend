@@ -1,4 +1,5 @@
 import React, { useState } from "react";
+import { Link } from "expo-router";
 import { FlatList, Pressable, StyleSheet, Text, TextInput, View } from "react-native";
 
 import { normalizeApiError } from "@/api/errors";
@@ -73,12 +74,27 @@ export default function FacilitySopRunsPresetsRoute() {
       <FlatList
         data={templates}
         keyExtractor={pickId}
-        renderItem={({ item }) => (
-          <View style={styles.card}>
-            <Text style={styles.title}>{String(item?.title || "Untitled Template")}</Text>
-            <Text style={styles.sub}>{String(item?.content || "")}</Text>
-          </View>
-        )}
+        renderItem={({ item, index }) => {
+          const id = pickId(item, index);
+          const titleText = String(item?.title || "Untitled Template");
+          return (
+            <View style={styles.card}>
+              <Text style={styles.title}>{titleText}</Text>
+              <Text style={styles.sub}>{String(item?.content || "")}</Text>
+              <Link
+                accessibilityRole="button"
+                accessibilityLabel={`Start run from SOP preset ${titleText}`}
+                href={{
+                  pathname: "/home/facility/sop-runs/start",
+                  params: { templateId: id, templateTitle: titleText }
+                }}
+                style={styles.startLink}
+              >
+                Start run from preset
+              </Link>
+            </View>
+          );
+        }}
       />
     </View>
   );
@@ -112,5 +128,10 @@ const styles = StyleSheet.create({
     marginTop: 10
   },
   title: { fontWeight: "800" },
-  sub: { opacity: 0.75 }
+  sub: { opacity: 0.75 },
+  startLink: {
+    color: "#2563eb",
+    fontWeight: "900",
+    marginTop: 10
+  }
 });
