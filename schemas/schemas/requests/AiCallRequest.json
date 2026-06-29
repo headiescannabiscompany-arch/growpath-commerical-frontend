@@ -10,9 +10,12 @@
         "harvest",
         "diagnosis",
         "environment",
+        "climate",
+        "ec",
         "feeding",
         "nutrients",
         "compliance",
+        "inventory",
         "planner"
       ]
     },
