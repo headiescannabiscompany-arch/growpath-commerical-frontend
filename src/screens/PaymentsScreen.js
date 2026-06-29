@@ -3,7 +3,6 @@ import React, { useCallback, useEffect, useMemo, useState } from "react";
 import {
   ActivityIndicator,
   Alert,
-  Linking,
   ScrollView,
   StyleSheet,
   Text,
@@ -11,6 +10,7 @@ import {
   View
 } from "react-native";
 import { createCheckoutSession, getSubscriptionStatus } from "../api/subscription";
+import { openExternalUrl } from "../utils/openExternalUrl";
 
 function normalizeSubscription(status) {
   const source = status?.data && typeof status.data === "object" ? status.data : status;
@@ -67,7 +67,7 @@ export default function PaymentsScreen() {
         Alert.alert("Checkout unavailable", "The backend did not return a checkout URL.");
         return;
       }
-      await Linking.openURL(url);
+      await openExternalUrl(url);
     } catch (err) {
       Alert.alert("Checkout failed", err?.message || "Unable to start checkout.");
     } finally {

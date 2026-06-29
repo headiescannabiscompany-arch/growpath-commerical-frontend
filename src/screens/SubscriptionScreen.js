@@ -1,16 +1,10 @@
 import React, { useEffect, useState } from "react";
-import {
-  Alert,
-  Linking,
-  ScrollView,
-  Text,
-  TouchableOpacity,
-  View
-} from "react-native";
+import { Alert, Linking, ScrollView, Text, TouchableOpacity, View } from "react-native";
 
 import { createCheckoutSession } from "../api/subscription";
 import ScreenContainer from "../components/ScreenContainer";
 import { spacing } from "../theme/theme";
+import { openExternalUrl } from "../utils/openExternalUrl";
 
 export default function SubscriptionScreen({ navigation }) {
   const [loading, setLoading] = useState(false);
@@ -46,7 +40,7 @@ export default function SubscriptionScreen({ navigation }) {
         return;
       }
 
-      await Linking.openURL(url);
+      await openExternalUrl(url);
       Alert.alert(
         "Payment Window Opened",
         "Complete payment in the browser. Access unlocks only after backend confirmation.",
@@ -89,13 +83,41 @@ export default function SubscriptionScreen({ navigation }) {
         </View>
 
         <View style={styles.features}>
-          <Feature label="Plant" title="Unlimited Plants" description="Track as many grows as you need" />
-          <Feature label="AI" title="AI Diagnostics" description="Get instant help from our AI assistant" />
-          <Feature label="Chat" title="Community Access" description="Post, comment, and connect with growers" />
-          <Feature label="Stats" title="Advanced Analytics" description="Track growth patterns and yields" />
-          <Feature label="Learn" title="Creator Tools" description="Create and sell your own courses" />
-          <Feature label="Fast" title="Priority Support" description="Get help faster when you need it" />
-          <Feature label="All" title="Unlock Everything" description="All pro features included" />
+          <Feature
+            label="Plant"
+            title="Unlimited Plants"
+            description="Track as many grows as you need"
+          />
+          <Feature
+            label="AI"
+            title="AI Diagnostics"
+            description="Get instant help from our AI assistant"
+          />
+          <Feature
+            label="Chat"
+            title="Community Access"
+            description="Post, comment, and connect with growers"
+          />
+          <Feature
+            label="Stats"
+            title="Advanced Analytics"
+            description="Track growth patterns and yields"
+          />
+          <Feature
+            label="Learn"
+            title="Creator Tools"
+            description="Create and sell your own courses"
+          />
+          <Feature
+            label="Fast"
+            title="Priority Support"
+            description="Get help faster when you need it"
+          />
+          <Feature
+            label="All"
+            title="Unlock Everything"
+            description="All pro features included"
+          />
         </View>
 
         <TouchableOpacity
@@ -117,8 +139,8 @@ export default function SubscriptionScreen({ navigation }) {
 
         <Text style={styles.footer}>
           By subscribing, you agree to our Terms of Service and Privacy Policy. Your
-          subscription will auto-renew monthly unless canceled. Features unlock only
-          after backend confirmation.
+          subscription will auto-renew monthly unless canceled. Features unlock only after
+          backend confirmation.
         </Text>
       </ScrollView>
     </ScreenContainer>

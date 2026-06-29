@@ -1,6 +1,7 @@
 import React, { useState } from "react";
-import { Alert, Linking, Pressable, StyleSheet, Text, View } from "react-native";
+import { Alert, Pressable, StyleSheet, Text, View } from "react-native";
 import { createCheckoutSession } from "../../../api/subscription";
+import { openExternalUrl } from "../../../utils/openExternalUrl";
 
 const plans = [
   { label: "Pro", plan: "pro", interval: "monthly" },
@@ -20,7 +21,7 @@ export default function UpgradePlan() {
         Alert.alert("Checkout unavailable", "The backend did not return a checkout URL.");
         return;
       }
-      await Linking.openURL(url);
+      await openExternalUrl(url);
     } catch (error: any) {
       Alert.alert("Checkout failed", error?.message || "Unable to start checkout.");
     } finally {

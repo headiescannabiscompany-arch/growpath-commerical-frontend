@@ -11,6 +11,7 @@ import PrimaryButton from "../components/PrimaryButton";
 import ScreenContainer from "../components/ScreenContainer";
 import { colors, spacing } from "../theme/theme";
 import { buySubscription, initIAP } from "../utils/iap";
+import { openExternalUrl } from "../utils/openExternalUrl";
 
 function isNativePurchasePlatform() {
   return Platform.OS === "ios" || Platform.OS === "android";
@@ -56,7 +57,7 @@ export default function SubscribeScreen({ navigation }) {
       return;
     }
 
-    await Linking.openURL(url);
+    await openExternalUrl(url);
     Alert.alert(
       "Checkout opened",
       "Complete payment in the browser. Access unlocks only after backend confirmation.",
@@ -110,8 +111,8 @@ export default function SubscribeScreen({ navigation }) {
         <Text style={styles.item}>Advanced grow analytics</Text>
 
         <Text style={styles.note}>
-          Courses are sold separately by creators. Subscription unlocks platform
-          features only after backend confirmation.
+          Courses are sold separately by creators. Subscription unlocks platform features
+          only after backend confirmation.
         </Text>
 
         <Text style={styles.price}>$9.99 / month</Text>

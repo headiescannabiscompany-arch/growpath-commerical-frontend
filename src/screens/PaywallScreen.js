@@ -1,18 +1,12 @@
 import React, { useState } from "react";
-import {
-  ActivityIndicator,
-  Alert,
-  Linking,
-  Text,
-  TouchableOpacity,
-  View
-} from "react-native";
+import { ActivityIndicator, Alert, Text, TouchableOpacity, View } from "react-native";
 
 import { useAuth } from "@/auth/AuthContext";
 import { startSubscription } from "../api/subscribe";
 import { createCheckoutSession } from "../api/subscription";
 import PrimaryButton from "../components/PrimaryButton";
 import ScreenContainer from "../components/ScreenContainer";
+import { openExternalUrl } from "../utils/openExternalUrl";
 
 export default function PaywallScreen({ navigation }) {
   const { token } = useAuth();
@@ -51,7 +45,7 @@ export default function PaywallScreen({ navigation }) {
         return;
       }
 
-      await Linking.openURL(url);
+      await openExternalUrl(url);
       Alert.alert(
         "Complete Payment",
         "After completing payment in your browser, return to the app and refresh subscription status. Access unlocks only after backend confirmation.",
