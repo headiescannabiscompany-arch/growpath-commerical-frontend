@@ -47,6 +47,9 @@ interface ContextData {
   logCount: number;
   taskCount: number;
   loadedAt: string;
+  grows: any[];
+  logs: any[];
+  tasks: any[];
 }
 
 function parseVpdCommand(
@@ -72,6 +75,104 @@ function parseVpdCommand(
   return { temp: tempNum, unit, rh: rhNum };
 }
 
+function rowTime(row: any, keys: string[]) {
+  for (const key of keys) {
+    const value = row?.[key];
+    const time = value ? new Date(value).getTime() : 0;
+    if (Number.isFinite(time) && time > 0) return time;
+  }
+  return 0;
+}
+
+function formatDate(value: any) {
+  const time = value ? new Date(value).getTime() : 0;
+  if (!Number.isFinite(time) || time <= 0) return "no date";
+  return new Date(time).toLocaleDateString();
+}
+
+function activeGrows(grows: any[]) {
+  return grows.filter((grow) => String(grow?.status || "").toLowerCase() !== "harvested");
+}
+
+function latestLog(logs: any[]) {
+  return [...logs].sort(
+    (left, right) =>
+      rowTime(right, ["date", "createdAt", "updatedAt"]) -
+      rowTime(left, ["date", "createdAt", "updatedAt"])
+  )[0];
+}
+
+function nextOpenTask(tasks: any[]) {
+  return [...tasks]
+    .filter((task) => !task?.completed)
+    .sort(
+      (left, right) =>
+        rowTime(left, ["dueDate", "dueAt", "createdAt"]) -
+        rowTime(right, ["dueDate", "dueAt", "createdAt"])
+    )[0];
+}
+
+function buildContextReply(text: string, context: ContextData | null) {
+  const lower = text.toLowerCase();
+  if (!context) {
+    return "I am still loading your grows, journal entries, and tasks. Try again in a moment, or use: vpd 78f 60.";
+  }
+
+  if (lower.includes("task") || lower.includes("todo") || lower.includes("next")) {
+    const task = nextOpenTask(context.tasks);
+    if (!task) {
+      return `You have no open personal grow tasks. Across this account I see ${context.growCount} grows and ${context.logCount} journal entries.`;
+    }
+    return `Next open task: ${task.title || "Untitled task"} due ${formatDate(task.dueDate || task.dueAt)}. ${task.description || "Open the grow task list to update or complete it."}`;
+  }
+
+  if (lower.includes("log") || lower.includes("journal") || lower.includes("recent")) {
+    const log = latestLog(context.logs);
+    if (!log) {
+      return "No journal entries are recorded yet. Start with one observation: date, stage, watering/feed, environment, and plant response.";
+    }
+    return `Latest journal entry: ${log.title || log.type || "Untitled entry"} on ${formatDate(log.date || log.createdAt)}. ${log.notes || "Open the journal to review details."}`;
+  }
+
+  if (lower.includes("grow") || lower.includes("garden") || lower.includes("plant")) {
+    const active = activeGrows(context.grows);
+    const newest = [...active].sort(
+      (left, right) =>
+        rowTime(right, ["updatedAt", "createdAt", "startDate"]) -
+        rowTime(left, ["updatedAt", "createdAt", "startDate"])
+    )[0];
+    if (!context.growCount) {
+      return "No grows are set up yet. Create a grow first so logs, tools, tasks, and AI context have a place to attach.";
+    }
+    return `You have ${active.length} active grow${active.length === 1 ? "" : "s"} out of ${context.growCount}. Current focus: ${newest?.name || newest?.title || "active grow"}.`;
+  }
+
+  if (
+    lower.includes("diagnose") ||
+    lower.includes("sick") ||
+    lower.includes("deficiency") ||
+    lower.includes("pest")
+  ) {
+    return "For diagnosis, include plant type, stage, symptom location, spread speed, watering/feed, pH/EC if known, temperature, RH, light level, and a clear photo when available. Save the result to the grow journal so follow-up tasks stay attached.";
+  }
+
+  if (
+    lower.includes("dew") ||
+    lower.includes("humidity") ||
+    lower.includes("environment") ||
+    lower.includes("mold") ||
+    lower.includes("rot")
+  ) {
+    return "For environment risk, use Dew Point Guard with current or sensor readings. Watch night-cycle RH, cold surfaces, dense canopy zones, and dew point spread under 2C.";
+  }
+
+  if (lower.includes("feed") || lower.includes("water") || lower.includes("nutrient")) {
+    return "For feeding or watering, use the feeding schedule, NPK, and watering tools with grow stage, medium, container size, recent runoff, and plant response.";
+  }
+
+  return `I have context for ${context.growCount} grows, ${context.logCount} journal entries, and ${context.taskCount} tasks. Ask about next task, recent journal, grow status, diagnosis, dew point risk, feeding, watering, or use: vpd 78f 60.`;
+}
+
 export default function AiScreen() {
   const [draft, setDraft] = useState("");
   const [messages, setMessages] = useState<Msg[]>([
@@ -95,7 +196,10 @@ export default function AiScreen() {
           growCount: grows.length,
           logCount: logs.length,
           taskCount: tasks.length,
-          loadedAt: new Date().toLocaleTimeString()
+          loadedAt: new Date().toLocaleTimeString(),
+          grows,
+          logs,
+          tasks
         });
       } catch (err) {
         console.error("[AI] Failed to load context:", err);
@@ -103,7 +207,10 @@ export default function AiScreen() {
           growCount: 0,
           logCount: 0,
           taskCount: 0,
-          loadedAt: "error"
+          loadedAt: "error",
+          grows: [],
+          logs: [],
+          tasks: []
         });
       }
     }
@@ -127,7 +234,7 @@ export default function AiScreen() {
           ...m,
           {
             role: "assistant",
-            text: `VPD ≈ ${v.toFixed(2)} kPa (tempC=${res.data.tempC.toFixed(1)}°C)`
+            text: `VPD approx ${v.toFixed(2)} kPa (tempC=${res.data.tempC.toFixed(1)} C)`
           }
         ]);
       } else {
@@ -139,10 +246,9 @@ export default function AiScreen() {
       return;
     }
 
-    // Minimal: acknowledge for now (no backend yet)
     setMessages((m) => [
       ...m,
-      { role: "assistant", text: "Got it. (Next: add grow/log context + photo uploads.)" }
+      { role: "assistant", text: buildContextReply(text, context) }
     ]);
   }
 
@@ -151,9 +257,7 @@ export default function AiScreen() {
       <ScrollView style={styles.body} contentContainerStyle={{ paddingBottom: 24 }}>
         {context && (
           <View style={styles.contextCard}>
-            <Text style={[styles.contextText, styles.contextTitle]}>
-              📚 Context Loaded
-            </Text>
+            <Text style={[styles.contextText, styles.contextTitle]}>Context Loaded</Text>
             <Text style={styles.contextText}>Grows: {context.growCount}</Text>
             <Text style={styles.contextText}>Logs: {context.logCount}</Text>
             <Text style={styles.contextText}>Tasks: {context.taskCount}</Text>
@@ -173,7 +277,7 @@ export default function AiScreen() {
           style={styles.input}
           value={draft}
           onChangeText={setDraft}
-          placeholder="Type here…"
+          placeholder="Type here..."
           onSubmitEditing={send}
         />
         <Pressable
