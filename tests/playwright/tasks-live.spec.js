@@ -1,10 +1,5 @@
 import { test, expect } from "@playwright/test";
 
-/**
- * Live integration test for Tasks CRUD
- * Tests facility task management workflow
- */
-
 const TEST_USER = {
   email: "equiptest@example.com",
   password: "Password123"
@@ -12,22 +7,24 @@ const TEST_USER = {
 
 const FACILITY_ID = "facility-1";
 
+async function openFacilityTasks(page) {
+  await page.goto("/home/facility/tasks");
+  await page.waitForTimeout(1000);
+}
+
 test.describe("Tasks Management - Live API Integration", () => {
   let authToken;
 
   test.beforeAll(async ({ request }) => {
-    try {
-      const response = await request.post("http://127.0.0.1:5001/api/auth/login", {
+    const response = await request
+      .post("http://127.0.0.1:5001/api/auth/login", {
         data: { email: TEST_USER.email, password: TEST_USER.password }
-      });
+      })
+      .catch(() => null);
 
-      if (response.ok()) {
-        const data = await response.json();
-        authToken = data.token;
-        console.log("✓ Authenticated with backend");
-      }
-    } catch (error) {
-      console.warn("⚠ Backend connection failed:", error.message);
+    if (response?.ok()) {
+      const data = await response.json();
+      authToken = data.token;
     }
   });
 
@@ -47,7 +44,7 @@ test.describe("Tasks Management - Live API Integration", () => {
             "user",
             JSON.stringify({
               _id: "test-user",
-              email: "equiptest@example.com",
+              email: TEST_USER.email,
               displayName: "Equipment Tester"
             })
           );
@@ -62,96 +59,47 @@ test.describe("Tasks Management - Live API Integration", () => {
   test("loads task list", async ({ page }) => {
     test.skip(!authToken, "Auth token not available - skipping live test");
 
-    await page.goto("/");
-    await page.waitForFunction(() => typeof globalThis.__NAV__ !== "undefined", {
-      timeout: 10000
-    });
-
-    // Navigate to Tasks
-    await page.evaluate(() => {
-      try {
-        globalThis.__NAV__?.navigate("MainTabs");
-        globalThis.__NAV__?.navigate("TasksTab");
-      } catch (e) {
-        console.error("Navigation failed:", e);
-      }
-    });
-
-    await page.waitForTimeout(2000);
-
-    const tasksVisible = await page
-      .getByText(/My Tasks|Tasks|Scheduled/i)
-      .isVisible()
-      .catch(() => false);
-    console.log(`✓ Tasks screen loaded: ${tasksVisible ? "with content" : "preparing"}`);
+    await openFacilityTasks(page);
+    await expect(
+      page.getByText(/Tasks|Facility Tasks|No tasks yet/i).first()
+    ).toBeVisible();
   });
 
   test("creates new task", async ({ page }) => {
     test.skip(!authToken, "Auth token not available - skipping live test");
 
-    await page.goto("/");
-    await page.waitForFunction(() => typeof globalThis.__NAV__ !== "undefined", {
-      timeout: 10000
-    });
+    await openFacilityTasks(page);
 
-    await page.evaluate(() => {
-      try {
-        globalThis.__NAV__?.navigate("MainTabs");
-        globalThis.__NAV__?.navigate("TasksTab");
-      } catch {}
-    });
+    const createBtn = page.getByRole("button", { name: /Create facility task/i }).first();
+    await expect(createBtn).toBeVisible();
 
-    await page.waitForTimeout(2000);
+    const taskName = `Task ${Date.now()}`;
+    await page
+      .getByPlaceholder(/Task title|New task title/i)
+      .first()
+      .fill(taskName);
+    await createBtn.click();
 
-    // Look for create task button
-    const createBtn = page.getByText(/\+ Add|Create Task|New Task|Add Task/i).first();
-    const canCreate = await createBtn.isVisible().catch(() => false);
-
-    if (canCreate) {
-      await createBtn.click();
-
-      const taskName = `Task ${Date.now()}`;
-      await page.getByPlaceholder(/Task|Title|Description/i).fill(taskName);
-
-      const saveBtn = page.getByText(/Save|Create/i).first();
-      await saveBtn.click();
-
-      await page.waitForTimeout(1000);
-      console.log(`✓ Created task: ${taskName}`);
-    } else {
-      console.log("⚠ Task creation UI not yet implemented");
-    }
+    await expect(page.getByText(new RegExp(taskName))).toBeVisible({ timeout: 5000 });
   });
 
-  test("marks task as complete", async ({ page }) => {
+  test("marks task as complete when a pending task exists", async ({ page }) => {
     test.skip(!authToken, "Auth token not available - skipping live test");
 
-    await page.goto("/");
-    await page.waitForFunction(() => typeof globalThis.__NAV__ !== "undefined", {
-      timeout: 10000
-    });
+    await openFacilityTasks(page);
 
-    await page.evaluate(() => {
-      try {
-        globalThis.__NAV__?.navigate("MainTabs");
-        globalThis.__NAV__?.navigate("TasksTab");
-      } catch {}
-    });
-
-    await page.waitForTimeout(2000);
-
-    // Find a task checkbox or complete button
     const completeBtn = page
       .getByRole("button", { name: /Complete|Done|Mark Done/i })
       .first();
-    const canComplete = await completeBtn.isVisible().catch(() => false);
-
-    if (canComplete) {
+    if (await completeBtn.isVisible().catch(() => false)) {
       await completeBtn.click();
-      await page.waitForTimeout(500);
-      console.log("✓ Task completion action triggered");
+      await expect(page.getByText(/Completed|\[Done\]/i).first()).toBeVisible({
+        timeout: 5000
+      });
     } else {
-      console.log("⚠ Task completion UI not found");
+      await expect(
+        page.getByText(/No tasks yet|Tasks|Facility Tasks/i).first()
+      ).toBeVisible();
     }
   });
 });

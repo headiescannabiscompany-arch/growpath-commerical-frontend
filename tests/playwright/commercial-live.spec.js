@@ -1,10 +1,5 @@
 import { test, expect } from "@playwright/test";
 
-/**
- * Live integration test for Commercial/Vendor features
- * Tests vendor dashboard, metrics, and analytics
- */
-
 const TEST_USER = {
   email: "equiptest@example.com",
   password: "Password123"
@@ -12,22 +7,35 @@ const TEST_USER = {
 
 const FACILITY_ID = "facility-1";
 
+async function openVendorDashboard(page) {
+  await page.goto("/");
+  await page.waitForFunction(() => typeof globalThis.__NAV__ !== "undefined", {
+    timeout: 10000
+  });
+
+  await page.evaluate(() => {
+    globalThis.__NAV__?.navigate("MainTabs");
+    globalThis.__NAV__?.navigate("FacilityStack");
+    globalThis.__NAV__?.navigate("FacilityTabs");
+    globalThis.__NAV__?.navigate("FacilityHome");
+  });
+
+  await page.waitForTimeout(1000);
+}
+
 test.describe("Commercial Features - Live API Integration", () => {
   let authToken;
 
   test.beforeAll(async ({ request }) => {
-    try {
-      const response = await request.post("http://127.0.0.1:5001/api/auth/login", {
+    const response = await request
+      .post("http://127.0.0.1:5001/api/auth/login", {
         data: { email: TEST_USER.email, password: TEST_USER.password }
-      });
+      })
+      .catch(() => null);
 
-      if (response.ok()) {
-        const data = await response.json();
-        authToken = data.token;
-        console.log("✓ Authenticated with backend");
-      }
-    } catch (error) {
-      console.warn("⚠ Backend connection failed:", error.message);
+    if (response?.ok()) {
+      const data = await response.json();
+      authToken = data.token;
     }
   });
 
@@ -47,7 +55,7 @@ test.describe("Commercial Features - Live API Integration", () => {
             "user",
             JSON.stringify({
               _id: "test-user",
-              email: "equiptest@example.com",
+              email: TEST_USER.email,
               displayName: "Equipment Tester",
               isCommercial: true
             })
@@ -63,149 +71,31 @@ test.describe("Commercial Features - Live API Integration", () => {
   test("loads vendor dashboard", async ({ page }) => {
     test.skip(!authToken, "Auth token not available - skipping live test");
 
-    await page.goto("/");
-    await page.waitForFunction(() => typeof globalThis.__NAV__ !== "undefined", {
-      timeout: 10000
-    });
-
-    // Navigate to Vendor Dashboard (commercial feature)
-    await page.evaluate(() => {
-      try {
-        globalThis.__NAV__?.navigate("MainTabs");
-        globalThis.__NAV__?.navigate("FacilityStack");
-        globalThis.__NAV__?.navigate("VendorDashboard");
-      } catch (e) {
-        console.error("Navigation failed:", e);
-      }
-    });
-
-    await page.waitForTimeout(2000);
-
-    const vendorVisible = await page
-      .getByText(/Vendor|Analytics|Dashboard/i)
-      .isVisible()
-      .catch(() => false);
-    console.log(`✓ Vendor Dashboard loaded: ${vendorVisible}`);
-  });
-
-  test("loads equipment tools", async ({ page }) => {
-    test.skip(!authToken, "Auth token not available - skipping live test");
-
-    await page.goto("/");
-    await page.waitForFunction(() => typeof globalThis.__NAV__ !== "undefined", {
-      timeout: 10000
-    });
-
-    await page.evaluate(() => {
-      try {
-        globalThis.__NAV__?.navigate("MainTabs");
-        globalThis.__NAV__?.navigate("FacilityStack");
-        globalThis.__NAV__?.navigate("EquipmentTools");
-      } catch {}
-    });
-
-    await page.waitForTimeout(2000);
-
-    const equipmentVisible = await page
-      .getByText(/Equipment|Tools|Analytics/i)
-      .isVisible()
-      .catch(() => false);
-    console.log(`✓ Equipment Tools loaded: ${equipmentVisible}`);
-  });
-
-  test("loads vendor metrics", async ({ page }) => {
-    test.skip(!authToken, "Auth token not available - skipping live test");
-
-    await page.goto("/");
-    await page.waitForFunction(() => typeof globalThis.__NAV__ !== "undefined", {
-      timeout: 10000
-    });
-
-    // Navigate to Commercial tab (if exists)
-    await page.evaluate(() => {
-      try {
-        globalThis.__NAV__?.navigate("MainTabs");
-        globalThis.__NAV__?.navigate("CommercialTab");
-      } catch (e) {
-        // May not exist, try alternative
-        globalThis.__NAV__?.navigate("MainTabs");
-      }
-    });
-
-    await page.waitForTimeout(2000);
-
-    const metricsVisible = await page
-      .getByText(/Metrics|Analytics|Reports/i)
-      .isVisible()
-      .catch(() => false);
-    console.log(`✓ Metrics section accessible: ${metricsVisible}`);
+    await openVendorDashboard(page);
+    await expect(
+      page.getByText(/Vendor Dashboard|Total Vendors|Vendors/i).first()
+    ).toBeVisible();
   });
 
   test("creates vendor relationship", async ({ page }) => {
     test.skip(!authToken, "Auth token not available - skipping live test");
 
-    await page.goto("/");
-    await page.waitForFunction(() => typeof globalThis.__NAV__ !== "undefined", {
-      timeout: 10000
-    });
+    await openVendorDashboard(page);
 
-    await page.evaluate(() => {
-      try {
-        globalThis.__NAV__?.navigate("MainTabs");
-        globalThis.__NAV__?.navigate("FacilityStack");
-        globalThis.__NAV__?.navigate("VendorDashboard");
-      } catch {}
-    });
+    const vendorName = `Vendor ${Date.now()}`;
+    await page
+      .getByPlaceholder(/Vendor Name|Vendor|Name|Company/i)
+      .first()
+      .fill(vendorName);
+    await page
+      .getByPlaceholder(/Contact Info|Contact/i)
+      .first()
+      .fill("ops@example.com");
+    await page
+      .getByText(/Add Vendor|Save|Create/i)
+      .first()
+      .click();
 
-    await page.waitForTimeout(2000);
-
-    // Look for add vendor button
-    const addBtn = page.getByText(/\+ Add|Add Vendor|New Vendor/i).first();
-    const canAdd = await addBtn.isVisible().catch(() => false);
-
-    if (canAdd) {
-      await addBtn.click();
-
-      const vendorName = `Vendor ${Date.now()}`;
-      await page.getByPlaceholder(/Vendor|Name|Company/i).fill(vendorName);
-
-      const saveBtn = page.getByText(/Save|Create/i).first();
-      await saveBtn.click();
-
-      await page.waitForTimeout(1000);
-      console.log(`✓ Created vendor: ${vendorName}`);
-    } else {
-      console.log("⚠ Vendor creation UI not yet implemented");
-    }
-  });
-
-  test("generates analytics report", async ({ page }) => {
-    test.skip(!authToken, "Auth token not available - skipping live test");
-
-    await page.goto("/");
-    await page.waitForFunction(() => typeof globalThis.__NAV__ !== "undefined", {
-      timeout: 10000
-    });
-
-    await page.evaluate(() => {
-      try {
-        globalThis.__NAV__?.navigate("MainTabs");
-        globalThis.__NAV__?.navigate("FacilityStack");
-        globalThis.__NAV__?.navigate("EquipmentTools");
-      } catch {}
-    });
-
-    await page.waitForTimeout(2000);
-
-    const reportBtn = page.getByText(/Report|Export|Analytics|Generate/i).first();
-    const canGenerate = await reportBtn.isVisible().catch(() => false);
-
-    if (canGenerate) {
-      await reportBtn.click();
-      await page.waitForTimeout(1000);
-      console.log("✓ Analytics report action triggered");
-    } else {
-      console.log("⚠ Report generation not yet in UI");
-    }
+    await expect(page.getByText(new RegExp(vendorName))).toBeVisible({ timeout: 5000 });
   });
 });

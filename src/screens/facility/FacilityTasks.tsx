@@ -76,7 +76,6 @@ export default function FacilityTasks() {
 
   const allowCreate = can(facilityRole, "TASKS_CREATE");
   const allowDelete = can(facilityRole, "TASKS_DELETE");
-  const allowUpdate = can(facilityRole, "TASKS_UPDATE");
   const allowComplete = can(facilityRole, "TASKS_UPDATE");
 
   async function onCreate() {
@@ -159,7 +158,8 @@ export default function FacilityTasks() {
           ) : null}
           {item?.assignedTo ? (
             <Text style={styles.taskMeta}>
-              Assigned to: {item.assignedTo.displayName || item.assignedTo.email || item.assignedTo}
+              Assigned to:{" "}
+              {item.assignedTo.displayName || item.assignedTo.email || item.assignedTo}
             </Text>
           ) : null}
         </View>
@@ -172,12 +172,6 @@ export default function FacilityTasks() {
               style={styles.actionButton}
             >
               <Text style={styles.actionButtonText}>{updating ? "..." : "Complete"}</Text>
-            </Pressable>
-          ) : null}
-
-          {allowUpdate ? (
-            <Pressable disabled style={[styles.actionButton, styles.disabledActionButton]}>
-              <Text style={styles.disabledActionText}>Edit (Unavailable in v1)</Text>
             </Pressable>
           ) : null}
 
@@ -238,7 +232,9 @@ export default function FacilityTasks() {
 
             {completedTasks.length > 0 && (
               <View style={styles.section}>
-                <Text style={styles.sectionTitle}>Completed ({completedTasks.length})</Text>
+                <Text style={styles.sectionTitle}>
+                  Completed ({completedTasks.length})
+                </Text>
                 {completedTasks.map((task: any) =>
                   renderTaskItem({ ...task, title: `[Done] ${task.title}` }, "completed")
                 )}
@@ -297,7 +293,9 @@ export default function FacilityTasks() {
                 onPress={onCreate}
                 disabled={creating}
               >
-                <Text style={styles.confirmButtonText}>{creating ? "Creating..." : "Create"}</Text>
+                <Text style={styles.confirmButtonText}>
+                  {creating ? "Creating..." : "Create"}
+                </Text>
               </Pressable>
             </View>
           </View>
@@ -397,14 +395,6 @@ const styles = StyleSheet.create({
   actionButtonText: {
     fontSize: 13,
     color: "#374151",
-    fontWeight: "500"
-  },
-  disabledActionButton: {
-    opacity: 0.55
-  },
-  disabledActionText: {
-    fontSize: 13,
-    color: "#6b7280",
     fontWeight: "500"
   },
   emptyState: {
