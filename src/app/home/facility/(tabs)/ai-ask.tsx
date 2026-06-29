@@ -68,6 +68,20 @@ const PRESETS: Preset[] = [
     summary: "Flag stock risks using counts, par levels, and estimated daily use."
   },
   {
+    key: "dli",
+    title: "DLI planning",
+    audience: "Cultivation / lighting",
+    tool: "light",
+    fn: "computeDLI",
+    args: {
+      stage: "flower",
+      photoperiodHours: 12,
+      targetDli: 30,
+      measuredPpfd: 620
+    },
+    summary: "Compare measured PPFD against stage target DLI and light schedule."
+  },
+  {
     key: "harvest",
     title: "Harvest window",
     audience: "Cultivation",
