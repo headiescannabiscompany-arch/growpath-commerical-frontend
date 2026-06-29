@@ -35,6 +35,11 @@ function renderKV(obj: AnyRec, key: string) {
   );
 }
 
+function unwrapPlant(res: AnyRec | null | undefined): AnyRec | null {
+  if (!res) return null;
+  return res.plant ?? res.data?.plant ?? res.data ?? res;
+}
+
 export default function FacilityPlantDetail() {
   const router = useRouter();
   const { id } = useLocalSearchParams<{ id: string }>();
@@ -64,8 +69,22 @@ export default function FacilityPlantDetail() {
 
       try {
         clearError();
-        const res = await apiRequest(endpoints.plant(facilityId, String(id)));
-        setItem(res ?? null);
+        try {
+          const res = await apiRequest(endpoints.plant(facilityId, String(id)));
+          setItem(unwrapPlant(res));
+        } catch {
+          const listRes = await apiRequest(endpoints.plants(facilityId));
+          const rows = Array.isArray(listRes)
+            ? listRes
+            : (listRes?.plants ?? listRes?.items ?? listRes?.data ?? []);
+          const found = Array.isArray(rows)
+            ? rows.find((row: AnyRec) => {
+                const rowId = String(row?._id ?? row?.id ?? row?.plantId ?? "");
+                return rowId === String(id);
+              })
+            : null;
+          setItem(found ?? null);
+        }
       } catch (e) {
         handleApiError(e);
       } finally {
@@ -101,6 +120,10 @@ export default function FacilityPlantDetail() {
       "stage",
       "roomId",
       "roomName",
+      "batch",
+      "batchId",
+      "batchCycleId",
+      "growId",
       "createdAt",
       "updatedAt"
     ];
@@ -126,7 +149,7 @@ export default function FacilityPlantDetail() {
         {loading ? (
           <View style={styles.loading}>
             <ActivityIndicator />
-            <Text style={styles.muted}>Loading plant…</Text>
+            <Text style={styles.muted}>Loading plant...</Text>
           </View>
         ) : null}
 
