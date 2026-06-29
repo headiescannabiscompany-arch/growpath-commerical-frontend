@@ -67,6 +67,7 @@ export default function ForumNewPostRoute() {
           placeholder="Title"
           editable={!submitting && canPost}
           style={styles.input}
+          accessibilityLabel="Forum post title"
         />
         <TextInput
           value={body}
@@ -75,9 +76,16 @@ export default function ForumNewPostRoute() {
           multiline
           editable={!submitting && canPost}
           style={[styles.input, styles.bodyInput]}
+          accessibilityLabel="Forum post body"
         />
 
-        <Pressable onPress={submit} disabled={disabled} style={[styles.primaryBtn, disabled && styles.disabled]}>
+        <Pressable
+          onPress={submit}
+          disabled={disabled}
+          style={[styles.primaryBtn, disabled && styles.disabled]}
+          accessibilityRole="button"
+          accessibilityLabel="Publish forum post"
+        >
           {submitting ? (
             <ActivityIndicator color="#FFFFFF" />
           ) : (
@@ -85,7 +93,12 @@ export default function ForumNewPostRoute() {
           )}
         </Pressable>
 
-        <Pressable onPress={() => router.back()} style={styles.secondaryBtn}>
+        <Pressable
+          onPress={() => router.back()}
+          style={styles.secondaryBtn}
+          accessibilityRole="button"
+          accessibilityLabel="Cancel forum post"
+        >
           <Text style={styles.secondaryText}>Cancel</Text>
         </Pressable>
       </ScrollView>

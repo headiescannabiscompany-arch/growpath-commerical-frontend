@@ -94,6 +94,13 @@ export async function addForumComment(id: string, text: string) {
   });
 }
 
+export async function saveForumPostToGrowLog(id: string, growId?: string) {
+  return apiRequest(apiRoutes.FORUM.TO_GROWLOG(id), {
+    method: "POST",
+    body: growId ? { growId } : {}
+  });
+}
+
 export async function listGuilds(): Promise<Guild[]> {
   const response = await apiRequest(apiRoutes.GUILDS.LIST, { method: "GET" });
   return rows<Guild>(response, ["guilds", "items"]);

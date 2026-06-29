@@ -31,24 +31,27 @@ export default function ForumRoute() {
   const [refreshing, setRefreshing] = useState(false);
   const [feedback, setFeedback] = useState("");
 
-  const load = useCallback(async (opts?: { refresh?: boolean }) => {
-    if (!canView) {
-      setLoading(false);
-      return;
-    }
-    if (opts?.refresh) setRefreshing(true);
-    else setLoading(true);
-    setFeedback("");
-    try {
-      setPosts(await listForumPosts());
-    } catch (error: any) {
-      setFeedback(error?.message || "Unable to load forum posts.");
-      setPosts([]);
-    } finally {
-      setLoading(false);
-      setRefreshing(false);
-    }
-  }, [canView]);
+  const load = useCallback(
+    async (opts?: { refresh?: boolean }) => {
+      if (!canView) {
+        setLoading(false);
+        return;
+      }
+      if (opts?.refresh) setRefreshing(true);
+      else setLoading(true);
+      setFeedback("");
+      try {
+        setPosts(await listForumPosts());
+      } catch (error: any) {
+        setFeedback(error?.message || "Unable to load forum posts.");
+        setPosts([]);
+      } finally {
+        setLoading(false);
+        setRefreshing(false);
+      }
+    },
+    [canView]
+  );
 
   useEffect(() => {
     load();
@@ -59,17 +62,26 @@ export default function ForumRoute() {
       style={styles.container}
       contentContainerStyle={styles.content}
       refreshControl={
-        <RefreshControl refreshing={refreshing} onRefresh={() => load({ refresh: true })} />
+        <RefreshControl
+          refreshing={refreshing}
+          onRefresh={() => load({ refresh: true })}
+        />
       }
     >
       <View style={styles.headerRow}>
         <View>
           <Text style={styles.title}>Forum</Text>
-          <Text style={styles.subtitle}>Community discussions from the forum endpoint.</Text>
+          <Text style={styles.subtitle}>
+            Community discussions from the forum endpoint.
+          </Text>
         </View>
         {canPost ? (
           <Link href="/home/personal/forum/new-post" asChild>
-            <Pressable style={styles.primaryBtn}>
+            <Pressable
+              style={styles.primaryBtn}
+              accessibilityRole="button"
+              accessibilityLabel="Create forum post"
+            >
               <Text style={styles.primaryText}>New</Text>
             </Pressable>
           </Link>
@@ -102,7 +114,11 @@ export default function ForumRoute() {
             href={`/home/personal/forum/post/${encodeURIComponent(id)}`}
             asChild
           >
-            <Pressable style={styles.card}>
+            <Pressable
+              style={styles.card}
+              accessibilityRole="link"
+              accessibilityLabel={`Open forum post ${titleOf(post)}`}
+            >
               <Text style={styles.cardTitle}>{titleOf(post)}</Text>
               {bodyOf(post) ? (
                 <Text style={styles.cardText} numberOfLines={3}>
@@ -143,5 +159,11 @@ const styles = StyleSheet.create({
     paddingVertical: 9
   },
   primaryText: { color: "#FFFFFF", fontWeight: "800" },
-  feedback: { color: "#334155", backgroundColor: "#F1F5F9", borderRadius: 9, padding: 9, fontWeight: "700" }
+  feedback: {
+    color: "#334155",
+    backgroundColor: "#F1F5F9",
+    borderRadius: 9,
+    padding: 9,
+    fontWeight: "700"
+  }
 });

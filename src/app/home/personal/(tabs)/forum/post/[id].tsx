@@ -17,6 +17,7 @@ import {
   likeForumPost,
   listForumComments,
   postId,
+  saveForumPostToGrowLog,
   type SocialPost,
   unlikeForumPost
 } from "@/api/communitySocial";
@@ -40,9 +41,16 @@ function getId(params: Record<string, any>): string {
   return String(raw ?? "");
 }
 
+function param(value: unknown): string {
+  if (Array.isArray(value)) return String(value[0] ?? "");
+  return String(value ?? "");
+}
+
 function authorName(row: any) {
   const author = row?.author || row?.user;
-  return String(author?.name || author?.username || row?.authorName || "Community member");
+  return String(
+    author?.name || author?.username || row?.authorName || "Community member"
+  );
 }
 
 function bodyOf(row: any) {
@@ -56,9 +64,9 @@ function titleOf(post: SocialPost | null) {
 function likedByViewer(post: SocialPost | null) {
   return Boolean(
     (post as any)?.viewerHasLiked ||
-      (post as any)?.currentUserLiked ||
-      (post as any)?.liked ||
-      (post as any)?.isLiked
+    (post as any)?.currentUserLiked ||
+    (post as any)?.liked ||
+    (post as any)?.isLiked
   );
 }
 
@@ -72,6 +80,7 @@ export default function ForumPostDetailRoute() {
   const router = useRouter();
   const params = useLocalSearchParams();
   const id = getId(params as any);
+  const growId = param((params as any).growId);
   const entitlements = useEntitlements();
   const canView = entitlements.can(CAPABILITY_KEYS.FORUM_VIEW);
   const canPost = entitlements.can(CAPABILITY_KEYS.FORUM_POST);
@@ -88,35 +97,38 @@ export default function ForumPostDetailRoute() {
 
   const loadedId = useMemo(() => postId(post), [post]);
 
-  const load = useCallback(async (opts?: { refresh?: boolean }) => {
-    if (!id || !canView) {
-      setLoading(false);
-      setRefreshing(false);
-      return;
-    }
+  const load = useCallback(
+    async (opts?: { refresh?: boolean }) => {
+      if (!id || !canView) {
+        setLoading(false);
+        setRefreshing(false);
+        return;
+      }
 
-    if (opts?.refresh) setRefreshing(true);
-    else setLoading(true);
-    setFeedback("");
+      if (opts?.refresh) setRefreshing(true);
+      else setLoading(true);
+      setFeedback("");
 
-    try {
-      const [nextPost, nextComments] = await Promise.all([
-        getForumPost(id),
-        listForumComments(id)
-      ]);
-      setPost(nextPost);
-      setComments(nextComments);
-      setLiked(likedByViewer(nextPost));
-      setLikes(likeTotal(nextPost));
-    } catch (error: any) {
-      setFeedback(error?.message || "Unable to load discussion.");
-      setPost(null);
-      setComments([]);
-    } finally {
-      setLoading(false);
-      setRefreshing(false);
-    }
-  }, [canView, id]);
+      try {
+        const [nextPost, nextComments] = await Promise.all([
+          getForumPost(id),
+          listForumComments(id)
+        ]);
+        setPost(nextPost);
+        setComments(nextComments);
+        setLiked(likedByViewer(nextPost));
+        setLikes(likeTotal(nextPost));
+      } catch (error: any) {
+        setFeedback(error?.message || "Unable to load discussion.");
+        setPost(null);
+        setComments([]);
+      } finally {
+        setLoading(false);
+        setRefreshing(false);
+      }
+    },
+    [canView, id]
+  );
 
   useEffect(() => {
     load();
@@ -160,16 +172,38 @@ export default function ForumPostDetailRoute() {
     }
   }
 
+  async function saveToGrowLog() {
+    const targetId = loadedId || id;
+    if (!targetId || !growId || !canPost) return;
+    setSaving(true);
+    setFeedback("");
+    try {
+      await saveForumPostToGrowLog(targetId, growId);
+      setFeedback("Post saved to grow journal.");
+    } catch (error: any) {
+      setFeedback(error?.message || "Unable to save post to grow journal.");
+    } finally {
+      setSaving(false);
+    }
+  }
+
   return (
     <ScreenBoundary name="personal.forum.postDetail">
       <ScrollView
         style={styles.container}
         contentContainerStyle={styles.content}
         refreshControl={
-          <RefreshControl refreshing={refreshing} onRefresh={() => load({ refresh: true })} />
+          <RefreshControl
+            refreshing={refreshing}
+            onRefresh={() => load({ refresh: true })}
+          />
         }
       >
-        <Pressable onPress={() => router.back()}>
+        <Pressable
+          onPress={() => router.back()}
+          accessibilityRole="button"
+          accessibilityLabel="Back to forum"
+        >
           <Text style={styles.backLink}>Back</Text>
         </Pressable>
 
@@ -194,7 +228,10 @@ export default function ForumPostDetailRoute() {
               <>
                 <Text style={styles.title}>{titleOf(post)}</Text>
                 <Text style={styles.meta}>
-                  {authorName(post)}{post.createdAt ? ` | ${new Date(post.createdAt).toLocaleString()}` : ""}
+                  {authorName(post)}
+                  {post.createdAt
+                    ? ` | ${new Date(post.createdAt).toLocaleString()}`
+                    : ""}
                 </Text>
                 {bodyOf(post) ? <Text style={styles.body}>{bodyOf(post)}</Text> : null}
                 <View style={styles.actions}>
@@ -202,14 +239,32 @@ export default function ForumPostDetailRoute() {
                     disabled={!canPost || saving}
                     onPress={toggleLike}
                     style={[styles.secondaryBtn, (!canPost || saving) && styles.disabled]}
+                    accessibilityRole="button"
+                    accessibilityLabel={liked ? "Unlike forum post" : "Like forum post"}
                   >
                     <Text style={styles.secondaryText}>{liked ? "Unlike" : "Like"}</Text>
                   </Pressable>
+                  {growId ? (
+                    <Pressable
+                      disabled={!canPost || saving}
+                      onPress={saveToGrowLog}
+                      style={[
+                        styles.secondaryBtn,
+                        (!canPost || saving) && styles.disabled
+                      ]}
+                      accessibilityRole="button"
+                      accessibilityLabel="Save forum post to grow log"
+                    >
+                      <Text style={styles.secondaryText}>Save to Log</Text>
+                    </Pressable>
+                  ) : null}
                   <Text style={styles.meta}>{likes} likes</Text>
                 </View>
               </>
             ) : (
-              <Text style={styles.cardText}>{id ? "No post returned." : "Missing post id."}</Text>
+              <Text style={styles.cardText}>
+                {id ? "No post returned." : "Missing post id."}
+              </Text>
             )}
           </View>
         ) : null}
@@ -226,6 +281,7 @@ export default function ForumPostDetailRoute() {
                   multiline
                   editable={!saving}
                   style={[styles.input, styles.commentInput]}
+                  accessibilityLabel="Forum comment"
                 />
                 <Pressable
                   disabled={!commentText.trim() || saving}
@@ -234,6 +290,8 @@ export default function ForumPostDetailRoute() {
                     styles.primaryBtn,
                     (!commentText.trim() || saving) && styles.disabled
                   ]}
+                  accessibilityRole="button"
+                  accessibilityLabel="Submit forum comment"
                 >
                   <Text style={styles.primaryText}>Comment</Text>
                 </Pressable>
@@ -243,12 +301,19 @@ export default function ForumPostDetailRoute() {
             )}
 
             {comments.map((comment) => (
-              <View key={String(comment._id || comment.id || bodyOf(comment))} style={styles.comment}>
+              <View
+                key={String(comment._id || comment.id || bodyOf(comment))}
+                style={styles.comment}
+              >
                 <Text style={styles.rowTitle}>{authorName(comment)}</Text>
-                <Text style={styles.cardText}>{bodyOf(comment) || "No comment text."}</Text>
+                <Text style={styles.cardText}>
+                  {bodyOf(comment) || "No comment text."}
+                </Text>
               </View>
             ))}
-            {!comments.length ? <Text style={styles.cardText}>No comments yet.</Text> : null}
+            {!comments.length ? (
+              <Text style={styles.cardText}>No comments yet.</Text>
+            ) : null}
           </View>
         ) : null}
       </ScrollView>
