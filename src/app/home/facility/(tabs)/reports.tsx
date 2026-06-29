@@ -44,6 +44,11 @@ type ExportSummary = {
   generatedAt: string;
   totalRecords: number;
   counts: Record<string, number>;
+  readiness: {
+    status: "Ready" | "Needs cleanup" | "Action required";
+    tone: "ok" | "warn" | "danger";
+    issues: string[];
+  };
   sopEvidence?: {
     totalRuns: number;
     completedRuns: number;
@@ -55,6 +60,40 @@ type ExportSummary = {
     runsMissingSteps: number;
   };
 };
+
+function buildReadinessSummary(
+  counts: Record<string, number>,
+  sopEvidence: ExportSummary["sopEvidence"]
+): ExportSummary["readiness"] {
+  const issues: string[] = [];
+  const deviations = Number(counts.deviations || 0);
+  const pendingSteps = Number(sopEvidence?.pendingSteps || 0);
+  const runsMissingSteps = Number(sopEvidence?.runsMissingSteps || 0);
+
+  if (deviations > 0) issues.push(`${deviations} deviation record(s) in packet`);
+  if (pendingSteps > 0) issues.push(`${pendingSteps} SOP checklist step(s) pending`);
+  if (runsMissingSteps > 0) {
+    issues.push(`${runsMissingSteps} SOP run(s) missing checklist evidence`);
+  }
+  if (Number(counts.auditLogs || 0) === 0) issues.push("No audit events exported");
+  if (Number(counts.sopRuns || 0) === 0) issues.push("No SOP runs exported");
+
+  if (!issues.length) {
+    return {
+      status: "Ready",
+      tone: "ok",
+      issues: ["Packet has audit, SOP, and compliance evidence coverage."]
+    };
+  }
+
+  const critical =
+    pendingSteps > 0 || runsMissingSteps > 0 || Number(counts.auditLogs || 0) === 0;
+  return {
+    status: critical ? "Action required" : "Needs cleanup",
+    tone: critical ? "danger" : "warn",
+    issues
+  };
+}
 
 function StatTile({
   label,
@@ -142,6 +181,7 @@ export default function FacilityReportsTab() {
         generatedAt: packet.generatedAt,
         totalRecords,
         counts,
+        readiness: buildReadinessSummary(counts, packet.evidenceSummary?.sopRuns),
         sopEvidence: packet.evidenceSummary?.sopRuns
       });
 
@@ -219,6 +259,51 @@ export default function FacilityReportsTab() {
                 </Text>
               </View>
               <Text style={styles.fileName}>{exportSummary.filename}</Text>
+            </View>
+            <View
+              style={[
+                styles.readinessPanel,
+                exportSummary.readiness.tone === "ok" && styles.readinessOk,
+                exportSummary.readiness.tone === "warn" && styles.readinessWarn,
+                exportSummary.readiness.tone === "danger" && styles.readinessDanger
+              ]}
+            >
+              <Text style={styles.readinessTitle}>
+                Inspection readiness: {exportSummary.readiness.status}
+              </Text>
+              {exportSummary.readiness.issues.map((issue) => (
+                <Text key={issue} style={styles.readinessIssue}>
+                  {issue}
+                </Text>
+              ))}
+              <View style={styles.nextActions}>
+                <Pressable
+                  accessibilityRole="button"
+                  accessibilityLabel="Open AI readiness from export"
+                  style={styles.secondaryButton}
+                  onPress={() =>
+                    router.push("/home/facility/ai-ask?preset=compliance" as any)
+                  }
+                >
+                  <Text style={styles.secondaryButtonText}>AI readiness</Text>
+                </Pressable>
+                <Pressable
+                  accessibilityRole="button"
+                  accessibilityLabel="Open compliance cleanup from export"
+                  style={styles.secondaryButton}
+                  onPress={() => router.push("/home/facility/compliance" as any)}
+                >
+                  <Text style={styles.secondaryButtonText}>Compliance</Text>
+                </Pressable>
+                <Pressable
+                  accessibilityRole="button"
+                  accessibilityLabel="Open SOP runs from export"
+                  style={styles.secondaryButton}
+                  onPress={() => router.push("/home/facility/sop-runs" as any)}
+                >
+                  <Text style={styles.secondaryButtonText}>SOP runs</Text>
+                </Pressable>
+              </View>
             </View>
             <View style={styles.grid}>
               {EXPORT_COUNT_LABELS.map(([key, label]) => (
@@ -378,6 +463,28 @@ const styles = StyleSheet.create({
     fontSize: 12,
     fontWeight: "800"
   },
+  readinessPanel: {
+    borderRadius: 12,
+    borderWidth: 1,
+    gap: 6,
+    marginBottom: 12,
+    padding: 12
+  },
+  readinessOk: { backgroundColor: "#ecfdf5", borderColor: "#86efac" },
+  readinessWarn: { backgroundColor: "#fffbeb", borderColor: "#fcd34d" },
+  readinessDanger: { backgroundColor: "#fef2f2", borderColor: "#fca5a5" },
+  readinessTitle: { color: "#0f172a", fontWeight: "900" },
+  readinessIssue: { color: "#334155", fontWeight: "700", lineHeight: 18 },
+  nextActions: { flexDirection: "row", flexWrap: "wrap", gap: 8, marginTop: 4 },
+  secondaryButton: {
+    backgroundColor: "white",
+    borderColor: "rgba(15,23,42,0.18)",
+    borderRadius: 10,
+    borderWidth: 1,
+    paddingHorizontal: 10,
+    paddingVertical: 8
+  },
+  secondaryButtonText: { color: "#0f172a", fontWeight: "900" },
   evidencePanel: {
     borderTopColor: "rgba(0,0,0,0.08)",
     borderTopWidth: 1,
