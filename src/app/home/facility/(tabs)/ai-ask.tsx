@@ -10,6 +10,7 @@ import {
 } from "react-native";
 import { useLocalSearchParams } from "expo-router";
 
+import { getFacilityComplianceExport } from "@/api/complianceExport";
 import { useFacility } from "@/state/useFacility";
 import { AICallBody, useAICall } from "@/hooks/useAICall";
 
@@ -86,6 +87,33 @@ function pretty(value: unknown) {
   return JSON.stringify(value, null, 2);
 }
 
+function readinessArgsFromCounts(counts: Record<string, number>) {
+  return {
+    counts: {
+      pendingVerifications: counts.verifications ?? 0,
+      openTasks: counts.tasks ?? 0,
+      auditEvents: counts.auditLogs ?? 0,
+      sopRuns: counts.sopRuns ?? 0,
+      inventoryReconciliations: counts.inventoryReconciliations ?? 0
+    },
+    exportCoverage: {
+      rooms: counts.rooms ?? 0,
+      equipment: counts.equipment ?? 0,
+      batchCycles: counts.batchCycles ?? 0,
+      plants: counts.plants ?? 0,
+      growLogs: counts.growLogs ?? 0,
+      inventoryItems: counts.inventoryItems ?? 0,
+      complianceLogs: counts.complianceLogs ?? 0,
+      deviations: counts.deviations ?? 0,
+      sopTemplates: counts.sopTemplates ?? 0,
+      metrcCredentialStatus: counts.metrcCredentialStatus ?? 0,
+      metrcPlants: counts.metrcPlants ?? 0,
+      metrcPackages: counts.metrcPackages ?? 0,
+      metrcTransfers: counts.metrcTransfers ?? 0
+    }
+  };
+}
+
 export default function FacilityAiAskRoute() {
   const params = useLocalSearchParams<{ preset?: string }>();
   const { selectedId: facilityId } = useFacility();
@@ -104,6 +132,8 @@ export default function FacilityAiAskRoute() {
   const [fn, setFn] = useState(initialPreset.fn);
   const [argsJson, setArgsJson] = useState(pretty(initialPreset.args));
   const [localError, setLocalError] = useState("");
+  const [loadingExport, setLoadingExport] = useState(false);
+  const [exportSummary, setExportSummary] = useState("");
 
   const canRun = useMemo(
     () => !!facilityId && tool.trim() && fn.trim() && argsJson.trim() && !loading,
@@ -152,6 +182,34 @@ export default function FacilityAiAskRoute() {
     });
   }
 
+  async function loadComplianceExportCounts() {
+    if (!facilityId || loadingExport) return;
+    setLoadingExport(true);
+    setLocalError("");
+    setExportSummary("");
+    try {
+      const packet = await getFacilityComplianceExport(String(facilityId));
+      const counts = packet.counts || {};
+      setSelected(PRESETS.find((preset) => preset.key === "compliance") || selected);
+      setTool("compliance");
+      setFn("buildReadinessChecklist");
+      setArgsJson(pretty(readinessArgsFromCounts(counts)));
+      const total = Object.values(counts).reduce(
+        (sum, value) => sum + Number(value || 0),
+        0
+      );
+      setExportSummary(
+        `Loaded ${total} export records generated ${new Date(
+          packet.generatedAt
+        ).toLocaleString()}.`
+      );
+    } catch (e: any) {
+      setLocalError(e?.message || "Unable to load compliance export counts.");
+    } finally {
+      setLoadingExport(false);
+    }
+  }
+
   return (
     <ScrollView style={styles.page} contentContainerStyle={styles.container}>
       <View style={styles.header}>
@@ -193,6 +251,28 @@ export default function FacilityAiAskRoute() {
           <View style={styles.panel}>
             <Text style={styles.cardTitle}>{selected.title}</Text>
             <Text style={styles.cardDesc}>{selected.summary}</Text>
+            {selected.key === "compliance" ? (
+              <>
+                <Pressable
+                  accessibilityRole="button"
+                  accessibilityLabel="Load compliance export counts"
+                  onPress={loadComplianceExportCounts}
+                  disabled={!facilityId || loadingExport}
+                  style={({ pressed }) => [
+                    styles.secondaryButton,
+                    (!facilityId || loadingExport) && styles.disabled,
+                    pressed && styles.pressed
+                  ]}
+                >
+                  <Text style={styles.secondaryButtonText}>
+                    {loadingExport ? "Loading export..." : "Load latest export counts"}
+                  </Text>
+                </Pressable>
+                {exportSummary ? (
+                  <Text style={styles.exportSummary}>{exportSummary}</Text>
+                ) : null}
+              </>
+            ) : null}
 
             {selected.requiresGrow ? (
               <TextInput
@@ -380,6 +460,7 @@ const styles = StyleSheet.create({
     paddingVertical: 11
   },
   secondaryButtonText: { color: "white", fontWeight: "900" },
+  exportSummary: { color: "#166534", fontSize: 13, fontWeight: "800" },
   disabled: { opacity: 0.5 },
   pressed: { opacity: 0.82 },
   errorBox: {
