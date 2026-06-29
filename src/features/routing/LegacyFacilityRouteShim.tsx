@@ -1,5 +1,6 @@
 import React from "react";
-import { useLocalSearchParams, useRouter } from "expo-router";
+import { ActivityIndicator, StyleSheet, View } from "react-native";
+import { useLocalSearchParams, useRootNavigationState, useRouter } from "expo-router";
 import { useAccountMode } from "@/state/useAccountMode";
 import { useFacility } from "@/state/useFacility";
 import { useEntitlements } from "@/entitlements";
@@ -11,12 +12,15 @@ import {
 
 export function LegacyFacilityRouteShim({ section }: { section: LegacyFacilitySection }) {
   const router = useRouter();
+  const rootNavigationState = useRootNavigationState();
   const { facilityId } = useLocalSearchParams<{ facilityId: string }>();
   const { mode } = useAccountMode();
   const entitlements = useEntitlements();
   const { selectedId, selectFacility } = useFacility() as any;
 
   React.useEffect(() => {
+    if (!rootNavigationState?.key || !entitlements.ready) return;
+
     const decision = decideLegacyFacilityAccess({
       mode,
       routeFacilityId: facilityId,
@@ -40,9 +44,25 @@ export function LegacyFacilityRouteShim({ section }: { section: LegacyFacilitySe
     selectedId,
     selectFacility,
     entitlements.facilityId,
+    entitlements.ready,
+    rootNavigationState?.key,
     router,
     section
   ]);
 
-  return null;
+  return (
+    <View style={styles.centered}>
+      <ActivityIndicator />
+    </View>
+  );
 }
+
+const styles = StyleSheet.create({
+  centered: {
+    alignItems: "center",
+    backgroundColor: "#FFFFFF",
+    flex: 1,
+    justifyContent: "center",
+    minHeight: 240
+  }
+});
