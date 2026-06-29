@@ -17,6 +17,7 @@ import { useFacility } from "@/state/useFacility";
 import { apiRequest } from "@/api/apiRequest";
 import { endpoints } from "@/api/endpoints";
 import { useApiErrorHandler } from "@/hooks/useApiErrorHandler";
+import { CAPABILITY_KEYS, useEntitlements } from "@/entitlements";
 
 type AnyRec = Record<string, any>;
 
@@ -36,6 +37,7 @@ export default function InventoryItemDetailScreen() {
   const router = useRouter();
   const params = useLocalSearchParams<{ id?: string; itemId?: string }>();
   const { selectedId: facilityId } = useFacility();
+  const ent = useEntitlements();
 
   const itemId = String(params?.id ?? params?.itemId ?? "");
 
@@ -59,6 +61,7 @@ export default function InventoryItemDetailScreen() {
   const [delta, setDelta] = useState("");
   const [reason, setReason] = useState("");
   const [saving, setSaving] = useState(false);
+  const canWriteInventory = Boolean(ent?.can?.(CAPABILITY_KEYS.INVENTORY_WRITE));
 
   const load = useCallback(
     async (opts?: { refresh?: boolean }) => {
@@ -83,7 +86,7 @@ export default function InventoryItemDetailScreen() {
   );
 
   const adjust = useCallback(async () => {
-    if (!facilityId || !itemId || !item) return;
+    if (!facilityId || !itemId || !item || !canWriteInventory) return;
 
     const n = Number(delta);
     if (!Number.isFinite(n) || n === 0) return;
@@ -112,7 +115,17 @@ export default function InventoryItemDetailScreen() {
     } finally {
       setSaving(false);
     }
-  }, [facilityId, itemId, item, delta, reason, clearError, handleApiError, load]);
+  }, [
+    facilityId,
+    itemId,
+    item,
+    canWriteInventory,
+    delta,
+    reason,
+    clearError,
+    handleApiError,
+    load
+  ]);
 
   useEffect(() => {
     if (!facilityId) {
@@ -153,6 +166,11 @@ export default function InventoryItemDetailScreen() {
           <Text style={styles.muted}>
             Use negative for decrement, positive for increment.
           </Text>
+          {!canWriteInventory ? (
+            <Text style={styles.lockedText}>
+              Inventory changes unlock after facility checkout is active.
+            </Text>
+          ) : null}
 
           <TextInput
             accessibilityLabel="Inventory adjustment quantity"
@@ -160,6 +178,7 @@ export default function InventoryItemDetailScreen() {
             onChangeText={setDelta}
             placeholder="e.g. 10 or -2"
             keyboardType="numeric"
+            editable={canWriteInventory}
             style={styles.input}
           />
           <TextInput
@@ -167,6 +186,7 @@ export default function InventoryItemDetailScreen() {
             value={reason}
             onChangeText={setReason}
             placeholder="Reason (optional)"
+            editable={canWriteInventory}
             style={styles.input}
           />
 
@@ -174,10 +194,10 @@ export default function InventoryItemDetailScreen() {
             accessibilityRole="button"
             accessibilityLabel="Save inventory adjustment"
             onPress={adjust}
-            disabled={saving}
+            disabled={saving || !canWriteInventory}
             style={({ pressed }) => [
               styles.btn,
-              saving && styles.btnDisabled,
+              (saving || !canWriteInventory) && styles.btnDisabled,
               pressed && styles.pressed
             ]}
           >
@@ -236,6 +256,7 @@ const styles = StyleSheet.create({
   },
   btnDisabled: { opacity: 0.5 },
   btnText: { fontWeight: "900" },
+  lockedText: { color: "#92400e", fontWeight: "800", marginBottom: 8 },
   pressed: { opacity: 0.85 },
 
   kv: { marginBottom: 10 },

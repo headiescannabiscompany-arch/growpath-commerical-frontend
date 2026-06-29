@@ -16,9 +16,22 @@ describe("facility room UI access", () => {
     });
   });
 
-  it("allows staff to manage rooms when facility context is active", () => {
+  it("hides room management when facility capability is inactive", () => {
     const access = getFacilityRoomAccess({
       can: () => false,
+      facilityRole: "STAFF"
+    });
+
+    expect(access.canManageRooms).toBe(false);
+    expect(access.canDeleteRooms).toBe(false);
+    expect(access.hiddenManageReason).toBe(
+      "You do not have permission to manage rooms and equipment."
+    );
+  });
+
+  it("allows staff to manage rooms when facility capability is active", () => {
+    const access = getFacilityRoomAccess({
+      can: (capability) => capability === CAPABILITY_KEYS.ROOMS_EQUIPMENT_STAFF,
       facilityRole: "STAFF"
     });
 

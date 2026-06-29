@@ -25,7 +25,7 @@ export function getFacilityRoomAccess({
 }: FacilityRoomAccessInput): FacilityRoomAccess {
   const hasCapability = Boolean(can?.(CAPABILITY_KEYS.ROOMS_EQUIPMENT_STAFF));
   const roleCanOperate = canOperate(facilityRole);
-  const canManageRooms = roleCanOperate && (hasCapability || roleCanOperate);
+  const canManageRooms = roleCanOperate && hasCapability;
 
   return {
     canManageRooms,

@@ -13,7 +13,7 @@ import { useRouter } from "expo-router";
 
 import { ScreenBoundary } from "@/components/ScreenBoundary";
 import { InlineError } from "@/components/InlineError";
-import { useEntitlements } from "@/entitlements";
+import { CAPABILITY_KEYS, useEntitlements } from "@/entitlements";
 import { can } from "@/facility/roleGates";
 import { useFacility } from "@/state/useFacility";
 import { inviteTeamMember, listTeamMembers } from "@/api/team";
@@ -52,7 +52,8 @@ export default function FacilityTeamTab() {
   const { selectedId: facilityId } = useFacility();
   const ent = useEntitlements();
   const facilityRole = (ent.facilityRole as any) ?? null;
-  const canInvite = can(facilityRole, "TEAM_INVITE");
+  const canInvite =
+    Boolean(ent?.can?.(CAPABILITY_KEYS.TEAM_INVITE)) && can(facilityRole, "TEAM_INVITE");
 
   const mapApiError = useApiErrorHandler();
   const mapApiErrorRef = useRef(mapApiError);

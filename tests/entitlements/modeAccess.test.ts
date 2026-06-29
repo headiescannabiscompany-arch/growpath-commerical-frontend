@@ -12,6 +12,9 @@ describe("entitlement mode access", () => {
     expect(getEffectivePlan("pro", "inactive")).toBe("free");
     expect(getEffectivePlan("commercial", "inactive")).toBe("free");
     expect(getEffectivePlan("facility", "inactive")).toBe("free");
+    expect(getEffectivePlan("pro", "free")).toBe("free");
+    expect(getEffectivePlan("commercial", "free")).toBe("free");
+    expect(getEffectivePlan("facility", "free")).toBe("free");
   });
 
   it("keeps paid effective access for active and trialing subscriptions", () => {
@@ -65,9 +68,10 @@ describe("entitlement mode access", () => {
     expect(resolveWorkspaceMode("pro", "personal")).toBe("personal");
   });
 
-  it("applies facility role capabilities by workspace mode, not paid plan", () => {
-    expect(shouldApplyFacilityRoleCapabilities("facility")).toBe(true);
-    expect(shouldApplyFacilityRoleCapabilities("commercial")).toBe(false);
-    expect(shouldApplyFacilityRoleCapabilities("personal")).toBe(false);
+  it("applies facility role capabilities only after paid facility access is effective", () => {
+    expect(shouldApplyFacilityRoleCapabilities("facility", "facility")).toBe(true);
+    expect(shouldApplyFacilityRoleCapabilities("facility", "free")).toBe(false);
+    expect(shouldApplyFacilityRoleCapabilities("commercial", "facility")).toBe(false);
+    expect(shouldApplyFacilityRoleCapabilities("personal", "facility")).toBe(false);
   });
 });

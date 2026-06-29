@@ -15,6 +15,7 @@ import { apiRequest } from "@/api/apiRequest";
 import { endpoints } from "@/api/endpoints";
 import { useApiErrorHandler } from "@/hooks/useApiErrorHandler";
 import { InlineError } from "@/components/InlineError";
+import { CAPABILITY_KEYS, useEntitlements } from "@/entitlements";
 
 type InventoryItem = {
   _id: string;
@@ -36,6 +37,7 @@ function normalizeInventory(res: any): InventoryItem[] {
 export default function FacilityInventoryTab() {
   const router = useRouter();
   const { selectedId: facilityId } = useFacility();
+  const ent = useEntitlements();
   const handleApiError = useApiErrorHandler();
 
   const [items, setItems] = useState<InventoryItem[]>([]);
@@ -90,6 +92,7 @@ export default function FacilityInventoryTab() {
     });
     return copy;
   }, [items]);
+  const canWriteInventory = Boolean(ent?.can?.(CAPABILITY_KEYS.INVENTORY_WRITE));
 
   if (!facilityId) {
     return (
@@ -158,7 +161,9 @@ export default function FacilityInventoryTab() {
             <TouchableOpacity
               accessibilityRole="button"
               accessibilityLabel="Create inventory item"
+              disabled={!canWriteInventory}
               onPress={() => router.push("/home/facility/CreateInventoryItemScreen")}
+              style={!canWriteInventory ? { opacity: 0.5 } : undefined}
             >
               <Text style={{ fontWeight: "900" }}>Create Item</Text>
             </TouchableOpacity>
@@ -166,6 +171,11 @@ export default function FacilityInventoryTab() {
         </View>
 
         <InlineError error={error} />
+        {!canWriteInventory ? (
+          <Text style={{ opacity: 0.7, marginBottom: 10 }}>
+            Inventory changes unlock after facility checkout is active.
+          </Text>
+        ) : null}
 
         {sorted.length === 0 ? (
           <Text>No inventory items yet.</Text>

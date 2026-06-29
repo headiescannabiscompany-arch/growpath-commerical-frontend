@@ -5,17 +5,20 @@ import { useRouter } from "expo-router";
 import { apiRequest } from "@/api/apiRequest";
 import { endpoints } from "@/api/endpoints";
 import { useFacility } from "@/state/useFacility";
+import { CAPABILITY_KEYS, useEntitlements } from "@/entitlements";
 
 export default function FacilityCreateInventoryItemScreen() {
   const router = useRouter();
   const { selectedId: facilityId } = useFacility();
+  const ent = useEntitlements();
 
   const [name, setName] = useState("");
   const [sku, setSku] = useState("");
   const [quantity, setQuantity] = useState("0");
   const [saving, setSaving] = useState(false);
 
-  const canSave = !!facilityId && name.trim().length > 1 && !saving;
+  const canWriteInventory = Boolean(ent?.can?.(CAPABILITY_KEYS.INVENTORY_WRITE));
+  const canSave = !!facilityId && canWriteInventory && name.trim().length > 1 && !saving;
 
   const createItem = async () => {
     if (!canSave || !facilityId) return;
@@ -40,6 +43,11 @@ export default function FacilityCreateInventoryItemScreen() {
   return (
     <View style={styles.container}>
       <Text style={styles.h1}>Create Inventory Item</Text>
+      {!canWriteInventory ? (
+        <Text style={styles.lockedText}>
+          Inventory changes unlock after facility checkout is active.
+        </Text>
+      ) : null}
       <TextInput
         value={name}
         onChangeText={setName}
@@ -93,5 +101,6 @@ const styles = StyleSheet.create({
     alignItems: "center"
   },
   disabled: { opacity: 0.55 },
-  buttonText: { color: "#fff", fontWeight: "800" }
+  buttonText: { color: "#fff", fontWeight: "800" },
+  lockedText: { color: "#92400e", fontWeight: "800" }
 });

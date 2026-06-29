@@ -21,6 +21,10 @@ function normalizeStatus(value: unknown) {
   return status || "inactive";
 }
 
+function hasActivePaidStatus(value: unknown) {
+  return ["active", "trial", "trialing"].includes(String(value || "").toLowerCase());
+}
+
 export default function Profile() {
   const router = useRouter();
   const auth = useAuth();
@@ -45,11 +49,18 @@ export default function Profile() {
   const canSaveEmail = emailDraft.trim().length > 3 && emailChanged && !savingEmail;
 
   const planNote = useMemo(() => {
-    if (requestedPlan === activePlan && subscriptionStatus !== "inactive") {
+    if (
+      requestedPlan !== "free" &&
+      requestedPlan === activePlan &&
+      hasActivePaidStatus(subscriptionStatus)
+    ) {
       return "Your subscription is active for this account.";
     }
     if (requestedPlan !== "free" && activePlan === "free") {
       return "Checkout has not completed, so this account currently uses free access.";
+    }
+    if (requestedPlan === "free" && activePlan === "free") {
+      return "This account is using free access.";
     }
     return "Use Manage Plan to start or change checkout.";
   }, [activePlan, requestedPlan, subscriptionStatus]);
@@ -106,6 +117,7 @@ export default function Profile() {
             This is the email used for login and account recovery.
           </Text>
           <TextInput
+            accessibilityLabel="Profile email"
             style={styles.input}
             autoCapitalize="none"
             autoCorrect={false}

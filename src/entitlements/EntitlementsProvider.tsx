@@ -111,7 +111,7 @@ export function hasActiveSubscriptionStatus(status: any) {
   const normalized = String(status || "")
     .trim()
     .toLowerCase();
-  return normalized === "free" || ACTIVE_SUBSCRIPTION_STATUSES.has(normalized);
+  return ACTIVE_SUBSCRIPTION_STATUSES.has(normalized);
 }
 
 export function getEffectivePlan(plan: string | null, subscriptionStatus: any) {
@@ -256,8 +256,11 @@ export function resolveWorkspaceMode(
   return "personal";
 }
 
-export function shouldApplyFacilityRoleCapabilities(mode: EntitlementsMode) {
-  return mode === "facility";
+export function shouldApplyFacilityRoleCapabilities(
+  mode: EntitlementsMode,
+  plan: string | null = null
+) {
+  return mode === "facility" && String(plan || "").toLowerCase() === "facility";
 }
 
 // Pure "apply" function (no side effects other than returning next state)
@@ -309,7 +312,7 @@ function applyServerCtx(
   warnUnknownCapsOnce(unknownKeys);
   applyUniversalCapabilities(normalized);
   applyPlanCapabilities(normalized, plan, mode);
-  if (shouldApplyFacilityRoleCapabilities(mode)) {
+  if (shouldApplyFacilityRoleCapabilities(mode, plan)) {
     applyFacilityRoleCapabilities(normalized, facilityRole);
   }
 
