@@ -18,6 +18,34 @@ import { useApiErrorHandler } from "@/hooks/useApiErrorHandler";
 import { useFacility } from "@/state/useFacility";
 import type { FacilityReport } from "@/types/report";
 
+const EXPORT_COUNT_LABELS: Array<[string, string]> = [
+  ["facility", "Facility"],
+  ["members", "Team"],
+  ["rooms", "Rooms"],
+  ["equipment", "Equipment"],
+  ["batchCycles", "Batches"],
+  ["plants", "Plants"],
+  ["growLogs", "Grow logs"],
+  ["inventoryItems", "Inventory"],
+  ["complianceLogs", "Compliance logs"],
+  ["auditLogs", "Audit logs"],
+  ["deviations", "Deviations"],
+  ["verifications", "Verifications"],
+  ["sopTemplates", "SOP templates"],
+  ["sopRuns", "SOP runs"],
+  ["metrcCredentialStatus", "METRC status"],
+  ["metrcPlants", "METRC plants"],
+  ["metrcPackages", "METRC packages"],
+  ["metrcTransfers", "METRC transfers"]
+];
+
+type ExportSummary = {
+  filename: string;
+  generatedAt: string;
+  totalRecords: number;
+  counts: Record<string, number>;
+};
+
 function StatTile({
   label,
   value,
@@ -55,6 +83,7 @@ export default function FacilityReportsTab() {
   const [refreshing, setRefreshing] = useState(false);
   const [exporting, setExporting] = useState(false);
   const [exportFeedback, setExportFeedback] = useState("");
+  const [exportSummary, setExportSummary] = useState<ExportSummary | null>(null);
 
   const load = useCallback(
     async (opts?: { refresh?: boolean }) => {
@@ -92,6 +121,18 @@ export default function FacilityReportsTab() {
       const packet = await getFacilityComplianceExport(facilityId);
       const filename = `facility-${facilityId}-compliance-export.json`;
       const json = JSON.stringify(packet, null, 2);
+      const counts = packet.counts || {};
+      const totalRecords = Object.values(counts).reduce(
+        (sum, value) => sum + Number(value || 0),
+        0
+      );
+
+      setExportSummary({
+        filename,
+        generatedAt: packet.generatedAt,
+        totalRecords,
+        counts
+      });
 
       if (typeof document !== "undefined") {
         const blob = new Blob([json], { type: "application/json" });
@@ -105,9 +146,7 @@ export default function FacilityReportsTab() {
         URL.revokeObjectURL(url);
         setExportFeedback(`Export ready: ${filename}`);
       } else {
-        setExportFeedback(
-          `Export ready with ${Object.values(packet.counts || {}).reduce((sum, value) => sum + Number(value || 0), 0)} records.`
-        );
+        setExportFeedback(`Export ready with ${totalRecords} records.`);
       }
     } catch (e) {
       handleApiError(e);
@@ -157,6 +196,30 @@ export default function FacilityReportsTab() {
           </View>
         </View>
         {exportFeedback ? <Text style={styles.success}>{exportFeedback}</Text> : null}
+
+        {exportSummary ? (
+          <View style={styles.card}>
+            <View style={styles.exportHeader}>
+              <View>
+                <Text style={styles.cardTitle}>Export packet coverage</Text>
+                <Text style={styles.muted}>
+                  {exportSummary.totalRecords} records | generated{" "}
+                  {new Date(exportSummary.generatedAt).toLocaleString()}
+                </Text>
+              </View>
+              <Text style={styles.fileName}>{exportSummary.filename}</Text>
+            </View>
+            <View style={styles.grid}>
+              {EXPORT_COUNT_LABELS.map(([key, label]) => (
+                <StatTile
+                  key={key}
+                  label={label}
+                  value={exportSummary.counts[key] ?? 0}
+                />
+              ))}
+            </View>
+          </View>
+        ) : null}
 
         {loading ? (
           <View style={styles.loading}>
@@ -261,6 +324,19 @@ const styles = StyleSheet.create({
   buttonText: { color: "white", fontWeight: "900" },
   actions: { flexDirection: "row", flexWrap: "wrap", gap: 8, justifyContent: "flex-end" },
   success: { color: "#166534", fontWeight: "800", marginBottom: 8 },
+  exportHeader: {
+    flexDirection: "row",
+    flexWrap: "wrap",
+    gap: 10,
+    justifyContent: "space-between",
+    marginBottom: 10
+  },
+  fileName: {
+    color: "#334155",
+    flexShrink: 1,
+    fontSize: 12,
+    fontWeight: "800"
+  },
   loading: { alignItems: "center", paddingVertical: 24 },
   card: {
     backgroundColor: "white",
