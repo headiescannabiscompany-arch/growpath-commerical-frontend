@@ -9,6 +9,7 @@ import {
   Alert,
   Image
 } from "react-native";
+import { MaterialCommunityIcons } from "@expo/vector-icons";
 import * as ImagePicker from "expo-image-picker";
 import ScreenContainer from "../components/ScreenContainer";
 import PrimaryButton from "../components/PrimaryButton";
@@ -135,9 +136,16 @@ export default function CreatePlantScreen({ navigation }) {
         <View style={styles.section}>
           <Text style={styles.label}>Video (Optional)</Text>
           <TouchableOpacity style={styles.uploadButton} onPress={pickVideo}>
-            <Text style={styles.uploadButtonText}>
-              {video ? "✅ Video Added" : "🎥 Add Video"}
-            </Text>
+            <View style={styles.uploadButtonContent}>
+              <MaterialCommunityIcons
+                name={video ? "check-circle" : "video-plus"}
+                size={18}
+                color="#FFF"
+              />
+              <Text style={styles.uploadButtonText}>
+                {video ? "Video Added" : "Add Video"}
+              </Text>
+            </View>
           </TouchableOpacity>
           {video && (
             <Text style={styles.videoInfo}>Video: {Math.round(video.duration)}s</Text>
@@ -287,6 +295,12 @@ const styles = StyleSheet.create({
     padding: 14,
     borderRadius: 8,
     alignItems: "center"
+  },
+  uploadButtonContent: {
+    flexDirection: "row",
+    alignItems: "center",
+    justifyContent: "center",
+    gap: 8
   },
   uploadButtonText: {
     color: "#FFF",
