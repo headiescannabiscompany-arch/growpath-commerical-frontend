@@ -47,6 +47,12 @@ export default function LessonScreen({ route, navigation }) {
         </Text>
       ) : null}
 
+      {lesson.audioUrl ? (
+        <Text style={styles.link} onPress={() => Linking.openURL(lesson.audioUrl)}>
+          Open Audio Lesson
+        </Text>
+      ) : null}
+
       {lesson.content ? <Text style={styles.content}>{lesson.content}</Text> : null}
 
       {courseId ? (

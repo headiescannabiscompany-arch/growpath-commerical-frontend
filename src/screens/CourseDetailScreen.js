@@ -432,7 +432,7 @@ export default function CourseDetailScreen({ route, navigation }) {
             <Text style={styles.rowTitle}>{lessonTitle(lesson, index)}</Text>
             <Text style={styles.meta}>
               {lesson.content ? "Text" : ""} {lesson.videoUrl ? "Video" : ""}{" "}
-              {lesson.pdfUrl ? "PDF" : ""}
+              {lesson.pdfUrl ? "PDF" : ""} {lesson.audioUrl ? "Audio" : ""}
             </Text>
             <View style={styles.actions}>
               <Pressable
@@ -466,6 +466,11 @@ export default function CourseDetailScreen({ route, navigation }) {
           {activeLesson.pdfUrl ? (
             <Pressable onPress={() => Linking.openURL(activeLesson.pdfUrl)}>
               <Text style={styles.link}>Open PDF lesson</Text>
+            </Pressable>
+          ) : null}
+          {activeLesson.audioUrl ? (
+            <Pressable onPress={() => Linking.openURL(activeLesson.audioUrl)}>
+              <Text style={styles.link}>Open audio lesson</Text>
             </Pressable>
           ) : null}
           {activeLesson.content ? (

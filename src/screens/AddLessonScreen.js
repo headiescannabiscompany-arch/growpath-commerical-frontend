@@ -13,11 +13,19 @@ import * as ImagePicker from "expo-image-picker";
 import ScreenContainer from "../components/ScreenContainer";
 import GrowInterestPicker from "../components/GrowInterestPicker";
 import { addLesson } from "../api/courses";
+import { uploadCourseMedia } from "@/api/uploads";
 import { useEntitlements } from "@/entitlements";
 import { getLearningAccess } from "@/features/learning/learningAccess";
 import { maybePromptAttachPhotosToGrow } from "@/utils/growPhotoAttachment";
 import { persistImageUris } from "@/utils/photoUploads";
 import { buildEmptyTierSelection, flattenTierSelections } from "../utils/growInterests";
+
+function firstDocumentAsset(result) {
+  if (!result || result.canceled) return null;
+  if (Array.isArray(result.assets) && result.assets[0]) return result.assets[0];
+  if (result.type === "success") return result;
+  return null;
+}
 
 export default function AddLessonScreen({ route, navigation }) {
   const entitlements = useEntitlements();
@@ -46,7 +54,7 @@ export default function AddLessonScreen({ route, navigation }) {
 
       if (!result.canceled && result.assets[0]) {
         setVideoFile(result.assets[0]);
-        Alert.alert("Video Selected", "Video will be uploaded when you save the lesson.");
+        Alert.alert("Video selected", "Video will upload when you save the lesson.");
       }
     } catch (_err) {
       Alert.alert("Error", "Failed to pick video");
@@ -59,9 +67,10 @@ export default function AddLessonScreen({ route, navigation }) {
         type: "application/pdf"
       });
 
-      if (result.type === "success" || !result.canceled) {
-        setPdfFile(result);
-        Alert.alert("PDF Selected", "PDF will be uploaded when you save the lesson.");
+      const asset = firstDocumentAsset(result);
+      if (asset) {
+        setPdfFile(asset);
+        Alert.alert("PDF selected", "PDF will upload when you save the lesson.");
       }
     } catch (_err) {
       Alert.alert("Error", "Failed to pick PDF");
@@ -74,9 +83,10 @@ export default function AddLessonScreen({ route, navigation }) {
         type: "audio/*"
       });
 
-      if (result.type === "success" || !result.canceled) {
-        setAudioFile(result);
-        Alert.alert("Audio Selected", "Audio will be uploaded when you save the lesson.");
+      const asset = firstDocumentAsset(result);
+      if (asset) {
+        setAudioFile(asset);
+        Alert.alert("Audio selected", "Audio will upload when you save the lesson.");
       }
     } catch (_err) {
       Alert.alert("Error", "Failed to pick audio");
@@ -107,14 +117,20 @@ export default function AddLessonScreen({ route, navigation }) {
       return Alert.alert("Missing title", "Please add a lesson title.");
     }
 
-    const imageUrls = await persistImageUris(images.map((image) => image.uri));
+    const [imageUrls, uploadedVideo, uploadedPdf, uploadedAudio] = await Promise.all([
+      persistImageUris(images.map((image) => image.uri)),
+      videoFile ? uploadCourseMedia(videoFile) : Promise.resolve(null),
+      pdfFile ? uploadCourseMedia(pdfFile) : Promise.resolve(null),
+      audioFile ? uploadCourseMedia(audioFile) : Promise.resolve(null)
+    ]);
 
     await addLesson(courseId, {
       title,
       order: order ? Number(order) : 1,
       content,
-      videoUrl: videoFile ? videoFile.uri : videoUrl,
-      pdfUrl: pdfFile ? pdfFile.uri : pdfUrl,
+      videoUrl: uploadedVideo?.url || videoUrl,
+      pdfUrl: uploadedPdf?.url || pdfUrl,
+      audioUrl: uploadedAudio?.url || "",
       imageUrls,
       growTags: flattenTierSelections(growInterestSelections)
     });
@@ -249,8 +265,8 @@ export default function AddLessonScreen({ route, navigation }) {
       </TouchableOpacity>
 
       <Text style={styles.helpText}>
-        Images upload when you save. For videos, PDFs, or large files, host them
-        externally and paste the URL.
+        Selected images, videos, PDFs, and audio upload when you save. Pasted video and
+        PDF links are saved as provided.
       </Text>
     </ScreenContainer>
   );

@@ -149,11 +149,10 @@ product backlogs.
       Playwright remains the canonical E2E suite.
 - [x] Record the 2026-06-23 stub/placeholder audit in
       `docs/stub-placeholder-audit-2026-06-23.md`.
-- [ ] Replace lesson video/PDF/audio local-file selectors with durable upload
-      wiring. Current completed media wiring persists lesson images and pasted
-      video/PDF URLs; selected video/PDF/audio files still need a backend upload
-      endpoint, frontend API helper, save payload integration, and Playwright
-      evidence before those buttons can be considered shippable.
+- [x] Replace lesson video/PDF/audio local-file selectors with durable upload
+      wiring. Lesson media now uses the authenticated course-media upload
+      endpoint, saves returned video/PDF/audio URLs, and keeps pasted video/PDF
+      URL support.
 
 ## Parked Or Blocked
 
