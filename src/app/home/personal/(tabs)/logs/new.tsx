@@ -19,6 +19,10 @@ import {
   normalizeLogInsightSuggestions,
   type LogInsightSuggestions
 } from "@/features/personal/logs/normalizeLogInsights";
+import {
+  ToolPlantContextPicker,
+  useToolPlantContext
+} from "@/features/personal/tools/ToolPlantContextPicker";
 import { persistImageUris } from "@/utils/photoUploads";
 
 type SelectedPhoto = {
@@ -37,11 +41,15 @@ export default function NewLogScreen() {
   const router = useRouter();
   const params = useLocalSearchParams<{
     growId?: string | string[];
+    plantId?: string | string[];
     toolRunId?: string | string[];
   }>();
   const growId = param(params.growId);
+  const initialPlantId = param(params.plantId);
   const queryToolRunId = param(params.toolRunId);
   const entitlements = useEntitlements();
+  const { plants, plantId, selectedPlant, setPlantId, toolRunContext } =
+    useToolPlantContext(growId, initialPlantId);
 
   const [title, setTitle] = useState("");
   const [date, setDate] = useState(new Date().toISOString().slice(0, 10));
@@ -67,6 +75,21 @@ export default function NewLogScreen() {
       .then((rows) => setToolRuns(rows.slice(0, 8)))
       .catch(() => setToolRuns([]));
   }, [growId]);
+
+  const selectedToolRun = useMemo(
+    () =>
+      toolRuns.find(
+        (run) => String(run?._id || run?.id || "") === String(selectedToolRunId || "")
+      ),
+    [selectedToolRunId, toolRuns]
+  );
+
+  useEffect(() => {
+    const runPlantId = String(selectedToolRun?.plantId || "").trim();
+    if (runPlantId && !plantId) {
+      setPlantId(runPlantId);
+    }
+  }, [plantId, selectedToolRun?.plantId, setPlantId]);
 
   const canSave = Boolean(growId && title.trim() && date.trim());
 
@@ -134,6 +157,7 @@ export default function NewLogScreen() {
       const uploadedPhotos = await persistImageUris(photos.map((photo) => photo.uri));
       const created = await createPersonalLog({
         growId,
+        plantId: toolRunContext.plantId,
         title: title.trim(),
         date: date.trim(),
         notes: notes.trim(),
@@ -141,6 +165,8 @@ export default function NewLogScreen() {
         toolRunId: selectedToolRunId || undefined,
         photos: uploadedPhotos,
         photoMetadata: uploadedPhotos.map((url, index) => ({
+          growId,
+          plantId: toolRunContext.plantId || null,
           url,
           mimeType: photos[index]?.mimeType || null,
           width: photos[index]?.width || null,
@@ -182,6 +208,7 @@ export default function NewLogScreen() {
     router,
     selectedToolRunId,
     suggestions,
+    toolRunContext.plantId,
     title
   ]);
 
@@ -212,6 +239,14 @@ export default function NewLogScreen() {
         {growId ? `Grow context: ${growId}` : "No grow selected"}
       </Text>
       {error ? <Text style={styles.error}>{error}</Text> : null}
+
+      <ToolPlantContextPicker
+        plants={plants}
+        plantId={plantId}
+        selectedPlant={selectedPlant}
+        onSelect={setPlantId}
+        description="Journal entries and attached photos save the selected plant, crop, cultivar, size, pheno, and timing context when available."
+      />
 
       <Text style={styles.label}>Title</Text>
       <TextInput
@@ -396,6 +431,16 @@ export default function NewLogScreen() {
                   >
                     {run?.toolType || run?.toolName || "tool"}
                   </Text>
+                  {run?.plantId ? (
+                    <Text
+                      style={[
+                        styles.chipSubtext,
+                        selectedToolRunId === id && styles.chipTextOn
+                      ]}
+                    >
+                      plant linked
+                    </Text>
+                  ) : null}
                 </Pressable>
               );
             })}
@@ -463,6 +508,7 @@ const styles = StyleSheet.create({
   chipOn: { backgroundColor: "#166534", borderColor: "#166534" },
   chipText: { color: "#334155", fontWeight: "700", fontSize: 12 },
   chipTextOn: { color: "#FFFFFF" },
+  chipSubtext: { color: "#64748B", fontSize: 10, fontWeight: "700" },
   primaryButton: {
     marginTop: 8,
     backgroundColor: "#166534",

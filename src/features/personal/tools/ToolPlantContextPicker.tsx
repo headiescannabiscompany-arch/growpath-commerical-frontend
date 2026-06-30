@@ -65,22 +65,21 @@ export function ToolPlantContextPicker({
   plants,
   plantId,
   selectedPlant,
-  onSelect
+  onSelect,
+  description = "Tool runs save the selected plant, crop, cultivar, size, pheno, and timing context when available."
 }: {
   plants: PersonalPlant[];
   plantId: string;
   selectedPlant?: PersonalPlant;
   onSelect: (plantId: string) => void;
+  description?: string;
 }) {
   if (!plants.length) return null;
 
   return (
     <View style={styles.section}>
       <Text style={styles.label}>Plant context</Text>
-      <Text style={styles.subtitle}>
-        Tool runs save the selected plant, crop, cultivar, size, pheno, and timing context
-        when available.
-      </Text>
+      <Text style={styles.subtitle}>{description}</Text>
       <View style={styles.row}>
         <Pressable
           style={[styles.pill, !plantId && styles.pillOn]}

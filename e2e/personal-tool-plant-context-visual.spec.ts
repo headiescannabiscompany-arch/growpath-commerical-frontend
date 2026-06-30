@@ -41,6 +41,7 @@ function fulfillJson(route: any, body: any, status = 200) {
 async function installMocks(page: any) {
   const createdToolRuns: any[] = [];
   const createdTasks: any[] = [];
+  const createdLogs: any[] = [];
 
   await page.addInitScript(() => {
     window.localStorage.setItem("auth_token_v1", "plant-context-token");
@@ -71,6 +72,7 @@ async function installMocks(page: any) {
             LOGS_PERSONAL_VIEW: true,
             LOGS_PERSONAL_WRITE: true,
             PLANTS_PERSONAL_VIEW: true,
+            DIAGNOSE_AI: true,
             TOOL_TIMELINE_PLANNER: true
           },
           limits: {}
@@ -145,10 +147,21 @@ async function installMocks(page: any) {
       });
     }
 
+    if (method === "POST" && url.pathname === "/api/personal/logs") {
+      const payload = request.postDataJSON();
+      createdLogs.push(payload);
+      return fulfillJson(route, {
+        log: {
+          id: `log-${createdLogs.length}`,
+          ...payload
+        }
+      });
+    }
+
     return fulfillJson(route, { ok: true });
   });
 
-  return { createdToolRuns, createdTasks };
+  return { createdToolRuns, createdTasks, createdLogs };
 }
 
 test.describe("personal tool plant context", () => {
@@ -243,5 +256,46 @@ test.describe("personal tool plant context", () => {
       path: "tmp/screenshots/personal-tool-plant-context-grow-tools-mobile.png",
       fullPage: true
     });
+  });
+
+  test("New journal entry preserves selected plant and tool result context", async ({
+    page
+  }) => {
+    await page.setViewportSize({ width: 390, height: 844 });
+    const mocks = await installMocks(page);
+
+    await page.goto(
+      `/home/personal/logs/new?growId=${GROW.id}&plantId=${PLANT.id}&toolRunId=toolrun-vpd-olive-1`,
+      { waitUntil: "domcontentloaded" }
+    );
+
+    await expect(page.getByRole("heading", { name: "New Journal Entry" })).toBeVisible();
+    await expect(
+      page.getByText("Olive | Arbequina | pheno: compact-container")
+    ).toBeVisible();
+    await expect(page.getByText("plant linked")).toBeVisible();
+
+    await page.getByLabel("Log title").fill("Olive canopy note");
+    await page.getByLabel("Log notes").fill("Checked leaves after VPD review.");
+
+    await page.screenshot({
+      path: "tmp/screenshots/personal-tool-plant-context-new-log-mobile.png",
+      fullPage: true
+    });
+
+    await page.getByRole("button", { name: "Create log" }).click();
+
+    await expect
+      .poll(() => mocks.createdLogs[0], {
+        message: "new journal entry includes plant and tool run context"
+      })
+      .toEqual(
+        expect.objectContaining({
+          growId: GROW.id,
+          plantId: PLANT.id,
+          toolRunId: "toolrun-vpd-olive-1",
+          title: "Olive canopy note"
+        })
+      );
   });
 });
