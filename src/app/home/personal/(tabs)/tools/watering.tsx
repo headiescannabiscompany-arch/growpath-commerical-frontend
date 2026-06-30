@@ -2,7 +2,6 @@ import React, { useMemo, useState } from "react";
 import { useLocalSearchParams, useRouter } from "expo-router";
 import { ScrollView, StyleSheet, Text, TextInput } from "react-native";
 
-import { apiRequest } from "@/api/apiRequest";
 import { createToolRun } from "@/api/toolRuns";
 import BackButton from "@/components/nav/BackButton";
 import {
@@ -12,7 +11,10 @@ import {
 import ToolResultSurface, {
   type ToolResultAction
 } from "@/features/personal/tools/ToolResultSurface";
-import { saveToolRunAndOpenJournal } from "@/features/personal/tools/saveToolRunAndOpenJournal";
+import {
+  saveToolRunAndCreateTask,
+  saveToolRunAndOpenJournal
+} from "@/features/personal/tools/saveToolRunAndOpenJournal";
 
 function toNum(value: string, fallback: number) {
   const parsed = Number(value);
@@ -112,16 +114,20 @@ export default function WateringToolScreen() {
         label: "Create Watering Task",
         variant: "secondary",
         onPress: async () => {
-          await apiRequest("/api/personal/tasks", {
-            method: "POST",
-            body: {
-              growId,
-              plantId: plantContext.toolRunContext.plantId,
-              title: "Water plants",
-              description: `Target ${model.targetLiters} L with ${runoffPct}% runoff`,
-              dueDate: model.nextWaterDate
-            }
+          const result = await saveToolRunAndCreateTask({
+            growId,
+            ...plantContext.toolRunContext,
+            toolKey: "watering",
+            toolRunId: savedRunId || undefined,
+            input,
+            output: model,
+            title: "Water plants",
+            description: `Target ${model.targetLiters} L with ${runoffPct}% runoff.`,
+            priority: "medium",
+            dueDate: model.nextWaterDate
           });
+          if (!result.ok) throw new Error(result.error);
+          if (!savedRunId) setSavedRunId(result.toolRunId);
           setFeedback("Created grow task.");
         }
       }

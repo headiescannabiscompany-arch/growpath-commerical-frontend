@@ -16,6 +16,7 @@ import {
   useToolPlantContext
 } from "@/features/personal/tools/ToolPlantContextPicker";
 import ToolResultSurface from "@/features/personal/tools/ToolResultSurface";
+import { saveToolRunAndCreateTask } from "@/features/personal/tools/saveToolRunAndOpenJournal";
 
 function coerceParam(value?: string | string[]) {
   if (typeof value === "string") return value;
@@ -26,6 +27,10 @@ function coerceParam(value?: string | string[]) {
 function numberValue(value: string, fallback: number) {
   const parsed = Number(value);
   return Number.isFinite(parsed) ? parsed : fallback;
+}
+
+function dueInDays(days: number) {
+  return new Date(Date.now() + days * 24 * 60 * 60 * 1000).toISOString();
 }
 
 export default function HarvestEstimatorScreen() {
@@ -189,6 +194,31 @@ export default function HarvestEstimatorScreen() {
                 pendingLabel: "Saving...",
                 disabled: !growId,
                 onPress: saveEstimate
+              },
+              {
+                key: "create-task",
+                label: "Create Harvest Check Task",
+                variant: "secondary",
+                pendingLabel: "Creating...",
+                disabled: !growId,
+                onPress: async () => {
+                  if (!growId) throw new Error("Select a grow before creating a task.");
+                  const taskResult = await saveToolRunAndCreateTask({
+                    growId,
+                    ...plantContext.toolRunContext,
+                    toolKey: "harvest-estimator",
+                    input,
+                    output: result,
+                    title: "Inspect harvest readiness",
+                    description: `${result.summary}\nWindow: day ${result.earliestDay}-${result.latestDay}. Check trichomes across multiple sites and confirm drying space readiness.`,
+                    priority: result.readiness === "ready" ? "high" : "medium",
+                    dueDate: dueInDays(
+                      Math.max(1, Math.min(7, result.daysRemaining || 1))
+                    )
+                  });
+                  if (!taskResult.ok) throw new Error(taskResult.error);
+                  setFeedback("Created harvest check task.");
+                }
               }
             ]}
             feedback={feedback}

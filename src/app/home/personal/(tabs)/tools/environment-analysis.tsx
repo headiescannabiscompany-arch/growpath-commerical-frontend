@@ -11,6 +11,7 @@ import {
   useToolPlantContext
 } from "@/features/personal/tools/ToolPlantContextPicker";
 import ToolResultSurface from "@/features/personal/tools/ToolResultSurface";
+import { saveToolRunAndCreateTask } from "@/features/personal/tools/saveToolRunAndOpenJournal";
 
 function coerceParam(value?: string | string[]) {
   if (typeof value === "string") return value;
@@ -58,6 +59,10 @@ function targetValue(result: any, key: string) {
   const targets = result?.data?.targets ?? result?.targets ?? {};
   const value = targets[key];
   return value === undefined || value === null || value === "" ? "n/a" : String(value);
+}
+
+function dueTomorrow() {
+  return new Date(Date.now() + 24 * 60 * 60 * 1000).toISOString();
 }
 
 export default function EnvironmentAnalysisToolScreen() {
@@ -317,6 +322,48 @@ export default function EnvironmentAnalysisToolScreen() {
                   label: "Save to Grow Log",
                   onPress: saveLog,
                   pendingLabel: "Saving..."
+                },
+                {
+                  key: "create-task",
+                  label: "Create Environment Task",
+                  variant: "secondary",
+                  pendingLabel: "Creating...",
+                  onPress: async () => {
+                    const issues = list(assessment.issues);
+                    const riskFlags = list(assessment.riskFlags);
+                    const taskResult = await saveToolRunAndCreateTask({
+                      growId,
+                      ...plantContext.toolRunContext,
+                      toolKey: "environment-analysis",
+                      input: {
+                        stage,
+                        tempDayC: numeric(tempDayC),
+                        tempNightC: numeric(tempNightC),
+                        humidity: numeric(humidity),
+                        vpd: numeric(vpd),
+                        ppfd: numeric(ppfd),
+                        dli: numeric(dli),
+                        co2: numeric(co2),
+                        lightHours: numeric(lightHours)
+                      },
+                      output: result,
+                      title: "Review environment analysis",
+                      description: [
+                        `Status: ${assessment.status || "analysis complete"}`,
+                        issues.length ? `Issues: ${issues.join("; ")}` : "",
+                        riskFlags.length ? `Risk flags: ${riskFlags.join("; ")}` : "",
+                        recommendations.length
+                          ? `Recommended actions: ${recommendations.join("; ")}`
+                          : ""
+                      ]
+                        .filter(Boolean)
+                        .join("\n"),
+                      priority: riskFlags.length ? "high" : "medium",
+                      dueDate: dueTomorrow()
+                    });
+                    if (!taskResult.ok) throw new Error(taskResult.error);
+                    setFeedback("Created environment review task.");
+                  }
                 }
               ]
             : []

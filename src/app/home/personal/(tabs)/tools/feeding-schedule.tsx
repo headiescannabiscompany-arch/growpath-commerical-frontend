@@ -12,6 +12,7 @@ import {
   useToolPlantContext
 } from "@/features/personal/tools/ToolPlantContextPicker";
 import ToolResultSurface from "@/features/personal/tools/ToolResultSurface";
+import { saveToolRunAndCreateTask } from "@/features/personal/tools/saveToolRunAndOpenJournal";
 
 function coerceParam(value?: string | string[]) {
   if (typeof value === "string") return value;
@@ -37,6 +38,10 @@ function notesFromSchedule(result: any) {
       result?.schedule?.notes ||
       ""
   );
+}
+
+function dueTomorrow() {
+  return new Date(Date.now() + 24 * 60 * 60 * 1000).toISOString();
 }
 
 export default function FeedingScheduleToolScreen() {
@@ -223,6 +228,40 @@ export default function FeedingScheduleToolScreen() {
                   label: "Save to Grow Log",
                   onPress: saveLog,
                   pendingLabel: "Saving..."
+                },
+                {
+                  key: "create-task",
+                  label: "Create Feeding Review Task",
+                  variant: "secondary",
+                  pendingLabel: "Creating...",
+                  onPress: async () => {
+                    const taskResult = await saveToolRunAndCreateTask({
+                      growId,
+                      ...plantContext.toolRunContext,
+                      toolKey: "feeding-schedule",
+                      input: {
+                        nutrientData: { productName: productName.trim() },
+                        growMedium: medium.trim(),
+                        strainType: strainType.trim(),
+                        experience: experience.trim(),
+                        weeks: Number(weeks)
+                      },
+                      output: result,
+                      title: "Review generated feeding schedule",
+                      description: [
+                        `Product: ${productName.trim() || "Unspecified"}`,
+                        `Medium: ${medium}`,
+                        `Rows: ${scheduleRows.length}`,
+                        notes
+                      ]
+                        .filter(Boolean)
+                        .join("\n"),
+                      priority: "medium",
+                      dueDate: dueTomorrow()
+                    });
+                    if (!taskResult.ok) throw new Error(taskResult.error);
+                    setFeedback("Created feeding review task.");
+                  }
                 }
               ]
             : []

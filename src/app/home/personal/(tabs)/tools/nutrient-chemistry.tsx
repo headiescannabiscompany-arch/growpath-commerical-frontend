@@ -16,7 +16,10 @@ import {
   ToolPlantContextPicker,
   useToolPlantContext
 } from "@/features/personal/tools/ToolPlantContextPicker";
-import { saveToolRunAndOpenJournal } from "@/features/personal/tools/saveToolRunAndOpenJournal";
+import {
+  saveToolRunAndCreateTask,
+  saveToolRunAndOpenJournal
+} from "@/features/personal/tools/saveToolRunAndOpenJournal";
 import {
   analyzeCompatibility,
   buildReleaseTimeline,
@@ -94,6 +97,7 @@ export default function NutrientChemistryToolScreen() {
   >({});
   const [savedMessage, setSavedMessage] = useState("");
   const [saving, setSaving] = useState(false);
+  const [creatingTask, setCreatingTask] = useState(false);
 
   const environment: NutrientEnvironment = useMemo(
     () => ({
@@ -251,6 +255,63 @@ export default function NutrientChemistryToolScreen() {
     });
     setSavedMessage(result.ok ? "Saved to grow journal." : result.error);
     setSaving(false);
+  }
+
+  async function createReviewTask() {
+    if (!growId || creatingTask || !activeRecommendation) return;
+    setCreatingTask(true);
+    setSavedMessage("");
+    const result = await saveToolRunAndCreateTask({
+      growId,
+      ...plantContext.toolRunContext,
+      toolKey: "nutrient-chemistry",
+      input: {
+        nutrient,
+        intent,
+        stage,
+        moisture,
+        microbialActivity,
+        soilTempC: toNumber(soilTempC),
+        pH: toNumber(pH),
+        daysUntilNeed: toNumber(daysUntilNeed),
+        livingSoil,
+        isConcentrate,
+        compareIds,
+        applicationRatesGPerL: applicationRates,
+        labResultOverrides: labOverrides,
+        referenceUrls
+      },
+      output: {
+        activeIngredient: activeRecommendation.ingredient,
+        rankedIngredients: recommendations.slice(0, 8).map((row) => ({
+          id: row.ingredient.id,
+          name: row.ingredient.name,
+          score: row.score,
+          fitLabel: row.fitLabel,
+          releaseSummary: row.releaseSummary,
+          reasons: row.reasons
+        })),
+        releaseTimeline,
+        compatibilityWarnings,
+        compatibilityAnalysis,
+        compareGroups
+      },
+      title: "Review nutrient chemistry recommendation",
+      description: [
+        `Best current fit: ${activeRecommendation.ingredient.name}`,
+        `Use case: ${intent.replaceAll("_", " ")}`,
+        `Release: ${activeRecommendation.releaseSummary}`,
+        compatibilityWarnings.length
+          ? `Warnings: ${compatibilityWarnings.join("; ")}`
+          : ""
+      ]
+        .filter(Boolean)
+        .join("\n"),
+      priority: compatibilityWarnings.length ? "high" : "medium",
+      dueDate: new Date(Date.now() + 24 * 60 * 60 * 1000).toISOString()
+    });
+    setSavedMessage(result.ok ? "Created nutrient review task." : result.error);
+    setCreatingTask(false);
   }
 
   if (!enabled) {
@@ -745,15 +806,29 @@ export default function NutrientChemistryToolScreen() {
           check into the grow journal.
         </Text>
         {growId ? (
-          <Pressable
-            style={[styles.primaryButton, saving ? styles.disabled : null]}
-            onPress={save}
-            disabled={saving}
-          >
-            <Text style={styles.primaryButtonText}>
-              {saving ? "Saving..." : "Save and Open Journal"}
-            </Text>
-          </Pressable>
+          <View style={styles.actionRow}>
+            <Pressable
+              style={[styles.primaryButton, saving ? styles.disabled : null]}
+              onPress={save}
+              disabled={saving}
+            >
+              <Text style={styles.primaryButtonText}>
+                {saving ? "Saving..." : "Save and Open Journal"}
+              </Text>
+            </Pressable>
+            <Pressable
+              style={[
+                styles.secondaryButton,
+                creatingTask || !activeRecommendation ? styles.disabled : null
+              ]}
+              onPress={createReviewTask}
+              disabled={creatingTask || !activeRecommendation}
+            >
+              <Text style={styles.secondaryButtonText}>
+                {creatingTask ? "Creating..." : "Create Review Task"}
+              </Text>
+            </Pressable>
+          </View>
         ) : (
           <Text style={styles.helperText}>
             Add a grow context to save this recommendation.
@@ -972,8 +1047,20 @@ const styles = StyleSheet.create({
     borderRadius: 12,
     backgroundColor: "#14532D",
     paddingVertical: 12,
+    paddingHorizontal: 14,
     alignItems: "center"
   },
   primaryButtonText: { color: "#FFFFFF", fontWeight: "800" },
+  actionRow: { flexDirection: "row", flexWrap: "wrap", gap: 8 },
+  secondaryButton: {
+    borderWidth: 1,
+    borderColor: "#14532D",
+    borderRadius: 12,
+    backgroundColor: "#FFFFFF",
+    paddingVertical: 12,
+    paddingHorizontal: 14,
+    alignItems: "center"
+  },
+  secondaryButtonText: { color: "#14532D", fontWeight: "800" },
   disabled: { opacity: 0.6 }
 });

@@ -8,7 +8,10 @@ import {
   useToolPlantContext
 } from "@/features/personal/tools/ToolPlantContextPicker";
 import ToolResultSurface from "@/features/personal/tools/ToolResultSurface";
-import { saveToolRunAndOpenJournal } from "@/features/personal/tools/saveToolRunAndOpenJournal";
+import {
+  saveToolRunAndCreateTask,
+  saveToolRunAndOpenJournal
+} from "@/features/personal/tools/saveToolRunAndOpenJournal";
 
 function coerceParam(value?: string | string[]) {
   if (typeof value === "string") return value;
@@ -19,6 +22,10 @@ function coerceParam(value?: string | string[]) {
 function toNum(value: string) {
   const parsed = Number(value);
   return Number.isFinite(parsed) ? parsed : NaN;
+}
+
+function dueTomorrow() {
+  return new Date(Date.now() + 24 * 60 * 60 * 1000).toISOString();
 }
 
 export default function PpfdToolScreen() {
@@ -133,6 +140,33 @@ export default function PpfdToolScreen() {
                       output: computed
                     });
                     if (!result.ok) throw new Error(result.error);
+                  }
+                },
+                {
+                  key: "create-task",
+                  label: "Create Light Check Task",
+                  variant: "secondary",
+                  pendingLabel: "Creating...",
+                  onPress: async () => {
+                    setFeedback("");
+                    const result = await saveToolRunAndCreateTask({
+                      growId,
+                      ...plantContext.toolRunContext,
+                      toolKey: "ppfd",
+                      input: {
+                        dliTarget: Number(dliTarget),
+                        photoperiodHours: Number(photoperiodHours),
+                        ppfdAtCanopy: ppfdAtCanopy ? Number(ppfdAtCanopy) : null,
+                        fixturePercent: Number(fixturePercent)
+                      },
+                      output: computed,
+                      title: "Check canopy PPFD",
+                      description: `Target about ${computed.requiredPpfd} umol/m2/s over ${photoperiodHours || "?"} hours. Verify with a meter and adjust fixture height or dimming gradually.`,
+                      priority: "medium",
+                      dueDate: dueTomorrow()
+                    });
+                    if (!result.ok) throw new Error(result.error);
+                    setFeedback("Created light check task.");
                   }
                 }
               ]

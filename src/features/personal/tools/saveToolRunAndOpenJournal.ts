@@ -1,3 +1,4 @@
+import { createPersonalTask } from "@/api/tasks";
 import { createToolRun } from "@/api/toolRuns";
 
 type SaveAndOpenArgs = {
@@ -16,17 +17,24 @@ type SaveAndOpenArgs = {
 };
 
 type SaveAndOpenResult = { ok: true; toolRunId: string } | { ok: false; error: string };
+type CreateTaskArgs = Omit<SaveAndOpenArgs, "router"> & {
+  title: string;
+  description?: string;
+  priority?: "low" | "medium" | "high";
+  dueDate?: string;
+};
+type CreateTaskResult =
+  | { ok: true; toolRunId: string; taskId: string }
+  | { ok: false; error: string };
 
-export async function saveToolRunAndOpenJournal(
-  args: SaveAndOpenArgs
-): Promise<SaveAndOpenResult> {
+async function ensureToolRun(args: Omit<SaveAndOpenArgs, "router">) {
   const growId = String(args.growId || "").trim();
   const toolType = String(args.toolKey || args.toolType || "").trim();
   if (!growId) {
-    return { ok: false, error: "A grow is required to open journal entry flow." };
+    return { ok: false as const, error: "A grow is required to save this tool run." };
   }
   if (!toolType) {
-    return { ok: false, error: "A tool key is required to save a run." };
+    return { ok: false as const, error: "A tool key is required to save a run." };
   }
 
   let toolRunId = String(args.toolRunId || "").trim();
@@ -45,14 +53,54 @@ export async function saveToolRunAndOpenJournal(
     toolRunId = String(created?._id || created?.id || "").trim();
   }
   if (!toolRunId) {
-    return { ok: false, error: "Unable to save tool run." };
+    return { ok: false as const, error: "Unable to save tool run." };
+  }
+  return { ok: true as const, toolRunId };
+}
+
+export async function saveToolRunAndOpenJournal(
+  args: SaveAndOpenArgs
+): Promise<SaveAndOpenResult> {
+  const growId = String(args.growId || "").trim();
+  const toolType = String(args.toolKey || args.toolType || "").trim();
+  if (!growId) {
+    return { ok: false, error: "A grow is required to open journal entry flow." };
+  }
+  if (!toolType) {
+    return { ok: false, error: "A tool key is required to save a run." };
   }
 
+  const ensured = await ensureToolRun(args);
+  if (!ensured.ok) return ensured;
+
   args.router.push(
-    `/home/personal/logs/new?growId=${encodeURIComponent(growId)}&toolRunId=${encodeURIComponent(
-      toolRunId
-    )}`
+    `/home/personal/logs/new?growId=${encodeURIComponent(growId)}&toolRunId=${encodeURIComponent(ensured.toolRunId)}`
   );
 
-  return { ok: true, toolRunId };
+  return { ok: true, toolRunId: ensured.toolRunId };
+}
+
+export async function saveToolRunAndCreateTask(
+  args: CreateTaskArgs
+): Promise<CreateTaskResult> {
+  const growId = String(args.growId || "").trim();
+  const ensured = await ensureToolRun(args);
+  if (!ensured.ok) return ensured;
+
+  const task = await createPersonalTask({
+    growId,
+    plantId: args.plantId,
+    title: args.title,
+    description:
+      args.description ||
+      `Follow up on ${String(args.toolKey || args.toolType || "tool")} result.`,
+    priority: args.priority || "medium",
+    dueDate: args.dueDate,
+    sourceType: "tool_run",
+    sourceObjectId: ensured.toolRunId,
+    sourceToolRunId: ensured.toolRunId
+  });
+  const taskId = String((task as any)?._id || task?.id || "").trim();
+  if (!taskId) return { ok: false, error: "Unable to create task from tool run." };
+  return { ok: true, toolRunId: ensured.toolRunId, taskId };
 }

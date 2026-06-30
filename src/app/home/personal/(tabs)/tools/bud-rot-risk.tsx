@@ -9,7 +9,10 @@ import {
   useToolPlantContext
 } from "@/features/personal/tools/ToolPlantContextPicker";
 import ToolResultSurface from "@/features/personal/tools/ToolResultSurface";
-import { saveToolRunAndOpenJournal } from "@/features/personal/tools/saveToolRunAndOpenJournal";
+import {
+  saveToolRunAndCreateTask,
+  saveToolRunAndOpenJournal
+} from "@/features/personal/tools/saveToolRunAndOpenJournal";
 
 function coerceParam(value?: string | string[]) {
   if (typeof value === "string") return value;
@@ -20,6 +23,10 @@ function coerceParam(value?: string | string[]) {
 function toNum(value: string) {
   const parsed = Number(value);
   return Number.isFinite(parsed) ? parsed : NaN;
+}
+
+function dueInHours(hours: number) {
+  return new Date(Date.now() + hours * 60 * 60 * 1000).toISOString();
 }
 
 export default function BudRotRiskToolScreen() {
@@ -175,6 +182,33 @@ export default function BudRotRiskToolScreen() {
                       output: computed
                     });
                     if (!result.ok) throw new Error(result.error);
+                  }
+                },
+                {
+                  key: "create-task",
+                  label: "Create Inspection Task",
+                  variant: "secondary",
+                  pendingLabel: "Creating...",
+                  onPress: async () => {
+                    setFeedback("");
+                    const result = await saveToolRunAndCreateTask({
+                      growId,
+                      ...plantContext.toolRunContext,
+                      toolKey: "bud-rot-risk",
+                      input: {
+                        tempF: Number(tempF),
+                        rh: Number(rh),
+                        airflowScore: Number(airflowScore),
+                        wetEventsPerWeek: Number(wetEventsPerWeek)
+                      },
+                      output: computed,
+                      title: "Inspect canopy for bud rot risk",
+                      description: `Heuristic risk screen is ${computed.band} (${computed.score}/100). Check dense flowers, wet pockets, and airflow before changing controls.`,
+                      priority: computed.band === "High" ? "high" : "medium",
+                      dueDate: dueInHours(computed.band === "High" ? 2 : 24)
+                    });
+                    if (!result.ok) throw new Error(result.error);
+                    setFeedback("Created inspection task.");
                   }
                 }
               ]
