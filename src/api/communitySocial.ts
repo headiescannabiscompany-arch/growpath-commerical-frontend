@@ -101,6 +101,19 @@ export async function saveForumPostToGrowLog(id: string, growId?: string) {
   });
 }
 
+export async function reportForumPost(
+  id: string,
+  data: { reason?: string; details?: string } = {}
+) {
+  return apiRequest(apiRoutes.FORUM.REPORT(id), {
+    method: "POST",
+    body: {
+      reason: data.reason || "other",
+      details: data.details || ""
+    }
+  });
+}
+
 export async function listGuilds(): Promise<Guild[]> {
   const response = await apiRequest(apiRoutes.GUILDS.LIST, { method: "GET" });
   return rows<Guild>(response, ["guilds", "items"]);

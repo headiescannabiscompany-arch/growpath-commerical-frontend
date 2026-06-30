@@ -17,6 +17,7 @@ import {
   likeForumPost,
   listForumComments,
   postId,
+  reportForumPost,
   saveForumPostToGrowLog,
   type SocialPost,
   unlikeForumPost
@@ -187,6 +188,24 @@ export default function ForumPostDetailRoute() {
     }
   }
 
+  async function reportPost() {
+    const targetId = loadedId || id;
+    if (!targetId || !canPost) return;
+    setSaving(true);
+    setFeedback("");
+    try {
+      await reportForumPost(targetId, {
+        reason: "other",
+        details: "Reported from personal forum post detail screen."
+      });
+      setFeedback("Report sent for moderation review.");
+    } catch (error: any) {
+      setFeedback(error?.message || "Unable to report this post.");
+    } finally {
+      setSaving(false);
+    }
+  }
+
   return (
     <ScreenBoundary name="personal.forum.postDetail">
       <ScrollView
@@ -258,6 +277,15 @@ export default function ForumPostDetailRoute() {
                       <Text style={styles.secondaryText}>Save to Log</Text>
                     </Pressable>
                   ) : null}
+                  <Pressable
+                    disabled={!canPost || saving}
+                    onPress={reportPost}
+                    style={[styles.dangerBtn, (!canPost || saving) && styles.disabled]}
+                    accessibilityRole="button"
+                    accessibilityLabel="Report forum post"
+                  >
+                    <Text style={styles.dangerText}>Report</Text>
+                  </Pressable>
                   <Text style={styles.meta}>{likes} likes</Text>
                 </View>
               </>
@@ -373,6 +401,16 @@ const styles = StyleSheet.create({
     backgroundColor: "#FFFFFF"
   },
   secondaryText: { color: "#0F172A", fontWeight: "800" },
+  dangerBtn: {
+    alignSelf: "flex-start",
+    borderWidth: 1,
+    borderColor: "#FCA5A5",
+    borderRadius: 9,
+    paddingHorizontal: 10,
+    paddingVertical: 7,
+    backgroundColor: "#FEF2F2"
+  },
+  dangerText: { color: "#991B1B", fontWeight: "800" },
   disabled: { opacity: 0.5 },
   backLink: { color: "#166534", fontWeight: "800" },
   feedback: {
