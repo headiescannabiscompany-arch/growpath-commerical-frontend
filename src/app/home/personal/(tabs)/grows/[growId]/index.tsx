@@ -180,7 +180,12 @@ export default function GrowOverviewScreen() {
           </Text>
         )}
         <Link href={`/home/personal/grows/${growId}/timeline`} asChild>
-          <Pressable style={[styles.action, { alignSelf: "flex-start", marginTop: 12 }]}>
+          <Pressable
+            style={StyleSheet.flatten([
+              styles.action,
+              { alignSelf: "flex-start", marginTop: 12 }
+            ])}
+          >
             <Text style={styles.actionText}>Open Timeline</Text>
           </Pressable>
         </Link>
