@@ -20,24 +20,28 @@ export default function TrichomeAnalysisScreen({
   const [amber, setAmber] = useState("0.1");
 
   const canRun = useMemo(
-    () => !!facilityId && !!growId && Number.isFinite(Number(daysSinceFlip)),
-    [daysSinceFlip, facilityId, growId]
+    () =>
+      !!facilityId &&
+      !!growId &&
+      !!imageUrl.trim() &&
+      Number.isFinite(Number(daysSinceFlip)),
+    [daysSinceFlip, facilityId, growId, imageUrl]
   );
 
   const runAnalysis = async () => {
     if (!canRun) return;
     await callAI({
       tool: "harvest",
-      fn: "estimateHarvestWindow",
+      fn: "analyzeTrichomes",
       args: {
-        daysSinceFlip: Number(daysSinceFlip),
-        goal: "balanced",
+        images: [imageUrl.trim()],
+        zones: ["top"],
         distribution: {
           clear: Number(clear) || 0,
           cloudy: Number(cloudy) || 0,
           amber: Number(amber) || 0
         },
-        imageUrl: imageUrl.trim() || undefined,
+        daysSinceFlip: Number(daysSinceFlip),
         notes: notes.trim() || undefined
       },
       context: { growId }
@@ -46,9 +50,9 @@ export default function TrichomeAnalysisScreen({
 
   return (
     <ScrollView contentContainerStyle={styles.container}>
-      <Text style={styles.h1}>Trichome Harvest Estimate</Text>
+      <Text style={styles.h1}>Trichome Analysis</Text>
       <Text style={styles.sub}>
-        Estimate harvest timing from trichome distribution and optional photo context.
+        Analyze trichome distribution from a macro photo and cultivation context.
       </Text>
 
       <View style={styles.card}>
@@ -99,7 +103,7 @@ export default function TrichomeAnalysisScreen({
           </View>
         </View>
 
-        <Text style={[styles.label, { marginTop: 12 }]}>Image URL (optional)</Text>
+        <Text style={[styles.label, { marginTop: 12 }]}>Image URL</Text>
         <TextInput
           accessibilityLabel="Trichome image URL"
           value={imageUrl}
@@ -122,11 +126,11 @@ export default function TrichomeAnalysisScreen({
         <Pressable
           onPress={runAnalysis}
           disabled={!canRun || loading}
-          accessibilityLabel="Estimate trichome harvest window"
+          accessibilityLabel="Analyze trichome image"
           style={[styles.cta, (!canRun || loading) && styles.ctaDisabled]}
         >
           <Text style={styles.ctaText}>
-            {loading ? "Estimating..." : "Estimate Harvest Window"}
+            {loading ? "Analyzing..." : "Analyze Trichomes"}
           </Text>
         </Pressable>
 
@@ -137,9 +141,7 @@ export default function TrichomeAnalysisScreen({
         )}
       </View>
 
-      {!!last?.data && (
-        <AIResultCard title="Trichome Harvest Estimate" data={last.data as any} />
-      )}
+      {!!last?.data && <AIResultCard title="Trichome Analysis" data={last.data as any} />}
     </ScrollView>
   );
 }
