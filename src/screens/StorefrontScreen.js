@@ -3,6 +3,7 @@ import {
   ActivityIndicator,
   Alert,
   FlatList,
+  Image,
   Modal,
   Pressable,
   ScrollView,
@@ -12,6 +13,7 @@ import {
   TextInput,
   View
 } from "react-native";
+import * as ImagePicker from "expo-image-picker";
 
 import { createStorefront, fetchStorefront, updateStorefront } from "../api/storefront";
 import {
@@ -23,6 +25,8 @@ import {
 import { apiRequest } from "../api/apiRequest";
 import { endpoints } from "../api/endpoints";
 import ScreenContainer from "../components/ScreenContainer";
+import { maybePromptAttachPhotosToGrow } from "@/utils/growPhotoAttachment";
+import { persistImageUri } from "@/utils/photoUploads";
 
 function idOf(item) {
   return String(item?.id || item?._id || item?.productId || "");
@@ -88,6 +92,7 @@ export default function StorefrontScreen() {
   const [productInventoryCount, setProductInventoryCount] = useState("");
   const [productInventoryItemId, setProductInventoryItemId] = useState("");
   const [productPublished, setProductPublished] = useState(false);
+  const [uploadingProductImage, setUploadingProductImage] = useState(false);
 
   const load = useCallback(async () => {
     setLoading(true);
@@ -136,6 +141,7 @@ export default function StorefrontScreen() {
     setProductInventoryCount("");
     setProductInventoryItemId("");
     setProductPublished(false);
+    setUploadingProductImage(false);
     setModalVisible(true);
   }
 
@@ -160,7 +166,50 @@ export default function StorefrontScreen() {
       )
     );
     setProductPublished(product?.status === "published" || product?.isPublished === true);
+    setUploadingProductImage(false);
     setModalVisible(true);
+  }
+
+  async function promptProductImageAttachment(imageUrl) {
+    try {
+      await maybePromptAttachPhotosToGrow(imageUrl ? [imageUrl] : []);
+    } catch (_err) {
+      // Product image upload should still succeed if the optional grow attachment fails.
+    }
+  }
+
+  async function pickProductImage() {
+    if (uploadingProductImage) return;
+    setUploadingProductImage(true);
+    try {
+      const permission = await ImagePicker.requestMediaLibraryPermissionsAsync();
+      if (permission?.granted === false) {
+        Alert.alert(
+          "Product image",
+          "Photo library access is required to upload an image."
+        );
+        return;
+      }
+
+      const result = await ImagePicker.launchImageLibraryAsync({
+        allowsEditing: true,
+        mediaTypes: ImagePicker.MediaTypeOptions.Images,
+        quality: 0.9
+      });
+      if (result.canceled) return;
+
+      const uri = result.assets?.[0]?.uri;
+      if (!uri) return;
+
+      const imageUrl = await persistImageUri(uri);
+      if (!imageUrl) throw new Error("Image upload did not return a URL.");
+      setProductImageUrl(imageUrl);
+      await promptProductImageAttachment(imageUrl);
+    } catch (err) {
+      Alert.alert("Product image", err?.message || "Unable to upload product image.");
+    } finally {
+      setUploadingProductImage(false);
+    }
   }
 
   async function saveStorefront() {
@@ -412,6 +461,36 @@ export default function StorefrontScreen() {
               keyboardType="url"
               style={styles.input}
             />
+            <View style={styles.imageActions}>
+              <Pressable
+                accessibilityRole="button"
+                accessibilityLabel="Upload product image"
+                style={styles.secondaryButton}
+                onPress={pickProductImage}
+                disabled={saving || uploadingProductImage}
+              >
+                <Text style={styles.secondaryButtonText}>
+                  {uploadingProductImage ? "Uploading..." : "Upload image"}
+                </Text>
+              </Pressable>
+              {productImageUrl ? (
+                <Pressable
+                  accessibilityRole="button"
+                  accessibilityLabel="Clear product image"
+                  style={styles.secondaryButton}
+                  onPress={() => setProductImageUrl("")}
+                  disabled={saving || uploadingProductImage}
+                >
+                  <Text style={styles.secondaryButtonText}>Clear</Text>
+                </Pressable>
+              ) : null}
+            </View>
+            {productImageUrl ? (
+              <Image
+                source={{ uri: productImageUrl }}
+                style={styles.productImagePreview}
+              />
+            ) : null}
             <TextInput
               value={productPriceValue}
               onChangeText={setProductPriceValue}
@@ -523,6 +602,19 @@ const styles = StyleSheet.create({
     color: "#64748B"
   },
   inventoryPicker: { gap: 8 },
+  imageActions: {
+    flexDirection: "row",
+    flexWrap: "wrap",
+    gap: 10
+  },
+  productImagePreview: {
+    aspectRatio: 16 / 9,
+    backgroundColor: "#F1F5F9",
+    borderColor: "#CBD5E1",
+    borderRadius: 8,
+    borderWidth: 1,
+    width: "100%"
+  },
   inventoryOption: {
     borderColor: "#CBD5E1",
     borderRadius: 8,
