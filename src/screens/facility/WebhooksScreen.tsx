@@ -1,7 +1,8 @@
 import React, { useState } from "react";
-import { View, Text, FlatList, TextInput, Pressable, Switch } from "react-native";
+import { Alert, View, Text, FlatList, TextInput, Pressable, Switch } from "react-native";
 import { useWebhooks } from "../../hooks/useWebhooks";
 import type { NotificationType } from "../../types/notification";
+import type { WebhookDelivery } from "../../api/webhooks";
 
 const EVENT_OPTIONS: { label: string; value: NotificationType }[] = [
   { label: "Task Assigned", value: "TASK_ASSIGNED" },
@@ -20,18 +21,48 @@ export default function WebhooksScreen() {
     createWebhook,
     updateWebhook,
     deleteWebhook,
+    rotateWebhookSecret,
+    testWebhookDelivery,
+    loadWebhookDeliveries,
     isSaving
   } = useWebhooks();
   const [url, setUrl] = useState("");
   const [events, setEvents] = useState<NotificationType[]>([]);
+  const [lastSecret, setLastSecret] = useState("");
+  const [deliveryRows, setDeliveryRows] = useState<Record<string, WebhookDelivery[]>>({});
 
   const webhooks = Array.isArray(data) ? data : [];
 
   const submit = async () => {
     if (!url.trim() || events.length === 0) return;
-    await createWebhook({ url, events, enabled: true });
+    const created = await createWebhook({ url, events, enabled: true });
+    const secret = created.signingSecret || "";
+    if (secret) setLastSecret(secret);
     setUrl("");
     setEvents([]);
+  };
+
+  const rotateSecret = async (id: string) => {
+    const result = await rotateWebhookSecret(id);
+    setLastSecret(result.signingSecret);
+    Alert.alert(
+      "Signing secret rotated",
+      "Copy the new secret now. It will not be shown again."
+    );
+  };
+
+  const sendTest = async (id: string) => {
+    const result = await testWebhookDelivery(id);
+    const rows = await loadWebhookDeliveries(id);
+    setDeliveryRows((current) => ({ ...current, [id]: rows }));
+    const status =
+      result.delivery.status === "success" ? "delivered" : result.delivery.status;
+    Alert.alert("Test delivery", `Webhook test ${status}.`);
+  };
+
+  const loadDeliveries = async (id: string) => {
+    const rows = await loadWebhookDeliveries(id);
+    setDeliveryRows((current) => ({ ...current, [id]: rows }));
   };
 
   return (
@@ -84,6 +115,27 @@ export default function WebhooksScreen() {
         <Text>{isSaving ? "Saving..." : "Add Webhook"}</Text>
       </Pressable>
 
+      {!!lastSecret && (
+        <View
+          style={{
+            borderWidth: 1,
+            borderColor: "#0f766e",
+            borderRadius: 8,
+            padding: 10,
+            marginBottom: 12,
+            backgroundColor: "#ecfdf5"
+          }}
+        >
+          <Text style={{ fontWeight: "800", marginBottom: 4 }}>New signing secret</Text>
+          <Text selectable style={{ fontFamily: "monospace" }}>
+            {lastSecret}
+          </Text>
+          <Text style={{ marginTop: 4, opacity: 0.75 }}>
+            Save this value now. GrowPath only shows it once.
+          </Text>
+        </View>
+      )}
+
       {error ? (
         <Text style={{ color: "#b91c1c", marginBottom: 12 }}>
           Unable to load webhooks. Check the backend webhook endpoint.
@@ -102,7 +154,29 @@ export default function WebhooksScreen() {
             >
               <Text style={{ fontWeight: "700" }}>{item.url}</Text>
               <Text style={{ marginTop: 4 }}>Events: {item.events.join(", ")}</Text>
-              <View style={{ flexDirection: "row", alignItems: "center", marginTop: 8 }}>
+              <Text style={{ marginTop: 4 }}>
+                Secret: {item.secretPreview || "configured"} | Failures:{" "}
+                {item.failureCount || 0}
+              </Text>
+              {!!item.lastDeliveryAt && (
+                <Text style={{ marginTop: 4 }}>
+                  Last delivery: {String(item.lastDeliveryAt)}
+                </Text>
+              )}
+              {!!item.lastError && (
+                <Text style={{ marginTop: 4, color: "#b91c1c" }}>
+                  Last error: {item.lastError}
+                </Text>
+              )}
+              <View
+                style={{
+                  flexDirection: "row",
+                  alignItems: "center",
+                  flexWrap: "wrap",
+                  gap: 12,
+                  marginTop: 8
+                }}
+              >
                 <Text>Enabled</Text>
                 <Switch
                   value={item.enabled}
@@ -112,13 +186,58 @@ export default function WebhooksScreen() {
                 />
                 <Pressable
                   onPress={() => {
+                    void sendTest(item.id);
+                  }}
+                  disabled={isSaving}
+                >
+                  <Text style={{ color: "#0369a1" }}>Test</Text>
+                </Pressable>
+                <Pressable
+                  onPress={() => {
+                    void loadDeliveries(item.id);
+                  }}
+                  disabled={isSaving}
+                >
+                  <Text style={{ color: "#0369a1" }}>Deliveries</Text>
+                </Pressable>
+                <Pressable
+                  onPress={() => {
+                    void rotateSecret(item.id);
+                  }}
+                  disabled={isSaving}
+                >
+                  <Text style={{ color: "#854d0e" }}>Rotate Secret</Text>
+                </Pressable>
+                <Pressable
+                  onPress={() => {
                     void deleteWebhook(item.id);
                   }}
-                  style={{ marginLeft: 16 }}
                 >
                   <Text style={{ color: "red" }}>Delete</Text>
                 </Pressable>
               </View>
+              {(deliveryRows[item.id] || []).slice(0, 5).map((delivery) => (
+                <View
+                  key={delivery.id}
+                  style={{
+                    marginTop: 8,
+                    paddingTop: 8,
+                    borderTopWidth: 1,
+                    borderTopColor: "#e5e7eb"
+                  }}
+                >
+                  <Text style={{ fontWeight: "700" }}>
+                    {delivery.event} | {delivery.status}
+                  </Text>
+                  <Text>
+                    Attempts: {delivery.attemptCount} | HTTP:{" "}
+                    {delivery.httpStatus || "n/a"}
+                  </Text>
+                  {!!delivery.error && (
+                    <Text style={{ color: "#b91c1c" }}>{delivery.error}</Text>
+                  )}
+                </View>
+              ))}
             </View>
           )}
         />
