@@ -1,6 +1,8 @@
 import React, { useCallback, useEffect, useMemo, useState } from "react";
 import {
   ActivityIndicator,
+  Alert,
+  Image,
   Pressable,
   RefreshControl,
   ScrollView,
@@ -9,6 +11,7 @@ import {
   TextInput,
   View
 } from "react-native";
+import * as ImagePicker from "expo-image-picker";
 
 import AppCard from "@/components/layout/AppCard";
 import AppPage from "@/components/layout/AppPage";
@@ -17,6 +20,8 @@ import { apiRequest } from "@/api/apiRequest";
 import { endpoints } from "@/api/endpoints";
 import { CAPABILITY_KEYS, useEntitlements } from "@/entitlements";
 import { useApiErrorHandler } from "@/hooks/useApiErrorHandler";
+import { maybePromptAttachPhotosToGrow } from "@/utils/growPhotoAttachment";
+import { persistImageUri } from "@/utils/photoUploads";
 
 type AnyRec = Record<string, any>;
 
@@ -64,6 +69,7 @@ export default function Storefront() {
   const [savingStorefront, setSavingStorefront] = useState(false);
   const [savingProduct, setSavingProduct] = useState(false);
   const [feedback, setFeedback] = useState("");
+  const [uploadingImageField, setUploadingImageField] = useState("");
 
   const [storeDraft, setStoreDraft] = useState({
     name: "",
@@ -142,6 +148,56 @@ export default function Storefront() {
       handleApiError(e);
     } finally {
       setSavingStorefront(false);
+    }
+  }
+
+  async function promptImageAttachment(imageUrl: string) {
+    try {
+      await maybePromptAttachPhotosToGrow(imageUrl ? [imageUrl] : []);
+    } catch (_error) {
+      // Optional grow attachment should not block storefront image setup.
+    }
+  }
+
+  async function uploadImageField(
+    field: "logoUrl" | "bannerUrl" | "imageUrl",
+    target: "storefront" | "product",
+    label: string
+  ) {
+    if (!canEdit || uploadingImageField) return;
+    setUploadingImageField(`${target}:${field}`);
+    setFeedback("");
+    try {
+      const permission = await ImagePicker.requestMediaLibraryPermissionsAsync();
+      if (permission?.granted === false) {
+        Alert.alert(label, "Photo library access is required to upload an image.");
+        return;
+      }
+
+      const result = await ImagePicker.launchImageLibraryAsync({
+        allowsEditing: true,
+        mediaTypes: ImagePicker.MediaTypeOptions.Images,
+        quality: 0.9
+      });
+      if (result.canceled) return;
+
+      const uri = result.assets?.[0]?.uri;
+      if (!uri) return;
+
+      const imageUrl = await persistImageUri(uri);
+      if (!imageUrl) throw new Error("Image upload did not return a URL.");
+
+      if (target === "storefront") {
+        setStoreDraft((draft) => ({ ...draft, [field]: imageUrl }));
+      } else {
+        setProductDraft((draft) => ({ ...draft, imageUrl }));
+      }
+      await promptImageAttachment(imageUrl);
+      setFeedback(`${label} uploaded.`);
+    } catch (e: any) {
+      Alert.alert(label, e?.message || "Unable to upload image.");
+    } finally {
+      setUploadingImageField("");
     }
   }
 
@@ -258,6 +314,35 @@ export default function Storefront() {
             autoCapitalize="none"
             style={styles.input}
           />
+          <View style={styles.imageActions}>
+            <Pressable
+              accessibilityRole="button"
+              accessibilityLabel="Upload storefront logo"
+              onPress={() => uploadImageField("logoUrl", "storefront", "Storefront logo")}
+              disabled={Boolean(uploadingImageField) || !canEdit}
+              style={styles.secondaryButton}
+            >
+              <Text style={styles.secondaryText}>
+                {uploadingImageField === "storefront:logoUrl"
+                  ? "Uploading..."
+                  : "Upload Logo"}
+              </Text>
+            </Pressable>
+            {storeDraft.logoUrl ? (
+              <Pressable
+                accessibilityRole="button"
+                accessibilityLabel="Clear storefront logo"
+                onPress={() => setStoreDraft((draft) => ({ ...draft, logoUrl: "" }))}
+                disabled={Boolean(uploadingImageField) || !canEdit}
+                style={styles.secondaryButton}
+              >
+                <Text style={styles.secondaryText}>Clear Logo</Text>
+              </Pressable>
+            ) : null}
+          </View>
+          {storeDraft.logoUrl ? (
+            <Image source={{ uri: storeDraft.logoUrl }} style={styles.logoPreview} />
+          ) : null}
           <TextInput
             value={storeDraft.bannerUrl}
             onChangeText={(bannerUrl) =>
@@ -268,6 +353,37 @@ export default function Storefront() {
             autoCapitalize="none"
             style={styles.input}
           />
+          <View style={styles.imageActions}>
+            <Pressable
+              accessibilityRole="button"
+              accessibilityLabel="Upload storefront banner"
+              onPress={() =>
+                uploadImageField("bannerUrl", "storefront", "Storefront banner")
+              }
+              disabled={Boolean(uploadingImageField) || !canEdit}
+              style={styles.secondaryButton}
+            >
+              <Text style={styles.secondaryText}>
+                {uploadingImageField === "storefront:bannerUrl"
+                  ? "Uploading..."
+                  : "Upload Banner"}
+              </Text>
+            </Pressable>
+            {storeDraft.bannerUrl ? (
+              <Pressable
+                accessibilityRole="button"
+                accessibilityLabel="Clear storefront banner"
+                onPress={() => setStoreDraft((draft) => ({ ...draft, bannerUrl: "" }))}
+                disabled={Boolean(uploadingImageField) || !canEdit}
+                style={styles.secondaryButton}
+              >
+                <Text style={styles.secondaryText}>Clear Banner</Text>
+              </Pressable>
+            ) : null}
+          </View>
+          {storeDraft.bannerUrl ? (
+            <Image source={{ uri: storeDraft.bannerUrl }} style={styles.bannerPreview} />
+          ) : null}
           <Pressable
             accessibilityRole="button"
             accessibilityLabel={
@@ -392,6 +508,35 @@ export default function Storefront() {
             autoCapitalize="none"
             style={styles.input}
           />
+          <View style={styles.imageActions}>
+            <Pressable
+              accessibilityRole="button"
+              accessibilityLabel="Upload product listing image"
+              onPress={() => uploadImageField("imageUrl", "product", "Product image")}
+              disabled={Boolean(uploadingImageField) || !canEdit}
+              style={styles.secondaryButton}
+            >
+              <Text style={styles.secondaryText}>
+                {uploadingImageField === "product:imageUrl"
+                  ? "Uploading..."
+                  : "Upload Product Image"}
+              </Text>
+            </Pressable>
+            {productDraft.imageUrl ? (
+              <Pressable
+                accessibilityRole="button"
+                accessibilityLabel="Clear product listing image"
+                onPress={() => setProductDraft((draft) => ({ ...draft, imageUrl: "" }))}
+                disabled={Boolean(uploadingImageField) || !canEdit}
+                style={styles.secondaryButton}
+              >
+                <Text style={styles.secondaryText}>Clear Product Image</Text>
+              </Pressable>
+            ) : null}
+          </View>
+          {productDraft.imageUrl ? (
+            <Image source={{ uri: productDraft.imageUrl }} style={styles.bannerPreview} />
+          ) : null}
           <Pressable
             accessibilityRole="button"
             accessibilityLabel={
@@ -513,6 +658,25 @@ const styles = StyleSheet.create({
     paddingVertical: 10
   },
   notesInput: { minHeight: 76, textAlignVertical: "top" },
+  imageActions: { flexDirection: "row", flexWrap: "wrap", gap: 8 },
+  logoPreview: {
+    backgroundColor: "#F1F5F9",
+    borderColor: "rgba(0,0,0,0.14)",
+    borderRadius: 10,
+    borderWidth: 1,
+    height: 96,
+    marginTop: 10,
+    width: 96
+  },
+  bannerPreview: {
+    aspectRatio: 16 / 9,
+    backgroundColor: "#F1F5F9",
+    borderColor: "rgba(0,0,0,0.14)",
+    borderRadius: 10,
+    borderWidth: 1,
+    marginTop: 10,
+    width: "100%"
+  },
   primaryButton: {
     alignItems: "center",
     backgroundColor: "#0F172A",
