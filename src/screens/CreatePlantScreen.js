@@ -13,6 +13,8 @@ import * as ImagePicker from "expo-image-picker";
 import ScreenContainer from "../components/ScreenContainer";
 import PrimaryButton from "../components/PrimaryButton";
 import { createPlant } from "../api/plants";
+import { maybePromptAttachPhotosToGrow } from "@/utils/growPhotoAttachment";
+import { persistImageUris } from "@/utils/photoUploads";
 
 export default function CreatePlantScreen({ navigation }) {
   const [name, setName] = useState("");
@@ -75,6 +77,7 @@ export default function CreatePlantScreen({ navigation }) {
     }
     try {
       setLoading(true);
+      const uploadedPhotos = await persistImageUris(photos);
       const formData = new FormData();
       formData.append("name", name.trim());
       formData.append("strain", strain.trim());
@@ -82,17 +85,20 @@ export default function CreatePlantScreen({ navigation }) {
       formData.append("notes", notes.trim());
       formData.append("startDate", new Date().toISOString());
       formData.append("stage", "Seedling");
-      // Photos
-      photos.forEach((uri) => {
-        const filename = uri.split("/").pop();
-        formData.append("photos", uri, filename);
-      });
+      uploadedPhotos.forEach((uri) => formData.append("photos", uri));
       // Video
       if (video && video.uri) {
         const filename = video.uri.split("/").pop();
         formData.append("video", video.uri, filename);
       }
       const newPlant = await createPlant(formData);
+      if (uploadedPhotos.length) {
+        try {
+          await maybePromptAttachPhotosToGrow(uploadedPhotos);
+        } catch (attachError) {
+          console.warn("Unable to attach plant photos to grow:", attachError);
+        }
+      }
       Alert.alert("Success", "Plant created! Start tracking your grow.", [
         {
           text: "View Plant",
