@@ -1,8 +1,18 @@
+import * as ImagePicker from "expo-image-picker";
 import React, { useMemo, useState } from "react";
-import { Pressable, ScrollView, StyleSheet, Text, TextInput, View } from "react-native";
+import {
+  Image,
+  Pressable,
+  ScrollView,
+  StyleSheet,
+  Text,
+  TextInput,
+  View
+} from "react-native";
 
 import { useAICall } from "@/hooks/useAICall";
 import { AIResultCard } from "@/features/ai/components/AIResultCard";
+import { uploadImage } from "@/api/uploads";
 
 export default function TrichomeAnalysisScreen({
   facilityId,
@@ -13,6 +23,9 @@ export default function TrichomeAnalysisScreen({
 }) {
   const { callAI, loading, error, last } = useAICall(facilityId);
   const [imageUrl, setImageUrl] = useState("");
+  const [photoPreview, setPhotoPreview] = useState("");
+  const [uploading, setUploading] = useState(false);
+  const [uploadError, setUploadError] = useState("");
   const [notes, setNotes] = useState("");
   const [daysSinceFlip, setDaysSinceFlip] = useState("65");
   const [clear, setClear] = useState("0.2");
@@ -24,9 +37,42 @@ export default function TrichomeAnalysisScreen({
       !!facilityId &&
       !!growId &&
       !!imageUrl.trim() &&
+      !uploading &&
       Number.isFinite(Number(daysSinceFlip)),
-    [daysSinceFlip, facilityId, growId, imageUrl]
+    [daysSinceFlip, facilityId, growId, imageUrl, uploading]
   );
+
+  const pickPhoto = async () => {
+    setUploadError("");
+    const permission = await ImagePicker.requestMediaLibraryPermissionsAsync();
+    if (!permission.granted) {
+      setUploadError("Photo library access is required.");
+      return;
+    }
+
+    const result = await ImagePicker.launchImageLibraryAsync({
+      mediaTypes: ImagePicker.MediaTypeOptions.Images,
+      quality: 0.9
+    });
+    if (result.canceled) return;
+
+    const asset = result.assets?.[0];
+    if (!asset?.uri) return;
+
+    setPhotoPreview(asset.uri);
+    setUploading(true);
+    try {
+      const uploaded = await uploadImage(asset.uri);
+      if (!uploaded?.url) throw new Error("Missing uploaded image URL.");
+      setImageUrl(uploaded.url);
+    } catch (err) {
+      setUploadError(
+        err instanceof Error ? err.message : "Unable to upload trichome photo."
+      );
+    } finally {
+      setUploading(false);
+    }
+  };
 
   const runAnalysis = async () => {
     if (!canRun) return;
@@ -50,11 +96,6 @@ export default function TrichomeAnalysisScreen({
 
   return (
     <ScrollView contentContainerStyle={styles.container}>
-      <Text style={styles.h1}>Trichome Analysis</Text>
-      <Text style={styles.sub}>
-        Analyze trichome distribution from a macro photo and cultivation context.
-      </Text>
-
       <View style={styles.card}>
         <Text style={styles.label}>Days since flip</Text>
         <TextInput
@@ -103,13 +144,36 @@ export default function TrichomeAnalysisScreen({
           </View>
         </View>
 
+        <Text style={[styles.label, { marginTop: 12 }]}>Photo</Text>
+        <Pressable
+          onPress={pickPhoto}
+          disabled={uploading}
+          accessibilityLabel="Upload trichome photo"
+          style={[styles.secondaryButton, uploading && styles.ctaDisabled]}
+        >
+          <Text style={styles.secondaryButtonText}>
+            {uploading ? "Uploading..." : imageUrl ? "Change Photo" : "Upload Photo"}
+          </Text>
+        </Pressable>
+        {!!photoPreview && (
+          <Image
+            accessibilityLabel="Selected trichome photo"
+            source={{ uri: photoPreview }}
+            style={styles.preview}
+          />
+        )}
+        {!!uploadError && <Text style={styles.error}>{uploadError}</Text>}
+
         <Text style={[styles.label, { marginTop: 12 }]}>Image URL</Text>
         <TextInput
           accessibilityLabel="Trichome image URL"
           value={imageUrl}
-          onChangeText={setImageUrl}
+          onChangeText={(value) => {
+            setImageUrl(value);
+            setUploadError("");
+          }}
           style={styles.input}
-          placeholder="https://example.com/trichomes.jpg"
+          placeholder="/uploads/trichomes.jpg"
           multiline
         />
 
@@ -125,9 +189,9 @@ export default function TrichomeAnalysisScreen({
 
         <Pressable
           onPress={runAnalysis}
-          disabled={!canRun || loading}
+          disabled={!canRun || loading || uploading}
           accessibilityLabel="Analyze trichome image"
-          style={[styles.cta, (!canRun || loading) && styles.ctaDisabled]}
+          style={[styles.cta, (!canRun || loading || uploading) && styles.ctaDisabled]}
         >
           <Text style={styles.ctaText}>
             {loading ? "Analyzing..." : "Analyze Trichomes"}
@@ -148,12 +212,10 @@ export default function TrichomeAnalysisScreen({
 
 const styles = StyleSheet.create({
   container: { padding: 16, gap: 12, paddingBottom: 40 },
-  h1: { fontSize: 22, fontWeight: "800", marginBottom: 4 },
-  sub: { fontSize: 14, opacity: 0.7, marginBottom: 8 },
   card: {
     borderWidth: 1,
     borderColor: "#E5E7EB",
-    borderRadius: 12,
+    borderRadius: 8,
     padding: 12,
     gap: 8,
     backgroundColor: "#fff"
@@ -187,5 +249,22 @@ const styles = StyleSheet.create({
   },
   ctaDisabled: { opacity: 0.6 },
   ctaText: { fontWeight: "700", color: "#fff", fontSize: 14 },
+  secondaryButton: {
+    borderWidth: 1,
+    borderColor: "#D1D5DB",
+    borderRadius: 8,
+    paddingVertical: 11,
+    paddingHorizontal: 14,
+    alignItems: "center",
+    backgroundColor: "#F9FAFB"
+  },
+  secondaryButtonText: { fontWeight: "700", color: "#111827", fontSize: 14 },
+  preview: {
+    width: "100%",
+    height: 220,
+    borderRadius: 8,
+    backgroundColor: "#F3F4F6",
+    marginTop: 8
+  },
   error: { color: "#DC2626", fontWeight: "600", fontSize: 12, marginTop: 8 }
 });
