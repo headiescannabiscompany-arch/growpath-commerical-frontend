@@ -79,9 +79,12 @@ export default function VendorMetricsScreen() {
         listVendorSoilMixes(vendorId),
         listVendorEquipment(vendorId)
       ]);
-      if (!metricRes.success) throw new Error(metricRes.message || "Failed to load metrics");
-      if (!mixesRes.success) throw new Error(mixesRes.message || "Failed to load soil mixes");
-      if (!equipmentRes.success) throw new Error(equipmentRes.message || "Failed to load equipment");
+      if (!metricRes.success)
+        throw new Error(metricRes.message || "Failed to load metrics");
+      if (!mixesRes.success)
+        throw new Error(mixesRes.message || "Failed to load soil mixes");
+      if (!equipmentRes.success)
+        throw new Error(equipmentRes.message || "Failed to load equipment");
       setMetrics(normalizeMetrics(metricRes.data));
       setSoilMixes(normalizeList(mixesRes.data));
       setEquipment(normalizeList(equipmentRes.data));
@@ -134,7 +137,9 @@ export default function VendorMetricsScreen() {
         <>
           <BarChart data={metrics?.yieldByMonth || []} label="Yield by Month (kg)" />
           <View style={styles.metricsRow}>
-            <Text style={styles.metricBox}>Avg. Soil pH: {metrics?.avgSoilPH ?? "-"}</Text>
+            <Text style={styles.metricBox}>
+              Avg. Soil pH: {metrics?.avgSoilPH ?? "-"}
+            </Text>
             <Text style={styles.metricBox}>Avg. EC: {metrics?.avgNutrientEC ?? "-"}</Text>
             <Text style={styles.metricBox}>Open Mixes: {soilMixes.length}</Text>
           </View>
@@ -159,7 +164,9 @@ export default function VendorMetricsScreen() {
                 onPress={handleAddMix}
                 disabled={submitting}
               >
-                <Text style={styles.addBtnText}>{submitting ? "Adding..." : "Add Mix"}</Text>
+                <Text style={styles.addBtnText}>
+                  {submitting ? "Adding..." : "Add Mix"}
+                </Text>
               </TouchableOpacity>
             </View>
             <FlatList
@@ -168,7 +175,9 @@ export default function VendorMetricsScreen() {
               renderItem={({ item }) => (
                 <View style={styles.mixRow}>
                   <Text style={styles.mixName}>{item.name || "Untitled mix"}</Text>
-                  <Text style={styles.mixNotes}>{item.notes || item.description || "-"}</Text>
+                  <Text style={styles.mixNotes}>
+                    {item.notes || item.description || "-"}
+                  </Text>
                 </View>
               )}
               ListEmptyComponent={<Text style={styles.emptyText}>No mixes yet</Text>}
@@ -235,20 +244,29 @@ const styles = StyleSheet.create({
     elevation: 2
   },
   sectionHeader: { fontSize: 18, fontWeight: "bold", marginBottom: 8 },
-  formRow: { flexDirection: "row", alignItems: "center", marginBottom: 12 },
+  formRow: {
+    flexDirection: "row",
+    alignItems: "center",
+    flexWrap: "wrap",
+    gap: 8,
+    marginBottom: 12
+  },
   input: {
     borderWidth: 1,
     borderColor: "#e5e7eb",
     borderRadius: 8,
     padding: 10,
-    marginRight: 8,
-    flex: 1
+    flexGrow: 1,
+    flexShrink: 1,
+    flexBasis: 140,
+    minWidth: 0
   },
   addBtn: {
     backgroundColor: "#0ea5e9",
     padding: 10,
     borderRadius: 8,
-    alignItems: "center"
+    alignItems: "center",
+    minWidth: 96
   },
   addBtnText: { color: "#fff", fontWeight: "bold", fontSize: 15 },
   mixRow: { flexDirection: "row", justifyContent: "space-between", marginBottom: 6 },

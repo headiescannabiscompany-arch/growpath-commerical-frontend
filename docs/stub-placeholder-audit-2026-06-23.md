@@ -11,6 +11,7 @@ Repository: growpath-commerical-frontend
 - Replaced static demo data in `VendorMetricsScreen` with API-backed metrics, soil mixes, equipment, and mix creation.
 - Replaced fake facility vendor dashboard analytics with values derived from real facility vendor records.
 - Fixed vendor analytics and metrics API paths so they call `/api/vendors/...`.
+- Validated vendor analytics, metrics, soil mixes, equipment, and order screens against seeded backend response envelopes; fixed the mobile vendor metrics mix form layout.
 - Removed dead frontend-repo backend shim files that contained demo/stub routes and old backup AI handlers.
 - Replaced Content Marketplace static sales, analytics, and upload success flows with API-backed runtime state.
 - Added picker-based Marketplace content and thumbnail uploads; selected files are persisted before the draft is saved.
@@ -26,7 +27,6 @@ Repository: growpath-commerical-frontend
 ## Active Product Gaps Still To Finish
 
 - Automation webhook dispatch still needs a real automation trigger producer before exposing `AUTOMATION_TRIGGERED` broadly.
-- Vendor analytics/metrics endpoints are now present for the frontend contract, but need seeded/live vendor data validation before calling the vendor portal release-ready.
 - Store submission remains blocked on external credentials, production builds, screenshots, legal sign-off, and final app-name/identifier confirmation.
 
 ## Release And Store Gaps
