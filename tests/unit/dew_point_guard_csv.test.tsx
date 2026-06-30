@@ -3,8 +3,14 @@ import { fireEvent, render, waitFor } from "@testing-library/react-native";
 
 import DewPointGuard from "@/app/home/personal/(tabs)/tools/dew-point-guard";
 
+const mockSaveToolRunAndOpenJournal = jest.fn(async () => ({
+  ok: true,
+  toolRunId: "tr1"
+}));
+const mockListPersonalPlants = jest.fn();
+
 jest.mock("expo-router", () => ({
-  useLocalSearchParams: () => ({ growId: "g1" }),
+  useLocalSearchParams: () => ({ growId: "g1", plantId: "plant-blueberry-1" }),
   useRouter: () => ({ push: jest.fn(), replace: jest.fn(), back: jest.fn() })
 }));
 
@@ -18,7 +24,11 @@ jest.mock("@react-native-async-storage/async-storage", () => ({
 }));
 
 jest.mock("@/features/personal/tools/saveToolRunAndOpenJournal", () => ({
-  saveToolRunAndOpenJournal: jest.fn(async () => ({ ok: true, toolRunId: "tr1" }))
+  saveToolRunAndOpenJournal: (...args: any[]) => mockSaveToolRunAndOpenJournal(...args)
+}));
+
+jest.mock("@/api/plants", () => ({
+  listPersonalPlants: (...args: any[]) => mockListPersonalPlants(...args)
 }));
 
 const mockListTelemetrySources = jest.fn();
@@ -42,6 +52,26 @@ jest.mock("@/api/telemetry", () => ({
 describe("Dew Point Guard CSV flow", () => {
   beforeEach(() => {
     jest.resetAllMocks();
+    mockSaveToolRunAndOpenJournal.mockResolvedValue({ ok: true, toolRunId: "tr1" });
+    mockListPersonalPlants.mockResolvedValue([
+      {
+        id: "plant-blueberry-1",
+        growId: "g1",
+        name: "Blueberry row A",
+        cropCommonName: "Blueberry",
+        scientificName: "Vaccinium corymbosum",
+        cultivar: "Duke",
+        cropProfileId: "crop-blueberry-1",
+        stage: "fruiting",
+        medium: "soil",
+        growthProfile: {
+          phenoLabel: "early-fruiting",
+          sizeMetrics: { canopyWidthCm: 120 },
+          timingAdjustments: { fruitingDaysOffset: -4 },
+          waterUseProfile: { observedDemand: "medium" }
+        }
+      }
+    ]);
 
     mockListTelemetrySources.mockResolvedValue([
       {
@@ -159,6 +189,33 @@ describe("Dew Point Guard CSV flow", () => {
         name: "Pulse Flower Room",
         timezone: "America/New_York",
         config: { pulse: { apiKey: "PULSE-SECRET", deviceId: "pulse-1" } }
+      })
+    );
+  });
+
+  it("saves manual runs with selected plant and crop context", async () => {
+    const { getByTestId } = render(<DewPointGuard />);
+
+    await waitFor(() =>
+      expect(mockListPersonalPlants).toHaveBeenCalledWith({ growId: "g1" })
+    );
+
+    fireEvent.press(getByTestId("dpg-save-open-journal"));
+
+    await waitFor(() => expect(mockSaveToolRunAndOpenJournal).toHaveBeenCalled());
+    expect(mockSaveToolRunAndOpenJournal).toHaveBeenCalledWith(
+      expect.objectContaining({
+        growId: "g1",
+        plantId: "plant-blueberry-1",
+        cropProfileId: "crop-blueberry-1",
+        selectedPlantContext: expect.objectContaining({
+          cropCommonName: "Blueberry",
+          scientificName: "Vaccinium corymbosum",
+          growthProfile: expect.objectContaining({
+            phenoLabel: "early-fruiting"
+          })
+        }),
+        toolKey: "dew-point-guard"
       })
     );
   });

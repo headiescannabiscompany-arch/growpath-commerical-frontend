@@ -4,6 +4,10 @@ import { Pressable, ScrollView, StyleSheet, Text, TextInput, View } from "react-
 
 import BackButton from "@/components/nav/BackButton";
 import { CAPABILITY_KEYS, useEntitlements } from "@/entitlements";
+import {
+  ToolPlantContextPicker,
+  useToolPlantContext
+} from "@/features/personal/tools/ToolPlantContextPicker";
 import ToolResultSurface from "@/features/personal/tools/ToolResultSurface";
 import { saveToolRunAndOpenJournal } from "@/features/personal/tools/saveToolRunAndOpenJournal";
 
@@ -20,8 +24,12 @@ function toNum(value: string) {
 
 export default function BudRotRiskToolScreen() {
   const router = useRouter();
-  const { growId: rawGrowId } = useLocalSearchParams<{ growId?: string | string[] }>();
+  const { growId: rawGrowId, plantId: rawPlantId } = useLocalSearchParams<{
+    growId?: string | string[];
+    plantId?: string | string[];
+  }>();
   const growId = coerceParam(rawGrowId);
+  const plantContext = useToolPlantContext(growId, coerceParam(rawPlantId));
   const entitlements = useEntitlements();
   const enabled = entitlements.can(CAPABILITY_KEYS.DIAGNOSE_ADVANCED);
 
@@ -74,6 +82,12 @@ export default function BudRotRiskToolScreen() {
         Quick risk snapshot based on RH, airflow, and moisture events.
       </Text>
       {growId ? <Text style={styles.context}>Grow context: {growId}</Text> : null}
+      <ToolPlantContextPicker
+        plants={plantContext.plants}
+        plantId={plantContext.plantId}
+        selectedPlant={plantContext.selectedPlant}
+        onSelect={plantContext.setPlantId}
+      />
 
       <Text style={styles.label}>Temperature (degF)</Text>
       <TextInput
@@ -150,6 +164,7 @@ export default function BudRotRiskToolScreen() {
                     const result = await saveToolRunAndOpenJournal({
                       router,
                       growId,
+                      ...plantContext.toolRunContext,
                       toolKey: "bud-rot-risk",
                       input: {
                         tempF: Number(tempF),

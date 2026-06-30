@@ -4,6 +4,10 @@ import { useLocalSearchParams, useRouter } from "expo-router";
 import * as DocumentPicker from "expo-document-picker";
 import AsyncStorage from "@react-native-async-storage/async-storage";
 
+import {
+  ToolPlantContextPicker,
+  useToolPlantContext
+} from "@/features/personal/tools/ToolPlantContextPicker";
 import { saveToolRunAndOpenJournal } from "@/features/personal/tools/saveToolRunAndOpenJournal";
 import {
   bulkIngestTelemetryPoints,
@@ -173,6 +177,7 @@ export default function DewPointGuardTool() {
   const router = useRouter();
   const params = useLocalSearchParams();
   const growId = asString(params.growId);
+  const plantContext = useToolPlantContext(growId, asString(params.plantId) || "");
 
   const [mode, setMode] = useState<"manual" | "source">("manual");
   const [savingAndOpening, setSavingAndOpening] = useState(false);
@@ -825,6 +830,7 @@ export default function DewPointGuardTool() {
         const res = await saveToolRunAndOpenJournal({
           router,
           growId,
+          ...plantContext.toolRunContext,
           toolKey: "dew-point-guard",
           input: {
             mode: "manual_estimate",
@@ -871,6 +877,7 @@ export default function DewPointGuardTool() {
       const res = await saveToolRunAndOpenJournal({
         router,
         growId,
+        ...plantContext.toolRunContext,
         toolKey: "dew-point-guard",
         input: {
           mode: "source_window",
@@ -920,6 +927,12 @@ export default function DewPointGuardTool() {
         Manual estimate default; telemetry-backed window analysis available (source
         creation + manual ingest included).
       </Text>
+      <ToolPlantContextPicker
+        plants={plantContext.plants}
+        plantId={plantContext.plantId}
+        selectedPlant={plantContext.selectedPlant}
+        onSelect={plantContext.setPlantId}
+      />
 
       <Text style={{ fontWeight: "800", marginBottom: 8 }}>Data mode</Text>
       <View style={{ flexDirection: "row", flexWrap: "wrap", marginBottom: 10 }}>
@@ -1644,6 +1657,7 @@ export default function DewPointGuardTool() {
       </View>
 
       <Pressable
+        testID="dpg-save-open-journal"
         onPress={onSaveAndOpen}
         disabled={savingAndOpening}
         style={{

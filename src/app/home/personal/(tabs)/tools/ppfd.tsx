@@ -3,6 +3,10 @@ import { useLocalSearchParams, useRouter } from "expo-router";
 import { Pressable, ScrollView, StyleSheet, Text, TextInput, View } from "react-native";
 
 import BackButton from "@/components/nav/BackButton";
+import {
+  ToolPlantContextPicker,
+  useToolPlantContext
+} from "@/features/personal/tools/ToolPlantContextPicker";
 import ToolResultSurface from "@/features/personal/tools/ToolResultSurface";
 import { saveToolRunAndOpenJournal } from "@/features/personal/tools/saveToolRunAndOpenJournal";
 
@@ -19,8 +23,12 @@ function toNum(value: string) {
 
 export default function PpfdToolScreen() {
   const router = useRouter();
-  const { growId: rawGrowId } = useLocalSearchParams<{ growId?: string | string[] }>();
+  const { growId: rawGrowId, plantId: rawPlantId } = useLocalSearchParams<{
+    growId?: string | string[];
+    plantId?: string | string[];
+  }>();
   const growId = coerceParam(rawGrowId);
+  const plantContext = useToolPlantContext(growId, coerceParam(rawPlantId));
 
   const [dliTarget, setDliTarget] = useState("35");
   const [photoperiodHours, setPhotoperiodHours] = useState("12");
@@ -44,6 +52,12 @@ export default function PpfdToolScreen() {
         Set DLI and photoperiod to estimate required canopy PPFD.
       </Text>
       {growId ? <Text style={styles.context}>Grow context: {growId}</Text> : null}
+      <ToolPlantContextPicker
+        plants={plantContext.plants}
+        plantId={plantContext.plantId}
+        selectedPlant={plantContext.selectedPlant}
+        onSelect={plantContext.setPlantId}
+      />
 
       <Text style={styles.label}>Target DLI (mol/m2/day)</Text>
       <TextInput
@@ -108,6 +122,7 @@ export default function PpfdToolScreen() {
                     const result = await saveToolRunAndOpenJournal({
                       router,
                       growId,
+                      ...plantContext.toolRunContext,
                       toolKey: "ppfd",
                       input: {
                         dliTarget: Number(dliTarget),

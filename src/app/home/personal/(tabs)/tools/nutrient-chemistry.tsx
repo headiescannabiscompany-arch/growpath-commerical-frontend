@@ -12,6 +12,10 @@ import {
 
 import BackButton from "@/components/nav/BackButton";
 import { CAPABILITY_KEYS, useEntitlements } from "@/entitlements";
+import {
+  ToolPlantContextPicker,
+  useToolPlantContext
+} from "@/features/personal/tools/ToolPlantContextPicker";
 import { saveToolRunAndOpenJournal } from "@/features/personal/tools/saveToolRunAndOpenJournal";
 import {
   analyzeCompatibility,
@@ -62,8 +66,12 @@ function pillStyle(active: boolean) {
 
 export default function NutrientChemistryToolScreen() {
   const router = useRouter();
-  const { growId: rawGrowId } = useLocalSearchParams<{ growId?: string | string[] }>();
+  const { growId: rawGrowId, plantId: rawPlantId } = useLocalSearchParams<{
+    growId?: string | string[];
+    plantId?: string | string[];
+  }>();
   const growId = coerceParam(rawGrowId);
+  const plantContext = useToolPlantContext(growId, coerceParam(rawPlantId));
   const entitlements = useEntitlements();
   const enabled = entitlements.can(CAPABILITY_KEYS.TOOL_NPK);
 
@@ -207,6 +215,7 @@ export default function NutrientChemistryToolScreen() {
     const result = await saveToolRunAndOpenJournal({
       router,
       growId,
+      ...plantContext.toolRunContext,
       toolKey: "nutrient-chemistry",
       input: {
         nutrient,
@@ -265,6 +274,12 @@ export default function NutrientChemistryToolScreen() {
         Classify source form, release speed, pH effect, and fast vs slow use case.
       </Text>
       {growId ? <Text style={styles.context}>Grow context: {growId}</Text> : null}
+      <ToolPlantContextPicker
+        plants={plantContext.plants}
+        plantId={plantContext.plantId}
+        selectedPlant={plantContext.selectedPlant}
+        onSelect={plantContext.setPlantId}
+      />
 
       <View style={styles.panel}>
         <Text style={styles.sectionTitle}>Nutrient</Text>
