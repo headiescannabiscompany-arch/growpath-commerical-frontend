@@ -12,6 +12,11 @@ export type NutrientRecipe = {
   batchUnit: "L" | "gal";
   products: Record<string, any>[];
   releaseEnvironment?: Record<string, any>;
+  waterBaseline?: Record<string, any>;
+  measuredEC?: number | null;
+  measuredPH?: number | null;
+  sourceConfidence?: Record<string, any>;
+  mixingOrder?: string[];
   calculation?: Record<string, any>;
   useCount?: number;
   lastUsedAt?: string | null;
@@ -62,6 +67,9 @@ export async function recordNutrientRecipeUse(
     growId?: string;
     batchVolume?: number;
     batchUnit?: "L" | "gal";
+    measuredEC?: number | null;
+    measuredPH?: number | null;
+    waterBaseline?: Record<string, any>;
     saveLog?: boolean;
   }
 ) {

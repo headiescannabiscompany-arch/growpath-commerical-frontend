@@ -100,11 +100,18 @@ export default function NpkToolScreen() {
   const [savedRecipes, setSavedRecipes] = useState<NutrientRecipe[]>([]);
   const [selectedRecipeId, setSelectedRecipeId] = useState("");
   const [daysUntilHarvest, setDaysUntilHarvest] = useState("");
+  const [sourceEC, setSourceEC] = useState("");
+  const [sourcePH, setSourcePH] = useState("");
+  const [alkalinityPpm, setAlkalinityPpm] = useState("");
+  const [waterCa, setWaterCa] = useState("");
+  const [waterMg, setWaterMg] = useState("");
+  const [measuredEC, setMeasuredEC] = useState("");
+  const [measuredPH, setMeasuredPH] = useState("");
   const [soilTempC, setSoilTempC] = useState("22");
   const [moisture, setMoisture] = useState("even");
   const [livingSoil, setLivingSoil] = useState(false);
   const [isConcentrate, setIsConcentrate] = useState(false);
-  const [rows, setRows] = useState<ProductRow[]>([newRow(0), newRow(1), newRow(2)]);
+  const [rows, setRows] = useState<ProductRow[]>([newRow(0)]);
   const [result, setResult] = useState<any>(null);
   const [toolRun, setToolRun] = useState<ToolRun | null>(null);
   const [feedback, setFeedback] = useState("");
@@ -117,6 +124,13 @@ export default function NpkToolScreen() {
   }, [growContext]);
 
   function recipePayload() {
+    const waterBaseline = {
+      sourceEC: sourceEC ? Number(sourceEC) : undefined,
+      sourcePH: sourcePH ? Number(sourcePH) : undefined,
+      alkalinityPpm: alkalinityPpm ? Number(alkalinityPpm) : undefined,
+      Ca: waterCa ? Number(waterCa) : undefined,
+      Mg: waterMg ? Number(waterMg) : undefined
+    };
     return {
       name: recipeName.trim(),
       growId: growContext || undefined,
@@ -126,6 +140,9 @@ export default function NpkToolScreen() {
       medium,
       daysUntilHarvest: daysUntilHarvest ? Number(daysUntilHarvest) : undefined,
       isConcentrate,
+      measuredEC: measuredEC ? Number(measuredEC) : undefined,
+      measuredPH: measuredPH ? Number(measuredPH) : undefined,
+      waterBaseline,
       releaseEnvironment: { soilTempC: Number(soilTempC), moisture, livingSoil },
       products: rows
         .filter((row) => row.name.trim() || Number(row.amount) > 0)
@@ -157,6 +174,13 @@ export default function NpkToolScreen() {
     setBatchUnit(recipe.batchUnit);
     setStage(recipe.stage || "veg");
     setMedium(recipe.medium || "soil");
+    setSourceEC(String(recipe.waterBaseline?.sourceEC ?? ""));
+    setSourcePH(String(recipe.waterBaseline?.sourcePH ?? ""));
+    setAlkalinityPpm(String(recipe.waterBaseline?.alkalinityPpm ?? ""));
+    setWaterCa(String(recipe.waterBaseline?.Ca ?? ""));
+    setWaterMg(String(recipe.waterBaseline?.Mg ?? ""));
+    setMeasuredEC(String(recipe.measuredEC ?? ""));
+    setMeasuredPH(String(recipe.measuredPH ?? ""));
     setSoilTempC(String(recipe.releaseEnvironment?.soilTempC ?? 22));
     setMoisture(String(recipe.releaseEnvironment?.moisture ?? "even"));
     setLivingSoil(Boolean(recipe.releaseEnvironment?.livingSoil));
@@ -205,18 +229,10 @@ export default function NpkToolScreen() {
           Mo: Number(row.Mo),
           Si: Number(row.Si)
         }));
+      const payload = recipePayload();
       const response = await runCalculator<any>("npk-recipe", {
+        ...payload,
         growId: growContext || undefined,
-        batchVolume: Number(batchVolume),
-        batchUnit,
-        stage,
-        daysUntilHarvest: daysUntilHarvest ? Number(daysUntilHarvest) : undefined,
-        isConcentrate,
-        releaseEnvironment: {
-          soilTempC: Number(soilTempC),
-          moisture,
-          livingSoil
-        },
         products
       });
       setResult(response.outputs);
@@ -372,6 +388,33 @@ export default function NpkToolScreen() {
             Concentrated stock
           </Text>
         </Pressable>
+      </View>
+
+      <Text style={styles.label}>Water baseline and measured feed</Text>
+      <Text style={styles.fieldHint}>
+        Add source-water minerals and the final mixed EC/pH so recipe history matches what
+        was actually fed.
+      </Text>
+      <View style={styles.analysisGrid}>
+        {[
+          ["Source EC", sourceEC, setSourceEC],
+          ["Source pH", sourcePH, setSourcePH],
+          ["Alkalinity ppm", alkalinityPpm, setAlkalinityPpm],
+          ["Water Ca ppm", waterCa, setWaterCa],
+          ["Water Mg ppm", waterMg, setWaterMg],
+          ["Measured EC", measuredEC, setMeasuredEC],
+          ["Measured pH", measuredPH, setMeasuredPH]
+        ].map(([label, value, setter]: any) => (
+          <View key={label} style={styles.analysisFieldWide}>
+            <Text style={styles.analysisLabel}>{label}</Text>
+            <TextInput
+              style={styles.analysisInput}
+              value={value}
+              onChangeText={setter}
+              keyboardType="numeric"
+            />
+          </View>
+        ))}
       </View>
 
       {rows.map((row, index) => (
@@ -541,6 +584,9 @@ export default function NpkToolScreen() {
                     growId: growContext || undefined,
                     batchVolume: Number(batchVolume),
                     batchUnit,
+                    measuredEC: measuredEC ? Number(measuredEC) : undefined,
+                    measuredPH: measuredPH ? Number(measuredPH) : undefined,
+                    waterBaseline: recipePayload().waterBaseline,
                     saveLog: true
                   });
                   setSavedRecipes(await listNutrientRecipes(growContext || undefined));
@@ -589,6 +635,53 @@ export default function NpkToolScreen() {
           assumptions={[result.releaseDisclaimer].filter(Boolean)}
           details={
             <>
+              {result.sourceConfidence ? (
+                <>
+                  <Text style={styles.resultTitle}>Source confidence</Text>
+                  <Text style={styles.recommendation}>
+                    Overall: {result.sourceConfidence.overall}. High{" "}
+                    {result.sourceConfidence.counts?.high || 0}, medium{" "}
+                    {result.sourceConfidence.counts?.medium || 0}, low{" "}
+                    {result.sourceConfidence.counts?.low || 0}.
+                  </Text>
+                </>
+              ) : null}
+              {Array.isArray(result.mixingOrder) && result.mixingOrder.length ? (
+                <>
+                  <Text style={styles.resultTitle}>Mixing sequence</Text>
+                  {result.mixingOrder.map((step: string, index: number) => (
+                    <Text key={`${step}-${index}`} style={styles.recommendation}>
+                      {index + 1}. {step}
+                    </Text>
+                  ))}
+                </>
+              ) : null}
+              {result.availabilityEstimate?.windows ? (
+                <>
+                  <Text style={styles.resultTitle}>Estimated availability</Text>
+                  <Text style={styles.fieldHint}>
+                    Raw ppm is label math. Availability estimates apply release timing
+                    from the product form.
+                  </Text>
+                  {Object.entries(result.availabilityEstimate.windows).map(
+                    ([window, totals]: [string, any]) => {
+                      const primary = ["Nppm", "Pppm", "Kppm", "Cappm", "Mgppm"]
+                        .map((key) => `${key.replace("ppm", "")}: ${totals?.[key] || 0}`)
+                        .join(" / ");
+                      return (
+                        <Text key={window} style={styles.recommendation}>
+                          {window.replaceAll("_", "-")}: {primary}
+                        </Text>
+                      );
+                    }
+                  )}
+                  {result.availabilityEstimate.disclaimer ? (
+                    <Text style={styles.fieldHint}>
+                      {result.availabilityEstimate.disclaimer}
+                    </Text>
+                  ) : null}
+                </>
+              ) : null}
               <Text style={styles.resultTitle}>Release timing</Text>
               {Object.entries(result.releaseTimeline || {}).map(
                 ([window, entries]: [string, any]) =>
@@ -689,6 +782,7 @@ const styles = StyleSheet.create({
   fieldHint: { color: "#64748B", fontSize: 12, lineHeight: 17 },
   analysisGrid: { flexDirection: "row", flexWrap: "wrap", gap: 8 },
   analysisField: { width: 82 },
+  analysisFieldWide: { width: 132 },
   analysisLabel: { fontSize: 12, fontWeight: "700", marginBottom: 4 },
   analysisInput: { borderWidth: 1, borderColor: "#CBD5E1", borderRadius: 8, padding: 9 },
   selectWrap: {

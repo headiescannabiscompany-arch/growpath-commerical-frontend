@@ -60,7 +60,16 @@ function formatScalar(value: any): string {
   }
   if (typeof value === "boolean") return value ? "Yes" : "No";
   if (Array.isArray(value)) return value.map(formatScalar).join(", ");
-  if (typeof value === "object") return JSON.stringify(value);
+  if (typeof value === "object") {
+    return Object.entries(value)
+      .slice(0, 5)
+      .map(([key, nested]) => {
+        if (Array.isArray(nested)) return `${key}: ${nested.length}`;
+        if (nested && typeof nested === "object") return `${key}: {...}`;
+        return `${key}: ${formatScalar(nested)}`;
+      })
+      .join("; ");
+  }
   return String(value);
 }
 
@@ -390,6 +399,7 @@ const styles = StyleSheet.create({
   },
   dataRow: {
     flexDirection: "row",
+    flexWrap: "wrap",
     justifyContent: "space-between",
     alignItems: "flex-start",
     gap: 10
@@ -403,10 +413,12 @@ const styles = StyleSheet.create({
   },
   dataValue: {
     flex: 1.25,
+    flexShrink: 1,
+    minWidth: 120,
     color: "#0F172A",
     fontSize: 12,
     fontWeight: "700",
-    textAlign: "right"
+    textAlign: "left"
   },
   notice: { borderRadius: 8, padding: 10, gap: 4 },
   noticeHigh: { backgroundColor: "#FEE2E2" },
