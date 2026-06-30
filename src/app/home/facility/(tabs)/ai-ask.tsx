@@ -196,6 +196,19 @@ const PRESETS: Preset[] = [
     summary: "Find a stage and medium target EC band for feed planning."
   },
   {
+    key: "ec-drift",
+    title: "EC Drift",
+    audience: "Cultivation / fertigation",
+    tool: "ec",
+    fn: "computeDrift",
+    args: {
+      inEC: 1.6,
+      outEC: 2.1,
+      medium: "coco"
+    },
+    summary: "Compare input and runoff EC to flag salt accumulation or depletion."
+  },
+  {
     key: "harvest",
     title: "Harvest window",
     audience: "Cultivation",
