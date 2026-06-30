@@ -17,6 +17,7 @@ import ScreenContainer from "../components/ScreenContainer";
 import StageSlider from "../components/StageSlider";
 import { createEntry, getEntry, updateEntry, autoTagEntry } from "../api/growlog";
 import { listGrows } from "../api/grows";
+import { persistImageUris } from "../utils/photoUploads";
 import GrowPlantSelector from "../components/GrowPlantSelector";
 import GrowInterestPicker from "../components/GrowInterestPicker";
 import {
@@ -45,8 +46,7 @@ const stageReverseMap = {
 
 export default function GrowLogEntryScreen({ route, navigation }) {
   const entryId = route.params?.id || null;
-  const initialDate =
-    route.params?.date || new Date().toISOString().split("T")[0];
+  const initialDate = route.params?.date || new Date().toISOString().split("T")[0];
   const initialGrowId = route.params?.grow || route.params?.growId || null;
   const initialPlantId = route.params?.plant || route.params?.plantId || null;
 
@@ -151,7 +151,9 @@ export default function GrowLogEntryScreen({ route, navigation }) {
   useEffect(() => {
     if (selectedGrowId || selectedPlantIds.length === 0) return;
     const grow = grows.find(
-      (g) => Array.isArray(g.plants) && g.plants.some((p) => selectedPlantIds.includes(p._id || p))
+      (g) =>
+        Array.isArray(g.plants) &&
+        g.plants.some((p) => selectedPlantIds.includes(p._id || p))
     );
     if (grow) {
       setSelectedGrowId(grow._id);
@@ -340,10 +342,19 @@ export default function GrowLogEntryScreen({ route, navigation }) {
       }
     }
 
+    let persistedPhotos = photos;
+    try {
+      setLoading(true);
+      persistedPhotos = await persistImageUris(photos);
+    } catch (err) {
+      setLoading(false);
+      return Alert.alert("Upload failed", err.message || "Unable to upload photos.");
+    }
+
     const payload = {
       title,
       notes,
-      photos,
+      photos: persistedPhotos,
       strain,
       breeder,
       stage,
@@ -557,7 +568,10 @@ export default function GrowLogEntryScreen({ route, navigation }) {
             onValueChange={(next) => {
               const summary = resolveCurrentStageLabel();
               if (summary === "Mixed" && next) {
-                Alert.alert("Multiple stages detected", "Select specific plants before updating.");
+                Alert.alert(
+                  "Multiple stages detected",
+                  "Select specific plants before updating."
+                );
                 return;
               }
               if (next && summary && summary !== "Mixed") {
@@ -580,7 +594,9 @@ export default function GrowLogEntryScreen({ route, navigation }) {
             ) : null}
             <StageSlider
               value={stageMap[stage] || resolveCurrentStageLabel() || "Vegetative"}
-              onChange={(option) => setStage(stageReverseMap[option] || option.toLowerCase())}
+              onChange={(option) =>
+                setStage(stageReverseMap[option] || option.toLowerCase())
+              }
               disabled={!selectedGrowId}
             />
           </>
@@ -915,7 +931,12 @@ export default function GrowLogEntryScreen({ route, navigation }) {
           </Text>
         </TouchableOpacity>
       </ScrollView>
-      <Modal visible={showStageConfirm} transparent animationType="fade" onRequestClose={cancelStageUpdate}>
+      <Modal
+        visible={showStageConfirm}
+        transparent
+        animationType="fade"
+        onRequestClose={cancelStageUpdate}
+      >
         <View style={styles.modalOverlay}>
           <View style={styles.modalContent}>
             <Text style={styles.modalTitle}>Update plant stages?</Text>
@@ -929,10 +950,16 @@ export default function GrowLogEntryScreen({ route, navigation }) {
               to {stageMap[stage] || stage}.
             </Text>
             <View style={styles.modalButtons}>
-              <TouchableOpacity style={[styles.modalButton, styles.modalButtonSecondary]} onPress={cancelStageUpdate}>
+              <TouchableOpacity
+                style={[styles.modalButton, styles.modalButtonSecondary]}
+                onPress={cancelStageUpdate}
+              >
                 <Text style={styles.modalButtonTextSecondary}>Cancel</Text>
               </TouchableOpacity>
-              <TouchableOpacity style={[styles.modalButton, styles.modalButtonPrimary]} onPress={confirmStageUpdate}>
+              <TouchableOpacity
+                style={[styles.modalButton, styles.modalButtonPrimary]}
+                onPress={confirmStageUpdate}
+              >
                 <Text style={styles.modalButtonTextPrimary}>Confirm</Text>
               </TouchableOpacity>
             </View>

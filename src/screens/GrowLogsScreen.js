@@ -18,6 +18,7 @@ import { useApiErrorHandler } from "../hooks/useApiErrorHandler";
 
 import { colors, spacing, radius } from "../theme/theme.js";
 import { createGrow, listGrows } from "../api/grows.js";
+import { persistImageUri } from "../utils/photoUploads";
 
 function GrowLogsScreen() {
   const ent = useEntitlements();
@@ -86,12 +87,13 @@ function GrowLogsScreen() {
 
     try {
       setRawError(null);
+      const persistedPhoto = await persistImageUri(photo);
 
       const created = await createGrow({
         name,
         genetics,
         stage,
-        photo,
+        photo: persistedPhoto,
         advanced:
           advancedEnt === "enabled"
             ? {
