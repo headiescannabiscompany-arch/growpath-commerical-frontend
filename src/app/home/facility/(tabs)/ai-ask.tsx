@@ -127,6 +127,35 @@ const PRESETS: Preset[] = [
       "Normalize elemental nitrogen, phosphorus, and potassium ppm into a feed ratio."
   },
   {
+    key: "fert-recipe",
+    title: "Fert Recipe",
+    audience: "Cultivation / fertigation",
+    tool: "fert",
+    fn: "buildRecipe",
+    args: {
+      name: "Flower Feed",
+      targetEC: 1.8,
+      targetRatio: "2:1:3",
+      volumeLiters: 10,
+      batchUnit: "L",
+      stage: "flower",
+      medium: "coco",
+      products: [
+        {
+          productId: "base-a",
+          name: "Base A",
+          amount: 10,
+          unit: "g",
+          N: 10,
+          P: 5,
+          K: 15
+        }
+      ]
+    },
+    summary:
+      "Build and save a validated fertigation recipe from target EC and product guarantees."
+  },
+  {
     key: "harvest",
     title: "Harvest window",
     audience: "Cultivation",
