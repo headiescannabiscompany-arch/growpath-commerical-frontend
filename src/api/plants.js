@@ -1,6 +1,7 @@
 import { apiRequest } from "./apiRequest";
 import routes from "./routes.js";
 import { endpoints } from "./endpoints";
+import { persistImageUri } from "@/utils/photoUploads";
 
 function normalizePlantList(res) {
   if (Array.isArray(res)) return res;
@@ -80,17 +81,9 @@ export async function deletePlant(a, b) {
 }
 
 export async function uploadPlantPhoto(file, token) {
-  const form = new FormData();
-  const value =
-    file && typeof file === "object" && file.uri
-      ? { uri: file.uri, type: file.type || "image/jpeg", name: file.name || "plant.jpg" }
-      : file;
-  form.append("photo", value);
-  return apiRequest(routes.PLANTS.UPLOAD_PHOTO, {
-    method: "POST",
-    ...asLegacyTokenOptions(token),
-    body: form
-  });
+  const uri = file && typeof file === "object" && file.uri ? file.uri : file;
+  const url = await persistImageUri(uri);
+  return { url };
 }
 
 export async function getPlantWithLogs(plantId, token) {
