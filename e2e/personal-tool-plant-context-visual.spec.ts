@@ -86,6 +86,34 @@ async function installMocks(page: any) {
       return fulfillJson(route, { grows: [GROW] });
     }
 
+    if (method === "GET" && url.pathname === "/api/tools") {
+      return fulfillJson(route, {
+        tools: [
+          {
+            _id: "toolrun-vpd-olive-1",
+            id: "toolrun-vpd-olive-1",
+            growId: GROW.id,
+            plantId: PLANT.id,
+            cropProfileId: PLANT.cropProfileId,
+            toolType: "vpd",
+            toolName: "vpd",
+            createdAt: "2026-06-30T14:00:00.000Z",
+            inputs: { rh: 60 },
+            outputs: { vpdKpa: 1.1 },
+            selectedPlantContext: {
+              id: PLANT.id,
+              name: PLANT.name,
+              cropCommonName: PLANT.cropCommonName,
+              scientificName: PLANT.scientificName,
+              cultivarOrStrain: PLANT.cultivar,
+              cropProfileId: PLANT.cropProfileId,
+              growthProfile: PLANT.growthProfile
+            }
+          }
+        ]
+      });
+    }
+
     if (method === "POST" && url.pathname === "/api/tools") {
       const payload = request.postDataJSON();
       createdToolRuns.push(payload);
@@ -197,5 +225,23 @@ test.describe("personal tool plant context", () => {
         description: expect.stringContaining("Species: Olea europaea")
       })
     );
+  });
+
+  test("Grow tools page shows plant context on recent runs", async ({ page }) => {
+    await page.setViewportSize({ width: 390, height: 844 });
+    await installMocks(page);
+
+    await page.goto(`/home/personal/grows/${GROW.id}/tools`, {
+      waitUntil: "domcontentloaded"
+    });
+
+    await expect(page.getByText("Grow Tools")).toBeVisible();
+    await expect(page.getByText("vpd | 2026-06-30")).toBeVisible();
+    await expect(page.getByText("Olive patio tree | Olive | Arbequina")).toBeVisible();
+
+    await page.screenshot({
+      path: "tmp/screenshots/personal-tool-plant-context-grow-tools-mobile.png",
+      fullPage: true
+    });
   });
 });

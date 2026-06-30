@@ -33,11 +33,22 @@ const styles = StyleSheet.create({
   },
   actionText: { fontWeight: "700", color: "#0F172A" },
   recentTitle: { marginTop: 12, fontWeight: "700", color: "#0F172A" },
-  recentRow: { marginTop: 6, fontSize: 12, color: "#475569" }
+  recentRow: { marginTop: 6, fontSize: 12, color: "#475569" },
+  recentContext: { marginTop: 2, fontSize: 12, color: "#166534", fontWeight: "700" }
 });
 
 function withGrow(path: string, growId: string) {
   return `${path}?growId=${encodeURIComponent(growId)}`;
+}
+
+function toolRunContextLabel(run: any) {
+  const context = run?.selectedPlantContext || run?.cropIdentity || {};
+  const parts = [
+    context?.name || (run?.plantId ? `Plant ${run.plantId}` : ""),
+    context?.cropCommonName || context?.scientificName || "",
+    context?.cultivarOrStrain || ""
+  ].filter(Boolean);
+  return parts.length ? parts.join(" | ") : "Whole grow";
 }
 
 export default function GrowToolsScreen() {
@@ -104,12 +115,15 @@ export default function GrowToolsScreen() {
           <Text style={styles.recentRow}>No saved runs yet.</Text>
         ) : (
           recent.map((run, index) => (
-            <Text
+            <View
               key={String(run?._id || run?.id || `${run?.toolType || "tool"}-${index}`)}
-              style={styles.recentRow}
             >
-              {run?.toolType || "tool"} | {String(run?.createdAt || "").slice(0, 10)}
-            </Text>
+              <Text style={styles.recentRow}>
+                {run?.toolType || run?.toolName || "tool"} |{" "}
+                {String(run?.createdAt || "").slice(0, 10)}
+              </Text>
+              <Text style={styles.recentContext}>{toolRunContextLabel(run)}</Text>
+            </View>
           ))
         )}
       </View>

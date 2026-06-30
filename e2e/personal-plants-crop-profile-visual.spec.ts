@@ -148,6 +148,9 @@ test.describe("personal plant crop profile form", () => {
       await expect(page.getByText("Cherry tomato #1")).toBeVisible();
       await expect(page.getByText(/Species: Tomato/)).toBeVisible();
       await expect(page.getByText(/Growth overlay: canopy 75 cm/)).toBeVisible();
+      await expect(
+        page.getByRole("link", { name: "Run VPD for Cherry tomato #1" })
+      ).toBeVisible();
       expect(api.createPayloads[0]).toMatchObject({
         cropCommonName: "Tomato",
         scientificName: "Solanum lycopersicum",
@@ -162,6 +165,11 @@ test.describe("personal plant crop profile form", () => {
         path: `tmp/screenshots/personal-plants-crop-profile-${size.name}.png`,
         fullPage: true
       });
+
+      await page.getByRole("link", { name: "Run VPD for Cherry tomato #1" }).click();
+      await expect(page).toHaveURL(/\/home\/personal\/tools\/vpd\?/);
+      await expect(page).toHaveURL(/growId=grow-crop-profile-1/);
+      await expect(page).toHaveURL(/plantId=plant-created-1/);
     });
   }
 });

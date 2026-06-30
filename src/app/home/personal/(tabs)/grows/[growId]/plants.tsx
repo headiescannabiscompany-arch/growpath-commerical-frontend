@@ -1,6 +1,6 @@
 import React, { useCallback, useMemo, useState } from "react";
 import { useFocusEffect } from "@react-navigation/native";
-import { useLocalSearchParams } from "expo-router";
+import { Link, useLocalSearchParams } from "expo-router";
 import {
   ActivityIndicator,
   Pressable,
@@ -167,6 +167,14 @@ export default function GrowPlantsScreen() {
       profile.phenoLabel ? `pheno ${profile.phenoLabel}` : ""
     ].filter(Boolean);
     return parts.join(" - ");
+  }
+
+  function withPlant(path: string, plant: PersonalPlant) {
+    const plantId = getRowId(plant);
+    const params = new URLSearchParams();
+    params.set("growId", growId);
+    if (plantId) params.set("plantId", plantId);
+    return `${path}?${params.toString()}`;
   }
 
   return (
@@ -336,6 +344,47 @@ export default function GrowPlantsScreen() {
             {growthOverlayLine(plant) ? (
               <Text style={styles.meta}>Growth overlay: {growthOverlayLine(plant)}</Text>
             ) : null}
+            <View style={styles.actions}>
+              <Link href={withPlant("/home/personal/diagnose", plant)} asChild>
+                <Pressable
+                  style={styles.quickAction}
+                  accessibilityRole="button"
+                  accessibilityLabel={`Diagnose ${plant.name || "plant"}`}
+                >
+                  <Text style={styles.quickActionText}>Diagnose</Text>
+                </Pressable>
+              </Link>
+              <Link href={withPlant("/home/personal/tools/vpd", plant)} asChild>
+                <Pressable
+                  style={styles.quickAction}
+                  accessibilityRole="button"
+                  accessibilityLabel={`Run VPD for ${plant.name || "plant"}`}
+                >
+                  <Text style={styles.quickActionText}>VPD</Text>
+                </Pressable>
+              </Link>
+              <Link href={withPlant("/home/personal/tools/watering", plant)} asChild>
+                <Pressable
+                  style={styles.quickAction}
+                  accessibilityRole="button"
+                  accessibilityLabel={`Plan watering for ${plant.name || "plant"}`}
+                >
+                  <Text style={styles.quickActionText}>Watering</Text>
+                </Pressable>
+              </Link>
+              <Link
+                href={withPlant("/home/personal/tools/timeline-planner", plant)}
+                asChild
+              >
+                <Pressable
+                  style={styles.quickAction}
+                  accessibilityRole="button"
+                  accessibilityLabel={`Plan timeline for ${plant.name || "plant"}`}
+                >
+                  <Text style={styles.quickActionText}>Timeline</Text>
+                </Pressable>
+              </Link>
+            </View>
           </View>
         ))
       )}
@@ -412,5 +461,15 @@ const styles = StyleSheet.create({
     gap: 4
   },
   cardTitle: { color: "#0F172A", fontSize: 16, fontWeight: "800" },
-  meta: { color: "#475569", fontSize: 12 }
+  meta: { color: "#475569", fontSize: 12 },
+  actions: { flexDirection: "row", flexWrap: "wrap", gap: 8, marginTop: 8 },
+  quickAction: {
+    borderWidth: 1,
+    borderColor: "#166534",
+    borderRadius: 8,
+    paddingHorizontal: 10,
+    paddingVertical: 7,
+    backgroundColor: "#F0FDF4"
+  },
+  quickActionText: { color: "#166534", fontWeight: "800", fontSize: 12 }
 });
