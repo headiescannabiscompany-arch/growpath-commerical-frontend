@@ -7,6 +7,10 @@ import { createPersonalLog } from "@/api/logs";
 import BackButton from "@/components/nav/BackButton";
 import { CAPABILITY_KEYS, useEntitlements } from "@/entitlements";
 import LockedToolCard from "@/features/personal/tools/LockedToolCard";
+import {
+  ToolPlantContextPicker,
+  useToolPlantContext
+} from "@/features/personal/tools/ToolPlantContextPicker";
 import ToolResultSurface from "@/features/personal/tools/ToolResultSurface";
 
 function coerceParam(value?: string | string[]) {
@@ -36,8 +40,13 @@ function notesFromSchedule(result: any) {
 }
 
 export default function FeedingScheduleToolScreen() {
-  const { growId: rawGrowId } = useLocalSearchParams<{ growId?: string | string[] }>();
+  const { growId: rawGrowId, plantId: rawPlantId } = useLocalSearchParams<{
+    growId?: string | string[];
+    plantId?: string | string[];
+  }>();
   const growId = useMemo(() => coerceParam(rawGrowId), [rawGrowId]);
+  const initialPlantId = useMemo(() => coerceParam(rawPlantId), [rawPlantId]);
+  const plantContext = useToolPlantContext(growId, initialPlantId);
   const entitlements = useEntitlements();
   const enabled = entitlements.can(CAPABILITY_KEYS.FEEDING_SCHEDULE);
 
@@ -61,6 +70,7 @@ export default function FeedingScheduleToolScreen() {
     try {
       const response = await generateSchedule({
         growId: growId || undefined,
+        ...plantContext.toolRunContext,
         nutrientData: { productName: productName.trim() },
         growMedium: medium.trim(),
         strainType: strainType.trim(),
@@ -82,12 +92,19 @@ export default function FeedingScheduleToolScreen() {
     if (!growId || !result) throw new Error("Select a grow before saving.");
     const created = await createPersonalLog({
       growId,
+      plantId: plantContext.toolRunContext.plantId,
       type: "feed",
       date: new Date().toISOString().slice(0, 10),
       title: `${productName.trim() || "Nutrient"} feeding schedule`,
       notes: [
         `Medium: ${medium}`,
         `Strain type: ${strainType}`,
+        plantContext.selectedPlantContext
+          ? `Plant: ${plantContext.selectedPlantContext.name || plantContext.selectedPlantContext.cropCommonName || "selected plant"}`
+          : "",
+        plantContext.selectedPlantContext?.scientificName
+          ? `Species: ${plantContext.selectedPlantContext.scientificName}`
+          : "",
         notes,
         ...scheduleRows.map(
           (row) =>
@@ -110,6 +127,12 @@ export default function FeedingScheduleToolScreen() {
         Generate a feeding plan from nutrient, medium, strain, and schedule context.
       </Text>
       {growId ? <Text style={styles.context}>Grow context: {growId}</Text> : null}
+      <ToolPlantContextPicker
+        plants={plantContext.plants}
+        plantId={plantContext.plantId}
+        selectedPlant={plantContext.selectedPlant}
+        onSelect={plantContext.setPlantId}
+      />
 
       <Text style={styles.label}>Product or nutrient line</Text>
       <TextInput

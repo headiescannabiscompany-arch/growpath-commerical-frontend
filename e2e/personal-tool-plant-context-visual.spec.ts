@@ -40,6 +40,7 @@ function fulfillJson(route: any, body: any, status = 200) {
 
 async function installMocks(page: any) {
   const createdToolRuns: any[] = [];
+  const createdTasks: any[] = [];
 
   await page.addInitScript(() => {
     window.localStorage.setItem("auth_token_v1", "plant-context-token");
@@ -69,7 +70,8 @@ async function installMocks(page: any) {
             GROWS_PERSONAL_VIEW: true,
             LOGS_PERSONAL_VIEW: true,
             LOGS_PERSONAL_WRITE: true,
-            PLANTS_PERSONAL_VIEW: true
+            PLANTS_PERSONAL_VIEW: true,
+            TOOL_TIMELINE_PLANNER: true
           },
           limits: {}
         }
@@ -103,10 +105,22 @@ async function installMocks(page: any) {
       });
     }
 
+    if (method === "POST" && url.pathname === "/api/personal/tasks") {
+      const payload = request.postDataJSON();
+      createdTasks.push(payload);
+      return fulfillJson(route, {
+        task: {
+          id: `task-${createdTasks.length}`,
+          ...payload,
+          completed: false
+        }
+      });
+    }
+
     return fulfillJson(route, { ok: true });
   });
 
-  return { createdToolRuns };
+  return { createdToolRuns, createdTasks };
 }
 
 test.describe("personal tool plant context", () => {
@@ -151,5 +165,37 @@ test.describe("personal tool plant context", () => {
           })
         })
       );
+  });
+
+  test("Timeline Planner creates selected plant tasks", async ({ page }) => {
+    await page.setViewportSize({ width: 390, height: 844 });
+    const mocks = await installMocks(page);
+
+    await page.goto(`/home/personal/tools/timeline-planner?growId=${GROW.id}`, {
+      waitUntil: "domcontentloaded"
+    });
+
+    await expect(page.getByRole("heading", { name: "Timeline Planner" })).toBeVisible();
+    await page.getByRole("button", { name: "Run tool for Olive patio tree" }).click();
+
+    await page.screenshot({
+      path: "tmp/screenshots/personal-tool-plant-context-timeline-mobile.png",
+      fullPage: true
+    });
+
+    await page.getByRole("button", { name: "Create Tasks" }).click();
+
+    await expect
+      .poll(() => mocks.createdTasks.length, {
+        message: "timeline planner created milestone tasks"
+      })
+      .toBeGreaterThan(0);
+    expect(mocks.createdTasks[0]).toEqual(
+      expect.objectContaining({
+        growId: GROW.id,
+        plantId: PLANT.id,
+        description: expect.stringContaining("Species: Olea europaea")
+      })
+    );
   });
 });

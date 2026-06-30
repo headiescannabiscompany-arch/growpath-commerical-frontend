@@ -7,6 +7,10 @@ import BackButton from "@/components/nav/BackButton";
 import { CAPABILITY_KEYS, useEntitlements } from "@/entitlements";
 import { buildTimelinePlan } from "@/features/personal/tools/advancedPlanning";
 import LockedToolCard from "@/features/personal/tools/LockedToolCard";
+import {
+  ToolPlantContextPicker,
+  useToolPlantContext
+} from "@/features/personal/tools/ToolPlantContextPicker";
 import ToolResultSurface from "@/features/personal/tools/ToolResultSurface";
 
 function coerceParam(value?: string | string[]) {
@@ -21,8 +25,13 @@ function numberValue(value: string, fallback: number) {
 }
 
 export default function TimelinePlannerScreen() {
-  const { growId: rawGrowId } = useLocalSearchParams<{ growId?: string | string[] }>();
+  const { growId: rawGrowId, plantId: rawPlantId } = useLocalSearchParams<{
+    growId?: string | string[];
+    plantId?: string | string[];
+  }>();
   const growId = useMemo(() => coerceParam(rawGrowId), [rawGrowId]);
+  const initialPlantId = useMemo(() => coerceParam(rawPlantId), [rawPlantId]);
+  const plantContext = useToolPlantContext(growId, initialPlantId);
   const entitlements = useEntitlements();
   const enabled = entitlements.can(CAPABILITY_KEYS.TOOL_TIMELINE_PLANNER);
   const [startDate, setStartDate] = useState(new Date().toISOString().slice(0, 10));
@@ -49,8 +58,19 @@ export default function TimelinePlannerScreen() {
     for (const milestone of milestones.slice(1)) {
       await createPersonalTask({
         growId,
+        plantId: plantContext.toolRunContext.plantId,
         title: milestone.label,
-        description: milestone.detail,
+        description: [
+          milestone.detail,
+          plantContext.selectedPlantContext
+            ? `Plant context: ${plantContext.selectedPlantContext.name || plantContext.selectedPlantContext.cropCommonName || "selected plant"}`
+            : "",
+          plantContext.selectedPlantContext?.scientificName
+            ? `Species: ${plantContext.selectedPlantContext.scientificName}`
+            : ""
+        ]
+          .filter(Boolean)
+          .join("\n"),
         dueDate: milestone.date
       });
     }
@@ -65,6 +85,12 @@ export default function TimelinePlannerScreen() {
         Build a date-based grow plan across veg, flower, dry, and cure milestones.
       </Text>
       {growId ? <Text style={styles.context}>Grow context: {growId}</Text> : null}
+      <ToolPlantContextPicker
+        plants={plantContext.plants}
+        plantId={plantContext.plantId}
+        selectedPlant={plantContext.selectedPlant}
+        onSelect={plantContext.setPlantId}
+      />
 
       {!enabled ? (
         <LockedToolCard

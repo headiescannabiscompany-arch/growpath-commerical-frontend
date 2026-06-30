@@ -6,6 +6,10 @@ import { analyzeEnvironment } from "@/api/environment";
 import { createPersonalLog } from "@/api/logs";
 import BackButton from "@/components/nav/BackButton";
 import { CAPABILITY_KEYS, useEntitlements } from "@/entitlements";
+import {
+  ToolPlantContextPicker,
+  useToolPlantContext
+} from "@/features/personal/tools/ToolPlantContextPicker";
 import ToolResultSurface from "@/features/personal/tools/ToolResultSurface";
 
 function coerceParam(value?: string | string[]) {
@@ -57,8 +61,13 @@ function targetValue(result: any, key: string) {
 }
 
 export default function EnvironmentAnalysisToolScreen() {
-  const { growId: rawGrowId } = useLocalSearchParams<{ growId?: string | string[] }>();
+  const { growId: rawGrowId, plantId: rawPlantId } = useLocalSearchParams<{
+    growId?: string | string[];
+    plantId?: string | string[];
+  }>();
   const growId = useMemo(() => coerceParam(rawGrowId), [rawGrowId]);
+  const initialPlantId = useMemo(() => coerceParam(rawPlantId), [rawPlantId]);
+  const plantContext = useToolPlantContext(growId, initialPlantId);
   const entitlements = useEntitlements();
   const enabled = entitlements.can(CAPABILITY_KEYS.AI_ASSISTANT);
 
@@ -86,6 +95,7 @@ export default function EnvironmentAnalysisToolScreen() {
     try {
       const response = await analyzeEnvironment({
         growId: growId || undefined,
+        ...plantContext.toolRunContext,
         stage,
         tempDayC: numeric(tempDayC),
         tempNightC: numeric(tempNightC),
@@ -110,11 +120,18 @@ export default function EnvironmentAnalysisToolScreen() {
     const riskFlags = list(assessment.riskFlags);
     const created = await createPersonalLog({
       growId,
+      plantId: plantContext.toolRunContext.plantId,
       type: "environment",
       date: new Date().toISOString().slice(0, 10),
       title: `Environment analysis: ${assessment.status || stage}`,
       notes: [
         `Stage: ${stage}`,
+        plantContext.selectedPlantContext
+          ? `Plant: ${plantContext.selectedPlantContext.name || plantContext.selectedPlantContext.cropCommonName || "selected plant"}`
+          : "",
+        plantContext.selectedPlantContext?.scientificName
+          ? `Species: ${plantContext.selectedPlantContext.scientificName}`
+          : "",
         `Status: ${assessment.status || "n/a"}`,
         issues.length ? `Issues: ${issues.join("; ")}` : "",
         riskFlags.length ? `Risk flags: ${riskFlags.join("; ")}` : "",
@@ -137,6 +154,12 @@ export default function EnvironmentAnalysisToolScreen() {
         risk flags, and adjustment recommendations.
       </Text>
       {growId ? <Text style={styles.context}>Grow context: {growId}</Text> : null}
+      <ToolPlantContextPicker
+        plants={plantContext.plants}
+        plantId={plantContext.plantId}
+        selectedPlant={plantContext.selectedPlant}
+        onSelect={plantContext.setPlantId}
+      />
 
       <Text style={styles.label}>Stage</Text>
       <TextInput
