@@ -11,6 +11,10 @@ import {
   type HarvestEstimatorInput
 } from "@/features/personal/tools/advancedPlanning";
 import LockedToolCard from "@/features/personal/tools/LockedToolCard";
+import {
+  ToolPlantContextPicker,
+  useToolPlantContext
+} from "@/features/personal/tools/ToolPlantContextPicker";
 import ToolResultSurface from "@/features/personal/tools/ToolResultSurface";
 
 function coerceParam(value?: string | string[]) {
@@ -25,8 +29,13 @@ function numberValue(value: string, fallback: number) {
 }
 
 export default function HarvestEstimatorScreen() {
-  const { growId: rawGrowId } = useLocalSearchParams<{ growId?: string | string[] }>();
+  const { growId: rawGrowId, plantId: rawPlantId } = useLocalSearchParams<{
+    growId?: string | string[];
+    plantId?: string | string[];
+  }>();
   const growId = useMemo(() => coerceParam(rawGrowId), [rawGrowId]);
+  const initialPlantId = useMemo(() => coerceParam(rawPlantId), [rawPlantId]);
+  const plantContext = useToolPlantContext(growId, initialPlantId);
   const entitlements = useEntitlements();
   const enabled = entitlements.can(CAPABILITY_KEYS.TOOL_HARVEST_ESTIMATOR);
   const [floweringDay, setFloweringDay] = useState("49");
@@ -56,12 +65,14 @@ export default function HarvestEstimatorScreen() {
     const toolRun = await createToolRun({
       toolType: "harvest-estimator",
       growId,
+      ...plantContext.toolRunContext,
       input,
       output: result,
       calculatorVersion: "advanced-planning-v1"
     });
     const created = await createPersonalLog({
       growId,
+      plantId: plantContext.toolRunContext.plantId,
       toolRunId: toolRun?._id || toolRun?.id,
       type: "harvest",
       date: new Date().toISOString().slice(0, 10),
@@ -82,6 +93,12 @@ export default function HarvestEstimatorScreen() {
         and cultivar speed.
       </Text>
       {growId ? <Text style={styles.context}>Grow context: {growId}</Text> : null}
+      <ToolPlantContextPicker
+        plants={plantContext.plants}
+        plantId={plantContext.plantId}
+        selectedPlant={plantContext.selectedPlant}
+        onSelect={plantContext.setPlantId}
+      />
 
       {!enabled ? (
         <LockedToolCard

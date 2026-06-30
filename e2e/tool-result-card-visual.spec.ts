@@ -164,9 +164,9 @@ test.describe("shared tool result card", () => {
       });
       await expect(page.getByRole("heading", { name: "VPD Calculator" })).toBeVisible();
       await expect(
-        page.getByRole("button", { name: "Run VPD for Blueberry row A" })
+        page.getByRole("button", { name: "Run tool for Blueberry row A" })
       ).toBeVisible();
-      await page.getByRole("button", { name: "Run VPD for Blueberry row A" }).click();
+      await page.getByRole("button", { name: "Run tool for Blueberry row A" }).click();
 
       await page.getByRole("button", { name: "Calculate and Save" }).click();
 

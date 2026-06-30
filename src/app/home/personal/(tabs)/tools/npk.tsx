@@ -5,6 +5,10 @@ import { Picker } from "@react-native-picker/picker";
 
 import BackButton from "@/components/nav/BackButton";
 import { CAPABILITY_KEYS, useEntitlements } from "@/entitlements";
+import {
+  ToolPlantContextPicker,
+  useToolPlantContext
+} from "@/features/personal/tools/ToolPlantContextPicker";
 import ToolResultSurface from "@/features/personal/tools/ToolResultSurface";
 import {
   createTaskFromToolRun,
@@ -61,6 +65,12 @@ const chemistryOptions = [
   ["chelated_micronutrient", "Chelated micronutrient"]
 ] as const;
 
+function coerceParam(value?: string | string[]) {
+  if (typeof value === "string") return value;
+  if (Array.isArray(value)) return value[0] || "";
+  return "";
+}
+
 function newRow(index: number): ProductRow {
   return {
     id: `${Date.now()}-${index}`,
@@ -87,11 +97,14 @@ function newRow(index: number): ProductRow {
 }
 
 export default function NpkToolScreen() {
-  const { growId } = useLocalSearchParams<{ growId?: string | string[] }>();
+  const { growId, plantId } = useLocalSearchParams<{
+    growId?: string | string[];
+    plantId?: string | string[];
+  }>();
   const entitlements = useEntitlements();
   const enabled = entitlements.can(CAPABILITY_KEYS.TOOL_NPK);
-  const growContext =
-    typeof growId === "string" ? growId : Array.isArray(growId) ? growId[0] : "";
+  const growContext = coerceParam(growId);
+  const plantContext = useToolPlantContext(growContext, coerceParam(plantId));
   const [batchVolume, setBatchVolume] = useState("5");
   const [batchUnit, setBatchUnit] = useState<"gal" | "L">("gal");
   const [stage, setStage] = useState("veg");
@@ -233,6 +246,7 @@ export default function NpkToolScreen() {
       const response = await runCalculator<any>("npk-recipe", {
         ...payload,
         growId: growContext || undefined,
+        ...plantContext.toolRunContext,
         products
       });
       setResult(response.outputs);
@@ -269,6 +283,12 @@ export default function NpkToolScreen() {
       {growContext ? (
         <Text style={styles.context}>Grow context: {growContext}</Text>
       ) : null}
+      <ToolPlantContextPicker
+        plants={plantContext.plants}
+        plantId={plantContext.plantId}
+        selectedPlant={plantContext.selectedPlant}
+        onSelect={plantContext.setPlantId}
+      />
 
       <Text style={styles.label}>Batch volume</Text>
       <View style={styles.row}>

@@ -5,6 +5,10 @@ import { ScrollView, StyleSheet, Text, TextInput } from "react-native";
 import { apiRequest } from "@/api/apiRequest";
 import { createToolRun } from "@/api/toolRuns";
 import BackButton from "@/components/nav/BackButton";
+import {
+  ToolPlantContextPicker,
+  useToolPlantContext
+} from "@/features/personal/tools/ToolPlantContextPicker";
 import ToolResultSurface, {
   type ToolResultAction
 } from "@/features/personal/tools/ToolResultSurface";
@@ -29,8 +33,12 @@ function coerceParam(value?: string | string[]) {
 
 export default function WateringToolScreen() {
   const router = useRouter();
-  const { growId: rawGrowId } = useLocalSearchParams<{ growId?: string | string[] }>();
+  const { growId: rawGrowId, plantId: rawPlantId } = useLocalSearchParams<{
+    growId?: string | string[];
+    plantId?: string | string[];
+  }>();
   const growId = coerceParam(rawGrowId);
+  const plantContext = useToolPlantContext(growId, coerceParam(rawPlantId));
 
   const [potLiters, setPotLiters] = useState("11");
   const [runoffPct, setRunoffPct] = useState("10");
@@ -67,6 +75,7 @@ export default function WateringToolScreen() {
         const created = await createToolRun({
           toolType: "watering",
           growId: growId || undefined,
+          ...plantContext.toolRunContext,
           input,
           output: model
         });
@@ -89,6 +98,7 @@ export default function WateringToolScreen() {
           const result = await saveToolRunAndOpenJournal({
             router,
             growId,
+            ...plantContext.toolRunContext,
             toolKey: "watering",
             toolRunId: savedRunId || undefined,
             input,
@@ -106,6 +116,7 @@ export default function WateringToolScreen() {
             method: "POST",
             body: {
               growId,
+              plantId: plantContext.toolRunContext.plantId,
               title: "Water plants",
               description: `Target ${model.targetLiters} L with ${runoffPct}% runoff`,
               dueDate: model.nextWaterDate
@@ -123,6 +134,12 @@ export default function WateringToolScreen() {
       <Text style={styles.title}>Watering Planner</Text>
       <Text style={styles.subtitle}>Estimate watering volume and schedule.</Text>
       {growId ? <Text style={styles.context}>Grow context: {growId}</Text> : null}
+      <ToolPlantContextPicker
+        plants={plantContext.plants}
+        plantId={plantContext.plantId}
+        selectedPlant={plantContext.selectedPlant}
+        onSelect={plantContext.setPlantId}
+      />
 
       <Text style={styles.label}>Pot size (L)</Text>
       <TextInput

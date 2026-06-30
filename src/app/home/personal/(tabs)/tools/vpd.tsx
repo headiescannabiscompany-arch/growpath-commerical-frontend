@@ -1,8 +1,7 @@
-import React, { useEffect, useMemo, useState } from "react";
+import React, { useMemo, useState } from "react";
 import { useLocalSearchParams, useRouter } from "expo-router";
 import { Pressable, ScrollView, StyleSheet, Text, TextInput, View } from "react-native";
 
-import { listPersonalPlants, type PersonalPlant } from "@/api/plants";
 import {
   createTaskFromToolRun,
   runCalculator,
@@ -11,6 +10,10 @@ import {
 } from "@/api/toolRuns";
 import BackButton from "@/components/nav/BackButton";
 import { CAPABILITY_KEYS, useEntitlements } from "@/entitlements";
+import {
+  ToolPlantContextPicker,
+  useToolPlantContext
+} from "@/features/personal/tools/ToolPlantContextPicker";
 import ToolResultSurface, {
   type ToolResultAction
 } from "@/features/personal/tools/ToolResultSurface";
@@ -38,8 +41,7 @@ export default function VpdToolScreen() {
   const entitlements = useEntitlements();
   const enabled = entitlements.can(CAPABILITY_KEYS.TOOLS_VPD);
 
-  const [plants, setPlants] = useState<PersonalPlant[]>([]);
-  const [plantId, setPlantId] = useState(initialPlantId);
+  const plantContext = useToolPlantContext(growId, initialPlantId);
   const [unit, setUnit] = useState<TempUnit>("F");
   const [tempText, setTempText] = useState("77");
   const [rhText, setRhText] = useState("60");
@@ -48,36 +50,6 @@ export default function VpdToolScreen() {
   const [serverResult, setServerResult] = useState<any>(null);
   const [serverRun, setServerRun] = useState<ToolRun | null>(null);
   const [feedback, setFeedback] = useState("");
-
-  useEffect(() => {
-    if (!growId) {
-      setPlants([]);
-      return;
-    }
-    listPersonalPlants({ growId })
-      .then(setPlants)
-      .catch(() => setPlants([]));
-  }, [growId]);
-
-  const selectedPlant = useMemo(
-    () => plants.find((plant) => String(plant.id || (plant as any)._id) === plantId),
-    [plantId, plants]
-  );
-
-  function selectedPlantContext() {
-    if (!selectedPlant) return null;
-    return {
-      id: String(selectedPlant.id || (selectedPlant as any)._id || ""),
-      name: selectedPlant.name || "",
-      cropCommonName: selectedPlant.cropCommonName || "",
-      scientificName: selectedPlant.scientificName || "",
-      cultivarOrStrain: selectedPlant.cultivar || selectedPlant.strain || "",
-      cropProfileId: selectedPlant.cropProfileId || null,
-      stage: selectedPlant.stage || selectedPlant.status || "",
-      medium: selectedPlant.medium || "",
-      growthProfile: selectedPlant.growthProfile || null
-    };
-  }
 
   const model = useMemo<VpdModel>(() => {
     const temperature = Number(tempText);
@@ -97,14 +69,9 @@ export default function VpdToolScreen() {
       pendingLabel: "Calculating...",
       onPress: async () => {
         setFeedback("");
-        const plantContext = selectedPlantContext();
         const response = await runCalculator<any>("vpd", {
           growId: growId || undefined,
-          plantId: plantId || undefined,
-          cropProfileId: selectedPlant?.cropProfileId || undefined,
-          cropIdentity: plantContext || undefined,
-          selectedPlantContext: plantContext || undefined,
-          plantGrowthProfile: selectedPlant?.growthProfile || undefined,
+          ...plantContext.toolRunContext,
           airTemp: Number(tempText),
           tempUnit: unit,
           rh: Number(rhText),
@@ -145,15 +112,10 @@ export default function VpdToolScreen() {
       label: "Open Journal Entry",
       pendingLabel: "Opening...",
       onPress: async () => {
-        const plantContext = selectedPlantContext();
         const result = await saveToolRunAndOpenJournal({
           router,
           growId,
-          plantId: plantId || undefined,
-          cropProfileId: selectedPlant?.cropProfileId || undefined,
-          cropIdentity: plantContext || undefined,
-          selectedPlantContext: plantContext || undefined,
-          plantGrowthProfile: selectedPlant?.growthProfile || undefined,
+          ...plantContext.toolRunContext,
           toolKey: "vpd",
           toolRunId: serverRun?._id,
           input: { temp: Number(tempText), unit, rh: Number(rhText) },
@@ -186,56 +148,12 @@ export default function VpdToolScreen() {
       </Text>
       {growId ? <Text style={styles.context}>Grow context: {growId}</Text> : null}
 
-      {plants.length ? (
-        <View style={styles.section}>
-          <Text style={styles.label}>Plant context</Text>
-          <Text style={styles.subtitle}>
-            Tool runs are saved with the selected plant, crop, cultivar, size, pheno, and
-            timing context when available.
-          </Text>
-          <View style={styles.row}>
-            <Pressable
-              style={[styles.pill, !plantId && styles.pillOn]}
-              onPress={() => setPlantId("")}
-              accessibilityRole="button"
-              accessibilityLabel="Run VPD for whole grow"
-            >
-              <Text style={[styles.pillText, !plantId && styles.pillTextOn]}>
-                Whole grow
-              </Text>
-            </Pressable>
-            {plants.map((plant, index) => {
-              const id = String(plant.id || (plant as any)._id || `plant-${index}`);
-              return (
-                <Pressable
-                  key={id}
-                  style={[styles.pill, plantId === id && styles.pillOn]}
-                  onPress={() => setPlantId(id)}
-                  accessibilityRole="button"
-                  accessibilityLabel={`Run VPD for ${plant.name || `Plant ${index + 1}`}`}
-                >
-                  <Text style={[styles.pillText, plantId === id && styles.pillTextOn]}>
-                    {plant.name || `Plant ${index + 1}`}
-                  </Text>
-                </Pressable>
-              );
-            })}
-          </View>
-          {selectedPlant ? (
-            <Text style={styles.context}>
-              {[
-                selectedPlant.cropCommonName || selectedPlant.scientificName,
-                selectedPlant.cultivar || selectedPlant.strain,
-                selectedPlant.growthProfile?.phenoLabel
-                  ? `pheno: ${selectedPlant.growthProfile.phenoLabel}`
-                  : ""
-              ]
-                .filter(Boolean)
-                .join(" | ")}
-            </Text>
-          ) : null}
-        </View>
-      ) : null}
+      <ToolPlantContextPicker
+        plants={plantContext.plants}
+        plantId={plantContext.plantId}
+        selectedPlant={plantContext.selectedPlant}
+        onSelect={plantContext.setPlantId}
+      />
 
       <View style={styles.row}>
         {(["F", "C"] as TempUnit[]).map((value) => (
@@ -384,7 +302,6 @@ const styles = StyleSheet.create({
   title: { fontSize: 22, fontWeight: "700" },
   subtitle: { fontSize: 13, color: "#64748B", marginBottom: 4 },
   context: { color: "#166534", fontWeight: "700" },
-  section: { gap: 7 },
   row: { flexDirection: "row", gap: 10, alignItems: "center", flexWrap: "wrap" },
   pill: {
     paddingVertical: 8,
