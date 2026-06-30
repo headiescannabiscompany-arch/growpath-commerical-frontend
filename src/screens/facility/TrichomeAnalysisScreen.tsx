@@ -13,6 +13,7 @@ import {
 import { useAICall } from "@/hooks/useAICall";
 import { AIResultCard } from "@/features/ai/components/AIResultCard";
 import { uploadImage } from "@/api/uploads";
+import { maybePromptAttachPhotosToGrow } from "@/utils/growPhotoAttachment";
 
 export default function TrichomeAnalysisScreen({
   facilityId,
@@ -65,6 +66,7 @@ export default function TrichomeAnalysisScreen({
       const uploaded = await uploadImage(asset.uri);
       if (!uploaded?.url) throw new Error("Missing uploaded image URL.");
       setImageUrl(uploaded.url);
+      await maybePromptAttachPhotosToGrow([uploaded.url], { skip: Boolean(growId) });
     } catch (err) {
       setUploadError(
         err instanceof Error ? err.message : "Unable to upload trichome photo."

@@ -85,7 +85,8 @@ describe("API Configuration & Endpoints", () => {
         fetchCalls.push({ url, options });
         return {
           ok: true,
-          text: async () => JSON.stringify({ success: true, grows: [{ id: "g1", name: "Grow 1" }] }),
+          text: async () =>
+            JSON.stringify({ success: true, grows: [{ id: "g1", name: "Grow 1" }] }),
           json: async () => ({ success: true, grows: [{ id: "g1", name: "Grow 1" }] })
         };
       };
@@ -99,14 +100,23 @@ describe("API Configuration & Endpoints", () => {
         global.fetch = originalFetch;
       }
     });
+
+    it("appendGrowPhotos targets personal grow photo attachment endpoint", async () => {
+      await growsApi.appendGrowPhotos("grow_1", ["/uploads/photo.jpg"]);
+      expect(fetchCalls[0].url.endsWith("/api/grows/grow_1/photos")).toBe(true);
+      expect(fetchCalls[0].options.method).toBe("PATCH");
+      expect(JSON.parse(fetchCalls[0].options.body).photos).toEqual([
+        "/uploads/photo.jpg"
+      ]);
+    });
   });
 
   describe("Facility P2 workflow endpoints", () => {
     it("facility report summary uses the facility-scoped reports endpoint", async () => {
       await getFacilityReport("facility 1");
-      expect(fetchCalls[0].url.endsWith("/api/facilities/facility%201/reports/summary")).toBe(
-        true
-      );
+      expect(
+        fetchCalls[0].url.endsWith("/api/facilities/facility%201/reports/summary")
+      ).toBe(true);
     });
 
     it("SOP templates use facility-scoped endpoints", async () => {
@@ -128,7 +138,9 @@ describe("API Configuration & Endpoints", () => {
 
       await rejectVerification("f1", "v1", "Missing image");
       expect(fetchCalls[2].options.method).toBe("PUT");
-      expect(fetchCalls[2].url.endsWith("/api/facilities/f1/verification/v1/reject")).toBe(true);
+      expect(
+        fetchCalls[2].url.endsWith("/api/facilities/f1/verification/v1/reject")
+      ).toBe(true);
       expect(JSON.parse(fetchCalls[2].options.body).reason).toBe("Missing image");
     });
 

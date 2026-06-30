@@ -88,6 +88,14 @@ export async function listPersonalGrows() {
   }
 }
 
+export async function appendGrowPhotos(growId, photos = []) {
+  const updateRes = await apiRequest(`${routes.GROWS.LIST}/${growId}/photos`, {
+    method: "PATCH",
+    body: { photos }
+  });
+  return normalizeGrowEntity(updateRes);
+}
+
 export function addEntry(growId, data = {}) {
   return apiRequest(routes.GROWS.ENTRIES(growId), {
     method: "POST",
