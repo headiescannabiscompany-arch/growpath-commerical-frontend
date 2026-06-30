@@ -103,3 +103,37 @@ export async function exportPlantPdf(plantId, token) {
     ...asLegacyTokenOptions(token)
   });
 }
+
+function normalizePersonalPlants(response) {
+  const rows = Array.isArray(response)
+    ? response
+    : (response?.plants ??
+      response?.items ??
+      response?.data?.plants ??
+      response?.data?.items);
+  return Array.isArray(rows) ? rows : [];
+}
+
+export async function listPersonalPlants(options) {
+  try {
+    const response = await apiRequest("/api/personal/plants", {
+      method: "GET",
+      params: options?.growId ? { growId: options.growId } : undefined
+    });
+    return normalizePersonalPlants(response);
+  } catch (_error) {
+    return [];
+  }
+}
+
+export async function createPersonalPlant(data) {
+  try {
+    const response = await apiRequest("/api/personal/plants", {
+      method: "POST",
+      body: data
+    });
+    return response?.created ?? response?.plant ?? response?.data?.plant ?? response;
+  } catch (_error) {
+    return null;
+  }
+}

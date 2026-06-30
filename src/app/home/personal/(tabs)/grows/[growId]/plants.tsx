@@ -16,6 +16,7 @@ import {
   listPersonalPlants,
   type PersonalPlant
 } from "@/api/plants";
+import { listCropProfiles } from "@/api/cropKnowledge";
 import GrowWorkspaceNav from "@/components/personal/GrowWorkspaceNav";
 import { coerceParam, getRowId } from "@/features/grows/routeUtils";
 
@@ -27,8 +28,17 @@ export default function GrowPlantsScreen() {
   const [creating, setCreating] = useState(false);
   const [showForm, setShowForm] = useState(false);
   const [name, setName] = useState("");
+  const [cropCommonName, setCropCommonName] = useState("");
+  const [scientificName, setScientificName] = useState("");
   const [cultivar, setCultivar] = useState("");
+  const [cropProfileId, setCropProfileId] = useState("");
+  const [cropProfileLabel, setCropProfileLabel] = useState("");
+  const [profileSearching, setProfileSearching] = useState(false);
   const [medium, setMedium] = useState("");
+  const [canopyWidthCm, setCanopyWidthCm] = useState("");
+  const [waterDemand, setWaterDemand] = useState("");
+  const [timingOffsetDays, setTimingOffsetDays] = useState("");
+  const [phenoLabel, setPhenoLabel] = useState("");
   const [feedback, setFeedback] = useState("");
 
   const load = useCallback(async () => {
@@ -54,6 +64,46 @@ export default function GrowPlantsScreen() {
     }, [load])
   );
 
+  async function matchCropProfile() {
+    const query = scientificName.trim() || cropCommonName.trim();
+    if (!query || profileSearching) return;
+    setProfileSearching(true);
+    setFeedback("");
+    try {
+      const profiles: any[] = await listCropProfiles({ q: query, limit: 5 });
+      const exact =
+        profiles.find(
+          (profile) =>
+            String(profile.scientificName || "").toLowerCase() ===
+              scientificName.trim().toLowerCase() ||
+            String(profile.displayName || "").toLowerCase() ===
+              cropCommonName.trim().toLowerCase()
+        ) || profiles[0];
+      if (exact?._id || exact?.id) {
+        const id = String(exact._id || exact.id);
+        setCropProfileId(id);
+        setCropProfileLabel(
+          `${exact.displayName || cropCommonName || "Crop profile"}${
+            exact.curationStatus ? ` (${exact.curationStatus})` : ""
+          }`
+        );
+        setFeedback(
+          "Crop profile linked. Confirm the species before relying on crop-specific defaults."
+        );
+      } else {
+        setCropProfileId("");
+        setCropProfileLabel("");
+        setFeedback(
+          "No crop profile matched yet. The plant can still be saved with species text."
+        );
+      }
+    } catch {
+      setFeedback("Unable to search crop profiles.");
+    } finally {
+      setProfileSearching(false);
+    }
+  }
+
   async function create() {
     if (!growId || creating || !name.trim()) return;
     setCreating(true);
@@ -61,15 +111,37 @@ export default function GrowPlantsScreen() {
     const created = await createPersonalPlant({
       growId,
       name: name.trim(),
+      cropCommonName: cropCommonName.trim() || undefined,
+      scientificName: scientificName.trim() || undefined,
+      cropProfileId: cropProfileId || undefined,
+      confirmationStatus: cropProfileId ? "user_confirmed" : "needs_confirmation",
       cultivar: cultivar.trim() || undefined,
       strain: cultivar.trim() || undefined,
       medium: medium.trim() || undefined,
+      sizeMetrics: canopyWidthCm.trim()
+        ? { canopyWidthCm: Number(canopyWidthCm.trim()) }
+        : undefined,
+      timingAdjustments: timingOffsetDays.trim()
+        ? { stageDaysOffset: Number(timingOffsetDays.trim()) }
+        : undefined,
+      waterUseProfile: waterDemand.trim()
+        ? { observedDemand: waterDemand.trim() }
+        : undefined,
+      phenoLabel: phenoLabel.trim() || undefined,
       stage: "seedling"
     });
     if (created) {
       setName("");
+      setCropCommonName("");
+      setScientificName("");
       setCultivar("");
+      setCropProfileId("");
+      setCropProfileLabel("");
       setMedium("");
+      setCanopyWidthCm("");
+      setWaterDemand("");
+      setTimingOffsetDays("");
+      setPhenoLabel("");
       setShowForm(false);
       setFeedback("Plant added to this grow.");
       await load();
@@ -114,6 +186,50 @@ export default function GrowPlantsScreen() {
             placeholder="Optional"
             accessibilityLabel="Cultivar or strain"
           />
+          <Text style={styles.label}>Crop species</Text>
+          <Text style={styles.help}>
+            Species and cultivar are separate. Link a crop profile when you know the plant
+            identity.
+          </Text>
+          <View style={styles.grid}>
+            <TextInput
+              style={styles.gridInput}
+              value={cropCommonName}
+              onChangeText={setCropCommonName}
+              placeholder="Tomato, olive, blueberry..."
+              accessibilityLabel="Plant crop common name"
+            />
+            <TextInput
+              style={styles.gridInput}
+              value={scientificName}
+              onChangeText={setScientificName}
+              placeholder="Scientific name optional"
+              accessibilityLabel="Plant scientific name"
+            />
+          </View>
+          <View style={styles.row}>
+            <Pressable
+              style={[
+                styles.secondaryButton,
+                (!cropCommonName.trim() && !scientificName.trim()) || profileSearching
+                  ? styles.disabled
+                  : null
+              ]}
+              disabled={
+                (!cropCommonName.trim() && !scientificName.trim()) || profileSearching
+              }
+              onPress={matchCropProfile}
+              accessibilityRole="button"
+              accessibilityLabel="Match crop profile"
+            >
+              <Text style={styles.secondaryButtonText}>
+                {profileSearching ? "Searching..." : "Match Crop Profile"}
+              </Text>
+            </Pressable>
+            {cropProfileLabel ? (
+              <Text style={styles.profileMatch}>{cropProfileLabel}</Text>
+            ) : null}
+          </View>
           <Text style={styles.label}>Medium</Text>
           <TextInput
             style={styles.input}
@@ -122,6 +238,39 @@ export default function GrowPlantsScreen() {
             placeholder="Soil, coco, hydro..."
             accessibilityLabel="Plant medium"
           />
+          <Text style={styles.label}>Growth overlay</Text>
+          <View style={styles.grid}>
+            <TextInput
+              style={styles.gridInput}
+              value={canopyWidthCm}
+              onChangeText={setCanopyWidthCm}
+              keyboardType="numeric"
+              placeholder="Canopy width cm"
+              accessibilityLabel="Plant canopy width"
+            />
+            <TextInput
+              style={styles.gridInput}
+              value={timingOffsetDays}
+              onChangeText={setTimingOffsetDays}
+              keyboardType="numeric"
+              placeholder="Timing offset days"
+              accessibilityLabel="Plant timing offset"
+            />
+            <TextInput
+              style={styles.gridInput}
+              value={waterDemand}
+              onChangeText={setWaterDemand}
+              placeholder="Water demand"
+              accessibilityLabel="Plant water demand"
+            />
+            <TextInput
+              style={styles.gridInput}
+              value={phenoLabel}
+              onChangeText={setPhenoLabel}
+              placeholder="Pheno notes"
+              accessibilityLabel="Plant pheno label"
+            />
+          </View>
           <Pressable
             style={[styles.primaryButton, (!name.trim() || creating) && styles.disabled]}
             disabled={!name.trim() || creating}
@@ -157,6 +306,15 @@ export default function GrowPlantsScreen() {
             {plant.medium ? (
               <Text style={styles.meta}>Medium: {plant.medium}</Text>
             ) : null}
+            {plant.cropCommonName || plant.scientificName ? (
+              <Text style={styles.meta}>
+                Species: {plant.cropCommonName || "Unknown common name"}
+                {plant.scientificName ? ` (${plant.scientificName})` : ""}
+              </Text>
+            ) : null}
+            {plant.cropProfileId ? (
+              <Text style={styles.meta}>Crop profile linked</Text>
+            ) : null}
           </View>
         ))
       )}
@@ -169,6 +327,7 @@ const styles = StyleSheet.create({
   content: { padding: 20, paddingBottom: 40, gap: 10 },
   title: { fontSize: 22, fontWeight: "700" },
   subtitle: { color: "#64748B", lineHeight: 19 },
+  help: { color: "#64748B", fontSize: 12, lineHeight: 17 },
   form: {
     borderWidth: 1,
     borderColor: "#CBD5E1",
@@ -185,6 +344,16 @@ const styles = StyleSheet.create({
     backgroundColor: "#FFFFFF",
     padding: 10
   },
+  grid: { flexDirection: "row", flexWrap: "wrap", gap: 8 },
+  gridInput: {
+    minWidth: 145,
+    flexGrow: 1,
+    borderWidth: 1,
+    borderColor: "#CBD5E1",
+    borderRadius: 9,
+    backgroundColor: "#FFFFFF",
+    padding: 10
+  },
   primaryButton: {
     alignSelf: "flex-start",
     borderRadius: 9,
@@ -193,8 +362,18 @@ const styles = StyleSheet.create({
     paddingVertical: 9
   },
   primaryButtonText: { color: "#FFFFFF", fontWeight: "800" },
+  secondaryButton: {
+    alignSelf: "flex-start",
+    borderWidth: 1,
+    borderColor: "#166534",
+    borderRadius: 9,
+    paddingHorizontal: 12,
+    paddingVertical: 9
+  },
+  secondaryButtonText: { color: "#166534", fontWeight: "800" },
   disabled: { opacity: 0.55 },
   feedback: { color: "#334155", fontWeight: "700" },
+  profileMatch: { color: "#166534", fontWeight: "800", alignSelf: "center" },
   empty: {
     borderWidth: 1,
     borderColor: "#E2E8F0",

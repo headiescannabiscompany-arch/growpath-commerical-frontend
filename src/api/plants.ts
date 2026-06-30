@@ -51,6 +51,9 @@ export type PersonalPlant = Plant & {
   growId: string;
   strain?: string;
   cultivar?: string;
+  cropCommonName?: string;
+  scientificName?: string;
+  cropProfileId?: string | null;
   stage?: string;
   medium?: string;
   status?: string;
@@ -86,6 +89,20 @@ export async function createPersonalPlant(data: {
   name: string;
   cultivar?: string;
   strain?: string;
+  cropCommonName?: string;
+  scientificName?: string;
+  cropProfileId?: string;
+  confirmationStatus?:
+    | "user_confirmed"
+    | "ai_suggested"
+    | "needs_confirmation"
+    | "unknown";
+  sizeMetrics?: Record<string, unknown>;
+  timingAdjustments?: Record<string, unknown>;
+  waterUseProfile?: Record<string, unknown>;
+  phenoLabel?: string;
+  stressSensitivities?: string[];
+  pestDiseaseSensitivities?: string[];
   stage?: string;
   medium?: string;
   notes?: string;
