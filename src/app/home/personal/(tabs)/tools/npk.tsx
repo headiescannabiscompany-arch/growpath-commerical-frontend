@@ -10,12 +10,7 @@ import {
   useToolPlantContext
 } from "@/features/personal/tools/ToolPlantContextPicker";
 import ToolResultSurface from "@/features/personal/tools/ToolResultSurface";
-import {
-  createTaskFromToolRun,
-  runCalculator,
-  saveToolRunToLog,
-  type ToolRun
-} from "@/api/toolRuns";
+import { runCalculator, saveToolRunToLog, type ToolRun } from "@/api/toolRuns";
 import {
   cloneNutrientRecipe,
   createNutrientRecipe,
@@ -24,6 +19,7 @@ import {
   reviseNutrientRecipe,
   type NutrientRecipe
 } from "@/api/nutrientRecipes";
+import { saveToolRunAndCreateTask } from "@/features/personal/tools/saveToolRunAndOpenJournal";
 
 type ProductRow = {
   id: string;
@@ -633,12 +629,29 @@ export default function NpkToolScreen() {
           }))}
           inputs={toolRun?.inputs || recipePayload()}
           outputs={toolRun?.outputs || result}
-          notices={(result.warnings || []).map((warning: string, index: number) => ({
-            key: `warning-${index}`,
-            severity: "medium" as const,
-            message: warning
-          }))}
-          recommendations={result.recommendations || []}
+          notices={[
+            ...(result.warnings || []).map((warning: string, index: number) => ({
+              key: `warning-${index}`,
+              severity: "medium" as const,
+              message: warning
+            })),
+            ...(result.sourceConfidence && result.sourceConfidence.overall !== "high"
+              ? [
+                  {
+                    key: "source-confidence",
+                    severity: "medium" as const,
+                    message:
+                      "One or more product rows are not high-confidence source data.",
+                    remediation:
+                      "Verify manufacturer labels, density assumptions, source water, and measured EC/pH before applying the recipe."
+                  }
+                ]
+              : [])
+          ]}
+          recommendations={[
+            ...(result.recommendations || []),
+            "Treat this NPK recipe as a beta chemistry estimate until product labels, water baseline, and final mixed EC/pH are verified."
+          ]}
           formulas={
             toolRun?.formulas?.length
               ? toolRun.formulas
@@ -652,7 +665,10 @@ export default function NpkToolScreen() {
             "Ingredient labels, density assumptions, water baseline, and product source confidence affect nutrient totals."
           }
           confidence={toolRun?.confidence || "beta-calculator"}
-          assumptions={[result.releaseDisclaimer].filter(Boolean)}
+          assumptions={[
+            result.releaseDisclaimer,
+            "Raw NPK totals are label math; release timing and availability estimates are not a substitute for substrate tests, water tests, or measured runoff/feed data."
+          ].filter(Boolean)}
           details={
             <>
               {result.sourceConfidence ? (
@@ -736,11 +752,34 @@ export default function NpkToolScreen() {
                   },
                   {
                     key: "create-task",
-                    label: "Create Task",
+                    label: "Create Recipe Review Task",
                     variant: "secondary",
                     onPress: async () => {
-                      await createTaskFromToolRun(toolRun._id!);
-                      setFeedback("Follow-up task created.");
+                      const taskResult = await saveToolRunAndCreateTask({
+                        growId: growContext,
+                        ...plantContext.toolRunContext,
+                        toolKey: "npk-recipe",
+                        toolRunId: toolRun._id!,
+                        input: toolRun.inputs || recipePayload(),
+                        output: toolRun.outputs || result,
+                        title: "Review NPK recipe before feeding",
+                        description: [
+                          recipeName.trim() ? `Recipe: ${recipeName.trim()}` : "",
+                          result.sourceConfidence
+                            ? `Source confidence: ${result.sourceConfidence.overall}`
+                            : "",
+                          measuredEC ? `Measured EC: ${measuredEC}` : "",
+                          measuredPH ? `Measured pH: ${measuredPH}` : "",
+                          "Verify product labels, water baseline, final EC/pH, and plant stage before application."
+                        ]
+                          .filter(Boolean)
+                          .join("\n"),
+                        priority:
+                          result.sourceConfidence?.overall === "low" ? "high" : "medium",
+                        dueDate: new Date(Date.now() + 24 * 60 * 60 * 1000).toISOString()
+                      });
+                      if (!taskResult.ok) throw new Error(taskResult.error);
+                      setFeedback("Recipe review task created.");
                     }
                   }
                 ]
