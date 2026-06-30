@@ -32,6 +32,7 @@ type Section =
   | "journal"
   | "tasks"
   | "tools"
+  | "automation"
   | "timeline"
   | "compare";
 
@@ -53,6 +54,7 @@ export default function GrowWorkspaceNav({
     { key: "journal", label: "Journal" },
     { key: "tasks", label: "Tasks" },
     { key: "tools", label: "Tools" },
+    { key: "automation", label: "Automation" },
     { key: "timeline", label: "Timeline" },
     { key: "compare", label: "Compare" }
   ];

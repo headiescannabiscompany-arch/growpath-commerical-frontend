@@ -27,6 +27,9 @@ export type AutomationPolicy = {
 };
 
 export type AutomationPolicyPayload = {
+  growId?: string;
+  plantId?: string;
+  facilityId?: string;
   name: string;
   description?: string;
   enabled?: boolean;

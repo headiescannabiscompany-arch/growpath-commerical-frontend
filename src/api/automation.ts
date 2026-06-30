@@ -61,6 +61,18 @@ export async function listAutomationPolicies(facilityId: string) {
   return normalizePolicyList(res);
 }
 
+export async function listPersonalAutomationPolicies(params: {
+  growId?: string;
+  facilityId?: string;
+}) {
+  const query = new URLSearchParams();
+  if (params.growId) query.set("growId", params.growId);
+  if (params.facilityId) query.set("facilityId", params.facilityId);
+  const suffix = query.toString() ? `?${query.toString()}` : "";
+  const res = await apiRequest(`/api/automation/policies${suffix}`);
+  return normalizePolicyList(res);
+}
+
 export async function setAutomationPolicyEnabled(
   facilityId: string,
   policyId: string,
@@ -87,6 +99,14 @@ export async function createAutomationPolicy(
   return normalizePolicy(res?.policy || res?.automationPolicy || res?.data || res);
 }
 
+export async function createPersonalAutomationPolicy(payload: AutomationPolicyPayload) {
+  const res = await apiRequest("/api/automation/policies", {
+    method: "POST",
+    body: payload
+  });
+  return normalizePolicy(res?.policy || res?.automationPolicy || res?.data || res);
+}
+
 export async function updateAutomationPolicy(
   facilityId: string,
   policyId: string,
@@ -102,9 +122,36 @@ export async function updateAutomationPolicy(
   return normalizePolicy(res?.policy || res?.automationPolicy || res?.data || res);
 }
 
+export async function updatePersonalAutomationPolicy(
+  policyId: string,
+  patch: Partial<AutomationPolicyPayload>
+) {
+  const res = await apiRequest(`/api/automation/policies/${policyId}`, {
+    method: "PATCH",
+    body: patch
+  });
+  return normalizePolicy(res?.policy || res?.automationPolicy || res?.data || res);
+}
+
 export async function deleteAutomationPolicy(facilityId: string, policyId: string) {
   return apiRequest(`/api/facilities/${facilityId}/automation/policies/${policyId}`, {
     method: "DELETE"
+  });
+}
+
+export async function deletePersonalAutomationPolicy(policyId: string) {
+  return apiRequest(`/api/automation/policies/${policyId}`, {
+    method: "DELETE"
+  });
+}
+
+export async function testPersonalAutomationPolicy(
+  policyId: string,
+  payload: Record<string, any> = {}
+) {
+  return apiRequest(`/api/automation/policies/${policyId}/test`, {
+    method: "POST",
+    body: { payload }
   });
 }
 

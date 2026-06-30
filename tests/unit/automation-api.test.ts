@@ -173,4 +173,92 @@ describe("automation API", () => {
       { method: "DELETE" }
     );
   });
+
+  it("manages personal grow automation policies through the global automation API", async () => {
+    mockApiRequest
+      .mockResolvedValueOnce({
+        policies: [
+          {
+            id: "personal-policy-1",
+            growId: "grow-1",
+            name: "AI Diagnosis Follow-Up",
+            trigger: { source: "ai_diagnosis", eventType: "ai_issue_detected" },
+            actions: [{ type: "create_task" }]
+          }
+        ]
+      })
+      .mockResolvedValueOnce({
+        policy: {
+          id: "personal-policy-2",
+          growId: "grow-1",
+          name: "Dew Point High Risk Alert",
+          trigger: { source: "tool_run", eventType: "dew_point_high_risk" },
+          actions: [{ type: "create_task" }]
+        }
+      })
+      .mockResolvedValueOnce({
+        policy: {
+          id: "personal-policy-2",
+          growId: "grow-1",
+          name: "Dew Point High Risk Alert",
+          enabled: false
+        }
+      })
+      .mockResolvedValueOnce({ result: { matchedPolicyCount: 1 } })
+      .mockResolvedValueOnce({ success: true, deleted: true });
+
+    const {
+      listPersonalAutomationPolicies,
+      createPersonalAutomationPolicy,
+      updatePersonalAutomationPolicy,
+      testPersonalAutomationPolicy,
+      deletePersonalAutomationPolicy
+    } = require("@/api/automation");
+
+    await expect(
+      listPersonalAutomationPolicies({ growId: "grow 1" })
+    ).resolves.toHaveLength(1);
+    await expect(
+      createPersonalAutomationPolicy({
+        growId: "grow-1",
+        name: "Dew Point High Risk Alert",
+        trigger: { source: "tool_run", eventType: "dew_point_high_risk" },
+        actions: [{ type: "create_task" }]
+      })
+    ).resolves.toMatchObject({ id: "personal-policy-2" });
+    await expect(
+      updatePersonalAutomationPolicy("personal-policy-2", { enabled: false })
+    ).resolves.toMatchObject({ id: "personal-policy-2", enabled: false });
+    await expect(
+      testPersonalAutomationPolicy("personal-policy-2", { risk: "high" })
+    ).resolves.toEqual({ result: { matchedPolicyCount: 1 } });
+    await expect(deletePersonalAutomationPolicy("personal-policy-2")).resolves.toEqual({
+      success: true,
+      deleted: true
+    });
+
+    expect(mockApiRequest).toHaveBeenNthCalledWith(
+      1,
+      "/api/automation/policies?growId=grow+1"
+    );
+    expect(mockApiRequest).toHaveBeenNthCalledWith(2, "/api/automation/policies", {
+      method: "POST",
+      body: expect.objectContaining({ growId: "grow-1" })
+    });
+    expect(mockApiRequest).toHaveBeenNthCalledWith(
+      3,
+      "/api/automation/policies/personal-policy-2",
+      { method: "PATCH", body: { enabled: false } }
+    );
+    expect(mockApiRequest).toHaveBeenNthCalledWith(
+      4,
+      "/api/automation/policies/personal-policy-2/test",
+      { method: "POST", body: { payload: { risk: "high" } } }
+    );
+    expect(mockApiRequest).toHaveBeenNthCalledWith(
+      5,
+      "/api/automation/policies/personal-policy-2",
+      { method: "DELETE" }
+    );
+  });
 });
