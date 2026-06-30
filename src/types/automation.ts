@@ -26,6 +26,20 @@ export type AutomationPolicy = {
   updatedAt: string;
 };
 
+export type AutomationPolicyPayload = {
+  name: string;
+  description?: string;
+  enabled?: boolean;
+  trigger: {
+    source: string;
+    eventType: string;
+  };
+  conditions?: Array<Record<string, any>>;
+  actions: Array<Record<string, any>>;
+  cooldownMinutes?: number;
+  maxTriggersPerDay?: number;
+};
+
 export type AutomationTriggerResponse = {
   policy: AutomationPolicy;
   result?: {

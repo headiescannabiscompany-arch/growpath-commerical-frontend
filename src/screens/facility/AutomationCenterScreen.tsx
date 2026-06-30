@@ -7,6 +7,7 @@ const styles = StyleSheet.create({
   container: { flex: 1, padding: 16, backgroundColor: "#FFFFFF" },
   title: { fontSize: 20, fontWeight: "800", marginBottom: 6, color: "#0F172A" },
   subtitle: { color: "#475569", marginBottom: 16, lineHeight: 20 },
+  topActions: { flexDirection: "row", flexWrap: "wrap", gap: 8, marginBottom: 12 },
   card: {
     borderWidth: 1,
     borderColor: "#CBD5E1",
@@ -42,6 +43,41 @@ const styles = StyleSheet.create({
   permission: { marginTop: 8, color: "#64748B" }
 });
 
+const DEW_POINT_STARTER_POLICY = {
+  name: "Dew Point High Risk Alert",
+  description: "Create a canopy inspection task when Dew Point Guard reports high risk.",
+  enabled: false,
+  trigger: { source: "tool_run", eventType: "dew_point_high_risk" },
+  conditions: [{ field: "risk", operator: "equals", value: "high" }],
+  actions: [
+    {
+      type: "create_task",
+      payload: {
+        title: "Inspect canopy for condensation risk",
+        priority: "high",
+        dueInHours: 1
+      }
+    },
+    {
+      type: "create_notification",
+      payload: {
+        title: "Dew Point Risk",
+        body: "Dew Point Guard detected high condensation risk."
+      }
+    }
+  ],
+  cooldownMinutes: 180,
+  maxTriggersPerDay: 4
+};
+
+const EXTREME_DEW_POINT_PATCH = {
+  name: "Extreme Dew Point Response",
+  description:
+    "Create urgent follow-up only when Dew Point Guard reports extreme condensation risk.",
+  conditions: [{ field: "risk", operator: "equals", value: "extreme" }],
+  cooldownMinutes: 60
+};
+
 function titleForPolicy(item: any) {
   return item.name || String(item.type || "Automation policy").replace(/_/g, " ");
 }
@@ -60,11 +96,27 @@ function actionLabel(item: any) {
     .join(", ");
 }
 
+function isDewPointPolicy(item: any) {
+  return String(item.trigger?.eventType || item.type) === "dew_point_high_risk";
+}
+
 export default function AutomationCenterScreen() {
   const ent = useEntitlements();
   const canEdit = ent.can(CAPABILITY_KEYS.FACILITY_SETTINGS_EDIT);
-  const { data, isLoading, togglePolicy, triggerPolicy, toggling, triggering } =
-    useAutomationPolicies();
+  const {
+    data,
+    isLoading,
+    createPolicy,
+    updatePolicy,
+    deletePolicy,
+    togglePolicy,
+    triggerPolicy,
+    creating,
+    updating,
+    deleting,
+    toggling,
+    triggering
+  } = useAutomationPolicies();
 
   const policies = Array.isArray(data) ? data : [];
 
@@ -74,6 +126,23 @@ export default function AutomationCenterScreen() {
       <Text style={styles.subtitle}>
         Lightweight workflows that keep tasks and compliance on track.
       </Text>
+      {canEdit ? (
+        <View style={styles.topActions}>
+          <Pressable
+            disabled={creating}
+            onPress={() => createPolicy(DEW_POINT_STARTER_POLICY)}
+            style={[
+              styles.button,
+              styles.primaryButton,
+              creating && styles.disabledButton
+            ]}
+          >
+            <Text style={[styles.buttonText, styles.primaryButtonText]}>
+              Add Dew Point Alert
+            </Text>
+          </Pressable>
+        </View>
+      ) : null}
 
       {isLoading ? (
         <Text>Loading...</Text>
@@ -136,6 +205,33 @@ export default function AutomationCenterScreen() {
                   <Text style={[styles.buttonText, styles.primaryButtonText]}>
                     Run Now
                   </Text>
+                </Pressable>
+
+                {isDewPointPolicy(item) ? (
+                  <Pressable
+                    disabled={!canEdit || updating}
+                    onPress={() =>
+                      canEdit &&
+                      updatePolicy({
+                        policyId: item.id,
+                        patch: EXTREME_DEW_POINT_PATCH
+                      })
+                    }
+                    style={[
+                      styles.button,
+                      (!canEdit || updating) && styles.disabledButton
+                    ]}
+                  >
+                    <Text style={styles.buttonText}>Use Extreme Risk</Text>
+                  </Pressable>
+                ) : null}
+
+                <Pressable
+                  disabled={!canEdit || deleting}
+                  onPress={() => canEdit && deletePolicy(item.id)}
+                  style={[styles.button, (!canEdit || deleting) && styles.disabledButton]}
+                >
+                  <Text style={styles.buttonText}>Delete</Text>
                 </Pressable>
               </View>
 

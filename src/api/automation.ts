@@ -1,5 +1,5 @@
 import { apiRequest } from "./apiRequest";
-import type { AutomationPolicy } from "../types/automation";
+import type { AutomationPolicy, AutomationPolicyPayload } from "../types/automation";
 
 // Aliases for backward compatibility (Phase 2.3)
 export const fetchAutomations = listAutomationPolicies;
@@ -74,6 +74,38 @@ export async function setAutomationPolicyEnabled(
     }
   );
   return normalizePolicy(res?.policy || res?.automationPolicy || res?.data || res);
+}
+
+export async function createAutomationPolicy(
+  facilityId: string,
+  payload: AutomationPolicyPayload
+) {
+  const res = await apiRequest(`/api/facilities/${facilityId}/automation/policies`, {
+    method: "POST",
+    body: payload
+  });
+  return normalizePolicy(res?.policy || res?.automationPolicy || res?.data || res);
+}
+
+export async function updateAutomationPolicy(
+  facilityId: string,
+  policyId: string,
+  patch: Partial<AutomationPolicyPayload>
+) {
+  const res = await apiRequest(
+    `/api/facilities/${facilityId}/automation/policies/${policyId}`,
+    {
+      method: "PATCH",
+      body: patch
+    }
+  );
+  return normalizePolicy(res?.policy || res?.automationPolicy || res?.data || res);
+}
+
+export async function deleteAutomationPolicy(facilityId: string, policyId: string) {
+  return apiRequest(`/api/facilities/${facilityId}/automation/policies/${policyId}`, {
+    method: "DELETE"
+  });
 }
 
 export async function triggerAutomationPolicy(

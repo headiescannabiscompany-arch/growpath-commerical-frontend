@@ -106,4 +106,71 @@ describe("automation API", () => {
       }
     );
   });
+
+  it("creates, updates, and deletes facility automation policies", async () => {
+    mockApiRequest
+      .mockResolvedValueOnce({
+        policy: {
+          id: "policy-2",
+          facilityId: "facility-1",
+          name: "Dew Point High Risk Alert",
+          enabled: false,
+          trigger: { source: "tool_run", eventType: "dew_point_high_risk" },
+          actions: [{ type: "create_task" }]
+        }
+      })
+      .mockResolvedValueOnce({
+        policy: {
+          id: "policy-2",
+          facilityId: "facility-1",
+          name: "Extreme Dew Point Response",
+          enabled: false,
+          trigger: { source: "tool_run", eventType: "dew_point_high_risk" },
+          actions: [{ type: "create_task" }]
+        }
+      })
+      .mockResolvedValueOnce({ success: true, deleted: true });
+
+    const {
+      createAutomationPolicy,
+      updateAutomationPolicy,
+      deleteAutomationPolicy
+    } = require("@/api/automation");
+
+    const payload = {
+      name: "Dew Point High Risk Alert",
+      trigger: { source: "tool_run", eventType: "dew_point_high_risk" },
+      actions: [{ type: "create_task", payload: { title: "Inspect canopy" } }]
+    };
+
+    await expect(createAutomationPolicy("facility-1", payload)).resolves.toMatchObject({
+      id: "policy-2",
+      name: "Dew Point High Risk Alert"
+    });
+    await expect(
+      updateAutomationPolicy("facility-1", "policy-2", {
+        name: "Extreme Dew Point Response"
+      })
+    ).resolves.toMatchObject({ id: "policy-2", name: "Extreme Dew Point Response" });
+    await expect(deleteAutomationPolicy("facility-1", "policy-2")).resolves.toEqual({
+      success: true,
+      deleted: true
+    });
+
+    expect(mockApiRequest).toHaveBeenNthCalledWith(
+      1,
+      "/api/facilities/facility-1/automation/policies",
+      { method: "POST", body: payload }
+    );
+    expect(mockApiRequest).toHaveBeenNthCalledWith(
+      2,
+      "/api/facilities/facility-1/automation/policies/policy-2",
+      { method: "PATCH", body: { name: "Extreme Dew Point Response" } }
+    );
+    expect(mockApiRequest).toHaveBeenNthCalledWith(
+      3,
+      "/api/facilities/facility-1/automation/policies/policy-2",
+      { method: "DELETE" }
+    );
+  });
 });
