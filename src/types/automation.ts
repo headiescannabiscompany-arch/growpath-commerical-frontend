@@ -25,3 +25,13 @@ export type AutomationPolicy = {
   createdAt: string;
   updatedAt: string;
 };
+
+export type AutomationTriggerResponse = {
+  policy: AutomationPolicy;
+  result?: {
+    matchedPolicyCount?: number;
+    executed?: Array<Record<string, any>>;
+    skipped?: Array<Record<string, any>>;
+  } | null;
+  deliveries?: Array<Record<string, any>>;
+};

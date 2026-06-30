@@ -6,14 +6,34 @@ export const fetchAutomations = listAutomationPolicies;
 export const toggleAutomation = setAutomationPolicyEnabled;
 
 function normalizePolicy(raw: any): AutomationPolicy {
+  const config = raw?.config && typeof raw.config === "object" ? raw.config : {};
+  const trigger = raw?.trigger || config.trigger || {};
+  const conditions = Array.isArray(raw?.conditions)
+    ? raw.conditions
+    : Array.isArray(config.conditions)
+      ? config.conditions
+      : [];
+  const actions = Array.isArray(raw?.actions)
+    ? raw.actions
+    : Array.isArray(config.actions)
+      ? config.actions
+      : [];
   return {
     id: String(raw?.id || raw?._id || ""),
     facilityId: String(raw?.facilityId || ""),
-    type: String(raw?.type || raw?.trigger?.eventType || ""),
+    type: String(raw?.type || trigger?.eventType || ""),
     name: String(raw?.name || raw?.type || ""),
     description: String(raw?.description || ""),
     enabled: raw?.enabled === true,
-    config: raw?.config && typeof raw.config === "object" ? raw.config : {},
+    trigger,
+    conditions,
+    actions,
+    config: {
+      ...config,
+      trigger,
+      conditions,
+      actions
+    },
     lastTriggeredAt: raw?.lastTriggeredAt || null,
     lastTriggeredByUserId: raw?.lastTriggeredByUserId || null,
     triggerCount: Number(raw?.triggerCount || 0),
@@ -70,6 +90,7 @@ export async function triggerAutomationPolicy(
   );
   return {
     policy: normalizePolicy(res?.policy || res?.automationPolicy || res?.data || res),
+    result: res?.result || null,
     deliveries: Array.isArray(res?.deliveries) ? res.deliveries : []
   };
 }

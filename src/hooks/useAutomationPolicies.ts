@@ -2,7 +2,11 @@ import { useEffect } from "react";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { useEntitlements } from "@/entitlements";
 import { useApiGuards } from "../api/hooks";
-import { listAutomationPolicies, setAutomationPolicyEnabled } from "../api/automation";
+import {
+  listAutomationPolicies,
+  setAutomationPolicyEnabled,
+  triggerAutomationPolicy
+} from "../api/automation";
 export function useAutomationPolicies() {
   const qc = useQueryClient();
   const { selectedFacilityId } = useEntitlements();
@@ -22,5 +26,17 @@ export function useAutomationPolicies() {
     onSuccess: () => qc.invalidateQueries({ queryKey }),
     onError
   });
-  return { ...query, togglePolicy: toggle.mutateAsync, toggling: toggle.isPending };
+  const trigger = useMutation({
+    mutationFn: ({ policyId, reason }: { policyId: string; reason?: string }) =>
+      triggerAutomationPolicy(selectedFacilityId!, policyId, reason),
+    onSuccess: () => qc.invalidateQueries({ queryKey }),
+    onError
+  });
+  return {
+    ...query,
+    togglePolicy: toggle.mutateAsync,
+    triggerPolicy: trigger.mutateAsync,
+    toggling: toggle.isPending,
+    triggering: trigger.isPending
+  };
 }

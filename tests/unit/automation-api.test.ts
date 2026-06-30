@@ -18,6 +18,8 @@ describe("automation API", () => {
           trigger: { source: "tool_run", eventType: "dew_point_high_risk" },
           name: "Dew Point High Risk Alert",
           enabled: true,
+          conditions: [{ field: "risk", operator: "equals", value: "high" }],
+          actions: [{ type: "create_task", payload: { title: "Inspect" } }],
           config: { threshold: "high" },
           triggerCount: 2
         }
@@ -37,6 +39,9 @@ describe("automation API", () => {
         type: "dew_point_high_risk",
         name: "Dew Point High Risk Alert",
         enabled: true,
+        trigger: { source: "tool_run", eventType: "dew_point_high_risk" },
+        conditions: [{ field: "risk", operator: "equals", value: "high" }],
+        actions: [{ type: "create_task", payload: { title: "Inspect" } }],
         triggerCount: 2
       })
     ]);
@@ -61,11 +66,17 @@ describe("automation API", () => {
           name: "Task overdue escalation",
           enabled: true
         },
+        result: {
+          matchedPolicyCount: 1,
+          executed: [{ actionType: "webhook" }]
+        },
         deliveries: [{ id: "delivery-1", status: "success" }]
       });
 
-    const { setAutomationPolicyEnabled, triggerAutomationPolicy } =
-      require("@/api/automation");
+    const {
+      setAutomationPolicyEnabled,
+      triggerAutomationPolicy
+    } = require("@/api/automation");
 
     await expect(
       setAutomationPolicyEnabled("facility-1", "policy-1", true)
@@ -74,6 +85,7 @@ describe("automation API", () => {
       triggerAutomationPolicy("facility-1", "policy-1", "release smoke")
     ).resolves.toMatchObject({
       policy: { id: "policy-1", enabled: true },
+      result: { matchedPolicyCount: 1 },
       deliveries: [{ id: "delivery-1", status: "success" }]
     });
 
