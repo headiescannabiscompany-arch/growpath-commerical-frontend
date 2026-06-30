@@ -54,6 +54,22 @@ export interface PersonalGrow extends Grow {
   updatedAt: string;
 }
 
+export interface PersonalGrowTimelineEvent {
+  id: string;
+  userId?: string;
+  growId?: string | null;
+  plantId?: string | null;
+  type: string;
+  sourceModel: string;
+  sourceId: string;
+  title: string;
+  summary?: string;
+  timestamp: string;
+  tags?: string[];
+  severity?: string | number | null;
+  payload?: Record<string, any>;
+}
+
 // Removed unused PersonalGrowsResponse interface
 
 /**
@@ -73,6 +89,32 @@ export async function listPersonalGrows(): Promise<PersonalGrow[]> {
     return [];
   } catch (err) {
     console.error("[listPersonalGrows] Error:", err);
+    return [];
+  }
+}
+
+export async function getPersonalGrowTimeline(
+  growId: string
+): Promise<PersonalGrowTimelineEvent[]> {
+  if (!growId) return [];
+  try {
+    const res = await apiRequest(
+      `/api/personal/grows/${encodeURIComponent(growId)}/timeline`
+    );
+    const rows = Array.isArray(res)
+      ? res
+      : Array.isArray((res as any)?.timeline)
+        ? (res as any).timeline
+        : Array.isArray((res as any)?.events)
+          ? (res as any).events
+          : Array.isArray((res as any)?.items)
+            ? (res as any).items
+            : Array.isArray((res as any)?.data?.timeline)
+              ? (res as any).data.timeline
+              : [];
+    return rows.filter((row: any) => row && typeof row === "object");
+  } catch (err) {
+    console.error("[getPersonalGrowTimeline] Error:", err);
     return [];
   }
 }

@@ -13,6 +13,7 @@ export default function GrowWorkspaceLayout() {
       <Stack.Screen name="journal" options={{ title: "Journal" }} />
       <Stack.Screen name="tasks" options={{ title: "Tasks" }} />
       <Stack.Screen name="tools" options={{ title: "Tools" }} />
+      <Stack.Screen name="timeline" options={{ title: "Timeline" }} />
       <Stack.Screen name="compare" options={{ title: "Compare" }} />
     </Stack>
   );

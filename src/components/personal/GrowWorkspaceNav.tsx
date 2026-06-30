@@ -26,7 +26,14 @@ const styles = StyleSheet.create({
   textActive: { color: "#FFFFFF" }
 });
 
-type Section = "overview" | "plants" | "journal" | "tasks" | "tools" | "compare";
+type Section =
+  | "overview"
+  | "plants"
+  | "journal"
+  | "tasks"
+  | "tools"
+  | "timeline"
+  | "compare";
 
 function hrefFor(growId: string, section: Section) {
   if (section === "overview") return `/home/personal/grows/${growId}`;
@@ -46,6 +53,7 @@ export default function GrowWorkspaceNav({
     { key: "journal", label: "Journal" },
     { key: "tasks", label: "Tasks" },
     { key: "tools", label: "Tools" },
+    { key: "timeline", label: "Timeline" },
     { key: "compare", label: "Compare" }
   ];
 

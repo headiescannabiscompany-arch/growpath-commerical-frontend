@@ -101,6 +101,54 @@ describe("API Configuration & Endpoints", () => {
       }
     });
 
+    it("getPersonalGrowTimeline accepts canonical timeline envelope", async () => {
+      const originalFetch = global.fetch;
+      global.fetch = async (url, options) => {
+        fetchCalls.push({ url, options });
+        return {
+          ok: true,
+          text: async () =>
+            JSON.stringify({
+              success: true,
+              timeline: [
+                {
+                  id: "GrowLog:1",
+                  type: "log_created",
+                  sourceModel: "GrowLog",
+                  sourceId: "1",
+                  title: "Journal",
+                  timestamp: "2026-06-30T00:00:00.000Z"
+                }
+              ]
+            }),
+          json: async () => ({
+            success: true,
+            timeline: [
+              {
+                id: "GrowLog:1",
+                type: "log_created",
+                sourceModel: "GrowLog",
+                sourceId: "1",
+                title: "Journal",
+                timestamp: "2026-06-30T00:00:00.000Z"
+              }
+            ]
+          })
+        };
+      };
+
+      try {
+        const timeline = await growsApi.getPersonalGrowTimeline("grow 1");
+        expect(fetchCalls[0].url.includes("/api/personal/grows/grow%201/timeline")).toBe(
+          true
+        );
+        expect(timeline).toHaveLength(1);
+        expect(timeline[0].type).toBe("log_created");
+      } finally {
+        global.fetch = originalFetch;
+      }
+    });
+
     it("appendGrowPhotos targets personal grow photo attachment endpoint", async () => {
       await growsApi.appendGrowPhotos("grow_1", ["/uploads/photo.jpg"]);
       expect(fetchCalls[0].url.endsWith("/api/grows/grow_1/photos")).toBe(true);

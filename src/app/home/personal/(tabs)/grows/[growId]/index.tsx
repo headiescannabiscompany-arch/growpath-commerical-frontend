@@ -1,9 +1,21 @@
 import React, { useCallback, useMemo, useState } from "react";
 import { useFocusEffect } from "@react-navigation/native";
 import { Link, useLocalSearchParams } from "expo-router";
-import { ActivityIndicator, Pressable, StyleSheet, Text, View } from "react-native";
+import {
+  ActivityIndicator,
+  Pressable,
+  ScrollView,
+  StyleSheet,
+  Text,
+  View
+} from "react-native";
 
-import { listPersonalGrows, type PersonalGrow } from "@/api/grows";
+import {
+  getPersonalGrowTimeline,
+  listPersonalGrows,
+  type PersonalGrow,
+  type PersonalGrowTimelineEvent
+} from "@/api/grows";
 import { listPersonalLogs } from "@/api/logs";
 import { listPersonalTasks } from "@/api/tasks";
 import { listToolRuns } from "@/api/toolRuns";
@@ -19,7 +31,7 @@ const styles = StyleSheet.create({
     padding: 14,
     borderWidth: 1,
     borderColor: "#E2E8F0",
-    borderRadius: 12,
+    borderRadius: 8,
     backgroundColor: "#F8FAFC"
   },
   stats: { flexDirection: "row", gap: 10, marginTop: 12, flexWrap: "wrap" },
@@ -28,7 +40,7 @@ const styles = StyleSheet.create({
     padding: 10,
     borderWidth: 1,
     borderColor: "#E2E8F0",
-    borderRadius: 10,
+    borderRadius: 8,
     backgroundColor: "#FFFFFF"
   },
   statLabel: { color: "#64748B", fontSize: 12 },
@@ -43,6 +55,17 @@ const styles = StyleSheet.create({
     backgroundColor: "#FFFFFF"
   },
   actionText: { fontWeight: "700", color: "#0F172A" },
+  sectionTitle: { marginTop: 4, fontSize: 16, fontWeight: "800", color: "#0F172A" },
+  timelineItem: {
+    marginTop: 10,
+    paddingTop: 10,
+    borderTopWidth: 1,
+    borderTopColor: "#E2E8F0"
+  },
+  timelineMeta: { marginTop: 3, color: "#64748B", fontSize: 12 },
+  timelineTitle: { fontWeight: "800", color: "#0F172A" },
+  timelineSummary: { marginTop: 3, color: "#334155" },
+  empty: { marginTop: 8, color: "#64748B" },
   error: { color: "#B91C1C", marginTop: 8 }
 });
 
@@ -52,6 +75,7 @@ export default function GrowOverviewScreen() {
 
   const [grow, setGrow] = useState<PersonalGrow | null>(null);
   const [counts, setCounts] = useState({ logs: 0, tasks: 0, runs: 0 });
+  const [timeline, setTimeline] = useState<PersonalGrowTimelineEvent[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState("");
 
@@ -64,11 +88,12 @@ export default function GrowOverviewScreen() {
     setLoading(true);
     setError("");
     try {
-      const [grows, logs, tasks, runs] = await Promise.all([
+      const [grows, logs, tasks, runs, timelineRows] = await Promise.all([
         listPersonalGrows(),
         listPersonalLogs({ growId }),
         listPersonalTasks({ growId }),
-        listToolRuns({ growId })
+        listToolRuns({ growId }),
+        getPersonalGrowTimeline(growId)
       ]);
       const current = findGrowById(grows, growId);
       setGrow(current);
@@ -77,11 +102,13 @@ export default function GrowOverviewScreen() {
         tasks: Array.isArray(tasks) ? tasks.length : 0,
         runs: Array.isArray(runs) ? runs.length : 0
       });
+      setTimeline(Array.isArray(timelineRows) ? timelineRows.slice(0, 5) : []);
       if (!current) setError("Grow not found.");
     } catch {
       setError("Failed to load grow workspace.");
       setGrow(null);
       setCounts({ logs: 0, tasks: 0, runs: 0 });
+      setTimeline([]);
     } finally {
       setLoading(false);
     }
@@ -102,7 +129,7 @@ export default function GrowOverviewScreen() {
   }
 
   return (
-    <View style={styles.container}>
+    <ScrollView style={styles.container} contentContainerStyle={{ paddingBottom: 28 }}>
       <Text style={styles.title}>{grow?.name || "Grow Workspace"}</Text>
       <Text style={styles.subtitle}>
         Status: {grow?.status || "active"} | Updated: {fmtDate(grow?.updatedAt)}
@@ -130,6 +157,35 @@ export default function GrowOverviewScreen() {
         </View>
       </View>
 
+      <View style={styles.panel}>
+        <Text style={styles.sectionTitle}>Recent timeline</Text>
+        {timeline.length ? (
+          timeline.map((event) => (
+            <View key={event.id} style={styles.timelineItem}>
+              <Text style={styles.timelineTitle}>{event.title}</Text>
+              <Text style={styles.timelineMeta}>
+                {event.type.replace(/_/g, " ")} | {fmtDate(event.timestamp)}
+              </Text>
+              {event.summary ? (
+                <Text numberOfLines={2} style={styles.timelineSummary}>
+                  {event.summary}
+                </Text>
+              ) : null}
+            </View>
+          ))
+        ) : (
+          <Text style={styles.empty}>
+            Logs, photos, tasks, tool runs, diagnoses, and automation events will appear
+            here after they are saved to this grow.
+          </Text>
+        )}
+        <Link href={`/home/personal/grows/${growId}/timeline`} asChild>
+          <Pressable style={[styles.action, { alignSelf: "flex-start", marginTop: 12 }]}>
+            <Text style={styles.actionText}>Open Timeline</Text>
+          </Pressable>
+        </Link>
+      </View>
+
       <View style={styles.quickRow}>
         <Link
           href={`/home/personal/logs/new?growId=${encodeURIComponent(growId)}`}
@@ -152,6 +208,6 @@ export default function GrowOverviewScreen() {
       </View>
 
       {error ? <Text style={styles.error}>{error}</Text> : null}
-    </View>
+    </ScrollView>
   );
 }

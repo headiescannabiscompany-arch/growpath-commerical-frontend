@@ -88,6 +88,29 @@ export async function listPersonalGrows() {
   }
 }
 
+export async function getPersonalGrowTimeline(growId) {
+  if (!growId) return [];
+  try {
+    const timelineRes = await apiRequest(
+      `/api/personal/grows/${encodeURIComponent(growId)}/timeline`
+    );
+    const rows = Array.isArray(timelineRes)
+      ? timelineRes
+      : Array.isArray(timelineRes?.timeline)
+        ? timelineRes.timeline
+        : Array.isArray(timelineRes?.events)
+          ? timelineRes.events
+          : Array.isArray(timelineRes?.items)
+            ? timelineRes.items
+            : Array.isArray(timelineRes?.data?.timeline)
+              ? timelineRes.data.timeline
+              : [];
+    return rows.filter((row) => row && typeof row === "object");
+  } catch (_err) {
+    return [];
+  }
+}
+
 export async function appendGrowPhotos(growId, photos = []) {
   const updateRes = await apiRequest(`${routes.GROWS.LIST}/${growId}/photos`, {
     method: "PATCH",
