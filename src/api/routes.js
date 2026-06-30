@@ -50,6 +50,14 @@ export const ROUTES = {
     EXPORT: `${PREFIX}/privacy/export`,
     DELETE_ACCOUNT: `${PREFIX}/privacy/delete`
   },
+  CROP_KNOWLEDGE: {
+    TAXA: `${PREFIX}/crop-knowledge/taxa`,
+    CROP_PROFILES: `${PREFIX}/crop-knowledge/crop-profiles`,
+    CROP_PROFILE_DETAIL: (id) => `${PREFIX}/crop-knowledge/crop-profiles/${id}`,
+    ORGANISMS: `${PREFIX}/crop-knowledge/organisms`,
+    REGIONAL_ALERTS: `${PREFIX}/crop-knowledge/regional-alerts`,
+    PLANT_GROWTH_PROFILES: `${PREFIX}/crop-knowledge/plant-growth-profiles`
+  },
   FORUM: {
     LIST: `${PREFIX}/forum`,
     DETAIL: (id) => `${PREFIX}/forum/${id}`,
