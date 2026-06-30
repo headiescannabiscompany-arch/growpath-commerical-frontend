@@ -169,6 +169,20 @@ const PRESETS: Preset[] = [
     summary: "Scale a saved fertigation recipe to a new batch volume and record the run."
   },
   {
+    key: "recipe-cost",
+    title: "Recipe Cost",
+    audience: "Cultivation / finance",
+    tool: "fert",
+    fn: "estimateCost",
+    args: {
+      recipeId: "recipe-demo-1",
+      volumeLiters: 20,
+      batchUnit: "L",
+      currency: "USD"
+    },
+    summary: "Estimate scaled recipe cost from saved product unit costs."
+  },
+  {
     key: "harvest",
     title: "Harvest window",
     audience: "Cultivation",
