@@ -1,7 +1,7 @@
 import React from "react";
 
-import CoursesScreen from "@/screens/CoursesScreen";
+import CoursesReleaseHold from "@/components/release/CoursesReleaseHold";
 
 export default function Courses() {
-  return <CoursesScreen />;
+  return <CoursesReleaseHold />;
 }

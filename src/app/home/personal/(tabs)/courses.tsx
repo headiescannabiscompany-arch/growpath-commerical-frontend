@@ -1,6 +1,6 @@
 import React from "react";
-import CoursesScreen from "@/screens/CoursesScreen";
+import CoursesReleaseHold from "@/components/release/CoursesReleaseHold";
 
 export default function CoursesRoute() {
-  return <CoursesScreen />;
+  return <CoursesReleaseHold />;
 }
