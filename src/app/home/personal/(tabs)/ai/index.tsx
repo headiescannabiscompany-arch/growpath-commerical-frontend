@@ -2,10 +2,16 @@ import React, { useMemo, useState, useEffect } from "react";
 import { View, Text, StyleSheet, TextInput, Pressable, ScrollView } from "react-native";
 import { useRouter } from "expo-router";
 import { runTool } from "@/ai/toolRegistry";
-import { apiRequest } from "@/api/apiRequest";
 import { listPersonalGrows } from "@/api/grows";
-import { listPersonalLogs } from "@/api/logs";
-import { listPersonalTasks } from "@/api/tasks";
+import { createPersonalLog, listPersonalLogs } from "@/api/logs";
+import { createPersonalTask, listPersonalTasks } from "@/api/tasks";
+import { getDiagnosisHistory } from "@/api/diagnose";
+import { listToolRuns } from "@/api/toolRuns";
+import {
+  askPersonalAssistant,
+  type AssistantProposedWrite,
+  type AssistantReference
+} from "@/api/personalAssistant";
 
 const styles = StyleSheet.create({
   container: { flex: 1, backgroundColor: "#fff" },
@@ -26,6 +32,22 @@ const styles = StyleSheet.create({
     marginBottom: 10,
     backgroundColor: "#F0FDF4"
   },
+  referenceCard: {
+    padding: 12,
+    borderWidth: 1,
+    borderColor: "#BFDBFE",
+    borderRadius: 8,
+    marginBottom: 10,
+    backgroundColor: "#EFF6FF"
+  },
+  draftCard: {
+    padding: 12,
+    borderWidth: 1,
+    borderColor: "#FED7AA",
+    borderRadius: 8,
+    marginBottom: 10,
+    backgroundColor: "#FFF7ED"
+  },
   actionButton: {
     alignSelf: "flex-start",
     backgroundColor: "#166534",
@@ -37,6 +59,17 @@ const styles = StyleSheet.create({
   actionButtonText: { color: "white", fontWeight: "800" },
   contextText: { fontSize: 12, color: "#64748B", marginBottom: 4 },
   contextTitle: { fontWeight: "700", color: "#0F172A" },
+  growPicker: { flexDirection: "row", flexWrap: "wrap", gap: 8, marginTop: 8 },
+  growChip: {
+    borderWidth: 1,
+    borderColor: "#CBD5E1",
+    borderRadius: 8,
+    paddingHorizontal: 10,
+    paddingVertical: 7
+  },
+  growChipOn: { backgroundColor: "#166534", borderColor: "#166534" },
+  growChipText: { color: "#334155", fontWeight: "700", fontSize: 12 },
+  growChipTextOn: { color: "#FFFFFF" },
   msg: {
     padding: 12,
     borderWidth: 1,
@@ -70,6 +103,9 @@ interface ContextData {
   grows: any[];
   logs: any[];
   tasks: any[];
+  toolRuns: any[];
+  diagnoses: any[];
+  photosMetadata: any[];
 }
 
 function parseVpdCommand(
@@ -204,7 +240,11 @@ export default function AiScreen() {
   ]);
   const [context, setContext] = useState<ContextData | null>(null);
   const [actions, setActions] = useState<AssistantAction[]>([]);
+  const [references, setReferences] = useState<AssistantReference[]>([]);
+  const [proposedWrites, setProposedWrites] = useState<AssistantProposedWrite[]>([]);
+  const [selectedGrowId, setSelectedGrowId] = useState("");
   const [sending, setSending] = useState(false);
+  const [writeFeedback, setWriteFeedback] = useState("");
 
   const canSend = useMemo(() => draft.trim().length > 0 && !sending, [draft, sending]);
 
@@ -212,11 +252,21 @@ export default function AiScreen() {
   useEffect(() => {
     async function loadContext() {
       try {
-        const [grows, logs, tasks] = await Promise.all([
+        const [grows, logs, tasks, toolRuns, diagnoses] = await Promise.all([
           listPersonalGrows(),
           listPersonalLogs(),
-          listPersonalTasks()
+          listPersonalTasks(),
+          listToolRuns(),
+          getDiagnosisHistory()
         ]);
+        const activeGrowId =
+          selectedGrowId ||
+          String(
+            grows.find((grow) => grow.status !== "harvested")?.id || grows[0]?.id || ""
+          );
+        const photosMetadata = logs.flatMap((log: any) =>
+          Array.isArray(log.photoMetadata) ? log.photoMetadata : []
+        );
 
         setContext({
           growCount: grows.length,
@@ -225,8 +275,12 @@ export default function AiScreen() {
           loadedAt: new Date().toLocaleTimeString(),
           grows,
           logs,
-          tasks
+          tasks,
+          toolRuns,
+          diagnoses,
+          photosMetadata
         });
+        if (!selectedGrowId && activeGrowId) setSelectedGrowId(activeGrowId);
       } catch (err) {
         console.error("[AI] Failed to load context:", err);
         setContext({
@@ -236,32 +290,45 @@ export default function AiScreen() {
           loadedAt: "error",
           grows: [],
           logs: [],
-          tasks: []
+          tasks: [],
+          toolRuns: [],
+          diagnoses: [],
+          photosMetadata: []
         });
       }
     }
 
     loadContext();
-  }, []);
+  }, [selectedGrowId]);
+
+  const selectedGrow = useMemo(
+    () => context?.grows.find((grow) => String(grow.id || grow._id) === selectedGrowId),
+    [context?.grows, selectedGrowId]
+  );
+
+  function assistantContext() {
+    const growId = selectedGrowId;
+    const scoped = (rows: any[]) =>
+      growId ? rows.filter((row) => !row?.growId || String(row.growId) === growId) : rows;
+    return {
+      selectedGrowId: growId || null,
+      selectedGrow: selectedGrow || null,
+      grows: context?.grows || [],
+      logs: scoped(context?.logs || []).slice(0, 20),
+      tasks: scoped(context?.tasks || []).slice(0, 20),
+      toolRuns: scoped(context?.toolRuns || []).slice(0, 12),
+      diagnoses: scoped(context?.diagnoses || []).slice(0, 12),
+      photosMetadata: scoped(context?.photosMetadata || []).slice(0, 20),
+      environmentHistory: [],
+      recipes: [],
+      phenoScores: []
+    };
+  }
 
   async function askBackend(text: string) {
-    const res = await apiRequest<{
-      success: boolean;
-      reply?: string;
-      actions?: AssistantAction[];
-    }>("/api/ai/assistant/personal", {
-      method: "POST",
-      body: {
-        message: text,
-        context: context || {
-          growCount: 0,
-          logCount: 0,
-          taskCount: 0,
-          grows: [],
-          logs: [],
-          tasks: []
-        }
-      }
+    const res = await askPersonalAssistant({
+      message: text,
+      context: context ? assistantContext() : { grows: [], logs: [], tasks: [] }
     });
 
     if (!res?.success || !res.reply) {
@@ -269,7 +336,46 @@ export default function AiScreen() {
     }
 
     setActions(Array.isArray(res.actions) ? res.actions : []);
+    setReferences(Array.isArray(res.referencedData) ? res.referencedData : []);
+    setProposedWrites(Array.isArray(res.proposedWrites) ? res.proposedWrites : []);
     return res.reply;
+  }
+
+  async function confirmWrite(write: AssistantProposedWrite) {
+    setWriteFeedback("");
+    const payload = { ...(write.payload || {}) };
+    const growId = payload.growId || selectedGrowId;
+    if (!growId) {
+      setWriteFeedback("Select a grow before confirming an AI draft.");
+      return;
+    }
+    if (write.type === "create_task") {
+      const created = await createPersonalTask({
+        growId,
+        title: String(payload.title || "AI suggested task"),
+        description: String(payload.description || ""),
+        priority: payload.priority || "medium",
+        sourceType: "ai_assistant",
+        sourceObjectId: payload.sourceObjectId || undefined
+      });
+      if (!created) throw new Error("Unable to create AI suggested task.");
+      setWriteFeedback("AI suggested task created.");
+    } else if (write.type === "draft_log") {
+      const created = await createPersonalLog({
+        growId,
+        title: String(payload.title || "AI grow summary"),
+        notes: String(payload.notes || ""),
+        type: String(payload.type || "ai_summary"),
+        date: new Date().toISOString(),
+        tags: ["ai_assistant"]
+      });
+      if (!created) throw new Error("Unable to create AI drafted log.");
+      setWriteFeedback("AI drafted log saved.");
+    } else {
+      setWriteFeedback(`Unsupported AI draft: ${write.type}`);
+      return;
+    }
+    setProposedWrites((current) => current.filter((item) => item !== write));
   }
 
   async function send() {
@@ -303,6 +409,8 @@ export default function AiScreen() {
     }
 
     try {
+      setReferences([]);
+      setProposedWrites([]);
       const reply = await askBackend(text);
       setMessages((m) => [...m, { role: "assistant", text: reply }]);
     } catch (err: any) {
@@ -330,7 +438,32 @@ export default function AiScreen() {
             <Text style={styles.contextText}>Grows: {context.growCount}</Text>
             <Text style={styles.contextText}>Logs: {context.logCount}</Text>
             <Text style={styles.contextText}>Tasks: {context.taskCount}</Text>
+            <Text style={styles.contextText}>Tool runs: {context.toolRuns.length}</Text>
+            <Text style={styles.contextText}>Diagnoses: {context.diagnoses.length}</Text>
             <Text style={styles.contextText}>Updated: {context.loadedAt}</Text>
+            {context.grows.length ? (
+              <View style={styles.growPicker}>
+                {context.grows.map((grow) => {
+                  const id = String(grow.id || grow._id || "");
+                  const active = id === selectedGrowId;
+                  return (
+                    <Pressable
+                      key={id || grow.name}
+                      accessibilityRole="button"
+                      accessibilityLabel={`Select AI grow ${grow.name || id}`}
+                      onPress={() => setSelectedGrowId(id)}
+                      style={[styles.growChip, active && styles.growChipOn]}
+                    >
+                      <Text
+                        style={[styles.growChipText, active && styles.growChipTextOn]}
+                      >
+                        {grow.name || id}
+                      </Text>
+                    </Pressable>
+                  );
+                })}
+              </View>
+            ) : null}
           </View>
         )}
         {messages.map((m, idx) => (
@@ -357,6 +490,43 @@ export default function AiScreen() {
             ))}
           </View>
         ) : null}
+        {references.length ? (
+          <View style={styles.referenceCard}>
+            <Text style={[styles.contextText, styles.contextTitle]}>
+              Referenced grow data
+            </Text>
+            {references.map((item, index) => (
+              <Text key={`${item.type}-${item.id || index}`} style={styles.contextText}>
+                {item.type}: {item.title}
+                {item.timestamp ? ` (${formatDate(item.timestamp)})` : ""}
+              </Text>
+            ))}
+          </View>
+        ) : null}
+        {proposedWrites.length ? (
+          <View style={styles.draftCard}>
+            <Text style={[styles.contextText, styles.contextTitle]}>
+              Drafted actions require confirmation
+            </Text>
+            {proposedWrites.map((write, index) => (
+              <View key={`${write.type}-${index}`} style={{ marginTop: 8 }}>
+                <Text style={styles.contextText}>
+                  {write.type}:{" "}
+                  {write.payload?.title || write.payload?.notes || "AI draft"}
+                </Text>
+                <Pressable
+                  accessibilityRole="button"
+                  accessibilityLabel={`Confirm ${write.type}`}
+                  onPress={() => confirmWrite(write)}
+                  style={styles.actionButton}
+                >
+                  <Text style={styles.actionButtonText}>Confirm</Text>
+                </Pressable>
+              </View>
+            ))}
+          </View>
+        ) : null}
+        {writeFeedback ? <Text style={styles.hint}>{writeFeedback}</Text> : null}
       </ScrollView>
 
       <View style={styles.composer}>
@@ -371,6 +541,8 @@ export default function AiScreen() {
           style={[styles.send, { opacity: canSend ? 1 : 0.5 }]}
           disabled={!canSend}
           onPress={send}
+          accessibilityRole="button"
+          accessibilityLabel="Send"
         >
           <Text style={styles.sendText}>{sending ? "Thinking..." : "Send"}</Text>
         </Pressable>

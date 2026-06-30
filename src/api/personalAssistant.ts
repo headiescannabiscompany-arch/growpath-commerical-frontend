@@ -1,0 +1,33 @@
+import { apiRequest } from "./apiRequest";
+
+export type AssistantReference = {
+  type: string;
+  id?: string | null;
+  title: string;
+  timestamp?: string | null;
+};
+
+export type AssistantProposedWrite = {
+  type: "create_task" | "draft_log" | string;
+  payload: Record<string, any>;
+};
+
+export type PersonalAssistantResponse = {
+  success: boolean;
+  intent?: string;
+  reply?: string;
+  actions?: { label: string; href: string }[];
+  contextSummary?: Record<string, any>;
+  referencedData?: AssistantReference[];
+  proposedWrites?: AssistantProposedWrite[];
+};
+
+export async function askPersonalAssistant(payload: {
+  message: string;
+  context: Record<string, any>;
+}): Promise<PersonalAssistantResponse> {
+  return apiRequest<PersonalAssistantResponse>("/api/ai/assistant/personal", {
+    method: "POST",
+    body: payload
+  });
+}
