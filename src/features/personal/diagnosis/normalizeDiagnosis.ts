@@ -4,12 +4,19 @@ export type NormalizedDiagnosis = {
   confidence: "low" | "medium" | "high" | "unknown";
   severity: "low" | "medium" | "high" | "unknown";
   evidence: string[];
+  counterEvidence: string[];
   missingData: string[];
   actions: string[];
   tags: string[];
   explanation: string;
   followUp: string;
   source: string;
+  diagnosisClass: string;
+  patternSummary: string;
+  rootZoneSummary: string;
+  environmentSummary: string;
+  numberSummary: string;
+  urgency: string;
 };
 
 function strings(value: unknown): string[] {
@@ -42,9 +49,10 @@ export function normalizeDiagnosisResponse(response: any): NormalizedDiagnosis {
     response?.data ??
     response ??
     {};
-  const details = response?.details ?? row?.details ?? {};
+  const details = response?.details ?? row?.details ?? row?.aiResult ?? {};
   const likelyIssues = Array.isArray(details?.likelyIssues) ? details.likelyIssues : [];
   const evidence = strings(row?.evidenceObserved ?? row?.evidence);
+  const counterEvidence = strings(row?.counterEvidence);
   const missingData = strings(row?.missingData);
   const actions = strings(row?.suggestedActions ?? row?.aiActions ?? row?.actions);
   return {
@@ -60,19 +68,34 @@ export function normalizeDiagnosisResponse(response: any): NormalizedDiagnosis {
     evidence: evidence.length
       ? evidence
       : strings(likelyIssues.flatMap((issue: any) => issue?.evidence || [])),
+    counterEvidence: counterEvidence.length
+      ? counterEvidence
+      : strings(likelyIssues.flatMap((issue: any) => issue?.counterEvidence || [])),
     missingData: missingData.length
       ? missingData
       : strings(likelyIssues.flatMap((issue: any) => issue?.nextChecks || [])),
     actions: actions.length ? actions : strings(details?.recommendations),
-    tags: strings(row?.tags ?? details?.tags),
+    tags: strings(row?.tags ?? details?.suggestedTags ?? details?.tags),
     explanation: String(
       row?.aiExplanation || row?.explanation || details?.disclaimer || ""
     ),
     followUp: String(
-      row?.followUp || row?.followUpQuestion || details?.suggestedTasks?.[0]?.title || ""
+      row?.followUp ||
+        row?.followUpQuestion ||
+        details?.tasksToCreate?.[0]?.title ||
+        details?.suggestedTasks?.[0]?.title ||
+        ""
     ),
     source: String(
       row?.provider || row?.analysisProvider || row?.sourceType || "unverified"
-    )
+    ),
+    diagnosisClass: String(row?.diagnosisClass || details?.diagnosisClass || ""),
+    patternSummary: String(row?.patternSummary || details?.patternSummary || ""),
+    rootZoneSummary: String(row?.rootZoneSummary || details?.rootZoneSummary || ""),
+    environmentSummary: String(
+      row?.environmentSummary || details?.environmentSummary || ""
+    ),
+    numberSummary: String(row?.numberSummary || details?.numberSummary || ""),
+    urgency: String(row?.urgency || details?.urgency || "")
   };
 }

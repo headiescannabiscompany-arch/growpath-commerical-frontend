@@ -42,12 +42,20 @@ describe("normalizeDiagnosisResponse", () => {
         likelyIssues: [
           {
             evidence: ["Lower leaves are yellow."],
+            counterEvidence: ["Could be normal senescence."],
             nextChecks: ["Check runoff pH."]
           }
         ],
+        diagnosisClass: "nutrition_or_root_zone_triage",
+        patternSummary: "location: lower old leaves",
+        rootZoneSummary: "moisture: too wet",
+        environmentSummary: "rh: 72",
+        numberSummary: "runoffEC: 2.8",
         recommendations: ["Verify pH before changing feed."],
-        suggestedTasks: [{ title: "Check runoff pH." }],
-        disclaimer: "Heuristic text triage only."
+        suggestedTags: ["yellowing"],
+        tasksToCreate: [{ title: "Check runoff pH." }],
+        urgency: "medium",
+        disclaimer: "GrowPathAI provides plant-health triage."
       }
     });
 
@@ -56,9 +64,17 @@ describe("normalizeDiagnosisResponse", () => {
         id: "d2",
         source: "heuristic",
         evidence: ["Lower leaves are yellow."],
+        counterEvidence: ["Could be normal senescence."],
         missingData: ["Check runoff pH."],
         actions: ["Verify pH before changing feed."],
-        followUp: "Check runoff pH."
+        tags: ["yellowing"],
+        followUp: "Check runoff pH.",
+        diagnosisClass: "nutrition_or_root_zone_triage",
+        patternSummary: "location: lower old leaves",
+        rootZoneSummary: "moisture: too wet",
+        environmentSummary: "rh: 72",
+        numberSummary: "runoffEC: 2.8",
+        urgency: "medium"
       })
     );
   });

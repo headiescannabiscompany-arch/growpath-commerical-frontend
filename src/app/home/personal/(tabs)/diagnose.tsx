@@ -40,6 +40,16 @@ export default function DiagnoseRoute() {
   const [plants, setPlants] = useState<PersonalPlant[]>([]);
   const [plantId, setPlantId] = useState(initialPlantId);
   const [stage, setStage] = useState("veg");
+  const [patternLocation, setPatternLocation] = useState("upper new growth");
+  const [rootMoisture, setRootMoisture] = useState("unknown");
+  const [rootConcern, setRootConcern] = useState("");
+  const [temp, setTemp] = useState("");
+  const [rh, setRh] = useState("");
+  const [vpd, setVpd] = useState("");
+  const [feedEC, setFeedEC] = useState("");
+  const [runoffEC, setRunoffEC] = useState("");
+  const [feedPH, setFeedPH] = useState("");
+  const [runoffPH, setRunoffPH] = useState("");
   const [notes, setNotes] = useState("");
   const [photoUri, setPhotoUri] = useState("");
   const [result, setResult] = useState<NormalizedDiagnosis | null>(null);
@@ -81,11 +91,34 @@ export default function DiagnoseRoute() {
     setRunning(true);
     setFeedback("");
     try {
+      const pattern = {
+        location: patternLocation,
+        notes: notes.trim()
+      };
+      const rootZone = {
+        moisture: rootMoisture,
+        concern: rootConcern.trim()
+      };
+      const environment = {
+        temp: temp.trim(),
+        rh: rh.trim(),
+        vpd: vpd.trim()
+      };
+      const numbers = {
+        feedEC: feedEC.trim(),
+        runoffEC: runoffEC.trim(),
+        feedPH: feedPH.trim(),
+        runoffPH: runoffPH.trim()
+      };
       const context = {
         notes: notes.trim(),
         stage,
         plantName: selectedPlant?.name,
-        cultivar: selectedPlant?.cultivar || selectedPlant?.strain
+        cultivar: selectedPlant?.cultivar || selectedPlant?.strain,
+        pattern,
+        rootZone,
+        environment,
+        numbers
       };
       const response = photoUri
         ? await diagnoseImage(photoUri, { growId, plantId, context })
@@ -109,7 +142,14 @@ export default function DiagnoseRoute() {
       title: result.issueSummary,
       notes: [
         result.explanation,
+        result.patternSummary ? `Pattern: ${result.patternSummary}` : "",
+        result.rootZoneSummary ? `Root zone: ${result.rootZoneSummary}` : "",
+        result.environmentSummary ? `Environment: ${result.environmentSummary}` : "",
+        result.numberSummary ? `Numbers: ${result.numberSummary}` : "",
         result.evidence.length ? `Evidence: ${result.evidence.join("; ")}` : "",
+        result.counterEvidence.length
+          ? `Counter-evidence: ${result.counterEvidence.join("; ")}`
+          : "",
         result.missingData.length ? `Missing data: ${result.missingData.join("; ")}` : ""
       ]
         .filter(Boolean)
@@ -230,6 +270,129 @@ export default function DiagnoseRoute() {
         accessibilityLabel="Diagnosis notes"
       />
 
+      <View style={styles.section}>
+        <Text style={styles.label}>Pattern location</Text>
+        <View style={styles.row}>
+          {[
+            "lower old leaves",
+            "upper new growth",
+            "middle",
+            "whole plant",
+            "random damage"
+          ].map((value) => (
+            <Pressable
+              key={value}
+              style={[styles.pill, patternLocation === value && styles.pillOn]}
+              onPress={() => setPatternLocation(value)}
+              accessibilityRole="button"
+              accessibilityLabel={`Diagnosis pattern ${value}`}
+            >
+              <Text
+                style={[styles.pillText, patternLocation === value && styles.pillTextOn]}
+              >
+                {value}
+              </Text>
+            </Pressable>
+          ))}
+        </View>
+      </View>
+
+      <View style={styles.section}>
+        <Text style={styles.label}>Root zone</Text>
+        <View style={styles.row}>
+          {["unknown", "too wet", "too dry", "compacted", "cold roots"].map((value) => (
+            <Pressable
+              key={value}
+              style={[styles.pill, rootMoisture === value && styles.pillOn]}
+              onPress={() => setRootMoisture(value)}
+              accessibilityRole="button"
+              accessibilityLabel={`Diagnosis root zone ${value}`}
+            >
+              <Text
+                style={[styles.pillText, rootMoisture === value && styles.pillTextOn]}
+              >
+                {value}
+              </Text>
+            </Pressable>
+          ))}
+        </View>
+        <TextInput
+          style={styles.input}
+          value={rootConcern}
+          onChangeText={setRootConcern}
+          placeholder="Root-zone notes: drainage, crust, smell, root temp, dryback."
+          accessibilityLabel="Diagnosis root-zone notes"
+        />
+      </View>
+
+      <View style={styles.section}>
+        <Text style={styles.label}>Environment</Text>
+        <View style={styles.grid}>
+          <TextInput
+            style={styles.gridInput}
+            value={temp}
+            onChangeText={setTemp}
+            keyboardType="numeric"
+            placeholder="Temp"
+            accessibilityLabel="Diagnosis temperature"
+          />
+          <TextInput
+            style={styles.gridInput}
+            value={rh}
+            onChangeText={setRh}
+            keyboardType="numeric"
+            placeholder="RH"
+            accessibilityLabel="Diagnosis RH"
+          />
+          <TextInput
+            style={styles.gridInput}
+            value={vpd}
+            onChangeText={setVpd}
+            keyboardType="numeric"
+            placeholder="VPD"
+            accessibilityLabel="Diagnosis VPD"
+          />
+        </View>
+      </View>
+
+      <View style={styles.section}>
+        <Text style={styles.label}>Measured numbers</Text>
+        <View style={styles.grid}>
+          <TextInput
+            style={styles.gridInput}
+            value={feedEC}
+            onChangeText={setFeedEC}
+            keyboardType="numeric"
+            placeholder="Feed EC"
+            accessibilityLabel="Diagnosis feed EC"
+          />
+          <TextInput
+            style={styles.gridInput}
+            value={runoffEC}
+            onChangeText={setRunoffEC}
+            keyboardType="numeric"
+            placeholder="Runoff EC"
+            accessibilityLabel="Diagnosis runoff EC"
+          />
+          <TextInput
+            style={styles.gridInput}
+            value={feedPH}
+            onChangeText={setFeedPH}
+            keyboardType="numeric"
+            placeholder="Feed pH"
+            accessibilityLabel="Diagnosis feed pH"
+          />
+          <TextInput
+            style={styles.gridInput}
+            value={runoffPH}
+            onChangeText={setRunoffPH}
+            keyboardType="numeric"
+            placeholder="Runoff pH"
+            accessibilityLabel="Diagnosis runoff pH"
+          />
+        </View>
+      </View>
+
       <View style={styles.row}>
         <Pressable
           style={styles.secondaryButton}
@@ -293,6 +456,26 @@ export default function DiagnoseRoute() {
               },
               { key: "source", label: "Source", value: result.source }
             ]}
+            inputs={{
+              stage,
+              patternLocation,
+              rootMoisture,
+              temp,
+              rh,
+              vpd,
+              feedEC,
+              runoffEC,
+              feedPH,
+              runoffPH
+            }}
+            outputs={{
+              diagnosisClass: result.diagnosisClass,
+              urgency: result.urgency,
+              pattern: result.patternSummary,
+              rootZone: result.rootZoneSummary,
+              environment: result.environmentSummary,
+              numbers: result.numberSummary
+            }}
             notices={[
               ...(result.source === "unverified"
                 ? [
@@ -313,7 +496,14 @@ export default function DiagnoseRoute() {
               }))
             ]}
             recommendations={result.actions}
-            assumptions={result.evidence.map((item) => `Observed evidence: ${item}`)}
+            assumptions={[
+              ...result.evidence.map((item) => `Observed evidence: ${item}`),
+              ...result.counterEvidence.map((item) => `Counter-evidence: ${item}`)
+            ]}
+            formulas={[
+              "ETGU checks symptom pattern, root-zone context, environment, and measured numbers before suggesting follow-up actions."
+            ]}
+            uncertainty="Plant-health triage is not a guaranteed lab diagnosis. Confirm with environment, medium, water, and testing when possible."
             actions={
               growId
                 ? [
@@ -369,7 +559,7 @@ export default function DiagnoseRoute() {
 }
 
 const styles = StyleSheet.create({
-  container: { padding: 20, paddingBottom: 40, backgroundColor: "#FFFFFF", gap: 10 },
+  container: { padding: 20, paddingBottom: 120, backgroundColor: "#FFFFFF", gap: 10 },
   title: { fontSize: 22, fontWeight: "800", color: "#0F172A" },
   subtitle: { color: "#64748B", lineHeight: 20 },
   context: { color: "#166534", fontWeight: "700" },
@@ -393,6 +583,21 @@ const styles = StyleSheet.create({
     borderRadius: 10,
     padding: 12,
     textAlignVertical: "top"
+  },
+  input: {
+    borderWidth: 1,
+    borderColor: "#CBD5E1",
+    borderRadius: 10,
+    padding: 12
+  },
+  grid: { flexDirection: "row", flexWrap: "wrap", gap: 8 },
+  gridInput: {
+    minWidth: 140,
+    flexGrow: 1,
+    borderWidth: 1,
+    borderColor: "#CBD5E1",
+    borderRadius: 10,
+    padding: 12
   },
   photo: { width: "100%", height: 240, borderRadius: 12, backgroundColor: "#E2E8F0" },
   primaryButton: {
