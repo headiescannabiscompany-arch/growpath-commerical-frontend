@@ -46,6 +46,10 @@ export const ROUTES = {
     CERTIFICATES: `${PREFIX}/user/certificates`,
     ONBOARD_CREATOR: `${PREFIX}/user/creator/onboard`
   },
+  PRIVACY: {
+    EXPORT: `${PREFIX}/privacy/export`,
+    DELETE_ACCOUNT: `${PREFIX}/privacy/delete`
+  },
   FORUM: {
     LIST: `${PREFIX}/forum`,
     DETAIL: (id) => `${PREFIX}/forum/${id}`,

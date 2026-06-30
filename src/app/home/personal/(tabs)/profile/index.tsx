@@ -1,12 +1,23 @@
 import React, { useEffect, useState } from "react";
-import { View, Text, StyleSheet, Pressable, Alert, TextInput } from "react-native";
+import {
+  View,
+  Text,
+  StyleSheet,
+  Pressable,
+  Alert,
+  TextInput,
+  ScrollView,
+  Platform,
+  Share
+} from "react-native";
 import { useRouter } from "expo-router";
 import { useAuth } from "@/auth/AuthContext";
 import { useEntitlements } from "@/entitlements";
-import { updateProfile } from "@/api/users";
+import { deleteAccount, exportPrivacyData, updateProfile } from "@/api/users";
 
 const styles = StyleSheet.create({
-  container: { flex: 1, padding: 20, backgroundColor: "#fff" },
+  container: { flex: 1, backgroundColor: "#fff" },
+  content: { padding: 20, paddingBottom: 42 },
   title: { fontSize: 24, fontWeight: "800", marginBottom: 6 },
   subtitle: { fontSize: 14, color: "#64748B", marginBottom: 18 },
 
@@ -46,6 +57,7 @@ const styles = StyleSheet.create({
 
   buttonDanger: { backgroundColor: "#fff", borderColor: "#FCA5A5" },
   buttonDangerText: { color: "#DC2626", fontWeight: "800" },
+  buttonSecondaryText: { color: "#0F172A", fontWeight: "800" },
 
   accountAction: {
     marginTop: 10,
@@ -57,7 +69,7 @@ const styles = StyleSheet.create({
     backgroundColor: "#FFFFFF"
   },
   accountActionText: { fontWeight: "800", color: "#0F172A" },
-  mutedText: { marginTop: 8, fontSize: 12, color: "#64748B" }
+  mutedText: { marginTop: 8, fontSize: 12, color: "#64748B", lineHeight: 18 }
 });
 
 export default function ProfileScreen() {
@@ -70,6 +82,11 @@ export default function ProfileScreen() {
   const [savingEmail, setSavingEmail] = useState(false);
   const [emailFeedback, setEmailFeedback] = useState("");
   const [emailError, setEmailError] = useState("");
+  const [privacyFeedback, setPrivacyFeedback] = useState("");
+  const [privacyError, setPrivacyError] = useState("");
+  const [exporting, setExporting] = useState(false);
+  const [deleteConfirm, setDeleteConfirm] = useState("");
+  const [deleting, setDeleting] = useState(false);
   const mode = ent.mode || "personal";
   const plan = ent.plan || "free";
 
@@ -122,8 +139,77 @@ export default function ProfileScreen() {
     ]);
   };
 
+  const handleExportData = async () => {
+    setExporting(true);
+    setPrivacyFeedback("");
+    setPrivacyError("");
+    try {
+      const data = await exportPrivacyData();
+      const payload = JSON.stringify(data, null, 2);
+      if (Platform.OS === "web" && typeof document !== "undefined") {
+        const blob = new Blob([payload], { type: "application/json" });
+        const url = URL.createObjectURL(blob);
+        const anchor = document.createElement("a");
+        anchor.href = url;
+        anchor.download = `growpathai-data-export-${new Date().toISOString().slice(0, 10)}.json`;
+        document.body.appendChild(anchor);
+        anchor.click();
+        anchor.remove();
+        URL.revokeObjectURL(url);
+        setPrivacyFeedback("Data export downloaded.");
+      } else {
+        await Share.share({
+          title: "GrowPathAI data export",
+          message: payload
+        });
+        setPrivacyFeedback("Data export opened in the share sheet.");
+      }
+    } catch (e: any) {
+      setPrivacyError(e?.message || "Unable to export account data.");
+    } finally {
+      setExporting(false);
+    }
+  };
+
+  const handleDeleteAccount = () => {
+    if (deleteConfirm.trim().toUpperCase() !== "DELETE") {
+      setPrivacyError("Type DELETE to confirm account deletion.");
+      return;
+    }
+
+    Alert.alert(
+      "Delete account?",
+      "This anonymizes your account, disables active tasks, archives personal grows, and logs you out. Some records may be retained in anonymized form for security, compliance, billing, dispute, or backup retention.",
+      [
+        { text: "Cancel", style: "cancel" },
+        {
+          text: "Delete account",
+          style: "destructive",
+          onPress: async () => {
+            setDeleting(true);
+            setPrivacyFeedback("");
+            setPrivacyError("");
+            try {
+              await deleteAccount("user_requested_from_profile");
+              if (typeof (auth as any).logout === "function") {
+                await (auth as any).logout();
+              } else if (typeof (auth as any).setToken === "function") {
+                (auth as any).setToken(null);
+              }
+              router.replace("/login" as any);
+            } catch (e: any) {
+              setPrivacyError(e?.message || "Unable to delete account.");
+            } finally {
+              setDeleting(false);
+            }
+          }
+        }
+      ]
+    );
+  };
+
   return (
-    <View style={styles.container}>
+    <ScrollView style={styles.container} contentContainerStyle={styles.content}>
       <Text style={styles.title}>Profile</Text>
       <Text style={styles.subtitle}>Account and plan details</Text>
 
@@ -190,6 +276,57 @@ export default function ProfileScreen() {
         </Text>
       </View>
 
+      <View style={styles.card}>
+        <Text style={styles.rowLabel}>Privacy and account data</Text>
+        <Text style={styles.mutedText}>
+          Export your account data as JSON, or request account deletion. Deletion
+          anonymizes the account and archives active personal records instead of blindly
+          removing grow history.
+        </Text>
+        {privacyFeedback ? <Text style={styles.feedback}>{privacyFeedback}</Text> : null}
+        {privacyError ? <Text style={styles.error}>{privacyError}</Text> : null}
+        <Pressable
+          style={[styles.button, exporting && { opacity: 0.55 }]}
+          disabled={exporting}
+          onPress={handleExportData}
+          accessibilityRole="button"
+          accessibilityLabel="Export account data"
+        >
+          <Text style={styles.buttonSecondaryText}>
+            {exporting ? "Exporting..." : "Export Account Data"}
+          </Text>
+        </Pressable>
+        <TextInput
+          style={styles.input}
+          autoCapitalize="characters"
+          autoCorrect={false}
+          placeholder="Type DELETE to confirm"
+          value={deleteConfirm}
+          onChangeText={(value) => {
+            setDeleteConfirm(value);
+            setPrivacyError("");
+          }}
+          accessibilityLabel="Delete account confirmation"
+        />
+        <Pressable
+          style={[
+            styles.button,
+            styles.buttonDanger,
+            (deleting || deleteConfirm.trim().toUpperCase() !== "DELETE") && {
+              opacity: 0.55
+            }
+          ]}
+          disabled={deleting || deleteConfirm.trim().toUpperCase() !== "DELETE"}
+          onPress={handleDeleteAccount}
+          accessibilityRole="button"
+          accessibilityLabel="Delete account"
+        >
+          <Text style={styles.buttonDangerText}>
+            {deleting ? "Deleting..." : "Delete Account"}
+          </Text>
+        </Pressable>
+      </View>
+
       <Pressable
         style={[styles.button, styles.buttonPrimary]}
         onPress={() =>
@@ -205,6 +342,6 @@ export default function ProfileScreen() {
       <Pressable style={[styles.button, styles.buttonDanger]} onPress={handleLogout}>
         <Text style={styles.buttonDangerText}>Log out</Text>
       </Pressable>
-    </View>
+    </ScrollView>
   );
 }

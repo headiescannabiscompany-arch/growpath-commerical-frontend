@@ -19,6 +19,17 @@ export function updateProfile(updates) {
   });
 }
 
+export function exportPrivacyData() {
+  return apiRequest(routes.PRIVACY.EXPORT, { method: "GET" });
+}
+
+export function deleteAccount(reason = "user_requested") {
+  return apiRequest(routes.PRIVACY.DELETE_ACCOUNT, {
+    method: "DELETE",
+    body: { reason }
+  });
+}
+
 export function updateAvatar(formData, token) {
   return apiRequest(routes.USER.AVATAR, {
     method: "POST",
