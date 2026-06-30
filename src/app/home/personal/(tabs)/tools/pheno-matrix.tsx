@@ -1,6 +1,8 @@
 import React, { useMemo, useState } from "react";
+import { useLocalSearchParams } from "expo-router";
 import { ScrollView, StyleSheet, Text, TextInput, View } from "react-native";
 
+import { createToolRun } from "@/api/toolRuns";
 import BackButton from "@/components/nav/BackButton";
 import { CAPABILITY_KEYS, useEntitlements } from "@/entitlements";
 import {
@@ -11,6 +13,8 @@ import {
   PhenoTraitWeights,
   rankPhenoCandidates
 } from "@/features/personal/tools/phenoMatrix";
+import ToolResultSurface from "@/features/personal/tools/ToolResultSurface";
+import { saveToolRunAndCreateTask } from "@/features/personal/tools/saveToolRunAndOpenJournal";
 
 const initialCandidates: PhenoCandidateInput[] = [
   {
@@ -66,7 +70,15 @@ function parseNumber(value: string) {
   return Number.isFinite(parsed) ? parsed : 0;
 }
 
+function coerceParam(value?: string | string[]) {
+  if (typeof value === "string") return value;
+  if (Array.isArray(value)) return value[0] || "";
+  return "";
+}
+
 export default function PhenoMatrixScreen() {
+  const { growId: rawGrowId } = useLocalSearchParams<{ growId?: string | string[] }>();
+  const growId = coerceParam(rawGrowId);
   const entitlements = useEntitlements();
   const enabled = entitlements.can(CAPABILITY_KEYS.TOOL_PHENO_MATRIX);
   const [candidates, setCandidates] = useState(initialCandidates);
@@ -76,13 +88,35 @@ export default function PhenoMatrixScreen() {
     resin: 1.5,
     resistance: 1.25
   });
+  const [savedRunId, setSavedRunId] = useState("");
+  const [feedback, setFeedback] = useState("");
 
   const ranked = useMemo(
     () => rankPhenoCandidates(candidates, weights),
     [candidates, weights]
   );
+  const topCandidate = ranked[0];
+  const keepers = ranked.filter((candidate) => candidate.recommendation === "keeper");
+  const watches = ranked.filter((candidate) => candidate.recommendation === "watch");
+  const matrixInput = useMemo(
+    () => ({
+      candidates,
+      weights
+    }),
+    [candidates, weights]
+  );
+  const matrixOutput = useMemo(
+    () => ({
+      ranked,
+      topCandidate,
+      keeperCount: keepers.length,
+      watchCount: watches.length
+    }),
+    [keepers.length, ranked, topCandidate, watches.length]
+  );
 
   function updateCandidate(id: string, key: keyof PhenoCandidateInput, value: string) {
+    setSavedRunId("");
     setCandidates((current) =>
       current.map((candidate) =>
         candidate.id === id
@@ -103,6 +137,44 @@ export default function PhenoMatrixScreen() {
 
   function updateWeight(key: PhenoTraitKey, value: string) {
     setWeights((current) => ({ ...current, [key]: parseNumber(value) }));
+    setSavedRunId("");
+  }
+
+  async function saveMatrixRun() {
+    if (!growId) throw new Error("Select a grow before saving this matrix.");
+    const created = await createToolRun({
+      toolType: "pheno-matrix",
+      growId,
+      input: matrixInput,
+      output: matrixOutput,
+      calculatorVersion: "pheno-matrix-v1"
+    });
+    const id = String(created?._id || created?.id || "").trim();
+    if (!id) throw new Error("Unable to save pheno matrix.");
+    setSavedRunId(id);
+    setFeedback("Saved pheno matrix ToolRun.");
+  }
+
+  async function createReviewTask() {
+    if (!growId) throw new Error("Select a grow before creating a review task.");
+    const result = await saveToolRunAndCreateTask({
+      growId,
+      toolKey: "pheno-matrix",
+      toolRunId: savedRunId || undefined,
+      input: matrixInput,
+      output: matrixOutput,
+      title: topCandidate
+        ? `Review pheno keeper: ${topCandidate.label}`
+        : "Review pheno matrix",
+      description: topCandidate
+        ? `${topCandidate.label} ranked #1 with ${topCandidate.normalizedScore.toFixed(2)}/10 and ${topCandidate.recommendation.toUpperCase()} recommendation. Review photos, clone performance, stress notes, smoke/lab data, and breeding intent before final keeper decision.`
+        : "Review pheno candidates before keeper decision.",
+      priority: keepers.length ? "high" : "medium",
+      dueDate: new Date(Date.now() + 24 * 60 * 60 * 1000).toISOString()
+    });
+    if (!result.ok) throw new Error(result.error);
+    if (!savedRunId) setSavedRunId(result.toolRunId);
+    setFeedback("Created pheno review task.");
   }
 
   if (!enabled) {
@@ -128,6 +200,7 @@ export default function PhenoMatrixScreen() {
         Score candidate plants from 0 to 10, adjust trait weights, and rank keeper
         selections.
       </Text>
+      {growId ? <Text style={styles.context}>Grow context: {growId}</Text> : null}
 
       <View style={styles.section}>
         <Text style={styles.sectionTitle}>Trait weights</Text>
@@ -225,6 +298,72 @@ export default function PhenoMatrixScreen() {
           </View>
         ))}
       </View>
+
+      <View style={styles.section}>
+        <ToolResultSurface
+          title="Pheno matrix result"
+          status={topCandidate ? topCandidate.recommendation.toUpperCase() : "READY"}
+          summary={
+            topCandidate
+              ? `${topCandidate.label} is currently ranked #1 at ${topCandidate.normalizedScore.toFixed(2)}/10. Treat this as a decision aid, not a final keeper call.`
+              : "Score candidates to rank pheno selections."
+          }
+          metrics={[
+            {
+              key: "candidates",
+              label: "Candidates",
+              value: String(candidates.length)
+            },
+            {
+              key: "keepers",
+              label: "Keeper calls",
+              value: String(keepers.length)
+            },
+            {
+              key: "watch",
+              label: "Watch calls",
+              value: String(watches.length)
+            }
+          ]}
+          inputs={matrixInput}
+          outputs={matrixOutput}
+          recommendations={[
+            "Confirm the top rank against photos, clone performance, stress response, and production goals.",
+            "Do not make keeper decisions from weighted scores alone.",
+            "Record rerun/reject reasons before cutting candidates."
+          ]}
+          formulas={[
+            "Each trait is clamped to 0-10 for scoring, multiplied by its weight, then normalized by total positive weight.",
+            "Default calls: keeper >= 8, watch >= 6, otherwise cull."
+          ]}
+          uncertainty="Current v1 matrix does not yet persist full pheno hunt projects, photos, lab/smoke review, clone performance, or stress-test history."
+          confidence="local-weighted-score"
+          actions={[
+            {
+              key: "save-run",
+              label: savedRunId ? "Matrix Saved" : "Save Tool Run",
+              pendingLabel: "Saving...",
+              disabled: !growId || Boolean(savedRunId),
+              onPress: saveMatrixRun
+            },
+            {
+              key: "create-task",
+              label: "Create Keeper Review Task",
+              variant: "secondary",
+              pendingLabel: "Creating...",
+              disabled: !growId,
+              onPress: createReviewTask
+            }
+          ]}
+          feedback={feedback}
+          contextMessage={
+            !growId
+              ? "Open this tool from a grow to save pheno matrix runs and create keeper review tasks."
+              : undefined
+          }
+          copyPayload={matrixOutput}
+        />
+      </View>
     </ScrollView>
   );
 }
@@ -234,6 +373,7 @@ const styles = StyleSheet.create({
   content: { padding: 20, paddingBottom: 44 },
   title: { fontSize: 24, fontWeight: "700", marginBottom: 6, color: "#0F172A" },
   subtitle: { fontSize: 14, color: "#64748B", lineHeight: 20 },
+  context: { color: "#166534", fontWeight: "800", marginTop: 8 },
   section: { marginTop: 22 },
   sectionTitle: {
     fontSize: 13,
