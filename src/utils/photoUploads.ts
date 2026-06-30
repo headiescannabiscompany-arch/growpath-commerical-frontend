@@ -1,7 +1,16 @@
 import { uploadImage } from "@/api/uploads";
+import { API_URL } from "@/api/apiRequest";
 
 export function isPersistedImageUri(uri: string) {
   return /^https?:\/\//i.test(uri) || uri.startsWith("/uploads/");
+}
+
+export function resolveImageUri(uri: string | null | undefined) {
+  const value = String(uri || "").trim();
+  if (!value) return "";
+  if (/^(https?:|file:|data:|blob:)/i.test(value)) return value;
+  if (value.startsWith("/uploads/")) return `${API_URL}${value}`;
+  return value;
 }
 
 export async function persistImageUris(uris: string[]) {

@@ -9,6 +9,7 @@ import {
   StyleSheet,
   Text,
   TextInput,
+  useWindowDimensions,
   View
 } from "react-native";
 
@@ -20,6 +21,7 @@ import {
 } from "@/api/logs";
 import BackButton from "@/components/nav/BackButton";
 import { fmtDate } from "@/features/grows/routeUtils";
+import { resolveImageUri } from "@/utils/photoUploads";
 
 function param(value?: string | string[]) {
   return typeof value === "string" ? value : Array.isArray(value) ? value[0] || "" : "";
@@ -39,8 +41,13 @@ function splitTags(value: string) {
 
 export default function LogDetailScreen() {
   const router = useRouter();
+  const { width: windowWidth } = useWindowDimensions();
   const { logId: rawLogId } = useLocalSearchParams<{ logId?: string | string[] }>();
   const logId = useMemo(() => param(rawLogId), [rawLogId]);
+  const photoTileWidth = useMemo(
+    () => Math.max(132, Math.min(180, Math.floor((windowWidth - 56) / 2))),
+    [windowWidth]
+  );
 
   const [log, setLog] = useState<PersonalLog | null>(null);
   const [loading, setLoading] = useState(true);
@@ -236,7 +243,11 @@ export default function LogDetailScreen() {
                   const meta = log.photoMetadata?.[index];
                   return (
                     <View key={`${uri}-${index}`} style={styles.photoTile}>
-                      <Image source={{ uri }} style={styles.photoThumb} />
+                      <Image
+                        source={{ uri: resolveImageUri(uri) }}
+                        style={[styles.photoThumb, { width: photoTileWidth }]}
+                        resizeMode="cover"
+                      />
                       <Text style={styles.photoMeta}>
                         {meta?.mimeType || "image"}
                         {meta?.width && meta?.height
@@ -364,7 +375,6 @@ const styles = StyleSheet.create({
   },
   photoGrid: { flexDirection: "row", flexWrap: "wrap", gap: 8 },
   photoTile: {
-    width: 118,
     borderWidth: 1,
     borderColor: "#CBD5E1",
     borderRadius: 8,
