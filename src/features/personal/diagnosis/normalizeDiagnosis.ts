@@ -23,8 +23,22 @@ export type NormalizedDiagnosis = {
     cultivarOrStrain?: string;
     confidence?: string;
     ambiguous?: boolean;
+    cropProfileMatched?: boolean;
+    cropProfileId?: string | null;
+    cropProfileCurationStatus?: string | null;
+    requiresUserConfirmation?: boolean;
     clarificationPrompt?: string;
   };
+  cropProfileSnapshot?: {
+    id?: string;
+    displayName?: string;
+    scientificName?: string;
+    cropCategory?: string;
+    curationStatus?: string;
+    environmentTargets?: unknown[];
+    nutritionTargets?: unknown[];
+    recommendationCautions?: string[];
+  } | null;
 };
 
 function strings(value: unknown): string[] {
@@ -105,6 +119,7 @@ export function normalizeDiagnosisResponse(response: any): NormalizedDiagnosis {
     ),
     numberSummary: String(row?.numberSummary || details?.numberSummary || ""),
     urgency: String(row?.urgency || details?.urgency || ""),
-    cropIdentity: row?.cropIdentity || details?.cropIdentity || {}
+    cropIdentity: row?.cropIdentity || details?.cropIdentity || {},
+    cropProfileSnapshot: row?.cropProfileSnapshot || details?.cropProfileSnapshot || null
   };
 }

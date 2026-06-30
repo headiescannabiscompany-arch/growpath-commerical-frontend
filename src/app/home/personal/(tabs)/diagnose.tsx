@@ -214,6 +214,42 @@ export default function DiagnoseRoute() {
     }
   }
 
+  const cropProfileNotice = result
+    ? result.cropIdentity?.ambiguous
+      ? {
+          key: "crop-identity-ambiguous",
+          severity: "high" as const,
+          message:
+            result.cropIdentity.clarificationPrompt || "Crop identity is ambiguous.",
+          remediation:
+            "Confirm the crop species before applying crop-specific diagnosis, nutrient, or IPM recommendations."
+        }
+      : result.cropIdentity?.cropProfileMatched
+        ? {
+            key: "crop-profile-match",
+            severity:
+              result.cropIdentity.cropProfileCurationStatus === "reviewed"
+                ? ("info" as const)
+                : ("medium" as const),
+            message: `Matched crop profile: ${
+              result.cropProfileSnapshot?.displayName ||
+              result.cropIdentity.commonName ||
+              "crop profile"
+            }`,
+            remediation:
+              result.cropIdentity.cropProfileCurationStatus === "reviewed"
+                ? "Crop-specific defaults are linked to reviewed profile data."
+                : "Profile is stored but still needs license/review confirmation before being treated as verified guidance."
+          }
+        : {
+            key: "crop-profile-missing",
+            severity: "info" as const,
+            message: "No reviewed crop profile matched this diagnosis.",
+            remediation:
+              "Use the diagnosis as cautious triage; crop-specific defaults may need confirmation or curation."
+          }
+    : null;
+
   return (
     <ScrollView contentContainerStyle={styles.container}>
       <BackButton />
@@ -521,12 +557,21 @@ export default function DiagnoseRoute() {
               diagnosisClass: result.diagnosisClass,
               urgency: result.urgency,
               cropIdentity: result.cropIdentity,
+              cropProfile: result.cropProfileSnapshot
+                ? {
+                    name: result.cropProfileSnapshot.displayName,
+                    scientificName: result.cropProfileSnapshot.scientificName,
+                    category: result.cropProfileSnapshot.cropCategory,
+                    review: result.cropProfileSnapshot.curationStatus
+                  }
+                : "not matched",
               pattern: result.patternSummary,
               rootZone: result.rootZoneSummary,
               environment: result.environmentSummary,
               numbers: result.numberSummary
             }}
             notices={[
+              ...(cropProfileNotice ? [cropProfileNotice] : []),
               ...(result.source === "unverified"
                 ? [
                     {

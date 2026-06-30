@@ -80,7 +80,18 @@ async function installMocks(page: any) {
             scientificName: "Cannabis sativa",
             cultivarOrStrain: "Blueberry Muffin HSC",
             confidence: "user_confirmed",
-            ambiguous: false
+            ambiguous: false,
+            cropProfileMatched: true,
+            cropProfileId: "crop-cannabis-1",
+            cropProfileCurationStatus: "reviewed",
+            requiresUserConfirmation: false
+          },
+          cropProfileSnapshot: {
+            id: "crop-cannabis-1",
+            displayName: "Cannabis",
+            scientificName: "Cannabis sativa",
+            cropCategory: "controlled_environment",
+            curationStatus: "reviewed"
           },
           likelyIssues: [
             {
@@ -145,6 +156,7 @@ test.describe("ETGU diagnosis intake", () => {
       await expect(page.getByText("Inputs")).toBeVisible();
       await expect(page.getByText("Outputs")).toBeVisible();
       await expect(page.getByText(/commonName: Cannabis/)).toBeVisible();
+      await expect(page.getByText("Matched crop profile: Cannabis")).toBeVisible();
       await expect(page.getByText("Formula / Why It Matters")).toBeVisible();
       await expect(page.getByText(/Counter-evidence/)).toBeVisible();
       await expect(page.getByRole("button", { name: "Save to Grow Log" })).toBeVisible();
