@@ -5,6 +5,7 @@ import DiagnoseRoute from "@/app/home/personal/(tabs)/diagnose";
 
 const mockAnalyzeDiagnosis = jest.fn();
 const mockDiagnoseImage = jest.fn();
+const mockGetDiagnosisProviderStatus = jest.fn();
 const mockSubmitDiagnosisFeedback = jest.fn();
 const mockCreatePersonalLog = jest.fn();
 const mockCreatePersonalTask = jest.fn();
@@ -13,6 +14,8 @@ const mockListPersonalPlants = jest.fn();
 jest.mock("@/api/diagnose", () => ({
   analyzeDiagnosis: (...args: any[]) => mockAnalyzeDiagnosis(...args),
   diagnoseImage: (...args: any[]) => mockDiagnoseImage(...args),
+  getDiagnosisProviderStatus: (...args: any[]) =>
+    mockGetDiagnosisProviderStatus(...args),
   submitDiagnosisFeedback: (...args: any[]) => mockSubmitDiagnosisFeedback(...args)
 }));
 
@@ -50,6 +53,14 @@ describe("DiagnoseRoute", () => {
     mockListPersonalPlants.mockResolvedValue([]);
     mockCreatePersonalLog.mockResolvedValue({ id: "log-1" });
     mockCreatePersonalTask.mockResolvedValue({ id: "task-1" });
+    mockGetDiagnosisProviderStatus.mockResolvedValue({
+      provider: {
+        providerName: "openai",
+        providerModel: "gpt-4o-mini",
+        configured: false,
+        imageSupport: true
+      }
+    });
     mockAnalyzeDiagnosis.mockResolvedValue({
       id: "diagnosis-1",
       issueSummary: "Possible pH issue",
@@ -68,6 +79,11 @@ describe("DiagnoseRoute", () => {
 
   it("lets users accept or reject diagnosis tags before saving to the grow journal", async () => {
     const screen = render(<DiagnoseRoute />);
+
+    await waitFor(() =>
+      expect(screen.getByText("Production AI provider needs verification")).toBeTruthy()
+    );
+    expect(mockGetDiagnosisProviderStatus).toHaveBeenCalled();
 
     fireEvent.changeText(screen.getByLabelText("Diagnosis notes"), "Yellowing leaves");
     fireEvent.press(screen.getByLabelText("Run diagnosis"));

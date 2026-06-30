@@ -75,6 +75,20 @@ async function installMocks(page: any) {
       });
     }
 
+    if (method === "GET" && url.pathname === "/api/diagnose/provider-status") {
+      return fulfillJson(route, {
+        success: true,
+        provider: {
+          providerName: "openai",
+          providerModel: "gpt-4o-mini",
+          configured: false,
+          imageSupport: true,
+          credentialsSource: "missing",
+          mode: "production"
+        }
+      });
+    }
+
     if (method === "POST" && url.pathname === "/api/diagnose/analyze") {
       diagnosisPayloads.push(request.postDataJSON());
       return fulfillJson(route, {
@@ -150,6 +164,9 @@ test.describe("ETGU diagnosis intake", () => {
         waitUntil: "domcontentloaded"
       });
       await expect(page.getByText("Plant Issue Diagnosis")).toBeVisible();
+      await expect(
+        page.getByText("Production AI provider needs verification")
+      ).toBeVisible();
 
       await expect(page.getByText("Crop identity")).toBeVisible();
       await page

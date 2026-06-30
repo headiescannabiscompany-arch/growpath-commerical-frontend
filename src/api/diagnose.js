@@ -18,6 +18,10 @@ export function getDiagnosis(id) {
   return apiRequest(apiRoutes.DIAGNOSE.DETAIL(id));
 }
 
+export function getDiagnosisProviderStatus() {
+  return apiRequest(apiRoutes.DIAGNOSE.PROVIDER_STATUS);
+}
+
 export function submitDiagnosisFeedback(id, payload) {
   if (!id) throw new Error("Diagnosis id is required to save feedback.");
   return apiRequest(apiRoutes.DIAGNOSE.FEEDBACK(id), {

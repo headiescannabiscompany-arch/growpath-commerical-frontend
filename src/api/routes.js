@@ -143,6 +143,7 @@ export const ROUTES = {
   },
   DIAGNOSE: {
     ANALYZE: `${PREFIX}/diagnose/analyze`,
+    PROVIDER_STATUS: `${PREFIX}/diagnose/provider-status`,
     HISTORY: `${PREFIX}/diagnose/history`,
     DETAIL: (id) => `${PREFIX}/diagnose/${id}`,
     FEEDBACK: (id) => `${PREFIX}/diagnose/${id}/feedback`,

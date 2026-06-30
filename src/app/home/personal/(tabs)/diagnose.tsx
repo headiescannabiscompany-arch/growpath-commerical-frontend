@@ -11,7 +11,12 @@ import {
   View
 } from "react-native";
 
-import { analyzeDiagnosis, diagnoseImage, submitDiagnosisFeedback } from "@/api/diagnose";
+import {
+  analyzeDiagnosis,
+  diagnoseImage,
+  getDiagnosisProviderStatus,
+  submitDiagnosisFeedback
+} from "@/api/diagnose";
 import { createPersonalLog } from "@/api/logs";
 import { listPersonalPlants, type PersonalPlant } from "@/api/plants";
 import { createPersonalTask } from "@/api/tasks";
@@ -66,6 +71,15 @@ function providerResultSummary(providerResult: unknown): string[] {
   return lines;
 }
 
+type DiagnosisProviderStatus = {
+  providerName?: string;
+  providerModel?: string;
+  configured?: boolean;
+  imageSupport?: boolean;
+  credentialsSource?: string;
+  mode?: string;
+};
+
 export default function DiagnoseRoute() {
   const params = useLocalSearchParams<{
     growId?: string | string[];
@@ -101,6 +115,10 @@ export default function DiagnoseRoute() {
   const [outcomeSaving, setOutcomeSaving] = useState(false);
   const [running, setRunning] = useState(false);
   const [feedback, setFeedback] = useState("");
+  const [providerStatus, setProviderStatus] = useState<DiagnosisProviderStatus | null>(
+    null
+  );
+  const [providerStatusError, setProviderStatusError] = useState("");
 
   useEffect(() => {
     if (!growId) {
@@ -111,6 +129,29 @@ export default function DiagnoseRoute() {
       .then(setPlants)
       .catch(() => setPlants([]));
   }, [growId]);
+
+  useEffect(() => {
+    if (!enabled) {
+      setProviderStatus(null);
+      setProviderStatusError("");
+      return;
+    }
+    let mounted = true;
+    getDiagnosisProviderStatus()
+      .then((response: any) => {
+        if (!mounted) return;
+        setProviderStatus(response?.provider || response || null);
+        setProviderStatusError("");
+      })
+      .catch(() => {
+        if (!mounted) return;
+        setProviderStatus(null);
+        setProviderStatusError("Unable to verify diagnosis provider readiness.");
+      });
+    return () => {
+      mounted = false;
+    };
+  }, [enabled]);
 
   const selectedPlant = useMemo(
     () => plants.find((plant) => String(plant.id || (plant as any)._id) === plantId),
@@ -601,6 +642,33 @@ export default function DiagnoseRoute() {
           Diagnosis is unavailable for the current plan or capability set.
         </Text>
       ) : null}
+      {enabled ? (
+        <View
+          style={[
+            styles.readinessPanel,
+            providerStatus?.configured ? styles.readinessReady : styles.readinessMissing
+          ]}
+        >
+          <Text style={styles.readinessTitle}>
+            {providerStatus?.configured
+              ? "Production AI provider ready"
+              : "Production AI provider needs verification"}
+          </Text>
+          <Text style={styles.readinessText}>
+            {providerStatus
+              ? `${providerStatus.providerName || "provider"} / ${
+                  providerStatus.providerModel || "model unknown"
+                } / ${providerStatus.imageSupport ? "image input supported" : "text only"}`
+              : providerStatusError || "Checking backend provider configuration..."}
+          </Text>
+          {!providerStatus?.configured ? (
+            <Text style={styles.readinessText}>
+              Server credentials are not exposed here. Release still needs a live backend
+              check with configured AI image credentials.
+            </Text>
+          ) : null}
+        </View>
+      ) : null}
       <Pressable
         disabled={!enabled || running || (!notes.trim() && !photoUri)}
         style={[
@@ -935,6 +1003,16 @@ const styles = StyleSheet.create({
   disabled: { opacity: 0.5 },
   locked: { color: "#9A3412", backgroundColor: "#FFF7ED", padding: 10, borderRadius: 9 },
   feedback: { color: "#334155", fontWeight: "700" },
+  readinessPanel: {
+    borderWidth: 1,
+    borderRadius: 8,
+    padding: 10,
+    gap: 4
+  },
+  readinessReady: { borderColor: "#86EFAC", backgroundColor: "#F0FDF4" },
+  readinessMissing: { borderColor: "#FDBA74", backgroundColor: "#FFF7ED" },
+  readinessTitle: { color: "#0F172A", fontWeight: "800" },
+  readinessText: { color: "#475569", fontSize: 12, lineHeight: 18 },
   providerPanel: {
     borderWidth: 1,
     borderColor: "#D9E2EC",

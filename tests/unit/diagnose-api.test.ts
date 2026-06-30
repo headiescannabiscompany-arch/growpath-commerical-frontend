@@ -17,6 +17,7 @@ jest.mock("@/utils/growPhotoAttachment", () => ({
 const {
   diagnoseImage,
   diagnosePhoto,
+  getDiagnosisProviderStatus,
   submitDiagnosisFeedback
 } = require("@/api/diagnose");
 
@@ -92,5 +93,11 @@ describe("diagnosis photo uploads", () => {
         symptomChange: "improved"
       }
     });
+  });
+
+  it("requests diagnosis provider readiness without sending secrets", async () => {
+    await getDiagnosisProviderStatus();
+
+    expect(mockApiRequest).toHaveBeenCalledWith("/api/diagnose/provider-status");
   });
 });
