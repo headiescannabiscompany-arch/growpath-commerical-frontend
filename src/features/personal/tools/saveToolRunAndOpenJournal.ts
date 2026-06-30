@@ -3,6 +3,11 @@ import { createToolRun } from "@/api/toolRuns";
 type SaveAndOpenArgs = {
   router: { push: (href: string) => void };
   growId?: string;
+  plantId?: string;
+  cropProfileId?: string | null;
+  cropIdentity?: Record<string, any> | null;
+  selectedPlantContext?: Record<string, any> | null;
+  plantGrowthProfile?: Record<string, any> | null;
   toolKey?: string;
   toolType?: string;
   toolRunId?: string;
@@ -29,6 +34,11 @@ export async function saveToolRunAndOpenJournal(
     const created = await createToolRun({
       toolType,
       growId,
+      plantId: args.plantId,
+      cropProfileId: args.cropProfileId,
+      cropIdentity: args.cropIdentity,
+      selectedPlantContext: args.selectedPlantContext,
+      plantGrowthProfile: args.plantGrowthProfile,
       input: args.input,
       output: args.output
     });

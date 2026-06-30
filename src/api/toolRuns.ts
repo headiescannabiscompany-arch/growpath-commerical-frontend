@@ -4,6 +4,11 @@ export interface ToolRun {
   id?: string;
   _id?: string;
   growId?: string;
+  plantId?: string | null;
+  cropProfileId?: string | null;
+  cropIdentity?: Record<string, any> | null;
+  selectedPlantContext?: Record<string, any> | null;
+  plantGrowthProfile?: Record<string, any> | null;
   toolName?: string;
   toolType?: string;
   params?: Record<string, any>;
@@ -69,6 +74,23 @@ export function normalizeToolRun(row: any): ToolRun {
   normalized.outputs = outputs;
   normalized.output = outputs;
   normalized.result = outputs;
+  normalized.plantId = row?.plantId ? String(row.plantId) : (row?.plantId ?? null);
+  normalized.cropProfileId = row?.cropProfileId
+    ? String(row.cropProfileId)
+    : (row?.cropProfileId ?? null);
+  normalized.cropIdentity =
+    row?.cropIdentity && typeof row.cropIdentity === "object" ? row.cropIdentity : null;
+  normalized.selectedPlantContext =
+    row?.selectedPlantContext && typeof row.selectedPlantContext === "object"
+      ? row.selectedPlantContext
+      : null;
+  normalized.plantGrowthProfile =
+    row?.plantGrowthProfile && typeof row.plantGrowthProfile === "object"
+      ? row.plantGrowthProfile
+      : normalized.selectedPlantContext?.growthProfile &&
+          typeof normalized.selectedPlantContext.growthProfile === "object"
+        ? normalized.selectedPlantContext.growthProfile
+        : null;
   normalized.schemaVersion = Number.isFinite(Number(row?.schemaVersion))
     ? Number(row.schemaVersion)
     : 1;
@@ -87,7 +109,11 @@ export function normalizeToolRun(row: any): ToolRun {
           toolName: normalized.toolName,
           toolType: normalized.toolType,
           growId: row?.growId || null,
-          plantId: row?.plantId || null,
+          plantId: normalized.plantId || null,
+          cropProfileId: normalized.cropProfileId || null,
+          cropIdentity: normalized.cropIdentity || null,
+          selectedPlantContext: normalized.selectedPlantContext || null,
+          plantGrowthProfile: normalized.plantGrowthProfile || null,
           schemaVersion: normalized.schemaVersion,
           calculatorVersion: normalized.calculatorVersion,
           inputs,
@@ -163,6 +189,11 @@ export async function listToolRuns(options?: { growId?: string }): Promise<ToolR
 export async function createToolRun(payload: {
   toolType: string;
   growId?: string;
+  plantId?: string;
+  cropProfileId?: string | null;
+  cropIdentity?: Record<string, any> | null;
+  selectedPlantContext?: Record<string, any> | null;
+  plantGrowthProfile?: Record<string, any> | null;
   input: Record<string, any>;
   output: Record<string, any>;
   calculatorVersion?: string;
@@ -181,6 +212,16 @@ export async function createToolRun(payload: {
       calculatorVersion: payload.calculatorVersion || "1",
       sourceType: payload.sourceType || "manual_tool_run",
       sourceObjectId: payload.sourceObjectId || null,
+      plantId: payload.plantId || payload.selectedPlantContext?.id || undefined,
+      cropProfileId:
+        payload.cropProfileId ||
+        payload.selectedPlantContext?.cropProfileId ||
+        payload.plantGrowthProfile?.cropProfile ||
+        null,
+      cropIdentity: payload.cropIdentity || payload.selectedPlantContext || null,
+      selectedPlantContext: payload.selectedPlantContext || null,
+      plantGrowthProfile:
+        payload.plantGrowthProfile || payload.selectedPlantContext?.growthProfile || null,
       // Frontend/backward compatibility aliases
       toolType: payload.toolType,
       input: payload.input,

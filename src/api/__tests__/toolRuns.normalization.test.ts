@@ -61,4 +61,50 @@ describe("normalizeToolRun", () => {
       outputs: { targetLiters: 2.66 }
     });
   });
+
+  it("preserves plant and crop context in normalized runs and snapshot fallback", () => {
+    const run = normalizeToolRun({
+      _id: "run-crop-1",
+      growId: "grow-1",
+      plantId: "plant-1",
+      cropProfileId: "crop-blueberry-1",
+      toolName: "vpd",
+      inputs: { stage: "fruiting" },
+      outputs: { status: "high" },
+      cropIdentity: {
+        cropCommonName: "Blueberry",
+        scientificName: "Vaccinium corymbosum"
+      },
+      selectedPlantContext: {
+        id: "plant-1",
+        name: "North row blueberry",
+        cropProfileId: "crop-blueberry-1",
+        growthProfile: {
+          phenoLabel: "early-fruiting"
+        }
+      }
+    });
+
+    expect(run.plantId).toBe("plant-1");
+    expect(run.cropProfileId).toBe("crop-blueberry-1");
+    expect(run.cropIdentity).toMatchObject({
+      scientificName: "Vaccinium corymbosum"
+    });
+    expect(run.selectedPlantContext).toMatchObject({
+      name: "North row blueberry"
+    });
+    expect(run.plantGrowthProfile).toMatchObject({
+      phenoLabel: "early-fruiting"
+    });
+    expect(run.immutableSnapshot).toMatchObject({
+      plantId: "plant-1",
+      cropProfileId: "crop-blueberry-1",
+      selectedPlantContext: {
+        name: "North row blueberry"
+      },
+      plantGrowthProfile: {
+        phenoLabel: "early-fruiting"
+      }
+    });
+  });
 });

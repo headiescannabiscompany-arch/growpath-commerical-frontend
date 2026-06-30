@@ -39,6 +39,16 @@ describe("saveToolRunAndOpenJournal", () => {
     const result = await saveToolRunAndOpenJournal({
       router,
       growId: "grow-1",
+      plantId: "plant-1",
+      cropProfileId: "crop-blueberry-1",
+      selectedPlantContext: {
+        id: "plant-1",
+        cropCommonName: "Blueberry",
+        scientificName: "Vaccinium corymbosum"
+      },
+      plantGrowthProfile: {
+        phenoLabel: "early fruiting"
+      },
       toolKey: "ppfd",
       input: { dliTarget: 35 },
       output: { requiredPpfd: 810 }
@@ -48,6 +58,17 @@ describe("saveToolRunAndOpenJournal", () => {
     expect(mockedCreateToolRun).toHaveBeenCalledWith({
       toolType: "ppfd",
       growId: "grow-1",
+      plantId: "plant-1",
+      cropProfileId: "crop-blueberry-1",
+      cropIdentity: undefined,
+      selectedPlantContext: {
+        id: "plant-1",
+        cropCommonName: "Blueberry",
+        scientificName: "Vaccinium corymbosum"
+      },
+      plantGrowthProfile: {
+        phenoLabel: "early fruiting"
+      },
       input: { dliTarget: 35 },
       output: { requiredPpfd: 810 }
     });
