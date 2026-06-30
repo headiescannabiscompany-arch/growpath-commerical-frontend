@@ -209,6 +209,18 @@ const PRESETS: Preset[] = [
     summary: "Compare input and runoff EC to flag salt accumulation or depletion."
   },
   {
+    key: "ec-correction",
+    title: "EC Correction",
+    audience: "Cultivation / fertigation",
+    tool: "ec",
+    fn: "recommendCorrection",
+    args: {
+      currentEC: 1.5,
+      targetEC: 1.8
+    },
+    summary: "Recommend a cautious EC adjustment and task priority."
+  },
+  {
     key: "harvest",
     title: "Harvest window",
     audience: "Cultivation",
