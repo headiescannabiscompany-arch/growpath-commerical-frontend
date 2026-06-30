@@ -1,6 +1,15 @@
 import React, { useCallback, useEffect, useMemo, useState } from "react";
+import * as ImagePicker from "expo-image-picker";
 import { useLocalSearchParams, useRouter } from "expo-router";
-import { Pressable, ScrollView, StyleSheet, Text, TextInput, View } from "react-native";
+import {
+  Image,
+  Pressable,
+  ScrollView,
+  StyleSheet,
+  Text,
+  TextInput,
+  View
+} from "react-native";
 
 import { suggestLogInsights } from "@/api/logInsights";
 import { createPersonalLog } from "@/api/logs";
@@ -10,6 +19,15 @@ import {
   normalizeLogInsightSuggestions,
   type LogInsightSuggestions
 } from "@/features/personal/logs/normalizeLogInsights";
+import { persistImageUris } from "@/utils/photoUploads";
+
+type SelectedPhoto = {
+  uri: string;
+  width?: number | null;
+  height?: number | null;
+  mimeType?: string | null;
+  sizeBytes?: number | null;
+};
 
 function param(value?: string | string[]) {
   return typeof value === "string" ? value : Array.isArray(value) ? value[0] || "" : "";
@@ -37,6 +55,7 @@ export default function NewLogScreen() {
   const [suggestions, setSuggestions] = useState<LogInsightSuggestions | null>(null);
   const [acceptedTags, setAcceptedTags] = useState<string[]>([]);
   const [rejectedTags, setRejectedTags] = useState<string[]>([]);
+  const [photos, setPhotos] = useState<SelectedPhoto[]>([]);
   const logTypes = useMemo(
     () => ["watering", "feed", "training", "environment", "issues", "harvest", "other"],
     []
@@ -50,6 +69,33 @@ export default function NewLogScreen() {
   }, [growId]);
 
   const canSave = Boolean(growId && title.trim() && date.trim());
+
+  const pickPhotos = useCallback(async () => {
+    const permission = await ImagePicker.requestMediaLibraryPermissionsAsync();
+    if (!permission.granted) {
+      setError("Photo-library permission is required to attach images.");
+      return;
+    }
+    const picked = await ImagePicker.launchImageLibraryAsync({
+      mediaTypes: ImagePicker.MediaTypeOptions.Images,
+      allowsMultipleSelection: true,
+      allowsEditing: false,
+      quality: 0.8
+    });
+    if (picked.canceled) return;
+    setPhotos((current) => [
+      ...current,
+      ...picked.assets
+        .filter((asset) => asset.uri)
+        .map((asset) => ({
+          uri: asset.uri,
+          width: asset.width ?? null,
+          height: asset.height ?? null,
+          mimeType: asset.mimeType ?? null,
+          sizeBytes: asset.fileSize ?? null
+        }))
+    ]);
+  }, []);
 
   const analyzeDraft = useCallback(async () => {
     if (!growId || analyzing || !notes.trim()) return;
@@ -85,6 +131,7 @@ export default function NewLogScreen() {
     setSaving(true);
     setError("");
     try {
+      const uploadedPhotos = await persistImageUris(photos.map((photo) => photo.uri));
       const created = await createPersonalLog({
         growId,
         title: title.trim(),
@@ -92,6 +139,17 @@ export default function NewLogScreen() {
         notes: notes.trim(),
         type: logType,
         toolRunId: selectedToolRunId || undefined,
+        photos: uploadedPhotos,
+        photoMetadata: uploadedPhotos.map((url, index) => ({
+          url,
+          mimeType: photos[index]?.mimeType || null,
+          width: photos[index]?.width || null,
+          height: photos[index]?.height || null,
+          sizeBytes: photos[index]?.sizeBytes || null,
+          stage: logType,
+          consentForAI: Boolean(suggestions),
+          consentForTraining: false
+        })),
         tags: acceptedTags,
         rejectedTags,
         aiInsight: suggestions
@@ -119,6 +177,7 @@ export default function NewLogScreen() {
     growId,
     logType,
     notes,
+    photos,
     rejectedTags,
     router,
     selectedToolRunId,
@@ -204,6 +263,41 @@ export default function NewLogScreen() {
         placeholder="What changed today?"
         accessibilityLabel="Log notes"
       />
+
+      <View style={styles.photoHeader}>
+        <Text style={styles.label}>Photos</Text>
+        <Pressable
+          style={styles.secondaryButton}
+          onPress={pickPhotos}
+          accessibilityRole="button"
+          accessibilityLabel="Attach log photos"
+        >
+          <Text style={styles.secondaryButtonText}>
+            {photos.length ? "Add More Photos" : "Attach Photos"}
+          </Text>
+        </Pressable>
+      </View>
+      {photos.length ? (
+        <View style={styles.photoGrid}>
+          {photos.map((photo, index) => (
+            <View key={`${photo.uri}-${index}`} style={styles.photoTile}>
+              <Image source={{ uri: photo.uri }} style={styles.photoThumb} />
+              <Pressable
+                style={styles.removePhoto}
+                onPress={() =>
+                  setPhotos((current) =>
+                    current.filter((_, itemIndex) => itemIndex !== index)
+                  )
+                }
+                accessibilityRole="button"
+                accessibilityLabel={`Remove attached photo ${index + 1}`}
+              >
+                <Text style={styles.removePhotoText}>Remove</Text>
+              </Pressable>
+            </View>
+          ))}
+        </View>
+      ) : null}
 
       <Pressable
         style={[styles.secondaryButton, (!notes.trim() || analyzing) && styles.disabled]}
@@ -340,6 +434,25 @@ const styles = StyleSheet.create({
     textAlignVertical: "top"
   },
   row: { flexDirection: "row", flexWrap: "wrap", gap: 7 },
+  photoHeader: {
+    flexDirection: "row",
+    alignItems: "center",
+    justifyContent: "space-between",
+    gap: 10,
+    flexWrap: "wrap"
+  },
+  photoGrid: { flexDirection: "row", flexWrap: "wrap", gap: 8 },
+  photoTile: {
+    width: 104,
+    borderWidth: 1,
+    borderColor: "#CBD5E1",
+    borderRadius: 8,
+    overflow: "hidden",
+    backgroundColor: "#F8FAFC"
+  },
+  photoThumb: { width: "100%", height: 82, backgroundColor: "#E2E8F0" },
+  removePhoto: { paddingVertical: 6, alignItems: "center" },
+  removePhotoText: { color: "#B91C1C", fontSize: 11, fontWeight: "800" },
   chip: {
     borderWidth: 1,
     borderColor: "#CBD5E1",

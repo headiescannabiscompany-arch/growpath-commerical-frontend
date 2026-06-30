@@ -3,6 +3,7 @@ import { useFocusEffect } from "@react-navigation/native";
 import { useLocalSearchParams, useRouter } from "expo-router";
 import {
   ActivityIndicator,
+  Image,
   Pressable,
   ScrollView,
   StyleSheet,
@@ -220,6 +221,33 @@ export default function LogDetailScreen() {
                 ))}
               </View>
             ) : null}
+            {log.rejectedTags?.length ? (
+              <View style={styles.tags}>
+                {log.rejectedTags.map((tag) => (
+                  <Text key={tag} style={styles.rejectedTag}>
+                    Rejected: {tag}
+                  </Text>
+                ))}
+              </View>
+            ) : null}
+            {log.photos?.length ? (
+              <View style={styles.photoGrid}>
+                {log.photos.map((uri, index) => {
+                  const meta = log.photoMetadata?.[index];
+                  return (
+                    <View key={`${uri}-${index}`} style={styles.photoTile}>
+                      <Image source={{ uri }} style={styles.photoThumb} />
+                      <Text style={styles.photoMeta}>
+                        {meta?.mimeType || "image"}
+                        {meta?.width && meta?.height
+                          ? ` | ${meta.width}x${meta.height}`
+                          : ""}
+                      </Text>
+                    </View>
+                  );
+                })}
+              </View>
+            ) : null}
           </View>
 
           <View style={styles.card}>
@@ -248,6 +276,16 @@ export default function LogDetailScreen() {
                   Missing context: {item}
                 </Text>
               ))}
+              {log.aiInsight.acceptedTags?.length ? (
+                <Text style={styles.linkMeta}>
+                  Accepted tags: {log.aiInsight.acceptedTags.join(", ")}
+                </Text>
+              ) : null}
+              {log.aiInsight.rejectedTags?.length ? (
+                <Text style={styles.linkMeta}>
+                  Rejected tags: {log.aiInsight.rejectedTags.join(", ")}
+                </Text>
+              ) : null}
             </View>
           ) : null}
 
@@ -315,6 +353,26 @@ const styles = StyleSheet.create({
     paddingVertical: 5,
     overflow: "hidden"
   },
+  rejectedTag: {
+    borderRadius: 999,
+    backgroundColor: "#FEE2E2",
+    color: "#991B1B",
+    fontWeight: "800",
+    paddingHorizontal: 9,
+    paddingVertical: 5,
+    overflow: "hidden"
+  },
+  photoGrid: { flexDirection: "row", flexWrap: "wrap", gap: 8 },
+  photoTile: {
+    width: 118,
+    borderWidth: 1,
+    borderColor: "#CBD5E1",
+    borderRadius: 8,
+    overflow: "hidden",
+    backgroundColor: "#FFFFFF"
+  },
+  photoThumb: { width: "100%", height: 88, backgroundColor: "#E2E8F0" },
+  photoMeta: { padding: 6, color: "#64748B", fontSize: 11, fontWeight: "700" },
   row: { flexDirection: "row", flexWrap: "wrap", gap: 8 },
   primaryButton: {
     backgroundColor: "#166534",

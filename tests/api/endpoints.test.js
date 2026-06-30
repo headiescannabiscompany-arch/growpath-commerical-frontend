@@ -1,6 +1,7 @@
 import { describe, it, beforeEach, expect } from "@jest/globals";
 import * as tasksApi from "../../src/api/tasks.js";
 import * as growsApi from "../../src/api/grows.js";
+import * as personalLogsApi from "../../src/api/logs";
 import * as postsApi from "../../src/api/posts.js";
 import { listBatchCycles } from "../../src/api/facilityWorkflows";
 import { getFacilityReport } from "../../src/api/reports";
@@ -156,6 +157,48 @@ describe("API Configuration & Endpoints", () => {
       expect(JSON.parse(fetchCalls[0].options.body).photos).toEqual([
         "/uploads/photo.jpg"
       ]);
+    });
+  });
+
+  describe("Personal Logs API", () => {
+    it("createPersonalLog sends photos and photo metadata", async () => {
+      await personalLogsApi.createPersonalLog({
+        growId: "grow_1",
+        title: "Photo log",
+        notes: "Bud sites checked",
+        photos: ["/uploads/log.jpg"],
+        photoMetadata: [
+          {
+            url: "/uploads/log.jpg",
+            mimeType: "image/jpeg",
+            width: 1200,
+            height: 900,
+            sizeBytes: 45678,
+            stage: "flower",
+            consentForAI: true,
+            consentForTraining: false
+          }
+        ],
+        tags: ["photo"],
+        rejectedTags: ["pests"]
+      });
+
+      expect(fetchCalls[0].url.endsWith("/api/personal/logs")).toBe(true);
+      expect(fetchCalls[0].options.method).toBe("POST");
+      const body = JSON.parse(fetchCalls[0].options.body);
+      expect(body.photos).toEqual(["/uploads/log.jpg"]);
+      expect(body.photoMetadata[0]).toMatchObject({
+        url: "/uploads/log.jpg",
+        mimeType: "image/jpeg",
+        width: 1200,
+        height: 900,
+        sizeBytes: 45678,
+        stage: "flower",
+        consentForAI: true,
+        consentForTraining: false
+      });
+      expect(body.tags).toEqual(["photo"]);
+      expect(body.rejectedTags).toEqual(["pests"]);
     });
   });
 

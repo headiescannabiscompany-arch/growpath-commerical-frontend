@@ -11,6 +11,8 @@ export interface PersonalLog {
   date: string;
   title: string;
   notes: string;
+  photos?: string[];
+  photoMetadata?: PersonalLogPhotoMetadata[];
   tags?: string[];
   rejectedTags?: string[];
   aiInsight?: {
@@ -23,6 +25,23 @@ export interface PersonalLog {
   };
   createdAt: string;
   updatedAt: string;
+}
+
+export interface PersonalLogPhotoMetadata {
+  userId?: string;
+  growId?: string;
+  plantId?: string | null;
+  logId?: string | null;
+  url: string;
+  storageKey?: string | null;
+  mimeType?: string | null;
+  sizeBytes?: number | null;
+  width?: number | null;
+  height?: number | null;
+  stage?: string | null;
+  consentForAI?: boolean;
+  consentForTraining?: boolean;
+  createdAt?: string;
 }
 
 function normalizePersonalLog(response: any): PersonalLog | null {
@@ -60,6 +79,8 @@ export async function createPersonalLog(data: {
   date?: string;
   title: string;
   notes?: string;
+  photos?: string[];
+  photoMetadata?: PersonalLogPhotoMetadata[];
   tags?: string[];
   rejectedTags?: string[];
   aiInsight?: PersonalLog["aiInsight"];
@@ -97,6 +118,8 @@ export async function updatePersonalLog(
       | "title"
       | "date"
       | "notes"
+      | "photos"
+      | "photoMetadata"
       | "type"
       | "plantId"
       | "diagnosisId"
