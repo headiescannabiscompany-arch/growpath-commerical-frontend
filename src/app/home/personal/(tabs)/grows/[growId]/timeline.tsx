@@ -57,6 +57,12 @@ const styles = StyleSheet.create({
   eventTitle: { fontSize: 15, fontWeight: "800", color: "#0F172A" },
   eventMeta: { marginTop: 4, color: "#64748B", fontSize: 12 },
   eventSummary: { marginTop: 8, color: "#334155", lineHeight: 19 },
+  detailRow: {
+    marginTop: 6,
+    color: "#475569",
+    fontSize: 12,
+    lineHeight: 17
+  },
   tags: { flexDirection: "row", flexWrap: "wrap", gap: 6, marginTop: 10 },
   tag: {
     borderRadius: 8,
@@ -86,6 +92,39 @@ function eventMatchesFilter(event: PersonalGrowTimelineEvent, filter: string) {
 
 function eventKind(event: PersonalGrowTimelineEvent) {
   return String(event.type || "event").replace(/_/g, " ");
+}
+
+function labelValue(label: string, value?: unknown) {
+  if (value === undefined || value === null || value === "") return null;
+  if (Array.isArray(value) && !value.length) return null;
+  const text = Array.isArray(value) ? value.join(", ") : String(value);
+  return `${label}: ${text.replace(/_/g, " ")}`;
+}
+
+function eventPayloadDetails(event: PersonalGrowTimelineEvent) {
+  const payload = event.payload || {};
+  if (event.type === "diagnosis_feedback") {
+    return [
+      labelValue("Verdict", payload.verdict),
+      labelValue("Symptoms", payload.symptomChange),
+      labelValue("Confirmed issue", payload.confirmedIssue),
+      labelValue("Actions", payload.actionsTaken),
+      labelValue(
+        "Provider",
+        [payload.providerName, payload.providerModel].filter(Boolean)
+      )
+    ].filter(Boolean) as string[];
+  }
+  if (event.type === "diagnosis_created") {
+    return [
+      labelValue("Overall health", payload.overallHealth),
+      labelValue(
+        "Feedback",
+        payload.feedbackCount ? `${payload.feedbackCount} response(s)` : ""
+      )
+    ].filter(Boolean) as string[];
+  }
+  return [];
 }
 
 export default function GrowTimelineScreen() {
@@ -170,6 +209,11 @@ export default function GrowTimelineScreen() {
           {event.summary ? (
             <Text style={styles.eventSummary}>{event.summary}</Text>
           ) : null}
+          {eventPayloadDetails(event).map((detail) => (
+            <Text key={detail} style={styles.detailRow}>
+              {detail}
+            </Text>
+          ))}
           {Array.isArray(event.tags) && event.tags.length ? (
             <View style={styles.tags}>
               {event.tags.slice(0, 5).map((tag) => (
