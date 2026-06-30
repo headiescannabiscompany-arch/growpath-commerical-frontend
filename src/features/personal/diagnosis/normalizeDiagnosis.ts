@@ -17,6 +17,11 @@ export type NormalizedDiagnosis = {
   environmentSummary: string;
   numberSummary: string;
   urgency: string;
+  providerName: string;
+  providerModel: string;
+  growPathReasoning: string[];
+  improvementNotice: string;
+  providerResult?: unknown;
   cropIdentity: {
     commonName?: string;
     scientificName?: string;
@@ -109,7 +114,12 @@ export function normalizeDiagnosisResponse(response: any): NormalizedDiagnosis {
         ""
     ),
     source: String(
-      row?.provider || row?.analysisProvider || row?.sourceType || "unverified"
+      row?.providerName ||
+        details?.providerName ||
+        row?.provider ||
+        row?.analysisProvider ||
+        row?.sourceType ||
+        "unverified"
     ),
     diagnosisClass: String(row?.diagnosisClass || details?.diagnosisClass || ""),
     patternSummary: String(row?.patternSummary || details?.patternSummary || ""),
@@ -119,6 +129,15 @@ export function normalizeDiagnosisResponse(response: any): NormalizedDiagnosis {
     ),
     numberSummary: String(row?.numberSummary || details?.numberSummary || ""),
     urgency: String(row?.urgency || details?.urgency || ""),
+    providerName: String(
+      row?.providerName || details?.providerName || row?.provider || ""
+    ),
+    providerModel: String(row?.providerModel || details?.providerModel || ""),
+    growPathReasoning: strings(
+      row?.growPathReasoning || details?.growPathReasoning || row?.reasoning
+    ),
+    improvementNotice: String(row?.improvementNotice || details?.improvementNotice || ""),
+    providerResult: row?.providerResult || details?.providerResult || undefined,
     cropIdentity: row?.cropIdentity || details?.cropIdentity || {},
     cropProfileSnapshot: row?.cropProfileSnapshot || details?.cropProfileSnapshot || null
   };

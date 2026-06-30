@@ -20,7 +20,6 @@ import { apiRequest } from "@/api/apiRequest";
 import { endpoints } from "@/api/endpoints";
 import { CAPABILITY_KEYS, useEntitlements } from "@/entitlements";
 import { useApiErrorHandler } from "@/hooks/useApiErrorHandler";
-import { maybePromptAttachPhotosToGrow } from "@/utils/growPhotoAttachment";
 import { persistImageUri } from "@/utils/photoUploads";
 
 type AnyRec = Record<string, any>;
@@ -151,14 +150,6 @@ export default function Storefront() {
     }
   }
 
-  async function promptImageAttachment(imageUrl: string) {
-    try {
-      await maybePromptAttachPhotosToGrow(imageUrl ? [imageUrl] : []);
-    } catch (_error) {
-      // Optional grow attachment should not block storefront image setup.
-    }
-  }
-
   async function uploadImageField(
     field: "logoUrl" | "bannerUrl" | "imageUrl",
     target: "storefront" | "product",
@@ -192,7 +183,6 @@ export default function Storefront() {
       } else {
         setProductDraft((draft) => ({ ...draft, imageUrl }));
       }
-      await promptImageAttachment(imageUrl);
       setFeedback(`${label} uploaded.`);
     } catch (e: any) {
       Alert.alert(label, e?.message || "Unable to upload image.");

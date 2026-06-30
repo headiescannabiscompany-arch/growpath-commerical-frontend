@@ -109,7 +109,7 @@ describe("AddLessonScreen image uploads", () => {
       "course-1",
       expect.objectContaining({ imageUrls: ["/uploads/lesson.jpg"] })
     );
-    expect(mockAttachPhotos).toHaveBeenCalledWith(["/uploads/lesson.jpg"]);
+    expect(mockAttachPhotos).not.toHaveBeenCalled();
   });
 
   it("uploads selected video, PDF, and audio files before saving", async () => {

@@ -559,7 +559,16 @@ export default function DiagnoseRoute() {
                 label: "Severity",
                 value: result.severity.toUpperCase()
               },
-              { key: "source", label: "Source", value: result.source }
+              { key: "source", label: "Source", value: result.source },
+              ...(result.providerModel
+                ? [
+                    {
+                      key: "provider-model",
+                      label: "Model",
+                      value: result.providerModel
+                    }
+                  ]
+                : [])
             ]}
             inputs={{
               stage,
@@ -591,7 +600,9 @@ export default function DiagnoseRoute() {
               pattern: result.patternSummary,
               rootZone: result.rootZoneSummary,
               environment: result.environmentSummary,
-              numbers: result.numberSummary
+              numbers: result.numberSummary,
+              provider: result.providerName || result.source,
+              providerResult: result.providerResult ? "stored" : "not supplied"
             }}
             notices={[
               ...(cropProfileNotice ? [cropProfileNotice] : []),
@@ -619,9 +630,15 @@ export default function DiagnoseRoute() {
               ...result.counterEvidence.map((item) => `Counter-evidence: ${item}`)
             ]}
             formulas={[
+              ...result.growPathReasoning,
               "ETGU checks symptom pattern, root-zone context, environment, and measured numbers before suggesting follow-up actions."
             ]}
-            uncertainty="Plant-health triage is not a guaranteed lab diagnosis. Confirm with environment, medium, water, and testing when possible."
+            uncertainty={[
+              "Plant-health triage is not a guaranteed lab diagnosis. Confirm with environment, medium, water, and testing when possible.",
+              result.improvementNotice
+            ]
+              .filter(Boolean)
+              .join("\n")}
             actions={
               growId
                 ? [

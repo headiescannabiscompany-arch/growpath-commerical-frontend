@@ -11,7 +11,11 @@ describe("normalizeDiagnosisResponse", () => {
           severity: 4,
           evidenceObserved: ["New growth affected"],
           suggestedActions: ["Check root-zone pH"],
-          provider: "openai"
+          providerName: "openai",
+          providerModel: "gpt-4o-mini",
+          providerResult: { likelyIssues: [{ issue: "Calcium transport" }] },
+          growPathReasoning: ["Compared pattern, root zone, and numbers."],
+          improvementNotice: "Stored for review and improvement."
         }
       }
     });
@@ -21,6 +25,11 @@ describe("normalizeDiagnosisResponse", () => {
         confidence: "medium",
         severity: "high",
         source: "openai",
+        providerName: "openai",
+        providerModel: "gpt-4o-mini",
+        growPathReasoning: ["Compared pattern, root zone, and numbers."],
+        improvementNotice: "Stored for review and improvement.",
+        providerResult: { likelyIssues: [{ issue: "Calcium transport" }] },
         actions: ["Check root-zone pH"]
       })
     );

@@ -91,7 +91,7 @@ describe("ContentMarketplaceScreen uploads", () => {
       expect.objectContaining({ uri: "file:///tmp/guide.pdf" })
     );
     expect(mockUploadImage).toHaveBeenCalledWith("file:///tmp/thumb.jpg");
-    expect(mockAttachPhotos).toHaveBeenCalledWith(["/uploads/thumb.jpg"]);
+    expect(mockAttachPhotos).not.toHaveBeenCalled();
     expect(mockUploadContent).toHaveBeenCalledWith(
       expect.objectContaining({
         title: "IPM Guide",

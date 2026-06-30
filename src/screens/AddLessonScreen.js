@@ -16,7 +16,6 @@ import { addLesson } from "../api/courses";
 import { uploadCourseMedia } from "@/api/uploads";
 import { useEntitlements } from "@/entitlements";
 import { getLearningAccess } from "@/features/learning/learningAccess";
-import { maybePromptAttachPhotosToGrow } from "@/utils/growPhotoAttachment";
 import { persistImageUris } from "@/utils/photoUploads";
 import { buildEmptyTierSelection, flattenTierSelections } from "../utils/growInterests";
 
@@ -134,13 +133,6 @@ export default function AddLessonScreen({ route, navigation }) {
       imageUrls,
       growTags: flattenTierSelections(growInterestSelections)
     });
-    if (imageUrls.length) {
-      try {
-        await maybePromptAttachPhotosToGrow(imageUrls);
-      } catch (attachError) {
-        console.warn("Unable to attach lesson images to grow:", attachError);
-      }
-    }
     navigation.goBack();
   }
 

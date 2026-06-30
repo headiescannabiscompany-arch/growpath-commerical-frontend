@@ -68,7 +68,7 @@ describe("StorefrontScreen", () => {
     mockAttachPhotos.mockResolvedValue({ prompted: true, attached: false });
   });
 
-  it("uploads product images before saving a product and offers grow attachment", async () => {
+  it("uploads product images before saving a product without grow-photo attachment", async () => {
     const screen = render(<StorefrontScreen />);
 
     await waitFor(() => expect(mockFetchProducts).toHaveBeenCalled());
@@ -82,7 +82,7 @@ describe("StorefrontScreen", () => {
     await waitFor(() =>
       expect(screen.getByDisplayValue("/uploads/product.jpg")).toBeTruthy()
     );
-    expect(mockAttachPhotos).toHaveBeenCalledWith(["/uploads/product.jpg"]);
+    expect(mockAttachPhotos).not.toHaveBeenCalled();
 
     fireEvent.changeText(screen.getByPlaceholderText("Product name"), "Living Soil");
     fireEvent.press(screen.getByText("Save"));

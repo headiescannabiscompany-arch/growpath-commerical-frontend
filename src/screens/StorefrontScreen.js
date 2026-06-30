@@ -25,7 +25,6 @@ import {
 import { apiRequest } from "../api/apiRequest";
 import { endpoints } from "../api/endpoints";
 import ScreenContainer from "../components/ScreenContainer";
-import { maybePromptAttachPhotosToGrow } from "@/utils/growPhotoAttachment";
 import { persistImageUri } from "@/utils/photoUploads";
 
 function idOf(item) {
@@ -170,14 +169,6 @@ export default function StorefrontScreen() {
     setModalVisible(true);
   }
 
-  async function promptProductImageAttachment(imageUrl) {
-    try {
-      await maybePromptAttachPhotosToGrow(imageUrl ? [imageUrl] : []);
-    } catch (_err) {
-      // Product image upload should still succeed if the optional grow attachment fails.
-    }
-  }
-
   async function pickProductImage() {
     if (uploadingProductImage) return;
     setUploadingProductImage(true);
@@ -204,7 +195,6 @@ export default function StorefrontScreen() {
       const imageUrl = await persistImageUri(uri);
       if (!imageUrl) throw new Error("Image upload did not return a URL.");
       setProductImageUrl(imageUrl);
-      await promptProductImageAttachment(imageUrl);
     } catch (err) {
       Alert.alert("Product image", err?.message || "Unable to upload product image.");
     } finally {

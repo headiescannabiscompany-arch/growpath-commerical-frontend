@@ -125,7 +125,7 @@ describe("Storefront route", () => {
     await waitFor(() =>
       expect(screen.getByDisplayValue("/uploads/logo.jpg")).toBeTruthy()
     );
-    expect(mockAttachPhotos).toHaveBeenCalledWith(["/uploads/logo.jpg"]);
+    expect(mockAttachPhotos).not.toHaveBeenCalled();
 
     fireEvent.press(screen.getByLabelText("Save storefront settings"));
     await waitFor(() =>
@@ -145,7 +145,7 @@ describe("Storefront route", () => {
     await waitFor(() =>
       expect(screen.getByDisplayValue("/uploads/product.jpg")).toBeTruthy()
     );
-    expect(mockAttachPhotos).toHaveBeenCalledWith(["/uploads/product.jpg"]);
+    expect(mockAttachPhotos).not.toHaveBeenCalled();
 
     fireEvent.changeText(screen.getByLabelText("Product name"), "Living Soil");
     fireEvent.press(screen.getByLabelText("Create storefront product"));

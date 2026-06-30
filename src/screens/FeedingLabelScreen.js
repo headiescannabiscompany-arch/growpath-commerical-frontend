@@ -4,7 +4,6 @@ import * as ImagePicker from "expo-image-picker";
 import ScreenContainer from "../components/ScreenContainer";
 import { uploadLabel } from "../api/feeding";
 import { CAPABILITY_KEYS, useEntitlements } from "@/entitlements";
-import { maybePromptAttachPhotosToGrow } from "@/utils/growPhotoAttachment";
 import { requireCapabilityAccess } from "../utils/proHelper";
 
 export default function FeedingLabelScreen({ navigation }) {
@@ -28,13 +27,6 @@ export default function FeedingLabelScreen({ navigation }) {
         const payload = res?.data ?? res;
         if (!payload?.nutrientData) {
           throw new Error("Label data unavailable");
-        }
-        if (payload.photoUrl) {
-          try {
-            await maybePromptAttachPhotosToGrow([payload.photoUrl]);
-          } catch (attachError) {
-            console.warn("Unable to attach label photo to grow:", attachError);
-          }
         }
         navigation.navigate("FeedingConfirm", { nutrientData: payload.nutrientData });
       } catch (error) {

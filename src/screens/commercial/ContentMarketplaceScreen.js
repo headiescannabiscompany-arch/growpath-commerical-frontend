@@ -23,7 +23,6 @@ import Card from "../../components/Card.js";
 import EmptyState from "../../components/EmptyState.js";
 import ErrorBoundary from "../../components/ErrorBoundary.js";
 import ErrorState from "../../components/ErrorState.js";
-import { maybePromptAttachPhotosToGrow } from "../../utils/growPhotoAttachment";
 import { Colors, Spacing, Typography } from "../../theme/theme.js";
 import * as DocumentPicker from "expo-document-picker";
 import * as ImagePicker from "expo-image-picker";
@@ -229,13 +228,6 @@ export default function ContentMarketplaceScreen() {
         selectedFile ? uploadCourseMedia(selectedFile) : Promise.resolve(null),
         selectedThumbnail ? uploadImage(selectedThumbnail.uri) : Promise.resolve(null)
       ]);
-      if (uploadedThumbnail?.url) {
-        try {
-          await maybePromptAttachPhotosToGrow([uploadedThumbnail.url]);
-        } catch (attachError) {
-          console.warn("Unable to attach marketplace thumbnail to grow:", attachError);
-        }
-      }
       await uploadContent({
         title,
         description,
