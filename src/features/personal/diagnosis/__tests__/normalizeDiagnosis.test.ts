@@ -45,6 +45,22 @@ describe("normalizeDiagnosisResponse", () => {
     expect(result.explanation).toBe(DIAGNOSIS_SAFETY_DISCLAIMER);
   });
 
+  it("softens absolute provider summaries before display", () => {
+    expect(
+      normalizeDiagnosisResponse({
+        issueSummary: "Confirmed powdery mildew infection",
+        providerName: "openai"
+      }).issueSummary
+    ).toBe("Possible powdery mildew infection");
+
+    expect(
+      normalizeDiagnosisResponse({
+        issueSummary: "Leaves are definite calcium deficiency",
+        providerName: "openai"
+      }).issueSummary
+    ).toBe("Leaves are possible calcium deficiency");
+  });
+
   it("normalizes legacy analyze details envelope", () => {
     const result = normalizeDiagnosisResponse({
       id: "d2",

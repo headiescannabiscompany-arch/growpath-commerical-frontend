@@ -71,6 +71,14 @@ function band(value: unknown): "low" | "medium" | "high" | "unknown" {
   return "unknown";
 }
 
+function cautiousIssueSummary(value: unknown): string {
+  const summary = String(value || "").trim() || "No diagnosis summary returned.";
+  return summary
+    .replace(/^\s*(confirmed|definite|certain|guaranteed)\b[:\-\s]*/i, "Possible ")
+    .replace(/\b(is|are)\s+(confirmed|definite|certain|guaranteed)\b/gi, "$1 possible")
+    .replace(/\b(confirmed|definite|certain|guaranteed)\s+(diagnosis|disease|infection|deficiency|toxicity)\b/gi, "possible $2");
+}
+
 export function normalizeDiagnosisResponse(response: any): NormalizedDiagnosis {
   const row =
     response?.data?.diagnosis ??
@@ -87,11 +95,8 @@ export function normalizeDiagnosisResponse(response: any): NormalizedDiagnosis {
   const actions = strings(row?.suggestedActions ?? row?.aiActions ?? row?.actions);
   return {
     id: String(row?._id || row?.id || ""),
-    issueSummary: String(
-      row?.issueSummary ||
-        row?.possibleIssue ||
-        row?.summary ||
-        "No diagnosis summary returned."
+    issueSummary: cautiousIssueSummary(
+      row?.issueSummary || row?.possibleIssue || row?.summary
     ),
     confidence: band(row?.confidence ?? row?.confidenceLevel),
     severity: band(row?.severity ?? row?.severityLevel),
