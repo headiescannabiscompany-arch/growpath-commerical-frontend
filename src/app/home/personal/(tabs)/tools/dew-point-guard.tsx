@@ -8,7 +8,11 @@ import {
   ToolPlantContextPicker,
   useToolPlantContext
 } from "@/features/personal/tools/ToolPlantContextPicker";
-import { saveToolRunAndOpenJournal } from "@/features/personal/tools/saveToolRunAndOpenJournal";
+import ToolResultSurface from "@/features/personal/tools/ToolResultSurface";
+import {
+  saveToolRunAndCreateTask,
+  saveToolRunAndOpenJournal
+} from "@/features/personal/tools/saveToolRunAndOpenJournal";
 import {
   bulkIngestTelemetryPoints,
   createTelemetrySource,
@@ -181,6 +185,8 @@ export default function DewPointGuardTool() {
 
   const [mode, setMode] = useState<"manual" | "source">("manual");
   const [savingAndOpening, setSavingAndOpening] = useState(false);
+  const [creatingInspectionTask, setCreatingInspectionTask] = useState(false);
+  const [resultFeedback, setResultFeedback] = useState("");
 
   const [lightsOffTempF, setLightsOffTempF] = useState("75");
   const [lightsOffRh, setLightsOffRh] = useState("55");
@@ -816,45 +822,101 @@ export default function DewPointGuardTool() {
     selectedSource?.timezone
   ]);
 
+  function dewPointFlags() {
+    return {
+      lateIrrigation: toNum(lateIrrigation) === 1,
+      fanOffIncident: toNum(fanOffIncident) === 1,
+      dehuStruggling: toNum(dehuStruggling) === 1
+    };
+  }
+
+  function dewPointToolRunPayload() {
+    const flags = dewPointFlags();
+    if (mode === "manual") {
+      return {
+        input: {
+          mode: "manual_estimate",
+          lightsOff: { tempF: toNum(lightsOffTempF), rh: toNum(lightsOffRh) },
+          night: { minTempF: toNum(nightMinTempF), maxRh: toNum(nightMaxRh) },
+          assumedLeafAirDeltaF: toNum(assumedLeafAirDeltaF),
+          flags
+        },
+        output: computedManual
+          ? {
+              summary: {
+                riskBand: computedManual.riskBand,
+                lightsOffDewPointF: computedManual.lightsOffDewPointF,
+                worstCaseDewPointF: computedManual.worstCaseDewPointF,
+                assumedLeafTempF: computedManual.assumedLeafTempF,
+                condensationMarginF: computedManual.condensationMarginF,
+                note: "Manual estimate (worst-case). Switch to Telemetry Source mode for true spike detection."
+              },
+              recommendations: computedManual.recommendations
+            }
+          : {
+              summary: { riskBand: "low", note: "Insufficient inputs to compute." },
+              recommendations: []
+            }
+      };
+    }
+
+    const window =
+      windowMode === "custom"
+        ? {
+            startIso: String(startIsoText || "").trim(),
+            endIso: String(endIsoText || "").trim()
+          }
+        : defaultWindow(windowMode);
+
+    return {
+      input: {
+        mode: "source_window",
+        sourceId: selectedSourceId,
+        sourceType: selectedSource?.type ?? "unknown",
+        window: { mode: windowMode, ...window },
+        assumedLeafAirDeltaF: toNum(assumedLeafAirDeltaF),
+        flags
+      },
+      output: computedSource
+        ? {
+            summary: {
+              riskBand: computedSource.riskBand,
+              pointsAnalyzed: computedSource.pointsAnalyzed,
+              minAirTempF: cToF(computedSource.extremes.minAirTempC),
+              maxRh: computedSource.extremes.maxRh,
+              maxDewPointF: cToF(computedSource.extremes.maxDewPointC),
+              minCondensationMarginF: deltaCToF(
+                computedSource.extremes.minCondensationMarginC
+              ),
+              timeAtRiskMinutes: computedSource.timeAtRiskMinutes,
+              minMarginAtIso: computedSource.minMarginAtIso
+            },
+            recommendations: computedSource.recommendations
+          }
+        : {
+            summary: {
+              riskBand: "low",
+              note: "No telemetry points loaded for this window."
+            },
+            recommendations: []
+          }
+    };
+  }
+
   async function onSaveAndOpen() {
     if (savingAndOpening) return;
     setSavingAndOpening(true);
+    setResultFeedback("");
     try {
-      const flags = {
-        lateIrrigation: toNum(lateIrrigation) === 1,
-        fanOffIncident: toNum(fanOffIncident) === 1,
-        dehuStruggling: toNum(dehuStruggling) === 1
-      };
-
       if (mode === "manual") {
+        const payload = dewPointToolRunPayload();
         const res = await saveToolRunAndOpenJournal({
           router,
           growId,
           ...plantContext.toolRunContext,
           toolKey: "dew-point-guard",
-          input: {
-            mode: "manual_estimate",
-            lightsOff: { tempF: toNum(lightsOffTempF), rh: toNum(lightsOffRh) },
-            night: { minTempF: toNum(nightMinTempF), maxRh: toNum(nightMaxRh) },
-            assumedLeafAirDeltaF: toNum(assumedLeafAirDeltaF),
-            flags
-          },
-          output: computedManual
-            ? {
-                summary: {
-                  riskBand: computedManual.riskBand,
-                  lightsOffDewPointF: computedManual.lightsOffDewPointF,
-                  worstCaseDewPointF: computedManual.worstCaseDewPointF,
-                  assumedLeafTempF: computedManual.assumedLeafTempF,
-                  condensationMarginF: computedManual.condensationMarginF,
-                  note: "Manual estimate (worst-case). Switch to Telemetry Source mode for true spike detection."
-                },
-                recommendations: computedManual.recommendations
-              }
-            : {
-                summary: { riskBand: "low", note: "Insufficient inputs to compute." },
-                recommendations: []
-              }
+          input: payload.input,
+          output: payload.output
         });
         if (!res?.ok)
           Alert.alert("Couldnt save tool run", String(res?.error || "Unknown error"));
@@ -866,50 +928,15 @@ export default function DewPointGuardTool() {
           "Select a telemetry source",
           "Pick a source before saving a source-backed run."
         );
-      const window =
-        windowMode === "custom"
-          ? {
-              startIso: String(startIsoText || "").trim(),
-              endIso: String(endIsoText || "").trim()
-            }
-          : defaultWindow(windowMode);
 
+      const payload = dewPointToolRunPayload();
       const res = await saveToolRunAndOpenJournal({
         router,
         growId,
         ...plantContext.toolRunContext,
         toolKey: "dew-point-guard",
-        input: {
-          mode: "source_window",
-          sourceId: selectedSourceId,
-          sourceType: selectedSource?.type ?? "unknown",
-          window: { mode: windowMode, ...window },
-          assumedLeafAirDeltaF: toNum(assumedLeafAirDeltaF),
-          flags
-        },
-        output: computedSource
-          ? {
-              summary: {
-                riskBand: computedSource.riskBand,
-                pointsAnalyzed: computedSource.pointsAnalyzed,
-                minAirTempF: cToF(computedSource.extremes.minAirTempC),
-                maxRh: computedSource.extremes.maxRh,
-                maxDewPointF: cToF(computedSource.extremes.maxDewPointC),
-                minCondensationMarginF: deltaCToF(
-                  computedSource.extremes.minCondensationMarginC
-                ),
-                timeAtRiskMinutes: computedSource.timeAtRiskMinutes,
-                minMarginAtIso: computedSource.minMarginAtIso
-              },
-              recommendations: computedSource.recommendations
-            }
-          : {
-              summary: {
-                riskBand: "low",
-                note: "No telemetry points loaded for this window."
-              },
-              recommendations: []
-            }
+        input: payload.input,
+        output: payload.output
       });
       if (!res?.ok)
         Alert.alert("Couldnt save tool run", String(res?.error || "Unknown error"));
@@ -917,6 +944,122 @@ export default function DewPointGuardTool() {
       setSavingAndOpening(false);
     }
   }
+
+  async function onCreateInspectionTask() {
+    if (creatingInspectionTask) return;
+    if (mode === "source" && !selectedSourceId) {
+      Alert.alert(
+        "Select a telemetry source",
+        "Pick a source before creating a source-backed inspection task."
+      );
+      return;
+    }
+    setCreatingInspectionTask(true);
+    setResultFeedback("");
+    try {
+      const payload = dewPointToolRunPayload();
+      const summary = payload.output.summary || {};
+      const riskBand = String(summary.riskBand || "unknown");
+      const highRisk = riskBand === "high";
+      const result = await saveToolRunAndCreateTask({
+        growId,
+        ...plantContext.toolRunContext,
+        toolKey: "dew-point-guard",
+        input: payload.input,
+        output: payload.output,
+        title: highRisk
+          ? "Inspect canopy for condensation risk"
+          : "Review dew point risk window",
+        description: [
+          `Dew Point Guard risk: ${riskBand}.`,
+          summary.condensationMarginF != null
+            ? `Manual condensation margin: ${Number(summary.condensationMarginF).toFixed(2)}F.`
+            : "",
+          summary.minCondensationMarginF != null
+            ? `Minimum telemetry margin: ${Number(summary.minCondensationMarginF).toFixed(2)}F.`
+            : "",
+          summary.timeAtRiskMinutes != null
+            ? `Time at risk: ${summary.timeAtRiskMinutes} minutes.`
+            : "",
+          "Inspect dense canopy areas, confirm sensor placement, and adjust RH/air movement gradually."
+        ]
+          .filter(Boolean)
+          .join("\n"),
+        priority: highRisk ? "high" : "medium",
+        dueDate: new Date(Date.now() + (highRisk ? 2 : 24) * 60 * 60 * 1000).toISOString()
+      });
+      if (!result.ok) throw new Error(result.error);
+      setResultFeedback("Created dew point inspection task.");
+    } catch (error: any) {
+      setResultFeedback(error?.message || "Unable to create inspection task.");
+    } finally {
+      setCreatingInspectionTask(false);
+    }
+  }
+
+  const activePayload = dewPointToolRunPayload();
+  const activeOutput = activePayload.output as any;
+  const activeSummary = activeOutput.summary || {};
+  const activeRecommendations = Array.isArray(activeOutput.recommendations)
+    ? activeOutput.recommendations
+        .map((item: any) => String(item?.message || item).trim())
+        .filter(Boolean)
+    : [];
+  const activeRiskBand = String(activeSummary.riskBand || "not calculated");
+  const activeMetrics =
+    mode === "manual"
+      ? [
+          {
+            key: "risk",
+            label: "Risk band",
+            value: activeRiskBand.toUpperCase()
+          },
+          {
+            key: "dew-point",
+            label: "Worst dew point",
+            value:
+              activeSummary.worstCaseDewPointF != null
+                ? `${Number(activeSummary.worstCaseDewPointF).toFixed(1)}F`
+                : "-"
+          },
+          {
+            key: "margin",
+            label: "Condensation margin",
+            value:
+              activeSummary.condensationMarginF != null
+                ? `${Number(activeSummary.condensationMarginF).toFixed(2)}F`
+                : "-"
+          }
+        ]
+      : [
+          {
+            key: "risk",
+            label: "Risk band",
+            value: activeRiskBand.toUpperCase()
+          },
+          {
+            key: "points",
+            label: "Points analyzed",
+            value: String(activeSummary.pointsAnalyzed ?? telemetryPoints.length)
+          },
+          {
+            key: "margin",
+            label: "Minimum margin",
+            value:
+              activeSummary.minCondensationMarginF != null
+                ? `${Number(activeSummary.minCondensationMarginF).toFixed(2)}F`
+                : "-"
+          },
+          {
+            key: "time-at-risk",
+            label: "Time at risk",
+            value:
+              activeSummary.timeAtRiskMinutes != null
+                ? `${activeSummary.timeAtRiskMinutes} min`
+                : "-"
+          }
+        ];
+  const resultNeedsSource = mode === "source" && !selectedSourceId;
 
   return (
     <ScrollView contentContainerStyle={{ padding: 16, paddingBottom: 28 }}>
@@ -1656,22 +1799,81 @@ export default function DewPointGuardTool() {
         )}
       </View>
 
-      <Pressable
-        testID="dpg-save-open-journal"
-        onPress={onSaveAndOpen}
-        disabled={savingAndOpening}
-        style={{
-          opacity: savingAndOpening ? 0.6 : 1,
-          backgroundColor: "#111",
-          borderRadius: 12,
-          paddingVertical: 12,
-          alignItems: "center"
-        }}
-      >
-        <Text style={{ color: "white", fontWeight: "800" }}>
-          {savingAndOpening ? "Saving..." : "Save and Open Journal"}
-        </Text>
-      </Pressable>
+      <ToolResultSurface
+        title="Dew Point Guard result"
+        status={activeRiskBand.toUpperCase()}
+        summary={
+          mode === "manual"
+            ? "Manual estimate of overnight dew point and leaf-surface condensation margin."
+            : "Telemetry-window analysis of dew point margin and time at condensation risk."
+        }
+        metrics={activeMetrics}
+        inputs={activePayload.input}
+        outputs={activePayload.output}
+        notices={
+          activeRiskBand === "high"
+            ? [
+                {
+                  key: "high-risk",
+                  severity: "high",
+                  message: "Current inputs indicate high condensation risk.",
+                  remediation:
+                    "Inspect dense canopy areas, confirm leaf temperature assumptions, and improve RH control or airflow gradually."
+                }
+              ]
+            : activeRiskBand === "medium"
+              ? [
+                  {
+                    key: "medium-risk",
+                    severity: "medium",
+                    message: "Current inputs indicate a narrow dew point safety margin.",
+                    remediation:
+                      "Recheck during lights-off and avoid late irrigation or fan shutdowns."
+                  }
+                ]
+              : []
+        }
+        recommendations={activeRecommendations}
+        formulas={[
+          "Dew point is calculated from air temperature and relative humidity.",
+          "Condensation risk increases when estimated leaf temperature approaches or drops below dew point."
+        ]}
+        uncertainty={
+          mode === "manual"
+            ? "Manual mode depends on estimated worst-case night values and assumed leaf-air temperature delta."
+            : "Telemetry mode depends on source mapping, sensor placement, timezone handling, and reading density."
+        }
+        confidence={mode === "manual" ? "manual-estimate" : "telemetry-window"}
+        assumptions={[
+          "This is a condensation-risk screen, not a mold diagnosis.",
+          "Use multiple canopy positions and sensor checks before changing controls."
+        ]}
+        actions={[
+          {
+            key: "save-journal",
+            label: "Save and Open Journal",
+            pendingLabel: "Saving...",
+            disabled: savingAndOpening || resultNeedsSource,
+            onPress: onSaveAndOpen
+          },
+          {
+            key: "create-task",
+            label: "Create Inspection Task",
+            variant: "secondary",
+            pendingLabel: "Creating...",
+            disabled: creatingInspectionTask || resultNeedsSource,
+            onPress: onCreateInspectionTask
+          }
+        ]}
+        feedback={resultFeedback}
+        contextMessage={
+          !growId
+            ? "Select a grow to save this result or create inspection tasks."
+            : resultNeedsSource
+              ? "Select a telemetry source before saving source-backed results."
+              : undefined
+        }
+      />
     </ScrollView>
   );
 }

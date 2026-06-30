@@ -7,6 +7,11 @@ const mockSaveToolRunAndOpenJournal = jest.fn(async () => ({
   ok: true,
   toolRunId: "tr1"
 }));
+const mockSaveToolRunAndCreateTask = jest.fn(async () => ({
+  ok: true,
+  toolRunId: "tr1",
+  taskId: "task-1"
+}));
 const mockListPersonalPlants = jest.fn();
 
 jest.mock("expo-router", () => ({
@@ -24,7 +29,8 @@ jest.mock("@react-native-async-storage/async-storage", () => ({
 }));
 
 jest.mock("@/features/personal/tools/saveToolRunAndOpenJournal", () => ({
-  saveToolRunAndOpenJournal: (...args: any[]) => mockSaveToolRunAndOpenJournal(...args)
+  saveToolRunAndOpenJournal: (...args: any[]) => mockSaveToolRunAndOpenJournal(...args),
+  saveToolRunAndCreateTask: (...args: any[]) => mockSaveToolRunAndCreateTask(...args)
 }));
 
 jest.mock("@/api/plants", () => ({
@@ -53,6 +59,11 @@ describe("Dew Point Guard CSV flow", () => {
   beforeEach(() => {
     jest.resetAllMocks();
     mockSaveToolRunAndOpenJournal.mockResolvedValue({ ok: true, toolRunId: "tr1" });
+    mockSaveToolRunAndCreateTask.mockResolvedValue({
+      ok: true,
+      toolRunId: "tr1",
+      taskId: "task-1"
+    });
     mockListPersonalPlants.mockResolvedValue([
       {
         id: "plant-blueberry-1",
@@ -194,13 +205,13 @@ describe("Dew Point Guard CSV flow", () => {
   });
 
   it("saves manual runs with selected plant and crop context", async () => {
-    const { getByTestId } = render(<DewPointGuard />);
+    const { getByLabelText } = render(<DewPointGuard />);
 
     await waitFor(() =>
       expect(mockListPersonalPlants).toHaveBeenCalledWith({ growId: "g1" })
     );
 
-    fireEvent.press(getByTestId("dpg-save-open-journal"));
+    fireEvent.press(getByLabelText("Save and Open Journal"));
 
     await waitFor(() => expect(mockSaveToolRunAndOpenJournal).toHaveBeenCalled());
     expect(mockSaveToolRunAndOpenJournal).toHaveBeenCalledWith(
