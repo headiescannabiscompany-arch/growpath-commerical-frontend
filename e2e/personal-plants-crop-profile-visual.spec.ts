@@ -58,7 +58,15 @@ async function installMocks(page: any) {
                   scientificName: createPayloads[0].scientificName,
                   cultivar: createPayloads[0].cultivar,
                   cropProfileId: createPayloads[0].cropProfileId,
-                  stage: "seedling"
+                  stage: "seedling",
+                  growthProfile: {
+                    cropProfile: createPayloads[0].cropProfileId,
+                    confirmationStatus: "user_confirmed",
+                    sizeMetrics: createPayloads[0].sizeMetrics,
+                    timingAdjustments: createPayloads[0].timingAdjustments,
+                    waterUseProfile: createPayloads[0].waterUseProfile,
+                    phenoLabel: createPayloads[0].phenoLabel
+                  }
                 }
               ]
             : []
@@ -139,6 +147,7 @@ test.describe("personal plant crop profile form", () => {
       await expect(page.getByText("Plant added to this grow.")).toBeVisible();
       await expect(page.getByText("Cherry tomato #1")).toBeVisible();
       await expect(page.getByText(/Species: Tomato/)).toBeVisible();
+      await expect(page.getByText(/Growth overlay: canopy 75 cm/)).toBeVisible();
       expect(api.createPayloads[0]).toMatchObject({
         cropCommonName: "Tomato",
         scientificName: "Solanum lycopersicum",

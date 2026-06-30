@@ -151,6 +151,24 @@ export default function GrowPlantsScreen() {
     setCreating(false);
   }
 
+  function growthOverlayLine(plant: PersonalPlant) {
+    const profile = plant.growthProfile;
+    if (!profile) return "";
+    const parts = [
+      profile.sizeMetrics?.canopyWidthCm
+        ? `canopy ${profile.sizeMetrics.canopyWidthCm} cm`
+        : "",
+      profile.waterUseProfile?.observedDemand
+        ? `water ${profile.waterUseProfile.observedDemand}`
+        : "",
+      profile.timingAdjustments?.stageDaysOffset
+        ? `timing ${profile.timingAdjustments.stageDaysOffset}d`
+        : "",
+      profile.phenoLabel ? `pheno ${profile.phenoLabel}` : ""
+    ].filter(Boolean);
+    return parts.join(" - ");
+  }
+
   return (
     <ScrollView style={styles.container} contentContainerStyle={styles.content}>
       <Text style={styles.title}>Plants</Text>
@@ -314,6 +332,9 @@ export default function GrowPlantsScreen() {
             ) : null}
             {plant.cropProfileId ? (
               <Text style={styles.meta}>Crop profile linked</Text>
+            ) : null}
+            {growthOverlayLine(plant) ? (
+              <Text style={styles.meta}>Growth overlay: {growthOverlayLine(plant)}</Text>
             ) : null}
           </View>
         ))

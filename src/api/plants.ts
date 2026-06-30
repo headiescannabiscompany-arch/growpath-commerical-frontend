@@ -54,6 +54,17 @@ export type PersonalPlant = Plant & {
   cropCommonName?: string;
   scientificName?: string;
   cropProfileId?: string | null;
+  growthProfile?: {
+    id?: string;
+    cropProfile?: string | null;
+    confirmationStatus?: string;
+    sizeMetrics?: Record<string, unknown>;
+    timingAdjustments?: Record<string, unknown>;
+    waterUseProfile?: Record<string, unknown>;
+    phenoLabel?: string;
+    stressSensitivities?: string[];
+    pestDiseaseSensitivities?: string[];
+  } | null;
   stage?: string;
   medium?: string;
   status?: string;
