@@ -156,6 +156,19 @@ const PRESETS: Preset[] = [
       "Build and save a validated fertigation recipe from target EC and product guarantees."
   },
   {
+    key: "scale-recipe",
+    title: "Scale Recipe",
+    audience: "Cultivation / fertigation",
+    tool: "fert",
+    fn: "scaleRecipe",
+    args: {
+      recipeId: "recipe-demo-1",
+      volumeLiters: 20,
+      batchUnit: "L"
+    },
+    summary: "Scale a saved fertigation recipe to a new batch volume and record the run."
+  },
+  {
     key: "harvest",
     title: "Harvest window",
     audience: "Cultivation",
