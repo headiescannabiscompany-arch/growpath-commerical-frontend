@@ -15,7 +15,6 @@ import * as ImagePicker from "expo-image-picker";
 import ScreenContainer from "../components/ScreenContainer";
 import PrimaryButton from "../components/PrimaryButton";
 import { createPost } from "../api/forum";
-import { uploadImage } from "../api/uploads";
 import GrowInterestPicker from "../components/GrowInterestPicker";
 import {
   buildEmptyTierSelection,
@@ -23,6 +22,8 @@ import {
   groupTagsByTier
 } from "../utils/growInterests";
 import { useAuth } from "@/auth/AuthContext";
+import { maybePromptAttachPhotosToGrow } from "@/utils/growPhotoAttachment";
+import { persistImageUris } from "@/utils/photoUploads";
 
 const categoryOptions = [
   { key: "general", label: "General", desc: "Updates, questions, daily logs" },
@@ -43,6 +44,7 @@ export default function ForumNewPostScreen({ route, navigation }) {
   const workspaceContext = route.params?.workspace || mode || "personal";
   const isCommercial = workspaceContext === "commercial";
   const growLogId = route.params?.growLogId || route.params?.fromGrowLogId || null;
+  const growId = route.params?.growId || null;
   const defaultPickerExpansion = Boolean(route.params?.expandInterestPicker);
 
   const [content, setContent] = useState(notesFromLog);
@@ -112,19 +114,7 @@ export default function ForumNewPostScreen({ route, navigation }) {
     try {
       setLoading(true);
 
-      const uploadedPhotos = [];
-      for (const uri of photos) {
-        // If it looks like a remote URL, keep it
-        if (uri.startsWith("http") || uri.startsWith("/")) {
-          uploadedPhotos.push(uri);
-        } else {
-          // Upload local file
-          const res = await uploadImage(uri);
-          if (res?.url) {
-            uploadedPhotos.push(res.url);
-          }
-        }
-      }
+      const uploadedPhotos = await persistImageUris(photos);
 
       const payload = {
         content,
@@ -142,6 +132,9 @@ export default function ForumNewPostScreen({ route, navigation }) {
       };
 
       await createPost(payload);
+      await maybePromptAttachPhotosToGrow(uploadedPhotos, {
+        skip: Boolean(growId || growLogId)
+      });
 
       // Invalidate feed cache
       queryClient.invalidateQueries({ queryKey: ["forum-feed"] });

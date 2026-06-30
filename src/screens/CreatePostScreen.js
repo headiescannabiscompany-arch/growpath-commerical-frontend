@@ -19,6 +19,7 @@ import { buildEmptyTierSelection, flattenTierSelections } from "../utils/growInt
 import { useAuth } from "@/auth/AuthContext";
 import { handleApiError } from "@/ui/handleApiError";
 import { useCreatePost } from "@/hooks/useCreatePost";
+import { maybePromptAttachPhotosToGrow } from "@/utils/growPhotoAttachment";
 
 export default function CreatePostScreen() {
   const [text, setText] = useState("");
@@ -26,6 +27,8 @@ export default function CreatePostScreen() {
   const navigation = useNavigation();
   const route = useRoute();
   const onPostCreated = route.params?.onPostCreated;
+  const growId = route.params?.growId || null;
+  const growLogId = route.params?.growLogId || route.params?.fromGrowLogId || null;
 
   const { user, mode } = useAuth();
   const [growInterestSelections, setGrowInterestSelections] = useState(
@@ -89,7 +92,7 @@ export default function CreatePostScreen() {
       : user?._id || "";
 
     try {
-      await createPost({
+      const created = await createPost({
         text,
         workspaceContext,
         authorType: isCommercial ? "business" : "user",
@@ -97,6 +100,9 @@ export default function CreatePostScreen() {
         postType: isCommercial ? postType : "discussion",
         growTags: selectedTags,
         photos
+      });
+      await maybePromptAttachPhotosToGrow(created?.photos || [], {
+        skip: Boolean(growId || growLogId)
       });
 
       if (typeof onPostCreated === "function") onPostCreated();
