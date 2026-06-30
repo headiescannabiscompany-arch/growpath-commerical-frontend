@@ -10,6 +10,14 @@ try {
 } catch (e) {}
 
 try {
+  jest.mock("react-native/Libraries/Animated/NativeAnimatedHelper");
+} catch (e) {}
+
+try {
+  jest.mock("react-native/src/private/animated/NativeAnimatedHelper");
+} catch (e) {}
+
+try {
   jest.mock("@react-native-async-storage/async-storage", () =>
     require("@react-native-async-storage/async-storage/jest/async-storage-mock")
   );
