@@ -23,7 +23,7 @@ import {
   ToolPlantContextPicker,
   useToolPlantContext
 } from "@/features/personal/tools/ToolPlantContextPicker";
-import { persistImageUris } from "@/utils/photoUploads";
+import { isPersistedImageUri, persistImageUris } from "@/utils/photoUploads";
 
 type SelectedPhoto = {
   uri: string;
@@ -64,6 +64,7 @@ export default function NewLogScreen() {
   const [acceptedTags, setAcceptedTags] = useState<string[]>([]);
   const [rejectedTags, setRejectedTags] = useState<string[]>([]);
   const [photos, setPhotos] = useState<SelectedPhoto[]>([]);
+  const [photoUrl, setPhotoUrl] = useState("");
   const logTypes = useMemo(
     () => ["watering", "feed", "training", "environment", "issues", "harvest", "other"],
     []
@@ -119,6 +120,27 @@ export default function NewLogScreen() {
         }))
     ]);
   }, []);
+
+  const addPhotoUrl = useCallback(() => {
+    const uri = photoUrl.trim();
+    if (!uri) return;
+    if (!isPersistedImageUri(uri)) {
+      setError("Paste a saved image URL or /uploads/... path.");
+      return;
+    }
+    setPhotos((current) => [
+      ...current,
+      {
+        uri,
+        width: null,
+        height: null,
+        mimeType: null,
+        sizeBytes: null
+      }
+    ]);
+    setPhotoUrl("");
+    setError("");
+  }, [photoUrl]);
 
   const analyzeDraft = useCallback(async () => {
     if (!growId || analyzing || !notes.trim()) return;
@@ -333,6 +355,24 @@ export default function NewLogScreen() {
           ))}
         </View>
       ) : null}
+      <View style={styles.urlRow}>
+        <TextInput
+          style={styles.urlInput}
+          value={photoUrl}
+          onChangeText={setPhotoUrl}
+          placeholder="/uploads/grow-photo.jpg or https://..."
+          accessibilityLabel="Photo URL"
+        />
+        <Pressable
+          style={[styles.secondaryButton, !photoUrl.trim() && styles.disabled]}
+          disabled={!photoUrl.trim()}
+          onPress={addPhotoUrl}
+          accessibilityRole="button"
+          accessibilityLabel="Add photo URL"
+        >
+          <Text style={styles.secondaryButtonText}>Add URL</Text>
+        </Pressable>
+      </View>
 
       <Pressable
         style={[styles.secondaryButton, (!notes.trim() || analyzing) && styles.disabled]}
@@ -487,6 +527,15 @@ const styles = StyleSheet.create({
     flexWrap: "wrap"
   },
   photoGrid: { flexDirection: "row", flexWrap: "wrap", gap: 8 },
+  urlRow: { flexDirection: "row", flexWrap: "wrap", gap: 8, alignItems: "center" },
+  urlInput: {
+    minWidth: 220,
+    flexGrow: 1,
+    borderWidth: 1,
+    borderColor: "#CBD5E1",
+    borderRadius: 9,
+    padding: 10
+  },
   photoTile: {
     width: 104,
     borderWidth: 1,
