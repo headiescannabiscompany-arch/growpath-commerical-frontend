@@ -27,6 +27,45 @@ function param(value?: string | string[]) {
   return typeof value === "string" ? value : Array.isArray(value) ? value[0] || "" : "";
 }
 
+function providerResultSummary(providerResult: unknown): string[] {
+  if (!providerResult || typeof providerResult !== "object") return [];
+  const data = providerResult as Record<string, any>;
+  const lines: string[] = [];
+  if (data.overallHealth) lines.push(`Overall health: ${data.overallHealth}`);
+  if (data.diagnosisClass) lines.push(`Diagnosis class: ${data.diagnosisClass}`);
+  if (data.urgency) lines.push(`Urgency: ${data.urgency}`);
+  if (Array.isArray(data.likelyIssues)) {
+    data.likelyIssues.slice(0, 3).forEach((issue: any, index: number) => {
+      const confidence =
+        issue?.confidence != null
+          ? ` (${Math.round(Number(issue.confidence) * 100)}%)`
+          : "";
+      lines.push(
+        `Issue ${index + 1}: ${[issue?.issue, issue?.category, issue?.nutrient]
+          .filter(Boolean)
+          .join(" / ")}${confidence}`
+      );
+    });
+  }
+  const recommendations = Array.isArray(data.recommendations)
+    ? data.recommendations
+    : Array.isArray(data.actions)
+      ? data.actions
+      : [];
+  recommendations.slice(0, 3).forEach((item: any, index: number) => {
+    lines.push(`Provider recommendation ${index + 1}: ${String(item)}`);
+  });
+  if (!lines.length) {
+    Object.entries(data)
+      .slice(0, 5)
+      .forEach(([key, value]) => {
+        if (value == null || typeof value === "object") return;
+        lines.push(`${key}: ${String(value)}`);
+      });
+  }
+  return lines;
+}
+
 export default function DiagnoseRoute() {
   const params = useLocalSearchParams<{
     growId?: string | string[];
@@ -664,6 +703,43 @@ export default function DiagnoseRoute() {
               ...result.evidence.map((item) => `Observed evidence: ${item}`),
               ...result.counterEvidence.map((item) => `Counter-evidence: ${item}`)
             ]}
+            details={
+              <View style={styles.providerPanel}>
+                <Text style={styles.providerTitle}>Provider output</Text>
+                <Text style={styles.providerMeta}>
+                  {result.providerName || result.source || "unverified provider"}
+                  {result.providerModel ? ` | ${result.providerModel}` : ""}
+                </Text>
+                {providerResultSummary(result.providerResult).length ? (
+                  providerResultSummary(result.providerResult).map((line) => (
+                    <Text key={line} style={styles.providerLine}>
+                      - {line}
+                    </Text>
+                  ))
+                ) : (
+                  <Text style={styles.providerLine}>
+                    Provider output was not supplied as a separate structured payload.
+                  </Text>
+                )}
+                <Text style={styles.providerTitle}>GrowPathAI reasoning</Text>
+                {result.growPathReasoning.length ? (
+                  result.growPathReasoning.map((line) => (
+                    <Text key={line} style={styles.providerLine}>
+                      - {line}
+                    </Text>
+                  ))
+                ) : (
+                  <Text style={styles.providerLine}>
+                    No additional GrowPathAI reasoning was returned with this result.
+                  </Text>
+                )}
+                <Text style={styles.providerMeta}>
+                  GrowPathAI improves diagnosis quality from reviewed provider output,
+                  crop/profile context, and user-confirmed outcomes. Training use remains
+                  opt-in.
+                </Text>
+              </View>
+            }
             formulas={[
               ...result.growPathReasoning,
               "ETGU checks symptom pattern, root-zone context, environment, and measured numbers before suggesting follow-up actions."
@@ -859,6 +935,17 @@ const styles = StyleSheet.create({
   disabled: { opacity: 0.5 },
   locked: { color: "#9A3412", backgroundColor: "#FFF7ED", padding: 10, borderRadius: 9 },
   feedback: { color: "#334155", fontWeight: "700" },
+  providerPanel: {
+    borderWidth: 1,
+    borderColor: "#D9E2EC",
+    borderRadius: 8,
+    backgroundColor: "#FFFFFF",
+    padding: 10,
+    gap: 5
+  },
+  providerTitle: { color: "#0F172A", fontWeight: "800", marginTop: 4 },
+  providerMeta: { color: "#64748B", fontSize: 12, lineHeight: 18 },
+  providerLine: { color: "#334155", fontSize: 12, lineHeight: 18 },
   followUpCard: {
     borderWidth: 1,
     borderColor: "#CBD5E1",
