@@ -113,6 +113,20 @@ const PRESETS: Preset[] = [
     summary: "Convert product labels and dose amounts into delivered elemental ppm."
   },
   {
+    key: "npk-ratio",
+    title: "NPK Ratio",
+    audience: "Cultivation / fertigation",
+    tool: "nutrients",
+    fn: "computeRatio",
+    args: {
+      nppm: 100,
+      ppmp: 50,
+      ppmk: 150
+    },
+    summary:
+      "Normalize elemental nitrogen, phosphorus, and potassium ppm into a feed ratio."
+  },
+  {
     key: "harvest",
     title: "Harvest window",
     audience: "Cultivation",
