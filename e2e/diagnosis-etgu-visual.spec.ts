@@ -11,6 +11,8 @@ function fulfillJson(route: any, body: any, status = 200) {
 }
 
 async function installMocks(page: any) {
+  const diagnosisPayloads: any[] = [];
+
   await page.addInitScript(() => {
     window.localStorage.setItem("auth_token_v1", "diagnosis-etgu-token");
     window.localStorage.setItem("seenOnboardingCarousel", "true");
@@ -54,14 +56,27 @@ async function installMocks(page: any) {
           {
             id: "plant-etgu-1",
             name: "Blueberry Muffin #1",
+            cropCommonName: "Cannabis",
+            scientificName: "Cannabis sativa",
+            cropProfileId: "crop-cannabis-1",
             cultivar: "Blueberry Muffin HSC",
-            stage: "flower"
+            stage: "flower",
+            medium: "coco",
+            growthProfile: {
+              cropProfile: "crop-cannabis-1",
+              confirmationStatus: "user_confirmed",
+              sizeMetrics: { canopyWidthCm: 85 },
+              timingAdjustments: { stageDaysOffset: 3 },
+              waterUseProfile: { observedDemand: "high" },
+              phenoLabel: "vigorous"
+            }
           }
         ]
       });
     }
 
     if (method === "POST" && url.pathname === "/api/diagnose/analyze") {
+      diagnosisPayloads.push(request.postDataJSON());
       return fulfillJson(route, {
         id: "diagnosis-etgu-1",
         issueSummary: "Possible calcium transport issue; Runoff EC is elevated",
@@ -118,6 +133,8 @@ async function installMocks(page: any) {
 
     return fulfillJson(route, { ok: true });
   });
+
+  return { diagnosisPayloads };
 }
 
 test.describe("ETGU diagnosis intake", () => {
@@ -127,7 +144,7 @@ test.describe("ETGU diagnosis intake", () => {
   ]) {
     test(`captures ETGU fields and renders result on ${size.name}`, async ({ page }) => {
       await page.setViewportSize({ width: size.width, height: size.height });
-      await installMocks(page);
+      const api = await installMocks(page);
 
       await page.goto(`/home/personal/diagnose?growId=${GROW_ID}`, {
         waitUntil: "domcontentloaded"
@@ -135,11 +152,12 @@ test.describe("ETGU diagnosis intake", () => {
       await expect(page.getByText("Plant Issue Diagnosis")).toBeVisible();
 
       await expect(page.getByText("Crop identity")).toBeVisible();
+      await page
+        .getByRole("button", { name: "Diagnose plant Blueberry Muffin #1" })
+        .click();
       await page.getByLabel("Diagnosis crop common name").fill("Cannabis");
       await page.getByLabel("Diagnosis scientific name").fill("Cannabis sativa");
-      await page
-        .getByLabel("Diagnosis cultivar or strain")
-        .fill("Blueberry Muffin HSC");
+      await page.getByLabel("Diagnosis cultivar or strain").fill("Blueberry Muffin HSC");
       await page
         .getByLabel("Diagnosis notes")
         .fill("Rust spots and calcium transport concern.");
@@ -154,6 +172,26 @@ test.describe("ETGU diagnosis intake", () => {
       await page.getByRole("button", { name: "Run diagnosis" }).click();
 
       await expect(page.getByText("Inputs")).toBeVisible();
+      expect(api.diagnosisPayloads[0]).toMatchObject({
+        cropCommonName: "Cannabis",
+        scientificName: "Cannabis sativa",
+        cultivarOrStrain: "Blueberry Muffin HSC",
+        cropProfileId: "crop-cannabis-1",
+        selectedPlantContext: {
+          id: "plant-etgu-1",
+          cropCommonName: "Cannabis",
+          scientificName: "Cannabis sativa",
+          cropProfileId: "crop-cannabis-1",
+          growthProfile: {
+            sizeMetrics: { canopyWidthCm: 85 },
+            waterUseProfile: { observedDemand: "high" },
+            phenoLabel: "vigorous"
+          }
+        },
+        plantGrowthProfile: {
+          timingAdjustments: { stageDaysOffset: 3 }
+        }
+      });
       await expect(page.getByText("Outputs")).toBeVisible();
       await expect(page.getByText(/commonName: Cannabis/)).toBeVisible();
       await expect(page.getByText("Matched crop profile: Cannabis")).toBeVisible();

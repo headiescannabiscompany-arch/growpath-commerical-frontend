@@ -77,8 +77,25 @@ export default function DiagnoseRoute() {
 
   useEffect(() => {
     if (!selectedPlant) return;
+    if (selectedPlant.cropCommonName) setCropCommonName(selectedPlant.cropCommonName);
+    if (selectedPlant.scientificName) setScientificName(selectedPlant.scientificName);
     setCultivarOrStrain(selectedPlant.cultivar || selectedPlant.strain || "");
   }, [selectedPlant]);
+
+  function selectedPlantContext() {
+    if (!selectedPlant) return null;
+    return {
+      id: String(selectedPlant.id || (selectedPlant as any)._id || ""),
+      name: selectedPlant.name || "",
+      cropCommonName: selectedPlant.cropCommonName || "",
+      scientificName: selectedPlant.scientificName || "",
+      cultivarOrStrain: selectedPlant.cultivar || selectedPlant.strain || "",
+      cropProfileId: selectedPlant.cropProfileId || null,
+      stage: selectedPlant.stage || selectedPlant.status || "",
+      medium: selectedPlant.medium || "",
+      growthProfile: selectedPlant.growthProfile || null
+    };
+  }
 
   async function choosePhoto() {
     const permission = await ImagePicker.requestMediaLibraryPermissionsAsync();
@@ -125,6 +142,9 @@ export default function DiagnoseRoute() {
         scientificName: scientificName.trim(),
         cultivarOrStrain: cultivarOrStrain.trim(),
         plantName: selectedPlant?.name,
+        selectedPlantContext: selectedPlantContext(),
+        cropProfileId: selectedPlant?.cropProfileId || undefined,
+        plantGrowthProfile: selectedPlant?.growthProfile || undefined,
         cultivar:
           cultivarOrStrain.trim() || selectedPlant?.cultivar || selectedPlant?.strain,
         pattern,
@@ -201,6 +221,9 @@ export default function DiagnoseRoute() {
         cropCommonName: cropCommonName.trim(),
         scientificName: scientificName.trim(),
         cultivarOrStrain: cultivarOrStrain.trim(),
+        selectedPlantContext: selectedPlantContext(),
+        cropProfileId: selectedPlant?.cropProfileId || undefined,
+        plantGrowthProfile: selectedPlant?.growthProfile || undefined,
         priorDiagnosisId: result.id || undefined,
         followUpQuestion: result.followUp,
         followUpAnswer: followUpAnswer.trim()
