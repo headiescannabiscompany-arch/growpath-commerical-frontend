@@ -50,7 +50,14 @@ async function installMocks(page: any) {
 
     if (method === "GET" && url.pathname === "/api/personal/plants") {
       return fulfillJson(route, {
-        plants: [{ id: "plant-etgu-1", name: "Plant ETGU", stage: "flower" }]
+        plants: [
+          {
+            id: "plant-etgu-1",
+            name: "Blueberry Muffin #1",
+            cultivar: "Blueberry Muffin HSC",
+            stage: "flower"
+          }
+        ]
       });
     }
 
@@ -68,6 +75,13 @@ async function installMocks(page: any) {
           rootZoneSummary: "moisture: too wet; concern: slow dryback",
           environmentSummary: "temp: 78; rh: 72; vpd: 0.7",
           numberSummary: "feedEC: 1.4; runoffEC: 2.8; feedPH: 6.0; runoffPH: 6.4",
+          cropIdentity: {
+            commonName: "Cannabis",
+            scientificName: "Cannabis sativa",
+            cultivarOrStrain: "Blueberry Muffin HSC",
+            confidence: "user_confirmed",
+            ambiguous: false
+          },
           likelyIssues: [
             {
               issue: "Possible calcium transport issue",
@@ -109,6 +123,12 @@ test.describe("ETGU diagnosis intake", () => {
       });
       await expect(page.getByText("Plant Issue Diagnosis")).toBeVisible();
 
+      await expect(page.getByText("Crop identity")).toBeVisible();
+      await page.getByLabel("Diagnosis crop common name").fill("Cannabis");
+      await page.getByLabel("Diagnosis scientific name").fill("Cannabis sativa");
+      await page
+        .getByLabel("Diagnosis cultivar or strain")
+        .fill("Blueberry Muffin HSC");
       await page
         .getByLabel("Diagnosis notes")
         .fill("Rust spots and calcium transport concern.");
@@ -124,6 +144,7 @@ test.describe("ETGU diagnosis intake", () => {
 
       await expect(page.getByText("Inputs")).toBeVisible();
       await expect(page.getByText("Outputs")).toBeVisible();
+      await expect(page.getByText(/commonName: Cannabis/)).toBeVisible();
       await expect(page.getByText("Formula / Why It Matters")).toBeVisible();
       await expect(page.getByText(/Counter-evidence/)).toBeVisible();
       await expect(page.getByRole("button", { name: "Save to Grow Log" })).toBeVisible();

@@ -17,6 +17,14 @@ export type NormalizedDiagnosis = {
   environmentSummary: string;
   numberSummary: string;
   urgency: string;
+  cropIdentity: {
+    commonName?: string;
+    scientificName?: string;
+    cultivarOrStrain?: string;
+    confidence?: string;
+    ambiguous?: boolean;
+    clarificationPrompt?: string;
+  };
 };
 
 function strings(value: unknown): string[] {
@@ -96,6 +104,7 @@ export function normalizeDiagnosisResponse(response: any): NormalizedDiagnosis {
       row?.environmentSummary || details?.environmentSummary || ""
     ),
     numberSummary: String(row?.numberSummary || details?.numberSummary || ""),
-    urgency: String(row?.urgency || details?.urgency || "")
+    urgency: String(row?.urgency || details?.urgency || ""),
+    cropIdentity: row?.cropIdentity || details?.cropIdentity || {}
   };
 }

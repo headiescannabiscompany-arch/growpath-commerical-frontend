@@ -39,6 +39,9 @@ export default function DiagnoseRoute() {
 
   const [plants, setPlants] = useState<PersonalPlant[]>([]);
   const [plantId, setPlantId] = useState(initialPlantId);
+  const [cropCommonName, setCropCommonName] = useState("Cannabis");
+  const [scientificName, setScientificName] = useState("");
+  const [cultivarOrStrain, setCultivarOrStrain] = useState("");
   const [stage, setStage] = useState("veg");
   const [patternLocation, setPatternLocation] = useState("upper new growth");
   const [rootMoisture, setRootMoisture] = useState("unknown");
@@ -71,6 +74,11 @@ export default function DiagnoseRoute() {
     () => plants.find((plant) => String(plant.id || (plant as any)._id) === plantId),
     [plantId, plants]
   );
+
+  useEffect(() => {
+    if (!selectedPlant) return;
+    setCultivarOrStrain(selectedPlant.cultivar || selectedPlant.strain || "");
+  }, [selectedPlant]);
 
   async function choosePhoto() {
     const permission = await ImagePicker.requestMediaLibraryPermissionsAsync();
@@ -113,8 +121,12 @@ export default function DiagnoseRoute() {
       const context = {
         notes: notes.trim(),
         stage,
+        cropCommonName: cropCommonName.trim(),
+        scientificName: scientificName.trim(),
+        cultivarOrStrain: cultivarOrStrain.trim(),
         plantName: selectedPlant?.name,
-        cultivar: selectedPlant?.cultivar || selectedPlant?.strain,
+        cultivar:
+          cultivarOrStrain.trim() || selectedPlant?.cultivar || selectedPlant?.strain,
         pattern,
         rootZone,
         environment,
@@ -186,6 +198,9 @@ export default function DiagnoseRoute() {
         plantId,
         notes,
         stage,
+        cropCommonName: cropCommonName.trim(),
+        scientificName: scientificName.trim(),
+        cultivarOrStrain: cultivarOrStrain.trim(),
         priorDiagnosisId: result.id || undefined,
         followUpQuestion: result.followUp,
         followUpAnswer: followUpAnswer.trim()
@@ -242,6 +257,37 @@ export default function DiagnoseRoute() {
           </View>
         </View>
       ) : null}
+
+      <View style={styles.section}>
+        <Text style={styles.label}>Crop identity</Text>
+        <Text style={styles.subtitle}>
+          Species/crop and cultivar are separate. Example: blueberry bush is not the same
+          as Blueberry Muffin HSC.
+        </Text>
+        <View style={styles.grid}>
+          <TextInput
+            style={styles.gridInput}
+            value={cropCommonName}
+            onChangeText={setCropCommonName}
+            placeholder="Crop: Cannabis, blueberry, olive..."
+            accessibilityLabel="Diagnosis crop common name"
+          />
+          <TextInput
+            style={styles.gridInput}
+            value={scientificName}
+            onChangeText={setScientificName}
+            placeholder="Scientific name optional"
+            accessibilityLabel="Diagnosis scientific name"
+          />
+          <TextInput
+            style={styles.gridInput}
+            value={cultivarOrStrain}
+            onChangeText={setCultivarOrStrain}
+            placeholder="Cultivar / strain"
+            accessibilityLabel="Diagnosis cultivar or strain"
+          />
+        </View>
+      </View>
 
       <Text style={styles.label}>Stage</Text>
       <View style={styles.row}>
@@ -466,11 +512,15 @@ export default function DiagnoseRoute() {
               feedEC,
               runoffEC,
               feedPH,
-              runoffPH
+              runoffPH,
+              cropCommonName,
+              scientificName,
+              cultivarOrStrain
             }}
             outputs={{
               diagnosisClass: result.diagnosisClass,
               urgency: result.urgency,
+              cropIdentity: result.cropIdentity,
               pattern: result.patternSummary,
               rootZone: result.rootZoneSummary,
               environment: result.environmentSummary,
