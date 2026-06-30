@@ -45,7 +45,10 @@ describe("buildPersonalHomeModel", () => {
           growId: "active",
           title: "Sooner",
           dueDate: "2026-06-21",
-          completed: false
+          completed: false,
+          priority: "high",
+          sourceType: "tool_run",
+          sourceToolRunId: "run-1"
         },
         {
           id: "task-3",
@@ -63,6 +66,18 @@ describe("buildPersonalHomeModel", () => {
     expect(model.activeGrowId).toBe("active");
     expect(model.latestLog?.id).toBe("right");
     expect(model.nextTask?.id).toBe("task-1");
+    expect(model.todayTasks).toEqual([
+      expect.objectContaining({
+        id: "task-1",
+        sourceLabel: "tool run",
+        sourceHref: "/home/personal/grows/active/tools"
+      }),
+      expect.objectContaining({
+        id: "task-2",
+        sourceLabel: "manual",
+        sourceHref: "/home/personal/grows/active/tasks"
+      })
+    ]);
     expect(model.openTaskCount).toBe(2);
     expect(model.latestToolRun?.toolType).toBe("vpd");
     expect(model.stats).toMatchObject({

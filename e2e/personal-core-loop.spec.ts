@@ -313,7 +313,7 @@ async function installCoreLoopMocks(page: any) {
         sourceToolRunId: toolRunId,
         sourceObjectId: toolRunId,
         createdAt: "2026-06-30T16:20:00.000Z",
-        dueDate: "2026-07-01T16:20:00.000Z"
+        dueDate: "2026-06-30T18:00:00.000Z"
       };
       state.tasks = [task];
       return fulfillJson(route, { task, created: task }, 201);
@@ -450,6 +450,12 @@ test("personal grow core loop persists and reappears in timeline", async ({ page
         sourceToolRunId: "toolrun-core-vpd-1"
       })
     );
+
+  await page.goto("/home/personal", { waitUntil: "domcontentloaded" });
+  await expect(page.getByText("Today's tasks")).toBeVisible();
+  await expect(page.getByText("Follow up: vpd")).toBeVisible();
+  await expect(page.getByText(/Source: tool run/)).toBeVisible();
+  await expect(page.getByText("Open Source")).toBeVisible();
 
   await page.goto("/home/personal/grows/grow-core-loop-1/timeline", {
     waitUntil: "domcontentloaded"

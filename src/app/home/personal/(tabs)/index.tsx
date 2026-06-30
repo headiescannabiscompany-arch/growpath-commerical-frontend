@@ -20,7 +20,7 @@ type HomeModel = ReturnType<typeof buildPersonalHomeModel>;
 function ActionLink({ href, label }: { href: string; label: string }) {
   return (
     <Link href={href} asChild>
-      <Pressable style={styles.action}>
+      <Pressable style={styles.action} accessibilityRole="button">
         <Text style={styles.actionText}>{label}</Text>
       </Pressable>
     </Link>
@@ -139,12 +139,35 @@ export default function PersonalHomeTab() {
         <View style={styles.section}>
           <Text style={styles.sectionTitle}>Today</Text>
           <AppCard>
-            <Text style={styles.cardTitle}>Next task</Text>
-            <Text style={styles.cardDescription}>
-              {model.nextTask
-                ? `${model.nextTask.title} | ${fmtDate(model.nextTask.dueDate)}`
-                : "No open task is scheduled for this grow."}
-            </Text>
+            <Text style={styles.cardTitle}>Today's tasks</Text>
+            {model.todayTasks.length ? (
+              <View style={styles.taskList}>
+                {model.todayTasks.map((task) => (
+                  <View key={task.id} style={styles.taskRow}>
+                    <Text style={styles.taskTitle}>{task.title}</Text>
+                    <Text style={styles.taskMeta}>
+                      Due {fmtDate(task.dueDate)} | {task.priority || "medium"} | Source:{" "}
+                      {task.sourceLabel}
+                    </Text>
+                    <Link href={task.sourceHref} asChild>
+                      <Pressable
+                        style={styles.inlineAction}
+                        accessibilityRole="button"
+                        accessibilityLabel={`Open source for ${task.title}`}
+                      >
+                        <Text style={styles.inlineActionText}>Open Source</Text>
+                      </Pressable>
+                    </Link>
+                  </View>
+                ))}
+              </View>
+            ) : (
+              <Text style={styles.cardDescription}>
+                {model.nextTask
+                  ? `Next: ${model.nextTask.title} | ${fmtDate(model.nextTask.dueDate)}`
+                  : "No open task is scheduled for this grow."}
+              </Text>
+            )}
             <ActionLink href={`${growHref}/tasks`} label="View Tasks" />
           </AppCard>
           <AppCard>
@@ -205,6 +228,16 @@ const styles = StyleSheet.create({
   metricValue: { fontSize: 17, fontWeight: "800", color: "#0F172A" },
   metricLabel: { color: "#64748B", fontSize: 12 },
   actions: { flexDirection: "row", flexWrap: "wrap", gap: 8 },
+  taskList: { gap: 10, marginBottom: 10 },
+  taskRow: {
+    borderWidth: 1,
+    borderColor: "#E2E8F0",
+    borderRadius: 8,
+    padding: 10,
+    backgroundColor: "#F8FAFC"
+  },
+  taskTitle: { color: "#0F172A", fontWeight: "800" },
+  taskMeta: { marginTop: 4, color: "#64748B", fontSize: 12, lineHeight: 17 },
   action: {
     borderWidth: 1,
     borderColor: "#166534",
@@ -214,5 +247,16 @@ const styles = StyleSheet.create({
     backgroundColor: "#FFFFFF"
   },
   actionText: { color: "#166534", fontWeight: "800" },
+  inlineAction: {
+    marginTop: 8,
+    alignSelf: "flex-start",
+    borderWidth: 1,
+    borderColor: "#CBD5E1",
+    borderRadius: 8,
+    paddingHorizontal: 9,
+    paddingVertical: 6,
+    backgroundColor: "#FFFFFF"
+  },
+  inlineActionText: { color: "#0F172A", fontWeight: "800", fontSize: 12 },
   error: { color: "#B91C1C", fontWeight: "700" }
 });
