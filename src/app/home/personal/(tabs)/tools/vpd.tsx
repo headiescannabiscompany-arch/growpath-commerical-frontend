@@ -225,6 +225,16 @@ export default function VpdToolScreen() {
             value: model.valid ? `${model.tempC.toFixed(1)} °C` : "—"
           }
         ]}
+        inputs={
+          serverRun?.inputs || {
+            airTemp: Number(tempText),
+            tempUnit: unit,
+            rh: Number(rhText),
+            leafTempOffsetC: Number(leafOffsetText),
+            stage
+          }
+        }
+        outputs={serverRun?.outputs || serverResult || undefined}
         notices={
           serverResult?.status && serverResult.status !== "in_range"
             ? [
@@ -239,6 +249,20 @@ export default function VpdToolScreen() {
             : []
         }
         recommendations={serverResult?.recommendations || []}
+        formulas={
+          serverRun?.formulas?.length
+            ? serverRun.formulas
+            : [
+                "VPD uses saturation vapor pressure, air temperature, relative humidity, and leaf temperature offset."
+              ]
+        }
+        uncertainty={
+          serverRun?.uncertainty ||
+          "Sensor placement, leaf temperature, and stage target ranges can shift the final recommendation."
+        }
+        confidence={
+          serverRun?.confidence || (serverResult ? "server-calculated" : "local-preview")
+        }
         assumptions={[
           "The local preview uses air temperature; the server result applies leaf-temperature offset and stage targets.",
           "Verify sensor placement and calibration before changing environmental controls."

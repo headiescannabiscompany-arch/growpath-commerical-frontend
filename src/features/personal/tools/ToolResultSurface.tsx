@@ -32,27 +32,75 @@ type ToolResultSurfaceProps = {
   status?: string;
   summary?: string;
   metrics: ToolResultMetric[];
+  inputs?: Record<string, any> | null;
+  outputs?: Record<string, any> | null;
   notices?: ToolResultNotice[];
   recommendations?: string[];
   assumptions?: string[];
+  formulas?: string[];
+  uncertainty?: string | Record<string, any> | null;
+  confidence?: string | null;
   actions?: ToolResultAction[];
   feedback?: string;
   contextMessage?: string;
   details?: React.ReactNode;
+  copyPayload?: unknown;
+  onReuseInputs?: () => void | Promise<void>;
+  onAskAI?: () => void | Promise<void>;
 };
+
+function canCopyText() {
+  return typeof navigator !== "undefined" && Boolean(navigator.clipboard?.writeText);
+}
+
+function formatScalar(value: any): string {
+  if (value == null || value === "") return "-";
+  if (typeof value === "number") {
+    return Number.isInteger(value) ? String(value) : value.toFixed(2);
+  }
+  if (typeof value === "boolean") return value ? "Yes" : "No";
+  if (Array.isArray(value)) return value.map(formatScalar).join(", ");
+  if (typeof value === "object") return JSON.stringify(value);
+  return String(value);
+}
+
+function compactEntries(data?: Record<string, any> | null) {
+  if (!data || typeof data !== "object") return [];
+  return Object.entries(data)
+    .filter(([, value]) => value !== undefined)
+    .slice(0, 8)
+    .map(([key, value]) => ({
+      key,
+      label: key.replace(/([a-z])([A-Z])/g, "$1 $2").replaceAll("_", " "),
+      value: formatScalar(value)
+    }));
+}
+
+async function copyResult(payload: unknown) {
+  if (!canCopyText()) throw new Error("Copy is unavailable in this runtime.");
+  await navigator.clipboard.writeText(JSON.stringify(payload, null, 2));
+}
 
 export default function ToolResultSurface({
   title = "Result",
   status,
   summary,
   metrics,
+  inputs,
+  outputs,
   notices = [],
   recommendations = [],
   assumptions = [],
+  formulas = [],
+  uncertainty,
+  confidence,
   actions = [],
   feedback,
   contextMessage,
-  details
+  details,
+  copyPayload,
+  onReuseInputs,
+  onAskAI
 }: ToolResultSurfaceProps) {
   const [activeAction, setActiveAction] = useState<string | null>(null);
   const [actionFeedback, setActionFeedback] = useState("");
@@ -71,6 +119,62 @@ export default function ToolResultSurface({
     }
   }
 
+  const inputEntries = compactEntries(inputs);
+  const outputEntries = compactEntries(outputs);
+  const standardActions: ToolResultAction[] = [
+    ...(canCopyText()
+      ? [
+          {
+            key: "copy-result",
+            label: "Copy Result",
+            variant: "secondary" as const,
+            pendingLabel: "Copying...",
+            successMessage: "Result copied.",
+            onPress: () =>
+              copyResult(
+                copyPayload ?? {
+                  title,
+                  status,
+                  summary,
+                  inputs,
+                  outputs,
+                  metrics,
+                  notices,
+                  recommendations,
+                  formulas,
+                  uncertainty,
+                  confidence
+                }
+              )
+          }
+        ]
+      : []),
+    ...(onReuseInputs
+      ? [
+          {
+            key: "reuse-inputs",
+            label: "Reuse Inputs",
+            variant: "secondary" as const,
+            pendingLabel: "Loading...",
+            successMessage: "Inputs restored.",
+            onPress: onReuseInputs
+          }
+        ]
+      : []),
+    ...(onAskAI
+      ? [
+          {
+            key: "ask-ai",
+            label: "Ask AI About This",
+            variant: "secondary" as const,
+            pendingLabel: "Opening...",
+            onPress: onAskAI
+          }
+        ]
+      : [])
+  ];
+  const allActions = [...actions, ...standardActions];
+
   return (
     <View style={styles.card} accessibilityRole="summary">
       <View style={styles.header}>
@@ -88,6 +192,33 @@ export default function ToolResultSurface({
           </View>
         ))}
       </View>
+
+      {inputEntries.length || outputEntries.length ? (
+        <View style={styles.dataGrid}>
+          {inputEntries.length ? (
+            <View style={styles.dataColumn}>
+              <Text style={styles.sectionTitle}>Inputs</Text>
+              {inputEntries.map((entry) => (
+                <View key={`input-${entry.key}`} style={styles.dataRow}>
+                  <Text style={styles.dataLabel}>{entry.label}</Text>
+                  <Text style={styles.dataValue}>{entry.value}</Text>
+                </View>
+              ))}
+            </View>
+          ) : null}
+          {outputEntries.length ? (
+            <View style={styles.dataColumn}>
+              <Text style={styles.sectionTitle}>Outputs</Text>
+              {outputEntries.map((entry) => (
+                <View key={`output-${entry.key}`} style={styles.dataRow}>
+                  <Text style={styles.dataLabel}>{entry.label}</Text>
+                  <Text style={styles.dataValue}>{entry.value}</Text>
+                </View>
+              ))}
+            </View>
+          ) : null}
+        </View>
+      ) : null}
 
       {notices.map((notice) => (
         <View
@@ -116,9 +247,36 @@ export default function ToolResultSurface({
           <Text style={styles.sectionTitle}>Recommendations</Text>
           {recommendations.map((item) => (
             <Text key={item} style={styles.listItem}>
-              • {item}
+              - {item}
             </Text>
           ))}
+        </View>
+      ) : null}
+
+      {formulas.length ? (
+        <View style={styles.section}>
+          <Text style={styles.sectionTitle}>Formula / Why It Matters</Text>
+          {formulas.map((item) => (
+            <Text key={item} style={styles.detail}>
+              - {item}
+            </Text>
+          ))}
+        </View>
+      ) : null}
+
+      {uncertainty || confidence ? (
+        <View style={styles.section}>
+          <Text style={styles.sectionTitle}>Uncertainty / Confidence</Text>
+          {confidence ? (
+            <Text style={styles.detail}>Confidence: {confidence}</Text>
+          ) : null}
+          {uncertainty ? (
+            <Text style={styles.detail}>
+              {typeof uncertainty === "string"
+                ? uncertainty
+                : JSON.stringify(uncertainty)}
+            </Text>
+          ) : null}
         </View>
       ) : null}
 
@@ -127,15 +285,15 @@ export default function ToolResultSurface({
           <Text style={styles.sectionTitle}>Assumptions</Text>
           {assumptions.map((item) => (
             <Text key={item} style={styles.detail}>
-              • {item}
+              - {item}
             </Text>
           ))}
         </View>
       ) : null}
 
-      {actions.length ? (
+      {allActions.length ? (
         <View style={styles.actions}>
-          {actions.map((action) => {
+          {allActions.map((action) => {
             const pending = activeAction === action.key;
             return (
               <Pressable
@@ -181,7 +339,7 @@ const styles = StyleSheet.create({
   card: {
     borderWidth: 1,
     borderColor: "#CBD5E1",
-    borderRadius: 14,
+    borderRadius: 8,
     backgroundColor: "#F8FAFC",
     padding: 14,
     gap: 10
@@ -210,7 +368,7 @@ const styles = StyleSheet.create({
     flexGrow: 1,
     borderWidth: 1,
     borderColor: "#E2E8F0",
-    borderRadius: 10,
+    borderRadius: 8,
     backgroundColor: "#FFFFFF",
     padding: 10,
     gap: 3
@@ -218,7 +376,39 @@ const styles = StyleSheet.create({
   metricLabel: { color: "#64748B", fontSize: 12, fontWeight: "700" },
   metricValue: { color: "#0F172A", fontSize: 18, fontWeight: "800" },
   detail: { color: "#64748B", fontSize: 12, lineHeight: 18 },
-  notice: { borderRadius: 10, padding: 10, gap: 4 },
+  dataGrid: { flexDirection: "row", flexWrap: "wrap", gap: 10 },
+  dataColumn: {
+    minWidth: 210,
+    flexGrow: 1,
+    flexBasis: 240,
+    borderWidth: 1,
+    borderColor: "#E2E8F0",
+    borderRadius: 8,
+    backgroundColor: "#FFFFFF",
+    padding: 10,
+    gap: 6
+  },
+  dataRow: {
+    flexDirection: "row",
+    justifyContent: "space-between",
+    alignItems: "flex-start",
+    gap: 10
+  },
+  dataLabel: {
+    flex: 1,
+    color: "#64748B",
+    fontSize: 12,
+    fontWeight: "700",
+    textTransform: "capitalize"
+  },
+  dataValue: {
+    flex: 1.25,
+    color: "#0F172A",
+    fontSize: 12,
+    fontWeight: "700",
+    textAlign: "right"
+  },
+  notice: { borderRadius: 8, padding: 10, gap: 4 },
   noticeHigh: { backgroundColor: "#FEE2E2" },
   noticeMedium: { backgroundColor: "#FFEDD5" },
   noticeInfo: { backgroundColor: "#E0F2FE" },
@@ -231,7 +421,7 @@ const styles = StyleSheet.create({
   actions: { flexDirection: "row", flexWrap: "wrap", gap: 8 },
   action: {
     borderWidth: 1,
-    borderRadius: 9,
+    borderRadius: 8,
     paddingHorizontal: 12,
     paddingVertical: 9
   },

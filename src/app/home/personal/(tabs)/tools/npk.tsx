@@ -565,12 +565,27 @@ export default function NpkToolScreen() {
             value: String(value),
             detail: "ppm elemental"
           }))}
+          inputs={toolRun?.inputs || recipePayload()}
+          outputs={toolRun?.outputs || result}
           notices={(result.warnings || []).map((warning: string, index: number) => ({
             key: `warning-${index}`,
             severity: "medium" as const,
             message: warning
           }))}
           recommendations={result.recommendations || []}
+          formulas={
+            toolRun?.formulas?.length
+              ? toolRun.formulas
+              : [
+                  result.formula ||
+                    "Fertilizer label P and K are converted from oxide label values to elemental ppm."
+                ]
+          }
+          uncertainty={
+            toolRun?.uncertainty ||
+            "Ingredient labels, density assumptions, water baseline, and product source confidence affect nutrient totals."
+          }
+          confidence={toolRun?.confidence || "beta-calculator"}
           assumptions={[result.releaseDisclaimer].filter(Boolean)}
           details={
             <>
