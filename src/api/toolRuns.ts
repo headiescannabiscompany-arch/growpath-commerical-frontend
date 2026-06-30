@@ -163,6 +163,19 @@ export async function createTaskFromToolRun(
   });
 }
 
+export async function getToolRun(toolRunId: string): Promise<ToolRun | null> {
+  try {
+    const res: any = await apiRequest(
+      `/api/tools/runs/${encodeURIComponent(toolRunId)}`,
+      { method: "GET" }
+    );
+    const row = res?.toolRun ?? res?.data?.toolRun ?? res;
+    return normalizeToolRun(row);
+  } catch (_err) {
+    return null;
+  }
+}
+
 export async function listToolRuns(options?: { growId?: string }): Promise<ToolRun[]> {
   try {
     const res: any = await apiRequest("/api/tools", {

@@ -4,7 +4,7 @@ jest.mock("@/api/apiRequest", () => ({
   apiRequest: (...args: any[]) => mockApiRequest(...args)
 }));
 
-const { createToolRun, runCalculator } = require("@/api/toolRuns");
+const { createToolRun, getToolRun, runCalculator } = require("@/api/toolRuns");
 
 describe("toolRuns API", () => {
   beforeEach(() => {
@@ -96,5 +96,30 @@ describe("toolRuns API", () => {
     });
     expect(response.toolRun.plantId).toBe("plant-1");
     expect(response.toolRun.cropProfileId).toBe("crop-blueberry-1");
+  });
+
+  it("reloads a saved tool run by id", async () => {
+    mockApiRequest.mockResolvedValueOnce({
+      toolRun: {
+        _id: "run-reload-1",
+        toolType: "dew_point_guard",
+        input: { rh: 84 },
+        result: { risk: "high" },
+        schemaVersion: 2,
+        calculatorVersion: "guard-v2"
+      }
+    });
+
+    const run = await getToolRun("run-reload-1");
+
+    expect(mockApiRequest).toHaveBeenCalledWith("/api/tools/runs/run-reload-1", {
+      method: "GET"
+    });
+    expect(run?._id).toBe("run-reload-1");
+    expect(run?.toolName).toBe("dew_point_guard");
+    expect(run?.inputs).toEqual({ rh: 84 });
+    expect(run?.outputs).toEqual({ risk: "high" });
+    expect(run?.schemaVersion).toBe(2);
+    expect(run?.calculatorVersion).toBe("guard-v2");
   });
 });
