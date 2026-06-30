@@ -56,6 +56,7 @@ export default function DiagnoseRoute() {
   const [notes, setNotes] = useState("");
   const [photoUri, setPhotoUri] = useState("");
   const [result, setResult] = useState<NormalizedDiagnosis | null>(null);
+  const [acceptedTags, setAcceptedTags] = useState<string[]>([]);
   const [followUpAnswer, setFollowUpAnswer] = useState("");
   const [outcomeNotes, setOutcomeNotes] = useState("");
   const [outcomeSaving, setOutcomeSaving] = useState(false);
@@ -157,7 +158,9 @@ export default function DiagnoseRoute() {
       const response = photoUri
         ? await diagnoseImage(photoUri, { growId, plantId, context })
         : await analyzeDiagnosis({ growId, plantId, ...context });
-      setResult(normalizeDiagnosisResponse(response));
+      const normalized = normalizeDiagnosisResponse(response);
+      setResult(normalized);
+      setAcceptedTags(normalized.tags);
     } catch (error: any) {
       setFeedback(error?.message || "Unable to run diagnosis.");
     } finally {
@@ -188,7 +191,7 @@ export default function DiagnoseRoute() {
       ]
         .filter(Boolean)
         .join("\n"),
-      tags: result.tags
+      tags: acceptedTags
     });
     if (!created) throw new Error("Unable to save diagnosis to the grow journal.");
     setFeedback("Diagnosis saved to grow journal.");
@@ -230,7 +233,9 @@ export default function DiagnoseRoute() {
         followUpQuestion: result.followUp,
         followUpAnswer: followUpAnswer.trim()
       });
-      setResult(normalizeDiagnosisResponse(response));
+      const normalized = normalizeDiagnosisResponse(response);
+      setResult(normalized);
+      setAcceptedTags(normalized.tags);
       setFollowUpAnswer("");
     } catch (error: any) {
       setFeedback(error?.message || "Unable to submit follow-up context.");
@@ -294,6 +299,14 @@ export default function DiagnoseRoute() {
               "Use the diagnosis as cautious triage; crop-specific defaults may need confirmation or curation."
           }
     : null;
+
+  function toggleAcceptedTag(tag: string) {
+    setAcceptedTags((current) =>
+      current.includes(tag)
+        ? current.filter((item) => item !== tag)
+        : Array.from(new Set([...current, tag]))
+    );
+  }
 
   return (
     <ScrollView contentContainerStyle={styles.container}>
@@ -679,6 +692,32 @@ export default function DiagnoseRoute() {
               !growId ? "Select a grow to enable log and task actions." : undefined
             }
           />
+          {result.tags.length ? (
+            <View style={styles.followUpCard}>
+              <Text style={styles.label}>Accepted tags</Text>
+              <Text style={styles.subtitle}>
+                Choose which diagnosis tags should be saved to the grow journal.
+              </Text>
+              <View style={styles.row}>
+                {result.tags.map((tag) => {
+                  const accepted = acceptedTags.includes(tag);
+                  return (
+                    <Pressable
+                      key={tag}
+                      style={[styles.pill, accepted && styles.pillOn]}
+                      onPress={() => toggleAcceptedTag(tag)}
+                      accessibilityRole="button"
+                      accessibilityLabel={`Diagnosis tag ${tag}`}
+                    >
+                      <Text style={[styles.pillText, accepted && styles.pillTextOn]}>
+                        {tag}
+                      </Text>
+                    </Pressable>
+                  );
+                })}
+              </View>
+            </View>
+          ) : null}
           <View style={styles.followUpCard}>
             <Text style={styles.label}>Improve this diagnosis</Text>
             <Text style={styles.subtitle}>
