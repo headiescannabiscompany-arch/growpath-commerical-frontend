@@ -14,6 +14,9 @@ export interface ToolRun {
   outputs?: Record<string, any>;
   schemaVersion?: number;
   calculatorVersion?: string;
+  status?: string;
+  formulas?: string[];
+  uncertainty?: any;
   sourceType?: string;
   sourceObjectId?: string | null;
   summary?: string;
@@ -21,8 +24,11 @@ export interface ToolRun {
   warnings?: string[];
   confidence?: string | null;
   linkedLogId?: string | null;
+  linkedTaskIds?: string[];
   linkedTaskId?: string | null;
+  linkedDiagnosisId?: string | null;
   linkedRecipeId?: string | null;
+  immutableSnapshot?: Record<string, any> | null;
   createdAt?: string;
 }
 
@@ -67,6 +73,26 @@ export function normalizeToolRun(row: any): ToolRun {
     ? Number(row.schemaVersion)
     : 1;
   normalized.calculatorVersion = String(row?.calculatorVersion || "legacy");
+  normalized.status = String(row?.status || "completed");
+  normalized.formulas = Array.isArray(row?.formulas) ? row.formulas : [];
+  normalized.linkedTaskIds = Array.isArray(row?.linkedTaskIds)
+    ? row.linkedTaskIds.map(String)
+    : row?.linkedTaskId
+      ? [String(row.linkedTaskId)]
+      : [];
+  normalized.immutableSnapshot =
+    row?.immutableSnapshot && typeof row.immutableSnapshot === "object"
+      ? row.immutableSnapshot
+      : {
+          toolName: normalized.toolName,
+          toolType: normalized.toolType,
+          growId: row?.growId || null,
+          plantId: row?.plantId || null,
+          schemaVersion: normalized.schemaVersion,
+          calculatorVersion: normalized.calculatorVersion,
+          inputs,
+          outputs
+        };
 
   return normalized;
 }
