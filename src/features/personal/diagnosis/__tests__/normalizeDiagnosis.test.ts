@@ -1,4 +1,7 @@
-import { normalizeDiagnosisResponse } from "../normalizeDiagnosis";
+import {
+  DIAGNOSIS_SAFETY_DISCLAIMER,
+  normalizeDiagnosisResponse
+} from "../normalizeDiagnosis";
 
 describe("normalizeDiagnosisResponse", () => {
   it("normalizes nested provider output", () => {
@@ -36,9 +39,10 @@ describe("normalizeDiagnosisResponse", () => {
   });
 
   it("labels missing provider provenance as unverified", () => {
-    expect(normalizeDiagnosisResponse({ issueSummary: "Healthy" }).source).toBe(
-      "unverified"
-    );
+    const result = normalizeDiagnosisResponse({ issueSummary: "Healthy" });
+
+    expect(result.source).toBe("unverified");
+    expect(result.explanation).toBe(DIAGNOSIS_SAFETY_DISCLAIMER);
   });
 
   it("normalizes legacy analyze details envelope", () => {

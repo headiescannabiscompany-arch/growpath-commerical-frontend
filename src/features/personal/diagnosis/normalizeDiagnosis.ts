@@ -46,6 +46,9 @@ export type NormalizedDiagnosis = {
   } | null;
 };
 
+export const DIAGNOSIS_SAFETY_DISCLAIMER =
+  "GrowPathAI provides plant-health triage, not a guaranteed lab diagnosis. Confirm with environment, medium, water, and testing when possible.";
+
 function strings(value: unknown): string[] {
   return Array.isArray(value)
     ? value
@@ -104,7 +107,10 @@ export function normalizeDiagnosisResponse(response: any): NormalizedDiagnosis {
     actions: actions.length ? actions : strings(details?.recommendations),
     tags: strings(row?.tags ?? details?.suggestedTags ?? details?.tags),
     explanation: String(
-      row?.aiExplanation || row?.explanation || details?.disclaimer || ""
+      row?.aiExplanation ||
+        row?.explanation ||
+        details?.disclaimer ||
+        DIAGNOSIS_SAFETY_DISCLAIMER
     ),
     followUp: String(
       row?.followUp ||
