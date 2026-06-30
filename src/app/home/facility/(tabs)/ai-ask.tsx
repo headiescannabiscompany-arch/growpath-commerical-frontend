@@ -183,6 +183,19 @@ const PRESETS: Preset[] = [
     summary: "Estimate scaled recipe cost from saved product unit costs."
   },
   {
+    key: "target-ec",
+    title: "Target EC",
+    audience: "Cultivation / fertigation",
+    tool: "ec",
+    fn: "targetEC",
+    args: {
+      stage: "flower",
+      medium: "coco",
+      cultivarId: "cultivar-demo-1"
+    },
+    summary: "Find a stage and medium target EC band for feed planning."
+  },
+  {
     key: "harvest",
     title: "Harvest window",
     audience: "Cultivation",
