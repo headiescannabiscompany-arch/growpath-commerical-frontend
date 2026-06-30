@@ -1,5 +1,5 @@
 import React from "react";
-import { render, waitFor } from "@testing-library/react-native";
+import { fireEvent, render, waitFor } from "@testing-library/react-native";
 
 import GrowTimelineScreen from "@/app/home/personal/(tabs)/grows/[growId]/timeline";
 
@@ -33,6 +33,26 @@ describe("GrowTimelineScreen", () => {
     jest.resetAllMocks();
     mockGetPersonalGrowTimeline.mockResolvedValue([
       {
+        id: "GrowLog:log-1",
+        type: "log_created",
+        sourceModel: "GrowLog",
+        sourceId: "log-1",
+        title: "Watered blueberry",
+        summary: "Added 500 ml.",
+        timestamp: "2026-06-30T11:00:00.000Z",
+        tags: ["journal"]
+      },
+      {
+        id: "Photo:log-1:0",
+        type: "photo_added",
+        sourceModel: "GrowLog",
+        sourceId: "log-1",
+        title: "Photo attached",
+        summary: "/uploads/leaf.jpg",
+        timestamp: "2026-06-30T11:30:00.000Z",
+        tags: ["photo"]
+      },
+      {
         id: "Diagnosis:diag-1",
         type: "diagnosis_created",
         sourceModel: "Diagnosis",
@@ -63,6 +83,26 @@ describe("GrowTimelineScreen", () => {
           providerName: "OpenAI",
           providerModel: "gpt-test"
         }
+      },
+      {
+        id: "ToolRun:run-1",
+        type: "tool_run_created",
+        sourceModel: "ToolRun",
+        sourceId: "run-1",
+        title: "VPD result saved",
+        summary: "Saved VPD result.",
+        timestamp: "2026-06-30T14:00:00.000Z",
+        tags: ["tool", "vpd"]
+      },
+      {
+        id: "Task:task-1",
+        type: "task_created",
+        sourceModel: "Task",
+        sourceId: "task-1",
+        title: "Review irrigation",
+        summary: "Tool-created task.",
+        timestamp: "2026-06-30T15:00:00.000Z",
+        tags: ["task"]
       }
     ]);
   });
@@ -83,5 +123,30 @@ describe("GrowTimelineScreen", () => {
     expect(screen.getByText("Confirmed issue: Heat stress")).toBeTruthy();
     expect(screen.getByText("Actions: Raised light, Increased airflow")).toBeTruthy();
     expect(screen.getByText("Provider: OpenAI, gpt-test")).toBeTruthy();
+    expect(screen.getAllByText("Open Journal Source")).toHaveLength(2);
+    expect(screen.getAllByText("Open Diagnosis Source")).toHaveLength(2);
+    expect(screen.getByText("Open Tool Source")).toBeTruthy();
+    expect(screen.getByText("Open Task Source")).toBeTruthy();
+  });
+
+  it("filters timeline events by canonical event group", async () => {
+    const screen = render(<GrowTimelineScreen />);
+
+    await waitFor(() =>
+      expect(mockGetPersonalGrowTimeline).toHaveBeenCalledWith("grow-1")
+    );
+
+    fireEvent.press(screen.getByText("Journal"));
+    expect(screen.getByText("Watered blueberry")).toBeTruthy();
+    expect(screen.getByText("Photo attached")).toBeTruthy();
+    expect(screen.queryByText("VPD result saved")).toBeNull();
+
+    fireEvent.press(screen.getByText("Tools"));
+    expect(screen.getByText("VPD result saved")).toBeTruthy();
+    expect(screen.queryByText("Watered blueberry")).toBeNull();
+
+    fireEvent.press(screen.getByText("Tasks"));
+    expect(screen.getByText("Review irrigation")).toBeTruthy();
+    expect(screen.queryByText("VPD result saved")).toBeNull();
   });
 });

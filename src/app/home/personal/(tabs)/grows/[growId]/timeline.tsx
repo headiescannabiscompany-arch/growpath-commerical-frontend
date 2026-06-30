@@ -1,6 +1,6 @@
 import React, { useCallback, useMemo, useState } from "react";
 import { useFocusEffect } from "@react-navigation/native";
-import { useLocalSearchParams } from "expo-router";
+import { Link, useLocalSearchParams } from "expo-router";
 import {
   ActivityIndicator,
   Pressable,
@@ -63,6 +63,17 @@ const styles = StyleSheet.create({
     fontSize: 12,
     lineHeight: 17
   },
+  sourceAction: {
+    marginTop: 10,
+    alignSelf: "flex-start",
+    borderWidth: 1,
+    borderColor: "#CBD5E1",
+    borderRadius: 8,
+    paddingHorizontal: 10,
+    paddingVertical: 7,
+    backgroundColor: "#FFFFFF"
+  },
+  sourceActionText: { color: "#0F172A", fontSize: 12, fontWeight: "800" },
   tags: { flexDirection: "row", flexWrap: "wrap", gap: 6, marginTop: 10 },
   tag: {
     borderRadius: 8,
@@ -83,11 +94,22 @@ const styles = StyleSheet.create({
   error: { marginTop: 12, color: "#B91C1C" }
 });
 
+function eventGroup(event: PersonalGrowTimelineEvent) {
+  const type = String(event.type || "").toLowerCase();
+  const model = String(event.sourceModel || "").toLowerCase();
+  if (type.includes("photo") || type.includes("log") || model.includes("growlog")) {
+    return "log";
+  }
+  if (type.includes("task") || model.includes("task")) return "task";
+  if (type.includes("tool") || model.includes("toolrun")) return "tool";
+  if (type.includes("diagnosis") || model.includes("diagnosis")) return "diagnosis";
+  if (type.includes("automation") || model.includes("automation")) return "automation";
+  return "other";
+}
+
 function eventMatchesFilter(event: PersonalGrowTimelineEvent, filter: string) {
   if (filter === "all") return true;
-  return String(event.type || event.sourceModel || "")
-    .toLowerCase()
-    .includes(filter);
+  return eventGroup(event) === filter;
 }
 
 function eventKind(event: PersonalGrowTimelineEvent) {
@@ -125,6 +147,48 @@ function eventPayloadDetails(event: PersonalGrowTimelineEvent) {
     ].filter(Boolean) as string[];
   }
   return [];
+}
+
+function sourceHref(event: PersonalGrowTimelineEvent, growId: string) {
+  const sourceId = String(event.sourceId || "");
+  const model = String(event.sourceModel || "").toLowerCase();
+  const type = String(event.type || "").toLowerCase();
+  const growPath = `/home/personal/grows/${encodeURIComponent(growId)}`;
+
+  if (!growId) return "";
+  if (
+    sourceId &&
+    (model.includes("growlog") || type.includes("log") || type.includes("photo"))
+  ) {
+    return `/home/personal/logs/${encodeURIComponent(sourceId)}`;
+  }
+  if (model.includes("toolrun") || type.includes("tool")) return `${growPath}/tools`;
+  if (model.includes("task") || type.includes("task")) return `${growPath}/tasks`;
+  if (model.includes("automation") || type.includes("automation")) {
+    return `${growPath}/automation`;
+  }
+  if (model.includes("plant") || type.includes("plant")) return `${growPath}/plants`;
+  if (model.includes("diagnosis") || type.includes("diagnosis")) {
+    return `/home/personal/diagnose?growId=${encodeURIComponent(growId)}`;
+  }
+  if (model.includes("grow") || type.includes("grow")) return growPath;
+  return "";
+}
+
+function sourceLabel(event: PersonalGrowTimelineEvent) {
+  const group = eventGroup(event);
+  if (group === "log") return "Open Journal Source";
+  if (group === "task") return "Open Task Source";
+  if (group === "tool") return "Open Tool Source";
+  if (group === "diagnosis") return "Open Diagnosis Source";
+  if (group === "automation") return "Open Automation Source";
+  if (
+    String(event.type || "")
+      .toLowerCase()
+      .includes("plant")
+  )
+    return "Open Plant Source";
+  return "Open Source";
 }
 
 export default function GrowTimelineScreen() {
@@ -214,6 +278,17 @@ export default function GrowTimelineScreen() {
               {detail}
             </Text>
           ))}
+          {sourceHref(event, growId) ? (
+            <Link href={sourceHref(event, growId)} asChild>
+              <Pressable
+                style={styles.sourceAction}
+                accessibilityRole="button"
+                accessibilityLabel={`${sourceLabel(event)}: ${event.title}`}
+              >
+                <Text style={styles.sourceActionText}>{sourceLabel(event)}</Text>
+              </Pressable>
+            </Link>
+          ) : null}
           {Array.isArray(event.tags) && event.tags.length ? (
             <View style={styles.tags}>
               {event.tags.slice(0, 5).map((tag) => (

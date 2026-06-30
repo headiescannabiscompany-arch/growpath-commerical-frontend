@@ -466,6 +466,9 @@ test("personal grow core loop persists and reappears in timeline", async ({ page
   await expect(page.getByText("Photo attached to log")).toBeVisible();
   await expect(page.getByText("vpd result saved")).toBeVisible();
   await expect(page.getByText("Follow up: vpd")).toBeVisible();
+  await expect(page.getByText("Open Journal Source").first()).toBeVisible();
+  await expect(page.getByText("Open Tool Source")).toBeVisible();
+  await expect(page.getByText("Open Task Source")).toBeVisible();
 
   await page.screenshot({
     path: "tmp/screenshots/personal-core-loop-timeline-mobile.png",
