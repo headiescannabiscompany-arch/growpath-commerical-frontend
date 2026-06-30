@@ -188,6 +188,19 @@ describe("automation API", () => {
         ]
       })
       .mockResolvedValueOnce({
+        events: [
+          {
+            id: "event-1",
+            growId: "grow-1",
+            source: "tool_run",
+            eventType: "dew_point_high_risk",
+            payload: { risk: "high" },
+            processed: true,
+            matchedPolicyIds: ["policy-1"]
+          }
+        ]
+      })
+      .mockResolvedValueOnce({
         policy: {
           id: "personal-policy-2",
           growId: "grow-1",
@@ -209,6 +222,7 @@ describe("automation API", () => {
 
     const {
       listPersonalAutomationPolicies,
+      listPersonalAutomationEvents,
       createPersonalAutomationPolicy,
       updatePersonalAutomationPolicy,
       testPersonalAutomationPolicy,
@@ -218,6 +232,15 @@ describe("automation API", () => {
     await expect(
       listPersonalAutomationPolicies({ growId: "grow 1" })
     ).resolves.toHaveLength(1);
+    await expect(listPersonalAutomationEvents({ growId: "grow 1" })).resolves.toEqual([
+      expect.objectContaining({
+        id: "event-1",
+        source: "tool_run",
+        eventType: "dew_point_high_risk",
+        processed: true,
+        matchedPolicyIds: ["policy-1"]
+      })
+    ]);
     await expect(
       createPersonalAutomationPolicy({
         growId: "grow-1",
@@ -241,22 +264,26 @@ describe("automation API", () => {
       1,
       "/api/automation/policies?growId=grow+1"
     );
-    expect(mockApiRequest).toHaveBeenNthCalledWith(2, "/api/automation/policies", {
+    expect(mockApiRequest).toHaveBeenNthCalledWith(
+      2,
+      "/api/automation/events?growId=grow+1"
+    );
+    expect(mockApiRequest).toHaveBeenNthCalledWith(3, "/api/automation/policies", {
       method: "POST",
       body: expect.objectContaining({ growId: "grow-1" })
     });
     expect(mockApiRequest).toHaveBeenNthCalledWith(
-      3,
+      4,
       "/api/automation/policies/personal-policy-2",
       { method: "PATCH", body: { enabled: false } }
     );
     expect(mockApiRequest).toHaveBeenNthCalledWith(
-      4,
+      5,
       "/api/automation/policies/personal-policy-2/test",
       { method: "POST", body: { payload: { risk: "high" } } }
     );
     expect(mockApiRequest).toHaveBeenNthCalledWith(
-      5,
+      6,
       "/api/automation/policies/personal-policy-2",
       { method: "DELETE" }
     );

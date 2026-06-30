@@ -26,6 +26,22 @@ export type AutomationPolicy = {
   updatedAt: string;
 };
 
+export type AutomationEvent = {
+  id: string;
+  userId?: string;
+  growId?: string | null;
+  plantId?: string | null;
+  facilityId?: string | null;
+  source: string;
+  eventType: string;
+  payload?: Record<string, any>;
+  processed: boolean;
+  matchedPolicyIds: string[];
+  errors: string[];
+  createdAt?: string;
+  updatedAt?: string;
+};
+
 export type AutomationPolicyPayload = {
   growId?: string;
   plantId?: string;

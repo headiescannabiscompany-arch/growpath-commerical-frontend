@@ -13,11 +13,16 @@ import {
 import {
   createPersonalAutomationPolicy,
   deletePersonalAutomationPolicy,
+  listPersonalAutomationEvents,
   listPersonalAutomationPolicies,
   testPersonalAutomationPolicy,
   updatePersonalAutomationPolicy
 } from "@/api/automation";
-import type { AutomationPolicy, AutomationPolicyPayload } from "@/types/automation";
+import type {
+  AutomationEvent,
+  AutomationPolicy,
+  AutomationPolicyPayload
+} from "@/types/automation";
 import GrowWorkspaceNav from "@/components/personal/GrowWorkspaceNav";
 import { coerceParam, fmtDate } from "@/features/grows/routeUtils";
 
@@ -36,6 +41,12 @@ const styles = StyleSheet.create({
     backgroundColor: "#F8FAFC"
   },
   cardTitle: { fontSize: 15, fontWeight: "800", color: "#0F172A" },
+  sectionTitle: {
+    marginTop: 22,
+    fontSize: 18,
+    fontWeight: "800",
+    color: "#0F172A"
+  },
   description: { marginTop: 6, color: "#475569", lineHeight: 19 },
   meta: { marginTop: 7, color: "#64748B", fontSize: 12, lineHeight: 17 },
   actions: { flexDirection: "row", flexWrap: "wrap", gap: 8, marginTop: 12 },
@@ -154,11 +165,23 @@ function samplePayload(policy: AutomationPolicy) {
   return {};
 }
 
+function eventTitle(event: AutomationEvent) {
+  return [event.source, event.eventType].filter(Boolean).join(":").replace(/_/g, " ");
+}
+
+function eventSummary(event: AutomationEvent) {
+  const matches = event.matchedPolicyIds?.length || 0;
+  const errorCount = event.errors?.length || 0;
+  if (errorCount) return `${errorCount} error(s): ${event.errors.join(", ")}`;
+  return `${event.processed ? "Processed" : "Pending"} | matched ${matches} policy(s)`;
+}
+
 export default function GrowAutomationScreen() {
   const { growId: rawGrowId } = useLocalSearchParams<{ growId?: string | string[] }>();
   const growId = useMemo(() => coerceParam(rawGrowId), [rawGrowId]);
 
   const [policies, setPolicies] = useState<AutomationPolicy[]>([]);
+  const [events, setEvents] = useState<AutomationEvent[]>([]);
   const [loading, setLoading] = useState(true);
   const [busy, setBusy] = useState(false);
   const [error, setError] = useState("");
@@ -173,9 +196,15 @@ export default function GrowAutomationScreen() {
     setLoading(true);
     setError("");
     try {
-      setPolicies(await listPersonalAutomationPolicies({ growId }));
+      const [policyRows, eventRows] = await Promise.all([
+        listPersonalAutomationPolicies({ growId }),
+        listPersonalAutomationEvents({ growId })
+      ]);
+      setPolicies(policyRows);
+      setEvents(eventRows);
     } catch {
       setPolicies([]);
+      setEvents([]);
       setError("Failed to load automation policies.");
     } finally {
       setLoading(false);
@@ -321,6 +350,30 @@ export default function GrowAutomationScreen() {
               <Text style={[styles.buttonText, styles.dangerText]}>Delete</Text>
             </Pressable>
           </View>
+        </View>
+      ))}
+
+      <Text style={styles.sectionTitle}>Recent Automation Events</Text>
+      {!loading && !events.length ? (
+        <Text style={styles.empty}>
+          No automation events have fired for this grow yet.
+        </Text>
+      ) : null}
+      {events.slice(0, 8).map((event) => (
+        <View key={event.id} style={styles.card}>
+          <Text style={styles.cardTitle}>{eventTitle(event) || "Automation event"}</Text>
+          <Text style={styles.meta}>{fmtDate(event.createdAt || "")}</Text>
+          <Text style={styles.description}>{eventSummary(event)}</Text>
+          {event.payload?.risk ? (
+            <Text style={styles.meta}>
+              Risk: {String(event.payload.risk).replace(/_/g, " ")}
+            </Text>
+          ) : null}
+          {event.payload?.overallHealth ? (
+            <Text style={styles.meta}>
+              Health: {String(event.payload.overallHealth).replace(/_/g, " ")}
+            </Text>
+          ) : null}
         </View>
       ))}
     </ScrollView>

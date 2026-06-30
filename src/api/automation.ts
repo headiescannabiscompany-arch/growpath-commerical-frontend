@@ -1,5 +1,9 @@
 import { apiRequest } from "./apiRequest";
-import type { AutomationPolicy, AutomationPolicyPayload } from "../types/automation";
+import type {
+  AutomationEvent,
+  AutomationPolicy,
+  AutomationPolicyPayload
+} from "../types/automation";
 
 // Aliases for backward compatibility (Phase 2.3)
 export const fetchAutomations = listAutomationPolicies;
@@ -56,6 +60,38 @@ function normalizePolicyList(res: any): AutomationPolicy[] {
     : [];
 }
 
+function normalizeEvent(raw: any): AutomationEvent {
+  return {
+    id: String(raw?.id || raw?._id || ""),
+    userId: raw?.userId ? String(raw.userId) : "",
+    growId: raw?.growId || null,
+    plantId: raw?.plantId || null,
+    facilityId: raw?.facilityId || null,
+    source: String(raw?.source || ""),
+    eventType: String(raw?.eventType || ""),
+    payload: raw?.payload && typeof raw.payload === "object" ? raw.payload : {},
+    processed: raw?.processed === true,
+    matchedPolicyIds: Array.isArray(raw?.matchedPolicyIds)
+      ? raw.matchedPolicyIds.map(String)
+      : [],
+    errors: Array.isArray(raw?.errors) ? raw.errors.map(String) : [],
+    createdAt: raw?.createdAt || "",
+    updatedAt: raw?.updatedAt || ""
+  };
+}
+
+function normalizeEventList(res: any): AutomationEvent[] {
+  const list =
+    res?.events ||
+    res?.automationEvents ||
+    res?.data?.events ||
+    res?.data?.automationEvents ||
+    res?.data ||
+    res ||
+    [];
+  return Array.isArray(list) ? list.map(normalizeEvent).filter((event) => event.id) : [];
+}
+
 export async function listAutomationPolicies(facilityId: string) {
   const res = await apiRequest(`/api/facilities/${facilityId}/automation/policies`);
   return normalizePolicyList(res);
@@ -71,6 +107,22 @@ export async function listPersonalAutomationPolicies(params: {
   const suffix = query.toString() ? `?${query.toString()}` : "";
   const res = await apiRequest(`/api/automation/policies${suffix}`);
   return normalizePolicyList(res);
+}
+
+export async function listPersonalAutomationEvents(params: {
+  growId?: string;
+  facilityId?: string;
+  source?: string;
+  eventType?: string;
+}) {
+  const query = new URLSearchParams();
+  if (params.growId) query.set("growId", params.growId);
+  if (params.facilityId) query.set("facilityId", params.facilityId);
+  if (params.source) query.set("source", params.source);
+  if (params.eventType) query.set("eventType", params.eventType);
+  const suffix = query.toString() ? `?${query.toString()}` : "";
+  const res = await apiRequest(`/api/automation/events${suffix}`);
+  return normalizeEventList(res);
 }
 
 export async function setAutomationPolicyEnabled(

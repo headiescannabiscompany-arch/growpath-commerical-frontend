@@ -4,6 +4,7 @@ import { fireEvent, render, waitFor } from "@testing-library/react-native";
 import GrowAutomationScreen from "@/app/home/personal/(tabs)/grows/[growId]/automation";
 
 const mockListPolicies = jest.fn();
+const mockListEvents = jest.fn();
 const mockCreatePolicy = jest.fn();
 const mockUpdatePolicy = jest.fn();
 const mockDeletePolicy = jest.fn();
@@ -11,6 +12,7 @@ const mockTestPolicy = jest.fn();
 
 jest.mock("@/api/automation", () => ({
   listPersonalAutomationPolicies: (...args: any[]) => mockListPolicies(...args),
+  listPersonalAutomationEvents: (...args: any[]) => mockListEvents(...args),
   createPersonalAutomationPolicy: (...args: any[]) => mockCreatePolicy(...args),
   updatePersonalAutomationPolicy: (...args: any[]) => mockUpdatePolicy(...args),
   deletePersonalAutomationPolicy: (...args: any[]) => mockDeletePolicy(...args),
@@ -50,6 +52,18 @@ describe("GrowAutomationScreen", () => {
         triggerCount: 2
       }
     ]);
+    mockListEvents.mockResolvedValue([
+      {
+        id: "event-1",
+        source: "tool_run",
+        eventType: "dew_point_high_risk",
+        payload: { risk: "high" },
+        processed: true,
+        matchedPolicyIds: ["policy-1"],
+        errors: [],
+        createdAt: "2026-06-30T12:00:00.000Z"
+      }
+    ]);
     mockCreatePolicy.mockResolvedValue({ id: "policy-created" });
     mockUpdatePolicy.mockResolvedValue({ id: "policy-1", enabled: false });
     mockDeletePolicy.mockResolvedValue({ success: true });
@@ -62,11 +76,16 @@ describe("GrowAutomationScreen", () => {
     await waitFor(() =>
       expect(mockListPolicies).toHaveBeenCalledWith({ growId: "grow-1" })
     );
+    expect(mockListEvents).toHaveBeenCalledWith({ growId: "grow-1" });
 
     expect(screen.getByText("Dew Point High Risk Alert")).toBeTruthy();
     expect(screen.getByText("Trigger: tool run:dew point high risk")).toBeTruthy();
     expect(screen.getByText("Actions: create task")).toBeTruthy();
     expect(screen.getByText("Triggered: 2")).toBeTruthy();
+    expect(screen.getByText("Recent Automation Events")).toBeTruthy();
+    expect(screen.getByText("tool run:dew point high risk")).toBeTruthy();
+    expect(screen.getByText("Processed | matched 1 policy(s)")).toBeTruthy();
+    expect(screen.getByText("Risk: high")).toBeTruthy();
 
     fireEvent.press(screen.getByText("Add Dew Point Alert"));
     await waitFor(() =>
