@@ -1,5 +1,6 @@
 import React from "react";
 import { View, Text, Button, StyleSheet } from "react-native";
+import { MaterialCommunityIcons } from "@expo/vector-icons";
 
 import { sanitizeViewChildren } from "@/components/layout/sanitizeViewChildren";
 export type EmptyStateProps = {
@@ -7,7 +8,7 @@ export type EmptyStateProps = {
   description?: string;
   actionLabel?: string;
   onAction?: () => void;
-  icon?: React.ReactNode;
+  icon?: React.ReactNode | string;
 };
 
 export default function EmptyState({
@@ -20,7 +21,13 @@ export default function EmptyState({
   return (
     <View style={styles.container}>
       {icon && (
-        <View style={styles.icon}>{sanitizeViewChildren(icon, "EmptyState.icon")}</View>
+        <View style={styles.icon}>
+          {typeof icon === "string" ? (
+            <MaterialCommunityIcons name={icon as any} size={40} color="#64748B" />
+          ) : (
+            sanitizeViewChildren(icon, "EmptyState.icon")
+          )}
+        </View>
       )}
       <Text style={styles.title}>{title}</Text>
       {description && <Text style={styles.description}>{description}</Text>}

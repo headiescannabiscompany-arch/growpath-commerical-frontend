@@ -18,11 +18,15 @@ import {
   getSalesData,
   uploadContent
 } from "../../api/marketplace.js";
+import { uploadCourseMedia, uploadImage } from "../../api/uploads.js";
 import Card from "../../components/Card.js";
 import EmptyState from "../../components/EmptyState.js";
 import ErrorBoundary from "../../components/ErrorBoundary.js";
 import ErrorState from "../../components/ErrorState.js";
+import { maybePromptAttachPhotosToGrow } from "../../utils/growPhotoAttachment";
 import { Colors, Spacing, Typography } from "../../theme/theme.js";
+import * as DocumentPicker from "expo-document-picker";
+import * as ImagePicker from "expo-image-picker";
 
 const tabs = [
   { id: "browse", label: "Browse", icon: "magnify" },
@@ -48,7 +52,13 @@ function titleOf(row) {
 }
 
 function creatorOf(row) {
-  return row?.creator?.name || row?.userId?.name || row?.creator || row?.author || "GrowPath creator";
+  return (
+    row?.creator?.name ||
+    row?.userId?.name ||
+    row?.creator ||
+    row?.author ||
+    "GrowPath creator"
+  );
 }
 
 function money(value) {
@@ -72,6 +82,13 @@ function thumbnailLabel(row) {
   return "GP";
 }
 
+function firstDocumentAsset(result) {
+  if (!result || result.canceled) return null;
+  if (Array.isArray(result.assets) && result.assets[0]) return result.assets[0];
+  if (result.type === "success") return result;
+  return null;
+}
+
 export default function ContentMarketplaceScreen() {
   const [activeTab, setActiveTab] = useState("browse");
   const [category, setCategory] = useState("all");
@@ -92,6 +109,8 @@ export default function ContentMarketplaceScreen() {
     fileUrl: "",
     thumbnailUrl: ""
   });
+  const [selectedFile, setSelectedFile] = useState(null);
+  const [selectedThumbnail, setSelectedThumbnail] = useState(null);
 
   async function loadMarketplaceData() {
     setLoading(true);
@@ -122,7 +141,8 @@ export default function ContentMarketplaceScreen() {
     const query = searchQuery.trim().toLowerCase();
     if (!query) return content;
     return content.filter((item) => {
-      const haystack = `${titleOf(item)} ${item?.description || ""} ${item?.category || ""}`.toLowerCase();
+      const haystack =
+        `${titleOf(item)} ${item?.description || ""} ${item?.category || ""}`.toLowerCase();
       return haystack.includes(query);
     });
   }, [content, searchQuery]);
@@ -148,7 +168,44 @@ export default function ContentMarketplaceScreen() {
       fileUrl: "",
       thumbnailUrl: ""
     });
+    setSelectedFile(null);
+    setSelectedThumbnail(null);
     setUploadError("");
+  }
+
+  async function pickContentFile() {
+    try {
+      const result = await DocumentPicker.getDocumentAsync({
+        type: ["application/pdf", "video/*", "audio/*"]
+      });
+      const asset = firstDocumentAsset(result);
+      if (asset) {
+        setSelectedFile(asset);
+        setField("fileUrl", "");
+      }
+    } catch (err) {
+      setUploadError(err?.message || "Failed to pick content file.");
+    }
+  }
+
+  async function pickThumbnailImage() {
+    try {
+      const permission = await ImagePicker.requestMediaLibraryPermissionsAsync();
+      if (!permission.granted) {
+        setUploadError("Photo library permission is required to select a thumbnail.");
+        return;
+      }
+      const result = await ImagePicker.launchImageLibraryAsync({
+        mediaTypes: ImagePicker.MediaTypeOptions.Images,
+        quality: 0.8
+      });
+      if (!result.canceled && result.assets?.[0]) {
+        setSelectedThumbnail(result.assets[0]);
+        setField("thumbnailUrl", "");
+      }
+    } catch (err) {
+      setUploadError(err?.message || "Failed to pick thumbnail image.");
+    }
   }
 
   async function submitUpload() {
@@ -157,8 +214,8 @@ export default function ContentMarketplaceScreen() {
     const fileUrl = form.fileUrl.trim();
     const thumbnailUrl = form.thumbnailUrl.trim();
     const price = Number(form.price || 0);
-    if (!title || !description || !fileUrl) {
-      setUploadError("Title, description, and file URL are required.");
+    if (!title || !description || (!fileUrl && !selectedFile)) {
+      setUploadError("Title, description, and a file or file URL are required.");
       return;
     }
     if (Number.isNaN(price) || price < 0) {
@@ -168,13 +225,24 @@ export default function ContentMarketplaceScreen() {
     setUploading(true);
     setUploadError("");
     try {
+      const [uploadedFile, uploadedThumbnail] = await Promise.all([
+        selectedFile ? uploadCourseMedia(selectedFile) : Promise.resolve(null),
+        selectedThumbnail ? uploadImage(selectedThumbnail.uri) : Promise.resolve(null)
+      ]);
+      if (uploadedThumbnail?.url) {
+        try {
+          await maybePromptAttachPhotosToGrow([uploadedThumbnail.url]);
+        } catch (attachError) {
+          console.warn("Unable to attach marketplace thumbnail to grow:", attachError);
+        }
+      }
       await uploadContent({
         title,
         description,
         category: form.category,
         price,
-        fileUrl,
-        thumbnailUrl
+        fileUrl: uploadedFile?.url || fileUrl,
+        thumbnailUrl: uploadedThumbnail?.url || thumbnailUrl
       });
       resetForm();
       setShowUploadModal(false);
@@ -260,7 +328,9 @@ export default function ContentMarketplaceScreen() {
                 size={18}
                 color={activeTab === tab.id ? Colors.primary : Colors.textSecondary}
               />
-              <Text style={[styles.tabLabel, activeTab === tab.id && styles.tabLabelActive]}>
+              <Text
+                style={[styles.tabLabel, activeTab === tab.id && styles.tabLabelActive]}
+              >
                 {tab.label}
               </Text>
             </TouchableOpacity>
@@ -294,7 +364,12 @@ export default function ContentMarketplaceScreen() {
                     style={[styles.chip, category === item.id && styles.chipActive]}
                     onPress={() => setCategory(item.id)}
                   >
-                    <Text style={[styles.chipText, category === item.id && styles.chipTextActive]}>
+                    <Text
+                      style={[
+                        styles.chipText,
+                        category === item.id && styles.chipTextActive
+                      ]}
+                    >
                       {item.label}
                     </Text>
                   </TouchableOpacity>
@@ -303,7 +378,11 @@ export default function ContentMarketplaceScreen() {
               {filteredContent.length ? (
                 filteredContent.map(renderContentCard)
               ) : (
-                <EmptyState icon="inbox-multiple" title="No content found" subtitle="Try a different category" />
+                <EmptyState
+                  icon="inbox-multiple"
+                  title="No content found"
+                  subtitle="Try a different category"
+                />
               )}
             </>
           ) : null}
@@ -312,7 +391,10 @@ export default function ContentMarketplaceScreen() {
             <>
               <View style={styles.headerRow}>
                 <Text style={styles.sectionTitle}>My Uploaded Content</Text>
-                <TouchableOpacity style={styles.primaryBtn} onPress={() => setShowUploadModal(true)}>
+                <TouchableOpacity
+                  style={styles.primaryBtn}
+                  onPress={() => setShowUploadModal(true)}
+                >
                   <MaterialCommunityIcons name="plus" size={18} color="#FFF" />
                   <Text style={styles.primaryBtnText}>Upload</Text>
                 </TouchableOpacity>
@@ -324,9 +406,15 @@ export default function ContentMarketplaceScreen() {
           {activeTab === "sales" ? (
             <>
               <View style={styles.metricsRow}>
-                <Metric label="Total Earnings" value={money(salesSummary.totalEarnings)} />
+                <Metric
+                  label="Total Earnings"
+                  value={money(salesSummary.totalEarnings)}
+                />
                 <Metric label="Downloads" value={whole(salesSummary.totalDownloads)} />
-                <Metric label="Avg Rating" value={Number(salesSummary.averageRating || 0).toFixed(1)} />
+                <Metric
+                  label="Avg Rating"
+                  value={Number(salesSummary.averageRating || 0).toFixed(1)}
+                />
               </View>
               <Card style={styles.card}>
                 <Text style={styles.sectionTitle}>Earnings by Month</Text>
@@ -344,7 +432,10 @@ export default function ContentMarketplaceScreen() {
               <Text style={styles.sectionTitle}>Recent Sales</Text>
               {recentSales.length ? (
                 recentSales.map((sale) => (
-                  <Card key={sale.id || `${sale.title}-${sale.date}`} style={styles.saleRow}>
+                  <Card
+                    key={sale.id || `${sale.title}-${sale.date}`}
+                    style={styles.saleRow}
+                  >
                     <View style={styles.cardBody}>
                       <Text style={styles.cardTitle}>{sale.title}</Text>
                       <Text style={styles.muted}>
@@ -355,7 +446,11 @@ export default function ContentMarketplaceScreen() {
                   </Card>
                 ))
               ) : (
-                <EmptyState icon="cash-clock" title="No sales yet" subtitle="Sales appear after purchases are recorded." />
+                <EmptyState
+                  icon="cash-clock"
+                  title="No sales yet"
+                  subtitle="Sales appear after purchases are recorded."
+                />
               )}
             </>
           ) : null}
@@ -388,6 +483,10 @@ export default function ContentMarketplaceScreen() {
           error={uploadError}
           uploading={uploading}
           setField={setField}
+          selectedFile={selectedFile}
+          selectedThumbnail={selectedThumbnail}
+          onPickFile={pickContentFile}
+          onPickThumbnail={pickThumbnailImage}
           onClose={() => {
             setShowUploadModal(false);
             setUploadError("");
@@ -408,7 +507,19 @@ function Metric({ label, value }) {
   );
 }
 
-function UploadModal({ visible, form, error, uploading, setField, onClose, onSubmit }) {
+function UploadModal({
+  visible,
+  form,
+  error,
+  uploading,
+  selectedFile,
+  selectedThumbnail,
+  setField,
+  onPickFile,
+  onPickThumbnail,
+  onClose,
+  onSubmit
+}) {
   return (
     <Modal visible={visible} animationType="slide">
       <View style={styles.modalContainer}>
@@ -421,7 +532,11 @@ function UploadModal({ visible, form, error, uploading, setField, onClose, onSub
         </View>
         <ScrollView style={styles.modalContent}>
           {error ? <Text style={styles.errorText}>{error}</Text> : null}
-          <LabelInput label="Title" value={form.title} onChangeText={(value) => setField("title", value)} />
+          <LabelInput
+            label="Title"
+            value={form.title}
+            onChangeText={(value) => setField("title", value)}
+          />
           <LabelInput
             label="Description"
             value={form.description}
@@ -445,6 +560,16 @@ function UploadModal({ visible, form, error, uploading, setField, onClose, onSub
             onChangeText={(value) => setField("fileUrl", value)}
             autoCapitalize="none"
           />
+          <TouchableOpacity
+            style={styles.mediaPickBtn}
+            disabled={uploading}
+            onPress={onPickFile}
+          >
+            <MaterialCommunityIcons name="file-upload-outline" size={18} color="#FFF" />
+            <Text style={styles.mediaPickText}>
+              {selectedFile?.name || selectedFile?.fileName || "Select Content File"}
+            </Text>
+          </TouchableOpacity>
           <LabelInput
             label="Thumbnail URL"
             value={form.thumbnailUrl}
@@ -452,11 +577,25 @@ function UploadModal({ visible, form, error, uploading, setField, onClose, onSub
             autoCapitalize="none"
           />
           <TouchableOpacity
+            style={styles.mediaPickBtn}
+            disabled={uploading}
+            onPress={onPickThumbnail}
+          >
+            <MaterialCommunityIcons name="image-plus" size={18} color="#FFF" />
+            <Text style={styles.mediaPickText}>
+              {selectedThumbnail?.fileName || selectedThumbnail?.uri
+                ? "Thumbnail Selected"
+                : "Select Thumbnail Image"}
+            </Text>
+          </TouchableOpacity>
+          <TouchableOpacity
             style={[styles.publishBtn, uploading && styles.disabledBtn]}
             disabled={uploading}
             onPress={onSubmit}
           >
-            <Text style={styles.publishBtnText}>{uploading ? "Saving..." : "Save Draft"}</Text>
+            <Text style={styles.publishBtnText}>
+              {uploading ? "Saving..." : "Save Draft"}
+            </Text>
           </TouchableOpacity>
         </ScrollView>
       </View>
@@ -468,7 +607,11 @@ function LabelInput({ label, ...props }) {
   return (
     <View style={styles.field}>
       <Text style={styles.inputLabel}>{label}</Text>
-      <TextInput style={[styles.input, props.multiline && styles.textArea]} placeholder={label} {...props} />
+      <TextInput
+        style={[styles.input, props.multiline && styles.textArea]}
+        placeholder={label}
+        {...props}
+      />
     </View>
   );
 }
@@ -570,8 +713,16 @@ const styles = StyleSheet.create({
   price: { color: Colors.primary, fontWeight: "900" },
   metricsRow: { flexDirection: "row", gap: Spacing.sm },
   metricCard: { flex: 1, padding: Spacing.md },
-  metricValue: { color: Colors.primary, fontSize: Typography.size.subtitle, fontWeight: "900" },
-  metricLabel: { color: Colors.textSecondary, marginTop: 4, fontSize: Typography.size.caption },
+  metricValue: {
+    color: Colors.primary,
+    fontSize: Typography.size.subtitle,
+    fontWeight: "900"
+  },
+  metricLabel: {
+    color: Colors.textSecondary,
+    marginTop: 4,
+    fontSize: Typography.size.caption
+  },
   row: {
     flexDirection: "row",
     alignItems: "center",
@@ -598,10 +749,26 @@ const styles = StyleSheet.create({
     borderBottomWidth: 1,
     borderBottomColor: "#e5e7eb"
   },
-  modalTitle: { fontSize: Typography.size.subtitle, fontWeight: "900", color: Colors.text },
+  modalTitle: {
+    fontSize: Typography.size.subtitle,
+    fontWeight: "900",
+    color: Colors.text
+  },
   modalContent: { flex: 1, padding: Spacing.md },
   field: { marginBottom: Spacing.md },
   inputLabel: { color: Colors.text, fontWeight: "800", marginBottom: Spacing.xs },
+  mediaPickBtn: {
+    flexDirection: "row",
+    alignItems: "center",
+    justifyContent: "center",
+    gap: 8,
+    backgroundColor: Colors.primary,
+    borderRadius: 8,
+    paddingVertical: Spacing.md,
+    paddingHorizontal: Spacing.md,
+    marginBottom: Spacing.md
+  },
+  mediaPickText: { color: "#fff", fontWeight: "900" },
   publishBtn: {
     alignItems: "center",
     backgroundColor: Colors.primary,

@@ -13,6 +13,7 @@ Repository: growpath-commerical-frontend
 - Fixed vendor analytics and metrics API paths so they call `/api/vendors/...`.
 - Removed dead frontend-repo backend shim files that contained demo/stub routes and old backup AI handlers.
 - Replaced Content Marketplace static sales, analytics, and upload success flows with API-backed runtime state.
+- Added picker-based Marketplace content and thumbnail uploads; selected files are persisted before the draft is saved.
 - Mounted and verified the backend `/api/marketplace` surface for browse, create, publish, analytics, download, and purchase counters.
 - Added backend webhook endpoint coverage for list, create, update, and delete.
 - Replaced the backend guild browse stub with DB-backed canonical `/api/guilds` routes and membership synchronization.
@@ -21,7 +22,6 @@ Repository: growpath-commerical-frontend
 
 ## Active Product Gaps Still To Finish
 
-- Marketplace upload still accepts URL-based assets only. If native file uploads are required before release, add picker/storage integration and backend media validation.
 - Webhook delivery execution is still a release-hardening gap: retry policy, delivery logs, secret rotation UX, and audit views should be completed before exposing webhooks broadly.
 - Vendor analytics/metrics endpoints are now present for the frontend contract, but need seeded/live vendor data validation before calling the vendor portal release-ready.
 - Store submission remains blocked on external credentials, production builds, screenshots, legal sign-off, and final app-name/identifier confirmation.
