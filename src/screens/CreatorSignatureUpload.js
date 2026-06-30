@@ -14,7 +14,7 @@ export default function CreatorSignatureUpload({ navigation }) {
         mediaTypes: ImagePicker.MediaTypeOptions.Images,
         allowsEditing: true,
         aspect: [4, 1],
-        quality: 1,
+        quality: 1
       });
 
       if (!res.canceled) {
@@ -33,16 +33,9 @@ export default function CreatorSignatureUpload({ navigation }) {
 
     try {
       setLoading(true);
-      const data = new FormData();
-      data.append("signature", {
-        uri: image,
-        name: "signature.png",
-        type: "image/png",
-      });
-
-      const res = await uploadSignature(data);
+      await uploadSignature(image);
       setLoading(false);
-      
+
       Alert.alert("Success", "Signature uploaded successfully!", [
         { text: "OK", onPress: () => navigation.goBack() }
       ]);
@@ -60,11 +53,7 @@ export default function CreatorSignatureUpload({ navigation }) {
       </Text>
 
       <View style={styles.section}>
-        <TouchableOpacity
-          style={styles.pickBtn}
-          onPress={pickImage}
-          disabled={loading}
-        >
+        <TouchableOpacity style={styles.pickBtn} onPress={pickImage} disabled={loading}>
           <Text style={styles.pickBtnText}>Select Signature Image</Text>
         </TouchableOpacity>
 
@@ -92,9 +81,7 @@ export default function CreatorSignatureUpload({ navigation }) {
         onPress={saveSignature}
         disabled={loading || !image}
       >
-        <Text style={styles.saveText}>
-          {loading ? "Uploading..." : "Save Signature"}
-        </Text>
+        <Text style={styles.saveText}>{loading ? "Uploading..." : "Save Signature"}</Text>
       </TouchableOpacity>
     </ScreenContainer>
   );
@@ -105,37 +92,37 @@ const styles = StyleSheet.create({
     fontSize: 26,
     fontWeight: "700",
     marginBottom: 8,
-    color: "#2c3e50",
+    color: "#2c3e50"
   },
   subtitle: {
     fontSize: 14,
     color: "#999",
-    marginBottom: 20,
+    marginBottom: 20
   },
   section: {
-    marginBottom: 24,
+    marginBottom: 24
   },
   pickBtn: {
     backgroundColor: "#3498db",
     paddingVertical: 14,
     paddingHorizontal: 16,
     borderRadius: 10,
-    alignItems: "center",
+    alignItems: "center"
   },
   pickBtnText: {
     color: "#fff",
     fontWeight: "700",
-    fontSize: 15,
+    fontSize: 15
   },
   previewContainer: {
     marginTop: 20,
-    alignItems: "center",
+    alignItems: "center"
   },
   previewLabel: {
     fontSize: 14,
     fontWeight: "600",
     color: "#2c3e50",
-    marginBottom: 12,
+    marginBottom: 12
   },
   preview: {
     width: "100%",
@@ -143,24 +130,24 @@ const styles = StyleSheet.create({
     borderRadius: 8,
     backgroundColor: "#f0f0f0",
     marginBottom: 12,
-    resizeMode: "contain",
+    resizeMode: "contain"
   },
   previewNote: {
     fontSize: 12,
     color: "#999",
-    fontStyle: "italic",
+    fontStyle: "italic"
   },
   sectionTitle: {
     fontSize: 15,
     fontWeight: "700",
     color: "#2c3e50",
-    marginBottom: 12,
+    marginBottom: 12
   },
   guideline: {
     fontSize: 13,
     color: "#666",
     marginBottom: 8,
-    lineHeight: 20,
+    lineHeight: 20
   },
   saveBtn: {
     backgroundColor: "#27ae60",
@@ -168,14 +155,14 @@ const styles = StyleSheet.create({
     paddingHorizontal: 16,
     borderRadius: 10,
     alignItems: "center",
-    marginBottom: 20,
+    marginBottom: 20
   },
   saveBtn_disabled: {
-    backgroundColor: "#bdc3c7",
+    backgroundColor: "#bdc3c7"
   },
   saveText: {
     color: "#fff",
     fontWeight: "700",
-    fontSize: 15,
-  },
+    fontSize: 15
+  }
 });

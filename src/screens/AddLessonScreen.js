@@ -15,6 +15,8 @@ import GrowInterestPicker from "../components/GrowInterestPicker";
 import { addLesson } from "../api/courses";
 import { useEntitlements } from "@/entitlements";
 import { getLearningAccess } from "@/features/learning/learningAccess";
+import { maybePromptAttachPhotosToGrow } from "@/utils/growPhotoAttachment";
+import { persistImageUris } from "@/utils/photoUploads";
 import { buildEmptyTierSelection, flattenTierSelections } from "../utils/growInterests";
 
 export default function AddLessonScreen({ route, navigation }) {
@@ -105,9 +107,7 @@ export default function AddLessonScreen({ route, navigation }) {
       return Alert.alert("Missing title", "Please add a lesson title.");
     }
 
-    // Note: In production, you would upload files to a cloud storage service
-    // (AWS S3, Cloudinary, etc.) and get URLs, then save those URLs
-    // For now, we'll just save the URLs if provided directly
+    const imageUrls = await persistImageUris(images.map((image) => image.uri));
 
     await addLesson(courseId, {
       title,
@@ -115,9 +115,16 @@ export default function AddLessonScreen({ route, navigation }) {
       content,
       videoUrl: videoFile ? videoFile.uri : videoUrl,
       pdfUrl: pdfFile ? pdfFile.uri : pdfUrl,
+      imageUrls,
       growTags: flattenTierSelections(growInterestSelections)
-      // Future: Add audioUrl, images array to lesson schema
     });
+    if (imageUrls.length) {
+      try {
+        await maybePromptAttachPhotosToGrow(imageUrls);
+      } catch (attachError) {
+        console.warn("Unable to attach lesson images to grow:", attachError);
+      }
+    }
     navigation.goBack();
   }
 
@@ -242,8 +249,8 @@ export default function AddLessonScreen({ route, navigation }) {
       </TouchableOpacity>
 
       <Text style={styles.helpText}>
-        Files will be uploaded when you save. For large videos, consider hosting on
-        YouTube or Vimeo and pasting the URL.
+        Images upload when you save. For videos, PDFs, or large files, host them
+        externally and paste the URL.
       </Text>
     </ScreenContainer>
   );

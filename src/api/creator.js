@@ -1,5 +1,6 @@
 import { apiRequest } from "./apiRequest";
 import apiRoutes from "./routes.js";
+import { persistImageUri } from "@/utils/photoUploads";
 
 function data(response) {
   return response?.data ?? response;
@@ -37,8 +38,17 @@ export function getPayoutHistory() {
   return apiRequest(apiRoutes.CREATOR.PAYOUT_HISTORY).then(data);
 }
 
-export async function uploadSignature(formData) {
-  return apiRequest(apiRoutes.CREATOR.SIGNATURE, { method: "POST", body: formData });
+export async function uploadSignature(input) {
+  const uri = input && typeof input === "object" && input.uri ? input.uri : input;
+  if (typeof uri === "string") {
+    const signatureUrl = await persistImageUri(uri);
+    return apiRequest(apiRoutes.CREATOR.SIGNATURE, {
+      method: "POST",
+      body: { signatureUrl }
+    });
+  }
+
+  return apiRequest(apiRoutes.CREATOR.SIGNATURE, { method: "POST", body: input });
 }
 
 export function getCourseAnalytics(courseId) {
