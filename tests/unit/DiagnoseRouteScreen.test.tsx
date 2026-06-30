@@ -84,6 +84,7 @@ describe("DiagnoseRoute", () => {
       expect(screen.getByText("Production AI provider needs verification")).toBeTruthy()
     );
     expect(mockGetDiagnosisProviderStatus).toHaveBeenCalled();
+    expect(screen.getByText(/Photos are used for this diagnosis request/i)).toBeTruthy();
 
     fireEvent.changeText(screen.getByLabelText("Diagnosis notes"), "Yellowing leaves");
     fireEvent.press(screen.getByLabelText("Run diagnosis"));

@@ -186,6 +186,9 @@ test.describe("ETGU diagnosis intake", () => {
       await page.getByLabel("Diagnosis runoff EC").fill("2.8");
       await page.getByLabel("Diagnosis feed pH").fill("6.0");
       await page.getByLabel("Diagnosis runoff pH").fill("6.4");
+      await expect(
+        page.getByText(/Photos are used for this diagnosis request/i)
+      ).toBeVisible();
       await page.getByRole("button", { name: "Run diagnosis" }).click();
 
       await expect(page.getByText("Inputs")).toBeVisible();

@@ -635,6 +635,10 @@ export default function DiagnoseRoute() {
           </Pressable>
         ) : null}
       </View>
+      <Text style={styles.photoPolicy}>
+        Photos are used for this diagnosis request. They are not used to train
+        GrowPathAI models unless you explicitly opt in.
+      </Text>
       {photoUri ? <Image source={{ uri: photoUri }} style={styles.photo} /> : null}
 
       {!enabled ? (
@@ -984,6 +988,7 @@ const styles = StyleSheet.create({
     padding: 12
   },
   photo: { width: "100%", height: 240, borderRadius: 12, backgroundColor: "#E2E8F0" },
+  photoPolicy: { color: "#475569", fontSize: 12, lineHeight: 18 },
   primaryButton: {
     alignSelf: "flex-start",
     backgroundColor: "#166534",
