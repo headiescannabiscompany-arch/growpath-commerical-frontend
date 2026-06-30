@@ -9,6 +9,7 @@ const EVENT_OPTIONS: { label: string; value: NotificationType }[] = [
   { label: "Task Overdue", value: "TASK_OVERDUE" },
   { label: "Compliance Required", value: "COMPLIANCE_REQUIRED" },
   { label: "Compliance Missed", value: "COMPLIANCE_MISSED" },
+  { label: "Automation Triggered", value: "AUTOMATION_TRIGGERED" },
   { label: "Team Invite", value: "TEAM_INVITE" }
 ];
 

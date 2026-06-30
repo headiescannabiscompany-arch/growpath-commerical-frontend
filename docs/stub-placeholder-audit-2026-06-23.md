@@ -18,6 +18,7 @@ Repository: growpath-commerical-frontend
 - Added webhook signing-secret creation/rotation, signed test delivery, and delivery-log visibility to the app webhook management surface.
 - Added automatic signed webhook dispatch for facility task assignment, overdue task, and team invite events.
 - Added automatic signed webhook dispatch for compliance-required and compliance-missed log events; hid the automation webhook option until a real automation trigger producer exists.
+- Added a real automation policy/event engine with stored trigger events, dry-run policy tests, cooldown and daily limits, task/notification/grow-log/webhook actions, Dew Point Guard event emission, and AI diagnosis event emission.
 - Mounted and verified the backend `/api/marketplace` surface for browse, create, publish, analytics, download, and purchase counters.
 - Added backend webhook endpoint coverage for list, create, update, and delete.
 - Replaced the backend guild browse stub with DB-backed canonical `/api/guilds` routes and membership synchronization.
@@ -26,7 +27,6 @@ Repository: growpath-commerical-frontend
 
 ## Active Product Gaps Still To Finish
 
-- Automation webhook dispatch still needs a real automation trigger producer before exposing `AUTOMATION_TRIGGERED` broadly.
 - Store submission remains blocked on external credentials, production builds, screenshots, legal sign-off, and final app-name/identifier confirmation.
 
 ## Release And Store Gaps
