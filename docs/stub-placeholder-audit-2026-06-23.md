@@ -15,6 +15,7 @@ Repository: growpath-commerical-frontend
 - Replaced Content Marketplace static sales, analytics, and upload success flows with API-backed runtime state.
 - Added picker-based Marketplace content and thumbnail uploads; selected files are persisted before the draft is saved.
 - Added webhook signing-secret creation/rotation, signed test delivery, and delivery-log visibility to the app webhook management surface.
+- Added automatic signed webhook dispatch for facility task assignment, overdue task, and team invite events.
 - Mounted and verified the backend `/api/marketplace` surface for browse, create, publish, analytics, download, and purchase counters.
 - Added backend webhook endpoint coverage for list, create, update, and delete.
 - Replaced the backend guild browse stub with DB-backed canonical `/api/guilds` routes and membership synchronization.
@@ -23,7 +24,7 @@ Repository: growpath-commerical-frontend
 
 ## Active Product Gaps Still To Finish
 
-- Webhook automatic event dispatch is still a release-hardening gap: domain events need to call the signed delivery runner before exposing webhooks broadly.
+- Webhook automatic event dispatch still needs expansion for compliance and automation event producers before exposing those event types broadly.
 - Vendor analytics/metrics endpoints are now present for the frontend contract, but need seeded/live vendor data validation before calling the vendor portal release-ready.
 - Store submission remains blocked on external credentials, production builds, screenshots, legal sign-off, and final app-name/identifier confirmation.
 
