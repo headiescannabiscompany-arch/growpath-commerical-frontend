@@ -18,6 +18,14 @@ export function getDiagnosis(id) {
   return apiRequest(apiRoutes.DIAGNOSE.DETAIL(id));
 }
 
+export function submitDiagnosisFeedback(id, payload) {
+  if (!id) throw new Error("Diagnosis id is required to save feedback.");
+  return apiRequest(apiRoutes.DIAGNOSE.FEEDBACK(id), {
+    method: "POST",
+    body: payload
+  });
+}
+
 async function promptForDiagnosisPhotoAttachment(photoUrl, options = {}) {
   try {
     await maybePromptAttachPhotosToGrow(photoUrl ? [photoUrl] : [], {

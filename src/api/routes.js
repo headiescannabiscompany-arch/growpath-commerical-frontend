@@ -145,6 +145,7 @@ export const ROUTES = {
     ANALYZE: `${PREFIX}/diagnose/analyze`,
     HISTORY: `${PREFIX}/diagnose/history`,
     DETAIL: (id) => `${PREFIX}/diagnose/${id}`,
+    FEEDBACK: (id) => `${PREFIX}/diagnose/${id}/feedback`,
     CREATE: `${PREFIX}/diagnose`
   },
   GROWLOG: {

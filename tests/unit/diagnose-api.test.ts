@@ -14,7 +14,11 @@ jest.mock("@/utils/growPhotoAttachment", () => ({
   maybePromptAttachPhotosToGrow: (...args: any[]) => mockAttachPhotos(...args)
 }));
 
-const { diagnoseImage, diagnosePhoto } = require("@/api/diagnose");
+const {
+  diagnoseImage,
+  diagnosePhoto,
+  submitDiagnosisFeedback
+} = require("@/api/diagnose");
 
 function formValue(form: any, key: string) {
   if (typeof form?.get === "function") return form.get(key);
@@ -66,6 +70,27 @@ describe("diagnosis photo uploads", () => {
     await expect(diagnosePhoto("file:///tmp/leaf.jpg")).resolves.toEqual({
       success: true,
       id: "diagnosis-1"
+    });
+  });
+
+  it("submits user-confirmed diagnosis feedback", async () => {
+    mockApiRequest.mockResolvedValueOnce({
+      feedback: { id: "feedback-1", verdict: "helpful" }
+    });
+
+    await submitDiagnosisFeedback("diagnosis-1", {
+      verdict: "helpful",
+      notes: "New growth improved after pH correction.",
+      symptomChange: "improved"
+    });
+
+    expect(mockApiRequest).toHaveBeenCalledWith("/api/diagnose/diagnosis-1/feedback", {
+      method: "POST",
+      body: {
+        verdict: "helpful",
+        notes: "New growth improved after pH correction.",
+        symptomChange: "improved"
+      }
     });
   });
 });

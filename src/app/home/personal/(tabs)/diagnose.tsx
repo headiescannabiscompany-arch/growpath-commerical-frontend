@@ -11,7 +11,7 @@ import {
   View
 } from "react-native";
 
-import { analyzeDiagnosis, diagnoseImage } from "@/api/diagnose";
+import { analyzeDiagnosis, diagnoseImage, submitDiagnosisFeedback } from "@/api/diagnose";
 import { createPersonalLog } from "@/api/logs";
 import { listPersonalPlants, type PersonalPlant } from "@/api/plants";
 import { createPersonalTask } from "@/api/tasks";
@@ -57,6 +57,8 @@ export default function DiagnoseRoute() {
   const [photoUri, setPhotoUri] = useState("");
   const [result, setResult] = useState<NormalizedDiagnosis | null>(null);
   const [followUpAnswer, setFollowUpAnswer] = useState("");
+  const [outcomeNotes, setOutcomeNotes] = useState("");
+  const [outcomeSaving, setOutcomeSaving] = useState(false);
   const [running, setRunning] = useState(false);
   const [feedback, setFeedback] = useState("");
 
@@ -234,6 +236,26 @@ export default function DiagnoseRoute() {
       setFeedback(error?.message || "Unable to submit follow-up context.");
     } finally {
       setRunning(false);
+    }
+  }
+
+  async function submitOutcomeFeedback(verdict: "helpful" | "not_accurate" | "unsure") {
+    if (!result?.id || outcomeSaving) return;
+    setOutcomeSaving(true);
+    setFeedback("");
+    try {
+      await submitDiagnosisFeedback(result.id, {
+        verdict,
+        notes: outcomeNotes.trim(),
+        symptomChange: "unknown",
+        consentForModelTraining: false
+      });
+      setOutcomeNotes("");
+      setFeedback("Diagnosis feedback saved.");
+    } catch (error: any) {
+      setFeedback(error?.message || "Unable to save diagnosis feedback.");
+    } finally {
+      setOutcomeSaving(false);
     }
   }
 
@@ -657,6 +679,50 @@ export default function DiagnoseRoute() {
               !growId ? "Select a grow to enable log and task actions." : undefined
             }
           />
+          <View style={styles.followUpCard}>
+            <Text style={styles.label}>Improve this diagnosis</Text>
+            <Text style={styles.subtitle}>
+              Tell GrowPathAI whether this result matched what you saw. Feedback is linked
+              to this diagnosis and is not used for model training unless you explicitly
+              consent.
+            </Text>
+            <TextInput
+              style={styles.input}
+              value={outcomeNotes}
+              onChangeText={setOutcomeNotes}
+              placeholder="Optional outcome notes, checks, or what changed later."
+              accessibilityLabel="Diagnosis outcome feedback notes"
+            />
+            <View style={styles.row}>
+              <Pressable
+                disabled={outcomeSaving}
+                style={[styles.secondaryButton, outcomeSaving && styles.disabled]}
+                onPress={() => submitOutcomeFeedback("helpful")}
+                accessibilityRole="button"
+                accessibilityLabel="Mark diagnosis helpful"
+              >
+                <Text style={styles.secondaryButtonText}>Helpful</Text>
+              </Pressable>
+              <Pressable
+                disabled={outcomeSaving}
+                style={[styles.secondaryButton, outcomeSaving && styles.disabled]}
+                onPress={() => submitOutcomeFeedback("not_accurate")}
+                accessibilityRole="button"
+                accessibilityLabel="Mark diagnosis not accurate"
+              >
+                <Text style={styles.secondaryButtonText}>Not Accurate</Text>
+              </Pressable>
+              <Pressable
+                disabled={outcomeSaving}
+                style={[styles.secondaryButton, outcomeSaving && styles.disabled]}
+                onPress={() => submitOutcomeFeedback("unsure")}
+                accessibilityRole="button"
+                accessibilityLabel="Mark diagnosis unsure"
+              >
+                <Text style={styles.secondaryButtonText}>Unsure</Text>
+              </Pressable>
+            </View>
+          </View>
           {result.followUp ? (
             <View style={styles.followUpCard}>
               <Text style={styles.label}>Provider follow-up</Text>
