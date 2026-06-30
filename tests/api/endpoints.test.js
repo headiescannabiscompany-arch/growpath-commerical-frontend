@@ -64,6 +64,43 @@ describe("API Configuration & Endpoints", () => {
       expect(fetchCalls[0].url.endsWith("/api/tasks/task_99/complete")).toBe(true);
       expect(fetchCalls[0].options.method).toBe("PUT");
     });
+
+    it("personal task helpers send source, priority, snooze, and delete requests", async () => {
+      await tasksApi.createPersonalTask({
+        growId: "grow_1",
+        title: "Follow up",
+        description: "Check VPD",
+        dueDate: "2026-07-01",
+        priority: "high",
+        sourceType: "ai_diagnosis",
+        sourceObjectId: "diagnosis-1",
+        sourceDiagnosisId: "diagnosis-1"
+      });
+      expect(fetchCalls[0].url.endsWith("/api/personal/tasks")).toBe(true);
+      expect(fetchCalls[0].options.method).toBe("POST");
+      expect(JSON.parse(fetchCalls[0].options.body)).toMatchObject({
+        growId: "grow_1",
+        priority: "high",
+        sourceType: "ai_diagnosis",
+        sourceObjectId: "diagnosis-1",
+        sourceDiagnosisId: "diagnosis-1"
+      });
+
+      await tasksApi.updatePersonalTask("task 1", {
+        snoozeUntil: "2026-07-02T12:00:00.000Z",
+        completed: true
+      });
+      expect(fetchCalls[1].url.endsWith("/api/personal/tasks/task%201")).toBe(true);
+      expect(fetchCalls[1].options.method).toBe("PATCH");
+      expect(JSON.parse(fetchCalls[1].options.body)).toMatchObject({
+        snoozeUntil: "2026-07-02T12:00:00.000Z",
+        completed: true
+      });
+
+      await tasksApi.deletePersonalTask("task 1");
+      expect(fetchCalls[2].url.endsWith("/api/personal/tasks/task%201")).toBe(true);
+      expect(fetchCalls[2].options.method).toBe("DELETE");
+    });
   });
 
   describe("Grows API with Shared Config", () => {

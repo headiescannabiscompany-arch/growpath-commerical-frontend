@@ -110,7 +110,8 @@ export async function listPersonalTasks(options = {}) {
     if (typeof listRes === "object" && listRes !== null && listRes.data) {
       return listRes.data.tasks ?? [];
     }
-    return [];
+    const tasks = listRes?.tasks ?? listRes?.items;
+    return Array.isArray(tasks) ? tasks : [];
   } catch (_err) {
     return [];
   }
@@ -130,12 +131,23 @@ export async function createPersonalTask(data) {
 
 export async function updatePersonalTask(id, patch) {
   try {
-    const res = await apiRequest(`/api/personal/tasks/${id}`, {
+    const res = await apiRequest(`/api/personal/tasks/${encodeURIComponent(id)}`, {
       method: "PATCH",
       body: patch
     });
     return res?.task ?? res?.updated ?? res?.data?.task ?? res;
   } catch (_err) {
     return null;
+  }
+}
+
+export async function deletePersonalTask(id) {
+  try {
+    await apiRequest(`/api/personal/tasks/${encodeURIComponent(id)}`, {
+      method: "DELETE"
+    });
+    return true;
+  } catch (_err) {
+    return false;
   }
 }

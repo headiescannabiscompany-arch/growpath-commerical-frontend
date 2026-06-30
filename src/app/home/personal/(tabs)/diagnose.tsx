@@ -127,7 +127,10 @@ export default function DiagnoseRoute() {
     const created = await createPersonalTask({
       growId,
       title: `Follow up: ${result.issueSummary}`,
-      description: action
+      description: action,
+      sourceType: "ai_diagnosis",
+      sourceObjectId: result.id || undefined,
+      sourceDiagnosisId: result.id || undefined
     });
     if (!created) throw new Error("Unable to create follow-up task.");
     setFeedback("Follow-up task created.");

@@ -111,10 +111,20 @@ export function deleteFacilityTask(facilityId: string, id: string) {
 export interface PersonalTask {
   id: string;
   growId: string;
+  plantId?: string | null;
   title: string;
   description: string;
   dueDate: string;
+  snoozeUntil?: string | null;
   completed: boolean;
+  priority?: "low" | "medium" | "high";
+  status?: string;
+  sourceType?: string | null;
+  sourceObjectId?: string | null;
+  sourceToolRunId?: string | null;
+  sourceDiagnosisId?: string | null;
+  linkedLogId?: string | null;
+  recurrence?: Record<string, any> | null;
   createdAt: string;
 }
 
@@ -152,9 +162,17 @@ export async function listPersonalTasks(options?: {
 
 export async function createPersonalTask(data: {
   growId: string;
+  plantId?: string;
   title: string;
   description?: string;
   dueDate?: string;
+  priority?: "low" | "medium" | "high";
+  snoozeUntil?: string | null;
+  sourceType?: string | null;
+  sourceObjectId?: string | null;
+  sourceToolRunId?: string | null;
+  sourceDiagnosisId?: string | null;
+  linkedLogId?: string | null;
 }): Promise<PersonalTask | null> {
   try {
     const res: any = await apiRequest("/api/personal/tasks", {
@@ -169,15 +187,42 @@ export async function createPersonalTask(data: {
 
 export async function updatePersonalTask(
   id: string,
-  patch: Partial<Pick<PersonalTask, "title" | "description" | "dueDate" | "completed">>
+  patch: Partial<
+    Pick<
+      PersonalTask,
+      | "title"
+      | "description"
+      | "dueDate"
+      | "snoozeUntil"
+      | "completed"
+      | "priority"
+      | "sourceType"
+      | "sourceObjectId"
+      | "sourceToolRunId"
+      | "sourceDiagnosisId"
+      | "linkedLogId"
+      | "recurrence"
+    >
+  >
 ): Promise<PersonalTask | null> {
   try {
-    const res: any = await apiRequest(`/api/personal/tasks/${id}`, {
+    const res: any = await apiRequest(`/api/personal/tasks/${encodeURIComponent(id)}`, {
       method: "PATCH",
       body: patch
     });
     return (res?.task ?? res?.updated ?? res?.data?.task ?? res) as PersonalTask;
   } catch (_err) {
     return null;
+  }
+}
+
+export async function deletePersonalTask(id: string): Promise<boolean> {
+  try {
+    await apiRequest(`/api/personal/tasks/${encodeURIComponent(id)}`, {
+      method: "DELETE"
+    });
+    return true;
+  } catch (_err) {
+    return false;
   }
 }

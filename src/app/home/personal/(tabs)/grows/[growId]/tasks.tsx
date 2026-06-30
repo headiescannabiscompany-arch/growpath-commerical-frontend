@@ -11,27 +11,58 @@ import {
   View
 } from "react-native";
 
-import { createPersonalTask, listPersonalTasks, updatePersonalTask } from "@/api/tasks";
+import {
+  createPersonalTask,
+  deletePersonalTask,
+  listPersonalTasks,
+  updatePersonalTask,
+  type PersonalTask
+} from "@/api/tasks";
 import GrowWorkspaceNav from "@/components/personal/GrowWorkspaceNav";
 import { coerceParam, fmtDate, getRowId } from "@/features/grows/routeUtils";
 
+const priorities = ["low", "medium", "high"] as const;
+
+function taskSource(task: PersonalTask) {
+  if (task.sourceType) return task.sourceType.replace(/_/g, " ");
+  if (task.sourceToolRunId) return "tool run";
+  if (task.sourceDiagnosisId) return "AI diagnosis";
+  if (task.linkedLogId) return "journal";
+  return "";
+}
+
 const styles = StyleSheet.create({
-  container: { flex: 1, padding: 20, backgroundColor: "#FFFFFF" },
+  container: { flex: 1, backgroundColor: "#FFFFFF" },
+  content: { padding: 20, paddingBottom: 36 },
   title: { fontSize: 22, fontWeight: "700", marginBottom: 8 },
   subtitle: { color: "#64748B", marginBottom: 10 },
-  row: { flexDirection: "row", gap: 8 },
-  input: {
-    flex: 1,
+  row: { flexDirection: "row", flexWrap: "wrap", gap: 8 },
+  form: {
     borderWidth: 1,
     borderColor: "#E2E8F0",
-    borderRadius: 10,
+    borderRadius: 8,
+    backgroundColor: "#F8FAFC",
+    padding: 12,
+    gap: 8,
+    marginBottom: 10
+  },
+  label: { color: "#334155", fontWeight: "800", fontSize: 12 },
+  input: {
+    minWidth: 170,
+    flexGrow: 1,
+    borderWidth: 1,
+    borderColor: "#E2E8F0",
+    borderRadius: 8,
     paddingHorizontal: 12,
-    paddingVertical: 10
+    paddingVertical: 10,
+    backgroundColor: "#FFFFFF"
   },
   addBtn: {
+    minHeight: 40,
+    alignSelf: "flex-start",
     paddingHorizontal: 12,
     justifyContent: "center",
-    borderRadius: 10,
+    borderRadius: 8,
     backgroundColor: "#166534"
   },
   addBtnText: { color: "#FFFFFF", fontWeight: "700" },
@@ -39,13 +70,13 @@ const styles = StyleSheet.create({
     marginTop: 10,
     borderWidth: 1,
     borderColor: "#E2E8F0",
-    borderRadius: 10,
+    borderRadius: 8,
     padding: 12,
     backgroundColor: "#F8FAFC"
   },
-  taskTitle: { fontWeight: "700" },
+  taskTitle: { fontWeight: "700", color: "#0F172A" },
   taskMeta: { color: "#64748B", marginTop: 4, fontSize: 12 },
-  actionRow: { flexDirection: "row", gap: 8, marginTop: 10 },
+  actionRow: { flexDirection: "row", flexWrap: "wrap", gap: 8, marginTop: 10 },
   actionBtn: {
     borderWidth: 1,
     borderColor: "#CBD5E1",
@@ -54,17 +85,40 @@ const styles = StyleSheet.create({
     paddingHorizontal: 10,
     backgroundColor: "#FFFFFF"
   },
-  actionText: { fontWeight: "700", color: "#0F172A" }
+  dangerBtn: {
+    borderWidth: 1,
+    borderColor: "#B91C1C",
+    borderRadius: 8,
+    paddingVertical: 6,
+    paddingHorizontal: 10,
+    backgroundColor: "#FFFFFF"
+  },
+  actionText: { fontWeight: "700", color: "#0F172A" },
+  dangerText: { fontWeight: "800", color: "#B91C1C" },
+  chip: {
+    borderWidth: 1,
+    borderColor: "#CBD5E1",
+    borderRadius: 8,
+    paddingHorizontal: 9,
+    paddingVertical: 6,
+    backgroundColor: "#FFFFFF"
+  },
+  chipOn: { backgroundColor: "#166534", borderColor: "#166534" },
+  chipText: { color: "#334155", fontWeight: "800", fontSize: 12 },
+  chipTextOn: { color: "#FFFFFF" }
 });
 
 export default function GrowTasksScreen() {
   const { growId: rawGrowId } = useLocalSearchParams<{ growId?: string | string[] }>();
   const growId = useMemo(() => coerceParam(rawGrowId), [rawGrowId]);
 
-  const [tasks, setTasks] = useState<any[]>([]);
+  const [tasks, setTasks] = useState<PersonalTask[]>([]);
   const [loading, setLoading] = useState(true);
   const [creating, setCreating] = useState(false);
   const [newTitle, setNewTitle] = useState("");
+  const [newDescription, setNewDescription] = useState("");
+  const [newDueDate, setNewDueDate] = useState("");
+  const [newPriority, setNewPriority] = useState<(typeof priorities)[number]>("medium");
   const [feedback, setFeedback] = useState("");
 
   const load = useCallback(async () => {
@@ -90,13 +144,41 @@ export default function GrowTasksScreen() {
     }, [load])
   );
 
+  async function createTask() {
+    if (!growId || !newTitle.trim() || creating) return;
+    setCreating(true);
+    setFeedback("");
+    try {
+      const created = await createPersonalTask({
+        growId,
+        title: newTitle.trim(),
+        description: newDescription.trim(),
+        dueDate: newDueDate.trim() || undefined,
+        priority: newPriority
+      });
+      if (created) {
+        setNewTitle("");
+        setNewDescription("");
+        setNewDueDate("");
+        setNewPriority("medium");
+        setFeedback("Task created.");
+        await load();
+      } else {
+        setFeedback("Unable to create task.");
+      }
+    } finally {
+      setCreating(false);
+    }
+  }
+
   return (
-    <ScrollView style={styles.container}>
+    <ScrollView style={styles.container} contentContainerStyle={styles.content}>
       <Text style={styles.title}>Tasks</Text>
       <Text style={styles.subtitle}>Personal grow tasks linked to this grow.</Text>
       <GrowWorkspaceNav growId={growId} active="tasks" />
 
-      <View style={styles.row}>
+      <View style={styles.form}>
+        <Text style={styles.label}>Title</Text>
         <TextInput
           style={styles.input}
           placeholder="Add task title"
@@ -104,32 +186,48 @@ export default function GrowTasksScreen() {
           onChangeText={setNewTitle}
           accessibilityLabel="Task title"
         />
+        <Text style={styles.label}>Description</Text>
+        <TextInput
+          style={styles.input}
+          placeholder="What needs to happen?"
+          value={newDescription}
+          onChangeText={setNewDescription}
+          accessibilityLabel="Task description"
+        />
+        <Text style={styles.label}>Due date</Text>
+        <TextInput
+          style={styles.input}
+          placeholder="YYYY-MM-DD or ISO date"
+          value={newDueDate}
+          onChangeText={setNewDueDate}
+          accessibilityLabel="Task due date"
+        />
+        <Text style={styles.label}>Priority</Text>
+        <View style={styles.row}>
+          {priorities.map((priority) => (
+            <Pressable
+              key={priority}
+              style={[styles.chip, newPriority === priority && styles.chipOn]}
+              onPress={() => setNewPriority(priority)}
+              accessibilityRole="button"
+              accessibilityLabel={`Set task priority ${priority}`}
+            >
+              <Text
+                style={[styles.chipText, newPriority === priority && styles.chipTextOn]}
+              >
+                {priority}
+              </Text>
+            </Pressable>
+          ))}
+        </View>
         <Pressable
           style={[styles.addBtn, (!newTitle.trim() || creating) && { opacity: 0.55 }]}
           disabled={!newTitle.trim() || creating}
           accessibilityRole="button"
           accessibilityLabel="Add task"
-          onPress={async () => {
-            if (!growId || !newTitle.trim() || creating) return;
-            setCreating(true);
-            try {
-              const created = await createPersonalTask({
-                growId,
-                title: newTitle.trim()
-              });
-              if (created) {
-                setNewTitle("");
-                setFeedback("Task created.");
-                await load();
-              } else {
-                setFeedback("Unable to create task.");
-              }
-            } finally {
-              setCreating(false);
-            }
-          }}
+          onPress={createTask}
         >
-          <Text style={styles.addBtnText}>{creating ? "Adding..." : "Add"}</Text>
+          <Text style={styles.addBtnText}>{creating ? "Adding..." : "Add Task"}</Text>
         </Pressable>
       </View>
 
@@ -147,31 +245,89 @@ export default function GrowTasksScreen() {
         tasks.map((task) => {
           const id = getRowId(task);
           const done = Boolean(task?.completed);
+          const source = taskSource(task);
           return (
             <View key={id || `${task.title}-${task.dueDate}`} style={styles.card}>
               <Text style={styles.taskTitle}>
                 {done ? "Done: " : ""}
                 {task?.title || "Untitled task"}
               </Text>
-              <Text style={styles.taskMeta}>Due: {fmtDate(task?.dueDate)}</Text>
+              {task.description ? (
+                <Text style={styles.taskMeta}>{task.description}</Text>
+              ) : null}
+              <Text style={styles.taskMeta}>
+                Due: {fmtDate(task?.dueDate)} | Priority: {task.priority || "medium"}
+              </Text>
+              {task.snoozeUntil ? (
+                <Text style={styles.taskMeta}>
+                  Snoozed until: {fmtDate(task.snoozeUntil)}
+                </Text>
+              ) : null}
+              {source ? <Text style={styles.taskMeta}>Source: {source}</Text> : null}
+              {task.recurrence ? (
+                <Text style={styles.taskMeta}>Recurring task</Text>
+              ) : null}
               <View style={styles.actionRow}>
                 {id ? (
-                  <Pressable
-                    style={styles.actionBtn}
-                    accessibilityRole="button"
-                    accessibilityLabel={done ? "Reopen task" : "Complete task"}
-                    onPress={async () => {
-                      const updated = await updatePersonalTask(id, { completed: !done });
-                      if (updated) {
-                        setFeedback(done ? "Task reopened." : "Task completed.");
-                        await load();
-                      } else {
-                        setFeedback("Unable to update task.");
-                      }
-                    }}
-                  >
-                    <Text style={styles.actionText}>{done ? "Reopen" : "Complete"}</Text>
-                  </Pressable>
+                  <>
+                    <Pressable
+                      style={styles.actionBtn}
+                      accessibilityRole="button"
+                      accessibilityLabel={done ? "Reopen task" : "Complete task"}
+                      onPress={async () => {
+                        const updated = await updatePersonalTask(id, {
+                          completed: !done
+                        });
+                        if (updated) {
+                          setFeedback(done ? "Task reopened." : "Task completed.");
+                          await load();
+                        } else {
+                          setFeedback("Unable to update task.");
+                        }
+                      }}
+                    >
+                      <Text style={styles.actionText}>
+                        {done ? "Reopen" : "Complete"}
+                      </Text>
+                    </Pressable>
+                    {!done ? (
+                      <Pressable
+                        style={styles.actionBtn}
+                        accessibilityRole="button"
+                        accessibilityLabel="Snooze task one day"
+                        onPress={async () => {
+                          const snoozeUntil = new Date(
+                            Date.now() + 86400000
+                          ).toISOString();
+                          const updated = await updatePersonalTask(id, { snoozeUntil });
+                          if (updated) {
+                            setFeedback("Task snoozed until tomorrow.");
+                            await load();
+                          } else {
+                            setFeedback("Unable to snooze task.");
+                          }
+                        }}
+                      >
+                        <Text style={styles.actionText}>Snooze</Text>
+                      </Pressable>
+                    ) : null}
+                    <Pressable
+                      style={styles.dangerBtn}
+                      accessibilityRole="button"
+                      accessibilityLabel="Delete task"
+                      onPress={async () => {
+                        const deleted = await deletePersonalTask(id);
+                        if (deleted) {
+                          setFeedback("Task archived.");
+                          await load();
+                        } else {
+                          setFeedback("Unable to archive task.");
+                        }
+                      }}
+                    >
+                      <Text style={styles.dangerText}>Delete</Text>
+                    </Pressable>
+                  </>
                 ) : null}
               </View>
             </View>
