@@ -14,7 +14,7 @@ import CourseDetailScreen from "../screens/CourseDetailScreen";
 import LessonScreen from "../screens/LessonScreen";
 import AddLessonScreen from "../screens/AddLessonScreen";
 import EditLessonScreen from "../screens/EditLessonScreen";
-import CoursesScreen from "../screens/CoursesScreen";
+import CoursesReleaseHold from "../components/release/CoursesReleaseHold";
 import LinksScreen from "../screens/LinksScreen";
 import CampaignsScreen from "../screens/CampaignsScreen";
 import CommercialOrdersScreen from "../screens/CommercialOrdersScreen";
@@ -46,7 +46,7 @@ export default function CommercialStack() {
       <Stack.Screen name="CreateCourse" component={CreateCourseScreen} />
       <Stack.Screen name="CourseDetail" component={CourseDetailScreen} />
       <Stack.Screen name="Course" component={CourseDetailScreen} />
-      <Stack.Screen name="Courses" component={CoursesScreen} />
+      <Stack.Screen name="Courses" component={CoursesReleaseHold} />
       <Stack.Screen name="Lesson" component={LessonScreen} />
       <Stack.Screen name="AddLesson" component={AddLessonScreen} />
       <Stack.Screen name="EditLesson" component={EditLessonScreen} />

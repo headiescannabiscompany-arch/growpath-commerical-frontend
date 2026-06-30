@@ -77,7 +77,7 @@ export const PAGE_REGISTRY_PERSONAL = [
     label: "Courses",
     icon: "school-outline",
     capabilityKey: "view.courses",
-    component: require("../screens/CoursesScreen").default
+    component: require("../components/release/CoursesReleaseHold").default
   },
   {
     name: "Profile",

@@ -14,7 +14,6 @@ const TOOLS = [
   { id: "schedule", title: "Schedule Calculator", screen: "ScheduleCalculator" },
   { id: "ph_ec", title: "pH/EC Calculator", screen: "PHECCalculator" },
   { id: "growth", title: "Growth Tracker", screen: "GrowthTracker" },
-  { id: "pest", title: "Pest & Disease Identifier", screen: "PestDiseaseIdentifier" },
   { id: "harvest", title: "Harvest Estimator", screen: "HarvestEstimator" }
 ];
 
@@ -26,7 +25,6 @@ const TOOL_CAPS = {
   schedule: "tools.stageTimeline",
   ph_ec: "tools.phEcCalc",
   growth: "tools.growthTracker",
-  pest: "tools.pestIdentifier",
   harvest: "tools.harvestEstimator"
 };
 
