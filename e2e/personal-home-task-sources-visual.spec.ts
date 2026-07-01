@@ -122,7 +122,35 @@ async function installMocks(page: any) {
     }
 
     if (method === "GET" && url.pathname === "/api/tools") {
-      return fulfillJson(route, { tools: [] });
+      return fulfillJson(route, {
+        tools: [
+          {
+            id: "tool-home-1",
+            growId: GROW.id,
+            toolType: "dew-point-guard",
+            createdAt: "2026-07-01T08:30:00.000Z",
+            warnings: ["Condensation risk increased after lights-off."]
+          }
+        ]
+      });
+    }
+
+    if (method === "GET" && url.pathname === "/api/telemetry/sources") {
+      return fulfillJson(route, {
+        sources: [
+          {
+            id: "telemetry-home-1",
+            growId: GROW.id,
+            type: "growlink",
+            name: "Home tent controller",
+            timezone: "America/New_York",
+            isActive: true,
+            config: {},
+            lastPointIso: "2026-06-29T08:00:00.000Z",
+            updatedAt: "2026-06-29T08:00:00.000Z"
+          }
+        ]
+      });
     }
 
     if (method === "GET" && url.pathname === "/api/diagnose/history") {
@@ -133,6 +161,7 @@ async function installMocks(page: any) {
           plantId: "plant-home-1",
           issueSummary: "Possible olive leaf spot",
           diagnosisClass: "plant_health_triage",
+          urgency: "high",
           createdAt: "2026-07-01T08:15:00.000Z"
         }
       ]);
@@ -157,12 +186,20 @@ test.describe("personal Home task source labels", () => {
 
       await expect(page.getByText("Your Garden")).toBeVisible();
       await expect(page.getByText("Today's tasks")).toBeVisible();
+      await expect(page.getByText("Active alerts")).toBeVisible();
+      await expect(page.getByText("High priority today")).toBeVisible();
+      await expect(page.getByText("Diagnosis follow-up")).toBeVisible();
+      await expect(page.getByText("Latest tool warning")).toBeVisible();
+      await expect(page.getByText("Telemetry stale")).toBeVisible();
+      await expect(page.getByText(/Home tent controller has not updated/)).toBeVisible();
       await expect(page.getByText("Follow up on olive diagnosis")).toBeVisible();
       await expect(page.getByText(/Source: ai diagnosis/)).toBeVisible();
       await expect(page.getByText("Inspect canopy after automation alert")).toBeVisible();
       await expect(page.getByText(/Source: automation policy/)).toBeVisible();
       await expect(page.getByText("Latest diagnosis")).toBeVisible();
-      await expect(page.getByText(/Possible olive leaf spot/)).toBeVisible();
+      await expect(
+        page.getByText(/Possible olive leaf spot \| 7\/1\/2026/)
+      ).toBeVisible();
       await expect(page.getByText("Recent photos")).toBeVisible();
       await expect(page.getByText(/1 recent photo attached to this grow/)).toBeVisible();
       await expect(page.getByText("Diagnose").first()).toBeVisible();

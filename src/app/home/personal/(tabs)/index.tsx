@@ -8,6 +8,7 @@ import { listPersonalGrows } from "@/api/grows";
 import { listPersonalLogs } from "@/api/logs";
 import { listPersonalPlants } from "@/api/plants";
 import { listPersonalTasks } from "@/api/tasks";
+import { listTelemetrySources } from "@/api/telemetry";
 import { listToolRuns } from "@/api/toolRuns";
 import { useAuth } from "@/auth/AuthContext";
 import AppCard from "@/components/layout/AppCard";
@@ -17,6 +18,7 @@ import { fmtDate } from "@/features/grows/routeUtils";
 import { buildPersonalHomeModel } from "@/features/personal/homeModel";
 
 type HomeModel = ReturnType<typeof buildPersonalHomeModel>;
+type HomeAlert = HomeModel["alerts"][number];
 
 function ActionLink({ href, label }: { href: string; label: string }) {
   return (
@@ -26,6 +28,12 @@ function ActionLink({ href, label }: { href: string; label: string }) {
       </Pressable>
     </Link>
   );
+}
+
+function alertSeverityStyle(severity: HomeAlert["severity"]) {
+  if (severity === "critical") return styles.alert_critical;
+  if (severity === "warning") return styles.alert_warning;
+  return styles.alert_info;
 }
 
 export default function PersonalHomeTab() {
@@ -52,8 +60,34 @@ export default function PersonalHomeTab() {
       const diagnoses = Array.isArray(diagnosisResponse)
         ? diagnosisResponse
         : diagnosisResponse?.diagnoses || diagnosisResponse?.data || [];
+      const baseModel = buildPersonalHomeModel({
+        grows,
+        logs,
+        plants,
+        tasks,
+        toolRuns,
+        diagnoses
+      });
+      let telemetrySources: Awaited<ReturnType<typeof listTelemetrySources>> = [];
+      let telemetryUnavailable = false;
+      if (baseModel.activeGrowId) {
+        try {
+          telemetrySources = await listTelemetrySources(baseModel.activeGrowId);
+        } catch {
+          telemetryUnavailable = true;
+        }
+      }
       setModel(
-        buildPersonalHomeModel({ grows, logs, plants, tasks, toolRuns, diagnoses })
+        buildPersonalHomeModel({
+          grows,
+          logs,
+          plants,
+          tasks,
+          toolRuns,
+          diagnoses,
+          telemetrySources,
+          telemetryUnavailable
+        })
       );
     } catch {
       setError("Unable to refresh your grow overview.");
@@ -156,6 +190,35 @@ export default function PersonalHomeTab() {
       {model?.activeGrow ? (
         <View style={styles.section}>
           <Text style={styles.sectionTitle}>Today</Text>
+          <AppCard>
+            <Text style={styles.cardTitle}>Active alerts</Text>
+            {model.alerts.length ? (
+              <View style={styles.alertList}>
+                {model.alerts.map((alert) => (
+                  <View
+                    key={alert.id}
+                    style={[styles.alertRow, alertSeverityStyle(alert.severity)]}
+                  >
+                    <View style={styles.alertText}>
+                      <Text style={styles.alertTitle}>{alert.title}</Text>
+                      <Text style={styles.alertMessage}>{alert.message}</Text>
+                    </View>
+                    <Link href={alert.href} asChild>
+                      <Pressable
+                        style={styles.inlineAction}
+                        accessibilityRole="button"
+                        accessibilityLabel={`Open ${alert.title}`}
+                      >
+                        <Text style={styles.inlineActionText}>Open</Text>
+                      </Pressable>
+                    </Link>
+                  </View>
+                ))}
+              </View>
+            ) : (
+              <Text style={styles.cardDescription}>No active grow alerts are open.</Text>
+            )}
+          </AppCard>
           <AppCard>
             <Text style={styles.cardTitle}>Today's tasks</Text>
             {model.todayTasks.length ? (
@@ -279,6 +342,21 @@ const styles = StyleSheet.create({
   metricLabel: { color: "#64748B", fontSize: 12 },
   actions: { flexDirection: "row", flexWrap: "wrap", gap: 8 },
   taskList: { gap: 10, marginBottom: 10 },
+  alertList: { gap: 10 },
+  alertRow: {
+    borderWidth: 1,
+    borderRadius: 8,
+    flexDirection: "row",
+    gap: 10,
+    justifyContent: "space-between",
+    padding: 10
+  },
+  alert_critical: { backgroundColor: "#FEF2F2", borderColor: "#FCA5A5" },
+  alert_warning: { backgroundColor: "#FFFBEB", borderColor: "#FCD34D" },
+  alert_info: { backgroundColor: "#EFF6FF", borderColor: "#BFDBFE" },
+  alertText: { flex: 1, minWidth: 0 },
+  alertTitle: { color: "#0F172A", fontWeight: "900" },
+  alertMessage: { color: "#475569", fontSize: 12, lineHeight: 17, marginTop: 3 },
   taskRow: {
     borderWidth: 1,
     borderColor: "#E2E8F0",

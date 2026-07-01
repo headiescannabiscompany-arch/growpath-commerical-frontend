@@ -41,17 +41,25 @@ describe("buildPersonalHomeModel", () => {
       ] as any,
       tasks: [
         {
+          id: "task-overdue",
+          growId: "active",
+          title: "Past due inspection",
+          dueDate: "2026-06-20T09:00:00.000Z",
+          completed: false,
+          priority: "high"
+        },
+        {
           id: "task-2",
           growId: "active",
           title: "Later",
-          dueDate: "2026-06-22",
+          dueDate: "2026-06-22T10:00:00.000Z",
           completed: false
         },
         {
           id: "task-1",
           growId: "active",
           title: "Sooner",
-          dueDate: "2026-06-21",
+          dueDate: "2026-06-21T10:00:00.000Z",
           completed: false,
           priority: "high",
           sourceType: "tool_run",
@@ -61,14 +69,14 @@ describe("buildPersonalHomeModel", () => {
           id: "task-3",
           growId: "active",
           title: "Done",
-          dueDate: "2026-06-20",
+          dueDate: "2026-06-20T10:00:00.000Z",
           completed: true
         },
         {
           id: "task-4",
           growId: "active",
           title: "Diagnosis follow-up",
-          dueDate: "2026-06-21",
+          dueDate: "2026-06-21T11:00:00.000Z",
           completed: false,
           sourceType: "ai_diagnosis",
           sourceDiagnosisId: "diagnosis-1"
@@ -77,20 +85,27 @@ describe("buildPersonalHomeModel", () => {
           id: "task-5",
           growId: "active",
           title: "Automation inspection",
-          dueDate: "2026-06-21",
+          dueDate: "2026-06-21T12:00:00.000Z",
           completed: false,
           sourceType: "automation_policy",
           sourceObjectId: "automation-event-1"
         }
       ] as any,
       toolRuns: [
-        { id: "run-1", growId: "active", toolType: "vpd", createdAt: "2026-06-19" }
+        {
+          id: "run-1",
+          growId: "active",
+          toolType: "vpd",
+          createdAt: "2026-06-19",
+          warnings: ["VPD drifted above the crop target."]
+        }
       ],
       diagnoses: [
         {
           id: "diagnosis-1",
           growId: "active",
           issueSummary: "Possible magnesium stress",
+          urgency: "high",
           createdAt: "2026-06-19T13:00:00.000Z"
         },
         {
@@ -99,13 +114,31 @@ describe("buildPersonalHomeModel", () => {
           issueSummary: "Wrong grow diagnosis",
           createdAt: "2026-06-20T13:00:00.000Z"
         }
-      ]
+      ],
+      telemetrySources: [
+        {
+          id: "source-1",
+          growId: "active",
+          type: "growlink",
+          name: "Tent controller",
+          timezone: "America/New_York",
+          isActive: true,
+          config: {},
+          updatedAt: "2026-06-20T09:00:00.000Z"
+        }
+      ] as any,
+      now: new Date("2026-06-21T12:00:00.000Z")
     });
 
     expect(model.activeGrowId).toBe("active");
     expect(model.latestLog?.id).toBe("right");
-    expect(model.nextTask?.id).toBe("task-1");
+    expect(model.nextTask?.id).toBe("task-overdue");
     expect(model.todayTasks).toEqual([
+      expect.objectContaining({
+        id: "task-overdue",
+        sourceLabel: "manual",
+        sourceHref: "/home/personal/grows/active/tasks"
+      }),
       expect.objectContaining({
         id: "task-1",
         sourceLabel: "tool run",
@@ -120,16 +153,34 @@ describe("buildPersonalHomeModel", () => {
         id: "task-5",
         sourceLabel: "automation policy",
         sourceHref: "/home/personal/grows/active/tasks"
-      }),
-      expect.objectContaining({
-        id: "task-2",
-        sourceLabel: "manual",
-        sourceHref: "/home/personal/grows/active/tasks"
       })
     ]);
-    expect(model.openTaskCount).toBe(4);
+    expect(model.openTaskCount).toBe(5);
     expect(model.latestToolRun?.toolType).toBe("vpd");
     expect(model.latestDiagnosis?.id).toBe("diagnosis-1");
+    expect(model.alerts).toEqual([
+      expect.objectContaining({
+        id: "overdue-tasks",
+        severity: "critical",
+        message: "1 open task past due for Active."
+      }),
+      expect.objectContaining({
+        id: "high-priority-today",
+        severity: "warning"
+      }),
+      expect.objectContaining({
+        id: "diagnosis-urgency",
+        message: "Possible magnesium stress"
+      }),
+      expect.objectContaining({
+        id: "tool-warning",
+        message: "VPD drifted above the crop target."
+      }),
+      expect.objectContaining({
+        id: "telemetry-stale",
+        message: "Tent controller has not updated in more than 24 hours."
+      })
+    ]);
     expect(model.recentPhotos).toEqual([
       expect.objectContaining({
         url: "/uploads/canopy.jpg",
@@ -142,8 +193,8 @@ describe("buildPersonalHomeModel", () => {
       activeGrowCount: 2,
       plantCount: 2,
       logCount: 1,
-      taskCount: 5,
-      openTaskCount: 4,
+      taskCount: 6,
+      openTaskCount: 5,
       completedTaskCount: 1,
       toolRunCount: 1,
       diagnosisCount: 1,
