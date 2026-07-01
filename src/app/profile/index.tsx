@@ -84,9 +84,13 @@ export default function Profile() {
     setEmailFeedback("");
     setEmailError("");
     try {
-      await updateProfile({ email: nextEmail });
+      const result = await updateProfile({ email: nextEmail });
       await auth.retryMe();
-      setEmailFeedback("Email updated.");
+      setEmailFeedback(
+        result?.emailVerificationRequired
+          ? "Email updated. Check the new inbox for a verification link."
+          : "Email updated."
+      );
     } catch (e: any) {
       setEmailError(
         e?.data?.error?.message ||
