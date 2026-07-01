@@ -292,6 +292,14 @@ function LoginScreen() {
               : "Have an account? Log in"}
           </Text>
         </TouchableOpacity>
+        {authMode === "login" && (
+          <TouchableOpacity
+            onPress={() => router.push("/forgot-password")}
+            style={{ marginTop: spacing(2) }}
+          >
+            <Text style={styles.link}>Forgot password?</Text>
+          </TouchableOpacity>
+        )}
         {/* Privacy Policy link for onboarding */}
         <View style={{ alignItems: "center", marginTop: 30, marginBottom: 10 }}>
           <TouchableOpacity onPress={() => Linking.openURL(config.privacyUrl)}>

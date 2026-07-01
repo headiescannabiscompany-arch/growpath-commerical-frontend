@@ -1,5 +1,10 @@
 import { apiRequest } from "../apiRequest";
-import { confirmEmailVerification, requestEmailVerification } from "../auth";
+import {
+  confirmEmailVerification,
+  forgotPassword,
+  requestEmailVerification,
+  resetPassword
+} from "../auth";
 
 jest.mock("../apiRequest", () => ({
   apiRequest: jest.fn()
@@ -56,6 +61,40 @@ describe("email verification API wrappers", () => {
       method: "POST",
       auth: false,
       body: { token: "token-123" }
+    });
+  });
+
+  it("requests password reset instructions through the auth endpoint", async () => {
+    mockApiRequest.mockResolvedValueOnce({
+      ok: true,
+      message: "If an account exists, password reset instructions will be sent.",
+      emailSent: true
+    });
+
+    await expect(forgotPassword("grower@example.com")).resolves.toEqual({
+      ok: true,
+      message: "If an account exists, password reset instructions will be sent.",
+      emailSent: true
+    });
+
+    expect(mockApiRequest).toHaveBeenCalledWith("/api/auth/forgot-password", {
+      method: "POST",
+      auth: false,
+      body: { email: "grower@example.com" }
+    });
+  });
+
+  it("resets a password through the auth endpoint", async () => {
+    mockApiRequest.mockResolvedValueOnce({ ok: true });
+
+    await expect(resetPassword("reset-token", "new-password")).resolves.toEqual({
+      ok: true
+    });
+
+    expect(mockApiRequest).toHaveBeenCalledWith("/api/auth/reset-password", {
+      method: "POST",
+      auth: false,
+      body: { token: "reset-token", password: "new-password" }
     });
   });
 });

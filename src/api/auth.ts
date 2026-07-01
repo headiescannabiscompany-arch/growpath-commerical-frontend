@@ -51,6 +51,16 @@ export type ConfirmEmailVerificationResponse = {
   user: AuthUser;
 };
 
+export type ForgotPasswordResponse = {
+  ok: true;
+  message: string;
+  emailSent?: boolean;
+};
+
+export type ResetPasswordResponse = {
+  ok: true;
+};
+
 /** Login with email/password. Returns LoginResponse or throws ApiError. */
 export async function login(body: LoginBody): Promise<LoginResponse> {
   return apiRequest("/api/auth/login", {
@@ -96,6 +106,25 @@ export async function confirmEmailVerification(
     auth: false,
     body: { token }
   }) as Promise<ConfirmEmailVerificationResponse>;
+}
+
+export async function forgotPassword(email: string): Promise<ForgotPasswordResponse> {
+  return apiRequest("/api/auth/forgot-password", {
+    method: "POST",
+    auth: false,
+    body: { email }
+  }) as Promise<ForgotPasswordResponse>;
+}
+
+export async function resetPassword(
+  token: string,
+  password: string
+): Promise<ResetPasswordResponse> {
+  return apiRequest("/api/auth/reset-password", {
+    method: "POST",
+    auth: false,
+    body: { token, password }
+  }) as Promise<ResetPasswordResponse>;
 }
 
 /** Upgrade account to creator. Returns { ok, role } or throws ApiError. */

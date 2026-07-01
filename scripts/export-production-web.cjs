@@ -66,6 +66,8 @@ const fallbackRoutes = [
   "storefront",
   "profile",
   "verify-email",
+  "forgot-password",
+  "reset-password",
   "facilities",
   "onboarding",
   "onboarding/create-facility",

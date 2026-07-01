@@ -185,6 +185,15 @@ export default function LoginScreen() {
             <Text style={styles.linkText}>Create account</Text>
           </Pressable>
 
+          <Pressable
+            onPress={() => router.push("/forgot-password")}
+            accessibilityRole="button"
+            accessibilityLabel="Forgot password"
+            style={styles.linkBtnTight}
+          >
+            <Text style={styles.linkText}>Forgot password?</Text>
+          </Pressable>
+
           <LegalLinks />
         </View>
       </View>
@@ -319,5 +328,6 @@ const styles = StyleSheet.create({
   },
   secondaryButtonText: { fontWeight: "800", color: "#166534" },
   linkBtn: { marginTop: 14, alignItems: "center" },
+  linkBtnTight: { marginTop: 8, alignItems: "center" },
   linkText: { fontWeight: "800", color: "#166534" }
 });

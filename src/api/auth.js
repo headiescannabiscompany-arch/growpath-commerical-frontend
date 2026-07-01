@@ -81,6 +81,22 @@ export async function confirmEmailVerification(token) {
   });
 }
 
+export async function forgotPassword(email) {
+  return apiRequest("/api/auth/forgot-password", {
+    method: "POST",
+    auth: false,
+    body: { email }
+  });
+}
+
+export async function resetPassword(token, password) {
+  return apiRequest("/api/auth/reset-password", {
+    method: "POST",
+    auth: false,
+    body: { token, password }
+  });
+}
+
 // Become Creator
 export async function becomeCreator() {
   try {
