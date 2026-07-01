@@ -36,6 +36,7 @@
     "scan:release": "node scripts/scan-release.cjs",
     "release:preflight": "node scripts/release-preflight.cjs",
     "release:preflight:strict": "node scripts/release-preflight.cjs --strict",
+    "verify:sentry-dsn": "node scripts/verify-sentry-dsn.cjs",
     "verify:data-rights:live": "node scripts/verify-data-rights-live.cjs",
     "verify:manual": "npm run verify:manual:checks && npm run export:web:production",
     "verify:manual:checks": "powershell -NoProfile -ExecutionPolicy Bypass -File scripts/verify-before-manual.ps1",

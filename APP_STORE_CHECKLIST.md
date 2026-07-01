@@ -97,6 +97,7 @@
       `docs/release-secret-scan-evidence-2026-06-23.md`.
 - [ ] Configure production `EXPO_PUBLIC_SENTRY_DSN`, verify crash capture in a
       production-like build, and confirm support/crash monitoring owners.
+      Procedure: `docs/monitoring-verification.md`.
 - [ ] Confirm geographic, legal, and age-rating decisions for cannabis references.
 
 ## 8. Submission

@@ -21,8 +21,8 @@ Current known blockers:
 - Current frontend pre-live evidence is recorded in
   `docs/release-readiness-evidence-2026-07-01.md`. The covered local release
   gates pass, but strict release remains blocked until production Sentry DSN,
-  release-machine URL checks, production builds, real-device smoke, and store
-  sign-off are complete.
+  release-machine Sentry/URL checks, production builds, real-device smoke, and
+  store sign-off are complete.
 
 ## 1. Release Gate
 

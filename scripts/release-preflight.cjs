@@ -109,6 +109,7 @@ async function main() {
     run("strict release scan", process.execPath, ["scripts/scan-release.cjs"], {
       env: { GROWPATH_STRICT_RELEASE: "1" }
     });
+    run("Sentry DSN event check", process.execPath, ["scripts/verify-sentry-dsn.cjs"]);
     await checkLiveUrls();
   }
 

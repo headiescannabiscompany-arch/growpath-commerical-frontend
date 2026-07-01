@@ -23,6 +23,7 @@ inside this workspace.
 - `docs/store-privacy-data-safety-2026-07-01.md`
 - `docs/store-assets-evidence-2026-07-01.md`
 - `docs/data-rights-live-verification.md`
+- `docs/monitoring-verification.md`
 
 Note: older root-level historical verification notes such as
 `FINAL_VERIFICATION_CHECKLIST.md` and `STATUS_REALITY_CHECK.md` contain stale
@@ -125,9 +126,10 @@ Required fix before production build:
 2. Add `EXPO_PUBLIC_SENTRY_DSN` as an EAS production environment secret or
    protected CI/release-machine environment value.
 3. Rerun strict release scan with the DSN present.
-4. Trigger one controlled captured exception in a production-like build and
+4. Confirm `npm.cmd run verify:sentry-dsn` accepts a release verification event.
+5. Trigger one controlled captured exception in a production-like build and
    confirm it appears in Sentry.
-5. Record the named crash-monitoring owner and triage SLA.
+6. Record the named crash-monitoring owner and triage SLA.
 
 ## URL Checks
 
