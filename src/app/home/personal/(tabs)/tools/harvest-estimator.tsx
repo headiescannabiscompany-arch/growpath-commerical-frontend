@@ -2,8 +2,6 @@ import React, { useMemo, useState } from "react";
 import { useLocalSearchParams } from "expo-router";
 import { Pressable, ScrollView, StyleSheet, Text, TextInput } from "react-native";
 
-import { createPersonalLog } from "@/api/logs";
-import { createToolRun } from "@/api/toolRuns";
 import BackButton from "@/components/nav/BackButton";
 import { CAPABILITY_KEYS, useEntitlements } from "@/entitlements";
 import {
@@ -16,7 +14,10 @@ import {
   useToolPlantContext
 } from "@/features/personal/tools/ToolPlantContextPicker";
 import ToolResultSurface from "@/features/personal/tools/ToolResultSurface";
-import { saveToolRunAndCreateTask } from "@/features/personal/tools/saveToolRunAndOpenJournal";
+import {
+  saveToolRunAndCreateLog,
+  saveToolRunAndCreateTask
+} from "@/features/personal/tools/saveToolRunAndOpenJournal";
 
 function coerceParam(value?: string | string[]) {
   if (typeof value === "string") return value;
@@ -67,25 +68,19 @@ export default function HarvestEstimatorScreen() {
 
   async function saveEstimate() {
     if (!growId) throw new Error("Select a grow before saving.");
-    const toolRun = await createToolRun({
-      toolType: "harvest-estimator",
+    const created = await saveToolRunAndCreateLog({
       growId,
       ...plantContext.toolRunContext,
+      toolKey: "harvest-estimator",
       input,
       output: result,
-      calculatorVersion: "advanced-planning-v1"
-    });
-    const created = await createPersonalLog({
-      growId,
-      plantId: plantContext.toolRunContext.plantId,
-      toolRunId: toolRun?._id || toolRun?.id,
       type: "harvest",
       date: new Date().toISOString().slice(0, 10),
       title: "Harvest window estimate",
       notes: `${result.summary}\nTarget flowering day: ${result.targetDay}\nWindow: day ${result.earliestDay}-${result.latestDay}`,
       tags: ["harvest", "estimator"]
     });
-    if (!created) throw new Error("Unable to save harvest estimate.");
+    if (!created.ok) throw new Error(created.error);
     setFeedback("Saved harvest estimate to grow journal.");
   }
 

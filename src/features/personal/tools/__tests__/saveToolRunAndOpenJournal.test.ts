@@ -6,7 +6,8 @@ import {
   saveToolRunAndCreateLog,
   saveToolRunAndCreateTask,
   saveToolRunAndCreateTasks,
-  saveToolRunAndOpenJournal
+  saveToolRunAndOpenJournal,
+  saveToolRunResult
 } from "../saveToolRunAndOpenJournal";
 
 jest.mock("@/api/logs", () => ({
@@ -116,6 +117,28 @@ describe("saveToolRunAndOpenJournal", () => {
       expect.objectContaining({
         toolType: "vpd",
         calculatorVersion: "vpd-experiment-2"
+      })
+    );
+  });
+
+  it("saves a standalone visible tool run through the calculator version registry", async () => {
+    mockedCreateToolRun.mockResolvedValue({ _id: "watering-run-1" });
+
+    const result = await saveToolRunResult({
+      growId: "grow-water",
+      plantId: "plant-water",
+      toolKey: "watering",
+      input: { potLiters: 11, runoffPct: 10 },
+      output: { targetLiters: 2.42 }
+    });
+
+    expect(result).toEqual({ ok: true, toolRunId: "watering-run-1" });
+    expect(mockedCreateToolRun).toHaveBeenCalledWith(
+      expect.objectContaining({
+        toolType: "watering",
+        growId: "grow-water",
+        plantId: "plant-water",
+        calculatorVersion: "watering-heuristic-2026.06"
       })
     );
   });

@@ -2,7 +2,6 @@ import React, { useMemo, useState } from "react";
 import { useLocalSearchParams, useRouter } from "expo-router";
 import { ScrollView, StyleSheet, Text, TextInput } from "react-native";
 
-import { createToolRun } from "@/api/toolRuns";
 import BackButton from "@/components/nav/BackButton";
 import {
   ToolPlantContextPicker,
@@ -13,7 +12,8 @@ import ToolResultSurface, {
 } from "@/features/personal/tools/ToolResultSurface";
 import {
   saveToolRunAndCreateTask,
-  saveToolRunAndOpenJournal
+  saveToolRunAndOpenJournal,
+  saveToolRunResult
 } from "@/features/personal/tools/saveToolRunAndOpenJournal";
 import { buildWateringEstimate } from "@/features/personal/tools/wateringEstimate";
 
@@ -75,16 +75,15 @@ export default function WateringToolScreen() {
       disabled: Boolean(savedRunId),
       onPress: async () => {
         setFeedback("");
-        const created = await createToolRun({
-          toolType: "watering",
-          growId: growId || undefined,
+        const result = await saveToolRunResult({
+          growId,
           ...plantContext.toolRunContext,
+          toolKey: "watering",
           input,
           output: model
         });
-        const id = String(created?._id || created?.id || "");
-        if (!id) throw new Error("Unable to save tool run.");
-        setSavedRunId(id);
+        if (!result.ok) throw new Error(result.error);
+        setSavedRunId(result.toolRunId);
         setFeedback("Saved tool run.");
       }
     }

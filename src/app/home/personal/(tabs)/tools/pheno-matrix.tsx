@@ -2,7 +2,6 @@ import React, { useMemo, useState } from "react";
 import { useLocalSearchParams } from "expo-router";
 import { ScrollView, StyleSheet, Text, TextInput, View } from "react-native";
 
-import { createToolRun } from "@/api/toolRuns";
 import BackButton from "@/components/nav/BackButton";
 import { CAPABILITY_KEYS, useEntitlements } from "@/entitlements";
 import {
@@ -14,7 +13,10 @@ import {
   rankPhenoCandidates
 } from "@/features/personal/tools/phenoMatrix";
 import ToolResultSurface from "@/features/personal/tools/ToolResultSurface";
-import { saveToolRunAndCreateTask } from "@/features/personal/tools/saveToolRunAndOpenJournal";
+import {
+  saveToolRunAndCreateTask,
+  saveToolRunResult
+} from "@/features/personal/tools/saveToolRunAndOpenJournal";
 
 const initialCandidates: PhenoCandidateInput[] = [
   {
@@ -142,16 +144,14 @@ export default function PhenoMatrixScreen() {
 
   async function saveMatrixRun() {
     if (!growId) throw new Error("Select a grow before saving this matrix.");
-    const created = await createToolRun({
-      toolType: "pheno-matrix",
+    const result = await saveToolRunResult({
       growId,
+      toolKey: "pheno-matrix",
       input: matrixInput,
-      output: matrixOutput,
-      calculatorVersion: "pheno-matrix-v1"
+      output: matrixOutput
     });
-    const id = String(created?._id || created?.id || "").trim();
-    if (!id) throw new Error("Unable to save pheno matrix.");
-    setSavedRunId(id);
+    if (!result.ok) throw new Error(result.error);
+    setSavedRunId(result.toolRunId);
     setFeedback("Saved pheno matrix ToolRun.");
   }
 

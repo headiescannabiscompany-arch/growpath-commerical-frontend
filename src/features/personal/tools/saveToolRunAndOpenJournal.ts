@@ -85,6 +85,12 @@ async function ensureToolRun(args: Omit<SaveAndOpenArgs, "router">) {
   return { ok: true as const, toolRunId };
 }
 
+export async function saveToolRunResult(
+  args: Omit<SaveAndOpenArgs, "router">
+): Promise<SaveAndOpenResult> {
+  return ensureToolRun(args);
+}
+
 export async function saveToolRunAndOpenJournal(
   args: SaveAndOpenArgs
 ): Promise<SaveAndOpenResult> {
