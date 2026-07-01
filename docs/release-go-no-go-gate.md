@@ -13,6 +13,12 @@ The command checks source-controlled release artifacts and ignored release
 evidence directories. It exits non-zero until every required external artifact
 exists with the expected status.
 
+The gate also validates evidence shape. A bare status-only JSON file is not
+enough for critical release buckets; build evidence must include both iOS and
+Android results, live URL evidence must include every required URL, and manual
+approval evidence must include the expected owner, approval, screenshot, or
+store-console fields.
+
 ## Required Evidence
 
 The gate requires tracked artifacts for listing copy, privacy/data-safety

@@ -25,59 +25,149 @@ const evidenceRequirements = [
   {
     name: "strict preflight evidence",
     dir: "tmp/spec/strict-preflight",
-    requiredStatus: "passed"
+    requiredStatus: "passed",
+    validate: (body) => Boolean(body.checkedAt && body.command)
   },
   {
     name: "live URL verification",
     dir: "tmp/spec/live-url-checks",
-    requiredStatus: "passed"
+    requiredStatus: "passed",
+    validate: (body) => {
+      const names = new Set((body.results || []).map((result) => result.name));
+      return [
+        "privacy",
+        "terms",
+        "support",
+        "delete-account",
+        "api-health",
+        "api-ready",
+        "api-health-api"
+      ].every((name) => names.has(name));
+    }
   },
   {
     name: "Sentry native crash verification",
     dir: "tmp/spec/monitoring-validation",
-    requiredStatus: "passed"
+    requiredStatus: "passed",
+    validate: hasValues([
+      "GROWPATH_SENTRY_EVENT_URL",
+      "GROWPATH_MONITORING_BUILD",
+      "GROWPATH_CRASH_OWNER",
+      "GROWPATH_TRIAGE_SLA"
+    ])
   },
   {
     name: "disposable-account export/delete verification",
     dir: "tmp/spec/data-rights-live",
-    requiredStatus: "passed"
+    requiredStatus: "passed",
+    validate: (body) =>
+      Boolean(
+        body.loginStatus &&
+          body.exportStatus &&
+          body.deleteStatus &&
+          body.postDeleteLoginStatus &&
+          Array.isArray(body.exportTopLevelKeys)
+      )
   },
   {
     name: "production iOS/Android build evidence",
     dir: "tmp/spec/release-builds",
-    requiredStatus: "passed"
+    requiredStatus: "passed",
+    validate: (body) => {
+      const platforms = new Set(body.platforms || []);
+      const results = Array.isArray(body.results) ? body.results : [];
+      return (
+        platforms.has("ios") &&
+        platforms.has("android") &&
+        results.some((result) => result.platform === "ios" && result.status === 0) &&
+        results.some((result) => result.platform === "android" && result.status === 0)
+      );
+    }
   },
   {
     name: "physical-device smoke evidence",
     dir: "tmp/spec/release-device-smoke",
-    requiredStatus: "passed"
+    requiredStatus: "passed",
+    validate: hasValues([
+      "GROWPATH_SMOKE_TESTER",
+      "GROWPATH_IOS_DEVICE",
+      "GROWPATH_ANDROID_DEVICE",
+      "GROWPATH_IOS_BUILD",
+      "GROWPATH_ANDROID_BUILD",
+      "GROWPATH_SMOKE_RESULT"
+    ])
   },
   {
     name: "store screenshots evidence",
     dir: "tmp/spec/store-screenshots",
-    requiredStatus: "passed"
+    requiredStatus: "passed",
+    validate: hasValues([
+      "GROWPATH_SCREENSHOT_IOS_67",
+      "GROWPATH_SCREENSHOT_IOS_65",
+      "GROWPATH_SCREENSHOT_IPAD_129",
+      "GROWPATH_SCREENSHOT_ANDROID_PHONE",
+      "GROWPATH_SCREENSHOT_ANDROID_TABLET"
+    ])
   },
   {
     name: "store-console submission form evidence",
     dir: "tmp/spec/store-submission",
-    requiredStatus: "passed"
+    requiredStatus: "passed",
+    validate: hasValues([
+      "GROWPATH_IOS_APP_RECORD_CONFIRMED",
+      "GROWPATH_ANDROID_APP_RECORD_CONFIRMED",
+      "GROWPATH_IOS_PRIVACY_NUTRITION_COMPLETED",
+      "GROWPATH_GOOGLE_DATA_SAFETY_COMPLETED",
+      "GROWPATH_STORE_PRICING_CONFIRMED",
+      "GROWPATH_REVIEW_NOTES_CONFIRMED"
+    ])
   },
   {
     name: "legal release sign-off",
     dir: "tmp/spec/legal-release-signoff",
-    requiredStatus: "approved"
+    requiredStatus: "approved",
+    validate: hasValues([
+      "GROWPATH_LEGAL_APPROVER",
+      "GROWPATH_RELEASE_OWNER",
+      "GROWPATH_APPROVED_LISTING_VERSION",
+      "GROWPATH_APPROVED_PRIVACY_VERSION",
+      "GROWPATH_AGE_RATING_DECISION",
+      "GROWPATH_JURISDICTION_NOTES"
+    ])
   },
   {
     name: "named release/support/QA/crash owners",
     dir: "tmp/spec/release-owners",
-    requiredStatus: "approved"
+    requiredStatus: "approved",
+    validate: hasValues([
+      "GROWPATH_RELEASE_OWNER",
+      "GROWPATH_QA_OWNER",
+      "GROWPATH_SUPPORT_OWNER",
+      "GROWPATH_CRASH_OWNER",
+      "GROWPATH_RELEASE_MONITORING_OWNER",
+      "GROWPATH_TRIAGE_SLA"
+    ])
   },
   {
     name: "hotfix and rollback plan sign-off",
     dir: "tmp/spec/hotfix-rollback",
-    requiredStatus: "approved"
+    requiredStatus: "approved",
+    validate: hasValues([
+      "GROWPATH_HOTFIX_OWNER",
+      "GROWPATH_ROLLBACK_OWNER",
+      "GROWPATH_HOTFIX_BRANCH",
+      "GROWPATH_ROLLBACK_PLAN",
+      "GROWPATH_SUPPORT_ESCALATION"
+    ])
   }
 ];
+
+function hasValues(names) {
+  return (body) => {
+    const values = body?.values || {};
+    return names.every((name) => String(values[name] || "").trim());
+  };
+}
 
 function exists(relPath) {
   return fs.existsSync(path.join(ROOT, relPath));
@@ -97,7 +187,10 @@ function latestPassingEvidence(requirement) {
   for (const file of jsonFiles(requirement.dir)) {
     try {
       const body = JSON.parse(fs.readFileSync(file, "utf8"));
-      if (body?.status === requirement.requiredStatus) {
+      if (
+        body?.status === requirement.requiredStatus &&
+        (!requirement.validate || requirement.validate(body))
+      ) {
         return path.relative(ROOT, file);
       }
     } catch {
