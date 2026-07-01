@@ -62,6 +62,18 @@ for manual approval buckets. Supported types are:
 The recorder requires `GROWPATH_RELEASE_EVIDENCE_CONFIRM=RECORD_RELEASE_EVIDENCE`
 and type-specific environment variables; it refuses blank approvals.
 
+Print the exact PowerShell template for a type with:
+
+```powershell
+npm.cmd run release:record-evidence -- --template owners
+npm.cmd run release:record-evidence -- --template legal
+npm.cmd run release:record-evidence -- --template hotfix
+npm.cmd run release:record-evidence -- --template store-submission
+npm.cmd run release:record-evidence -- --template screenshots
+npm.cmd run release:record-evidence -- --template device-smoke
+npm.cmd run release:record-evidence -- --template monitoring
+```
+
 ## Current Expected Result
 
 In this workspace, the gate should currently return `NO-GO` because production

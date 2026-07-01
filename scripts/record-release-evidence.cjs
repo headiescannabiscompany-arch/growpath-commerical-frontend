@@ -103,7 +103,24 @@ const evidenceTypes = {
 function usage() {
   const types = Object.keys(evidenceTypes).join("|");
   console.log(`Usage: node scripts/record-release-evidence.cjs <${types}>`);
+  console.log(`Template: node scripts/record-release-evidence.cjs --template <${types}>`);
   console.log(`Required confirmation: GROWPATH_RELEASE_EVIDENCE_CONFIRM=${CONFIRM}`);
+}
+
+function printTemplate(type, spec) {
+  console.log(`$env:GROWPATH_RELEASE_EVIDENCE_CONFIRM="${CONFIRM}"`);
+  console.log('$env:GROWPATH_EVIDENCE_RECORDED_BY="<name-or-release-machine>"');
+  for (const name of spec.required) {
+    const expected = spec.exact?.[name];
+    if (expected) {
+      console.log(`$env:${name}="${expected}"`);
+    } else if ((spec.yesNo || []).includes(name)) {
+      console.log(`$env:${name}="yes"`);
+    } else {
+      console.log(`$env:${name}="<required>"`);
+    }
+  }
+  console.log(`npm.cmd run release:record-evidence -- ${type}`);
 }
 
 function env(name) {
@@ -155,7 +172,8 @@ function writeEvidence(type, spec, values) {
 }
 
 function main() {
-  const type = process.argv[2];
+  const templateMode = process.argv[2] === "--template";
+  const type = templateMode ? process.argv[3] : process.argv[2];
   if (!type || type === "--help" || type === "-h") {
     usage();
     process.exit(type ? 0 : 1);
@@ -165,6 +183,11 @@ function main() {
   if (!spec) {
     usage();
     throw new Error(`Unknown release evidence type: ${type}`);
+  }
+
+  if (templateMode) {
+    printTemplate(type, spec);
+    return;
   }
 
   requireConfirmation();
