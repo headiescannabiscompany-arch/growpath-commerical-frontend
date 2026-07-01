@@ -12,6 +12,7 @@ import {
 } from "react-native";
 import { useRouter } from "expo-router";
 
+import { requestEmailVerification } from "@/api/auth";
 import { deleteAccount, exportPrivacyData, updateProfile } from "@/api/users";
 import { useAuth } from "@/auth/AuthContext";
 import AppCard from "@/components/layout/AppCard";
@@ -39,6 +40,7 @@ export default function Profile() {
   const [savingEmail, setSavingEmail] = useState(false);
   const [emailFeedback, setEmailFeedback] = useState("");
   const [emailError, setEmailError] = useState("");
+  const [resendingVerification, setResendingVerification] = useState(false);
   const [loggingOut, setLoggingOut] = useState(false);
   const [privacyFeedback, setPrivacyFeedback] = useState("");
   const [privacyError, setPrivacyError] = useState("");
@@ -56,6 +58,7 @@ export default function Profile() {
   const mode = ent.mode || "personal";
   const emailChanged = emailDraft.trim().toLowerCase() !== email.toLowerCase();
   const canSaveEmail = emailDraft.trim().length > 3 && emailChanged && !savingEmail;
+  const emailVerified = Boolean(auth.user?.emailVerified);
 
   const planNote = useMemo(() => {
     if (
@@ -93,6 +96,21 @@ export default function Profile() {
       );
     } finally {
       setSavingEmail(false);
+    }
+  }
+
+  async function handleResendVerification() {
+    if (!email || resendingVerification) return;
+    setResendingVerification(true);
+    setEmailFeedback("");
+    setEmailError("");
+    try {
+      await requestEmailVerification(email);
+      setEmailFeedback("If this account needs verification, a new email has been sent.");
+    } catch (e: any) {
+      setEmailError(e?.message || "Unable to request verification email.");
+    } finally {
+      setResendingVerification(false);
     }
   }
 
@@ -193,6 +211,17 @@ export default function Profile() {
           <Text style={styles.cardText}>
             This is the email used for login and account recovery.
           </Text>
+          <View style={styles.statusRow}>
+            <Text style={styles.statusLabel}>Email status</Text>
+            <Text
+              style={[
+                styles.statusValue,
+                emailVerified ? styles.statusVerified : styles.statusUnverified
+              ]}
+            >
+              {emailVerified ? "Verified" : "Not verified"}
+            </Text>
+          </View>
           <TextInput
             accessibilityLabel="Profile email"
             style={styles.input}
@@ -225,6 +254,22 @@ export default function Profile() {
               <Text style={styles.primaryButtonText}>Update email</Text>
             )}
           </Pressable>
+          {!emailVerified ? (
+            <Pressable
+              onPress={handleResendVerification}
+              disabled={resendingVerification || !email}
+              accessibilityRole="button"
+              accessibilityLabel="Resend verification email"
+              style={[
+                styles.secondaryButton,
+                (resendingVerification || !email) && styles.disabledButton
+              ]}
+            >
+              <Text style={styles.secondaryButtonText}>
+                {resendingVerification ? "Sending..." : "Resend verification email"}
+              </Text>
+            </Pressable>
+          ) : null}
         </AppCard>
 
         <AppCard style={styles.card}>
@@ -305,9 +350,9 @@ export default function Profile() {
         <AppCard style={styles.card}>
           <Text style={styles.cardTitle}>Privacy and account data</Text>
           <Text style={styles.cardText}>
-            Export your account data or delete your account from inside the app.
-            Deletion anonymizes the account and archives active personal records instead
-            of blindly removing grow history.
+            Export your account data or delete your account from inside the app. Deletion
+            anonymizes the account and archives active personal records instead of blindly
+            removing grow history.
           </Text>
           <LegalLinks />
           {privacyFeedback ? (
@@ -390,6 +435,28 @@ const styles = StyleSheet.create({
     fontWeight: "700",
     lineHeight: 20
   },
+  statusRow: {
+    alignItems: "center",
+    borderColor: "#dbe3ea",
+    borderRadius: 8,
+    borderWidth: 1,
+    flexDirection: "row",
+    justifyContent: "space-between",
+    marginBottom: 12,
+    paddingHorizontal: 12,
+    paddingVertical: 10
+  },
+  statusLabel: {
+    color: "#475569",
+    fontSize: 13,
+    fontWeight: "700"
+  },
+  statusValue: {
+    fontSize: 13,
+    fontWeight: "900"
+  },
+  statusVerified: { color: "#166534" },
+  statusUnverified: { color: "#b45309" },
   input: {
     backgroundColor: "#ffffff",
     borderColor: "#cbd5e1",

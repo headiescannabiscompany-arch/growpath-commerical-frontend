@@ -25,13 +25,14 @@ describe("apiMe contract normalization", () => {
 
   it("accepts canonical direct shape { user, ctx }", async () => {
     mockApiRequest.mockResolvedValue({
-      user: { id: "u1", email: "u1@example.com" },
+      user: { id: "u1", email: "u1@example.com", emailVerified: true },
       ctx: { mode: "personal", capabilities: {}, limits: {} }
     });
 
     const me = await apiMe();
 
     expect(me.user.id).toBe("u1");
+    expect(me.user.emailVerified).toBe(true);
     expect(me.ctx.mode).toBe("personal");
   });
 

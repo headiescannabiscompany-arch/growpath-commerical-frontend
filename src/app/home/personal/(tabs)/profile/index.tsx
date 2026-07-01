@@ -13,6 +13,7 @@ import {
 import { useRouter } from "expo-router";
 import { useAuth } from "@/auth/AuthContext";
 import { useEntitlements } from "@/entitlements";
+import { requestEmailVerification } from "@/api/auth";
 import { deleteAccount, exportPrivacyData, updateProfile } from "@/api/users";
 
 const styles = StyleSheet.create({
@@ -31,6 +32,21 @@ const styles = StyleSheet.create({
   },
   rowLabel: { fontSize: 12, color: "#64748B" },
   rowValue: { marginTop: 4, fontSize: 15, fontWeight: "700" },
+  statusRow: {
+    alignItems: "center",
+    borderColor: "#E2E8F0",
+    borderRadius: 8,
+    borderWidth: 1,
+    flexDirection: "row",
+    justifyContent: "space-between",
+    marginTop: 8,
+    paddingHorizontal: 12,
+    paddingVertical: 10
+  },
+  statusLabel: { color: "#64748B", fontSize: 12, fontWeight: "700" },
+  statusValue: { fontSize: 12, fontWeight: "900" },
+  statusVerified: { color: "#166534" },
+  statusUnverified: { color: "#B45309" },
   input: {
     marginTop: 8,
     borderWidth: 1,
@@ -82,6 +98,7 @@ export default function ProfileScreen() {
   const [savingEmail, setSavingEmail] = useState(false);
   const [emailFeedback, setEmailFeedback] = useState("");
   const [emailError, setEmailError] = useState("");
+  const [resendingVerification, setResendingVerification] = useState(false);
   const [privacyFeedback, setPrivacyFeedback] = useState("");
   const [privacyError, setPrivacyError] = useState("");
   const [exporting, setExporting] = useState(false);
@@ -89,6 +106,7 @@ export default function ProfileScreen() {
   const [deleting, setDeleting] = useState(false);
   const mode = ent.mode || "personal";
   const plan = ent.plan || "free";
+  const emailVerified = Boolean(auth.user?.emailVerified);
 
   useEffect(() => {
     setEmailDraft(email === "unknown" ? "" : email);
@@ -113,6 +131,21 @@ export default function ProfileScreen() {
       setEmailError(message);
     } finally {
       setSavingEmail(false);
+    }
+  };
+
+  const handleResendVerification = async () => {
+    if (!email || email === "unknown" || resendingVerification) return;
+    setResendingVerification(true);
+    setEmailFeedback("");
+    setEmailError("");
+    try {
+      await requestEmailVerification(email);
+      setEmailFeedback("If this account needs verification, a new email has been sent.");
+    } catch (e: any) {
+      setEmailError(e?.message || "Unable to request verification email.");
+    } finally {
+      setResendingVerification(false);
     }
   };
 
@@ -227,6 +260,17 @@ export default function ProfileScreen() {
 
       <View style={styles.card}>
         <Text style={styles.rowLabel}>Email</Text>
+        <View style={styles.statusRow}>
+          <Text style={styles.statusLabel}>Status</Text>
+          <Text
+            style={[
+              styles.statusValue,
+              emailVerified ? styles.statusVerified : styles.statusUnverified
+            ]}
+          >
+            {emailVerified ? "Verified" : "Not verified"}
+          </Text>
+        </View>
         <TextInput
           style={styles.input}
           autoCapitalize="none"
@@ -257,6 +301,22 @@ export default function ProfileScreen() {
             {savingEmail ? "Saving..." : "Update Email"}
           </Text>
         </Pressable>
+        {!emailVerified ? (
+          <Pressable
+            style={[
+              styles.button,
+              (resendingVerification || !email || email === "unknown") && {
+                opacity: 0.55
+              }
+            ]}
+            disabled={resendingVerification || !email || email === "unknown"}
+            onPress={handleResendVerification}
+          >
+            <Text style={styles.buttonSecondaryText}>
+              {resendingVerification ? "Sending..." : "Resend verification email"}
+            </Text>
+          </Pressable>
+        ) : null}
       </View>
 
       <View style={styles.card}>
