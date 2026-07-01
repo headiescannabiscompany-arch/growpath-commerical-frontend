@@ -20,6 +20,7 @@ inside this workspace.
 - `docs/release-secret-scan-evidence-2026-06-23.md`
 - `docs/release-validation-evidence-2026-06-22.md`
 - `docs/eas-submit-runbook.md`
+- `docs/store-privacy-data-safety-2026-07-01.md`
 
 Note: older root-level historical verification notes such as
 `FINAL_VERIFICATION_CHECKLIST.md` and `STATUS_REALITY_CHECK.md` contain stale
@@ -170,7 +171,8 @@ outside this local workspace before live testing or store submission.
    request end-to-end against the real backend, then verify the account can no
    longer authenticate.
 7. Complete Apple privacy nutrition labels and Google Play data safety answers
-   from the actual data collected by the app.
+   from `docs/store-privacy-data-safety-2026-07-01.md`, then attach
+   legal/release-owner sign-off.
 8. Attach legal approval for cannabis-related copy, age rating, jurisdiction
    disclaimers, image retention, and AI diagnosis limitations.
 9. Capture final store screenshots from validated production builds.

@@ -40,6 +40,8 @@
       URLs are live from a release machine with working TLS.
 - [ ] Complete iOS privacy nutrition labels.
 - [ ] Complete Google Play data safety form.
+- [x] Source-derived privacy/data-safety answer set exists at
+      `docs/store-privacy-data-safety-2026-07-01.md`.
 
 ## 4. Assets
 
@@ -82,7 +84,9 @@
 - [x] Placeholder submit credentials are not stored in `eas.json`.
 - [ ] Confirm Apple and Google submit credentials are available only through trusted release machines or protected CI secrets.
 - [ ] Confirm privacy policy and terms are hosted and accessible.
-- [ ] Confirm account deletion and data export support path.
+- [x] Confirm account deletion and data export support path is wired in-app.
+      Evidence: profile privacy controls and
+      `docs/store-privacy-data-safety-2026-07-01.md`.
 - [x] Confirm no production secrets are committed. Evidence:
       `docs/release-secret-scan-evidence-2026-06-23.md`.
 - [ ] Configure production `EXPO_PUBLIC_SENTRY_DSN`, verify crash capture in a

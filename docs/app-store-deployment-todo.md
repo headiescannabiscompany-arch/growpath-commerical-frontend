@@ -132,10 +132,14 @@ Current known blockers:
 
 ## 5. Store Submission
 
-- NOT DONE: App Store Connect and Google Play Console forms.
+- PARTIAL: App Store Connect and Google Play Console forms.
 - Owner: Release Manager
+- Current evidence: `docs/store-privacy-data-safety-2026-07-01.md` contains
+  source-derived Apple privacy nutrition label and Google Play data safety
+  answer inputs.
 - Next action: Complete listing, privacy, data safety, age rating, pricing,
-  compliance, and review notes after production builds are validated.
+  compliance, and review notes in the store consoles after legal/release-owner
+  approval and production builds are validated.
 - Evidence target: `tmp/spec/store_submission_2026-06-21.md`
 
 - NOT DONE: Release notes and version information.
