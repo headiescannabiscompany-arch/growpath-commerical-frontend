@@ -1,6 +1,6 @@
 import React, { useMemo, useState, useEffect } from "react";
 import { View, Text, StyleSheet, TextInput, Pressable, ScrollView } from "react-native";
-import { useRouter } from "expo-router";
+import { useLocalSearchParams, useRouter } from "expo-router";
 import { runTool } from "@/ai/toolRegistry";
 import { listPersonalGrows } from "@/api/grows";
 import { createPersonalLog, listPersonalLogs } from "@/api/logs";
@@ -148,6 +148,10 @@ function formatDate(value: any) {
   return new Date(time).toLocaleDateString();
 }
 
+function firstQueryValue(value: string | string[] | undefined) {
+  return String(Array.isArray(value) ? value[0] || "" : value || "").trim();
+}
+
 function activeGrows(grows: any[]) {
   return grows.filter((grow) => String(grow?.status || "").toLowerCase() !== "harvested");
 }
@@ -257,7 +261,13 @@ function cropContextSummary(plants: any[]) {
 
 export default function AiScreen() {
   const router = useRouter();
-  const [draft, setDraft] = useState("");
+  const params = useLocalSearchParams<{
+    prompt?: string | string[];
+    growId?: string | string[];
+  }>();
+  const initialPrompt = firstQueryValue(params.prompt);
+  const initialGrowId = firstQueryValue(params.growId);
+  const [draft, setDraft] = useState(initialPrompt);
   const [messages, setMessages] = useState<Msg[]>([
     {
       role: "assistant",
@@ -268,7 +278,7 @@ export default function AiScreen() {
   const [actions, setActions] = useState<AssistantAction[]>([]);
   const [references, setReferences] = useState<AssistantReference[]>([]);
   const [proposedWrites, setProposedWrites] = useState<AssistantProposedWrite[]>([]);
-  const [selectedGrowId, setSelectedGrowId] = useState("");
+  const [selectedGrowId, setSelectedGrowId] = useState(initialGrowId);
   const [sending, setSending] = useState(false);
   const [writeFeedback, setWriteFeedback] = useState("");
 

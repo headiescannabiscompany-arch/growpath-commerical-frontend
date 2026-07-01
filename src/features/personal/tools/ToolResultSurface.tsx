@@ -1,5 +1,6 @@
 import React, { useState } from "react";
 import { Pressable, StyleSheet, Text, View } from "react-native";
+import { useRouter } from "expo-router";
 
 export type ToolResultSeverity = "info" | "low" | "medium" | "high";
 
@@ -90,6 +91,67 @@ async function copyResult(payload: unknown) {
   await navigator.clipboard.writeText(JSON.stringify(payload, null, 2));
 }
 
+function firstString(...values: unknown[]) {
+  for (const value of values) {
+    const text = String(value || "").trim();
+    if (text) return text;
+  }
+  return "";
+}
+
+function objectValue(source: unknown, key: string) {
+  return source && typeof source === "object"
+    ? (source as Record<string, unknown>)[key]
+    : undefined;
+}
+
+function buildAskAiPrompt({
+  title,
+  status,
+  summary,
+  inputs,
+  outputs,
+  metrics,
+  notices,
+  recommendations,
+  formulas,
+  confidence,
+  copyPayload
+}: {
+  title: string;
+  status?: string;
+  summary?: string;
+  inputs?: Record<string, any> | null;
+  outputs?: Record<string, any> | null;
+  metrics: ToolResultMetric[];
+  notices: ToolResultNotice[];
+  recommendations: string[];
+  formulas: string[];
+  confidence?: string | null;
+  copyPayload?: unknown;
+}) {
+  const payload = {
+    title,
+    status,
+    summary,
+    metrics,
+    inputs,
+    outputs,
+    notices,
+    recommendations,
+    formulas,
+    confidence,
+    source: copyPayload
+  };
+  return [
+    `Explain this GrowPathAI tool result and suggest safe next checks.`,
+    `Do not make absolute diagnosis claims; use the selected grow context if available.`,
+    JSON.stringify(payload, null, 2)
+  ]
+    .join("\n\n")
+    .slice(0, 4000);
+}
+
 export default function ToolResultSurface({
   title = "Result",
   status,
@@ -111,6 +173,7 @@ export default function ToolResultSurface({
   onReuseInputs,
   onAskAI
 }: ToolResultSurfaceProps) {
+  const router = useRouter();
   const [activeAction, setActiveAction] = useState<string | null>(null);
   const [actionFeedback, setActionFeedback] = useState("");
 
@@ -130,6 +193,37 @@ export default function ToolResultSurface({
 
   const inputEntries = compactEntries(inputs);
   const outputEntries = compactEntries(outputs);
+  const growId = firstString(
+    objectValue(copyPayload, "growId"),
+    objectValue(inputs, "growId"),
+    objectValue(outputs, "growId")
+  );
+  const defaultAskAi =
+    onAskAI ||
+    (copyPayload || inputs || outputs || metrics.length || summary
+      ? () => {
+          const prompt = buildAskAiPrompt({
+            title,
+            status,
+            summary,
+            inputs,
+            outputs,
+            metrics,
+            notices,
+            recommendations,
+            formulas,
+            confidence,
+            copyPayload
+          });
+          const query = [
+            `prompt=${encodeURIComponent(prompt)}`,
+            growId ? `growId=${encodeURIComponent(growId)}` : ""
+          ]
+            .filter(Boolean)
+            .join("&");
+          router.push(`/home/personal/ai?${query}`);
+        }
+      : undefined);
   const standardActions: ToolResultAction[] = [
     ...(canCopyText()
       ? [
@@ -170,14 +264,14 @@ export default function ToolResultSurface({
           }
         ]
       : []),
-    ...(onAskAI
+    ...(defaultAskAi
       ? [
           {
             key: "ask-ai",
             label: "Ask AI About This",
             variant: "secondary" as const,
             pendingLabel: "Opening...",
-            onPress: onAskAI
+            onPress: defaultAskAi
           }
         ]
       : [])

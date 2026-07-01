@@ -4,8 +4,15 @@ import { Text } from "react-native";
 
 import ToolResultSurface from "../ToolResultSurface";
 
+const mockPush = jest.fn();
+
+jest.mock("expo-router", () => ({
+  useRouter: () => ({ push: mockPush })
+}));
+
 describe("ToolResultSurface", () => {
   beforeEach(() => {
+    mockPush.mockReset();
     Object.defineProperty(globalThis, "navigator", {
       configurable: true,
       value: {
@@ -52,6 +59,40 @@ describe("ToolResultSurface", () => {
     expect(text.flat(Infinity).join(" ")).toContain("Copy Result");
     expect(text.flat(Infinity).join(" ")).toContain("Reuse Inputs");
     expect(text.flat(Infinity).join(" ")).toContain("Ask AI About This");
+  });
+
+  it("opens personal AI with structured result context by default", async () => {
+    let tree: renderer.ReactTestRenderer;
+    await act(async () => {
+      tree = renderer.create(
+        <ToolResultSurface
+          title="Dew Point Guard result"
+          status="HIGH"
+          summary="Condensation risk is elevated."
+          metrics={[{ key: "spread", label: "Dew point spread", value: "1.2 C" }]}
+          inputs={{ growId: "grow-1", rh: 82 }}
+          outputs={{ risk: "high", dewPointSpreadC: 1.2 }}
+          recommendations={["Inspect dense canopy zones."]}
+        />
+      );
+    });
+
+    const askButton = tree!.root
+      .findAll((node) => node.props.accessibilityLabel === "Ask AI About This")
+      .at(0);
+    expect(askButton).toBeTruthy();
+
+    await act(async () => {
+      askButton?.props.onPress();
+    });
+
+    expect(mockPush).toHaveBeenCalledWith(
+      expect.stringContaining("/home/personal/ai?prompt=")
+    );
+    expect(mockPush).toHaveBeenCalledWith(expect.stringContaining("growId=grow-1"));
+    const href = mockPush.mock.calls[0][0];
+    expect(decodeURIComponent(href)).toContain("Dew Point Guard result");
+    expect(decodeURIComponent(href)).toContain('"risk": "high"');
   });
 
   it("copies the structured result payload when the runtime supports clipboard", async () => {
