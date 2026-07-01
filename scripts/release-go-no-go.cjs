@@ -17,6 +17,7 @@ const trackedRequired = [
   "docs/production-build-device-smoke-runbook.md",
   "docs/release-go-no-go-gate.md",
   "docs/store-screenshot-capture-runbook.md",
+  "docs/release-signoff-runbook.md",
   "store-assets/graphics/app-store-icon-1024.png",
   "store-assets/graphics/google-play-icon-512.png",
   "store-assets/graphics/google-play-feature-graphic-1024x500.png"
@@ -89,14 +90,17 @@ const evidenceRequirements = [
     name: "physical-device smoke evidence",
     dir: "tmp/spec/release-device-smoke",
     requiredStatus: "passed",
-    validate: hasValues([
-      "GROWPATH_SMOKE_TESTER",
-      "GROWPATH_IOS_DEVICE",
-      "GROWPATH_ANDROID_DEVICE",
-      "GROWPATH_IOS_BUILD",
-      "GROWPATH_ANDROID_BUILD",
-      "GROWPATH_SMOKE_RESULT"
-    ])
+    validate: allValidators(
+      hasValues([
+        "GROWPATH_SMOKE_TESTER",
+        "GROWPATH_IOS_DEVICE",
+        "GROWPATH_ANDROID_DEVICE",
+        "GROWPATH_IOS_BUILD",
+        "GROWPATH_ANDROID_BUILD",
+        "GROWPATH_SMOKE_RESULT"
+      ]),
+      hasExactValue("GROWPATH_SMOKE_RESULT", "passed")
+    )
   },
   {
     name: "store screenshots evidence",
@@ -114,7 +118,7 @@ const evidenceRequirements = [
     name: "store-console submission form evidence",
     dir: "tmp/spec/store-submission",
     requiredStatus: "passed",
-    validate: hasValues([
+    validate: hasTruthyValues([
       "GROWPATH_IOS_APP_RECORD_CONFIRMED",
       "GROWPATH_ANDROID_APP_RECORD_CONFIRMED",
       "GROWPATH_IOS_PRIVACY_NUTRITION_COMPLETED",
@@ -168,6 +172,21 @@ function hasValues(names) {
     const values = body?.values || {};
     return names.every((name) => String(values[name] || "").trim());
   };
+}
+
+function hasTruthyValues(names) {
+  return (body) => {
+    const values = body?.values || {};
+    return names.every((name) => /^(yes|true|1)$/i.test(String(values[name] || "").trim()));
+  };
+}
+
+function hasExactValue(name, expected) {
+  return (body) => String(body?.values?.[name] || "").trim() === expected;
+}
+
+function allValidators(...validators) {
+  return (body) => validators.every((validator) => validator(body));
 }
 
 function exists(relPath) {

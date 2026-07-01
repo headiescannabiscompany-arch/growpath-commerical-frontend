@@ -29,6 +29,9 @@ go/no-go gate definition.
 Store screenshot capture procedure is tracked in
 `docs/store-screenshot-capture-runbook.md`.
 
+Store-console, legal, owner, and hotfix sign-off procedure is tracked in
+`docs/release-signoff-runbook.md`.
+
 It also requires JSON evidence under these ignored directories:
 
 | Evidence | Directory | Required status |

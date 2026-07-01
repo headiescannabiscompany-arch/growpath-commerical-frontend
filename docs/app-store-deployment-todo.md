@@ -154,6 +154,7 @@ Current known blockers:
   compliance, and review notes in the store consoles after legal/release-owner
   approval and production builds are validated.
 - Evidence target: `tmp/spec/store_submission_2026-06-21.md`
+- Current procedure: `docs/release-signoff-runbook.md`
 
 - NOT DONE: Release notes and version information.
 - Owner: Product
@@ -169,3 +170,4 @@ Current known blockers:
 - Next action: Assign named release, support, QA, and crash-monitoring owners,
   attach hotfix/rollback evidence, then pass `npm.cmd run release:go-no-go`.
 - Evidence target: `tmp/spec/post_submission_plan_2026-06-21.md`
+- Current procedure: `docs/release-signoff-runbook.md`

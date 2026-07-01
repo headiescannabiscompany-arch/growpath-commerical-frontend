@@ -28,6 +28,7 @@ inside this workspace.
 - `docs/production-build-device-smoke-runbook.md`
 - `docs/release-go-no-go-gate.md`
 - `docs/store-screenshot-capture-runbook.md`
+- `docs/release-signoff-runbook.md`
 
 Note: older root-level historical verification notes such as
 `FINAL_VERIFICATION_CHECKLIST.md` and `STATUS_REALITY_CHECK.md` contain stale
@@ -184,7 +185,7 @@ outside this local workspace before live testing or store submission.
    authenticate.
 7. Complete Apple privacy nutrition labels and Google Play data safety answers
    from `docs/store-privacy-data-safety-2026-07-01.md`, then attach
-   legal/release-owner sign-off.
+   legal/release-owner sign-off using `docs/release-signoff-runbook.md`.
 8. Attach legal approval for cannabis-related copy, age rating, jurisdiction
    disclaimers, image retention, and AI diagnosis limitations.
 9. Capture final store screenshots from validated production builds using
@@ -192,6 +193,8 @@ outside this local workspace before live testing or store submission.
 10. Upload the generated store icon and feature graphic package from
     `store-assets/graphics/` after release-owner approval.
 11. Assign named release, QA, support, and crash-monitoring owners.
+12. Record hotfix and rollback approval using
+    `docs/release-signoff-runbook.md`.
 
 ## Current Go / No-Go
 

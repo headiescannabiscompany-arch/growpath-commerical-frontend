@@ -38,6 +38,7 @@
 - [x] Draft marketing URL: `https://www.growpathai.com`.
 - [ ] Legal approval for cannabis-related language.
 - [ ] Release-owner approval for final app name, subtitle, keywords, age rating, and review notes.
+      Procedure: `docs/release-signoff-runbook.md`.
 - [ ] Confirm support, privacy, terms, delete-account, marketing, and API health
       URLs are live from a release machine with working TLS. Procedure:
       `docs/live-url-verification.md`.
@@ -110,6 +111,7 @@
 - [ ] Complete Google Play Console listing.
 - [ ] Add demo account or review instructions if required.
 - [ ] Confirm pricing and availability.
+      Procedure: `docs/release-signoff-runbook.md`.
 - [ ] Submit iOS build for review.
 - [ ] Submit Android build for review.
 
@@ -119,6 +121,7 @@
 - [ ] Assign support escalation owner.
 - [ ] Assign crash monitoring owner.
 - [ ] Prepare hotfix branch and rollback plan.
+      Procedure: `docs/release-signoff-runbook.md`.
 - [ ] Track review feedback and resubmission notes.
 
 ## Go / No-Go
