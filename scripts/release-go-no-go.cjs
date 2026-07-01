@@ -16,6 +16,7 @@ const trackedRequired = [
   "docs/data-rights-live-verification.md",
   "docs/production-build-device-smoke-runbook.md",
   "docs/release-go-no-go-gate.md",
+  "docs/store-screenshot-capture-runbook.md",
   "store-assets/graphics/app-store-icon-1024.png",
   "store-assets/graphics/google-play-icon-512.png",
   "store-assets/graphics/google-play-feature-graphic-1024x500.png"

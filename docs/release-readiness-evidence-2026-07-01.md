@@ -27,6 +27,7 @@ inside this workspace.
 - `docs/live-url-verification.md`
 - `docs/production-build-device-smoke-runbook.md`
 - `docs/release-go-no-go-gate.md`
+- `docs/store-screenshot-capture-runbook.md`
 
 Note: older root-level historical verification notes such as
 `FINAL_VERIFICATION_CHECKLIST.md` and `STATUS_REALITY_CHECK.md` contain stale
@@ -186,7 +187,8 @@ outside this local workspace before live testing or store submission.
    legal/release-owner sign-off.
 8. Attach legal approval for cannabis-related copy, age rating, jurisdiction
    disclaimers, image retention, and AI diagnosis limitations.
-9. Capture final store screenshots from validated production builds.
+9. Capture final store screenshots from validated production builds using
+   `docs/store-screenshot-capture-runbook.md`.
 10. Upload the generated store icon and feature graphic package from
     `store-assets/graphics/` after release-owner approval.
 11. Assign named release, QA, support, and crash-monitoring owners.

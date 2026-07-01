@@ -26,6 +26,9 @@ answers, store graphics, monitoring verification, live URL verification,
 data-rights verification, production build/device-smoke runbooks, and this
 go/no-go gate definition.
 
+Store screenshot capture procedure is tracked in
+`docs/store-screenshot-capture-runbook.md`.
+
 It also requires JSON evidence under these ignored directories:
 
 | Evidence | Directory | Required status |

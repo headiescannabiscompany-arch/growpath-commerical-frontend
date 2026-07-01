@@ -60,6 +60,7 @@
 - [ ] Capture iPad 12.9 inch screenshots.
 - [ ] Capture Android phone screenshots.
 - [ ] Capture Android tablet screenshots.
+      Procedure: `docs/store-screenshot-capture-runbook.md`.
 - [ ] Optional: create app preview video.
 
 ## 5. Production Builds

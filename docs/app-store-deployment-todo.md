@@ -65,6 +65,7 @@ Current known blockers:
 - Next action: Capture final screenshots from production builds after workflow
   validation passes.
 - Evidence target: `tmp/spec/store_assets_2026-06-21/screenshots/`
+- Current procedure: `docs/store-screenshot-capture-runbook.md`
 
 - DONE: Final icon and feature graphic package.
 - Owner: Design
