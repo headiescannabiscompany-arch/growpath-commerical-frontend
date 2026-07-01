@@ -40,8 +40,10 @@ export async function signup(payload) {
       auth: false,
       body: signupPayload
     });
-    global.authToken = signupData.token;
-    global.user = signupData.user;
+    if (signupData.token) {
+      global.authToken = signupData.token;
+      global.user = signupData.user;
+    }
     return signupData;
   } catch (err) {
     throw err?.data?.message || err.message || "Signup failed";
@@ -58,8 +60,8 @@ export async function register(payload) {
       auth: false,
       body: registerPayload
     });
-    global.authToken = registerData.token;
-    return { token: registerData.token };
+    if (registerData.token) global.authToken = registerData.token;
+    return registerData;
   } catch (err) {
     throw err?.data?.message || err.message || "Register failed";
   }

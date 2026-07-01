@@ -73,6 +73,7 @@ export default function RegisterScreen() {
 
   const [submitting, setSubmitting] = useState(false);
   const [errMsg, setErrMsg] = useState<string | null>(null);
+  const [infoMsg, setInfoMsg] = useState<string | null>(null);
 
   const canSubmit = useMemo(() => {
     return (
@@ -85,6 +86,7 @@ export default function RegisterScreen() {
 
   async function onSubmit() {
     setErrMsg(null);
+    setInfoMsg(null);
     setSubmitting(true);
 
     try {
@@ -97,7 +99,16 @@ export default function RegisterScreen() {
         plan: choice.key,
         mode: choice.mode
       };
-      await auth.signup(payload);
+      const signupResult = await auth.signup(payload);
+      if (signupResult.emailVerificationRequired && !signupResult.token) {
+        setPassword("");
+        setInfoMsg(
+          signupResult.emailSent
+            ? "Account created. Check your email to verify the account before signing in."
+            : "Account created. Email verification is required before signing in. Use Resend verification on the login screen, or contact support."
+        );
+        return;
+      }
       router.replace({
         pathname: "/onboarding/guilds",
         params: { next: choice.afterSignup, mode: choice.mode, plan: choice.key }
@@ -195,6 +206,7 @@ export default function RegisterScreen() {
           />
 
           {errMsg ? <Text style={styles.error}>{errMsg}</Text> : null}
+          {infoMsg ? <Text style={styles.success}>{infoMsg}</Text> : null}
 
           <Pressable
             onPress={onSubmit}
@@ -318,6 +330,7 @@ const styles = StyleSheet.create({
     paddingVertical: 12
   },
   error: { color: "#b91c1c", fontWeight: "700", marginBottom: 12 },
+  success: { color: "#166534", fontWeight: "700", marginBottom: 12 },
   button: {
     alignItems: "center",
     backgroundColor: "#166534",

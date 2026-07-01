@@ -13,7 +13,8 @@ import {
   login as apiLogin,
   signup as apiSignup,
   type AuthUser,
-  type SignupBody
+  type SignupBody,
+  type SignupResponse
 } from "../api/auth";
 import { setToken as persistToken, getToken as readToken } from "./tokenStore";
 import { setOnUnauthorized } from "../api/apiRequest";
@@ -28,7 +29,7 @@ type AuthState = {
   isHydrating: boolean;
   isAuthed: boolean;
   login: (email: string, password: string) => Promise<void>;
-  signup: (body: SignupBody) => Promise<void>;
+  signup: (body: SignupBody) => Promise<SignupResponse>;
   logout: () => Promise<void>;
   retryMe: () => Promise<void>;
 };
@@ -153,19 +154,28 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
     void logEvent("USER_LOGIN");
   }
 
-  async function signup(body: SignupBody) {
+  async function signup(body: SignupBody): Promise<SignupResponse> {
     try {
       const signupRes = await apiSignup(body);
-      await persistToken(signupRes.token);
-      setToken(signupRes.token);
-      setUser(signupRes.user);
-      await loadMeForToken();
+      if (signupRes.token) {
+        await persistToken(signupRes.token);
+        setToken(signupRes.token);
+        setUser(signupRes.user ?? null);
+        await loadMeForToken();
+      } else {
+        await persistToken(null);
+        setToken(null);
+        setUser(null);
+        setCtx(null);
+        setMeStatus("idle");
+        setMeError(null);
+      }
+      void logEvent("USER_REGISTER");
+      return signupRes;
     } catch (err: any) {
       // Pass through normalized errors so UI can branch on code/status
       throw err;
     }
-    // Fire analytics after successful auth (fire-and-forget)
-    void logEvent("USER_REGISTER");
   }
 
   async function logout() {

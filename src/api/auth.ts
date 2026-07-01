@@ -33,8 +33,8 @@ export type LoginResponse = {
 };
 
 export type SignupResponse = {
-  token: string;
-  user: AuthUser;
+  token?: string;
+  user?: AuthUser;
   emailVerificationRequired?: boolean;
   emailSent?: boolean;
 };
@@ -79,13 +79,13 @@ export async function signup(body: SignupBody): Promise<SignupResponse> {
   }) as Promise<SignupResponse>;
 }
 
-/** Register (legacy). Returns { token } or throws ApiError. */
-export async function register(body: SignupBody): Promise<{ token: string }> {
+/** Register (legacy). Returns signup/verification state or throws ApiError. */
+export async function register(body: SignupBody): Promise<SignupResponse> {
   return apiRequest("/api/auth/register", {
     method: "POST",
     auth: false,
     body
-  }) as Promise<{ token: string }>;
+  }) as Promise<SignupResponse>;
 }
 
 export async function requestEmailVerification(
