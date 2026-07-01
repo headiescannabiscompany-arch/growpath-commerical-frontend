@@ -10,9 +10,10 @@
 - [x] Source-controlled placeholder EAS submit credentials removed.
 - [x] Production EAS profile points at `https://api.growpathai.com`.
 - [x] Confirm production DNS and backend health for `https://api.growpathai.com`.
-- [x] Current local release scan, focused unit checks, production web export,
-      store graphics export, privacy/Home Playwright checks, and personal
-      core-loop Playwright check pass. Repeatable command:
+- [x] Current local release scan, release-gate script regression tests,
+      focused unit checks, production web export, store graphics export,
+      privacy/Home Playwright checks, and personal core-loop Playwright check
+      pass. Repeatable command:
       `npm.cmd run release:preflight`. Evidence:
       `docs/release-readiness-evidence-2026-07-01.md`.
 - [ ] Confirm no critical or high release-blocking bugs remain open after

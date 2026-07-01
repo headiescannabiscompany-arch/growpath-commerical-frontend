@@ -57,20 +57,34 @@ npm.cmd run release:preflight
 Result: passed on 2026-07-01.
 
 The command runs the release scan, UI route inventory, focused release unit
-tests, privacy/Home/core-loop Playwright specs, production web export, and
-store graphics export.
+tests, release-gate script regression tests, privacy/Home/core-loop Playwright
+specs, production web export, and store graphics export.
 
 ```text
 node scripts\scan-release.cjs
 ```
 
-Result: passed. Checked 651 files.
+Result: passed. Checked 762 files.
 
 ```text
-npm.cmd test -- tests\unit\monitoring.test.ts tests\release.scan.test.js src\api\__tests__\users.privacy.test.ts tests\unit\ProfilePrivacyControls.test.tsx src\features\personal\__tests__\homeModel.test.ts --runInBand
+npm.cmd test -- tests\unit\monitoring.test.ts tests\release.scan.test.js tests\release.go-no-go.test.js tests\release.record-evidence.test.js tests\release.preflight.test.js tests\release.live-urls.test.js tests\release.sentry-dsn.test.js tests\release.data-rights.test.js tests\release.production-builds.test.js tests\release.store-assets.test.js src\api\__tests__\users.privacy.test.ts tests\unit\ProfilePrivacyControls.test.tsx src\features\personal\__tests__\homeModel.test.ts --runInBand
 ```
 
-Result: passed. 5 suites, 12 tests.
+Result: passed. 13 suites, 44 tests.
+
+Release-gate script coverage includes:
+
+- Final go/no-go evidence shape and blocking behavior.
+- Manual release evidence recorder templates, confirmation guard, and output
+  shape.
+- Strict preflight command sequence and strict-preflight evidence creation.
+- Live URL verifier dry-run validation and evidence output.
+- Sentry DSN verifier validation and release event payload.
+- Disposable-account data export/delete verifier confirmation, redaction, and
+  post-delete login failure behavior.
+- Production build evidence runner dry-run, confirmation guard, success, and
+  failure evidence.
+- Store asset exporter PNG dimensions, opacity, and manifest contents.
 
 ```text
 PLAYWRIGHT_USE_SYSTEM_CHROME=1
