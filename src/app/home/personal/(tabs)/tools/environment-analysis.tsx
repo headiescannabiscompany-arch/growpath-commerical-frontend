@@ -10,6 +10,10 @@ import {
   ToolPlantContextPicker,
   useToolPlantContext
 } from "@/features/personal/tools/ToolPlantContextPicker";
+import {
+  buildEnvironmentContextAssumption,
+  buildEnvironmentContextNotices
+} from "@/features/personal/tools/environmentContext";
 import ToolResultSurface from "@/features/personal/tools/ToolResultSurface";
 import { saveToolRunAndCreateTask } from "@/features/personal/tools/saveToolRunAndOpenJournal";
 
@@ -298,6 +302,7 @@ export default function EnvironmentAnalysisToolScreen() {
           { key: "vpd", label: "Ideal VPD", value: targetValue(result, "vpdIdeal") }
         ]}
         notices={[
+          ...buildEnvironmentContextNotices(plantContext.selectedPlantContext),
           ...list(assessment.issues).map((issue, index) => ({
             key: `issue-${index}`,
             severity: "medium" as const,
@@ -312,6 +317,7 @@ export default function EnvironmentAnalysisToolScreen() {
         recommendations={recommendations}
         assumptions={[
           "The backend environment endpoint supplies the targets and recommendations.",
+          buildEnvironmentContextAssumption(plantContext.selectedPlantContext),
           "Confirm sensor calibration, canopy position, and plant response before changing controls."
         ]}
         actions={

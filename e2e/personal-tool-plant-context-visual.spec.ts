@@ -73,6 +73,7 @@ async function installMocks(page: any) {
             LOGS_PERSONAL_WRITE: true,
             PLANTS_PERSONAL_VIEW: true,
             DIAGNOSE_AI: true,
+            AI_ASSISTANT: true,
             TOOL_TIMELINE_PLANNER: true
           },
           limits: {}
@@ -132,6 +133,27 @@ async function installMocks(page: any) {
           selectedPlantContext: payload.selectedPlantContext,
           plantGrowthProfile: payload.plantGrowthProfile
         }
+      });
+    }
+
+    if (method === "POST" && url.pathname === "/api/environment/analyze") {
+      return fulfillJson(route, {
+        success: true,
+        currentAssessment: {
+          status: "watch",
+          issues: ["Night humidity is trending high."],
+          riskFlags: ["Confirm canopy sensor placement."]
+        },
+        targets: {
+          tempDayC: "22-28",
+          humidityMin: 45,
+          humidityMax: 65,
+          vpdIdeal: "0.8-1.2"
+        },
+        recommendations: {
+          actions: ["Review airflow and confirm sensor height."]
+        },
+        notes: "Environment analysis includes selected crop context."
       });
     }
 
@@ -262,6 +284,37 @@ test.describe("personal tool plant context", () => {
 
     await page.screenshot({
       path: "tmp/screenshots/personal-tool-plant-context-watering-mobile.png",
+      fullPage: true
+    });
+  });
+
+  test("Environment analysis shows selected crop context caveat", async ({ page }) => {
+    await page.setViewportSize({ width: 390, height: 900 });
+    await installMocks(page);
+
+    await page.goto(`/home/personal/tools/environment-analysis?growId=${GROW.id}`, {
+      waitUntil: "domcontentloaded"
+    });
+
+    await expect(
+      page.getByRole("heading", { name: "AI Environment Analysis" })
+    ).toBeVisible();
+    await page.getByRole("button", { name: "Run tool for Olive patio tree" }).click();
+    await page.getByLabel("Environment day temperature Celsius").fill("25");
+    await page.getByLabel("Environment humidity percent").fill("58");
+    await page.getByRole("button", { name: "Analyze environment" }).click();
+
+    await expect(
+      page.getByText(/Environment analysis includes selected crop context: Olive/i)
+    ).toBeVisible();
+    await expect(
+      page.getByText(
+        /Selected crop context sent to the environment endpoint: Olive \/ Arbequina/i
+      )
+    ).toBeVisible();
+
+    await page.screenshot({
+      path: "tmp/screenshots/personal-tool-plant-context-environment-mobile.png",
       fullPage: true
     });
   });
