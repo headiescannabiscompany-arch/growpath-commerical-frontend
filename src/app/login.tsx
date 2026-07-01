@@ -13,6 +13,7 @@ import {
 import { useRouter } from "expo-router";
 
 import { ApiError } from "@/api/apiRequest";
+import { requestEmailVerification } from "@/api/auth";
 import { useAuth } from "@/auth/AuthContext";
 import LegalLinks from "@/components/LegalLinks";
 
@@ -25,7 +26,10 @@ export default function LoginScreen() {
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [submitting, setSubmitting] = useState(false);
+  const [resendingVerification, setResendingVerification] = useState(false);
   const [errMsg, setErrMsg] = useState<string | null>(null);
+  const [verificationEmail, setVerificationEmail] = useState<string | null>(null);
+  const [verificationMsg, setVerificationMsg] = useState<string | null>(null);
 
   const canSubmit = useMemo(() => {
     return email.trim().length > 3 && password.length > 0 && !submitting;
@@ -33,6 +37,7 @@ export default function LoginScreen() {
 
   async function onSubmit() {
     setErrMsg(null);
+    setVerificationMsg(null);
     setSubmitting(true);
 
     try {
@@ -44,11 +49,32 @@ export default function LoginScreen() {
         const backendMessage =
           e.data?.error?.message || e.data?.message || "Invalid email or password";
         setErrMsg(backendMessage);
+        if (e.code === "EMAIL_NOT_VERIFIED") {
+          setVerificationEmail(email.trim().toLowerCase());
+        }
       } else {
         setErrMsg(e?.message || "Login failed");
       }
     } finally {
       setSubmitting(false);
+    }
+  }
+
+  async function onResendVerification() {
+    const targetEmail = verificationEmail || email.trim().toLowerCase();
+    if (!targetEmail || resendingVerification) return;
+
+    setVerificationMsg(null);
+    setResendingVerification(true);
+    try {
+      await requestEmailVerification(targetEmail);
+      setVerificationMsg(
+        "If that account exists, a new verification email has been sent."
+      );
+    } catch (e: any) {
+      setVerificationMsg(e?.message || "Unable to request a verification email.");
+    } finally {
+      setResendingVerification(false);
     }
   }
 
@@ -107,6 +133,34 @@ export default function LoginScreen() {
           />
 
           {errMsg ? <Text style={styles.error}>{errMsg}</Text> : null}
+          {verificationEmail ? (
+            <View style={styles.verificationBox}>
+              <Text style={styles.verificationText}>
+                Check your inbox for the GrowPathAI verification link.
+              </Text>
+              {verificationMsg ? (
+                <Text style={styles.verificationNote}>{verificationMsg}</Text>
+              ) : null}
+              <Pressable
+                onPress={onResendVerification}
+                disabled={resendingVerification}
+                accessibilityRole="button"
+                accessibilityLabel="Resend verification email"
+                style={[
+                  styles.secondaryButton,
+                  resendingVerification && styles.buttonDisabled
+                ]}
+              >
+                {resendingVerification ? (
+                  <ActivityIndicator color="#166534" />
+                ) : (
+                  <Text style={styles.secondaryButtonText}>
+                    Resend verification email
+                  </Text>
+                )}
+              </Pressable>
+            </View>
+          ) : null}
 
           <Pressable
             onPress={onSubmit}
@@ -225,6 +279,26 @@ const styles = StyleSheet.create({
     marginBottom: 12
   },
   error: { color: "#b91c1c", marginBottom: 12, fontWeight: "600" },
+  verificationBox: {
+    borderWidth: 1,
+    borderColor: "#bfdbfe",
+    backgroundColor: "#eff6ff",
+    borderRadius: 8,
+    padding: 12,
+    marginBottom: 12,
+    gap: 8
+  },
+  verificationText: {
+    color: "#1e3a8a",
+    fontSize: 13,
+    fontWeight: "700",
+    lineHeight: 18
+  },
+  verificationNote: {
+    color: "#1f2937",
+    fontSize: 13,
+    lineHeight: 18
+  },
   button: {
     paddingVertical: 12,
     borderRadius: 8,
@@ -233,6 +307,17 @@ const styles = StyleSheet.create({
   },
   buttonDisabled: { opacity: 0.5 },
   buttonText: { fontWeight: "800", color: "#ffffff" },
+  secondaryButton: {
+    alignItems: "center",
+    backgroundColor: "#ffffff",
+    borderColor: "#93c5fd",
+    borderRadius: 8,
+    borderWidth: 1,
+    minHeight: 40,
+    justifyContent: "center",
+    paddingHorizontal: 12
+  },
+  secondaryButtonText: { fontWeight: "800", color: "#166534" },
   linkBtn: { marginTop: 14, alignItems: "center" },
   linkText: { fontWeight: "800", color: "#166534" }
 });

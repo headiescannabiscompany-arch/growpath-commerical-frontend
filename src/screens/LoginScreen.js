@@ -13,6 +13,7 @@ import {
 import AsyncStorage from "@react-native-async-storage/async-storage";
 import ScreenContainer from "../components/ScreenContainer.js";
 import PrimaryButton from "../components/PrimaryButton.js";
+import { requestEmailVerification } from "../api/auth";
 import { useAuth } from "@/auth/AuthContext";
 import { useRouter } from "expo-router";
 import { config } from "../config/config";
@@ -35,6 +36,7 @@ function LoginScreen() {
   const [password, setPassword] = useState("");
   const [displayName, setDisplayName] = useState("");
   const [loading, setLoading] = useState(false);
+  const [resendingVerification, setResendingVerification] = useState(false);
   const [hasLoggedInBefore, setHasLoggedInBefore] = useState(false);
 
   useEffect(() => {
@@ -71,18 +73,19 @@ function LoginScreen() {
       return;
     }
 
+    const normalizedEmail = email.trim().toLowerCase();
     setLoading(true);
     try {
       if (authMode === "login") {
         // Call context login, which wraps API errors properly
-        await contextLogin(email.trim(), password.trim());
+        await contextLogin(normalizedEmail, password.trim());
       } else {
         // Get business type from AsyncStorage
         // @ts-ignore
         const businessType = await AsyncStorage.getItem("businessType");
         // Create signup body and call context signup
         await contextSignup({
-          email: email.trim(),
+          email: normalizedEmail,
           password: password.trim(),
           displayName: displayName.trim(),
           businessType: businessType || "cultivator"
@@ -99,7 +102,21 @@ function LoginScreen() {
       const errorMessage =
         err?.message || "Authentication failed. Please check your connection.";
 
-      if (err?.status === 401 || errorCode === "INVALID_CREDENTIALS") {
+      if (errorCode === "EMAIL_NOT_VERIFIED") {
+        Alert.alert(
+          "Verify Email",
+          "Please verify your email address before signing in.",
+          [
+            { text: "Cancel", style: "cancel" },
+            {
+              text: "Resend Email",
+              onPress: () => {
+                void handleResendVerification(normalizedEmail);
+              }
+            }
+          ]
+        );
+      } else if (err?.status === 401 || errorCode === "INVALID_CREDENTIALS") {
         Alert.alert("Login Failed", "Incorrect email or password. Please try again.");
       } else if (errorCode === "VALIDATION_ERROR") {
         Alert.alert("Invalid Input", errorMessage);
@@ -124,6 +141,26 @@ function LoginScreen() {
       }
     } finally {
       setLoading(false);
+    }
+  }
+
+  async function handleResendVerification(targetEmail) {
+    if (!targetEmail || resendingVerification) return;
+
+    setResendingVerification(true);
+    try {
+      await requestEmailVerification(targetEmail);
+      Alert.alert(
+        "Verification Email",
+        "If that account exists, a new verification email has been sent."
+      );
+    } catch (err) {
+      Alert.alert(
+        "Verification Email",
+        err?.message || "Unable to request a verification email."
+      );
+    } finally {
+      setResendingVerification(false);
     }
   }
 
@@ -257,9 +294,7 @@ function LoginScreen() {
         </TouchableOpacity>
         {/* Privacy Policy link for onboarding */}
         <View style={{ alignItems: "center", marginTop: 30, marginBottom: 10 }}>
-          <TouchableOpacity
-            onPress={() => Linking.openURL(config.privacyUrl)}
-          >
+          <TouchableOpacity onPress={() => Linking.openURL(config.privacyUrl)}>
             <Text
               style={{ color: "#3498db", fontSize: 15, textDecorationLine: "underline" }}
             >
