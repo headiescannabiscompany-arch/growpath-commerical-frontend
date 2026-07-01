@@ -22,6 +22,7 @@ inside this workspace.
 - `docs/eas-submit-runbook.md`
 - `docs/store-privacy-data-safety-2026-07-01.md`
 - `docs/store-assets-evidence-2026-07-01.md`
+- `docs/data-rights-live-verification.md`
 
 Note: older root-level historical verification notes such as
 `FINAL_VERIFICATION_CHECKLIST.md` and `STATUS_REALITY_CHECK.md` contain stale
@@ -178,8 +179,9 @@ outside this local workspace before live testing or store submission.
    authentication, profile export/delete, personal core loop, photo upload,
    diagnosis, Home alerts, offline/error state, and logout.
 6. Execute one staging or production-disposable account export and deletion
-   request end-to-end against the real backend, then verify the account can no
-   longer authenticate.
+   request end-to-end against the real backend with
+   `npm.cmd run verify:data-rights:live`, then verify the account can no longer
+   authenticate.
 7. Complete Apple privacy nutrition labels and Google Play data safety answers
    from `docs/store-privacy-data-safety-2026-07-01.md`, then attach
    legal/release-owner sign-off.

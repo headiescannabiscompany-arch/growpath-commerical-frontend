@@ -132,6 +132,14 @@ Current known blockers:
   logout on physical devices.
 - Evidence target: `tmp/spec/release_device_smoke_2026-06-21.md`
 
+- NOT DONE: Live disposable-account data export/delete verification.
+- Owner: QA + Backend
+- Current evidence: `docs/data-rights-live-verification.md` defines the
+  repeatable release-machine command.
+- Next action: Run `npm.cmd run verify:data-rights:live` with a disposable
+  account and attach the generated redacted evidence.
+- Evidence target: `tmp/spec/data-rights-live/`
+
 ## 5. Store Submission
 
 - PARTIAL: App Store Connect and Google Play Console forms.

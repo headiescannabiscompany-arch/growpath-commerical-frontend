@@ -90,6 +90,9 @@
 - [x] Confirm account deletion and data export support path is wired in-app.
       Evidence: profile privacy controls and
       `docs/store-privacy-data-safety-2026-07-01.md`.
+- [ ] Run disposable-account export/delete live verification with
+      `npm.cmd run verify:data-rights:live`. Procedure:
+      `docs/data-rights-live-verification.md`.
 - [x] Confirm no production secrets are committed. Evidence:
       `docs/release-secret-scan-evidence-2026-06-23.md`.
 - [ ] Configure production `EXPO_PUBLIC_SENTRY_DSN`, verify crash capture in a
