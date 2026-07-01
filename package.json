@@ -33,6 +33,8 @@
     "normalize:mojibake": "node scripts/normalize-mojibake.mjs",
     "verify:delivery": "node scripts/verify-delivery.mjs",
     "scan:release": "node scripts/scan-release.cjs",
+    "release:preflight": "node scripts/release-preflight.cjs",
+    "release:preflight:strict": "node scripts/release-preflight.cjs --strict",
     "verify:manual": "npm run verify:manual:checks && npm run export:web:production",
     "verify:manual:checks": "powershell -NoProfile -ExecutionPolicy Bypass -File scripts/verify-before-manual.ps1",
     "test": "npm run inventory:ui-routes && jest --runInBand",

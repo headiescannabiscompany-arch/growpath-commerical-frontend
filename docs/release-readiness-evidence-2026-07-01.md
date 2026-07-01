@@ -39,6 +39,17 @@ for the 2026-07-01 pass.
 
 ## Passing Local Release Gates
 
+Repeatable command:
+
+```text
+npm.cmd run release:preflight
+```
+
+Result: passed on 2026-07-01.
+
+The command runs the release scan, UI route inventory, focused release unit
+tests, privacy/Home/core-loop Playwright specs, and production web export.
+
 ```text
 node scripts\scan-release.cjs
 ```
@@ -76,6 +87,14 @@ npm.cmd run export:web:production
 Result: passed. `dist` export uses `https://api.growpathai.com`.
 
 ## Strict Release Gate
+
+Repeatable command for the release machine:
+
+```text
+npm.cmd run release:preflight:strict
+```
+
+Current result: failed by design until production Sentry DSN is provided.
 
 ```text
 $env:GROWPATH_STRICT_RELEASE='1'; node scripts\scan-release.cjs
@@ -136,6 +155,8 @@ These are not placeholders. They are the concrete items that must be completed
 outside this local workspace before live testing or store submission.
 
 1. Configure production `EXPO_PUBLIC_SENTRY_DSN` and verify crash capture.
+   After the DSN is set, `npm.cmd run release:preflight:strict` must pass on
+   the release machine.
 2. Confirm live privacy, terms, support, delete-account, and API health URLs
    from a release machine with working TLS.
 3. Run `eas build --profile production --platform ios` and retain build
