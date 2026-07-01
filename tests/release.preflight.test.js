@@ -99,6 +99,19 @@ describe("release preflight", () => {
       "node_modules/@playwright/test/cli.js",
       "scripts/export-production-web.cjs"
     ]);
+    expect(readLog(tempRoot)[2].argv).toEqual(
+      expect.arrayContaining([
+        "tests/release.scan.test.js",
+        "tests/release.go-no-go.test.js",
+        "tests/release.record-evidence.test.js",
+        "tests/release.preflight.test.js",
+        "tests/release.live-urls.test.js",
+        "tests/release.sentry-dsn.test.js",
+        "tests/release.data-rights.test.js",
+        "tests/release.production-builds.test.js",
+        "tests/release.store-assets.test.js"
+      ])
+    );
   });
 
   it("runs strict checks before writing strict evidence", () => {
@@ -122,6 +135,19 @@ describe("release preflight", () => {
       "scripts/export-production-web.cjs"
     ]);
     expect(log[1].strict).toBe("1");
+    expect(log[5].argv).toEqual(
+      expect.arrayContaining([
+        "tests/release.scan.test.js",
+        "tests/release.go-no-go.test.js",
+        "tests/release.record-evidence.test.js",
+        "tests/release.preflight.test.js",
+        "tests/release.live-urls.test.js",
+        "tests/release.sentry-dsn.test.js",
+        "tests/release.data-rights.test.js",
+        "tests/release.production-builds.test.js",
+        "tests/release.store-assets.test.js"
+      ])
+    );
     expect(log[6]).toEqual(
       expect.objectContaining({
         playwrightPort: "19025",
