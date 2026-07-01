@@ -18,6 +18,7 @@ import ToolResultSurface, {
   type ToolResultAction
 } from "@/features/personal/tools/ToolResultSurface";
 import { saveToolRunAndOpenJournal } from "@/features/personal/tools/saveToolRunAndOpenJournal";
+import { buildVpdNotices } from "@/features/personal/tools/vpdNotices";
 import { calcVpdFromTemp, type TempUnit } from "@/tools/vpd";
 
 type VpdModel =
@@ -253,19 +254,7 @@ export default function VpdToolScreen() {
           }
         }
         outputs={serverRun?.outputs || serverResult || undefined}
-        notices={
-          serverResult?.status && serverResult.status !== "in_range"
-            ? [
-                {
-                  key: "target-status",
-                  severity: "medium",
-                  message: `VPD is ${String(serverResult.status).replaceAll("_", " ")} for the selected stage.`,
-                  remediation:
-                    "Confirm leaf temperature and adjust temperature or RH gradually."
-                }
-              ]
-            : []
-        }
+        notices={buildVpdNotices(serverResult)}
         recommendations={serverResult?.recommendations || []}
         formulas={
           serverRun?.formulas?.length
@@ -282,7 +271,7 @@ export default function VpdToolScreen() {
           serverRun?.confidence || (serverResult ? "server-calculated" : "local-preview")
         }
         assumptions={[
-          "The local preview uses air temperature; the server result applies leaf-temperature offset and stage targets.",
+          "The local preview uses air temperature; the server result applies leaf-temperature offset and crop/stage targets.",
           "Verify sensor placement and calibration before changing environmental controls."
         ]}
         actions={actions}
