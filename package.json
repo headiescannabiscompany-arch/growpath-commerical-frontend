@@ -23,6 +23,7 @@
     "ios": "expo start --ios",
     "web": "expo start --web",
     "export:web:production": "node scripts/export-production-web.cjs",
+    "export:store-assets": "powershell -NoProfile -ExecutionPolicy Bypass -File scripts/export-store-assets.ps1",
     "lint": "eslint \"src/{app,api,auth,components,entitlements,hooks,ui,utils}/**/*.{js,jsx,ts,tsx}\"",
     "lint:ci": "eslint \"src/{app,api,auth,components,entitlements,hooks,ui,utils}/**/*.{js,jsx,ts,tsx}\" --max-warnings 0",
     "lint:fix": "eslint \"src/{app,api,auth,components,entitlements,hooks,ui,utils}/**/*.{js,jsx,ts,tsx}\" --fix",

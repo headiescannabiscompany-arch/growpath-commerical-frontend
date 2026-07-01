@@ -65,11 +65,13 @@ Current known blockers:
   validation passes.
 - Evidence target: `tmp/spec/store_assets_2026-06-21/screenshots/`
 
-- NOT DONE: Final icon and feature graphic package.
+- DONE: Final icon and feature graphic package.
 - Owner: Design
-- Next action: Export App Store and Google Play asset sizes from approved brand
-  files.
-- Evidence target: `tmp/spec/store_assets_2026-06-21/graphics/`
+- Current evidence: `docs/store-assets-evidence-2026-07-01.md` and
+  `store-assets/graphics/`.
+- Next action: Upload exported graphics in the store consoles after release-owner
+  approval.
+- Evidence target: `store-assets/graphics/`
 
 - PARTIAL: Store descriptions, keywords, privacy URL, and support URL.
 - Owner: Product + Legal

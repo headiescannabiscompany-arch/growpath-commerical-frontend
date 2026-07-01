@@ -48,8 +48,10 @@
 - [x] Source icon asset exists at `assets/icon.png`.
 - [x] Source splash/white mark asset exists at `assets/icon-white.png`.
 - [x] Source banner asset exists at `assets/banner.png`.
-- [ ] Export final App Store icon package from approved brand assets.
-- [ ] Export Google Play feature graphic.
+- [x] Export final App Store icon package from source brand assets. Evidence:
+      `docs/store-assets-evidence-2026-07-01.md`.
+- [x] Export Google Play feature graphic. Evidence:
+      `docs/store-assets-evidence-2026-07-01.md`.
 - [ ] Capture iPhone 6.7 inch screenshots.
 - [ ] Capture iPhone 6.5 inch screenshots.
 - [ ] Capture iPad 12.9 inch screenshots.
