@@ -22,7 +22,8 @@ Current known blockers:
   `docs/release-readiness-evidence-2026-07-01.md`. The covered local release
   gates pass, but strict release remains blocked until production Sentry DSN,
   release-machine Sentry/URL checks, production builds, real-device smoke, and
-  store sign-off are complete.
+  store sign-off are complete. Final launch approval requires
+  `npm.cmd run release:go-no-go` to pass.
 
 ## 1. Release Gate
 
@@ -164,5 +165,6 @@ Current known blockers:
 - Owner: Release Manager + Support
 - Current evidence: `tmp/spec/post_submission_plan_2026-06-21.md` defines the
   review monitoring, crash/support monitoring, hotfix, and launch-comms plan.
-- Next action: Assign named release, support, QA, and crash-monitoring owners.
+- Next action: Assign named release, support, QA, and crash-monitoring owners,
+  attach hotfix/rollback evidence, then pass `npm.cmd run release:go-no-go`.
 - Evidence target: `tmp/spec/post_submission_plan_2026-06-21.md`

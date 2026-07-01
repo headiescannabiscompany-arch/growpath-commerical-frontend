@@ -16,7 +16,8 @@
       `npm.cmd run release:preflight`. Evidence:
       `docs/release-readiness-evidence-2026-07-01.md`.
 - [ ] Confirm no critical or high release-blocking bugs remain open after
-      release-machine checks.
+      release-machine checks. Final gate:
+      `npm.cmd run release:go-no-go`.
 
 ## 2. Store Configuration
 
@@ -121,4 +122,5 @@
 
 ## Go / No-Go
 
-Launch remains blocked until production builds, real-device smoke testing, store-console forms, legal approval, and named release-owner sign-off are complete.
+Launch remains blocked until `npm.cmd run release:go-no-go` passes on the
+release machine.

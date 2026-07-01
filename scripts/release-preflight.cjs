@@ -1,6 +1,7 @@
 #!/usr/bin/env node
 
 const { spawnSync } = require("child_process");
+const fs = require("fs");
 const path = require("path");
 
 const ROOT = path.resolve(__dirname, "..");
@@ -27,6 +28,26 @@ function run(label, command, args, options = {}) {
     console.error(`[release-preflight] ${label} failed with status ${result.status}`);
     process.exit(result.status || 1);
   }
+}
+
+function writeStrictEvidence() {
+  const outputDir = path.join(ROOT, "tmp", "spec", "strict-preflight");
+  fs.mkdirSync(outputDir, { recursive: true });
+  const stamp = new Date().toISOString().replace(/[:.]/g, "-");
+  const outputPath = path.join(outputDir, `${stamp}.json`);
+  fs.writeFileSync(
+    outputPath,
+    `${JSON.stringify(
+      {
+        status: "passed",
+        checkedAt: new Date().toISOString(),
+        command: "npm.cmd run release:preflight:strict"
+      },
+      null,
+      2
+    )}\n`
+  );
+  console.log(`[release-preflight] strict evidence: ${path.relative(ROOT, outputPath)}`);
 }
 
 async function main() {
@@ -84,6 +105,7 @@ async function main() {
   console.log(
     `\n[release-preflight] ${strict ? "strict " : ""}preflight passed.`
   );
+  if (strict) writeStrictEvidence();
 }
 
 main().catch((err) => {

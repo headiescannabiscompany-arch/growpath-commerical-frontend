@@ -26,6 +26,7 @@ inside this workspace.
 - `docs/monitoring-verification.md`
 - `docs/live-url-verification.md`
 - `docs/production-build-device-smoke-runbook.md`
+- `docs/release-go-no-go-gate.md`
 
 Note: older root-level historical verification notes such as
 `FINAL_VERIFICATION_CHECKLIST.md` and `STATUS_REALITY_CHECK.md` contain stale
@@ -193,5 +194,6 @@ outside this local workspace before live testing or store submission.
 ## Current Go / No-Go
 
 No-go for production store submission until the remaining production blockers
-above are complete. The covered frontend release paths are ready for the next
+above are complete and `npm.cmd run release:go-no-go` passes on the release
+machine. The covered frontend release paths are ready for the next
 release-machine validation pass.
