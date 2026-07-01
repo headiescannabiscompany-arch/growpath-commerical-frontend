@@ -1,12 +1,16 @@
 import { CAPABILITY_KEYS } from "@/entitlements/capabilityKeys";
 
-export type FeatureStatus = "implemented" | "beta" | "coming_soon" | "hidden";
+export type FeatureStatus = "implemented" | "beta" | "coming_soon" | "hidden" | "backlog";
 
 export type FeatureArea =
   | "personal_navigation"
   | "environment"
   | "water_nutrients"
-  | "ai"
+  | "plant_health"
+  | "crop_management"
+  | "planning_records"
+  | "genetics"
+  | "lab_tc"
   | "integrations";
 
 export type FeatureDefinition = {
@@ -194,7 +198,7 @@ export const personalToolFeatures = [
     title: "Harvest Estimator",
     description:
       "Estimate harvest windows from flowering day, cultivar timing, and maturity signals.",
-    area: "ai",
+    area: "planning_records",
     status: "beta",
     href: "/home/personal/tools/harvest-estimator",
     acceptsGrowContext: true,
@@ -205,7 +209,7 @@ export const personalToolFeatures = [
     key: "tools.timeline_planner",
     title: "Timeline Planner",
     description: "Plan grow milestones across veg, flower, drying, and cure windows.",
-    area: "ai",
+    area: "planning_records",
     status: "beta",
     href: "/home/personal/tools/timeline-planner",
     acceptsGrowContext: true,
@@ -216,7 +220,7 @@ export const personalToolFeatures = [
     key: "tools.pdf_export",
     title: "PDF / Export",
     description: "Prepare grow records, plants, tasks, and tool runs for export.",
-    area: "integrations",
+    area: "planning_records",
     status: "beta",
     href: "/home/personal/tools/pdf-export",
     acceptsGrowContext: true,
@@ -227,7 +231,7 @@ export const personalToolFeatures = [
     key: "tools.pheno_matrix",
     title: "Pheno Matrix",
     description: "Score phenotype candidates, weight traits, and rank keeper selections.",
-    area: "ai",
+    area: "genetics",
     status: "beta",
     href: "/home/personal/tools/pheno-matrix",
     acceptsGrowContext: true,
@@ -238,7 +242,7 @@ export const personalToolFeatures = [
     key: "tools.ai_diagnosis",
     title: "Plant Issue Diagnosis",
     description: "Use photos and grow context for cautious plant-health triage.",
-    area: "ai",
+    area: "plant_health",
     status: "beta",
     href: "/home/personal/diagnose",
     acceptsGrowContext: true,
@@ -249,12 +253,208 @@ export const personalToolFeatures = [
     key: "tools.crop_steering",
     title: "Crop Steering",
     description: "Plan irrigation phases, dryback, EC, and steering trials.",
-    area: "environment",
+    area: "crop_management",
     status: "hidden",
     href: "/home/personal/tools/crop-steering",
     acceptsGrowContext: true,
     internalNote:
       "Current screen is a scaffold and must not be exposed as a complete tool."
+  },
+  {
+    key: "tools.soil_builder",
+    title: "Soil Builder",
+    description:
+      "Build full soil mixes with base, compost, aeration, minerals, and amendments.",
+    area: "water_nutrients",
+    status: "backlog",
+    acceptsGrowContext: true,
+    internalNote:
+      "Future tool. Needs saveable recipes, release windows, source provenance, cost/batch math, and grow assignment before exposure."
+  },
+  {
+    key: "tools.dry_amendment_mix",
+    title: "Dry Amendment Mix Builder",
+    description: "Blend dry amendments toward target ratios and dose rates.",
+    area: "water_nutrients",
+    status: "backlog",
+    acceptsGrowContext: true,
+    internalNote:
+      "Future tool. Needs ingredient library, release timing, dose-per-volume math, and warnings before exposure."
+  },
+  {
+    key: "tools.topdress_planner",
+    title: "Topdress Planner",
+    description: "Plan topdress amount, timing, release window, and follow-up tasks.",
+    area: "water_nutrients",
+    status: "backlog",
+    acceptsGrowContext: true,
+    internalNote:
+      "Future tool. Needs soil volume, stage, amendment recipe, timing, task creation, and grow log wiring."
+  },
+  {
+    key: "tools.ph_ec_adjustment",
+    title: "pH / EC Adjustment",
+    description: "Check pH and EC differences with safe adjustment warnings.",
+    area: "water_nutrients",
+    status: "backlog",
+    acceptsGrowContext: true,
+    internalNote:
+      "Future limited-safety tool. Must not give exact dosing without known product concentration."
+  },
+  {
+    key: "tools.nutrient_release_chemistry",
+    title: "Nutrient Release Chemistry",
+    description:
+      "Compare nutrient forms, release classes, pH effects, and compatibility.",
+    area: "water_nutrients",
+    status: "backlog",
+    acceptsGrowContext: true,
+    internalNote:
+      "Backend/frontend foundation exists in nutrient chemistry, but full source-reviewed tool pages and recipe confidence are backlog."
+  },
+  {
+    key: "tools.crop_steering_projects",
+    title: "Crop Steering Projects",
+    description:
+      "Track P0/P1/P2/P3, dryback, runoff, substrate EC, and steering response.",
+    area: "crop_management",
+    status: "backlog",
+    acceptsGrowContext: true,
+    internalNote:
+      "Future full workflow. Current direct route stays hidden until projects/runs/log/task/automation/pheno scoring are real."
+  },
+  {
+    key: "tools.stress_testing",
+    title: "Stress Testing",
+    description: "Record controlled stress response and recovery scoring.",
+    area: "crop_management",
+    status: "backlog",
+    acceptsGrowContext: true,
+    internalNote:
+      "Future workflow for drought, heat, high VPD, high EC, intersex screening, and keeper-score impact."
+  },
+  {
+    key: "tools.pheno_hunting",
+    title: "Pheno Hunting",
+    description:
+      "Run staged pheno projects, score plants, and compare keeper candidates.",
+    area: "genetics",
+    status: "backlog",
+    acceptsGrowContext: true,
+    internalNote:
+      "Future full project workflow. The current Pheno Matrix is only a beta local scoring surface."
+  },
+  {
+    key: "tools.genetics_inventory",
+    title: "Genetics Inventory / Breeding Planner",
+    description:
+      "Track cultivars, parentage, seed batches, breeding lanes, and target traits.",
+    area: "genetics",
+    status: "backlog",
+    internalNote:
+      "Future genetics inventory and breeding workflow; do not expose until persistence and reporting exist."
+  },
+  {
+    key: "tools.tissue_culture",
+    title: "Tissue Culture",
+    description:
+      "Track TC projects, explants, media, vessels, transfers, contamination, and acclimation.",
+    area: "lab_tc",
+    status: "backlog",
+    acceptsGrowContext: true,
+    internalNote: "Future lab workflow. Not built and must not be exposed as complete."
+  },
+  {
+    key: "tools.dry_cure_guard",
+    title: "Dry / Cure Guard",
+    description: "Track drying room, jar RH, cure status, mold risk, and next actions.",
+    area: "planning_records",
+    status: "backlog",
+    acceptsGrowContext: true,
+    internalNote: "Future harvest batch workflow; needs dry/cure records and task wiring."
+  },
+  {
+    key: "tools.clone_rooting",
+    title: "Clone Rooting Troubleshooter",
+    description: "Check clone rooting conditions, bottlenecks, and follow-up tasks.",
+    area: "plant_health",
+    status: "backlog",
+    acceptsGrowContext: true,
+    internalNote:
+      "Future plant-health workflow; needs clone records and cautious diagnosis copy."
+  },
+  {
+    key: "tools.ipm_scout",
+    title: "IPM Scout / Pest & Organism Tool",
+    description:
+      "Record scouting observations, likely organisms, severity, and non-chemical next checks.",
+    area: "plant_health",
+    status: "backlog",
+    acceptsGrowContext: true,
+    internalNote:
+      "Future/beta only after IPM organism library, regional alert rules, and licensed image/provider policy exist. No pesticide dosing."
+  },
+  {
+    key: "tools.species_crop_identification",
+    title: "Species / Crop Identification",
+    description:
+      "Identify likely crop/species from user input, image, or video with user confirmation.",
+    area: "plant_health",
+    status: "backlog",
+    internalNote:
+      "Future/beta only with licensed provider or source-reviewed taxon database. Must require user confirmation before crop-specific recommendations."
+  },
+  {
+    key: "tools.harvest_readiness_ai",
+    title: "Harvest Readiness AI",
+    description:
+      "Estimate harvest readiness from maturity signals, photos, cultivar timing, and user goals.",
+    area: "planning_records",
+    status: "backlog",
+    acceptsGrowContext: true,
+    internalNote:
+      "Future AI workflow. Current Harvest Estimator remains a beta local estimator, not image readiness AI."
+  },
+  {
+    key: "tools.run_comparison",
+    title: "Run-To-Run Comparison",
+    description:
+      "Compare grows by yield, timing, issues, environment, feeding, quality, and keeper score.",
+    area: "planning_records",
+    status: "backlog",
+    internalNote:
+      "Future analytics workflow requiring normalized grow outcomes and history."
+  },
+  {
+    key: "tools.auto_grow_calendar",
+    title: "Auto Grow Calendar",
+    description:
+      "Generate stage timelines, task schedules, reminders, and harvest windows.",
+    area: "planning_records",
+    status: "backlog",
+    acceptsGrowContext: true,
+    internalNote:
+      "Future calendar workflow; must create real tasks/events and reload from grow history."
+  },
+  {
+    key: "tools.product_ingredient_library",
+    title: "Product / Ingredient Library",
+    description:
+      "Store labels, elemental nutrients, nutrient forms, density, and source confidence.",
+    area: "water_nutrients",
+    status: "backlog",
+    internalNote:
+      "Backend ingredient endpoints exist, but release exposure needs provenance review, source records, and product-label validation."
+  },
+  {
+    key: "tools.crop_profile_database",
+    title: "Crop Profile / Taxon Database",
+    description:
+      "Manage reviewed crop profiles, taxonomy, environment targets, IPM rules, and source records.",
+    area: "plant_health",
+    status: "backlog",
+    internalNote:
+      "Draft user-entered crop profile flow exists. Admin/source review and seeded licensed data remain backlog."
   }
 ] as const satisfies readonly FeatureDefinition[];
 

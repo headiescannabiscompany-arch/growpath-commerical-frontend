@@ -67,7 +67,11 @@ function hrefWithGrow(path: string, growId: string) {
 const AREA_ORDER: FeatureArea[] = [
   "environment",
   "water_nutrients",
-  "ai",
+  "plant_health",
+  "crop_management",
+  "planning_records",
+  "genetics",
+  "lab_tc",
   "integrations"
 ];
 
@@ -75,7 +79,11 @@ const AREA_LABELS: Record<FeatureArea, string> = {
   personal_navigation: "Navigation",
   environment: "Environment",
   water_nutrients: "Water & Nutrients",
-  ai: "AI",
+  plant_health: "Plant Health & AI",
+  crop_management: "Crop Management",
+  planning_records: "Planning & Records",
+  genetics: "Genetics & Selection",
+  lab_tc: "Lab / Tissue Culture",
   integrations: "Integrations"
 };
 
