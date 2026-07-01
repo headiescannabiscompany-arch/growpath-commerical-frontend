@@ -1,7 +1,10 @@
 import React, { useEffect, useMemo, useState } from "react";
 import {
   ActivityIndicator,
+  Alert,
+  Platform,
   Pressable,
+  Share,
   StyleSheet,
   Text,
   TextInput,
@@ -9,10 +12,11 @@ import {
 } from "react-native";
 import { useRouter } from "expo-router";
 
-import { updateProfile } from "@/api/users";
+import { deleteAccount, exportPrivacyData, updateProfile } from "@/api/users";
 import { useAuth } from "@/auth/AuthContext";
 import AppCard from "@/components/layout/AppCard";
 import AppPage from "@/components/layout/AppPage";
+import LegalLinks from "@/components/LegalLinks";
 import { useEntitlements } from "@/entitlements";
 
 function normalizeStatus(value: unknown) {
@@ -36,6 +40,11 @@ export default function Profile() {
   const [emailFeedback, setEmailFeedback] = useState("");
   const [emailError, setEmailError] = useState("");
   const [loggingOut, setLoggingOut] = useState(false);
+  const [privacyFeedback, setPrivacyFeedback] = useState("");
+  const [privacyError, setPrivacyError] = useState("");
+  const [exporting, setExporting] = useState(false);
+  const [deleteConfirm, setDeleteConfirm] = useState("");
+  const [deleting, setDeleting] = useState(false);
 
   useEffect(() => {
     setEmailDraft(email);
@@ -95,6 +104,74 @@ export default function Profile() {
     } finally {
       setLoggingOut(false);
     }
+  }
+
+  async function handleExportData() {
+    setExporting(true);
+    setPrivacyFeedback("");
+    setPrivacyError("");
+    try {
+      const data = await exportPrivacyData();
+      const payload = JSON.stringify(data, null, 2);
+      if (Platform.OS === "web" && typeof document !== "undefined") {
+        const blob = new Blob([payload], { type: "application/json" });
+        const url = URL.createObjectURL(blob);
+        const anchor = document.createElement("a");
+        anchor.href = url;
+        anchor.download = `growpathai-data-export-${new Date().toISOString().slice(0, 10)}.json`;
+        document.body.appendChild(anchor);
+        anchor.click();
+        anchor.remove();
+        URL.revokeObjectURL(url);
+        setPrivacyFeedback("Data export downloaded.");
+      } else {
+        await Share.share({ title: "GrowPathAI data export", message: payload });
+        setPrivacyFeedback("Data export opened in the share sheet.");
+      }
+    } catch (e: any) {
+      setPrivacyError(e?.message || "Unable to export account data.");
+    } finally {
+      setExporting(false);
+    }
+  }
+
+  async function executeDeleteAccount() {
+    setDeleting(true);
+    setPrivacyFeedback("");
+    setPrivacyError("");
+    try {
+      await deleteAccount("user_requested_from_profile");
+      await auth.logout();
+      router.replace("/login");
+    } catch (e: any) {
+      setPrivacyError(e?.message || "Unable to delete account.");
+    } finally {
+      setDeleting(false);
+    }
+  }
+
+  function handleDeleteAccount() {
+    if (deleteConfirm.trim().toUpperCase() !== "DELETE") {
+      setPrivacyError("Type DELETE to confirm account deletion.");
+      return;
+    }
+
+    const message =
+      "This anonymizes your account, disables active tasks, archives personal grows, and logs you out. Some records may be retained in anonymized form for security, compliance, billing, dispute, or backup retention.";
+
+    if (
+      Platform.OS === "web" &&
+      typeof window !== "undefined" &&
+      typeof window.confirm === "function"
+    ) {
+      if (window.confirm(`Delete account?\n\n${message}`)) executeDeleteAccount();
+      return;
+    }
+
+    Alert.alert("Delete account?", message, [
+      { text: "Cancel", style: "cancel" },
+      { text: "Delete account", style: "destructive", onPress: executeDeleteAccount }
+    ]);
   }
 
   return (
@@ -221,6 +298,59 @@ export default function Profile() {
           >
             <Text style={styles.dangerButtonText}>
               {loggingOut ? "Logging out..." : "Log out"}
+            </Text>
+          </Pressable>
+        </AppCard>
+
+        <AppCard style={styles.card}>
+          <Text style={styles.cardTitle}>Privacy and account data</Text>
+          <Text style={styles.cardText}>
+            Export your account data or delete your account from inside the app.
+            Deletion anonymizes the account and archives active personal records instead
+            of blindly removing grow history.
+          </Text>
+          <LegalLinks />
+          {privacyFeedback ? (
+            <Text style={styles.feedbackText}>{privacyFeedback}</Text>
+          ) : null}
+          {privacyError ? <Text style={styles.errorText}>{privacyError}</Text> : null}
+          <Pressable
+            onPress={handleExportData}
+            disabled={exporting}
+            accessibilityRole="button"
+            accessibilityLabel="Export account data"
+            style={[styles.secondaryButton, exporting && styles.disabledButton]}
+          >
+            <Text style={styles.secondaryButtonText}>
+              {exporting ? "Exporting..." : "Export account data"}
+            </Text>
+          </Pressable>
+          <TextInput
+            accessibilityLabel="Delete account confirmation"
+            autoCapitalize="characters"
+            autoCorrect={false}
+            placeholder="Type DELETE to confirm"
+            placeholderTextColor="#64748b"
+            style={styles.input}
+            value={deleteConfirm}
+            onChangeText={(value) => {
+              setDeleteConfirm(value);
+              setPrivacyError("");
+            }}
+          />
+          <Pressable
+            onPress={handleDeleteAccount}
+            disabled={deleting || deleteConfirm.trim().toUpperCase() !== "DELETE"}
+            accessibilityRole="button"
+            accessibilityLabel="Delete account"
+            style={[
+              styles.dangerButton,
+              (deleting || deleteConfirm.trim().toUpperCase() !== "DELETE") &&
+                styles.disabledButton
+            ]}
+          >
+            <Text style={styles.dangerButtonText}>
+              {deleting ? "Deleting..." : "Delete account"}
             </Text>
           </Pressable>
         </AppCard>
