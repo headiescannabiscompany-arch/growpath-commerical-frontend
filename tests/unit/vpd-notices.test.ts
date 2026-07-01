@@ -38,4 +38,21 @@ describe("buildVpdNotices", () => {
       }
     ]);
   });
+
+  it("surfaces unconfirmed crop fallback warnings", () => {
+    const notices = buildVpdNotices({
+      status: "in_range",
+      targetSource: "stage_default_unconfirmed_crop",
+      targetConfidence: "medium",
+      requiresCropConfirmation: true,
+      warnings: [
+        "Crop identity is not confirmed, so VPD used the generic stage target. Confirm species/crop profile before applying crop-specific defaults."
+      ]
+    });
+
+    const text = notices.map((notice) => notice.message).join(" ");
+    expect(text).toContain("Crop identity is not confirmed");
+    expect(text).toContain("stage_default_unconfirmed_crop");
+    expect(text).toContain("confidence: medium");
+  });
 });
