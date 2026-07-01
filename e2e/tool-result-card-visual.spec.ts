@@ -121,7 +121,12 @@ async function installMocks(page: any) {
             vpdKpa: 1.18,
             leafTempC: 23,
             status: "in_range",
-            target: { min: 0.8, max: 1.2 },
+            target: { min: 0.7, max: 1.1 },
+            targetSource: "starter_crop_profile:blueberry",
+            targetConfidence: "low",
+            warnings: [
+              "Crop-specific VPD target is a starter default pending source/license review. Confirm against crop profile, cultivar, and observed plant response."
+            ],
             recommendations: ["Maintain current VPD range."]
           },
           formulas: ["VPD = saturation vapor pressure - actual vapor pressure."],
@@ -132,7 +137,12 @@ async function installMocks(page: any) {
           vpdKpa: 1.18,
           leafTempC: 23,
           status: "in_range",
-          target: { min: 0.8, max: 1.2 },
+          target: { min: 0.7, max: 1.1 },
+          targetSource: "starter_crop_profile:blueberry",
+          targetConfidence: "low",
+          warnings: [
+            "Crop-specific VPD target is a starter default pending source/license review. Confirm against crop profile, cultivar, and observed plant response."
+          ],
           recommendations: ["Maintain current VPD range."]
         }
       });
@@ -190,6 +200,12 @@ test.describe("shared tool result card", () => {
       await expect(page.getByText("Outputs")).toBeVisible();
       await expect(page.getByText("Formula / Why It Matters")).toBeVisible();
       await expect(page.getByText("Uncertainty / Confidence")).toBeVisible();
+      await expect(
+        page.getByText(/starter default pending source\/license review/i).first()
+      ).toBeVisible();
+      await expect(
+        page.getByText(/starter_crop_profile:blueberry/i).first()
+      ).toBeVisible();
       await expect(page.getByRole("button", { name: "Save to Grow Log" })).toBeVisible();
       await expect(page.getByRole("button", { name: "Create Task" })).toBeVisible();
       await expect(page.getByRole("button", { name: "Copy Result" })).toBeVisible();
