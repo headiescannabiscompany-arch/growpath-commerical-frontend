@@ -154,8 +154,7 @@ export async function listPersonalTasks(options?: {
     }
     const tasks = listPersonalRes?.tasks ?? listPersonalRes?.items;
     return Array.isArray(tasks) ? (tasks as PersonalTask[]) : [];
-  } catch (err) {
-    console.error("[listPersonalTasks] Error:", err);
+  } catch (_err) {
     return [];
   }
 }

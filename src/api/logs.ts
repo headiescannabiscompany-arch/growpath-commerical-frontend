@@ -64,8 +64,7 @@ export async function listPersonalLogs(options?: {
     });
     const logs = res?.data?.logs ?? res?.logs ?? res?.items;
     return Array.isArray(logs) ? (logs as PersonalLog[]) : [];
-  } catch (err) {
-    console.error("[listPersonalLogs] Error:", err);
+  } catch (_err) {
     return [];
   }
 }

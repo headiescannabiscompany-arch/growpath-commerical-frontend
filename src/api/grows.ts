@@ -87,8 +87,7 @@ export async function listPersonalGrows(): Promise<PersonalGrow[]> {
       if (Array.isArray(nested)) return nested as PersonalGrow[];
     }
     return [];
-  } catch (err) {
-    console.error("[listPersonalGrows] Error:", err);
+  } catch (_err) {
     return [];
   }
 }
