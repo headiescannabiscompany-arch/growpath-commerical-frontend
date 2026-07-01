@@ -56,6 +56,24 @@ describe("buildPersonalHomeModel", () => {
           title: "Done",
           dueDate: "2026-06-20",
           completed: true
+        },
+        {
+          id: "task-4",
+          growId: "active",
+          title: "Diagnosis follow-up",
+          dueDate: "2026-06-21",
+          completed: false,
+          sourceType: "ai_diagnosis",
+          sourceDiagnosisId: "diagnosis-1"
+        },
+        {
+          id: "task-5",
+          growId: "active",
+          title: "Automation inspection",
+          dueDate: "2026-06-21",
+          completed: false,
+          sourceType: "automation_policy",
+          sourceObjectId: "automation-event-1"
         }
       ] as any,
       toolRuns: [
@@ -73,20 +91,30 @@ describe("buildPersonalHomeModel", () => {
         sourceHref: "/home/personal/grows/active/tools"
       }),
       expect.objectContaining({
+        id: "task-4",
+        sourceLabel: "ai diagnosis",
+        sourceHref: "/home/personal/grows/active/timeline"
+      }),
+      expect.objectContaining({
+        id: "task-5",
+        sourceLabel: "automation policy",
+        sourceHref: "/home/personal/grows/active/tasks"
+      }),
+      expect.objectContaining({
         id: "task-2",
         sourceLabel: "manual",
         sourceHref: "/home/personal/grows/active/tasks"
       })
     ]);
-    expect(model.openTaskCount).toBe(2);
+    expect(model.openTaskCount).toBe(4);
     expect(model.latestToolRun?.toolType).toBe("vpd");
     expect(model.stats).toMatchObject({
       totalGrows: 3,
       activeGrowCount: 2,
       plantCount: 2,
       logCount: 1,
-      taskCount: 3,
-      openTaskCount: 2,
+      taskCount: 5,
+      openTaskCount: 4,
       completedTaskCount: 1,
       toolRunCount: 1
     });
