@@ -10,8 +10,9 @@ function fulfillJson(route: any, body: any, status = 200) {
   });
 }
 
-async function installMocks(page: any) {
+async function installMocks(page: any, options: { cropProfiles?: any[] } = {}) {
   const createPayloads: any[] = [];
+  const cropProfileDrafts: any[] = [];
 
   await page.addInitScript(() => {
     window.localStorage.setItem("auth_token_v1", "plants-crop-profile-token");
@@ -75,7 +76,7 @@ async function installMocks(page: any) {
 
     if (method === "GET" && url.pathname === "/api/crop-knowledge/crop-profiles") {
       return fulfillJson(route, {
-        items: [
+        items: options.cropProfiles ?? [
           {
             _id: "crop-tomato-1",
             displayName: "Tomato",
@@ -85,6 +86,18 @@ async function installMocks(page: any) {
           }
         ]
       });
+    }
+
+    if (method === "POST" && url.pathname === "/api/crop-knowledge/crop-profiles") {
+      const body = request.postDataJSON();
+      const item = {
+        _id: `crop-draft-${cropProfileDrafts.length + 1}`,
+        id: `crop-draft-${cropProfileDrafts.length + 1}`,
+        curationStatus: "needs_license_review",
+        ...body
+      };
+      cropProfileDrafts.push(item);
+      return fulfillJson(route, { item }, 201);
     }
 
     if (method === "POST" && url.pathname === "/api/personal/plants") {
@@ -112,7 +125,7 @@ async function installMocks(page: any) {
     return fulfillJson(route, { ok: true });
   });
 
-  return { createPayloads };
+  return { createPayloads, cropProfileDrafts };
 }
 
 test.describe("personal plant crop profile form", () => {
@@ -172,4 +185,51 @@ test.describe("personal plant crop profile form", () => {
       await expect(page).toHaveURL(/plantId=plant-created-1/);
     });
   }
+
+  test("creates a license-review draft crop profile when no match exists", async ({
+    page
+  }) => {
+    await page.setViewportSize({ width: 1280, height: 950 });
+    const api = await installMocks(page, { cropProfiles: [] });
+
+    await page.goto(`/home/personal/grows/${GROW_ID}/plants`, {
+      waitUntil: "domcontentloaded"
+    });
+    await page.getByRole("button", { name: "Add plant" }).click();
+
+    await page.getByLabel("Plant name").fill("Patio fig #1");
+    await page.getByLabel("Plant crop common name").fill("Fig");
+    await page.getByLabel("Plant scientific name").fill("Ficus carica");
+    await page.getByRole("button", { name: "Match crop profile" }).click();
+    await expect(page.getByText(/No crop profile matched yet/)).toBeVisible();
+
+    await page.getByRole("button", { name: "Create draft crop profile" }).click();
+    await expect(page.getByText(/Draft crop profile created and linked/)).toBeVisible();
+    await expect(page.getByText(/Fig \(needs_license_review\)/)).toBeVisible();
+
+    await page.getByRole("button", { name: "Add plant to grow" }).click();
+    await expect(page.getByText("Plant added to this grow.")).toBeVisible();
+
+    expect(api.cropProfileDrafts[0]).toMatchObject({
+      displayName: "Fig",
+      scientificName: "Ficus carica",
+      commonNames: ["Fig"],
+      curationStatus: "needs_license_review",
+      sourceRecords: [
+        expect.objectContaining({
+          sourceName: "User-entered crop profile request",
+          sourceType: "user_entered",
+          commercialUseAllowed: false,
+          trainingUseAllowed: false,
+          confidence: "low"
+        })
+      ]
+    });
+    expect(api.createPayloads[0]).toMatchObject({
+      cropCommonName: "Fig",
+      scientificName: "Ficus carica",
+      cropProfileId: "crop-draft-1",
+      confirmationStatus: "user_confirmed"
+    });
+  });
 });

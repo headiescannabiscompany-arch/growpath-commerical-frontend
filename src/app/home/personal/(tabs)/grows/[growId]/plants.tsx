@@ -16,7 +16,7 @@ import {
   listPersonalPlants,
   type PersonalPlant
 } from "@/api/plants";
-import { listCropProfiles } from "@/api/cropKnowledge";
+import { createCropProfile, listCropProfiles } from "@/api/cropKnowledge";
 import GrowWorkspaceNav from "@/components/personal/GrowWorkspaceNav";
 import { coerceParam, getRowId } from "@/features/grows/routeUtils";
 
@@ -34,6 +34,7 @@ export default function GrowPlantsScreen() {
   const [cropProfileId, setCropProfileId] = useState("");
   const [cropProfileLabel, setCropProfileLabel] = useState("");
   const [profileSearching, setProfileSearching] = useState(false);
+  const [profileDrafting, setProfileDrafting] = useState(false);
   const [medium, setMedium] = useState("");
   const [canopyWidthCm, setCanopyWidthCm] = useState("");
   const [waterDemand, setWaterDemand] = useState("");
@@ -101,6 +102,45 @@ export default function GrowPlantsScreen() {
       setFeedback("Unable to search crop profiles.");
     } finally {
       setProfileSearching(false);
+    }
+  }
+
+  async function createDraftCropProfile() {
+    const displayName = cropCommonName.trim() || scientificName.trim();
+    if (!displayName || profileDrafting) return;
+    setProfileDrafting(true);
+    setFeedback("");
+    try {
+      const created: any = await createCropProfile({
+        displayName,
+        scientificName: scientificName.trim() || undefined,
+        commonNames: cropCommonName.trim() ? [cropCommonName.trim()] : [],
+        cropCategory: "unknown",
+        curationStatus: "needs_license_review",
+        sourceRecords: [
+          {
+            sourceName: "User-entered crop profile request",
+            sourceType: "user_entered",
+            commercialUseAllowed: false,
+            trainingUseAllowed: false,
+            confidence: "low",
+            accessedAt: new Date().toISOString(),
+            notes:
+              "Created from the personal plant form. Requires source and license review before verified crop guidance or model training use."
+          }
+        ]
+      });
+      const id = String(created?._id || created?.id || "");
+      if (!id) throw new Error("Draft crop profile was not returned.");
+      setCropProfileId(id);
+      setCropProfileLabel(`${created.displayName || displayName} (needs_license_review)`);
+      setFeedback(
+        "Draft crop profile created and linked. Treat crop-specific guidance as unverified until source review is complete."
+      );
+    } catch {
+      setFeedback("Unable to create draft crop profile.");
+    } finally {
+      setProfileDrafting(false);
     }
   }
 
@@ -252,6 +292,19 @@ export default function GrowPlantsScreen() {
                 {profileSearching ? "Searching..." : "Match Crop Profile"}
               </Text>
             </Pressable>
+            {!cropProfileId && (cropCommonName.trim() || scientificName.trim()) ? (
+              <Pressable
+                style={[styles.secondaryButton, profileDrafting ? styles.disabled : null]}
+                disabled={profileDrafting}
+                onPress={createDraftCropProfile}
+                accessibilityRole="button"
+                accessibilityLabel="Create draft crop profile"
+              >
+                <Text style={styles.secondaryButtonText}>
+                  {profileDrafting ? "Creating draft..." : "Create Draft Crop Profile"}
+                </Text>
+              </Pressable>
+            ) : null}
             {cropProfileLabel ? (
               <Text style={styles.profileMatch}>{cropProfileLabel}</Text>
             ) : null}
