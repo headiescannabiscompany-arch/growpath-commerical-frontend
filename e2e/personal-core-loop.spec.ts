@@ -126,13 +126,21 @@ async function installCoreLoopMocks(page: any) {
         id: `timeline-task-${task.id}`,
         growId,
         plantId: task.plantId,
-        type: "task_created",
+        type: task.completed ? "task_completed" : "task_created",
         sourceModel: "Task",
         sourceId: task.id,
         title: task.title,
         summary: task.description,
-        timestamp: task.createdAt,
-        tags: ["task", task.sourceType || ""].filter(Boolean)
+        timestamp: task.completed ? task.updatedAt || task.createdAt : task.createdAt,
+        tags: ["task", task.sourceType || ""].filter(Boolean),
+        payload: {
+          status: task.completed ? "DONE" : "OPEN",
+          sourceType: task.sourceType || null,
+          sourceObjectId: task.sourceObjectId || null,
+          sourceToolRunId: task.sourceToolRunId || null,
+          sourceDiagnosisId: task.sourceDiagnosisId || null,
+          linkedLogId: task.linkedLogId || null
+        }
       });
     }
     return events.sort(
@@ -327,6 +335,19 @@ async function installCoreLoopMocks(page: any) {
       return fulfillJson(route, { tasks: rows });
     }
 
+    if (method === "PATCH" && url.pathname.startsWith("/api/personal/tasks/")) {
+      const taskId = decodeURIComponent(url.pathname.split("/").pop() || "");
+      const payload = request.postDataJSON();
+      const index = state.tasks.findIndex((task) => task.id === taskId);
+      if (index < 0) return fulfillJson(route, { message: "Task not found" }, 404);
+      state.tasks[index] = {
+        ...state.tasks[index],
+        ...payload,
+        updatedAt: "2026-06-30T16:25:00.000Z"
+      };
+      return fulfillJson(route, { task: state.tasks[index] });
+    }
+
     return fulfillJson(route, { ok: true });
   });
 
@@ -382,9 +403,8 @@ test("personal grow core loop persists and reappears in timeline", async ({ page
     { waitUntil: "domcontentloaded" }
   );
   await expect(page.getByRole("heading", { name: "New Journal Entry" })).toBeVisible();
-  await expect(
-    page.getByText("Blueberry | Bluecrop | pheno: compact fruiting")
-  ).toBeVisible();
+  await expect(page.getByText(/Blueberry \| Bluecrop/)).toBeVisible();
+  await expect(page.getByText(/pheno compact fruiting/)).toBeVisible();
   await page.getByLabel("Log title").fill("Blueberry leaf photo check");
   await page.getByLabel("Log notes").fill("Attached leaf photo before VPD review.");
   await page
@@ -456,6 +476,26 @@ test("personal grow core loop persists and reappears in timeline", async ({ page
   await expect(page.getByText("Follow up: vpd")).toBeVisible();
   await expect(page.getByText(/Source: tool run/)).toBeVisible();
   await expect(page.getByText("Open Source")).toBeVisible();
+
+  await page.goto("/home/personal/grows/grow-core-loop-1/tasks", {
+    waitUntil: "domcontentloaded"
+  });
+  await page.getByRole("button", { name: "Complete task" }).click();
+  await expect(page.getByText("Task completed.")).toBeVisible();
+  await expect
+    .poll(() => state.tasks[0], { message: "tool-created task was completed" })
+    .toEqual(
+      expect.objectContaining({
+        completed: true,
+        sourceType: "tool_run",
+        sourceObjectId: "toolrun-core-vpd-1",
+        sourceToolRunId: "toolrun-core-vpd-1"
+      })
+    );
+
+  await page.goto("/home/personal", { waitUntil: "domcontentloaded" });
+  await expect(page.getByText("No open task is scheduled for this grow.")).toBeVisible();
+  await expect(page.getByText("Completed tasks")).toBeVisible();
 
   await page.goto("/home/personal/grows/grow-core-loop-1/timeline", {
     waitUntil: "domcontentloaded"
