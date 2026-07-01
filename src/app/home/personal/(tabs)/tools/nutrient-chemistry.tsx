@@ -40,6 +40,7 @@ import {
   type NutrientStage,
   type NutrientEnvironment
 } from "@/features/personal/tools/nutrientChemistry/engine";
+import { nutrientContextState } from "@/features/personal/tools/nutrientContext";
 
 function coerceParam(value?: string | string[]) {
   if (typeof value === "string") return value;
@@ -77,6 +78,7 @@ export default function NutrientChemistryToolScreen() {
   const plantContext = useToolPlantContext(growId, coerceParam(rawPlantId));
   const entitlements = useEntitlements();
   const enabled = entitlements.can(CAPABILITY_KEYS.TOOL_NPK);
+  const cropContext = nutrientContextState(plantContext.selectedPlantContext);
 
   const [nutrient, setNutrient] = useState<NutrientKey>("calcium");
   const [intent, setIntent] = useState<NutrientIntent>("fast_fix");
@@ -341,6 +343,15 @@ export default function NutrientChemistryToolScreen() {
         selectedPlant={plantContext.selectedPlant}
         onSelect={plantContext.setPlantId}
       />
+      <View
+        style={[
+          styles.contextPanel,
+          cropContext.state === "confirmed" ? styles.contextPanelOk : null
+        ]}
+      >
+        <Text style={styles.contextPanelTitle}>{cropContext.label}</Text>
+        <Text style={styles.helperText}>{cropContext.message}</Text>
+      </View>
 
       <View style={styles.panel}>
         <Text style={styles.sectionTitle}>Nutrient</Text>
@@ -854,6 +865,19 @@ const styles = StyleSheet.create({
     borderRadius: 10,
     padding: 10
   },
+  contextPanel: {
+    borderWidth: 1,
+    borderColor: "#FBBF24",
+    backgroundColor: "#FFFBEB",
+    borderRadius: 12,
+    padding: 12,
+    gap: 4
+  },
+  contextPanelOk: {
+    borderColor: "#BBF7D0",
+    backgroundColor: "#F0FDF4"
+  },
+  contextPanelTitle: { color: "#0F172A", fontWeight: "800" },
   panel: {
     borderWidth: 1,
     borderColor: "#E2E8F0",

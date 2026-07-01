@@ -20,6 +20,10 @@ import {
   type NutrientRecipe
 } from "@/api/nutrientRecipes";
 import { saveToolRunAndCreateTask } from "@/features/personal/tools/saveToolRunAndOpenJournal";
+import {
+  buildNutrientContextAssumption,
+  buildNutrientContextNotices
+} from "@/features/personal/tools/nutrientContext";
 
 type ProductRow = {
   id: string;
@@ -630,6 +634,7 @@ export default function NpkToolScreen() {
           inputs={toolRun?.inputs || recipePayload()}
           outputs={toolRun?.outputs || result}
           notices={[
+            ...buildNutrientContextNotices(plantContext.selectedPlantContext),
             ...(result.warnings || []).map((warning: string, index: number) => ({
               key: `warning-${index}`,
               severity: "medium" as const,
@@ -666,6 +671,7 @@ export default function NpkToolScreen() {
           }
           confidence={toolRun?.confidence || "beta-calculator"}
           assumptions={[
+            buildNutrientContextAssumption(plantContext.selectedPlantContext),
             result.releaseDisclaimer,
             "Raw NPK totals are label math; release timing and availability estimates are not a substitute for substrate tests, water tests, or measured runoff/feed data."
           ].filter(Boolean)}

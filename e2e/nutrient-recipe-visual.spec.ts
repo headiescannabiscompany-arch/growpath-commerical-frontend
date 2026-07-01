@@ -13,6 +13,21 @@ const GROW = {
   updatedAt: "2026-06-30T00:00:00.000Z"
 };
 
+const PLANT = {
+  id: "plant-olive-nutrient-1",
+  growId: GROW.id,
+  name: "Olive patio tree",
+  cropCommonName: "Olive",
+  scientificName: "Olea europaea",
+  cultivar: "Arbequina",
+  cropProfileId: "crop-olive-1",
+  growthProfile: {
+    confirmationStatus: "user_confirmed",
+    sizeMetrics: { canopyWidthCm: 140 },
+    waterUseProfile: { observedDemand: "medium" }
+  }
+};
+
 const NPK_OUTPUTS = {
   totals: {
     Nppm: 110,
@@ -23,7 +38,9 @@ const NPK_OUTPUTS = {
   },
   formula:
     "ppm = product grams x 1000 x nutrient fraction / batch liters; label P2O5 and K2O are converted to elemental P and K.",
-  warnings: ["Source water EC is elevated. Include baseline minerals when comparing measured EC."],
+  warnings: [
+    "Source water EC is elevated. Include baseline minerals when comparing measured EC."
+  ],
   recommendations: [
     "Confirm product labels, nutrient forms, and units, then verify finished solution EC and pH with calibrated meters."
   ],
@@ -108,6 +125,7 @@ async function installMocks(page: any) {
           capabilities: {
             GROWS_PERSONAL_VIEW: true,
             GROWS_PERSONAL_WRITE: true,
+            PLANTS_PERSONAL_VIEW: true,
             TOOL_NPK: true,
             AI_ASSISTANT: true
           },
@@ -120,6 +138,10 @@ async function installMocks(page: any) {
       return fulfillJson(route, { grows: [GROW] });
     }
 
+    if (method === "GET" && url.pathname === "/api/personal/plants") {
+      return fulfillJson(route, { plants: [PLANT] });
+    }
+
     if (method === "GET" && url.pathname === "/api/tools/recipes") {
       return fulfillJson(route, { items: [] });
     }
@@ -130,6 +152,8 @@ async function installMocks(page: any) {
           id: "toolrun-npk-1",
           _id: "toolrun-npk-1",
           growId: GROW.id,
+          plantId: PLANT.id,
+          cropProfileId: PLANT.cropProfileId,
           toolType: "npk_recipe",
           toolName: "npk_recipe",
           schemaVersion: 1,
@@ -198,6 +222,7 @@ test.describe("nutrient recipe workflow", () => {
       await expect(
         page.getByRole("heading", { name: "NPK Label Ratio (Preview)" })
       ).toBeVisible();
+      await page.getByRole("button", { name: "Run tool for Olive patio tree" }).click();
       await expect(page.getByText("Water baseline and measured feed")).toBeVisible();
 
       await page.getByPlaceholder("e.g. Veg base").fill("Olive baseline feed");
@@ -208,8 +233,13 @@ test.describe("nutrient recipe workflow", () => {
 
       await expect(page.getByText("Source confidence", { exact: true })).toBeVisible();
       await expect(page.getByText("Mixing sequence", { exact: true })).toBeVisible();
-      await expect(page.getByText("Estimated availability", { exact: true })).toBeVisible();
+      await expect(
+        page.getByText("Estimated availability", { exact: true })
+      ).toBeVisible();
       await expect(page.getByText("Release timing", { exact: true })).toBeVisible();
+      await expect(
+        page.getByText(/Nutrient workflow includes selected crop context: Olive/i)
+      ).toBeVisible();
       await expect(page.getByText("Save Recipe")).toBeVisible();
 
       await page.getByText("Source confidence", { exact: true }).scrollIntoViewIfNeeded();

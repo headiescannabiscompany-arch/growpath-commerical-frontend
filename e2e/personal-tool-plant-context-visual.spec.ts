@@ -74,6 +74,7 @@ async function installMocks(page: any) {
             PLANTS_PERSONAL_VIEW: true,
             DIAGNOSE_AI: true,
             AI_ASSISTANT: true,
+            TOOL_NPK: true,
             TOOL_TIMELINE_PLANNER: true
           },
           limits: {}
@@ -315,6 +316,27 @@ test.describe("personal tool plant context", () => {
 
     await page.screenshot({
       path: "tmp/screenshots/personal-tool-plant-context-environment-mobile.png",
+      fullPage: true
+    });
+  });
+
+  test("Nutrient Chemistry shows selected crop context caveat", async ({ page }) => {
+    await page.setViewportSize({ width: 390, height: 900 });
+    await installMocks(page);
+
+    await page.goto(`/home/personal/tools/nutrient-chemistry?growId=${GROW.id}`, {
+      waitUntil: "domcontentloaded"
+    });
+
+    await expect(page.getByRole("heading", { name: "Nutrient Chemistry" })).toBeVisible();
+    await page.getByRole("button", { name: "Run tool for Olive patio tree" }).click();
+    await expect(page.getByText("Crop context included")).toBeVisible();
+    await expect(
+      page.getByText(/Nutrient workflow includes selected crop context: Olive/i)
+    ).toBeVisible();
+
+    await page.screenshot({
+      path: "tmp/screenshots/personal-tool-plant-context-nutrient-chemistry-mobile.png",
       fullPage: true
     });
   });
