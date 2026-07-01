@@ -7,6 +7,7 @@ import {
   Alert,
   ActivityIndicator,
   Image,
+  Linking,
   StyleSheet
 } from "react-native";
 import AsyncStorage from "@react-native-async-storage/async-storage";
@@ -14,6 +15,7 @@ import ScreenContainer from "../components/ScreenContainer.js";
 import PrimaryButton from "../components/PrimaryButton.js";
 import { useAuth } from "@/auth/AuthContext";
 import { useRouter } from "expo-router";
+import { config } from "../config/config";
 import { colors, radius, spacing } from "../theme/theme.js";
 // DEBUG_LAYOUT: toggle yellow background for debug
 const DEBUG_LAYOUT = __DEV__ && false;
@@ -256,12 +258,7 @@ function LoginScreen() {
         {/* Privacy Policy link for onboarding */}
         <View style={{ alignItems: "center", marginTop: 30, marginBottom: 10 }}>
           <TouchableOpacity
-            onPress={() =>
-              Alert.alert(
-                "Privacy Policy",
-                "Privacy policy screen routing is not connected in this build yet."
-              )
-            }
+            onPress={() => Linking.openURL(config.privacyUrl)}
           >
             <Text
               style={{ color: "#3498db", fontSize: 15, textDecorationLine: "underline" }}

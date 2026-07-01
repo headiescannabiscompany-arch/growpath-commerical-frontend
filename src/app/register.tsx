@@ -14,6 +14,7 @@ import { useRouter } from "expo-router";
 import { ApiError } from "@/api/apiRequest";
 import { SignupBody } from "@/api/auth";
 import { useAuth } from "@/auth/AuthContext";
+import LegalLinks from "@/components/LegalLinks";
 
 type AccountChoice = {
   key: "free" | "pro" | "commercial" | "facility";
@@ -217,6 +218,8 @@ export default function RegisterScreen() {
           >
             <Text style={styles.linkText}>Back to login</Text>
           </Pressable>
+
+          <LegalLinks />
         </View>
       </View>
     </ScrollView>

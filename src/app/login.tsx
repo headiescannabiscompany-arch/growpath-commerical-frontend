@@ -14,6 +14,7 @@ import { useRouter } from "expo-router";
 
 import { ApiError } from "@/api/apiRequest";
 import { useAuth } from "@/auth/AuthContext";
+import LegalLinks from "@/components/LegalLinks";
 
 export default function LoginScreen() {
   const router = useRouter();
@@ -129,6 +130,8 @@ export default function LoginScreen() {
           >
             <Text style={styles.linkText}>Create account</Text>
           </Pressable>
+
+          <LegalLinks />
         </View>
       </View>
     </ScrollView>
