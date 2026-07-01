@@ -54,6 +54,10 @@ const checks = [
     name: "hardcoded local URL",
     pattern: /https?:\/\/(?:localhost|127\.0\.0\.1|192\.168\.\d+\.\d+|10\.\d+\.\d+\.\d+)(?::\d+)?/g,
     allowFile: (rel) => allowedLocalUrlFiles.has(rel)
+  },
+  {
+    name: "auth debug logging",
+    pattern: /Authorization preview|Authorization header present|\[API\] Login (?:request|error)|passwordLength/g
   }
 ];
 

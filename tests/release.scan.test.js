@@ -58,4 +58,24 @@ describe("release scan", () => {
     expect(result.status).toBe(1);
     expect(result.stderr).toMatch(/avoid broad Android storage permission/);
   });
+
+  it("rejects auth debug logging in release source", () => {
+    const tempRoot = fs.mkdtempSync(path.join(os.tmpdir(), "growpath-release-scan-"));
+    fs.cpSync(root, tempRoot, {
+      recursive: true,
+      filter: (source) => !source.includes(`${path.sep}node_modules${path.sep}`)
+    });
+
+    const sourcePath = path.join(tempRoot, "src", "api", "auth.js");
+    fs.appendFileSync(sourcePath, "\nconsole.error('[API] Login error:', {});\n");
+
+    const result = spawnSync(process.execPath, [path.join(tempRoot, "scripts", "scan-release.cjs")], {
+      cwd: tempRoot,
+      encoding: "utf8",
+      env: process.env
+    });
+
+    expect(result.status).toBe(1);
+    expect(result.stderr).toMatch(/auth debug logging/);
+  });
 });

@@ -19,13 +19,6 @@ export async function login(a, b) {
     global.user = loginData.user;
     return { user: loginData.user, token: loginData.token };
   } catch (err) {
-    console.error("[API] Login error:", {
-      error: err,
-      message: err?.message,
-      data: err?.data,
-      code: err?.code,
-      status: err?.status
-    });
     throw err; // Throw the full error object, not just the message
   }
 }
