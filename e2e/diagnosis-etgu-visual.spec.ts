@@ -12,6 +12,62 @@ function fulfillJson(route: any, body: any, status = 200) {
 
 async function installMocks(page: any) {
   const diagnosisPayloads: any[] = [];
+  const savedLogs: any[] = [];
+  const savedTasks: any[] = [];
+  const savedFeedback: any[] = [];
+
+  function timelineEvents() {
+    return [
+      ...savedLogs.map((log) => ({
+        id: `GrowLog:${log.id}`,
+        userId: "diagnosis-user",
+        growId: log.growId,
+        plantId: log.plantId || null,
+        type: "diagnosis_created",
+        sourceModel: "GrowLog",
+        sourceId: log.id,
+        title: log.title,
+        summary: log.notes,
+        timestamp: log.createdAt,
+        tags: log.tags || [],
+        severity: "medium",
+        payload: { diagnosisId: log.diagnosisId, acceptedTags: log.tags || [] }
+      })),
+      ...savedTasks.map((task) => ({
+        id: `Task:${task.id}`,
+        userId: "diagnosis-user",
+        growId: task.growId,
+        plantId: task.plantId || null,
+        type: "task_created",
+        sourceModel: "Task",
+        sourceId: task.id,
+        title: task.title,
+        summary: task.description,
+        timestamp: task.createdAt,
+        tags: ["task", task.sourceType].filter(Boolean),
+        severity: task.priority || "medium",
+        payload: {
+          sourceType: task.sourceType,
+          sourceDiagnosisId: task.sourceDiagnosisId
+        }
+      })),
+      ...savedFeedback.map((feedback) => ({
+        id: `DiagnosisFeedback:${feedback.id}`,
+        userId: "diagnosis-user",
+        growId: feedback.growId,
+        plantId: feedback.plantId || null,
+        type: "diagnosis_feedback",
+        sourceModel: "DiagnosisFeedback",
+        sourceId: feedback.id,
+        title: `Diagnosis feedback: ${feedback.verdict.replace("_", " ")}`,
+        summary: feedback.notes,
+        timestamp: feedback.createdAt,
+        tags: ["diagnosis_feedback", feedback.verdict],
+        severity: "info",
+        payload: feedback
+      }))
+    ];
+  }
 
   await page.addInitScript(() => {
     window.localStorage.setItem("auth_token_v1", "diagnosis-etgu-token");
@@ -149,10 +205,55 @@ async function installMocks(page: any) {
       });
     }
 
+    if (method === "POST" && url.pathname === "/api/personal/logs") {
+      const payload = request.postDataJSON();
+      const log = {
+        id: `diagnosis-log-${savedLogs.length + 1}`,
+        _id: `diagnosis-log-${savedLogs.length + 1}`,
+        createdAt: new Date().toISOString(),
+        updatedAt: new Date().toISOString(),
+        ...payload
+      };
+      savedLogs.push(log);
+      return fulfillJson(route, { log, created: log }, 201);
+    }
+
+    if (method === "POST" && url.pathname === "/api/personal/tasks") {
+      const payload = request.postDataJSON();
+      const task = {
+        id: `diagnosis-task-${savedTasks.length + 1}`,
+        _id: `diagnosis-task-${savedTasks.length + 1}`,
+        completed: false,
+        priority: payload.priority || "medium",
+        createdAt: new Date().toISOString(),
+        ...payload
+      };
+      savedTasks.push(task);
+      return fulfillJson(route, { task, created: task }, 201);
+    }
+
+    if (method === "POST" && url.pathname === "/api/diagnose/diagnosis-etgu-1/feedback") {
+      const payload = request.postDataJSON();
+      const feedback = {
+        id: `diagnosis-feedback-${savedFeedback.length + 1}`,
+        diagnosisId: "diagnosis-etgu-1",
+        growId: GROW_ID,
+        plantId: "plant-etgu-1",
+        createdAt: new Date().toISOString(),
+        ...payload
+      };
+      savedFeedback.push(feedback);
+      return fulfillJson(route, { feedback, ok: true }, 201);
+    }
+
+    if (method === "GET" && url.pathname === `/api/personal/grows/${GROW_ID}/timeline`) {
+      return fulfillJson(route, { timeline: timelineEvents() });
+    }
+
     return fulfillJson(route, { ok: true });
   });
 
-  return { diagnosisPayloads };
+  return { diagnosisPayloads, savedLogs, savedTasks, savedFeedback };
 }
 
 test.describe("ETGU diagnosis intake", () => {
@@ -232,6 +333,56 @@ test.describe("ETGU diagnosis intake", () => {
       await expect(
         page.getByRole("button", { name: "Create Follow-up Task" })
       ).toBeVisible();
+      await page.getByRole("button", { name: "Diagnosis tag root zone" }).click();
+      await page.getByRole("button", { name: "Save to Grow Log" }).click();
+      await expect(page.getByText("Diagnosis saved to grow journal.")).toBeVisible();
+      expect(api.savedLogs[0]).toMatchObject({
+        growId: GROW_ID,
+        plantId: "plant-etgu-1",
+        diagnosisId: "diagnosis-etgu-1",
+        type: "diagnosis",
+        title: "Possible root-zone stress; container olive leaf spotting",
+        tags: ["olive", "leaf spotting"]
+      });
+
+      await page.getByRole("button", { name: "Create Follow-up Task" }).click();
+      await expect(page.getByText("Follow-up task created.")).toBeVisible();
+      expect(api.savedTasks[0]).toMatchObject({
+        growId: GROW_ID,
+        title: "Follow up: Possible root-zone stress; container olive leaf spotting",
+        sourceType: "ai_diagnosis",
+        sourceObjectId: "diagnosis-etgu-1",
+        sourceDiagnosisId: "diagnosis-etgu-1"
+      });
+
+      await page
+        .getByLabel("Diagnosis outcome feedback notes")
+        .fill("Drainage check matched the diagnosis.");
+      await page.getByRole("button", { name: "Mark diagnosis helpful" }).click();
+      await expect(page.getByText("Diagnosis feedback saved.")).toBeVisible();
+      expect(api.savedFeedback[0]).toMatchObject({
+        verdict: "helpful",
+        notes: "Drainage check matched the diagnosis.",
+        consentForModelTraining: false
+      });
+
+      await page.goto(`/home/personal/grows/${GROW_ID}/timeline`, {
+        waitUntil: "domcontentloaded"
+      });
+      await expect(
+        page.getByText("Possible root-zone stress; container olive leaf spotting", {
+          exact: true
+        })
+      ).toBeVisible();
+      await expect(
+        page.getByText(
+          "Follow up: Possible root-zone stress; container olive leaf spotting",
+          {
+            exact: true
+          }
+        )
+      ).toBeVisible();
+      await expect(page.getByText("Diagnosis feedback: helpful")).toBeVisible();
 
       await page.screenshot({
         path: `tmp/screenshots/diagnosis-etgu-${size.name}.png`,
