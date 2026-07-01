@@ -10,6 +10,7 @@ export type AuthUser = {
   role: "user" | "creator" | "admin";
   plan: string | null;
   subscriptionStatus: string | null;
+  emailVerified?: boolean;
 };
 
 export type SignupBody = {
@@ -33,6 +34,20 @@ export type LoginResponse = {
 
 export type SignupResponse = {
   token: string;
+  user: AuthUser;
+  emailVerificationRequired?: boolean;
+  emailSent?: boolean;
+};
+
+export type EmailVerificationResponse = {
+  ok: true;
+  message?: string;
+  emailSent?: boolean;
+  alreadyVerified?: boolean;
+};
+
+export type ConfirmEmailVerificationResponse = {
+  ok: true;
   user: AuthUser;
 };
 
@@ -61,6 +76,26 @@ export async function register(body: SignupBody): Promise<{ token: string }> {
     auth: false,
     body
   }) as Promise<{ token: string }>;
+}
+
+export async function requestEmailVerification(
+  email: string
+): Promise<EmailVerificationResponse> {
+  return apiRequest("/api/auth/verify-email/request", {
+    method: "POST",
+    auth: false,
+    body: { email }
+  }) as Promise<EmailVerificationResponse>;
+}
+
+export async function confirmEmailVerification(
+  token: string
+): Promise<ConfirmEmailVerificationResponse> {
+  return apiRequest("/api/auth/verify-email/confirm", {
+    method: "POST",
+    auth: false,
+    body: { token }
+  }) as Promise<ConfirmEmailVerificationResponse>;
 }
 
 /** Upgrade account to creator. Returns { ok, role } or throws ApiError. */

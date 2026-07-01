@@ -9,16 +9,13 @@ const outputDir =
     ? process.argv[outputArgIndex + 1]
     : "dist";
 const absoluteOutputDir = path.resolve(ROOT, outputDir);
-const productionApiUrl =
-  process.env.EXPO_PUBLIC_API_URL || "https://api.growpathai.com";
+const productionApiUrl = process.env.EXPO_PUBLIC_API_URL || "https://api.growpathai.com";
 
 let parsedProductionApiUrl;
 try {
   parsedProductionApiUrl = new URL(productionApiUrl);
 } catch {
-  console.error(
-    `Invalid EXPO_PUBLIC_API_URL for production export: ${productionApiUrl}`
-  );
+  console.error(`Invalid EXPO_PUBLIC_API_URL for production export: ${productionApiUrl}`);
   process.exit(1);
 }
 
@@ -42,15 +39,7 @@ const env = {
 const expoCli = path.join(ROOT, "node_modules", "expo", "bin", "cli");
 const exportResult = spawnSync(
   process.execPath,
-  [
-    expoCli,
-    "export",
-    "--platform",
-    "web",
-    "--clear",
-    "--output-dir",
-    outputDir
-  ],
+  [expoCli, "export", "--platform", "web", "--clear", "--output-dir", outputDir],
   {
     cwd: ROOT,
     env,
@@ -76,6 +65,7 @@ const fallbackRoutes = [
   "marketplace",
   "storefront",
   "profile",
+  "verify-email",
   "facilities",
   "onboarding",
   "onboarding/create-facility",
@@ -137,9 +127,7 @@ function walk(dir) {
 const textFiles = walk(absoluteOutputDir).filter((file) =>
   /\.(html|js|json|txt)$/i.test(file)
 );
-const haystack = textFiles
-  .map((file) => fs.readFileSync(file, "utf8"))
-  .join("\n");
+const haystack = textFiles.map((file) => fs.readFileSync(file, "utf8")).join("\n");
 
 const forbidden = [
   "http://localhost:5002",
@@ -161,6 +149,4 @@ if (foundForbidden.length) {
   process.exit(1);
 }
 
-console.log(
-  `Production web export verified: ${outputDir} uses ${productionApiUrl}`
-);
+console.log(`Production web export verified: ${outputDir} uses ${productionApiUrl}`);
