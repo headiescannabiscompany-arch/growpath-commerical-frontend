@@ -78,4 +78,14 @@ describe("release scan", () => {
     expect(result.status).toBe(1);
     expect(result.stderr).toMatch(/auth debug logging/);
   });
+
+  it("strict release mode requires frontend crash reporting DSN", () => {
+    const result = runScan({
+      GROWPATH_STRICT_RELEASE: "1",
+      EXPO_PUBLIC_SENTRY_DSN: ""
+    });
+
+    expect(result.status).toBe(1);
+    expect(result.stderr).toMatch(/frontend crash reporting DSN/);
+  });
 });

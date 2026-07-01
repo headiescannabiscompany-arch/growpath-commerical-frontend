@@ -2,6 +2,7 @@ import React from "react";
 import { View, Text, StyleSheet, TouchableOpacity } from "react-native";
 import { MaterialCommunityIcons } from "@expo/vector-icons";
 import { Colors, Typography, Spacing } from "../theme/theme.js";
+import { captureException } from "../utils/monitoring";
 
 /**
  * ErrorBoundary Component
@@ -28,6 +29,10 @@ class ErrorBoundary extends React.Component {
       errorInfo
     });
     console.error("ErrorBoundary caught:", error, errorInfo);
+    captureException(error, {
+      boundary: "legacy",
+      componentStack: errorInfo?.componentStack
+    });
   }
 
   handleReset = () => {

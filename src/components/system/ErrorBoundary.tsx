@@ -1,5 +1,6 @@
 import React from "react";
 import { View, Text } from "react-native";
+import { captureException } from "@/utils/monitoring";
 
 export class ErrorBoundary extends React.Component<
   { children: React.ReactNode; label?: string },
@@ -19,6 +20,7 @@ export class ErrorBoundary extends React.Component<
 
   componentDidCatch(err: unknown) {
     console.error("[ErrorBoundary]", this.props.label || "boundary", err);
+    captureException(err, { boundary: this.props.label || "boundary" });
   }
 
   render() {

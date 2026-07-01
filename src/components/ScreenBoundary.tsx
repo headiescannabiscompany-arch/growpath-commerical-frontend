@@ -1,5 +1,6 @@
 import React from "react";
 import { Text, ScrollView } from "react-native";
+import { captureException } from "@/utils/monitoring";
 
 type Props = {
   name?: string;
@@ -20,6 +21,7 @@ export class ScreenBoundary extends React.PureComponent<Props, State> {
     // Deterministic, visible logging
     const label = this.props.name || this.props.title || "UnknownScreen";
     console.error(`[SCREEN_CRASH] ${label}`, error, info);
+    captureException(error, { screen: label, componentStack: info?.componentStack });
   }
 
   render() {

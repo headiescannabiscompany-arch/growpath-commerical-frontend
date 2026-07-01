@@ -88,6 +88,8 @@ const releaseLinks = [
   }
 ];
 
+const strictRelease = process.env.GROWPATH_STRICT_RELEASE === "1";
+
 function readExpoExtra() {
   const appJsonPath = path.join(ROOT, "app.json");
   if (!fs.existsSync(appJsonPath)) return {};
@@ -132,6 +134,35 @@ function validateAndroidPermissions() {
       line: 1,
       check: "valid app.json",
       value: err?.message || String(err)
+    });
+  }
+}
+
+function validateFrontendMonitoring(extra) {
+  const dsn = String(process.env.EXPO_PUBLIC_SENTRY_DSN || extra.SENTRY_DSN || "");
+  if (!strictRelease && !dsn) return;
+
+  if (!dsn) {
+    violations.push({
+      file: "eas.json",
+      line: 1,
+      check: "frontend crash reporting DSN",
+      value: "missing EXPO_PUBLIC_SENTRY_DSN"
+    });
+    return;
+  }
+
+  try {
+    const parsed = new URL(dsn);
+    if (parsed.protocol !== "https:" || parsed.hostname === "example.com") {
+      throw new Error("invalid production DSN");
+    }
+  } catch {
+    violations.push({
+      file: "eas.json",
+      line: 1,
+      check: "frontend crash reporting DSN must be production https",
+      value: dsn
     });
   }
 }
@@ -211,6 +242,7 @@ const files = SEARCH_ROOTS.flatMap((root) => walk(root));
 const expoExtra = readExpoExtra();
 
 validateAndroidPermissions();
+validateFrontendMonitoring(expoExtra);
 
 for (const link of releaseLinks) {
   validateReleaseLink(link, expoExtra);

@@ -9,8 +9,10 @@ import { EntitlementsProvider } from "../entitlements/EntitlementsProvider";
 import { FacilityProvider } from "../facility/FacilityProvider";
 import { GlobalApiStatusBanner } from "../components/GlobalApiStatusBanner";
 import { RouteAccessGuard } from "../navigation/RouteAccessGuard";
+import { initMonitoring, wrapWithMonitoring } from "@/utils/monitoring";
 
 initUnauthorizedHandler();
+initMonitoring();
 
 const queryClient = new QueryClient({
   defaultOptions: {
@@ -20,7 +22,7 @@ const queryClient = new QueryClient({
   }
 });
 
-export default function RootLayout() {
+function RootLayout() {
   useEffect(() => {
     if (process.env.EXPO_PUBLIC_E2E === "1") {
       (globalThis as any).__E2E__ = { ready: true };
@@ -48,3 +50,5 @@ export default function RootLayout() {
     </QueryClientProvider>
   );
 }
+
+export default wrapWithMonitoring(RootLayout);
