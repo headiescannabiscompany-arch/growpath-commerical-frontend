@@ -1,8 +1,6 @@
 #!/usr/bin/env node
 
-const https = require("https");
 const { spawnSync } = require("child_process");
-const fs = require("fs");
 const path = require("path");
 
 const ROOT = path.resolve(__dirname, "..");
@@ -31,77 +29,6 @@ function run(label, command, args, options = {}) {
   }
 }
 
-function readJson(file) {
-  return JSON.parse(fs.readFileSync(path.join(ROOT, file), "utf8"));
-}
-
-function productionEnv() {
-  const eas = readJson("eas.json");
-  return eas?.build?.production?.env || {};
-}
-
-function urlFromEnv(name, fallback) {
-  return process.env[name] || productionEnv()[name] || fallback;
-}
-
-function liveUrls() {
-  const apiBase = urlFromEnv("EXPO_PUBLIC_API_URL", "https://api.growpathai.com").replace(
-    /\/$/,
-    ""
-  );
-  return [
-    urlFromEnv("EXPO_PUBLIC_PRIVACY_URL", "https://growpathai.com/privacy"),
-    urlFromEnv("EXPO_PUBLIC_TERMS_URL", "https://growpathai.com/terms"),
-    urlFromEnv("EXPO_PUBLIC_SUPPORT_URL", "https://growpathai.com/support"),
-    urlFromEnv("EXPO_PUBLIC_DELETE_ACCOUNT_URL", "https://growpathai.com/account/delete"),
-    `${apiBase}/health`,
-    `${apiBase}/ready`,
-    `${apiBase}/api/health`
-  ];
-}
-
-function requestUrl(url, method) {
-  return new Promise((resolve, reject) => {
-    const req = https.request(
-      url,
-      {
-        method,
-        timeout: 20000,
-        headers: {
-          "user-agent": "growpath-release-preflight/1.0"
-        }
-      },
-      (res) => {
-        res.resume();
-        res.on("end", () => resolve(res.statusCode || 0));
-      }
-    );
-    req.on("timeout", () => {
-      req.destroy(new Error(`timeout checking ${url}`));
-    });
-    req.on("error", reject);
-    req.end();
-  });
-}
-
-async function checkUrl(url) {
-  let status = await requestUrl(url, "HEAD");
-  if (status === 405 || status === 403) {
-    status = await requestUrl(url, "GET");
-  }
-  if (status < 200 || status >= 400) {
-    throw new Error(`${url} returned HTTP ${status}`);
-  }
-  console.log(`[release-preflight] URL OK ${status}: ${url}`);
-}
-
-async function checkLiveUrls() {
-  console.log("\n[release-preflight] live production URL checks");
-  for (const url of liveUrls()) {
-    await checkUrl(url);
-  }
-}
-
 async function main() {
   run("release scan", process.execPath, ["scripts/scan-release.cjs"]);
 
@@ -110,7 +37,7 @@ async function main() {
       env: { GROWPATH_STRICT_RELEASE: "1" }
     });
     run("Sentry DSN event check", process.execPath, ["scripts/verify-sentry-dsn.cjs"]);
-    await checkLiveUrls();
+    run("live production URL checks", process.execPath, ["scripts/verify-live-urls.cjs"]);
   }
 
   run("UI route inventory", process.execPath, ["scripts/inventory-ui-routes.cjs"]);

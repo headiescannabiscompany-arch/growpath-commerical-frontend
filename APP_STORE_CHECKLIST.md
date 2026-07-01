@@ -38,7 +38,8 @@
 - [ ] Legal approval for cannabis-related language.
 - [ ] Release-owner approval for final app name, subtitle, keywords, age rating, and review notes.
 - [ ] Confirm support, privacy, terms, delete-account, marketing, and API health
-      URLs are live from a release machine with working TLS.
+      URLs are live from a release machine with working TLS. Procedure:
+      `docs/live-url-verification.md`.
 - [ ] Complete iOS privacy nutrition labels.
 - [ ] Complete Google Play data safety form.
 - [x] Source-derived privacy/data-safety answer set exists at

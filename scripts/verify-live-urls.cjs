@@ -1,0 +1,162 @@
+#!/usr/bin/env node
+
+const fs = require("fs");
+const path = require("path");
+
+const ROOT = path.resolve(__dirname, "..");
+const dryRun = process.argv.includes("--dry-run");
+
+function env(name) {
+  return String(process.env[name] || "").trim();
+}
+
+function readJson(file) {
+  return JSON.parse(fs.readFileSync(path.join(ROOT, file), "utf8"));
+}
+
+function productionEnv() {
+  const eas = readJson("eas.json");
+  return eas?.build?.production?.env || {};
+}
+
+function urlFromEnv(name, fallback) {
+  return env(name) || productionEnv()[name] || fallback;
+}
+
+function expectedUrls() {
+  const apiBase = urlFromEnv("EXPO_PUBLIC_API_URL", "https://api.growpathai.com").replace(
+    /\/$/,
+    ""
+  );
+  return [
+    {
+      name: "privacy",
+      url: urlFromEnv("EXPO_PUBLIC_PRIVACY_URL", "https://growpathai.com/privacy")
+    },
+    {
+      name: "terms",
+      url: urlFromEnv("EXPO_PUBLIC_TERMS_URL", "https://growpathai.com/terms")
+    },
+    {
+      name: "support",
+      url: urlFromEnv("EXPO_PUBLIC_SUPPORT_URL", "https://growpathai.com/support")
+    },
+    {
+      name: "delete-account",
+      url: urlFromEnv(
+        "EXPO_PUBLIC_DELETE_ACCOUNT_URL",
+        "https://growpathai.com/account/delete"
+      )
+    },
+    { name: "api-health", url: `${apiBase}/health` },
+    { name: "api-ready", url: `${apiBase}/ready` },
+    { name: "api-health-api", url: `${apiBase}/api/health` }
+  ];
+}
+
+function validateProductionUrl(entry) {
+  let parsed;
+  try {
+    parsed = new URL(entry.url);
+  } catch {
+    throw new Error(`${entry.name} is not a valid URL: ${entry.url}`);
+  }
+
+  const host = parsed.hostname.toLowerCase();
+  const isLocal =
+    host === "localhost" ||
+    host === "127.0.0.1" ||
+    /^192\.168\./.test(host) ||
+    /^10\./.test(host);
+  const isPlaceholder =
+    host === "example.com" ||
+    host.endsWith(".example.com") ||
+    entry.url.includes("TODO") ||
+    entry.url.includes("REPLACE_ME");
+
+  if (parsed.protocol !== "https:" || isLocal || isPlaceholder) {
+    throw new Error(`${entry.name} must be production https: ${entry.url}`);
+  }
+}
+
+async function requestUrl(entry, method) {
+  const controller = new AbortController();
+  const timeout = setTimeout(() => controller.abort(), 20000);
+  try {
+    const response = await fetch(entry.url, {
+      method,
+      redirect: "follow",
+      signal: controller.signal,
+      headers: {
+        "User-Agent": "growpath-release-url-verifier/1.0"
+      }
+    });
+    await response.arrayBuffer();
+    return {
+      status: response.status,
+      finalUrl: response.url || entry.url
+    };
+  } finally {
+    clearTimeout(timeout);
+  }
+}
+
+async function checkUrl(entry) {
+  let result = await requestUrl(entry, "HEAD");
+  if (result.status === 403 || result.status === 405) {
+    result = await requestUrl(entry, "GET");
+  }
+  if (result.status < 200 || result.status >= 400) {
+    throw new Error(`${entry.name} returned HTTP ${result.status}: ${entry.url}`);
+  }
+  console.log(`[live-url] OK ${result.status} ${entry.name}: ${entry.url}`);
+  return {
+    name: entry.name,
+    url: entry.url,
+    status: result.status,
+    finalUrl: result.finalUrl
+  };
+}
+
+function writeEvidence(results) {
+  const outputDir = path.join(ROOT, "tmp", "spec", "live-url-checks");
+  fs.mkdirSync(outputDir, { recursive: true });
+  const stamp = new Date().toISOString().replace(/[:.]/g, "-");
+  const outputPath = path.join(outputDir, `${stamp}.json`);
+  fs.writeFileSync(
+    outputPath,
+    `${JSON.stringify(
+      {
+        status: "passed",
+        checkedAt: new Date().toISOString(),
+        results
+      },
+      null,
+      2
+    )}\n`
+  );
+  return path.relative(ROOT, outputPath);
+}
+
+async function main() {
+  const urls = expectedUrls();
+  urls.forEach(validateProductionUrl);
+
+  if (dryRun) {
+    urls.forEach((entry) => console.log(`[live-url] configured ${entry.name}: ${entry.url}`));
+    console.log("Live URL dry run passed.");
+    return;
+  }
+
+  const results = [];
+  for (const entry of urls) {
+    results.push(await checkUrl(entry));
+  }
+  const evidencePath = writeEvidence(results);
+  console.log(`Live URL verification passed. Evidence: ${evidencePath}`);
+}
+
+main().catch((err) => {
+  console.error(`Live URL verification failed: ${err?.message || err}`);
+  process.exit(1);
+});

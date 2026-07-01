@@ -24,6 +24,7 @@ inside this workspace.
 - `docs/store-assets-evidence-2026-07-01.md`
 - `docs/data-rights-live-verification.md`
 - `docs/monitoring-verification.md`
+- `docs/live-url-verification.md`
 
 Note: older root-level historical verification notes such as
 `FINAL_VERIFICATION_CHECKLIST.md` and `STATUS_REALITY_CHECK.md` contain stale
@@ -151,13 +152,7 @@ curl: (35) schannel: AcquireCredentialsHandle failed: SEC_E_NO_CREDENTIALS
 Required release-machine check before production build:
 
 ```powershell
-curl.exe -I -L https://growpathai.com/privacy
-curl.exe -I -L https://growpathai.com/terms
-curl.exe -I -L https://growpathai.com/support
-curl.exe -I -L https://growpathai.com/account/delete
-curl.exe -I -L https://api.growpathai.com/health
-curl.exe -I -L https://api.growpathai.com/ready
-curl.exe -I -L https://api.growpathai.com/api/health
+npm.cmd run verify:live-urls
 ```
 
 Expected result: each URL returns HTTP 200 or a deliberate production redirect
