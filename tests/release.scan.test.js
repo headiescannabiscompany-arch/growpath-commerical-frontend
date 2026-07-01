@@ -34,6 +34,28 @@ describe("release scan", () => {
     expect(result.stderr).toMatch(/Privacy URL must be production https/);
   });
 
+  it("rejects local production API URLs", () => {
+    const tempRoot = fs.mkdtempSync(path.join(os.tmpdir(), "growpath-release-scan-"));
+    fs.cpSync(root, tempRoot, {
+      recursive: true,
+      filter: (source) => !source.includes(`${path.sep}node_modules${path.sep}`)
+    });
+
+    const easPath = path.join(tempRoot, "eas.json");
+    const easJson = JSON.parse(fs.readFileSync(easPath, "utf8"));
+    easJson.build.production.env.EXPO_PUBLIC_API_URL = "http://127.0.0.1:5002";
+    fs.writeFileSync(easPath, JSON.stringify(easJson, null, 2));
+
+    const result = spawnSync(process.execPath, [path.join(tempRoot, "scripts", "scan-release.cjs")], {
+      cwd: tempRoot,
+      encoding: "utf8",
+      env: { ...process.env, EXPO_PUBLIC_API_URL: "" }
+    });
+
+    expect(result.status).toBe(1);
+    expect(result.stderr).toMatch(/production API URL must be production https/);
+  });
+
   it("rejects broad Android storage permissions", () => {
     const tempRoot = fs.mkdtempSync(path.join(os.tmpdir(), "growpath-release-scan-"));
     fs.cpSync(root, tempRoot, {
@@ -97,6 +119,26 @@ describe("release scan", () => {
 
     expect(result.status).toBe(1);
     expect(result.stderr).toMatch(/legacy privacy API endpoint/);
+  });
+
+  it("scans all source folders for hardcoded local URLs", () => {
+    const tempRoot = fs.mkdtempSync(path.join(os.tmpdir(), "growpath-release-scan-"));
+    fs.cpSync(root, tempRoot, {
+      recursive: true,
+      filter: (source) => !source.includes(`${path.sep}node_modules${path.sep}`)
+    });
+
+    const sourcePath = path.join(tempRoot, "src", "utils", "releaseLeak.ts");
+    fs.writeFileSync(sourcePath, "export const leak = 'http://127.0.0.1:5002';\n");
+
+    const result = spawnSync(process.execPath, [path.join(tempRoot, "scripts", "scan-release.cjs")], {
+      cwd: tempRoot,
+      encoding: "utf8",
+      env: process.env
+    });
+
+    expect(result.status).toBe(1);
+    expect(result.stderr).toMatch(/hardcoded local URL/);
   });
 
   it("strict release mode requires frontend crash reporting DSN", () => {

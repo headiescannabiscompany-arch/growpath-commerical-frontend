@@ -7,14 +7,7 @@ const ROOT = path.resolve(__dirname, "..");
 const SEARCH_ROOTS = [
   "app.json",
   "eas.json",
-  "src/app",
-  "src/api",
-  "src/auth",
-  "src/components",
-  "src/config",
-  "src/features",
-  "src/hooks",
-  "src/screens"
+  "src"
 ];
 const SOURCE_EXTENSIONS = new Set([".js", ".jsx", ".ts", ".tsx", ".json"]);
 
@@ -62,6 +55,10 @@ const checks = [
   {
     name: "legacy privacy API endpoint",
     pattern: /\/api\/privacy\/(?:export|delete)\b/g
+  },
+  {
+    name: "public environment variable exposes secret-like value",
+    pattern: /\bEXPO_PUBLIC_[A-Z0-9_]*(?:SECRET|PRIVATE|TOKEN|PASSWORD|CLIENT_SECRET)[A-Z0-9_]*\b/g
   }
 ];
 
@@ -111,6 +108,23 @@ function readExpoExtra() {
   }
 }
 
+function readEasProductionEnv() {
+  const easPath = path.join(ROOT, "eas.json");
+  if (!fs.existsSync(easPath)) return {};
+  try {
+    const easJson = JSON.parse(fs.readFileSync(easPath, "utf8"));
+    return easJson?.build?.production?.env || {};
+  } catch (err) {
+    violations.push({
+      file: "eas.json",
+      line: 1,
+      check: "valid eas.json",
+      value: err?.message || String(err)
+    });
+    return {};
+  }
+}
+
 function validateAndroidPermissions() {
   const appJsonPath = path.join(ROOT, "app.json");
   if (!fs.existsSync(appJsonPath)) return;
@@ -139,6 +153,37 @@ function validateAndroidPermissions() {
       check: "valid app.json",
       value: err?.message || String(err)
     });
+  }
+}
+
+function validateProductionHttpsUrl({ file, line = 1, check, value }) {
+  if (!value) {
+    violations.push({ file, line, check, value: "missing" });
+    return;
+  }
+
+  let parsed;
+  try {
+    parsed = new URL(value);
+  } catch {
+    violations.push({ file, line, check, value });
+    return;
+  }
+
+  const host = parsed.hostname.toLowerCase();
+  const isLocal =
+    host === "localhost" ||
+    host === "127.0.0.1" ||
+    /^192\.168\./.test(host) ||
+    /^10\./.test(host);
+  const isPlaceholder =
+    host === "example.com" ||
+    host.endsWith(".example.com") ||
+    value.includes("TODO") ||
+    value.includes("REPLACE_ME");
+
+  if (parsed.protocol !== "https:" || isLocal || isPlaceholder) {
+    violations.push({ file, line, check, value });
   }
 }
 
@@ -171,51 +216,22 @@ function validateFrontendMonitoring(extra) {
   }
 }
 
+function validateProductionApiUrl(easEnv) {
+  const value = String(easEnv.EXPO_PUBLIC_API_URL || process.env.EXPO_PUBLIC_API_URL || "");
+  validateProductionHttpsUrl({
+    file: "eas.json",
+    check: "production API URL must be production https",
+    value
+  });
+}
+
 function validateReleaseLink(link, extra) {
   const value = String(process.env[link.env] || extra[link.extra] || link.fallback || "");
-  if (!value) {
-    violations.push({
-      file: "src/config/config.ts",
-      line: 1,
-      check: link.name,
-      value: "missing"
-    });
-    return;
-  }
-
-  let parsed;
-  try {
-    parsed = new URL(value);
-  } catch (err) {
-    violations.push({
-      file: "src/config/config.ts",
-      line: 1,
-      check: link.name,
-      value
-    });
-    return;
-  }
-
-  const host = parsed.hostname.toLowerCase();
-  const isLocal =
-    host === "localhost" ||
-    host === "127.0.0.1" ||
-    /^192\.168\./.test(host) ||
-    /^10\./.test(host);
-  const isPlaceholder =
-    host === "example.com" ||
-    host.endsWith(".example.com") ||
-    value.includes("TODO") ||
-    value.includes("REPLACE_ME");
-
-  if (parsed.protocol !== "https:" || isLocal || isPlaceholder) {
-    violations.push({
-      file: "src/config/config.ts",
-      line: 1,
-      check: `${link.name} must be production https`,
-      value
-    });
-  }
+  validateProductionHttpsUrl({
+    file: "src/config/config.ts",
+    check: `${link.name} must be production https`,
+    value
+  });
 }
 
 function walk(target, files = []) {
@@ -244,9 +260,11 @@ function lineFor(text, index) {
 const violations = [];
 const files = SEARCH_ROOTS.flatMap((root) => walk(root));
 const expoExtra = readExpoExtra();
+const easProductionEnv = readEasProductionEnv();
 
 validateAndroidPermissions();
 validateFrontendMonitoring(expoExtra);
+validateProductionApiUrl(easProductionEnv);
 
 for (const link of releaseLinks) {
   validateReleaseLink(link, expoExtra);
