@@ -1,6 +1,6 @@
 import React from "react";
 import { Image } from "react-native";
-import { render, waitFor } from "@testing-library/react-native";
+import { fireEvent, render, waitFor } from "@testing-library/react-native";
 
 import LogDetailScreen from "@/app/home/personal/(tabs)/logs/[logId]";
 import { API_URL } from "@/api/apiRequest";
@@ -71,5 +71,17 @@ describe("LogDetailScreen", () => {
     expect(image.props.source).toEqual({
       uri: `${API_URL}/uploads/log-photo.jpg`
     });
+  });
+
+  it("shows a stable fallback when an uploaded log photo cannot load", async () => {
+    const screen = render(<LogDetailScreen />);
+
+    await waitFor(() => expect(mockGetPersonalLog).toHaveBeenCalledWith("log-1"));
+    const image = screen.getByLabelText("Journal photo 1");
+    fireEvent(image, "error");
+
+    expect(screen.getByText("Photo unavailable")).toBeTruthy();
+    expect(screen.getByText("/uploads/log-photo.jpg")).toBeTruthy();
+    expect(screen.getByText("image/jpeg | 1600x1200")).toBeTruthy();
   });
 });

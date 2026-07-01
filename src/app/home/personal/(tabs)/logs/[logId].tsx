@@ -55,6 +55,7 @@ export default function LogDetailScreen() {
   const [saving, setSaving] = useState(false);
   const [deleting, setDeleting] = useState(false);
   const [feedback, setFeedback] = useState("");
+  const [brokenPhotos, setBrokenPhotos] = useState<Record<string, true>>({});
   const [form, setForm] = useState({
     title: "",
     date: "",
@@ -73,6 +74,7 @@ export default function LogDetailScreen() {
     setFeedback("");
     const row = await getPersonalLog(logId);
     setLog(row);
+    setBrokenPhotos({});
     if (row) {
       setForm({
         title: row.title || "",
@@ -241,13 +243,32 @@ export default function LogDetailScreen() {
               <View style={styles.photoGrid}>
                 {log.photos.map((uri, index) => {
                   const meta = log.photoMetadata?.[index];
+                  const photoKey = `${uri}-${index}`;
+                  const resolvedUri = resolveImageUri(uri);
+                  const broken = brokenPhotos[photoKey];
                   return (
-                    <View key={`${uri}-${index}`} style={styles.photoTile}>
-                      <Image
-                        source={{ uri: resolveImageUri(uri) }}
-                        style={[styles.photoThumb, { width: photoTileWidth }]}
-                        resizeMode="cover"
-                      />
+                    <View key={photoKey} style={styles.photoTile}>
+                      {broken ? (
+                        <View style={[styles.photoFallback, { width: photoTileWidth }]}>
+                          <Text style={styles.photoFallbackTitle}>Photo unavailable</Text>
+                          <Text style={styles.photoFallbackText} numberOfLines={2}>
+                            {uri}
+                          </Text>
+                        </View>
+                      ) : (
+                        <Image
+                          source={{ uri: resolvedUri }}
+                          style={[styles.photoThumb, { width: photoTileWidth }]}
+                          resizeMode="cover"
+                          accessibilityLabel={`Journal photo ${index + 1}`}
+                          onError={() =>
+                            setBrokenPhotos((current) => ({
+                              ...current,
+                              [photoKey]: true
+                            }))
+                          }
+                        />
+                      )}
                       <Text style={styles.photoMeta}>
                         {meta?.mimeType || "image"}
                         {meta?.width && meta?.height
@@ -382,6 +403,14 @@ const styles = StyleSheet.create({
     backgroundColor: "#FFFFFF"
   },
   photoThumb: { width: "100%", height: 88, backgroundColor: "#E2E8F0" },
+  photoFallback: {
+    height: 88,
+    backgroundColor: "#FFF7ED",
+    padding: 8,
+    justifyContent: "center"
+  },
+  photoFallbackTitle: { color: "#9A3412", fontWeight: "800", fontSize: 12 },
+  photoFallbackText: { color: "#9A3412", fontSize: 11, marginTop: 3 },
   photoMeta: { padding: 6, color: "#64748B", fontSize: 11, fontWeight: "700" },
   row: { flexDirection: "row", flexWrap: "wrap", gap: 8 },
   primaryButton: {
