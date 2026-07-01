@@ -1,6 +1,8 @@
 import { createPersonalTask } from "@/api/tasks";
 import { createToolRun } from "@/api/toolRuns";
 
+import { getCalculatorVersion } from "./calculatorVersions";
+
 type SaveAndOpenArgs = {
   router: { push: (href: string) => void };
   growId?: string;
@@ -14,6 +16,7 @@ type SaveAndOpenArgs = {
   toolRunId?: string;
   input: Record<string, any>;
   output: Record<string, any>;
+  calculatorVersion?: string;
 };
 
 type SaveAndOpenResult = { ok: true; toolRunId: string } | { ok: false; error: string };
@@ -48,7 +51,8 @@ async function ensureToolRun(args: Omit<SaveAndOpenArgs, "router">) {
       selectedPlantContext: args.selectedPlantContext,
       plantGrowthProfile: args.plantGrowthProfile,
       input: args.input,
-      output: args.output
+      output: args.output,
+      calculatorVersion: args.calculatorVersion || getCalculatorVersion(toolType)
     });
     toolRunId = String(created?._id || created?.id || "").trim();
   }

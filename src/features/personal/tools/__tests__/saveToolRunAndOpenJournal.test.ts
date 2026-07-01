@@ -82,8 +82,31 @@ describe("saveToolRunAndOpenJournal", () => {
         phenoLabel: "early fruiting"
       },
       input: { dliTarget: 35 },
-      output: { requiredPpfd: 810 }
+      output: { requiredPpfd: 810 },
+      calculatorVersion: "ppfd-dli-2026.06"
     });
+  });
+
+  it("allows an explicit calculator version override", async () => {
+    mockedCreateToolRun.mockResolvedValue({ _id: "override-run" });
+    const router = { push: jest.fn() };
+
+    const result = await saveToolRunAndOpenJournal({
+      router,
+      growId: "grow-override",
+      toolKey: "vpd",
+      input: { rh: 64 },
+      output: { vpdKpa: 1.18 },
+      calculatorVersion: "vpd-experiment-2"
+    });
+
+    expect(result).toEqual({ ok: true, toolRunId: "override-run" });
+    expect(mockedCreateToolRun).toHaveBeenCalledWith(
+      expect.objectContaining({
+        toolType: "vpd",
+        calculatorVersion: "vpd-experiment-2"
+      })
+    );
   });
 
   it("creates a source-linked task from an existing tool run", async () => {
@@ -157,6 +180,12 @@ describe("saveToolRunAndOpenJournal", () => {
         sourceType: "tool_run",
         sourceObjectId: "created-run",
         sourceToolRunId: "created-run"
+      })
+    );
+    expect(mockedCreateToolRun).toHaveBeenCalledWith(
+      expect.objectContaining({
+        toolType: "nutrient-chemistry",
+        calculatorVersion: "nutrient-chemistry-2026.06"
       })
     );
   });
