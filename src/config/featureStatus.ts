@@ -1,6 +1,6 @@
 import { CAPABILITY_KEYS } from "@/entitlements/capabilityKeys";
 
-export type FeatureStatus = "implemented" | "beta" | "coming_soon" | "hidden" | "backlog";
+export type FeatureStatus = "implemented" | "beta" | "coming_soon" | "hidden" | "planned";
 
 export type FeatureArea =
   | "personal_navigation"
@@ -11,7 +11,8 @@ export type FeatureArea =
   | "planning_records"
   | "genetics"
   | "lab_tc"
-  | "integrations";
+  | "integrations"
+  | "business_production";
 
 export type FeatureDefinition = {
   key: string;
@@ -250,6 +251,16 @@ export const personalToolFeatures = [
       "Vision path works when configured; full ETGU intake and follow-up remain."
   },
   {
+    key: "tools.grow_log_auto_tagging",
+    title: "Grow Log Auto-Tagging",
+    description: "Suggest tags and insights from grow-log notes, photos, and context.",
+    area: "plant_health",
+    status: "planned",
+    acceptsGrowContext: true,
+    internalNote:
+      "Planned v1 tool. Needs accepted/rejected tag persistence, AI insight save, follow-up task creation, and timeline evidence."
+  },
+  {
     key: "tools.crop_steering",
     title: "Crop Steering",
     description: "Plan irrigation phases, dryback, EC, and steering trials.",
@@ -266,40 +277,40 @@ export const personalToolFeatures = [
     description:
       "Build full soil mixes with base, compost, aeration, minerals, and amendments.",
     area: "water_nutrients",
-    status: "backlog",
+    status: "planned",
     acceptsGrowContext: true,
     internalNote:
-      "Future tool. Needs saveable recipes, release windows, source provenance, cost/batch math, and grow assignment before exposure."
+      "Original planned v1 module. Needs saveable recipes, release windows, source provenance, cost/batch math, and grow assignment before exposure."
   },
   {
     key: "tools.dry_amendment_mix",
     title: "Dry Amendment Mix Builder",
     description: "Blend dry amendments toward target ratios and dose rates.",
     area: "water_nutrients",
-    status: "backlog",
+    status: "planned",
     acceptsGrowContext: true,
     internalNote:
-      "Future tool. Needs ingredient library, release timing, dose-per-volume math, and warnings before exposure."
+      "Original planned v1 module. Needs ingredient library, release timing, dose-per-volume math, and warnings before exposure."
   },
   {
     key: "tools.topdress_planner",
     title: "Topdress Planner",
     description: "Plan topdress amount, timing, release window, and follow-up tasks.",
     area: "water_nutrients",
-    status: "backlog",
+    status: "planned",
     acceptsGrowContext: true,
     internalNote:
-      "Future tool. Needs soil volume, stage, amendment recipe, timing, task creation, and grow log wiring."
+      "Original planned v1 module. Needs soil volume, stage, amendment recipe, timing, task creation, and grow log wiring."
   },
   {
     key: "tools.ph_ec_adjustment",
     title: "pH / EC Adjustment",
     description: "Check pH and EC differences with safe adjustment warnings.",
     area: "water_nutrients",
-    status: "backlog",
+    status: "planned",
     acceptsGrowContext: true,
     internalNote:
-      "Future limited-safety tool. Must not give exact dosing without known product concentration."
+      "Original planned v1 limited-safety module. Must not give exact dosing without known product concentration."
   },
   {
     key: "tools.nutrient_release_chemistry",
@@ -307,10 +318,32 @@ export const personalToolFeatures = [
     description:
       "Compare nutrient forms, release classes, pH effects, and compatibility.",
     area: "water_nutrients",
-    status: "backlog",
+    status: "planned",
     acceptsGrowContext: true,
     internalNote:
-      "Backend/frontend foundation exists in nutrient chemistry, but full source-reviewed tool pages and recipe confidence are backlog."
+      "Backend/frontend foundation exists in nutrient chemistry, but full source-reviewed tool pages and recipe confidence remain planned v1 work."
+  },
+  {
+    key: "tools.nutrient_source_comparison",
+    title: "Nutrient Source Comparison",
+    description:
+      "Compare fast-fix and soil-building nutrient sources by release, pH effect, EC impact, and confidence.",
+    area: "water_nutrients",
+    status: "planned",
+    acceptsGrowContext: true,
+    internalNote:
+      "Planned v1 support tool for nutrient and soil workflows. Needs source-reviewed ingredient data before exposure."
+  },
+  {
+    key: "tools.compatibility_checker",
+    title: "Compatibility Checker",
+    description:
+      "Check recipe and concentrate compatibility risks such as calcium/phosphate precipitation.",
+    area: "water_nutrients",
+    status: "planned",
+    acceptsGrowContext: true,
+    internalNote:
+      "Planned v1 support tool. Some compatibility logic exists in NPK/nutrient chemistry; dedicated saveable workflow remains."
   },
   {
     key: "tools.crop_steering_projects",
@@ -318,41 +351,41 @@ export const personalToolFeatures = [
     description:
       "Track P0/P1/P2/P3, dryback, runoff, substrate EC, and steering response.",
     area: "crop_management",
-    status: "backlog",
+    status: "planned",
     acceptsGrowContext: true,
     internalNote:
-      "Future full workflow. Current direct route stays hidden until projects/runs/log/task/automation/pheno scoring are real."
+      "Original planned v1 full workflow. Current direct route stays hidden until projects/runs/log/task/automation/pheno scoring are real."
   },
   {
     key: "tools.stress_testing",
     title: "Stress Testing",
     description: "Record controlled stress response and recovery scoring.",
     area: "crop_management",
-    status: "backlog",
+    status: "planned",
     acceptsGrowContext: true,
     internalNote:
-      "Future workflow for drought, heat, high VPD, high EC, intersex screening, and keeper-score impact."
+      "Original planned v1 workflow for drought, heat, high VPD, high EC, intersex screening, and keeper-score impact."
   },
   {
     key: "tools.pheno_hunting",
     title: "Pheno Hunting",
     description:
-      "Run staged pheno projects, score plants, and compare keeper candidates.",
+      "Run staged pheno projects, score plants, record photos, sensory notes, lab notes, terpene/flavor notes, and compare keeper candidates.",
     area: "genetics",
-    status: "backlog",
+    status: "planned",
     acceptsGrowContext: true,
     internalNote:
-      "Future full project workflow. The current Pheno Matrix is only a beta local scoring surface."
+      "Original planned v1 project workflow. Pheno starts as structured user notes and scoring; breeding lane and terpene/flavor targets are logged decision-support fields, not separate AI tools."
   },
   {
     key: "tools.genetics_inventory",
     title: "Genetics Inventory / Breeding Planner",
     description:
-      "Track cultivars, parentage, seed batches, breeding lanes, and target traits.",
+      "Track cultivars, parentage, seed batches, breeding lane notes, terpene/flavor targets, project use, and user decisions.",
     area: "genetics",
-    status: "backlog",
+    status: "planned",
     internalNote:
-      "Future genetics inventory and breeding workflow; do not expose until persistence and reporting exist."
+      "Original planned v1 genetics inventory and breeding-notes workflow. Breeding lane and terpene/flavor target data belong here and in pheno records unless a later separate workflow is justified."
   },
   {
     key: "tools.tissue_culture",
@@ -360,28 +393,30 @@ export const personalToolFeatures = [
     description:
       "Track TC projects, explants, media, vessels, transfers, contamination, and acclimation.",
     area: "lab_tc",
-    status: "backlog",
+    status: "planned",
     acceptsGrowContext: true,
-    internalNote: "Future lab workflow. Not built and must not be exposed as complete."
+    internalNote:
+      "Original planned v1 lab workflow. Not built and must not be exposed as complete."
   },
   {
     key: "tools.dry_cure_guard",
     title: "Dry / Cure Guard",
     description: "Track drying room, jar RH, cure status, mold risk, and next actions.",
     area: "planning_records",
-    status: "backlog",
+    status: "planned",
     acceptsGrowContext: true,
-    internalNote: "Future harvest batch workflow; needs dry/cure records and task wiring."
+    internalNote:
+      "Original planned v1 harvest batch workflow; needs dry/cure records and task wiring."
   },
   {
     key: "tools.clone_rooting",
     title: "Clone Rooting Troubleshooter",
     description: "Check clone rooting conditions, bottlenecks, and follow-up tasks.",
     area: "plant_health",
-    status: "backlog",
+    status: "planned",
     acceptsGrowContext: true,
     internalNote:
-      "Future plant-health workflow; needs clone records and cautious diagnosis copy."
+      "Original planned v1 plant-health workflow; needs clone records and cautious diagnosis copy."
   },
   {
     key: "tools.ipm_scout",
@@ -389,10 +424,40 @@ export const personalToolFeatures = [
     description:
       "Record scouting observations, likely organisms, severity, and non-chemical next checks.",
     area: "plant_health",
-    status: "backlog",
+    status: "planned",
     acceptsGrowContext: true,
     internalNote:
-      "Future/beta only after IPM organism library, regional alert rules, and licensed image/provider policy exist. No pesticide dosing."
+      "Original planned v1 IPM support module. Beta only after organism library, regional alert rules, and licensed image/provider policy exist. No pesticide dosing."
+  },
+  {
+    key: "tools.organism_library",
+    title: "Organism Library",
+    description:
+      "Store pests, beneficials, pathogens, weeds, symptoms, hosts, and non-chemical IPM next checks.",
+    area: "plant_health",
+    status: "planned",
+    internalNote:
+      "Planned v1 crop-knowledge foundation for IPM Scout. Needs source records and no pesticide dosing."
+  },
+  {
+    key: "tools.regional_invasive_alerts",
+    title: "Regional Invasive Alerts",
+    description:
+      "Check region-specific invasive, regulated, watchlist, native, or unknown organism status.",
+    area: "plant_health",
+    status: "planned",
+    internalNote:
+      "Planned v1 support tool. Must never claim invasive status without user region and reviewed source records."
+  },
+  {
+    key: "tools.diagnosis_rules",
+    title: "Diagnosis Rules",
+    description:
+      "Manage symptom patterns, crop limits, next checks, evidence, and counter-evidence rules.",
+    area: "plant_health",
+    status: "planned",
+    internalNote:
+      "Planned v1 crop-knowledge foundation for ETGU/IPM. Needs reviewed source records before trusted recommendations."
   },
   {
     key: "tools.species_crop_identification",
@@ -400,9 +465,9 @@ export const personalToolFeatures = [
     description:
       "Identify likely crop/species from user input, image, or video with user confirmation.",
     area: "plant_health",
-    status: "backlog",
+    status: "planned",
     internalNote:
-      "Future/beta only with licensed provider or source-reviewed taxon database. Must require user confirmation before crop-specific recommendations."
+      "Original planned v1 crop-identity support module. Beta only with licensed provider or source-reviewed taxon database. Must require user confirmation before crop-specific recommendations."
   },
   {
     key: "tools.harvest_readiness_ai",
@@ -410,10 +475,10 @@ export const personalToolFeatures = [
     description:
       "Estimate harvest readiness from maturity signals, photos, cultivar timing, and user goals.",
     area: "planning_records",
-    status: "backlog",
+    status: "planned",
     acceptsGrowContext: true,
     internalNote:
-      "Future AI workflow. Current Harvest Estimator remains a beta local estimator, not image readiness AI."
+      "Original planned v1 AI workflow. Current Harvest Estimator remains a beta local estimator, not image readiness AI."
   },
   {
     key: "tools.run_comparison",
@@ -421,9 +486,9 @@ export const personalToolFeatures = [
     description:
       "Compare grows by yield, timing, issues, environment, feeding, quality, and keeper score.",
     area: "planning_records",
-    status: "backlog",
+    status: "planned",
     internalNote:
-      "Future analytics workflow requiring normalized grow outcomes and history."
+      "Original planned v1 analytics workflow requiring normalized grow outcomes and history."
   },
   {
     key: "tools.auto_grow_calendar",
@@ -431,10 +496,10 @@ export const personalToolFeatures = [
     description:
       "Generate stage timelines, task schedules, reminders, and harvest windows.",
     area: "planning_records",
-    status: "backlog",
+    status: "planned",
     acceptsGrowContext: true,
     internalNote:
-      "Future calendar workflow; must create real tasks/events and reload from grow history."
+      "Original planned v1 calendar workflow; must create real tasks/events and reload from grow history."
   },
   {
     key: "tools.product_ingredient_library",
@@ -442,7 +507,7 @@ export const personalToolFeatures = [
     description:
       "Store labels, elemental nutrients, nutrient forms, density, and source confidence.",
     area: "water_nutrients",
-    status: "backlog",
+    status: "planned",
     internalNote:
       "Backend ingredient endpoints exist, but release exposure needs provenance review, source records, and product-label validation."
   },
@@ -452,9 +517,29 @@ export const personalToolFeatures = [
     description:
       "Manage reviewed crop profiles, taxonomy, environment targets, IPM rules, and source records.",
     area: "plant_health",
-    status: "backlog",
+    status: "planned",
     internalNote:
-      "Draft user-entered crop profile flow exists. Admin/source review and seeded licensed data remain backlog."
+      "Draft user-entered crop profile flow exists. Admin/source review and seeded licensed data remain planned v1 work."
+  },
+  {
+    key: "tools.living_soil_batch_production",
+    title: "Living Soil Labs / Batch Production",
+    description:
+      "Estimate soil/amendment batch costs, bag counts, pull sheets, labor, packaging, and margin.",
+    area: "business_production",
+    status: "planned",
+    internalNote:
+      "Planned v1 business/production tool. Needs saved recipes, batch records, inventory, task creation, and exportable batch sheets."
+  },
+  {
+    key: "tools.inventory",
+    title: "Inventory",
+    description:
+      "Track nutrients, amendments, soil inputs, seeds, clones, packaging, and grow supplies.",
+    area: "business_production",
+    status: "planned",
+    internalNote:
+      "Planned v1 business/grow-supplies tool. Needs product-library links, low-stock warnings, reorder tasks, and recipe availability."
   }
 ] as const satisfies readonly FeatureDefinition[];
 

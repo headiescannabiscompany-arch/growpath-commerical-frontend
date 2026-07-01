@@ -42,13 +42,16 @@ describe("personal feature status manifest", () => {
     }
   });
 
-  test("records future tools in the backlog without exposing fake routes", () => {
-    const backlogTools = [
+  test("records planned v1 tools without exposing fake routes", () => {
+    const plannedTools = [
+      "tools.grow_log_auto_tagging",
       "tools.soil_builder",
       "tools.dry_amendment_mix",
       "tools.topdress_planner",
       "tools.ph_ec_adjustment",
       "tools.nutrient_release_chemistry",
+      "tools.nutrient_source_comparison",
+      "tools.compatibility_checker",
       "tools.crop_steering_projects",
       "tools.stress_testing",
       "tools.pheno_hunting",
@@ -57,19 +60,24 @@ describe("personal feature status manifest", () => {
       "tools.dry_cure_guard",
       "tools.clone_rooting",
       "tools.ipm_scout",
+      "tools.organism_library",
+      "tools.regional_invasive_alerts",
+      "tools.diagnosis_rules",
       "tools.species_crop_identification",
       "tools.harvest_readiness_ai",
       "tools.run_comparison",
       "tools.auto_grow_calendar",
       "tools.product_ingredient_library",
-      "tools.crop_profile_database"
+      "tools.crop_profile_database",
+      "tools.living_soil_batch_production",
+      "tools.inventory"
     ];
 
     const navigable = getNavigablePersonalTools();
-    for (const key of backlogTools) {
+    for (const key of plannedTools) {
       const feature = personalToolFeatures.find((item) => item.key === key);
       expect(feature).toBeTruthy();
-      expect(feature?.status).toBe("backlog");
+      expect(feature?.status).toBe("planned");
       expect(feature?.href).toBeUndefined();
       expect(navigable).not.toContain(feature);
     }
@@ -87,6 +95,10 @@ describe("personal feature status manifest", () => {
     expect(byKey["tools.crop_steering_projects"].area).toBe("crop_management");
     expect(byKey["tools.timeline_planner"].area).toBe("planning_records");
     expect(byKey["tools.pheno_matrix"].area).toBe("genetics");
+    expect(byKey["tools.pheno_hunting"].description).toMatch(/terpene\/flavor/i);
+    expect(byKey["tools.genetics_inventory"].description).toMatch(/breeding lane/i);
+    expect(byKey["tools.grow_aware_ai_assistant"]).toBeUndefined();
     expect(byKey["tools.tissue_culture"].area).toBe("lab_tc");
+    expect(byKey["tools.living_soil_batch_production"].area).toBe("business_production");
   });
 });

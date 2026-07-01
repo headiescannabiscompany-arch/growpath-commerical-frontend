@@ -72,7 +72,8 @@ const AREA_ORDER: FeatureArea[] = [
   "planning_records",
   "genetics",
   "lab_tc",
-  "integrations"
+  "integrations",
+  "business_production"
 ];
 
 const AREA_LABELS: Record<FeatureArea, string> = {
@@ -84,7 +85,8 @@ const AREA_LABELS: Record<FeatureArea, string> = {
   planning_records: "Planning & Records",
   genetics: "Genetics & Selection",
   lab_tc: "Lab / Tissue Culture",
-  integrations: "Integrations"
+  integrations: "Integrations",
+  business_production: "Business & Production"
 };
 
 function ToolCard({
