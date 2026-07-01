@@ -1,10 +1,16 @@
 import { createPersonalTask } from "@/api/tasks";
+import { createPersonalLog } from "@/api/logs";
 import { createToolRun } from "@/api/toolRuns";
 
 import {
+  saveToolRunAndCreateLog,
   saveToolRunAndCreateTask,
   saveToolRunAndOpenJournal
 } from "../saveToolRunAndOpenJournal";
+
+jest.mock("@/api/logs", () => ({
+  createPersonalLog: jest.fn()
+}));
 
 jest.mock("@/api/tasks", () => ({
   createPersonalTask: jest.fn()
@@ -17,10 +23,14 @@ jest.mock("@/api/toolRuns", () => ({
 const mockedCreatePersonalTask = createPersonalTask as jest.MockedFunction<
   typeof createPersonalTask
 >;
+const mockedCreatePersonalLog = createPersonalLog as jest.MockedFunction<
+  typeof createPersonalLog
+>;
 const mockedCreateToolRun = createToolRun as jest.MockedFunction<typeof createToolRun>;
 
 describe("saveToolRunAndOpenJournal", () => {
   beforeEach(() => {
+    mockedCreatePersonalLog.mockReset();
     mockedCreatePersonalTask.mockReset();
     mockedCreateToolRun.mockReset();
   });
@@ -188,5 +198,58 @@ describe("saveToolRunAndOpenJournal", () => {
         calculatorVersion: "nutrient-chemistry-2026.06"
       })
     );
+  });
+
+  it("creates a tool run before saving a source-linked grow log", async () => {
+    mockedCreateToolRun.mockResolvedValue({ _id: "log-run-1" });
+    mockedCreatePersonalLog.mockResolvedValue({
+      id: "log-1",
+      growId: "grow-log",
+      toolRunId: "log-run-1",
+      date: "2026-07-01",
+      title: "Environment analysis",
+      notes: "Review VPD and RH.",
+      createdAt: "2026-07-01T00:00:00.000Z",
+      updatedAt: "2026-07-01T00:00:00.000Z"
+    });
+
+    const result = await saveToolRunAndCreateLog({
+      growId: "grow-log",
+      plantId: "plant-log",
+      toolKey: "environment-analysis",
+      input: { vpd: 1.4, humidity: 62 },
+      output: { status: "review", recommendations: ["Increase airflow."] },
+      type: "environment",
+      date: "2026-07-01",
+      title: "Environment analysis",
+      notes: "Review VPD and RH.",
+      tags: ["environment", "ai_analysis"]
+    });
+
+    expect(result).toEqual({
+      ok: true,
+      toolRunId: "log-run-1",
+      logId: "log-1"
+    });
+    expect(mockedCreateToolRun).toHaveBeenCalledWith(
+      expect.objectContaining({
+        toolType: "environment-analysis",
+        growId: "grow-log",
+        plantId: "plant-log",
+        input: { vpd: 1.4, humidity: 62 },
+        output: { status: "review", recommendations: ["Increase airflow."] },
+        calculatorVersion: "environment-analysis-2026.06"
+      })
+    );
+    expect(mockedCreatePersonalLog).toHaveBeenCalledWith({
+      growId: "grow-log",
+      plantId: "plant-log",
+      toolRunId: "log-run-1",
+      type: "environment",
+      date: "2026-07-01",
+      title: "Environment analysis",
+      notes: "Review VPD and RH.",
+      tags: ["environment", "ai_analysis"]
+    });
   });
 });

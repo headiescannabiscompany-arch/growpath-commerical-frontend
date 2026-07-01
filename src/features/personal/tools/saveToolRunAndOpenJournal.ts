@@ -1,4 +1,5 @@
 import { createPersonalTask } from "@/api/tasks";
+import { createPersonalLog } from "@/api/logs";
 import { createToolRun } from "@/api/toolRuns";
 
 import { getCalculatorVersion } from "./calculatorVersions";
@@ -28,6 +29,16 @@ type CreateTaskArgs = Omit<SaveAndOpenArgs, "router"> & {
 };
 type CreateTaskResult =
   | { ok: true; toolRunId: string; taskId: string }
+  | { ok: false; error: string };
+type CreateLogArgs = Omit<SaveAndOpenArgs, "router"> & {
+  title: string;
+  notes?: string;
+  type?: string;
+  date?: string;
+  tags?: string[];
+};
+type CreateLogResult =
+  | { ok: true; toolRunId: string; logId: string }
   | { ok: false; error: string };
 
 async function ensureToolRun(args: Omit<SaveAndOpenArgs, "router">) {
@@ -107,4 +118,26 @@ export async function saveToolRunAndCreateTask(
   const taskId = String((task as any)?._id || task?.id || "").trim();
   if (!taskId) return { ok: false, error: "Unable to create task from tool run." };
   return { ok: true, toolRunId: ensured.toolRunId, taskId };
+}
+
+export async function saveToolRunAndCreateLog(
+  args: CreateLogArgs
+): Promise<CreateLogResult> {
+  const growId = String(args.growId || "").trim();
+  const ensured = await ensureToolRun(args);
+  if (!ensured.ok) return ensured;
+
+  const log = await createPersonalLog({
+    growId,
+    plantId: args.plantId,
+    toolRunId: ensured.toolRunId,
+    type: args.type,
+    date: args.date,
+    title: args.title,
+    notes: args.notes,
+    tags: args.tags
+  });
+  const logId = String((log as any)?._id || log?.id || "").trim();
+  if (!logId) return { ok: false, error: "Unable to save tool run to grow log." };
+  return { ok: true, toolRunId: ensured.toolRunId, logId };
 }

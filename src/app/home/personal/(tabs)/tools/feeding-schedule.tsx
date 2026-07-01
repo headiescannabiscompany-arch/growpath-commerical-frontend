@@ -3,7 +3,6 @@ import { useLocalSearchParams } from "expo-router";
 import { Pressable, ScrollView, StyleSheet, Text, TextInput, View } from "react-native";
 
 import { generateSchedule } from "@/api/feeding";
-import { createPersonalLog } from "@/api/logs";
 import BackButton from "@/components/nav/BackButton";
 import { CAPABILITY_KEYS, useEntitlements } from "@/entitlements";
 import LockedToolCard from "@/features/personal/tools/LockedToolCard";
@@ -12,7 +11,10 @@ import {
   useToolPlantContext
 } from "@/features/personal/tools/ToolPlantContextPicker";
 import ToolResultSurface from "@/features/personal/tools/ToolResultSurface";
-import { saveToolRunAndCreateTask } from "@/features/personal/tools/saveToolRunAndOpenJournal";
+import {
+  saveToolRunAndCreateLog,
+  saveToolRunAndCreateTask
+} from "@/features/personal/tools/saveToolRunAndOpenJournal";
 
 function coerceParam(value?: string | string[]) {
   if (typeof value === "string") return value;
@@ -95,9 +97,19 @@ export default function FeedingScheduleToolScreen() {
 
   async function saveLog() {
     if (!growId || !result) throw new Error("Select a grow before saving.");
-    const created = await createPersonalLog({
+    const input = {
+      nutrientData: { productName: productName.trim() },
+      growMedium: medium.trim(),
+      strainType: strainType.trim(),
+      experience: experience.trim(),
+      weeks: Number(weeks)
+    };
+    const created = await saveToolRunAndCreateLog({
       growId,
-      plantId: plantContext.toolRunContext.plantId,
+      ...plantContext.toolRunContext,
+      toolKey: "feeding-schedule",
+      input,
+      output: result,
       type: "feed",
       date: new Date().toISOString().slice(0, 10),
       title: `${productName.trim() || "Nutrient"} feeding schedule`,
@@ -120,7 +132,7 @@ export default function FeedingScheduleToolScreen() {
         .join("\n"),
       tags: ["feeding", "ai_schedule"]
     });
-    if (!created) throw new Error("Unable to save feeding schedule to journal.");
+    if (!created.ok) throw new Error(created.error);
     setFeedback("Saved feeding schedule to grow journal.");
   }
 

@@ -3,7 +3,6 @@ import { useLocalSearchParams } from "expo-router";
 import { Pressable, ScrollView, StyleSheet, Text, TextInput, View } from "react-native";
 
 import { analyzeEnvironment } from "@/api/environment";
-import { createPersonalLog } from "@/api/logs";
 import BackButton from "@/components/nav/BackButton";
 import { CAPABILITY_KEYS, useEntitlements } from "@/entitlements";
 import {
@@ -15,7 +14,10 @@ import {
   buildEnvironmentContextNotices
 } from "@/features/personal/tools/environmentContext";
 import ToolResultSurface from "@/features/personal/tools/ToolResultSurface";
-import { saveToolRunAndCreateTask } from "@/features/personal/tools/saveToolRunAndOpenJournal";
+import {
+  saveToolRunAndCreateLog,
+  saveToolRunAndCreateTask
+} from "@/features/personal/tools/saveToolRunAndOpenJournal";
 
 function coerceParam(value?: string | string[]) {
   if (typeof value === "string") return value;
@@ -127,9 +129,22 @@ export default function EnvironmentAnalysisToolScreen() {
     if (!growId || !result) throw new Error("Select a grow before saving.");
     const issues = list(assessment.issues);
     const riskFlags = list(assessment.riskFlags);
-    const created = await createPersonalLog({
+    const created = await saveToolRunAndCreateLog({
       growId,
-      plantId: plantContext.toolRunContext.plantId,
+      ...plantContext.toolRunContext,
+      toolKey: "environment-analysis",
+      input: {
+        stage,
+        tempDayC: numeric(tempDayC),
+        tempNightC: numeric(tempNightC),
+        humidity: numeric(humidity),
+        vpd: numeric(vpd),
+        ppfd: numeric(ppfd),
+        dli: numeric(dli),
+        co2: numeric(co2),
+        lightHours: numeric(lightHours)
+      },
+      output: result,
       type: "environment",
       date: new Date().toISOString().slice(0, 10),
       title: `Environment analysis: ${assessment.status || stage}`,
@@ -150,7 +165,7 @@ export default function EnvironmentAnalysisToolScreen() {
         .join("\n"),
       tags: ["environment", "ai_analysis"]
     });
-    if (!created) throw new Error("Unable to save environment analysis to journal.");
+    if (!created.ok) throw new Error(created.error);
     setFeedback("Saved environment analysis to grow journal.");
   }
 
