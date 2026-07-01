@@ -12,6 +12,8 @@ async function installMocks(page: any) {
   let exportCalls = 0;
   let deleteCalls = 0;
   let deletePayload: any = null;
+  let exportAuthHeader = "";
+  let deleteAuthHeader = "";
   await page.addInitScript(() => {
     window.localStorage.setItem("auth_token_v1", "profile-privacy-token");
     window.localStorage.setItem("seenOnboardingCarousel", "true");
@@ -22,6 +24,8 @@ async function installMocks(page: any) {
   await page.exposeFunction("getExportCalls", () => exportCalls);
   await page.exposeFunction("getDeleteCalls", () => deleteCalls);
   await page.exposeFunction("getDeletePayload", () => deletePayload);
+  await page.exposeFunction("getExportAuthHeader", () => exportAuthHeader);
+  await page.exposeFunction("getDeleteAuthHeader", () => deleteAuthHeader);
 
   await page.route("**/api/**", async (route: any) => {
     const request = route.request();
@@ -52,8 +56,17 @@ async function installMocks(page: any) {
       });
     }
 
-    if (method === "GET" && url.pathname === "/api/privacy/export") {
+    if (url.pathname.startsWith("/api/privacy/")) {
+      return fulfillJson(
+        route,
+        { error: { message: "Legacy privacy endpoint must not be used" } },
+        410
+      );
+    }
+
+    if (method === "GET" && url.pathname === "/api/account/export") {
       exportCalls += 1;
+      exportAuthHeader = request.headers().authorization || "";
       return fulfillJson(route, {
         exportedAt: "2026-06-30T00:00:00.000Z",
         user: { email: "privacy@example.com" },
@@ -64,8 +77,9 @@ async function installMocks(page: any) {
       });
     }
 
-    if (method === "DELETE" && url.pathname === "/api/privacy/delete") {
+    if (method === "DELETE" && url.pathname === "/api/account/delete") {
       deleteCalls += 1;
+      deleteAuthHeader = request.headers().authorization || "";
       deletePayload = request.postDataJSON();
       return fulfillJson(route, {
         ok: true,
@@ -100,6 +114,9 @@ test.describe("profile privacy controls", () => {
       await page.getByRole("button", { name: "Export account data" }).click();
       await expect(page.getByText("Data export downloaded.")).toBeVisible();
       await expect(await page.evaluate(() => (window as any).getExportCalls())).toBe(1);
+      await expect(await page.evaluate(() => (window as any).getExportAuthHeader())).toBe(
+        "Bearer profile-privacy-token"
+      );
 
       await page.getByLabel("Delete account confirmation").fill("DELETE");
       await expect(page.getByRole("button", { name: "Delete account" })).toBeEnabled();
@@ -111,6 +128,9 @@ test.describe("profile privacy controls", () => {
       await page.getByRole("button", { name: "Delete account" }).click();
       await expect(page).toHaveURL(/\/login/);
       await expect(await page.evaluate(() => (window as any).getDeleteCalls())).toBe(1);
+      await expect(await page.evaluate(() => (window as any).getDeleteAuthHeader())).toBe(
+        "Bearer profile-privacy-token"
+      );
       await expect(await page.evaluate(() => (window as any).getDeletePayload())).toEqual(
         { reason: "user_requested_from_profile" }
       );

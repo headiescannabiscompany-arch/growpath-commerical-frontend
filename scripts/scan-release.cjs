@@ -58,6 +58,10 @@ const checks = [
   {
     name: "auth debug logging",
     pattern: /Authorization preview|Authorization header present|\[API\] Login (?:request|error)|passwordLength/g
+  },
+  {
+    name: "legacy privacy API endpoint",
+    pattern: /\/api\/privacy\/(?:export|delete)\b/g
   }
 ];
 

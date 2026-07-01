@@ -79,6 +79,26 @@ describe("release scan", () => {
     expect(result.stderr).toMatch(/auth debug logging/);
   });
 
+  it("rejects legacy privacy account endpoints in release source", () => {
+    const tempRoot = fs.mkdtempSync(path.join(os.tmpdir(), "growpath-release-scan-"));
+    fs.cpSync(root, tempRoot, {
+      recursive: true,
+      filter: (source) => !source.includes(`${path.sep}node_modules${path.sep}`)
+    });
+
+    const sourcePath = path.join(tempRoot, "src", "api", "users.js");
+    fs.appendFileSync(sourcePath, "\nconst stale = '/api/privacy/delete';\n");
+
+    const result = spawnSync(process.execPath, [path.join(tempRoot, "scripts", "scan-release.cjs")], {
+      cwd: tempRoot,
+      encoding: "utf8",
+      env: process.env
+    });
+
+    expect(result.status).toBe(1);
+    expect(result.stderr).toMatch(/legacy privacy API endpoint/);
+  });
+
   it("strict release mode requires frontend crash reporting DSN", () => {
     const result = runScan({
       GROWPATH_STRICT_RELEASE: "1",
