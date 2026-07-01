@@ -117,12 +117,12 @@ Current known blockers:
 
 - NOT DONE: iOS production build artifact.
 - Owner: Release Engineering
-- Next action: Run `eas build --profile production --platform ios`.
+- Next action: Run `npm.cmd run release:builds` from a trusted release machine.
 - Evidence target: `tmp/spec/release_builds_2026-06-21.md`
 
 - NOT DONE: Android production build artifact.
 - Owner: Release Engineering
-- Next action: Run `eas build --profile production --platform android`.
+- Next action: Run `npm.cmd run release:builds` from a trusted release machine.
 - Evidence target: `tmp/spec/release_builds_2026-06-21.md`
 
 - NOT DONE: Real-device smoke validation.
@@ -131,6 +131,7 @@ Current known blockers:
   status, permissions, image upload, notifications, offline/error states, and
   logout on physical devices.
 - Evidence target: `tmp/spec/release_device_smoke_2026-06-21.md`
+- Current procedure: `docs/production-build-device-smoke-runbook.md`
 
 - NOT DONE: Live disposable-account data export/delete verification.
 - Owner: QA + Backend

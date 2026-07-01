@@ -39,6 +39,8 @@
     "verify:sentry-dsn": "node scripts/verify-sentry-dsn.cjs",
     "verify:live-urls": "node scripts/verify-live-urls.cjs",
     "verify:data-rights:live": "node scripts/verify-data-rights-live.cjs",
+    "release:builds:dry-run": "node scripts/run-production-builds.cjs",
+    "release:builds": "node scripts/run-production-builds.cjs --execute",
     "verify:manual": "npm run verify:manual:checks && npm run export:web:production",
     "verify:manual:checks": "powershell -NoProfile -ExecutionPolicy Bypass -File scripts/verify-before-manual.ps1",
     "test": "npm run inventory:ui-routes && jest --runInBand",

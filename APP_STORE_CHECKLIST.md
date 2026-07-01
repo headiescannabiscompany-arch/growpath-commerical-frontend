@@ -82,6 +82,7 @@
 - [ ] Validate image upload and CSV export/share behavior.
 - [ ] Validate offline, timeout, and unavailable-server states.
 - [ ] Validate notification permission prompts and fallback states.
+      Procedure: `docs/production-build-device-smoke-runbook.md`.
 
 ## 7. Compliance And Security
 

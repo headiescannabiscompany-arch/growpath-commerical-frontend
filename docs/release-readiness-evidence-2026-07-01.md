@@ -25,6 +25,7 @@ inside this workspace.
 - `docs/data-rights-live-verification.md`
 - `docs/monitoring-verification.md`
 - `docs/live-url-verification.md`
+- `docs/production-build-device-smoke-runbook.md`
 
 Note: older root-level historical verification notes such as
 `FINAL_VERIFICATION_CHECKLIST.md` and `STATUS_REALITY_CHECK.md` contain stale
@@ -168,10 +169,10 @@ outside this local workspace before live testing or store submission.
    the release machine.
 2. Confirm live privacy, terms, support, delete-account, and API health URLs
    from a release machine with working TLS.
-3. Run `eas build --profile production --platform ios` and retain build
-   artifact evidence.
-4. Run `eas build --profile production --platform android` and retain build
-   artifact evidence.
+3. Run `npm.cmd run release:builds` from a trusted release machine and retain
+   iOS/Android build artifact evidence.
+4. Upload iOS and Android production builds to TestFlight / Google Play internal
+   testing.
 5. Execute physical-device smoke on iOS and Android production builds:
    authentication, profile export/delete, personal core loop, photo upload,
    diagnosis, Home alerts, offline/error state, and logout.
