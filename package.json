@@ -42,6 +42,7 @@
     "release:builds:dry-run": "node scripts/run-production-builds.cjs",
     "release:builds": "node scripts/run-production-builds.cjs --execute",
     "release:go-no-go": "node scripts/release-go-no-go.cjs",
+    "release:record-evidence": "node scripts/record-release-evidence.cjs",
     "verify:manual": "npm run verify:manual:checks && npm run export:web:production",
     "verify:manual:checks": "powershell -NoProfile -ExecutionPolicy Bypass -File scripts/verify-before-manual.ps1",
     "test": "npm run inventory:ui-routes && jest --runInBand",

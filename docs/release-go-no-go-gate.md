@@ -42,6 +42,20 @@ packet, then run this gate from the release machine.
 `npm.cmd run release:preflight:strict` writes strict-preflight evidence
 automatically after all strict checks pass.
 
+Use `npm.cmd run release:record-evidence -- <type>` to write guarded evidence
+for manual approval buckets. Supported types are:
+
+- `owners`
+- `legal`
+- `hotfix`
+- `store-submission`
+- `screenshots`
+- `device-smoke`
+- `monitoring`
+
+The recorder requires `GROWPATH_RELEASE_EVIDENCE_CONFIRM=RECORD_RELEASE_EVIDENCE`
+and type-specific environment variables; it refuses blank approvals.
+
 ## Current Expected Result
 
 In this workspace, the gate should currently return `NO-GO` because production
