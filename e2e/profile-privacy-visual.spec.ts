@@ -10,6 +10,8 @@ function fulfillJson(route: any, body: any, status = 200) {
 
 async function installMocks(page: any) {
   let exportCalls = 0;
+  let deleteCalls = 0;
+  let deletePayload: any = null;
   await page.addInitScript(() => {
     window.localStorage.setItem("auth_token_v1", "profile-privacy-token");
     window.localStorage.setItem("seenOnboardingCarousel", "true");
@@ -18,6 +20,8 @@ async function installMocks(page: any) {
   });
 
   await page.exposeFunction("getExportCalls", () => exportCalls);
+  await page.exposeFunction("getDeleteCalls", () => deleteCalls);
+  await page.exposeFunction("getDeletePayload", () => deletePayload);
 
   await page.route("**/api/**", async (route: any) => {
     const request = route.request();
@@ -60,6 +64,18 @@ async function installMocks(page: any) {
       });
     }
 
+    if (method === "DELETE" && url.pathname === "/api/privacy/delete") {
+      deleteCalls += 1;
+      deletePayload = request.postDataJSON();
+      return fulfillJson(route, {
+        ok: true,
+        deleted: true,
+        deletedAt: "2026-07-01T00:00:00.000Z",
+        retainedRecords:
+          "Grow history, logs, and audit-linked records may remain in anonymized form."
+      });
+    }
+
     return fulfillJson(route, { ok: true });
   });
 }
@@ -87,6 +103,17 @@ test.describe("profile privacy controls", () => {
 
       await page.getByLabel("Delete account confirmation").fill("DELETE");
       await expect(page.getByRole("button", { name: "Delete account" })).toBeEnabled();
+
+      page.once("dialog", async (dialog) => {
+        expect(dialog.message()).toContain("anonymizes your account");
+        await dialog.accept();
+      });
+      await page.getByRole("button", { name: "Delete account" }).click();
+      await expect(page).toHaveURL(/\/login/);
+      await expect(await page.evaluate(() => (window as any).getDeleteCalls())).toBe(1);
+      await expect(await page.evaluate(() => (window as any).getDeletePayload())).toEqual(
+        { reason: "user_requested_from_profile" }
+      );
 
       await page.screenshot({
         path: `tmp/screenshots/profile-privacy-${size.name}.png`,

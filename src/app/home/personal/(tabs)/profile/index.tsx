@@ -171,41 +171,53 @@ export default function ProfileScreen() {
     }
   };
 
+  const executeDeleteAccount = async () => {
+    setDeleting(true);
+    setPrivacyFeedback("");
+    setPrivacyError("");
+    try {
+      await deleteAccount("user_requested_from_profile");
+      if (typeof (auth as any).logout === "function") {
+        await (auth as any).logout();
+      } else if (typeof (auth as any).setToken === "function") {
+        (auth as any).setToken(null);
+      }
+      router.replace("/login" as any);
+    } catch (e: any) {
+      setPrivacyError(e?.message || "Unable to delete account.");
+    } finally {
+      setDeleting(false);
+    }
+  };
+
   const handleDeleteAccount = () => {
     if (deleteConfirm.trim().toUpperCase() !== "DELETE") {
       setPrivacyError("Type DELETE to confirm account deletion.");
       return;
     }
 
-    Alert.alert(
-      "Delete account?",
-      "This anonymizes your account, disables active tasks, archives personal grows, and logs you out. Some records may be retained in anonymized form for security, compliance, billing, dispute, or backup retention.",
-      [
-        { text: "Cancel", style: "cancel" },
-        {
-          text: "Delete account",
-          style: "destructive",
-          onPress: async () => {
-            setDeleting(true);
-            setPrivacyFeedback("");
-            setPrivacyError("");
-            try {
-              await deleteAccount("user_requested_from_profile");
-              if (typeof (auth as any).logout === "function") {
-                await (auth as any).logout();
-              } else if (typeof (auth as any).setToken === "function") {
-                (auth as any).setToken(null);
-              }
-              router.replace("/login" as any);
-            } catch (e: any) {
-              setPrivacyError(e?.message || "Unable to delete account.");
-            } finally {
-              setDeleting(false);
-            }
-          }
-        }
-      ]
-    );
+    const message =
+      "This anonymizes your account, disables active tasks, archives personal grows, and logs you out. Some records may be retained in anonymized form for security, compliance, billing, dispute, or backup retention.";
+
+    if (
+      Platform.OS === "web" &&
+      typeof window !== "undefined" &&
+      typeof window.confirm === "function"
+    ) {
+      if (window.confirm(`Delete account?\n\n${message}`)) {
+        executeDeleteAccount();
+      }
+      return;
+    }
+
+    Alert.alert("Delete account?", message, [
+      { text: "Cancel", style: "cancel" },
+      {
+        text: "Delete account",
+        style: "destructive",
+        onPress: executeDeleteAccount
+      }
+    ]);
   };
 
   return (
