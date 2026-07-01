@@ -251,16 +251,6 @@ export const personalToolFeatures = [
       "Vision path works when configured; full ETGU intake and follow-up remain."
   },
   {
-    key: "tools.grow_log_auto_tagging",
-    title: "Grow Log Auto-Tagging",
-    description: "Suggest tags and insights from grow-log notes, photos, and context.",
-    area: "plant_health",
-    status: "planned",
-    acceptsGrowContext: true,
-    internalNote:
-      "Planned v1 tool. Needs accepted/rejected tag persistence, AI insight save, follow-up task creation, and timeline evidence."
-  },
-  {
     key: "tools.crop_steering",
     title: "Crop Steering",
     description: "Plan irrigation phases, dryback, EC, and steering trials.",
@@ -311,39 +301,6 @@ export const personalToolFeatures = [
     acceptsGrowContext: true,
     internalNote:
       "Original planned v1 limited-safety module. Must not give exact dosing without known product concentration."
-  },
-  {
-    key: "tools.nutrient_release_chemistry",
-    title: "Nutrient Release Chemistry",
-    description:
-      "Compare nutrient forms, release classes, pH effects, and compatibility.",
-    area: "water_nutrients",
-    status: "planned",
-    acceptsGrowContext: true,
-    internalNote:
-      "Backend/frontend foundation exists in nutrient chemistry, but full source-reviewed tool pages and recipe confidence remain planned v1 work."
-  },
-  {
-    key: "tools.nutrient_source_comparison",
-    title: "Nutrient Source Comparison",
-    description:
-      "Compare fast-fix and soil-building nutrient sources by release, pH effect, EC impact, and confidence.",
-    area: "water_nutrients",
-    status: "planned",
-    acceptsGrowContext: true,
-    internalNote:
-      "Planned v1 support tool for nutrient and soil workflows. Needs source-reviewed ingredient data before exposure."
-  },
-  {
-    key: "tools.compatibility_checker",
-    title: "Compatibility Checker",
-    description:
-      "Check recipe and concentrate compatibility risks such as calcium/phosphate precipitation.",
-    area: "water_nutrients",
-    status: "planned",
-    acceptsGrowContext: true,
-    internalNote:
-      "Planned v1 support tool. Some compatibility logic exists in NPK/nutrient chemistry; dedicated saveable workflow remains."
   },
   {
     key: "tools.crop_steering_projects",
@@ -430,36 +387,6 @@ export const personalToolFeatures = [
       "Original planned v1 IPM support module. Beta only after organism library, regional alert rules, and licensed image/provider policy exist. No pesticide dosing."
   },
   {
-    key: "tools.organism_library",
-    title: "Organism Library",
-    description:
-      "Store pests, beneficials, pathogens, weeds, symptoms, hosts, and non-chemical IPM next checks.",
-    area: "plant_health",
-    status: "planned",
-    internalNote:
-      "Planned v1 crop-knowledge foundation for IPM Scout. Needs source records and no pesticide dosing."
-  },
-  {
-    key: "tools.regional_invasive_alerts",
-    title: "Regional Invasive Alerts",
-    description:
-      "Check region-specific invasive, regulated, watchlist, native, or unknown organism status.",
-    area: "plant_health",
-    status: "planned",
-    internalNote:
-      "Planned v1 support tool. Must never claim invasive status without user region and reviewed source records."
-  },
-  {
-    key: "tools.diagnosis_rules",
-    title: "Diagnosis Rules",
-    description:
-      "Manage symptom patterns, crop limits, next checks, evidence, and counter-evidence rules.",
-    area: "plant_health",
-    status: "planned",
-    internalNote:
-      "Planned v1 crop-knowledge foundation for ETGU/IPM. Needs reviewed source records before trusted recommendations."
-  },
-  {
     key: "tools.species_crop_identification",
     title: "Species / Crop Identification",
     description:
@@ -500,26 +427,6 @@ export const personalToolFeatures = [
     acceptsGrowContext: true,
     internalNote:
       "Original planned v1 calendar workflow; must create real tasks/events and reload from grow history."
-  },
-  {
-    key: "tools.product_ingredient_library",
-    title: "Product / Ingredient Library",
-    description:
-      "Store labels, elemental nutrients, nutrient forms, density, and source confidence.",
-    area: "water_nutrients",
-    status: "planned",
-    internalNote:
-      "Backend ingredient endpoints exist, but release exposure needs provenance review, source records, and product-label validation."
-  },
-  {
-    key: "tools.crop_profile_database",
-    title: "Crop Profile / Taxon Database",
-    description:
-      "Manage reviewed crop profiles, taxonomy, environment targets, IPM rules, and source records.",
-    area: "plant_health",
-    status: "planned",
-    internalNote:
-      "Draft user-entered crop profile flow exists. Admin/source review and seeded licensed data remain planned v1 work."
   },
   {
     key: "tools.living_soil_batch_production",

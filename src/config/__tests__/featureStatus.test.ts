@@ -44,14 +44,10 @@ describe("personal feature status manifest", () => {
 
   test("records planned v1 tools without exposing fake routes", () => {
     const plannedTools = [
-      "tools.grow_log_auto_tagging",
       "tools.soil_builder",
       "tools.dry_amendment_mix",
       "tools.topdress_planner",
       "tools.ph_ec_adjustment",
-      "tools.nutrient_release_chemistry",
-      "tools.nutrient_source_comparison",
-      "tools.compatibility_checker",
       "tools.crop_steering_projects",
       "tools.stress_testing",
       "tools.pheno_hunting",
@@ -60,15 +56,10 @@ describe("personal feature status manifest", () => {
       "tools.dry_cure_guard",
       "tools.clone_rooting",
       "tools.ipm_scout",
-      "tools.organism_library",
-      "tools.regional_invasive_alerts",
-      "tools.diagnosis_rules",
       "tools.species_crop_identification",
       "tools.harvest_readiness_ai",
       "tools.run_comparison",
       "tools.auto_grow_calendar",
-      "tools.product_ingredient_library",
-      "tools.crop_profile_database",
       "tools.living_soil_batch_production",
       "tools.inventory"
     ];
@@ -98,6 +89,14 @@ describe("personal feature status manifest", () => {
     expect(byKey["tools.pheno_hunting"].description).toMatch(/terpene\/flavor/i);
     expect(byKey["tools.genetics_inventory"].description).toMatch(/breeding lane/i);
     expect(byKey["tools.grow_aware_ai_assistant"]).toBeUndefined();
+    expect(byKey["tools.grow_log_auto_tagging"]).toBeUndefined();
+    expect(byKey["tools.nutrient_source_comparison"]).toBeUndefined();
+    expect(byKey["tools.compatibility_checker"]).toBeUndefined();
+    expect(byKey["tools.organism_library"]).toBeUndefined();
+    expect(byKey["tools.regional_invasive_alerts"]).toBeUndefined();
+    expect(byKey["tools.diagnosis_rules"]).toBeUndefined();
+    expect(byKey["tools.product_ingredient_library"]).toBeUndefined();
+    expect(byKey["tools.crop_profile_database"]).toBeUndefined();
     expect(byKey["tools.tissue_culture"].area).toBe("lab_tc");
     expect(byKey["tools.living_soil_batch_production"].area).toBe("business_production");
   });
