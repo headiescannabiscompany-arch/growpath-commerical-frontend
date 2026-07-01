@@ -105,7 +105,8 @@ function checkExportSanity() {
 
 const placeholderFiles = [
   ...walk(path.join(ROOT, "src", "app")),
-  ...walk(path.join(ROOT, "src", "screens"))
+  ...walk(path.join(ROOT, "src", "screens")),
+  ...walk(path.join(ROOT, "src", "contracts"))
 ];
 
 const corruptionFiles = [

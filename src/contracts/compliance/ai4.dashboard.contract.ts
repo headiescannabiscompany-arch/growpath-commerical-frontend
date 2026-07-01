@@ -31,7 +31,7 @@ export interface AI4DashboardData {
   actionQueue: ActionQueueItem[];
 }
 
-// Example placeholder data
+// Reference fixture data for contract consumers and tests.
 export const exampleAI4DashboardData: AI4DashboardData = {
   complianceStatus: {
     level: "yellow",
