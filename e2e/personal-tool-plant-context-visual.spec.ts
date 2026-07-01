@@ -242,6 +242,30 @@ test.describe("personal tool plant context", () => {
     );
   });
 
+  test("Watering planner shows selected plant size and demand adjustment", async ({
+    page
+  }) => {
+    await page.setViewportSize({ width: 390, height: 844 });
+    await installMocks(page);
+
+    await page.goto(`/home/personal/tools/watering?growId=${GROW.id}`, {
+      waitUntil: "domcontentloaded"
+    });
+
+    await expect(page.getByRole("heading", { name: "Watering Planner" })).toBeVisible();
+    await page.getByRole("button", { name: "Run tool for Olive patio tree" }).click();
+    await expect(page.getByText("Plant adjustment")).toBeVisible();
+    await expect(page.getByText("+15%")).toBeVisible();
+    await expect(
+      page.getByText("canopy 140 cm | observed water demand medium")
+    ).toBeVisible();
+
+    await page.screenshot({
+      path: "tmp/screenshots/personal-tool-plant-context-watering-mobile.png",
+      fullPage: true
+    });
+  });
+
   test("Grow tools page shows plant context on recent runs", async ({ page }) => {
     await page.setViewportSize({ width: 390, height: 844 });
     await installMocks(page);

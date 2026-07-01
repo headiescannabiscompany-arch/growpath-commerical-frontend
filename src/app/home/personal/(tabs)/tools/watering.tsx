@@ -15,6 +15,7 @@ import {
   saveToolRunAndCreateTask,
   saveToolRunAndOpenJournal
 } from "@/features/personal/tools/saveToolRunAndOpenJournal";
+import { buildWateringEstimate } from "@/features/personal/tools/wateringEstimate";
 
 function toNum(value: string, fallback: number) {
   const parsed = Number(value);
@@ -49,17 +50,17 @@ export default function WateringToolScreen() {
   const [feedback, setFeedback] = useState("");
 
   const model = useMemo(() => {
-    const liters = Math.max(0, toNum(potLiters, 0));
-    const runoff = Math.max(0, toNum(runoffPct, 0));
-    const interval = Math.max(1, Math.round(toNum(intervalDays, 1)));
-    const base = liters * 0.22;
-    const target = base * (1 + runoff / 100);
+    const estimate = buildWateringEstimate({
+      potLiters: toNum(potLiters, 0),
+      runoffPct: toNum(runoffPct, 0),
+      intervalDays: toNum(intervalDays, 1),
+      plantGrowthProfile: plantContext.selectedPlantContext?.growthProfile
+    });
     return {
-      targetLiters: target.toFixed(2),
-      perWeekLiters: (target * (7 / interval)).toFixed(2),
-      nextWaterDate: nextDate(interval)
+      ...estimate,
+      nextWaterDate: nextDate(toNum(intervalDays, 1))
     };
-  }, [potLiters, runoffPct, intervalDays]);
+  }, [potLiters, runoffPct, intervalDays, plantContext.selectedPlantContext]);
 
   const input = {
     potLiters: Number(potLiters),
@@ -199,11 +200,21 @@ export default function WateringToolScreen() {
             key: "next-date",
             label: "Next planned date",
             value: model.nextWaterDate
+          },
+          {
+            key: "plant-adjustment",
+            label: "Plant adjustment",
+            value: model.plantAdjustmentLabel,
+            detail:
+              model.plantContextReasons.join(" | ") || "No plant size/demand overlay"
           }
         ]}
         assumptions={[
           "The estimate uses pot volume, runoff target, and a fixed base-volume heuristic.",
-          "Plant size, medium water retention, dryback, climate, and recent watering history are not yet modeled.",
+          model.plantContextApplied
+            ? "Selected plant canopy size and observed water demand adjusted the volume estimate."
+            : "No selected plant size or observed water-demand adjustment was applied.",
+          "Medium water retention, dryback, climate, and recent watering history are not yet fully modeled.",
           "Inspect root-zone moisture and plant condition before watering."
         ]}
         actions={actions}
