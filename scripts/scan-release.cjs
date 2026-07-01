@@ -56,6 +56,97 @@ const checks = [
   }
 ];
 
+const releaseLinks = [
+  {
+    name: "Privacy URL",
+    env: "EXPO_PUBLIC_PRIVACY_URL",
+    extra: "PRIVACY_URL",
+    fallback: "https://growpathai.com/privacy"
+  },
+  {
+    name: "Terms URL",
+    env: "EXPO_PUBLIC_TERMS_URL",
+    extra: "TERMS_URL",
+    fallback: "https://growpathai.com/terms"
+  },
+  {
+    name: "Support URL",
+    env: "EXPO_PUBLIC_SUPPORT_URL",
+    extra: "SUPPORT_URL",
+    fallback: "https://growpathai.com/support"
+  },
+  {
+    name: "Delete-account URL",
+    env: "EXPO_PUBLIC_DELETE_ACCOUNT_URL",
+    extra: "DELETE_ACCOUNT_URL",
+    fallback: "https://growpathai.com/account/delete"
+  }
+];
+
+function readExpoExtra() {
+  const appJsonPath = path.join(ROOT, "app.json");
+  if (!fs.existsSync(appJsonPath)) return {};
+  try {
+    const appJson = JSON.parse(fs.readFileSync(appJsonPath, "utf8"));
+    return appJson?.expo?.extra || {};
+  } catch (err) {
+    violations.push({
+      file: "app.json",
+      line: 1,
+      check: "valid app.json",
+      value: err?.message || String(err)
+    });
+    return {};
+  }
+}
+
+function validateReleaseLink(link, extra) {
+  const value = String(process.env[link.env] || extra[link.extra] || link.fallback || "");
+  if (!value) {
+    violations.push({
+      file: "src/config/config.ts",
+      line: 1,
+      check: link.name,
+      value: "missing"
+    });
+    return;
+  }
+
+  let parsed;
+  try {
+    parsed = new URL(value);
+  } catch (err) {
+    violations.push({
+      file: "src/config/config.ts",
+      line: 1,
+      check: link.name,
+      value
+    });
+    return;
+  }
+
+  const host = parsed.hostname.toLowerCase();
+  const isLocal =
+    host === "localhost" ||
+    host === "127.0.0.1" ||
+    /^192\.168\./.test(host) ||
+    /^10\./.test(host);
+  const isPlaceholder =
+    host === "example.com" ||
+    host.endsWith(".example.com") ||
+    value.includes("TODO") ||
+    value.includes("REPLACE_ME");
+
+  if (parsed.protocol !== "https:" || isLocal || isPlaceholder) {
+    violations.push({
+      file: "src/config/config.ts",
+      line: 1,
+      check: `${link.name} must be production https`,
+      value
+    });
+  }
+}
+
 function walk(target, files = []) {
   const absolute = path.join(ROOT, target);
   if (!fs.existsSync(absolute)) return files;
@@ -81,6 +172,11 @@ function lineFor(text, index) {
 
 const violations = [];
 const files = SEARCH_ROOTS.flatMap((root) => walk(root));
+const expoExtra = readExpoExtra();
+
+for (const link of releaseLinks) {
+  validateReleaseLink(link, expoExtra);
+}
 
 for (const file of files) {
   const rel = path.normalize(path.relative(ROOT, file));
