@@ -1,7 +1,7 @@
 # App Store / Deployment Prep TODO
 
 > Status: BLOCKED FOR SUBMISSION
-> Last reviewed: 2026-06-27
+> Last reviewed: 2026-07-01
 
 Store submission must wait until production-mode validation evidence exists.
 Current known blockers:
@@ -18,6 +18,11 @@ Current known blockers:
   backend and production health checks returned 200 on 2026-06-27.
 - Production iOS/Android builds and real-device smoke validation have not been
   attached as evidence. Local handoff checklists now exist under `tmp/spec/`.
+- Current frontend pre-live evidence is recorded in
+  `docs/release-readiness-evidence-2026-07-01.md`. The covered local release
+  gates pass, but strict release remains blocked until production Sentry DSN,
+  release-machine URL checks, production builds, real-device smoke, and store
+  sign-off are complete.
 
 ## 1. Release Gate
 
@@ -31,6 +36,11 @@ Current known blockers:
   `e2e/live-facility-workflows.spec.ts`, and
   `e2e/smoke.personal.grows.spec.ts`.
 - Evidence target: `tmp/spec/production_workflow_validation_2026-06-21.md`
+
+- DONE: Current local pre-live release batch for privacy/account, Personal Home
+  alerts, and the full Personal grow core loop.
+- Owner: Engineering
+- Current evidence: `docs/release-readiness-evidence-2026-07-01.md`
 
 - DONE: Backend schema and AI release evidence.
 - Owner: Backend Engineering

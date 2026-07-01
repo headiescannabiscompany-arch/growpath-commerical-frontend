@@ -1,7 +1,7 @@
 # App Store And Production Launch Checklist
 
 > Status: Blocked for submission until external release evidence is complete.
-> Last reviewed: 2026-06-27
+> Last reviewed: 2026-07-01
 
 ## 1. Release Gate
 
@@ -10,7 +10,11 @@
 - [x] Source-controlled placeholder EAS submit credentials removed.
 - [x] Production EAS profile points at `https://api.growpathai.com`.
 - [x] Confirm production DNS and backend health for `https://api.growpathai.com`.
-- [ ] Confirm no critical or high release-blocking bugs remain open.
+- [x] Current local release scan, focused unit checks, production web export,
+      privacy/Home Playwright checks, and personal core-loop Playwright check
+      pass. Evidence: `docs/release-readiness-evidence-2026-07-01.md`.
+- [ ] Confirm no critical or high release-blocking bugs remain open after
+      release-machine checks.
 
 ## 2. Store Configuration
 
@@ -31,7 +35,8 @@
 - [x] Draft marketing URL: `https://www.growpathai.com`.
 - [ ] Legal approval for cannabis-related language.
 - [ ] Release-owner approval for final app name, subtitle, keywords, age rating, and review notes.
-- [ ] Confirm support, privacy, and marketing URLs are live in production.
+- [ ] Confirm support, privacy, terms, delete-account, marketing, and API health
+      URLs are live from a release machine with working TLS.
 - [ ] Complete iOS privacy nutrition labels.
 - [ ] Complete Google Play data safety form.
 
@@ -79,7 +84,8 @@
 - [ ] Confirm account deletion and data export support path.
 - [x] Confirm no production secrets are committed. Evidence:
       `docs/release-secret-scan-evidence-2026-06-23.md`.
-- [ ] Confirm crash reporting and support monitoring owners.
+- [ ] Configure production `EXPO_PUBLIC_SENTRY_DSN`, verify crash capture in a
+      production-like build, and confirm support/crash monitoring owners.
 - [ ] Confirm geographic, legal, and age-rating decisions for cannabis references.
 
 ## 8. Submission
