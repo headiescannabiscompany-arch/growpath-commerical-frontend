@@ -62,7 +62,17 @@ async function installMocks(page: any) {
             growId: GROW.id,
             title: "Morning canopy check",
             notes: "No new spread.",
-            date: "2026-07-01T07:30:00.000Z"
+            date: "2026-07-01T07:30:00.000Z",
+            photos: ["/uploads/home-canopy.jpg"],
+            photoMetadata: [
+              {
+                growId: GROW.id,
+                plantId: "plant-home-1",
+                createdAt: "2026-07-01T07:35:00.000Z",
+                consentForAI: true,
+                consentForTraining: false
+              }
+            ]
           }
         ]
       });
@@ -115,6 +125,19 @@ async function installMocks(page: any) {
       return fulfillJson(route, { tools: [] });
     }
 
+    if (method === "GET" && url.pathname === "/api/diagnose/history") {
+      return fulfillJson(route, [
+        {
+          id: "diag-home-1",
+          growId: GROW.id,
+          plantId: "plant-home-1",
+          issueSummary: "Possible olive leaf spot",
+          diagnosisClass: "plant_health_triage",
+          createdAt: "2026-07-01T08:15:00.000Z"
+        }
+      ]);
+    }
+
     return fulfillJson(route, { ok: true });
   });
 }
@@ -138,6 +161,13 @@ test.describe("personal Home task source labels", () => {
       await expect(page.getByText(/Source: ai diagnosis/)).toBeVisible();
       await expect(page.getByText("Inspect canopy after automation alert")).toBeVisible();
       await expect(page.getByText(/Source: automation policy/)).toBeVisible();
+      await expect(page.getByText("Latest diagnosis")).toBeVisible();
+      await expect(page.getByText(/Possible olive leaf spot/)).toBeVisible();
+      await expect(page.getByText("Recent photos")).toBeVisible();
+      await expect(page.getByText(/1 recent photo attached to this grow/)).toBeVisible();
+      await expect(page.getByText("Diagnose").first()).toBeVisible();
+      await expect(page.getByText("Add Photo").first()).toBeVisible();
+      await expect(page.getByText("Create Task")).toBeVisible();
       await expect(page.getByText("Open Source")).toHaveCount(2);
 
       await page.screenshot({

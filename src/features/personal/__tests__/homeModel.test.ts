@@ -25,7 +25,14 @@ describe("buildPersonalHomeModel", () => {
       ] as any,
       logs: [
         { id: "wrong", growId: "older", date: "2026-06-20", title: "Wrong" },
-        { id: "right", growId: "active", date: "2026-06-19", title: "Right" }
+        {
+          id: "right",
+          growId: "active",
+          date: "2026-06-19",
+          title: "Right",
+          photos: ["/uploads/canopy.jpg"],
+          photoMetadata: [{ createdAt: "2026-06-19T12:00:00.000Z" }]
+        }
       ] as any,
       plants: [
         { id: "plant-1", growId: "active", name: "A" },
@@ -78,6 +85,20 @@ describe("buildPersonalHomeModel", () => {
       ] as any,
       toolRuns: [
         { id: "run-1", growId: "active", toolType: "vpd", createdAt: "2026-06-19" }
+      ],
+      diagnoses: [
+        {
+          id: "diagnosis-1",
+          growId: "active",
+          issueSummary: "Possible magnesium stress",
+          createdAt: "2026-06-19T13:00:00.000Z"
+        },
+        {
+          id: "diagnosis-wrong-grow",
+          growId: "older",
+          issueSummary: "Wrong grow diagnosis",
+          createdAt: "2026-06-20T13:00:00.000Z"
+        }
       ]
     });
 
@@ -108,6 +129,14 @@ describe("buildPersonalHomeModel", () => {
     ]);
     expect(model.openTaskCount).toBe(4);
     expect(model.latestToolRun?.toolType).toBe("vpd");
+    expect(model.latestDiagnosis?.id).toBe("diagnosis-1");
+    expect(model.recentPhotos).toEqual([
+      expect.objectContaining({
+        url: "/uploads/canopy.jpg",
+        logId: "right",
+        title: "Right"
+      })
+    ]);
     expect(model.stats).toMatchObject({
       totalGrows: 3,
       activeGrowCount: 2,
@@ -116,7 +145,9 @@ describe("buildPersonalHomeModel", () => {
       taskCount: 5,
       openTaskCount: 4,
       completedTaskCount: 1,
-      toolRunCount: 1
+      toolRunCount: 1,
+      diagnosisCount: 1,
+      photoCount: 1
     });
   });
 });

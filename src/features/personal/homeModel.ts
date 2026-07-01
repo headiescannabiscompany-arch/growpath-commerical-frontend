@@ -4,6 +4,19 @@ import type { PersonalPlant } from "@/api/plants";
 import type { PersonalTask } from "@/api/tasks";
 import type { ToolRun } from "@/api/toolRuns";
 
+type PersonalDiagnosis = {
+  id?: string;
+  _id?: string;
+  growId?: string;
+  plantId?: string;
+  issueSummary?: string;
+  diagnosisClass?: string;
+  overallHealth?: string;
+  urgency?: string;
+  createdAt?: string;
+  updatedAt?: string;
+};
+
 function timestamp(value?: string) {
   const parsed = value ? new Date(value).getTime() : 0;
   return Number.isFinite(parsed) ? parsed : 0;
@@ -63,13 +76,15 @@ export function buildPersonalHomeModel({
   logs,
   plants = [],
   tasks,
-  toolRuns
+  toolRuns,
+  diagnoses = []
 }: {
   grows: PersonalGrow[];
   logs: PersonalLog[];
   plants?: PersonalPlant[];
   tasks: PersonalTask[];
   toolRuns: ToolRun[];
+  diagnoses?: PersonalDiagnosis[];
 }) {
   const activeGrows = grows.filter((grow) => grow.status !== "harvested");
   const activeGrow = [...grows]
@@ -104,6 +119,28 @@ export function buildPersonalHomeModel({
   const latestToolRun = [...toolRuns]
     .filter((run) => !activeGrowId || run.growId === activeGrowId)
     .sort((left, right) => timestamp(right.createdAt) - timestamp(left.createdAt))[0];
+  const scopedLogs = logs.filter((log) => !activeGrowId || log.growId === activeGrowId);
+  const recentPhotos = scopedLogs
+    .flatMap((log) =>
+      (log.photos || []).map((url, index) => ({
+        id: `${log.id || (log as any)._id || "log"}-${index}`,
+        url,
+        logId: String(log.id || (log as any)._id || ""),
+        title: log.title || "Grow photo",
+        createdAt:
+          log.photoMetadata?.[index]?.createdAt || log.date || log.createdAt || "",
+        plantId: log.photoMetadata?.[index]?.plantId || log.plantId || ""
+      }))
+    )
+    .sort((left, right) => timestamp(right.createdAt) - timestamp(left.createdAt));
+  const scopedDiagnoses = diagnoses.filter(
+    (diagnosis) => !activeGrowId || diagnosis.growId === activeGrowId
+  );
+  const latestDiagnosis = [...scopedDiagnoses].sort(
+    (left, right) =>
+      timestamp(right.updatedAt || right.createdAt) -
+      timestamp(left.updatedAt || left.createdAt)
+  )[0];
 
   return {
     activeGrow: activeGrow || null,
@@ -117,13 +154,17 @@ export function buildPersonalHomeModel({
       openTaskCount: openTasks.length,
       completedTaskCount: growTasks.filter((task) => task.completed).length,
       toolRunCount: toolRuns.filter((run) => !activeGrowId || run.growId === activeGrowId)
-        .length
+        .length,
+      photoCount: recentPhotos.length,
+      diagnosisCount: scopedDiagnoses.length
     },
     plants: growPlants,
     openTaskCount: openTasks.length,
     nextTask: openTasks[0] || null,
     todayTasks,
     latestLog: latestLog || null,
-    latestToolRun: latestToolRun || null
+    latestToolRun: latestToolRun || null,
+    latestDiagnosis: latestDiagnosis || null,
+    recentPhotos: recentPhotos.slice(0, 5)
   };
 }

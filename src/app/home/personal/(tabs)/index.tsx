@@ -3,6 +3,7 @@ import { useFocusEffect } from "@react-navigation/native";
 import { Link } from "expo-router";
 import { ActivityIndicator, Pressable, StyleSheet, Text, View } from "react-native";
 
+import { getDiagnosisHistory } from "@/api/diagnose";
 import { listPersonalGrows } from "@/api/grows";
 import { listPersonalLogs } from "@/api/logs";
 import { listPersonalPlants } from "@/api/plants";
@@ -38,14 +39,22 @@ export default function PersonalHomeTab() {
     setLoading(true);
     setError("");
     try {
-      const [grows, logs, plants, tasks, toolRuns] = await Promise.all([
-        listPersonalGrows(),
-        listPersonalLogs(),
-        listPersonalPlants(),
-        listPersonalTasks(),
-        listToolRuns()
-      ]);
-      setModel(buildPersonalHomeModel({ grows, logs, plants, tasks, toolRuns }));
+      const [grows, logs, plants, tasks, toolRuns, diagnosisResponse] = await Promise.all(
+        [
+          listPersonalGrows(),
+          listPersonalLogs(),
+          listPersonalPlants(),
+          listPersonalTasks(),
+          listToolRuns(),
+          getDiagnosisHistory()
+        ]
+      );
+      const diagnoses = Array.isArray(diagnosisResponse)
+        ? diagnosisResponse
+        : diagnosisResponse?.diagnoses || diagnosisResponse?.data || [];
+      setModel(
+        buildPersonalHomeModel({ grows, logs, plants, tasks, toolRuns, diagnoses })
+      );
     } catch {
       setError("Unable to refresh your grow overview.");
     } finally {
@@ -127,9 +136,18 @@ export default function PersonalHomeTab() {
                 label="Add Log"
               />
               <ActionLink
+                href={`/home/personal/logs/new?growId=${encodeURIComponent(growId)}&focus=photos`}
+                label="Add Photo"
+              />
+              <ActionLink
                 href={`/home/personal/tools?growId=${encodeURIComponent(growId)}`}
                 label="Run Tool"
               />
+              <ActionLink
+                href={`/home/personal/diagnose?growId=${encodeURIComponent(growId)}`}
+                label="Diagnose"
+              />
+              <ActionLink href={`${growHref}/tasks`} label="Create Task" />
             </View>
           </AppCard>
         </View>
@@ -180,6 +198,30 @@ export default function PersonalHomeTab() {
             <ActionLink href={`${growHref}/journal`} label="Open Journal" />
           </AppCard>
           <AppCard>
+            <Text style={styles.cardTitle}>Latest diagnosis</Text>
+            <Text style={styles.cardDescription}>
+              {model.latestDiagnosis
+                ? `${model.latestDiagnosis.issueSummary || model.latestDiagnosis.diagnosisClass || "Diagnosis saved"} | ${fmtDate(model.latestDiagnosis.createdAt)}`
+                : "No diagnosis has been saved for this grow yet."}
+            </Text>
+            <ActionLink
+              href={`/home/personal/diagnose?growId=${encodeURIComponent(growId)}`}
+              label="Run Diagnosis"
+            />
+          </AppCard>
+          <AppCard>
+            <Text style={styles.cardTitle}>Recent photos</Text>
+            <Text style={styles.cardDescription}>
+              {model.recentPhotos.length
+                ? `${model.recentPhotos.length} recent photo${model.recentPhotos.length === 1 ? "" : "s"} attached to this grow. Latest: ${model.recentPhotos[0].title}`
+                : "No photos have been attached to this grow yet."}
+            </Text>
+            <ActionLink
+              href={`/home/personal/logs/new?growId=${encodeURIComponent(growId)}&focus=photos`}
+              label="Add Photo"
+            />
+          </AppCard>
+          <AppCard>
             <Text style={styles.cardTitle}>Garden statistics</Text>
             <View style={styles.metrics}>
               <View style={styles.metric}>
@@ -193,6 +235,14 @@ export default function PersonalHomeTab() {
               <View style={styles.metric}>
                 <Text style={styles.metricValue}>{model.stats.toolRunCount}</Text>
                 <Text style={styles.metricLabel}>Tool runs</Text>
+              </View>
+              <View style={styles.metric}>
+                <Text style={styles.metricValue}>{model.stats.diagnosisCount}</Text>
+                <Text style={styles.metricLabel}>Diagnoses</Text>
+              </View>
+              <View style={styles.metric}>
+                <Text style={styles.metricValue}>{model.stats.photoCount}</Text>
+                <Text style={styles.metricLabel}>Photos</Text>
               </View>
             </View>
           </AppCard>
