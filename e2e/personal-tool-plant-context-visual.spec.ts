@@ -176,7 +176,9 @@ test.describe("personal tool plant context", () => {
     await expect(page.getByRole("heading", { name: "PPFD / DLI Planner" })).toBeVisible();
     await page.getByRole("button", { name: "Run tool for Olive patio tree" }).click();
     await expect(
-      page.getByText("Olive | Arbequina | pheno: compact-container")
+      page.getByText(
+        "Olive | Arbequina | canopy 140 cm | fruiting +10d | water medium | pheno compact-container"
+      )
     ).toBeVisible();
 
     await page.screenshot({
@@ -271,7 +273,9 @@ test.describe("personal tool plant context", () => {
 
     await expect(page.getByRole("heading", { name: "New Journal Entry" })).toBeVisible();
     await expect(
-      page.getByText("Olive | Arbequina | pheno: compact-container")
+      page.getByText(
+        "Olive | Arbequina | canopy 140 cm | fruiting +10d | water medium | pheno compact-container"
+      )
     ).toBeVisible();
     await expect(page.getByText("plant linked")).toBeVisible();
 

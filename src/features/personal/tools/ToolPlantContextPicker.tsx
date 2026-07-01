@@ -18,6 +18,35 @@ export function buildToolPlantContext(plant?: PersonalPlant | null) {
   };
 }
 
+export function buildToolPlantContextSummary(plant?: PersonalPlant | null) {
+  if (!plant) return "";
+  const profile = plant.growthProfile || {};
+  const size = profile.sizeMetrics || {};
+  const timing = profile.timingAdjustments || {};
+  const water = profile.waterUseProfile || {};
+  const canopyWidth = size.canopyWidthCm || size.canopyCm;
+  const height = size.heightCm || size.plantHeightCm;
+  const fruitingOffset = timing.fruitingDaysOffset;
+  const floweringOffset = timing.floweringDaysOffset;
+  const observedDemand = water.observedDemand || water.waterDemand || water.demand;
+  return [
+    plant.cropCommonName || plant.scientificName,
+    plant.cultivar || plant.strain,
+    canopyWidth ? `canopy ${canopyWidth} cm` : "",
+    height ? `height ${height} cm` : "",
+    fruitingOffset != null
+      ? `fruiting ${Number(fruitingOffset) >= 0 ? "+" : ""}${fruitingOffset}d`
+      : "",
+    floweringOffset != null
+      ? `flowering ${Number(floweringOffset) >= 0 ? "+" : ""}${floweringOffset}d`
+      : "",
+    observedDemand ? `water ${observedDemand}` : "",
+    profile.phenoLabel ? `pheno ${profile.phenoLabel}` : ""
+  ]
+    .filter(Boolean)
+    .join(" | ");
+}
+
 export function useToolPlantContext(growId?: string, initialPlantId = "") {
   const [plants, setPlants] = useState<PersonalPlant[]>([]);
   const [plantId, setPlantId] = useState(initialPlantId);
@@ -107,17 +136,7 @@ export function ToolPlantContextPicker({
         })}
       </View>
       {selectedPlant ? (
-        <Text style={styles.context}>
-          {[
-            selectedPlant.cropCommonName || selectedPlant.scientificName,
-            selectedPlant.cultivar || selectedPlant.strain,
-            selectedPlant.growthProfile?.phenoLabel
-              ? `pheno: ${selectedPlant.growthProfile.phenoLabel}`
-              : ""
-          ]
-            .filter(Boolean)
-            .join(" | ")}
-        </Text>
+        <Text style={styles.context}>{buildToolPlantContextSummary(selectedPlant)}</Text>
       ) : null}
     </View>
   );
