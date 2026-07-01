@@ -53,6 +53,7 @@ export const ROUTES = {
   CROP_KNOWLEDGE: {
     TAXA: `${PREFIX}/crop-knowledge/taxa`,
     CROP_PROFILES: `${PREFIX}/crop-knowledge/crop-profiles`,
+    STARTER_CROP_PROFILE_SEED: `${PREFIX}/crop-knowledge/crop-profiles/starter-seed`,
     CROP_PROFILE_DETAIL: (id) => `${PREFIX}/crop-knowledge/crop-profiles/${id}`,
     ORGANISMS: `${PREFIX}/crop-knowledge/organisms`,
     REGIONAL_ALERTS: `${PREFIX}/crop-knowledge/regional-alerts`,

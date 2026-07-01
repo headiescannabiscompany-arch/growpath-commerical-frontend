@@ -165,6 +165,17 @@ export function createCropProfile(input: CropProfileInput) {
   return create(routes.CROP_KNOWLEDGE.CROP_PROFILES, input);
 }
 
+export function seedStarterCropProfiles() {
+  return apiRequest<{
+    items: unknown[];
+    count: number;
+    curationStatus: string;
+    message: string;
+  }>(routes.CROP_KNOWLEDGE.STARTER_CROP_PROFILE_SEED, {
+    method: "POST"
+  });
+}
+
 export function listOrganismProfiles(params?: CropKnowledgeListParams) {
   return list(routes.CROP_KNOWLEDGE.ORGANISMS, params);
 }

@@ -9,7 +9,8 @@ const {
   createOrganismProfile,
   listCropProfiles,
   listRegionalAlerts,
-  savePlantGrowthProfile
+  savePlantGrowthProfile,
+  seedStarterCropProfiles
 } = require("@/api/cropKnowledge");
 
 describe("crop knowledge API", () => {
@@ -58,6 +59,27 @@ describe("crop knowledge API", () => {
         ]
       })
     });
+  });
+
+  it("calls the admin-gated starter crop profile seed endpoint", async () => {
+    mockApiRequest.mockResolvedValueOnce({
+      count: 8,
+      curationStatus: "needs_license_review",
+      items: [{ cropKey: "tomato" }]
+    });
+
+    await expect(seedStarterCropProfiles()).resolves.toEqual({
+      count: 8,
+      curationStatus: "needs_license_review",
+      items: [{ cropKey: "tomato" }]
+    });
+
+    expect(mockApiRequest).toHaveBeenCalledWith(
+      "/api/crop-knowledge/crop-profiles/starter-seed",
+      {
+        method: "POST"
+      }
+    );
   });
 
   it("creates organism profiles and regional alert lookups", async () => {
