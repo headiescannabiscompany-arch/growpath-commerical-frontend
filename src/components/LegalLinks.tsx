@@ -11,7 +11,8 @@ type LegalLink = {
 const LINKS: LegalLink[] = [
   { label: "Privacy", url: config.privacyUrl },
   { label: "Terms", url: config.termsUrl },
-  { label: "Support", url: config.supportUrl }
+  { label: "Support", url: config.supportUrl },
+  { label: "Delete account", url: config.deleteAccountUrl }
 ];
 
 async function openLegalUrl(url: string) {
