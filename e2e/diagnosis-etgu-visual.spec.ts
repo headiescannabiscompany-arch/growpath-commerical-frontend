@@ -55,20 +55,20 @@ async function installMocks(page: any) {
         plants: [
           {
             id: "plant-etgu-1",
-            name: "Blueberry Muffin #1",
-            cropCommonName: "Cannabis",
-            scientificName: "Cannabis sativa",
-            cropProfileId: "crop-cannabis-1",
-            cultivar: "Blueberry Muffin HSC",
-            stage: "flower",
-            medium: "coco",
+            name: "Arbequina Olive #1",
+            cropCommonName: "Olive",
+            scientificName: "Olea europaea",
+            cropProfileId: "crop-olive-1",
+            cultivar: "Arbequina",
+            stage: "fruiting",
+            medium: "container mix",
             growthProfile: {
-              cropProfile: "crop-cannabis-1",
+              cropProfile: "crop-olive-1",
               confirmationStatus: "user_confirmed",
-              sizeMetrics: { canopyWidthCm: 85 },
-              timingAdjustments: { stageDaysOffset: 3 },
-              waterUseProfile: { observedDemand: "high" },
-              phenoLabel: "vigorous"
+              sizeMetrics: { canopyWidthCm: 140 },
+              timingAdjustments: { stageDaysOffset: 8 },
+              waterUseProfile: { observedDemand: "low" },
+              phenoLabel: "compact"
             }
           }
         ]
@@ -93,7 +93,7 @@ async function installMocks(page: any) {
       diagnosisPayloads.push(request.postDataJSON());
       return fulfillJson(route, {
         id: "diagnosis-etgu-1",
-        issueSummary: "Possible calcium transport issue; Runoff EC is elevated",
+        issueSummary: "Possible root-zone stress; container olive leaf spotting",
         sourceType: "heuristic",
         confidence: "medium",
         severity: 4,
@@ -105,39 +105,43 @@ async function installMocks(page: any) {
           environmentSummary: "temp: 78; rh: 72; vpd: 0.7",
           numberSummary: "feedEC: 1.4; runoffEC: 2.8; feedPH: 6.0; runoffPH: 6.4",
           cropIdentity: {
-            commonName: "Cannabis",
-            scientificName: "Cannabis sativa",
-            cultivarOrStrain: "Blueberry Muffin HSC",
+            commonName: "Olive",
+            scientificName: "Olea europaea",
+            cultivarOrStrain: "Arbequina",
             confidence: "user_confirmed",
             ambiguous: false,
             cropProfileMatched: true,
-            cropProfileId: "crop-cannabis-1",
+            cropProfileId: "crop-olive-1",
             cropProfileCurationStatus: "reviewed",
             requiresUserConfirmation: false
           },
           cropProfileSnapshot: {
-            id: "crop-cannabis-1",
-            displayName: "Cannabis",
-            scientificName: "Cannabis sativa",
-            cropCategory: "controlled_environment",
+            id: "crop-olive-1",
+            displayName: "Olive",
+            scientificName: "Olea europaea",
+            cropCategory: "orchard_container",
             curationStatus: "reviewed"
           },
           likelyIssues: [
             {
-              issue: "Possible calcium transport issue",
-              category: "nutrition",
-              nutrient: "calcium",
+              issue: "Possible root-zone stress",
+              category: "root_zone",
+              nutrient: null,
               confidence: 0.66,
-              evidence: ["Rust spotting was reported on upper new growth."],
-              counterEvidence: ["Calcium symptoms can resemble pH/root-zone stress."],
-              nextChecks: ["Check VPD/RH and airflow."]
+              evidence: ["Leaf spotting was reported on upper canopy leaves."],
+              counterEvidence: [
+                "Olive leaf spots can also require pest or disease checks."
+              ],
+              nextChecks: ["Check drainage and inspect leaf undersides."]
             }
           ],
           recommendations: [
-            "Stabilize transpiration and root-zone conditions before changing the recipe."
+            "Confirm drainage and avoid applying cannabis feed defaults to olive."
           ],
-          suggestedTags: ["calcium transport", "runoff ec high"],
-          tasksToCreate: [{ title: "Check VPD/RH and airflow.", priority: "high" }],
+          suggestedTags: ["olive", "root zone", "leaf spotting"],
+          tasksToCreate: [
+            { title: "Check drainage and inspect leaf undersides.", priority: "high" }
+          ],
           urgency: "high",
           disclaimer:
             "GrowPathAI provides plant-health triage, not a guaranteed lab diagnosis."
@@ -170,14 +174,21 @@ test.describe("ETGU diagnosis intake", () => {
 
       await expect(page.getByText("Crop identity")).toBeVisible();
       await page
-        .getByRole("button", { name: "Diagnose plant Blueberry Muffin #1" })
+        .getByRole("button", { name: "Diagnose plant Arbequina Olive #1" })
         .click();
-      await page.getByLabel("Diagnosis crop common name").fill("Cannabis");
-      await page.getByLabel("Diagnosis scientific name").fill("Cannabis sativa");
-      await page.getByLabel("Diagnosis cultivar or strain").fill("Blueberry Muffin HSC");
+      await page.getByLabel("Diagnosis crop common name").fill("Olive");
+      await page.getByLabel("Diagnosis scientific name").fill("Olea europaea");
+      await page.getByLabel("Diagnosis cultivar or strain").fill("Arbequina");
+      await expect(
+        page.getByText("Confirmed crop context", { exact: true })
+      ).toBeVisible();
+      await expect(
+        page.getByText(/Olive \/ Olea europaea \/ Arbequina is linked/i)
+      ).toBeVisible();
+      await expect(page.getByText(/Canopy width: 140 cm/)).toBeVisible();
       await page
         .getByLabel("Diagnosis notes")
-        .fill("Rust spots and calcium transport concern.");
+        .fill("Leaf spotting and possible container root-zone stress.");
       await page.getByLabel("Diagnosis root-zone notes").fill("slow dryback");
       await page.getByLabel("Diagnosis temperature").fill("78");
       await page.getByLabel("Diagnosis RH").fill("72");
@@ -193,28 +204,28 @@ test.describe("ETGU diagnosis intake", () => {
 
       await expect(page.getByText("Inputs")).toBeVisible();
       expect(api.diagnosisPayloads[0]).toMatchObject({
-        cropCommonName: "Cannabis",
-        scientificName: "Cannabis sativa",
-        cultivarOrStrain: "Blueberry Muffin HSC",
-        cropProfileId: "crop-cannabis-1",
+        cropCommonName: "Olive",
+        scientificName: "Olea europaea",
+        cultivarOrStrain: "Arbequina",
+        cropProfileId: "crop-olive-1",
         selectedPlantContext: {
           id: "plant-etgu-1",
-          cropCommonName: "Cannabis",
-          scientificName: "Cannabis sativa",
-          cropProfileId: "crop-cannabis-1",
+          cropCommonName: "Olive",
+          scientificName: "Olea europaea",
+          cropProfileId: "crop-olive-1",
           growthProfile: {
-            sizeMetrics: { canopyWidthCm: 85 },
-            waterUseProfile: { observedDemand: "high" },
-            phenoLabel: "vigorous"
+            sizeMetrics: { canopyWidthCm: 140 },
+            waterUseProfile: { observedDemand: "low" },
+            phenoLabel: "compact"
           }
         },
         plantGrowthProfile: {
-          timingAdjustments: { stageDaysOffset: 3 }
+          timingAdjustments: { stageDaysOffset: 8 }
         }
       });
       await expect(page.getByText("Outputs")).toBeVisible();
-      await expect(page.getByText(/commonName: Cannabis/)).toBeVisible();
-      await expect(page.getByText("Matched crop profile: Cannabis")).toBeVisible();
+      await expect(page.getByText(/commonName: Olive/)).toBeVisible();
+      await expect(page.getByText("Matched crop profile: Olive")).toBeVisible();
       await expect(page.getByText("Formula / Why It Matters")).toBeVisible();
       await expect(page.getByText(/Counter-evidence/)).toBeVisible();
       await expect(page.getByRole("button", { name: "Save to Grow Log" })).toBeVisible();

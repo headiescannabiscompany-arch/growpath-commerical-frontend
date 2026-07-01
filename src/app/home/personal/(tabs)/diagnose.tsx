@@ -22,6 +22,7 @@ import { listPersonalPlants, type PersonalPlant } from "@/api/plants";
 import { createPersonalTask } from "@/api/tasks";
 import BackButton from "@/components/nav/BackButton";
 import ToolResultSurface from "@/features/personal/tools/ToolResultSurface";
+import { diagnosisCropContextState } from "@/features/personal/diagnosis/diagnosisCropContext";
 import {
   normalizeDiagnosisResponse,
   type NormalizedDiagnosis
@@ -380,6 +381,11 @@ export default function DiagnoseRoute() {
           }
     : null;
 
+  const diagnosisCropContext = diagnosisCropContextState(
+    selectedPlantContext(),
+    cropCommonName
+  );
+
   function toggleAcceptedTag(tag: string) {
     setAcceptedTags((current) =>
       current.includes(tag)
@@ -460,6 +466,22 @@ export default function DiagnoseRoute() {
             placeholder="Cultivar / strain"
             accessibilityLabel="Diagnosis cultivar or strain"
           />
+        </View>
+        <View
+          style={[
+            styles.cropContextPanel,
+            diagnosisCropContext.status === "confirmed"
+              ? styles.cropContextReady
+              : styles.cropContextNeedsReview
+          ]}
+        >
+          <Text style={styles.cropContextTitle}>{diagnosisCropContext.title}</Text>
+          <Text style={styles.cropContextText}>{diagnosisCropContext.message}</Text>
+          {diagnosisCropContext.details.map((detail) => (
+            <Text key={detail} style={styles.cropContextText}>
+              - {detail}
+            </Text>
+          ))}
         </View>
       </View>
 
@@ -636,8 +658,8 @@ export default function DiagnoseRoute() {
         ) : null}
       </View>
       <Text style={styles.photoPolicy}>
-        Photos are used for this diagnosis request. They are not used to train
-        GrowPathAI models unless you explicitly opt in.
+        Photos are used for this diagnosis request. They are not used to train GrowPathAI
+        models unless you explicitly opt in.
       </Text>
       {photoUri ? <Image source={{ uri: photoUri }} style={styles.photo} /> : null}
 
@@ -1029,6 +1051,16 @@ const styles = StyleSheet.create({
   providerTitle: { color: "#0F172A", fontWeight: "800", marginTop: 4 },
   providerMeta: { color: "#64748B", fontSize: 12, lineHeight: 18 },
   providerLine: { color: "#334155", fontSize: 12, lineHeight: 18 },
+  cropContextPanel: {
+    borderWidth: 1,
+    borderRadius: 8,
+    padding: 10,
+    gap: 4
+  },
+  cropContextReady: { borderColor: "#86EFAC", backgroundColor: "#F0FDF4" },
+  cropContextNeedsReview: { borderColor: "#FDBA74", backgroundColor: "#FFF7ED" },
+  cropContextTitle: { color: "#0F172A", fontWeight: "800" },
+  cropContextText: { color: "#475569", fontSize: 12, lineHeight: 18 },
   followUpCard: {
     borderWidth: 1,
     borderColor: "#CBD5E1",
