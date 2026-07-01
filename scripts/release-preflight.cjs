@@ -145,6 +145,13 @@ async function main() {
   );
 
   run("production web export", process.execPath, ["scripts/export-production-web.cjs"]);
+  run("store graphics export", "powershell", [
+    "-NoProfile",
+    "-ExecutionPolicy",
+    "Bypass",
+    "-File",
+    "scripts/export-store-assets.ps1"
+  ]);
 
   console.log(
     `\n[release-preflight] ${strict ? "strict " : ""}preflight passed.`

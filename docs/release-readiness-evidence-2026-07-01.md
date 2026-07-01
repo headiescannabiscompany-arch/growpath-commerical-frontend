@@ -50,7 +50,8 @@ npm.cmd run release:preflight
 Result: passed on 2026-07-01.
 
 The command runs the release scan, UI route inventory, focused release unit
-tests, privacy/Home/core-loop Playwright specs, and production web export.
+tests, privacy/Home/core-loop Playwright specs, production web export, and
+store graphics export.
 
 ```text
 node scripts\scan-release.cjs
@@ -87,6 +88,14 @@ npm.cmd run export:web:production
 ```
 
 Result: passed. `dist` export uses `https://api.growpathai.com`.
+
+```text
+npm.cmd run export:store-assets
+```
+
+Result: passed. `store-assets/graphics` contains opaque 1024x1024 App Store
+icon, opaque 512x512 Google Play icon, and opaque 1024x500 Google Play feature
+graphic.
 
 ## Strict Release Gate
 
