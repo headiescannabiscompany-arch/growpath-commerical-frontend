@@ -5,6 +5,7 @@ import { createToolRun } from "@/api/toolRuns";
 import {
   saveToolRunAndCreateLog,
   saveToolRunAndCreateTask,
+  saveToolRunAndCreateTasks,
   saveToolRunAndOpenJournal
 } from "../saveToolRunAndOpenJournal";
 
@@ -251,5 +252,83 @@ describe("saveToolRunAndOpenJournal", () => {
       notes: "Review VPD and RH.",
       tags: ["environment", "ai_analysis"]
     });
+  });
+
+  it("creates one tool run before creating multiple source-linked tasks", async () => {
+    mockedCreateToolRun.mockResolvedValue({ _id: "timeline-run-1" });
+    mockedCreatePersonalTask
+      .mockResolvedValueOnce({
+        id: "task-a",
+        growId: "grow-timeline",
+        title: "Flip to flower",
+        description: "",
+        dueDate: "2026-08-01",
+        completed: false,
+        createdAt: "2026-07-01T00:00:00.000Z"
+      })
+      .mockResolvedValueOnce({
+        id: "task-b",
+        growId: "grow-timeline",
+        title: "Harvest window",
+        description: "",
+        dueDate: "2026-10-01",
+        completed: false,
+        createdAt: "2026-07-01T00:00:00.000Z"
+      });
+
+    const result = await saveToolRunAndCreateTasks({
+      growId: "grow-timeline",
+      toolKey: "timeline-planner",
+      input: { startDate: "2026-07-01", vegWeeks: 4 },
+      output: { milestoneCount: 2 },
+      tasks: [
+        {
+          title: "Flip to flower",
+          description: "Change photoperiod.",
+          dueDate: "2026-08-01"
+        },
+        {
+          title: "Harvest window",
+          description: "Start harvest checks.",
+          dueDate: "2026-10-01",
+          priority: "high"
+        }
+      ]
+    });
+
+    expect(result).toEqual({
+      ok: true,
+      toolRunId: "timeline-run-1",
+      taskIds: ["task-a", "task-b"]
+    });
+    expect(mockedCreateToolRun).toHaveBeenCalledTimes(1);
+    expect(mockedCreateToolRun).toHaveBeenCalledWith(
+      expect.objectContaining({
+        toolType: "timeline-planner",
+        calculatorVersion: "timeline-planner-2026.06"
+      })
+    );
+    expect(mockedCreatePersonalTask).toHaveBeenCalledTimes(2);
+    expect(mockedCreatePersonalTask).toHaveBeenNthCalledWith(
+      1,
+      expect.objectContaining({
+        growId: "grow-timeline",
+        title: "Flip to flower",
+        sourceType: "tool_run",
+        sourceObjectId: "timeline-run-1",
+        sourceToolRunId: "timeline-run-1"
+      })
+    );
+    expect(mockedCreatePersonalTask).toHaveBeenNthCalledWith(
+      2,
+      expect.objectContaining({
+        growId: "grow-timeline",
+        title: "Harvest window",
+        priority: "high",
+        sourceType: "tool_run",
+        sourceObjectId: "timeline-run-1",
+        sourceToolRunId: "timeline-run-1"
+      })
+    );
   });
 });

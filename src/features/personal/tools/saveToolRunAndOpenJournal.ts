@@ -30,6 +30,18 @@ type CreateTaskArgs = Omit<SaveAndOpenArgs, "router"> & {
 type CreateTaskResult =
   | { ok: true; toolRunId: string; taskId: string }
   | { ok: false; error: string };
+type LinkedTaskDraft = {
+  title: string;
+  description?: string;
+  priority?: "low" | "medium" | "high";
+  dueDate?: string;
+};
+type CreateTasksArgs = Omit<SaveAndOpenArgs, "router"> & {
+  tasks: LinkedTaskDraft[];
+};
+type CreateTasksResult =
+  | { ok: true; toolRunId: string; taskIds: string[] }
+  | { ok: false; error: string };
 type CreateLogArgs = Omit<SaveAndOpenArgs, "router"> & {
   title: string;
   notes?: string;
@@ -118,6 +130,36 @@ export async function saveToolRunAndCreateTask(
   const taskId = String((task as any)?._id || task?.id || "").trim();
   if (!taskId) return { ok: false, error: "Unable to create task from tool run." };
   return { ok: true, toolRunId: ensured.toolRunId, taskId };
+}
+
+export async function saveToolRunAndCreateTasks(
+  args: CreateTasksArgs
+): Promise<CreateTasksResult> {
+  const growId = String(args.growId || "").trim();
+  const ensured = await ensureToolRun(args);
+  if (!ensured.ok) return ensured;
+
+  const taskIds: string[] = [];
+  for (const draft of args.tasks) {
+    const task = await createPersonalTask({
+      growId,
+      plantId: args.plantId,
+      title: draft.title,
+      description:
+        draft.description ||
+        `Follow up on ${String(args.toolKey || args.toolType || "tool")} result.`,
+      priority: draft.priority || "medium",
+      dueDate: draft.dueDate,
+      sourceType: "tool_run",
+      sourceObjectId: ensured.toolRunId,
+      sourceToolRunId: ensured.toolRunId
+    });
+    const taskId = String((task as any)?._id || task?.id || "").trim();
+    if (!taskId) return { ok: false, error: "Unable to create task from tool run." };
+    taskIds.push(taskId);
+  }
+
+  return { ok: true, toolRunId: ensured.toolRunId, taskIds };
 }
 
 export async function saveToolRunAndCreateLog(

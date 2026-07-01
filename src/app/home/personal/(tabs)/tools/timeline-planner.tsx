@@ -2,7 +2,6 @@ import React, { useMemo, useState } from "react";
 import { useLocalSearchParams } from "expo-router";
 import { ScrollView, StyleSheet, Text, TextInput, View } from "react-native";
 
-import { createPersonalTask } from "@/api/tasks";
 import BackButton from "@/components/nav/BackButton";
 import { CAPABILITY_KEYS, useEntitlements } from "@/entitlements";
 import { buildTimelinePlan } from "@/features/personal/tools/advancedPlanning";
@@ -12,6 +11,7 @@ import {
   useToolPlantContext
 } from "@/features/personal/tools/ToolPlantContextPicker";
 import ToolResultSurface from "@/features/personal/tools/ToolResultSurface";
+import { saveToolRunAndCreateTasks } from "@/features/personal/tools/saveToolRunAndOpenJournal";
 
 function coerceParam(value?: string | string[]) {
   if (typeof value === "string") return value;
@@ -55,10 +55,24 @@ export default function TimelinePlannerScreen() {
 
   async function createTasks() {
     if (!growId) throw new Error("Select a grow before creating tasks.");
-    for (const milestone of milestones.slice(1)) {
-      await createPersonalTask({
-        growId,
-        plantId: plantContext.toolRunContext.plantId,
+    const result = await saveToolRunAndCreateTasks({
+      growId,
+      ...plantContext.toolRunContext,
+      toolKey: "timeline-planner",
+      input: {
+        startDate,
+        vegWeeks: numberValue(vegWeeks, 4),
+        flowerWeeks: numberValue(flowerWeeks, 9),
+        dryDays: numberValue(dryDays, 10),
+        cureWeeks: numberValue(cureWeeks, 4)
+      },
+      output: {
+        milestones,
+        milestoneCount: milestones.length,
+        harvestWindow:
+          milestones.find((item) => item.key === "harvest-window")?.date || null
+      },
+      tasks: milestones.slice(1).map((milestone) => ({
         title: milestone.label,
         description: [
           milestone.detail,
@@ -71,10 +85,12 @@ export default function TimelinePlannerScreen() {
         ]
           .filter(Boolean)
           .join("\n"),
-        dueDate: milestone.date
-      });
-    }
-    setFeedback("Timeline tasks created.");
+        dueDate: milestone.date,
+        priority: "medium"
+      }))
+    });
+    if (!result.ok) throw new Error(result.error);
+    setFeedback(`Timeline tasks created and linked to ToolRun ${result.toolRunId}.`);
   }
 
   return (
