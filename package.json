@@ -32,6 +32,7 @@
     "drift:scan": "powershell -NoProfile -ExecutionPolicy Bypass -Command \"Get-ChildItem .\\src -Recurse -File -Include *.js,*.jsx,*.ts,*.tsx | Where-Object { $_.FullName -notlike '*\\src\\api\\uriToBlob.ts' } | Select-String -Pattern '\\bfetch\\s*\\(|\\baxios\\b|\\bXMLHttpRequest\\b' | Where-Object { $_.Path -notlike '*\\src\\api\\client.ts' -and $_.Path -notlike '*\\src\\api\\apiRequest.ts' } | Where-Object { $_.Line -notmatch '\\bapiRequest\\b' } | Select-Object Path,LineNumber,Line | Sort-Object Path,LineNumber\"",
     "normalize:mojibake": "node scripts/normalize-mojibake.mjs",
     "verify:delivery": "node scripts/verify-delivery.mjs",
+    "scan:release": "node scripts/scan-release.cjs",
     "verify:manual": "npm run verify:manual:checks && npm run export:web:production",
     "verify:manual:checks": "powershell -NoProfile -ExecutionPolicy Bypass -File scripts/verify-before-manual.ps1",
     "test": "npm run inventory:ui-routes && jest --runInBand",
