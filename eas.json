@@ -32,7 +32,11 @@
       },
       "env": {
         "NODE_ENV": "production",
-        "EXPO_PUBLIC_API_URL": "https://api.growpathai.com"
+        "EXPO_PUBLIC_API_URL": "https://api.growpathai.com",
+        "EXPO_PUBLIC_PRIVACY_URL": "https://growpathai.com/privacy",
+        "EXPO_PUBLIC_TERMS_URL": "https://growpathai.com/terms",
+        "EXPO_PUBLIC_SUPPORT_URL": "https://growpathai.com/support",
+        "EXPO_PUBLIC_DELETE_ACCOUNT_URL": "https://growpathai.com/account/delete"
       }
     }
   }

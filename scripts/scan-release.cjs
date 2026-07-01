@@ -6,6 +6,7 @@ const path = require("path");
 const ROOT = path.resolve(__dirname, "..");
 const SEARCH_ROOTS = [
   "app.json",
+  "eas.json",
   "src/app",
   "src/api",
   "src/auth",
