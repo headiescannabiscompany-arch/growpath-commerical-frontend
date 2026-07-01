@@ -14,8 +14,7 @@ const mockListPersonalPlants = jest.fn();
 jest.mock("@/api/diagnose", () => ({
   analyzeDiagnosis: (...args: any[]) => mockAnalyzeDiagnosis(...args),
   diagnoseImage: (...args: any[]) => mockDiagnoseImage(...args),
-  getDiagnosisProviderStatus: (...args: any[]) =>
-    mockGetDiagnosisProviderStatus(...args),
+  getDiagnosisProviderStatus: (...args: any[]) => mockGetDiagnosisProviderStatus(...args),
   submitDiagnosisFeedback: (...args: any[]) => mockSubmitDiagnosisFeedback(...args)
 }));
 
@@ -105,5 +104,35 @@ describe("DiagnoseRoute", () => {
         tags: ["yellowing"]
       })
     );
+  });
+
+  it("creates source-linked follow-up tasks from diagnosis results", async () => {
+    const screen = render(<DiagnoseRoute />);
+
+    await waitFor(() =>
+      expect(screen.getByText("Production AI provider needs verification")).toBeTruthy()
+    );
+
+    fireEvent.changeText(
+      screen.getByLabelText("Diagnosis notes"),
+      "Interveinal yellowing on older leaves"
+    );
+    fireEvent.press(screen.getByLabelText("Run diagnosis"));
+
+    await waitFor(() => expect(mockAnalyzeDiagnosis).toHaveBeenCalled());
+    fireEvent.press(screen.getByLabelText("Create Follow-up Task"));
+
+    await waitFor(() => expect(mockCreatePersonalTask).toHaveBeenCalled());
+    expect(mockCreatePersonalTask).toHaveBeenCalledWith(
+      expect.objectContaining({
+        growId: "grow-1",
+        title: "Follow up: Possible pH issue",
+        description: "Check runoff pH before changing feed.",
+        sourceType: "ai_diagnosis",
+        sourceObjectId: "diagnosis-1",
+        sourceDiagnosisId: "diagnosis-1"
+      })
+    );
+    expect(screen.getByText("Follow-up task created.")).toBeTruthy();
   });
 });
