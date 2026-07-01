@@ -47,8 +47,8 @@ export const ROUTES = {
     ONBOARD_CREATOR: `${PREFIX}/user/creator/onboard`
   },
   PRIVACY: {
-    EXPORT: `${PREFIX}/privacy/export`,
-    DELETE_ACCOUNT: `${PREFIX}/privacy/delete`
+    EXPORT: `${PREFIX}/account/export`,
+    DELETE_ACCOUNT: `${PREFIX}/account/delete`
   },
   CROP_KNOWLEDGE: {
     TAXA: `${PREFIX}/crop-knowledge/taxa`,
