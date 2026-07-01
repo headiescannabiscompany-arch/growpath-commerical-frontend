@@ -211,12 +211,15 @@ export default function WateringToolScreen() {
         ]}
         assumptions={[
           "The estimate uses pot volume, runoff target, and a fixed base-volume heuristic.",
+          model.plantContextRequiresConfirmation
+            ? "Selected plant size or water-demand context is present but did not change the estimate because the crop/profile context is not confirmed."
+            : "",
           model.plantContextApplied
             ? "Selected plant canopy size and observed water demand adjusted the volume estimate."
             : "No selected plant size or observed water-demand adjustment was applied.",
           "Medium water retention, dryback, climate, and recent watering history are not yet fully modeled.",
           "Inspect root-zone moisture and plant condition before watering."
-        ]}
+        ].filter(Boolean)}
         actions={actions}
         feedback={feedback}
         contextMessage={

@@ -1,7 +1,10 @@
 type GrowthProfile = {
+  confirmationStatus?: string;
   sizeMetrics?: Record<string, any>;
   waterUseProfile?: Record<string, any>;
 } | null;
+
+const CONFIRMED_STATUSES = new Set(["user_confirmed", "reviewed", "verified"]);
 
 function demandFactor(value?: string) {
   const normalized = String(value || "").toLowerCase();
@@ -15,6 +18,10 @@ function canopyFactor(widthCm?: number) {
   if ((widthCm || 0) >= 120) return 1.15;
   if ((widthCm || 0) <= 45) return 0.85;
   return 1;
+}
+
+function isConfirmed(profile?: GrowthProfile) {
+  return CONFIRMED_STATUSES.has(String(profile?.confirmationStatus || "").toLowerCase());
 }
 
 export function buildWateringEstimate({
@@ -43,9 +50,12 @@ export function buildWateringEstimate({
       waterUseProfile.demand ||
       ""
   );
-  const plantFactor = Number(
+  const rawPlantFactor = Number(
     (canopyFactor(canopyWidthCm || undefined) * demandFactor(observedDemand)).toFixed(2)
   );
+  const hasPlantOverlay = Boolean(canopyWidthCm || observedDemand);
+  const confirmed = isConfirmed(plantGrowthProfile);
+  const plantFactor = confirmed ? rawPlantFactor : 1;
   const base = liters * 0.22;
   const target = base * plantFactor * (1 + runoff / 100);
   return {
@@ -57,6 +67,7 @@ export function buildWateringEstimate({
         ? "none"
         : `${plantFactor > 1 ? "+" : ""}${Math.round((plantFactor - 1) * 100)}%`,
     plantContextApplied: plantFactor !== 1,
+    plantContextRequiresConfirmation: hasPlantOverlay && !confirmed,
     plantContextReasons: [
       canopyWidthCm ? `canopy ${canopyWidthCm} cm` : "",
       observedDemand ? `observed water demand ${observedDemand}` : ""

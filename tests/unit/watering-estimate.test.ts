@@ -7,6 +7,7 @@ describe("buildWateringEstimate", () => {
       runoffPct: 10,
       intervalDays: 2,
       plantGrowthProfile: {
+        confirmationStatus: "user_confirmed",
         sizeMetrics: { canopyWidthCm: 140 },
         waterUseProfile: { observedDemand: "high" }
       }
@@ -15,6 +16,7 @@ describe("buildWateringEstimate", () => {
     expect(result.plantAdjustmentFactor).toBe(1.38);
     expect(result.plantAdjustmentLabel).toBe("+38%");
     expect(result.plantContextApplied).toBe(true);
+    expect(result.plantContextRequiresConfirmation).toBe(false);
     expect(result.plantContextReasons).toEqual([
       "canopy 140 cm",
       "observed water demand high"
@@ -28,6 +30,7 @@ describe("buildWateringEstimate", () => {
       runoffPct: 0,
       intervalDays: 3,
       plantGrowthProfile: {
+        confirmationStatus: "reviewed",
         sizeMetrics: { canopyWidthCm: 35 },
         waterUseProfile: { observedDemand: "low" }
       }
@@ -36,6 +39,29 @@ describe("buildWateringEstimate", () => {
     expect(result.plantAdjustmentFactor).toBe(0.72);
     expect(result.plantAdjustmentLabel).toBe("-28%");
     expect(result.targetLiters).toBe("1.58");
+  });
+
+  it("does not apply plant overlay until the crop/profile context is confirmed", () => {
+    const result = buildWateringEstimate({
+      potLiters: 20,
+      runoffPct: 10,
+      intervalDays: 2,
+      plantGrowthProfile: {
+        confirmationStatus: "needs_confirmation",
+        sizeMetrics: { canopyWidthCm: 140 },
+        waterUseProfile: { observedDemand: "high" }
+      }
+    });
+
+    expect(result.plantAdjustmentFactor).toBe(1);
+    expect(result.plantAdjustmentLabel).toBe("none");
+    expect(result.plantContextApplied).toBe(false);
+    expect(result.plantContextRequiresConfirmation).toBe(true);
+    expect(result.plantContextReasons).toEqual([
+      "canopy 140 cm",
+      "observed water demand high"
+    ]);
+    expect(result.targetLiters).toBe("4.84");
   });
 
   it("keeps the old base heuristic when no plant overlay is present", () => {
@@ -48,6 +74,7 @@ describe("buildWateringEstimate", () => {
     expect(result.plantAdjustmentFactor).toBe(1);
     expect(result.plantAdjustmentLabel).toBe("none");
     expect(result.plantContextApplied).toBe(false);
+    expect(result.plantContextRequiresConfirmation).toBe(false);
     expect(result.targetLiters).toBe("2.42");
   });
 });
