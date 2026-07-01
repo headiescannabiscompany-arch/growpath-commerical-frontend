@@ -63,7 +63,7 @@ function writeValidEvidence(tempRoot, overrides = {}) {
         "api-health",
         "api-ready",
         "api-health-api"
-      ].map((name) => ({ name, status: 200 }))
+      ].map((name) => ({ name, url: `https://example.test/${name}`, status: 200 }))
     },
     "tmp/spec/monitoring-validation/valid.json": {
       status: "passed",
@@ -200,6 +200,52 @@ describe("release go/no-go gate", () => {
 
     expect(result.status).toBe(1);
     expect(result.stderr).toMatch(/store-console submission form evidence/);
+  });
+
+  it("rejects live URL evidence with a failing status", () => {
+    const tempRoot = createReleaseRoot();
+    writeValidEvidence(tempRoot, {
+      "tmp/spec/live-url-checks/valid.json": {
+        status: "passed",
+        results: [
+          "privacy",
+          "terms",
+          "support",
+          "delete-account",
+          "api-health",
+          "api-ready",
+          "api-health-api"
+        ].map((name) => ({
+          name,
+          url: `https://example.test/${name}`,
+          status: name === "support" ? 500 : 200
+        }))
+      }
+    });
+
+    const result = runGate(tempRoot);
+
+    expect(result.status).toBe(1);
+    expect(result.stderr).toMatch(/live URL verification/);
+  });
+
+  it("rejects data-rights evidence when post-delete login succeeds", () => {
+    const tempRoot = createReleaseRoot();
+    writeValidEvidence(tempRoot, {
+      "tmp/spec/data-rights-live/valid.json": {
+        status: "passed",
+        loginStatus: 200,
+        exportStatus: 200,
+        deleteStatus: 200,
+        postDeleteLoginStatus: 200,
+        exportTopLevelKeys: ["profile"]
+      }
+    });
+
+    const result = runGate(tempRoot);
+
+    expect(result.status).toBe(1);
+    expect(result.stderr).toMatch(/disposable-account export\/delete verification/);
   });
 
   it("rejects device-smoke evidence that is not explicitly passed", () => {

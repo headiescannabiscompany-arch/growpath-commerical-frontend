@@ -35,7 +35,8 @@ const evidenceRequirements = [
     dir: "tmp/spec/live-url-checks",
     requiredStatus: "passed",
     validate: (body) => {
-      const names = new Set((body.results || []).map((result) => result.name));
+      const results = Array.isArray(body.results) ? body.results : [];
+      const resultByName = new Map(results.map((result) => [result.name, result]));
       return [
         "privacy",
         "terms",
@@ -44,7 +45,10 @@ const evidenceRequirements = [
         "api-health",
         "api-ready",
         "api-health-api"
-      ].every((name) => names.has(name));
+      ].every((name) => {
+        const result = resultByName.get(name);
+        return result && result.status >= 200 && result.status < 400 && result.url;
+      });
     }
   },
   {
@@ -64,10 +68,10 @@ const evidenceRequirements = [
     requiredStatus: "passed",
     validate: (body) =>
       Boolean(
-        body.loginStatus &&
-          body.exportStatus &&
-          body.deleteStatus &&
-          body.postDeleteLoginStatus &&
+        statusInRange(body.loginStatus, 200, 299) &&
+          statusInRange(body.exportStatus, 200, 299) &&
+          statusInRange(body.deleteStatus, 200, 299) &&
+          statusInRange(body.postDeleteLoginStatus, 400, 499) &&
           Array.isArray(body.exportTopLevelKeys)
       )
   },
@@ -187,6 +191,11 @@ function hasExactValue(name, expected) {
 
 function allValidators(...validators) {
   return (body) => validators.every((validator) => validator(body));
+}
+
+function statusInRange(value, min, max) {
+  const status = Number(value);
+  return Number.isInteger(status) && status >= min && status <= max;
 }
 
 function exists(relPath) {
