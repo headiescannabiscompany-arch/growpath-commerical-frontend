@@ -4,6 +4,7 @@ import { useRouter } from "expo-router";
 import { runTool } from "@/ai/toolRegistry";
 import { listPersonalGrows } from "@/api/grows";
 import { createPersonalLog, listPersonalLogs } from "@/api/logs";
+import { listPersonalPlants } from "@/api/plants";
 import { createPersonalTask, listPersonalTasks } from "@/api/tasks";
 import { getDiagnosisHistory } from "@/api/diagnose";
 import { listToolRuns } from "@/api/toolRuns";
@@ -101,6 +102,7 @@ interface ContextData {
   taskCount: number;
   loadedAt: string;
   grows: any[];
+  plants: any[];
   logs: any[];
   tasks: any[];
   toolRuns: any[];
@@ -229,6 +231,30 @@ function buildContextReply(text: string, context: ContextData | null) {
   return `I have context for ${context.growCount} grows, ${context.logCount} journal entries, and ${context.taskCount} tasks. Ask about next task, recent journal, grow status, diagnosis, dew point risk, feeding, watering, or use: vpd 78f 60.`;
 }
 
+function plantLabel(plant: any) {
+  return [
+    plant?.name,
+    plant?.cropCommonName,
+    plant?.scientificName,
+    plant?.cultivar || plant?.strain
+  ]
+    .map((item) => String(item || "").trim())
+    .filter(Boolean)
+    .join(" / ");
+}
+
+function cropContextSummary(plants: any[]) {
+  if (!plants.length) return "No plant crop context loaded for the selected grow.";
+  const confirmed = plants.filter((plant) =>
+    ["user_confirmed", "reviewed", "verified"].includes(
+      String(plant?.growthProfile?.confirmationStatus || "").toLowerCase()
+    )
+  );
+  const first = confirmed[0] || plants[0];
+  const status = confirmed.length ? "confirmed" : "needs confirmation";
+  return `${plantLabel(first) || "Plant context"} (${status})`;
+}
+
 export default function AiScreen() {
   const router = useRouter();
   const [draft, setDraft] = useState("");
@@ -252,8 +278,9 @@ export default function AiScreen() {
   useEffect(() => {
     async function loadContext() {
       try {
-        const [grows, logs, tasks, toolRuns, diagnoses] = await Promise.all([
+        const [grows, plants, logs, tasks, toolRuns, diagnoses] = await Promise.all([
           listPersonalGrows(),
+          listPersonalPlants(selectedGrowId ? { growId: selectedGrowId } : undefined),
           listPersonalLogs(),
           listPersonalTasks(),
           listToolRuns(),
@@ -274,6 +301,7 @@ export default function AiScreen() {
           taskCount: tasks.length,
           loadedAt: new Date().toLocaleTimeString(),
           grows,
+          plants,
           logs,
           tasks,
           toolRuns,
@@ -289,6 +317,7 @@ export default function AiScreen() {
           taskCount: 0,
           loadedAt: "error",
           grows: [],
+          plants: [],
           logs: [],
           tasks: [],
           toolRuns: [],
@@ -314,6 +343,7 @@ export default function AiScreen() {
       selectedGrowId: growId || null,
       selectedGrow: selectedGrow || null,
       grows: context?.grows || [],
+      plants: scoped(context?.plants || []).slice(0, 30),
       logs: scoped(context?.logs || []).slice(0, 20),
       tasks: scoped(context?.tasks || []).slice(0, 20),
       toolRuns: scoped(context?.toolRuns || []).slice(0, 12),
@@ -436,10 +466,31 @@ export default function AiScreen() {
           <View style={styles.contextCard}>
             <Text style={[styles.contextText, styles.contextTitle]}>Context Loaded</Text>
             <Text style={styles.contextText}>Grows: {context.growCount}</Text>
+            <Text style={styles.contextText}>
+              Plants:{" "}
+              {
+                (selectedGrowId
+                  ? context.plants.filter(
+                      (plant) => !plant?.growId || String(plant.growId) === selectedGrowId
+                    )
+                  : context.plants
+                ).length
+              }
+            </Text>
             <Text style={styles.contextText}>Logs: {context.logCount}</Text>
             <Text style={styles.contextText}>Tasks: {context.taskCount}</Text>
             <Text style={styles.contextText}>Tool runs: {context.toolRuns.length}</Text>
             <Text style={styles.contextText}>Diagnoses: {context.diagnoses.length}</Text>
+            <Text style={styles.contextText}>
+              Crop context:{" "}
+              {cropContextSummary(
+                selectedGrowId
+                  ? context.plants.filter(
+                      (plant) => !plant?.growId || String(plant.growId) === selectedGrowId
+                    )
+                  : context.plants
+              )}
+            </Text>
             <Text style={styles.contextText}>Updated: {context.loadedAt}</Text>
             {context.grows.length ? (
               <View style={styles.growPicker}>

@@ -9,6 +9,8 @@ function fulfillJson(route: any, body: any, status = 200) {
 }
 
 async function installMocks(page: any) {
+  const assistantPayloads: any[] = [];
+
   await page.addInitScript(() => {
     window.localStorage.setItem("auth_token_v1", "personal-ai-token");
     window.localStorage.setItem("seenOnboardingCarousel", "true");
@@ -47,6 +49,31 @@ async function installMocks(page: any) {
         grows: [
           { id: "grow-ai-1", name: "Flower Room", status: "flowering" },
           { id: "grow-ai-2", name: "Veg Tent", status: "vegetating" }
+        ]
+      });
+    }
+
+    if (method === "GET" && url.pathname === "/api/personal/plants") {
+      return fulfillJson(route, {
+        plants: [
+          {
+            id: "plant-ai-1",
+            growId: "grow-ai-1",
+            name: "Arbequina Olive #1",
+            cropCommonName: "Olive",
+            scientificName: "Olea europaea",
+            cropProfileId: "crop-olive-1",
+            cultivar: "Arbequina",
+            stage: "fruiting",
+            growthProfile: {
+              cropProfile: "crop-olive-1",
+              confirmationStatus: "user_confirmed",
+              sizeMetrics: { canopyWidthCm: 140 },
+              timingAdjustments: { stageDaysOffset: 8 },
+              waterUseProfile: { observedDemand: "low" },
+              phenoLabel: "compact"
+            }
+          }
         ]
       });
     }
@@ -106,11 +133,12 @@ async function installMocks(page: any) {
     }
 
     if (method === "POST" && url.pathname === "/api/ai/assistant/personal") {
+      assistantPayloads.push(request.postDataJSON());
       return fulfillJson(route, {
         success: true,
         intent: "environment",
         reply:
-          "Flower Room has a recent dew point task. Inspect dense canopy and confirm night RH.",
+          "Flower Room has a recent dew point task. Olive crop context is confirmed; do not use cannabis defaults for this plant.",
         actions: [
           { label: "Open Dew Point Guard", href: "/home/personal/tools/dew-point-guard" }
         ],
@@ -156,6 +184,8 @@ async function installMocks(page: any) {
 
     return fulfillJson(route, { ok: true });
   });
+
+  return { assistantPayloads };
 }
 
 test.describe("grow-aware personal AI assistant", () => {
@@ -165,10 +195,12 @@ test.describe("grow-aware personal AI assistant", () => {
   ]) {
     test(`shows scoped context and confirms write on ${size.name}`, async ({ page }) => {
       await page.setViewportSize({ width: size.width, height: size.height });
-      await installMocks(page);
+      const api = await installMocks(page);
 
       await page.goto("/home/personal/ai", { waitUntil: "domcontentloaded" });
       await expect(page.getByText("Context Loaded")).toBeVisible();
+      await expect(page.getByText("Plants: 1")).toBeVisible();
+      await expect(page.getByText(/Crop context: .*Olive/i)).toBeVisible();
       await expect(
         page.getByRole("button", { name: "Select AI grow Flower Room" })
       ).toBeVisible();
@@ -178,9 +210,26 @@ test.describe("grow-aware personal AI assistant", () => {
         .fill("what should I do about humidity?");
       await page.getByRole("button", { name: "Send" }).click();
 
-      await expect(
-        page.getByText(/Flower Room has a recent dew point task/)
-      ).toBeVisible();
+      await expect(page.getByText(/Olive crop context is confirmed/)).toBeVisible();
+      expect(api.assistantPayloads[0]).toMatchObject({
+        context: {
+          selectedGrowId: "grow-ai-1",
+          plants: [
+            {
+              id: "plant-ai-1",
+              cropCommonName: "Olive",
+              scientificName: "Olea europaea",
+              cropProfileId: "crop-olive-1",
+              growthProfile: {
+                confirmationStatus: "user_confirmed",
+                sizeMetrics: { canopyWidthCm: 140 },
+                waterUseProfile: { observedDemand: "low" },
+                phenoLabel: "compact"
+              }
+            }
+          ]
+        }
+      });
       await expect(page.getByText("Referenced grow data")).toBeVisible();
       await expect(page.getByText(/task: Check dew point/)).toBeVisible();
       await expect(page.getByText("Drafted actions require confirmation")).toBeVisible();
