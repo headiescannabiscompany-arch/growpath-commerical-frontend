@@ -101,6 +101,37 @@ function readExpoExtra() {
   }
 }
 
+function validateAndroidPermissions() {
+  const appJsonPath = path.join(ROOT, "app.json");
+  if (!fs.existsSync(appJsonPath)) return;
+
+  try {
+    const appJson = JSON.parse(fs.readFileSync(appJsonPath, "utf8"));
+    const permissions = appJson?.expo?.android?.permissions || [];
+    const broadStorage = permissions.filter((permission) =>
+      ["android.permission.READ_EXTERNAL_STORAGE", "android.permission.WRITE_EXTERNAL_STORAGE"].includes(
+        permission
+      )
+    );
+
+    for (const permission of broadStorage) {
+      violations.push({
+        file: "app.json",
+        line: 1,
+        check: "avoid broad Android storage permission",
+        value: permission
+      });
+    }
+  } catch (err) {
+    violations.push({
+      file: "app.json",
+      line: 1,
+      check: "valid app.json",
+      value: err?.message || String(err)
+    });
+  }
+}
+
 function validateReleaseLink(link, extra) {
   const value = String(process.env[link.env] || extra[link.extra] || link.fallback || "");
   if (!value) {
@@ -174,6 +205,8 @@ function lineFor(text, index) {
 const violations = [];
 const files = SEARCH_ROOTS.flatMap((root) => walk(root));
 const expoExtra = readExpoExtra();
+
+validateAndroidPermissions();
 
 for (const link of releaseLinks) {
   validateReleaseLink(link, expoExtra);
