@@ -1,0 +1,13 @@
+services:
+  - type: web
+    name: growpath-commercial-frontend
+    runtime: static
+    buildCommand: npm ci && npm run build
+    staticPublishPath: dist
+    envVars:
+      - key: NODE_VERSION
+        value: 20.19.4
+      - key: EXPO_PUBLIC_API_URL
+        value: https://api.growpathai.com
+      - key: EXPO_PUBLIC_SENTRY_DSN
+        sync: false
