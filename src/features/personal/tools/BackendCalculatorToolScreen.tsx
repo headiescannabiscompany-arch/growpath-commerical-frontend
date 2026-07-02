@@ -45,7 +45,7 @@ type BackendCalculatorToolScreenProps = {
     description?: string;
     priority?: "low" | "medium" | "high";
     dueDate?: string;
-  };
+  } | undefined;
 };
 
 function coerceParam(value?: string | string[]) {

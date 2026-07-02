@@ -50,6 +50,14 @@ export async function reviseNutrientRecipe(id: string, payload: Record<string, a
   return (res?.recipe ?? res?.data?.recipe) as NutrientRecipe;
 }
 
+export async function updateNutrientRecipe(id: string, payload: Record<string, any>) {
+  const res: any = await apiRequest(`/api/tools/recipes/${encodeURIComponent(id)}`, {
+    method: "PATCH",
+    body: payload
+  });
+  return (res?.recipe ?? res?.data?.recipe) as NutrientRecipe;
+}
+
 export async function cloneNutrientRecipe(id: string, name?: string) {
   const res: any = await apiRequest(
     `/api/tools/recipes/${encodeURIComponent(id)}/clone`,
@@ -77,4 +85,11 @@ export async function recordNutrientRecipeUse(
     method: "POST",
     body: payload
   });
+}
+
+export async function archiveNutrientRecipe(id: string): Promise<boolean> {
+  const res: any = await apiRequest(`/api/tools/recipes/${encodeURIComponent(id)}`, {
+    method: "DELETE"
+  });
+  return Boolean(res?.archived ?? res?.data?.archived);
 }

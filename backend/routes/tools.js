@@ -182,7 +182,15 @@ router.get("/", async (req, res, next) => {
     const uid = getRawUserId(req);
     if (!uid) return res.status(401).json({ error: { code: "NOT_AUTHENTICATED" } });
     const query = { user: toObjectId(uid) };
+    if (req.query.includeArchived !== "true") {
+      query.archivedAt = null;
+      query.status = { $ne: "archived" };
+    }
     if (req.query.growId) query.growId = String(req.query.growId);
+    if (req.query.toolType) {
+      const toolType = String(req.query.toolType);
+      query.$or = [{ toolName: toolType }, { toolType }];
+    }
     const items = (await ToolRun.find(query).sort({ createdAt: -1 }).lean()).map(
       toolRunDto
     );
@@ -202,7 +210,9 @@ router.get("/nutrient-chemistry/presets", (_req, res) => {
 
 router.get("/ingredients", async (req, res, next) => {
   try {
-    const items = await ProductIngredient.find({ user: toObjectId(getRawUserId(req)) })
+    const query = { user: toObjectId(getRawUserId(req)) };
+    if (req.query.includeArchived !== "true") query.archivedAt = null;
+    const items = await ProductIngredient.find(query)
       .sort({ favorite: -1, name: 1 })
       .lean();
     return res.json({ items });
@@ -223,6 +233,20 @@ router.post("/ingredients", async (req, res, next) => {
       confidence: req.body?.confidence || "low"
     });
     return res.status(201).json({ created });
+  } catch (error) {
+    return next(error);
+  }
+});
+
+router.get("/ingredients/:id", async (req, res, next) => {
+  try {
+    const item = await ProductIngredient.findOne({
+      _id: req.params.id,
+      user: toObjectId(getRawUserId(req)),
+      archivedAt: null
+    }).lean();
+    if (!item) return res.status(404).json({ message: "Ingredient not found" });
+    return res.json({ item });
   } catch (error) {
     return next(error);
   }
@@ -265,6 +289,20 @@ router.patch("/ingredients/:id", async (req, res, next) => {
   }
 });
 
+router.delete("/ingredients/:id", async (req, res, next) => {
+  try {
+    const updated = await ProductIngredient.findOneAndUpdate(
+      { _id: req.params.id, user: toObjectId(getRawUserId(req)), archivedAt: null },
+      { archivedAt: new Date() },
+      { new: true }
+    );
+    if (!updated) return res.status(404).json({ message: "Ingredient not found" });
+    return res.json({ archived: true, item: updated });
+  } catch (error) {
+    return next(error);
+  }
+});
+
 function recipeInput(body = {}) {
   return {
     batchVolume: body.batchVolume,
@@ -301,6 +339,53 @@ router.get("/recipes/:id", async (req, res, next) => {
     if (!recipe) return res.status(404).json({ message: "Recipe not found" });
     return res.json({ recipe });
   } catch (error) {
+    return next(error);
+  }
+});
+
+router.patch("/recipes/:id", async (req, res, next) => {
+  try {
+    const uid = getRawUserId(req);
+    const recipe = await NutrientRecipe.findOne({
+      _id: req.params.id,
+      user: toObjectId(uid),
+      active: true
+    });
+    if (!recipe) return res.status(404).json({ message: "Recipe not found" });
+    const allowed = [
+      "name",
+      "description",
+      "stage",
+      "medium",
+      "batchVolume",
+      "batchUnit",
+      "products",
+      "releaseEnvironment",
+      "waterBaseline",
+      "measuredEC",
+      "measuredPH",
+      "notes"
+    ];
+    for (const key of allowed) {
+      if (req.body?.[key] !== undefined) recipe[key] = req.body[key];
+    }
+    if (req.body?.growId !== undefined) {
+      const growId = req.body.growId ? String(req.body.growId) : null;
+      if (growId && !(await ownsGrow(uid, growId))) {
+        return res.status(404).json({ message: "Grow not found" });
+      }
+      recipe.growId = growId;
+    }
+    const input = recipeInput(recipe.toObject ? recipe.toObject() : recipe);
+    recipe.calculation = calculators.calculateNpkRecipe(input);
+    recipe.sourceConfidence = recipe.calculation.sourceConfidence || {};
+    recipe.mixingOrder = recipe.calculation.mixingOrder || [];
+    await recipe.save();
+    return res.json({ recipe });
+  } catch (error) {
+    if (/must|greater|maximum|required/i.test(error.message || "")) {
+      return res.status(400).json({ message: error.message });
+    }
     return next(error);
   }
 });
@@ -416,6 +501,24 @@ router.post("/recipes/:id/clone", async (req, res, next) => {
     });
     await clone.save();
     return res.status(201).json({ recipe: clone });
+  } catch (error) {
+    return next(error);
+  }
+});
+
+router.delete("/recipes/:id", async (req, res, next) => {
+  try {
+    const uid = getRawUserId(req);
+    const recipe = await NutrientRecipe.findOne({
+      _id: req.params.id,
+      user: toObjectId(uid),
+      active: true
+    });
+    if (!recipe) return res.status(404).json({ message: "Recipe not found" });
+    recipe.active = false;
+    recipe.archivedAt = new Date();
+    await recipe.save();
+    return res.json({ archived: true, recipe });
   } catch (error) {
     return next(error);
   }
@@ -553,6 +656,21 @@ calculatorRoute(
   "living_soil_batch",
   calculators.calculateLivingSoilBatch
 );
+calculatorRoute("/ipm-scout", "ipm_scout", calculators.calculateIpmScout);
+calculatorRoute(
+  "/species-crop-id",
+  "species_crop_id",
+  calculators.calculateSpeciesCropIdentification
+);
+calculatorRoute("/genetics-inventory", "genetics_inventory", calculators.calculateGeneticsInventory);
+calculatorRoute("/harvest-readiness", "harvest_readiness", calculators.calculateHarvestReadiness);
+calculatorRoute("/personal-inventory", "personal_inventory", calculators.calculatePersonalInventory);
+calculatorRoute(
+  "/crop-steering-project",
+  "crop_steering_project",
+  calculators.calculateCropSteeringProject
+);
+calculatorRoute("/pheno-hunt", "pheno_hunt", calculators.calculatePhenoHunt);
 
 router.get("/runs/:id", async (req, res, next) => {
   try {
@@ -564,6 +682,82 @@ router.get("/runs/:id", async (req, res, next) => {
     const run = await ToolRun.findOne({ _id: req.params.id, user: toObjectId(uid) });
     if (!run) return res.status(404).json({ message: "Tool run not found" });
     return res.json({ toolRun: toolRunDto(run) });
+  } catch (error) {
+    return next(error);
+  }
+});
+
+router.patch("/runs/:id", async (req, res, next) => {
+  try {
+    const uid = getRawUserId(req);
+    if (!uid) return res.status(401).json({ error: { code: "NOT_AUTHENTICATED" } });
+    if (!mongoose.isValidObjectId(String(req.params.id))) {
+      return res.status(404).json({ message: "Tool run not found" });
+    }
+    const run = await ToolRun.findOne({
+      _id: req.params.id,
+      user: toObjectId(uid),
+      archivedAt: null
+    });
+    if (!run) return res.status(404).json({ message: "Tool run not found" });
+    if (req.body?.growId !== undefined) {
+      const growId = req.body.growId ? String(req.body.growId) : null;
+      if (growId && !(await ownsGrow(uid, growId))) {
+        return res.status(404).json({ message: "Grow not found" });
+      }
+      run.growId = growId;
+    }
+    const allowed = [
+      "plantId",
+      "cropIdentity",
+      "selectedPlantContext",
+      "plantGrowthProfile",
+      "schemaVersion",
+      "calculatorVersion",
+      "inputs",
+      "input",
+      "params",
+      "outputs",
+      "output",
+      "result",
+      "status",
+      "summary",
+      "recommendations",
+      "warnings",
+      "formulas",
+      "uncertainty",
+      "confidence",
+      "sourceType",
+      "sourceObjectId",
+      "linkedRecipeId"
+    ];
+    for (const key of allowed) {
+      if (req.body?.[key] !== undefined) run[key] = req.body[key];
+    }
+    await run.save();
+    return res.json({ toolRun: toolRunDto(run) });
+  } catch (error) {
+    return next(error);
+  }
+});
+
+router.delete("/runs/:id", async (req, res, next) => {
+  try {
+    const uid = getRawUserId(req);
+    if (!uid) return res.status(401).json({ error: { code: "NOT_AUTHENTICATED" } });
+    if (!mongoose.isValidObjectId(String(req.params.id))) {
+      return res.status(404).json({ message: "Tool run not found" });
+    }
+    const run = await ToolRun.findOne({
+      _id: req.params.id,
+      user: toObjectId(uid),
+      archivedAt: null
+    });
+    if (!run) return res.status(404).json({ message: "Tool run not found" });
+    run.status = "archived";
+    run.archivedAt = new Date();
+    await run.save();
+    return res.json({ archived: true, toolRun: toolRunDto(run) });
   } catch (error) {
     return next(error);
   }

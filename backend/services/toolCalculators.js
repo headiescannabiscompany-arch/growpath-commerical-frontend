@@ -1153,6 +1153,191 @@ function calculateLivingSoilBatch(input = {}) {
   };
 }
 
+function calculateIpmScout(input = {}) {
+  const stickyTrapCount = Math.max(0, number(input.stickyTrapCount ?? 0, "Sticky trap count"));
+  const leafDamage = String(input.leafDamage || "").toLowerCase();
+  const pestSeen = String(input.pestSeen || "").toLowerCase();
+  const underside = String(input.undersideInspection || "").toLowerCase();
+  const evidence = parseList(input.evidence || input.notes);
+  let suspectedIssue = "monitoring";
+  let suspectedOrganism = "unknown";
+  let severity = stickyTrapCount > 20 ? "high" : stickyTrapCount > 5 ? "medium" : "low";
+  if (/mite|web|stippling/.test(`${pestSeen} ${leafDamage} ${underside}`)) {
+    suspectedIssue = "pest_pressure";
+    suspectedOrganism = "mites possible";
+  } else if (/thrip|silver|scrape/.test(`${pestSeen} ${leafDamage}`)) {
+    suspectedIssue = "pest_pressure";
+    suspectedOrganism = "thrips possible";
+  } else if (/mold|mildew|spot|lesion/.test(leafDamage)) {
+    suspectedIssue = "disease_or_leaf_spot";
+  }
+  if (suspectedIssue !== "monitoring" && severity === "low") severity = "medium";
+  return {
+    suspectedIssue,
+    suspectedOrganism,
+    confidence: evidence.length || stickyTrapCount ? "medium" : "low",
+    severity,
+    evidence,
+    nextInspectionSteps: [
+      "Inspect leaf undersides and new growth with magnification.",
+      "Check sticky traps by zone and date.",
+      "Record photos before treatment decisions."
+    ],
+    nonChemicalRecommendations: [
+      "Improve scouting frequency and isolate heavily affected material when appropriate.",
+      "Confirm organism identity before choosing any treatment category."
+    ],
+    treatmentCategory: "inspection_and_cultural_controls_first",
+    taskSuggestions: [{ title: "Repeat IPM scout", dueInDays: severity === "high" ? 1 : 3, priority: severity === "high" ? "high" : "medium" }]
+  };
+}
+
+function calculateSpeciesCropIdentification(input = {}) {
+  const commonName = String(input.commonName || input.crop || "unknown crop").trim();
+  const cultivar = String(input.cultivar || input.strain || "").trim();
+  const traits = parseList(input.traits || input.notes);
+  const confirmed = String(input.userConfirmed || "").toLowerCase() === "true";
+  return {
+    likelyCrop: commonName,
+    cultivarOrStrain: cultivar || null,
+    confidence: confirmed ? "user_confirmed" : traits.length >= 3 ? "medium" : "low",
+    confirmationRequired: !confirmed,
+    cropProfileSuggestion: {
+      commonName,
+      cultivarOrStrain: cultivar || null,
+      traits,
+      source: confirmed ? "user_confirmed" : "user_entered"
+    },
+    warnings: confirmed ? [] : ["Confirm crop identity before relying on crop-specific recommendations."],
+    recommendations: [
+      "Attach this identity to the plant or grow profile once confirmed.",
+      "Use photos, breeder/source notes, leaf structure, growth habit, and flowering behavior as supporting evidence."
+    ]
+  };
+}
+
+function calculateGeneticsInventory(input = {}) {
+  const cultivar = String(input.cultivar || "Unnamed cultivar");
+  const stressNotes = parseList(input.stressNotes);
+  const feedingResponse = String(input.feedingResponse || "unknown");
+  const flowerTime = input.flowerTime ? number(input.flowerTime, "Flower time") : null;
+  return {
+    cultivar,
+    breeder: input.breeder || "",
+    parentage: input.parentage || "",
+    seedType: input.seedType || "",
+    feedingResponse,
+    stressNotes,
+    flowerTime,
+    growHistory: parseList(input.growHistory),
+    aromaFlavorNotes: parseList(input.aromaFlavorNotes),
+    keeperSignals: [
+      feedingResponse,
+      flowerTime ? `${flowerTime} day flower estimate` : null,
+      stressNotes.length ? `${stressNotes.length} stress notes` : null
+    ].filter(Boolean),
+    recommendations: [
+      "Link this genetics record to grows, plants, pheno scores, clone runs, and final product notes.",
+      "Do not make keeper decisions from genetics notes alone; compare against actual run results."
+    ]
+  };
+}
+
+function calculateHarvestReadiness(input = {}) {
+  const flowerDay = number(input.flowerDay ?? 49, "Flower day");
+  const breederFlowerTime = number(input.breederFlowerTime ?? 63, "Breeder flower time");
+  const cloudyPercent = Math.max(0, number(input.cloudyPercent ?? 50, "Cloudy percent"));
+  const amberPercent = Math.max(0, number(input.amberPercent ?? 5, "Amber percent"));
+  const clearPercent = Math.max(0, number(input.clearPercent ?? 100 - cloudyPercent - amberPercent, "Clear percent"));
+  const remaining = breederFlowerTime - flowerDay;
+  let readinessStatus = "early";
+  if (remaining <= 10 && cloudyPercent >= 50) readinessStatus = "checking_window";
+  if (remaining <= 3 && cloudyPercent >= 60 && amberPercent >= 5) readinessStatus = "ready_soon";
+  if (clearPercent > 25) readinessStatus = "not_ready";
+  return {
+    readinessStatus,
+    estimatedWindow: {
+      startDay: Math.max(flowerDay, breederFlowerTime - 7),
+      targetDay: breederFlowerTime,
+      endDay: breederFlowerTime + 7
+    },
+    evidence: [`Flower day ${flowerDay}`, `${cloudyPercent}% cloudy`, `${amberPercent}% amber`, `${clearPercent}% clear`],
+    trichomeInterpretation: clearPercent > 25 ? "Clear trichomes still suggest waiting." : "Trichome mix is entering a check window.",
+    aromaFlavorInterpretation: input.aromaIntensity ? `Aroma intensity: ${input.aromaIntensity}` : "Aroma data not entered.",
+    suggestedNextCheckDate: new Date(Date.now() + (readinessStatus === "ready_soon" ? 1 : 3) * 86400000).toISOString(),
+    warnings: ["Harvest readiness is decision support, not a guarantee. Confirm with photos, cultivar behavior, desired effect, and whole-plant maturity."],
+    harvestTask: { title: "Recheck harvest readiness", dueInDays: readinessStatus === "ready_soon" ? 1 : 3, priority: readinessStatus === "ready_soon" ? "high" : "medium" }
+  };
+}
+
+function calculatePersonalInventory(input = {}) {
+  const quantity = Math.max(0, number(input.quantity ?? 0, "Quantity"));
+  const reorderAt = Math.max(0, number(input.reorderAt ?? 0, "Reorder threshold"));
+  const cost = Math.max(0, number(input.cost ?? 0, "Cost"));
+  const lowStock = quantity <= reorderAt;
+  return {
+    name: input.name || "Inventory item",
+    category: input.category || "grow_supply",
+    quantity,
+    unit: input.unit || "",
+    cost,
+    lowStockWarnings: lowStock ? [`${input.name || "Item"} is at or below reorder threshold.`] : [],
+    recipeAvailability: input.recipeUseRate ? Math.floor(quantity / Math.max(1, number(input.recipeUseRate, "Recipe use rate"))) : null,
+    costPerUse: input.recipeUseRate ? Number((cost * number(input.recipeUseRate, "Recipe use rate")).toFixed(2)) : null,
+    reorderSuggestions: lowStock ? [{ title: `Reorder ${input.name || "item"}`, dueInDays: 1, priority: "medium" }] : []
+  };
+}
+
+function calculateCropSteeringProject(input = {}) {
+  const dryback = input.drybackPercent ? number(input.drybackPercent, "Dryback percent") : null;
+  const runoffEC = input.runoffEC ? number(input.runoffEC, "Runoff EC") : null;
+  const inputEC = input.inputEC ? number(input.inputEC, "Input EC") : null;
+  const warnings = [];
+  if (dryback != null && dryback > 35) warnings.push("Dryback is high. Watch stress response before pushing generative pressure further.");
+  if (runoffEC != null && inputEC != null && runoffEC > inputEC * 1.4) warnings.push("Runoff EC is materially higher than input EC.");
+  return {
+    steeringIntent: input.steeringIntent || "balanced",
+    plantResponse: input.plantResponse || "not recorded",
+    phase: input.phase || "P1",
+    warnings,
+    recommendations: [
+      "Record consistent irrigation timing, shot size, dryback, runoff, DLI, VPD, and plant response.",
+      "Use control comparisons before deciding a steering approach improved the run."
+    ],
+    notesForPhenoScore: warnings.length ? "Stress response should be considered in pheno scoring." : "No major steering warnings entered.",
+    tasksToCreate: [{ title: "Log crop steering response", dueInDays: 1, priority: warnings.length ? "high" : "medium" }]
+  };
+}
+
+function calculatePhenoHunt(input = {}) {
+  const plants = Array.isArray(input.plants) ? input.plants : [];
+  if (!plants.length) throw new Error("At least one pheno plant is required");
+  const scored = plants.map((plant, index) => {
+    const vigor = Number(plant.vigor ?? 0);
+    const aroma = Number(plant.aroma ?? 0);
+    const resin = Number(plant.resin ?? 0);
+    const stress = Number(plant.stressResistance ?? 0);
+    const yieldScore = Number(plant.yieldScore ?? plant.yield ?? 0);
+    const score = vigor * 0.2 + aroma * 0.2 + resin * 0.2 + stress * 0.2 + yieldScore * 0.2;
+    return {
+      id: String(plant.id || `plant_${index + 1}`),
+      label: String(plant.label || plant.name || `Plant ${index + 1}`),
+      score: Number(score.toFixed(2)),
+      keeperDecision: score >= 8 ? "keeper_candidate" : score >= 6 ? "retest" : "reject_or_watch",
+      notes: plant.notes || ""
+    };
+  }).sort((a, b) => b.score - a.score);
+  return {
+    projectName: input.projectName || "Pheno hunt",
+    comparisonMatrix: scored,
+    weightedScores: scored,
+    keeperRecommendations: scored.filter((plant) => plant.keeperDecision === "keeper_candidate"),
+    rejectReasons: scored.filter((plant) => plant.keeperDecision === "reject_or_watch").map((plant) => ({ plant: plant.label, reason: "Score below current keeper threshold." })),
+    breedingCandidateNotes: "Confirm with clone performance, stress testing, lab/smoke notes, and rerun evidence before final keeper decisions.",
+    reports: [{ title: `${input.projectName || "Pheno hunt"} summary`, plantCount: scored.length }]
+  };
+}
+
 module.exports = {
   calculateVpd,
   calculatePpfdDli,
@@ -1171,5 +1356,12 @@ module.exports = {
   calculateRunComparison,
   calculateAutoGrowCalendar,
   calculateTissueCulture,
-  calculateLivingSoilBatch
+  calculateLivingSoilBatch,
+  calculateIpmScout,
+  calculateSpeciesCropIdentification,
+  calculateGeneticsInventory,
+  calculateHarvestReadiness,
+  calculatePersonalInventory,
+  calculateCropSteeringProject,
+  calculatePhenoHunt
 };

@@ -14,16 +14,17 @@ Legend:
 - [x] Create current implementation audit comparing planned modules to frontend routes, API clients, backend routes, backend models, tests, and docs.
 - [x] Convert audit into a machine-readable report and a short markdown report.
 - [~] Keep release surface policy: release surfaces visible, beta opt-in only, hidden/planned/disabled not visible.
-- [ ] Add or update validation so planned modules cannot leak into public navigation.
+- [x] Add or update validation so planned modules cannot leak into public navigation.
 - [x] Record all module decisions in this TODO and ledger before implementation changes.
 
 ## Phase 1 - Foundation Contracts
 
 - [~] ToolRun canonical contract.
 - [x] ToolRun backend model and `/api/tools` create/list/reload route contract.
+- [x] ToolRun update/archive route contract.
 - [ ] SourceRecord/provenance model.
-- [~] Product/Ingredient canonical model.
-- [~] Recipe model and nutrient recipe persistence.
+- [~] Product/Ingredient canonical model and CRUD/archive route contract.
+- [~] Recipe model, nutrient recipe persistence, update, archive, revise, clone, and use route contract.
 - [x] Nutrient recipe backend model and `/api/tools/recipes` create/list/revise/clone/use route contract.
 - [x] Personal grow/log/task backend CRUD restored from previous backend.
 - [x] Grow timeline route restored with grow, plant, log, photo, task, tool, diagnosis, feedback, automation, and telemetry events.
@@ -51,24 +52,24 @@ Legend:
 - [~] AI Diagnosis.
 - [ ] ETGU Diagnosis Rules.
 - [ ] Grow Log Auto-Tagging approval flow.
-- [ ] IPM Scout.
+- [~] IPM Scout.
 - [ ] Organism Library.
-- [ ] Species / Crop Identification.
+- [~] Species / Crop Identification.
 - [ ] Crop Profile Database.
 - [ ] Treatment and next-check task flow.
 
 ## Phase 4 - Genetics / Pheno / Stress / Crop Steering
 
-- [ ] Genetics Inventory.
+- [~] Genetics Inventory.
 - [~] Pheno Matrix foundation.
-- [ ] Pheno Hunt Projects.
+- [~] Pheno Hunt Projects.
 - [ ] Pheno Plant Records.
 - [ ] Stage Scorecards.
 - [~] Stress Testing.
 - [~] Crop Steering foundation.
-- [ ] Keeper / Reject / Retest decisions.
-- [ ] Breeding lane links.
-- [ ] Pheno reports.
+- [~] Keeper / Reject / Retest decisions.
+- [~] Breeding lane links.
+- [~] Pheno reports.
 
 ## Phase 5 - Propagation / Tissue Culture
 
@@ -82,7 +83,7 @@ Legend:
 
 ## Phase 6 - Harvest / Dry / Cure / History
 
-- [ ] Harvest Readiness AI.
+- [~] Harvest Readiness AI.
 - [~] Dry / Cure Guard.
 - [~] Run-To-Run Comparison.
 - [~] Auto Grow Calendar.
@@ -110,6 +111,9 @@ Legend:
 - [x] Backend tests run for Stress Testing, Clone Rooting, Run-To-Run Comparison, Auto Grow Calendar, Tissue Culture, Living Soil batch, and Facility Insights Summary.
 - [x] System audit rerun after the next tool slice: 33 modules, 25 partial, 8 present-foundation, 0 missing, 0 trace-only.
 - [x] Full surface audit rerun after adding ten personal tool routes: 162 frontend route files, 148 routes, 38 backend route declarations, 0 errors, 0 warnings.
+- [x] Backend tests run for IPM Scout, Species/Crop ID, Genetics Inventory, Harvest Readiness, Inventory, Crop Steering Projects, and Pheno Hunt.
+- [x] Feature status tests verify these modules are release routes and the old crop-steering scaffold remains hidden.
+- [x] Backend CRUD tests run for ToolRun update/archive, ProductIngredient read/update/archive, and NutrientRecipe update/archive.
 - [ ] Tool workflow E2E: grow -> tool -> ToolRun -> log -> task -> timeline -> reload.
 - [ ] Diagnosis workflow E2E: photo -> diagnosis -> accepted tags -> log -> follow-up task.
 - [ ] Recipe workflow E2E: recipe -> revision -> feeding event -> grow history.

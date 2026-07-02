@@ -139,6 +139,7 @@ const MODULES = [
   {
     phase: "Diagnosis / IPM / Crop ID",
     name: "IPM Scout",
+    route: "/home/personal/tools/ipm-scout",
     keywords: ["ipm", "scout", "stickyTrap", "pestSeen"],
     required: ["route", "organism-link", "task"]
   },
@@ -149,15 +150,23 @@ const MODULES = [
     required: ["model", "sources", "ui"]
   },
   {
+    phase: "Diagnosis / IPM / Crop ID",
+    name: "Species / Crop Identification",
+    route: "/home/personal/tools/species-crop-id",
+    keywords: ["species", "crop identification", "likelyCrop", "cropProfileSuggestion"],
+    required: ["route", "confirmation", "crop-profile-link"]
+  },
+  {
     phase: "Genetics / Pheno / Stress",
     name: "Genetics Inventory",
+    route: "/home/personal/tools/genetics-inventory",
     keywords: ["genetics", "cultivar", "breeder", "parentage"],
     required: ["model", "ui", "grow-links"]
   },
   {
     phase: "Genetics / Pheno / Stress",
     name: "Pheno Hunting",
-    route: "/home/personal/tools/pheno-matrix",
+    route: "/home/personal/tools/pheno-hunt",
     keywords: ["pheno", "keeper", "weightedScores", "stageScores"],
     required: ["project", "plant-records", "reports"]
   },
@@ -171,7 +180,7 @@ const MODULES = [
   {
     phase: "Genetics / Pheno / Stress",
     name: "Crop Steering Projects",
-    route: "/home/personal/tools/crop-steering",
+    route: "/home/personal/tools/crop-steering-project",
     keywords: ["crop-steering", "dryback", "steeringIntent"],
     required: ["project", "measurements", "tasks"]
   },
@@ -192,7 +201,7 @@ const MODULES = [
   {
     phase: "Harvest / History",
     name: "Harvest Readiness AI",
-    route: "/home/personal/tools/harvest-estimator",
+    route: "/home/personal/tools/harvest-readiness",
     keywords: ["harvest", "trichome", "amberPercent", "readiness"],
     required: ["photos", "harvest-task", "history"]
   },
@@ -219,6 +228,7 @@ const MODULES = [
   {
     phase: "Business / Production",
     name: "Inventory",
+    route: "/home/personal/tools/inventory",
     keywords: ["inventory", "lowStock", "reorder"],
     required: ["model", "api", "ui", "recipe-links"]
   },

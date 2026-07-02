@@ -24,6 +24,13 @@ const mockTask = {
   create: jest.fn()
 };
 
+const mockProductIngredient = {
+  find: jest.fn(),
+  findOne: jest.fn(),
+  create: jest.fn(),
+  findOneAndUpdate: jest.fn()
+};
+
 const mockNutrientRecipeModel = jest.fn(function NutrientRecipe(payload) {
   Object.assign(this, payload);
   this._id = RECIPE_ID;
@@ -39,7 +46,7 @@ jest.mock("../models/Grow", () => mockGrow);
 jest.mock("../models/GrowLog", () => mockGrowLog);
 jest.mock("../models/Task", () => mockTask);
 jest.mock("../models/NutrientRecipe", () => mockNutrientRecipeModel);
-jest.mock("../models/ProductIngredient", () => ({ find: jest.fn(), create: jest.fn() }));
+jest.mock("../models/ProductIngredient", () => mockProductIngredient);
 jest.mock("../services/createAutomationEvent", () => jest.fn().mockResolvedValue({}));
 
 function createApp() {
@@ -604,6 +611,326 @@ describe("Tools Router (tools.js)", () => {
       costPerBag: 5.42
     });
     expect(batch.body.outputs.ingredientPullSheet).toHaveLength(2);
+  });
+
+  test("runs IPM scout and species crop identification tools", async () => {
+    mockGrow.exists.mockResolvedValue(true);
+    mockToolRun.create.mockImplementation((payload) => ({
+      _id: RUN_ID,
+      toObject: () => ({ _id: RUN_ID, ...payload })
+    }));
+
+    const ipm = await authed(
+      request(app)
+        .post("/api/tools/ipm-scout")
+        .send({
+          growId: "grow_1",
+          plantId: "plant_1",
+          pestSeen: "mites",
+          leafDamage: "stippling",
+          undersideInspection: "webbing under leaf",
+          stickyTrapCount: 12,
+          notes: "mites, webbing"
+        })
+    );
+    const cropId = await authed(
+      request(app)
+        .post("/api/tools/species-crop-id")
+        .send({
+          growId: "grow_1",
+          commonName: "Cannabis",
+          cultivar: "Blue Dream",
+          traits: "serrated leaves, photoperiod",
+          userConfirmed: false
+        })
+    );
+
+    expect(ipm.status).toBe(201);
+    expect(ipm.body.outputs).toMatchObject({
+      suspectedIssue: "pest_pressure",
+      suspectedOrganism: "mites possible",
+      severity: "medium"
+    });
+    expect(ipm.body.outputs.taskSuggestions[0]).toMatchObject({
+      title: "Repeat IPM scout"
+    });
+    expect(cropId.status).toBe(201);
+    expect(cropId.body.outputs).toMatchObject({
+      likelyCrop: "Cannabis",
+      cultivarOrStrain: "Blue Dream",
+      confirmationRequired: true
+    });
+    expect(cropId.body.outputs.warnings).toEqual(
+      expect.arrayContaining([
+        "Confirm crop identity before relying on crop-specific recommendations."
+      ])
+    );
+  });
+
+  test("runs genetics inventory and harvest readiness tools", async () => {
+    mockGrow.exists.mockResolvedValue(true);
+    mockToolRun.create.mockImplementation((payload) => ({
+      _id: RUN_ID,
+      toObject: () => ({ _id: RUN_ID, ...payload })
+    }));
+
+    const genetics = await authed(
+      request(app)
+        .post("/api/tools/genetics-inventory")
+        .send({
+          growId: "grow_1",
+          cultivar: "Keeper Kush",
+          breeder: "House line",
+          parentage: "A x B",
+          seedType: "regular",
+          feedingResponse: "heavy feeder",
+          stressNotes: "heat tolerant, roots fast",
+          flowerTime: 63,
+          aromaFlavorNotes: "gas, citrus"
+        })
+    );
+    const harvest = await authed(
+      request(app)
+        .post("/api/tools/harvest-readiness")
+        .send({
+          growId: "grow_1",
+          plantId: "plant_1",
+          flowerDay: 61,
+          breederFlowerTime: 63,
+          cloudyPercent: 70,
+          amberPercent: 7,
+          clearPercent: 10,
+          aromaIntensity: "strong"
+        })
+    );
+
+    expect(genetics.status).toBe(201);
+    expect(genetics.body.outputs).toMatchObject({
+      cultivar: "Keeper Kush",
+      breeder: "House line",
+      feedingResponse: "heavy feeder"
+    });
+    expect(genetics.body.outputs.keeperSignals).toEqual(
+      expect.arrayContaining(["63 day flower estimate", "2 stress notes"])
+    );
+    expect(harvest.status).toBe(201);
+    expect(harvest.body.outputs).toMatchObject({
+      readinessStatus: "ready_soon",
+      harvestTask: expect.objectContaining({ title: "Recheck harvest readiness" })
+    });
+    expect(harvest.body.outputs.estimatedWindow).toMatchObject({
+      targetDay: 63
+    });
+  });
+
+  test("runs inventory, crop steering project, and pheno hunt tools", async () => {
+    mockGrow.exists.mockResolvedValue(true);
+    mockToolRun.create.mockImplementation((payload) => ({
+      _id: RUN_ID,
+      toObject: () => ({ _id: RUN_ID, ...payload })
+    }));
+
+    const inventory = await authed(
+      request(app)
+        .post("/api/tools/personal-inventory")
+        .send({
+          growId: "grow_1",
+          name: "Kelp meal",
+          category: "amendment",
+          quantity: 1,
+          unit: "lb",
+          reorderAt: 2,
+          cost: 12,
+          recipeUseRate: 1
+        })
+    );
+    const steering = await authed(
+      request(app)
+        .post("/api/tools/crop-steering-project")
+        .send({
+          growId: "grow_1",
+          steeringIntent: "generative",
+          drybackPercent: 42,
+          inputEC: 1.6,
+          runoffEC: 3.1,
+          plantResponse: "leaf edge stress"
+        })
+    );
+    const pheno = await authed(
+      request(app)
+        .post("/api/tools/pheno-hunt")
+        .send({
+          growId: "grow_1",
+          projectName: "F2 keeper search",
+          plants: [
+            {
+              label: "P1",
+              vigor: 9,
+              aroma: 9,
+              resin: 9,
+              stressResistance: 8,
+              yieldScore: 8
+            },
+            {
+              label: "P2",
+              vigor: 4,
+              aroma: 4,
+              resin: 5,
+              stressResistance: 4,
+              yieldScore: 4
+            }
+          ]
+        })
+    );
+
+    expect(inventory.status).toBe(201);
+    expect(inventory.body.outputs.lowStockWarnings).toEqual(
+      expect.arrayContaining(["Kelp meal is at or below reorder threshold."])
+    );
+    expect(inventory.body.outputs.reorderSuggestions[0]).toMatchObject({
+      title: "Reorder Kelp meal"
+    });
+    expect(steering.status).toBe(201);
+    expect(steering.body.outputs.warnings).toEqual(
+      expect.arrayContaining([
+        "Dryback is high. Watch stress response before pushing generative pressure further.",
+        "Runoff EC is materially higher than input EC."
+      ])
+    );
+    expect(pheno.status).toBe(201);
+    expect(pheno.body.outputs.comparisonMatrix[0]).toMatchObject({
+      label: "P1",
+      keeperDecision: "keeper_candidate"
+    });
+    expect(pheno.body.outputs.keeperRecommendations[0]).toMatchObject({ label: "P1" });
+  });
+
+  test("updates and archives an owned ToolRun", async () => {
+    const run = {
+      _id: RUN_ID,
+      user: "object-user",
+      growId: "grow_1",
+      plantId: "plant_1",
+      toolName: "ipm_scout",
+      toolType: "ipm_scout",
+      inputs: { pestSeen: "mites" },
+      outputs: { severity: "medium" },
+      recommendations: [],
+      warnings: [],
+      linkedTaskIds: [],
+      save: jest.fn().mockResolvedValue(null)
+    };
+    mockToolRun.findOne.mockResolvedValueOnce(run).mockResolvedValueOnce(run);
+
+    const updated = await authed(
+      request(app)
+        .patch(`/api/tools/runs/${RUN_ID}`)
+        .send({
+          summary: "Updated scout note",
+          outputs: { severity: "high" },
+          warnings: ["Pressure increased"]
+        })
+    );
+    const archived = await authed(request(app).delete(`/api/tools/runs/${RUN_ID}`));
+
+    expect(updated.status).toBe(200);
+    expect(run.summary).toBe("Updated scout note");
+    expect(run.outputs).toEqual({ severity: "high" });
+    expect(run.save).toHaveBeenCalledTimes(2);
+    expect(archived.status).toBe(200);
+    expect(archived.body.archived).toBe(true);
+    expect(run.status).toBe("archived");
+    expect(run.archivedAt).toBeInstanceOf(Date);
+  });
+
+  test("reads, updates, and archives product ingredients for the authenticated user", async () => {
+    const item = { _id: "ingredient_1", name: "Kelp meal", archivedAt: null };
+    mockProductIngredient.findOne.mockReturnValue({
+      lean: jest.fn().mockResolvedValue(item)
+    });
+    mockProductIngredient.findOneAndUpdate
+      .mockResolvedValueOnce({ _id: "ingredient_1", name: "Kelp meal", favorite: true })
+      .mockResolvedValueOnce({ _id: "ingredient_1", name: "Kelp meal", archivedAt: new Date() });
+
+    const loaded = await authed(request(app).get("/api/tools/ingredients/ingredient_1"));
+    const updated = await authed(
+      request(app).patch("/api/tools/ingredients/ingredient_1").send({ favorite: true })
+    );
+    const archived = await authed(request(app).delete("/api/tools/ingredients/ingredient_1"));
+
+    expect(loaded.status).toBe(200);
+    expect(loaded.body.item).toMatchObject({ name: "Kelp meal" });
+    expect(updated.status).toBe(200);
+    expect(updated.body.updated).toMatchObject({ favorite: true });
+    expect(archived.status).toBe(200);
+    expect(archived.body.archived).toBe(true);
+    expect(mockProductIngredient.findOneAndUpdate).toHaveBeenCalledWith(
+      { _id: "ingredient_1", user: expect.any(Object) },
+      { favorite: true },
+      { new: true, runValidators: true }
+    );
+    expect(mockProductIngredient.findOneAndUpdate).toHaveBeenCalledWith(
+      { _id: "ingredient_1", user: expect.any(Object), archivedAt: null },
+      { archivedAt: expect.any(Date) },
+      { new: true }
+    );
+  });
+
+  test("updates and archives nutrient recipes for the authenticated user", async () => {
+    const recipe = {
+      _id: RECIPE_ID,
+      user: "object-user",
+      growId: "grow_1",
+      name: "Veg Feed",
+      description: "",
+      version: 1,
+      stage: "veg",
+      medium: "soil",
+      batchVolume: 5,
+      batchUnit: "gal",
+      products: [{ name: "Base", amount: 10, unit: "ml", N: 3, P2O5: 1, K2O: 2 }],
+      releaseEnvironment: {},
+      waterBaseline: {},
+      measuredEC: null,
+      measuredPH: null,
+      notes: "",
+      active: true,
+      toObject: function toObject() {
+        return {
+          growId: this.growId,
+          name: this.name,
+          stage: this.stage,
+          medium: this.medium,
+          batchVolume: this.batchVolume,
+          batchUnit: this.batchUnit,
+          products: this.products,
+          releaseEnvironment: this.releaseEnvironment,
+          waterBaseline: this.waterBaseline,
+          measuredEC: this.measuredEC,
+          measuredPH: this.measuredPH,
+          notes: this.notes
+        };
+      },
+      save: jest.fn().mockResolvedValue(null)
+    };
+    mockNutrientRecipeModel.findOne.mockResolvedValueOnce(recipe).mockResolvedValueOnce(recipe);
+
+    const updated = await authed(
+      request(app)
+        .patch(`/api/tools/recipes/${RECIPE_ID}`)
+        .send({ name: "Veg Feed Updated", measuredEC: 1.4 })
+    );
+    const archived = await authed(request(app).delete(`/api/tools/recipes/${RECIPE_ID}`));
+
+    expect(updated.status).toBe(200);
+    expect(recipe.name).toBe("Veg Feed Updated");
+    expect(recipe.measuredEC).toBe(1.4);
+    expect(recipe.calculation).toBeTruthy();
+    expect(archived.status).toBe(200);
+    expect(archived.body.archived).toBe(true);
+    expect(recipe.active).toBe(false);
+    expect(recipe.archivedAt).toBeInstanceOf(Date);
+    expect(recipe.save).toHaveBeenCalledTimes(2);
   });
 
   test("creates a nutrient recipe for the authenticated user", async () => {

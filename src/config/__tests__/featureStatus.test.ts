@@ -61,24 +61,24 @@ describe("personal feature status manifest", () => {
     }
   });
 
-  test("records planned v1 tools without exposing fake routes", () => {
-    const plannedTools = [
-      "tools.crop_steering_projects",
-      "tools.pheno_hunting",
-      "tools.genetics_inventory",
-      "tools.ipm_scout",
-      "tools.species_crop_identification",
-      "tools.harvest_readiness_ai",
-      "tools.inventory"
-    ];
+  test("exposes completed v1 module routes without exposing fake redirects", () => {
+    const releaseRoutes = {
+      "tools.crop_steering_projects": "/home/personal/tools/crop-steering-project",
+      "tools.pheno_hunting": "/home/personal/tools/pheno-hunt",
+      "tools.genetics_inventory": "/home/personal/tools/genetics-inventory",
+      "tools.ipm_scout": "/home/personal/tools/ipm-scout",
+      "tools.species_crop_identification": "/home/personal/tools/species-crop-id",
+      "tools.harvest_readiness_ai": "/home/personal/tools/harvest-readiness",
+      "tools.inventory": "/home/personal/tools/inventory"
+    };
 
     const navigable = getNavigablePersonalTools();
-    for (const key of plannedTools) {
+    for (const [key, href] of Object.entries(releaseRoutes)) {
       const feature = personalToolFeatures.find((item) => item.key === key);
       expect(feature).toBeTruthy();
-      expect(feature?.status).toBe("planned");
-      expect(feature?.href).toBeUndefined();
-      expect(navigable).not.toContain(feature);
+      expect(feature?.status).toBe("release");
+      expect(feature?.href).toBe(href);
+      expect(navigable).toContain(feature);
     }
   });
 
@@ -113,8 +113,30 @@ describe("personal feature status manifest", () => {
       "/home/personal/tools/living-soil-batch"
     );
     expect(byKey["tools.crop_steering_projects"].area).toBe("crop_management");
+    expect(byKey["tools.crop_steering_projects"].status).toBe("release");
+    expect(byKey["tools.crop_steering_projects"].href).toBe(
+      "/home/personal/tools/crop-steering-project"
+    );
     expect(byKey["tools.timeline_planner"].area).toBe("planning_records");
     expect(byKey["tools.pheno_matrix"].area).toBe("genetics");
+    expect(byKey["tools.pheno_hunting"].status).toBe("release");
+    expect(byKey["tools.pheno_hunting"].href).toBe("/home/personal/tools/pheno-hunt");
+    expect(byKey["tools.genetics_inventory"].status).toBe("release");
+    expect(byKey["tools.genetics_inventory"].href).toBe(
+      "/home/personal/tools/genetics-inventory"
+    );
+    expect(byKey["tools.ipm_scout"].status).toBe("release");
+    expect(byKey["tools.ipm_scout"].href).toBe("/home/personal/tools/ipm-scout");
+    expect(byKey["tools.species_crop_identification"].status).toBe("release");
+    expect(byKey["tools.species_crop_identification"].href).toBe(
+      "/home/personal/tools/species-crop-id"
+    );
+    expect(byKey["tools.harvest_readiness_ai"].status).toBe("release");
+    expect(byKey["tools.harvest_readiness_ai"].href).toBe(
+      "/home/personal/tools/harvest-readiness"
+    );
+    expect(byKey["tools.inventory"].status).toBe("release");
+    expect(byKey["tools.inventory"].href).toBe("/home/personal/tools/inventory");
     expect(byKey["tools.pheno_hunting"].description).toMatch(/terpene\/flavor/i);
     expect(byKey["tools.genetics_inventory"].description).toMatch(/breeding lane/i);
     expect(byKey["tools.grow_aware_ai_assistant"]).toBeUndefined();

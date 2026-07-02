@@ -55,7 +55,14 @@ export type CalculatorTool =
   | "run-comparison"
   | "auto-grow-calendar"
   | "tissue-culture"
-  | "living-soil-batch";
+  | "living-soil-batch"
+  | "ipm-scout"
+  | "species-crop-id"
+  | "genetics-inventory"
+  | "harvest-readiness"
+  | "personal-inventory"
+  | "crop-steering-project"
+  | "pheno-hunt";
 
 export function normalizeToolRun(row: any): ToolRun {
   if (!row || typeof row !== "object") return {};
@@ -188,11 +195,19 @@ export async function getToolRun(toolRunId: string): Promise<ToolRun | null> {
   }
 }
 
-export async function listToolRuns(options?: { growId?: string }): Promise<ToolRun[]> {
+export async function listToolRuns(options?: {
+  growId?: string;
+  toolType?: string;
+  includeArchived?: boolean;
+}): Promise<ToolRun[]> {
   try {
+    const params: Record<string, string> = {};
+    if (options?.growId) params.growId = options.growId;
+    if (options?.toolType) params.toolType = options.toolType;
+    if (options?.includeArchived) params.includeArchived = "true";
     const res: any = await apiRequest("/api/tools", {
       method: "GET",
-      params: options?.growId ? { growId: options.growId } : undefined
+      params: Object.keys(params).length ? params : undefined
     });
     const rows = Array.isArray(res)
       ? res
@@ -208,6 +223,51 @@ export async function listToolRuns(options?: { growId?: string }): Promise<ToolR
     return rows.map(normalizeToolRun);
   } catch (_err) {
     return [];
+  }
+}
+
+export async function updateToolRun(
+  toolRunId: string,
+  payload: Partial<{
+    growId: string | null;
+    plantId: string | null;
+    inputs: Record<string, any>;
+    input: Record<string, any>;
+    params: Record<string, any>;
+    outputs: Record<string, any>;
+    output: Record<string, any>;
+    result: Record<string, any>;
+    status: string;
+    summary: string;
+    recommendations: string[];
+    warnings: string[];
+    confidence: string | null;
+    sourceType: string;
+    sourceObjectId: string | null;
+    linkedRecipeId: string | null;
+  }>
+): Promise<ToolRun | null> {
+  try {
+    const res: any = await apiRequest(
+      `/api/tools/runs/${encodeURIComponent(toolRunId)}`,
+      { method: "PATCH", body: payload }
+    );
+    const row = res?.toolRun ?? res?.data?.toolRun ?? res;
+    return normalizeToolRun(row);
+  } catch (_err) {
+    return null;
+  }
+}
+
+export async function archiveToolRun(toolRunId: string): Promise<boolean> {
+  try {
+    const res: any = await apiRequest(
+      `/api/tools/runs/${encodeURIComponent(toolRunId)}`,
+      { method: "DELETE" }
+    );
+    return Boolean(res?.archived ?? res?.data?.archived ?? true);
+  } catch (_err) {
+    return false;
   }
 }
 

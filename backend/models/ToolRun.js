@@ -45,6 +45,7 @@ const ToolRunSchema = new mongoose.Schema(
     linkedDiagnosisId: { type: String, default: null },
     linkedRecipeId: { type: String, default: null },
     sourceIntegrationId: { type: String, default: null },
+    archivedAt: { type: Date, default: null, index: true },
     immutableSnapshot: { type: mongoose.Schema.Types.Mixed, default: null }
   },
   { timestamps: true }

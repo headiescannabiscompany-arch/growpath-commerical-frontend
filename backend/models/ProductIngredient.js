@@ -53,7 +53,8 @@ const ProductIngredientSchema = new mongoose.Schema(
     },
     confidence: { type: String, enum: ["low", "medium", "high"], default: "low" },
     sourceUrl: { type: String, default: "" },
-    favorite: { type: Boolean, default: false }
+    favorite: { type: Boolean, default: false },
+    archivedAt: { type: Date, default: null, index: true }
   },
   { timestamps: true }
 );

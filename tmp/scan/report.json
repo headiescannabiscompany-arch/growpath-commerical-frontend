@@ -1,11 +1,11 @@
 {
   "root": "C:\\growpathai\\growpath-commerical-frontend",
   "counts": {
-    "srcFiles": 772,
+    "srcFiles": 780,
     "testFiles": 116,
-    "totalFiles": 888,
-    "apiFiles": 102,
-    "apiOrphans": 0,
+    "totalFiles": 896,
+    "apiFiles": 103,
+    "apiOrphans": 1,
     "legacyClientCallers": 0,
     "jsTsTwins": 15,
     "bannedFindings": 0
@@ -72,7 +72,9 @@
       "src/ui/handleApiError.ts"
     ]
   ],
-  "apiOrphans": [],
+  "apiOrphans": [
+    "src/api/productIngredients.ts"
+  ],
   "legacyClientCallers": [],
   "bannedFindings": []
 }

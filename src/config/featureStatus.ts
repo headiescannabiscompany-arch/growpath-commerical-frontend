@@ -328,10 +328,11 @@ export const personalToolFeatures = [
     description:
       "Track P0/P1/P2/P3, dryback, runoff, substrate EC, and steering response.",
     area: "crop_management",
-    status: "planned",
+    status: "release",
+    href: "/home/personal/tools/crop-steering-project",
     acceptsGrowContext: true,
     internalNote:
-      "Original planned v1 full workflow. Current direct route stays hidden until projects/runs/log/task/automation/pheno scoring are real."
+      "V1 release project check is wired to ToolRun, grow log, task, and timeline. The older direct crop-steering scaffold stays hidden."
   },
   {
     key: "tools.stress_testing",
@@ -350,10 +351,11 @@ export const personalToolFeatures = [
     description:
       "Run staged pheno projects, score plants, record photos, sensory notes, lab notes, terpene/flavor notes, and compare keeper candidates.",
     area: "genetics",
-    status: "planned",
+    status: "release",
+    href: "/home/personal/tools/pheno-hunt",
     acceptsGrowContext: true,
     internalNote:
-      "Original planned v1 project workflow. Pheno starts as structured user notes and scoring; breeding lane and terpene/flavor targets are logged decision-support fields, not separate AI tools."
+      "V1 release project check ranks entered plants, creates ToolRun/log/task records, and keeps breeding lane and terpene/flavor targets as structured decision-support fields."
   },
   {
     key: "tools.genetics_inventory",
@@ -361,9 +363,11 @@ export const personalToolFeatures = [
     description:
       "Track cultivars, parentage, seed batches, breeding lane notes, terpene/flavor targets, project use, and user decisions.",
     area: "genetics",
-    status: "planned",
+    status: "release",
+    href: "/home/personal/tools/genetics-inventory",
+    acceptsGrowContext: true,
     internalNote:
-      "Original planned v1 genetics inventory and breeding-notes workflow. Breeding lane and terpene/flavor target data belong here and in pheno records unless a later separate workflow is justified."
+      "V1 release record check is wired to ToolRun, grow log, task, and timeline. Dedicated cultivar CRUD and seed-lot inventory remain deeper workflow work."
   },
   {
     key: "tools.tissue_culture",
@@ -405,10 +409,11 @@ export const personalToolFeatures = [
     description:
       "Record scouting observations, likely organisms, severity, and non-chemical next checks.",
     area: "plant_health",
-    status: "planned",
+    status: "release",
+    href: "/home/personal/tools/ipm-scout",
     acceptsGrowContext: true,
     internalNote:
-      "Original planned v1 IPM support module. Expose only after organism library, regional alert rules, and licensed image/provider policy exist. No pesticide dosing."
+      "V1 release scout check records observations, likely issue, non-chemical next checks, ToolRun, grow log, task, and timeline. It does not provide pesticide dosing."
   },
   {
     key: "tools.species_crop_identification",
@@ -416,9 +421,11 @@ export const personalToolFeatures = [
     description:
       "Identify likely crop/species from user input, image, or video with user confirmation.",
     area: "plant_health",
-    status: "planned",
+    status: "release",
+    href: "/home/personal/tools/species-crop-id",
+    acceptsGrowContext: true,
     internalNote:
-      "Original planned v1 crop-identity support module. Expose only with licensed provider or source-reviewed taxon database. Must require user confirmation before crop-specific recommendations."
+      "V1 release identification check requires user confirmation before crop-specific recommendations. Licensed image-provider expansion remains future hardening."
   },
   {
     key: "tools.harvest_readiness_ai",
@@ -426,10 +433,11 @@ export const personalToolFeatures = [
     description:
       "Estimate harvest readiness from maturity signals, photos, cultivar timing, and user goals.",
     area: "planning_records",
-    status: "planned",
+    status: "release",
+    href: "/home/personal/tools/harvest-readiness",
     acceptsGrowContext: true,
     internalNote:
-      "Original planned v1 AI workflow. Current Harvest Estimator remains a beta local estimator, not image readiness AI."
+      "V1 release readiness check uses maturity inputs, trichome percentages, cultivar timing, ToolRun, grow log, task, and timeline. Image AI remains guarded by configured provider support."
   },
   {
     key: "tools.run_comparison",
@@ -471,9 +479,11 @@ export const personalToolFeatures = [
     description:
       "Track nutrients, amendments, soil inputs, seeds, clones, packaging, and grow supplies.",
     area: "business_production",
-    status: "planned",
+    status: "release",
+    href: "/home/personal/tools/inventory",
+    acceptsGrowContext: true,
     internalNote:
-      "Planned v1 business/grow-supplies tool. Needs product-library links, low-stock warnings, reorder tasks, and recipe availability."
+      "V1 release inventory check supports low-stock warnings, reorder tasks, recipe availability, ToolRun, grow log, and timeline. Full inventory CRUD remains the deeper production workflow."
   }
 ] as const satisfies readonly FeatureDefinition[];
 
