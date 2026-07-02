@@ -24,6 +24,11 @@ Current known blockers:
   release-machine Sentry/URL checks, production builds, real-device smoke, and
   store sign-off are complete. Final launch approval requires
   `npm.cmd run release:go-no-go` to pass.
+- The automated release-machine batch is available as
+  `npm.cmd run release:machine -- --execute`, but this workspace is missing the
+  real required inputs: production Sentry DSN, disposable data-rights account
+  email/password/confirmation, production build confirmation, and release-machine
+  confirmation.
 
 ## 1. Release Gate
 
@@ -142,6 +147,17 @@ Current known blockers:
 - Next action: Run `npm.cmd run verify:data-rights:live` with a disposable
   account and attach the generated redacted evidence.
 - Evidence target: `tmp/spec/data-rights-live/`
+
+- NOT DONE: Automated release-machine gate batch.
+- Owner: Release Engineering + QA
+- Current evidence: `npm.cmd run release:machine` refuses to execute in this
+  workspace because required real production inputs are missing.
+- Next action: On the trusted release machine, set the production Sentry DSN,
+  disposable data-rights account credentials and confirmation, production build
+  confirmation, and `GROWPATH_RELEASE_MACHINE_CONFIRM=RUN_RELEASE_MACHINE_GATES`;
+  then run `npm.cmd run release:machine -- --execute`.
+- Evidence target: `tmp/spec/strict-preflight/`, `tmp/spec/data-rights-live/`,
+  `tmp/spec/release-builds/`, and final `npm.cmd run release:go-no-go` output.
 
 ## 5. Store Submission
 

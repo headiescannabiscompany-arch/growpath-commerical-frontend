@@ -19,6 +19,13 @@
 - [ ] Confirm no critical or high release-blocking bugs remain open after
       release-machine checks. Final gate:
       `npm.cmd run release:go-no-go`.
+- [ ] Run automated release-machine batch with real production inputs.
+      Command: `npm.cmd run release:machine -- --execute`.
+      Required inputs not present in this workspace:
+      `EXPO_PUBLIC_SENTRY_DSN` or `SENTRY_DSN`,
+      `GROWPATH_DATA_RIGHTS_EMAIL`, `GROWPATH_DATA_RIGHTS_PASSWORD`,
+      `GROWPATH_DATA_RIGHTS_CONFIRM`, `GROWPATH_PRODUCTION_BUILD_CONFIRM`,
+      and `GROWPATH_RELEASE_MACHINE_CONFIRM=RUN_RELEASE_MACHINE_GATES`.
 
 ## 2. Store Configuration
 
