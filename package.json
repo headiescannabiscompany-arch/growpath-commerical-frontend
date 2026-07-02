@@ -34,6 +34,8 @@
     "normalize:mojibake": "node scripts/normalize-mojibake.mjs",
     "verify:delivery": "node scripts/verify-delivery.mjs",
     "scan:release": "node scripts/scan-release.cjs",
+    "scan:full": "node scripts/full-scan.mjs",
+    "audit:full-surface": "node scripts/audit-full-surface.cjs",
     "release:preflight": "node scripts/release-preflight.cjs",
     "release:preflight:strict": "node scripts/release-preflight.cjs --strict",
     "verify:sentry-dsn": "node scripts/verify-sentry-dsn.cjs",

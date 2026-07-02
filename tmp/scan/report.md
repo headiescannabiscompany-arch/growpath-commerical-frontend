@@ -1,14 +1,14 @@
 # Full Scan Report
 
 ## Counts
-- src files: 669
-- test files: 49
-- total files: 718
-- api files: 84
+- src files: 760
+- test files: 115
+- total files: 875
+- api files: 102
 - api orphans: 0
-- legacy client callers: 2
+- legacy client callers: 0
 - js/ts twin modules: 15
-- banned findings: 2
+- banned findings: 0
 
 ## JS/TS Twins (same module name exists in both JS + TS)
 - src/api/auth.js , src/api/auth.ts
@@ -31,9 +31,7 @@
 - none
 
 ## Legacy client callers
-- src/api/apiClient.js
-- src/api/client.js
+- none
 
 ## Banned findings
-- fetch(: src/api/apiRequest.ts
-- fetch(: src/api/uriToBlob.ts
+- none

@@ -1,14 +1,14 @@
 {
   "root": "C:\\growpathai\\growpath-commerical-frontend",
   "counts": {
-    "srcFiles": 669,
-    "testFiles": 49,
-    "totalFiles": 718,
-    "apiFiles": 84,
+    "srcFiles": 760,
+    "testFiles": 115,
+    "totalFiles": 875,
+    "apiFiles": 102,
     "apiOrphans": 0,
-    "legacyClientCallers": 2,
+    "legacyClientCallers": 0,
     "jsTsTwins": 15,
-    "bannedFindings": 2
+    "bannedFindings": 0
   },
   "jsTsTwins": [
     [
@@ -73,18 +73,6 @@
     ]
   ],
   "apiOrphans": [],
-  "legacyClientCallers": [
-    "src/api/apiClient.js",
-    "src/api/client.js"
-  ],
-  "bannedFindings": [
-    {
-      "file": "src/api/apiRequest.ts",
-      "rule": "fetch("
-    },
-    {
-      "file": "src/api/uriToBlob.ts",
-      "rule": "fetch("
-    }
-  ]
+  "legacyClientCallers": [],
+  "bannedFindings": []
 }

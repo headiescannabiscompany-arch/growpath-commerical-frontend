@@ -37,6 +37,7 @@ function createPreflightRoot() {
 
   [
     "scripts/scan-release.cjs",
+    "scripts/audit-full-surface.cjs",
     "scripts/verify-sentry-dsn.cjs",
     "scripts/verify-live-urls.cjs",
     "scripts/inventory-ui-routes.cjs",
@@ -94,12 +95,13 @@ describe("release preflight", () => {
     const names = readLog(tempRoot).map((entry) => entry.name);
     expect(names).toEqual([
       "scripts/scan-release.cjs",
+      "scripts/audit-full-surface.cjs",
       "scripts/inventory-ui-routes.cjs",
       "node_modules/jest/bin/jest.js",
       "node_modules/@playwright/test/cli.js",
       "scripts/export-production-web.cjs"
     ]);
-    expect(readLog(tempRoot)[2].argv).toEqual(
+    expect(readLog(tempRoot)[3].argv).toEqual(
       expect.arrayContaining([
         "tests/release.scan.test.js",
         "tests/release.go-no-go.test.js",
@@ -127,6 +129,7 @@ describe("release preflight", () => {
     const log = readLog(tempRoot);
     expect(log.map((entry) => entry.name)).toEqual([
       "scripts/scan-release.cjs",
+      "scripts/audit-full-surface.cjs",
       "scripts/scan-release.cjs",
       "scripts/verify-sentry-dsn.cjs",
       "scripts/verify-live-urls.cjs",
@@ -135,8 +138,8 @@ describe("release preflight", () => {
       "node_modules/@playwright/test/cli.js",
       "scripts/export-production-web.cjs"
     ]);
-    expect(log[1].strict).toBe("1");
-    expect(log[5].argv).toEqual(
+    expect(log[2].strict).toBe("1");
+    expect(log[6].argv).toEqual(
       expect.arrayContaining([
         "tests/release.scan.test.js",
         "tests/release.go-no-go.test.js",
@@ -150,7 +153,7 @@ describe("release preflight", () => {
         "tests/release.store-assets.test.js"
       ])
     );
-    expect(log[6]).toEqual(
+    expect(log[7]).toEqual(
       expect.objectContaining({
         playwrightPort: "19025",
         playwrightVideo: "1"

@@ -52,6 +52,9 @@ function writeStrictEvidence() {
 
 async function main() {
   run("release scan", process.execPath, ["scripts/scan-release.cjs"]);
+  run("full frontend/backend surface audit", process.execPath, [
+    "scripts/audit-full-surface.cjs"
+  ]);
 
   if (strict) {
     run("strict release scan", process.execPath, ["scripts/scan-release.cjs"], {

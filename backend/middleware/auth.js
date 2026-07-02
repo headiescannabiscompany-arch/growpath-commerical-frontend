@@ -21,6 +21,3 @@ module.exports = function auth(req, res, next) {
     return res.status(401).json({ message: "Invalid token" });
   }
 };
-
-import { useAuth } from "../auth/AuthContext";
-import { useEntitlements } from "../entitlements";

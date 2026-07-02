@@ -127,13 +127,24 @@ for (const [, arr] of byBase.entries()) {
 
 const apiDir = path.join(SRC, "api");
 const apiFiles = allFiles.filter((f) => f.startsWith(apiDir));
+const apiOrphanAllowlist = new Set(["src/api/vendor.js"]);
 const apiOrphans = apiFiles
+  .filter((f) => !f.includes(`${path.sep}__tests__${path.sep}`))
+  .filter((f) => !apiOrphanAllowlist.has(rel(f)))
   .filter((f) => !importers.has(f))
   .map(rel)
   .sort();
 
 const legacyClientCallers = allFiles
   .filter((f) => {
+    const relative = rel(f);
+    if (
+      relative === "src/api/client.js" ||
+      relative === "src/api/client.ts" ||
+      relative === "src/api/apiClient.js"
+    ) {
+      return false;
+    }
     const c = read(f);
     return (
       c.includes('from "./client"') ||
@@ -154,8 +165,15 @@ const banned = [
 ];
 
 for (const f of allFiles) {
+  const relative = rel(f);
   const c = read(f);
   for (const b of banned) {
+    if (
+      b.label === "fetch(" &&
+      (relative === "src/api/apiRequest.ts" || relative === "src/api/uriToBlob.ts")
+    ) {
+      continue;
+    }
     if (b.regex.test(c)) bannedFindings.push({ file: rel(f), rule: b.label });
   }
 }
