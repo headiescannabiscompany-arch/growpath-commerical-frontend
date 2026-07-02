@@ -13,6 +13,15 @@ jest.mock("@sentry/react-native", () => ({
 describe("frontend monitoring", () => {
   const originalEnv = process.env;
 
+  function mockConfig(sentryDsn = "") {
+    jest.doMock("@/config/config", () => ({
+      config: {
+        env: "test",
+        sentryDsn
+      }
+    }));
+  }
+
   beforeEach(() => {
     jest.resetModules();
     mockInit.mockReset();
@@ -28,6 +37,7 @@ describe("frontend monitoring", () => {
   });
 
   it("stays disabled when no public Sentry DSN is configured", () => {
+    mockConfig();
     const monitoring = require("@/utils/monitoring");
 
     expect(monitoring.initMonitoring()).toEqual({
@@ -40,7 +50,7 @@ describe("frontend monitoring", () => {
   });
 
   it("initializes Sentry and captures boundary exceptions when configured", () => {
-    process.env.EXPO_PUBLIC_SENTRY_DSN = "https://public@example.ingest.sentry.io/1";
+    mockConfig("https://public@example.ingest.sentry.io/1");
     const monitoring = require("@/utils/monitoring");
 
     expect(monitoring.initMonitoring()).toEqual({
