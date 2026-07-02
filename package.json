@@ -41,6 +41,7 @@
     "verify:data-rights:live": "node scripts/verify-data-rights-live.cjs",
     "release:builds:dry-run": "node scripts/run-production-builds.cjs",
     "release:builds": "node scripts/run-production-builds.cjs --execute",
+    "release:machine": "node scripts/run-release-machine-gates.cjs",
     "release:go-no-go": "node scripts/release-go-no-go.cjs",
     "release:record-evidence": "node scripts/record-release-evidence.cjs",
     "verify:manual": "npm run verify:manual:checks && npm run export:web:production",

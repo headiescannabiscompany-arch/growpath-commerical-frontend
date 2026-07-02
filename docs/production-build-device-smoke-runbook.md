@@ -20,6 +20,22 @@ $env:GROWPATH_PRODUCTION_BUILD_CONFIRM="BUILD_PRODUCTION_GROWPATH"
 npm.cmd run release:builds
 ```
 
+To batch the automated release-machine gates without faking evidence, use:
+
+```powershell
+$env:EXPO_PUBLIC_SENTRY_DSN="<production-sentry-dsn>"
+$env:GROWPATH_DATA_RIGHTS_EMAIL="disposable@example.com"
+$env:GROWPATH_DATA_RIGHTS_PASSWORD="<disposable-password>"
+$env:GROWPATH_DATA_RIGHTS_CONFIRM="DELETE_DISPOSABLE_ACCOUNT:disposable@example.com"
+$env:GROWPATH_PRODUCTION_BUILD_CONFIRM="BUILD_PRODUCTION_GROWPATH"
+$env:GROWPATH_RELEASE_MACHINE_CONFIRM="RUN_RELEASE_MACHINE_GATES"
+npm.cmd run release:machine -- --execute
+```
+
+The batch runner stops at the first failing step and only accepts real evidence
+from strict preflight, live data-rights verification, production builds, and the
+final go/no-go gate.
+
 The script runs:
 
 ```text

@@ -54,6 +54,12 @@ packet, then run this gate from the release machine.
 `npm.cmd run release:preflight:strict` writes strict-preflight evidence
 automatically after all strict checks pass.
 
+`npm.cmd run release:machine -- --execute` batches the automated release-machine
+portion in order: strict preflight, live data-rights verification, production
+builds, then this final go/no-go gate. It refuses to run without production
+Sentry, disposable-account credentials, destructive confirmation, production
+build confirmation, and `GROWPATH_RELEASE_MACHINE_CONFIRM=RUN_RELEASE_MACHINE_GATES`.
+
 Use `npm.cmd run release:record-evidence -- <type>` to write guarded evidence
 for manual approval buckets. Supported types are:
 

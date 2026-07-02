@@ -75,6 +75,7 @@ async function main() {
     "tests/release.sentry-dsn.test.js",
     "tests/release.data-rights.test.js",
     "tests/release.production-builds.test.js",
+    "tests/release.machine-gates.test.js",
     "tests/release.store-assets.test.js",
     "src/api/__tests__/users.privacy.test.ts",
     "tests/unit/ProfilePrivacyControls.test.tsx",

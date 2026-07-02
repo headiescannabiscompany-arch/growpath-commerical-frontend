@@ -109,6 +109,7 @@ describe("release preflight", () => {
         "tests/release.sentry-dsn.test.js",
         "tests/release.data-rights.test.js",
         "tests/release.production-builds.test.js",
+        "tests/release.machine-gates.test.js",
         "tests/release.store-assets.test.js"
       ])
     );
@@ -145,6 +146,7 @@ describe("release preflight", () => {
         "tests/release.sentry-dsn.test.js",
         "tests/release.data-rights.test.js",
         "tests/release.production-builds.test.js",
+        "tests/release.machine-gates.test.js",
         "tests/release.store-assets.test.js"
       ])
     );

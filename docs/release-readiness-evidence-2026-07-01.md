@@ -67,10 +67,10 @@ node scripts\scan-release.cjs
 Result: passed. Checked 762 files.
 
 ```text
-npm.cmd test -- tests\unit\monitoring.test.ts tests\release.scan.test.js tests\release.go-no-go.test.js tests\release.record-evidence.test.js tests\release.preflight.test.js tests\release.live-urls.test.js tests\release.sentry-dsn.test.js tests\release.data-rights.test.js tests\release.production-builds.test.js tests\release.store-assets.test.js src\api\__tests__\users.privacy.test.ts tests\unit\ProfilePrivacyControls.test.tsx src\features\personal\__tests__\homeModel.test.ts --runInBand
+npm.cmd test -- tests\unit\monitoring.test.ts tests\release.scan.test.js tests\release.go-no-go.test.js tests\release.record-evidence.test.js tests\release.preflight.test.js tests\release.live-urls.test.js tests\release.sentry-dsn.test.js tests\release.data-rights.test.js tests\release.production-builds.test.js tests\release.machine-gates.test.js tests\release.store-assets.test.js src\api\__tests__\users.privacy.test.ts tests\unit\ProfilePrivacyControls.test.tsx src\features\personal\__tests__\homeModel.test.ts --runInBand
 ```
 
-Result: passed. 13 suites, 44 tests.
+Result: passed. 14 suites, 49 tests.
 
 Release-gate script coverage includes:
 
@@ -84,6 +84,7 @@ Release-gate script coverage includes:
   post-delete login failure behavior.
 - Production build evidence runner dry-run, confirmation guard, success, and
   failure evidence.
+- Release-machine batch runner required-input checks and command order.
 - Store asset exporter PNG dimensions, opacity, and manifest contents.
 
 ```text
