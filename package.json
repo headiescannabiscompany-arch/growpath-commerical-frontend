@@ -22,6 +22,7 @@
     "android": "expo start --android",
     "ios": "expo start --ios",
     "web": "expo start --web",
+    "build": "npm run export:web:production",
     "export:web:production": "node scripts/export-production-web.cjs",
     "export:store-assets": "powershell -NoProfile -ExecutionPolicy Bypass -File scripts/export-store-assets.ps1",
     "lint": "eslint \"src/{app,api,auth,components,entitlements,hooks,ui,utils}/**/*.{js,jsx,ts,tsx}\"",
