@@ -29,7 +29,8 @@ const PlantGrowthProfileSchema = new mongoose.Schema(
     stressSensitivities: { type: [String], default: [] },
     pestDiseaseSensitivities: { type: [String], default: [] },
     notes: { type: String, default: "" },
-    sourceRecords: { type: [SourceRecordSchema], default: [] }
+    sourceRecords: { type: [SourceRecordSchema], default: [] },
+    archivedAt: { type: Date, default: null, index: true }
   },
   { timestamps: true }
 );

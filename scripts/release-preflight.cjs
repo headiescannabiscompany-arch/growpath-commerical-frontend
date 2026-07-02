@@ -74,10 +74,20 @@ async function main() {
     "scripts/validate-v1-feature-matrix.cjs"
   ]);
 
+  run("focused backend release routes", process.execPath, [
+    jestCli,
+    "--config",
+    "jest.backend.config.cjs",
+    "--runInBand",
+    "backend/routes/tools.test.js",
+    "backend/routes/cropKnowledge.test.js"
+  ]);
+
   run("focused release unit tests", process.execPath, [
     jestCli,
     "--runInBand",
     "tests/unit/monitoring.test.ts",
+    "tests/unit/cropKnowledge-api.test.ts",
     "tests/release.scan.test.js",
     "tests/release.go-no-go.test.js",
     "tests/release.record-evidence.test.js",

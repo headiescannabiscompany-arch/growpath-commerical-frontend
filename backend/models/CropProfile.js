@@ -44,6 +44,7 @@ const CropProfileSchema = new mongoose.Schema(
     cultivarSensitivity: { type: [mongoose.Schema.Types.Mixed], default: [] },
     recommendationCautions: { type: [String], default: [] },
     sourceRecords: { type: [SourceRecordSchema], default: [] },
+    submittedBy: { type: mongoose.Schema.Types.ObjectId, ref: "User", default: null },
     curationStatus: {
       type: String,
       enum: ["draft", "needs_license_review", "reviewed", "rejected"],
@@ -51,7 +52,8 @@ const CropProfileSchema = new mongoose.Schema(
       index: true
     },
     reviewedBy: { type: mongoose.Schema.Types.ObjectId, ref: "User", default: null },
-    reviewedAt: { type: Date, default: null }
+    reviewedAt: { type: Date, default: null },
+    archivedAt: { type: Date, default: null, index: true }
   },
   { timestamps: true }
 );

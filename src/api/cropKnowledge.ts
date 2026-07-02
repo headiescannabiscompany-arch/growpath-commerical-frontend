@@ -143,12 +143,38 @@ function create<T>(path: string, body: unknown) {
   );
 }
 
+function update<T>(path: string, body: unknown) {
+  return apiRequest<{ item: T }>(path, { method: "PATCH", body }).then(
+    (response) => response.item
+  );
+}
+
+function archive(path: string) {
+  return apiRequest<{ archived: boolean }>(path, { method: "DELETE" }).then(
+    (response) => Boolean(response.archived)
+  );
+}
+
 export function listPlantTaxa(params?: CropKnowledgeListParams) {
   return list(routes.CROP_KNOWLEDGE.TAXA, params);
 }
 
 export function createPlantTaxon(input: PlantTaxonInput) {
   return create(routes.CROP_KNOWLEDGE.TAXA, input);
+}
+
+export function getPlantTaxon(id: string) {
+  return apiRequest<{ item: unknown }>(routes.CROP_KNOWLEDGE.TAXON_DETAIL(id)).then(
+    (response) => response.item
+  );
+}
+
+export function updatePlantTaxon(id: string, input: Partial<PlantTaxonInput>) {
+  return update(routes.CROP_KNOWLEDGE.TAXON_DETAIL(id), input);
+}
+
+export function archivePlantTaxon(id: string) {
+  return archive(routes.CROP_KNOWLEDGE.TAXON_DETAIL(id));
 }
 
 export function listCropProfiles(params?: CropKnowledgeListParams) {
@@ -163,6 +189,14 @@ export function getCropProfile(id: string) {
 
 export function createCropProfile(input: CropProfileInput) {
   return create(routes.CROP_KNOWLEDGE.CROP_PROFILES, input);
+}
+
+export function updateCropProfile(id: string, input: Partial<CropProfileInput>) {
+  return update(routes.CROP_KNOWLEDGE.CROP_PROFILE_DETAIL(id), input);
+}
+
+export function archiveCropProfile(id: string) {
+  return archive(routes.CROP_KNOWLEDGE.CROP_PROFILE_DETAIL(id));
 }
 
 export function seedStarterCropProfiles() {
@@ -184,6 +218,23 @@ export function createOrganismProfile(input: OrganismProfileInput) {
   return create(routes.CROP_KNOWLEDGE.ORGANISMS, input);
 }
 
+export function getOrganismProfile(id: string) {
+  return apiRequest<{ item: unknown }>(routes.CROP_KNOWLEDGE.ORGANISM_DETAIL(id)).then(
+    (response) => response.item
+  );
+}
+
+export function updateOrganismProfile(
+  id: string,
+  input: Partial<OrganismProfileInput>
+) {
+  return update(routes.CROP_KNOWLEDGE.ORGANISM_DETAIL(id), input);
+}
+
+export function archiveOrganismProfile(id: string) {
+  return archive(routes.CROP_KNOWLEDGE.ORGANISM_DETAIL(id));
+}
+
 export function listRegionalAlerts(params?: CropKnowledgeListParams) {
   return list(routes.CROP_KNOWLEDGE.REGIONAL_ALERTS, params);
 }
@@ -192,10 +243,35 @@ export function createRegionalAlert(input: RegionalAlertInput) {
   return create(routes.CROP_KNOWLEDGE.REGIONAL_ALERTS, input);
 }
 
+export function updateRegionalAlert(id: string, input: Partial<RegionalAlertInput>) {
+  return update(routes.CROP_KNOWLEDGE.REGIONAL_ALERT_DETAIL(id), input);
+}
+
+export function archiveRegionalAlert(id: string) {
+  return archive(routes.CROP_KNOWLEDGE.REGIONAL_ALERT_DETAIL(id));
+}
+
 export function listPlantGrowthProfiles(params?: CropKnowledgeListParams) {
   return list(routes.CROP_KNOWLEDGE.PLANT_GROWTH_PROFILES, params);
 }
 
 export function savePlantGrowthProfile(input: PlantGrowthProfileInput) {
   return create(routes.CROP_KNOWLEDGE.PLANT_GROWTH_PROFILES, input);
+}
+
+export function getPlantGrowthProfile(id: string) {
+  return apiRequest<{ item: unknown }>(
+    routes.CROP_KNOWLEDGE.PLANT_GROWTH_PROFILE_DETAIL(id)
+  ).then((response) => response.item);
+}
+
+export function updatePlantGrowthProfile(
+  id: string,
+  input: Partial<PlantGrowthProfileInput>
+) {
+  return update(routes.CROP_KNOWLEDGE.PLANT_GROWTH_PROFILE_DETAIL(id), input);
+}
+
+export function archivePlantGrowthProfile(id: string) {
+  return archive(routes.CROP_KNOWLEDGE.PLANT_GROWTH_PROFILE_DETAIL(id));
 }

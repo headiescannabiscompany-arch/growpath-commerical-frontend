@@ -53,9 +53,9 @@ Legend:
 - [ ] ETGU Diagnosis Rules.
 - [ ] Grow Log Auto-Tagging approval flow.
 - [~] IPM Scout.
-- [ ] Organism Library.
+- [~] Organism Library.
 - [~] Species / Crop Identification.
-- [ ] Crop Profile Database.
+- [~] Crop Profile Database.
 - [ ] Treatment and next-check task flow.
 
 ## Phase 4 - Genetics / Pheno / Stress / Crop Steering
@@ -115,6 +115,8 @@ Legend:
 - [x] Feature status tests verify these modules are release routes and the old crop-steering scaffold remains hidden.
 - [x] Backend CRUD tests run for ToolRun update/archive, ProductIngredient read/update/archive, and NutrientRecipe update/archive.
 - [x] Backend provenance schema restored and ingredient/recipe source records verified in tools route tests.
+- [x] Crop knowledge backend CRUD added and verified for crop profiles, organisms, regional alerts, taxa, and plant growth profiles.
+- [x] Release preflight now includes focused backend route tests for tools and crop knowledge plus the crop knowledge frontend API unit test.
 - [ ] Tool workflow E2E: grow -> tool -> ToolRun -> log -> task -> timeline -> reload.
 - [ ] Diagnosis workflow E2E: photo -> diagnosis -> accepted tags -> log -> follow-up task.
 - [ ] Recipe workflow E2E: recipe -> revision -> feeding event -> grow history.

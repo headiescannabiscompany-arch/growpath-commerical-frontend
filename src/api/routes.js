@@ -52,12 +52,17 @@ export const ROUTES = {
   },
   CROP_KNOWLEDGE: {
     TAXA: `${PREFIX}/crop-knowledge/taxa`,
+    TAXON_DETAIL: (id) => `${PREFIX}/crop-knowledge/taxa/${id}`,
     CROP_PROFILES: `${PREFIX}/crop-knowledge/crop-profiles`,
     STARTER_CROP_PROFILE_SEED: `${PREFIX}/crop-knowledge/crop-profiles/starter-seed`,
     CROP_PROFILE_DETAIL: (id) => `${PREFIX}/crop-knowledge/crop-profiles/${id}`,
     ORGANISMS: `${PREFIX}/crop-knowledge/organisms`,
+    ORGANISM_DETAIL: (id) => `${PREFIX}/crop-knowledge/organisms/${id}`,
     REGIONAL_ALERTS: `${PREFIX}/crop-knowledge/regional-alerts`,
-    PLANT_GROWTH_PROFILES: `${PREFIX}/crop-knowledge/plant-growth-profiles`
+    REGIONAL_ALERT_DETAIL: (id) => `${PREFIX}/crop-knowledge/regional-alerts/${id}`,
+    PLANT_GROWTH_PROFILES: `${PREFIX}/crop-knowledge/plant-growth-profiles`,
+    PLANT_GROWTH_PROFILE_DETAIL: (id) =>
+      `${PREFIX}/crop-knowledge/plant-growth-profiles/${id}`
   },
   FORUM: {
     LIST: `${PREFIX}/forum`,

@@ -7,10 +7,14 @@ jest.mock("@/api/apiRequest", () => ({
 const {
   createCropProfile,
   createOrganismProfile,
+  archiveCropProfile,
+  archiveOrganismProfile,
   listCropProfiles,
   listRegionalAlerts,
   savePlantGrowthProfile,
-  seedStarterCropProfiles
+  seedStarterCropProfiles,
+  updateCropProfile,
+  updateOrganismProfile
 } = require("@/api/cropKnowledge");
 
 describe("crop knowledge API", () => {
@@ -102,6 +106,43 @@ describe("crop knowledge API", () => {
       2,
       "/api/crop-knowledge/regional-alerts",
       { params: { organismId: "org-1", region: "US-PA" } }
+    );
+  });
+
+  it("updates and archives crop and organism records through detail endpoints", async () => {
+    mockApiRequest.mockResolvedValueOnce({ item: { id: "crop-1" } });
+    mockApiRequest.mockResolvedValueOnce({ archived: true });
+    mockApiRequest.mockResolvedValueOnce({ item: { id: "org-1" } });
+    mockApiRequest.mockResolvedValueOnce({ archived: true });
+
+    await expect(updateCropProfile("crop-1", { displayName: "Updated" })).resolves.toEqual({
+      id: "crop-1"
+    });
+    await expect(archiveCropProfile("crop-1")).resolves.toBe(true);
+    await expect(
+      updateOrganismProfile("org-1", { organismType: "beneficial" })
+    ).resolves.toEqual({ id: "org-1" });
+    await expect(archiveOrganismProfile("org-1")).resolves.toBe(true);
+
+    expect(mockApiRequest).toHaveBeenNthCalledWith(
+      1,
+      "/api/crop-knowledge/crop-profiles/crop-1",
+      { method: "PATCH", body: { displayName: "Updated" } }
+    );
+    expect(mockApiRequest).toHaveBeenNthCalledWith(
+      2,
+      "/api/crop-knowledge/crop-profiles/crop-1",
+      { method: "DELETE" }
+    );
+    expect(mockApiRequest).toHaveBeenNthCalledWith(
+      3,
+      "/api/crop-knowledge/organisms/org-1",
+      { method: "PATCH", body: { organismType: "beneficial" } }
+    );
+    expect(mockApiRequest).toHaveBeenNthCalledWith(
+      4,
+      "/api/crop-knowledge/organisms/org-1",
+      { method: "DELETE" }
     );
   });
 

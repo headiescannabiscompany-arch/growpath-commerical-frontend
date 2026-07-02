@@ -114,11 +114,21 @@ describe("release preflight", () => {
       "scripts/validate-v1-ui-surface.cjs",
       "scripts/validate-v1-feature-matrix.cjs",
       "node_modules/jest/bin/jest.js",
+      "node_modules/jest/bin/jest.js",
       "node_modules/@playwright/test/cli.js",
       "scripts/export-production-web.cjs"
     ]);
     expect(readLog(tempRoot)[5].argv).toEqual(
       expect.arrayContaining([
+        "--config",
+        "jest.backend.config.cjs",
+        "backend/routes/tools.test.js",
+        "backend/routes/cropKnowledge.test.js"
+      ])
+    );
+    expect(readLog(tempRoot)[6].argv).toEqual(
+      expect.arrayContaining([
+        "tests/unit/cropKnowledge-api.test.ts",
         "tests/release.scan.test.js",
         "tests/release.go-no-go.test.js",
         "tests/release.record-evidence.test.js",
@@ -154,12 +164,22 @@ describe("release preflight", () => {
       "scripts/validate-v1-ui-surface.cjs",
       "scripts/validate-v1-feature-matrix.cjs",
       "node_modules/jest/bin/jest.js",
+      "node_modules/jest/bin/jest.js",
       "node_modules/@playwright/test/cli.js",
       "scripts/export-production-web.cjs"
     ]);
     expect(log[2].strict).toBe("1");
     expect(log[8].argv).toEqual(
       expect.arrayContaining([
+        "--config",
+        "jest.backend.config.cjs",
+        "backend/routes/tools.test.js",
+        "backend/routes/cropKnowledge.test.js"
+      ])
+    );
+    expect(log[9].argv).toEqual(
+      expect.arrayContaining([
+        "tests/unit/cropKnowledge-api.test.ts",
         "tests/release.scan.test.js",
         "tests/release.go-no-go.test.js",
         "tests/release.record-evidence.test.js",
@@ -173,7 +193,7 @@ describe("release preflight", () => {
         "tests/release.store-assets.test.js"
       ])
     );
-    expect(log[9]).toEqual(
+    expect(log[10]).toEqual(
       expect.objectContaining({
         playwrightPort: "19025",
         playwrightVideo: "1"
