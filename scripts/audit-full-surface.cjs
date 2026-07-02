@@ -27,7 +27,11 @@ const ROUTE_PLACEHOLDERS = [
   /\bnot implemented\b/i,
   /\btemporarily stubbed\b/i,
   /\b\(stub\)\b/i,
-  /\bTODO\b/
+  /\bTODO\b/,
+  /\bhidden for release\b/i,
+  /\brelease decision:\s*hidden\b/i,
+  /\bbeta\b/i,
+  /\bplanned for this shell\b/i
 ];
 
 const RELEASE_SCRIPTS = [
@@ -91,7 +95,8 @@ function collectFrontendRoutes() {
     const source = read(abs);
     const isLayout = /\/_layout\.(tsx?|jsx?)$/i.test(file);
     const hasDefaultExport =
-      /\bexport\s+default\b/.test(source) || /\bexport\s*\{\s*default\s*\}\s*from\b/.test(source);
+      /\bexport\s+default\b/.test(source) ||
+      /\bexport\s*\{\s*default\s*\}\s*from\b/.test(source);
     const controls = {
       pressable: (source.match(/\bPressable\b/g) || []).length,
       touchable: (source.match(/\bTouchable[A-Za-z]*\b/g) || []).length,
@@ -127,7 +132,8 @@ function collectFrontendRoutes() {
       }
     }
 
-    const visibleControls = controls.pressable + controls.touchable + controls.button + controls.link;
+    const visibleControls =
+      controls.pressable + controls.touchable + controls.button + controls.link;
     const actions = controls.onPress + controls.href + controls.routerPush;
     if (!isLayout && visibleControls > 0 && actions === 0) {
       findings.push({
@@ -135,7 +141,8 @@ function collectFrontendRoutes() {
         check: "frontend inert controls",
         file,
         route,
-        message: "Interactive components are present but no onPress, href, or router navigation was detected."
+        message:
+          "Interactive components are present but no onPress, href, or router navigation was detected."
       });
     }
 
@@ -275,11 +282,17 @@ function writeReport(report) {
   } else {
     for (const finding of report.findings) {
       const loc = [finding.file, finding.line].filter(Boolean).join(":");
-      lines.push(`- ${finding.severity.toUpperCase()} ${finding.check} (${loc}): ${finding.message}`);
+      lines.push(
+        `- ${finding.severity.toUpperCase()} ${finding.check} (${loc}): ${finding.message}`
+      );
     }
   }
 
-  fs.writeFileSync(path.join(OUT_DIR, "full-surface-audit.md"), `${lines.join("\n")}\n`, "utf8");
+  fs.writeFileSync(
+    path.join(OUT_DIR, "full-surface-audit.md"),
+    `${lines.join("\n")}\n`,
+    "utf8"
+  );
 }
 
 function main() {

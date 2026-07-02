@@ -47,7 +47,6 @@ const styles = StyleSheet.create({
     gap: 12
   },
   cardTitle: { flex: 1, fontSize: 16, fontWeight: "700" },
-  beta: { fontSize: 12, color: "#92400E", fontWeight: "700" },
   locked: { fontSize: 12, color: "#991B1B", fontWeight: "700" },
   cardDesc: { fontSize: 14, color: "#475569" },
   link: { marginTop: 10, fontSize: 14, fontWeight: "700", color: "#166534" },
@@ -106,7 +105,6 @@ function ToolCard({
     <View style={[styles.card, !enabled && styles.cardLocked]}>
       <View style={styles.cardHeader}>
         <Text style={styles.cardTitle}>{tool.title}</Text>
-        {tool.status === "beta" ? <Text style={styles.beta}>Beta</Text> : null}
         {!enabled ? <Text style={styles.locked}>Locked</Text> : null}
       </View>
       <Text style={styles.cardDesc}>{tool.description}</Text>

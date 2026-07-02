@@ -135,7 +135,7 @@ export default function CommercialHome() {
         <Text style={styles.sectionTitle}>Content & Account</Text>
         <ActionCard
           title="Logs"
-          description="Review saved notes, AI/tool records, tagged work, and diagnosis links."
+          description="Review saved notes, tool records, tagged work, and diagnosis links."
           href="/logs"
           status="Live"
         />

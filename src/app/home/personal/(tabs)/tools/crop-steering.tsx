@@ -29,13 +29,12 @@ export default function CropSteeringToolScreen() {
       <View style={styles.headerRow}>
         <Text style={styles.title}>Crop Steering</Text>
         <View style={styles.statusBadge}>
-          <Text style={styles.statusText}>Hidden for release</Text>
+          <Text style={styles.statusText}>Project workflow</Text>
         </View>
       </View>
       <Text style={styles.subtitle}>
-        This workflow is not enabled in this release. The previous direct route was a
-        scaffold and has been blocked so unfinished irrigation guidance cannot be saved as
-        a real ToolRun.
+        Use this workspace to review the crop-steering pieces that need live project
+        records before they are saved into grow history.
       </Text>
       {growId ? <Text style={styles.context}>Grow context: {growId}</Text> : null}
 
@@ -50,9 +49,8 @@ export default function CropSteeringToolScreen() {
       </View>
 
       <Text style={styles.note}>
-        Release decision: hidden. Do not market crop steering as complete until it
-        persists structured projects/runs, reloads safely, enforces ownership, appears in
-        the grow timeline, and passes mobile E2E tests.
+        Save actions stay in the established grow tools until structured projects,
+        reloads, ownership checks, timeline links, and mobile E2E coverage are complete.
       </Text>
 
       <Pressable

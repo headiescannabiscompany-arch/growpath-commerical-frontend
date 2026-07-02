@@ -10,7 +10,6 @@ import ComplianceLogsScreen from "../screens/facility/ComplianceLogsScreen";
 import AutomationCenterScreen from "../screens/facility/AutomationCenterScreen";
 import NotificationsCenterScreen from "../screens/facility/NotificationsCenterScreen";
 import WebhooksScreen from "../screens/facility/WebhooksScreen";
-import InsightsScreen from "../screens/facility/InsightsScreen";
 
 import FacilityGuard from "../guards/FacilityGuard";
 
@@ -24,7 +23,6 @@ export type FacilityStackParamList = {
   AutomationCenter: undefined;
   NotificationsCenter: undefined;
   Webhooks: undefined;
-  Insights: undefined;
 };
 
 const Stack = createNativeStackNavigator<FacilityStackParamList>();
@@ -77,11 +75,6 @@ export default function FacilityNavigator() {
           name="Webhooks"
           component={WebhooksScreen}
           options={{ title: "Webhooks" }}
-        />
-        <Stack.Screen
-          name="Insights"
-          component={InsightsScreen}
-          options={{ title: "Insights" }}
         />
       </Stack.Navigator>
     </FacilityGuard>

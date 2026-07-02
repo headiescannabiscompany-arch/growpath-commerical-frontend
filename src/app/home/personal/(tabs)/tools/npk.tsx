@@ -655,7 +655,7 @@ export default function NpkToolScreen() {
           ]}
           recommendations={[
             ...(result.recommendations || []),
-            "Treat this NPK recipe as a beta chemistry estimate until product labels, water baseline, and final mixed EC/pH are verified."
+            "Verify product labels, water baseline, and final mixed EC/pH before applying this recipe."
           ]}
           formulas={
             toolRun?.formulas?.length
@@ -669,7 +669,7 @@ export default function NpkToolScreen() {
             toolRun?.uncertainty ||
             "Ingredient labels, density assumptions, water baseline, and product source confidence affect nutrient totals."
           }
-          confidence={toolRun?.confidence || "beta-calculator"}
+          confidence={toolRun?.confidence || "label-math-calculator"}
           assumptions={[
             buildNutrientContextAssumption(plantContext.selectedPlantContext),
             result.releaseDisclaimer,
