@@ -1,6 +1,7 @@
 # Glue-repair backups
 *.bak
 node_modules
+.npm-cache/
 .expo/
 tmp/
 test-results/

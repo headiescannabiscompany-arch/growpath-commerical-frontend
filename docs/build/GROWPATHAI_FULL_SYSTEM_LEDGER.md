@@ -35,12 +35,20 @@ This ledger is the current build source of truth for the full GrowPathAI system.
 
 ## Current Repository Reality
 
-Initial audit from 2026-07-02:
+Initial audit from 2026-07-02, before the old backend port:
 
 - Frontend has broad API client coverage for grows, plants, logs, tasks, tool runs, products, nutrient recipes, inventory, insights, telemetry, diagnosis, and reports.
 - Backend persisted route/model coverage is much narrower: AI call, calendar facility, events, notifications, several models, and selected utilities.
 - Existing personal tool routes include VPD, Dew Point Guard, PPFD, bud-rot risk, NPK, nutrient chemistry, watering, environment analysis, feeding schedule, harvest estimator, timeline planner, PDF/export, pheno matrix, crop steering, and integrations.
 - Planned personal tool gaps remain for pH/EC range check, topdress planner, dry amendment mix builder, dry/cure guard, soil builder, clone rooting, IPM scout, organism library, species/crop identification, genetics inventory, tissue culture, run comparison, auto grow calendar, and Living Soil Labs/batch production.
+
+Restored from the previous backend on 2026-07-02:
+
+- Personal grow workspace backend routes for plants, grow-scoped logs, grow-scoped tasks, and merged grow timeline.
+- Tool backend routes for ToolRun create/list/reload, save-to-log, create-task, nutrient recipes, product ingredients, and nutrient chemistry calculators.
+- Canonical backend models for Grow, Plant, GrowLog, Task, ToolRun, NutrientRecipe, ProductIngredient, Diagnosis, DiagnosisFeedback, CropProfile, PlantGrowthProfile, telemetry, automation, and webhook records.
+- Service layer for tool calculators, nutrient chemistry, automation events, automation engine, webhook dispatch, stable object ids, and secret encryption helpers.
+- This was a port/reconciliation of existing work from `C:\growpathai\growpath-commerical`, not a rewrite from scratch.
 
 ## Facility Insights Rule
 
@@ -73,3 +81,9 @@ Hide or skip it if it requires deep analytics, prediction, or a new commercial-h
 - Added local backend `ToolRun` and `NutrientRecipe` models plus `/api/tools` route contracts for ToolRun create/list/reload and recipe create/list/revise/clone/use.
 - Added backend route tests enforcing authenticated ownership for tool runs and recipes.
 - Reran full-surface audit: 150 frontend route files, 136 frontend routes, 14 backend route declarations, 0 errors, 0 warnings.
+- Found and ported the old full backend personal workspace layer instead of rebuilding it: `backend/routes/personal.js`, `backend/routes/grows.personal.js`, grow/log/task/tool/diagnosis/telemetry/automation models, and supporting services.
+- Added backend tests for grow-scoped log CRUD, task CRUD, source linking, and merged grow timeline events.
+- Backend verification passed after the port: `npm run test:backend:all` -> 10 suites, 61 tests.
+- Full surface audit passed after adding direct `grows.personal` coverage: 150 frontend route files, 136 frontend routes, 37 backend route declarations, 0 errors, 0 warnings.
+- Release preflight passed after the port: release scan, full surface audit, route inventory, V1 UI validation, V1 matrix validation, 15 focused Jest suites, 5 Playwright specs, production web export, and store graphics export.
+- Production render/export printed the required pass message again: `Production web export verified: dist uses https://api.growpathai.com`.

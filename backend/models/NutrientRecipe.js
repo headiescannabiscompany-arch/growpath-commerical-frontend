@@ -4,43 +4,41 @@ const mongoose = require("mongoose");
 
 const NutrientRecipeSchema = new mongoose.Schema(
   {
-    userId: { type: String, required: true, index: true },
+    user: { type: mongoose.Schema.Types.ObjectId, ref: "User", required: true, index: true },
     growId: { type: String, default: null, index: true },
-    recipeType: { type: String, default: "nutrient_solution", index: true },
-    name: { type: String, required: true },
+    name: { type: String, required: true, trim: true },
     description: { type: String, default: "" },
-    version: { type: Number, default: 1 },
-    parentRecipeId: { type: String, default: null },
-
-    stage: { type: String, default: "" },
-    medium: { type: String, default: "" },
-    batchVolume: { type: Number, default: 0 },
-    batchUnit: { type: String, default: "gal" },
+    version: { type: Number, required: true, default: 1 },
+    rootRecipeId: { type: String, default: null, index: true },
+    previousVersionId: { type: String, default: null },
+    clonedFromRecipeId: { type: String, default: null },
+    stage: { type: String, default: "veg" },
+    medium: { type: String, default: "unspecified" },
+    batchVolume: { type: Number, required: true },
+    batchUnit: { type: String, enum: ["L", "gal"], required: true },
     products: { type: [mongoose.Schema.Types.Mixed], default: [] },
-    ingredients: { type: [mongoose.Schema.Types.Mixed], default: [] },
-    waterBaseline: { type: mongoose.Schema.Types.Mixed, default: {} },
     releaseEnvironment: { type: mongoose.Schema.Types.Mixed, default: {} },
+    waterBaseline: { type: mongoose.Schema.Types.Mixed, default: {} },
     measuredEC: { type: Number, default: null },
     measuredPH: { type: Number, default: null },
-
-    calculatedTotals: { type: mongoose.Schema.Types.Mixed, default: {} },
-    calculation: { type: mongoose.Schema.Types.Mixed, default: {} },
-    releaseTimeline: { type: mongoose.Schema.Types.Mixed, default: {} },
-    warnings: { type: [String], default: [] },
     sourceConfidence: { type: mongoose.Schema.Types.Mixed, default: {} },
+    mixingOrder: { type: [String], default: [] },
+    calculation: { type: mongoose.Schema.Types.Mixed, default: {} },
     notes: { type: String, default: "" },
-
-    useCount: { type: Number, default: 0 },
+    active: { type: Boolean, default: true, index: true },
+    archivedAt: { type: Date, default: null },
     lastUsedAt: { type: Date, default: null },
-    deletedAt: { type: Date, default: null, index: true }
+    useCount: { type: Number, default: 0 }
   },
-  { timestamps: true, minimize: false }
+  { timestamps: true }
 );
 
-NutrientRecipeSchema.index({ userId: 1, growId: 1, recipeType: 1, createdAt: -1 });
-NutrientRecipeSchema.index({ userId: 1, name: 1, deletedAt: 1 });
+NutrientRecipeSchema.index({ user: 1, rootRecipeId: 1, version: -1 });
+NutrientRecipeSchema.index({ user: 1, growId: 1, active: 1, updatedAt: -1 });
 
-module.exports =
-  mongoose.models.NutrientRecipe ||
-  mongoose.model("NutrientRecipe", NutrientRecipeSchema);
+NutrientRecipeSchema.pre("save", function setRoot(next) {
+  if (!this.rootRecipeId && this._id) this.rootRecipeId = String(this._id);
+  next();
+});
 
+module.exports = mongoose.model("NutrientRecipe", NutrientRecipeSchema);
