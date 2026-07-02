@@ -82,6 +82,7 @@ async function main() {
     "tests/release.go-no-go.test.js",
     "tests/release.record-evidence.test.js",
     "tests/release.preflight.test.js",
+    "tests/contracts/v1.release.matrix.test.js",
     "tests/release.live-urls.test.js",
     "tests/release.sentry-dsn.test.js",
     "tests/release.data-rights.test.js",

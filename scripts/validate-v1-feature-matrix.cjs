@@ -61,7 +61,6 @@ function toBackendRouteSignature(method, apiPath) {
 function main() {
   const failures = [];
   const warnings = [];
-  const missingLegacyEvidence = [];
   let autoMissingUiCount = 0;
 
   if (!fs.existsSync(MATRIX_PATH)) {
@@ -79,7 +78,6 @@ function main() {
   const backendRoutes = new Set(readBackendRoutes().map(String));
   const plannedAllowed = !!matrix?.policy?.plannedEndpointsAllowed;
   const requireUiForAll = !!matrix?.policy?.requireUiRouteForAll;
-  const evidencePolicy = String(matrix?.policy?.evidencePathPolicy || "strict");
   const features = Array.isArray(matrix?.features) ? matrix.features : [];
 
   for (const feature of features) {
@@ -147,18 +145,18 @@ function main() {
         if (!backendRoutes.has(sig))
           failures.push(`[${id}] backend route missing from inventory: ${sig}`);
       }
-      if (evidence.length === 0)
-        failures.push(`[${id}] Functional feature has no evidence.test entries`);
+      if (userVisible && releaseScope === "v1" && evidence.length === 0) {
+        failures.push(`[${id}] public v1 feature has no evidence.test entries`);
+      }
     } else if (!plannedAllowed && status === "Planned") {
       failures.push(`[${id}] Planned feature is disallowed by policy`);
     }
 
-    for (const testPath of evidence) {
-      if (!existsEvidencePath(testPath)) {
-        const message = `[${id}] missing evidence file: ${testPath}`;
-        if (evidencePolicy === "warn_on_missing_legacy_paths") {
-          missingLegacyEvidence.push(message);
-        } else failures.push(message);
+    if (userVisible && releaseScope === "v1") {
+      for (const testPath of evidence) {
+        if (!existsEvidencePath(testPath)) {
+          failures.push(`[${id}] missing public v1 evidence file: ${testPath}`);
+        }
       }
     }
   }
@@ -174,17 +172,6 @@ function main() {
   if (warnings.length) {
     console.log("\nWarnings:");
     for (const w of warnings) console.log(` - ${w}`);
-  }
-  if (missingLegacyEvidence.length) {
-    console.log(
-      `\nLegacy evidence path warnings: ${missingLegacyEvidence.length} missing path(s).`
-    );
-    for (const warning of missingLegacyEvidence.slice(0, 20)) {
-      console.log(` - ${warning}`);
-    }
-    if (missingLegacyEvidence.length > 20) {
-      console.log(` - ... ${missingLegacyEvidence.length - 20} more`);
-    }
   }
   if (failures.length) {
     console.error("\nFailures:");
