@@ -1,6 +1,6 @@
 import React, { useMemo } from "react";
 import { Href, Link, useLocalSearchParams } from "expo-router";
-import { ScrollView, StyleSheet, Text, View } from "react-native";
+import { Pressable, ScrollView, StyleSheet, Text, View } from "react-native";
 
 import {
   FeatureArea,
@@ -50,7 +50,17 @@ const styles = StyleSheet.create({
   locked: { fontSize: 12, color: "#991B1B", fontWeight: "700" },
   cardDesc: { fontSize: 14, color: "#475569" },
   link: { marginTop: 10, fontSize: 14, fontWeight: "700", color: "#166534" },
-  lockedText: { marginTop: 10, fontSize: 14, fontWeight: "700", color: "#991B1B" }
+  lockedText: { marginTop: 10, fontSize: 14, fontWeight: "700", color: "#991B1B" },
+  utilityRow: { flexDirection: "row", flexWrap: "wrap", gap: 8, marginTop: 14 },
+  utilityButton: {
+    borderWidth: 1,
+    borderColor: "#166534",
+    borderRadius: 8,
+    backgroundColor: "#FFFFFF",
+    paddingHorizontal: 12,
+    paddingVertical: 9
+  },
+  utilityText: { color: "#166534", fontWeight: "800" }
 });
 
 function coerceParam(value?: string | string[]) {
@@ -137,6 +147,21 @@ export default function ToolsHubScreen() {
             <Text style={styles.contextText}>Grow context active: {growId}</Text>
           </View>
         ) : null}
+        <View style={styles.utilityRow}>
+          <Link
+            href={hrefWithGrow("/home/personal/tools/saved-runs", growId) as Href}
+            asChild
+          >
+            <Pressable style={styles.utilityButton}>
+              <Text style={styles.utilityText}>Saved Runs</Text>
+            </Pressable>
+          </Link>
+          <Link href={"/home/personal/tools/npk" as Href} asChild>
+            <Pressable style={styles.utilityButton}>
+              <Text style={styles.utilityText}>Recipes</Text>
+            </Pressable>
+          </Link>
+        </View>
       </View>
 
       {AREA_ORDER.map((area) => {

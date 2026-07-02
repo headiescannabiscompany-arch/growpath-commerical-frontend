@@ -1,0 +1,351 @@
+import React, { useCallback, useMemo, useState } from "react";
+import { useFocusEffect } from "@react-navigation/native";
+import { useLocalSearchParams } from "expo-router";
+import {
+  ActivityIndicator,
+  Pressable,
+  ScrollView,
+  StyleSheet,
+  Text,
+  TextInput,
+  View
+} from "react-native";
+
+import {
+  archiveToolRun,
+  createTaskFromToolRun,
+  getToolRun,
+  listToolRuns,
+  saveToolRunToLog,
+  updateToolRun,
+  type ToolRun
+} from "@/api/toolRuns";
+import BackButton from "@/components/nav/BackButton";
+import ToolResultSurface, {
+  type ToolResultAction,
+  type ToolResultMetric,
+  type ToolResultNotice
+} from "@/features/personal/tools/ToolResultSurface";
+
+const TOOL_FILTERS = [
+  { label: "All", value: "" },
+  { label: "IPM", value: "ipm_scout" },
+  { label: "Harvest", value: "harvest_readiness" },
+  { label: "Inventory", value: "personal_inventory" },
+  { label: "Pheno", value: "pheno_hunt" },
+  { label: "Steering", value: "crop_steering_project" },
+  { label: "NPK", value: "npk_recipe" },
+  { label: "Dry/Cure", value: "dry_cure_guard" }
+];
+
+function coerceParam(value?: string | string[]) {
+  if (typeof value === "string") return value;
+  if (Array.isArray(value)) return value[0] || "";
+  return "";
+}
+
+function idFor(run: ToolRun) {
+  return String(run?._id || run?.id || "");
+}
+
+function formatDate(value?: string) {
+  return value ? String(value).slice(0, 10) : "unsaved";
+}
+
+function labelize(value: string) {
+  return value.replace(/([a-z])([A-Z])/g, "$1 $2").replaceAll("_", " ");
+}
+
+function formatValue(value: unknown) {
+  if (value == null || value === "") return "-";
+  if (typeof value === "number") return Number.isInteger(value) ? String(value) : value.toFixed(2);
+  if (typeof value === "boolean") return value ? "Yes" : "No";
+  if (Array.isArray(value)) return `${value.length} item${value.length === 1 ? "" : "s"}`;
+  if (typeof value === "object") return "{...}";
+  return String(value);
+}
+
+function metricsFor(run: ToolRun | null): ToolResultMetric[] {
+  const outputs = run?.outputs || run?.result || {};
+  const entries = Object.entries(outputs)
+    .filter(([, value]) => value != null && typeof value !== "object")
+    .slice(0, 6);
+  return entries.length
+    ? entries.map(([key, value]) => ({
+        key,
+        label: labelize(key),
+        value: formatValue(value)
+      }))
+    : [{ key: "status", label: "Status", value: run?.status || "completed" }];
+}
+
+function noticesFor(run: ToolRun | null): ToolResultNotice[] {
+  return (run?.warnings || []).map((message, index) => ({
+    key: `warning-${index}`,
+    severity: "medium",
+    message
+  }));
+}
+
+function runTitle(run: ToolRun | null) {
+  const type = run?.toolType || run?.toolName || "tool";
+  return labelize(type);
+}
+
+export default function SavedToolRunsScreen() {
+  const params = useLocalSearchParams<{
+    growId?: string | string[];
+    toolType?: string | string[];
+  }>();
+  const growId = useMemo(() => coerceParam(params.growId), [params.growId]);
+  const initialToolType = useMemo(() => coerceParam(params.toolType), [params.toolType]);
+  const [toolType, setToolType] = useState(initialToolType);
+  const [runs, setRuns] = useState<ToolRun[]>([]);
+  const [selectedRun, setSelectedRun] = useState<ToolRun | null>(null);
+  const [summaryDraft, setSummaryDraft] = useState("");
+  const [loading, setLoading] = useState(true);
+  const [feedback, setFeedback] = useState("");
+
+  const load = useCallback(async () => {
+    setLoading(true);
+    setFeedback("");
+    const rows = await listToolRuns({
+      growId: growId || undefined,
+      toolType: toolType || undefined
+    });
+    setRuns(rows);
+    setLoading(false);
+  }, [growId, toolType]);
+
+  useFocusEffect(
+    useCallback(() => {
+      load();
+    }, [load])
+  );
+
+  async function selectRun(run: ToolRun) {
+    const id = idFor(run);
+    if (!id) return;
+    setFeedback("");
+    const full = await getToolRun(id);
+    const nextRun = full || run;
+    setSelectedRun(nextRun);
+    setSummaryDraft(nextRun.summary || "");
+    if (!full) setFeedback("Unable to reload this run; showing cached list data.");
+  }
+
+  async function saveSummary() {
+    const id = selectedRun ? idFor(selectedRun) : "";
+    if (!id) return;
+    const updated = await updateToolRun(id, { summary: summaryDraft });
+    if (!updated) {
+      setFeedback("Unable to update this saved run.");
+      return;
+    }
+    setSelectedRun(updated);
+    setSummaryDraft(updated.summary || "");
+    setFeedback("Saved run updated.");
+    await load();
+  }
+
+  async function archiveSelectedRun() {
+    const id = selectedRun ? idFor(selectedRun) : "";
+    if (!id) return;
+    const ok = await archiveToolRun(id);
+    if (!ok) {
+      setFeedback("Unable to archive this saved run.");
+      return;
+    }
+    setSelectedRun(null);
+    setSummaryDraft("");
+    setFeedback("Saved run archived.");
+    await load();
+  }
+
+  const selectedRunId = selectedRun ? idFor(selectedRun) : "";
+  const actions: ToolResultAction[] = selectedRunId
+    ? [
+        {
+          key: "save-log",
+          label: "Save to Grow Log",
+          variant: "secondary",
+          pendingLabel: "Saving...",
+          successMessage: "Saved to grow log.",
+          onPress: () => saveToolRunToLog(selectedRunId)
+        },
+        {
+          key: "create-task",
+          label: "Create Task",
+          variant: "secondary",
+          pendingLabel: "Creating...",
+          successMessage: "Task created.",
+          onPress: () => createTaskFromToolRun(selectedRunId)
+        },
+        {
+          key: "archive",
+          label: "Archive Run",
+          variant: "secondary",
+          pendingLabel: "Archiving...",
+          successMessage: "Archived.",
+          onPress: archiveSelectedRun
+        }
+      ]
+    : [];
+
+  return (
+    <ScrollView style={styles.screen} contentContainerStyle={styles.content}>
+      <BackButton />
+      <View style={styles.header}>
+        <Text style={styles.title}>Saved Tool Runs</Text>
+        <Text style={styles.subtitle}>
+          Reopen, annotate, archive, and continue from saved GrowPathAI results.
+        </Text>
+        {growId ? <Text style={styles.context}>Grow context: {growId}</Text> : null}
+      </View>
+
+      <View style={styles.filters}>
+        {TOOL_FILTERS.map((filter) => {
+          const active = toolType === filter.value;
+          return (
+            <Pressable
+              key={filter.value || "all"}
+              accessibilityRole="button"
+              onPress={() => setToolType(filter.value)}
+              style={[styles.chip, active && styles.chipOn]}
+            >
+              <Text style={[styles.chipText, active && styles.chipTextOn]}>
+                {filter.label}
+              </Text>
+            </Pressable>
+          );
+        })}
+      </View>
+
+      {loading ? (
+        <View style={styles.card}>
+          <ActivityIndicator />
+        </View>
+      ) : runs.length ? (
+        <View style={styles.list}>
+          {runs.map((run) => {
+            const active = selectedRunId && selectedRunId === idFor(run);
+            return (
+              <Pressable
+                key={idFor(run)}
+                accessibilityRole="button"
+                onPress={() => selectRun(run)}
+                style={[styles.card, active && styles.cardOn]}
+              >
+                <Text style={styles.cardTitle}>{runTitle(run)}</Text>
+                <Text style={styles.meta}>
+                  {formatDate(run.createdAt)} | {run.growId || "No grow"}
+                </Text>
+                <Text style={styles.cardText} numberOfLines={2}>
+                  {run.summary || JSON.stringify(run.outputs || run.result || {}).slice(0, 180)}
+                </Text>
+              </Pressable>
+            );
+          })}
+        </View>
+      ) : (
+        <View style={styles.card}>
+          <Text style={styles.cardTitle}>No saved runs</Text>
+          <Text style={styles.cardText}>
+            Run a tool and it will appear here as a saved ToolRun record.
+          </Text>
+        </View>
+      )}
+
+      {selectedRun ? (
+        <View style={styles.editor}>
+          <Text style={styles.label}>Summary / note</Text>
+          <TextInput
+            value={summaryDraft}
+            onChangeText={setSummaryDraft}
+            multiline
+            style={styles.input}
+            placeholder="Add a short note for this saved run"
+          />
+          <Pressable accessibilityRole="button" onPress={saveSummary} style={styles.primary}>
+            <Text style={styles.primaryText}>Save Note</Text>
+          </Pressable>
+        </View>
+      ) : null}
+
+      {selectedRun ? (
+        <ToolResultSurface
+          title={`${runTitle(selectedRun)} result`}
+          status={selectedRun.status || "completed"}
+          summary={selectedRun.summary || ""}
+          metrics={metricsFor(selectedRun)}
+          inputs={selectedRun.inputs || selectedRun.input || selectedRun.params || {}}
+          outputs={selectedRun.outputs || selectedRun.output || selectedRun.result || {}}
+          notices={noticesFor(selectedRun)}
+          recommendations={selectedRun.recommendations || []}
+          formulas={selectedRun.formulas || []}
+          uncertainty={selectedRun.uncertainty || null}
+          confidence={selectedRun.confidence || null}
+          actions={actions}
+          feedback={feedback}
+          copyPayload={selectedRun}
+        />
+      ) : feedback ? (
+        <Text style={styles.feedback}>{feedback}</Text>
+      ) : null}
+    </ScrollView>
+  );
+}
+
+const styles = StyleSheet.create({
+  screen: { flex: 1, backgroundColor: "#FFFFFF" },
+  content: { padding: 20, paddingBottom: 48, gap: 14 },
+  header: { gap: 6 },
+  title: { color: "#0F172A", fontSize: 24, fontWeight: "800" },
+  subtitle: { color: "#475569", lineHeight: 20 },
+  context: { color: "#166534", fontWeight: "800" },
+  filters: { flexDirection: "row", flexWrap: "wrap", gap: 8 },
+  chip: {
+    borderWidth: 1,
+    borderColor: "#CBD5E1",
+    borderRadius: 999,
+    paddingHorizontal: 10,
+    paddingVertical: 7,
+    backgroundColor: "#FFFFFF"
+  },
+  chipOn: { borderColor: "#166534", backgroundColor: "#166534" },
+  chipText: { color: "#0F172A", fontSize: 12, fontWeight: "800" },
+  chipTextOn: { color: "#FFFFFF" },
+  list: { gap: 10 },
+  card: {
+    borderWidth: 1,
+    borderColor: "#E2E8F0",
+    borderRadius: 8,
+    backgroundColor: "#F8FAFC",
+    padding: 12,
+    gap: 5
+  },
+  cardOn: { borderColor: "#166534", backgroundColor: "#F0FDF4" },
+  cardTitle: { color: "#0F172A", fontWeight: "800" },
+  cardText: { color: "#475569", lineHeight: 19 },
+  meta: { color: "#64748B", fontSize: 12, fontWeight: "700" },
+  editor: { gap: 8 },
+  label: { color: "#334155", fontSize: 12, fontWeight: "800" },
+  input: {
+    minHeight: 82,
+    borderWidth: 1,
+    borderColor: "#CBD5E1",
+    borderRadius: 8,
+    backgroundColor: "#FFFFFF",
+    padding: 10,
+    textAlignVertical: "top"
+  },
+  primary: {
+    alignSelf: "flex-start",
+    borderRadius: 8,
+    backgroundColor: "#166534",
+    paddingHorizontal: 12,
+    paddingVertical: 9
+  },
+  primaryText: { color: "#FFFFFF", fontWeight: "800" },
+  feedback: { color: "#334155", fontWeight: "700" }
+});

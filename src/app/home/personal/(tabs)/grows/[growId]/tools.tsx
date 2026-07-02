@@ -185,6 +185,11 @@ export default function GrowToolsScreen() {
             <Text style={styles.actionText}>Open tools hub</Text>
           </Pressable>
         </Link>
+        <Link href={withGrow("/home/personal/tools/saved-runs", growId)} asChild>
+          <Pressable style={styles.action}>
+            <Text style={styles.actionText}>Saved runs</Text>
+          </Pressable>
+        </Link>
       </View>
 
       <View style={styles.card}>
