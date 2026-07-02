@@ -12,11 +12,13 @@ import {
 import ToolResultSurface from "@/features/personal/tools/ToolResultSurface";
 import { runCalculator, saveToolRunToLog, type ToolRun } from "@/api/toolRuns";
 import {
+  archiveNutrientRecipe,
   cloneNutrientRecipe,
   createNutrientRecipe,
   listNutrientRecipes,
   recordNutrientRecipeUse,
   reviseNutrientRecipe,
+  updateNutrientRecipe,
   type NutrientRecipe
 } from "@/api/nutrientRecipes";
 import { saveToolRunAndCreateTask } from "@/features/personal/tools/saveToolRunAndOpenJournal";
@@ -136,6 +138,10 @@ export default function NpkToolScreen() {
       .catch(() => setSavedRecipes([]));
   }, [growContext]);
 
+  async function reloadRecipes() {
+    setSavedRecipes(await listNutrientRecipes(growContext || undefined));
+  }
+
   function recipePayload() {
     const waterBaseline = {
       sourceEC: sourceEC ? Number(sourceEC) : undefined,
@@ -209,6 +215,35 @@ export default function NpkToolScreen() {
         id: `${Date.now()}-${index}`
       })) as ProductRow[]
     );
+  }
+
+  async function updateSelectedRecipe() {
+    if (!selectedRecipeId) return;
+    try {
+      const updated = await updateNutrientRecipe(selectedRecipeId, recipePayload());
+      await reloadRecipes();
+      loadRecipe(updated);
+      setFeedback(`Updated ${updated.name} v${updated.version}.`);
+    } catch (error: any) {
+      setFeedback(error?.message || "Unable to update recipe.");
+    }
+  }
+
+  async function archiveSelectedRecipe() {
+    if (!selectedRecipeId) return;
+    try {
+      const archived = await archiveNutrientRecipe(selectedRecipeId);
+      if (!archived) throw new Error("Archive failed.");
+      setSelectedRecipeId("");
+      setRecipeName("");
+      setRows([newRow(0)]);
+      setResult(null);
+      setToolRun(null);
+      await reloadRecipes();
+      setFeedback("Recipe archived.");
+    } catch (error: any) {
+      setFeedback(error?.message || "Unable to archive recipe.");
+    }
   }
 
   function updateRow(id: string, key: keyof ProductRow, value: string) {
@@ -339,6 +374,16 @@ export default function NpkToolScreen() {
               </Text>
             </Pressable>
           ))}
+          {selectedRecipeId ? (
+            <View style={styles.row}>
+              <Pressable style={styles.secondaryButton} onPress={updateSelectedRecipe}>
+                <Text style={styles.secondaryButtonText}>Update Selected Recipe</Text>
+              </Pressable>
+              <Pressable style={styles.secondaryButton} onPress={archiveSelectedRecipe}>
+                <Text style={styles.secondaryButtonText}>Archive Selected Recipe</Text>
+              </Pressable>
+            </View>
+          ) : null}
         </View>
       ) : null}
 
@@ -570,7 +615,7 @@ export default function NpkToolScreen() {
                   ? await reviseNutrientRecipe(selectedRecipeId, recipePayload())
                   : await createNutrientRecipe(recipePayload());
                 setSelectedRecipeId(saved._id);
-                setSavedRecipes(await listNutrientRecipes(growContext || undefined));
+                await reloadRecipes();
                 setFeedback(`Saved ${saved.name} v${saved.version}.`);
               } catch (error: any) {
                 setFeedback(error?.message || "Unable to save recipe.");
@@ -590,7 +635,7 @@ export default function NpkToolScreen() {
                     selectedRecipeId,
                     `${recipeName} copy`
                   );
-                  setSavedRecipes(await listNutrientRecipes(growContext || undefined));
+                  await reloadRecipes();
                   loadRecipe(clone);
                   setFeedback("Recipe cloned.");
                 }}
@@ -609,7 +654,7 @@ export default function NpkToolScreen() {
                     waterBaseline: recipePayload().waterBaseline,
                     saveLog: true
                   });
-                  setSavedRecipes(await listNutrientRecipes(growContext || undefined));
+                  await reloadRecipes();
                   setFeedback("Recipe use saved to grow history.");
                 }}
               >
