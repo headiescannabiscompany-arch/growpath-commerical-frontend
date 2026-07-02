@@ -6,17 +6,38 @@ import AiScreen from "@/app/home/personal/(tabs)/ai";
 const mockListPersonalGrows = jest.fn();
 const mockListPersonalLogs = jest.fn();
 const mockListPersonalTasks = jest.fn();
+const mockListPersonalPlants = jest.fn();
+const mockListToolRuns = jest.fn();
+const mockGetDiagnosisHistory = jest.fn();
 
 jest.mock("@/api/grows", () => ({
   listPersonalGrows: (...args: any[]) => mockListPersonalGrows(...args)
 }));
 
 jest.mock("@/api/logs", () => ({
+  createPersonalLog: jest.fn(),
   listPersonalLogs: (...args: any[]) => mockListPersonalLogs(...args)
 }));
 
+jest.mock("@/api/plants", () => ({
+  listPersonalPlants: (...args: any[]) => mockListPersonalPlants(...args)
+}));
+
 jest.mock("@/api/tasks", () => ({
+  createPersonalTask: jest.fn(),
   listPersonalTasks: (...args: any[]) => mockListPersonalTasks(...args)
+}));
+
+jest.mock("@/api/diagnose", () => ({
+  getDiagnosisHistory: (...args: any[]) => mockGetDiagnosisHistory(...args)
+}));
+
+jest.mock("@/api/toolRuns", () => ({
+  listToolRuns: (...args: any[]) => mockListToolRuns(...args)
+}));
+
+jest.mock("@/api/personalAssistant", () => ({
+  askPersonalAssistant: jest.fn()
 }));
 
 describe("personal AI screen", () => {
@@ -49,6 +70,9 @@ describe("personal AI screen", () => {
         completed: false
       }
     ]);
+    mockListPersonalPlants.mockResolvedValue([]);
+    mockListToolRuns.mockResolvedValue([]);
+    mockGetDiagnosisHistory.mockResolvedValue([]);
   });
 
   it("answers VPD commands and context-aware task prompts", async () => {

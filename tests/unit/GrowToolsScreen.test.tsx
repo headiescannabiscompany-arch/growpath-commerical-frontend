@@ -17,6 +17,7 @@ jest.mock("@/api/toolRuns", () => ({
 
 jest.mock("expo-router", () => ({
   useLocalSearchParams: () => ({ growId: "grow-1" }),
+  useRouter: () => ({ push: jest.fn() }),
   Link: ({ children }: any) => children
 }));
 
