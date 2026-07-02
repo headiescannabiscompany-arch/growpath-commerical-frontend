@@ -1,6 +1,6 @@
 import { CAPABILITY_KEYS } from "@/entitlements/capabilityKeys";
 
-export type FeatureStatus = "implemented" | "beta" | "coming_soon" | "hidden" | "planned";
+export type FeatureStatus = "release" | "beta" | "hidden" | "planned" | "disabled";
 
 export type FeatureArea =
   | "personal_navigation"
@@ -32,7 +32,7 @@ export const personalFeatures = {
     title: "Home",
     description: "Daily grow overview and quick actions.",
     area: "personal_navigation",
-    status: "beta",
+    status: "release",
     href: "/home/personal"
   },
   grows: {
@@ -40,7 +40,7 @@ export const personalFeatures = {
     title: "Grows",
     description: "Grow workspaces, plants, logs, tasks, and history.",
     area: "personal_navigation",
-    status: "beta",
+    status: "release",
     href: "/home/personal/grows"
   },
   tools: {
@@ -48,7 +48,7 @@ export const personalFeatures = {
     title: "Tools / AI",
     description: "Cultivation calculations, analysis, and integrations.",
     area: "personal_navigation",
-    status: "beta",
+    status: "release",
     href: "/home/personal/tools"
   },
   community: {
@@ -56,7 +56,7 @@ export const personalFeatures = {
     title: "Community",
     description: "Grow updates and community discussions.",
     area: "personal_navigation",
-    status: "beta",
+    status: "release",
     href: "/home/personal/community"
   },
   profile: {
@@ -64,7 +64,7 @@ export const personalFeatures = {
     title: "Profile",
     description: "Account, privacy, units, and preferences.",
     area: "personal_navigation",
-    status: "beta",
+    status: "release",
     href: "/home/personal/profile"
   },
   courses: {
@@ -89,7 +89,7 @@ export const personalToolFeatures = [
     title: "Data Integrations",
     description: "Connect supported devices and map environmental data to grows.",
     area: "integrations",
-    status: "beta",
+    status: "release",
     href: "/home/personal/tools/integrations",
     internalNote:
       "Pulse is implemented. Growlink is viable for read-only user-authorized data ingestion and awaits backend endpoints plus real credentials/hardware. UbiBot is parked until Developer Membership, credentials, and a real device/channel are available. Other providers require contracts, credentials, or adapters."
@@ -99,7 +99,7 @@ export const personalToolFeatures = [
     title: "VPD Calculator",
     description: "Calculate leaf-aware VPD against a growth-stage target.",
     area: "environment",
-    status: "implemented",
+    status: "release",
     href: "/home/personal/tools/vpd",
     acceptsGrowContext: true,
     internalNote: "Working calculator with grow log and task actions."
@@ -109,7 +109,7 @@ export const personalToolFeatures = [
     title: "Dew Point Guard",
     description: "Analyze manual, CSV, or connected readings for condensation risk.",
     area: "environment",
-    status: "beta",
+    status: "release",
     href: "/home/personal/tools/dew-point-guard",
     acceptsGrowContext: true,
     internalNote:
@@ -120,7 +120,7 @@ export const personalToolFeatures = [
     title: "PPFD / DLI Planner",
     description: "Compare measured light against DLI and photoperiod targets.",
     area: "environment",
-    status: "beta",
+    status: "release",
     href: "/home/personal/tools/ppfd",
     acceptsGrowContext: true,
     internalNote: "Measured-light calculation works; fixture modeling remains incomplete."
@@ -130,7 +130,7 @@ export const personalToolFeatures = [
     title: "Bud Rot Risk",
     description: "Screen humidity, temperature, airflow, and wet-window risk factors.",
     area: "environment",
-    status: "beta",
+    status: "release",
     href: "/home/personal/tools/bud-rot-risk",
     acceptsGrowContext: true,
     capabilityKey: CAPABILITY_KEYS.DIAGNOSE_ADVANCED,
@@ -141,7 +141,7 @@ export const personalToolFeatures = [
     title: "NPK Recipe Calculator",
     description: "Build multi-product recipes with elemental ppm and release timing.",
     area: "water_nutrients",
-    status: "beta",
+    status: "release",
     href: "/home/personal/tools/npk",
     acceptsGrowContext: true,
     capabilityKey: CAPABILITY_KEYS.TOOL_NPK,
@@ -153,7 +153,7 @@ export const personalToolFeatures = [
     title: "Nutrient Chemistry",
     description: "Compare nutrient forms, release behavior, pH effects, and use cases.",
     area: "water_nutrients",
-    status: "beta",
+    status: "release",
     href: "/home/personal/tools/nutrient-chemistry",
     acceptsGrowContext: true,
     capabilityKey: CAPABILITY_KEYS.TOOL_NPK,
@@ -165,7 +165,7 @@ export const personalToolFeatures = [
     title: "Watering Planner",
     description: "Estimate watering volume using medium, stage, and environment.",
     area: "water_nutrients",
-    status: "beta",
+    status: "release",
     href: "/home/personal/tools/watering",
     acceptsGrowContext: true,
     internalNote: "Heuristic estimate; history and substrate measurements remain."
@@ -176,7 +176,7 @@ export const personalToolFeatures = [
     description:
       "Send temperature, humidity, VPD, PPFD, DLI, and CO2 context to the environment analysis endpoint.",
     area: "environment",
-    status: "beta",
+    status: "release",
     href: "/home/personal/tools/environment-analysis",
     acceptsGrowContext: true,
     internalNote:
@@ -188,7 +188,7 @@ export const personalToolFeatures = [
     description:
       "Generate a stage-aware feeding schedule from nutrient and grow-medium context.",
     area: "water_nutrients",
-    status: "beta",
+    status: "release",
     href: "/home/personal/tools/feeding-schedule",
     acceptsGrowContext: true,
     internalNote:
@@ -200,7 +200,7 @@ export const personalToolFeatures = [
     description:
       "Estimate harvest windows from flowering day, cultivar timing, and maturity signals.",
     area: "planning_records",
-    status: "beta",
+    status: "release",
     href: "/home/personal/tools/harvest-estimator",
     acceptsGrowContext: true,
     internalNote:
@@ -211,7 +211,7 @@ export const personalToolFeatures = [
     title: "Timeline Planner",
     description: "Plan grow milestones across veg, flower, drying, and cure windows.",
     area: "planning_records",
-    status: "beta",
+    status: "release",
     href: "/home/personal/tools/timeline-planner",
     acceptsGrowContext: true,
     internalNote:
@@ -222,7 +222,7 @@ export const personalToolFeatures = [
     title: "PDF / Export",
     description: "Prepare grow records, plants, tasks, and tool runs for export.",
     area: "planning_records",
-    status: "beta",
+    status: "release",
     href: "/home/personal/tools/pdf-export",
     acceptsGrowContext: true,
     internalNote:
@@ -233,7 +233,7 @@ export const personalToolFeatures = [
     title: "Pheno Matrix",
     description: "Score phenotype candidates, weight traits, and rank keeper selections.",
     area: "genetics",
-    status: "beta",
+    status: "release",
     href: "/home/personal/tools/pheno-matrix",
     acceptsGrowContext: true,
     internalNote:
@@ -244,7 +244,7 @@ export const personalToolFeatures = [
     title: "Plant Issue Diagnosis",
     description: "Use photos and grow context for cautious plant-health triage.",
     area: "plant_health",
-    status: "beta",
+    status: "release",
     href: "/home/personal/diagnose",
     acceptsGrowContext: true,
     internalNote:
@@ -384,7 +384,7 @@ export const personalToolFeatures = [
     status: "planned",
     acceptsGrowContext: true,
     internalNote:
-      "Original planned v1 IPM support module. Beta only after organism library, regional alert rules, and licensed image/provider policy exist. No pesticide dosing."
+      "Original planned v1 IPM support module. Expose only after organism library, regional alert rules, and licensed image/provider policy exist. No pesticide dosing."
   },
   {
     key: "tools.species_crop_identification",
@@ -394,7 +394,7 @@ export const personalToolFeatures = [
     area: "plant_health",
     status: "planned",
     internalNote:
-      "Original planned v1 crop-identity support module. Beta only with licensed provider or source-reviewed taxon database. Must require user confirmation before crop-specific recommendations."
+      "Original planned v1 crop-identity support module. Expose only with licensed provider or source-reviewed taxon database. Must require user confirmation before crop-specific recommendations."
   },
   {
     key: "tools.harvest_readiness_ai",
@@ -450,13 +450,17 @@ export const personalToolFeatures = [
   }
 ] as const satisfies readonly FeatureDefinition[];
 
-export function isFeatureNavigable(feature: Pick<FeatureDefinition, "status" | "href">) {
-  return (
-    Boolean(feature.href) &&
-    (feature.status === "implemented" || feature.status === "beta")
-  );
+export function isFeatureNavigable(
+  feature: Pick<FeatureDefinition, "status" | "href">,
+  options: { allowBetaSurfaces?: boolean } = {}
+) {
+  if (!feature.href) return false;
+  if (feature.status === "release") return true;
+  return feature.status === "beta" && options.allowBetaSurfaces === true;
 }
 
-export function getNavigablePersonalTools() {
-  return personalToolFeatures.filter(isFeatureNavigable) as FeatureDefinition[];
+export function getNavigablePersonalTools(options: { allowBetaSurfaces?: boolean } = {}) {
+  return personalToolFeatures.filter((feature) =>
+    isFeatureNavigable(feature, options)
+  ) as FeatureDefinition[];
 }

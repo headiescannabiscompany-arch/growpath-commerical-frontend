@@ -1,0 +1,467 @@
+"use strict";
+
+const fs = require("fs");
+const path = require("path");
+
+const ROOT = path.resolve(__dirname, "..");
+const SRC = path.join(ROOT, "src");
+const APP = path.join(SRC, "app");
+const API = path.join(SRC, "api");
+const BACKEND = path.join(ROOT, "backend");
+const OUT_DIR = path.join(ROOT, "tmp", "scan");
+
+const IGNORE_DIRS = new Set([
+  ".git",
+  ".expo",
+  ".npm-cache",
+  "coverage",
+  "dist",
+  "node_modules",
+  "playwright-report",
+  "test-results",
+  "tmp"
+]);
+
+const CODE_EXTS = new Set([".js", ".jsx", ".ts", ".tsx", ".cjs", ".mjs"]);
+
+const MODULES = [
+  {
+    phase: "Foundation",
+    name: "ToolRun canonical contract",
+    keywords: ["toolrun", "toolRuns", "ToolRun"],
+    required: ["model-or-api", "save-reload", "ownership-tests"]
+  },
+  {
+    phase: "Foundation",
+    name: "SourceRecord / provenance",
+    keywords: ["sourceRecord", "provenance", "sourceRecords", "sourceConfidence"],
+    required: ["model", "source-confidence", "tests"]
+  },
+  {
+    phase: "Foundation",
+    name: "Product / Ingredient Library",
+    keywords: ["products", "ProductIngredient", "ingredient", "guaranteed analysis"],
+    required: ["model", "api", "ui", "tests"]
+  },
+  {
+    phase: "Foundation",
+    name: "Recipe model",
+    keywords: ["recipe", "nutrientRecipes", "Recipe"],
+    required: ["model", "api", "ui", "tests"]
+  },
+  {
+    phase: "Foundation",
+    name: "Timeline event schema",
+    keywords: ["timeline", "TimelineEvent", "events"],
+    required: ["model", "api", "grow-links", "tests"]
+  },
+  {
+    phase: "Foundation",
+    name: "Task source-object links",
+    keywords: ["sourceObject", "sourceType", "linkedTask", "tasks"],
+    required: ["model", "api", "ownership-tests"]
+  },
+  {
+    phase: "Foundation",
+    name: "Photo / media metadata",
+    keywords: ["photos", "media", "uploads", "image"],
+    required: ["metadata", "ownership", "retention"]
+  },
+  {
+    phase: "Foundation",
+    name: "Crop profile / taxon base model",
+    keywords: ["cropProfile", "taxon", "species", "cropKnowledge"],
+    required: ["model", "api", "diagnosis-links"]
+  },
+  {
+    phase: "Soil & Nutrients",
+    name: "NPK / Nutrient Recipe Calculator",
+    route: "/home/personal/tools/npk",
+    keywords: ["npk", "nutrient recipe", "nutrientRecipes"],
+    required: ["calculator", "ToolRun", "log", "task", "recipe"]
+  },
+  {
+    phase: "Soil & Nutrients",
+    name: "Nutrient Release Chemistry",
+    route: "/home/personal/tools/nutrient-chemistry",
+    keywords: ["nutrient-chemistry", "releaseClass", "releaseWindow", "nutrientForms"],
+    required: ["library", "provenance", "tests"]
+  },
+  {
+    phase: "Soil & Nutrients",
+    name: "Compatibility Checker",
+    keywords: ["compatibility", "precipitation", "mixingOrder", "antagonism"],
+    required: ["rules", "NPK integration", "tests"]
+  },
+  {
+    phase: "Soil & Nutrients",
+    name: "Nutrient Source Comparison",
+    keywords: ["source comparison", "fastSources", "mediumSources", "slowSources"],
+    required: ["library", "intent", "tests"]
+  },
+  {
+    phase: "Soil & Nutrients",
+    name: "Soil Builder",
+    keywords: ["soil builder", "soil_mix", "basePercent", "compostPercent", "aerationPercent"],
+    required: ["route", "recipe", "task", "timeline"]
+  },
+  {
+    phase: "Soil & Nutrients",
+    name: "Dry Amendment Mix Builder",
+    keywords: ["dry amendment", "dry_amendment", "achievedRatio"],
+    required: ["route", "recipe", "ToolRun", "task"]
+  },
+  {
+    phase: "Soil & Nutrients",
+    name: "Topdress Planner",
+    keywords: ["topdress", "topdress-plan", "plannedApplyDate"],
+    required: ["route", "ToolRun", "log", "task"]
+  },
+  {
+    phase: "Soil & Nutrients",
+    name: "pH / EC Range Check",
+    keywords: ["ph-ec", "runoffEC", "runoffPH", "ecStatus"],
+    required: ["route", "ToolRun", "retest-task", "tests"]
+  },
+  {
+    phase: "Diagnosis / IPM / Crop ID",
+    name: "ETGU Diagnosis Rules",
+    keywords: ["ETGU", "diagnosis rules", "symptomLocation", "counterEvidence"],
+    required: ["rules", "intake", "tests"]
+  },
+  {
+    phase: "Diagnosis / IPM / Crop ID",
+    name: "AI Diagnosis",
+    route: "/home/personal/diagnose",
+    keywords: ["diagnose", "diagnosis", "vision"],
+    required: ["photo", "structured-output", "log", "task"]
+  },
+  {
+    phase: "Diagnosis / IPM / Crop ID",
+    name: "IPM Scout",
+    keywords: ["ipm", "scout", "stickyTrap", "pestSeen"],
+    required: ["route", "organism-link", "task"]
+  },
+  {
+    phase: "Diagnosis / IPM / Crop ID",
+    name: "Organism Library",
+    keywords: ["OrganismProfile", "organism", "beneficialOrPest"],
+    required: ["model", "sources", "ui"]
+  },
+  {
+    phase: "Genetics / Pheno / Stress",
+    name: "Genetics Inventory",
+    keywords: ["genetics", "cultivar", "breeder", "parentage"],
+    required: ["model", "ui", "grow-links"]
+  },
+  {
+    phase: "Genetics / Pheno / Stress",
+    name: "Pheno Hunting",
+    route: "/home/personal/tools/pheno-matrix",
+    keywords: ["pheno", "keeper", "weightedScores", "stageScores"],
+    required: ["project", "plant-records", "reports"]
+  },
+  {
+    phase: "Genetics / Pheno / Stress",
+    name: "Stress Testing",
+    keywords: ["stress testing", "stressResponseScore", "recoveryScore"],
+    required: ["project", "scorecards", "pheno-links"]
+  },
+  {
+    phase: "Genetics / Pheno / Stress",
+    name: "Crop Steering Projects",
+    route: "/home/personal/tools/crop-steering",
+    keywords: ["crop-steering", "dryback", "steeringIntent"],
+    required: ["project", "measurements", "tasks"]
+  },
+  {
+    phase: "Propagation / Tissue Culture",
+    name: "Clone Rooting Troubleshooter",
+    keywords: ["clone rooting", "daysSinceCut", "rootingHormone"],
+    required: ["route", "ToolRun", "task"]
+  },
+  {
+    phase: "Propagation / Tissue Culture",
+    name: "Tissue Culture",
+    keywords: ["tissue culture", "vessels", "mediaRecipe", "contamination"],
+    required: ["projects", "batch", "vessels", "tasks"]
+  },
+  {
+    phase: "Harvest / History",
+    name: "Harvest Readiness AI",
+    route: "/home/personal/tools/harvest-estimator",
+    keywords: ["harvest", "trichome", "amberPercent", "readiness"],
+    required: ["photos", "harvest-task", "history"]
+  },
+  {
+    phase: "Harvest / History",
+    name: "Dry / Cure Guard",
+    keywords: ["dry cure", "dry-cure", "jarRH", "dewPointSpread"],
+    required: ["route", "ToolRun", "harvest-batch", "task"]
+  },
+  {
+    phase: "Harvest / History",
+    name: "Run-To-Run Comparison",
+    keywords: ["run comparison", "run-to-run", "bestRun", "recommendationsForNextRun"],
+    required: ["history-query", "report", "tests"]
+  },
+  {
+    phase: "Harvest / History",
+    name: "Auto Grow Calendar",
+    keywords: ["auto grow calendar", "expectedHarvestWindows", "stageTimeline"],
+    required: ["calendar-events", "tasks", "grow-links"]
+  },
+  {
+    phase: "Business / Production",
+    name: "Inventory",
+    keywords: ["inventory", "lowStock", "reorder"],
+    required: ["model", "api", "ui", "recipe-links"]
+  },
+  {
+    phase: "Business / Production",
+    name: "Living Soil Labs / Batch Production",
+    keywords: ["Living Soil Labs", "batch production", "ingredientPullSheet", "costPerBag"],
+    required: ["recipe-links", "inventory", "tasks", "costing"]
+  },
+  {
+    phase: "Facility",
+    name: "Facility Insights Summary",
+    keywords: ["facility insights", "activeGrowsCount", "overdueTasksCount", "latestToolRuns"],
+    required: ["existing-data-only", "read-only", "tests"]
+  }
+];
+
+function walk(dir, out = []) {
+  if (!fs.existsSync(dir)) return out;
+  for (const entry of fs.readdirSync(dir, { withFileTypes: true })) {
+    if (entry.isDirectory() && IGNORE_DIRS.has(entry.name)) continue;
+    const abs = path.join(dir, entry.name);
+    if (entry.isDirectory()) walk(abs, out);
+    else if (entry.isFile() && CODE_EXTS.has(path.extname(entry.name))) out.push(abs);
+  }
+  return out;
+}
+
+function read(abs) {
+  return fs.readFileSync(abs, "utf8").replace(/^\uFEFF/, "");
+}
+
+function rel(abs) {
+  return path.relative(ROOT, abs).replace(/\\/g, "/");
+}
+
+function toRoute(abs) {
+  const appRel = path.relative(APP, abs).replace(/\\/g, "/");
+  const noExt = appRel.replace(/\.(tsx?|jsx?)$/i, "");
+  const segments = noExt
+    .split("/")
+    .filter(Boolean)
+    .filter((segment) => !(segment.startsWith("(") && segment.endsWith(")")))
+    .filter((segment) => segment !== "_layout");
+  if (!segments.length) return null;
+  if (segments[segments.length - 1] === "index") segments.pop();
+  return `/${segments.join("/")}`;
+}
+
+function collectFiles() {
+  const appFiles = walk(APP).filter((f) => /\.(tsx?|jsx?)$/i.test(f));
+  const apiFiles = walk(API);
+  const backendRouteFiles = walk(path.join(BACKEND, "routes")).filter(
+    (f) => !/\.test\.[cm]?[jt]s$/i.test(f)
+  );
+  const backendModelFiles = walk(path.join(BACKEND, "models"));
+  const testFiles = walk(ROOT).filter((f) => /\.(test|spec)\.[cm]?[jt]sx?$/i.test(f));
+  const docs = walk(path.join(ROOT, "docs")).filter((f) => /\.md$/i.test(f));
+
+  const searchable = [...appFiles, ...apiFiles, ...backendRouteFiles, ...backendModelFiles, ...testFiles, ...docs]
+    .filter((f) => fs.existsSync(f))
+    .map((file) => ({ file, rel: rel(file), text: read(file) }));
+
+  const routes = appFiles
+    .map((file) => ({ file: rel(file), route: toRoute(file) }))
+    .filter((row) => row.route);
+
+  return { appFiles, apiFiles, backendRouteFiles, backendModelFiles, testFiles, docs, searchable, routes };
+}
+
+function routeSource(routes, route) {
+  const row = routes.find((candidate) => candidate.route === route);
+  if (!row) return "";
+  return read(path.join(ROOT, row.file));
+}
+
+function routeIsRedirectOnly(routes, route, target) {
+  const source = routeSource(routes, route);
+  if (!source) return false;
+  return (
+    /\bRedirect\b/.test(source) &&
+    source.includes(`href="${target}"`) &&
+    !/\bcreatePersonalTask\b|\bcreatePersonalLog\b|\blistPersonalTasks\b|\blistPersonalLogs\b/.test(source)
+  );
+}
+
+function keywordHits(searchable, keywords) {
+  const hits = [];
+  for (const keyword of keywords) {
+    const needle = keyword.toLowerCase();
+    for (const item of searchable) {
+      if (item.text.toLowerCase().includes(needle) || item.rel.toLowerCase().includes(needle)) {
+        hits.push({ keyword, file: item.rel });
+      }
+    }
+  }
+  const unique = [];
+  const seen = new Set();
+  for (const hit of hits) {
+    const key = `${hit.keyword}\0${hit.file}`;
+    if (!seen.has(key)) {
+      seen.add(key);
+      unique.push(hit);
+    }
+  }
+  return unique;
+}
+
+function parseFeatureStatus() {
+  const file = path.join(SRC, "config", "featureStatus.ts");
+  if (!fs.existsSync(file)) return [];
+  const source = read(file);
+  const blocks = source.split(/\n\s*\{\s*\n/).slice(1);
+  return blocks
+    .map((block) => {
+      const key = /key:\s*"([^"]+)"/.exec(block)?.[1];
+      const title = /title:\s*"([^"]+)"/.exec(block)?.[1];
+      const status = /status:\s*"([^"]+)"/.exec(block)?.[1];
+      const href = /href:\s*"([^"]+)"/.exec(block)?.[1];
+      return key ? { key, title, status, href } : null;
+    })
+    .filter(Boolean);
+}
+
+function statusFor(module, hits, routeExists) {
+  if (routeExists && hits.length >= 6) return "present-foundation";
+  if (routeExists || hits.length >= 6) return "partial";
+  if (hits.length > 0) return "trace-only";
+  return "missing";
+}
+
+function main() {
+  const files = collectFiles();
+  const featureStatus = parseFeatureStatus();
+  const routeSet = new Set(files.routes.map((row) => row.route));
+
+  const moduleRows = MODULES.map((module) => {
+    const hits = keywordHits(files.searchable, module.keywords);
+    const routeExists = module.route ? routeSet.has(module.route) : false;
+    const featureMatches = featureStatus.filter((feature) => {
+      const haystack = [feature.key, feature.title, feature.href].filter(Boolean).join(" ").toLowerCase();
+      return module.keywords.some((keyword) => haystack.includes(keyword.toLowerCase()));
+    });
+    return {
+      phase: module.phase,
+      name: module.name,
+      status: statusFor(module, hits, routeExists),
+      expectedRoute: module.route || null,
+      routeExists,
+      required: module.required,
+      featureStatus: featureMatches,
+      evidenceFiles: [...new Set(hits.map((hit) => hit.file))].sort().slice(0, 20),
+      evidenceCount: hits.length
+    };
+  });
+
+  const topLevelLogsRouteExists = routeSet.has("/home/personal/logs");
+  const topLevelTasksRouteExists = routeSet.has("/home/personal/tasks");
+  const topLevelLogsRedirectOnly = routeIsRedirectOnly(files.routes, "/home/personal/logs", "/home/personal/grows");
+  const topLevelTasksRedirectOnly = routeIsRedirectOnly(files.routes, "/home/personal/tasks", "/home/personal/grows");
+
+  const decisionChecks = {
+    topLevelLogsRouteExists,
+    topLevelLogsRedirectOnly,
+    topLevelLogsVisibleModule: topLevelLogsRouteExists && !topLevelLogsRedirectOnly,
+    topLevelTasksRouteExists,
+    topLevelTasksRedirectOnly,
+    topLevelTasksVisibleModule: topLevelTasksRouteExists && !topLevelTasksRedirectOnly,
+    facilityInsightsRouteExists: [...routeSet].some((route) => /facility.*insights/i.test(route)),
+    commercialAiCopyHits: keywordHits(files.searchable, ["commercial AI", "business helper"])
+      .filter((hit) => !hit.file.startsWith("docs/build/"))
+      .map((hit) => hit.file)
+  };
+
+  const summary = moduleRows.reduce(
+    (acc, row) => {
+      acc[row.status] = (acc[row.status] || 0) + 1;
+      return acc;
+    },
+    {}
+  );
+
+  const report = {
+    generatedAt: new Date().toISOString(),
+    counts: {
+      frontendRoutes: files.routes.length,
+      apiFiles: files.apiFiles.length,
+      backendRouteFiles: files.backendRouteFiles.length,
+      backendModelFiles: files.backendModelFiles.length,
+      testFiles: files.testFiles.length,
+      featureStatusRows: featureStatus.length
+    },
+    summary,
+    decisionChecks,
+    modules: moduleRows
+  };
+
+  fs.mkdirSync(OUT_DIR, { recursive: true });
+  fs.writeFileSync(
+    path.join(OUT_DIR, "growpath-system-audit.json"),
+    `${JSON.stringify(report, null, 2)}\n`,
+    "utf8"
+  );
+
+  const lines = [
+    "# GrowPathAI System Audit",
+    "",
+    `Generated: ${report.generatedAt}`,
+    "",
+    "## Counts",
+    `- Frontend routes: ${report.counts.frontendRoutes}`,
+    `- API files: ${report.counts.apiFiles}`,
+    `- Backend route files: ${report.counts.backendRouteFiles}`,
+    `- Backend model files: ${report.counts.backendModelFiles}`,
+    `- Test/spec files: ${report.counts.testFiles}`,
+    `- Feature status rows: ${report.counts.featureStatusRows}`,
+    "",
+    "## Decision Checks",
+    `- Top-level Logs visible module: ${decisionChecks.topLevelLogsVisibleModule}`,
+    `- Top-level Logs redirect-only stale-link guard: ${decisionChecks.topLevelLogsRedirectOnly}`,
+    `- Top-level Tasks visible module: ${decisionChecks.topLevelTasksVisibleModule}`,
+    `- Top-level Tasks redirect-only stale-link guard: ${decisionChecks.topLevelTasksRedirectOnly}`,
+    `- Facility Insights route exists: ${decisionChecks.facilityInsightsRouteExists}`,
+    `- Commercial AI/business-helper copy hits outside build docs: ${decisionChecks.commercialAiCopyHits.length}`,
+    "",
+    "## Module Status",
+    "",
+    "| Phase | Module | Status | Route | Evidence files |",
+    "| --- | --- | --- | --- | --- |",
+    ...moduleRows.map((row) => {
+      const evidence = row.evidenceFiles.length ? row.evidenceFiles.slice(0, 4).join("<br>") : "-";
+      const route = row.expectedRoute ? `${row.expectedRoute} (${row.routeExists ? "found" : "missing"})` : "-";
+      return `| ${row.phase} | ${row.name} | ${row.status} | ${route} | ${evidence} |`;
+    }),
+    ""
+  ];
+
+  fs.writeFileSync(path.join(OUT_DIR, "growpath-system-audit.md"), `${lines.join("\n")}\n`, "utf8");
+
+  console.log("Wrote:");
+  console.log("- tmp/scan/growpath-system-audit.json");
+  console.log("- tmp/scan/growpath-system-audit.md");
+  console.log(`Modules: ${moduleRows.length}`);
+  console.log(
+    `Status: ${Object.entries(summary)
+      .map(([key, value]) => `${key}=${value}`)
+      .join(", ")}`
+  );
+}
+
+main();

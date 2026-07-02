@@ -5,8 +5,26 @@ import {
 } from "../featureStatus";
 
 describe("personal feature status manifest", () => {
-  test("only implemented and beta tools are navigable", () => {
+  test("only release tools are navigable by default", () => {
     expect(getNavigablePersonalTools().every(isFeatureNavigable)).toBe(true);
+    expect(
+      getNavigablePersonalTools().every((feature) => feature.status === "release")
+    ).toBe(true);
+  });
+
+  test("beta tools require an explicit visibility opt-in", () => {
+    const betaTool = {
+      key: "tools.experimental",
+      title: "Experimental",
+      description: "Internal experiment.",
+      area: "environment" as const,
+      status: "beta" as const,
+      href: "/home/personal/tools/experimental",
+      internalNote: "Only visible when beta surfaces are deliberately enabled."
+    };
+
+    expect(isFeatureNavigable(betaTool)).toBe(false);
+    expect(isFeatureNavigable(betaTool, { allowBetaSurfaces: true })).toBe(true);
   });
 
   test("does not expose the crop steering scaffold", () => {
@@ -24,7 +42,7 @@ describe("personal feature status manifest", () => {
     );
   });
 
-  test("keeps navigable personal tools open at the catalog level", () => {
+  test("keeps release personal tools open at the catalog level", () => {
     const broadlyUsefulTools = [
       "tools.ai_diagnosis",
       "tools.feeding_schedule",
@@ -38,6 +56,7 @@ describe("personal feature status manifest", () => {
     for (const key of broadlyUsefulTools) {
       const feature = personalToolFeatures.find((item) => item.key === key);
       expect(feature).toBeTruthy();
+      expect(feature?.status).toBe("release");
       expect(feature && "capabilityKey" in feature).toBe(false);
     }
   });
