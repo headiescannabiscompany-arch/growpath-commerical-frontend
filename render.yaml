@@ -2,7 +2,7 @@ services:
   - type: web
     name: growpath-commercial-frontend
     runtime: static
-    buildCommand: npm ci && npm run build
+    buildCommand: npm run build
     staticPublishPath: dist
     envVars:
       - key: NODE_VERSION
@@ -11,3 +11,7 @@ services:
         value: https://api.growpathai.com
       - key: EXPO_PUBLIC_SENTRY_DSN
         sync: false
+    routes:
+      - type: rewrite
+        source: /*
+        destination: /index.html
