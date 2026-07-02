@@ -18,14 +18,43 @@ export default function SoilBuilderToolScreen() {
       subtitle="Build base, compost, aeration, amendment, and mineral amounts from total soil volume."
       fields={[
         { key: "mixName", label: "Mix name", defaultValue: "Living soil mix" },
-        { key: "totalVolume", label: "Total volume", defaultValue: "30", keyboardType: "numeric" },
+        {
+          key: "totalVolume",
+          label: "Total volume",
+          defaultValue: "30",
+          keyboardType: "numeric"
+        },
         { key: "volumeUnit", label: "Volume unit", defaultValue: "gallons" },
-        { key: "basePercent", label: "Base %", defaultValue: "33", keyboardType: "numeric" },
-        { key: "compostPercent", label: "Compost %", defaultValue: "33", keyboardType: "numeric" },
-        { key: "aerationPercent", label: "Aeration %", defaultValue: "34", keyboardType: "numeric" },
+        {
+          key: "basePercent",
+          label: "Base %",
+          defaultValue: "33",
+          keyboardType: "numeric"
+        },
+        {
+          key: "compostPercent",
+          label: "Compost %",
+          defaultValue: "33",
+          keyboardType: "numeric"
+        },
+        {
+          key: "aerationPercent",
+          label: "Aeration %",
+          defaultValue: "34",
+          keyboardType: "numeric"
+        },
         { key: "amendmentName", label: "Amendment", defaultValue: "Kelp meal" },
-        { key: "amendmentDose", label: "Amendment dose", defaultValue: "0.5", keyboardType: "numeric" },
-        { key: "amendmentUnit", label: "Amendment dose unit", defaultValue: "cups_per_cubic_foot" }
+        {
+          key: "amendmentDose",
+          label: "Amendment dose",
+          defaultValue: "0.5",
+          keyboardType: "numeric"
+        },
+        {
+          key: "amendmentUnit",
+          label: "Amendment dose unit",
+          defaultValue: "cups_per_cubic_foot"
+        }
       ]}
       buildPayload={(values, { growId, plantContext }) => ({
         growId: growId || undefined,
@@ -46,9 +75,21 @@ export default function SoilBuilderToolScreen() {
         ]
       })}
       buildMetrics={(outputs) => [
-        { key: "gallons", label: "Total gallons", value: String(outputs.totalGallons ?? "-") },
-        { key: "ft3", label: "Total cubic feet", value: String(outputs.totalCubicFeet ?? "-") },
-        { key: "bags", label: "Bag count", value: String(outputs.bagCountEstimate ?? "-") },
+        {
+          key: "gallons",
+          label: "Total gallons",
+          value: String(outputs.totalGallons ?? "-")
+        },
+        {
+          key: "ft3",
+          label: "Total cubic feet",
+          value: String(outputs.totalCubicFeet ?? "-")
+        },
+        {
+          key: "bags",
+          label: "Bag count",
+          value: String(outputs.bagCountEstimate ?? "-")
+        },
         { key: "recipe", label: "Recipe type", value: outputs.recipe?.recipeType || "-" }
       ]}
       defaultLogTitle={(outputs) => `${outputs.mixName || "Soil mix"} planned`}

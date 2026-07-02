@@ -58,7 +58,8 @@ function labelize(value: string) {
 
 function formatValue(value: unknown) {
   if (value == null || value === "") return "-";
-  if (typeof value === "number") return Number.isInteger(value) ? String(value) : value.toFixed(2);
+  if (typeof value === "number")
+    return Number.isInteger(value) ? String(value) : value.toFixed(2);
   if (typeof value === "boolean") return value ? "Yes" : "No";
   if (Array.isArray(value)) return `${value.length} item${value.length === 1 ? "" : "s"}`;
   if (typeof value === "object") return "{...}";
@@ -241,7 +242,8 @@ export default function SavedToolRunsScreen() {
                   {formatDate(run.createdAt)} | {run.growId || "No grow"}
                 </Text>
                 <Text style={styles.cardText} numberOfLines={2}>
-                  {run.summary || JSON.stringify(run.outputs || run.result || {}).slice(0, 180)}
+                  {run.summary ||
+                    JSON.stringify(run.outputs || run.result || {}).slice(0, 180)}
                 </Text>
               </Pressable>
             );
@@ -266,7 +268,11 @@ export default function SavedToolRunsScreen() {
             style={styles.input}
             placeholder="Add a short note for this saved run"
           />
-          <Pressable accessibilityRole="button" onPress={saveSummary} style={styles.primary}>
+          <Pressable
+            accessibilityRole="button"
+            onPress={saveSummary}
+            style={styles.primary}
+          >
             <Text style={styles.primaryText}>Save Note</Text>
           </Pressable>
         </View>

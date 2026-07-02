@@ -150,8 +150,8 @@ function update<T>(path: string, body: unknown) {
 }
 
 function archive(path: string) {
-  return apiRequest<{ archived: boolean }>(path, { method: "DELETE" }).then(
-    (response) => Boolean(response.archived)
+  return apiRequest<{ archived: boolean }>(path, { method: "DELETE" }).then((response) =>
+    Boolean(response.archived)
   );
 }
 
@@ -224,10 +224,7 @@ export function getOrganismProfile(id: string) {
   );
 }
 
-export function updateOrganismProfile(
-  id: string,
-  input: Partial<OrganismProfileInput>
-) {
+export function updateOrganismProfile(id: string, input: Partial<OrganismProfileInput>) {
   return update(routes.CROP_KNOWLEDGE.ORGANISM_DETAIL(id), input);
 }
 

@@ -20,10 +20,28 @@ export default function NutrientSourceComparisonToolScreen() {
         intent: values.intent
       })}
       buildMetrics={(outputs) => [
-        { key: "best", label: "Best by intent", value: outputs.bestChoiceByIntent || "-" },
-        { key: "fast", label: "Fast sources", value: Array.isArray(outputs.fastSources) ? outputs.fastSources.join(", ") : "-" },
-        { key: "medium", label: "Medium sources", value: Array.isArray(outputs.mediumSources) ? outputs.mediumSources.join(", ") : "-" },
-        { key: "slow", label: "Slow sources", value: Array.isArray(outputs.slowSources) ? outputs.slowSources.join(", ") : "-" }
+        {
+          key: "best",
+          label: "Best by intent",
+          value: outputs.bestChoiceByIntent || "-"
+        },
+        {
+          key: "fast",
+          label: "Fast sources",
+          value: Array.isArray(outputs.fastSources) ? outputs.fastSources.join(", ") : "-"
+        },
+        {
+          key: "medium",
+          label: "Medium sources",
+          value: Array.isArray(outputs.mediumSources)
+            ? outputs.mediumSources.join(", ")
+            : "-"
+        },
+        {
+          key: "slow",
+          label: "Slow sources",
+          value: Array.isArray(outputs.slowSources) ? outputs.slowSources.join(", ") : "-"
+        }
       ]}
       defaultLogTitle={(outputs) => `${outputs.nutrient || "Nutrient"} source comparison`}
     />

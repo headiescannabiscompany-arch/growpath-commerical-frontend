@@ -220,7 +220,7 @@ export default function PersonalHomeTab() {
             )}
           </AppCard>
           <AppCard>
-            <Text style={styles.cardTitle}>Today's tasks</Text>
+            <Text style={styles.cardTitle}>{"Today's tasks"}</Text>
             {model.todayTasks.length ? (
               <View style={styles.taskList}>
                 {model.todayTasks.map((task) => (

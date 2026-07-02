@@ -49,11 +49,16 @@ export async function listProductIngredients(options?: {
   return Array.isArray(rows) ? rows : [];
 }
 
-export async function getProductIngredient(id: string): Promise<ProductIngredient | null> {
+export async function getProductIngredient(
+  id: string
+): Promise<ProductIngredient | null> {
   try {
-    const res: any = await apiRequest(`/api/tools/ingredients/${encodeURIComponent(id)}`, {
-      method: "GET"
-    });
+    const res: any = await apiRequest(
+      `/api/tools/ingredients/${encodeURIComponent(id)}`,
+      {
+        method: "GET"
+      }
+    );
     return (res?.item ?? res?.data?.item ?? null) as ProductIngredient | null;
   } catch (_error) {
     return null;

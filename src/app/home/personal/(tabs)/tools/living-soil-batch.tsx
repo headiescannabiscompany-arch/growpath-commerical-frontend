@@ -1,6 +1,8 @@
 import React from "react";
 
-import BackendCalculatorToolScreen, { tomorrow } from "@/features/personal/tools/BackendCalculatorToolScreen";
+import BackendCalculatorToolScreen, {
+  tomorrow
+} from "@/features/personal/tools/BackendCalculatorToolScreen";
 
 function parseIngredientCosts(value: string) {
   try {
@@ -27,18 +29,49 @@ export default function LivingSoilBatchToolRoute() {
       subtitle="Estimate batch cost, bag count, pull sheet, packaging/labor cost, and margin from saved recipe inputs."
       fields={[
         { key: "recipeId", label: "Recipe ID or name", defaultValue: "Living Soil Base" },
-        { key: "batchVolume", label: "Batch volume", defaultValue: "120", keyboardType: "numeric" },
-        { key: "bagSize", label: "Bag size", defaultValue: "1.5", keyboardType: "numeric" },
+        {
+          key: "batchVolume",
+          label: "Batch volume",
+          defaultValue: "120",
+          keyboardType: "numeric"
+        },
+        {
+          key: "bagSize",
+          label: "Bag size",
+          defaultValue: "1.5",
+          keyboardType: "numeric"
+        },
         {
           key: "ingredientCosts",
           label: "Ingredients as lines: name, quantity, unit, cost",
-          defaultValue: "Compost, 40, gal, 80\nAeration, 40, gal, 70\nBase peat, 40, gal, 65",
+          defaultValue:
+            "Compost, 40, gal, 80\nAeration, 40, gal, 70\nBase peat, 40, gal, 65",
           multiline: true
         },
-        { key: "laborCost", label: "Labor cost", defaultValue: "120", keyboardType: "numeric" },
-        { key: "packagingCost", label: "Packaging cost", defaultValue: "60", keyboardType: "numeric" },
-        { key: "shrinkagePercent", label: "Shrinkage %", defaultValue: "5", keyboardType: "numeric" },
-        { key: "targetMarginPercent", label: "Target margin %", defaultValue: "40", keyboardType: "numeric" }
+        {
+          key: "laborCost",
+          label: "Labor cost",
+          defaultValue: "120",
+          keyboardType: "numeric"
+        },
+        {
+          key: "packagingCost",
+          label: "Packaging cost",
+          defaultValue: "60",
+          keyboardType: "numeric"
+        },
+        {
+          key: "shrinkagePercent",
+          label: "Shrinkage %",
+          defaultValue: "5",
+          keyboardType: "numeric"
+        },
+        {
+          key: "targetMarginPercent",
+          label: "Target margin %",
+          defaultValue: "40",
+          keyboardType: "numeric"
+        }
       ]}
       buildPayload={(values, { growId }) => ({
         growId,
@@ -62,7 +95,8 @@ export default function LivingSoilBatchToolRoute() {
         title: outputs.taskSuggestion?.title || "Build soil batch",
         priority: outputs.taskSuggestion?.priority || "medium",
         dueDate: tomorrow(outputs.taskSuggestion?.dueInDays || 1),
-        description: "Pull ingredients, mix batch, record bag count, update inventory, and log actuals."
+        description:
+          "Pull ingredients, mix batch, record bag count, update inventory, and log actuals."
       })}
     />
   );

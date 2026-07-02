@@ -19,10 +19,30 @@ export default function PhEcToolScreen() {
       fields={[
         { key: "medium", label: "Medium", defaultValue: "soil" },
         { key: "stage", label: "Stage", defaultValue: "flower" },
-        { key: "inputPH", label: "Input pH", defaultValue: "6.3", keyboardType: "numeric" },
-        { key: "runoffPH", label: "Runoff pH", defaultValue: "6.6", keyboardType: "numeric" },
-        { key: "inputEC", label: "Input EC", defaultValue: "1.4", keyboardType: "numeric" },
-        { key: "runoffEC", label: "Runoff EC", defaultValue: "2.1", keyboardType: "numeric" },
+        {
+          key: "inputPH",
+          label: "Input pH",
+          defaultValue: "6.3",
+          keyboardType: "numeric"
+        },
+        {
+          key: "runoffPH",
+          label: "Runoff pH",
+          defaultValue: "6.6",
+          keyboardType: "numeric"
+        },
+        {
+          key: "inputEC",
+          label: "Input EC",
+          defaultValue: "1.4",
+          keyboardType: "numeric"
+        },
+        {
+          key: "runoffEC",
+          label: "Runoff EC",
+          defaultValue: "2.1",
+          keyboardType: "numeric"
+        },
         { key: "ecUnit", label: "EC unit", defaultValue: "mS/cm" },
         { key: "waterSource", label: "Water source", defaultValue: "unknown" }
       ]}

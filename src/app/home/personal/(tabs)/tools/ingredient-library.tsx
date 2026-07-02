@@ -290,7 +290,9 @@ export default function IngredientLibraryRoute() {
       ) : (
         <View style={styles.card}>
           <Text style={styles.cardTitle}>No ingredients yet</Text>
-          <Text style={styles.meta}>Create one to use in recipes and amendment planning.</Text>
+          <Text style={styles.meta}>
+            Create one to use in recipes and amendment planning.
+          </Text>
         </View>
       )}
 
@@ -299,7 +301,11 @@ export default function IngredientLibraryRoute() {
           {selected ? "Edit ingredient" : "Create ingredient"}
         </Text>
 
-        <Field label="Name" value={draft.name} onChangeText={(value) => updateDraft("name", value)} />
+        <Field
+          label="Name"
+          value={draft.name}
+          onChangeText={(value) => updateDraft("name", value)}
+        />
         <Field
           label="Brand"
           value={draft.brand}
@@ -383,10 +389,7 @@ export default function IngredientLibraryRoute() {
             style={[styles.chip, draft.commercialUseAllowed && styles.chipOn]}
           >
             <Text
-              style={[
-                styles.chipText,
-                draft.commercialUseAllowed && styles.chipTextOn
-              ]}
+              style={[styles.chipText, draft.commercialUseAllowed && styles.chipTextOn]}
             >
               Commercial use {draft.commercialUseAllowed ? "yes" : "no"}
             </Text>
@@ -416,7 +419,9 @@ export default function IngredientLibraryRoute() {
             onPress={save}
             style={[styles.primary, saving && styles.disabled]}
           >
-            <Text style={styles.primaryText}>{saving ? "Saving..." : "Save Ingredient"}</Text>
+            <Text style={styles.primaryText}>
+              {saving ? "Saving..." : "Save Ingredient"}
+            </Text>
           </Pressable>
           {selectedId ? (
             <Pressable

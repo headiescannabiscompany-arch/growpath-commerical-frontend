@@ -10,7 +10,9 @@ function parseRuns(value: string) {
     return value
       .split("\n")
       .map((line, index) => {
-        const [name, yieldAmount, qualityScore, issueCount, days] = line.split(",").map((part) => part.trim());
+        const [name, yieldAmount, qualityScore, issueCount, days] = line
+          .split(",")
+          .map((part) => part.trim());
         if (!name) return null;
         return {
           id: `run_${index + 1}`,
@@ -48,9 +50,15 @@ export default function RunComparisonToolRoute() {
         { key: "best", label: "Best run", value: outputs.bestRun?.name },
         { key: "worst", label: "Needs review", value: outputs.worstRun?.name },
         { key: "yield", label: "Yield spread", value: outputs.differences?.yieldSpread },
-        { key: "quality", label: "Quality spread", value: outputs.differences?.qualitySpread }
+        {
+          key: "quality",
+          label: "Quality spread",
+          value: outputs.differences?.qualitySpread
+        }
       ]}
-      defaultLogTitle={(outputs) => `Run comparison: ${outputs.bestRun?.name || "selected runs"}`}
+      defaultLogTitle={(outputs) =>
+        `Run comparison: ${outputs.bestRun?.name || "selected runs"}`
+      }
     />
   );
 }

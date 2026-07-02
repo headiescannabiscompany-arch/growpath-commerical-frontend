@@ -1,6 +1,8 @@
 import React from "react";
 
-import BackendCalculatorToolScreen, { tomorrow } from "@/features/personal/tools/BackendCalculatorToolScreen";
+import BackendCalculatorToolScreen, {
+  tomorrow
+} from "@/features/personal/tools/BackendCalculatorToolScreen";
 
 export default function StressTestToolRoute() {
   return (
@@ -11,10 +13,30 @@ export default function StressTestToolRoute() {
       subtitle="Record controlled stress response, recovery, stability signals, and keeper impact."
       fields={[
         { key: "stressType", label: "Stress type", defaultValue: "dryback" },
-        { key: "severity", label: "Severity 1-10", defaultValue: "4", keyboardType: "numeric" },
-        { key: "recoveryDays", label: "Recovery days", defaultValue: "2", keyboardType: "numeric" },
-        { key: "damageScore", label: "Damage score 0-10", defaultValue: "3", keyboardType: "numeric" },
-        { key: "vigorScore", label: "Vigor under stress 0-10", defaultValue: "7", keyboardType: "numeric" },
+        {
+          key: "severity",
+          label: "Severity 1-10",
+          defaultValue: "4",
+          keyboardType: "numeric"
+        },
+        {
+          key: "recoveryDays",
+          label: "Recovery days",
+          defaultValue: "2",
+          keyboardType: "numeric"
+        },
+        {
+          key: "damageScore",
+          label: "Damage score 0-10",
+          defaultValue: "3",
+          keyboardType: "numeric"
+        },
+        {
+          key: "vigorScore",
+          label: "Vigor under stress 0-10",
+          defaultValue: "7",
+          keyboardType: "numeric"
+        },
         {
           key: "stabilitySignals",
           label: "Stability signals, comma-separated",
@@ -44,7 +66,8 @@ export default function StressTestToolRoute() {
         title: outputs.taskSuggestion?.title || "Recheck stress recovery",
         priority: outputs.taskSuggestion?.priority || "medium",
         dueDate: tomorrow(outputs.taskSuggestion?.dueInDays || 2),
-        description: "Review recovery, new damage, photos, and stability signals before changing keeper decisions."
+        description:
+          "Review recovery, new damage, photos, and stability signals before changing keeper decisions."
       })}
     />
   );

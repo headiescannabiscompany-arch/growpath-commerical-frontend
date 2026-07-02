@@ -17,14 +17,37 @@ export default function TopdressToolScreen() {
       title="Topdress Planner"
       subtitle="Plan amendment amount by soil volume, stage, and plant count, then create the grow task."
       fields={[
-        { key: "productName", label: "Product or recipe name", defaultValue: "Dry amendment blend" },
-        { key: "plantCount", label: "Plant count", defaultValue: "4", keyboardType: "numeric" },
-        { key: "soilVolumePerPlant", label: "Soil volume per plant", defaultValue: "10", keyboardType: "numeric" },
+        {
+          key: "productName",
+          label: "Product or recipe name",
+          defaultValue: "Dry amendment blend"
+        },
+        {
+          key: "plantCount",
+          label: "Plant count",
+          defaultValue: "4",
+          keyboardType: "numeric"
+        },
+        {
+          key: "soilVolumePerPlant",
+          label: "Soil volume per plant",
+          defaultValue: "10",
+          keyboardType: "numeric"
+        },
         { key: "soilVolumeUnit", label: "Soil volume unit", defaultValue: "gallons" },
         { key: "stage", label: "Stage", defaultValue: "flower" },
-        { key: "doseRate", label: "Dose rate", defaultValue: "2", keyboardType: "numeric" },
+        {
+          key: "doseRate",
+          label: "Dose rate",
+          defaultValue: "2",
+          keyboardType: "numeric"
+        },
         { key: "doseUnit", label: "Dose unit", defaultValue: "tbsp_per_gallon" },
-        { key: "plannedApplyDate", label: "Planned apply date", defaultValue: tomorrow(1) }
+        {
+          key: "plannedApplyDate",
+          label: "Planned apply date",
+          defaultValue: tomorrow(1)
+        }
       ]}
       buildPayload={(values, { growId, plantContext }) => ({
         growId: growId || undefined,
@@ -40,10 +63,22 @@ export default function TopdressToolScreen() {
         waterInAfterApply: true
       })}
       buildMetrics={(outputs) => [
-        { key: "per-plant", label: "Per plant", value: `${outputs.amountPerPlant} ${outputs.amountUnit}` },
-        { key: "total", label: "Total", value: `${outputs.totalAmount} ${outputs.amountUnit}` },
+        {
+          key: "per-plant",
+          label: "Per plant",
+          value: `${outputs.amountPerPlant} ${outputs.amountUnit}`
+        },
+        {
+          key: "total",
+          label: "Total",
+          value: `${outputs.totalAmount} ${outputs.amountUnit}`
+        },
         { key: "plants", label: "Plants", value: String(outputs.plantCount ?? "-") },
-        { key: "release", label: "Release window", value: outputs.expectedReleaseWindow || "-" }
+        {
+          key: "release",
+          label: "Release window",
+          value: outputs.expectedReleaseWindow || "-"
+        }
       ]}
       defaultLogTitle={(outputs) => outputs.taskToCreate?.title || "Topdress planned"}
       defaultTask={(outputs) => ({

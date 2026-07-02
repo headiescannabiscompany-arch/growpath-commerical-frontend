@@ -1,6 +1,8 @@
 import React from "react";
 
-import BackendCalculatorToolScreen, { tomorrow } from "@/features/personal/tools/BackendCalculatorToolScreen";
+import BackendCalculatorToolScreen, {
+  tomorrow
+} from "@/features/personal/tools/BackendCalculatorToolScreen";
 
 export default function AutoGrowCalendarToolRoute() {
   return (
@@ -10,10 +12,25 @@ export default function AutoGrowCalendarToolRoute() {
       title="Auto Grow Calendar"
       subtitle="Generate deterministic stage anchors, task dates, and harvest planning windows."
       fields={[
-        { key: "plantCount", label: "Plant count", defaultValue: "4", keyboardType: "numeric" },
+        {
+          key: "plantCount",
+          label: "Plant count",
+          defaultValue: "4",
+          keyboardType: "numeric"
+        },
         { key: "startDate", label: "Start date YYYY-MM-DD", defaultValue: tomorrow(0) },
-        { key: "vegLengthWeeks", label: "Veg length weeks", defaultValue: "4", keyboardType: "numeric" },
-        { key: "expectedFlowerDays", label: "Expected flower days", defaultValue: "63", keyboardType: "numeric" },
+        {
+          key: "vegLengthWeeks",
+          label: "Veg length weeks",
+          defaultValue: "4",
+          keyboardType: "numeric"
+        },
+        {
+          key: "expectedFlowerDays",
+          label: "Expected flower days",
+          defaultValue: "63",
+          keyboardType: "numeric"
+        },
         { key: "growStyle", label: "Grow style", defaultValue: "indoor" },
         { key: "medium", label: "Medium", defaultValue: "living_soil" }
       ]}
@@ -28,8 +45,16 @@ export default function AutoGrowCalendarToolRoute() {
       })}
       buildMetrics={(outputs) => [
         { key: "flip", label: "Flip date", value: outputs.stageTimeline?.flipDate },
-        { key: "harvestStart", label: "Harvest start", value: outputs.stageTimeline?.expectedHarvestStart },
-        { key: "harvestEnd", label: "Harvest end", value: outputs.stageTimeline?.expectedHarvestEnd },
+        {
+          key: "harvestStart",
+          label: "Harvest start",
+          value: outputs.stageTimeline?.expectedHarvestStart
+        },
+        {
+          key: "harvestEnd",
+          label: "Harvest end",
+          value: outputs.stageTimeline?.expectedHarvestEnd
+        },
         {
           key: "tasks",
           label: "Planned tasks",
@@ -41,7 +66,8 @@ export default function AutoGrowCalendarToolRoute() {
         title: outputs.taskSchedule?.[0]?.title || "Start grow calendar",
         dueDate: outputs.taskSchedule?.[0]?.dueDate || tomorrow(0),
         priority: "medium",
-        description: "Use this as the first calendar task, then create the rest from the saved plan."
+        description:
+          "Use this as the first calendar task, then create the rest from the saved plan."
       })}
     />
   );

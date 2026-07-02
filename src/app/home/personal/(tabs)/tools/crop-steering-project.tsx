@@ -1,6 +1,8 @@
 import React from "react";
 
-import BackendCalculatorToolScreen, { tomorrow } from "@/features/personal/tools/BackendCalculatorToolScreen";
+import BackendCalculatorToolScreen, {
+  tomorrow
+} from "@/features/personal/tools/BackendCalculatorToolScreen";
 
 export default function CropSteeringProjectToolRoute() {
   return (
@@ -12,12 +14,31 @@ export default function CropSteeringProjectToolRoute() {
       fields={[
         { key: "steeringIntent", label: "Steering intent", defaultValue: "balanced" },
         { key: "phase", label: "Phase P0/P1/P2/P3", defaultValue: "P1" },
-        { key: "drybackPercent", label: "Dryback %", defaultValue: "25", keyboardType: "numeric" },
-        { key: "inputEC", label: "Input EC", defaultValue: "1.4", keyboardType: "numeric" },
-        { key: "runoffEC", label: "Runoff EC", defaultValue: "1.7", keyboardType: "numeric" },
+        {
+          key: "drybackPercent",
+          label: "Dryback %",
+          defaultValue: "25",
+          keyboardType: "numeric"
+        },
+        {
+          key: "inputEC",
+          label: "Input EC",
+          defaultValue: "1.4",
+          keyboardType: "numeric"
+        },
+        {
+          key: "runoffEC",
+          label: "Runoff EC",
+          defaultValue: "1.7",
+          keyboardType: "numeric"
+        },
         { key: "plantResponse", label: "Plant response", defaultValue: "normal turgor" }
       ]}
-      buildPayload={(values, { growId, plantContext }) => ({ growId, ...plantContext.toolRunContext, ...values })}
+      buildPayload={(values, { growId, plantContext }) => ({
+        growId,
+        ...plantContext.toolRunContext,
+        ...values
+      })}
       buildMetrics={(outputs) => [
         { key: "intent", label: "Intent", value: outputs.steeringIntent },
         { key: "phase", label: "Phase", value: outputs.phase },

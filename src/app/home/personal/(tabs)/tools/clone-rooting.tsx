@@ -1,6 +1,8 @@
 import React from "react";
 
-import BackendCalculatorToolScreen, { tomorrow } from "@/features/personal/tools/BackendCalculatorToolScreen";
+import BackendCalculatorToolScreen, {
+  tomorrow
+} from "@/features/personal/tools/BackendCalculatorToolScreen";
 
 export default function CloneRootingToolRoute() {
   return (
@@ -10,13 +12,37 @@ export default function CloneRootingToolRoute() {
       title="Clone Rooting Troubleshooter"
       subtitle="Check clone rooting bottlenecks from humidity, temperature, light, stem condition, and timeline."
       fields={[
-        { key: "daysSinceCut", label: "Days since cut", defaultValue: "7", keyboardType: "numeric" },
-        { key: "humidity", label: "Humidity %", defaultValue: "80", keyboardType: "numeric" },
-        { key: "temperature", label: "Temperature F", defaultValue: "76", keyboardType: "numeric" },
-        { key: "lightIntensity", label: "Light intensity PPFD", defaultValue: "150", keyboardType: "numeric" },
+        {
+          key: "daysSinceCut",
+          label: "Days since cut",
+          defaultValue: "7",
+          keyboardType: "numeric"
+        },
+        {
+          key: "humidity",
+          label: "Humidity %",
+          defaultValue: "80",
+          keyboardType: "numeric"
+        },
+        {
+          key: "temperature",
+          label: "Temperature F",
+          defaultValue: "76",
+          keyboardType: "numeric"
+        },
+        {
+          key: "lightIntensity",
+          label: "Light intensity PPFD",
+          defaultValue: "150",
+          keyboardType: "numeric"
+        },
         { key: "stemCondition", label: "Stem condition", defaultValue: "green, firm" },
         { key: "leafCondition", label: "Leaf condition", defaultValue: "slight wilt" },
-        { key: "rootingStatus", label: "Rooting status", defaultValue: "no visible roots yet" }
+        {
+          key: "rootingStatus",
+          label: "Rooting status",
+          defaultValue: "no visible roots yet"
+        }
       ]}
       buildPayload={(values, { growId, plantContext }) => ({
         growId,
@@ -35,7 +61,9 @@ export default function CloneRootingToolRoute() {
         {
           key: "bottlenecks",
           label: "Bottlenecks",
-          value: Array.isArray(outputs.likelyBottlenecks) ? outputs.likelyBottlenecks.length : 0
+          value: Array.isArray(outputs.likelyBottlenecks)
+            ? outputs.likelyBottlenecks.length
+            : 0
         }
       ]}
       defaultLogTitle={() => "Clone rooting check"}
@@ -43,7 +71,8 @@ export default function CloneRootingToolRoute() {
         title: outputs.followUpTask?.title || "Check clone rooting tray",
         priority: outputs.followUpTask?.priority || "medium",
         dueDate: tomorrow(outputs.followUpTask?.dueInDays || 2),
-        description: "Inspect dome humidity, leaf turgor, stem base, and callus/root progress."
+        description:
+          "Inspect dome humidity, leaf turgor, stem base, and callus/root progress."
       })}
     />
   );
