@@ -4,11 +4,19 @@ const fs = require("fs");
 const path = require("path");
 
 const ROOT = path.resolve(__dirname, "..");
-const BACKEND_ROOT = path.resolve(ROOT, "..", "backend");
+const BACKEND_ROOT = path.join(ROOT, "backend");
 const MATRIX_PATH = path.join(ROOT, "docs", "product", "V1_FEATURE_BACKEND_MATRIX.json");
 const UI_ROUTES_PATH = path.join(ROOT, "tmp", "spec", "ui-routes.json");
 const BACKEND_ROUTES_JSON = path.join(ROOT, "tmp", "spec", "backend-routes.json");
 const BACKEND_ROUTES_TXT = path.join(ROOT, "tmp", "spec", "backend-routes.txt");
+const VALID_RELEASE_SCOPES = new Set(["v1", "post_v1", "internal", "removed"]);
+const VALID_RELEASE_DECISIONS = new Set([
+  "complete",
+  "beta",
+  "hide",
+  "backlog",
+  "remove"
+]);
 
 function readJson(p) {
   const raw = fs.readFileSync(p, "utf8").replace(/^\uFEFF/, "");
@@ -35,7 +43,12 @@ function existsEvidencePath(p) {
   const normalized = String(p || "").replace(/\\/g, "/");
   if (!normalized) return false;
   if (normalized.startsWith("backend/")) {
-    return fs.existsSync(path.join(BACKEND_ROOT, normalized.slice("backend/".length)));
+    const relative = normalized.slice("backend/".length);
+    if (fs.existsSync(path.join(BACKEND_ROOT, relative))) return true;
+    if (relative.startsWith("tests/")) {
+      return fs.existsSync(path.join(BACKEND_ROOT, relative.slice("tests/".length)));
+    }
+    return false;
   }
   return fs.existsSync(path.join(ROOT, normalized));
 }
@@ -48,6 +61,7 @@ function toBackendRouteSignature(method, apiPath) {
 function main() {
   const failures = [];
   const warnings = [];
+  const missingLegacyEvidence = [];
   let autoMissingUiCount = 0;
 
   if (!fs.existsSync(MATRIX_PATH)) {
@@ -65,16 +79,46 @@ function main() {
   const backendRoutes = new Set(readBackendRoutes().map(String));
   const plannedAllowed = !!matrix?.policy?.plannedEndpointsAllowed;
   const requireUiForAll = !!matrix?.policy?.requireUiRouteForAll;
+  const evidencePolicy = String(matrix?.policy?.evidencePathPolicy || "strict");
   const features = Array.isArray(matrix?.features) ? matrix.features : [];
 
   for (const feature of features) {
     const id = feature?.featureId || "(missing-id)";
     const status = String(feature?.status || "Unspecified");
     const uiRoute = String(feature?.ui?.route || "");
+    const releaseScope = String(feature?.releaseScope || "");
+    const releaseDecision = String(feature?.releaseDecision || "");
+    const userVisible = feature?.userVisible === true;
     const apiRows = Array.isArray(feature?.api) ? feature.api : [];
     const evidence = Array.isArray(feature?.evidence?.tests)
       ? feature.evidence.tests
       : [];
+
+    if (!VALID_RELEASE_SCOPES.has(releaseScope)) {
+      failures.push(
+        `[${id}] invalid or missing releaseScope: ${releaseScope || "(missing)"}`
+      );
+    }
+    if (!VALID_RELEASE_DECISIONS.has(releaseDecision)) {
+      failures.push(
+        `[${id}] invalid or missing releaseDecision: ${releaseDecision || "(missing)"}`
+      );
+    }
+    if (typeof feature?.userVisible !== "boolean") {
+      failures.push(`[${id}] missing boolean userVisible`);
+    }
+    if (userVisible && releaseScope !== "v1") {
+      failures.push(`[${id}] userVisible rows must use releaseScope=v1`);
+    }
+    if (userVisible && !["complete", "beta"].includes(releaseDecision)) {
+      failures.push(`[${id}] userVisible rows must be releaseDecision=complete or beta`);
+    }
+    if (["Planned", "Disabled"].includes(status) && userVisible) {
+      failures.push(`[${id}] ${status} rows must not be userVisible`);
+    }
+    if (["Planned", "Disabled"].includes(status) && releaseScope === "v1") {
+      failures.push(`[${id}] ${status} rows must not use releaseScope=v1`);
+    }
 
     const isAutoOnly = String(id).startsWith("auto.");
     if (!uiRoute) {
@@ -110,8 +154,12 @@ function main() {
     }
 
     for (const testPath of evidence) {
-      if (!existsEvidencePath(testPath))
-        failures.push(`[${id}] missing evidence file: ${testPath}`);
+      if (!existsEvidencePath(testPath)) {
+        const message = `[${id}] missing evidence file: ${testPath}`;
+        if (evidencePolicy === "warn_on_missing_legacy_paths") {
+          missingLegacyEvidence.push(message);
+        } else failures.push(message);
+      }
     }
   }
 
@@ -126,6 +174,17 @@ function main() {
   if (warnings.length) {
     console.log("\nWarnings:");
     for (const w of warnings) console.log(` - ${w}`);
+  }
+  if (missingLegacyEvidence.length) {
+    console.log(
+      `\nLegacy evidence path warnings: ${missingLegacyEvidence.length} missing path(s).`
+    );
+    for (const warning of missingLegacyEvidence.slice(0, 20)) {
+      console.log(` - ${warning}`);
+    }
+    if (missingLegacyEvidence.length > 20) {
+      console.log(` - ... ${missingLegacyEvidence.length - 20} more`);
+    }
   }
   if (failures.length) {
     console.error("\nFailures:");

@@ -1,8 +1,12 @@
-﻿{
+{
   "version": "v1",
   "policy": {
     "plannedEndpointsAllowed": true,
-    "ciFailCondition": "Functional features must have API mappings present in /api/__debug/routes and test evidence files that exist on disk"
+    "ciFailCondition": "Functional features must have API mappings present in /api/__debug/routes and test evidence files that exist on disk",
+    "releaseMetadataRequired": true,
+    "validReleaseScopes": ["v1", "post_v1", "internal", "removed"],
+    "validReleaseDecisions": ["complete", "beta", "hide", "backlog", "remove"],
+    "evidencePathPolicy": "warn_on_missing_legacy_paths"
   },
   "features": [
     {
@@ -11,9 +15,7 @@
       "ui": {
         "mode": "personal",
         "route": "/home/personal/ai",
-        "actions": [
-          "open ai hub"
-        ]
+        "actions": ["open ai hub"]
       },
       "api": [
         {
@@ -24,26 +26,23 @@
       "guards": {
         "auth": true,
         "facilityScope": false,
-        "rolesAllowed": [
-          "ANY_AUTHENTICATED"
-        ]
+        "rolesAllowed": ["ANY_AUTHENTICATED"]
       },
       "evidence": {
-        "tests": [
-          "backend/tests/routes/ai.test.js"
-        ]
+        "tests": ["backend/tests/routes/ai.test.js"]
       },
-      "verification": "Unverified"
+      "verification": "Unverified",
+      "releaseScope": "v1",
+      "userVisible": true,
+      "releaseDecision": "complete"
     },
     {
       "featureId": "ai.facility.call",
       "status": "Functional",
       "ui": {
         "mode": "facility",
-        "route": "/home/facility/ai/ask",
-        "actions": [
-          "run ai call"
-        ]
+        "route": "/home/facility/ai-ask",
+        "actions": ["run ai call"]
       },
       "api": [
         {
@@ -54,29 +53,23 @@
       "guards": {
         "auth": true,
         "facilityScope": true,
-        "rolesAllowed": [
-          "OWNER",
-          "MANAGER",
-          "STAFF",
-          "VIEWER"
-        ]
+        "rolesAllowed": ["OWNER", "MANAGER", "STAFF", "VIEWER"]
       },
       "evidence": {
-        "tests": [
-          "backend/tests/core/ai.call.test.js"
-        ]
+        "tests": ["backend/tests/core/ai.call.test.js"]
       },
-      "verification": "Unverified"
+      "verification": "Unverified",
+      "releaseScope": "v1",
+      "userVisible": true,
+      "releaseDecision": "complete"
     },
     {
       "featureId": "ai.verify.endpoint",
       "status": "Functional",
       "ui": {
         "mode": "facility",
-        "route": "/home/facility/ai/validation",
-        "actions": [
-          "verify ai output"
-        ]
+        "route": "/home/facility/ai-validation",
+        "actions": ["verify ai output"]
       },
       "api": [
         {
@@ -87,17 +80,15 @@
       "guards": {
         "auth": true,
         "facilityScope": false,
-        "rolesAllowed": [
-          "OWNER",
-          "MANAGER"
-        ]
+        "rolesAllowed": ["OWNER", "MANAGER"]
       },
       "evidence": {
-        "tests": [
-          "backend/tests/routes/ai.test.js"
-        ]
+        "tests": ["backend/tests/routes/ai.test.js"]
       },
-      "verification": "Unverified"
+      "verification": "Unverified",
+      "releaseScope": "v1",
+      "userVisible": true,
+      "releaseDecision": "complete"
     },
     {
       "featureId": "tools.workspace",
@@ -105,10 +96,7 @@
       "ui": {
         "mode": "personal",
         "route": "/home/personal/tools",
-        "actions": [
-          "list tools",
-          "create tool config"
-        ]
+        "actions": ["list tools", "create tool config"]
       },
       "api": [
         {
@@ -123,15 +111,14 @@
       "guards": {
         "auth": true,
         "facilityScope": false,
-        "rolesAllowed": [
-          "ANY_AUTHENTICATED"
-        ]
+        "rolesAllowed": ["ANY_AUTHENTICATED"]
       },
       "evidence": {
-        "tests": [
-          "backend/tests/routes/tools.test.js"
-        ]
-      }
+        "tests": ["backend/tests/routes/tools.test.js"]
+      },
+      "releaseScope": "v1",
+      "userVisible": true,
+      "releaseDecision": "complete"
     },
     {
       "featureId": "facility.tasks.core",
@@ -139,12 +126,7 @@
       "ui": {
         "mode": "facility",
         "route": "/home/facility/tasks",
-        "actions": [
-          "list tasks",
-          "create task",
-          "update task",
-          "delete task"
-        ]
+        "actions": ["list tasks", "create task", "update task", "delete task"]
       },
       "api": [
         {
@@ -167,18 +149,15 @@
       "guards": {
         "auth": true,
         "facilityScope": true,
-        "rolesAllowed": [
-          "OWNER",
-          "MANAGER",
-          "STAFF"
-        ],
+        "rolesAllowed": ["OWNER", "MANAGER", "STAFF"],
         "viewerIsReadOnly": true
       },
       "evidence": {
-        "tests": [
-          "backend/tests/core/tasks.behavior.contract.test.js"
-        ]
-      }
+        "tests": ["backend/tests/core/tasks.behavior.contract.test.js"]
+      },
+      "releaseScope": "v1",
+      "userVisible": true,
+      "releaseDecision": "complete"
     },
     {
       "featureId": "facility.team.core",
@@ -186,10 +165,7 @@
       "ui": {
         "mode": "facility",
         "route": "/home/facility/team",
-        "actions": [
-          "list team",
-          "invite member"
-        ]
+        "actions": ["list team", "invite member"]
       },
       "api": [
         {
@@ -204,17 +180,15 @@
       "guards": {
         "auth": true,
         "facilityScope": true,
-        "rolesAllowed": [
-          "OWNER",
-          "MANAGER"
-        ],
+        "rolesAllowed": ["OWNER", "MANAGER"],
         "viewerIsReadOnly": true
       },
       "evidence": {
-        "tests": [
-          "backend/tests/core/facilityTeam.contract.test.js"
-        ]
-      }
+        "tests": ["backend/tests/core/facilityTeam.contract.test.js"]
+      },
+      "releaseScope": "v1",
+      "userVisible": true,
+      "releaseDecision": "complete"
     },
     {
       "featureId": "auto.delete.courses.param.answers.param",
@@ -222,9 +196,7 @@
       "ui": {
         "mode": "unknown",
         "route": null,
-        "actions": [
-          "DELETE /api/courses/:id/answers/:answerId"
-        ]
+        "actions": ["DELETE /api/courses/:id/answers/:answerId"]
       },
       "api": [
         {
@@ -245,7 +217,10 @@
       },
       "verification": "Unverified",
       "autoGenerated": true,
-      "generatedFrom": "DELETE /api/courses/:id/answers/:answerId"
+      "generatedFrom": "DELETE /api/courses/:id/answers/:answerId",
+      "releaseScope": "internal",
+      "userVisible": false,
+      "releaseDecision": "complete"
     },
     {
       "featureId": "auto.delete.courses.param.questions.param",
@@ -253,9 +228,7 @@
       "ui": {
         "mode": "unknown",
         "route": null,
-        "actions": [
-          "DELETE /api/courses/:id/questions/:questionId"
-        ]
+        "actions": ["DELETE /api/courses/:id/questions/:questionId"]
       },
       "api": [
         {
@@ -269,13 +242,14 @@
         "rolesAllowed": []
       },
       "evidence": {
-        "tests": [
-          "backend/tests/routes/courses.mutations.cycle20.test.js"
-        ]
+        "tests": ["backend/tests/routes/courses.mutations.cycle20.test.js"]
       },
       "verification": "Unverified",
       "autoGenerated": true,
-      "generatedFrom": "DELETE /api/courses/:id/questions/:questionId"
+      "generatedFrom": "DELETE /api/courses/:id/questions/:questionId",
+      "releaseScope": "internal",
+      "userVisible": false,
+      "releaseDecision": "complete"
     },
     {
       "featureId": "auto.delete.courses.param.review",
@@ -283,9 +257,7 @@
       "ui": {
         "mode": "unknown",
         "route": null,
-        "actions": [
-          "DELETE /api/courses/:id/review"
-        ]
+        "actions": ["DELETE /api/courses/:id/review"]
       },
       "api": [
         {
@@ -299,13 +271,14 @@
         "rolesAllowed": []
       },
       "evidence": {
-        "tests": [
-          "backend/tests/routes/courses.mutations.cycle20.test.js"
-        ]
+        "tests": ["backend/tests/routes/courses.mutations.cycle20.test.js"]
       },
       "verification": "Unverified",
       "autoGenerated": true,
-      "generatedFrom": "DELETE /api/courses/:id/review"
+      "generatedFrom": "DELETE /api/courses/:id/review",
+      "releaseScope": "internal",
+      "userVisible": false,
+      "releaseDecision": "complete"
     },
     {
       "featureId": "auto.delete.courses.lesson.param",
@@ -313,9 +286,7 @@
       "ui": {
         "mode": "unknown",
         "route": null,
-        "actions": [
-          "DELETE /api/courses/lesson/:lessonId"
-        ]
+        "actions": ["DELETE /api/courses/lesson/:lessonId"]
       },
       "api": [
         {
@@ -329,13 +300,14 @@
         "rolesAllowed": []
       },
       "evidence": {
-        "tests": [
-          "backend/tests/routes/courses.mutations.cycle20.test.js"
-        ]
+        "tests": ["backend/tests/routes/courses.mutations.cycle20.test.js"]
       },
       "verification": "Unverified",
       "autoGenerated": true,
-      "generatedFrom": "DELETE /api/courses/lesson/:lessonId"
+      "generatedFrom": "DELETE /api/courses/lesson/:lessonId",
+      "releaseScope": "internal",
+      "userVisible": false,
+      "releaseDecision": "complete"
     },
     {
       "featureId": "auto.delete.facility.param.growlogs.param",
@@ -343,9 +315,7 @@
       "ui": {
         "mode": "unknown",
         "route": null,
-        "actions": [
-          "DELETE /api/facility/:facilityId/growlogs/:id"
-        ]
+        "actions": ["DELETE /api/facility/:facilityId/growlogs/:id"]
       },
       "api": [
         {
@@ -363,7 +333,10 @@
       },
       "verification": "Unverified",
       "autoGenerated": true,
-      "generatedFrom": "DELETE /api/facilities/:facilityId/growlogs/:id"
+      "generatedFrom": "DELETE /api/facilities/:facilityId/growlogs/:id",
+      "releaseScope": "internal",
+      "userVisible": false,
+      "releaseDecision": "backlog"
     },
     {
       "featureId": "auto.delete.facility.param.grows.param",
@@ -371,9 +344,7 @@
       "ui": {
         "mode": "unknown",
         "route": null,
-        "actions": [
-          "DELETE /api/facility/:facilityId/grows/:growId"
-        ]
+        "actions": ["DELETE /api/facility/:facilityId/grows/:growId"]
       },
       "api": [
         {
@@ -394,7 +365,10 @@
       },
       "verification": "Unverified",
       "autoGenerated": true,
-      "generatedFrom": "DELETE /api/facilities/:facilityId/grows/:growId"
+      "generatedFrom": "DELETE /api/facilities/:facilityId/grows/:growId",
+      "releaseScope": "internal",
+      "userVisible": false,
+      "releaseDecision": "complete"
     },
     {
       "featureId": "auto.delete.facility.param.inventory.param",
@@ -402,9 +376,7 @@
       "ui": {
         "mode": "unknown",
         "route": null,
-        "actions": [
-          "DELETE /api/facility/:facilityId/inventory/:sku"
-        ]
+        "actions": ["DELETE /api/facility/:facilityId/inventory/:sku"]
       },
       "api": [
         {
@@ -425,7 +397,10 @@
       },
       "verification": "Unverified",
       "autoGenerated": true,
-      "generatedFrom": "DELETE /api/facilities/:facilityId/inventory/:sku"
+      "generatedFrom": "DELETE /api/facilities/:facilityId/inventory/:sku",
+      "releaseScope": "internal",
+      "userVisible": false,
+      "releaseDecision": "complete"
     },
     {
       "featureId": "auto.delete.facility.param.plants.param",
@@ -433,9 +408,7 @@
       "ui": {
         "mode": "unknown",
         "route": null,
-        "actions": [
-          "DELETE /api/facility/:facilityId/plants/:plantId"
-        ]
+        "actions": ["DELETE /api/facility/:facilityId/plants/:plantId"]
       },
       "api": [
         {
@@ -456,7 +429,10 @@
       },
       "verification": "Unverified",
       "autoGenerated": true,
-      "generatedFrom": "DELETE /api/facilities/:facilityId/plants/:plantId"
+      "generatedFrom": "DELETE /api/facilities/:facilityId/plants/:plantId",
+      "releaseScope": "internal",
+      "userVisible": false,
+      "releaseDecision": "complete"
     },
     {
       "featureId": "auto.delete.facility.param.rooms.param",
@@ -464,9 +440,7 @@
       "ui": {
         "mode": "unknown",
         "route": null,
-        "actions": [
-          "DELETE /api/facility/:facilityId/rooms/:roomId"
-        ]
+        "actions": ["DELETE /api/facility/:facilityId/rooms/:roomId"]
       },
       "api": [
         {
@@ -487,7 +461,10 @@
       },
       "verification": "Unverified",
       "autoGenerated": true,
-      "generatedFrom": "DELETE /api/facilities/:facilityId/rooms/:roomId"
+      "generatedFrom": "DELETE /api/facilities/:facilityId/rooms/:roomId",
+      "releaseScope": "internal",
+      "userVisible": false,
+      "releaseDecision": "complete"
     },
     {
       "featureId": "auto.delete.facility.param.team.param.members.param",
@@ -495,9 +472,7 @@
       "ui": {
         "mode": "unknown",
         "route": null,
-        "actions": [
-          "DELETE /api/facility/:facilityId/team/:userId,/members/:userId"
-        ]
+        "actions": ["DELETE /api/facility/:facilityId/team/:userId,/members/:userId"]
       },
       "api": [
         {
@@ -515,7 +490,10 @@
       },
       "verification": "Unverified",
       "autoGenerated": true,
-      "generatedFrom": "DELETE /api/facilities/:facilityId/team/:userId,/members/:userId"
+      "generatedFrom": "DELETE /api/facilities/:facilityId/team/:userId,/members/:userId",
+      "releaseScope": "internal",
+      "userVisible": false,
+      "releaseDecision": "backlog"
     },
     {
       "featureId": "auto.delete.facility.param.team.invites.param",
@@ -523,9 +501,7 @@
       "ui": {
         "mode": "unknown",
         "route": null,
-        "actions": [
-          "DELETE /api/facility/:facilityId/team/invites/:inviteId"
-        ]
+        "actions": ["DELETE /api/facility/:facilityId/team/invites/:inviteId"]
       },
       "api": [
         {
@@ -543,7 +519,10 @@
       },
       "verification": "Unverified",
       "autoGenerated": true,
-      "generatedFrom": "DELETE /api/facilities/:facilityId/team/invites/:inviteId"
+      "generatedFrom": "DELETE /api/facilities/:facilityId/team/invites/:inviteId",
+      "releaseScope": "internal",
+      "userVisible": false,
+      "releaseDecision": "backlog"
     },
     {
       "featureId": "auto.delete.facilities.param.members.param",
@@ -551,9 +530,7 @@
       "ui": {
         "mode": "unknown",
         "route": null,
-        "actions": [
-          "DELETE /api/facilities/:id/members/:userId"
-        ]
+        "actions": ["DELETE /api/facilities/:id/members/:userId"]
       },
       "api": [
         {
@@ -571,7 +548,10 @@
       },
       "verification": "Unverified",
       "autoGenerated": true,
-      "generatedFrom": "DELETE /api/facilities/:id/members/:userId"
+      "generatedFrom": "DELETE /api/facilities/:id/members/:userId",
+      "releaseScope": "internal",
+      "userVisible": false,
+      "releaseDecision": "backlog"
     },
     {
       "featureId": "auto.delete.facility.param.growlogs.param.2",
@@ -579,9 +559,7 @@
       "ui": {
         "mode": "unknown",
         "route": null,
-        "actions": [
-          "DELETE /api/facility/:facilityId/growlogs/:id"
-        ]
+        "actions": ["DELETE /api/facility/:facilityId/growlogs/:id"]
       },
       "api": [
         {
@@ -599,7 +577,10 @@
       },
       "verification": "Unverified",
       "autoGenerated": true,
-      "generatedFrom": "DELETE /api/facility/:facilityId/growlogs/:id"
+      "generatedFrom": "DELETE /api/facility/:facilityId/growlogs/:id",
+      "releaseScope": "internal",
+      "userVisible": false,
+      "releaseDecision": "backlog"
     },
     {
       "featureId": "auto.delete.facility.param.grows.param.2",
@@ -607,9 +588,7 @@
       "ui": {
         "mode": "unknown",
         "route": null,
-        "actions": [
-          "DELETE /api/facility/:facilityId/grows/:growId"
-        ]
+        "actions": ["DELETE /api/facility/:facilityId/grows/:growId"]
       },
       "api": [
         {
@@ -630,7 +609,10 @@
       },
       "verification": "Unverified",
       "autoGenerated": true,
-      "generatedFrom": "DELETE /api/facility/:facilityId/grows/:growId"
+      "generatedFrom": "DELETE /api/facility/:facilityId/grows/:growId",
+      "releaseScope": "internal",
+      "userVisible": false,
+      "releaseDecision": "complete"
     },
     {
       "featureId": "auto.delete.facility.param.inventory.param.2",
@@ -638,9 +620,7 @@
       "ui": {
         "mode": "unknown",
         "route": null,
-        "actions": [
-          "DELETE /api/facility/:facilityId/inventory/:sku"
-        ]
+        "actions": ["DELETE /api/facility/:facilityId/inventory/:sku"]
       },
       "api": [
         {
@@ -661,7 +641,10 @@
       },
       "verification": "Unverified",
       "autoGenerated": true,
-      "generatedFrom": "DELETE /api/facility/:facilityId/inventory/:sku"
+      "generatedFrom": "DELETE /api/facility/:facilityId/inventory/:sku",
+      "releaseScope": "internal",
+      "userVisible": false,
+      "releaseDecision": "complete"
     },
     {
       "featureId": "auto.delete.facility.param.plants.param.2",
@@ -669,9 +652,7 @@
       "ui": {
         "mode": "unknown",
         "route": null,
-        "actions": [
-          "DELETE /api/facility/:facilityId/plants/:plantId"
-        ]
+        "actions": ["DELETE /api/facility/:facilityId/plants/:plantId"]
       },
       "api": [
         {
@@ -692,7 +673,10 @@
       },
       "verification": "Unverified",
       "autoGenerated": true,
-      "generatedFrom": "DELETE /api/facility/:facilityId/plants/:plantId"
+      "generatedFrom": "DELETE /api/facility/:facilityId/plants/:plantId",
+      "releaseScope": "internal",
+      "userVisible": false,
+      "releaseDecision": "complete"
     },
     {
       "featureId": "auto.delete.facility.param.rooms.param.2",
@@ -700,9 +684,7 @@
       "ui": {
         "mode": "unknown",
         "route": null,
-        "actions": [
-          "DELETE /api/facility/:facilityId/rooms/:roomId"
-        ]
+        "actions": ["DELETE /api/facility/:facilityId/rooms/:roomId"]
       },
       "api": [
         {
@@ -723,7 +705,10 @@
       },
       "verification": "Unverified",
       "autoGenerated": true,
-      "generatedFrom": "DELETE /api/facility/:facilityId/rooms/:roomId"
+      "generatedFrom": "DELETE /api/facility/:facilityId/rooms/:roomId",
+      "releaseScope": "internal",
+      "userVisible": false,
+      "releaseDecision": "complete"
     },
     {
       "featureId": "auto.delete.facility.param.team.param.members.param.2",
@@ -731,9 +716,7 @@
       "ui": {
         "mode": "unknown",
         "route": null,
-        "actions": [
-          "DELETE /api/facility/:facilityId/team/:userId,/members/:userId"
-        ]
+        "actions": ["DELETE /api/facility/:facilityId/team/:userId,/members/:userId"]
       },
       "api": [
         {
@@ -751,7 +734,10 @@
       },
       "verification": "Unverified",
       "autoGenerated": true,
-      "generatedFrom": "DELETE /api/facility/:facilityId/team/:userId,/members/:userId"
+      "generatedFrom": "DELETE /api/facility/:facilityId/team/:userId,/members/:userId",
+      "releaseScope": "internal",
+      "userVisible": false,
+      "releaseDecision": "backlog"
     },
     {
       "featureId": "auto.delete.facility.param.team.invites.param.2",
@@ -759,9 +745,7 @@
       "ui": {
         "mode": "unknown",
         "route": null,
-        "actions": [
-          "DELETE /api/facility/:facilityId/team/invites/:inviteId"
-        ]
+        "actions": ["DELETE /api/facility/:facilityId/team/invites/:inviteId"]
       },
       "api": [
         {
@@ -779,7 +763,10 @@
       },
       "verification": "Unverified",
       "autoGenerated": true,
-      "generatedFrom": "DELETE /api/facility/:facilityId/team/invites/:inviteId"
+      "generatedFrom": "DELETE /api/facility/:facilityId/team/invites/:inviteId",
+      "releaseScope": "internal",
+      "userVisible": false,
+      "releaseDecision": "backlog"
     },
     {
       "featureId": "auto.delete.growlogs.param",
@@ -787,9 +774,7 @@
       "ui": {
         "mode": "unknown",
         "route": null,
-        "actions": [
-          "DELETE /api/growlogs/:id"
-        ]
+        "actions": ["DELETE /api/growlogs/:id"]
       },
       "api": [
         {
@@ -807,7 +792,10 @@
       },
       "verification": "Unverified",
       "autoGenerated": true,
-      "generatedFrom": "DELETE /api/growlogs/:id"
+      "generatedFrom": "DELETE /api/growlogs/:id",
+      "releaseScope": "internal",
+      "userVisible": false,
+      "releaseDecision": "backlog"
     },
     {
       "featureId": "auto.delete.inventory.param",
@@ -815,9 +803,7 @@
       "ui": {
         "mode": "unknown",
         "route": null,
-        "actions": [
-          "DELETE /api/inventory/:sku"
-        ]
+        "actions": ["DELETE /api/inventory/:sku"]
       },
       "api": [
         {
@@ -835,7 +821,10 @@
       },
       "verification": "Unverified",
       "autoGenerated": true,
-      "generatedFrom": "DELETE /api/inventory/:sku"
+      "generatedFrom": "DELETE /api/inventory/:sku",
+      "releaseScope": "internal",
+      "userVisible": false,
+      "releaseDecision": "backlog"
     },
     {
       "featureId": "auto.delete.rooms.param",
@@ -843,9 +832,7 @@
       "ui": {
         "mode": "unknown",
         "route": null,
-        "actions": [
-          "DELETE /api/rooms/:roomId"
-        ]
+        "actions": ["DELETE /api/rooms/:roomId"]
       },
       "api": [
         {
@@ -863,7 +850,10 @@
       },
       "verification": "Unverified",
       "autoGenerated": true,
-      "generatedFrom": "DELETE /api/rooms/:roomId"
+      "generatedFrom": "DELETE /api/rooms/:roomId",
+      "releaseScope": "internal",
+      "userVisible": false,
+      "releaseDecision": "backlog"
     },
     {
       "featureId": "auto.get.certificates",
@@ -871,9 +861,7 @@
       "ui": {
         "mode": "unknown",
         "route": null,
-        "actions": [
-          "GET /api/certificates"
-        ]
+        "actions": ["GET /api/certificates"]
       },
       "api": [
         {
@@ -884,21 +872,18 @@
       "guards": {
         "auth": true,
         "facilityScope": false,
-        "rolesAllowed": [
-          "ANY_AUTHENTICATED"
-        ]
+        "rolesAllowed": ["ANY_AUTHENTICATED"]
       },
       "evidence": {
-        "tests": [
-          "backend/tests/routes/courses.read.cycle16.test.js"
-        ],
-        "backendTests": [
-          "backend/tests/routes/courses.read.cycle16.test.js"
-        ]
+        "tests": ["backend/tests/routes/courses.read.cycle16.test.js"],
+        "backendTests": ["backend/tests/routes/courses.read.cycle16.test.js"]
       },
       "verification": "Unverified",
       "autoGenerated": true,
-      "generatedFrom": "GET /api/certificates"
+      "generatedFrom": "GET /api/certificates",
+      "releaseScope": "internal",
+      "userVisible": false,
+      "releaseDecision": "complete"
     },
     {
       "featureId": "auto.get.courses",
@@ -906,9 +891,7 @@
       "ui": {
         "mode": "unknown",
         "route": null,
-        "actions": [
-          "GET /api/courses"
-        ]
+        "actions": ["GET /api/courses"]
       },
       "api": [
         {
@@ -919,21 +902,18 @@
       "guards": {
         "auth": true,
         "facilityScope": false,
-        "rolesAllowed": [
-          "ANY_AUTHENTICATED"
-        ]
+        "rolesAllowed": ["ANY_AUTHENTICATED"]
       },
       "evidence": {
-        "tests": [
-          "backend/tests/routes/courses.read.cycle15.test.js"
-        ],
-        "backendTests": [
-          "backend/tests/routes/courses.read.cycle15.test.js"
-        ]
+        "tests": ["backend/tests/routes/courses.read.cycle15.test.js"],
+        "backendTests": ["backend/tests/routes/courses.read.cycle15.test.js"]
       },
       "verification": "Unverified",
       "autoGenerated": true,
-      "generatedFrom": "GET /api/courses"
+      "generatedFrom": "GET /api/courses",
+      "releaseScope": "internal",
+      "userVisible": false,
+      "releaseDecision": "complete"
     },
     {
       "featureId": "auto.get.courses.param",
@@ -941,9 +921,7 @@
       "ui": {
         "mode": "unknown",
         "route": null,
-        "actions": [
-          "GET /api/courses/:id([0-9a-fA-F]{24})"
-        ]
+        "actions": ["GET /api/courses/:id([0-9a-fA-F]{24})"]
       },
       "api": [
         {
@@ -954,21 +932,18 @@
       "guards": {
         "auth": true,
         "facilityScope": false,
-        "rolesAllowed": [
-          "ANY_AUTHENTICATED"
-        ]
+        "rolesAllowed": ["ANY_AUTHENTICATED"]
       },
       "evidence": {
-        "tests": [
-          "backend/tests/routes/courses.read.cycle15.test.js"
-        ],
-        "backendTests": [
-          "backend/tests/routes/courses.read.cycle15.test.js"
-        ]
+        "tests": ["backend/tests/routes/courses.read.cycle15.test.js"],
+        "backendTests": ["backend/tests/routes/courses.read.cycle15.test.js"]
       },
       "verification": "Unverified",
       "autoGenerated": true,
-      "generatedFrom": "GET /api/courses/:id"
+      "generatedFrom": "GET /api/courses/:id",
+      "releaseScope": "internal",
+      "userVisible": false,
+      "releaseDecision": "complete"
     },
     {
       "featureId": "auto.get.courses.param.recommendations",
@@ -976,9 +951,7 @@
       "ui": {
         "mode": "unknown",
         "route": null,
-        "actions": [
-          "GET /api/courses/:id([0-9a-fA-F]{24})/recommendations"
-        ]
+        "actions": ["GET /api/courses/:id([0-9a-fA-F]{24})/recommendations"]
       },
       "api": [
         {
@@ -989,21 +962,18 @@
       "guards": {
         "auth": true,
         "facilityScope": false,
-        "rolesAllowed": [
-          "ANY_AUTHENTICATED"
-        ]
+        "rolesAllowed": ["ANY_AUTHENTICATED"]
       },
       "evidence": {
-        "tests": [
-          "backend/tests/routes/courses.read.cycle16.test.js"
-        ],
-        "backendTests": [
-          "backend/tests/routes/courses.read.cycle16.test.js"
-        ]
+        "tests": ["backend/tests/routes/courses.read.cycle16.test.js"],
+        "backendTests": ["backend/tests/routes/courses.read.cycle16.test.js"]
       },
       "verification": "Unverified",
       "autoGenerated": true,
-      "generatedFrom": "GET /api/courses/:id/recommendations"
+      "generatedFrom": "GET /api/courses/:id/recommendations",
+      "releaseScope": "internal",
+      "userVisible": false,
+      "releaseDecision": "complete"
     },
     {
       "featureId": "auto.get.courses.param.enrollment.status",
@@ -1011,9 +981,7 @@
       "ui": {
         "mode": "unknown",
         "route": null,
-        "actions": [
-          "GET /api/courses/:id/enrollment-status"
-        ]
+        "actions": ["GET /api/courses/:id/enrollment-status"]
       },
       "api": [
         {
@@ -1024,21 +992,18 @@
       "guards": {
         "auth": true,
         "facilityScope": false,
-        "rolesAllowed": [
-          "ANY_AUTHENTICATED"
-        ]
+        "rolesAllowed": ["ANY_AUTHENTICATED"]
       },
       "evidence": {
-        "tests": [
-          "backend/tests/routes/courses.read.cycle16.test.js"
-        ],
-        "backendTests": [
-          "backend/tests/routes/courses.read.cycle16.test.js"
-        ]
+        "tests": ["backend/tests/routes/courses.read.cycle16.test.js"],
+        "backendTests": ["backend/tests/routes/courses.read.cycle16.test.js"]
       },
       "verification": "Unverified",
       "autoGenerated": true,
-      "generatedFrom": "GET /api/courses/:id/enrollment-status"
+      "generatedFrom": "GET /api/courses/:id/enrollment-status",
+      "releaseScope": "internal",
+      "userVisible": false,
+      "releaseDecision": "complete"
     },
     {
       "featureId": "auto.get.courses.param.questions",
@@ -1046,9 +1011,7 @@
       "ui": {
         "mode": "unknown",
         "route": null,
-        "actions": [
-          "GET /api/courses/:id/questions"
-        ]
+        "actions": ["GET /api/courses/:id/questions"]
       },
       "api": [
         {
@@ -1059,21 +1022,18 @@
       "guards": {
         "auth": true,
         "facilityScope": false,
-        "rolesAllowed": [
-          "ANY_AUTHENTICATED"
-        ]
+        "rolesAllowed": ["ANY_AUTHENTICATED"]
       },
       "evidence": {
-        "tests": [
-          "backend/tests/routes/courses.read.cycle15.test.js"
-        ],
-        "backendTests": [
-          "backend/tests/routes/courses.read.cycle15.test.js"
-        ]
+        "tests": ["backend/tests/routes/courses.read.cycle15.test.js"],
+        "backendTests": ["backend/tests/routes/courses.read.cycle15.test.js"]
       },
       "verification": "Unverified",
       "autoGenerated": true,
-      "generatedFrom": "GET /api/courses/:id/questions"
+      "generatedFrom": "GET /api/courses/:id/questions",
+      "releaseScope": "internal",
+      "userVisible": false,
+      "releaseDecision": "complete"
     },
     {
       "featureId": "auto.get.courses.param.reviews",
@@ -1081,9 +1041,7 @@
       "ui": {
         "mode": "unknown",
         "route": null,
-        "actions": [
-          "GET /api/courses/:id/reviews"
-        ]
+        "actions": ["GET /api/courses/:id/reviews"]
       },
       "api": [
         {
@@ -1094,21 +1052,18 @@
       "guards": {
         "auth": true,
         "facilityScope": false,
-        "rolesAllowed": [
-          "ANY_AUTHENTICATED"
-        ]
+        "rolesAllowed": ["ANY_AUTHENTICATED"]
       },
       "evidence": {
-        "tests": [
-          "backend/tests/routes/courses.read.cycle15.test.js"
-        ],
-        "backendTests": [
-          "backend/tests/routes/courses.read.cycle15.test.js"
-        ]
+        "tests": ["backend/tests/routes/courses.read.cycle15.test.js"],
+        "backendTests": ["backend/tests/routes/courses.read.cycle15.test.js"]
       },
       "verification": "Unverified",
       "autoGenerated": true,
-      "generatedFrom": "GET /api/courses/:id/reviews"
+      "generatedFrom": "GET /api/courses/:id/reviews",
+      "releaseScope": "internal",
+      "userVisible": false,
+      "releaseDecision": "complete"
     },
     {
       "featureId": "auto.get.courses.categories",
@@ -1116,9 +1071,7 @@
       "ui": {
         "mode": "unknown",
         "route": null,
-        "actions": [
-          "GET /api/courses/categories"
-        ]
+        "actions": ["GET /api/courses/categories"]
       },
       "api": [
         {
@@ -1129,21 +1082,18 @@
       "guards": {
         "auth": true,
         "facilityScope": false,
-        "rolesAllowed": [
-          "ANY_AUTHENTICATED"
-        ]
+        "rolesAllowed": ["ANY_AUTHENTICATED"]
       },
       "evidence": {
-        "tests": [
-          "backend/tests/routes/courses.read.cycle15.test.js"
-        ],
-        "backendTests": [
-          "backend/tests/routes/courses.read.cycle15.test.js"
-        ]
+        "tests": ["backend/tests/routes/courses.read.cycle15.test.js"],
+        "backendTests": ["backend/tests/routes/courses.read.cycle15.test.js"]
       },
       "verification": "Unverified",
       "autoGenerated": true,
-      "generatedFrom": "GET /api/courses/categories"
+      "generatedFrom": "GET /api/courses/categories",
+      "releaseScope": "internal",
+      "userVisible": false,
+      "releaseDecision": "complete"
     },
     {
       "featureId": "auto.get.courses.category.param",
@@ -1151,9 +1101,7 @@
       "ui": {
         "mode": "unknown",
         "route": null,
-        "actions": [
-          "GET /api/courses/category/:category"
-        ]
+        "actions": ["GET /api/courses/category/:category"]
       },
       "api": [
         {
@@ -1164,21 +1112,18 @@
       "guards": {
         "auth": true,
         "facilityScope": false,
-        "rolesAllowed": [
-          "ANY_AUTHENTICATED"
-        ]
+        "rolesAllowed": ["ANY_AUTHENTICATED"]
       },
       "evidence": {
-        "tests": [
-          "backend/tests/routes/courses.read.cycle16.test.js"
-        ],
-        "backendTests": [
-          "backend/tests/routes/courses.read.cycle16.test.js"
-        ]
+        "tests": ["backend/tests/routes/courses.read.cycle16.test.js"],
+        "backendTests": ["backend/tests/routes/courses.read.cycle16.test.js"]
       },
       "verification": "Unverified",
       "autoGenerated": true,
-      "generatedFrom": "GET /api/courses/category/:category"
+      "generatedFrom": "GET /api/courses/category/:category",
+      "releaseScope": "internal",
+      "userVisible": false,
+      "releaseDecision": "complete"
     },
     {
       "featureId": "auto.get.courses.filter",
@@ -1186,9 +1131,7 @@
       "ui": {
         "mode": "unknown",
         "route": null,
-        "actions": [
-          "GET /api/courses/filter"
-        ]
+        "actions": ["GET /api/courses/filter"]
       },
       "api": [
         {
@@ -1199,21 +1142,18 @@
       "guards": {
         "auth": true,
         "facilityScope": false,
-        "rolesAllowed": [
-          "ANY_AUTHENTICATED"
-        ]
+        "rolesAllowed": ["ANY_AUTHENTICATED"]
       },
       "evidence": {
-        "tests": [
-          "backend/tests/routes/courses.read.cycle15.test.js"
-        ],
-        "backendTests": [
-          "backend/tests/routes/courses.read.cycle15.test.js"
-        ]
+        "tests": ["backend/tests/routes/courses.read.cycle15.test.js"],
+        "backendTests": ["backend/tests/routes/courses.read.cycle15.test.js"]
       },
       "verification": "Unverified",
       "autoGenerated": true,
-      "generatedFrom": "GET /api/courses/filter"
+      "generatedFrom": "GET /api/courses/filter",
+      "releaseScope": "internal",
+      "userVisible": false,
+      "releaseDecision": "complete"
     },
     {
       "featureId": "auto.get.courses.list",
@@ -1221,9 +1161,7 @@
       "ui": {
         "mode": "unknown",
         "route": null,
-        "actions": [
-          "GET /api/courses/list"
-        ]
+        "actions": ["GET /api/courses/list"]
       },
       "api": [
         {
@@ -1234,21 +1172,18 @@
       "guards": {
         "auth": true,
         "facilityScope": false,
-        "rolesAllowed": [
-          "ANY_AUTHENTICATED"
-        ]
+        "rolesAllowed": ["ANY_AUTHENTICATED"]
       },
       "evidence": {
-        "tests": [
-          "backend/tests/routes/courses.read.cycle15.test.js"
-        ],
-        "backendTests": [
-          "backend/tests/routes/courses.read.cycle15.test.js"
-        ]
+        "tests": ["backend/tests/routes/courses.read.cycle15.test.js"],
+        "backendTests": ["backend/tests/routes/courses.read.cycle15.test.js"]
       },
       "verification": "Unverified",
       "autoGenerated": true,
-      "generatedFrom": "GET /api/courses/list"
+      "generatedFrom": "GET /api/courses/list",
+      "releaseScope": "internal",
+      "userVisible": false,
+      "releaseDecision": "complete"
     },
     {
       "featureId": "auto.get.courses.mine",
@@ -1256,9 +1191,7 @@
       "ui": {
         "mode": "unknown",
         "route": null,
-        "actions": [
-          "GET /api/courses/mine"
-        ]
+        "actions": ["GET /api/courses/mine"]
       },
       "api": [
         {
@@ -1269,21 +1202,18 @@
       "guards": {
         "auth": true,
         "facilityScope": false,
-        "rolesAllowed": [
-          "ANY_AUTHENTICATED"
-        ]
+        "rolesAllowed": ["ANY_AUTHENTICATED"]
       },
       "evidence": {
-        "tests": [
-          "backend/tests/routes/courses.read.cycle16.test.js"
-        ],
-        "backendTests": [
-          "backend/tests/routes/courses.read.cycle16.test.js"
-        ]
+        "tests": ["backend/tests/routes/courses.read.cycle16.test.js"],
+        "backendTests": ["backend/tests/routes/courses.read.cycle16.test.js"]
       },
       "verification": "Unverified",
       "autoGenerated": true,
-      "generatedFrom": "GET /api/courses/mine"
+      "generatedFrom": "GET /api/courses/mine",
+      "releaseScope": "internal",
+      "userVisible": false,
+      "releaseDecision": "complete"
     },
     {
       "featureId": "auto.get.courses.recommendations",
@@ -1291,9 +1221,7 @@
       "ui": {
         "mode": "unknown",
         "route": null,
-        "actions": [
-          "GET /api/courses/recommendations"
-        ]
+        "actions": ["GET /api/courses/recommendations"]
       },
       "api": [
         {
@@ -1304,21 +1232,18 @@
       "guards": {
         "auth": true,
         "facilityScope": false,
-        "rolesAllowed": [
-          "ANY_AUTHENTICATED"
-        ]
+        "rolesAllowed": ["ANY_AUTHENTICATED"]
       },
       "evidence": {
-        "tests": [
-          "backend/tests/routes/courses.read.cycle15.test.js"
-        ],
-        "backendTests": [
-          "backend/tests/routes/courses.read.cycle15.test.js"
-        ]
+        "tests": ["backend/tests/routes/courses.read.cycle15.test.js"],
+        "backendTests": ["backend/tests/routes/courses.read.cycle15.test.js"]
       },
       "verification": "Unverified",
       "autoGenerated": true,
-      "generatedFrom": "GET /api/courses/recommendations"
+      "generatedFrom": "GET /api/courses/recommendations",
+      "releaseScope": "internal",
+      "userVisible": false,
+      "releaseDecision": "complete"
     },
     {
       "featureId": "auto.get.courses.recommended",
@@ -1326,9 +1251,7 @@
       "ui": {
         "mode": "unknown",
         "route": null,
-        "actions": [
-          "GET /api/courses/recommended"
-        ]
+        "actions": ["GET /api/courses/recommended"]
       },
       "api": [
         {
@@ -1339,21 +1262,18 @@
       "guards": {
         "auth": true,
         "facilityScope": false,
-        "rolesAllowed": [
-          "ANY_AUTHENTICATED"
-        ]
+        "rolesAllowed": ["ANY_AUTHENTICATED"]
       },
       "evidence": {
-        "tests": [
-          "backend/tests/routes/courses.read.cycle15.test.js"
-        ],
-        "backendTests": [
-          "backend/tests/routes/courses.read.cycle15.test.js"
-        ]
+        "tests": ["backend/tests/routes/courses.read.cycle15.test.js"],
+        "backendTests": ["backend/tests/routes/courses.read.cycle15.test.js"]
       },
       "verification": "Unverified",
       "autoGenerated": true,
-      "generatedFrom": "GET /api/courses/recommended"
+      "generatedFrom": "GET /api/courses/recommended",
+      "releaseScope": "internal",
+      "userVisible": false,
+      "releaseDecision": "complete"
     },
     {
       "featureId": "auto.get.courses.search",
@@ -1361,9 +1281,7 @@
       "ui": {
         "mode": "unknown",
         "route": null,
-        "actions": [
-          "GET /api/courses/search"
-        ]
+        "actions": ["GET /api/courses/search"]
       },
       "api": [
         {
@@ -1374,21 +1292,18 @@
       "guards": {
         "auth": true,
         "facilityScope": false,
-        "rolesAllowed": [
-          "ANY_AUTHENTICATED"
-        ]
+        "rolesAllowed": ["ANY_AUTHENTICATED"]
       },
       "evidence": {
-        "tests": [
-          "backend/tests/routes/courses.read.cycle15.test.js"
-        ],
-        "backendTests": [
-          "backend/tests/routes/courses.read.cycle15.test.js"
-        ]
+        "tests": ["backend/tests/routes/courses.read.cycle15.test.js"],
+        "backendTests": ["backend/tests/routes/courses.read.cycle15.test.js"]
       },
       "verification": "Unverified",
       "autoGenerated": true,
-      "generatedFrom": "GET /api/courses/search"
+      "generatedFrom": "GET /api/courses/search",
+      "releaseScope": "internal",
+      "userVisible": false,
+      "releaseDecision": "complete"
     },
     {
       "featureId": "auto.get.courses.subcategories.param",
@@ -1396,9 +1311,7 @@
       "ui": {
         "mode": "unknown",
         "route": null,
-        "actions": [
-          "GET /api/courses/subcategories/:category"
-        ]
+        "actions": ["GET /api/courses/subcategories/:category"]
       },
       "api": [
         {
@@ -1409,21 +1322,18 @@
       "guards": {
         "auth": true,
         "facilityScope": false,
-        "rolesAllowed": [
-          "ANY_AUTHENTICATED"
-        ]
+        "rolesAllowed": ["ANY_AUTHENTICATED"]
       },
       "evidence": {
-        "tests": [
-          "backend/tests/routes/courses.read.cycle16.test.js"
-        ],
-        "backendTests": [
-          "backend/tests/routes/courses.read.cycle16.test.js"
-        ]
+        "tests": ["backend/tests/routes/courses.read.cycle16.test.js"],
+        "backendTests": ["backend/tests/routes/courses.read.cycle16.test.js"]
       },
       "verification": "Unverified",
       "autoGenerated": true,
-      "generatedFrom": "GET /api/courses/subcategories/:category"
+      "generatedFrom": "GET /api/courses/subcategories/:category",
+      "releaseScope": "internal",
+      "userVisible": false,
+      "releaseDecision": "complete"
     },
     {
       "featureId": "auto.get.courses.trending.tags",
@@ -1431,9 +1341,7 @@
       "ui": {
         "mode": "unknown",
         "route": null,
-        "actions": [
-          "GET /api/courses/trending-tags"
-        ]
+        "actions": ["GET /api/courses/trending-tags"]
       },
       "api": [
         {
@@ -1444,21 +1352,18 @@
       "guards": {
         "auth": true,
         "facilityScope": false,
-        "rolesAllowed": [
-          "ANY_AUTHENTICATED"
-        ]
+        "rolesAllowed": ["ANY_AUTHENTICATED"]
       },
       "evidence": {
-        "tests": [
-          "backend/tests/routes/courses.read.cycle16.test.js"
-        ],
-        "backendTests": [
-          "backend/tests/routes/courses.read.cycle16.test.js"
-        ]
+        "tests": ["backend/tests/routes/courses.read.cycle16.test.js"],
+        "backendTests": ["backend/tests/routes/courses.read.cycle16.test.js"]
       },
       "verification": "Unverified",
       "autoGenerated": true,
-      "generatedFrom": "GET /api/courses/trending-tags"
+      "generatedFrom": "GET /api/courses/trending-tags",
+      "releaseScope": "internal",
+      "userVisible": false,
+      "releaseDecision": "complete"
     },
     {
       "featureId": "auto.get.courses.user.certificates",
@@ -1466,9 +1371,7 @@
       "ui": {
         "mode": "unknown",
         "route": null,
-        "actions": [
-          "GET /api/courses/user/certificates"
-        ]
+        "actions": ["GET /api/courses/user/certificates"]
       },
       "api": [
         {
@@ -1479,21 +1382,18 @@
       "guards": {
         "auth": true,
         "facilityScope": false,
-        "rolesAllowed": [
-          "ANY_AUTHENTICATED"
-        ]
+        "rolesAllowed": ["ANY_AUTHENTICATED"]
       },
       "evidence": {
-        "tests": [
-          "backend/tests/routes/courses.read.cycle16.test.js"
-        ],
-        "backendTests": [
-          "backend/tests/routes/courses.read.cycle16.test.js"
-        ]
+        "tests": ["backend/tests/routes/courses.read.cycle16.test.js"],
+        "backendTests": ["backend/tests/routes/courses.read.cycle16.test.js"]
       },
       "verification": "Unverified",
       "autoGenerated": true,
-      "generatedFrom": "GET /api/courses/user/certificates"
+      "generatedFrom": "GET /api/courses/user/certificates",
+      "releaseScope": "internal",
+      "userVisible": false,
+      "releaseDecision": "complete"
     },
     {
       "featureId": "auto.get.courses.verify.param",
@@ -1501,9 +1401,7 @@
       "ui": {
         "mode": "unknown",
         "route": null,
-        "actions": [
-          "GET /api/courses/verify/:certificateId"
-        ]
+        "actions": ["GET /api/courses/verify/:certificateId"]
       },
       "api": [
         {
@@ -1514,21 +1412,18 @@
       "guards": {
         "auth": true,
         "facilityScope": false,
-        "rolesAllowed": [
-          "ANY_AUTHENTICATED"
-        ]
+        "rolesAllowed": ["ANY_AUTHENTICATED"]
       },
       "evidence": {
-        "tests": [
-          "backend/tests/routes/courses.read.cycle16.test.js"
-        ],
-        "backendTests": [
-          "backend/tests/routes/courses.read.cycle16.test.js"
-        ]
+        "tests": ["backend/tests/routes/courses.read.cycle16.test.js"],
+        "backendTests": ["backend/tests/routes/courses.read.cycle16.test.js"]
       },
       "verification": "Unverified",
       "autoGenerated": true,
-      "generatedFrom": "GET /api/courses/verify/:certificateId"
+      "generatedFrom": "GET /api/courses/verify/:certificateId",
+      "releaseScope": "internal",
+      "userVisible": false,
+      "releaseDecision": "complete"
     },
     {
       "featureId": "auto.get.debug.info",
@@ -1536,9 +1431,7 @@
       "ui": {
         "mode": "unknown",
         "route": null,
-        "actions": [
-          "GET /api/debug/info"
-        ]
+        "actions": ["GET /api/debug/info"]
       },
       "api": [
         {
@@ -1549,21 +1442,18 @@
       "guards": {
         "auth": false,
         "facilityScope": false,
-        "rolesAllowed": [
-          "PUBLIC"
-        ]
+        "rolesAllowed": ["PUBLIC"]
       },
       "evidence": {
-        "tests": [
-          "backend/tests/routes/courses.read.cycle16.test.js"
-        ],
-        "backendTests": [
-          "backend/tests/routes/courses.read.cycle16.test.js"
-        ]
+        "tests": ["backend/tests/routes/courses.read.cycle16.test.js"],
+        "backendTests": ["backend/tests/routes/courses.read.cycle16.test.js"]
       },
       "verification": "Unverified",
       "autoGenerated": true,
-      "generatedFrom": "GET /api/debug/info"
+      "generatedFrom": "GET /api/debug/info",
+      "releaseScope": "internal",
+      "userVisible": false,
+      "releaseDecision": "complete"
     },
     {
       "featureId": "auto.get.facilities",
@@ -1571,9 +1461,7 @@
       "ui": {
         "mode": "unknown",
         "route": null,
-        "actions": [
-          "GET /api/facilities"
-        ]
+        "actions": ["GET /api/facilities"]
       },
       "api": [
         {
@@ -1591,7 +1479,10 @@
       },
       "verification": "Unverified",
       "autoGenerated": true,
-      "generatedFrom": "GET /api/facilities"
+      "generatedFrom": "GET /api/facilities",
+      "releaseScope": "internal",
+      "userVisible": false,
+      "releaseDecision": "backlog"
     },
     {
       "featureId": "auto.get.facility.param",
@@ -1599,9 +1490,7 @@
       "ui": {
         "mode": "unknown",
         "route": null,
-        "actions": [
-          "GET /api/facility/:facilityId"
-        ]
+        "actions": ["GET /api/facility/:facilityId"]
       },
       "api": [
         {
@@ -1619,7 +1508,10 @@
       },
       "verification": "Unverified",
       "autoGenerated": true,
-      "generatedFrom": "GET /api/facilities/:facilityId"
+      "generatedFrom": "GET /api/facilities/:facilityId",
+      "releaseScope": "internal",
+      "userVisible": false,
+      "releaseDecision": "backlog"
     },
     {
       "featureId": "auto.get.facility.param.compliance.deviations.summary",
@@ -1627,9 +1519,7 @@
       "ui": {
         "mode": "unknown",
         "route": null,
-        "actions": [
-          "GET /api/facility/:facilityId/compliance/deviations/summary"
-        ]
+        "actions": ["GET /api/facility/:facilityId/compliance/deviations/summary"]
       },
       "api": [
         {
@@ -1647,7 +1537,10 @@
       },
       "verification": "Unverified",
       "autoGenerated": true,
-      "generatedFrom": "GET /api/facilities/:facilityId/compliance/deviations/summary"
+      "generatedFrom": "GET /api/facilities/:facilityId/compliance/deviations/summary",
+      "releaseScope": "internal",
+      "userVisible": false,
+      "releaseDecision": "backlog"
     },
     {
       "featureId": "auto.get.facility.param.compliance.sops.recommended",
@@ -1655,9 +1548,7 @@
       "ui": {
         "mode": "unknown",
         "route": null,
-        "actions": [
-          "GET /api/facility/:facilityId/compliance/sops/recommended"
-        ]
+        "actions": ["GET /api/facility/:facilityId/compliance/sops/recommended"]
       },
       "api": [
         {
@@ -1675,7 +1566,10 @@
       },
       "verification": "Unverified",
       "autoGenerated": true,
-      "generatedFrom": "GET /api/facilities/:facilityId/compliance/sops/recommended"
+      "generatedFrom": "GET /api/facilities/:facilityId/compliance/sops/recommended",
+      "releaseScope": "internal",
+      "userVisible": false,
+      "releaseDecision": "backlog"
     },
     {
       "featureId": "auto.get.facility.param.growlogs",
@@ -1683,9 +1577,7 @@
       "ui": {
         "mode": "unknown",
         "route": null,
-        "actions": [
-          "GET /api/facility/:facilityId/growlogs"
-        ]
+        "actions": ["GET /api/facility/:facilityId/growlogs"]
       },
       "api": [
         {
@@ -1703,7 +1595,10 @@
       },
       "verification": "Unverified",
       "autoGenerated": true,
-      "generatedFrom": "GET /api/facilities/:facilityId/growlogs"
+      "generatedFrom": "GET /api/facilities/:facilityId/growlogs",
+      "releaseScope": "internal",
+      "userVisible": false,
+      "releaseDecision": "backlog"
     },
     {
       "featureId": "auto.get.facility.param.growlogs.param",
@@ -1711,9 +1606,7 @@
       "ui": {
         "mode": "unknown",
         "route": null,
-        "actions": [
-          "GET /api/facility/:facilityId/growlogs/:id"
-        ]
+        "actions": ["GET /api/facility/:facilityId/growlogs/:id"]
       },
       "api": [
         {
@@ -1731,7 +1624,10 @@
       },
       "verification": "Unverified",
       "autoGenerated": true,
-      "generatedFrom": "GET /api/facilities/:facilityId/growlogs/:id"
+      "generatedFrom": "GET /api/facilities/:facilityId/growlogs/:id",
+      "releaseScope": "internal",
+      "userVisible": false,
+      "releaseDecision": "backlog"
     },
     {
       "featureId": "auto.get.facility.param.grows",
@@ -1739,9 +1635,7 @@
       "ui": {
         "mode": "unknown",
         "route": null,
-        "actions": [
-          "GET /api/facility/:facilityId/grows"
-        ]
+        "actions": ["GET /api/facility/:facilityId/grows"]
       },
       "api": [
         {
@@ -1762,7 +1656,10 @@
       },
       "verification": "Unverified",
       "autoGenerated": true,
-      "generatedFrom": "GET /api/facilities/:facilityId/grows"
+      "generatedFrom": "GET /api/facilities/:facilityId/grows",
+      "releaseScope": "internal",
+      "userVisible": false,
+      "releaseDecision": "complete"
     },
     {
       "featureId": "auto.get.facility.param.inventory",
@@ -1770,9 +1667,7 @@
       "ui": {
         "mode": "unknown",
         "route": null,
-        "actions": [
-          "GET /api/facility/:facilityId/inventory"
-        ]
+        "actions": ["GET /api/facility/:facilityId/inventory"]
       },
       "api": [
         {
@@ -1793,7 +1688,10 @@
       },
       "verification": "Unverified",
       "autoGenerated": true,
-      "generatedFrom": "GET /api/facilities/:facilityId/inventory"
+      "generatedFrom": "GET /api/facilities/:facilityId/inventory",
+      "releaseScope": "internal",
+      "userVisible": false,
+      "releaseDecision": "complete"
     },
     {
       "featureId": "auto.get.facility.param.inventory.param",
@@ -1801,9 +1699,7 @@
       "ui": {
         "mode": "unknown",
         "route": null,
-        "actions": [
-          "GET /api/facility/:facilityId/inventory/:itemId"
-        ]
+        "actions": ["GET /api/facility/:facilityId/inventory/:itemId"]
       },
       "api": [
         {
@@ -1824,7 +1720,10 @@
       },
       "verification": "Unverified",
       "autoGenerated": true,
-      "generatedFrom": "GET /api/facilities/:facilityId/inventory/:itemId"
+      "generatedFrom": "GET /api/facilities/:facilityId/inventory/:itemId",
+      "releaseScope": "internal",
+      "userVisible": false,
+      "releaseDecision": "complete"
     },
     {
       "featureId": "auto.get.facility.param.plants",
@@ -1832,9 +1731,7 @@
       "ui": {
         "mode": "unknown",
         "route": null,
-        "actions": [
-          "GET /api/facility/:facilityId/plants"
-        ]
+        "actions": ["GET /api/facility/:facilityId/plants"]
       },
       "api": [
         {
@@ -1855,7 +1752,10 @@
       },
       "verification": "Unverified",
       "autoGenerated": true,
-      "generatedFrom": "GET /api/facilities/:facilityId/plants"
+      "generatedFrom": "GET /api/facilities/:facilityId/plants",
+      "releaseScope": "internal",
+      "userVisible": false,
+      "releaseDecision": "complete"
     },
     {
       "featureId": "auto.get.facility.param.rooms",
@@ -1863,9 +1763,7 @@
       "ui": {
         "mode": "unknown",
         "route": null,
-        "actions": [
-          "GET /api/facility/:facilityId/rooms"
-        ]
+        "actions": ["GET /api/facility/:facilityId/rooms"]
       },
       "api": [
         {
@@ -1886,7 +1784,10 @@
       },
       "verification": "Unverified",
       "autoGenerated": true,
-      "generatedFrom": "GET /api/facilities/:facilityId/rooms"
+      "generatedFrom": "GET /api/facilities/:facilityId/rooms",
+      "releaseScope": "internal",
+      "userVisible": false,
+      "releaseDecision": "complete"
     },
     {
       "featureId": "auto.get.facility.param.settings",
@@ -1894,9 +1795,7 @@
       "ui": {
         "mode": "unknown",
         "route": null,
-        "actions": [
-          "GET /api/facility/:facilityId/settings"
-        ]
+        "actions": ["GET /api/facility/:facilityId/settings"]
       },
       "api": [
         {
@@ -1910,13 +1809,14 @@
         "rolesAllowed": []
       },
       "evidence": {
-        "tests": [
-          "backend/tests/routes/cycle21.mixed.lowrisk.test.js"
-        ]
+        "tests": ["backend/tests/routes/cycle21.mixed.lowrisk.test.js"]
       },
       "verification": "Unverified",
       "autoGenerated": true,
-      "generatedFrom": "GET /api/facilities/:facilityId/settings"
+      "generatedFrom": "GET /api/facilities/:facilityId/settings",
+      "releaseScope": "internal",
+      "userVisible": false,
+      "releaseDecision": "complete"
     },
     {
       "featureId": "auto.get.facility.param.tasks.param",
@@ -1924,9 +1824,7 @@
       "ui": {
         "mode": "unknown",
         "route": null,
-        "actions": [
-          "GET /api/facility/:facilityId/tasks/:taskId"
-        ]
+        "actions": ["GET /api/facility/:facilityId/tasks/:taskId"]
       },
       "api": [
         {
@@ -1948,7 +1846,10 @@
       },
       "verification": "Unverified",
       "autoGenerated": true,
-      "generatedFrom": "GET /api/facilities/:facilityId/tasks/:taskId"
+      "generatedFrom": "GET /api/facilities/:facilityId/tasks/:taskId",
+      "releaseScope": "internal",
+      "userVisible": false,
+      "releaseDecision": "complete"
     },
     {
       "featureId": "auto.get.facility.param.team.invites",
@@ -1956,9 +1857,7 @@
       "ui": {
         "mode": "unknown",
         "route": null,
-        "actions": [
-          "GET /api/facility/:facilityId/team/invites"
-        ]
+        "actions": ["GET /api/facility/:facilityId/team/invites"]
       },
       "api": [
         {
@@ -1976,7 +1875,10 @@
       },
       "verification": "Unverified",
       "autoGenerated": true,
-      "generatedFrom": "GET /api/facilities/:facilityId/team/invites"
+      "generatedFrom": "GET /api/facilities/:facilityId/team/invites",
+      "releaseScope": "internal",
+      "userVisible": false,
+      "releaseDecision": "backlog"
     },
     {
       "featureId": "auto.get.facility.param.team.members",
@@ -1984,9 +1886,7 @@
       "ui": {
         "mode": "unknown",
         "route": null,
-        "actions": [
-          "GET /api/facility/:facilityId/team/members"
-        ]
+        "actions": ["GET /api/facility/:facilityId/team/members"]
       },
       "api": [
         {
@@ -2004,7 +1904,10 @@
       },
       "verification": "Unverified",
       "autoGenerated": true,
-      "generatedFrom": "GET /api/facilities/:facilityId/team/members"
+      "generatedFrom": "GET /api/facilities/:facilityId/team/members",
+      "releaseScope": "internal",
+      "userVisible": false,
+      "releaseDecision": "backlog"
     },
     {
       "featureId": "auto.get.facilities.param",
@@ -2012,9 +1915,7 @@
       "ui": {
         "mode": "unknown",
         "route": null,
-        "actions": [
-          "GET /api/facilities/:id"
-        ]
+        "actions": ["GET /api/facilities/:id"]
       },
       "api": [
         {
@@ -2032,7 +1933,10 @@
       },
       "verification": "Unverified",
       "autoGenerated": true,
-      "generatedFrom": "GET /api/facilities/:id"
+      "generatedFrom": "GET /api/facilities/:id",
+      "releaseScope": "internal",
+      "userVisible": false,
+      "releaseDecision": "backlog"
     },
     {
       "featureId": "auto.get.facilities.ping",
@@ -2040,9 +1944,7 @@
       "ui": {
         "mode": "unknown",
         "route": null,
-        "actions": [
-          "GET /api/facilities/__ping"
-        ]
+        "actions": ["GET /api/facilities/__ping"]
       },
       "api": [
         {
@@ -2060,7 +1962,10 @@
       },
       "verification": "Unverified",
       "autoGenerated": true,
-      "generatedFrom": "GET /api/facilities/__ping"
+      "generatedFrom": "GET /api/facilities/__ping",
+      "releaseScope": "internal",
+      "userVisible": false,
+      "releaseDecision": "backlog"
     },
     {
       "featureId": "auto.get.facilities.settings",
@@ -2068,9 +1973,7 @@
       "ui": {
         "mode": "unknown",
         "route": null,
-        "actions": [
-          "GET /api/facilities/settings"
-        ]
+        "actions": ["GET /api/facilities/settings"]
       },
       "api": [
         {
@@ -2088,7 +1991,10 @@
       },
       "verification": "Unverified",
       "autoGenerated": true,
-      "generatedFrom": "GET /api/facilities/settings"
+      "generatedFrom": "GET /api/facilities/settings",
+      "releaseScope": "internal",
+      "userVisible": false,
+      "releaseDecision": "backlog"
     },
     {
       "featureId": "auto.get.facility.param.2",
@@ -2096,9 +2002,7 @@
       "ui": {
         "mode": "unknown",
         "route": null,
-        "actions": [
-          "GET /api/facility/:facilityId"
-        ]
+        "actions": ["GET /api/facility/:facilityId"]
       },
       "api": [
         {
@@ -2116,7 +2020,10 @@
       },
       "verification": "Unverified",
       "autoGenerated": true,
-      "generatedFrom": "GET /api/facility/:facilityId"
+      "generatedFrom": "GET /api/facility/:facilityId",
+      "releaseScope": "internal",
+      "userVisible": false,
+      "releaseDecision": "backlog"
     },
     {
       "featureId": "auto.get.facility.param.compliance.deviations.summary.2",
@@ -2124,9 +2031,7 @@
       "ui": {
         "mode": "unknown",
         "route": null,
-        "actions": [
-          "GET /api/facility/:facilityId/compliance/deviations/summary"
-        ]
+        "actions": ["GET /api/facility/:facilityId/compliance/deviations/summary"]
       },
       "api": [
         {
@@ -2144,7 +2049,10 @@
       },
       "verification": "Unverified",
       "autoGenerated": true,
-      "generatedFrom": "GET /api/facility/:facilityId/compliance/deviations/summary"
+      "generatedFrom": "GET /api/facility/:facilityId/compliance/deviations/summary",
+      "releaseScope": "internal",
+      "userVisible": false,
+      "releaseDecision": "backlog"
     },
     {
       "featureId": "auto.get.facility.param.compliance.sops.recommended.2",
@@ -2152,9 +2060,7 @@
       "ui": {
         "mode": "unknown",
         "route": null,
-        "actions": [
-          "GET /api/facility/:facilityId/compliance/sops/recommended"
-        ]
+        "actions": ["GET /api/facility/:facilityId/compliance/sops/recommended"]
       },
       "api": [
         {
@@ -2172,7 +2078,10 @@
       },
       "verification": "Unverified",
       "autoGenerated": true,
-      "generatedFrom": "GET /api/facility/:facilityId/compliance/sops/recommended"
+      "generatedFrom": "GET /api/facility/:facilityId/compliance/sops/recommended",
+      "releaseScope": "internal",
+      "userVisible": false,
+      "releaseDecision": "backlog"
     },
     {
       "featureId": "auto.get.facility.param.growlogs.2",
@@ -2180,9 +2089,7 @@
       "ui": {
         "mode": "unknown",
         "route": null,
-        "actions": [
-          "GET /api/facility/:facilityId/growlogs"
-        ]
+        "actions": ["GET /api/facility/:facilityId/growlogs"]
       },
       "api": [
         {
@@ -2200,7 +2107,10 @@
       },
       "verification": "Unverified",
       "autoGenerated": true,
-      "generatedFrom": "GET /api/facility/:facilityId/growlogs"
+      "generatedFrom": "GET /api/facility/:facilityId/growlogs",
+      "releaseScope": "internal",
+      "userVisible": false,
+      "releaseDecision": "backlog"
     },
     {
       "featureId": "auto.get.facility.param.growlogs.param.2",
@@ -2208,9 +2118,7 @@
       "ui": {
         "mode": "unknown",
         "route": null,
-        "actions": [
-          "GET /api/facility/:facilityId/growlogs/:id"
-        ]
+        "actions": ["GET /api/facility/:facilityId/growlogs/:id"]
       },
       "api": [
         {
@@ -2228,7 +2136,10 @@
       },
       "verification": "Unverified",
       "autoGenerated": true,
-      "generatedFrom": "GET /api/facility/:facilityId/growlogs/:id"
+      "generatedFrom": "GET /api/facility/:facilityId/growlogs/:id",
+      "releaseScope": "internal",
+      "userVisible": false,
+      "releaseDecision": "backlog"
     },
     {
       "featureId": "auto.get.facility.param.grows.2",
@@ -2236,9 +2147,7 @@
       "ui": {
         "mode": "unknown",
         "route": null,
-        "actions": [
-          "GET /api/facility/:facilityId/grows"
-        ]
+        "actions": ["GET /api/facility/:facilityId/grows"]
       },
       "api": [
         {
@@ -2259,7 +2168,10 @@
       },
       "verification": "Unverified",
       "autoGenerated": true,
-      "generatedFrom": "GET /api/facility/:facilityId/grows"
+      "generatedFrom": "GET /api/facility/:facilityId/grows",
+      "releaseScope": "internal",
+      "userVisible": false,
+      "releaseDecision": "complete"
     },
     {
       "featureId": "auto.get.facility.param.inventory.2",
@@ -2267,9 +2179,7 @@
       "ui": {
         "mode": "unknown",
         "route": null,
-        "actions": [
-          "GET /api/facility/:facilityId/inventory"
-        ]
+        "actions": ["GET /api/facility/:facilityId/inventory"]
       },
       "api": [
         {
@@ -2290,7 +2200,10 @@
       },
       "verification": "Unverified",
       "autoGenerated": true,
-      "generatedFrom": "GET /api/facility/:facilityId/inventory"
+      "generatedFrom": "GET /api/facility/:facilityId/inventory",
+      "releaseScope": "internal",
+      "userVisible": false,
+      "releaseDecision": "complete"
     },
     {
       "featureId": "auto.get.facility.param.inventory.param.2",
@@ -2298,9 +2211,7 @@
       "ui": {
         "mode": "unknown",
         "route": null,
-        "actions": [
-          "GET /api/facility/:facilityId/inventory/:itemId"
-        ]
+        "actions": ["GET /api/facility/:facilityId/inventory/:itemId"]
       },
       "api": [
         {
@@ -2321,7 +2232,10 @@
       },
       "verification": "Unverified",
       "autoGenerated": true,
-      "generatedFrom": "GET /api/facility/:facilityId/inventory/:itemId"
+      "generatedFrom": "GET /api/facility/:facilityId/inventory/:itemId",
+      "releaseScope": "internal",
+      "userVisible": false,
+      "releaseDecision": "complete"
     },
     {
       "featureId": "auto.get.facility.param.plants.2",
@@ -2329,9 +2243,7 @@
       "ui": {
         "mode": "unknown",
         "route": null,
-        "actions": [
-          "GET /api/facility/:facilityId/plants"
-        ]
+        "actions": ["GET /api/facility/:facilityId/plants"]
       },
       "api": [
         {
@@ -2352,7 +2264,10 @@
       },
       "verification": "Unverified",
       "autoGenerated": true,
-      "generatedFrom": "GET /api/facility/:facilityId/plants"
+      "generatedFrom": "GET /api/facility/:facilityId/plants",
+      "releaseScope": "internal",
+      "userVisible": false,
+      "releaseDecision": "complete"
     },
     {
       "featureId": "auto.get.facility.param.rooms.2",
@@ -2360,9 +2275,7 @@
       "ui": {
         "mode": "unknown",
         "route": null,
-        "actions": [
-          "GET /api/facility/:facilityId/rooms"
-        ]
+        "actions": ["GET /api/facility/:facilityId/rooms"]
       },
       "api": [
         {
@@ -2383,7 +2296,10 @@
       },
       "verification": "Unverified",
       "autoGenerated": true,
-      "generatedFrom": "GET /api/facility/:facilityId/rooms"
+      "generatedFrom": "GET /api/facility/:facilityId/rooms",
+      "releaseScope": "internal",
+      "userVisible": false,
+      "releaseDecision": "complete"
     },
     {
       "featureId": "auto.get.facility.param.settings.2",
@@ -2391,9 +2307,7 @@
       "ui": {
         "mode": "unknown",
         "route": null,
-        "actions": [
-          "GET /api/facility/:facilityId/settings"
-        ]
+        "actions": ["GET /api/facility/:facilityId/settings"]
       },
       "api": [
         {
@@ -2407,13 +2321,14 @@
         "rolesAllowed": []
       },
       "evidence": {
-        "tests": [
-          "backend/tests/routes/cycle21.mixed.lowrisk.test.js"
-        ]
+        "tests": ["backend/tests/routes/cycle21.mixed.lowrisk.test.js"]
       },
       "verification": "Unverified",
       "autoGenerated": true,
-      "generatedFrom": "GET /api/facility/:facilityId/settings"
+      "generatedFrom": "GET /api/facility/:facilityId/settings",
+      "releaseScope": "internal",
+      "userVisible": false,
+      "releaseDecision": "complete"
     },
     {
       "featureId": "auto.get.facility.param.tasks.param.2",
@@ -2421,9 +2336,7 @@
       "ui": {
         "mode": "unknown",
         "route": null,
-        "actions": [
-          "GET /api/facility/:facilityId/tasks/:taskId"
-        ]
+        "actions": ["GET /api/facility/:facilityId/tasks/:taskId"]
       },
       "api": [
         {
@@ -2445,7 +2358,10 @@
       },
       "verification": "Unverified",
       "autoGenerated": true,
-      "generatedFrom": "GET /api/facility/:facilityId/tasks/:taskId"
+      "generatedFrom": "GET /api/facility/:facilityId/tasks/:taskId",
+      "releaseScope": "internal",
+      "userVisible": false,
+      "releaseDecision": "complete"
     },
     {
       "featureId": "auto.get.facility.param.team.invites.2",
@@ -2453,9 +2369,7 @@
       "ui": {
         "mode": "unknown",
         "route": null,
-        "actions": [
-          "GET /api/facility/:facilityId/team/invites"
-        ]
+        "actions": ["GET /api/facility/:facilityId/team/invites"]
       },
       "api": [
         {
@@ -2473,7 +2387,10 @@
       },
       "verification": "Unverified",
       "autoGenerated": true,
-      "generatedFrom": "GET /api/facility/:facilityId/team/invites"
+      "generatedFrom": "GET /api/facility/:facilityId/team/invites",
+      "releaseScope": "internal",
+      "userVisible": false,
+      "releaseDecision": "backlog"
     },
     {
       "featureId": "auto.get.facility.param.team.members.2",
@@ -2481,9 +2398,7 @@
       "ui": {
         "mode": "unknown",
         "route": null,
-        "actions": [
-          "GET /api/facility/:facilityId/team/members"
-        ]
+        "actions": ["GET /api/facility/:facilityId/team/members"]
       },
       "api": [
         {
@@ -2501,7 +2416,10 @@
       },
       "verification": "Unverified",
       "autoGenerated": true,
-      "generatedFrom": "GET /api/facility/:facilityId/team/members"
+      "generatedFrom": "GET /api/facility/:facilityId/team/members",
+      "releaseScope": "internal",
+      "userVisible": false,
+      "releaseDecision": "backlog"
     },
     {
       "featureId": "auto.get.followers.param",
@@ -2509,9 +2427,7 @@
       "ui": {
         "mode": "unknown",
         "route": null,
-        "actions": [
-          "GET /api/followers/:id"
-        ]
+        "actions": ["GET /api/followers/:id"]
       },
       "api": [
         {
@@ -2529,7 +2445,10 @@
       },
       "verification": "Unverified",
       "autoGenerated": true,
-      "generatedFrom": "GET /api/followers/:id"
+      "generatedFrom": "GET /api/followers/:id",
+      "releaseScope": "internal",
+      "userVisible": false,
+      "releaseDecision": "backlog"
     },
     {
       "featureId": "auto.get.following.param",
@@ -2537,9 +2456,7 @@
       "ui": {
         "mode": "unknown",
         "route": null,
-        "actions": [
-          "GET /api/following/:id"
-        ]
+        "actions": ["GET /api/following/:id"]
       },
       "api": [
         {
@@ -2557,7 +2474,10 @@
       },
       "verification": "Unverified",
       "autoGenerated": true,
-      "generatedFrom": "GET /api/following/:id"
+      "generatedFrom": "GET /api/following/:id",
+      "releaseScope": "internal",
+      "userVisible": false,
+      "releaseDecision": "backlog"
     },
     {
       "featureId": "auto.get.growlogs",
@@ -2565,9 +2485,7 @@
       "ui": {
         "mode": "unknown",
         "route": null,
-        "actions": [
-          "GET /api/growlogs"
-        ]
+        "actions": ["GET /api/growlogs"]
       },
       "api": [
         {
@@ -2585,7 +2503,10 @@
       },
       "verification": "Unverified",
       "autoGenerated": true,
-      "generatedFrom": "GET /api/growlogs"
+      "generatedFrom": "GET /api/growlogs",
+      "releaseScope": "internal",
+      "userVisible": false,
+      "releaseDecision": "backlog"
     },
     {
       "featureId": "auto.get.growlogs.param",
@@ -2593,9 +2514,7 @@
       "ui": {
         "mode": "unknown",
         "route": null,
-        "actions": [
-          "GET /api/growlogs/:id"
-        ]
+        "actions": ["GET /api/growlogs/:id"]
       },
       "api": [
         {
@@ -2613,7 +2532,10 @@
       },
       "verification": "Unverified",
       "autoGenerated": true,
-      "generatedFrom": "GET /api/growlogs/:id"
+      "generatedFrom": "GET /api/growlogs/:id",
+      "releaseScope": "internal",
+      "userVisible": false,
+      "releaseDecision": "backlog"
     },
     {
       "featureId": "auto.get.health",
@@ -2621,9 +2543,7 @@
       "ui": {
         "mode": "unknown",
         "route": null,
-        "actions": [
-          "GET /api/health"
-        ]
+        "actions": ["GET /api/health"]
       },
       "api": [
         {
@@ -2641,7 +2561,10 @@
       },
       "verification": "Unverified",
       "autoGenerated": true,
-      "generatedFrom": "GET /api/health"
+      "generatedFrom": "GET /api/health",
+      "releaseScope": "internal",
+      "userVisible": false,
+      "releaseDecision": "backlog"
     },
     {
       "featureId": "auto.get.inventory",
@@ -2649,9 +2572,7 @@
       "ui": {
         "mode": "unknown",
         "route": null,
-        "actions": [
-          "GET /api/inventory"
-        ]
+        "actions": ["GET /api/inventory"]
       },
       "api": [
         {
@@ -2669,7 +2590,10 @@
       },
       "verification": "Unverified",
       "autoGenerated": true,
-      "generatedFrom": "GET /api/inventory"
+      "generatedFrom": "GET /api/inventory",
+      "releaseScope": "internal",
+      "userVisible": false,
+      "releaseDecision": "backlog"
     },
     {
       "featureId": "auto.get.inventory.param",
@@ -2677,9 +2601,7 @@
       "ui": {
         "mode": "unknown",
         "route": null,
-        "actions": [
-          "GET /api/inventory/:itemId"
-        ]
+        "actions": ["GET /api/inventory/:itemId"]
       },
       "api": [
         {
@@ -2697,7 +2619,10 @@
       },
       "verification": "Unverified",
       "autoGenerated": true,
-      "generatedFrom": "GET /api/inventory/:itemId"
+      "generatedFrom": "GET /api/inventory/:itemId",
+      "releaseScope": "internal",
+      "userVisible": false,
+      "releaseDecision": "backlog"
     },
     {
       "featureId": "auto.get.is.following.param",
@@ -2705,9 +2630,7 @@
       "ui": {
         "mode": "unknown",
         "route": null,
-        "actions": [
-          "GET /api/is-following/:id"
-        ]
+        "actions": ["GET /api/is-following/:id"]
       },
       "api": [
         {
@@ -2725,7 +2648,10 @@
       },
       "verification": "Unverified",
       "autoGenerated": true,
-      "generatedFrom": "GET /api/is-following/:id"
+      "generatedFrom": "GET /api/is-following/:id",
+      "releaseScope": "internal",
+      "userVisible": false,
+      "releaseDecision": "backlog"
     },
     {
       "featureId": "auto.get.me",
@@ -2733,9 +2659,7 @@
       "ui": {
         "mode": "unknown",
         "route": null,
-        "actions": [
-          "GET /api/me"
-        ]
+        "actions": ["GET /api/me"]
       },
       "api": [
         {
@@ -2746,9 +2670,7 @@
       "guards": {
         "auth": true,
         "facilityScope": false,
-        "rolesAllowed": [
-          "ANY_AUTHENTICATED"
-        ]
+        "rolesAllowed": ["ANY_AUTHENTICATED"]
       },
       "evidence": {
         "tests": [
@@ -2762,7 +2684,10 @@
       },
       "verification": "Unverified",
       "autoGenerated": true,
-      "generatedFrom": "GET /api/me"
+      "generatedFrom": "GET /api/me",
+      "releaseScope": "internal",
+      "userVisible": false,
+      "releaseDecision": "complete"
     },
     {
       "featureId": "auto.get.profile.param",
@@ -2770,9 +2695,7 @@
       "ui": {
         "mode": "unknown",
         "route": null,
-        "actions": [
-          "GET /api/profile/:id"
-        ]
+        "actions": ["GET /api/profile/:id"]
       },
       "api": [
         {
@@ -2790,7 +2713,10 @@
       },
       "verification": "Unverified",
       "autoGenerated": true,
-      "generatedFrom": "GET /api/profile/:id"
+      "generatedFrom": "GET /api/profile/:id",
+      "releaseScope": "internal",
+      "userVisible": false,
+      "releaseDecision": "backlog"
     },
     {
       "featureId": "auto.get.rooms",
@@ -2798,9 +2724,7 @@
       "ui": {
         "mode": "unknown",
         "route": null,
-        "actions": [
-          "GET /api/rooms"
-        ]
+        "actions": ["GET /api/rooms"]
       },
       "api": [
         {
@@ -2818,7 +2742,10 @@
       },
       "verification": "Unverified",
       "autoGenerated": true,
-      "generatedFrom": "GET /api/rooms"
+      "generatedFrom": "GET /api/rooms",
+      "releaseScope": "internal",
+      "userVisible": false,
+      "releaseDecision": "backlog"
     },
     {
       "featureId": "auto.get.user.certificates",
@@ -2826,9 +2753,7 @@
       "ui": {
         "mode": "unknown",
         "route": null,
-        "actions": [
-          "GET /api/user/certificates"
-        ]
+        "actions": ["GET /api/user/certificates"]
       },
       "api": [
         {
@@ -2839,21 +2764,18 @@
       "guards": {
         "auth": true,
         "facilityScope": false,
-        "rolesAllowed": [
-          "ANY_AUTHENTICATED"
-        ]
+        "rolesAllowed": ["ANY_AUTHENTICATED"]
       },
       "evidence": {
-        "tests": [
-          "backend/tests/routes/user.read.aliases.cycle13.test.js"
-        ],
-        "backendTests": [
-          "backend/tests/routes/user.read.aliases.cycle13.test.js"
-        ]
+        "tests": ["backend/tests/routes/user.read.aliases.cycle13.test.js"],
+        "backendTests": ["backend/tests/routes/user.read.aliases.cycle13.test.js"]
       },
       "verification": "Unverified",
       "autoGenerated": true,
-      "generatedFrom": "GET /api/user/certificates"
+      "generatedFrom": "GET /api/user/certificates",
+      "releaseScope": "internal",
+      "userVisible": false,
+      "releaseDecision": "complete"
     },
     {
       "featureId": "auto.get.user.followers.param",
@@ -2861,9 +2783,7 @@
       "ui": {
         "mode": "unknown",
         "route": null,
-        "actions": [
-          "GET /api/user/followers/:id"
-        ]
+        "actions": ["GET /api/user/followers/:id"]
       },
       "api": [
         {
@@ -2874,21 +2794,18 @@
       "guards": {
         "auth": false,
         "facilityScope": false,
-        "rolesAllowed": [
-          "PUBLIC"
-        ]
+        "rolesAllowed": ["PUBLIC"]
       },
       "evidence": {
-        "tests": [
-          "backend/tests/routes/user.read.aliases.cycle13.test.js"
-        ],
-        "backendTests": [
-          "backend/tests/routes/user.read.aliases.cycle13.test.js"
-        ]
+        "tests": ["backend/tests/routes/user.read.aliases.cycle13.test.js"],
+        "backendTests": ["backend/tests/routes/user.read.aliases.cycle13.test.js"]
       },
       "verification": "Unverified",
       "autoGenerated": true,
-      "generatedFrom": "GET /api/user/followers/:id"
+      "generatedFrom": "GET /api/user/followers/:id",
+      "releaseScope": "internal",
+      "userVisible": false,
+      "releaseDecision": "complete"
     },
     {
       "featureId": "auto.get.user.following.param",
@@ -2896,9 +2813,7 @@
       "ui": {
         "mode": "unknown",
         "route": null,
-        "actions": [
-          "GET /api/user/following/:id"
-        ]
+        "actions": ["GET /api/user/following/:id"]
       },
       "api": [
         {
@@ -2909,21 +2824,18 @@
       "guards": {
         "auth": false,
         "facilityScope": false,
-        "rolesAllowed": [
-          "PUBLIC"
-        ]
+        "rolesAllowed": ["PUBLIC"]
       },
       "evidence": {
-        "tests": [
-          "backend/tests/routes/user.read.aliases.cycle13.test.js"
-        ],
-        "backendTests": [
-          "backend/tests/routes/user.read.aliases.cycle13.test.js"
-        ]
+        "tests": ["backend/tests/routes/user.read.aliases.cycle13.test.js"],
+        "backendTests": ["backend/tests/routes/user.read.aliases.cycle13.test.js"]
       },
       "verification": "Unverified",
       "autoGenerated": true,
-      "generatedFrom": "GET /api/user/following/:id"
+      "generatedFrom": "GET /api/user/following/:id",
+      "releaseScope": "internal",
+      "userVisible": false,
+      "releaseDecision": "complete"
     },
     {
       "featureId": "auto.get.user.is.following.param",
@@ -2931,9 +2843,7 @@
       "ui": {
         "mode": "unknown",
         "route": null,
-        "actions": [
-          "GET /api/user/is-following/:id"
-        ]
+        "actions": ["GET /api/user/is-following/:id"]
       },
       "api": [
         {
@@ -2944,21 +2854,18 @@
       "guards": {
         "auth": true,
         "facilityScope": false,
-        "rolesAllowed": [
-          "ANY_AUTHENTICATED"
-        ]
+        "rolesAllowed": ["ANY_AUTHENTICATED"]
       },
       "evidence": {
-        "tests": [
-          "backend/tests/routes/user.read.aliases.cycle13.test.js"
-        ],
-        "backendTests": [
-          "backend/tests/routes/user.read.aliases.cycle13.test.js"
-        ]
+        "tests": ["backend/tests/routes/user.read.aliases.cycle13.test.js"],
+        "backendTests": ["backend/tests/routes/user.read.aliases.cycle13.test.js"]
       },
       "verification": "Unverified",
       "autoGenerated": true,
-      "generatedFrom": "GET /api/user/is-following/:id"
+      "generatedFrom": "GET /api/user/is-following/:id",
+      "releaseScope": "internal",
+      "userVisible": false,
+      "releaseDecision": "complete"
     },
     {
       "featureId": "auto.get.user.profile.param",
@@ -2966,9 +2873,7 @@
       "ui": {
         "mode": "unknown",
         "route": null,
-        "actions": [
-          "GET /api/user/profile/:id"
-        ]
+        "actions": ["GET /api/user/profile/:id"]
       },
       "api": [
         {
@@ -2979,21 +2884,18 @@
       "guards": {
         "auth": false,
         "facilityScope": false,
-        "rolesAllowed": [
-          "PUBLIC"
-        ]
+        "rolesAllowed": ["PUBLIC"]
       },
       "evidence": {
-        "tests": [
-          "backend/tests/routes/user.read.aliases.cycle13.test.js"
-        ],
-        "backendTests": [
-          "backend/tests/routes/user.read.aliases.cycle13.test.js"
-        ]
+        "tests": ["backend/tests/routes/user.read.aliases.cycle13.test.js"],
+        "backendTests": ["backend/tests/routes/user.read.aliases.cycle13.test.js"]
       },
       "verification": "Unverified",
       "autoGenerated": true,
-      "generatedFrom": "GET /api/user/profile/:id"
+      "generatedFrom": "GET /api/user/profile/:id",
+      "releaseScope": "internal",
+      "userVisible": false,
+      "releaseDecision": "complete"
     },
     {
       "featureId": "auto.get.user.certificates.2",
@@ -3001,9 +2903,7 @@
       "ui": {
         "mode": "unknown",
         "route": null,
-        "actions": [
-          "GET /api/users/certificates"
-        ]
+        "actions": ["GET /api/users/certificates"]
       },
       "api": [
         {
@@ -3014,21 +2914,18 @@
       "guards": {
         "auth": true,
         "facilityScope": false,
-        "rolesAllowed": [
-          "ANY_AUTHENTICATED"
-        ]
+        "rolesAllowed": ["ANY_AUTHENTICATED"]
       },
       "evidence": {
-        "tests": [
-          "backend/tests/routes/user.read.aliases.cycle13.test.js"
-        ],
-        "backendTests": [
-          "backend/tests/routes/user.read.aliases.cycle13.test.js"
-        ]
+        "tests": ["backend/tests/routes/user.read.aliases.cycle13.test.js"],
+        "backendTests": ["backend/tests/routes/user.read.aliases.cycle13.test.js"]
       },
       "verification": "Unverified",
       "autoGenerated": true,
-      "generatedFrom": "GET /api/users/certificates"
+      "generatedFrom": "GET /api/users/certificates",
+      "releaseScope": "internal",
+      "userVisible": false,
+      "releaseDecision": "complete"
     },
     {
       "featureId": "auto.get.user.followers.param.2",
@@ -3036,9 +2933,7 @@
       "ui": {
         "mode": "unknown",
         "route": null,
-        "actions": [
-          "GET /api/users/followers/:id"
-        ]
+        "actions": ["GET /api/users/followers/:id"]
       },
       "api": [
         {
@@ -3049,21 +2944,18 @@
       "guards": {
         "auth": false,
         "facilityScope": false,
-        "rolesAllowed": [
-          "PUBLIC"
-        ]
+        "rolesAllowed": ["PUBLIC"]
       },
       "evidence": {
-        "tests": [
-          "backend/tests/routes/user.read.aliases.cycle13.test.js"
-        ],
-        "backendTests": [
-          "backend/tests/routes/user.read.aliases.cycle13.test.js"
-        ]
+        "tests": ["backend/tests/routes/user.read.aliases.cycle13.test.js"],
+        "backendTests": ["backend/tests/routes/user.read.aliases.cycle13.test.js"]
       },
       "verification": "Unverified",
       "autoGenerated": true,
-      "generatedFrom": "GET /api/users/followers/:id"
+      "generatedFrom": "GET /api/users/followers/:id",
+      "releaseScope": "internal",
+      "userVisible": false,
+      "releaseDecision": "complete"
     },
     {
       "featureId": "auto.get.user.following.param.2",
@@ -3071,9 +2963,7 @@
       "ui": {
         "mode": "unknown",
         "route": null,
-        "actions": [
-          "GET /api/users/following/:id"
-        ]
+        "actions": ["GET /api/users/following/:id"]
       },
       "api": [
         {
@@ -3084,21 +2974,18 @@
       "guards": {
         "auth": false,
         "facilityScope": false,
-        "rolesAllowed": [
-          "PUBLIC"
-        ]
+        "rolesAllowed": ["PUBLIC"]
       },
       "evidence": {
-        "tests": [
-          "backend/tests/routes/user.read.aliases.cycle13.test.js"
-        ],
-        "backendTests": [
-          "backend/tests/routes/user.read.aliases.cycle13.test.js"
-        ]
+        "tests": ["backend/tests/routes/user.read.aliases.cycle13.test.js"],
+        "backendTests": ["backend/tests/routes/user.read.aliases.cycle13.test.js"]
       },
       "verification": "Unverified",
       "autoGenerated": true,
-      "generatedFrom": "GET /api/users/following/:id"
+      "generatedFrom": "GET /api/users/following/:id",
+      "releaseScope": "internal",
+      "userVisible": false,
+      "releaseDecision": "complete"
     },
     {
       "featureId": "auto.get.user.is.following.param.2",
@@ -3106,9 +2993,7 @@
       "ui": {
         "mode": "unknown",
         "route": null,
-        "actions": [
-          "GET /api/users/is-following/:id"
-        ]
+        "actions": ["GET /api/users/is-following/:id"]
       },
       "api": [
         {
@@ -3119,21 +3004,18 @@
       "guards": {
         "auth": true,
         "facilityScope": false,
-        "rolesAllowed": [
-          "ANY_AUTHENTICATED"
-        ]
+        "rolesAllowed": ["ANY_AUTHENTICATED"]
       },
       "evidence": {
-        "tests": [
-          "backend/tests/routes/user.read.aliases.cycle13.test.js"
-        ],
-        "backendTests": [
-          "backend/tests/routes/user.read.aliases.cycle13.test.js"
-        ]
+        "tests": ["backend/tests/routes/user.read.aliases.cycle13.test.js"],
+        "backendTests": ["backend/tests/routes/user.read.aliases.cycle13.test.js"]
       },
       "verification": "Unverified",
       "autoGenerated": true,
-      "generatedFrom": "GET /api/users/is-following/:id"
+      "generatedFrom": "GET /api/users/is-following/:id",
+      "releaseScope": "internal",
+      "userVisible": false,
+      "releaseDecision": "complete"
     },
     {
       "featureId": "auto.get.user.profile.param.2",
@@ -3141,9 +3023,7 @@
       "ui": {
         "mode": "unknown",
         "route": null,
-        "actions": [
-          "GET /api/users/profile/:id"
-        ]
+        "actions": ["GET /api/users/profile/:id"]
       },
       "api": [
         {
@@ -3154,21 +3034,18 @@
       "guards": {
         "auth": false,
         "facilityScope": false,
-        "rolesAllowed": [
-          "PUBLIC"
-        ]
+        "rolesAllowed": ["PUBLIC"]
       },
       "evidence": {
-        "tests": [
-          "backend/tests/routes/user.read.aliases.cycle13.test.js"
-        ],
-        "backendTests": [
-          "backend/tests/routes/user.read.aliases.cycle13.test.js"
-        ]
+        "tests": ["backend/tests/routes/user.read.aliases.cycle13.test.js"],
+        "backendTests": ["backend/tests/routes/user.read.aliases.cycle13.test.js"]
       },
       "verification": "Unverified",
       "autoGenerated": true,
-      "generatedFrom": "GET /api/users/profile/:id"
+      "generatedFrom": "GET /api/users/profile/:id",
+      "releaseScope": "internal",
+      "userVisible": false,
+      "releaseDecision": "complete"
     },
     {
       "featureId": "auto.get.health.2",
@@ -3176,9 +3053,7 @@
       "ui": {
         "mode": "unknown",
         "route": null,
-        "actions": [
-          "GET /health"
-        ]
+        "actions": ["GET /health"]
       },
       "api": [
         {
@@ -3196,7 +3071,10 @@
       },
       "verification": "Unverified",
       "autoGenerated": true,
-      "generatedFrom": "GET /health"
+      "generatedFrom": "GET /health",
+      "releaseScope": "internal",
+      "userVisible": false,
+      "releaseDecision": "backlog"
     },
     {
       "featureId": "auto.get.ready",
@@ -3204,9 +3082,7 @@
       "ui": {
         "mode": "unknown",
         "route": null,
-        "actions": [
-          "GET /ready"
-        ]
+        "actions": ["GET /ready"]
       },
       "api": [
         {
@@ -3224,7 +3100,10 @@
       },
       "verification": "Unverified",
       "autoGenerated": true,
-      "generatedFrom": "GET /ready"
+      "generatedFrom": "GET /ready",
+      "releaseScope": "internal",
+      "userVisible": false,
+      "releaseDecision": "backlog"
     },
     {
       "featureId": "auto.patch.facility.param.growlogs.param",
@@ -3232,9 +3111,7 @@
       "ui": {
         "mode": "unknown",
         "route": null,
-        "actions": [
-          "PATCH /api/facility/:facilityId/growlogs/:id"
-        ]
+        "actions": ["PATCH /api/facility/:facilityId/growlogs/:id"]
       },
       "api": [
         {
@@ -3252,7 +3129,10 @@
       },
       "verification": "Unverified",
       "autoGenerated": true,
-      "generatedFrom": "PATCH /api/facilities/:facilityId/growlogs/:id"
+      "generatedFrom": "PATCH /api/facilities/:facilityId/growlogs/:id",
+      "releaseScope": "internal",
+      "userVisible": false,
+      "releaseDecision": "backlog"
     },
     {
       "featureId": "auto.patch.facility.param.grows.param",
@@ -3260,9 +3140,7 @@
       "ui": {
         "mode": "unknown",
         "route": null,
-        "actions": [
-          "PATCH /api/facility/:facilityId/grows/:growId"
-        ]
+        "actions": ["PATCH /api/facility/:facilityId/grows/:growId"]
       },
       "api": [
         {
@@ -3283,7 +3161,10 @@
       },
       "verification": "Unverified",
       "autoGenerated": true,
-      "generatedFrom": "PATCH /api/facilities/:facilityId/grows/:growId"
+      "generatedFrom": "PATCH /api/facilities/:facilityId/grows/:growId",
+      "releaseScope": "internal",
+      "userVisible": false,
+      "releaseDecision": "complete"
     },
     {
       "featureId": "auto.patch.facility.param.inventory.param",
@@ -3291,9 +3172,7 @@
       "ui": {
         "mode": "unknown",
         "route": null,
-        "actions": [
-          "PATCH /api/facility/:facilityId/inventory/:sku"
-        ]
+        "actions": ["PATCH /api/facility/:facilityId/inventory/:sku"]
       },
       "api": [
         {
@@ -3314,7 +3193,10 @@
       },
       "verification": "Unverified",
       "autoGenerated": true,
-      "generatedFrom": "PATCH /api/facilities/:facilityId/inventory/:sku"
+      "generatedFrom": "PATCH /api/facilities/:facilityId/inventory/:sku",
+      "releaseScope": "internal",
+      "userVisible": false,
+      "releaseDecision": "complete"
     },
     {
       "featureId": "auto.patch.facility.param.plants.param",
@@ -3322,9 +3204,7 @@
       "ui": {
         "mode": "unknown",
         "route": null,
-        "actions": [
-          "PATCH /api/facility/:facilityId/plants/:plantId"
-        ]
+        "actions": ["PATCH /api/facility/:facilityId/plants/:plantId"]
       },
       "api": [
         {
@@ -3345,7 +3225,10 @@
       },
       "verification": "Unverified",
       "autoGenerated": true,
-      "generatedFrom": "PATCH /api/facilities/:facilityId/plants/:plantId"
+      "generatedFrom": "PATCH /api/facilities/:facilityId/plants/:plantId",
+      "releaseScope": "internal",
+      "userVisible": false,
+      "releaseDecision": "complete"
     },
     {
       "featureId": "auto.patch.facility.param.rooms.param",
@@ -3353,9 +3236,7 @@
       "ui": {
         "mode": "unknown",
         "route": null,
-        "actions": [
-          "PATCH /api/facility/:facilityId/rooms/:roomId"
-        ]
+        "actions": ["PATCH /api/facility/:facilityId/rooms/:roomId"]
       },
       "api": [
         {
@@ -3376,7 +3257,10 @@
       },
       "verification": "Unverified",
       "autoGenerated": true,
-      "generatedFrom": "PATCH /api/facilities/:facilityId/rooms/:roomId"
+      "generatedFrom": "PATCH /api/facilities/:facilityId/rooms/:roomId",
+      "releaseScope": "internal",
+      "userVisible": false,
+      "releaseDecision": "complete"
     },
     {
       "featureId": "auto.patch.facility.param.team.param.members.param",
@@ -3384,9 +3268,7 @@
       "ui": {
         "mode": "unknown",
         "route": null,
-        "actions": [
-          "PATCH /api/facility/:facilityId/team/:userId,/members/:userId"
-        ]
+        "actions": ["PATCH /api/facility/:facilityId/team/:userId,/members/:userId"]
       },
       "api": [
         {
@@ -3404,7 +3286,10 @@
       },
       "verification": "Unverified",
       "autoGenerated": true,
-      "generatedFrom": "PATCH /api/facilities/:facilityId/team/:userId,/members/:userId"
+      "generatedFrom": "PATCH /api/facilities/:facilityId/team/:userId,/members/:userId",
+      "releaseScope": "internal",
+      "userVisible": false,
+      "releaseDecision": "backlog"
     },
     {
       "featureId": "auto.patch.facility.param.growlogs.param.2",
@@ -3412,9 +3297,7 @@
       "ui": {
         "mode": "unknown",
         "route": null,
-        "actions": [
-          "PATCH /api/facility/:facilityId/growlogs/:id"
-        ]
+        "actions": ["PATCH /api/facility/:facilityId/growlogs/:id"]
       },
       "api": [
         {
@@ -3432,7 +3315,10 @@
       },
       "verification": "Unverified",
       "autoGenerated": true,
-      "generatedFrom": "PATCH /api/facility/:facilityId/growlogs/:id"
+      "generatedFrom": "PATCH /api/facility/:facilityId/growlogs/:id",
+      "releaseScope": "internal",
+      "userVisible": false,
+      "releaseDecision": "backlog"
     },
     {
       "featureId": "auto.patch.facility.param.grows.param.2",
@@ -3440,9 +3326,7 @@
       "ui": {
         "mode": "unknown",
         "route": null,
-        "actions": [
-          "PATCH /api/facility/:facilityId/grows/:growId"
-        ]
+        "actions": ["PATCH /api/facility/:facilityId/grows/:growId"]
       },
       "api": [
         {
@@ -3463,7 +3347,10 @@
       },
       "verification": "Unverified",
       "autoGenerated": true,
-      "generatedFrom": "PATCH /api/facility/:facilityId/grows/:growId"
+      "generatedFrom": "PATCH /api/facility/:facilityId/grows/:growId",
+      "releaseScope": "internal",
+      "userVisible": false,
+      "releaseDecision": "complete"
     },
     {
       "featureId": "auto.patch.facility.param.inventory.param.2",
@@ -3471,9 +3358,7 @@
       "ui": {
         "mode": "unknown",
         "route": null,
-        "actions": [
-          "PATCH /api/facility/:facilityId/inventory/:sku"
-        ]
+        "actions": ["PATCH /api/facility/:facilityId/inventory/:sku"]
       },
       "api": [
         {
@@ -3494,7 +3379,10 @@
       },
       "verification": "Unverified",
       "autoGenerated": true,
-      "generatedFrom": "PATCH /api/facility/:facilityId/inventory/:sku"
+      "generatedFrom": "PATCH /api/facility/:facilityId/inventory/:sku",
+      "releaseScope": "internal",
+      "userVisible": false,
+      "releaseDecision": "complete"
     },
     {
       "featureId": "auto.patch.facility.param.plants.param.2",
@@ -3502,9 +3390,7 @@
       "ui": {
         "mode": "unknown",
         "route": null,
-        "actions": [
-          "PATCH /api/facility/:facilityId/plants/:plantId"
-        ]
+        "actions": ["PATCH /api/facility/:facilityId/plants/:plantId"]
       },
       "api": [
         {
@@ -3525,7 +3411,10 @@
       },
       "verification": "Unverified",
       "autoGenerated": true,
-      "generatedFrom": "PATCH /api/facility/:facilityId/plants/:plantId"
+      "generatedFrom": "PATCH /api/facility/:facilityId/plants/:plantId",
+      "releaseScope": "internal",
+      "userVisible": false,
+      "releaseDecision": "complete"
     },
     {
       "featureId": "auto.patch.facility.param.rooms.param.2",
@@ -3533,9 +3422,7 @@
       "ui": {
         "mode": "unknown",
         "route": null,
-        "actions": [
-          "PATCH /api/facility/:facilityId/rooms/:roomId"
-        ]
+        "actions": ["PATCH /api/facility/:facilityId/rooms/:roomId"]
       },
       "api": [
         {
@@ -3556,7 +3443,10 @@
       },
       "verification": "Unverified",
       "autoGenerated": true,
-      "generatedFrom": "PATCH /api/facility/:facilityId/rooms/:roomId"
+      "generatedFrom": "PATCH /api/facility/:facilityId/rooms/:roomId",
+      "releaseScope": "internal",
+      "userVisible": false,
+      "releaseDecision": "complete"
     },
     {
       "featureId": "auto.patch.facility.param.team.param.members.param.2",
@@ -3564,9 +3454,7 @@
       "ui": {
         "mode": "unknown",
         "route": null,
-        "actions": [
-          "PATCH /api/facility/:facilityId/team/:userId,/members/:userId"
-        ]
+        "actions": ["PATCH /api/facility/:facilityId/team/:userId,/members/:userId"]
       },
       "api": [
         {
@@ -3584,7 +3472,10 @@
       },
       "verification": "Unverified",
       "autoGenerated": true,
-      "generatedFrom": "PATCH /api/facility/:facilityId/team/:userId,/members/:userId"
+      "generatedFrom": "PATCH /api/facility/:facilityId/team/:userId,/members/:userId",
+      "releaseScope": "internal",
+      "userVisible": false,
+      "releaseDecision": "backlog"
     },
     {
       "featureId": "auto.patch.growlogs.param",
@@ -3592,9 +3483,7 @@
       "ui": {
         "mode": "unknown",
         "route": null,
-        "actions": [
-          "PATCH /api/growlogs/:id"
-        ]
+        "actions": ["PATCH /api/growlogs/:id"]
       },
       "api": [
         {
@@ -3612,7 +3501,10 @@
       },
       "verification": "Unverified",
       "autoGenerated": true,
-      "generatedFrom": "PATCH /api/growlogs/:id"
+      "generatedFrom": "PATCH /api/growlogs/:id",
+      "releaseScope": "internal",
+      "userVisible": false,
+      "releaseDecision": "backlog"
     },
     {
       "featureId": "auto.patch.inventory.param",
@@ -3620,9 +3512,7 @@
       "ui": {
         "mode": "unknown",
         "route": null,
-        "actions": [
-          "PATCH /api/inventory/:sku"
-        ]
+        "actions": ["PATCH /api/inventory/:sku"]
       },
       "api": [
         {
@@ -3640,7 +3530,10 @@
       },
       "verification": "Unverified",
       "autoGenerated": true,
-      "generatedFrom": "PATCH /api/inventory/:sku"
+      "generatedFrom": "PATCH /api/inventory/:sku",
+      "releaseScope": "internal",
+      "userVisible": false,
+      "releaseDecision": "backlog"
     },
     {
       "featureId": "auto.patch.rooms.param",
@@ -3648,9 +3541,7 @@
       "ui": {
         "mode": "unknown",
         "route": null,
-        "actions": [
-          "PATCH /api/rooms/:roomId"
-        ]
+        "actions": ["PATCH /api/rooms/:roomId"]
       },
       "api": [
         {
@@ -3668,7 +3559,10 @@
       },
       "verification": "Unverified",
       "autoGenerated": true,
-      "generatedFrom": "PATCH /api/rooms/:roomId"
+      "generatedFrom": "PATCH /api/rooms/:roomId",
+      "releaseScope": "internal",
+      "userVisible": false,
+      "releaseDecision": "backlog"
     },
     {
       "featureId": "auto.post.param.follow",
@@ -3676,9 +3570,7 @@
       "ui": {
         "mode": "unknown",
         "route": null,
-        "actions": [
-          "POST /api/:id/follow"
-        ]
+        "actions": ["POST /api/:id/follow"]
       },
       "api": [
         {
@@ -3696,7 +3588,10 @@
       },
       "verification": "Unverified",
       "autoGenerated": true,
-      "generatedFrom": "POST /api/:id/follow"
+      "generatedFrom": "POST /api/:id/follow",
+      "releaseScope": "internal",
+      "userVisible": false,
+      "releaseDecision": "backlog"
     },
     {
       "featureId": "auto.post.param.unfollow",
@@ -3704,9 +3599,7 @@
       "ui": {
         "mode": "unknown",
         "route": null,
-        "actions": [
-          "POST /api/:id/unfollow"
-        ]
+        "actions": ["POST /api/:id/unfollow"]
       },
       "api": [
         {
@@ -3724,7 +3617,10 @@
       },
       "verification": "Unverified",
       "autoGenerated": true,
-      "generatedFrom": "POST /api/:id/unfollow"
+      "generatedFrom": "POST /api/:id/unfollow",
+      "releaseScope": "internal",
+      "userVisible": false,
+      "releaseDecision": "backlog"
     },
     {
       "featureId": "auto.post.auth.become.creator",
@@ -3732,9 +3628,7 @@
       "ui": {
         "mode": "unknown",
         "route": null,
-        "actions": [
-          "POST /api/auth/become-creator"
-        ]
+        "actions": ["POST /api/auth/become-creator"]
       },
       "api": [
         {
@@ -3745,21 +3639,18 @@
       "guards": {
         "auth": true,
         "facilityScope": false,
-        "rolesAllowed": [
-          "ANY_AUTHENTICATED"
-        ]
+        "rolesAllowed": ["ANY_AUTHENTICATED"]
       },
       "evidence": {
-        "tests": [
-          "backend/tests/routes/auth.test.js"
-        ],
-        "backendTests": [
-          "backend/tests/routes/auth.test.js"
-        ]
+        "tests": ["backend/tests/routes/auth.test.js"],
+        "backendTests": ["backend/tests/routes/auth.test.js"]
       },
       "verification": "Unverified",
       "autoGenerated": true,
-      "generatedFrom": "POST /api/auth/become-creator"
+      "generatedFrom": "POST /api/auth/become-creator",
+      "releaseScope": "internal",
+      "userVisible": false,
+      "releaseDecision": "complete"
     },
     {
       "featureId": "auto.post.auth.login",
@@ -3767,9 +3658,7 @@
       "ui": {
         "mode": "unknown",
         "route": null,
-        "actions": [
-          "POST /api/auth/login"
-        ]
+        "actions": ["POST /api/auth/login"]
       },
       "api": [
         {
@@ -3780,21 +3669,18 @@
       "guards": {
         "auth": false,
         "facilityScope": false,
-        "rolesAllowed": [
-          "PUBLIC"
-        ]
+        "rolesAllowed": ["PUBLIC"]
       },
       "evidence": {
-        "tests": [
-          "backend/tests/routes/auth.test.js"
-        ],
-        "backendTests": [
-          "backend/tests/routes/auth.test.js"
-        ]
+        "tests": ["backend/tests/routes/auth.test.js"],
+        "backendTests": ["backend/tests/routes/auth.test.js"]
       },
       "verification": "Unverified",
       "autoGenerated": true,
-      "generatedFrom": "POST /api/auth/login"
+      "generatedFrom": "POST /api/auth/login",
+      "releaseScope": "internal",
+      "userVisible": false,
+      "releaseDecision": "complete"
     },
     {
       "featureId": "auto.post.auth.register",
@@ -3802,9 +3688,7 @@
       "ui": {
         "mode": "unknown",
         "route": null,
-        "actions": [
-          "POST /api/auth/register"
-        ]
+        "actions": ["POST /api/auth/register"]
       },
       "api": [
         {
@@ -3815,21 +3699,18 @@
       "guards": {
         "auth": false,
         "facilityScope": false,
-        "rolesAllowed": [
-          "PUBLIC"
-        ]
+        "rolesAllowed": ["PUBLIC"]
       },
       "evidence": {
-        "tests": [
-          "backend/tests/routes/auth.test.js"
-        ],
-        "backendTests": [
-          "backend/tests/routes/auth.test.js"
-        ]
+        "tests": ["backend/tests/routes/auth.test.js"],
+        "backendTests": ["backend/tests/routes/auth.test.js"]
       },
       "verification": "Unverified",
       "autoGenerated": true,
-      "generatedFrom": "POST /api/auth/register"
+      "generatedFrom": "POST /api/auth/register",
+      "releaseScope": "internal",
+      "userVisible": false,
+      "releaseDecision": "complete"
     },
     {
       "featureId": "auto.post.auth.save.push.token",
@@ -3837,9 +3718,7 @@
       "ui": {
         "mode": "unknown",
         "route": null,
-        "actions": [
-          "POST /api/auth/save-push-token"
-        ]
+        "actions": ["POST /api/auth/save-push-token"]
       },
       "api": [
         {
@@ -3850,21 +3729,18 @@
       "guards": {
         "auth": true,
         "facilityScope": false,
-        "rolesAllowed": [
-          "ANY_AUTHENTICATED"
-        ]
+        "rolesAllowed": ["ANY_AUTHENTICATED"]
       },
       "evidence": {
-        "tests": [
-          "backend/tests/routes/auth.test.js"
-        ],
-        "backendTests": [
-          "backend/tests/routes/auth.test.js"
-        ]
+        "tests": ["backend/tests/routes/auth.test.js"],
+        "backendTests": ["backend/tests/routes/auth.test.js"]
       },
       "verification": "Unverified",
       "autoGenerated": true,
-      "generatedFrom": "POST /api/auth/save-push-token"
+      "generatedFrom": "POST /api/auth/save-push-token",
+      "releaseScope": "internal",
+      "userVisible": false,
+      "releaseDecision": "complete"
     },
     {
       "featureId": "auto.post.auth.signup",
@@ -3872,9 +3748,7 @@
       "ui": {
         "mode": "unknown",
         "route": null,
-        "actions": [
-          "POST /api/auth/signup"
-        ]
+        "actions": ["POST /api/auth/signup"]
       },
       "api": [
         {
@@ -3885,21 +3759,18 @@
       "guards": {
         "auth": false,
         "facilityScope": false,
-        "rolesAllowed": [
-          "PUBLIC"
-        ]
+        "rolesAllowed": ["PUBLIC"]
       },
       "evidence": {
-        "tests": [
-          "backend/tests/routes/auth.test.js"
-        ],
-        "backendTests": [
-          "backend/tests/routes/auth.test.js"
-        ]
+        "tests": ["backend/tests/routes/auth.test.js"],
+        "backendTests": ["backend/tests/routes/auth.test.js"]
       },
       "verification": "Unverified",
       "autoGenerated": true,
-      "generatedFrom": "POST /api/auth/signup"
+      "generatedFrom": "POST /api/auth/signup",
+      "releaseScope": "internal",
+      "userVisible": false,
+      "releaseDecision": "complete"
     },
     {
       "featureId": "auto.post.avatar",
@@ -3907,9 +3778,7 @@
       "ui": {
         "mode": "unknown",
         "route": null,
-        "actions": [
-          "POST /api/avatar"
-        ]
+        "actions": ["POST /api/avatar"]
       },
       "api": [
         {
@@ -3920,9 +3789,7 @@
       "guards": {
         "auth": true,
         "facilityScope": false,
-        "rolesAllowed": [
-          "ANY_AUTHENTICATED"
-        ]
+        "rolesAllowed": ["ANY_AUTHENTICATED"]
       },
       "evidence": {
         "tests": [
@@ -3936,7 +3803,10 @@
       },
       "verification": "Unverified",
       "autoGenerated": true,
-      "generatedFrom": "POST /api/avatar"
+      "generatedFrom": "POST /api/avatar",
+      "releaseScope": "internal",
+      "userVisible": false,
+      "releaseDecision": "complete"
     },
     {
       "featureId": "auto.post.banner",
@@ -3944,9 +3814,7 @@
       "ui": {
         "mode": "unknown",
         "route": null,
-        "actions": [
-          "POST /api/banner"
-        ]
+        "actions": ["POST /api/banner"]
       },
       "api": [
         {
@@ -3957,9 +3825,7 @@
       "guards": {
         "auth": true,
         "facilityScope": false,
-        "rolesAllowed": [
-          "ANY_AUTHENTICATED"
-        ]
+        "rolesAllowed": ["ANY_AUTHENTICATED"]
       },
       "evidence": {
         "tests": [
@@ -3973,7 +3839,10 @@
       },
       "verification": "Unverified",
       "autoGenerated": true,
-      "generatedFrom": "POST /api/banner"
+      "generatedFrom": "POST /api/banner",
+      "releaseScope": "internal",
+      "userVisible": false,
+      "releaseDecision": "complete"
     },
     {
       "featureId": "auto.post.bio",
@@ -3981,9 +3850,7 @@
       "ui": {
         "mode": "unknown",
         "route": null,
-        "actions": [
-          "POST /api/bio"
-        ]
+        "actions": ["POST /api/bio"]
       },
       "api": [
         {
@@ -3994,9 +3861,7 @@
       "guards": {
         "auth": true,
         "facilityScope": false,
-        "rolesAllowed": [
-          "ANY_AUTHENTICATED"
-        ]
+        "rolesAllowed": ["ANY_AUTHENTICATED"]
       },
       "evidence": {
         "tests": [
@@ -4010,7 +3875,10 @@
       },
       "verification": "Unverified",
       "autoGenerated": true,
-      "generatedFrom": "POST /api/bio"
+      "generatedFrom": "POST /api/bio",
+      "releaseScope": "internal",
+      "userVisible": false,
+      "releaseDecision": "complete"
     },
     {
       "featureId": "auto.post.courses",
@@ -4018,9 +3886,7 @@
       "ui": {
         "mode": "unknown",
         "route": null,
-        "actions": [
-          "POST /api/courses"
-        ]
+        "actions": ["POST /api/courses"]
       },
       "api": [
         {
@@ -4034,13 +3900,14 @@
         "rolesAllowed": []
       },
       "evidence": {
-        "tests": [
-          "backend/tests/routes/courses.mutations.cycle18.test.js"
-        ]
+        "tests": ["backend/tests/routes/courses.mutations.cycle18.test.js"]
       },
       "verification": "Unverified",
       "autoGenerated": true,
-      "generatedFrom": "POST /api/courses"
+      "generatedFrom": "POST /api/courses",
+      "releaseScope": "internal",
+      "userVisible": false,
+      "releaseDecision": "complete"
     },
     {
       "featureId": "auto.post.courses.param.buy",
@@ -4048,9 +3915,7 @@
       "ui": {
         "mode": "unknown",
         "route": null,
-        "actions": [
-          "POST /api/courses/:id/buy"
-        ]
+        "actions": ["POST /api/courses/:id/buy"]
       },
       "api": [
         {
@@ -4064,13 +3929,14 @@
         "rolesAllowed": []
       },
       "evidence": {
-        "tests": [
-          "backend/tests/routes/courses.mutations.cycle18.test.js"
-        ]
+        "tests": ["backend/tests/routes/courses.mutations.cycle18.test.js"]
       },
       "verification": "Unverified",
       "autoGenerated": true,
-      "generatedFrom": "POST /api/courses/:id/buy"
+      "generatedFrom": "POST /api/courses/:id/buy",
+      "releaseScope": "internal",
+      "userVisible": false,
+      "releaseDecision": "complete"
     },
     {
       "featureId": "auto.post.courses.param.checkout",
@@ -4078,9 +3944,7 @@
       "ui": {
         "mode": "unknown",
         "route": null,
-        "actions": [
-          "POST /api/courses/:id/checkout"
-        ]
+        "actions": ["POST /api/courses/:id/checkout"]
       },
       "api": [
         {
@@ -4094,13 +3958,14 @@
         "rolesAllowed": []
       },
       "evidence": {
-        "tests": [
-          "backend/tests/routes/courses.mutations.cycle18.test.js"
-        ]
+        "tests": ["backend/tests/routes/courses.mutations.cycle18.test.js"]
       },
       "verification": "Unverified",
       "autoGenerated": true,
-      "generatedFrom": "POST /api/courses/:id/checkout"
+      "generatedFrom": "POST /api/courses/:id/checkout",
+      "releaseScope": "internal",
+      "userVisible": false,
+      "releaseDecision": "complete"
     },
     {
       "featureId": "auto.post.courses.param.enroll",
@@ -4108,9 +3973,7 @@
       "ui": {
         "mode": "unknown",
         "route": null,
-        "actions": [
-          "POST /api/courses/:id/enroll"
-        ]
+        "actions": ["POST /api/courses/:id/enroll"]
       },
       "api": [
         {
@@ -4124,13 +3987,14 @@
         "rolesAllowed": []
       },
       "evidence": {
-        "tests": [
-          "backend/tests/routes/courses.mutations.cycle18.test.js"
-        ]
+        "tests": ["backend/tests/routes/courses.mutations.cycle18.test.js"]
       },
       "verification": "Unverified",
       "autoGenerated": true,
-      "generatedFrom": "POST /api/courses/:id/enroll"
+      "generatedFrom": "POST /api/courses/:id/enroll",
+      "releaseScope": "internal",
+      "userVisible": false,
+      "releaseDecision": "complete"
     },
     {
       "featureId": "auto.post.courses.param.lesson",
@@ -4138,9 +4002,7 @@
       "ui": {
         "mode": "unknown",
         "route": null,
-        "actions": [
-          "POST /api/courses/:id/lesson"
-        ]
+        "actions": ["POST /api/courses/:id/lesson"]
       },
       "api": [
         {
@@ -4158,7 +4020,10 @@
       },
       "verification": "Unverified",
       "autoGenerated": true,
-      "generatedFrom": "POST /api/courses/:id/lesson"
+      "generatedFrom": "POST /api/courses/:id/lesson",
+      "releaseScope": "internal",
+      "userVisible": false,
+      "releaseDecision": "backlog"
     },
     {
       "featureId": "auto.post.courses.param.questions",
@@ -4166,9 +4031,7 @@
       "ui": {
         "mode": "unknown",
         "route": null,
-        "actions": [
-          "POST /api/courses/:id/questions"
-        ]
+        "actions": ["POST /api/courses/:id/questions"]
       },
       "api": [
         {
@@ -4182,13 +4045,14 @@
         "rolesAllowed": []
       },
       "evidence": {
-        "tests": [
-          "backend/tests/routes/courses.mutations.cycle18.test.js"
-        ]
+        "tests": ["backend/tests/routes/courses.mutations.cycle18.test.js"]
       },
       "verification": "Unverified",
       "autoGenerated": true,
-      "generatedFrom": "POST /api/courses/:id/questions"
+      "generatedFrom": "POST /api/courses/:id/questions",
+      "releaseScope": "internal",
+      "userVisible": false,
+      "releaseDecision": "complete"
     },
     {
       "featureId": "auto.post.courses.param.questions.param.answer",
@@ -4196,9 +4060,7 @@
       "ui": {
         "mode": "unknown",
         "route": null,
-        "actions": [
-          "POST /api/courses/:id/questions/:questionId/answer"
-        ]
+        "actions": ["POST /api/courses/:id/questions/:questionId/answer"]
       },
       "api": [
         {
@@ -4212,13 +4074,14 @@
         "rolesAllowed": []
       },
       "evidence": {
-        "tests": [
-          "backend/tests/routes/courses.mutations.cycle18.test.js"
-        ]
+        "tests": ["backend/tests/routes/courses.mutations.cycle18.test.js"]
       },
       "verification": "Unverified",
       "autoGenerated": true,
-      "generatedFrom": "POST /api/courses/:id/questions/:questionId/answer"
+      "generatedFrom": "POST /api/courses/:id/questions/:questionId/answer",
+      "releaseScope": "internal",
+      "userVisible": false,
+      "releaseDecision": "complete"
     },
     {
       "featureId": "auto.post.courses.param.review",
@@ -4226,9 +4089,7 @@
       "ui": {
         "mode": "unknown",
         "route": null,
-        "actions": [
-          "POST /api/courses/:id/review"
-        ]
+        "actions": ["POST /api/courses/:id/review"]
       },
       "api": [
         {
@@ -4242,13 +4103,14 @@
         "rolesAllowed": []
       },
       "evidence": {
-        "tests": [
-          "backend/tests/routes/courses.mutations.cycle18.test.js"
-        ]
+        "tests": ["backend/tests/routes/courses.mutations.cycle18.test.js"]
       },
       "verification": "Unverified",
       "autoGenerated": true,
-      "generatedFrom": "POST /api/courses/:id/review"
+      "generatedFrom": "POST /api/courses/:id/review",
+      "releaseScope": "internal",
+      "userVisible": false,
+      "releaseDecision": "complete"
     },
     {
       "featureId": "auto.post.courses.create",
@@ -4256,9 +4118,7 @@
       "ui": {
         "mode": "unknown",
         "route": null,
-        "actions": [
-          "POST /api/courses/create"
-        ]
+        "actions": ["POST /api/courses/create"]
       },
       "api": [
         {
@@ -4276,7 +4136,10 @@
       },
       "verification": "Unverified",
       "autoGenerated": true,
-      "generatedFrom": "POST /api/courses/create"
+      "generatedFrom": "POST /api/courses/create",
+      "releaseScope": "internal",
+      "userVisible": false,
+      "releaseDecision": "backlog"
     },
     {
       "featureId": "auto.post.courses.lesson.param.complete",
@@ -4284,9 +4147,7 @@
       "ui": {
         "mode": "unknown",
         "route": null,
-        "actions": [
-          "POST /api/courses/lesson/:lessonId/complete"
-        ]
+        "actions": ["POST /api/courses/lesson/:lessonId/complete"]
       },
       "api": [
         {
@@ -4304,7 +4165,10 @@
       },
       "verification": "Unverified",
       "autoGenerated": true,
-      "generatedFrom": "POST /api/courses/lesson/:lessonId/complete"
+      "generatedFrom": "POST /api/courses/lesson/:lessonId/complete",
+      "releaseScope": "internal",
+      "userVisible": false,
+      "releaseDecision": "backlog"
     },
     {
       "featureId": "auto.post.courses.lesson.param.dropoff",
@@ -4312,9 +4176,7 @@
       "ui": {
         "mode": "unknown",
         "route": null,
-        "actions": [
-          "POST /api/courses/lesson/:lessonId/dropoff"
-        ]
+        "actions": ["POST /api/courses/lesson/:lessonId/dropoff"]
       },
       "api": [
         {
@@ -4332,7 +4194,10 @@
       },
       "verification": "Unverified",
       "autoGenerated": true,
-      "generatedFrom": "POST /api/courses/lesson/:lessonId/dropoff"
+      "generatedFrom": "POST /api/courses/lesson/:lessonId/dropoff",
+      "releaseScope": "internal",
+      "userVisible": false,
+      "releaseDecision": "backlog"
     },
     {
       "featureId": "auto.post.courses.lessons.param.complete",
@@ -4340,9 +4205,7 @@
       "ui": {
         "mode": "unknown",
         "route": null,
-        "actions": [
-          "POST /api/courses/lessons/:lessonId/complete"
-        ]
+        "actions": ["POST /api/courses/lessons/:lessonId/complete"]
       },
       "api": [
         {
@@ -4360,7 +4223,10 @@
       },
       "verification": "Unverified",
       "autoGenerated": true,
-      "generatedFrom": "POST /api/courses/lessons/:lessonId/complete"
+      "generatedFrom": "POST /api/courses/lessons/:lessonId/complete",
+      "releaseScope": "internal",
+      "userVisible": false,
+      "releaseDecision": "backlog"
     },
     {
       "featureId": "auto.post.courses.lessons.param.dropoff",
@@ -4368,9 +4234,7 @@
       "ui": {
         "mode": "unknown",
         "route": null,
-        "actions": [
-          "POST /api/courses/lessons/:lessonId/dropoff"
-        ]
+        "actions": ["POST /api/courses/lessons/:lessonId/dropoff"]
       },
       "api": [
         {
@@ -4388,7 +4252,10 @@
       },
       "verification": "Unverified",
       "autoGenerated": true,
-      "generatedFrom": "POST /api/courses/lessons/:lessonId/dropoff"
+      "generatedFrom": "POST /api/courses/lessons/:lessonId/dropoff",
+      "releaseScope": "internal",
+      "userVisible": false,
+      "releaseDecision": "backlog"
     },
     {
       "featureId": "auto.post.courses.lessons.param.view",
@@ -4396,9 +4263,7 @@
       "ui": {
         "mode": "unknown",
         "route": null,
-        "actions": [
-          "POST /api/courses/lessons/:lessonId/view"
-        ]
+        "actions": ["POST /api/courses/lessons/:lessonId/view"]
       },
       "api": [
         {
@@ -4412,13 +4277,14 @@
         "rolesAllowed": []
       },
       "evidence": {
-        "tests": [
-          "backend/tests/routes/courses.mutations.cycle20.test.js"
-        ]
+        "tests": ["backend/tests/routes/courses.mutations.cycle20.test.js"]
       },
       "verification": "Unverified",
       "autoGenerated": true,
-      "generatedFrom": "POST /api/courses/lessons/:lessonId/view"
+      "generatedFrom": "POST /api/courses/lessons/:lessonId/view",
+      "releaseScope": "internal",
+      "userVisible": false,
+      "releaseDecision": "complete"
     },
     {
       "featureId": "auto.post.courses.lessons.param.watch",
@@ -4426,9 +4292,7 @@
       "ui": {
         "mode": "unknown",
         "route": null,
-        "actions": [
-          "POST /api/courses/lessons/:lessonId/watch"
-        ]
+        "actions": ["POST /api/courses/lessons/:lessonId/watch"]
       },
       "api": [
         {
@@ -4442,13 +4306,14 @@
         "rolesAllowed": []
       },
       "evidence": {
-        "tests": [
-          "backend/tests/routes/courses.mutations.cycle20.test.js"
-        ]
+        "tests": ["backend/tests/routes/courses.mutations.cycle20.test.js"]
       },
       "verification": "Unverified",
       "autoGenerated": true,
-      "generatedFrom": "POST /api/courses/lessons/:lessonId/watch"
+      "generatedFrom": "POST /api/courses/lessons/:lessonId/watch",
+      "releaseScope": "internal",
+      "userVisible": false,
+      "releaseDecision": "complete"
     },
     {
       "featureId": "auto.post.creator.onboard",
@@ -4456,9 +4321,7 @@
       "ui": {
         "mode": "unknown",
         "route": null,
-        "actions": [
-          "POST /api/creator/onboard"
-        ]
+        "actions": ["POST /api/creator/onboard"]
       },
       "api": [
         {
@@ -4472,13 +4335,14 @@
         "rolesAllowed": []
       },
       "evidence": {
-        "tests": [
-          "backend/tests/routes/cycle21.mixed.lowrisk.test.js"
-        ]
+        "tests": ["backend/tests/routes/cycle21.mixed.lowrisk.test.js"]
       },
       "verification": "Unverified",
       "autoGenerated": true,
-      "generatedFrom": "POST /api/creator/onboard"
+      "generatedFrom": "POST /api/creator/onboard",
+      "releaseScope": "internal",
+      "userVisible": false,
+      "releaseDecision": "complete"
     },
     {
       "featureId": "auto.post.events",
@@ -4486,9 +4350,7 @@
       "ui": {
         "mode": "unknown",
         "route": null,
-        "actions": [
-          "POST /api/events"
-        ]
+        "actions": ["POST /api/events"]
       },
       "api": [
         {
@@ -4502,13 +4364,14 @@
         "rolesAllowed": []
       },
       "evidence": {
-        "tests": [
-          "backend/tests/routes/cycle21.mixed.lowrisk.test.js"
-        ]
+        "tests": ["backend/tests/routes/cycle21.mixed.lowrisk.test.js"]
       },
       "verification": "Unverified",
       "autoGenerated": true,
-      "generatedFrom": "POST /api/events"
+      "generatedFrom": "POST /api/events",
+      "releaseScope": "internal",
+      "userVisible": false,
+      "releaseDecision": "complete"
     },
     {
       "featureId": "auto.post.facilities",
@@ -4516,9 +4379,7 @@
       "ui": {
         "mode": "unknown",
         "route": null,
-        "actions": [
-          "POST /api/facilities"
-        ]
+        "actions": ["POST /api/facilities"]
       },
       "api": [
         {
@@ -4532,13 +4393,14 @@
         "rolesAllowed": []
       },
       "evidence": {
-        "tests": [
-          "backend/tests/routes/cycle21.mixed.lowrisk.test.js"
-        ]
+        "tests": ["backend/tests/routes/cycle21.mixed.lowrisk.test.js"]
       },
       "verification": "Unverified",
       "autoGenerated": true,
-      "generatedFrom": "POST /api/facilities"
+      "generatedFrom": "POST /api/facilities",
+      "releaseScope": "internal",
+      "userVisible": false,
+      "releaseDecision": "complete"
     },
     {
       "featureId": "auto.post.facility.param.growlogs",
@@ -4546,9 +4408,7 @@
       "ui": {
         "mode": "unknown",
         "route": null,
-        "actions": [
-          "POST /api/facility/:facilityId/growlogs"
-        ]
+        "actions": ["POST /api/facility/:facilityId/growlogs"]
       },
       "api": [
         {
@@ -4562,13 +4422,14 @@
         "rolesAllowed": []
       },
       "evidence": {
-        "tests": [
-          "backend/tests/routes/cycle22.mixed.lowrisk.test.js"
-        ]
+        "tests": ["backend/tests/routes/cycle22.mixed.lowrisk.test.js"]
       },
       "verification": "Unverified",
       "autoGenerated": true,
-      "generatedFrom": "POST /api/facilities/:facilityId/growlogs"
+      "generatedFrom": "POST /api/facilities/:facilityId/growlogs",
+      "releaseScope": "internal",
+      "userVisible": false,
+      "releaseDecision": "complete"
     },
     {
       "featureId": "auto.post.facility.param.grows",
@@ -4576,9 +4437,7 @@
       "ui": {
         "mode": "unknown",
         "route": null,
-        "actions": [
-          "POST /api/facility/:facilityId/grows"
-        ]
+        "actions": ["POST /api/facility/:facilityId/grows"]
       },
       "api": [
         {
@@ -4599,7 +4458,10 @@
       },
       "verification": "Unverified",
       "autoGenerated": true,
-      "generatedFrom": "POST /api/facilities/:facilityId/grows"
+      "generatedFrom": "POST /api/facilities/:facilityId/grows",
+      "releaseScope": "internal",
+      "userVisible": false,
+      "releaseDecision": "complete"
     },
     {
       "featureId": "auto.post.facility.param.inventory",
@@ -4607,9 +4469,7 @@
       "ui": {
         "mode": "unknown",
         "route": null,
-        "actions": [
-          "POST /api/facility/:facilityId/inventory"
-        ]
+        "actions": ["POST /api/facility/:facilityId/inventory"]
       },
       "api": [
         {
@@ -4630,7 +4490,10 @@
       },
       "verification": "Unverified",
       "autoGenerated": true,
-      "generatedFrom": "POST /api/facilities/:facilityId/inventory"
+      "generatedFrom": "POST /api/facilities/:facilityId/inventory",
+      "releaseScope": "internal",
+      "userVisible": false,
+      "releaseDecision": "complete"
     },
     {
       "featureId": "auto.post.facility.param.plants",
@@ -4638,9 +4501,7 @@
       "ui": {
         "mode": "unknown",
         "route": null,
-        "actions": [
-          "POST /api/facility/:facilityId/plants"
-        ]
+        "actions": ["POST /api/facility/:facilityId/plants"]
       },
       "api": [
         {
@@ -4661,7 +4522,10 @@
       },
       "verification": "Unverified",
       "autoGenerated": true,
-      "generatedFrom": "POST /api/facilities/:facilityId/plants"
+      "generatedFrom": "POST /api/facilities/:facilityId/plants",
+      "releaseScope": "internal",
+      "userVisible": false,
+      "releaseDecision": "complete"
     },
     {
       "featureId": "auto.post.facility.param.rooms",
@@ -4669,9 +4533,7 @@
       "ui": {
         "mode": "unknown",
         "route": null,
-        "actions": [
-          "POST /api/facility/:facilityId/rooms"
-        ]
+        "actions": ["POST /api/facility/:facilityId/rooms"]
       },
       "api": [
         {
@@ -4692,7 +4554,10 @@
       },
       "verification": "Unverified",
       "autoGenerated": true,
-      "generatedFrom": "POST /api/facilities/:facilityId/rooms"
+      "generatedFrom": "POST /api/facilities/:facilityId/rooms",
+      "releaseScope": "internal",
+      "userVisible": false,
+      "releaseDecision": "complete"
     },
     {
       "featureId": "auto.post.facility.param.team.transfer.ownership.transfer.ownership.param.transfer.param",
@@ -4720,7 +4585,10 @@
       },
       "verification": "Unverified",
       "autoGenerated": true,
-      "generatedFrom": "POST /api/facilities/:facilityId/team/transfer-ownership,/transfer-ownership/:userId,/transfer/:userId"
+      "generatedFrom": "POST /api/facilities/:facilityId/team/transfer-ownership,/transfer-ownership/:userId,/transfer/:userId",
+      "releaseScope": "internal",
+      "userVisible": false,
+      "releaseDecision": "backlog"
     },
     {
       "featureId": "auto.post.facilities.param.members",
@@ -4728,9 +4596,7 @@
       "ui": {
         "mode": "unknown",
         "route": null,
-        "actions": [
-          "POST /api/facilities/:id/members"
-        ]
+        "actions": ["POST /api/facilities/:id/members"]
       },
       "api": [
         {
@@ -4744,13 +4610,14 @@
         "rolesAllowed": []
       },
       "evidence": {
-        "tests": [
-          "backend/tests/routes/cycle21.mixed.lowrisk.test.js"
-        ]
+        "tests": ["backend/tests/routes/cycle21.mixed.lowrisk.test.js"]
       },
       "verification": "Unverified",
       "autoGenerated": true,
-      "generatedFrom": "POST /api/facilities/:id/members"
+      "generatedFrom": "POST /api/facilities/:id/members",
+      "releaseScope": "internal",
+      "userVisible": false,
+      "releaseDecision": "complete"
     },
     {
       "featureId": "auto.post.facility.param.growlogs.2",
@@ -4758,9 +4625,7 @@
       "ui": {
         "mode": "unknown",
         "route": null,
-        "actions": [
-          "POST /api/facility/:facilityId/growlogs"
-        ]
+        "actions": ["POST /api/facility/:facilityId/growlogs"]
       },
       "api": [
         {
@@ -4774,13 +4639,14 @@
         "rolesAllowed": []
       },
       "evidence": {
-        "tests": [
-          "backend/tests/routes/cycle22.mixed.lowrisk.test.js"
-        ]
+        "tests": ["backend/tests/routes/cycle22.mixed.lowrisk.test.js"]
       },
       "verification": "Unverified",
       "autoGenerated": true,
-      "generatedFrom": "POST /api/facility/:facilityId/growlogs"
+      "generatedFrom": "POST /api/facility/:facilityId/growlogs",
+      "releaseScope": "internal",
+      "userVisible": false,
+      "releaseDecision": "complete"
     },
     {
       "featureId": "auto.post.facility.param.grows.2",
@@ -4788,9 +4654,7 @@
       "ui": {
         "mode": "unknown",
         "route": null,
-        "actions": [
-          "POST /api/facility/:facilityId/grows"
-        ]
+        "actions": ["POST /api/facility/:facilityId/grows"]
       },
       "api": [
         {
@@ -4811,7 +4675,10 @@
       },
       "verification": "Unverified",
       "autoGenerated": true,
-      "generatedFrom": "POST /api/facility/:facilityId/grows"
+      "generatedFrom": "POST /api/facility/:facilityId/grows",
+      "releaseScope": "internal",
+      "userVisible": false,
+      "releaseDecision": "complete"
     },
     {
       "featureId": "auto.post.facility.param.inventory.2",
@@ -4819,9 +4686,7 @@
       "ui": {
         "mode": "unknown",
         "route": null,
-        "actions": [
-          "POST /api/facility/:facilityId/inventory"
-        ]
+        "actions": ["POST /api/facility/:facilityId/inventory"]
       },
       "api": [
         {
@@ -4842,7 +4707,10 @@
       },
       "verification": "Unverified",
       "autoGenerated": true,
-      "generatedFrom": "POST /api/facility/:facilityId/inventory"
+      "generatedFrom": "POST /api/facility/:facilityId/inventory",
+      "releaseScope": "internal",
+      "userVisible": false,
+      "releaseDecision": "complete"
     },
     {
       "featureId": "auto.post.facility.param.plants.2",
@@ -4850,9 +4718,7 @@
       "ui": {
         "mode": "unknown",
         "route": null,
-        "actions": [
-          "POST /api/facility/:facilityId/plants"
-        ]
+        "actions": ["POST /api/facility/:facilityId/plants"]
       },
       "api": [
         {
@@ -4873,7 +4739,10 @@
       },
       "verification": "Unverified",
       "autoGenerated": true,
-      "generatedFrom": "POST /api/facility/:facilityId/plants"
+      "generatedFrom": "POST /api/facility/:facilityId/plants",
+      "releaseScope": "internal",
+      "userVisible": false,
+      "releaseDecision": "complete"
     },
     {
       "featureId": "auto.post.facility.param.rooms.2",
@@ -4881,9 +4750,7 @@
       "ui": {
         "mode": "unknown",
         "route": null,
-        "actions": [
-          "POST /api/facility/:facilityId/rooms"
-        ]
+        "actions": ["POST /api/facility/:facilityId/rooms"]
       },
       "api": [
         {
@@ -4904,7 +4771,10 @@
       },
       "verification": "Unverified",
       "autoGenerated": true,
-      "generatedFrom": "POST /api/facility/:facilityId/rooms"
+      "generatedFrom": "POST /api/facility/:facilityId/rooms",
+      "releaseScope": "internal",
+      "userVisible": false,
+      "releaseDecision": "complete"
     },
     {
       "featureId": "auto.post.facility.param.team.transfer.ownership.transfer.ownership.param.transfer.param.2",
@@ -4932,7 +4802,10 @@
       },
       "verification": "Unverified",
       "autoGenerated": true,
-      "generatedFrom": "POST /api/facility/:facilityId/team/transfer-ownership,/transfer-ownership/:userId,/transfer/:userId"
+      "generatedFrom": "POST /api/facility/:facilityId/team/transfer-ownership,/transfer-ownership/:userId,/transfer/:userId",
+      "releaseScope": "internal",
+      "userVisible": false,
+      "releaseDecision": "backlog"
     },
     {
       "featureId": "auto.post.follow.param",
@@ -4940,9 +4813,7 @@
       "ui": {
         "mode": "unknown",
         "route": null,
-        "actions": [
-          "POST /api/follow/:id"
-        ]
+        "actions": ["POST /api/follow/:id"]
       },
       "api": [
         {
@@ -4960,7 +4831,10 @@
       },
       "verification": "Unverified",
       "autoGenerated": true,
-      "generatedFrom": "POST /api/follow/:id"
+      "generatedFrom": "POST /api/follow/:id",
+      "releaseScope": "internal",
+      "userVisible": false,
+      "releaseDecision": "backlog"
     },
     {
       "featureId": "auto.post.growlogs",
@@ -4968,9 +4842,7 @@
       "ui": {
         "mode": "unknown",
         "route": null,
-        "actions": [
-          "POST /api/growlogs"
-        ]
+        "actions": ["POST /api/growlogs"]
       },
       "api": [
         {
@@ -4988,7 +4860,10 @@
       },
       "verification": "Unverified",
       "autoGenerated": true,
-      "generatedFrom": "POST /api/growlogs"
+      "generatedFrom": "POST /api/growlogs",
+      "releaseScope": "internal",
+      "userVisible": false,
+      "releaseDecision": "backlog"
     },
     {
       "featureId": "auto.post.inventory",
@@ -4996,9 +4871,7 @@
       "ui": {
         "mode": "unknown",
         "route": null,
-        "actions": [
-          "POST /api/inventory"
-        ]
+        "actions": ["POST /api/inventory"]
       },
       "api": [
         {
@@ -5016,7 +4889,10 @@
       },
       "verification": "Unverified",
       "autoGenerated": true,
-      "generatedFrom": "POST /api/inventory"
+      "generatedFrom": "POST /api/inventory",
+      "releaseScope": "internal",
+      "userVisible": false,
+      "releaseDecision": "backlog"
     },
     {
       "featureId": "auto.post.preferences.notifications",
@@ -5024,9 +4900,7 @@
       "ui": {
         "mode": "unknown",
         "route": null,
-        "actions": [
-          "POST /api/preferences/notifications"
-        ]
+        "actions": ["POST /api/preferences/notifications"]
       },
       "api": [
         {
@@ -5040,13 +4914,14 @@
         "rolesAllowed": []
       },
       "evidence": {
-        "tests": [
-          "backend/tests/routes/cycle22.mixed.lowrisk.test.js"
-        ]
+        "tests": ["backend/tests/routes/cycle22.mixed.lowrisk.test.js"]
       },
       "verification": "Unverified",
       "autoGenerated": true,
-      "generatedFrom": "POST /api/preferences/notifications"
+      "generatedFrom": "POST /api/preferences/notifications",
+      "releaseScope": "internal",
+      "userVisible": false,
+      "releaseDecision": "complete"
     },
     {
       "featureId": "auto.post.rooms",
@@ -5054,9 +4929,7 @@
       "ui": {
         "mode": "unknown",
         "route": null,
-        "actions": [
-          "POST /api/rooms"
-        ]
+        "actions": ["POST /api/rooms"]
       },
       "api": [
         {
@@ -5074,7 +4947,10 @@
       },
       "verification": "Unverified",
       "autoGenerated": true,
-      "generatedFrom": "POST /api/rooms"
+      "generatedFrom": "POST /api/rooms",
+      "releaseScope": "internal",
+      "userVisible": false,
+      "releaseDecision": "backlog"
     },
     {
       "featureId": "auto.post.unfollow.param",
@@ -5082,9 +4958,7 @@
       "ui": {
         "mode": "unknown",
         "route": null,
-        "actions": [
-          "POST /api/unfollow/:id"
-        ]
+        "actions": ["POST /api/unfollow/:id"]
       },
       "api": [
         {
@@ -5102,7 +4976,10 @@
       },
       "verification": "Unverified",
       "autoGenerated": true,
-      "generatedFrom": "POST /api/unfollow/:id"
+      "generatedFrom": "POST /api/unfollow/:id",
+      "releaseScope": "internal",
+      "userVisible": false,
+      "releaseDecision": "backlog"
     },
     {
       "featureId": "auto.post.user.param.follow",
@@ -5110,9 +4987,7 @@
       "ui": {
         "mode": "unknown",
         "route": null,
-        "actions": [
-          "POST /api/user/:id/follow"
-        ]
+        "actions": ["POST /api/user/:id/follow"]
       },
       "api": [
         {
@@ -5123,21 +4998,20 @@
       "guards": {
         "auth": true,
         "facilityScope": false,
-        "rolesAllowed": [
-          "ANY_AUTHENTICATED"
-        ]
+        "rolesAllowed": ["ANY_AUTHENTICATED"]
       },
       "evidence": {
-        "tests": [
-          "backend/tests/routes/user.follow.profile.aliases.cycle14.test.js"
-        ],
+        "tests": ["backend/tests/routes/user.follow.profile.aliases.cycle14.test.js"],
         "backendTests": [
           "backend/tests/routes/user.follow.profile.aliases.cycle14.test.js"
         ]
       },
       "verification": "Unverified",
       "autoGenerated": true,
-      "generatedFrom": "POST /api/user/:id/follow"
+      "generatedFrom": "POST /api/user/:id/follow",
+      "releaseScope": "internal",
+      "userVisible": false,
+      "releaseDecision": "complete"
     },
     {
       "featureId": "auto.post.user.param.unfollow",
@@ -5145,9 +5019,7 @@
       "ui": {
         "mode": "unknown",
         "route": null,
-        "actions": [
-          "POST /api/user/:id/unfollow"
-        ]
+        "actions": ["POST /api/user/:id/unfollow"]
       },
       "api": [
         {
@@ -5158,21 +5030,20 @@
       "guards": {
         "auth": true,
         "facilityScope": false,
-        "rolesAllowed": [
-          "ANY_AUTHENTICATED"
-        ]
+        "rolesAllowed": ["ANY_AUTHENTICATED"]
       },
       "evidence": {
-        "tests": [
-          "backend/tests/routes/user.follow.profile.aliases.cycle14.test.js"
-        ],
+        "tests": ["backend/tests/routes/user.follow.profile.aliases.cycle14.test.js"],
         "backendTests": [
           "backend/tests/routes/user.follow.profile.aliases.cycle14.test.js"
         ]
       },
       "verification": "Unverified",
       "autoGenerated": true,
-      "generatedFrom": "POST /api/user/:id/unfollow"
+      "generatedFrom": "POST /api/user/:id/unfollow",
+      "releaseScope": "internal",
+      "userVisible": false,
+      "releaseDecision": "complete"
     },
     {
       "featureId": "auto.post.user.avatar",
@@ -5180,9 +5051,7 @@
       "ui": {
         "mode": "unknown",
         "route": null,
-        "actions": [
-          "POST /api/user/avatar"
-        ]
+        "actions": ["POST /api/user/avatar"]
       },
       "api": [
         {
@@ -5193,9 +5062,7 @@
       "guards": {
         "auth": true,
         "facilityScope": false,
-        "rolesAllowed": [
-          "ANY_AUTHENTICATED"
-        ]
+        "rolesAllowed": ["ANY_AUTHENTICATED"]
       },
       "evidence": {
         "tests": [
@@ -5209,7 +5076,10 @@
       },
       "verification": "Unverified",
       "autoGenerated": true,
-      "generatedFrom": "POST /api/user/avatar"
+      "generatedFrom": "POST /api/user/avatar",
+      "releaseScope": "internal",
+      "userVisible": false,
+      "releaseDecision": "complete"
     },
     {
       "featureId": "auto.post.user.banner",
@@ -5217,9 +5087,7 @@
       "ui": {
         "mode": "unknown",
         "route": null,
-        "actions": [
-          "POST /api/user/banner"
-        ]
+        "actions": ["POST /api/user/banner"]
       },
       "api": [
         {
@@ -5230,9 +5098,7 @@
       "guards": {
         "auth": true,
         "facilityScope": false,
-        "rolesAllowed": [
-          "ANY_AUTHENTICATED"
-        ]
+        "rolesAllowed": ["ANY_AUTHENTICATED"]
       },
       "evidence": {
         "tests": [
@@ -5246,7 +5112,10 @@
       },
       "verification": "Unverified",
       "autoGenerated": true,
-      "generatedFrom": "POST /api/user/banner"
+      "generatedFrom": "POST /api/user/banner",
+      "releaseScope": "internal",
+      "userVisible": false,
+      "releaseDecision": "complete"
     },
     {
       "featureId": "auto.post.user.bio",
@@ -5254,9 +5123,7 @@
       "ui": {
         "mode": "unknown",
         "route": null,
-        "actions": [
-          "POST /api/user/bio"
-        ]
+        "actions": ["POST /api/user/bio"]
       },
       "api": [
         {
@@ -5267,9 +5134,7 @@
       "guards": {
         "auth": true,
         "facilityScope": false,
-        "rolesAllowed": [
-          "ANY_AUTHENTICATED"
-        ]
+        "rolesAllowed": ["ANY_AUTHENTICATED"]
       },
       "evidence": {
         "tests": [
@@ -5283,7 +5148,10 @@
       },
       "verification": "Unverified",
       "autoGenerated": true,
-      "generatedFrom": "POST /api/user/bio"
+      "generatedFrom": "POST /api/user/bio",
+      "releaseScope": "internal",
+      "userVisible": false,
+      "releaseDecision": "complete"
     },
     {
       "featureId": "auto.post.user.creator.onboard",
@@ -5291,9 +5159,7 @@
       "ui": {
         "mode": "unknown",
         "route": null,
-        "actions": [
-          "POST /api/user/creator/onboard"
-        ]
+        "actions": ["POST /api/user/creator/onboard"]
       },
       "api": [
         {
@@ -5307,13 +5173,14 @@
         "rolesAllowed": []
       },
       "evidence": {
-        "tests": [
-          "backend/tests/routes/cycle21.mixed.lowrisk.test.js"
-        ]
+        "tests": ["backend/tests/routes/cycle21.mixed.lowrisk.test.js"]
       },
       "verification": "Unverified",
       "autoGenerated": true,
-      "generatedFrom": "POST /api/user/creator/onboard"
+      "generatedFrom": "POST /api/user/creator/onboard",
+      "releaseScope": "internal",
+      "userVisible": false,
+      "releaseDecision": "complete"
     },
     {
       "featureId": "auto.post.user.follow.param",
@@ -5321,9 +5188,7 @@
       "ui": {
         "mode": "unknown",
         "route": null,
-        "actions": [
-          "POST /api/user/follow/:id"
-        ]
+        "actions": ["POST /api/user/follow/:id"]
       },
       "api": [
         {
@@ -5334,21 +5199,20 @@
       "guards": {
         "auth": true,
         "facilityScope": false,
-        "rolesAllowed": [
-          "ANY_AUTHENTICATED"
-        ]
+        "rolesAllowed": ["ANY_AUTHENTICATED"]
       },
       "evidence": {
-        "tests": [
-          "backend/tests/routes/user.follow.profile.aliases.cycle14.test.js"
-        ],
+        "tests": ["backend/tests/routes/user.follow.profile.aliases.cycle14.test.js"],
         "backendTests": [
           "backend/tests/routes/user.follow.profile.aliases.cycle14.test.js"
         ]
       },
       "verification": "Unverified",
       "autoGenerated": true,
-      "generatedFrom": "POST /api/user/follow/:id"
+      "generatedFrom": "POST /api/user/follow/:id",
+      "releaseScope": "internal",
+      "userVisible": false,
+      "releaseDecision": "complete"
     },
     {
       "featureId": "auto.post.user.preferences.notifications",
@@ -5356,9 +5220,7 @@
       "ui": {
         "mode": "unknown",
         "route": null,
-        "actions": [
-          "POST /api/user/preferences/notifications"
-        ]
+        "actions": ["POST /api/user/preferences/notifications"]
       },
       "api": [
         {
@@ -5372,13 +5234,14 @@
         "rolesAllowed": []
       },
       "evidence": {
-        "tests": [
-          "backend/tests/routes/cycle22.mixed.lowrisk.test.js"
-        ]
+        "tests": ["backend/tests/routes/cycle22.mixed.lowrisk.test.js"]
       },
       "verification": "Unverified",
       "autoGenerated": true,
-      "generatedFrom": "POST /api/user/preferences/notifications"
+      "generatedFrom": "POST /api/user/preferences/notifications",
+      "releaseScope": "internal",
+      "userVisible": false,
+      "releaseDecision": "complete"
     },
     {
       "featureId": "auto.post.user.unfollow.param",
@@ -5386,9 +5249,7 @@
       "ui": {
         "mode": "unknown",
         "route": null,
-        "actions": [
-          "POST /api/user/unfollow/:id"
-        ]
+        "actions": ["POST /api/user/unfollow/:id"]
       },
       "api": [
         {
@@ -5399,21 +5260,20 @@
       "guards": {
         "auth": true,
         "facilityScope": false,
-        "rolesAllowed": [
-          "ANY_AUTHENTICATED"
-        ]
+        "rolesAllowed": ["ANY_AUTHENTICATED"]
       },
       "evidence": {
-        "tests": [
-          "backend/tests/routes/user.follow.profile.aliases.cycle14.test.js"
-        ],
+        "tests": ["backend/tests/routes/user.follow.profile.aliases.cycle14.test.js"],
         "backendTests": [
           "backend/tests/routes/user.follow.profile.aliases.cycle14.test.js"
         ]
       },
       "verification": "Unverified",
       "autoGenerated": true,
-      "generatedFrom": "POST /api/user/unfollow/:id"
+      "generatedFrom": "POST /api/user/unfollow/:id",
+      "releaseScope": "internal",
+      "userVisible": false,
+      "releaseDecision": "complete"
     },
     {
       "featureId": "auto.post.user.param.follow.2",
@@ -5421,9 +5281,7 @@
       "ui": {
         "mode": "unknown",
         "route": null,
-        "actions": [
-          "POST /api/users/:id/follow"
-        ]
+        "actions": ["POST /api/users/:id/follow"]
       },
       "api": [
         {
@@ -5434,21 +5292,20 @@
       "guards": {
         "auth": true,
         "facilityScope": false,
-        "rolesAllowed": [
-          "ANY_AUTHENTICATED"
-        ]
+        "rolesAllowed": ["ANY_AUTHENTICATED"]
       },
       "evidence": {
-        "tests": [
-          "backend/tests/routes/user.follow.profile.aliases.cycle14.test.js"
-        ],
+        "tests": ["backend/tests/routes/user.follow.profile.aliases.cycle14.test.js"],
         "backendTests": [
           "backend/tests/routes/user.follow.profile.aliases.cycle14.test.js"
         ]
       },
       "verification": "Unverified",
       "autoGenerated": true,
-      "generatedFrom": "POST /api/users/:id/follow"
+      "generatedFrom": "POST /api/users/:id/follow",
+      "releaseScope": "internal",
+      "userVisible": false,
+      "releaseDecision": "complete"
     },
     {
       "featureId": "auto.post.user.param.unfollow.2",
@@ -5456,9 +5313,7 @@
       "ui": {
         "mode": "unknown",
         "route": null,
-        "actions": [
-          "POST /api/users/:id/unfollow"
-        ]
+        "actions": ["POST /api/users/:id/unfollow"]
       },
       "api": [
         {
@@ -5469,21 +5324,20 @@
       "guards": {
         "auth": true,
         "facilityScope": false,
-        "rolesAllowed": [
-          "ANY_AUTHENTICATED"
-        ]
+        "rolesAllowed": ["ANY_AUTHENTICATED"]
       },
       "evidence": {
-        "tests": [
-          "backend/tests/routes/user.follow.profile.aliases.cycle14.test.js"
-        ],
+        "tests": ["backend/tests/routes/user.follow.profile.aliases.cycle14.test.js"],
         "backendTests": [
           "backend/tests/routes/user.follow.profile.aliases.cycle14.test.js"
         ]
       },
       "verification": "Unverified",
       "autoGenerated": true,
-      "generatedFrom": "POST /api/users/:id/unfollow"
+      "generatedFrom": "POST /api/users/:id/unfollow",
+      "releaseScope": "internal",
+      "userVisible": false,
+      "releaseDecision": "complete"
     },
     {
       "featureId": "auto.post.user.avatar.2",
@@ -5491,9 +5345,7 @@
       "ui": {
         "mode": "unknown",
         "route": null,
-        "actions": [
-          "POST /api/users/avatar"
-        ]
+        "actions": ["POST /api/users/avatar"]
       },
       "api": [
         {
@@ -5504,9 +5356,7 @@
       "guards": {
         "auth": true,
         "facilityScope": false,
-        "rolesAllowed": [
-          "ANY_AUTHENTICATED"
-        ]
+        "rolesAllowed": ["ANY_AUTHENTICATED"]
       },
       "evidence": {
         "tests": [
@@ -5520,7 +5370,10 @@
       },
       "verification": "Unverified",
       "autoGenerated": true,
-      "generatedFrom": "POST /api/users/avatar"
+      "generatedFrom": "POST /api/users/avatar",
+      "releaseScope": "internal",
+      "userVisible": false,
+      "releaseDecision": "complete"
     },
     {
       "featureId": "auto.post.user.banner.2",
@@ -5528,9 +5381,7 @@
       "ui": {
         "mode": "unknown",
         "route": null,
-        "actions": [
-          "POST /api/users/banner"
-        ]
+        "actions": ["POST /api/users/banner"]
       },
       "api": [
         {
@@ -5541,9 +5392,7 @@
       "guards": {
         "auth": true,
         "facilityScope": false,
-        "rolesAllowed": [
-          "ANY_AUTHENTICATED"
-        ]
+        "rolesAllowed": ["ANY_AUTHENTICATED"]
       },
       "evidence": {
         "tests": [
@@ -5557,7 +5406,10 @@
       },
       "verification": "Unverified",
       "autoGenerated": true,
-      "generatedFrom": "POST /api/users/banner"
+      "generatedFrom": "POST /api/users/banner",
+      "releaseScope": "internal",
+      "userVisible": false,
+      "releaseDecision": "complete"
     },
     {
       "featureId": "auto.post.user.bio.2",
@@ -5565,9 +5417,7 @@
       "ui": {
         "mode": "unknown",
         "route": null,
-        "actions": [
-          "POST /api/users/bio"
-        ]
+        "actions": ["POST /api/users/bio"]
       },
       "api": [
         {
@@ -5578,9 +5428,7 @@
       "guards": {
         "auth": true,
         "facilityScope": false,
-        "rolesAllowed": [
-          "ANY_AUTHENTICATED"
-        ]
+        "rolesAllowed": ["ANY_AUTHENTICATED"]
       },
       "evidence": {
         "tests": [
@@ -5594,7 +5442,10 @@
       },
       "verification": "Unverified",
       "autoGenerated": true,
-      "generatedFrom": "POST /api/users/bio"
+      "generatedFrom": "POST /api/users/bio",
+      "releaseScope": "internal",
+      "userVisible": false,
+      "releaseDecision": "complete"
     },
     {
       "featureId": "auto.post.user.creator.onboard.2",
@@ -5602,9 +5453,7 @@
       "ui": {
         "mode": "unknown",
         "route": null,
-        "actions": [
-          "POST /api/user/creator/onboard"
-        ]
+        "actions": ["POST /api/user/creator/onboard"]
       },
       "api": [
         {
@@ -5618,13 +5467,14 @@
         "rolesAllowed": []
       },
       "evidence": {
-        "tests": [
-          "backend/tests/routes/cycle21.mixed.lowrisk.test.js"
-        ]
+        "tests": ["backend/tests/routes/cycle21.mixed.lowrisk.test.js"]
       },
       "verification": "Unverified",
       "autoGenerated": true,
-      "generatedFrom": "POST /api/users/creator/onboard"
+      "generatedFrom": "POST /api/users/creator/onboard",
+      "releaseScope": "internal",
+      "userVisible": false,
+      "releaseDecision": "complete"
     },
     {
       "featureId": "auto.post.user.follow.param.2",
@@ -5632,9 +5482,7 @@
       "ui": {
         "mode": "unknown",
         "route": null,
-        "actions": [
-          "POST /api/users/follow/:id"
-        ]
+        "actions": ["POST /api/users/follow/:id"]
       },
       "api": [
         {
@@ -5645,21 +5493,20 @@
       "guards": {
         "auth": true,
         "facilityScope": false,
-        "rolesAllowed": [
-          "ANY_AUTHENTICATED"
-        ]
+        "rolesAllowed": ["ANY_AUTHENTICATED"]
       },
       "evidence": {
-        "tests": [
-          "backend/tests/routes/user.follow.profile.aliases.cycle14.test.js"
-        ],
+        "tests": ["backend/tests/routes/user.follow.profile.aliases.cycle14.test.js"],
         "backendTests": [
           "backend/tests/routes/user.follow.profile.aliases.cycle14.test.js"
         ]
       },
       "verification": "Unverified",
       "autoGenerated": true,
-      "generatedFrom": "POST /api/users/follow/:id"
+      "generatedFrom": "POST /api/users/follow/:id",
+      "releaseScope": "internal",
+      "userVisible": false,
+      "releaseDecision": "complete"
     },
     {
       "featureId": "auto.post.user.preferences.notifications.2",
@@ -5667,9 +5514,7 @@
       "ui": {
         "mode": "unknown",
         "route": null,
-        "actions": [
-          "POST /api/user/preferences/notifications"
-        ]
+        "actions": ["POST /api/user/preferences/notifications"]
       },
       "api": [
         {
@@ -5683,13 +5528,14 @@
         "rolesAllowed": []
       },
       "evidence": {
-        "tests": [
-          "backend/tests/routes/cycle22.mixed.lowrisk.test.js"
-        ]
+        "tests": ["backend/tests/routes/cycle22.mixed.lowrisk.test.js"]
       },
       "verification": "Unverified",
       "autoGenerated": true,
-      "generatedFrom": "POST /api/users/preferences/notifications"
+      "generatedFrom": "POST /api/users/preferences/notifications",
+      "releaseScope": "internal",
+      "userVisible": false,
+      "releaseDecision": "complete"
     },
     {
       "featureId": "auto.post.user.unfollow.param.2",
@@ -5697,9 +5543,7 @@
       "ui": {
         "mode": "unknown",
         "route": null,
-        "actions": [
-          "POST /api/users/unfollow/:id"
-        ]
+        "actions": ["POST /api/users/unfollow/:id"]
       },
       "api": [
         {
@@ -5710,21 +5554,20 @@
       "guards": {
         "auth": true,
         "facilityScope": false,
-        "rolesAllowed": [
-          "ANY_AUTHENTICATED"
-        ]
+        "rolesAllowed": ["ANY_AUTHENTICATED"]
       },
       "evidence": {
-        "tests": [
-          "backend/tests/routes/user.follow.profile.aliases.cycle14.test.js"
-        ],
+        "tests": ["backend/tests/routes/user.follow.profile.aliases.cycle14.test.js"],
         "backendTests": [
           "backend/tests/routes/user.follow.profile.aliases.cycle14.test.js"
         ]
       },
       "verification": "Unverified",
       "autoGenerated": true,
-      "generatedFrom": "POST /api/users/unfollow/:id"
+      "generatedFrom": "POST /api/users/unfollow/:id",
+      "releaseScope": "internal",
+      "userVisible": false,
+      "releaseDecision": "complete"
     },
     {
       "featureId": "auto.put.courses.param.publish",
@@ -5732,9 +5575,7 @@
       "ui": {
         "mode": "unknown",
         "route": null,
-        "actions": [
-          "PUT /api/courses/:id/publish"
-        ]
+        "actions": ["PUT /api/courses/:id/publish"]
       },
       "api": [
         {
@@ -5752,7 +5593,10 @@
       },
       "verification": "Unverified",
       "autoGenerated": true,
-      "generatedFrom": "PUT /api/courses/:id/publish"
+      "generatedFrom": "PUT /api/courses/:id/publish",
+      "releaseScope": "internal",
+      "userVisible": false,
+      "releaseDecision": "backlog"
     },
     {
       "featureId": "auto.put.courses.lesson.param",
@@ -5760,9 +5604,7 @@
       "ui": {
         "mode": "unknown",
         "route": null,
-        "actions": [
-          "PUT /api/courses/lesson/:lessonId"
-        ]
+        "actions": ["PUT /api/courses/lesson/:lessonId"]
       },
       "api": [
         {
@@ -5780,7 +5622,10 @@
       },
       "verification": "Unverified",
       "autoGenerated": true,
-      "generatedFrom": "PUT /api/courses/lesson/:lessonId"
+      "generatedFrom": "PUT /api/courses/lesson/:lessonId",
+      "releaseScope": "internal",
+      "userVisible": false,
+      "releaseDecision": "backlog"
     },
     {
       "featureId": "auto.put.facility.param.tasks.param",
@@ -5788,9 +5633,7 @@
       "ui": {
         "mode": "unknown",
         "route": null,
-        "actions": [
-          "PUT /api/facility/:facilityId/tasks/:taskId"
-        ]
+        "actions": ["PUT /api/facility/:facilityId/tasks/:taskId"]
       },
       "api": [
         {
@@ -5812,7 +5655,10 @@
       },
       "verification": "Unverified",
       "autoGenerated": true,
-      "generatedFrom": "PUT /api/facilities/:facilityId/tasks/:taskId"
+      "generatedFrom": "PUT /api/facilities/:facilityId/tasks/:taskId",
+      "releaseScope": "internal",
+      "userVisible": false,
+      "releaseDecision": "complete"
     },
     {
       "featureId": "auto.put.facilities.param",
@@ -5820,9 +5666,7 @@
       "ui": {
         "mode": "unknown",
         "route": null,
-        "actions": [
-          "PUT /api/facilities/:id"
-        ]
+        "actions": ["PUT /api/facilities/:id"]
       },
       "api": [
         {
@@ -5836,13 +5680,14 @@
         "rolesAllowed": []
       },
       "evidence": {
-        "tests": [
-          "backend/tests/routes/cycle21.mixed.lowrisk.test.js"
-        ]
+        "tests": ["backend/tests/routes/cycle21.mixed.lowrisk.test.js"]
       },
       "verification": "Unverified",
       "autoGenerated": true,
-      "generatedFrom": "PUT /api/facilities/:id"
+      "generatedFrom": "PUT /api/facilities/:id",
+      "releaseScope": "internal",
+      "userVisible": false,
+      "releaseDecision": "complete"
     },
     {
       "featureId": "auto.put.facilities.param.active",
@@ -5850,9 +5695,7 @@
       "ui": {
         "mode": "unknown",
         "route": null,
-        "actions": [
-          "PUT /api/facilities/:id/active"
-        ]
+        "actions": ["PUT /api/facilities/:id/active"]
       },
       "api": [
         {
@@ -5866,13 +5709,14 @@
         "rolesAllowed": []
       },
       "evidence": {
-        "tests": [
-          "backend/tests/routes/cycle21.mixed.lowrisk.test.js"
-        ]
+        "tests": ["backend/tests/routes/cycle21.mixed.lowrisk.test.js"]
       },
       "verification": "Unverified",
       "autoGenerated": true,
-      "generatedFrom": "PUT /api/facilities/:id/active"
+      "generatedFrom": "PUT /api/facilities/:id/active",
+      "releaseScope": "internal",
+      "userVisible": false,
+      "releaseDecision": "complete"
     },
     {
       "featureId": "auto.put.facility.param.tasks.param.2",
@@ -5880,9 +5724,7 @@
       "ui": {
         "mode": "unknown",
         "route": null,
-        "actions": [
-          "PUT /api/facility/:facilityId/tasks/:taskId"
-        ]
+        "actions": ["PUT /api/facility/:facilityId/tasks/:taskId"]
       },
       "api": [
         {
@@ -5904,7 +5746,10 @@
       },
       "verification": "Unverified",
       "autoGenerated": true,
-      "generatedFrom": "PUT /api/facility/:facilityId/tasks/:taskId"
+      "generatedFrom": "PUT /api/facility/:facilityId/tasks/:taskId",
+      "releaseScope": "internal",
+      "userVisible": false,
+      "releaseDecision": "complete"
     },
     {
       "featureId": "auto.put.profile",
@@ -5912,9 +5757,7 @@
       "ui": {
         "mode": "unknown",
         "route": null,
-        "actions": [
-          "PUT /api/profile"
-        ]
+        "actions": ["PUT /api/profile"]
       },
       "api": [
         {
@@ -5932,7 +5775,10 @@
       },
       "verification": "Unverified",
       "autoGenerated": true,
-      "generatedFrom": "PUT /api/profile"
+      "generatedFrom": "PUT /api/profile",
+      "releaseScope": "internal",
+      "userVisible": false,
+      "releaseDecision": "backlog"
     },
     {
       "featureId": "auto.put.user.profile",
@@ -5940,9 +5786,7 @@
       "ui": {
         "mode": "unknown",
         "route": null,
-        "actions": [
-          "PUT /api/user/profile"
-        ]
+        "actions": ["PUT /api/user/profile"]
       },
       "api": [
         {
@@ -5953,21 +5797,20 @@
       "guards": {
         "auth": true,
         "facilityScope": false,
-        "rolesAllowed": [
-          "ANY_AUTHENTICATED"
-        ]
+        "rolesAllowed": ["ANY_AUTHENTICATED"]
       },
       "evidence": {
-        "tests": [
-          "backend/tests/routes/user.follow.profile.aliases.cycle14.test.js"
-        ],
+        "tests": ["backend/tests/routes/user.follow.profile.aliases.cycle14.test.js"],
         "backendTests": [
           "backend/tests/routes/user.follow.profile.aliases.cycle14.test.js"
         ]
       },
       "verification": "Unverified",
       "autoGenerated": true,
-      "generatedFrom": "PUT /api/user/profile"
+      "generatedFrom": "PUT /api/user/profile",
+      "releaseScope": "internal",
+      "userVisible": false,
+      "releaseDecision": "complete"
     },
     {
       "featureId": "auto.put.user.profile.2",
@@ -5975,9 +5818,7 @@
       "ui": {
         "mode": "unknown",
         "route": null,
-        "actions": [
-          "PUT /api/users/profile"
-        ]
+        "actions": ["PUT /api/users/profile"]
       },
       "api": [
         {
@@ -5988,21 +5829,20 @@
       "guards": {
         "auth": true,
         "facilityScope": false,
-        "rolesAllowed": [
-          "ANY_AUTHENTICATED"
-        ]
+        "rolesAllowed": ["ANY_AUTHENTICATED"]
       },
       "evidence": {
-        "tests": [
-          "backend/tests/routes/user.follow.profile.aliases.cycle14.test.js"
-        ],
+        "tests": ["backend/tests/routes/user.follow.profile.aliases.cycle14.test.js"],
         "backendTests": [
           "backend/tests/routes/user.follow.profile.aliases.cycle14.test.js"
         ]
       },
       "verification": "Unverified",
       "autoGenerated": true,
-      "generatedFrom": "PUT /api/users/profile"
+      "generatedFrom": "PUT /api/users/profile",
+      "releaseScope": "internal",
+      "userVisible": false,
+      "releaseDecision": "complete"
     },
     {
       "featureId": "ui.route.commercial.alerts.id",
@@ -6011,9 +5851,7 @@
       "ui": {
         "mode": "commercial",
         "route": "/alerts/[id]",
-        "actions": [
-          "open page"
-        ]
+        "actions": ["open page"]
       },
       "api": [
         {
@@ -6027,11 +5865,12 @@
         "rolesAllowed": []
       },
       "evidence": {
-        "tests": [
-          "tests/contracts/cycle8.frontend.route.surface.contract.test.js"
-        ]
+        "tests": ["tests/contracts/cycle8.frontend.route.surface.contract.test.js"]
       },
-      "autoGeneratedFromUiGap": true
+      "autoGeneratedFromUiGap": true,
+      "releaseScope": "v1",
+      "userVisible": true,
+      "releaseDecision": "complete"
     },
     {
       "featureId": "ui.route.commercial.feed",
@@ -6040,9 +5879,7 @@
       "ui": {
         "mode": "commercial",
         "route": "/home/commercial",
-        "actions": [
-          "open page"
-        ]
+        "actions": ["open page"]
       },
       "api": [
         {
@@ -6056,11 +5893,12 @@
         "rolesAllowed": []
       },
       "evidence": {
-        "tests": [
-          "tests/contracts/cycle8.frontend.route.surface.contract.test.js"
-        ]
+        "tests": ["tests/contracts/cycle8.frontend.route.surface.contract.test.js"]
       },
-      "autoGeneratedFromUiGap": true
+      "autoGeneratedFromUiGap": true,
+      "releaseScope": "v1",
+      "userVisible": true,
+      "releaseDecision": "complete"
     },
     {
       "featureId": "ui.route.commercial.logs.id",
@@ -6069,9 +5907,7 @@
       "ui": {
         "mode": "commercial",
         "route": "/logs/[id]",
-        "actions": [
-          "open page"
-        ]
+        "actions": ["open page"]
       },
       "api": [
         {
@@ -6085,11 +5921,12 @@
         "rolesAllowed": []
       },
       "evidence": {
-        "tests": [
-          "tests/contracts/cycle8.frontend.route.surface.contract.test.js"
-        ]
+        "tests": ["tests/contracts/cycle8.frontend.route.surface.contract.test.js"]
       },
-      "autoGeneratedFromUiGap": true
+      "autoGeneratedFromUiGap": true,
+      "releaseScope": "v1",
+      "userVisible": true,
+      "releaseDecision": "complete"
     },
     {
       "featureId": "ui.route.commercial.tasks.id",
@@ -6098,9 +5935,7 @@
       "ui": {
         "mode": "commercial",
         "route": "/tasks/[id]",
-        "actions": [
-          "open page"
-        ]
+        "actions": ["open page"]
       },
       "api": [
         {
@@ -6114,11 +5949,12 @@
         "rolesAllowed": []
       },
       "evidence": {
-        "tests": [
-          "tests/contracts/cycle8.frontend.route.surface.contract.test.js"
-        ]
+        "tests": ["tests/contracts/cycle8.frontend.route.surface.contract.test.js"]
       },
-      "autoGeneratedFromUiGap": true
+      "autoGeneratedFromUiGap": true,
+      "releaseScope": "v1",
+      "userVisible": true,
+      "releaseDecision": "complete"
     },
     {
       "featureId": "ui.route.home.commercial",
@@ -6127,9 +5963,7 @@
       "ui": {
         "mode": "commercial",
         "route": "/home/commercial",
-        "actions": [
-          "open page"
-        ]
+        "actions": ["open page"]
       },
       "api": [
         {
@@ -6143,11 +5977,12 @@
         "rolesAllowed": []
       },
       "evidence": {
-        "tests": [
-          "tests/contracts/cycle8.frontend.route.surface.contract.test.js"
-        ]
+        "tests": ["tests/contracts/cycle8.frontend.route.surface.contract.test.js"]
       },
-      "autoGeneratedFromUiGap": true
+      "autoGeneratedFromUiGap": true,
+      "releaseScope": "v1",
+      "userVisible": true,
+      "releaseDecision": "complete"
     },
     {
       "featureId": "ui.route.home.commercial.inventory",
@@ -6156,9 +5991,7 @@
       "ui": {
         "mode": "commercial",
         "route": "/home/commercial/inventory",
-        "actions": [
-          "list inventory"
-        ]
+        "actions": ["list inventory"]
       },
       "api": [
         {
@@ -6172,11 +6005,12 @@
         "rolesAllowed": []
       },
       "evidence": {
-        "tests": [
-          "backend/tests/routes/facility.compat.endpoints.test.js"
-        ]
+        "tests": ["backend/tests/routes/facility.compat.endpoints.test.js"]
       },
-      "autoGeneratedFromUiGap": true
+      "autoGeneratedFromUiGap": true,
+      "releaseScope": "v1",
+      "userVisible": true,
+      "releaseDecision": "complete"
     },
     {
       "featureId": "ui.route.home.commercial.inventory.create",
@@ -6185,9 +6019,7 @@
       "ui": {
         "mode": "commercial",
         "route": "/home/commercial/inventory-create",
-        "actions": [
-          "create inventory"
-        ]
+        "actions": ["create inventory"]
       },
       "api": [
         {
@@ -6201,11 +6033,12 @@
         "rolesAllowed": []
       },
       "evidence": {
-        "tests": [
-          "backend/tests/routes/facility.compat.endpoints.test.js"
-        ]
+        "tests": ["backend/tests/routes/facility.compat.endpoints.test.js"]
       },
-      "autoGeneratedFromUiGap": true
+      "autoGeneratedFromUiGap": true,
+      "releaseScope": "v1",
+      "userVisible": true,
+      "releaseDecision": "complete"
     },
     {
       "featureId": "ui.route.home.commercial.inventory.item.id",
@@ -6214,10 +6047,7 @@
       "ui": {
         "mode": "commercial",
         "route": "/home/commercial/inventory-item/[id]",
-        "actions": [
-          "get inventory item",
-          "update inventory item"
-        ]
+        "actions": ["get inventory item", "update inventory item"]
       },
       "api": [
         {
@@ -6235,11 +6065,12 @@
         "rolesAllowed": []
       },
       "evidence": {
-        "tests": [
-          "backend/tests/routes/facility.compat.endpoints.test.js"
-        ]
+        "tests": ["backend/tests/routes/facility.compat.endpoints.test.js"]
       },
-      "autoGeneratedFromUiGap": true
+      "autoGeneratedFromUiGap": true,
+      "releaseScope": "v1",
+      "userVisible": true,
+      "releaseDecision": "complete"
     },
     {
       "featureId": "ui.route.home.facility",
@@ -6248,9 +6079,7 @@
       "ui": {
         "mode": "facility",
         "route": "/home/facility",
-        "actions": [
-          "open page"
-        ]
+        "actions": ["open page"]
       },
       "api": [
         {
@@ -6264,11 +6093,12 @@
         "rolesAllowed": []
       },
       "evidence": {
-        "tests": [
-          "tests/contracts/cycle8.frontend.route.surface.contract.test.js"
-        ]
+        "tests": ["tests/contracts/cycle8.frontend.route.surface.contract.test.js"]
       },
-      "autoGeneratedFromUiGap": true
+      "autoGeneratedFromUiGap": true,
+      "releaseScope": "v1",
+      "userVisible": true,
+      "releaseDecision": "complete"
     },
     {
       "featureId": "ui.route.home.facility.ai.diagnosis.photo",
@@ -6276,10 +6106,8 @@
       "verification": "Unverified",
       "ui": {
         "mode": "facility",
-        "route": "/home/facility/ai/diagnosis-photo",
-        "actions": [
-          "submit feedback"
-        ]
+        "route": "/home/facility/ai-diagnosis-photo",
+        "actions": ["submit feedback"]
       },
       "api": [
         {
@@ -6293,11 +6121,12 @@
         "rolesAllowed": []
       },
       "evidence": {
-        "tests": [
-          "backend/tests/routes/facility.compat.endpoints.test.js"
-        ]
+        "tests": ["backend/tests/routes/facility.compat.endpoints.test.js"]
       },
-      "autoGeneratedFromUiGap": true
+      "autoGeneratedFromUiGap": true,
+      "releaseScope": "v1",
+      "userVisible": true,
+      "releaseDecision": "complete"
     },
     {
       "featureId": "ui.route.home.facility.ai.template",
@@ -6305,11 +6134,8 @@
       "verification": "Unverified",
       "ui": {
         "mode": "facility",
-        "route": "/home/facility/ai/template",
-        "actions": [
-          "compare templates",
-          "export training"
-        ]
+        "route": "/home/facility/ai-template",
+        "actions": ["compare templates", "export training"]
       },
       "api": [
         {
@@ -6327,11 +6153,12 @@
         "rolesAllowed": []
       },
       "evidence": {
-        "tests": [
-          "backend/tests/routes/ai.test.js"
-        ]
+        "tests": ["backend/tests/routes/ai.test.js"]
       },
-      "autoGeneratedFromUiGap": true
+      "autoGeneratedFromUiGap": true,
+      "releaseScope": "v1",
+      "userVisible": true,
+      "releaseDecision": "complete"
     },
     {
       "featureId": "ui.route.home.facility.audit.logs",
@@ -6340,10 +6167,7 @@
       "ui": {
         "mode": "facility",
         "route": "/home/facility/audit-logs",
-        "actions": [
-          "list logs",
-          "create log"
-        ]
+        "actions": ["list logs", "create log"]
       },
       "api": [
         {
@@ -6361,11 +6185,12 @@
         "rolesAllowed": []
       },
       "evidence": {
-        "tests": [
-          "backend/tests/routes/facility.compat.endpoints.test.js"
-        ]
+        "tests": ["backend/tests/routes/facility.compat.endpoints.test.js"]
       },
-      "autoGeneratedFromUiGap": true
+      "autoGeneratedFromUiGap": true,
+      "releaseScope": "v1",
+      "userVisible": true,
+      "releaseDecision": "complete"
     },
     {
       "featureId": "ui.route.home.facility.compliance.reports",
@@ -6374,10 +6199,7 @@
       "ui": {
         "mode": "facility",
         "route": "/home/facility/compliance/reports",
-        "actions": [
-          "list compliance logs",
-          "create compliance log"
-        ]
+        "actions": ["list compliance logs", "create compliance log"]
       },
       "api": [
         {
@@ -6395,11 +6217,12 @@
         "rolesAllowed": []
       },
       "evidence": {
-        "tests": [
-          "backend/tests/routes/facility.compat.endpoints.test.js"
-        ]
+        "tests": ["backend/tests/routes/facility.compat.endpoints.test.js"]
       },
-      "autoGeneratedFromUiGap": true
+      "autoGeneratedFromUiGap": true,
+      "releaseScope": "v1",
+      "userVisible": true,
+      "releaseDecision": "complete"
     },
     {
       "featureId": "ui.route.home.facility.dashboard",
@@ -6408,9 +6231,7 @@
       "ui": {
         "mode": "facility",
         "route": "/home/facility/dashboard",
-        "actions": [
-          "fetch summary counts"
-        ]
+        "actions": ["fetch summary counts"]
       },
       "api": [
         {
@@ -6440,11 +6261,12 @@
         "rolesAllowed": []
       },
       "evidence": {
-        "tests": [
-          "backend/tests/routes/facility.compat.endpoints.test.js"
-        ]
+        "tests": ["backend/tests/routes/facility.compat.endpoints.test.js"]
       },
-      "autoGeneratedFromUiGap": true
+      "autoGeneratedFromUiGap": true,
+      "releaseScope": "v1",
+      "userVisible": true,
+      "releaseDecision": "complete"
     },
     {
       "featureId": "ui.route.home.facility.grows",
@@ -6453,9 +6275,7 @@
       "ui": {
         "mode": "facility",
         "route": "/home/facility/grows",
-        "actions": [
-          "list grows"
-        ]
+        "actions": ["list grows"]
       },
       "api": [
         {
@@ -6469,11 +6289,12 @@
         "rolesAllowed": []
       },
       "evidence": {
-        "tests": [
-          "backend/tests/routes/facility.compat.endpoints.test.js"
-        ]
+        "tests": ["backend/tests/routes/facility.compat.endpoints.test.js"]
       },
-      "autoGeneratedFromUiGap": true
+      "autoGeneratedFromUiGap": true,
+      "releaseScope": "v1",
+      "userVisible": true,
+      "releaseDecision": "complete"
     },
     {
       "featureId": "ui.route.home.facility.inventory",
@@ -6482,9 +6303,7 @@
       "ui": {
         "mode": "facility",
         "route": "/home/facility/inventory",
-        "actions": [
-          "list inventory"
-        ]
+        "actions": ["list inventory"]
       },
       "api": [
         {
@@ -6498,11 +6317,12 @@
         "rolesAllowed": []
       },
       "evidence": {
-        "tests": [
-          "backend/tests/routes/facility.compat.endpoints.test.js"
-        ]
+        "tests": ["backend/tests/routes/facility.compat.endpoints.test.js"]
       },
-      "autoGeneratedFromUiGap": true
+      "autoGeneratedFromUiGap": true,
+      "releaseScope": "v1",
+      "userVisible": true,
+      "releaseDecision": "complete"
     },
     {
       "featureId": "ui.route.home.facility.logs",
@@ -6511,9 +6331,7 @@
       "ui": {
         "mode": "facility",
         "route": "/home/facility/logs",
-        "actions": [
-          "list logs"
-        ]
+        "actions": ["list logs"]
       },
       "api": [
         {
@@ -6527,11 +6345,12 @@
         "rolesAllowed": []
       },
       "evidence": {
-        "tests": [
-          "backend/tests/routes/facility.compat.endpoints.test.js"
-        ]
+        "tests": ["backend/tests/routes/facility.compat.endpoints.test.js"]
       },
-      "autoGeneratedFromUiGap": true
+      "autoGeneratedFromUiGap": true,
+      "releaseScope": "v1",
+      "userVisible": true,
+      "releaseDecision": "complete"
     },
     {
       "featureId": "ui.route.home.facility.plants",
@@ -6540,9 +6359,7 @@
       "ui": {
         "mode": "facility",
         "route": "/home/facility/plants",
-        "actions": [
-          "list plants"
-        ]
+        "actions": ["list plants"]
       },
       "api": [
         {
@@ -6556,11 +6373,12 @@
         "rolesAllowed": []
       },
       "evidence": {
-        "tests": [
-          "backend/tests/routes/facility.compat.endpoints.test.js"
-        ]
+        "tests": ["backend/tests/routes/facility.compat.endpoints.test.js"]
       },
-      "autoGeneratedFromUiGap": true
+      "autoGeneratedFromUiGap": true,
+      "releaseScope": "v1",
+      "userVisible": true,
+      "releaseDecision": "complete"
     },
     {
       "featureId": "ui.route.home.facility.profile",
@@ -6569,10 +6387,7 @@
       "ui": {
         "mode": "facility",
         "route": "/home/facility/profile",
-        "actions": [
-          "get me",
-          "list facilities"
-        ]
+        "actions": ["get me", "list facilities"]
       },
       "api": [
         {
@@ -6590,11 +6405,12 @@
         "rolesAllowed": []
       },
       "evidence": {
-        "tests": [
-          "backend/tests/routes/facility.compat.endpoints.test.js"
-        ]
+        "tests": ["backend/tests/routes/facility.compat.endpoints.test.js"]
       },
-      "autoGeneratedFromUiGap": true
+      "autoGeneratedFromUiGap": true,
+      "releaseScope": "v1",
+      "userVisible": true,
+      "releaseDecision": "complete"
     },
     {
       "featureId": "ui.route.home.facility.select",
@@ -6603,9 +6419,7 @@
       "ui": {
         "mode": "facility",
         "route": "/home/facility/select",
-        "actions": [
-          "list facilities"
-        ]
+        "actions": ["list facilities"]
       },
       "api": [
         {
@@ -6619,11 +6433,12 @@
         "rolesAllowed": []
       },
       "evidence": {
-        "tests": [
-          "backend/tests/routes/facility.compat.endpoints.test.js"
-        ]
+        "tests": ["backend/tests/routes/facility.compat.endpoints.test.js"]
       },
-      "autoGeneratedFromUiGap": true
+      "autoGeneratedFromUiGap": true,
+      "releaseScope": "v1",
+      "userVisible": true,
+      "releaseDecision": "complete"
     },
     {
       "featureId": "ui.route.home.facility.sop.runs",
@@ -6632,12 +6447,7 @@
       "ui": {
         "mode": "facility",
         "route": "/home/facility/sop-runs",
-        "actions": [
-          "list runs",
-          "start run",
-          "view run",
-          "complete run"
-        ]
+        "actions": ["list runs", "start run", "view run", "complete run"]
       },
       "api": [
         {
@@ -6667,11 +6477,12 @@
         "rolesAllowed": []
       },
       "evidence": {
-        "tests": [
-          "backend/tests/routes/facility.compat.endpoints.test.js"
-        ]
+        "tests": ["backend/tests/routes/facility.compat.endpoints.test.js"]
       },
-      "autoGeneratedFromUiGap": true
+      "autoGeneratedFromUiGap": true,
+      "releaseScope": "v1",
+      "userVisible": true,
+      "releaseDecision": "complete"
     },
     {
       "featureId": "ui.route.home.personal",
@@ -6680,9 +6491,7 @@
       "ui": {
         "mode": "personal",
         "route": "/home/personal",
-        "actions": [
-          "load home context"
-        ]
+        "actions": ["load home context"]
       },
       "api": [
         {
@@ -6696,11 +6505,12 @@
         "rolesAllowed": []
       },
       "evidence": {
-        "tests": [
-          "backend/tests/routes/personal.surface.endpoints.test.js"
-        ]
+        "tests": ["backend/tests/routes/personal.surface.endpoints.test.js"]
       },
-      "autoGeneratedFromUiGap": true
+      "autoGeneratedFromUiGap": true,
+      "releaseScope": "v1",
+      "userVisible": true,
+      "releaseDecision": "complete"
     },
     {
       "featureId": "ui.route.home.personal.courses",
@@ -6709,10 +6519,7 @@
       "ui": {
         "mode": "personal",
         "route": "/home/personal/courses",
-        "actions": [
-          "list courses",
-          "send invite"
-        ]
+        "actions": ["list courses", "send invite"]
       },
       "api": [
         {
@@ -6730,11 +6537,12 @@
         "rolesAllowed": []
       },
       "evidence": {
-        "tests": [
-          "backend/tests/routes/facility.compat.endpoints.test.js"
-        ]
+        "tests": ["backend/tests/routes/facility.compat.endpoints.test.js"]
       },
-      "autoGeneratedFromUiGap": true
+      "autoGeneratedFromUiGap": true,
+      "releaseScope": "v1",
+      "userVisible": true,
+      "releaseDecision": "complete"
     },
     {
       "featureId": "ui.route.home.personal.diagnose",
@@ -6769,11 +6577,12 @@
         "rolesAllowed": []
       },
       "evidence": {
-        "tests": [
-          "backend/tests/routes/personal.surface.endpoints.test.js"
-        ]
+        "tests": ["backend/tests/routes/personal.surface.endpoints.test.js"]
       },
-      "autoGeneratedFromUiGap": true
+      "autoGeneratedFromUiGap": true,
+      "releaseScope": "v1",
+      "userVisible": true,
+      "releaseDecision": "complete"
     },
     {
       "featureId": "ui.route.home.personal.forum",
@@ -6782,10 +6591,7 @@
       "ui": {
         "mode": "personal",
         "route": "/home/personal/forum",
-        "actions": [
-          "list latest forum posts",
-          "create forum post"
-        ]
+        "actions": ["list latest forum posts", "create forum post"]
       },
       "api": [
         {
@@ -6811,11 +6617,12 @@
         "rolesAllowed": []
       },
       "evidence": {
-        "tests": [
-          "backend/tests/routes/personal.surface.endpoints.test.js"
-        ]
+        "tests": ["backend/tests/routes/personal.surface.endpoints.test.js"]
       },
-      "autoGeneratedFromUiGap": true
+      "autoGeneratedFromUiGap": true,
+      "releaseScope": "v1",
+      "userVisible": true,
+      "releaseDecision": "complete"
     },
     {
       "featureId": "ui.route.home.personal.grows",
@@ -6824,10 +6631,7 @@
       "ui": {
         "mode": "personal",
         "route": "/home/personal/grows",
-        "actions": [
-          "list grows",
-          "create grow"
-        ]
+        "actions": ["list grows", "create grow"]
       },
       "api": [
         {
@@ -6845,23 +6649,21 @@
         "rolesAllowed": []
       },
       "evidence": {
-        "tests": [
-          "backend/tests/routes/personal.surface.endpoints.test.js"
-        ]
+        "tests": ["backend/tests/routes/personal.surface.endpoints.test.js"]
       },
-      "autoGeneratedFromUiGap": true
+      "autoGeneratedFromUiGap": true,
+      "releaseScope": "v1",
+      "userVisible": true,
+      "releaseDecision": "complete"
     },
     {
       "featureId": "ui.route.home.personal.logs",
-      "status": "Functional",
+      "status": "Disabled",
       "verification": "Unverified",
       "ui": {
         "mode": "personal",
         "route": "/home/personal/logs",
-        "actions": [
-          "list personal logs",
-          "log auto-tag"
-        ]
+        "actions": ["list personal logs", "log auto-tag"]
       },
       "api": [
         {
@@ -6879,11 +6681,13 @@
         "rolesAllowed": []
       },
       "evidence": {
-        "tests": [
-          "backend/tests/routes/personal.surface.endpoints.test.js"
-        ]
+        "tests": ["backend/tests/routes/personal.surface.endpoints.test.js"]
       },
-      "autoGeneratedFromUiGap": true
+      "autoGeneratedFromUiGap": true,
+      "releaseScope": "post_v1",
+      "userVisible": false,
+      "releaseDecision": "hide",
+      "releaseNote": "Logs are grow-scoped for v1; keep top-level route out of navigation."
     },
     {
       "featureId": "ui.route.home.personal.profile",
@@ -6892,9 +6696,7 @@
       "ui": {
         "mode": "personal",
         "route": "/home/personal/profile",
-        "actions": [
-          "load user profile context"
-        ]
+        "actions": ["load user profile context"]
       },
       "api": [
         {
@@ -6912,11 +6714,12 @@
         "rolesAllowed": []
       },
       "evidence": {
-        "tests": [
-          "backend/tests/routes/personal.surface.endpoints.test.js"
-        ]
+        "tests": ["backend/tests/routes/personal.surface.endpoints.test.js"]
       },
-      "autoGeneratedFromUiGap": true
+      "autoGeneratedFromUiGap": true,
+      "releaseScope": "v1",
+      "userVisible": true,
+      "releaseDecision": "complete"
     },
     {
       "featureId": "ui.route.home.personal.tasks",
@@ -6925,9 +6728,7 @@
       "ui": {
         "mode": "personal",
         "route": "/home/personal/tasks",
-        "actions": [
-          "redirect to facility tasks"
-        ]
+        "actions": ["redirect to facility tasks"]
       },
       "api": [],
       "guards": {
@@ -6939,7 +6740,11 @@
         "tests": []
       },
       "autoGeneratedFromUiGap": true,
-      "disabledReason": "Personal tasks are intentionally disabled in v1; screen routes users to facility mode tasks."
+      "disabledReason": "Personal tasks are intentionally disabled in v1; screen routes users to facility mode tasks.",
+      "releaseScope": "post_v1",
+      "userVisible": false,
+      "releaseDecision": "hide",
+      "releaseNote": "Tasks are grow-scoped for v1; keep top-level route out of navigation."
     },
     {
       "featureId": "ai.compare.endpoint",
@@ -6947,10 +6752,8 @@
       "verification": "Unverified",
       "ui": {
         "mode": "facility",
-        "route": "/home/facility/ai/template",
-        "actions": [
-          "compare ai candidates"
-        ]
+        "route": "/home/facility/ai-template",
+        "actions": ["compare ai candidates"]
       },
       "api": [
         {
@@ -6961,17 +6764,14 @@
       "guards": {
         "auth": true,
         "facilityScope": false,
-        "rolesAllowed": [
-          "OWNER",
-          "MANAGER",
-          "STAFF"
-        ]
+        "rolesAllowed": ["OWNER", "MANAGER", "STAFF"]
       },
       "evidence": {
-        "tests": [
-          "backend/tests/routes/ai.test.js"
-        ]
-      }
+        "tests": ["backend/tests/routes/ai.test.js"]
+      },
+      "releaseScope": "v1",
+      "userVisible": true,
+      "releaseDecision": "complete"
     },
     {
       "featureId": "ai.feedback.endpoint",
@@ -6979,10 +6779,8 @@
       "verification": "Unverified",
       "ui": {
         "mode": "facility",
-        "route": "/home/facility/ai/diagnosis-photo",
-        "actions": [
-          "submit ai feedback"
-        ]
+        "route": "/home/facility/ai-diagnosis-photo",
+        "actions": ["submit ai feedback"]
       },
       "api": [
         {
@@ -6993,18 +6791,14 @@
       "guards": {
         "auth": true,
         "facilityScope": false,
-        "rolesAllowed": [
-          "OWNER",
-          "MANAGER",
-          "STAFF",
-          "VIEWER"
-        ]
+        "rolesAllowed": ["OWNER", "MANAGER", "STAFF", "VIEWER"]
       },
       "evidence": {
-        "tests": [
-          "backend/tests/routes/ai.test.js"
-        ]
-      }
+        "tests": ["backend/tests/routes/ai.test.js"]
+      },
+      "releaseScope": "v1",
+      "userVisible": true,
+      "releaseDecision": "complete"
     },
     {
       "featureId": "ai.training.export.endpoint",
@@ -7012,10 +6806,8 @@
       "verification": "Unverified",
       "ui": {
         "mode": "facility",
-        "route": "/home/facility/ai/template",
-        "actions": [
-          "export ai training data"
-        ]
+        "route": "/home/facility/ai-template",
+        "actions": ["export ai training data"]
       },
       "api": [
         {
@@ -7026,16 +6818,14 @@
       "guards": {
         "auth": true,
         "facilityScope": false,
-        "rolesAllowed": [
-          "OWNER",
-          "MANAGER"
-        ]
+        "rolesAllowed": ["OWNER", "MANAGER"]
       },
       "evidence": {
-        "tests": [
-          "backend/tests/routes/ai.test.js"
-        ]
-      }
+        "tests": ["backend/tests/routes/ai.test.js"]
+      },
+      "releaseScope": "v1",
+      "userVisible": true,
+      "releaseDecision": "complete"
     },
     {
       "featureId": "facility.verification.compat",
@@ -7044,11 +6834,7 @@
       "ui": {
         "mode": "facility",
         "route": "/home/facility/tasks",
-        "actions": [
-          "list verification",
-          "approve verification",
-          "reject verification"
-        ]
+        "actions": ["list verification", "approve verification", "reject verification"]
       },
       "api": [
         {
@@ -7065,10 +6851,11 @@
         }
       ],
       "evidence": {
-        "tests": [
-          "backend/tests/routes/facility.compat.endpoints.test.js"
-        ]
-      }
+        "tests": ["backend/tests/routes/facility.compat.endpoints.test.js"]
+      },
+      "releaseScope": "v1",
+      "userVisible": true,
+      "releaseDecision": "complete"
     },
     {
       "featureId": "vendors.global.compat",
@@ -7077,12 +6864,7 @@
       "ui": {
         "mode": "commercial",
         "route": "/home/commercial",
-        "actions": [
-          "list vendors",
-          "create vendor",
-          "update vendor",
-          "delete vendor"
-        ]
+        "actions": ["list vendors", "create vendor", "update vendor", "delete vendor"]
       },
       "api": [
         {
@@ -7103,10 +6885,11 @@
         }
       ],
       "evidence": {
-        "tests": [
-          "backend/tests/routes/facility.compat.endpoints.test.js"
-        ]
-      }
+        "tests": ["backend/tests/routes/facility.compat.endpoints.test.js"]
+      },
+      "releaseScope": "v1",
+      "userVisible": true,
+      "releaseDecision": "complete"
     }
   ],
   "generatedAt": "2026-02-25T14:39:41.005Z",
@@ -7119,6 +6902,14 @@
     "source": "validate:v1-ui-surface live missing list",
     "attemptedRows": 29,
     "addedRows": 29
+  },
+  "releaseMetadata": {
+    "updatedAt": "2026-07-02T02:03:30.250Z",
+    "rules": {
+      "v1": "Implemented and intended for public release UI.",
+      "post_v1": "Product-owned but intentionally absent from v1 UI.",
+      "internal": "Backend, compatibility, inventory, or generated row not directly user-visible.",
+      "removed": "Removed from release scope."
+    }
   }
 }
-

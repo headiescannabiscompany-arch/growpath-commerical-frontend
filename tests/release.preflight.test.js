@@ -41,12 +41,18 @@ function createPreflightRoot() {
     "scripts/verify-sentry-dsn.cjs",
     "scripts/verify-live-urls.cjs",
     "scripts/inventory-ui-routes.cjs",
+    "scripts/validate-v1-ui-surface.cjs",
+    "scripts/validate-v1-feature-matrix.cjs",
     "scripts/export-production-web.cjs",
     "node_modules/jest/bin/jest.js",
     "node_modules/@playwright/test/cli.js"
   ].forEach((relPath) => writeFile(tempRoot, relPath, fakeNodeScript(relPath)));
 
-  writeFile(tempRoot, "scripts/export-store-assets.ps1", "Write-Output 'store assets ok'\n");
+  writeFile(
+    tempRoot,
+    "scripts/export-store-assets.ps1",
+    "Write-Output 'store assets ok'\n"
+  );
   writeFile(
     tempRoot,
     "fake-powershell.js",
@@ -59,19 +65,27 @@ fs.appendFileSync(path.join(process.cwd(), "preflight-log.jsonl"), JSON.stringif
 }) + "\\n");
 `
   );
-  writeFile(tempRoot, "powershell.cmd", '@echo off\r\nnode "%~dp0fake-powershell.js" %*\r\n');
+  writeFile(
+    tempRoot,
+    "powershell.cmd",
+    '@echo off\r\nnode "%~dp0fake-powershell.js" %*\r\n'
+  );
   return tempRoot;
 }
 
 function runPreflight(tempRoot, args = []) {
-  return spawnSync(process.execPath, [path.join(tempRoot, "scripts", "release-preflight.cjs"), ...args], {
-    cwd: tempRoot,
-    encoding: "utf8",
-    env: {
-      ...process.env,
-      PATH: `${tempRoot}${path.delimiter}${process.env.PATH || ""}`
+  return spawnSync(
+    process.execPath,
+    [path.join(tempRoot, "scripts", "release-preflight.cjs"), ...args],
+    {
+      cwd: tempRoot,
+      encoding: "utf8",
+      env: {
+        ...process.env,
+        PATH: `${tempRoot}${path.delimiter}${process.env.PATH || ""}`
+      }
     }
-  });
+  );
 }
 
 function readLog(tempRoot) {
@@ -97,11 +111,13 @@ describe("release preflight", () => {
       "scripts/scan-release.cjs",
       "scripts/audit-full-surface.cjs",
       "scripts/inventory-ui-routes.cjs",
+      "scripts/validate-v1-ui-surface.cjs",
+      "scripts/validate-v1-feature-matrix.cjs",
       "node_modules/jest/bin/jest.js",
       "node_modules/@playwright/test/cli.js",
       "scripts/export-production-web.cjs"
     ]);
-    expect(readLog(tempRoot)[3].argv).toEqual(
+    expect(readLog(tempRoot)[5].argv).toEqual(
       expect.arrayContaining([
         "tests/release.scan.test.js",
         "tests/release.go-no-go.test.js",
@@ -134,12 +150,14 @@ describe("release preflight", () => {
       "scripts/verify-sentry-dsn.cjs",
       "scripts/verify-live-urls.cjs",
       "scripts/inventory-ui-routes.cjs",
+      "scripts/validate-v1-ui-surface.cjs",
+      "scripts/validate-v1-feature-matrix.cjs",
       "node_modules/jest/bin/jest.js",
       "node_modules/@playwright/test/cli.js",
       "scripts/export-production-web.cjs"
     ]);
     expect(log[2].strict).toBe("1");
-    expect(log[6].argv).toEqual(
+    expect(log[8].argv).toEqual(
       expect.arrayContaining([
         "tests/release.scan.test.js",
         "tests/release.go-no-go.test.js",
@@ -153,7 +171,7 @@ describe("release preflight", () => {
         "tests/release.store-assets.test.js"
       ])
     );
-    expect(log[7]).toEqual(
+    expect(log[9]).toEqual(
       expect.objectContaining({
         playwrightPort: "19025",
         playwrightVideo: "1"
@@ -163,7 +181,9 @@ describe("release preflight", () => {
     const evidenceDir = path.join(tempRoot, "tmp/spec/strict-preflight");
     const files = fs.readdirSync(evidenceDir).filter((file) => file.endsWith(".json"));
     expect(files).toHaveLength(1);
-    const evidence = JSON.parse(fs.readFileSync(path.join(evidenceDir, files[0]), "utf8"));
+    const evidence = JSON.parse(
+      fs.readFileSync(path.join(evidenceDir, files[0]), "utf8")
+    );
     expect(evidence).toEqual(
       expect.objectContaining({
         status: "passed",

@@ -20,7 +20,9 @@ function run(label, command, args, options = {}) {
   });
 
   if (result.error) {
-    console.error(`[release-preflight] ${label} failed to start: ${result.error.message}`);
+    console.error(
+      `[release-preflight] ${label} failed to start: ${result.error.message}`
+    );
     process.exit(1);
   }
 
@@ -65,6 +67,12 @@ async function main() {
   }
 
   run("UI route inventory", process.execPath, ["scripts/inventory-ui-routes.cjs"]);
+  run("V1 UI surface validation", process.execPath, [
+    "scripts/validate-v1-ui-surface.cjs"
+  ]);
+  run("V1 feature matrix validation", process.execPath, [
+    "scripts/validate-v1-feature-matrix.cjs"
+  ]);
 
   run("focused release unit tests", process.execPath, [
     jestCli,
@@ -114,9 +122,7 @@ async function main() {
     "scripts/export-store-assets.ps1"
   ]);
 
-  console.log(
-    `\n[release-preflight] ${strict ? "strict " : ""}preflight passed.`
-  );
+  console.log(`\n[release-preflight] ${strict ? "strict " : ""}preflight passed.`);
   if (strict) writeStrictEvidence();
 }
 

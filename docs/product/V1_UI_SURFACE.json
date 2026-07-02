@@ -3,11 +3,10 @@
   "updatedAt": "2026-02-25",
   "modes": {
     "personal": {
-      "nav": ["Home", "Grows", "Logs", "Tools", "Courses", "Forum", "Diagnose", "Profile", "AI"],
+      "nav": ["Home", "Grows", "Tools", "Courses", "Forum", "Diagnose", "Profile", "AI"],
       "routes": [
         "/home/personal",
         "/home/personal/grows",
-        "/home/personal/logs",
         "/home/personal/tools",
         "/home/personal/courses",
         "/home/personal/forum",
@@ -15,10 +14,19 @@
         "/home/personal/profile",
         "/home/personal/ai"
       ],
-      "outOfNavRoutes": ["/home/personal/tasks"]
+      "outOfNavRoutes": []
     },
     "facility": {
-      "nav": ["Dashboard", "Grows", "Plants", "Tasks", "Logs", "Inventory", "Team", "Profile"],
+      "nav": [
+        "Dashboard",
+        "Grows",
+        "Plants",
+        "Tasks",
+        "Logs",
+        "Inventory",
+        "Team",
+        "Profile"
+      ],
       "routes": [
         "/home/facility",
         "/home/facility/select",
@@ -32,10 +40,10 @@
         "/home/facility/profile"
       ],
       "outOfNavRoutes": [
-        "/home/facility/ai/ask",
-        "/home/facility/ai/diagnosis-photo",
-        "/home/facility/ai/template",
-        "/home/facility/ai/validation",
+        "/home/facility/ai-ask",
+        "/home/facility/ai-diagnosis-photo",
+        "/home/facility/ai-template",
+        "/home/facility/ai-validation",
         "/home/facility/sop-runs",
         "/home/facility/compliance/reports",
         "/home/facility/audit-logs"
@@ -50,7 +58,10 @@
         "/logs/[id]",
         "/alerts/[id]"
       ],
-      "outOfNavRoutes": ["/home/commercial/inventory-item/[id]", "/home/commercial/inventory-create"]
+      "outOfNavRoutes": [
+        "/home/commercial/inventory-item/[id]",
+        "/home/commercial/inventory-create"
+      ]
     }
   },
   "statusPolicy": {
@@ -60,6 +71,6 @@
       "Planned",
       "Disabled"
     ],
-    "rule": "Every reachable route in nav must be assigned exactly one required status."
+    "rule": "Every user-visible v1 route must be mapped to a matrix row with releaseScope=v1, userVisible=true, and releaseDecision=complete or beta. Hidden, planned, disabled, and grow-scoped redirect routes must not appear in top-level navigation."
   }
 }

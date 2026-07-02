@@ -58,16 +58,26 @@ function main() {
       continue;
     }
 
-    const hasActionableStatus = rows.some((r) =>
-      ["Functional", "Planned", "Disabled"].includes(String(r?.status || ""))
+    const hasVisibleReleaseRow = rows.some(
+      (r) =>
+        r?.userVisible === true &&
+        r?.releaseScope === "v1" &&
+        ["complete", "beta"].includes(String(r?.releaseDecision || ""))
     );
-    if (!hasActionableStatus) {
-      failures.push(`Route mapped but has no actionable status row: ${route}`);
+    if (!hasVisibleReleaseRow) {
+      failures.push(`Route mapped but has no visible v1 release row: ${route}`);
     }
   }
 
   for (const [route, rows] of rowsByRoute.entries()) {
-    if (!requiredRoutes.has(route) && route.startsWith("/home/")) {
+    const hasVisibleReleaseRow = rows.some(
+      (r) => r?.userVisible === true && r?.releaseScope === "v1"
+    );
+    if (
+      !requiredRoutes.has(route) &&
+      route.startsWith("/home/") &&
+      hasVisibleReleaseRow
+    ) {
       warnings.push(
         `Matrix route not in V1_UI_SURFACE (check stale/extra row): ${route} (${rows.length} row(s))`
       );
