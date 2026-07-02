@@ -98,6 +98,10 @@ describe("personal feature status manifest", () => {
     expect(byKey["tools.ph_ec_adjustment"].status).toBe("release");
     expect(byKey["tools.dry_cure_guard"].status).toBe("release");
     expect(byKey["tools.nutrient_source_comparison"].status).toBe("release");
+    expect(byKey["tools.product_ingredient_library"].status).toBe("release");
+    expect(byKey["tools.product_ingredient_library"].href).toBe(
+      "/home/personal/tools/ingredient-library"
+    );
     expect(byKey["tools.stress_testing"].status).toBe("release");
     expect(byKey["tools.stress_testing"].href).toBe("/home/personal/tools/stress-test");
     expect(byKey["tools.clone_rooting"].status).toBe("release");
@@ -145,7 +149,6 @@ describe("personal feature status manifest", () => {
     expect(byKey["tools.organism_library"]).toBeUndefined();
     expect(byKey["tools.regional_invasive_alerts"]).toBeUndefined();
     expect(byKey["tools.diagnosis_rules"]).toBeUndefined();
-    expect(byKey["tools.product_ingredient_library"]).toBeUndefined();
     expect(byKey["tools.crop_profile_database"]).toBeUndefined();
     expect(byKey["tools.tissue_culture"].area).toBe("lab_tc");
     expect(byKey["tools.living_soil_batch_production"].area).toBe("business_production");

@@ -100,7 +100,7 @@ async function installMocks(page: any) {
             growId: GROW.id,
             title: "Follow up on olive diagnosis",
             description: "Inspect leaves and confirm root-zone moisture.",
-            dueDate: "2026-07-01T10:00:00.000Z",
+            dueDate: "2026-07-02T10:00:00.000Z",
             completed: false,
             priority: "high",
             sourceType: "ai_diagnosis",

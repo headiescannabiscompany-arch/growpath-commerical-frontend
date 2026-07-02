@@ -1,11 +1,11 @@
 # Full Scan Report
 
 ## Counts
-- src files: 781
+- src files: 782
 - test files: 116
-- total files: 897
+- total files: 898
 - api files: 103
-- api orphans: 1
+- api orphans: 0
 - legacy client callers: 0
 - js/ts twin modules: 15
 - banned findings: 0
@@ -28,7 +28,7 @@
 - src/ui/handleApiError.js , src/ui/handleApiError.ts
 
 ## API Orphans (src/api files not imported anywhere)
-- src/api/productIngredients.ts
+- none
 
 ## Legacy client callers
 - none

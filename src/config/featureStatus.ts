@@ -173,6 +173,18 @@ export const personalToolFeatures = [
       "V1 release view inside the nutrient system. Uses starter source categories and keeps provenance expansion in the ingredient library backlog."
   },
   {
+    key: "tools.product_ingredient_library",
+    title: "Product / Ingredient Library",
+    description:
+      "Create and manage nutrient, amendment, soil, and input records for recipes and grow planning.",
+    area: "water_nutrients",
+    status: "release",
+    href: "/home/personal/tools/ingredient-library",
+    capabilityKey: CAPABILITY_KEYS.TOOL_NPK,
+    internalNote:
+      "V1 release CRUD surface for user-entered ingredients with label NPK, source confidence, favorites, and archive support."
+  },
+  {
     key: "tools.watering",
     title: "Watering Planner",
     description: "Estimate watering volume using medium, stage, and environment.",

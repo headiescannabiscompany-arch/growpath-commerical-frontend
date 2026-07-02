@@ -161,6 +161,11 @@ export default function ToolsHubScreen() {
               <Text style={styles.utilityText}>Recipes</Text>
             </Pressable>
           </Link>
+          <Link href={"/home/personal/tools/ingredient-library" as Href} asChild>
+            <Pressable style={styles.utilityButton}>
+              <Text style={styles.utilityText}>Ingredients</Text>
+            </Pressable>
+          </Link>
         </View>
       </View>
 
