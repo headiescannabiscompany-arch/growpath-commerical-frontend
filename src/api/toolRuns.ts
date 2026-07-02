@@ -43,7 +43,13 @@ export type CalculatorTool =
   | "dew-point-guard"
   | "watering"
   | "bud-rot-risk"
-  | "npk-recipe";
+  | "npk-recipe"
+  | "ph-ec-check"
+  | "topdress-plan"
+  | "dry-amendment-mix"
+  | "dry-cure-guard"
+  | "soil-builder"
+  | "nutrient-source-comparison";
 
 export function normalizeToolRun(row: any): ToolRun {
   if (!row || typeof row !== "object") return {};

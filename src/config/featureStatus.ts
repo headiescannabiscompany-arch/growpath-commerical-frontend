@@ -161,6 +161,18 @@ export const personalToolFeatures = [
       "Starter library requires complete source provenance and wider validation."
   },
   {
+    key: "tools.nutrient_source_comparison",
+    title: "Nutrient Source Comparison",
+    description: "Compare source speed, pH effects, secondary nutrients, and use cases.",
+    area: "water_nutrients",
+    status: "release",
+    href: "/home/personal/tools/nutrient-source-comparison",
+    acceptsGrowContext: true,
+    capabilityKey: CAPABILITY_KEYS.TOOL_NPK,
+    internalNote:
+      "V1 release view inside the nutrient system. Uses starter source categories and keeps provenance expansion in the ingredient library backlog."
+  },
+  {
     key: "tools.watering",
     title: "Watering Planner",
     description: "Estimate watering volume using medium, stage, and environment.",
@@ -267,40 +279,48 @@ export const personalToolFeatures = [
     description:
       "Build full soil mixes with base, compost, aeration, minerals, and amendments.",
     area: "water_nutrients",
-    status: "planned",
+    status: "release",
+    href: "/home/personal/tools/soil-builder",
     acceptsGrowContext: true,
+    capabilityKey: CAPABILITY_KEYS.TOOL_NPK,
     internalNote:
-      "Original planned v1 module. Needs saveable recipes, release windows, source provenance, cost/batch math, and grow assignment before exposure."
+      "V1 release calculator is wired to ToolRun, grow log, task, and timeline. Source provenance, inventory costing, and batch production remain deeper system work."
   },
   {
     key: "tools.dry_amendment_mix",
     title: "Dry Amendment Mix Builder",
     description: "Blend dry amendments toward target ratios and dose rates.",
     area: "water_nutrients",
-    status: "planned",
+    status: "release",
+    href: "/home/personal/tools/dry-amendment-mix",
     acceptsGrowContext: true,
+    capabilityKey: CAPABILITY_KEYS.TOOL_NPK,
     internalNote:
-      "Original planned v1 module. Needs ingredient library, release timing, dose-per-volume math, and warnings before exposure."
+      "V1 release calculator uses guaranteed analysis, release grouping, dose math, ToolRun, grow log, task, and timeline. Ingredient-library provenance still needs expansion."
   },
   {
     key: "tools.topdress_planner",
     title: "Topdress Planner",
     description: "Plan topdress amount, timing, release window, and follow-up tasks.",
     area: "water_nutrients",
-    status: "planned",
+    status: "release",
+    href: "/home/personal/tools/topdress",
     acceptsGrowContext: true,
+    capabilityKey: CAPABILITY_KEYS.TOOL_NPK,
     internalNote:
-      "Original planned v1 module. Needs soil volume, stage, amendment recipe, timing, task creation, and grow log wiring."
+      "V1 release calculator supports soil volume, stage warning, amount math, ToolRun, grow log, topdress task, and timeline."
   },
   {
     key: "tools.ph_ec_adjustment",
-    title: "pH / EC Adjustment",
-    description: "Check pH and EC differences with safe adjustment warnings.",
+    title: "pH / EC Range Check",
+    description: "Check input/runoff pH and EC with safe adjustment warnings.",
     area: "water_nutrients",
-    status: "planned",
+    status: "release",
+    href: "/home/personal/tools/ph-ec",
     acceptsGrowContext: true,
+    capabilityKey: CAPABILITY_KEYS.TOOL_NPK,
     internalNote:
-      "Original planned v1 limited-safety module. Must not give exact dosing without known product concentration."
+      "Upgraded from legacy pH/EC screen. V1 release checks ranges and runoff drift; it intentionally does not give exact pH up/down dosing without product concentration."
   },
   {
     key: "tools.crop_steering_projects",
@@ -360,10 +380,11 @@ export const personalToolFeatures = [
     title: "Dry / Cure Guard",
     description: "Track drying room, jar RH, cure status, mold risk, and next actions.",
     area: "planning_records",
-    status: "planned",
+    status: "release",
+    href: "/home/personal/tools/dry-cure-guard",
     acceptsGrowContext: true,
     internalNote:
-      "Original planned v1 harvest batch workflow; needs dry/cure records and task wiring."
+      "V1 release calculator is wired to ToolRun, grow log, task, and timeline. Harvest-batch-specific records remain deeper workflow work."
   },
   {
     key: "tools.clone_rooting",

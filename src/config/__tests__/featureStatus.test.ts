@@ -63,16 +63,11 @@ describe("personal feature status manifest", () => {
 
   test("records planned v1 tools without exposing fake routes", () => {
     const plannedTools = [
-      "tools.soil_builder",
-      "tools.dry_amendment_mix",
-      "tools.topdress_planner",
-      "tools.ph_ec_adjustment",
       "tools.crop_steering_projects",
       "tools.stress_testing",
       "tools.pheno_hunting",
       "tools.genetics_inventory",
       "tools.tissue_culture",
-      "tools.dry_cure_guard",
       "tools.clone_rooting",
       "tools.ipm_scout",
       "tools.species_crop_identification",
@@ -102,6 +97,13 @@ describe("personal feature status manifest", () => {
     expect(byKey["tools.ipm_scout"].area).toBe("plant_health");
     expect(byKey["tools.npk_recipe"].area).toBe("water_nutrients");
     expect(byKey["tools.soil_builder"].area).toBe("water_nutrients");
+    expect(byKey["tools.soil_builder"].status).toBe("release");
+    expect(byKey["tools.soil_builder"].href).toBe("/home/personal/tools/soil-builder");
+    expect(byKey["tools.dry_amendment_mix"].status).toBe("release");
+    expect(byKey["tools.topdress_planner"].status).toBe("release");
+    expect(byKey["tools.ph_ec_adjustment"].status).toBe("release");
+    expect(byKey["tools.dry_cure_guard"].status).toBe("release");
+    expect(byKey["tools.nutrient_source_comparison"].status).toBe("release");
     expect(byKey["tools.crop_steering_projects"].area).toBe("crop_management");
     expect(byKey["tools.timeline_planner"].area).toBe("planning_records");
     expect(byKey["tools.pheno_matrix"].area).toBe("genetics");
@@ -109,7 +111,6 @@ describe("personal feature status manifest", () => {
     expect(byKey["tools.genetics_inventory"].description).toMatch(/breeding lane/i);
     expect(byKey["tools.grow_aware_ai_assistant"]).toBeUndefined();
     expect(byKey["tools.grow_log_auto_tagging"]).toBeUndefined();
-    expect(byKey["tools.nutrient_source_comparison"]).toBeUndefined();
     expect(byKey["tools.compatibility_checker"]).toBeUndefined();
     expect(byKey["tools.organism_library"]).toBeUndefined();
     expect(byKey["tools.regional_invasive_alerts"]).toBeUndefined();

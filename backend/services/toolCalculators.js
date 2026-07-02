@@ -423,4 +423,440 @@ function calculateNpkRecipe(input = {}) {
   };
 }
 
-module.exports = { calculateVpd, calculatePpfdDli, calculateDewPointGuard, calculateWatering, calculateBudRotRisk, calculateNpkRecipe };
+function classifyRange(value, range = {}) {
+  if (value === null || value === undefined || value === "") return "missing";
+  const n = Number(value);
+  if (!Number.isFinite(n)) return "missing";
+  const min = Number(range.min);
+  const max = Number(range.max);
+  if (!Number.isFinite(min) || !Number.isFinite(max)) return "missing";
+  if (n < min) return "low";
+  if (n > max) return "high";
+  return "in_range";
+}
+
+function normalizeEc(value, unit = "mS/cm") {
+  if (value === null || value === undefined || value === "") return null;
+  const n = number(value, "EC");
+  const normalized = String(unit || "mS/cm").toLowerCase();
+  if (normalized === "ppm500") return n / 500;
+  if (normalized === "ppm700") return n / 700;
+  return n;
+}
+
+function calculatePhEcCheck(input = {}) {
+  const medium = String(input.medium || "soil");
+  const stage = String(input.stage || "veg");
+  const targetPHRange = input.targetPHRange || (medium === "coco" || medium === "hydro"
+    ? { min: 5.7, max: 6.2 }
+    : { min: 6.2, max: 6.8 });
+  const targetECRange = input.targetECRange || (stage === "seedling"
+    ? { min: 0.4, max: 1.0 }
+    : stage === "flower" || stage === "late_flower"
+      ? { min: 1.2, max: 2.2 }
+      : { min: 0.8, max: 1.8 });
+  const inputEC = normalizeEc(input.inputEC, input.ecUnit);
+  const runoffEC = normalizeEc(input.runoffEC, input.ecUnit);
+  const phStatus = classifyRange(input.inputPH, targetPHRange);
+  const runoffPHStatus = classifyRange(input.runoffPH, targetPHRange);
+  const ecStatus = classifyRange(inputEC, targetECRange);
+  const runoffECStatus = classifyRange(runoffEC, targetECRange);
+  const warnings = [];
+  const recommendations = [];
+  const possibleRisks = [];
+  let driftDirection = "unknown";
+
+  if (input.runoffPH !== undefined && input.inputPH !== undefined) {
+    const drift = Number(input.runoffPH) - Number(input.inputPH);
+    if (Number.isFinite(drift)) {
+      driftDirection = drift > 0.2 ? "runoff_higher" : drift < -0.2 ? "runoff_lower" : "stable";
+    }
+  }
+  if (runoffEC != null && inputEC != null && runoffEC > inputEC * 1.35) {
+    warnings.push("Runoff EC is materially higher than input EC.");
+    possibleRisks.push("Salt buildup or accumulated nutrients may be affecting uptake.");
+    recommendations.push("Check dryback, runoff volume, feed strength, and recent feeding history before increasing nutrients.");
+  }
+  if (runoffECStatus === "high") {
+    warnings.push("Runoff EC is above the selected target range.");
+    possibleRisks.push("Root-zone EC may be too high for the selected stage or medium.");
+  }
+  if (runoffPHStatus === "low" || runoffPHStatus === "high") {
+    warnings.push("Runoff pH is outside the selected target range.");
+    possibleRisks.push("Root-zone pH drift may be affecting nutrient availability.");
+    recommendations.push("Recheck meter calibration and compare input pH to runoff pH over multiple waterings.");
+  }
+  if (phStatus === "low" || phStatus === "high") {
+    recommendations.push("Adjust input pH cautiously based on medium and product instructions.");
+  }
+  if (String(input.waterSource || "").toLowerCase() === "ro") {
+    recommendations.push("RO water contributes little mineral buffering. Ca/Mg and alkalinity context matter.");
+  }
+  if (!warnings.length) {
+    recommendations.push("Values are within the selected ranges. Keep logging trends instead of reacting to one reading.");
+  }
+
+  return {
+    medium,
+    stage,
+    targetPHRange,
+    targetECRange,
+    normalizedEC: { inputEC, runoffEC, unit: "mS/cm" },
+    phStatus,
+    runoffPHStatus,
+    ecStatus,
+    runoffECStatus,
+    driftDirection,
+    possibleRisks: Array.from(new Set(possibleRisks)),
+    warnings: Array.from(new Set(warnings)),
+    recommendations: Array.from(new Set(recommendations)),
+    retestTaskSuggestion: {
+      title: "Retest pH / EC",
+      dueInDays: warnings.length ? 1 : 3,
+      priority: warnings.length ? "medium" : "low"
+    },
+    formulaExplanation:
+      "This tool compares measured pH and EC values against selected target ranges and flags runoff drift or buildup. It does not calculate exact pH up/down dosing because product concentration and alkalinity are required."
+  };
+}
+
+function gallons(value, unit = "gallons") {
+  const n = number(value, "Soil volume");
+  const normalized = String(unit || "gallons").toLowerCase();
+  if (["cubic_feet", "cubic feet", "ft3"].includes(normalized)) return n * 7.48052;
+  if (["liters", "l"].includes(normalized)) return n * 0.264172;
+  return n;
+}
+
+function calculateTopdressPlan(input = {}) {
+  const plantCount = Math.max(1, Number(input.plantCount || input.plantIds?.length || 1));
+  const gallonsPerPlant = gallons(input.soilVolumePerPlant, input.soilVolumeUnit);
+  const doseRate = number(input.doseRate, "Dose rate");
+  const doseUnit = String(input.doseUnit || "tbsp_per_gallon");
+  let amountPerPlant = doseRate * gallonsPerPlant;
+  let amountUnit = doseUnit;
+  if (doseUnit === "grams_total") {
+    amountPerPlant = doseRate / plantCount;
+    amountUnit = "grams";
+  } else if (doseUnit === "cups_per_cubic_foot") {
+    amountPerPlant = doseRate * (gallonsPerPlant / 7.48052);
+    amountUnit = "cups";
+  } else if (doseUnit === "grams_per_gallon") {
+    amountUnit = "grams";
+  } else if (doseUnit === "tbsp_per_gallon") {
+    amountUnit = "tbsp";
+  }
+  const totalAmount = amountPerPlant * plantCount;
+  const warnings = [];
+  if (String(input.stage || "").toLowerCase() === "late_flower") {
+    warnings.push("Late flower topdressing may release too slowly to affect this run. Decide whether this is current support or next-cycle soil building.");
+  }
+  if (input.lastTopdressDate && input.plannedApplyDate) {
+    const days = (Date.parse(input.plannedApplyDate) - Date.parse(input.lastTopdressDate)) / 86400000;
+    if (Number.isFinite(days) && days < 10) warnings.push("Topdress interval is short. Check the previous application before stacking more amendment.");
+  }
+  const plannedApplyDate = input.plannedApplyDate || new Date().toISOString();
+  return {
+    plantCount,
+    gallonsPerPlant: Number(gallonsPerPlant.toFixed(2)),
+    amountPerPlant: Number(amountPerPlant.toFixed(2)),
+    totalAmount: Number(totalAmount.toFixed(2)),
+    amountUnit,
+    plannedApplyDate,
+    expectedReleaseWindow: input.expectedReleaseWindow || "Depends on product release speed, biology, moisture, and particle size.",
+    warnings,
+    recommendations: [
+      input.waterInAfterApply === false
+        ? "If the product label allows, lightly water in after application to start biological contact."
+        : "Water in gently and avoid burying dry amendments against stems.",
+      "Log the application and schedule a follow-up check rather than judging release from one day of response."
+    ],
+    taskToCreate: {
+      title: `Topdress ${input.productName || "selected amendment"}`,
+      dueDate: plannedApplyDate,
+      priority: warnings.length ? "medium" : "low"
+    },
+    logSummary: `Topdress planned: ${amountPerPlant.toFixed(2)} ${amountUnit} per plant, ${totalAmount.toFixed(2)} ${amountUnit} total.`
+  };
+}
+
+function gramsFromWeight(value, unit = "grams") {
+  const n = number(value, "Weight");
+  const normalized = String(unit || "grams").toLowerCase();
+  if (["kg", "kilogram", "kilograms"].includes(normalized)) return n * 1000;
+  if (["pound", "pounds", "lb", "lbs"].includes(normalized)) return n * 453.59237;
+  if (["ounce", "ounces", "oz"].includes(normalized)) return n * 28.3495;
+  return n;
+}
+
+function releaseBucket(row = {}) {
+  const explicit = String(row.releaseClass || "").toLowerCase();
+  if (["immediate", "fast", "medium", "slow", "very_slow"].includes(explicit)) return explicit;
+  const days = Number(row.releaseWindowDays);
+  if (!Number.isFinite(days)) return "unknown";
+  if (days <= 3) return "immediate";
+  if (days <= 14) return "fast";
+  if (days <= 45) return "medium";
+  if (days <= 120) return "slow";
+  return "very_slow";
+}
+
+function calculateDryAmendmentMix(input = {}) {
+  const ingredients = Array.isArray(input.ingredients) ? input.ingredients : [];
+  if (!ingredients.length) throw new Error("At least one ingredient is required");
+  const rows = ingredients.map((ingredient, index) => {
+    const grams = gramsFromWeight(ingredient.amount, ingredient.amountUnit || input.batchWeightUnit || "grams");
+    return {
+      name: String(ingredient.name || `Ingredient ${index + 1}`),
+      grams,
+      labelN: number(ingredient.N ?? 0, "N"),
+      labelP2O5: number(ingredient.P2O5 ?? ingredient.P ?? 0, "P2O5"),
+      labelK2O: number(ingredient.K2O ?? ingredient.K ?? 0, "K2O"),
+      Ca: number(ingredient.Ca ?? 0, "Ca"),
+      Mg: number(ingredient.Mg ?? 0, "Mg"),
+      S: number(ingredient.S ?? 0, "S"),
+      releaseClass: releaseBucket(ingredient),
+      sourceConfidence: sourceConfidenceFor(ingredient)
+    };
+  });
+  const batchWeight = input.batchWeight
+    ? gramsFromWeight(input.batchWeight, input.batchWeightUnit || "grams")
+    : rows.reduce((sum, row) => sum + row.grams, 0);
+  if (batchWeight <= 0) throw new Error("Batch weight must be greater than zero");
+  const weighted = (key) => rows.reduce((sum, row) => sum + row.grams * (row[key] / 100), 0) / batchWeight * 100;
+  const totalAnalysis = {
+    N: Number(weighted("labelN").toFixed(2)),
+    P2O5: Number(weighted("labelP2O5").toFixed(2)),
+    K2O: Number(weighted("labelK2O").toFixed(2)),
+    elementalP: Number((weighted("labelP2O5") * 0.4364).toFixed(2)),
+    elementalK: Number((weighted("labelK2O") * 0.8301).toFixed(2)),
+    Ca: Number(weighted("Ca").toFixed(2)),
+    Mg: Number(weighted("Mg").toFixed(2)),
+    S: Number(weighted("S").toFixed(2))
+  };
+  const nonZero = [totalAnalysis.N, totalAnalysis.P2O5, totalAnalysis.K2O].filter((v) => v > 0);
+  const base = nonZero.length ? Math.min(...nonZero) : 1;
+  const achievedRatio = {
+    N: Number((totalAnalysis.N / base).toFixed(2)),
+    P: Number((totalAnalysis.P2O5 / base).toFixed(2)),
+    K: Number((totalAnalysis.K2O / base).toFixed(2))
+  };
+  const releaseTimeline = rows.reduce((acc, row) => {
+    const key = row.releaseClass || "unknown";
+    acc[key] = acc[key] || [];
+    acc[key].push({ name: row.name, grams: Number(row.grams.toFixed(2)) });
+    return acc;
+  }, { immediate: [], fast: [], medium: [], slow: [], very_slow: [], unknown: [] });
+  const warnings = [
+    "Slow amendments may not correct urgent symptoms.",
+    "Ingredient analysis may vary unless label/source is verified."
+  ];
+  if (totalAnalysis.P2O5 > totalAnalysis.N * 1.8 && totalAnalysis.P2O5 > 1) {
+    warnings.push("High phosphorus blends can affect micronutrient balance.");
+  }
+  if (totalAnalysis.K2O > totalAnalysis.N * 2 && totalAnalysis.K2O > 1) {
+    warnings.push("High potassium can compete with calcium/magnesium uptake.");
+  }
+  const dosePerGallonSoil = input.dosePerGallonSoil ? number(input.dosePerGallonSoil, "Dose per gallon soil") : null;
+  return {
+    recipeName: input.recipeName || "Dry amendment blend",
+    targetRatio: input.targetRatio || null,
+    achievedRatio,
+    totalAnalysis,
+    batchWeight,
+    batchWeightUnit: "grams",
+    ingredientWeights: rows.map((row) => ({
+      name: row.name,
+      grams: Number(row.grams.toFixed(2)),
+      percentOfBatch: Number((row.grams / batchWeight * 100).toFixed(2)),
+      releaseClass: row.releaseClass,
+      sourceConfidence: row.sourceConfidence
+    })),
+    dosePerGallonSoil,
+    dosePerCubicFoot: dosePerGallonSoil == null ? null : Number((dosePerGallonSoil * 7.48052).toFixed(2)),
+    releaseTimeline,
+    warnings: Array.from(new Set(warnings)),
+    recommendations: ["Save this blend as a recipe, then use Topdress Planner or Soil Builder for actual application timing."],
+    logSummary: `${input.recipeName || "Dry amendment blend"}: ${totalAnalysis.N}-${totalAnalysis.P2O5}-${totalAnalysis.K2O} guaranteed analysis estimate.`
+  };
+}
+
+function calculateDryCureGuard(input = {}) {
+  const tempF = number(input.dryRoomTemp ?? input.tempF ?? input.airTemp, "Dry room temperature");
+  const tempC = celsius(tempF, input.tempUnit || "F");
+  const rh = validRh(input.dryRoomRH ?? input.rh);
+  const jarRH = input.jarRH == null || input.jarRH === "" ? null : number(input.jarRH, "Jar RH");
+  const dewPointC = dewPoint(tempC, rh);
+  const spread = tempC - dewPointC;
+  const warnings = [];
+  const recommendations = [];
+  let moldRisk = "low";
+  let overdryRisk = "low";
+  if (rh > 65) {
+    moldRisk = "medium";
+    warnings.push("Dry room RH is elevated. Watch dense flowers and airflow.");
+  }
+  if (rh > 70) {
+    moldRisk = "high";
+    warnings.push("High RH can increase mold risk during drying.");
+  }
+  if (rh < 50) {
+    overdryRisk = "medium";
+    warnings.push("Low RH can dry the outside too quickly and reduce cure quality.");
+  }
+  if (tempF > 68) {
+    recommendations.push("Temperature is above the common 60F target. Good results are still possible, but watch dry speed, aroma retention, RH, and airflow.");
+  }
+  if (String(input.mode || "drying") === "curing" && jarRH !== null) {
+    if (jarRH > 68) {
+      moldRisk = "high";
+      recommendations.push("Jar RH is high. Open jars, inspect for mold, and allow moisture to drop.");
+    } else if (jarRH >= 62 && jarRH <= 65) {
+      recommendations.push("Jar RH is in a common curing zone. Continue monitoring.");
+    } else if (jarRH < 55) {
+      overdryRisk = "high";
+      recommendations.push("Jar RH is low. Flower may be overdried or curing may slow.");
+    }
+  }
+  return {
+    mode: String(input.mode || "drying"),
+    dewPointC: Number(dewPointC.toFixed(2)),
+    dewPointF: Number((dewPointC * 9 / 5 + 32).toFixed(2)),
+    dewPointSpreadC: Number(spread.toFixed(2)),
+    dryStatus: String(input.mode || "drying") === "drying" ? "monitoring" : null,
+    cureStatus: String(input.mode || "drying") === "curing" ? "monitoring" : null,
+    moldRisk,
+    overdryRisk,
+    nextAction: moldRisk === "high" ? "Inspect and vent immediately" : "Continue monitoring",
+    taskSuggestions: [
+      {
+        title: String(input.mode || "drying") === "curing" ? "Check jar RH" : "Check dry room RH/temp",
+        dueInHours: moldRisk === "high" ? 6 : 12,
+        priority: moldRisk === "high" ? "high" : "medium"
+      }
+    ],
+    warnings,
+    recommendations,
+    realisticNotes:
+      "60/60 is a common target, not the only path. Dry/cure results are not guaranteed; temperature, RH, airflow, flower density, dry speed, jar moisture, and handling all matter."
+  };
+}
+
+function calculateSoilBuilder(input = {}) {
+  const totalGallons = gallons(input.totalVolume, input.volumeUnit || "gallons");
+  if (totalGallons <= 0) throw new Error("Total soil volume must be greater than zero");
+  const basePercent = number(input.basePercent ?? 33, "Base percent");
+  const compostPercent = number(input.compostPercent ?? 33, "Compost percent");
+  const aerationPercent = number(input.aerationPercent ?? 34, "Aeration percent");
+  const percentTotal = basePercent + compostPercent + aerationPercent;
+  if (Math.abs(percentTotal - 100) > 0.5) throw new Error("Base, compost, and aeration percentages must total 100");
+  const amendments = Array.isArray(input.amendments) ? input.amendments : [];
+  const minerals = Array.isArray(input.minerals) ? input.minerals : [];
+  const ingredientBreakdown = [
+    { name: "Base", gallons: Number((totalGallons * basePercent / 100).toFixed(2)), percent: basePercent },
+    { name: "Compost", gallons: Number((totalGallons * compostPercent / 100).toFixed(2)), percent: compostPercent },
+    { name: "Aeration", gallons: Number((totalGallons * aerationPercent / 100).toFixed(2)), percent: aerationPercent }
+  ];
+  const doseRows = [...amendments, ...minerals].map((row) => {
+    const rate = number(row.doseRate ?? 0, `${row.name || "Ingredient"} dose`);
+    const unit = String(row.doseUnit || "cups_per_cubic_foot");
+    const amount = unit === "grams_per_gallon" ? rate * totalGallons : rate * (totalGallons / 7.48052);
+    return {
+      name: String(row.name || "Ingredient"),
+      amount: Number(amount.toFixed(2)),
+      unit: unit === "grams_per_gallon" ? "grams" : "cups",
+      releaseClass: releaseBucket(row)
+    };
+  });
+  const warnings = [];
+  if (compostPercent > 40) warnings.push("Compost is above 40%. Watch density, drainage, and nutrient strength.");
+  if (amendments.length + minerals.length === 0) warnings.push("No amendments or minerals were entered; this is only a base soil volume plan.");
+  return {
+    mixName: input.mixName || "Soil mix",
+    totalGallons: Number(totalGallons.toFixed(2)),
+    totalCubicFeet: Number((totalGallons / 7.48052).toFixed(2)),
+    ingredientBreakdown,
+    cubicFeetBreakdown: ingredientBreakdown.map((row) => ({ ...row, cubicFeet: Number((row.gallons / 7.48052).toFixed(2)) })),
+    gallonBreakdown: ingredientBreakdown,
+    bagCountEstimate: input.bagSizeGallons ? Math.ceil(totalGallons / number(input.bagSizeGallons, "Bag size")) : null,
+    amendmentDosePerGallon: doseRows,
+    amendmentDosePerCubicFoot: doseRows,
+    releaseTimeline: doseRows.reduce((acc, row) => {
+      acc[row.releaseClass] = acc[row.releaseClass] || [];
+      acc[row.releaseClass].push(row.name);
+      return acc;
+    }, {}),
+    warnings,
+    mixingInstructions: [
+      "Blend base, compost, and aeration evenly before adding concentrated amendments.",
+      "Pre-mix dry amendments separately to avoid hot spots.",
+      "Moisten evenly and allow biological blends to cycle before transplanting when appropriate."
+    ],
+    recipe: { recipeType: "soil_mix", ingredients: [...ingredientBreakdown, ...doseRows] }
+  };
+}
+
+function calculateNutrientSourceComparison(input = {}) {
+  const nutrient = String(input.nutrient || "calcium").toLowerCase();
+  const intent = String(input.intent || "fast_correction").toLowerCase();
+  const library = {
+    calcium: {
+      fast: ["calcium nitrate", "calcium acetate/lactate", "calcium chloride, with chloride warning"],
+      medium: ["gypsum"],
+      slow: ["calcitic lime", "dolomitic lime", "oyster shell", "bone meal", "crab meal"],
+      warnings: ["Lime and oyster shell are pH-buffering soil builders, not fast Ca corrections."]
+    },
+    nitrogen: {
+      fast: ["nitrate nitrogen", "ammonium nitrate blends", "amino/soluble organic N where label supports it"],
+      medium: ["alfalfa meal", "fish meal"],
+      slow: ["feather meal", "blood meal in biologically active media"],
+      warnings: ["High nitrogen in flower can work against finish quality depending on crop and stage."]
+    },
+    phosphorus: {
+      fast: ["soluble phosphate products"],
+      medium: ["soft rock phosphate where biology and pH support it"],
+      slow: ["bone meal", "rock phosphate"],
+      warnings: ["High phosphorus can affect micronutrient balance."]
+    },
+    potassium: {
+      fast: ["potassium sulfate", "potassium silicate with mixing-order care"],
+      medium: ["kelp meal", "langbeinite"],
+      slow: ["greensand"],
+      warnings: ["High potassium can compete with calcium and magnesium uptake."]
+    },
+    magnesium: {
+      fast: ["magnesium sulfate"],
+      medium: ["langbeinite"],
+      slow: ["dolomitic lime"],
+      warnings: ["Dolomitic lime is slow and also affects pH buffering."]
+    }
+  };
+  const row = library[nutrient] || library.calcium;
+  return {
+    nutrient,
+    intent,
+    fastSources: row.fast,
+    mediumSources: row.medium,
+    slowSources: row.slow,
+    bestChoiceByIntent: intent.includes("long") || intent.includes("soil") ? row.slow[0] : row.fast[0],
+    pHEffectWarnings: row.warnings.filter((warning) => /lime|pH|buffer/i.test(warning)),
+    secondaryNutrients: "Review label analysis; many sources bring secondary nutrients or salts.",
+    badUseCases: row.warnings,
+    recommendations: ["Choose source speed based on intent: fast correction versus long-term soil building.", "Confirm product label, medium pH, and crop stage before applying."]
+  };
+}
+
+module.exports = {
+  calculateVpd,
+  calculatePpfdDli,
+  calculateDewPointGuard,
+  calculateWatering,
+  calculateBudRotRisk,
+  calculateNpkRecipe,
+  calculatePhEcCheck,
+  calculateTopdressPlan,
+  calculateDryAmendmentMix,
+  calculateDryCureGuard,
+  calculateSoilBuilder,
+  calculateNutrientSourceComparison
+};

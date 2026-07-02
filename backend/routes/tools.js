@@ -529,6 +529,20 @@ calculatorRoute(
 calculatorRoute("/watering", "watering", calculators.calculateWatering);
 calculatorRoute("/bud-rot-risk", "bud_rot_risk", calculators.calculateBudRotRisk);
 calculatorRoute("/npk-recipe", "npk_recipe", calculators.calculateNpkRecipe);
+calculatorRoute("/ph-ec-check", "ph_ec_check", calculators.calculatePhEcCheck);
+calculatorRoute("/topdress-plan", "topdress_plan", calculators.calculateTopdressPlan);
+calculatorRoute(
+  "/dry-amendment-mix",
+  "dry_amendment_mix",
+  calculators.calculateDryAmendmentMix
+);
+calculatorRoute("/dry-cure-guard", "dry_cure_guard", calculators.calculateDryCureGuard);
+calculatorRoute("/soil-builder", "soil_builder", calculators.calculateSoilBuilder);
+calculatorRoute(
+  "/nutrient-source-comparison",
+  "nutrient_source_comparison",
+  calculators.calculateNutrientSourceComparison
+);
 
 router.get("/runs/:id", async (req, res, next) => {
   try {

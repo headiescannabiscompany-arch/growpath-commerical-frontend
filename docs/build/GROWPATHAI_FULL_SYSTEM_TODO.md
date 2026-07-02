@@ -30,7 +30,7 @@ Legend:
 - [x] Task source-object links restored for ToolRun, Diagnosis, and GrowLog sources.
 - [x] Photo/media metadata and source links restored for grow logs.
 - [~] Crop profile/taxon base model.
-- [ ] Shared result UI contract and action state machine.
+- [~] Shared result UI contract and action state machine.
 - [~] Ownership tests for grow, plant, task, log, recipe, tool run, diagnosis, telemetry, and integration records.
 
 ## Phase 2 - Soil And Nutrient System
@@ -38,11 +38,11 @@ Legend:
 - [~] NPK / Nutrient Recipe Calculator.
 - [~] Nutrient Release Chemistry.
 - [ ] Compatibility Checker.
-- [ ] Nutrient Source Comparison.
-- [ ] Soil Builder.
-- [ ] Dry Amendment Mix Builder.
-- [ ] Topdress Planner.
-- [ ] pH / EC Range Check.
+- [~] Nutrient Source Comparison.
+- [~] Soil Builder.
+- [~] Dry Amendment Mix Builder.
+- [~] Topdress Planner.
+- [~] pH / EC Range Check.
 - [~] Feeding Schedule.
 - [ ] Product / Ingredient Library UI and backend reconciliation.
 
@@ -83,7 +83,7 @@ Legend:
 ## Phase 6 - Harvest / Dry / Cure / History
 
 - [ ] Harvest Readiness AI.
-- [ ] Dry / Cure Guard.
+- [~] Dry / Cure Guard.
 - [ ] Run-To-Run Comparison.
 - [ ] Auto Grow Calendar.
 - [ ] Harvest batch and dry/cure records.
@@ -105,6 +105,8 @@ Legend:
 - [x] Frontend route/surface validation run.
 - [x] Production render/export verified message observed: `Production web export verified: dist uses https://api.growpathai.com`.
 - [x] Release preflight passed after personal backend CRUD/timeline port.
+- [x] Soil/nutrient V1 tool backend tests run for pH/EC, Topdress, Dry Amendment Mix, Soil Builder, Nutrient Source Comparison, and Dry/Cure Guard.
+- [x] Tool route inventory and frontend runtime contract passed after adding six new personal tool routes.
 - [ ] Tool workflow E2E: grow -> tool -> ToolRun -> log -> task -> timeline -> reload.
 - [ ] Diagnosis workflow E2E: photo -> diagnosis -> accepted tags -> log -> follow-up task.
 - [ ] Recipe workflow E2E: recipe -> revision -> feeding event -> grow history.

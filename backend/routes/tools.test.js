@@ -242,6 +242,216 @@ describe("Tools Router (tools.js)", () => {
     expect(run.save).toHaveBeenCalled();
   });
 
+  test("runs pH/EC range check and saves a canonical ToolRun", async () => {
+    mockToolRun.create.mockImplementation(async (payload) => ({
+      _id: RUN_ID,
+      ...payload,
+      toObject: () => ({ _id: RUN_ID, ...payload })
+    }));
+
+    const res = await authed(
+      request(app)
+        .post("/api/tools/ph-ec-check")
+        .send({
+          growId: "grow_1",
+          medium: "coco",
+          stage: "flower",
+          inputPH: 6.0,
+          runoffPH: 6.8,
+          inputEC: 1.4,
+          runoffEC: 2.8,
+          ecUnit: "mS/cm",
+          waterSource: "RO"
+        })
+    );
+
+    expect(res.status).toBe(201);
+    expect(res.body.outputs).toMatchObject({
+      runoffECStatus: "high",
+      driftDirection: "runoff_higher",
+      retestTaskSuggestion: expect.objectContaining({ title: "Retest pH / EC" })
+    });
+    expect(res.body.outputs.warnings).toEqual(
+      expect.arrayContaining([
+        "Runoff EC is materially higher than input EC.",
+        "Runoff EC is above the selected target range.",
+        "Runoff pH is outside the selected target range."
+      ])
+    );
+    expect(mockToolRun.create).toHaveBeenCalledWith(
+      expect.objectContaining({
+        toolName: "ph_ec_check",
+        toolType: "ph_ec_check",
+        inputs: expect.objectContaining({ growId: "grow_1", runoffEC: 2.8 })
+      })
+    );
+  });
+
+  test("runs topdress planner with late flower warning", async () => {
+    mockToolRun.create.mockImplementation(async (payload) => ({
+      _id: RUN_ID,
+      ...payload,
+      toObject: () => ({ _id: RUN_ID, ...payload })
+    }));
+
+    const res = await authed(
+      request(app)
+        .post("/api/tools/topdress-plan")
+        .send({
+          growId: "grow_1",
+          plantCount: 4,
+          soilVolumePerPlant: 10,
+          soilVolumeUnit: "gallons",
+          stage: "late_flower",
+          productName: "Craft Blend",
+          doseRate: 2,
+          doseUnit: "tbsp_per_gallon",
+          plannedApplyDate: "2026-07-03T12:00:00.000Z"
+        })
+    );
+
+    expect(res.status).toBe(201);
+    expect(res.body.outputs).toMatchObject({
+      amountPerPlant: 20,
+      totalAmount: 80,
+      amountUnit: "tbsp",
+      taskToCreate: expect.objectContaining({ title: "Topdress Craft Blend" })
+    });
+    expect(res.body.outputs.warnings[0]).toMatch(/Late flower topdressing/);
+  });
+
+  test("runs dry amendment mix builder with guaranteed-analysis output", async () => {
+    mockToolRun.create.mockImplementation(async (payload) => ({
+      _id: RUN_ID,
+      ...payload,
+      toObject: () => ({ _id: RUN_ID, ...payload })
+    }));
+
+    const res = await authed(
+      request(app)
+        .post("/api/tools/dry-amendment-mix")
+        .send({
+          growId: "grow_1",
+          recipeName: "Test 3-3-3",
+          ingredients: [
+            {
+              name: "Meal A",
+              amount: 500,
+              amountUnit: "grams",
+              N: 3,
+              P2O5: 3,
+              K2O: 3,
+              releaseClass: "medium"
+            },
+            {
+              name: "Mineral B",
+              amount: 500,
+              amountUnit: "grams",
+              N: 0,
+              P2O5: 0,
+              K2O: 0,
+              Ca: 20,
+              releaseClass: "slow"
+            }
+          ],
+          dosePerGallonSoil: 10
+        })
+    );
+
+    expect(res.status).toBe(201);
+    expect(res.body.outputs).toMatchObject({
+      recipeName: "Test 3-3-3",
+      totalAnalysis: expect.objectContaining({
+        N: 1.5,
+        P2O5: 1.5,
+        K2O: 1.5,
+        elementalP: 0.65,
+        elementalK: 1.25,
+        Ca: 10
+      }),
+      dosePerCubicFoot: 74.81
+    });
+    expect(res.body.outputs.releaseTimeline.medium[0]).toMatchObject({
+      name: "Meal A"
+    });
+  });
+
+  test("runs dry/cure guard without treating temperatures above 68F as automatic failure", async () => {
+    mockToolRun.create.mockImplementation(async (payload) => ({
+      _id: RUN_ID,
+      ...payload,
+      toObject: () => ({ _id: RUN_ID, ...payload })
+    }));
+
+    const res = await authed(
+      request(app)
+        .post("/api/tools/dry-cure-guard")
+        .send({
+          growId: "grow_1",
+          mode: "curing",
+          dryRoomTemp: 72,
+          tempUnit: "F",
+          dryRoomRH: 60,
+          jarRH: 70
+        })
+    );
+
+    expect(res.status).toBe(201);
+    expect(res.body.outputs).toMatchObject({
+      moldRisk: "high",
+      overdryRisk: "low",
+      nextAction: "Inspect and vent immediately"
+    });
+    expect(res.body.outputs.recommendations).toEqual(
+      expect.arrayContaining([
+        expect.stringMatching(/above the common 60F target/),
+        "Jar RH is high. Open jars, inspect for mold, and allow moisture to drop."
+      ])
+    );
+    expect(res.body.outputs.realisticNotes).toMatch(/not the only path/i);
+  });
+
+  test("runs soil builder and nutrient source comparison foundations", async () => {
+    mockToolRun.create.mockImplementation(async (payload) => ({
+      _id: RUN_ID,
+      ...payload,
+      toObject: () => ({ _id: RUN_ID, ...payload })
+    }));
+
+    const soil = await authed(
+      request(app)
+        .post("/api/tools/soil-builder")
+        .send({
+          growId: "grow_1",
+          mixName: "Living soil",
+          totalVolume: 30,
+          volumeUnit: "gallons",
+          basePercent: 33,
+          compostPercent: 33,
+          aerationPercent: 34,
+          amendments: [{ name: "Kelp meal", doseRate: 0.5, releaseClass: "medium" }]
+        })
+    );
+    const comparison = await authed(
+      request(app)
+        .post("/api/tools/nutrient-source-comparison")
+        .send({ growId: "grow_1", nutrient: "calcium", intent: "long_term_soil" })
+    );
+
+    expect(soil.status).toBe(201);
+    expect(soil.body.outputs).toMatchObject({
+      totalGallons: 30,
+      totalCubicFeet: 4.01,
+      recipe: expect.objectContaining({ recipeType: "soil_mix" })
+    });
+    expect(comparison.status).toBe(201);
+    expect(comparison.body.outputs).toMatchObject({
+      nutrient: "calcium",
+      bestChoiceByIntent: "calcitic lime",
+      slowSources: expect.arrayContaining(["oyster shell"])
+    });
+  });
+
   test("creates a nutrient recipe for the authenticated user", async () => {
     const res = await authed(
       request(app)
