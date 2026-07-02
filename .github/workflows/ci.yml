@@ -38,8 +38,8 @@ jobs:
           if [ $STATUS -eq 0 ]; then
             exit 0
           fi
-          # Fail if there are warnings besides the known Android API 34 requirement
-          WARNINGS=$(printf '%s\n' "$OUTPUT" | grep -c "✖ Check")
+          # Fail if there are warnings besides the known Android API 34 requirement.
+          WARNINGS=$(printf '%s\n' "$OUTPUT" | grep -c $'\342\234\226 Check')
           if [ "$WARNINGS" -eq 1 ] && printf '%s\n' "$OUTPUT" | grep -q "Android API level 34"; then
             echo "expo-doctor warning acknowledged: Expo SDK 49 targets Android API 33. Ignoring until the SDK 50+ upgrade."
             exit 0
@@ -50,8 +50,7 @@ jobs:
         run: npm run audit:ci
 
       - name: Run lint
-        run: npm run lint
-        continue-on-error: true
+        run: npm run lint:ci
 
       - name: Guard sensitive copy
         run: npm run check:sensitive-copy
