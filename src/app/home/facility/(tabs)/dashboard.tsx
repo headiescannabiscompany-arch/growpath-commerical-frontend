@@ -16,6 +16,10 @@ import { InlineError } from "@/components/InlineError";
 import { useFacility } from "@/state/useFacility";
 import { apiRequest } from "@/api/apiRequest";
 import { endpoints } from "@/api/endpoints";
+import {
+  fetchFacilityInsightsSummary,
+  type FacilityInsightsSummary
+} from "@/api/insights";
 import { listAuditLogs } from "@/api/audit";
 import { listBatchCycles } from "@/api/facilityWorkflows";
 import { getFacilityReport } from "@/api/reports";
@@ -103,6 +107,7 @@ export default function FacilityDashboardTab() {
     verifications: 0,
     reports: 0
   });
+  const [insights, setInsights] = useState<FacilityInsightsSummary | null>(null);
 
   const load = useCallback(
     async (opts?: { refresh?: boolean }) => {
@@ -134,7 +139,8 @@ export default function FacilityDashboardTab() {
           sopRows,
           auditRes,
           verificationRows,
-          reportRes
+          reportRes,
+          insightsSummary
         ] = await Promise.all([
           apiRequest(endpoints.grows(facilityId)),
           apiRequest(endpoints.plants(facilityId)),
@@ -147,17 +153,19 @@ export default function FacilityDashboardTab() {
           optional(() => getSOPTemplates(facilityId), []),
           optional(() => listAuditLogs(facilityId), { success: true, data: [] }),
           optional(() => getVerifications(facilityId), []),
-          optional(() => getFacilityReport(facilityId), null)
+          optional(() => getFacilityReport(facilityId), null),
+          optional(() => fetchFacilityInsightsSummary(facilityId), null)
         ]);
 
+        setInsights(insightsSummary);
         setCounts({
-          grows: asArray(growsRes).length,
+          grows: insightsSummary?.activeGrowsCount ?? asArray(growsRes).length,
           plants: asArray(plantsRes).length,
           rooms: asArray(roomsRes).length,
           batchCycles: asArray(batchCyclesRes).length,
-          tasks: asArray(tasksRes).length,
+          tasks: insightsSummary?.openTasksCount ?? asArray(tasksRes).length,
           inventory: asArray(inventoryRes).length,
-          logs: asArray(logsRes).length,
+          logs: insightsSummary?.recentLogsCount ?? asArray(logsRes).length,
           team: asArray(teamRes).length,
           sops: asArray(sopRows).length,
           auditLogs: Array.isArray(auditRes?.data)
@@ -272,9 +280,17 @@ export default function FacilityDashboardTab() {
         value: `${counts.tasks} tasks / ${counts.logs} logs`,
         tone: (counts.tasks ? "amber" : "slate") as Tone,
         to: "/home/facility/tasks"
+      },
+      {
+        label: "Facility insights",
+        value: insights
+          ? `${insights.overdueTasksCount} overdue / ${insights.latestToolRuns.length} tool runs`
+          : "Summary unavailable",
+        tone: (insights?.overdueTasksCount ? "red" : "blue") as Tone,
+        to: "/home/facility/reports"
       }
     ],
-    [counts]
+    [counts, insights]
   );
 
   const actionRows = useMemo(

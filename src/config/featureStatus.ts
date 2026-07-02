@@ -338,10 +338,11 @@ export const personalToolFeatures = [
     title: "Stress Testing",
     description: "Record controlled stress response and recovery scoring.",
     area: "crop_management",
-    status: "planned",
+    status: "release",
+    href: "/home/personal/tools/stress-test",
     acceptsGrowContext: true,
     internalNote:
-      "Original planned v1 workflow for drought, heat, high VPD, high EC, intersex screening, and keeper-score impact."
+      "V1 release calculator records controlled stress response, recovery, stability signals, ToolRun, grow log, task, and timeline. Full pheno-project integration remains deeper work."
   },
   {
     key: "tools.pheno_hunting",
@@ -370,10 +371,11 @@ export const personalToolFeatures = [
     description:
       "Track TC projects, explants, media, vessels, transfers, contamination, and acclimation.",
     area: "lab_tc",
-    status: "planned",
+    status: "release",
+    href: "/home/personal/tools/tissue-culture",
     acceptsGrowContext: true,
     internalNote:
-      "Original planned v1 lab workflow. Not built and must not be exposed as complete."
+      "V1 release calculator tracks batch/vessel counts, contamination, rooting, acclimation, SOP version, ToolRun, grow log, task, and timeline. Dedicated TC project CRUD remains deeper lab workflow work."
   },
   {
     key: "tools.dry_cure_guard",
@@ -391,10 +393,11 @@ export const personalToolFeatures = [
     title: "Clone Rooting Troubleshooter",
     description: "Check clone rooting conditions, bottlenecks, and follow-up tasks.",
     area: "plant_health",
-    status: "planned",
+    status: "release",
+    href: "/home/personal/tools/clone-rooting",
     acceptsGrowContext: true,
     internalNote:
-      "Original planned v1 plant-health workflow; needs clone records and cautious diagnosis copy."
+      "V1 release calculator checks clone rooting bottlenecks and creates ToolRun/log/task records. Dedicated clone batch records remain deeper propagation work."
   },
   {
     key: "tools.ipm_scout",
@@ -434,9 +437,10 @@ export const personalToolFeatures = [
     description:
       "Compare grows by yield, timing, issues, environment, feeding, quality, and keeper score.",
     area: "planning_records",
-    status: "planned",
+    status: "release",
+    href: "/home/personal/tools/run-comparison",
     internalNote:
-      "Original planned v1 analytics workflow requiring normalized grow outcomes and history."
+      "V1 release comparison accepts structured run summaries and saves ToolRun/log records. Automatic history mining remains deeper analytics work."
   },
   {
     key: "tools.auto_grow_calendar",
@@ -444,10 +448,11 @@ export const personalToolFeatures = [
     description:
       "Generate stage timelines, task schedules, reminders, and harvest windows.",
     area: "planning_records",
-    status: "planned",
+    status: "release",
+    href: "/home/personal/tools/auto-grow-calendar",
     acceptsGrowContext: true,
     internalNote:
-      "Original planned v1 calendar workflow; must create real tasks/events and reload from grow history."
+      "V1 release calculator generates deterministic stage anchors, task schedule, ToolRun, grow log, and starter task. Bulk calendar-event creation remains deeper workflow work."
   },
   {
     key: "tools.living_soil_batch_production",
@@ -455,9 +460,10 @@ export const personalToolFeatures = [
     description:
       "Estimate soil/amendment batch costs, bag counts, pull sheets, labor, packaging, and margin.",
     area: "business_production",
-    status: "planned",
+    status: "release",
+    href: "/home/personal/tools/living-soil-batch",
     internalNote:
-      "Planned v1 business/production tool. Needs saved recipes, batch records, inventory, task creation, and exportable batch sheets."
+      "V1 release calculator estimates batch costs, bag counts, pull sheet, margin, ToolRun, grow log, task, and timeline. Inventory deductions and saved batch records remain deeper production work."
   },
   {
     key: "tools.inventory",

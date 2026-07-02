@@ -64,17 +64,11 @@ describe("personal feature status manifest", () => {
   test("records planned v1 tools without exposing fake routes", () => {
     const plannedTools = [
       "tools.crop_steering_projects",
-      "tools.stress_testing",
       "tools.pheno_hunting",
       "tools.genetics_inventory",
-      "tools.tissue_culture",
-      "tools.clone_rooting",
       "tools.ipm_scout",
       "tools.species_crop_identification",
       "tools.harvest_readiness_ai",
-      "tools.run_comparison",
-      "tools.auto_grow_calendar",
-      "tools.living_soil_batch_production",
       "tools.inventory"
     ];
 
@@ -104,6 +98,20 @@ describe("personal feature status manifest", () => {
     expect(byKey["tools.ph_ec_adjustment"].status).toBe("release");
     expect(byKey["tools.dry_cure_guard"].status).toBe("release");
     expect(byKey["tools.nutrient_source_comparison"].status).toBe("release");
+    expect(byKey["tools.stress_testing"].status).toBe("release");
+    expect(byKey["tools.stress_testing"].href).toBe("/home/personal/tools/stress-test");
+    expect(byKey["tools.clone_rooting"].status).toBe("release");
+    expect(byKey["tools.clone_rooting"].href).toBe("/home/personal/tools/clone-rooting");
+    expect(byKey["tools.run_comparison"].status).toBe("release");
+    expect(byKey["tools.run_comparison"].href).toBe("/home/personal/tools/run-comparison");
+    expect(byKey["tools.auto_grow_calendar"].status).toBe("release");
+    expect(byKey["tools.auto_grow_calendar"].href).toBe("/home/personal/tools/auto-grow-calendar");
+    expect(byKey["tools.tissue_culture"].status).toBe("release");
+    expect(byKey["tools.tissue_culture"].href).toBe("/home/personal/tools/tissue-culture");
+    expect(byKey["tools.living_soil_batch_production"].status).toBe("release");
+    expect(byKey["tools.living_soil_batch_production"].href).toBe(
+      "/home/personal/tools/living-soil-batch"
+    );
     expect(byKey["tools.crop_steering_projects"].area).toBe("crop_management");
     expect(byKey["tools.timeline_planner"].area).toBe("planning_records");
     expect(byKey["tools.pheno_matrix"].area).toBe("genetics");

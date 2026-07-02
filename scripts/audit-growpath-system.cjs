@@ -164,6 +164,7 @@ const MODULES = [
   {
     phase: "Genetics / Pheno / Stress",
     name: "Stress Testing",
+    route: "/home/personal/tools/stress-test",
     keywords: ["stress testing", "stressResponseScore", "recoveryScore"],
     required: ["project", "scorecards", "pheno-links"]
   },
@@ -177,12 +178,14 @@ const MODULES = [
   {
     phase: "Propagation / Tissue Culture",
     name: "Clone Rooting Troubleshooter",
+    route: "/home/personal/tools/clone-rooting",
     keywords: ["clone rooting", "daysSinceCut", "rootingHormone"],
     required: ["route", "ToolRun", "task"]
   },
   {
     phase: "Propagation / Tissue Culture",
     name: "Tissue Culture",
+    route: "/home/personal/tools/tissue-culture",
     keywords: ["tissue culture", "vessels", "mediaRecipe", "contamination"],
     required: ["projects", "batch", "vessels", "tasks"]
   },
@@ -202,12 +205,14 @@ const MODULES = [
   {
     phase: "Harvest / History",
     name: "Run-To-Run Comparison",
+    route: "/home/personal/tools/run-comparison",
     keywords: ["run comparison", "run-to-run", "bestRun", "recommendationsForNextRun"],
     required: ["history-query", "report", "tests"]
   },
   {
     phase: "Harvest / History",
     name: "Auto Grow Calendar",
+    route: "/home/personal/tools/auto-grow-calendar",
     keywords: ["auto grow calendar", "expectedHarvestWindows", "stageTimeline"],
     required: ["calendar-events", "tasks", "grow-links"]
   },
@@ -220,6 +225,7 @@ const MODULES = [
   {
     phase: "Business / Production",
     name: "Living Soil Labs / Batch Production",
+    route: "/home/personal/tools/living-soil-batch",
     keywords: ["Living Soil Labs", "batch production", "ingredientPullSheet", "costPerBag"],
     required: ["recipe-links", "inventory", "tasks", "costing"]
   },
@@ -382,7 +388,9 @@ function main() {
     topLevelTasksRouteExists,
     topLevelTasksRedirectOnly,
     topLevelTasksVisibleModule: topLevelTasksRouteExists && !topLevelTasksRedirectOnly,
-    facilityInsightsRouteExists: [...routeSet].some((route) => /facility.*insights/i.test(route)),
+    facilityInsightsRouteExists:
+      [...routeSet].some((route) => /facility.*insights/i.test(route)) ||
+      files.searchable.some((file) => file.rel === "backend/routes/facility.insights.js"),
     commercialAiCopyHits: keywordHits(files.searchable, ["commercial AI", "business helper"])
       .filter((hit) => !hit.file.startsWith("docs/build/"))
       .map((hit) => hit.file)

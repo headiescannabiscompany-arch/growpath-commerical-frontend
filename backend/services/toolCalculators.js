@@ -846,6 +846,313 @@ function calculateNutrientSourceComparison(input = {}) {
   };
 }
 
+function parseList(value) {
+  if (Array.isArray(value)) return value.map(String).filter(Boolean);
+  return String(value || "")
+    .split(",")
+    .map((item) => item.trim())
+    .filter(Boolean);
+}
+
+function calculateStressTest(input = {}) {
+  const stressType = String(input.stressType || "dryback").toLowerCase();
+  const severity = Math.max(1, Math.min(10, number(input.severity ?? 3, "Severity")));
+  const recoveryDays = Math.max(0, number(input.recoveryDays ?? 0, "Recovery days"));
+  const damageScore = Math.max(0, Math.min(10, number(input.damageScore ?? severity, "Damage score")));
+  const vigorScore = Math.max(0, Math.min(10, number(input.vigorScore ?? 7, "Vigor score")));
+  const stabilitySignals = parseList(input.stabilitySignals);
+  const warnings = [];
+  const tags = ["stress-test", stressType];
+  let riskLevel = "low";
+
+  if (severity >= 8 || damageScore >= 7) {
+    riskLevel = "high";
+    warnings.push("Stress intensity is high. Stop the test before irreversible damage or invalid comparison data.");
+  } else if (severity >= 5 || damageScore >= 4 || recoveryDays > 3) {
+    riskLevel = "medium";
+  }
+  if (stabilitySignals.some((signal) => /intersex|herm|male flower/i.test(signal))) {
+    warnings.push("Intersex or instability signals should be recorded separately from ordinary stress response.");
+    tags.push("stability-watch");
+  }
+  const stressResponseScore = Math.max(0, Math.min(10, 10 - damageScore + vigorScore / 5 - recoveryDays * 0.3));
+  const recoveryScore = Math.max(0, Math.min(10, 10 - recoveryDays * 1.2 - damageScore * 0.35));
+  const stabilityScore = Math.max(0, Math.min(10, 10 - severity * 0.35 - (warnings.length ? 2 : 0)));
+  const keeperImpact =
+    riskLevel === "high"
+      ? "negative_until_retested"
+      : recoveryScore >= 7 && stabilityScore >= 7
+        ? "supports_keeper_case"
+        : "neutral_needs_more_data";
+
+  return {
+    stressType,
+    riskLevel,
+    stressResponseScore: Number(stressResponseScore.toFixed(2)),
+    recoveryScore: Number(recoveryScore.toFixed(2)),
+    damageScore,
+    stabilityScore: Number(stabilityScore.toFixed(2)),
+    vigorUnderStressScore: vigorScore,
+    keeperImpact,
+    warnings,
+    recommendations: [
+      "Compare only against plants exposed to the same timing, medium, environment, and measurement method.",
+      "Log photos and recovery notes before changing keeper or breeding decisions.",
+      "Do not stack stressors unless the test protocol explicitly calls for it."
+    ],
+    taskSuggestion: {
+      title: "Recheck stress recovery",
+      dueInDays: riskLevel === "high" ? 1 : 2,
+      priority: riskLevel === "high" ? "high" : "medium"
+    },
+    tags
+  };
+}
+
+function calculateCloneRooting(input = {}) {
+  const daysSinceCut = Math.max(0, number(input.daysSinceCut ?? 0, "Days since cut"));
+  const humidity = input.humidity == null || input.humidity === "" ? null : number(input.humidity, "Humidity");
+  const tempF = input.temperature == null || input.temperature === "" ? null : number(input.temperature, "Temperature");
+  const light = input.lightIntensity == null || input.lightIntensity === "" ? null : number(input.lightIntensity, "Light intensity");
+  const likelyBottlenecks = [];
+  const recommendations = [];
+  let riskLevel = "low";
+
+  if (humidity != null && humidity < 70) {
+    likelyBottlenecks.push("Humidity may be too low for fresh cuts.");
+    recommendations.push("Raise humidity or tighten dome management while watching for stagnant air.");
+  }
+  if (tempF != null && (tempF < 70 || tempF > 82)) {
+    likelyBottlenecks.push("Root-zone or dome temperature may be outside the common rooting range.");
+  }
+  if (light != null && light > 250) {
+    likelyBottlenecks.push("Light intensity may be too strong for unrooted cuts.");
+    recommendations.push("Reduce intensity until roots form and leaves regain normal turgor.");
+  }
+  if (/mush|rot|black|slime/i.test(String(input.stemCondition || ""))) {
+    likelyBottlenecks.push("Stem condition suggests rot risk or failed cut health.");
+    riskLevel = "high";
+  }
+  if (/wilt|curl|yellow/i.test(String(input.leafCondition || ""))) {
+    likelyBottlenecks.push("Leaf condition suggests transpiration or mother-plant stress.");
+  }
+  if (daysSinceCut > 14 && !/root|callus/i.test(String(input.rootingStatus || ""))) {
+    likelyBottlenecks.push("Rooting is delayed for the entered timeline.");
+    riskLevel = riskLevel === "high" ? "high" : "medium";
+  }
+  if (!likelyBottlenecks.length) {
+    recommendations.push("Conditions look workable. Keep notes consistent and avoid changing too many variables at once.");
+  }
+  if (likelyBottlenecks.length >= 2 && riskLevel !== "high") riskLevel = "medium";
+
+  return {
+    daysSinceCut,
+    riskLevel,
+    likelyBottlenecks,
+    nextChecks: [
+      "Check dome humidity and leaf turgor.",
+      "Inspect stem base for callus, rot, or drying.",
+      "Compare mother-plant health and cut location against successful trays."
+    ],
+    recommendations,
+    followUpTask: {
+      title: "Check clone rooting tray",
+      dueInDays: riskLevel === "high" ? 1 : 2,
+      priority: riskLevel === "high" ? "high" : "medium"
+    },
+    logSummary: likelyBottlenecks.length
+      ? `Clone rooting bottlenecks: ${likelyBottlenecks.join("; ")}`
+      : "Clone rooting conditions logged with no major bottlenecks."
+  };
+}
+
+function calculateRunComparison(input = {}) {
+  const runs = Array.isArray(input.runs) ? input.runs : [];
+  if (runs.length < 2) throw new Error("At least two runs are required for comparison");
+  const normalized = runs.map((run, index) => {
+    const yieldAmount = Number(run.yieldAmount ?? run.yield ?? 0);
+    const qualityScore = Number(run.qualityScore ?? 0);
+    const issueCount = Number(run.issueCount ?? 0);
+    const days = Number(run.days ?? run.totalDays ?? 0);
+    const score = yieldAmount * 0.4 + qualityScore * 8 - issueCount * 4 - Math.max(0, days - 120) * 0.2;
+    return {
+      id: String(run.id || run.growId || `run_${index + 1}`),
+      name: String(run.name || run.cultivar || `Run ${index + 1}`),
+      yieldAmount,
+      qualityScore,
+      issueCount,
+      days,
+      score: Number(score.toFixed(2)),
+      notes: String(run.notes || "")
+    };
+  });
+  const ranked = [...normalized].sort((a, b) => b.score - a.score);
+  const bestRun = ranked[0];
+  const worstRun = ranked[ranked.length - 1];
+  const differences = {
+    yieldSpread: Number((Math.max(...normalized.map((r) => r.yieldAmount)) - Math.min(...normalized.map((r) => r.yieldAmount))).toFixed(2)),
+    qualitySpread: Number((Math.max(...normalized.map((r) => r.qualityScore)) - Math.min(...normalized.map((r) => r.qualityScore))).toFixed(2)),
+    issueSpread: Math.max(...normalized.map((r) => r.issueCount)) - Math.min(...normalized.map((r) => r.issueCount))
+  };
+  return {
+    comparedRuns: normalized,
+    bestRun,
+    worstRun,
+    differences,
+    patterns: [
+      differences.issueSpread > 2 ? "Issue pressure varied materially between runs." : "Issue pressure was similar across selected runs.",
+      differences.yieldSpread > 0 ? "Yield changed between runs; compare plant count, veg length, cultivar, environment, and feed history." : "Yield data did not show a spread."
+    ],
+    recommendationsForNextRun: [
+      `Use ${bestRun.name} as the baseline notes package for the next run.`,
+      "Compare logs, tool runs, diagnoses, environment, feed strength, dry/cure notes, and final quality before changing the plan."
+    ],
+    uncertainty: "This comparison uses entered summary data. Full history comparison improves when yield, logs, tasks, diagnoses, tool runs, and dry/cure outcomes are linked."
+  };
+}
+
+function calculateAutoGrowCalendar(input = {}) {
+  const startDate = input.startDate ? new Date(input.startDate) : new Date();
+  if (Number.isNaN(startDate.getTime())) throw new Error("Start date must be a valid date");
+  const vegWeeks = Math.max(0, number(input.vegLengthWeeks ?? 4, "Veg length weeks"));
+  const flowerDays = Math.max(1, number(input.expectedFlowerDays ?? input.flowerDays ?? 63, "Flower days"));
+  const plantCount = Math.max(1, number(input.plantCount ?? 1, "Plant count"));
+  const iso = (offsetDays) => {
+    const d = new Date(startDate);
+    d.setDate(d.getDate() + offsetDays);
+    return d.toISOString().slice(0, 10);
+  };
+  const flipOffset = Math.round(vegWeeks * 7);
+  const harvestStart = flipOffset + Math.max(1, flowerDays - 7);
+  const harvestEnd = flipOffset + flowerDays + 7;
+  const taskSchedule = [
+    { title: "Confirm grow setup", dueDate: iso(0), stage: "start" },
+    { title: "Veg health check", dueDate: iso(Math.max(3, Math.round(flipOffset / 2))), stage: "veg" },
+    { title: "Flip to flower", dueDate: iso(flipOffset), stage: "flower" },
+    { title: "Mid-flower inspection", dueDate: iso(flipOffset + Math.round(flowerDays / 2)), stage: "flower" },
+    { title: "Harvest readiness check", dueDate: iso(harvestStart), stage: "harvest" }
+  ];
+  return {
+    plantCount,
+    stageTimeline: {
+      startDate: iso(0),
+      flipDate: iso(flipOffset),
+      expectedHarvestStart: iso(harvestStart),
+      expectedHarvestEnd: iso(harvestEnd)
+    },
+    calendarEvents: taskSchedule.map((task) => ({
+      type: "GROW_TASK",
+      title: task.title,
+      start: task.dueDate,
+      stage: task.stage
+    })),
+    taskSchedule,
+    expectedHarvestWindows: [{ start: iso(harvestStart), end: iso(harvestEnd), confidence: "planning" }],
+    reminders: [
+      "Calendar dates are planning anchors, not guarantees.",
+      "Update the schedule when plants change stage, show stress, or cultivar timing differs from expectation."
+    ]
+  };
+}
+
+function calculateTissueCulture(input = {}) {
+  const vessels = Math.max(0, number(input.vessels ?? 0, "Vessels"));
+  const contaminated = Math.max(0, number(input.contaminatedVessels ?? 0, "Contaminated vessels"));
+  const rooted = Math.max(0, number(input.rootedVessels ?? 0, "Rooted vessels"));
+  const acclimated = Math.max(0, number(input.acclimatedPlants ?? 0, "Acclimated plants"));
+  const transfersDueDays = Math.max(0, number(input.transfersDueDays ?? 14, "Transfers due days"));
+  const contaminationRate = vessels ? contaminated / vessels : 0;
+  const rootingRate = vessels ? rooted / vessels : 0;
+  const acclimationRate = rooted ? acclimated / rooted : 0;
+  const warnings = [];
+  if (contaminationRate > 0.15) warnings.push("Contamination rate is elevated. Review sterilization, explant prep, media handling, and vessel sealing notes.");
+  if (vessels && rootingRate < 0.4) warnings.push("Rooting rate is low for this batch. Compare media recipe, transfer timing, genetics, and vessel conditions.");
+  return {
+    projectName: input.projectName || "Tissue culture project",
+    batchNumber: input.batchNumber || null,
+    projectStatus: contaminationRate > 0.35 ? "at_risk" : "active",
+    batchSummary: {
+      vessels,
+      contaminatedVessels: contaminated,
+      rootedVessels: rooted,
+      acclimatedPlants: acclimated,
+      mediaRecipe: input.mediaRecipe || "",
+      sopVersion: input.SOPVersion || input.sopVersion || ""
+    },
+    contaminationRate: Number((contaminationRate * 100).toFixed(2)),
+    rootingRate: Number((rootingRate * 100).toFixed(2)),
+    acclimationRate: Number((acclimationRate * 100).toFixed(2)),
+    nextTransferTasks: [
+      {
+        title: "Review TC vessels for transfer",
+        dueInDays: transfersDueDays,
+        priority: warnings.length ? "high" : "medium"
+      }
+    ],
+    storageReminders: ["Record vessel IDs, media lot, transfer date, contamination disposition, and acclimation outcome."],
+    complianceRecord: {
+      batchNumber: input.batchNumber || null,
+      geneticsId: input.geneticsId || null,
+      SOPVersion: input.SOPVersion || input.sopVersion || null
+    },
+    warnings,
+    recommendations: [
+      "Keep TC notes as records, not guarantees. Confirm SOPs, media recipes, and contamination decisions with trained lab process.",
+      "Create follow-up tasks for transfer, contamination review, rooting check, and acclimation."
+    ]
+  };
+}
+
+function calculateLivingSoilBatch(input = {}) {
+  const batchVolume = Math.max(0, number(input.batchVolume ?? 0, "Batch volume"));
+  const bagSize = Math.max(0.01, number(input.bagSize ?? 1, "Bag size"));
+  const ingredientCosts = Array.isArray(input.ingredientCosts) ? input.ingredientCosts : [];
+  const laborCost = Math.max(0, number(input.laborCost ?? 0, "Labor cost"));
+  const packagingCost = Math.max(0, number(input.packagingCost ?? 0, "Packaging cost"));
+  const shrinkagePercent = Math.max(0, number(input.shrinkagePercent ?? 0, "Shrinkage percent"));
+  const ingredientTotal = ingredientCosts.reduce((sum, row) => {
+    return sum + Math.max(0, Number(row.cost ?? row.totalCost ?? 0));
+  }, 0);
+  const usableVolume = batchVolume * (1 - shrinkagePercent / 100);
+  const bagCount = Math.floor(usableVolume / bagSize);
+  const totalBatchCost = ingredientTotal + laborCost + packagingCost;
+  const costPerBag = bagCount ? totalBatchCost / bagCount : 0;
+  const marginPercent = Math.max(0, number(input.targetMarginPercent ?? 40, "Target margin percent"));
+  const retailPriceSuggestion = costPerBag ? costPerBag / (1 - Math.min(90, marginPercent) / 100) : 0;
+  const ingredientPullSheet = ingredientCosts.map((row) => ({
+    name: String(row.name || "Ingredient"),
+    quantity: Number(row.quantity ?? 0),
+    unit: String(row.unit || ""),
+    cost: Number(row.cost ?? row.totalCost ?? 0)
+  }));
+  return {
+    recipeId: input.recipeId || null,
+    batchVolume,
+    bagSize,
+    usableVolume: Number(usableVolume.toFixed(2)),
+    bagCount,
+    totalBatchCost: Number(totalBatchCost.toFixed(2)),
+    costPerBag: Number(costPerBag.toFixed(2)),
+    retailPriceSuggestion: Number(retailPriceSuggestion.toFixed(2)),
+    marginEstimate: {
+      targetMarginPercent: marginPercent,
+      grossMarginPerBag: Number((retailPriceSuggestion - costPerBag).toFixed(2))
+    },
+    ingredientPullSheet,
+    mixingSheet: [
+      "Verify recipe version and ingredient lots before pulling material.",
+      "Record actual pulled amounts, shrinkage, batch number, bag count, and packaging lot.",
+      "Create production tasks for pull, mix, moisture/cook check, bagging, and inventory update."
+    ],
+    warnings: bagCount <= 0 ? ["Batch volume and bag size do not produce any sellable bags."] : [],
+    taskSuggestion: {
+      title: `Build soil batch${input.recipeId ? ` for ${input.recipeId}` : ""}`,
+      dueInDays: 1,
+      priority: "medium"
+    }
+  };
+}
+
 module.exports = {
   calculateVpd,
   calculatePpfdDli,
@@ -858,5 +1165,11 @@ module.exports = {
   calculateDryAmendmentMix,
   calculateDryCureGuard,
   calculateSoilBuilder,
-  calculateNutrientSourceComparison
+  calculateNutrientSourceComparison,
+  calculateStressTest,
+  calculateCloneRooting,
+  calculateRunComparison,
+  calculateAutoGrowCalendar,
+  calculateTissueCulture,
+  calculateLivingSoilBatch
 };

@@ -543,6 +543,16 @@ calculatorRoute(
   "nutrient_source_comparison",
   calculators.calculateNutrientSourceComparison
 );
+calculatorRoute("/stress-test", "stress_test", calculators.calculateStressTest);
+calculatorRoute("/clone-rooting", "clone_rooting", calculators.calculateCloneRooting);
+calculatorRoute("/run-comparison", "run_comparison", calculators.calculateRunComparison);
+calculatorRoute("/auto-grow-calendar", "auto_grow_calendar", calculators.calculateAutoGrowCalendar);
+calculatorRoute("/tissue-culture", "tissue_culture", calculators.calculateTissueCulture);
+calculatorRoute(
+  "/living-soil-batch",
+  "living_soil_batch",
+  calculators.calculateLivingSoilBatch
+);
 
 router.get("/runs/:id", async (req, res, next) => {
   try {

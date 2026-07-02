@@ -452,6 +452,160 @@ describe("Tools Router (tools.js)", () => {
     });
   });
 
+  test("runs stress testing and clone rooting tools", async () => {
+    mockGrow.exists.mockResolvedValue(true);
+    mockToolRun.create.mockImplementation((payload) => ({
+      _id: RUN_ID,
+      toObject: () => ({ _id: RUN_ID, ...payload })
+    }));
+
+    const stress = await authed(
+      request(app)
+        .post("/api/tools/stress-test")
+        .send({
+          growId: "grow_1",
+          plantId: "plant_1",
+          stressType: "heat",
+          severity: 8,
+          recoveryDays: 3,
+          damageScore: 7,
+          vigorScore: 6,
+          stabilitySignals: "intersex watch"
+        })
+    );
+    const clone = await authed(
+      request(app)
+        .post("/api/tools/clone-rooting")
+        .send({
+          growId: "grow_1",
+          daysSinceCut: 16,
+          humidity: 60,
+          temperature: 68,
+          lightIntensity: 320,
+          stemCondition: "black slime",
+          leafCondition: "wilt"
+        })
+    );
+
+    expect(stress.status).toBe(201);
+    expect(stress.body.outputs).toMatchObject({
+      riskLevel: "high",
+      keeperImpact: "negative_until_retested",
+      tags: expect.arrayContaining(["stress-test", "stability-watch"])
+    });
+    expect(clone.status).toBe(201);
+    expect(clone.body.outputs.riskLevel).toBe("high");
+    expect(clone.body.outputs.likelyBottlenecks).toEqual(
+      expect.arrayContaining([
+        "Humidity may be too low for fresh cuts.",
+        "Light intensity may be too strong for unrooted cuts."
+      ])
+    );
+  });
+
+  test("runs run comparison and auto grow calendar tools", async () => {
+    mockGrow.exists.mockResolvedValue(true);
+    mockToolRun.create.mockImplementation((payload) => ({
+      _id: RUN_ID,
+      toObject: () => ({ _id: RUN_ID, ...payload })
+    }));
+
+    const comparison = await authed(
+      request(app)
+        .post("/api/tools/run-comparison")
+        .send({
+          growId: "grow_1",
+          runs: [
+            { name: "Run 1", yieldAmount: 14, qualityScore: 7, issueCount: 4, days: 120 },
+            { name: "Run 2", yieldAmount: 18, qualityScore: 8, issueCount: 1, days: 112 }
+          ]
+        })
+    );
+    const calendar = await authed(
+      request(app)
+        .post("/api/tools/auto-grow-calendar")
+        .send({
+          growId: "grow_1",
+          plantCount: 4,
+          startDate: "2026-07-01",
+          vegLengthWeeks: 4,
+          expectedFlowerDays: 63
+        })
+    );
+
+    expect(comparison.status).toBe(201);
+    expect(comparison.body.outputs.bestRun).toMatchObject({ name: "Run 2" });
+    expect(comparison.body.outputs.differences.yieldSpread).toBe(4);
+    expect(calendar.status).toBe(201);
+    expect(calendar.body.outputs.stageTimeline).toMatchObject({
+      startDate: "2026-07-01",
+      flipDate: "2026-07-29",
+      expectedHarvestStart: "2026-09-23"
+    });
+    expect(calendar.body.outputs.taskSchedule).toHaveLength(5);
+  });
+
+  test("runs tissue culture and living soil batch tools", async () => {
+    mockGrow.exists.mockResolvedValue(true);
+    mockToolRun.create.mockImplementation((payload) => ({
+      _id: RUN_ID,
+      toObject: () => ({ _id: RUN_ID, ...payload })
+    }));
+
+    const tc = await authed(
+      request(app)
+        .post("/api/tools/tissue-culture")
+        .send({
+          growId: "grow_1",
+          projectName: "TC mother backup",
+          batchNumber: "TC-001",
+          vessels: 20,
+          contaminatedVessels: 5,
+          rootedVessels: 6,
+          acclimatedPlants: 3,
+          mediaRecipe: "starter",
+          SOPVersion: "SOP-1"
+        })
+    );
+    const batch = await authed(
+      request(app)
+        .post("/api/tools/living-soil-batch")
+        .send({
+          growId: "grow_1",
+          recipeId: "living-soil-base",
+          batchVolume: 100,
+          bagSize: 2,
+          ingredientCosts: [
+            { name: "Compost", quantity: 35, unit: "gal", cost: 70 },
+            { name: "Aeration", quantity: 35, unit: "gal", cost: 50 }
+          ],
+          laborCost: 100,
+          packagingCost: 40,
+          shrinkagePercent: 4,
+          targetMarginPercent: 40
+        })
+    );
+
+    expect(tc.status).toBe(201);
+    expect(tc.body.outputs).toMatchObject({
+      projectStatus: "active",
+      contaminationRate: 25,
+      rootingRate: 30
+    });
+    expect(tc.body.outputs.warnings).toEqual(
+      expect.arrayContaining([
+        "Contamination rate is elevated. Review sterilization, explant prep, media handling, and vessel sealing notes."
+      ])
+    );
+    expect(batch.status).toBe(201);
+    expect(batch.body.outputs).toMatchObject({
+      bagCount: 48,
+      totalBatchCost: 260,
+      costPerBag: 5.42
+    });
+    expect(batch.body.outputs.ingredientPullSheet).toHaveLength(2);
+  });
+
   test("creates a nutrient recipe for the authenticated user", async () => {
     const res = await authed(
       request(app)

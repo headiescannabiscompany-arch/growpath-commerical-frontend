@@ -64,7 +64,7 @@ Legend:
 - [ ] Pheno Hunt Projects.
 - [ ] Pheno Plant Records.
 - [ ] Stage Scorecards.
-- [ ] Stress Testing.
+- [~] Stress Testing.
 - [~] Crop Steering foundation.
 - [ ] Keeper / Reject / Retest decisions.
 - [ ] Breeding lane links.
@@ -72,30 +72,30 @@ Legend:
 
 ## Phase 5 - Propagation / Tissue Culture
 
-- [ ] Clone Rooting Troubleshooter.
-- [ ] Tissue Culture Projects.
-- [ ] TC Batch / Vessel tracking.
-- [ ] TC SOPs.
-- [ ] TC Media Recipes.
-- [ ] TC Contamination Diagnosis.
-- [ ] TC Storage / Acclimation / Cost tracking.
+- [~] Clone Rooting Troubleshooter.
+- [~] Tissue Culture Projects.
+- [~] TC Batch / Vessel tracking.
+- [~] TC SOPs.
+- [~] TC Media Recipes.
+- [~] TC Contamination Diagnosis.
+- [~] TC Storage / Acclimation / Cost tracking.
 
 ## Phase 6 - Harvest / Dry / Cure / History
 
 - [ ] Harvest Readiness AI.
 - [~] Dry / Cure Guard.
-- [ ] Run-To-Run Comparison.
-- [ ] Auto Grow Calendar.
+- [~] Run-To-Run Comparison.
+- [~] Auto Grow Calendar.
 - [ ] Harvest batch and dry/cure records.
 - [~] PDF/export/report surfaces.
 
 ## Phase 7 - Business / Production
 
 - [~] Inventory foundation.
-- [ ] Living Soil Labs / Batch Production.
-- [ ] Batch cost calculator.
-- [ ] Ingredient pull sheets.
-- [ ] Production task creation.
+- [~] Living Soil Labs / Batch Production.
+- [~] Batch cost calculator.
+- [~] Ingredient pull sheets.
+- [~] Production task creation.
 
 ## Verification Ledger
 
@@ -107,6 +107,9 @@ Legend:
 - [x] Release preflight passed after personal backend CRUD/timeline port.
 - [x] Soil/nutrient V1 tool backend tests run for pH/EC, Topdress, Dry Amendment Mix, Soil Builder, Nutrient Source Comparison, and Dry/Cure Guard.
 - [x] Tool route inventory and frontend runtime contract passed after adding six new personal tool routes.
+- [x] Backend tests run for Stress Testing, Clone Rooting, Run-To-Run Comparison, Auto Grow Calendar, Tissue Culture, Living Soil batch, and Facility Insights Summary.
+- [x] System audit rerun after the next tool slice: 33 modules, 25 partial, 8 present-foundation, 0 missing, 0 trace-only.
+- [x] Full surface audit rerun after adding ten personal tool routes: 162 frontend route files, 148 routes, 38 backend route declarations, 0 errors, 0 warnings.
 - [ ] Tool workflow E2E: grow -> tool -> ToolRun -> log -> task -> timeline -> reload.
 - [ ] Diagnosis workflow E2E: photo -> diagnosis -> accepted tags -> log -> follow-up task.
 - [ ] Recipe workflow E2E: recipe -> revision -> feeding event -> grow history.

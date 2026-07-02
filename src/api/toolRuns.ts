@@ -49,7 +49,13 @@ export type CalculatorTool =
   | "dry-amendment-mix"
   | "dry-cure-guard"
   | "soil-builder"
-  | "nutrient-source-comparison";
+  | "nutrient-source-comparison"
+  | "stress-test"
+  | "clone-rooting"
+  | "run-comparison"
+  | "auto-grow-calendar"
+  | "tissue-culture"
+  | "living-soil-batch";
 
 export function normalizeToolRun(row: any): ToolRun {
   if (!row || typeof row !== "object") return {};
