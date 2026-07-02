@@ -113,6 +113,7 @@ async function main() {
       "e2e/profile-privacy-visual.spec.ts",
       "e2e/personal-home-task-sources-visual.spec.ts",
       "e2e/personal-core-loop.spec.ts",
+      "e2e/toolrun-log-release.spec.ts",
       "--reporter=list"
     ],
     {

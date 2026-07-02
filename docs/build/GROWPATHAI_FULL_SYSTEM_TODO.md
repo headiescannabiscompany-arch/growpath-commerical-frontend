@@ -117,7 +117,8 @@ Legend:
 - [x] Backend provenance schema restored and ingredient/recipe source records verified in tools route tests.
 - [x] Crop knowledge backend CRUD added and verified for crop profiles, organisms, regional alerts, taxa, and plant growth profiles.
 - [x] Release preflight now includes focused backend route tests for tools and crop knowledge plus the crop knowledge frontend API unit test.
-- [ ] Tool workflow E2E: grow -> tool -> ToolRun -> log -> task -> timeline -> reload.
+- [x] Tool workflow E2E covered by `e2e/personal-core-loop.spec.ts` and `e2e/toolrun-log-release.spec.ts`; both are now release preflight gates.
+- [x] Tool workflow E2E: grow -> tool -> ToolRun -> log -> task -> timeline -> reload.
 - [ ] Diagnosis workflow E2E: photo -> diagnosis -> accepted tags -> log -> follow-up task.
 - [ ] Recipe workflow E2E: recipe -> revision -> feeding event -> grow history.
 - [ ] Production export sanity check.

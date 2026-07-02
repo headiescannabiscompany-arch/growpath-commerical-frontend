@@ -23,6 +23,7 @@ const PLANT = {
   stage: "fruiting",
   medium: "soil",
   growthProfile: {
+    confirmationStatus: "user_confirmed",
     phenoLabel: "compact-container",
     sizeMetrics: { canopyWidthCm: 140 },
     timingAdjustments: { fruitingDaysOffset: 10 },
