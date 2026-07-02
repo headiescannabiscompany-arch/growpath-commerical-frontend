@@ -16,6 +16,7 @@ export type NutrientRecipe = {
   measuredEC?: number | null;
   measuredPH?: number | null;
   sourceConfidence?: Record<string, any>;
+  sourceRecords?: Record<string, any>[];
   mixingOrder?: string[];
   calculation?: Record<string, any>;
   useCount?: number;

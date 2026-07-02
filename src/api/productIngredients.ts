@@ -23,6 +23,17 @@ export type ProductIngredient = {
   sourceType?: string;
   confidence?: "low" | "medium" | "high";
   sourceUrl?: string;
+  sourceRecords?: {
+    sourceName: string;
+    sourceType?: string;
+    url?: string;
+    citation?: string;
+    license?: string;
+    commercialUseAllowed?: boolean;
+    trainingUseAllowed?: boolean;
+    confidence?: "low" | "medium" | "high";
+    notes?: string;
+  }[];
   favorite?: boolean;
   archivedAt?: string | null;
 };

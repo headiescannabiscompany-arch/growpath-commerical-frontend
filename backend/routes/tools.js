@@ -271,6 +271,7 @@ router.patch("/ingredients/:id", async (req, res, next) => {
       "sourceType",
       "confidence",
       "sourceUrl",
+      "sourceRecords",
       "favorite"
     ];
     const patch = {};
@@ -364,6 +365,7 @@ router.patch("/recipes/:id", async (req, res, next) => {
       "waterBaseline",
       "measuredEC",
       "measuredPH",
+      "sourceRecords",
       "notes"
     ];
     for (const key of allowed) {
@@ -415,6 +417,7 @@ router.post("/recipes", async (req, res, next) => {
       measuredEC: input.measuredEC ?? null,
       measuredPH: input.measuredPH ?? null,
       sourceConfidence: calculation.sourceConfidence || {},
+      sourceRecords: Array.isArray(req.body?.sourceRecords) ? req.body.sourceRecords : [],
       mixingOrder: calculation.mixingOrder || [],
       calculation,
       notes: String(req.body?.notes || "")
@@ -460,6 +463,9 @@ router.post("/recipes/:id/revisions", async (req, res, next) => {
       measuredEC: input.measuredEC ?? previous.measuredEC ?? null,
       measuredPH: input.measuredPH ?? previous.measuredPH ?? null,
       sourceConfidence: calculation.sourceConfidence || {},
+      sourceRecords: Array.isArray(req.body?.sourceRecords)
+        ? req.body.sourceRecords
+        : previous.sourceRecords || [],
       mixingOrder: calculation.mixingOrder || [],
       calculation,
       notes: String(req.body?.notes ?? previous.notes)
@@ -495,6 +501,7 @@ router.post("/recipes/:id/clone", async (req, res, next) => {
       measuredEC: source.measuredEC ?? null,
       measuredPH: source.measuredPH ?? null,
       sourceConfidence: source.sourceConfidence || {},
+      sourceRecords: source.sourceRecords || [],
       mixingOrder: source.mixingOrder || [],
       calculation: source.calculation,
       notes: source.notes

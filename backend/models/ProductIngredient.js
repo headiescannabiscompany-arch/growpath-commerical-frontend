@@ -1,6 +1,7 @@
 "use strict";
 
 const mongoose = require("mongoose");
+const SourceRecordSchema = require("./schemas/sourceRecord");
 
 const NutrientFormSchema = new mongoose.Schema(
   {
@@ -48,11 +49,26 @@ const ProductIngredientSchema = new mongoose.Schema(
     organicOrSynthetic: { type: String, default: "unknown" },
     sourceType: {
       type: String,
-      enum: ["user_entered", "manufacturer", "extension_reference", "lab_tested", "curated_default"],
+      enum: [
+        "user_entered",
+        "manufacturer",
+        "manufacturer_label",
+        "extension",
+        "extension_reference",
+        "federal",
+        "academic",
+        "api",
+        "lab_tested",
+        "curated_default",
+        "growpath_verified",
+        "ai_assisted",
+        "other"
+      ],
       default: "user_entered"
     },
     confidence: { type: String, enum: ["low", "medium", "high"], default: "low" },
     sourceUrl: { type: String, default: "" },
+    sourceRecords: { type: [SourceRecordSchema], default: [] },
     favorite: { type: Boolean, default: false },
     archivedAt: { type: Date, default: null, index: true }
   },

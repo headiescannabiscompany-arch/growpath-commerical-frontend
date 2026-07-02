@@ -1,6 +1,7 @@
 "use strict";
 
 const mongoose = require("mongoose");
+const SourceRecordSchema = require("./schemas/sourceRecord");
 
 const NutrientRecipeSchema = new mongoose.Schema(
   {
@@ -22,6 +23,7 @@ const NutrientRecipeSchema = new mongoose.Schema(
     measuredEC: { type: Number, default: null },
     measuredPH: { type: Number, default: null },
     sourceConfidence: { type: mongoose.Schema.Types.Mixed, default: {} },
+    sourceRecords: { type: [SourceRecordSchema], default: [] },
     mixingOrder: { type: [String], default: [] },
     calculation: { type: mongoose.Schema.Types.Mixed, default: {} },
     notes: { type: String, default: "" },

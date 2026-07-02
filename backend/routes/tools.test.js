@@ -848,25 +848,45 @@ describe("Tools Router (tools.js)", () => {
     mockProductIngredient.findOne.mockReturnValue({
       lean: jest.fn().mockResolvedValue(item)
     });
+    const sourceRecords = [
+      {
+        sourceName: "Manufacturer label",
+        sourceType: "manufacturer_label",
+        url: "https://example.test/label",
+        commercialUseAllowed: true,
+        trainingUseAllowed: false,
+        confidence: "medium"
+      }
+    ];
     mockProductIngredient.findOneAndUpdate
-      .mockResolvedValueOnce({ _id: "ingredient_1", name: "Kelp meal", favorite: true })
+      .mockResolvedValueOnce({
+        _id: "ingredient_1",
+        name: "Kelp meal",
+        favorite: true,
+        sourceRecords
+      })
       .mockResolvedValueOnce({ _id: "ingredient_1", name: "Kelp meal", archivedAt: new Date() });
 
     const loaded = await authed(request(app).get("/api/tools/ingredients/ingredient_1"));
     const updated = await authed(
-      request(app).patch("/api/tools/ingredients/ingredient_1").send({ favorite: true })
+      request(app)
+        .patch("/api/tools/ingredients/ingredient_1")
+        .send({ favorite: true, sourceRecords })
     );
     const archived = await authed(request(app).delete("/api/tools/ingredients/ingredient_1"));
 
     expect(loaded.status).toBe(200);
     expect(loaded.body.item).toMatchObject({ name: "Kelp meal" });
     expect(updated.status).toBe(200);
-    expect(updated.body.updated).toMatchObject({ favorite: true });
+    expect(updated.body.updated).toMatchObject({
+      favorite: true,
+      sourceRecords: [expect.objectContaining({ sourceName: "Manufacturer label" })]
+    });
     expect(archived.status).toBe(200);
     expect(archived.body.archived).toBe(true);
     expect(mockProductIngredient.findOneAndUpdate).toHaveBeenCalledWith(
       { _id: "ingredient_1", user: expect.any(Object) },
-      { favorite: true },
+      { favorite: true, sourceRecords },
       { new: true, runValidators: true }
     );
     expect(mockProductIngredient.findOneAndUpdate).toHaveBeenCalledWith(
@@ -913,18 +933,26 @@ describe("Tools Router (tools.js)", () => {
       },
       save: jest.fn().mockResolvedValue(null)
     };
+    const sourceRecords = [
+      {
+        sourceName: "Lab feed chart",
+        sourceType: "user_entered",
+        confidence: "medium"
+      }
+    ];
     mockNutrientRecipeModel.findOne.mockResolvedValueOnce(recipe).mockResolvedValueOnce(recipe);
 
     const updated = await authed(
       request(app)
         .patch(`/api/tools/recipes/${RECIPE_ID}`)
-        .send({ name: "Veg Feed Updated", measuredEC: 1.4 })
+        .send({ name: "Veg Feed Updated", measuredEC: 1.4, sourceRecords })
     );
     const archived = await authed(request(app).delete(`/api/tools/recipes/${RECIPE_ID}`));
 
     expect(updated.status).toBe(200);
     expect(recipe.name).toBe("Veg Feed Updated");
     expect(recipe.measuredEC).toBe(1.4);
+    expect(recipe.sourceRecords).toEqual(sourceRecords);
     expect(recipe.calculation).toBeTruthy();
     expect(archived.status).toBe(200);
     expect(archived.body.archived).toBe(true);
@@ -944,6 +972,13 @@ describe("Tools Router (tools.js)", () => {
           batchUnit: "gal",
           products: [
             { name: "Base", amount: 10, unit: "ml", N: 3, P2O5: 1, K2O: 2 }
+          ],
+          sourceRecords: [
+            {
+              sourceName: "Manufacturer label",
+              sourceType: "manufacturer_label",
+              confidence: "medium"
+            }
           ]
         })
     );
@@ -957,6 +992,12 @@ describe("Tools Router (tools.js)", () => {
         batchUnit: "gal",
         products: [
           { name: "Base", amount: 10, unit: "ml", N: 3, P2O5: 1, K2O: 2 }
+        ],
+        sourceRecords: [
+          expect.objectContaining({
+            sourceName: "Manufacturer label",
+            sourceType: "manufacturer_label"
+          })
         ]
       })
     );

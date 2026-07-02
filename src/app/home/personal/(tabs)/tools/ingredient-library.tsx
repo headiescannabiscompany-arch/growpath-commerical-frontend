@@ -28,7 +28,13 @@ type Draft = {
   k: string;
   sourceType: string;
   confidence: "low" | "medium" | "high";
+  sourceName: string;
   sourceUrl: string;
+  citation: string;
+  license: string;
+  commercialUseAllowed: boolean;
+  trainingUseAllowed: boolean;
+  sourceNotes: string;
   favorite: boolean;
 };
 
@@ -41,7 +47,13 @@ const EMPTY_DRAFT: Draft = {
   k: "0",
   sourceType: "user_entered",
   confidence: "low",
+  sourceName: "",
   sourceUrl: "",
+  citation: "",
+  license: "",
+  commercialUseAllowed: false,
+  trainingUseAllowed: false,
+  sourceNotes: "",
   favorite: false
 };
 
@@ -56,6 +68,7 @@ function toNumber(value: string) {
 
 function fromItem(item?: ProductIngredient | null): Draft {
   if (!item) return EMPTY_DRAFT;
+  const firstSource = item.sourceRecords?.[0] || null;
   return {
     name: item.name || "",
     brand: item.brand || "",
@@ -65,12 +78,36 @@ function fromItem(item?: ProductIngredient | null): Draft {
     k: String(item.labelNPK?.K ?? 0),
     sourceType: item.sourceType || "user_entered",
     confidence: item.confidence || "low",
-    sourceUrl: item.sourceUrl || "",
+    sourceName: firstSource?.sourceName || "",
+    sourceUrl: firstSource?.url || item.sourceUrl || "",
+    citation: firstSource?.citation || "",
+    license: firstSource?.license || "",
+    commercialUseAllowed: Boolean(firstSource?.commercialUseAllowed),
+    trainingUseAllowed: Boolean(firstSource?.trainingUseAllowed),
+    sourceNotes: firstSource?.notes || "",
     favorite: Boolean(item.favorite)
   };
 }
 
 function payloadFromDraft(draft: Draft) {
+  const sourceName = draft.sourceName.trim();
+  const sourceUrl = draft.sourceUrl.trim();
+  const sourceRecords =
+    sourceName || sourceUrl || draft.citation.trim()
+      ? [
+          {
+            sourceName: sourceName || draft.name.trim(),
+            sourceType: draft.sourceType.trim() || "user_entered",
+            url: sourceUrl,
+            citation: draft.citation.trim(),
+            license: draft.license.trim(),
+            commercialUseAllowed: draft.commercialUseAllowed,
+            trainingUseAllowed: draft.trainingUseAllowed,
+            confidence: draft.confidence,
+            notes: draft.sourceNotes.trim()
+          }
+        ]
+      : [];
   return {
     name: draft.name.trim(),
     brand: draft.brand.trim(),
@@ -82,7 +119,8 @@ function payloadFromDraft(draft: Draft) {
     },
     sourceType: draft.sourceType.trim() || "user_entered",
     confidence: draft.confidence,
-    sourceUrl: draft.sourceUrl.trim(),
+    sourceUrl,
+    sourceRecords,
     favorite: draft.favorite
   };
 }
@@ -240,6 +278,11 @@ export default function IngredientLibraryRoute() {
                   {item.sourceType || "user_entered"} | confidence{" "}
                   {item.confidence || "low"}
                 </Text>
+                {item.sourceRecords?.[0]?.sourceName ? (
+                  <Text style={styles.meta}>
+                    Source: {item.sourceRecords[0].sourceName}
+                  </Text>
+                ) : null}
               </Pressable>
             );
           })}
@@ -312,9 +355,58 @@ export default function IngredientLibraryRoute() {
           ))}
         </View>
         <Field
+          label="Source name"
+          value={draft.sourceName}
+          onChangeText={(value) => updateDraft("sourceName", value)}
+        />
+        <Field
           label="Source URL"
           value={draft.sourceUrl}
           onChangeText={(value) => updateDraft("sourceUrl", value)}
+        />
+        <Field
+          label="Citation"
+          value={draft.citation}
+          onChangeText={(value) => updateDraft("citation", value)}
+        />
+        <Field
+          label="License"
+          value={draft.license}
+          onChangeText={(value) => updateDraft("license", value)}
+        />
+        <View style={styles.actions}>
+          <Pressable
+            accessibilityRole="button"
+            onPress={() =>
+              updateDraft("commercialUseAllowed", !draft.commercialUseAllowed)
+            }
+            style={[styles.chip, draft.commercialUseAllowed && styles.chipOn]}
+          >
+            <Text
+              style={[
+                styles.chipText,
+                draft.commercialUseAllowed && styles.chipTextOn
+              ]}
+            >
+              Commercial use {draft.commercialUseAllowed ? "yes" : "no"}
+            </Text>
+          </Pressable>
+          <Pressable
+            accessibilityRole="button"
+            onPress={() => updateDraft("trainingUseAllowed", !draft.trainingUseAllowed)}
+            style={[styles.chip, draft.trainingUseAllowed && styles.chipOn]}
+          >
+            <Text
+              style={[styles.chipText, draft.trainingUseAllowed && styles.chipTextOn]}
+            >
+              Training use {draft.trainingUseAllowed ? "yes" : "no"}
+            </Text>
+          </Pressable>
+        </View>
+        <Field
+          label="Source notes"
+          value={draft.sourceNotes}
+          onChangeText={(value) => updateDraft("sourceNotes", value)}
         />
 
         <View style={styles.actions}>

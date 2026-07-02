@@ -22,9 +22,9 @@ Legend:
 - [~] ToolRun canonical contract.
 - [x] ToolRun backend model and `/api/tools` create/list/reload route contract.
 - [x] ToolRun update/archive route contract.
-- [ ] SourceRecord/provenance model.
-- [~] Product/Ingredient canonical model and CRUD/archive route contract.
-- [~] Recipe model, nutrient recipe persistence, update, archive, revise, clone, and use route contract.
+- [~] SourceRecord/provenance model.
+- [~] Product/Ingredient canonical model, provenance fields, and CRUD/archive route contract.
+- [~] Recipe model, provenance fields, nutrient recipe persistence, update, archive, revise, clone, and use route contract.
 - [x] Nutrient recipe backend model and `/api/tools/recipes` create/list/revise/clone/use route contract.
 - [x] Personal grow/log/task backend CRUD restored from previous backend.
 - [x] Grow timeline route restored with grow, plant, log, photo, task, tool, diagnosis, feedback, automation, and telemetry events.
@@ -114,6 +114,7 @@ Legend:
 - [x] Backend tests run for IPM Scout, Species/Crop ID, Genetics Inventory, Harvest Readiness, Inventory, Crop Steering Projects, and Pheno Hunt.
 - [x] Feature status tests verify these modules are release routes and the old crop-steering scaffold remains hidden.
 - [x] Backend CRUD tests run for ToolRun update/archive, ProductIngredient read/update/archive, and NutrientRecipe update/archive.
+- [x] Backend provenance schema restored and ingredient/recipe source records verified in tools route tests.
 - [ ] Tool workflow E2E: grow -> tool -> ToolRun -> log -> task -> timeline -> reload.
 - [ ] Diagnosis workflow E2E: photo -> diagnosis -> accepted tags -> log -> follow-up task.
 - [ ] Recipe workflow E2E: recipe -> revision -> feeding event -> grow history.
