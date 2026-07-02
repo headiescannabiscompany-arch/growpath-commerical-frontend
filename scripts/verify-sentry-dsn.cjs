@@ -7,7 +7,7 @@ function env(name) {
 }
 
 function sentryDsn() {
-  const dsn = env("EXPO_PUBLIC_SENTRY_DSN") || env("SENTRY_DSN");
+  const dsn = env("EXPO_PUBLIC_SENTRY_DSN");
   if (!dsn) throw new Error("Missing EXPO_PUBLIC_SENTRY_DSN");
   return dsn;
 }

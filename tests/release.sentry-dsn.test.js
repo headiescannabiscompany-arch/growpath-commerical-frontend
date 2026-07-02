@@ -28,7 +28,6 @@ function runVerifier(tempRoot, env = {}) {
     env: {
       ...process.env,
       EXPO_PUBLIC_SENTRY_DSN: "",
-      SENTRY_DSN: "",
       GROWPATH_RELEASE_ENV: "",
       ...env
     }
@@ -64,7 +63,6 @@ require("./scripts/verify-sentry-dsn.cjs");
     env: {
       ...process.env,
       EXPO_PUBLIC_SENTRY_DSN: "https://public%20key@sentry.example.com/42",
-      SENTRY_DSN: "",
       GROWPATH_RELEASE_ENV: "production"
     }
   });

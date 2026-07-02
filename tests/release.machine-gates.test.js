@@ -45,7 +45,6 @@ function baseEnv(overrides = {}) {
     PATH: "",
     Path: "",
     EXPO_PUBLIC_SENTRY_DSN: "",
-    SENTRY_DSN: "",
     GROWPATH_DATA_RIGHTS_EMAIL: "",
     GROWPATH_DATA_RIGHTS_PASSWORD: "",
     GROWPATH_DATA_RIGHTS_CONFIRM: "",
@@ -85,7 +84,7 @@ describe("release-machine gate runner", () => {
 
     expect(result.status).toBe(1);
     expect(result.stdout).toMatch(/planned execute order/);
-    expect(result.stderr).toMatch(/EXPO_PUBLIC_SENTRY_DSN or SENTRY_DSN/);
+    expect(result.stderr).toMatch(/EXPO_PUBLIC_SENTRY_DSN/);
     expect(result.stderr).toMatch(/GROWPATH_DATA_RIGHTS_EMAIL/);
     expect(result.stderr).toMatch(/GROWPATH_PRODUCTION_BUILD_CONFIRM/);
     expect(fs.existsSync(path.join(tempRoot, "release-machine-steps.txt"))).toBe(false);

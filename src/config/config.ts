@@ -7,7 +7,6 @@ type Extra = {
   TERMS_URL?: string;
   SUPPORT_URL?: string;
   DELETE_ACCOUNT_URL?: string;
-  SENTRY_DSN?: string;
 };
 
 function _readExtra(): Extra {
@@ -34,5 +33,5 @@ export const config = {
     process.env.EXPO_PUBLIC_DELETE_ACCOUNT_URL ||
     _readExtra().DELETE_ACCOUNT_URL ||
     "https://growpathai.com/account/delete",
-  sentryDsn: process.env.EXPO_PUBLIC_SENTRY_DSN || _readExtra().SENTRY_DSN || ""
+  sentryDsn: process.env.EXPO_PUBLIC_SENTRY_DSN || ""
 };

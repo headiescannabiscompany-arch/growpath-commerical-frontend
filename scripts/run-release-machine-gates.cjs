@@ -9,15 +9,11 @@ function env(name) {
   return String(process.env[name] || "").trim();
 }
 
-function hasAny(names) {
-  return names.some((name) => env(name));
-}
-
 function missingRequirements() {
   const missing = [];
 
-  if (!hasAny(["EXPO_PUBLIC_SENTRY_DSN", "SENTRY_DSN"])) {
-    missing.push("EXPO_PUBLIC_SENTRY_DSN or SENTRY_DSN");
+  if (!env("EXPO_PUBLIC_SENTRY_DSN")) {
+    missing.push("EXPO_PUBLIC_SENTRY_DSN");
   }
 
   for (const name of [

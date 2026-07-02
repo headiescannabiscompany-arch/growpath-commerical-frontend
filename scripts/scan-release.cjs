@@ -188,7 +188,7 @@ function validateProductionHttpsUrl({ file, line = 1, check, value }) {
 }
 
 function validateFrontendMonitoring(extra) {
-  const dsn = String(process.env.EXPO_PUBLIC_SENTRY_DSN || extra.SENTRY_DSN || "");
+  const dsn = String(process.env.EXPO_PUBLIC_SENTRY_DSN || "");
   if (!strictRelease && !dsn) return;
 
   if (!dsn) {
