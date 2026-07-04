@@ -1,13 +1,23 @@
 import React, { useMemo, useState } from "react";
-import { useLocalSearchParams, useRouter } from "expo-router";
+import { useLocalSearchParams } from "expo-router";
 import { Pressable, ScrollView, StyleSheet, Text, TextInput, View } from "react-native";
 
 import BackButton from "@/components/nav/BackButton";
+import FeedBanner from "@/components/feed/FeedBanner";
+import {
+  createGrowpathModuleRecord,
+  type GrowpathModuleRecord
+} from "@/api/growpathModules";
 import { runCalculator, type CalculatorTool, type ToolRun } from "@/api/toolRuns";
+import { useEntitlements } from "@/entitlements";
+import { LockedScreen } from "@/entitlements/LockedScreen";
+import { personalToolFeatures, type FeatureDefinition } from "@/config/featureStatus";
+import { getFeedBannerPolicy } from "@/utils/feedPolicy";
 import {
   ToolPlantContextPicker,
   useToolPlantContext
 } from "@/features/personal/tools/ToolPlantContextPicker";
+import { TOOL_FEATURE_KEY_BY_TOOL_KEY } from "@/features/personal/tools/toolFeatureKeys";
 import ToolResultSurface, {
   type ToolResultAction,
   type ToolResultMetric,
@@ -17,6 +27,7 @@ import {
   saveToolRunAndCreateLog,
   saveToolRunAndCreateTask
 } from "@/features/personal/tools/saveToolRunAndOpenJournal";
+import { buildModuleRecordInput } from "@/features/personal/tools/moduleRecordPersistence";
 
 type ToolField = {
   key: string;
@@ -40,12 +51,14 @@ type BackendCalculatorToolScreenProps = {
   buildMetrics?: (outputs: Record<string, any>) => ToolResultMetric[];
   buildNotices?: (outputs: Record<string, any>) => ToolResultNotice[];
   defaultLogTitle: (outputs: Record<string, any>) => string;
-  defaultTask?: (outputs: Record<string, any>) => {
-    title: string;
-    description?: string;
-    priority?: "low" | "medium" | "high";
-    dueDate?: string;
-  } | undefined;
+  defaultTask?: (outputs: Record<string, any>) =>
+    | {
+        title: string;
+        description?: string;
+        priority?: "low" | "medium" | "high";
+        dueDate?: string;
+      }
+    | undefined;
 };
 
 function coerceParam(value?: string | string[]) {
@@ -60,9 +73,10 @@ function tomorrow(days = 1) {
   return date.toISOString().slice(0, 10);
 }
 
-function formatValue(value: unknown) {
+function formatValue(value: unknown): string {
   if (value == null || value === "") return "-";
-  if (typeof value === "number") return Number.isInteger(value) ? String(value) : value.toFixed(2);
+  if (typeof value === "number")
+    return Number.isInteger(value) ? String(value) : value.toFixed(2);
   if (typeof value === "boolean") return value ? "Yes" : "No";
   if (Array.isArray(value)) return value.length ? value.map(formatValue).join(", ") : "-";
   if (typeof value === "object") return JSON.stringify(value);
@@ -71,7 +85,9 @@ function formatValue(value: unknown) {
 
 function defaultMetrics(outputs: Record<string, any>): ToolResultMetric[] {
   return Object.entries(outputs)
-    .filter(([, value]) => value == null || typeof value !== "object" || Array.isArray(value))
+    .filter(
+      ([, value]) => value == null || typeof value !== "object" || Array.isArray(value)
+    )
     .slice(0, 6)
     .map(([key, value]) => ({
       key,
@@ -108,10 +124,30 @@ export default function BackendCalculatorToolScreen({
   defaultLogTitle,
   defaultTask
 }: BackendCalculatorToolScreenProps) {
-  const router = useRouter();
-  const params = useLocalSearchParams<{ growId?: string | string[]; plantId?: string | string[] }>();
+  const params = useLocalSearchParams<{
+    growId?: string | string[];
+    plantId?: string | string[];
+  }>();
   const growId = coerceParam(params.growId);
   const plantContext = useToolPlantContext(growId, coerceParam(params.plantId));
+  const entitlements = useEntitlements();
+  const plan = entitlements.plan || "free";
+  const isFreePlan = String(plan).toLowerCase() === "free";
+  const feature = personalToolFeatures.find(
+    (item) => item.key === TOOL_FEATURE_KEY_BY_TOOL_KEY[toolKey]
+  ) as FeatureDefinition | undefined;
+  const requiredCapability = feature?.capabilityKey || null;
+  const betaLockedForFree = feature?.status === "beta" && isFreePlan;
+  const capabilityLocked =
+    Boolean(requiredCapability) && !entitlements.can(String(requiredCapability));
+  const locked = betaLockedForFree || capabilityLocked;
+  const bannerPolicy = getFeedBannerPolicy({
+    routeKey: `personal_tool_${toolKey}`,
+    plan,
+    mode: entitlements.mode,
+    longContent: true
+  });
+
   const initialValues = useMemo(
     () => Object.fromEntries(fields.map((field) => [field.key, field.defaultValue])),
     [fields]
@@ -119,12 +155,14 @@ export default function BackendCalculatorToolScreen({
   const [values, setValues] = useState<Record<string, string>>(initialValues);
   const [outputs, setOutputs] = useState<Record<string, any> | null>(null);
   const [toolRun, setToolRun] = useState<ToolRun | null>(null);
+  const [moduleRecord, setModuleRecord] = useState<GrowpathModuleRecord | null>(null);
   const [running, setRunning] = useState(false);
   const [feedback, setFeedback] = useState("");
 
   function updateValue(key: string, value: string) {
     setValues((current) => ({ ...current, [key]: value }));
     setToolRun(null);
+    setModuleRecord(null);
     setOutputs(null);
     setFeedback("");
   }
@@ -142,7 +180,36 @@ export default function BackendCalculatorToolScreen({
       const response = await runCalculator<Record<string, any>>(tool, payload);
       setOutputs(response.outputs);
       setToolRun(response.toolRun);
-      setFeedback("Calculated and saved as a ToolRun.");
+      const modulePayload = buildModuleRecordInput({
+        tool,
+        title: defaultLogTitle(response.outputs),
+        growId,
+        plantId: plantContext.plantId,
+        cropProfileId: response.toolRun?.cropProfileId || payload.cropProfileId || null,
+        cropIdentity: response.toolRun?.cropIdentity || payload.cropIdentity || null,
+        selectedPlantContext:
+          response.toolRun?.selectedPlantContext || payload.selectedPlantContext || null,
+        inputs: payload,
+        outputs: response.outputs,
+        toolRun: response.toolRun
+      });
+      if (modulePayload) {
+        try {
+          const createdRecord = await createGrowpathModuleRecord(modulePayload);
+          setModuleRecord(createdRecord);
+          setFeedback("Calculated and saved as a ToolRun and module record.");
+        } catch (saveError: any) {
+          setModuleRecord(null);
+          setFeedback(
+            `Calculated and saved as a ToolRun. Module record save failed: ${
+              saveError?.message || "unknown error"
+            }`
+          );
+        }
+      } else {
+        setModuleRecord(null);
+        setFeedback("Calculated and saved as a ToolRun.");
+      }
     } catch (error: any) {
       setFeedback(error?.message || "Unable to calculate.");
     } finally {
@@ -160,7 +227,6 @@ export default function BackendCalculatorToolScreen({
       successMessage: "Saved to grow log.",
       onPress: async () => {
         const result = await saveToolRunAndCreateLog({
-          router,
           growId,
           ...plantContext.toolRunContext,
           toolKey,
@@ -201,11 +267,52 @@ export default function BackendCalculatorToolScreen({
     }
   }
 
+  if (locked) {
+    return (
+      <ScrollView style={styles.screen} contentContainerStyle={styles.content}>
+        <BackButton />
+        <Text style={styles.title}>{title}</Text>
+        <Text style={styles.subtitle}>{subtitle}</Text>
+        {bannerPolicy.top ? (
+          <FeedBanner
+            placement="top"
+            slots={bannerPolicy.slotsByPlacement.top}
+            mode={entitlements.mode}
+            plan={plan}
+            railMode={bannerPolicy.railMode}
+          />
+        ) : null}
+        <LockedScreen
+          title={`${title} is a Pro tool`}
+          message="Free accounts can use core tools and browse the app. Upgrade to run this tool and save its results to grow history."
+        />
+        {bannerPolicy.bottom ? (
+          <FeedBanner
+            placement="bottom"
+            slots={bannerPolicy.slotsByPlacement.bottom}
+            mode={entitlements.mode}
+            plan={plan}
+            railMode={bannerPolicy.railMode}
+          />
+        ) : null}
+      </ScrollView>
+    );
+  }
+
   return (
     <ScrollView style={styles.screen} contentContainerStyle={styles.content}>
       <BackButton />
       <Text style={styles.title}>{title}</Text>
       <Text style={styles.subtitle}>{subtitle}</Text>
+      {bannerPolicy.top ? (
+        <FeedBanner
+          placement="top"
+          slots={bannerPolicy.slotsByPlacement.top}
+          mode={entitlements.mode}
+          plan={plan}
+          railMode={bannerPolicy.railMode}
+        />
+      ) : null}
       {growId ? <Text style={styles.context}>Grow context: {growId}</Text> : null}
       <ToolPlantContextPicker
         plants={plantContext.plants}
@@ -240,6 +347,16 @@ export default function BackendCalculatorToolScreen({
         <Text style={styles.buttonText}>{running ? "Calculating..." : "Calculate"}</Text>
       </Pressable>
 
+      {bannerPolicy.middle ? (
+        <FeedBanner
+          placement="middle"
+          slots={bannerPolicy.slotsByPlacement.middle}
+          mode={entitlements.mode}
+          plan={plan}
+          railMode={bannerPolicy.railMode}
+        />
+      ) : null}
+
       {outputs ? (
         <ToolResultSurface
           title={`${title} result`}
@@ -248,7 +365,9 @@ export default function BackendCalculatorToolScreen({
           inputs={payload}
           outputs={outputs}
           notices={buildNotices(outputs)}
-          recommendations={Array.isArray(outputs.recommendations) ? outputs.recommendations : []}
+          recommendations={
+            Array.isArray(outputs.recommendations) ? outputs.recommendations : []
+          }
           formulas={[
             outputs.formulaExplanation,
             outputs.formula,
@@ -257,11 +376,25 @@ export default function BackendCalculatorToolScreen({
           ].filter(Boolean)}
           actions={actions}
           feedback={feedback}
-          contextMessage={growId ? undefined : "Select a grow to enable log and task actions."}
+          contextMessage={
+            growId ? undefined : "Select a grow to enable log and task actions."
+          }
           copyPayload={{ tool, input: payload, output: outputs }}
+          footerMessage={
+            moduleRecord?.id ? `Module record saved: ${moduleRecord.id}` : undefined
+          }
         />
       ) : feedback ? (
         <Text style={styles.feedback}>{feedback}</Text>
+      ) : null}
+      {bannerPolicy.bottom ? (
+        <FeedBanner
+          placement="bottom"
+          slots={bannerPolicy.slotsByPlacement.bottom}
+          mode={entitlements.mode}
+          plan={plan}
+          railMode={bannerPolicy.railMode}
+        />
       ) : null}
     </ScrollView>
   );

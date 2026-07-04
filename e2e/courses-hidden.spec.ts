@@ -48,24 +48,22 @@ async function installMocks(page: any) {
   });
 }
 
-test.describe("hidden courses routes", () => {
+test.describe("courses routes", () => {
   for (const target of [
     { name: "personal", path: "/home/personal/courses" },
     { name: "top-level", path: "/courses" }
   ]) {
-    test(`blocks ${target.name} courses route`, async ({ page }) => {
+    test(`renders ${target.name} courses route`, async ({ page }) => {
       await page.setViewportSize({ width: 390, height: 900 });
       await installMocks(page);
 
       await page.goto(target.path, { waitUntil: "domcontentloaded" });
 
       await expect(page.getByText("Courses", { exact: true }).first()).toBeVisible();
-      await expect(page.getByText("Hidden for release")).toBeVisible();
-      await expect(page.getByText(/moderation, creator, payout/i)).toBeVisible();
-      await expect(page.getByText(/Release decision: hidden/i)).toBeVisible();
-      await expect(page.getByText("Create Course")).toHaveCount(0);
+      await expect(page.getByText("Hidden for release")).toHaveCount(0);
+      await expect(page.getByText(/Release decision: hidden/i)).toHaveCount(0);
+      await expect(page.getByText("Create Course")).toBeVisible();
       await expect(page.getByText("Loading courses...")).toHaveCount(0);
-      await expect(page.getByText("Open details")).toHaveCount(0);
 
       await page.screenshot({
         path: `tmp/screenshots/courses-hidden-${target.name}.png`,

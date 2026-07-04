@@ -1,6 +1,8 @@
 import React from "react";
+import * as ImagePicker from "expo-image-picker";
 import {
   ActivityIndicator,
+  Image,
   Pressable,
   ScrollView,
   Text,
@@ -9,14 +11,28 @@ import {
 } from "react-native";
 import { useRouter } from "expo-router";
 import { apiRequest } from "@/api/apiRequest";
+import { appendGrowPhotos } from "@/api/grows";
+import PersonalFeedPlacement from "@/components/feed/PersonalFeedPlacement";
+import { LockedScreen } from "@/entitlements/LockedScreen";
+import { CAPABILITY_KEYS, useEntitlements } from "@/entitlements";
+import { isPersistedImageUri, persistImageUris } from "@/utils/photoUploads";
 
 const GROWS_CREATE_PATH = "/api/personal/grows";
 
 type SystemPreset = "soil" | "coco" | "hydro";
 type AnchorType = "vegStart" | "flowerDay1";
+type SelectedPhoto = {
+  uri: string;
+  width?: number | null;
+  height?: number | null;
+  mimeType?: string | null;
+  sizeBytes?: number | null;
+};
 
 export default function NewGrowScreen() {
   const router = useRouter();
+  const entitlements = useEntitlements();
+  const canCreateGrow = entitlements.can(CAPABILITY_KEYS.GROWS_PERSONAL_WRITE);
   const defaultTimeZone = Intl.DateTimeFormat().resolvedOptions().timeZone || "UTC";
 
   const [name, setName] = React.useState("");
@@ -32,11 +48,71 @@ export default function NewGrowScreen() {
   const [cultivar, setCultivar] = React.useState("");
   const [targetVpdBand, setTargetVpdBand] = React.useState("");
   const [notes, setNotes] = React.useState("");
+  const [photos, setPhotos] = React.useState<SelectedPhoto[]>([]);
+  const [photoUrl, setPhotoUrl] = React.useState("");
 
   const [saving, setSaving] = React.useState(false);
   const [error, setError] = React.useState<string | null>(null);
 
   const isValid = name.trim().length > 0 && anchorDate.trim().length > 0;
+
+  if (!canCreateGrow) {
+    return (
+      <LockedScreen
+        title="Create grows with Pro"
+        message="Free accounts can browse GrowPathAI and use free tools. Upgrade to create and save personal grow records."
+        actionLabel="Back to grows"
+        onAction={() => router.replace("/home/personal/grows" as any)}
+      />
+    );
+  }
+
+  const pickPhotos = React.useCallback(async () => {
+    const permission = await ImagePicker.requestMediaLibraryPermissionsAsync();
+    if (!permission.granted) {
+      setError("Photo-library permission is required to attach images.");
+      return;
+    }
+
+    const picked = await ImagePicker.launchImageLibraryAsync({
+      mediaTypes: ImagePicker.MediaTypeOptions.Images,
+      allowsMultipleSelection: true,
+      allowsEditing: false,
+      quality: 0.8
+    });
+
+    if (picked.canceled) return;
+
+    setPhotos((current) => [
+      ...current,
+      ...picked.assets
+        .filter((asset) => asset.uri)
+        .map((asset) => ({
+          uri: asset.uri,
+          width: asset.width ?? null,
+          height: asset.height ?? null,
+          mimeType: asset.mimeType ?? null,
+          sizeBytes: asset.fileSize ?? null
+        }))
+    ]);
+    setError(null);
+  }, []);
+
+  const addPhotoUrl = React.useCallback(() => {
+    const uri = photoUrl.trim();
+    if (!uri) return;
+    if (!isPersistedImageUri(uri)) {
+      setError("Paste a saved image URL or /uploads/... path.");
+      return;
+    }
+
+    setPhotos((current) => [
+      ...current,
+      { uri, width: null, height: null, mimeType: null, sizeBytes: null }
+    ]);
+    setPhotoUrl("");
+    setError(null);
+  }, [photoUrl]);
 
   const onCreate = React.useCallback(async () => {
     if (!isValid) {
@@ -47,7 +123,8 @@ export default function NewGrowScreen() {
     setSaving(true);
     setError(null);
     try {
-      await apiRequest(GROWS_CREATE_PATH, {
+      const uploadedPhotos = await persistImageUris(photos.map((photo) => photo.uri));
+      const created = await apiRequest(GROWS_CREATE_PATH, {
         method: "POST",
         body: {
           name: name.trim(),
@@ -60,9 +137,25 @@ export default function NewGrowScreen() {
           potCount: potCount ? Number(potCount) : undefined,
           cultivar: cultivar.trim() || undefined,
           targetVpdBand: targetVpdBand.trim() || undefined,
+          photos: uploadedPhotos,
+          photoMetadata: uploadedPhotos.map((url, index) => ({
+            url,
+            mimeType: photos[index]?.mimeType || null,
+            width: photos[index]?.width || null,
+            height: photos[index]?.height || null,
+            sizeBytes: photos[index]?.sizeBytes || null,
+            source: "grow-create"
+          })),
           notes: notes.trim() || undefined
         }
       });
+
+      const createdId = String(
+        created?._id || created?.id || created?.grow?._id || created?.grow?.id || ""
+      );
+      if (createdId && uploadedPhotos.length) {
+        await appendGrowPhotos(createdId, uploadedPhotos);
+      }
 
       router.replace(`/home/personal/grows?r=${Date.now()}`);
     } catch (err: any) {
@@ -78,6 +171,7 @@ export default function NewGrowScreen() {
     isValid,
     name,
     notes,
+    photos,
     potCount,
     potSize,
     router,
@@ -95,6 +189,7 @@ export default function NewGrowScreen() {
       <Text style={{ color: "#475569" }}>
         Set required anchors so logs, tools, and tasks can map to this grow correctly.
       </Text>
+      <PersonalFeedPlacement placement="top" routeKey="personal_new_grow" longContent />
 
       {error ? (
         <View
@@ -210,6 +305,105 @@ export default function NewGrowScreen() {
         }}
       />
 
+      <View style={{ gap: 8, marginTop: 6 }}>
+        <View
+          style={{
+            flexDirection: "row",
+            justifyContent: "space-between",
+            alignItems: "center",
+            gap: 10
+          }}
+        >
+          <Text style={{ fontWeight: "700" }}>Grow photos</Text>
+          <Pressable
+            onPress={pickPhotos}
+            accessibilityRole="button"
+            accessibilityLabel="Attach grow photos"
+            style={{
+              borderWidth: 1,
+              borderColor: "#166534",
+              borderRadius: 10,
+              paddingHorizontal: 12,
+              paddingVertical: 8,
+              backgroundColor: "#F0FDF4"
+            }}
+          >
+            <Text style={{ color: "#166534", fontWeight: "800" }}>
+              {photos.length ? "Add More Photos" : "Attach Photos"}
+            </Text>
+          </Pressable>
+        </View>
+        {photos.length ? (
+          <View style={{ flexDirection: "row", flexWrap: "wrap", gap: 8 }}>
+            {photos.map((photo, index) => (
+              <View
+                key={`${photo.uri}-${index}`}
+                style={{
+                  width: 92,
+                  borderWidth: 1,
+                  borderColor: "#E2E8F0",
+                  borderRadius: 10,
+                  overflow: "hidden",
+                  backgroundColor: "#F8FAFC"
+                }}
+              >
+                <Image
+                  source={{ uri: photo.uri }}
+                  accessibilityLabel={`Attached grow photo ${index + 1}`}
+                  style={{ width: "100%", height: 72, backgroundColor: "#E2E8F0" }}
+                />
+                <Pressable
+                  onPress={() =>
+                    setPhotos((current) => current.filter((_, i) => i !== index))
+                  }
+                  accessibilityRole="button"
+                  accessibilityLabel={`Remove attached grow photo ${index + 1}`}
+                  style={{ padding: 6, alignItems: "center" }}
+                >
+                  <Text style={{ color: "#991B1B", fontSize: 12, fontWeight: "800" }}>
+                    Remove
+                  </Text>
+                </Pressable>
+              </View>
+            ))}
+          </View>
+        ) : (
+          <Text style={{ color: "#64748B" }}>
+            Attach setup photos now so the grow starts with visual history.
+          </Text>
+        )}
+        <TextInput
+          value={photoUrl}
+          onChangeText={setPhotoUrl}
+          placeholder="/uploads/grow-photo.jpg or https://..."
+          accessibilityLabel="Grow photo URL"
+          autoCapitalize="none"
+          style={{
+            borderWidth: 1,
+            borderColor: "#E2E8F0",
+            borderRadius: 10,
+            paddingHorizontal: 12,
+            paddingVertical: 10
+          }}
+        />
+        <Pressable
+          onPress={addPhotoUrl}
+          disabled={!photoUrl.trim()}
+          accessibilityRole="button"
+          accessibilityLabel="Add grow photo URL"
+          style={{
+            borderWidth: 1,
+            borderColor: "#CBD5E1",
+            borderRadius: 10,
+            padding: 10,
+            alignSelf: "flex-start",
+            opacity: photoUrl.trim() ? 1 : 0.5
+          }}
+        >
+          <Text style={{ fontWeight: "700" }}>Add photo URL</Text>
+        </Pressable>
+      </View>
+
       <Pressable
         onPress={() => setShowAdvanced((prev) => !prev)}
         accessibilityRole="button"
@@ -228,6 +422,11 @@ export default function NewGrowScreen() {
           {showAdvanced ? "Hide advanced fields" : "Show advanced fields"}
         </Text>
       </Pressable>
+      <PersonalFeedPlacement
+        placement="middle"
+        routeKey="personal_new_grow"
+        longContent
+      />
 
       {showAdvanced ? (
         <View style={{ gap: 10 }}>
@@ -351,6 +550,11 @@ export default function NewGrowScreen() {
           <Text style={{ color: "#FFFFFF", fontWeight: "700" }}>Create grow</Text>
         )}
       </Pressable>
+      <PersonalFeedPlacement
+        placement="bottom"
+        routeKey="personal_new_grow"
+        longContent
+      />
     </ScrollView>
   );
 }

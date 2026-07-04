@@ -1,8 +1,10 @@
 import React, { useMemo, useState } from "react";
+import { useRouter } from "expo-router";
 import { Alert, StyleSheet, Text, TextInput, TouchableOpacity, View } from "react-native";
 
 import ScreenContainer from "../../components/ScreenContainer";
 import { createCourse } from "@/api/courses";
+import PersonalFeedPlacement from "@/components/feed/PersonalFeedPlacement";
 import { useEntitlements } from "@/entitlements";
 import { getLearningAccess } from "@/features/learning/learningAccess";
 
@@ -13,6 +15,7 @@ function toPriceCents(input) {
 }
 
 export default function CreateCourseScreen({ navigation }) {
+  const router = useRouter();
   const entitlements = useEntitlements();
   const access = getLearningAccess(entitlements);
   const [title, setTitle] = useState("");
@@ -45,12 +48,14 @@ export default function CreateCourseScreen({ navigation }) {
         summary: summary.trim(),
         priceCents: priceCents ?? 0,
         isPublished: false,
-        workspace: "commercial"
+        workspace: entitlements.mode || "personal"
       });
 
       Alert.alert("Course created", "Your course draft has been created.");
       if (navigation?.replace) {
         navigation.replace("CourseDetail", { course, id: course?._id || course?.id });
+      } else if (router?.replace) {
+        router.replace("/courses");
       } else {
         navigation.goBack();
       }
@@ -62,9 +67,10 @@ export default function CreateCourseScreen({ navigation }) {
   }
 
   return (
-    <ScreenContainer>
+    <ScreenContainer scroll>
       <View style={styles.container}>
         <Text style={styles.title}>Create Course</Text>
+        <PersonalFeedPlacement placement="top" routeKey="personal_course_create" />
         {!access.canCreateCourses ? (
           <View style={styles.lockedCard}>
             <Text style={styles.lockedTitle}>Course creation unavailable</Text>
@@ -108,6 +114,7 @@ export default function CreateCourseScreen({ navigation }) {
           Lesson limit per course:{" "}
           {access.maxLessonsPerCourse === null ? "unlimited" : access.maxLessonsPerCourse}
         </Text>
+        <PersonalFeedPlacement placement="bottom" routeKey="personal_course_create" />
 
         <TouchableOpacity
           onPress={submitCourse}

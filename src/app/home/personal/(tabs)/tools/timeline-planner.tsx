@@ -12,6 +12,7 @@ import {
 } from "@/features/personal/tools/ToolPlantContextPicker";
 import ToolResultSurface from "@/features/personal/tools/ToolResultSurface";
 import { saveToolRunAndCreateTasks } from "@/features/personal/tools/saveToolRunAndOpenJournal";
+import PersonalFeedPlacement from "@/components/feed/PersonalFeedPlacement";
 
 function coerceParam(value?: string | string[]) {
   if (typeof value === "string") return value;
@@ -100,6 +101,11 @@ export default function TimelinePlannerScreen() {
       <Text style={styles.subtitle}>
         Build a date-based grow plan across veg, flower, dry, and cure milestones.
       </Text>
+      <PersonalFeedPlacement
+        placement="top"
+        routeKey="personal_tools_timeline_planner"
+        longContent
+      />
       {growId ? <Text style={styles.context}>Grow context: {growId}</Text> : null}
       <ToolPlantContextPicker
         plants={plantContext.plants}
@@ -156,6 +162,12 @@ export default function TimelinePlannerScreen() {
             keyboardType="numeric"
           />
 
+          <PersonalFeedPlacement
+            placement="middle"
+            routeKey="personal_tools_timeline_planner"
+            longContent
+          />
+
           <ToolResultSurface
             title="Planned timeline"
             status="LOCAL PLAN"
@@ -197,6 +209,12 @@ export default function TimelinePlannerScreen() {
           />
         </>
       )}
+
+      <PersonalFeedPlacement
+        placement="bottom"
+        routeKey="personal_tools_timeline_planner"
+        longContent
+      />
     </ScrollView>
   );
 }

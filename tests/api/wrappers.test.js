@@ -20,6 +20,8 @@ import * as linksApi from "../../src/api/links.js";
 import * as ordersApi from "../../src/api/orders";
 import * as productsApi from "../../src/api/products";
 import * as storefrontApi from "../../src/api/storefront";
+import * as commercialAnalyticsApi from "../../src/api/commercialAnalytics";
+import * as commercialWorkflowsApi from "../../src/api/commercialWorkflows";
 import * as marketplaceApi from "../../src/api/marketplace.js";
 import ROUTES from "../../src/api/routes.js";
 
@@ -160,6 +162,20 @@ describe("API Wrappers Unit Tests", () => {
     ).toBe(true);
   });
 
+  it("Commercial API: public storefront search supports query and similarity", async () => {
+    await storefrontApi.searchPublicStorefronts({
+      q: "soil",
+      similarTo: "seller store",
+      limit: 12
+    });
+    expect(fetchCalls[0].options.method).toBe("GET");
+    expect(
+      fetchCalls[0].url.endsWith(
+        "/api/commercial/storefront/public?q=soil&similarTo=seller+store&limit=12"
+      )
+    ).toBe(true);
+  });
+
   it("Commercial API: products use canonical commercial endpoints", async () => {
     await productsApi.fetchProducts();
     expect(fetchCalls[0].url.endsWith("/api/commercial/products")).toBe(true);
@@ -185,25 +201,161 @@ describe("API Wrappers Unit Tests", () => {
   it("Commercial API: links campaigns and orders use canonical endpoints", async () => {
     await linksApi.fetchLinks();
     await campaignsApi.fetchCampaigns();
+    await campaignsApi.createCampaign({
+      name: "Product Drop",
+      linkedProductId: "product 1"
+    });
     await ordersApi.fetchOrders();
     await ordersApi.updateOrderFulfillment("order 1", "fulfilled");
     await linksApi.updateLink("link 1", { label: "Updated" });
     await campaignsApi.updateCampaign("campaign 1", { status: "active" });
+    await campaignsApi.recordCampaignClick("campaign 1", {
+      targetUrl: "https://example.com",
+      source: "feed"
+    });
 
     expect(fetchCalls[0].url.endsWith("/api/commercial/links")).toBe(true);
     expect(fetchCalls[1].url.endsWith("/api/commercial/campaigns")).toBe(true);
-    expect(fetchCalls[2].url.endsWith("/api/commercial/orders")).toBe(true);
-    expect(fetchCalls[3].options.method).toBe("PATCH");
-    expect(fetchCalls[3].url.endsWith("/api/commercial/orders/order%201")).toBe(true);
-    expect(JSON.parse(fetchCalls[3].options.body)).toEqual({
+    expect(fetchCalls[2].options.method).toBe("POST");
+    expect(fetchCalls[2].url.endsWith("/api/commercial/campaigns")).toBe(true);
+    expect(JSON.parse(fetchCalls[2].options.body)).toMatchObject({
+      name: "Product Drop",
+      linkedProductId: "product 1"
+    });
+    expect(fetchCalls[3].url.endsWith("/api/commercial/orders")).toBe(true);
+    expect(fetchCalls[4].options.method).toBe("PATCH");
+    expect(fetchCalls[4].url.endsWith("/api/commercial/orders/order%201")).toBe(true);
+    expect(JSON.parse(fetchCalls[4].options.body)).toEqual({
       fulfillmentStatus: "fulfilled"
     });
-    expect(fetchCalls[4].options.method).toBe("PATCH");
-    expect(fetchCalls[4].url.endsWith("/api/commercial/links/link%201")).toBe(true);
     expect(fetchCalls[5].options.method).toBe("PATCH");
-    expect(fetchCalls[5].url.endsWith("/api/commercial/campaigns/campaign%201")).toBe(
+    expect(fetchCalls[5].url.endsWith("/api/commercial/links/link%201")).toBe(true);
+    expect(fetchCalls[6].options.method).toBe("PATCH");
+    expect(fetchCalls[6].url.endsWith("/api/commercial/campaigns/campaign%201")).toBe(
       true
     );
+    expect(fetchCalls[7].options.method).toBe("POST");
+    expect(
+      fetchCalls[7].url.endsWith("/api/commercial/campaigns/campaign%201/click")
+    ).toBe(true);
+    expect(JSON.parse(fetchCalls[7].options.body)).toMatchObject({
+      targetUrl: "https://example.com",
+      source: "feed"
+    });
+  });
+
+  it("Commercial API: product lines and trials use canonical workflow endpoints", async () => {
+    await commercialWorkflowsApi.fetchProductLines();
+    await commercialWorkflowsApi.createProductLine({
+      name: "Living Soil Line",
+      status: "draft"
+    });
+    await commercialWorkflowsApi.updateProductLine("line 1", {
+      publicSummary: "Updated"
+    });
+    await commercialWorkflowsApi.fetchProductTrials();
+    await commercialWorkflowsApi.createProductTrial({
+      trialName: "Seedling Safety",
+      status: "planned"
+    });
+    await commercialWorkflowsApi.updateProductTrial("trial 1", {
+      status: "active"
+    });
+    await commercialWorkflowsApi.fetchCommercialGrows();
+    await commercialWorkflowsApi.createCommercialGrow({
+      name: "Bloom Trial",
+      status: "active"
+    });
+    await commercialWorkflowsApi.updateCommercialGrow("grow 1", {
+      publicShareStatus: "public_ready"
+    });
+    await commercialWorkflowsApi.fetchSoilNutrientBatches();
+    await commercialWorkflowsApi.createSoilNutrientBatch({
+      batchName: "Bloom Batch",
+      status: "planned"
+    });
+    await commercialWorkflowsApi.updateSoilNutrientBatch("batch 1", {
+      status: "ready"
+    });
+    await commercialWorkflowsApi.fetchCommercialCourses();
+    await commercialWorkflowsApi.createCommercialCourse({
+      title: "Bloom Topdress Training",
+      status: "draft"
+    });
+    await commercialWorkflowsApi.updateCommercialCourse("course 1", {
+      status: "published"
+    });
+
+    expect(fetchCalls[0].url.endsWith("/api/commercial/product-lines")).toBe(true);
+    expect(fetchCalls[1].options.method).toBe("POST");
+    expect(fetchCalls[1].url.endsWith("/api/commercial/product-lines")).toBe(true);
+    expect(JSON.parse(fetchCalls[1].options.body)).toMatchObject({
+      name: "Living Soil Line",
+      status: "draft"
+    });
+    expect(fetchCalls[2].options.method).toBe("PATCH");
+    expect(fetchCalls[2].url.endsWith("/api/commercial/product-lines/line%201")).toBe(
+      true
+    );
+    expect(fetchCalls[3].url.endsWith("/api/commercial/trials")).toBe(true);
+    expect(fetchCalls[4].options.method).toBe("POST");
+    expect(fetchCalls[4].url.endsWith("/api/commercial/trials")).toBe(true);
+    expect(JSON.parse(fetchCalls[4].options.body)).toMatchObject({
+      trialName: "Seedling Safety",
+      status: "planned"
+    });
+    expect(fetchCalls[5].options.method).toBe("PATCH");
+    expect(fetchCalls[5].url.endsWith("/api/commercial/trials/trial%201")).toBe(true);
+    expect(fetchCalls[6].url.endsWith("/api/commercial/grows")).toBe(true);
+    expect(fetchCalls[7].options.method).toBe("POST");
+    expect(fetchCalls[7].url.endsWith("/api/commercial/grows")).toBe(true);
+    expect(JSON.parse(fetchCalls[7].options.body)).toMatchObject({
+      name: "Bloom Trial",
+      status: "active"
+    });
+    expect(fetchCalls[8].options.method).toBe("PATCH");
+    expect(fetchCalls[8].url.endsWith("/api/commercial/grows/grow%201")).toBe(true);
+    expect(fetchCalls[9].url.endsWith("/api/commercial/batches")).toBe(true);
+    expect(fetchCalls[10].options.method).toBe("POST");
+    expect(fetchCalls[10].url.endsWith("/api/commercial/batches")).toBe(true);
+    expect(JSON.parse(fetchCalls[10].options.body)).toMatchObject({
+      batchName: "Bloom Batch",
+      status: "planned"
+    });
+    expect(fetchCalls[11].options.method).toBe("PATCH");
+    expect(fetchCalls[11].url.endsWith("/api/commercial/batches/batch%201")).toBe(true);
+    expect(fetchCalls[12].url.endsWith("/api/commercial/courses")).toBe(true);
+    expect(fetchCalls[13].options.method).toBe("POST");
+    expect(fetchCalls[13].url.endsWith("/api/commercial/courses")).toBe(true);
+    expect(JSON.parse(fetchCalls[13].options.body)).toMatchObject({
+      title: "Bloom Topdress Training",
+      status: "draft"
+    });
+    expect(fetchCalls[14].options.method).toBe("PATCH");
+    expect(fetchCalls[14].url.endsWith("/api/commercial/courses/course%201")).toBe(true);
+  });
+
+  it("Commercial API: analytics overview uses canonical endpoint", async () => {
+    await commercialAnalyticsApi.fetchCommercialAnalyticsOverview();
+    expect(fetchCalls[0].url.endsWith("/api/commercial/analytics/overview")).toBe(true);
+  });
+
+  it("Commercial API: analytics event tracking posts public click events", async () => {
+    await commercialAnalyticsApi.recordCommercialAnalyticsEvent({
+      eventType: "product_external_link_click",
+      objectType: "product",
+      objectId: "product 1",
+      storefrontSlug: "soil-brand",
+      targetUrl: "https://example.com"
+    });
+
+    expect(fetchCalls[0].options.method).toBe("POST");
+    expect(fetchCalls[0].url.endsWith("/api/commercial/analytics/events")).toBe(true);
+    expect(JSON.parse(fetchCalls[0].options.body)).toMatchObject({
+      eventType: "product_external_link_click",
+      objectId: "product 1",
+      storefrontSlug: "soil-brand"
+    });
   });
 
   it("Forum API: createPost uses POST", async () => {

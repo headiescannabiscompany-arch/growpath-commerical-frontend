@@ -1,4 +1,5 @@
 import React, { useEffect, useMemo, useState } from "react";
+import { useRouter } from "expo-router";
 import {
   ActivityIndicator,
   Pressable,
@@ -10,6 +11,7 @@ import {
 } from "react-native";
 import { CAPABILITY_KEYS, useEntitlements } from "@/entitlements";
 import { apiRequest } from "@/api/apiRequest";
+import PersonalFeedPlacement from "@/components/feed/PersonalFeedPlacement";
 import { countPaidCourses, getLearningAccess } from "@/features/learning/learningAccess";
 import CourseDetailScreen from "./CourseDetailScreen";
 
@@ -22,6 +24,7 @@ function normalizeList(payload) {
 }
 
 export default function CoursesScreen({ navigation } = {}) {
+  const router = useRouter();
   const ent = useEntitlements();
   const access = getLearningAccess(ent);
   const canInvite = !!ent.can?.(CAPABILITY_KEYS.COMMERCIAL_HOME);
@@ -105,7 +108,7 @@ export default function CoursesScreen({ navigation } = {}) {
       navigation.navigate("CreateCourse");
       return;
     }
-    setInviteMessage("Open the Commercial course creator to create a draft.");
+    router.push("/courses/create");
   }
 
   if (selectedCourse) {
@@ -125,6 +128,7 @@ export default function CoursesScreen({ navigation } = {}) {
   return (
     <ScrollView style={styles.container} contentContainerStyle={styles.content}>
       <Text style={styles.title}>Courses</Text>
+      <PersonalFeedPlacement placement="top" routeKey="personal_courses" longContent />
 
       {!access.canViewCourses ? (
         <View style={styles.lockedCard}>
@@ -198,6 +202,8 @@ export default function CoursesScreen({ navigation } = {}) {
         <Text style={styles.meta}>Paid course sales require `COURSES_SELL_PAID`.</Text>
       ) : null}
 
+      <PersonalFeedPlacement placement="middle" routeKey="personal_courses" longContent />
+
       {canInvite ? (
         <View style={styles.inviteCard}>
           <TextInput
@@ -213,6 +219,7 @@ export default function CoursesScreen({ navigation } = {}) {
           {inviteMessage ? <Text style={styles.meta}>{inviteMessage}</Text> : null}
         </View>
       ) : null}
+      <PersonalFeedPlacement placement="bottom" routeKey="personal_courses" longContent />
     </ScrollView>
   );
 }

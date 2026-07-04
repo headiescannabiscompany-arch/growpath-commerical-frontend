@@ -1,0 +1,17 @@
+{
+  "schemaVersion": "growpath-external-source-smoke-v1",
+  "sources": [
+    {
+      "id": "headies-growdiaries-profile",
+      "owner": "user_provided",
+      "provider": "GrowDiaries",
+      "sourceType": "grower_profile",
+      "sourceUrl": "https://growdiaries.com/grower/headies",
+      "sourceLink": "https://growdiaries.com/grower/headies",
+      "photoPolicy": "external_link_only",
+      "rightsMode": "external_link_only",
+      "copyOrRehostPhotos": false,
+      "notes": "Use this as a real external profile/source-link smoke target. Do not infer diary facts or copy photos from the profile."
+    }
+  ]
+}

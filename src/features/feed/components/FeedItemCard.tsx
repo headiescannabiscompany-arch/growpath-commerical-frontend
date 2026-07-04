@@ -14,6 +14,12 @@ try {
 } catch {}
 
 function getRouteForItem(item: FeedItem): string {
+  const brandSlug =
+    item.metadata?.commercialSlug ||
+    item.metadata?.storefrontSlug ||
+    item.metadata?.brandSlug ||
+    item.metadata?.actorSlug;
+  if (brandSlug) return `/brands/${encodeURIComponent(String(brandSlug))}`;
   if (item.type === "task") return `/app/(commercial)/tasks/${item.id}`;
   if (item.type === "alert") return `/app/(commercial)/alerts/${item.id}`;
   if (item.type === "log") {

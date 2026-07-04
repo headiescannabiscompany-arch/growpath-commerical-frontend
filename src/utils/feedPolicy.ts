@@ -7,11 +7,22 @@ export type FeedPolicy = {
   cadence: "always" | "everyOther";
 };
 
+export type FeedBannerPlacement = "top" | "middle" | "bottom";
+
+export type FeedBannerPolicy = {
+  top: boolean;
+  middle: boolean;
+  bottom: boolean;
+  slotsByPlacement: Record<FeedBannerPlacement, number>;
+  railMode: FeedRailMode;
+};
+
 type FeedPolicyInput = {
   routeKey?: string;
   routeName?: string;
   plan?: string | null;
   mode?: string | null;
+  longContent?: boolean;
 };
 
 function shouldIncludeEveryOther(routeKey: string) {
@@ -79,5 +90,45 @@ export function getFeedPolicy({
     includeForumHighlights: false,
     railMode: mode === "facility" ? "education-only" : "standard",
     cadence
+  };
+}
+
+export function getFeedBannerPolicy({
+  routeKey,
+  routeName,
+  plan,
+  mode,
+  longContent = false
+}: FeedPolicyInput): FeedBannerPolicy {
+  const normalizedPlan = plan || "free";
+  const isFree = normalizedPlan === "free";
+  const key = routeKey || routeName || "shared";
+  const isHome = key === "home";
+  const railMode = mode === "facility" ? "education-only" : "standard";
+
+  if (isHome) {
+    return {
+      top: false,
+      middle: false,
+      bottom: false,
+      slotsByPlacement: {
+        top: 0,
+        middle: 0,
+        bottom: 0
+      },
+      railMode
+    };
+  }
+
+  return {
+    top: true,
+    middle: isFree && longContent,
+    bottom: isFree,
+    slotsByPlacement: {
+      top: 1,
+      middle: isFree && longContent ? 1 : 0,
+      bottom: isFree ? 1 : 0
+    },
+    railMode
   };
 }

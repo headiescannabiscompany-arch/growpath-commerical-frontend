@@ -1,0 +1,20 @@
+export const TOOL_FEATURE_KEY_BY_TOOL_KEY: Record<string, string> = {
+  "auto-grow-calendar": "tools.auto_grow_calendar",
+  "clone-rooting": "tools.clone_rooting",
+  "crop-steering-project": "tools.crop_steering_projects",
+  "dry-amendment-mix": "tools.dry_amendment_mix",
+  "dry-cure-guard": "tools.dry_cure_guard",
+  "genetics-inventory": "tools.genetics_inventory",
+  "harvest-readiness": "tools.harvest_readiness_ai",
+  "ipm-scout": "tools.ipm_scout",
+  "nutrient-source-comparison": "tools.nutrient_source_comparison",
+  "ph-ec-check": "tools.ph_ec_adjustment",
+  "pheno-hunt": "tools.pheno_hunting",
+  "run-comparison": "tools.run_comparison",
+  "soil-builder": "tools.soil_builder",
+  "soil-nutrient-batch": "tools.soil_nutrient_batch_planner",
+  "species-crop-id": "tools.species_crop_identification",
+  "stress-test": "tools.stress_testing",
+  "tissue-culture": "tools.tissue_culture",
+  "topdress-plan": "tools.topdress_planner"
+};

@@ -197,7 +197,7 @@ test.describe("auth/me shell selection and capability gating", () => {
     await expect(
       page.getByText(/personal-shell@example\.com \| free plan/i)
     ).toBeVisible();
-    await expect(page.getByText(ACTIVE_GROW.name)).toBeVisible();
+    await expect(page.getByText(ACTIVE_GROW.name, { exact: true })).toBeVisible();
     await expect(page.getByText("Water plants")).toBeVisible();
     await expect(page.getByText(/Canopy check/)).toBeVisible();
     expect(api.getMeRequests()).toBeGreaterThan(0);
@@ -214,7 +214,7 @@ test.describe("auth/me shell selection and capability gating", () => {
     await expect(page.getByText("VPD Calculator")).toBeVisible();
     await expect(page.getByText("NPK Recipe Calculator")).toBeVisible();
     await expect(page.getByText("Locked").first()).toBeVisible();
-    await expect(page.getByText("Upgrade or enable capability").first()).toBeVisible();
+    await expect(page.getByText("Upgrade to unlock").first()).toBeVisible();
   });
 
   test("facility /api/me selects Facility shell instead of Personal shell", async ({

@@ -1,0 +1,427 @@
+import React, { useCallback, useEffect, useMemo, useState } from "react";
+import {
+  ActivityIndicator,
+  Alert,
+  Linking,
+  Platform,
+  Pressable,
+  StyleSheet,
+  Text,
+  View
+} from "react-native";
+import { Link, useLocalSearchParams } from "expo-router";
+
+import { checkoutProduct } from "@/api/products";
+import { fetchPublicStorefront } from "@/api/storefront";
+import { recordCommercialAnalyticsEvent } from "@/api/commercialAnalytics";
+import AppCard from "@/components/layout/AppCard";
+import AppPage from "@/components/layout/AppPage";
+import { useEntitlements } from "@/entitlements";
+import { sharePublicLink } from "@/utils/publicLinks";
+
+function asArray(value: any) {
+  return Array.isArray(value) ? value : [];
+}
+
+function productKey(product: any) {
+  return String(product?.id || product?._id || product?.productId || product?.slug || "");
+}
+
+function money(product: any) {
+  const cents = Number(product?.priceCents || 0);
+  if (cents > 0) return `$${(cents / 100).toFixed(2)}`;
+  const price = Number(product?.price || 0);
+  return price > 0 ? `$${price.toFixed(2)}` : "Free";
+}
+
+function normalize(value: string) {
+  return String(value || "")
+    .trim()
+    .toLowerCase();
+}
+
+function publicProductUrl(slug: string, product: any) {
+  const id = productKey(product) || product?.name || "product";
+  return `/store/${encodeURIComponent(slug)}/products/${encodeURIComponent(String(id))}`;
+}
+
+function publicLinks(storefront: any) {
+  const links: Array<{ label: string; url: string }> = [];
+  if (storefront?.websiteUrl)
+    links.push({ label: "Website", url: storefront.websiteUrl });
+  if (storefront?.supportEmail) {
+    links.push({ label: "Support Email", url: `mailto:${storefront.supportEmail}` });
+  }
+  const socialLinks = storefront?.socialLinks;
+  if (Array.isArray(socialLinks)) {
+    socialLinks.forEach((link: any) => {
+      if (link?.url)
+        links.push({ label: link?.label || link?.platform || "Social", url: link.url });
+    });
+  } else if (socialLinks && typeof socialLinks === "object") {
+    Object.entries(socialLinks).forEach(([label, url]) => {
+      if (url) links.push({ label, url: String(url) });
+    });
+  }
+  asArray(storefront?.publicLinks || storefront?.externalLinks).forEach((link: any) => {
+    if (link?.url) links.push({ label: link?.label || "Link", url: link.url });
+  });
+  return links;
+}
+
+async function openUrl(url: string) {
+  if (Platform.OS === "web" && typeof window !== "undefined" && window.location) {
+    window.location.href = url;
+    return;
+  }
+  await Linking.openURL(url);
+}
+
+function trackCommercialClick(payload: Record<string, any>) {
+  void recordCommercialAnalyticsEvent(payload).catch(() => {
+    // Click tracking should not block public product navigation.
+  });
+}
+
+export default function PublicProductRoute() {
+  const entitlements = useEntitlements();
+  const params = useLocalSearchParams<{ slug?: string; productId?: string }>();
+  const slug = useMemo(() => String(params.slug || "").trim(), [params.slug]);
+  const requestedProductId = useMemo(
+    () => String(params.productId || "").trim(),
+    [params.productId]
+  );
+  const returnFeedHref =
+    entitlements.mode === "commercial" || entitlements.mode === "facility"
+      ? "/feed"
+      : "/home/personal/community";
+
+  const [loading, setLoading] = useState(true);
+  const [busy, setBusy] = useState(false);
+  const [storefront, setStorefront] = useState<any>(null);
+  const [products, setProducts] = useState<any[]>([]);
+  const [error, setError] = useState("");
+  const [feedback, setFeedback] = useState("");
+
+  const load = useCallback(async () => {
+    if (!slug) return;
+    setLoading(true);
+    setError("");
+    try {
+      const res: any = await fetchPublicStorefront(slug);
+      setStorefront(res?.storefront || res?.data?.storefront || null);
+      setProducts(asArray(res?.products || res?.data?.products));
+    } catch (err: any) {
+      setError(err?.message || "Unable to load product.");
+    } finally {
+      setLoading(false);
+    }
+  }, [slug]);
+
+  useEffect(() => {
+    void load();
+  }, [load]);
+
+  const product = useMemo(() => {
+    const requested = normalize(decodeURIComponent(requestedProductId));
+    return products.find((item) => {
+      const candidates = [
+        productKey(item),
+        item?.slug,
+        item?.sku,
+        item?.name,
+        String(item?.name || "").replace(/\s+/g, "-")
+      ];
+      return candidates.some((candidate) => normalize(String(candidate)) === requested);
+    });
+  }, [products, requestedProductId]);
+
+  const relatedProducts = products
+    .filter((item) => productKey(item) !== productKey(product))
+    .slice(0, 3);
+
+  useEffect(() => {
+    const id = productKey(product);
+    if (!slug || !id) return;
+    trackCommercialClick({
+      eventType: "product_view",
+      objectType: "product",
+      objectId: id,
+      productId: id,
+      storefrontSlug: slug,
+      source: "public_product"
+    });
+  }, [product, slug]);
+
+  async function buy() {
+    const id = productKey(product);
+    if (!id) return;
+    setBusy(true);
+    setFeedback("");
+    trackCommercialClick({
+      eventType: "product_checkout_click",
+      objectType: "product",
+      objectId: id,
+      productId: id,
+      storefrontSlug: slug,
+      source: "public_product"
+    });
+    try {
+      const checkout: any = await checkoutProduct(id);
+      const url = checkout?.url || checkout?.checkoutUrl || checkout?.data?.url;
+      if (!url) {
+        setFeedback("Checkout unavailable. The backend did not return a checkout URL.");
+        Alert.alert("Checkout unavailable", "The backend did not return a checkout URL.");
+        return;
+      }
+      await openUrl(url);
+      setFeedback("Checkout started.");
+    } catch (err: any) {
+      setFeedback(err?.message || "Unable to start checkout.");
+      Alert.alert("Checkout failed", err?.message || "Unable to start checkout.");
+    } finally {
+      setBusy(false);
+    }
+  }
+
+  async function shareProduct() {
+    try {
+      const result = await sharePublicLink(
+        product?.name || "GrowPathAI product",
+        `/store/${slug}/products/${requestedProductId}`
+      );
+      setFeedback(
+        result.method === "web-clipboard"
+          ? "Product link copied."
+          : "Product link ready to share."
+      );
+    } catch (err: any) {
+      setFeedback(err?.message || "Unable to share product.");
+    }
+  }
+
+  const externalUrl =
+    product?.externalPurchaseUrl || product?.purchaseUrl || product?.url || product?.link;
+  const brandName = storefront?.businessName || storefront?.name || "Brand";
+  const links = publicLinks(storefront);
+
+  return (
+    <AppPage
+      routeKey="public-product"
+      header={
+        <View>
+          <Text style={styles.title}>{product?.name || "Product"}</Text>
+          <Text style={styles.subtitle}>{brandName}</Text>
+        </View>
+      }
+    >
+      {loading ? (
+        <View style={styles.center}>
+          <ActivityIndicator />
+          <Text style={styles.meta}>Loading product...</Text>
+        </View>
+      ) : error ? (
+        <Text style={styles.error}>{error}</Text>
+      ) : !product ? (
+        <AppCard>
+          <Text style={styles.cardTitle}>Product not found</Text>
+          <Text style={styles.meta}>
+            This product may be unpublished or no longer available.
+          </Text>
+          <Link href={`/store/${encodeURIComponent(slug)}` as any} asChild>
+            <Pressable style={styles.secondaryButton}>
+              <Text style={styles.secondaryButtonText}>Back to Store</Text>
+            </Pressable>
+          </Link>
+        </AppCard>
+      ) : (
+        <>
+          {feedback ? <Text style={styles.feedback}>{feedback}</Text> : null}
+          <AppCard>
+            <Text style={styles.cardTitle}>{product.name || "Product"}</Text>
+            {product.description ? (
+              <Text style={styles.bodyText}>{product.description}</Text>
+            ) : null}
+            {product.shortDescription ? (
+              <Text style={styles.bodyText}>{product.shortDescription}</Text>
+            ) : null}
+            <Text style={styles.price}>{money(product)}</Text>
+
+            <View style={styles.actionRow}>
+              <Pressable
+                accessibilityLabel={`Buy ${product?.name || "product"}`}
+                style={[styles.primaryButton, busy && styles.disabled]}
+                disabled={busy}
+                onPress={buy}
+              >
+                <Text style={styles.primaryButtonText}>
+                  {busy ? "Opening..." : "Buy"}
+                </Text>
+              </Pressable>
+              {externalUrl ? (
+                <Pressable
+                  style={styles.secondaryButton}
+                  onPress={() => {
+                    trackCommercialClick({
+                      eventType: "product_external_link_click",
+                      objectType: "product",
+                      objectId: productKey(product),
+                      productId: productKey(product),
+                      storefrontSlug: slug,
+                      targetUrl: String(externalUrl),
+                      source: "public_product"
+                    });
+                    void openUrl(String(externalUrl));
+                  }}
+                >
+                  <Text style={styles.secondaryButtonText}>External Link</Text>
+                </Pressable>
+              ) : null}
+              <Pressable style={styles.secondaryButton} onPress={shareProduct}>
+                <Text style={styles.secondaryButtonText}>Share Product</Text>
+              </Pressable>
+            </View>
+          </AppCard>
+
+          <AppCard>
+            <Text style={styles.cardTitle}>Product Context</Text>
+            <Text style={styles.meta}>
+              Use this page for product photos, use instructions, related courses, grow
+              trials, formula notes, and support links as the public product record grows.
+            </Text>
+            {product?.usageInstructions ? (
+              <Text style={styles.bodyText}>{product.usageInstructions}</Text>
+            ) : null}
+            {product?.warnings ? (
+              <Text style={styles.warning}>{product.warnings}</Text>
+            ) : null}
+          </AppCard>
+
+          <AppCard>
+            <Text style={styles.cardTitle}>More Options</Text>
+            <View style={styles.actionRow}>
+              <Link href={`/store/${encodeURIComponent(slug)}` as any} asChild>
+                <Pressable style={styles.secondaryButton}>
+                  <Text style={styles.secondaryButtonText}>Back to Store</Text>
+                </Pressable>
+              </Link>
+              <Link href={`/brands/${encodeURIComponent(slug)}` as any} asChild>
+                <Pressable style={styles.secondaryButton}>
+                  <Text style={styles.secondaryButtonText}>Brand Profile</Text>
+                </Pressable>
+              </Link>
+              <Link href={`/store?similarTo=${encodeURIComponent(slug)}` as any} asChild>
+                <Pressable style={styles.secondaryButton}>
+                  <Text style={styles.secondaryButtonText}>Similar Brands</Text>
+                </Pressable>
+              </Link>
+              <Link href={returnFeedHref as any} asChild>
+                <Pressable style={styles.secondaryButton}>
+                  <Text style={styles.secondaryButtonText}>Return to Feed</Text>
+                </Pressable>
+              </Link>
+            </View>
+          </AppCard>
+
+          {links.length ? (
+            <AppCard>
+              <Text style={styles.cardTitle}>Brand Links</Text>
+              <View style={styles.actionRow}>
+                {links.map((link) => (
+                  <Pressable
+                    key={`${link.label}-${link.url}`}
+                    style={styles.secondaryButton}
+                    onPress={() => {
+                      trackCommercialClick({
+                        eventType: "product_brand_link_click",
+                        objectType: "storefront",
+                        objectId: productKey(product),
+                        productId: productKey(product),
+                        storefrontSlug: slug,
+                        targetUrl: link.url,
+                        source: "public_product",
+                        metadata: { label: link.label }
+                      });
+                      void openUrl(link.url);
+                    }}
+                  >
+                    <Text style={styles.secondaryButtonText}>{link.label}</Text>
+                  </Pressable>
+                ))}
+              </View>
+            </AppCard>
+          ) : null}
+
+          {relatedProducts.length ? (
+            <AppCard>
+              <Text style={styles.cardTitle}>More From {brandName}</Text>
+              {relatedProducts.map((item) => (
+                <Link
+                  key={productKey(item) || item?.name}
+                  href={publicProductUrl(slug, item) as any}
+                  asChild
+                >
+                  <Pressable style={styles.relatedRow}>
+                    <Text style={styles.relatedName}>{item?.name || "Product"}</Text>
+                    <Text style={styles.meta}>{money(item)}</Text>
+                  </Pressable>
+                </Link>
+              ))}
+            </AppCard>
+          ) : null}
+        </>
+      )}
+    </AppPage>
+  );
+}
+
+const styles = StyleSheet.create({
+  title: { color: "#111827", fontSize: 26, fontWeight: "800" },
+  subtitle: { color: "#64748B", lineHeight: 20, marginTop: 4 },
+  center: { alignItems: "center", gap: 8, justifyContent: "center", minHeight: 180 },
+  error: { color: "#B91C1C", fontWeight: "800" },
+  feedback: {
+    backgroundColor: "#F1F5F9",
+    borderRadius: 8,
+    color: "#334155",
+    marginBottom: 10,
+    padding: 8
+  },
+  cardTitle: { color: "#111827", fontSize: 18, fontWeight: "800", marginBottom: 8 },
+  bodyText: { color: "#475569", lineHeight: 20, marginBottom: 10 },
+  meta: { color: "#64748B", lineHeight: 19 },
+  price: { color: "#166534", fontSize: 18, fontWeight: "800", marginTop: 4 },
+  warning: { color: "#92400E", fontWeight: "700", lineHeight: 20 },
+  actionRow: {
+    flexDirection: "row",
+    flexWrap: "wrap",
+    gap: 8,
+    marginTop: 12
+  },
+  primaryButton: {
+    alignItems: "center",
+    backgroundColor: "#166534",
+    borderRadius: 8,
+    paddingHorizontal: 16,
+    paddingVertical: 10
+  },
+  primaryButtonText: { color: "#FFFFFF", fontWeight: "800" },
+  secondaryButton: {
+    alignItems: "center",
+    backgroundColor: "#F1F5F9",
+    borderColor: "#CBD5E1",
+    borderRadius: 8,
+    borderWidth: 1,
+    paddingHorizontal: 14,
+    paddingVertical: 10
+  },
+  secondaryButtonText: { color: "#166534", fontWeight: "800" },
+  disabled: { opacity: 0.6 },
+  relatedRow: {
+    borderTopColor: "#E2E8F0",
+    borderTopWidth: 1,
+    gap: 4,
+    paddingVertical: 10
+  },
+  relatedName: { color: "#111827", fontWeight: "800" }
+});

@@ -13,6 +13,7 @@ import { useRouter } from "expo-router";
 import { createForumPost } from "@/api/communitySocial";
 import { ScreenBoundary } from "@/components/ScreenBoundary";
 import { CAPABILITY_KEYS, useEntitlements } from "@/entitlements";
+import PersonalFeedPlacement from "@/components/feed/PersonalFeedPlacement";
 
 export default function ForumNewPostRoute() {
   const router = useRouter();
@@ -50,6 +51,11 @@ export default function ForumNewPostRoute() {
         <View>
           <Text style={styles.title}>New Discussion</Text>
           <Text style={styles.subtitle}>Create a forum post for the community feed.</Text>
+          <PersonalFeedPlacement
+            placement="top"
+            routeKey="personal_forum_new_post"
+            longContent
+          />
         </View>
 
         {!canPost ? (
@@ -79,6 +85,12 @@ export default function ForumNewPostRoute() {
           accessibilityLabel="Forum post body"
         />
 
+        <PersonalFeedPlacement
+          placement="middle"
+          routeKey="personal_forum_new_post"
+          longContent
+        />
+
         <Pressable
           onPress={submit}
           disabled={disabled}
@@ -101,6 +113,12 @@ export default function ForumNewPostRoute() {
         >
           <Text style={styles.secondaryText}>Cancel</Text>
         </Pressable>
+
+        <PersonalFeedPlacement
+          placement="bottom"
+          routeKey="personal_forum_new_post"
+          longContent
+        />
       </ScrollView>
     </ScreenBoundary>
   );

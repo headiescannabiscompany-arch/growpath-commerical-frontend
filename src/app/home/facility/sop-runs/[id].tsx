@@ -173,14 +173,18 @@ export default function FacilitySopRunDetailRoute() {
             const stepId = String(step.stepId || `step-${index + 1}`);
             const title = String(step.title || `Step ${index + 1}`);
             const status = String(step.status || "pending");
+            const statusStyle =
+              status === "done"
+                ? styles.status_done
+                : status === "skipped"
+                  ? styles.status_skipped
+                  : styles.status_pending;
             const busy = savingStep === stepId;
             return (
               <View key={stepId} style={styles.stepCard}>
                 <View style={styles.stepHeader}>
                   <Text style={styles.stepTitle}>{title}</Text>
-                  <Text style={[styles.statusPill, styles[`status_${status}`] as any]}>
-                    {status}
-                  </Text>
+                  <Text style={[styles.statusPill, statusStyle]}>{status}</Text>
                 </View>
                 {step.note ? (
                   <Text style={styles.stepNote}>{String(step.note)}</Text>

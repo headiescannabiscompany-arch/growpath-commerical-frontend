@@ -4,6 +4,7 @@ import { Redirect } from "expo-router";
 import { ActivityIndicator, View } from "react-native";
 import { useEntitlements } from "@/entitlements";
 import { useFacility } from "@/state/useFacility";
+import { getHomeForUser } from "@/navigation/routeAccess";
 
 function HomeGate() {
   const ent = useEntitlements();
@@ -17,14 +18,11 @@ function HomeGate() {
     );
   }
 
-  const target =
-    ent.mode === "commercial"
-      ? "/home/commercial"
-      : ent.mode === "facility"
-        ? selectedId
-          ? "/home/facility"
-          : "/home/facility/select"
-        : "/home/personal";
+  const target = getHomeForUser({
+    ready: ent.ready,
+    mode: ent.mode,
+    selectedFacilityId: selectedId || ent.facilityId || null
+  });
 
   return <Redirect href={target} />;
 }

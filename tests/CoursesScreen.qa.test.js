@@ -140,6 +140,25 @@ describe("CoursesScreen QA (capability-driven)", () => {
     });
   });
 
+  it("shows course creation controls for a free creator with paid-course limits", async () => {
+    mockUseEntitlements.mockReturnValue({
+      ready: true,
+      mode: "personal",
+      limits: { maxPaidCourses: 1, maxLessonsPerCourse: 7 },
+      can: (cap) =>
+        cap === "COURSES_VIEW" ||
+        cap === "SEE_PAID_COURSES" ||
+        cap === "COURSES_CREATE" ||
+        cap === "COURSES_SELL_PAID"
+    });
+    const { getByText } = await renderWithNav();
+    await waitFor(() => {
+      expect(getByText("Create Course")).toBeTruthy();
+      expect(getByText("Paid course limit: 1/1")).toBeTruthy();
+      expect(getByText("Lesson limit per course: 7")).toBeTruthy();
+    });
+  });
+
   it("shows analytics if canViewCourseAnalytics is true", async () => {
     mockUseEntitlements.mockReturnValue({
       ready: true,

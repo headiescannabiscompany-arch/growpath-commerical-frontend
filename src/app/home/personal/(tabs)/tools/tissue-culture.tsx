@@ -15,6 +15,7 @@ export default function TissueCultureToolRoute() {
         { key: "projectName", label: "Project name", defaultValue: "TC Project" },
         { key: "batchNumber", label: "Batch number", defaultValue: "TC-001" },
         { key: "geneticsId", label: "Genetics ID", defaultValue: "" },
+        { key: "stage", label: "Stage", defaultValue: "initiation" },
         { key: "mediaRecipe", label: "Media recipe", defaultValue: "starter media" },
         {
           key: "vessels",
@@ -26,6 +27,18 @@ export default function TissueCultureToolRoute() {
           key: "contaminatedVessels",
           label: "Contaminated vessels",
           defaultValue: "2",
+          keyboardType: "numeric"
+        },
+        {
+          key: "browningVessels",
+          label: "Browning / oxidized vessels",
+          defaultValue: "1",
+          keyboardType: "numeric"
+        },
+        {
+          key: "stalledVessels",
+          label: "Stalled vessels",
+          defaultValue: "3",
           keyboardType: "numeric"
         },
         {
@@ -42,6 +55,12 @@ export default function TissueCultureToolRoute() {
         },
         { key: "SOPVersion", label: "SOP version", defaultValue: "SOP-TC-1" },
         {
+          key: "symptoms",
+          label: "Symptoms / diagnosis notes",
+          defaultValue: "fuzzy mold, browning",
+          multiline: true
+        },
+        {
           key: "transfersDueDays",
           label: "Next transfer due in days",
           defaultValue: "14",
@@ -54,12 +73,16 @@ export default function TissueCultureToolRoute() {
         projectName: values.projectName,
         batchNumber: values.batchNumber,
         geneticsId: values.geneticsId,
+        stage: values.stage,
         mediaRecipe: values.mediaRecipe,
         vessels: values.vessels,
         contaminatedVessels: values.contaminatedVessels,
+        browningVessels: values.browningVessels,
+        stalledVessels: values.stalledVessels,
         rootedVessels: values.rootedVessels,
         acclimatedPlants: values.acclimatedPlants,
         SOPVersion: values.SOPVersion,
+        symptoms: values.symptoms,
         transfersDueDays: values.transfersDueDays
       })}
       buildMetrics={(outputs) => [
@@ -70,7 +93,36 @@ export default function TissueCultureToolRoute() {
           value: outputs.contaminationRate
         },
         { key: "rooting", label: "Rooting %", value: outputs.rootingRate },
-        { key: "acclimation", label: "Acclimation %", value: outputs.acclimationRate }
+        { key: "acclimation", label: "Acclimation %", value: outputs.acclimationRate },
+        {
+          key: "failureModes",
+          label: "Likely issues",
+          value: outputs.diagnosisRecord?.likelyFailureModes?.length || 0
+        },
+        {
+          key: "nextCheck",
+          label: "Calendar tasks",
+          value: outputs.generatedCalendar?.length || 0
+        }
+      ]}
+      buildNotices={(outputs) => [
+        ...(Array.isArray(outputs.warnings)
+          ? outputs.warnings.map((message: string, index: number) => ({
+              key: `warning-${index}`,
+              severity: "medium" as const,
+              message
+            }))
+          : []),
+        ...(outputs.diagnosisRecord?.likelyFailureModes?.length
+          ? [
+              {
+                key: "diagnosis",
+                severity: "info" as const,
+                message:
+                  "Diagnosis is pattern-based. Compare vessel and batch patterns before changing the whole protocol."
+              }
+            ]
+          : [])
       ]}
       defaultLogTitle={(outputs) =>
         `${outputs.projectName || "Tissue culture"} batch check`

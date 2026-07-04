@@ -17,6 +17,7 @@ import ToolResultSurface, {
   type ToolResultMetric,
   type ToolResultNotice
 } from "@/features/personal/tools/ToolResultSurface";
+import PersonalFeedPlacement from "@/components/feed/PersonalFeedPlacement";
 
 const styles = StyleSheet.create({
   container: { flex: 1, backgroundColor: "#FFFFFF" },
@@ -173,6 +174,11 @@ export default function GrowToolsScreen() {
       <Text style={styles.subtitle}>
         Run tools in this grow context and save outputs.
       </Text>
+      <PersonalFeedPlacement
+        placement="top"
+        routeKey="personal_grows_growid_tools"
+        longContent
+      />
       <GrowWorkspaceNav growId={growId} active="tools" />
 
       <View style={styles.card}>
@@ -241,6 +247,12 @@ export default function GrowToolsScreen() {
         )}
       </View>
 
+      <PersonalFeedPlacement
+        placement="middle"
+        routeKey="personal_grows_growid_tools"
+        longContent
+      />
+
       {selectedRun ? (
         <ToolResultSurface
           title={`${selectedRun.toolType || selectedRun.toolName || "Tool"} result`}
@@ -259,6 +271,12 @@ export default function GrowToolsScreen() {
           copyPayload={selectedRun}
         />
       ) : null}
+
+      <PersonalFeedPlacement
+        placement="bottom"
+        routeKey="personal_grows_growid_tools"
+        longContent
+      />
     </ScrollView>
   );
 }

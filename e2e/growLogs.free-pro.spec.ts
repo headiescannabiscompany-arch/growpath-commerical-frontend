@@ -28,7 +28,9 @@ function userCtx(user: typeof FREE_USER | typeof PRO_USER) {
       id: user.id,
       email: user.email,
       displayName: pro ? "Pro Grower" : "Free Grower",
-      plan: user.plan
+      role: "user",
+      plan: user.plan,
+      subscriptionStatus: pro ? "active" : "free"
     },
     ctx: {
       mode: "personal",
@@ -36,7 +38,7 @@ function userCtx(user: typeof FREE_USER | typeof PRO_USER) {
       subscriptionStatus: pro ? "active" : "free",
       capabilities: {
         GROWS_PERSONAL_VIEW: true,
-        GROWS_PERSONAL_WRITE: true,
+        GROWS_PERSONAL_WRITE: pro,
         LOGS_PERSONAL_VIEW: true,
         LOGS_PERSONAL_WRITE: true,
         PLANTS_PERSONAL_VIEW: true,
@@ -59,12 +61,13 @@ async function installPersonalAuthMocks(
   let createCount = 0;
   const token = `${user.plan}-playwright-auth-token`;
 
-  await page.addInitScript(() => {
+  await page.addInitScript((authToken) => {
     window.localStorage.clear();
+    window.localStorage.setItem("auth_token_v1", authToken);
     window.localStorage.setItem("seenOnboardingCarousel", "true");
     window.localStorage.setItem("seenAppIntro", "true");
     window.global = window;
-  });
+  }, token);
 
   const fulfillJson = (route: any, body: any, status = 200) =>
     route.fulfill({
@@ -141,11 +144,8 @@ async function installPersonalAuthMocks(
   });
 }
 
-async function loginAs(page: any, user: typeof FREE_USER | typeof PRO_USER) {
-  await page.goto("/");
-  await page.getByPlaceholder("Email").fill(user.email);
-  await page.getByPlaceholder("Password").fill(user.password);
-  await page.getByText("Sign in").last().click();
+async function bootstrapAs(page: any, user: typeof FREE_USER | typeof PRO_USER) {
+  await page.goto("/home/personal", { waitUntil: "domcontentloaded" });
   await expect(page.getByText(new RegExp(`${user.plan} plan`, "i"))).toBeVisible({
     timeout: 15000
   });
@@ -171,19 +171,22 @@ test.describe("GrowLogsScreen Free/Pro auth setup", () => {
     page
   }) => {
     await installPersonalAuthMocks(page, FREE_USER);
-    await loginAs(page, FREE_USER);
+    await bootstrapAs(page, FREE_USER);
 
-    await openNewGrowForm(page);
-    await submitGrow(page, "Free Second Grow");
-
-    await expect(page.getByText(/Upgrade Required/i)).toBeVisible();
+    await page.goto("/home/personal/grows");
+    await expect(page.getByTestId("screen-personal-grows")).toBeVisible();
+    await expect(page.getByText("Create grows with Pro")).toBeVisible();
+    await expect(
+      page.getByText("Free accounts can browse saved grows.")
+    ).toBeVisible();
+    await expect(page.getByTestId("btn-new-grow")).toHaveCount(0);
   });
 
   test("Pro user is authenticated with multi-grow capability and can create another grow", async ({
     page
   }) => {
     await installPersonalAuthMocks(page, PRO_USER);
-    await loginAs(page, PRO_USER);
+    await bootstrapAs(page, PRO_USER);
 
     await openNewGrowForm(page);
     await submitGrow(page, "Pro Second Grow");

@@ -13,6 +13,7 @@ import {
   saveToolRunAndCreateTask,
   saveToolRunAndOpenJournal
 } from "@/features/personal/tools/saveToolRunAndOpenJournal";
+import PersonalFeedPlacement from "@/components/feed/PersonalFeedPlacement";
 
 function coerceParam(value?: string | string[]) {
   if (typeof value === "string") return value;
@@ -76,6 +77,11 @@ export default function BudRotRiskToolScreen() {
           <Text style={styles.subtitle}>
             This account does not have `DIAGNOSE_ADVANCED`.
           </Text>
+          <PersonalFeedPlacement
+            placement="top"
+            routeKey="personal_tools_bud_rot_risk"
+            longContent
+          />
         </View>
       </ScrollView>
     );
@@ -88,6 +94,11 @@ export default function BudRotRiskToolScreen() {
       <Text style={styles.subtitle}>
         Quick risk snapshot based on RH, airflow, and moisture events.
       </Text>
+      <PersonalFeedPlacement
+        placement="top"
+        routeKey="personal_tools_bud_rot_risk"
+        longContent
+      />
       {growId ? <Text style={styles.context}>Grow context: {growId}</Text> : null}
       <ToolPlantContextPicker
         plants={plantContext.plants}
@@ -130,6 +141,12 @@ export default function BudRotRiskToolScreen() {
         onChangeText={setWetEventsPerWeek}
         keyboardType="numeric"
         placeholder="0"
+      />
+
+      <PersonalFeedPlacement
+        placement="middle"
+        routeKey="personal_tools_bud_rot_risk"
+        longContent
       />
 
       <ToolResultSurface
@@ -218,6 +235,12 @@ export default function BudRotRiskToolScreen() {
         contextMessage={
           !growId ? "Select a grow context to save this result." : undefined
         }
+      />
+
+      <PersonalFeedPlacement
+        placement="bottom"
+        routeKey="personal_tools_bud_rot_risk"
+        longContent
       />
     </ScrollView>
   );

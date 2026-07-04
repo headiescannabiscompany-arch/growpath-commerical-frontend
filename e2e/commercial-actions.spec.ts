@@ -40,6 +40,7 @@ async function installCommercialMocks(page: any) {
 
   await page.addInitScript(() => {
     window.localStorage.clear();
+    window.localStorage.setItem("auth_token_v1", "commercial-actions-token");
     window.localStorage.setItem("seenOnboardingCarousel", "true");
     window.localStorage.setItem("seenAppIntro", "true");
     window.global = window;
@@ -71,6 +72,168 @@ async function installCommercialMocks(page: any) {
       return fulfillJson(route, mePayload());
     }
 
+    if (method === "GET" && path === "/api/commercial/dashboard") {
+      return fulfillJson(route, {
+        dashboard: {
+          storefront: { slug: "growpath-demo-store" },
+          counts: {
+            activeTrials: 1,
+            completedTrials: 1,
+            productsMissingCompletedTrials: 1,
+            batches: 1,
+            productLines: 1,
+            products: 1,
+            productsMissingBatches: 0,
+            storefrontViews: 12,
+            inventory: 1,
+            lowStock: 1,
+            externalLeads: 2,
+            orders: 0,
+            draftPosts: 1,
+            draftCourses: 1,
+            courses: 1,
+            posts: 1,
+            adClicks: 9,
+            externalClicks: 4,
+            productViews: 7
+          }
+        }
+      });
+    }
+
+    if (method === "GET" && path === "/api/commercial/grows") {
+      return fulfillJson(route, {
+        grows: [
+          {
+            id: "grow-1",
+            name: "Tomato Soil Trial",
+            purpose: "soil_trial",
+            cropType: "tomato",
+            cultivar: "Sunviva / Primabella",
+            medium: "outdoor soil",
+            plantCount: 4,
+            publicShareStatus: "evidence_building",
+            measurementPlan: "vigor, soil comparison, harvest quality notes",
+            harvestQualityNotes: "Sweet, aromatic fruit after recovery.",
+            commercialCropSummary: "Sonnerde outperformed Neudorff until correction.",
+            status: "active"
+          }
+        ]
+      });
+    }
+
+    if (method === "POST" && path === "/api/commercial/grows") {
+      return fulfillJson(route, { grow: { id: "grow-created", ...body } });
+    }
+
+    if (method === "GET" && path === "/api/commercial/product-lines") {
+      return fulfillJson(route, {
+        productLines: [
+          {
+            id: "line-1",
+            name: "Living Soil Line",
+            category: "soil",
+            publicSummary: "Purpose-built soils and amendments.",
+            status: "testing"
+          }
+        ]
+      });
+    }
+
+    if (method === "POST" && path === "/api/commercial/product-lines") {
+      return fulfillJson(route, { productLine: { id: "line-created", ...body } });
+    }
+
+    if (method === "GET" && path === "/api/commercial/batches") {
+      return fulfillJson(route, {
+        batches: [
+          {
+            id: "batch-1",
+            batchName: "Veg Soil Batch",
+            purpose: "veg",
+            formulaVersion: "v1",
+            releaseTimelineNotes: "Fast N plus slow background fertility.",
+            guaranteedAnalysisNotes: "3-1-1 target with compost uncertainty.",
+            status: "ready"
+          }
+        ]
+      });
+    }
+
+    if (method === "POST" && path === "/api/commercial/batches") {
+      return fulfillJson(route, { batch: { id: "batch-created", ...body } });
+    }
+
+    if (method === "GET" && path === "/api/commercial/trials") {
+      return fulfillJson(route, {
+        trials: [
+          {
+            id: "trial-1",
+            trialName: "Tomato Soil Trial",
+            purpose: "long_term_soil_performance",
+            cropType: "tomato",
+            cultivar: "Sunviva / Primabella",
+            effectivenessSummary:
+              "Tracked soil performance, recovery, harvest, and flavor.",
+            harvestQualityNotes: "Sweet/aromatic harvest notes captured.",
+            commercialCropSummary: "Supplier soil issue and correction documented.",
+            status: "active"
+          }
+        ]
+      });
+    }
+
+    if (method === "POST" && path === "/api/commercial/trials") {
+      return fulfillJson(route, { trial: { id: "trial-created", ...body } });
+    }
+
+    if (method === "GET" && path === "/api/commercial/courses") {
+      return fulfillJson(route, {
+        courses: [
+          {
+            id: "course-1",
+            title: "Using Living Soil",
+            category: "soil",
+            access: "free",
+            status: "draft"
+          }
+        ]
+      });
+    }
+
+    if (method === "POST" && path === "/api/commercial/courses") {
+      return fulfillJson(route, { course: { id: "course-created", ...body } });
+    }
+
+    if (method === "GET" && path === "/api/commercial/analytics/overview") {
+      return fulfillJson(route, {
+        overview: {
+          adClicks: 9,
+          marketingClicks: 6,
+          linkClicks: 5,
+          productCheckoutClicks: 4,
+          externalCheckoutLeads: 2,
+          productViews: 7,
+          storefrontViews: 12,
+          brandProfileViews: 3,
+          feedClicks: 5,
+          courseStarts: 2,
+          forumReplies: 1,
+          activeTrials: 1,
+          completedTrials: 1,
+          breakdowns: {
+            ads: [{ key: "spring-ad", label: "Spring Ad", count: 9 }],
+            products: [{ key: "prod-1", label: "Soil Kit", count: 7 }],
+            links: [{ key: "storefront", label: "Storefront link", count: 5 }]
+          }
+        }
+      });
+    }
+
+    if (method === "POST" && path === "/api/commercial/analytics/events") {
+      return fulfillJson(route, { ok: true });
+    }
+
     if (method === "GET" && path === "/api/commercial/inventory") {
       return fulfillJson(route, {
         inventory: [
@@ -91,8 +254,8 @@ async function installCommercialMocks(page: any) {
       return fulfillJson(route, {
         storefront: {
           id: "store-1",
-          name: "Living Soil Labs",
-          slug: "living-soil-labs",
+          name: "GrowPath Demo Store",
+          slug: "growpath-demo-store",
           description: "Inputs and education.",
           isPublished: false
         }
@@ -170,7 +333,7 @@ async function installCommercialMocks(page: any) {
             tags: ["soil"],
             likeCount: 2,
             createdAt: "2026-03-01T00:00:00.000Z",
-            author: { displayName: "Living Soil Labs" }
+            author: { displayName: "GrowPath Demo Store" }
           }
         ]
       });
@@ -255,10 +418,7 @@ async function installCommercialMocks(page: any) {
 }
 
 async function login(page: any) {
-  await page.goto("/login", { waitUntil: "domcontentloaded" });
-  await page.getByPlaceholder("Email").fill(COMMERCIAL_USER.email);
-  await page.getByPlaceholder("Password").fill(COMMERCIAL_USER.password);
-  await page.getByText("Sign in").last().click();
+  await page.goto("/home/commercial", { waitUntil: "domcontentloaded" });
   await expect(page.getByText("Brand Dashboard")).toBeVisible({ timeout: 30000 });
 }
 
@@ -272,12 +432,127 @@ test.describe("commercial dashboard actions", () => {
     const apiCalls = await installCommercialMocks(page);
     await login(page);
 
-    await page.getByText("Open Inventory").click();
-    await expect(page.getByText("Commercial Inventory")).toBeVisible();
+    await expect(page.getByText("Grows & Trials")).toBeVisible();
+    await expect(page.getByText("Products & Storefront")).toBeVisible();
+    await expect(page.getByText("Analytics Snapshot")).toBeVisible();
+    await expect(page.getByText("Ad clicks", { exact: true })).toBeVisible();
+    await expect(page.getByRole("link", { name: "Open Grows" })).toBeVisible();
+    await expect(page.getByRole("link", { name: "Product Trials" })).toBeVisible();
+    await expect(page.getByRole("link", { name: "Storefront" })).toBeVisible();
+
+    await page.getByRole("link", { name: "Open Grows" }).click();
+    await expect(page.getByText("Commercial grow workspace")).toBeVisible();
+    await page.getByLabel("Commercial grow name").fill("Pepper Input Trial");
+    await page.getByLabel("Commercial grow purpose").fill("product_trial");
+    await page.getByLabel("Commercial grow crop type").fill("pepper");
+    await page.getByLabel("Commercial grow cultivar").fill("Lunchbox Red");
+    await page.getByLabel("Commercial grow plant count").fill("12");
+    await page.getByLabel("Create commercial grow").click();
+    await expect
+      .poll(() =>
+        apiCalls.some(
+          (call) =>
+            call.method === "POST" &&
+            call.path === "/api/commercial/grows" &&
+            call.body?.name === "Pepper Input Trial"
+        )
+      )
+      .toBeTruthy();
+
+    await backToCommercialHome(page);
+    await page.getByRole("link", { name: "Product Lines" }).first().click();
+    await expect(page.getByText("Create Product Line").first()).toBeVisible();
+    await page.getByLabel("Product line name").fill("Tomato Soil Line");
+    await page.getByLabel("Product line category").fill("soil");
+    await page
+      .getByLabel("Product line public summary")
+      .fill("Commercial tomato soil trials.");
+    await page.getByLabel("Create product line").click();
+    await expect
+      .poll(() =>
+        apiCalls.some(
+          (call) =>
+            call.method === "POST" &&
+            call.path === "/api/commercial/product-lines" &&
+            call.body?.name === "Tomato Soil Line"
+        )
+      )
+      .toBeTruthy();
+
+    await backToCommercialHome(page);
+    await page.getByRole("link", { name: "Products" }).first().click();
+    await expect(page.getByText("Product catalog")).toBeVisible();
+    await page.getByLabel("Commercial product name").fill("Compost Tea Kit");
+    await page.getByLabel("Commercial product price").fill("42");
+    await page
+      .getByLabel("Commercial product external purchase URL")
+      .fill("https://example.com/tea-kit");
+    await page.getByLabel("Create commercial product").click();
+    await expect
+      .poll(() =>
+        apiCalls.some(
+          (call) =>
+            call.method === "POST" &&
+            call.path === "/api/commercial/products" &&
+            call.body?.name === "Compost Tea Kit"
+        )
+      )
+      .toBeTruthy();
+
+    await backToCommercialHome(page);
+    await page.getByRole("link", { name: "Batch Planner" }).first().click();
+    await expect(page.getByText("Create commercial batch")).toBeVisible();
+    await page.getByLabel("Commercial batch name").fill("Veg Soil Batch 2");
+    await page.getByLabel("Commercial batch purpose").fill("veg");
+    await page.getByLabel("Commercial batch formula version").fill("v2");
+    await page
+      .getByLabel("Commercial batch guaranteed analysis notes")
+      .fill("3-1-1 target with fast N plus slow background fertility.");
+    await page
+      .getByLabel("Commercial batch release timeline notes")
+      .fill("Fast nitrogen, medium compost, slow minerals.");
+    await page.getByLabel("Create commercial batch").click();
+    await expect
+      .poll(() =>
+        apiCalls.some(
+          (call) =>
+            call.method === "POST" &&
+            call.path === "/api/commercial/batches" &&
+            call.body?.batchName === "Veg Soil Batch 2"
+        )
+      )
+      .toBeTruthy();
+
+    await backToCommercialHome(page);
+    await page.getByRole("link", { name: "Product Trials" }).click();
+    await expect(page.getByText("Create Product Trial").first()).toBeVisible();
+    await page.getByLabel("Product trial name").fill("Tomato Trial 2");
+    await page.getByLabel("Product trial purpose").fill("long_term_soil_performance");
+    await page.getByLabel("Trial crop type").fill("tomato");
+    await page.getByLabel("Trial cultivar").fill("Sunviva");
+    await page.getByLabel("Trial plant count").fill("4");
+    await page
+      .getByLabel("Trial notes")
+      .fill("Harvest quality notes, commercial crop summary, soil comparison.");
+    await page.getByLabel("Create product trial").click();
+    await expect
+      .poll(() =>
+        apiCalls.some(
+          (call) =>
+            call.method === "POST" &&
+            call.path === "/api/commercial/trials" &&
+            call.body?.trialName === "Tomato Trial 2"
+        )
+      )
+      .toBeTruthy();
+
+    await backToCommercialHome(page);
+    await page.getByRole("link", { name: "Inventory", exact: true }).click();
+    await expect(page.getByText("Commercial Inventory", { exact: true })).toBeVisible();
     await expect(page.getByText("Living Soil Blend")).toBeVisible();
 
     await backToCommercialHome(page);
-    await page.getByText("Open Storefront").click();
+    await page.getByRole("link", { name: "Storefront" }).first().click();
     await expect(page.getByText("Storefront Settings", { exact: true })).toBeVisible();
     await page.getByLabel("Publish storefront").click();
     await page.getByLabel("Save storefront settings").click();
@@ -288,13 +563,7 @@ test.describe("commercial dashboard actions", () => {
     await expect(page.getByText("Product created.")).toBeVisible();
 
     await backToCommercialHome(page);
-    await page.getByText("Open Orders").click();
-    await expect(page.getByText("Orders").first()).toBeVisible();
-    await page.getByLabel("Mark order Soil Kit fulfilled").click();
-    await expect(page.getByText("Soil Kit marked fulfilled.")).toBeVisible();
-
-    await backToCommercialHome(page);
-    await page.getByText("Open Feed").click();
+    await page.getByRole("link", { name: "Feed", exact: true }).click();
     await expect(page.getByText("Commercial Feed")).toBeVisible();
     await page.getByLabel("Feed post title").fill("Batch note");
     await page.getByLabel("Feed post body").fill("Educational inventory update.");
@@ -302,19 +571,48 @@ test.describe("commercial dashboard actions", () => {
     await expect(page.getByText("Feed post published.")).toBeVisible();
 
     await backToCommercialHome(page);
-    await page.getByText("Open Campaigns").click();
-    await expect(page.getByText("Campaigns").first()).toBeVisible();
-    await page.getByLabel("Campaign name").fill("Retail Push");
-    await page.getByLabel("Campaign total budget").fill("1000");
-    await page.getByLabel("Create campaign").click();
-    await expect(page.getByText("Campaign created.")).toBeVisible();
-    await page.getByLabel("Activate campaign Spring Launch").click();
-    await expect(page.getByText("Spring Launch set to active.")).toBeVisible();
+    await page.getByRole("link", { name: "Create Course" }).click();
+    await expect(page.getByText("Create commercial course").first()).toBeVisible();
+    await page.getByLabel("Commercial course title").fill("Tomato Soil Basics");
+    await page
+      .getByLabel("Commercial course description")
+      .fill("Free course for soil product users.");
+    await page.getByLabel("Create commercial course").click();
+    await expect
+      .poll(() =>
+        apiCalls.some(
+          (call) =>
+            call.method === "POST" &&
+            call.path === "/api/commercial/courses" &&
+            call.body?.title === "Tomato Soil Basics"
+        )
+      )
+      .toBeTruthy();
 
     await backToCommercialHome(page);
-    await page.getByText("Open Logs").click();
-    await expect(page.getByText("Tool output")).toBeVisible();
-    await expect(page.getByText("Open Log")).toBeVisible();
+    await page.getByRole("link", { name: "Marketing Planner" }).click();
+    await expect(page.getByText("Marketing Planner").first()).toBeVisible();
+    await page.getByLabel("Marketing plan name").fill("Retail Push");
+    await page
+      .getByLabel("Marketing plan target URL")
+      .fill("https://example.com/tea-kit");
+    await page.getByLabel("Create marketing plan").click();
+    await expect
+      .poll(() =>
+        apiCalls.some(
+          (call) =>
+            call.method === "POST" &&
+            call.path === "/api/commercial/campaigns" &&
+            call.body?.name === "Retail Push"
+        )
+      )
+      .toBeTruthy();
+
+    await backToCommercialHome(page);
+    await page.getByRole("link", { name: "Analytics" }).click();
+    await expect(page.getByText("Commercial Analytics")).toBeVisible();
+    await expect(page.getByText("Ad and marketing click counts")).toBeVisible();
+    await expect(page.getByText("Spring Ad")).toBeVisible();
 
     expect(
       apiCalls.some(
@@ -331,15 +629,32 @@ test.describe("commercial dashboard actions", () => {
     ).toBeTruthy();
     expect(
       apiCalls.some(
-        (call) =>
-          call.method === "PATCH" &&
-          call.path === "/api/commercial/orders/order-1" &&
-          call.body?.fulfillmentStatus === "fulfilled"
+        (call) => call.method === "POST" && call.path === "/api/commercial/grows"
+      )
+    ).toBeTruthy();
+    expect(
+      apiCalls.some(
+        (call) => call.method === "POST" && call.path === "/api/commercial/product-lines"
+      )
+    ).toBeTruthy();
+    expect(
+      apiCalls.some(
+        (call) => call.method === "POST" && call.path === "/api/commercial/batches"
+      )
+    ).toBeTruthy();
+    expect(
+      apiCalls.some(
+        (call) => call.method === "POST" && call.path === "/api/commercial/trials"
       )
     ).toBeTruthy();
     expect(
       apiCalls.some(
         (call) => call.method === "POST" && call.path === "/api/commercial/posts"
+      )
+    ).toBeTruthy();
+    expect(
+      apiCalls.some(
+        (call) => call.method === "POST" && call.path === "/api/commercial/courses"
       )
     ).toBeTruthy();
     expect(
@@ -350,9 +665,7 @@ test.describe("commercial dashboard actions", () => {
     expect(
       apiCalls.some(
         (call) =>
-          call.method === "PATCH" &&
-          call.path === "/api/commercial/campaigns/campaign-1" &&
-          call.body?.status === "active"
+          call.method === "GET" && call.path === "/api/commercial/analytics/overview"
       )
     ).toBeTruthy();
   });

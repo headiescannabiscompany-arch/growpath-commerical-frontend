@@ -20,7 +20,7 @@ export const PAGE_REGISTRY = [
   },
   {
     name: "Courses",
-    component: require("../components/release/CoursesReleaseHold").default,
+    component: require("../screens/CoursesScreen").default,
     icon: "book-outline",
     capability: CAPABILITIES.VIEW_COURSES,
     label: "Courses"

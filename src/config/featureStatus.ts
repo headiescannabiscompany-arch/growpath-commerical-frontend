@@ -1,6 +1,11 @@
 import { CAPABILITY_KEYS } from "@/entitlements/capabilityKeys";
 
-export type FeatureStatus = "release" | "beta" | "hidden" | "planned" | "disabled";
+export type FeatureStatus =
+  | "release"
+  | "beta"
+  | "internal_ai_only"
+  | "remove_from_user_app"
+  | "disabled";
 
 export type FeatureArea =
   | "personal_navigation"
@@ -70,16 +75,17 @@ export const personalFeatures = {
   courses: {
     key: "personal.courses",
     title: "Courses",
-    description: "Structured learning content.",
+    description: "Create, sell, and take structured learning content.",
     area: "personal_navigation",
-    status: "hidden"
+    status: "release",
+    href: "/home/personal/courses"
   },
   facility: {
     key: "personal.facility",
     title: "Facility",
     description: "Commercial facility operations.",
     area: "personal_navigation",
-    status: "hidden"
+    status: "remove_from_user_app"
   }
 } as const satisfies Record<string, Omit<FeatureDefinition, "internalNote">>;
 
@@ -215,6 +221,7 @@ export const personalToolFeatures = [
     status: "release",
     href: "/home/personal/tools/feeding-schedule",
     acceptsGrowContext: true,
+    capabilityKey: CAPABILITY_KEYS.FEEDING_SCHEDULE,
     internalNote:
       "Uses the backend feeding schedule endpoint when available and local stage-aware planning otherwise."
   },
@@ -227,6 +234,7 @@ export const personalToolFeatures = [
     status: "release",
     href: "/home/personal/tools/harvest-estimator",
     acceptsGrowContext: true,
+    capabilityKey: CAPABILITY_KEYS.TOOL_HARVEST_ESTIMATOR,
     internalNote:
       "Local estimator with tool-run and journal save paths; not a lab-grade harvest prediction."
   },
@@ -238,6 +246,7 @@ export const personalToolFeatures = [
     status: "release",
     href: "/home/personal/tools/timeline-planner",
     acceptsGrowContext: true,
+    capabilityKey: CAPABILITY_KEYS.TOOL_TIMELINE_PLANNER,
     internalNote:
       "Local milestone builder can create grow tasks when grow context is present."
   },
@@ -249,6 +258,7 @@ export const personalToolFeatures = [
     status: "release",
     href: "/home/personal/tools/pdf-export",
     acceptsGrowContext: true,
+    capabilityKey: CAPABILITY_KEYS.TOOL_PDF_EXPORT,
     internalNote:
       "CSV package supports browser download and native share. Rendered PDF remains tracked separately."
   },
@@ -260,6 +270,7 @@ export const personalToolFeatures = [
     status: "release",
     href: "/home/personal/tools/pheno-matrix",
     acceptsGrowContext: true,
+    capabilityKey: CAPABILITY_KEYS.TOOL_PHENO_MATRIX,
     internalNote:
       "Local weighted scoring matrix is implemented; persistence/export can follow endpoint support."
   },
@@ -271,6 +282,7 @@ export const personalToolFeatures = [
     status: "release",
     href: "/home/personal/diagnose",
     acceptsGrowContext: true,
+    capabilityKey: CAPABILITY_KEYS.DIAGNOSE_AI,
     internalNote:
       "Vision path works when configured; full ETGU intake and follow-up remain."
   },
@@ -279,8 +291,8 @@ export const personalToolFeatures = [
     title: "Crop Steering",
     description: "Plan irrigation phases, dryback, EC, and steering trials.",
     area: "crop_management",
-    status: "hidden",
-    href: "/home/personal/tools/crop-steering",
+    status: "remove_from_user_app",
+    href: undefined,
     acceptsGrowContext: true,
     internalNote:
       "Current screen is a scaffold and must not be exposed as a complete tool."
@@ -291,48 +303,48 @@ export const personalToolFeatures = [
     description:
       "Build full soil mixes with base, compost, aeration, minerals, and amendments.",
     area: "water_nutrients",
-    status: "release",
+    status: "beta",
     href: "/home/personal/tools/soil-builder",
     acceptsGrowContext: true,
     capabilityKey: CAPABILITY_KEYS.TOOL_NPK,
     internalNote:
-      "V1 release calculator is wired to ToolRun, grow log, task, and timeline. Source provenance, inventory costing, and batch production remain deeper system work."
+      "Approved beta soil/nutrient workflow wired to ToolRun, grow context, logs, tasks, and backend soil mix calculations."
   },
   {
     key: "tools.dry_amendment_mix",
     title: "Dry Amendment Mix Builder",
     description: "Blend dry amendments toward target ratios and dose rates.",
     area: "water_nutrients",
-    status: "release",
+    status: "beta",
     href: "/home/personal/tools/dry-amendment-mix",
     acceptsGrowContext: true,
     capabilityKey: CAPABILITY_KEYS.TOOL_NPK,
     internalNote:
-      "V1 release calculator uses guaranteed analysis, release grouping, dose math, ToolRun, grow log, task, and timeline. Ingredient-library provenance still needs expansion."
+      "Approved beta dry amendment workflow wired to ToolRun, grow context, logs, tasks, and nutrient release calculations."
   },
   {
     key: "tools.topdress_planner",
     title: "Topdress Planner",
     description: "Plan topdress amount, timing, release window, and follow-up tasks.",
     area: "water_nutrients",
-    status: "release",
+    status: "beta",
     href: "/home/personal/tools/topdress",
     acceptsGrowContext: true,
     capabilityKey: CAPABILITY_KEYS.TOOL_NPK,
     internalNote:
-      "V1 release calculator supports soil volume, stage warning, amount math, ToolRun, grow log, topdress task, and timeline."
+      "Approved beta task/calendar workflow wired to ToolRun, grow context, logs, tasks, and release timing warnings."
   },
   {
     key: "tools.ph_ec_adjustment",
     title: "pH / EC Range Check",
     description: "Check input/runoff pH and EC with safe adjustment warnings.",
     area: "water_nutrients",
-    status: "release",
+    status: "beta",
     href: "/home/personal/tools/ph-ec",
     acceptsGrowContext: true,
     capabilityKey: CAPABILITY_KEYS.TOOL_NPK,
     internalNote:
-      "Upgraded from legacy pH/EC screen. V1 release checks ranges and runoff drift; it intentionally does not give exact pH up/down dosing without product concentration."
+      "Approved beta pH/EC range workflow. It does not recommend exact pH up/down dosing without product concentration."
   },
   {
     key: "tools.crop_steering_projects",
@@ -340,22 +352,22 @@ export const personalToolFeatures = [
     description:
       "Track P0/P1/P2/P3, dryback, runoff, substrate EC, and steering response.",
     area: "crop_management",
-    status: "release",
+    status: "beta",
     href: "/home/personal/tools/crop-steering-project",
     acceptsGrowContext: true,
     internalNote:
-      "V1 release project check is wired to ToolRun, grow log, task, and timeline. The older direct crop-steering scaffold stays hidden."
+      "Approved beta crop steering project workflow wired to grow context, saved ToolRuns, log summaries, and follow-up tasks."
   },
   {
     key: "tools.stress_testing",
     title: "Stress Testing",
     description: "Record controlled stress response and recovery scoring.",
     area: "crop_management",
-    status: "release",
+    status: "beta",
     href: "/home/personal/tools/stress-test",
     acceptsGrowContext: true,
     internalNote:
-      "V1 release calculator records controlled stress response, recovery, stability signals, ToolRun, grow log, task, and timeline. Full pheno-project integration remains deeper work."
+      "Approved beta stress-response record workflow wired to plant/grow context and pheno-scoring outputs."
   },
   {
     key: "tools.pheno_hunting",
@@ -363,23 +375,23 @@ export const personalToolFeatures = [
     description:
       "Run staged pheno projects, score plants, record photos, sensory notes, lab notes, terpene/flavor notes, and compare keeper candidates.",
     area: "genetics",
-    status: "release",
+    status: "beta",
     href: "/home/personal/tools/pheno-hunt",
     acceptsGrowContext: true,
     internalNote:
-      "V1 release project check ranks entered plants, creates ToolRun/log/task records, and keeps breeding lane and terpene/flavor targets as structured decision-support fields."
+      "Approved beta pheno selection workflow wired to plant/grow context and ToolRun persistence."
   },
   {
     key: "tools.genetics_inventory",
-    title: "Genetics Inventory / Breeding Planner",
+    title: "Genetics Notes",
     description:
       "Track cultivars, parentage, seed batches, breeding lane notes, terpene/flavor targets, project use, and user decisions.",
     area: "genetics",
-    status: "release",
+    status: "beta",
     href: "/home/personal/tools/genetics-inventory",
     acceptsGrowContext: true,
     internalNote:
-      "V1 release record check is wired to ToolRun, grow log, task, and timeline. Dedicated cultivar CRUD and seed-lot inventory remain deeper workflow work."
+      "Approved beta genetics/material notes workflow. This is not generic personal inventory."
   },
   {
     key: "tools.tissue_culture",
@@ -387,33 +399,33 @@ export const personalToolFeatures = [
     description:
       "Track TC projects, explants, media, vessels, transfers, contamination, and acclimation.",
     area: "lab_tc",
-    status: "release",
+    status: "beta",
     href: "/home/personal/tools/tissue-culture",
     acceptsGrowContext: true,
     internalNote:
-      "V1 release calculator tracks batch/vessel counts, contamination, rooting, acclimation, SOP version, ToolRun, grow log, task, and timeline. Dedicated TC project CRUD remains deeper lab workflow work."
+      "Approved beta TC protocol/task workflow wired to saved ToolRuns, records, and follow-up reminders."
   },
   {
     key: "tools.dry_cure_guard",
     title: "Dry / Cure Guard",
     description: "Track drying room, jar RH, cure status, mold risk, and next actions.",
     area: "planning_records",
-    status: "release",
+    status: "beta",
     href: "/home/personal/tools/dry-cure-guard",
     acceptsGrowContext: true,
     internalNote:
-      "V1 release calculator is wired to ToolRun, grow log, task, and timeline. Harvest-batch-specific records remain deeper workflow work."
+      "Approved beta dry/cure workflow wired to harvest/grow context, ToolRuns, log summaries, and check tasks."
   },
   {
     key: "tools.clone_rooting",
     title: "Clone Rooting Troubleshooter",
     description: "Check clone rooting conditions, bottlenecks, and follow-up tasks.",
     area: "plant_health",
-    status: "release",
+    status: "beta",
     href: "/home/personal/tools/clone-rooting",
     acceptsGrowContext: true,
     internalNote:
-      "V1 release calculator checks clone rooting bottlenecks and creates ToolRun/log/task records. Dedicated clone batch records remain deeper propagation work."
+      "Approved beta clone-room workflow wired to grow context, saved ToolRuns, and follow-up tasks."
   },
   {
     key: "tools.ipm_scout",
@@ -421,23 +433,23 @@ export const personalToolFeatures = [
     description:
       "Record scouting observations, likely organisms, severity, and non-chemical next checks.",
     area: "plant_health",
-    status: "release",
+    status: "beta",
     href: "/home/personal/tools/ipm-scout",
     acceptsGrowContext: true,
     internalNote:
-      "V1 release scout check records observations, likely issue, non-chemical next checks, ToolRun, grow log, task, and timeline. It does not provide pesticide dosing."
+      "Approved beta IPM scouting workflow. It records cautious evidence and follow-up tasks without reckless pesticide dosing."
   },
   {
     key: "tools.species_crop_identification",
     title: "Species / Crop Identification",
     description:
-      "Identify likely crop/species from user input, image, or video with user confirmation.",
+      "Confirm crop/species identity for diagnosis, nutrient, environment, and IPM context.",
     area: "plant_health",
-    status: "release",
+    status: "beta",
     href: "/home/personal/tools/species-crop-id",
     acceptsGrowContext: true,
     internalNote:
-      "V1 release identification check requires user confirmation before crop-specific recommendations. Licensed image-provider expansion remains future hardening."
+      "Approved beta crop-context workflow. Regional invasive alerts stay out of current programming."
   },
   {
     key: "tools.harvest_readiness_ai",
@@ -445,11 +457,11 @@ export const personalToolFeatures = [
     description:
       "Estimate harvest readiness from maturity signals, photos, cultivar timing, and user goals.",
     area: "planning_records",
-    status: "release",
+    status: "beta",
     href: "/home/personal/tools/harvest-readiness",
     acceptsGrowContext: true,
     internalNote:
-      "V1 release readiness check uses maturity inputs, trichome percentages, cultivar timing, ToolRun, grow log, task, and timeline. Image AI remains guarded by configured provider support."
+      "Approved beta harvest-readiness workflow using maturity signals, cultivar timing, user goals, ToolRuns, logs, and tasks."
   },
   {
     key: "tools.run_comparison",
@@ -457,10 +469,10 @@ export const personalToolFeatures = [
     description:
       "Compare grows by yield, timing, issues, environment, feeding, quality, and keeper score.",
     area: "planning_records",
-    status: "release",
+    status: "beta",
     href: "/home/personal/tools/run-comparison",
     internalNote:
-      "V1 release comparison accepts structured run summaries and saves ToolRun/log records. Automatic history mining remains deeper analytics work."
+      "Approved beta comparison workflow; keep visible unless the user later decides it is too large."
   },
   {
     key: "tools.auto_grow_calendar",
@@ -468,22 +480,22 @@ export const personalToolFeatures = [
     description:
       "Generate stage timelines, task schedules, reminders, and harvest windows.",
     area: "planning_records",
-    status: "release",
+    status: "beta",
     href: "/home/personal/tools/auto-grow-calendar",
     acceptsGrowContext: true,
     internalNote:
-      "V1 release calculator generates deterministic stage anchors, task schedule, ToolRun, grow log, and starter task. Bulk calendar-event creation remains deeper workflow work."
+      "Approved beta grow calendar workflow wired to stage timelines, ToolRuns, logs, and task creation."
   },
   {
-    key: "tools.living_soil_batch_production",
-    title: "Living Soil Labs / Batch Production",
+    key: "tools.soil_nutrient_batch_planner",
+    title: "Soil & Nutrient Batch Planner",
     description:
       "Estimate soil/amendment batch costs, bag counts, pull sheets, labor, packaging, and margin.",
     area: "business_production",
-    status: "release",
-    href: "/home/personal/tools/living-soil-batch",
+    status: "beta",
+    href: "/home/personal/tools/soil-nutrient-batch",
     internalNote:
-      "V1 release calculator estimates batch costs, bag counts, pull sheet, margin, ToolRun, grow log, task, and timeline. Inventory deductions and saved batch records remain deeper production work."
+      "Approved beta soil/nutrient batch planning workflow without brand wording."
   },
   {
     key: "tools.inventory",
@@ -491,11 +503,11 @@ export const personalToolFeatures = [
     description:
       "Track nutrients, amendments, soil inputs, seeds, clones, packaging, and grow supplies.",
     area: "business_production",
-    status: "release",
-    href: "/home/personal/tools/inventory",
+    status: "remove_from_user_app",
+    href: undefined,
     acceptsGrowContext: true,
     internalNote:
-      "V1 release inventory check supports low-stock warnings, reorder tasks, recipe availability, ToolRun, grow log, and timeline. Full inventory CRUD remains the deeper production workflow."
+      "Inventory belongs to commercial and facility surfaces, not the personal tools hub."
   }
 ] as const satisfies readonly FeatureDefinition[];
 

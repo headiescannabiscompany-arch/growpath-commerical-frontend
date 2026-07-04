@@ -15,6 +15,7 @@ import { useAuth } from "@/auth/AuthContext";
 import { useEntitlements } from "@/entitlements";
 import { requestEmailVerification } from "@/api/auth";
 import { deleteAccount, exportPrivacyData, updateProfile } from "@/api/users";
+import PersonalFeedPlacement from "@/components/feed/PersonalFeedPlacement";
 
 const styles = StyleSheet.create({
   container: { flex: 1, backgroundColor: "#fff" },
@@ -261,6 +262,7 @@ export default function ProfileScreen() {
     <ScrollView style={styles.container} contentContainerStyle={styles.content}>
       <Text style={styles.title}>Profile</Text>
       <Text style={styles.subtitle}>Account and plan details</Text>
+      <PersonalFeedPlacement placement="top" routeKey="personal_profile" longContent />
 
       <View style={styles.card}>
         <Text style={styles.rowLabel}>Email</Text>
@@ -332,6 +334,7 @@ export default function ProfileScreen() {
         <Text style={styles.rowLabel}>Plan</Text>
         <Text style={styles.rowValue}>{plan}</Text>
       </View>
+      <PersonalFeedPlacement placement="middle" routeKey="personal_profile" longContent />
 
       <View style={styles.card}>
         <Text style={styles.rowLabel}>Other account types</Text>
@@ -418,6 +421,7 @@ export default function ProfileScreen() {
       <Pressable style={[styles.button, styles.buttonDanger]} onPress={handleLogout}>
         <Text style={styles.buttonDangerText}>Log out</Text>
       </Pressable>
+      <PersonalFeedPlacement placement="bottom" routeKey="personal_profile" longContent />
     </ScrollView>
   );
 }

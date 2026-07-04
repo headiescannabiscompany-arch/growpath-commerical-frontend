@@ -17,6 +17,7 @@ import { fetchLinks } from "../../api/links";
 import { fetchOrders } from "../../api/orders";
 import { fetchProducts } from "../../api/products";
 import { fetchStorefront } from "../../api/storefront";
+import { fetchCommercialGrows } from "../../api/commercialWorkflows";
 import ScreenContainer from "../../components/ScreenContainer";
 
 function rows(payload, key) {
@@ -86,6 +87,7 @@ export default function CommercialDashboardScreen() {
     links: [],
     campaigns: [],
     orders: [],
+    grows: [],
     inventory: []
   });
 
@@ -101,6 +103,7 @@ export default function CommercialDashboardScreen() {
         links,
         campaigns,
         orders,
+        grows,
         inventory
       ] = await Promise.all([
         fetchStorefront(),
@@ -109,6 +112,7 @@ export default function CommercialDashboardScreen() {
         fetchLinks(),
         fetchCampaigns(),
         fetchOrders(),
+        fetchCommercialGrows().catch(() => []),
         fetchInventory()
       ]);
 
@@ -119,6 +123,7 @@ export default function CommercialDashboardScreen() {
         links,
         campaigns,
         orders,
+        grows,
         inventory
       });
     } catch (err) {
@@ -135,11 +140,14 @@ export default function CommercialDashboardScreen() {
 
   const summary = useMemo(() => {
     const publishedProducts = model.products.filter(isPublished).length;
-    const activeCampaigns = model.campaigns.filter((c) => c?.status === "active").length;
-    const openOrders = model.orders.filter((o) =>
-      !["complete", "completed", "fulfilled", "cancelled"].includes(
-        String(o?.status || "").toLowerCase()
-      )
+    const activeMarketingPlans = model.campaigns.filter((c) =>
+      ["active", "launched", "scheduled"].includes(String(c?.status || "").toLowerCase())
+    ).length;
+    const openExternalTracking = model.orders.filter(
+      (o) =>
+        !["complete", "completed", "fulfilled", "cancelled"].includes(
+          String(o?.status || "").toLowerCase()
+        )
     ).length;
     const revenue = model.orders.reduce(
       (sum, order) => sum + Number(order?.total || order?.totalAmount || 0),
@@ -153,8 +161,8 @@ export default function CommercialDashboardScreen() {
 
     return {
       publishedProducts,
-      activeCampaigns,
-      openOrders,
+      activeMarketingPlans,
+      openExternalTracking,
       revenue,
       lowStock
     };
@@ -164,7 +172,10 @@ export default function CommercialDashboardScreen() {
     <ScreenContainer scroll={false}>
       <ScrollView
         refreshControl={
-          <RefreshControl refreshing={refreshing} onRefresh={() => load({ refresh: true })} />
+          <RefreshControl
+            refreshing={refreshing}
+            onRefresh={() => load({ refresh: true })}
+          />
         }
         contentContainerStyle={styles.content}
       >
@@ -173,7 +184,8 @@ export default function CommercialDashboardScreen() {
             <Text style={styles.eyebrow}>Commercial</Text>
             <Text style={styles.header}>Dashboard</Text>
             <Text style={styles.subtitle}>
-              Storefront, products, courses, links, campaigns, orders, and inventory.
+              Pro grow workflow plus products, trials, storefront, feed, courses,
+              inventory, and external tracking.
             </Text>
           </View>
           <Pressable style={styles.refreshButton} onPress={() => load({ refresh: true })}>
@@ -208,6 +220,12 @@ export default function CommercialDashboardScreen() {
                 </Pressable>
                 <Pressable
                   style={styles.secondaryButton}
+                  onPress={() => navigation.navigate("CommercialGrows")}
+                >
+                  <Text style={styles.secondaryButtonText}>Open Grows & Trials</Text>
+                </Pressable>
+                <Pressable
+                  style={styles.secondaryButton}
                   onPress={() => navigation.navigate("CreateCourse")}
                 >
                   <Text style={styles.secondaryButtonText}>Create Course</Text>
@@ -217,10 +235,17 @@ export default function CommercialDashboardScreen() {
 
             <View style={styles.grid}>
               <StatCard
+                label="Grows & Trials"
+                value={model.grows.length}
+                detail="grow workspace retained"
+                route="CommercialGrows"
+                navigation={navigation}
+              />
+              <StatCard
                 label="Products"
                 value={model.products.length}
                 detail={`${summary.publishedProducts} published`}
-                route="Storefront"
+                route="CommercialProducts"
                 navigation={navigation}
               />
               <StatCard
@@ -238,16 +263,16 @@ export default function CommercialDashboardScreen() {
                 navigation={navigation}
               />
               <StatCard
-                label="Campaigns"
+                label="Marketing Plans"
                 value={model.campaigns.length}
-                detail={`${summary.activeCampaigns} active`}
-                route="Campaigns"
+                detail={`${summary.activeMarketingPlans} active or scheduled`}
+                route="MarketingPlanner"
                 navigation={navigation}
               />
               <StatCard
-                label="Orders"
+                label="External Tracking"
                 value={model.orders.length}
-                detail={`${summary.openOrders} open`}
+                detail={`${summary.openExternalTracking} open`}
                 route="CommercialOrders"
                 navigation={navigation}
               />
@@ -261,47 +286,68 @@ export default function CommercialDashboardScreen() {
             </View>
 
             <View style={styles.panel}>
-              <Text style={styles.sectionTitle}>Revenue</Text>
+              <Text style={styles.sectionTitle}>Orders / External Tracking</Text>
               <Text style={styles.revenue}>{money(summary.revenue)}</Text>
-              <Text style={styles.meta}>Based on commercial order totals returned by the API.</Text>
+              <Text style={styles.meta}>
+                Use this for internal orders only when checkout exists. Otherwise track
+                product views, external purchase clicks, inquiries, and leads.
+              </Text>
             </View>
 
             <View style={styles.panel}>
               <Text style={styles.sectionTitle}>Workflows</Text>
               <ActionRow
-                title="Storefront and products"
-                subtitle="Edit storefront identity, add products, and publish listings."
-                route="Storefront"
+                title="Grows and product trials"
+                subtitle="Open grow workspaces, demo grows, formula tests, and product trials."
+                route="CommercialGrows"
+                navigation={navigation}
+              />
+              <ActionRow
+                title="Products and storefront"
+                subtitle="Create products with photos, text, links, usage guidance, and trial evidence."
+                route="CommercialProducts"
+                navigation={navigation}
+              />
+              <ActionRow
+                title="Soil & Nutrient Batch Planner"
+                subtitle="Design, scale, cost, and test formulas before publishing product claims."
+                route="CommercialBatchPlanner"
                 navigation={navigation}
               />
               <ActionRow
                 title="Courses"
-                subtitle="Create, edit, moderate, and review commercial courses."
+                subtitle="Create free or paid education tied to products, grows, and support."
                 route="Courses"
                 navigation={navigation}
               />
               <ActionRow
-                title="Links"
-                subtitle="Maintain public links for campaigns, offers, and education."
-                route="Links"
+                title="Feed and community"
+                subtitle="Post updates, answer questions, and link products, courses, and trials."
+                route="Feed"
                 navigation={navigation}
               />
               <ActionRow
-                title="Campaigns"
-                subtitle="Create drafts and manage active promotional work."
-                route="Campaigns"
+                title="Marketing Planner"
+                subtitle="Plan launches, product drops, course announcements, ads, feed content, and tracked clicks."
+                route="MarketingPlanner"
                 navigation={navigation}
               />
               <ActionRow
-                title="Orders"
-                subtitle="Review order status and fulfillment queue."
+                title="Orders / external tracking"
+                subtitle="Review internal orders when available, plus external leads and click tracking."
                 route="CommercialOrders"
                 navigation={navigation}
               />
               <ActionRow
-                title="Basic inventory"
-                subtitle="Search stock, SKU, vendor, and quantity data."
+                title="Inventory and catalog"
+                subtitle="Track products, plants, ingredients, packaging, genetics, and retail stock."
                 route="CommercialInventory"
+                navigation={navigation}
+              />
+              <ActionRow
+                title="Analytics"
+                subtitle="Review ad clicks, storefront views, product clicks, course starts, replies, and trial counts."
+                route="CommercialAnalytics"
                 navigation={navigation}
               />
             </View>

@@ -1,6 +1,7 @@
 import React, { useCallback, useEffect, useMemo, useState } from "react";
 import {
   ActivityIndicator,
+  Pressable,
   RefreshControl,
   ScrollView,
   StyleSheet,
@@ -14,6 +15,7 @@ import { InlineError } from "@/components/InlineError";
 import { useFacility } from "@/state/useFacility";
 import { apiRequest } from "@/api/apiRequest";
 import { endpoints } from "@/api/endpoints";
+import { useAuth } from "@/auth/AuthContext";
 import { useApiErrorHandler } from "@/hooks/useApiErrorHandler";
 
 type AnyRec = Record<string, any>;
@@ -41,6 +43,7 @@ function renderKV(obj: AnyRec | null, key: string) {
 
 export default function FacilityProfileRoute() {
   const router = useRouter();
+  const auth = useAuth();
   const { selectedId: facilityId } = useFacility();
 
   const apiErr: any = useApiErrorHandler();
@@ -98,6 +101,11 @@ export default function FacilityProfileRoute() {
     }
     load();
   }, [facilityId, load, router]);
+
+  const logout = useCallback(async () => {
+    await auth.logout();
+    router.replace("/login");
+  }, [auth, router]);
 
   const meKeys = useMemo(() => {
     if (!me) return [];
@@ -180,6 +188,15 @@ export default function FacilityProfileRoute() {
             <Text style={styles.muted}>No /api/me data.</Text>
           )}
         </View>
+
+        <Pressable
+          accessibilityRole="button"
+          accessibilityLabel="Log out"
+          onPress={logout}
+          style={styles.logoutButton}
+        >
+          <Text style={styles.logoutText}>Log out</Text>
+        </Pressable>
       </ScrollView>
     </ScreenBoundary>
   );
@@ -204,5 +221,15 @@ const styles = StyleSheet.create({
   kvWrap: { marginTop: 8 },
   kv: { marginBottom: 10 },
   k: { fontSize: 12, opacity: 0.7, marginBottom: 3 },
-  v: { fontSize: 14 }
+  v: { fontSize: 14 },
+  logoutButton: {
+    borderWidth: 1,
+    borderColor: "#DC2626",
+    borderRadius: 10,
+    paddingHorizontal: 14,
+    paddingVertical: 12,
+    backgroundColor: "#FEF2F2",
+    alignItems: "center"
+  },
+  logoutText: { color: "#991B1B", fontWeight: "900" }
 });

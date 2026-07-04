@@ -29,8 +29,10 @@ jest.mock("@react-native-async-storage/async-storage", () => ({
 }));
 
 jest.mock("@/features/personal/tools/saveToolRunAndOpenJournal", () => ({
-  saveToolRunAndOpenJournal: (...args: any[]) => mockSaveToolRunAndOpenJournal(...args),
-  saveToolRunAndCreateTask: (...args: any[]) => mockSaveToolRunAndCreateTask(...args)
+  saveToolRunAndOpenJournal: (...args: any[]) =>
+    mockSaveToolRunAndOpenJournal.apply(null, args),
+  saveToolRunAndCreateTask: (...args: any[]) =>
+    mockSaveToolRunAndCreateTask.apply(null, args)
 }));
 
 jest.mock("@/api/plants", () => ({

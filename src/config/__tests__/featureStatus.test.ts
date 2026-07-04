@@ -1,12 +1,24 @@
 import {
+  FeatureDefinition,
   getNavigablePersonalTools,
   isFeatureNavigable,
+  personalFeatures,
   personalToolFeatures
 } from "../featureStatus";
+import fs from "node:fs";
+import path from "node:path";
+import { TOOL_FEATURE_KEY_BY_TOOL_KEY } from "@/features/personal/tools/toolFeatureKeys";
 
 describe("personal feature status manifest", () => {
+  test("keeps courses released for every personal account type", () => {
+    expect(personalFeatures.courses.status).toBe("release");
+    expect(personalFeatures.courses.href).toBe("/home/personal/courses");
+  });
+
   test("only release tools are navigable by default", () => {
-    expect(getNavigablePersonalTools().every(isFeatureNavigable)).toBe(true);
+    expect(
+      getNavigablePersonalTools().every((feature) => isFeatureNavigable(feature))
+    ).toBe(true);
     expect(
       getNavigablePersonalTools().every((feature) => feature.status === "release")
     ).toBe(true);
@@ -27,12 +39,13 @@ describe("personal feature status manifest", () => {
     expect(isFeatureNavigable(betaTool, { allowBetaSurfaces: true })).toBe(true);
   });
 
-  test("does not expose the crop steering scaffold", () => {
+  test("does not expose the old crop steering scaffold", () => {
     const cropSteering = personalToolFeatures.find(
       (feature) => feature.key === "tools.crop_steering"
     );
 
-    expect(cropSteering?.status).toBe("hidden");
+    expect(cropSteering?.status).toBe("remove_from_user_app");
+    expect(cropSteering?.href).toBeUndefined();
     expect(getNavigablePersonalTools()).not.toContain(cropSteering);
   });
 
@@ -42,15 +55,59 @@ describe("personal feature status manifest", () => {
     );
   });
 
+  test("keeps every personal tools href backed by a route file", () => {
+    const toolsDir = path.join(
+      process.cwd(),
+      "src",
+      "app",
+      "home",
+      "personal",
+      "(tabs)",
+      "tools"
+    );
+    const betaNavigable = getNavigablePersonalTools({ allowBetaSurfaces: true });
+    const missingRoutes = betaNavigable
+      .map((feature) => feature.href || "")
+      .filter((href) => href.startsWith("/home/personal/tools/"))
+      .map((href) => href.replace("/home/personal/tools/", "") || "index")
+      .filter((route) => route !== "index")
+      .filter((route) => {
+        const routeFile = path.join(toolsDir, `${route}.tsx`);
+        const routeIndex = path.join(toolsDir, route, "index.tsx");
+        return !fs.existsSync(routeFile) && !fs.existsSync(routeIndex);
+      });
+
+    expect(missingRoutes).toEqual([]);
+  });
+
+  test("keeps backend calculator tool keys wired to feature entries and API routes", () => {
+    const byKey = Object.fromEntries(
+      personalToolFeatures.map((feature) => [feature.key, feature])
+    ) as Record<string, FeatureDefinition>;
+    const routeSource = fs.readFileSync(
+      path.join(process.cwd(), "backend", "routes", "tools.js"),
+      "utf8"
+    );
+    const backendRoutes = new Set(
+      Array.from(routeSource.matchAll(/calculatorRoute\(\s*["']\/([^"']+)["']/g)).map(
+        (match) => match[1]
+      )
+    );
+
+    for (const [toolKey, featureKey] of Object.entries(TOOL_FEATURE_KEY_BY_TOOL_KEY)) {
+      expect(byKey[featureKey]).toBeTruthy();
+      expect(["release", "beta"]).toContain(byKey[featureKey].status);
+      expect(backendRoutes.has(toolKey)).toBe(true);
+    }
+  });
+
   test("keeps release personal tools open at the catalog level", () => {
     const broadlyUsefulTools = [
-      "tools.ai_diagnosis",
-      "tools.feeding_schedule",
       "tools.environment_analysis",
-      "tools.pheno_matrix",
-      "tools.harvest_estimator",
-      "tools.timeline_planner",
-      "tools.pdf_export"
+      "tools.watering",
+      "tools.vpd",
+      "tools.dew_point_guard",
+      "tools.ppfd_dli"
     ];
 
     for (const key of broadlyUsefulTools) {
@@ -61,15 +118,28 @@ describe("personal feature status manifest", () => {
     }
   });
 
-  test("exposes completed v1 module routes without exposing fake redirects", () => {
+  test("marks pro-gated release tools with the same capability used by their screens", () => {
+    const byKey = Object.fromEntries(
+      personalToolFeatures.map((feature) => [feature.key, feature])
+    ) as Record<string, FeatureDefinition>;
+
+    expect(byKey["tools.ai_diagnosis"].capabilityKey).toBe("DIAGNOSE_AI");
+    expect(byKey["tools.feeding_schedule"].capabilityKey).toBe("FEEDING_SCHEDULE");
+    expect(byKey["tools.harvest_estimator"].capabilityKey).toBe("TOOL_HARVEST_ESTIMATOR");
+    expect(byKey["tools.timeline_planner"].capabilityKey).toBe("TOOL_TIMELINE_PLANNER");
+    expect(byKey["tools.pdf_export"].capabilityKey).toBe("TOOL_PDF_EXPORT");
+    expect(byKey["tools.pheno_matrix"].capabilityKey).toBe("TOOL_PHENO_MATRIX");
+  });
+
+  test("exposes only release-ready module routes without exposing fake redirects", () => {
     const releaseRoutes = {
-      "tools.crop_steering_projects": "/home/personal/tools/crop-steering-project",
-      "tools.pheno_hunting": "/home/personal/tools/pheno-hunt",
-      "tools.genetics_inventory": "/home/personal/tools/genetics-inventory",
-      "tools.ipm_scout": "/home/personal/tools/ipm-scout",
-      "tools.species_crop_identification": "/home/personal/tools/species-crop-id",
-      "tools.harvest_readiness_ai": "/home/personal/tools/harvest-readiness",
-      "tools.inventory": "/home/personal/tools/inventory"
+      "tools.vpd": "/home/personal/tools/vpd",
+      "tools.dew_point_guard": "/home/personal/tools/dew-point-guard",
+      "tools.ppfd_dli": "/home/personal/tools/ppfd",
+      "tools.bud_rot_risk": "/home/personal/tools/bud-rot-risk",
+      "tools.npk_recipe": "/home/personal/tools/npk",
+      "tools.ai_diagnosis": "/home/personal/diagnose",
+      "tools.integrations": "/home/personal/tools/integrations"
     };
 
     const navigable = getNavigablePersonalTools();
@@ -82,6 +152,49 @@ describe("personal feature status manifest", () => {
     }
   });
 
+  test("exposes approved beta tools only when beta surfaces are enabled", () => {
+    const approvedBetaTools = [
+      "tools.soil_builder",
+      "tools.dry_amendment_mix",
+      "tools.topdress_planner",
+      "tools.ph_ec_adjustment",
+      "tools.crop_steering_projects",
+      "tools.stress_testing",
+      "tools.pheno_hunting",
+      "tools.genetics_inventory",
+      "tools.tissue_culture",
+      "tools.dry_cure_guard",
+      "tools.clone_rooting",
+      "tools.ipm_scout",
+      "tools.species_crop_identification",
+      "tools.harvest_readiness_ai",
+      "tools.run_comparison",
+      "tools.auto_grow_calendar",
+      "tools.soil_nutrient_batch_planner"
+    ];
+
+    const defaultNavigable = getNavigablePersonalTools();
+    const betaNavigable = getNavigablePersonalTools({ allowBetaSurfaces: true });
+    for (const key of approvedBetaTools) {
+      const feature = personalToolFeatures.find((item) => item.key === key);
+      expect(feature).toBeTruthy();
+      expect(feature?.status).toBe("beta");
+      expect(defaultNavigable).not.toContain(feature);
+      expect(betaNavigable).toContain(feature);
+    }
+  });
+
+  test("keeps removed/internal-only tools out of the user-facing app", () => {
+    const removedTools = ["tools.crop_steering", "tools.inventory"];
+    const betaNavigable = getNavigablePersonalTools({ allowBetaSurfaces: true });
+    for (const key of removedTools) {
+      const feature = personalToolFeatures.find((item) => item.key === key);
+      expect(feature).toBeTruthy();
+      expect(["remove_from_user_app", "internal_ai_only"]).toContain(feature?.status);
+      expect(betaNavigable).not.toContain(feature);
+    }
+  });
+
   test("places tools in their release categories", () => {
     const byKey = Object.fromEntries(
       personalToolFeatures.map((feature) => [feature.key, feature])
@@ -91,58 +204,65 @@ describe("personal feature status manifest", () => {
     expect(byKey["tools.ipm_scout"].area).toBe("plant_health");
     expect(byKey["tools.npk_recipe"].area).toBe("water_nutrients");
     expect(byKey["tools.soil_builder"].area).toBe("water_nutrients");
-    expect(byKey["tools.soil_builder"].status).toBe("release");
+    expect(byKey["tools.soil_builder"].status).toBe("beta");
     expect(byKey["tools.soil_builder"].href).toBe("/home/personal/tools/soil-builder");
-    expect(byKey["tools.dry_amendment_mix"].status).toBe("release");
-    expect(byKey["tools.topdress_planner"].status).toBe("release");
-    expect(byKey["tools.ph_ec_adjustment"].status).toBe("release");
-    expect(byKey["tools.dry_cure_guard"].status).toBe("release");
+    expect(byKey["tools.dry_amendment_mix"].status).toBe("beta");
+    expect(byKey["tools.topdress_planner"].status).toBe("beta");
+    expect(byKey["tools.ph_ec_adjustment"].status).toBe("beta");
+    expect(byKey["tools.dry_cure_guard"].status).toBe("beta");
     expect(byKey["tools.nutrient_source_comparison"].status).toBe("release");
     expect(byKey["tools.product_ingredient_library"].status).toBe("release");
     expect(byKey["tools.product_ingredient_library"].href).toBe(
       "/home/personal/tools/ingredient-library"
     );
-    expect(byKey["tools.stress_testing"].status).toBe("release");
+    expect(byKey["tools.stress_testing"].status).toBe("beta");
     expect(byKey["tools.stress_testing"].href).toBe("/home/personal/tools/stress-test");
-    expect(byKey["tools.clone_rooting"].status).toBe("release");
+    expect(byKey["tools.clone_rooting"].status).toBe("beta");
     expect(byKey["tools.clone_rooting"].href).toBe("/home/personal/tools/clone-rooting");
-    expect(byKey["tools.run_comparison"].status).toBe("release");
-    expect(byKey["tools.run_comparison"].href).toBe("/home/personal/tools/run-comparison");
-    expect(byKey["tools.auto_grow_calendar"].status).toBe("release");
-    expect(byKey["tools.auto_grow_calendar"].href).toBe("/home/personal/tools/auto-grow-calendar");
-    expect(byKey["tools.tissue_culture"].status).toBe("release");
-    expect(byKey["tools.tissue_culture"].href).toBe("/home/personal/tools/tissue-culture");
-    expect(byKey["tools.living_soil_batch_production"].status).toBe("release");
-    expect(byKey["tools.living_soil_batch_production"].href).toBe(
-      "/home/personal/tools/living-soil-batch"
+    expect(byKey["tools.run_comparison"].status).toBe("beta");
+    expect(byKey["tools.run_comparison"].href).toBe(
+      "/home/personal/tools/run-comparison"
+    );
+    expect(byKey["tools.auto_grow_calendar"].status).toBe("beta");
+    expect(byKey["tools.auto_grow_calendar"].href).toBe(
+      "/home/personal/tools/auto-grow-calendar"
+    );
+    expect(byKey["tools.tissue_culture"].status).toBe("beta");
+    expect(byKey["tools.tissue_culture"].href).toBe(
+      "/home/personal/tools/tissue-culture"
+    );
+    expect(byKey["tools.soil_nutrient_batch_planner"].status).toBe("beta");
+    expect(byKey["tools.soil_nutrient_batch_planner"].href).toBe(
+      "/home/personal/tools/soil-nutrient-batch"
     );
     expect(byKey["tools.crop_steering_projects"].area).toBe("crop_management");
-    expect(byKey["tools.crop_steering_projects"].status).toBe("release");
+    expect(byKey["tools.crop_steering_projects"].status).toBe("beta");
     expect(byKey["tools.crop_steering_projects"].href).toBe(
       "/home/personal/tools/crop-steering-project"
     );
     expect(byKey["tools.timeline_planner"].area).toBe("planning_records");
     expect(byKey["tools.pheno_matrix"].area).toBe("genetics");
-    expect(byKey["tools.pheno_hunting"].status).toBe("release");
+    expect(byKey["tools.pheno_hunting"].status).toBe("beta");
     expect(byKey["tools.pheno_hunting"].href).toBe("/home/personal/tools/pheno-hunt");
-    expect(byKey["tools.genetics_inventory"].status).toBe("release");
+    expect(byKey["tools.genetics_inventory"].status).toBe("beta");
     expect(byKey["tools.genetics_inventory"].href).toBe(
       "/home/personal/tools/genetics-inventory"
     );
-    expect(byKey["tools.ipm_scout"].status).toBe("release");
+    expect(byKey["tools.ipm_scout"].status).toBe("beta");
     expect(byKey["tools.ipm_scout"].href).toBe("/home/personal/tools/ipm-scout");
-    expect(byKey["tools.species_crop_identification"].status).toBe("release");
+    expect(byKey["tools.species_crop_identification"].status).toBe("beta");
     expect(byKey["tools.species_crop_identification"].href).toBe(
       "/home/personal/tools/species-crop-id"
     );
-    expect(byKey["tools.harvest_readiness_ai"].status).toBe("release");
+    expect(byKey["tools.harvest_readiness_ai"].status).toBe("beta");
     expect(byKey["tools.harvest_readiness_ai"].href).toBe(
       "/home/personal/tools/harvest-readiness"
     );
-    expect(byKey["tools.inventory"].status).toBe("release");
-    expect(byKey["tools.inventory"].href).toBe("/home/personal/tools/inventory");
-    expect(byKey["tools.pheno_hunting"].description).toMatch(/terpene\/flavor/i);
-    expect(byKey["tools.genetics_inventory"].description).toMatch(/breeding lane/i);
+    expect(byKey["tools.inventory"].status).toBe("remove_from_user_app");
+    expect(byKey["tools.inventory"].href).toBeUndefined();
+    expect(byKey["tools.soil_nutrient_batch_planner"].title).not.toMatch(
+      /Living Soil Labs/i
+    );
     expect(byKey["tools.grow_aware_ai_assistant"]).toBeUndefined();
     expect(byKey["tools.grow_log_auto_tagging"]).toBeUndefined();
     expect(byKey["tools.compatibility_checker"]).toBeUndefined();
@@ -151,6 +271,6 @@ describe("personal feature status manifest", () => {
     expect(byKey["tools.diagnosis_rules"]).toBeUndefined();
     expect(byKey["tools.crop_profile_database"]).toBeUndefined();
     expect(byKey["tools.tissue_culture"].area).toBe("lab_tc");
-    expect(byKey["tools.living_soil_batch_production"].area).toBe("business_production");
+    expect(byKey["tools.soil_nutrient_batch_planner"].area).toBe("business_production");
   });
 });

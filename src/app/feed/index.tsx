@@ -64,6 +64,12 @@ export default function CommercialFeedRoute() {
   const [body, setBody] = useState("");
   const [tags, setTags] = useState("");
   const [location, setLocation] = useState("");
+  const [linkedProductId, setLinkedProductId] = useState("");
+  const [linkedCourseId, setLinkedCourseId] = useState("");
+  const [linkedGrowId, setLinkedGrowId] = useState("");
+  const [storefrontSlug, setStorefrontSlug] = useState("");
+  const [externalLinkUrl, setExternalLinkUrl] = useState("");
+  const [externalLinkLabel, setExternalLinkLabel] = useState("");
   const [loading, setLoading] = useState(false);
   const [refreshing, setRefreshing] = useState(false);
   const [creating, setCreating] = useState(false);
@@ -121,6 +127,8 @@ export default function CommercialFeedRoute() {
     const cleanBody = body.trim();
     const cleanTags = splitTags(tags);
     const cleanLocation = location.trim();
+    const cleanExternalUrl = externalLinkUrl.trim();
+    const cleanExternalLabel = externalLinkLabel.trim();
     if (isFacility && hasFacilitySalesLanguage([cleanTitle, cleanBody, ...cleanTags])) {
       setCreating(false);
       setFeedback(facilitySalesPolicyText());
@@ -132,12 +140,25 @@ export default function CommercialFeedRoute() {
         title: cleanTitle,
         body: cleanBody,
         tags: cleanTags,
-        location: cleanLocation
+        location: cleanLocation,
+        linkedProductId: linkedProductId.trim() || undefined,
+        linkedCourseId: linkedCourseId.trim() || undefined,
+        linkedGrowId: linkedGrowId.trim() || undefined,
+        storefrontSlug: storefrontSlug.trim() || undefined,
+        externalLinks: cleanExternalUrl
+          ? [{ label: cleanExternalLabel || "External link", url: cleanExternalUrl }]
+          : undefined
       });
       setTitle("");
       setBody("");
       setTags("");
       setLocation("");
+      setLinkedProductId("");
+      setLinkedCourseId("");
+      setLinkedGrowId("");
+      setStorefrontSlug("");
+      setExternalLinkUrl("");
+      setExternalLinkLabel("");
       setFeedback(isFacility ? "Educational post published." : "Feed post published.");
       await load({ refresh: true });
     } catch (e) {
@@ -216,6 +237,64 @@ export default function CommercialFeedRoute() {
           placeholder="Location (optional)"
           accessibilityLabel="Feed post location"
         />
+        {!isFacility ? (
+          <View style={styles.linkBox}>
+            <Text style={styles.linkBoxTitle}>Optional commercial links</Text>
+            <Text style={styles.linkBoxText}>
+              Attach product, course, grow/trial, storefront, or external purchase context
+              so users can move from the feed into the right public surface.
+            </Text>
+            <TextInput
+              value={linkedProductId}
+              onChangeText={setLinkedProductId}
+              style={styles.input}
+              placeholder="Linked product ID or slug"
+              autoCapitalize="none"
+              accessibilityLabel="Linked product"
+            />
+            <TextInput
+              value={linkedCourseId}
+              onChangeText={setLinkedCourseId}
+              style={styles.input}
+              placeholder="Linked course ID or slug"
+              autoCapitalize="none"
+              accessibilityLabel="Linked course"
+            />
+            <TextInput
+              value={linkedGrowId}
+              onChangeText={setLinkedGrowId}
+              style={styles.input}
+              placeholder="Linked grow or trial ID"
+              autoCapitalize="none"
+              accessibilityLabel="Linked grow or trial"
+            />
+            <TextInput
+              value={storefrontSlug}
+              onChangeText={setStorefrontSlug}
+              style={styles.input}
+              placeholder="Storefront slug"
+              autoCapitalize="none"
+              accessibilityLabel="Linked storefront slug"
+            />
+            <View style={styles.twoColumn}>
+              <TextInput
+                value={externalLinkLabel}
+                onChangeText={setExternalLinkLabel}
+                style={[styles.input, styles.columnInput]}
+                placeholder="External link label"
+                accessibilityLabel="External link label"
+              />
+              <TextInput
+                value={externalLinkUrl}
+                onChangeText={setExternalLinkUrl}
+                style={[styles.input, styles.columnInput]}
+                placeholder="https://..."
+                autoCapitalize="none"
+                accessibilityLabel="External link URL"
+              />
+            </View>
+          </View>
+        ) : null}
         <Pressable
           onPress={createPost}
           disabled={!canCreate}
@@ -293,6 +372,31 @@ export default function CommercialFeedRoute() {
           {post.tags.length ? (
             <Text style={styles.tags}>{post.tags.map((tag) => `#${tag}`).join(" ")}</Text>
           ) : null}
+          {post.linkedProductId ||
+          post.linkedCourseId ||
+          post.linkedGrowId ||
+          post.storefrontSlug ||
+          post.externalLinks?.length ? (
+            <View style={styles.linkMetaRow}>
+              {post.linkedProductId ? (
+                <Text style={styles.linkMeta}>Product: {post.linkedProductId}</Text>
+              ) : null}
+              {post.linkedCourseId ? (
+                <Text style={styles.linkMeta}>Course: {post.linkedCourseId}</Text>
+              ) : null}
+              {post.linkedGrowId ? (
+                <Text style={styles.linkMeta}>Grow/trial: {post.linkedGrowId}</Text>
+              ) : null}
+              {post.storefrontSlug ? (
+                <Text style={styles.linkMeta}>Store: {post.storefrontSlug}</Text>
+              ) : null}
+              {post.externalLinks?.map((link) => (
+                <Text key={`${link.label}-${link.url}`} style={styles.linkMeta}>
+                  {link.label}: {link.url}
+                </Text>
+              ))}
+            </View>
+          ) : null}
           <Text style={styles.meta}>{postMeta(post)}</Text>
         </View>
       ))}
@@ -329,6 +433,18 @@ const styles = StyleSheet.create({
     paddingVertical: 10
   },
   bodyInput: { minHeight: 110, textAlignVertical: "top" },
+  linkBox: {
+    backgroundColor: "#F8FAFC",
+    borderColor: "#E2E8F0",
+    borderRadius: 8,
+    borderWidth: 1,
+    gap: 8,
+    padding: 10
+  },
+  linkBoxTitle: { color: "#0F172A", fontWeight: "900" },
+  linkBoxText: { color: "#64748B", fontSize: 12, fontWeight: "700", lineHeight: 18 },
+  twoColumn: { flexDirection: "row", flexWrap: "wrap", gap: 8 },
+  columnInput: { flex: 1, minWidth: 180 },
   chipRow: { flexDirection: "row", flexWrap: "wrap", gap: 8 },
   chip: {
     backgroundColor: "white",
@@ -390,5 +506,16 @@ const styles = StyleSheet.create({
   postTitle: { color: "#0F172A", fontSize: 17, fontWeight: "900" },
   postBody: { color: "#334155", fontWeight: "600", lineHeight: 21 },
   tags: { color: "#2563EB", fontSize: 12, fontWeight: "800" },
+  linkMetaRow: { flexDirection: "row", flexWrap: "wrap", gap: 6 },
+  linkMeta: {
+    backgroundColor: "#EEF2FF",
+    borderRadius: 999,
+    color: "#3730A3",
+    fontSize: 12,
+    fontWeight: "800",
+    overflow: "hidden",
+    paddingHorizontal: 8,
+    paddingVertical: 4
+  },
   meta: { color: "#64748B", fontSize: 12, fontWeight: "700" }
 });

@@ -1,0 +1,116 @@
+{
+  "version": "2026-07-04",
+  "note": "This repo contains backend route modules used by tests and local contracts. The running backend may live in a separate project, but it must mount equivalent base paths.",
+  "requiredRouteModules": [
+    {
+      "id": "personal",
+      "basePath": "/api/personal",
+      "file": "backend/routes/personal.js",
+      "testFile": "backend/routes/personal.test.js",
+      "requiredRoutes": [
+        { "method": "GET", "path": "/plants" },
+        { "method": "POST", "path": "/plants" },
+        { "method": "GET", "path": "/logs" },
+        { "method": "POST", "path": "/logs" },
+        { "method": "GET", "path": "/tasks" },
+        { "method": "POST", "path": "/tasks" },
+        { "method": "GET", "path": "/grows/:growId/timeline" }
+      ]
+    },
+    {
+      "id": "personal_grows",
+      "basePath": "/api/personal/grows",
+      "file": "backend/routes/grows.personal.js",
+      "testFile": "backend/routes/grows.personal.test.js",
+      "requiredRoutes": [
+        { "method": "GET", "path": "/" },
+        { "method": "POST", "path": "/" }
+      ]
+    },
+    {
+      "id": "tools",
+      "basePath": "/api/tools",
+      "file": "backend/routes/tools.js",
+      "testFile": "backend/routes/tools.test.js",
+      "requiredRoutes": [
+        { "method": "GET", "path": "/" },
+        { "method": "POST", "path": "/" },
+        { "method": "POST", "path": "/vpd" },
+        { "method": "POST", "path": "/npk-recipe" },
+        { "method": "POST", "path": "/soil-builder" },
+        { "method": "POST", "path": "/dry-amendment-mix" },
+        { "method": "POST", "path": "/topdress-plan" },
+        { "method": "POST", "path": "/ph-ec-check" },
+        { "method": "POST", "path": "/crop-steering-project" },
+        { "method": "POST", "path": "/stress-test" },
+        { "method": "POST", "path": "/pheno-hunt" },
+        { "method": "POST", "path": "/genetics-inventory" },
+        { "method": "POST", "path": "/tissue-culture" },
+        { "method": "POST", "path": "/dry-cure-guard" },
+        { "method": "POST", "path": "/clone-rooting" },
+        { "method": "POST", "path": "/ipm-scout" },
+        { "method": "POST", "path": "/species-crop-id" },
+        { "method": "POST", "path": "/harvest-readiness" },
+        { "method": "POST", "path": "/run-comparison" },
+        { "method": "POST", "path": "/auto-grow-calendar" },
+        { "method": "POST", "path": "/soil-nutrient-batch" }
+      ]
+    },
+    {
+      "id": "growpath_modules",
+      "basePath": "/api/growpath-modules",
+      "file": "backend/routes/growpathModules.js",
+      "testFile": "backend/routes/growpathModules.test.js",
+      "requiredRoutes": [
+        { "method": "GET", "path": "/types" },
+        { "method": "GET", "path": "/" },
+        { "method": "POST", "path": "/" },
+        { "method": "GET", "path": "/:id" },
+        { "method": "PATCH", "path": "/:id" },
+        { "method": "DELETE", "path": "/:id" }
+      ]
+    },
+    {
+      "id": "commercial",
+      "basePath": "/api/commercial",
+      "file": "backend/routes/commercial.js",
+      "testFile": "backend/routes/commercial.test.js",
+      "requiredRoutes": [
+        { "method": "GET", "path": "/dashboard" },
+        { "method": "GET", "path": "/grows" },
+        { "method": "POST", "path": "/grows" },
+        { "method": "GET", "path": "/products" },
+        { "method": "POST", "path": "/products" },
+        { "method": "GET", "path": "/product-lines" },
+        { "method": "POST", "path": "/product-lines" },
+        { "method": "GET", "path": "/batches" },
+        { "method": "POST", "path": "/batches" },
+        { "method": "GET", "path": "/trials" },
+        { "method": "POST", "path": "/trials" },
+        { "method": "GET", "path": "/storefront" },
+        { "method": "PATCH", "path": "/storefront" },
+        { "method": "GET", "path": "/storefront/public/:slug" },
+        { "method": "GET", "path": "/feed" },
+        { "method": "POST", "path": "/posts" },
+        { "method": "GET", "path": "/courses" },
+        { "method": "POST", "path": "/courses" },
+        { "method": "GET", "path": "/inventory" },
+        { "method": "POST", "path": "/inventory" },
+        { "method": "GET", "path": "/analytics/overview" },
+        { "method": "POST", "path": "/analytics/events" }
+      ]
+    },
+    {
+      "id": "courses",
+      "basePath": "/api/courses",
+      "file": "backend/routes/courses.js",
+      "testFile": "backend/routes/courses.test.js",
+      "requiredRoutes": [
+        { "method": "GET", "path": "/" },
+        { "method": "POST", "path": "/" },
+        { "method": "GET", "path": "/list" },
+        { "method": "POST", "path": "/:id/enroll" }
+      ]
+    }
+  ]
+}

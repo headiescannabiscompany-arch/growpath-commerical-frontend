@@ -8,7 +8,6 @@ const ROOT = path.resolve(__dirname, "..");
 const strict = process.argv.includes("--strict");
 const playwrightPort = process.env.PLAYWRIGHT_WEB_PORT || "19025";
 const jestCli = path.join(ROOT, "node_modules", "jest", "bin", "jest.js");
-const playwrightCli = path.join(ROOT, "node_modules", "@playwright", "test", "cli.js");
 
 function run(label, command, args, options = {}) {
   console.log(`\n[release-preflight] ${label}`);
@@ -67,6 +66,12 @@ async function main() {
   }
 
   run("UI route inventory", process.execPath, ["scripts/inventory-ui-routes.cjs"]);
+  run("frontend runtime contract validation", process.execPath, [
+    "scripts/validate-frontend-runtime-contract.cjs"
+  ]);
+  run("backend route contract validation", process.execPath, [
+    "scripts/validate-backend-route-contract.cjs"
+  ]);
   run("V1 UI surface validation", process.execPath, [
     "scripts/validate-v1-ui-surface.cjs"
   ]);
@@ -80,6 +85,7 @@ async function main() {
     "jest.backend.config.cjs",
     "--runInBand",
     "backend/routes/tools.test.js",
+    "backend/routes/growpathModules.test.js",
     "backend/routes/cropKnowledge.test.js"
   ]);
 
@@ -108,8 +114,7 @@ async function main() {
     "focused release Playwright specs",
     process.execPath,
     [
-      playwrightCli,
-      "test",
+      "scripts/run-playwright-expo.cjs",
       "e2e/profile-privacy-visual.spec.ts",
       "e2e/personal-home-task-sources-visual.spec.ts",
       "e2e/personal-core-loop.spec.ts",

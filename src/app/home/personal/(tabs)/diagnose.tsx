@@ -20,6 +20,7 @@ import {
 import { createPersonalLog } from "@/api/logs";
 import { listPersonalPlants, type PersonalPlant } from "@/api/plants";
 import { createPersonalTask } from "@/api/tasks";
+import PersonalFeedPlacement from "@/components/feed/PersonalFeedPlacement";
 import BackButton from "@/components/nav/BackButton";
 import ToolResultSurface from "@/features/personal/tools/ToolResultSurface";
 import { diagnosisCropContextState } from "@/features/personal/diagnosis/diagnosisCropContext";
@@ -402,6 +403,7 @@ export default function DiagnoseRoute() {
         Cautious triage based on the context you provide. Results are possibilities, not
         certainty.
       </Text>
+      <PersonalFeedPlacement placement="top" routeKey="personal_diagnose" longContent />
       {growId ? <Text style={styles.context}>Grow context: {growId}</Text> : null}
 
       {plants.length ? (
@@ -437,6 +439,11 @@ export default function DiagnoseRoute() {
           </View>
         </View>
       ) : null}
+      <PersonalFeedPlacement
+        placement="middle"
+        routeKey="personal_diagnose"
+        longContent
+      />
 
       <View style={styles.section}>
         <Text style={styles.label}>Crop identity</Text>
@@ -964,6 +971,11 @@ export default function DiagnoseRoute() {
       ) : feedback ? (
         <Text style={styles.feedback}>{feedback}</Text>
       ) : null}
+      <PersonalFeedPlacement
+        placement="bottom"
+        routeKey="personal_diagnose"
+        longContent
+      />
     </ScrollView>
   );
 }

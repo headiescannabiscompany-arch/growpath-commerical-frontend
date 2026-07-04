@@ -636,11 +636,21 @@ calculatorRoute(
   "dew_point_guard",
   calculators.calculateDewPointGuard
 );
+calculatorRoute(
+  "/environment-review",
+  "environment_review",
+  calculators.calculateEnvironmentReview
+);
 calculatorRoute("/watering", "watering", calculators.calculateWatering);
 calculatorRoute("/bud-rot-risk", "bud_rot_risk", calculators.calculateBudRotRisk);
 calculatorRoute("/npk-recipe", "npk_recipe", calculators.calculateNpkRecipe);
 calculatorRoute("/ph-ec-check", "ph_ec_check", calculators.calculatePhEcCheck);
 calculatorRoute("/topdress-plan", "topdress_plan", calculators.calculateTopdressPlan);
+calculatorRoute(
+  "/feeding-schedule-review",
+  "feeding_schedule_review",
+  calculators.calculateFeedingScheduleReview
+);
 calculatorRoute(
   "/dry-amendment-mix",
   "dry_amendment_mix",
@@ -658,6 +668,11 @@ calculatorRoute("/clone-rooting", "clone_rooting", calculators.calculateCloneRoo
 calculatorRoute("/run-comparison", "run_comparison", calculators.calculateRunComparison);
 calculatorRoute("/auto-grow-calendar", "auto_grow_calendar", calculators.calculateAutoGrowCalendar);
 calculatorRoute("/tissue-culture", "tissue_culture", calculators.calculateTissueCulture);
+calculatorRoute(
+  "/soil-nutrient-batch",
+  "soil_nutrient_batch",
+  calculators.calculateLivingSoilBatch
+);
 calculatorRoute(
   "/living-soil-batch",
   "living_soil_batch",

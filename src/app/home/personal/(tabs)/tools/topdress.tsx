@@ -43,6 +43,13 @@ export default function TopdressToolScreen() {
           keyboardType: "numeric"
         },
         { key: "doseUnit", label: "Dose unit", defaultValue: "tbsp_per_gallon" },
+        { key: "releaseClass", label: "Release class", defaultValue: "medium" },
+        {
+          key: "daysUntilHarvest",
+          label: "Days until harvest",
+          defaultValue: "42",
+          keyboardType: "numeric"
+        },
         {
           key: "plannedApplyDate",
           label: "Planned apply date",
@@ -59,6 +66,8 @@ export default function TopdressToolScreen() {
         stage: values.stage,
         doseRate: n(values.doseRate, 0),
         doseUnit: values.doseUnit,
+        releaseClass: values.releaseClass,
+        daysUntilHarvest: n(values.daysUntilHarvest),
         plannedApplyDate: values.plannedApplyDate,
         waterInAfterApply: true
       })}
@@ -77,8 +86,33 @@ export default function TopdressToolScreen() {
         {
           key: "release",
           label: "Release window",
-          value: outputs.expectedReleaseWindow || "-"
+          value: outputs.releaseWindowDays
+            ? `${outputs.releaseWindowDays.min}-${outputs.releaseWindowDays.max} days`
+            : outputs.expectedReleaseWindow || "-"
+        },
+        {
+          key: "fit",
+          label: "Timing fit",
+          value: outputs.purposeFit || "-"
         }
+      ]}
+      buildNotices={(outputs) => [
+        ...(Array.isArray(outputs.warnings)
+          ? outputs.warnings.map((message: string, index: number) => ({
+              key: `warning-${index}`,
+              severity: "medium" as const,
+              message
+            }))
+          : []),
+        ...(outputs.timingInterpretation
+          ? [
+              {
+                key: "timing",
+                severity: "info" as const,
+                message: outputs.timingInterpretation
+              }
+            ]
+          : [])
       ]}
       defaultLogTitle={(outputs) => outputs.taskToCreate?.title || "Topdress planned"}
       defaultTask={(outputs) => ({

@@ -5,7 +5,12 @@ const path = require("path");
 
 const ROOT = path.resolve(__dirname, "..");
 const APP_DIR = path.join(ROOT, "src", "app");
-const CONTRACT_PATH = path.join(ROOT, "docs", "contracts", "FRONTEND_RUNTIME_CONTRACT.json");
+const CONTRACT_PATH = path.join(
+  ROOT,
+  "docs",
+  "contracts",
+  "FRONTEND_RUNTIME_CONTRACT.json"
+);
 const OUT_DIR = path.join(ROOT, "tmp", "spec");
 const OUT_FILE = path.join(OUT_DIR, "tool-surface.json");
 
@@ -56,7 +61,9 @@ function main() {
     process.exit(1);
   }
 
-  const contract = JSON.parse(fs.readFileSync(CONTRACT_PATH, "utf8").replace(/^\uFEFF/, ""));
+  const contract = JSON.parse(
+    fs.readFileSync(CONTRACT_PATH, "utf8").replace(/^\uFEFF/, "")
+  );
   const routeRows = collectRoutes();
   const routeSet = new Set(routeRows.map((row) => row.route));
 
@@ -85,6 +92,19 @@ function main() {
   console.log(
     `Required tools: ${required.length} | discovered personal tool routes: ${discoveredPersonalToolRoutes.length}`
   );
+
+  const missingRequired = required.filter(
+    (tool) => !tool.routeExists || !tool.fileExists
+  );
+  if (missingRequired.length) {
+    console.error("Missing required tool routes:");
+    for (const tool of missingRequired) {
+      console.error(
+        `- ${tool.id}: routeExists=${tool.routeExists} fileExists=${tool.fileExists} route=${tool.route} file=${tool.file}`
+      );
+    }
+    process.exit(1);
+  }
 }
 
 main();

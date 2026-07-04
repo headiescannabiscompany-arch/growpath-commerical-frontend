@@ -48,10 +48,21 @@ export default function CommercialOrdersScreen() {
       keyExtractor={orderId}
       onRefresh={refetch}
       refreshing={isRefetching}
-      ListHeaderComponent={<Text style={styles.title}>Orders</Text>}
+      ListHeaderComponent={
+        <View style={styles.header}>
+          <Text style={styles.title}>Orders / External Tracking</Text>
+          <Text style={styles.subtitle}>
+            Internal checkout orders appear here when checkout is enabled. For products
+            sold elsewhere, use this surface alongside product views, outbound clicks,
+            inquiries, and storefront analytics.
+          </Text>
+        </View>
+      }
       ListEmptyComponent={
         <Text style={styles.empty}>
-          {error ? "Failed to load orders." : "No orders yet."}
+          {error
+            ? "Failed to load orders or external tracking."
+            : "No internal orders yet. External purchase links should be evaluated with product views, clicks, inquiries, and feed analytics."}
         </Text>
       }
       renderItem={({ item }) => (
@@ -88,7 +99,7 @@ export default function CommercialOrdersScreen() {
               disabled={updateFulfillment.isPending}
               onPress={() => markFulfilled(item)}
             >
-              <Text style={styles.buttonText}>Mark Fulfilled</Text>
+              <Text style={styles.buttonText}>Mark Internal Order Fulfilled</Text>
             </Pressable>
           ) : null}
         </View>
@@ -100,7 +111,9 @@ export default function CommercialOrdersScreen() {
 const styles = StyleSheet.create({
   list: { flex: 1, padding: 16 },
   center: { flex: 1, alignItems: "center", justifyContent: "center" },
+  header: { marginBottom: 10 },
   title: { fontSize: 22, fontWeight: "800", marginBottom: 10 },
+  subtitle: { color: "#64748B", lineHeight: 19 },
   card: {
     borderWidth: 1,
     borderColor: "#e5e7eb",

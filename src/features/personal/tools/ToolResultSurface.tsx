@@ -44,6 +44,7 @@ type ToolResultSurfaceProps = {
   actions?: ToolResultAction[];
   feedback?: string;
   contextMessage?: string;
+  footerMessage?: string;
   details?: React.ReactNode;
   copyPayload?: unknown;
   onReuseInputs?: () => void | Promise<void>;
@@ -168,6 +169,7 @@ export default function ToolResultSurface({
   actions = [],
   feedback,
   contextMessage,
+  footerMessage,
   details,
   copyPayload,
   onReuseInputs,
@@ -429,6 +431,7 @@ export default function ToolResultSurface({
       ) : null}
 
       {contextMessage ? <Text style={styles.detail}>{contextMessage}</Text> : null}
+      {footerMessage ? <Text style={styles.detail}>{footerMessage}</Text> : null}
       {feedback || actionFeedback ? (
         <Text accessibilityLiveRegion="polite" style={styles.feedback}>
           {feedback || actionFeedback}

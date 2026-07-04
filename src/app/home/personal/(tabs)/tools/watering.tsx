@@ -16,10 +16,17 @@ import {
   saveToolRunResult
 } from "@/features/personal/tools/saveToolRunAndOpenJournal";
 import { buildWateringEstimate } from "@/features/personal/tools/wateringEstimate";
+import PersonalFeedPlacement from "@/components/feed/PersonalFeedPlacement";
 
 function toNum(value: string, fallback: number) {
   const parsed = Number(value);
   return Number.isFinite(parsed) ? parsed : fallback;
+}
+
+function toOptionalNum(value: string) {
+  if (!value.trim()) return NaN;
+  const parsed = Number(value);
+  return Number.isFinite(parsed) ? parsed : NaN;
 }
 
 function nextDate(days: number) {
@@ -46,6 +53,14 @@ export default function WateringToolScreen() {
   const [potLiters, setPotLiters] = useState("11");
   const [runoffPct, setRunoffPct] = useState("10");
   const [intervalDays, setIntervalDays] = useState("2");
+  const [medium, setMedium] = useState("soil");
+  const [stage, setStage] = useState("veg");
+  const [targetDrybackPercent, setTargetDrybackPercent] = useState("20");
+  const [actualDrybackPercent, setActualDrybackPercent] = useState("");
+  const [vpdKpa, setVpdKpa] = useState("");
+  const [recentRunoffPct, setRecentRunoffPct] = useState("");
+  const [recoveryTimeHours, setRecoveryTimeHours] = useState("");
+  const [leafResponse, setLeafResponse] = useState("");
   const [savedRunId, setSavedRunId] = useState("");
   const [feedback, setFeedback] = useState("");
 
@@ -54,18 +69,47 @@ export default function WateringToolScreen() {
       potLiters: toNum(potLiters, 0),
       runoffPct: toNum(runoffPct, 0),
       intervalDays: toNum(intervalDays, 1),
-      plantGrowthProfile: plantContext.selectedPlantContext?.growthProfile
+      plantGrowthProfile: plantContext.selectedPlantContext?.growthProfile,
+      medium,
+      stage,
+      targetDrybackPercent: toNum(targetDrybackPercent, NaN),
+      actualDrybackPercent: toOptionalNum(actualDrybackPercent),
+      vpdKpa: toOptionalNum(vpdKpa),
+      recentRunoffPct: toOptionalNum(recentRunoffPct),
+      recoveryTimeHours: toOptionalNum(recoveryTimeHours),
+      leafResponse
     });
     return {
       ...estimate,
       nextWaterDate: nextDate(toNum(intervalDays, 1))
     };
-  }, [potLiters, runoffPct, intervalDays, plantContext.selectedPlantContext]);
+  }, [
+    actualDrybackPercent,
+    intervalDays,
+    leafResponse,
+    medium,
+    plantContext.selectedPlantContext,
+    potLiters,
+    recentRunoffPct,
+    recoveryTimeHours,
+    runoffPct,
+    stage,
+    targetDrybackPercent,
+    vpdKpa
+  ]);
 
   const input = {
     potLiters: Number(potLiters),
     runoffPct: Number(runoffPct),
-    intervalDays: Number(intervalDays)
+    intervalDays: Number(intervalDays),
+    medium,
+    stage,
+    targetDrybackPercent: Number(targetDrybackPercent),
+    actualDrybackPercent: toOptionalNum(actualDrybackPercent),
+    vpdKpa: toOptionalNum(vpdKpa),
+    recentRunoffPct: toOptionalNum(recentRunoffPct),
+    recoveryTimeHours: toOptionalNum(recoveryTimeHours),
+    leafResponse
   };
   const actions: ToolResultAction[] = [
     {
@@ -122,7 +166,7 @@ export default function WateringToolScreen() {
             input,
             output: model,
             title: "Water plants",
-            description: `Target ${model.targetLiters} L with ${runoffPct}% runoff.`,
+            description: `Target ${model.targetLiters} L with ${runoffPct}% runoff. Pressure: ${model.pressureLevel}.`,
             priority: "medium",
             dueDate: model.nextWaterDate
           });
@@ -139,6 +183,11 @@ export default function WateringToolScreen() {
       <BackButton />
       <Text style={styles.title}>Watering Planner</Text>
       <Text style={styles.subtitle}>Estimate watering volume and schedule.</Text>
+      <PersonalFeedPlacement
+        placement="top"
+        routeKey="personal_tools_watering"
+        longContent
+      />
       {growId ? <Text style={styles.context}>Grow context: {growId}</Text> : null}
       <ToolPlantContextPicker
         plants={plantContext.plants}
@@ -180,6 +229,98 @@ export default function WateringToolScreen() {
         }}
         keyboardType="numeric"
       />
+      <Text style={styles.label}>Medium</Text>
+      <TextInput
+        accessibilityLabel="Watering medium"
+        style={styles.input}
+        value={medium}
+        onChangeText={(value) => {
+          setMedium(value);
+          setSavedRunId("");
+        }}
+      />
+      <Text style={styles.label}>Stage</Text>
+      <TextInput
+        accessibilityLabel="Watering stage"
+        style={styles.input}
+        value={stage}
+        onChangeText={(value) => {
+          setStage(value);
+          setSavedRunId("");
+        }}
+      />
+      <Text style={styles.label}>Target dryback (%)</Text>
+      <TextInput
+        accessibilityLabel="Watering target dryback percent"
+        style={styles.input}
+        value={targetDrybackPercent}
+        onChangeText={(value) => {
+          setTargetDrybackPercent(value);
+          setSavedRunId("");
+        }}
+        keyboardType="numeric"
+      />
+      <Text style={styles.label}>Actual dryback (%)</Text>
+      <TextInput
+        accessibilityLabel="Watering actual dryback percent"
+        style={styles.input}
+        value={actualDrybackPercent}
+        onChangeText={(value) => {
+          setActualDrybackPercent(value);
+          setSavedRunId("");
+        }}
+        keyboardType="numeric"
+      />
+      <Text style={styles.label}>VPD (kPa)</Text>
+      <TextInput
+        accessibilityLabel="Watering VPD kPa"
+        style={styles.input}
+        value={vpdKpa}
+        onChangeText={(value) => {
+          setVpdKpa(value);
+          setSavedRunId("");
+        }}
+        keyboardType="numeric"
+      />
+      <Text style={styles.label}>Recent runoff (%)</Text>
+      <TextInput
+        accessibilityLabel="Watering recent runoff percent"
+        style={styles.input}
+        value={recentRunoffPct}
+        onChangeText={(value) => {
+          setRecentRunoffPct(value);
+          setSavedRunId("");
+        }}
+        keyboardType="numeric"
+      />
+      <Text style={styles.label}>Recovery time after last irrigation/dryback (hours)</Text>
+      <TextInput
+        accessibilityLabel="Watering recovery time hours"
+        style={styles.input}
+        value={recoveryTimeHours}
+        onChangeText={(value) => {
+          setRecoveryTimeHours(value);
+          setSavedRunId("");
+        }}
+        keyboardType="numeric"
+      />
+      <Text style={styles.label}>Leaf response</Text>
+      <TextInput
+        accessibilityLabel="Watering leaf response"
+        style={styles.input}
+        value={leafResponse}
+        onChangeText={(value) => {
+          setLeafResponse(value);
+          setSavedRunId("");
+        }}
+        placeholder="turgid, droop, wilt, stalled, recovered"
+      />
+
+      <PersonalFeedPlacement
+        placement="middle"
+        routeKey="personal_tools_watering"
+        longContent
+      />
 
       <ToolResultSurface
         title="Watering estimate"
@@ -206,24 +347,52 @@ export default function WateringToolScreen() {
             value: model.plantAdjustmentLabel,
             detail:
               model.plantContextReasons.join(" | ") || "No plant size/demand overlay"
+          },
+          {
+            key: "watering-intent",
+            label: "Watering intent",
+            value: model.wateringIntent.replace(/_/g, " ")
+          },
+          {
+            key: "pressure-level",
+            label: "Pressure level",
+            value: String(model.pressureLevel).toUpperCase(),
+            detail:
+              model.environmentalAdjustmentReasons.join(" | ") ||
+              "No stage/medium/VPD adjustment"
+          },
+          {
+            key: "dryback",
+            label: "Dryback",
+            value:
+              model.actualDrybackPercent == null
+                ? `${model.targetDrybackPercent ?? "?"}% target`
+                : `${model.actualDrybackPercent}% actual / ${model.targetDrybackPercent ?? "?"}% target`
           }
         ]}
         assumptions={[
-          "The estimate uses pot volume, runoff target, and a fixed base-volume heuristic.",
+          "The estimate uses pot volume, runoff target, stage, medium, VPD, and plant context where available.",
           model.plantContextRequiresConfirmation
             ? "Selected plant size or water-demand context is present but did not change the estimate because the crop/profile context is not confirmed."
             : "",
           model.plantContextApplied
             ? "Selected plant canopy size and observed water demand adjusted the volume estimate."
             : "No selected plant size or observed water-demand adjustment was applied.",
-          "Medium water retention, dryback, climate, and recent watering history are not yet fully modeled.",
-          "Inspect root-zone moisture and plant condition before watering."
+          ...model.warnings,
+          ...model.recommendations,
+          "Inspect root-zone moisture, pot weight, and plant condition before watering."
         ].filter(Boolean)}
         actions={actions}
         feedback={feedback}
         contextMessage={
           !growId ? "Select a grow to enable journal and task actions." : undefined
         }
+      />
+
+      <PersonalFeedPlacement
+        placement="bottom"
+        routeKey="personal_tools_watering"
+        longContent
       />
     </ScrollView>
   );

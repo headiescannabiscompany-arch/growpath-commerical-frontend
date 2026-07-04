@@ -2,12 +2,14 @@ import React, { useMemo } from "react";
 import { Href, Link, useLocalSearchParams } from "expo-router";
 import { Pressable, ScrollView, StyleSheet, Text, View } from "react-native";
 
+import FeedBanner from "@/components/feed/FeedBanner";
 import {
   FeatureArea,
   FeatureDefinition,
   getNavigablePersonalTools
 } from "@/config/featureStatus";
 import { useEntitlements } from "@/entitlements";
+import { getFeedBannerPolicy } from "@/utils/feedPolicy";
 
 const styles = StyleSheet.create({
   container: { flex: 1, backgroundColor: "#FFFFFF" },
@@ -123,7 +125,7 @@ function ToolCard({
           <Text>Open</Text>
         </Link>
       ) : (
-        <Text style={styles.lockedText}>Upgrade or enable capability</Text>
+        <Text style={styles.lockedText}>Upgrade to unlock</Text>
       )}
     </View>
   );
@@ -132,8 +134,19 @@ function ToolCard({
 export default function ToolsHubScreen() {
   const { growId: rawGrowId } = useLocalSearchParams<{ growId?: string | string[] }>();
   const growId = useMemo(() => coerceParam(rawGrowId), [rawGrowId]);
-  const tools = useMemo(() => getNavigablePersonalTools(), []);
   const entitlements = useEntitlements();
+  const plan = entitlements.plan || "free";
+  const isFreePlan = String(plan).toLowerCase() === "free";
+  const tools = useMemo(
+    () => getNavigablePersonalTools({ allowBetaSurfaces: !isFreePlan }),
+    [isFreePlan]
+  );
+  const bannerPolicy = getFeedBannerPolicy({
+    routeKey: "personal_tools_hub",
+    plan,
+    mode: entitlements.mode,
+    longContent: true
+  });
 
   return (
     <ScrollView style={styles.container} contentContainerStyle={styles.content}>
@@ -169,26 +182,57 @@ export default function ToolsHubScreen() {
         </View>
       </View>
 
-      {AREA_ORDER.map((area) => {
+      {bannerPolicy.top ? (
+        <FeedBanner
+          placement="top"
+          slots={bannerPolicy.slotsByPlacement.top}
+          mode={entitlements.mode}
+          plan={plan}
+          railMode={bannerPolicy.railMode}
+        />
+      ) : null}
+
+      {AREA_ORDER.map((area, index) => {
         const areaTools = tools.filter((tool) => tool.area === area);
         if (!areaTools.length) return null;
 
         return (
-          <View key={area} style={styles.section}>
-            <Text style={styles.sectionTitle}>{AREA_LABELS[area]}</Text>
-            <View style={styles.grid}>
-              {areaTools.map((tool) => (
-                <ToolCard
-                  key={tool.key}
-                  tool={tool}
-                  growId={growId}
-                  enabled={!tool.capabilityKey || entitlements.can(tool.capabilityKey)}
-                />
-              ))}
+          <React.Fragment key={area}>
+            {bannerPolicy.middle && index === 3 ? (
+              <FeedBanner
+                placement="middle"
+                slots={bannerPolicy.slotsByPlacement.middle}
+                mode={entitlements.mode}
+                plan={plan}
+                railMode={bannerPolicy.railMode}
+              />
+            ) : null}
+            <View style={styles.section}>
+              <Text style={styles.sectionTitle}>{AREA_LABELS[area]}</Text>
+              <View style={styles.grid}>
+                {areaTools.map((tool) => (
+                  <ToolCard
+                    key={tool.key}
+                    tool={tool}
+                    growId={growId}
+                    enabled={!tool.capabilityKey || entitlements.can(tool.capabilityKey)}
+                  />
+                ))}
+              </View>
             </View>
-          </View>
+          </React.Fragment>
         );
       })}
+
+      {bannerPolicy.bottom ? (
+        <FeedBanner
+          placement="bottom"
+          slots={bannerPolicy.slotsByPlacement.bottom}
+          mode={entitlements.mode}
+          plan={plan}
+          railMode={bannerPolicy.railMode}
+        />
+      ) : null}
     </ScrollView>
   );
 }

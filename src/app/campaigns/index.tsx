@@ -25,7 +25,13 @@ import { useEntitlements } from "@/entitlements";
 import { useApiErrorHandler, type UiErrorState } from "@/hooks/useApiErrorHandler";
 
 type CampaignStatus = "draft" | "scheduled" | "active" | "paused" | "ended";
-type CampaignObjective = "awareness" | "reach" | "engagement" | "conversions" | "traffic";
+type CampaignObjective =
+  | "content_plan"
+  | "awareness"
+  | "reach"
+  | "engagement"
+  | "conversions"
+  | "traffic";
 type CampaignPlatform = "multi" | "instagram" | "tiktok" | "twitter" | "youtube";
 
 const statusOptions: CampaignStatus[] = [
@@ -36,6 +42,7 @@ const statusOptions: CampaignStatus[] = [
   "ended"
 ];
 const objectiveOptions: CampaignObjective[] = [
+  "content_plan",
   "awareness",
   "reach",
   "engagement",
@@ -98,7 +105,7 @@ export default function Campaigns() {
     name: "",
     description: "",
     totalBudget: "",
-    objective: "awareness" as CampaignObjective,
+    objective: "content_plan" as CampaignObjective,
     platform: "multi" as CampaignPlatform,
     status: "draft" as CampaignStatus
   });
@@ -138,7 +145,7 @@ export default function Campaigns() {
 
   async function submitCampaign() {
     if (!draft.name.trim()) {
-      setError({ message: "Campaign name is required." });
+      setError({ message: "Marketing plan name is required." });
       return;
     }
     setCreating(true);
@@ -160,11 +167,11 @@ export default function Campaigns() {
         name: "",
         description: "",
         totalBudget: "",
-        objective: "awareness",
+        objective: "content_plan",
         platform: "multi",
         status: "draft"
       });
-      setFeedback("Campaign created.");
+      setFeedback("Marketing plan created.");
     } catch (e) {
       setError(mapApiError.toInlineError(e));
     } finally {
@@ -219,9 +226,11 @@ export default function Campaigns() {
       routeKey="campaigns"
       header={
         <View>
-          <Text style={styles.headerTitle}>Campaigns</Text>
+          <Text style={styles.headerTitle}>Marketing Planner</Text>
           <Text style={styles.headerSubtitle}>
-            Plan commercial campaigns, budgets, channels, and launch status.
+            Plan product drops, course launches, trial updates, feed posts, ads, budgets,
+            channels, and tracked clicks without pretending GrowPathAI executes
+            ad-platform spend.
           </Text>
         </View>
       }
@@ -241,7 +250,7 @@ export default function Campaigns() {
         <View style={styles.summaryGrid}>
           <View style={styles.summaryCard}>
             <Text style={styles.summaryValue}>{summary.count}</Text>
-            <Text style={styles.summaryLabel}>Campaigns</Text>
+            <Text style={styles.summaryLabel}>Marketing Plans</Text>
           </View>
           <View style={styles.summaryCard}>
             <Text style={styles.summaryValue}>{summary.active}</Text>
@@ -262,12 +271,12 @@ export default function Campaigns() {
         </View>
 
         <AppCard>
-          <Text style={styles.cardTitle}>Create Campaign</Text>
+          <Text style={styles.cardTitle}>Create Marketing Plan</Text>
           <TextInput
             value={draft.name}
             onChangeText={(name) => setDraft((current) => ({ ...current, name }))}
-            accessibilityLabel="Campaign name"
-            placeholder="Campaign name"
+            accessibilityLabel="Marketing plan name"
+            placeholder="Marketing plan name"
             style={styles.input}
           />
           <TextInput
@@ -275,8 +284,8 @@ export default function Campaigns() {
             onChangeText={(description) =>
               setDraft((current) => ({ ...current, description }))
             }
-            accessibilityLabel="Campaign description"
-            placeholder="Campaign description"
+            accessibilityLabel="Marketing plan description"
+            placeholder="Marketing plan description"
             multiline
             style={[styles.input, styles.notesInput]}
           />
@@ -285,8 +294,8 @@ export default function Campaigns() {
             onChangeText={(totalBudget) =>
               setDraft((current) => ({ ...current, totalBudget }))
             }
-            accessibilityLabel="Campaign total budget"
-            placeholder="Total budget"
+            accessibilityLabel="Marketing plan total budget"
+            placeholder="Total budget or budget note"
             keyboardType="decimal-pad"
             style={styles.input}
           />
@@ -297,7 +306,7 @@ export default function Campaigns() {
               <Pressable
                 key={objective}
                 accessibilityRole="button"
-                accessibilityLabel={`Select campaign objective ${objective}`}
+                accessibilityLabel={`Select marketing plan objective ${objective}`}
                 onPress={() => setDraft((current) => ({ ...current, objective }))}
                 style={[
                   styles.optionButton,
@@ -322,7 +331,7 @@ export default function Campaigns() {
               <Pressable
                 key={platform}
                 accessibilityRole="button"
-                accessibilityLabel={`Select campaign platform ${platform}`}
+                accessibilityLabel={`Select marketing plan platform ${platform}`}
                 onPress={() => setDraft((current) => ({ ...current, platform }))}
                 style={[
                   styles.optionButton,
@@ -347,7 +356,7 @@ export default function Campaigns() {
               <Pressable
                 key={status}
                 accessibilityRole="button"
-                accessibilityLabel={`Select campaign status ${status}`}
+                accessibilityLabel={`Select marketing plan status ${status}`}
                 onPress={() => setDraft((current) => ({ ...current, status }))}
                 style={[
                   styles.optionButton,
@@ -368,13 +377,13 @@ export default function Campaigns() {
 
           <Pressable
             accessibilityRole="button"
-            accessibilityLabel="Create campaign"
+            accessibilityLabel="Create marketing plan"
             disabled={creating}
             onPress={() => void submitCampaign()}
             style={[styles.primaryButton, creating && styles.disabledButton]}
           >
             <Text style={styles.primaryButtonText}>
-              {creating ? "Creating..." : "Create Campaign"}
+              {creating ? "Creating..." : "Create Marketing Plan"}
             </Text>
           </Pressable>
         </AppCard>
@@ -382,15 +391,16 @@ export default function Campaigns() {
         {loading ? (
           <View style={styles.loading}>
             <ActivityIndicator />
-            <Text style={styles.muted}>Loading campaigns...</Text>
+            <Text style={styles.muted}>Loading marketing plans...</Text>
           </View>
         ) : null}
 
         {!loading && campaigns.length === 0 ? (
           <AppCard style={styles.emptyCard}>
-            <Text style={styles.cardTitle}>No Campaigns Yet</Text>
+            <Text style={styles.cardTitle}>No Marketing Plans Yet</Text>
             <Text style={styles.cardDesc}>
-              Build a draft campaign to track budget, platform, and launch state.
+              Build a draft plan to track launch context, budget, platform, links, and
+              clicks.
             </Text>
           </AppCard>
         ) : null}
@@ -432,7 +442,7 @@ export default function Campaigns() {
               <View style={styles.actions}>
                 <Pressable
                   accessibilityRole="button"
-                  accessibilityLabel={`Activate campaign ${campaign.name}`}
+                  accessibilityLabel={`Activate marketing plan ${campaign.name}`}
                   disabled={saving || campaign.status === "active"}
                   onPress={() => void setStatus(campaign, "active")}
                   style={[
@@ -444,7 +454,7 @@ export default function Campaigns() {
                 </Pressable>
                 <Pressable
                   accessibilityRole="button"
-                  accessibilityLabel={`Pause campaign ${campaign.name}`}
+                  accessibilityLabel={`Pause marketing plan ${campaign.name}`}
                   disabled={saving || campaign.status === "paused"}
                   onPress={() => void setStatus(campaign, "paused")}
                   style={[
@@ -457,7 +467,7 @@ export default function Campaigns() {
                 </Pressable>
                 <Pressable
                   accessibilityRole="button"
-                  accessibilityLabel={`End campaign ${campaign.name}`}
+                  accessibilityLabel={`End marketing plan ${campaign.name}`}
                   disabled={saving || campaign.status === "ended"}
                   onPress={() => void setStatus(campaign, "ended")}
                   style={[
@@ -470,7 +480,7 @@ export default function Campaigns() {
                 </Pressable>
                 <Pressable
                   accessibilityRole="button"
-                  accessibilityLabel={`Delete campaign ${campaign.name}`}
+                  accessibilityLabel={`Delete marketing plan ${campaign.name}`}
                   disabled={saving}
                   onPress={() => void removeCampaign(campaign)}
                   style={[

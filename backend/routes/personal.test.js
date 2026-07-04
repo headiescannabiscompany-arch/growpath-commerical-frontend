@@ -1,5 +1,7 @@
 const request = require("supertest");
 const express = require("express");
+const liveTestPacks = require("../../tests/fixtures/growpath-live-test-packs.json");
+const externalSourceSmoke = require("../../tests/fixtures/external-source-smoke.json");
 
 const TEST_USER = "507f191e810c19729de860aa";
 const GROW_ID = "507f1f77bcf86cd799439011";
@@ -127,6 +129,12 @@ function doc(row) {
   };
 }
 
+function livePack(accountType) {
+  const pack = liveTestPacks.packs.find((item) => item.accountType === accountType);
+  if (!pack) throw new Error(`Missing ${accountType} live test pack`);
+  return pack;
+}
+
 describe("Personal grow workspace routes", () => {
   let app;
 
@@ -216,6 +224,160 @@ describe("Personal grow workspace routes", () => {
     );
   });
 
+  test("runs Bruce Banner live pack through personal log photo metadata workflow", async () => {
+    const pack = livePack("personal");
+    const harvestWeek = pack.weeklyLogs.find((log) => log.stage === "harvest");
+    const photos = harvestWeek.photos.slice(0, 2).map((photo) => photo.photoSourceLink);
+    const photoMetadata = harvestWeek.photos.slice(0, 2).map((photo, index) => ({
+      url: photo.photoSourceLink,
+      sourceLink: harvestWeek.sourceLink,
+      photoSourceLink: photo.photoSourceLink,
+      stage: harvestWeek.stage,
+      sourceProvider: pack.source.provider,
+      rightsMode: pack.source.rightsMode,
+      consentForAI: index === 0,
+      consentForTraining: false
+    }));
+    const createdLog = doc({
+      _id: LOG_ID,
+      facilityId: `personal:${TEST_USER}`,
+      userId: TEST_USER,
+      growId: GROW_ID,
+      plantId: PLANT_ID,
+      title: "Bruce Banner harvest quality notes",
+      notes: "236 g dry. Taste notes: diesel, earthy, mint.",
+      note: "236 g dry. Taste notes: diesel, earthy, mint.",
+      tags: ["harvest", "yield", "smoke_report"],
+      photos,
+      photoMetadata,
+      linkedToolRunId: null,
+      linkedDiagnosisId: null
+    });
+    mockGrowLog.create.mockResolvedValue(createdLog);
+
+    const res = await request(app)
+      .post("/api/personal/logs")
+      .send({
+        growId: GROW_ID,
+        plantId: PLANT_ID,
+        title: "Bruce Banner harvest quality notes",
+        notes: "236 g dry. Taste notes: diesel, earthy, mint.",
+        tags: ["harvest", "yield", "smoke_report"],
+        photos,
+        photoMetadata
+      });
+
+    expect(res.status).toBe(201);
+    expect(mockGrowLog.create).toHaveBeenCalledWith(
+      expect.objectContaining({
+        userId: TEST_USER,
+        growId: GROW_ID,
+        plantId: PLANT_ID,
+        photos,
+        tags: ["harvest", "yield", "smoke_report"],
+        photoMetadata: [
+          expect.objectContaining({
+            userId: TEST_USER,
+            growId: GROW_ID,
+            plantId: PLANT_ID,
+            url: photos[0],
+            sourceLink: harvestWeek.sourceLink,
+            photoSourceLink: photos[0],
+            stage: "harvest",
+            sourceProvider: pack.source.provider,
+            rightsMode: pack.source.rightsMode,
+            consentForAI: true,
+            consentForTraining: false
+          }),
+          expect.objectContaining({
+            userId: TEST_USER,
+            growId: GROW_ID,
+            plantId: PLANT_ID,
+            url: photos[1],
+            photoSourceLink: photos[1],
+            consentForAI: false,
+            consentForTraining: false
+          })
+        ]
+      })
+    );
+    expect(res.body.log.photos).toEqual(photos);
+    expect(res.body.log.photoMetadata).toHaveLength(2);
+    expect(res.body.log.photoMetadata[0]).not.toHaveProperty("uploadedAssetUri");
+    expect(res.body.log.photoMetadata[0]).not.toHaveProperty("localFilePath");
+  });
+
+  test("preserves user-provided GrowDiaries profile source metadata without rehosting", async () => {
+    const source = externalSourceSmoke.sources.find(
+      (item) => item.id === "headies-growdiaries-profile"
+    );
+    const photoMetadata = [
+      {
+        url: source.sourceUrl,
+        sourceLink: source.sourceLink,
+        photoSourceLink: source.sourceLink,
+        sourceProvider: source.provider,
+        sourceType: source.sourceType,
+        rightsMode: source.rightsMode,
+        consentForAI: false,
+        consentForTraining: false,
+        note: "Profile-level source smoke; no diary facts extracted."
+      }
+    ];
+    const createdLog = doc({
+      _id: LOG_ID,
+      facilityId: `personal:${TEST_USER}`,
+      userId: TEST_USER,
+      growId: GROW_ID,
+      plantId: PLANT_ID,
+      title: "GrowDiaries profile source smoke",
+      notes: "External profile link saved for future diary-backed testing.",
+      note: "External profile link saved for future diary-backed testing.",
+      tags: ["external_source", "growdiaries"],
+      photos: [source.sourceUrl],
+      photoMetadata,
+      linkedToolRunId: null,
+      linkedDiagnosisId: null
+    });
+    mockGrowLog.create.mockResolvedValue(createdLog);
+
+    const res = await request(app)
+      .post("/api/personal/logs")
+      .send({
+        growId: GROW_ID,
+        plantId: PLANT_ID,
+        title: "GrowDiaries profile source smoke",
+        notes: "External profile link saved for future diary-backed testing.",
+        tags: ["external_source", "growdiaries"],
+        photos: [source.sourceUrl],
+        photoMetadata
+      });
+
+    expect(res.status).toBe(201);
+    expect(mockGrowLog.create).toHaveBeenCalledWith(
+      expect.objectContaining({
+        photos: [source.sourceUrl],
+        photoMetadata: [
+          expect.objectContaining({
+            userId: TEST_USER,
+            growId: GROW_ID,
+            plantId: PLANT_ID,
+            url: source.sourceUrl,
+            sourceLink: source.sourceLink,
+            photoSourceLink: source.sourceLink,
+            sourceProvider: "GrowDiaries",
+            sourceType: "grower_profile",
+            rightsMode: "external_link_only",
+            consentForAI: false,
+            consentForTraining: false
+          })
+        ]
+      })
+    );
+    expect(res.body.log.photoMetadata[0]).not.toHaveProperty("uploadedAssetUri");
+    expect(res.body.log.photoMetadata[0]).not.toHaveProperty("localFilePath");
+  });
+
   test("lists, reads, updates, and soft-deletes grow logs for the current user", async () => {
     const existingLog = {
       _id: LOG_ID,
@@ -295,16 +457,14 @@ describe("Personal grow workspace routes", () => {
     });
     mockTask.create.mockResolvedValue(createdTask);
 
-    const res = await request(app)
-      .post("/api/personal/tasks")
-      .send({
-        growId: GROW_ID,
-        plantId: PLANT_ID,
-        title: "Retest pH / EC",
-        description: "Check runoff tomorrow.",
-        priority: "high",
-        sourceToolRunId: TOOL_RUN_ID
-      });
+    const res = await request(app).post("/api/personal/tasks").send({
+      growId: GROW_ID,
+      plantId: PLANT_ID,
+      title: "Retest pH / EC",
+      description: "Check runoff tomorrow.",
+      priority: "high",
+      sourceToolRunId: TOOL_RUN_ID
+    });
 
     expect(res.status).toBe(201);
     expect(res.body.task).toMatchObject({
@@ -392,7 +552,11 @@ describe("Personal grow workspace routes", () => {
         facilityId: `personal:${TEST_USER}`,
         deletedAt: null
       },
-      expect.objectContaining({ title: "Water and inspect", notes: "After", status: "DONE" }),
+      expect.objectContaining({
+        title: "Water and inspect",
+        notes: "After",
+        status: "DONE"
+      }),
       { new: true }
     );
     expect(mockTask.findOneAndUpdate).toHaveBeenCalledWith(

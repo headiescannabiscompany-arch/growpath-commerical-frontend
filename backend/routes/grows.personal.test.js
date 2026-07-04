@@ -1,5 +1,6 @@
 const request = require("supertest");
 const express = require("express");
+const liveTestPacks = require("../../tests/fixtures/growpath-live-test-packs.json");
 
 const TEST_USER = "507f191e810c19729de860aa";
 const GROW_ID = "507f1f77bcf86cd799439011";
@@ -49,6 +50,12 @@ function doc(row) {
       return value;
     }
   };
+}
+
+function livePack(accountType) {
+  const pack = liveTestPacks.packs.find((item) => item.accountType === accountType);
+  if (!pack) throw new Error(`Missing ${accountType} live test pack`);
+  return pack;
 }
 
 describe("Personal grows route", () => {
@@ -152,5 +159,80 @@ describe("Personal grows route", () => {
       deletedAt: null
     });
     expect(grow.save).toHaveBeenCalled();
+  });
+
+  test("runs Bruce Banner live pack through personal grow creation and external photo attachment", async () => {
+    const pack = livePack("personal");
+    const weekZeroPhotos = pack.weeklyLogs[0].photos.map(
+      (photo) => photo.photoSourceLink
+    );
+    const harvestPhotos = pack.weeklyLogs
+      .find((log) => log.stage === "harvest")
+      .photos.slice(0, 3)
+      .map((photo) => photo.photoSourceLink);
+
+    mockGrow.create.mockResolvedValue(
+      doc({
+        _id: GROW_ID,
+        user: TEST_USER,
+        userId: TEST_USER,
+        name: pack.grow.cultivar,
+        title: pack.grow.cultivar,
+        stage: "germination",
+        cultivar: pack.grow.cultivar,
+        strain: pack.grow.cultivar,
+        potSize: pack.grow.potSize,
+        notes: pack.grow.cocoPreparation,
+        photos: weekZeroPhotos
+      })
+    );
+
+    const create = await request(createApp()).post("/api/grows").send({
+      name: pack.title,
+      stage: "germination",
+      cultivar: pack.grow.cultivar,
+      potSize: pack.grow.potSize,
+      notes: pack.grow.cocoPreparation,
+      photos: weekZeroPhotos
+    });
+
+    expect(create.status).toBe(201);
+    expect(mockGrow.create).toHaveBeenCalledWith(
+      expect.objectContaining({
+        user: TEST_USER,
+        userId: TEST_USER,
+        title: pack.title,
+        name: pack.title,
+        stage: "germination",
+        strain: pack.grow.cultivar,
+        cultivar: pack.grow.cultivar,
+        potSize: pack.grow.potSize,
+        notes: pack.grow.cocoPreparation,
+        photos: weekZeroPhotos
+      })
+    );
+    expect(create.body.grow.photos).toEqual(weekZeroPhotos);
+
+    const grow = doc({
+      _id: GROW_ID,
+      userId: TEST_USER,
+      name: pack.title,
+      photo: weekZeroPhotos[0],
+      photoUrl: weekZeroPhotos[0],
+      photos: weekZeroPhotos
+    });
+    mockGrow.findOne.mockResolvedValue(grow);
+
+    const append = await request(createApp())
+      .patch(`/api/grows/${GROW_ID}/photos`)
+      .send({ photos: [...weekZeroPhotos.slice(0, 1), ...harvestPhotos] });
+
+    expect(append.status).toBe(200);
+    expect(append.body.grow.photos).toEqual([...weekZeroPhotos, ...harvestPhotos]);
+    expect(append.body.grow.photos.every((url) => url.includes("TODO_SOURCE"))).toBe(
+      true
+    );
+    expect(append.body.grow).not.toHaveProperty("uploadedAssetUri");
+    expect(append.body.grow).not.toHaveProperty("localFilePath");
   });
 });

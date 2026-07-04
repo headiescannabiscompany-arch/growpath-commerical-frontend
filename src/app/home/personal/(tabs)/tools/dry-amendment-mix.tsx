@@ -30,6 +30,7 @@ export default function DryAmendmentMixToolScreen() {
       subtitle="Blend guaranteed-analysis ingredients, estimate achieved NPK, and group release timing."
       fields={[
         { key: "recipeName", label: "Recipe name", defaultValue: "Dry amendment blend" },
+        { key: "desiredStage", label: "Desired stage", defaultValue: "veg" },
         { key: "ingredientA", label: "Ingredient A", defaultValue: "Alfalfa meal" },
         {
           key: "amountA",
@@ -59,6 +60,7 @@ export default function DryAmendmentMixToolScreen() {
         growId: growId || undefined,
         ...plantContext.toolRunContext,
         recipeName: values.recipeName,
+        desiredStage: values.desiredStage,
         ingredients: [
           ingredient(
             values.ingredientA,
@@ -91,7 +93,37 @@ export default function DryAmendmentMixToolScreen() {
           key: "dose",
           label: "Dose / ft3",
           value: `${outputs.dosePerCubicFoot ?? "-"} g`
+        },
+        {
+          key: "stageFit",
+          label: "Stage fit",
+          value: outputs.stageFit
         }
+      ]}
+      buildNotices={(outputs) => [
+        ...(Array.isArray(outputs.stageTimingWarnings)
+          ? outputs.stageTimingWarnings.map((message: string, index: number) => ({
+              key: `stage-${index}`,
+              severity: "medium" as const,
+              message
+            }))
+          : []),
+        ...(Array.isArray(outputs.compatibilityWarnings)
+          ? outputs.compatibilityWarnings.map((message: string, index: number) => ({
+              key: `compat-${index}`,
+              severity: "medium" as const,
+              message
+            }))
+          : []),
+        ...(outputs.deliveryCurve?.explanation
+          ? [
+              {
+                key: "delivery",
+                severity: "info" as const,
+                message: outputs.deliveryCurve.explanation
+              }
+            ]
+          : [])
       ]}
       defaultLogTitle={(outputs) =>
         `${outputs.recipeName || "Dry amendment blend"} built`

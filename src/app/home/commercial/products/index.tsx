@@ -1,0 +1,579 @@
+import { Link } from "expo-router";
+import React, { useEffect, useMemo, useState } from "react";
+import { Pressable, StyleSheet, Text, TextInput, View } from "react-native";
+
+import { createProduct, fetchProducts, Product } from "@/api/products";
+import { InlineError } from "@/components/InlineError";
+import AppCard from "@/components/layout/AppCard";
+import AppPage from "@/components/layout/AppPage";
+import { useAuth } from "@/auth/AuthContext";
+import { useEntitlements } from "@/entitlements";
+
+type ProductForm = {
+  name: string;
+  category: string;
+  shortDescription: string;
+  price: string;
+  currency: string;
+  sku: string;
+  externalPurchaseUrl: string;
+  status: "draft" | "published";
+};
+
+const EMPTY_FORM: ProductForm = {
+  name: "",
+  category: "soil_mix",
+  shortDescription: "",
+  price: "",
+  currency: "USD",
+  sku: "",
+  externalPurchaseUrl: "",
+  status: "draft"
+};
+
+function productId(product: Product) {
+  return product.id || (product as any)._id || product.sku || product.name;
+}
+
+function parsePrice(value: string) {
+  const parsed = Number(value);
+  return Number.isFinite(parsed) && parsed >= 0 ? parsed : undefined;
+}
+
+function ActionLink({ href, label }: { href: string; label: string }) {
+  return (
+    <Link href={href as any} asChild>
+      <Pressable accessibilityRole="button" style={styles.action}>
+        <Text style={styles.actionText}>{label}</Text>
+      </Pressable>
+    </Link>
+  );
+}
+
+export default function CommercialProductsRoute() {
+  const auth = useAuth();
+  const ent = useEntitlements();
+  const [products, setProducts] = useState<Product[]>([]);
+  const [form, setForm] = useState<ProductForm>(EMPTY_FORM);
+  const [loading, setLoading] = useState(false);
+  const [saving, setSaving] = useState(false);
+  const [error, setError] = useState<any>(null);
+
+  const publishedCount = useMemo(
+    () => products.filter((product) => product.status === "published").length,
+    [products]
+  );
+  const draftCount = Math.max(0, products.length - publishedCount);
+  const externalLinkCount = useMemo(
+    () => products.filter((product) => (product as any).externalPurchaseUrl).length,
+    [products]
+  );
+
+  async function loadProducts() {
+    setLoading(true);
+    setError(null);
+    try {
+      setProducts(await fetchProducts());
+    } catch (err) {
+      setError(err);
+    } finally {
+      setLoading(false);
+    }
+  }
+
+  useEffect(() => {
+    loadProducts();
+  }, []);
+
+  async function submitProduct() {
+    if (!form.name.trim()) return;
+    setSaving(true);
+    setError(null);
+    try {
+      await createProduct({
+        name: form.name.trim(),
+        category: form.category.trim() || "other",
+        shortDescription: form.shortDescription.trim(),
+        description: form.shortDescription.trim(),
+        price: parsePrice(form.price),
+        currency: form.currency.trim() || "USD",
+        sku: form.sku.trim(),
+        externalPurchaseUrl: form.externalPurchaseUrl.trim(),
+        status: form.status
+      } as Partial<Product>);
+      setForm(EMPTY_FORM);
+      await loadProducts();
+    } catch (err) {
+      setError(err);
+    } finally {
+      setSaving(false);
+    }
+  }
+
+  return (
+    <AppPage
+      routeKey="commercial-products"
+      longContent
+      header={
+        <View style={styles.header}>
+          <View style={styles.headerText}>
+            <Text style={styles.kicker}>Commercial workspace</Text>
+            <Text style={styles.title}>Products</Text>
+            <Text style={styles.subtitle}>
+              Commercial products need images, descriptions, links, use instructions,
+              related trials, related courses, and storefront visibility.
+            </Text>
+            <Text style={styles.accountLine}>
+              {[auth.user?.email, `${ent.plan || "commercial"} plan`]
+                .filter(Boolean)
+                .join(" | ")}
+            </Text>
+          </View>
+          <View style={styles.headerActions}>
+            <ActionLink href="/home/commercial/product-lines" label="Product Lines" />
+            <ActionLink href="/home/commercial/storefront" label="Storefront" />
+            <ActionLink href="/home/commercial/batch-planner" label="Batch Planner" />
+          </View>
+        </View>
+      }
+    >
+      <AppCard>
+        <Text style={styles.cardTitle}>Product catalog</Text>
+        <Text style={styles.body}>
+          Products are business-facing records, not generic inventory rows. They can link
+          to inventory, recipes, batches, grow trials, courses, feed posts, and external
+          purchase URLs.
+        </Text>
+        <View style={styles.metricGrid}>
+          <View style={styles.metric}>
+            <Text style={styles.metricValue}>{products.length}</Text>
+            <Text style={styles.metricLabel}>Products</Text>
+          </View>
+          <View style={styles.metric}>
+            <Text style={styles.metricValue}>{publishedCount}</Text>
+            <Text style={styles.metricLabel}>Published</Text>
+          </View>
+          <View style={styles.metric}>
+            <Text style={styles.metricValue}>{draftCount}</Text>
+            <Text style={styles.metricLabel}>Draft/private</Text>
+          </View>
+          <View style={styles.metric}>
+            <Text style={styles.metricValue}>{externalLinkCount}</Text>
+            <Text style={styles.metricLabel}>External links</Text>
+          </View>
+        </View>
+        {loading ? <Text style={styles.muted}>Loading products...</Text> : null}
+        {error ? <InlineError error={error} /> : null}
+      </AppCard>
+
+      <AppCard>
+        <Text style={styles.cardTitle}>Create product</Text>
+        <Text style={styles.body}>
+          Create the product shell here, then connect formulas, batches, trial grows,
+          courses, feed posts, and support threads as evidence comes in.
+        </Text>
+        <View style={styles.formGrid}>
+          <TextInput
+            value={form.name}
+            onChangeText={(name) => setForm((prev) => ({ ...prev, name }))}
+            accessibilityLabel="Commercial product name"
+            placeholder="Product name"
+            style={styles.input}
+          />
+          <TextInput
+            value={form.category}
+            onChangeText={(category) => setForm((prev) => ({ ...prev, category }))}
+            accessibilityLabel="Commercial product category"
+            placeholder="Category: soil_mix, nutrient, plant, equipment..."
+            style={styles.input}
+          />
+          <TextInput
+            value={form.sku}
+            onChangeText={(sku) => setForm((prev) => ({ ...prev, sku }))}
+            accessibilityLabel="Commercial product SKU"
+            placeholder="SKU"
+            style={styles.input}
+          />
+          <TextInput
+            value={form.price}
+            onChangeText={(price) => setForm((prev) => ({ ...prev, price }))}
+            accessibilityLabel="Commercial product price"
+            keyboardType="decimal-pad"
+            placeholder="Price"
+            style={styles.input}
+          />
+          <TextInput
+            value={form.currency}
+            onChangeText={(currency) => setForm((prev) => ({ ...prev, currency }))}
+            accessibilityLabel="Commercial product currency"
+            placeholder="Currency"
+            style={styles.input}
+          />
+          <TextInput
+            value={form.externalPurchaseUrl}
+            onChangeText={(externalPurchaseUrl) =>
+              setForm((prev) => ({ ...prev, externalPurchaseUrl }))
+            }
+            accessibilityLabel="Commercial product external purchase URL"
+            placeholder="External purchase URL"
+            style={styles.input}
+          />
+        </View>
+        <TextInput
+          value={form.shortDescription}
+          onChangeText={(shortDescription) =>
+            setForm((prev) => ({ ...prev, shortDescription }))
+          }
+          accessibilityLabel="Commercial product short description"
+          multiline
+          placeholder="Short public description, use case, and product context"
+          style={[styles.input, styles.textArea]}
+        />
+        <View style={styles.actions}>
+          <Pressable
+            accessibilityRole="button"
+            accessibilityLabel="Create commercial product"
+            disabled={saving || !form.name.trim()}
+            onPress={submitProduct}
+            style={[
+              styles.primaryAction,
+              saving || !form.name.trim() ? styles.disabled : null
+            ]}
+          >
+            <Text style={styles.primaryActionText}>
+              {saving ? "Creating..." : "Create Product"}
+            </Text>
+          </Pressable>
+          <Pressable
+            accessibilityRole="button"
+            accessibilityLabel="Toggle commercial product publish status"
+            onPress={() =>
+              setForm((prev) => ({
+                ...prev,
+                status: prev.status === "published" ? "draft" : "published"
+              }))
+            }
+            style={styles.action}
+          >
+            <Text style={styles.actionText}>
+              Status: {form.status === "published" ? "Published" : "Draft"}
+            </Text>
+          </Pressable>
+        </View>
+      </AppCard>
+
+      <AppCard>
+        <Text style={styles.cardTitle}>Current products</Text>
+        {products.length ? (
+          <View style={styles.list}>
+            {products.map((product) => {
+              const id = productId(product);
+              return (
+                <View key={id} style={styles.productRow}>
+                  <View style={styles.productMain}>
+                    <Text style={styles.productTitle}>
+                      {product.name || "Untitled product"}
+                    </Text>
+                    <Text style={styles.productMeta}>
+                      {[
+                        (product as any).category,
+                        product.sku && `SKU ${product.sku}`,
+                        product.status || "draft",
+                        (product as any).externalPurchaseUrl ? "external link" : null
+                      ]
+                        .filter(Boolean)
+                        .join(" | ")}
+                    </Text>
+                    {product.description || (product as any).shortDescription ? (
+                      <Text style={styles.productDescription}>
+                        {(product as any).shortDescription || product.description}
+                      </Text>
+                    ) : null}
+                  </View>
+                  <View style={styles.rowActions}>
+                    <ActionLink
+                      href={`/home/commercial/products/${encodeURIComponent(String(id))}`}
+                      label="Open Detail"
+                    />
+                    <ActionLink
+                      href={`/store/example-brand/products/${id}`}
+                      label="Public Detail"
+                    />
+                    <ActionLink href="/home/commercial/feed" label="Post Update" />
+                  </View>
+                </View>
+              );
+            })}
+          </View>
+        ) : (
+          <Text style={styles.muted}>No products yet.</Text>
+        )}
+      </AppCard>
+
+      <AppCard>
+        <Text style={styles.cardTitle}>Public product page workflow</Text>
+        <Text style={styles.body}>
+          Published products should be inspectable from public storefronts and public
+          brand profiles. Users should be able to move from feed to brand profile to
+          product detail to external purchase or support.
+        </Text>
+        <Text style={styles.bullet}>
+          Public product detail route: /store/:slug/products/:productId
+        </Text>
+        <Text style={styles.bullet}>
+          Support product photos, description, price, external purchase link, usage
+          instructions, warnings, courses, trials, and support links
+        </Text>
+        <Text style={styles.bullet}>
+          Product cards should link to Details instead of dead-ending in a storefront list
+        </Text>
+        <Text style={styles.bullet}>
+          Storefront and brand profile should both expose featured products
+        </Text>
+        <View style={styles.actions}>
+          <ActionLink href="/store" label="Public Store Directory" />
+          <ActionLink href="/home/commercial/feed" label="Create Feed Post" />
+        </View>
+      </AppCard>
+
+      <AppCard>
+        <Text style={styles.cardTitle}>Soil and nutrient product path</Text>
+        <Text style={styles.body}>
+          For soil, dry amendment, and nutrient products, the product record should
+          connect to formula, guaranteed analysis, release timing, batch records, trial
+          grows, and long-term effectiveness notes.
+        </Text>
+        <Text style={styles.bullet}>Build formula in Soil & Nutrient Batch Planner</Text>
+        <Text style={styles.bullet}>Link formula/batch to product and product line</Text>
+        <Text style={styles.bullet}>
+          Run product trial grow and record pH/EC, vigor, diagnosis events, harvest,
+          dry/cure, aroma/flavor
+        </Text>
+        <Text style={styles.bullet}>
+          Publish only supported claims as product proof, courses, or feed updates
+        </Text>
+        <View style={styles.actions}>
+          <ActionLink href="/home/commercial/batch-planner" label="Batch Planner" />
+          <ActionLink href="/home/commercial/trials" label="Product Trials" />
+        </View>
+      </AppCard>
+
+      <AppCard>
+        <Text style={styles.cardTitle}>Garden center and retail product path</Text>
+        <Text style={styles.body}>
+          Retailers and garden centers need plant/product inventory plus public product
+          education. This workflow must not assume every product is cannabis-specific.
+        </Text>
+        <Text style={styles.bullet}>
+          Houseplants, vegetable starts, trees/shrubs, soils, fertilizers, tools, and
+          seasonal products
+        </Text>
+        <Text style={styles.bullet}>
+          Attach care instructions, course links, photos, and external purchase URLs
+        </Text>
+        <Text style={styles.bullet}>
+          Publish seasonal feed posts and support answers from product records
+        </Text>
+        <View style={styles.actions}>
+          <ActionLink href="/home/commercial/inventory" label="Inventory" />
+          <ActionLink href="/home/commercial/courses" label="Courses" />
+        </View>
+      </AppCard>
+
+      <AppCard>
+        <Text style={styles.cardTitle}>Inventory is support, not the product model</Text>
+        <Text style={styles.body}>
+          Inventory tracks stock. Product records explain and sell the item. Storefront
+          should feature Products and Product Lines, not raw inventory rows.
+        </Text>
+        <View style={styles.actions}>
+          <ActionLink href="/home/commercial/inventory" label="Open Inventory" />
+        </View>
+      </AppCard>
+    </AppPage>
+  );
+}
+
+const styles = StyleSheet.create({
+  header: {
+    flexDirection: "row",
+    flexWrap: "wrap",
+    gap: 16,
+    justifyContent: "space-between"
+  },
+  headerText: {
+    flex: 1,
+    minWidth: 260
+  },
+  headerActions: {
+    alignContent: "flex-start",
+    flexDirection: "row",
+    flexWrap: "wrap",
+    gap: 8,
+    maxWidth: 440
+  },
+  kicker: {
+    color: "#166534",
+    fontSize: 12,
+    fontWeight: "900",
+    textTransform: "uppercase"
+  },
+  title: {
+    color: "#0F172A",
+    fontSize: 28,
+    fontWeight: "900",
+    marginTop: 4
+  },
+  subtitle: {
+    color: "#475569",
+    fontSize: 15,
+    lineHeight: 22,
+    marginTop: 6
+  },
+  accountLine: {
+    color: "#64748B",
+    fontSize: 13,
+    marginTop: 8
+  },
+  cardTitle: {
+    color: "#0F172A",
+    fontSize: 17,
+    fontWeight: "900"
+  },
+  body: {
+    color: "#475569",
+    fontSize: 14,
+    lineHeight: 21,
+    marginTop: 8
+  },
+  metricGrid: {
+    flexDirection: "row",
+    flexWrap: "wrap",
+    gap: 8,
+    marginTop: 12
+  },
+  metric: {
+    borderColor: "#E2E8F0",
+    borderRadius: 8,
+    borderWidth: 1,
+    minWidth: 120,
+    padding: 9
+  },
+  metricValue: {
+    color: "#0F172A",
+    fontSize: 18,
+    fontWeight: "900"
+  },
+  metricLabel: {
+    color: "#64748B",
+    fontSize: 12,
+    marginTop: 2
+  },
+  formGrid: {
+    flexDirection: "row",
+    flexWrap: "wrap",
+    gap: 8,
+    marginTop: 12
+  },
+  input: {
+    borderColor: "#CBD5E1",
+    borderRadius: 8,
+    borderWidth: 1,
+    color: "#0F172A",
+    flexGrow: 1,
+    fontSize: 14,
+    minWidth: 220,
+    paddingHorizontal: 10,
+    paddingVertical: 9
+  },
+  textArea: {
+    minHeight: 80,
+    marginTop: 8,
+    textAlignVertical: "top"
+  },
+  actions: {
+    flexDirection: "row",
+    flexWrap: "wrap",
+    gap: 8,
+    marginTop: 12
+  },
+  action: {
+    backgroundColor: "#FFFFFF",
+    borderColor: "#166534",
+    borderRadius: 8,
+    borderWidth: 1,
+    paddingHorizontal: 11,
+    paddingVertical: 8
+  },
+  actionText: {
+    color: "#166534",
+    fontSize: 13,
+    fontWeight: "900"
+  },
+  primaryAction: {
+    backgroundColor: "#166534",
+    borderRadius: 8,
+    paddingHorizontal: 12,
+    paddingVertical: 9
+  },
+  primaryActionText: {
+    color: "#FFFFFF",
+    fontSize: 13,
+    fontWeight: "900"
+  },
+  disabled: {
+    opacity: 0.5
+  },
+  list: {
+    gap: 10,
+    marginTop: 12
+  },
+  productRow: {
+    borderColor: "#E2E8F0",
+    borderRadius: 8,
+    borderWidth: 1,
+    flexDirection: "row",
+    flexWrap: "wrap",
+    gap: 10,
+    justifyContent: "space-between",
+    padding: 10
+  },
+  productMain: {
+    flex: 1,
+    minWidth: 240
+  },
+  productTitle: {
+    color: "#0F172A",
+    fontSize: 15,
+    fontWeight: "900"
+  },
+  productMeta: {
+    color: "#64748B",
+    fontSize: 12,
+    fontWeight: "700",
+    marginTop: 3
+  },
+  productDescription: {
+    color: "#475569",
+    fontSize: 13,
+    lineHeight: 19,
+    marginTop: 6
+  },
+  rowActions: {
+    alignContent: "flex-start",
+    flexDirection: "row",
+    flexWrap: "wrap",
+    gap: 8
+  },
+  bullet: {
+    color: "#334155",
+    fontSize: 13,
+    lineHeight: 19,
+    marginTop: 6
+  },
+  muted: {
+    color: "#64748B",
+    fontSize: 13,
+    marginTop: 10
+  }
+});

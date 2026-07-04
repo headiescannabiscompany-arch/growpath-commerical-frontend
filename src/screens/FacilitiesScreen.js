@@ -3,7 +3,7 @@ import { View, Text, FlatList, TouchableOpacity } from "react-native";
 
 export default function FacilitiesScreen() {
   const facilities = [
-    { id: "1", name: "Living Soil Labs" },
+    { id: "1", name: "GrowPath Demo Facility" },
     { id: "2", name: "Triple Bag Genetics" }
   ];
 

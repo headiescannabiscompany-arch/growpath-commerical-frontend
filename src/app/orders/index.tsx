@@ -320,7 +320,9 @@ export default function Orders() {
         <View>
           <Text style={styles.headerTitle}>Orders</Text>
           <Text style={styles.headerSubtitle}>
-            Track storefront revenue and fulfill customer purchases.
+            Track internal storefront purchases when checkout is enabled. If products use
+            external purchase links, use analytics and inquiries instead of treating this
+            page as fulfillment.
           </Text>
         </View>
       }
@@ -367,7 +369,9 @@ export default function Orders() {
           <AppCard style={styles.emptyCard}>
             <Text style={styles.cardTitle}>No Orders Yet</Text>
             <Text style={styles.cardDesc}>
-              Paid storefront orders will appear here when customers complete checkout.
+              Paid internal storefront orders will appear here when customers complete
+              checkout. External product links should be measured through product views,
+              link clicks, and inquiries.
             </Text>
           </AppCard>
         ) : null}

@@ -55,12 +55,11 @@ export type CalculatorTool =
   | "run-comparison"
   | "auto-grow-calendar"
   | "tissue-culture"
-  | "living-soil-batch"
+  | "soil-nutrient-batch"
   | "ipm-scout"
-  | "species-crop-id"
   | "genetics-inventory"
   | "harvest-readiness"
-  | "personal-inventory"
+  | "species-crop-id"
   | "crop-steering-project"
   | "pheno-hunt";
 

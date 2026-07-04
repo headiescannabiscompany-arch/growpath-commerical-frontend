@@ -163,11 +163,39 @@ function applyFacilityRoleCapabilities(
   }
 }
 
-function applyUniversalCapabilities(normalized: Record<string, boolean>) {
+export function applyUniversalCapabilities(normalized: Record<string, boolean>) {
   normalized[CAPABILITY_KEYS.COURSES_VIEW] = true;
   normalized[CAPABILITY_KEYS.SEE_PAID_COURSES] = true;
+  normalized[CAPABILITY_KEYS.COURSES_CREATE] = true;
+  normalized[CAPABILITY_KEYS.COURSES_SELL_PAID] = true;
   normalized[CAPABILITY_KEYS.FORUM_VIEW] = true;
   normalized[CAPABILITY_KEYS.FORUM_POST] = true;
+}
+
+export function applyDefaultCourseLimits(
+  limits: Record<string, any>,
+  plan: string | null
+): Record<string, any> {
+  const next = { ...limits };
+  const normalizedPlan = String(plan || "free")
+    .trim()
+    .toLowerCase();
+
+  if (next.maxPaidCourses === undefined || next.maxPaidCourses === null) {
+    if (normalizedPlan === "free") next.maxPaidCourses = 1;
+    else if (normalizedPlan === "pro" || normalizedPlan === "personal") {
+      next.maxPaidCourses = 5;
+    }
+  }
+
+  if (next.maxLessonsPerCourse === undefined || next.maxLessonsPerCourse === null) {
+    if (normalizedPlan === "free") next.maxLessonsPerCourse = 7;
+    else if (normalizedPlan === "pro" || normalizedPlan === "personal") {
+      next.maxLessonsPerCourse = 20;
+    }
+  }
+
+  return next;
 }
 
 export function applyPlanCapabilities(
@@ -329,7 +357,10 @@ function applyServerCtx(
     selectedFacilityId: facilityId, // Alias
     facilityRole,
     capabilities: normalized,
-    limits: ctx?.limits && typeof ctx.limits === "object" ? ctx.limits : {}
+    limits: applyDefaultCourseLimits(
+      ctx?.limits && typeof ctx.limits === "object" ? ctx.limits : {},
+      plan
+    )
   };
 }
 
@@ -369,8 +400,15 @@ export function EntitlementsProvider({ children }: { children: React.ReactNode }
         mode: "personal",
         plan: "free",
         facilityId: null,
-        capabilities: {},
-        limits: {}
+        capabilities: {
+          [CAPABILITY_KEYS.COURSES_VIEW]: true,
+          [CAPABILITY_KEYS.SEE_PAID_COURSES]: true,
+          [CAPABILITY_KEYS.COURSES_CREATE]: true,
+          [CAPABILITY_KEYS.COURSES_SELL_PAID]: true,
+          [CAPABILITY_KEYS.FORUM_VIEW]: true,
+          [CAPABILITY_KEYS.FORUM_POST]: true
+        },
+        limits: applyDefaultCourseLimits({}, "free")
       });
       setPreferredModeState(null);
       lastAppliedRef.current = "NO_TOKEN";

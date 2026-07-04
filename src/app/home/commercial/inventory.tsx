@@ -41,10 +41,14 @@ function pickTitle(x: AnyRec): string {
 function pickSubtitle(x: AnyRec): string {
   const qty = quantityOf(x);
   const unit = x?.unit ?? x?.uom ?? "";
-  const cat = x?.category ?? x?.type ?? "";
+  const cat = x?.category ?? "";
+  const type = x?.itemType ?? x?.type ?? "";
+  const location = x?.location ?? x?.storageLocation ?? "";
   const a = `On hand: ${String(qty)}${unit ? ` ${unit}` : ""}`;
   const b = cat ? `Category: ${String(cat)}` : "";
-  return [a, b].filter(Boolean).join(" -  ");
+  const c = type ? `Type: ${String(type)}` : "";
+  const d = location ? `Location: ${String(location)}` : "";
+  return [a, b, c, d].filter(Boolean).join(" -  ");
 }
 
 function quantityOf(x: AnyRec): number {
@@ -186,6 +190,15 @@ export default function CommercialInventoryRoute() {
           </View>
         </View>
 
+        <View style={styles.guideCard}>
+          <Text style={styles.guideTitle}>Commercial inventory scope</Text>
+          <Text style={styles.guideText}>
+            Track stock for products, ingredients, packaging, plants, genetics, equipment,
+            courses, services, and retail items. Product records still hold public copy,
+            photos, use instructions, links, and trial evidence.
+          </Text>
+        </View>
+
         <FlatList
           data={sorted}
           keyExtractor={(it, idx) => pickId(it) || String(idx)}
@@ -298,6 +311,16 @@ const styles = StyleSheet.create({
   summaryLabel: { color: "#1e40af", fontSize: 12, fontWeight: "800" },
   warnText: { color: "#b45309" },
   dangerText: { color: "#991b1b" },
+  guideCard: {
+    backgroundColor: "#F8FAFC",
+    borderColor: "#E2E8F0",
+    borderRadius: 12,
+    borderWidth: 1,
+    gap: 4,
+    padding: 12
+  },
+  guideTitle: { color: "#0F172A", fontWeight: "900" },
+  guideText: { color: "#475569", fontSize: 13, fontWeight: "700", lineHeight: 19 },
 
   list: { paddingVertical: 6, gap: 10 },
 

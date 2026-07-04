@@ -41,7 +41,35 @@ export default function IpmScoutToolRoute() {
         { key: "issue", label: "Issue", value: outputs.suspectedIssue },
         { key: "organism", label: "Organism", value: outputs.suspectedOrganism },
         { key: "severity", label: "Severity", value: outputs.severity },
-        { key: "confidence", label: "Confidence", value: outputs.confidence }
+        { key: "confidence", label: "Confidence", value: outputs.confidence },
+        {
+          key: "verification",
+          label: "GPT check",
+          value: outputs.gptVerification?.status || "pending"
+        },
+        {
+          key: "record",
+          label: "Saved as",
+          value: outputs.documentation?.savedAs || "ToolRun"
+        }
+      ]}
+      buildNotices={(outputs) => [
+        ...(Array.isArray(outputs.warnings)
+          ? outputs.warnings.map((message: string, index: number) => ({
+              key: `warning-${index}`,
+              severity: "medium" as const,
+              message
+            }))
+          : []),
+        ...(outputs.gptVerification?.status
+          ? [
+              {
+                key: "gpt-verification",
+                severity: "info" as const,
+                message: `GPT verification status: ${outputs.gptVerification.status}. Save this ToolRun so the GrowPathAI scout answer and GPT review can be documented together.`
+              }
+            ]
+          : [])
       ]}
       defaultLogTitle={(outputs) =>
         `IPM scout: ${outputs.suspectedIssue || "inspection"}`

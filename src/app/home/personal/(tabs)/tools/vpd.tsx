@@ -20,6 +20,7 @@ import ToolResultSurface, {
 import { saveToolRunAndOpenJournal } from "@/features/personal/tools/saveToolRunAndOpenJournal";
 import { buildVpdNotices } from "@/features/personal/tools/vpdNotices";
 import { calcVpdFromTemp, type TempUnit } from "@/tools/vpd";
+import PersonalFeedPlacement from "@/components/feed/PersonalFeedPlacement";
 
 type VpdModel =
   | { valid: false; vpd: null; tempC: null }
@@ -135,6 +136,11 @@ export default function VpdToolScreen() {
         <View style={styles.lockedCard}>
           <Text style={styles.lockedTitle}>Tool unavailable</Text>
           <Text style={styles.subtitle}>This account does not have `TOOLS_VPD`.</Text>
+          <PersonalFeedPlacement
+            placement="top"
+            routeKey="personal_tools_vpd"
+            longContent
+          />
         </View>
       </View>
     );
@@ -147,6 +153,7 @@ export default function VpdToolScreen() {
       <Text style={styles.subtitle}>
         Enter temperature ({unit === "F" ? "°F" : "°C"}) and RH (%).
       </Text>
+      <PersonalFeedPlacement placement="top" routeKey="personal_tools_vpd" longContent />
       {growId ? <Text style={styles.context}>Grow context: {growId}</Text> : null}
 
       <ToolPlantContextPicker
@@ -217,6 +224,12 @@ export default function VpdToolScreen() {
         ))}
       </View>
 
+      <PersonalFeedPlacement
+        placement="middle"
+        routeKey="personal_tools_vpd"
+        longContent
+      />
+
       <ToolResultSurface
         title="VPD result"
         status={
@@ -281,6 +294,12 @@ export default function VpdToolScreen() {
             ? "Select a grow context to enable journal and task actions."
             : undefined
         }
+      />
+
+      <PersonalFeedPlacement
+        placement="bottom"
+        routeKey="personal_tools_vpd"
+        longContent
       />
     </ScrollView>
   );

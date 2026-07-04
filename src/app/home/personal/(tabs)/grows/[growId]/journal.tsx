@@ -16,6 +16,7 @@ import { listToolRuns } from "@/api/toolRuns";
 import GrowWorkspaceNav from "@/components/personal/GrowWorkspaceNav";
 import { coerceParam, fmtDate } from "@/features/grows/routeUtils";
 import { buildGrowTimeline, type GrowTimelineItem } from "@/features/grows/timeline";
+import PersonalFeedPlacement from "@/components/feed/PersonalFeedPlacement";
 
 const styles = StyleSheet.create({
   container: { flex: 1, padding: 20, backgroundColor: "#FFFFFF" },
@@ -122,6 +123,11 @@ export default function GrowJournalScreen() {
       <Text style={styles.subtitle}>
         Timeline of logs, tool results, and tasks for this grow.
       </Text>
+      <PersonalFeedPlacement
+        placement="top"
+        routeKey="personal_grows_growid_journal"
+        longContent
+      />
       <GrowWorkspaceNav growId={growId} active="journal" />
 
       <Link href={`/home/personal/logs/new?growId=${encodeURIComponent(growId)}`} asChild>
@@ -156,6 +162,12 @@ export default function GrowJournalScreen() {
           );
         })}
       </View>
+
+      <PersonalFeedPlacement
+        placement="middle"
+        routeKey="personal_grows_growid_journal"
+        longContent
+      />
 
       {loading ? (
         <View style={styles.card}>
@@ -197,6 +209,12 @@ export default function GrowJournalScreen() {
           );
         })
       )}
+
+      <PersonalFeedPlacement
+        placement="bottom"
+        routeKey="personal_grows_growid_journal"
+        longContent
+      />
     </ScrollView>
   );
 }

@@ -1,11 +1,21 @@
 import React, { useCallback, useState } from "react";
 import { useFocusEffect } from "@react-navigation/native";
 import { Link } from "expo-router";
-import { ActivityIndicator, Pressable, StyleSheet, Text, View } from "react-native";
+import {
+  ActivityIndicator,
+  Pressable,
+  ScrollView,
+  StyleSheet,
+  Text,
+  View
+} from "react-native";
 import { listPersonalGrows } from "@/api/grows";
+import PersonalFeedPlacement from "@/components/feed/PersonalFeedPlacement";
+import { CAPABILITY_KEYS, useEntitlements } from "@/entitlements";
 
 const styles = StyleSheet.create({
   container: { flex: 1, padding: 20, backgroundColor: "#FFFFFF" },
+  content: { paddingBottom: 32 },
   header: { marginBottom: 16 },
   title: { fontSize: 24, fontWeight: "700", marginBottom: 6 },
   subtitle: { fontSize: 14, color: "#64748B" },
@@ -51,9 +61,13 @@ const styles = StyleSheet.create({
 });
 
 export default function GrowsListScreen() {
+  const entitlements = useEntitlements();
+  const hasCreateCapability = entitlements.can(CAPABILITY_KEYS.GROWS_PERSONAL_WRITE);
   const [grows, setGrows] = useState<any[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState("");
+  const maxGrows = Number(entitlements.limits?.maxGrows ?? 0);
+  const canCreateGrow = hasCreateCapability || (!loading && maxGrows > grows.length);
 
   const load = useCallback(async () => {
     setLoading(true);
@@ -76,13 +90,18 @@ export default function GrowsListScreen() {
   );
 
   return (
-    <View testID="screen-personal-grows" style={styles.container}>
+    <ScrollView
+      testID="screen-personal-grows"
+      style={styles.container}
+      contentContainerStyle={styles.content}
+    >
       <View style={styles.header}>
         <Text style={styles.title}>Grows</Text>
         <Text style={styles.subtitle}>
           Grows are the parent object for journal entries, tool runs, and tasks.
         </Text>
       </View>
+      <PersonalFeedPlacement placement="top" routeKey="personal_grows" longContent />
 
       {loading ? (
         <View style={styles.panel}>
@@ -98,11 +117,21 @@ export default function GrowsListScreen() {
           {error ? (
             <Text style={[styles.panelText, { marginTop: 8 }]}>{error}</Text>
           ) : null}
-          <Link href="/home/personal/grows/new" asChild>
-            <Pressable testID="btn-create-first-grow" style={styles.cta}>
-              <Text style={styles.ctaText}>+ New Grow</Text>
-            </Pressable>
-          </Link>
+          {canCreateGrow ? (
+            <Link href="/home/personal/grows/new" asChild>
+              <Pressable testID="btn-create-first-grow" style={styles.cta}>
+                <Text style={styles.ctaText}>+ New Grow</Text>
+              </Pressable>
+            </Link>
+          ) : (
+            <View style={styles.panel}>
+              <Text style={styles.panelTitle}>Create grows with Pro</Text>
+              <Text style={styles.panelText}>
+                Free accounts can browse the workspace and tools. Upgrade to create and
+                save personal grow records.
+              </Text>
+            </View>
+          )}
         </View>
       ) : (
         <View>
@@ -139,13 +168,25 @@ export default function GrowsListScreen() {
             );
           })}
 
-          <Link href="/home/personal/grows/new" asChild>
-            <Pressable testID="btn-new-grow" style={styles.cta}>
-              <Text style={styles.ctaText}>+ New Grow</Text>
-            </Pressable>
-          </Link>
+          {canCreateGrow ? (
+            <Link href="/home/personal/grows/new" asChild>
+              <Pressable testID="btn-new-grow" style={styles.cta}>
+                <Text style={styles.ctaText}>+ New Grow</Text>
+              </Pressable>
+            </Link>
+          ) : (
+            <View style={styles.panel}>
+              <Text style={styles.panelTitle}>Create grows with Pro</Text>
+              <Text style={styles.panelText}>
+                Free accounts can browse saved grows. Upgrade to create and save personal
+                grow records.
+              </Text>
+            </View>
+          )}
         </View>
       )}
-    </View>
+      <PersonalFeedPlacement placement="middle" routeKey="personal_grows" longContent />
+      <PersonalFeedPlacement placement="bottom" routeKey="personal_grows" longContent />
+    </ScrollView>
   );
 }

@@ -21,6 +21,7 @@ import { endpoints } from "@/api/endpoints";
 import { CAPABILITY_KEYS, useEntitlements } from "@/entitlements";
 import { useApiErrorHandler } from "@/hooks/useApiErrorHandler";
 import { persistImageUri } from "@/utils/photoUploads";
+import { currentPublicUrl } from "@/utils/publicLinks";
 
 type AnyRec = Record<string, any>;
 
@@ -76,17 +77,30 @@ export default function Storefront() {
     description: "",
     logoUrl: "",
     bannerUrl: "",
+    websiteUrl: "",
+    supportEmail: "",
+    socialLinksText: "",
     isPublished: false
   });
   const [productDraft, setProductDraft] = useState({
     name: "",
     sku: "",
+    category: "",
+    shortDescription: "",
     description: "",
     price: "",
     currency: "usd",
     status: "draft",
     inventoryItemId: "",
-    imageUrl: ""
+    imageUrl: "",
+    externalPurchaseUrl: "",
+    usageInstructions: "",
+    warnings: "",
+    productLineId: "",
+    linkedRecipeId: "",
+    linkedBatchId: "",
+    linkedGrowTrialId: "",
+    linkedCourseId: ""
   });
 
   const load = useCallback(
@@ -127,9 +141,20 @@ export default function Storefront() {
       description: String(storefront.description ?? ""),
       logoUrl: String(storefront.logoUrl ?? ""),
       bannerUrl: String(storefront.bannerUrl ?? ""),
+      websiteUrl: String(storefront.websiteUrl ?? ""),
+      supportEmail: String(storefront.supportEmail ?? ""),
+      socialLinksText: Array.isArray(storefront.socialLinks)
+        ? storefront.socialLinks
+            .map((link: AnyRec) => [link.label, link.url].filter(Boolean).join(": "))
+            .join("\n")
+        : String(storefront.socialLinksText ?? ""),
       isPublished: Boolean(storefront.isPublished)
     });
   }, [storefront]);
+
+  const publicSlug = storeDraft.slug.trim() || "your-brand";
+  const publicProfilePath = `/brands/${publicSlug}`;
+  const publicStorePath = `/store/${publicSlug}`;
 
   async function saveStorefront() {
     if (!canEdit) return;
@@ -203,12 +228,22 @@ export default function Storefront() {
         body: {
           name: productDraft.name.trim(),
           sku: productDraft.sku.trim() || undefined,
+          category: productDraft.category.trim() || undefined,
+          shortDescription: productDraft.shortDescription.trim() || undefined,
           description: productDraft.description.trim() || undefined,
           price: Number.isFinite(priceNumber) ? priceNumber : 0,
           currency: productDraft.currency.trim() || "usd",
           status: productDraft.status === "published" ? "published" : "draft",
           inventoryItemId: productDraft.inventoryItemId.trim() || undefined,
-          imageUrl: productDraft.imageUrl.trim() || undefined
+          imageUrl: productDraft.imageUrl.trim() || undefined,
+          externalPurchaseUrl: productDraft.externalPurchaseUrl.trim() || undefined,
+          usageInstructions: productDraft.usageInstructions.trim() || undefined,
+          warnings: productDraft.warnings.trim() || undefined,
+          productLineId: productDraft.productLineId.trim() || undefined,
+          linkedRecipeId: productDraft.linkedRecipeId.trim() || undefined,
+          linkedBatchId: productDraft.linkedBatchId.trim() || undefined,
+          linkedGrowTrialId: productDraft.linkedGrowTrialId.trim() || undefined,
+          linkedCourseId: productDraft.linkedCourseId.trim() || undefined
         }
       });
       const created = res?.product ?? res;
@@ -216,12 +251,22 @@ export default function Storefront() {
       setProductDraft({
         name: "",
         sku: "",
+        category: "",
+        shortDescription: "",
         description: "",
         price: "",
         currency: "usd",
         status: "draft",
         inventoryItemId: "",
-        imageUrl: ""
+        imageUrl: "",
+        externalPurchaseUrl: "",
+        usageInstructions: "",
+        warnings: "",
+        productLineId: "",
+        linkedRecipeId: "",
+        linkedBatchId: "",
+        linkedGrowTrialId: "",
+        linkedCourseId: ""
       });
       setFeedback("Product created.");
     } catch (e) {
@@ -293,6 +338,37 @@ export default function Storefront() {
             }
             accessibilityLabel="Storefront description"
             placeholder="Storefront description"
+            multiline
+            style={[styles.input, styles.notesInput]}
+          />
+          <TextInput
+            value={storeDraft.websiteUrl}
+            onChangeText={(websiteUrl) =>
+              setStoreDraft((draft) => ({ ...draft, websiteUrl }))
+            }
+            accessibilityLabel="Storefront website URL"
+            placeholder="Website or shop URL"
+            autoCapitalize="none"
+            style={styles.input}
+          />
+          <TextInput
+            value={storeDraft.supportEmail}
+            onChangeText={(supportEmail) =>
+              setStoreDraft((draft) => ({ ...draft, supportEmail }))
+            }
+            accessibilityLabel="Storefront support email"
+            placeholder="Support email"
+            autoCapitalize="none"
+            keyboardType="email-address"
+            style={styles.input}
+          />
+          <TextInput
+            value={storeDraft.socialLinksText}
+            onChangeText={(socialLinksText) =>
+              setStoreDraft((draft) => ({ ...draft, socialLinksText }))
+            }
+            accessibilityLabel="Storefront social links"
+            placeholder="Social links, one per line"
             multiline
             style={[styles.input, styles.notesInput]}
           />
@@ -405,6 +481,33 @@ export default function Storefront() {
         </AppCard>
 
         <AppCard>
+          <Text style={styles.cardTitle}>Public Discovery</Text>
+          <Text style={styles.helperText}>
+            Free, Pro, commercial, and facility users can reach this brand from feed
+            posts, forum replies, course pages, product cards, and public search surfaces.
+            Storefronts should make it easy to view similar brands, return to the feed,
+            open support discussions, and follow external product links.
+          </Text>
+          <View style={styles.publicLinkBox}>
+            <Text style={styles.publicLinkLabel}>Brand profile</Text>
+            <Text selectable style={styles.publicLinkText}>
+              {currentPublicUrl(publicProfilePath)}
+            </Text>
+          </View>
+          <View style={styles.publicLinkBox}>
+            <Text style={styles.publicLinkLabel}>Store page</Text>
+            <Text selectable style={styles.publicLinkText}>
+              {currentPublicUrl(publicStorePath)}
+            </Text>
+          </View>
+          <View style={styles.discoveryActions}>
+            <Text style={styles.discoveryAction}>View similar brands</Text>
+            <Text style={styles.discoveryAction}>Return to feed</Text>
+            <Text style={styles.discoveryAction}>Open forum/support discussions</Text>
+          </View>
+        </AppCard>
+
+        <AppCard>
           <Text style={styles.cardTitle}>Create Product</Text>
           <TextInput
             value={productDraft.name}
@@ -421,12 +524,50 @@ export default function Storefront() {
             style={styles.input}
           />
           <TextInput
+            value={productDraft.category}
+            onChangeText={(category) =>
+              setProductDraft((draft) => ({ ...draft, category }))
+            }
+            accessibilityLabel="Product category"
+            placeholder="Category, e.g. soil mix, dry amendment, houseplant"
+            style={styles.input}
+          />
+          <TextInput
+            value={productDraft.shortDescription}
+            onChangeText={(shortDescription) =>
+              setProductDraft((draft) => ({ ...draft, shortDescription }))
+            }
+            accessibilityLabel="Product short description"
+            placeholder="Short public summary"
+            style={styles.input}
+          />
+          <TextInput
             value={productDraft.description}
             onChangeText={(description) =>
               setProductDraft((draft) => ({ ...draft, description }))
             }
             accessibilityLabel="Product description"
             placeholder="Product description"
+            multiline
+            style={[styles.input, styles.notesInput]}
+          />
+          <TextInput
+            value={productDraft.usageInstructions}
+            onChangeText={(usageInstructions) =>
+              setProductDraft((draft) => ({ ...draft, usageInstructions }))
+            }
+            accessibilityLabel="Product usage instructions"
+            placeholder="Usage instructions, application rate, or care guidance"
+            multiline
+            style={[styles.input, styles.notesInput]}
+          />
+          <TextInput
+            value={productDraft.warnings}
+            onChangeText={(warnings) =>
+              setProductDraft((draft) => ({ ...draft, warnings }))
+            }
+            accessibilityLabel="Product warnings"
+            placeholder="Warnings, stage limits, legal notes, or safety notes"
             multiline
             style={[styles.input, styles.notesInput]}
           />
@@ -449,6 +590,16 @@ export default function Storefront() {
             style={styles.input}
           />
           <TextInput
+            value={productDraft.externalPurchaseUrl}
+            onChangeText={(externalPurchaseUrl) =>
+              setProductDraft((draft) => ({ ...draft, externalPurchaseUrl }))
+            }
+            accessibilityLabel="Product external purchase URL"
+            placeholder="External purchase URL"
+            autoCapitalize="none"
+            style={styles.input}
+          />
+          <TextInput
             value={productDraft.inventoryItemId}
             onChangeText={(inventoryItemId) =>
               setProductDraft((draft) => ({ ...draft, inventoryItemId }))
@@ -458,6 +609,58 @@ export default function Storefront() {
             autoCapitalize="none"
             style={styles.input}
           />
+          <TextInput
+            value={productDraft.productLineId}
+            onChangeText={(productLineId) =>
+              setProductDraft((draft) => ({ ...draft, productLineId }))
+            }
+            accessibilityLabel="Product line id"
+            placeholder="Product line id"
+            autoCapitalize="none"
+            style={styles.input}
+          />
+          <View style={styles.linkGrid}>
+            <TextInput
+              value={productDraft.linkedRecipeId}
+              onChangeText={(linkedRecipeId) =>
+                setProductDraft((draft) => ({ ...draft, linkedRecipeId }))
+              }
+              accessibilityLabel="Linked recipe id"
+              placeholder="Linked recipe id"
+              autoCapitalize="none"
+              style={[styles.input, styles.linkInput]}
+            />
+            <TextInput
+              value={productDraft.linkedBatchId}
+              onChangeText={(linkedBatchId) =>
+                setProductDraft((draft) => ({ ...draft, linkedBatchId }))
+              }
+              accessibilityLabel="Linked batch id"
+              placeholder="Linked batch id"
+              autoCapitalize="none"
+              style={[styles.input, styles.linkInput]}
+            />
+            <TextInput
+              value={productDraft.linkedGrowTrialId}
+              onChangeText={(linkedGrowTrialId) =>
+                setProductDraft((draft) => ({ ...draft, linkedGrowTrialId }))
+              }
+              accessibilityLabel="Linked grow trial id"
+              placeholder="Linked grow/trial id"
+              autoCapitalize="none"
+              style={[styles.input, styles.linkInput]}
+            />
+            <TextInput
+              value={productDraft.linkedCourseId}
+              onChangeText={(linkedCourseId) =>
+                setProductDraft((draft) => ({ ...draft, linkedCourseId }))
+              }
+              accessibilityLabel="Linked course id"
+              placeholder="Linked course id"
+              autoCapitalize="none"
+              style={[styles.input, styles.linkInput]}
+            />
+          </View>
           {inventory.length ? (
             <View style={styles.chipRow}>
               {inventory.slice(0, 6).map((item) => {
@@ -577,6 +780,13 @@ export default function Storefront() {
                       {String(product.currency || "usd").toUpperCase()} |{" "}
                       {product.status || "draft"}
                     </Text>
+                    {product.category || product.shortDescription ? (
+                      <Text style={styles.muted}>
+                        {[product.category, product.shortDescription]
+                          .filter(Boolean)
+                          .join(" | ")}
+                      </Text>
+                    ) : null}
                     {product.inventoryItem ? (
                       <Text style={styles.muted}>
                         Linked inventory: {product.inventoryItem.name}
@@ -584,6 +794,25 @@ export default function Storefront() {
                     ) : product.inventoryItemId ? (
                       <Text style={styles.muted}>
                         Linked inventory: {String(product.inventoryItemId)}
+                      </Text>
+                    ) : null}
+                    {product.externalPurchaseUrl ? (
+                      <Text style={styles.muted}>External purchase link added</Text>
+                    ) : null}
+                    {product.linkedRecipeId ||
+                    product.linkedBatchId ||
+                    product.linkedGrowTrialId ||
+                    product.linkedCourseId ? (
+                      <Text style={styles.muted}>
+                        Linked evidence:{" "}
+                        {[
+                          product.linkedRecipeId && "recipe",
+                          product.linkedBatchId && "batch",
+                          product.linkedGrowTrialId && "trial",
+                          product.linkedCourseId && "course"
+                        ]
+                          .filter(Boolean)
+                          .join(", ")}
                       </Text>
                     ) : null}
                   </View>
@@ -649,6 +878,32 @@ const styles = StyleSheet.create({
   },
   notesInput: { minHeight: 76, textAlignVertical: "top" },
   imageActions: { flexDirection: "row", flexWrap: "wrap", gap: 8 },
+  helperText: {
+    color: "#475569",
+    fontSize: 13,
+    fontWeight: "700",
+    lineHeight: 19,
+    marginTop: 8
+  },
+  publicLinkBox: {
+    backgroundColor: "#F8FAFC",
+    borderColor: "rgba(15,23,42,0.12)",
+    borderRadius: 10,
+    borderWidth: 1,
+    marginTop: 10,
+    padding: 10
+  },
+  publicLinkLabel: { color: "#64748B", fontSize: 12, fontWeight: "900" },
+  publicLinkText: {
+    color: "#0F172A",
+    fontSize: 13,
+    fontWeight: "800",
+    marginTop: 4
+  },
+  discoveryActions: { gap: 6, marginTop: 10 },
+  discoveryAction: { color: "#0F172A", fontSize: 13, fontWeight: "800" },
+  linkGrid: { flexDirection: "row", flexWrap: "wrap", gap: 8 },
+  linkInput: { flexBasis: "48%", flexGrow: 1 },
   logoPreview: {
     backgroundColor: "#F1F5F9",
     borderColor: "rgba(0,0,0,0.14)",

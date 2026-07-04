@@ -17,6 +17,7 @@ import {
   saveToolRunAndCreateTask,
   saveToolRunResult
 } from "@/features/personal/tools/saveToolRunAndOpenJournal";
+import PersonalFeedPlacement from "@/components/feed/PersonalFeedPlacement";
 
 const initialCandidates: PhenoCandidateInput[] = [
   {
@@ -187,6 +188,11 @@ export default function PhenoMatrixScreen() {
           <Text style={styles.subtitle}>
             This account does not have `TOOL_PHENO_MATRIX`.
           </Text>
+          <PersonalFeedPlacement
+            placement="top"
+            routeKey="personal_tools_pheno_matrix"
+            longContent
+          />
         </View>
       </ScrollView>
     );
@@ -200,6 +206,11 @@ export default function PhenoMatrixScreen() {
         Score candidate plants from 0 to 10, adjust trait weights, and rank keeper
         selections.
       </Text>
+      <PersonalFeedPlacement
+        placement="top"
+        routeKey="personal_tools_pheno_matrix"
+        longContent
+      />
       {growId ? <Text style={styles.context}>Grow context: {growId}</Text> : null}
 
       <View style={styles.section}>
@@ -299,6 +310,12 @@ export default function PhenoMatrixScreen() {
         ))}
       </View>
 
+      <PersonalFeedPlacement
+        placement="middle"
+        routeKey="personal_tools_pheno_matrix"
+        longContent
+      />
+
       <View style={styles.section}>
         <ToolResultSurface
           title="Pheno matrix result"
@@ -364,6 +381,12 @@ export default function PhenoMatrixScreen() {
           copyPayload={matrixOutput}
         />
       </View>
+
+      <PersonalFeedPlacement
+        placement="bottom"
+        routeKey="personal_tools_pheno_matrix"
+        longContent
+      />
     </ScrollView>
   );
 }

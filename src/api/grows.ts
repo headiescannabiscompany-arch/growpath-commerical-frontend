@@ -7,6 +7,9 @@ export type Grow = {
   id: string;
   name?: string;
   createdAt?: string;
+  photo?: string;
+  photoUrl?: string;
+  photos?: string[];
   // Add fields as your backend defines them (keep optional to avoid UI breakage during migration)
 };
 
@@ -116,4 +119,21 @@ export async function getPersonalGrowTimeline(
     console.error("[getPersonalGrowTimeline] Error:", err);
     return [];
   }
+}
+
+export async function appendGrowPhotos(
+  growId: string,
+  photos: string[]
+): Promise<PersonalGrow | null> {
+  const id = String(growId || "").trim();
+  const photoUrls = (Array.isArray(photos) ? photos : [])
+    .map((photo) => String(photo || "").trim())
+    .filter(Boolean);
+  if (!id || !photoUrls.length) return null;
+
+  const res = await apiRequest(`/api/grows/${encodeURIComponent(id)}/photos`, {
+    method: "PATCH",
+    body: { photos: photoUrls }
+  });
+  return (res as any)?.grow ?? (res as any)?.data?.grow ?? (res as any) ?? null;
 }

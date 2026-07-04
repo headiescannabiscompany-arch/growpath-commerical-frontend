@@ -13,6 +13,7 @@ import {
 import { getPersonalGrowTimeline, type PersonalGrowTimelineEvent } from "@/api/grows";
 import GrowWorkspaceNav from "@/components/personal/GrowWorkspaceNav";
 import { coerceParam, fmtDate } from "@/features/grows/routeUtils";
+import PersonalFeedPlacement from "@/components/feed/PersonalFeedPlacement";
 
 const FILTERS = [
   { key: "all", label: "All" },
@@ -235,6 +236,11 @@ export default function GrowTimelineScreen() {
       <Text style={styles.subtitle}>
         Saved logs, photos, tasks, tool runs, diagnoses, and automation events.
       </Text>
+      <PersonalFeedPlacement
+        placement="top"
+        routeKey="personal_grows_growid_timeline"
+        longContent
+      />
       <GrowWorkspaceNav growId={growId} active="timeline" />
 
       <View style={styles.filterRow}>
@@ -256,6 +262,12 @@ export default function GrowTimelineScreen() {
 
       {loading ? <ActivityIndicator /> : null}
       {error ? <Text style={styles.error}>{error}</Text> : null}
+
+      <PersonalFeedPlacement
+        placement="middle"
+        routeKey="personal_grows_growid_timeline"
+        longContent
+      />
 
       {!loading && !visibleEvents.length ? (
         <Text style={styles.empty}>
@@ -300,6 +312,12 @@ export default function GrowTimelineScreen() {
           ) : null}
         </View>
       ))}
+
+      <PersonalFeedPlacement
+        placement="bottom"
+        routeKey="personal_grows_growid_timeline"
+        longContent
+      />
     </ScrollView>
   );
 }

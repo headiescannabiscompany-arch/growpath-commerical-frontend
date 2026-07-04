@@ -41,6 +41,7 @@ import {
   type NutrientEnvironment
 } from "@/features/personal/tools/nutrientChemistry/engine";
 import { nutrientContextState } from "@/features/personal/tools/nutrientContext";
+import PersonalFeedPlacement from "@/components/feed/PersonalFeedPlacement";
 
 function coerceParam(value?: string | string[]) {
   if (typeof value === "string") return value;
@@ -336,6 +337,11 @@ export default function NutrientChemistryToolScreen() {
       <Text style={styles.subtitle}>
         Classify source form, release speed, pH effect, and fast vs slow use case.
       </Text>
+      <PersonalFeedPlacement
+        placement="top"
+        routeKey="personal_tools_nutrient_chemistry"
+        longContent
+      />
       {growId ? <Text style={styles.context}>Grow context: {growId}</Text> : null}
       <ToolPlantContextPicker
         plants={plantContext.plants}
@@ -531,6 +537,12 @@ export default function NutrientChemistryToolScreen() {
           ))}
         </View>
       ) : null}
+
+      <PersonalFeedPlacement
+        placement="middle"
+        routeKey="personal_tools_nutrient_chemistry"
+        longContent
+      />
 
       <View style={styles.panel}>
         <Text style={styles.sectionTitle}>Recommended sources</Text>
@@ -847,6 +859,12 @@ export default function NutrientChemistryToolScreen() {
         )}
         {savedMessage ? <Text style={styles.helperText}>{savedMessage}</Text> : null}
       </View>
+
+      <PersonalFeedPlacement
+        placement="bottom"
+        routeKey="personal_tools_nutrient_chemistry"
+        longContent
+      />
     </ScrollView>
   );
 }

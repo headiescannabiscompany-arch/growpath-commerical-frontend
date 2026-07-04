@@ -4,6 +4,7 @@ import { Pressable, ScrollView, StyleSheet, Text, TextInput, View } from "react-
 import { Picker } from "@react-native-picker/picker";
 
 import BackButton from "@/components/nav/BackButton";
+import { LockedScreen } from "@/entitlements/LockedScreen";
 import { CAPABILITY_KEYS, useEntitlements } from "@/entitlements";
 import {
   ToolPlantContextPicker,
@@ -26,6 +27,7 @@ import {
   buildNutrientContextAssumption,
   buildNutrientContextNotices
 } from "@/features/personal/tools/nutrientContext";
+import PersonalFeedPlacement from "@/components/feed/PersonalFeedPlacement";
 
 type ProductRow = {
   id: string;
@@ -296,14 +298,10 @@ export default function NpkToolScreen() {
 
   if (!enabled) {
     return (
-      <ScrollView style={styles.container} contentContainerStyle={styles.content}>
-        <BackButton />
-        <Text style={styles.title}>NPK Label Ratio (Preview)</Text>
-        <View style={styles.lockedCard}>
-          <Text style={styles.productTitle}>Tool unavailable</Text>
-          <Text style={styles.fieldHint}>This account does not have `TOOL_NPK`.</Text>
-        </View>
-      </ScrollView>
+      <LockedScreen
+        title="NPK Label Ratio is a Pro tool"
+        message="Free accounts can use core tools and browse the app. Upgrade to calculate NPK recipes and save results to grow history."
+      />
     );
   }
 
@@ -315,6 +313,7 @@ export default function NpkToolScreen() {
         Build up to 20 product rows. Fertilizer label P and K are converted from P2O5 and
         K2O to elemental ppm.
       </Text>
+      <PersonalFeedPlacement placement="top" routeKey="personal_tools_npk" longContent />
       {growContext ? (
         <Text style={styles.context}>Grow context: {growContext}</Text>
       ) : null}
@@ -666,6 +665,12 @@ export default function NpkToolScreen() {
       ) : null}
 
       {result ? (
+        <>
+          <PersonalFeedPlacement
+            placement="middle"
+            routeKey="personal_tools_npk"
+            longContent
+          />
         <ToolResultSurface
           title="NPK recipe result"
           status="CALCULATED"
@@ -841,7 +846,14 @@ export default function NpkToolScreen() {
             !growContext ? "Select a grow to enable journal and task actions." : undefined
           }
         />
+        </>
       ) : null}
+
+      <PersonalFeedPlacement
+        placement="bottom"
+        routeKey="personal_tools_npk"
+        longContent
+      />
     </ScrollView>
   );
 }

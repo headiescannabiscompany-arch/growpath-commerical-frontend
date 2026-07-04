@@ -24,6 +24,7 @@ import {
 } from "@/api/communitySocial";
 import { ScreenBoundary } from "@/components/ScreenBoundary";
 import { CAPABILITY_KEYS, useEntitlements } from "@/entitlements";
+import PersonalFeedPlacement from "@/components/feed/PersonalFeedPlacement";
 
 type CommentRow = {
   id?: string;
@@ -246,6 +247,11 @@ export default function ForumPostDetailRoute() {
             {post ? (
               <>
                 <Text style={styles.title}>{titleOf(post)}</Text>
+                <PersonalFeedPlacement
+                  placement="top"
+                  routeKey="personal_forum_post_id"
+                  longContent
+                />
                 <Text style={styles.meta}>
                   {authorName(post)}
                   {post.createdAt
@@ -298,6 +304,14 @@ export default function ForumPostDetailRoute() {
         ) : null}
 
         {canView ? (
+          <PersonalFeedPlacement
+            placement="middle"
+            routeKey="personal_forum_post_id"
+            longContent
+          />
+        ) : null}
+
+        {canView ? (
           <View style={styles.card}>
             <Text style={styles.cardTitle}>Comments</Text>
             {canPost ? (
@@ -344,6 +358,12 @@ export default function ForumPostDetailRoute() {
             ) : null}
           </View>
         ) : null}
+
+        <PersonalFeedPlacement
+          placement="bottom"
+          routeKey="personal_forum_post_id"
+          longContent
+        />
       </ScrollView>
     </ScreenBoundary>
   );

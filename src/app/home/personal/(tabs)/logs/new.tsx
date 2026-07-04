@@ -14,6 +14,8 @@ import {
 import { suggestLogInsights } from "@/api/logInsights";
 import { createPersonalLog } from "@/api/logs";
 import { listToolRuns } from "@/api/toolRuns";
+import PersonalFeedPlacement from "@/components/feed/PersonalFeedPlacement";
+import { LockedScreen } from "@/entitlements/LockedScreen";
 import { CAPABILITY_KEYS, useEntitlements } from "@/entitlements";
 import {
   normalizeLogInsightSuggestions,
@@ -48,6 +50,7 @@ export default function NewLogScreen() {
   const initialPlantId = param(params.plantId);
   const queryToolRunId = param(params.toolRunId);
   const entitlements = useEntitlements();
+  const canCreateLog = entitlements.can(CAPABILITY_KEYS.LOGS_PERSONAL_WRITE);
   const { plants, plantId, selectedPlant, setPlantId, toolRunContext } =
     useToolPlantContext(growId, initialPlantId);
 
@@ -254,12 +257,24 @@ export default function NewLogScreen() {
     setRejectedTags([]);
   }
 
+  if (!canCreateLog) {
+    return (
+      <LockedScreen
+        title="Create journal entries with Pro"
+        message="Free accounts can browse grow history and use free tools. Upgrade to save journal entries, photos, and AI-assisted log notes."
+        actionLabel="Back"
+        onAction={() => router.back()}
+      />
+    );
+  }
+
   return (
     <ScrollView style={styles.container} contentContainerStyle={styles.content}>
       <Text style={styles.title}>New Journal Entry</Text>
       <Text style={styles.subtitle}>
         {growId ? `Grow context: ${growId}` : "No grow selected"}
       </Text>
+      <PersonalFeedPlacement placement="top" routeKey="personal_new_log" longContent />
       {error ? <Text style={styles.error}>{error}</Text> : null}
 
       <ToolPlantContextPicker
@@ -387,6 +402,7 @@ export default function NewLogScreen() {
           {analyzing ? "Analyzing..." : "Suggest Tags and Summary"}
         </Text>
       </Pressable>
+      <PersonalFeedPlacement placement="middle" routeKey="personal_new_log" longContent />
       {!entitlements.can(CAPABILITY_KEYS.DIAGNOSE_AI) ? (
         <Text style={styles.helper}>AI suggestions are unavailable for this plan.</Text>
       ) : null}
@@ -499,6 +515,7 @@ export default function NewLogScreen() {
           {saving ? "Saving..." : "Create Log"}
         </Text>
       </Pressable>
+      <PersonalFeedPlacement placement="bottom" routeKey="personal_new_log" longContent />
     </ScrollView>
   );
 }

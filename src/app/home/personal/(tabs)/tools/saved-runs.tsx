@@ -26,12 +26,12 @@ import ToolResultSurface, {
   type ToolResultMetric,
   type ToolResultNotice
 } from "@/features/personal/tools/ToolResultSurface";
+import PersonalFeedPlacement from "@/components/feed/PersonalFeedPlacement";
 
 const TOOL_FILTERS = [
   { label: "All", value: "" },
   { label: "IPM", value: "ipm_scout" },
   { label: "Harvest", value: "harvest_readiness" },
-  { label: "Inventory", value: "personal_inventory" },
   { label: "Pheno", value: "pheno_hunt" },
   { label: "Steering", value: "crop_steering_project" },
   { label: "NPK", value: "npk_recipe" },
@@ -201,6 +201,11 @@ export default function SavedToolRunsScreen() {
         <Text style={styles.subtitle}>
           Reopen, annotate, archive, and continue from saved GrowPathAI results.
         </Text>
+        <PersonalFeedPlacement
+          placement="top"
+          routeKey="personal_tools_saved_runs"
+          longContent
+        />
         {growId ? <Text style={styles.context}>Grow context: {growId}</Text> : null}
       </View>
 
@@ -278,6 +283,12 @@ export default function SavedToolRunsScreen() {
         </View>
       ) : null}
 
+      <PersonalFeedPlacement
+        placement="middle"
+        routeKey="personal_tools_saved_runs"
+        longContent
+      />
+
       {selectedRun ? (
         <ToolResultSurface
           title={`${runTitle(selectedRun)} result`}
@@ -298,6 +309,12 @@ export default function SavedToolRunsScreen() {
       ) : feedback ? (
         <Text style={styles.feedback}>{feedback}</Text>
       ) : null}
+
+      <PersonalFeedPlacement
+        placement="bottom"
+        routeKey="personal_tools_saved_runs"
+        longContent
+      />
     </ScrollView>
   );
 }

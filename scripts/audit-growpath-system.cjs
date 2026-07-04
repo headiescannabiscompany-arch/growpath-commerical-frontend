@@ -102,7 +102,13 @@ const MODULES = [
   {
     phase: "Soil & Nutrients",
     name: "Soil Builder",
-    keywords: ["soil builder", "soil_mix", "basePercent", "compostPercent", "aerationPercent"],
+    keywords: [
+      "soil builder",
+      "soil_mix",
+      "basePercent",
+      "compostPercent",
+      "aerationPercent"
+    ],
     required: ["route", "recipe", "task", "timeline"]
   },
   {
@@ -148,13 +154,6 @@ const MODULES = [
     name: "Organism Library",
     keywords: ["OrganismProfile", "organism", "beneficialOrPest"],
     required: ["model", "sources", "ui"]
-  },
-  {
-    phase: "Diagnosis / IPM / Crop ID",
-    name: "Species / Crop Identification",
-    route: "/home/personal/tools/species-crop-id",
-    keywords: ["species", "crop identification", "likelyCrop", "cropProfileSuggestion"],
-    required: ["route", "confirmation", "crop-profile-link"]
   },
   {
     phase: "Genetics / Pheno / Stress",
@@ -227,22 +226,20 @@ const MODULES = [
   },
   {
     phase: "Business / Production",
-    name: "Inventory",
-    route: "/home/personal/tools/inventory",
-    keywords: ["inventory", "lowStock", "reorder"],
-    required: ["model", "api", "ui", "recipe-links"]
-  },
-  {
-    phase: "Business / Production",
-    name: "Living Soil Labs / Batch Production",
-    route: "/home/personal/tools/living-soil-batch",
-    keywords: ["Living Soil Labs", "batch production", "ingredientPullSheet", "costPerBag"],
+    name: "Soil & Nutrient Batch Planner",
+    route: "/home/personal/tools/soil-nutrient-batch",
+    keywords: ["batch production", "ingredientPullSheet", "costPerBag"],
     required: ["recipe-links", "inventory", "tasks", "costing"]
   },
   {
     phase: "Facility",
     name: "Facility Insights Summary",
-    keywords: ["facility insights", "activeGrowsCount", "overdueTasksCount", "latestToolRuns"],
+    keywords: [
+      "facility insights",
+      "activeGrowsCount",
+      "overdueTasksCount",
+      "latestToolRuns"
+    ],
     required: ["existing-data-only", "read-only", "tests"]
   }
 ];
@@ -289,7 +286,14 @@ function collectFiles() {
   const testFiles = walk(ROOT).filter((f) => /\.(test|spec)\.[cm]?[jt]sx?$/i.test(f));
   const docs = walk(path.join(ROOT, "docs")).filter((f) => /\.md$/i.test(f));
 
-  const searchable = [...appFiles, ...apiFiles, ...backendRouteFiles, ...backendModelFiles, ...testFiles, ...docs]
+  const searchable = [
+    ...appFiles,
+    ...apiFiles,
+    ...backendRouteFiles,
+    ...backendModelFiles,
+    ...testFiles,
+    ...docs
+  ]
     .filter((f) => fs.existsSync(f))
     .map((file) => ({ file, rel: rel(file), text: read(file) }));
 
@@ -297,7 +301,16 @@ function collectFiles() {
     .map((file) => ({ file: rel(file), route: toRoute(file) }))
     .filter((row) => row.route);
 
-  return { appFiles, apiFiles, backendRouteFiles, backendModelFiles, testFiles, docs, searchable, routes };
+  return {
+    appFiles,
+    apiFiles,
+    backendRouteFiles,
+    backendModelFiles,
+    testFiles,
+    docs,
+    searchable,
+    routes
+  };
 }
 
 function routeSource(routes, route) {
@@ -312,7 +325,9 @@ function routeIsRedirectOnly(routes, route, target) {
   return (
     /\bRedirect\b/.test(source) &&
     source.includes(`href="${target}"`) &&
-    !/\bcreatePersonalTask\b|\bcreatePersonalLog\b|\blistPersonalTasks\b|\blistPersonalLogs\b/.test(source)
+    !/\bcreatePersonalTask\b|\bcreatePersonalLog\b|\blistPersonalTasks\b|\blistPersonalLogs\b/.test(
+      source
+    )
   );
 }
 
@@ -321,7 +336,10 @@ function keywordHits(searchable, keywords) {
   for (const keyword of keywords) {
     const needle = keyword.toLowerCase();
     for (const item of searchable) {
-      if (item.text.toLowerCase().includes(needle) || item.rel.toLowerCase().includes(needle)) {
+      if (
+        item.text.toLowerCase().includes(needle) ||
+        item.rel.toLowerCase().includes(needle)
+      ) {
         hits.push({ keyword, file: item.rel });
       }
     }
@@ -370,7 +388,10 @@ function main() {
     const hits = keywordHits(files.searchable, module.keywords);
     const routeExists = module.route ? routeSet.has(module.route) : false;
     const featureMatches = featureStatus.filter((feature) => {
-      const haystack = [feature.key, feature.title, feature.href].filter(Boolean).join(" ").toLowerCase();
+      const haystack = [feature.key, feature.title, feature.href]
+        .filter(Boolean)
+        .join(" ")
+        .toLowerCase();
       return module.keywords.some((keyword) => haystack.includes(keyword.toLowerCase()));
     });
     return {
@@ -388,8 +409,16 @@ function main() {
 
   const topLevelLogsRouteExists = routeSet.has("/home/personal/logs");
   const topLevelTasksRouteExists = routeSet.has("/home/personal/tasks");
-  const topLevelLogsRedirectOnly = routeIsRedirectOnly(files.routes, "/home/personal/logs", "/home/personal/grows");
-  const topLevelTasksRedirectOnly = routeIsRedirectOnly(files.routes, "/home/personal/tasks", "/home/personal/grows");
+  const topLevelLogsRedirectOnly = routeIsRedirectOnly(
+    files.routes,
+    "/home/personal/logs",
+    "/home/personal/grows"
+  );
+  const topLevelTasksRedirectOnly = routeIsRedirectOnly(
+    files.routes,
+    "/home/personal/tasks",
+    "/home/personal/grows"
+  );
 
   const decisionChecks = {
     topLevelLogsRouteExists,
@@ -401,18 +430,18 @@ function main() {
     facilityInsightsRouteExists:
       [...routeSet].some((route) => /facility.*insights/i.test(route)) ||
       files.searchable.some((file) => file.rel === "backend/routes/facility.insights.js"),
-    commercialAiCopyHits: keywordHits(files.searchable, ["commercial AI", "business helper"])
+    commercialAiCopyHits: keywordHits(files.searchable, [
+      "commercial AI",
+      "business helper"
+    ])
       .filter((hit) => !hit.file.startsWith("docs/build/"))
       .map((hit) => hit.file)
   };
 
-  const summary = moduleRows.reduce(
-    (acc, row) => {
-      acc[row.status] = (acc[row.status] || 0) + 1;
-      return acc;
-    },
-    {}
-  );
+  const summary = moduleRows.reduce((acc, row) => {
+    acc[row.status] = (acc[row.status] || 0) + 1;
+    return acc;
+  }, {});
 
   const report = {
     generatedAt: new Date().toISOString(),
@@ -462,14 +491,22 @@ function main() {
     "| Phase | Module | Status | Route | Evidence files |",
     "| --- | --- | --- | --- | --- |",
     ...moduleRows.map((row) => {
-      const evidence = row.evidenceFiles.length ? row.evidenceFiles.slice(0, 4).join("<br>") : "-";
-      const route = row.expectedRoute ? `${row.expectedRoute} (${row.routeExists ? "found" : "missing"})` : "-";
+      const evidence = row.evidenceFiles.length
+        ? row.evidenceFiles.slice(0, 4).join("<br>")
+        : "-";
+      const route = row.expectedRoute
+        ? `${row.expectedRoute} (${row.routeExists ? "found" : "missing"})`
+        : "-";
       return `| ${row.phase} | ${row.name} | ${row.status} | ${route} | ${evidence} |`;
     }),
     ""
   ];
 
-  fs.writeFileSync(path.join(OUT_DIR, "growpath-system-audit.md"), `${lines.join("\n")}\n`, "utf8");
+  fs.writeFileSync(
+    path.join(OUT_DIR, "growpath-system-audit.md"),
+    `${lines.join("\n")}\n`,
+    "utf8"
+  );
 
   console.log("Wrote:");
   console.log("- tmp/scan/growpath-system-audit.json");

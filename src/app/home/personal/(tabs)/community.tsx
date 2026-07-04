@@ -23,6 +23,7 @@ import {
   type SocialNotification,
   type SocialPost
 } from "@/api/communitySocial";
+import PersonalFeedPlacement from "@/components/feed/PersonalFeedPlacement";
 import { CAPABILITY_KEYS, useEntitlements } from "@/entitlements";
 
 function rowId(row: any) {
@@ -151,6 +152,7 @@ export default function CommunityTab() {
       <Text style={styles.subtitle}>
         Posts, discussions, memberships, and notifications from live community endpoints.
       </Text>
+      <PersonalFeedPlacement placement="top" routeKey="personal_community" longContent />
       {feedback ? <Text style={styles.feedback}>{feedback}</Text> : null}
 
       {!canView ? (
@@ -210,6 +212,11 @@ export default function CommunityTab() {
             })}
             {!posts.length ? <Text style={styles.cardText}>No posts yet.</Text> : null}
           </View>
+          <PersonalFeedPlacement
+            placement="middle"
+            routeKey="personal_community"
+            longContent
+          />
 
           <View style={styles.card}>
             <Text style={styles.cardTitle}>Memberships</Text>
@@ -270,6 +277,11 @@ export default function CommunityTab() {
           </View>
         </>
       ) : null}
+      <PersonalFeedPlacement
+        placement="bottom"
+        routeKey="personal_community"
+        longContent
+      />
     </ScrollView>
   );
 }

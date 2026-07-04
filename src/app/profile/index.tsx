@@ -56,6 +56,7 @@ export default function Profile() {
   const requestedPlan = auth.user?.plan || "free";
   const activePlan = ent.plan || "free";
   const mode = ent.mode || "personal";
+  const isCommercial = mode === "commercial";
   const emailChanged = emailDraft.trim().toLowerCase() !== email.toLowerCase();
   const canSaveEmail = emailDraft.trim().length > 3 && emailChanged && !savingEmail;
   const emailVerified = Boolean(auth.user?.emailVerified);
@@ -307,6 +308,48 @@ export default function Profile() {
           </Pressable>
         </AppCard>
 
+        {isCommercial ? (
+          <AppCard style={styles.card}>
+            <Text style={styles.cardTitle}>Commercial business identity</Text>
+            <Text style={styles.cardText}>
+              Manage the public brand details users see from storefronts, feed posts,
+              forum replies, courses, and product pages.
+            </Text>
+            <View style={styles.factGrid}>
+              <View style={styles.fact}>
+                <Text style={styles.factLabel}>Public profile</Text>
+                <Text style={styles.factValue}>Brand-facing</Text>
+              </View>
+              <View style={styles.fact}>
+                <Text style={styles.factLabel}>Storefront</Text>
+                <Text style={styles.factValue}>Product-facing</Text>
+              </View>
+              <View style={styles.fact}>
+                <Text style={styles.factLabel}>Community</Text>
+                <Text style={styles.factValue}>Brand identity</Text>
+              </View>
+            </View>
+            <View style={styles.actionRow}>
+              <Pressable
+                onPress={() => router.push("/home/commercial/profile")}
+                accessibilityRole="button"
+                accessibilityLabel="Manage commercial business profile"
+                style={styles.secondaryButton}
+              >
+                <Text style={styles.secondaryButtonText}>Business settings</Text>
+              </Pressable>
+              <Pressable
+                onPress={() => router.push("/home/commercial/storefront")}
+                accessibilityRole="button"
+                accessibilityLabel="Manage commercial storefront"
+                style={styles.secondaryButton}
+              >
+                <Text style={styles.secondaryButtonText}>Storefront settings</Text>
+              </Pressable>
+            </View>
+          </AppCard>
+        ) : null}
+
         <AppCard style={styles.card}>
           <Text style={styles.cardTitle}>Account type</Text>
           <Text style={styles.cardText}>
@@ -320,7 +363,7 @@ export default function Profile() {
               accessibilityLabel="Create another account type"
               style={styles.secondaryButton}
             >
-              <Text style={styles.secondaryButtonText}>Create account</Text>
+              <Text style={styles.secondaryButtonText}>Create another account</Text>
             </Pressable>
             <Pressable
               onPress={() => router.push("/onboarding/guilds")}

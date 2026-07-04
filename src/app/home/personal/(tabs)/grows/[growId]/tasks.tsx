@@ -20,6 +20,8 @@ import {
 } from "@/api/tasks";
 import GrowWorkspaceNav from "@/components/personal/GrowWorkspaceNav";
 import { coerceParam, fmtDate, getRowId } from "@/features/grows/routeUtils";
+import PersonalFeedPlacement from "@/components/feed/PersonalFeedPlacement";
+import { CAPABILITY_KEYS, useEntitlements } from "@/entitlements";
 
 const priorities = ["low", "medium", "high"] as const;
 
@@ -109,6 +111,8 @@ const styles = StyleSheet.create({
 });
 
 export default function GrowTasksScreen() {
+  const entitlements = useEntitlements();
+  const canWriteTasks = entitlements.can(CAPABILITY_KEYS.TASK_REMINDERS);
   const { growId: rawGrowId } = useLocalSearchParams<{ growId?: string | string[] }>();
   const growId = useMemo(() => coerceParam(rawGrowId), [rawGrowId]);
 
@@ -175,63 +179,83 @@ export default function GrowTasksScreen() {
     <ScrollView style={styles.container} contentContainerStyle={styles.content}>
       <Text style={styles.title}>Tasks</Text>
       <Text style={styles.subtitle}>Personal grow tasks linked to this grow.</Text>
+      <PersonalFeedPlacement
+        placement="top"
+        routeKey="personal_grows_growid_tasks"
+        longContent
+      />
       <GrowWorkspaceNav growId={growId} active="tasks" />
 
-      <View style={styles.form}>
-        <Text style={styles.label}>Title</Text>
-        <TextInput
-          style={styles.input}
-          placeholder="Add task title"
-          value={newTitle}
-          onChangeText={setNewTitle}
-          accessibilityLabel="Task title"
-        />
-        <Text style={styles.label}>Description</Text>
-        <TextInput
-          style={styles.input}
-          placeholder="What needs to happen?"
-          value={newDescription}
-          onChangeText={setNewDescription}
-          accessibilityLabel="Task description"
-        />
-        <Text style={styles.label}>Due date</Text>
-        <TextInput
-          style={styles.input}
-          placeholder="YYYY-MM-DD or ISO date"
-          value={newDueDate}
-          onChangeText={setNewDueDate}
-          accessibilityLabel="Task due date"
-        />
-        <Text style={styles.label}>Priority</Text>
-        <View style={styles.row}>
-          {priorities.map((priority) => (
-            <Pressable
-              key={priority}
-              style={[styles.chip, newPriority === priority && styles.chipOn]}
-              onPress={() => setNewPriority(priority)}
-              accessibilityRole="button"
-              accessibilityLabel={`Set task priority ${priority}`}
-            >
-              <Text
-                style={[styles.chipText, newPriority === priority && styles.chipTextOn]}
+      {canWriteTasks ? (
+        <View style={styles.form}>
+          <Text style={styles.label}>Title</Text>
+          <TextInput
+            style={styles.input}
+            placeholder="Add task title"
+            value={newTitle}
+            onChangeText={setNewTitle}
+            accessibilityLabel="Task title"
+          />
+          <Text style={styles.label}>Description</Text>
+          <TextInput
+            style={styles.input}
+            placeholder="What needs to happen?"
+            value={newDescription}
+            onChangeText={setNewDescription}
+            accessibilityLabel="Task description"
+          />
+          <Text style={styles.label}>Due date</Text>
+          <TextInput
+            style={styles.input}
+            placeholder="YYYY-MM-DD or ISO date"
+            value={newDueDate}
+            onChangeText={setNewDueDate}
+            accessibilityLabel="Task due date"
+          />
+          <Text style={styles.label}>Priority</Text>
+          <View style={styles.row}>
+            {priorities.map((priority) => (
+              <Pressable
+                key={priority}
+                style={[styles.chip, newPriority === priority && styles.chipOn]}
+                onPress={() => setNewPriority(priority)}
+                accessibilityRole="button"
+                accessibilityLabel={`Set task priority ${priority}`}
               >
-                {priority}
-              </Text>
-            </Pressable>
-          ))}
+                <Text
+                  style={[styles.chipText, newPriority === priority && styles.chipTextOn]}
+                >
+                  {priority}
+                </Text>
+              </Pressable>
+            ))}
+          </View>
+          <Pressable
+            style={[styles.addBtn, (!newTitle.trim() || creating) && { opacity: 0.55 }]}
+            disabled={!newTitle.trim() || creating}
+            accessibilityRole="button"
+            accessibilityLabel="Add task"
+            onPress={createTask}
+          >
+            <Text style={styles.addBtnText}>{creating ? "Adding..." : "Add Task"}</Text>
+          </Pressable>
         </View>
-        <Pressable
-          style={[styles.addBtn, (!newTitle.trim() || creating) && { opacity: 0.55 }]}
-          disabled={!newTitle.trim() || creating}
-          accessibilityRole="button"
-          accessibilityLabel="Add task"
-          onPress={createTask}
-        >
-          <Text style={styles.addBtnText}>{creating ? "Adding..." : "Add Task"}</Text>
-        </Pressable>
-      </View>
+      ) : (
+        <View style={styles.form}>
+          <Text style={styles.label}>Task reminders are Pro</Text>
+          <Text style={styles.taskMeta}>
+            Free accounts can review existing grow tasks. Upgrade to create, complete,
+            reopen, snooze, or archive reminders.
+          </Text>
+        </View>
+      )}
 
       {feedback ? <Text style={styles.taskMeta}>{feedback}</Text> : null}
+      <PersonalFeedPlacement
+        placement="middle"
+        routeKey="personal_grows_growid_tasks"
+        longContent
+      />
 
       {loading ? (
         <View style={styles.card}>
@@ -267,73 +291,81 @@ export default function GrowTasksScreen() {
               {task.recurrence ? (
                 <Text style={styles.taskMeta}>Recurring task</Text>
               ) : null}
-              <View style={styles.actionRow}>
-                {id ? (
-                  <>
-                    <Pressable
-                      style={styles.actionBtn}
-                      accessibilityRole="button"
-                      accessibilityLabel={done ? "Reopen task" : "Complete task"}
-                      onPress={async () => {
-                        const updated = await updatePersonalTask(id, {
-                          completed: !done
-                        });
-                        if (updated) {
-                          setFeedback(done ? "Task reopened." : "Task completed.");
-                          await load();
-                        } else {
-                          setFeedback("Unable to update task.");
-                        }
-                      }}
-                    >
-                      <Text style={styles.actionText}>
-                        {done ? "Reopen" : "Complete"}
-                      </Text>
-                    </Pressable>
-                    {!done ? (
+              {canWriteTasks ? (
+                <View style={styles.actionRow}>
+                  {id ? (
+                    <>
                       <Pressable
                         style={styles.actionBtn}
                         accessibilityRole="button"
-                        accessibilityLabel="Snooze task one day"
+                        accessibilityLabel={done ? "Reopen task" : "Complete task"}
                         onPress={async () => {
-                          const snoozeUntil = new Date(
-                            Date.now() + 86400000
-                          ).toISOString();
-                          const updated = await updatePersonalTask(id, { snoozeUntil });
+                          const updated = await updatePersonalTask(id, {
+                            completed: !done
+                          });
                           if (updated) {
-                            setFeedback("Task snoozed until tomorrow.");
+                            setFeedback(done ? "Task reopened." : "Task completed.");
                             await load();
                           } else {
-                            setFeedback("Unable to snooze task.");
+                            setFeedback("Unable to update task.");
                           }
                         }}
                       >
-                        <Text style={styles.actionText}>Snooze</Text>
+                        <Text style={styles.actionText}>
+                          {done ? "Reopen" : "Complete"}
+                        </Text>
                       </Pressable>
-                    ) : null}
-                    <Pressable
-                      style={styles.dangerBtn}
-                      accessibilityRole="button"
-                      accessibilityLabel="Delete task"
-                      onPress={async () => {
-                        const deleted = await deletePersonalTask(id);
-                        if (deleted) {
-                          setFeedback("Task archived.");
-                          await load();
-                        } else {
-                          setFeedback("Unable to archive task.");
-                        }
-                      }}
-                    >
-                      <Text style={styles.dangerText}>Delete</Text>
-                    </Pressable>
-                  </>
-                ) : null}
-              </View>
+                      {!done ? (
+                        <Pressable
+                          style={styles.actionBtn}
+                          accessibilityRole="button"
+                          accessibilityLabel="Snooze task one day"
+                          onPress={async () => {
+                            const snoozeUntil = new Date(
+                              Date.now() + 86400000
+                            ).toISOString();
+                            const updated = await updatePersonalTask(id, { snoozeUntil });
+                            if (updated) {
+                              setFeedback("Task snoozed until tomorrow.");
+                              await load();
+                            } else {
+                              setFeedback("Unable to snooze task.");
+                            }
+                          }}
+                        >
+                          <Text style={styles.actionText}>Snooze</Text>
+                        </Pressable>
+                      ) : null}
+                      <Pressable
+                        style={styles.dangerBtn}
+                        accessibilityRole="button"
+                        accessibilityLabel="Delete task"
+                        onPress={async () => {
+                          const deleted = await deletePersonalTask(id);
+                          if (deleted) {
+                            setFeedback("Task archived.");
+                            await load();
+                          } else {
+                            setFeedback("Unable to archive task.");
+                          }
+                        }}
+                      >
+                        <Text style={styles.dangerText}>Delete</Text>
+                      </Pressable>
+                    </>
+                  ) : null}
+                </View>
+              ) : null}
             </View>
           );
         })
       )}
+
+      <PersonalFeedPlacement
+        placement="bottom"
+        routeKey="personal_grows_growid_tasks"
+        longContent
+      />
     </ScrollView>
   );
 }

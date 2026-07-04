@@ -6,16 +6,41 @@ export type Campaign = {
   id: string;
   name: string;
   description?: string;
-  objective?: "awareness" | "reach" | "engagement" | "conversions" | "traffic";
+  objective?:
+    | "awareness"
+    | "reach"
+    | "engagement"
+    | "conversions"
+    | "traffic"
+    | "content_plan";
   platform?: "instagram" | "tiktok" | "twitter" | "youtube" | "multi";
   status?: "draft" | "scheduled" | "active" | "paused" | "ended";
   total?: number;
   spent?: number;
+  clicks?: number;
+  clickCount?: number;
+  linkClicks?: number;
+  adClicks?: number;
+  impressions?: number;
+  launchDate?: string;
+  targetUrl?: string;
+  externalUrl?: string;
+  storefrontSlug?: string;
+  linkedProductId?: string;
+  linkedProductLineId?: string;
+  linkedCourseId?: string;
+  linkedGrowId?: string;
+  linkedForumThreadId?: string;
+  platformNotes?: string;
   budget?: {
     totalBudget?: number;
     dailyBudget?: number;
     spent?: number;
     remaining?: number;
+  };
+  metrics?: {
+    clickCount?: number;
+    [key: string]: any;
   };
   creative?: Record<string, any>;
   createdAt?: string;
@@ -47,5 +72,15 @@ export async function updateCampaign(campaignId: string, data: Partial<Campaign>
 export async function deleteCampaign(campaignId: string) {
   return apiRequest(`${CAMPAIGNS_BASE}/${encodeURIComponent(campaignId)}`, {
     method: "DELETE"
+  });
+}
+
+export async function recordCampaignClick(
+  campaignId: string,
+  data?: { targetUrl?: string; source?: string }
+) {
+  return apiRequest(`${CAMPAIGNS_BASE}/${encodeURIComponent(campaignId)}/click`, {
+    method: "POST",
+    body: data || {}
   });
 }

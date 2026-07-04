@@ -25,6 +25,7 @@ import type {
 } from "@/types/automation";
 import GrowWorkspaceNav from "@/components/personal/GrowWorkspaceNav";
 import { coerceParam, fmtDate } from "@/features/grows/routeUtils";
+import PersonalFeedPlacement from "@/components/feed/PersonalFeedPlacement";
 
 const styles = StyleSheet.create({
   container: { flex: 1, backgroundColor: "#FFFFFF" },
@@ -239,6 +240,11 @@ export default function GrowAutomationScreen() {
         Create grow-scoped rules that turn tool and AI events into tasks, alerts, and grow
         logs.
       </Text>
+      <PersonalFeedPlacement
+        placement="top"
+        routeKey="personal_grows_growid_automation"
+        longContent
+      />
       <GrowWorkspaceNav growId={growId} active="automation" />
 
       <View style={styles.topActions}>
@@ -284,6 +290,12 @@ export default function GrowAutomationScreen() {
           above, then run Dew Point Guard or AI diagnosis from this grow.
         </Text>
       ) : null}
+
+      <PersonalFeedPlacement
+        placement="middle"
+        routeKey="personal_grows_growid_automation"
+        longContent
+      />
 
       {policies.map((policy) => (
         <View key={policy.id} style={styles.card}>
@@ -376,6 +388,12 @@ export default function GrowAutomationScreen() {
           ) : null}
         </View>
       ))}
+
+      <PersonalFeedPlacement
+        placement="bottom"
+        routeKey="personal_grows_growid_automation"
+        longContent
+      />
     </ScrollView>
   );
 }

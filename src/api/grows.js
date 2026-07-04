@@ -112,10 +112,19 @@ export async function getPersonalGrowTimeline(growId) {
 }
 
 export async function appendGrowPhotos(growId, photos = []) {
-  const updateRes = await apiRequest(`${routes.GROWS.LIST}/${growId}/photos`, {
-    method: "PATCH",
-    body: { photos }
-  });
+  const id = String(growId || "").trim();
+  const photoUrls = (Array.isArray(photos) ? photos : [])
+    .map((photo) => String(photo || "").trim())
+    .filter(Boolean);
+  if (!id || !photoUrls.length) return null;
+
+  const updateRes = await apiRequest(
+    `${routes.GROWS.LIST}/${encodeURIComponent(id)}/photos`,
+    {
+      method: "PATCH",
+      body: { photos: photoUrls }
+    }
+  );
   return normalizeGrowEntity(updateRes);
 }
 

@@ -22,6 +22,7 @@ import {
 import BackButton from "@/components/nav/BackButton";
 import { fmtDate } from "@/features/grows/routeUtils";
 import { resolveImageUri } from "@/utils/photoUploads";
+import PersonalFeedPlacement from "@/components/feed/PersonalFeedPlacement";
 
 function param(value?: string | string[]) {
   return typeof value === "string" ? value : Array.isArray(value) ? value[0] || "" : "";
@@ -149,6 +150,7 @@ export default function LogDetailScreen() {
     <ScrollView style={styles.container} contentContainerStyle={styles.content}>
       <BackButton />
       <Text style={styles.title}>{log?.title || "Journal Entry"}</Text>
+      <PersonalFeedPlacement placement="top" routeKey="personal_logs_logid" longContent />
       <Text style={styles.meta}>
         {log?.type || "other"} | {fmtDate(log?.date || log?.createdAt)}
       </Text>
@@ -321,6 +323,12 @@ export default function LogDetailScreen() {
             </View>
           ) : null}
 
+          <PersonalFeedPlacement
+            placement="middle"
+            routeKey="personal_logs_logid"
+            longContent
+          />
+
           <View style={styles.row}>
             <Pressable
               style={styles.primaryButton}
@@ -344,6 +352,12 @@ export default function LogDetailScreen() {
           </View>
         </>
       )}
+
+      <PersonalFeedPlacement
+        placement="bottom"
+        routeKey="personal_logs_logid"
+        longContent
+      />
     </ScrollView>
   );
 }

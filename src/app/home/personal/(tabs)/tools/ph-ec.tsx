@@ -63,7 +63,12 @@ export default function PhEcToolScreen() {
         { key: "runoff-ph", label: "Runoff pH", value: outputs.runoffPHStatus || "-" },
         { key: "input-ec", label: "Input EC", value: outputs.ecStatus || "-" },
         { key: "runoff-ec", label: "Runoff EC", value: outputs.runoffECStatus || "-" },
-        { key: "drift", label: "Drift", value: outputs.driftDirection || "-" }
+        { key: "drift", label: "Drift", value: outputs.driftDirection || "-" },
+        {
+          key: "risks",
+          label: "Risks",
+          value: Array.isArray(outputs.possibleRisks) ? outputs.possibleRisks.length : "-"
+        }
       ]}
       defaultLogTitle={() => "pH / EC range check"}
       defaultTask={(outputs) => ({

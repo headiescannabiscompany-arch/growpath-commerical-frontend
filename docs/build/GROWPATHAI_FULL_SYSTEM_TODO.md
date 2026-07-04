@@ -93,7 +93,7 @@ Legend:
 ## Phase 7 - Business / Production
 
 - [~] Inventory foundation.
-- [~] Living Soil Labs / Batch Production.
+- [~] Soil & Nutrient Batch Planner.
 - [~] Batch cost calculator.
 - [~] Ingredient pull sheets.
 - [~] Production task creation.
@@ -108,11 +108,11 @@ Legend:
 - [x] Release preflight passed after personal backend CRUD/timeline port.
 - [x] Soil/nutrient V1 tool backend tests run for pH/EC, Topdress, Dry Amendment Mix, Soil Builder, Nutrient Source Comparison, and Dry/Cure Guard.
 - [x] Tool route inventory and frontend runtime contract passed after adding six new personal tool routes.
-- [x] Backend tests run for Stress Testing, Clone Rooting, Run-To-Run Comparison, Auto Grow Calendar, Tissue Culture, Living Soil batch, and Facility Insights Summary.
+- [x] Backend tests run for Stress Testing, Clone Rooting, Run-To-Run Comparison, Auto Grow Calendar, Tissue Culture, Soil & Nutrient Batch Planner, and Facility Insights Summary.
 - [x] System audit rerun after the next tool slice: 33 modules, 25 partial, 8 present-foundation, 0 missing, 0 trace-only.
 - [x] Full surface audit rerun after adding ten personal tool routes: 162 frontend route files, 148 routes, 38 backend route declarations, 0 errors, 0 warnings.
 - [x] Backend tests run for IPM Scout, Species/Crop ID, Genetics Inventory, Harvest Readiness, Inventory, Crop Steering Projects, and Pheno Hunt.
-- [x] Feature status tests verify these modules are release routes and the old crop-steering scaffold remains hidden.
+- [x] Feature status tests verify these modules are release routes and removed/internal-only tools have no user-facing route.
 - [x] Backend CRUD tests run for ToolRun update/archive, ProductIngredient read/update/archive, and NutrientRecipe update/archive.
 - [x] Backend provenance schema restored and ingredient/recipe source records verified in tools route tests.
 - [x] Crop knowledge backend CRUD added and verified for crop profiles, organisms, regional alerts, taxa, and plant growth profiles.

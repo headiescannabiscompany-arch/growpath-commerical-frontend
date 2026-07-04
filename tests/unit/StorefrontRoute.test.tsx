@@ -127,13 +127,30 @@ describe("Storefront route", () => {
     );
     expect(mockAttachPhotos).not.toHaveBeenCalled();
 
+    fireEvent.changeText(
+      screen.getByLabelText("Storefront website URL"),
+      "https://shop.example.com"
+    );
+    fireEvent.changeText(
+      screen.getByLabelText("Storefront support email"),
+      "support@example.com"
+    );
+    fireEvent.changeText(
+      screen.getByLabelText("Storefront social links"),
+      "Instagram: https://instagram.example.com/grow-shop"
+    );
     fireEvent.press(screen.getByLabelText("Save storefront settings"));
     await waitFor(() =>
       expect(mockApiRequest).toHaveBeenCalledWith(
         "/api/commercial/storefront",
         expect.objectContaining({
           method: "PATCH",
-          body: expect.objectContaining({ logoUrl: "/uploads/logo.jpg" })
+          body: expect.objectContaining({
+            logoUrl: "/uploads/logo.jpg",
+            websiteUrl: "https://shop.example.com",
+            supportEmail: "support@example.com",
+            socialLinksText: "Instagram: https://instagram.example.com/grow-shop"
+          })
         })
       )
     );
@@ -148,6 +165,28 @@ describe("Storefront route", () => {
     expect(mockAttachPhotos).not.toHaveBeenCalled();
 
     fireEvent.changeText(screen.getByLabelText("Product name"), "Living Soil");
+    fireEvent.changeText(screen.getByLabelText("Product category"), "soil mix");
+    fireEvent.changeText(
+      screen.getByLabelText("Product short description"),
+      "Seedling-safe living soil"
+    );
+    fireEvent.changeText(
+      screen.getByLabelText("Product usage instructions"),
+      "Use 1 gallon per small container."
+    );
+    fireEvent.changeText(
+      screen.getByLabelText("Product warnings"),
+      "Do not use as fast calcium rescue."
+    );
+    fireEvent.changeText(
+      screen.getByLabelText("Product external purchase URL"),
+      "https://shop.example.com/living-soil"
+    );
+    fireEvent.changeText(screen.getByLabelText("Product line id"), "line-1");
+    fireEvent.changeText(screen.getByLabelText("Linked recipe id"), "recipe-1");
+    fireEvent.changeText(screen.getByLabelText("Linked batch id"), "batch-1");
+    fireEvent.changeText(screen.getByLabelText("Linked grow trial id"), "trial-1");
+    fireEvent.changeText(screen.getByLabelText("Linked course id"), "course-1");
     fireEvent.press(screen.getByLabelText("Create storefront product"));
 
     await waitFor(() =>
@@ -155,7 +194,19 @@ describe("Storefront route", () => {
         "/api/commercial/products",
         expect.objectContaining({
           method: "POST",
-          body: expect.objectContaining({ imageUrl: "/uploads/product.jpg" })
+          body: expect.objectContaining({
+            imageUrl: "/uploads/product.jpg",
+            category: "soil mix",
+            shortDescription: "Seedling-safe living soil",
+            usageInstructions: "Use 1 gallon per small container.",
+            warnings: "Do not use as fast calcium rescue.",
+            externalPurchaseUrl: "https://shop.example.com/living-soil",
+            productLineId: "line-1",
+            linkedRecipeId: "recipe-1",
+            linkedBatchId: "batch-1",
+            linkedGrowTrialId: "trial-1",
+            linkedCourseId: "course-1"
+          })
         })
       )
     );

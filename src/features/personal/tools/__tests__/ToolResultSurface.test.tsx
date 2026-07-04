@@ -24,7 +24,7 @@ describe("ToolResultSurface", () => {
   });
 
   it("renders canonical tool result sections and standard actions", async () => {
-    let tree: renderer.ReactTestRenderer;
+    let tree: any;
     await act(async () => {
       tree = renderer.create(
         <ToolResultSurface
@@ -51,7 +51,7 @@ describe("ToolResultSurface", () => {
       );
     });
 
-    const text = tree!.root.findAllByType(Text).map((node) => node.props.children);
+    const text = tree!.root.findAllByType(Text).map((node: any) => node.props.children);
     expect(text.flat(Infinity).join(" ")).toContain("Inputs");
     expect(text.flat(Infinity).join(" ")).toContain("Outputs");
     expect(text.flat(Infinity).join(" ")).toContain("Formula / Why It Matters");
@@ -62,7 +62,7 @@ describe("ToolResultSurface", () => {
   });
 
   it("opens personal AI with structured result context by default", async () => {
-    let tree: renderer.ReactTestRenderer;
+    let tree: any;
     await act(async () => {
       tree = renderer.create(
         <ToolResultSurface
@@ -78,7 +78,7 @@ describe("ToolResultSurface", () => {
     });
 
     const askButton = tree!.root
-      .findAll((node) => node.props.accessibilityLabel === "Ask AI About This")
+      .findAll((node: any) => node.props.accessibilityLabel === "Ask AI About This")
       .at(0);
     expect(askButton).toBeTruthy();
 
@@ -102,7 +102,7 @@ describe("ToolResultSurface", () => {
       value: { clipboard: { writeText } }
     });
 
-    let tree: renderer.ReactTestRenderer;
+    let tree: any;
     await act(async () => {
       tree = renderer.create(
         <ToolResultSurface
@@ -115,7 +115,7 @@ describe("ToolResultSurface", () => {
     });
 
     const copyButton = tree!.root
-      .findAll((node) => node.props.accessibilityLabel === "Copy Result")
+      .findAll((node: any) => node.props.accessibilityLabel === "Copy Result")
       .at(0);
     expect(copyButton).toBeTruthy();
 

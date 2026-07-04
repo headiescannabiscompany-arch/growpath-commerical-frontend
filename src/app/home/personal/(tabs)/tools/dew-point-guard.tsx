@@ -34,6 +34,7 @@ import {
   mapCsvToPoints,
   parseCsvText
 } from "@/features/personal/tools/dewPointGuard/engine";
+import PersonalFeedPlacement from "@/components/feed/PersonalFeedPlacement";
 
 function asString(v: string | string[] | undefined) {
   return Array.isArray(v) ? v[0] : v;
@@ -1063,6 +1064,11 @@ export default function DewPointGuardTool() {
 
   return (
     <ScrollView contentContainerStyle={{ padding: 16, paddingBottom: 28 }}>
+      <PersonalFeedPlacement
+        placement="top"
+        routeKey="personal_tools_dew_point_guard"
+        longContent
+      />
       <Text style={{ fontSize: 22, fontWeight: "800", marginBottom: 6 }}>
         Dew Point Guard
       </Text>
@@ -1799,6 +1805,12 @@ export default function DewPointGuardTool() {
         )}
       </View>
 
+      <PersonalFeedPlacement
+        placement="middle"
+        routeKey="personal_tools_dew_point_guard"
+        longContent
+      />
+
       <ToolResultSurface
         title="Dew Point Guard result"
         status={activeRiskBand.toUpperCase()}
@@ -1873,6 +1885,12 @@ export default function DewPointGuardTool() {
               ? "Select a telemetry source before saving source-backed results."
               : undefined
         }
+      />
+
+      <PersonalFeedPlacement
+        placement="bottom"
+        routeKey="personal_tools_dew_point_guard"
+        longContent
       />
     </ScrollView>
   );

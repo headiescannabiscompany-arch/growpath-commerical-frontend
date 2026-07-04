@@ -7,6 +7,19 @@ const GROW = {
   updatedAt: "2026-07-01T08:00:00.000Z"
 };
 
+function localIsoAt(hour: number) {
+  const now = new Date();
+  return new Date(
+    now.getFullYear(),
+    now.getMonth(),
+    now.getDate(),
+    hour,
+    0,
+    0,
+    0
+  ).toISOString();
+}
+
 function fulfillJson(route: any, body: any, status = 200) {
   return route.fulfill({
     status,
@@ -100,7 +113,7 @@ async function installMocks(page: any) {
             growId: GROW.id,
             title: "Follow up on olive diagnosis",
             description: "Inspect leaves and confirm root-zone moisture.",
-            dueDate: "2026-07-02T10:00:00.000Z",
+            dueDate: localIsoAt(10),
             completed: false,
             priority: "high",
             sourceType: "ai_diagnosis",
@@ -111,7 +124,7 @@ async function installMocks(page: any) {
             growId: GROW.id,
             title: "Inspect canopy after automation alert",
             description: "Automation policy created this inspection.",
-            dueDate: "2026-07-01T11:00:00.000Z",
+            dueDate: localIsoAt(11),
             completed: false,
             priority: "medium",
             sourceType: "automation_policy",

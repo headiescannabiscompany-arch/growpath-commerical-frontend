@@ -73,6 +73,31 @@ describe("StorefrontScreen", () => {
 
     await waitFor(() => expect(mockFetchProducts).toHaveBeenCalled());
 
+    fireEvent.changeText(
+      screen.getByPlaceholderText("Website or shop URL"),
+      "https://shop.example.com"
+    );
+    fireEvent.changeText(
+      screen.getByPlaceholderText("Support email"),
+      "support@example.com"
+    );
+    fireEvent.changeText(
+      screen.getByPlaceholderText("Social links, one per line"),
+      "Instagram: https://instagram.example.com/grow-shop"
+    );
+    fireEvent.press(screen.getByText("Save storefront"));
+
+    await waitFor(() =>
+      expect(mockUpdateStorefront).toHaveBeenCalledWith(
+        expect.objectContaining({
+          websiteUrl: "https://shop.example.com",
+          supportEmail: "support@example.com",
+          socialLinksText: "Instagram: https://instagram.example.com/grow-shop"
+        })
+      )
+    );
+    await waitFor(() => expect(screen.getByText("Save storefront")).toBeTruthy());
+
     fireEvent.press(screen.getByText("Add Product"));
     fireEvent.press(screen.getByLabelText("Upload product image"));
 
@@ -85,13 +110,50 @@ describe("StorefrontScreen", () => {
     expect(mockAttachPhotos).not.toHaveBeenCalled();
 
     fireEvent.changeText(screen.getByPlaceholderText("Product name"), "Living Soil");
+    fireEvent.changeText(
+      screen.getByPlaceholderText("Category, e.g. soil mix, dry amendment, houseplant"),
+      "soil mix"
+    );
+    fireEvent.changeText(
+      screen.getByPlaceholderText("Short public summary"),
+      "Seedling-safe living soil"
+    );
+    fireEvent.changeText(
+      screen.getByPlaceholderText(
+        "Usage instructions, application rate, or care guidance"
+      ),
+      "Use 1 gallon per small container."
+    );
+    fireEvent.changeText(
+      screen.getByPlaceholderText("Warnings, stage limits, legal notes, or safety notes"),
+      "Do not use as fast calcium rescue."
+    );
+    fireEvent.changeText(
+      screen.getByPlaceholderText("External purchase URL"),
+      "https://shop.example.com/living-soil"
+    );
+    fireEvent.changeText(screen.getByPlaceholderText("Product line id"), "line-1");
+    fireEvent.changeText(screen.getByPlaceholderText("Linked recipe id"), "recipe-1");
+    fireEvent.changeText(screen.getByPlaceholderText("Linked batch id"), "batch-1");
+    fireEvent.changeText(screen.getByPlaceholderText("Linked grow/trial id"), "trial-1");
+    fireEvent.changeText(screen.getByPlaceholderText("Linked course id"), "course-1");
     fireEvent.press(screen.getByText("Save"));
 
     await waitFor(() =>
       expect(mockCreateProduct).toHaveBeenCalledWith(
         expect.objectContaining({
           name: "Living Soil",
-          imageUrl: "/uploads/product.jpg"
+          imageUrl: "/uploads/product.jpg",
+          category: "soil mix",
+          shortDescription: "Seedling-safe living soil",
+          usageInstructions: "Use 1 gallon per small container.",
+          warnings: "Do not use as fast calcium rescue.",
+          externalPurchaseUrl: "https://shop.example.com/living-soil",
+          productLineId: "line-1",
+          linkedRecipeId: "recipe-1",
+          linkedBatchId: "batch-1",
+          linkedGrowTrialId: "trial-1",
+          linkedCourseId: "course-1"
         })
       )
     );

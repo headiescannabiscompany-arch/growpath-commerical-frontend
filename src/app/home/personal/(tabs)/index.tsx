@@ -13,7 +13,7 @@ import { listToolRuns } from "@/api/toolRuns";
 import { useAuth } from "@/auth/AuthContext";
 import AppCard from "@/components/layout/AppCard";
 import AppPage from "@/components/layout/AppPage";
-import { useEntitlements } from "@/entitlements";
+import { CAPABILITY_KEYS, useEntitlements } from "@/entitlements";
 import { fmtDate } from "@/features/grows/routeUtils";
 import { buildPersonalHomeModel } from "@/features/personal/homeModel";
 
@@ -39,6 +39,9 @@ function alertSeverityStyle(severity: HomeAlert["severity"]) {
 export default function PersonalHomeTab() {
   const auth = useAuth();
   const ent = useEntitlements();
+  const canCreateGrow = ent.can(CAPABILITY_KEYS.GROWS_PERSONAL_WRITE);
+  const canCreateLog = ent.can(CAPABILITY_KEYS.LOGS_PERSONAL_WRITE);
+  const canCreateTask = ent.can(CAPABILITY_KEYS.TASK_REMINDERS);
   const [model, setModel] = useState<HomeModel | null>(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState("");
@@ -127,9 +130,16 @@ export default function PersonalHomeTab() {
             Create a grow to connect journal entries, tasks, tool results, and AI context.
           </Text>
           <View style={styles.actions}>
-            <ActionLink href="/home/personal/grows/new" label="Create Grow" />
+            {canCreateGrow ? (
+              <ActionLink href="/home/personal/grows/new" label="Create Grow" />
+            ) : null}
             <ActionLink href="/home/personal/tools" label="Explore Tools" />
           </View>
+          {!canCreateGrow ? (
+            <Text style={styles.upgradeNote}>
+              Upgrade to create and save personal grow records.
+            </Text>
+          ) : null}
         </AppCard>
       ) : null}
 
@@ -165,14 +175,18 @@ export default function PersonalHomeTab() {
             </View>
             <View style={styles.actions}>
               <ActionLink href={growHref} label="Open Grow" />
-              <ActionLink
-                href={`/home/personal/logs/new?growId=${encodeURIComponent(growId)}`}
-                label="Add Log"
-              />
-              <ActionLink
-                href={`/home/personal/logs/new?growId=${encodeURIComponent(growId)}&focus=photos`}
-                label="Add Photo"
-              />
+              {canCreateLog ? (
+                <>
+                  <ActionLink
+                    href={`/home/personal/logs/new?growId=${encodeURIComponent(growId)}`}
+                    label="Add Log"
+                  />
+                  <ActionLink
+                    href={`/home/personal/logs/new?growId=${encodeURIComponent(growId)}&focus=photos`}
+                    label="Add Photo"
+                  />
+                </>
+              ) : null}
               <ActionLink
                 href={`/home/personal/tools?growId=${encodeURIComponent(growId)}`}
                 label="Run Tool"
@@ -181,8 +195,16 @@ export default function PersonalHomeTab() {
                 href={`/home/personal/diagnose?growId=${encodeURIComponent(growId)}`}
                 label="Diagnose"
               />
-              <ActionLink href={`${growHref}/tasks`} label="Create Task" />
+              {canCreateTask ? (
+                <ActionLink href={`${growHref}/tasks`} label="Create Task" />
+              ) : null}
             </View>
+            {!canCreateLog || !canCreateTask ? (
+              <Text style={styles.upgradeNote}>
+                Free accounts can review this grow. Upgrade to save journal entries,
+                photos, and reminders.
+              </Text>
+            ) : null}
           </AppCard>
         </View>
       ) : null}
@@ -279,10 +301,12 @@ export default function PersonalHomeTab() {
                 ? `${model.recentPhotos.length} recent photo${model.recentPhotos.length === 1 ? "" : "s"} attached to this grow. Latest: ${model.recentPhotos[0].title}`
                 : "No photos have been attached to this grow yet."}
             </Text>
-            <ActionLink
-              href={`/home/personal/logs/new?growId=${encodeURIComponent(growId)}&focus=photos`}
-              label="Add Photo"
-            />
+            {canCreateLog ? (
+              <ActionLink
+                href={`/home/personal/logs/new?growId=${encodeURIComponent(growId)}&focus=photos`}
+                label="Add Photo"
+              />
+            ) : null}
           </AppCard>
           <AppCard>
             <Text style={styles.cardTitle}>Garden statistics</Text>
@@ -386,5 +410,6 @@ const styles = StyleSheet.create({
     backgroundColor: "#FFFFFF"
   },
   inlineActionText: { color: "#0F172A", fontWeight: "800", fontSize: 12 },
+  upgradeNote: { color: "#64748B", fontSize: 12, lineHeight: 17, marginTop: 8 },
   error: { color: "#B91C1C", fontWeight: "700" }
 });

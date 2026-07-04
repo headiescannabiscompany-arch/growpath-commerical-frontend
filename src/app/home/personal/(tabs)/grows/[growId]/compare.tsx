@@ -13,6 +13,7 @@ import {
 import { listToolRuns } from "@/api/toolRuns";
 import GrowWorkspaceNav from "@/components/personal/GrowWorkspaceNav";
 import { coerceParam, fmtDate } from "@/features/grows/routeUtils";
+import PersonalFeedPlacement from "@/components/feed/PersonalFeedPlacement";
 
 const styles = StyleSheet.create({
   container: { flex: 1, padding: 20, backgroundColor: "#FFFFFF" },
@@ -116,6 +117,11 @@ export default function GrowCompareScreen() {
       <Text style={styles.subtitle}>
         Compare the latest two tool runs for a selected tool type.
       </Text>
+      <PersonalFeedPlacement
+        placement="top"
+        routeKey="personal_grows_growid_compare"
+        longContent
+      />
       <GrowWorkspaceNav growId={growId} active="compare" />
 
       <View style={styles.chipsRow}>
@@ -132,6 +138,12 @@ export default function GrowCompareScreen() {
           );
         })}
       </View>
+
+      <PersonalFeedPlacement
+        placement="middle"
+        routeKey="personal_grows_growid_compare"
+        longContent
+      />
 
       {loading ? (
         <View style={styles.card}>
@@ -163,6 +175,12 @@ export default function GrowCompareScreen() {
           </View>
         </View>
       )}
+
+      <PersonalFeedPlacement
+        placement="bottom"
+        routeKey="personal_grows_growid_compare"
+        longContent
+      />
     </ScrollView>
   );
 }

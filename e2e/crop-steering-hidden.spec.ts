@@ -63,14 +63,10 @@ test.describe("hidden crop steering route", () => {
         waitUntil: "domcontentloaded"
       });
 
-      await expect(
-        page.getByRole("heading", { name: "Crop Steering" })
-      ).toBeVisible();
-      await expect(page.getByText("Hidden for release")).toBeVisible();
-      await expect(page.getByText(`Grow context: ${GROW_ID}`)).toBeVisible();
-      await expect(page.getByText(/P0 \/ P1 \/ P2 \/ P3/)).toBeVisible();
-      await expect(page.getByText(/dryback, runoff, pore EC/i)).toBeVisible();
-      await expect(page.getByText(/Release decision: hidden/i)).toBeVisible();
+      await expect(page.getByRole("heading", { name: "Unmatched Route" })).toBeVisible();
+      await expect(page.getByText("Page could not be found.")).toBeVisible();
+      await expect(page.getByText("Hidden for release")).toHaveCount(0);
+      await expect(page.getByText(/Release decision: hidden/i)).toHaveCount(0);
       await expect(page.getByText("Save and Open Journal")).toHaveCount(0);
       await expect(page.getByText("Estimated Output")).toHaveCount(0);
       await expect(page.getByPlaceholder("coco")).toHaveCount(0);

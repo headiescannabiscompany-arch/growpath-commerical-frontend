@@ -2,10 +2,10 @@ import React from "react";
 import { createBottomTabNavigator } from "@react-navigation/bottom-tabs";
 
 import CommercialDashboardScreen from "../screens/commercial/CommercialDashboardScreen";
-import StorefrontScreen from "../screens/StorefrontScreen";
-import CommercialToolsScreen from "../screens/commercial/CommercialToolsScreen";
-import CommercialReportsScreen from "../screens/commercial/CommercialReportsScreen";
-import CommercialProfileScreen from "../screens/commercial/CommercialProfileScreen";
+import CommercialGrowsRoute from "../app/home/commercial/grows";
+import CommercialProductsRoute from "../app/home/commercial/products";
+import CommercialFeedRoute from "../app/feed";
+import CommercialProfileRoute from "../app/home/commercial/profile";
 
 const Tab = createBottomTabNavigator();
 
@@ -17,20 +17,24 @@ export default function CommercialTabs() {
         component={CommercialDashboardScreen}
         options={{ title: "Dashboard" }}
       />
-      <Tab.Screen name="Storefront" component={StorefrontScreen} options={{ title: "Storefront" }} />
       <Tab.Screen
-        name="CommercialTools"
-        component={CommercialToolsScreen}
-        options={{ title: "Tools" }}
+        name="CommercialGrows"
+        component={CommercialGrowsRoute}
+        options={{ title: "Grows & Trials" }}
       />
       <Tab.Screen
-        name="CommercialReports"
-        component={CommercialReportsScreen}
-        options={{ title: "Reports" }}
+        name="CommercialProducts"
+        component={CommercialProductsRoute}
+        options={{ title: "Products" }}
+      />
+      <Tab.Screen
+        name="CommercialFeed"
+        component={CommercialFeedRoute}
+        options={{ title: "Feed" }}
       />
       <Tab.Screen
         name="CommercialProfile"
-        component={CommercialProfileScreen}
+        component={CommercialProfileRoute}
         options={{ title: "Profile" }}
       />
     </Tab.Navigator>

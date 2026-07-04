@@ -1,25 +1,55 @@
 import React from "react";
-import { Text, StyleSheet } from "react-native";
-import { Link } from "expo-router";
+import { Pressable, Text, StyleSheet } from "react-native";
 import AppCard from "@/components/layout/AppCard";
+import { recordCommercialAnalyticsEvent } from "@/api/commercialAnalytics";
 
 type AdCardProps = {
   title: string;
   body: string;
   cta: string;
+  href?: string;
+  commercialAccountId?: string;
+  storefrontSlug?: string;
 };
 
-export default function AdCard({ title, body, cta }: AdCardProps) {
+export default function AdCard({
+  title,
+  body,
+  cta,
+  href = "/store",
+  commercialAccountId,
+  storefrontSlug
+}: AdCardProps) {
+  function recordAdClick() {
+    recordCommercialAnalyticsEvent({
+      eventType: "ad_click",
+      objectType: "feed_ad",
+      commercialAccountId,
+      storefrontSlug,
+      targetUrl: href,
+      source: "feed_banner",
+      metadata: { title, cta }
+    }).catch(() => null);
+  }
+
+  function openAd() {
+    recordAdClick();
+    const location = (globalThis as any)?.window?.location;
+    if (location) location.href = href;
+  }
+
   return (
     <AppCard>
       <Text style={styles.label}>Sponsor</Text>
       <Text style={styles.title}>{title}</Text>
       <Text style={styles.body}>{body}</Text>
-      <Link href="/tools" style={styles.link}>
-        <Text style={styles.link}>
-          {cta} {"\u2192"}
-        </Text>
-      </Link>
+      <Pressable
+        accessibilityRole="link"
+        accessibilityLabel={`${cta} for ${title}`}
+        onPress={openAd}
+      >
+        <Text style={styles.link}>{cta} {"\u2192"}</Text>
+      </Pressable>
     </AppCard>
   );
 }

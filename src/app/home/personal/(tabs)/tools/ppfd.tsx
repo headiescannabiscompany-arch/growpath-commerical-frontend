@@ -1,8 +1,9 @@
 import React, { useMemo, useState } from "react";
 import { useLocalSearchParams, useRouter } from "expo-router";
-import { Pressable, ScrollView, StyleSheet, Text, TextInput, View } from "react-native";
+import { ScrollView, StyleSheet, Text, TextInput } from "react-native";
 
 import BackButton from "@/components/nav/BackButton";
+import PersonalFeedPlacement from "@/components/feed/PersonalFeedPlacement";
 import {
   ToolPlantContextPicker,
   useToolPlantContext
@@ -41,6 +42,8 @@ export default function PpfdToolScreen() {
   const [photoperiodHours, setPhotoperiodHours] = useState("12");
   const [ppfdAtCanopy, setPpfdAtCanopy] = useState("");
   const [fixturePercent, setFixturePercent] = useState("100");
+  const [stage, setStage] = useState("flower");
+  const [leafResponse, setLeafResponse] = useState("");
   const [feedback, setFeedback] = useState("");
 
   const computed = useMemo(() => {
@@ -48,8 +51,40 @@ export default function PpfdToolScreen() {
     const hours = toNum(photoperiodHours);
     if (!Number.isFinite(dli) || !Number.isFinite(hours) || hours <= 0) return null;
     const requiredPpfd = dli / (0.0036 * hours);
-    return { requiredPpfd: Math.round(requiredPpfd) };
-  }, [dliTarget, photoperiodHours]);
+    const measuredPpfd = toNum(ppfdAtCanopy);
+    const measuredDli = Number.isFinite(measuredPpfd)
+      ? measuredPpfd * hours * 0.0036
+      : null;
+    const normalizedStage = stage.toLowerCase();
+    const response = leafResponse.toLowerCase();
+    const warnings: string[] = [];
+    if (/seed|clone/.test(normalizedStage) && (requiredPpfd > 300 || measuredPpfd > 300)) {
+      warnings.push("Seedlings/clones may be under too much light for stable rooting and early growth.");
+    }
+    if (/late|ripen|finish/.test(normalizedStage) && dli > 45) {
+      warnings.push("Very high DLI late flower can add heat/light pressure and reduce finish quality if plants are not tolerating it.");
+    }
+    if (/taco|bleach|curl|canoe|light burn/.test(response)) {
+      warnings.push("Leaf posture or bleaching symptoms suggest light stress; compare against VPD, temperature, and root-zone status before increasing intensity.");
+    }
+    if (hours > 13 && /flower|late|ripen|finish/.test(normalizedStage)) {
+      warnings.push("Flowering photoperiod appears long; verify crop type, genetics, and light schedule.");
+    }
+    return {
+      requiredPpfd: Math.round(requiredPpfd),
+      measuredDli: measuredDli == null ? null : Number(measuredDli.toFixed(1)),
+      warnings
+    };
+  }, [dliTarget, leafResponse, photoperiodHours, ppfdAtCanopy, stage]);
+
+  const input = {
+    dliTarget: Number(dliTarget),
+    photoperiodHours: Number(photoperiodHours),
+    ppfdAtCanopy: ppfdAtCanopy ? Number(ppfdAtCanopy) : null,
+    fixturePercent: Number(fixturePercent),
+    stage,
+    leafResponse
+  };
 
   return (
     <ScrollView contentContainerStyle={styles.container}>
@@ -58,6 +93,7 @@ export default function PpfdToolScreen() {
       <Text style={styles.subtitle}>
         Set DLI and photoperiod to estimate required canopy PPFD.
       </Text>
+      <PersonalFeedPlacement placement="top" routeKey="personal_tools_ppfd" longContent />
       {growId ? <Text style={styles.context}>Grow context: {growId}</Text> : null}
       <ToolPlantContextPicker
         plants={plantContext.plants}
@@ -74,7 +110,6 @@ export default function PpfdToolScreen() {
         keyboardType="numeric"
         placeholder="35"
       />
-
       <Text style={styles.label}>Photoperiod (hours)</Text>
       <TextInput
         style={styles.input}
@@ -83,7 +118,6 @@ export default function PpfdToolScreen() {
         keyboardType="numeric"
         placeholder="12"
       />
-
       <Text style={styles.label}>Measured PPFD at canopy (optional)</Text>
       <TextInput
         style={styles.input}
@@ -92,7 +126,6 @@ export default function PpfdToolScreen() {
         keyboardType="numeric"
         placeholder="850"
       />
-
       <Text style={styles.label}>Fixture power (%)</Text>
       <TextInput
         style={styles.input}
@@ -100,6 +133,26 @@ export default function PpfdToolScreen() {
         onChangeText={setFixturePercent}
         keyboardType="numeric"
         placeholder="100"
+      />
+      <Text style={styles.label}>Stage</Text>
+      <TextInput
+        style={styles.input}
+        value={stage}
+        onChangeText={setStage}
+        placeholder="clone, veg, flower, late_flower"
+      />
+      <Text style={styles.label}>Leaf response</Text>
+      <TextInput
+        style={styles.input}
+        value={leafResponse}
+        onChangeText={setLeafResponse}
+        placeholder="tacoing, bleaching, praying, normal"
+      />
+
+      <PersonalFeedPlacement
+        placement="middle"
+        routeKey="personal_tools_ppfd"
+        longContent
       />
 
       <ToolResultSurface
@@ -109,12 +162,25 @@ export default function PpfdToolScreen() {
           {
             key: "required-ppfd",
             label: "Required canopy PPFD",
-            value: computed ? `${computed.requiredPpfd} µmol/m²/s` : "—",
-            detail: `${photoperiodHours || "—"} hour photoperiod`
+            value: computed ? `${computed.requiredPpfd} umol/m2/s` : "-",
+            detail: `${photoperiodHours || "-"} hour photoperiod`
+          },
+          {
+            key: "measured-dli",
+            label: "Measured DLI",
+            value:
+              computed?.measuredDli == null ? "Not entered" : `${computed.measuredDli}`
+          },
+          {
+            key: "warnings",
+            label: "Warnings",
+            value: String(computed?.warnings.length || 0),
+            detail: computed?.warnings[0] || "No light-stress warning from entered data"
           }
         ]}
         assumptions={[
           "This calculation converts target DLI and photoperiod; it does not estimate fixture output from wattage.",
+          ...(computed?.warnings || []),
           "Use a calibrated PAR meter and canopy sampling for measured PPFD."
         ]}
         actions={
@@ -131,12 +197,7 @@ export default function PpfdToolScreen() {
                       growId,
                       ...plantContext.toolRunContext,
                       toolKey: "ppfd",
-                      input: {
-                        dliTarget: Number(dliTarget),
-                        photoperiodHours: Number(photoperiodHours),
-                        ppfdAtCanopy: ppfdAtCanopy ? Number(ppfdAtCanopy) : null,
-                        fixturePercent: Number(fixturePercent)
-                      },
+                      input,
                       output: computed
                     });
                     if (!result.ok) throw new Error(result.error);
@@ -153,16 +214,18 @@ export default function PpfdToolScreen() {
                       growId,
                       ...plantContext.toolRunContext,
                       toolKey: "ppfd",
-                      input: {
-                        dliTarget: Number(dliTarget),
-                        photoperiodHours: Number(photoperiodHours),
-                        ppfdAtCanopy: ppfdAtCanopy ? Number(ppfdAtCanopy) : null,
-                        fixturePercent: Number(fixturePercent)
-                      },
+                      input,
                       output: computed,
-                      title: "Check canopy PPFD",
-                      description: `Target about ${computed.requiredPpfd} umol/m2/s over ${photoperiodHours || "?"} hours. Verify with a meter and adjust fixture height or dimming gradually.`,
-                      priority: "medium",
+                      title:
+                        computed.warnings.length
+                          ? "Check light stress response"
+                          : "Check canopy PPFD",
+                      description: [
+                        `Target about ${computed.requiredPpfd} umol/m2/s over ${photoperiodHours || "?"} hours.`,
+                        ...computed.warnings,
+                        "Verify with a meter and adjust fixture height or dimming gradually."
+                      ].join("\n"),
+                      priority: computed.warnings.length ? "high" : "medium",
                       dueDate: dueTomorrow()
                     });
                     if (!result.ok) throw new Error(result.error);
@@ -176,6 +239,12 @@ export default function PpfdToolScreen() {
         contextMessage={
           !growId ? "Select a grow context to save this result." : undefined
         }
+      />
+
+      <PersonalFeedPlacement
+        placement="bottom"
+        routeKey="personal_tools_ppfd"
+        longContent
       />
     </ScrollView>
   );
@@ -193,6 +262,5 @@ const styles = StyleSheet.create({
     borderRadius: 10,
     padding: 12,
     backgroundColor: "#FFFFFF"
-  },
-  hint: { fontSize: 12, color: "#64748B", marginTop: 6 }
+  }
 });

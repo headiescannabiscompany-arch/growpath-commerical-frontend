@@ -18,6 +18,7 @@ import {
   saveToolRunAndCreateLog,
   saveToolRunAndCreateTask
 } from "@/features/personal/tools/saveToolRunAndOpenJournal";
+import PersonalFeedPlacement from "@/components/feed/PersonalFeedPlacement";
 
 function coerceParam(value?: string | string[]) {
   if (typeof value === "string") return value;
@@ -49,6 +50,11 @@ export default function HarvestEstimatorScreen() {
   const [cloudyPct, setCloudyPct] = useState("60");
   const [amberPct, setAmberPct] = useState("8");
   const [pistilDarkPct, setPistilDarkPct] = useState("70");
+  const [budSwellStatus, setBudSwellStatus] = useState("mostly swollen");
+  const [aromaTrend, setAromaTrend] = useState("building");
+  const [sampleLocation, setSampleLocation] = useState("mixed bud sites");
+  const [userGoal, setUserGoal] =
+    useState<NonNullable<HarvestEstimatorInput["userGoal"]>>("balanced");
   const [cultivarSpeed, setCultivarSpeed] =
     useState<HarvestEstimatorInput["cultivarSpeed"]>("average");
   const [feedback, setFeedback] = useState("");
@@ -60,9 +66,24 @@ export default function HarvestEstimatorScreen() {
       cloudyPct: numberValue(cloudyPct, 0),
       amberPct: numberValue(amberPct, 0),
       pistilDarkPct: numberValue(pistilDarkPct, 0),
-      cultivarSpeed
+      cultivarSpeed,
+      budSwellStatus,
+      aromaTrend,
+      sampleLocation,
+      userGoal
     }),
-    [amberPct, breederFlowerDays, cloudyPct, cultivarSpeed, floweringDay, pistilDarkPct]
+    [
+      amberPct,
+      aromaTrend,
+      breederFlowerDays,
+      budSwellStatus,
+      cloudyPct,
+      cultivarSpeed,
+      floweringDay,
+      pistilDarkPct,
+      sampleLocation,
+      userGoal
+    ]
   );
   const result = useMemo(() => estimateHarvestWindow(input), [input]);
 
@@ -77,7 +98,13 @@ export default function HarvestEstimatorScreen() {
       type: "harvest",
       date: new Date().toISOString().slice(0, 10),
       title: "Harvest window estimate",
-      notes: `${result.summary}\nTarget flowering day: ${result.targetDay}\nWindow: day ${result.earliestDay}-${result.latestDay}`,
+      notes: [
+        result.summary,
+        `Target flowering day: ${result.targetDay}`,
+        `Window: day ${result.earliestDay}-${result.latestDay}`,
+        ...result.evidence,
+        ...result.warnings.map((warning) => `Warning: ${warning}`)
+      ].join("\n"),
       tags: ["harvest", "estimator"]
     });
     if (!created.ok) throw new Error(created.error);
@@ -92,6 +119,11 @@ export default function HarvestEstimatorScreen() {
         Estimate a harvest window from flowering day, breeder timing, trichomes, pistils,
         and cultivar speed.
       </Text>
+      <PersonalFeedPlacement
+        placement="top"
+        routeKey="personal_tools_harvest_estimator"
+        longContent
+      />
       {growId ? <Text style={styles.context}>Grow context: {growId}</Text> : null}
       <ToolPlantContextPicker
         plants={plantContext.plants}
@@ -143,6 +175,27 @@ export default function HarvestEstimatorScreen() {
             onChangeText={setPistilDarkPct}
             keyboardType="numeric"
           />
+          <Text style={styles.label}>Bud/calyx swell</Text>
+          <TextInput
+            style={styles.input}
+            value={budSwellStatus}
+            onChangeText={setBudSwellStatus}
+            placeholder="still swelling, mostly swollen, fully swollen"
+          />
+          <Text style={styles.label}>Aroma trend</Text>
+          <TextInput
+            style={styles.input}
+            value={aromaTrend}
+            onChangeText={setAromaTrend}
+            placeholder="building, peaking, fading"
+          />
+          <Text style={styles.label}>Trichome sample location</Text>
+          <TextInput
+            style={styles.input}
+            value={sampleLocation}
+            onChangeText={setSampleLocation}
+            placeholder="top cola, mid canopy, mixed bud sites"
+          />
           <Text style={styles.label}>Cultivar speed</Text>
           <ScrollView horizontal contentContainerStyle={styles.pills}>
             {(["fast", "average", "slow"] as const).map((value) => (
@@ -159,6 +212,30 @@ export default function HarvestEstimatorScreen() {
               </Pressable>
             ))}
           </ScrollView>
+          <Text style={styles.label}>Effect goal</Text>
+          <ScrollView horizontal contentContainerStyle={styles.pills}>
+            {(["brighter", "balanced", "heavier", "hash", "unknown"] as const).map(
+              (value) => (
+                <Pressable
+                  key={value}
+                  style={[styles.pill, userGoal === value && styles.pillOn]}
+                  onPress={() => setUserGoal(value)}
+                >
+                  <Text
+                    style={[styles.pillText, userGoal === value && styles.pillTextOn]}
+                  >
+                    {value}
+                  </Text>
+                </Pressable>
+              )
+            )}
+          </ScrollView>
+
+          <PersonalFeedPlacement
+            placement="middle"
+            routeKey="personal_tools_harvest_estimator"
+            longContent
+          />
 
           <ToolResultSurface
             title="Harvest estimate"
@@ -175,11 +252,17 @@ export default function HarvestEstimatorScreen() {
                 key: "window",
                 label: "Window",
                 value: `Day ${result.earliestDay}-${result.latestDay}`
+              },
+              {
+                key: "warnings",
+                label: "Warnings",
+                value: String(result.warnings.length),
+                detail: result.warnings[0] || "No warning from entered context"
               }
             ]}
+            assumptions={[...result.evidence, ...result.warnings]}
             recommendations={[
-              "Check trichomes on multiple bud sites before acting.",
-              "Prepare drying space before the estimated target day.",
+              ...result.recommendations,
               "Use cultivar notes and plant health to override the estimate when needed."
             ]}
             actions={[
@@ -205,11 +288,13 @@ export default function HarvestEstimatorScreen() {
                     input,
                     output: result,
                     title: "Inspect harvest readiness",
-                    description: `${result.summary}\nWindow: day ${result.earliestDay}-${result.latestDay}. Check trichomes across multiple sites and confirm drying space readiness.`,
-                    priority: result.readiness === "ready" ? "high" : "medium",
-                    dueDate: dueInDays(
-                      Math.max(1, Math.min(7, result.daysRemaining || 1))
-                    )
+                    description: [
+                      result.summary,
+                      `Window: day ${result.earliestDay}-${result.latestDay}.`,
+                      ...result.warnings.map((warning) => `Warning: ${warning}`)
+                    ].join("\n"),
+                    priority: result.tasksToCreate[0]?.priority || "medium",
+                    dueDate: dueInDays(result.tasksToCreate[0]?.dueInDays ?? 1)
                   });
                   if (!taskResult.ok) throw new Error(taskResult.error);
                   setFeedback("Created harvest check task.");
@@ -221,6 +306,12 @@ export default function HarvestEstimatorScreen() {
           />
         </>
       )}
+
+      <PersonalFeedPlacement
+        placement="bottom"
+        routeKey="personal_tools_harvest_estimator"
+        longContent
+      />
     </ScrollView>
   );
 }

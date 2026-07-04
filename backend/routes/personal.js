@@ -318,6 +318,21 @@ function normalizePhotoMetadata({ uid, growId, plantId, logId, photos, metadata 
       width: Number.isFinite(Number(source.width)) ? Number(source.width) : null,
       height: Number.isFinite(Number(source.height)) ? Number(source.height) : null,
       stage: source.stage ? String(source.stage) : null,
+      sourceLink: source.sourceLink ? String(source.sourceLink) : null,
+      photoSourceLink: source.photoSourceLink
+        ? String(source.photoSourceLink)
+        : source.sourcePhotoUrl
+          ? String(source.sourcePhotoUrl)
+          : null,
+      sourcePhotoUrl: source.sourcePhotoUrl
+        ? String(source.sourcePhotoUrl)
+        : source.photoSourceLink
+          ? String(source.photoSourceLink)
+          : null,
+      sourceProvider: source.sourceProvider ? String(source.sourceProvider) : null,
+      sourceType: source.sourceType ? String(source.sourceType) : null,
+      rightsMode: source.rightsMode ? String(source.rightsMode) : null,
+      attributionRequired: Boolean(source.attributionRequired),
       consentForAI: Boolean(source.consentForAI),
       consentForTraining: Boolean(source.consentForTraining),
       createdAt: source.createdAt || new Date().toISOString()
@@ -1071,10 +1086,7 @@ router.patch("/logs/:id", async (req, res, next) => {
       linkedToolRunId: Object.prototype.hasOwnProperty.call(patch, "linkedToolRunId")
         ? patch.linkedToolRunId
         : existing.linkedToolRunId,
-      linkedDiagnosisId: Object.prototype.hasOwnProperty.call(
-        patch,
-        "linkedDiagnosisId"
-      )
+      linkedDiagnosisId: Object.prototype.hasOwnProperty.call(patch, "linkedDiagnosisId")
         ? patch.linkedDiagnosisId
         : existing.linkedDiagnosisId
     };

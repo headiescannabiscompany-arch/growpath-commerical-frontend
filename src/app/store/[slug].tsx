@@ -9,11 +9,21 @@ import {
   Text,
   View
 } from "react-native";
-import { useLocalSearchParams } from "expo-router";
+import { Link, useLocalSearchParams } from "expo-router";
 
 import { checkoutProduct } from "@/api/products";
 import { fetchPublicStorefront } from "@/api/storefront";
+import { recordCommercialAnalyticsEvent } from "@/api/commercialAnalytics";
 import AppPage from "@/components/layout/AppPage";
+import { useEntitlements } from "@/entitlements";
+import {
+  extractPublicCommercialPayload,
+  publicItemId,
+  publicItemSummary,
+  publicItemTitle,
+  publicLinks
+} from "@/utils/publicCommerce";
+import { sharePublicLink } from "@/utils/publicLinks";
 
 function money(product: any) {
   const cents = Number(product?.priceCents || 0);
@@ -34,13 +44,26 @@ async function openCheckoutUrl(url: string) {
   await Linking.openURL(url);
 }
 
+function trackCommercialClick(payload: Record<string, any>) {
+  void recordCommercialAnalyticsEvent(payload).catch(() => {
+    // Click tracking should never block public storefront navigation.
+  });
+}
+
 export default function PublicStorefrontRoute() {
+  const entitlements = useEntitlements();
   const params = useLocalSearchParams<{ slug?: string }>();
   const slug = useMemo(() => String(params.slug || "").trim(), [params.slug]);
+  const returnFeedHref =
+    entitlements.mode === "commercial" || entitlements.mode === "facility"
+      ? "/feed"
+      : "/home/personal/community";
   const [loading, setLoading] = useState(true);
   const [busyId, setBusyId] = useState("");
   const [storefront, setStorefront] = useState<any>(null);
   const [products, setProducts] = useState<any[]>([]);
+  const [courses, setCourses] = useState<any[]>([]);
+  const [trials, setTrials] = useState<any[]>([]);
   const [error, setError] = useState("");
   const [feedback, setFeedback] = useState("");
 
@@ -50,8 +73,11 @@ export default function PublicStorefrontRoute() {
     setError("");
     try {
       const res: any = await fetchPublicStorefront(slug);
-      setStorefront(res?.storefront || res?.data?.storefront || null);
-      setProducts(res?.products || res?.data?.products || []);
+      const payload = extractPublicCommercialPayload(res);
+      setStorefront(payload.storefront);
+      setProducts(payload.products);
+      setCourses(payload.courses);
+      setTrials(payload.trials);
     } catch (err: any) {
       setError(err?.message || "Unable to load storefront.");
     } finally {
@@ -63,11 +89,30 @@ export default function PublicStorefrontRoute() {
     load();
   }, [load]);
 
+  useEffect(() => {
+    if (!slug || !storefront) return;
+    trackCommercialClick({
+      eventType: "storefront_view",
+      objectType: "storefront",
+      objectId: storefront?.id || storefront?._id || slug,
+      storefrontSlug: slug,
+      source: "public_storefront"
+    });
+  }, [slug, storefront]);
+
   async function buy(product: any) {
     const id = productId(product);
     if (!id) return;
     setBusyId(id);
     setFeedback("");
+    trackCommercialClick({
+      eventType: "product_checkout_click",
+      objectType: "product",
+      objectId: id,
+      productId: id,
+      storefrontSlug: slug,
+      source: "public_storefront"
+    });
     try {
       const checkout: any = await checkoutProduct(id);
       const url = checkout?.url || checkout?.checkoutUrl || checkout?.data?.url;
@@ -85,6 +130,24 @@ export default function PublicStorefrontRoute() {
       setBusyId("");
     }
   }
+
+  async function shareStorefront() {
+    try {
+      const result = await sharePublicLink(
+        storefront?.name || "GrowPathAI storefront",
+        `/store/${slug}`
+      );
+      setFeedback(
+        result.method === "web-clipboard"
+          ? "Store link copied."
+          : "Store link ready to share."
+      );
+    } catch (err: any) {
+      setFeedback(err?.message || "Unable to share store link.");
+    }
+  }
+
+  const links = publicLinks(storefront);
 
   return (
     <AppPage
@@ -105,36 +168,161 @@ export default function PublicStorefrontRoute() {
         </View>
       ) : error ? (
         <Text style={styles.error}>{error}</Text>
-      ) : products.length ? (
-        <>
-          {feedback ? <Text style={styles.feedback}>{feedback}</Text> : null}
-          {products.map((product) => {
-            const id = productId(product);
-            return (
-              <View key={id || product?.name} style={styles.product}>
-                <View style={styles.productBody}>
-                  <Text style={styles.productName}>{product?.name || "Product"}</Text>
-                  {product?.description ? (
-                    <Text style={styles.meta}>{product.description}</Text>
-                  ) : null}
-                  <Text style={styles.price}>{money(product)}</Text>
-                </View>
-                <Pressable
-                  accessibilityLabel={`Buy ${product?.name || "product"}`}
-                  style={[styles.button, busyId === id && styles.disabled]}
-                  disabled={busyId === id}
-                  onPress={() => buy(product)}
-                >
-                  <Text style={styles.buttonText}>
-                    {busyId === id ? "Opening..." : "Buy"}
-                  </Text>
-                </Pressable>
-              </View>
-            );
-          })}
-        </>
       ) : (
-        <Text style={styles.meta}>No published products.</Text>
+        <>
+          <View style={styles.profilePanel}>
+            <Text style={styles.profileTitle}>About this brand</Text>
+            <Text style={styles.meta}>
+              View the public profile for brand details, courses, product context, and
+              public links.
+            </Text>
+            <Link href={`/brands/${encodeURIComponent(slug)}` as any} asChild>
+              <Pressable style={styles.secondaryButton}>
+                <Text style={styles.secondaryButtonText}>View Brand Profile</Text>
+              </Pressable>
+            </Link>
+            <View style={styles.actionRow}>
+              <Pressable style={styles.secondaryButton} onPress={shareStorefront}>
+                <Text style={styles.secondaryButtonText}>Share Store</Text>
+              </Pressable>
+              <Link href={`/store?similarTo=${encodeURIComponent(slug)}` as any} asChild>
+                <Pressable style={styles.secondaryButton}>
+                  <Text style={styles.secondaryButtonText}>View Similar Brands</Text>
+                </Pressable>
+              </Link>
+              <Link href={returnFeedHref as any} asChild>
+                <Pressable style={styles.secondaryButton}>
+                  <Text style={styles.secondaryButtonText}>Return to Feed</Text>
+                </Pressable>
+              </Link>
+            </View>
+          </View>
+          {links.length ? (
+            <View style={styles.profilePanel}>
+              <Text style={styles.profileTitle}>Public Links</Text>
+              <View style={styles.actionRow}>
+                {links.map((link) => (
+                  <Pressable
+                    key={`${link.label}-${link.url}`}
+                    style={styles.secondaryButton}
+                    onPress={() => {
+                      trackCommercialClick({
+                        eventType: "storefront_public_link_click",
+                        objectType: "storefront",
+                        storefrontSlug: slug,
+                        targetUrl: link.url,
+                        source: "public_storefront",
+                        metadata: { label: link.label }
+                      });
+                      void openCheckoutUrl(link.url);
+                    }}
+                  >
+                    <Text style={styles.secondaryButtonText}>{link.label}</Text>
+                  </Pressable>
+                ))}
+              </View>
+            </View>
+          ) : null}
+          {feedback ? <Text style={styles.feedback}>{feedback}</Text> : null}
+          {products.length ? (
+            products.map((product) => {
+              const id = productId(product);
+              return (
+                <View key={id || product?.name} style={styles.product}>
+                  <View style={styles.productBody}>
+                    <Text style={styles.productName}>{product?.name || "Product"}</Text>
+                    {product?.description ? (
+                      <Text style={styles.meta}>{product.description}</Text>
+                    ) : null}
+                    <Text style={styles.price}>{money(product)}</Text>
+                  </View>
+                  <View style={styles.productActions}>
+                    <Link
+                      href={
+                        `/store/${encodeURIComponent(slug)}/products/${encodeURIComponent(
+                          id || product?.slug || product?.name || "product"
+                        )}` as any
+                      }
+                      asChild
+                    >
+                      <Pressable style={styles.secondaryButton}>
+                        <Text style={styles.secondaryButtonText}>Details</Text>
+                      </Pressable>
+                    </Link>
+                    <Pressable
+                      accessibilityLabel={`Buy ${product?.name || "product"}`}
+                      style={[styles.button, busyId === id && styles.disabled]}
+                      disabled={busyId === id}
+                      onPress={() => buy(product)}
+                    >
+                      <Text style={styles.buttonText}>
+                        {busyId === id ? "Opening..." : "Buy"}
+                      </Text>
+                    </Pressable>
+                  </View>
+                </View>
+              );
+            })
+          ) : (
+            <Text style={styles.meta}>No published products.</Text>
+          )}
+
+          {courses.length ? (
+            <View style={styles.profilePanel}>
+              <Text style={styles.profileTitle}>Courses</Text>
+              {courses.slice(0, 3).map((course) => {
+                const id = publicItemId(course);
+                return (
+                  <View
+                    key={id || publicItemTitle(course, "Course")}
+                    style={styles.linkRow}
+                  >
+                    <View style={styles.productBody}>
+                      <Text style={styles.productName}>
+                        {publicItemTitle(course, "Course")}
+                      </Text>
+                      {publicItemSummary(course) ? (
+                        <Text style={styles.meta}>{publicItemSummary(course)}</Text>
+                      ) : null}
+                    </View>
+                    <Link
+                      href={
+                        `/courses${id ? `?courseId=${encodeURIComponent(id)}` : ""}` as any
+                      }
+                      asChild
+                    >
+                      <Pressable style={styles.secondaryButton}>
+                        <Text style={styles.secondaryButtonText}>Open</Text>
+                      </Pressable>
+                    </Link>
+                  </View>
+                );
+              })}
+            </View>
+          ) : null}
+
+          {trials.length ? (
+            <View style={styles.profilePanel}>
+              <Text style={styles.profileTitle}>Product Trial Proof</Text>
+              {trials.slice(0, 3).map((trial) => (
+                <View
+                  key={publicItemId(trial) || publicItemTitle(trial, "Trial")}
+                  style={styles.linkRow}
+                >
+                  <View style={styles.productBody}>
+                    <Text style={styles.productName}>
+                      {publicItemTitle(trial, "Trial")}
+                    </Text>
+                    {publicItemSummary(trial) ? (
+                      <Text style={styles.meta}>{publicItemSummary(trial)}</Text>
+                    ) : null}
+                  </View>
+                  <Text style={styles.statusPill}>{trial?.status || "trial"}</Text>
+                </View>
+              ))}
+            </View>
+          ) : null}
+        </>
       )}
     </AppPage>
   );
@@ -145,6 +333,11 @@ const styles = StyleSheet.create({
   subtitle: { color: "#64748B", marginTop: 4 },
   center: { alignItems: "center", gap: 8, justifyContent: "center", minHeight: 180 },
   error: { color: "#B91C1C", fontWeight: "700" },
+  actionRow: {
+    flexDirection: "row",
+    flexWrap: "wrap",
+    gap: 8
+  },
   feedback: {
     backgroundColor: "#F1F5F9",
     borderRadius: 8,
@@ -166,8 +359,53 @@ const styles = StyleSheet.create({
     padding: 12
   },
   productBody: { flex: 1, gap: 4 },
+  productActions: {
+    alignItems: "flex-end",
+    gap: 8
+  },
+  linkRow: {
+    alignItems: "center",
+    borderTopColor: "#E2E8F0",
+    borderTopWidth: 1,
+    flexDirection: "row",
+    gap: 8,
+    justifyContent: "space-between",
+    paddingVertical: 10
+  },
   productName: { color: "#111827", fontSize: 16, fontWeight: "800" },
   price: { color: "#166534", fontWeight: "800" },
+  profilePanel: {
+    backgroundColor: "#F8FAFC",
+    borderColor: "#E2E8F0",
+    borderRadius: 8,
+    borderWidth: 1,
+    gap: 8,
+    marginBottom: 12,
+    padding: 12
+  },
+  profileTitle: { color: "#111827", fontSize: 16, fontWeight: "800" },
+  secondaryButton: {
+    alignItems: "center",
+    alignSelf: "flex-start",
+    backgroundColor: "#F1F5F9",
+    borderColor: "#CBD5E1",
+    borderRadius: 8,
+    borderWidth: 1,
+    paddingHorizontal: 14,
+    paddingVertical: 10
+  },
+  secondaryButtonText: { color: "#166534", fontWeight: "800" },
+  statusPill: {
+    backgroundColor: "#DCFCE7",
+    borderRadius: 999,
+    color: "#166534",
+    fontSize: 12,
+    fontWeight: "800",
+    overflow: "hidden",
+    paddingHorizontal: 10,
+    paddingVertical: 5,
+    textTransform: "capitalize"
+  },
   button: {
     backgroundColor: "#166534",
     borderRadius: 8,

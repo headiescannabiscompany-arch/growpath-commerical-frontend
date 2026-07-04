@@ -41,8 +41,11 @@ function createPreflightRoot() {
     "scripts/verify-sentry-dsn.cjs",
     "scripts/verify-live-urls.cjs",
     "scripts/inventory-ui-routes.cjs",
+    "scripts/validate-frontend-runtime-contract.cjs",
+    "scripts/validate-backend-route-contract.cjs",
     "scripts/validate-v1-ui-surface.cjs",
     "scripts/validate-v1-feature-matrix.cjs",
+    "scripts/run-playwright-expo.cjs",
     "scripts/export-production-web.cjs",
     "node_modules/jest/bin/jest.js",
     "node_modules/@playwright/test/cli.js"
@@ -74,6 +77,8 @@ fs.appendFileSync(path.join(process.cwd(), "preflight-log.jsonl"), JSON.stringif
 }
 
 function runPreflight(tempRoot, args = []) {
+  const env = { ...process.env };
+  delete env.PLAYWRIGHT_WEB_PORT;
   return spawnSync(
     process.execPath,
     [path.join(tempRoot, "scripts", "release-preflight.cjs"), ...args],
@@ -81,7 +86,7 @@ function runPreflight(tempRoot, args = []) {
       cwd: tempRoot,
       encoding: "utf8",
       env: {
-        ...process.env,
+        ...env,
         PATH: `${tempRoot}${path.delimiter}${process.env.PATH || ""}`
       }
     }
@@ -111,14 +116,16 @@ describe("release preflight", () => {
       "scripts/scan-release.cjs",
       "scripts/audit-full-surface.cjs",
       "scripts/inventory-ui-routes.cjs",
+      "scripts/validate-frontend-runtime-contract.cjs",
+      "scripts/validate-backend-route-contract.cjs",
       "scripts/validate-v1-ui-surface.cjs",
       "scripts/validate-v1-feature-matrix.cjs",
       "node_modules/jest/bin/jest.js",
       "node_modules/jest/bin/jest.js",
-      "node_modules/@playwright/test/cli.js",
+      "scripts/run-playwright-expo.cjs",
       "scripts/export-production-web.cjs"
     ]);
-    expect(readLog(tempRoot)[5].argv).toEqual(
+    expect(readLog(tempRoot)[7].argv).toEqual(
       expect.arrayContaining([
         "--config",
         "jest.backend.config.cjs",
@@ -126,7 +133,7 @@ describe("release preflight", () => {
         "backend/routes/cropKnowledge.test.js"
       ])
     );
-    expect(readLog(tempRoot)[6].argv).toEqual(
+    expect(readLog(tempRoot)[8].argv).toEqual(
       expect.arrayContaining([
         "tests/unit/cropKnowledge-api.test.ts",
         "tests/release.scan.test.js",
@@ -161,15 +168,17 @@ describe("release preflight", () => {
       "scripts/verify-sentry-dsn.cjs",
       "scripts/verify-live-urls.cjs",
       "scripts/inventory-ui-routes.cjs",
+      "scripts/validate-frontend-runtime-contract.cjs",
+      "scripts/validate-backend-route-contract.cjs",
       "scripts/validate-v1-ui-surface.cjs",
       "scripts/validate-v1-feature-matrix.cjs",
       "node_modules/jest/bin/jest.js",
       "node_modules/jest/bin/jest.js",
-      "node_modules/@playwright/test/cli.js",
+      "scripts/run-playwright-expo.cjs",
       "scripts/export-production-web.cjs"
     ]);
     expect(log[2].strict).toBe("1");
-    expect(log[8].argv).toEqual(
+    expect(log[10].argv).toEqual(
       expect.arrayContaining([
         "--config",
         "jest.backend.config.cjs",
@@ -177,7 +186,7 @@ describe("release preflight", () => {
         "backend/routes/cropKnowledge.test.js"
       ])
     );
-    expect(log[9].argv).toEqual(
+    expect(log[11].argv).toEqual(
       expect.arrayContaining([
         "tests/unit/cropKnowledge-api.test.ts",
         "tests/release.scan.test.js",
@@ -193,7 +202,7 @@ describe("release preflight", () => {
         "tests/release.store-assets.test.js"
       ])
     );
-    expect(log[10]).toEqual(
+    expect(log[12]).toEqual(
       expect.objectContaining({
         playwrightPort: "19025",
         playwrightVideo: "1"

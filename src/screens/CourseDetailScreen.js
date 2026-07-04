@@ -1,4 +1,5 @@
 import React, { useCallback, useEffect, useMemo, useState } from "react";
+import { useRouter } from "expo-router";
 import {
   ActivityIndicator,
   Linking,
@@ -31,6 +32,7 @@ import {
   startCourseCheckout
 } from "../api/coursePayments";
 import { submitReport, exportCourseSales } from "../api/reports";
+import PersonalFeedPlacement from "@/components/feed/PersonalFeedPlacement";
 import { useEntitlements } from "@/entitlements";
 import { getLearningAccess } from "@/features/learning/learningAccess";
 
@@ -73,6 +75,7 @@ async function openCheckoutUrl(url) {
 }
 
 export default function CourseDetailScreen({ route, navigation }) {
+  const router = useRouter();
   const entitlements = useEntitlements();
   const access = getLearningAccess(entitlements);
   const initialCourse = route?.params?.course || null;
@@ -326,7 +329,11 @@ export default function CourseDetailScreen({ route, navigation }) {
   }
 
   function addLesson() {
-    if (!loadedCourseId || !navigation?.navigate) return;
+    if (!loadedCourseId) return;
+    if (!navigation?.navigate) {
+      router.push(`/courses/add-lesson?courseId=${encodeURIComponent(loadedCourseId)}`);
+      return;
+    }
     navigation.navigate("AddLesson", { courseId: loadedCourseId });
   }
 
@@ -340,7 +347,9 @@ export default function CourseDetailScreen({ route, navigation }) {
     return (
       <ScrollView contentContainerStyle={styles.content}>
         <Text style={styles.title}>Course unavailable</Text>
+        <PersonalFeedPlacement placement="top" routeKey="personal_course_detail" />
         <Text style={styles.meta}>This account does not have `COURSES_VIEW`.</Text>
+        <PersonalFeedPlacement placement="bottom" routeKey="personal_course_detail" />
       </ScrollView>
     );
   }
@@ -357,6 +366,7 @@ export default function CourseDetailScreen({ route, navigation }) {
   return (
     <ScrollView style={styles.container} contentContainerStyle={styles.content}>
       <Text style={styles.title}>{course?.title || course?.name || "Course"}</Text>
+      <PersonalFeedPlacement placement="top" routeKey="personal_course_detail" longContent />
       <Text style={styles.meta}>
         {coursePrice(course)} |{" "}
         {course?.status || (course?.isPublished ? "published" : "draft")}
@@ -411,16 +421,14 @@ export default function CourseDetailScreen({ route, navigation }) {
         {access.canCreateCourses ? (
           <Pressable
             disabled={
-              !navigation?.navigate ||
               (access.maxLessonsPerCourse !== null &&
                 lessons.length >= access.maxLessonsPerCourse)
             }
             onPress={addLesson}
             style={[
               styles.secondaryBtn,
-              (!navigation?.navigate ||
-                (access.maxLessonsPerCourse !== null &&
-                  lessons.length >= access.maxLessonsPerCourse)) &&
+              access.maxLessonsPerCourse !== null &&
+                lessons.length >= access.maxLessonsPerCourse &&
                 styles.disabled
             ]}
           >
@@ -454,6 +462,8 @@ export default function CourseDetailScreen({ route, navigation }) {
         ))}
         {!lessons.length ? <Text style={styles.meta}>No lessons returned.</Text> : null}
       </View>
+
+      <PersonalFeedPlacement placement="middle" routeKey="personal_course_detail" longContent />
 
       {activeLesson ? (
         <View style={styles.card}>
@@ -619,6 +629,7 @@ export default function CourseDetailScreen({ route, navigation }) {
           </Pressable>
         </View>
       ) : null}
+      <PersonalFeedPlacement placement="bottom" routeKey="personal_course_detail" longContent />
     </ScrollView>
   );
 }

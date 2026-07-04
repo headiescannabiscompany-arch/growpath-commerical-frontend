@@ -15,6 +15,13 @@ export type CommercialFeedPost = {
   body: string;
   tags: string[];
   location?: string;
+  linkedProductId?: string;
+  linkedProductLineId?: string;
+  linkedCourseId?: string;
+  linkedGrowId?: string;
+  linkedForumThreadId?: string;
+  storefrontSlug?: string;
+  externalLinks?: Array<{ label: string; url: string }>;
   likeCount?: number;
   commentCount?: number;
   createdAt?: string;
@@ -68,6 +75,13 @@ export async function createCommercialFeedPost(input: {
   body: string;
   tags?: string[];
   location?: string;
+  linkedProductId?: string;
+  linkedProductLineId?: string;
+  linkedCourseId?: string;
+  linkedGrowId?: string;
+  linkedForumThreadId?: string;
+  storefrontSlug?: string;
+  externalLinks?: Array<{ label: string; url: string }>;
 }) {
   const res: any = await apiRequest("/api/commercial/posts", {
     method: "POST",

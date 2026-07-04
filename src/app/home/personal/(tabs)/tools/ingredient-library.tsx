@@ -18,6 +18,7 @@ import {
   type ProductIngredient
 } from "@/api/productIngredients";
 import BackButton from "@/components/nav/BackButton";
+import PersonalFeedPlacement from "@/components/feed/PersonalFeedPlacement";
 
 type Draft = {
   name: string;
@@ -234,6 +235,11 @@ export default function IngredientLibraryRoute() {
         <Text style={styles.subtitle}>
           Manage user-entered nutrients, amendments, soil inputs, and source confidence.
         </Text>
+        <PersonalFeedPlacement
+          placement="top"
+          routeKey="personal_tools_ingredient_library"
+          longContent
+        />
       </View>
 
       <View style={styles.actions}>
@@ -295,6 +301,12 @@ export default function IngredientLibraryRoute() {
           </Text>
         </View>
       )}
+
+      <PersonalFeedPlacement
+        placement="middle"
+        routeKey="personal_tools_ingredient_library"
+        longContent
+      />
 
       <View style={styles.form}>
         <Text style={styles.sectionTitle}>
@@ -437,6 +449,12 @@ export default function IngredientLibraryRoute() {
 
         {feedback ? <Text style={styles.feedback}>{feedback}</Text> : null}
       </View>
+
+      <PersonalFeedPlacement
+        placement="bottom"
+        routeKey="personal_tools_ingredient_library"
+        longContent
+      />
     </ScrollView>
   );
 }

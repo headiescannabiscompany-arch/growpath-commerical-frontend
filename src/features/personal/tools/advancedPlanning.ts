@@ -5,6 +5,10 @@ export type HarvestEstimatorInput = {
   amberPct: number;
   pistilDarkPct: number;
   cultivarSpeed: "fast" | "average" | "slow";
+  budSwellStatus?: string;
+  aromaTrend?: string;
+  sampleLocation?: string;
+  userGoal?: "brighter" | "balanced" | "heavier" | "hash" | "unknown";
 };
 
 export type HarvestEstimatorResult = {
@@ -14,6 +18,10 @@ export type HarvestEstimatorResult = {
   latestDay: number;
   readiness: "early" | "monitor" | "ready" | "late";
   summary: string;
+  evidence: string[];
+  warnings: string[];
+  recommendations: string[];
+  tasksToCreate: { title: string; priority: "low" | "medium" | "high"; dueInDays: number }[];
 };
 
 export type TimelineInput = {
@@ -62,6 +70,10 @@ export function estimateHarvestWindow(
   const pistilDarkPct = Math.max(0, Math.min(100, finiteNumber(input.pistilDarkPct, 0)));
   const speedAdjustment =
     input.cultivarSpeed === "fast" ? -5 : input.cultivarSpeed === "slow" ? 5 : 0;
+  const budSwellStatus = String(input.budSwellStatus || "").toLowerCase();
+  const aromaTrend = String(input.aromaTrend || "").toLowerCase();
+  const sampleLocation = String(input.sampleLocation || "").toLowerCase();
+  const userGoal = input.userGoal || "unknown";
   const maturitySignal =
     cloudyPct * 0.45 + amberPct * 1.1 + pistilDarkPct * 0.25 + floweringDay * 0.35;
   const targetDay = Math.max(
@@ -77,8 +89,56 @@ export function estimateHarvestWindow(
       : amberPct >= 10 && cloudyPct >= 60 && floweringDay >= earliestDay
         ? "ready"
         : floweringDay >= earliestDay - 7 || cloudyPct >= 55
-          ? "monitor"
-          : "early";
+        ? "monitor"
+        : "early";
+  const evidence = [
+    `Flower day ${floweringDay} against breeder reference ${breederFlowerDays}`,
+    `Trichomes: ${cloudyPct}% cloudy / ${amberPct}% amber`,
+    `Dark pistils: ${pistilDarkPct}%`,
+    budSwellStatus ? `Bud swell: ${budSwellStatus}` : "",
+    aromaTrend ? `Aroma trend: ${aromaTrend}` : "",
+    sampleLocation ? `Sample location: ${sampleLocation}` : "",
+    userGoal !== "unknown" ? `User goal: ${userGoal}` : ""
+  ].filter(Boolean);
+  const warnings: string[] = [];
+  if (/still|building|not done|swelling/.test(budSwellStatus)) {
+    warnings.push("Buds/calyxes still appear to be swelling; harvest may be early even if some trichomes are cloudy.");
+  }
+  if (/sugar|leaf/.test(sampleLocation)) {
+    warnings.push("Do not harvest from one sugar-leaf trichome sample; check multiple bud sites.");
+  }
+  if (cloudyPct < 50 && amberPct < 10) {
+    warnings.push("Trichomes do not yet show a strong mature signal.");
+  }
+  if (aromaTrend.includes("fading") || aromaTrend.includes("decline")) {
+    warnings.push("Aroma appears to be fading; review soon for late-window quality risk.");
+  }
+  if (floweringDay + 14 < breederFlowerDays && readiness !== "late") {
+    warnings.push("Plant is still well before breeder timing; require strong maturity evidence before harvesting.");
+  }
+  const recommendations = [
+    userGoal === "brighter"
+      ? "For a brighter goal, prefer mostly cloudy trichomes with low amber only if buds and aroma agree."
+      : userGoal === "heavier"
+        ? "For a heavier goal, allow more amber while watching aroma fade and overripe risk."
+        : userGoal === "hash"
+          ? "For hash, also evaluate resin head quality, grease, aroma, and intended wash/dry-sift behavior."
+          : "Match final timing to effect goal, bud swell, trichome spread, and aroma maturity.",
+    "Check trichomes on multiple bud sites before acting.",
+    "Prepare drying space before the estimated target day."
+  ];
+  const tasksToCreate = [
+    {
+      title: readiness === "ready" || readiness === "late" ? "Inspect harvest readiness now" : "Recheck trichomes",
+      priority: readiness === "ready" || readiness === "late" ? "high" as const : "medium" as const,
+      dueInDays: readiness === "early" ? 5 : readiness === "monitor" ? 2 : 0
+    },
+    {
+      title: "Prepare dry room",
+      priority: daysRemaining <= 7 ? "high" as const : "medium" as const,
+      dueInDays: Math.max(0, Math.min(7, daysRemaining))
+    }
+  ];
 
   return {
     daysRemaining,
@@ -86,6 +146,10 @@ export function estimateHarvestWindow(
     targetDay,
     latestDay,
     readiness,
+    evidence,
+    warnings,
+    recommendations,
+    tasksToCreate,
     summary:
       readiness === "ready"
         ? "Harvest window is open. Confirm with multiple bud sites before cutting."

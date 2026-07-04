@@ -15,6 +15,8 @@ import {
   saveToolRunAndCreateLog,
   saveToolRunAndCreateTask
 } from "@/features/personal/tools/saveToolRunAndOpenJournal";
+import { reviewFeedingSchedule } from "@/features/personal/tools/feedingScheduleReview";
+import PersonalFeedPlacement from "@/components/feed/PersonalFeedPlacement";
 
 function coerceParam(value?: string | string[]) {
   if (typeof value === "string") return value;
@@ -60,14 +62,45 @@ export default function FeedingScheduleToolScreen() {
   const [productName, setProductName] = useState("Base nutrient");
   const [medium, setMedium] = useState("Soil");
   const [strainType, setStrainType] = useState("Photoperiod");
+  const [currentStage, setCurrentStage] = useState("veg");
   const [experience, setExperience] = useState("Intermediate");
   const [weeks, setWeeks] = useState("12");
+  const [inputEC, setInputEC] = useState("");
+  const [runoffEC, setRunoffEC] = useState("");
+  const [inputPH, setInputPH] = useState("");
+  const [runoffPH, setRunoffPH] = useState("");
+  const [waterSource, setWaterSource] = useState("");
   const [result, setResult] = useState<any>(null);
   const [running, setRunning] = useState(false);
   const [feedback, setFeedback] = useState("");
 
   const scheduleRows = rowsFromSchedule(result);
   const notes = notesFromSchedule(result);
+  const review = useMemo(
+    () =>
+      reviewFeedingSchedule({
+        schedule: scheduleRows,
+        productName: productName.trim(),
+        medium,
+        stage: currentStage,
+        inputEC: inputEC.trim() ? Number(inputEC) : undefined,
+        runoffEC: runoffEC.trim() ? Number(runoffEC) : undefined,
+        inputPH: inputPH.trim() ? Number(inputPH) : undefined,
+        runoffPH: runoffPH.trim() ? Number(runoffPH) : undefined,
+        waterSource
+      }),
+    [
+      currentStage,
+      inputEC,
+      medium,
+      productName,
+      runoffEC,
+      inputPH,
+      runoffPH,
+      scheduleRows,
+      waterSource
+    ]
+  );
 
   async function run() {
     if (!enabled || running) return;
@@ -82,7 +115,13 @@ export default function FeedingScheduleToolScreen() {
         growMedium: medium.trim(),
         strainType: strainType.trim(),
         experience: experience.trim(),
-        weeks: Number(weeks)
+        weeks: Number(weeks),
+        stage: currentStage.trim(),
+        inputEC: Number(inputEC),
+        runoffEC: Number(runoffEC),
+        inputPH: Number(inputPH),
+        runoffPH: Number(runoffPH),
+        waterSource: waterSource.trim()
       });
       setResult(response);
       if (!rowsFromSchedule(response).length) {
@@ -102,7 +141,13 @@ export default function FeedingScheduleToolScreen() {
       growMedium: medium.trim(),
       strainType: strainType.trim(),
       experience: experience.trim(),
-      weeks: Number(weeks)
+      weeks: Number(weeks),
+      stage: currentStage.trim(),
+      inputEC: Number(inputEC),
+      runoffEC: Number(runoffEC),
+      inputPH: Number(inputPH),
+      runoffPH: Number(runoffPH),
+      waterSource: waterSource.trim()
     };
     const created = await saveToolRunAndCreateLog({
       growId,
@@ -115,6 +160,8 @@ export default function FeedingScheduleToolScreen() {
       title: `${productName.trim() || "Nutrient"} feeding schedule`,
       notes: [
         `Medium: ${medium}`,
+        `Stage: ${currentStage}`,
+        `Review risk: ${review.riskLevel}`,
         `Strain type: ${strainType}`,
         plantContext.selectedPlantContext
           ? `Plant: ${plantContext.selectedPlantContext.name || plantContext.selectedPlantContext.cropCommonName || "selected plant"}`
@@ -123,6 +170,7 @@ export default function FeedingScheduleToolScreen() {
           ? `Species: ${plantContext.selectedPlantContext.scientificName}`
           : "",
         notes,
+        ...review.warnings.map((warning) => `Warning: ${warning}`),
         ...scheduleRows.map(
           (row) =>
             `Week ${row.week ?? "?"}: ${row.stage || "stage"} - ${row.feed?.amountPerGallon || row.amount || "dose not specified"}`
@@ -143,6 +191,11 @@ export default function FeedingScheduleToolScreen() {
       <Text style={styles.subtitle}>
         Generate a feeding plan from nutrient, medium, strain, and schedule context.
       </Text>
+      <PersonalFeedPlacement
+        placement="top"
+        routeKey="personal_tools_feeding_schedule"
+        longContent
+      />
       {growId ? <Text style={styles.context}>Grow context: {growId}</Text> : null}
       <ToolPlantContextPicker
         plants={plantContext.plants}
@@ -172,6 +225,13 @@ export default function FeedingScheduleToolScreen() {
         value={strainType}
         onChangeText={setStrainType}
       />
+      <Text style={styles.label}>Current stage</Text>
+      <TextInput
+        accessibilityLabel="Feeding current stage"
+        style={styles.input}
+        value={currentStage}
+        onChangeText={setCurrentStage}
+      />
       <Text style={styles.label}>Experience</Text>
       <TextInput
         accessibilityLabel="Feeding experience"
@@ -186,6 +246,46 @@ export default function FeedingScheduleToolScreen() {
         value={weeks}
         onChangeText={setWeeks}
         keyboardType="numeric"
+      />
+      <Text style={styles.label}>Input EC</Text>
+      <TextInput
+        accessibilityLabel="Feeding input EC"
+        style={styles.input}
+        value={inputEC}
+        onChangeText={setInputEC}
+        keyboardType="numeric"
+      />
+      <Text style={styles.label}>Runoff EC</Text>
+      <TextInput
+        accessibilityLabel="Feeding runoff EC"
+        style={styles.input}
+        value={runoffEC}
+        onChangeText={setRunoffEC}
+        keyboardType="numeric"
+      />
+      <Text style={styles.label}>Input pH</Text>
+      <TextInput
+        accessibilityLabel="Feeding input pH"
+        style={styles.input}
+        value={inputPH}
+        onChangeText={setInputPH}
+        keyboardType="numeric"
+      />
+      <Text style={styles.label}>Runoff pH</Text>
+      <TextInput
+        accessibilityLabel="Feeding runoff pH"
+        style={styles.input}
+        value={runoffPH}
+        onChangeText={setRunoffPH}
+        keyboardType="numeric"
+      />
+      <Text style={styles.label}>Water source</Text>
+      <TextInput
+        accessibilityLabel="Feeding water source"
+        style={styles.input}
+        value={waterSource}
+        onChangeText={setWaterSource}
+        placeholder="RO, city, well, rain"
       />
 
       {!enabled ? (
@@ -207,6 +307,12 @@ export default function FeedingScheduleToolScreen() {
         </Text>
       </Pressable>
 
+      <PersonalFeedPlacement
+        placement="middle"
+        routeKey="personal_tools_feeding_schedule"
+        longContent
+      />
+
       <ToolResultSurface
         title="Feeding schedule"
         status={result ? "AI ENDPOINT" : "READY"}
@@ -214,7 +320,14 @@ export default function FeedingScheduleToolScreen() {
         metrics={[
           { key: "weeks", label: "Requested weeks", value: weeks || "0" },
           { key: "rows", label: "Schedule rows", value: String(scheduleRows.length) },
-          { key: "medium", label: "Medium", value: medium || "Unspecified" }
+          { key: "medium", label: "Medium", value: medium || "Unspecified" },
+          { key: "stage", label: "Stage", value: currentStage || "Unspecified" },
+          {
+            key: "risk",
+            label: "Review risk",
+            value: review.riskLevel.toUpperCase(),
+            detail: `${review.warnings.length} warnings`
+          }
         ]}
         details={
           scheduleRows.length ? (
@@ -230,6 +343,8 @@ export default function FeedingScheduleToolScreen() {
         }
         assumptions={[
           "Backend schedule output is authoritative for entitlement and endpoint behavior.",
+          ...review.warnings,
+          ...review.recommendations,
           "Confirm product label rates, local regulations, runoff, EC, and plant response before applying."
         ]}
         actions={
@@ -256,14 +371,23 @@ export default function FeedingScheduleToolScreen() {
                         growMedium: medium.trim(),
                         strainType: strainType.trim(),
                         experience: experience.trim(),
-                        weeks: Number(weeks)
+                        weeks: Number(weeks),
+                        stage: currentStage.trim(),
+                        inputEC: Number(inputEC),
+                        runoffEC: Number(runoffEC),
+                        inputPH: Number(inputPH),
+                        runoffPH: Number(runoffPH),
+                        waterSource: waterSource.trim()
                       },
                       output: result,
                       title: "Review generated feeding schedule",
                       description: [
                         `Product: ${productName.trim() || "Unspecified"}`,
                         `Medium: ${medium}`,
+                        `Stage: ${currentStage}`,
+                        `Risk: ${review.riskLevel}`,
                         `Rows: ${scheduleRows.length}`,
+                        ...review.warnings.map((warning) => `Warning: ${warning}`),
                         notes
                       ]
                         .filter(Boolean)
@@ -280,6 +404,12 @@ export default function FeedingScheduleToolScreen() {
         }
         feedback={feedback}
         contextMessage={!growId ? "Select a grow to save this schedule." : undefined}
+      />
+
+      <PersonalFeedPlacement
+        placement="bottom"
+        routeKey="personal_tools_feeding_schedule"
+        longContent
       />
     </ScrollView>
   );

@@ -14,6 +14,7 @@ import { ScreenBoundary } from "@/components/ScreenBoundary";
 import { InlineError } from "@/components/InlineError";
 import { apiRequest } from "@/api/apiRequest";
 import { endpoints } from "@/api/endpoints";
+import { useAuth } from "@/auth/AuthContext";
 import { useApiErrorHandler } from "@/hooks/useApiErrorHandler";
 import { useFacility } from "@/state/useFacility";
 
@@ -45,6 +46,7 @@ function uniquePaths(paths: unknown[]): string[] {
 export default function FacilitySelectRoute() {
   const router = useRouter();
   const store: any = useFacility();
+  const auth = useAuth();
 
   const apiErr: any = useApiErrorHandler();
   const resolved = useMemo(() => {
@@ -111,14 +113,31 @@ export default function FacilitySelectRoute() {
     store?.setFacilityId ??
     ((_: AnyRec | string) => {});
 
+  const logout = useCallback(async () => {
+    await auth.logout();
+    router.replace("/login");
+  }, [auth, router]);
+
   return (
     <ScreenBoundary title="Select Facility">
       <View style={styles.container}>
         {resolved.error ? <InlineError error={resolved.error} /> : null}
 
         <View style={styles.headerRow}>
-          <Text style={styles.h1}>Select a Facility</Text>
-          <Text style={styles.muted}>Choose where you want to work.</Text>
+          <View style={styles.titleRow}>
+            <View style={{ flex: 1 }}>
+              <Text style={styles.h1}>Select a Facility</Text>
+              <Text style={styles.muted}>Choose where you want to work.</Text>
+            </View>
+            <Pressable
+              accessibilityRole="button"
+              accessibilityLabel="Log out"
+              onPress={logout}
+              style={styles.logoutButton}
+            >
+              <Text style={styles.logoutText}>Log out</Text>
+            </Pressable>
+          </View>
         </View>
 
         {loading ? (
@@ -141,10 +160,44 @@ export default function FacilitySelectRoute() {
           ListEmptyComponent={
             !loading ? (
               <View style={styles.empty}>
-                <Text style={styles.emptyTitle}>No facilities</Text>
+                <Text style={styles.emptyTitle}>No facility found.</Text>
                 <Text style={styles.muted}>
-                  Create a facility in the backend or seed your account.
+                  Create a facility, request access with an invite, or switch accounts.
                 </Text>
+                <View style={styles.emptyActions}>
+                  <Pressable
+                    accessibilityRole="button"
+                    accessibilityLabel="Create facility"
+                    onPress={() => router.push("/onboarding/create-facility")}
+                    style={styles.primaryButton}
+                  >
+                    <Text style={styles.primaryText}>Create Facility</Text>
+                  </Pressable>
+                  <Pressable
+                    accessibilityRole="button"
+                    accessibilityLabel="Request facility access"
+                    onPress={() => router.push("/onboarding/join-facility")}
+                    style={styles.secondaryButton}
+                  >
+                    <Text style={styles.secondaryText}>Request Access</Text>
+                  </Pressable>
+                  <Pressable
+                    accessibilityRole="button"
+                    accessibilityLabel="Switch account"
+                    onPress={logout}
+                    style={styles.secondaryButton}
+                  >
+                    <Text style={styles.secondaryText}>Switch Account</Text>
+                  </Pressable>
+                  <Pressable
+                    accessibilityRole="button"
+                    accessibilityLabel="Contact support"
+                    onPress={() => router.push("/support")}
+                    style={styles.secondaryButton}
+                  >
+                    <Text style={styles.secondaryText}>Contact Support</Text>
+                  </Pressable>
+                </View>
               </View>
             ) : null
           }
@@ -184,6 +237,7 @@ export default function FacilitySelectRoute() {
 const styles = StyleSheet.create({
   container: { flex: 1, padding: 16, gap: 12 },
   headerRow: { gap: 4 },
+  titleRow: { flexDirection: "row", alignItems: "center", gap: 12 },
   h1: { fontSize: 22, fontWeight: "900" },
   muted: { opacity: 0.7 },
   loading: { paddingVertical: 18, alignItems: "center", gap: 10 },
@@ -202,5 +256,40 @@ const styles = StyleSheet.create({
   rowTitle: { fontSize: 16, fontWeight: "800" },
   chev: { fontSize: 22, opacity: 0.5, paddingLeft: 8 },
   empty: { paddingVertical: 26, alignItems: "center", gap: 8 },
-  emptyTitle: { fontSize: 16, fontWeight: "800" }
+  emptyTitle: { fontSize: 16, fontWeight: "800" },
+  emptyActions: {
+    alignItems: "center",
+    flexDirection: "row",
+    flexWrap: "wrap",
+    gap: 8,
+    justifyContent: "center",
+    marginTop: 8
+  },
+  primaryButton: {
+    backgroundColor: "#166534",
+    borderColor: "#166534",
+    borderRadius: 8,
+    borderWidth: 1,
+    paddingHorizontal: 12,
+    paddingVertical: 9
+  },
+  primaryText: { color: "#FFFFFF", fontWeight: "900" },
+  secondaryButton: {
+    backgroundColor: "#FFFFFF",
+    borderColor: "#CBD5E1",
+    borderRadius: 8,
+    borderWidth: 1,
+    paddingHorizontal: 12,
+    paddingVertical: 9
+  },
+  secondaryText: { color: "#0F172A", fontWeight: "800" },
+  logoutButton: {
+    borderWidth: 1,
+    borderColor: "#DC2626",
+    borderRadius: 8,
+    paddingHorizontal: 12,
+    paddingVertical: 8,
+    backgroundColor: "#FEF2F2"
+  },
+  logoutText: { color: "#991B1B", fontWeight: "800" }
 });

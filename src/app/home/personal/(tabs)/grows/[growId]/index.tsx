@@ -19,6 +19,7 @@ import {
 import { listPersonalLogs } from "@/api/logs";
 import { listPersonalTasks } from "@/api/tasks";
 import { listToolRuns } from "@/api/toolRuns";
+import PersonalFeedPlacement from "@/components/feed/PersonalFeedPlacement";
 import GrowWorkspaceNav from "@/components/personal/GrowWorkspaceNav";
 import { coerceParam, findGrowById, fmtDate } from "@/features/grows/routeUtils";
 
@@ -134,6 +135,11 @@ export default function GrowOverviewScreen() {
       <Text style={styles.subtitle}>
         Status: {grow?.status || "active"} | Updated: {fmtDate(grow?.updatedAt)}
       </Text>
+      <PersonalFeedPlacement
+        placement="top"
+        routeKey="personal_grow_overview"
+        longContent
+      />
       <GrowWorkspaceNav growId={growId} active="overview" />
 
       <View style={styles.panel}>
@@ -191,6 +197,12 @@ export default function GrowOverviewScreen() {
         </Link>
       </View>
 
+      <PersonalFeedPlacement
+        placement="middle"
+        routeKey="personal_grow_overview"
+        longContent
+      />
+
       <View style={styles.quickRow}>
         <Link
           href={`/home/personal/logs/new?growId=${encodeURIComponent(growId)}`}
@@ -213,6 +225,11 @@ export default function GrowOverviewScreen() {
       </View>
 
       {error ? <Text style={styles.error}>{error}</Text> : null}
+      <PersonalFeedPlacement
+        placement="bottom"
+        routeKey="personal_grow_overview"
+        longContent
+      />
     </ScrollView>
   );
 }

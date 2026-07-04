@@ -41,6 +41,32 @@ function renderKV(obj: AnyRec | null, key: string) {
   );
 }
 
+function draftFromItem(item: AnyRec | null) {
+  return {
+    name: String(item?.name ?? ""),
+    sku: String(item?.sku ?? ""),
+    quantity:
+      item?.quantity === undefined || item?.quantity === null
+        ? ""
+        : String(item.quantity),
+    unit: String(item?.unit ?? ""),
+    reorderPoint:
+      item?.reorderPoint === undefined || item?.reorderPoint === null
+        ? ""
+        : String(item.reorderPoint),
+    vendor: String(item?.vendor ?? ""),
+    category: String(item?.category ?? ""),
+    itemType: String(item?.itemType ?? item?.type ?? ""),
+    location: String(item?.location ?? item?.storageLocation ?? ""),
+    linkedProductId: String(item?.linkedProductId ?? ""),
+    linkedIngredientId: String(item?.linkedIngredientId ?? ""),
+    linkedGeneticsId: String(item?.linkedGeneticsId ?? ""),
+    linkedGrowId: String(item?.linkedGrowId ?? ""),
+    status: String(item?.status ?? "active"),
+    notes: String(item?.notes ?? "")
+  };
+}
+
 export default function CommercialInventoryItemDetailRoute() {
   const router = useRouter();
   const ent = useEntitlements();
@@ -48,28 +74,15 @@ export default function CommercialInventoryItemDetailRoute() {
   const id = safeId(params as any);
 
   const apiErr: any = useApiErrorHandler();
-  const resolved = useMemo(() => {
-    const error = apiErr?.error ?? apiErr?.[0] ?? null;
-    const handleApiError = apiErr?.handleApiError ?? apiErr?.[1] ?? ((_: any) => {});
-    const clearError = apiErr?.clearError ?? apiErr?.[2] ?? (() => {});
-    return { error, handleApiError, clearError };
-  }, [apiErr]);
+  const error = apiErr?.error ?? apiErr?.[0] ?? null;
+  const handleApiError = apiErr?.handleApiError ?? apiErr?.[1] ?? ((_: any) => {});
+  const clearError = apiErr?.clearError ?? apiErr?.[2] ?? (() => {});
 
   const [item, setItem] = useState<AnyRec | null>(null);
   const [loading, setLoading] = useState(true);
   const [refreshing, setRefreshing] = useState(false);
   const [saving, setSaving] = useState(false);
-  const [draft, setDraft] = useState({
-    name: "",
-    sku: "",
-    quantity: "",
-    unit: "",
-    reorderPoint: "",
-    vendor: "",
-    category: "",
-    status: "active",
-    notes: ""
-  });
+  const [draft, setDraft] = useState(() => draftFromItem(null));
 
   const load = useCallback(
     async (opts?: { refresh?: boolean }) => {
@@ -79,7 +92,7 @@ export default function CommercialInventoryItemDetailRoute() {
       else setLoading(true);
 
       try {
-        resolved.clearError();
+        clearError();
 
         const path =
           (endpoints as any)?.commercial?.inventoryItem?.(id) ??
@@ -87,15 +100,17 @@ export default function CommercialInventoryItemDetailRoute() {
           `/api/inventory/${encodeURIComponent(id)}`;
 
         const res = await apiRequest(path, { method: "GET" });
-        setItem(res ?? null);
+        const nextItem = res?.item ?? res ?? null;
+        setItem(nextItem);
+        setDraft(draftFromItem(nextItem));
       } catch (e) {
-        resolved.handleApiError(e);
+        handleApiError(e);
       } finally {
         setLoading(false);
         setRefreshing(false);
       }
     },
-    [id, resolved]
+    [id]
   );
 
   useEffect(() => {
@@ -104,38 +119,17 @@ export default function CommercialInventoryItemDetailRoute() {
       return;
     }
     load();
-  }, [ent?.ready, ent?.mode, load, router]);
+  }, [ent?.ready, ent?.mode, load]);
 
   const keys = useMemo(() => (item ? Object.keys(item).sort() : []), [item]);
   const canEdit = !!ent?.can?.(CAPABILITY_KEYS.COMMERCIAL_INVENTORY_WRITE);
-
-  useEffect(() => {
-    if (!item) return;
-    setDraft({
-      name: String(item.name ?? ""),
-      sku: String(item.sku ?? ""),
-      quantity:
-        item.quantity === undefined || item.quantity === null
-          ? ""
-          : String(item.quantity),
-      unit: String(item.unit ?? ""),
-      reorderPoint:
-        item.reorderPoint === undefined || item.reorderPoint === null
-          ? ""
-          : String(item.reorderPoint),
-      vendor: String(item.vendor ?? ""),
-      category: String(item.category ?? ""),
-      status: String(item.status ?? "active"),
-      notes: String(item.notes ?? "")
-    });
-  }, [item]);
 
   const save = useCallback(async () => {
     if (!id) return;
     if (!canEdit) return;
     setSaving(true);
     try {
-      resolved.clearError();
+      clearError();
       const path =
         (endpoints as any)?.commercial?.inventoryItem?.(id) ??
         (endpoints as any)?.inventoryItemGlobal?.(id) ??
@@ -147,6 +141,12 @@ export default function CommercialInventoryItemDetailRoute() {
         unit: draft.unit.trim() || undefined,
         vendor: draft.vendor.trim() || undefined,
         category: draft.category.trim() || undefined,
+        itemType: draft.itemType.trim() || undefined,
+        location: draft.location.trim() || undefined,
+        linkedProductId: draft.linkedProductId.trim() || undefined,
+        linkedIngredientId: draft.linkedIngredientId.trim() || undefined,
+        linkedGeneticsId: draft.linkedGeneticsId.trim() || undefined,
+        linkedGrowId: draft.linkedGrowId.trim() || undefined,
         status: draft.status.trim() || "active",
         notes: draft.notes.trim() || undefined
       };
@@ -168,13 +168,15 @@ export default function CommercialInventoryItemDetailRoute() {
         data: payload
       });
 
-      setItem(res ?? item);
+      const nextItem = res?.item ?? res ?? item;
+      setItem(nextItem);
+      setDraft(draftFromItem(nextItem));
     } catch (e) {
-      resolved.handleApiError(e);
+      handleApiError(e);
     } finally {
       setSaving(false);
     }
-  }, [id, canEdit, draft, item, resolved]);
+  }, [id, canEdit, draft, item]);
 
   if (!ent?.ready) return null;
   if (ent.mode !== "commercial") return null;
@@ -203,7 +205,7 @@ export default function CommercialInventoryItemDetailRoute() {
           />
         }
       >
-        {resolved.error ? <InlineError error={resolved.error} /> : null}
+        {error ? <InlineError error={error} /> : null}
 
         <View style={styles.headerRow}>
           <Text style={styles.h1}>Inventory Item</Text>
@@ -239,6 +241,87 @@ export default function CommercialInventoryItemDetailRoute() {
                 {[item.vendor, item.category].filter(Boolean).join(" | ")}
               </Text>
             ) : null}
+            {item.itemType || item.location || item.storageLocation ? (
+              <Text style={styles.muted}>
+                {[item.itemType || item.type, item.location || item.storageLocation]
+                  .filter(Boolean)
+                  .join(" | ")}
+              </Text>
+            ) : null}
+          </View>
+        ) : null}
+
+        {item ? (
+          <View style={styles.card}>
+            <Text style={styles.sectionTitle}>Connected Workflows</Text>
+            <Text style={styles.workflowText}>
+              Use inventory as the stock record behind products, trial grows, batches,
+              packaging, plant material, and garden-center catalog items.
+            </Text>
+            <View style={styles.actionGrid}>
+              {item.linkedProductId ? (
+                <TouchableOpacity
+                  accessibilityRole="button"
+                  accessibilityLabel="Open linked commercial product"
+                  onPress={() =>
+                    router.push({
+                      pathname: "/home/commercial/products/[productId]",
+                      params: { productId: String(item.linkedProductId) }
+                    })
+                  }
+                  style={styles.actionBtn}
+                >
+                  <Text style={styles.actionText}>Linked Product</Text>
+                </TouchableOpacity>
+              ) : null}
+              {item.linkedGrowId ? (
+                <TouchableOpacity
+                  accessibilityRole="button"
+                  accessibilityLabel="Open linked commercial grow"
+                  onPress={() =>
+                    router.push({
+                      pathname: "/home/commercial/grows/[growId]",
+                      params: { growId: String(item.linkedGrowId) }
+                    })
+                  }
+                  style={styles.actionBtn}
+                >
+                  <Text style={styles.actionText}>Linked Grow</Text>
+                </TouchableOpacity>
+              ) : null}
+              <TouchableOpacity
+                accessibilityRole="button"
+                accessibilityLabel="Open commercial products from inventory"
+                onPress={() => router.push("/home/commercial/products" as any)}
+                style={styles.actionBtn}
+              >
+                <Text style={styles.actionText}>Products</Text>
+              </TouchableOpacity>
+              <TouchableOpacity
+                accessibilityRole="button"
+                accessibilityLabel="Open commercial batch planner from inventory"
+                onPress={() => router.push("/home/commercial/batch-planner" as any)}
+                style={styles.actionBtn}
+              >
+                <Text style={styles.actionText}>Batch Planner</Text>
+              </TouchableOpacity>
+              <TouchableOpacity
+                accessibilityRole="button"
+                accessibilityLabel="Open commercial product trials from inventory"
+                onPress={() => router.push("/home/commercial/trials" as any)}
+                style={styles.actionBtn}
+              >
+                <Text style={styles.actionText}>Product Trials</Text>
+              </TouchableOpacity>
+              <TouchableOpacity
+                accessibilityRole="button"
+                accessibilityLabel="Open commercial storefront from inventory"
+                onPress={() => router.push("/home/commercial/storefront" as any)}
+                style={styles.actionBtn}
+              >
+                <Text style={styles.actionText}>Storefront</Text>
+              </TouchableOpacity>
+            </View>
           </View>
         ) : null}
 
@@ -317,6 +400,60 @@ export default function CommercialInventoryItemDetailRoute() {
                     accessibilityLabel="Commercial detail category"
                   />
 
+                  <Text style={styles.label}>Item type</Text>
+                  <TextInput
+                    value={draft.itemType}
+                    onChangeText={(v) => setDraft((d) => ({ ...d, itemType: v }))}
+                    style={styles.input}
+                    placeholder="product, ingredient, packaging, plant, genetics..."
+                    accessibilityLabel="Commercial detail item type"
+                  />
+
+                  <Text style={styles.label}>Storage location</Text>
+                  <TextInput
+                    value={draft.location}
+                    onChangeText={(v) => setDraft((d) => ({ ...d, location: v }))}
+                    style={styles.input}
+                    placeholder="Storage location"
+                    accessibilityLabel="Commercial detail location"
+                  />
+
+                  <Text style={styles.sectionLabel}>Optional links</Text>
+                  <TextInput
+                    value={draft.linkedProductId}
+                    onChangeText={(v) => setDraft((d) => ({ ...d, linkedProductId: v }))}
+                    style={styles.input}
+                    placeholder="Linked product ID"
+                    autoCapitalize="none"
+                    accessibilityLabel="Commercial detail linked product"
+                  />
+                  <TextInput
+                    value={draft.linkedIngredientId}
+                    onChangeText={(v) =>
+                      setDraft((d) => ({ ...d, linkedIngredientId: v }))
+                    }
+                    style={styles.input}
+                    placeholder="Linked ingredient ID"
+                    autoCapitalize="none"
+                    accessibilityLabel="Commercial detail linked ingredient"
+                  />
+                  <TextInput
+                    value={draft.linkedGeneticsId}
+                    onChangeText={(v) => setDraft((d) => ({ ...d, linkedGeneticsId: v }))}
+                    style={styles.input}
+                    placeholder="Linked genetics ID"
+                    autoCapitalize="none"
+                    accessibilityLabel="Commercial detail linked genetics"
+                  />
+                  <TextInput
+                    value={draft.linkedGrowId}
+                    onChangeText={(v) => setDraft((d) => ({ ...d, linkedGrowId: v }))}
+                    style={styles.input}
+                    placeholder="Linked grow ID"
+                    autoCapitalize="none"
+                    accessibilityLabel="Commercial detail linked grow"
+                  />
+
                   <Text style={styles.label}>Status</Text>
                   <TextInput
                     value={draft.status}
@@ -379,6 +516,7 @@ const styles = StyleSheet.create({
   headerRow: { gap: 4 },
   h1: { fontSize: 22, fontWeight: "900" },
   muted: { opacity: 0.7 },
+  workflowText: { color: "#475569", fontSize: 13, fontWeight: "700", lineHeight: 19 },
 
   loading: { paddingVertical: 18, alignItems: "center", gap: 10 },
 
@@ -419,6 +557,13 @@ const styles = StyleSheet.create({
   sectionTitle: { fontSize: 16, fontWeight: "900", marginBottom: 8 },
   form: { gap: 8 },
   label: { fontSize: 12, opacity: 0.7 },
+  sectionLabel: {
+    color: "#475569",
+    fontSize: 12,
+    fontWeight: "900",
+    marginTop: 6,
+    textTransform: "uppercase"
+  },
   input: {
     borderWidth: 1,
     borderColor: "rgba(0,0,0,0.12)",
@@ -436,6 +581,16 @@ const styles = StyleSheet.create({
   },
   primaryBtnDisabled: { opacity: 0.6 },
   primaryBtnText: { color: "white", fontWeight: "800" },
+  actionGrid: { flexDirection: "row", flexWrap: "wrap", gap: 8, marginTop: 10 },
+  actionBtn: {
+    borderWidth: 1,
+    borderColor: "#cbd5e1",
+    borderRadius: 10,
+    paddingHorizontal: 10,
+    paddingVertical: 8,
+    backgroundColor: "#f8fafc"
+  },
+  actionText: { color: "#0f172a", fontSize: 12, fontWeight: "900" },
 
   backLink: { fontWeight: "800", marginTop: 6 }
 });

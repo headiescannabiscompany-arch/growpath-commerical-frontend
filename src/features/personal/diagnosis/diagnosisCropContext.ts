@@ -8,8 +8,8 @@ export type DiagnosisPlantContext = {
   medium?: string;
   growthProfile?: {
     confirmationStatus?: string;
-    cropProfile?: string;
-    cropProfileId?: string;
+    cropProfile?: string | null;
+    cropProfileId?: string | null;
     phenoLabel?: string;
     sizeMetrics?: {
       canopyWidthCm?: number;

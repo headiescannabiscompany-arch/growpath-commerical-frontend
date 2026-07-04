@@ -1,6 +1,11 @@
 import { describe, expect, it } from "@jest/globals";
 import { CAPABILITY_KEYS } from "../../src/entitlements/capabilityKeys";
-import { canAccessRoute, getRoutePolicy } from "../../src/navigation/routeAccess";
+import {
+  canAccessRoute,
+  getHomeForUser,
+  getRoutePolicy,
+  requiresFacility
+} from "../../src/navigation/routeAccess";
 
 const commercial = (capabilities: Record<string, boolean>) => ({
   ready: true,
@@ -11,11 +16,38 @@ const commercial = (capabilities: Record<string, boolean>) => ({
 const facility = (capabilities: Record<string, boolean>) => ({
   ready: true,
   mode: "facility" as const,
+  capabilities,
+  selectedFacilityId: "facility-1"
+});
+
+const personal = (capabilities: Record<string, boolean> = {}) => ({
+  ready: true,
+  mode: "personal" as const,
   capabilities
 });
 
 const COMMERCIAL_ONLY_ROUTES = [
   "/home/commercial",
+  "/home/commercial/grows",
+  "/home/commercial/grows/new",
+  "/home/commercial/grows/grow-1",
+  "/home/commercial/products",
+  "/home/commercial/products/new",
+  "/home/commercial/products/product-1",
+  "/home/commercial/product-lines",
+  "/home/commercial/product-lines/line-1",
+  "/home/commercial/batch-planner",
+  "/home/commercial/batch-planner/batch-1",
+  "/home/commercial/trials",
+  "/home/commercial/trials/trial-1",
+  "/home/commercial/storefront",
+  "/home/commercial/feed",
+  "/home/commercial/community",
+  "/home/commercial/courses",
+  "/home/commercial/courses/course-1",
+  "/home/commercial/marketing",
+  "/home/commercial/analytics",
+  "/home/commercial/profile",
   "/home/commercial/inventory",
   "/home/commercial/inventory-create",
   "/home/commercial/inventory-item/item-1",
@@ -45,6 +77,42 @@ describe("route access policy", () => {
       expect(getRoutePolicy(route)).not.toBeNull();
       expect(canAccessRoute(route, facility(allCommercialCaps))).toBe(false);
     }
+  });
+
+  it("routes users to the correct home for their account type", () => {
+    expect(getHomeForUser(personal())).toBe("/home/personal");
+    expect(getHomeForUser(commercial({}))).toBe("/home/commercial");
+    expect(getHomeForUser(facility({}))).toBe("/home/facility/dashboard");
+    expect(
+      getHomeForUser({
+        ready: true,
+        mode: "facility",
+        selectedFacilityId: null
+      })
+    ).toBe("/home/facility/select");
+    expect(getHomeForUser(null)).toBe("/login");
+  });
+
+  it("blocks cross-account dashboards", () => {
+    expect(canAccessRoute("/home/facility/dashboard", personal())).toBe(false);
+    expect(canAccessRoute("/home/commercial", personal())).toBe(false);
+    expect(canAccessRoute("/home/personal", commercial({}))).toBe(false);
+    expect(canAccessRoute("/home/facility/dashboard", commercial({}))).toBe(false);
+    expect(canAccessRoute("/home/personal", facility({}))).toBe(false);
+  });
+
+  it("requires selected facility for facility work routes", () => {
+    const unselectedFacility = {
+      ready: true,
+      mode: "facility" as const,
+      capabilities: {},
+      selectedFacilityId: null
+    };
+
+    expect(requiresFacility("/home/facility/dashboard")).toBe(true);
+    expect(canAccessRoute("/home/facility/select", unselectedFacility)).toBe(true);
+    expect(canAccessRoute("/home/facility/dashboard", unselectedFacility)).toBe(false);
+    expect(canAccessRoute("/home/facility/dashboard", facility({}))).toBe(true);
   });
 
   it("allows Facility mode into the education feed", () => {

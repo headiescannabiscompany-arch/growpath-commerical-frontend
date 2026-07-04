@@ -7,12 +7,23 @@ const mockCreatePersonalTask = jest.fn();
 const mockDeletePersonalTask = jest.fn();
 const mockListPersonalTasks = jest.fn();
 const mockUpdatePersonalTask = jest.fn();
+let mockCanUseTaskReminders = true;
 
 jest.mock("@/api/tasks", () => ({
   createPersonalTask: (...args: any[]) => mockCreatePersonalTask(...args),
   deletePersonalTask: (...args: any[]) => mockDeletePersonalTask(...args),
   listPersonalTasks: (...args: any[]) => mockListPersonalTasks(...args),
   updatePersonalTask: (...args: any[]) => mockUpdatePersonalTask(...args)
+}));
+
+jest.mock("@/entitlements", () => ({
+  CAPABILITY_KEYS: {
+    TASK_REMINDERS: "TASK_REMINDERS"
+  },
+  useEntitlements: () => ({
+    can: (capability: string) =>
+      capability === "TASK_REMINDERS" ? mockCanUseTaskReminders : false
+  })
 }));
 
 jest.mock("expo-router", () => ({
@@ -36,6 +47,7 @@ jest.mock("@/components/personal/GrowWorkspaceNav", () => {
 describe("GrowTasksScreen", () => {
   beforeEach(() => {
     jest.resetAllMocks();
+    mockCanUseTaskReminders = true;
     mockListPersonalTasks.mockResolvedValue([
       {
         id: "task-open-1",
@@ -117,5 +129,18 @@ describe("GrowTasksScreen", () => {
         priority: "high"
       })
     );
+  });
+
+  it("shows an upgrade prompt instead of write controls without task entitlement", async () => {
+    mockCanUseTaskReminders = false;
+
+    const screen = render(<GrowTasksScreen />);
+
+    await waitFor(() =>
+      expect(mockListPersonalTasks).toHaveBeenCalledWith({ growId: "grow-task-1" })
+    );
+    expect(screen.getByText("Task reminders are Pro")).toBeTruthy();
+    expect(screen.queryByLabelText("Task title")).toBeNull();
+    expect(screen.queryByLabelText("Complete task")).toBeNull();
   });
 });

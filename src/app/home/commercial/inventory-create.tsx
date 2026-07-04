@@ -14,6 +14,12 @@ export default function CommercialInventoryCreateRoute() {
   const [reorderPoint, setReorderPoint] = useState("");
   const [vendor, setVendor] = useState("");
   const [category, setCategory] = useState("");
+  const [itemType, setItemType] = useState("");
+  const [location, setLocation] = useState("");
+  const [linkedProductId, setLinkedProductId] = useState("");
+  const [linkedIngredientId, setLinkedIngredientId] = useState("");
+  const [linkedGeneticsId, setLinkedGeneticsId] = useState("");
+  const [linkedGrowId, setLinkedGrowId] = useState("");
   const [notes, setNotes] = useState("");
   const [saving, setSaving] = useState(false);
 
@@ -47,6 +53,12 @@ export default function CommercialInventoryCreateRoute() {
               : 0,
           vendor: vendor.trim() || undefined,
           category: category.trim() || undefined,
+          itemType: itemType.trim() || undefined,
+          location: location.trim() || undefined,
+          linkedProductId: linkedProductId.trim() || undefined,
+          linkedIngredientId: linkedIngredientId.trim() || undefined,
+          linkedGeneticsId: linkedGeneticsId.trim() || undefined,
+          linkedGrowId: linkedGrowId.trim() || undefined,
           notes: notes.trim() || undefined
         }
       });
@@ -61,6 +73,12 @@ export default function CommercialInventoryCreateRoute() {
   return (
     <View style={styles.container}>
       <Text style={styles.h1}>Create Inventory Item</Text>
+      <Text style={styles.helpText}>
+        Commercial inventory supports stock for products, plants, ingredients, packaging,
+        genetics, equipment, courses, services, and retail items. Product records still
+        explain and sell the item; inventory tracks quantity, cost, supplier, and
+        location.
+      </Text>
       <TextInput
         value={name}
         onChangeText={setName}
@@ -113,6 +131,53 @@ export default function CommercialInventoryCreateRoute() {
         style={styles.input}
       />
       <TextInput
+        value={itemType}
+        onChangeText={setItemType}
+        accessibilityLabel="Commercial inventory item type"
+        placeholder="Item type: product, ingredient, packaging, plant, genetics, equipment..."
+        style={styles.input}
+      />
+      <TextInput
+        value={location}
+        onChangeText={setLocation}
+        accessibilityLabel="Commercial inventory item location"
+        placeholder="Storage location"
+        style={styles.input}
+      />
+      <Text style={styles.sectionLabel}>Optional links</Text>
+      <TextInput
+        value={linkedProductId}
+        onChangeText={setLinkedProductId}
+        accessibilityLabel="Commercial inventory linked product"
+        placeholder="Linked product ID"
+        autoCapitalize="none"
+        style={styles.input}
+      />
+      <TextInput
+        value={linkedIngredientId}
+        onChangeText={setLinkedIngredientId}
+        accessibilityLabel="Commercial inventory linked ingredient"
+        placeholder="Linked ingredient ID"
+        autoCapitalize="none"
+        style={styles.input}
+      />
+      <TextInput
+        value={linkedGeneticsId}
+        onChangeText={setLinkedGeneticsId}
+        accessibilityLabel="Commercial inventory linked genetics"
+        placeholder="Linked genetics ID"
+        autoCapitalize="none"
+        style={styles.input}
+      />
+      <TextInput
+        value={linkedGrowId}
+        onChangeText={setLinkedGrowId}
+        accessibilityLabel="Commercial inventory linked grow"
+        placeholder="Linked grow ID"
+        autoCapitalize="none"
+        style={styles.input}
+      />
+      <TextInput
         value={notes}
         onChangeText={setNotes}
         accessibilityLabel="Commercial inventory item notes"
@@ -136,6 +201,14 @@ export default function CommercialInventoryCreateRoute() {
 const styles = StyleSheet.create({
   container: { flex: 1, padding: 16, gap: 10 },
   h1: { fontSize: 22, fontWeight: "900", marginBottom: 4 },
+  helpText: { color: "#475569", fontSize: 13, fontWeight: "700", lineHeight: 19 },
+  sectionLabel: {
+    color: "#475569",
+    fontSize: 12,
+    fontWeight: "900",
+    marginTop: 4,
+    textTransform: "uppercase"
+  },
   input: {
     borderWidth: 1,
     borderColor: "#d1d5db",

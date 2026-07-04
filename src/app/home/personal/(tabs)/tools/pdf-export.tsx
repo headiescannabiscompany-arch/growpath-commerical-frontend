@@ -12,6 +12,7 @@ import { buildExportRows } from "@/features/personal/tools/advancedPlanning";
 import LockedToolCard from "@/features/personal/tools/LockedToolCard";
 import ToolResultSurface from "@/features/personal/tools/ToolResultSurface";
 import { exportToCsv } from "@/utils/exportToCsv";
+import PersonalFeedPlacement from "@/components/feed/PersonalFeedPlacement";
 
 function coerceParam(value?: string | string[]) {
   if (typeof value === "string") return value;
@@ -77,6 +78,11 @@ export default function PdfExportScreen() {
       <Text style={styles.subtitle}>
         Gather grow logs, tasks, plants, and tool runs into an export-ready dataset.
       </Text>
+      <PersonalFeedPlacement
+        placement="top"
+        routeKey="personal_tools_pdf_export"
+        longContent
+      />
       {growId ? <Text style={styles.context}>Grow context: {growId}</Text> : null}
 
       {!enabled ? (
@@ -86,51 +92,64 @@ export default function PdfExportScreen() {
           description="Enable this capability to prepare grow records for export."
         />
       ) : (
-        <ToolResultSurface
-          title="Export package"
-          status="READY"
-          summary="CSV export is available now with browser download and native share support."
-          metrics={[
-            { key: "logs", label: "Logs", value: String(logs.length) },
-            { key: "tasks", label: "Tasks", value: String(tasks.length) },
-            { key: "plants", label: "Plants", value: String(plants.length) },
-            { key: "runs", label: "Tool runs", value: String(toolRuns.length) }
-          ]}
-          details={
-            rows.length ? (
-              <View style={styles.preview}>
-                {rows.slice(0, 8).map((row, index) => (
-                  <View
-                    key={`${row.type}-${row.date}-${index}`}
-                    style={styles.previewRow}
-                  >
-                    <Text style={styles.previewTitle}>
-                      {row.date || "No date"} | {row.type} | {row.title}
-                    </Text>
-                    <Text style={styles.previewDetail} numberOfLines={2}>
-                      {row.detail || "No detail"}
-                    </Text>
-                  </View>
-                ))}
-              </View>
-            ) : undefined
-          }
-          assumptions={[
-            "This export uses records visible to the current account and optional grow context.",
-            "PDF rendering is represented as an export-ready package until backend or native PDF support is connected."
-          ]}
-          actions={[
-            {
-              key: "csv",
-              label: "Export CSV",
-              pendingLabel: "Preparing...",
-              disabled: !rows.length,
-              onPress: exportCsv
+        <>
+          <PersonalFeedPlacement
+            placement="middle"
+            routeKey="personal_tools_pdf_export"
+            longContent
+          />
+          <ToolResultSurface
+            title="Export package"
+            status="READY"
+            summary="CSV export is available now with browser download and native share support."
+            metrics={[
+              { key: "logs", label: "Logs", value: String(logs.length) },
+              { key: "tasks", label: "Tasks", value: String(tasks.length) },
+              { key: "plants", label: "Plants", value: String(plants.length) },
+              { key: "runs", label: "Tool runs", value: String(toolRuns.length) }
+            ]}
+            details={
+              rows.length ? (
+                <View style={styles.preview}>
+                  {rows.slice(0, 8).map((row, index) => (
+                    <View
+                      key={`${row.type}-${row.date}-${index}`}
+                      style={styles.previewRow}
+                    >
+                      <Text style={styles.previewTitle}>
+                        {row.date || "No date"} | {row.type} | {row.title}
+                      </Text>
+                      <Text style={styles.previewDetail} numberOfLines={2}>
+                        {row.detail || "No detail"}
+                      </Text>
+                    </View>
+                  ))}
+                </View>
+              ) : undefined
             }
-          ]}
-          feedback={feedback}
-        />
+            assumptions={[
+              "This export uses records visible to the current account and optional grow context.",
+              "PDF rendering is represented as an export-ready package until backend or native PDF support is connected."
+            ]}
+            actions={[
+              {
+                key: "csv",
+                label: "Export CSV",
+                pendingLabel: "Preparing...",
+                disabled: !rows.length,
+                onPress: exportCsv
+              }
+            ]}
+            feedback={feedback}
+          />
+        </>
       )}
+
+      <PersonalFeedPlacement
+        placement="bottom"
+        routeKey="personal_tools_pdf_export"
+        longContent
+      />
     </ScrollView>
   );
 }

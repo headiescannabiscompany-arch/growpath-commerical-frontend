@@ -1,7 +1,9 @@
 import { describe, expect, it } from "@jest/globals";
 import { CAPABILITY_KEYS } from "../../src/entitlements/capabilityKeys";
 import {
+  applyDefaultCourseLimits,
   applyPlanCapabilities,
+  applyUniversalCapabilities,
   getEffectivePlan,
   resolveEntitlementsMode,
   resolveWorkspaceMode,
@@ -84,5 +86,65 @@ describe("entitlement mode access", () => {
     expect(normalized[CAPABILITY_KEYS.COMMERCIAL_HOME]).toBe(true);
     expect(normalized[CAPABILITY_KEYS.COMMERCIAL_INVENTORY_VIEW]).toBe(true);
     expect(normalized[CAPABILITY_KEYS.COMMERCIAL_INVENTORY_WRITE]).toBe(true);
+  });
+
+  it("keeps free personal users in the grow OS without commercial inventory", () => {
+    const normalized: Record<string, boolean> = {};
+
+    applyUniversalCapabilities(normalized);
+    applyPlanCapabilities(normalized, "free", "personal");
+
+    expect(normalized[CAPABILITY_KEYS.GROWS_PERSONAL_VIEW]).toBe(true);
+    expect(normalized[CAPABILITY_KEYS.LOGS_PERSONAL_VIEW]).toBe(true);
+    expect(normalized[CAPABILITY_KEYS.PLANTS_PERSONAL_VIEW]).toBe(true);
+    expect(normalized[CAPABILITY_KEYS.DIAGNOSE_BASIC]).toBe(true);
+    expect(normalized[CAPABILITY_KEYS.TOOLS_VPD]).toBe(true);
+    expect(normalized[CAPABILITY_KEYS.GROWS_PERSONAL_WRITE]).not.toBe(true);
+    expect(normalized[CAPABILITY_KEYS.COMMERCIAL_HOME]).not.toBe(true);
+    expect(normalized[CAPABILITY_KEYS.COMMERCIAL_INVENTORY_VIEW]).not.toBe(true);
+    expect(normalized[CAPABILITY_KEYS.COMMERCIAL_INVENTORY_WRITE]).not.toBe(true);
+  });
+
+  it("lets every personal plan create free or paid courses with plan limits", () => {
+    const freeCaps: Record<string, boolean> = {};
+    const proCaps: Record<string, boolean> = {};
+
+    applyUniversalCapabilities(freeCaps);
+    applyPlanCapabilities(freeCaps, "free", "personal");
+    applyUniversalCapabilities(proCaps);
+    applyPlanCapabilities(proCaps, "pro", "personal");
+
+    for (const caps of [freeCaps, proCaps]) {
+      expect(caps[CAPABILITY_KEYS.COURSES_VIEW]).toBe(true);
+      expect(caps[CAPABILITY_KEYS.SEE_PAID_COURSES]).toBe(true);
+      expect(caps[CAPABILITY_KEYS.COURSES_CREATE]).toBe(true);
+      expect(caps[CAPABILITY_KEYS.COURSES_SELL_PAID]).toBe(true);
+    }
+
+    expect(applyDefaultCourseLimits({}, "free")).toMatchObject({
+      maxPaidCourses: 1,
+      maxLessonsPerCourse: 7
+    });
+    expect(applyDefaultCourseLimits({}, "pro")).toMatchObject({
+      maxPaidCourses: 5,
+      maxLessonsPerCourse: 20
+    });
+  });
+
+  it("upgrades pro personal users without exposing commercial/facility workspaces", () => {
+    const normalized: Record<string, boolean> = {};
+
+    applyUniversalCapabilities(normalized);
+    applyPlanCapabilities(normalized, "pro", "personal");
+
+    expect(normalized[CAPABILITY_KEYS.GROWS_PERSONAL_WRITE]).toBe(true);
+    expect(normalized[CAPABILITY_KEYS.LOGS_PERSONAL_WRITE]).toBe(true);
+    expect(normalized[CAPABILITY_KEYS.PLANTS_PERSONAL_WRITE]).toBe(true);
+    expect(normalized[CAPABILITY_KEYS.AI_ASSISTANT]).toBe(true);
+    expect(normalized[CAPABILITY_KEYS.TOOL_NPK]).toBe(true);
+    expect(normalized[CAPABILITY_KEYS.TASK_REMINDERS]).toBe(true);
+    expect(normalized[CAPABILITY_KEYS.COMMERCIAL_HOME]).not.toBe(true);
+    expect(normalized[CAPABILITY_KEYS.COMMERCIAL_INVENTORY_VIEW]).not.toBe(true);
+    expect(normalized[CAPABILITY_KEYS.FACILITY_ACCESS]).not.toBe(true);
   });
 });

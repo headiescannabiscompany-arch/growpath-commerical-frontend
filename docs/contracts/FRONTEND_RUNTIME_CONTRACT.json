@@ -2,18 +2,8 @@
   "version": "2026-02-27",
   "personal": {
     "tabsLayoutFile": "src/app/home/personal/(tabs)/_layout.tsx",
-    "visibleTabs": [
-      "index",
-      "grows",
-      "tools",
-      "community",
-      "profile",
-      "ai",
-      "forum",
-      "courses",
-      "diagnose"
-    ],
-    "hiddenTabs": ["logs", "tasks"],
+    "visibleTabs": ["index", "grows", "tools", "community", "courses", "profile"],
+    "hiddenTabs": ["ai", "forum", "diagnose", "logs", "tasks"],
     "requiredRoutes": [
       "/home/personal",
       "/home/personal/grows",
@@ -39,9 +29,39 @@
   "tools": {
     "requiredRoutes": [
       {
+        "id": "tools_hub",
+        "route": "/home/personal/tools",
+        "file": "src/app/home/personal/(tabs)/tools/index.tsx"
+      },
+      {
+        "id": "integrations",
+        "route": "/home/personal/tools/integrations",
+        "file": "src/app/home/personal/(tabs)/tools/integrations.tsx"
+      },
+      {
         "id": "vpd",
         "route": "/home/personal/tools/vpd",
         "file": "src/app/home/personal/(tabs)/tools/vpd.tsx"
+      },
+      {
+        "id": "dew_point_guard",
+        "route": "/home/personal/tools/dew-point-guard",
+        "file": "src/app/home/personal/(tabs)/tools/dew-point-guard.tsx"
+      },
+      {
+        "id": "ppfd_dli",
+        "route": "/home/personal/tools/ppfd",
+        "file": "src/app/home/personal/(tabs)/tools/ppfd.tsx"
+      },
+      {
+        "id": "bud_rot_risk",
+        "route": "/home/personal/tools/bud-rot-risk",
+        "file": "src/app/home/personal/(tabs)/tools/bud-rot-risk.tsx"
+      },
+      {
+        "id": "environment_analysis",
+        "route": "/home/personal/tools/environment-analysis",
+        "file": "src/app/home/personal/(tabs)/tools/environment-analysis.tsx"
       },
       {
         "id": "npk_preview",
@@ -49,9 +69,139 @@
         "file": "src/app/home/personal/(tabs)/tools/npk.tsx"
       },
       {
+        "id": "nutrient_chemistry",
+        "route": "/home/personal/tools/nutrient-chemistry",
+        "file": "src/app/home/personal/(tabs)/tools/nutrient-chemistry.tsx"
+      },
+      {
+        "id": "ingredient_library",
+        "route": "/home/personal/tools/ingredient-library",
+        "file": "src/app/home/personal/(tabs)/tools/ingredient-library.tsx"
+      },
+      {
+        "id": "nutrient_source_comparison",
+        "route": "/home/personal/tools/nutrient-source-comparison",
+        "file": "src/app/home/personal/(tabs)/tools/nutrient-source-comparison.tsx"
+      },
+      {
         "id": "watering",
         "route": "/home/personal/tools/watering",
         "file": "src/app/home/personal/(tabs)/tools/watering.tsx"
+      },
+      {
+        "id": "feeding_schedule",
+        "route": "/home/personal/tools/feeding-schedule",
+        "file": "src/app/home/personal/(tabs)/tools/feeding-schedule.tsx"
+      },
+      {
+        "id": "soil_builder",
+        "route": "/home/personal/tools/soil-builder",
+        "file": "src/app/home/personal/(tabs)/tools/soil-builder.tsx"
+      },
+      {
+        "id": "dry_amendment_mix",
+        "route": "/home/personal/tools/dry-amendment-mix",
+        "file": "src/app/home/personal/(tabs)/tools/dry-amendment-mix.tsx"
+      },
+      {
+        "id": "topdress_plan",
+        "route": "/home/personal/tools/topdress",
+        "file": "src/app/home/personal/(tabs)/tools/topdress.tsx"
+      },
+      {
+        "id": "ph_ec_check",
+        "route": "/home/personal/tools/ph-ec",
+        "file": "src/app/home/personal/(tabs)/tools/ph-ec.tsx"
+      },
+      {
+        "id": "ipm_scout",
+        "route": "/home/personal/tools/ipm-scout",
+        "file": "src/app/home/personal/(tabs)/tools/ipm-scout.tsx"
+      },
+      {
+        "id": "species_crop_id",
+        "route": "/home/personal/tools/species-crop-id",
+        "file": "src/app/home/personal/(tabs)/tools/species-crop-id.tsx"
+      },
+      {
+        "id": "crop_steering_project",
+        "route": "/home/personal/tools/crop-steering-project",
+        "file": "src/app/home/personal/(tabs)/tools/crop-steering-project.tsx"
+      },
+      {
+        "id": "stress_test",
+        "route": "/home/personal/tools/stress-test",
+        "file": "src/app/home/personal/(tabs)/tools/stress-test.tsx"
+      },
+      {
+        "id": "pheno_hunt",
+        "route": "/home/personal/tools/pheno-hunt",
+        "file": "src/app/home/personal/(tabs)/tools/pheno-hunt.tsx"
+      },
+      {
+        "id": "genetics_inventory",
+        "route": "/home/personal/tools/genetics-inventory",
+        "file": "src/app/home/personal/(tabs)/tools/genetics-inventory.tsx"
+      },
+      {
+        "id": "clone_rooting",
+        "route": "/home/personal/tools/clone-rooting",
+        "file": "src/app/home/personal/(tabs)/tools/clone-rooting.tsx"
+      },
+      {
+        "id": "tissue_culture",
+        "route": "/home/personal/tools/tissue-culture",
+        "file": "src/app/home/personal/(tabs)/tools/tissue-culture.tsx"
+      },
+      {
+        "id": "harvest_estimator",
+        "route": "/home/personal/tools/harvest-estimator",
+        "file": "src/app/home/personal/(tabs)/tools/harvest-estimator.tsx"
+      },
+      {
+        "id": "harvest_readiness",
+        "route": "/home/personal/tools/harvest-readiness",
+        "file": "src/app/home/personal/(tabs)/tools/harvest-readiness.tsx"
+      },
+      {
+        "id": "dry_cure_guard",
+        "route": "/home/personal/tools/dry-cure-guard",
+        "file": "src/app/home/personal/(tabs)/tools/dry-cure-guard.tsx"
+      },
+      {
+        "id": "run_comparison",
+        "route": "/home/personal/tools/run-comparison",
+        "file": "src/app/home/personal/(tabs)/tools/run-comparison.tsx"
+      },
+      {
+        "id": "auto_grow_calendar",
+        "route": "/home/personal/tools/auto-grow-calendar",
+        "file": "src/app/home/personal/(tabs)/tools/auto-grow-calendar.tsx"
+      },
+      {
+        "id": "timeline_planner",
+        "route": "/home/personal/tools/timeline-planner",
+        "file": "src/app/home/personal/(tabs)/tools/timeline-planner.tsx"
+      },
+      {
+        "id": "pdf_export",
+        "route": "/home/personal/tools/pdf-export",
+        "file": "src/app/home/personal/(tabs)/tools/pdf-export.tsx"
+      },
+      {
+        "id": "pheno_matrix",
+        "route": "/home/personal/tools/pheno-matrix",
+        "file": "src/app/home/personal/(tabs)/tools/pheno-matrix.tsx"
+      },
+      {
+        "id": "soil_nutrient_batch",
+        "route": "/home/personal/tools/soil-nutrient-batch",
+        "file": "src/app/home/personal/(tabs)/tools/soil-nutrient-batch.tsx"
+      },
+      {
+        "id": "saved_runs",
+        "route": "/home/personal/tools/saved-runs",
+        "file": "src/app/home/personal/(tabs)/tools/saved-runs.tsx"
       }
     ],
     "safetyAssertions": [

@@ -42,8 +42,19 @@ export default function HarvestReadinessToolRoute() {
           defaultValue: "10",
           keyboardType: "numeric"
         },
+        { key: "pistilStatus", label: "Pistil / hair status", defaultValue: "mixed" },
+        {
+          key: "budSwellStatus",
+          label: "Bud / calyx swell",
+          defaultValue: "mostly_swollen"
+        },
+        {
+          key: "sampleLocation",
+          label: "Trichome sample location",
+          defaultValue: "mixed_bud_sites"
+        },
         { key: "aromaIntensity", label: "Aroma intensity", defaultValue: "building" },
-        { key: "userEffectGoal", label: "Effect goal", defaultValue: "balanced" }
+        { key: "userGoal", label: "Effect goal", defaultValue: "balanced" }
       ]}
       buildPayload={(values, { growId, plantContext }) => ({
         growId,
@@ -54,8 +65,27 @@ export default function HarvestReadinessToolRoute() {
         { key: "status", label: "Readiness", value: outputs.readinessStatus },
         { key: "start", label: "Start day", value: outputs.estimatedWindow?.startDay },
         { key: "target", label: "Target day", value: outputs.estimatedWindow?.targetDay },
-        { key: "end", label: "End day", value: outputs.estimatedWindow?.endDay }
+        { key: "end", label: "End day", value: outputs.estimatedWindow?.endDay },
+        {
+          key: "pistils",
+          label: "Pistils",
+          value: outputs.wholePlantMaturity?.pistilStatus
+        },
+        {
+          key: "swell",
+          label: "Bud swell",
+          value: outputs.wholePlantMaturity?.budSwellStatus
+        }
       ]}
+      buildNotices={(outputs) =>
+        Array.isArray(outputs.warnings)
+          ? outputs.warnings.map((message: string, index: number) => ({
+              key: `warning-${index}`,
+              severity: "medium" as const,
+              message
+            }))
+          : []
+      }
       defaultLogTitle={(outputs) =>
         `Harvest readiness: ${outputs.readinessStatus || "check"}`
       }

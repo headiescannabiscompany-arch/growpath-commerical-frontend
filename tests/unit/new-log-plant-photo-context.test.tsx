@@ -10,6 +10,8 @@ const mockListPersonalPlants = jest.fn();
 const mockPersistImageUris = jest.fn();
 const mockRequestMediaLibraryPermissionsAsync = jest.fn();
 const mockLaunchImageLibraryAsync = jest.fn();
+const mockEntitlementsCan = jest.fn();
+const mockRouterBack = jest.fn();
 
 jest.mock("expo-router", () => ({
   useLocalSearchParams: () => ({
@@ -20,7 +22,7 @@ jest.mock("expo-router", () => ({
   useRouter: () => ({
     replace: mockReplace,
     push: jest.fn(),
-    back: jest.fn()
+    back: mockRouterBack
   }),
   Link: ({ children }: any) => children
 }));
@@ -33,8 +35,11 @@ jest.mock("expo-image-picker", () => ({
 }));
 
 jest.mock("@/entitlements", () => ({
-  CAPABILITY_KEYS: { DIAGNOSE_AI: "DIAGNOSE_AI" },
-  useEntitlements: () => ({ can: () => true })
+  CAPABILITY_KEYS: {
+    DIAGNOSE_AI: "DIAGNOSE_AI",
+    LOGS_PERSONAL_WRITE: "LOGS_PERSONAL_WRITE"
+  },
+  useEntitlements: () => ({ can: mockEntitlementsCan })
 }));
 
 jest.mock("@/api/logs", () => ({
@@ -60,6 +65,7 @@ jest.mock("@/api/logInsights", () => ({
 describe("NewLogScreen plant/photo context", () => {
   beforeEach(() => {
     jest.clearAllMocks();
+    mockEntitlementsCan.mockReturnValue(true);
     mockListPersonalPlants.mockResolvedValue([
       {
         id: "plant-olive-1",
@@ -103,6 +109,27 @@ describe("NewLogScreen plant/photo context", () => {
     });
     mockPersistImageUris.mockResolvedValue(["https://cdn.example.com/olive-leaf.jpg"]);
     mockCreatePersonalLog.mockResolvedValue({ id: "log-1" });
+  });
+
+  it("locks journal creation for free personal accounts", async () => {
+    mockEntitlementsCan.mockImplementation(
+      (capability) => capability !== "LOGS_PERSONAL_WRITE"
+    );
+
+    const { getByText } = render(<NewLogScreen />);
+
+    expect(getByText("Create journal entries with Pro")).toBeTruthy();
+    expect(
+      getByText(
+        "Free accounts can browse grow history and use free tools. Upgrade to save journal entries, photos, and AI-assisted log notes."
+      )
+    ).toBeTruthy();
+    await waitFor(() =>
+      expect(mockListToolRuns).toHaveBeenCalledWith({ growId: "grow-1" })
+    );
+    fireEvent.press(getByText("Back"));
+    expect(mockRouterBack).toHaveBeenCalled();
+    expect(mockCreatePersonalLog).not.toHaveBeenCalled();
   });
 
   it("creates logs and photo metadata with selected plant context", async () => {

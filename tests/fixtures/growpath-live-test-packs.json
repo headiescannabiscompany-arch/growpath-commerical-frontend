@@ -1,0 +1,4021 @@
+{
+  "schemaVersion": "growpath-live-test-packs-v1",
+  "rightsPolicy": {
+    "photoHandling": "external_link_only",
+    "copyOrRehostPhotos": false,
+    "aiVisionAllowedOnlyWhenUserProvidesPermission": true,
+    "notes": "Store external source/photo-set links in grow data. Do not copy, cache, upload, or rehost third-party photos unless GrowPathAI has permission from the rightsholder."
+  },
+  "packs": [
+    {
+      "id": "single-user-cannabis-bruce-banner-auto-coco",
+      "accountType": "personal",
+      "planTargets": ["free", "pro"],
+      "title": "Bruce Banner Auto - Coco/Perlite Home Grow",
+      "featureTestCount": 8,
+      "growPathAIFeaturesTested": [
+        "free personal feed banner placement",
+        "free personal grow creation lock",
+        "free personal journal creation lock",
+        "pro personal grow record creation",
+        "pro personal journal/photo metadata save",
+        "external photo source metadata preservation",
+        "universal course creation access",
+        "personal route boundary against commercial inventory"
+      ],
+      "source": {
+        "provider": "GrowDiaries",
+        "sourceUrl": "TODO_PASTE_GROWDIARIES_BRUCE_BANNER_AUTO_DIARY_URL",
+        "photoSetUrl": "TODO_PASTE_GROWDIARIES_BRUCE_BANNER_AUTO_PHOTO_PAGE_URL",
+        "sourceLink": "TODO_PASTE_GROWDIARIES_BRUCE_BANNER_AUTO_DIARY_URL",
+        "photoSourceLink": "TODO_PASTE_GROWDIARIES_BRUCE_BANNER_AUTO_PHOTO_PAGE_URL",
+        "rightsMode": "external_link_only",
+        "attributionRequired": true
+      },
+      "grow": {
+        "cropType": "cannabis",
+        "cultivar": "Bruce Banner Auto",
+        "seedType": "auto",
+        "medium": "coco_perlite",
+        "potSize": "3 gallon",
+        "containerType": "fabric_pot",
+        "growStyle": "single_user_home",
+        "lightSchedule": "20/4",
+        "cocoPreparation": "pre-soaked coco with light nutrients plus CalMag",
+        "training": ["topping", "LST", "HST", "defoliation"],
+        "nutrition": {
+          "sourceHasNutrientEvents": true,
+          "trackedInputs": ["pH", "TDS", "nutrients", "flush"]
+        },
+        "environment": {
+          "trackedInputs": ["RH", "dayTemp", "nightTemp", "lightSchedule"]
+        },
+        "harvest": {
+          "trackedInputs": ["harvestDate", "dryWeight", "taste", "effects"]
+        }
+      },
+      "realGrowData": {
+        "dataConfidence": "source_pending",
+        "doNotInventMissingValues": true,
+        "sourceRequiredBeforeSeeding": true,
+        "fieldsToExtractFromSource": [
+          "germinationDate",
+          "germinationMethod",
+          "daysToSprout",
+          "seedlingVigor",
+          "startDate",
+          "harvestDate",
+          "weeklyStage",
+          "weeklyPlantHeight",
+          "weeklyPH",
+          "weeklyTDS",
+          "weeklyRH",
+          "weeklyDayTemp",
+          "weeklyNightTemp",
+          "potSize",
+          "containerType",
+          "lightSchedule",
+          "nutrientProducts",
+          "trainingEvents",
+          "flushDate",
+          "dryWeight",
+          "tasteNotes",
+          "effectNotes"
+        ],
+        "knownFromUserPrompt": {
+          "cropType": "cannabis",
+          "cultivar": "Bruce Banner Auto",
+          "seedType": "auto",
+          "medium": "coco_perlite",
+          "germinationMethod": "paper_towel",
+          "potSize": "3 gallon",
+          "containerType": "fabric_pot",
+          "lightSchedule": "20/4",
+          "cocoPreparation": "pre-soaked coco with light nutrients plus CalMag",
+          "hasWeeklyPhotos": true,
+          "hasPH": true,
+          "hasTDS": true,
+          "hasRH": true,
+          "hasTemps": true,
+          "hasPotSize": true,
+          "hasLightSchedule": true,
+          "hasNutrients": true,
+          "hasTraining": ["topping", "LST", "HST", "defoliation"],
+          "hasFlush": true,
+          "hasHarvest": true,
+          "hasDryWeight": true,
+          "hasTasteEffects": true
+        },
+        "normalizedRecords": {
+          "grow": {
+            "name": "Bruce Banner Auto - Coco/Perlite Home Grow",
+            "cropType": "cannabis",
+            "cultivar": "Bruce Banner Auto",
+            "seedType": "auto",
+            "medium": "coco_perlite",
+            "potSize": "3 gallon",
+            "containerType": "fabric_pot",
+            "lightSchedule": "20/4",
+            "cocoPreparation": "pre-soaked coco with light nutrients plus CalMag",
+            "status": "source_pending"
+          },
+          "plants": [
+            {
+              "plantCode": "BBA-1",
+              "cultivar": "Bruce Banner Auto",
+              "germination": {
+                "germinationDate": "TODO_EXTRACT_FROM_SOURCE",
+                "germinationMethod": "paper_towel",
+                "daysToSprout": "TODO_EXTRACT_FROM_SOURCE",
+                "seedlingVigor": "TODO_EXTRACT_FROM_SOURCE",
+                "sourceLink": "TODO_PASTE_GROWDIARIES_BRUCE_BANNER_AUTO_DIARY_URL",
+                "photoSourceLink": "TODO_SOURCE_GERMINATION_OR_SEEDLING_PHOTO_URL"
+              },
+              "source": "GrowDiaries",
+              "sourceLink": "TODO_PASTE_GROWDIARIES_BRUCE_BANNER_AUTO_DIARY_URL"
+            }
+          ],
+          "harvest": {
+            "harvestDate": "TODO_EXTRACT_FROM_SOURCE",
+            "harvestDay": 73,
+            "dryWeight": 236,
+            "dryWeightUnit": "g",
+            "plantCount": 1,
+            "growAreaM2": 0.36,
+            "yieldPerM2": 655.56,
+            "tasteNotes": ["diesel", "earthy", "mint"],
+            "effectNotes": "TODO_EXTRACT_FROM_SOURCE"
+          }
+        }
+      },
+      "weeklyLogs": [
+        {
+          "week": 0,
+          "stage": "germination",
+          "germinationMethod": "paper_towel",
+          "medium": "coco_perlite",
+          "potSize": "3 gallon",
+          "containerType": "fabric_pot",
+          "lightSchedule": "20/4",
+          "cocoPreparation": "pre-soaked coco with light nutrients plus CalMag",
+          "sourceLink": "TODO_PASTE_GROWDIARIES_BRUCE_BANNER_AUTO_DIARY_URL",
+          "photoSourceLink": "TODO_SOURCE_WEEK_0_PHOTO_SET_URL",
+          "sourcePhotoUrl": "TODO_SOURCE_WEEK_0_PHOTO_SET_URL",
+          "photoPolicy": "external_link_only",
+          "photoCount": 3,
+          "photos": [
+            {
+              "index": 1,
+              "photoSourceLink": "TODO_SOURCE_WEEK_0_PHOTO_1_URL",
+              "photoPolicy": "external_link_only"
+            },
+            {
+              "index": 2,
+              "photoSourceLink": "TODO_SOURCE_WEEK_0_PHOTO_2_URL",
+              "photoPolicy": "external_link_only"
+            },
+            {
+              "index": 3,
+              "photoSourceLink": "TODO_SOURCE_WEEK_0_PHOTO_3_URL",
+              "photoPolicy": "external_link_only"
+            }
+          ],
+          "testFocus": ["seed start", "medium setup", "germination photo log"],
+          "plannedFeatureCoverage": [
+            "Seed start",
+            "Medium setup",
+            "Germination photo log"
+          ]
+        },
+        {
+          "week": 1,
+          "stage": "seedling",
+          "stageConfirmedByUser": true,
+          "lightHours": 20,
+          "dayTempC": 25,
+          "nightTempC": 22,
+          "rhPercent": 65,
+          "ph": 6.2,
+          "ppm": 425,
+          "potVolumeL": 11.36,
+          "lampDistanceCm": 85,
+          "sourceLink": "TODO_PASTE_GROWDIARIES_BRUCE_BANNER_AUTO_DIARY_URL",
+          "photoSourceLink": "TODO_SOURCE_WEEK_1_PHOTO_OR_PHOTO_SET_URL",
+          "sourcePhotoUrl": "TODO_SOURCE_WEEK_1_PHOTO_OR_PHOTO_SET_URL",
+          "photoPolicy": "external_link_only",
+          "photoCount": 6,
+          "photos": [
+            {
+              "index": 1,
+              "photoSourceLink": "TODO_SOURCE_WEEK_1_PHOTO_1_URL",
+              "photoPolicy": "external_link_only"
+            },
+            {
+              "index": 2,
+              "photoSourceLink": "TODO_SOURCE_WEEK_1_PHOTO_2_URL",
+              "photoPolicy": "external_link_only"
+            },
+            {
+              "index": 3,
+              "photoSourceLink": "TODO_SOURCE_WEEK_1_PHOTO_3_URL",
+              "photoPolicy": "external_link_only"
+            },
+            {
+              "index": 4,
+              "photoSourceLink": "TODO_SOURCE_WEEK_1_PHOTO_4_URL",
+              "photoPolicy": "external_link_only"
+            },
+            {
+              "index": 5,
+              "photoSourceLink": "TODO_SOURCE_WEEK_1_PHOTO_5_URL",
+              "photoPolicy": "external_link_only"
+            },
+            {
+              "index": 6,
+              "photoSourceLink": "TODO_SOURCE_WEEK_1_PHOTO_6_URL",
+              "photoPolicy": "external_link_only"
+            }
+          ],
+          "testFocus": ["environment log", "VPD", "seedling photo check"],
+          "plannedFeatureCoverage": ["Environment log", "VPD", "Seedling photo check"]
+        },
+        {
+          "week": 2,
+          "stage": "veg",
+          "stageConfirmedByUser": true,
+          "dayTempC": 25,
+          "nightTempC": 22,
+          "rhPercent": 65,
+          "ph": 6.2,
+          "ppm": 500,
+          "wateringCadenceDays": 3,
+          "wateringCadenceNote": "about every 3 days",
+          "irrigationStyle": "run_to_waste",
+          "irrigationStyleStarted": true,
+          "sourceLink": "TODO_PASTE_GROWDIARIES_BRUCE_BANNER_AUTO_DIARY_URL",
+          "photoSourceLink": "TODO_SOURCE_WEEK_2_PHOTO_OR_PHOTO_SET_URL",
+          "sourcePhotoUrl": "TODO_SOURCE_WEEK_2_PHOTO_OR_PHOTO_SET_URL",
+          "photoPolicy": "external_link_only",
+          "photoCount": 6,
+          "photos": [
+            {
+              "index": 1,
+              "photoSourceLink": "TODO_SOURCE_WEEK_2_PHOTO_1_URL",
+              "photoPolicy": "external_link_only"
+            },
+            {
+              "index": 2,
+              "photoSourceLink": "TODO_SOURCE_WEEK_2_PHOTO_2_URL",
+              "photoPolicy": "external_link_only"
+            },
+            {
+              "index": 3,
+              "photoSourceLink": "TODO_SOURCE_WEEK_2_PHOTO_3_URL",
+              "photoPolicy": "external_link_only"
+            },
+            {
+              "index": 4,
+              "photoSourceLink": "TODO_SOURCE_WEEK_2_PHOTO_4_URL",
+              "photoPolicy": "external_link_only"
+            },
+            {
+              "index": 5,
+              "photoSourceLink": "TODO_SOURCE_WEEK_2_PHOTO_5_URL",
+              "photoPolicy": "external_link_only"
+            },
+            {
+              "index": 6,
+              "photoSourceLink": "TODO_SOURCE_WEEK_2_PHOTO_6_URL",
+              "photoPolicy": "external_link_only"
+            }
+          ],
+          "testFocus": ["watering schedule", "runoff tracking", "root-zone notes"],
+          "plannedFeatureCoverage": [
+            "Watering schedule",
+            "Runoff tracking",
+            "Root-zone notes"
+          ]
+        },
+        {
+          "week": 3,
+          "stage": "veg/training",
+          "stageConfirmedByUser": true,
+          "tempC": 25,
+          "rhPercent": 65,
+          "ph": 6.2,
+          "ppm": 550,
+          "trainingEvents": [
+            {
+              "type": "topping",
+              "day": 15,
+              "node": 5,
+              "notes": "Topped on day 15 at 5th node"
+            },
+            {
+              "type": "LST",
+              "started": true,
+              "notes": "Started LST after topping"
+            }
+          ],
+          "sourceLink": "TODO_PASTE_GROWDIARIES_BRUCE_BANNER_AUTO_DIARY_URL",
+          "photoSourceLink": "TODO_SOURCE_WEEK_3_PHOTO_OR_PHOTO_SET_URL",
+          "sourcePhotoUrl": "TODO_SOURCE_WEEK_3_PHOTO_OR_PHOTO_SET_URL",
+          "photoPolicy": "external_link_only",
+          "photoCount": 9,
+          "photoSubject": "topping",
+          "photos": [
+            {
+              "index": 1,
+              "photoSourceLink": "TODO_SOURCE_WEEK_3_TOPPING_PHOTO_1_URL",
+              "photoPolicy": "external_link_only"
+            },
+            {
+              "index": 2,
+              "photoSourceLink": "TODO_SOURCE_WEEK_3_TOPPING_PHOTO_2_URL",
+              "photoPolicy": "external_link_only"
+            },
+            {
+              "index": 3,
+              "photoSourceLink": "TODO_SOURCE_WEEK_3_TOPPING_PHOTO_3_URL",
+              "photoPolicy": "external_link_only"
+            },
+            {
+              "index": 4,
+              "photoSourceLink": "TODO_SOURCE_WEEK_3_TOPPING_PHOTO_4_URL",
+              "photoPolicy": "external_link_only"
+            },
+            {
+              "index": 5,
+              "photoSourceLink": "TODO_SOURCE_WEEK_3_TOPPING_PHOTO_5_URL",
+              "photoPolicy": "external_link_only"
+            },
+            {
+              "index": 6,
+              "photoSourceLink": "TODO_SOURCE_WEEK_3_TOPPING_PHOTO_6_URL",
+              "photoPolicy": "external_link_only"
+            },
+            {
+              "index": 7,
+              "photoSourceLink": "TODO_SOURCE_WEEK_3_TOPPING_PHOTO_7_URL",
+              "photoPolicy": "external_link_only"
+            },
+            {
+              "index": 8,
+              "photoSourceLink": "TODO_SOURCE_WEEK_3_TOPPING_PHOTO_8_URL",
+              "photoPolicy": "external_link_only"
+            },
+            {
+              "index": 9,
+              "photoSourceLink": "TODO_SOURCE_WEEK_3_TOPPING_PHOTO_9_URL",
+              "photoPolicy": "external_link_only"
+            }
+          ],
+          "testFocus": ["training log", "topping reminder", "stress-risk AI check"],
+          "plannedFeatureCoverage": [
+            "Training log",
+            "Topping reminder",
+            "Stress-risk AI check"
+          ]
+        },
+        {
+          "week": 4,
+          "stage": "veg/canopy build",
+          "stageConfirmedByUser": true,
+          "tempC": 25,
+          "rhPercent": 65,
+          "ph": 6.2,
+          "ppm": 600,
+          "trainingNotes": "Plant trained wide",
+          "morphologyNotes": "Compact/bushy phenotype noted",
+          "morphologyTags": ["compact", "bushy", "trained_wide"],
+          "sourceLink": "TODO_PASTE_GROWDIARIES_BRUCE_BANNER_AUTO_DIARY_URL",
+          "photoSourceLink": "TODO_SOURCE_WEEK_4_PHOTO_OR_PHOTO_SET_URL",
+          "sourcePhotoUrl": "TODO_SOURCE_WEEK_4_PHOTO_OR_PHOTO_SET_URL",
+          "photoPolicy": "external_link_only",
+          "photoCount": 8,
+          "photoSubject": "LST",
+          "photos": [
+            {
+              "index": 1,
+              "photoSourceLink": "TODO_SOURCE_WEEK_4_LST_PHOTO_1_URL",
+              "photoPolicy": "external_link_only"
+            },
+            {
+              "index": 2,
+              "photoSourceLink": "TODO_SOURCE_WEEK_4_LST_PHOTO_2_URL",
+              "photoPolicy": "external_link_only"
+            },
+            {
+              "index": 3,
+              "photoSourceLink": "TODO_SOURCE_WEEK_4_LST_PHOTO_3_URL",
+              "photoPolicy": "external_link_only"
+            },
+            {
+              "index": 4,
+              "photoSourceLink": "TODO_SOURCE_WEEK_4_LST_PHOTO_4_URL",
+              "photoPolicy": "external_link_only"
+            },
+            {
+              "index": 5,
+              "photoSourceLink": "TODO_SOURCE_WEEK_4_LST_PHOTO_5_URL",
+              "photoPolicy": "external_link_only"
+            },
+            {
+              "index": 6,
+              "photoSourceLink": "TODO_SOURCE_WEEK_4_LST_PHOTO_6_URL",
+              "photoPolicy": "external_link_only"
+            },
+            {
+              "index": 7,
+              "photoSourceLink": "TODO_SOURCE_WEEK_4_LST_PHOTO_7_URL",
+              "photoPolicy": "external_link_only"
+            },
+            {
+              "index": 8,
+              "photoSourceLink": "TODO_SOURCE_WEEK_4_LST_PHOTO_8_URL",
+              "photoPolicy": "external_link_only"
+            }
+          ],
+          "testFocus": ["canopy/morphology notes", "photo comparison"],
+          "plannedFeatureCoverage": ["Canopy/morphology notes", "Photo comparison"]
+        },
+        {
+          "week": 5,
+          "stage": "pre-flower",
+          "stageConfirmedByUser": true,
+          "tempC": 25,
+          "rhPercent": 60,
+          "ph": 6.2,
+          "ppm": 600,
+          "wateringFrequencyPerDay": 2,
+          "wateringFrequencyNote": "Watering twice daily to runoff",
+          "runoffTracked": true,
+          "trainingEvents": [
+            {
+              "type": "HST",
+              "active": true
+            },
+            {
+              "type": "LST",
+              "active": true
+            }
+          ],
+          "inputs": [
+            {
+              "type": "silica",
+              "used": true
+            }
+          ],
+          "defoliationStatus": "not_started",
+          "defoliationNotes": "No defoliation yet",
+          "sourceLink": "TODO_PASTE_GROWDIARIES_BRUCE_BANNER_AUTO_DIARY_URL",
+          "photoSourceLink": "TODO_SOURCE_WEEK_5_PHOTO_OR_PHOTO_SET_URL",
+          "sourcePhotoUrl": "TODO_SOURCE_WEEK_5_PHOTO_OR_PHOTO_SET_URL",
+          "photoPolicy": "external_link_only",
+          "photoCount": 9,
+          "photos": [
+            {
+              "index": 1,
+              "photoSourceLink": "TODO_SOURCE_WEEK_5_PHOTO_1_URL",
+              "photoPolicy": "external_link_only"
+            },
+            {
+              "index": 2,
+              "photoSourceLink": "TODO_SOURCE_WEEK_5_PHOTO_2_URL",
+              "photoPolicy": "external_link_only"
+            },
+            {
+              "index": 3,
+              "photoSourceLink": "TODO_SOURCE_WEEK_5_PHOTO_3_URL",
+              "photoPolicy": "external_link_only"
+            },
+            {
+              "index": 4,
+              "photoSourceLink": "TODO_SOURCE_WEEK_5_PHOTO_4_URL",
+              "photoPolicy": "external_link_only"
+            },
+            {
+              "index": 5,
+              "photoSourceLink": "TODO_SOURCE_WEEK_5_PHOTO_5_URL",
+              "photoPolicy": "external_link_only"
+            },
+            {
+              "index": 6,
+              "photoSourceLink": "TODO_SOURCE_WEEK_5_PHOTO_6_URL",
+              "photoPolicy": "external_link_only"
+            },
+            {
+              "index": 7,
+              "photoSourceLink": "TODO_SOURCE_WEEK_5_PHOTO_7_URL",
+              "photoPolicy": "external_link_only"
+            },
+            {
+              "index": 8,
+              "photoSourceLink": "TODO_SOURCE_WEEK_5_PHOTO_8_URL",
+              "photoPolicy": "external_link_only"
+            },
+            {
+              "index": 9,
+              "photoSourceLink": "TODO_SOURCE_WEEK_5_PHOTO_9_URL",
+              "photoPolicy": "external_link_only"
+            }
+          ],
+          "testFocus": ["nutrient log", "watering frequency", "training timeline"],
+          "plannedFeatureCoverage": [
+            "Nutrient log",
+            "Watering frequency",
+            "Training timeline"
+          ]
+        },
+        {
+          "week": 6,
+          "stage": "flower",
+          "stageConfirmedByUser": true,
+          "floweringStatus": "begins",
+          "flowerBegins": true,
+          "defoliationEvents": [
+            {
+              "type": "defoliation",
+              "sequence": 1,
+              "notes": "First defoliation"
+            }
+          ],
+          "wateringFrequencyPerDay": 3,
+          "wateringFrequencyNote": "Watering 3x daily run-to-waste",
+          "irrigationStyle": "run_to_waste",
+          "ecTargetRange": {
+            "min": 1.2,
+            "max": 1.3,
+            "unit": "mS/cm"
+          },
+          "sourceLink": "TODO_PASTE_GROWDIARIES_BRUCE_BANNER_AUTO_DIARY_URL",
+          "photoSourceLink": "TODO_SOURCE_WEEK_6_PHOTO_OR_PHOTO_SET_URL",
+          "sourcePhotoUrl": "TODO_SOURCE_WEEK_6_PHOTO_OR_PHOTO_SET_URL",
+          "photoPolicy": "external_link_only",
+          "photoCount": 11,
+          "photoSubject": "defoliation",
+          "photos": [
+            {
+              "index": 1,
+              "photoSourceLink": "TODO_SOURCE_WEEK_6_DEFOLIATION_PHOTO_1_URL",
+              "photoPolicy": "external_link_only"
+            },
+            {
+              "index": 2,
+              "photoSourceLink": "TODO_SOURCE_WEEK_6_DEFOLIATION_PHOTO_2_URL",
+              "photoPolicy": "external_link_only"
+            },
+            {
+              "index": 3,
+              "photoSourceLink": "TODO_SOURCE_WEEK_6_DEFOLIATION_PHOTO_3_URL",
+              "photoPolicy": "external_link_only"
+            },
+            {
+              "index": 4,
+              "photoSourceLink": "TODO_SOURCE_WEEK_6_DEFOLIATION_PHOTO_4_URL",
+              "photoPolicy": "external_link_only"
+            },
+            {
+              "index": 5,
+              "photoSourceLink": "TODO_SOURCE_WEEK_6_DEFOLIATION_PHOTO_5_URL",
+              "photoPolicy": "external_link_only"
+            },
+            {
+              "index": 6,
+              "photoSourceLink": "TODO_SOURCE_WEEK_6_DEFOLIATION_PHOTO_6_URL",
+              "photoPolicy": "external_link_only"
+            },
+            {
+              "index": 7,
+              "photoSourceLink": "TODO_SOURCE_WEEK_6_DEFOLIATION_PHOTO_7_URL",
+              "photoPolicy": "external_link_only"
+            },
+            {
+              "index": 8,
+              "photoSourceLink": "TODO_SOURCE_WEEK_6_DEFOLIATION_PHOTO_8_URL",
+              "photoPolicy": "external_link_only"
+            },
+            {
+              "index": 9,
+              "photoSourceLink": "TODO_SOURCE_WEEK_6_DEFOLIATION_PHOTO_9_URL",
+              "photoPolicy": "external_link_only"
+            },
+            {
+              "index": 10,
+              "photoSourceLink": "TODO_SOURCE_WEEK_6_DEFOLIATION_PHOTO_10_URL",
+              "photoPolicy": "external_link_only"
+            },
+            {
+              "index": 11,
+              "photoSourceLink": "TODO_SOURCE_WEEK_6_DEFOLIATION_PHOTO_11_URL",
+              "photoPolicy": "external_link_only"
+            }
+          ],
+          "testFocus": ["flower transition", "defoliation log", "runoff EC"],
+          "plannedFeatureCoverage": ["Flower transition", "Defoliation log", "Runoff EC"]
+        },
+        {
+          "week": 7,
+          "stage": "flower",
+          "stageConfirmedByUser": true,
+          "tempC": 25,
+          "rhPercent": 55,
+          "ph": 6.2,
+          "ppm": 600,
+          "budSitesStatus": "forming",
+          "structureNotes": "Compact indica-like structure",
+          "morphologyTags": ["compact", "indica_like"],
+          "defoliationEvents": [
+            {
+              "type": "defoliation",
+              "intensity": "light",
+              "notes": "Light defoliation"
+            }
+          ],
+          "sourceLink": "TODO_PASTE_GROWDIARIES_BRUCE_BANNER_AUTO_DIARY_URL",
+          "photoSourceLink": "TODO_SOURCE_WEEK_7_PHOTO_OR_PHOTO_SET_URL",
+          "sourcePhotoUrl": "TODO_SOURCE_WEEK_7_PHOTO_OR_PHOTO_SET_URL",
+          "photoPolicy": "external_link_only",
+          "photoCount": 9,
+          "photos": [
+            {
+              "index": 1,
+              "photoSourceLink": "TODO_SOURCE_WEEK_7_PHOTO_1_URL",
+              "photoPolicy": "external_link_only"
+            },
+            {
+              "index": 2,
+              "photoSourceLink": "TODO_SOURCE_WEEK_7_PHOTO_2_URL",
+              "photoPolicy": "external_link_only"
+            },
+            {
+              "index": 3,
+              "photoSourceLink": "TODO_SOURCE_WEEK_7_PHOTO_3_URL",
+              "photoPolicy": "external_link_only"
+            },
+            {
+              "index": 4,
+              "photoSourceLink": "TODO_SOURCE_WEEK_7_PHOTO_4_URL",
+              "photoPolicy": "external_link_only"
+            },
+            {
+              "index": 5,
+              "photoSourceLink": "TODO_SOURCE_WEEK_7_PHOTO_5_URL",
+              "photoPolicy": "external_link_only"
+            },
+            {
+              "index": 6,
+              "photoSourceLink": "TODO_SOURCE_WEEK_7_PHOTO_6_URL",
+              "photoPolicy": "external_link_only"
+            },
+            {
+              "index": 7,
+              "photoSourceLink": "TODO_SOURCE_WEEK_7_PHOTO_7_URL",
+              "photoPolicy": "external_link_only"
+            },
+            {
+              "index": 8,
+              "photoSourceLink": "TODO_SOURCE_WEEK_7_PHOTO_8_URL",
+              "photoPolicy": "external_link_only"
+            },
+            {
+              "index": 9,
+              "photoSourceLink": "TODO_SOURCE_WEEK_7_PHOTO_9_URL",
+              "photoPolicy": "external_link_only"
+            }
+          ],
+          "testFocus": ["AI weekly plant summary", "airflow/light penetration"],
+          "plannedFeatureCoverage": [
+            "AI weekly plant summary",
+            "Airflow/light penetration"
+          ]
+        },
+        {
+          "week": 8,
+          "stage": "flower/bud stack",
+          "stageConfirmedByUser": true,
+          "tempC": 25,
+          "rhPercent": 55,
+          "ph": 6.2,
+          "ppm": 650,
+          "stretchStatus": "stopped",
+          "budDevelopmentNotes": "Dense sticky buds",
+          "budStructureTags": ["dense", "sticky"],
+          "trainingEvents": [
+            {
+              "type": "lollipopping",
+              "active": true
+            },
+            {
+              "type": "defoliation",
+              "intensity": "minor"
+            }
+          ],
+          "inputs": [
+            {
+              "type": "PK_booster",
+              "started": true
+            }
+          ],
+          "sourceLink": "TODO_PASTE_GROWDIARIES_BRUCE_BANNER_AUTO_DIARY_URL",
+          "photoSourceLink": "TODO_SOURCE_HARVEST_PHOTO_OR_PHOTO_SET_URL",
+          "sourcePhotoUrl": "TODO_SOURCE_HARVEST_PHOTO_OR_PHOTO_SET_URL",
+          "photoPolicy": "external_link_only",
+          "photoCount": 17,
+          "photos": [
+            {
+              "index": 1,
+              "photoSourceLink": "TODO_SOURCE_WEEK_8_PHOTO_1_URL",
+              "photoPolicy": "external_link_only"
+            },
+            {
+              "index": 2,
+              "photoSourceLink": "TODO_SOURCE_WEEK_8_PHOTO_2_URL",
+              "photoPolicy": "external_link_only"
+            },
+            {
+              "index": 3,
+              "photoSourceLink": "TODO_SOURCE_WEEK_8_PHOTO_3_URL",
+              "photoPolicy": "external_link_only"
+            },
+            {
+              "index": 4,
+              "photoSourceLink": "TODO_SOURCE_WEEK_8_PHOTO_4_URL",
+              "photoPolicy": "external_link_only"
+            },
+            {
+              "index": 5,
+              "photoSourceLink": "TODO_SOURCE_WEEK_8_PHOTO_5_URL",
+              "photoPolicy": "external_link_only"
+            },
+            {
+              "index": 6,
+              "photoSourceLink": "TODO_SOURCE_WEEK_8_PHOTO_6_URL",
+              "photoPolicy": "external_link_only"
+            },
+            {
+              "index": 7,
+              "photoSourceLink": "TODO_SOURCE_WEEK_8_PHOTO_7_URL",
+              "photoPolicy": "external_link_only"
+            },
+            {
+              "index": 8,
+              "photoSourceLink": "TODO_SOURCE_WEEK_8_PHOTO_8_URL",
+              "photoPolicy": "external_link_only"
+            },
+            {
+              "index": 9,
+              "photoSourceLink": "TODO_SOURCE_WEEK_8_PHOTO_9_URL",
+              "photoPolicy": "external_link_only"
+            },
+            {
+              "index": 10,
+              "photoSourceLink": "TODO_SOURCE_WEEK_8_PHOTO_10_URL",
+              "photoPolicy": "external_link_only"
+            },
+            {
+              "index": 11,
+              "photoSourceLink": "TODO_SOURCE_WEEK_8_PHOTO_11_URL",
+              "photoPolicy": "external_link_only"
+            },
+            {
+              "index": 12,
+              "photoSourceLink": "TODO_SOURCE_WEEK_8_PHOTO_12_URL",
+              "photoPolicy": "external_link_only"
+            },
+            {
+              "index": 13,
+              "photoSourceLink": "TODO_SOURCE_WEEK_8_PHOTO_13_URL",
+              "photoPolicy": "external_link_only"
+            },
+            {
+              "index": 14,
+              "photoSourceLink": "TODO_SOURCE_WEEK_8_PHOTO_14_URL",
+              "photoPolicy": "external_link_only"
+            },
+            {
+              "index": 15,
+              "photoSourceLink": "TODO_SOURCE_WEEK_8_PHOTO_15_URL",
+              "photoPolicy": "external_link_only"
+            },
+            {
+              "index": 16,
+              "photoSourceLink": "TODO_SOURCE_WEEK_8_PHOTO_16_URL",
+              "photoPolicy": "external_link_only"
+            },
+            {
+              "index": 17,
+              "photoSourceLink": "TODO_SOURCE_WEEK_8_PHOTO_17_URL",
+              "photoPolicy": "external_link_only"
+            }
+          ],
+          "testFocus": ["bud development log", "lollipop task", "nutrient adjustment"],
+          "plannedFeatureCoverage": [
+            "Bud development log",
+            "Lollipop task",
+            "Nutrient adjustment"
+          ]
+        },
+        {
+          "week": 9,
+          "stage": "flower/resin",
+          "stageConfirmedByUser": true,
+          "tempC": 25,
+          "rhPercent": 55,
+          "ph": 6.2,
+          "ppm": 650,
+          "resinNotes": "Heavy resin",
+          "resinIntensity": "heavy",
+          "airflowAdded": true,
+          "airflowNotes": "Added airflow",
+          "runoffECCheckFrequency": "2-3x weekly",
+          "runoffECTracked": true,
+          "sourceLink": "TODO_PASTE_GROWDIARIES_BRUCE_BANNER_AUTO_DIARY_URL",
+          "photoSourceLink": "TODO_SOURCE_WEEK_9_PHOTO_OR_PHOTO_SET_URL",
+          "sourcePhotoUrl": "TODO_SOURCE_WEEK_9_PHOTO_OR_PHOTO_SET_URL",
+          "photoPolicy": "external_link_only",
+          "photoCount": 20,
+          "photos": [
+            {
+              "index": 1,
+              "photoSourceLink": "TODO_SOURCE_WEEK_9_PHOTO_1_URL",
+              "photoPolicy": "external_link_only"
+            },
+            {
+              "index": 2,
+              "photoSourceLink": "TODO_SOURCE_WEEK_9_PHOTO_2_URL",
+              "photoPolicy": "external_link_only"
+            },
+            {
+              "index": 3,
+              "photoSourceLink": "TODO_SOURCE_WEEK_9_PHOTO_3_URL",
+              "photoPolicy": "external_link_only"
+            },
+            {
+              "index": 4,
+              "photoSourceLink": "TODO_SOURCE_WEEK_9_PHOTO_4_URL",
+              "photoPolicy": "external_link_only"
+            },
+            {
+              "index": 5,
+              "photoSourceLink": "TODO_SOURCE_WEEK_9_PHOTO_5_URL",
+              "photoPolicy": "external_link_only"
+            },
+            {
+              "index": 6,
+              "photoSourceLink": "TODO_SOURCE_WEEK_9_PHOTO_6_URL",
+              "photoPolicy": "external_link_only"
+            },
+            {
+              "index": 7,
+              "photoSourceLink": "TODO_SOURCE_WEEK_9_PHOTO_7_URL",
+              "photoPolicy": "external_link_only"
+            },
+            {
+              "index": 8,
+              "photoSourceLink": "TODO_SOURCE_WEEK_9_PHOTO_8_URL",
+              "photoPolicy": "external_link_only"
+            },
+            {
+              "index": 9,
+              "photoSourceLink": "TODO_SOURCE_WEEK_9_PHOTO_9_URL",
+              "photoPolicy": "external_link_only"
+            },
+            {
+              "index": 10,
+              "photoSourceLink": "TODO_SOURCE_WEEK_9_PHOTO_10_URL",
+              "photoPolicy": "external_link_only"
+            },
+            {
+              "index": 11,
+              "photoSourceLink": "TODO_SOURCE_WEEK_9_PHOTO_11_URL",
+              "photoPolicy": "external_link_only"
+            },
+            {
+              "index": 12,
+              "photoSourceLink": "TODO_SOURCE_WEEK_9_PHOTO_12_URL",
+              "photoPolicy": "external_link_only"
+            },
+            {
+              "index": 13,
+              "photoSourceLink": "TODO_SOURCE_WEEK_9_PHOTO_13_URL",
+              "photoPolicy": "external_link_only"
+            },
+            {
+              "index": 14,
+              "photoSourceLink": "TODO_SOURCE_WEEK_9_PHOTO_14_URL",
+              "photoPolicy": "external_link_only"
+            },
+            {
+              "index": 15,
+              "photoSourceLink": "TODO_SOURCE_WEEK_9_PHOTO_15_URL",
+              "photoPolicy": "external_link_only"
+            },
+            {
+              "index": 16,
+              "photoSourceLink": "TODO_SOURCE_WEEK_9_PHOTO_16_URL",
+              "photoPolicy": "external_link_only"
+            },
+            {
+              "index": 17,
+              "photoSourceLink": "TODO_SOURCE_WEEK_9_PHOTO_17_URL",
+              "photoPolicy": "external_link_only"
+            },
+            {
+              "index": 18,
+              "photoSourceLink": "TODO_SOURCE_WEEK_9_PHOTO_18_URL",
+              "photoPolicy": "external_link_only"
+            },
+            {
+              "index": 19,
+              "photoSourceLink": "TODO_SOURCE_WEEK_9_PHOTO_19_URL",
+              "photoPolicy": "external_link_only"
+            },
+            {
+              "index": 20,
+              "photoSourceLink": "TODO_SOURCE_WEEK_9_PHOTO_20_URL",
+              "photoPolicy": "external_link_only"
+            }
+          ],
+          "testFocus": ["mold-risk prevention", "runoff trend", "photo resin tracking"],
+          "plannedFeatureCoverage": [
+            "Mold-risk prevention",
+            "Runoff trend",
+            "Photo resin tracking"
+          ]
+        },
+        {
+          "week": 10,
+          "stage": "flush/ripening",
+          "stageConfirmedByUser": true,
+          "tempC": 25,
+          "rhPercent": 50,
+          "ph": 6.2,
+          "ppm": 650,
+          "flushStarted": true,
+          "flushStartDay": 67,
+          "trichomeObservation": {
+            "cloudyStatus": "mostly_cloudy",
+            "amberPercentMin": 1,
+            "amberPercentMax": 5
+          },
+          "sourceLink": "TODO_PASTE_GROWDIARIES_BRUCE_BANNER_AUTO_DIARY_URL",
+          "photoSourceLink": "TODO_SOURCE_WEEK_10_PHOTO_OR_PHOTO_SET_URL",
+          "sourcePhotoUrl": "TODO_SOURCE_WEEK_10_PHOTO_OR_PHOTO_SET_URL",
+          "photoPolicy": "external_link_only",
+          "photoCount": 25,
+          "photos": [
+            {
+              "index": 1,
+              "photoSourceLink": "TODO_SOURCE_WEEK_10_PHOTO_1_URL",
+              "photoPolicy": "external_link_only"
+            },
+            {
+              "index": 2,
+              "photoSourceLink": "TODO_SOURCE_WEEK_10_PHOTO_2_URL",
+              "photoPolicy": "external_link_only"
+            },
+            {
+              "index": 3,
+              "photoSourceLink": "TODO_SOURCE_WEEK_10_PHOTO_3_URL",
+              "photoPolicy": "external_link_only"
+            },
+            {
+              "index": 4,
+              "photoSourceLink": "TODO_SOURCE_WEEK_10_PHOTO_4_URL",
+              "photoPolicy": "external_link_only"
+            },
+            {
+              "index": 5,
+              "photoSourceLink": "TODO_SOURCE_WEEK_10_PHOTO_5_URL",
+              "photoPolicy": "external_link_only"
+            },
+            {
+              "index": 6,
+              "photoSourceLink": "TODO_SOURCE_WEEK_10_PHOTO_6_URL",
+              "photoPolicy": "external_link_only"
+            },
+            {
+              "index": 7,
+              "photoSourceLink": "TODO_SOURCE_WEEK_10_PHOTO_7_URL",
+              "photoPolicy": "external_link_only"
+            },
+            {
+              "index": 8,
+              "photoSourceLink": "TODO_SOURCE_WEEK_10_PHOTO_8_URL",
+              "photoPolicy": "external_link_only"
+            },
+            {
+              "index": 9,
+              "photoSourceLink": "TODO_SOURCE_WEEK_10_PHOTO_9_URL",
+              "photoPolicy": "external_link_only"
+            },
+            {
+              "index": 10,
+              "photoSourceLink": "TODO_SOURCE_WEEK_10_PHOTO_10_URL",
+              "photoPolicy": "external_link_only"
+            },
+            {
+              "index": 11,
+              "photoSourceLink": "TODO_SOURCE_WEEK_10_PHOTO_11_URL",
+              "photoPolicy": "external_link_only"
+            },
+            {
+              "index": 12,
+              "photoSourceLink": "TODO_SOURCE_WEEK_10_PHOTO_12_URL",
+              "photoPolicy": "external_link_only"
+            },
+            {
+              "index": 13,
+              "photoSourceLink": "TODO_SOURCE_WEEK_10_PHOTO_13_URL",
+              "photoPolicy": "external_link_only"
+            },
+            {
+              "index": 14,
+              "photoSourceLink": "TODO_SOURCE_WEEK_10_PHOTO_14_URL",
+              "photoPolicy": "external_link_only"
+            },
+            {
+              "index": 15,
+              "photoSourceLink": "TODO_SOURCE_WEEK_10_PHOTO_15_URL",
+              "photoPolicy": "external_link_only"
+            },
+            {
+              "index": 16,
+              "photoSourceLink": "TODO_SOURCE_WEEK_10_PHOTO_16_URL",
+              "photoPolicy": "external_link_only"
+            },
+            {
+              "index": 17,
+              "photoSourceLink": "TODO_SOURCE_WEEK_10_PHOTO_17_URL",
+              "photoPolicy": "external_link_only"
+            },
+            {
+              "index": 18,
+              "photoSourceLink": "TODO_SOURCE_WEEK_10_PHOTO_18_URL",
+              "photoPolicy": "external_link_only"
+            },
+            {
+              "index": 19,
+              "photoSourceLink": "TODO_SOURCE_WEEK_10_PHOTO_19_URL",
+              "photoPolicy": "external_link_only"
+            },
+            {
+              "index": 20,
+              "photoSourceLink": "TODO_SOURCE_WEEK_10_PHOTO_20_URL",
+              "photoPolicy": "external_link_only"
+            },
+            {
+              "index": 21,
+              "photoSourceLink": "TODO_SOURCE_WEEK_10_PHOTO_21_URL",
+              "photoPolicy": "external_link_only"
+            },
+            {
+              "index": 22,
+              "photoSourceLink": "TODO_SOURCE_WEEK_10_PHOTO_22_URL",
+              "photoPolicy": "external_link_only"
+            },
+            {
+              "index": 23,
+              "photoSourceLink": "TODO_SOURCE_WEEK_10_PHOTO_23_URL",
+              "photoPolicy": "external_link_only"
+            },
+            {
+              "index": 24,
+              "photoSourceLink": "TODO_SOURCE_WEEK_10_PHOTO_24_URL",
+              "photoPolicy": "external_link_only"
+            },
+            {
+              "index": 25,
+              "photoSourceLink": "TODO_SOURCE_WEEK_10_PHOTO_25_URL",
+              "photoPolicy": "external_link_only"
+            }
+          ],
+          "testFocus": ["harvest timing", "trichome log", "flush task"],
+          "plannedFeatureCoverage": ["Harvest timing", "Trichome log", "Flush task"]
+        },
+        {
+          "week": 11,
+          "stage": "harvest",
+          "stageConfirmedByUser": true,
+          "harvestDay": 73,
+          "dryWeight": 236,
+          "dryWeightUnit": "g",
+          "plantCount": 1,
+          "growAreaM2": 0.36,
+          "yieldPerM2": 655.56,
+          "tasteNotes": ["diesel", "earthy", "mint"],
+          "sourceLink": "TODO_PASTE_GROWDIARIES_BRUCE_BANNER_AUTO_DIARY_URL",
+          "photoSourceLink": "TODO_SOURCE_WEEK_11_HARVEST_PHOTO_OR_PHOTO_SET_URL",
+          "sourcePhotoUrl": "TODO_SOURCE_WEEK_11_HARVEST_PHOTO_OR_PHOTO_SET_URL",
+          "photoPolicy": "external_link_only",
+          "photoCount": 34,
+          "photoSubject": "harvest/dry",
+          "photos": [
+            {
+              "index": 1,
+              "photoSourceLink": "TODO_SOURCE_WEEK_11_HARVEST_DRY_PHOTO_1_URL",
+              "photoPolicy": "external_link_only"
+            },
+            {
+              "index": 2,
+              "photoSourceLink": "TODO_SOURCE_WEEK_11_HARVEST_DRY_PHOTO_2_URL",
+              "photoPolicy": "external_link_only"
+            },
+            {
+              "index": 3,
+              "photoSourceLink": "TODO_SOURCE_WEEK_11_HARVEST_DRY_PHOTO_3_URL",
+              "photoPolicy": "external_link_only"
+            },
+            {
+              "index": 4,
+              "photoSourceLink": "TODO_SOURCE_WEEK_11_HARVEST_DRY_PHOTO_4_URL",
+              "photoPolicy": "external_link_only"
+            },
+            {
+              "index": 5,
+              "photoSourceLink": "TODO_SOURCE_WEEK_11_HARVEST_DRY_PHOTO_5_URL",
+              "photoPolicy": "external_link_only"
+            },
+            {
+              "index": 6,
+              "photoSourceLink": "TODO_SOURCE_WEEK_11_HARVEST_DRY_PHOTO_6_URL",
+              "photoPolicy": "external_link_only"
+            },
+            {
+              "index": 7,
+              "photoSourceLink": "TODO_SOURCE_WEEK_11_HARVEST_DRY_PHOTO_7_URL",
+              "photoPolicy": "external_link_only"
+            },
+            {
+              "index": 8,
+              "photoSourceLink": "TODO_SOURCE_WEEK_11_HARVEST_DRY_PHOTO_8_URL",
+              "photoPolicy": "external_link_only"
+            },
+            {
+              "index": 9,
+              "photoSourceLink": "TODO_SOURCE_WEEK_11_HARVEST_DRY_PHOTO_9_URL",
+              "photoPolicy": "external_link_only"
+            },
+            {
+              "index": 10,
+              "photoSourceLink": "TODO_SOURCE_WEEK_11_HARVEST_DRY_PHOTO_10_URL",
+              "photoPolicy": "external_link_only"
+            },
+            {
+              "index": 11,
+              "photoSourceLink": "TODO_SOURCE_WEEK_11_HARVEST_DRY_PHOTO_11_URL",
+              "photoPolicy": "external_link_only"
+            },
+            {
+              "index": 12,
+              "photoSourceLink": "TODO_SOURCE_WEEK_11_HARVEST_DRY_PHOTO_12_URL",
+              "photoPolicy": "external_link_only"
+            },
+            {
+              "index": 13,
+              "photoSourceLink": "TODO_SOURCE_WEEK_11_HARVEST_DRY_PHOTO_13_URL",
+              "photoPolicy": "external_link_only"
+            },
+            {
+              "index": 14,
+              "photoSourceLink": "TODO_SOURCE_WEEK_11_HARVEST_DRY_PHOTO_14_URL",
+              "photoPolicy": "external_link_only"
+            },
+            {
+              "index": 15,
+              "photoSourceLink": "TODO_SOURCE_WEEK_11_HARVEST_DRY_PHOTO_15_URL",
+              "photoPolicy": "external_link_only"
+            },
+            {
+              "index": 16,
+              "photoSourceLink": "TODO_SOURCE_WEEK_11_HARVEST_DRY_PHOTO_16_URL",
+              "photoPolicy": "external_link_only"
+            },
+            {
+              "index": 17,
+              "photoSourceLink": "TODO_SOURCE_WEEK_11_HARVEST_DRY_PHOTO_17_URL",
+              "photoPolicy": "external_link_only"
+            },
+            {
+              "index": 18,
+              "photoSourceLink": "TODO_SOURCE_WEEK_11_HARVEST_DRY_PHOTO_18_URL",
+              "photoPolicy": "external_link_only"
+            },
+            {
+              "index": 19,
+              "photoSourceLink": "TODO_SOURCE_WEEK_11_HARVEST_DRY_PHOTO_19_URL",
+              "photoPolicy": "external_link_only"
+            },
+            {
+              "index": 20,
+              "photoSourceLink": "TODO_SOURCE_WEEK_11_HARVEST_DRY_PHOTO_20_URL",
+              "photoPolicy": "external_link_only"
+            },
+            {
+              "index": 21,
+              "photoSourceLink": "TODO_SOURCE_WEEK_11_HARVEST_DRY_PHOTO_21_URL",
+              "photoPolicy": "external_link_only"
+            },
+            {
+              "index": 22,
+              "photoSourceLink": "TODO_SOURCE_WEEK_11_HARVEST_DRY_PHOTO_22_URL",
+              "photoPolicy": "external_link_only"
+            },
+            {
+              "index": 23,
+              "photoSourceLink": "TODO_SOURCE_WEEK_11_HARVEST_DRY_PHOTO_23_URL",
+              "photoPolicy": "external_link_only"
+            },
+            {
+              "index": 24,
+              "photoSourceLink": "TODO_SOURCE_WEEK_11_HARVEST_DRY_PHOTO_24_URL",
+              "photoPolicy": "external_link_only"
+            },
+            {
+              "index": 25,
+              "photoSourceLink": "TODO_SOURCE_WEEK_11_HARVEST_DRY_PHOTO_25_URL",
+              "photoPolicy": "external_link_only"
+            },
+            {
+              "index": 26,
+              "photoSourceLink": "TODO_SOURCE_WEEK_11_HARVEST_DRY_PHOTO_26_URL",
+              "photoPolicy": "external_link_only"
+            },
+            {
+              "index": 27,
+              "photoSourceLink": "TODO_SOURCE_WEEK_11_HARVEST_DRY_PHOTO_27_URL",
+              "photoPolicy": "external_link_only"
+            },
+            {
+              "index": 28,
+              "photoSourceLink": "TODO_SOURCE_WEEK_11_HARVEST_DRY_PHOTO_28_URL",
+              "photoPolicy": "external_link_only"
+            },
+            {
+              "index": 29,
+              "photoSourceLink": "TODO_SOURCE_WEEK_11_HARVEST_DRY_PHOTO_29_URL",
+              "photoPolicy": "external_link_only"
+            },
+            {
+              "index": 30,
+              "photoSourceLink": "TODO_SOURCE_WEEK_11_HARVEST_DRY_PHOTO_30_URL",
+              "photoPolicy": "external_link_only"
+            },
+            {
+              "index": 31,
+              "photoSourceLink": "TODO_SOURCE_WEEK_11_HARVEST_DRY_PHOTO_31_URL",
+              "photoPolicy": "external_link_only"
+            },
+            {
+              "index": 32,
+              "photoSourceLink": "TODO_SOURCE_WEEK_11_HARVEST_DRY_PHOTO_32_URL",
+              "photoPolicy": "external_link_only"
+            },
+            {
+              "index": 33,
+              "photoSourceLink": "TODO_SOURCE_WEEK_11_HARVEST_DRY_PHOTO_33_URL",
+              "photoPolicy": "external_link_only"
+            },
+            {
+              "index": 34,
+              "photoSourceLink": "TODO_SOURCE_WEEK_11_HARVEST_DRY_PHOTO_34_URL",
+              "photoPolicy": "external_link_only"
+            }
+          ],
+          "testFocus": ["harvest report", "yield report", "smoke report", "share card"],
+          "plannedFeatureCoverage": [
+            "Harvest report",
+            "Yield report",
+            "Smoke report",
+            "Share card"
+          ]
+        }
+      ],
+      "acceptanceChecks": [
+        "Free user can view feed banners and use allowed grow/log flows without commercial inventory.",
+        "Pro user can save tool runs, logs, tasks, and external photo metadata.",
+        "External photo links remain URLs in metadata and are not converted into uploaded GrowPathAI assets.",
+        "Harvest quality notes can be saved and later compared in run history."
+      ]
+    },
+    {
+      "id": "commercial-non-cannabis-tomatoes-sunviva-primabella-outdoor",
+      "accountType": "commercial",
+      "planTargets": ["commercial"],
+      "title": "Tomatoes Sunviva / Primabella Outdoor",
+      "featureTestCount": 11,
+      "growPathAIFeaturesTested": [
+        "commercial dashboard workflow counts",
+        "commercial product line creation",
+        "commercial product creation",
+        "soil nutrient batch linked to product workflows",
+        "commercial grow creation",
+        "product trial creation",
+        "tomato crop trial effectiveness summary",
+        "commercial crop summary save",
+        "harvest quality notes save",
+        "public storefront discovery and similar brand navigation",
+        "ad and external link click analytics"
+      ],
+      "source": {
+        "provider": "GrowDiaries",
+        "sourceUrl": "TODO_PASTE_GROWDIARIES_TOMATOES_SUNVIVA_PRIMABELLA_DIARY_URL",
+        "photoSetUrl": "TODO_PASTE_GROWDIARIES_TOMATOES_SUNVIVA_PRIMABELLA_PHOTO_PAGE_URL",
+        "sourceLink": "TODO_PASTE_GROWDIARIES_TOMATOES_SUNVIVA_PRIMABELLA_DIARY_URL",
+        "photoSourceLink": "TODO_PASTE_GROWDIARIES_TOMATOES_SUNVIVA_PRIMABELLA_PHOTO_PAGE_URL",
+        "rightsMode": "external_link_only",
+        "attributionRequired": true
+      },
+      "business": {
+        "businessName": "Commercial Outdoor Crop Demo",
+        "businessType": "garden_center_or_crop_producer"
+      },
+      "workflow": {
+        "cropBatch": "Sunviva / Primabella Outdoor Tomato Trial",
+        "cropType": "tomato",
+        "cultivars": ["Sunviva", "Primabella"],
+        "environment": "outdoor",
+        "trialGrow": "Outdoor Tomato Cultivar Comparison",
+        "requiredEvidence": [
+          "crop batch creation",
+          "cultivar comparison",
+          "germination rate",
+          "seedling propagation",
+          "transplanting",
+          "outdoor hardening",
+          "soil/input comparison",
+          "supplier issue notes",
+          "harvest count",
+          "recovery tracking"
+        ]
+      },
+      "realGrowData": {
+        "dataConfidence": "source_pending",
+        "doNotInventMissingValues": true,
+        "sourceRequiredBeforeSeeding": true,
+        "fieldsToExtractFromSource": [
+          "weeklyStage",
+          "weeklyPhotoLinks",
+          "cultivarRows",
+          "germinationRate",
+          "seedlingPropagationNotes",
+          "transplantDates",
+          "outdoorHardeningNotes",
+          "soilInputComparison",
+          "supplierIssueNotes",
+          "harvestCount",
+          "recoveryTracking"
+        ],
+        "knownFromUserPrompt": {
+          "cropType": "tomato",
+          "cultivars": ["Sunviva", "Primabella"],
+          "environment": "outdoor",
+          "testsCropBatchCreation": true,
+          "testsCultivarComparison": true,
+          "testsGerminationRate": true,
+          "testsSeedlingPropagation": true,
+          "testsTransplanting": true,
+          "testsOutdoorHardening": true,
+          "testsSoilInputComparison": true,
+          "testsSupplierIssueNotes": true,
+          "testsHarvestCount": true,
+          "testsRecoveryTracking": true
+        },
+        "normalizedRecords": {
+          "grow": {
+            "name": "Tomatoes Sunviva / Primabella Outdoor",
+            "purpose": "commercial_crop_trial",
+            "cropType": "tomato",
+            "cultivars": ["Sunviva", "Primabella"],
+            "environment": "outdoor",
+            "status": "source_pending"
+          },
+          "cropTrial": {
+            "trialName": "Sunviva / Primabella Outdoor Tomato Trial",
+            "purpose": "cultivar_comparison",
+            "status": "source_pending",
+            "measurementPlan": "germination, propagation, transplanting, hardening, input comparison, supplier issues, harvest count, recovery tracking"
+          },
+          "germination": {
+            "tracked": true,
+            "germinationRate": "TODO_EXTRACT_FROM_SOURCE"
+          },
+          "commercialCropSummary": "TODO_EXTRACT_FROM_SOURCE"
+        }
+      },
+      "sampleRecords": {
+        "commercialCropSummary": "TODO_EXTRACT_FROM_SOURCE"
+      },
+      "weeklyLogs": [
+        {
+          "week": 0,
+          "stage": "germination",
+          "stageConfirmedByUser": true,
+          "germinationMethod": "direct_substrate",
+          "cultivarGermination": [
+            {
+              "cultivar": "Sunviva",
+              "germinated": 6,
+              "started": 6,
+              "germinationRatePercent": 100
+            },
+            {
+              "cultivar": "Primabella",
+              "germinated": 5,
+              "started": 6,
+              "germinationRatePercent": 83.33
+            }
+          ],
+          "sourceLink": "TODO_PASTE_GROWDIARIES_TOMATOES_SUNVIVA_PRIMABELLA_DIARY_URL",
+          "photoSourceLink": "TODO_SOURCE_COMMERCIAL_TOMATO_WEEK_0_PHOTO_OR_PHOTO_SET_URL",
+          "sourcePhotoUrl": "TODO_SOURCE_COMMERCIAL_TOMATO_WEEK_0_PHOTO_OR_PHOTO_SET_URL",
+          "photoPolicy": "external_link_only",
+          "photoCount": 1,
+          "photos": [
+            {
+              "index": 1,
+              "photoSourceLink": "TODO_SOURCE_COMMERCIAL_TOMATO_WEEK_0_PHOTO_1_URL",
+              "photoPolicy": "external_link_only"
+            }
+          ],
+          "realGrowDataStatus": "user_confirmed_germination",
+          "testFocus": [
+            "crop start",
+            "germination",
+            "cultivar comparison",
+            "direct substrate",
+            "germination rate"
+          ],
+          "plannedFeatureCoverage": [
+            "Crop start",
+            "Commercial germination record",
+            "Cultivar comparison",
+            "Germination rate",
+            "Source-backed weekly log"
+          ]
+        },
+        {
+          "week": 1,
+          "stage": "seedling",
+          "stageConfirmedByUser": true,
+          "plantHeightCm": 2,
+          "lightHours": 16,
+          "rhPercent": 70,
+          "wateringLiters": 0.05,
+          "lampDistanceCm": 40,
+          "co2Ppm": 800,
+          "vpdKpa": 0.8,
+          "ppfd": 200,
+          "sourceLink": "TODO_PASTE_GROWDIARIES_TOMATOES_SUNVIVA_PRIMABELLA_DIARY_URL",
+          "photoSourceLink": "TODO_SOURCE_COMMERCIAL_TOMATO_WEEK_1_PHOTO_OR_PHOTO_SET_URL",
+          "sourcePhotoUrl": "TODO_SOURCE_COMMERCIAL_TOMATO_WEEK_1_PHOTO_OR_PHOTO_SET_URL",
+          "photoPolicy": "external_link_only",
+          "photoCount": 6,
+          "photos": [
+            {
+              "index": 1,
+              "photoSourceLink": "TODO_SOURCE_COMMERCIAL_TOMATO_WEEK_1_PHOTO_1_URL",
+              "photoPolicy": "external_link_only"
+            },
+            {
+              "index": 2,
+              "photoSourceLink": "TODO_SOURCE_COMMERCIAL_TOMATO_WEEK_1_PHOTO_2_URL",
+              "photoPolicy": "external_link_only"
+            },
+            {
+              "index": 3,
+              "photoSourceLink": "TODO_SOURCE_COMMERCIAL_TOMATO_WEEK_1_PHOTO_3_URL",
+              "photoPolicy": "external_link_only"
+            },
+            {
+              "index": 4,
+              "photoSourceLink": "TODO_SOURCE_COMMERCIAL_TOMATO_WEEK_1_PHOTO_4_URL",
+              "photoPolicy": "external_link_only"
+            },
+            {
+              "index": 5,
+              "photoSourceLink": "TODO_SOURCE_COMMERCIAL_TOMATO_WEEK_1_PHOTO_5_URL",
+              "photoPolicy": "external_link_only"
+            },
+            {
+              "index": 6,
+              "photoSourceLink": "TODO_SOURCE_COMMERCIAL_TOMATO_WEEK_1_PHOTO_6_URL",
+              "photoPolicy": "external_link_only"
+            }
+          ],
+          "realGrowDataStatus": "user_confirmed_seedling_environment",
+          "testFocus": [
+            "seedling",
+            "seedling propagation",
+            "propagation dashboard",
+            "VPD",
+            "seedling photo log",
+            "PPFD",
+            "cultivar comparison",
+            "commercial propagation environment"
+          ],
+          "plannedFeatureCoverage": [
+            "Propagation dashboard",
+            "Commercial seedling record",
+            "Seedling propagation",
+            "VPD tracking",
+            "Seedling photo log",
+            "PPFD tracking",
+            "CO2 tracking",
+            "Cultivar comparison",
+            "Source-backed weekly log"
+          ]
+        },
+        {
+          "week": 2,
+          "stage": "veg",
+          "stageConfirmedByUser": true,
+          "plantHeightCm": 5,
+          "lightHours": 16,
+          "tempC": 19,
+          "rhPercent": 60,
+          "inputs": [
+            {
+              "name": "Root Juice",
+              "doseMlPerL": 2
+            }
+          ],
+          "ppfd": 300,
+          "sourceLink": "TODO_PASTE_GROWDIARIES_TOMATOES_SUNVIVA_PRIMABELLA_DIARY_URL",
+          "photoSourceLink": "TODO_SOURCE_COMMERCIAL_TOMATO_WEEK_2_PHOTO_OR_PHOTO_SET_URL",
+          "sourcePhotoUrl": "TODO_SOURCE_COMMERCIAL_TOMATO_WEEK_2_PHOTO_OR_PHOTO_SET_URL",
+          "photoPolicy": "external_link_only",
+          "photoCount": 4,
+          "photos": [
+            {
+              "index": 1,
+              "photoSourceLink": "TODO_SOURCE_COMMERCIAL_TOMATO_WEEK_2_PHOTO_1_URL",
+              "photoPolicy": "external_link_only"
+            },
+            {
+              "index": 2,
+              "photoSourceLink": "TODO_SOURCE_COMMERCIAL_TOMATO_WEEK_2_PHOTO_2_URL",
+              "photoPolicy": "external_link_only"
+            },
+            {
+              "index": 3,
+              "photoSourceLink": "TODO_SOURCE_COMMERCIAL_TOMATO_WEEK_2_PHOTO_3_URL",
+              "photoPolicy": "external_link_only"
+            },
+            {
+              "index": 4,
+              "photoSourceLink": "TODO_SOURCE_COMMERCIAL_TOMATO_WEEK_2_PHOTO_4_URL",
+              "photoPolicy": "external_link_only"
+            }
+          ],
+          "realGrowDataStatus": "user_confirmed_veg_growth",
+          "testFocus": [
+            "veg",
+            "Root Juice",
+            "nutrient log",
+            "growth rate",
+            "PPFD",
+            "cultivar comparison",
+            "cultivar notes",
+            "commercial crop growth"
+          ],
+          "plannedFeatureCoverage": [
+            "Commercial veg record",
+            "Nutrient log",
+            "Growth rate",
+            "Input tracking",
+            "PPFD tracking",
+            "Cultivar comparison",
+            "Cultivar notes",
+            "Commercial crop growth tracking",
+            "Source-backed weekly log"
+          ]
+        },
+        {
+          "week": 3,
+          "stage": "veg / selection",
+          "stageConfirmedByUser": true,
+          "plantHeightCm": 10,
+          "lightHours": 18,
+          "tempC": 19,
+          "rhPercent": 60,
+          "selection": {
+            "startingPlantCount": 11,
+            "selectedPlantCount": 6,
+            "note": "Plants reduced from 11 to 6."
+          },
+          "stressCorrection": {
+            "issue": "wind stress from fan",
+            "corrected": true,
+            "note": "Wind stress from fan corrected."
+          },
+          "sourceLink": "TODO_PASTE_GROWDIARIES_TOMATOES_SUNVIVA_PRIMABELLA_DIARY_URL",
+          "photoSourceLink": "TODO_SOURCE_COMMERCIAL_TOMATO_WEEK_3_PHOTO_OR_PHOTO_SET_URL",
+          "sourcePhotoUrl": "TODO_SOURCE_COMMERCIAL_TOMATO_WEEK_3_PHOTO_OR_PHOTO_SET_URL",
+          "photoPolicy": "external_link_only",
+          "photoCount": 4,
+          "photos": [
+            {
+              "index": 1,
+              "photoSourceLink": "TODO_SOURCE_COMMERCIAL_TOMATO_WEEK_3_PHOTO_1_URL",
+              "photoPolicy": "external_link_only"
+            },
+            {
+              "index": 2,
+              "photoSourceLink": "TODO_SOURCE_COMMERCIAL_TOMATO_WEEK_3_PHOTO_2_URL",
+              "photoPolicy": "external_link_only"
+            },
+            {
+              "index": 3,
+              "photoSourceLink": "TODO_SOURCE_COMMERCIAL_TOMATO_WEEK_3_PHOTO_3_URL",
+              "photoPolicy": "external_link_only"
+            },
+            {
+              "index": 4,
+              "photoSourceLink": "TODO_SOURCE_COMMERCIAL_TOMATO_WEEK_3_PHOTO_4_URL",
+              "photoPolicy": "external_link_only"
+            }
+          ],
+          "realGrowDataStatus": "user_confirmed_selection",
+          "testFocus": [
+            "veg",
+            "selection",
+            "plant selection",
+            "plant count reduction",
+            "wind stress correction",
+            "AI stress diagnosis",
+            "fan task",
+            "cultivar comparison",
+            "commercial crop growth"
+          ],
+          "plannedFeatureCoverage": [
+            "Commercial veg record",
+            "Selection workflow",
+            "Plant selection",
+            "Plant count tracking",
+            "AI stress diagnosis",
+            "Stress correction",
+            "Fan task",
+            "Cultivar comparison",
+            "Source-backed weekly log"
+          ]
+        },
+        {
+          "week": 4,
+          "stage": "veg / pruning",
+          "stageConfirmedByUser": true,
+          "cultivarMeasurements": [
+            {
+              "cultivar": "Sunviva",
+              "plantHeightCmApprox": 30
+            },
+            {
+              "cultivar": "Primabella",
+              "plantHeightCmApprox": 15
+            }
+          ],
+          "pruningEvents": [
+            {
+              "type": "side_shoot_removal",
+              "completed": true,
+              "notes": "Side shoots removed."
+            }
+          ],
+          "wateringLitersTotal": 1.5,
+          "ph": 6.5,
+          "inputs": [
+            {
+              "name": "Root Juice"
+            },
+            {
+              "name": "Epsom salt"
+            }
+          ],
+          "sourceLink": "TODO_PASTE_GROWDIARIES_TOMATOES_SUNVIVA_PRIMABELLA_DIARY_URL",
+          "photoSourceLink": "TODO_SOURCE_COMMERCIAL_TOMATO_WEEK_4_PHOTO_OR_PHOTO_SET_URL",
+          "sourcePhotoUrl": "TODO_SOURCE_COMMERCIAL_TOMATO_WEEK_4_PHOTO_OR_PHOTO_SET_URL",
+          "photoPolicy": "external_link_only",
+          "photoCount": 4,
+          "photos": [
+            {
+              "index": 1,
+              "photoSourceLink": "TODO_SOURCE_COMMERCIAL_TOMATO_WEEK_4_PHOTO_1_URL",
+              "photoPolicy": "external_link_only"
+            },
+            {
+              "index": 2,
+              "photoSourceLink": "TODO_SOURCE_COMMERCIAL_TOMATO_WEEK_4_PHOTO_2_URL",
+              "photoPolicy": "external_link_only"
+            },
+            {
+              "index": 3,
+              "photoSourceLink": "TODO_SOURCE_COMMERCIAL_TOMATO_WEEK_4_PHOTO_3_URL",
+              "photoPolicy": "external_link_only"
+            },
+            {
+              "index": 4,
+              "photoSourceLink": "TODO_SOURCE_COMMERCIAL_TOMATO_WEEK_4_PHOTO_4_URL",
+              "photoPolicy": "external_link_only"
+            }
+          ],
+          "realGrowDataStatus": "stage_only_pending_details",
+          "testFocus": [
+            "veg",
+            "pruning",
+            "side shoot removal",
+            "suckering task",
+            "cultivar height comparison",
+            "cultivar morphology",
+            "watering log",
+            "pH log",
+            "input tracking",
+            "cultivar comparison",
+            "external source placeholder"
+          ],
+          "plannedFeatureCoverage": [
+            "Commercial veg record",
+            "Pruning log",
+            "Pruning/suckering task",
+            "Side shoot removal",
+            "Cultivar height comparison",
+            "Cultivar morphology",
+            "Watering log",
+            "pH log",
+            "Input tracking",
+            "Cultivar comparison",
+            "Source-backed weekly log"
+          ]
+        },
+        {
+          "week": 5,
+          "stage": "transplant / preflower",
+          "stageConfirmedByUser": true,
+          "tableHeightCm": 40,
+          "transplantEvent": {
+            "fromPotVolumeL": 0.5,
+            "toPotVolumeL": 2,
+            "completed": true,
+            "notes": "Transplanted into 2 L pots from rootbound 0.5 L pots."
+          },
+          "rootZoneObservation": {
+            "rootbound": true,
+            "potVolumeL": 0.5,
+            "notes": "Rootbound 0.5 L pots."
+          },
+          "cultivarObservations": [
+            {
+              "cultivar": "Sunviva",
+              "preflowerStatus": "first_flowers",
+              "notes": "Sunviva first flowers."
+            },
+            {
+              "cultivar": "Primabella",
+              "morphology": "compact",
+              "notes": "Primabella compact."
+            }
+          ],
+          "outsideTrial": {
+            "active": true,
+            "potVolumeL": 30,
+            "plants": "extra_plants",
+            "notes": "Extra plants tested outside in 30 L pots."
+          },
+          "sourceLink": "TODO_PASTE_GROWDIARIES_TOMATOES_SUNVIVA_PRIMABELLA_DIARY_URL",
+          "photoSourceLink": "TODO_SOURCE_COMMERCIAL_TOMATO_WEEK_5_PHOTO_OR_PHOTO_SET_URL",
+          "sourcePhotoUrl": "TODO_SOURCE_COMMERCIAL_TOMATO_WEEK_5_PHOTO_OR_PHOTO_SET_URL",
+          "photoPolicy": "external_link_only",
+          "photoCount": 8,
+          "photos": [
+            {
+              "index": 1,
+              "photoSourceLink": "TODO_SOURCE_COMMERCIAL_TOMATO_WEEK_5_PHOTO_1_URL",
+              "photoPolicy": "external_link_only"
+            },
+            {
+              "index": 2,
+              "photoSourceLink": "TODO_SOURCE_COMMERCIAL_TOMATO_WEEK_5_PHOTO_2_URL",
+              "photoPolicy": "external_link_only"
+            },
+            {
+              "index": 3,
+              "photoSourceLink": "TODO_SOURCE_COMMERCIAL_TOMATO_WEEK_5_PHOTO_3_URL",
+              "photoPolicy": "external_link_only"
+            },
+            {
+              "index": 4,
+              "photoSourceLink": "TODO_SOURCE_COMMERCIAL_TOMATO_WEEK_5_PHOTO_4_URL",
+              "photoPolicy": "external_link_only"
+            },
+            {
+              "index": 5,
+              "photoSourceLink": "TODO_SOURCE_COMMERCIAL_TOMATO_WEEK_5_PHOTO_5_URL",
+              "photoPolicy": "external_link_only"
+            },
+            {
+              "index": 6,
+              "photoSourceLink": "TODO_SOURCE_COMMERCIAL_TOMATO_WEEK_5_PHOTO_6_URL",
+              "photoPolicy": "external_link_only"
+            },
+            {
+              "index": 7,
+              "photoSourceLink": "TODO_SOURCE_COMMERCIAL_TOMATO_WEEK_5_PHOTO_7_URL",
+              "photoPolicy": "external_link_only"
+            },
+            {
+              "index": 8,
+              "photoSourceLink": "TODO_SOURCE_COMMERCIAL_TOMATO_WEEK_5_PHOTO_8_URL",
+              "photoPolicy": "external_link_only"
+            }
+          ],
+          "realGrowDataStatus": "stage_only_pending_details",
+          "testFocus": [
+            "transplant",
+            "transplant log",
+            "preflower",
+            "rootbound detection",
+            "rootbound alert",
+            "pot size change",
+            "first flowers",
+            "compact morphology",
+            "outside 30 L pot test",
+            "hardening trial",
+            "outdoor hardening",
+            "cultivar comparison",
+            "external source placeholder"
+          ],
+          "plannedFeatureCoverage": [
+            "Commercial transplant record",
+            "Transplant log",
+            "Preflower transition",
+            "Rootbound note",
+            "Rootbound alert",
+            "Pot size change",
+            "Cultivar morphology",
+            "Outdoor 30 L trial",
+            "Hardening trial",
+            "Outdoor hardening log",
+            "Cultivar comparison",
+            "Source-backed weekly log"
+          ]
+        },
+        {
+          "week": 6,
+          "stage": "veg / flowering start",
+          "stageConfirmedByUser": true,
+          "cultivarMeasurements": [
+            {
+              "cultivar": "Sunviva",
+              "plantHeightCmApprox": 75,
+              "floweringStatus": "started"
+            },
+            {
+              "cultivar": "Primabella",
+              "plantHeightCmApprox": 45,
+              "floweringStatus": "started"
+            }
+          ],
+          "floweringStatus": {
+            "Sunviva": "started",
+            "Primabella": "started",
+            "notes": "Both varieties started flowering."
+          },
+          "hardeningEvents": [
+            {
+              "type": "sunny_day_outdoor_placement",
+              "active": true,
+              "notes": "Plants placed outside on sunny days."
+            }
+          ],
+          "sourceLink": "TODO_PASTE_GROWDIARIES_TOMATOES_SUNVIVA_PRIMABELLA_DIARY_URL",
+          "photoSourceLink": "TODO_SOURCE_COMMERCIAL_TOMATO_WEEK_6_PHOTO_OR_PHOTO_SET_URL",
+          "sourcePhotoUrl": "TODO_SOURCE_COMMERCIAL_TOMATO_WEEK_6_PHOTO_OR_PHOTO_SET_URL",
+          "photoPolicy": "external_link_only",
+          "photoCount": 3,
+          "photos": [
+            {
+              "index": 1,
+              "photoSourceLink": "TODO_SOURCE_COMMERCIAL_TOMATO_WEEK_6_PHOTO_1_URL",
+              "photoPolicy": "external_link_only"
+            },
+            {
+              "index": 2,
+              "photoSourceLink": "TODO_SOURCE_COMMERCIAL_TOMATO_WEEK_6_PHOTO_2_URL",
+              "photoPolicy": "external_link_only"
+            },
+            {
+              "index": 3,
+              "photoSourceLink": "TODO_SOURCE_COMMERCIAL_TOMATO_WEEK_6_PHOTO_3_URL",
+              "photoPolicy": "external_link_only"
+            }
+          ],
+          "realGrowDataStatus": "stage_only_pending_details",
+          "testFocus": [
+            "veg",
+            "flowering start",
+            "stage change",
+            "cultivar height comparison",
+            "both varieties flowering",
+            "sunny day hardening",
+            "outdoor acclimation",
+            "preflower tracking",
+            "cultivar comparison",
+            "external source placeholder"
+          ],
+          "plannedFeatureCoverage": [
+            "Commercial veg record",
+            "Flowering start log",
+            "Stage change",
+            "Cultivar height comparison",
+            "Both-variety flowering log",
+            "Sunny-day outdoor hardening",
+            "Outdoor acclimation",
+            "Preflower tracking",
+            "Cultivar comparison",
+            "Source-backed weekly log"
+          ]
+        },
+        {
+          "week": 7,
+          "stage": "flower / first fruit",
+          "stageConfirmedByUser": true,
+          "plantHeightCm": 80,
+          "tempC": 20,
+          "rhPercent": 50,
+          "inputs": [
+            {
+              "name": "Fish-Mix",
+              "doseMlPerL": 2
+            }
+          ],
+          "fruitSetStatus": "first_fruits_setting",
+          "fruitSetNotes": "First fruits setting.",
+          "potLimitation": {
+            "potVolumeL": 2,
+            "limiting": true,
+            "notes": "2 L pots becoming limiting."
+          },
+          "sourceLink": "TODO_PASTE_GROWDIARIES_TOMATOES_SUNVIVA_PRIMABELLA_DIARY_URL",
+          "photoSourceLink": "TODO_SOURCE_COMMERCIAL_TOMATO_WEEK_7_PHOTO_OR_PHOTO_SET_URL",
+          "sourcePhotoUrl": "TODO_SOURCE_COMMERCIAL_TOMATO_WEEK_7_PHOTO_OR_PHOTO_SET_URL",
+          "photoPolicy": "external_link_only",
+          "photoCount": 4,
+          "photos": [
+            {
+              "index": 1,
+              "photoSourceLink": "TODO_SOURCE_COMMERCIAL_TOMATO_WEEK_7_PHOTO_1_URL",
+              "photoPolicy": "external_link_only"
+            },
+            {
+              "index": 2,
+              "photoSourceLink": "TODO_SOURCE_COMMERCIAL_TOMATO_WEEK_7_PHOTO_2_URL",
+              "photoPolicy": "external_link_only"
+            },
+            {
+              "index": 3,
+              "photoSourceLink": "TODO_SOURCE_COMMERCIAL_TOMATO_WEEK_7_PHOTO_3_URL",
+              "photoPolicy": "external_link_only"
+            },
+            {
+              "index": 4,
+              "photoSourceLink": "TODO_SOURCE_COMMERCIAL_TOMATO_WEEK_7_PHOTO_4_URL",
+              "photoPolicy": "external_link_only"
+            }
+          ],
+          "realGrowDataStatus": "stage_only_pending_details",
+          "testFocus": [
+            "flower",
+            "first fruit",
+            "fruit set tracking",
+            "fruit-set log",
+            "Fish-Mix input",
+            "pot limitation",
+            "root-zone warning",
+            "transplant reminder",
+            "environment log",
+            "cultivar comparison",
+            "external source placeholder"
+          ],
+          "plannedFeatureCoverage": [
+            "Commercial flower record",
+            "First fruit log",
+            "Fruit set tracking",
+            "Fruit-set log",
+            "Input tracking",
+            "Pot limitation warning",
+            "Root-zone warning",
+            "Transplant reminder",
+            "Environment log",
+            "Cultivar comparison",
+            "Source-backed weekly log"
+          ]
+        },
+        {
+          "week": 8,
+          "stage": "flower / fruiting",
+          "stageConfirmedByUser": true,
+          "plantHeightCm": 100,
+          "tempC": 20,
+          "rhPercent": 50,
+          "wateringLiters": 0.4,
+          "inputs": [
+            {
+              "name": "Fish-Mix",
+              "doseMlPerL": 2
+            }
+          ],
+          "fruitStatus": "first_green_tomatoes",
+          "fruitNotes": "First green tomatoes.",
+          "plannedTransplant": {
+            "toPotVolumeL": 30,
+            "planned": true,
+            "notes": "Transplant to 30 L planned."
+          },
+          "sourceLink": "TODO_PASTE_GROWDIARIES_TOMATOES_SUNVIVA_PRIMABELLA_DIARY_URL",
+          "photoSourceLink": "TODO_SOURCE_COMMERCIAL_TOMATO_WEEK_8_PHOTO_OR_PHOTO_SET_URL",
+          "sourcePhotoUrl": "TODO_SOURCE_COMMERCIAL_TOMATO_WEEK_8_PHOTO_OR_PHOTO_SET_URL",
+          "photoPolicy": "external_link_only",
+          "photoCount": 6,
+          "photos": [
+            {
+              "index": 1,
+              "photoSourceLink": "TODO_SOURCE_COMMERCIAL_TOMATO_WEEK_8_PHOTO_1_URL",
+              "photoPolicy": "external_link_only"
+            },
+            {
+              "index": 2,
+              "photoSourceLink": "TODO_SOURCE_COMMERCIAL_TOMATO_WEEK_8_PHOTO_2_URL",
+              "photoPolicy": "external_link_only"
+            },
+            {
+              "index": 3,
+              "photoSourceLink": "TODO_SOURCE_COMMERCIAL_TOMATO_WEEK_8_PHOTO_3_URL",
+              "photoPolicy": "external_link_only"
+            },
+            {
+              "index": 4,
+              "photoSourceLink": "TODO_SOURCE_COMMERCIAL_TOMATO_WEEK_8_PHOTO_4_URL",
+              "photoPolicy": "external_link_only"
+            },
+            {
+              "index": 5,
+              "photoSourceLink": "TODO_SOURCE_COMMERCIAL_TOMATO_WEEK_8_PHOTO_5_URL",
+              "photoPolicy": "external_link_only"
+            },
+            {
+              "index": 6,
+              "photoSourceLink": "TODO_SOURCE_COMMERCIAL_TOMATO_WEEK_8_PHOTO_6_URL",
+              "photoPolicy": "external_link_only"
+            }
+          ],
+          "realGrowDataStatus": "stage_only_pending_details",
+          "testFocus": [
+            "flower",
+            "fruiting",
+            "fruit development tracking",
+            "fruit tracking",
+            "first green tomatoes",
+            "watering log",
+            "Fish-Mix input",
+            "30 L transplant plan",
+            "transplant scheduling",
+            "environment log",
+            "cultivar comparison",
+            "external source placeholder"
+          ],
+          "plannedFeatureCoverage": [
+            "Commercial flower record",
+            "Fruiting log",
+            "Fruit development tracking",
+            "Fruit tracking",
+            "First green tomato log",
+            "Watering log",
+            "Input tracking",
+            "30 L transplant reminder",
+            "Transplant scheduling",
+            "Environment log",
+            "Cultivar comparison",
+            "Source-backed weekly log"
+          ]
+        },
+        {
+          "week": 9,
+          "stage": "outdoor transition",
+          "stageConfirmedByUser": true,
+          "plantHeightCm": 110,
+          "tempC": 20,
+          "rhPercent": 50,
+          "inputs": [
+            {
+              "name": "Fish-Mix",
+              "doseMlPerL": 2
+            }
+          ],
+          "outdoorTransition": {
+            "permanentMove": true,
+            "notes": "Plants moving outdoors permanently."
+          },
+          "plannedTransplant": {
+            "toPotVolumeL": 30,
+            "planned": true,
+            "notes": "30 L pots planned."
+          },
+          "sourceLink": "TODO_PASTE_GROWDIARIES_TOMATOES_SUNVIVA_PRIMABELLA_DIARY_URL",
+          "photoSourceLink": "TODO_SOURCE_COMMERCIAL_TOMATO_WEEK_9_PHOTO_OR_PHOTO_SET_URL",
+          "sourcePhotoUrl": "TODO_SOURCE_COMMERCIAL_TOMATO_WEEK_9_PHOTO_OR_PHOTO_SET_URL",
+          "photoPolicy": "external_link_only",
+          "photoCount": 8,
+          "photos": [
+            {
+              "index": 1,
+              "photoSourceLink": "TODO_SOURCE_COMMERCIAL_TOMATO_WEEK_9_PHOTO_1_URL",
+              "photoPolicy": "external_link_only"
+            },
+            {
+              "index": 2,
+              "photoSourceLink": "TODO_SOURCE_COMMERCIAL_TOMATO_WEEK_9_PHOTO_2_URL",
+              "photoPolicy": "external_link_only"
+            },
+            {
+              "index": 3,
+              "photoSourceLink": "TODO_SOURCE_COMMERCIAL_TOMATO_WEEK_9_PHOTO_3_URL",
+              "photoPolicy": "external_link_only"
+            },
+            {
+              "index": 4,
+              "photoSourceLink": "TODO_SOURCE_COMMERCIAL_TOMATO_WEEK_9_PHOTO_4_URL",
+              "photoPolicy": "external_link_only"
+            },
+            {
+              "index": 5,
+              "photoSourceLink": "TODO_SOURCE_COMMERCIAL_TOMATO_WEEK_9_PHOTO_5_URL",
+              "photoPolicy": "external_link_only"
+            },
+            {
+              "index": 6,
+              "photoSourceLink": "TODO_SOURCE_COMMERCIAL_TOMATO_WEEK_9_PHOTO_6_URL",
+              "photoPolicy": "external_link_only"
+            },
+            {
+              "index": 7,
+              "photoSourceLink": "TODO_SOURCE_COMMERCIAL_TOMATO_WEEK_9_PHOTO_7_URL",
+              "photoPolicy": "external_link_only"
+            },
+            {
+              "index": 8,
+              "photoSourceLink": "TODO_SOURCE_COMMERCIAL_TOMATO_WEEK_9_PHOTO_8_URL",
+              "photoPolicy": "external_link_only"
+            }
+          ],
+          "realGrowDataStatus": "stage_only_pending_details",
+          "testFocus": [
+            "outdoor transition",
+            "permanent outdoor move",
+            "hardening continuation",
+            "transplant follow-up",
+            "30 L pot plan",
+            "task reminders",
+            "Fish-Mix input",
+            "environment log",
+            "cultivar comparison",
+            "external source placeholder"
+          ],
+          "plannedFeatureCoverage": [
+            "Outdoor transition log",
+            "Permanent outdoor move",
+            "Hardening continuation",
+            "Transplant follow-up",
+            "30 L transplant reminder",
+            "Outdoor transition task reminders",
+            "Input tracking",
+            "Environment log",
+            "Cultivar comparison",
+            "Source-backed weekly log"
+          ]
+        },
+        {
+          "week": 10,
+          "stage": "final pots",
+          "stageConfirmedByUser": true,
+          "finalPots": [
+            {
+              "count": 3,
+              "potVolumeL": 30
+            },
+            {
+              "count": 1,
+              "potVolumeL": 40
+            }
+          ],
+          "soilOptions": ["Sonnerde", "Neudorff"],
+          "soilNotes": "Sonnerde or Neudorff soil.",
+          "inputs": [
+            {
+              "name": "compost tea"
+            },
+            {
+              "name": "Great White"
+            }
+          ],
+          "sourceLink": "TODO_PASTE_GROWDIARIES_TOMATOES_SUNVIVA_PRIMABELLA_DIARY_URL",
+          "photoSourceLink": "TODO_SOURCE_COMMERCIAL_TOMATO_WEEK_10_PHOTO_OR_PHOTO_SET_URL",
+          "sourcePhotoUrl": "TODO_SOURCE_COMMERCIAL_TOMATO_WEEK_10_PHOTO_OR_PHOTO_SET_URL",
+          "photoPolicy": "external_link_only",
+          "photoCount": 6,
+          "photos": [
+            {
+              "index": 1,
+              "photoSourceLink": "TODO_SOURCE_COMMERCIAL_TOMATO_WEEK_10_PHOTO_1_URL",
+              "photoPolicy": "external_link_only"
+            },
+            {
+              "index": 2,
+              "photoSourceLink": "TODO_SOURCE_COMMERCIAL_TOMATO_WEEK_10_PHOTO_2_URL",
+              "photoPolicy": "external_link_only"
+            },
+            {
+              "index": 3,
+              "photoSourceLink": "TODO_SOURCE_COMMERCIAL_TOMATO_WEEK_10_PHOTO_3_URL",
+              "photoPolicy": "external_link_only"
+            },
+            {
+              "index": 4,
+              "photoSourceLink": "TODO_SOURCE_COMMERCIAL_TOMATO_WEEK_10_PHOTO_4_URL",
+              "photoPolicy": "external_link_only"
+            },
+            {
+              "index": 5,
+              "photoSourceLink": "TODO_SOURCE_COMMERCIAL_TOMATO_WEEK_10_PHOTO_5_URL",
+              "photoPolicy": "external_link_only"
+            },
+            {
+              "index": 6,
+              "photoSourceLink": "TODO_SOURCE_COMMERCIAL_TOMATO_WEEK_10_PHOTO_6_URL",
+              "photoPolicy": "external_link_only"
+            }
+          ],
+          "realGrowDataStatus": "stage_only_pending_details",
+          "testFocus": [
+            "final pots",
+            "transplant completion",
+            "batch transplant",
+            "30 L pot tracking",
+            "40 L pot tracking",
+            "soil input comparison",
+            "soil lot tracking",
+            "input tracking",
+            "compost tea input",
+            "Great White input",
+            "outdoor production setup",
+            "cultivar comparison",
+            "external source placeholder"
+          ],
+          "plannedFeatureCoverage": [
+            "Final pot log",
+            "Transplant completion",
+            "Batch transplant",
+            "Final pot inventory",
+            "Soil/input comparison",
+            "Soil lot tracking",
+            "Input tracking",
+            "Compost tea log",
+            "Great White input log",
+            "Outdoor production setup",
+            "Cultivar comparison",
+            "Source-backed weekly log"
+          ]
+        },
+        {
+          "week": 11,
+          "stage": "first harvest",
+          "stageConfirmedByUser": true,
+          "harvestEvents": [
+            {
+              "cultivar": "Sunviva",
+              "crop": "tomato",
+              "ripeness": "ripe",
+              "harvested": true,
+              "notes": "First Sunviva tomatoes ripe and harvested."
+            }
+          ],
+          "soilPerformanceComparison": {
+            "currentLeader": "Sonnerde",
+            "outperforming": "Neudorff",
+            "status": "early_observation",
+            "notes": "Sonnerde soil outperforming Neudorff so far."
+          },
+          "sourceLink": "TODO_PASTE_GROWDIARIES_TOMATOES_SUNVIVA_PRIMABELLA_DIARY_URL",
+          "photoSourceLink": "TODO_SOURCE_COMMERCIAL_TOMATO_WEEK_11_PHOTO_OR_PHOTO_SET_URL",
+          "sourcePhotoUrl": "TODO_SOURCE_COMMERCIAL_TOMATO_WEEK_11_PHOTO_OR_PHOTO_SET_URL",
+          "photoPolicy": "external_link_only",
+          "photoCount": 6,
+          "photos": [
+            {
+              "index": 1,
+              "photoSourceLink": "TODO_SOURCE_COMMERCIAL_TOMATO_WEEK_11_PHOTO_1_URL",
+              "photoPolicy": "external_link_only"
+            },
+            {
+              "index": 2,
+              "photoSourceLink": "TODO_SOURCE_COMMERCIAL_TOMATO_WEEK_11_PHOTO_2_URL",
+              "photoPolicy": "external_link_only"
+            },
+            {
+              "index": 3,
+              "photoSourceLink": "TODO_SOURCE_COMMERCIAL_TOMATO_WEEK_11_PHOTO_3_URL",
+              "photoPolicy": "external_link_only"
+            },
+            {
+              "index": 4,
+              "photoSourceLink": "TODO_SOURCE_COMMERCIAL_TOMATO_WEEK_11_PHOTO_4_URL",
+              "photoPolicy": "external_link_only"
+            },
+            {
+              "index": 5,
+              "photoSourceLink": "TODO_SOURCE_COMMERCIAL_TOMATO_WEEK_11_PHOTO_5_URL",
+              "photoPolicy": "external_link_only"
+            },
+            {
+              "index": 6,
+              "photoSourceLink": "TODO_SOURCE_COMMERCIAL_TOMATO_WEEK_11_PHOTO_6_URL",
+              "photoPolicy": "external_link_only"
+            }
+          ],
+          "realGrowDataStatus": "stage_only_pending_details",
+          "testFocus": [
+            "first harvest",
+            "harvest log",
+            "harvest count",
+            "Sunviva harvest",
+            "ripe tomato harvest",
+            "soil performance comparison",
+            "soil comparison",
+            "Sonnerde vs Neudorff",
+            "cultivar performance",
+            "cultivar comparison",
+            "commercial crop summary",
+            "external source placeholder"
+          ],
+          "plannedFeatureCoverage": [
+            "First harvest log",
+            "Harvest log",
+            "Harvest count",
+            "Cultivar harvest record",
+            "Ripe tomato harvest",
+            "Soil performance comparison",
+            "Soil comparison",
+            "Sonnerde vs Neudorff comparison",
+            "Cultivar performance",
+            "Cultivar comparison",
+            "Commercial crop summary",
+            "Source-backed weekly log"
+          ]
+        },
+        {
+          "week": 12,
+          "stage": "soil issue",
+          "stageConfirmedByUser": true,
+          "soilPerformanceComparison": {
+            "currentLeader": "Sonnerde",
+            "laggingSoil": "Neudorff",
+            "differenceStrength": "strong",
+            "notes": "Strong difference between Sonnerde and Neudorff soil; Neudorff plants lagging."
+          },
+          "affectedPlants": [
+            {
+              "soil": "Neudorff",
+              "status": "lagging"
+            }
+          ],
+          "supplierContact": {
+            "supplier": "Neudorff",
+            "contacted": true,
+            "notes": "Grower contacted supplier."
+          },
+          "sourceLink": "TODO_PASTE_GROWDIARIES_TOMATOES_SUNVIVA_PRIMABELLA_DIARY_URL",
+          "photoSourceLink": "TODO_SOURCE_COMMERCIAL_TOMATO_WEEK_12_PHOTO_OR_PHOTO_SET_URL",
+          "sourcePhotoUrl": "TODO_SOURCE_COMMERCIAL_TOMATO_WEEK_12_PHOTO_OR_PHOTO_SET_URL",
+          "photoPolicy": "external_link_only",
+          "photoCount": 4,
+          "photos": [
+            {
+              "index": 1,
+              "photoSourceLink": "TODO_SOURCE_COMMERCIAL_TOMATO_WEEK_12_PHOTO_1_URL",
+              "photoPolicy": "external_link_only"
+            },
+            {
+              "index": 2,
+              "photoSourceLink": "TODO_SOURCE_COMMERCIAL_TOMATO_WEEK_12_PHOTO_2_URL",
+              "photoPolicy": "external_link_only"
+            },
+            {
+              "index": 3,
+              "photoSourceLink": "TODO_SOURCE_COMMERCIAL_TOMATO_WEEK_12_PHOTO_3_URL",
+              "photoPolicy": "external_link_only"
+            },
+            {
+              "index": 4,
+              "photoSourceLink": "TODO_SOURCE_COMMERCIAL_TOMATO_WEEK_12_PHOTO_4_URL",
+              "photoPolicy": "external_link_only"
+            }
+          ],
+          "realGrowDataStatus": "stage_only_pending_details",
+          "testFocus": [
+            "soil issue",
+            "soil comparison follow-up",
+            "Sonnerde vs Neudorff performance gap",
+            "lagging plants",
+            "supplier contact",
+            "supplier issue",
+            "input performance",
+            "crop health comparison",
+            "root-zone diagnosis",
+            "cultivar performance",
+            "external source placeholder"
+          ],
+          "plannedFeatureCoverage": [
+            "Soil issue log",
+            "Soil comparison follow-up",
+            "Soil performance gap",
+            "Lagging plant tracking",
+            "Supplier issue note",
+            "Supplier issue",
+            "Input performance",
+            "Crop health comparison",
+            "Root-zone diagnosis",
+            "Cultivar performance",
+            "Source-backed weekly log"
+          ]
+        },
+        {
+          "week": 13,
+          "stage": "fertility correction",
+          "stageConfirmedByUser": true,
+          "plantHeightCm": 110,
+          "wateringLiters": 0.8,
+          "inputs": [
+            {
+              "name": "Neudorff fertilizer",
+              "applied": true
+            }
+          ],
+          "harvest": {
+            "crop": "tomato",
+            "countApprox": 10,
+            "notes": "About 10 tomatoes harvested."
+          },
+          "soilIssue": {
+            "type": "poor_water_retention",
+            "observed": true,
+            "notes": "Poor water retention noted."
+          },
+          "sourceLink": "TODO_PASTE_GROWDIARIES_TOMATOES_SUNVIVA_PRIMABELLA_DIARY_URL",
+          "photoSourceLink": "TODO_SOURCE_COMMERCIAL_TOMATO_WEEK_13_PHOTO_OR_PHOTO_SET_URL",
+          "sourcePhotoUrl": "TODO_SOURCE_COMMERCIAL_TOMATO_WEEK_13_PHOTO_OR_PHOTO_SET_URL",
+          "photoPolicy": "external_link_only",
+          "photoCount": 5,
+          "photos": [
+            {
+              "index": 1,
+              "photoSourceLink": "TODO_SOURCE_COMMERCIAL_TOMATO_WEEK_13_PHOTO_1_URL",
+              "photoPolicy": "external_link_only"
+            },
+            {
+              "index": 2,
+              "photoSourceLink": "TODO_SOURCE_COMMERCIAL_TOMATO_WEEK_13_PHOTO_2_URL",
+              "photoPolicy": "external_link_only"
+            },
+            {
+              "index": 3,
+              "photoSourceLink": "TODO_SOURCE_COMMERCIAL_TOMATO_WEEK_13_PHOTO_3_URL",
+              "photoPolicy": "external_link_only"
+            },
+            {
+              "index": 4,
+              "photoSourceLink": "TODO_SOURCE_COMMERCIAL_TOMATO_WEEK_13_PHOTO_4_URL",
+              "photoPolicy": "external_link_only"
+            },
+            {
+              "index": 5,
+              "photoSourceLink": "TODO_SOURCE_COMMERCIAL_TOMATO_WEEK_13_PHOTO_5_URL",
+              "photoPolicy": "external_link_only"
+            }
+          ],
+          "realGrowDataStatus": "stage_only_pending_details",
+          "testFocus": [
+            "fertility correction",
+            "soil issue response",
+            "input adjustment",
+            "Neudorff fertilizer application",
+            "poor water retention",
+            "soil problem tracking",
+            "harvest count",
+            "watering log",
+            "crop recovery tracking",
+            "external source placeholder"
+          ],
+          "plannedFeatureCoverage": [
+            "Fertility correction log",
+            "Soil issue response",
+            "Input adjustment",
+            "Neudorff fertilizer log",
+            "Poor water retention warning",
+            "Soil problem tracking",
+            "Harvest count",
+            "Watering log",
+            "Crop recovery tracking",
+            "Source-backed weekly log"
+          ]
+        },
+        {
+          "week": 14,
+          "stage": "recovery",
+          "stageConfirmedByUser": true,
+          "plantHeightCm": 110,
+          "potVolumeL": 30,
+          "wateringLiters": 1.5,
+          "recoveryObservations": {
+            "plantColor": "greener",
+            "stemThickness": "thicker",
+            "newFlowersAppearing": true,
+            "notes": "Plants greener, stems thicker, new flowers appearing after fertilizer."
+          },
+          "correctionResponse": {
+            "afterFertilizer": true,
+            "response": "positive"
+          },
+          "sourceLink": "TODO_PASTE_GROWDIARIES_TOMATOES_SUNVIVA_PRIMABELLA_DIARY_URL",
+          "photoSourceLink": "TODO_SOURCE_COMMERCIAL_TOMATO_WEEK_14_PHOTO_OR_PHOTO_SET_URL",
+          "sourcePhotoUrl": "TODO_SOURCE_COMMERCIAL_TOMATO_WEEK_14_PHOTO_OR_PHOTO_SET_URL",
+          "photoPolicy": "external_link_only",
+          "photoCount": 6,
+          "photos": [
+            {
+              "index": 1,
+              "photoSourceLink": "TODO_SOURCE_COMMERCIAL_TOMATO_WEEK_14_PHOTO_1_URL",
+              "photoPolicy": "external_link_only"
+            },
+            {
+              "index": 2,
+              "photoSourceLink": "TODO_SOURCE_COMMERCIAL_TOMATO_WEEK_14_PHOTO_2_URL",
+              "photoPolicy": "external_link_only"
+            },
+            {
+              "index": 3,
+              "photoSourceLink": "TODO_SOURCE_COMMERCIAL_TOMATO_WEEK_14_PHOTO_3_URL",
+              "photoPolicy": "external_link_only"
+            },
+            {
+              "index": 4,
+              "photoSourceLink": "TODO_SOURCE_COMMERCIAL_TOMATO_WEEK_14_PHOTO_4_URL",
+              "photoPolicy": "external_link_only"
+            },
+            {
+              "index": 5,
+              "photoSourceLink": "TODO_SOURCE_COMMERCIAL_TOMATO_WEEK_14_PHOTO_5_URL",
+              "photoPolicy": "external_link_only"
+            },
+            {
+              "index": 6,
+              "photoSourceLink": "TODO_SOURCE_COMMERCIAL_TOMATO_WEEK_14_PHOTO_6_URL",
+              "photoPolicy": "external_link_only"
+            }
+          ],
+          "realGrowDataStatus": "stage_only_pending_details",
+          "testFocus": [
+            "recovery",
+            "recovery tracking",
+            "post-correction response",
+            "positive fertilizer response",
+            "plant color recovery",
+            "stem thickening",
+            "new flower tracking",
+            "watering log",
+            "soil problem follow-up",
+            "crop health comparison",
+            "weekly crop report",
+            "external source placeholder"
+          ],
+          "plannedFeatureCoverage": [
+            "Recovery log",
+            "Recovery tracking",
+            "Post-correction response",
+            "Positive fertilizer response",
+            "Plant color recovery",
+            "Stem thickening",
+            "New flower tracking",
+            "Watering log",
+            "Soil problem follow-up",
+            "Crop health comparison",
+            "Weekly crop report",
+            "Source-backed weekly log"
+          ]
+        },
+        {
+          "week": 15,
+          "stage": "ongoing harvest",
+          "stageConfirmedByUser": true,
+          "plantHeightCm": 110,
+          "potVolumeL": 30,
+          "wateringLiters": 1.5,
+          "recoveryStatus": {
+            "plantCount": 4,
+            "allRecovered": true,
+            "notes": "All four tomato plants recovered."
+          },
+          "harvest": {
+            "crop": "tomato",
+            "countDescription": "a few",
+            "notes": "Harvesting a few tomatoes."
+          },
+          "flavorNotes": ["sweet", "aromatic"],
+          "sourceLink": "TODO_PASTE_GROWDIARIES_TOMATOES_SUNVIVA_PRIMABELLA_DIARY_URL",
+          "photoSourceLink": "TODO_SOURCE_COMMERCIAL_TOMATO_WEEK_15_PHOTO_OR_PHOTO_SET_URL",
+          "sourcePhotoUrl": "TODO_SOURCE_COMMERCIAL_TOMATO_WEEK_15_PHOTO_OR_PHOTO_SET_URL",
+          "photoPolicy": "external_link_only",
+          "photoCount": 5,
+          "photos": [
+            {
+              "index": 1,
+              "photoSourceLink": "TODO_SOURCE_COMMERCIAL_TOMATO_WEEK_15_PHOTO_1_URL",
+              "photoPolicy": "external_link_only"
+            },
+            {
+              "index": 2,
+              "photoSourceLink": "TODO_SOURCE_COMMERCIAL_TOMATO_WEEK_15_PHOTO_2_URL",
+              "photoPolicy": "external_link_only"
+            },
+            {
+              "index": 3,
+              "photoSourceLink": "TODO_SOURCE_COMMERCIAL_TOMATO_WEEK_15_PHOTO_3_URL",
+              "photoPolicy": "external_link_only"
+            },
+            {
+              "index": 4,
+              "photoSourceLink": "TODO_SOURCE_COMMERCIAL_TOMATO_WEEK_15_PHOTO_4_URL",
+              "photoPolicy": "external_link_only"
+            },
+            {
+              "index": 5,
+              "photoSourceLink": "TODO_SOURCE_COMMERCIAL_TOMATO_WEEK_15_PHOTO_5_URL",
+              "photoPolicy": "external_link_only"
+            }
+          ],
+          "realGrowDataStatus": "stage_only_pending_details",
+          "testFocus": [
+            "ongoing harvest",
+            "harvest count",
+            "full plant recovery",
+            "flavor notes",
+            "sweet aromatic tomatoes",
+            "watering log",
+            "crop production tracking",
+            "cultivar performance",
+            "external source placeholder"
+          ],
+          "plannedFeatureCoverage": [
+            "Ongoing harvest log",
+            "Harvest count",
+            "Full plant recovery",
+            "Flavor notes",
+            "Watering log",
+            "Crop production tracking",
+            "Cultivar performance",
+            "Source-backed weekly log"
+          ]
+        }
+      ],
+      "acceptanceChecks": [
+        "Commercial user can create a non-cannabis crop batch.",
+        "Commercial grow workspace supports cultivar comparison for Sunviva and Primabella.",
+        "Germination, propagation, transplanting, hardening, input comparison, supplier notes, harvest count, and recovery tracking are represented.",
+        "External photo links remain source metadata and are not copied into GrowPathAI assets."
+      ]
+    },
+    {
+      "id": "facility-cannabis-mac1-floraflex-clone-batch",
+      "accountType": "facility",
+      "planTargets": ["facility"],
+      "title": "MAC1 FloraFlex - 8 Plant Clone Batch",
+      "featureTestCount": 7,
+      "growPathAIFeaturesTested": [
+        "facility clone room creation",
+        "facility veg room creation",
+        "facility flower room creation",
+        "clone intake task workflow",
+        "reservoir issue staff note workflow",
+        "runoff correction task workflow",
+        "harvest crew and room reset task workflow"
+      ],
+      "source": {
+        "provider": "GrowDiaries",
+        "sourceUrl": "TODO_PASTE_GROWDIARIES_MAC1_FLORAFLEX_DIARY_URL",
+        "photoSetUrl": "TODO_PASTE_GROWDIARIES_MAC1_FLORAFLEX_PHOTO_PAGE_URL",
+        "sourceLink": "TODO_PASTE_GROWDIARIES_MAC1_FLORAFLEX_DIARY_URL",
+        "photoSourceLink": "TODO_PASTE_GROWDIARIES_MAC1_FLORAFLEX_PHOTO_PAGE_URL",
+        "rightsMode": "external_link_only",
+        "attributionRequired": true
+      },
+      "facility": {
+        "facilityName": "MAC1 FloraFlex Facility Test",
+        "rooms": ["Clone/Veg Room", "Flower Room", "Dry/Cure Room", "Room Reset"],
+        "roles": ["owner", "cultivation_lead", "post_harvest_lead", "viewer"]
+      },
+      "workflow": {
+        "grow": "MAC1 FloraFlex Facility Run",
+        "batch": "MAC1 8 Clone Batch",
+        "tasks": [
+          "clone batch check",
+          "reservoir mix",
+          "room check",
+          "CO2 check",
+          "PPFD adjustment",
+          "runoff EC check",
+          "lollipop task",
+          "shwazzing/defoliation task",
+          "flush task",
+          "harvest crew workflow",
+          "dry/cure check",
+          "room reset"
+        ],
+        "reports": [
+          "facility insight summary",
+          "crop summary",
+          "harvest crew report",
+          "dry/cure report",
+          "post-harvest quality notes"
+        ]
+      },
+      "realGrowData": {
+        "dataConfidence": "source_pending",
+        "doNotInventMissingValues": true,
+        "sourceRequiredBeforeSeeding": true,
+        "fieldsToExtractFromSource": [
+          "cloneStartDate",
+          "vegStartDate",
+          "flipDate",
+          "harvestDate",
+          "weeklyStage",
+          "weeklyPhotos",
+          "reservoirMixes",
+          "ROWaterUse",
+          "CO2",
+          "screenUse",
+          "lollipopEvents",
+          "shwazzingEvents",
+          "defoliationEvents",
+          "PPFDAdjustments",
+          "runoffEC",
+          "flushDate",
+          "harvestCrewWorkflow",
+          "dryingConditions",
+          "curingNotes",
+          "roomReset"
+        ],
+        "knownFromUserPrompt": {
+          "cropType": "cannabis",
+          "cultivar": "MAC1",
+          "system": "FloraFlex",
+          "sourceType": "clone_batch",
+          "plantCount": 8,
+          "uniformClones": true,
+          "usesReservoirMixing": true,
+          "waterSource": "RO",
+          "tracksCO2": true,
+          "usesScreens": true,
+          "tracksLollipop": true,
+          "tracksShwazzingDefoliation": true,
+          "tracksPPFDAdjustments": true,
+          "tracksRunoffEC": true,
+          "tracksFlush": true,
+          "tracksHarvestCrewWorkflow": true,
+          "tracksDrying": true,
+          "tracksCuring": true,
+          "tracksRoomReset": true
+        },
+        "normalizedRecords": {
+          "facilityGrow": {
+            "name": "MAC1 FloraFlex Facility Run",
+            "cropType": "cannabis",
+            "cultivar": "MAC1",
+            "system": "FloraFlex",
+            "rooms": ["Clone/Veg Room", "Flower Room", "Dry/Cure Room", "Room Reset"],
+            "status": "source_pending"
+          },
+          "batch": {
+            "name": "MAC1 8 Clone Batch",
+            "room": "Flower Room",
+            "plantCount": 8,
+            "sourceType": "clone_batch",
+            "status": "source_pending"
+          },
+          "cloneBatch": {
+            "tracked": true,
+            "cultivar": "MAC1",
+            "clonesTaken": 16,
+            "plantCount": 8,
+            "selectedCount": 8,
+            "selectionCriteria": "most_uniform",
+            "startMedium": "rockwool_cube",
+            "uniformityNotes": "16 clones taken; 8 most uniform selected."
+          },
+          "reservoir": {
+            "tracked": true,
+            "waterSource": "RO",
+            "mixingEvents": "TODO_EXTRACT_FROM_SOURCE"
+          },
+          "environment": {
+            "co2Tracked": true,
+            "ppfdAdjustmentsTracked": true,
+            "runoffECTracked": true
+          },
+          "harvestQualityNotes": "TODO_EXTRACT_FROM_SOURCE",
+          "commercialCropSummary": "TODO_EXTRACT_FROM_SOURCE"
+        }
+      },
+      "sampleRecords": {
+        "harvestQualityNotes": "TODO_EXTRACT_FROM_SOURCE",
+        "commercialCropSummary": "TODO_EXTRACT_FROM_SOURCE"
+      },
+      "weeklyLogs": [
+        {
+          "week": 0,
+          "stage": "clone selection",
+          "stageConfirmedByUser": true,
+          "clonesTaken": 16,
+          "selectedCloneCount": 8,
+          "selectionCriteria": "most_uniform",
+          "startMedium": "rockwool_cube",
+          "cloneSelectionNotes": "16 clones taken, 8 most uniform selected. Rockwool cube start.",
+          "sourceLink": "TODO_PASTE_GROWDIARIES_MAC1_FLORAFLEX_DIARY_URL",
+          "photoSourceLink": "TODO_SOURCE_FACILITY_WEEK_0_PHOTO_OR_PHOTO_SET_URL",
+          "sourcePhotoUrl": "TODO_SOURCE_FACILITY_WEEK_0_PHOTO_OR_PHOTO_SET_URL",
+          "photoPolicy": "external_link_only",
+          "photoCount": 1,
+          "photos": [
+            {
+              "index": 1,
+              "photoSourceLink": "TODO_SOURCE_FACILITY_WEEK_0_PHOTO_1_URL",
+              "photoPolicy": "external_link_only"
+            }
+          ],
+          "testFocus": ["clone intake", "batch creation", "selection notes"],
+          "plannedFeatureCoverage": ["Clone intake", "Batch creation", "Selection notes"]
+        },
+        {
+          "week": 1,
+          "stage": "veg",
+          "stageConfirmedByUser": true,
+          "plantHeightCm": 8.89,
+          "lightHours": 18,
+          "dayTempC": 24,
+          "nightTempC": 20,
+          "rhPercent": 65,
+          "ph": 6.0,
+          "co2Ppm": 650,
+          "wateringVolumeL": 0.76,
+          "sourceLink": "TODO_PASTE_GROWDIARIES_MAC1_FLORAFLEX_DIARY_URL",
+          "photoSourceLink": "TODO_SOURCE_FACILITY_WEEK_1_PHOTO_OR_PHOTO_SET_URL",
+          "sourcePhotoUrl": "TODO_SOURCE_FACILITY_WEEK_1_PHOTO_OR_PHOTO_SET_URL",
+          "photoPolicy": "external_link_only",
+          "photoCount": 2,
+          "photos": [
+            {
+              "index": 1,
+              "photoSourceLink": "TODO_SOURCE_FACILITY_WEEK_1_PHOTO_1_URL",
+              "photoPolicy": "external_link_only"
+            },
+            {
+              "index": 2,
+              "photoSourceLink": "TODO_SOURCE_FACILITY_WEEK_1_PHOTO_2_URL",
+              "photoPolicy": "external_link_only"
+            }
+          ],
+          "testFocus": ["room environment", "batch feed", "reservoir SOP"],
+          "plannedFeatureCoverage": ["Room environment", "Batch feed", "Reservoir SOP"]
+        },
+        {
+          "week": 2,
+          "stage": "veg",
+          "stageConfirmedByUser": true,
+          "feedTimingChanges": [
+            {
+              "change": "added_second_feed_timing",
+              "notes": "Added second feed timing"
+            }
+          ],
+          "reservoirConcerns": [
+            {
+              "type": "slime",
+              "status": "concern",
+              "notes": "Reservoir slime concern"
+            }
+          ],
+          "productChanges": [
+            {
+              "type": "CalMag",
+              "change": "switched_product",
+              "notes": "Switched CalMag product"
+            }
+          ],
+          "sourceLink": "TODO_PASTE_GROWDIARIES_MAC1_FLORAFLEX_DIARY_URL",
+          "photoSourceLink": "TODO_SOURCE_FACILITY_WEEK_2_PHOTO_OR_PHOTO_SET_URL",
+          "sourcePhotoUrl": "TODO_SOURCE_FACILITY_WEEK_2_PHOTO_OR_PHOTO_SET_URL",
+          "photoPolicy": "external_link_only",
+          "photoCount": 1,
+          "photos": [
+            {
+              "index": 1,
+              "photoSourceLink": "TODO_SOURCE_FACILITY_WEEK_2_PHOTO_1_URL",
+              "photoPolicy": "external_link_only"
+            }
+          ],
+          "testFocus": ["facility alert", "reservoir issue", "staff note"],
+          "plannedFeatureCoverage": ["Facility alert", "Reservoir issue", "Staff note"]
+        },
+        {
+          "week": 3,
+          "stage": "veg",
+          "stageConfirmedByUser": true,
+          "plantHeightCm": 35.56,
+          "lightHours": 18,
+          "tempC": 24,
+          "rhPercent": 65,
+          "ph": 6.0,
+          "co2Ppm": 750,
+          "wateringVolumeL": 1.51,
+          "sourceLink": "TODO_PASTE_GROWDIARIES_MAC1_FLORAFLEX_DIARY_URL",
+          "photoSourceLink": "TODO_SOURCE_FACILITY_WEEK_3_PHOTO_OR_PHOTO_SET_URL",
+          "sourcePhotoUrl": "TODO_SOURCE_FACILITY_WEEK_3_PHOTO_OR_PHOTO_SET_URL",
+          "photoPolicy": "external_link_only",
+          "photoCount": 5,
+          "photos": [
+            {
+              "index": 1,
+              "photoSourceLink": "TODO_SOURCE_FACILITY_WEEK_3_PHOTO_1_URL",
+              "photoPolicy": "external_link_only"
+            },
+            {
+              "index": 2,
+              "photoSourceLink": "TODO_SOURCE_FACILITY_WEEK_3_PHOTO_2_URL",
+              "photoPolicy": "external_link_only"
+            },
+            {
+              "index": 3,
+              "photoSourceLink": "TODO_SOURCE_FACILITY_WEEK_3_PHOTO_3_URL",
+              "photoPolicy": "external_link_only"
+            },
+            {
+              "index": 4,
+              "photoSourceLink": "TODO_SOURCE_FACILITY_WEEK_3_PHOTO_4_URL",
+              "photoPolicy": "external_link_only"
+            },
+            {
+              "index": 5,
+              "photoSourceLink": "TODO_SOURCE_FACILITY_WEEK_3_PHOTO_5_URL",
+              "photoPolicy": "external_link_only"
+            }
+          ],
+          "testFocus": ["batch growth tracking", "screen prep"],
+          "plannedFeatureCoverage": ["Batch growth tracking", "Screen prep"]
+        },
+        {
+          "week": 4,
+          "stage": "veg/flip prep",
+          "stageConfirmedByUser": true,
+          "trainingEvents": [
+            {
+              "type": "lollipopping",
+              "completed": true
+            }
+          ],
+          "screenEvents": [
+            {
+              "type": "first_screen",
+              "installed": true
+            },
+            {
+              "type": "upper_screen",
+              "installed": true
+            }
+          ],
+          "flushEvents": [
+            {
+              "type": "pre_flip_flush",
+              "solution": "flower_nutrients",
+              "notes": "Flushed with flower nutrients before flip"
+            }
+          ],
+          "sourceLink": "TODO_PASTE_GROWDIARIES_MAC1_FLORAFLEX_DIARY_URL",
+          "sourceNotes": "TODO_EXTRACT_WEEK_4_SOURCE_NOTES",
+          "photoSourceLink": "TODO_SOURCE_FACILITY_WEEK_4_PHOTO_OR_PHOTO_SET_URL",
+          "sourcePhotoUrl": "TODO_SOURCE_FACILITY_WEEK_4_PHOTO_OR_PHOTO_SET_URL",
+          "photoPolicy": "external_link_only",
+          "testFocus": ["flip checklist", "trellis task", "defoliation SOP"],
+          "plannedFeatureCoverage": ["Flip checklist", "Trellis task", "Defoliation SOP"]
+        },
+        {
+          "week": 5,
+          "stage": "flower week 1",
+          "stageConfirmedByUser": true,
+          "plantHeightCm": 40.64,
+          "lightHoursListed": 18,
+          "tempC": 24,
+          "rhPercent": 60,
+          "ph": 6.0,
+          "co2Ppm": 750,
+          "wateringVolumeL": 1.89,
+          "sourceLink": "TODO_PASTE_GROWDIARIES_MAC1_FLORAFLEX_DIARY_URL",
+          "sourceNotes": "TODO_EXTRACT_WEEK_5_SOURCE_NOTES",
+          "realGrowDataStatus": "source_pending",
+          "photoSourceLink": "TODO_SOURCE_FACILITY_WEEK_5_PHOTO_OR_PHOTO_SET_URL",
+          "sourcePhotoUrl": "TODO_SOURCE_FACILITY_WEEK_5_PHOTO_OR_PHOTO_SET_URL",
+          "photoPolicy": "external_link_only",
+          "testFocus": ["flower phase change", "nutrient schedule switch"],
+          "plannedFeatureCoverage": ["Flower phase change", "Nutrient schedule switch"]
+        },
+        {
+          "week": 6,
+          "stage": "flower week 2",
+          "stageConfirmedByUser": true,
+          "trainingEvents": [
+            {
+              "type": "supercropping",
+              "active": true
+            },
+            {
+              "type": "training",
+              "active": true
+            }
+          ],
+          "plannedDefoliationEvents": [
+            {
+              "type": "strip",
+              "plannedDay": 20,
+              "notes": "Day 20 strip planned"
+            }
+          ],
+          "sourceLink": "TODO_PASTE_GROWDIARIES_MAC1_FLORAFLEX_DIARY_URL",
+          "photoSourceLink": "TODO_SOURCE_FACILITY_WEEK_6_PHOTO_OR_PHOTO_SET_URL",
+          "sourcePhotoUrl": "TODO_SOURCE_FACILITY_WEEK_6_PHOTO_OR_PHOTO_SET_URL",
+          "photoPolicy": "external_link_only",
+          "photoCount": 17,
+          "photos": [
+            {
+              "index": 1,
+              "photoSourceLink": "TODO_SOURCE_FACILITY_WEEK_6_PHOTO_1_URL",
+              "photoPolicy": "external_link_only"
+            },
+            {
+              "index": 2,
+              "photoSourceLink": "TODO_SOURCE_FACILITY_WEEK_6_PHOTO_2_URL",
+              "photoPolicy": "external_link_only"
+            },
+            {
+              "index": 3,
+              "photoSourceLink": "TODO_SOURCE_FACILITY_WEEK_6_PHOTO_3_URL",
+              "photoPolicy": "external_link_only"
+            },
+            {
+              "index": 4,
+              "photoSourceLink": "TODO_SOURCE_FACILITY_WEEK_6_PHOTO_4_URL",
+              "photoPolicy": "external_link_only"
+            },
+            {
+              "index": 5,
+              "photoSourceLink": "TODO_SOURCE_FACILITY_WEEK_6_PHOTO_5_URL",
+              "photoPolicy": "external_link_only"
+            },
+            {
+              "index": 6,
+              "photoSourceLink": "TODO_SOURCE_FACILITY_WEEK_6_PHOTO_6_URL",
+              "photoPolicy": "external_link_only"
+            },
+            {
+              "index": 7,
+              "photoSourceLink": "TODO_SOURCE_FACILITY_WEEK_6_PHOTO_7_URL",
+              "photoPolicy": "external_link_only"
+            },
+            {
+              "index": 8,
+              "photoSourceLink": "TODO_SOURCE_FACILITY_WEEK_6_PHOTO_8_URL",
+              "photoPolicy": "external_link_only"
+            },
+            {
+              "index": 9,
+              "photoSourceLink": "TODO_SOURCE_FACILITY_WEEK_6_PHOTO_9_URL",
+              "photoPolicy": "external_link_only"
+            },
+            {
+              "index": 10,
+              "photoSourceLink": "TODO_SOURCE_FACILITY_WEEK_6_PHOTO_10_URL",
+              "photoPolicy": "external_link_only"
+            },
+            {
+              "index": 11,
+              "photoSourceLink": "TODO_SOURCE_FACILITY_WEEK_6_PHOTO_11_URL",
+              "photoPolicy": "external_link_only"
+            },
+            {
+              "index": 12,
+              "photoSourceLink": "TODO_SOURCE_FACILITY_WEEK_6_PHOTO_12_URL",
+              "photoPolicy": "external_link_only"
+            },
+            {
+              "index": 13,
+              "photoSourceLink": "TODO_SOURCE_FACILITY_WEEK_6_PHOTO_13_URL",
+              "photoPolicy": "external_link_only"
+            },
+            {
+              "index": 14,
+              "photoSourceLink": "TODO_SOURCE_FACILITY_WEEK_6_PHOTO_14_URL",
+              "photoPolicy": "external_link_only"
+            },
+            {
+              "index": 15,
+              "photoSourceLink": "TODO_SOURCE_FACILITY_WEEK_6_PHOTO_15_URL",
+              "photoPolicy": "external_link_only"
+            },
+            {
+              "index": 16,
+              "photoSourceLink": "TODO_SOURCE_FACILITY_WEEK_6_PHOTO_16_URL",
+              "photoPolicy": "external_link_only"
+            },
+            {
+              "index": 17,
+              "photoSourceLink": "TODO_SOURCE_FACILITY_WEEK_6_PHOTO_17_URL",
+              "photoPolicy": "external_link_only"
+            }
+          ],
+          "testFocus": ["staff task", "crop steering", "training notes"],
+          "plannedFeatureCoverage": ["Staff task", "Crop steering", "Training notes"]
+        },
+        {
+          "week": 7,
+          "stage": "flower week 3",
+          "stageConfirmedByUser": true,
+          "lightHours": 12,
+          "tempC": 24,
+          "rhPercent": 55,
+          "ph": 5.9,
+          "co2Ppm": 750,
+          "defoliationEvents": [
+            {
+              "type": "strip_shwazze",
+              "day": 20,
+              "completed": true,
+              "notes": "Day 20 strip/shwazze"
+            }
+          ],
+          "humidityAdjustment": {
+            "targetRHPercent": 55,
+            "notes": "Humidity adjusted to 55%"
+          },
+          "sourceLink": "TODO_PASTE_GROWDIARIES_MAC1_FLORAFLEX_DIARY_URL",
+          "photoSourceLink": "TODO_SOURCE_FACILITY_WEEK_7_PHOTO_OR_PHOTO_SET_URL",
+          "sourcePhotoUrl": "TODO_SOURCE_FACILITY_WEEK_7_PHOTO_OR_PHOTO_SET_URL",
+          "photoPolicy": "external_link_only",
+          "photoCount": 7,
+          "photos": [
+            {
+              "index": 1,
+              "photoSourceLink": "TODO_SOURCE_FACILITY_WEEK_7_PHOTO_1_URL",
+              "photoPolicy": "external_link_only"
+            },
+            {
+              "index": 2,
+              "photoSourceLink": "TODO_SOURCE_FACILITY_WEEK_7_PHOTO_2_URL",
+              "photoPolicy": "external_link_only"
+            },
+            {
+              "index": 3,
+              "photoSourceLink": "TODO_SOURCE_FACILITY_WEEK_7_PHOTO_3_URL",
+              "photoPolicy": "external_link_only"
+            },
+            {
+              "index": 4,
+              "photoSourceLink": "TODO_SOURCE_FACILITY_WEEK_7_PHOTO_4_URL",
+              "photoPolicy": "external_link_only"
+            },
+            {
+              "index": 5,
+              "photoSourceLink": "TODO_SOURCE_FACILITY_WEEK_7_PHOTO_5_URL",
+              "photoPolicy": "external_link_only"
+            },
+            {
+              "index": 6,
+              "photoSourceLink": "TODO_SOURCE_FACILITY_WEEK_7_PHOTO_6_URL",
+              "photoPolicy": "external_link_only"
+            },
+            {
+              "index": 7,
+              "photoSourceLink": "TODO_SOURCE_FACILITY_WEEK_7_PHOTO_7_URL",
+              "photoPolicy": "external_link_only"
+            }
+          ],
+          "testFocus": ["defoliation labor log", "humidity alert", "trichome photo"],
+          "plannedFeatureCoverage": [
+            "Defoliation labor log",
+            "Humidity alert",
+            "Trichome photo"
+          ]
+        },
+        {
+          "week": 8,
+          "stage": "flower week 4",
+          "stageConfirmedByUser": true,
+          "plantHeightCm": 71.12,
+          "lightHours": 12,
+          "dayTempC": 26,
+          "nightTempC": 19,
+          "ph": 5.9,
+          "tdsPpm": 950,
+          "rhPercent": 55,
+          "co2Ppm": 750,
+          "stretchStatus": "stopped",
+          "screenNotes": "Lower colas reached second screen",
+          "canopyEvents": [
+            {
+              "type": "lower_colas_reached_second_screen",
+              "completed": true
+            }
+          ],
+          "sourceLink": "TODO_PASTE_GROWDIARIES_MAC1_FLORAFLEX_DIARY_URL",
+          "photoSourceLink": "TODO_SOURCE_FACILITY_WEEK_8_PHOTO_OR_PHOTO_SET_URL",
+          "sourcePhotoUrl": "TODO_SOURCE_FACILITY_WEEK_8_PHOTO_OR_PHOTO_SET_URL",
+          "photoPolicy": "external_link_only",
+          "photoCount": 12,
+          "photos": [
+            {
+              "index": 1,
+              "photoSourceLink": "TODO_SOURCE_FACILITY_WEEK_8_PHOTO_1_URL",
+              "photoPolicy": "external_link_only"
+            },
+            {
+              "index": 2,
+              "photoSourceLink": "TODO_SOURCE_FACILITY_WEEK_8_PHOTO_2_URL",
+              "photoPolicy": "external_link_only"
+            },
+            {
+              "index": 3,
+              "photoSourceLink": "TODO_SOURCE_FACILITY_WEEK_8_PHOTO_3_URL",
+              "photoPolicy": "external_link_only"
+            },
+            {
+              "index": 4,
+              "photoSourceLink": "TODO_SOURCE_FACILITY_WEEK_8_PHOTO_4_URL",
+              "photoPolicy": "external_link_only"
+            },
+            {
+              "index": 5,
+              "photoSourceLink": "TODO_SOURCE_FACILITY_WEEK_8_PHOTO_5_URL",
+              "photoPolicy": "external_link_only"
+            },
+            {
+              "index": 6,
+              "photoSourceLink": "TODO_SOURCE_FACILITY_WEEK_8_PHOTO_6_URL",
+              "photoPolicy": "external_link_only"
+            },
+            {
+              "index": 7,
+              "photoSourceLink": "TODO_SOURCE_FACILITY_WEEK_8_PHOTO_7_URL",
+              "photoPolicy": "external_link_only"
+            },
+            {
+              "index": 8,
+              "photoSourceLink": "TODO_SOURCE_FACILITY_WEEK_8_PHOTO_8_URL",
+              "photoPolicy": "external_link_only"
+            },
+            {
+              "index": 9,
+              "photoSourceLink": "TODO_SOURCE_FACILITY_WEEK_8_PHOTO_9_URL",
+              "photoPolicy": "external_link_only"
+            },
+            {
+              "index": 10,
+              "photoSourceLink": "TODO_SOURCE_FACILITY_WEEK_8_PHOTO_10_URL",
+              "photoPolicy": "external_link_only"
+            },
+            {
+              "index": 11,
+              "photoSourceLink": "TODO_SOURCE_FACILITY_WEEK_8_PHOTO_11_URL",
+              "photoPolicy": "external_link_only"
+            },
+            {
+              "index": 12,
+              "photoSourceLink": "TODO_SOURCE_FACILITY_WEEK_8_PHOTO_12_URL",
+              "photoPolicy": "external_link_only"
+            }
+          ],
+          "testFocus": ["canopy tracking", "stretch report", "bud-site monitoring"],
+          "plannedFeatureCoverage": [
+            "Canopy tracking",
+            "Stretch report",
+            "Bud-site monitoring"
+          ]
+        },
+        {
+          "week": 9,
+          "stage": "flower week 5",
+          "stageConfirmedByUser": true,
+          "plantHeightCm": 71.12,
+          "tempC": 25,
+          "rhPercent": 53,
+          "ph": 6.0,
+          "tdsPpm": 1000,
+          "co2Ppm": 850,
+          "sourceLink": "TODO_PASTE_GROWDIARIES_MAC1_FLORAFLEX_DIARY_URL",
+          "photoSourceLink": "TODO_SOURCE_FACILITY_WEEK_9_PHOTO_OR_PHOTO_SET_URL",
+          "sourcePhotoUrl": "TODO_SOURCE_FACILITY_WEEK_9_PHOTO_OR_PHOTO_SET_URL",
+          "photoPolicy": "external_link_only",
+          "photoCount": 23,
+          "photos": [
+            {
+              "index": 1,
+              "photoSourceLink": "TODO_SOURCE_FACILITY_WEEK_9_PHOTO_1_URL",
+              "photoPolicy": "external_link_only"
+            },
+            {
+              "index": 2,
+              "photoSourceLink": "TODO_SOURCE_FACILITY_WEEK_9_PHOTO_2_URL",
+              "photoPolicy": "external_link_only"
+            },
+            {
+              "index": 3,
+              "photoSourceLink": "TODO_SOURCE_FACILITY_WEEK_9_PHOTO_3_URL",
+              "photoPolicy": "external_link_only"
+            },
+            {
+              "index": 4,
+              "photoSourceLink": "TODO_SOURCE_FACILITY_WEEK_9_PHOTO_4_URL",
+              "photoPolicy": "external_link_only"
+            },
+            {
+              "index": 5,
+              "photoSourceLink": "TODO_SOURCE_FACILITY_WEEK_9_PHOTO_5_URL",
+              "photoPolicy": "external_link_only"
+            },
+            {
+              "index": 6,
+              "photoSourceLink": "TODO_SOURCE_FACILITY_WEEK_9_PHOTO_6_URL",
+              "photoPolicy": "external_link_only"
+            },
+            {
+              "index": 7,
+              "photoSourceLink": "TODO_SOURCE_FACILITY_WEEK_9_PHOTO_7_URL",
+              "photoPolicy": "external_link_only"
+            },
+            {
+              "index": 8,
+              "photoSourceLink": "TODO_SOURCE_FACILITY_WEEK_9_PHOTO_8_URL",
+              "photoPolicy": "external_link_only"
+            },
+            {
+              "index": 9,
+              "photoSourceLink": "TODO_SOURCE_FACILITY_WEEK_9_PHOTO_9_URL",
+              "photoPolicy": "external_link_only"
+            },
+            {
+              "index": 10,
+              "photoSourceLink": "TODO_SOURCE_FACILITY_WEEK_9_PHOTO_10_URL",
+              "photoPolicy": "external_link_only"
+            },
+            {
+              "index": 11,
+              "photoSourceLink": "TODO_SOURCE_FACILITY_WEEK_9_PHOTO_11_URL",
+              "photoPolicy": "external_link_only"
+            },
+            {
+              "index": 12,
+              "photoSourceLink": "TODO_SOURCE_FACILITY_WEEK_9_PHOTO_12_URL",
+              "photoPolicy": "external_link_only"
+            },
+            {
+              "index": 13,
+              "photoSourceLink": "TODO_SOURCE_FACILITY_WEEK_9_PHOTO_13_URL",
+              "photoPolicy": "external_link_only"
+            },
+            {
+              "index": 14,
+              "photoSourceLink": "TODO_SOURCE_FACILITY_WEEK_9_PHOTO_14_URL",
+              "photoPolicy": "external_link_only"
+            },
+            {
+              "index": 15,
+              "photoSourceLink": "TODO_SOURCE_FACILITY_WEEK_9_PHOTO_15_URL",
+              "photoPolicy": "external_link_only"
+            },
+            {
+              "index": 16,
+              "photoSourceLink": "TODO_SOURCE_FACILITY_WEEK_9_PHOTO_16_URL",
+              "photoPolicy": "external_link_only"
+            },
+            {
+              "index": 17,
+              "photoSourceLink": "TODO_SOURCE_FACILITY_WEEK_9_PHOTO_17_URL",
+              "photoPolicy": "external_link_only"
+            },
+            {
+              "index": 18,
+              "photoSourceLink": "TODO_SOURCE_FACILITY_WEEK_9_PHOTO_18_URL",
+              "photoPolicy": "external_link_only"
+            },
+            {
+              "index": 19,
+              "photoSourceLink": "TODO_SOURCE_FACILITY_WEEK_9_PHOTO_19_URL",
+              "photoPolicy": "external_link_only"
+            },
+            {
+              "index": 20,
+              "photoSourceLink": "TODO_SOURCE_FACILITY_WEEK_9_PHOTO_20_URL",
+              "photoPolicy": "external_link_only"
+            },
+            {
+              "index": 21,
+              "photoSourceLink": "TODO_SOURCE_FACILITY_WEEK_9_PHOTO_21_URL",
+              "photoPolicy": "external_link_only"
+            },
+            {
+              "index": 22,
+              "photoSourceLink": "TODO_SOURCE_FACILITY_WEEK_9_PHOTO_22_URL",
+              "photoPolicy": "external_link_only"
+            },
+            {
+              "index": 23,
+              "photoSourceLink": "TODO_SOURCE_FACILITY_WEEK_9_PHOTO_23_URL",
+              "photoPolicy": "external_link_only"
+            }
+          ],
+          "testFocus": [
+            "PPFD/CO2 crop steering",
+            "light stress check",
+            "external photo metadata"
+          ],
+          "plannedFeatureCoverage": ["PPFD/CO2 crop steering", "Light stress check"]
+        },
+        {
+          "week": 10,
+          "stage": "flower week 6",
+          "stageConfirmedByUser": true,
+          "plantHeightCm": 76.2,
+          "tempC": 24,
+          "rhPercent": 55,
+          "ph": 6.0,
+          "tdsPpm": 850,
+          "co2Ppm": 650,
+          "cropSteeringAdjustment": "Reduced CO2 and light to avoid foxtail/transpiration imbalance.",
+          "sourceLink": "TODO_PASTE_GROWDIARIES_MAC1_FLORAFLEX_DIARY_URL",
+          "photoSourceLink": "TODO_SOURCE_FACILITY_WEEK_10_PHOTO_OR_PHOTO_SET_URL",
+          "sourcePhotoUrl": "TODO_SOURCE_FACILITY_WEEK_10_PHOTO_OR_PHOTO_SET_URL",
+          "photoPolicy": "external_link_only",
+          "photoCount": 7,
+          "photos": [
+            {
+              "index": 1,
+              "photoSourceLink": "TODO_SOURCE_FACILITY_WEEK_10_PHOTO_1_URL",
+              "photoPolicy": "external_link_only"
+            },
+            {
+              "index": 2,
+              "photoSourceLink": "TODO_SOURCE_FACILITY_WEEK_10_PHOTO_2_URL",
+              "photoPolicy": "external_link_only"
+            },
+            {
+              "index": 3,
+              "photoSourceLink": "TODO_SOURCE_FACILITY_WEEK_10_PHOTO_3_URL",
+              "photoPolicy": "external_link_only"
+            },
+            {
+              "index": 4,
+              "photoSourceLink": "TODO_SOURCE_FACILITY_WEEK_10_PHOTO_4_URL",
+              "photoPolicy": "external_link_only"
+            },
+            {
+              "index": 5,
+              "photoSourceLink": "TODO_SOURCE_FACILITY_WEEK_10_PHOTO_5_URL",
+              "photoPolicy": "external_link_only"
+            },
+            {
+              "index": 6,
+              "photoSourceLink": "TODO_SOURCE_FACILITY_WEEK_10_PHOTO_6_URL",
+              "photoPolicy": "external_link_only"
+            },
+            {
+              "index": 7,
+              "photoSourceLink": "TODO_SOURCE_FACILITY_WEEK_10_PHOTO_7_URL",
+              "photoPolicy": "external_link_only"
+            }
+          ],
+          "realGrowDataStatus": "user_confirmed_measurements",
+          "testFocus": [
+            "CO2 reduction",
+            "light reduction",
+            "foxtail/transpiration imbalance prevention"
+          ],
+          "plannedFeatureCoverage": [
+            "AI diagnosis",
+            "Crop steering adjustment",
+            "Environmental risk",
+            "CO2 crop steering",
+            "Light intensity steering",
+            "Foxtail/transpiration imbalance prevention"
+          ]
+        },
+        {
+          "week": 11,
+          "stage": "late flower",
+          "stageConfirmedByUser": true,
+          "plantHeightCm": 76.2,
+          "tempC": 24,
+          "rhPercent": 55,
+          "ph": 5.9,
+          "tdsPpm": 950,
+          "co2Ppm": 650,
+          "wateringLiters": 3.79,
+          "runoffCorrection": {
+            "startingRunoffTdsPpm": 2000,
+            "endingRunoffTdsPpm": 1500,
+            "note": "Runoff flushed from over 2000 ppm toward 1500 ppm."
+          },
+          "sourceLink": "TODO_PASTE_GROWDIARIES_MAC1_FLORAFLEX_DIARY_URL",
+          "photoSourceLink": "TODO_SOURCE_FACILITY_WEEK_11_PHOTO_OR_PHOTO_SET_URL",
+          "sourcePhotoUrl": "TODO_SOURCE_FACILITY_WEEK_11_PHOTO_OR_PHOTO_SET_URL",
+          "photoPolicy": "external_link_only",
+          "photoCount": 8,
+          "photos": [
+            {
+              "index": 1,
+              "photoSourceLink": "TODO_SOURCE_FACILITY_WEEK_11_PHOTO_1_URL",
+              "photoPolicy": "external_link_only"
+            },
+            {
+              "index": 2,
+              "photoSourceLink": "TODO_SOURCE_FACILITY_WEEK_11_PHOTO_2_URL",
+              "photoPolicy": "external_link_only"
+            },
+            {
+              "index": 3,
+              "photoSourceLink": "TODO_SOURCE_FACILITY_WEEK_11_PHOTO_3_URL",
+              "photoPolicy": "external_link_only"
+            },
+            {
+              "index": 4,
+              "photoSourceLink": "TODO_SOURCE_FACILITY_WEEK_11_PHOTO_4_URL",
+              "photoPolicy": "external_link_only"
+            },
+            {
+              "index": 5,
+              "photoSourceLink": "TODO_SOURCE_FACILITY_WEEK_11_PHOTO_5_URL",
+              "photoPolicy": "external_link_only"
+            },
+            {
+              "index": 6,
+              "photoSourceLink": "TODO_SOURCE_FACILITY_WEEK_11_PHOTO_6_URL",
+              "photoPolicy": "external_link_only"
+            },
+            {
+              "index": 7,
+              "photoSourceLink": "TODO_SOURCE_FACILITY_WEEK_11_PHOTO_7_URL",
+              "photoPolicy": "external_link_only"
+            },
+            {
+              "index": 8,
+              "photoSourceLink": "TODO_SOURCE_FACILITY_WEEK_11_PHOTO_8_URL",
+              "photoPolicy": "external_link_only"
+            }
+          ],
+          "realGrowDataStatus": "user_confirmed_measurements",
+          "testFocus": [
+            "late flower runoff correction",
+            "high runoff TDS flush-down",
+            "salt buildup alert",
+            "late flower report",
+            "facility finish progression"
+          ],
+          "plannedFeatureCoverage": [
+            "Late flower monitoring",
+            "Runoff EC/TDS correction",
+            "Salt buildup alert",
+            "Late flower report",
+            "pH/EC range check",
+            "Facility finish progression",
+            "Source-backed weekly log"
+          ]
+        },
+        {
+          "week": 12,
+          "stage": "late flower",
+          "stageConfirmedByUser": true,
+          "plantHeightCm": 76.2,
+          "tempC": 25,
+          "rhPercent": 55,
+          "ph": 6.1,
+          "tdsPpm": 850,
+          "co2Ppm": 500,
+          "irrigationSchedule": {
+            "volumePerPlantGallonsPerDay": 1,
+            "feedDurationMinutes": 3,
+            "feedCountDuringLightsOn": 5,
+            "note": "1 gal/plant/day, 3 min x 5 feeds during lights on."
+          },
+          "sourceLink": "TODO_PASTE_GROWDIARIES_MAC1_FLORAFLEX_DIARY_URL",
+          "photoSourceLink": "TODO_SOURCE_FACILITY_WEEK_12_PHOTO_OR_PHOTO_SET_URL",
+          "sourcePhotoUrl": "TODO_SOURCE_FACILITY_WEEK_12_PHOTO_OR_PHOTO_SET_URL",
+          "photoPolicy": "external_link_only",
+          "photoCount": 6,
+          "photos": [
+            {
+              "index": 1,
+              "photoSourceLink": "TODO_SOURCE_FACILITY_WEEK_12_PHOTO_1_URL",
+              "photoPolicy": "external_link_only"
+            },
+            {
+              "index": 2,
+              "photoSourceLink": "TODO_SOURCE_FACILITY_WEEK_12_PHOTO_2_URL",
+              "photoPolicy": "external_link_only"
+            },
+            {
+              "index": 3,
+              "photoSourceLink": "TODO_SOURCE_FACILITY_WEEK_12_PHOTO_3_URL",
+              "photoPolicy": "external_link_only"
+            },
+            {
+              "index": 4,
+              "photoSourceLink": "TODO_SOURCE_FACILITY_WEEK_12_PHOTO_4_URL",
+              "photoPolicy": "external_link_only"
+            },
+            {
+              "index": 5,
+              "photoSourceLink": "TODO_SOURCE_FACILITY_WEEK_12_PHOTO_5_URL",
+              "photoPolicy": "external_link_only"
+            },
+            {
+              "index": 6,
+              "photoSourceLink": "TODO_SOURCE_FACILITY_WEEK_12_PHOTO_6_URL",
+              "photoPolicy": "external_link_only"
+            }
+          ],
+          "realGrowDataStatus": "user_confirmed_measurements",
+          "testFocus": [
+            "late flower irrigation timing",
+            "multi-feed lights-on schedule",
+            "trichome monitoring",
+            "runoff EC",
+            "facility finish progression"
+          ],
+          "plannedFeatureCoverage": [
+            "Late flower monitoring",
+            "Irrigation schedule",
+            "Irrigation timing",
+            "Trichome monitoring",
+            "Runoff EC",
+            "Facility feed schedule",
+            "Facility finish progression",
+            "Source-backed weekly log"
+          ]
+        },
+        {
+          "week": 13,
+          "stage": "ripening",
+          "stageConfirmedByUser": true,
+          "plantHeightCm": 76.2,
+          "tempC": 24,
+          "rhPercent": 55,
+          "ph": 5.9,
+          "tdsPpm": 950,
+          "co2Ppm": 500,
+          "trichomeCheck": {
+            "flowerDay": 55,
+            "harvestWindowNote": "Day 55 trichomes, 2+ weeks left."
+          },
+          "sourceLink": "TODO_PASTE_GROWDIARIES_MAC1_FLORAFLEX_DIARY_URL",
+          "photoSourceLink": "TODO_SOURCE_FACILITY_WEEK_13_PHOTO_OR_PHOTO_SET_URL",
+          "sourcePhotoUrl": "TODO_SOURCE_FACILITY_WEEK_13_PHOTO_OR_PHOTO_SET_URL",
+          "photoPolicy": "external_link_only",
+          "photoCount": 8,
+          "photos": [
+            {
+              "index": 1,
+              "photoSourceLink": "TODO_SOURCE_FACILITY_WEEK_13_PHOTO_1_URL",
+              "photoPolicy": "external_link_only"
+            },
+            {
+              "index": 2,
+              "photoSourceLink": "TODO_SOURCE_FACILITY_WEEK_13_PHOTO_2_URL",
+              "photoPolicy": "external_link_only"
+            },
+            {
+              "index": 3,
+              "photoSourceLink": "TODO_SOURCE_FACILITY_WEEK_13_PHOTO_3_URL",
+              "photoPolicy": "external_link_only"
+            },
+            {
+              "index": 4,
+              "photoSourceLink": "TODO_SOURCE_FACILITY_WEEK_13_PHOTO_4_URL",
+              "photoPolicy": "external_link_only"
+            },
+            {
+              "index": 5,
+              "photoSourceLink": "TODO_SOURCE_FACILITY_WEEK_13_PHOTO_5_URL",
+              "photoPolicy": "external_link_only"
+            },
+            {
+              "index": 6,
+              "photoSourceLink": "TODO_SOURCE_FACILITY_WEEK_13_PHOTO_6_URL",
+              "photoPolicy": "external_link_only"
+            },
+            {
+              "index": 7,
+              "photoSourceLink": "TODO_SOURCE_FACILITY_WEEK_13_PHOTO_7_URL",
+              "photoPolicy": "external_link_only"
+            },
+            {
+              "index": 8,
+              "photoSourceLink": "TODO_SOURCE_FACILITY_WEEK_13_PHOTO_8_URL",
+              "photoPolicy": "external_link_only"
+            }
+          ],
+          "realGrowDataStatus": "user_confirmed_measurements",
+          "testFocus": [
+            "ripening trichome check",
+            "harvest window estimate",
+            "harvest forecast",
+            "maturity tracking",
+            "facility finish progression"
+          ],
+          "plannedFeatureCoverage": [
+            "Ripening monitoring",
+            "Trichome monitoring",
+            "Harvest readiness",
+            "Harvest window estimate",
+            "Harvest forecast",
+            "Maturity tracking",
+            "Source-backed weekly log"
+          ]
+        },
+        {
+          "week": 14,
+          "stage": "flush / harvest prep",
+          "stageConfirmedByUser": true,
+          "tempDayC": 22,
+          "tempNightC": 18,
+          "rhPercent": 55,
+          "ph": 5.9,
+          "tdsPpm": 500,
+          "co2Ppm": 400,
+          "waterSource": "RO",
+          "feedInputs": ["CalMag"],
+          "lightAdjustment": "lights reduced",
+          "harvestStatus": "harvest planned",
+          "sourceLink": "TODO_PASTE_GROWDIARIES_MAC1_FLORAFLEX_DIARY_URL",
+          "photoSourceLink": "TODO_SOURCE_FACILITY_WEEK_14_PHOTO_OR_PHOTO_SET_URL",
+          "sourcePhotoUrl": "TODO_SOURCE_FACILITY_WEEK_14_PHOTO_OR_PHOTO_SET_URL",
+          "photoPolicy": "external_link_only",
+          "photoCount": 12,
+          "photos": [
+            {
+              "index": 1,
+              "photoSourceLink": "TODO_SOURCE_FACILITY_WEEK_14_PHOTO_1_URL",
+              "photoPolicy": "external_link_only"
+            },
+            {
+              "index": 2,
+              "photoSourceLink": "TODO_SOURCE_FACILITY_WEEK_14_PHOTO_2_URL",
+              "photoPolicy": "external_link_only"
+            },
+            {
+              "index": 3,
+              "photoSourceLink": "TODO_SOURCE_FACILITY_WEEK_14_PHOTO_3_URL",
+              "photoPolicy": "external_link_only"
+            },
+            {
+              "index": 4,
+              "photoSourceLink": "TODO_SOURCE_FACILITY_WEEK_14_PHOTO_4_URL",
+              "photoPolicy": "external_link_only"
+            },
+            {
+              "index": 5,
+              "photoSourceLink": "TODO_SOURCE_FACILITY_WEEK_14_PHOTO_5_URL",
+              "photoPolicy": "external_link_only"
+            },
+            {
+              "index": 6,
+              "photoSourceLink": "TODO_SOURCE_FACILITY_WEEK_14_PHOTO_6_URL",
+              "photoPolicy": "external_link_only"
+            },
+            {
+              "index": 7,
+              "photoSourceLink": "TODO_SOURCE_FACILITY_WEEK_14_PHOTO_7_URL",
+              "photoPolicy": "external_link_only"
+            },
+            {
+              "index": 8,
+              "photoSourceLink": "TODO_SOURCE_FACILITY_WEEK_14_PHOTO_8_URL",
+              "photoPolicy": "external_link_only"
+            },
+            {
+              "index": 9,
+              "photoSourceLink": "TODO_SOURCE_FACILITY_WEEK_14_PHOTO_9_URL",
+              "photoPolicy": "external_link_only"
+            },
+            {
+              "index": 10,
+              "photoSourceLink": "TODO_SOURCE_FACILITY_WEEK_14_PHOTO_10_URL",
+              "photoPolicy": "external_link_only"
+            },
+            {
+              "index": 11,
+              "photoSourceLink": "TODO_SOURCE_FACILITY_WEEK_14_PHOTO_11_URL",
+              "photoPolicy": "external_link_only"
+            },
+            {
+              "index": 12,
+              "photoSourceLink": "TODO_SOURCE_FACILITY_WEEK_14_PHOTO_12_URL",
+              "photoPolicy": "external_link_only"
+            }
+          ],
+          "realGrowDataStatus": "user_confirmed_measurements",
+          "testFocus": [
+            "flush",
+            "harvest prep",
+            "flush SOP",
+            "light taper",
+            "lights reduced",
+            "RO + CalMag"
+          ],
+          "plannedFeatureCoverage": [
+            "Flush tracking",
+            "Flush SOP",
+            "Harvest prep",
+            "Light taper",
+            "Light reduction",
+            "RO water feed record",
+            "CalMag record",
+            "Source-backed weekly log"
+          ]
+        },
+        {
+          "week": 15,
+          "stage": "harvest / dry / cure",
+          "stageConfirmedByUser": true,
+          "plantCount": 8,
+          "totalCycleDays": 100,
+          "darkPeriodHours": 24,
+          "harvestWindow": {
+            "startTime": "04:00",
+            "endTime": "09:45",
+            "note": "Harvest from 4 a.m. to 9:45 a.m."
+          },
+          "dryRoom": {
+            "targetRHPercent": 60,
+            "ambientTempF": 65,
+            "ambientRHPercent": 55,
+            "note": "Dry tent around 60% RH target, 65°F/55% ambient noted."
+          },
+          "moistureMeterUsed": true,
+          "cureContainer": "CVault",
+          "sourceLink": "TODO_PASTE_GROWDIARIES_MAC1_FLORAFLEX_DIARY_URL",
+          "photoSourceLink": "TODO_SOURCE_FACILITY_WEEK_15_PHOTO_OR_PHOTO_SET_URL",
+          "sourcePhotoUrl": "TODO_SOURCE_FACILITY_WEEK_15_PHOTO_OR_PHOTO_SET_URL",
+          "photoPolicy": "external_link_only",
+          "photoCount": 21,
+          "photos": [
+            {
+              "index": 1,
+              "photoSourceLink": "TODO_SOURCE_FACILITY_WEEK_15_PHOTO_1_URL",
+              "photoPolicy": "external_link_only"
+            },
+            {
+              "index": 2,
+              "photoSourceLink": "TODO_SOURCE_FACILITY_WEEK_15_PHOTO_2_URL",
+              "photoPolicy": "external_link_only"
+            },
+            {
+              "index": 3,
+              "photoSourceLink": "TODO_SOURCE_FACILITY_WEEK_15_PHOTO_3_URL",
+              "photoPolicy": "external_link_only"
+            },
+            {
+              "index": 4,
+              "photoSourceLink": "TODO_SOURCE_FACILITY_WEEK_15_PHOTO_4_URL",
+              "photoPolicy": "external_link_only"
+            },
+            {
+              "index": 5,
+              "photoSourceLink": "TODO_SOURCE_FACILITY_WEEK_15_PHOTO_5_URL",
+              "photoPolicy": "external_link_only"
+            },
+            {
+              "index": 6,
+              "photoSourceLink": "TODO_SOURCE_FACILITY_WEEK_15_PHOTO_6_URL",
+              "photoPolicy": "external_link_only"
+            },
+            {
+              "index": 7,
+              "photoSourceLink": "TODO_SOURCE_FACILITY_WEEK_15_PHOTO_7_URL",
+              "photoPolicy": "external_link_only"
+            },
+            {
+              "index": 8,
+              "photoSourceLink": "TODO_SOURCE_FACILITY_WEEK_15_PHOTO_8_URL",
+              "photoPolicy": "external_link_only"
+            },
+            {
+              "index": 9,
+              "photoSourceLink": "TODO_SOURCE_FACILITY_WEEK_15_PHOTO_9_URL",
+              "photoPolicy": "external_link_only"
+            },
+            {
+              "index": 10,
+              "photoSourceLink": "TODO_SOURCE_FACILITY_WEEK_15_PHOTO_10_URL",
+              "photoPolicy": "external_link_only"
+            },
+            {
+              "index": 11,
+              "photoSourceLink": "TODO_SOURCE_FACILITY_WEEK_15_PHOTO_11_URL",
+              "photoPolicy": "external_link_only"
+            },
+            {
+              "index": 12,
+              "photoSourceLink": "TODO_SOURCE_FACILITY_WEEK_15_PHOTO_12_URL",
+              "photoPolicy": "external_link_only"
+            },
+            {
+              "index": 13,
+              "photoSourceLink": "TODO_SOURCE_FACILITY_WEEK_15_PHOTO_13_URL",
+              "photoPolicy": "external_link_only"
+            },
+            {
+              "index": 14,
+              "photoSourceLink": "TODO_SOURCE_FACILITY_WEEK_15_PHOTO_14_URL",
+              "photoPolicy": "external_link_only"
+            },
+            {
+              "index": 15,
+              "photoSourceLink": "TODO_SOURCE_FACILITY_WEEK_15_PHOTO_15_URL",
+              "photoPolicy": "external_link_only"
+            },
+            {
+              "index": 16,
+              "photoSourceLink": "TODO_SOURCE_FACILITY_WEEK_15_PHOTO_16_URL",
+              "photoPolicy": "external_link_only"
+            },
+            {
+              "index": 17,
+              "photoSourceLink": "TODO_SOURCE_FACILITY_WEEK_15_PHOTO_17_URL",
+              "photoPolicy": "external_link_only"
+            },
+            {
+              "index": 18,
+              "photoSourceLink": "TODO_SOURCE_FACILITY_WEEK_15_PHOTO_18_URL",
+              "photoPolicy": "external_link_only"
+            },
+            {
+              "index": 19,
+              "photoSourceLink": "TODO_SOURCE_FACILITY_WEEK_15_PHOTO_19_URL",
+              "photoPolicy": "external_link_only"
+            },
+            {
+              "index": 20,
+              "photoSourceLink": "TODO_SOURCE_FACILITY_WEEK_15_PHOTO_20_URL",
+              "photoPolicy": "external_link_only"
+            },
+            {
+              "index": 21,
+              "photoSourceLink": "TODO_SOURCE_FACILITY_WEEK_15_PHOTO_21_URL",
+              "photoPolicy": "external_link_only"
+            }
+          ],
+          "realGrowDataStatus": "user_confirmed_harvest_dry_cure",
+          "testFocus": [
+            "harvest",
+            "harvest labor",
+            "dry",
+            "cure",
+            "dry room target",
+            "CVault cure",
+            "room reset"
+          ],
+          "plannedFeatureCoverage": [
+            "Harvest report",
+            "Harvest labor",
+            "Dry room tracking",
+            "Dry room log",
+            "Cure tracking",
+            "Cure tracker",
+            "Moisture meter record",
+            "CVault cure record",
+            "Room reset",
+            "Source-backed weekly log"
+          ]
+        }
+      ],
+      "acceptanceChecks": [
+        "Facility users can access room/task workflows by role.",
+        "Facility crop summary links grow, room, task, harvest, and dry/cure records.",
+        "Post-harvest quality notes are visible in reports without becoming public storefront content.",
+        "Facility and commercial workflows stay separate unless explicitly linked."
+      ]
+    }
+  ]
+}

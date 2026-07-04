@@ -18,6 +18,8 @@ export default function SoilBuilderToolScreen() {
       subtitle="Build base, compost, aeration, amendment, and mineral amounts from total soil volume."
       fields={[
         { key: "mixName", label: "Mix name", defaultValue: "Living soil mix" },
+        { key: "intendedUse", label: "Intended use", defaultValue: "veg" },
+        { key: "stage", label: "Stage", defaultValue: "veg" },
         {
           key: "totalVolume",
           label: "Total volume",
@@ -72,7 +74,9 @@ export default function SoilBuilderToolScreen() {
             doseUnit: values.amendmentUnit,
             releaseClass: "medium"
           }
-        ]
+        ],
+        intendedUse: values.intendedUse,
+        stage: values.stage
       })}
       buildMetrics={(outputs) => [
         {
@@ -90,7 +94,35 @@ export default function SoilBuilderToolScreen() {
           label: "Bag count",
           value: String(outputs.bagCountEstimate ?? "-")
         },
+        {
+          key: "fit",
+          label: "Purpose fit",
+          value: outputs.purposeFit || "-"
+        },
         { key: "recipe", label: "Recipe type", value: outputs.recipe?.recipeType || "-" }
+      ]}
+      buildNotices={(outputs) => [
+        ...(Array.isArray(outputs.stageTimingWarnings)
+          ? outputs.stageTimingWarnings.map((message: string, index: number) => ({
+              key: `stage-${index}`,
+              severity: "medium" as const,
+              message
+            }))
+          : []),
+        ...(Array.isArray(outputs.sourceConfidenceWarnings)
+          ? outputs.sourceConfidenceWarnings.map((message: string, index: number) => ({
+              key: `source-${index}`,
+              severity: "medium" as const,
+              message
+            }))
+          : []),
+        ...(Array.isArray(outputs.compatibilityWarnings)
+          ? outputs.compatibilityWarnings.map((message: string, index: number) => ({
+              key: `compat-${index}`,
+              severity: "medium" as const,
+              message
+            }))
+          : [])
       ]}
       defaultLogTitle={(outputs) => `${outputs.mixName || "Soil mix"} planned`}
       defaultTask={(outputs) => ({

@@ -14,6 +14,7 @@ import ScreenContainer from "../components/ScreenContainer";
 import GrowInterestPicker from "../components/GrowInterestPicker";
 import { addLesson } from "../api/courses";
 import { uploadCourseMedia } from "@/api/uploads";
+import PersonalFeedPlacement from "@/components/feed/PersonalFeedPlacement";
 import { useEntitlements } from "@/entitlements";
 import { getLearningAccess } from "@/features/learning/learningAccess";
 import { persistImageUris } from "@/utils/photoUploads";
@@ -139,6 +140,7 @@ export default function AddLessonScreen({ route, navigation }) {
   return (
     <ScreenContainer scroll>
       <Text style={styles.header}>Add Lesson</Text>
+      <PersonalFeedPlacement placement="top" routeKey="personal_lesson_add" longContent />
       {!access.canCreateCourses ? (
         <View style={styles.lockedCard}>
           <Text style={styles.lockedTitle}>Lesson authoring unavailable</Text>
@@ -248,6 +250,8 @@ export default function AddLessonScreen({ route, navigation }) {
         defaultExpanded={false}
       />
 
+      <PersonalFeedPlacement placement="middle" routeKey="personal_lesson_add" longContent />
+
       <TouchableOpacity
         style={[styles.btn, !access.canCreateCourses && styles.disabled]}
         onPress={submit}
@@ -260,6 +264,7 @@ export default function AddLessonScreen({ route, navigation }) {
         Selected images, videos, PDFs, and audio upload when you save. Pasted video and
         PDF links are saved as provided.
       </Text>
+      <PersonalFeedPlacement placement="bottom" routeKey="personal_lesson_add" longContent />
     </ScreenContainer>
   );
 }

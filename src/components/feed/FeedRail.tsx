@@ -1,5 +1,5 @@
 import React from "react";
-import { View, StyleSheet } from "react-native";
+import { StyleSheet, View } from "react-native";
 import EducationPostCard from "@/components/feed/EducationPostCard";
 import AdCard from "@/components/feed/AdCard";
 
@@ -32,17 +32,23 @@ const AD_ITEMS = [
   {
     title: "Sponsor: HydroTech Sensors",
     body: "Save 20% on VPD monitoring bundles this week.",
-    cta: "View offer"
+    cta: "View offer",
+    href: "/brands/example-brand",
+    storefrontSlug: "example-brand"
   },
   {
     title: "Partner: GreenBench Genetics",
     body: "New high-THC cultivar drops + grower discounts.",
-    cta: "Explore drops"
+    cta: "Explore drops",
+    href: "/store/example-brand",
+    storefrontSlug: "example-brand"
   },
   {
     title: "Promotion: SoilPro Mix",
-    body: "Starter packs for small grows — free shipping.",
-    cta: "Shop now"
+    body: "Starter packs for small grows - free shipping.",
+    cta: "Shop now",
+    href: "/store/example-brand",
+    storefrontSlug: "example-brand"
   }
 ];
 
@@ -50,12 +56,16 @@ const FACILITY_AD_ITEMS = [
   {
     title: "Facility Sponsor: EnviroTrack",
     body: "Automate compliance logs with audit-ready exports.",
-    cta: "See demo"
+    cta: "See demo",
+    href: "/brands/example-brand",
+    storefrontSlug: "example-brand"
   },
   {
     title: "Partner: CropGuard",
     body: "IPM program kits for multi-room operations.",
-    cta: "View program"
+    cta: "View program",
+    href: "/store/example-brand",
+    storefrontSlug: "example-brand"
   }
 ];
 
@@ -89,6 +99,8 @@ export default function FeedRail({ slots, mode, railMode = "standard" }: FeedRai
               title={adItem.title}
               body={adItem.body}
               cta={adItem.cta}
+              href={adItem.href}
+              storefrontSlug={adItem.storefrontSlug}
             />
           );
         }
@@ -109,6 +121,8 @@ export default function FeedRail({ slots, mode, railMode = "standard" }: FeedRai
             title={adItem.title}
             body={adItem.body}
             cta={adItem.cta}
+            href={adItem.href}
+            storefrontSlug={adItem.storefrontSlug}
           />
         );
       })}

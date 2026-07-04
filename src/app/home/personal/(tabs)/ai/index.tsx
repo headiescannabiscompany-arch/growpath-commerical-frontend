@@ -13,6 +13,7 @@ import {
   type AssistantProposedWrite,
   type AssistantReference
 } from "@/api/personalAssistant";
+import PersonalFeedPlacement from "@/components/feed/PersonalFeedPlacement";
 
 const styles = StyleSheet.create({
   container: { flex: 1, backgroundColor: "#fff" },
@@ -472,6 +473,7 @@ export default function AiScreen() {
   return (
     <View style={styles.container}>
       <ScrollView style={styles.body} contentContainerStyle={{ paddingBottom: 24 }}>
+        <PersonalFeedPlacement placement="top" routeKey="personal_ai" longContent />
         {context && (
           <View style={styles.contextCard}>
             <Text style={[styles.contextText, styles.contextTitle]}>Context Loaded</Text>
@@ -533,6 +535,7 @@ export default function AiScreen() {
             <Text style={styles.msgText}>{m.text}</Text>
           </View>
         ))}
+        <PersonalFeedPlacement placement="middle" routeKey="personal_ai" longContent />
         {actions.length ? (
           <View style={styles.actionCard}>
             <Text style={[styles.contextText, styles.contextTitle]}>
@@ -588,6 +591,8 @@ export default function AiScreen() {
           </View>
         ) : null}
         {writeFeedback ? <Text style={styles.hint}>{writeFeedback}</Text> : null}
+
+        <PersonalFeedPlacement placement="bottom" routeKey="personal_ai" longContent />
       </ScrollView>
 
       <View style={styles.composer}>

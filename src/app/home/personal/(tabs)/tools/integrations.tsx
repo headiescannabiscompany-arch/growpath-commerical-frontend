@@ -29,6 +29,7 @@ import {
   verifyGrowlinkCredentials
 } from "@/api/telemetry";
 import type { GrowlinkController, TelemetrySource } from "@/types/telemetry";
+import PersonalFeedPlacement from "@/components/feed/PersonalFeedPlacement";
 
 function message(error: any) {
   return String(error?.message || error?.error?.message || "Request failed");
@@ -339,6 +340,11 @@ export default function DataIntegrationsScreen() {
       <Text style={styles.subtitle}>
         Connect grow sensors, controllers, irrigation, and environmental data.
       </Text>
+      <PersonalFeedPlacement
+        placement="top"
+        routeKey="personal_tools_integrations"
+        longContent
+      />
 
       <View style={styles.growlinkPanel}>
         <View style={styles.row}>
@@ -474,6 +480,12 @@ export default function DataIntegrationsScreen() {
         ) : null}
       </View>
 
+      <PersonalFeedPlacement
+        placement="middle"
+        routeKey="personal_tools_integrations"
+        longContent
+      />
+
       {providers.map((provider) => {
         const connection = byProvider.get(provider.id);
         return (
@@ -550,6 +562,12 @@ export default function DataIntegrationsScreen() {
           ) : null}
         </View>
       ) : null}
+
+      <PersonalFeedPlacement
+        placement="bottom"
+        routeKey="personal_tools_integrations"
+        longContent
+      />
     </ScrollView>
   );
 }

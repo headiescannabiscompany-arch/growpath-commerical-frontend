@@ -4,10 +4,10 @@ const mockWithScope = jest.fn((fn) => fn({ setExtra: jest.fn() }));
 const mockWrap = jest.fn((component) => component);
 
 jest.mock("@sentry/react-native", () => ({
-  init: (...args: any[]) => mockInit(...args),
-  captureException: (...args: any[]) => mockCaptureException(...args),
-  withScope: (...args: any[]) => mockWithScope(...args),
-  wrap: (...args: any[]) => mockWrap(...args)
+  init: (...args: any[]) => mockInit.apply(null, args),
+  captureException: (...args: any[]) => mockCaptureException.apply(null, args),
+  withScope: (...args: any[]) => mockWithScope.apply(null, args),
+  wrap: (...args: any[]) => mockWrap.apply(null, args)
 }));
 
 describe("frontend monitoring", () => {

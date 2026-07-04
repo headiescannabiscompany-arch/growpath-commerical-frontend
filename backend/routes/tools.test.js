@@ -276,13 +276,19 @@ describe("Tools Router (tools.js)", () => {
     expect(res.body.outputs).toMatchObject({
       runoffECStatus: "high",
       driftDirection: "runoff_higher",
+      canonicalDriftDirection: "input_to_runoff_up",
       retestTaskSuggestion: expect.objectContaining({ title: "Retest pH / EC" })
     });
+    expect(res.body.outputs.riskCodes).toEqual(
+      expect.arrayContaining(["salt_buildup", "lockout_risk", "low_buffering"])
+    );
     expect(res.body.outputs.warnings).toEqual(
       expect.arrayContaining([
         "Runoff EC is materially higher than input EC.",
         "Runoff EC is above the selected target range.",
-        "Runoff pH is outside the selected target range."
+        "Runoff pH is outside the selected target range.",
+        "RO water has low buffering. Calcium/magnesium and alkalinity context matter.",
+        "Do not recommend exact pH Up/Down dosing unless product concentration and water volume are known."
       ])
     );
     expect(mockToolRun.create).toHaveBeenCalledWith(
@@ -291,6 +297,295 @@ describe("Tools Router (tools.js)", () => {
         toolType: "ph_ec_check",
         inputs: expect.objectContaining({ growId: "grow_1", runoffEC: 2.8 })
       })
+    );
+  });
+
+  test("runs PPFD/DLI planner with stage-aware light stress warnings", async () => {
+    mockToolRun.create.mockImplementation(async (payload) => ({
+      _id: RUN_ID,
+      ...payload,
+      toObject: () => ({ _id: RUN_ID, ...payload })
+    }));
+
+    const res = await authed(
+      request(app)
+        .post("/api/tools/ppfd-dli")
+        .send({
+          growId: "grow_1",
+          stage: "clone",
+          targetDli: 22,
+          photoperiodHours: 18,
+          measuredPpfd: 420,
+          leafResponse: "taco and bleaching"
+        })
+    );
+
+    expect(res.status).toBe(201);
+    expect(res.body.outputs).toMatchObject({
+      stage: "clone",
+      photoperiodHours: 18,
+      targetDli: 22,
+      requiredPpfd: expect.any(Number),
+      measuredDli: expect.any(Number),
+      status: expect.any(String),
+      tasksToCreate: [
+        expect.objectContaining({
+          title: "Check light stress response",
+          priority: "high"
+        })
+      ]
+    });
+    expect(res.body.outputs.warnings).toEqual(
+      expect.arrayContaining([
+        "Seedlings/clones may be under too much light for stable rooting and early growth.",
+        "Leaf posture or bleaching symptoms suggest light stress; compare against VPD, temperature, and root-zone status before increasing intensity."
+      ])
+    );
+  });
+
+  test("runs NPK recipe with elemental conversion, water baseline, and compatibility warnings", async () => {
+    mockToolRun.create.mockImplementation(async (payload) => ({
+      _id: RUN_ID,
+      ...payload,
+      toObject: () => ({ _id: RUN_ID, ...payload })
+    }));
+
+    const res = await authed(
+      request(app)
+        .post("/api/tools/npk-recipe")
+        .send({
+          growId: "grow_1",
+          batchVolume: 5,
+          batchUnit: "gal",
+          stage: "flower",
+          medium: "coco",
+          measuredEC: 3.2,
+          measuredPH: 7.1,
+          isConcentrate: true,
+          waterBaseline: {
+            Ca: 20,
+            Mg: 5,
+            sourceEC: 0.2,
+            sourcePH: 7.4,
+            alkalinityPpm: 120
+          },
+          products: [
+            {
+              name: "Calcium Base",
+              amount: 10,
+              unit: "g",
+              N: 15,
+              Ca: 19,
+              sourceType: "manufacturer",
+              chemistryKey: "water_soluble_nitrate"
+            },
+            {
+              name: "PK Boost",
+              amount: 10,
+              unit: "g",
+              P: 10,
+              K: 20,
+              sourceType: "user_entered",
+              chemistryKey: "soluble_phosphate"
+            }
+          ]
+        })
+    );
+
+    expect(res.status).toBe(201);
+    expect(res.body.outputs).toMatchObject({
+      batchGallons: 5,
+      productCount: 2,
+      totals: expect.objectContaining({
+        Pppm: expect.any(Number),
+        Kppm: expect.any(Number),
+        Cappm: expect.any(Number)
+      }),
+      waterBaseline: expect.objectContaining({
+        totals: expect.objectContaining({
+          Cappm: 20,
+          Mgppm: 5
+        })
+      }),
+      measured: { ec: 3.2, ph: 7.1 },
+      sourceConfidence: expect.objectContaining({
+        overall: expect.any(String)
+      })
+    });
+    expect(res.body.outputs.totals.Pppm).toBeCloseTo(23.1, 1);
+    expect(res.body.outputs.totals.Kppm).toBeCloseTo(87.7, 1);
+    expect(res.body.outputs.warnings).toEqual(
+      expect.arrayContaining([
+        "Measured EC is high. Confirm cultivar/stage tolerance before applying.",
+        "Measured feed pH is outside a common fertigation target range. Verify medium-specific targets before feeding."
+      ])
+    );
+    expect(res.body.outputs.mixingOrder.length).toBeGreaterThan(0);
+    expect(res.body.outputs.availabilityEstimate).toHaveProperty("windows");
+    expect(res.body.outputs.releaseTimeline).toBeTruthy();
+  });
+
+  test("runs watering planner with dryback pressure and recovery warnings", async () => {
+    mockToolRun.create.mockImplementation(async (payload) => ({
+      _id: RUN_ID,
+      ...payload,
+      toObject: () => ({ _id: RUN_ID, ...payload })
+    }));
+
+    const res = await authed(
+      request(app)
+        .post("/api/tools/watering")
+        .send({
+          growId: "grow_1",
+          potVolume: 5,
+          potUnit: "gal",
+          medium: "coco",
+          stage: "flower",
+          drybackTargetPercent: 20,
+          actualDrybackPercent: 34,
+          runoffTargetPercent: 10,
+          actualRunoffPercent: 1,
+          vpdKpa: 1.7,
+          recoveryTimeHours: 30,
+          leafResponse: "wilt and stalled"
+        })
+    );
+
+    expect(res.status).toBe(201);
+    expect(res.body.outputs).toMatchObject({
+      medium: "coco",
+      stage: "flower",
+      wateringIntent: "generative",
+      pressureLevel: "high",
+      recoveryStatus: "poor_recovery",
+      drybackTargetPercent: 20,
+      actualDrybackPercent: 34,
+      actualRunoffPercent: 1,
+      vpdKpa: 1.7,
+      tasksToCreate: [
+        expect.objectContaining({
+          title: "Check plant recovery after watering",
+          priority: "high"
+        })
+      ]
+    });
+    expect(res.body.outputs.warnings).toEqual(
+      expect.arrayContaining([
+        "Actual dryback exceeded the target by a meaningful margin.",
+        "Dryback is high enough to treat as steering pressure, not routine watering.",
+        "Very low runoff in coco/salt-style systems can increase salt buildup risk.",
+        "High VPD can speed dryback and increase irrigation demand.",
+        "Recovery longer than 24 hours suggests the previous dryback or irrigation pressure was too high.",
+        "Leaf response suggests this watering/dryback pattern may be causing stress damage."
+      ])
+    );
+  });
+
+  test("reviews environment readings for dew point, VPD, and light risk", async () => {
+    mockToolRun.create.mockImplementation(async (payload) => ({
+      _id: RUN_ID,
+      ...payload,
+      toObject: () => ({ _id: RUN_ID, ...payload })
+    }));
+
+    const res = await authed(
+      request(app)
+        .post("/api/tools/environment-review")
+        .send({
+          growId: "grow_1",
+          stage: "late_flower",
+          tempDayC: 22,
+          tempNightC: 12,
+          humidity: 78,
+          vpd: 0.55,
+          dli: 48,
+          lightHours: 14
+        })
+    );
+
+    expect(res.status).toBe(201);
+    expect(res.body.outputs).toMatchObject({
+      stage: "late_flower",
+      riskLevel: "high",
+      dewPointC: expect.any(Number),
+      dewPointSpreadC: expect.any(Number),
+      tasksToCreate: [
+        expect.objectContaining({
+          title: "Inspect environment risk zones",
+          priority: "high"
+        })
+      ]
+    });
+    expect(res.body.outputs.warnings).toEqual(
+      expect.arrayContaining([
+        "High humidity in flower increases mold and bud rot risk.",
+        "Dew point spread is tight; inspect dense canopy and flower surfaces.",
+        "Low VPD can reduce transpiration and contribute to calcium-transport symptoms.",
+        "Very high DLI late flower can add heat/light pressure and reduce finish quality if plants are not tolerating it.",
+        "Large day/night temperature swings can complicate VPD, color, uptake, and condensation risk.",
+        "Flowering photoperiod appears long; verify crop type, genetics, and light schedule."
+      ])
+    );
+  });
+
+  test("reviews feeding schedules for stage, medium, pH, and EC risk", async () => {
+    mockToolRun.create.mockImplementation(async (payload) => ({
+      _id: RUN_ID,
+      ...payload,
+      toObject: () => ({ _id: RUN_ID, ...payload })
+    }));
+
+    const res = await authed(
+      request(app)
+        .post("/api/tools/feeding-schedule-review")
+        .send({
+          growId: "grow_1",
+          productName: "Bloom Line",
+          growMedium: "coco",
+          stage: "late_flower",
+          weeks: 10,
+          inputEC: 2.8,
+          runoffEC: 4.1,
+          inputPH: 7.0,
+          runoffPH: 6.3,
+          waterSource: "well",
+          schedule: [
+            {
+              week: 9,
+              stage: "late flower",
+              amount: "heavy grow nitrogen feed"
+            }
+          ]
+        })
+    );
+
+    expect(res.status).toBe(201);
+    expect(res.body.outputs).toMatchObject({
+      productName: "Bloom Line",
+      medium: "coco",
+      stage: "late_flower",
+      rowCount: 1,
+      riskLevel: "high",
+      tasksToCreate: [
+        expect.objectContaining({
+          title: "Review feeding schedule before applying",
+          priority: "high"
+        }),
+        expect.objectContaining({
+          title: "Log input EC/pH and runoff after next feed"
+        })
+      ]
+    });
+    expect(res.body.outputs.warnings).toEqual(
+      expect.arrayContaining([
+        "Late flower/ripening schedules should avoid heavy late nitrogen or high EC unless intentionally justified.",
+        "Coco/hydro-style feeding should track runoff or root-zone EC trends, not just input schedule.",
+        "Input EC is high for many cultivars/stages. Confirm tolerance before applying.",
+        "Runoff EC is materially higher than input EC; review buildup before increasing feed.",
+        "Input pH is outside a common fertigation target range. Verify medium-specific targets.",
+        "Runoff pH drift is large enough to trend before changing feed strength.",
+        "City/well water may contain alkalinity or minerals that change pH/EC interpretation."
+      ])
     );
   });
 
@@ -313,6 +608,8 @@ describe("Tools Router (tools.js)", () => {
           productName: "Craft Blend",
           doseRate: 2,
           doseUnit: "tbsp_per_gallon",
+          releaseClass: "slow",
+          daysUntilHarvest: 14,
           plannedApplyDate: "2026-07-03T12:00:00.000Z"
         })
     );
@@ -322,9 +619,21 @@ describe("Tools Router (tools.js)", () => {
       amountPerPlant: 20,
       totalAmount: 80,
       amountUnit: "tbsp",
+      releaseClass: "slow",
+      purposeFit: "review_before_apply",
+      releaseWindowDays: expect.objectContaining({ min: 30, max: 120 }),
       taskToCreate: expect.objectContaining({ title: "Topdress Craft Blend" })
     });
     expect(res.body.outputs.warnings[0]).toMatch(/Late flower topdressing/);
+    expect(res.body.outputs.warnings).toEqual(
+      expect.arrayContaining(["Expected release may start too late for the likely harvest window."])
+    );
+    expect(res.body.outputs.followUpTasks).toEqual(
+      expect.arrayContaining([
+        expect.objectContaining({ title: "Water in topdress" }),
+        expect.objectContaining({ title: "Check plant response after topdress" })
+      ])
+    );
   });
 
   test("runs dry amendment mix builder with guaranteed-analysis output", async () => {
@@ -361,6 +670,7 @@ describe("Tools Router (tools.js)", () => {
               releaseClass: "slow"
             }
           ],
+          desiredStage: "late_flower",
           dosePerGallonSoil: 10
         })
     );
@@ -376,11 +686,31 @@ describe("Tools Router (tools.js)", () => {
         elementalK: 1.25,
         Ca: 10
       }),
+      guaranteedAnalysis: expect.objectContaining({
+        N: 1.5,
+        P2O5: 1.5,
+        K2O: 1.5
+      }),
+      elementalBreakdown: expect.objectContaining({
+        P: 0.65,
+        K: 1.25,
+        Ca: 10
+      }),
+      deliveryCurve: expect.objectContaining({
+        longTermBackgroundCount: 1
+      }),
+      stageFit: "review_before_use",
       dosePerCubicFoot: 74.81
     });
     expect(res.body.outputs.releaseTimeline.medium[0]).toMatchObject({
-      name: "Meal A"
+      name: "Meal A",
+      role: "mid-window support"
     });
+    expect(res.body.outputs.stageTimingWarnings).toEqual(
+      expect.arrayContaining([
+        "Slow release ingredients may not affect the current late-flower window."
+      ])
+    );
   });
 
   test("runs dry/cure guard without treating temperatures above 68F as automatic failure", async () => {
@@ -433,30 +763,67 @@ describe("Tools Router (tools.js)", () => {
           mixName: "Living soil",
           totalVolume: 30,
           volumeUnit: "gallons",
+          intendedUse: "seedling",
+          stage: "seedling",
           basePercent: 33,
           compostPercent: 33,
           aerationPercent: 34,
-          amendments: [{ name: "Kelp meal", doseRate: 0.5, releaseClass: "medium" }]
+          amendments: [
+            { name: "Fast N meal", doseRate: 0.5, releaseClass: "fast", sourceConfidence: "low" },
+            { name: "Gypsum", doseRate: 0.25, releaseClass: "slow" }
+          ]
         })
     );
     const comparison = await authed(
       request(app)
         .post("/api/tools/nutrient-source-comparison")
-        .send({ growId: "grow_1", nutrient: "calcium", intent: "long_term_soil" })
+        .send({ growId: "grow_1", nutrient: "calcium", intent: "long_term_soil", stage: "late flower", medium: "coco" })
     );
 
     expect(soil.status).toBe(201);
     expect(soil.body.outputs).toMatchObject({
       totalGallons: 30,
       totalCubicFeet: 4.01,
+      intendedUse: "seedling",
+      purposeFit: "review_before_use",
       recipe: expect.objectContaining({ recipeType: "soil_mix" })
     });
+    expect(soil.body.outputs.releaseTimeline.fast[0]).toMatchObject({
+      name: "Fast N meal",
+      role: "near-term support"
+    });
+    expect(soil.body.outputs.stageTimingWarnings).toEqual(
+      expect.arrayContaining([
+        "This mix may be too hot for seedlings or fresh clones because fast-release inputs were entered."
+      ])
+    );
+    expect(soil.body.outputs.sourceConfidenceWarnings).toEqual(
+      expect.arrayContaining([
+        "Compost/castings nutrient contribution is estimated unless a lab or label analysis is entered.",
+        "One or more amendment/mineral inputs have low source confidence."
+      ])
+    );
+    expect(soil.body.outputs.compatibilityWarnings).toEqual(
+      expect.arrayContaining(["Gypsum supplies calcium/sulfur support but is not pH down."])
+    );
     expect(comparison.status).toBe(201);
     expect(comparison.body.outputs).toMatchObject({
       nutrient: "calcium",
+      desiredSpeed: "long_term_soil_building",
       bestChoiceByIntent: "calcitic lime",
-      slowSources: expect.arrayContaining(["oyster shell"])
+      slowSources: expect.arrayContaining(["oyster shell"]),
+      bestUseCase: "Use slow sources as soil-building/background nutrition, not urgent rescue."
     });
+    expect(comparison.body.outputs.intentQuestions[0]).toMatch(/current calcium transport issue/);
+    expect(comparison.body.outputs.timingWarnings).toEqual(
+      expect.arrayContaining([
+        "Long-term soil-building sources may release too slowly for late flower or finish correction.",
+        "Slow organic/mineral sources may not behave predictably in coco/hydro compared with biologically active soil."
+      ])
+    );
+    expect(comparison.body.outputs.pHEffectWarnings).toEqual(
+      expect.arrayContaining(["Gypsum supplies calcium/sulfur support without being pH down."])
+    );
   });
 
   test("runs stress testing and clone rooting tools", async () => {
@@ -475,9 +842,11 @@ describe("Tools Router (tools.js)", () => {
           stressType: "heat",
           severity: 8,
           recoveryDays: 3,
+          hoursToRecover: 72,
           damageScore: 7,
           vigorScore: 6,
-          stabilitySignals: "intersex watch"
+          stabilitySignals: "intersex watch",
+          notes: "quality drop after heat"
         })
     );
     const clone = await authed(
@@ -486,11 +855,17 @@ describe("Tools Router (tools.js)", () => {
         .send({
           growId: "grow_1",
           daysSinceCut: 16,
+          cloneCount: 10,
+          rootedCount: 1,
+          failedCount: 3,
+          motherPlantHealth: "stressed",
           humidity: 60,
           temperature: 68,
           lightIntensity: 320,
           stemCondition: "black slime",
-          leafCondition: "wilt"
+          leafCondition: "wilt",
+          mediumStatus: "too wet",
+          rootingStatus: "no visible roots"
         })
     );
 
@@ -498,15 +873,41 @@ describe("Tools Router (tools.js)", () => {
     expect(stress.body.outputs).toMatchObject({
       riskLevel: "high",
       keeperImpact: "negative_until_retested",
-      tags: expect.arrayContaining(["stress-test", "stability-watch"])
+      recoveryStatus: "poor_recovery",
+      selectionSignals: expect.objectContaining({
+        cropSteeringCandidate: false,
+        rejectOrRetest: true
+      }),
+      phenoImpact: "retest_before_keeper_decision",
+      tags: expect.arrayContaining(["stress-test", "stability-watch", "recovery_poor", "quality_loss_under_stress"])
     });
+    expect(stress.body.outputs.tasksToCreate).toEqual(
+      expect.arrayContaining([
+        expect.objectContaining({ title: "Recheck stress recovery" }),
+        expect.objectContaining({ title: "Photograph same plant after stress test" })
+      ])
+    );
     expect(clone.status).toBe(201);
-    expect(clone.body.outputs.riskLevel).toBe("high");
+    expect(clone.body.outputs).toMatchObject({
+      riskLevel: "high",
+      rootingProgress: "delayed",
+      clonePerformanceSummary: expect.objectContaining({
+        cloneCount: 10,
+        rootedCount: 1,
+        rootingPercent: 10
+      })
+    });
     expect(clone.body.outputs.likelyBottlenecks).toEqual(
       expect.arrayContaining([
-        "Humidity may be too low for fresh cuts.",
-        "Light intensity may be too strong for unrooted cuts."
+        expect.objectContaining({ category: "mother_health" }),
+        expect.objectContaining({ issue: "Humidity may be too low for fresh clones" }),
+        expect.objectContaining({ issue: "Light may be too strong for fresh clones" }),
+        expect.objectContaining({ category: "medium" }),
+        expect.objectContaining({ issue: "Delayed rooting" })
       ])
+    );
+    expect(clone.body.outputs.tags).toEqual(
+      expect.arrayContaining(["mother_health_issue", "low_humidity", "overwet_medium", "delayed_rooting"])
     );
   });
 
@@ -523,8 +924,8 @@ describe("Tools Router (tools.js)", () => {
         .send({
           growId: "grow_1",
           runs: [
-            { name: "Run 1", yieldAmount: 14, qualityScore: 7, issueCount: 4, days: 120 },
-            { name: "Run 2", yieldAmount: 18, qualityScore: 8, issueCount: 1, days: 112 }
+            { name: "Run 1", cultivar: "Sour Diesel", yieldAmount: 14, qualityScore: 7, issueCount: 4, days: 120, averageVpd: 1.1 },
+            { name: "Run 2", cultivar: "Sour Diesel", yieldAmount: 18, qualityScore: 8, issueCount: 1, days: 112, averageVpd: 1.3, averageDli: 40 }
           ]
         })
     );
@@ -536,23 +937,70 @@ describe("Tools Router (tools.js)", () => {
           plantCount: 4,
           startDate: "2026-07-01",
           vegLengthWeeks: 4,
-          expectedFlowerDays: 63
+          expectedFlowerDays: 63,
+          plants: [
+            { plantId: "plant_1", cultivar: "Sour Diesel", expectedFlowerDaysMin: 63, expectedFlowerDaysMax: 70 },
+            { plantId: "plant_2", cultivar: "Haze Hybrid", expectedFlowerDaysMin: 70, expectedFlowerDaysMax: 77 }
+          ]
         })
     );
 
     expect(comparison.status).toBe(201);
     expect(comparison.body.outputs.bestRun).toMatchObject({ name: "Run 2" });
     expect(comparison.body.outputs.differences.yieldSpread).toBe(4);
+    expect(comparison.body.outputs.structuredSummary).toMatchObject({
+      summaryStats: expect.objectContaining({
+        yieldDifference: 4,
+        issueCountDifference: 3
+      }),
+      sameCultivar: true
+    });
+    expect(comparison.body.outputs.keyDifferences).toEqual(
+      expect.arrayContaining([
+        expect.objectContaining({ category: "yield" }),
+        expect.objectContaining({ category: "issues" })
+      ])
+    );
+    expect(comparison.body.outputs.likelyDrivers).toEqual(
+      expect.arrayContaining([
+        expect.objectContaining({ driver: "Higher yield run" }),
+        expect.objectContaining({ driver: "Lower issue pressure" })
+      ])
+    );
+    expect(comparison.body.outputs.missingData).toEqual(
+      expect.arrayContaining([
+        expect.objectContaining({ field: "taskCompletionRate" }),
+        expect.objectContaining({ field: "dryDays" })
+      ])
+    );
     expect(calendar.status).toBe(201);
     expect(calendar.body.outputs.stageTimeline).toMatchObject({
       startDate: "2026-07-01",
       flipDate: "2026-07-29",
       expectedHarvestStart: "2026-09-23"
     });
-    expect(calendar.body.outputs.taskSchedule).toHaveLength(5);
+    expect(calendar.body.outputs.taskSchedule).toEqual(
+      expect.arrayContaining([
+        expect.objectContaining({ title: "Pre-flip review" }),
+        expect.objectContaining({ title: "Flower day 1" }),
+        expect.objectContaining({ title: "Harvest readiness check" }),
+        expect.objectContaining({ title: "Dry room setup" })
+      ])
+    );
+    expect(calendar.body.outputs.plantSpecificHarvestWindows).toEqual(
+      expect.arrayContaining([
+        expect.objectContaining({ cultivar: "Sour Diesel", start: "2026-09-23", end: "2026-10-14" }),
+        expect.objectContaining({ cultivar: "Haze Hybrid", start: "2026-09-30", end: "2026-10-21" })
+      ])
+    );
+    expect(calendar.body.outputs.reminders).toEqual(
+      expect.arrayContaining([
+        "Flower time is a range. Breeder timing is a reference, not a command."
+      ])
+    );
   });
 
-  test("runs tissue culture and living soil batch tools", async () => {
+  test("runs tissue culture and soil nutrient batch tools", async () => {
     mockGrow.exists.mockResolvedValue(true);
     mockToolRun.create.mockImplementation((payload) => ({
       _id: RUN_ID,
@@ -568,23 +1016,50 @@ describe("Tools Router (tools.js)", () => {
           batchNumber: "TC-001",
           vessels: 20,
           contaminatedVessels: 5,
+          browningVessels: 2,
+          stalledVessels: 1,
           rootedVessels: 6,
           acclimatedPlants: 3,
+          stage: "initiation",
+          symptoms: "fuzzy mold, browning near explant",
           mediaRecipe: "starter",
           SOPVersion: "SOP-1"
         })
     );
     const batch = await authed(
       request(app)
-        .post("/api/tools/living-soil-batch")
+        .post("/api/tools/soil-nutrient-batch")
         .send({
           growId: "grow_1",
           recipeId: "living-soil-base",
+          purpose: "seedling",
+          stage: "seedling",
           batchVolume: 100,
           bagSize: 2,
-          ingredientCosts: [
-            { name: "Compost", quantity: 35, unit: "gal", cost: 70 },
-            { name: "Aeration", quantity: 35, unit: "gal", cost: 50 }
+          ingredients: [
+            {
+              name: "Compost",
+              quantity: 35,
+              unit: "gal",
+              cost: 70,
+              N: 1,
+              P2O5: 1,
+              K2O: 1,
+              releaseClass: "slow",
+              sourceConfidence: "low",
+              category: "compost"
+            },
+            {
+              name: "Fast N meal",
+              quantity: 35,
+              unit: "gal",
+              cost: 50,
+              N: 8,
+              P2O5: 0,
+              K2O: 0,
+              releaseClass: "fast",
+              sourceConfidence: "medium"
+            }
           ],
           laborCost: 100,
           packagingCost: 40,
@@ -597,8 +1072,38 @@ describe("Tools Router (tools.js)", () => {
     expect(tc.body.outputs).toMatchObject({
       projectStatus: "active",
       contaminationRate: 25,
-      rootingRate: 30
+      rootingRate: 30,
+      vesselStatus: expect.objectContaining({
+        contaminatedVessels: 5,
+        browningVessels: 2,
+        stalledVessels: 1
+      }),
+      successMetrics: expect.objectContaining({
+        totalExplantsStarted: 20,
+        contaminatedExplants: 5,
+        oxidizedExplants: 2
+      }),
+      diagnosisRecord: expect.objectContaining({
+        tags: expect.arrayContaining(["contamination", "oxidation"])
+      }),
+      complianceRecord: expect.objectContaining({
+        batchNumber: "TC-001",
+        mediaRecipe: "starter",
+        stage: "initiation"
+      })
     });
+    expect(tc.body.outputs.diagnosisRecord.likelyFailureModes).toEqual(
+      expect.arrayContaining([
+        expect.objectContaining({ issue: "Likely contamination" }),
+        expect.objectContaining({ issue: "Possible browning or oxidation" })
+      ])
+    );
+    expect(tc.body.outputs.generatedCalendar).toEqual(
+      expect.arrayContaining([
+        expect.objectContaining({ title: "Review TC batch issue notes" }),
+        expect.objectContaining({ title: "Check for early contamination" })
+      ])
+    );
     expect(tc.body.outputs.warnings).toEqual(
       expect.arrayContaining([
         "Contamination rate is elevated. Review sterilization, explant prep, media handling, and vessel sealing notes."
@@ -608,8 +1113,29 @@ describe("Tools Router (tools.js)", () => {
     expect(batch.body.outputs).toMatchObject({
       bagCount: 48,
       totalBatchCost: 260,
-      costPerBag: 5.42
+      costPerBag: 5.42,
+      purpose: "seedling",
+      purposeFit: "review_before_use",
+      guaranteedAnalysisEstimate: {
+        N: 4.5,
+        P2O5: 0.5,
+        K2O: 0.5
+      }
     });
+    expect(batch.body.outputs.releaseTimeline.fast[0]).toMatchObject({
+      name: "Fast N meal",
+      role: "near-term support"
+    });
+    expect(batch.body.outputs.releaseTimeline.slow[0]).toMatchObject({
+      name: "Compost",
+      role: "long-term soil building"
+    });
+    expect(batch.body.outputs.warnings).toEqual(
+      expect.arrayContaining([
+        "This batch may be too hot for seedlings or fresh clones. Reduce fast-release fertility or use a gentler starter mix.",
+        "Compost/castings nutrient contribution is estimated and should not be treated as exact guaranteed analysis."
+      ])
+    );
     expect(batch.body.outputs.ingredientPullSheet).toHaveLength(2);
   });
 
@@ -649,8 +1175,30 @@ describe("Tools Router (tools.js)", () => {
     expect(ipm.body.outputs).toMatchObject({
       suspectedIssue: "pest_pressure",
       suspectedOrganism: "mites possible",
-      severity: "medium"
+      severity: "medium",
+      primaryAnswer: expect.objectContaining({
+        source: "growpathai_ipm_scout",
+        suspectedIssue: "pest_pressure",
+        suspectedOrganism: "mites possible"
+      }),
+      gptVerification: expect.objectContaining({
+        provider: "gpt",
+        status: "pending_gpt_review",
+        requiredForTreatmentDecision: true,
+        documentationTarget: "ToolRun.outputs.gptVerification"
+      }),
+      documentation: expect.objectContaining({
+        savedAs: "ToolRun",
+        includeBothAnswers: true
+      })
     });
+    expect(ipm.body.outputs.gptVerification.prompt).toMatch(/IPM verification assistant/);
+    expect(ipm.body.outputs.verificationDisplay).toHaveLength(2);
+    expect(ipm.body.outputs.warnings).toEqual(
+      expect.arrayContaining([
+        "Verify IPM findings with magnification/photos and GPT second review before treatment decisions."
+      ])
+    );
     expect(ipm.body.outputs.taskSuggestions[0]).toMatchObject({
       title: "Repeat IPM scout"
     });
@@ -681,8 +1229,9 @@ describe("Tools Router (tools.js)", () => {
           growId: "grow_1",
           cultivar: "Keeper Kush",
           breeder: "House line",
-          parentage: "A x B",
+          parentage: "(A x B) x C",
           seedType: "regular",
+          materialType: "mother",
           feedingResponse: "heavy feeder",
           stressNotes: "heat tolerant, roots fast",
           flowerTime: 63,
@@ -700,7 +1249,11 @@ describe("Tools Router (tools.js)", () => {
           cloudyPercent: 70,
           amberPercent: 7,
           clearPercent: 10,
-          aromaIntensity: "strong"
+          pistilStatus: "mostly_receded",
+          budSwellStatus: "fully_swollen",
+          sampleLocation: "mixed_bud_sites",
+          aromaIntensity: "strong",
+          userGoal: "balanced"
         })
     );
 
@@ -708,18 +1261,57 @@ describe("Tools Router (tools.js)", () => {
     expect(genetics.body.outputs).toMatchObject({
       cultivar: "Keeper Kush",
       breeder: "House line",
-      feedingResponse: "heavy feeder"
+      feedingResponse: "heavy feeder",
+      materialType: "mother",
+      geneticsInventoryItem: expect.objectContaining({
+        cultivar: "Keeper Kush",
+        materialType: "mother",
+        tags: expect.arrayContaining(["heavy_feeder", "stress_resistant", "roots_fast", "notable_aroma"])
+      }),
+      observedTraits: expect.objectContaining({
+        feedingResponse: "heavy feeder",
+        rootingBehavior: "roots_fast"
+      })
     });
+    expect(genetics.body.outputs.parentageWarnings).toEqual(
+      expect.arrayContaining([
+        "Parentage grouping is present; preserve the exact text because (A x B) x C is not the same as A x (B x C)."
+      ])
+    );
     expect(genetics.body.outputs.keeperSignals).toEqual(
       expect.arrayContaining(["63 day flower estimate", "2 stress notes"])
     );
     expect(harvest.status).toBe(201);
     expect(harvest.body.outputs).toMatchObject({
       readinessStatus: "ready_soon",
-      harvestTask: expect.objectContaining({ title: "Recheck harvest readiness" })
+      harvestTask: expect.objectContaining({ title: "Recheck harvest readiness" }),
+      trichomeObservation: expect.objectContaining({
+        cloudyPercent: 70,
+        amberPercent: 7,
+        sampleLocation: "mixed_bud_sites"
+      }),
+      wholePlantMaturity: expect.objectContaining({
+        pistilStatus: "mostly_receded",
+        budSwellStatus: "fully_swollen"
+      }),
+      userGoalInterpretation: expect.stringMatching(/Balanced goal/)
     });
+    expect(harvest.body.outputs.evidence).toEqual(
+      expect.arrayContaining([
+        expect.objectContaining({ factor: "pistils" }),
+        expect.objectContaining({ factor: "bud_swell" }),
+        expect.objectContaining({ factor: "user_goal" })
+      ])
+    );
+    expect(harvest.body.outputs.tasksToCreate).toEqual(
+      expect.arrayContaining([
+        expect.objectContaining({ title: "Check trichomes again" }),
+        expect.objectContaining({ title: "Prepare dry room" })
+      ])
+    );
     expect(harvest.body.outputs.estimatedWindow).toMatchObject({
-      targetDay: 63
+      targetDay: 63,
+      confidence: expect.any(String)
     });
   });
 
@@ -750,9 +1342,11 @@ describe("Tools Router (tools.js)", () => {
         .send({
           growId: "grow_1",
           steeringIntent: "generative",
+          stage: "mid flower",
           drybackPercent: 42,
           inputEC: 1.6,
           runoffEC: 3.1,
+          recoveryHours: 30,
           plantResponse: "leaf edge stress"
         })
     );
@@ -769,7 +1363,10 @@ describe("Tools Router (tools.js)", () => {
               aroma: 9,
               resin: 9,
               stressResistance: 8,
-              yieldScore: 8
+              yieldScore: 8,
+              sexWeek: 4,
+              cloneRootingDays: 9,
+              recoveryHours: 8
             },
             {
               label: "P2",
@@ -777,7 +1374,8 @@ describe("Tools Router (tools.js)", () => {
               aroma: 4,
               resin: 5,
               stressResistance: 4,
-              yieldScore: 4
+              yieldScore: 4,
+              notes: "herm under stress"
             }
           ]
         })
@@ -791,6 +1389,14 @@ describe("Tools Router (tools.js)", () => {
       title: "Reorder Kelp meal"
     });
     expect(steering.status).toBe(201);
+    expect(steering.body.outputs).toMatchObject({
+      steeringIntent: "generative",
+      pressureLevel: "excessive",
+      plantResponse: "negative",
+      recoveryStatus: "poor_recovery",
+      steeringOutcome: "exceeded_useful_steering",
+      phenoImpact: "dryback_sensitive"
+    });
     expect(steering.body.outputs.warnings).toEqual(
       expect.arrayContaining([
         "Dryback is high. Watch stress response before pushing generative pressure further.",
@@ -800,9 +1406,27 @@ describe("Tools Router (tools.js)", () => {
     expect(pheno.status).toBe(201);
     expect(pheno.body.outputs.comparisonMatrix[0]).toMatchObject({
       label: "P1",
-      keeperDecision: "keeper_candidate"
+      keeperDecision: "keeper_candidate",
+      keeperCategory: expect.any(String),
+      sexExpression: expect.objectContaining({
+        vegWeekSexObserved: 4,
+        earlySexSignal: true
+      }),
+      clonePerformance: expect.objectContaining({
+        daysToRoot: 9
+      })
     });
+    expect(pheno.body.outputs.comparisonMatrix[0].tags).toEqual(
+      expect.arrayContaining(["early_sex", "roots_fast", "recovery_strong"])
+    );
     expect(pheno.body.outputs.keeperRecommendations[0]).toMatchObject({ label: "P1" });
+    expect(pheno.body.outputs.retestRecommendations[0]).toMatchObject({
+      label: "P2",
+      keeperDecision: "retest_or_reject_stability"
+    });
+    expect(pheno.body.outputs.phenoTags.P2).toEqual(
+      expect.arrayContaining(["stability_concern"])
+    );
   });
 
   test("updates and archives an owned ToolRun", async () => {

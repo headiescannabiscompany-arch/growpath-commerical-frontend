@@ -154,6 +154,13 @@ export const endpoints = {
     orders: `${BASE}/commercial/orders`,
     order: (id: string) => `${BASE}/commercial/orders/${encodeURIComponent(id)}`,
     campaigns: `${BASE}/commercial/campaigns`,
-    campaign: (id: string) => `${BASE}/commercial/campaigns/${encodeURIComponent(id)}`
+    campaign: (id: string) => `${BASE}/commercial/campaigns/${encodeURIComponent(id)}`,
+    productLines: `${BASE}/commercial/product-lines`,
+    productLine: (id: string) =>
+      `${BASE}/commercial/product-lines/${encodeURIComponent(id)}`,
+    trials: `${BASE}/commercial/trials`,
+    trial: (id: string) => `${BASE}/commercial/trials/${encodeURIComponent(id)}`,
+    analyticsOverview: `${BASE}/commercial/analytics/overview`,
+    analyticsEvents: `${BASE}/commercial/analytics/events`
   }
 };

@@ -19,8 +19,12 @@ import {
 import { createCropProfile, listCropProfiles } from "@/api/cropKnowledge";
 import GrowWorkspaceNav from "@/components/personal/GrowWorkspaceNav";
 import { coerceParam, getRowId } from "@/features/grows/routeUtils";
+import PersonalFeedPlacement from "@/components/feed/PersonalFeedPlacement";
+import { CAPABILITY_KEYS, useEntitlements } from "@/entitlements";
 
 export default function GrowPlantsScreen() {
+  const entitlements = useEntitlements();
+  const canWritePlants = entitlements.can(CAPABILITY_KEYS.PLANTS_PERSONAL_WRITE);
   const { growId: rawGrowId } = useLocalSearchParams<{ growId?: string | string[] }>();
   const growId = useMemo(() => coerceParam(rawGrowId), [rawGrowId]);
   const [plants, setPlants] = useState<PersonalPlant[]>([]);
@@ -221,20 +225,35 @@ export default function GrowPlantsScreen() {
     <ScrollView style={styles.container} contentContainerStyle={styles.content}>
       <Text style={styles.title}>Plants</Text>
       <Text style={styles.subtitle}>Plants tracked inside this grow.</Text>
+      <PersonalFeedPlacement
+        placement="top"
+        routeKey="personal_grows_growid_plants"
+        longContent
+      />
       <GrowWorkspaceNav growId={growId} active="plants" />
 
-      <Pressable
-        style={styles.primaryButton}
-        onPress={() => setShowForm((value) => !value)}
-        accessibilityRole="button"
-        accessibilityLabel={showForm ? "Cancel adding plant" : "Add plant"}
-      >
-        <Text style={styles.primaryButtonText}>
-          {showForm ? "Cancel" : "+ Add Plant"}
-        </Text>
-      </Pressable>
+      {canWritePlants ? (
+        <Pressable
+          style={styles.primaryButton}
+          onPress={() => setShowForm((value) => !value)}
+          accessibilityRole="button"
+          accessibilityLabel={showForm ? "Cancel adding plant" : "Add plant"}
+        >
+          <Text style={styles.primaryButtonText}>
+            {showForm ? "Cancel" : "+ Add Plant"}
+          </Text>
+        </Pressable>
+      ) : (
+        <View style={styles.form}>
+          <Text style={styles.label}>Plant tracking writes are Pro</Text>
+          <Text style={styles.help}>
+            Free accounts can view plant records. Upgrade to add plants, crop profiles,
+            and plant-level grow history.
+          </Text>
+        </View>
+      )}
 
-      {showForm ? (
+      {showForm && canWritePlants ? (
         <View style={styles.form}>
           <Text style={styles.label}>Plant name *</Text>
           <TextInput
@@ -365,6 +384,11 @@ export default function GrowPlantsScreen() {
       ) : null}
 
       {feedback ? <Text style={styles.feedback}>{feedback}</Text> : null}
+      <PersonalFeedPlacement
+        placement="middle"
+        routeKey="personal_grows_growid_plants"
+        longContent
+      />
       {loading ? (
         <ActivityIndicator />
       ) : plants.length === 0 ? (
@@ -373,6 +397,11 @@ export default function GrowPlantsScreen() {
           <Text style={styles.subtitle}>
             Add the first plant to start plant-level tracking.
           </Text>
+          <PersonalFeedPlacement
+            placement="top"
+            routeKey="personal_grows_growid_plants"
+            longContent
+          />
         </View>
       ) : (
         plants.map((plant, index) => (
@@ -382,6 +411,11 @@ export default function GrowPlantsScreen() {
               {plant.cultivar || plant.strain || "Unknown cultivar"} -{" "}
               {plant.stage || plant.status || "stage not set"}
             </Text>
+            <PersonalFeedPlacement
+              placement="top"
+              routeKey="personal_grows_growid_plants"
+              longContent
+            />
             {plant.medium ? (
               <Text style={styles.meta}>Medium: {plant.medium}</Text>
             ) : null}
@@ -441,6 +475,12 @@ export default function GrowPlantsScreen() {
           </View>
         ))
       )}
+
+      <PersonalFeedPlacement
+        placement="bottom"
+        routeKey="personal_grows_growid_plants"
+        longContent
+      />
     </ScrollView>
   );
 }
@@ -468,6 +508,7 @@ const styles = StyleSheet.create({
     padding: 10
   },
   grid: { flexDirection: "row", flexWrap: "wrap", gap: 8 },
+  row: { flexDirection: "row", flexWrap: "wrap", gap: 8, alignItems: "center" },
   gridInput: {
     minWidth: 145,
     flexGrow: 1,

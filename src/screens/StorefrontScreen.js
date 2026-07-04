@@ -79,13 +79,26 @@ export default function StorefrontScreen() {
 
   const [storeName, setStoreName] = useState("");
   const [storeSlug, setStoreSlug] = useState("");
+  const [storeWebsiteUrl, setStoreWebsiteUrl] = useState("");
+  const [storeSupportEmail, setStoreSupportEmail] = useState("");
+  const [storeSocialLinksText, setStoreSocialLinksText] = useState("");
   const [storePublished, setStorePublished] = useState(false);
 
   const [modalVisible, setModalVisible] = useState(false);
   const [editingProduct, setEditingProduct] = useState(null);
   const [productName, setProductName] = useState("");
   const [productSku, setProductSku] = useState("");
+  const [productCategory, setProductCategory] = useState("");
+  const [productShortDescription, setProductShortDescription] = useState("");
   const [productDescription, setProductDescription] = useState("");
+  const [productUsageInstructions, setProductUsageInstructions] = useState("");
+  const [productWarnings, setProductWarnings] = useState("");
+  const [productExternalPurchaseUrl, setProductExternalPurchaseUrl] = useState("");
+  const [productLineId, setProductLineId] = useState("");
+  const [linkedRecipeId, setLinkedRecipeId] = useState("");
+  const [linkedBatchId, setLinkedBatchId] = useState("");
+  const [linkedGrowTrialId, setLinkedGrowTrialId] = useState("");
+  const [linkedCourseId, setLinkedCourseId] = useState("");
   const [productImageUrl, setProductImageUrl] = useState("");
   const [productPriceValue, setProductPriceValue] = useState("");
   const [productInventoryCount, setProductInventoryCount] = useState("");
@@ -105,6 +118,15 @@ export default function StorefrontScreen() {
       setStorefront(nextStorefront);
       setStoreName(nextStorefront?.name || "");
       setStoreSlug(nextStorefront?.slug || "");
+      setStoreWebsiteUrl(nextStorefront?.websiteUrl || "");
+      setStoreSupportEmail(nextStorefront?.supportEmail || "");
+      setStoreSocialLinksText(
+        Array.isArray(nextStorefront?.socialLinks)
+          ? nextStorefront.socialLinks
+              .map((link) => [link.label, link.url].filter(Boolean).join(": "))
+              .join("\n")
+          : nextStorefront?.socialLinksText || ""
+      );
       setStorePublished(Boolean(nextStorefront?.isPublished));
       setProducts(nextProducts);
       setInventoryItems(rows(nextInventory, "inventory"));
@@ -134,7 +156,17 @@ export default function StorefrontScreen() {
     setEditingProduct(null);
     setProductName("");
     setProductSku("");
+    setProductCategory("");
+    setProductShortDescription("");
     setProductDescription("");
+    setProductUsageInstructions("");
+    setProductWarnings("");
+    setProductExternalPurchaseUrl("");
+    setProductLineId("");
+    setLinkedRecipeId("");
+    setLinkedBatchId("");
+    setLinkedGrowTrialId("");
+    setLinkedCourseId("");
     setProductImageUrl("");
     setProductPriceValue("");
     setProductInventoryCount("");
@@ -148,7 +180,17 @@ export default function StorefrontScreen() {
     setEditingProduct(product);
     setProductName(product?.name || "");
     setProductSku(product?.sku || "");
+    setProductCategory(product?.category || "");
+    setProductShortDescription(product?.shortDescription || "");
     setProductDescription(product?.description || "");
+    setProductUsageInstructions(product?.usageInstructions || "");
+    setProductWarnings(product?.warnings || "");
+    setProductExternalPurchaseUrl(product?.externalPurchaseUrl || "");
+    setProductLineId(product?.productLineId || "");
+    setLinkedRecipeId(product?.linkedRecipeId || "");
+    setLinkedBatchId(product?.linkedBatchId || "");
+    setLinkedGrowTrialId(product?.linkedGrowTrialId || "");
+    setLinkedCourseId(product?.linkedCourseId || "");
     setProductImageUrl(product?.imageUrl || "");
     setProductPriceValue(centsToInput(product?.priceCents ?? product?.price));
     setProductInventoryCount(
@@ -214,6 +256,9 @@ export default function StorefrontScreen() {
       const payload = {
         name,
         slug: storeSlug.trim() || undefined,
+        websiteUrl: storeWebsiteUrl.trim() || undefined,
+        supportEmail: storeSupportEmail.trim() || undefined,
+        socialLinksText: storeSocialLinksText.trim() || undefined,
         isPublished: storePublished
       };
       const result = storefront
@@ -224,6 +269,9 @@ export default function StorefrontScreen() {
       setStorefront(next);
       setStoreName(next?.name || name);
       setStoreSlug(next?.slug || payload.slug || "");
+      setStoreWebsiteUrl(next?.websiteUrl || payload.websiteUrl || "");
+      setStoreSupportEmail(next?.supportEmail || payload.supportEmail || "");
+      setStoreSocialLinksText(next?.socialLinksText || payload.socialLinksText || "");
       setStorePublished(Boolean(next?.isPublished ?? storePublished));
     } catch (err) {
       setError(err?.message || "Unable to save storefront.");
@@ -244,7 +292,17 @@ export default function StorefrontScreen() {
       const payload = {
         name,
         sku: productSku.trim(),
+        category: productCategory.trim(),
+        shortDescription: productShortDescription.trim(),
         description: productDescription.trim(),
+        usageInstructions: productUsageInstructions.trim(),
+        warnings: productWarnings.trim(),
+        externalPurchaseUrl: productExternalPurchaseUrl.trim(),
+        productLineId: productLineId.trim() || undefined,
+        linkedRecipeId: linkedRecipeId.trim() || undefined,
+        linkedBatchId: linkedBatchId.trim() || undefined,
+        linkedGrowTrialId: linkedGrowTrialId.trim() || undefined,
+        linkedCourseId: linkedCourseId.trim() || undefined,
         imageUrl: productImageUrl.trim(),
         priceCents: inputToCents(productPriceValue),
         status: productPublished ? "published" : "draft",
@@ -322,6 +380,36 @@ export default function StorefrontScreen() {
           autoCapitalize="none"
           style={styles.input}
         />
+        <TextInput
+          value={storeWebsiteUrl}
+          onChangeText={setStoreWebsiteUrl}
+          placeholder="Website or shop URL"
+          placeholderTextColor="#94A3B8"
+          autoCapitalize="none"
+          keyboardType="url"
+          style={styles.input}
+        />
+        <TextInput
+          value={storeSupportEmail}
+          onChangeText={setStoreSupportEmail}
+          placeholder="Support email"
+          placeholderTextColor="#94A3B8"
+          autoCapitalize="none"
+          keyboardType="email-address"
+          style={styles.input}
+        />
+        <TextInput
+          value={storeSocialLinksText}
+          onChangeText={setStoreSocialLinksText}
+          placeholder="Social links, one per line"
+          placeholderTextColor="#94A3B8"
+          multiline
+          style={[styles.input, styles.textArea]}
+        />
+        <Text style={styles.meta}>
+          Public users can find this profile from feed posts, forum replies, products,
+          courses, similar brand links, and public store pages.
+        </Text>
         <View style={styles.rowBetween}>
           <Text style={styles.meta}>
             Status: {storefront?.isPublished ? "published" : "draft"}
@@ -380,6 +468,11 @@ export default function StorefrontScreen() {
                     .filter(Boolean)
                     .join(" - ")}
                 </Text>
+                {item?.category || item?.shortDescription ? (
+                  <Text style={styles.meta}>
+                    {[item.category, item.shortDescription].filter(Boolean).join(" - ")}
+                  </Text>
+                ) : null}
                 <Text style={styles.meta}>
                   Inventory:{" "}
                   {item?.inventoryItem
@@ -391,6 +484,25 @@ export default function StorefrontScreen() {
                 {item?.description ? (
                   <Text style={styles.description} numberOfLines={2}>
                     {item.description}
+                  </Text>
+                ) : null}
+                {item?.externalPurchaseUrl ? (
+                  <Text style={styles.meta}>External purchase link added</Text>
+                ) : null}
+                {item?.linkedRecipeId ||
+                item?.linkedBatchId ||
+                item?.linkedGrowTrialId ||
+                item?.linkedCourseId ? (
+                  <Text style={styles.meta}>
+                    Linked evidence:{" "}
+                    {[
+                      item.linkedRecipeId && "recipe",
+                      item.linkedBatchId && "batch",
+                      item.linkedGrowTrialId && "trial",
+                      item.linkedCourseId && "course"
+                    ]
+                      .filter(Boolean)
+                      .join(", ")}
                   </Text>
                 ) : null}
               </View>
@@ -435,6 +547,20 @@ export default function StorefrontScreen() {
               style={styles.input}
             />
             <TextInput
+              value={productCategory}
+              onChangeText={setProductCategory}
+              placeholder="Category, e.g. soil mix, dry amendment, houseplant"
+              placeholderTextColor="#94A3B8"
+              style={styles.input}
+            />
+            <TextInput
+              value={productShortDescription}
+              onChangeText={setProductShortDescription}
+              placeholder="Short public summary"
+              placeholderTextColor="#94A3B8"
+              style={styles.input}
+            />
+            <TextInput
               value={productDescription}
               onChangeText={setProductDescription}
               placeholder="Description"
@@ -442,6 +568,73 @@ export default function StorefrontScreen() {
               multiline
               style={[styles.input, styles.textArea]}
             />
+            <TextInput
+              value={productUsageInstructions}
+              onChangeText={setProductUsageInstructions}
+              placeholder="Usage instructions, application rate, or care guidance"
+              placeholderTextColor="#94A3B8"
+              multiline
+              style={[styles.input, styles.textArea]}
+            />
+            <TextInput
+              value={productWarnings}
+              onChangeText={setProductWarnings}
+              placeholder="Warnings, stage limits, legal notes, or safety notes"
+              placeholderTextColor="#94A3B8"
+              multiline
+              style={[styles.input, styles.textArea]}
+            />
+            <TextInput
+              value={productExternalPurchaseUrl}
+              onChangeText={setProductExternalPurchaseUrl}
+              placeholder="External purchase URL"
+              placeholderTextColor="#94A3B8"
+              autoCapitalize="none"
+              keyboardType="url"
+              style={styles.input}
+            />
+            <TextInput
+              value={productLineId}
+              onChangeText={setProductLineId}
+              placeholder="Product line id"
+              placeholderTextColor="#94A3B8"
+              autoCapitalize="none"
+              style={styles.input}
+            />
+            <View style={styles.linkGrid}>
+              <TextInput
+                value={linkedRecipeId}
+                onChangeText={setLinkedRecipeId}
+                placeholder="Linked recipe id"
+                placeholderTextColor="#94A3B8"
+                autoCapitalize="none"
+                style={[styles.input, styles.linkInput]}
+              />
+              <TextInput
+                value={linkedBatchId}
+                onChangeText={setLinkedBatchId}
+                placeholder="Linked batch id"
+                placeholderTextColor="#94A3B8"
+                autoCapitalize="none"
+                style={[styles.input, styles.linkInput]}
+              />
+              <TextInput
+                value={linkedGrowTrialId}
+                onChangeText={setLinkedGrowTrialId}
+                placeholder="Linked grow/trial id"
+                placeholderTextColor="#94A3B8"
+                autoCapitalize="none"
+                style={[styles.input, styles.linkInput]}
+              />
+              <TextInput
+                value={linkedCourseId}
+                onChangeText={setLinkedCourseId}
+                placeholder="Linked course id"
+                placeholderTextColor="#94A3B8"
+                autoCapitalize="none"
+                style={[styles.input, styles.linkInput]}
+              />
+            </View>
             <TextInput
               value={productImageUrl}
               onChangeText={setProductImageUrl}
@@ -604,6 +797,15 @@ const styles = StyleSheet.create({
     borderRadius: 8,
     borderWidth: 1,
     width: "100%"
+  },
+  linkGrid: {
+    flexDirection: "row",
+    flexWrap: "wrap",
+    gap: 8
+  },
+  linkInput: {
+    flexBasis: "48%",
+    flexGrow: 1
   },
   inventoryOption: {
     borderColor: "#CBD5E1",

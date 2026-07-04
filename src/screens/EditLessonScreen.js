@@ -1,11 +1,16 @@
 import React, { useEffect, useState } from "react";
-import { Text, TextInput, TouchableOpacity, StyleSheet, Alert } from "react-native";
+import { Alert, StyleSheet, Text, TextInput, TouchableOpacity } from "react-native";
 import ScreenContainer from "../components/ScreenContainer";
 import GrowInterestPicker from "../components/GrowInterestPicker";
 import { updateLesson } from "../api/courses";
+import PersonalFeedPlacement from "@/components/feed/PersonalFeedPlacement";
 import { useEntitlements } from "@/entitlements";
 import { getLearningAccess } from "@/features/learning/learningAccess";
-import { buildEmptyTierSelection, flattenTierSelections, groupTagsByTier } from "../utils/growInterests";
+import {
+  buildEmptyTierSelection,
+  flattenTierSelections,
+  groupTagsByTier
+} from "../utils/growInterests";
 
 export default function EditLessonScreen({ route, navigation }) {
   const entitlements = useEntitlements();
@@ -54,11 +59,20 @@ export default function EditLessonScreen({ route, navigation }) {
     navigation.goBack();
   }
 
-  if (!lesson) return <ScreenContainer><Text>Loading…</Text></ScreenContainer>;
+  if (!lesson) {
+    return (
+      <ScreenContainer scroll>
+        <PersonalFeedPlacement placement="top" routeKey="personal_lesson_edit" />
+        <Text>Loading...</Text>
+        <PersonalFeedPlacement placement="bottom" routeKey="personal_lesson_edit" />
+      </ScreenContainer>
+    );
+  }
 
   return (
     <ScreenContainer scroll>
       <Text style={styles.header}>Edit Lesson</Text>
+      <PersonalFeedPlacement placement="top" routeKey="personal_lesson_edit" longContent />
       {!access.canCreateCourses ? (
         <Text style={styles.helpText}>This account does not have COURSES_CREATE.</Text>
       ) : null}
@@ -117,6 +131,8 @@ export default function EditLessonScreen({ route, navigation }) {
         defaultExpanded
       />
 
+      <PersonalFeedPlacement placement="middle" routeKey="personal_lesson_edit" longContent />
+
       <TouchableOpacity
         style={[styles.btn, !access.canCreateCourses && styles.disabled]}
         onPress={submit}
@@ -124,6 +140,7 @@ export default function EditLessonScreen({ route, navigation }) {
       >
         <Text style={styles.btnText}>Save Changes</Text>
       </TouchableOpacity>
+      <PersonalFeedPlacement placement="bottom" routeKey="personal_lesson_edit" longContent />
     </ScreenContainer>
   );
 }
@@ -135,24 +152,24 @@ const styles = StyleSheet.create({
     backgroundColor: "#eee",
     padding: 10,
     borderRadius: 8,
-    marginBottom: 8,
+    marginBottom: 8
   },
   textBox: {
     height: 120,
-    textAlignVertical: "top",
+    textAlignVertical: "top"
   },
   btn: {
     marginTop: 16,
     backgroundColor: "#2ecc71",
     paddingVertical: 12,
-    borderRadius: 8,
+    borderRadius: 8
   },
   btnText: {
     textAlign: "center",
     color: "white",
     fontWeight: "700",
-    fontSize: 16,
+    fontSize: 16
   },
   helpText: { color: "#64748b", fontSize: 12, marginBottom: 8 },
-  disabled: { opacity: 0.5 },
+  disabled: { opacity: 0.5 }
 });

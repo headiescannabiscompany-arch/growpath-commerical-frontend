@@ -39,6 +39,11 @@ export async function fetchProducts(): Promise<Product[]> {
   return [];
 }
 
+export async function fetchProduct(productId: string): Promise<Product | null> {
+  const res = await apiRequest(`${PRODUCTS_BASE}/${encodeURIComponent(productId)}`);
+  return res?.product ?? res?.data?.product ?? res?.data ?? res ?? null;
+}
+
 export async function createProduct(data: Partial<Product>) {
   return apiRequest(PRODUCTS_BASE, { method: "POST", body: data });
 }
@@ -54,6 +59,10 @@ export async function deleteProduct(productId: string) {
   return apiRequest(`${PRODUCTS_BASE}/${encodeURIComponent(productId)}`, {
     method: "DELETE"
   });
+}
+
+export async function fetchProductEffectiveness(productId: string) {
+  return apiRequest(`${PRODUCTS_BASE}/${encodeURIComponent(productId)}/effectiveness`);
 }
 
 function currentOrigin() {

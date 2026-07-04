@@ -20,6 +20,37 @@ describe("advanced planning tools", () => {
     expect(result.latestDay).toBeGreaterThan(result.targetDay);
   });
 
+  test("adds harvest warnings for incomplete bud swell and weak sample location", () => {
+    const result = estimateHarvestWindow({
+      floweringDay: 50,
+      breederFlowerDays: 70,
+      cloudyPct: 55,
+      amberPct: 3,
+      pistilDarkPct: 45,
+      cultivarSpeed: "slow",
+      budSwellStatus: "still swelling",
+      aromaTrend: "building",
+      sampleLocation: "sugar leaf",
+      userGoal: "balanced"
+    });
+
+    expect(result.warnings).toEqual(
+      expect.arrayContaining([
+        "Buds/calyxes still appear to be swelling; harvest may be early even if some trichomes are cloudy.",
+        "Do not harvest from one sugar-leaf trichome sample; check multiple bud sites."
+      ])
+    );
+    expect(result.evidence).toEqual(
+      expect.arrayContaining([
+        "Bud swell: still swelling",
+        "Aroma trend: building",
+        "Sample location: sugar leaf",
+        "User goal: balanced"
+      ])
+    );
+    expect(result.tasksToCreate.length).toBeGreaterThan(0);
+  });
+
   test("builds deterministic grow timeline milestones", () => {
     const timeline = buildTimelinePlan({
       startDate: "2026-01-01",

@@ -42,6 +42,8 @@
     "release:preflight:strict": "node scripts/release-preflight.cjs --strict",
     "verify:sentry-dsn": "node scripts/verify-sentry-dsn.cjs",
     "verify:live-urls": "node scripts/verify-live-urls.cjs",
+    "verify:live-test-packs:sources": "node scripts/verify-live-test-pack-sources.cjs",
+    "verify:live-test-packs:sources:planning": "node scripts/verify-live-test-pack-sources.cjs --allow-placeholders",
     "verify:data-rights:live": "node scripts/verify-data-rights-live.cjs",
     "release:builds:dry-run": "node scripts/run-production-builds.cjs",
     "release:builds": "node scripts/run-production-builds.cjs --execute",
@@ -64,10 +66,11 @@
     "validate:v1-matrix": "node scripts/validate-v1-feature-matrix.cjs",
     "validate:v1-ui-surface": "node scripts/validate-v1-ui-surface.cjs",
     "validate:frontend-runtime-contract": "node scripts/validate-frontend-runtime-contract.cjs",
+    "validate:backend-route-contract": "node scripts/validate-backend-route-contract.cjs",
     "acceptance": "node scripts/run-acceptance.js",
     "acceptance:live": "USE_LIVE_BACKEND=true ACCEPTANCE_COMMANDS='node --test --import ./tests/setup_fetch_spy.js tests/**/*.test.js' node scripts/run-acceptance.js",
     "postacceptance:live": "npx playwright test tests/playwright",
-    "e2e": "playwright test",
+    "e2e": "node scripts/run-playwright-expo.cjs",
     "e2e:ui": "playwright test --ui"
   },
   "husky": {

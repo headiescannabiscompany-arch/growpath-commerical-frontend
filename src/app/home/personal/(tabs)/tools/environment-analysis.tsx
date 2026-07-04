@@ -13,11 +13,13 @@ import {
   buildEnvironmentContextAssumption,
   buildEnvironmentContextNotices
 } from "@/features/personal/tools/environmentContext";
+import { reviewEnvironmentReadings } from "@/features/personal/tools/environmentReview";
 import ToolResultSurface from "@/features/personal/tools/ToolResultSurface";
 import {
   saveToolRunAndCreateLog,
   saveToolRunAndCreateTask
 } from "@/features/personal/tools/saveToolRunAndOpenJournal";
+import PersonalFeedPlacement from "@/components/feed/PersonalFeedPlacement";
 
 function coerceParam(value?: string | string[]) {
   if (typeof value === "string") return value;
@@ -97,6 +99,21 @@ export default function EnvironmentAnalysisToolScreen() {
 
   const assessment = result?.data?.currentAssessment ?? result?.currentAssessment ?? {};
   const recommendations = actionList(result);
+  const environmentReview = useMemo(
+    () =>
+      reviewEnvironmentReadings({
+        stage,
+        tempDayC: numeric(tempDayC),
+        tempNightC: numeric(tempNightC),
+        humidity: numeric(humidity),
+        vpd: numeric(vpd),
+        ppfd: numeric(ppfd),
+        dli: numeric(dli),
+        co2: numeric(co2),
+        lightHours: numeric(lightHours)
+      }),
+    [co2, dli, humidity, lightHours, ppfd, stage, tempDayC, tempNightC, vpd]
+  );
 
   async function run() {
     if (!enabled || running) return;
@@ -157,6 +174,13 @@ export default function EnvironmentAnalysisToolScreen() {
           ? `Species: ${plantContext.selectedPlantContext.scientificName}`
           : "",
         `Status: ${assessment.status || "n/a"}`,
+        `Local environment risk: ${environmentReview.riskLevel}`,
+        environmentReview.dewPointC != null
+          ? `Dew point: ${environmentReview.dewPointC}C / spread ${environmentReview.dewPointSpreadC}C`
+          : "",
+        environmentReview.warnings.length
+          ? `Local warnings: ${environmentReview.warnings.join("; ")}`
+          : "",
         issues.length ? `Issues: ${issues.join("; ")}` : "",
         riskFlags.length ? `Risk flags: ${riskFlags.join("; ")}` : "",
         recommendations.length ? `Actions: ${recommendations.join("; ")}` : ""
@@ -177,6 +201,11 @@ export default function EnvironmentAnalysisToolScreen() {
         Send grow-room readings to the environment analysis endpoint for target ranges,
         risk flags, and adjustment recommendations.
       </Text>
+      <PersonalFeedPlacement
+        placement="top"
+        routeKey="personal_tools_environment_analysis"
+        longContent
+      />
       {growId ? <Text style={styles.context}>Grow context: {growId}</Text> : null}
       <ToolPlantContextPicker
         plants={plantContext.plants}
@@ -290,6 +319,12 @@ export default function EnvironmentAnalysisToolScreen() {
         </Text>
       </Pressable>
 
+      <PersonalFeedPlacement
+        placement="middle"
+        routeKey="personal_tools_environment_analysis"
+        longContent
+      />
+
       <ToolResultSurface
         title="Environment analysis"
         status={
@@ -314,10 +349,24 @@ export default function EnvironmentAnalysisToolScreen() {
             label: "Target RH max",
             value: targetValue(result, "humidityMax")
           },
-          { key: "vpd", label: "Ideal VPD", value: targetValue(result, "vpdIdeal") }
+          { key: "vpd", label: "Ideal VPD", value: targetValue(result, "vpdIdeal") },
+          {
+            key: "local-risk",
+            label: "Local risk",
+            value: environmentReview.riskLevel.toUpperCase(),
+            detail:
+              environmentReview.dewPointC == null
+                ? `${environmentReview.warnings.length} warnings`
+                : `Dew point ${environmentReview.dewPointC}C, spread ${environmentReview.dewPointSpreadC}C`
+          }
         ]}
         notices={[
           ...buildEnvironmentContextNotices(plantContext.selectedPlantContext),
+          ...environmentReview.warnings.map((warning, index) => ({
+            key: `local-warning-${index}`,
+            severity: environmentReview.riskLevel === "high" ? ("high" as const) : ("medium" as const),
+            message: warning
+          })),
           ...list(assessment.issues).map((issue, index) => ({
             key: `issue-${index}`,
             severity: "medium" as const,
@@ -332,6 +381,7 @@ export default function EnvironmentAnalysisToolScreen() {
         recommendations={recommendations}
         assumptions={[
           "The backend environment endpoint supplies the targets and recommendations.",
+          ...environmentReview.recommendations,
           buildEnvironmentContextAssumption(plantContext.selectedPlantContext),
           "Confirm sensor calibration, canopy position, and plant response before changing controls."
         ]}
@@ -368,9 +418,14 @@ export default function EnvironmentAnalysisToolScreen() {
                         lightHours: numeric(lightHours)
                       },
                       output: result,
-                      title: "Review environment analysis",
+                      title:
+                        environmentReview.riskLevel === "high"
+                          ? "Inspect environment risk zones"
+                          : "Review environment analysis",
                       description: [
                         `Status: ${assessment.status || "analysis complete"}`,
+                        `Local risk: ${environmentReview.riskLevel}`,
+                        ...environmentReview.warnings.map((warning) => `Warning: ${warning}`),
                         issues.length ? `Issues: ${issues.join("; ")}` : "",
                         riskFlags.length ? `Risk flags: ${riskFlags.join("; ")}` : "",
                         recommendations.length
@@ -379,7 +434,10 @@ export default function EnvironmentAnalysisToolScreen() {
                       ]
                         .filter(Boolean)
                         .join("\n"),
-                      priority: riskFlags.length ? "high" : "medium",
+                      priority:
+                        riskFlags.length || environmentReview.riskLevel === "high"
+                          ? "high"
+                          : "medium",
                       dueDate: dueTomorrow()
                     });
                     if (!taskResult.ok) throw new Error(taskResult.error);
@@ -391,6 +449,12 @@ export default function EnvironmentAnalysisToolScreen() {
         }
         feedback={feedback}
         contextMessage={!growId ? "Select a grow to save this analysis." : undefined}
+      />
+
+      <PersonalFeedPlacement
+        placement="bottom"
+        routeKey="personal_tools_environment_analysis"
+        longContent
       />
     </ScrollView>
   );
