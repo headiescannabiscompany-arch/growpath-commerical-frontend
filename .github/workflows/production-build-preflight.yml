@@ -1,0 +1,77 @@
+name: Production Build Preflight
+
+on:
+  workflow_dispatch:
+  push:
+    branches:
+      - main
+    paths:
+      - ".github/workflows/production-build-preflight.yml"
+
+concurrency:
+  group: production-build-preflight
+  cancel-in-progress: false
+
+jobs:
+  preflight:
+    name: Release preflight
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: "20.19.4"
+          cache: npm
+
+      - name: Install dependencies
+        run: npm ci
+
+      - name: Verify Expo dependency versions
+        run: npx expo install --check
+
+      - name: Run Expo Doctor
+        run: npx expo-doctor
+
+      - name: Run release preflight
+        env:
+          PLAYWRIGHT_USE_SYSTEM_CHROME: "1"
+          PLAYWRIGHT_WEB_PORT: "19041"
+        run: npm run release:preflight
+
+  eas-builds:
+    name: EAS production build (${{ matrix.platform }})
+    runs-on: ubuntu-latest
+    needs: preflight
+    strategy:
+      fail-fast: false
+      matrix:
+        platform:
+          - ios
+          - android
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: "20.19.4"
+          cache: npm
+
+      - name: Install dependencies
+        run: npm ci
+
+      - name: Confirm EAS authentication
+        env:
+          EXPO_TOKEN: ${{ secrets.EXPO_TOKEN }}
+        run: npx eas-cli whoami
+
+      - name: Start EAS production build
+        env:
+          EXPO_TOKEN: ${{ secrets.EXPO_TOKEN }}
+        run: npx eas-cli build --profile production --platform ${{ matrix.platform }} --non-interactive --no-wait
