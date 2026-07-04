@@ -20,6 +20,8 @@ gh run list --repo headiescannabiscompany-arch/growpath-commerical-frontend --li
 
 Then continue at **Next Actions, item 1** below.
 
+Update after pushing commit `6a9cfaf`: GitHub Actions reached the new `Production Build Preflight` workflow, but the release preflight job failed before EAS because Ubuntu runners do not provide the Windows `powershell` command. The current follow-up is patching the release preflight and store asset tests to use `pwsh` on non-Windows runners, then pushing that fix so the workflow can reach the EAS authentication and iOS/Android build-start jobs.
+
 ## What Changed After Web Deployment
 
 The web deployment commit already pushed:
@@ -171,12 +173,12 @@ Live test pack strict source validation is also blocked:
 
 ## Next Actions
 
-1. Commit and push the current changes:
+1. Commit and push the Linux PowerShell runner fix:
 
    ```powershell
    git status --short
-   git add package.json package-lock.json .github/workflows/production-build-preflight.yml dist docs/release-handoff-2026-07-04.md
-   git commit -m "Add production EAS build preflight workflow"
+   git add scripts/release-preflight.cjs tests/release.preflight.test.js tests/release.store-assets.test.js docs/release-handoff-2026-07-04.md
+   git commit -m "Fix release preflight on Linux runners"
    git push origin main
    ```
 
@@ -274,4 +276,3 @@ Live test pack strict source validation is also blocked:
   reports HTTP auth/token problems.
 
 - The GitHub connector can read workflow logs, but cannot dispatch the workflow in this session.
-

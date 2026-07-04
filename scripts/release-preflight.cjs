@@ -8,6 +8,7 @@ const ROOT = path.resolve(__dirname, "..");
 const strict = process.argv.includes("--strict");
 const playwrightPort = process.env.PLAYWRIGHT_WEB_PORT || "19025";
 const jestCli = path.join(ROOT, "node_modules", "jest", "bin", "jest.js");
+const powerShellCommand = process.platform === "win32" ? "powershell" : "pwsh";
 
 function run(label, command, args, options = {}) {
   console.log(`\n[release-preflight] ${label}`);
@@ -131,7 +132,7 @@ async function main() {
   );
 
   run("production web export", process.execPath, ["scripts/export-production-web.cjs"]);
-  run("store graphics export", "powershell", [
+  run("store graphics export", powerShellCommand, [
     "-NoProfile",
     "-ExecutionPolicy",
     "Bypass",

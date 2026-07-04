@@ -27,6 +27,21 @@ fs.appendFileSync(logPath, JSON.stringify({
 `;
 }
 
+function writeFakePowerShell(tempRoot) {
+  if (process.platform === "win32") {
+    writeFile(
+      tempRoot,
+      "powershell.cmd",
+      "@echo off\r\necho store assets ok\r\nexit /b 0\r\n"
+    );
+    return;
+  }
+
+  const fakePwsh = path.join(tempRoot, "pwsh");
+  writeFile(tempRoot, "pwsh", "#!/usr/bin/env node\nconsole.log('store assets ok');\n");
+  fs.chmodSync(fakePwsh, 0o755);
+}
+
 function createPreflightRoot() {
   const tempRoot = fs.mkdtempSync(path.join(os.tmpdir(), "growpath-preflight-"));
   fs.mkdirSync(path.join(tempRoot, "scripts"), { recursive: true });
@@ -56,23 +71,7 @@ function createPreflightRoot() {
     "scripts/export-store-assets.ps1",
     "Write-Output 'store assets ok'\n"
   );
-  writeFile(
-    tempRoot,
-    "fake-powershell.js",
-    `
-const fs = require("fs");
-const path = require("path");
-fs.appendFileSync(path.join(process.cwd(), "preflight-log.jsonl"), JSON.stringify({
-  name: "powershell",
-  argv: process.argv.slice(2)
-}) + "\\n");
-`
-  );
-  writeFile(
-    tempRoot,
-    "powershell.cmd",
-    '@echo off\r\nnode "%~dp0fake-powershell.js" %*\r\n'
-  );
+  writeFakePowerShell(tempRoot);
   return tempRoot;
 }
 

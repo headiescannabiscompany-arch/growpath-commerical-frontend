@@ -3,6 +3,7 @@ const fs = require("fs");
 const path = require("path");
 
 const root = path.resolve(__dirname, "..");
+const powerShellCommand = process.platform === "win32" ? "powershell" : "pwsh";
 
 function readPngInfo(filePath) {
   const data = fs.readFileSync(filePath);
@@ -27,7 +28,7 @@ describe("store asset exporter", () => {
 
     try {
       const result = spawnSync(
-        "powershell",
+        powerShellCommand,
         [
           "-NoProfile",
           "-ExecutionPolicy",
