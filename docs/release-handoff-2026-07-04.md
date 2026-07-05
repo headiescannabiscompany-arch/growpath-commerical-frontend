@@ -37,6 +37,7 @@ Latest production workflow run:
 - Production Build Preflight run `28724338574` passed release preflight, then iOS and Android again passed EAS authentication and failed at `Start EAS production build`. The iOS log still shows the token as `GrowPathAI Production Build Token (robot)` with `etgujays-organization (Role: Viewer)`, followed by the same `Entity not authorized` EAS build-start error.
 - `npm.cmd run release:go-no-go` was rerun after CI was green. It still returns `NO-GO` because the final external evidence buckets are missing.
 - `npm.cmd run verify:live-urls` was rerun with `NODE_OPTIONS=--use-system-ca` and passed. Fresh ignored evidence was written to `tmp/spec/live-url-checks/2026-07-05T01-37-27-236Z.json`.
+- Added `docs/release-evidence-commands-2026-07-05.md` with guarded copy-paste commands for the remaining evidence buckets.
 
 Current step: update the Expo robot/token permissions so it can read/build the EAS app, then rerun failed jobs or push a no-op workflow change if rerun permissions are unavailable.
 
@@ -183,6 +184,12 @@ App Store / Google Play final go/no-go is still blocked by required release evid
 - Legal release sign-off under `tmp/spec/legal-release-signoff/`.
 - Named release/support/QA/crash owners under `tmp/spec/release-owners/`.
 - Hotfix and rollback plan sign-off under `tmp/spec/hotfix-rollback/`.
+
+Command templates for recording these buckets are now in:
+
+```text
+docs/release-evidence-commands-2026-07-05.md
+```
 
 Live test pack strict source validation is also blocked:
 
