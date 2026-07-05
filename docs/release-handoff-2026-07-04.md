@@ -44,6 +44,9 @@ Latest production workflow run:
   - `commercial@growpath.com`
   - `facility@growpath.com`
   This blocks live personal/commercial/facility mode testing until seeded credentials are restored or replacement test accounts are provided.
+- Production Build Preflight failed jobs were rerun again at `2026-07-05T02:45:00Z` after the checkpoint commit:
+  - iOS job `85186782745`: `Confirm EAS authentication` passed as `GrowPathAI Production Build Token (robot) (authenticated using EXPO_TOKEN)`; account still showed `etgujays-organization (Role: Viewer)`; `Start EAS production build` failed with `Entity not authorized: AppEntity[6cc46b82-1bf2-4fe8-989a-0f77b7a51370] (viewer = RobotViewerContext, action = READ, ruleIndex = -1)`.
+  - Android job `85186782764`: same result; auth passed, account still `Role: Viewer`, build start failed with the same authorization error.
 
 Current step: update the Expo robot/token permissions so it can read/build the EAS app, then rerun failed jobs or push a no-op workflow change if rerun permissions are unavailable.
 
