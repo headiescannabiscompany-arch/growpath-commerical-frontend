@@ -4,6 +4,12 @@
 
 We completed a frontend-heavy release QA pass and fixed one facility dashboard crash found during screenshot review.
 
+Post-push status:
+
+- Commit: `ae5dca8`
+- Frontend CI run `28729495976`: passed.
+- Production Build Preflight run `28729495975`: `Release preflight` passed, EAS iOS/Android authentication passed, EAS build start remains blocked by Expo robot `Viewer` permissions.
+
 Resume from here if interrupted:
 
 1. Check `git status --short`.

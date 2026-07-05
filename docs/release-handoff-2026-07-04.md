@@ -48,6 +48,7 @@ Latest production workflow run:
   - iOS job `85186782745`: `Confirm EAS authentication` passed as `GrowPathAI Production Build Token (robot) (authenticated using EXPO_TOKEN)`; account still showed `etgujays-organization (Role: Viewer)`; `Start EAS production build` failed with `Entity not authorized: AppEntity[6cc46b82-1bf2-4fe8-989a-0f77b7a51370] (viewer = RobotViewerContext, action = READ, ruleIndex = -1)`.
   - Android job `85186782764`: same result; auth passed, account still `Role: Viewer`, build start failed with the same authorization error.
 - Deep-dive frontend QA was completed and documented in `docs/release-deep-dive-qa-2026-07-05.md`. The pass found and fixed a facility dashboard crash when insights data is partial, reran live/public checks, captured screenshots under `tmp/deep-dive-qa/`, and reran `npm.cmd run release:preflight` successfully.
+- Commit `ae5dca8` pushed the facility dashboard fix, regenerated `dist`, and the deep-dive QA document. Frontend CI run `28729495976` passed. Production Build Preflight run `28729495975` passed its `Release preflight` job, then iOS job `85192758862` and Android job `85192758866` again passed `Confirm EAS authentication` but failed at `Start EAS production build` because the Expo robot still shows `etgujays-organization (Role: Viewer)`.
 
 Current step: update the Expo robot/token permissions so it can read/build the EAS app, then rerun failed jobs or push a no-op workflow change if rerun permissions are unavailable.
 
