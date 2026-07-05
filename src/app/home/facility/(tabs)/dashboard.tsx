@@ -259,8 +259,14 @@ export default function FacilityDashboardTab() {
     [counts]
   );
 
-  const statusRows = useMemo(
-    () => [
+  const statusRows = useMemo(() => {
+    const overdueTasksCount =
+      typeof insights?.overdueTasksCount === "number" ? insights.overdueTasksCount : 0;
+    const latestToolRunsCount = Array.isArray(insights?.latestToolRuns)
+      ? insights.latestToolRuns.length
+      : 0;
+
+    return [
       {
         label: "Compliance posture",
         value: counts.verifications
@@ -284,14 +290,13 @@ export default function FacilityDashboardTab() {
       {
         label: "Facility insights",
         value: insights
-          ? `${insights.overdueTasksCount} overdue / ${insights.latestToolRuns.length} tool runs`
+          ? `${overdueTasksCount} overdue / ${latestToolRunsCount} tool runs`
           : "Summary unavailable",
-        tone: (insights?.overdueTasksCount ? "red" : "blue") as Tone,
+        tone: (overdueTasksCount ? "red" : "blue") as Tone,
         to: "/home/facility/reports"
       }
-    ],
-    [counts, insights]
-  );
+    ];
+  }, [counts, insights]);
 
   const actionRows = useMemo(
     () => [
