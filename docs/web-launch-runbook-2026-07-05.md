@@ -112,6 +112,36 @@ Because the frontend is a static Expo web export and the backend already points
 to Render, the lowest-friction path is to keep the frontend on Render unless
 live traffic, support, team access, or uptime needs justify upgrading.
 
+## Render Pipeline Minutes Note
+
+Current deploy blocker:
+
+- Render showed `Your workspace has run out of pipeline minutes`.
+- Deploys failed before build logs appeared because the build was blocked before
+  it started.
+- The user is considering an upgrade with roughly twice as many pipeline/build
+  minutes.
+
+Important distinction:
+
+- Render pipeline minutes are spent by builds/deploys, not by normal public web
+  traffic.
+- `growpathai.com` running on the web does not consume pipeline minutes by
+  itself.
+- Apple/iOS and Android EAS builds do not consume Render pipeline minutes; those
+  are handled by Expo/EAS and Apple/Google store accounts.
+- Apple Developer Program enrollment and App Store setup are separate costs and
+  blockers from Render.
+
+Recommendation:
+
+- Upgrade Render enough to unblock web deploys now.
+- After deployment is stable, avoid burning minutes on unnecessary redeploys.
+- Consider disabling auto-deploy for doc-only commits or batching small changes
+  before deploys.
+- Budget separately for Apple Developer enrollment and any Expo/EAS native build
+  capacity.
+
 ## Human Account / Billing Checks
 
 These require the site owner because they involve billing, domain ownership, or
