@@ -33,6 +33,8 @@ Latest production workflow run:
 - iOS build start: failed.
 - Build-start blocker for both platforms: the Expo robot token only has `Viewer` role on `etgujays-organization`; EAS returned `Entity not authorized: AppEntity[6cc46b82-1bf2-4fe8-989a-0f77b7a51370] (viewer = RobotViewerContext, action = READ, ruleIndex = -1)`.
 - Rerun of failed EAS jobs started at `2026-07-05T00:20:22Z`; iOS and Android again passed `Confirm EAS authentication` and failed at `Start EAS production build`, confirming this is still an Expo/EAS permission issue.
+- Commit `dd537f6` fixed Frontend CI lint failures. Frontend CI run `28724338581` passed all steps: dependency install, Expo dependency check, Expo Doctor, production dependency audit, lint, sensitive-copy guard, delivery guard, and tests.
+- Production Build Preflight run `28724338574` passed release preflight, then iOS and Android again passed EAS authentication and failed at `Start EAS production build`. The iOS log still shows the token as `GrowPathAI Production Build Token (robot)` with `etgujays-organization (Role: Viewer)`, followed by the same `Entity not authorized` EAS build-start error.
 
 Current step: update the Expo robot/token permissions so it can read/build the EAS app, then rerun failed jobs or push a no-op workflow change if rerun permissions are unavailable.
 
