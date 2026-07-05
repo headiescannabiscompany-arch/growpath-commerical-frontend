@@ -46,7 +46,7 @@ function userCtx(user) {
       },
       limits: {
         maxGrows: pro ? 999 : 1,
-        maxPlants: pro ? 999 : 3
+        maxPlants: pro ? 999 : 1
       }
     }
   };
@@ -119,11 +119,20 @@ async function installPersonalAuthMocks(page, user) {
     }
 
     if (
-      ["/api/personal/logs", "/api/personal/plants", "/api/personal/tasks", "/api/tools"].includes(
-        url.pathname
-      )
+      [
+        "/api/personal/logs",
+        "/api/personal/plants",
+        "/api/personal/tasks",
+        "/api/tools"
+      ].includes(url.pathname)
     ) {
-      return fulfillJson(route, { items: [], logs: [], plants: [], tasks: [], tools: [] });
+      return fulfillJson(route, {
+        items: [],
+        logs: [],
+        plants: [],
+        tasks: [],
+        tools: []
+      });
     }
 
     return fulfillJson(route, { success: true });

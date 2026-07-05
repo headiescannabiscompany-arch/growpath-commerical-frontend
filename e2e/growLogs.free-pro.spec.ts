@@ -47,7 +47,7 @@ function userCtx(user: typeof FREE_USER | typeof PRO_USER) {
       },
       limits: {
         maxGrows: pro ? 999 : 1,
-        maxPlants: pro ? 999 : 3
+        maxPlants: pro ? 999 : 1
       }
     }
   };
@@ -176,9 +176,7 @@ test.describe("GrowLogsScreen Free/Pro auth setup", () => {
     await page.goto("/home/personal/grows");
     await expect(page.getByTestId("screen-personal-grows")).toBeVisible();
     await expect(page.getByText("Create grows with Pro")).toBeVisible();
-    await expect(
-      page.getByText("Free accounts can browse saved grows.")
-    ).toBeVisible();
+    await expect(page.getByText("Free accounts can browse saved grows.")).toBeVisible();
     await expect(page.getByTestId("btn-new-grow")).toHaveCount(0);
   });
 

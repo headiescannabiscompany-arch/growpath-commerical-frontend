@@ -33,6 +33,20 @@ function shouldIncludeEveryOther(routeKey: string) {
   return hash % 2 === 0;
 }
 
+function emptyBannerPolicy(railMode: FeedRailMode): FeedBannerPolicy {
+  return {
+    top: false,
+    middle: false,
+    bottom: false,
+    slotsByPlacement: {
+      top: 0,
+      middle: 0,
+      bottom: 0
+    },
+    railMode
+  };
+}
+
 export function getFeedPolicy({
   routeKey,
   routeName,
@@ -47,6 +61,15 @@ export function getFeedPolicy({
   const isFacilityOps = key === "facility_ops";
 
   if (isHome) {
+    if (isFree) {
+      return {
+        slots: 0,
+        includeForumHighlights: false,
+        railMode: "standard",
+        cadence: "always"
+      };
+    }
+
     return {
       slots: 2,
       includeForumHighlights: mode !== "facility",
@@ -107,14 +130,22 @@ export function getFeedBannerPolicy({
   const railMode = mode === "facility" ? "education-only" : "standard";
 
   if (isHome) {
+    return emptyBannerPolicy(railMode);
+  }
+
+  if (isFree && !longContent) {
+    return emptyBannerPolicy(railMode);
+  }
+
+  if (isFree) {
     return {
-      top: false,
-      middle: false,
-      bottom: false,
+      top: true,
+      middle: true,
+      bottom: true,
       slotsByPlacement: {
-        top: 0,
-        middle: 0,
-        bottom: 0
+        top: 1,
+        middle: 1,
+        bottom: 1
       },
       railMode
     };
@@ -122,12 +153,12 @@ export function getFeedBannerPolicy({
 
   return {
     top: true,
-    middle: isFree && longContent,
-    bottom: isFree,
+    middle: false,
+    bottom: false,
     slotsByPlacement: {
       top: 1,
-      middle: isFree && longContent ? 1 : 0,
-      bottom: isFree ? 1 : 0
+      middle: 0,
+      bottom: 0
     },
     railMode
   };

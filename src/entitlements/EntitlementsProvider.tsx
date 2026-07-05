@@ -195,6 +195,14 @@ export function applyDefaultCourseLimits(
     }
   }
 
+  if (next.maxGrows === undefined || next.maxGrows === null) {
+    if (normalizedPlan === "free") next.maxGrows = 1;
+  }
+
+  if (next.maxPlants === undefined || next.maxPlants === null) {
+    if (normalizedPlan === "free") next.maxPlants = 1;
+  }
+
   return next;
 }
 

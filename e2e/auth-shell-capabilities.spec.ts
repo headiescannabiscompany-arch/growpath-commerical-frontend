@@ -81,7 +81,7 @@ function mePayload(user: ShellUser) {
                 STORE_FRONT_VIEW: true
               }
             : personalCapabilities,
-      limits: user.mode === "facility" ? {} : { maxGrows: 1, maxPlants: 3 }
+      limits: user.mode === "facility" ? {} : { maxGrows: 1, maxPlants: 1 }
     }
   };
 }

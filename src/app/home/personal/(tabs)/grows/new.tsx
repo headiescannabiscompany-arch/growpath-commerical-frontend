@@ -11,7 +11,7 @@ import {
 } from "react-native";
 import { useRouter } from "expo-router";
 import { apiRequest } from "@/api/apiRequest";
-import { appendGrowPhotos } from "@/api/grows";
+import { appendGrowPhotos, listPersonalGrows } from "@/api/grows";
 import PersonalFeedPlacement from "@/components/feed/PersonalFeedPlacement";
 import { LockedScreen } from "@/entitlements/LockedScreen";
 import { CAPABILITY_KEYS, useEntitlements } from "@/entitlements";
@@ -32,7 +32,8 @@ type SelectedPhoto = {
 export default function NewGrowScreen() {
   const router = useRouter();
   const entitlements = useEntitlements();
-  const canCreateGrow = entitlements.can(CAPABILITY_KEYS.GROWS_PERSONAL_WRITE);
+  const hasCreateCapability = entitlements.can(CAPABILITY_KEYS.GROWS_PERSONAL_WRITE);
+  const maxGrows = Number(entitlements.limits?.maxGrows ?? 0);
   const defaultTimeZone = Intl.DateTimeFormat().resolvedOptions().timeZone || "UTC";
 
   const [name, setName] = React.useState("");
@@ -52,9 +53,40 @@ export default function NewGrowScreen() {
   const [photoUrl, setPhotoUrl] = React.useState("");
 
   const [saving, setSaving] = React.useState(false);
+  const [checkingLimit, setCheckingLimit] = React.useState(true);
+  const [existingGrowCount, setExistingGrowCount] = React.useState(0);
   const [error, setError] = React.useState<string | null>(null);
 
   const isValid = name.trim().length > 0 && anchorDate.trim().length > 0;
+  const canCreateGrow =
+    hasCreateCapability || (!checkingLimit && maxGrows > existingGrowCount);
+
+  React.useEffect(() => {
+    let alive = true;
+    async function loadLimit() {
+      if (hasCreateCapability) {
+        if (alive) {
+          setExistingGrowCount(0);
+          setCheckingLimit(false);
+        }
+        return;
+      }
+      setCheckingLimit(true);
+      try {
+        const rows = await listPersonalGrows();
+        if (alive) setExistingGrowCount(Array.isArray(rows) ? rows.length : 0);
+      } catch {
+        if (alive) setExistingGrowCount(maxGrows || 0);
+      } finally {
+        if (alive) setCheckingLimit(false);
+      }
+    }
+
+    loadLimit();
+    return () => {
+      alive = false;
+    };
+  }, [hasCreateCapability, maxGrows]);
 
   const pickPhotos = React.useCallback(async () => {
     const permission = await ImagePicker.requestMediaLibraryPermissionsAsync();
@@ -169,11 +201,24 @@ export default function NewGrowScreen() {
     timeZone
   ]);
 
+  if (checkingLimit && !hasCreateCapability) {
+    return (
+      <ScrollView
+        style={{ flex: 1, backgroundColor: "#FFFFFF" }}
+        contentContainerStyle={{ padding: 16, gap: 10, paddingBottom: 32 }}
+      >
+        <Text style={{ fontSize: 22, fontWeight: "700" }}>New Grow</Text>
+        <ActivityIndicator />
+        <Text style={{ color: "#475569" }}>Checking free grow limit...</Text>
+      </ScrollView>
+    );
+  }
+
   if (!canCreateGrow) {
     return (
       <LockedScreen
         title="Create grows with Pro"
-        message="Free accounts can browse GrowPathAI and use free tools. Upgrade to create and save personal grow records."
+        message="Free accounts can create one grow. Upgrade to create more grows and save unlimited grow history."
         actionLabel="Back to grows"
         onAction={() => router.replace("/home/personal/grows" as any)}
       />

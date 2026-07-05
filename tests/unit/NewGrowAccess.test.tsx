@@ -6,8 +6,10 @@ import NewGrowScreen from "@/app/home/personal/(tabs)/grows/new";
 const mockReplace = jest.fn();
 const mockApiRequest = jest.fn();
 const mockAppendGrowPhotos = jest.fn();
+const mockListPersonalGrows = jest.fn();
 const mockPersistImageUris = jest.fn();
 const mockEntitlementsCan = jest.fn();
+let mockLimits: Record<string, number> = {};
 
 jest.mock("expo-router", () => ({
   useRouter: () => ({
@@ -27,7 +29,8 @@ jest.mock("@/api/apiRequest", () => ({
 }));
 
 jest.mock("@/api/grows", () => ({
-  appendGrowPhotos: (...args: any[]) => mockAppendGrowPhotos(...args)
+  appendGrowPhotos: (...args: any[]) => mockAppendGrowPhotos(...args),
+  listPersonalGrows: (...args: any[]) => mockListPersonalGrows(...args)
 }));
 
 jest.mock("@/utils/photoUploads", () => ({
@@ -40,7 +43,8 @@ jest.mock("@/entitlements", () => ({
     GROWS_PERSONAL_WRITE: "GROWS_PERSONAL_WRITE"
   },
   useEntitlements: () => ({
-    can: mockEntitlementsCan
+    can: mockEntitlementsCan,
+    limits: mockLimits
   })
 }));
 
@@ -48,26 +52,57 @@ describe("NewGrowScreen access", () => {
   beforeEach(() => {
     jest.clearAllMocks();
     mockEntitlementsCan.mockReturnValue(true);
+    mockLimits = {};
+    mockListPersonalGrows.mockResolvedValue([]);
     mockPersistImageUris.mockResolvedValue([]);
     mockApiRequest.mockResolvedValue({ grow: { id: "grow-bruce-banner" } });
   });
 
-  it("locks grow creation for free personal accounts", () => {
+  it("locks grow creation after the free one-grow limit is used", async () => {
     mockEntitlementsCan.mockImplementation(
       (capability) => capability !== "GROWS_PERSONAL_WRITE"
     );
+    mockLimits = { maxGrows: 1 };
+    mockListPersonalGrows.mockResolvedValue([{ id: "grow-1" }]);
 
     render(<NewGrowScreen />);
 
-    expect(screen.getByText("Create grows with Pro")).toBeTruthy();
+    await waitFor(() => expect(screen.getByText("Create grows with Pro")).toBeTruthy());
     expect(
       screen.getByText(
-        "Free accounts can browse GrowPathAI and use free tools. Upgrade to create and save personal grow records."
+        "Free accounts can create one grow. Upgrade to create more grows and save unlimited grow history."
       )
     ).toBeTruthy();
     fireEvent.press(screen.getByText("Back to grows"));
     expect(mockReplace).toHaveBeenCalledWith("/home/personal/grows");
     expect(mockApiRequest).not.toHaveBeenCalled();
+  });
+
+  it("lets free personal users create their first grow within the limit", async () => {
+    mockEntitlementsCan.mockImplementation(
+      (capability) => capability !== "GROWS_PERSONAL_WRITE"
+    );
+    mockLimits = { maxGrows: 1 };
+    mockListPersonalGrows.mockResolvedValue([]);
+
+    render(<NewGrowScreen />);
+
+    await waitFor(() => expect(screen.getByLabelText("Grow name")).toBeTruthy());
+    fireEvent.changeText(screen.getByLabelText("Grow name"), "First Free Grow");
+    fireEvent.changeText(screen.getByLabelText("Anchor date"), "2026-01-01");
+    fireEvent.press(screen.getByLabelText("Create grow"));
+
+    await waitFor(() => expect(mockApiRequest).toHaveBeenCalled());
+    expect(mockApiRequest).toHaveBeenCalledWith(
+      "/api/personal/grows",
+      expect.objectContaining({
+        method: "POST",
+        body: expect.objectContaining({
+          name: "First Free Grow",
+          anchorDate: "2026-01-01"
+        })
+      })
+    );
   });
 
   it("lets pro personal users create a grow record", async () => {

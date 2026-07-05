@@ -1,7 +1,7 @@
 import { getFeedBannerPolicy, getFeedPolicy } from "../../src/utils/feedPolicy";
 
 describe("feedPolicy", () => {
-  it("keeps the main personal landing page on the side rail only", () => {
+  it("keeps the main free personal landing page free of side feed rails", () => {
     const rail = getFeedPolicy({ routeKey: "home", plan: "free", mode: "personal" });
     const banner = getFeedBannerPolicy({
       routeKey: "home",
@@ -10,8 +10,8 @@ describe("feedPolicy", () => {
       longContent: true
     });
 
-    expect(rail.slots).toBeGreaterThan(0);
-    expect(rail.includeForumHighlights).toBe(true);
+    expect(rail.slots).toBe(0);
+    expect(rail.includeForumHighlights).toBe(false);
     expect(banner.top).toBe(false);
     expect(banner.middle).toBe(false);
     expect(banner.bottom).toBe(false);
@@ -46,7 +46,7 @@ describe("feedPolicy", () => {
     expect(banner.slotsByPlacement.bottom).toBe(1);
   });
 
-  it("omits the middle placement for short free pages", () => {
+  it("omits all banner placements for short free pages", () => {
     const banner = getFeedBannerPolicy({
       routeKey: "short_page",
       plan: "free",
@@ -54,8 +54,11 @@ describe("feedPolicy", () => {
       longContent: false
     });
 
-    expect(banner.top).toBe(true);
+    expect(banner.top).toBe(false);
     expect(banner.middle).toBe(false);
-    expect(banner.bottom).toBe(true);
+    expect(banner.bottom).toBe(false);
+    expect(banner.slotsByPlacement.top).toBe(0);
+    expect(banner.slotsByPlacement.middle).toBe(0);
+    expect(banner.slotsByPlacement.bottom).toBe(0);
   });
 });

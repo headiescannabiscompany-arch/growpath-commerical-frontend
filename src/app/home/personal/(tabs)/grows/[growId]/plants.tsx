@@ -24,7 +24,8 @@ import { CAPABILITY_KEYS, useEntitlements } from "@/entitlements";
 
 export default function GrowPlantsScreen() {
   const entitlements = useEntitlements();
-  const canWritePlants = entitlements.can(CAPABILITY_KEYS.PLANTS_PERSONAL_WRITE);
+  const hasPlantWriteCapability = entitlements.can(CAPABILITY_KEYS.PLANTS_PERSONAL_WRITE);
+  const maxPlants = Number(entitlements.limits?.maxPlants ?? 0);
   const { growId: rawGrowId } = useLocalSearchParams<{ growId?: string | string[] }>();
   const growId = useMemo(() => coerceParam(rawGrowId), [rawGrowId]);
   const [plants, setPlants] = useState<PersonalPlant[]>([]);
@@ -45,6 +46,8 @@ export default function GrowPlantsScreen() {
   const [timingOffsetDays, setTimingOffsetDays] = useState("");
   const [phenoLabel, setPhenoLabel] = useState("");
   const [feedback, setFeedback] = useState("");
+  const canWritePlants =
+    hasPlantWriteCapability || (!loading && maxPlants > plants.length);
 
   const load = useCallback(async () => {
     if (!growId) {
@@ -149,6 +152,10 @@ export default function GrowPlantsScreen() {
   }
 
   async function create() {
+    if (!canWritePlants) {
+      setFeedback("Free accounts can create one plant. Upgrade to add more plants.");
+      return;
+    }
     if (!growId || creating || !name.trim()) return;
     setCreating(true);
     setFeedback("");
@@ -247,8 +254,8 @@ export default function GrowPlantsScreen() {
         <View style={styles.form}>
           <Text style={styles.label}>Plant tracking writes are Pro</Text>
           <Text style={styles.help}>
-            Free accounts can view plant records. Upgrade to add plants, crop profiles,
-            and plant-level grow history.
+            Free accounts can create one plant in one grow. Upgrade to add more plants,
+            crop profiles, and plant-level grow history.
           </Text>
         </View>
       )}
