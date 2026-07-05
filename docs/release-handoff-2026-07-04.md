@@ -36,8 +36,13 @@ Latest production workflow run:
 - Commit `dd537f6` fixed Frontend CI lint failures. Frontend CI run `28724338581` passed all steps: dependency install, Expo dependency check, Expo Doctor, production dependency audit, lint, sensitive-copy guard, delivery guard, and tests.
 - Production Build Preflight run `28724338574` passed release preflight, then iOS and Android again passed EAS authentication and failed at `Start EAS production build`. The iOS log still shows the token as `GrowPathAI Production Build Token (robot)` with `etgujays-organization (Role: Viewer)`, followed by the same `Entity not authorized` EAS build-start error.
 - `npm.cmd run release:go-no-go` was rerun after CI was green. It still returns `NO-GO` because the final external evidence buckets are missing.
-- `npm.cmd run verify:live-urls` was rerun with `NODE_OPTIONS=--use-system-ca` and passed. Fresh ignored evidence was written to `tmp/spec/live-url-checks/2026-07-05T01-37-27-236Z.json`.
+- `npm.cmd run verify:live-urls` was rerun with `NODE_OPTIONS=--use-system-ca` and passed. Fresh ignored evidence was written to `tmp/spec/live-url-checks/2026-07-05T01-37-27-236Z.json` and `tmp/spec/live-url-checks/2026-07-05T01-56-29-367Z.json`.
 - Added `docs/release-evidence-commands-2026-07-05.md` with guarded copy-paste commands for the remaining evidence buckets.
+- Attempted live seeded user-mode shell verification against `https://growpathai.com` with `e2e/live-shells.spec.ts`. All three seeded accounts stayed on `/login` with `Invalid email or password`:
+  - `free@growpath.com`
+  - `commercial@growpath.com`
+  - `facility@growpath.com`
+  This blocks live personal/commercial/facility mode testing until seeded credentials are restored or replacement test accounts are provided.
 
 Current step: update the Expo robot/token permissions so it can read/build the EAS app, then rerun failed jobs or push a no-op workflow change if rerun permissions are unavailable.
 
@@ -157,6 +162,7 @@ Release checks:
 - Evidence written:
   - `tmp/spec/live-url-checks/2026-07-04T23-03-21-546Z.json`
   - `tmp/spec/live-url-checks/2026-07-05T01-37-27-236Z.json`
+  - `tmp/spec/live-url-checks/2026-07-05T01-56-29-367Z.json`
 - `npm.cmd run export:store-assets` passed.
 - Store graphics present:
   - `store-assets/graphics/app-store-icon-1024.png`
@@ -196,6 +202,10 @@ Live test pack strict source validation is also blocked:
 - `npm.cmd run verify:live-test-packs:sources` fails because there are 514 placeholder source/photo URLs.
 - Planning mode passes:
   - `npm.cmd run verify:live-test-packs:sources:planning`
+
+Live seeded shell testing is blocked:
+
+- `PLAYWRIGHT_BASE_URL=https://growpathai.com PLAYWRIGHT_SKIP_WEBSERVER=1 npx playwright test e2e/live-shells.spec.ts --reporter=list` reached `/login`, but the seeded personal/commercial/facility credentials all returned `Invalid email or password`.
 
 ## Next Actions
 
