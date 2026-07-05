@@ -148,6 +148,36 @@ Latest pushed P0 deployment checkpoint:
     `npx.cmd playwright test e2e/walkthrough-checkout.spec.ts --reporter=list`
     passed 2/2 tests.
 
+Latest free-account web QA checkpoint:
+
+- Commit: `55eadc8`
+- Scope:
+  - Free personal home no longer shows feed in a side rail.
+  - Free long-content personal pages show at most three vertical feed placements.
+  - Short free pages do not show feed banners.
+  - Free defaults are now one grow and one plant.
+  - Free users can create their first grow/plant within limits, then see upgrade
+    gating after the limit is used.
+- Local verification passed:
+  - `npm.cmd test -- --runInBand tests/unit/feedPolicy.test.ts tests/unit/PersonalFeedPlacement.test.tsx tests/unit/NewGrowAccess.test.tsx tests/entitlements/modeAccess.test.ts`
+  - `npm.cmd run lint:ci`
+  - `npm.cmd run export:web:production`
+  - `npm.cmd run release:preflight`
+- GitHub verification:
+  - Frontend CI passed.
+  - Production Build Preflight release preflight passed.
+  - Android EAS production build start passed.
+  - iOS EAS production build start remains blocked until Apple Developer
+    credentials exist.
+- Live verification passed:
+  - `npm.cmd run verify:live-urls`
+  - Evidence: `tmp/spec/live-url-checks/2026-07-05T19-38-48-446Z.json`
+  - `PLAYWRIGHT_BASE_URL=https://growpathai.com`
+    `PLAYWRIGHT_SKIP_WEBSERVER=1`
+    `E2E_EMAIL=free@growpathai.com`
+    `npx.cmd playwright test e2e/live-free-account.spec.ts --reporter=list`
+    passed 1/1 test.
+
 Live issue found:
 
 - Production `/api/auth/login` returns the correct free account email, but

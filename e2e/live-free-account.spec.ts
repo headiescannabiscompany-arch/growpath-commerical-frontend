@@ -26,9 +26,16 @@ test("live free account can browse gated personal mode and log out", async ({
 
   await page.goto("/home/personal/grows", { waitUntil: "domcontentloaded" });
   await expect(page.getByRole("heading", { name: "Grows" }).first()).toBeVisible();
-  await expect(page.getByText("Create grows with Pro")).toBeVisible();
-  await expect(page.getByText(/Free accounts can browse/i)).toBeVisible();
+  const firstGrowButton = page.getByTestId("btn-create-first-grow");
+  if ((await firstGrowButton.count()) > 0) {
+    await expect(page.getByText("No grows yet")).toBeVisible();
+    await expect(firstGrowButton).toBeVisible();
+  } else {
+    await expect(page.getByText("Create grows with Pro")).toBeVisible();
+    await expect(page.getByText(/Free accounts can browse saved grows/i)).toBeVisible();
+  }
   await expect(page.getByText(/Triple Bag: clones in production/i).first()).toBeVisible();
+  await expect(page.getByLabel(/placement$/)).toHaveCount(3);
   await page.screenshot({
     path: testInfo.outputPath("live-free-grows-gated.png"),
     fullPage: true
