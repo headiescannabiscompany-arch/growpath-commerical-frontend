@@ -88,7 +88,8 @@ export default function StressTestToolRoute() {
         ...(Array.isArray(outputs.warnings)
           ? outputs.warnings.map((message: string, index: number) => ({
               key: `warning-${index}`,
-              severity: outputs.riskLevel === "high" ? ("high" as const) : ("medium" as const),
+              severity:
+                outputs.riskLevel === "high" ? ("high" as const) : ("medium" as const),
               message
             }))
           : []),

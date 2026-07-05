@@ -25,7 +25,11 @@ export default function EducationPostCard({
     <View style={styles.card}>
       {!!title && <Text style={styles.title}>{title}</Text>}
       {!!body && <Text style={styles.body}>{body}</Text>}
-      {!!cta && <Text style={styles.cta}>{cta} {"\u2192"}</Text>}
+      {!!cta && (
+        <Text style={styles.cta}>
+          {cta} {"\u2192"}
+        </Text>
+      )}
     </View>
   );
 

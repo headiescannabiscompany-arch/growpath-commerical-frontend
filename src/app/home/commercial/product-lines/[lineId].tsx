@@ -40,7 +40,9 @@ function ActionLink({ href, label }: { href: string; label: string }) {
   );
 }
 
-export default function CommercialProductLineDetailRoute({ route }: { route?: any } = {}) {
+export default function CommercialProductLineDetailRoute({
+  route
+}: { route?: any } = {}) {
   const params = useLocalSearchParams<{ lineId?: string }>();
   const lineId = useMemo(
     () => cleanId(params.lineId || route?.params?.lineId || route?.params?.id),
@@ -144,8 +146,8 @@ export default function CommercialProductLineDetailRoute({ route }: { route?: an
       <AppCard>
         <Text style={styles.cardTitle}>Commercial Links</Text>
         <Text style={styles.body}>
-          A line should connect products, product formulas, batches, trial grows,
-          courses, feed posts, storefront blocks, and forum support.
+          A line should connect products, product formulas, batches, trial grows, courses,
+          feed posts, storefront blocks, and forum support.
         </Text>
         <View style={styles.actions}>
           <ActionLink href="/home/commercial/products" label="Product Catalog" />
@@ -203,10 +205,18 @@ export default function CommercialProductLineDetailRoute({ route }: { route?: an
 
       <AppCard>
         <Text style={styles.cardTitle}>Public Use</Text>
-        <Text style={styles.bullet}>Feature this line on storefront and public brand profile.</Text>
-        <Text style={styles.bullet}>Link products to trial evidence before strong claims.</Text>
-        <Text style={styles.bullet}>Create a course or support thread explaining product-line use.</Text>
-        <Text style={styles.bullet}>Use feed posts to announce releases, trials, and seasonal recommendations.</Text>
+        <Text style={styles.bullet}>
+          Feature this line on storefront and public brand profile.
+        </Text>
+        <Text style={styles.bullet}>
+          Link products to trial evidence before strong claims.
+        </Text>
+        <Text style={styles.bullet}>
+          Create a course or support thread explaining product-line use.
+        </Text>
+        <Text style={styles.bullet}>
+          Use feed posts to announce releases, trials, and seasonal recommendations.
+        </Text>
       </AppCard>
     </AppPage>
   );

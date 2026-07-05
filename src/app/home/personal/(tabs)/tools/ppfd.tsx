@@ -58,17 +58,28 @@ export default function PpfdToolScreen() {
     const normalizedStage = stage.toLowerCase();
     const response = leafResponse.toLowerCase();
     const warnings: string[] = [];
-    if (/seed|clone/.test(normalizedStage) && (requiredPpfd > 300 || measuredPpfd > 300)) {
-      warnings.push("Seedlings/clones may be under too much light for stable rooting and early growth.");
+    if (
+      /seed|clone/.test(normalizedStage) &&
+      (requiredPpfd > 300 || measuredPpfd > 300)
+    ) {
+      warnings.push(
+        "Seedlings/clones may be under too much light for stable rooting and early growth."
+      );
     }
     if (/late|ripen|finish/.test(normalizedStage) && dli > 45) {
-      warnings.push("Very high DLI late flower can add heat/light pressure and reduce finish quality if plants are not tolerating it.");
+      warnings.push(
+        "Very high DLI late flower can add heat/light pressure and reduce finish quality if plants are not tolerating it."
+      );
     }
     if (/taco|bleach|curl|canoe|light burn/.test(response)) {
-      warnings.push("Leaf posture or bleaching symptoms suggest light stress; compare against VPD, temperature, and root-zone status before increasing intensity.");
+      warnings.push(
+        "Leaf posture or bleaching symptoms suggest light stress; compare against VPD, temperature, and root-zone status before increasing intensity."
+      );
     }
     if (hours > 13 && /flower|late|ripen|finish/.test(normalizedStage)) {
-      warnings.push("Flowering photoperiod appears long; verify crop type, genetics, and light schedule.");
+      warnings.push(
+        "Flowering photoperiod appears long; verify crop type, genetics, and light schedule."
+      );
     }
     return {
       requiredPpfd: Math.round(requiredPpfd),
@@ -216,10 +227,9 @@ export default function PpfdToolScreen() {
                       toolKey: "ppfd",
                       input,
                       output: computed,
-                      title:
-                        computed.warnings.length
-                          ? "Check light stress response"
-                          : "Check canopy PPFD",
+                      title: computed.warnings.length
+                        ? "Check light stress response"
+                        : "Check canopy PPFD",
                       description: [
                         `Target about ${computed.requiredPpfd} umol/m2/s over ${photoperiodHours || "?"} hours.`,
                         ...computed.warnings,

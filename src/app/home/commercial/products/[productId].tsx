@@ -119,8 +119,8 @@ export default function CommercialProductDetailRoute({ route }: { route?: any } 
           <Text style={styles.kicker}>Commercial product workspace</Text>
           <Text style={styles.title}>{productTitle(product)}</Text>
           <Text style={styles.subtitle}>
-            Manage the private product record, evidence links, external purchase path,
-            and publishability before pushing claims to storefront, feed, courses, or forum.
+            Manage the private product record, evidence links, external purchase path, and
+            publishability before pushing claims to storefront, feed, courses, or forum.
           </Text>
           <View style={styles.actions}>
             <ActionLink href="/home/commercial/products" label="All Products" />
@@ -150,7 +150,9 @@ export default function CommercialProductDetailRoute({ route }: { route?: any } 
 
       <AppCard>
         <Text style={styles.cardTitle}>Effectiveness Snapshot</Text>
-        <Text style={styles.body}>{summary.claimGuard || "No claim guard returned yet."}</Text>
+        <Text style={styles.body}>
+          {summary.claimGuard || "No claim guard returned yet."}
+        </Text>
         <View style={styles.metricGrid}>
           <View style={styles.metric}>
             <Text style={styles.metricValue}>{summary.batchCount || 0}</Text>
@@ -190,7 +192,9 @@ export default function CommercialProductDetailRoute({ route }: { route?: any } 
           </Text>
         ) : null}
         {summary.publicProofReady ? (
-          <Text style={styles.success}>Public proof ready from linked batch and completed trial.</Text>
+          <Text style={styles.success}>
+            Public proof ready from linked batch and completed trial.
+          </Text>
         ) : null}
         {Array.isArray(summary.warnings) && summary.warnings.length ? (
           <View style={styles.warningBox}>

@@ -147,7 +147,10 @@ export default function CommercialBatchDetailRoute({ route }: { route?: any } = 
           <DetailRow label="Purpose" value={batch?.purpose} />
           <DetailRow label="Formula version" value={batch?.formulaVersion} />
           <DetailRow label="Status" value={batch?.status} />
-          <DetailRow label="Volume" value={[batch?.batchVolume, batch?.batchVolumeUnit].filter(Boolean).join(" ")} />
+          <DetailRow
+            label="Volume"
+            value={[batch?.batchVolume, batch?.batchVolumeUnit].filter(Boolean).join(" ")}
+          />
           <DetailRow label="Estimated cost" value={batch?.estimatedCost} />
         </View>
       </AppCard>
@@ -262,10 +265,18 @@ export default function CommercialBatchDetailRoute({ route }: { route?: any } = 
 
       <AppCard>
         <Text style={styles.cardTitle}>Commercial Use Rules</Text>
-        <Text style={styles.bullet}>Do not call the module Living Soil Labs in the app.</Text>
-        <Text style={styles.bullet}>Use guaranteed analysis plus release timing, not only NPK.</Text>
-        <Text style={styles.bullet}>Treat compost/castings and organic release as estimated.</Text>
-        <Text style={styles.bullet}>Link trial results before making public product claims.</Text>
+        <Text style={styles.bullet}>
+          Do not call the module Living Soil Labs in the app.
+        </Text>
+        <Text style={styles.bullet}>
+          Use guaranteed analysis plus release timing, not only NPK.
+        </Text>
+        <Text style={styles.bullet}>
+          Treat compost/castings and organic release as estimated.
+        </Text>
+        <Text style={styles.bullet}>
+          Link trial results before making public product claims.
+        </Text>
       </AppCard>
     </AppPage>
   );

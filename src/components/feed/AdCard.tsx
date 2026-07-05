@@ -48,7 +48,9 @@ export default function AdCard({
         accessibilityLabel={`${cta} for ${title}`}
         onPress={openAd}
       >
-        <Text style={styles.link}>{cta} {"\u2192"}</Text>
+        <Text style={styles.link}>
+          {cta} {"\u2192"}
+        </Text>
       </Pressable>
     </AppCard>
   );

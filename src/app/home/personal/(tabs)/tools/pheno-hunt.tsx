@@ -21,9 +21,7 @@ function parsePlants(value: string) {
           cloneRootingDays,
           recoveryHours,
           notes
-        ] = line
-          .split(",")
-          .map((part) => part.trim());
+        ] = line.split(",").map((part) => part.trim());
         if (!label) return null;
         return {
           id: `plant_${index + 1}`,
@@ -97,8 +95,9 @@ export default function PhenoHuntToolRoute() {
               }
             ]
           : []),
-        ...(outputs.comparisonMatrix?.some((plant: any) =>
-          Array.isArray(plant.tags) && plant.tags.includes("stability_concern")
+        ...(outputs.comparisonMatrix?.some(
+          (plant: any) =>
+            Array.isArray(plant.tags) && plant.tags.includes("stability_concern")
         )
           ? [
               {

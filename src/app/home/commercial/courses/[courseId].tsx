@@ -189,8 +189,8 @@ export default function CommercialCourseDetailRoute({ route }: { route?: any } =
       <AppCard>
         <Text style={styles.cardTitle}>Course Record</Text>
         <Text style={styles.body}>
-          Commercial courses can be free or paid, and should connect to products,
-          product lines, grow trials, feed posts, storefronts, and forum support.
+          Commercial courses can be free or paid, and should connect to products, product
+          lines, grow trials, feed posts, storefronts, and forum support.
         </Text>
         <View style={styles.detailGrid}>
           <DetailRow label="Category" value={course?.category} />
@@ -267,7 +267,10 @@ export default function CommercialCourseDetailRoute({ route }: { route?: any } =
             accessibilityRole="button"
             disabled={publishing || !courseId}
             onPress={publishCourse}
-            style={[styles.secondaryAction, publishing || !courseId ? styles.disabled : null]}
+            style={[
+              styles.secondaryAction,
+              publishing || !courseId ? styles.disabled : null
+            ]}
           >
             <Text style={styles.secondaryActionText}>
               {publishing ? "Publishing..." : "Publish"}
@@ -282,7 +285,9 @@ export default function CommercialCourseDetailRoute({ route }: { route?: any } =
           <View style={styles.list}>
             {lessons.map((lesson, index) => (
               <View key={String(lesson.id || index)} style={styles.row}>
-                <Text style={styles.rowTitle}>{lesson.title || `Lesson ${index + 1}`}</Text>
+                <Text style={styles.rowTitle}>
+                  {lesson.title || `Lesson ${index + 1}`}
+                </Text>
                 <Text style={styles.muted}>
                   {[lesson.status || "draft", lesson.order && `order ${lesson.order}`]
                     .filter(Boolean)
@@ -328,10 +333,18 @@ export default function CommercialCourseDetailRoute({ route }: { route?: any } =
 
       <AppCard>
         <Text style={styles.cardTitle}>Commercial Course Loop</Text>
-        <Text style={styles.bullet}>Attach products and product lines before public launch.</Text>
-        <Text style={styles.bullet}>Use trial/grow evidence in lessons when making product claims.</Text>
-        <Text style={styles.bullet}>Announce published courses in feed and link them from storefront/profile.</Text>
-        <Text style={styles.bullet}>Answer course/product questions in community support threads.</Text>
+        <Text style={styles.bullet}>
+          Attach products and product lines before public launch.
+        </Text>
+        <Text style={styles.bullet}>
+          Use trial/grow evidence in lessons when making product claims.
+        </Text>
+        <Text style={styles.bullet}>
+          Announce published courses in feed and link them from storefront/profile.
+        </Text>
+        <Text style={styles.bullet}>
+          Answer course/product questions in community support threads.
+        </Text>
         <View style={styles.actions}>
           <ActionLink href="/home/commercial/products" label="Products" />
           <ActionLink href="/home/commercial/trials" label="Product Trials" />

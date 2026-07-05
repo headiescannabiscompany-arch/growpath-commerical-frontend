@@ -62,11 +62,13 @@ export default function GeneticsInventoryToolRoute() {
             }))
           : []),
         ...(Array.isArray(outputs.preservationRecommendations)
-          ? outputs.preservationRecommendations.slice(0, 1).map((message: string, index: number) => ({
-              key: `preservation-${index}`,
-              severity: "info" as const,
-              message
-            }))
+          ? outputs.preservationRecommendations
+              .slice(0, 1)
+              .map((message: string, index: number) => ({
+                key: `preservation-${index}`,
+                severity: "info" as const,
+                message
+              }))
           : [])
       ]}
       defaultLogTitle={(outputs) => `Genetics record: ${outputs.cultivar || "cultivar"}`}

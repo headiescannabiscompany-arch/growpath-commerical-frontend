@@ -36,30 +36,27 @@ export default function StoreIndex() {
   const [directoryMessage, setDirectoryMessage] = useState("");
   const cleanSlug = slug.trim();
 
-  const loadBrands = useCallback(
-    async (options?: { q?: string; similarTo?: string }) => {
-      const q = String(options?.q ?? "").trim();
-      const related = String(options?.similarTo ?? "").trim();
-      if (!q && !related) return;
-      setSearching(true);
-      setDirectoryMessage("");
-      try {
-        const payload = await searchPublicStorefronts({
-          q: q || undefined,
-          similarTo: related || undefined,
-          limit: 12
-        });
-        const rows = asArray(payload);
-        setBrands(rows);
-        if (!rows.length) setDirectoryMessage("No matching public brands found yet.");
-      } catch (error: any) {
-        setDirectoryMessage(error?.message || "Unable to load public brands.");
-      } finally {
-        setSearching(false);
-      }
-    },
-    []
-  );
+  const loadBrands = useCallback(async (options?: { q?: string; similarTo?: string }) => {
+    const q = String(options?.q ?? "").trim();
+    const related = String(options?.similarTo ?? "").trim();
+    if (!q && !related) return;
+    setSearching(true);
+    setDirectoryMessage("");
+    try {
+      const payload = await searchPublicStorefronts({
+        q: q || undefined,
+        similarTo: related || undefined,
+        limit: 12
+      });
+      const rows = asArray(payload);
+      setBrands(rows);
+      if (!rows.length) setDirectoryMessage("No matching public brands found yet.");
+    } catch (error: any) {
+      setDirectoryMessage(error?.message || "Unable to load public brands.");
+    } finally {
+      setSearching(false);
+    }
+  }, []);
 
   useEffect(() => {
     if (similarTo) void loadBrands({ similarTo });
@@ -92,8 +89,8 @@ export default function StoreIndex() {
         <Text style={styles.cardTitle}>Public brand profiles</Text>
         <Text style={styles.cardText}>
           Commercial profiles can be opened from feed posts, forum content, products,
-          courses, and storefront links. A profile gives users a public brand page with
-          a direct path to the store.
+          courses, and storefront links. A profile gives users a public brand page with a
+          direct path to the store.
         </Text>
         <TextInput
           accessibilityLabel="Public brand slug"
@@ -146,7 +143,10 @@ export default function StoreIndex() {
           accessibilityRole="button"
           disabled={!brandQuery.trim() || searching}
           onPress={searchBrands}
-          style={[styles.secondaryButton, (!brandQuery.trim() || searching) && styles.disabled]}
+          style={[
+            styles.secondaryButton,
+            (!brandQuery.trim() || searching) && styles.disabled
+          ]}
         >
           <Text style={styles.secondaryButtonText}>
             {searching ? "Searching..." : "Search Brands"}

@@ -671,181 +671,189 @@ export default function NpkToolScreen() {
             routeKey="personal_tools_npk"
             longContent
           />
-        <ToolResultSurface
-          title="NPK recipe result"
-          status="CALCULATED"
-          summary={result.formula}
-          metrics={Object.entries(result.totals || {}).map(([key, value]) => ({
-            key,
-            label: key.replace("ppm", ""),
-            value: String(value),
-            detail: "ppm elemental"
-          }))}
-          inputs={toolRun?.inputs || recipePayload()}
-          outputs={toolRun?.outputs || result}
-          notices={[
-            ...buildNutrientContextNotices(plantContext.selectedPlantContext),
-            ...(result.warnings || []).map((warning: string, index: number) => ({
-              key: `warning-${index}`,
-              severity: "medium" as const,
-              message: warning
-            })),
-            ...(result.sourceConfidence && result.sourceConfidence.overall !== "high"
-              ? [
-                  {
-                    key: "source-confidence",
-                    severity: "medium" as const,
-                    message:
-                      "One or more product rows are not high-confidence source data.",
-                    remediation:
-                      "Verify manufacturer labels, density assumptions, source water, and measured EC/pH before applying the recipe."
-                  }
-                ]
-              : [])
-          ]}
-          recommendations={[
-            ...(result.recommendations || []),
-            "Verify product labels, water baseline, and final mixed EC/pH before applying this recipe."
-          ]}
-          formulas={
-            toolRun?.formulas?.length
-              ? toolRun.formulas
-              : [
-                  result.formula ||
-                    "Fertilizer label P and K are converted from oxide label values to elemental ppm."
-                ]
-          }
-          uncertainty={
-            toolRun?.uncertainty ||
-            "Ingredient labels, density assumptions, water baseline, and product source confidence affect nutrient totals."
-          }
-          confidence={toolRun?.confidence || "label-math-calculator"}
-          assumptions={[
-            buildNutrientContextAssumption(plantContext.selectedPlantContext),
-            result.releaseDisclaimer,
-            "Raw NPK totals are label math; release timing and availability estimates are not a substitute for substrate tests, water tests, or measured runoff/feed data."
-          ].filter(Boolean)}
-          details={
-            <>
-              {result.sourceConfidence ? (
-                <>
-                  <Text style={styles.resultTitle}>Source confidence</Text>
-                  <Text style={styles.recommendation}>
-                    Overall: {result.sourceConfidence.overall}. High{" "}
-                    {result.sourceConfidence.counts?.high || 0}, medium{" "}
-                    {result.sourceConfidence.counts?.medium || 0}, low{" "}
-                    {result.sourceConfidence.counts?.low || 0}.
-                  </Text>
-                </>
-              ) : null}
-              {Array.isArray(result.mixingOrder) && result.mixingOrder.length ? (
-                <>
-                  <Text style={styles.resultTitle}>Mixing sequence</Text>
-                  {result.mixingOrder.map((step: string, index: number) => (
-                    <Text key={`${step}-${index}`} style={styles.recommendation}>
-                      {index + 1}. {step}
-                    </Text>
-                  ))}
-                </>
-              ) : null}
-              {result.availabilityEstimate?.windows ? (
-                <>
-                  <Text style={styles.resultTitle}>Estimated availability</Text>
-                  <Text style={styles.fieldHint}>
-                    Raw ppm is label math. Availability estimates apply release timing
-                    from the product form.
-                  </Text>
-                  {Object.entries(result.availabilityEstimate.windows).map(
-                    ([window, totals]: [string, any]) => {
-                      const primary = ["Nppm", "Pppm", "Kppm", "Cappm", "Mgppm"]
-                        .map((key) => `${key.replace("ppm", "")}: ${totals?.[key] || 0}`)
-                        .join(" / ");
-                      return (
-                        <Text key={window} style={styles.recommendation}>
-                          {window.replaceAll("_", "-")}: {primary}
-                        </Text>
-                      );
+          <ToolResultSurface
+            title="NPK recipe result"
+            status="CALCULATED"
+            summary={result.formula}
+            metrics={Object.entries(result.totals || {}).map(([key, value]) => ({
+              key,
+              label: key.replace("ppm", ""),
+              value: String(value),
+              detail: "ppm elemental"
+            }))}
+            inputs={toolRun?.inputs || recipePayload()}
+            outputs={toolRun?.outputs || result}
+            notices={[
+              ...buildNutrientContextNotices(plantContext.selectedPlantContext),
+              ...(result.warnings || []).map((warning: string, index: number) => ({
+                key: `warning-${index}`,
+                severity: "medium" as const,
+                message: warning
+              })),
+              ...(result.sourceConfidence && result.sourceConfidence.overall !== "high"
+                ? [
+                    {
+                      key: "source-confidence",
+                      severity: "medium" as const,
+                      message:
+                        "One or more product rows are not high-confidence source data.",
+                      remediation:
+                        "Verify manufacturer labels, density assumptions, source water, and measured EC/pH before applying the recipe."
                     }
-                  )}
-                  {result.availabilityEstimate.disclaimer ? (
+                  ]
+                : [])
+            ]}
+            recommendations={[
+              ...(result.recommendations || []),
+              "Verify product labels, water baseline, and final mixed EC/pH before applying this recipe."
+            ]}
+            formulas={
+              toolRun?.formulas?.length
+                ? toolRun.formulas
+                : [
+                    result.formula ||
+                      "Fertilizer label P and K are converted from oxide label values to elemental ppm."
+                  ]
+            }
+            uncertainty={
+              toolRun?.uncertainty ||
+              "Ingredient labels, density assumptions, water baseline, and product source confidence affect nutrient totals."
+            }
+            confidence={toolRun?.confidence || "label-math-calculator"}
+            assumptions={[
+              buildNutrientContextAssumption(plantContext.selectedPlantContext),
+              result.releaseDisclaimer,
+              "Raw NPK totals are label math; release timing and availability estimates are not a substitute for substrate tests, water tests, or measured runoff/feed data."
+            ].filter(Boolean)}
+            details={
+              <>
+                {result.sourceConfidence ? (
+                  <>
+                    <Text style={styles.resultTitle}>Source confidence</Text>
+                    <Text style={styles.recommendation}>
+                      Overall: {result.sourceConfidence.overall}. High{" "}
+                      {result.sourceConfidence.counts?.high || 0}, medium{" "}
+                      {result.sourceConfidence.counts?.medium || 0}, low{" "}
+                      {result.sourceConfidence.counts?.low || 0}.
+                    </Text>
+                  </>
+                ) : null}
+                {Array.isArray(result.mixingOrder) && result.mixingOrder.length ? (
+                  <>
+                    <Text style={styles.resultTitle}>Mixing sequence</Text>
+                    {result.mixingOrder.map((step: string, index: number) => (
+                      <Text key={`${step}-${index}`} style={styles.recommendation}>
+                        {index + 1}. {step}
+                      </Text>
+                    ))}
+                  </>
+                ) : null}
+                {result.availabilityEstimate?.windows ? (
+                  <>
+                    <Text style={styles.resultTitle}>Estimated availability</Text>
                     <Text style={styles.fieldHint}>
-                      {result.availabilityEstimate.disclaimer}
+                      Raw ppm is label math. Availability estimates apply release timing
+                      from the product form.
                     </Text>
-                  ) : null}
-                </>
-              ) : null}
-              <Text style={styles.resultTitle}>Release timing</Text>
-              {Object.entries(result.releaseTimeline || {}).map(
-                ([window, entries]: [string, any]) =>
-                  entries.length ? (
-                    <View key={window} style={styles.timelineRow}>
-                      <Text style={styles.timelineLabel}>
-                        {window.replaceAll("_", "-")}
-                      </Text>
-                      <Text style={styles.recommendation}>
-                        {entries
+                    {Object.entries(result.availabilityEstimate.windows).map(
+                      ([window, totals]: [string, any]) => {
+                        const primary = ["Nppm", "Pppm", "Kppm", "Cappm", "Mgppm"]
                           .map(
-                            (entry: any) =>
-                              `${entry.name}: ${entry.form} (${entry.confidence})`
+                            (key) => `${key.replace("ppm", "")}: ${totals?.[key] || 0}`
                           )
-                          .join("; ")}
+                          .join(" / ");
+                        return (
+                          <Text key={window} style={styles.recommendation}>
+                            {window.replaceAll("_", "-")}: {primary}
+                          </Text>
+                        );
+                      }
+                    )}
+                    {result.availabilityEstimate.disclaimer ? (
+                      <Text style={styles.fieldHint}>
+                        {result.availabilityEstimate.disclaimer}
                       </Text>
-                    </View>
-                  ) : null
-              )}
-            </>
-          }
-          actions={
-            toolRun?._id && growContext
-              ? [
-                  {
-                    key: "save-log",
-                    label: "Save to Grow Log",
-                    onPress: async () => {
-                      await saveToolRunToLog(toolRun._id!);
-                      setFeedback("Saved to grow journal.");
+                    ) : null}
+                  </>
+                ) : null}
+                <Text style={styles.resultTitle}>Release timing</Text>
+                {Object.entries(result.releaseTimeline || {}).map(
+                  ([window, entries]: [string, any]) =>
+                    entries.length ? (
+                      <View key={window} style={styles.timelineRow}>
+                        <Text style={styles.timelineLabel}>
+                          {window.replaceAll("_", "-")}
+                        </Text>
+                        <Text style={styles.recommendation}>
+                          {entries
+                            .map(
+                              (entry: any) =>
+                                `${entry.name}: ${entry.form} (${entry.confidence})`
+                            )
+                            .join("; ")}
+                        </Text>
+                      </View>
+                    ) : null
+                )}
+              </>
+            }
+            actions={
+              toolRun?._id && growContext
+                ? [
+                    {
+                      key: "save-log",
+                      label: "Save to Grow Log",
+                      onPress: async () => {
+                        await saveToolRunToLog(toolRun._id!);
+                        setFeedback("Saved to grow journal.");
+                      }
+                    },
+                    {
+                      key: "create-task",
+                      label: "Create Recipe Review Task",
+                      variant: "secondary",
+                      onPress: async () => {
+                        const taskResult = await saveToolRunAndCreateTask({
+                          growId: growContext,
+                          ...plantContext.toolRunContext,
+                          toolKey: "npk-recipe",
+                          toolRunId: toolRun._id!,
+                          input: toolRun.inputs || recipePayload(),
+                          output: toolRun.outputs || result,
+                          title: "Review NPK recipe before feeding",
+                          description: [
+                            recipeName.trim() ? `Recipe: ${recipeName.trim()}` : "",
+                            result.sourceConfidence
+                              ? `Source confidence: ${result.sourceConfidence.overall}`
+                              : "",
+                            measuredEC ? `Measured EC: ${measuredEC}` : "",
+                            measuredPH ? `Measured pH: ${measuredPH}` : "",
+                            "Verify product labels, water baseline, final EC/pH, and plant stage before application."
+                          ]
+                            .filter(Boolean)
+                            .join("\n"),
+                          priority:
+                            result.sourceConfidence?.overall === "low"
+                              ? "high"
+                              : "medium",
+                          dueDate: new Date(
+                            Date.now() + 24 * 60 * 60 * 1000
+                          ).toISOString()
+                        });
+                        if (!taskResult.ok) throw new Error(taskResult.error);
+                        setFeedback("Recipe review task created.");
+                      }
                     }
-                  },
-                  {
-                    key: "create-task",
-                    label: "Create Recipe Review Task",
-                    variant: "secondary",
-                    onPress: async () => {
-                      const taskResult = await saveToolRunAndCreateTask({
-                        growId: growContext,
-                        ...plantContext.toolRunContext,
-                        toolKey: "npk-recipe",
-                        toolRunId: toolRun._id!,
-                        input: toolRun.inputs || recipePayload(),
-                        output: toolRun.outputs || result,
-                        title: "Review NPK recipe before feeding",
-                        description: [
-                          recipeName.trim() ? `Recipe: ${recipeName.trim()}` : "",
-                          result.sourceConfidence
-                            ? `Source confidence: ${result.sourceConfidence.overall}`
-                            : "",
-                          measuredEC ? `Measured EC: ${measuredEC}` : "",
-                          measuredPH ? `Measured pH: ${measuredPH}` : "",
-                          "Verify product labels, water baseline, final EC/pH, and plant stage before application."
-                        ]
-                          .filter(Boolean)
-                          .join("\n"),
-                        priority:
-                          result.sourceConfidence?.overall === "low" ? "high" : "medium",
-                        dueDate: new Date(Date.now() + 24 * 60 * 60 * 1000).toISOString()
-                      });
-                      if (!taskResult.ok) throw new Error(taskResult.error);
-                      setFeedback("Recipe review task created.");
-                    }
-                  }
-                ]
-              : []
-          }
-          feedback={feedback}
-          contextMessage={
-            !growContext ? "Select a grow to enable journal and task actions." : undefined
-          }
-        />
+                  ]
+                : []
+            }
+            feedback={feedback}
+            contextMessage={
+              !growContext
+                ? "Select a grow to enable journal and task actions."
+                : undefined
+            }
+          />
         </>
       ) : null}
 

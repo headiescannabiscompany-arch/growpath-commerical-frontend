@@ -293,7 +293,9 @@ export default function WateringToolScreen() {
         }}
         keyboardType="numeric"
       />
-      <Text style={styles.label}>Recovery time after last irrigation/dryback (hours)</Text>
+      <Text style={styles.label}>
+        Recovery time after last irrigation/dryback (hours)
+      </Text>
       <TextInput
         accessibilityLabel="Watering recovery time hours"
         style={styles.input}

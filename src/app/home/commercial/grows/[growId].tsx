@@ -116,8 +116,8 @@ export default function CommercialGrowDetailRoute({ route }: { route?: any } = {
           <Text style={styles.kicker}>Commercial grow workspace</Text>
           <Text style={styles.title}>{titleFor(grow)}</Text>
           <Text style={styles.subtitle}>
-            Keep the grow as the private source of truth, then connect product,
-            batch, formula, trial, public-share, feed, and report workflows around it.
+            Keep the grow as the private source of truth, then connect product, batch,
+            formula, trial, public-share, feed, and report workflows around it.
           </Text>
           <View style={styles.actions}>
             <ActionLink href="/home/commercial/grows" label="All Grows" />
@@ -189,8 +189,8 @@ export default function CommercialGrowDetailRoute({ route }: { route?: any } = {
         <Text style={styles.cardTitle}>Harvest Quality Notes</Text>
         <Text style={styles.body}>
           Capture the final quality evidence that matters commercially: yield, flower
-          structure, aroma, flavor, resin, dry/cure result, defects, and what can be
-          used publicly.
+          structure, aroma, flavor, resin, dry/cure result, defects, and what can be used
+          publicly.
         </Text>
         <TextInput
           accessibilityLabel="Commercial grow harvest quality notes"
@@ -260,10 +260,18 @@ export default function CommercialGrowDetailRoute({ route }: { route?: any } = {
 
       <AppCard>
         <Text style={styles.cardTitle}>Next Commercial Actions</Text>
-        <Text style={styles.bullet}>Log grow observations and photos in the Pro grow workspace.</Text>
-        <Text style={styles.bullet}>Attach product, batch, and formula context before publishing claims.</Text>
-        <Text style={styles.bullet}>Use product trials and run comparisons to summarize effectiveness.</Text>
-        <Text style={styles.bullet}>Publish only evidence-backed updates to feed, courses, or storefront proof.</Text>
+        <Text style={styles.bullet}>
+          Log grow observations and photos in the Pro grow workspace.
+        </Text>
+        <Text style={styles.bullet}>
+          Attach product, batch, and formula context before publishing claims.
+        </Text>
+        <Text style={styles.bullet}>
+          Use product trials and run comparisons to summarize effectiveness.
+        </Text>
+        <Text style={styles.bullet}>
+          Publish only evidence-backed updates to feed, courses, or storefront proof.
+        </Text>
       </AppCard>
     </AppPage>
   );
@@ -331,5 +339,11 @@ const styles = StyleSheet.create({
   primaryActionText: { color: "#FFFFFF", fontSize: 13, fontWeight: "900" },
   disabled: { opacity: 0.55 },
   success: { color: "#166534", fontSize: 13, fontWeight: "800", marginTop: 8 },
-  bullet: { color: "#334155", fontSize: 13, fontWeight: "700", lineHeight: 19, marginTop: 6 }
+  bullet: {
+    color: "#334155",
+    fontSize: 13,
+    fontWeight: "700",
+    lineHeight: 19,
+    marginTop: 6
+  }
 });

@@ -75,8 +75,17 @@ export default function CommercialInventoryItemDetailRoute() {
 
   const apiErr: any = useApiErrorHandler();
   const error = apiErr?.error ?? apiErr?.[0] ?? null;
-  const handleApiError = apiErr?.handleApiError ?? apiErr?.[1] ?? ((_: any) => {});
-  const clearError = apiErr?.clearError ?? apiErr?.[2] ?? (() => {});
+  const handleApiError = useCallback(
+    (err: any) => {
+      const handler = apiErr?.handleApiError ?? apiErr?.[1];
+      if (handler) handler(err);
+    },
+    [apiErr]
+  );
+  const clearError = useCallback(() => {
+    const handler = apiErr?.clearError ?? apiErr?.[2];
+    if (handler) handler();
+  }, [apiErr]);
 
   const [item, setItem] = useState<AnyRec | null>(null);
   const [loading, setLoading] = useState(true);
@@ -110,7 +119,7 @@ export default function CommercialInventoryItemDetailRoute() {
         setRefreshing(false);
       }
     },
-    [id]
+    [clearError, handleApiError, id]
   );
 
   useEffect(() => {
@@ -119,7 +128,7 @@ export default function CommercialInventoryItemDetailRoute() {
       return;
     }
     load();
-  }, [ent?.ready, ent?.mode, load]);
+  }, [ent?.ready, ent?.mode, load, router]);
 
   const keys = useMemo(() => (item ? Object.keys(item).sort() : []), [item]);
   const canEdit = !!ent?.can?.(CAPABILITY_KEYS.COMMERCIAL_INVENTORY_WRITE);
@@ -176,7 +185,7 @@ export default function CommercialInventoryItemDetailRoute() {
     } finally {
       setSaving(false);
     }
-  }, [id, canEdit, draft, item]);
+  }, [canEdit, clearError, draft, handleApiError, id, item]);
 
   if (!ent?.ready) return null;
   if (ent.mode !== "commercial") return null;

@@ -20,9 +20,7 @@ function parseRuns(value: string) {
           averageVpd,
           averageDli,
           dryDays
-        ] = line
-          .split(",")
-          .map((part) => part.trim());
+        ] = line.split(",").map((part) => part.trim());
         if (!name) return null;
         return {
           id: `run_${index + 1}`,
@@ -53,7 +51,8 @@ export default function RunComparisonToolRoute() {
           key: "runs",
           label:
             "Runs as lines: name, cultivar, yield, quality 0-10, issue count, days, avg VPD, avg DLI, dry days",
-          defaultValue: "Run 1, Sour Diesel, 14, 7, 3, 120, 1.1, 36, 12\nRun 2, Sour Diesel, 18, 8, 1, 112, 1.3, 40, 8",
+          defaultValue:
+            "Run 1, Sour Diesel, 14, 7, 3, 120, 1.1, 36, 12\nRun 2, Sour Diesel, 18, 8, 1, 112, 1.3, 40, 8",
           multiline: true
         }
       ]}

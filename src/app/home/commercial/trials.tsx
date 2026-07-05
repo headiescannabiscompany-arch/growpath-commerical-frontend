@@ -262,7 +262,9 @@ export default function CommercialTrialsRoute() {
                 </Text>
                 <View style={styles.headerActions}>
                   <Link
-                    href={`/home/commercial/trials/${encodeURIComponent(idOf(trial, index))}` as any}
+                    href={
+                      `/home/commercial/trials/${encodeURIComponent(idOf(trial, index))}` as any
+                    }
                     asChild
                   >
                     <Pressable style={styles.outlineButton}>

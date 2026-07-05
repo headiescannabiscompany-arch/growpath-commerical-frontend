@@ -364,7 +364,10 @@ export default function EnvironmentAnalysisToolScreen() {
           ...buildEnvironmentContextNotices(plantContext.selectedPlantContext),
           ...environmentReview.warnings.map((warning, index) => ({
             key: `local-warning-${index}`,
-            severity: environmentReview.riskLevel === "high" ? ("high" as const) : ("medium" as const),
+            severity:
+              environmentReview.riskLevel === "high"
+                ? ("high" as const)
+                : ("medium" as const),
             message: warning
           })),
           ...list(assessment.issues).map((issue, index) => ({
@@ -425,7 +428,9 @@ export default function EnvironmentAnalysisToolScreen() {
                       description: [
                         `Status: ${assessment.status || "analysis complete"}`,
                         `Local risk: ${environmentReview.riskLevel}`,
-                        ...environmentReview.warnings.map((warning) => `Warning: ${warning}`),
+                        ...environmentReview.warnings.map(
+                          (warning) => `Warning: ${warning}`
+                        ),
                         issues.length ? `Issues: ${issues.join("; ")}` : "",
                         riskFlags.length ? `Risk flags: ${riskFlags.join("; ")}` : "",
                         recommendations.length

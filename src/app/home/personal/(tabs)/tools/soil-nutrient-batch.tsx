@@ -134,8 +134,16 @@ export default function SoilNutrientBatchToolRoute() {
         { key: "fit", label: "Purpose fit", value: outputs.purposeFit },
         { key: "bags", label: "Bag count", value: outputs.bagCount },
         { key: "analysisN", label: "N", value: outputs.guaranteedAnalysisEstimate?.N },
-        { key: "analysisP", label: "P2O5", value: outputs.guaranteedAnalysisEstimate?.P2O5 },
-        { key: "analysisK", label: "K2O", value: outputs.guaranteedAnalysisEstimate?.K2O },
+        {
+          key: "analysisP",
+          label: "P2O5",
+          value: outputs.guaranteedAnalysisEstimate?.P2O5
+        },
+        {
+          key: "analysisK",
+          label: "K2O",
+          value: outputs.guaranteedAnalysisEstimate?.K2O
+        },
         { key: "costPerBag", label: "Cost / bag", value: outputs.costPerBag }
       ]}
       defaultLogTitle={(outputs) => `Soil batch plan: ${outputs.recipeId || "recipe"}`}

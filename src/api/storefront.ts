@@ -36,11 +36,13 @@ export async function fetchPublicStorefront(slug: string) {
   });
 }
 
-export async function searchPublicStorefronts(options: {
-  q?: string;
-  similarTo?: string;
-  limit?: number;
-} = {}) {
+export async function searchPublicStorefronts(
+  options: {
+    q?: string;
+    similarTo?: string;
+    limit?: number;
+  } = {}
+) {
   const params = new URLSearchParams();
   if (options.q) params.set("q", options.q);
   if (options.similarTo) params.set("similarTo", options.similarTo);

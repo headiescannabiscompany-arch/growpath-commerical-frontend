@@ -70,7 +70,9 @@ function BreakdownList({
                 </Text>
               ) : null}
             </View>
-            <Text style={styles.breakdownCount}>{Number(row.count || 0).toLocaleString()}</Text>
+            <Text style={styles.breakdownCount}>
+              {Number(row.count || 0).toLocaleString()}
+            </Text>
           </View>
         ))
       ) : (

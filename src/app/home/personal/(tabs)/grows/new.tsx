@@ -56,17 +56,6 @@ export default function NewGrowScreen() {
 
   const isValid = name.trim().length > 0 && anchorDate.trim().length > 0;
 
-  if (!canCreateGrow) {
-    return (
-      <LockedScreen
-        title="Create grows with Pro"
-        message="Free accounts can browse GrowPathAI and use free tools. Upgrade to create and save personal grow records."
-        actionLabel="Back to grows"
-        onAction={() => router.replace("/home/personal/grows" as any)}
-      />
-    );
-  }
-
   const pickPhotos = React.useCallback(async () => {
     const permission = await ImagePicker.requestMediaLibraryPermissionsAsync();
     if (!permission.granted) {
@@ -179,6 +168,17 @@ export default function NewGrowScreen() {
     targetVpdBand,
     timeZone
   ]);
+
+  if (!canCreateGrow) {
+    return (
+      <LockedScreen
+        title="Create grows with Pro"
+        message="Free accounts can browse GrowPathAI and use free tools. Upgrade to create and save personal grow records."
+        actionLabel="Back to grows"
+        onAction={() => router.replace("/home/personal/grows" as any)}
+      />
+    );
+  }
 
   return (
     <ScrollView

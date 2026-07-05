@@ -329,10 +329,20 @@ export default function CommercialTrialDetailRoute({ route }: { route?: any } = 
 
       <AppCard>
         <Text style={styles.cardTitle}>Publish Path</Text>
-        <Text style={styles.bullet}>Complete the trial before using it as strong product proof.</Text>
-        <Text style={styles.bullet}>Attach product, batch, grow, pH/EC, diagnosis, harvest, and dry/cure evidence.</Text>
-        <Text style={styles.bullet}>Use cautious language: may have contributed, observed in this trial, limited sample size.</Text>
-        <Text style={styles.bullet}>Turn the final summary into a feed post, storefront proof point, course lesson, or forum answer.</Text>
+        <Text style={styles.bullet}>
+          Complete the trial before using it as strong product proof.
+        </Text>
+        <Text style={styles.bullet}>
+          Attach product, batch, grow, pH/EC, diagnosis, harvest, and dry/cure evidence.
+        </Text>
+        <Text style={styles.bullet}>
+          Use cautious language: may have contributed, observed in this trial, limited
+          sample size.
+        </Text>
+        <Text style={styles.bullet}>
+          Turn the final summary into a feed post, storefront proof point, course lesson,
+          or forum answer.
+        </Text>
         <View style={styles.actions}>
           <ActionLink href="/home/commercial/feed" label="Create Feed Post" />
           <ActionLink href="/home/commercial/storefront" label="Storefront" />

@@ -132,7 +132,9 @@ export async function createProductLine(data: Partial<ProductLine>) {
 
 export async function fetchProductLine(id: string): Promise<ProductLine | null> {
   const res = await apiRequest(endpoints.commercial.productLine(id));
-  return res?.productLine ?? res?.line ?? res?.data?.productLine ?? res?.data ?? res ?? null;
+  return (
+    res?.productLine ?? res?.line ?? res?.data?.productLine ?? res?.data ?? res ?? null
+  );
 }
 
 export async function updateProductLine(id: string, data: Partial<ProductLine>) {
@@ -227,7 +229,9 @@ export async function fetchSoilNutrientBatch(
   id: string
 ): Promise<SoilNutrientBatch | null> {
   const res = await apiRequest(`/api/commercial/batches/${encodeURIComponent(id)}`);
-  return res?.batch ?? res?.soilNutrientBatch ?? res?.data?.batch ?? res?.data ?? res ?? null;
+  return (
+    res?.batch ?? res?.soilNutrientBatch ?? res?.data?.batch ?? res?.data ?? res ?? null
+  );
 }
 
 export async function updateSoilNutrientBatch(
@@ -258,7 +262,9 @@ export async function fetchCommercialCourse(
   id: string
 ): Promise<CommercialCourse | null> {
   const res = await apiRequest(`/api/commercial/courses/${encodeURIComponent(id)}`);
-  return res?.course ?? res?.commercialCourse ?? res?.data?.course ?? res?.data ?? res ?? null;
+  return (
+    res?.course ?? res?.commercialCourse ?? res?.data?.course ?? res?.data ?? res ?? null
+  );
 }
 
 export async function updateCommercialCourse(
@@ -272,10 +278,7 @@ export async function updateCommercialCourse(
   return res?.course ?? res?.commercialCourse ?? res?.updated ?? res;
 }
 
-export async function addCommercialCourseLesson(
-  id: string,
-  data: Record<string, any>
-) {
+export async function addCommercialCourseLesson(id: string, data: Record<string, any>) {
   const res = await apiRequest(
     `/api/commercial/courses/${encodeURIComponent(id)}/lessons`,
     {

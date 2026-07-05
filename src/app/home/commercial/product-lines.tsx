@@ -197,7 +197,9 @@ export default function CommercialProductLinesRoute() {
                 ) : null}
                 <View style={styles.headerActions}>
                   <Link
-                    href={`/home/commercial/product-lines/${encodeURIComponent(idOf(line, index))}` as any}
+                    href={
+                      `/home/commercial/product-lines/${encodeURIComponent(idOf(line, index))}` as any
+                    }
                     asChild
                   >
                     <Pressable style={styles.outlineButton}>
