@@ -1,5 +1,5 @@
 import React, { useEffect, useRef, useState } from "react";
-import { ActivityIndicator, View, Text, Pressable } from "react-native";
+import { ActivityIndicator, View, Text, Pressable, Platform } from "react-native";
 import { useRouter } from "expo-router";
 import { useAuth } from "@/auth/AuthContext";
 import { useEntitlements } from "@/entitlements";
@@ -174,7 +174,17 @@ export default function Index() {
     if (lastHrefRef.current === decision.href) return;
     lastHrefRef.current = decision.href;
     router.replace(decision.href as any);
-  }, [decision, router]);
+    if (Platform.OS !== "web") return;
+
+    const id = setTimeout(() => {
+      const windowRef = (globalThis as any).window;
+      const location = windowRef?.location;
+      if (!location || location.pathname === decision.href) return;
+      location.replace(decision.href);
+    }, 500);
+
+    return () => clearTimeout(id);
+  }, [decision.kind, decision.href, router]);
 
   if (decision.kind === "render") return decision.node;
 
