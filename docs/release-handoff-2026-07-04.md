@@ -20,7 +20,20 @@ gh run list --repo headiescannabiscompany-arch/growpath-commerical-frontend --li
 
 Then continue at **Next Actions, item 1** below.
 
-Update after pushing commit `6a9cfaf`: GitHub Actions reached the new `Production Build Preflight` workflow, but the release preflight job failed before EAS because Ubuntu runners do not provide the Windows `powershell` command. Commit `5b6ea2c` patched the release preflight and store asset tests to use `pwsh` on non-Windows runners. Commit `0b6f07c` widened the workflow path filters and reran `Production Build Preflight`; it passed `npm ci`, `expo install --check`, and `expo-doctor`, but failed in the store asset exporter under Ubuntu PowerShell. The current follow-up is moving store asset generation to a cross-platform Node exporter, then pushing so the workflow can reach EAS authentication and iOS/Android build-start results.
+Update after pushing commit `6a9cfaf`: GitHub Actions reached the new `Production Build Preflight` workflow, but the release preflight job failed before EAS because Ubuntu runners do not provide the Windows `powershell` command. Commit `5b6ea2c` patched the release preflight and store asset tests to use `pwsh` on non-Windows runners. Commit `0b6f07c` widened the workflow path filters and reran `Production Build Preflight`; it passed `npm ci`, `expo install --check`, and `expo-doctor`, but failed in the store asset exporter under Ubuntu PowerShell. Commit `a6f28ed` moved store asset generation to a cross-platform Node exporter.
+
+Latest production workflow run:
+
+- Run ID: `28723871790`
+- URL: `https://github.com/headiescannabiscompany-arch/growpath-commerical-frontend/actions/runs/28723871790`
+- Release preflight: passed.
+- Android EAS auth: passed. `npx eas-cli whoami` returned `GrowPathAI Production Build Token (robot) (authenticated using EXPO_TOKEN)`.
+- iOS EAS auth: passed. `npx eas-cli whoami` returned `GrowPathAI Production Build Token (robot) (authenticated using EXPO_TOKEN)`.
+- Android build start: failed.
+- iOS build start: failed.
+- Build-start blocker for both platforms: the Expo robot token only has `Viewer` role on `etgujays-organization`; EAS returned `Entity not authorized: AppEntity[6cc46b82-1bf2-4fe8-989a-0f77b7a51370] (viewer = RobotViewerContext, action = READ, ruleIndex = -1)`.
+
+Current step: update the Expo robot/token permissions so it can read/build the EAS app, then rerun failed jobs or push a no-op workflow change if rerun permissions are unavailable.
 
 ## What Changed After Web Deployment
 
@@ -173,28 +186,33 @@ Live test pack strict source validation is also blocked:
 
 ## Next Actions
 
-1. Commit and push the cross-platform store asset exporter fix:
+1. Commit and push this handoff update:
 
    ```powershell
    git status --short
-   git add package.json package-lock.json scripts/export-store-assets.cjs scripts/export-store-assets.ps1 scripts/release-preflight.cjs tests/release.preflight.test.js tests/release.store-assets.test.js store-assets/graphics docs/release-handoff-2026-07-04.md
-   git commit -m "Make store asset export cross-platform"
+   git add docs/release-handoff-2026-07-04.md
+   git commit -m "Document EAS production build permission blocker"
    git push origin main
    ```
 
-2. Watch the new workflow:
+2. Update Expo/EAS credentials:
+
+   - Give the `GrowPathAI Production Build Token (robot)` enough access to the EAS app/project to read the app and start production builds, or replace the `EXPO_TOKEN` GitHub secret with a token from an Expo user/robot that has that access.
+   - The current token authenticates, but its organization role is only `Viewer`.
+
+3. Rerun the failed workflow jobs, or trigger the workflow again:
 
    ```powershell
    gh run list --repo headiescannabiscompany-arch/growpath-commerical-frontend --workflow "Production Build Preflight" --limit 5
    ```
 
-3. If a run appears, inspect jobs:
+4. If a run appears, inspect jobs:
 
    ```powershell
    gh run view <run-id> --repo headiescannabiscompany-arch/growpath-commerical-frontend --json status,conclusion,url,jobs
    ```
 
-4. Confirm the EAS auth step:
+5. Confirm the EAS auth step:
 
    Look for this job step:
 
@@ -204,7 +222,7 @@ Live test pack strict source validation is also blocked:
 
    Success there means `EXPO_TOKEN` authenticates successfully.
 
-5. Confirm the EAS build start steps:
+6. Confirm the EAS build start steps:
 
    Look for:
 
@@ -214,11 +232,11 @@ Live test pack strict source validation is also blocked:
 
    Success in both matrix jobs means iOS and Android production builds can authenticate and start.
 
-6. If workflow fails before EAS:
+7. If workflow fails before EAS:
 
    Fix the first failing preflight step.
 
-7. If workflow fails at EAS auth:
+8. If workflow fails at EAS auth:
 
    Recheck the GitHub Actions repository secret name:
 
@@ -228,7 +246,7 @@ Live test pack strict source validation is also blocked:
 
    Then confirm the token belongs to an Expo account with access to this EAS project.
 
-8. If workflow starts builds successfully:
+9. If workflow starts builds successfully:
 
    Collect the EAS build URLs from logs and create release evidence under:
 
@@ -236,7 +254,7 @@ Live test pack strict source validation is also blocked:
    tmp/spec/release-builds/
    ```
 
-9. After production builds complete:
+10. After production builds complete:
 
    Run or record:
 
@@ -246,7 +264,7 @@ Live test pack strict source validation is also blocked:
    - data-rights disposable account verification
    - store-console/legal/owners/hotfix evidence
 
-10. Re-run final gate:
+11. Re-run final gate:
 
     ```powershell
     npm.cmd run release:go-no-go
