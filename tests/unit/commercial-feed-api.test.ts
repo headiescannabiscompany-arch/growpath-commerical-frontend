@@ -1,12 +1,18 @@
 const mockApiRequest = jest.fn();
+const mockPersistImageUri = jest.fn();
 
 jest.mock("@/api/apiRequest", () => ({
   apiRequest: (...args: any[]) => mockApiRequest(...args)
 }));
 
+jest.mock("@/utils/photoUploads", () => ({
+  persistImageUri: (...args: any[]) => mockPersistImageUri(...args)
+}));
+
 describe("commercial feed API", () => {
   beforeEach(() => {
     jest.resetAllMocks();
+    mockPersistImageUri.mockResolvedValue("/uploads/feed-image.jpg");
     mockApiRequest.mockResolvedValue({
       post: {
         id: "post-1",
@@ -17,6 +23,7 @@ describe("commercial feed API", () => {
         linkedCourseId: "course-1",
         linkedGrowId: "grow-1",
         storefrontSlug: "living-soil-labs",
+        imageUrl: "/uploads/feed-image.jpg",
         externalLinks: [{ label: "Buy", url: "https://example.com" }]
       }
     });
@@ -35,9 +42,11 @@ describe("commercial feed API", () => {
       linkedCourseId: "course-1",
       linkedGrowId: "grow-1",
       storefrontSlug: "living-soil-labs",
+      imageUrl: "file:///tmp/feed-image.jpg",
       externalLinks: [{ label: "Buy", url: "https://example.com" }]
     });
 
+    expect(mockPersistImageUri).toHaveBeenCalledWith("file:///tmp/feed-image.jpg");
     expect(mockApiRequest).toHaveBeenCalledWith("/api/commercial/posts", {
       method: "POST",
       body: {
@@ -50,6 +59,8 @@ describe("commercial feed API", () => {
         linkedCourseId: "course-1",
         linkedGrowId: "grow-1",
         storefrontSlug: "living-soil-labs",
+        imageUrl: "/uploads/feed-image.jpg",
+        creativeImageUrl: "/uploads/feed-image.jpg",
         externalLinks: [{ label: "Buy", url: "https://example.com" }]
       }
     });
@@ -58,7 +69,8 @@ describe("commercial feed API", () => {
       linkedProductId: "product-1",
       linkedCourseId: "course-1",
       linkedGrowId: "grow-1",
-      storefrontSlug: "living-soil-labs"
+      storefrontSlug: "living-soil-labs",
+      imageUrl: "/uploads/feed-image.jpg"
     });
   });
 });

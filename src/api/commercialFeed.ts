@@ -1,4 +1,5 @@
 import { apiRequest } from "./apiRequest";
+import { persistImageUri } from "@/utils/photoUploads";
 
 export type CommercialFeedPostType =
   | "listing"
@@ -21,6 +22,9 @@ export type CommercialFeedPost = {
   linkedGrowId?: string;
   linkedForumThreadId?: string;
   storefrontSlug?: string;
+  imageUrl?: string;
+  creativeImageUrl?: string;
+  bannerImageUrl?: string;
   externalLinks?: Array<{ label: string; url: string }>;
   likeCount?: number;
   commentCount?: number;
@@ -81,11 +85,17 @@ export async function createCommercialFeedPost(input: {
   linkedGrowId?: string;
   linkedForumThreadId?: string;
   storefrontSlug?: string;
+  imageUrl?: string;
   externalLinks?: Array<{ label: string; url: string }>;
 }) {
+  const imageUrl = await persistImageUri(input.imageUrl);
   const res: any = await apiRequest("/api/commercial/posts", {
     method: "POST",
-    body: input
+    body: {
+      ...input,
+      imageUrl: imageUrl || undefined,
+      creativeImageUrl: imageUrl || undefined
+    }
   });
   return normalizePost(res?.item ?? res?.post ?? res);
 }

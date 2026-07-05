@@ -6,6 +6,9 @@ export type Storefront = {
   id: string;
   name: string;
   slug?: string;
+  logoUrl?: string;
+  bannerUrl?: string;
+  imageUrl?: string;
   isPublished?: boolean;
   createdAt?: string;
   updatedAt?: string;

@@ -2,6 +2,7 @@ import React, { useCallback, useEffect, useState } from "react";
 import { Link } from "expo-router";
 import {
   ActivityIndicator,
+  Image,
   Pressable,
   RefreshControl,
   ScrollView,
@@ -13,6 +14,7 @@ import {
 import { listForumPosts, postId, type SocialPost } from "@/api/communitySocial";
 import PersonalFeedPlacement from "@/components/feed/PersonalFeedPlacement";
 import { CAPABILITY_KEYS, useEntitlements } from "@/entitlements";
+import { resolveImageUri } from "@/utils/photoUploads";
 
 function titleOf(post: SocialPost) {
   return String(post.title || post.text || post.content || post.body || "Forum post");
@@ -20,6 +22,16 @@ function titleOf(post: SocialPost) {
 
 function bodyOf(post: SocialPost) {
   return String(post.body || post.content || post.text || "");
+}
+
+function photosOf(post: SocialPost) {
+  const rows = [
+    post.photos,
+    post.photoUrls,
+    post.images,
+    post.imageUrl ? [post.imageUrl] : []
+  ].find((value) => Array.isArray(value) && value.length);
+  return (rows || []).map((uri) => resolveImageUri(uri)).filter(Boolean);
 }
 
 export default function ForumRoute() {
@@ -112,6 +124,7 @@ export default function ForumRoute() {
 
       {posts.map((post) => {
         const id = postId(post);
+        const photos = photosOf(post);
         return (
           <Link
             key={id || titleOf(post)}
@@ -128,6 +141,19 @@ export default function ForumRoute() {
                 <Text style={styles.cardText} numberOfLines={3}>
                   {bodyOf(post)}
                 </Text>
+              ) : null}
+              {photos.length ? (
+                <View style={styles.photoRow}>
+                  {photos.slice(0, 3).map((photo, index) => (
+                    <Image
+                      key={`${photo}-${index}`}
+                      source={{ uri: photo }}
+                      style={styles.photoThumb}
+                      resizeMode="cover"
+                      accessibilityLabel={`Forum post photo ${index + 1}`}
+                    />
+                  ))}
+                </View>
               ) : null}
               <Text style={styles.meta}>{post.likeCount || 0} likes</Text>
             </Pressable>
@@ -155,6 +181,13 @@ const styles = StyleSheet.create({
   },
   cardTitle: { fontSize: 16, fontWeight: "800", color: "#0F172A" },
   cardText: { color: "#475569", lineHeight: 20 },
+  photoRow: { flexDirection: "row", flexWrap: "wrap", gap: 8 },
+  photoThumb: {
+    width: 96,
+    height: 72,
+    borderRadius: 8,
+    backgroundColor: "#E2E8F0"
+  },
   meta: { color: "#64748B", fontSize: 12, fontWeight: "700" },
   primaryBtn: {
     alignSelf: "flex-start",

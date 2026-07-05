@@ -154,24 +154,43 @@ export default function ProfileScreen() {
     }
   };
 
+  const performLogout = async () => {
+    try {
+      if (typeof (auth as any).logout === "function") {
+        await (auth as any).logout();
+      } else if (typeof (auth as any).setToken === "function") {
+        (auth as any).setToken(null);
+      }
+
+      router.replace("/login" as any);
+    } catch (e: any) {
+      if (Platform.OS === "web") {
+        setPrivacyError(e?.message || "Failed to log out");
+      } else {
+        Alert.alert("Error", e?.message || "Failed to log out");
+      }
+    }
+  };
+
   const handleLogout = () => {
+    if (
+      Platform.OS === "web" &&
+      typeof window !== "undefined" &&
+      typeof window.confirm === "function"
+    ) {
+      if (window.confirm("Log out?\n\nYou'll be returned to the login screen.")) {
+        void performLogout();
+      }
+      return;
+    }
+
     Alert.alert("Log out?", "You'll be returned to the login screen.", [
       { text: "Cancel", style: "cancel" },
       {
         text: "Log out",
         style: "destructive",
-        onPress: async () => {
-          try {
-            if (typeof (auth as any).logout === "function") {
-              await (auth as any).logout();
-            } else if (typeof (auth as any).setToken === "function") {
-              (auth as any).setToken(null);
-            }
-
-            router.replace("/login" as any);
-          } catch (e: any) {
-            Alert.alert("Error", e?.message || "Failed to log out");
-          }
+        onPress: () => {
+          void performLogout();
         }
       }
     ]);

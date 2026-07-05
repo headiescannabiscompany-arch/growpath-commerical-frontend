@@ -34,7 +34,13 @@ export default function FeedBanner({
       style={styles.banner}
     >
       <Text style={styles.label}>{LABELS[placement]}</Text>
-      <FeedRail slots={slots} mode={mode} plan={plan} railMode={railMode} />
+      <FeedRail
+        slots={slots}
+        mode={mode}
+        plan={plan}
+        railMode={railMode}
+        placement={placement}
+      />
     </View>
   );
 }

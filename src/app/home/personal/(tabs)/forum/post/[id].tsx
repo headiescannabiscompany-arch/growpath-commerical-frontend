@@ -1,6 +1,7 @@
 import React, { useCallback, useEffect, useMemo, useState } from "react";
 import {
   ActivityIndicator,
+  Image,
   Pressable,
   RefreshControl,
   ScrollView,
@@ -25,6 +26,7 @@ import {
 import { ScreenBoundary } from "@/components/ScreenBoundary";
 import { CAPABILITY_KEYS, useEntitlements } from "@/entitlements";
 import PersonalFeedPlacement from "@/components/feed/PersonalFeedPlacement";
+import { resolveImageUri } from "@/utils/photoUploads";
 
 type CommentRow = {
   id?: string;
@@ -61,6 +63,17 @@ function bodyOf(row: any) {
 
 function titleOf(post: SocialPost | null) {
   return String(post?.title || post?.text || post?.content || post?.body || "Forum post");
+}
+
+function photosOf(post: SocialPost | null) {
+  if (!post) return [];
+  const rows = [
+    post.photos,
+    post.photoUrls,
+    post.images,
+    post.imageUrl ? [post.imageUrl] : []
+  ].find((value) => Array.isArray(value) && value.length);
+  return (rows || []).map((uri) => resolveImageUri(uri)).filter(Boolean);
 }
 
 function likedByViewer(post: SocialPost | null) {
@@ -259,6 +272,19 @@ export default function ForumPostDetailRoute() {
                     : ""}
                 </Text>
                 {bodyOf(post) ? <Text style={styles.body}>{bodyOf(post)}</Text> : null}
+                {photosOf(post).length ? (
+                  <View style={styles.photoGrid}>
+                    {photosOf(post).map((photo, index) => (
+                      <Image
+                        key={`${photo}-${index}`}
+                        source={{ uri: photo }}
+                        style={styles.postPhoto}
+                        resizeMode="cover"
+                        accessibilityLabel={`Forum post photo ${index + 1}`}
+                      />
+                    ))}
+                  </View>
+                ) : null}
                 <View style={styles.actions}>
                   <Pressable
                     disabled={!canPost || saving}
@@ -374,6 +400,13 @@ const styles = StyleSheet.create({
   content: { padding: 20, paddingBottom: 36, gap: 12 },
   title: { fontSize: 24, fontWeight: "800", color: "#0F172A" },
   body: { color: "#334155", lineHeight: 21, marginTop: 10 },
+  photoGrid: { flexDirection: "row", flexWrap: "wrap", gap: 10, marginTop: 8 },
+  postPhoto: {
+    width: 160,
+    height: 120,
+    borderRadius: 8,
+    backgroundColor: "#E2E8F0"
+  },
   card: {
     borderWidth: 1,
     borderColor: "#E2E8F0",

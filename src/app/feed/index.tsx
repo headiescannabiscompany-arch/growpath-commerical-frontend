@@ -1,6 +1,8 @@
 import React, { useCallback, useEffect, useMemo, useState } from "react";
+import * as ImagePicker from "expo-image-picker";
 import {
   ActivityIndicator,
+  Image,
   Pressable,
   RefreshControl,
   ScrollView,
@@ -23,6 +25,7 @@ import {
   facilitySalesPolicyText,
   hasFacilitySalesLanguage
 } from "@/utils/commercialFeedPolicy";
+import { resolveImageUri } from "@/utils/photoUploads";
 
 const COMMERCIAL_TYPES: CommercialFeedPostType[] = [
   "update",
@@ -41,6 +44,12 @@ function authorLabel(post: CommercialFeedPost) {
 function postMeta(post: CommercialFeedPost) {
   const created = post.createdAt ? new Date(post.createdAt).toLocaleString() : "";
   return [authorLabel(post), created, post.location].filter(Boolean).join(" - ");
+}
+
+function postImage(post: CommercialFeedPost) {
+  return resolveImageUri(
+    post.imageUrl || post.creativeImageUrl || post.bannerImageUrl || ""
+  );
 }
 
 function splitTags(value: string) {
@@ -68,6 +77,7 @@ export default function CommercialFeedRoute() {
   const [linkedCourseId, setLinkedCourseId] = useState("");
   const [linkedGrowId, setLinkedGrowId] = useState("");
   const [storefrontSlug, setStorefrontSlug] = useState("");
+  const [imageUrl, setImageUrl] = useState("");
   const [externalLinkUrl, setExternalLinkUrl] = useState("");
   const [externalLinkLabel, setExternalLinkLabel] = useState("");
   const [loading, setLoading] = useState(false);
@@ -145,6 +155,7 @@ export default function CommercialFeedRoute() {
         linkedCourseId: linkedCourseId.trim() || undefined,
         linkedGrowId: linkedGrowId.trim() || undefined,
         storefrontSlug: storefrontSlug.trim() || undefined,
+        imageUrl: imageUrl.trim() || undefined,
         externalLinks: cleanExternalUrl
           ? [{ label: cleanExternalLabel || "External link", url: cleanExternalUrl }]
           : undefined
@@ -157,6 +168,7 @@ export default function CommercialFeedRoute() {
       setLinkedCourseId("");
       setLinkedGrowId("");
       setStorefrontSlug("");
+      setImageUrl("");
       setExternalLinkUrl("");
       setExternalLinkLabel("");
       setFeedback(isFacility ? "Educational post published." : "Feed post published.");
@@ -165,6 +177,25 @@ export default function CommercialFeedRoute() {
       setError(e);
     } finally {
       setCreating(false);
+    }
+  }
+
+  async function pickPostImage() {
+    const permission = await ImagePicker.requestMediaLibraryPermissionsAsync();
+    if (!permission.granted) {
+      setFeedback("Photo-library permission is required to attach an image.");
+      return;
+    }
+    const result = await ImagePicker.launchImageLibraryAsync({
+      mediaTypes: ImagePicker.MediaTypeOptions.Images,
+      allowsEditing: false,
+      quality: 0.85
+    });
+    if (result.canceled) return;
+    const uri = result.assets.find((asset) => asset.uri)?.uri;
+    if (uri) {
+      setImageUrl(uri);
+      setFeedback("");
     }
   }
 
@@ -276,6 +307,44 @@ export default function CommercialFeedRoute() {
               autoCapitalize="none"
               accessibilityLabel="Linked storefront slug"
             />
+            <TextInput
+              value={imageUrl}
+              onChangeText={setImageUrl}
+              style={styles.input}
+              placeholder="Post image URL or uploaded creative"
+              autoCapitalize="none"
+              accessibilityLabel="Commercial feed post image URL"
+            />
+            <View style={styles.imageTools}>
+              <Pressable
+                onPress={pickPostImage}
+                accessibilityRole="button"
+                accessibilityLabel="Upload commercial feed post image"
+                style={styles.secondaryButton}
+                disabled={creating}
+              >
+                <Text style={styles.secondaryButtonText}>Upload image</Text>
+              </Pressable>
+              {imageUrl ? (
+                <Pressable
+                  onPress={() => setImageUrl("")}
+                  accessibilityRole="button"
+                  accessibilityLabel="Clear commercial feed post image"
+                  style={styles.secondaryButton}
+                  disabled={creating}
+                >
+                  <Text style={styles.secondaryButtonText}>Clear image</Text>
+                </Pressable>
+              ) : null}
+            </View>
+            {imageUrl ? (
+              <Image
+                source={{ uri: resolveImageUri(imageUrl) }}
+                style={styles.postImagePreview}
+                resizeMode="cover"
+                accessibilityLabel="Commercial feed post image preview"
+              />
+            ) : null}
             <View style={styles.twoColumn}>
               <TextInput
                 value={externalLinkLabel}
@@ -368,6 +437,14 @@ export default function CommercialFeedRoute() {
             <Text style={styles.likes}>{Number(post.likeCount || 0)} likes</Text>
           </View>
           <Text style={styles.postTitle}>{post.title || "Feed update"}</Text>
+          {postImage(post) ? (
+            <Image
+              source={{ uri: postImage(post) }}
+              style={styles.feedImage}
+              resizeMode="cover"
+              accessibilityLabel={`${post.title || "Feed update"} image`}
+            />
+          ) : null}
           <Text style={styles.postBody}>{post.body}</Text>
           {post.tags.length ? (
             <Text style={styles.tags}>{post.tags.map((tag) => `#${tag}`).join(" ")}</Text>
@@ -443,6 +520,25 @@ const styles = StyleSheet.create({
   },
   linkBoxTitle: { color: "#0F172A", fontWeight: "900" },
   linkBoxText: { color: "#64748B", fontSize: 12, fontWeight: "700", lineHeight: 18 },
+  imageTools: { flexDirection: "row", flexWrap: "wrap", gap: 8 },
+  secondaryButton: {
+    alignItems: "center",
+    borderColor: "#CBD5E1",
+    borderRadius: 8,
+    borderWidth: 1,
+    minHeight: 40,
+    justifyContent: "center",
+    paddingHorizontal: 12,
+    paddingVertical: 9
+  },
+  secondaryButtonText: { color: "#0F172A", fontWeight: "800" },
+  postImagePreview: {
+    width: "100%",
+    maxWidth: 520,
+    aspectRatio: 16 / 7,
+    borderRadius: 8,
+    backgroundColor: "#E2E8F0"
+  },
   twoColumn: { flexDirection: "row", flexWrap: "wrap", gap: 8 },
   columnInput: { flex: 1, minWidth: 180 },
   chipRow: { flexDirection: "row", flexWrap: "wrap", gap: 8 },
@@ -504,6 +600,13 @@ const styles = StyleSheet.create({
   },
   likes: { color: "#64748B", fontSize: 12, fontWeight: "800" },
   postTitle: { color: "#0F172A", fontSize: 17, fontWeight: "900" },
+  feedImage: {
+    width: "100%",
+    maxWidth: 640,
+    aspectRatio: 16 / 7,
+    borderRadius: 8,
+    backgroundColor: "#E2E8F0"
+  },
   postBody: { color: "#334155", fontWeight: "600", lineHeight: 21 },
   tags: { color: "#2563EB", fontSize: 12, fontWeight: "800" },
   linkMetaRow: { flexDirection: "row", flexWrap: "wrap", gap: 6 },

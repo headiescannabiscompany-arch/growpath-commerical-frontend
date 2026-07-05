@@ -216,6 +216,17 @@ Live seeded shell testing is blocked:
 
 ## Next Actions
 
+Current completed local step:
+
+- Live free-mode fixes were implemented after testing `free@growpathai.com`.
+- Fixed repeated banner rotation, real Living Soil Labs / Triple Bag Genetics profile links, ad image support, forum photo uploads/display, commercial campaign/feed image uploads, and web logout token clearing.
+- Local verification passed:
+  - focused API tests for forum/commercial images
+  - `npm.cmd run lint:ci`
+  - touched-file Prettier check
+  - `npm.cmd run release:preflight` rerun passed end to end
+- Production web export regenerated in `dist/`.
+
 1. Update Expo/EAS credentials:
 
    - Give the `GrowPathAI Production Build Token (robot)` enough access to the EAS app/project to read the app and start production builds, or replace the `EXPO_TOKEN` GitHub secret with a token from an Expo user/robot that has that access.

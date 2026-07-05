@@ -1,11 +1,13 @@
 import { Link } from "expo-router";
+import * as ImagePicker from "expo-image-picker";
 import React, { useEffect, useMemo, useState } from "react";
-import { Pressable, StyleSheet, Text, TextInput, View } from "react-native";
+import { Image, Pressable, StyleSheet, Text, TextInput, View } from "react-native";
 
 import { Campaign, createCampaign, fetchCampaigns } from "@/api/campaigns";
 import { InlineError } from "@/components/InlineError";
 import AppCard from "@/components/layout/AppCard";
 import AppPage from "@/components/layout/AppPage";
+import { persistImageUri, resolveImageUri } from "@/utils/photoUploads";
 
 type CampaignForm = {
   name: string;
@@ -21,6 +23,7 @@ type CampaignForm = {
   linkedGrowId: string;
   storefrontSlug: string;
   targetUrl: string;
+  imageUrl: string;
   platformNotes: string;
 };
 
@@ -38,6 +41,7 @@ const EMPTY_FORM: CampaignForm = {
   linkedGrowId: "",
   storefrontSlug: "",
   targetUrl: "",
+  imageUrl: "",
   platformNotes: ""
 };
 
@@ -67,6 +71,18 @@ function clickCount(campaign: Campaign) {
 
 function budgetTotal(campaign: Campaign) {
   return Number(campaign.budget?.totalBudget || campaign.total || 0);
+}
+
+function campaignImage(campaign: Campaign) {
+  const creativeImage = String(
+    campaign.imageUrl ||
+      campaign.creativeImageUrl ||
+      campaign.bannerImageUrl ||
+      campaign.creative?.imageUrl ||
+      campaign.creative?.bannerUrl ||
+      ""
+  ).trim();
+  return resolveImageUri(creativeImage);
 }
 
 export default function CommercialMarketingRoute() {
@@ -117,6 +133,7 @@ export default function CommercialMarketingRoute() {
     setSaving(true);
     setError(null);
     try {
+      const imageUrl = await persistImageUri(form.imageUrl.trim());
       await createCampaign({
         name: form.name.trim(),
         description: form.description.trim(),
@@ -126,6 +143,10 @@ export default function CommercialMarketingRoute() {
         launchDate: form.launchDate.trim() || undefined,
         targetUrl: form.targetUrl.trim() || undefined,
         externalUrl: form.targetUrl.trim() || undefined,
+        imageUrl: imageUrl || undefined,
+        creativeImageUrl: imageUrl || undefined,
+        bannerImageUrl: imageUrl || undefined,
+        creative: imageUrl ? { imageUrl } : undefined,
         storefrontSlug: form.storefrontSlug.trim() || undefined,
         linkedProductId: form.linkedProductId.trim() || undefined,
         linkedProductLineId: form.linkedProductLineId.trim() || undefined,
@@ -143,6 +164,22 @@ export default function CommercialMarketingRoute() {
     } finally {
       setSaving(false);
     }
+  }
+
+  async function pickCreativeImage() {
+    const permission = await ImagePicker.requestMediaLibraryPermissionsAsync();
+    if (!permission.granted) {
+      setError(new Error("Photo-library permission is required to upload ad creative."));
+      return;
+    }
+    const result = await ImagePicker.launchImageLibraryAsync({
+      mediaTypes: ImagePicker.MediaTypeOptions.Images,
+      allowsEditing: false,
+      quality: 0.85
+    });
+    if (result.canceled) return;
+    const uri = result.assets.find((asset) => asset.uri)?.uri;
+    if (uri) setForm((prev) => ({ ...prev, imageUrl: uri }));
   }
 
   return (
@@ -325,6 +362,14 @@ export default function CommercialMarketingRoute() {
             style={styles.input}
           />
           <TextInput
+            value={form.imageUrl}
+            onChangeText={(imageUrl) => setForm((prev) => ({ ...prev, imageUrl }))}
+            accessibilityLabel="Marketing plan ad image URL"
+            autoCapitalize="none"
+            placeholder="Ad image URL or uploaded creative"
+            style={styles.input}
+          />
+          <TextInput
             value={form.platformNotes}
             onChangeText={(platformNotes) =>
               setForm((prev) => ({ ...prev, platformNotes }))
@@ -334,6 +379,36 @@ export default function CommercialMarketingRoute() {
             style={styles.input}
           />
         </View>
+        <View style={styles.creativeTools}>
+          <Pressable
+            accessibilityRole="button"
+            accessibilityLabel="Upload marketing plan ad image"
+            onPress={pickCreativeImage}
+            disabled={saving}
+            style={[styles.uploadButton, saving && styles.submitDisabled]}
+          >
+            <Text style={styles.uploadButtonText}>Upload ad image</Text>
+          </Pressable>
+          {form.imageUrl ? (
+            <Pressable
+              accessibilityRole="button"
+              accessibilityLabel="Clear marketing plan ad image"
+              onPress={() => setForm((prev) => ({ ...prev, imageUrl: "" }))}
+              disabled={saving}
+              style={styles.clearButton}
+            >
+              <Text style={styles.clearButtonText}>Clear image</Text>
+            </Pressable>
+          ) : null}
+        </View>
+        {form.imageUrl ? (
+          <Image
+            source={{ uri: resolveImageUri(form.imageUrl) }}
+            style={styles.creativePreview}
+            resizeMode="cover"
+            accessibilityLabel="Marketing plan ad image preview"
+          />
+        ) : null}
         <Pressable
           accessibilityRole="button"
           accessibilityLabel="Create marketing plan"
@@ -382,6 +457,14 @@ export default function CommercialMarketingRoute() {
           <View style={styles.list}>
             {campaigns.map((campaign) => (
               <View key={campaignId(campaign)} style={styles.row}>
+                {campaignImage(campaign) ? (
+                  <Image
+                    source={{ uri: campaignImage(campaign) }}
+                    style={styles.rowImage}
+                    resizeMode="cover"
+                    accessibilityLabel={`${campaign.name} ad image`}
+                  />
+                ) : null}
                 <View style={styles.rowMain}>
                   <Text style={styles.rowTitle}>{campaign.name}</Text>
                   {campaign.description ? (
@@ -541,6 +624,42 @@ const styles = StyleSheet.create({
   submitDisabled: {
     opacity: 0.55
   },
+  creativeTools: {
+    flexDirection: "row",
+    flexWrap: "wrap",
+    gap: 10,
+    marginTop: 12
+  },
+  uploadButton: {
+    alignItems: "center",
+    borderColor: "#b9c8b9",
+    borderRadius: 8,
+    borderWidth: 1,
+    minHeight: 40,
+    justifyContent: "center",
+    paddingHorizontal: 14,
+    paddingVertical: 10
+  },
+  uploadButtonText: { color: "#1f4d2c", fontSize: 14, fontWeight: "800" },
+  clearButton: {
+    alignItems: "center",
+    borderColor: "#e2c4c4",
+    borderRadius: 8,
+    borderWidth: 1,
+    minHeight: 40,
+    justifyContent: "center",
+    paddingHorizontal: 14,
+    paddingVertical: 10
+  },
+  clearButtonText: { color: "#8a2d2d", fontSize: 14, fontWeight: "800" },
+  creativePreview: {
+    width: "100%",
+    maxWidth: 520,
+    aspectRatio: 16 / 7,
+    borderRadius: 8,
+    marginTop: 12,
+    backgroundColor: "#edf5ec"
+  },
   submitText: {
     color: "#ffffff",
     fontSize: 14,
@@ -561,6 +680,12 @@ const styles = StyleSheet.create({
     flexDirection: "row",
     gap: 12,
     padding: 12
+  },
+  rowImage: {
+    width: 128,
+    height: 82,
+    borderRadius: 8,
+    backgroundColor: "#edf5ec"
   },
   rowMain: {
     flex: 1,

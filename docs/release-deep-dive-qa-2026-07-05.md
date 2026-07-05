@@ -154,6 +154,51 @@ Change:
 - Normalized `insights.overdueTasksCount` and `insights.latestToolRuns` before rendering the Facility insights status row.
 - Missing `latestToolRuns` now renders as `0 tool runs` instead of throwing.
 
+## Live Free-Mode Follow-Up Fixes
+
+User live test account:
+
+- `free@growpathai.com`
+
+Issues reported from live web testing:
+
+- Feed banners repeated the same advertisement.
+- Banner ads needed different rotation logic for newest, most-liked, low-click, and least-promoted inventory.
+- Banner ads should attach to real commercial profiles, not placeholder profiles.
+- Ads need images.
+- Personal profile logout did not work reliably on web.
+- Forum posts need picture upload and display.
+
+Changes made:
+
+- Feed rail ad rotation now chooses different sponsored cards by placement and slot using newest, most-liked, low-click, and fresh-rotation strategies.
+- Default sponsored ad inventory now points to the real Living Soil Labs profile/store slugs:
+  - `/brands/living-soil-labs`
+  - `/store/living-soil-labs`
+- Education cards now point to Triple Bag Genetics:
+  - `/brands/triple-bag-genetics`
+- Ad cards now load real profile/storefront images by `storefrontSlug` first, then fall back to campaign/banner creative.
+- Forum create-post screen now supports photo picker uploads.
+- Forum list and forum detail screens now render attached post images.
+- Commercial marketing plans now support uploaded ad creative and persist image URLs through campaign payloads.
+- Commercial feed posts now support uploaded images for education/content posts.
+- Web logout now uses a web-safe confirm flow and clears AsyncStorage, `localStorage`, and `sessionStorage` token fallbacks.
+
+Verification:
+
+- `npm.cmd test -- --runInBand tests/unit/community-social-api.test.ts tests/unit/commercial-feed-api.test.ts`
+  - Passed: 2 suites, 2 tests.
+- `npm.cmd run lint:ci`
+  - Passed.
+- Prettier check on touched files
+  - Passed.
+- `npm.cmd run release:preflight`
+  - First run: scans and Jest passed; release Playwright timed out during a cold 104s Metro bundle.
+  - Rerun: passed end to end.
+  - Release Playwright specs: 6 passed.
+  - Production web export verified against `https://api.growpathai.com`.
+  - Store graphics export passed.
+
 ## Remaining Blockers
 
 Expo/EAS:

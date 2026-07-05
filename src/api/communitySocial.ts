@@ -1,5 +1,6 @@
 import { apiRequest } from "./apiRequest";
 import apiRoutes from "./routes.js";
+import { persistImageUris } from "@/utils/photoUploads";
 
 export type SocialPost = {
   id?: string;
@@ -13,6 +14,10 @@ export type SocialPost = {
   likeCount?: number;
   likes?: any[];
   comments?: any[];
+  photos?: string[];
+  photoUrls?: string[];
+  imageUrl?: string;
+  images?: string[];
   createdAt?: string;
   updatedAt?: string;
 };
@@ -61,10 +66,15 @@ export async function listForumPosts(page = 1): Promise<SocialPost[]> {
 export async function createForumPost(data: {
   title: string;
   body: string;
+  photos?: string[];
 }): Promise<SocialPost> {
+  const photos = await persistImageUris(data.photos || []);
   const response = await apiRequest(apiRoutes.FORUM.CREATE, {
     method: "POST",
-    body: data
+    body: {
+      ...data,
+      photos
+    }
   });
   return response?.created ?? response?.post ?? response;
 }

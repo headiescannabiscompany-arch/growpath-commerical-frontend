@@ -16,7 +16,11 @@ export async function getToken(): Promise<string | null> {
   try {
     if (Platform.OS === "web") {
       const webToken = await AsyncStorage.getItem(KEY);
-      return normalizeToken(webToken);
+      const fallbackToken =
+        typeof globalThis?.localStorage?.getItem === "function"
+          ? globalThis.localStorage.getItem(KEY)
+          : null;
+      return normalizeToken(webToken || fallbackToken);
     }
     const nativeToken = await SecureStore.getItemAsync(KEY);
     return normalizeToken(nativeToken);
@@ -31,6 +35,16 @@ export async function setToken(token: string | null): Promise<void> {
   if (Platform.OS === "web") {
     if (!t) await AsyncStorage.removeItem(KEY);
     else await AsyncStorage.setItem(KEY, t);
+    try {
+      if (!t) {
+        globalThis?.localStorage?.removeItem?.(KEY);
+        globalThis?.sessionStorage?.removeItem?.(KEY);
+      } else {
+        globalThis?.localStorage?.setItem?.(KEY, t);
+      }
+    } catch {
+      // Browser storage can be unavailable in privacy modes.
+    }
     return;
   }
 

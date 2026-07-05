@@ -1,6 +1,8 @@
 import React, { useCallback, useState } from "react";
+import * as ImagePicker from "expo-image-picker";
 import {
   ActivityIndicator,
+  Image,
   ScrollView,
   StyleSheet,
   Text,
@@ -14,6 +16,14 @@ import { createForumPost } from "@/api/communitySocial";
 import { ScreenBoundary } from "@/components/ScreenBoundary";
 import { CAPABILITY_KEYS, useEntitlements } from "@/entitlements";
 import PersonalFeedPlacement from "@/components/feed/PersonalFeedPlacement";
+import { resolveImageUri } from "@/utils/photoUploads";
+
+type SelectedPhoto = {
+  uri: string;
+  width?: number | null;
+  height?: number | null;
+  mimeType?: string | null;
+};
 
 export default function ForumNewPostRoute() {
   const router = useRouter();
@@ -24,6 +34,34 @@ export default function ForumNewPostRoute() {
   const [body, setBody] = useState("");
   const [submitting, setSubmitting] = useState(false);
   const [feedback, setFeedback] = useState("");
+  const [photos, setPhotos] = useState<SelectedPhoto[]>([]);
+
+  const pickPhotos = useCallback(async () => {
+    const permission = await ImagePicker.requestMediaLibraryPermissionsAsync();
+    if (!permission.granted) {
+      setFeedback("Photo-library permission is required to attach pictures.");
+      return;
+    }
+    const picked = await ImagePicker.launchImageLibraryAsync({
+      mediaTypes: ImagePicker.MediaTypeOptions.Images,
+      allowsMultipleSelection: true,
+      allowsEditing: false,
+      quality: 0.85
+    });
+    if (picked.canceled) return;
+    setPhotos((current) => [
+      ...current,
+      ...picked.assets
+        .filter((asset) => asset.uri)
+        .map((asset) => ({
+          uri: asset.uri,
+          width: asset.width ?? null,
+          height: asset.height ?? null,
+          mimeType: asset.mimeType ?? null
+        }))
+    ]);
+    setFeedback("");
+  }, []);
 
   const submit = useCallback(async () => {
     if (!canPost) return;
@@ -34,14 +72,18 @@ export default function ForumNewPostRoute() {
     setSubmitting(true);
     setFeedback("");
     try {
-      await createForumPost({ title: nextTitle, body: nextBody });
+      await createForumPost({
+        title: nextTitle,
+        body: nextBody,
+        photos: photos.map((photo) => photo.uri)
+      });
       router.replace("/home/personal/forum");
     } catch (error: any) {
       setFeedback(error?.message || "Unable to create discussion.");
     } finally {
       setSubmitting(false);
     }
-  }, [body, canPost, router, title]);
+  }, [body, canPost, photos, router, title]);
 
   const disabled = !title.trim() || !body.trim() || submitting || !canPost;
 
@@ -84,6 +126,55 @@ export default function ForumNewPostRoute() {
           style={[styles.input, styles.bodyInput]}
           accessibilityLabel="Forum post body"
         />
+
+        <View style={styles.photoTools}>
+          <Pressable
+            onPress={pickPhotos}
+            disabled={submitting || !canPost}
+            style={[
+              styles.secondaryBtn,
+              styles.attachBtn,
+              (submitting || !canPost) && styles.disabled
+            ]}
+            accessibilityRole="button"
+            accessibilityLabel="Attach forum post photos"
+          >
+            <Text style={styles.secondaryText}>
+              {photos.length ? "Add More Photos" : "Attach Photos"}
+            </Text>
+          </Pressable>
+          {photos.length ? (
+            <Text style={styles.photoCount}>{photos.length} attached</Text>
+          ) : null}
+        </View>
+
+        {photos.length ? (
+          <View style={styles.photoGrid}>
+            {photos.map((photo, index) => (
+              <View key={`${photo.uri}-${index}`} style={styles.photoTile}>
+                <Image
+                  source={{ uri: resolveImageUri(photo.uri) }}
+                  style={styles.photoPreview}
+                  resizeMode="cover"
+                  accessibilityLabel={`Forum post photo ${index + 1}`}
+                />
+                <Pressable
+                  onPress={() =>
+                    setPhotos((current) =>
+                      current.filter((_, itemIndex) => itemIndex !== index)
+                    )
+                  }
+                  disabled={submitting}
+                  style={styles.removePhoto}
+                  accessibilityRole="button"
+                  accessibilityLabel={`Remove forum post photo ${index + 1}`}
+                >
+                  <Text style={styles.removePhotoText}>Remove</Text>
+                </Pressable>
+              </View>
+            ))}
+          </View>
+        ) : null}
 
         <PersonalFeedPlacement
           placement="middle"
@@ -164,7 +255,26 @@ const styles = StyleSheet.create({
     paddingHorizontal: 12,
     paddingVertical: 11
   },
+  attachBtn: { alignSelf: "flex-start" },
   secondaryText: { color: "#0F172A", fontWeight: "800" },
+  photoTools: { alignItems: "center", flexDirection: "row", flexWrap: "wrap", gap: 10 },
+  photoCount: { color: "#64748B", fontSize: 12, fontWeight: "700" },
+  photoGrid: { flexDirection: "row", flexWrap: "wrap", gap: 10 },
+  photoTile: { width: 118, gap: 6 },
+  photoPreview: {
+    width: 118,
+    height: 88,
+    borderRadius: 8,
+    backgroundColor: "#E2E8F0"
+  },
+  removePhoto: {
+    alignItems: "center",
+    borderColor: "#CBD5E1",
+    borderRadius: 8,
+    borderWidth: 1,
+    paddingVertical: 6
+  },
+  removePhotoText: { color: "#334155", fontSize: 12, fontWeight: "800" },
   disabled: { opacity: 0.5 },
   feedback: {
     color: "#334155",
