@@ -173,17 +173,15 @@ export default function Index() {
     if (decision.kind !== "nav") return;
     if (lastHrefRef.current === decision.href) return;
     lastHrefRef.current = decision.href;
-    router.replace(decision.href as any);
-    if (Platform.OS !== "web") return;
-
-    const id = setTimeout(() => {
+    if (Platform.OS === "web") {
       const windowRef = (globalThis as any).window;
       const location = windowRef?.location;
-      if (!location || location.pathname === decision.href) return;
-      location.replace(decision.href);
-    }, 500);
-
-    return () => clearTimeout(id);
+      if (location && location.pathname !== decision.href) {
+        location.replace(decision.href);
+        return;
+      }
+    }
+    router.replace(decision.href as any);
   }, [decision.kind, decision.href, router]);
 
   if (decision.kind === "render") return decision.node;
