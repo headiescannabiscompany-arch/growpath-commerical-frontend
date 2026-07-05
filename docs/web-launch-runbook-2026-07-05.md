@@ -13,7 +13,8 @@ Resume from here if interrupted:
 1. Run `git status --short`.
 2. Run `npm.cmd run verify:live-urls` with `NODE_OPTIONS=--use-system-ca`.
 3. Confirm `https://growpathai.com` and `https://api.growpathai.com` are healthy.
-4. Continue at **Human Account / Billing Checks** below.
+4. Confirm whether Render is serving the latest pushed bundle.
+5. Continue at **Human Account / Billing Checks** below.
 
 ## Current Web State
 
@@ -32,7 +33,9 @@ Latest live URL verification:
 - Date: 2026-07-05
 - Command: `npm.cmd run verify:live-urls`
 - Result: passed
-- Evidence: `tmp/spec/live-url-checks/2026-07-05T15-32-58-936Z.json`
+- Evidence:
+  - `tmp/spec/live-url-checks/2026-07-05T15-32-58-936Z.json`
+  - `tmp/spec/live-url-checks/2026-07-05T16-19-47-231Z.json`
 
 Checked URLs:
 
@@ -43,6 +46,26 @@ Checked URLs:
 - `https://api.growpathai.com/health` returned 200
 - `https://api.growpathai.com/ready` returned 200
 - `https://api.growpathai.com/api/health` returned 200
+
+Latest pushed web fix:
+
+- Commit: `473ade6`
+- Commit message: `Harden live web auth profile QA`
+- GitHub Frontend CI: passed
+- GitHub Production Build Preflight:
+  - Release preflight: passed
+  - Android EAS production build start: passed
+  - iOS EAS production build start: failed because Apple/iOS credentials are not
+    configured yet
+- Local `npm.cmd run release:preflight`: passed
+- New exported bundle in repo: `index-14fffa668d8759f16dff5a560dc64d7b.js`
+- Live site was still serving `index-ed86e3aa831d4d4ed07281f92e51ecaf.js`
+  when checked after push.
+- Render/Cloudflare response showed `Last-Modified: Sun, 05 Jul 2026 14:15:56 UTC`.
+- Next action: trigger a manual Render deploy for
+  `growpath-commerical-frontend` / `growpath-commercial-frontend`, then confirm
+  the live bundle hash changes to
+  `index-14fffa668d8759f16dff5a560dc64d7b.js`.
 
 Latest live account verification:
 
