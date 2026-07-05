@@ -125,6 +125,29 @@ Latest local P0 QA fix checkpoint:
   - Password reset may still require backend/email provider inspection if the
     email does not arrive or the backend does not honor the supplied reset URL.
 
+Latest pushed P0 deployment checkpoint:
+
+- P0 app fix commit: `dcbe773`
+- Static onboarding route fallback commit: `ef9c9dd`
+- GitHub Frontend CI: passed for both commits.
+- GitHub Production Build Preflight:
+  - Release preflight: passed.
+  - Android EAS production build start: passed.
+  - iOS EAS production build start: failed at credential setup because iOS
+    credentials are not configured for non-interactive builds yet.
+- Render deployed the static fallback update:
+  - Direct URL
+    `https://growpathai.com/onboarding/walkthroughs?plan=facility&mode=facility`
+    returned 200 with the app bundle, not `Not Found`.
+  - `Last-Modified: Sun, 05 Jul 2026 18:51:21 UTC`.
+- Live verification passed:
+  - `npm.cmd run verify:live-urls`
+  - Evidence: `tmp/spec/live-url-checks/2026-07-05T18-54-01-564Z.json`
+  - `PLAYWRIGHT_BASE_URL=https://growpathai.com`
+    `PLAYWRIGHT_SKIP_WEBSERVER=1`
+    `npx.cmd playwright test e2e/walkthrough-checkout.spec.ts --reporter=list`
+    passed 2/2 tests.
+
 Live issue found:
 
 - Production `/api/auth/login` returns the correct free account email, but
