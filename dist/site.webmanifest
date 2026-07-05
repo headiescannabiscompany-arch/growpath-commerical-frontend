@@ -1,0 +1,17 @@
+{
+  "name": "GrowPathAI",
+  "short_name": "GrowPath",
+  "start_url": "/",
+  "scope": "/",
+  "display": "standalone",
+  "background_color": "#ffffff",
+  "theme_color": "#0f5132",
+  "description": "GrowPathAI helps growers plan, track, diagnose, and improve gardens, commercial grows, courses, communities, and facility workflows.",
+  "icons": [
+    {
+      "src": "/favicon.ico",
+      "sizes": "48x48 64x64",
+      "type": "image/x-icon"
+    }
+  ]
+}

@@ -131,6 +131,7 @@ async function main() {
   );
 
   run("production web export", process.execPath, ["scripts/export-production-web.cjs"]);
+  run("web SEO verification", process.execPath, ["scripts/verify-web-seo.cjs"]);
   run("store graphics export", process.execPath, ["scripts/export-store-assets.cjs"]);
 
   console.log(`\n[release-preflight] ${strict ? "strict " : ""}preflight passed.`);

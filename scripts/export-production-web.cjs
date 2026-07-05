@@ -142,12 +142,256 @@ const fallbackRoutes = [
   "home/commercial/profile"
 ];
 const indexHtml = path.join(absoluteOutputDir, "index.html");
+const rawIndexHtml = fs.readFileSync(indexHtml, "utf8");
+const siteUrl = "https://growpathai.com";
+
+const defaultSeo = {
+  title: "GrowPathAI",
+  description:
+    "GrowPathAI helps growers plan, track, diagnose, and improve gardens, commercial grows, courses, communities, and facility workflows.",
+  index: true
+};
+
+const routeSeo = new Map(
+  [
+    [
+      "",
+      {
+        title: "GrowPathAI | AI grow planning, tracking, and facility tools",
+        description:
+          "Plan grows, track plants, diagnose issues, use cultivation calculators, run courses, and manage commercial or facility workflows with GrowPathAI."
+      }
+    ],
+    [
+      "login",
+      {
+        title: "Log in to GrowPathAI",
+        description:
+          "Log in to your GrowPathAI account to manage grows, plants, tools, courses, and facility workflows.",
+        index: false
+      }
+    ],
+    [
+      "register",
+      {
+        title: "Create a GrowPathAI account",
+        description:
+          "Create a GrowPathAI account for personal grow tracking, grow tools, community, commercial profiles, and facility workflows."
+      }
+    ],
+    [
+      "store",
+      {
+        title: "GrowPathAI Store",
+        description:
+          "Discover grow products, genetics, soil lines, nutrient lines, and commercial profiles published through GrowPathAI."
+      }
+    ],
+    [
+      "courses",
+      {
+        title: "GrowPathAI Courses",
+        description:
+          "Browse grow education, live sessions, documents, videos, and structured courses from GrowPathAI creators."
+      }
+    ],
+    [
+      "feed",
+      {
+        title: "GrowPathAI Feed",
+        description:
+          "Explore GrowPathAI updates from growers, educators, brands, commercial profiles, and cultivation communities."
+      }
+    ],
+    [
+      "forum",
+      {
+        title: "GrowPathAI Forum",
+        description:
+          "Join GrowPathAI community discussions about growing, diagnostics, tools, genetics, soil, nutrients, and facility workflows."
+      }
+    ],
+    [
+      "privacy",
+      {
+        title: "Privacy Policy | GrowPathAI",
+        description:
+          "Read the GrowPathAI privacy policy, including account data, grow data, uploads, subscriptions, and data rights."
+      }
+    ],
+    [
+      "terms",
+      {
+        title: "Terms of Service | GrowPathAI",
+        description:
+          "Read the GrowPathAI terms of service for accounts, subscriptions, user content, commerce, courses, and app usage."
+      }
+    ],
+    [
+      "support",
+      {
+        title: "Support | GrowPathAI",
+        description:
+          "Get GrowPathAI support for accounts, billing, subscriptions, privacy, grows, courses, commercial profiles, and facilities."
+      }
+    ],
+    [
+      "account/delete",
+      {
+        title: "Delete Account | GrowPathAI",
+        description:
+          "Request GrowPathAI account deletion and data rights support.",
+        index: false
+      }
+    ]
+  ].map(([route, seo]) => [route, { ...defaultSeo, ...seo }])
+);
+
+const sitemapRoutes = [
+  { route: "", priority: "1.0", changefreq: "weekly" },
+  { route: "register", priority: "0.8", changefreq: "monthly" },
+  { route: "store", priority: "0.8", changefreq: "daily" },
+  { route: "courses", priority: "0.8", changefreq: "weekly" },
+  { route: "feed", priority: "0.7", changefreq: "daily" },
+  { route: "forum", priority: "0.7", changefreq: "daily" },
+  { route: "privacy", priority: "0.3", changefreq: "monthly" },
+  { route: "terms", priority: "0.3", changefreq: "monthly" },
+  { route: "support", priority: "0.5", changefreq: "monthly" }
+];
+
+function escapeHtml(value) {
+  return String(value)
+    .replace(/&/g, "&amp;")
+    .replace(/</g, "&lt;")
+    .replace(/>/g, "&gt;")
+    .replace(/"/g, "&quot;");
+}
+
+function escapeXml(value) {
+  return escapeHtml(value).replace(/'/g, "&apos;");
+}
+
+function seoForRoute(route) {
+  if (routeSeo.has(route)) return routeSeo.get(route);
+  if (route.startsWith("home/") || route.startsWith("reset-password") || route === "verify-email") {
+    return {
+      ...defaultSeo,
+      title: "GrowPathAI App",
+      description: defaultSeo.description,
+      index: false
+    };
+  }
+  return defaultSeo;
+}
+
+function canonicalUrl(route) {
+  return route ? `${siteUrl}/${route}` : siteUrl;
+}
+
+function staticIntroForRoute(route, seo) {
+  if (route === "") {
+    return `${seo.title}. ${seo.description} Create an account or log in to use the app.`;
+  }
+  return `${seo.title}. ${seo.description}`;
+}
+
+function applySeo(html, route) {
+  const seo = seoForRoute(route);
+  const canonical = canonicalUrl(route);
+  const title = escapeHtml(seo.title);
+  const description = escapeHtml(seo.description);
+  const robots = seo.index ? "index,follow" : "noindex,follow";
+  const routePath = route ? `/${route}` : "/";
+  const tags = [
+    `<meta name="description" content="${description}" />`,
+    `<meta name="robots" content="${robots}" />`,
+    `<link rel="canonical" href="${escapeHtml(canonical)}" />`,
+    `<link rel="manifest" href="/site.webmanifest" />`,
+    `<meta name="theme-color" content="#0f5132" />`,
+    `<meta property="og:type" content="website" />`,
+    `<meta property="og:site_name" content="GrowPathAI" />`,
+    `<meta property="og:title" content="${title}" />`,
+    `<meta property="og:description" content="${description}" />`,
+    `<meta property="og:url" content="${escapeHtml(canonical)}" />`,
+    `<meta property="og:image" content="${siteUrl}/favicon.ico" />`,
+    `<meta name="twitter:card" content="summary" />`,
+    `<meta name="twitter:title" content="${title}" />`,
+    `<meta name="twitter:description" content="${description}" />`
+  ].join("\n    ");
+  const staticIntro = escapeHtml(staticIntroForRoute(route, seo));
+
+  return html
+    .replace(/<title>[\s\S]*?<\/title>/i, `<title>${title}</title>`)
+    .replace("</head>", `    ${tags}\n  </head>`)
+    .replace(
+      /<noscript>[\s\S]*?<\/noscript>/i,
+      `<noscript>${staticIntro} JavaScript is required for the interactive app at ${escapeHtml(
+        routePath
+      )}.</noscript>`
+    );
+}
+
+fs.writeFileSync(indexHtml, applySeo(rawIndexHtml, ""));
 
 for (const route of fallbackRoutes) {
   const routeDir = path.join(absoluteOutputDir, route);
   fs.mkdirSync(routeDir, { recursive: true });
-  fs.copyFileSync(indexHtml, path.join(routeDir, "index.html"));
+  fs.writeFileSync(path.join(routeDir, "index.html"), applySeo(rawIndexHtml, route));
 }
+
+const robotsTxt = [
+  "User-agent: *",
+  "Allow: /",
+  "Disallow: /home/",
+  "Disallow: /reset-password",
+  "Disallow: /verify-email",
+  "Disallow: /account/delete",
+  `Sitemap: ${siteUrl}/sitemap.xml`,
+  ""
+].join("\n");
+fs.writeFileSync(path.join(absoluteOutputDir, "robots.txt"), robotsTxt);
+
+const sitemapXml = [
+  '<?xml version="1.0" encoding="UTF-8"?>',
+  '<urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">',
+  ...sitemapRoutes.map(({ route, priority, changefreq }) =>
+    [
+      "  <url>",
+      `    <loc>${escapeXml(canonicalUrl(route))}</loc>`,
+      `    <changefreq>${changefreq}</changefreq>`,
+      `    <priority>${priority}</priority>`,
+      "  </url>"
+    ].join("\n")
+  ),
+  "</urlset>",
+  ""
+].join("\n");
+fs.writeFileSync(path.join(absoluteOutputDir, "sitemap.xml"), sitemapXml);
+
+fs.writeFileSync(
+  path.join(absoluteOutputDir, "site.webmanifest"),
+  `${JSON.stringify(
+    {
+      name: "GrowPathAI",
+      short_name: "GrowPath",
+      start_url: "/",
+      scope: "/",
+      display: "standalone",
+      background_color: "#ffffff",
+      theme_color: "#0f5132",
+      description: defaultSeo.description,
+      icons: [
+        {
+          src: "/favicon.ico",
+          sizes: "48x48 64x64",
+          type: "image/x-icon"
+        }
+      ]
+    },
+    null,
+    2
+  )}\n`
+);
 
 function walk(dir) {
   const files = [];

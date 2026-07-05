@@ -266,12 +266,57 @@ external credentials.
 
 - Keep verifying live public/API URLs.
 - Run release preflight after any source change.
+- Keep the generated web SEO artifacts healthy:
+  - `dist/robots.txt`
+  - `dist/sitemap.xml`
+  - `dist/site.webmanifest`
+  - route-specific `<title>`, description, canonical, Open Graph, Twitter, and
+    robots metadata in exported HTML.
+- Run `npm.cmd run verify:web-seo` after web export changes.
 - Prepare a Render deploy hook workflow if the user creates a Render deploy
   hook and adds it as a GitHub secret.
 - Update support, privacy, terms, or launch documentation.
 - Continue live free-mode UI testing with the working free account.
 - Continue live pro/commercial/facility UI testing after those credentials are
   created or reset.
+
+## Public Search / Discoverability
+
+Latest local discoverability checkpoint:
+
+- Added a production-export SEO pass that writes:
+  - `robots.txt`
+  - `sitemap.xml`
+  - `site.webmanifest`
+  - route-specific metadata for public pages.
+- Public sitemap routes:
+  - `https://growpathai.com`
+  - `https://growpathai.com/register`
+  - `https://growpathai.com/store`
+  - `https://growpathai.com/courses`
+  - `https://growpathai.com/feed`
+  - `https://growpathai.com/forum`
+  - `https://growpathai.com/privacy`
+  - `https://growpathai.com/terms`
+  - `https://growpathai.com/support`
+- Private app-shell routes under `/home/` are marked `noindex,follow`.
+- Verification:
+  - `npm.cmd run export:web:production`
+  - `npm.cmd run verify:web-seo`
+  - `npm.cmd test -- --runInBand tests/release.preflight.test.js`
+
+Owner-side search submission steps:
+
+1. Open Google Search Console.
+2. Add a Domain property for `growpathai.com`.
+3. Verify ownership through the DNS record Google provides at the registrar.
+4. Submit `https://growpathai.com/sitemap.xml`.
+5. Request indexing for `https://growpathai.com`.
+6. Repeat the same sitemap submission in Bing Webmaster Tools.
+7. After the next Render deploy, confirm these live URLs return HTTP 200:
+   - `https://growpathai.com/robots.txt`
+   - `https://growpathai.com/sitemap.xml`
+   - `https://growpathai.com/site.webmanifest`
 
 ## Paused Native/App Store Track
 

@@ -41,6 +41,7 @@
     "release:preflight": "node scripts/release-preflight.cjs",
     "release:preflight:strict": "node scripts/release-preflight.cjs --strict",
     "verify:sentry-dsn": "node scripts/verify-sentry-dsn.cjs",
+    "verify:web-seo": "node scripts/verify-web-seo.cjs",
     "verify:live-urls": "node scripts/verify-live-urls.cjs",
     "verify:live-test-packs:sources": "node scripts/verify-live-test-pack-sources.cjs",
     "verify:live-test-packs:sources:planning": "node scripts/verify-live-test-pack-sources.cjs --allow-placeholders",

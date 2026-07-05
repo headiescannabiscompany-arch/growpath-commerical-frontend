@@ -47,6 +47,7 @@ function createPreflightRoot() {
     "scripts/validate-v1-feature-matrix.cjs",
     "scripts/run-playwright-expo.cjs",
     "scripts/export-production-web.cjs",
+    "scripts/verify-web-seo.cjs",
     "scripts/export-store-assets.cjs",
     "node_modules/jest/bin/jest.js",
     "node_modules/@playwright/test/cli.js"
@@ -102,6 +103,7 @@ describe("release preflight", () => {
       "node_modules/jest/bin/jest.js",
       "scripts/run-playwright-expo.cjs",
       "scripts/export-production-web.cjs",
+      "scripts/verify-web-seo.cjs",
       "scripts/export-store-assets.cjs"
     ]);
     expect(readLog(tempRoot)[7].argv).toEqual(
@@ -155,6 +157,7 @@ describe("release preflight", () => {
       "node_modules/jest/bin/jest.js",
       "scripts/run-playwright-expo.cjs",
       "scripts/export-production-web.cjs",
+      "scripts/verify-web-seo.cjs",
       "scripts/export-store-assets.cjs"
     ]);
     expect(log[2].strict).toBe("1");
