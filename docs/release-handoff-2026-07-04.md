@@ -36,7 +36,8 @@ Latest production workflow run:
 - Commit `dd537f6` fixed Frontend CI lint failures. Frontend CI run `28724338581` passed all steps: dependency install, Expo dependency check, Expo Doctor, production dependency audit, lint, sensitive-copy guard, delivery guard, and tests.
 - Production Build Preflight run `28724338574` passed release preflight, then iOS and Android again passed EAS authentication and failed at `Start EAS production build`. The iOS log still shows the token as `GrowPathAI Production Build Token (robot)` with `etgujays-organization (Role: Viewer)`, followed by the same `Entity not authorized` EAS build-start error.
 - `npm.cmd run release:go-no-go` was rerun after CI was green. It still returns `NO-GO` because the final external evidence buckets are missing.
-- `npm.cmd run verify:live-urls` was rerun with `NODE_OPTIONS=--use-system-ca` and passed. Fresh ignored evidence was written to `tmp/spec/live-url-checks/2026-07-05T01-37-27-236Z.json` and `tmp/spec/live-url-checks/2026-07-05T01-56-29-367Z.json`.
+- `npm.cmd run verify:live-urls` was rerun with `NODE_OPTIONS=--use-system-ca` and passed. Fresh ignored evidence was written to `tmp/spec/live-url-checks/2026-07-05T01-37-27-236Z.json`, `tmp/spec/live-url-checks/2026-07-05T01-56-29-367Z.json`, and `tmp/spec/live-url-checks/2026-07-05T02-42-00-603Z.json`.
+- Corruption/placeholder scans on `src`, `tests`, `scripts`, and `docs` found no merge-conflict markers or `TODO_PLACEHOLDER` / `FIXME_PLACEHOLDER` markers.
 - Added `docs/release-evidence-commands-2026-07-05.md` with guarded copy-paste commands for the remaining evidence buckets.
 - Attempted live seeded user-mode shell verification against `https://growpathai.com` with `e2e/live-shells.spec.ts`. All three seeded accounts stayed on `/login` with `Invalid email or password`:
   - `free@growpath.com`
@@ -163,6 +164,7 @@ Release checks:
   - `tmp/spec/live-url-checks/2026-07-04T23-03-21-546Z.json`
   - `tmp/spec/live-url-checks/2026-07-05T01-37-27-236Z.json`
   - `tmp/spec/live-url-checks/2026-07-05T01-56-29-367Z.json`
+  - `tmp/spec/live-url-checks/2026-07-05T02-42-00-603Z.json`
 - `npm.cmd run export:store-assets` passed.
 - Store graphics present:
   - `store-assets/graphics/app-store-icon-1024.png`
