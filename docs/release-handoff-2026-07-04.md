@@ -2,7 +2,7 @@
 
 ## Current Step
 
-We are on the step: **commit and push the CI/EAS production build workflow and Expo dependency fixes**.
+We are on the step: **resolve Expo/EAS build permissions and collect final release evidence**.
 
 The last completed verification before this handoff:
 
@@ -35,6 +35,8 @@ Latest production workflow run:
 - Rerun of failed EAS jobs started at `2026-07-05T00:20:22Z`; iOS and Android again passed `Confirm EAS authentication` and failed at `Start EAS production build`, confirming this is still an Expo/EAS permission issue.
 - Commit `dd537f6` fixed Frontend CI lint failures. Frontend CI run `28724338581` passed all steps: dependency install, Expo dependency check, Expo Doctor, production dependency audit, lint, sensitive-copy guard, delivery guard, and tests.
 - Production Build Preflight run `28724338574` passed release preflight, then iOS and Android again passed EAS authentication and failed at `Start EAS production build`. The iOS log still shows the token as `GrowPathAI Production Build Token (robot)` with `etgujays-organization (Role: Viewer)`, followed by the same `Entity not authorized` EAS build-start error.
+- `npm.cmd run release:go-no-go` was rerun after CI was green. It still returns `NO-GO` because the final external evidence buckets are missing.
+- `npm.cmd run verify:live-urls` was rerun with `NODE_OPTIONS=--use-system-ca` and passed. Fresh ignored evidence was written to `tmp/spec/live-url-checks/2026-07-05T01-37-27-236Z.json`.
 
 Current step: update the Expo robot/token permissions so it can read/build the EAS app, then rerun failed jobs or push a no-op workflow change if rerun permissions are unavailable.
 
@@ -153,6 +155,7 @@ Release checks:
 - `npm.cmd run verify:live-urls` passed with `NODE_OPTIONS=--use-system-ca`.
 - Evidence written:
   - `tmp/spec/live-url-checks/2026-07-04T23-03-21-546Z.json`
+  - `tmp/spec/live-url-checks/2026-07-05T01-37-27-236Z.json`
 - `npm.cmd run export:store-assets` passed.
 - Store graphics present:
   - `store-assets/graphics/app-store-icon-1024.png`
@@ -189,33 +192,24 @@ Live test pack strict source validation is also blocked:
 
 ## Next Actions
 
-1. Commit and push this handoff update:
-
-   ```powershell
-   git status --short
-   git add docs/release-handoff-2026-07-04.md
-   git commit -m "Document EAS production build permission blocker"
-   git push origin main
-   ```
-
-2. Update Expo/EAS credentials:
+1. Update Expo/EAS credentials:
 
    - Give the `GrowPathAI Production Build Token (robot)` enough access to the EAS app/project to read the app and start production builds, or replace the `EXPO_TOKEN` GitHub secret with a token from an Expo user/robot that has that access.
    - The current token authenticates, but its organization role is only `Viewer`.
 
-3. Rerun the failed workflow jobs, or trigger the workflow again:
+2. Rerun the failed workflow jobs, or trigger the workflow again:
 
    ```powershell
    gh run list --repo headiescannabiscompany-arch/growpath-commerical-frontend --workflow "Production Build Preflight" --limit 5
    ```
 
-4. If a run appears, inspect jobs:
+3. If a run appears, inspect jobs:
 
    ```powershell
    gh run view <run-id> --repo headiescannabiscompany-arch/growpath-commerical-frontend --json status,conclusion,url,jobs
    ```
 
-5. Confirm the EAS auth step:
+4. Confirm the EAS auth step:
 
    Look for this job step:
 
@@ -225,7 +219,7 @@ Live test pack strict source validation is also blocked:
 
    Success there means `EXPO_TOKEN` authenticates successfully.
 
-6. Confirm the EAS build start steps:
+5. Confirm the EAS build start steps:
 
    Look for:
 
@@ -235,11 +229,11 @@ Live test pack strict source validation is also blocked:
 
    Success in both matrix jobs means iOS and Android production builds can authenticate and start.
 
-7. If workflow fails before EAS:
+6. If workflow fails before EAS:
 
    Fix the first failing preflight step.
 
-8. If workflow fails at EAS auth:
+7. If workflow fails at EAS auth:
 
    Recheck the GitHub Actions repository secret name:
 
@@ -249,7 +243,7 @@ Live test pack strict source validation is also blocked:
 
    Then confirm the token belongs to an Expo account with access to this EAS project.
 
-9. If workflow starts builds successfully:
+8. If workflow starts builds successfully:
 
    Collect the EAS build URLs from logs and create release evidence under:
 
@@ -257,7 +251,7 @@ Live test pack strict source validation is also blocked:
    tmp/spec/release-builds/
    ```
 
-10. After production builds complete:
+9. After production builds complete:
 
    Run or record:
 
@@ -267,7 +261,7 @@ Live test pack strict source validation is also blocked:
    - data-rights disposable account verification
    - store-console/legal/owners/hotfix evidence
 
-11. Re-run final gate:
+10. Re-run final gate:
 
     ```powershell
     npm.cmd run release:go-no-go
