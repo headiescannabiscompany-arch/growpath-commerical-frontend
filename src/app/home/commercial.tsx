@@ -37,6 +37,40 @@ type DashboardModel = {
   guidance?: string[];
 };
 
+let commercialDashboardCache: DashboardModel | null = null;
+let commercialDashboardPromise: Promise<DashboardModel> | null = null;
+let commercialDashboardFetchedAt = 0;
+const COMMERCIAL_DASHBOARD_CACHE_MS = 30000;
+
+async function loadCommercialDashboard() {
+  const now = Date.now();
+  if (
+    commercialDashboardCache &&
+    now - commercialDashboardFetchedAt < COMMERCIAL_DASHBOARD_CACHE_MS
+  ) {
+    return commercialDashboardCache;
+  }
+
+  if (!commercialDashboardPromise) {
+    commercialDashboardPromise = apiRequest("/api/commercial/dashboard")
+      .then((res: any) => res?.dashboard ?? res?.data?.dashboard ?? res ?? {})
+      .catch((error: any) => {
+        if (error?.status === 404) return {};
+        throw error;
+      })
+      .then((dashboard: DashboardModel) => {
+        commercialDashboardCache = dashboard;
+        commercialDashboardFetchedAt = Date.now();
+        return dashboard;
+      })
+      .finally(() => {
+        commercialDashboardPromise = null;
+      });
+  }
+
+  return commercialDashboardPromise;
+}
+
 const QUICK_ACTIONS: Action[] = [
   { label: "Create Grow / Trial", href: "/home/commercial/grows/new" },
   { label: "Create Product", href: "/home/commercial/products/new" },
@@ -225,9 +259,9 @@ export default function CommercialHome() {
     let mounted = true;
     setLoadingDashboard(true);
     setDashboardError(null);
-    apiRequest("/api/commercial/dashboard")
-      .then((res: any) => {
-        if (mounted) setDashboard(res?.dashboard ?? res?.data?.dashboard ?? res ?? {});
+    loadCommercialDashboard()
+      .then((nextDashboard) => {
+        if (mounted) setDashboard(nextDashboard);
       })
       .catch((error) => {
         if (mounted) setDashboardError(error);
