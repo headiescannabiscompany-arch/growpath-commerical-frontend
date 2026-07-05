@@ -54,7 +54,7 @@ const PRESETS: Preset[] = [
   },
   {
     key: "inventory",
-    title: "Inventory risk",
+    title: "Supply planning",
     audience: "Purchasing / inventory",
     tool: "inventory",
     fn: "assessStockRisk",
@@ -65,7 +65,8 @@ const PRESETS: Preset[] = [
         { name: "Gloves", quantity: 200, par: 50, dailyUse: 3 }
       ]
     },
-    summary: "Flag stock risks using counts, par levels, and estimated daily use."
+    summary:
+      "Plan reorder timing from inventory counts, par levels, and estimated daily use."
   },
   {
     key: "dli",

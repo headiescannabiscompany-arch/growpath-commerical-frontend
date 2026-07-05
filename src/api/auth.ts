@@ -61,6 +61,11 @@ export type ResetPasswordResponse = {
   ok: true;
 };
 
+function currentOrigin() {
+  const location = (globalThis as any)?.window?.location;
+  return typeof location?.origin === "string" ? location.origin : "";
+}
+
 /** Login with email/password. Returns LoginResponse or throws ApiError. */
 export async function login(body: LoginBody): Promise<LoginResponse> {
   return apiRequest("/api/auth/login", {
@@ -109,10 +114,19 @@ export async function confirmEmailVerification(
 }
 
 export async function forgotPassword(email: string): Promise<ForgotPasswordResponse> {
+  const origin = currentOrigin();
   return apiRequest("/api/auth/forgot-password", {
     method: "POST",
     auth: false,
-    body: { email }
+    body: {
+      email,
+      ...(origin
+        ? {
+            resetUrl: `${origin}/reset-password`,
+            resetUrlBase: `${origin}/reset-password`
+          }
+        : {})
+    }
   }) as Promise<ForgotPasswordResponse>;
 }
 

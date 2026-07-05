@@ -11,6 +11,7 @@ import { useRouter } from "expo-router";
 
 import { ApiError } from "@/api/apiRequest";
 import { forgotPassword } from "@/api/auth";
+import BackButton from "@/components/nav/BackButton";
 
 export default function ForgotPasswordScreen() {
   const router = useRouter();
@@ -49,6 +50,7 @@ export default function ForgotPasswordScreen() {
   return (
     <View style={styles.root}>
       <View style={styles.panel}>
+        <BackButton fallbackHref="/login" />
         <Text style={styles.title}>Reset password</Text>
         <Text style={styles.message}>
           Enter your account email and GrowPathAI will send password reset instructions if

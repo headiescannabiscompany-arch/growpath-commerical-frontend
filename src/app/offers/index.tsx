@@ -13,6 +13,11 @@ import { createCheckoutSession } from "@/api/subscription";
 import { useAuth } from "@/auth/AuthContext";
 import AppCard from "@/components/layout/AppCard";
 import AppPage from "@/components/layout/AppPage";
+import {
+  formatPlanBillingNote,
+  formatPlanPrice,
+  PLAN_PRICING
+} from "@/constants/pricing";
 import { useEntitlements } from "@/entitlements";
 
 type BillingInterval = "monthly" | "yearly";
@@ -22,7 +27,6 @@ type Plan = {
   key: PlanKey;
   title: string;
   eyebrow: string;
-  price: string;
   description: string;
   bullets: string[];
 };
@@ -30,25 +34,22 @@ type Plan = {
 const PLANS: Plan[] = [
   {
     key: "pro",
-    title: "Pro Grower",
-    eyebrow: "Personal",
-    price: "$19",
+    title: PLAN_PRICING.pro.title,
+    eyebrow: PLAN_PRICING.pro.eyebrow,
     description: "Advanced personal grow tools, AI workflows, and exports.",
     bullets: ["AI diagnosis and planning", "Advanced calculators", "Grow exports"]
   },
   {
     key: "commercial",
-    title: "Commercial",
-    eyebrow: "Business",
-    price: "$79",
+    title: PLAN_PRICING.commercial.title,
+    eyebrow: PLAN_PRICING.commercial.eyebrow,
     description: "Marketplace, storefront, campaigns, and business operations.",
     bullets: ["Storefront and products", "Campaign tools", "Commercial inventory"]
   },
   {
     key: "facility",
-    title: "Facility",
-    eyebrow: "Operations",
-    price: "$199",
+    title: PLAN_PRICING.facility.title,
+    eyebrow: PLAN_PRICING.facility.eyebrow,
     description: "Facility compliance, SOPs, team workflows, audit evidence, and AI.",
     bullets: ["Compliance export packet", "Rooms, plants, SOPs", "Facility AI command"]
   }
@@ -156,11 +157,14 @@ export default function Offers() {
               <Text style={styles.eyebrow}>{plan.eyebrow}</Text>
               <Text style={styles.cardTitle}>{plan.title}</Text>
               <Text style={styles.price}>
-                {plan.price}
+                {formatPlanPrice(plan.key, interval)}
                 <Text style={styles.priceMeta}>
                   {" "}
-                  / {interval === "monthly" ? "mo" : "yr"}
+                  / {interval === "monthly" ? "month" : "year"}
                 </Text>
+              </Text>
+              <Text style={styles.billingNote}>
+                {formatPlanBillingNote(plan.key, interval)}
               </Text>
               <Text style={styles.cardDesc}>{plan.description}</Text>
 
@@ -248,6 +252,7 @@ const styles = StyleSheet.create({
   cardTitle: { color: "#111827", fontSize: 20, fontWeight: "900" },
   price: { color: "#111827", fontSize: 30, fontWeight: "900" },
   priceMeta: { color: "#64748b", fontSize: 13, fontWeight: "800" },
+  billingNote: { color: "#334155", fontSize: 12, fontWeight: "800" },
   cardDesc: { color: "#475569", fontWeight: "700", lineHeight: 20 },
   bullets: { gap: 6 },
   bullet: { color: "#334155", fontSize: 13, fontWeight: "800" },

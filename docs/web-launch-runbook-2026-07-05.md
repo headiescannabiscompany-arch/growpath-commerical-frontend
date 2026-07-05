@@ -11,10 +11,11 @@ work until Apple Developer and App Store Connect accounts exist.
 Resume from here if interrupted:
 
 1. Run `git status --short`.
-2. Run `npm.cmd run verify:live-urls` with `NODE_OPTIONS=--use-system-ca`.
-3. Confirm `https://growpathai.com` and `https://api.growpathai.com` are healthy.
-4. Confirm whether Render is serving the latest pushed bundle.
-5. Continue at **Human Account / Billing Checks** below.
+2. Confirm whether the latest P0 QA fix commit has been pushed and deployed.
+3. Run `npm.cmd run verify:live-urls` with `NODE_OPTIONS=--use-system-ca`.
+4. Confirm `https://growpathai.com` and `https://api.growpathai.com` are healthy.
+5. Confirm whether Render is serving the latest pushed bundle.
+6. Continue live owner walkthrough testing, starting with P0 retest items.
 
 ## Current Web State
 
@@ -91,6 +92,38 @@ Latest live account verification:
   - `headiescannabiscompany@gmail.com`: all provided passwords failed
 - Current blocker for full user-mode QA: create or reset working commercial,
   facility, and pro production test accounts.
+
+Latest local P0 QA fix checkpoint:
+
+- Date: 2026-07-05
+- Scope:
+  - Add broader in-app back arrows for AppPage screens with a safe fallback route.
+  - Add back arrows to forgot-password and reset-password screens.
+  - Send live reset URL metadata with forgot-password requests and accept
+    `token`, `resetToken`, or `code` on reset-password.
+  - Centralize displayed plan prices:
+    - Pro: `$10/month or $100/year`
+    - Commercial: `$50/month or $500/year`
+    - Facility: `$100/month or $1,000/year`
+  - Clarify yearly billing equivalents as "Billed once yearly. Equivalent to
+    $X/month."
+  - Update facility walkthrough copy so guided setup appears before operations
+    alerts and remove early "stock risk" wording.
+  - Add Commercial to the pricing matrix and correct free-plan copy to one grow
+    and one plant.
+- Local verification passed:
+  - `npm.cmd run lint:ci`
+  - `npm.cmd test -- --runInBand src/api/__tests__/auth.emailVerification.test.ts`
+  - `npx.cmd playwright test e2e/walkthrough-checkout.spec.ts --reporter=list`
+  - `npm.cmd run export:web:production`
+  - `npm.cmd run release:preflight`
+- Next after push/deploy:
+  - Verify Render serves the new bundle.
+  - Run `npm.cmd run verify:live-urls`.
+  - Retest live P0 items: back navigation, forgot-password email flow, pricing
+    display, and facility onboarding entry.
+  - Password reset may still require backend/email provider inspection if the
+    email does not arrive or the backend does not honor the supplied reset URL.
 
 Live issue found:
 

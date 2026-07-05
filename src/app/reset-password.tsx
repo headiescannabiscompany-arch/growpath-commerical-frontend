@@ -11,14 +11,19 @@ import { useLocalSearchParams, useRouter } from "expo-router";
 
 import { ApiError } from "@/api/apiRequest";
 import { resetPassword } from "@/api/auth";
+import BackButton from "@/components/nav/BackButton";
 
 export default function ResetPasswordScreen() {
   const router = useRouter();
-  const params = useLocalSearchParams<{ token?: string | string[] }>();
+  const params = useLocalSearchParams<{
+    token?: string | string[];
+    resetToken?: string | string[];
+    code?: string | string[];
+  }>();
   const token = useMemo(() => {
-    const raw = params.token;
+    const raw = params.token || params.resetToken || params.code;
     return Array.isArray(raw) ? raw[0] || "" : raw || "";
-  }, [params.token]);
+  }, [params.code, params.resetToken, params.token]);
 
   const [password, setPassword] = useState("");
   const [confirmPassword, setConfirmPassword] = useState("");
@@ -70,6 +75,7 @@ export default function ResetPasswordScreen() {
   return (
     <View style={styles.root}>
       <View style={styles.panel}>
+        <BackButton fallbackHref="/login" />
         <Text style={styles.title}>Choose new password</Text>
         <Text style={styles.message}>
           Enter a new password for your GrowPathAI account. Reset links expire after 1

@@ -59,22 +59,22 @@ const WALKTHROUGHS: Record<PlanKey, Walkthrough> = {
   },
   facility: {
     title: "Facility walkthrough",
-    subtitle: "Review operations and compliance before entering payment.",
+    subtitle: "Start with a guided setup tour before operations alerts appear.",
     steps: [
       {
-        title: "Map the facility",
-        body: "After activation, create rooms, grows, plants, tasks, SOP runs, team roles, and inventory."
+        title: "Name the facility",
+        body: "Confirm the facility name, type, and operating model before entering the dashboard."
       },
       {
-        title: "Prepare for scrutiny",
-        body: "Compliance reports combine SOPs, audit logs, deviations, inventory, verification, and waste records."
+        title: "Map rooms and zones",
+        body: "Create rooms or zones first so grows, plants, staff, tasks, and inventory have a clear home."
       },
       {
-        title: "Use AI across operations",
-        body: "Facility AI can help with dew point risk, stock risk, readiness checklists, and operating decisions."
+        title: "Walk the dashboard",
+        body: "Review crops, batches, staff, tasks, inventory, settings, and compliance after setup exists."
       }
     ],
-    preview: ["Compliance export", "Rooms and SOPs", "Facility AI"]
+    preview: ["Facility name", "Rooms and zones", "Crops and batches", "Staff and tasks"]
   }
 };
 

@@ -80,7 +80,7 @@ describe("email verification API wrappers", () => {
     expect(mockApiRequest).toHaveBeenCalledWith("/api/auth/forgot-password", {
       method: "POST",
       auth: false,
-      body: { email: "grower@example.com" }
+      body: expect.objectContaining({ email: "grower@example.com" })
     });
   });
 

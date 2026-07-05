@@ -81,6 +81,7 @@ test.describe("walkthrough before unpaid checkout", () => {
     await expect(page.getByText("Choose your GrowPath plan")).toBeVisible({
       timeout: 15000
     });
+    await expect(page.getByText("$50")).toBeVisible();
 
     await page.getByRole("button", { name: "Start Commercial checkout" }).click();
     await expect(page).toHaveURL(new RegExp(`${CHECKOUT_PATH}$`), {
@@ -109,9 +110,18 @@ test.describe("walkthrough before unpaid checkout", () => {
       waitUntil: "domcontentloaded"
     });
     await expect(page.getByText("Facility walkthrough")).toBeVisible();
+    await expect(
+      page.getByText("Start with a guided setup tour before operations alerts appear.")
+    ).toBeVisible();
+    await expect(page.getByText("Name the facility")).toBeVisible();
+    await expect(page.getByText("stock risk")).toHaveCount(0);
     await page.getByRole("button", { name: "Continue to Facility checkout" }).click();
 
     await page.getByRole("button", { name: "Yearly billing" }).click();
+    await expect(page.getByText("$1,000")).toBeVisible();
+    await expect(
+      page.getByText("Billed once yearly. Equivalent to $83.33/month.")
+    ).toBeVisible();
     await page.getByRole("button", { name: "Start Facility checkout" }).click();
     await expect(page).toHaveURL(new RegExp(`${CHECKOUT_PATH}$`), {
       timeout: 15000

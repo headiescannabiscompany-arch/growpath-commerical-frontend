@@ -11,6 +11,7 @@ import { useEntitlements } from "@/entitlements";
 import FeedBanner from "@/components/feed/FeedBanner";
 import FeedRail from "@/components/feed/FeedRail";
 import ForumHighlights from "@/components/feed/ForumHighlights";
+import BackButton from "@/components/nav/BackButton";
 import { getFeedBannerPolicy, getFeedPolicy } from "@/utils/feedPolicy";
 
 type AppPageProps = {
@@ -19,14 +20,23 @@ type AppPageProps = {
   children: React.ReactNode;
   railOverride?: React.ReactNode | null;
   longContent?: boolean;
+  showBack?: boolean;
 };
+
+const NO_BACK_ROUTE_KEYS = new Set([
+  "home",
+  "personal_home",
+  "commercial_home",
+  "facility_dashboard"
+]);
 
 export default function AppPage({
   routeKey,
   header,
   children,
   railOverride,
-  longContent = false
+  longContent = false,
+  showBack
 }: AppPageProps) {
   const { width } = useWindowDimensions();
   const isWide = Platform.OS === "web" && width >= 900;
@@ -59,6 +69,11 @@ export default function AppPage({
 
   return (
     <ScrollView style={styles.page} contentContainerStyle={styles.pageContent}>
+      {(showBack ?? !NO_BACK_ROUTE_KEYS.has(routeKey)) ? (
+        <View style={styles.backRow}>
+          <BackButton />
+        </View>
+      ) : null}
       {header ? (
         <View style={styles.header}>
           {sanitizeViewChildren(header, "AppPage.header")}
@@ -122,6 +137,9 @@ const styles = StyleSheet.create({
   },
   header: {
     marginBottom: 16
+  },
+  backRow: {
+    marginBottom: 12
   },
   topBanner: {
     marginBottom: 16

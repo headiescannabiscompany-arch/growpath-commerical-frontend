@@ -1,6 +1,7 @@
 import React from "react";
 import { View, Text, StyleSheet, ScrollView } from "react-native";
 import {
+  COMMERCIAL_PLAN_PRICE_DISPLAY,
   FACILITY_PLAN_PRICE_DISPLAY,
   PRO_PLAN_PRICE_DISPLAY
 } from "../constants/pricing.js";
@@ -10,7 +11,8 @@ const plans = [
     name: "Free",
     price: "$0",
     features: [
-      "1–2 active grows",
+      "1 active grow",
+      "1 plant in that grow",
       "Manual grow logs",
       "Basic tools (VPD, pH, light targets)",
       "Forum access",
@@ -26,6 +28,17 @@ const plans = [
       "AI Diagnose (higher quota)",
       "Export logs (PDF/CSV)",
       "Course access (non-creator)"
+    ]
+  },
+  {
+    name: "Commercial",
+    price: COMMERCIAL_PLAN_PRICE_DISPLAY,
+    features: [
+      "Commercial grow workspace",
+      "Crop and batch tracking",
+      "Business profile and advertising",
+      "Course and educational content tools",
+      "Expanded AI workflows"
     ]
   },
   {
@@ -57,7 +70,7 @@ export default function PricingMatrixScreen() {
             <Text style={styles.planPrice}>{plan.price}</Text>
             {plan.features.map((feature, i) => (
               <Text key={i} style={styles.feature}>
-                • {feature}
+                {`\u2022 ${feature}`}
               </Text>
             ))}
           </View>

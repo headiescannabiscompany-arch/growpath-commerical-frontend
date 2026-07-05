@@ -76,11 +76,25 @@ export async function confirmEmailVerification(token) {
   });
 }
 
+function currentOrigin() {
+  const location = globalThis?.window?.location;
+  return typeof location?.origin === "string" ? location.origin : "";
+}
+
 export async function forgotPassword(email) {
+  const origin = currentOrigin();
   return apiRequest("/api/auth/forgot-password", {
     method: "POST",
     auth: false,
-    body: { email }
+    body: {
+      email,
+      ...(origin
+        ? {
+            resetUrl: `${origin}/reset-password`,
+            resetUrlBase: `${origin}/reset-password`
+          }
+        : {})
+    }
   });
 }
 
