@@ -77,6 +77,9 @@ export async function apiMe(options: { silent?: boolean } = {}): Promise<MeRespo
   inflightPromise = (async () => {
     try {
       const result = await apiRequest(endpoints.me, {
+        timeoutMs: 10000,
+        retries: 1,
+        retryDelay: 500,
         ...options
       });
       const typed = normalizeMeResponse(result);
