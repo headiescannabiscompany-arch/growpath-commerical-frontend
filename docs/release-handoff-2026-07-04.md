@@ -20,7 +20,7 @@ gh run list --repo headiescannabiscompany-arch/growpath-commerical-frontend --li
 
 Then continue at **Next Actions, item 1** below.
 
-Update after pushing commit `6a9cfaf`: GitHub Actions reached the new `Production Build Preflight` workflow, but the release preflight job failed before EAS because Ubuntu runners do not provide the Windows `powershell` command. Commit `5b6ea2c` patched the release preflight and store asset tests to use `pwsh` on non-Windows runners. The current follow-up is widening the workflow path filters so release script/test changes rerun `Production Build Preflight`, then watching for EAS authentication and iOS/Android build-start results.
+Update after pushing commit `6a9cfaf`: GitHub Actions reached the new `Production Build Preflight` workflow, but the release preflight job failed before EAS because Ubuntu runners do not provide the Windows `powershell` command. Commit `5b6ea2c` patched the release preflight and store asset tests to use `pwsh` on non-Windows runners. Commit `0b6f07c` widened the workflow path filters and reran `Production Build Preflight`; it passed `npm ci`, `expo install --check`, and `expo-doctor`, but failed in the store asset exporter under Ubuntu PowerShell. The current follow-up is moving store asset generation to a cross-platform Node exporter, then pushing so the workflow can reach EAS authentication and iOS/Android build-start results.
 
 ## What Changed After Web Deployment
 
@@ -173,12 +173,12 @@ Live test pack strict source validation is also blocked:
 
 ## Next Actions
 
-1. Commit and push the production workflow trigger-path fix:
+1. Commit and push the cross-platform store asset exporter fix:
 
    ```powershell
    git status --short
-   git add .github/workflows/production-build-preflight.yml docs/release-handoff-2026-07-04.md
-   git commit -m "Expand production preflight workflow triggers"
+   git add package.json package-lock.json scripts/export-store-assets.cjs scripts/export-store-assets.ps1 scripts/release-preflight.cjs tests/release.preflight.test.js tests/release.store-assets.test.js store-assets/graphics docs/release-handoff-2026-07-04.md
+   git commit -m "Make store asset export cross-platform"
    git push origin main
    ```
 

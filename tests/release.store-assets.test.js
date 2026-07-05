@@ -3,7 +3,6 @@ const fs = require("fs");
 const path = require("path");
 
 const root = path.resolve(__dirname, "..");
-const powerShellCommand = process.platform === "win32" ? "powershell" : "pwsh";
 
 function readPngInfo(filePath) {
   const data = fs.readFileSync(filePath);
@@ -28,14 +27,10 @@ describe("store asset exporter", () => {
 
     try {
       const result = spawnSync(
-        powerShellCommand,
+        process.execPath,
         [
-          "-NoProfile",
-          "-ExecutionPolicy",
-          "Bypass",
-          "-File",
-          "scripts/export-store-assets.ps1",
-          "-OutputDir",
+          "scripts/export-store-assets.cjs",
+          "--output-dir",
           outputRel
         ],
         {
@@ -44,6 +39,7 @@ describe("store asset exporter", () => {
         }
       );
 
+      expect(result.stderr).toBe("");
       expect(result.status).toBe(0);
       expect(result.stdout).toMatch(/Exported store assets/);
 
@@ -66,7 +62,7 @@ describe("store asset exporter", () => {
       const manifest = readJson(path.join(outputAbs, "manifest.json"));
       expect(manifest).toEqual(
         expect.objectContaining({
-          generatedBy: "scripts/export-store-assets.ps1",
+          generatedBy: "scripts/export-store-assets.cjs",
           sourceIcon: "assets/icon.png",
           sourceBanner: "assets/banner.png"
         })

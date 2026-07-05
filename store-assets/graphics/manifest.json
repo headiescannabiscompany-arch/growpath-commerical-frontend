@@ -1,28 +1,28 @@
-﻿{
-    "generatedBy":  "scripts/export-store-assets.ps1",
-    "sourceIcon":  "assets/icon.png",
-    "sourceBanner":  "assets/banner.png",
-    "assets":  [
-                   {
-                       "file":  "app-store-icon-1024.png",
-                       "width":  1024,
-                       "height":  1024,
-                       "alpha":  false,
-                       "target":  "Apple App Store icon"
-                   },
-                   {
-                       "file":  "google-play-icon-512.png",
-                       "width":  512,
-                       "height":  512,
-                       "alpha":  false,
-                       "target":  "Google Play app icon"
-                   },
-                   {
-                       "file":  "google-play-feature-graphic-1024x500.png",
-                       "width":  1024,
-                       "height":  500,
-                       "alpha":  false,
-                       "target":  "Google Play feature graphic"
-                   }
-               ]
+{
+  "generatedBy": "scripts/export-store-assets.cjs",
+  "sourceIcon": "assets/icon.png",
+  "sourceBanner": "assets/banner.png",
+  "assets": [
+    {
+      "file": "app-store-icon-1024.png",
+      "width": 1024,
+      "height": 1024,
+      "alpha": false,
+      "target": "Apple App Store icon"
+    },
+    {
+      "file": "google-play-icon-512.png",
+      "width": 512,
+      "height": 512,
+      "alpha": false,
+      "target": "Google Play app icon"
+    },
+    {
+      "file": "google-play-feature-graphic-1024x500.png",
+      "width": 1024,
+      "height": 500,
+      "alpha": false,
+      "target": "Google Play feature graphic"
+    }
+  ]
 }
