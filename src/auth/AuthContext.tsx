@@ -36,6 +36,25 @@ type AuthState = {
 
 const AuthContext = createContext<AuthState | null>(null);
 
+function mergeAuthUser(
+  current: AuthUser | null,
+  next: AuthUser | null | undefined
+): AuthUser | null {
+  if (!next) return current;
+  if (!current) return next;
+
+  return {
+    ...current,
+    ...next,
+    email: next.email || current.email,
+    displayName: next.displayName || current.displayName,
+    role: next.role || current.role,
+    plan: next.plan ?? current.plan,
+    subscriptionStatus: next.subscriptionStatus ?? current.subscriptionStatus,
+    emailVerified: next.emailVerified ?? current.emailVerified
+  };
+}
+
 export function AuthProvider({ children }: { children: React.ReactNode }) {
   const [token, setToken] = useState<string | null>(null);
   const [user, setUser] = useState<AuthUser | null>(null);
@@ -73,7 +92,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
     setMeError(null);
     try {
       const me = await apiMe();
-      setUser(me.user);
+      setUser((current) => mergeAuthUser(current, me.user));
       setCtx(me.ctx ?? null);
       setMeStatus("ready");
       setMeError(null);
