@@ -36,6 +36,8 @@ Latest live URL verification:
 - Evidence:
   - `tmp/spec/live-url-checks/2026-07-05T15-32-58-936Z.json`
   - `tmp/spec/live-url-checks/2026-07-05T16-19-47-231Z.json`
+  - `tmp/spec/live-url-checks/2026-07-05T16-55-35-642Z.json`
+  - `tmp/spec/live-url-checks/2026-07-05T16-56-56-228Z.json`
 
 Checked URLs:
 
@@ -62,10 +64,10 @@ Latest pushed web fix:
 - Live site was still serving `index-ed86e3aa831d4d4ed07281f92e51ecaf.js`
   when checked after push.
 - Render/Cloudflare response showed `Last-Modified: Sun, 05 Jul 2026 14:15:56 UTC`.
-- Next action: trigger a manual Render deploy for
-  `growpath-commerical-frontend` / `growpath-commercial-frontend`, then confirm
-  the live bundle hash changes to
-  `index-14fffa668d8759f16dff5a560dc64d7b.js`.
+- Render deploy was unblocked after pipeline minutes were upgraded.
+- Production is now serving a newer Render build:
+  - Live bundle: `index-0ba9643d9737ce92a5259694a38f1193.js`
+  - `Last-Modified: Sun, 05 Jul 2026 16:55:04 UTC`
 
 Latest live account verification:
 
@@ -79,8 +81,14 @@ Latest live account verification:
   - feed content visibility
   - Profile/privacy controls
   - logout returning to `/login`
+- Focused free-mode Playwright check passed again after Render went live.
 - Commercial, facility, and pro emails currently return invalid credentials
   through both browser login and direct API login checks.
+- Rechecked after web deploy:
+  - `free@growpathai.com`: authenticates
+  - `livingsoillabs@growpathai.com`: all provided passwords failed
+  - `Johnc@growpathai.com`: all provided passwords failed
+  - `headiescannabiscompany@gmail.com`: all provided passwords failed
 - Current blocker for full user-mode QA: create or reset working commercial,
   facility, and pro production test accounts.
 
