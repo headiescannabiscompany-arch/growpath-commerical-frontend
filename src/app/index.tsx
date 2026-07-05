@@ -21,7 +21,15 @@ function Center({ label }: { label: string }) {
   );
 }
 
-function BootstrapError({ label, onRetry }: { label: string; onRetry: () => void }) {
+function BootstrapError({
+  label,
+  onRetry,
+  onSignOut
+}: {
+  label: string;
+  onRetry: () => void;
+  onSignOut: () => void;
+}) {
   return (
     <View
       style={{
@@ -43,6 +51,21 @@ function BootstrapError({ label, onRetry }: { label: string; onRetry: () => void
         }}
       >
         <Text style={{ color: "#fff", fontWeight: "700" }}>Retry /api/me</Text>
+      </Pressable>
+      <Pressable
+        onPress={onSignOut}
+        style={{
+          marginTop: 10,
+          borderColor: "#111",
+          borderWidth: 1,
+          paddingHorizontal: 14,
+          paddingVertical: 10,
+          borderRadius: 10
+        }}
+      >
+        <Text style={{ color: "#111", fontWeight: "700" }}>
+          Clear session and sign in
+        </Text>
       </Pressable>
     </View>
   );
@@ -88,6 +111,9 @@ export default function Index() {
               label={ent.bootstrapError}
               onRetry={() => {
                 void auth.retryMe();
+              }}
+              onSignOut={() => {
+                void auth.logout().then(() => router.replace("/login"));
               }}
             />
           )
