@@ -40,6 +40,11 @@ const COMMERCIAL_RULES: RouteRule[] = [
     capabilities: [CAPABILITY_KEYS.COMMERCIAL_INVENTORY_VIEW]
   },
   {
+    matches: (pathname: string) => pathname === "/home/commercial",
+    mode: "commercial",
+    capabilities: []
+  },
+  {
     matches: startsWith("/home/commercial"),
     mode: "commercial",
     capabilities: [CAPABILITY_KEYS.COMMERCIAL_HOME]
