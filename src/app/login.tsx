@@ -7,7 +7,6 @@ import {
   StyleSheet,
   Text,
   TextInput,
-  useWindowDimensions,
   View
 } from "react-native";
 import { useRouter } from "expo-router";
@@ -20,8 +19,6 @@ import LegalLinks from "@/components/LegalLinks";
 export default function LoginScreen() {
   const router = useRouter();
   const auth = useAuth();
-  const { width } = useWindowDimensions();
-  const isWide = width >= 900;
 
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
@@ -84,8 +81,8 @@ export default function LoginScreen() {
       contentContainerStyle={styles.content}
       keyboardShouldPersistTaps="handled"
     >
-      <View style={[styles.shell, isWide ? styles.shellWide : null]}>
-        <View style={[styles.visualPanel, isWide ? styles.visualPanelWide : null]}>
+      <View style={styles.shell}>
+        <View style={styles.visualPanel}>
           <View style={styles.bannerFrame}>
             <Image
               source={require("../../assets/banner.png")}
@@ -95,7 +92,7 @@ export default function LoginScreen() {
           </View>
         </View>
 
-        <View style={[styles.formCard, isWide ? styles.formCardWide : null]}>
+        <View style={styles.formCard}>
           <View style={styles.brandBlock}>
             <View style={styles.logoMark}>
               <Image
@@ -210,18 +207,12 @@ const styles = StyleSheet.create({
     padding: 16
   },
   shell: {
-    alignItems: "stretch",
+    alignItems: "center",
     gap: 18,
-    maxWidth: 1120,
+    maxWidth: 720,
     width: "100%"
   },
-  shellWide: {
-    alignItems: "center",
-    flexDirection: "row",
-    gap: 28
-  },
-  visualPanel: { width: "100%" },
-  visualPanelWide: { flex: 1.25 },
+  visualPanel: { maxWidth: 680, width: "100%" },
   bannerFrame: {
     width: "100%",
     aspectRatio: 1.42,
@@ -265,16 +256,13 @@ const styles = StyleSheet.create({
     marginTop: 6
   },
   formCard: {
-    backgroundColor: "transparent",
-    width: "100%"
-  },
-  formCardWide: {
     backgroundColor: "#ffffff",
     borderColor: "#d8ded6",
     borderRadius: 8,
     borderWidth: 1,
     padding: 24,
-    width: 420
+    maxWidth: 460,
+    width: "100%"
   },
   title: { fontSize: 24, fontWeight: "800", marginBottom: 16, color: "#111827" },
   input: {
