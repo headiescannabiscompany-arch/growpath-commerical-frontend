@@ -19,6 +19,7 @@ import {
 
 type EntitlementsMode = "personal" | "commercial" | "facility";
 const ACTIVE_SUBSCRIPTION_STATUSES = new Set(["active", "trial", "trialing"]);
+const DEV_ENTITLEMENT_PLANS = new Set(["pro", "commercial", "facility"]);
 
 export type EntitlementsState = {
   ready: boolean;
@@ -105,6 +106,53 @@ function hasFacilityAccess(ctx: any) {
 
 function hasCommercialAccess(ctx: any) {
   return ctxHasCapability(ctx, CAPABILITY_KEYS.COMMERCIAL_HOME);
+}
+
+export function resolveDevEntitlementsPlan(rawPlan?: string | null, isDev = __DEV__) {
+  if (!isDev) return null;
+  const normalized = String(
+    rawPlan ?? process.env.EXPO_PUBLIC_DEV_ENTITLEMENTS_PLAN ?? ""
+  )
+    .trim()
+    .toLowerCase();
+  return DEV_ENTITLEMENT_PLANS.has(normalized) ? normalized : null;
+}
+
+function withCapability(ctx: any, capability: string) {
+  if (Array.isArray(ctx?.capabilities)) {
+    return {
+      ...ctx,
+      capabilities: Array.from(new Set([...ctx.capabilities, capability]))
+    };
+  }
+  return {
+    ...ctx,
+    capabilities: {
+      ...(ctx?.capabilities && typeof ctx.capabilities === "object"
+        ? ctx.capabilities
+        : {}),
+      [capability]: true
+    }
+  };
+}
+
+function applyDevEntitlementsOverride(ctx: any, devPlan: string | null) {
+  if (!devPlan) return ctx ?? {};
+  if (devPlan === "pro") {
+    return {
+      ...(ctx ?? {}),
+      mode: "personal"
+    };
+  }
+
+  const mode = devPlan === "facility" ? "facility" : "commercial";
+  let next = withCapability({ ...(ctx ?? {}), mode }, CAPABILITY_KEYS.COMMERCIAL_HOME);
+  if (devPlan === "facility") {
+    next = withCapability(next, CAPABILITY_KEYS.FACILITY_ACCESS);
+    next.facilityId = next.facilityId ?? "local-dev-facility";
+    next.facilityRole = next.facilityRole ?? "OWNER";
+  }
+  return next;
 }
 
 export function hasActiveSubscriptionStatus(status: any) {
@@ -308,21 +356,30 @@ function applyServerCtx(
   user: any,
   preferredMode: PreferredMode | null
 ): Omit<EntitlementsState, "can"> {
+  const devPlan = resolveDevEntitlementsPlan();
+  const effectiveCtx = applyDevEntitlementsOverride(ctx, devPlan);
   const requestedPlan =
-    user?.plan ?? ctx?.requestedPlan ?? ctx?.plan ?? prev.plan ?? "free";
+    devPlan ??
+    user?.plan ??
+    effectiveCtx?.requestedPlan ??
+    effectiveCtx?.plan ??
+    prev.plan ??
+    "free";
   const subscriptionStatus =
-    ctx?.subscriptionStatus ?? ctx?.user?.subscriptionStatus ?? user?.subscriptionStatus;
-  const plan = getEffectivePlan(requestedPlan, subscriptionStatus);
-  const resolvedMode = resolveEntitlementsMode(ctx, preferredMode);
+    effectiveCtx?.subscriptionStatus ??
+    effectiveCtx?.user?.subscriptionStatus ??
+    user?.subscriptionStatus;
+  const plan = devPlan ?? getEffectivePlan(requestedPlan, subscriptionStatus);
+  const resolvedMode = resolveEntitlementsMode(effectiveCtx, preferredMode);
   const mode = resolveWorkspaceMode(requestedPlan, resolvedMode);
-  const facilityId = ctx?.facilityId ?? null;
-  const facilityRole = normalizeFacilityRole(ctx?.facilityRole);
+  const facilityId = effectiveCtx?.facilityId ?? null;
+  const facilityRole = normalizeFacilityRole(effectiveCtx?.facilityRole);
 
   const normalized: Record<string, boolean> = {};
   const unknownKeys: string[] = [];
-  if (ctx?.capabilities) {
-    if (Array.isArray(ctx.capabilities)) {
-      for (const raw of ctx.capabilities) {
+  if (effectiveCtx?.capabilities) {
+    if (Array.isArray(effectiveCtx.capabilities)) {
+      for (const raw of effectiveCtx.capabilities) {
         const key = normalizeCapabilityKey(raw);
         if (!key) {
           unknownKeys.push(String(raw));
@@ -334,8 +391,8 @@ function applyServerCtx(
         }
         normalized[key] = true;
       }
-    } else if (typeof ctx.capabilities === "object") {
-      for (const [raw, v] of Object.entries(ctx.capabilities)) {
+    } else if (typeof effectiveCtx.capabilities === "object") {
+      for (const [raw, v] of Object.entries(effectiveCtx.capabilities)) {
         const key = normalizeCapabilityKey(raw);
         if (!key) {
           unknownKeys.push(String(raw));
@@ -366,7 +423,9 @@ function applyServerCtx(
     facilityRole,
     capabilities: normalized,
     limits: applyDefaultCourseLimits(
-      ctx?.limits && typeof ctx.limits === "object" ? ctx.limits : {},
+      effectiveCtx?.limits && typeof effectiveCtx.limits === "object"
+        ? effectiveCtx.limits
+        : {},
       plan
     )
   };

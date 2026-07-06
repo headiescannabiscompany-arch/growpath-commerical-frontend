@@ -5,6 +5,7 @@ import {
   applyPlanCapabilities,
   applyUniversalCapabilities,
   getEffectivePlan,
+  resolveDevEntitlementsPlan,
   resolveEntitlementsMode,
   resolveWorkspaceMode,
   shouldApplyFacilityRoleCapabilities
@@ -24,6 +25,14 @@ describe("entitlement mode access", () => {
     expect(getEffectivePlan("pro", "active")).toBe("pro");
     expect(getEffectivePlan("commercial", "trialing")).toBe("commercial");
     expect(getEffectivePlan("facility", "trial")).toBe("facility");
+  });
+
+  it("accepts local paid entitlement overrides only in dev", () => {
+    expect(resolveDevEntitlementsPlan("commercial", true)).toBe("commercial");
+    expect(resolveDevEntitlementsPlan("facility", true)).toBe("facility");
+    expect(resolveDevEntitlementsPlan("pro", true)).toBe("pro");
+    expect(resolveDevEntitlementsPlan("free", true)).toBeNull();
+    expect(resolveDevEntitlementsPlan("commercial", false)).toBeNull();
   });
 
   it("does not grant Commercial mode from a plan name alone", () => {

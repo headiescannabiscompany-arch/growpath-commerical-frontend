@@ -326,3 +326,67 @@ Current completed local step:
   reports HTTP auth/token problems.
 
 - The GitHub connector can read workflow logs, but cannot dispatch the workflow in this session.
+
+## Local Paid-Mode QA Update - 2026-07-06
+
+Current user request:
+
+- Run GrowPath locally in a way that bypasses Stripe paid status so Commercial,
+  Facility, and Pro screens can be tested before creating real Stripe-paid
+  accounts.
+
+Implemented frontend change:
+
+- Added a dev-only entitlement override in
+  `src/entitlements/EntitlementsProvider.tsx`.
+- Environment variable:
+  - `EXPO_PUBLIC_DEV_ENTITLEMENTS_PLAN=pro`
+  - `EXPO_PUBLIC_DEV_ENTITLEMENTS_PLAN=commercial`
+  - `EXPO_PUBLIC_DEV_ENTITLEMENTS_PLAN=facility`
+- The override only works when `__DEV__` is true.
+- Invalid values and production mode do not bypass Stripe entitlement checks.
+- Facility override grants local `OWNER` role and a synthetic
+  `local-dev-facility` id so facility pages are not partially locked during
+  local QA.
+
+Verification completed:
+
+- `npm.cmd test -- --runInBand tests/entitlements/modeAccess.test.ts` passed.
+- `npx.cmd prettier --check src\entitlements\EntitlementsProvider.tsx tests\entitlements\modeAccess.test.ts` passed.
+
+Running local QA servers:
+
+- Backend:
+  - URL: `http://localhost:5002`
+  - Health check: `http://localhost:5002/health`
+  - Start command used: `PORT=5002 npm.cmd start`
+  - Logs:
+    - `C:\growpathai\growpath-commerical\tmp\local-run\backend-5002.out.log`
+    - `C:\growpathai\growpath-commerical\tmp\local-run\backend-5002.err.log`
+- Frontend:
+  - URL: `http://localhost:8081`
+  - Start command used:
+    `EXPO_PUBLIC_DEV_ENTITLEMENTS_PLAN=commercial EXPO_PUBLIC_API_URL=http://localhost:5002 npx.cmd expo start --web --port 8081`
+  - Logs:
+    - `tmp/local-run/frontend-commercial-8081.out.log`
+    - `tmp/local-run/frontend-commercial-8081.err.log`
+
+Manual QA status:
+
+- Ready for owner manual testing at `http://localhost:8081`.
+- Current local entitlement mode is Commercial.
+- To test Facility locally, restart the frontend with
+  `EXPO_PUBLIC_DEV_ENTITLEMENTS_PLAN=facility`.
+- To test Pro locally, restart the frontend with
+  `EXPO_PUBLIC_DEV_ENTITLEMENTS_PLAN=pro`.
+
+Backend/module task status before this local QA interruption:
+
+- Completed: backend test cleanup and first pass of module records/timeline
+  persistence.
+- Current next backend task: IPM AI second-opinion verification endpoint and
+  durable storage.
+- Backend dirty files were pre-existing/unrelated at this checkpoint:
+  `middleware/uploadUserMedia.js`, `routes/courses.facility.js`,
+  `routes/uploads.js`, `routes/user.js`, `tests/setup/afterEnv.js`,
+  `.npm-cache/`.
