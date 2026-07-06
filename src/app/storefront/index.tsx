@@ -48,6 +48,51 @@ function productId(product: AnyRec) {
   return String(product.id ?? product._id ?? "");
 }
 
+function hasText(value: any) {
+  return String(value ?? "").trim().length > 0;
+}
+
+function productImage(product: AnyRec) {
+  return (
+    product.imageUrl ||
+    product.thumbnailUrl ||
+    product.photoUrl ||
+    product.gallery?.[0] ||
+    product.images?.[0] ||
+    ""
+  );
+}
+
+function productPrice(product: AnyRec) {
+  const priceCents = Number(product.priceCents);
+  if (Number.isFinite(priceCents) && priceCents > 0) return priceCents;
+  const price = Number(product.price);
+  if (Number.isFinite(price) && price > 0) return price * 100;
+  return 0;
+}
+
+function productIsPublished(product: AnyRec) {
+  return ["published", "live", "active"].includes(
+    String(product.status || "").toLowerCase()
+  );
+}
+
+function productCheckoutReady(product: AnyRec) {
+  return hasText(product.externalPurchaseUrl) || hasText(product.stripePriceId);
+}
+
+function productMissingSetup(product: AnyRec) {
+  const missing: string[] = [];
+  if (!productImage(product)) missing.push("image");
+  if (!hasText(product.shortDescription) && !hasText(product.description)) {
+    missing.push("description");
+  }
+  if (productPrice(product) <= 0) missing.push("price");
+  if (!productCheckoutReady(product)) missing.push("checkout link");
+  if (!productIsPublished(product)) missing.push("published status");
+  return missing;
+}
+
 function PublicPreviewLink({ href, label }: { href: string; label: string }) {
   return (
     <Link href={href as any} asChild>
@@ -166,6 +211,73 @@ export default function Storefront() {
   const publicSlug = storeDraft.slug.trim() || "your-brand";
   const publicProfilePath = `/brands/${publicSlug}`;
   const publicStorePath = `/store/${publicSlug}`;
+  const publishedProducts = useMemo(
+    () => products.filter((product) => productIsPublished(product)),
+    [products]
+  );
+  const productWarnings = useMemo(
+    () =>
+      products.map((product) => ({
+        id: productId(product),
+        missing: productMissingSetup(product)
+      })),
+    [products]
+  );
+  const warningCount = productWarnings.reduce(
+    (sum, item) => sum + item.missing.length,
+    0
+  );
+  const setupChecklist = useMemo(
+    () => [
+      {
+        label: "Brand name",
+        complete: hasText(storeDraft.name),
+        helper: "Public storefront has a real brand name."
+      },
+      {
+        label: "Public slug",
+        complete: hasText(storeDraft.slug),
+        helper: "Public URLs are stable for View as User."
+      },
+      {
+        label: "Logo",
+        complete: hasText(storeDraft.logoUrl),
+        helper: "Brand identity appears on cards and public pages."
+      },
+      {
+        label: "Banner",
+        complete: hasText(storeDraft.bannerUrl),
+        helper: "Public storefront has a first-viewport brand signal."
+      },
+      {
+        label: "Description",
+        complete: hasText(storeDraft.description),
+        helper: "Users can understand what the brand sells or teaches."
+      },
+      {
+        label: "Published storefront",
+        complete: storeDraft.isPublished,
+        helper: "Owner has intentionally made the storefront visible."
+      },
+      {
+        label: "First product",
+        complete: products.length > 0,
+        helper: "Storefront has at least one product card to show."
+      },
+      {
+        label: "Published product",
+        complete: publishedProducts.length > 0,
+        helper: "At least one product is ready for public display."
+      },
+      {
+        label: "Product checkout path",
+        complete: products.some(productCheckoutReady),
+        helper: "At least one product has an external checkout or Stripe price."
+      }
+    ],
+    [products, publishedProducts.length, storeDraft]
+  );
+  const completedSetupCount = setupChecklist.filter((item) => item.complete).length;
 
   async function saveStorefront() {
     if (!canEdit) return;
@@ -320,6 +432,54 @@ export default function Storefront() {
             <Text style={styles.muted}>Loading storefront...</Text>
           </View>
         ) : null}
+
+        <AppCard>
+          <View style={styles.cardHeader}>
+            <View>
+              <Text style={styles.cardTitle}>Storefront Setup Checklist</Text>
+              <Text style={styles.helperText}>
+                {completedSetupCount} of {setupChecklist.length} ready. Fix warnings
+                before treating the storefront as launch-ready.
+              </Text>
+            </View>
+            <Text
+              style={[
+                styles.statusPill,
+                completedSetupCount === setupChecklist.length && styles.livePill
+              ]}
+            >
+              {completedSetupCount === setupChecklist.length ? "Ready" : "Needs setup"}
+            </Text>
+          </View>
+          <View style={styles.metricGrid}>
+            <View style={styles.metric}>
+              <Text style={styles.metricValue}>{products.length}</Text>
+              <Text style={styles.metricLabel}>Products</Text>
+            </View>
+            <View style={styles.metric}>
+              <Text style={styles.metricValue}>{publishedProducts.length}</Text>
+              <Text style={styles.metricLabel}>Published</Text>
+            </View>
+            <View style={styles.metric}>
+              <Text style={styles.metricValue}>{warningCount}</Text>
+              <Text style={styles.metricLabel}>Product warnings</Text>
+            </View>
+          </View>
+          <View style={styles.checklist}>
+            {setupChecklist.map((item) => (
+              <View
+                key={item.label}
+                style={[styles.checkItem, item.complete && styles.checkItemComplete]}
+              >
+                <Text style={styles.checkIcon}>{item.complete ? "OK" : "TODO"}</Text>
+                <View style={styles.checkCopy}>
+                  <Text style={styles.checkLabel}>{item.label}</Text>
+                  <Text style={styles.checkHelper}>{item.helper}</Text>
+                </View>
+              </View>
+            ))}
+          </View>
+        </AppCard>
 
         <AppCard>
           <View style={styles.cardHeader}>
@@ -784,59 +944,92 @@ export default function Storefront() {
         <AppCard>
           <Text style={styles.cardTitle}>Products</Text>
           {products.length === 0 ? (
-            <Text style={styles.muted}>No products yet.</Text>
+            <Text style={styles.muted}>
+              No products yet. Create the first product with an image, description, price,
+              and checkout path so it can become a storefront card.
+            </Text>
           ) : (
             <View style={styles.productList}>
-              {products.map((product) => (
-                <View key={productId(product)} style={styles.productRow}>
-                  <View style={{ flex: 1 }}>
-                    <Text style={styles.productTitle}>{product.name || "Product"}</Text>
-                    <Text style={styles.muted}>
-                      ${dollars(product.priceCents)}{" "}
-                      {String(product.currency || "usd").toUpperCase()} |{" "}
-                      {product.status || "draft"}
-                    </Text>
-                    {product.category || product.shortDescription ? (
+              {products.map((product) => {
+                const image = productImage(product);
+                const missing = productMissingSetup(product);
+                const priceCents = productPrice(product);
+                return (
+                  <View key={productId(product)} style={styles.productRow}>
+                    {image ? (
+                      <Image source={{ uri: image }} style={styles.productThumb} />
+                    ) : (
+                      <View style={styles.productThumbPlaceholder}>
+                        <Text style={styles.productThumbText}>No image</Text>
+                      </View>
+                    )}
+                    <View style={styles.productCopy}>
+                      <View style={styles.productHeaderRow}>
+                        <Text style={styles.productTitle}>
+                          {product.name || "Product"}
+                        </Text>
+                        <Text
+                          style={[
+                            styles.rowPill,
+                            productIsPublished(product) && styles.livePill
+                          ]}
+                        >
+                          {productIsPublished(product) ? "Live" : "Draft"}
+                        </Text>
+                      </View>
                       <Text style={styles.muted}>
-                        {[product.category, product.shortDescription]
-                          .filter(Boolean)
-                          .join(" | ")}
+                        ${dollars(priceCents)}{" "}
+                        {String(product.currency || "usd").toUpperCase()} |{" "}
+                        {product.category || "No category"}
                       </Text>
-                    ) : null}
-                    {product.inventoryItem ? (
-                      <Text style={styles.muted}>
-                        Linked inventory: {product.inventoryItem.name}
-                      </Text>
-                    ) : product.inventoryItemId ? (
-                      <Text style={styles.muted}>
-                        Linked inventory: {String(product.inventoryItemId)}
-                      </Text>
-                    ) : null}
-                    {product.externalPurchaseUrl ? (
-                      <Text style={styles.muted}>External purchase link added</Text>
-                    ) : null}
-                    {product.linkedRecipeId ||
-                    product.linkedBatchId ||
-                    product.linkedGrowTrialId ||
-                    product.linkedCourseId ? (
-                      <Text style={styles.muted}>
-                        Linked evidence:{" "}
-                        {[
-                          product.linkedRecipeId && "recipe",
-                          product.linkedBatchId && "batch",
-                          product.linkedGrowTrialId && "trial",
-                          product.linkedCourseId && "course"
-                        ]
-                          .filter(Boolean)
-                          .join(", ")}
-                      </Text>
-                    ) : null}
+                      {product.shortDescription || product.description ? (
+                        <Text style={styles.muted} numberOfLines={2}>
+                          {product.shortDescription || product.description}
+                        </Text>
+                      ) : null}
+                      {product.inventoryItem ? (
+                        <Text style={styles.muted}>
+                          Linked inventory: {product.inventoryItem.name}
+                        </Text>
+                      ) : product.inventoryItemId ? (
+                        <Text style={styles.muted}>
+                          Linked inventory: {String(product.inventoryItemId)}
+                        </Text>
+                      ) : null}
+                      {productCheckoutReady(product) ? (
+                        <Text style={styles.goodText}>Checkout path added</Text>
+                      ) : null}
+                      {product.linkedRecipeId ||
+                      product.linkedBatchId ||
+                      product.linkedGrowTrialId ||
+                      product.linkedCourseId ? (
+                        <Text style={styles.muted}>
+                          Linked evidence:{" "}
+                          {[
+                            product.linkedRecipeId && "recipe",
+                            product.linkedBatchId && "batch",
+                            product.linkedGrowTrialId && "trial",
+                            product.linkedCourseId && "course"
+                          ]
+                            .filter(Boolean)
+                            .join(", ")}
+                        </Text>
+                      ) : null}
+                      {missing.length ? (
+                        <View style={styles.warningRow}>
+                          {missing.map((item) => (
+                            <Text key={item} style={styles.warningPill}>
+                              Missing {item}
+                            </Text>
+                          ))}
+                        </View>
+                      ) : (
+                        <Text style={styles.readyText}>Storefront card ready</Text>
+                      )}
+                    </View>
                   </View>
-                  <Text style={styles.rowPill}>
-                    {product.status === "published" ? "Live" : "Draft"}
-                  </Text>
-                </View>
-              ))}
+                );
+              })}
             </View>
           )}
         </AppCard>
@@ -872,6 +1065,18 @@ const styles = StyleSheet.create({
     justifyContent: "space-between"
   },
   cardTitle: { color: "#0F172A", fontSize: 16, fontWeight: "900" },
+  metricGrid: { flexDirection: "row", flexWrap: "wrap", gap: 10, marginTop: 12 },
+  metric: {
+    backgroundColor: "#F8FAFC",
+    borderColor: "rgba(15,23,42,0.1)",
+    borderRadius: 10,
+    borderWidth: 1,
+    flexGrow: 1,
+    minWidth: 130,
+    padding: 12
+  },
+  metricValue: { color: "#0F172A", fontSize: 20, fontWeight: "900" },
+  metricLabel: { color: "#64748B", fontSize: 12, fontWeight: "900", marginTop: 2 },
   statusPill: {
     backgroundColor: "#E2E8F0",
     borderRadius: 999,
@@ -901,6 +1106,26 @@ const styles = StyleSheet.create({
     lineHeight: 19,
     marginTop: 8
   },
+  checklist: { gap: 8, marginTop: 12 },
+  checkItem: {
+    backgroundColor: "#FFF7ED",
+    borderColor: "#FED7AA",
+    borderRadius: 10,
+    borderWidth: 1,
+    flexDirection: "row",
+    gap: 10,
+    padding: 10
+  },
+  checkItemComplete: { backgroundColor: "#F0FDF4", borderColor: "#BBF7D0" },
+  checkIcon: {
+    color: "#0F172A",
+    fontSize: 11,
+    fontWeight: "900",
+    minWidth: 36
+  },
+  checkCopy: { flex: 1, gap: 2 },
+  checkLabel: { color: "#0F172A", fontSize: 13, fontWeight: "900" },
+  checkHelper: { color: "#64748B", fontSize: 12, fontWeight: "700", lineHeight: 17 },
   publicLinkBox: {
     backgroundColor: "#F8FAFC",
     borderColor: "rgba(15,23,42,0.12)",
@@ -983,9 +1208,39 @@ const styles = StyleSheet.create({
     borderColor: "rgba(0,0,0,0.12)",
     borderRadius: 10,
     borderWidth: 1,
+    alignItems: "flex-start",
     flexDirection: "row",
     gap: 10,
     padding: 12
+  },
+  productThumb: {
+    backgroundColor: "#F1F5F9",
+    borderRadius: 8,
+    height: 84,
+    width: 84
+  },
+  productThumbPlaceholder: {
+    alignItems: "center",
+    backgroundColor: "#F8FAFC",
+    borderColor: "rgba(15,23,42,0.12)",
+    borderRadius: 8,
+    borderWidth: 1,
+    height: 84,
+    justifyContent: "center",
+    width: 84
+  },
+  productThumbText: {
+    color: "#64748B",
+    fontSize: 11,
+    fontWeight: "900",
+    textAlign: "center"
+  },
+  productCopy: { flex: 1, gap: 5 },
+  productHeaderRow: {
+    alignItems: "flex-start",
+    flexDirection: "row",
+    gap: 8,
+    justifyContent: "space-between"
   },
   productTitle: { color: "#0F172A", fontSize: 15, fontWeight: "900" },
   rowPill: {
@@ -998,5 +1253,18 @@ const styles = StyleSheet.create({
     overflow: "hidden",
     paddingHorizontal: 8,
     paddingVertical: 3
+  },
+  goodText: { color: "#047857", fontSize: 12, fontWeight: "900" },
+  readyText: { color: "#047857", fontSize: 12, fontWeight: "900" },
+  warningRow: { flexDirection: "row", flexWrap: "wrap", gap: 6, marginTop: 3 },
+  warningPill: {
+    backgroundColor: "#FEF3C7",
+    borderRadius: 999,
+    color: "#92400E",
+    fontSize: 11,
+    fontWeight: "900",
+    overflow: "hidden",
+    paddingHorizontal: 8,
+    paddingVertical: 4
   }
 });
