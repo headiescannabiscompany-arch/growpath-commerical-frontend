@@ -20,6 +20,35 @@ function productTitle(product: Product | null) {
   return product?.name || "Commercial Product";
 }
 
+function hasText(value: unknown) {
+  return String(value ?? "").trim().length > 0;
+}
+
+function productPrice(product: Product | null) {
+  const priceCents = Number(product?.priceCents);
+  if (Number.isFinite(priceCents) && priceCents > 0) return priceCents;
+  const price = Number(product?.price);
+  if (Number.isFinite(price) && price > 0) return price * 100;
+  return 0;
+}
+
+function productMissingSetup(product: Product | null) {
+  const missing: string[] = [];
+  if (!hasText((product as any)?.imageUrl)) missing.push("image");
+  if (!hasText((product as any)?.shortDescription) && !hasText(product?.description)) {
+    missing.push("description");
+  }
+  if (productPrice(product) <= 0) missing.push("price");
+  if (
+    !hasText((product as any)?.externalPurchaseUrl) &&
+    !hasText((product as any)?.stripePriceId)
+  ) {
+    missing.push("checkout path");
+  }
+  if (product?.status !== "published") missing.push("published status");
+  return missing;
+}
+
 function DetailRow({ label, value }: { label: string; value?: unknown }) {
   const display = String(value || "").trim();
   if (!display) return null;
@@ -109,6 +138,7 @@ export default function CommercialProductDetailRoute({ route }: { route?: any } 
 
   const summary = effectiveness?.summary || {};
   const linked = effectiveness?.linked || {};
+  const missingSetup = productMissingSetup(product);
 
   return (
     <AppPage
@@ -146,6 +176,30 @@ export default function CommercialProductDetailRoute({ route }: { route?: any } 
           <DetailRow label="Currency" value={product?.currency} />
           <DetailRow label="External URL" value={(product as any)?.externalPurchaseUrl} />
         </View>
+      </AppCard>
+
+      <AppCard>
+        <View style={styles.cardHeader}>
+          <Text style={styles.cardTitle}>Storefront Readiness</Text>
+          <Text style={[styles.statusPill, !missingSetup.length && styles.readyPill]}>
+            {missingSetup.length ? "Needs setup" : "Ready"}
+          </Text>
+        </View>
+        <Text style={styles.body}>
+          Use this before pushing a product into storefront cards, feed campaigns,
+          courses, lives, or public support answers.
+        </Text>
+        {missingSetup.length ? (
+          <View style={styles.warningRow}>
+            {missingSetup.map((item) => (
+              <Text key={item} style={styles.warningPill}>
+                Missing {item}
+              </Text>
+            ))}
+          </View>
+        ) : (
+          <Text style={styles.success}>This product has the minimum public fields.</Text>
+        )}
       </AppCard>
 
       <AppCard>
@@ -276,6 +330,12 @@ const styles = StyleSheet.create({
   },
   title: { color: "#0F172A", fontSize: 28, fontWeight: "900" },
   subtitle: { color: "#475569", lineHeight: 21 },
+  cardHeader: {
+    alignItems: "center",
+    flexDirection: "row",
+    gap: 10,
+    justifyContent: "space-between"
+  },
   cardTitle: { color: "#0F172A", fontSize: 17, fontWeight: "900" },
   body: { color: "#475569", fontSize: 14, lineHeight: 21, marginTop: 8 },
   muted: { color: "#64748B", fontSize: 13 },
@@ -316,6 +376,28 @@ const styles = StyleSheet.create({
   metricLabel: { color: "#64748B", fontSize: 12, marginTop: 2 },
   warningBox: { gap: 6, marginTop: 10 },
   warningText: { color: "#92400E", fontSize: 13, fontWeight: "700" },
+  warningRow: { flexDirection: "row", flexWrap: "wrap", gap: 6, marginTop: 10 },
+  warningPill: {
+    backgroundColor: "#FEF3C7",
+    borderRadius: 999,
+    color: "#92400E",
+    fontSize: 11,
+    fontWeight: "900",
+    overflow: "hidden",
+    paddingHorizontal: 8,
+    paddingVertical: 4
+  },
+  statusPill: {
+    backgroundColor: "#FEF3C7",
+    borderRadius: 999,
+    color: "#92400E",
+    fontSize: 12,
+    fontWeight: "900",
+    overflow: "hidden",
+    paddingHorizontal: 9,
+    paddingVertical: 4
+  },
+  readyPill: { backgroundColor: "#DCFCE7", color: "#166534" },
   formGrid: { flexDirection: "row", flexWrap: "wrap", gap: 8, marginTop: 12 },
   input: {
     borderColor: "#CBD5E1",

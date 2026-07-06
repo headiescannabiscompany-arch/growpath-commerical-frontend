@@ -35,6 +35,48 @@ function productId(product: Product) {
   return product.id || (product as any)._id || product.sku || product.name;
 }
 
+function hasText(value: unknown) {
+  return String(value ?? "").trim().length > 0;
+}
+
+function productImage(product: Product) {
+  return (
+    product.imageUrl ||
+    (product as any).thumbnailUrl ||
+    (product as any).photoUrl ||
+    (product as any).gallery?.[0] ||
+    (product as any).images?.[0] ||
+    ""
+  );
+}
+
+function productPrice(product: Product) {
+  const priceCents = Number(product.priceCents);
+  if (Number.isFinite(priceCents) && priceCents > 0) return priceCents;
+  const price = Number(product.price);
+  if (Number.isFinite(price) && price > 0) return price * 100;
+  return 0;
+}
+
+function productCheckoutReady(product: Product) {
+  return (
+    hasText((product as any).externalPurchaseUrl) ||
+    hasText((product as any).stripePriceId)
+  );
+}
+
+function productMissingSetup(product: Product) {
+  const missing: string[] = [];
+  if (!productImage(product)) missing.push("image");
+  if (!hasText((product as any).shortDescription) && !hasText(product.description)) {
+    missing.push("description");
+  }
+  if (productPrice(product) <= 0) missing.push("price");
+  if (!productCheckoutReady(product)) missing.push("checkout");
+  if (product.status !== "published") missing.push("published");
+  return missing;
+}
+
 function parsePrice(value: string) {
   const parsed = Number(value);
   return Number.isFinite(parsed) && parsed >= 0 ? parsed : undefined;
@@ -66,6 +108,11 @@ export default function CommercialProductsRoute() {
   const draftCount = Math.max(0, products.length - publishedCount);
   const externalLinkCount = useMemo(
     () => products.filter((product) => (product as any).externalPurchaseUrl).length,
+    [products]
+  );
+  const missingSetupCount = useMemo(
+    () =>
+      products.reduce((total, product) => total + productMissingSetup(product).length, 0),
     [products]
   );
 
@@ -160,6 +207,10 @@ export default function CommercialProductsRoute() {
           <View style={styles.metric}>
             <Text style={styles.metricValue}>{externalLinkCount}</Text>
             <Text style={styles.metricLabel}>External links</Text>
+          </View>
+          <View style={styles.metric}>
+            <Text style={styles.metricValue}>{missingSetupCount}</Text>
+            <Text style={styles.metricLabel}>Missing setup</Text>
           </View>
         </View>
         {loading ? <Text style={styles.muted}>Loading products...</Text> : null}
@@ -268,6 +319,7 @@ export default function CommercialProductsRoute() {
           <View style={styles.list}>
             {products.map((product) => {
               const id = productId(product);
+              const missing = productMissingSetup(product);
               return (
                 <View key={id} style={styles.productRow}>
                   <View style={styles.productMain}>
@@ -289,6 +341,17 @@ export default function CommercialProductsRoute() {
                         {(product as any).shortDescription || product.description}
                       </Text>
                     ) : null}
+                    {missing.length ? (
+                      <View style={styles.warningRow}>
+                        {missing.map((item) => (
+                          <Text key={item} style={styles.warningPill}>
+                            Missing {item}
+                          </Text>
+                        ))}
+                      </View>
+                    ) : (
+                      <Text style={styles.readyText}>Storefront-ready product</Text>
+                    )}
                   </View>
                   <View style={styles.rowActions}>
                     <ActionLink
@@ -299,7 +362,7 @@ export default function CommercialProductsRoute() {
                       href={`/store/example-brand/products/${id}`}
                       label="Public Detail"
                     />
-                    <ActionLink href="/home/commercial/feed" label="Post Update" />
+                    <ActionLink href="/home/commercial/feed" label="Create Campaign" />
                   </View>
                 </View>
               );
@@ -558,6 +621,23 @@ const styles = StyleSheet.create({
     fontSize: 13,
     lineHeight: 19,
     marginTop: 6
+  },
+  warningRow: { flexDirection: "row", flexWrap: "wrap", gap: 6, marginTop: 8 },
+  warningPill: {
+    backgroundColor: "#FEF3C7",
+    borderRadius: 999,
+    color: "#92400E",
+    fontSize: 11,
+    fontWeight: "900",
+    overflow: "hidden",
+    paddingHorizontal: 8,
+    paddingVertical: 4
+  },
+  readyText: {
+    color: "#166534",
+    fontSize: 12,
+    fontWeight: "900",
+    marginTop: 8
   },
   rowActions: {
     alignContent: "flex-start",

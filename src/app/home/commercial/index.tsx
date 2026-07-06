@@ -339,7 +339,7 @@ export default function CommercialHome() {
         {dashboardError ? <InlineError error={dashboardError} /> : null}
         <View style={styles.actions}>
           {QUICK_ACTIONS.map((action) => (
-            <ActionButton key={`quick-${action.href}`} action={action} />
+            <ActionButton key={`quick-${action.label}-${action.href}`} action={action} />
           ))}
         </View>
       </AppCard>

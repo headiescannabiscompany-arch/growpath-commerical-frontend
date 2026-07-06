@@ -628,7 +628,7 @@ describe("commercial workflow pages", () => {
     expect(screen.getByText("Brand Community")).toBeTruthy();
     expect(screen.getByText("Support thread workflow")).toBeTruthy();
     expect(screen.getByText("Community discovery")).toBeTruthy();
-    expect(screen.getByText("Create linked feed post")).toBeTruthy();
+    expect(screen.getByText("Create linked campaign")).toBeTruthy();
     expect(screen.getByText("Public Store Directory")).toBeTruthy();
     await waitFor(() => expect(screen.getByText("How to use Bloom Mix")).toBeTruthy());
 
@@ -841,7 +841,7 @@ describe("commercial workflow pages", () => {
     expect(screen.getByText("Content launch planner")).toBeTruthy();
     expect(screen.getByText("Product drop workflow")).toBeTruthy();
     expect(screen.getByText("Trial-to-content workflow")).toBeTruthy();
-    expect(screen.getByText("Create linked feed post")).toBeTruthy();
+    expect(screen.getByText("Create linked campaign")).toBeTruthy();
     expect(screen.getByText("Product Trials")).toBeTruthy();
     await waitFor(() => expect(screen.getByText("Bloom Mix Launch")).toBeTruthy());
     expect(screen.getByText("Ad clicks tracked")).toBeTruthy();
@@ -1002,7 +1002,10 @@ describe("commercial workflow pages", () => {
       screen.getByText("Public proof ready from linked batch and completed trial.")
     ).toBeTruthy();
 
-    fireEvent.changeText(screen.getByLabelText("Commercial product detail status"), "draft");
+    fireEvent.changeText(
+      screen.getByLabelText("Commercial product detail status"),
+      "draft"
+    );
     fireEvent.changeText(
       screen.getByLabelText("Commercial product detail external URL"),
       "https://example.com/new-base"
@@ -1174,9 +1177,9 @@ describe("commercial workflow pages", () => {
     expect(
       screen.getByLabelText("Commercial trial effectiveness summary").props.value
     ).toBe("Strong seedling emergence with no burn.");
-    expect(screen.getByLabelText("Commercial trial harvest quality notes").props.value).toBe(
-      "Clean finish with strong aroma after cure."
-    );
+    expect(
+      screen.getByLabelText("Commercial trial harvest quality notes").props.value
+    ).toBe("Clean finish with strong aroma after cure.");
     expect(screen.getByLabelText("Commercial trial crop summary").props.value).toBe(
       "Seedling safety crop completed cleanly with good final quality."
     );
@@ -1209,8 +1212,7 @@ describe("commercial workflow pages", () => {
             status: "complete",
             effectivenessSummary: "Completed trial with clean seedling response.",
             harvestQualityNotes: "Strong aroma, clean dry, no mold, good bag appeal.",
-            commercialCropSummary:
-              "Crop summary supports a cautious public proof point.",
+            commercialCropSummary: "Crop summary supports a cautious public proof point.",
             notes: "Ready for cautious storefront proof."
           })
         })
@@ -1487,7 +1489,10 @@ describe("commercial workflow pages", () => {
     );
     expect(screen.getByText("Create Feed Update")).toBeTruthy();
 
-    fireEvent.changeText(screen.getByLabelText("Commercial grow detail status"), "completed");
+    fireEvent.changeText(
+      screen.getByLabelText("Commercial grow detail status"),
+      "completed"
+    );
     fireEvent.changeText(
       screen.getByLabelText("Commercial grow detail public share status"),
       "public_ready"
