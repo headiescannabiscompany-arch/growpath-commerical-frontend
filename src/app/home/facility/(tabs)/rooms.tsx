@@ -25,7 +25,7 @@ import { InlineError } from "@/components/InlineError";
 import { ScreenBoundary } from "@/components/ScreenBoundary";
 import { useEntitlements } from "@/entitlements";
 import { getFacilityRoomAccess } from "@/features/facility/roomAccess";
-import { useApiErrorHandler } from "@/hooks/useApiErrorHandler";
+import { useApiErrorHandler, type UiErrorState } from "@/hooks/useApiErrorHandler";
 import { useFacility } from "@/state/useFacility";
 
 function rowId(row: any) {
@@ -37,6 +37,17 @@ function today() {
 }
 
 const TRACKING_MODES = ["batch", "individual"] as const;
+const ROOM_TYPES = [
+  { value: "greenhouse", label: "Greenhouse" },
+  { value: "flower", label: "Flower" },
+  { value: "veg", label: "Veg" },
+  { value: "clone", label: "Clone" },
+  { value: "mother", label: "Mother" },
+  { value: "dry", label: "Dry" },
+  { value: "cure", label: "Cure" },
+  { value: "seedling", label: "Seedling" },
+  { value: "other", label: "Other" }
+] as const;
 const CYCLE_STAGES = ["clone", "veg", "flower", "dry", "cure", "complete"] as const;
 const CYCLE_STATUSES = ["planned", "active", "paused", "complete"] as const;
 
@@ -54,15 +65,23 @@ export default function FacilityRoomsTab() {
   const ent = useEntitlements();
   const { selectedId: facilityId } = useFacility();
 
-  const apiErr: any = useApiErrorHandler();
-  const error = apiErr?.error ?? apiErr?.[0] ?? null;
-  const handleApiError = useMemo(
-    () => apiErr?.handleApiError ?? apiErr?.[1] ?? ((_: any) => {}),
-    [apiErr]
-  );
-  const clearError = useMemo(
-    () => apiErr?.clearError ?? apiErr?.[2] ?? (() => {}),
-    [apiErr]
+  const apiErrorMapper = useApiErrorHandler();
+  const [error, setError] = useState<UiErrorState | null>(null);
+  const clearError = useCallback(() => setError(null), []);
+  const handleApiError = useCallback(
+    (err: any) => {
+      setError(
+        apiErrorMapper.toInlineError(err) || {
+          title: "Room action failed",
+          message:
+            err?.message ||
+            "Unable to update rooms. Check your facility role and try again.",
+          code: err?.code,
+          requestId: err?.requestId ?? null
+        }
+      );
+    },
+    [apiErrorMapper]
   );
 
   const [rooms, setRooms] = useState<Room[]>([]);
@@ -75,7 +94,8 @@ export default function FacilityRoomsTab() {
   const [feedback, setFeedback] = useState("");
 
   const [roomName, setRoomName] = useState("");
-  const [roomType, setRoomType] = useState("flower");
+  const [roomType, setRoomType] =
+    useState<(typeof ROOM_TYPES)[number]["value"]>("greenhouse");
   const [roomTrackingMode, setRoomTrackingMode] =
     useState<(typeof TRACKING_MODES)[number]>("batch");
 
@@ -165,6 +185,7 @@ export default function FacilityRoomsTab() {
     if (!facilityId || !canEditRooms || !roomName.trim()) return;
     setSaving(true);
     setFeedback("");
+    clearError();
     try {
       await createRoom(facilityId, {
         name: roomName.trim(),
@@ -185,6 +206,7 @@ export default function FacilityRoomsTab() {
     if (!facilityId || !activeRoomId || !canEditRooms) return;
     setSaving(true);
     setFeedback("");
+    clearError();
     try {
       await updateRoom(facilityId, activeRoomId, { trackingMode: mode });
       setRoomTrackingMode(mode);
@@ -201,6 +223,7 @@ export default function FacilityRoomsTab() {
     if (!facilityId || !activeRoomId || !canDeleteRooms) return;
     setSaving(true);
     setFeedback("");
+    clearError();
     try {
       await deleteRoom(facilityId, activeRoomId);
       setFeedback("Room deleted.");
@@ -223,6 +246,7 @@ export default function FacilityRoomsTab() {
       return;
     setSaving(true);
     setFeedback("");
+    clearError();
     try {
       await createEquipment(facilityId, {
         name: equipmentName.trim(),
@@ -245,6 +269,7 @@ export default function FacilityRoomsTab() {
       return;
     setSaving(true);
     setFeedback("");
+    clearError();
     try {
       await createBatchCycle(facilityId, {
         name: cycleName.trim(),
@@ -271,6 +296,7 @@ export default function FacilityRoomsTab() {
     if (!facilityId || !id || !canManageEquipmentCycles) return;
     setSaving(true);
     setFeedback("");
+    clearError();
     try {
       await deleteBatchCycle(facilityId, id);
       setFeedback("Batch cycle deleted.");
@@ -319,13 +345,26 @@ export default function FacilityRoomsTab() {
                 accessibilityLabel="New room name"
                 placeholder="Room name"
               />
-              <TextInput
-                value={roomType}
-                onChangeText={setRoomType}
-                style={styles.input}
-                accessibilityLabel="New room type"
-                placeholder="Room type"
-              />
+              <View style={styles.pillRow}>
+                {ROOM_TYPES.map((type) => (
+                  <Pressable
+                    key={type.value}
+                    onPress={() => setRoomType(type.value)}
+                    accessibilityRole="button"
+                    accessibilityLabel={`Set new room type to ${type.label}`}
+                    style={[styles.pill, roomType === type.value && styles.pillSelected]}
+                  >
+                    <Text
+                      style={[
+                        styles.pillText,
+                        roomType === type.value && styles.pillTextSelected
+                      ]}
+                    >
+                      {type.label}
+                    </Text>
+                  </Pressable>
+                ))}
+              </View>
               <View style={styles.pillRow}>
                 {TRACKING_MODES.map((mode) => (
                   <Pressable
