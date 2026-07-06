@@ -33,6 +33,12 @@ export default function ForgotPasswordScreen() {
     setSubmitting(true);
     try {
       const response = await forgotPassword(normalizedEmail);
+      if (response.emailSent === false) {
+        setError(
+          "Password reset email is not available right now. Contact support to reset this account."
+        );
+        return;
+      }
       setMessage(
         response.message || "If an account exists, reset instructions have been sent."
       );
