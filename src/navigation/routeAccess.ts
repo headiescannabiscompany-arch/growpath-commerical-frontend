@@ -133,13 +133,17 @@ export function canAccessRoute(pathname: string, snapshot: RouteAccessSnapshot):
   if (!policy) return true;
   const modes = Array.isArray(policy.mode) ? policy.mode : [policy.mode];
   if (!snapshot.ready || !modes.includes(snapshot.mode)) return false;
-
-  // Paid-mode pages should remain browsable as preview/walkthrough shells even
-  // before checkout or facility setup is complete. Backend permissions and
-  // per-action checks still protect paid writes and real data access.
-  if (snapshot.mode === "commercial" || snapshot.mode === "facility") return true;
-
   if (policy.requiresFacility && !snapshot.selectedFacilityId) return false;
+
+  // Commercial mode pages should remain browsable as preview/walkthrough shells
+  // before checkout is complete. Direct standalone routes and write-entry routes
+  // still require their normal capabilities.
+  const commercialPreview =
+    snapshot.mode === "commercial" &&
+    pathname.startsWith("/home/commercial") &&
+    !pathname.startsWith("/home/commercial/inventory-create");
+  if (commercialPreview) return true;
+
   return policy.capabilities.every(
     (capability) => snapshot.capabilities?.[capability] === true
   );
