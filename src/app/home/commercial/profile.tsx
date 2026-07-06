@@ -153,8 +153,8 @@ export default function CommercialProfileRoute() {
             <Text style={styles.title}>Business Profile & Billing</Text>
             <Text style={styles.subtitle}>
               Manage the business identity that appears on public profiles, storefronts,
-              courses, feed posts, and forum support. Keep destructive account controls in
-              the account profile.
+              courses, feed campaigns, and forum support. Keep destructive account
+              controls in the account profile.
             </Text>
           </View>
           <View style={styles.headerActions}>
@@ -290,8 +290,8 @@ export default function CommercialProfileRoute() {
         <Text style={styles.cardTitle}>Public profile discovery</Text>
         <Text style={styles.body}>
           Free, Pro, commercial, and facility users should be able to discover this brand
-          from feed posts, product cards, courses, forum threads, store search, similar
-          brands, and direct public URLs.
+          from feed campaigns, product cards, courses, forum threads, store search,
+          similar brands, and direct public URLs.
         </Text>
         <View style={styles.urlList}>
           <Text style={styles.urlText}>Public profile: {publicProfileUrl}</Text>
@@ -305,7 +305,7 @@ export default function CommercialProfileRoute() {
         </View>
         <View style={styles.actions}>
           <ActionLink href="/store" label="Browse Public Store" />
-          <ActionLink href="/home/commercial/feed" label="Commercial Feed" />
+          <ActionLink href="/home/commercial/feed" label="Feed / Campaigns" />
         </View>
       </AppCard>
 

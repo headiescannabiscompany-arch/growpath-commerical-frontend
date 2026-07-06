@@ -41,12 +41,12 @@ function authorLabel(post: CommercialFeedPost) {
   return post.author?.displayName || post.author?.email || "GrowPath member";
 }
 
-function postMeta(post: CommercialFeedPost) {
+function campaignMeta(post: CommercialFeedPost) {
   const created = post.createdAt ? new Date(post.createdAt).toLocaleString() : "";
   return [authorLabel(post), created, post.location].filter(Boolean).join(" - ");
 }
 
-function postImage(post: CommercialFeedPost) {
+function campaignImage(post: CommercialFeedPost) {
   return resolveImageUri(
     post.imageUrl || post.creativeImageUrl || post.bannerImageUrl || ""
   );
@@ -96,8 +96,8 @@ export default function CommercialFeedRoute() {
   const helper = useMemo(
     () =>
       isFacility
-        ? "Facility posts are education-only. Share training, SOP, IPM, safety, cultivation, and compliance lessons. Sales listings are blocked."
-        : "Share updates, listings, ISO requests, drops, questions, or educational content with the commercial network.",
+        ? "Facility feed campaigns are outreach placements. Share training, SOP, IPM, safety, cultivation, compliance, and professional education. Direct sales listings are blocked for facility accounts."
+        : "Create outreach campaigns that promote products, courses, lives, storefronts, offers, and brand updates. Use Forum/Q&A for discussion.",
     [isFacility]
   );
 
@@ -128,7 +128,7 @@ export default function CommercialFeedRoute() {
     void load();
   }, [load]);
 
-  async function createPost() {
+  async function createCampaign() {
     if (!canCreate) return;
     setCreating(true);
     setError(null);
@@ -171,7 +171,9 @@ export default function CommercialFeedRoute() {
       setImageUrl("");
       setExternalLinkUrl("");
       setExternalLinkLabel("");
-      setFeedback(isFacility ? "Educational post published." : "Feed post published.");
+      setFeedback(
+        isFacility ? "Facility outreach campaign published." : "Feed campaign published."
+      );
       await load({ refresh: true });
     } catch (e) {
       setError(e);
@@ -180,7 +182,7 @@ export default function CommercialFeedRoute() {
     }
   }
 
-  async function pickPostImage() {
+  async function pickCampaignImage() {
     const permission = await ImagePicker.requestMediaLibraryPermissionsAsync();
     if (!permission.granted) {
       setFeedback("Photo-library permission is required to attach an image.");
@@ -214,19 +216,23 @@ export default function CommercialFeedRoute() {
     >
       <View style={styles.header}>
         <Text style={styles.title}>
-          {isFacility ? "Facility Education Feed" : "Commercial Feed"}
+          {isFacility ? "Facility Outreach" : "Feed / Campaigns"}
         </Text>
         <Text style={styles.subtitle}>{helper}</Text>
       </View>
 
       <View style={styles.card}>
-        <Text style={styles.cardTitle}>Create Post</Text>
+        <Text style={styles.cardTitle}>Create Campaign</Text>
+        <Text style={styles.linkBoxText}>
+          Feed is advertising and outreach. Link the campaign to a product, course, live,
+          storefront, or support Q&A thread. Keep threaded conversation in Forum/Q&A.
+        </Text>
         <View style={styles.chipRow}>
           {allowedTypes.map((option) => (
             <Pressable
               key={option}
               onPress={() => setType(option)}
-              accessibilityLabel={`Select ${option} feed post type`}
+              accessibilityLabel={`Select ${option} campaign type`}
               style={[styles.chip, type === option && styles.chipSelected]}
             >
               <Text style={[styles.chipText, type === option && styles.chipTextSelected]}>
@@ -240,7 +246,7 @@ export default function CommercialFeedRoute() {
           onChangeText={setTitle}
           style={styles.input}
           placeholder={isFacility ? "Educational topic" : "Title"}
-          accessibilityLabel="Feed post title"
+          accessibilityLabel="Feed campaign title"
         />
         <TextInput
           value={body}
@@ -252,21 +258,21 @@ export default function CommercialFeedRoute() {
               : "What do you want to share?"
           }
           multiline
-          accessibilityLabel="Feed post body"
+          accessibilityLabel="Feed campaign body"
         />
         <TextInput
           value={tags}
           onChangeText={setTags}
           style={styles.input}
           placeholder="Tags, comma separated"
-          accessibilityLabel="Feed post tags"
+          accessibilityLabel="Feed campaign tags"
         />
         <TextInput
           value={location}
           onChangeText={setLocation}
           style={styles.input}
           placeholder="Location (optional)"
-          accessibilityLabel="Feed post location"
+          accessibilityLabel="Feed campaign location"
         />
         {!isFacility ? (
           <View style={styles.linkBox}>
@@ -311,15 +317,15 @@ export default function CommercialFeedRoute() {
               value={imageUrl}
               onChangeText={setImageUrl}
               style={styles.input}
-              placeholder="Post image URL or uploaded creative"
+              placeholder="Campaign image URL or uploaded creative"
               autoCapitalize="none"
-              accessibilityLabel="Commercial feed post image URL"
+              accessibilityLabel="Commercial feed campaign image URL"
             />
             <View style={styles.imageTools}>
               <Pressable
-                onPress={pickPostImage}
+                onPress={pickCampaignImage}
                 accessibilityRole="button"
-                accessibilityLabel="Upload commercial feed post image"
+                accessibilityLabel="Upload commercial feed campaign image"
                 style={styles.secondaryButton}
                 disabled={creating}
               >
@@ -329,7 +335,7 @@ export default function CommercialFeedRoute() {
                 <Pressable
                   onPress={() => setImageUrl("")}
                   accessibilityRole="button"
-                  accessibilityLabel="Clear commercial feed post image"
+                  accessibilityLabel="Clear commercial feed campaign image"
                   style={styles.secondaryButton}
                   disabled={creating}
                 >
@@ -342,7 +348,7 @@ export default function CommercialFeedRoute() {
                 source={{ uri: resolveImageUri(imageUrl) }}
                 style={styles.postImagePreview}
                 resizeMode="cover"
-                accessibilityLabel="Commercial feed post image preview"
+                accessibilityLabel="Commercial feed campaign image preview"
               />
             ) : null}
             <View style={styles.twoColumn}>
@@ -365,17 +371,19 @@ export default function CommercialFeedRoute() {
           </View>
         ) : null}
         <Pressable
-          onPress={createPost}
+          onPress={createCampaign}
           disabled={!canCreate}
-          accessibilityLabel={isFacility ? "Publish education post" : "Publish feed post"}
+          accessibilityLabel={
+            isFacility ? "Publish facility outreach" : "Publish feed campaign"
+          }
           style={[styles.primaryButton, !canCreate && styles.disabled]}
         >
           <Text style={styles.primaryButtonText}>
             {creating
               ? "Publishing..."
               : isFacility
-                ? "Publish Education"
-                : "Publish Post"}
+                ? "Publish Outreach"
+                : "Publish Campaign"}
           </Text>
         </Pressable>
         {feedback ? <Text style={styles.feedback}>{feedback}</Text> : null}
@@ -423,9 +431,9 @@ export default function CommercialFeedRoute() {
 
       {!loading && items.length === 0 ? (
         <View style={styles.card}>
-          <Text style={styles.cardTitle}>No posts yet</Text>
+          <Text style={styles.cardTitle}>No campaigns yet</Text>
           <Text style={styles.muted}>
-            Publish the first {isFacility ? "educational" : "commercial"} post.
+            Publish the first {isFacility ? "facility outreach" : "feed campaign"}.
           </Text>
         </View>
       ) : null}
@@ -436,13 +444,13 @@ export default function CommercialFeedRoute() {
             <Text style={styles.typePill}>{post.type}</Text>
             <Text style={styles.likes}>{Number(post.likeCount || 0)} likes</Text>
           </View>
-          <Text style={styles.postTitle}>{post.title || "Feed update"}</Text>
-          {postImage(post) ? (
+          <Text style={styles.postTitle}>{post.title || "Feed campaign"}</Text>
+          {campaignImage(post) ? (
             <Image
-              source={{ uri: postImage(post) }}
+              source={{ uri: campaignImage(post) }}
               style={styles.feedImage}
               resizeMode="cover"
-              accessibilityLabel={`${post.title || "Feed update"} image`}
+              accessibilityLabel={`${post.title || "Feed campaign"} image`}
             />
           ) : null}
           <Text style={styles.postBody}>{post.body}</Text>
@@ -474,7 +482,7 @@ export default function CommercialFeedRoute() {
               ))}
             </View>
           ) : null}
-          <Text style={styles.meta}>{postMeta(post)}</Text>
+          <Text style={styles.meta}>{campaignMeta(post)}</Text>
         </View>
       ))}
     </ScrollView>

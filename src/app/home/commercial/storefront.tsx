@@ -1,6 +1,5 @@
-import React from "react";
-import { Redirect } from "expo-router";
+import Storefront from "@/app/storefront";
 
 export default function CommercialStorefrontRoute() {
-  return <Redirect href="/storefront" />;
+  return <Storefront />;
 }

@@ -141,8 +141,8 @@ export default function CommercialProductsRoute() {
         <Text style={styles.cardTitle}>Product catalog</Text>
         <Text style={styles.body}>
           Products are business-facing records, not generic inventory rows. They can link
-          to inventory, recipes, batches, grow trials, courses, feed posts, and external
-          purchase URLs.
+          to inventory, recipes, batches, grow trials, courses, feed campaigns, and
+          external purchase URLs.
         </Text>
         <View style={styles.metricGrid}>
           <View style={styles.metric}>
@@ -170,7 +170,7 @@ export default function CommercialProductsRoute() {
         <Text style={styles.cardTitle}>Create product</Text>
         <Text style={styles.body}>
           Create the product shell here, then connect formulas, batches, trial grows,
-          courses, feed posts, and support threads as evidence comes in.
+          courses, feed campaigns, and support threads as evidence comes in.
         </Text>
         <View style={styles.formGrid}>
           <TextInput
@@ -332,7 +332,7 @@ export default function CommercialProductsRoute() {
         </Text>
         <View style={styles.actions}>
           <ActionLink href="/store" label="Public Store Directory" />
-          <ActionLink href="/home/commercial/feed" label="Create Feed Post" />
+          <ActionLink href="/home/commercial/feed" label="Create Feed Campaign" />
         </View>
       </AppCard>
 
@@ -372,7 +372,7 @@ export default function CommercialProductsRoute() {
           Attach care instructions, course links, photos, and external purchase URLs
         </Text>
         <Text style={styles.bullet}>
-          Publish seasonal feed posts and support answers from product records
+          Publish seasonal feed campaigns and support answers from product records
         </Text>
         <View style={styles.actions}>
           <ActionLink href="/home/commercial/inventory" label="Inventory" />

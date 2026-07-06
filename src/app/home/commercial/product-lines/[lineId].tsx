@@ -114,7 +114,7 @@ export default function CommercialProductLineDetailRoute({
           <Text style={styles.title}>{lineTitle(line)}</Text>
           <Text style={styles.subtitle}>
             Manage the private product-family record that feeds storefront sections,
-            products, batches, trials, courses, feed posts, and support conversations.
+            products, batches, trials, courses, feed campaigns, and support conversations.
           </Text>
           <View style={styles.actions}>
             <ActionLink href="/home/commercial/product-lines" label="All Lines" />
@@ -147,7 +147,7 @@ export default function CommercialProductLineDetailRoute({
         <Text style={styles.cardTitle}>Commercial Links</Text>
         <Text style={styles.body}>
           A line should connect products, product formulas, batches, trial grows, courses,
-          feed posts, storefront blocks, and forum support.
+          feed campaigns, storefront blocks, and forum support.
         </Text>
         <View style={styles.actions}>
           <ActionLink href="/home/commercial/products" label="Product Catalog" />
@@ -215,7 +215,7 @@ export default function CommercialProductLineDetailRoute({
           Create a course or support thread explaining product-line use.
         </Text>
         <Text style={styles.bullet}>
-          Use feed posts to announce releases, trials, and seasonal recommendations.
+          Use feed campaigns to announce releases, trials, and seasonal recommendations.
         </Text>
       </AppCard>
     </AppPage>

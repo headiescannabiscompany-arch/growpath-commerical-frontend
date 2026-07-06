@@ -1,6 +1,5 @@
-import React from "react";
-import { Redirect } from "expo-router";
+import CommercialFeed from "@/app/feed";
 
 export default function CommercialFeedRoute() {
-  return <Redirect href="/feed" />;
+  return <CommercialFeed />;
 }

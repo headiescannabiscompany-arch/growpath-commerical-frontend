@@ -125,7 +125,7 @@ export default function CommercialProductDetailRoute({ route }: { route?: any } 
           <View style={styles.actions}>
             <ActionLink href="/home/commercial/products" label="All Products" />
             <ActionLink href="/home/commercial/storefront" label="Storefront" />
-            <ActionLink href="/home/commercial/feed" label="Create Feed Post" />
+            <ActionLink href="/home/commercial/feed" label="Create Feed Campaign" />
           </View>
         </View>
       }
@@ -136,7 +136,7 @@ export default function CommercialProductDetailRoute({ route }: { route?: any } 
       <AppCard>
         <Text style={styles.cardTitle}>Product Record</Text>
         <Text style={styles.body}>
-          This is the commercial source record for storefront listings, feed posts,
+          This is the commercial source record for storefront listings, feed campaigns,
           courses, support threads, and product-trial reports.
         </Text>
         <View style={styles.detailGrid}>

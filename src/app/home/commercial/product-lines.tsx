@@ -123,7 +123,7 @@ export default function CommercialProductLinesRoute() {
         <Text style={styles.cardTitle}>Create Product Line</Text>
         <Text style={styles.body}>
           Product family workflow: create the line first, then attach products, formulas,
-          grow trials, courses, feed posts, and storefront sections.
+          grow trials, courses, feed campaigns, and storefront sections.
         </Text>
         <TextInput
           value={name}

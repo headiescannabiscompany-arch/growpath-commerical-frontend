@@ -391,7 +391,7 @@ export default function CommercialGrowsRoute() {
           records as evidence
         </Text>
         <Text style={styles.bullet}>
-          Create feed posts, course lessons, or storefront proof only from saved grow
+          Create feed campaigns, course lessons, or storefront proof only from saved grow
           records
         </Text>
         <View style={styles.actions}>

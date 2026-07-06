@@ -198,7 +198,7 @@ export default function CommercialMarketingRoute() {
             </Text>
           </View>
           <View style={styles.headerActions}>
-            <ActionLink href="/home/commercial/feed" label="Create Feed Post" />
+            <ActionLink href="/home/commercial/feed" label="Create Feed Campaign" />
             <ActionLink href="/home/commercial/products" label="Products" />
             <ActionLink href="/home/commercial/courses" label="Courses" />
             <ActionLink href="/home/commercial/storefront" label="Storefront" />
@@ -429,10 +429,11 @@ export default function CommercialMarketingRoute() {
         <Text style={styles.cardTitle}>Product drop workflow</Text>
         <Text style={styles.body}>
           A product drop should start from the product or product line, then create a
-          storefront update, linked feed post, support thread, and optional course/lesson.
+          storefront update, linked feed campaign, support thread, and optional
+          course/lesson.
         </Text>
         <View style={styles.actions}>
-          <ActionLink href="/home/commercial/feed" label="Create linked feed post" />
+          <ActionLink href="/home/commercial/feed" label="Create linked campaign" />
           <ActionLink href="/home/commercial/products/new" label="Create Product" />
           <ActionLink href="/home/commercial/community" label="Community Support" />
         </View>

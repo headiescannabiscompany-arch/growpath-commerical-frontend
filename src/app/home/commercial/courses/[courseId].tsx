@@ -190,7 +190,7 @@ export default function CommercialCourseDetailRoute({ route }: { route?: any } =
         <Text style={styles.cardTitle}>Course Record</Text>
         <Text style={styles.body}>
           Commercial courses can be free or paid, and should connect to products, product
-          lines, grow trials, feed posts, storefronts, and forum support.
+          lines, grow trials, feed campaigns, storefronts, and forum support.
         </Text>
         <View style={styles.detailGrid}>
           <DetailRow label="Category" value={course?.category} />

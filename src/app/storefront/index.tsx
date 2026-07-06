@@ -12,6 +12,7 @@ import {
   View
 } from "react-native";
 import * as ImagePicker from "expo-image-picker";
+import { Link } from "expo-router";
 
 import AppCard from "@/components/layout/AppCard";
 import AppPage from "@/components/layout/AppPage";
@@ -45,6 +46,16 @@ function dollars(cents: any) {
 
 function productId(product: AnyRec) {
   return String(product.id ?? product._id ?? "");
+}
+
+function PublicPreviewLink({ href, label }: { href: string; label: string }) {
+  return (
+    <Link href={href as any} asChild>
+      <Pressable accessibilityRole="link" style={styles.previewButton}>
+        <Text style={styles.previewButtonText}>{label}</Text>
+      </Pressable>
+    </Link>
+  );
 }
 
 export default function Storefront() {
@@ -285,7 +296,8 @@ export default function Storefront() {
         <View>
           <Text style={styles.headerTitle}>Storefront</Text>
           <Text style={styles.headerSubtitle}>
-            Configure storefront settings, product listings, and inventory links.
+            Public brand profile, product cards, courses, lives, campaigns, and user
+            preview links.
           </Text>
         </View>
       }
@@ -484,9 +496,9 @@ export default function Storefront() {
           <Text style={styles.cardTitle}>Public Discovery</Text>
           <Text style={styles.helperText}>
             Free, Pro, commercial, and facility users can reach this brand from feed
-            posts, forum replies, course pages, product cards, and public search surfaces.
-            Storefronts should make it easy to view similar brands, return to the feed,
-            open support discussions, and follow external product links.
+            campaigns, forum replies, course pages, product cards, and public search
+            surfaces. Storefronts should make it easy to view as a user, open the brand
+            profile, open support discussions, and follow product links.
           </Text>
           <View style={styles.publicLinkBox}>
             <Text style={styles.publicLinkLabel}>Brand profile</Text>
@@ -500,9 +512,13 @@ export default function Storefront() {
               {currentPublicUrl(publicStorePath)}
             </Text>
           </View>
+          <View style={styles.previewActions}>
+            <PublicPreviewLink href={publicStorePath} label="View Store Page" />
+            <PublicPreviewLink href={publicProfilePath} label="View Brand Profile" />
+          </View>
           <View style={styles.discoveryActions}>
             <Text style={styles.discoveryAction}>View similar brands</Text>
-            <Text style={styles.discoveryAction}>Return to feed</Text>
+            <Text style={styles.discoveryAction}>Return to campaign placements</Text>
             <Text style={styles.discoveryAction}>Open forum/support discussions</Text>
           </View>
         </AppCard>
@@ -900,6 +916,17 @@ const styles = StyleSheet.create({
     fontWeight: "800",
     marginTop: 4
   },
+  previewActions: { flexDirection: "row", flexWrap: "wrap", gap: 8, marginTop: 10 },
+  previewButton: {
+    alignItems: "center",
+    backgroundColor: "#0F172A",
+    borderRadius: 10,
+    minHeight: 42,
+    justifyContent: "center",
+    paddingHorizontal: 14,
+    paddingVertical: 10
+  },
+  previewButtonText: { color: "white", fontWeight: "900" },
   discoveryActions: { gap: 6, marginTop: 10 },
   discoveryAction: { color: "#0F172A", fontSize: 13, fontWeight: "800" },
   linkGrid: { flexDirection: "row", flexWrap: "wrap", gap: 8 },

@@ -13,9 +13,9 @@ type FeedBannerProps = {
 };
 
 const LABELS: Record<FeedBannerPlacement, string> = {
-  top: "GrowPath feed",
-  middle: "More from the feed",
-  bottom: "From the feed"
+  top: "Promoted from GrowPath",
+  middle: "More promoted picks",
+  bottom: "Recommended campaigns"
 };
 
 export default function FeedBanner({

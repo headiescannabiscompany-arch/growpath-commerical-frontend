@@ -129,7 +129,7 @@ export default function CommercialCoursesRoute() {
           <View style={styles.headerActions}>
             <ActionLink href="/courses" label="Open Course Catalog" />
             <ActionLink href="/courses/create" label="Universal Course Creator" />
-            <ActionLink href="/home/commercial/feed" label="Create Feed Post" />
+            <ActionLink href="/home/commercial/feed" label="Create Feed Campaign" />
             <ActionLink href="/home/commercial/products" label="Products" />
           </View>
         </View>
@@ -313,7 +313,7 @@ export default function CommercialCoursesRoute() {
           Use trial results and grow reports as lesson evidence
         </Text>
         <Text style={styles.bullet}>
-          Announce course updates through linked feed posts
+          Announce course updates through linked feed campaigns
         </Text>
         <Text style={styles.bullet}>
           Send users back to public product pages and forum support threads
@@ -321,7 +321,7 @@ export default function CommercialCoursesRoute() {
         <View style={styles.actions}>
           <ActionLink href="/home/commercial/trials" label="Product Trials" />
           <ActionLink href="/home/commercial/storefront" label="Storefront" />
-          <ActionLink href="/home/commercial/feed" label="Create Feed Post" />
+          <ActionLink href="/home/commercial/feed" label="Create Feed Campaign" />
         </View>
       </AppCard>
 

@@ -53,11 +53,12 @@ export default function CommercialTabsLayout() {
         name="index"
         options={{ title: "Dashboard", tabBarLabel: compactTabs ? "Dash" : "Dashboard" }}
       />
-      <Tabs.Screen name="grows" options={{ title: "Grows" }} />
+      <Tabs.Screen name="grows" options={{ title: "Product Trial Grows", href: null }} />
+      <Tabs.Screen name="storefront" options={{ title: "Storefront" }} />
       <Tabs.Screen name="products" options={{ title: "Products" }} />
-      <Tabs.Screen name="inventory" options={{ title: "Inventory" }} />
       <Tabs.Screen name="courses" options={{ title: "Courses" }} />
-      <Tabs.Screen name="feed" options={{ title: "Feed" }} />
+      <Tabs.Screen name="feed" options={{ title: "Feed / Campaigns" }} />
+      <Tabs.Screen name="inventory" options={{ title: "Inventory", href: null }} />
       <Tabs.Screen
         name="analytics"
         options={{ title: "Analytics", href: compactTabs ? null : undefined }}
@@ -65,22 +66,15 @@ export default function CommercialTabsLayout() {
       <Tabs.Screen name="profile" options={{ title: "Profile" }} />
       <Tabs.Screen
         name="batch-planner"
-        options={{ title: "Batches", href: compactTabs ? null : undefined }}
+        options={{ title: "Product Batches", href: null }}
       />
       <Tabs.Screen
         name="product-lines"
-        options={{ title: "Lines", href: compactTabs ? null : undefined }}
+        options={{ title: "Product Lines", href: null }}
       />
-      <Tabs.Screen
-        name="trials"
-        options={{ title: "Trials", href: compactTabs ? null : undefined }}
-      />
-      <Tabs.Screen
-        name="community"
-        options={{ title: "Community", href: compactTabs ? null : undefined }}
-      />
+      <Tabs.Screen name="trials" options={{ title: "Product Trials", href: null }} />
+      <Tabs.Screen name="community" options={{ title: "Forum / Q&A", href: null }} />
       <Tabs.Screen name="marketing" options={{ href: null, title: "Marketing" }} />
-      <Tabs.Screen name="storefront" options={{ href: null, title: "Storefront" }} />
       <Tabs.Screen
         name="inventory-create"
         options={{ href: null, title: "Add Inventory Item" }}

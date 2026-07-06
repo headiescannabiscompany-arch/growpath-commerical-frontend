@@ -61,19 +61,10 @@ export function getFeedPolicy({
   const isFacilityOps = key === "facility_ops";
 
   if (isHome) {
-    if (isFree) {
-      return {
-        slots: 0,
-        includeForumHighlights: false,
-        railMode: "standard",
-        cadence: "always"
-      };
-    }
-
     return {
       slots: 2,
-      includeForumHighlights: mode !== "facility",
-      railMode: mode === "facility" ? "education-only" : "standard",
+      includeForumHighlights: false,
+      railMode: "promo-only",
       cadence: "always"
     };
   }
@@ -130,14 +121,6 @@ export function getFeedBannerPolicy({
   const railMode = mode === "facility" ? "education-only" : "standard";
 
   if (isHome) {
-    return emptyBannerPolicy(railMode);
-  }
-
-  if (isFree && !longContent) {
-    return emptyBannerPolicy(railMode);
-  }
-
-  if (isFree) {
     return {
       top: true,
       middle: true,
@@ -145,6 +128,20 @@ export function getFeedBannerPolicy({
       slotsByPlacement: {
         top: 1,
         middle: 1,
+        bottom: 1
+      },
+      railMode: "promo-only"
+    };
+  }
+
+  if (isFree) {
+    return {
+      top: true,
+      middle: longContent,
+      bottom: true,
+      slotsByPlacement: {
+        top: 1,
+        middle: longContent ? 1 : 0,
         bottom: 1
       },
       railMode

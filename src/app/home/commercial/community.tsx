@@ -128,7 +128,7 @@ export default function CommercialCommunityRoute() {
           </View>
           <View style={styles.headerActions}>
             <ActionLink href="/communities" label="Open Communities" />
-            <ActionLink href="/home/commercial/feed" label="Create Feed Post" />
+            <ActionLink href="/home/commercial/feed" label="Create Feed Campaign" />
             <ActionLink href="/home/commercial/profile" label="Brand Profile" />
           </View>
         </View>
@@ -138,8 +138,8 @@ export default function CommercialCommunityRoute() {
         <Text style={styles.cardTitle}>Brand forum identity</Text>
         <Text style={styles.body}>
           Commercial accounts should post and reply as the brand, answer product
-          questions, link products/courses/grow trials, and track mentions through feed
-          and community workflows.
+          questions, link products/courses/grow trials, and track mentions through forum,
+          Q&A, and campaign workflows.
         </Text>
         <View style={styles.metricGrid}>
           <View style={styles.metric}>
@@ -305,10 +305,10 @@ export default function CommercialCommunityRoute() {
           Attach product, course, grow trial, storefront, or external support URL
         </Text>
         <Text style={styles.bullet}>
-          Optionally turn strong answers into feed posts or course lessons
+          Optionally turn strong answers into feed campaigns or course lessons
         </Text>
         <View style={styles.actions}>
-          <ActionLink href="/home/commercial/feed" label="Create linked feed post" />
+          <ActionLink href="/home/commercial/feed" label="Create linked campaign" />
           <ActionLink href="/courses/add-lesson" label="Create course lesson" />
         </View>
       </AppCard>
@@ -316,7 +316,7 @@ export default function CommercialCommunityRoute() {
       <AppCard>
         <Text style={styles.cardTitle}>Community discovery</Text>
         <Text style={styles.body}>
-          Users should find the brand through public profile links, feed posts, store
+          Users should find the brand through public profile links, feed campaigns, store
           products, courses, and forum answers. Guild/community selection should support
           discovery, not replace support workflows.
         </Text>
@@ -324,7 +324,7 @@ export default function CommercialCommunityRoute() {
         <Text style={styles.bullet}>Storefront is the stable product destination</Text>
         <Text style={styles.bullet}>Forum/support threads should link back to both</Text>
         <Text style={styles.bullet}>
-          Similar brands and return-to-feed actions keep users moving
+          Similar brands and return-to-campaign actions keep users moving
         </Text>
         <View style={styles.actions}>
           <ActionLink href="/store" label="Public Store Directory" />

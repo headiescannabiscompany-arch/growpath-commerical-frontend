@@ -340,11 +340,11 @@ export default function CommercialTrialDetailRoute({ route }: { route?: any } = 
           sample size.
         </Text>
         <Text style={styles.bullet}>
-          Turn the final summary into a feed post, storefront proof point, course lesson,
-          or forum answer.
+          Turn the final summary into a feed campaign, storefront proof point, course
+          lesson, or forum answer.
         </Text>
         <View style={styles.actions}>
-          <ActionLink href="/home/commercial/feed" label="Create Feed Post" />
+          <ActionLink href="/home/commercial/feed" label="Create Feed Campaign" />
           <ActionLink href="/home/commercial/storefront" label="Storefront" />
           <ActionLink href="/home/commercial/courses" label="Courses" />
           <ActionLink href="/home/commercial/community" label="Community" />

@@ -331,7 +331,7 @@ export default function CommercialTrialsRoute() {
         <View style={styles.headerActions}>
           <Link href="/home/commercial/feed" asChild>
             <Pressable style={styles.outlineButton}>
-              <Text style={styles.outlineText}>Create Feed Post</Text>
+              <Text style={styles.outlineText}>Create Feed Campaign</Text>
             </Pressable>
           </Link>
           <Link href="/home/commercial/storefront" asChild>

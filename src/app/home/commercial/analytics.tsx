@@ -145,8 +145,8 @@ export default function CommercialAnalyticsRoute() {
           <Text style={styles.title}>Commercial Analytics</Text>
           <Text style={styles.subtitle}>
             Start with useful counts: ad clicks, marketing link clicks, storefront views,
-            product views, feed clicks, course starts, forum replies, inventory alerts,
-            and active/completed trials.
+            product views, campaign clicks, course starts, forum replies, inventory
+            alerts, and active/completed trials.
           </Text>
           <View style={styles.actions}>
             <ActionLink href="/home/commercial/storefront" label="Storefront" />
@@ -192,7 +192,7 @@ export default function CommercialAnalyticsRoute() {
           <MetricCard
             label="Feed clicks"
             value={normalized.feedClicks}
-            helper="Clicks from commercial posts"
+            helper="Clicks from commercial feed campaigns"
           />
           <MetricCard
             label="Course starts"
@@ -246,7 +246,7 @@ export default function CommercialAnalyticsRoute() {
       <AppCard>
         <Text style={styles.cardTitle}>Simple metrics first</Text>
         <Text style={styles.body}>
-          Analytics should stay event-backed and practical. Start with product, feed,
+          Analytics should stay event-backed and practical. Start with product, campaigns,
           course, trial, ad-click, and external-link events before adding advanced
           reporting.
         </Text>
@@ -255,9 +255,9 @@ export default function CommercialAnalyticsRoute() {
           <Text style={styles.bullet}>
             Brand profile views, storefront views, and featured product clicks
           </Text>
-          <Text style={styles.bullet}>Feed post views, comments, saves, and clicks</Text>
+          <Text style={styles.bullet}>Feed campaign views, saves, and clicks</Text>
           <Text style={styles.bullet}>
-            Ad/marketing plan clicks by product, post, course, or storefront link
+            Ad/marketing plan clicks by product, campaign, course, or storefront link
           </Text>
           <Text style={styles.bullet}>Course starts/completions</Text>
           <Text style={styles.bullet}>Product trial counts and outcomes</Text>
@@ -277,7 +277,7 @@ export default function CommercialAnalyticsRoute() {
         <View style={styles.bullets}>
           <Text style={styles.bullet}>Clicks by marketing plan or campaign</Text>
           <Text style={styles.bullet}>
-            Clicks by linked product, storefront, course, feed post, or external URL
+            Clicks by linked product, storefront, course, feed campaign, or external URL
           </Text>
           <Text style={styles.bullet}>
             Impressions when available from manual entry or future integrations
@@ -296,7 +296,9 @@ export default function CommercialAnalyticsRoute() {
           internal orders unless checkout is actually built.
         </Text>
         <View style={styles.bullets}>
-          <Text style={styles.bullet}>External link clicks by product and feed post</Text>
+          <Text style={styles.bullet}>
+            External link clicks by product and feed campaign
+          </Text>
           <Text style={styles.bullet}>
             Ad clicks and marketing-plan clicks by linked target
           </Text>
@@ -308,7 +310,7 @@ export default function CommercialAnalyticsRoute() {
         </View>
         <View style={styles.actions}>
           <ActionLink href="/orders" label="Orders / External Tracking" />
-          <ActionLink href="/home/commercial/feed" label="Commercial Feed" />
+          <ActionLink href="/home/commercial/feed" label="Feed / Campaigns" />
         </View>
       </AppCard>
 
@@ -321,7 +323,7 @@ export default function CommercialAnalyticsRoute() {
         <View style={styles.bullets}>
           <Text style={styles.bullet}>Active and completed product trials</Text>
           <Text style={styles.bullet}>
-            Trial summaries converted into feed posts, lessons, or storefront proof
+            Trial summaries converted into feed campaigns, lessons, or storefront proof
           </Text>
           <Text style={styles.bullet}>
             Course starts/completions for product education

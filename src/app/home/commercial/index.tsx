@@ -72,37 +72,37 @@ async function loadCommercialDashboard() {
 }
 
 const QUICK_ACTIONS: Action[] = [
-  { label: "Create Grow / Trial", href: "/home/commercial/grows/new" },
-  { label: "Create Product", href: "/home/commercial/products/new" },
-  { label: "Create Product Line", href: "/home/commercial/product-lines" },
-  { label: "Open Batch Planner", href: "/home/commercial/batch-planner" },
-  { label: "Create Feed Post", href: "/home/commercial/feed" },
+  { label: "View Storefront", href: "/home/commercial/storefront" },
+  { label: "Edit Storefront", href: "/home/commercial/storefront" },
+  { label: "Add Product", href: "/home/commercial/products/new" },
   { label: "Create Course", href: "/home/commercial/courses" },
-  { label: "Add Inventory Item", href: "/home/commercial/inventory-create" }
+  { label: "Create Feed Campaign", href: "/home/commercial/feed" },
+  { label: "View Orders", href: "/orders" },
+  { label: "View Analytics", href: "/home/commercial/analytics" }
 ];
 
 const DASHBOARD_SECTIONS: DashboardSection[] = [
   {
-    title: "Grows & Trials",
+    title: "Storefront Launch",
     description:
-      "Commercial users keep the Pro grow workspace, then link grows to products, formulas, batches, public reports, and trial outcomes.",
+      "Your storefront is the public brand profile. Users should be able to follow the brand, view products, browse courses, RSVP to lives, and buy through Stripe.",
     status: "Active",
     metrics: [
-      { label: "Active trials", key: "activeTrials" },
-      { label: "Completed trials", key: "completedTrials" },
-      { label: "Products needing trials", key: "productsMissingCompletedTrials" },
-      { label: "Batches", key: "batches" }
+      { label: "Storefront status", key: "storefrontConfigured" },
+      { label: "Products", key: "products" },
+      { label: "Courses", key: "courses" },
+      { label: "Campaigns", key: "posts" }
     ],
     actions: [
-      { label: "Open Grows", href: "/home/commercial/grows" },
-      { label: "Create Grow", href: "/home/commercial/grows/new" },
-      { label: "Product Trials", href: "/home/commercial/trials" }
+      { label: "Open Storefront", href: "/home/commercial/storefront" },
+      { label: "Products", href: "/home/commercial/products" },
+      { label: "Feed Campaigns", href: "/home/commercial/feed" }
     ]
   },
   {
     title: "Products & Storefront",
     description:
-      "Product lines and products drive storefront, feed posts, courses, inventory, and external purchase links.",
+      "Product lines and products drive storefront, feed campaigns, courses, inventory, and external purchase links.",
     status: "Active",
     metrics: [
       { label: "Product lines", key: "productLines" },
@@ -112,8 +112,8 @@ const DASHBOARD_SECTIONS: DashboardSection[] = [
     ],
     actions: [
       { label: "Products", href: "/home/commercial/products" },
-      { label: "Product Lines", href: "/home/commercial/product-lines" },
-      { label: "Storefront", href: "/home/commercial/storefront" }
+      { label: "Storefront", href: "/home/commercial/storefront" },
+      { label: "Product Lines", href: "/home/commercial/product-lines" }
     ]
   },
   {
@@ -152,17 +152,17 @@ const DASHBOARD_SECTIONS: DashboardSection[] = [
   {
     title: "Content & Community",
     description:
-      "Publish product updates, grow trial updates, course announcements, support answers, and seasonal education as the brand.",
+      "Create outreach campaigns for products, courses, lives, and storefront visibility. Discussion and Q&A belong in Forum/Community, not inside feed ads.",
     status: "Active",
     metrics: [
-      { label: "Draft posts", key: "draftPosts" },
+      { label: "Draft campaigns", key: "draftPosts" },
       { label: "Course drafts", key: "draftCourses" },
       { label: "Courses", key: "courses" },
-      { label: "Posts", key: "posts" }
+      { label: "Campaigns", key: "posts" }
     ],
     actions: [
-      { label: "Feed", href: "/home/commercial/feed" },
-      { label: "Community", href: "/home/commercial/community" },
+      { label: "Feed Campaigns", href: "/home/commercial/feed" },
+      { label: "Forum / Q&A", href: "/home/commercial/community" },
       { label: "Courses", href: "/home/commercial/courses" },
       { label: "Marketing Planner", href: "/home/commercial/marketing" }
     ]
@@ -300,8 +300,8 @@ export default function CommercialHome() {
               {auth.user?.email} | {plan} plan
             </Text>
             <Text style={styles.headerDescription}>
-              Pro grow workflow plus product lines, product trials, storefront,
-              feed/content, course creation, inventory, and analytics.
+              Brand profile and storefront plus products, courses, lives, feed campaigns,
+              orders, Stripe readiness, and analytics.
             </Text>
           </View>
           <Pressable
@@ -318,9 +318,8 @@ export default function CommercialHome() {
       <AppCard style={styles.commandCard}>
         <Text style={styles.cardTitle}>Commercial command center</Text>
         <Text style={styles.cardDesc}>
-          This account should operate like a serious Pro grower and a business at the same
-          time. Start from grows/trials or products, then publish selected results through
-          storefront, feed, forum, and courses.
+          Start from the storefront. Add products and courses, schedule lives, create feed
+          campaigns for outreach, and use Forum/Q&A for discussion and support.
         </Text>
         {dashboard?.storefront ? (
           <Text style={styles.dashboardMeta}>

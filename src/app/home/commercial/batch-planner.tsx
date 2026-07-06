@@ -410,7 +410,7 @@ export default function CommercialBatchPlannerRoute() {
         </Text>
         <View style={styles.actions}>
           <ActionLink href="/home/commercial/trials" label="Start Trial" />
-          <ActionLink href="/home/commercial/feed" label="Create Feed Post" />
+          <ActionLink href="/home/commercial/feed" label="Create Feed Campaign" />
         </View>
       </AppCard>
 
