@@ -50,7 +50,11 @@ describe("IngredientLibraryRoute", () => {
         supplier: "Local supply",
         cost: 18,
         confidence: "medium",
-        sourceType: "user_entered"
+        sourceType: "user_entered",
+        documentUrl: "https://example.com/coa.pdf",
+        photoUrl: "https://example.com/label.jpg",
+        applicationNotes: "Topdress during veg.",
+        micronutrientNotes: "Contains trace minerals."
       }
     ]);
     mockCreateProductIngredient.mockImplementation((payload) =>
@@ -68,6 +72,10 @@ describe("IngredientLibraryRoute", () => {
     await waitFor(() => expect(screen.getByText("Kelp meal")).toBeTruthy());
     expect(screen.getByText(/Release medium/)).toBeTruthy();
     expect(screen.getByText(/Supplier Local supply/)).toBeTruthy();
+    expect(screen.getByText(/Docs https:\/\/example.com\/coa.pdf/)).toBeTruthy();
+    expect(screen.getByText(/Label https:\/\/example.com\/label.jpg/)).toBeTruthy();
+    expect(screen.getByText("Use: Topdress during veg.")).toBeTruthy();
+    expect(screen.getByText("Micros: Contains trace minerals.")).toBeTruthy();
 
     fireEvent.press(screen.getByText("New Ingredient"));
     fireEvent.changeText(screen.getByLabelText("Name"), "Fish bone meal");

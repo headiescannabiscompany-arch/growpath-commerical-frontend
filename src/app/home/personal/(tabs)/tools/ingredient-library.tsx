@@ -340,6 +340,18 @@ export default function IngredientLibraryRoute() {
                     Source: {item.sourceRecords[0].sourceName}
                   </Text>
                 ) : null}
+                {item.documentUrl || item.photoUrl ? (
+                  <Text style={styles.meta}>
+                    Docs {item.documentUrl || "not set"} | Label{" "}
+                    {item.photoUrl || "not set"}
+                  </Text>
+                ) : null}
+                {item.applicationNotes ? (
+                  <Text style={styles.meta}>Use: {item.applicationNotes}</Text>
+                ) : null}
+                {item.micronutrientNotes ? (
+                  <Text style={styles.meta}>Micros: {item.micronutrientNotes}</Text>
+                ) : null}
               </Pressable>
             );
           })}

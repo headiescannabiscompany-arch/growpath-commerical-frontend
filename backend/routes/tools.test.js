@@ -1468,7 +1468,19 @@ describe("Tools Router (tools.js)", () => {
   });
 
   test("reads, updates, and archives product ingredients for the authenticated user", async () => {
-    const item = { _id: "ingredient_1", name: "Kelp meal", archivedAt: null };
+    const item = {
+      _id: "ingredient_1",
+      name: "Kelp meal",
+      releaseSpeed: "medium",
+      releaseWindow: "days_7_21",
+      supplier: "Local supply",
+      cost: 18,
+      documentUrl: "https://example.test/coa.pdf",
+      photoUrl: "https://example.test/label.jpg",
+      applicationNotes: "Topdress and water in.",
+      micronutrientNotes: "Contains trace minerals.",
+      archivedAt: null
+    };
     mockProductIngredient.findOne.mockReturnValue({
       lean: jest.fn().mockResolvedValue(item)
     });
@@ -1487,6 +1499,14 @@ describe("Tools Router (tools.js)", () => {
         _id: "ingredient_1",
         name: "Kelp meal",
         favorite: true,
+        releaseSpeed: "slow",
+        releaseWindow: "days_45_90",
+        supplier: "Trusted supplier",
+        cost: 42,
+        documentUrl: "https://example.test/updated-coa.pdf",
+        photoUrl: "https://example.test/updated-label.jpg",
+        applicationNotes: "Better for established plants.",
+        micronutrientNotes: "Adds calcium and trace minerals.",
         sourceRecords
       })
       .mockResolvedValueOnce({ _id: "ingredient_1", name: "Kelp meal", archivedAt: new Date() });
@@ -1495,22 +1515,62 @@ describe("Tools Router (tools.js)", () => {
     const updated = await authed(
       request(app)
         .patch("/api/tools/ingredients/ingredient_1")
-        .send({ favorite: true, sourceRecords })
+        .send({
+          favorite: true,
+          releaseSpeed: "slow",
+          releaseWindow: "days_45_90",
+          supplier: "Trusted supplier",
+          cost: 42,
+          documentUrl: "https://example.test/updated-coa.pdf",
+          photoUrl: "https://example.test/updated-label.jpg",
+          applicationNotes: "Better for established plants.",
+          micronutrientNotes: "Adds calcium and trace minerals.",
+          sourceRecords
+        })
     );
     const archived = await authed(request(app).delete("/api/tools/ingredients/ingredient_1"));
 
     expect(loaded.status).toBe(200);
-    expect(loaded.body.item).toMatchObject({ name: "Kelp meal" });
+    expect(loaded.body.item).toMatchObject({
+      name: "Kelp meal",
+      releaseSpeed: "medium",
+      releaseWindow: "days_7_21",
+      supplier: "Local supply",
+      cost: 18,
+      documentUrl: "https://example.test/coa.pdf",
+      photoUrl: "https://example.test/label.jpg",
+      applicationNotes: "Topdress and water in.",
+      micronutrientNotes: "Contains trace minerals."
+    });
     expect(updated.status).toBe(200);
     expect(updated.body.updated).toMatchObject({
       favorite: true,
+      releaseSpeed: "slow",
+      releaseWindow: "days_45_90",
+      supplier: "Trusted supplier",
+      cost: 42,
+      documentUrl: "https://example.test/updated-coa.pdf",
+      photoUrl: "https://example.test/updated-label.jpg",
+      applicationNotes: "Better for established plants.",
+      micronutrientNotes: "Adds calcium and trace minerals.",
       sourceRecords: [expect.objectContaining({ sourceName: "Manufacturer label" })]
     });
     expect(archived.status).toBe(200);
     expect(archived.body.archived).toBe(true);
     expect(mockProductIngredient.findOneAndUpdate).toHaveBeenCalledWith(
       { _id: "ingredient_1", user: expect.any(Object) },
-      { favorite: true, sourceRecords },
+      {
+        favorite: true,
+        releaseSpeed: "slow",
+        releaseWindow: "days_45_90",
+        supplier: "Trusted supplier",
+        cost: 42,
+        documentUrl: "https://example.test/updated-coa.pdf",
+        photoUrl: "https://example.test/updated-label.jpg",
+        applicationNotes: "Better for established plants.",
+        micronutrientNotes: "Adds calcium and trace minerals.",
+        sourceRecords
+      },
       { new: true, runValidators: true }
     );
     expect(mockProductIngredient.findOneAndUpdate).toHaveBeenCalledWith(

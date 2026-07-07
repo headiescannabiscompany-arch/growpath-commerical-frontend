@@ -6,6 +6,7 @@ const path = require("node:path");
 const root = path.resolve(__dirname, "..");
 const isWindows = process.platform === "win32";
 const npmCmd = isWindows ? "npm.cmd" : "npm";
+const npxCmd = isWindows ? "npx.cmd" : "npx";
 const shellCmd = process.env.ComSpec || "cmd.exe";
 const planOnly = process.argv.includes("--plan");
 
@@ -50,6 +51,17 @@ const checks = [
       "tests/unit/SchedulePicker.test.tsx",
       "tests/unit/AppPageBackBehavior.test.tsx"
     ]
+  },
+  {
+    label: "Backend ingredient/tool persistence",
+    command: npxCmd,
+    args: [
+      "jest",
+      "--config",
+      "jest.backend.config.cjs",
+      "--runInBand",
+      "backend/routes/tools.test.js"
+    ]
   }
 ];
 
@@ -84,6 +96,7 @@ const manualChecks = [
     area: "Tools to work",
     checks: [
       "Run NPK / Feed Recipe Builder with label N-P2O5-K2O values and verify elemental P/K, density assumptions, release timing, the AI recipe brief, ToolRun tasks, and product draft conversion.",
+      "Create an Ingredient Library entry and verify supplier, cost, release window, document URL, label photo URL, application notes, and micronutrient notes remain visible after reload.",
       "Run Soil Builder, Dry Amendment Mix Builder, Topdress Planner, and Soil & Nutrient Batch Planner and verify AI recipe/plan briefs, release timing, task plans, and product-draft/commercial/facility handoff language where available.",
       "Run IPM Scout and verify GrowPath AI and GPT verification are shown and saved together."
     ]

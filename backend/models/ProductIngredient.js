@@ -29,7 +29,12 @@ const NutrientFormSchema = new mongoose.Schema(
 
 const ProductIngredientSchema = new mongoose.Schema(
   {
-    user: { type: mongoose.Schema.Types.ObjectId, ref: "User", required: true, index: true },
+    user: {
+      type: mongoose.Schema.Types.ObjectId,
+      ref: "User",
+      required: true,
+      index: true
+    },
     name: { type: String, required: true, trim: true },
     brand: { type: String, default: "" },
     category: { type: String, default: "nutrient" },
@@ -46,7 +51,19 @@ const ProductIngredientSchema = new mongoose.Schema(
     badUseCases: { type: [String], default: [] },
     warnings: { type: [String], default: [] },
     densityGml: { type: Number, default: null },
+    releaseSpeed: {
+      type: String,
+      enum: ["immediate", "fast", "medium", "slow", "unknown"],
+      default: "unknown"
+    },
+    releaseWindow: { type: String, default: "unknown" },
+    cost: { type: Number, default: null },
+    supplier: { type: String, default: "" },
     organicOrSynthetic: { type: String, default: "unknown" },
+    documentUrl: { type: String, default: "" },
+    photoUrl: { type: String, default: "" },
+    applicationNotes: { type: String, default: "" },
+    micronutrientNotes: { type: String, default: "" },
     sourceType: {
       type: String,
       enum: [
