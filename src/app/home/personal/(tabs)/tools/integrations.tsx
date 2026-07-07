@@ -391,12 +391,31 @@ export default function DataIntegrationsScreen() {
 
     setGrowlinkBusy(true);
     try {
+      const importPreview = growlinkImportPreview.map((room) => ({
+        ...room,
+        permissionLevel: "read-only",
+        provider: "growlink"
+      }));
       const created = await createTelemetrySource({
         growId: nextGrowId,
         type: "growlink",
         name: growlinkSourceName.trim() || "Growlink Telemetry",
         timezone: selectedGrowlinkController?.timeZoneId || "America/New_York",
-        config: { growlink: { userName, password, controllerId } }
+        config: {
+          growlink: {
+            userName,
+            password,
+            controllerId,
+            accountStructure: {
+              provider: "growlink",
+              permissionLevel: "read-only",
+              detectedRooms: growlinkPreviewTotals.rooms,
+              detectedDevices: growlinkPreviewTotals.devices,
+              detectedStreams: growlinkPreviewTotals.streams,
+              rooms: importPreview
+            }
+          }
+        }
       });
       setGrowlinkSources((rows) => [
         created,

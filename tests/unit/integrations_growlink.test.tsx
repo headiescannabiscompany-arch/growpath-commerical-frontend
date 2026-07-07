@@ -136,7 +136,25 @@ describe("Data Integrations Growlink flow", () => {
           growlink: {
             userName: "grower@example.com",
             password: "secret",
-            controllerId: "controller-1"
+            controllerId: "controller-1",
+            accountStructure: expect.objectContaining({
+              provider: "growlink",
+              permissionLevel: "read-only",
+              detectedRooms: 1,
+              detectedDevices: 1,
+              detectedStreams: 2,
+              rooms: [
+                expect.objectContaining({
+                  name: "Flower A",
+                  type: "flower",
+                  controllerName: "Flower A",
+                  devices: ["Flower A Temp/RH"],
+                  metrics: ["air_temperature", "relative_humidity"],
+                  permissionLevel: "read-only",
+                  provider: "growlink"
+                })
+              ]
+            })
           }
         }
       })
