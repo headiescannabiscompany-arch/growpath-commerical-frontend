@@ -121,7 +121,21 @@ describe("FacilityRoomsTab", () => {
         rawDeviceName: "Flower Room 1 Temp/RH",
         suggestedRoomName: "Flower Room 1",
         suggestedRoomType: "flower",
-        normalizedMetrics: ["air_temperature", "relative_humidity"]
+        normalizedMetrics: ["air_temperature", "relative_humidity"],
+        sensorStreams: [
+          expect.objectContaining({
+            providerMetricKey: "air_temperature",
+            normalizedMetric: "air_temperature",
+            suggestedRoomName: "Flower Room 1",
+            suggestedDeviceName: "Flower Room 1 Temp/RH"
+          }),
+          expect.objectContaining({
+            providerMetricKey: "relative_humidity",
+            normalizedMetric: "relative_humidity",
+            suggestedRoomName: "Flower Room 1",
+            suggestedDeviceName: "Flower Room 1 Temp/RH"
+          })
+        ]
       })
     });
     expect(mockCreateEquipment).toHaveBeenCalledWith("facility-1", {

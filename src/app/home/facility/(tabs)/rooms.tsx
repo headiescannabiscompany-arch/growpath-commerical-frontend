@@ -331,6 +331,12 @@ export default function FacilityRoomsTab() {
                 provider: importProvider.trim() || undefined,
                 permissionLevel: "read-only",
                 normalizedMetrics: device.metrics,
+                sensorStreams: device.metrics.map((metric) => ({
+                  providerMetricKey: metric,
+                  normalizedMetric: metric,
+                  suggestedRoomName: room.name,
+                  suggestedDeviceName: deviceName
+                })),
                 rawDeviceName: deviceName,
                 suggestedRoomName: room.name,
                 suggestedRoomType: room.roomType
