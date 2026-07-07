@@ -46,6 +46,7 @@ import CommercialTrialDetailRoute from "../app/home/commercial/trials/[trialId]"
 import NewCommercialGrowRoute from "../app/home/commercial/grows/new";
 import CommercialMarketingRoute from "../app/home/commercial/marketing";
 import CommercialAnalyticsRoute from "../app/home/commercial/analytics";
+import CommercialTasksRoute from "../app/home/commercial/tasks";
 import CommercialInventoryRoute from "../app/home/commercial/inventory";
 import CommercialInventoryCreateRoute from "../app/home/commercial/inventory-create";
 import CommercialInventoryItemDetailRoute from "../app/home/commercial/inventory-item/[id]";
@@ -109,6 +110,7 @@ export default function CommercialStack() {
         component={CommercialTrialDetailRoute}
       />
       <Stack.Screen name="CommercialAnalytics" component={CommercialAnalyticsRoute} />
+      <Stack.Screen name="Tasks" component={CommercialTasksRoute} />
       <Stack.Screen name="Lesson" component={LessonScreen} />
       <Stack.Screen name="AddLesson" component={AddLessonScreen} />
       <Stack.Screen name="EditLesson" component={EditLessonScreen} />

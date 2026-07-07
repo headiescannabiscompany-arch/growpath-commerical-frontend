@@ -78,6 +78,7 @@ describe("commercial page registry", () => {
     expect(byName.Courses.component?.name).toBe("CommercialCoursesRoute");
     expect(byName.Community.component?.name).toBe("CommercialCommunityRoute");
     expect(byName.CommercialAnalytics.component?.name).toBe("CommercialAnalyticsRoute");
+    expect(byName.Tasks.component?.name).toBe("CommercialTasksRoute");
     expect(byName.Profile.component?.name).toBe("CommercialProfileRoute");
   });
 });

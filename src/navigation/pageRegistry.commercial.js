@@ -160,7 +160,7 @@ export const PAGE_REGISTRY_COMMERCIAL = [
     icon: "checkbox-outline",
     capabilityKey: "commercial.tasks",
     primary: true,
-    component: require("../screens/TasksScreen").default
+    component: require("../app/home/commercial/tasks").default
   },
   {
     name: "Profile",
