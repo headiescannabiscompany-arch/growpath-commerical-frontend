@@ -318,26 +318,44 @@ export default function CommercialHome() {
       }
     >
       <AppCard style={styles.commandCard}>
-        <Text style={styles.cardTitle}>Commercial command center</Text>
-        <Text style={styles.cardDesc}>
-          Start from the storefront. Add products and courses, schedule lives, create feed
-          campaigns for outreach, and use Forum/Q&A for discussion and support.
-        </Text>
-        {dashboard?.storefront ? (
-          <Text style={styles.dashboardMeta}>
-            Storefront:{" "}
-            {dashboard.storefront.name ||
-              dashboard.storefront.businessName ||
-              "Configured"}
-            {dashboard.storefront.slug ? ` /${dashboard.storefront.slug}` : ""}
-          </Text>
-        ) : (
-          <Text style={styles.dashboardMeta}>
-            {loadingDashboard
-              ? "Loading dashboard data..."
-              : "Storefront not configured yet."}
-          </Text>
-        )}
+        <View style={styles.commandHeader}>
+          <View style={styles.commandCopy}>
+            <Text style={styles.cardTitle}>Commercial command center</Text>
+            <Text style={styles.cardDesc}>
+              Start from the storefront. Add products and courses, schedule lives, create
+              feed campaigns for outreach, and use Forum/Q&A for discussion and support.
+            </Text>
+            {dashboard?.storefront ? (
+              <Text style={styles.dashboardMeta}>
+                Storefront:{" "}
+                {dashboard.storefront.name ||
+                  dashboard.storefront.businessName ||
+                  "Configured"}
+                {dashboard.storefront.slug ? ` /${dashboard.storefront.slug}` : ""}
+              </Text>
+            ) : (
+              <Text style={styles.dashboardMeta}>
+                {loadingDashboard
+                  ? "Loading dashboard data..."
+                  : "Storefront not configured yet."}
+              </Text>
+            )}
+          </View>
+          <View style={styles.pulseStack}>
+            <View style={styles.pulse}>
+              <Text style={styles.pulseValue}>
+                {dashboard?.storefront?.slug ? "Live" : "Draft"}
+              </Text>
+              <Text style={styles.pulseLabel}>Storefront</Text>
+            </View>
+            <View style={styles.pulse}>
+              <Text style={styles.pulseValue}>
+                {(counts.products ?? 0).toLocaleString()}
+              </Text>
+              <Text style={styles.pulseLabel}>Products</Text>
+            </View>
+          </View>
+        </View>
         {dashboardError ? <InlineError error={dashboardError} /> : null}
         <View style={styles.actions}>
           {QUICK_ACTIONS.map((action) => (
@@ -440,6 +458,42 @@ const styles = StyleSheet.create({
   commandCard: {
     backgroundColor: "#F0FDF4",
     borderColor: "#BBF7D0"
+  },
+  commandHeader: {
+    alignItems: "stretch",
+    flexDirection: "row",
+    flexWrap: "wrap",
+    gap: 12,
+    justifyContent: "space-between"
+  },
+  commandCopy: {
+    flex: 1,
+    minWidth: 260
+  },
+  pulseStack: {
+    flexDirection: "row",
+    flexWrap: "wrap",
+    gap: 8
+  },
+  pulse: {
+    backgroundColor: "#FFFFFF",
+    borderColor: "#BBF7D0",
+    borderRadius: 8,
+    borderWidth: 1,
+    minWidth: 120,
+    padding: 10
+  },
+  pulseValue: {
+    color: "#14532D",
+    fontSize: 18,
+    fontWeight: "900"
+  },
+  pulseLabel: {
+    color: "#64748B",
+    fontSize: 12,
+    fontWeight: "800",
+    marginTop: 2,
+    textTransform: "uppercase"
   },
   sectionGrid: {
     gap: 14
