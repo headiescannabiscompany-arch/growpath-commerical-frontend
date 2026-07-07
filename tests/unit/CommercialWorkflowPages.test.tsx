@@ -26,9 +26,11 @@ import CommercialInventoryItemDetailRoute from "@/app/home/commercial/inventory-
 const mockApiRequest = jest.fn();
 const mockReplace = jest.fn();
 const mockPush = jest.fn();
+const mockBack = jest.fn();
 
 jest.mock("expo-router", () => {
   const React = require("react");
+  const mockRouter = { replace: mockReplace, push: mockPush, back: mockBack };
   return {
     Link: ({ children }: any) => React.createElement(React.Fragment, null, children),
     Redirect: ({ href }: any) => React.createElement("Redirect", { href }),
@@ -41,7 +43,7 @@ jest.mock("expo-router", () => {
       trialId: "trial-1",
       id: "inventory-1"
     }),
-    useRouter: () => ({ replace: mockReplace, push: mockPush, back: jest.fn() })
+    useRouter: () => mockRouter
   };
 });
 
@@ -84,6 +86,7 @@ describe("commercial workflow pages", () => {
     mockApiRequest.mockReset();
     mockReplace.mockReset();
     mockPush.mockReset();
+    mockBack.mockReset();
     mockApiRequest.mockImplementation((path: string, options?: any) => {
       if (path === "/api/commercial/dashboard") {
         return Promise.resolve({

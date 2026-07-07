@@ -1,0 +1,50 @@
+#!/usr/bin/env node
+const { spawnSync } = require("node:child_process");
+
+const isWindows = process.platform === "win32";
+const npmCmd = isWindows ? "npm.cmd" : "npm";
+const shellCmd = process.env.ComSpec || "cmd.exe";
+
+function runCheck(check) {
+  if (!isWindows) {
+    return spawnSync(check.command, check.args, {
+      stdio: "inherit",
+      shell: false
+    });
+  }
+
+  const line = [check.command, ...check.args].join(" ");
+  return spawnSync(shellCmd, ["/d", "/c", line], {
+    stdio: "inherit",
+    shell: false
+  });
+}
+const checks = [
+  { label: "lint", command: npmCmd, args: ["run", "lint"] },
+  {
+    label: "focused connected workflow tests",
+    command: npmCmd,
+    args: [
+      "test",
+      "--",
+      "--runInBand",
+      "tests/unit/CommercialWorkflowPages.test.tsx",
+      "tests/unit/StorefrontRoute.test.tsx",
+      "tests/unit/GrowTasksScreen.test.tsx"
+    ]
+  },
+  { label: "production web export", command: npmCmd, args: ["run", "build"] }
+];
+
+for (const check of checks) {
+  console.log(`\n[verify-connected-workflows] ${check.label}`);
+  const result = runCheck(check);
+  if (result.error) {
+    console.error(result.error);
+  }
+  if (result.status !== 0) {
+    process.exit(result.status ?? 1);
+  }
+}
+
+console.log("\n[verify-connected-workflows] all checks passed");
