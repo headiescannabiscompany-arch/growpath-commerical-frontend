@@ -22,7 +22,10 @@ import {
   updateNutrientRecipe,
   type NutrientRecipe
 } from "@/api/nutrientRecipes";
-import { saveToolRunAndCreateTask } from "@/features/personal/tools/saveToolRunAndOpenJournal";
+import {
+  saveToolRunAndCreateTask,
+  saveToolRunAndCreateTasks
+} from "@/features/personal/tools/saveToolRunAndOpenJournal";
 import {
   buildNutrientContextAssumption,
   buildNutrientContextNotices
@@ -197,6 +200,78 @@ function normalizeProductRow(row: ProductRow) {
       Si
     }
   };
+}
+
+function daysFromNow(days: number) {
+  const date = new Date();
+  date.setDate(date.getDate() + days);
+  return date.toISOString().slice(0, 10);
+}
+
+function npkRecipeTasks(args: {
+  recipeName: string;
+  recipeMode: string;
+  stage: string;
+  medium: string;
+  result: any;
+  payload: Record<string, any>;
+}) {
+  const name = args.recipeName.trim() || "NPK feed recipe";
+  const mode = args.recipeMode.replaceAll("_", " ");
+  const confidence = args.result?.sourceConfidence?.overall || "unknown";
+  const productNames = Array.isArray(args.payload.products)
+    ? args.payload.products
+        .map((product: any) => product.name)
+        .filter(Boolean)
+        .join(", ")
+    : "";
+
+  return [
+    {
+      title: `Verify labels for ${name}`,
+      description: [
+        `Mode: ${mode}. Stage: ${args.stage}. Medium: ${args.medium}.`,
+        productNames ? `Ingredients/products: ${productNames}.` : "",
+        `Source confidence: ${confidence}. Confirm guaranteed analysis, P2O5/K2O label values, density for liquids, and water baseline before mixing.`
+      ]
+        .filter(Boolean)
+        .join("\n"),
+      priority: confidence === "low" ? ("high" as const) : ("medium" as const),
+      dueDate: daysFromNow(0)
+    },
+    {
+      title: `Mix ${name}`,
+      description: [
+        args.result?.formula || "Mix the recipe from the calculator output.",
+        "Record final EC/pH where relevant and keep this ToolRun linked to the grow history."
+      ]
+        .filter(Boolean)
+        .join("\n"),
+      priority: "high" as const,
+      dueDate: daysFromNow(1)
+    },
+    {
+      title: `Apply ${name}`,
+      description:
+        "Apply only after label, water, EC/pH, plant stage, and release timing checks are complete.",
+      priority: "high" as const,
+      dueDate: daysFromNow(1)
+    },
+    {
+      title: `Check response to ${name}`,
+      description:
+        "Compare plant posture, color, runoff/feed notes, and any stress response against the recipe target.",
+      priority: "medium" as const,
+      dueDate: daysFromNow(3)
+    },
+    {
+      title: `Review next adjustment for ${name}`,
+      description:
+        "Decide whether to repeat, reduce, increase, or revise the recipe based on measured response and release timing.",
+      priority: "medium" as const,
+      dueDate: daysFromNow(7)
+    }
+  ];
 }
 
 export default function NpkToolScreen() {
@@ -1075,6 +1150,39 @@ export default function NpkToolScreen() {
                         });
                         if (!taskResult.ok) throw new Error(taskResult.error);
                         setFeedback("Recipe review task created.");
+                      }
+                    },
+                    {
+                      key: "create-recipe-task-plan",
+                      label: "Create Recipe Task Plan",
+                      variant: "secondary" as const,
+                      onPress: async () => {
+                        const taskInput =
+                          toolRun.inputs && Object.keys(toolRun.inputs).length
+                            ? toolRun.inputs
+                            : recipePayload();
+                        const taskOutput =
+                          toolRun.outputs && Object.keys(toolRun.outputs).length
+                            ? toolRun.outputs
+                            : result;
+                        const taskResult = await saveToolRunAndCreateTasks({
+                          growId: growContext,
+                          ...plantContext.toolRunContext,
+                          toolKey: "npk-recipe",
+                          toolRunId: toolRun._id!,
+                          input: taskInput,
+                          output: taskOutput,
+                          tasks: npkRecipeTasks({
+                            recipeName,
+                            recipeMode,
+                            stage,
+                            medium,
+                            result,
+                            payload: taskInput
+                          })
+                        });
+                        if (!taskResult.ok) throw new Error(taskResult.error);
+                        setFeedback("Recipe task plan created.");
                       }
                     }
                   ]

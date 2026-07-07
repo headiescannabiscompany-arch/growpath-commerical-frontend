@@ -6,6 +6,7 @@ import NpkToolScreen from "@/app/home/personal/(tabs)/tools/npk";
 const mockRunCalculator = jest.fn();
 const mockListNutrientRecipes = jest.fn();
 const mockCreateProduct = jest.fn();
+const mockSaveToolRunAndCreateTasks = jest.fn();
 
 jest.mock("expo-router", () => ({
   useLocalSearchParams: () => ({ growId: "grow-1" }),
@@ -56,9 +57,20 @@ jest.mock("@/features/personal/tools/ToolPlantContextPicker", () => {
 
 jest.mock("@/features/personal/tools/ToolResultSurface", () => {
   const React = require("react");
-  const { Text, View } = require("react-native");
-  return ({ title }: { title: string }) =>
-    React.createElement(View, null, React.createElement(Text, null, title));
+  const { Pressable, Text, View } = require("react-native");
+  return ({ title, actions = [] }: { title: string; actions?: any[] }) =>
+    React.createElement(
+      View,
+      null,
+      React.createElement(Text, null, title),
+      ...actions.map((action) =>
+        React.createElement(
+          Pressable,
+          { key: action.key, onPress: action.onPress },
+          React.createElement(Text, null, action.label)
+        )
+      )
+    );
 });
 
 jest.mock("@/features/personal/tools/nutrientContext", () => ({
@@ -67,7 +79,8 @@ jest.mock("@/features/personal/tools/nutrientContext", () => ({
 }));
 
 jest.mock("@/features/personal/tools/saveToolRunAndOpenJournal", () => ({
-  saveToolRunAndCreateTask: jest.fn()
+  saveToolRunAndCreateTask: jest.fn(),
+  saveToolRunAndCreateTasks: (...args: any[]) => mockSaveToolRunAndCreateTasks(...args)
 }));
 
 jest.mock("@/api/toolRuns", () => ({
@@ -103,9 +116,25 @@ describe("NpkToolScreen", () => {
       toolRun: {
         id: "toolrun-1",
         _id: "toolrun-1",
-        inputs: {},
+        inputs: {
+          products: [
+            {
+              name: "Kelp meal",
+              amount: 100,
+              unit: "g",
+              N: 3,
+              P2O5: 1,
+              K2O: 2
+            }
+          ]
+        },
         outputs: {}
       }
+    });
+    mockSaveToolRunAndCreateTasks.mockResolvedValue({
+      ok: true,
+      toolRunId: "toolrun-1",
+      taskIds: ["task-1", "task-2", "task-3", "task-4", "task-5"]
     });
   });
 
@@ -156,5 +185,45 @@ describe("NpkToolScreen", () => {
     );
 
     await waitFor(() => expect(screen.getByText("NPK recipe result")).toBeTruthy());
+  });
+
+  it("creates a source-linked NPK recipe task plan from the saved ToolRun", async () => {
+    const screen = render(<NpkToolScreen />);
+
+    fireEvent.changeText(screen.getByPlaceholderText("e.g. Veg base"), "Kelp veg feed");
+    fireEvent.changeText(screen.getByPlaceholderText("Product name"), "Kelp meal");
+    fireEvent.changeText(screen.getByPlaceholderText("Amount"), "100");
+    fireEvent.changeText(screen.getByLabelText("NPK ingredient 1 N percent"), "3");
+    fireEvent.changeText(screen.getByLabelText("NPK ingredient 1 P2O5 percent"), "1");
+    fireEvent.changeText(screen.getByLabelText("NPK ingredient 1 K2O percent"), "2");
+
+    fireEvent.press(screen.getByText("Calculate recipe"));
+
+    await waitFor(() => expect(screen.getByText("NPK recipe result")).toBeTruthy());
+
+    fireEvent.press(screen.getByText("Create Recipe Task Plan"));
+
+    await waitFor(() =>
+      expect(mockSaveToolRunAndCreateTasks).toHaveBeenCalledWith(
+        expect.objectContaining({
+          growId: "grow-1",
+          toolKey: "npk-recipe",
+          toolRunId: "toolrun-1",
+          tasks: expect.arrayContaining([
+            expect.objectContaining({ title: "Verify labels for Kelp veg feed" }),
+            expect.objectContaining({
+              title: "Mix Kelp veg feed",
+              priority: "high"
+            }),
+            expect.objectContaining({
+              title: "Apply Kelp veg feed",
+              priority: "high"
+            }),
+            expect.objectContaining({ title: "Check response to Kelp veg feed" }),
+            expect.objectContaining({ title: "Review next adjustment for Kelp veg feed" })
+          ])
+        })
+      )
+    );
   });
 });
