@@ -27,6 +27,16 @@ type Draft = {
   n: string;
   p: string;
   k: string;
+  densityGml: string;
+  releaseSpeed: "immediate" | "fast" | "medium" | "slow" | "unknown";
+  releaseWindow: string;
+  cost: string;
+  supplier: string;
+  organicOrSynthetic: string;
+  documentUrl: string;
+  photoUrl: string;
+  applicationNotes: string;
+  micronutrientNotes: string;
   sourceType: string;
   confidence: "low" | "medium" | "high";
   sourceName: string;
@@ -46,6 +56,16 @@ const EMPTY_DRAFT: Draft = {
   n: "0",
   p: "0",
   k: "0",
+  densityGml: "",
+  releaseSpeed: "unknown",
+  releaseWindow: "unknown",
+  cost: "",
+  supplier: "",
+  organicOrSynthetic: "",
+  documentUrl: "",
+  photoUrl: "",
+  applicationNotes: "",
+  micronutrientNotes: "",
   sourceType: "user_entered",
   confidence: "low",
   sourceName: "",
@@ -77,6 +97,16 @@ function fromItem(item?: ProductIngredient | null): Draft {
     n: String(item.labelNPK?.N ?? 0),
     p: String(item.labelNPK?.P ?? 0),
     k: String(item.labelNPK?.K ?? 0),
+    densityGml: item.densityGml ? String(item.densityGml) : "",
+    releaseSpeed: item.releaseSpeed || "unknown",
+    releaseWindow: item.releaseWindow || "unknown",
+    cost: item.cost ? String(item.cost) : "",
+    supplier: item.supplier || "",
+    organicOrSynthetic: item.organicOrSynthetic || "",
+    documentUrl: item.documentUrl || "",
+    photoUrl: item.photoUrl || "",
+    applicationNotes: item.applicationNotes || "",
+    micronutrientNotes: item.micronutrientNotes || "",
     sourceType: item.sourceType || "user_entered",
     confidence: item.confidence || "low",
     sourceName: firstSource?.sourceName || "",
@@ -118,6 +148,16 @@ function payloadFromDraft(draft: Draft) {
       P: toNumber(draft.p),
       K: toNumber(draft.k)
     },
+    densityGml: draft.densityGml.trim() ? toNumber(draft.densityGml) : null,
+    releaseSpeed: draft.releaseSpeed,
+    releaseWindow: draft.releaseWindow.trim() || "unknown",
+    cost: draft.cost.trim() ? toNumber(draft.cost) : null,
+    supplier: draft.supplier.trim(),
+    organicOrSynthetic: draft.organicOrSynthetic.trim(),
+    documentUrl: draft.documentUrl.trim(),
+    photoUrl: draft.photoUrl.trim(),
+    applicationNotes: draft.applicationNotes.trim(),
+    micronutrientNotes: draft.micronutrientNotes.trim(),
     sourceType: draft.sourceType.trim() || "user_entered",
     confidence: draft.confidence,
     sourceUrl,
@@ -284,6 +324,17 @@ export default function IngredientLibraryRoute() {
                   {item.sourceType || "user_entered"} | confidence{" "}
                   {item.confidence || "low"}
                 </Text>
+                <Text style={styles.meta}>
+                  Release {item.releaseSpeed || "unknown"} | Window{" "}
+                  {item.releaseWindow || "unknown"} | Density{" "}
+                  {item.densityGml ? `${item.densityGml} g/ml` : "not set"}
+                </Text>
+                {item.supplier || item.cost ? (
+                  <Text style={styles.meta}>
+                    Supplier {item.supplier || "not set"} | Cost{" "}
+                    {item.cost ? `$${item.cost}` : "not set"}
+                  </Text>
+                ) : null}
                 {item.sourceRecords?.[0]?.sourceName ? (
                   <Text style={styles.meta}>
                     Source: {item.sourceRecords[0].sourceName}
@@ -349,6 +400,78 @@ export default function IngredientLibraryRoute() {
             onChangeText={(value) => updateDraft("k", value)}
           />
         </View>
+
+        <View style={styles.row}>
+          <Field
+            label="Density g/ml"
+            value={draft.densityGml}
+            numeric
+            onChangeText={(value) => updateDraft("densityGml", value)}
+          />
+          <Field
+            label="Cost"
+            value={draft.cost}
+            numeric
+            onChangeText={(value) => updateDraft("cost", value)}
+          />
+        </View>
+
+        <Text style={styles.label}>Release speed</Text>
+        <View style={styles.actions}>
+          {(["immediate", "fast", "medium", "slow", "unknown"] as const).map((value) => (
+            <Pressable
+              key={value}
+              accessibilityRole="button"
+              accessibilityLabel={`Release speed ${value}`}
+              onPress={() => updateDraft("releaseSpeed", value)}
+              style={[styles.chip, draft.releaseSpeed === value && styles.chipOn]}
+            >
+              <Text
+                style={[
+                  styles.chipText,
+                  draft.releaseSpeed === value && styles.chipTextOn
+                ]}
+              >
+                {value}
+              </Text>
+            </Pressable>
+          ))}
+        </View>
+        <Field
+          label="Release window"
+          value={draft.releaseWindow}
+          onChangeText={(value) => updateDraft("releaseWindow", value)}
+        />
+        <Field
+          label="Supplier"
+          value={draft.supplier}
+          onChangeText={(value) => updateDraft("supplier", value)}
+        />
+        <Field
+          label="Organic or synthetic"
+          value={draft.organicOrSynthetic}
+          onChangeText={(value) => updateDraft("organicOrSynthetic", value)}
+        />
+        <Field
+          label="Document / COA / SDS URL"
+          value={draft.documentUrl}
+          onChangeText={(value) => updateDraft("documentUrl", value)}
+        />
+        <Field
+          label="Label photo URL"
+          value={draft.photoUrl}
+          onChangeText={(value) => updateDraft("photoUrl", value)}
+        />
+        <Field
+          label="Micronutrient notes"
+          value={draft.micronutrientNotes}
+          onChangeText={(value) => updateDraft("micronutrientNotes", value)}
+        />
+        <Field
+          label="Application notes"
+          value={draft.applicationNotes}
+          onChangeText={(value) => updateDraft("applicationNotes", value)}
+        />
 
         <Field
           label="Source type"
@@ -474,6 +597,7 @@ function Field({
     <View style={styles.field}>
       <Text style={styles.label}>{label}</Text>
       <TextInput
+        accessibilityLabel={label}
         value={value}
         onChangeText={onChangeText}
         keyboardType={numeric ? "numeric" : "default"}

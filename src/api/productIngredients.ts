@@ -19,7 +19,15 @@ export type ProductIngredient = {
   badUseCases?: string[];
   warnings?: string[];
   densityGml?: number | null;
+  releaseSpeed?: "immediate" | "fast" | "medium" | "slow" | "unknown";
+  releaseWindow?: string;
+  cost?: number | null;
+  supplier?: string;
   organicOrSynthetic?: string;
+  documentUrl?: string;
+  photoUrl?: string;
+  applicationNotes?: string;
+  micronutrientNotes?: string;
   sourceType?: string;
   confidence?: "low" | "medium" | "high";
   sourceUrl?: string;
