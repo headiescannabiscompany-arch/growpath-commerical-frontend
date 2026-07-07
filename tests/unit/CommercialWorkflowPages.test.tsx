@@ -355,8 +355,15 @@ describe("commercial workflow pages", () => {
               id: "course-1",
               title: "Living Soil Product Use",
               description: "How to use the seedling soil line",
+              thumbnailUrl: "https://example.com/course-thumb.jpg",
               category: "product_education",
+              growInterests: ["living soil"],
+              skillLevel: "beginner",
               access: "free",
+              linkedLiveIds: ["live-1"],
+              modules: [{ title: "Start here" }],
+              lessons: [{ title: "Application rate" }],
+              tasks: [{ title: "Watch lesson" }],
               status: "draft"
             }
           ]
@@ -724,6 +731,22 @@ describe("commercial workflow pages", () => {
       "product_training"
     );
     fireEvent.changeText(
+      screen.getByLabelText("Commercial course thumbnail URL"),
+      "https://example.com/bloom-course.jpg"
+    );
+    fireEvent.changeText(
+      screen.getByLabelText("Commercial course banner URL"),
+      "https://example.com/bloom-banner.jpg"
+    );
+    fireEvent.changeText(
+      screen.getByLabelText("Commercial course grow interests"),
+      "living soil, dry amendments"
+    );
+    fireEvent.changeText(
+      screen.getByLabelText("Commercial course skill level"),
+      "intermediate"
+    );
+    fireEvent.changeText(
       screen.getByLabelText("Commercial course description"),
       "How to use the bloom topdress blend"
     );
@@ -739,6 +762,30 @@ describe("commercial workflow pages", () => {
       screen.getByLabelText("Commercial course linked grows"),
       "grow-1"
     );
+    fireEvent.changeText(
+      screen.getByLabelText("Commercial course linked lives"),
+      "live-1"
+    );
+    fireEvent.changeText(
+      screen.getByLabelText("Commercial course linked videos"),
+      "https://example.com/video-1, https://example.com/video-2"
+    );
+    fireEvent.changeText(
+      screen.getByLabelText("Commercial course documents"),
+      "https://example.com/label.pdf"
+    );
+    fireEvent.changeText(
+      screen.getByLabelText("Commercial course module outline"),
+      "How the product works\nApplication timing"
+    );
+    fireEvent.changeText(
+      screen.getByLabelText("Commercial course lesson outline"),
+      "Read the label\nApply and water in"
+    );
+    fireEvent.changeText(
+      screen.getByLabelText("Commercial course task checklist"),
+      "Watch lesson\nComplete product checklist"
+    );
     fireEvent.press(screen.getByLabelText("Set commercial course access paid"));
     fireEvent.changeText(screen.getByLabelText("Commercial course price"), "49");
     fireEvent.press(screen.getByLabelText("Create commercial course"));
@@ -752,9 +799,47 @@ describe("commercial workflow pages", () => {
             title: "Bloom Topdress Training",
             category: "product_training",
             description: "How to use the bloom topdress blend",
+            thumbnailUrl: "https://example.com/bloom-course.jpg",
+            bannerUrl: "https://example.com/bloom-banner.jpg",
+            growInterests: ["living soil", "dry amendments"],
+            skillLevel: "intermediate",
             linkedProductIds: ["product-1", "product-2"],
             linkedProductLineIds: ["line-1"],
             linkedGrowIds: ["grow-1"],
+            linkedLiveIds: ["live-1"],
+            linkedVideoUrls: [
+              "https://example.com/video-1",
+              "https://example.com/video-2"
+            ],
+            documentUrls: ["https://example.com/label.pdf"],
+            modules: [
+              expect.objectContaining({ title: "How the product works", sortOrder: 1 }),
+              expect.objectContaining({ title: "Application timing", sortOrder: 2 })
+            ],
+            lessons: [
+              expect.objectContaining({
+                title: "Read the label",
+                sortOrder: 1,
+                lessonType: "article"
+              }),
+              expect.objectContaining({
+                title: "Apply and water in",
+                sortOrder: 2,
+                lessonType: "article"
+              })
+            ],
+            tasks: [
+              expect.objectContaining({
+                title: "Watch lesson",
+                sourceType: "course",
+                sortOrder: 1
+              }),
+              expect.objectContaining({
+                title: "Complete product checklist",
+                sourceType: "course",
+                sortOrder: 2
+              })
+            ],
             access: "paid",
             price: 49,
             status: "draft"

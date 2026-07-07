@@ -93,7 +93,12 @@ export type CommercialCourse = {
   _id?: string;
   title?: string;
   description?: string;
+  shortDescription?: string;
+  thumbnailUrl?: string;
+  bannerUrl?: string;
   category?: string;
+  growInterests?: string[];
+  skillLevel?: string;
   access?: "free" | "paid" | "followers" | "customers" | "private";
   price?: number;
   linkedProductIds?: string[];
@@ -101,8 +106,12 @@ export type CommercialCourse = {
   linkedGrowIds?: string[];
   linkedLiveIds?: string[];
   linkedFeedPostIds?: string[];
+  linkedVideoUrls?: string[];
+  documentUrls?: string[];
   forumThreadId?: string;
+  modules?: Array<Record<string, any>>;
   lessons?: Array<Record<string, any>>;
+  tasks?: Array<Record<string, any>>;
   status?: "draft" | "published" | "archived";
   createdAt?: string;
   updatedAt?: string;

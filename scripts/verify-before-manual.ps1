@@ -93,5 +93,21 @@ Invoke-Step `
   -Command "node" `
   -Arguments @("scripts\verify-delivery.mjs")
 
+Invoke-Step `
+  -Name "Connected workflow guard" `
+  -WorkingDirectory $frontendRoot `
+  -Command "node" `
+  -Arguments @("scripts\verify-connected-workflows.cjs")
+
 Write-Host ""
 Write-Host "Pre-manual checks passed."
+Write-Host ""
+Write-Host "Deferred user/human verification queue:"
+Write-Host "- Log in as free/pro personal, commercial, and facility accounts with current seeded credentials."
+Write-Host "- Confirm mode switching lands in the correct workspace and does not loop."
+Write-Host "- Commercial: create/edit storefront, view as user, create product/course/live/feed campaign, and confirm public storefront navigation."
+Write-Host "- Product: verify image, size/weight, grow interests, NPK, guaranteed analysis, ingredients, directions, and application rate appear on owner and public detail."
+Write-Host "- Feed: confirm campaign cards behave as ads/outreach and CTA buttons open product/course/live/storefront/forum targets."
+Write-Host "- Forum: confirm discussion/Q&A remains separate from feed campaigns."
+Write-Host "- Facility: confirm room import preview can create rooms/devices from controller-style names."
+Write-Host "- AI/tool workflows: run Soil Builder, save ToolRun/log/task, and convert a recipe to product draft."

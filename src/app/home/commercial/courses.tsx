@@ -1,6 +1,6 @@
 import { Link } from "expo-router";
 import React, { useEffect, useMemo, useState } from "react";
-import { Pressable, StyleSheet, Text, TextInput, View } from "react-native";
+import { Image, Pressable, StyleSheet, Text, TextInput, View } from "react-native";
 
 import {
   CommercialCourse,
@@ -14,34 +14,70 @@ import AppPage from "@/components/layout/AppPage";
 type CourseForm = {
   title: string;
   description: string;
+  thumbnailUrl: string;
+  bannerUrl: string;
   category: string;
+  growInterests: string;
+  skillLevel: string;
   access: "free" | "paid" | "followers" | "customers" | "private";
   price: string;
   linkedProductIds: string;
   linkedProductLineIds: string;
   linkedGrowIds: string;
+  linkedLiveIds: string;
+  linkedVideoUrls: string;
+  documentUrls: string;
+  moduleOutline: string;
+  lessonOutline: string;
+  taskChecklist: string;
 };
 
 const EMPTY_FORM: CourseForm = {
   title: "",
   description: "",
+  thumbnailUrl: "",
+  bannerUrl: "",
   category: "product_education",
+  growInterests: "",
+  skillLevel: "",
   access: "free",
   price: "",
   linkedProductIds: "",
   linkedProductLineIds: "",
-  linkedGrowIds: ""
+  linkedGrowIds: "",
+  linkedLiveIds: "",
+  linkedVideoUrls: "",
+  documentUrls: "",
+  moduleOutline: "",
+  lessonOutline: "",
+  taskChecklist: ""
 };
 
-function splitIds(value: string) {
+function splitList(value: string) {
   return value
-    .split(",")
+    .split(/[\n,]+/)
     .map((part) => part.trim())
     .filter(Boolean);
 }
 
+function splitIds(value: string) {
+  return splitList(value);
+}
+
 function courseId(course: CommercialCourse) {
   return course.id || course._id || course.title || "course";
+}
+
+function outlineItems(value: string, type: "module" | "lesson" | "task") {
+  return splitList(value).map((title, index) => ({
+    title,
+    sortOrder: index + 1,
+    status: "draft",
+    ...(type === "lesson" ? { lessonType: "article" } : null),
+    ...(type === "task"
+      ? { sourceType: "course", priority: "normal", status: "open" }
+      : null)
+  }));
 }
 
 function ActionLink({ href, label }: { href: string; label: string }) {
@@ -94,12 +130,22 @@ export default function CommercialCoursesRoute() {
       await createCommercialCourse({
         title: form.title.trim(),
         description: form.description.trim(),
+        thumbnailUrl: form.thumbnailUrl.trim() || undefined,
+        bannerUrl: form.bannerUrl.trim() || undefined,
         category: form.category.trim() || "product_education",
+        growInterests: splitList(form.growInterests),
+        skillLevel: form.skillLevel.trim() || undefined,
         access: form.access,
         price: form.access === "paid" ? Number(form.price) || 0 : 0,
         linkedProductIds: splitIds(form.linkedProductIds),
         linkedProductLineIds: splitIds(form.linkedProductLineIds),
         linkedGrowIds: splitIds(form.linkedGrowIds),
+        linkedLiveIds: splitIds(form.linkedLiveIds),
+        linkedVideoUrls: splitList(form.linkedVideoUrls),
+        documentUrls: splitList(form.documentUrls),
+        modules: outlineItems(form.moduleOutline, "module"),
+        lessons: outlineItems(form.lessonOutline, "lesson"),
+        tasks: outlineItems(form.taskChecklist, "task"),
         status: "draft"
       });
       setForm(EMPTY_FORM);
@@ -176,6 +222,40 @@ export default function CommercialCoursesRoute() {
           placeholder="Category"
           style={styles.input}
         />
+        <View style={styles.formGrid}>
+          <TextInput
+            value={form.thumbnailUrl}
+            onChangeText={(thumbnailUrl) =>
+              setForm((prev) => ({ ...prev, thumbnailUrl }))
+            }
+            accessibilityLabel="Commercial course thumbnail URL"
+            placeholder="Thumbnail image URL"
+            style={styles.input}
+          />
+          <TextInput
+            value={form.bannerUrl}
+            onChangeText={(bannerUrl) => setForm((prev) => ({ ...prev, bannerUrl }))}
+            accessibilityLabel="Commercial course banner URL"
+            placeholder="Banner image URL"
+            style={styles.input}
+          />
+          <TextInput
+            value={form.growInterests}
+            onChangeText={(growInterests) =>
+              setForm((prev) => ({ ...prev, growInterests }))
+            }
+            accessibilityLabel="Commercial course grow interests"
+            placeholder="Grow interests, comma separated"
+            style={styles.input}
+          />
+          <TextInput
+            value={form.skillLevel}
+            onChangeText={(skillLevel) => setForm((prev) => ({ ...prev, skillLevel }))}
+            accessibilityLabel="Commercial course skill level"
+            placeholder="Skill level"
+            style={styles.input}
+          />
+        </View>
         <TextInput
           value={form.description}
           onChangeText={(description) => setForm((prev) => ({ ...prev, description }))}
@@ -213,6 +293,33 @@ export default function CommercialCoursesRoute() {
             style={styles.input}
           />
           <TextInput
+            value={form.linkedLiveIds}
+            onChangeText={(linkedLiveIds) =>
+              setForm((prev) => ({ ...prev, linkedLiveIds }))
+            }
+            accessibilityLabel="Commercial course linked lives"
+            placeholder="Linked live IDs"
+            style={styles.input}
+          />
+          <TextInput
+            value={form.linkedVideoUrls}
+            onChangeText={(linkedVideoUrls) =>
+              setForm((prev) => ({ ...prev, linkedVideoUrls }))
+            }
+            accessibilityLabel="Commercial course linked videos"
+            placeholder="Video URLs, comma or newline separated"
+            style={styles.input}
+          />
+          <TextInput
+            value={form.documentUrls}
+            onChangeText={(documentUrls) =>
+              setForm((prev) => ({ ...prev, documentUrls }))
+            }
+            accessibilityLabel="Commercial course documents"
+            placeholder="Document URLs, comma or newline separated"
+            style={styles.input}
+          />
+          <TextInput
             value={form.price}
             onChangeText={(price) => setForm((prev) => ({ ...prev, price }))}
             accessibilityLabel="Commercial course price"
@@ -221,6 +328,36 @@ export default function CommercialCoursesRoute() {
             style={styles.input}
           />
         </View>
+        <TextInput
+          value={form.moduleOutline}
+          onChangeText={(moduleOutline) =>
+            setForm((prev) => ({ ...prev, moduleOutline }))
+          }
+          accessibilityLabel="Commercial course module outline"
+          multiline
+          placeholder="Module outline, one per line"
+          style={[styles.input, styles.textArea]}
+        />
+        <TextInput
+          value={form.lessonOutline}
+          onChangeText={(lessonOutline) =>
+            setForm((prev) => ({ ...prev, lessonOutline }))
+          }
+          accessibilityLabel="Commercial course lesson outline"
+          multiline
+          placeholder="Lesson outline, one per line"
+          style={[styles.input, styles.textArea]}
+        />
+        <TextInput
+          value={form.taskChecklist}
+          onChangeText={(taskChecklist) =>
+            setForm((prev) => ({ ...prev, taskChecklist }))
+          }
+          accessibilityLabel="Commercial course task checklist"
+          multiline
+          placeholder="Course tasks/checklist, one per line"
+          style={[styles.input, styles.textArea]}
+        />
         <View style={styles.actions}>
           {(
             [
@@ -274,14 +411,45 @@ export default function CommercialCoursesRoute() {
           <View style={styles.list}>
             {courses.map((course) => (
               <View key={courseId(course)} style={styles.courseRow}>
+                {course.thumbnailUrl ? (
+                  <Image
+                    accessibilityLabel={`${course.title || "Course"} thumbnail`}
+                    source={{ uri: course.thumbnailUrl }}
+                    style={styles.courseThumbnail}
+                  />
+                ) : null}
                 <Text style={styles.courseTitle}>
                   {course.title || "Untitled course"}
                 </Text>
                 <Text style={styles.courseMeta}>
-                  {[course.category, course.access || "free", course.status || "draft"]
+                  {[
+                    course.category,
+                    course.skillLevel,
+                    course.access || "free",
+                    course.status || "draft",
+                    course.growInterests?.length
+                      ? `Interests ${course.growInterests.join(", ")}`
+                      : null,
+                    course.linkedLiveIds?.length
+                      ? `Lives ${course.linkedLiveIds.join(", ")}`
+                      : null
+                  ]
                     .filter(Boolean)
                     .join(" | ")}
                 </Text>
+                {course.modules?.length ||
+                course.lessons?.length ||
+                course.tasks?.length ? (
+                  <Text style={styles.courseMeta}>
+                    {[
+                      course.modules?.length ? `${course.modules.length} modules` : null,
+                      course.lessons?.length ? `${course.lessons.length} lessons` : null,
+                      course.tasks?.length ? `${course.tasks.length} tasks` : null
+                    ]
+                      .filter(Boolean)
+                      .join(" | ")}
+                  </Text>
+                ) : null}
                 {course.description ? (
                   <Text style={styles.courseBody}>{course.description}</Text>
                 ) : null}
@@ -496,6 +664,13 @@ const styles = StyleSheet.create({
     borderRadius: 8,
     borderWidth: 1,
     padding: 10
+  },
+  courseThumbnail: {
+    backgroundColor: "#E2E8F0",
+    borderRadius: 8,
+    height: 120,
+    marginBottom: 10,
+    width: "100%"
   },
   courseTitle: {
     color: "#0F172A",
