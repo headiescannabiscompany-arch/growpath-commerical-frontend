@@ -61,6 +61,8 @@ export default function CommercialCourseDetailRoute({ route }: { route?: any } =
   const [status, setStatus] = useState("");
   const [access, setAccess] = useState("");
   const [description, setDescription] = useState("");
+  const [stripeProductId, setStripeProductId] = useState("");
+  const [stripePriceId, setStripePriceId] = useState("");
   const [linkedProductIds, setLinkedProductIds] = useState("");
   const [linkedProductLineIds, setLinkedProductLineIds] = useState("");
   const [linkedGrowIds, setLinkedGrowIds] = useState("");
@@ -85,6 +87,8 @@ export default function CommercialCourseDetailRoute({ route }: { route?: any } =
     setStatus(next?.status || "draft");
     setAccess(next?.access || "free");
     setDescription(next?.description || "");
+    setStripeProductId(next?.stripeProductId || "");
+    setStripePriceId(next?.stripePriceId || "");
     setLinkedProductIds((next?.linkedProductIds || []).join(", "));
     setLinkedProductLineIds((next?.linkedProductLineIds || []).join(", "));
     setLinkedGrowIds((next?.linkedGrowIds || []).join(", "));
@@ -118,6 +122,8 @@ export default function CommercialCourseDetailRoute({ route }: { route?: any } =
         status: (status.trim() || "draft") as CommercialCourse["status"],
         access: (access.trim() || "free") as CommercialCourse["access"],
         description: description.trim(),
+        stripeProductId: stripeProductId.trim() || undefined,
+        stripePriceId: stripePriceId.trim() || undefined,
         linkedProductIds: splitIds(linkedProductIds),
         linkedProductLineIds: splitIds(linkedProductLineIds),
         linkedGrowIds: splitIds(linkedGrowIds),
@@ -224,6 +230,8 @@ export default function CommercialCourseDetailRoute({ route }: { route?: any } =
           <DetailRow label="Category" value={course?.category} />
           <DetailRow label="Access" value={course?.access} />
           <DetailRow label="Status" value={course?.status} />
+          <DetailRow label="Stripe product" value={course?.stripeProductId} />
+          <DetailRow label="Stripe price" value={course?.stripePriceId} />
           <DetailRow label="Lessons" value={lessons.length} />
           <DetailRow label="Linked products" value={course?.linkedProductIds} />
           <DetailRow label="Linked product lines" value={course?.linkedProductLineIds} />
@@ -258,6 +266,24 @@ export default function CommercialCourseDetailRoute({ route }: { route?: any } =
           style={[styles.input, styles.textArea]}
           value={description}
         />
+        <View style={styles.formGrid}>
+          <TextInput
+            accessibilityLabel="Commercial course detail Stripe product ID"
+            autoCapitalize="none"
+            onChangeText={setStripeProductId}
+            placeholder="Stripe product ID for paid course"
+            style={styles.input}
+            value={stripeProductId}
+          />
+          <TextInput
+            accessibilityLabel="Commercial course detail Stripe price ID"
+            autoCapitalize="none"
+            onChangeText={setStripePriceId}
+            placeholder="Stripe price ID for paid course"
+            style={styles.input}
+            value={stripePriceId}
+          />
+        </View>
         <TextInput
           accessibilityLabel="Commercial course detail linked products"
           onChangeText={setLinkedProductIds}

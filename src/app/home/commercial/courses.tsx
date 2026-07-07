@@ -21,6 +21,8 @@ type CourseForm = {
   skillLevel: string;
   access: "free" | "paid" | "followers" | "customers" | "private";
   price: string;
+  stripeProductId: string;
+  stripePriceId: string;
   linkedProductIds: string;
   linkedProductLineIds: string;
   linkedGrowIds: string;
@@ -42,6 +44,8 @@ const EMPTY_FORM: CourseForm = {
   skillLevel: "",
   access: "free",
   price: "",
+  stripeProductId: "",
+  stripePriceId: "",
   linkedProductIds: "",
   linkedProductLineIds: "",
   linkedGrowIds: "",
@@ -137,6 +141,8 @@ export default function CommercialCoursesRoute() {
         skillLevel: form.skillLevel.trim() || undefined,
         access: form.access,
         price: form.access === "paid" ? Number(form.price) || 0 : 0,
+        stripeProductId: form.stripeProductId.trim() || undefined,
+        stripePriceId: form.stripePriceId.trim() || undefined,
         linkedProductIds: splitIds(form.linkedProductIds),
         linkedProductLineIds: splitIds(form.linkedProductLineIds),
         linkedGrowIds: splitIds(form.linkedGrowIds),
@@ -326,6 +332,26 @@ export default function CommercialCoursesRoute() {
             keyboardType="decimal-pad"
             placeholder="Price if paid"
             style={styles.input}
+          />
+          <TextInput
+            value={form.stripeProductId}
+            onChangeText={(stripeProductId) =>
+              setForm((prev) => ({ ...prev, stripeProductId }))
+            }
+            accessibilityLabel="Commercial course Stripe product ID"
+            placeholder="Stripe product ID for paid course"
+            style={styles.input}
+            autoCapitalize="none"
+          />
+          <TextInput
+            value={form.stripePriceId}
+            onChangeText={(stripePriceId) =>
+              setForm((prev) => ({ ...prev, stripePriceId }))
+            }
+            accessibilityLabel="Commercial course Stripe price ID"
+            placeholder="Stripe price ID for paid course"
+            style={styles.input}
+            autoCapitalize="none"
           />
         </View>
         <TextInput

@@ -364,6 +364,8 @@ describe("commercial workflow pages", () => {
               growInterests: ["living soil"],
               skillLevel: "beginner",
               access: "free",
+              stripeProductId: "prod_course_existing",
+              stripePriceId: "price_course_existing",
               linkedLiveIds: ["live-1"],
               modules: [{ title: "Start here" }],
               lessons: [{ title: "Application rate" }],
@@ -384,6 +386,8 @@ describe("commercial workflow pages", () => {
             description: "How to use the seedling soil line",
             category: "product_education",
             access: "free",
+            stripeProductId: "prod_course_existing",
+            stripePriceId: "price_course_existing",
             linkedProductIds: ["product-1"],
             linkedProductLineIds: ["line-1"],
             linkedGrowIds: ["grow-1"],
@@ -795,6 +799,14 @@ describe("commercial workflow pages", () => {
     );
     fireEvent.press(screen.getByLabelText("Set commercial course access paid"));
     fireEvent.changeText(screen.getByLabelText("Commercial course price"), "49");
+    fireEvent.changeText(
+      screen.getByLabelText("Commercial course Stripe product ID"),
+      "prod_course_123"
+    );
+    fireEvent.changeText(
+      screen.getByLabelText("Commercial course Stripe price ID"),
+      "price_course_123"
+    );
     fireEvent.press(screen.getByLabelText("Create commercial course"));
 
     await waitFor(() =>
@@ -849,6 +861,8 @@ describe("commercial workflow pages", () => {
             ],
             access: "paid",
             price: 49,
+            stripeProductId: "prod_course_123",
+            stripePriceId: "price_course_123",
             status: "draft"
           })
         })
@@ -864,6 +878,8 @@ describe("commercial workflow pages", () => {
     expect(screen.getAllByText("Lessons").length).toBeGreaterThan(0);
     expect(screen.getByText("Commercial Course Loop")).toBeTruthy();
     expect(screen.getByText("Application rate")).toBeTruthy();
+    expect(screen.getByText("prod_course_existing")).toBeTruthy();
+    expect(screen.getByText("price_course_existing")).toBeTruthy();
 
     fireEvent.changeText(
       screen.getByLabelText("Commercial course detail status"),
@@ -876,6 +892,14 @@ describe("commercial workflow pages", () => {
     fireEvent.changeText(
       screen.getByLabelText("Commercial course detail description"),
       "Updated product course description."
+    );
+    fireEvent.changeText(
+      screen.getByLabelText("Commercial course detail Stripe product ID"),
+      "prod_course_updated"
+    );
+    fireEvent.changeText(
+      screen.getByLabelText("Commercial course detail Stripe price ID"),
+      "price_course_updated"
     );
     fireEvent.changeText(
       screen.getByLabelText("Commercial course detail linked products"),
@@ -904,6 +928,8 @@ describe("commercial workflow pages", () => {
             status: "draft",
             access: "paid",
             description: "Updated product course description.",
+            stripeProductId: "prod_course_updated",
+            stripePriceId: "price_course_updated",
             linkedProductIds: ["product-1", "product-2"],
             linkedProductLineIds: ["line-1"],
             linkedGrowIds: ["grow-1"],

@@ -101,6 +101,8 @@ export type CommercialCourse = {
   skillLevel?: string;
   access?: "free" | "paid" | "followers" | "customers" | "private";
   price?: number;
+  stripeProductId?: string;
+  stripePriceId?: string;
   linkedProductIds?: string[];
   linkedProductLineIds?: string[];
   linkedGrowIds?: string[];
