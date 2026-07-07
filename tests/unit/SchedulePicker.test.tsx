@@ -25,4 +25,43 @@ describe("SchedulePicker", () => {
     expect(onDueDateChange).toHaveBeenCalledWith(expect.stringMatching(/T18:00$/));
     expect(onDueDateChange).toHaveBeenCalledTimes(3);
   });
+
+  it("supports shared clear, reminder, recurrence, all-day, and lights-cycle controls", () => {
+    const onDueDateChange = jest.fn();
+    const onReminderChange = jest.fn();
+    const onRecurrenceChange = jest.fn();
+    const onAllDayChange = jest.fn();
+    const screen = render(
+      <SchedulePicker
+        dueDate="2026-07-07"
+        reminder="24 hours before"
+        recurrence="weekly"
+        allDay={false}
+        timezone="America/New_York"
+        lightsOnTime="06:00"
+        lightsOffTime="18:00"
+        onDueDateChange={onDueDateChange}
+        onReminderChange={onReminderChange}
+        onRecurrenceChange={onRecurrenceChange}
+        onAllDayChange={onAllDayChange}
+        accessibilityPrefix="Grow task"
+      />
+    );
+
+    expect(screen.getByText(/Timezone: America\/New_York/)).toBeTruthy();
+
+    fireEvent.press(screen.getByLabelText("Grow task quick date Next lights on"));
+    fireEvent.press(screen.getByLabelText("Grow task reminder preset no reminder"));
+    fireEvent.press(screen.getByLabelText("Grow task recurrence preset monthly"));
+    fireEvent.press(screen.getByLabelText("Grow task all day toggle"));
+    fireEvent.press(screen.getByLabelText("Grow task clear schedule"));
+
+    expect(onDueDateChange).toHaveBeenCalledWith(expect.stringMatching(/T06:00$/));
+    expect(onReminderChange).toHaveBeenCalledWith("");
+    expect(onRecurrenceChange).toHaveBeenCalledWith("monthly");
+    expect(onAllDayChange).toHaveBeenCalledWith(true);
+    expect(onDueDateChange).toHaveBeenLastCalledWith("");
+    expect(onRecurrenceChange).toHaveBeenLastCalledWith("");
+    expect(onAllDayChange).toHaveBeenLastCalledWith(false);
+  });
 });
