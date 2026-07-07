@@ -3,10 +3,79 @@ import React from "react";
 import BackendCalculatorToolScreen, {
   tomorrow
 } from "@/features/personal/tools/BackendCalculatorToolScreen";
+import { saveToolRunAndCreateTasks } from "@/features/personal/tools/saveToolRunAndOpenJournal";
 
 function n(value: string, fallback?: number) {
   const parsed = Number(value);
   return Number.isFinite(parsed) ? parsed : fallback;
+}
+
+function addDays(dateValue: unknown, days: number) {
+  const base = new Date(String(dateValue || tomorrow(1)));
+  if (Number.isNaN(base.getTime())) return tomorrow(days);
+  base.setDate(base.getDate() + days);
+  return base.toISOString().slice(0, 10);
+}
+
+function topdressTasks(outputs: Record<string, any>, payload: Record<string, any>) {
+  const productName = String(
+    outputs.productName || payload.productName || "topdress plan"
+  );
+  const topdressLabel = /topdress/i.test(productName)
+    ? productName
+    : `${productName} topdress`;
+  const applyDate = String(
+    outputs.plannedApplyDate || payload.plannedApplyDate || tomorrow(1)
+  ).slice(0, 10);
+  const amount =
+    outputs.amountPerPlant && outputs.amountUnit
+      ? `${outputs.amountPerPlant} ${outputs.amountUnit} per plant`
+      : payload.doseRate
+        ? `${payload.doseRate} ${payload.doseUnit || "dose units"}`
+        : "planned rate";
+  const total =
+    outputs.totalAmount && outputs.amountUnit
+      ? ` Total batch: ${outputs.totalAmount} ${outputs.amountUnit}.`
+      : "";
+  const releaseWindow = outputs.releaseWindowDays
+    ? `${outputs.releaseWindowDays.min}-${outputs.releaseWindowDays.max} days`
+    : outputs.expectedReleaseWindow || payload.releaseClass || "estimated release window";
+
+  return [
+    {
+      title: `Apply ${topdressLabel}`,
+      description: `Apply ${amount} for ${payload.stage || "the current stage"}.${total} Keep off stems and spread evenly.`,
+      priority: "high" as const,
+      dueDate: applyDate
+    },
+    {
+      title: `Water in ${productName}`,
+      description:
+        "Water in the topdress gently so amendments make soil contact without runoff or channeling.",
+      priority: "high" as const,
+      dueDate: applyDate
+    },
+    {
+      title: `Check ${productName} response after 3 days`,
+      description:
+        "Compare leaf posture, color, moisture, and stress response against the original topdress reason.",
+      priority: "medium" as const,
+      dueDate: addDays(applyDate, 3)
+    },
+    {
+      title: `Recheck ${productName} response after 7 days`,
+      description: `Review whether the expected ${releaseWindow} is matching plant response, and add photos/notes.`,
+      priority: "medium" as const,
+      dueDate: addDays(applyDate, 7)
+    },
+    {
+      title: `Review next re-amend timing for ${productName}`,
+      description:
+        "Decide whether to re-amend, wait, or adjust based on plant response, harvest window, and release timing.",
+      priority: "medium" as const,
+      dueDate: addDays(applyDate, 21)
+    }
+  ];
 }
 
 export default function TopdressToolScreen() {
@@ -121,6 +190,28 @@ export default function TopdressToolScreen() {
         priority: outputs.taskToCreate?.priority || "medium",
         dueDate: String(outputs.plannedApplyDate || tomorrow(1)).slice(0, 10)
       })}
+      buildActions={({ outputs, payload, toolRun, plantContext }) => [
+        {
+          key: "create-topdress-plan-tasks",
+          label: "Create Topdress Follow-up Tasks",
+          variant: "secondary",
+          pendingLabel: "Creating...",
+          successMessage: "Created topdress follow-up tasks.",
+          disabled: !payload.growId,
+          onPress: async () => {
+            const result = await saveToolRunAndCreateTasks({
+              growId: payload.growId,
+              ...plantContext.toolRunContext,
+              toolKey: "topdress-plan",
+              toolRunId: toolRun?.id || toolRun?._id,
+              input: payload,
+              output: outputs,
+              tasks: topdressTasks(outputs, payload)
+            });
+            if (!result.ok) throw new Error(result.error);
+          }
+        }
+      ]}
     />
   );
 }

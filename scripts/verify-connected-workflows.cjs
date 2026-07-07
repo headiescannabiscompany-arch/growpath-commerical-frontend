@@ -48,6 +48,7 @@ const checks = [
       "src/api/__tests__/auth.emailVerification.test.ts",
       "tests/unit/SoilBuilderToolScreen.test.tsx",
       "tests/unit/DryAmendmentMixToolScreen.test.tsx",
+      "tests/unit/TopdressToolScreen.test.tsx",
       "tests/unit/NpkToolScreen.test.tsx",
       "tests/unit/PersonalTaskCenterRoute.test.tsx",
       "tests/unit/GrowTasksScreen.test.tsx"
