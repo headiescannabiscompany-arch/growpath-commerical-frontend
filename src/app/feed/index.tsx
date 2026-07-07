@@ -30,9 +30,7 @@ import { resolveImageUri } from "@/utils/photoUploads";
 const COMMERCIAL_TYPES: CommercialFeedPostType[] = [
   "update",
   "listing",
-  "iso",
   "drop",
-  "question",
   "education"
 ];
 const FACILITY_TYPES: CommercialFeedPostType[] = ["education"];

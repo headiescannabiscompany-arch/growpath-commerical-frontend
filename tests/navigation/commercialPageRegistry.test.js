@@ -1,21 +1,21 @@
 import { PAGE_REGISTRY_COMMERCIAL } from "../../src/navigation/pageRegistry.commercial";
 
 describe("commercial page registry", () => {
-  it("keeps commercial navigation grow-centered with business tools layered on", () => {
+  it("keeps commercial navigation storefront-centered with evidence and business tools", () => {
     const labels = PAGE_REGISTRY_COMMERCIAL.map((entry) => entry.label);
 
     expect(labels).toEqual(
       expect.arrayContaining([
         "Dashboard",
-        "Grows & Trials",
+        "Evidence & Trials",
         "Products",
         "Product Lines",
         "Storefront",
         "Batch Planner",
         "Product Trials",
         "Inventory",
-        "Feed",
-        "Community",
+        "Feed / Campaigns",
+        "Forum / Q&A",
         "Courses",
         "Analytics",
         "Profile"

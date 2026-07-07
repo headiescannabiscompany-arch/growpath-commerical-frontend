@@ -184,7 +184,7 @@ export default function CommercialDashboardScreen() {
             <Text style={styles.eyebrow}>Commercial</Text>
             <Text style={styles.header}>Dashboard</Text>
             <Text style={styles.subtitle}>
-              Pro grow workflow plus products, trials, storefront, feed, courses,
+              Storefront, products, product trial evidence, feed campaigns, courses,
               inventory, and external tracking.
             </Text>
           </View>
@@ -222,7 +222,7 @@ export default function CommercialDashboardScreen() {
                   style={styles.secondaryButton}
                   onPress={() => navigation.navigate("CommercialGrows")}
                 >
-                  <Text style={styles.secondaryButtonText}>Open Grows & Trials</Text>
+                  <Text style={styles.secondaryButtonText}>Open Evidence & Trials</Text>
                 </Pressable>
                 <Pressable
                   style={styles.secondaryButton}
@@ -235,9 +235,9 @@ export default function CommercialDashboardScreen() {
 
             <View style={styles.grid}>
               <StatCard
-                label="Grows & Trials"
+                label="Evidence & Trials"
                 value={model.grows.length}
-                detail="grow workspace retained"
+                detail="product trial evidence"
                 route="CommercialGrows"
                 navigation={navigation}
               />
@@ -297,8 +297,8 @@ export default function CommercialDashboardScreen() {
             <View style={styles.panel}>
               <Text style={styles.sectionTitle}>Workflows</Text>
               <ActionRow
-                title="Grows and product trials"
-                subtitle="Open grow workspaces, demo grows, formula tests, and product trials."
+                title="Evidence runs and product trials"
+                subtitle="Open private evidence runs, formula tests, demos, and product trials."
                 route="CommercialGrows"
                 navigation={navigation}
               />
@@ -321,14 +321,14 @@ export default function CommercialDashboardScreen() {
                 navigation={navigation}
               />
               <ActionRow
-                title="Feed and community"
-                subtitle="Post updates, answer questions, and link products, courses, and trials."
+                title="Feed campaigns"
+                subtitle="Publish ad and outreach campaigns linked to products, courses, lives, storefronts, and forum Q&A."
                 route="Feed"
                 navigation={navigation}
               />
               <ActionRow
                 title="Marketing Planner"
-                subtitle="Plan launches, product drops, course announcements, ads, feed content, and tracked clicks."
+                subtitle="Plan launches, product drops, course announcements, ads, feed campaigns, and tracked clicks."
                 route="MarketingPlanner"
                 navigation={navigation}
               />

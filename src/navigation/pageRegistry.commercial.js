@@ -11,7 +11,7 @@ export const PAGE_REGISTRY_COMMERCIAL = [
   },
   {
     name: "CommercialGrows",
-    label: "Grows & Trials",
+    label: "Evidence & Trials",
     icon: "leaf-outline",
     capabilityKey: "commercial.grows",
     component: require("../app/home/commercial/grows").default
@@ -95,14 +95,14 @@ export const PAGE_REGISTRY_COMMERCIAL = [
   },
   {
     name: "Community",
-    label: "Community",
+    label: "Forum / Q&A",
     icon: "chatbubbles-outline",
     capabilityKey: "view.community.forum",
     component: require("../app/home/commercial/community").default
   },
   {
     name: "Feed",
-    label: "Feed",
+    label: "Feed / Campaigns",
     icon: "megaphone-outline",
     capabilityKey: "view.community.feed",
     component: require("../app/feed").default
