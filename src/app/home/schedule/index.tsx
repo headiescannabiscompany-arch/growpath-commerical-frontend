@@ -23,6 +23,8 @@ type CalendarItem = {
   workspaceType?: string;
   sourceType?: string;
   sourceId?: string;
+  reminder?: string;
+  recurrence?: string;
   href?: string;
 };
 
@@ -78,6 +80,29 @@ function sourceLabel(item: CalendarItem) {
     .replace(/_/g, " ");
 }
 
+function reminderLabel(row: any) {
+  if (typeof row?.reminderPlan?.label === "string") return row.reminderPlan.label;
+  if (typeof row?.reminderPlan?.summary === "string") return row.reminderPlan.summary;
+  if (typeof row?.reminder === "string") return row.reminder;
+  return "";
+}
+
+function recurrenceLabel(row: any) {
+  if (typeof row?.recurrence?.rule === "string") return row.recurrence.rule;
+  if (typeof row?.recurrenceRule === "string") return row.recurrenceRule;
+  return "";
+}
+
+function taskHref(task: any, id: string) {
+  const workspace = String(task?.workspaceType || "").toLowerCase();
+  if (workspace === "facility") return `/home/facility/tasks/${id}`;
+  if (workspace === "personal") {
+    const growId = String(task?.linkedGrowId || task?.growId || "");
+    return growId ? `/home/personal/grows/${growId}/tasks` : "/home/personal/more/tasks";
+  }
+  return `/app/(commercial)/tasks/${id}`;
+}
+
 function taskToItem(task: any): CalendarItem {
   const id = taskId(task);
   const sourceType = String(task?.sourceType || "task");
@@ -92,7 +117,9 @@ function taskToItem(task: any): CalendarItem {
     workspaceType: String(task?.workspaceType || "personal"),
     sourceType,
     sourceId: String(task?.sourceId || task?.sourceObjectId || ""),
-    href: `/app/(commercial)/tasks/${id}`
+    reminder: reminderLabel(task),
+    recurrence: recurrenceLabel(task),
+    href: taskHref(task, id)
   };
 }
 
@@ -210,7 +237,9 @@ export default function HomeScheduleRoute() {
           {[
             item.startAt && `Starts ${item.startAt.slice(0, 16)}`,
             item.status && `Status ${item.status}`,
-            item.priority && `Priority ${item.priority}`
+            item.priority && `Priority ${item.priority}`,
+            item.reminder && `Reminder ${item.reminder}`,
+            item.recurrence && `Repeats ${item.recurrence}`
           ]
             .filter(Boolean)
             .join(" | ") || "No schedule metadata."}

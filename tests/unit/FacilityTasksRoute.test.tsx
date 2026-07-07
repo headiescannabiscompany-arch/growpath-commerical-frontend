@@ -8,6 +8,12 @@ const mockGetFacilityTasks = jest.fn();
 const mockPush = jest.fn();
 const mockReplace = jest.fn();
 
+function addDaysKey(days: number) {
+  const date = new Date();
+  date.setDate(date.getDate() + days);
+  return date.toISOString().slice(0, 10);
+}
+
 jest.mock("expo-router", () => ({
   useRouter: () => ({ push: mockPush, replace: mockReplace })
 }));
@@ -84,7 +90,11 @@ describe("FacilityTasksRoute", () => {
       screen.getByLabelText("Facility task notes"),
       "After clone pull."
     );
-    fireEvent.changeText(screen.getByLabelText("Facility task due date"), "2026-07-09");
+    fireEvent.press(screen.getByLabelText("Facility task quick date In 7 days"));
+    fireEvent.press(
+      screen.getByLabelText("Facility task reminder preset 24 hours before")
+    );
+    fireEvent.press(screen.getByLabelText("Facility task recurrence preset weekly"));
     fireEvent.changeText(screen.getByLabelText("Facility task assignee"), "user-1");
     fireEvent.press(screen.getByLabelText("Set facility task source sop"));
     fireEvent.changeText(screen.getByLabelText("Facility task source object"), "sop-7");
@@ -97,11 +107,13 @@ describe("FacilityTasksRoute", () => {
       expect(mockCreateTask).toHaveBeenCalledWith("facility-1", {
         title: "Sanitize clone trays",
         notes: "After clone pull.",
-        dueDate: "2026-07-09",
+        dueDate: addDaysKey(7),
         assignedTo: "user-1",
         sourceType: "sop",
         sourceObjectId: "sop-7",
         roomId: "clone-room",
+        reminderPlan: { label: "24 hours before", channels: ["in_app"] },
+        recurrence: { rule: "weekly" },
         requiresProof: true,
         requiresApproval: true,
         scope: "facility"

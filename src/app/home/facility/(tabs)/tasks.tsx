@@ -19,6 +19,7 @@ import { createTask as createFacilityTask, getFacilityTasks } from "@/api/tasks"
 import { useApiErrorHandler } from "@/hooks/useApiErrorHandler";
 import { useEntitlements } from "@/entitlements";
 import { getFacilityTaskAccess } from "@/features/facility/taskAccess";
+import SchedulePicker from "@/components/schedule/SchedulePicker";
 
 type AnyRec = Record<string, any>;
 
@@ -101,6 +102,8 @@ export default function FacilityTasksRoute() {
   const [newTitle, setNewTitle] = useState("");
   const [newNotes, setNewNotes] = useState("");
   const [newDueDate, setNewDueDate] = useState("");
+  const [newReminder, setNewReminder] = useState("");
+  const [newRecurrence, setNewRecurrence] = useState("");
   const [newAssignedTo, setNewAssignedTo] = useState("");
   const [newSourceType, setNewSourceType] =
     useState<(typeof sourceTypes)[number]>("manual");
@@ -160,6 +163,10 @@ export default function FacilityTasksRoute() {
         sourceType: newSourceType,
         sourceObjectId: newSourceObjectId.trim() || undefined,
         roomId: newRoomId.trim() || undefined,
+        reminderPlan: newReminder.trim()
+          ? { label: newReminder.trim(), channels: ["in_app"] }
+          : undefined,
+        recurrence: newRecurrence.trim() ? { rule: newRecurrence.trim() } : undefined,
         requiresProof: newRequiresProof || undefined,
         requiresApproval: newRequiresApproval || undefined,
         scope: "facility"
@@ -167,6 +174,8 @@ export default function FacilityTasksRoute() {
       setNewTitle("");
       setNewNotes("");
       setNewDueDate("");
+      setNewReminder("");
+      setNewRecurrence("");
       setNewAssignedTo("");
       setNewSourceType("manual");
       setNewSourceObjectId("");
@@ -186,6 +195,8 @@ export default function FacilityTasksRoute() {
     newTitle,
     newNotes,
     newDueDate,
+    newReminder,
+    newRecurrence,
     newAssignedTo,
     newSourceType,
     newSourceObjectId,
@@ -231,13 +242,17 @@ export default function FacilityTasksRoute() {
                 multiline
               />
 
-              <Text style={styles.label}>Due date (optional)</Text>
-              <TextInput
-                accessibilityLabel="Facility task due date"
-                value={newDueDate}
-                onChangeText={setNewDueDate}
-                style={styles.input}
-                placeholder="YYYY-MM-DD"
+              <SchedulePicker
+                dueDate={newDueDate}
+                reminder={newReminder}
+                recurrence={newRecurrence}
+                onDueDateChange={setNewDueDate}
+                onReminderChange={setNewReminder}
+                onRecurrenceChange={setNewRecurrence}
+                accessibilityPrefix="Facility task"
+                dueDatePlaceholder="Due date, e.g. YYYY-MM-DD"
+                reminderPlaceholder="Reminder, e.g. 24 hours before"
+                recurrencePlaceholder="Recurrence, e.g. weekly SOP"
               />
 
               {canAssign ? (

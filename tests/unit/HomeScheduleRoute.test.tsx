@@ -31,7 +31,9 @@ describe("HomeScheduleRoute", () => {
               priority: "high",
               workspaceType: "commercial",
               sourceType: "product",
-              sourceId: "product-1"
+              sourceId: "product-1",
+              reminderPlan: { label: "24 hours before" },
+              recurrence: { rule: "weekly" }
             }
           ]
         });
@@ -91,6 +93,8 @@ describe("HomeScheduleRoute", () => {
     expect(screen.getByText("Living Soil Basics")).toBeTruthy();
     expect(screen.getByText("Veg Mix Launch")).toBeTruthy();
     expect(screen.getByText("feed campaign")).toBeTruthy();
+    expect(screen.getByText(/Reminder 24 hours before/)).toBeTruthy();
+    expect(screen.getByText(/Repeats weekly/)).toBeTruthy();
     expect(screen.getAllByText("Open Source").length).toBeGreaterThan(0);
   });
 });
