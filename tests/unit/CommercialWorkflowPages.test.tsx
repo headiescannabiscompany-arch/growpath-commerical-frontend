@@ -384,8 +384,11 @@ describe("commercial workflow pages", () => {
             id: "course-1",
             title: "Living Soil Product Use",
             description: "How to use the seedling soil line",
+            thumbnailUrl: "https://example.com/course-thumb.jpg",
             category: "product_education",
             access: "free",
+            price: 49,
+            growInterests: ["living soil"],
             stripeProductId: "prod_course_existing",
             stripePriceId: "price_course_existing",
             linkedProductIds: ["product-1"],
@@ -415,6 +418,10 @@ describe("commercial workflow pages", () => {
           course: {
             id: "course-1",
             title: "Living Soil Product Use",
+            thumbnailUrl: "https://example.com/course-thumb.jpg",
+            price: 49,
+            growInterests: ["living soil"],
+            lessons: [{ id: "lesson-1", title: "Application rate" }],
             ...options.body
           }
         });
@@ -427,6 +434,9 @@ describe("commercial workflow pages", () => {
           course: {
             id: "course-1",
             title: "Living Soil Product Use",
+            thumbnailUrl: "https://example.com/course-thumb.jpg",
+            price: 49,
+            growInterests: ["living soil"],
             lessons: [{ id: "lesson-new", ...options.body }]
           },
           lesson: { id: "lesson-new", ...options.body }

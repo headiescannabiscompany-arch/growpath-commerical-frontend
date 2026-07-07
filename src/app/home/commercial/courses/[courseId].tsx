@@ -28,6 +28,31 @@ function courseTitle(course: CommercialCourse | null) {
   return course?.title || "Commercial Course";
 }
 
+function courseSetupWarnings(course: Partial<CommercialCourse>) {
+  const warnings: string[] = [];
+  if (!course.thumbnailUrl?.trim()) warnings.push("add thumbnail");
+  if (!course.description?.trim()) warnings.push("add description");
+  if (!course.growInterests?.length) warnings.push("add grow interests");
+  if (!course.lessons?.length) warnings.push("add lesson");
+  if (course.access === "paid") {
+    if (!Number(course.price)) warnings.push("add paid price");
+    if (!course.stripeProductId?.trim()) warnings.push("connect Stripe product");
+    if (!course.stripePriceId?.trim()) warnings.push("connect Stripe price");
+  }
+  return warnings;
+}
+
+function blocksCoursePublish(warning: string) {
+  return [
+    "add description",
+    "add grow interests",
+    "add lesson",
+    "add paid price",
+    "connect Stripe product",
+    "connect Stripe price"
+  ].includes(warning);
+}
+
 function DetailRow({ label, value }: { label: string; value?: unknown }) {
   const display = Array.isArray(value)
     ? value.filter(Boolean).join(", ")
@@ -194,6 +219,20 @@ export default function CommercialCourseDetailRoute({ route }: { route?: any } =
   }
 
   const lessons = Array.isArray(course?.lessons) ? course.lessons : [];
+  const setupWarnings = courseSetupWarnings({
+    ...course,
+    status: (status.trim() || course?.status || "draft") as CommercialCourse["status"],
+    access: (access.trim() || course?.access || "free") as CommercialCourse["access"],
+    description,
+    stripeProductId,
+    stripePriceId,
+    linkedProductIds: splitIds(linkedProductIds),
+    linkedProductLineIds: splitIds(linkedProductLineIds),
+    linkedGrowIds: splitIds(linkedGrowIds),
+    linkedLiveIds: splitIds(linkedLiveIds),
+    lessons
+  });
+  const publishBlocked = setupWarnings.some(blocksCoursePublish);
 
   return (
     <AppPage
@@ -238,6 +277,12 @@ export default function CommercialCourseDetailRoute({ route }: { route?: any } =
           <DetailRow label="Evidence runs" value={course?.linkedGrowIds} />
           <DetailRow label="Linked lives" value={course?.linkedLiveIds} />
         </View>
+        {setupWarnings.length ? (
+          <View style={styles.warningBox}>
+            <Text style={styles.warningTitle}>Course setup checklist</Text>
+            <Text style={styles.warningText}>{setupWarnings.join(" | ")}</Text>
+          </View>
+        ) : null}
       </AppCard>
 
       <AppCard>
@@ -327,11 +372,11 @@ export default function CommercialCourseDetailRoute({ route }: { route?: any } =
           <Pressable
             accessibilityLabel="Publish commercial course"
             accessibilityRole="button"
-            disabled={publishing || !courseId}
+            disabled={publishing || !courseId || publishBlocked}
             onPress={publishCourse}
             style={[
               styles.secondaryAction,
-              publishing || !courseId ? styles.disabled : null
+              publishing || !courseId || publishBlocked ? styles.disabled : null
             ]}
           >
             <Text style={styles.secondaryActionText}>
@@ -557,6 +602,26 @@ const styles = StyleSheet.create({
   secondaryActionText: { color: "#166534", fontSize: 13, fontWeight: "900" },
   disabled: { opacity: 0.55 },
   success: { color: "#166534", fontSize: 13, fontWeight: "800", marginTop: 8 },
+  warningBox: {
+    backgroundColor: "#FFF7ED",
+    borderColor: "#FDBA74",
+    borderRadius: 8,
+    borderWidth: 1,
+    marginTop: 10,
+    padding: 10
+  },
+  warningTitle: {
+    color: "#9A3412",
+    fontSize: 12,
+    fontWeight: "900",
+    textTransform: "uppercase"
+  },
+  warningText: {
+    color: "#9A3412",
+    fontSize: 12,
+    fontWeight: "800",
+    marginTop: 4
+  },
   list: { gap: 10, marginTop: 12 },
   row: {
     borderColor: "#E2E8F0",
