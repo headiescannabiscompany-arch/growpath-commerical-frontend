@@ -54,6 +54,7 @@
     "release:record-evidence": "node scripts/record-release-evidence.cjs",
     "verify:manual": "npm run verify:manual:checks && npm run export:web:production",
     "verify:manual:checks": "powershell -NoProfile -ExecutionPolicy Bypass -File scripts/verify-before-manual.ps1",
+    "verify:deferred-user-checks": "node scripts/run-deferred-user-verifications.cjs",
     "test": "npm run inventory:ui-routes && jest --runInBand",
     "test:backend": "jest --config jest.backend.config.cjs --runInBand backend/routes/ai.call.test.js backend/llm/provider.test.js backend/utils/ecCorrection.test.js backend/entitlements.test.js",
     "test:backend:all": "jest --config jest.backend.config.cjs --runInBand",
