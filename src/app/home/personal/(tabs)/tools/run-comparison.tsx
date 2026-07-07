@@ -1,6 +1,16 @@
 import React from "react";
 
-import BackendCalculatorToolScreen from "@/features/personal/tools/BackendCalculatorToolScreen";
+import BackendCalculatorToolScreen, {
+  tomorrow
+} from "@/features/personal/tools/BackendCalculatorToolScreen";
+import { saveToolRunAndCreateTasks } from "@/features/personal/tools/saveToolRunAndOpenJournal";
+
+function normalizePriority(
+  value: unknown,
+  fallback: "low" | "medium" | "high" = "medium"
+) {
+  return value === "low" || value === "medium" || value === "high" ? value : fallback;
+}
 
 function parseRuns(value: string) {
   try {
@@ -37,6 +47,65 @@ function parseRuns(value: string) {
       })
       .filter(Boolean);
   }
+}
+
+function runComparisonTaskPlan(outputs: Record<string, any>) {
+  const planned = Array.isArray(outputs.tasksToCreate) ? outputs.tasksToCreate : [];
+  if (planned.length) {
+    return planned.slice(0, 8).map((task: any, index: number) => ({
+      title: String(task?.title || `Run comparison follow-up ${index + 1}`),
+      priority: normalizePriority(task?.priority),
+      dueDate: tomorrow(Number(task?.dueInDays || index + 1)),
+      description:
+        task?.description ||
+        "Use this run comparison result to update next-run planning, notes, environment targets, and task templates."
+    }));
+  }
+
+  const missingCount = Array.isArray(outputs.missingData)
+    ? outputs.missingData.length
+    : 0;
+  const bestRun = outputs.bestRun?.name || "best run";
+  const worstRun = outputs.worstRun?.name || "review run";
+  const sameCultivar = outputs.structuredSummary?.sameCultivar;
+
+  const tasks = [
+    {
+      title: "Record run comparison decisions",
+      priority: "medium" as const,
+      dueDate: tomorrow(1),
+      description: `Compare ${bestRun} against ${worstRun}; save the environment, feeding, IPM, dry/cure, and quality lessons that should change the next run.`
+    },
+    {
+      title: "Update next-run task template",
+      priority: "medium" as const,
+      dueDate: tomorrow(3),
+      description:
+        "Turn the comparison into concrete next-run actions for VPD, DLI, feeding, IPM checks, dry/cure timing, harvest timing, and pheno scoring."
+    }
+  ];
+
+  if (missingCount > 0) {
+    tasks.push({
+      title: "Fill missing comparison data",
+      priority: "high",
+      dueDate: tomorrow(2),
+      description:
+        "Add missing yield, quality, issue, environment, task, dry/cure, or smoke-note data before trusting the comparison."
+    });
+  }
+
+  if (sameCultivar === false) {
+    tasks.push({
+      title: "Separate cultivar and environment effects",
+      priority: "medium",
+      dueDate: tomorrow(4),
+      description:
+        "Review whether the result is driven by genetics/pheno differences or by grow process differences before changing SOPs."
+    });
+  }
+
+  return tasks;
 }
 
 export default function RunComparisonToolRoute() {
@@ -100,6 +169,28 @@ export default function RunComparisonToolRoute() {
       defaultLogTitle={(outputs) =>
         `Run comparison: ${outputs.bestRun?.name || "selected runs"}`
       }
+      buildActions={({ outputs, payload, toolRun, growId, plantContext }) => [
+        {
+          key: "create-run-comparison-tasks",
+          label: "Create Next-Run Tasks",
+          variant: "secondary",
+          pendingLabel: "Creating...",
+          disabled: !growId,
+          successMessage: "Created run comparison tasks.",
+          onPress: async () => {
+            const result = await saveToolRunAndCreateTasks({
+              growId,
+              ...plantContext.toolRunContext,
+              toolKey: "run-comparison",
+              toolRunId: toolRun?.id || toolRun?._id,
+              input: payload,
+              output: outputs,
+              tasks: runComparisonTaskPlan(outputs)
+            });
+            if (!result.ok) throw new Error(result.error);
+          }
+        }
+      ]}
     />
   );
 }
