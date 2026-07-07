@@ -66,6 +66,19 @@ type BackendCalculatorToolScreenProps = {
     growId: string;
     plantContext: ReturnType<typeof useToolPlantContext>;
   }) => ToolResultAction[];
+  assistantBrief?: {
+    title: string;
+    description: string;
+    buttonLabel: string;
+    accessibilityLabel: string;
+    briefTitle: string;
+    buildBrief: (context: {
+      values: Record<string, string>;
+      payload: Record<string, any>;
+      growId: string;
+      plantContext: ReturnType<typeof useToolPlantContext>;
+    }) => string;
+  };
 };
 
 function coerceParam(value?: string | string[]) {
@@ -130,7 +143,8 @@ export default function BackendCalculatorToolScreen({
   buildNotices = defaultNotices,
   defaultLogTitle,
   defaultTask,
-  buildActions
+  buildActions,
+  assistantBrief
 }: BackendCalculatorToolScreenProps) {
   const params = useLocalSearchParams<{
     growId?: string | string[];
@@ -166,6 +180,7 @@ export default function BackendCalculatorToolScreen({
   const [moduleRecord, setModuleRecord] = useState<GrowpathModuleRecord | null>(null);
   const [running, setRunning] = useState(false);
   const [feedback, setFeedback] = useState("");
+  const [assistantBriefText, setAssistantBriefText] = useState("");
 
   function updateValue(key: string, value: string) {
     setValues((current) => ({ ...current, [key]: value }));
@@ -173,6 +188,7 @@ export default function BackendCalculatorToolScreen({
     setModuleRecord(null);
     setOutputs(null);
     setFeedback("");
+    setAssistantBriefText("");
   }
 
   const payload = useMemo(
@@ -349,6 +365,33 @@ export default function BackendCalculatorToolScreen({
         onSelect={plantContext.setPlantId}
       />
 
+      {assistantBrief ? (
+        <View style={styles.guidanceCard}>
+          <Text style={styles.resultTitle}>{assistantBrief.title}</Text>
+          <Text style={styles.guidanceText}>{assistantBrief.description}</Text>
+          <Pressable
+            accessibilityRole="button"
+            accessibilityLabel={assistantBrief.accessibilityLabel}
+            style={styles.secondaryButton}
+            onPress={() =>
+              setAssistantBriefText(
+                assistantBrief.buildBrief({ values, payload, growId, plantContext })
+              )
+            }
+          >
+            <Text style={styles.secondaryButtonText}>{assistantBrief.buttonLabel}</Text>
+          </Pressable>
+          {assistantBriefText ? (
+            <View style={styles.briefBox}>
+              <Text style={styles.resultTitle}>{assistantBrief.briefTitle}</Text>
+              <Text selectable style={styles.briefText}>
+                {assistantBriefText}
+              </Text>
+            </View>
+          ) : null}
+        </View>
+      ) : null}
+
       <View style={styles.form}>
         {fields.map((field) => (
           <View key={field.key} style={styles.field}>
@@ -434,6 +477,34 @@ const styles = StyleSheet.create({
   title: { fontSize: 22, fontWeight: "700", color: "#0F172A" },
   subtitle: { fontSize: 13, color: "#64748B" },
   context: { color: "#166534", fontWeight: "700" },
+  guidanceCard: {
+    borderWidth: 1,
+    borderColor: "#BBF7D0",
+    borderRadius: 8,
+    padding: 12,
+    gap: 8,
+    backgroundColor: "#F0FDF4"
+  },
+  resultTitle: { fontSize: 15, fontWeight: "800", color: "#0F172A" },
+  guidanceText: { color: "#334155", lineHeight: 19 },
+  secondaryButton: {
+    borderWidth: 1,
+    borderColor: "#166534",
+    borderRadius: 8,
+    paddingVertical: 10,
+    alignItems: "center",
+    backgroundColor: "#FFFFFF"
+  },
+  secondaryButtonText: { color: "#166534", fontWeight: "800" },
+  briefBox: {
+    borderWidth: 1,
+    borderColor: "#D9F99D",
+    borderRadius: 8,
+    padding: 10,
+    gap: 6,
+    backgroundColor: "#FFFFFF"
+  },
+  briefText: { color: "#0F172A", lineHeight: 19 },
   form: { gap: 10 },
   field: { gap: 6 },
   label: { fontSize: 13, fontWeight: "700", color: "#334155" },

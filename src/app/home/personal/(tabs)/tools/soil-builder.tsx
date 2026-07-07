@@ -70,6 +70,45 @@ function soilTimelineTasks(outputs: Record<string, any>, payload: Record<string,
   ];
 }
 
+function buildSoilAssistantBrief(payload: Record<string, any>) {
+  const amendments = Array.isArray(payload.amendments) ? payload.amendments : [];
+  const amendmentLines = amendments.length
+    ? amendments
+        .map(
+          (row: any, index: number) =>
+            `${index + 1}. ${row.name || "Unnamed"}: ${row.doseRate || 0} ${
+              row.doseUnit || "unit"
+            }, label ${row.guaranteedAnalysis?.N ?? 0}-${
+              row.guaranteedAnalysis?.P2O5 ?? 0
+            }-${row.guaranteedAnalysis?.K2O ?? 0}, release ${
+              row.releaseClass || "unknown"
+            }`
+        )
+        .join("\n")
+    : "No amendment rows entered yet.";
+
+  return [
+    "AI Soil Builder brief",
+    "",
+    "Role: help the user design the recipe conversationally, but call the Soil Builder calculator for final nutrient estimates, release chart, warnings, ToolRun saving, tasks, and product draft conversion.",
+    `Goal: ${payload.goal || "not set"}`,
+    `Stage/use: ${payload.stage || payload.intendedUse || "not set"}`,
+    `Target label N-P-K: ${payload.targetNpk || "not set"}`,
+    `Target release logic: ${payload.targetReleaseCurve || "not set"}`,
+    `Batch: ${payload.totalVolume || "-"} ${payload.volumeUnit || ""}`.trim(),
+    `Base mix: ${payload.baseMedia || "base media"} with ${payload.basePercent || 0}% base, ${payload.compostPercent || 0}% compost/castings, ${payload.aerationPercent || 0}% aeration, ${payload.biocharPercent || 0}% biochar.`,
+    `Compost uncertainty: ${payload.compostUncertainty || "unknown"}`,
+    "Amendments:",
+    amendmentLines,
+    `Mineral support: ${payload.mineralSupport || "none entered"}`,
+    `Biology/activation: ${payload.biologySupport || "none entered"}`,
+    `Rest/cook time: ${payload.restCookDays || 21} days`,
+    `Safety notes: ${payload.safetyNotes || "none"}`,
+    "",
+    "Explain tradeoffs like fast nitrogen versus slower base nutrition, compost uncertainty, mineral/biology support, seedling hot-mix risk, and whether this should become grow tasks, a facility batch, or a commercial product draft after user approval."
+  ].join("\n");
+}
+
 export default function SoilBuilderToolScreen() {
   return (
     <BackendCalculatorToolScreen
@@ -314,6 +353,15 @@ export default function SoilBuilderToolScreen() {
         priority: "medium",
         dueDate: tomorrow(1)
       })}
+      assistantBrief={{
+        title: "AI-guided, calculator-verified",
+        description:
+          "Ask AI to help shape the soil recipe, collect missing label data, and explain fast/medium/slow release choices. The Soil Builder remains the source of truth for recipe math, warnings, ToolRuns, tasks, and product conversion.",
+        buttonLabel: "Ask AI to Build Soil Recipe",
+        accessibilityLabel: "Ask AI to build soil recipe",
+        briefTitle: "AI soil recipe brief",
+        buildBrief: ({ payload }) => buildSoilAssistantBrief(payload)
+      }}
       buildActions={({ outputs, payload, toolRun }) => [
         {
           key: "create-recipe-timeline",

@@ -206,4 +206,30 @@ describe("SoilBuilderToolScreen", () => {
       )
     );
   });
+
+  it("builds an AI soil recipe brief without replacing calculator math", () => {
+    const screen = render(<SoilBuilderToolScreen />);
+
+    fireEvent.changeText(screen.getByLabelText("Soil Builder Target N-P-K"), "3-1-1");
+    fireEvent.changeText(
+      screen.getByLabelText("Soil Builder Target release curve"),
+      "1-1-1 slow base plus fast nitrogen"
+    );
+    fireEvent.changeText(
+      screen.getByLabelText("Soil Builder Compost uncertainty"),
+      "high - lab test missing"
+    );
+
+    fireEvent.press(screen.getByLabelText("Ask AI to build soil recipe"));
+
+    expect(screen.getByText("AI soil recipe brief")).toBeTruthy();
+    expect(screen.getByText(/Target label N-P-K: 3-1-1/)).toBeTruthy();
+    expect(
+      screen.getByText(/Target release logic: 1-1-1 slow base plus fast nitrogen/)
+    ).toBeTruthy();
+    expect(screen.getByText(/Compost uncertainty: high - lab test missing/)).toBeTruthy();
+    expect(
+      screen.getByText(/call the Soil Builder calculator for final nutrient estimates/)
+    ).toBeTruthy();
+  });
 });
