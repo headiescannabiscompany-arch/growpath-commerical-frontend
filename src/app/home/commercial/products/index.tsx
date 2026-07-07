@@ -1,6 +1,6 @@
 import { Link } from "expo-router";
 import React, { useEffect, useMemo, useState } from "react";
-import { Pressable, StyleSheet, Text, TextInput, View } from "react-native";
+import { Image, Pressable, StyleSheet, Text, TextInput, View } from "react-native";
 
 import { createProduct, fetchProducts, Product } from "@/api/products";
 import { InlineError } from "@/components/InlineError";
@@ -13,9 +13,17 @@ type ProductForm = {
   name: string;
   category: string;
   shortDescription: string;
+  imageUrl: string;
   price: string;
   currency: string;
   sku: string;
+  unitSize: string;
+  growInterests: string;
+  npk: string;
+  guaranteedAnalysis: string;
+  ingredients: string;
+  directions: string;
+  applicationRate: string;
   externalPurchaseUrl: string;
   status: "draft" | "published";
 };
@@ -24,9 +32,17 @@ const EMPTY_FORM: ProductForm = {
   name: "",
   category: "soil_mix",
   shortDescription: "",
+  imageUrl: "",
   price: "",
   currency: "USD",
   sku: "",
+  unitSize: "",
+  growInterests: "",
+  npk: "",
+  guaranteedAnalysis: "",
+  ingredients: "",
+  directions: "",
+  applicationRate: "",
   externalPurchaseUrl: "",
   status: "draft"
 };
@@ -65,6 +81,24 @@ function productCheckoutReady(product: Product) {
   );
 }
 
+function splitList(value: string) {
+  return value
+    .split(/[\n,]+/)
+    .map((item) => item.trim())
+    .filter(Boolean);
+}
+
+function hasProductSpecs(form: ProductForm) {
+  return [
+    form.unitSize,
+    form.npk,
+    form.guaranteedAnalysis,
+    form.ingredients,
+    form.directions,
+    form.applicationRate
+  ].some(hasText);
+}
+
 function productMissingSetup(product: Product) {
   const missing: string[] = [];
   if (!productImage(product)) missing.push("image");
@@ -72,6 +106,9 @@ function productMissingSetup(product: Product) {
     missing.push("description");
   }
   if (productPrice(product) <= 0) missing.push("price");
+  if (!hasText((product as any).unitSize) && !hasText(product.specs?.unitSize)) {
+    missing.push("size/weight");
+  }
   if (!productCheckoutReady(product)) missing.push("checkout");
   if (product.status !== "published") missing.push("published");
   return missing;
@@ -142,10 +179,23 @@ export default function CommercialProductsRoute() {
         category: form.category.trim() || "other",
         shortDescription: form.shortDescription.trim(),
         description: form.shortDescription.trim(),
+        imageUrl: form.imageUrl.trim() || undefined,
         price: parsePrice(form.price),
         currency: form.currency.trim() || "USD",
         sku: form.sku.trim(),
+        unitSize: form.unitSize.trim() || undefined,
+        growInterests: splitList(form.growInterests),
         externalPurchaseUrl: form.externalPurchaseUrl.trim(),
+        specs: hasProductSpecs(form)
+          ? {
+              unitSize: form.unitSize.trim() || undefined,
+              npk: form.npk.trim() || undefined,
+              guaranteedAnalysis: form.guaranteedAnalysis.trim() || undefined,
+              ingredients: splitList(form.ingredients),
+              directions: form.directions.trim() || undefined,
+              applicationRate: form.applicationRate.trim() || undefined
+            }
+          : undefined,
         status: form.status
       } as Partial<Product>);
       setForm(EMPTY_FORM);
@@ -246,11 +296,51 @@ export default function CommercialProductsRoute() {
             style={styles.input}
           />
           <TextInput
+            value={form.imageUrl}
+            onChangeText={(imageUrl) => setForm((prev) => ({ ...prev, imageUrl }))}
+            accessibilityLabel="Commercial product image URL"
+            placeholder="Thumbnail / image URL"
+            autoCapitalize="none"
+            style={styles.input}
+          />
+          <TextInput
             value={form.price}
             onChangeText={(price) => setForm((prev) => ({ ...prev, price }))}
             accessibilityLabel="Commercial product price"
             keyboardType="decimal-pad"
             placeholder="Price"
+            style={styles.input}
+          />
+          <TextInput
+            value={form.unitSize}
+            onChangeText={(unitSize) => setForm((prev) => ({ ...prev, unitSize }))}
+            accessibilityLabel="Commercial product size or weight"
+            placeholder="Size / weight / unit: 5 lb, 1 cu ft, 1 gallon..."
+            style={styles.input}
+          />
+          <TextInput
+            value={form.growInterests}
+            onChangeText={(growInterests) =>
+              setForm((prev) => ({ ...prev, growInterests }))
+            }
+            accessibilityLabel="Commercial product grow interests"
+            placeholder="Grow interests: living soil, dry amendments..."
+            style={styles.input}
+          />
+          <TextInput
+            value={form.npk}
+            onChangeText={(npk) => setForm((prev) => ({ ...prev, npk }))}
+            accessibilityLabel="Commercial product NPK"
+            placeholder="N-P-K: 3-1-1"
+            style={styles.input}
+          />
+          <TextInput
+            value={form.applicationRate}
+            onChangeText={(applicationRate) =>
+              setForm((prev) => ({ ...prev, applicationRate }))
+            }
+            accessibilityLabel="Commercial product application rate"
+            placeholder="Application rate"
             style={styles.input}
           />
           <TextInput
@@ -270,6 +360,32 @@ export default function CommercialProductsRoute() {
             style={styles.input}
           />
         </View>
+        <TextInput
+          value={form.guaranteedAnalysis}
+          onChangeText={(guaranteedAnalysis) =>
+            setForm((prev) => ({ ...prev, guaranteedAnalysis }))
+          }
+          accessibilityLabel="Commercial product guaranteed analysis"
+          multiline
+          placeholder="Guaranteed analysis / label fields: N, P2O5, K2O, Ca, Mg, S, micros"
+          style={[styles.input, styles.textArea]}
+        />
+        <TextInput
+          value={form.ingredients}
+          onChangeText={(ingredients) => setForm((prev) => ({ ...prev, ingredients }))}
+          accessibilityLabel="Commercial product ingredients"
+          multiline
+          placeholder="Ingredients, one per line or comma separated"
+          style={[styles.input, styles.textArea]}
+        />
+        <TextInput
+          value={form.directions}
+          onChangeText={(directions) => setForm((prev) => ({ ...prev, directions }))}
+          accessibilityLabel="Commercial product directions"
+          multiline
+          placeholder="Directions for use, storage, and safety notes"
+          style={[styles.input, styles.textArea]}
+        />
         <TextInput
           value={form.shortDescription}
           onChangeText={(shortDescription) =>
@@ -322,6 +438,14 @@ export default function CommercialProductsRoute() {
               const missing = productMissingSetup(product);
               return (
                 <View key={id} style={styles.productRow}>
+                  {productImage(product) ? (
+                    <Image
+                      source={{ uri: productImage(product) }}
+                      style={styles.productThumb}
+                      resizeMode="cover"
+                      accessibilityLabel={`${product.name || "Product"} thumbnail`}
+                    />
+                  ) : null}
                   <View style={styles.productMain}>
                     <Text style={styles.productTitle}>
                       {product.name || "Untitled product"}
@@ -330,6 +454,8 @@ export default function CommercialProductsRoute() {
                       {[
                         (product as any).category,
                         product.sku && `SKU ${product.sku}`,
+                        ((product as any).unitSize || product.specs?.unitSize) &&
+                          `Size ${(product as any).unitSize || product.specs?.unitSize}`,
                         product.status || "draft",
                         (product as any).externalPurchaseUrl ? "external link" : null
                       ]
@@ -600,6 +726,12 @@ const styles = StyleSheet.create({
     gap: 10,
     justifyContent: "space-between",
     padding: 10
+  },
+  productThumb: {
+    backgroundColor: "#E2E8F0",
+    borderRadius: 8,
+    height: 82,
+    width: 112
   },
   productMain: {
     flex: 1,

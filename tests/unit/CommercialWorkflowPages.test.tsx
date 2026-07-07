@@ -995,10 +995,39 @@ describe("commercial workflow pages", () => {
       "dry_amendment"
     );
     fireEvent.changeText(screen.getByLabelText("Commercial product SKU"), "BLOOM-1");
+    fireEvent.changeText(
+      screen.getByLabelText("Commercial product image URL"),
+      "https://example.com/bloom.jpg"
+    );
     fireEvent.changeText(screen.getByLabelText("Commercial product price"), "29.99");
+    fireEvent.changeText(
+      screen.getByLabelText("Commercial product size or weight"),
+      "5 lb bag"
+    );
+    fireEvent.changeText(
+      screen.getByLabelText("Commercial product grow interests"),
+      "living soil, dry amendments"
+    );
+    fireEvent.changeText(screen.getByLabelText("Commercial product NPK"), "3-1-1");
+    fireEvent.changeText(
+      screen.getByLabelText("Commercial product application rate"),
+      "1 cup per cubic foot"
+    );
     fireEvent.changeText(
       screen.getByLabelText("Commercial product external purchase URL"),
       "https://example.com/bloom"
+    );
+    fireEvent.changeText(
+      screen.getByLabelText("Commercial product guaranteed analysis"),
+      "N 3\nP2O5 1\nK2O 1"
+    );
+    fireEvent.changeText(
+      screen.getByLabelText("Commercial product ingredients"),
+      "Alfalfa meal\nFish bone meal"
+    );
+    fireEvent.changeText(
+      screen.getByLabelText("Commercial product directions"),
+      "Topdress and water in."
     );
     fireEvent.changeText(
       screen.getByLabelText("Commercial product short description"),
@@ -1016,9 +1045,20 @@ describe("commercial workflow pages", () => {
             name: "Bloom Mix",
             category: "dry_amendment",
             sku: "BLOOM-1",
+            imageUrl: "https://example.com/bloom.jpg",
             price: 29.99,
+            unitSize: "5 lb bag",
+            growInterests: ["living soil", "dry amendments"],
             externalPurchaseUrl: "https://example.com/bloom",
             shortDescription: "Flower topdress blend",
+            specs: expect.objectContaining({
+              unitSize: "5 lb bag",
+              npk: "3-1-1",
+              guaranteedAnalysis: "N 3\nP2O5 1\nK2O 1",
+              ingredients: ["Alfalfa meal", "Fish bone meal"],
+              directions: "Topdress and water in.",
+              applicationRate: "1 cup per cubic foot"
+            }),
             status: "published"
           })
         })
