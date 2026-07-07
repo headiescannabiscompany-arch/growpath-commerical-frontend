@@ -2,6 +2,7 @@ import { Link, useLocalSearchParams } from "expo-router";
 import React, { useCallback, useEffect, useMemo, useState } from "react";
 import { Pressable, StyleSheet, Text, TextInput, View } from "react-native";
 
+import { apiRequest } from "@/api/apiRequest";
 import {
   fetchProductTrial,
   ProductTrial,
@@ -87,6 +88,7 @@ export default function CommercialTrialDetailRoute({ route }: { route?: any } = 
   const [loading, setLoading] = useState(false);
   const [saving, setSaving] = useState(false);
   const [reviewing, setReviewing] = useState(false);
+  const [creatingTask, setCreatingTask] = useState(false);
   const [error, setError] = useState<any>(null);
   const [message, setMessage] = useState("");
 
@@ -161,6 +163,45 @@ export default function CommercialTrialDetailRoute({ route }: { route?: any } = 
       setError(err);
     } finally {
       setReviewing(false);
+    }
+  }
+
+  async function createClaimReadinessTask() {
+    if (!trialId || !trial || creatingTask) return;
+    const warnings = trialClaimWarnings(trial);
+    if (!warnings.length) return;
+    setCreatingTask(true);
+    setMessage("");
+    setError(null);
+    try {
+      await apiRequest("/api/tasks", {
+        method: "POST",
+        body: {
+          workspaceType: "commercial",
+          title: `Complete trial evidence: ${trialTitle(trial)}`,
+          description: `Missing claim-readiness evidence: ${warnings.join(", ")}.`,
+          sourceType: "product_trial",
+          sourceId: trialId,
+          linkedProductTrialId: trialId,
+          linkedProductId: trial.productId,
+          linkedProductBatchId: trial.batchId,
+          linkedGrowId: trial.growId,
+          priority:
+            warnings.includes("complete trial") ||
+            warnings.includes("add measurement data") ||
+            warnings.includes("save AI review evidence")
+              ? "high"
+              : "normal",
+          status: "open",
+          dueAt: new Date().toISOString().slice(0, 10),
+          reminderPlan: { label: "24 hours before", channels: ["in_app"] }
+        }
+      });
+      setMessage(`Created evidence task for ${trialTitle(trial)}.`);
+    } catch (err) {
+      setError(err);
+    } finally {
+      setCreatingTask(false);
     }
   }
 
@@ -267,6 +308,17 @@ export default function CommercialTrialDetailRoute({ route }: { route?: any } = 
                 Missing {warning}
               </Text>
             ))}
+            <Pressable
+              accessibilityLabel="Create trial evidence task"
+              accessibilityRole="button"
+              disabled={creatingTask}
+              onPress={createClaimReadinessTask}
+              style={[styles.action, creatingTask ? styles.disabled : null]}
+            >
+              <Text style={styles.actionText}>
+                {creatingTask ? "Creating..." : "Create Task"}
+              </Text>
+            </Pressable>
           </View>
         ) : (
           <Text style={styles.success}>

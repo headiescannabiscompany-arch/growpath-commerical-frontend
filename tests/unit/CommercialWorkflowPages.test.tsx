@@ -1556,6 +1556,30 @@ describe("commercial workflow pages", () => {
     expect(screen.getByText("Missing add measurement data")).toBeTruthy();
     expect(screen.getByText("Claim-Safe AI Review")).toBeTruthy();
     expect(screen.getByText("Publish Path")).toBeTruthy();
+    fireEvent.press(screen.getByLabelText("Create trial evidence task"));
+
+    await waitFor(() =>
+      expect(mockApiRequest).toHaveBeenCalledWith(
+        "/api/tasks",
+        expect.objectContaining({
+          method: "POST",
+          body: expect.objectContaining({
+            workspaceType: "commercial",
+            title: "Complete trial evidence: Seedling Safety",
+            sourceType: "product_trial",
+            sourceId: "trial-1",
+            linkedProductTrialId: "trial-1",
+            linkedProductId: "product-1",
+            linkedProductBatchId: "batch-1",
+            linkedGrowId: "grow-1",
+            priority: "high",
+            status: "open",
+            reminderPlan: { label: "24 hours before", channels: ["in_app"] }
+          })
+        })
+      )
+    );
+    expect(screen.getByText("Created evidence task for Seedling Safety.")).toBeTruthy();
     expect(
       screen.getByLabelText("Commercial trial effectiveness summary").props.value
     ).toBe("Strong seedling emergence with no burn.");
