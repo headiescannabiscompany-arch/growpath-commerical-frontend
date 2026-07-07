@@ -6,6 +6,7 @@ import { startSubscription } from "../api/subscribe";
 import { createCheckoutSession } from "../api/subscription";
 import PrimaryButton from "../components/PrimaryButton";
 import ScreenContainer from "../components/ScreenContainer";
+import { PRO_PLAN_PRICE_DISPLAY } from "../constants/pricing";
 import { openExternalUrl } from "../utils/openExternalUrl";
 
 export default function PaywallScreen({ navigation }) {
@@ -93,7 +94,9 @@ export default function PaywallScreen({ navigation }) {
               style={[styles.button, styles.subscribeButton]}
               onPress={handleSubscribe}
             >
-              <Text style={styles.buttonText}>Subscribe Now - $9.99/month</Text>
+              <Text style={styles.buttonText}>
+                Subscribe Now - {PRO_PLAN_PRICE_DISPLAY}
+              </Text>
             </TouchableOpacity>
 
             <PrimaryButton

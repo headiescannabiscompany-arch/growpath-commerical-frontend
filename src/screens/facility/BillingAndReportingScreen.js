@@ -16,6 +16,10 @@ import { handleApiError } from "../../ui/handleApiError";
 import { useFacilityBilling } from "../../hooks/useFacilityBilling";
 import { useSubscriptionStatus } from "../../hooks/useSubscriptionStatus";
 import { useFacilityReport } from "../../hooks/useFacilityReport";
+import {
+  FACILITY_PLAN_PRICE_DISPLAY,
+  formatPlanBillingNote
+} from "../../constants/pricing";
 
 async function openCheckoutUrl(url) {
   if (Platform.OS === "web" && typeof window !== "undefined" && window.location) {
@@ -211,7 +215,10 @@ export default function BillingAndReportingScreen() {
               )}
               <View style={styles.infoBit}>
                 <Text style={styles.infoLabel}>Price</Text>
-                <Text style={styles.infoValue}>$50/month</Text>
+                <Text style={styles.infoValue}>{FACILITY_PLAN_PRICE_DISPLAY}</Text>
+                <Text style={styles.billingNote}>
+                  {formatPlanBillingNote("facility", "yearly")}
+                </Text>
               </View>
             </View>
 
@@ -398,6 +405,11 @@ const styles = StyleSheet.create({
     fontSize: 16,
     fontWeight: "600",
     color: "#1f2937"
+  },
+  billingNote: {
+    color: "#6b7280",
+    fontSize: 12,
+    marginTop: 4
   },
   button: {
     paddingVertical: 14,

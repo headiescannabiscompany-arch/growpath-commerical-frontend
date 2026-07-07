@@ -2,6 +2,11 @@
 import React, { useState } from "react";
 import { View, Text } from "react-native";
 import PrimaryButton from "../components/PrimaryButton.js";
+import {
+  COMMERCIAL_PLAN_PRICE_DISPLAY,
+  FACILITY_PLAN_PRICE_DISPLAY,
+  PRO_PLAN_PRICE_DISPLAY
+} from "../constants/pricing.js";
 
 const slides = [
   {
@@ -21,7 +26,7 @@ const slides = [
   },
   {
     title: "Freemium Model",
-    body: "Cultivators get core features free. Industry partners pay $50/month for ads, courses, content showcase, and audience reach.",
+    body: `Core grow tracking starts free. Pro is ${PRO_PLAN_PRICE_DISPLAY}, Commercial is ${COMMERCIAL_PLAN_PRICE_DISPLAY}, and Facility is ${FACILITY_PLAN_PRICE_DISPLAY}.`,
     emoji: "💸"
   },
   {

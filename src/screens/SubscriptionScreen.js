@@ -3,6 +3,7 @@ import { Alert, Linking, ScrollView, Text, TouchableOpacity, View } from "react-
 
 import { createCheckoutSession } from "../api/subscription";
 import ScreenContainer from "../components/ScreenContainer";
+import { PRO_PLAN_PRICE_DISPLAY, formatPlanBillingNote } from "../constants/pricing";
 import { spacing } from "../theme/theme";
 import { openExternalUrl } from "../utils/openExternalUrl";
 
@@ -74,11 +75,8 @@ export default function SubscriptionScreen({ navigation }) {
         </View>
 
         <View style={styles.pricingCard}>
-          <View style={styles.priceRow}>
-            <Text style={styles.currency}>$</Text>
-            <Text style={styles.price}>10</Text>
-            <Text style={styles.period}>/month</Text>
-          </View>
+          <Text style={styles.priceDisplay}>{PRO_PLAN_PRICE_DISPLAY}</Text>
+          <Text style={styles.billingNote}>{formatPlanBillingNote("pro", "yearly")}</Text>
           <Text style={styles.billingNote}>Cancel anytime. No commitment.</Text>
         </View>
 
@@ -206,26 +204,12 @@ const styles = {
     borderWidth: 2,
     borderColor: "#10B981"
   },
-  priceRow: {
-    flexDirection: "row",
-    alignItems: "flex-start",
-    marginBottom: 8
-  },
-  currency: {
-    fontSize: 28,
-    fontWeight: "700",
-    color: "#111827",
-    marginTop: 8
-  },
-  price: {
-    fontSize: 56,
+  priceDisplay: {
+    fontSize: 32,
     fontWeight: "800",
-    color: "#111827"
-  },
-  period: {
-    fontSize: 20,
-    color: "#6B7280",
-    marginTop: 28
+    color: "#111827",
+    marginBottom: 8,
+    textAlign: "center"
   },
   billingNote: {
     fontSize: 14,
