@@ -109,7 +109,7 @@ export default function CommercialTrialsRoute() {
           <Text style={styles.title}>Product Trials</Text>
           <Text style={styles.subtitle}>
             Track product effectiveness over time by linking products, formulas, batches,
-            and commercial grows.
+            and product trial grows.
           </Text>
           <View style={styles.headerActions}>
             <Link href="/home/personal/grows/new" asChild>

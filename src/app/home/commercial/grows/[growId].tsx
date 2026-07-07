@@ -16,7 +16,7 @@ function cleanId(value: unknown) {
 }
 
 function titleFor(grow: CommercialGrow | null) {
-  return grow?.name || grow?.growName || "Commercial Grow";
+  return grow?.name || grow?.growName || "Product Trial Grow";
 }
 
 function DetailRow({ label, value }: { label: string; value?: unknown }) {
@@ -99,7 +99,7 @@ export default function CommercialGrowDetailRoute({ route }: { route?: any } = {
         notes: notes.trim()
       });
       hydrate(updated);
-      setMessage("Commercial grow updated.");
+      setMessage("Product trial grow updated.");
     } catch (err) {
       setError(err);
     } finally {
@@ -113,28 +113,28 @@ export default function CommercialGrowDetailRoute({ route }: { route?: any } = {
       longContent
       header={
         <View style={styles.header}>
-          <Text style={styles.kicker}>Commercial grow workspace</Text>
+          <Text style={styles.kicker}>Product trial grow workspace</Text>
           <Text style={styles.title}>{titleFor(grow)}</Text>
           <Text style={styles.subtitle}>
-            Keep the grow as the private source of truth, then connect product, batch,
-            formula, trial, public-share, feed, and report workflows around it.
+            Keep the grow as the private evidence source, then connect product, batch,
+            formula, trial, public-share, feed campaign, and report workflows around it.
           </Text>
           <View style={styles.actions}>
-            <ActionLink href="/home/commercial/grows" label="All Grows" />
+            <ActionLink href="/home/commercial/grows" label="All Trial Grows" />
             <ActionLink href="/home/personal/grows" label="Pro Grow Workspace" />
             <ActionLink href="/home/commercial/trials" label="Product Trials" />
           </View>
         </View>
       }
     >
-      {loading ? <Text style={styles.muted}>Loading commercial grow...</Text> : null}
+      {loading ? <Text style={styles.muted}>Loading product trial grow...</Text> : null}
       {error ? <InlineError error={error} /> : null}
 
       <AppCard>
         <Text style={styles.cardTitle}>Commercial Context</Text>
         <Text style={styles.body}>
           This layer tracks why the grow exists commercially: product trial, soil trial,
-          demo grow, genetics test, plant inventory grow, or private business grow.
+          demo grow, genetics test, plant inventory evidence, or private business proof.
         </Text>
         <View style={styles.detailGrid}>
           <DetailRow label="Purpose" value={grow?.purpose} />
@@ -193,7 +193,7 @@ export default function CommercialGrowDetailRoute({ route }: { route?: any } = {
           publicly.
         </Text>
         <TextInput
-          accessibilityLabel="Commercial grow harvest quality notes"
+          accessibilityLabel="Product trial grow harvest quality notes"
           multiline
           onChangeText={setHarvestQualityNotes}
           placeholder="Aroma, flavor, resin, yield, trim quality, dry/cure notes, defects, customer-facing quality notes..."
@@ -209,7 +209,7 @@ export default function CommercialGrowDetailRoute({ route }: { route?: any } = {
           and cautious enough for storefront, feed, trial, or course use.
         </Text>
         <TextInput
-          accessibilityLabel="Commercial grow crop summary"
+          accessibilityLabel="Product trial grow crop summary"
           multiline
           onChangeText={setCommercialCropSummary}
           placeholder="Commercial summary: product/batch used, crop outcome, quality result, limitations, next run changes..."
@@ -222,14 +222,14 @@ export default function CommercialGrowDetailRoute({ route }: { route?: any } = {
         <Text style={styles.cardTitle}>Update Grow Status</Text>
         <View style={styles.formGrid}>
           <TextInput
-            accessibilityLabel="Commercial grow detail status"
+            accessibilityLabel="Product trial grow detail status"
             onChangeText={setStatus}
             placeholder="active, completed, archived"
             style={styles.input}
             value={status}
           />
           <TextInput
-            accessibilityLabel="Commercial grow detail public share status"
+            accessibilityLabel="Product trial grow detail public share status"
             onChangeText={setPublicShareStatus}
             placeholder="private, evidence_building, public_ready"
             style={styles.input}
@@ -237,7 +237,7 @@ export default function CommercialGrowDetailRoute({ route }: { route?: any } = {
           />
         </View>
         <TextInput
-          accessibilityLabel="Commercial grow detail notes"
+          accessibilityLabel="Product trial grow detail notes"
           multiline
           onChangeText={setNotes}
           placeholder="Commercial notes, publishability, evidence gaps, or next checks"
@@ -246,7 +246,7 @@ export default function CommercialGrowDetailRoute({ route }: { route?: any } = {
         />
         {message ? <Text style={styles.success}>{message}</Text> : null}
         <Pressable
-          accessibilityLabel="Save commercial grow detail"
+          accessibilityLabel="Save product trial grow detail"
           accessibilityRole="button"
           disabled={saving || !growId}
           onPress={saveChanges}

@@ -137,10 +137,10 @@ export default function CommercialGrowsRoute() {
         <View style={styles.header}>
           <View style={styles.headerText}>
             <Text style={styles.kicker}>Commercial workspace</Text>
-            <Text style={styles.title}>Grows & Product Trials</Text>
+            <Text style={styles.title}>Product Trial Grows</Text>
             <Text style={styles.subtitle}>
-              Commercial accounts keep the same grow operating system as Pro, then add
-              product trials, formula tests, demo grows, and public reporting.
+              Commercial accounts use grow records only when they support product trials,
+              formula tests, demos, and evidence-backed public reporting.
             </Text>
             <Text style={styles.accountLine}>
               {[auth.user?.email, `${ent.plan || "commercial"} plan`]
@@ -157,16 +157,16 @@ export default function CommercialGrowsRoute() {
       }
     >
       <AppCard>
-        <Text style={styles.cardTitle}>Commercial grow workspace</Text>
+        <Text style={styles.cardTitle}>Trial evidence workspace</Text>
         <Text style={styles.body}>
-          Use grows to track plants, logs, tasks, photos, diagnosis, crop steering,
-          dry/cure, and run-to-run comparisons. Commercial metadata links a grow to
-          products, formulas, batches, and trial reports.
+          Use product trial grows to track plants, logs, tasks, photos, diagnosis, crop
+          steering, dry/cure, and run-to-run comparisons. Commercial metadata links the
+          evidence back to products, formulas, batches, and trial reports.
         </Text>
         <View style={styles.metricGrid}>
           <View style={styles.metric}>
             <Text style={styles.metricValue}>{grows.length}</Text>
-            <Text style={styles.metricLabel}>Commercial grows</Text>
+            <Text style={styles.metricLabel}>Trial grows</Text>
           </View>
           <View style={styles.metric}>
             <Text style={styles.metricValue}>{activeCount}</Text>
@@ -177,56 +177,58 @@ export default function CommercialGrowsRoute() {
             <Text style={styles.metricLabel}>Public-ready</Text>
           </View>
         </View>
-        {loading ? <Text style={styles.muted}>Loading commercial grows...</Text> : null}
+        {loading ? (
+          <Text style={styles.muted}>Loading product trial grows...</Text>
+        ) : null}
         {error ? <InlineError error={error} /> : null}
       </AppCard>
 
       <AppCard>
-        <Text style={styles.cardTitle}>Create Commercial Grow / Trial</Text>
+        <Text style={styles.cardTitle}>Create Product Trial Grow</Text>
         <Text style={styles.body}>
-          Start with grow anchors, then add business context: product line, product,
+          Start with trial anchors, then add business context: product line, product,
           batch, formula version, purpose, and public-share intent.
         </Text>
         <View style={styles.formGrid}>
           <TextInput
             value={form.name}
             onChangeText={(name) => setForm((prev) => ({ ...prev, name }))}
-            accessibilityLabel="Commercial grow name"
-            placeholder="Grow or trial name"
+            accessibilityLabel="Product trial grow name"
+            placeholder="Trial grow name"
             style={styles.input}
           />
           <TextInput
             value={form.purpose}
             onChangeText={(purpose) => setForm((prev) => ({ ...prev, purpose }))}
-            accessibilityLabel="Commercial grow purpose"
+            accessibilityLabel="Product trial grow purpose"
             placeholder="Purpose: product_trial, soil_trial, demo_grow..."
             style={styles.input}
           />
           <TextInput
             value={form.cropType}
             onChangeText={(cropType) => setForm((prev) => ({ ...prev, cropType }))}
-            accessibilityLabel="Commercial grow crop type"
+            accessibilityLabel="Product trial grow crop type"
             placeholder="Crop type"
             style={styles.input}
           />
           <TextInput
             value={form.cultivar}
             onChangeText={(cultivar) => setForm((prev) => ({ ...prev, cultivar }))}
-            accessibilityLabel="Commercial grow cultivar"
+            accessibilityLabel="Product trial grow cultivar"
             placeholder="Cultivar / plant line"
             style={styles.input}
           />
           <TextInput
             value={form.medium}
             onChangeText={(medium) => setForm((prev) => ({ ...prev, medium }))}
-            accessibilityLabel="Commercial grow medium"
+            accessibilityLabel="Product trial grow medium"
             placeholder="Medium"
             style={styles.input}
           />
           <TextInput
             value={form.plantCount}
             onChangeText={(plantCount) => setForm((prev) => ({ ...prev, plantCount }))}
-            accessibilityLabel="Commercial grow plant count"
+            accessibilityLabel="Product trial grow plant count"
             keyboardType="numeric"
             placeholder="Plant count"
             style={styles.input}
@@ -234,7 +236,7 @@ export default function CommercialGrowsRoute() {
           <TextInput
             value={form.productId}
             onChangeText={(productId) => setForm((prev) => ({ ...prev, productId }))}
-            accessibilityLabel="Commercial grow product id"
+            accessibilityLabel="Product trial grow product id"
             placeholder="Linked product ID"
             style={styles.input}
           />
@@ -243,14 +245,14 @@ export default function CommercialGrowsRoute() {
             onChangeText={(productLineId) =>
               setForm((prev) => ({ ...prev, productLineId }))
             }
-            accessibilityLabel="Commercial grow product line id"
+            accessibilityLabel="Product trial grow product line id"
             placeholder="Linked product line ID"
             style={styles.input}
           />
           <TextInput
             value={form.batchId}
             onChangeText={(batchId) => setForm((prev) => ({ ...prev, batchId }))}
-            accessibilityLabel="Commercial grow batch id"
+            accessibilityLabel="Product trial grow batch id"
             placeholder="Linked batch ID"
             style={styles.input}
           />
@@ -259,7 +261,7 @@ export default function CommercialGrowsRoute() {
             onChangeText={(formulaVersion) =>
               setForm((prev) => ({ ...prev, formulaVersion }))
             }
-            accessibilityLabel="Commercial grow formula version"
+            accessibilityLabel="Product trial grow formula version"
             placeholder="Formula version"
             style={styles.input}
           />
@@ -269,7 +271,7 @@ export default function CommercialGrowsRoute() {
           onChangeText={(measurementPlan) =>
             setForm((prev) => ({ ...prev, measurementPlan }))
           }
-          accessibilityLabel="Commercial grow measurement plan"
+          accessibilityLabel="Product trial grow measurement plan"
           multiline
           placeholder="Measurement plan: pH/EC, vigor, diagnosis, steering, harvest, dry/cure, final quality"
           style={[styles.input, styles.textArea]}
@@ -277,7 +279,7 @@ export default function CommercialGrowsRoute() {
         <TextInput
           value={form.notes}
           onChangeText={(notes) => setForm((prev) => ({ ...prev, notes }))}
-          accessibilityLabel="Commercial grow notes"
+          accessibilityLabel="Product trial grow notes"
           multiline
           placeholder="Notes and public-share context"
           style={[styles.input, styles.textArea]}
@@ -285,7 +287,7 @@ export default function CommercialGrowsRoute() {
         <View style={styles.actions}>
           <Pressable
             accessibilityRole="button"
-            accessibilityLabel="Create commercial grow"
+            accessibilityLabel="Create product trial grow"
             disabled={saving || !form.name.trim()}
             onPress={submitGrow}
             style={[
@@ -294,12 +296,12 @@ export default function CommercialGrowsRoute() {
             ]}
           >
             <Text style={styles.primaryActionText}>
-              {saving ? "Creating..." : "Create Commercial Grow"}
+              {saving ? "Creating..." : "Create Product Trial Grow"}
             </Text>
           </Pressable>
           <Pressable
             accessibilityRole="button"
-            accessibilityLabel="Toggle commercial grow public share status"
+            accessibilityLabel="Toggle product trial grow public share status"
             onPress={() =>
               setForm((prev) => ({
                 ...prev,
@@ -319,7 +321,7 @@ export default function CommercialGrowsRoute() {
       </AppCard>
 
       <AppCard>
-        <Text style={styles.cardTitle}>Current commercial grows</Text>
+        <Text style={styles.cardTitle}>Current product trial grows</Text>
         {grows.length ? (
           <View style={styles.list}>
             {grows.map((grow) => (
@@ -361,15 +363,16 @@ export default function CommercialGrowsRoute() {
             ))}
           </View>
         ) : (
-          <Text style={styles.muted}>No commercial grows yet.</Text>
+          <Text style={styles.muted}>No product trial grows yet.</Text>
         )}
       </AppCard>
 
       <AppCard>
         <Text style={styles.cardTitle}>Pro workflow retained</Text>
         <Text style={styles.body}>
-          Commercial users should not lose Pro grow behavior. Grows remain the anchor for
-          plant records, logs, tool runs, tasks, photos, and reports.
+          Commercial users should not lose Pro grow behavior. Product trial grows remain
+          the evidence anchor for plant records, logs, tool runs, tasks, photos, and
+          reports when commercial proof is needed.
         </Text>
         <View style={styles.actions}>
           <ActionLink href="/home/personal/grows" label="Open grow list" />
@@ -377,10 +380,10 @@ export default function CommercialGrowsRoute() {
       </AppCard>
 
       <AppCard>
-        <Text style={styles.cardTitle}>Commercial evidence layer</Text>
+        <Text style={styles.cardTitle}>Product trial evidence layer</Text>
         <Text style={styles.body}>
-          Commercial grows add product, batch, formula, and public-report context on top
-          of the normal grow workspace. The private grow record remains the source of
+          Product trial grows add product, batch, formula, and public-report context on
+          top of the normal grow workspace. The private grow record remains the source of
           truth.
         </Text>
         <Text style={styles.bullet}>
