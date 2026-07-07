@@ -4,6 +4,37 @@ import BackendCalculatorToolScreen, {
   tomorrow
 } from "@/features/personal/tools/BackendCalculatorToolScreen";
 
+function firstText(...values: unknown[]) {
+  for (const value of values) {
+    const text = String(value || "").trim();
+    if (text) return text;
+  }
+  return "";
+}
+
+function verificationAnswer(verification: any) {
+  return firstText(
+    verification?.answer,
+    verification?.summary,
+    verification?.finding,
+    verification?.result,
+    verification?.message
+  );
+}
+
+function growPathAnswer(outputs: any) {
+  return firstText(
+    outputs.growPathAi?.answer,
+    outputs.growPathAI?.answer,
+    outputs.growpathAI?.answer,
+    outputs.growPathDiagnosis,
+    outputs.aiDiagnosis,
+    outputs.diagnosis,
+    outputs.summary,
+    outputs.suspectedIssue
+  );
+}
+
 export default function IpmScoutToolRoute() {
   return (
     <BackendCalculatorToolScreen
@@ -43,9 +74,18 @@ export default function IpmScoutToolRoute() {
         { key: "severity", label: "Severity", value: outputs.severity },
         { key: "confidence", label: "Confidence", value: outputs.confidence },
         {
+          key: "growpath-ai-answer",
+          label: "GrowPath AI",
+          value: growPathAnswer(outputs) || "-",
+          detail: "Primary scout answer"
+        },
+        {
           key: "verification",
-          label: "GPT check",
-          value: outputs.gptVerification?.status || "pending"
+          label: "GPT verification",
+          value: verificationAnswer(outputs.gptVerification) || "pending",
+          detail: outputs.gptVerification?.status
+            ? `Status: ${outputs.gptVerification.status}`
+            : "Separate verification result"
         },
         {
           key: "record",
@@ -66,7 +106,15 @@ export default function IpmScoutToolRoute() {
               {
                 key: "gpt-verification",
                 severity: "info" as const,
-                message: `GPT verification status: ${outputs.gptVerification.status}. Save this ToolRun so the GrowPathAI scout answer and GPT review can be documented together.`
+                message: [
+                  `GPT verification status: ${outputs.gptVerification.status}.`,
+                  verificationAnswer(outputs.gptVerification)
+                    ? `GPT review: ${verificationAnswer(outputs.gptVerification)}`
+                    : "",
+                  "Save this ToolRun so the GrowPath AI scout answer and GPT review can be documented together."
+                ]
+                  .filter(Boolean)
+                  .join(" ")
               }
             ]
           : [])

@@ -1,0 +1,127 @@
+import React from "react";
+import { fireEvent, render, waitFor } from "@testing-library/react-native";
+
+import IpmScoutToolRoute from "@/app/home/personal/(tabs)/tools/ipm-scout";
+
+const mockRunCalculator = jest.fn();
+const mockCreateGrowpathModuleRecord = jest.fn();
+
+jest.mock("expo-router", () => ({
+  useLocalSearchParams: () => ({ growId: "grow-1" }),
+  useRouter: () => ({
+    back: jest.fn(),
+    canGoBack: jest.fn(() => true),
+    push: jest.fn(),
+    replace: jest.fn()
+  })
+}));
+
+jest.mock("@/entitlements", () => ({
+  useEntitlements: () => ({
+    plan: "pro",
+    mode: "personal",
+    can: () => true
+  })
+}));
+
+jest.mock("@/components/feed/FeedBanner", () => {
+  const React = require("react");
+  const { View } = require("react-native");
+  return () => React.createElement(View, { testID: "feed-banner" });
+});
+
+jest.mock("@/features/personal/tools/ToolPlantContextPicker", () => {
+  const React = require("react");
+  const { View } = require("react-native");
+  return {
+    ToolPlantContextPicker: () => React.createElement(View, { testID: "plant-picker" }),
+    useToolPlantContext: () => ({
+      plants: [],
+      plantId: "",
+      selectedPlant: null,
+      setPlantId: jest.fn(),
+      toolRunContext: { selectedPlantContext: null }
+    })
+  };
+});
+
+jest.mock("@/api/toolRuns", () => ({
+  runCalculator: (...args: any[]) => mockRunCalculator(...args)
+}));
+
+jest.mock("@/api/growpathModules", () => ({
+  createGrowpathModuleRecord: (...args: any[]) => mockCreateGrowpathModuleRecord(...args)
+}));
+
+jest.mock("@/features/personal/tools/saveToolRunAndOpenJournal", () => ({
+  saveToolRunAndCreateLog: jest.fn(),
+  saveToolRunAndCreateTask: jest.fn()
+}));
+
+describe("IpmScoutToolRoute", () => {
+  beforeEach(() => {
+    jest.resetAllMocks();
+    mockRunCalculator.mockResolvedValue({
+      outputs: {
+        suspectedIssue: "Possible spider mite pressure",
+        suspectedOrganism: "spider mites",
+        severity: "medium",
+        confidence: "moderate",
+        growPathAi: {
+          answer:
+            "GrowPath AI sees stippling and recommends confirming leaf undersides before treatment."
+        },
+        gptVerification: {
+          status: "completed",
+          answer:
+            "GPT verification agrees mites are plausible but says to verify eggs or moving pests first."
+        },
+        documentation: { savedAs: "ToolRun" }
+      },
+      toolRun: { id: "toolrun-1", _id: "toolrun-1" }
+    });
+    mockCreateGrowpathModuleRecord.mockResolvedValue({ id: "module-record-1" });
+  });
+
+  it("shows GrowPath AI and GPT verification answers from the IPM ToolRun", async () => {
+    const screen = render(<IpmScoutToolRoute />);
+
+    fireEvent.changeText(
+      screen.getByLabelText("IPM Scout Pest or organism seen"),
+      "mites"
+    );
+    fireEvent.changeText(
+      screen.getByLabelText("IPM Scout Evidence / notes, comma-separated"),
+      "stippling, leaf underside specks"
+    );
+    fireEvent.press(screen.getByLabelText("Run IPM Scout"));
+
+    await waitFor(() =>
+      expect(mockRunCalculator).toHaveBeenCalledWith(
+        "ipm-scout",
+        expect.objectContaining({
+          growId: "grow-1",
+          pestSeen: "mites",
+          evidence: "stippling, leaf underside specks"
+        })
+      )
+    );
+
+    await waitFor(() => expect(screen.getByText("IPM Scout result")).toBeTruthy());
+    expect(screen.getByText("GrowPath AI")).toBeTruthy();
+    expect(
+      screen.getByText(
+        "GrowPath AI sees stippling and recommends confirming leaf undersides before treatment."
+      )
+    ).toBeTruthy();
+    expect(screen.getByText("GPT verification")).toBeTruthy();
+    expect(
+      screen.getByText(
+        "GPT verification agrees mites are plausible but says to verify eggs or moving pests first."
+      )
+    ).toBeTruthy();
+    expect(
+      screen.getByText(/Save this ToolRun so the GrowPath AI scout answer and GPT review/)
+    ).toBeTruthy();
+  });
+});
