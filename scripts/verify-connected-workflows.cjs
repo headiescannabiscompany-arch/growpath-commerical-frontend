@@ -36,6 +36,7 @@ const checks = [
       "tests/unit/CommercialFeedRoute.test.tsx",
       "tests/unit/feedPolicy.test.ts",
       "tests/unit/PersonalFeedPlacement.test.tsx",
+      "tests/unit/ForumFeedSeparationRoutes.test.tsx",
       "tests/unit/CommercialLivesRoute.test.tsx",
       "tests/unit/AppPageBackBehavior.test.tsx",
       "tests/unit/FacilityRoomsRoute.test.tsx",

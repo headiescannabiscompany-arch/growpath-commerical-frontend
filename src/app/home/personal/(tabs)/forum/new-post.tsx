@@ -92,7 +92,10 @@ export default function ForumNewPostRoute() {
       <ScrollView style={styles.container} contentContainerStyle={styles.content}>
         <View>
           <Text style={styles.title}>New Discussion</Text>
-          <Text style={styles.subtitle}>Create a forum post for the community feed.</Text>
+          <Text style={styles.subtitle}>
+            Create a forum discussion or Q&A post. Product, course, live, and storefront
+            promotions belong in Feed / Campaigns.
+          </Text>
           <PersonalFeedPlacement
             placement="top"
             routeKey="personal_forum_new_post"
@@ -120,7 +123,7 @@ export default function ForumNewPostRoute() {
         <TextInput
           value={body}
           onChangeText={setBody}
-          placeholder="Write your update..."
+          placeholder="Write your question or discussion..."
           multiline
           editable={!submitting && canPost}
           style={[styles.input, styles.bodyInput]}

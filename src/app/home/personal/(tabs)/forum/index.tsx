@@ -85,7 +85,9 @@ export default function ForumRoute() {
         <View>
           <Text style={styles.title}>Forum</Text>
           <Text style={styles.subtitle}>
-            Community discussions from the forum endpoint.
+            Discussion, Q&A, grow help, course/product/live questions, and community
+            replies. Promotional feed placements around this page are campaign ads, not
+            forum threads.
           </Text>
         </View>
         {canPost ? (
