@@ -2,6 +2,7 @@ import { Link } from "expo-router";
 import React, { useEffect, useMemo, useState } from "react";
 import { Image, Pressable, StyleSheet, Text, TextInput, View } from "react-native";
 
+import { apiRequest } from "@/api/apiRequest";
 import { createProduct, fetchProducts, Product } from "@/api/products";
 import { InlineError } from "@/components/InlineError";
 import AppCard from "@/components/layout/AppCard";
@@ -150,6 +151,8 @@ export default function CommercialProductsRoute({
   const [form, setForm] = useState<ProductForm>(EMPTY_FORM);
   const [loading, setLoading] = useState(false);
   const [saving, setSaving] = useState(false);
+  const [creatingTaskForProductId, setCreatingTaskForProductId] = useState("");
+  const [feedback, setFeedback] = useState("");
   const [error, setError] = useState<any>(null);
 
   const publishedCount = useMemo(
@@ -223,6 +226,39 @@ export default function CommercialProductsRoute({
     }
   }
 
+  async function createProductSetupTask(product: Product, missing: string[]) {
+    const id = productId(product);
+    if (!id || !missing.length || creatingTaskForProductId) return;
+    setCreatingTaskForProductId(String(id));
+    setFeedback("");
+    setError(null);
+    try {
+      await apiRequest("/api/tasks", {
+        method: "POST",
+        body: {
+          workspaceType: "commercial",
+          title: `Complete product setup: ${product.name || "Product"}`,
+          description: `Missing setup: ${missing.join(", ")}.`,
+          sourceType: "product",
+          sourceId: String(id),
+          linkedProductId: String(id),
+          priority:
+            missing.includes("checkout") || missing.includes("published")
+              ? "high"
+              : "normal",
+          status: "open",
+          dueAt: new Date().toISOString().slice(0, 10),
+          reminderPlan: { label: "24 hours before", channels: ["in_app"] }
+        }
+      });
+      setFeedback(`Created setup task for ${product.name || "product"}.`);
+    } catch (err) {
+      setError(err);
+    } finally {
+      setCreatingTaskForProductId("");
+    }
+  }
+
   return (
     <AppPage
       routeKey={routeKey}
@@ -280,6 +316,7 @@ export default function CommercialProductsRoute({
           </View>
         </View>
         {loading ? <Text style={styles.muted}>Loading products...</Text> : null}
+        {feedback ? <Text style={styles.feedback}>{feedback}</Text> : null}
         {error ? <InlineError error={error} /> : null}
       </AppCard>
 
@@ -497,6 +534,22 @@ export default function CommercialProductsRoute({
                             Missing {item}
                           </Text>
                         ))}
+                        <Pressable
+                          accessibilityRole="button"
+                          accessibilityLabel={`Create setup task for ${product.name || "product"}`}
+                          onPress={() => createProductSetupTask(product, missing)}
+                          disabled={creatingTaskForProductId === String(id)}
+                          style={[
+                            styles.miniAction,
+                            creatingTaskForProductId === String(id) && styles.disabled
+                          ]}
+                        >
+                          <Text style={styles.miniActionText}>
+                            {creatingTaskForProductId === String(id)
+                              ? "Creating..."
+                              : "Create Task"}
+                          </Text>
+                        </Pressable>
                       </View>
                     ) : (
                       <Text style={styles.readyText}>Storefront-ready product</Text>
@@ -804,6 +857,17 @@ const styles = StyleSheet.create({
     paddingHorizontal: 8,
     paddingVertical: 4
   },
+  miniAction: {
+    backgroundColor: "#111827",
+    borderRadius: 999,
+    paddingHorizontal: 9,
+    paddingVertical: 5
+  },
+  miniActionText: {
+    color: "#FFFFFF",
+    fontSize: 11,
+    fontWeight: "900"
+  },
   readyText: {
     color: "#166534",
     fontSize: 12,
@@ -825,6 +889,12 @@ const styles = StyleSheet.create({
   muted: {
     color: "#64748B",
     fontSize: 13,
+    marginTop: 10
+  },
+  feedback: {
+    color: "#166534",
+    fontSize: 13,
+    fontWeight: "800",
     marginTop: 10
   }
 });

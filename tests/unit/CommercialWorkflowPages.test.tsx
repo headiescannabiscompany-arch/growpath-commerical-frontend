@@ -185,6 +185,9 @@ describe("commercial workflow pages", () => {
       if (path === "/api/commercial/products" && options?.method === "POST") {
         return Promise.resolve({ product: { id: "product-new", ...options.body } });
       }
+      if (path === "/api/tasks" && options?.method === "POST") {
+        return Promise.resolve({ task: { id: "task-new", ...options.body } });
+      }
       if (path === "/api/commercial/products/product-1" && !options) {
         return Promise.resolve({
           product: {
@@ -1140,6 +1143,25 @@ describe("commercial workflow pages", () => {
       screen.getByLabelText("Toggle commercial product publish status").props
         .accessibilityState?.disabled
     ).toBe(true);
+    fireEvent.press(screen.getByLabelText("Create setup task for Living Soil Base"));
+    await waitFor(() =>
+      expect(mockApiRequest).toHaveBeenCalledWith(
+        "/api/tasks",
+        expect.objectContaining({
+          method: "POST",
+          body: expect.objectContaining({
+            workspaceType: "commercial",
+            title: "Complete product setup: Living Soil Base",
+            sourceType: "product",
+            sourceId: "product-1",
+            linkedProductId: "product-1",
+            priority: "normal",
+            reminderPlan: { label: "24 hours before", channels: ["in_app"] }
+          })
+        })
+      )
+    );
+    expect(screen.getByText("Created setup task for Living Soil Base.")).toBeTruthy();
 
     fireEvent.changeText(screen.getByLabelText("Commercial product name"), "Bloom Mix");
     fireEvent.changeText(
