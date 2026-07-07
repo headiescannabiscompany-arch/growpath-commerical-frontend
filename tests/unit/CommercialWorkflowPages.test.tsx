@@ -117,7 +117,8 @@ describe("commercial workflow pages", () => {
               {
                 type: "product_missing_batch",
                 title: "Bloom Topdress",
-                priority: "medium"
+                priority: "medium",
+                productId: "product-1"
               }
             ],
             guidance: [
@@ -659,6 +660,9 @@ describe("commercial workflow pages", () => {
           }
         });
       }
+      if (path === "/api/tasks" && options?.method === "POST") {
+        return Promise.resolve({ task: { id: "task-dashboard", ...options.body } });
+      }
       return Promise.resolve({});
     });
   });
@@ -678,6 +682,29 @@ describe("commercial workflow pages", () => {
     expect(screen.getByText("Dashboard Guidance")).toBeTruthy();
     expect(screen.getAllByText("88").length).toBeGreaterThan(0);
     expect(screen.getAllByText("19").length).toBeGreaterThan(0);
+
+    fireEvent.press(
+      screen.getByLabelText("Create task for dashboard action Bloom Topdress")
+    );
+
+    await waitFor(() =>
+      expect(mockApiRequest).toHaveBeenCalledWith(
+        "/api/tasks",
+        expect.objectContaining({
+          method: "POST",
+          body: expect.objectContaining({
+            workspaceType: "commercial",
+            title: "Resolve dashboard action: Bloom Topdress",
+            sourceType: "product",
+            sourceId: "product-1",
+            linkedProductId: "product-1",
+            priority: "medium",
+            reminderPlan: { label: "24 hours before", channels: ["in_app"] }
+          })
+        })
+      )
+    );
+    expect(screen.getByText("Commercial dashboard task created.")).toBeTruthy();
   });
 
   it("creates brand community support posts with product links", async () => {

@@ -31,7 +31,12 @@ type DashboardModel = {
     type?: string;
     title?: string;
     priority?: string;
+    sourceId?: string;
     productId?: string;
+    productBatchId?: string;
+    courseId?: string;
+    liveId?: string;
+    storefrontId?: string;
     inventoryId?: string;
   }>;
   guidance?: string[];
@@ -207,6 +212,39 @@ function ActionButton({ action }: { action: Action }) {
   );
 }
 
+function actionItemSource(item: NonNullable<DashboardModel["actionItems"]>[number]) {
+  const type = String(item.type || "");
+  if (
+    item.productBatchId ||
+    type === "product_batch" ||
+    type.startsWith("product_batch_")
+  ) {
+    return {
+      sourceType: "product_batch",
+      sourceId: item.productBatchId || item.sourceId
+    };
+  }
+  if (item.productId || type.startsWith("product_")) {
+    return { sourceType: "product", sourceId: item.productId || item.sourceId };
+  }
+  if (item.courseId || type.includes("course")) {
+    return { sourceType: "course", sourceId: item.courseId || item.sourceId };
+  }
+  if (item.liveId || type.includes("live")) {
+    return { sourceType: "live", sourceId: item.liveId || item.sourceId };
+  }
+  if (item.storefrontId || type.includes("storefront")) {
+    return { sourceType: "storefront", sourceId: item.storefrontId || item.sourceId };
+  }
+  if (item.inventoryId || type.includes("inventory") || type.includes("stock")) {
+    return {
+      sourceType: "inventory",
+      sourceId: item.inventoryId || item.sourceId
+    };
+  }
+  return { sourceType: type || "commercial_dashboard", sourceId: item.sourceId };
+}
+
 function DashboardCard({
   section,
   counts
@@ -250,6 +288,8 @@ export default function CommercialHome() {
   const [dashboard, setDashboard] = useState<DashboardModel>({});
   const [loadingDashboard, setLoadingDashboard] = useState(false);
   const [dashboardError, setDashboardError] = useState<any>(null);
+  const [creatingActionTask, setCreatingActionTask] = useState("");
+  const [taskFeedback, setTaskFeedback] = useState("");
 
   const logout = React.useCallback(async () => {
     await auth.logout();
@@ -283,6 +323,46 @@ export default function CommercialHome() {
       storefrontConfigured: dashboard?.storefront?.slug ? 1 : 0
     };
   }, [dashboard]);
+
+  async function createActionItemTask(
+    item: NonNullable<DashboardModel["actionItems"]>[number],
+    index: number
+  ) {
+    const key = `${item.type || "dashboard"}-${item.sourceId || item.productId || item.inventoryId || index}`;
+    if (creatingActionTask) return;
+    const source = actionItemSource(item);
+    setCreatingActionTask(key);
+    setTaskFeedback("");
+    try {
+      await apiRequest("/api/tasks", {
+        method: "POST",
+        body: {
+          workspaceType: "commercial",
+          title: `Resolve dashboard action: ${item.title || "Commercial task"}`,
+          description: [
+            `Dashboard action type: ${item.type || "commercial_dashboard"}.`,
+            "Created from the commercial command center so storefront, product, course, live, inventory, and campaign gaps become trackable work."
+          ].join(" "),
+          sourceType: source.sourceType,
+          sourceId: source.sourceId || undefined,
+          linkedProductId: item.productId || undefined,
+          linkedProductBatchId: item.productBatchId || undefined,
+          linkedCourseId: item.courseId || undefined,
+          linkedLiveId: item.liveId || undefined,
+          linkedStorefrontId: item.storefrontId || undefined,
+          linkedInventoryId: item.inventoryId || undefined,
+          priority: item.priority === "critical" ? "critical" : item.priority || "normal",
+          status: "open",
+          reminderPlan: { label: "24 hours before", channels: ["in_app"] }
+        }
+      });
+      setTaskFeedback("Commercial dashboard task created.");
+    } catch {
+      setTaskFeedback("Unable to create dashboard task.");
+    } finally {
+      setCreatingActionTask("");
+    }
+  }
 
   if (!ent?.ready) return null;
   if (ent.mode !== "commercial") {
@@ -382,9 +462,21 @@ export default function CommercialHome() {
                 <Text style={styles.actionItemMeta}>
                   {item.type || "action"} | {item.priority || "normal"}
                 </Text>
+                <Pressable
+                  accessibilityRole="button"
+                  accessibilityLabel={`Create task for dashboard action ${item.title || index + 1}`}
+                  style={styles.taskButton}
+                  disabled={Boolean(creatingActionTask)}
+                  onPress={() => void createActionItemTask(item, index)}
+                >
+                  <Text style={styles.taskButtonText}>
+                    {creatingActionTask ? "Creating..." : "Create Task"}
+                  </Text>
+                </Pressable>
               </View>
             ))}
           </View>
+          {taskFeedback ? <Text style={styles.feedback}>{taskFeedback}</Text> : null}
         </AppCard>
       ) : null}
 
@@ -544,6 +636,29 @@ const styles = StyleSheet.create({
     fontSize: 12,
     fontWeight: "700",
     marginTop: 3
+  },
+  taskButton: {
+    alignSelf: "flex-start",
+    backgroundColor: "#166534",
+    borderRadius: 8,
+    marginTop: 8,
+    paddingHorizontal: 10,
+    paddingVertical: 7
+  },
+  taskButtonText: {
+    color: "#FFFFFF",
+    fontSize: 12,
+    fontWeight: "900"
+  },
+  feedback: {
+    backgroundColor: "#ECFDF5",
+    borderColor: "#A7F3D0",
+    borderRadius: 8,
+    borderWidth: 1,
+    color: "#166534",
+    fontWeight: "800",
+    marginTop: 10,
+    padding: 10
   },
   guidance: {
     color: "#475569",
