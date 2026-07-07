@@ -280,6 +280,41 @@ function npkRecipeTasks(args: {
   ];
 }
 
+function buildAiRecipeBrief(payload: Record<string, any>) {
+  const target = payload.targetNpk || {};
+  const products = Array.isArray(payload.products) ? payload.products : [];
+  const productLines = products.length
+    ? products.map((product: any, index: number) =>
+        [
+          `${index + 1}. ${product.name || "Unnamed ingredient"}`,
+          `${product.amount || 0}${product.unit || ""}`,
+          `label ${product.N || 0}-${product.P2O5 || 0}-${product.K2O || 0}`,
+          `elemental P ${product.elementalP || 0}`,
+          `elemental K ${product.elementalK || 0}`,
+          `release ${product.releaseSpeed || "unknown"} / ${product.releaseWindow || "unknown"}`,
+          product.densityAssumption
+        ]
+          .filter(Boolean)
+          .join(" | ")
+      )
+    : ["No ingredients entered yet."];
+
+  return [
+    "Help me build this GrowPath NPK / feed recipe conversationally.",
+    "Collect missing inputs, explain tradeoffs, and suggest adjustments, but do not invent final math.",
+    "Final nutrient totals, elemental P/K conversion, ppm, release timing, ToolRun saving, tasks, and product draft conversion must come from the deterministic NPK calculator.",
+    `Recipe: ${payload.name || "unnamed"}`,
+    `Mode: ${String(payload.recipeMode || "dose_existing_products").replaceAll("_", " ")}`,
+    `Stage: ${payload.stage || "unknown"} | Medium: ${payload.medium || "unknown"} | Batch: ${payload.batchVolume || 0} ${payload.batchUnit || ""}`,
+    `Target label N-P2O5-K2O: ${target.N ?? "-"}-${target.P ?? "-"}-${target.K ?? "-"}`,
+    `Desired release profile: ${payload.desiredReleaseProfile || "blended"}`,
+    `Water baseline: EC ${payload.waterBaseline?.sourceEC ?? "-"}, pH ${payload.waterBaseline?.sourcePH ?? "-"}, Ca ${payload.waterBaseline?.Ca ?? "-"}, Mg ${payload.waterBaseline?.Mg ?? "-"}`,
+    "Ingredients:",
+    ...productLines,
+    "Ask me for label density, source-water/soil-test data, compost uncertainty, stage constraints, and release timing when missing."
+  ].join("\n");
+}
+
 export default function NpkToolScreen() {
   const { growId, plantId } = useLocalSearchParams<{
     growId?: string | string[];
@@ -317,6 +352,7 @@ export default function NpkToolScreen() {
   const [result, setResult] = useState<any>(null);
   const [toolRun, setToolRun] = useState<ToolRun | null>(null);
   const [feedback, setFeedback] = useState("");
+  const [aiRecipeBrief, setAiRecipeBrief] = useState("");
   const [running, setRunning] = useState(false);
 
   useEffect(() => {
@@ -561,6 +597,22 @@ export default function NpkToolScreen() {
           deterministic tool preserves label N-P-K, converts P2O5/K2O for elemental math,
           tracks release timing, and saves the ToolRun for review.
         </Text>
+        <Pressable
+          accessibilityRole="button"
+          accessibilityLabel="Ask AI to build NPK recipe"
+          style={styles.secondaryButton}
+          onPress={() => setAiRecipeBrief(buildAiRecipeBrief(recipePayload()))}
+        >
+          <Text style={styles.secondaryButtonText}>Ask AI to Build Recipe</Text>
+        </Pressable>
+        {aiRecipeBrief ? (
+          <View style={styles.aiBriefBox}>
+            <Text style={styles.resultTitle}>AI recipe brief</Text>
+            <Text selectable style={styles.aiBriefText}>
+              {aiRecipeBrief}
+            </Text>
+          </View>
+        ) : null}
       </View>
       <PersonalFeedPlacement placement="top" routeKey="personal_tools_npk" longContent />
       {growContext ? (
@@ -1281,6 +1333,15 @@ const styles = StyleSheet.create({
     gap: 6,
     padding: 12
   },
+  aiBriefBox: {
+    backgroundColor: "white",
+    borderColor: "#CBD5E1",
+    borderRadius: 8,
+    borderWidth: 1,
+    marginTop: 8,
+    padding: 10
+  },
+  aiBriefText: { color: "#334155", fontSize: 12, lineHeight: 18, marginTop: 6 },
   volumeInput: {
     minWidth: 130,
     borderWidth: 1,

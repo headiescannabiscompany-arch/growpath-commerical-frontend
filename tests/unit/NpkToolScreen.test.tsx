@@ -197,6 +197,25 @@ describe("NpkToolScreen", () => {
     await waitFor(() => expect(screen.getByText("NPK recipe result")).toBeTruthy());
   });
 
+  it("builds an AI recipe brief from current labels without replacing calculator math", () => {
+    const screen = render(<NpkToolScreen />);
+
+    fireEvent.changeText(screen.getByPlaceholderText("e.g. Veg base"), "Kelp veg feed");
+    fireEvent.changeText(screen.getByPlaceholderText("Product name"), "Kelp meal");
+    fireEvent.changeText(screen.getByPlaceholderText("Amount"), "100");
+    fireEvent.changeText(screen.getByLabelText("NPK ingredient 1 N percent"), "3");
+    fireEvent.changeText(screen.getByLabelText("NPK ingredient 1 P2O5 percent"), "1");
+    fireEvent.changeText(screen.getByLabelText("NPK ingredient 1 K2O percent"), "2");
+
+    fireEvent.press(screen.getByLabelText("Ask AI to build NPK recipe"));
+
+    expect(screen.getByText("AI recipe brief")).toBeTruthy();
+    expect(screen.getByText(/Final nutrient totals, elemental P\/K conversion/)).toBeTruthy();
+    expect(screen.getByText(/Recipe: Kelp veg feed/)).toBeTruthy();
+    expect(screen.getByText(/1\. Kelp meal \| 100g \| label 3-1-2/)).toBeTruthy();
+    expect(screen.getByText(/Ask me for label density/)).toBeTruthy();
+  });
+
   it("creates a source-linked NPK recipe task plan from the saved ToolRun", async () => {
     const screen = render(<NpkToolScreen />);
 
