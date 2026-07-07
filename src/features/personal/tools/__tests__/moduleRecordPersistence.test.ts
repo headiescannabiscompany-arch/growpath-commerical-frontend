@@ -68,7 +68,9 @@ describe("moduleRecordPersistence", () => {
         growPathRuleResult: {
           suspectedIssues: [{ issueName: "thrips possible", category: "pest" }]
         },
-        aiVerificationResult: {
+        gptVerification: {
+          status: "completed",
+          agreementStatus: "partially_agrees",
           likelyIssues: [{ issueName: "possible thrips pressure", category: "pest" }]
         },
         taskSuggestions: [{ title: "Re-scout leaf undersides" }]
@@ -81,8 +83,16 @@ describe("moduleRecordPersistence", () => {
       suspectedIssues: [{ issueName: "thrips possible", category: "pest" }]
     });
     expect(payload?.aiVerificationResult).toEqual({
+      status: "completed",
+      agreementStatus: "partially_agrees",
       likelyIssues: [{ issueName: "possible thrips pressure", category: "pest" }]
     });
+    expect(payload?.outputs?.gptVerification).toEqual({
+      status: "completed",
+      agreementStatus: "partially_agrees",
+      likelyIssues: [{ issueName: "possible thrips pressure", category: "pest" }]
+    });
+    expect(payload?.agreementStatus).toBe("partially_agrees");
     expect(payload?.tasksToCreate?.[0].title).toBe("Re-scout leaf undersides");
   });
 });

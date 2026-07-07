@@ -80,7 +80,18 @@ export function buildModuleRecordInput({
         outputs
       : undefined;
   const aiVerificationResult =
-    recordType === "ipm_scout" ? outputs.aiVerificationResult || null : undefined;
+    recordType === "ipm_scout"
+      ? outputs.aiVerificationResult || outputs.gptVerification || null
+      : undefined;
+  const agreementStatus =
+    recordType === "ipm_scout"
+      ? firstString(
+          outputs.agreementStatus,
+          outputs.gptVerification?.agreementStatus,
+          outputs.gptVerification?.agreement,
+          outputs.verificationStatus
+        ) || undefined
+      : undefined;
 
   return {
     recordType,
@@ -104,6 +115,7 @@ export function buildModuleRecordInput({
     payload: outputs,
     localRuleResult,
     aiVerificationResult,
+    agreementStatus,
     warnings: compactStrings([outputs.warnings, outputs.stageTimingWarnings]),
     recommendations: compactStrings([outputs.recommendations, outputs.nextChecks]),
     confidence: firstString(outputs.confidence, outputs.sourceConfidence) || null,
