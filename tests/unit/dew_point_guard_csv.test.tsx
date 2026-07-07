@@ -201,7 +201,29 @@ describe("Dew Point Guard CSV flow", () => {
         type: "pulse",
         name: "Pulse Flower Room",
         timezone: "America/New_York",
-        config: { pulse: { apiKey: "PULSE-SECRET", deviceId: "pulse-1" } }
+        config: {
+          pulse: {
+            apiKey: "PULSE-SECRET",
+            deviceId: "pulse-1",
+            accountStructure: expect.objectContaining({
+              provider: "pulse",
+              permissionLevel: "read-only",
+              detectedRooms: 1,
+              detectedDevices: 1,
+              detectedStreams: 4,
+              rooms: [
+                expect.objectContaining({
+                  name: "Flower Room",
+                  type: "environment",
+                  devices: ["Flower Room"],
+                  metrics: ["air_temperature", "relative_humidity", "dew_point", "vpd"],
+                  permissionLevel: "read-only",
+                  provider: "pulse"
+                })
+              ]
+            })
+          }
+        }
       })
     );
   });

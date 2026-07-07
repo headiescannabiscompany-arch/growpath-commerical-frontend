@@ -158,6 +158,12 @@ function headerIndex(headers: string[], key: string): number {
 
 type PendingReading = { ts: string; tempF: number; rh: number };
 const CSV_MAX_ROWS = 5000;
+const PULSE_IMPORTED_METRICS = [
+  "air_temperature",
+  "relative_humidity",
+  "dew_point",
+  "vpd"
+];
 
 function hasTimezoneInfo(ts: string): boolean {
   return /(?:Z|[+-]\d{2}:\d{2})$/i.test(ts);
@@ -490,12 +496,35 @@ export default function DewPointGuardTool() {
     setCreatingSource(true);
     try {
       const selected = pulseDevices.find((d) => String(d.id) === selectedPulseDeviceId);
+      const selectedName = selected?.name || "Pulse device";
       const created = await createTelemetrySource({
         growId,
         type: "pulse",
         name: selected?.name ? `Pulse ${selected.name}` : "Pulse Telemetry",
         timezone: "America/New_York",
-        config: { pulse: { apiKey, deviceId: selectedPulseDeviceId } }
+        config: {
+          pulse: {
+            apiKey,
+            deviceId: selectedPulseDeviceId,
+            accountStructure: {
+              provider: "pulse",
+              permissionLevel: "read-only",
+              detectedRooms: 1,
+              detectedDevices: 1,
+              detectedStreams: PULSE_IMPORTED_METRICS.length,
+              rooms: [
+                {
+                  name: selectedName,
+                  type: "environment",
+                  devices: [selectedName],
+                  metrics: PULSE_IMPORTED_METRICS,
+                  permissionLevel: "read-only",
+                  provider: "pulse"
+                }
+              ]
+            }
+          }
+        }
       });
       setSources((prev) => [created, ...prev.filter((p) => p.id !== created.id)]);
       setSelectedSourceId(created.id);
