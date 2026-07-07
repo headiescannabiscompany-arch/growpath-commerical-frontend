@@ -1,6 +1,60 @@
 import React from "react";
 
-import BackendCalculatorToolScreen from "@/features/personal/tools/BackendCalculatorToolScreen";
+import BackendCalculatorToolScreen, {
+  tomorrow
+} from "@/features/personal/tools/BackendCalculatorToolScreen";
+import { saveToolRunAndCreateTasks } from "@/features/personal/tools/saveToolRunAndOpenJournal";
+
+function listSummary(value: unknown) {
+  return Array.isArray(value) && value.length ? value.slice(0, 4).join(", ") : "";
+}
+
+function nutrientSourceTaskPlan(outputs: Record<string, any>) {
+  const nutrient = String(outputs.nutrient || "nutrient");
+  const bestChoice = String(outputs.bestChoiceByIntent || "best-fit source");
+  const timingWarnings = listSummary(outputs.timingWarnings);
+  const phWarnings = listSummary(outputs.pHEffectWarnings);
+
+  return [
+    {
+      title: `Review ${nutrient} source choice`,
+      priority: timingWarnings || phWarnings ? ("high" as const) : ("medium" as const),
+      dueDate: tomorrow(1),
+      description: [
+        `Best choice by intent: ${bestChoice}.`,
+        timingWarnings ? `Timing warnings: ${timingWarnings}` : "",
+        phWarnings ? `pH warnings: ${phWarnings}` : ""
+      ]
+        .filter(Boolean)
+        .join("\n")
+    },
+    {
+      title: `Compare available ${nutrient} inputs`,
+      priority: "medium" as const,
+      dueDate: tomorrow(2),
+      description: [
+        listSummary(outputs.fastSources)
+          ? `Fast sources: ${listSummary(outputs.fastSources)}`
+          : "",
+        listSummary(outputs.mediumSources)
+          ? `Medium sources: ${listSummary(outputs.mediumSources)}`
+          : "",
+        listSummary(outputs.slowSources)
+          ? `Slow sources: ${listSummary(outputs.slowSources)}`
+          : ""
+      ]
+        .filter(Boolean)
+        .join("\n")
+    },
+    {
+      title: `Log ${nutrient} source result after application`,
+      priority: "medium" as const,
+      dueDate: tomorrow(7),
+      description:
+        "Record plant response, timing, pH/EC side effects, and whether this source should be reused in future recipes."
+    }
+  ];
+}
 
 export default function NutrientSourceComparisonToolScreen() {
   return (
@@ -76,6 +130,28 @@ export default function NutrientSourceComparisonToolScreen() {
           : [])
       ]}
       defaultLogTitle={(outputs) => `${outputs.nutrient || "Nutrient"} source comparison`}
+      buildActions={({ outputs, payload, toolRun, growId, plantContext }) => [
+        {
+          key: "create-source-comparison-tasks",
+          label: "Create Source Review Tasks",
+          variant: "secondary",
+          pendingLabel: "Creating...",
+          disabled: !growId,
+          successMessage: "Created source review tasks.",
+          onPress: async () => {
+            const result = await saveToolRunAndCreateTasks({
+              growId,
+              ...plantContext.toolRunContext,
+              toolKey: "nutrient-source-comparison",
+              toolRunId: toolRun?.id || toolRun?._id,
+              input: payload,
+              output: outputs,
+              tasks: nutrientSourceTaskPlan(outputs)
+            });
+            if (!result.ok) throw new Error(result.error);
+          }
+        }
+      ]}
     />
   );
 }
