@@ -250,7 +250,6 @@ export default function CommercialFeedRoute() {
   }, [allowedCampaignKinds, campaignKind]);
 
   const canAccess = ent.ready;
-  const canCreate = canManageCampaigns && body.trim().length > 0 && !creating;
   const readinessWarnings = campaignReadinessWarnings({
     campaignKind,
     linkedProductId,
@@ -261,6 +260,9 @@ export default function CommercialFeedRoute() {
     externalLinkUrl,
     imageUrl
   });
+  const canCreate =
+    canManageCampaigns && title.trim().length > 0 && body.trim().length > 0 && !creating;
+  const canPublishCampaign = canCreate && (isFacility || readinessWarnings.length === 0);
 
   const helper = useMemo(
     () =>
@@ -300,7 +302,7 @@ export default function CommercialFeedRoute() {
   }, [load]);
 
   async function createCampaign() {
-    if (!canCreate || !canManageCampaigns) return;
+    if (!canPublishCampaign || !canManageCampaigns) return;
     setCreating(true);
     setError(null);
     setFeedback("");
@@ -600,11 +602,11 @@ export default function CommercialFeedRoute() {
           ) : null}
           <Pressable
             onPress={createCampaign}
-            disabled={!canCreate}
+            disabled={!canPublishCampaign}
             accessibilityLabel={
               isFacility ? "Publish facility outreach" : "Publish feed campaign"
             }
-            style={[styles.primaryButton, !canCreate && styles.disabled]}
+            style={[styles.primaryButton, !canPublishCampaign && styles.disabled]}
           >
             <Text style={styles.primaryButtonText}>
               {creating

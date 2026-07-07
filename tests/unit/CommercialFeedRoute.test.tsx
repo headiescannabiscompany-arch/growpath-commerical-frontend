@@ -87,6 +87,9 @@ describe("CommercialFeedRoute", () => {
     expect(screen.queryByText("0 likes")).toBeNull();
     expect(screen.getByText("Live: live-1")).toBeTruthy();
     expect(screen.getByText("Forum/Q&A: thread-1")).toBeTruthy();
+    expect(
+      screen.getByLabelText("Publish feed campaign").props.accessibilityState?.disabled
+    ).toBe(true);
 
     fireEvent.press(screen.getByLabelText("View Live for Live soil demo"));
 
@@ -98,6 +101,9 @@ describe("CommercialFeedRoute", () => {
       screen.getByLabelText("Feed campaign body"),
       "RSVP for the live dry amendment recipe build."
     );
+    expect(
+      screen.getByLabelText("Publish feed campaign").props.accessibilityState?.disabled
+    ).toBe(true);
     fireEvent.changeText(screen.getByLabelText("Feed campaign tags"), "dry amendments");
     fireEvent.changeText(screen.getByLabelText("Linked live"), "live-demo-1");
     fireEvent.changeText(screen.getByLabelText("Linked forum thread"), "thread-q-and-a");
@@ -109,6 +115,9 @@ describe("CommercialFeedRoute", () => {
     await waitFor(() =>
       expect(screen.getByText("Campaign has destination and creative.")).toBeTruthy()
     );
+    expect(
+      screen.getByLabelText("Publish feed campaign").props.accessibilityState?.disabled
+    ).toBe(false);
 
     fireEvent.press(screen.getByLabelText("Publish feed campaign"));
 
