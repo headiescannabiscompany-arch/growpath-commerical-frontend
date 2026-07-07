@@ -55,6 +55,12 @@ type RoomImportPreview = {
   controllerName: string;
   devices: string[];
   metrics: string[];
+  sensorStreams: Array<{
+    providerMetricKey: string;
+    normalizedMetric: string;
+    suggestedRoomName: string;
+    suggestedDeviceName: string;
+  }>;
 };
 
 const metricPatterns: Array<[RegExp, string]> = [
@@ -145,12 +151,26 @@ function buildGrowlinkImportPreview(
           type: inferRoomType(roomName),
           controllerName,
           devices: [],
-          metrics: []
+          metrics: [],
+          sensorStreams: []
         } satisfies RoomImportPreview);
 
+      const moduleMetrics = inferMetrics(module, rawName);
       existing.devices = Array.from(new Set([...existing.devices, rawName]));
-      existing.metrics = Array.from(
-        new Set([...existing.metrics, ...inferMetrics(module, rawName)])
+      existing.metrics = Array.from(new Set([...existing.metrics, ...moduleMetrics]));
+      const nextStreams = moduleMetrics.map((metric) => ({
+        providerMetricKey: metric,
+        normalizedMetric: metric,
+        suggestedRoomName: roomName,
+        suggestedDeviceName: rawName
+      }));
+      existing.sensorStreams = Array.from(
+        new Map(
+          [...existing.sensorStreams, ...nextStreams].map((stream) => [
+            `${stream.suggestedDeviceName}:${stream.normalizedMetric}`,
+            stream
+          ])
+        ).values()
       );
       rooms.set(roomName, existing);
     });
