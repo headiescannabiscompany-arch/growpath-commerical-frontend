@@ -60,10 +60,10 @@ export const PAGE_REGISTRY_FACILITY = [
   },
   {
     name: "FacilityFeed",
-    label: "Feed",
-    icon: "newspaper-outline",
+    label: "Facility Outreach",
+    icon: "megaphone-outline",
     capabilityKey: "facility.feed",
-    component: require("../screens/FacilityFeedScreen").default
+    component: require("../app/feed").default
   },
   {
     name: "FacilityProfile",

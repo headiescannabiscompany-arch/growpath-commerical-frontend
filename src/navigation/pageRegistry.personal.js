@@ -67,10 +67,10 @@ export const PAGE_REGISTRY_PERSONAL = [
   },
   {
     name: "Feed",
-    label: "Feed",
+    label: "Campaigns",
     icon: "megaphone-outline",
     capabilityKey: "view.community.feed",
-    component: require("../screens/FeedScreen").default
+    component: require("../app/feed").default
   },
   {
     name: "Courses",

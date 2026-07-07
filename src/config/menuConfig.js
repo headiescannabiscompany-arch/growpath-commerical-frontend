@@ -14,13 +14,13 @@ export function getMenuItems({ capabilities, mode }) {
     });
   }
 
-  // Feed
+  // Feed / outreach campaigns. Forum/community discussions are separate.
   if (capabilities.canUseFeed) {
     items.push({
       key: "feed",
-      label: "Feed",
-      icon: "rss",
-      route: "FeedScreen"
+      label: "Campaigns",
+      icon: "megaphone",
+      route: "CommercialFeedRoute"
     });
   }
 

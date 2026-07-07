@@ -35,11 +35,11 @@ export const TAB_CONFIG = [
   },
   {
     key: "FeedTab",
-    label: "Feed",
+    label: "Campaigns",
     icon: "newspaper-outline",
     routeName: "FeedTab",
     requiredCaps: [CAPABILITIES.VIEW_FEED],
-    component: "FeedScreen"
+    component: "CommercialFeedRoute"
   },
   {
     key: "ForumTab",
