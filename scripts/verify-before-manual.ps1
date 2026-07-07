@@ -110,4 +110,6 @@ Write-Host "- Product: verify image, size/weight, grow interests, NPK, guarantee
 Write-Host "- Feed: confirm campaign cards behave as ads/outreach and CTA buttons open product/course/live/storefront/forum targets."
 Write-Host "- Forum: confirm discussion/Q&A remains separate from feed campaigns."
 Write-Host "- Facility: confirm room import preview can create rooms/devices from controller-style names."
-Write-Host "- AI/tool workflows: run Soil Builder, save ToolRun/log/task, and convert a recipe to product draft."
+Write-Host "- AI/tool workflows: run Soil Builder, NPK, Dry Amendment, Topdress, IPM Scout, Harvest Readiness, Dry/Cure, Tissue Culture, Clone Rooting, Auto Grow Calendar, Pheno Hunt, Genetics Inventory, and Nutrient Source Comparison; confirm each can save ToolRun/log/task where offered."
+Write-Host "- Recipe/product workflow: convert a recipe to product draft and verify generated specs stay attached."
+Write-Host "- Task review: confirm ToolRun-created tasks link back to the source grow/tool result and appear in Task Center/Schedule."
