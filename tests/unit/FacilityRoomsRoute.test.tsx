@@ -63,7 +63,10 @@ describe("FacilityRoomsTab", () => {
         id: "eq-existing",
         name: "Existing Dry Room Temp/RH",
         roomId: "room-existing",
-        type: "sensor"
+        type: "sensor",
+        status: "active",
+        provider: "Pulse",
+        metrics: ["air_temperature", "relative_humidity"]
       }
     ]);
     mockListBatchCycles.mockResolvedValue([]);
@@ -85,13 +88,17 @@ describe("FacilityRoomsTab", () => {
     fireEvent.changeText(screen.getByLabelText("Facility import provider"), "Pulse");
     fireEvent.changeText(
       screen.getByLabelText("Facility import device list"),
-      "Flower Room 1 Temp/RH\nFlower Room 1 CO2\nVeg Room Temp/RH\nExisting Dry Room Temp/RH"
+      "Flower Room 1 Temp/RH\nFlower Room 1 CO2\nFlower Room 1 Substrate EC\nFlower Room 1 Irrigation Alarm\nVeg Room Temp/RH\nExisting Dry Room Temp/RH"
     );
 
     expect(screen.getByText("Flower Room 1")).toBeTruthy();
     expect(screen.getByText("Veg Room")).toBeTruthy();
     expect(screen.getAllByText("Existing Dry Room").length).toBeGreaterThan(1);
     expect(screen.getByText(/air_temperature, relative_humidity, co2/)).toBeTruthy();
+    expect(screen.getByText(/substrate_ec, irrigation_event, sensor_alarm/)).toBeTruthy();
+    expect(
+      screen.getByText(/provider Pulse \| metrics air_temperature, relative_humidity/)
+    ).toBeTruthy();
 
     fireEvent.press(screen.getByLabelText("Create imported facility rooms"));
 
@@ -151,6 +158,38 @@ describe("FacilityRoomsTab", () => {
       })
     });
     expect(mockCreateEquipment).toHaveBeenCalledWith("facility-1", {
+      name: "Flower Room 1 Substrate EC",
+      type: "sensor",
+      roomId: "room-flower-room-1",
+      status: "active",
+      provider: "Pulse",
+      metrics: ["substrate_ec"],
+      integrationMapping: expect.objectContaining({
+        normalizedMetrics: ["substrate_ec"],
+        rawDeviceName: "Flower Room 1 Substrate EC",
+        sensorStreams: [
+          expect.objectContaining({
+            providerMetricKey: "substrate_ec",
+            normalizedMetric: "substrate_ec",
+            suggestedRoomName: "Flower Room 1",
+            suggestedDeviceName: "Flower Room 1 Substrate EC"
+          })
+        ]
+      })
+    });
+    expect(mockCreateEquipment).toHaveBeenCalledWith("facility-1", {
+      name: "Flower Room 1 Irrigation Alarm",
+      type: "sensor",
+      roomId: "room-flower-room-1",
+      status: "active",
+      provider: "Pulse",
+      metrics: ["irrigation_event", "sensor_alarm"],
+      integrationMapping: expect.objectContaining({
+        normalizedMetrics: ["irrigation_event", "sensor_alarm"],
+        rawDeviceName: "Flower Room 1 Irrigation Alarm"
+      })
+    });
+    expect(mockCreateEquipment).toHaveBeenCalledWith("facility-1", {
       name: "Veg Room Temp/RH",
       type: "sensor",
       roomId: "room-veg-room",
@@ -171,7 +210,7 @@ describe("FacilityRoomsTab", () => {
       expect.objectContaining({ name: "Existing Dry Room Temp/RH" })
     );
     await waitFor(() =>
-      expect(screen.getByText("Created 2 rooms and 3 devices from Pulse.")).toBeTruthy()
+      expect(screen.getByText("Created 2 rooms and 5 devices from Pulse.")).toBeTruthy()
     );
   });
 });

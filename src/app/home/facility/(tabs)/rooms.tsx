@@ -76,10 +76,48 @@ function inferRoomType(name: string) {
 function inferRoomName(raw: string) {
   return raw
     .replace(/\b(temp|temperature|rh|humidity|co2|vpd|sensor|probe)\b/gi, "")
+    .replace(
+      /\b(dew|point|ppfd|dli|substrate|soil|media|root|moisture|ec|ph|irrigation|watering|alarm|alert|pump|valve|reservoir|offline|fault)\b/gi,
+      ""
+    )
     .replace(/\b(controller|module|device|channel|monitor|light|fan|exhaust)\b/gi, "")
     .replace(/[-_:/|]+/g, " ")
     .replace(/\s+/g, " ")
     .trim();
+}
+
+function inferDeviceMetrics(raw: string) {
+  const lower = raw.toLowerCase();
+  return [
+    (lower.includes("temp") || lower.includes("temperature")) && "air_temperature",
+    (lower.includes("rh") || lower.includes("humidity")) && "relative_humidity",
+    (lower.includes("dew") || lower.includes("dewpoint")) && "dew_point",
+    lower.includes("co2") && "co2",
+    lower.includes("vpd") && "vpd",
+    lower.includes("ppfd") && "ppfd",
+    lower.includes("dli") && "dli",
+    lower.includes("light") && "light_status",
+    (lower.includes("substrate temp") || lower.includes("root temp")) &&
+      "substrate_temperature",
+    (lower.includes("substrate moisture") ||
+      lower.includes("soil moisture") ||
+      lower.includes("water content")) &&
+      "substrate_moisture",
+    (lower.includes("substrate ec") ||
+      lower.includes("pore ec") ||
+      lower.includes("media ec")) &&
+      "substrate_ec",
+    (lower.includes("substrate ph") ||
+      lower.includes("media ph") ||
+      lower.includes("reservoir ph")) &&
+      "substrate_ph",
+    (lower.includes("irrigation") || lower.includes("watering")) && "irrigation_event",
+    lower.includes("reservoir ec") && "reservoir_ec",
+    lower.includes("pump") && "pump_status",
+    lower.includes("valve") && "valve_status",
+    (lower.includes("alarm") || lower.includes("alert")) && "sensor_alarm",
+    (lower.includes("offline") || lower.includes("fault")) && "device_offline"
+  ].filter(Boolean) as string[];
 }
 
 function buildRoomImportPreview(rawText: string) {
@@ -106,15 +144,7 @@ function buildRoomImportPreview(rawText: string) {
         devices: [],
         metrics: []
       };
-      existing.devices = Array.from(new Set([...existing.devices, line]));
-      const lower = line.toLowerCase();
-      const metrics = [
-        lower.includes("temp") && "air_temperature",
-        (lower.includes("rh") || lower.includes("humidity")) && "relative_humidity",
-        lower.includes("co2") && "co2",
-        lower.includes("vpd") && "vpd",
-        lower.includes("light") && "light_status"
-      ].filter(Boolean) as string[];
+      const metrics = inferDeviceMetrics(line);
       if (!existing.devices.some((device) => device.name === line)) {
         existing.devices.push({ name: line, metrics });
       }
@@ -733,7 +763,16 @@ export default function FacilityRoomsTab() {
                   <View key={rowId(item) || item.name} style={styles.row}>
                     <Text style={styles.rowTitle}>{item.name || "Equipment"}</Text>
                     <Text style={styles.rowMeta}>
-                      {item.type || "type n/a"} | {item.status || "status n/a"}
+                      {[
+                        item.type || "type n/a",
+                        item.status || "status n/a",
+                        item.provider && `provider ${item.provider}`,
+                        Array.isArray((item as any).metrics) &&
+                          (item as any).metrics.length &&
+                          `metrics ${(item as any).metrics.join(", ")}`
+                      ]
+                        .filter(Boolean)
+                        .join(" | ")}
                     </Text>
                   </View>
                 ))
