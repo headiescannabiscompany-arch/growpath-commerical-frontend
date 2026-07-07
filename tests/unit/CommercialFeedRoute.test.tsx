@@ -97,6 +97,27 @@ describe("CommercialFeedRoute", () => {
     fireEvent.press(screen.getByLabelText("View Live for Live soil demo"));
 
     expect(mockPush).toHaveBeenCalledWith("/home/commercial/lives?liveId=live-1");
+    await waitFor(() =>
+      expect(mockApiRequest).toHaveBeenCalledWith(
+        "/api/commercial/analytics/events",
+        expect.objectContaining({
+          method: "POST",
+          body: expect.objectContaining({
+            eventType: "feed_campaign_click",
+            objectType: "feed_campaign",
+            objectId: "campaign-1",
+            targetUrl: "/home/commercial/lives?liveId=live-1",
+            source: "commercial_feed",
+            metadata: expect.objectContaining({
+              campaignKind: "Live event ad",
+              destinationLabel: "View Live",
+              linkedLiveId: "live-1",
+              linkedForumThreadId: "thread-1"
+            })
+          })
+        })
+      )
+    );
 
     fireEvent.press(screen.getByLabelText("Select Live event ad campaign type"));
     fireEvent.changeText(screen.getByLabelText("Feed campaign title"), "Friday mix demo");

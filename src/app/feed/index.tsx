@@ -14,6 +14,7 @@ import {
 import { Redirect, useRouter } from "expo-router";
 
 import { apiRequest } from "@/api/apiRequest";
+import { recordCommercialAnalyticsEvent } from "@/api/commercialAnalytics";
 import { InlineError } from "@/components/InlineError";
 import {
   createCommercialFeedPost,
@@ -422,6 +423,30 @@ export default function CommercialFeedRoute() {
     }
   }
 
+  function openCampaignDestination(
+    post: CommercialFeedPost,
+    destination: { label: string; href: string }
+  ) {
+    void recordCommercialAnalyticsEvent({
+      eventType: "feed_campaign_click",
+      objectType: "feed_campaign",
+      objectId: post.id,
+      storefrontSlug: post.storefrontSlug,
+      productId: post.linkedProductId,
+      targetUrl: destination.href,
+      source: "commercial_feed",
+      metadata: {
+        campaignKind: post.campaignKind || visibleCampaignType(post),
+        destinationLabel: destination.label,
+        linkedCourseId: post.linkedCourseId,
+        linkedLiveId: post.linkedLiveId,
+        linkedForumThreadId: post.linkedForumThreadId,
+        linkedGrowId: post.linkedGrowId
+      }
+    }).catch(() => undefined);
+    router.push(destination.href as any);
+  }
+
   if (!ent.ready) return null;
   if (!canAccess) return <Redirect href="/home/personal" />;
 
@@ -790,7 +815,7 @@ export default function CommercialFeedRoute() {
               <Pressable
                 accessibilityRole="button"
                 accessibilityLabel={`${destination.label} for ${post.title || "campaign"}`}
-                onPress={() => router.push(destination.href as any)}
+                onPress={() => openCampaignDestination(post, destination)}
                 style={styles.ctaButton}
               >
                 <Text style={styles.ctaButtonText}>{destination.label}</Text>
