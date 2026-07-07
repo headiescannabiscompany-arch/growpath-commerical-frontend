@@ -5,7 +5,13 @@ import CommercialFeedRoute from "@/app/feed";
 
 const mockApiRequest = jest.fn();
 const mockPersistImageUri = jest.fn();
+const mockPush = jest.fn();
 let mockMode = "commercial";
+
+jest.mock("expo-router", () => ({
+  Redirect: () => null,
+  useRouter: () => ({ push: mockPush })
+}));
 
 jest.mock("@/api/apiRequest", () => ({
   apiRequest: (...args: any[]) => mockApiRequest(...args)
@@ -40,6 +46,7 @@ describe("CommercialFeedRoute", () => {
     mockMode = "commercial";
     mockApiRequest.mockReset();
     mockPersistImageUri.mockReset();
+    mockPush.mockReset();
     mockPersistImageUri.mockImplementation(async (uri) => uri);
     mockApiRequest.mockImplementation((path: string, options?: any) => {
       if (path === "/api/commercial/feed") {
@@ -75,6 +82,10 @@ describe("CommercialFeedRoute", () => {
     expect(screen.getByText(/Feed is advertising and outreach/i)).toBeTruthy();
     expect(screen.getByText("Live: live-1")).toBeTruthy();
     expect(screen.getByText("Forum/Q&A: thread-1")).toBeTruthy();
+
+    fireEvent.press(screen.getByLabelText("View Live for Live soil demo"));
+
+    expect(mockPush).toHaveBeenCalledWith("/home/commercial/lives?liveId=live-1");
 
     fireEvent.press(screen.getByLabelText("Select Live event ad campaign type"));
     fireEvent.changeText(screen.getByLabelText("Feed campaign title"), "Friday mix demo");

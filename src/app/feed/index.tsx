@@ -11,7 +11,7 @@ import {
   TextInput,
   View
 } from "react-native";
-import { Redirect } from "expo-router";
+import { Redirect, useRouter } from "expo-router";
 
 import { InlineError } from "@/components/InlineError";
 import {
@@ -140,7 +140,52 @@ function splitTags(value: string) {
     .filter(Boolean);
 }
 
+function campaignDestination(post: CommercialFeedPost) {
+  if (post.linkedProductId) {
+    const productId = encodeURIComponent(String(post.linkedProductId));
+    if (post.storefrontSlug) {
+      const slug = encodeURIComponent(String(post.storefrontSlug));
+      return {
+        label: "View Product",
+        href: `/store/${slug}/products/${productId}`
+      };
+    }
+    return {
+      label: "View Product",
+      href: `/home/commercial/products/${productId}`
+    };
+  }
+  if (post.linkedCourseId) {
+    return {
+      label: "View Course",
+      href: `/home/commercial/courses/${encodeURIComponent(String(post.linkedCourseId))}`
+    };
+  }
+  if (post.linkedLiveId) {
+    return {
+      label: "View Live",
+      href: `/home/commercial/lives?liveId=${encodeURIComponent(String(post.linkedLiveId))}`
+    };
+  }
+  if (post.storefrontSlug) {
+    return {
+      label: "Visit Storefront",
+      href: `/store/${encodeURIComponent(String(post.storefrontSlug))}`
+    };
+  }
+  if (post.linkedForumThreadId) {
+    return {
+      label: "Open Forum Q&A",
+      href: `/home/personal/forum/post/${encodeURIComponent(
+        String(post.linkedForumThreadId)
+      )}`
+    };
+  }
+  return null;
+}
+
 export default function CommercialFeedRoute() {
+  const router = useRouter();
   const ent = useEntitlements();
   const isFacility = ent.mode === "facility";
   const isCommercial = ent.mode === "commercial";
@@ -579,61 +624,78 @@ export default function CommercialFeedRoute() {
         </View>
       ) : null}
 
-      {items.map((post) => (
-        <View key={post.id} style={styles.post}>
-          <View style={styles.postHeader}>
-            <Text style={styles.typePill}>{post.type}</Text>
-            <Text style={styles.likes}>{Number(post.likeCount || 0)} likes</Text>
-          </View>
-          <Text style={styles.postTitle}>{post.title || "Feed campaign"}</Text>
-          {campaignImage(post) ? (
-            <Image
-              source={{ uri: campaignImage(post) }}
-              style={styles.feedImage}
-              resizeMode="cover"
-              accessibilityLabel={`${post.title || "Feed campaign"} image`}
-            />
-          ) : null}
-          <Text style={styles.postBody}>{post.body}</Text>
-          {post.tags.length ? (
-            <Text style={styles.tags}>{post.tags.map((tag) => `#${tag}`).join(" ")}</Text>
-          ) : null}
-          {post.linkedProductId ||
-          post.linkedCourseId ||
-          post.linkedLiveId ||
-          post.linkedGrowId ||
-          post.linkedForumThreadId ||
-          post.storefrontSlug ||
-          post.externalLinks?.length ? (
-            <View style={styles.linkMetaRow}>
-              {post.linkedProductId ? (
-                <Text style={styles.linkMeta}>Product: {post.linkedProductId}</Text>
-              ) : null}
-              {post.linkedCourseId ? (
-                <Text style={styles.linkMeta}>Course: {post.linkedCourseId}</Text>
-              ) : null}
-              {post.linkedLiveId ? (
-                <Text style={styles.linkMeta}>Live: {post.linkedLiveId}</Text>
-              ) : null}
-              {post.linkedGrowId ? (
-                <Text style={styles.linkMeta}>Grow/trial: {post.linkedGrowId}</Text>
-              ) : null}
-              {post.linkedForumThreadId ? (
-                <Text style={styles.linkMeta}>Forum/Q&A: {post.linkedForumThreadId}</Text>
-              ) : null}
-              {post.storefrontSlug ? (
-                <Text style={styles.linkMeta}>Store: {post.storefrontSlug}</Text>
-              ) : null}
-              {post.externalLinks?.map((link) => (
-                <Text key={`${link.label}-${link.url}`} style={styles.linkMeta}>
-                  {link.label}: {link.url}
-                </Text>
-              ))}
+      {items.map((post) => {
+        const destination = campaignDestination(post);
+        return (
+          <View key={post.id} style={styles.post}>
+            <View style={styles.postHeader}>
+              <Text style={styles.typePill}>{post.type}</Text>
+              <Text style={styles.likes}>{Number(post.likeCount || 0)} likes</Text>
             </View>
-          ) : null}
-          <Text style={styles.meta}>{campaignMeta(post)}</Text>
-        </View>
-      ))}
+            <Text style={styles.postTitle}>{post.title || "Feed campaign"}</Text>
+            {campaignImage(post) ? (
+              <Image
+                source={{ uri: campaignImage(post) }}
+                style={styles.feedImage}
+                resizeMode="cover"
+                accessibilityLabel={`${post.title || "Feed campaign"} image`}
+              />
+            ) : null}
+            <Text style={styles.postBody}>{post.body}</Text>
+            {post.tags.length ? (
+              <Text style={styles.tags}>
+                {post.tags.map((tag) => `#${tag}`).join(" ")}
+              </Text>
+            ) : null}
+            {post.linkedProductId ||
+            post.linkedCourseId ||
+            post.linkedLiveId ||
+            post.linkedGrowId ||
+            post.linkedForumThreadId ||
+            post.storefrontSlug ||
+            post.externalLinks?.length ? (
+              <View style={styles.linkMetaRow}>
+                {post.linkedProductId ? (
+                  <Text style={styles.linkMeta}>Product: {post.linkedProductId}</Text>
+                ) : null}
+                {post.linkedCourseId ? (
+                  <Text style={styles.linkMeta}>Course: {post.linkedCourseId}</Text>
+                ) : null}
+                {post.linkedLiveId ? (
+                  <Text style={styles.linkMeta}>Live: {post.linkedLiveId}</Text>
+                ) : null}
+                {post.linkedGrowId ? (
+                  <Text style={styles.linkMeta}>Grow/trial: {post.linkedGrowId}</Text>
+                ) : null}
+                {post.linkedForumThreadId ? (
+                  <Text style={styles.linkMeta}>
+                    Forum/Q&A: {post.linkedForumThreadId}
+                  </Text>
+                ) : null}
+                {post.storefrontSlug ? (
+                  <Text style={styles.linkMeta}>Store: {post.storefrontSlug}</Text>
+                ) : null}
+                {post.externalLinks?.map((link) => (
+                  <Text key={`${link.label}-${link.url}`} style={styles.linkMeta}>
+                    {link.label}: {link.url}
+                  </Text>
+                ))}
+              </View>
+            ) : null}
+            {destination ? (
+              <Pressable
+                accessibilityRole="button"
+                accessibilityLabel={`${destination.label} for ${post.title || "campaign"}`}
+                onPress={() => router.push(destination.href as any)}
+                style={styles.ctaButton}
+              >
+                <Text style={styles.ctaButtonText}>{destination.label}</Text>
+              </Pressable>
+            ) : null}
+            <Text style={styles.meta}>{campaignMeta(post)}</Text>
+          </View>
+        );
+      })}
     </ScrollView>
   );
 }
@@ -780,5 +842,16 @@ const styles = StyleSheet.create({
     paddingHorizontal: 8,
     paddingVertical: 4
   },
+  ctaButton: {
+    alignItems: "center",
+    alignSelf: "flex-start",
+    backgroundColor: "#0F766E",
+    borderRadius: 8,
+    minHeight: 40,
+    justifyContent: "center",
+    paddingHorizontal: 14,
+    paddingVertical: 10
+  },
+  ctaButtonText: { color: "white", fontWeight: "900" },
   meta: { color: "#64748B", fontSize: 12, fontWeight: "700" }
 });
