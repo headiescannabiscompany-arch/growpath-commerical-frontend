@@ -1489,6 +1489,10 @@ describe("commercial workflow pages", () => {
 
     await waitFor(() => expect(screen.getByText("Seedling Safety")).toBeTruthy());
     expect(screen.getByText("Linked Commercial Evidence")).toBeTruthy();
+    expect(screen.getByText("Claim Readiness")).toBeTruthy();
+    expect(screen.getByText("Evidence building")).toBeTruthy();
+    expect(screen.getByText("Missing complete trial")).toBeTruthy();
+    expect(screen.getByText("Missing add measurement data")).toBeTruthy();
     expect(screen.getByText("Claim-Safe AI Review")).toBeTruthy();
     expect(screen.getByText("Publish Path")).toBeTruthy();
     expect(

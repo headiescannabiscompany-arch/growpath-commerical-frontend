@@ -27,6 +27,27 @@ function splitLines(value: string) {
     .filter(Boolean);
 }
 
+function trialClaimWarnings(trial: ProductTrial | null) {
+  const warnings: string[] = [];
+  const review = trial?.AIReview || trial?.aiReview || {};
+  const measurements = trial?.measurements || {};
+  if (trial?.status !== "complete") warnings.push("complete trial");
+  if (!trial?.productId) warnings.push("link product");
+  if (!trial?.batchId) warnings.push("link batch/lot");
+  if (!trial?.growId) warnings.push("link evidence run");
+  if (!trial?.effectivenessSummary?.trim()) warnings.push("add effectiveness summary");
+  if (!trial?.harvestQualityNotes?.trim()) warnings.push("add harvest quality notes");
+  if (!trial?.commercialCropSummary?.trim()) warnings.push("add crop summary");
+  if (!review.summary?.trim()) warnings.push("save AI review summary");
+  if (!Array.isArray(review.evidence) || !review.evidence.length) {
+    warnings.push("save AI review evidence");
+  }
+  if (!measurements?.pHChecks && !measurements?.ecChecks && !measurements?.yieldData) {
+    warnings.push("add measurement data");
+  }
+  return warnings;
+}
+
 function DetailRow({ label, value }: { label: string; value?: unknown }) {
   const display = String(value || "").trim();
   if (!display) return null;
@@ -144,6 +165,7 @@ export default function CommercialTrialDetailRoute({ route }: { route?: any } = 
   }
 
   const measurements = trial?.measurements || {};
+  const claimWarnings = trialClaimWarnings(trial);
   const evidenceCount = [
     trial?.productId,
     trial?.productLineId,
@@ -224,6 +246,34 @@ export default function CommercialTrialDetailRoute({ route }: { route?: any } = 
           <ActionLink href="/home/commercial/batch-planner" label="Batch Planner" />
           <ActionLink href="/home/commercial/analytics" label="Analytics" />
         </View>
+      </AppCard>
+
+      <AppCard>
+        <View style={styles.cardHeader}>
+          <Text style={styles.cardTitle}>Claim Readiness</Text>
+          <Text style={[styles.statusPill, !claimWarnings.length && styles.readyPill]}>
+            {claimWarnings.length ? "Evidence building" : "Claim-ready"}
+          </Text>
+        </View>
+        <Text style={styles.body}>
+          Trials stay private evidence until completion, linked product/batch/grow
+          records, measurement data, summaries, and AI review evidence support the public
+          claim.
+        </Text>
+        {claimWarnings.length ? (
+          <View style={styles.warningBox}>
+            {claimWarnings.map((warning) => (
+              <Text key={warning} style={styles.warningText}>
+                Missing {warning}
+              </Text>
+            ))}
+          </View>
+        ) : (
+          <Text style={styles.success}>
+            This trial has the minimum support for cautious storefront, course, feed, or
+            forum proof points.
+          </Text>
+        )}
       </AppCard>
 
       <AppCard>
@@ -364,6 +414,12 @@ const styles = StyleSheet.create({
   },
   title: { color: "#0F172A", fontSize: 28, fontWeight: "900" },
   subtitle: { color: "#475569", lineHeight: 21 },
+  cardHeader: {
+    alignItems: "center",
+    flexDirection: "row",
+    gap: 10,
+    justifyContent: "space-between"
+  },
   cardTitle: { color: "#0F172A", fontSize: 17, fontWeight: "900" },
   body: { color: "#475569", fontSize: 14, lineHeight: 21, marginTop: 8 },
   muted: { color: "#64748B", fontSize: 13 },
@@ -414,6 +470,19 @@ const styles = StyleSheet.create({
   primaryActionText: { color: "#FFFFFF", fontSize: 13, fontWeight: "900" },
   disabled: { opacity: 0.55 },
   success: { color: "#166534", fontSize: 13, fontWeight: "800", marginTop: 8 },
+  statusPill: {
+    backgroundColor: "#FEF3C7",
+    borderRadius: 999,
+    color: "#92400E",
+    fontSize: 12,
+    fontWeight: "900",
+    overflow: "hidden",
+    paddingHorizontal: 9,
+    paddingVertical: 4
+  },
+  readyPill: { backgroundColor: "#DCFCE7", color: "#166534" },
+  warningBox: { gap: 6, marginTop: 10 },
+  warningText: { color: "#92400E", fontSize: 13, fontWeight: "700" },
   bullet: {
     color: "#334155",
     fontSize: 13,
