@@ -230,7 +230,7 @@ export default function CommercialProductLinesRoute() {
             Linked courses and grow/product trial evidence
           </Text>
           <Text style={styles.bullet}>
-            Feed posts and support threads related to the line
+            Feed campaigns and support threads related to the line
           </Text>
         </View>
       </AppCard>

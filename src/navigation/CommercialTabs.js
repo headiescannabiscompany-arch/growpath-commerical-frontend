@@ -20,7 +20,7 @@ export default function CommercialTabs() {
       <Tab.Screen
         name="CommercialGrows"
         component={CommercialGrowsRoute}
-        options={{ title: "Grows & Trials" }}
+        options={{ title: "Evidence & Trials" }}
       />
       <Tab.Screen
         name="CommercialProducts"
@@ -30,7 +30,7 @@ export default function CommercialTabs() {
       <Tab.Screen
         name="CommercialFeed"
         component={CommercialFeedRoute}
-        options={{ title: "Feed" }}
+        options={{ title: "Feed / Campaigns" }}
       />
       <Tab.Screen
         name="CommercialProfile"

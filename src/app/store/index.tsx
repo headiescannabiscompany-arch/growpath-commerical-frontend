@@ -88,7 +88,7 @@ export default function StoreIndex() {
       <AppCard>
         <Text style={styles.cardTitle}>Public brand profiles</Text>
         <Text style={styles.cardText}>
-          Commercial profiles can be opened from feed posts, forum content, products,
+          Commercial profiles can be opened from feed campaigns, forum content, products,
           courses, and storefront links. A profile gives users a public brand page with a
           direct path to the store.
         </Text>

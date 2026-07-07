@@ -407,7 +407,7 @@ export default function StorefrontScreen() {
           style={[styles.input, styles.textArea]}
         />
         <Text style={styles.meta}>
-          Public users can find this profile from feed posts, forum replies, products,
+          Public users can find this profile from feed campaigns, forum replies, products,
           courses, similar brand links, and public store pages.
         </Text>
         <View style={styles.rowBetween}>

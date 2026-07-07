@@ -312,7 +312,7 @@ export default function Profile() {
           <AppCard style={styles.card}>
             <Text style={styles.cardTitle}>Commercial business identity</Text>
             <Text style={styles.cardText}>
-              Manage the public brand details users see from storefronts, feed posts,
+              Manage the public brand details users see from storefronts, feed campaigns,
               forum replies, courses, and product pages.
             </Text>
             <View style={styles.factGrid}>
