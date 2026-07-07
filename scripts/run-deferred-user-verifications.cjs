@@ -31,7 +31,18 @@ const checks = [
       "tests/navigation/commercialTabs.test.js",
       "tests/navigation/commercialPageRegistry.test.js",
       "tests/navigation/feedForumSeparationNavigation.test.js",
+      "tests/navigation/routeAccess.test.ts",
       "tests/unit/CommercialWorkflowPages.test.tsx",
+      "tests/unit/CommercialFeedRoute.test.tsx",
+      "tests/unit/CommercialLivesRoute.test.tsx",
+      "tests/unit/StorefrontRoute.test.tsx",
+      "tests/unit/NpkToolScreen.test.tsx",
+      "tests/unit/HomeScheduleRoute.test.tsx",
+      "tests/unit/AlertCenterRoute.test.tsx",
+      "tests/unit/PersonalTaskCenterRoute.test.tsx",
+      "tests/unit/CommercialTasksRoute.test.tsx",
+      "tests/unit/FacilityRoomsRoute.test.tsx",
+      "src/config/__tests__/featureStatus.test.ts",
       "tests/unit/SchedulePicker.test.tsx",
       "tests/unit/AppPageBackBehavior.test.tsx"
     ]
@@ -58,16 +69,17 @@ const manualChecks = [
     area: "Storefront and commercial readiness",
     checks: [
       "Open Commercial > Storefront and verify Storefront is a top-level destination with View as User and setup status.",
+      "From Commercial > Storefront, verify product, course, live, campaign, and Q&A cards link back to their owner workspaces.",
       "Open Commercial > Orders from the commercial tab/dashboard and verify it stays inside /home/commercial/orders with no root-page back arrow.",
       "Open Commercial > Products and verify product cards feed the public storefront and batches/trials/inventory are product support surfaces.",
-      "Open Commercial > Courses and a course detail; verify setup warnings and paid Stripe readiness before publish.",
+      "Open Commercial > Courses and a course detail; verify thumbnail, banner, category, grow interests, setup warnings, and paid Stripe readiness before publish.",
       "Open Commercial > Lives; verify Twitch channel/embed/EventSub warnings and reminder-plan language."
     ]
   },
   {
     area: "Tools to work",
     checks: [
-      "Run NPK / Feed Recipe Builder with label N-P2O5-K2O values and verify elemental P/K, density assumptions, release timing, ToolRun tasks, and product draft conversion.",
+      "Run NPK / Feed Recipe Builder with label N-P2O5-K2O values and verify elemental P/K, density assumptions, release timing, the AI recipe brief, ToolRun tasks, and product draft conversion.",
       "Run Soil Builder and Dry Amendment Mix Builder and verify release charts, recipe timeline tasks, and product-draft conversion.",
       "Run IPM Scout and verify GrowPath AI and GPT verification are shown and saved together."
     ]
@@ -136,7 +148,7 @@ function renderChecklist() {
     "## Notes",
     "",
     "- Facility visual quality should be applied across Personal/Pro and Commercial UI, not kept only in Facility.",
-    "- Known non-blocking current test noise: some facility tests may emit React act(...) warnings while still passing.",
+    "- Known non-blocking current test noise: some facility and NPK tests may emit React act(...) warnings while still passing.",
     ""
   );
 
