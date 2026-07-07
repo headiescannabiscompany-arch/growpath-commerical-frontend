@@ -146,4 +146,27 @@ describe("SoilNutrientBatchToolRoute", () => {
       )
     );
   });
+
+  it("builds an AI soil batch brief without replacing production math", () => {
+    const screen = render(<SoilNutrientBatchToolRoute />);
+
+    fireEvent.changeText(
+      screen.getByLabelText("Soil & Nutrient Batch Planner Purpose"),
+      "seedling"
+    );
+    fireEvent.changeText(
+      screen.getByLabelText("Soil & Nutrient Batch Planner Recipe ID or name"),
+      "Base Soil Mix"
+    );
+
+    fireEvent.press(screen.getByLabelText("Ask AI to plan soil nutrient batch"));
+
+    expect(screen.getByText("AI soil batch brief")).toBeTruthy();
+    expect(screen.getByText(/Purpose\/stage: seedling \/ seedling/)).toBeTruthy();
+    expect(screen.getByText(/Recipe: Base Soil Mix/)).toBeTruthy();
+    expect(screen.getByText(/Compost: 40 gal, cost 80, label 1-1-1/)).toBeTruthy();
+    expect(
+      screen.getByText(/call the Soil & Nutrient Batch Planner for final bag count/)
+    ).toBeTruthy();
+  });
 });

@@ -116,6 +116,42 @@ function soilBatchTaskPlan(outputs: Record<string, any>) {
   ];
 }
 
+function buildSoilBatchAssistantBrief(payload: Record<string, any>) {
+  const ingredients = Array.isArray(payload.ingredients) ? payload.ingredients : [];
+  const ingredientLines = ingredients.length
+    ? ingredients
+        .slice(0, 12)
+        .map(
+          (row: any, index: number) =>
+            `${index + 1}. ${row.name || "Unnamed"}: ${row.quantity || row.amount || 0} ${
+              row.unit || "units"
+            }, cost ${row.cost ?? 0}, label ${row.N ?? 0}-${row.P2O5 ?? 0}-${
+              row.K2O ?? 0
+            }, release ${row.releaseClass || "unknown"}, confidence ${
+              row.sourceConfidence || "unknown"
+            }`
+        )
+        .join("\n")
+    : "No ingredient rows entered yet.";
+
+  return [
+    "AI Soil & Nutrient Batch brief",
+    "",
+    "Role: help the user scale the recipe into a production batch, but call the Soil & Nutrient Batch Planner for final bag count, guaranteed-analysis estimate, costs, warnings, ToolRun saving, and production task plan.",
+    `Purpose/stage: ${payload.purpose || "not set"} / ${payload.stage || "not set"}`,
+    `Recipe: ${payload.recipeId || "not set"}`,
+    `Batch volume: ${payload.batchVolume || "-"} with ${payload.bagSize || "-"} bag size`,
+    `Labor cost: ${payload.laborCost || 0}`,
+    `Packaging cost: ${payload.packagingCost || 0}`,
+    `Shrinkage: ${payload.shrinkagePercent || 0}%`,
+    `Target margin: ${payload.targetMarginPercent || 0}%`,
+    "Ingredients:",
+    ingredientLines,
+    "",
+    "Explain ingredient pull-list risk, QA/label needs, batch/lot documentation, whether the mix is too hot for the purpose, and whether the result should update grow notes, facility production records, or a commercial product draft after user approval."
+  ].join("\n");
+}
+
 export default function SoilNutrientBatchToolRoute() {
   return (
     <BackendCalculatorToolScreen
@@ -211,6 +247,15 @@ export default function SoilNutrientBatchToolRoute() {
         description:
           "Pull ingredients, mix batch, record bag count, update inventory, and log actuals."
       })}
+      assistantBrief={{
+        title: "AI-guided, calculator-verified",
+        description:
+          "Ask AI to help scale the recipe into a production workflow, pull list, QA checklist, or commercial/facility handoff. The batch planner remains the source of truth for bag count, analysis, costs, warnings, and tasks.",
+        buttonLabel: "Ask AI to Plan Batch",
+        accessibilityLabel: "Ask AI to plan soil nutrient batch",
+        briefTitle: "AI soil batch brief",
+        buildBrief: ({ payload }) => buildSoilBatchAssistantBrief(payload)
+      }}
       buildActions={({ outputs, payload, toolRun, growId, plantContext }) => [
         {
           key: "create-soil-batch-tasks",
