@@ -3,6 +3,62 @@ import React from "react";
 import BackendCalculatorToolScreen, {
   tomorrow
 } from "@/features/personal/tools/BackendCalculatorToolScreen";
+import { saveToolRunAndCreateTasks } from "@/features/personal/tools/saveToolRunAndOpenJournal";
+
+function normalizePriority(
+  value: unknown,
+  fallback: "low" | "medium" | "high" = "medium"
+) {
+  return value === "low" || value === "medium" || value === "high" ? value : fallback;
+}
+
+function stressTestTaskPlan(outputs: Record<string, any>) {
+  const highRisk = outputs.riskLevel === "high";
+  const shouldRetest = Boolean(outputs.selectionSignals?.rejectOrRetest);
+  const stressLabel = outputs.stressType || "stress";
+  const responseScore =
+    outputs.stressResponseScore === undefined
+      ? "not scored"
+      : String(outputs.stressResponseScore);
+
+  const tasks = [
+    {
+      title: outputs.taskSuggestion?.title || "Recheck stress recovery",
+      priority: normalizePriority(
+        outputs.taskSuggestion?.priority,
+        highRisk ? "high" : "medium"
+      ),
+      dueDate: tomorrow(outputs.taskSuggestion?.dueInDays || 2),
+      description:
+        "Review recovery, new damage, photos, and stability signals before changing keeper decisions."
+    },
+    {
+      title: "Update pheno stress score",
+      priority: shouldRetest ? "high" : "medium",
+      dueDate: tomorrow(3),
+      description: `Record ${stressLabel} recovery status, stress response score (${responseScore}), keeper impact, and clone/mother implications.`
+    },
+    {
+      title: "Compare stress response to selection plan",
+      priority: shouldRetest ? "high" : "medium",
+      dueDate: tomorrow(5),
+      description:
+        "Decide whether this plant should stay keeper/watch/reject, whether the stress should be retested, and whether clones need extra observation."
+    }
+  ];
+
+  if (outputs.selectionSignals?.cropSteeringCandidate) {
+    tasks.push({
+      title: "Flag crop steering candidate notes",
+      priority: "medium",
+      dueDate: tomorrow(7),
+      description:
+        "Save why this plant handled stress well enough for future crop steering or production-run testing."
+    });
+  }
+
+  return tasks;
+}
 
 export default function StressTestToolRoute() {
   return (
@@ -112,6 +168,28 @@ export default function StressTestToolRoute() {
         description:
           "Review recovery, new damage, photos, and stability signals before changing keeper decisions."
       })}
+      buildActions={({ outputs, payload, toolRun, growId, plantContext }) => [
+        {
+          key: "create-stress-follow-up-tasks",
+          label: "Create Stress Follow-up Tasks",
+          variant: "secondary",
+          pendingLabel: "Creating...",
+          disabled: !growId,
+          successMessage: "Created stress follow-up tasks.",
+          onPress: async () => {
+            const result = await saveToolRunAndCreateTasks({
+              growId,
+              ...plantContext.toolRunContext,
+              toolKey: "stress-test",
+              input: payload,
+              output: outputs,
+              toolRunId: toolRun?.id || toolRun?._id,
+              tasks: stressTestTaskPlan(outputs)
+            });
+            if (!result.ok) throw new Error(result.error);
+          }
+        }
+      ]}
     />
   );
 }
