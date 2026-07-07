@@ -142,6 +142,30 @@ function campaignIsActive(campaign: AnyRec) {
   return ["active", "published", "scheduled", "live"].includes(status);
 }
 
+function storefrontPublishBlockers(args: {
+  draft: AnyRec;
+  publishedProducts: AnyRec[];
+  courses: AnyRec[];
+  lives: AnyRec[];
+  campaigns: AnyRec[];
+}) {
+  const blockers: string[] = [];
+  if (!hasText(args.draft.name)) blockers.push("add brand name");
+  if (!hasText(args.draft.slug)) blockers.push("add public slug");
+  if (!hasText(args.draft.logoUrl)) blockers.push("add logo");
+  if (!hasText(args.draft.bannerUrl)) blockers.push("add banner");
+  if (!hasText(args.draft.description)) blockers.push("add description");
+  if (
+    !args.publishedProducts.length &&
+    !args.courses.length &&
+    !args.lives.length &&
+    !args.campaigns.length
+  ) {
+    blockers.push("add a product, course, live, or campaign");
+  }
+  return blockers;
+}
+
 function PublicPreviewLink({ href, label }: { href: string; label: string }) {
   return (
     <Link href={href as any} asChild>
@@ -362,6 +386,14 @@ export default function Storefront() {
     ]
   );
   const completedSetupCount = setupChecklist.filter((item) => item.complete).length;
+  const publishBlockers = storefrontPublishBlockers({
+    draft: storeDraft,
+    publishedProducts,
+    courses: storefrontCourses,
+    lives: storefrontLives,
+    campaigns: storefrontCampaigns
+  });
+  const publishDisabled = !storeDraft.isPublished && publishBlockers.length > 0;
 
   async function saveStorefront() {
     if (!canEdit) return;
@@ -789,12 +821,19 @@ export default function Storefront() {
             onPress={() =>
               setStoreDraft((draft) => ({ ...draft, isPublished: !draft.isPublished }))
             }
-            style={styles.secondaryButton}
+            disabled={publishDisabled}
+            style={[styles.secondaryButton, publishDisabled && styles.disabled]}
           >
             <Text style={styles.secondaryText}>
               {storeDraft.isPublished ? "Set Draft" : "Publish"}
             </Text>
           </Pressable>
+          {publishDisabled ? (
+            <View style={styles.warningBox}>
+              <Text style={styles.warningTitle}>Publish blocked</Text>
+              <Text style={styles.warningText}>{publishBlockers.join(" | ")}</Text>
+            </View>
+          ) : null}
           <Pressable
             accessibilityRole="button"
             accessibilityLabel="Save storefront settings"
@@ -1451,6 +1490,21 @@ const styles = StyleSheet.create({
   },
   secondaryText: { color: "#0F172A", fontWeight: "900" },
   disabled: { opacity: 0.55 },
+  warningBox: {
+    backgroundColor: "#FFF7ED",
+    borderColor: "#FDBA74",
+    borderRadius: 10,
+    borderWidth: 1,
+    marginTop: 10,
+    padding: 10
+  },
+  warningTitle: {
+    color: "#9A3412",
+    fontSize: 12,
+    fontWeight: "900",
+    textTransform: "uppercase"
+  },
+  warningText: { color: "#9A3412", fontSize: 12, fontWeight: "800", marginTop: 4 },
   chipRow: { flexDirection: "row", flexWrap: "wrap", gap: 8, marginTop: 10 },
   chip: {
     borderColor: "rgba(0,0,0,0.16)",

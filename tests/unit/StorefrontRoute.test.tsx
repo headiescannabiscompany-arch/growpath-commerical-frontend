@@ -220,6 +220,13 @@ describe("Storefront route", () => {
     expect(screen.getByText("Storefront card ready")).toBeTruthy();
     expect(screen.getByText("Linked evidence: recipe")).toBeTruthy();
     expect(screen.getByText("Linked inventory: Bloom batch 001")).toBeTruthy();
+    expect(screen.getByText("Publish blocked")).toBeTruthy();
+    expect(screen.getByText(/add logo/)).toBeTruthy();
+    expect(screen.getByText(/add banner/)).toBeTruthy();
+    expect(screen.getByText(/add description/)).toBeTruthy();
+    expect(
+      screen.getByLabelText("Publish storefront").props.accessibilityState?.disabled
+    ).toBe(true);
 
     fireEvent.press(screen.getByLabelText("Upload storefront logo"));
     await waitFor(() =>
