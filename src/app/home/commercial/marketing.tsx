@@ -448,7 +448,7 @@ export default function CommercialMarketingRoute() {
         </Text>
         <View style={styles.actions}>
           <ActionLink href="/home/commercial/trials" label="Product Trials" />
-          <ActionLink href="/home/commercial/grows" label="Product Trial Grows" />
+          <ActionLink href="/home/commercial/grows" label="Evidence Runs" />
         </View>
       </AppCard>
 

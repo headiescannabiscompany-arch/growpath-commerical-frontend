@@ -16,7 +16,7 @@ function cleanId(value: unknown) {
 }
 
 function titleFor(grow: CommercialGrow | null) {
-  return grow?.name || grow?.growName || "Product Trial Grow";
+  return grow?.name || grow?.growName || "Product Trial Evidence Run";
 }
 
 function DetailRow({ label, value }: { label: string; value?: unknown }) {
@@ -99,7 +99,7 @@ export default function CommercialGrowDetailRoute({ route }: { route?: any } = {
         notes: notes.trim()
       });
       hydrate(updated);
-      setMessage("Product trial grow updated.");
+      setMessage("Product trial evidence run updated.");
     } catch (err) {
       setError(err);
     } finally {
@@ -113,21 +113,23 @@ export default function CommercialGrowDetailRoute({ route }: { route?: any } = {
       longContent
       header={
         <View style={styles.header}>
-          <Text style={styles.kicker}>Product trial grow workspace</Text>
+          <Text style={styles.kicker}>Product trial evidence run</Text>
           <Text style={styles.title}>{titleFor(grow)}</Text>
           <Text style={styles.subtitle}>
             Keep the grow as the private evidence source, then connect product, batch,
             formula, trial, public-share, feed campaign, and report workflows around it.
           </Text>
           <View style={styles.actions}>
-            <ActionLink href="/home/commercial/grows" label="All Trial Grows" />
+            <ActionLink href="/home/commercial/grows" label="All Evidence Runs" />
             <ActionLink href="/home/personal/grows" label="Pro Grow Workspace" />
             <ActionLink href="/home/commercial/trials" label="Product Trials" />
           </View>
         </View>
       }
     >
-      {loading ? <Text style={styles.muted}>Loading product trial grow...</Text> : null}
+      {loading ? (
+        <Text style={styles.muted}>Loading product trial evidence run...</Text>
+      ) : null}
       {error ? <InlineError error={error} /> : null}
 
       <AppCard>
@@ -253,7 +255,7 @@ export default function CommercialGrowDetailRoute({ route }: { route?: any } = {
           style={[styles.primaryAction, saving || !growId ? styles.disabled : null]}
         >
           <Text style={styles.primaryActionText}>
-            {saving ? "Saving..." : "Save Trial Grow Detail"}
+            {saving ? "Saving..." : "Save Evidence Run Detail"}
           </Text>
         </Pressable>
       </AppCard>

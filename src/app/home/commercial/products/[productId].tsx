@@ -279,7 +279,7 @@ export default function CommercialProductDetailRoute({ route }: { route?: any } 
           </View>
           <View style={styles.metric}>
             <Text style={styles.metricValue}>{summary.growCount || 0}</Text>
-            <Text style={styles.metricLabel}>Linked grows</Text>
+            <Text style={styles.metricLabel}>Evidence runs</Text>
           </View>
           <View style={styles.metric}>
             <Text style={styles.metricValue}>{summary.courseCount || 0}</Text>
@@ -327,13 +327,13 @@ export default function CommercialProductDetailRoute({ route }: { route?: any } 
         <View style={styles.detailGrid}>
           <DetailRow label="Linked batches" value={linked.batches?.length || 0} />
           <DetailRow label="Linked trials" value={linked.trials?.length || 0} />
-          <DetailRow label="Linked grows" value={linked.grows?.length || 0} />
+          <DetailRow label="Evidence runs" value={linked.grows?.length || 0} />
           <DetailRow label="Linked courses" value={linked.courses?.length || 0} />
         </View>
         <View style={styles.actions}>
           <ActionLink href="/home/commercial/batch-planner" label="Open Batch Planner" />
           <ActionLink href="/home/commercial/trials" label="Open Product Trials" />
-          <ActionLink href="/home/commercial/grows" label="Open Trial Grows" />
+          <ActionLink href="/home/commercial/grows" label="Open Evidence Runs" />
           <ActionLink href="/home/commercial/courses" label="Open Courses" />
         </View>
       </AppCard>

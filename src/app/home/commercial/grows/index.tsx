@@ -137,7 +137,7 @@ export default function CommercialGrowsRoute() {
         <View style={styles.header}>
           <View style={styles.headerText}>
             <Text style={styles.kicker}>Commercial workspace</Text>
-            <Text style={styles.title}>Product Trial Grows</Text>
+            <Text style={styles.title}>Product Trial Evidence Runs</Text>
             <Text style={styles.subtitle}>
               Commercial accounts use grow records only when they support product trials,
               formula tests, demos, and evidence-backed public reporting.
@@ -157,16 +157,16 @@ export default function CommercialGrowsRoute() {
       }
     >
       <AppCard>
-        <Text style={styles.cardTitle}>Trial evidence workspace</Text>
+        <Text style={styles.cardTitle}>Product trial evidence layer</Text>
         <Text style={styles.body}>
-          Use product trial grows to track plants, logs, tasks, photos, diagnosis, crop
+          Use evidence runs to track plants, logs, tasks, photos, diagnosis, crop
           steering, dry/cure, and run-to-run comparisons. Commercial metadata links the
           evidence back to products, formulas, batches, and trial reports.
         </Text>
         <View style={styles.metricGrid}>
           <View style={styles.metric}>
             <Text style={styles.metricValue}>{grows.length}</Text>
-            <Text style={styles.metricLabel}>Trial grows</Text>
+            <Text style={styles.metricLabel}>Evidence runs</Text>
           </View>
           <View style={styles.metric}>
             <Text style={styles.metricValue}>{activeCount}</Text>
@@ -178,13 +178,13 @@ export default function CommercialGrowsRoute() {
           </View>
         </View>
         {loading ? (
-          <Text style={styles.muted}>Loading product trial grows...</Text>
+          <Text style={styles.muted}>Loading product trial evidence runs...</Text>
         ) : null}
         {error ? <InlineError error={error} /> : null}
       </AppCard>
 
       <AppCard>
-        <Text style={styles.cardTitle}>Create Product Trial Grow</Text>
+        <Text style={styles.cardTitle}>Create Product Trial Evidence Run</Text>
         <Text style={styles.body}>
           Start with trial anchors, then add business context: product line, product,
           batch, formula version, purpose, and public-share intent.
@@ -296,7 +296,7 @@ export default function CommercialGrowsRoute() {
             ]}
           >
             <Text style={styles.primaryActionText}>
-              {saving ? "Creating..." : "Create Product Trial Grow"}
+              {saving ? "Creating..." : "Create Evidence Run"}
             </Text>
           </Pressable>
           <Pressable
@@ -321,7 +321,7 @@ export default function CommercialGrowsRoute() {
       </AppCard>
 
       <AppCard>
-        <Text style={styles.cardTitle}>Current product trial grows</Text>
+        <Text style={styles.cardTitle}>Current product trial evidence runs</Text>
         {grows.length ? (
           <View style={styles.list}>
             {grows.map((grow) => (
@@ -363,16 +363,16 @@ export default function CommercialGrowsRoute() {
             ))}
           </View>
         ) : (
-          <Text style={styles.muted}>No product trial grows yet.</Text>
+          <Text style={styles.muted}>No product trial evidence runs yet.</Text>
         )}
       </AppCard>
 
       <AppCard>
         <Text style={styles.cardTitle}>Pro workflow retained</Text>
         <Text style={styles.body}>
-          Commercial users should not lose Pro grow behavior. Product trial grows remain
-          the evidence anchor for plant records, logs, tool runs, tasks, photos, and
-          reports when commercial proof is needed.
+          Commercial users should not lose Pro grow behavior. Evidence runs remain the
+          evidence anchor for plant records, logs, tool runs, tasks, photos, and reports
+          when commercial proof is needed.
         </Text>
         <View style={styles.actions}>
           <ActionLink href="/home/personal/grows" label="Open grow list" />
@@ -382,9 +382,8 @@ export default function CommercialGrowsRoute() {
       <AppCard>
         <Text style={styles.cardTitle}>Product trial evidence layer</Text>
         <Text style={styles.body}>
-          Product trial grows add product, batch, formula, and public-report context on
-          top of the normal grow workspace. The private grow record remains the source of
-          truth.
+          Evidence runs add product, batch, formula, and public-report context on top of
+          the normal grow workspace. The private grow record remains the source of truth.
         </Text>
         <Text style={styles.bullet}>
           Link product/product line/batch/formula before the trial starts

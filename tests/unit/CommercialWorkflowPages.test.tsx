@@ -1452,7 +1452,7 @@ describe("commercial workflow pages", () => {
     await waitFor(() => expect(screen.getByText("Kelp Meal")).toBeTruthy());
     expect(screen.getByText("Connected Workflows")).toBeTruthy();
     expect(screen.getByText("Linked Product")).toBeTruthy();
-    expect(screen.getByText("Linked Trial Grow")).toBeTruthy();
+    expect(screen.getByText("Linked Evidence Run")).toBeTruthy();
     expect(screen.getByText("Batch Planner")).toBeTruthy();
     expect(screen.getByText("Product Trials")).toBeTruthy();
     expect(screen.getByText("Storefront")).toBeTruthy();
@@ -1607,11 +1607,11 @@ describe("commercial workflow pages", () => {
     );
   });
 
-  it("manages product trial grows as private evidence source for public claims", async () => {
+  it("manages product trial evidence runs as private evidence source for public claims", async () => {
     const screen = render(<CommercialGrowsRoute />);
 
-    expect(screen.getByText("Product Trial Grows")).toBeTruthy();
-    expect(screen.getByText("Product trial evidence layer")).toBeTruthy();
+    expect(screen.getByText("Product Trial Evidence Runs")).toBeTruthy();
+    expect(screen.getAllByText("Product trial evidence layer").length).toBeGreaterThan(0);
     expect(screen.getAllByText("Product Trials").length).toBeGreaterThan(0);
     expect(screen.getAllByText("Batch Planner").length).toBeGreaterThan(0);
     await waitFor(() => expect(screen.getByText("Bloom Formula Trial")).toBeTruthy());
@@ -1684,7 +1684,7 @@ describe("commercial workflow pages", () => {
     await waitFor(() =>
       expect(mockApiRequest).toHaveBeenCalledWith("/api/commercial/grows/grow-1")
     );
-    expect(screen.getByText("Product trial grow workspace")).toBeTruthy();
+    expect(screen.getByText("Product trial evidence run")).toBeTruthy();
     expect(screen.getAllByText("Bloom Formula Trial").length).toBeGreaterThan(0);
     expect(screen.getByText("Commercial Context")).toBeTruthy();
     expect(screen.getByText("Linked Evidence")).toBeTruthy();
@@ -1742,7 +1742,9 @@ describe("commercial workflow pages", () => {
   it("routes product trial grow creation to the real grow form", async () => {
     const screen = render(<NewCommercialGrowRoute />);
 
-    expect(screen.getAllByText("Create Product Trial Grow").length).toBeGreaterThan(0);
+    expect(
+      screen.getAllByText("Create Product Trial Evidence Run").length
+    ).toBeGreaterThan(0);
     expect(screen.getByText("Trial setup checklist")).toBeTruthy();
     expect(
       screen.getByText(

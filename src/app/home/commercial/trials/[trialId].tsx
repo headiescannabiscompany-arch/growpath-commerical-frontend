@@ -170,7 +170,7 @@ export default function CommercialTrialDetailRoute({ route }: { route?: any } = 
           </Text>
           <View style={styles.actions}>
             <ActionLink href="/home/commercial/trials" label="All Trials" />
-            <ActionLink href="/home/commercial/grows" label="Grows" />
+            <ActionLink href="/home/commercial/grows" label="Evidence Runs" />
             <ActionLink href="/home/commercial/products" label="Products" />
           </View>
         </View>
@@ -218,7 +218,7 @@ export default function CommercialTrialDetailRoute({ route }: { route?: any } = 
           {trial?.growId ? (
             <ActionLink
               href={`/home/commercial/grows/${encodeURIComponent(trial.growId)}`}
-              label="Open Grow"
+              label="Open Evidence Run"
             />
           ) : null}
           <ActionLink href="/home/commercial/batch-planner" label="Batch Planner" />

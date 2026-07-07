@@ -226,7 +226,7 @@ export default function CommercialCourseDetailRoute({ route }: { route?: any } =
           <DetailRow label="Lessons" value={lessons.length} />
           <DetailRow label="Linked products" value={course?.linkedProductIds} />
           <DetailRow label="Linked product lines" value={course?.linkedProductLineIds} />
-          <DetailRow label="Linked grows" value={course?.linkedGrowIds} />
+          <DetailRow label="Evidence runs" value={course?.linkedGrowIds} />
           <DetailRow label="Linked lives" value={course?.linkedLiveIds} />
         </View>
       </AppCard>

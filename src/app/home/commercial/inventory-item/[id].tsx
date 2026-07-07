@@ -296,7 +296,7 @@ export default function CommercialInventoryItemDetailRoute() {
                   }
                   style={styles.actionBtn}
                 >
-                  <Text style={styles.actionText}>Linked Trial Grow</Text>
+                  <Text style={styles.actionText}>Linked Evidence Run</Text>
                 </TouchableOpacity>
               ) : null}
               <TouchableOpacity
