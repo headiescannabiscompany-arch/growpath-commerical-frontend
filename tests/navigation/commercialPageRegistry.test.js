@@ -14,6 +14,7 @@ describe("commercial page registry", () => {
         "Feed / Campaigns",
         "Forum / Q&A",
         "Courses",
+        "Lives",
         "Orders / External Tracking",
         "Analytics",
         "Tasks",
@@ -62,6 +63,7 @@ describe("commercial page registry", () => {
     );
 
     expect(byName.CommercialGrows.component?.name).toBe("CommercialGrowsRoute");
+    expect(byName.CommercialLives.component?.name).toBe("CommercialLivesRoute");
     expect(byName.CommercialProducts.component?.name).toBe("CommercialProductsRoute");
     expect(byName.CommercialProductLines.component?.name).toBe(
       "CommercialProductLinesRoute"

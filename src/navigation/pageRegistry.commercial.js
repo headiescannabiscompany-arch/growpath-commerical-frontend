@@ -12,7 +12,7 @@ export const PAGE_REGISTRY_COMMERCIAL = [
   },
   {
     name: "CommercialGrows",
-    label: "Evidence & Trials",
+    label: "Product Evidence & Trials",
     icon: "leaf-outline",
     capabilityKey: "commercial.grows",
     primary: false,
@@ -121,6 +121,14 @@ export const PAGE_REGISTRY_COMMERCIAL = [
     capabilityKey: "view.courses",
     primary: true,
     component: require("../app/home/commercial/courses").default
+  },
+  {
+    name: "CommercialLives",
+    label: "Lives",
+    icon: "videocam-outline",
+    capabilityKey: "commercial.lives",
+    primary: true,
+    component: require("../app/home/commercial/lives").default
   },
   {
     name: "Community",

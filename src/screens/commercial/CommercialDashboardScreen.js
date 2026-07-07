@@ -17,7 +17,10 @@ import { fetchLinks } from "../../api/links";
 import { fetchOrders } from "../../api/orders";
 import { fetchProducts } from "../../api/products";
 import { fetchStorefront } from "../../api/storefront";
-import { fetchCommercialGrows } from "../../api/commercialWorkflows";
+import {
+  fetchCommercialGrows,
+  fetchCommercialLives
+} from "../../api/commercialWorkflows";
 import ScreenContainer from "../../components/ScreenContainer";
 
 function rows(payload, key) {
@@ -88,6 +91,7 @@ export default function CommercialDashboardScreen() {
     campaigns: [],
     orders: [],
     grows: [],
+    lives: [],
     inventory: []
   });
 
@@ -104,6 +108,7 @@ export default function CommercialDashboardScreen() {
         campaigns,
         orders,
         grows,
+        lives,
         inventory
       ] = await Promise.all([
         fetchStorefront(),
@@ -113,6 +118,7 @@ export default function CommercialDashboardScreen() {
         fetchCampaigns(),
         fetchOrders(),
         fetchCommercialGrows().catch(() => []),
+        fetchCommercialLives().catch(() => []),
         fetchInventory()
       ]);
 
@@ -124,6 +130,7 @@ export default function CommercialDashboardScreen() {
         campaigns,
         orders,
         grows,
+        lives,
         inventory
       });
     } catch (err) {
@@ -184,8 +191,8 @@ export default function CommercialDashboardScreen() {
             <Text style={styles.eyebrow}>Commercial</Text>
             <Text style={styles.header}>Dashboard</Text>
             <Text style={styles.subtitle}>
-              Storefront, products, product trial evidence, feed campaigns, courses,
-              inventory, and external tracking.
+      Storefront, products, product trial evidence, feed campaigns, courses,
+              lives, inventory, analytics, and external tracking.
             </Text>
           </View>
           <Pressable style={styles.refreshButton} onPress={() => load({ refresh: true })}>
@@ -220,9 +227,9 @@ export default function CommercialDashboardScreen() {
                 </Pressable>
                 <Pressable
                   style={styles.secondaryButton}
-                  onPress={() => navigation.navigate("CommercialGrows")}
+                  onPress={() => navigation.navigate("CommercialProducts")}
                 >
-                  <Text style={styles.secondaryButtonText}>Open Evidence & Trials</Text>
+                  <Text style={styles.secondaryButtonText}>Add Product</Text>
                 </Pressable>
                 <Pressable
                   style={styles.secondaryButton}
@@ -230,17 +237,16 @@ export default function CommercialDashboardScreen() {
                 >
                   <Text style={styles.secondaryButtonText}>Create Course</Text>
                 </Pressable>
+                <Pressable
+                  style={styles.secondaryButton}
+                  onPress={() => navigation.navigate("CommercialLives")}
+                >
+                  <Text style={styles.secondaryButtonText}>Schedule Live</Text>
+                </Pressable>
               </View>
             </View>
 
             <View style={styles.grid}>
-              <StatCard
-                label="Evidence & Trials"
-                value={model.grows.length}
-                detail="product trial evidence"
-                route="CommercialGrows"
-                navigation={navigation}
-              />
               <StatCard
                 label="Products"
                 value={model.products.length}
@@ -256,17 +262,24 @@ export default function CommercialDashboardScreen() {
                 navigation={navigation}
               />
               <StatCard
-                label="Links"
-                value={model.links.length}
-                detail="public destinations"
-                route="Links"
+                label="Lives"
+                value={model.lives.length}
+                detail="demos, Q&A, replays"
+                route="CommercialLives"
                 navigation={navigation}
               />
               <StatCard
-                label="Marketing Plans"
+                label="Product Evidence"
+                value={model.grows.length}
+                detail="trials and proof records"
+                route="CommercialGrows"
+                navigation={navigation}
+              />
+              <StatCard
+                label="Feed Campaigns"
                 value={model.campaigns.length}
                 detail={`${summary.activeMarketingPlans} active or scheduled`}
-                route="MarketingPlanner"
+                route="Feed"
                 navigation={navigation}
               />
               <StatCard
@@ -297,13 +310,13 @@ export default function CommercialDashboardScreen() {
             <View style={styles.panel}>
               <Text style={styles.sectionTitle}>Workflows</Text>
               <ActionRow
-                title="Evidence runs and product trials"
-                subtitle="Open private evidence runs, formula tests, demos, and product trials."
-                route="CommercialGrows"
+                title="Storefront"
+                subtitle="Manage the public brand profile, featured products, courses, lives, campaigns, and setup checklist."
+                route="Storefront"
                 navigation={navigation}
               />
               <ActionRow
-                title="Products and storefront"
+                title="Products and product support records"
                 subtitle="Create products with photos, text, links, usage guidance, and trial evidence."
                 route="CommercialProducts"
                 navigation={navigation}
@@ -318,6 +331,12 @@ export default function CommercialDashboardScreen() {
                 title="Courses"
                 subtitle="Create free or paid education tied to products, grows, and support."
                 route="Courses"
+                navigation={navigation}
+              />
+              <ActionRow
+                title="Lives"
+                subtitle="Schedule Twitch demos, Q&A, reminders, replays, and related product/course links."
+                route="CommercialLives"
                 navigation={navigation}
               />
               <ActionRow

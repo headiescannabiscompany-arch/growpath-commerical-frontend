@@ -2,7 +2,8 @@ import React from "react";
 import { createBottomTabNavigator } from "@react-navigation/bottom-tabs";
 
 import CommercialDashboardScreen from "../screens/commercial/CommercialDashboardScreen";
-import CommercialGrowsRoute from "../app/home/commercial/grows";
+import CommercialCoursesRoute from "../app/home/commercial/courses";
+import CommercialLivesRoute from "../app/home/commercial/lives";
 import CommercialProductsRoute from "../app/home/commercial/products";
 import CommercialFeedRoute from "../app/feed";
 import CommercialProfileRoute from "../app/home/commercial/profile";
@@ -19,9 +20,9 @@ export default function CommercialTabs() {
         options={{ title: "Dashboard" }}
       />
       <Tab.Screen
-        name="CommercialGrows"
-        component={CommercialGrowsRoute}
-        options={{ title: "Evidence & Trials" }}
+        name="Storefront"
+        component={StorefrontScreen}
+        options={{ title: "Storefront" }}
       />
       <Tab.Screen
         name="CommercialProducts"
@@ -29,9 +30,14 @@ export default function CommercialTabs() {
         options={{ title: "Products" }}
       />
       <Tab.Screen
-        name="Storefront"
-        component={StorefrontScreen}
-        options={{ title: "Storefront" }}
+        name="CommercialCourses"
+        component={CommercialCoursesRoute}
+        options={{ title: "Courses" }}
+      />
+      <Tab.Screen
+        name="CommercialLives"
+        component={CommercialLivesRoute}
+        options={{ title: "Lives" }}
       />
       <Tab.Screen
         name="CommercialFeed"

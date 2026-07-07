@@ -31,6 +31,7 @@ import CommercialFeedRoute from "../app/feed";
 import CommercialCommunityRoute from "../app/home/commercial/community";
 import CommercialCoursesRoute from "../app/home/commercial/courses";
 import CommercialCourseDetailRoute from "../app/home/commercial/courses/[courseId]";
+import CommercialLivesRoute from "../app/home/commercial/lives";
 import CommercialGrowsRoute from "../app/home/commercial/grows";
 import CommercialGrowDetailRoute from "../app/home/commercial/grows/[growId]";
 import CommercialProductsRoute from "../app/home/commercial/products";
@@ -70,6 +71,7 @@ export default function CommercialStack() {
         name="CommercialCourseDetail"
         component={CommercialCourseDetailRoute}
       />
+      <Stack.Screen name="CommercialLives" component={CommercialLivesRoute} />
       <Stack.Screen name="Feed" component={CommercialFeedRoute} />
       <Stack.Screen name="Community" component={CommercialCommunityRoute} />
       <Stack.Screen name="CommercialGrows" component={CommercialGrowsRoute} />
