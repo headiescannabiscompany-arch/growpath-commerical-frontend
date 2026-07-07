@@ -85,7 +85,12 @@ function inferRoomName(raw: string) {
 function buildRoomImportPreview(rawText: string) {
   const rooms = new Map<
     string,
-    { name: string; roomType: string; devices: string[]; metrics: string[] }
+    {
+      name: string;
+      roomType: string;
+      devices: Array<{ name: string; metrics: string[] }>;
+      metrics: string[];
+    }
   >();
 
   rawText
@@ -110,6 +115,9 @@ function buildRoomImportPreview(rawText: string) {
         lower.includes("vpd") && "vpd",
         lower.includes("light") && "light_status"
       ].filter(Boolean) as string[];
+      if (!existing.devices.some((device) => device.name === line)) {
+        existing.devices.push({ name: line, metrics });
+      }
       existing.metrics = Array.from(new Set([...existing.metrics, ...metrics]));
       rooms.set(key, existing);
     });
@@ -308,14 +316,25 @@ export default function FacilityRoomsTab() {
         const savedRoomId = rowId(savedRoom);
         if (savedRoomId && canManageEquipmentCycles) {
           for (const device of room.devices) {
-            const deviceName = String(device || "").trim();
+            const deviceName = String(device.name || "").trim();
             const equipmentKey = `${savedRoomId}::${deviceName.toLowerCase()}`;
             if (!deviceName || existingEquipmentKeys.has(equipmentKey)) continue;
             await createEquipment(facilityId, {
               name: deviceName,
               type: "sensor",
               roomId: savedRoomId,
-              status: "active"
+              status: "active",
+              provider: importProvider.trim() || undefined,
+              metrics: device.metrics,
+              integrationMapping: {
+                source: "facility_room_import_preview",
+                provider: importProvider.trim() || undefined,
+                permissionLevel: "read-only",
+                normalizedMetrics: device.metrics,
+                rawDeviceName: deviceName,
+                suggestedRoomName: room.name,
+                suggestedRoomType: room.roomType
+              }
             });
             existingEquipmentKeys.add(equipmentKey);
             createdDeviceCount += 1;

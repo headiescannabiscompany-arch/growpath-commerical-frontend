@@ -9,6 +9,9 @@ export type EquipmentItem = {
   roomId?: string;
   status?: string;
   nextMaintenance?: string;
+  provider?: string;
+  metrics?: string[];
+  integrationMapping?: Record<string, any>;
   createdAt?: string;
   updatedAt?: string;
 };
@@ -49,6 +52,9 @@ export async function createEquipment(
     roomId?: string;
     status?: string;
     nextMaintenance?: string;
+    provider?: string;
+    metrics?: string[];
+    integrationMapping?: Record<string, any>;
   }
 ): Promise<EquipmentItem> {
   const response = await apiRequest(endpoints.equipment(facilityId), {

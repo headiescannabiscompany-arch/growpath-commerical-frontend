@@ -77,7 +77,9 @@ describe("FacilityRoomsTab", () => {
   it("previews controller devices as facility rooms and creates missing rooms/devices", async () => {
     const screen = render(<FacilityRoomsTab />);
 
-    await waitFor(() => expect(screen.getByText("Controller Room Import Preview")).toBeTruthy());
+    await waitFor(() =>
+      expect(screen.getByText("Controller Room Import Preview")).toBeTruthy()
+    );
     expect(mockFetchRooms).toHaveBeenCalledWith("facility-1");
 
     fireEvent.changeText(screen.getByLabelText("Facility import provider"), "Pulse");
@@ -109,19 +111,42 @@ describe("FacilityRoomsTab", () => {
       name: "Flower Room 1 Temp/RH",
       type: "sensor",
       roomId: "room-flower-room-1",
-      status: "active"
+      status: "active",
+      provider: "Pulse",
+      metrics: ["air_temperature", "relative_humidity"],
+      integrationMapping: expect.objectContaining({
+        source: "facility_room_import_preview",
+        provider: "Pulse",
+        permissionLevel: "read-only",
+        rawDeviceName: "Flower Room 1 Temp/RH",
+        suggestedRoomName: "Flower Room 1",
+        suggestedRoomType: "flower",
+        normalizedMetrics: ["air_temperature", "relative_humidity"]
+      })
     });
     expect(mockCreateEquipment).toHaveBeenCalledWith("facility-1", {
       name: "Flower Room 1 CO2",
       type: "sensor",
       roomId: "room-flower-room-1",
-      status: "active"
+      status: "active",
+      provider: "Pulse",
+      metrics: ["co2"],
+      integrationMapping: expect.objectContaining({
+        normalizedMetrics: ["co2"],
+        rawDeviceName: "Flower Room 1 CO2"
+      })
     });
     expect(mockCreateEquipment).toHaveBeenCalledWith("facility-1", {
       name: "Veg Room Temp/RH",
       type: "sensor",
       roomId: "room-veg-room",
-      status: "active"
+      status: "active",
+      provider: "Pulse",
+      metrics: ["air_temperature", "relative_humidity"],
+      integrationMapping: expect.objectContaining({
+        normalizedMetrics: ["air_temperature", "relative_humidity"],
+        rawDeviceName: "Veg Room Temp/RH"
+      })
     });
     expect(mockCreateRoom).not.toHaveBeenCalledWith(
       "facility-1",
