@@ -1,6 +1,58 @@
 import React from "react";
 
-import BackendCalculatorToolScreen from "@/features/personal/tools/BackendCalculatorToolScreen";
+import BackendCalculatorToolScreen, {
+  tomorrow
+} from "@/features/personal/tools/BackendCalculatorToolScreen";
+import { saveToolRunAndCreateTasks } from "@/features/personal/tools/saveToolRunAndOpenJournal";
+
+function normalizePriority(
+  value: unknown,
+  fallback: "low" | "medium" | "high" = "medium"
+) {
+  return value === "low" || value === "medium" || value === "high" ? value : fallback;
+}
+
+function speciesCropTaskPlan(outputs: Record<string, any>) {
+  const planned = Array.isArray(outputs.tasksToCreate) ? outputs.tasksToCreate : [];
+  if (planned.length) {
+    return planned.slice(0, 8).map((task: any, index: number) => ({
+      title: String(task?.title || `Crop identity follow-up ${index + 1}`),
+      priority: normalizePriority(task?.priority),
+      dueDate: tomorrow(Number(task?.dueInDays || index + 1)),
+      description:
+        task?.description ||
+        "Follow up on crop identity before applying crop-specific diagnosis, nutrition, IPM, or environment guidance."
+    }));
+  }
+
+  const needsConfirm = Boolean(outputs.userConfirmationRequired);
+  const crop = outputs.likelyCrop || outputs.scientificName || "crop";
+
+  return [
+    {
+      title: needsConfirm ? "Confirm crop identity" : "Save crop identity to profile",
+      priority: needsConfirm ? "high" : ("medium" as const),
+      dueDate: tomorrow(1),
+      description:
+        outputs.recommendationContext ||
+        `Confirm ${crop} identity and save the crop profile before using crop-specific guidance.`
+    },
+    {
+      title: "Review crop-specific tool targets",
+      priority: "medium" as const,
+      dueDate: tomorrow(2),
+      description:
+        "Check whether diagnosis prompts, pH/EC ranges, VPD targets, nutrient assumptions, and IPM context should change for this crop identity."
+    },
+    {
+      title: "Update grow or plant tags",
+      priority: "medium" as const,
+      dueDate: tomorrow(3),
+      description:
+        "Attach confirmed common names, scientific name, cultivar, grow interests, and privacy-safe notes to the grow or plant record."
+    }
+  ];
+}
 
 export default function SpeciesCropIdToolRoute() {
   return (
@@ -59,6 +111,28 @@ export default function SpeciesCropIdToolRoute() {
           "Confirm species/crop profile before applying crop-specific guidance.",
         priority: outputs.userConfirmationRequired ? "high" : "medium"
       })}
+      buildActions={({ outputs, payload, toolRun, growId, plantContext }) => [
+        {
+          key: "create-crop-identity-tasks",
+          label: "Create Crop Identity Tasks",
+          variant: "secondary",
+          pendingLabel: "Creating...",
+          disabled: !growId,
+          successMessage: "Created crop identity tasks.",
+          onPress: async () => {
+            const result = await saveToolRunAndCreateTasks({
+              growId,
+              ...plantContext.toolRunContext,
+              toolKey: "species-crop-id",
+              toolRunId: toolRun?.id || toolRun?._id,
+              input: payload,
+              output: outputs,
+              tasks: speciesCropTaskPlan(outputs)
+            });
+            if (!result.ok) throw new Error(result.error);
+          }
+        }
+      ]}
     />
   );
 }
