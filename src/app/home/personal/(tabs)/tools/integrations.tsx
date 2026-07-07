@@ -49,6 +49,116 @@ function controllerLabel(controller: GrowlinkController) {
   return details.join(" / ");
 }
 
+type RoomImportPreview = {
+  name: string;
+  type: string;
+  controllerName: string;
+  devices: string[];
+  metrics: string[];
+};
+
+const metricPatterns: Array<[RegExp, string]> = [
+  [/temp|temperature/i, "air_temperature"],
+  [/rh|humidity/i, "relative_humidity"],
+  [/\bvpd\b/i, "vpd"],
+  [/\bco2\b|carbon/i, "co2"],
+  [/light|ppfd|par/i, "ppfd"],
+  [/moisture|water content|vwc/i, "substrate_moisture"],
+  [/\bec\b|conductivity/i, "substrate_ec"],
+  [/\bph\b/i, "substrate_ph"],
+  [/irrigation|pump|valve/i, "irrigation_event"]
+];
+
+function cleanRoomName(value: string) {
+  const clean = value
+    .replace(/\b(temp|temperature|rh|humidity|vpd|co2|light|ppfd|par)\b/gi, "")
+    .replace(/\b(sensor|probe|module|controller|device|channel|monitor)\b/gi, "")
+    .replace(/\s*[-_/]\s*/g, " ")
+    .replace(/\s+/g, " ")
+    .trim();
+  return clean || value.trim() || "Imported Room";
+}
+
+function inferRoomType(name: string) {
+  if (/clone|prop|root/i.test(name)) return "clone";
+  if (/veg|vegetative/i.test(name)) return "veg";
+  if (/flower|bloom/i.test(name)) return "flower";
+  if (/dry|cure/i.test(name)) return "dry/cure";
+  if (/mother/i.test(name)) return "mother";
+  return "room";
+}
+
+function valueText(value: any) {
+  if (typeof value === "string") return value;
+  if (typeof value === "number") return String(value);
+  return "";
+}
+
+function moduleName(module: any) {
+  return (
+    valueText(module?.roomName) ||
+    valueText(module?.zoneName) ||
+    valueText(module?.name) ||
+    valueText(module?.label) ||
+    valueText(module?.displayName) ||
+    valueText(module?.deviceName) ||
+    valueText(module?.id)
+  );
+}
+
+function inferMetrics(module: any, fallbackName: string) {
+  const metricSource = [
+    fallbackName,
+    valueText(module?.type),
+    valueText(module?.metric),
+    ...(Array.isArray(module?.metrics) ? module.metrics.map(valueText) : []),
+    ...(Array.isArray(module?.sensors) ? module.sensors.map(valueText) : []),
+    ...(Array.isArray(module?.channels) ? module.channels.map(valueText) : [])
+  ]
+    .filter(Boolean)
+    .join(" ");
+  const metrics = metricPatterns
+    .filter(([pattern]) => pattern.test(metricSource))
+    .map(([, metric]) => metric);
+  return Array.from(new Set(metrics));
+}
+
+function buildGrowlinkImportPreview(
+  controllers: GrowlinkController[]
+): RoomImportPreview[] {
+  const rooms = new Map<string, RoomImportPreview>();
+
+  controllers.forEach((controller) => {
+    const controllerName = controller.name || controller.id || "Growlink controller";
+    const modules = Array.isArray(controller.modules) ? controller.modules : [];
+    const rows = modules.length ? modules : [{ name: controllerName, id: controller.id }];
+
+    rows.forEach((module) => {
+      const rawName = moduleName(module) || controllerName;
+      const roomName = cleanRoomName(
+        valueText(module?.roomName) || valueText(module?.zoneName) || rawName
+      );
+      const existing =
+        rooms.get(roomName) ||
+        ({
+          name: roomName,
+          type: inferRoomType(roomName),
+          controllerName,
+          devices: [],
+          metrics: []
+        } satisfies RoomImportPreview);
+
+      existing.devices = Array.from(new Set([...existing.devices, rawName]));
+      existing.metrics = Array.from(
+        new Set([...existing.metrics, ...inferMetrics(module, rawName)])
+      );
+      rooms.set(roomName, existing);
+    });
+  });
+
+  return Array.from(rooms.values());
+}
+
 function defaultHistoryWindow() {
   const end = new Date();
   const start = new Date(end.getTime() - 24 * 60 * 60 * 1000);
@@ -104,6 +214,10 @@ export default function DataIntegrationsScreen() {
         (controller) => controller.id === selectedGrowlinkControllerId
       ),
     [growlinkControllers, selectedGrowlinkControllerId]
+  );
+  const growlinkImportPreview = useMemo(
+    () => buildGrowlinkImportPreview(growlinkControllers),
+    [growlinkControllers]
   );
 
   const loadGrowlinkSources = useCallback(
@@ -430,6 +544,36 @@ export default function DataIntegrationsScreen() {
           </View>
         ) : null}
 
+        {growlinkImportPreview.length ? (
+          <View style={styles.importPreview}>
+            <Text style={styles.sourceListTitle}>Room import preview</Text>
+            <Text style={styles.meta}>
+              Review this mapping before saving. GrowPath can use it to create
+              rooms/devices/streams for personal grows or facility onboarding when the
+              import endpoint is enabled. Read-only data sync stays separate from
+              write/control actions.
+            </Text>
+            {growlinkImportPreview.map((room) => (
+              <View
+                key={`${room.controllerName}-${room.name}`}
+                style={styles.previewRoom}
+              >
+                <Text style={styles.previewTitle}>Suggested room: {room.name}</Text>
+                <Text style={styles.meta}>
+                  Type: {room.type} / Controller: {room.controllerName}
+                </Text>
+                <Text style={styles.meta}>Devices: {room.devices.join(", ")}</Text>
+                <Text style={styles.meta}>
+                  Streams:{" "}
+                  {room.metrics.length
+                    ? room.metrics.join(", ")
+                    : "manual mapping needed"}
+                </Text>
+              </View>
+            ))}
+          </View>
+        ) : null}
+
         {growlinkSources.length || loadingGrowlinkSources ? (
           <View style={styles.sourceList}>
             <View style={styles.row}>
@@ -644,6 +788,23 @@ const styles = StyleSheet.create({
     paddingTop: 12
   },
   sourceListTitle: { fontWeight: "700" },
+  importPreview: {
+    backgroundColor: "#EFF6FF",
+    borderColor: "#BFDBFE",
+    borderRadius: 8,
+    borderWidth: 1,
+    gap: 8,
+    marginTop: 10,
+    padding: 10
+  },
+  previewRoom: {
+    backgroundColor: "#FFFFFF",
+    borderColor: "#DBEAFE",
+    borderRadius: 8,
+    borderWidth: 1,
+    padding: 10
+  },
+  previewTitle: { color: "#0F172A", fontWeight: "900" },
   sourceRow: {
     flexDirection: "row",
     alignItems: "center",

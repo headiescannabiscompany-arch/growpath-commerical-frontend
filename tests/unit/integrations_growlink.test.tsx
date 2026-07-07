@@ -67,7 +67,7 @@ describe("Data Integrations Growlink flow", () => {
         name: "Flower A",
         serialNumber: "GL-001",
         timeZoneId: "America/Denver",
-        modules: [{ id: "module-1" }]
+        modules: [{ id: "module-1", name: "Flower A Temp/RH" }]
       }
     ]);
     mockCreateTelemetrySource.mockResolvedValue({
@@ -119,6 +119,9 @@ describe("Data Integrations Growlink flow", () => {
       })
     );
     await waitFor(() => expect(screen.getByText("Flower A")).toBeTruthy());
+    expect(screen.getByText("Room import preview")).toBeTruthy();
+    expect(screen.getByText("Suggested room: Flower A")).toBeTruthy();
+    expect(screen.getByText(/air_temperature, relative_humidity/)).toBeTruthy();
 
     fireEvent.press(screen.getByText("Create source"));
 
