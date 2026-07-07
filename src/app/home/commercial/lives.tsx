@@ -2,6 +2,7 @@ import { Link } from "expo-router";
 import React, { useEffect, useMemo, useState } from "react";
 import { Pressable, StyleSheet, Text, TextInput, View } from "react-native";
 
+import { apiRequest } from "@/api/apiRequest";
 import {
   CommercialLiveEvent,
   createCommercialLive,
@@ -104,6 +105,7 @@ export default function CommercialLivesRoute() {
   const [form, setForm] = useState<LiveForm>(EMPTY_FORM);
   const [loading, setLoading] = useState(false);
   const [saving, setSaving] = useState(false);
+  const [creatingTaskForLiveId, setCreatingTaskForLiveId] = useState("");
   const [error, setError] = useState<any>(null);
   const [message, setMessage] = useState("");
 
@@ -164,6 +166,43 @@ export default function CommercialLivesRoute() {
       setError(err);
     } finally {
       setSaving(false);
+    }
+  }
+
+  async function createLiveSetupTask(live: CommercialLiveEvent, warnings: string[]) {
+    const id = liveId(live);
+    if (!id || !warnings.length || creatingTaskForLiveId) return;
+    setCreatingTaskForLiveId(String(id));
+    setError(null);
+    setMessage("");
+    try {
+      await apiRequest("/api/tasks", {
+        method: "POST",
+        body: {
+          workspaceType: "commercial",
+          title: `Complete live setup: ${live.title || "Live"}`,
+          description: `Missing setup: ${warnings.join(", ")}.`,
+          sourceType: "live",
+          sourceId: String(id),
+          linkedLiveId: String(id),
+          linkedCourseId: live.relatedCourseId,
+          linkedProductId: live.relatedProductId,
+          priority:
+            warnings.includes("schedule date/time") ||
+            warnings.includes("connect Twitch channel") ||
+            warnings.includes("attach reminder plan")
+              ? "high"
+              : "normal",
+          status: "open",
+          dueAt: new Date().toISOString().slice(0, 10),
+          reminderPlan: { label: "24 hours before", channels: ["in_app"] }
+        }
+      });
+      setMessage(`Created setup task for ${live.title || "live"}.`);
+    } catch (err) {
+      setError(err);
+    } finally {
+      setCreatingTaskForLiveId("");
     }
   }
 
@@ -449,6 +488,24 @@ export default function CommercialLivesRoute() {
                       <View style={styles.warningBox}>
                         <Text style={styles.warningTitle}>Missing live setup</Text>
                         <Text style={styles.warningText}>{warnings.join(" | ")}</Text>
+                        <Pressable
+                          accessibilityRole="button"
+                          accessibilityLabel={`Create setup task for ${live.title || "live"}`}
+                          disabled={creatingTaskForLiveId === String(liveId(live))}
+                          onPress={() => createLiveSetupTask(live, warnings)}
+                          style={[
+                            styles.action,
+                            creatingTaskForLiveId === String(liveId(live))
+                              ? styles.disabled
+                              : null
+                          ]}
+                        >
+                          <Text style={styles.actionText}>
+                            {creatingTaskForLiveId === String(liveId(live))
+                              ? "Creating..."
+                              : "Create Task"}
+                          </Text>
+                        </Pressable>
                       </View>
                     ) : null}
                   </View>

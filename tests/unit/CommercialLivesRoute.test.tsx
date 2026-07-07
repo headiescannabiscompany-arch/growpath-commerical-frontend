@@ -62,6 +62,9 @@ describe("CommercialLivesRoute", () => {
       if (path === "/api/commercial/lives" && options?.method === "POST") {
         return Promise.resolve({ live: { id: "live-new", ...options.body } });
       }
+      if (path === "/api/tasks" && options?.method === "POST") {
+        return Promise.resolve({ task: { id: "task-new", ...options.body } });
+      }
       return Promise.resolve({});
     });
   });
@@ -85,6 +88,29 @@ describe("CommercialLivesRoute", () => {
     expect(screen.getByText("Missing live setup")).toBeTruthy();
     expect(screen.getAllByText(/add thumbnail/).length).toBeGreaterThan(0);
     expect(screen.getByText(/attach reminder plan/)).toBeTruthy();
+    fireEvent.press(screen.getByLabelText("Create setup task for Soil Mix Demo"));
+
+    await waitFor(() =>
+      expect(mockApiRequest).toHaveBeenCalledWith(
+        "/api/tasks",
+        expect.objectContaining({
+          method: "POST",
+          body: expect.objectContaining({
+            workspaceType: "commercial",
+            title: "Complete live setup: Soil Mix Demo",
+            sourceType: "live",
+            sourceId: "live-1",
+            linkedLiveId: "live-1",
+            linkedCourseId: "course-1",
+            linkedProductId: "product-1",
+            priority: "high",
+            status: "open",
+            reminderPlan: { label: "24 hours before", channels: ["in_app"] }
+          })
+        })
+      )
+    );
+    expect(screen.getByText("Created setup task for Soil Mix Demo.")).toBeTruthy();
 
     fireEvent.changeText(
       screen.getByLabelText("Commercial live title"),
@@ -188,8 +214,7 @@ describe("CommercialLivesRoute", () => {
     );
 
     expect(
-      screen.getByLabelText("Schedule commercial live").props.accessibilityState
-        ?.disabled
+      screen.getByLabelText("Schedule commercial live").props.accessibilityState?.disabled
     ).toBe(true);
     expect(mockApiRequest).not.toHaveBeenCalledWith(
       "/api/commercial/lives",
