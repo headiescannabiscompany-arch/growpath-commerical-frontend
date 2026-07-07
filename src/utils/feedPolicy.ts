@@ -118,7 +118,7 @@ export function getFeedBannerPolicy({
   const isFree = normalizedPlan === "free";
   const key = routeKey || routeName || "shared";
   const isHome = key === "home";
-  const railMode = mode === "facility" ? "education-only" : "standard";
+  const railMode = "promo-only";
 
   if (isHome) {
     return {

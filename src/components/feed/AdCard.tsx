@@ -84,7 +84,7 @@ export default function AdCard({
         />
       ) : null}
       <View style={styles.labelRow}>
-        <Text style={styles.label}>Sponsor</Text>
+        <Text style={styles.label}>Promoted campaign</Text>
         {strategyLabel ? <Text style={styles.strategy}>{strategyLabel}</Text> : null}
       </View>
       <Text style={styles.title}>{title}</Text>

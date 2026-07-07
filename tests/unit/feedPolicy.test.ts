@@ -46,6 +46,7 @@ describe("feedPolicy", () => {
     expect(banner.bottom).toBe(true);
     expect(banner.slotsByPlacement.middle).toBe(1);
     expect(banner.slotsByPlacement.bottom).toBe(1);
+    expect(banner.railMode).toBe("promo-only");
   });
 
   it("adds top and bottom placements for short free pages", () => {
@@ -62,5 +63,6 @@ describe("feedPolicy", () => {
     expect(banner.slotsByPlacement.top).toBe(1);
     expect(banner.slotsByPlacement.middle).toBe(0);
     expect(banner.slotsByPlacement.bottom).toBe(1);
+    expect(banner.railMode).toBe("promo-only");
   });
 });

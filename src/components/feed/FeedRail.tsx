@@ -154,19 +154,19 @@ function selectAds(ads: AdItem[], count: number, placement: FeedRailProps["place
   const placementOffset = PLACEMENT_OFFSET[placement || "top"] || 0;
   const strategies = [
     {
-      label: "Newest",
+      label: "New",
       rows: [...ads].sort((a, b) => Date.parse(b.createdAt) - Date.parse(a.createdAt))
     },
     {
-      label: "Most liked",
+      label: "Popular",
       rows: [...ads].sort((a, b) => b.likeCount - a.likeCount)
     },
     {
-      label: "Low click",
+      label: "Recommended",
       rows: [...ads].sort((a, b) => a.clickCount - b.clickCount)
     },
     {
-      label: "Fresh rotation",
+      label: "Fresh",
       rows: [...ads].sort((a, b) => a.promotionCount - b.promotionCount)
     }
   ];

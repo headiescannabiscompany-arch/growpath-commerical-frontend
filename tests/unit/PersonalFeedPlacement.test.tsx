@@ -30,6 +30,7 @@ describe("PersonalFeedPlacement", () => {
     expect(screen.getByLabelText("Promoted campaigns placement")).toBeTruthy();
     expect(screen.getByLabelText("More promoted campaigns placement")).toBeTruthy();
     expect(screen.getByLabelText("Recommended campaigns placement")).toBeTruthy();
+    expect(screen.getAllByText("Promoted campaign").length).toBeGreaterThanOrEqual(3);
   });
 
   it("keeps paid personal pages to the top placement only", () => {
@@ -52,6 +53,7 @@ describe("PersonalFeedPlacement", () => {
     );
 
     expect(screen.getByLabelText("Promoted campaigns placement")).toBeTruthy();
+    expect(screen.getByText("Promoted campaign")).toBeTruthy();
     expect(screen.queryByLabelText("More promoted campaigns placement")).toBeNull();
     expect(screen.queryByLabelText("Recommended campaigns placement")).toBeNull();
   });
@@ -68,5 +70,6 @@ describe("PersonalFeedPlacement", () => {
     expect(screen.getByLabelText("Promoted campaigns placement")).toBeTruthy();
     expect(screen.getByLabelText("More promoted campaigns placement")).toBeTruthy();
     expect(screen.getByLabelText("Recommended campaigns placement")).toBeTruthy();
+    expect(screen.getAllByText("Promoted campaign").length).toBeGreaterThanOrEqual(3);
   });
 });
