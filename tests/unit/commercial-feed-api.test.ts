@@ -29,7 +29,7 @@ describe("commercial feed API", () => {
     });
   });
 
-  it("sends commercial object links when creating feed posts", async () => {
+  it("sends commercial object links when creating feed campaigns", async () => {
     const { createCommercialFeedPost } = require("@/api/commercialFeed");
 
     const result = await createCommercialFeedPost({

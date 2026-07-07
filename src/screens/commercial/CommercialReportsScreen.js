@@ -45,7 +45,7 @@ export default function CommercialReportsScreen({ navigation }) {
             "Active and completed product trials",
             "Formula or batch linked to a grow",
             "Effectiveness summary and limitations",
-            "Feed, course, or storefront proof created from saved records"
+            "Campaign, course, or storefront proof created from saved records"
           ]}
           actionLabel="Open Product Trials"
           route="CommercialProductTrials"
@@ -68,11 +68,11 @@ export default function CommercialReportsScreen({ navigation }) {
         />
 
         <ReportCard
-          title="Feed, course, and community outcomes"
-          body="Commercial content should connect back to real products, trials, courses, and support threads."
+          title="Feed, course, and forum outcomes"
+          body="Commercial outreach should connect back to real products, trials, courses, and forum support threads."
           bullets={[
-            "Feed post views, saves, comments, and clicks",
-            "Promotional post and ad-link click counts",
+            "Feed campaign impressions, saves, hides, reports, and clicks",
+            "Promotional card and ad-link click counts",
             "Course starts and completions",
             "Forum replies and unresolved support threads",
             "Trial summaries converted into education or support"

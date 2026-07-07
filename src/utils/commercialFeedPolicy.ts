@@ -24,5 +24,5 @@ export function hasFacilitySalesLanguage(input: string | string[]) {
 }
 
 export function facilitySalesPolicyText() {
-  return "Facility feed posts must be educational content, not sales listings.";
+  return "Facility feed campaigns must be educational or outreach content, not direct sales listings.";
 }

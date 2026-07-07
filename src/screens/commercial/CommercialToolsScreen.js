@@ -39,7 +39,7 @@ export default function CommercialToolsScreen({ navigation }) {
         />
         <ToolCard
           title="Marketing Planner"
-          subtitle="Plan product drops, course announcements, feed posts, and external links."
+          subtitle="Plan product drops, course announcements, feed campaigns, and external links."
           onPress={() => navigation.navigate("MarketingPlanner")}
         />
       </View>

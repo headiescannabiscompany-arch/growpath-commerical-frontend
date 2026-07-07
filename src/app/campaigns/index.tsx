@@ -228,8 +228,8 @@ export default function Campaigns() {
         <View>
           <Text style={styles.headerTitle}>Marketing Planner</Text>
           <Text style={styles.headerSubtitle}>
-            Plan product drops, course launches, trial updates, feed posts, ads, budgets,
-            channels, and tracked clicks without pretending GrowPathAI executes
+            Plan product drops, course launches, evidence updates, feed campaigns, ads,
+            budgets, channels, and tracked clicks without pretending GrowPathAI executes
             ad-platform spend.
           </Text>
         </View>
