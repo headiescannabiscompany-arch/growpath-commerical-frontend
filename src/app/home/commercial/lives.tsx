@@ -407,7 +407,7 @@ export default function CommercialLivesRoute() {
         <Text style={styles.cardTitle}>Current lives</Text>
         {lives.length ? (
           <View style={styles.list}>
-            {lives.map((live) => (
+            {lives.map((live) =>
               (() => {
                 const warnings = liveSetupWarnings(live);
                 return (
@@ -449,7 +449,7 @@ export default function CommercialLivesRoute() {
                   </View>
                 );
               })()
-            ))}
+            )}
           </View>
         ) : (
           <Text style={styles.muted}>No lives scheduled yet.</Text>
