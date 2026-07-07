@@ -15,6 +15,12 @@ describe("personal feature status manifest", () => {
     expect(personalFeatures.courses.href).toBe("/home/personal/courses");
   });
 
+  test("keeps personal community described as forum and grow help, not feed ads", () => {
+    expect(personalFeatures.community.description).toMatch(/Forum discussions/);
+    expect(personalFeatures.community.description).toMatch(/Q&A/);
+    expect(personalFeatures.community.description).not.toMatch(/feed|campaign|ad/i);
+  });
+
   test("only release tools are navigable by default", () => {
     expect(
       getNavigablePersonalTools().every((feature) => isFeatureNavigable(feature))

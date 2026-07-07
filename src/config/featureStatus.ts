@@ -59,7 +59,7 @@ export const personalFeatures = {
   community: {
     key: "personal.community",
     title: "Community",
-    description: "Grow updates and community discussions.",
+    description: "Forum discussions, Q&A, and grow help.",
     area: "personal_navigation",
     status: "release",
     href: "/home/personal/community"
