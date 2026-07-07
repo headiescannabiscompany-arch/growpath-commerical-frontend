@@ -62,8 +62,17 @@ const publicPayload = {
       name: "Veg Mix",
       description: "Nitrogen-forward veg support.",
       priceCents: 2500,
+      unitSize: "5 lb bag",
       usageInstructions: "Topdress during veg and water in.",
-      externalPurchaseUrl: "https://example.com/veg-mix"
+      externalPurchaseUrl: "https://example.com/veg-mix",
+      specs: {
+        npk: "3-1-1",
+        guaranteedAnalysis: "N 3 / P2O5 1 / K2O 1",
+        ingredients: ["Alfalfa meal", "Fish bone meal"],
+        directions: "Topdress and water in.",
+        applicationRate: "1 cup per cubic foot",
+        releaseCurve: { summary: "fast nitrogen with slower phosphorus" }
+      }
     },
     {
       id: "product-2",
@@ -181,6 +190,13 @@ describe("public commercial routes", () => {
     expect(screen.getAllByText("Veg Mix").length).toBeGreaterThan(0);
     expect(screen.getByText("Living Soil Labs")).toBeTruthy();
     expect(screen.getByText("Topdress during veg and water in.")).toBeTruthy();
+    expect(screen.getByText("Label / Use Information")).toBeTruthy();
+    expect(screen.getByText("5 lb bag")).toBeTruthy();
+    expect(screen.getByText("3-1-1")).toBeTruthy();
+    expect(screen.getByText("N 3 / P2O5 1 / K2O 1")).toBeTruthy();
+    expect(screen.getByText("Alfalfa meal, Fish bone meal")).toBeTruthy();
+    expect(screen.getAllByText("Topdress and water in.").length).toBeGreaterThan(0);
+    expect(screen.getByText("1 cup per cubic foot")).toBeTruthy();
     expect(screen.getByText("Buy")).toBeTruthy();
     expect(screen.getByText("External Link")).toBeTruthy();
     expect(screen.getByText("Share Product")).toBeTruthy();

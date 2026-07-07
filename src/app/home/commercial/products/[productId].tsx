@@ -49,8 +49,14 @@ function productMissingSetup(product: Product | null) {
   return missing;
 }
 
+function formatDetailValue(value: unknown) {
+  if (Array.isArray(value)) return value.filter(Boolean).join(", ");
+  if (value && typeof value === "object") return JSON.stringify(value);
+  return String(value || "").trim();
+}
+
 function DetailRow({ label, value }: { label: string; value?: unknown }) {
-  const display = String(value || "").trim();
+  const display = formatDetailValue(value);
   if (!display) return null;
   return (
     <View style={styles.detailRow}>
@@ -138,6 +144,7 @@ export default function CommercialProductDetailRoute({ route }: { route?: any } 
 
   const summary = effectiveness?.summary || {};
   const linked = effectiveness?.linked || {};
+  const specs = (product as any)?.specs || {};
   const missingSetup = productMissingSetup(product);
 
   return (
@@ -174,7 +181,42 @@ export default function CommercialProductDetailRoute({ route }: { route?: any } 
           <DetailRow label="SKU" value={product?.sku} />
           <DetailRow label="Status" value={product?.status} />
           <DetailRow label="Currency" value={product?.currency} />
+          <DetailRow
+            label="Size / weight"
+            value={(product as any)?.unitSize || specs.unitSize}
+          />
           <DetailRow label="External URL" value={(product as any)?.externalPurchaseUrl} />
+        </View>
+      </AppCard>
+
+      <AppCard>
+        <Text style={styles.cardTitle}>Label / Use Specs</Text>
+        <Text style={styles.body}>
+          Soil, nutrient, and dry amendment products need public-facing label fields
+          before campaigns, courses, or product claims rely on them.
+        </Text>
+        <View style={styles.detailGrid}>
+          <DetailRow label="N-P-K" value={specs.npk || (product as any)?.npk} />
+          <DetailRow
+            label="Guaranteed analysis"
+            value={specs.guaranteedAnalysis || (product as any)?.guaranteedAnalysis}
+          />
+          <DetailRow
+            label="Ingredients"
+            value={specs.ingredients || (product as any)?.ingredients}
+          />
+          <DetailRow
+            label="Directions"
+            value={specs.directions || (product as any)?.directions}
+          />
+          <DetailRow
+            label="Application rate"
+            value={specs.applicationRate || (product as any)?.applicationRate}
+          />
+          <DetailRow
+            label="Release timing"
+            value={specs.releaseCurve || specs.releaseTimeline}
+          />
         </View>
       </AppCard>
 

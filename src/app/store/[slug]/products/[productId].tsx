@@ -40,6 +40,23 @@ function normalize(value: string) {
     .toLowerCase();
 }
 
+function formatSpecValue(value: unknown) {
+  if (Array.isArray(value)) return value.filter(Boolean).join(", ");
+  if (value && typeof value === "object") return JSON.stringify(value);
+  return String(value || "").trim();
+}
+
+function SpecRow({ label, value }: { label: string; value?: unknown }) {
+  const display = formatSpecValue(value);
+  if (!display) return null;
+  return (
+    <View style={styles.specRow}>
+      <Text style={styles.specLabel}>{label}</Text>
+      <Text style={styles.specValue}>{display}</Text>
+    </View>
+  );
+}
+
 function publicProductUrl(slug: string, product: any) {
   const id = productKey(product) || product?.name || "product";
   return `/store/${encodeURIComponent(slug)}/products/${encodeURIComponent(String(id))}`;
@@ -204,6 +221,7 @@ export default function PublicProductRoute() {
     product?.externalPurchaseUrl || product?.purchaseUrl || product?.url || product?.link;
   const brandName = storefront?.businessName || storefront?.name || "Brand";
   const links = publicLinks(storefront);
+  const specs = product?.specs || {};
 
   return (
     <AppPage
@@ -295,6 +313,37 @@ export default function PublicProductRoute() {
             {product?.warnings ? (
               <Text style={styles.warning}>{product.warnings}</Text>
             ) : null}
+          </AppCard>
+
+          <AppCard>
+            <Text style={styles.cardTitle}>Label / Use Information</Text>
+            <View style={styles.specGrid}>
+              <SpecRow
+                label="Size / weight"
+                value={product?.unitSize || specs.unitSize}
+              />
+              <SpecRow label="N-P-K" value={product?.npk || specs.npk} />
+              <SpecRow
+                label="Guaranteed analysis"
+                value={product?.guaranteedAnalysis || specs.guaranteedAnalysis}
+              />
+              <SpecRow
+                label="Ingredients"
+                value={product?.ingredients || specs.ingredients}
+              />
+              <SpecRow
+                label="Directions"
+                value={product?.directions || specs.directions}
+              />
+              <SpecRow
+                label="Application rate"
+                value={product?.applicationRate || specs.applicationRate}
+              />
+              <SpecRow
+                label="Release timing"
+                value={specs.releaseCurve || specs.releaseTimeline}
+              />
+            </View>
           </AppCard>
 
           <AppCard>
@@ -392,6 +441,20 @@ const styles = StyleSheet.create({
   meta: { color: "#64748B", lineHeight: 19 },
   price: { color: "#166534", fontSize: 18, fontWeight: "800", marginTop: 4 },
   warning: { color: "#92400E", fontWeight: "700", lineHeight: 20 },
+  specGrid: { gap: 8 },
+  specRow: {
+    borderColor: "#E2E8F0",
+    borderRadius: 8,
+    borderWidth: 1,
+    padding: 10
+  },
+  specLabel: {
+    color: "#64748B",
+    fontSize: 11,
+    fontWeight: "900",
+    textTransform: "uppercase"
+  },
+  specValue: { color: "#0F172A", fontWeight: "700", lineHeight: 20, marginTop: 4 },
   actionRow: {
     flexDirection: "row",
     flexWrap: "wrap",

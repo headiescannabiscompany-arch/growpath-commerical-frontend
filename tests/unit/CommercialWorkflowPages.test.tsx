@@ -194,7 +194,16 @@ describe("commercial workflow pages", () => {
             status: "published",
             sku: "LSL-BASE",
             shortDescription: "Seedling-safe base soil",
-            externalPurchaseUrl: "https://example.com/base"
+            externalPurchaseUrl: "https://example.com/base",
+            unitSize: "1 cu ft bag",
+            specs: {
+              npk: "3-1-1",
+              guaranteedAnalysis: "N 3 / P2O5 1 / K2O 1",
+              ingredients: ["Compost", "Aeration", "Dry amendments"],
+              directions: "Mix, moisten, and rest before transplant.",
+              applicationRate: "Use as full medium",
+              releaseCurve: { summary: "fast nitrogen plus slow background" }
+            }
           }
         });
       }
@@ -1076,6 +1085,11 @@ describe("commercial workflow pages", () => {
     expect(screen.getAllByText("Living Soil Base").length).toBeGreaterThan(0);
     expect(screen.getByText("Effectiveness Snapshot")).toBeTruthy();
     expect(screen.getByText("Linked Evidence")).toBeTruthy();
+    expect(screen.getByText("Label / Use Specs")).toBeTruthy();
+    expect(screen.getByText("3-1-1")).toBeTruthy();
+    expect(screen.getByText("N 3 / P2O5 1 / K2O 1")).toBeTruthy();
+    expect(screen.getByText("Compost, Aeration, Dry amendments")).toBeTruthy();
+    expect(screen.getByText("Mix, moisten, and rest before transplant.")).toBeTruthy();
     expect(screen.getByText("Harvest quality notes")).toBeTruthy();
     expect(screen.getByText("Crop summaries")).toBeTruthy();
     expect(
