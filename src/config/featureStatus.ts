@@ -144,7 +144,7 @@ export const personalToolFeatures = [
   },
   {
     key: "tools.npk_recipe",
-    title: "NPK Recipe Calculator",
+    title: "NPK / Feed Recipe Builder",
     description: "Build multi-product recipes with elemental ppm and release timing.",
     area: "water_nutrients",
     status: "release",

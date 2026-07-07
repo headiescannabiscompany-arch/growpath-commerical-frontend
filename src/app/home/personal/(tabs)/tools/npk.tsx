@@ -36,6 +36,14 @@ type ProductRow = {
   unit: "g" | "ml" | "oz" | "tsp" | "tbsp";
   chemistryKey: string;
   sourceType: "user_entered" | "manufacturer" | "extension_reference" | "lab_tested";
+  releaseSpeed: "immediate" | "fast" | "medium" | "slow" | "unknown";
+  releaseWindow:
+    | "days_0_7"
+    | "days_7_21"
+    | "days_21_45"
+    | "days_45_90"
+    | "days_90_plus"
+    | "unknown";
   densityGml: string;
   N: string;
   P: string;
@@ -83,6 +91,8 @@ function newRow(index: number): ProductRow {
     unit: "g",
     chemistryKey: "unknown",
     sourceType: "user_entered",
+    releaseSpeed: "unknown",
+    releaseWindow: "unknown",
     densityGml: "1",
     N: "0",
     P: "0",
@@ -316,8 +326,8 @@ export default function NpkToolScreen() {
   if (!enabled) {
     return (
       <LockedScreen
-        title="NPK Label Ratio is a Pro tool"
-        message="Free accounts can use core tools and browse the app. Upgrade to calculate NPK recipes and save results to grow history."
+        title="NPK / Feed Recipe Builder is a Pro tool"
+        message="Free accounts can use core tools and browse the app. Upgrade to build NPK recipes, model release timing, and save results to grow history."
       />
     );
   }
@@ -325,10 +335,11 @@ export default function NpkToolScreen() {
   return (
     <ScrollView style={styles.container} contentContainerStyle={styles.content}>
       <BackButton />
-      <Text style={styles.title}>NPK Label Ratio (Preview)</Text>
+      <Text style={styles.title}>NPK / Feed Recipe Builder</Text>
       <Text style={styles.subtitle}>
-        Build up to 20 product rows. Fertilizer label P and K are converted from P2O5 and
-        K2O to elemental ppm.
+        Build up to 20 product rows from guaranteed analysis, target N-P-K, source water,
+        and release timing. Fertilizer label P and K are converted from P2O5 and K2O to
+        elemental ppm where appropriate.
       </Text>
       <View style={styles.guidanceCard}>
         <Text style={styles.resultTitle}>AI-guided, calculator-verified</Text>
@@ -597,6 +608,41 @@ export default function NpkToolScreen() {
               <Picker.Item label="Lab tested" value="lab_tested" />
             </Picker>
           </View>
+          <Text style={styles.fieldHint}>Release behavior</Text>
+          <View style={styles.row}>
+            <View style={styles.selectWrap}>
+              <Picker
+                selectedValue={row.releaseSpeed}
+                onValueChange={(value) => updateRow(row.id, "releaseSpeed", value)}
+                style={styles.picker}
+              >
+                <Picker.Item label="Immediate release" value="immediate" />
+                <Picker.Item label="Fast release" value="fast" />
+                <Picker.Item label="Medium release" value="medium" />
+                <Picker.Item label="Slow release" value="slow" />
+                <Picker.Item label="Unknown release" value="unknown" />
+              </Picker>
+            </View>
+            <View style={styles.selectWrap}>
+              <Picker
+                selectedValue={row.releaseWindow}
+                onValueChange={(value) => updateRow(row.id, "releaseWindow", value)}
+                style={styles.picker}
+              >
+                <Picker.Item label="Day 0-7" value="days_0_7" />
+                <Picker.Item label="Day 7-21" value="days_7_21" />
+                <Picker.Item label="Day 21-45" value="days_21_45" />
+                <Picker.Item label="Day 45-90" value="days_45_90" />
+                <Picker.Item label="90+ days" value="days_90_plus" />
+                <Picker.Item label="Unknown window" value="unknown" />
+              </Picker>
+            </View>
+          </View>
+          <Text style={styles.fieldHint}>
+            Use this when a label or your experience says an input behaves faster or
+            slower than the chemical-form default. Compost and castings should usually
+            stay uncertain unless lab-tested.
+          </Text>
           <View style={styles.row}>
             <TextInput
               style={styles.input}

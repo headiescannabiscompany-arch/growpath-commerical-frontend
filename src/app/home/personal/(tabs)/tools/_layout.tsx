@@ -26,7 +26,7 @@ export default function ToolsLayout() {
       <Stack.Screen name="ppfd" options={{ title: "PPFD / DLI Planner" }} />
       <Stack.Screen name="bud-rot-risk" options={{ title: "Bud Rot Risk" }} />
       <Stack.Screen name="nutrient-chemistry" options={{ title: "Nutrient Chemistry" }} />
-      <Stack.Screen name="npk" options={{ title: "NPK Label Ratio (Preview)" }} />
+      <Stack.Screen name="npk" options={{ title: "NPK / Feed Recipe Builder" }} />
       <Stack.Screen name="watering" options={{ title: "Watering Planner" }} />
       <Stack.Screen name="feeding-schedule" options={{ title: "AI Feeding Schedule" }} />
       <Stack.Screen name="harvest-estimator" options={{ title: "Harvest Estimator" }} />
