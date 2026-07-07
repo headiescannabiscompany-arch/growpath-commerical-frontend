@@ -14,7 +14,7 @@ import {
 } from "@/features/personal/tools/phenoMatrix";
 import ToolResultSurface from "@/features/personal/tools/ToolResultSurface";
 import {
-  saveToolRunAndCreateTask,
+  saveToolRunAndCreateTasks,
   saveToolRunResult
 } from "@/features/personal/tools/saveToolRunAndOpenJournal";
 import PersonalFeedPlacement from "@/components/feed/PersonalFeedPlacement";
@@ -77,6 +77,10 @@ function coerceParam(value?: string | string[]) {
   if (typeof value === "string") return value;
   if (Array.isArray(value)) return value[0] || "";
   return "";
+}
+
+function daysFromNow(days: number) {
+  return new Date(Date.now() + days * 24 * 60 * 60 * 1000).toISOString();
 }
 
 export default function PhenoMatrixScreen() {
@@ -156,26 +160,51 @@ export default function PhenoMatrixScreen() {
     setFeedback("Saved pheno matrix ToolRun.");
   }
 
-  async function createReviewTask() {
+  async function createDecisionTasks() {
     if (!growId) throw new Error("Select a grow before creating a review task.");
-    const result = await saveToolRunAndCreateTask({
+    const candidateLabel = topCandidate?.label || "top pheno";
+    const scoreLine = topCandidate
+      ? `${candidateLabel} ranked #1 with ${topCandidate.normalizedScore.toFixed(2)}/10 and ${topCandidate.recommendation.toUpperCase()} recommendation.`
+      : "Review ranked pheno candidates before making final keeper decisions.";
+    const result = await saveToolRunAndCreateTasks({
       growId,
       toolKey: "pheno-matrix",
       toolRunId: savedRunId || undefined,
       input: matrixInput,
       output: matrixOutput,
-      title: topCandidate
-        ? `Review pheno keeper: ${topCandidate.label}`
-        : "Review pheno matrix",
-      description: topCandidate
-        ? `${topCandidate.label} ranked #1 with ${topCandidate.normalizedScore.toFixed(2)}/10 and ${topCandidate.recommendation.toUpperCase()} recommendation. Review photos, clone performance, stress notes, smoke/lab data, and breeding intent before final keeper decision.`
-        : "Review pheno candidates before keeper decision.",
-      priority: keepers.length ? "high" : "medium",
-      dueDate: new Date(Date.now() + 24 * 60 * 60 * 1000).toISOString()
+      tasks: [
+        {
+          title: `Review pheno keeper evidence: ${candidateLabel}`,
+          description: `${scoreLine} Review photos, morphology, vigor, aroma, resin, pest resistance, and stress notes before changing keeper status.`,
+          priority: keepers.length ? "high" : "medium",
+          dueDate: daysFromNow(1)
+        },
+        {
+          title: `Verify clone and stress response: ${candidateLabel}`,
+          description:
+            "Confirm clone status, rooting behavior, stress tolerance, pest/disease tolerance, and whether backup cuts or mother stock should be kept.",
+          priority: "medium",
+          dueDate: daysFromNow(3)
+        },
+        {
+          title: `Record dry/cure smoke and hash notes: ${candidateLabel}`,
+          description:
+            "After dry/cure, add smell, taste, smoke quality, resin behavior, hash value, and any lab or wash notes to support the keeper/reject decision.",
+          priority: "medium",
+          dueDate: daysFromNow(14)
+        },
+        {
+          title: `Mark final keeper/reject/watch decision: ${candidateLabel}`,
+          description:
+            "Save the final decision with reasoning, including what data supported the call and where selected keeper data should flow next.",
+          priority: keepers.length ? "high" : "medium",
+          dueDate: daysFromNow(21)
+        }
+      ]
     });
     if (!result.ok) throw new Error(result.error);
     if (!savedRunId) setSavedRunId(result.toolRunId);
-    setFeedback("Created pheno review task.");
+    setFeedback("Created pheno decision tasks.");
   }
 
   if (!enabled) {
@@ -365,11 +394,11 @@ export default function PhenoMatrixScreen() {
             },
             {
               key: "create-task",
-              label: "Create Keeper Review Task",
+              label: "Create Pheno Decision Tasks",
               variant: "secondary",
               pendingLabel: "Creating...",
               disabled: !growId,
-              onPress: createReviewTask
+              onPress: createDecisionTasks
             }
           ]}
           feedback={feedback}
