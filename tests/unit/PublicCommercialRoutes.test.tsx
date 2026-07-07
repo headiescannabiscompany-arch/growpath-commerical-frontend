@@ -142,7 +142,7 @@ describe("public commercial routes", () => {
     expect(screen.getByText("Go to Store")).toBeTruthy();
     expect(screen.getByText("Share Profile")).toBeTruthy();
     expect(screen.getByText("View Similar Brands")).toBeTruthy();
-    expect(screen.getByText("Return to Feed")).toBeTruthy();
+    expect(screen.getByText("Return to Campaigns")).toBeTruthy();
     expect(mockLinkHrefs).toContain("/feed");
     expect(mockLinkHrefs).not.toContain("/home/personal/community");
     expect(screen.getByText("Website")).toBeTruthy();
@@ -152,6 +152,8 @@ describe("public commercial routes", () => {
     expect(screen.getAllByText("Details").length).toBeGreaterThan(0);
     expect(screen.getByText("Using Veg Mix")).toBeTruthy();
     expect(screen.getByText("Trial update")).toBeTruthy();
+    expect(screen.getByText("Promoted Campaigns")).toBeTruthy();
+    expect(screen.getByText("Open Campaign")).toBeTruthy();
     expect(screen.getByText("Veg Mix Trial")).toBeTruthy();
     expect(screen.getByText("Veg Mix Support")).toBeTruthy();
     await waitFor(() =>
@@ -175,7 +177,7 @@ describe("public commercial routes", () => {
     expect(screen.getByText("View Brand Profile")).toBeTruthy();
     expect(screen.getByText("Share Store")).toBeTruthy();
     expect(screen.getByText("View Similar Brands")).toBeTruthy();
-    expect(screen.getByText("Return to Feed")).toBeTruthy();
+    expect(screen.getByText("Return to Campaigns")).toBeTruthy();
     expect(screen.getByText("Website")).toBeTruthy();
     expect(screen.getByText("Support Email")).toBeTruthy();
     expect(screen.getByText("Instagram")).toBeTruthy();
@@ -239,7 +241,7 @@ describe("public commercial routes", () => {
     expect(screen.getByText("Back to Store")).toBeTruthy();
     expect(screen.getByText("Brand Profile")).toBeTruthy();
     expect(screen.getByText("Similar Brands")).toBeTruthy();
-    expect(screen.getByText("Return to Feed")).toBeTruthy();
+    expect(screen.getByText("Return to Campaigns")).toBeTruthy();
     expect(screen.getByText("Website")).toBeTruthy();
     expect(screen.getByText("Support Email")).toBeTruthy();
     expect(screen.getByText("Instagram")).toBeTruthy();

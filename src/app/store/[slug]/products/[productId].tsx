@@ -518,7 +518,7 @@ export default function PublicProductRoute() {
               </Link>
               <Link href={returnFeedHref as any} asChild>
                 <Pressable style={styles.secondaryButton}>
-                  <Text style={styles.secondaryButtonText}>Return to Feed</Text>
+                  <Text style={styles.secondaryButtonText}>Return to Campaigns</Text>
                 </Pressable>
               </Link>
             </View>

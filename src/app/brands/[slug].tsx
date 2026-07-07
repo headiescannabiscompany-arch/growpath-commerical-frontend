@@ -145,7 +145,7 @@ export default function PublicBrandProfileRoute() {
               </Link>
               <Link href={returnFeedHref as any} asChild>
                 <Pressable style={styles.secondaryButton}>
-                  <Text style={styles.secondaryButtonText}>Return to Feed</Text>
+                  <Text style={styles.secondaryButtonText}>Return to Campaigns</Text>
                 </Pressable>
               </Link>
             </View>
@@ -250,15 +250,19 @@ export default function PublicBrandProfileRoute() {
 
           {feedPosts.length ? (
             <AppCard>
-              <Text style={styles.cardTitle}>Latest Updates</Text>
+              <Text style={styles.cardTitle}>Promoted Campaigns</Text>
+              <Text style={styles.meta}>
+                Feed placements are commercial outreach and advertising. Discussion and
+                support stay in Forum/Q&A.
+              </Text>
               {feedPosts.slice(0, 3).map((post) => (
                 <View
-                  key={publicItemId(post) || publicItemTitle(post, "Update")}
+                  key={publicItemId(post) || publicItemTitle(post, "Campaign")}
                   style={styles.listRow}
                 >
                   <View style={styles.productCopy}>
                     <Text style={styles.productName}>
-                      {publicItemTitle(post, "Update")}
+                      {publicItemTitle(post, "Campaign")}
                     </Text>
                     {publicItemSummary(post) ? (
                       <Text style={styles.meta}>{publicItemSummary(post)}</Text>
@@ -266,7 +270,7 @@ export default function PublicBrandProfileRoute() {
                   </View>
                   <Link href={returnFeedHref as any} asChild>
                     <Pressable style={styles.secondaryButton}>
-                      <Text style={styles.secondaryButtonText}>Feed</Text>
+                      <Text style={styles.secondaryButtonText}>Open Campaign</Text>
                     </Pressable>
                   </Link>
                 </View>
