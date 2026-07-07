@@ -137,7 +137,7 @@ export default function SubscriptionScreen({ navigation }) {
 
         <Text style={styles.footer}>
           By subscribing, you agree to our Terms of Service and Privacy Policy. Your
-          subscription will auto-renew monthly unless canceled. Features unlock only after
+          subscription will auto-renew based on the billing interval you choose unless canceled. Features unlock only after
           backend confirmation.
         </Text>
       </ScrollView>
