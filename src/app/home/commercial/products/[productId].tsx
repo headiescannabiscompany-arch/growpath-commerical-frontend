@@ -51,7 +51,19 @@ function productMissingSetup(product: Product | null) {
 
 function formatDetailValue(value: unknown) {
   if (Array.isArray(value)) return value.filter(Boolean).join(", ");
-  if (value && typeof value === "object") return JSON.stringify(value);
+  if (value && typeof value === "object") {
+    const record = value as Record<string, any>;
+    if (hasText(record.summary)) return String(record.summary);
+    if (hasText(record.explanation)) return String(record.explanation);
+    return Object.entries(record)
+      .filter(([, entry]) => entry !== null && entry !== undefined && entry !== "")
+      .map(([key, entry]) => {
+        if (Array.isArray(entry)) return `${key}: ${entry.filter(Boolean).join(", ")}`;
+        if (entry && typeof entry === "object") return `${key}: ${JSON.stringify(entry)}`;
+        return `${key}: ${entry}`;
+      })
+      .join(", ");
+  }
   return String(value || "").trim();
 }
 
@@ -196,11 +208,17 @@ export default function CommercialProductDetailRoute({ route }: { route?: any } 
           before campaigns, courses, or product claims rely on them.
         </Text>
         <View style={styles.detailGrid}>
+          <DetailRow label="Source tool" value={specs.sourceTool || specs.source} />
           <DetailRow label="N-P-K" value={specs.npk || (product as any)?.npk} />
           <DetailRow
             label="Guaranteed analysis"
             value={specs.guaranteedAnalysis || (product as any)?.guaranteedAnalysis}
           />
+          <DetailRow
+            label="Guaranteed analysis estimate"
+            value={specs.guaranteedAnalysisEstimate}
+          />
+          <DetailRow label="Elemental estimate" value={specs.elementalEstimate} />
           <DetailRow
             label="Ingredients"
             value={specs.ingredients || (product as any)?.ingredients}
@@ -217,6 +235,7 @@ export default function CommercialProductDetailRoute({ route }: { route?: any } 
             label="Release timing"
             value={specs.releaseCurve || specs.releaseTimeline}
           />
+          <DetailRow label="Warnings" value={specs.warnings} />
         </View>
       </AppCard>
 
