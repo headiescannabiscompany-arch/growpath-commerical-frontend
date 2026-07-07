@@ -272,9 +272,9 @@ export default function CommercialCourseDetailRoute({ route }: { route?: any } =
           value={linkedProductLineIds}
         />
         <TextInput
-          accessibilityLabel="Commercial course detail linked grows"
+          accessibilityLabel="Commercial course detail linked evidence runs"
           onChangeText={setLinkedGrowIds}
-          placeholder="Linked grow/trial IDs"
+          placeholder="Linked evidence run IDs"
           style={styles.input}
           value={linkedGrowIds}
         />

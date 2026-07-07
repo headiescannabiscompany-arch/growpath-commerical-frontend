@@ -146,8 +146,8 @@ export default function CommercialProductLineDetailRoute({
       <AppCard>
         <Text style={styles.cardTitle}>Commercial Links</Text>
         <Text style={styles.body}>
-          A line should connect products, product formulas, batches, trial grows, courses,
-          feed campaigns, storefront blocks, and forum support.
+          A line should connect products, product formulas, batches, evidence runs,
+          courses, feed campaigns, storefront blocks, and forum support.
         </Text>
         <View style={styles.actions}>
           <ActionLink href="/home/commercial/products" label="Product Catalog" />

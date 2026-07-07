@@ -270,7 +270,7 @@ export default function CommercialProductsRoute() {
       <AppCard>
         <Text style={styles.cardTitle}>Create product</Text>
         <Text style={styles.body}>
-          Create the product shell here, then connect formulas, batches, trial grows,
+          Create the product shell here, then connect formulas, batches, evidence runs,
           courses, feed campaigns, and support threads as evidence comes in.
         </Text>
         <View style={styles.formGrid}>
@@ -529,8 +529,8 @@ export default function CommercialProductsRoute() {
         <Text style={styles.cardTitle}>Soil and nutrient product path</Text>
         <Text style={styles.body}>
           For soil, dry amendment, and nutrient products, the product record should
-          connect to formula, guaranteed analysis, release timing, batch records, trial
-          grows, and long-term effectiveness notes.
+          connect to formula, guaranteed analysis, release timing, batch records, evidence
+          runs, and long-term effectiveness notes.
         </Text>
         <Text style={styles.bullet}>Build formula in Soil & Nutrient Batch Planner</Text>
         <Text style={styles.bullet}>Link formula/batch to product and product line</Text>

@@ -138,7 +138,7 @@ export default function CommercialTrialsRoute() {
         <Text style={styles.cardTitle}>Create Product Trial</Text>
         <Text style={styles.body}>
           Trial record: connect CommercialProduct, ProductLine, SoilNutrientBatch, Recipe,
-          and Grow records before using the result as public proof.
+          and underlying grow evidence before using the result as public proof.
         </Text>
         <TextInput
           value={trialName}

@@ -165,7 +165,7 @@ export default function CommercialTrialDetailRoute({ route }: { route?: any } = 
           <Text style={styles.kicker}>Commercial evidence workspace</Text>
           <Text style={styles.title}>{trialTitle(trial)}</Text>
           <Text style={styles.subtitle}>
-            Keep product trials tied to real grows, batches, measurements, limitations,
+            Keep product trials tied to evidence runs, batches, measurements, limitations,
             and claim-safe public summaries.
           </Text>
           <View style={styles.actions}>
@@ -206,7 +206,7 @@ export default function CommercialTrialDetailRoute({ route }: { route?: any } = 
           <DetailRow label="Product ID" value={trial?.productId} />
           <DetailRow label="Product line ID" value={trial?.productLineId} />
           <DetailRow label="Batch ID" value={trial?.batchId} />
-          <DetailRow label="Grow ID" value={trial?.growId} />
+          <DetailRow label="Evidence run ID" value={trial?.growId} />
         </View>
         <View style={styles.actions}>
           {trial?.productId ? (
@@ -230,7 +230,7 @@ export default function CommercialTrialDetailRoute({ route }: { route?: any } = 
         <Text style={styles.cardTitle}>Effectiveness Summary</Text>
         <Text style={styles.body}>
           Save the private working summary here. Publish only claims supported by saved
-          grows, measurements, photos, harvest, dry/cure, or comparison records.
+          evidence runs, measurements, photos, harvest, dry/cure, or comparison records.
         </Text>
         <TextInput
           accessibilityLabel="Commercial trial status"

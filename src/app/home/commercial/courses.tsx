@@ -288,8 +288,8 @@ export default function CommercialCoursesRoute() {
             onChangeText={(linkedGrowIds) =>
               setForm((prev) => ({ ...prev, linkedGrowIds }))
             }
-            accessibilityLabel="Commercial course linked grows"
-            placeholder="Linked grow/trial IDs"
+            accessibilityLabel="Commercial course linked evidence runs"
+            placeholder="Linked evidence run IDs"
             style={styles.input}
           />
           <TextInput
@@ -478,7 +478,7 @@ export default function CommercialCoursesRoute() {
           Attach product IDs or product-line IDs to course metadata
         </Text>
         <Text style={styles.bullet}>
-          Use trial results and grow reports as lesson evidence
+          Use trial results and evidence reports as lesson evidence
         </Text>
         <Text style={styles.bullet}>
           Announce course updates through linked feed campaigns

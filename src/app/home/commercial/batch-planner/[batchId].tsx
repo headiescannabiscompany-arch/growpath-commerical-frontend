@@ -158,8 +158,8 @@ export default function CommercialBatchDetailRoute({ route }: { route?: any } = 
       <AppCard>
         <Text style={styles.cardTitle}>Linked Commercial Workflow</Text>
         <Text style={styles.body}>
-          Batches should link to products, product lines, trial grows, feed campaigns, and
-          storefront proof only when the evidence is strong enough.
+          Batches should link to products, product lines, evidence runs, feed campaigns,
+          and storefront proof only when the evidence is strong enough.
         </Text>
         <View style={styles.detailGrid}>
           <DetailRow label="Product ID" value={batch?.productId} />

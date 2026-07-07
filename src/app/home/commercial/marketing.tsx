@@ -238,8 +238,8 @@ export default function CommercialMarketingRoute() {
       <AppCard>
         <Text style={styles.cardTitle}>Create marketing plan</Text>
         <Text style={styles.body}>
-          Attach the plan to products, courses, grows, storefronts, and external URLs so
-          clicks and public content can be traced back to real commercial work.
+          Attach the plan to products, courses, evidence runs, storefronts, and external
+          URLs so clicks and public content can be traced back to real commercial work.
         </Text>
         <TextInput
           value={form.name}
@@ -340,8 +340,8 @@ export default function CommercialMarketingRoute() {
             onChangeText={(linkedGrowId) =>
               setForm((prev) => ({ ...prev, linkedGrowId }))
             }
-            accessibilityLabel="Marketing plan linked grow"
-            placeholder="Linked grow/trial ID"
+            accessibilityLabel="Marketing plan linked evidence run"
+            placeholder="Linked evidence run ID"
             style={styles.input}
           />
           <TextInput
@@ -443,8 +443,8 @@ export default function CommercialMarketingRoute() {
         <Text style={styles.cardTitle}>Trial-to-content workflow</Text>
         <Text style={styles.body}>
           Trial results should become public proof only when there is enough saved grow
-          data. Marketing should point back to product trials, grow reports, and public
-          product pages.
+          data. Marketing should point back to product trials, evidence reports, and
+          public product pages.
         </Text>
         <View style={styles.actions}>
           <ActionLink href="/home/commercial/trials" label="Product Trials" />
@@ -477,7 +477,7 @@ export default function CommercialMarketingRoute() {
                   </Text>
                   <Text style={styles.rowMeta}>
                     Product {campaign.linkedProductId || "none"} / Course{" "}
-                    {campaign.linkedCourseId || "none"} / Grow{" "}
+                    {campaign.linkedCourseId || "none"} / Evidence run{" "}
                     {campaign.linkedGrowId || "none"}
                   </Text>
                   {campaign.targetUrl || campaign.externalUrl ? (

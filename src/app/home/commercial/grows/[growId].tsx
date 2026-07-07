@@ -221,7 +221,7 @@ export default function CommercialGrowDetailRoute({ route }: { route?: any } = {
       </AppCard>
 
       <AppCard>
-        <Text style={styles.cardTitle}>Update Grow Status</Text>
+        <Text style={styles.cardTitle}>Update Evidence Run Status</Text>
         <View style={styles.formGrid}>
           <TextInput
             accessibilityLabel="Product trial grow detail status"

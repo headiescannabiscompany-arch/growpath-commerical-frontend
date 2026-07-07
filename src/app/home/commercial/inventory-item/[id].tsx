@@ -265,8 +265,8 @@ export default function CommercialInventoryItemDetailRoute() {
             <Text style={styles.sectionTitle}>Connected Workflows</Text>
             <Text style={styles.workflowText}>
               Use inventory support as the stock record behind products, product trial
-              grows, batches/lots, packaging, plant material, and garden-center catalog
-              items.
+              evidence runs, batches/lots, packaging, plant material, and garden-center
+              catalog items.
             </Text>
             <View style={styles.actionGrid}>
               {item.linkedProductId ? (

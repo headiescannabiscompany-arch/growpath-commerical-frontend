@@ -458,7 +458,7 @@ export default function CommercialFeedRoute() {
           <View style={styles.linkBox}>
             <Text style={styles.linkBoxTitle}>Optional commercial links</Text>
             <Text style={styles.linkBoxText}>
-              Attach product, course, live, grow/trial, storefront, external purchase
+              Attach product, course, live, evidence run, storefront, external purchase
               context, or a Forum/Q&A thread so users can move from the ad into the right
               public surface.
             </Text>
@@ -490,9 +490,9 @@ export default function CommercialFeedRoute() {
               value={linkedGrowId}
               onChangeText={setLinkedGrowId}
               style={styles.input}
-              placeholder="Linked grow or trial ID"
+              placeholder="Linked evidence run ID"
               autoCapitalize="none"
-              accessibilityLabel="Linked grow or trial"
+              accessibilityLabel="Linked evidence run"
             />
             <TextInput
               value={linkedForumThreadId}
@@ -689,7 +689,7 @@ export default function CommercialFeedRoute() {
                   <Text style={styles.linkMeta}>Live: {post.linkedLiveId}</Text>
                 ) : null}
                 {post.linkedGrowId ? (
-                  <Text style={styles.linkMeta}>Grow/trial: {post.linkedGrowId}</Text>
+                  <Text style={styles.linkMeta}>Evidence run: {post.linkedGrowId}</Text>
                 ) : null}
                 {post.linkedForumThreadId ? (
                   <Text style={styles.linkMeta}>

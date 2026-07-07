@@ -677,7 +677,10 @@ describe("commercial workflow pages", () => {
       screen.getByLabelText("Brand support linked course"),
       "course-2"
     );
-    fireEvent.changeText(screen.getByLabelText("Brand support linked grow"), "grow-2");
+    fireEvent.changeText(
+      screen.getByLabelText("Brand support linked evidence run"),
+      "grow-2"
+    );
     fireEvent.changeText(
       screen.getByLabelText("Brand support storefront slug"),
       "living-soil-labs"
@@ -763,7 +766,7 @@ describe("commercial workflow pages", () => {
       "line-1"
     );
     fireEvent.changeText(
-      screen.getByLabelText("Commercial course linked grows"),
+      screen.getByLabelText("Commercial course linked evidence runs"),
       "grow-1"
     );
     fireEvent.changeText(
@@ -883,7 +886,7 @@ describe("commercial workflow pages", () => {
       "line-1"
     );
     fireEvent.changeText(
-      screen.getByLabelText("Commercial course detail linked grows"),
+      screen.getByLabelText("Commercial course detail linked evidence runs"),
       "grow-1"
     );
     fireEvent.changeText(
@@ -1018,7 +1021,10 @@ describe("commercial workflow pages", () => {
       screen.getByLabelText("Marketing plan linked course"),
       "course-2"
     );
-    fireEvent.changeText(screen.getByLabelText("Marketing plan linked grow"), "grow-2");
+    fireEvent.changeText(
+      screen.getByLabelText("Marketing plan linked evidence run"),
+      "grow-2"
+    );
     fireEvent.changeText(
       screen.getByLabelText("Marketing plan storefront slug"),
       "living-soil-labs"

@@ -204,8 +204,8 @@ export default function CommercialCommunityRoute() {
             onChangeText={(linkedGrowId) =>
               setForm((prev) => ({ ...prev, linkedGrowId }))
             }
-            accessibilityLabel="Brand support linked grow"
-            placeholder="Linked grow/trial ID"
+            accessibilityLabel="Brand support linked evidence run"
+            placeholder="Linked evidence run ID"
             style={styles.input}
           />
           <TextInput
