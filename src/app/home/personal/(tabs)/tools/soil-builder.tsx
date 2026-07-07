@@ -422,7 +422,10 @@ export default function SoilBuilderToolScreen() {
                 },
                 directions: Array.isArray(outputs.mixingInstructions)
                   ? outputs.mixingInstructions
-                  : [],
+                  : [
+                      "Confirm base media, amendment labels, and guaranteed analysis before commercial use.",
+                      "Mix evenly, moisten, label the mixed date, and complete rest/cook review before publishing or batching."
+                    ],
                 applicationRate: outputs.applicationRate || null,
                 releaseCurve: outputs.releaseCurve || outputs.deliveryCurve || null,
                 restCookDays: outputs.restCookDays ?? payload.restCookDays,
@@ -440,7 +443,8 @@ export default function SoilBuilderToolScreen() {
                     : []),
                   ...(Array.isArray(outputs.compatibilityWarnings)
                     ? outputs.compatibilityWarnings
-                    : [])
+                    : []),
+                  "Draft product requires image, package size, price, Stripe, stock, label directions, documents, and batch/lot review before publishing."
                 ].filter(Boolean)
               }
             });

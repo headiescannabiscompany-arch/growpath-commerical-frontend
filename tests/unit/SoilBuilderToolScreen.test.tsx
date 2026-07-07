@@ -158,6 +158,13 @@ describe("SoilBuilderToolScreen", () => {
             releaseCurve: { summary: "fast N plus slow P base" },
             restCookDays: 21,
             compostUncertainty: "high - compost only estimated",
+            directions: expect.arrayContaining([
+              expect.stringContaining("Confirm base media"),
+              expect.stringContaining("complete rest/cook review")
+            ]),
+            warnings: expect.arrayContaining([
+              expect.stringContaining("Draft product requires image")
+            ]),
             ingredients: expect.arrayContaining([
               expect.objectContaining({ name: "Alfalfa meal" }),
               expect.objectContaining({ name: "Fish bone meal" })
