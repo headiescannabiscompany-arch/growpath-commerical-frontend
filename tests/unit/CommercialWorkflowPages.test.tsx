@@ -1132,6 +1132,12 @@ describe("commercial workflow pages", () => {
     expect(screen.getAllByText("Batch Planner").length).toBeGreaterThan(0);
     await waitFor(() => expect(screen.getByText("Living Soil Base")).toBeTruthy());
     expect(screen.getByText("Open Detail")).toBeTruthy();
+    expect(screen.getByText("Product publish blocked")).toBeTruthy();
+    expect(screen.getByText(/add image/)).toBeTruthy();
+    expect(
+      screen.getByLabelText("Toggle commercial product publish status").props
+        .accessibilityState?.disabled
+    ).toBe(true);
 
     fireEvent.changeText(screen.getByLabelText("Commercial product name"), "Bloom Mix");
     fireEvent.changeText(
@@ -1177,6 +1183,10 @@ describe("commercial workflow pages", () => {
       screen.getByLabelText("Commercial product short description"),
       "Flower topdress blend"
     );
+    expect(
+      screen.getByLabelText("Toggle commercial product publish status").props
+        .accessibilityState?.disabled
+    ).toBe(false);
     fireEvent.press(screen.getByLabelText("Toggle commercial product publish status"));
     fireEvent.press(screen.getByLabelText("Create commercial product"));
 

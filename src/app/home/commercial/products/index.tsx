@@ -114,6 +114,16 @@ function productMissingSetup(product: Product) {
   return missing;
 }
 
+function formPublishBlockers(form: ProductForm) {
+  const blockers: string[] = [];
+  if (!hasText(form.imageUrl)) blockers.push("add image");
+  if (!hasText(form.shortDescription)) blockers.push("add description");
+  if (!Number(form.price)) blockers.push("add price");
+  if (!hasText(form.unitSize)) blockers.push("add size/weight");
+  if (!hasText(form.externalPurchaseUrl)) blockers.push("add checkout link");
+  return blockers;
+}
+
 function parsePrice(value: string) {
   const parsed = Number(value);
   return Number.isFinite(parsed) && parsed >= 0 ? parsed : undefined;
@@ -156,6 +166,8 @@ export default function CommercialProductsRoute({
       products.reduce((total, product) => total + productMissingSetup(product).length, 0),
     [products]
   );
+  const publishBlockers = formPublishBlockers(form);
+  const publishToggleDisabled = form.status === "draft" && publishBlockers.length > 0;
 
   async function loadProducts() {
     setLoading(true);
@@ -418,19 +430,26 @@ export default function CommercialProductsRoute({
           <Pressable
             accessibilityRole="button"
             accessibilityLabel="Toggle commercial product publish status"
+            disabled={publishToggleDisabled}
             onPress={() =>
               setForm((prev) => ({
                 ...prev,
                 status: prev.status === "published" ? "draft" : "published"
               }))
             }
-            style={styles.action}
+            style={[styles.action, publishToggleDisabled ? styles.disabled : null]}
           >
             <Text style={styles.actionText}>
               Status: {form.status === "published" ? "Published" : "Draft"}
             </Text>
           </Pressable>
         </View>
+        {publishToggleDisabled ? (
+          <View style={styles.warningBox}>
+            <Text style={styles.warningTitle}>Product publish blocked</Text>
+            <Text style={styles.warningText}>{publishBlockers.join(" | ")}</Text>
+          </View>
+        ) : null}
       </AppCard>
 
       <AppCard>
@@ -760,6 +779,21 @@ const styles = StyleSheet.create({
     marginTop: 6
   },
   warningRow: { flexDirection: "row", flexWrap: "wrap", gap: 6, marginTop: 8 },
+  warningBox: {
+    backgroundColor: "#FFF7ED",
+    borderColor: "#FDBA74",
+    borderRadius: 8,
+    borderWidth: 1,
+    marginTop: 10,
+    padding: 10
+  },
+  warningTitle: {
+    color: "#9A3412",
+    fontSize: 12,
+    fontWeight: "900",
+    textTransform: "uppercase"
+  },
+  warningText: { color: "#9A3412", fontSize: 12, fontWeight: "800", marginTop: 4 },
   warningPill: {
     backgroundColor: "#FEF3C7",
     borderRadius: 999,
