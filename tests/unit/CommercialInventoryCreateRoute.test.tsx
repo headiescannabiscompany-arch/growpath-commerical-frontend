@@ -81,7 +81,7 @@ describe("CommercialInventoryCreateRoute", () => {
       "genetics-1"
     );
     fireEvent.changeText(
-      screen.getByLabelText("Commercial inventory linked product trial grow"),
+      screen.getByLabelText("Commercial inventory linked product trial evidence run"),
       "grow-1"
     );
 
