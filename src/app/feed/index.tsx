@@ -645,7 +645,9 @@ export default function CommercialFeedRoute() {
           <View key={post.id} style={styles.post}>
             <View style={styles.postHeader}>
               <Text style={styles.typePill}>{visibleCampaignType(post)}</Text>
-              <Text style={styles.likes}>{Number(post.likeCount || 0)} likes</Text>
+              <Text style={styles.likes}>
+                {Number(post.likeCount || 0)} campaign engagements
+              </Text>
             </View>
             <Text style={styles.postTitle}>{post.title || "Feed campaign"}</Text>
             {campaignImage(post) ? (

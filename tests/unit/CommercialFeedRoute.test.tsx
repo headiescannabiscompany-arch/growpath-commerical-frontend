@@ -81,6 +81,8 @@ describe("CommercialFeedRoute", () => {
 
     expect(screen.getByText(/Feed is advertising and outreach/i)).toBeTruthy();
     expect(screen.getAllByText("Live event ad").length).toBeGreaterThan(0);
+    expect(screen.getByText("0 campaign engagements")).toBeTruthy();
+    expect(screen.queryByText("0 likes")).toBeNull();
     expect(screen.getByText("Live: live-1")).toBeTruthy();
     expect(screen.getByText("Forum/Q&A: thread-1")).toBeTruthy();
 
