@@ -140,4 +140,35 @@ describe("CommercialFeedRoute", () => {
       screen.getByText(/Facility feed campaigns are outreach placements/i)
     ).toBeTruthy();
   });
+
+  it("renders a CTA for external-link-only campaigns", async () => {
+    mockApiRequest.mockImplementation((path: string) => {
+      if (path === "/api/commercial/feed") {
+        return Promise.resolve({
+          items: [
+            {
+              id: "campaign-external",
+              type: "update",
+              campaignKind: "general_campaign",
+              title: "Partner workshop",
+              body: "Register for the partner soil workshop.",
+              tags: ["education"],
+              externalLinks: [{ label: "Register", url: "https://example.com/workshop" }],
+              author: { displayName: "Living Soil Labs" },
+              createdAt: "2026-07-07T12:00:00Z"
+            }
+          ]
+        });
+      }
+      return Promise.resolve({});
+    });
+
+    const screen = render(<CommercialFeedRoute />);
+
+    await waitFor(() => expect(screen.getByText("Partner workshop")).toBeTruthy());
+
+    fireEvent.press(screen.getByLabelText("Register for Partner workshop"));
+
+    expect(mockPush).toHaveBeenCalledWith("https://example.com/workshop");
+  });
 });

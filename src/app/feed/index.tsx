@@ -195,6 +195,13 @@ function campaignDestination(post: CommercialFeedPost) {
       )}`
     };
   }
+  const externalLink = post.externalLinks?.find((link) => String(link?.url || "").trim());
+  if (externalLink) {
+    return {
+      label: externalLink.label || "Learn More",
+      href: String(externalLink.url)
+    };
+  }
   return null;
 }
 
