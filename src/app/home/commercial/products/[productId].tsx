@@ -32,13 +32,41 @@ function productPrice(product: Product | null) {
   return 0;
 }
 
+function productImage(product: Product | null) {
+  return (
+    product?.imageUrl ||
+    (product as any)?.thumbnailUrl ||
+    (product as any)?.photoUrl ||
+    (product as any)?.gallery?.[0] ||
+    (product as any)?.images?.[0] ||
+    ""
+  );
+}
+
+function priceInputValue(product: Product | null) {
+  const priceCents = Number(product?.priceCents);
+  if (Number.isFinite(priceCents) && priceCents > 0) {
+    return String(priceCents / 100);
+  }
+  const price = Number(product?.price);
+  return Number.isFinite(price) && price > 0 ? String(price) : "";
+}
+
+function parsePrice(value: string) {
+  const parsed = Number(value);
+  return Number.isFinite(parsed) && parsed >= 0 ? parsed : undefined;
+}
+
 function productMissingSetup(product: Product | null) {
   const missing: string[] = [];
-  if (!hasText((product as any)?.imageUrl)) missing.push("image");
+  if (!productImage(product)) missing.push("image");
   if (!hasText((product as any)?.shortDescription) && !hasText(product?.description)) {
     missing.push("description");
   }
   if (productPrice(product) <= 0) missing.push("price");
+  if (!hasText((product as any)?.unitSize) && !hasText(product?.specs?.unitSize)) {
+    missing.push("size/weight");
+  }
   if (
     !hasText((product as any)?.externalPurchaseUrl) &&
     !hasText((product as any)?.stripePriceId)
@@ -101,8 +129,12 @@ export default function CommercialProductDetailRoute({ route }: { route?: any } 
   const [product, setProduct] = useState<Product | null>(null);
   const [effectiveness, setEffectiveness] = useState<any>(null);
   const [status, setStatus] = useState("");
+  const [imageUrl, setImageUrl] = useState("");
+  const [price, setPrice] = useState("");
+  const [unitSize, setUnitSize] = useState("");
   const [shortDescription, setShortDescription] = useState("");
   const [externalPurchaseUrl, setExternalPurchaseUrl] = useState("");
+  const [stripePriceId, setStripePriceId] = useState("");
   const [loading, setLoading] = useState(false);
   const [saving, setSaving] = useState(false);
   const [error, setError] = useState<any>(null);
@@ -111,8 +143,12 @@ export default function CommercialProductDetailRoute({ route }: { route?: any } 
   const hydrate = useCallback((next: Product | null) => {
     setProduct(next);
     setStatus(next?.status || "draft");
+    setImageUrl(productImage(next));
+    setPrice(priceInputValue(next));
+    setUnitSize(next?.unitSize || next?.specs?.unitSize || "");
     setShortDescription((next as any)?.shortDescription || next?.description || "");
-    setExternalPurchaseUrl((next as any)?.externalPurchaseUrl || "");
+    setExternalPurchaseUrl(next?.externalPurchaseUrl || "");
+    setStripePriceId(next?.stripePriceId || "");
   }, []);
 
   const load = useCallback(async () => {
@@ -143,9 +179,17 @@ export default function CommercialProductDetailRoute({ route }: { route?: any } 
     const nextProduct = {
       ...(product || {}),
       status: nextStatus,
+      imageUrl: imageUrl.trim(),
+      price: parsePrice(price),
+      unitSize: unitSize.trim(),
       shortDescription: shortDescription.trim(),
       description: shortDescription.trim(),
-      externalPurchaseUrl: externalPurchaseUrl.trim()
+      externalPurchaseUrl: externalPurchaseUrl.trim(),
+      stripePriceId: stripePriceId.trim(),
+      specs: {
+        ...(product?.specs || {}),
+        unitSize: unitSize.trim() || product?.specs?.unitSize
+      }
     } as Product;
     const publishMissing = publicFieldMissingSetup(productMissingSetup(nextProduct));
     if (
@@ -162,9 +206,17 @@ export default function CommercialProductDetailRoute({ route }: { route?: any } 
     try {
       const res = await updateProduct(productId, {
         status: nextStatus,
+        imageUrl: imageUrl.trim() || undefined,
+        price: parsePrice(price),
+        unitSize: unitSize.trim() || undefined,
         shortDescription: shortDescription.trim(),
         description: shortDescription.trim(),
-        externalPurchaseUrl: externalPurchaseUrl.trim()
+        externalPurchaseUrl: externalPurchaseUrl.trim(),
+        stripePriceId: stripePriceId.trim() || undefined,
+        specs: {
+          ...(product?.specs || {}),
+          unitSize: unitSize.trim() || product?.specs?.unitSize
+        }
       } as Partial<Product>);
       hydrate(res?.product ?? res?.item ?? res);
       setMessage("Product updated.");
@@ -214,11 +266,14 @@ export default function CommercialProductDetailRoute({ route }: { route?: any } 
           <DetailRow label="SKU" value={product?.sku} />
           <DetailRow label="Status" value={product?.status} />
           <DetailRow label="Currency" value={product?.currency} />
+          <DetailRow label="Image" value={productImage(product)} />
+          <DetailRow label="Price" value={product?.price ? `$${product.price}` : ""} />
           <DetailRow
             label="Size / weight"
             value={(product as any)?.unitSize || specs.unitSize}
           />
-          <DetailRow label="External URL" value={(product as any)?.externalPurchaseUrl} />
+          <DetailRow label="External URL" value={product?.externalPurchaseUrl} />
+          <DetailRow label="Stripe price" value={product?.stripePriceId} />
         </View>
       </AppCard>
 
@@ -370,11 +425,43 @@ export default function CommercialProductDetailRoute({ route }: { route?: any } 
             value={status}
           />
           <TextInput
+            accessibilityLabel="Commercial product detail image URL"
+            autoCapitalize="none"
+            onChangeText={setImageUrl}
+            placeholder="Storefront image URL"
+            style={styles.input}
+            value={imageUrl}
+          />
+          <TextInput
+            accessibilityLabel="Commercial product detail price"
+            keyboardType="decimal-pad"
+            onChangeText={setPrice}
+            placeholder="Product price"
+            style={styles.input}
+            value={price}
+          />
+          <TextInput
+            accessibilityLabel="Commercial product detail size or weight"
+            onChangeText={setUnitSize}
+            placeholder="Size / weight, e.g. 5 lb bag"
+            style={styles.input}
+            value={unitSize}
+          />
+          <TextInput
             accessibilityLabel="Commercial product detail external URL"
+            autoCapitalize="none"
             onChangeText={setExternalPurchaseUrl}
             placeholder="External purchase URL"
             style={styles.input}
             value={externalPurchaseUrl}
+          />
+          <TextInput
+            accessibilityLabel="Commercial product detail Stripe price ID"
+            autoCapitalize="none"
+            onChangeText={setStripePriceId}
+            placeholder="Stripe price ID"
+            style={styles.input}
+            value={stripePriceId}
           />
         </View>
         <TextInput

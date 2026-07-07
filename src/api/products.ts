@@ -10,6 +10,7 @@ export type Product = {
   sku?: string;
   description?: string;
   imageUrl?: string;
+  unitSize?: string;
   category?: string;
   shortDescription?: string;
   fullDescription?: string;
@@ -30,6 +31,8 @@ export type Product = {
     status?: string;
   } | null;
   currency?: string;
+  externalPurchaseUrl?: string;
+  stripePriceId?: string;
   status?: "draft" | "published";
   createdAt?: string;
   updatedAt?: string;

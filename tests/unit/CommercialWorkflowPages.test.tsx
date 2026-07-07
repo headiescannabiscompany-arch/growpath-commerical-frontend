@@ -1263,8 +1263,21 @@ describe("commercial workflow pages", () => {
       "draft"
     );
     fireEvent.changeText(
+      screen.getByLabelText("Commercial product detail image URL"),
+      "https://example.com/base-updated.jpg"
+    );
+    fireEvent.changeText(screen.getByLabelText("Commercial product detail price"), "39");
+    fireEvent.changeText(
+      screen.getByLabelText("Commercial product detail size or weight"),
+      "2 cu ft bag"
+    );
+    fireEvent.changeText(
       screen.getByLabelText("Commercial product detail external URL"),
       "https://example.com/new-base"
+    );
+    fireEvent.changeText(
+      screen.getByLabelText("Commercial product detail Stripe price ID"),
+      "price_product_updated"
     );
     fireEvent.changeText(
       screen.getByLabelText("Commercial product detail short description"),
@@ -1279,9 +1292,16 @@ describe("commercial workflow pages", () => {
           method: "PATCH",
           body: expect.objectContaining({
             status: "draft",
+            imageUrl: "https://example.com/base-updated.jpg",
+            price: 39,
+            unitSize: "2 cu ft bag",
             externalPurchaseUrl: "https://example.com/new-base",
+            stripePriceId: "price_product_updated",
             shortDescription: "Updated product copy.",
-            description: "Updated product copy."
+            description: "Updated product copy.",
+            specs: expect.objectContaining({
+              unitSize: "2 cu ft bag"
+            })
           })
         })
       )
