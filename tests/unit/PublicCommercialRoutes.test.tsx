@@ -208,10 +208,13 @@ describe("public commercial routes", () => {
     expect(screen.getByText("1 cup per cubic foot")).toBeTruthy();
     expect(screen.getByText("Related Courses")).toBeTruthy();
     expect(screen.getByText("Using Veg Mix")).toBeTruthy();
+    expect(screen.getByText("Open Course")).toBeTruthy();
     expect(screen.getByText("Promoted Product Campaigns")).toBeTruthy();
     expect(screen.getByText("Trial update")).toBeTruthy();
+    expect(screen.getAllByText("Open Campaign").length).toBeGreaterThan(0);
     expect(screen.getByText("Product Forum / Q&A")).toBeTruthy();
     expect(screen.getByText("Veg Mix Support")).toBeTruthy();
+    expect(screen.getAllByText("Open Q&A").length).toBeGreaterThan(0);
     expect(screen.getByText("Buy")).toBeTruthy();
     expect(screen.getByText("External Link")).toBeTruthy();
     expect(screen.getByText("Share Product")).toBeTruthy();

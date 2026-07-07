@@ -402,18 +402,29 @@ export default function PublicProductRoute() {
             <AppCard>
               <Text style={styles.cardTitle}>Related Courses</Text>
               {relatedCourses.map((course) => (
-                <View
-                  key={productKey(course) || course?.id || course?.title}
-                  style={styles.relatedRow}
-                >
-                  <Text style={styles.relatedName}>
-                    {course?.title || course?.name || "Course"}
-                  </Text>
-                  {course?.summary || course?.description ? (
-                    <Text style={styles.meta}>
-                      {course.summary || course.description}
+                <View key={course?.id || course?.title} style={styles.linkedRow}>
+                  <View style={styles.linkedCopy}>
+                    <Text style={styles.relatedName}>
+                      {course?.title || course?.name || "Course"}
                     </Text>
-                  ) : null}
+                    {course?.summary || course?.description ? (
+                      <Text style={styles.meta}>
+                        {course.summary || course.description}
+                      </Text>
+                    ) : null}
+                  </View>
+                  <Link
+                    href={
+                      `/courses${
+                        course?.id ? `?courseId=${encodeURIComponent(course.id)}` : ""
+                      }` as any
+                    }
+                    asChild
+                  >
+                    <Pressable style={styles.secondaryButton}>
+                      <Text style={styles.secondaryButtonText}>Open Course</Text>
+                    </Pressable>
+                  </Link>
                 </View>
               ))}
             </AppCard>
@@ -427,16 +438,20 @@ export default function PublicProductRoute() {
                 and discussion stay in Forum/Q&A.
               </Text>
               {relatedCampaigns.map((campaign) => (
-                <View
-                  key={productKey(campaign) || campaign?.id || campaign?.title}
-                  style={styles.relatedRow}
-                >
-                  <Text style={styles.relatedName}>
-                    {campaign?.title || campaign?.headline || "Campaign"}
-                  </Text>
-                  {campaign?.summary || campaign?.body ? (
-                    <Text style={styles.meta}>{campaign.summary || campaign.body}</Text>
-                  ) : null}
+                <View key={campaign?.id || campaign?.title} style={styles.linkedRow}>
+                  <View style={styles.linkedCopy}>
+                    <Text style={styles.relatedName}>
+                      {campaign?.title || campaign?.headline || "Campaign"}
+                    </Text>
+                    {campaign?.summary || campaign?.body ? (
+                      <Text style={styles.meta}>{campaign.summary || campaign.body}</Text>
+                    ) : null}
+                  </View>
+                  <Link href={returnFeedHref as any} asChild>
+                    <Pressable style={styles.secondaryButton}>
+                      <Text style={styles.secondaryButtonText}>Open Campaign</Text>
+                    </Pressable>
+                  </Link>
                 </View>
               ))}
             </AppCard>
@@ -450,16 +465,20 @@ export default function PublicProductRoute() {
                 linked Forum/Q&A thread.
               </Text>
               {relatedThreads.map((thread) => (
-                <View
-                  key={productKey(thread) || thread?.id || thread?.title}
-                  style={styles.relatedRow}
-                >
-                  <Text style={styles.relatedName}>
-                    {thread?.title || thread?.headline || "Discussion"}
-                  </Text>
-                  {thread?.summary || thread?.body ? (
-                    <Text style={styles.meta}>{thread.summary || thread.body}</Text>
-                  ) : null}
+                <View key={thread?.id || thread?.title} style={styles.linkedRow}>
+                  <View style={styles.linkedCopy}>
+                    <Text style={styles.relatedName}>
+                      {thread?.title || thread?.headline || "Discussion"}
+                    </Text>
+                    {thread?.summary || thread?.body ? (
+                      <Text style={styles.meta}>{thread.summary || thread.body}</Text>
+                    ) : null}
+                  </View>
+                  <Link href="/home/personal/forum" asChild>
+                    <Pressable style={styles.secondaryButton}>
+                      <Text style={styles.secondaryButtonText}>Open Q&A</Text>
+                    </Pressable>
+                  </Link>
                 </View>
               ))}
             </AppCard>
@@ -605,5 +624,15 @@ const styles = StyleSheet.create({
     gap: 4,
     paddingVertical: 10
   },
+  linkedRow: {
+    alignItems: "center",
+    borderTopColor: "#E2E8F0",
+    borderTopWidth: 1,
+    flexDirection: "row",
+    gap: 8,
+    justifyContent: "space-between",
+    paddingVertical: 10
+  },
+  linkedCopy: { flex: 1, gap: 4 },
   relatedName: { color: "#111827", fontWeight: "800" }
 });
