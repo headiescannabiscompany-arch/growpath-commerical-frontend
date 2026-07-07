@@ -271,27 +271,61 @@ export default function FacilityRoomsTab() {
     setFeedback("");
     clearError();
     try {
-      const existingNames = new Set(
-        rooms.map((room) =>
+      const existingRoomsByName = new Map(
+        rooms.map((room) => [
           String(room.name || "")
             .trim()
-            .toLowerCase()
+            .toLowerCase(),
+          room
+        ])
+      );
+      const existingEquipmentKeys = new Set(
+        equipment.map((item) =>
+          [
+            String(item.roomId || ""),
+            String(item.name || "")
+              .trim()
+              .toLowerCase()
+          ].join("::")
         )
       );
-      const toCreate = roomImportPreview.filter(
-        (room) => !existingNames.has(room.name.trim().toLowerCase())
-      );
-      for (const room of toCreate) {
-        await createRoom(facilityId, {
-          name: room.name,
-          roomType: room.roomType,
-          trackingMode: "batch"
-        });
+      let createdRoomCount = 0;
+      let createdDeviceCount = 0;
+
+      for (const room of roomImportPreview) {
+        const roomKey = room.name.trim().toLowerCase();
+        let savedRoom = existingRoomsByName.get(roomKey);
+        if (!savedRoom) {
+          savedRoom = await createRoom(facilityId, {
+            name: room.name,
+            roomType: room.roomType,
+            trackingMode: "batch"
+          });
+          existingRoomsByName.set(roomKey, savedRoom);
+          createdRoomCount += 1;
+        }
+
+        const savedRoomId = rowId(savedRoom);
+        if (savedRoomId && canManageEquipmentCycles) {
+          for (const device of room.devices) {
+            const deviceName = String(device || "").trim();
+            const equipmentKey = `${savedRoomId}::${deviceName.toLowerCase()}`;
+            if (!deviceName || existingEquipmentKeys.has(equipmentKey)) continue;
+            await createEquipment(facilityId, {
+              name: deviceName,
+              type: "sensor",
+              roomId: savedRoomId,
+              status: "active"
+            });
+            existingEquipmentKeys.add(equipmentKey);
+            createdDeviceCount += 1;
+          }
+        }
       }
       setFeedback(
-        toCreate.length
-          ? `Created ${toCreate.length} room${toCreate.length === 1 ? "" : "s"} from ${importProvider}.`
-          : "All imported rooms already exist."
+        createdRoomCount || createdDeviceCount
+          ? `Created ${createdRoomCount} room${createdRoomCount === 1 ? "" : "s"} and ${createdDeviceCount} device${createdDeviceCount === 1 ? "" : "s"} from ${importProvider}.`
+          : "All imported rooms and devices already exist."
       );
       await load({ refresh: true });
     } catch (e) {

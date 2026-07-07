@@ -58,16 +58,23 @@ describe("FacilityRoomsTab", () => {
         createdAt: "2026-07-07T00:00:00Z"
       }
     ]);
-    mockListEquipment.mockResolvedValue([]);
+    mockListEquipment.mockResolvedValue([
+      {
+        id: "eq-existing",
+        name: "Existing Dry Room Temp/RH",
+        roomId: "room-existing",
+        type: "sensor"
+      }
+    ]);
     mockListBatchCycles.mockResolvedValue([]);
-    mockCreateRoom.mockResolvedValue({
-      id: "room-new",
-      name: "Flower Room 1",
-      roomType: "flower"
-    });
+    mockCreateRoom.mockImplementation((_facilityId, input) => ({
+      id: `room-${String(input.name).toLowerCase().replaceAll(" ", "-")}`,
+      ...input
+    }));
+    mockCreateEquipment.mockResolvedValue({ id: "eq-new" });
   });
 
-  it("previews controller devices as facility rooms and creates missing rooms", async () => {
+  it("previews controller devices as facility rooms and creates missing rooms/devices", async () => {
     const screen = render(<FacilityRoomsTab />);
 
     await waitFor(() => expect(screen.getByText("Controller Room Import Preview")).toBeTruthy());
@@ -98,10 +105,34 @@ describe("FacilityRoomsTab", () => {
       roomType: "veg",
       trackingMode: "batch"
     });
+    expect(mockCreateEquipment).toHaveBeenCalledWith("facility-1", {
+      name: "Flower Room 1 Temp/RH",
+      type: "sensor",
+      roomId: "room-flower-room-1",
+      status: "active"
+    });
+    expect(mockCreateEquipment).toHaveBeenCalledWith("facility-1", {
+      name: "Flower Room 1 CO2",
+      type: "sensor",
+      roomId: "room-flower-room-1",
+      status: "active"
+    });
+    expect(mockCreateEquipment).toHaveBeenCalledWith("facility-1", {
+      name: "Veg Room Temp/RH",
+      type: "sensor",
+      roomId: "room-veg-room",
+      status: "active"
+    });
     expect(mockCreateRoom).not.toHaveBeenCalledWith(
       "facility-1",
       expect.objectContaining({ name: "Existing Dry Room" })
     );
-    await waitFor(() => expect(screen.getByText("Created 2 rooms from Pulse.")).toBeTruthy());
+    expect(mockCreateEquipment).not.toHaveBeenCalledWith(
+      "facility-1",
+      expect.objectContaining({ name: "Existing Dry Room Temp/RH" })
+    );
+    await waitFor(() =>
+      expect(screen.getByText("Created 2 rooms and 3 devices from Pulse.")).toBeTruthy()
+    );
   });
 });
