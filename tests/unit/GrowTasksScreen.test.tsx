@@ -85,6 +85,7 @@ describe("GrowTasksScreen", () => {
       expect(mockListPersonalTasks).toHaveBeenCalledWith({ growId: "grow-task-1" })
     );
     expect(screen.getByText("Source: ai diagnosis")).toBeTruthy();
+    expect(screen.getByText("AI Diagnosis: diag-1")).toBeTruthy();
     expect(screen.getByText("Source: tool run")).toBeTruthy();
 
     fireEvent.press(screen.getByLabelText("Complete task"));
@@ -118,8 +119,8 @@ describe("GrowTasksScreen", () => {
     fireEvent.changeText(screen.getByLabelText("Task description"), "Before watering.");
     fireEvent.changeText(screen.getByLabelText("Task due date"), "2026-07-03");
     fireEvent.press(screen.getByLabelText("Set task priority high"));
-    fireEvent.press(screen.getByLabelText("Set task source tool_run"));
-    fireEvent.changeText(screen.getByLabelText("Task source object"), "recipe-1");
+    fireEvent.press(screen.getByLabelText("Set task source product_batch"));
+    fireEvent.changeText(screen.getByLabelText("Task source object"), "batch-1");
     fireEvent.changeText(screen.getByLabelText("Task ToolRun"), "toolrun-1");
     fireEvent.changeText(screen.getByLabelText("Task diagnosis"), "diag-2");
     fireEvent.changeText(screen.getByLabelText("Task linked log"), "log-3");
@@ -134,8 +135,8 @@ describe("GrowTasksScreen", () => {
         description: "Before watering.",
         dueDate: "2026-07-03",
         priority: "high",
-        sourceType: "tool_run",
-        sourceObjectId: "recipe-1",
+        sourceType: "product_batch",
+        sourceObjectId: "batch-1",
         sourceToolRunId: "toolrun-1",
         sourceDiagnosisId: "diag-2",
         linkedLogId: "log-3",

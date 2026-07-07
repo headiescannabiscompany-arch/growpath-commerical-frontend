@@ -26,13 +26,27 @@ import { CAPABILITY_KEYS, useEntitlements } from "@/entitlements";
 const priorities = ["low", "medium", "high"] as const;
 const sourceTypes = [
   "manual",
+  "grow",
+  "plant",
   "tool_run",
   "ai_diagnosis",
   "recipe",
+  "product",
+  "product_batch",
+  "product_trial",
+  "storefront",
+  "order",
   "course",
+  "lesson",
   "live",
+  "live_replay",
   "alert",
-  "sensor_alert"
+  "sensor_alert",
+  "facility",
+  "room",
+  "facility_run",
+  "sop",
+  "forum"
 ] as const;
 
 function taskSource(task: PersonalTask) {
@@ -43,9 +57,18 @@ function taskSource(task: PersonalTask) {
   return "";
 }
 
+function sourceObjectLabel(task: PersonalTask) {
+  if (task.sourceType === "ai_diagnosis") return "AI Diagnosis";
+  const source = String(task.sourceType || "")
+    .replace(/_/g, " ")
+    .trim();
+  if (!source) return "Source";
+  return source.replace(/\b\w/g, (char) => char.toUpperCase());
+}
+
 function taskLinks(task: PersonalTask) {
   return [
-    task.sourceObjectId && `Source object: ${task.sourceObjectId}`,
+    task.sourceObjectId && `${sourceObjectLabel(task)}: ${task.sourceObjectId}`,
     task.sourceToolRunId && `ToolRun: ${task.sourceToolRunId}`,
     task.sourceDiagnosisId && `Diagnosis: ${task.sourceDiagnosisId}`,
     task.linkedLogId && `Log: ${task.linkedLogId}`
