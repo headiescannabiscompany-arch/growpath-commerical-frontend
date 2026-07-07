@@ -85,14 +85,16 @@ const publicPayload = {
     {
       id: "course-1",
       title: "Using Veg Mix",
-      summary: "A short setup course for the veg blend."
+      summary: "A short setup course for the veg blend.",
+      linkedProductIds: ["product-1"]
     }
   ],
   feedPosts: [
     {
       id: "post-1",
       title: "Trial update",
-      summary: "Week three plants are pushing clean growth."
+      summary: "Week three plants are pushing clean growth.",
+      linkedProductId: "product-1"
     }
   ],
   trials: [
@@ -107,7 +109,8 @@ const publicPayload = {
     {
       id: "thread-1",
       title: "Veg Mix Support",
-      summary: "Ask use-rate and topdress questions."
+      summary: "Ask use-rate and topdress questions.",
+      linkedProductId: "product-1"
     }
   ]
 };
@@ -203,6 +206,12 @@ describe("public commercial routes", () => {
     expect(screen.getByText("Alfalfa meal, Fish bone meal")).toBeTruthy();
     expect(screen.getAllByText("Topdress and water in.").length).toBeGreaterThan(0);
     expect(screen.getByText("1 cup per cubic foot")).toBeTruthy();
+    expect(screen.getByText("Related Courses")).toBeTruthy();
+    expect(screen.getByText("Using Veg Mix")).toBeTruthy();
+    expect(screen.getByText("Promoted Product Campaigns")).toBeTruthy();
+    expect(screen.getByText("Trial update")).toBeTruthy();
+    expect(screen.getByText("Product Forum / Q&A")).toBeTruthy();
+    expect(screen.getByText("Veg Mix Support")).toBeTruthy();
     expect(screen.getByText("Buy")).toBeTruthy();
     expect(screen.getByText("External Link")).toBeTruthy();
     expect(screen.getByText("Share Product")).toBeTruthy();

@@ -40,6 +40,18 @@ function normalize(value: string) {
     .toLowerCase();
 }
 
+function itemLinksProduct(item: any, id: string) {
+  if (!id) return false;
+  const linkedIds = [
+    item?.linkedProductId,
+    item?.relatedProductId,
+    item?.productId,
+    ...(Array.isArray(item?.linkedProductIds) ? item.linkedProductIds : []),
+    ...(Array.isArray(item?.relatedProductIds) ? item.relatedProductIds : [])
+  ];
+  return linkedIds.some((value) => String(value || "") === id);
+}
+
 function formatSpecValue(value: unknown) {
   if (Array.isArray(value)) return value.filter(Boolean).join(", ");
   if (value && typeof value === "object") return JSON.stringify(value);
@@ -117,6 +129,9 @@ export default function PublicProductRoute() {
   const [busy, setBusy] = useState(false);
   const [storefront, setStorefront] = useState<any>(null);
   const [products, setProducts] = useState<any[]>([]);
+  const [courses, setCourses] = useState<any[]>([]);
+  const [feedPosts, setFeedPosts] = useState<any[]>([]);
+  const [forumThreads, setForumThreads] = useState<any[]>([]);
   const [error, setError] = useState("");
   const [feedback, setFeedback] = useState("");
 
@@ -126,8 +141,34 @@ export default function PublicProductRoute() {
     setError("");
     try {
       const res: any = await fetchPublicStorefront(slug);
-      setStorefront(res?.storefront || res?.data?.storefront || null);
-      setProducts(asArray(res?.products || res?.data?.products));
+      const data = res?.data || {};
+      setStorefront(res?.storefront || data?.storefront || null);
+      setProducts(asArray(res?.products || data?.products));
+      setCourses(
+        asArray(
+          res?.courses || data?.courses || res?.featuredCourses || data?.featuredCourses
+        )
+      );
+      setFeedPosts(
+        asArray(
+          res?.feedPosts ||
+            data?.feedPosts ||
+            res?.posts ||
+            data?.posts ||
+            res?.updates ||
+            data?.updates
+        )
+      );
+      setForumThreads(
+        asArray(
+          res?.forumThreads ||
+            data?.forumThreads ||
+            res?.threads ||
+            data?.threads ||
+            res?.supportThreads ||
+            data?.supportThreads
+        )
+      );
     } catch (err: any) {
       setError(err?.message || "Unable to load product.");
     } finally {
@@ -155,6 +196,16 @@ export default function PublicProductRoute() {
 
   const relatedProducts = products
     .filter((item) => productKey(item) !== productKey(product))
+    .slice(0, 3);
+  const productId = productKey(product);
+  const relatedCourses = courses
+    .filter((course) => itemLinksProduct(course, productId))
+    .slice(0, 3);
+  const relatedCampaigns = feedPosts
+    .filter((post) => itemLinksProduct(post, productId))
+    .slice(0, 3);
+  const relatedThreads = forumThreads
+    .filter((thread) => itemLinksProduct(thread, productId))
     .slice(0, 3);
 
   useEffect(() => {
@@ -304,8 +355,9 @@ export default function PublicProductRoute() {
           <AppCard>
             <Text style={styles.cardTitle}>Product Context</Text>
             <Text style={styles.meta}>
-              Use this page for product photos, use instructions, related courses, grow
-              trials, formula notes, and support links as the public product record grows.
+              Use this page for product photos, use instructions, related courses,
+              promotional campaigns, grow trials, formula notes, and Forum/Q&A support
+              links as the public product record grows.
             </Text>
             {product?.usageInstructions ? (
               <Text style={styles.bodyText}>{product.usageInstructions}</Text>
@@ -345,6 +397,73 @@ export default function PublicProductRoute() {
               />
             </View>
           </AppCard>
+
+          {relatedCourses.length ? (
+            <AppCard>
+              <Text style={styles.cardTitle}>Related Courses</Text>
+              {relatedCourses.map((course) => (
+                <View
+                  key={productKey(course) || course?.id || course?.title}
+                  style={styles.relatedRow}
+                >
+                  <Text style={styles.relatedName}>
+                    {course?.title || course?.name || "Course"}
+                  </Text>
+                  {course?.summary || course?.description ? (
+                    <Text style={styles.meta}>
+                      {course.summary || course.description}
+                    </Text>
+                  ) : null}
+                </View>
+              ))}
+            </AppCard>
+          ) : null}
+
+          {relatedCampaigns.length ? (
+            <AppCard>
+              <Text style={styles.cardTitle}>Promoted Product Campaigns</Text>
+              <Text style={styles.meta}>
+                Campaigns are advertising and outreach for this product. Product support
+                and discussion stay in Forum/Q&A.
+              </Text>
+              {relatedCampaigns.map((campaign) => (
+                <View
+                  key={productKey(campaign) || campaign?.id || campaign?.title}
+                  style={styles.relatedRow}
+                >
+                  <Text style={styles.relatedName}>
+                    {campaign?.title || campaign?.headline || "Campaign"}
+                  </Text>
+                  {campaign?.summary || campaign?.body ? (
+                    <Text style={styles.meta}>{campaign.summary || campaign.body}</Text>
+                  ) : null}
+                </View>
+              ))}
+            </AppCard>
+          ) : null}
+
+          {relatedThreads.length ? (
+            <AppCard>
+              <Text style={styles.cardTitle}>Product Forum / Q&A</Text>
+              <Text style={styles.meta}>
+                Ask usage, application-rate, batch, and product-support questions in the
+                linked Forum/Q&A thread.
+              </Text>
+              {relatedThreads.map((thread) => (
+                <View
+                  key={productKey(thread) || thread?.id || thread?.title}
+                  style={styles.relatedRow}
+                >
+                  <Text style={styles.relatedName}>
+                    {thread?.title || thread?.headline || "Discussion"}
+                  </Text>
+                  {thread?.summary || thread?.body ? (
+                    <Text style={styles.meta}>{thread.summary || thread.body}</Text>
+                  ) : null}
+                </View>
+              ))}
+            </AppCard>
+          ) : null}
 
           <AppCard>
             <Text style={styles.cardTitle}>More Options</Text>
