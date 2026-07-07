@@ -3,6 +3,14 @@ import React from "react";
 import BackendCalculatorToolScreen, {
   tomorrow
 } from "@/features/personal/tools/BackendCalculatorToolScreen";
+import { saveToolRunAndCreateTasks } from "@/features/personal/tools/saveToolRunAndOpenJournal";
+
+function normalizePriority(
+  value: unknown,
+  fallback: "low" | "medium" | "high" = "medium"
+) {
+  return value === "low" || value === "medium" || value === "high" ? value : fallback;
+}
 
 function parseIngredientCosts(value: string) {
   try {
@@ -57,6 +65,55 @@ function parseIngredients(value: string) {
       })
       .filter(Boolean);
   }
+}
+
+function soilBatchTaskPlan(outputs: Record<string, any>) {
+  const suggested = Array.isArray(outputs.tasksToCreate) ? outputs.tasksToCreate : [];
+  if (suggested.length) {
+    return suggested.slice(0, 8).map((task: any, index: number) => ({
+      title: String(task?.title || `Soil batch follow-up ${index + 1}`),
+      priority: normalizePriority(task?.priority),
+      dueDate: tomorrow(Number(task?.dueInDays || index + 1)),
+      description:
+        task?.description ||
+        "Complete the soil batch step and save actual quantities, lot notes, photos, and QA findings."
+    }));
+  }
+
+  const warnings = Array.isArray(outputs.warnings) ? outputs.warnings : [];
+  const hasWarnings = warnings.length > 0 || outputs.purposeFit === "poor";
+  const recipe = outputs.recipeId || "soil batch";
+  const bagCount = outputs.bagCount ? ` Target bag count: ${outputs.bagCount}.` : "";
+
+  return [
+    {
+      title: `Pull ingredients for ${recipe}`,
+      priority: "medium" as const,
+      dueDate: tomorrow(1),
+      description:
+        "Confirm ingredient lots, quantities, guaranteed analysis, costs, and substitutions before mixing."
+    },
+    {
+      title: `Mix and record ${recipe} actuals`,
+      priority: hasWarnings ? "high" : ("medium" as const),
+      dueDate: tomorrow(2),
+      description: `Mix the batch, record actual weights/volumes, moisture activation, shrinkage, photos, and operator notes.${bagCount}`
+    },
+    {
+      title: "QA soil batch label and release notes",
+      priority: hasWarnings ? "high" : ("medium" as const),
+      dueDate: tomorrow(3),
+      description:
+        "Review N-P-K estimate, release timing, stage fit, warnings, directions, application rate, and required COA/SDS or lab documents."
+    },
+    {
+      title: "Update inventory or product draft",
+      priority: "medium" as const,
+      dueDate: tomorrow(4),
+      description:
+        "Create or update product batch/lot inventory, storefront draft fields, facility production records, or grow recipe notes from this batch plan."
+    }
+  ];
 }
 
 export default function SoilNutrientBatchToolRoute() {
@@ -154,6 +211,28 @@ export default function SoilNutrientBatchToolRoute() {
         description:
           "Pull ingredients, mix batch, record bag count, update inventory, and log actuals."
       })}
+      buildActions={({ outputs, payload, toolRun, growId, plantContext }) => [
+        {
+          key: "create-soil-batch-tasks",
+          label: "Create Batch Task Plan",
+          variant: "secondary",
+          pendingLabel: "Creating...",
+          disabled: !growId,
+          successMessage: "Created soil batch tasks.",
+          onPress: async () => {
+            const result = await saveToolRunAndCreateTasks({
+              growId,
+              ...plantContext.toolRunContext,
+              toolKey: "soil-nutrient-batch",
+              toolRunId: toolRun?.id || toolRun?._id,
+              input: payload,
+              output: outputs,
+              tasks: soilBatchTaskPlan(outputs)
+            });
+            if (!result.ok) throw new Error(result.error);
+          }
+        }
+      ]}
     />
   );
 }
