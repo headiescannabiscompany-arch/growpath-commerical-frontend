@@ -30,6 +30,7 @@ const checks = [
       "--runInBand",
       "tests/unit/CommercialWorkflowPages.test.tsx",
       "tests/unit/CommercialAlertDetailRoute.test.tsx",
+      "tests/unit/CommercialTaskDetailRoute.test.tsx",
       "tests/unit/StorefrontRoute.test.tsx",
       "tests/unit/CommercialFeedRoute.test.tsx",
       "tests/unit/CommercialLivesRoute.test.tsx",
