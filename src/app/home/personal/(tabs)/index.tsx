@@ -146,11 +146,35 @@ export default function PersonalHomeTab() {
       {model?.activeGrow ? (
         <View style={styles.section}>
           <Text style={styles.sectionTitle}>Active Grow</Text>
-          <AppCard>
-            <Text style={styles.cardTitle}>{model.activeGrow.name || "Active grow"}</Text>
-            <Text style={styles.cardDescription}>
-              {model.activeGrow.status} | Updated {fmtDate(model.activeGrow.updatedAt)}
-            </Text>
+          <AppCard style={styles.commandCard}>
+            <View style={styles.commandHeader}>
+              <View style={styles.commandCopy}>
+                <Text style={styles.commandEyebrow}>Personal command center</Text>
+                <Text style={styles.commandTitle}>
+                  {model.activeGrow.name || "Active grow"}
+                </Text>
+                <Text style={styles.commandDescription}>
+                  {model.activeGrow.status} | Updated{" "}
+                  {fmtDate(model.activeGrow.updatedAt)}
+                </Text>
+              </View>
+              <View style={styles.pulseStack}>
+                <View style={styles.pulse}>
+                  <Text style={styles.pulseValue}>
+                    {model.activeGrow.status || "Active"}
+                  </Text>
+                  <Text style={styles.pulseLabel}>Stage</Text>
+                </View>
+                <View style={styles.pulse}>
+                  <Text style={styles.pulseValue}>{model.alerts.length}</Text>
+                  <Text style={styles.pulseLabel}>Alerts</Text>
+                </View>
+                <View style={styles.pulse}>
+                  <Text style={styles.pulseValue}>{model.openTaskCount}</Text>
+                  <Text style={styles.pulseLabel}>Open tasks</Text>
+                </View>
+              </View>
+            </View>
             <View style={styles.metrics}>
               <View style={styles.metric}>
                 <Text style={styles.metricValue}>{model.stats.plantCount}</Text>
@@ -352,6 +376,45 @@ const styles = StyleSheet.create({
   headerSubtitle: { fontSize: 14, color: "#64748B" },
   section: { gap: 10 },
   sectionTitle: { fontSize: 18, fontWeight: "700", color: "#0F172A" },
+  commandCard: {
+    backgroundColor: "#F0FDF4",
+    borderColor: "#BBF7D0"
+  },
+  commandHeader: {
+    flexDirection: "row",
+    flexWrap: "wrap",
+    gap: 14,
+    justifyContent: "space-between",
+    marginBottom: 12
+  },
+  commandCopy: { flex: 1, minWidth: 210 },
+  commandEyebrow: {
+    color: "#166534",
+    fontSize: 12,
+    fontWeight: "900",
+    letterSpacing: 0,
+    marginBottom: 4,
+    textTransform: "uppercase"
+  },
+  commandTitle: { color: "#052E16", fontSize: 24, fontWeight: "900", lineHeight: 29 },
+  commandDescription: { color: "#166534", lineHeight: 20, marginTop: 5 },
+  pulseStack: {
+    flexDirection: "row",
+    flexWrap: "wrap",
+    gap: 8,
+    justifyContent: "flex-end"
+  },
+  pulse: {
+    minWidth: 92,
+    borderWidth: 1,
+    borderColor: "#86EFAC",
+    borderRadius: 8,
+    paddingHorizontal: 10,
+    paddingVertical: 8,
+    backgroundColor: "#FFFFFF"
+  },
+  pulseValue: { color: "#052E16", fontSize: 17, fontWeight: "900" },
+  pulseLabel: { color: "#166534", fontSize: 11, fontWeight: "800", marginTop: 2 },
   cardTitle: { fontSize: 16, fontWeight: "700", marginBottom: 5 },
   cardDescription: { color: "#475569", lineHeight: 20, marginBottom: 8 },
   metrics: { flexDirection: "row", flexWrap: "wrap", gap: 8, marginBottom: 10 },
