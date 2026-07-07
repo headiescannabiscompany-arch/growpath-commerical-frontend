@@ -80,6 +80,7 @@ describe("CommercialFeedRoute", () => {
     await waitFor(() => expect(screen.getByText("Feed / Campaigns")).toBeTruthy());
 
     expect(screen.getByText(/Feed is advertising and outreach/i)).toBeTruthy();
+    expect(screen.getAllByText("Live event ad").length).toBeGreaterThan(0);
     expect(screen.getByText("Live: live-1")).toBeTruthy();
     expect(screen.getByText("Forum/Q&A: thread-1")).toBeTruthy();
 
@@ -112,6 +113,7 @@ describe("CommercialFeedRoute", () => {
         method: "POST",
         body: expect.objectContaining({
           type: "drop",
+          campaignKind: "live_ad",
           title: "Friday mix demo",
           body: "RSVP for the live dry amendment recipe build.",
           tags: ["dry amendments"],

@@ -12,6 +12,9 @@ export type CommercialFeedPostType =
 export type CommercialFeedPost = {
   id: string;
   type: CommercialFeedPostType;
+  campaignKind?: string;
+  authorType?: string;
+  workspaceType?: string;
   title?: string;
   body: string;
   tags: string[];
@@ -76,6 +79,7 @@ export async function listCommercialFeedPosts(
 
 export async function createCommercialFeedPost(input: {
   type: CommercialFeedPostType;
+  campaignKind?: string;
   title?: string;
   body: string;
   tags?: string[];

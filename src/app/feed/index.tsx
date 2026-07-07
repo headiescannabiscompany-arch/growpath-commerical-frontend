@@ -133,6 +133,20 @@ function campaignImage(post: CommercialFeedPost) {
   );
 }
 
+function visibleCampaignType(post: CommercialFeedPost) {
+  if (post.campaignKind && campaignKindLabels[post.campaignKind as CampaignKind]) {
+    return campaignKindLabels[post.campaignKind as CampaignKind];
+  }
+  if (post.linkedProductId) return campaignKindLabels.product_ad;
+  if (post.linkedCourseId) return campaignKindLabels.course_ad;
+  if (post.linkedLiveId) return campaignKindLabels.live_ad;
+  if (post.storefrontSlug) return campaignKindLabels.storefront_ad;
+  if (post.authorType === "facility" || post.workspaceType === "facility") {
+    return campaignKindLabels.facility_outreach;
+  }
+  return campaignKindLabels.general_campaign;
+}
+
 function splitTags(value: string) {
   return value
     .split(",")
@@ -296,6 +310,7 @@ export default function CommercialFeedRoute() {
     try {
       await createCommercialFeedPost({
         type: isFacility ? "education" : backendTypeForCampaignKind(campaignKind),
+        campaignKind,
         title: cleanTitle,
         body: cleanBody,
         tags: cleanTags,
@@ -629,7 +644,7 @@ export default function CommercialFeedRoute() {
         return (
           <View key={post.id} style={styles.post}>
             <View style={styles.postHeader}>
-              <Text style={styles.typePill}>{post.type}</Text>
+              <Text style={styles.typePill}>{visibleCampaignType(post)}</Text>
               <Text style={styles.likes}>{Number(post.likeCount || 0)} likes</Text>
             </View>
             <Text style={styles.postTitle}>{post.title || "Feed campaign"}</Text>
