@@ -73,6 +73,22 @@ function splitStatus(lives: CommercialLiveEvent[]) {
   };
 }
 
+function liveSetupWarnings(live: Partial<CommercialLiveEvent>) {
+  const warnings: string[] = [];
+  if (!live.thumbnailUrl?.trim()) warnings.push("add thumbnail");
+  if (!live.description?.trim()) warnings.push("add description");
+  if (!live.scheduledStart?.trim()) warnings.push("schedule date/time");
+  if (!live.twitchChannelName?.trim() && !live.twitchChannelId?.trim()) {
+    warnings.push("connect Twitch channel");
+  }
+  if (!live.twitchEmbedUrl?.trim()) warnings.push("test Twitch embed");
+  if (String(live.eventSubStatus || "not_connected") !== "connected") {
+    warnings.push("connect EventSub live status");
+  }
+  if (!live.notificationPlan?.length) warnings.push("attach reminder plan");
+  return warnings;
+}
+
 function ActionLink({ href, label }: { href: string; label: string }) {
   return (
     <Link href={href as any} asChild>
@@ -92,6 +108,7 @@ export default function CommercialLivesRoute() {
   const [message, setMessage] = useState("");
 
   const counts = useMemo(() => splitStatus(lives), [lives]);
+  const formWarnings = liveSetupWarnings({ ...form, notificationPlan });
 
   async function loadLives() {
     setLoading(true);
@@ -364,6 +381,12 @@ export default function CommercialLivesRoute() {
         <Text style={styles.notice}>
           Default reminders: scheduled, 24h, 1h, 15m, live now, replay available.
         </Text>
+        {formWarnings.length ? (
+          <View style={styles.warningBox}>
+            <Text style={styles.warningTitle}>Live setup checklist</Text>
+            <Text style={styles.warningText}>{formWarnings.join(" | ")}</Text>
+          </View>
+        ) : null}
         <Pressable
           accessibilityRole="button"
           accessibilityLabel="Schedule commercial live"
@@ -385,36 +408,47 @@ export default function CommercialLivesRoute() {
         {lives.length ? (
           <View style={styles.list}>
             {lives.map((live) => (
-              <View key={liveId(live)} style={styles.liveRow}>
-                <Text style={styles.liveTitle}>{live.title || "Untitled live"}</Text>
-                <Text style={styles.liveMeta}>
-                  {[
-                    live.status || "scheduled",
-                    live.visibility || "public",
-                    live.scheduledStart,
-                    live.twitchChannelName && `Twitch: ${live.twitchChannelName}`,
-                    live.twitchChannelId && `Channel ID ${live.twitchChannelId}`,
-                    live.eventSubStatus && `EventSub ${live.eventSubStatus}`
-                  ]
-                    .filter(Boolean)
-                    .join(" | ")}
-                </Text>
-                {live.description ? (
-                  <Text style={styles.body}>{live.description}</Text>
-                ) : null}
-                <Text style={styles.liveMeta}>
-                  {[
-                    live.relatedProductId && `Product ${live.relatedProductId}`,
-                    live.relatedCourseId && `Course ${live.relatedCourseId}`,
-                    live.relatedFeedPostId && `Feed ${live.relatedFeedPostId}`,
-                    live.forumThreadId && `Forum/Q&A ${live.forumThreadId}`,
-                    live.twitchEmbedUrl && `Embed ${live.twitchEmbedUrl}`,
-                    live.replayUrl && `Replay ${live.replayUrl}`
-                  ]
-                    .filter(Boolean)
-                    .join(" | ")}
-                </Text>
-              </View>
+              (() => {
+                const warnings = liveSetupWarnings(live);
+                return (
+                  <View key={liveId(live)} style={styles.liveRow}>
+                    <Text style={styles.liveTitle}>{live.title || "Untitled live"}</Text>
+                    <Text style={styles.liveMeta}>
+                      {[
+                        live.status || "scheduled",
+                        live.visibility || "public",
+                        live.scheduledStart,
+                        live.twitchChannelName && `Twitch: ${live.twitchChannelName}`,
+                        live.twitchChannelId && `Channel ID ${live.twitchChannelId}`,
+                        live.eventSubStatus && `EventSub ${live.eventSubStatus}`
+                      ]
+                        .filter(Boolean)
+                        .join(" | ")}
+                    </Text>
+                    {live.description ? (
+                      <Text style={styles.body}>{live.description}</Text>
+                    ) : null}
+                    <Text style={styles.liveMeta}>
+                      {[
+                        live.relatedProductId && `Product ${live.relatedProductId}`,
+                        live.relatedCourseId && `Course ${live.relatedCourseId}`,
+                        live.relatedFeedPostId && `Feed ${live.relatedFeedPostId}`,
+                        live.forumThreadId && `Forum/Q&A ${live.forumThreadId}`,
+                        live.twitchEmbedUrl && `Embed ${live.twitchEmbedUrl}`,
+                        live.replayUrl && `Replay ${live.replayUrl}`
+                      ]
+                        .filter(Boolean)
+                        .join(" | ")}
+                    </Text>
+                    {warnings.length ? (
+                      <View style={styles.warningBox}>
+                        <Text style={styles.warningTitle}>Missing live setup</Text>
+                        <Text style={styles.warningText}>{warnings.join(" | ")}</Text>
+                      </View>
+                    ) : null}
+                  </View>
+                );
+              })()
             ))}
           </View>
         ) : (
@@ -486,6 +520,21 @@ const styles = StyleSheet.create({
   actionText: { color: "#0F172A", fontWeight: "800" },
   actionTextSelected: { color: "#FFFFFF" },
   notice: { color: "#475569", fontSize: 12, fontWeight: "700", marginTop: 10 },
+  warningBox: {
+    backgroundColor: "#FFF7ED",
+    borderColor: "#FDBA74",
+    borderRadius: 8,
+    borderWidth: 1,
+    marginTop: 10,
+    padding: 10
+  },
+  warningTitle: {
+    color: "#9A3412",
+    fontSize: 12,
+    fontWeight: "900",
+    textTransform: "uppercase"
+  },
+  warningText: { color: "#9A3412", fontSize: 12, fontWeight: "800", marginTop: 4 },
   primaryAction: {
     alignItems: "center",
     alignSelf: "flex-start",

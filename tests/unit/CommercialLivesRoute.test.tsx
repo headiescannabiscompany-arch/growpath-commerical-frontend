@@ -82,6 +82,9 @@ describe("CommercialLivesRoute", () => {
       screen.getByText(/Embed https:\/\/player.twitch.tv\/\?channel=growpath/)
     ).toBeTruthy();
     expect(screen.getByText(/Replay https:\/\/twitch.tv\/videos\/1/)).toBeTruthy();
+    expect(screen.getByText("Missing live setup")).toBeTruthy();
+    expect(screen.getAllByText(/add thumbnail/).length).toBeGreaterThan(0);
+    expect(screen.getByText(/attach reminder plan/)).toBeTruthy();
 
     fireEvent.changeText(
       screen.getByLabelText("Commercial live title"),
