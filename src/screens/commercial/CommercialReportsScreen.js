@@ -83,7 +83,7 @@ export default function CommercialReportsScreen({ navigation }) {
         />
 
         <ReportCard
-          title="Orders / external tracking"
+          title="Orders"
           body="Internal order fulfillment belongs here only when checkout exists. External product links should be judged by views, clicks, inquiries, and follow-up content."
           bullets={[
             "Internal orders if checkout is enabled",
@@ -91,7 +91,7 @@ export default function CommercialReportsScreen({ navigation }) {
             "Product-support inquiries",
             "Lead or customer follow-up notes"
           ]}
-          actionLabel="Open External Tracking"
+          actionLabel="Open Orders"
           route="CommercialOrders"
           navigation={navigation}
         />

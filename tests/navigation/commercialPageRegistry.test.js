@@ -15,7 +15,7 @@ describe("commercial page registry", () => {
         "Forum / Q&A",
         "Courses",
         "Lives",
-        "Orders / External Tracking",
+        "Orders",
         "Analytics",
         "Schedule / Agenda",
         "Alerts",
@@ -51,13 +51,13 @@ describe("commercial page registry", () => {
     });
   });
 
-  it("does not expose shallow campaigns or checkout-only orders as primary wording", () => {
+  it("does not expose shallow campaigns or checkout-only wording as primary navigation", () => {
     const labels = PAGE_REGISTRY_COMMERCIAL.map((entry) => entry.label);
 
     expect(labels).toContain("Marketing Planner");
-    expect(labels).toContain("Orders / External Tracking");
+    expect(labels).toContain("Orders");
     expect(labels).not.toContain("Campaigns");
-    expect(labels).not.toContain("Orders");
+    expect(labels).not.toContain("Orders / External Tracking");
   });
 
   it("routes primary commercial workflows to commercial-aware components", () => {

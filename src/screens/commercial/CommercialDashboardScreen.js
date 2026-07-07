@@ -283,7 +283,7 @@ export default function CommercialDashboardScreen() {
                 navigation={navigation}
               />
               <StatCard
-                label="External Tracking"
+                label="Orders"
                 value={model.orders.length}
                 detail={`${summary.openExternalTracking} open`}
                 route="CommercialOrders"
@@ -299,7 +299,7 @@ export default function CommercialDashboardScreen() {
             </View>
 
             <View style={styles.panel}>
-              <Text style={styles.sectionTitle}>Orders / External Tracking</Text>
+              <Text style={styles.sectionTitle}>Orders</Text>
               <Text style={styles.revenue}>{money(summary.revenue)}</Text>
               <Text style={styles.meta}>
                 Use this for internal orders only when checkout exists. Otherwise track

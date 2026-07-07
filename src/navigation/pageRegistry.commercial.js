@@ -98,7 +98,7 @@ export const PAGE_REGISTRY_COMMERCIAL = [
   },
   {
     name: "CommercialOrders",
-    label: "Orders / External Tracking",
+    label: "Orders",
     icon: "cart-outline",
     capabilityKey: "commercial.orders",
     primary: true,

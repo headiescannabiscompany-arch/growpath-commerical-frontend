@@ -50,7 +50,7 @@ export default function CommercialOrdersScreen() {
       refreshing={isRefetching}
       ListHeaderComponent={
         <View style={styles.header}>
-          <Text style={styles.title}>Orders / External Tracking</Text>
+          <Text style={styles.title}>Orders</Text>
           <Text style={styles.subtitle}>
             Internal checkout orders appear here when checkout is enabled. For products
             sold elsewhere, use this surface alongside product views, outbound clicks,

@@ -2031,7 +2031,7 @@ describe("commercial workflow pages", () => {
     expect(screen.getByText("Ad and marketing click counts")).toBeTruthy();
     expect(screen.getByText("External checkout reality")).toBeTruthy();
     expect(screen.getByText("Trial and content outcomes")).toBeTruthy();
-    expect(screen.getByText("Orders / External Tracking")).toBeTruthy();
+    expect(screen.getAllByText("Orders").length).toBeGreaterThan(0);
     expect(screen.getByText("Product Trials")).toBeTruthy();
     await waitFor(() => expect(screen.getAllByText("42").length).toBeGreaterThan(0));
   });

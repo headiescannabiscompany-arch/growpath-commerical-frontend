@@ -86,7 +86,7 @@ describe("commercial legacy screens", () => {
   it("frames orders as internal checkout plus external tracking context", () => {
     const screen = render(<CommercialOrdersScreen />);
 
-    expect(screen.getByText("Orders / External Tracking")).toBeTruthy();
+    expect(screen.getByText("Orders")).toBeTruthy();
     expect(screen.getByText(/Internal checkout orders appear here/i)).toBeTruthy();
     expect(screen.getByText(/No internal orders yet/i)).toBeTruthy();
   });

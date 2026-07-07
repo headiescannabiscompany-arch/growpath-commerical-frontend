@@ -309,7 +309,7 @@ export default function CommercialAnalyticsRoute() {
           </Text>
         </View>
         <View style={styles.actions}>
-          <ActionLink href="/home/commercial/orders" label="Orders / External Tracking" />
+          <ActionLink href="/home/commercial/orders" label="Orders" />
           <ActionLink href="/home/commercial/feed" label="Feed / Campaigns" />
         </View>
       </AppCard>
