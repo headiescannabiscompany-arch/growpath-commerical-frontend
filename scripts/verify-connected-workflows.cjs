@@ -41,6 +41,8 @@ const checks = [
       "tests/unit/pricingConstants.test.js",
       "tests/unit/AppPageBackBehavior.test.tsx",
       "tests/navigation/commercialTabs.test.js",
+      "tests/navigation/feedForumSeparationNavigation.test.js",
+      "tests/unit/FirstSetupRooms.test.tsx",
       "tests/unit/FacilityRoomsRoute.test.tsx",
       "tests/unit/FacilityInventoryRoute.test.tsx",
       "tests/unit/FacilityTasksRoute.test.tsx",
