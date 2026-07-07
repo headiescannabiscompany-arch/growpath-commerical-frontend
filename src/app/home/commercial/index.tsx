@@ -103,7 +103,7 @@ const DASHBOARD_SECTIONS: DashboardSection[] = [
   {
     title: "Products & Storefront",
     description:
-      "Product lines and products drive storefront, feed campaigns, courses, inventory, and external purchase links.",
+      "Products are the commercial source of truth. Product lines, batches/lots, trials, and inventory are supporting views that feed storefront cards, campaigns, courses, and purchase links.",
     status: "Active",
     metrics: [
       { label: "Product lines", key: "productLines" },
@@ -114,13 +114,13 @@ const DASHBOARD_SECTIONS: DashboardSection[] = [
     actions: [
       { label: "Products", href: "/home/commercial/products" },
       { label: "Storefront", href: "/home/commercial/storefront" },
-      { label: "Product Lines", href: "/home/commercial/product-lines" }
+      { label: "Manage Product Lines", href: "/home/commercial/product-lines" }
     ]
   },
   {
-    title: "Soil / Nutrient / Formula Work",
+    title: "Product Formulas, Batches & Trials",
     description:
-      "Design formulas, scale batches, track guaranteed analysis, model release timing, and connect batches to trial grows.",
+      "Design product formulas, scale product batches/lots, track guaranteed analysis and release timing, then attach trial evidence back to the related product.",
     status: "Active",
     metrics: [
       { label: "Recent batches", key: "batches" },
@@ -129,15 +129,15 @@ const DASHBOARD_SECTIONS: DashboardSection[] = [
       { label: "Completed trials", key: "completedTrials" }
     ],
     actions: [
-      { label: "Batch Planner", href: "/home/commercial/batch-planner" },
+      { label: "Product Batch Planner", href: "/home/commercial/batch-planner" },
       { label: "Products", href: "/home/commercial/products" },
-      { label: "Trials", href: "/home/commercial/trials" }
+      { label: "Product Trials", href: "/home/commercial/trials" }
     ]
   },
   {
-    title: "Inventory / Catalog",
+    title: "Product Inventory Support",
     description:
-      "Track plant, product, ingredient, packaging, genetics, equipment, course, and retail inventory. Inventory supports product and batch workflows; it is not the whole commercial app.",
+      "Use inventory as a support view for product stock, ingredients, packaging, genetics, equipment, courses, and retail records. It should not become a second product universe.",
     status: "Live",
     metrics: [
       { label: "Inventory items", key: "inventory" },
@@ -146,8 +146,8 @@ const DASHBOARD_SECTIONS: DashboardSection[] = [
       { label: "Orders/leads", key: "orders" }
     ],
     actions: [
-      { label: "Inventory", href: "/home/commercial/inventory" },
-      { label: "Add Item", href: "/home/commercial/inventory-create" }
+      { label: "Open Inventory Support", href: "/home/commercial/inventory" },
+      { label: "Add Support Item", href: "/home/commercial/inventory-create" }
     ]
   },
   {
