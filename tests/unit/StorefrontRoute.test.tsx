@@ -79,6 +79,42 @@ function apiResponseFor(path: string, options?: any) {
   if (path === "/api/commercial/products" && !options) {
     return Promise.resolve({ products: [] });
   }
+  if (path === "/api/commercial/lives" && !options) {
+    return Promise.resolve({
+      lives: [
+        {
+          id: "live-1",
+          title: "Live Soil Mixing Demo",
+          description: "RSVP for a product demo tied to the course.",
+          status: "scheduled",
+          scheduledStart: "2026-07-17T20:00:00Z",
+          twitchChannelName: "growpath",
+          relatedProductId: "product-1",
+          relatedCourseId: "course-1",
+          relatedFeedPostId: "campaign-1",
+          forumThreadId: "thread-1"
+        }
+      ]
+    });
+  }
+  if (path === "/api/commercial/feed" && !options) {
+    return Promise.resolve({
+      items: [
+        {
+          id: "campaign-1",
+          title: "New Veg Mix Launch",
+          body: "Promotional storefront placement for the new mix.",
+          type: "product_ad",
+          status: "active",
+          imageUrl: "https://example.com/campaign.jpg",
+          linkedProductId: "product-1",
+          linkedCourseId: "course-1",
+          linkedLiveId: "live-1",
+          linkedForumThreadId: "thread-1"
+        }
+      ]
+    });
+  }
   if (path === "/api/commercial/inventory" && !options) {
     return Promise.resolve({ inventory: [] });
   }
@@ -117,6 +153,15 @@ describe("Storefront route", () => {
     await waitFor(() =>
       expect(mockApiRequest).toHaveBeenCalledWith("/api/commercial/storefront")
     );
+    await waitFor(() =>
+      expect(mockApiRequest).toHaveBeenCalledWith("/api/commercial/lives")
+    );
+    expect(screen.getByText("Live Soil Mixing Demo")).toBeTruthy();
+    expect(screen.getAllByText(/Product product-1/).length).toBeGreaterThan(0);
+    expect(screen.getAllByText(/Forum\/Q&A thread-1/).length).toBeGreaterThan(0);
+    expect(screen.getByText("New Veg Mix Launch")).toBeTruthy();
+    expect(screen.getByText(/Advertising \/ outreach/)).toBeTruthy();
+    expect(screen.getByText(/Live live-1/)).toBeTruthy();
 
     fireEvent.press(screen.getByLabelText("Upload storefront logo"));
     await waitFor(() =>

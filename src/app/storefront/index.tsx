@@ -29,6 +29,8 @@ type AnyRec = Record<string, any>;
 const commercialEndpoints = {
   storefront: "/api/commercial/storefront",
   products: "/api/commercial/products",
+  lives: "/api/commercial/lives",
+  feed: "/api/commercial/feed",
   inventory: (endpoints as any)?.commercial?.inventory ?? "/api/commercial/inventory"
 };
 
@@ -93,6 +95,43 @@ function productMissingSetup(product: AnyRec) {
   return missing;
 }
 
+function liveId(live: AnyRec) {
+  return String(live.id ?? live._id ?? live.title ?? "");
+}
+
+function liveIsPublic(live: AnyRec) {
+  return !["cancelled", "archived", "hidden"].includes(
+    String(live.status || "").toLowerCase()
+  );
+}
+
+function campaignId(campaign: AnyRec) {
+  return String(campaign.id ?? campaign._id ?? campaign.title ?? campaign.name ?? "");
+}
+
+function campaignTitle(campaign: AnyRec) {
+  return String(campaign.title ?? campaign.headline ?? campaign.name ?? "Campaign");
+}
+
+function campaignBody(campaign: AnyRec) {
+  return String(campaign.body ?? campaign.description ?? campaign.shortDescription ?? "");
+}
+
+function campaignImage(campaign: AnyRec) {
+  return (
+    campaign.imageUrl ||
+    campaign.creativeImageUrl ||
+    campaign.thumbnailUrl ||
+    campaign.videoThumbnailUrl ||
+    ""
+  );
+}
+
+function campaignIsActive(campaign: AnyRec) {
+  const status = String(campaign.status || "active").toLowerCase();
+  return ["active", "published", "scheduled", "live"].includes(status);
+}
+
 function PublicPreviewLink({ href, label }: { href: string; label: string }) {
   return (
     <Link href={href as any} asChild>
@@ -119,6 +158,8 @@ export default function Storefront() {
 
   const [storefront, setStorefront] = useState<AnyRec | null>(null);
   const [products, setProducts] = useState<AnyRec[]>([]);
+  const [lives, setLives] = useState<AnyRec[]>([]);
+  const [campaigns, setCampaigns] = useState<AnyRec[]>([]);
   const [inventory, setInventory] = useState<AnyRec[]>([]);
   const [loading, setLoading] = useState(true);
   const [refreshing, setRefreshing] = useState(false);
@@ -166,14 +207,18 @@ export default function Storefront() {
       setFeedback("");
       try {
         clearError();
-        const [storeRes, productRes, inventoryRes] = await Promise.all([
+        const [storeRes, productRes, liveRes, feedRes, inventoryRes] = await Promise.all([
           apiRequest(commercialEndpoints.storefront),
           apiRequest(commercialEndpoints.products),
+          apiRequest(commercialEndpoints.lives),
+          apiRequest(commercialEndpoints.feed),
           apiRequest(commercialEndpoints.inventory)
         ]);
         const nextStorefront = storeRes?.storefront ?? storeRes ?? null;
         setStorefront(nextStorefront);
         setProducts(asArray(productRes, "products"));
+        setLives(asArray(liveRes, "lives").filter(liveIsPublic));
+        setCampaigns(asArray(feedRes, "items").filter(campaignIsActive));
         setInventory(asArray(inventoryRes, "inventory"));
       } catch (e) {
         handleApiError(e);
@@ -215,6 +260,8 @@ export default function Storefront() {
     () => products.filter((product) => productIsPublished(product)),
     [products]
   );
+  const storefrontLives = useMemo(() => lives.slice(0, 4), [lives]);
+  const storefrontCampaigns = useMemo(() => campaigns.slice(0, 4), [campaigns]);
   const productWarnings = useMemo(
     () =>
       products.map((product) => ({
@@ -273,9 +320,25 @@ export default function Storefront() {
         label: "Product checkout path",
         complete: products.some(productCheckoutReady),
         helper: "At least one product has an external checkout or Stripe price."
+      },
+      {
+        label: "Upcoming live or replay",
+        complete: storefrontLives.length > 0,
+        helper: "Storefront can show RSVP, replay, or product-demo live content."
+      },
+      {
+        label: "Active feed campaign",
+        complete: storefrontCampaigns.length > 0,
+        helper: "Promotional outreach is available without becoming forum discussion."
       }
     ],
-    [products, publishedProducts.length, storeDraft]
+    [
+      products,
+      publishedProducts.length,
+      storeDraft,
+      storefrontCampaigns.length,
+      storefrontLives.length
+    ]
   );
   const completedSetupCount = setupChecklist.filter((item) => item.complete).length;
 
@@ -463,6 +526,14 @@ export default function Storefront() {
             <View style={styles.metric}>
               <Text style={styles.metricValue}>{warningCount}</Text>
               <Text style={styles.metricLabel}>Product warnings</Text>
+            </View>
+            <View style={styles.metric}>
+              <Text style={styles.metricValue}>{storefrontLives.length}</Text>
+              <Text style={styles.metricLabel}>Lives</Text>
+            </View>
+            <View style={styles.metric}>
+              <Text style={styles.metricValue}>{storefrontCampaigns.length}</Text>
+              <Text style={styles.metricLabel}>Campaigns</Text>
             </View>
           </View>
           <View style={styles.checklist}>
@@ -681,6 +752,106 @@ export default function Storefront() {
             <Text style={styles.discoveryAction}>Return to campaign placements</Text>
             <Text style={styles.discoveryAction}>Open forum/support discussions</Text>
           </View>
+        </AppCard>
+
+        <AppCard>
+          <View style={styles.cardHeader}>
+            <Text style={styles.cardTitle}>Upcoming Lives</Text>
+            <Text style={styles.statusPill}>Storefront section</Text>
+          </View>
+          <Text style={styles.helperText}>
+            Storefront lives are event cards for RSVP, reminders, replay access, and
+            related product/course links. Forum/Q&A stays linked as discussion.
+          </Text>
+          {storefrontLives.length ? (
+            <View style={styles.eventList}>
+              {storefrontLives.map((live) => (
+                <View key={liveId(live)} style={styles.eventRow}>
+                  <Text style={styles.eventTitle}>{live.title || "Commercial live"}</Text>
+                  <Text style={styles.muted}>
+                    {[
+                      live.status || "scheduled",
+                      live.scheduledStart,
+                      live.twitchChannelName && `Twitch ${live.twitchChannelName}`
+                    ]
+                      .filter(Boolean)
+                      .join(" | ")}
+                  </Text>
+                  {live.description ? (
+                    <Text style={styles.eventBody}>{live.description}</Text>
+                  ) : null}
+                  <Text style={styles.muted}>
+                    {[
+                      live.relatedProductId && `Product ${live.relatedProductId}`,
+                      live.relatedCourseId && `Course ${live.relatedCourseId}`,
+                      live.relatedFeedPostId && `Campaign ${live.relatedFeedPostId}`,
+                      live.forumThreadId && `Forum/Q&A ${live.forumThreadId}`,
+                      live.replayUrl && "Replay available"
+                    ]
+                      .filter(Boolean)
+                      .join(" | ")}
+                  </Text>
+                </View>
+              ))}
+            </View>
+          ) : (
+            <Text style={styles.muted}>
+              No scheduled lives yet. Use the commercial Lives workspace to add product
+              demos, course sessions, launch events, and replay links.
+            </Text>
+          )}
+        </AppCard>
+
+        <AppCard>
+          <View style={styles.cardHeader}>
+            <Text style={styles.cardTitle}>Active Feed Campaigns</Text>
+            <Text style={styles.statusPill}>Advertising / outreach</Text>
+          </View>
+          <Text style={styles.helperText}>
+            Feed is promotional outreach from commercial or facility accounts. Campaign
+            cards link to products, courses, lives, storefronts, and optional Forum/Q&A
+            threads, but discussion does not happen inside the ad.
+          </Text>
+          {storefrontCampaigns.length ? (
+            <View style={styles.eventList}>
+              {storefrontCampaigns.map((campaign) => {
+                const image = campaignImage(campaign);
+                return (
+                  <View key={campaignId(campaign)} style={styles.campaignRow}>
+                    {image ? (
+                      <Image source={{ uri: image }} style={styles.campaignThumb} />
+                    ) : null}
+                    <View style={styles.campaignCopy}>
+                      <Text style={styles.eventTitle}>{campaignTitle(campaign)}</Text>
+                      {campaignBody(campaign) ? (
+                        <Text style={styles.eventBody}>{campaignBody(campaign)}</Text>
+                      ) : null}
+                      <Text style={styles.muted}>
+                        {[
+                          campaign.type || campaign.campaignType || "campaign",
+                          campaign.linkedProductId &&
+                            `Product ${campaign.linkedProductId}`,
+                          campaign.linkedCourseId && `Course ${campaign.linkedCourseId}`,
+                          campaign.linkedLiveId && `Live ${campaign.linkedLiveId}`,
+                          campaign.linkedStorefrontId &&
+                            `Storefront ${campaign.linkedStorefrontId}`,
+                          campaign.linkedForumThreadId &&
+                            `Forum/Q&A ${campaign.linkedForumThreadId}`
+                        ]
+                          .filter(Boolean)
+                          .join(" | ")}
+                      </Text>
+                    </View>
+                  </View>
+                );
+              })}
+            </View>
+          ) : (
+            <Text style={styles.muted}>
+              No active campaigns yet. Use Feed / Campaigns for storefront, product,
+              course, and live outreach.
+            </Text>
+          )}
         </AppCard>
 
         <AppCard>
@@ -1203,6 +1374,39 @@ const styles = StyleSheet.create({
   chipSelected: { backgroundColor: "#0F172A", borderColor: "#0F172A" },
   chipText: { color: "#0F172A", fontWeight: "800" },
   chipTextSelected: { color: "white" },
+  eventList: { gap: 10, marginTop: 12 },
+  eventRow: {
+    backgroundColor: "#F8FAFC",
+    borderColor: "rgba(15,23,42,0.12)",
+    borderRadius: 10,
+    borderWidth: 1,
+    padding: 12
+  },
+  eventTitle: { color: "#0F172A", fontSize: 15, fontWeight: "900" },
+  eventBody: {
+    color: "#475569",
+    fontSize: 13,
+    fontWeight: "700",
+    lineHeight: 19,
+    marginTop: 5
+  },
+  campaignRow: {
+    alignItems: "flex-start",
+    backgroundColor: "#F8FAFC",
+    borderColor: "rgba(15,23,42,0.12)",
+    borderRadius: 10,
+    borderWidth: 1,
+    flexDirection: "row",
+    gap: 10,
+    padding: 12
+  },
+  campaignThumb: {
+    backgroundColor: "#F1F5F9",
+    borderRadius: 8,
+    height: 72,
+    width: 72
+  },
+  campaignCopy: { flex: 1, gap: 4 },
   productList: { gap: 10, marginTop: 10 },
   productRow: {
     borderColor: "rgba(0,0,0,0.12)",
