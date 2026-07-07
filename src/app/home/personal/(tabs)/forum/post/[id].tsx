@@ -23,6 +23,7 @@ import {
   type SocialPost,
   unlikeForumPost
 } from "@/api/communitySocial";
+import { createPersonalTask } from "@/api/tasks";
 import { ScreenBoundary } from "@/components/ScreenBoundary";
 import { CAPABILITY_KEYS, useEntitlements } from "@/entitlements";
 import PersonalFeedPlacement from "@/components/feed/PersonalFeedPlacement";
@@ -108,6 +109,7 @@ export default function ForumPostDetailRoute() {
   const [loading, setLoading] = useState(true);
   const [refreshing, setRefreshing] = useState(false);
   const [saving, setSaving] = useState(false);
+  const [creatingTask, setCreatingTask] = useState(false);
   const [feedback, setFeedback] = useState("");
 
   const loadedId = useMemo(() => postId(post), [post]);
@@ -199,6 +201,44 @@ export default function ForumPostDetailRoute() {
       setFeedback(error?.message || "Unable to save post to grow journal.");
     } finally {
       setSaving(false);
+    }
+  }
+
+  async function createFollowUpTask() {
+    const targetId = loadedId || id;
+    if (!targetId || !growId || !canPost || creatingTask) return;
+    setCreatingTask(true);
+    setFeedback("");
+    const due = new Date();
+    due.setDate(due.getDate() + 3);
+    try {
+      const created = await createPersonalTask({
+        growId,
+        title: `Follow up on forum advice: ${titleOf(post)}`,
+        description: [
+          "Created from a Forum/Q&A discussion so community advice becomes trackable grow work.",
+          bodyOf(post) ? `Post context: ${bodyOf(post)}` : "",
+          comments.length
+            ? `Current comments: ${comments
+                .slice(0, 3)
+                .map((comment) => bodyOf(comment))
+                .filter(Boolean)
+                .join(" | ")}`
+            : ""
+        ]
+          .filter(Boolean)
+          .join("\n"),
+        dueDate: due.toISOString().slice(0, 10),
+        priority: "medium",
+        sourceType: "forum",
+        sourceObjectId: targetId,
+        reminderPlan: { label: "24 hours before", channels: ["in_app"] }
+      });
+      setFeedback(created ? "Forum follow-up task created." : "Unable to create task.");
+    } catch (error: any) {
+      setFeedback(error?.message || "Unable to create task.");
+    } finally {
+      setCreatingTask(false);
     }
   }
 
@@ -296,18 +336,34 @@ export default function ForumPostDetailRoute() {
                     <Text style={styles.secondaryText}>{liked ? "Unlike" : "Like"}</Text>
                   </Pressable>
                   {growId ? (
-                    <Pressable
-                      disabled={!canPost || saving}
-                      onPress={saveToGrowLog}
-                      style={[
-                        styles.secondaryBtn,
-                        (!canPost || saving) && styles.disabled
-                      ]}
-                      accessibilityRole="button"
-                      accessibilityLabel="Save forum post to grow log"
-                    >
-                      <Text style={styles.secondaryText}>Save to Log</Text>
-                    </Pressable>
+                    <>
+                      <Pressable
+                        disabled={!canPost || saving}
+                        onPress={saveToGrowLog}
+                        style={[
+                          styles.secondaryBtn,
+                          (!canPost || saving) && styles.disabled
+                        ]}
+                        accessibilityRole="button"
+                        accessibilityLabel="Save forum post to grow log"
+                      >
+                        <Text style={styles.secondaryText}>Save to Log</Text>
+                      </Pressable>
+                      <Pressable
+                        disabled={!canPost || creatingTask}
+                        onPress={createFollowUpTask}
+                        style={[
+                          styles.secondaryBtn,
+                          (!canPost || creatingTask) && styles.disabled
+                        ]}
+                        accessibilityRole="button"
+                        accessibilityLabel="Create forum follow-up task"
+                      >
+                        <Text style={styles.secondaryText}>
+                          {creatingTask ? "Creating..." : "Create Task"}
+                        </Text>
+                      </Pressable>
+                    </>
                   ) : null}
                   <Pressable
                     disabled={!canPost || saving}
