@@ -143,6 +143,21 @@ describe("CommercialFeedRoute", () => {
     ).toBeTruthy();
   });
 
+  it("lets personal users view campaigns without campaign creation controls", async () => {
+    mockMode = "personal";
+    const screen = render(<CommercialFeedRoute />);
+
+    await waitFor(() => expect(screen.getByText("Campaigns")).toBeTruthy());
+
+    expect(screen.getByText("Promoted Outreach")).toBeTruthy();
+    expect(
+      screen.getByText(/Personal grow updates, questions, and replies/)
+    ).toBeTruthy();
+    expect(screen.getByText("Live soil demo")).toBeTruthy();
+    expect(screen.queryByText("Create Campaign")).toBeNull();
+    expect(screen.queryByLabelText("Publish feed campaign")).toBeNull();
+  });
+
   it("renders a CTA for external-link-only campaigns", async () => {
     mockApiRequest.mockImplementation((path: string) => {
       if (path === "/api/commercial/feed") {

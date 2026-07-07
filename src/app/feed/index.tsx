@@ -208,6 +208,7 @@ export default function CommercialFeedRoute() {
   const ent = useEntitlements();
   const isFacility = ent.mode === "facility";
   const isCommercial = ent.mode === "commercial";
+  const canManageCampaigns = isCommercial || isFacility;
   const allowedTypes = isFacility ? FACILITY_TYPES : COMMERCIAL_TYPES;
   const allowedCampaignKinds = isFacility
     ? FACILITY_CAMPAIGN_KINDS
@@ -248,8 +249,8 @@ export default function CommercialFeedRoute() {
     setType(backendTypeForCampaignKind(campaignKind));
   }, [allowedCampaignKinds, campaignKind]);
 
-  const canAccess = ent.ready && (isCommercial || isFacility);
-  const canCreate = body.trim().length > 0 && !creating;
+  const canAccess = ent.ready;
+  const canCreate = canManageCampaigns && body.trim().length > 0 && !creating;
   const readinessWarnings = campaignReadinessWarnings({
     campaignKind,
     linkedProductId,
@@ -265,8 +266,10 @@ export default function CommercialFeedRoute() {
     () =>
       isFacility
         ? "Facility feed campaigns are outreach placements. Share training, SOP, IPM, safety, cultivation, compliance, and professional education. Direct sales listings are blocked for facility accounts."
-        : "Create outreach campaigns that promote products, courses, lives, storefronts, offers, and brand updates. Use Forum/Q&A for discussion.",
-    [isFacility]
+        : isCommercial
+          ? "Create outreach campaigns that promote products, courses, lives, storefronts, offers, and brand updates. Use Forum/Q&A for discussion."
+          : "Browse commercial and facility outreach campaigns for products, courses, lives, storefronts, and offers. Use Forum/Q&A for discussion.",
+    [isCommercial, isFacility]
   );
 
   const load = useCallback(
@@ -297,7 +300,7 @@ export default function CommercialFeedRoute() {
   }, [load]);
 
   async function createCampaign() {
-    if (!canCreate) return;
+    if (!canCreate || !canManageCampaigns) return;
     setCreating(true);
     setError(null);
     setFeedback("");
@@ -389,211 +392,231 @@ export default function CommercialFeedRoute() {
     >
       <View style={styles.header}>
         <Text style={styles.title}>
-          {isFacility ? "Facility Outreach" : "Feed / Campaigns"}
+          {isFacility
+            ? "Facility Outreach"
+            : isCommercial
+              ? "Feed / Campaigns"
+              : "Campaigns"}
         </Text>
         <Text style={styles.subtitle}>{helper}</Text>
       </View>
 
-      <View style={styles.card}>
-        <Text style={styles.cardTitle}>Create Campaign</Text>
-        <Text style={styles.linkBoxText}>
-          Feed is advertising and outreach. Link the campaign to a product, course, live,
-          storefront, or support Q&A thread. Keep threaded conversation in Forum/Q&A.
-        </Text>
-        <View style={styles.chipRow}>
-          {allowedCampaignKinds.map((option) => (
-            <Pressable
-              key={option}
-              onPress={() => setCampaignKind(option)}
-              accessibilityLabel={`Select ${campaignKindLabels[option]} campaign type`}
-              style={[styles.chip, campaignKind === option && styles.chipSelected]}
-            >
-              <Text
-                style={[
-                  styles.chipText,
-                  campaignKind === option && styles.chipTextSelected
-                ]}
-              >
-                {campaignKindLabels[option]}
-              </Text>
-            </Pressable>
-          ))}
+      {!canManageCampaigns ? (
+        <View style={styles.card}>
+          <Text style={styles.cardTitle}>Promoted Outreach</Text>
+          <Text style={styles.linkBoxText}>
+            Feed placements are advertisements and outreach from commercial and facility
+            accounts. Personal grow updates, questions, and replies belong in Forum/Q&A or
+            grow logs.
+          </Text>
         </View>
-        <TextInput
-          value={title}
-          onChangeText={setTitle}
-          style={styles.input}
-          placeholder={isFacility ? "Educational topic" : "Title"}
-          accessibilityLabel="Feed campaign title"
-        />
-        <TextInput
-          value={body}
-          onChangeText={setBody}
-          style={[styles.input, styles.bodyInput]}
-          placeholder={
-            isFacility
-              ? "Teach something useful: SOP notes, scouting lesson, compliance tip..."
-              : "What do you want to share?"
-          }
-          multiline
-          accessibilityLabel="Feed campaign body"
-        />
-        <TextInput
-          value={tags}
-          onChangeText={setTags}
-          style={styles.input}
-          placeholder="Tags, comma separated"
-          accessibilityLabel="Feed campaign tags"
-        />
-        <TextInput
-          value={location}
-          onChangeText={setLocation}
-          style={styles.input}
-          placeholder="Location (optional)"
-          accessibilityLabel="Feed campaign location"
-        />
-        {!isFacility ? (
-          <View style={styles.linkBox}>
-            <Text style={styles.linkBoxTitle}>Optional commercial links</Text>
-            <Text style={styles.linkBoxText}>
-              Attach product, course, live, evidence run, storefront, external purchase
-              context, or a Forum/Q&A thread so users can move from the ad into the right
-              public surface.
-            </Text>
-            <TextInput
-              value={linkedProductId}
-              onChangeText={setLinkedProductId}
-              style={styles.input}
-              placeholder="Linked product ID or slug"
-              autoCapitalize="none"
-              accessibilityLabel="Linked product"
-            />
-            <TextInput
-              value={linkedCourseId}
-              onChangeText={setLinkedCourseId}
-              style={styles.input}
-              placeholder="Linked course ID or slug"
-              autoCapitalize="none"
-              accessibilityLabel="Linked course"
-            />
-            <TextInput
-              value={linkedLiveId}
-              onChangeText={setLinkedLiveId}
-              style={styles.input}
-              placeholder="Linked live ID or slug"
-              autoCapitalize="none"
-              accessibilityLabel="Linked live"
-            />
-            <TextInput
-              value={linkedGrowId}
-              onChangeText={setLinkedGrowId}
-              style={styles.input}
-              placeholder="Linked evidence run ID"
-              autoCapitalize="none"
-              accessibilityLabel="Linked evidence run"
-            />
-            <TextInput
-              value={linkedForumThreadId}
-              onChangeText={setLinkedForumThreadId}
-              style={styles.input}
-              placeholder="Linked Forum/Q&A thread ID"
-              autoCapitalize="none"
-              accessibilityLabel="Linked forum thread"
-            />
-            <TextInput
-              value={storefrontSlug}
-              onChangeText={setStorefrontSlug}
-              style={styles.input}
-              placeholder="Storefront slug"
-              autoCapitalize="none"
-              accessibilityLabel="Linked storefront slug"
-            />
-            <TextInput
-              value={imageUrl}
-              onChangeText={setImageUrl}
-              style={styles.input}
-              placeholder="Campaign image URL or uploaded creative"
-              autoCapitalize="none"
-              accessibilityLabel="Commercial feed campaign image URL"
-            />
-            <View style={styles.imageTools}>
+      ) : null}
+
+      {canManageCampaigns ? (
+        <View style={styles.card}>
+          <Text style={styles.cardTitle}>Create Campaign</Text>
+          <Text style={styles.linkBoxText}>
+            Feed is advertising and outreach. Link the campaign to a product, course,
+            live, storefront, or support Q&A thread. Keep threaded conversation in
+            Forum/Q&A.
+          </Text>
+          <View style={styles.chipRow}>
+            {allowedCampaignKinds.map((option) => (
               <Pressable
-                onPress={pickCampaignImage}
-                accessibilityRole="button"
-                accessibilityLabel="Upload commercial feed campaign image"
-                style={styles.secondaryButton}
-                disabled={creating}
+                key={option}
+                onPress={() => setCampaignKind(option)}
+                accessibilityLabel={`Select ${campaignKindLabels[option]} campaign type`}
+                style={[styles.chip, campaignKind === option && styles.chipSelected]}
               >
-                <Text style={styles.secondaryButtonText}>Upload image</Text>
+                <Text
+                  style={[
+                    styles.chipText,
+                    campaignKind === option && styles.chipTextSelected
+                  ]}
+                >
+                  {campaignKindLabels[option]}
+                </Text>
               </Pressable>
-              {imageUrl ? (
+            ))}
+          </View>
+          <TextInput
+            value={title}
+            onChangeText={setTitle}
+            style={styles.input}
+            placeholder={isFacility ? "Educational topic" : "Title"}
+            accessibilityLabel="Feed campaign title"
+          />
+          <TextInput
+            value={body}
+            onChangeText={setBody}
+            style={[styles.input, styles.bodyInput]}
+            placeholder={
+              isFacility
+                ? "Teach something useful: SOP notes, scouting lesson, compliance tip..."
+                : "What do you want to share?"
+            }
+            multiline
+            accessibilityLabel="Feed campaign body"
+          />
+          <TextInput
+            value={tags}
+            onChangeText={setTags}
+            style={styles.input}
+            placeholder="Tags, comma separated"
+            accessibilityLabel="Feed campaign tags"
+          />
+          <TextInput
+            value={location}
+            onChangeText={setLocation}
+            style={styles.input}
+            placeholder="Location (optional)"
+            accessibilityLabel="Feed campaign location"
+          />
+          {!isFacility ? (
+            <View style={styles.linkBox}>
+              <Text style={styles.linkBoxTitle}>Optional commercial links</Text>
+              <Text style={styles.linkBoxText}>
+                Attach product, course, live, evidence run, storefront, external purchase
+                context, or a Forum/Q&A thread so users can move from the ad into the
+                right public surface.
+              </Text>
+              <TextInput
+                value={linkedProductId}
+                onChangeText={setLinkedProductId}
+                style={styles.input}
+                placeholder="Linked product ID or slug"
+                autoCapitalize="none"
+                accessibilityLabel="Linked product"
+              />
+              <TextInput
+                value={linkedCourseId}
+                onChangeText={setLinkedCourseId}
+                style={styles.input}
+                placeholder="Linked course ID or slug"
+                autoCapitalize="none"
+                accessibilityLabel="Linked course"
+              />
+              <TextInput
+                value={linkedLiveId}
+                onChangeText={setLinkedLiveId}
+                style={styles.input}
+                placeholder="Linked live ID or slug"
+                autoCapitalize="none"
+                accessibilityLabel="Linked live"
+              />
+              <TextInput
+                value={linkedGrowId}
+                onChangeText={setLinkedGrowId}
+                style={styles.input}
+                placeholder="Linked evidence run ID"
+                autoCapitalize="none"
+                accessibilityLabel="Linked evidence run"
+              />
+              <TextInput
+                value={linkedForumThreadId}
+                onChangeText={setLinkedForumThreadId}
+                style={styles.input}
+                placeholder="Linked Forum/Q&A thread ID"
+                autoCapitalize="none"
+                accessibilityLabel="Linked forum thread"
+              />
+              <TextInput
+                value={storefrontSlug}
+                onChangeText={setStorefrontSlug}
+                style={styles.input}
+                placeholder="Storefront slug"
+                autoCapitalize="none"
+                accessibilityLabel="Linked storefront slug"
+              />
+              <TextInput
+                value={imageUrl}
+                onChangeText={setImageUrl}
+                style={styles.input}
+                placeholder="Campaign image URL or uploaded creative"
+                autoCapitalize="none"
+                accessibilityLabel="Commercial feed campaign image URL"
+              />
+              <View style={styles.imageTools}>
                 <Pressable
-                  onPress={() => setImageUrl("")}
+                  onPress={pickCampaignImage}
                   accessibilityRole="button"
-                  accessibilityLabel="Clear commercial feed campaign image"
+                  accessibilityLabel="Upload commercial feed campaign image"
                   style={styles.secondaryButton}
                   disabled={creating}
                 >
-                  <Text style={styles.secondaryButtonText}>Clear image</Text>
+                  <Text style={styles.secondaryButtonText}>Upload image</Text>
                 </Pressable>
-              ) : null}
-            </View>
-            {imageUrl ? (
-              <Image
-                source={{ uri: resolveImageUri(imageUrl) }}
-                style={styles.postImagePreview}
-                resizeMode="cover"
-                accessibilityLabel="Commercial feed campaign image preview"
-              />
-            ) : null}
-            {readinessWarnings.length ? (
-              <View style={styles.warningBox}>
-                {readinessWarnings.map((warning) => (
-                  <Text key={warning} style={styles.warningText}>
-                    {warning}
-                  </Text>
-                ))}
+                {imageUrl ? (
+                  <Pressable
+                    onPress={() => setImageUrl("")}
+                    accessibilityRole="button"
+                    accessibilityLabel="Clear commercial feed campaign image"
+                    style={styles.secondaryButton}
+                    disabled={creating}
+                  >
+                    <Text style={styles.secondaryButtonText}>Clear image</Text>
+                  </Pressable>
+                ) : null}
               </View>
-            ) : (
-              <Text style={styles.readyText}>Campaign has destination and creative.</Text>
-            )}
-            <View style={styles.twoColumn}>
-              <TextInput
-                value={externalLinkLabel}
-                onChangeText={setExternalLinkLabel}
-                style={[styles.input, styles.columnInput]}
-                placeholder="External link label"
-                accessibilityLabel="External link label"
-              />
-              <TextInput
-                value={externalLinkUrl}
-                onChangeText={setExternalLinkUrl}
-                style={[styles.input, styles.columnInput]}
-                placeholder="https://..."
-                autoCapitalize="none"
-                accessibilityLabel="External link URL"
-              />
+              {imageUrl ? (
+                <Image
+                  source={{ uri: resolveImageUri(imageUrl) }}
+                  style={styles.postImagePreview}
+                  resizeMode="cover"
+                  accessibilityLabel="Commercial feed campaign image preview"
+                />
+              ) : null}
+              {readinessWarnings.length ? (
+                <View style={styles.warningBox}>
+                  {readinessWarnings.map((warning) => (
+                    <Text key={warning} style={styles.warningText}>
+                      {warning}
+                    </Text>
+                  ))}
+                </View>
+              ) : (
+                <Text style={styles.readyText}>
+                  Campaign has destination and creative.
+                </Text>
+              )}
+              <View style={styles.twoColumn}>
+                <TextInput
+                  value={externalLinkLabel}
+                  onChangeText={setExternalLinkLabel}
+                  style={[styles.input, styles.columnInput]}
+                  placeholder="External link label"
+                  accessibilityLabel="External link label"
+                />
+                <TextInput
+                  value={externalLinkUrl}
+                  onChangeText={setExternalLinkUrl}
+                  style={[styles.input, styles.columnInput]}
+                  placeholder="https://..."
+                  autoCapitalize="none"
+                  accessibilityLabel="External link URL"
+                />
+              </View>
             </View>
-          </View>
-        ) : null}
-        <Pressable
-          onPress={createCampaign}
-          disabled={!canCreate}
-          accessibilityLabel={
-            isFacility ? "Publish facility outreach" : "Publish feed campaign"
-          }
-          style={[styles.primaryButton, !canCreate && styles.disabled]}
-        >
-          <Text style={styles.primaryButtonText}>
-            {creating
-              ? "Publishing..."
-              : isFacility
-                ? "Publish Outreach"
-                : "Publish Campaign"}
-          </Text>
-        </Pressable>
-        {feedback ? <Text style={styles.feedback}>{feedback}</Text> : null}
-      </View>
+          ) : null}
+          <Pressable
+            onPress={createCampaign}
+            disabled={!canCreate}
+            accessibilityLabel={
+              isFacility ? "Publish facility outreach" : "Publish feed campaign"
+            }
+            style={[styles.primaryButton, !canCreate && styles.disabled]}
+          >
+            <Text style={styles.primaryButtonText}>
+              {creating
+                ? "Publishing..."
+                : isFacility
+                  ? "Publish Outreach"
+                  : "Publish Campaign"}
+            </Text>
+          </Pressable>
+          {feedback ? <Text style={styles.feedback}>{feedback}</Text> : null}
+        </View>
+      ) : null}
 
       {error ? <InlineError error={error} /> : null}
 
