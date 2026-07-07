@@ -176,6 +176,16 @@ function PublicPreviewLink({ href, label }: { href: string; label: string }) {
   );
 }
 
+function ObjectActionLink({ href, label }: { href: string; label: string }) {
+  return (
+    <Link href={href as any} asChild>
+      <Pressable accessibilityRole="link" style={styles.objectAction}>
+        <Text style={styles.objectActionText}>{label}</Text>
+      </Pressable>
+    </Link>
+  );
+}
+
 export default function Storefront() {
   const ent = useEntitlements();
   const canEdit = Boolean(ent?.can?.(CAPABILITY_KEYS.STORE_FRONT_VIEW));
@@ -718,6 +728,18 @@ export default function Storefront() {
                       .filter(Boolean)
                       .join(" | ")}
                   </Text>
+                  <View style={styles.objectActions}>
+                    <ObjectActionLink
+                      href={`/home/commercial/courses/${encodeURIComponent(courseId(course))}`}
+                      label="Open Course"
+                    />
+                    {course.forumThreadId ? (
+                      <ObjectActionLink
+                        href={`/home/personal/forum/post/${encodeURIComponent(String(course.forumThreadId))}`}
+                        label="Open Q&A"
+                      />
+                    ) : null}
+                  </View>
                 </View>
               ))}
             </View>
@@ -975,6 +997,18 @@ export default function Storefront() {
                       .filter(Boolean)
                       .join(" | ")}
                   </Text>
+                  <View style={styles.objectActions}>
+                    <ObjectActionLink
+                      href={`/home/commercial/lives?liveId=${encodeURIComponent(liveId(live))}`}
+                      label="Open Live"
+                    />
+                    {live.forumThreadId ? (
+                      <ObjectActionLink
+                        href={`/home/personal/forum/post/${encodeURIComponent(String(live.forumThreadId))}`}
+                        label="Open Q&A"
+                      />
+                    ) : null}
+                  </View>
                 </View>
               ))}
             </View>
@@ -1025,6 +1059,18 @@ export default function Storefront() {
                           .filter(Boolean)
                           .join(" | ")}
                       </Text>
+                      <View style={styles.objectActions}>
+                        <ObjectActionLink
+                          href="/home/commercial/feed"
+                          label="Open Campaigns"
+                        />
+                        {campaign.linkedForumThreadId ? (
+                          <ObjectActionLink
+                            href={`/home/personal/forum/post/${encodeURIComponent(String(campaign.linkedForumThreadId))}`}
+                            label="Open Q&A"
+                          />
+                        ) : null}
+                      </View>
                     </View>
                   </View>
                 );
@@ -1381,6 +1427,18 @@ export default function Storefront() {
                       ) : (
                         <Text style={styles.readyText}>Storefront card ready</Text>
                       )}
+                      <View style={styles.objectActions}>
+                        <ObjectActionLink
+                          href={`/home/commercial/products/${encodeURIComponent(productId(product))}`}
+                          label="Open Product"
+                        />
+                        {product.linkedCourseId ? (
+                          <ObjectActionLink
+                            href={`/home/commercial/courses/${encodeURIComponent(String(product.linkedCourseId))}`}
+                            label="Open Course"
+                          />
+                        ) : null}
+                      </View>
                     </View>
                   </View>
                 );
@@ -1507,6 +1565,19 @@ const styles = StyleSheet.create({
     paddingVertical: 10
   },
   previewButtonText: { color: "white", fontWeight: "900" },
+  objectActions: { flexDirection: "row", flexWrap: "wrap", gap: 8, marginTop: 10 },
+  objectAction: {
+    alignItems: "center",
+    backgroundColor: "white",
+    borderColor: "rgba(15,23,42,0.16)",
+    borderRadius: 8,
+    borderWidth: 1,
+    minHeight: 34,
+    justifyContent: "center",
+    paddingHorizontal: 10,
+    paddingVertical: 7
+  },
+  objectActionText: { color: "#0F172A", fontSize: 12, fontWeight: "900" },
   discoveryActions: { gap: 6, marginTop: 10 },
   discoveryAction: { color: "#0F172A", fontSize: 13, fontWeight: "800" },
   linkGrid: { flexDirection: "row", flexWrap: "wrap", gap: 8 },

@@ -209,13 +209,18 @@ describe("Storefront route", () => {
     expect(screen.queryByText("TODO")).toBeNull();
     expect(screen.getByText("Living Soil Basics")).toBeTruthy();
     expect(screen.getByText(/Interests living soil, dry amendments/)).toBeTruthy();
+    expect(screen.getAllByText("Open Course").length).toBeGreaterThan(0);
+    expect(screen.getAllByText("Open Q&A").length).toBeGreaterThan(0);
     expect(screen.getByText("Live Soil Mixing Demo")).toBeTruthy();
+    expect(screen.getByText("Open Live")).toBeTruthy();
     expect(screen.getAllByText(/Product product-1/).length).toBeGreaterThan(0);
     expect(screen.getAllByText(/Forum\/Q&A thread-1/).length).toBeGreaterThan(0);
     expect(screen.getByText("New Veg Mix Launch")).toBeTruthy();
+    expect(screen.getByText("Open Campaigns")).toBeTruthy();
     expect(screen.getByText(/Advertising \/ outreach/)).toBeTruthy();
     expect(screen.getByText(/Live live-1/)).toBeTruthy();
     expect(screen.getByText("Living Soil Base")).toBeTruthy();
+    expect(screen.getAllByText("Open Product").length).toBeGreaterThan(0);
     expect(screen.getByText("Published Bloom Topdress")).toBeTruthy();
     expect(screen.getByText("Missing checkout link")).toBeTruthy();
     expect(screen.getByText("Missing published status")).toBeTruthy();
