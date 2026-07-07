@@ -19,6 +19,22 @@ const checks = [
     label: "Connected workflow verifier",
     command: npmCmd,
     args: ["run", "verify:connected-workflows"]
+  },
+  {
+    label: "Recent autonomous workflow slices",
+    command: npmCmd,
+    args: [
+      "test",
+      "--",
+      "--runTestsByPath",
+      "tests/navigation/commercialStack.test.js",
+      "tests/navigation/commercialTabs.test.js",
+      "tests/navigation/commercialPageRegistry.test.js",
+      "tests/navigation/feedForumSeparationNavigation.test.js",
+      "tests/unit/CommercialWorkflowPages.test.tsx",
+      "tests/unit/SchedulePicker.test.tsx",
+      "tests/unit/AppPageBackBehavior.test.tsx"
+    ]
   }
 ];
 
@@ -42,6 +58,7 @@ const manualChecks = [
     area: "Storefront and commercial readiness",
     checks: [
       "Open Commercial > Storefront and verify Storefront is a top-level destination with View as User and setup status.",
+      "Open Commercial > Orders from the commercial tab/dashboard and verify it stays inside /home/commercial/orders with no root-page back arrow.",
       "Open Commercial > Products and verify product cards feed the public storefront and batches/trials/inventory are product support surfaces.",
       "Open Commercial > Courses and a course detail; verify setup warnings and paid Stripe readiness before publish.",
       "Open Commercial > Lives; verify Twitch channel/embed/EventSub warnings and reminder-plan language."
@@ -66,7 +83,8 @@ const manualChecks = [
   {
     area: "Tasks and schedule",
     checks: [
-      "Create a manual task from Task Center using the shared schedule picker quick dates, reminders, and recurrence.",
+      "Create a manual task from Task Center using the shared schedule picker quick dates: This evening, In 3 days, In 21 days, and Next week.",
+      "Confirm the same SchedulePicker behavior is available from Personal, Commercial, Facility, and Alert Center task/snooze flows.",
       "Create tasks from a ToolRun and confirm they link back to the grow/tool result.",
       "Convert an alert to a task and confirm the source link remains visible."
     ]
