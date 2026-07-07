@@ -9,6 +9,8 @@ const mockListPersonalTasks = jest.fn();
 const mockListPersonalPlants = jest.fn();
 const mockListToolRuns = jest.fn();
 const mockGetDiagnosisHistory = jest.fn();
+const mockCreatePersonalTask = jest.fn();
+const mockAskPersonalAssistant = jest.fn();
 
 jest.mock("@/api/grows", () => ({
   listPersonalGrows: (...args: any[]) => mockListPersonalGrows(...args)
@@ -24,7 +26,7 @@ jest.mock("@/api/plants", () => ({
 }));
 
 jest.mock("@/api/tasks", () => ({
-  createPersonalTask: jest.fn(),
+  createPersonalTask: (...args: any[]) => mockCreatePersonalTask(...args),
   listPersonalTasks: (...args: any[]) => mockListPersonalTasks(...args)
 }));
 
@@ -37,7 +39,7 @@ jest.mock("@/api/toolRuns", () => ({
 }));
 
 jest.mock("@/api/personalAssistant", () => ({
-  askPersonalAssistant: jest.fn()
+  askPersonalAssistant: (...args: any[]) => mockAskPersonalAssistant(...args)
 }));
 
 describe("personal AI screen", () => {
@@ -73,6 +75,8 @@ describe("personal AI screen", () => {
     mockListPersonalPlants.mockResolvedValue([]);
     mockListToolRuns.mockResolvedValue([]);
     mockGetDiagnosisHistory.mockResolvedValue([]);
+    mockAskPersonalAssistant.mockRejectedValue(new Error("assistant unavailable"));
+    mockCreatePersonalTask.mockResolvedValue({ id: "ai-task-1" });
   });
 
   it("answers VPD commands and context-aware task prompts", async () => {
@@ -92,5 +96,54 @@ describe("personal AI screen", () => {
     await waitFor(() =>
       expect(screen.getByText(/Next open task: Inspect lowers/)).toBeTruthy()
     );
+  });
+
+  it("requires confirmation before creating AI-suggested tasks", async () => {
+    mockAskPersonalAssistant.mockResolvedValue({
+      success: true,
+      reply: "I drafted a follow-up task for your humidity issue.",
+      proposedWrites: [
+        {
+          type: "create_task",
+          payload: {
+            title: "Check humidity pockets after lights out",
+            description: "Inspect dense canopy and corners before the next dark cycle.",
+            priority: "high",
+            sourceObjectId: "assistant-thread-1"
+          }
+        }
+      ],
+      actions: [],
+      referencedData: []
+    });
+
+    const screen = render(<AiScreen />);
+
+    await waitFor(() => expect(screen.getByText("Context Loaded")).toBeTruthy());
+
+    fireEvent.changeText(
+      screen.getByPlaceholderText("Type here..."),
+      "turn this into a task"
+    );
+    fireEvent.press(screen.getByText("Send"));
+
+    await waitFor(() =>
+      expect(screen.getByText("Drafted actions require confirmation")).toBeTruthy()
+    );
+    expect(mockCreatePersonalTask).not.toHaveBeenCalled();
+
+    fireEvent.press(screen.getByLabelText("Confirm create_task"));
+
+    await waitFor(() =>
+      expect(mockCreatePersonalTask).toHaveBeenCalledWith({
+        growId: "grow-1",
+        title: "Check humidity pockets after lights out",
+        description: "Inspect dense canopy and corners before the next dark cycle.",
+        priority: "high",
+        sourceType: "ai_assistant",
+        sourceObjectId: "assistant-thread-1"
+      })
+    );
+    expect(screen.getByText("AI suggested task created.")).toBeTruthy();
   });
 });
