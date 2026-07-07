@@ -367,11 +367,17 @@ describe("commercial workflow pages", () => {
             linkedProductIds: ["product-1"],
             linkedProductLineIds: ["line-1"],
             linkedGrowIds: ["grow-1"],
+            linkedLiveIds: ["live-1"],
             lessons: [
               {
                 id: "lesson-1",
                 title: "Application rate",
                 body: "Topdress and water in.",
+                lessonType: "article",
+                relatedProductIds: ["product-1"],
+                relatedLiveIds: ["live-1"],
+                forumThreadId: "thread-1",
+                taskTemplate: { title: "Complete application checklist" },
                 status: "draft",
                 order: 1
               }
@@ -782,6 +788,10 @@ describe("commercial workflow pages", () => {
       screen.getByLabelText("Commercial course detail linked grows"),
       "grow-1"
     );
+    fireEvent.changeText(
+      screen.getByLabelText("Commercial course detail linked lives"),
+      "live-1, live-2"
+    );
     fireEvent.press(screen.getByLabelText("Save commercial course detail"));
 
     await waitFor(() =>
@@ -795,7 +805,8 @@ describe("commercial workflow pages", () => {
             description: "Updated product course description.",
             linkedProductIds: ["product-1", "product-2"],
             linkedProductLineIds: ["line-1"],
-            linkedGrowIds: ["grow-1"]
+            linkedGrowIds: ["grow-1"],
+            linkedLiveIds: ["live-1", "live-2"]
           })
         })
       )
@@ -809,6 +820,30 @@ describe("commercial workflow pages", () => {
       screen.getByLabelText("Commercial course lesson body"),
       "Water in the topdress and check response."
     );
+    fireEvent.changeText(
+      screen.getByLabelText("Commercial course lesson type"),
+      "assignment"
+    );
+    fireEvent.changeText(
+      screen.getByLabelText("Commercial course lesson related products"),
+      "product-1, product-2"
+    );
+    fireEvent.changeText(
+      screen.getByLabelText("Commercial course lesson related lives"),
+      "live-1"
+    );
+    fireEvent.changeText(
+      screen.getByLabelText("Commercial course lesson Forum Q&A thread"),
+      "thread-1"
+    );
+    fireEvent.changeText(
+      screen.getByLabelText("Commercial course lesson task title"),
+      "Upload topdress photo"
+    );
+    fireEvent.changeText(
+      screen.getByLabelText("Commercial course lesson task due offset days"),
+      "7"
+    );
     fireEvent.press(screen.getByLabelText("Add commercial course lesson"));
 
     await waitFor(() =>
@@ -819,6 +854,16 @@ describe("commercial workflow pages", () => {
           body: expect.objectContaining({
             title: "Water-in schedule",
             body: "Water in the topdress and check response.",
+            lessonType: "assignment",
+            relatedProductIds: ["product-1", "product-2"],
+            relatedLiveIds: ["live-1"],
+            forumThreadId: "thread-1",
+            taskTemplate: expect.objectContaining({
+              title: "Upload topdress photo",
+              sourceType: "lesson",
+              dueOffsetDays: 7,
+              completionCriteria: "lesson_action"
+            }),
             status: "draft"
           })
         })

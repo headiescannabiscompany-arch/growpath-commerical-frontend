@@ -99,6 +99,9 @@ export type CommercialCourse = {
   linkedProductIds?: string[];
   linkedProductLineIds?: string[];
   linkedGrowIds?: string[];
+  linkedLiveIds?: string[];
+  linkedFeedPostIds?: string[];
+  forumThreadId?: string;
   lessons?: Array<Record<string, any>>;
   status?: "draft" | "published" | "archived";
   createdAt?: string;

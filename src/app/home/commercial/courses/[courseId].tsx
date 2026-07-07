@@ -64,8 +64,15 @@ export default function CommercialCourseDetailRoute({ route }: { route?: any } =
   const [linkedProductIds, setLinkedProductIds] = useState("");
   const [linkedProductLineIds, setLinkedProductLineIds] = useState("");
   const [linkedGrowIds, setLinkedGrowIds] = useState("");
+  const [linkedLiveIds, setLinkedLiveIds] = useState("");
   const [lessonTitle, setLessonTitle] = useState("");
   const [lessonBody, setLessonBody] = useState("");
+  const [lessonType, setLessonType] = useState("video");
+  const [lessonRelatedProductIds, setLessonRelatedProductIds] = useState("");
+  const [lessonRelatedLiveIds, setLessonRelatedLiveIds] = useState("");
+  const [lessonForumThreadId, setLessonForumThreadId] = useState("");
+  const [lessonTaskTitle, setLessonTaskTitle] = useState("");
+  const [lessonTaskDueOffsetDays, setLessonTaskDueOffsetDays] = useState("");
   const [loading, setLoading] = useState(false);
   const [saving, setSaving] = useState(false);
   const [addingLesson, setAddingLesson] = useState(false);
@@ -81,6 +88,7 @@ export default function CommercialCourseDetailRoute({ route }: { route?: any } =
     setLinkedProductIds((next?.linkedProductIds || []).join(", "));
     setLinkedProductLineIds((next?.linkedProductLineIds || []).join(", "));
     setLinkedGrowIds((next?.linkedGrowIds || []).join(", "));
+    setLinkedLiveIds((next?.linkedLiveIds || []).join(", "));
   }, []);
 
   const load = useCallback(async () => {
@@ -112,7 +120,8 @@ export default function CommercialCourseDetailRoute({ route }: { route?: any } =
         description: description.trim(),
         linkedProductIds: splitIds(linkedProductIds),
         linkedProductLineIds: splitIds(linkedProductLineIds),
-        linkedGrowIds: splitIds(linkedGrowIds)
+        linkedGrowIds: splitIds(linkedGrowIds),
+        linkedLiveIds: splitIds(linkedLiveIds)
       });
       hydrate(updated);
       setMessage("Commercial course updated.");
@@ -132,11 +141,29 @@ export default function CommercialCourseDetailRoute({ route }: { route?: any } =
       const updated = await addCommercialCourseLesson(courseId, {
         title: lessonTitle.trim(),
         body: lessonBody.trim(),
+        lessonType: lessonType.trim() || "video",
+        relatedProductIds: splitIds(lessonRelatedProductIds),
+        relatedLiveIds: splitIds(lessonRelatedLiveIds),
+        forumThreadId: lessonForumThreadId.trim() || undefined,
+        taskTemplate: lessonTaskTitle.trim()
+          ? {
+              title: lessonTaskTitle.trim(),
+              sourceType: "lesson",
+              dueOffsetDays: Number(lessonTaskDueOffsetDays) || 0,
+              completionCriteria: "lesson_action"
+            }
+          : undefined,
         status: "draft"
       });
       hydrate(updated);
       setLessonTitle("");
       setLessonBody("");
+      setLessonType("video");
+      setLessonRelatedProductIds("");
+      setLessonRelatedLiveIds("");
+      setLessonForumThreadId("");
+      setLessonTaskTitle("");
+      setLessonTaskDueOffsetDays("");
       setMessage("Lesson added.");
     } catch (err) {
       setError(err);
@@ -200,6 +227,7 @@ export default function CommercialCourseDetailRoute({ route }: { route?: any } =
           <DetailRow label="Linked products" value={course?.linkedProductIds} />
           <DetailRow label="Linked product lines" value={course?.linkedProductLineIds} />
           <DetailRow label="Linked grows" value={course?.linkedGrowIds} />
+          <DetailRow label="Linked lives" value={course?.linkedLiveIds} />
         </View>
       </AppCard>
 
@@ -250,6 +278,13 @@ export default function CommercialCourseDetailRoute({ route }: { route?: any } =
           style={styles.input}
           value={linkedGrowIds}
         />
+        <TextInput
+          accessibilityLabel="Commercial course detail linked lives"
+          onChangeText={setLinkedLiveIds}
+          placeholder="Linked live IDs"
+          style={styles.input}
+          value={linkedLiveIds}
+        />
         <View style={styles.actions}>
           <Pressable
             accessibilityLabel="Save commercial course detail"
@@ -294,6 +329,27 @@ export default function CommercialCourseDetailRoute({ route }: { route?: any } =
                     .join(" | ")}
                 </Text>
                 {lesson.body ? <Text style={styles.body}>{lesson.body}</Text> : null}
+                {lesson.lessonType ||
+                lesson.relatedProductIds?.length ||
+                lesson.relatedLiveIds?.length ||
+                lesson.forumThreadId ||
+                lesson.taskTemplate?.title ? (
+                  <Text style={styles.muted}>
+                    {[
+                      lesson.lessonType && `Type ${lesson.lessonType}`,
+                      Array.isArray(lesson.relatedProductIds) &&
+                        lesson.relatedProductIds.length &&
+                        `Products ${lesson.relatedProductIds.join(", ")}`,
+                      Array.isArray(lesson.relatedLiveIds) &&
+                        lesson.relatedLiveIds.length &&
+                        `Lives ${lesson.relatedLiveIds.join(", ")}`,
+                      lesson.forumThreadId && `Forum/Q&A ${lesson.forumThreadId}`,
+                      lesson.taskTemplate?.title && `Task ${lesson.taskTemplate.title}`
+                    ]
+                      .filter(Boolean)
+                      .join(" | ")}
+                  </Text>
+                ) : null}
               </View>
             ))}
           </View>
@@ -315,6 +371,51 @@ export default function CommercialCourseDetailRoute({ route }: { route?: any } =
           style={[styles.input, styles.textArea]}
           value={lessonBody}
         />
+        <View style={styles.formGrid}>
+          <TextInput
+            accessibilityLabel="Commercial course lesson type"
+            onChangeText={setLessonType}
+            placeholder="video, article, tool, recipe, live replay, assignment"
+            style={styles.input}
+            value={lessonType}
+          />
+          <TextInput
+            accessibilityLabel="Commercial course lesson related products"
+            onChangeText={setLessonRelatedProductIds}
+            placeholder="Related product IDs"
+            style={styles.input}
+            value={lessonRelatedProductIds}
+          />
+          <TextInput
+            accessibilityLabel="Commercial course lesson related lives"
+            onChangeText={setLessonRelatedLiveIds}
+            placeholder="Related live IDs"
+            style={styles.input}
+            value={lessonRelatedLiveIds}
+          />
+          <TextInput
+            accessibilityLabel="Commercial course lesson Forum Q&A thread"
+            onChangeText={setLessonForumThreadId}
+            placeholder="Forum/Q&A thread ID"
+            style={styles.input}
+            value={lessonForumThreadId}
+          />
+          <TextInput
+            accessibilityLabel="Commercial course lesson task title"
+            onChangeText={setLessonTaskTitle}
+            placeholder="Task created by this lesson"
+            style={styles.input}
+            value={lessonTaskTitle}
+          />
+          <TextInput
+            accessibilityLabel="Commercial course lesson task due offset days"
+            keyboardType="numeric"
+            onChangeText={setLessonTaskDueOffsetDays}
+            placeholder="Task due offset days"
+            style={styles.input}
+            value={lessonTaskDueOffsetDays}
+          />
+        </View>
         <Pressable
           accessibilityLabel="Add commercial course lesson"
           accessibilityRole="button"
