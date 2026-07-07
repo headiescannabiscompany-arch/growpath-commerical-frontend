@@ -149,6 +149,10 @@ describe("NpkToolScreen", () => {
 
     fireEvent.changeText(screen.getByPlaceholderText("Product name"), "Kelp meal");
     fireEvent.changeText(screen.getByPlaceholderText("Amount"), "100");
+    fireEvent.press(screen.getByText("ml"));
+    expect(
+      screen.getByText(/1 g\/ml is an assumption unless the label provides density/i)
+    ).toBeTruthy();
     fireEvent.changeText(screen.getByLabelText("NPK ingredient 1 N percent"), "3");
     fireEvent.changeText(screen.getByLabelText("NPK ingredient 1 P2O5 percent"), "1");
     fireEvent.changeText(screen.getByLabelText("NPK ingredient 1 K2O percent"), "2");
@@ -171,6 +175,9 @@ describe("NpkToolScreen", () => {
               K2O: 2,
               elementalP: 0.4364,
               elementalK: 1.6602,
+              densityGml: 1,
+              densityAssumption:
+                "Liquid density is assumed at 1 g/ml unless label density is supplied.",
               guaranteedAnalysis: expect.objectContaining({
                 N: 3,
                 P2O5: 1,

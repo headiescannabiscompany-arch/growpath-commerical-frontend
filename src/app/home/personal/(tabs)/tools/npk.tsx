@@ -133,6 +133,8 @@ function numberValue(value: string) {
 }
 
 function normalizeProductRow(row: ProductRow) {
+  const rawDensity = row.densityGml.trim();
+  const densityGml = numberValue(row.densityGml);
   const N = numberValue(row.N);
   const P2O5 = numberValue(row.P);
   const K2O = numberValue(row.K);
@@ -150,7 +152,11 @@ function normalizeProductRow(row: ProductRow) {
   return {
     ...row,
     amount: numberValue(row.amount),
-    densityGml: numberValue(row.densityGml),
+    densityGml,
+    densityAssumption:
+      ["ml", "tsp", "tbsp"].includes(row.unit) && (!rawDensity || densityGml === 1)
+        ? "Liquid density is assumed at 1 g/ml unless label density is supplied."
+        : undefined,
     // P and K stay as label values for backward compatibility with the calculator.
     N,
     P: P2O5,
@@ -869,13 +875,20 @@ export default function NpkToolScreen() {
               </Pressable>
             ))}
             {["ml", "tsp", "tbsp"].includes(row.unit) ? (
-              <TextInput
-                style={styles.input}
-                value={row.densityGml}
-                onChangeText={(value) => updateRow(row.id, "densityGml", value)}
-                keyboardType="numeric"
-                placeholder="g/ml"
-              />
+              <View style={styles.densityField}>
+                <TextInput
+                  style={styles.input}
+                  value={row.densityGml}
+                  onChangeText={(value) => updateRow(row.id, "densityGml", value)}
+                  keyboardType="numeric"
+                  placeholder="g/ml"
+                  accessibilityLabel={`NPK ingredient ${index + 1} density g/ml`}
+                />
+                <Text style={styles.fieldHint}>
+                  Required for liquid volume rows. 1 g/ml is an assumption unless the
+                  label provides density.
+                </Text>
+              </View>
             ) : null}
           </View>
           <Text style={styles.fieldHint}>Micronutrient percentages</Text>
@@ -1306,6 +1319,7 @@ const styles = StyleSheet.create({
   fieldHint: { color: "#64748B", fontSize: 12, lineHeight: 17 },
   analysisGrid: { flexDirection: "row", flexWrap: "wrap", gap: 8 },
   analysisField: { width: 82 },
+  densityField: { minWidth: 180, flexGrow: 1, gap: 4 },
   analysisFieldWide: { width: 132 },
   analysisLabel: { fontSize: 12, fontWeight: "700", marginBottom: 4 },
   analysisInput: { borderWidth: 1, borderColor: "#CBD5E1", borderRadius: 8, padding: 9 },
