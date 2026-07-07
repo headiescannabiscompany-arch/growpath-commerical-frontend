@@ -2,25 +2,49 @@ import { PAGE_REGISTRY_COMMERCIAL } from "../../src/navigation/pageRegistry.comm
 
 describe("commercial page registry", () => {
   it("keeps commercial navigation storefront-centered with evidence and business tools", () => {
-    const labels = PAGE_REGISTRY_COMMERCIAL.map((entry) => entry.label);
+    const labels = PAGE_REGISTRY_COMMERCIAL.filter((entry) => entry.primary).map(
+      (entry) => entry.label
+    );
 
     expect(labels).toEqual(
       expect.arrayContaining([
         "Dashboard",
-        "Evidence & Trials",
-        "Products",
-        "Product Lines",
         "Storefront",
-        "Batch Planner",
-        "Product Trials",
-        "Inventory",
+        "Products",
         "Feed / Campaigns",
         "Forum / Q&A",
         "Courses",
+        "Orders / External Tracking",
         "Analytics",
+        "Tasks",
         "Profile"
       ])
     );
+    expect(labels).not.toContain("Evidence & Trials");
+    expect(labels).not.toContain("Product Lines");
+    expect(labels).not.toContain("Batch Planner");
+    expect(labels).not.toContain("Product Trials");
+    expect(labels).not.toContain("Inventory");
+  });
+
+  it("demotes product support surfaces from top-level commercial navigation", () => {
+    const byName = Object.fromEntries(
+      PAGE_REGISTRY_COMMERCIAL.map((entry) => [entry.name, entry])
+    );
+
+    [
+      "CommercialGrows",
+      "CommercialProductLines",
+      "CommercialBatchPlanner",
+      "CommercialProductTrials",
+      "CommercialInventory"
+    ].forEach((name) => {
+      expect(byName[name]).toMatchObject({
+        primary: false,
+        group: "products",
+        supportSurface: true
+      });
+    });
   });
 
   it("does not expose shallow campaigns or checkout-only orders as primary wording", () => {

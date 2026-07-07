@@ -7,6 +7,7 @@ export const PAGE_REGISTRY_COMMERCIAL = [
     label: "Dashboard",
     icon: "business-outline",
     capabilityKey: "commercial.dashboard",
+    primary: true,
     component: require("../screens/commercial/CommercialDashboardScreen.js").default
   },
   {
@@ -14,6 +15,9 @@ export const PAGE_REGISTRY_COMMERCIAL = [
     label: "Evidence & Trials",
     icon: "leaf-outline",
     capabilityKey: "commercial.grows",
+    primary: false,
+    group: "products",
+    supportSurface: true,
     component: require("../app/home/commercial/grows").default
   },
   {
@@ -21,6 +25,7 @@ export const PAGE_REGISTRY_COMMERCIAL = [
     label: "Products",
     icon: "pricetags-outline",
     capabilityKey: "commercial.products",
+    primary: true,
     component: require("../app/home/commercial/products").default
   },
   {
@@ -28,6 +33,9 @@ export const PAGE_REGISTRY_COMMERCIAL = [
     label: "Product Lines",
     icon: "albums-outline",
     capabilityKey: "commercial.products",
+    primary: false,
+    group: "products",
+    supportSurface: true,
     component: require("../app/home/commercial/product-lines").default
   },
   {
@@ -35,6 +43,7 @@ export const PAGE_REGISTRY_COMMERCIAL = [
     label: "Storefront",
     icon: "storefront-outline",
     capabilityKey: "commercial.storefront",
+    primary: true,
     component: require("../screens/StorefrontScreen").default
   },
   {
@@ -42,6 +51,9 @@ export const PAGE_REGISTRY_COMMERCIAL = [
     label: "Batch Planner",
     icon: "flask-outline",
     capabilityKey: "commercial.batchPlanner",
+    primary: false,
+    group: "products",
+    supportSurface: true,
     component: require("../app/home/commercial/batch-planner").default
   },
   {
@@ -49,6 +61,9 @@ export const PAGE_REGISTRY_COMMERCIAL = [
     label: "Product Trials",
     icon: "analytics-outline",
     capabilityKey: "commercial.trials",
+    primary: false,
+    group: "products",
+    supportSurface: true,
     component: require("../app/home/commercial/trials").default
   },
   {
@@ -56,6 +71,9 @@ export const PAGE_REGISTRY_COMMERCIAL = [
     label: "Links",
     icon: "link-outline",
     capabilityKey: "commercial.links",
+    primary: false,
+    group: "profile",
+    supportSurface: true,
     component: require("../screens/LinksScreen").default
   },
   {
@@ -63,6 +81,9 @@ export const PAGE_REGISTRY_COMMERCIAL = [
     label: "Marketing Planner",
     icon: "rocket-outline",
     capabilityKey: "commercial.campaigns",
+    primary: false,
+    group: "feed",
+    supportSurface: true,
     component: require("../app/home/commercial/marketing").default
   },
   {
@@ -70,6 +91,9 @@ export const PAGE_REGISTRY_COMMERCIAL = [
     label: "Social Tools",
     icon: "share-social-outline",
     capabilityKey: "commercial.socialTools",
+    primary: false,
+    group: "profile",
+    supportSurface: true,
     component: require("../screens/SocialToolsScreen").default
   },
   {
@@ -77,6 +101,7 @@ export const PAGE_REGISTRY_COMMERCIAL = [
     label: "Orders / External Tracking",
     icon: "cart-outline",
     capabilityKey: "commercial.orders",
+    primary: true,
     component: require("../screens/CommercialOrdersScreen").default
   },
   {
@@ -84,6 +109,9 @@ export const PAGE_REGISTRY_COMMERCIAL = [
     label: "Inventory",
     icon: "cube-outline",
     capabilityKey: "commercial.inventory",
+    primary: false,
+    group: "products",
+    supportSurface: true,
     component: require("../app/home/commercial/inventory").default
   },
   {
@@ -91,6 +119,7 @@ export const PAGE_REGISTRY_COMMERCIAL = [
     label: "Courses",
     icon: "school-outline",
     capabilityKey: "view.courses",
+    primary: true,
     component: require("../app/home/commercial/courses").default
   },
   {
@@ -98,6 +127,7 @@ export const PAGE_REGISTRY_COMMERCIAL = [
     label: "Forum / Q&A",
     icon: "chatbubbles-outline",
     capabilityKey: "view.community.forum",
+    primary: true,
     component: require("../app/home/commercial/community").default
   },
   {
@@ -105,6 +135,7 @@ export const PAGE_REGISTRY_COMMERCIAL = [
     label: "Feed / Campaigns",
     icon: "megaphone-outline",
     capabilityKey: "view.community.feed",
+    primary: true,
     component: require("../app/feed").default
   },
   {
@@ -112,6 +143,7 @@ export const PAGE_REGISTRY_COMMERCIAL = [
     label: "Analytics",
     icon: "bar-chart-outline",
     capabilityKey: "commercial.analytics",
+    primary: true,
     component: require("../app/home/commercial/analytics").default
   },
   {
@@ -119,6 +151,7 @@ export const PAGE_REGISTRY_COMMERCIAL = [
     label: "Tasks",
     icon: "checkbox-outline",
     capabilityKey: "commercial.tasks",
+    primary: true,
     component: require("../screens/TasksScreen").default
   },
   {
@@ -126,6 +159,7 @@ export const PAGE_REGISTRY_COMMERCIAL = [
     label: "Profile",
     icon: "person-outline",
     capabilityKey: "view.profile",
+    primary: true,
     component: require("../app/home/commercial/profile").default
   }
 ];
