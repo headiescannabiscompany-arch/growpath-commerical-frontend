@@ -127,7 +127,7 @@ export default function AppPage({
 const styles = StyleSheet.create({
   page: {
     flex: 1,
-    backgroundColor: "#F8FAFC"
+    backgroundColor: "#F1F5F9"
   },
   pageContent: {
     padding: 20,

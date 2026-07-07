@@ -41,12 +41,17 @@ export default function AppCard({
 
 const styles = StyleSheet.create({
   card: {
-    padding: 12,
+    backgroundColor: "#FFFFFF",
+    borderColor: "#E2E8F0",
+    borderRadius: 8,
     borderWidth: 1,
-    borderRadius: 12,
-    borderColor: "rgba(0,0,0,0.15)"
+    padding: 16,
+    shadowColor: "#0F172A",
+    shadowOffset: { width: 0, height: 8 },
+    shadowOpacity: 0.06,
+    shadowRadius: 18
   },
-  title: { fontSize: 16, fontWeight: "600" },
-  subtitle: { marginTop: 4, opacity: 0.75 },
-  content: { marginTop: 10 }
+  title: { color: "#0F172A", fontSize: 16, fontWeight: "800" },
+  subtitle: { color: "#64748B", marginTop: 4 },
+  content: { marginTop: 12 }
 });
