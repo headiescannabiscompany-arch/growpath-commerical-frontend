@@ -7,11 +7,15 @@ import PublicProductRoute from "@/app/store/[slug]/products/[productId]";
 
 const mockFetchPublicStorefront = jest.fn();
 const mockRecordCommercialAnalyticsEvent = jest.fn();
+const mockLinkHrefs: string[] = [];
 
 jest.mock("expo-router", () => {
   const React = require("react");
   return {
-    Link: ({ children }: any) => React.createElement(React.Fragment, null, children),
+    Link: ({ children, href }: any) => {
+      mockLinkHrefs.push(String(href));
+      return React.createElement(React.Fragment, null, children);
+    },
     useLocalSearchParams: () => ({ slug: "living-soil-labs", productId: "product-1" })
   };
 });
@@ -119,6 +123,7 @@ describe("public commercial routes", () => {
   beforeEach(() => {
     mockFetchPublicStorefront.mockReset();
     mockRecordCommercialAnalyticsEvent.mockReset();
+    mockLinkHrefs.length = 0;
     mockRecordCommercialAnalyticsEvent.mockResolvedValue({ success: true });
     mockFetchPublicStorefront.mockResolvedValue(publicPayload);
   });
@@ -134,6 +139,8 @@ describe("public commercial routes", () => {
     expect(screen.getByText("Share Profile")).toBeTruthy();
     expect(screen.getByText("View Similar Brands")).toBeTruthy();
     expect(screen.getByText("Return to Feed")).toBeTruthy();
+    expect(mockLinkHrefs).toContain("/feed");
+    expect(mockLinkHrefs).not.toContain("/home/personal/community");
     expect(screen.getByText("Website")).toBeTruthy();
     expect(screen.getByText("Support Email")).toBeTruthy();
     expect(screen.getByText("Instagram")).toBeTruthy();

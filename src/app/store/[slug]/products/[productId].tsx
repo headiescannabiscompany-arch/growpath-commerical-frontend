@@ -16,7 +16,6 @@ import { fetchPublicStorefront } from "@/api/storefront";
 import { recordCommercialAnalyticsEvent } from "@/api/commercialAnalytics";
 import AppCard from "@/components/layout/AppCard";
 import AppPage from "@/components/layout/AppPage";
-import { useEntitlements } from "@/entitlements";
 import { sharePublicLink } from "@/utils/publicLinks";
 
 function asArray(value: any) {
@@ -113,17 +112,13 @@ function trackCommercialClick(payload: Record<string, any>) {
 }
 
 export default function PublicProductRoute() {
-  const entitlements = useEntitlements();
   const params = useLocalSearchParams<{ slug?: string; productId?: string }>();
   const slug = useMemo(() => String(params.slug || "").trim(), [params.slug]);
   const requestedProductId = useMemo(
     () => String(params.productId || "").trim(),
     [params.productId]
   );
-  const returnFeedHref =
-    entitlements.mode === "commercial" || entitlements.mode === "facility"
-      ? "/feed"
-      : "/home/personal/community";
+  const returnFeedHref = "/feed";
 
   const [loading, setLoading] = useState(true);
   const [busy, setBusy] = useState(false);
