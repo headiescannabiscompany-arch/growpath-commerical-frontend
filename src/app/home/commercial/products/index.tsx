@@ -129,7 +129,11 @@ function ActionLink({ href, label }: { href: string; label: string }) {
   );
 }
 
-export default function CommercialProductsRoute() {
+export default function CommercialProductsRoute({
+  routeKey = "commercial-products"
+}: {
+  routeKey?: string;
+} = {}) {
   const auth = useAuth();
   const ent = useEntitlements();
   const [products, setProducts] = useState<Product[]>([]);
@@ -209,7 +213,7 @@ export default function CommercialProductsRoute() {
 
   return (
     <AppPage
-      routeKey="commercial-products"
+      routeKey={routeKey}
       longContent
       header={
         <View style={styles.header}>

@@ -64,7 +64,11 @@ function ActionLink({ href, label }: { href: string; label: string }) {
   );
 }
 
-export default function CommercialGrowsRoute() {
+export default function CommercialGrowsRoute({
+  routeKey = "commercial-grows"
+}: {
+  routeKey?: string;
+} = {}) {
   const auth = useAuth();
   const ent = useEntitlements();
   const [grows, setGrows] = useState<CommercialGrow[]>([]);
@@ -131,7 +135,7 @@ export default function CommercialGrowsRoute() {
 
   return (
     <AppPage
-      routeKey="commercial-grows"
+      routeKey={routeKey}
       longContent
       header={
         <View style={styles.header}>

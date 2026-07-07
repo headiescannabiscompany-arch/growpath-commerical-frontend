@@ -56,4 +56,20 @@ describe("AppPage back behavior", () => {
     expect(screen.getByText("Shared Back")).toBeTruthy();
     expect(screen.getByText("Product detail")).toBeTruthy();
   });
+
+  it("shows the shared back button on commercial create pages", () => {
+    const productScreen = render(
+      <AppPage routeKey="commercial-product-create">
+        <Text>Create product</Text>
+      </AppPage>
+    );
+    expect(productScreen.getByText("Shared Back")).toBeTruthy();
+
+    const growScreen = render(
+      <AppPage routeKey="commercial-grow-create">
+        <Text>Create evidence run</Text>
+      </AppPage>
+    );
+    expect(growScreen.getByText("Shared Back")).toBeTruthy();
+  });
 });
