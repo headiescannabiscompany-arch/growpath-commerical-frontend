@@ -166,6 +166,9 @@ function apiResponseFor(path: string, options?: any) {
   if (path === "/api/commercial/products" && options?.method === "POST") {
     return Promise.resolve({ product: { id: "product-new", ...options.body } });
   }
+  if (path === "/api/tasks" && options?.method === "POST") {
+    return Promise.resolve({ task: { id: "task-new", ...options.body } });
+  }
   return Promise.resolve({});
 }
 
@@ -227,6 +230,26 @@ describe("Storefront route", () => {
     expect(
       screen.getByLabelText("Publish storefront").props.accessibilityState?.disabled
     ).toBe(true);
+
+    fireEvent.press(screen.getByLabelText("Create storefront setup tasks"));
+    await waitFor(() =>
+      expect(mockApiRequest).toHaveBeenCalledWith(
+        "/api/tasks",
+        expect.objectContaining({
+          method: "POST",
+          body: expect.objectContaining({
+            workspaceType: "commercial",
+            title: "Complete storefront setup: Logo",
+            sourceType: "storefront",
+            sourceId: "store-1",
+            linkedStorefrontId: "store-1",
+            priority: "high",
+            reminderPlan: { label: "24 hours before", channels: ["in_app"] }
+          })
+        })
+      )
+    );
+    expect(screen.getByText("Created 4 storefront setup tasks.")).toBeTruthy();
 
     fireEvent.press(screen.getByLabelText("Upload storefront logo"));
     await waitFor(() =>

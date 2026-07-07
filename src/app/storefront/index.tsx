@@ -200,6 +200,7 @@ export default function Storefront() {
   const [refreshing, setRefreshing] = useState(false);
   const [savingStorefront, setSavingStorefront] = useState(false);
   const [savingProduct, setSavingProduct] = useState(false);
+  const [creatingSetupTasks, setCreatingSetupTasks] = useState(false);
   const [feedback, setFeedback] = useState("");
   const [uploadingImageField, setUploadingImageField] = useState("");
 
@@ -386,6 +387,7 @@ export default function Storefront() {
     ]
   );
   const completedSetupCount = setupChecklist.filter((item) => item.complete).length;
+  const incompleteSetup = setupChecklist.filter((item) => !item.complete);
   const publishBlockers = storefrontPublishBlockers({
     draft: storeDraft,
     publishedProducts,
@@ -411,6 +413,45 @@ export default function Storefront() {
       handleApiError(e);
     } finally {
       setSavingStorefront(false);
+    }
+  }
+
+  async function createSetupTasks() {
+    if (!canEdit || !incompleteSetup.length || creatingSetupTasks) return;
+    setCreatingSetupTasks(true);
+    setFeedback("");
+    try {
+      clearError();
+      const sourceId = String(storefront?.id ?? storefront?._id ?? storeDraft.slug ?? "");
+      const today = new Date().toISOString().slice(0, 10);
+      await Promise.all(
+        incompleteSetup.map((item) =>
+          apiRequest("/api/tasks", {
+            method: "POST",
+            body: {
+              workspaceType: "commercial",
+              title: `Complete storefront setup: ${item.label}`,
+              description: item.helper,
+              sourceType: "storefront",
+              sourceId,
+              linkedStorefrontId: sourceId,
+              priority: publishBlockers.some((blocker) =>
+                blocker.includes(item.label.toLowerCase())
+              )
+                ? "high"
+                : "normal",
+              status: "open",
+              dueAt: today,
+              reminderPlan: { label: "24 hours before", channels: ["in_app"] }
+            }
+          })
+        )
+      );
+      setFeedback(`Created ${incompleteSetup.length} storefront setup tasks.`);
+    } catch (e) {
+      handleApiError(e);
+    } finally {
+      setCreatingSetupTasks(false);
     }
   }
 
@@ -609,6 +650,22 @@ export default function Storefront() {
               </View>
             ))}
           </View>
+          {incompleteSetup.length ? (
+            <Pressable
+              accessibilityRole="button"
+              accessibilityLabel="Create storefront setup tasks"
+              onPress={createSetupTasks}
+              disabled={creatingSetupTasks || !canEdit}
+              style={[
+                styles.secondaryButton,
+                (creatingSetupTasks || !canEdit) && styles.disabled
+              ]}
+            >
+              <Text style={styles.secondaryText}>
+                {creatingSetupTasks ? "Creating..." : "Create Setup Tasks"}
+              </Text>
+            </Pressable>
+          ) : null}
         </AppCard>
 
         <AppCard>
