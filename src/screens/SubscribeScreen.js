@@ -9,6 +9,7 @@ import {
 import Card from "../components/Card";
 import PrimaryButton from "../components/PrimaryButton";
 import ScreenContainer from "../components/ScreenContainer";
+import { PRO_PLAN_PRICE_DISPLAY } from "../constants/pricing";
 import { colors, spacing } from "../theme/theme";
 import { buySubscription, initIAP } from "../utils/iap";
 import { openExternalUrl } from "../utils/openExternalUrl";
@@ -115,7 +116,7 @@ export default function SubscribeScreen({ navigation }) {
           only after backend confirmation.
         </Text>
 
-        <Text style={styles.price}>$9.99 / month</Text>
+        <Text style={styles.price}>{PRO_PLAN_PRICE_DISPLAY}</Text>
 
         {isActiveSubscription(status) ? (
           <Text style={styles.active}>Subscription confirmed by backend</Text>
