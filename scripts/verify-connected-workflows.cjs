@@ -40,6 +40,7 @@ const checks = [
       "tests/unit/AppPageBackBehavior.test.tsx",
       "tests/unit/FacilityRoomsRoute.test.tsx",
       "tests/unit/FacilityInventoryRoute.test.tsx",
+      "tests/unit/FacilityTasksRoute.test.tsx",
       "tests/unit/integrations_growlink.test.tsx",
       "tests/unit/ForgotPasswordScreen.test.tsx",
       "tests/unit/ResetPasswordScreen.test.tsx",

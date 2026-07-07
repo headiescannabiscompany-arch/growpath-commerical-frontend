@@ -22,6 +22,24 @@ import { getFacilityTaskAccess } from "@/features/facility/taskAccess";
 
 type AnyRec = Record<string, any>;
 
+const sourceTypes = [
+  "manual",
+  "room",
+  "facility_run",
+  "sop",
+  "sensor_alert",
+  "alert",
+  "course",
+  "lesson",
+  "live",
+  "toolrun",
+  "recipe",
+  "product",
+  "product_batch",
+  "product_trial",
+  "forum"
+] as const;
+
 function asArray(res: any): AnyRec[] {
   if (Array.isArray(res)) return res;
   if (Array.isArray(res?.items)) return res.items;
@@ -43,12 +61,21 @@ function pickSubtitle(x: AnyRec): string {
   const due = x?.dueAt ?? x?.dueDate ?? x?.due;
   const status = x?.status ?? x?.state;
   const assignee = x?.assigneeName ?? x?.assignee ?? x?.assignedTo;
+  const sourceType = x?.sourceType;
+  const sourceObjectId = x?.sourceObjectId ?? x?.sourceId;
+  const roomId = x?.roomId ?? x?.linkedRoomId;
+  const proof = x?.requiresProof ? "Proof required" : "";
+  const approval = x?.requiresApproval ? "Approval required" : "";
 
   const a = due ? `Due: ${String(due)}` : "";
   const b = status ? `Status: ${String(status)}` : "";
   const c = assignee ? `Assignee: ${String(assignee)}` : "";
+  const d = sourceType
+    ? `Source: ${String(sourceType).replace(/_/g, " ")}${sourceObjectId ? ` ${String(sourceObjectId)}` : ""}`
+    : "";
+  const e = roomId ? `Room: ${String(roomId)}` : "";
 
-  return [a, b, c].filter(Boolean).join(" -  ");
+  return [a, b, c, d, e, proof, approval].filter(Boolean).join(" -  ");
 }
 
 export default function FacilityTasksRoute() {
@@ -75,6 +102,12 @@ export default function FacilityTasksRoute() {
   const [newNotes, setNewNotes] = useState("");
   const [newDueDate, setNewDueDate] = useState("");
   const [newAssignedTo, setNewAssignedTo] = useState("");
+  const [newSourceType, setNewSourceType] =
+    useState<(typeof sourceTypes)[number]>("manual");
+  const [newSourceObjectId, setNewSourceObjectId] = useState("");
+  const [newRoomId, setNewRoomId] = useState("");
+  const [newRequiresProof, setNewRequiresProof] = useState(false);
+  const [newRequiresApproval, setNewRequiresApproval] = useState(false);
 
   const load = useCallback(
     async (opts?: { refresh?: boolean }) => {
@@ -124,12 +157,22 @@ export default function FacilityTasksRoute() {
         notes: newNotes.trim() || undefined,
         dueDate: newDueDate.trim() || undefined,
         assignedTo: canAssign ? newAssignedTo.trim() || undefined : undefined,
+        sourceType: newSourceType,
+        sourceObjectId: newSourceObjectId.trim() || undefined,
+        roomId: newRoomId.trim() || undefined,
+        requiresProof: newRequiresProof || undefined,
+        requiresApproval: newRequiresApproval || undefined,
         scope: "facility"
       });
       setNewTitle("");
       setNewNotes("");
       setNewDueDate("");
       setNewAssignedTo("");
+      setNewSourceType("manual");
+      setNewSourceObjectId("");
+      setNewRoomId("");
+      setNewRequiresProof(false);
+      setNewRequiresApproval(false);
       await load({ refresh: true });
     } catch (e) {
       handleApiError(e);
@@ -144,6 +187,11 @@ export default function FacilityTasksRoute() {
     newNotes,
     newDueDate,
     newAssignedTo,
+    newSourceType,
+    newSourceObjectId,
+    newRoomId,
+    newRequiresProof,
+    newRequiresApproval,
     clearError,
     handleApiError,
     load
@@ -208,6 +256,79 @@ export default function FacilityTasksRoute() {
                   Only owners and managers can assign facility tasks.
                 </Text>
               )}
+
+              <Text style={styles.label}>Source</Text>
+              <View style={styles.chipRow}>
+                {sourceTypes.map((sourceType) => (
+                  <Pressable
+                    key={sourceType}
+                    accessibilityRole="button"
+                    accessibilityLabel={`Set facility task source ${sourceType}`}
+                    onPress={() => setNewSourceType(sourceType)}
+                    style={[
+                      styles.chip,
+                      newSourceType === sourceType && styles.chipSelected
+                    ]}
+                  >
+                    <Text
+                      style={[
+                        styles.chipText,
+                        newSourceType === sourceType && styles.chipTextSelected
+                      ]}
+                    >
+                      {sourceType.replace(/_/g, " ")}
+                    </Text>
+                  </Pressable>
+                ))}
+              </View>
+
+              <Text style={styles.label}>Linked source / room</Text>
+              <View style={styles.inlineInputs}>
+                <TextInput
+                  accessibilityLabel="Facility task source object"
+                  value={newSourceObjectId}
+                  onChangeText={setNewSourceObjectId}
+                  style={[styles.input, styles.inlineInput]}
+                  placeholder="source object id"
+                />
+                <TextInput
+                  accessibilityLabel="Facility task room"
+                  value={newRoomId}
+                  onChangeText={setNewRoomId}
+                  style={[styles.input, styles.inlineInput]}
+                  placeholder="room id"
+                />
+              </View>
+
+              <View style={styles.chipRow}>
+                <Pressable
+                  accessibilityRole="button"
+                  accessibilityLabel="Toggle proof required"
+                  onPress={() => setNewRequiresProof((current) => !current)}
+                  style={[styles.chip, newRequiresProof && styles.chipSelected]}
+                >
+                  <Text
+                    style={[styles.chipText, newRequiresProof && styles.chipTextSelected]}
+                  >
+                    Proof required
+                  </Text>
+                </Pressable>
+                <Pressable
+                  accessibilityRole="button"
+                  accessibilityLabel="Toggle approval required"
+                  onPress={() => setNewRequiresApproval((current) => !current)}
+                  style={[styles.chip, newRequiresApproval && styles.chipSelected]}
+                >
+                  <Text
+                    style={[
+                      styles.chipText,
+                      newRequiresApproval && styles.chipTextSelected
+                    ]}
+                  >
+                    Approval required
+                  </Text>
+                </Pressable>
+              </View>
 
               <TouchableOpacity
                 accessibilityRole="button"
@@ -305,6 +426,20 @@ const styles = StyleSheet.create({
   cardTitle: { fontSize: 16, fontWeight: "900", marginBottom: 8 },
   form: { gap: 8 },
   label: { fontSize: 12, opacity: 0.7 },
+  chipRow: { flexDirection: "row", flexWrap: "wrap", gap: 8 },
+  chip: {
+    borderWidth: 1,
+    borderColor: "rgba(0,0,0,0.18)",
+    borderRadius: 999,
+    paddingHorizontal: 10,
+    paddingVertical: 7,
+    backgroundColor: "white"
+  },
+  chipSelected: { backgroundColor: "#0f172a", borderColor: "#0f172a" },
+  chipText: { color: "#0f172a", fontSize: 12, fontWeight: "800" },
+  chipTextSelected: { color: "white" },
+  inlineInputs: { flexDirection: "row", flexWrap: "wrap", gap: 8 },
+  inlineInput: { minWidth: 160, flexGrow: 1 },
   input: {
     borderWidth: 1,
     borderColor: "rgba(0,0,0,0.12)",
