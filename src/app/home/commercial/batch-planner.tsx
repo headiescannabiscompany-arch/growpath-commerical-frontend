@@ -391,7 +391,10 @@ export default function CommercialBatchPlannerRoute() {
         </Text>
         <View style={styles.actions}>
           <ActionLink href="/home/commercial/product-lines" label="Product Lines" />
-          <ActionLink href="/home/commercial/grows/new" label="Create Grow / Trial" />
+          <ActionLink
+            href="/home/commercial/grows/new"
+            label="Create Product Trial Grow"
+          />
         </View>
       </AppCard>
 

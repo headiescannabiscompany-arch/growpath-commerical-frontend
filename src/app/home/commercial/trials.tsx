@@ -114,7 +114,7 @@ export default function CommercialTrialsRoute() {
           <View style={styles.headerActions}>
             <Link href="/home/personal/grows/new" asChild>
               <Pressable style={styles.outlineButton}>
-                <Text style={styles.outlineText}>Create Grow</Text>
+                <Text style={styles.outlineText}>Create Personal Grow</Text>
               </Pressable>
             </Link>
             <Link href="/storefront" asChild>

@@ -314,7 +314,7 @@ export default function CommercialProductDetailRoute({ route }: { route?: any } 
         <View style={styles.actions}>
           <ActionLink href="/home/commercial/batch-planner" label="Open Batch Planner" />
           <ActionLink href="/home/commercial/trials" label="Open Product Trials" />
-          <ActionLink href="/home/commercial/grows" label="Open Grows" />
+          <ActionLink href="/home/commercial/grows" label="Open Trial Grows" />
           <ActionLink href="/home/commercial/courses" label="Open Courses" />
         </View>
       </AppCard>

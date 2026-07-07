@@ -81,8 +81,14 @@ export default function CommercialTabsLayout() {
         options={{ href: null, title: "Add Inventory Item" }}
       />
       <Tabs.Screen name="inventory-item/[id]" options={{ href: null }} />
-      <Tabs.Screen name="grows/new" options={{ href: null, title: "Create Grow" }} />
-      <Tabs.Screen name="grows/[growId]" options={{ href: null, title: "Grow Detail" }} />
+      <Tabs.Screen
+        name="grows/new"
+        options={{ href: null, title: "Create Product Trial Grow" }}
+      />
+      <Tabs.Screen
+        name="grows/[growId]"
+        options={{ href: null, title: "Product Trial Grow Detail" }}
+      />
       <Tabs.Screen
         name="products/new"
         options={{ href: null, title: "Create Product" }}

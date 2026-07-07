@@ -253,7 +253,7 @@ export default function CommercialGrowDetailRoute({ route }: { route?: any } = {
           style={[styles.primaryAction, saving || !growId ? styles.disabled : null]}
         >
           <Text style={styles.primaryActionText}>
-            {saving ? "Saving..." : "Save Grow Detail"}
+            {saving ? "Saving..." : "Save Trial Grow Detail"}
           </Text>
         </Pressable>
       </AppCard>
