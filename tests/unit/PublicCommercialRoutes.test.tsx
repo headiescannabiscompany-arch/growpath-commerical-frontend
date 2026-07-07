@@ -169,7 +169,13 @@ describe("public commercial routes", () => {
     expect(screen.getByText("$25.00")).toBeTruthy();
     expect(screen.getAllByText("Details").length).toBeGreaterThan(0);
     expect(screen.getByText("Using Veg Mix")).toBeTruthy();
+    expect(screen.getByText("Promoted Campaigns")).toBeTruthy();
+    expect(screen.getByText("Trial update")).toBeTruthy();
+    expect(screen.getByText("Open Campaign")).toBeTruthy();
     expect(screen.getByText("Veg Mix Trial")).toBeTruthy();
+    expect(screen.getByText("Forum / Q&A")).toBeTruthy();
+    expect(screen.getByText("Veg Mix Support")).toBeTruthy();
+    expect(screen.getByText("Open Q&A")).toBeTruthy();
     await waitFor(() =>
       expect(mockRecordCommercialAnalyticsEvent).toHaveBeenCalledWith(
         expect.objectContaining({

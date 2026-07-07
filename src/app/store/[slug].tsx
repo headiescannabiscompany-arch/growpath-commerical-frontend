@@ -63,7 +63,9 @@ export default function PublicStorefrontRoute() {
   const [storefront, setStorefront] = useState<any>(null);
   const [products, setProducts] = useState<any[]>([]);
   const [courses, setCourses] = useState<any[]>([]);
+  const [feedPosts, setFeedPosts] = useState<any[]>([]);
   const [trials, setTrials] = useState<any[]>([]);
+  const [forumThreads, setForumThreads] = useState<any[]>([]);
   const [error, setError] = useState("");
   const [feedback, setFeedback] = useState("");
 
@@ -77,7 +79,9 @@ export default function PublicStorefrontRoute() {
       setStorefront(payload.storefront);
       setProducts(payload.products);
       setCourses(payload.courses);
+      setFeedPosts(payload.feedPosts);
       setTrials(payload.trials);
+      setForumThreads(payload.forumThreads);
     } catch (err: any) {
       setError(err?.message || "Unable to load storefront.");
     } finally {
@@ -301,6 +305,36 @@ export default function PublicStorefrontRoute() {
             </View>
           ) : null}
 
+          {feedPosts.length ? (
+            <View style={styles.profilePanel}>
+              <Text style={styles.profileTitle}>Promoted Campaigns</Text>
+              <Text style={styles.meta}>
+                Storefront campaigns are advertising and outreach. Open the linked
+                Forum/Q&A when you want discussion or product support.
+              </Text>
+              {feedPosts.slice(0, 3).map((post) => (
+                <View
+                  key={publicItemId(post) || publicItemTitle(post, "Campaign")}
+                  style={styles.linkRow}
+                >
+                  <View style={styles.productBody}>
+                    <Text style={styles.productName}>
+                      {publicItemTitle(post, "Campaign")}
+                    </Text>
+                    {publicItemSummary(post) ? (
+                      <Text style={styles.meta}>{publicItemSummary(post)}</Text>
+                    ) : null}
+                  </View>
+                  <Link href={returnFeedHref as any} asChild>
+                    <Pressable style={styles.secondaryButton}>
+                      <Text style={styles.secondaryButtonText}>Open Campaign</Text>
+                    </Pressable>
+                  </Link>
+                </View>
+              ))}
+            </View>
+          ) : null}
+
           {trials.length ? (
             <View style={styles.profilePanel}>
               <Text style={styles.profileTitle}>Product Trial Proof</Text>
@@ -318,6 +352,36 @@ export default function PublicStorefrontRoute() {
                     ) : null}
                   </View>
                   <Text style={styles.statusPill}>{trial?.status || "trial"}</Text>
+                </View>
+              ))}
+            </View>
+          ) : null}
+
+          {forumThreads.length ? (
+            <View style={styles.profilePanel}>
+              <Text style={styles.profileTitle}>Forum / Q&A</Text>
+              <Text style={styles.meta}>
+                Discussion, support, and product questions live in Forum/Q&A instead of
+                inside feed campaign placements.
+              </Text>
+              {forumThreads.slice(0, 3).map((thread) => (
+                <View
+                  key={publicItemId(thread) || publicItemTitle(thread, "Discussion")}
+                  style={styles.linkRow}
+                >
+                  <View style={styles.productBody}>
+                    <Text style={styles.productName}>
+                      {publicItemTitle(thread, "Discussion")}
+                    </Text>
+                    {publicItemSummary(thread) ? (
+                      <Text style={styles.meta}>{publicItemSummary(thread)}</Text>
+                    ) : null}
+                  </View>
+                  <Link href="/home/personal/forum" asChild>
+                    <Pressable style={styles.secondaryButton}>
+                      <Text style={styles.secondaryButtonText}>Open Q&A</Text>
+                    </Pressable>
+                  </Link>
                 </View>
               ))}
             </View>
