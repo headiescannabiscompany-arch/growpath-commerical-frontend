@@ -12,7 +12,13 @@ import { useRouter } from "expo-router";
 
 import { useBulkCreateRooms, useRooms } from "../hooks";
 
-const DEFAULT_ROOMS = ["Flower Room", "Veg Room", "Mother Room"];
+const DEFAULT_ROOMS = [
+  "Flower Room",
+  "Veg Room",
+  "Mother Room",
+  "Greenhouse",
+  "Dry/Cure Room"
+];
 
 type RoomDraft = { name: string; error: string };
 type ProgressState = { current: number; total: number; failed: number[] };
