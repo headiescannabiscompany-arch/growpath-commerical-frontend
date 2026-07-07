@@ -80,6 +80,7 @@ function inferRoomName(raw: string) {
       /\b(dew|point|ppfd|dli|substrate|soil|media|root|moisture|ec|ph|irrigation|watering|alarm|alert|pump|valve|reservoir|offline|fault)\b/gi,
       ""
     )
+    .replace(/\b(high|low)\b/gi, "")
     .replace(/\b(controller|module|device|channel|monitor|light|fan|exhaust)\b/gi, "")
     .replace(/[-_:/|]+/g, " ")
     .replace(/\s+/g, " ")
@@ -88,6 +89,11 @@ function inferRoomName(raw: string) {
 
 function inferDeviceMetrics(raw: string) {
   const lower = raw.toLowerCase();
+  const hasHigh = /\bhigh\b/.test(lower);
+  const hasLow = /\blow\b/.test(lower);
+  const hasTemp = /\b(temp|temperature)\b/.test(lower);
+  const hasHumidity = /\b(humidity|rh)\b/.test(lower);
+
   return [
     (lower.includes("temp") || lower.includes("temperature")) && "air_temperature",
     (lower.includes("rh") || lower.includes("humidity")) && "relative_humidity",
@@ -107,16 +113,24 @@ function inferDeviceMetrics(raw: string) {
       lower.includes("pore ec") ||
       lower.includes("media ec")) &&
       "substrate_ec",
-    (lower.includes("substrate ph") ||
-      lower.includes("media ph") ||
-      lower.includes("reservoir ph")) &&
-      "substrate_ph",
+    (lower.includes("substrate ph") || lower.includes("media ph")) && "substrate_ph",
     (lower.includes("irrigation") || lower.includes("watering")) && "irrigation_event",
+    lower.includes("reservoir ph") && "reservoir_ph",
     lower.includes("reservoir ec") && "reservoir_ec",
+    lower.includes("reservoir") && hasTemp && "reservoir_temperature",
     lower.includes("pump") && "pump_status",
     lower.includes("valve") && "valve_status",
+    hasHigh && hasTemp && "high_temp_alarm",
+    hasLow && hasTemp && "low_temp_alarm",
+    hasHigh && hasHumidity && "high_humidity_alarm",
+    hasLow && hasHumidity && "low_humidity_alarm",
+    lower.includes("co2") &&
+      (lower.includes("alarm") || lower.includes("alert")) &&
+      "co2_alarm",
+    lower.includes("leak") && "leak_alarm",
     (lower.includes("alarm") || lower.includes("alert")) && "sensor_alarm",
-    (lower.includes("offline") || lower.includes("fault")) && "device_offline"
+    lower.includes("fault") && "sensor_fault",
+    lower.includes("offline") && "device_offline"
   ].filter(Boolean) as string[];
 }
 
