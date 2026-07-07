@@ -26,8 +26,23 @@ type AppPageProps = {
 const NO_BACK_ROUTE_KEYS = new Set([
   "home",
   "personal_home",
+  "personal_task_center",
   "commercial_home",
-  "facility_dashboard"
+  "commercial-analytics",
+  "commercial-batch-planner",
+  "commercial-community",
+  "commercial-courses",
+  "commercial-grows",
+  "commercial-lives",
+  "commercial-marketing",
+  "commercial-product-lines",
+  "commercial-products",
+  "commercial-profile",
+  "commercial-trials",
+  "facility_dashboard",
+  "store",
+  "store-public",
+  "storefront"
 ]);
 
 export default function AppPage({
