@@ -57,6 +57,7 @@ const checks = [
       "tests/unit/DryCureGuardToolScreen.test.tsx",
       "tests/unit/TissueCultureToolScreen.test.tsx",
       "tests/unit/CloneRootingToolScreen.test.tsx",
+      "tests/unit/AutoGrowCalendarToolScreen.test.tsx",
       "tests/unit/PersonalTaskCenterRoute.test.tsx",
       "tests/unit/GrowTasksScreen.test.tsx"
     ]

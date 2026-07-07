@@ -3,6 +3,7 @@ import React from "react";
 import BackendCalculatorToolScreen, {
   tomorrow
 } from "@/features/personal/tools/BackendCalculatorToolScreen";
+import { saveToolRunAndCreateTasks } from "@/features/personal/tools/saveToolRunAndOpenJournal";
 
 function parsePlants(value: string) {
   if (!value.trim()) return [];
@@ -26,6 +27,29 @@ function parsePlants(value: string) {
       })
       .filter(Boolean);
   }
+}
+
+function normalizePriority(value: unknown): "low" | "medium" | "high" {
+  return value === "low" || value === "medium" || value === "high" ? value : "medium";
+}
+
+function calendarTaskPlan(outputs: Record<string, any>) {
+  const schedule = Array.isArray(outputs.taskSchedule) ? outputs.taskSchedule : [];
+  return schedule.slice(0, 20).map((item: any, index: number) => {
+    const title = String(item?.title || item?.name || `Grow calendar task ${index + 1}`);
+    const dueDate = String(item?.dueDate || item?.date || tomorrow(index));
+    const stage = item?.stage ? `Stage: ${item.stage}` : "";
+    const notes = item?.description || item?.notes || item?.reason || "";
+
+    return {
+      title,
+      priority: normalizePriority(item?.priority),
+      dueDate,
+      description: [stage, notes, "Created from the Auto Grow Calendar ToolRun."]
+        .filter(Boolean)
+        .join("\n")
+    };
+  });
 }
 
 export default function AutoGrowCalendarToolRoute() {
@@ -114,6 +138,28 @@ export default function AutoGrowCalendarToolRoute() {
         description:
           "Use this as the first calendar task, then create the rest from the saved plan."
       })}
+      buildActions={({ outputs, payload, toolRun, growId, plantContext }) => [
+        {
+          key: "create-grow-calendar-tasks",
+          label: "Create Calendar Tasks",
+          variant: "secondary",
+          pendingLabel: "Creating...",
+          disabled: !growId || calendarTaskPlan(outputs).length === 0,
+          successMessage: "Created grow calendar tasks.",
+          onPress: async () => {
+            const result = await saveToolRunAndCreateTasks({
+              growId,
+              ...plantContext.toolRunContext,
+              toolKey: "auto-grow-calendar",
+              toolRunId: toolRun?.id || toolRun?._id,
+              input: payload,
+              output: outputs,
+              tasks: calendarTaskPlan(outputs)
+            });
+            if (!result.ok) throw new Error(result.error);
+          }
+        }
+      ]}
     />
   );
 }
