@@ -907,6 +907,7 @@ describe("commercial workflow pages", () => {
       screen.getByLabelText("Commercial course detail description"),
       "Updated product course description."
     );
+    fireEvent.changeText(screen.getByLabelText("Commercial course detail price"), "59");
     fireEvent.changeText(
       screen.getByLabelText("Commercial course detail Stripe product ID"),
       "prod_course_updated"
@@ -941,6 +942,7 @@ describe("commercial workflow pages", () => {
           body: expect.objectContaining({
             status: "draft",
             access: "paid",
+            price: 59,
             description: "Updated product course description.",
             stripeProductId: "prod_course_updated",
             stripePriceId: "price_course_updated",
