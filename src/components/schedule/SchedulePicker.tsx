@@ -23,6 +23,18 @@ function dateKey(daysFromToday = 0) {
   return date.toISOString().slice(0, 10);
 }
 
+function eveningKey() {
+  return `${dateKey(0)}T18:00`;
+}
+
+function nextWeekKey() {
+  const date = new Date();
+  const day = date.getDay();
+  const daysUntilNextMonday = (8 - day) % 7 || 7;
+  date.setDate(date.getDate() + daysUntilNextMonday);
+  return date.toISOString().slice(0, 10);
+}
+
 export default function SchedulePicker({
   dueDate,
   reminder,
@@ -40,10 +52,13 @@ export default function SchedulePicker({
 }: SchedulePickerProps) {
   const quickDates = [
     ["Today", dateKey(0)],
+    ["This evening", eveningKey()],
     ["Tomorrow", dateKey(1)],
+    ["In 3 days", dateKey(3)],
     ["In 7 days", dateKey(7)],
     ["In 14 days", dateKey(14)],
-    ["In 21 days", dateKey(21)]
+    ["In 21 days", dateKey(21)],
+    ["Next week", nextWeekKey()]
   ];
   const reminderPresets = [
     "at due time",
