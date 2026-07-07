@@ -175,7 +175,7 @@ function selectAds(ads: AdItem[], count: number, placement: FeedRailProps["place
 
   for (let index = 0; index < count; index += 1) {
     const strategy = strategies[(index + placementOffset) % strategies.length];
-    const rows = rotate(strategy.rows, placementOffset + index);
+    const rows = rotate(strategy.rows, index);
     const item = rows.find((row) => !usedTitles.has(row.title)) || rows[0];
     if (item) {
       selected.push({ ...item, strategyLabel: strategy.label });
