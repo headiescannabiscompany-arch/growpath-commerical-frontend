@@ -28,6 +28,7 @@ import {
   buildNutrientContextNotices
 } from "@/features/personal/tools/nutrientContext";
 import PersonalFeedPlacement from "@/components/feed/PersonalFeedPlacement";
+import { createProduct } from "@/api/products";
 
 type ProductRow = {
   id: string;
@@ -321,6 +322,59 @@ export default function NpkToolScreen() {
     } finally {
       setRunning(false);
     }
+  }
+
+  function productDraftFromRecipe() {
+    const payload = recipePayload();
+    const linkedRecipeId = selectedRecipeId || toolRun?.linkedRecipeId || null;
+    const linkedToolRunId = toolRun?._id || toolRun?.id || null;
+    return {
+      name: recipeName.trim() || "NPK feed recipe draft",
+      category:
+        recipeMode === "build_dry_blend"
+          ? "dry_amendment"
+          : recipeMode === "soil_amendment_plan"
+            ? "soil_amendment"
+            : "nutrient_recipe",
+      shortDescription:
+        "Draft created from GrowPath NPK / Feed Recipe Builder. Review label, batch, image, price, Stripe, and stock before publishing.",
+      description: [
+        `Mode: ${recipeMode.replaceAll("_", " ")}`,
+        `Stage: ${stage}`,
+        `Medium: ${medium}`,
+        `Target N-P-K: ${[targetN || "-", targetP || "-", targetK || "-"].join("-")}`,
+        `Desired release: ${desiredReleaseProfile}`,
+        result?.formula ? `Formula: ${result.formula}` : "",
+        result?.releaseDisclaimer || ""
+      ]
+        .filter(Boolean)
+        .join("\n"),
+      status: "draft" as const,
+      linkedRecipeId,
+      linkedToolRunId,
+      specs: {
+        source: "npk_feed_recipe_builder",
+        targetNpk: payload.targetNpk,
+        desiredReleaseProfile,
+        batchVolume: payload.batchVolume,
+        batchUnit: payload.batchUnit,
+        stage,
+        medium,
+        products: payload.products,
+        calculatedTotals: result?.totals,
+        availabilityEstimate: result?.availabilityEstimate,
+        releaseTimeline: result?.releaseTimeline,
+        warnings: result?.warnings,
+        sourceConfidence: result?.sourceConfidence
+      },
+      growInterests: [
+        medium,
+        recipeMode === "build_dry_blend" ? "dry amendments" : "",
+        recipeMode === "soil_amendment_plan" ? "living soil" : "",
+        "NPK",
+        "recipe building"
+      ].filter(Boolean)
+    };
   }
 
   if (!enabled) {
@@ -915,8 +969,8 @@ export default function NpkToolScreen() {
                 )}
               </>
             }
-            actions={
-              toolRun?._id && growContext
+            actions={[
+              ...(toolRun?._id && growContext
                 ? [
                     {
                       key: "save-log",
@@ -929,7 +983,7 @@ export default function NpkToolScreen() {
                     {
                       key: "create-task",
                       label: "Create Recipe Review Task",
-                      variant: "secondary",
+                      variant: "secondary" as const,
                       onPress: async () => {
                         const taskResult = await saveToolRunAndCreateTask({
                           growId: growContext,
@@ -963,8 +1017,30 @@ export default function NpkToolScreen() {
                       }
                     }
                   ]
-                : []
-            }
+                : []),
+              ...(recipeName.trim()
+                ? [
+                    {
+                      key: "convert-product-draft",
+                      label: "Convert to Product Draft",
+                      variant: "secondary" as const,
+                      pendingLabel: "Creating draft...",
+                      successMessage: "Product draft created.",
+                      onPress: async () => {
+                        const created = await createProduct(
+                          productDraftFromRecipe() as any
+                        );
+                        const productId = created?.product?.id || created?.id;
+                        setFeedback(
+                          productId
+                            ? `Product draft created: ${productId}.`
+                            : "Product draft created."
+                        );
+                      }
+                    }
+                  ]
+                : [])
+            ]}
             feedback={feedback}
             contextMessage={
               !growContext

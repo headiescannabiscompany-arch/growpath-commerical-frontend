@@ -10,6 +10,13 @@ export type Product = {
   sku?: string;
   description?: string;
   imageUrl?: string;
+  category?: string;
+  shortDescription?: string;
+  fullDescription?: string;
+  linkedRecipeId?: string | null;
+  linkedToolRunId?: string | null;
+  specs?: Record<string, any>;
+  growInterests?: string[];
   inventoryCount?: number | null;
   inventoryItemId?: string | null;
   inventoryItem?: {
