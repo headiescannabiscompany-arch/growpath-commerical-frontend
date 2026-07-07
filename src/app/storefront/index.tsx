@@ -29,6 +29,7 @@ type AnyRec = Record<string, any>;
 const commercialEndpoints = {
   storefront: "/api/commercial/storefront",
   products: "/api/commercial/products",
+  courses: "/api/commercial/courses",
   lives: "/api/commercial/lives",
   feed: "/api/commercial/feed",
   inventory: (endpoints as any)?.commercial?.inventory ?? "/api/commercial/inventory"
@@ -99,6 +100,15 @@ function liveId(live: AnyRec) {
   return String(live.id ?? live._id ?? live.title ?? "");
 }
 
+function courseId(course: AnyRec) {
+  return String(course.id ?? course._id ?? course.slug ?? course.title ?? "");
+}
+
+function courseIsPublic(course: AnyRec) {
+  const status = String(course.status || "published").toLowerCase();
+  return ["published", "active", "live"].includes(status);
+}
+
 function liveIsPublic(live: AnyRec) {
   return !["cancelled", "archived", "hidden"].includes(
     String(live.status || "").toLowerCase()
@@ -158,6 +168,7 @@ export default function Storefront() {
 
   const [storefront, setStorefront] = useState<AnyRec | null>(null);
   const [products, setProducts] = useState<AnyRec[]>([]);
+  const [courses, setCourses] = useState<AnyRec[]>([]);
   const [lives, setLives] = useState<AnyRec[]>([]);
   const [campaigns, setCampaigns] = useState<AnyRec[]>([]);
   const [inventory, setInventory] = useState<AnyRec[]>([]);
@@ -207,16 +218,19 @@ export default function Storefront() {
       setFeedback("");
       try {
         clearError();
-        const [storeRes, productRes, liveRes, feedRes, inventoryRes] = await Promise.all([
-          apiRequest(commercialEndpoints.storefront),
-          apiRequest(commercialEndpoints.products),
-          apiRequest(commercialEndpoints.lives),
-          apiRequest(commercialEndpoints.feed),
-          apiRequest(commercialEndpoints.inventory)
-        ]);
+        const [storeRes, productRes, courseRes, liveRes, feedRes, inventoryRes] =
+          await Promise.all([
+            apiRequest(commercialEndpoints.storefront),
+            apiRequest(commercialEndpoints.products),
+            apiRequest(commercialEndpoints.courses),
+            apiRequest(commercialEndpoints.lives),
+            apiRequest(commercialEndpoints.feed),
+            apiRequest(commercialEndpoints.inventory)
+          ]);
         const nextStorefront = storeRes?.storefront ?? storeRes ?? null;
         setStorefront(nextStorefront);
         setProducts(asArray(productRes, "products"));
+        setCourses(asArray(courseRes, "courses").filter(courseIsPublic));
         setLives(asArray(liveRes, "lives").filter(liveIsPublic));
         setCampaigns(asArray(feedRes, "items").filter(campaignIsActive));
         setInventory(asArray(inventoryRes, "inventory"));
@@ -261,6 +275,7 @@ export default function Storefront() {
     [products]
   );
   const storefrontLives = useMemo(() => lives.slice(0, 4), [lives]);
+  const storefrontCourses = useMemo(() => courses.slice(0, 4), [courses]);
   const storefrontCampaigns = useMemo(() => campaigns.slice(0, 4), [campaigns]);
   const productWarnings = useMemo(
     () =>
@@ -322,6 +337,11 @@ export default function Storefront() {
         helper: "At least one product has an external checkout or Stripe price."
       },
       {
+        label: "Published course",
+        complete: storefrontCourses.length > 0,
+        helper: "Storefront can show course cards for learning and product education."
+      },
+      {
         label: "Upcoming live or replay",
         complete: storefrontLives.length > 0,
         helper: "Storefront can show RSVP, replay, or product-demo live content."
@@ -337,6 +357,7 @@ export default function Storefront() {
       publishedProducts.length,
       storeDraft,
       storefrontCampaigns.length,
+      storefrontCourses.length,
       storefrontLives.length
     ]
   );
@@ -532,6 +553,10 @@ export default function Storefront() {
               <Text style={styles.metricLabel}>Lives</Text>
             </View>
             <View style={styles.metric}>
+              <Text style={styles.metricValue}>{storefrontCourses.length}</Text>
+              <Text style={styles.metricLabel}>Courses</Text>
+            </View>
+            <View style={styles.metric}>
               <Text style={styles.metricValue}>{storefrontCampaigns.length}</Text>
               <Text style={styles.metricLabel}>Campaigns</Text>
             </View>
@@ -550,6 +575,67 @@ export default function Storefront() {
               </View>
             ))}
           </View>
+        </AppCard>
+
+        <AppCard>
+          <View style={styles.cardHeader}>
+            <Text style={styles.cardTitle}>Featured Courses</Text>
+            <Text style={styles.statusPill}>Storefront section</Text>
+          </View>
+          <Text style={styles.helperText}>
+            Course cards help users learn from the brand, enroll in paid or free content,
+            and move into related products, lives, and Forum/Q&A when they need support.
+          </Text>
+          {storefrontCourses.length ? (
+            <View style={styles.eventList}>
+              {storefrontCourses.map((course) => (
+                <View key={courseId(course)} style={styles.eventRow}>
+                  <Text style={styles.eventTitle}>
+                    {course.title || "Commercial course"}
+                  </Text>
+                  <Text style={styles.muted}>
+                    {[
+                      course.skillLevel || course.level,
+                      course.access || course.pricingType,
+                      course.price
+                        ? `$${course.price}`
+                        : course.priceCents
+                          ? `$${dollars(course.priceCents)}`
+                          : "Free or draft pricing"
+                    ]
+                      .filter(Boolean)
+                      .join(" | ")}
+                  </Text>
+                  {course.shortDescription || course.description ? (
+                    <Text style={styles.eventBody}>
+                      {course.shortDescription || course.description}
+                    </Text>
+                  ) : null}
+                  <Text style={styles.muted}>
+                    {[
+                      Array.isArray(course.growInterests) &&
+                        course.growInterests.length &&
+                        `Interests ${course.growInterests.join(", ")}`,
+                      Array.isArray(course.linkedProductIds) &&
+                        course.linkedProductIds.length &&
+                        `Products ${course.linkedProductIds.join(", ")}`,
+                      Array.isArray(course.linkedLiveIds) &&
+                        course.linkedLiveIds.length &&
+                        `Lives ${course.linkedLiveIds.join(", ")}`,
+                      course.forumThreadId && `Forum/Q&A ${course.forumThreadId}`
+                    ]
+                      .filter(Boolean)
+                      .join(" | ")}
+                  </Text>
+                </View>
+              ))}
+            </View>
+          ) : (
+            <Text style={styles.muted}>
+              No published courses yet. Use the commercial Courses workspace to add
+              product education, workshops, SOP training, and replay-based lessons.
+            </Text>
+          )}
         </AppCard>
 
         <AppCard>

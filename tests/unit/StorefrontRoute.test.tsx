@@ -79,6 +79,24 @@ function apiResponseFor(path: string, options?: any) {
   if (path === "/api/commercial/products" && !options) {
     return Promise.resolve({ products: [] });
   }
+  if (path === "/api/commercial/courses" && !options) {
+    return Promise.resolve({
+      courses: [
+        {
+          id: "course-1",
+          title: "Living Soil Basics",
+          description: "Build a practical soil mix and product education path.",
+          status: "published",
+          skillLevel: "beginner",
+          access: "free",
+          growInterests: ["living soil", "dry amendments"],
+          linkedProductIds: ["product-1"],
+          linkedLiveIds: ["live-1"],
+          forumThreadId: "thread-course"
+        }
+      ]
+    });
+  }
   if (path === "/api/commercial/lives" && !options) {
     return Promise.resolve({
       lives: [
@@ -156,6 +174,12 @@ describe("Storefront route", () => {
     await waitFor(() =>
       expect(mockApiRequest).toHaveBeenCalledWith("/api/commercial/lives")
     );
+    await waitFor(() =>
+      expect(mockApiRequest).toHaveBeenCalledWith("/api/commercial/courses")
+    );
+    expect(screen.getByText("Featured Courses")).toBeTruthy();
+    expect(screen.getByText("Living Soil Basics")).toBeTruthy();
+    expect(screen.getByText(/Interests living soil, dry amendments/)).toBeTruthy();
     expect(screen.getByText("Live Soil Mixing Demo")).toBeTruthy();
     expect(screen.getAllByText(/Product product-1/).length).toBeGreaterThan(0);
     expect(screen.getAllByText(/Forum\/Q&A thread-1/).length).toBeGreaterThan(0);
