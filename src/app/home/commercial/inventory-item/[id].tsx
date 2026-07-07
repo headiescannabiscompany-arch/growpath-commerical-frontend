@@ -287,7 +287,7 @@ export default function CommercialInventoryItemDetailRoute() {
               {item.linkedGrowId ? (
                 <TouchableOpacity
                   accessibilityRole="button"
-                  accessibilityLabel="Open linked commercial product trial grow"
+                  accessibilityLabel="Open linked commercial product trial evidence run"
                   onPress={() =>
                     router.push({
                       pathname: "/home/commercial/grows/[growId]",
@@ -459,9 +459,9 @@ export default function CommercialInventoryItemDetailRoute() {
                     value={draft.linkedGrowId}
                     onChangeText={(v) => setDraft((d) => ({ ...d, linkedGrowId: v }))}
                     style={styles.input}
-                    placeholder="Linked product trial grow ID"
+                    placeholder="Linked product trial evidence run ID"
                     autoCapitalize="none"
-                    accessibilityLabel="Commercial detail linked product trial grow"
+                    accessibilityLabel="Commercial detail linked product trial evidence run"
                   />
 
                   <Text style={styles.label}>Status</Text>

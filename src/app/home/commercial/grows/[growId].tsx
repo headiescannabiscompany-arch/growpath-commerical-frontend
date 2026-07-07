@@ -195,7 +195,7 @@ export default function CommercialGrowDetailRoute({ route }: { route?: any } = {
           publicly.
         </Text>
         <TextInput
-          accessibilityLabel="Product trial grow harvest quality notes"
+          accessibilityLabel="Product trial evidence run harvest quality notes"
           multiline
           onChangeText={setHarvestQualityNotes}
           placeholder="Aroma, flavor, resin, yield, trim quality, dry/cure notes, defects, customer-facing quality notes..."
@@ -211,7 +211,7 @@ export default function CommercialGrowDetailRoute({ route }: { route?: any } = {
           and cautious enough for storefront, feed, trial, or course use.
         </Text>
         <TextInput
-          accessibilityLabel="Product trial grow crop summary"
+          accessibilityLabel="Product trial evidence run crop summary"
           multiline
           onChangeText={setCommercialCropSummary}
           placeholder="Commercial summary: product/batch used, crop outcome, quality result, limitations, next run changes..."
@@ -224,14 +224,14 @@ export default function CommercialGrowDetailRoute({ route }: { route?: any } = {
         <Text style={styles.cardTitle}>Update Evidence Run Status</Text>
         <View style={styles.formGrid}>
           <TextInput
-            accessibilityLabel="Product trial grow detail status"
+            accessibilityLabel="Product trial evidence run detail status"
             onChangeText={setStatus}
             placeholder="active, completed, archived"
             style={styles.input}
             value={status}
           />
           <TextInput
-            accessibilityLabel="Product trial grow detail public share status"
+            accessibilityLabel="Product trial evidence run detail public share status"
             onChangeText={setPublicShareStatus}
             placeholder="private, evidence_building, public_ready"
             style={styles.input}
@@ -239,7 +239,7 @@ export default function CommercialGrowDetailRoute({ route }: { route?: any } = {
           />
         </View>
         <TextInput
-          accessibilityLabel="Product trial grow detail notes"
+          accessibilityLabel="Product trial evidence run detail notes"
           multiline
           onChangeText={setNotes}
           placeholder="Commercial notes, publishability, evidence gaps, or next checks"
@@ -248,7 +248,7 @@ export default function CommercialGrowDetailRoute({ route }: { route?: any } = {
         />
         {message ? <Text style={styles.success}>{message}</Text> : null}
         <Pressable
-          accessibilityLabel="Save product trial grow detail"
+          accessibilityLabel="Save product trial evidence run detail"
           accessibilityRole="button"
           disabled={saving || !growId}
           onPress={saveChanges}

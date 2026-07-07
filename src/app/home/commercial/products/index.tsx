@@ -539,8 +539,8 @@ export default function CommercialProductsRoute({
         <Text style={styles.bullet}>Build formula in Soil & Nutrient Batch Planner</Text>
         <Text style={styles.bullet}>Link formula/batch to product and product line</Text>
         <Text style={styles.bullet}>
-          Run product trial grow and record pH/EC, vigor, diagnosis events, harvest,
-          dry/cure, aroma/flavor
+          Run product trial evidence runs and record pH/EC, vigor, diagnosis events,
+          harvest, dry/cure, aroma/flavor
         </Text>
         <Text style={styles.bullet}>
           Publish only supported claims as product proof, courses, or feed campaigns

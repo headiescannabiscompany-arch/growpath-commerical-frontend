@@ -172,8 +172,8 @@ export default function CommercialInventoryCreateRoute() {
       <TextInput
         value={linkedGrowId}
         onChangeText={setLinkedGrowId}
-        accessibilityLabel="Commercial inventory linked product trial grow"
-        placeholder="Linked product trial grow ID"
+        accessibilityLabel="Commercial inventory linked product trial evidence run"
+        placeholder="Linked product trial evidence run ID"
         autoCapitalize="none"
         style={styles.input}
       />

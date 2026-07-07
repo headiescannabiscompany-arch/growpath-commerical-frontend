@@ -1511,7 +1511,7 @@ describe("commercial workflow pages", () => {
       "line-2"
     );
     fireEvent.changeText(
-      screen.getByLabelText("Commercial batch trial grow id"),
+      screen.getByLabelText("Commercial batch evidence run id"),
       "grow-2"
     );
     fireEvent.changeText(screen.getByLabelText("Commercial batch volume"), "40");
@@ -1624,41 +1624,50 @@ describe("commercial workflow pages", () => {
     expect(screen.getByText("Open Detail")).toBeTruthy();
 
     fireEvent.changeText(
-      screen.getByLabelText("Product trial grow name"),
+      screen.getByLabelText("Product trial evidence run name"),
       "Veg Mix Trial"
     );
     fireEvent.changeText(
-      screen.getByLabelText("Product trial grow purpose"),
+      screen.getByLabelText("Product trial evidence run purpose"),
       "soil_trial"
     );
-    fireEvent.changeText(screen.getByLabelText("Product trial grow crop type"), "tomato");
     fireEvent.changeText(
-      screen.getByLabelText("Product trial grow cultivar"),
+      screen.getByLabelText("Product trial evidence run crop type"),
+      "tomato"
+    );
+    fireEvent.changeText(
+      screen.getByLabelText("Product trial evidence run cultivar"),
       "Cherokee Purple"
     );
     fireEvent.changeText(
-      screen.getByLabelText("Product trial grow medium"),
+      screen.getByLabelText("Product trial evidence run medium"),
       "raised_bed"
     );
-    fireEvent.changeText(screen.getByLabelText("Product trial grow plant count"), "12");
     fireEvent.changeText(
-      screen.getByLabelText("Product trial grow product id"),
+      screen.getByLabelText("Product trial evidence run plant count"),
+      "12"
+    );
+    fireEvent.changeText(
+      screen.getByLabelText("Product trial evidence run product id"),
       "product-2"
     );
     fireEvent.changeText(
-      screen.getByLabelText("Product trial grow product line id"),
+      screen.getByLabelText("Product trial evidence run product line id"),
       "line-1"
     );
-    fireEvent.changeText(screen.getByLabelText("Product trial grow batch id"), "batch-2");
     fireEvent.changeText(
-      screen.getByLabelText("Product trial grow formula version"),
+      screen.getByLabelText("Product trial evidence run batch id"),
+      "batch-2"
+    );
+    fireEvent.changeText(
+      screen.getByLabelText("Product trial evidence run formula version"),
       "v2"
     );
     fireEvent.changeText(
-      screen.getByLabelText("Product trial grow measurement plan"),
+      screen.getByLabelText("Product trial evidence run measurement plan"),
       "Weekly vigor and pH checks"
     );
-    fireEvent.press(screen.getByLabelText("Create product trial grow"));
+    fireEvent.press(screen.getByLabelText("Create product trial evidence run"));
 
     await waitFor(() =>
       expect(mockApiRequest).toHaveBeenCalledWith(
@@ -1684,7 +1693,7 @@ describe("commercial workflow pages", () => {
     );
   });
 
-  it("opens and updates product trial grow detail as evidence workspace", async () => {
+  it("opens and updates product trial evidence run detail as evidence workspace", async () => {
     const screen = render(<CommercialGrowDetailRoute />);
 
     await waitFor(() =>
@@ -1698,34 +1707,35 @@ describe("commercial workflow pages", () => {
     expect(screen.getByText("Harvest Quality Notes")).toBeTruthy();
     expect(screen.getByText("Commercial Crop Summary")).toBeTruthy();
     expect(
-      screen.getByLabelText("Product trial grow harvest quality notes").props.value
+      screen.getByLabelText("Product trial evidence run harvest quality notes").props
+        .value
     ).toBe("Dense flower, strong citrus fuel aroma, clean dry.");
-    expect(screen.getByLabelText("Product trial grow crop summary").props.value).toBe(
-      "Bloom formula trial finished with strong aroma and no major burn."
-    );
+    expect(
+      screen.getByLabelText("Product trial evidence run crop summary").props.value
+    ).toBe("Bloom formula trial finished with strong aroma and no major burn.");
     expect(screen.getByText("Create Feed Campaign")).toBeTruthy();
 
     fireEvent.changeText(
-      screen.getByLabelText("Product trial grow detail status"),
+      screen.getByLabelText("Product trial evidence run detail status"),
       "completed"
     );
     fireEvent.changeText(
-      screen.getByLabelText("Product trial grow detail public share status"),
+      screen.getByLabelText("Product trial evidence run detail public share status"),
       "public_ready"
     );
     fireEvent.changeText(
-      screen.getByLabelText("Product trial grow detail notes"),
+      screen.getByLabelText("Product trial evidence run detail notes"),
       "Ready for public trial summary."
     );
     fireEvent.changeText(
-      screen.getByLabelText("Product trial grow harvest quality notes"),
+      screen.getByLabelText("Product trial evidence run harvest quality notes"),
       "High aroma, clean burn, dense flower."
     );
     fireEvent.changeText(
-      screen.getByLabelText("Product trial grow crop summary"),
+      screen.getByLabelText("Product trial evidence run crop summary"),
       "Commercial crop finished with strong quality and clear next-run notes."
     );
-    fireEvent.press(screen.getByLabelText("Save product trial grow detail"));
+    fireEvent.press(screen.getByLabelText("Save product trial evidence run detail"));
 
     await waitFor(() =>
       expect(mockApiRequest).toHaveBeenCalledWith(
@@ -1745,7 +1755,7 @@ describe("commercial workflow pages", () => {
     );
   });
 
-  it("routes product trial grow creation to the real grow form", async () => {
+  it("routes product trial evidence run creation to the real evidence form", async () => {
     const screen = render(<NewCommercialGrowRoute />);
 
     expect(
@@ -1757,7 +1767,7 @@ describe("commercial workflow pages", () => {
         "Measurement plan: pH/EC, vigor, diagnosis, steering, harvest, dry/cure, final quality"
       )
     ).toBeTruthy();
-    expect(screen.getByLabelText("Product trial grow name")).toBeTruthy();
+    expect(screen.getByLabelText("Product trial evidence run name")).toBeTruthy();
     await waitFor(() => expect(screen.getByText("Bloom Formula Trial")).toBeTruthy());
   });
 

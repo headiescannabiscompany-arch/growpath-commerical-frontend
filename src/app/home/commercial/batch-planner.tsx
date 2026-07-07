@@ -143,7 +143,7 @@ export default function CommercialBatchPlannerRoute() {
             <Text style={styles.title}>Soil & Nutrient Batch Planner</Text>
             <Text style={styles.subtitle}>
               Commercial batch planning scales recipes with purpose, guaranteed analysis,
-              release timing, cost, inventory pull sheets, product links, and trial grow
+              release timing, cost, inventory pull sheets, product links, and evidence run
               links.
             </Text>
           </View>
@@ -234,8 +234,8 @@ export default function CommercialBatchPlannerRoute() {
           <TextInput
             value={form.trialGrowId}
             onChangeText={(trialGrowId) => setForm((prev) => ({ ...prev, trialGrowId }))}
-            accessibilityLabel="Commercial batch trial grow id"
-            placeholder="Linked trial/grow ID"
+            accessibilityLabel="Commercial batch evidence run id"
+            placeholder="Linked evidence run ID"
             style={styles.input}
           />
           <TextInput
@@ -373,7 +373,7 @@ export default function CommercialBatchPlannerRoute() {
         <Text style={styles.body}>
           Commercial batch planning should turn a purpose-built recipe into a
           product-ready formula only after the formula has batch records, cost context,
-          and grow-trial evidence.
+          and product trial evidence.
         </Text>
         <Text style={styles.bullet}>
           Create recipe/formula with purpose: seedling, veg, flower, topdress, re-amend,
@@ -384,7 +384,7 @@ export default function CommercialBatchPlannerRoute() {
           tasks
         </Text>
         <Text style={styles.bullet}>
-          Link batch to product/product line and trial grow
+          Link batch to product/product line and evidence run
         </Text>
         <Text style={styles.bullet}>
           Track plant response before publishing product claims
@@ -393,7 +393,7 @@ export default function CommercialBatchPlannerRoute() {
           <ActionLink href="/home/commercial/product-lines" label="Product Lines" />
           <ActionLink
             href="/home/commercial/grows/new"
-            label="Create Product Trial Grow"
+            label="Create Product Trial Evidence Run"
           />
         </View>
       </AppCard>
@@ -402,8 +402,8 @@ export default function CommercialBatchPlannerRoute() {
         <Text style={styles.cardTitle}>Effectiveness loop</Text>
         <Text style={styles.body}>
           A soil or nutrient product is not done at recipe math. Link batches to trial
-          grows and track seedling safety, veg vigor, pH/EC stability, deficiencies,
-          yield, aroma, dry/cure, and repeat-run performance.
+          evidence runs and track seedling safety, veg vigor, pH/EC stability,
+          deficiencies, yield, aroma, dry/cure, and repeat-run performance.
         </Text>
         <Text style={styles.bullet}>pH/EC checks and runoff context</Text>
         <Text style={styles.bullet}>Diagnosis events and nutrient/source warnings</Text>

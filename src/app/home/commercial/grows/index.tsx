@@ -197,42 +197,42 @@ export default function CommercialGrowsRoute({
           <TextInput
             value={form.name}
             onChangeText={(name) => setForm((prev) => ({ ...prev, name }))}
-            accessibilityLabel="Product trial grow name"
-            placeholder="Trial grow name"
+            accessibilityLabel="Product trial evidence run name"
+            placeholder="Evidence run name"
             style={styles.input}
           />
           <TextInput
             value={form.purpose}
             onChangeText={(purpose) => setForm((prev) => ({ ...prev, purpose }))}
-            accessibilityLabel="Product trial grow purpose"
+            accessibilityLabel="Product trial evidence run purpose"
             placeholder="Purpose: product_trial, soil_trial, demo_grow..."
             style={styles.input}
           />
           <TextInput
             value={form.cropType}
             onChangeText={(cropType) => setForm((prev) => ({ ...prev, cropType }))}
-            accessibilityLabel="Product trial grow crop type"
+            accessibilityLabel="Product trial evidence run crop type"
             placeholder="Crop type"
             style={styles.input}
           />
           <TextInput
             value={form.cultivar}
             onChangeText={(cultivar) => setForm((prev) => ({ ...prev, cultivar }))}
-            accessibilityLabel="Product trial grow cultivar"
+            accessibilityLabel="Product trial evidence run cultivar"
             placeholder="Cultivar / plant line"
             style={styles.input}
           />
           <TextInput
             value={form.medium}
             onChangeText={(medium) => setForm((prev) => ({ ...prev, medium }))}
-            accessibilityLabel="Product trial grow medium"
+            accessibilityLabel="Product trial evidence run medium"
             placeholder="Medium"
             style={styles.input}
           />
           <TextInput
             value={form.plantCount}
             onChangeText={(plantCount) => setForm((prev) => ({ ...prev, plantCount }))}
-            accessibilityLabel="Product trial grow plant count"
+            accessibilityLabel="Product trial evidence run plant count"
             keyboardType="numeric"
             placeholder="Plant count"
             style={styles.input}
@@ -240,7 +240,7 @@ export default function CommercialGrowsRoute({
           <TextInput
             value={form.productId}
             onChangeText={(productId) => setForm((prev) => ({ ...prev, productId }))}
-            accessibilityLabel="Product trial grow product id"
+            accessibilityLabel="Product trial evidence run product id"
             placeholder="Linked product ID"
             style={styles.input}
           />
@@ -249,14 +249,14 @@ export default function CommercialGrowsRoute({
             onChangeText={(productLineId) =>
               setForm((prev) => ({ ...prev, productLineId }))
             }
-            accessibilityLabel="Product trial grow product line id"
+            accessibilityLabel="Product trial evidence run product line id"
             placeholder="Linked product line ID"
             style={styles.input}
           />
           <TextInput
             value={form.batchId}
             onChangeText={(batchId) => setForm((prev) => ({ ...prev, batchId }))}
-            accessibilityLabel="Product trial grow batch id"
+            accessibilityLabel="Product trial evidence run batch id"
             placeholder="Linked batch ID"
             style={styles.input}
           />
@@ -265,7 +265,7 @@ export default function CommercialGrowsRoute({
             onChangeText={(formulaVersion) =>
               setForm((prev) => ({ ...prev, formulaVersion }))
             }
-            accessibilityLabel="Product trial grow formula version"
+            accessibilityLabel="Product trial evidence run formula version"
             placeholder="Formula version"
             style={styles.input}
           />
@@ -275,7 +275,7 @@ export default function CommercialGrowsRoute({
           onChangeText={(measurementPlan) =>
             setForm((prev) => ({ ...prev, measurementPlan }))
           }
-          accessibilityLabel="Product trial grow measurement plan"
+          accessibilityLabel="Product trial evidence run measurement plan"
           multiline
           placeholder="Measurement plan: pH/EC, vigor, diagnosis, steering, harvest, dry/cure, final quality"
           style={[styles.input, styles.textArea]}
@@ -283,7 +283,7 @@ export default function CommercialGrowsRoute({
         <TextInput
           value={form.notes}
           onChangeText={(notes) => setForm((prev) => ({ ...prev, notes }))}
-          accessibilityLabel="Product trial grow notes"
+          accessibilityLabel="Product trial evidence run notes"
           multiline
           placeholder="Notes and public-share context"
           style={[styles.input, styles.textArea]}
@@ -291,7 +291,7 @@ export default function CommercialGrowsRoute({
         <View style={styles.actions}>
           <Pressable
             accessibilityRole="button"
-            accessibilityLabel="Create product trial grow"
+            accessibilityLabel="Create product trial evidence run"
             disabled={saving || !form.name.trim()}
             onPress={submitGrow}
             style={[
@@ -305,7 +305,7 @@ export default function CommercialGrowsRoute({
           </Pressable>
           <Pressable
             accessibilityRole="button"
-            accessibilityLabel="Toggle product trial grow public share status"
+            accessibilityLabel="Toggle product trial evidence run public share status"
             onPress={() =>
               setForm((prev) => ({
                 ...prev,

@@ -182,7 +182,7 @@ export default function CommercialBatchDetailRoute({ route }: { route?: any } = 
           {batch?.trialGrowId ? (
             <ActionLink
               href={`/home/commercial/grows/${encodeURIComponent(batch.trialGrowId)}`}
-              label="Open Trial Grow"
+              label="Open Evidence Run"
             />
           ) : null}
           <ActionLink href="/home/commercial/trials" label="Open Trials" />
