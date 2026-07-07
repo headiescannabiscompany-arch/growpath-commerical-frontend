@@ -291,7 +291,7 @@ export default function CommercialHome() {
 
   return (
     <AppPage
-      routeKey="home"
+      routeKey="commercial_home"
       longContent
       header={
         <View style={styles.headerRow}>

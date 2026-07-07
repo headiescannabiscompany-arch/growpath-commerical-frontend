@@ -33,6 +33,20 @@ describe("feedPolicy", () => {
     expect(banner.slotsByPlacement.top).toBe(1);
   });
 
+  it("does not treat the commercial dashboard as the global feed-heavy home", () => {
+    const banner = getFeedBannerPolicy({
+      routeKey: "commercial_home",
+      plan: "commercial",
+      mode: "commercial",
+      longContent: true
+    });
+
+    expect(banner.top).toBe(true);
+    expect(banner.middle).toBe(false);
+    expect(banner.bottom).toBe(false);
+    expect(banner.slotsByPlacement.top).toBe(1);
+  });
+
   it("adds top, middle, and bottom placements for long free pages", () => {
     const banner = getFeedBannerPolicy({
       routeKey: "personal_tools_hub",

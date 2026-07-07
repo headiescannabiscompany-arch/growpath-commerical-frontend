@@ -46,6 +46,17 @@ describe("AppPage back behavior", () => {
     expect(screen.getByText("Products root")).toBeTruthy();
   });
 
+  it("keeps the commercial dashboard as a root page", () => {
+    const screen = render(
+      <AppPage routeKey="commercial_home">
+        <Text>Commercial dashboard</Text>
+      </AppPage>
+    );
+
+    expect(screen.queryByText("Shared Back")).toBeNull();
+    expect(screen.getByText("Commercial dashboard")).toBeTruthy();
+  });
+
   it("shows the shared back button on nested pages by default", () => {
     const screen = render(
       <AppPage routeKey="commercial-product-detail">
