@@ -78,6 +78,19 @@ const chemistryOptions = [
   ["chelated_micronutrient", "Chelated micronutrient"]
 ] as const;
 
+const MAX_PRODUCT_ROWS = 20;
+const P2O5_TO_ELEMENTAL_P = 0.4364;
+const K2O_TO_ELEMENTAL_K = 0.8301;
+
+const guaranteedAnalysisLabels: Record<"N" | "P" | "K" | "Ca" | "Mg" | "S", string> = {
+  N: "N",
+  P: "P2O5",
+  K: "K2O",
+  Ca: "Ca",
+  Mg: "Mg",
+  S: "S"
+};
+
 function coerceParam(value?: string | string[]) {
   if (typeof value === "string") return value;
   if (Array.isArray(value)) return value[0] || "";
@@ -108,6 +121,81 @@ function newRow(index: number): ProductRow {
     B: "0",
     Mo: "0",
     Si: "0"
+  };
+}
+
+function numberValue(value: string) {
+  const parsed = Number(value);
+  return Number.isFinite(parsed) ? parsed : 0;
+}
+
+function normalizeProductRow(row: ProductRow) {
+  const N = numberValue(row.N);
+  const P2O5 = numberValue(row.P);
+  const K2O = numberValue(row.K);
+  const Ca = numberValue(row.Ca);
+  const Mg = numberValue(row.Mg);
+  const S = numberValue(row.S);
+  const Fe = numberValue(row.Fe);
+  const Mn = numberValue(row.Mn);
+  const Zn = numberValue(row.Zn);
+  const Cu = numberValue(row.Cu);
+  const B = numberValue(row.B);
+  const Mo = numberValue(row.Mo);
+  const Si = numberValue(row.Si);
+
+  return {
+    ...row,
+    amount: numberValue(row.amount),
+    densityGml: numberValue(row.densityGml),
+    // P and K stay as label values for backward compatibility with the calculator.
+    N,
+    P: P2O5,
+    K: K2O,
+    P2O5,
+    K2O,
+    elementalP: Number((P2O5 * P2O5_TO_ELEMENTAL_P).toFixed(4)),
+    elementalK: Number((K2O * K2O_TO_ELEMENTAL_K).toFixed(4)),
+    Ca,
+    Mg,
+    S,
+    Fe,
+    Mn,
+    Zn,
+    Cu,
+    B,
+    Mo,
+    Si,
+    guaranteedAnalysis: {
+      N,
+      P2O5,
+      K2O,
+      Ca,
+      Mg,
+      S,
+      Fe,
+      Mn,
+      Zn,
+      Cu,
+      B,
+      Mo,
+      Si
+    },
+    elementalAnalysis: {
+      N,
+      P: Number((P2O5 * P2O5_TO_ELEMENTAL_P).toFixed(4)),
+      K: Number((K2O * K2O_TO_ELEMENTAL_K).toFixed(4)),
+      Ca,
+      Mg,
+      S,
+      Fe,
+      Mn,
+      Zn,
+      Cu,
+      B,
+      Mo,
+      Si
+    }
   };
 }
 
@@ -190,24 +278,7 @@ export default function NpkToolScreen() {
       releaseEnvironment: { soilTempC: Number(soilTempC), moisture, livingSoil },
       products: rows
         .filter((row) => row.name.trim() || Number(row.amount) > 0)
-        .map(({ id: _id, ...row }) => ({
-          ...row,
-          amount: Number(row.amount),
-          densityGml: Number(row.densityGml),
-          N: Number(row.N),
-          P: Number(row.P),
-          K: Number(row.K),
-          Ca: Number(row.Ca),
-          Mg: Number(row.Mg),
-          S: Number(row.S),
-          Fe: Number(row.Fe),
-          Mn: Number(row.Mn),
-          Zn: Number(row.Zn),
-          Cu: Number(row.Cu),
-          B: Number(row.B),
-          Mo: Number(row.Mo),
-          Si: Number(row.Si)
-        }))
+        .map(({ id: _id, ...row }) => normalizeProductRow(row as ProductRow))
     };
   }
 
@@ -289,24 +360,7 @@ export default function NpkToolScreen() {
     try {
       const products = rows
         .filter((row) => row.name.trim() || Number(row.amount) > 0)
-        .map(({ id: _id, ...row }) => ({
-          ...row,
-          amount: Number(row.amount),
-          densityGml: Number(row.densityGml),
-          N: Number(row.N),
-          P: Number(row.P),
-          K: Number(row.K),
-          Ca: Number(row.Ca),
-          Mg: Number(row.Mg),
-          S: Number(row.S),
-          Fe: Number(row.Fe),
-          Mn: Number(row.Mn),
-          Zn: Number(row.Zn),
-          Cu: Number(row.Cu),
-          B: Number(row.B),
-          Mo: Number(row.Mo),
-          Si: Number(row.Si)
-        }));
+        .map(({ id: _id, ...row }) => normalizeProductRow(row as ProductRow));
       const payload = recipePayload();
       const response = await runCalculator<any>("npk-recipe", {
         ...payload,
@@ -391,9 +445,9 @@ export default function NpkToolScreen() {
       <BackButton />
       <Text style={styles.title}>NPK / Feed Recipe Builder</Text>
       <Text style={styles.subtitle}>
-        Build up to 20 product rows from guaranteed analysis, target N-P-K, source water,
-        and release timing. Fertilizer label P and K are converted from P2O5 and K2O to
-        elemental ppm where appropriate.
+        Build up to {MAX_PRODUCT_ROWS} product rows from guaranteed analysis, target
+        N-P-K, source water, and release timing. Fertilizer label P and K are entered as
+        P2O5 and K2O, then converted to elemental P/K where appropriate.
       </Text>
       <View style={styles.guidanceCard}>
         <Text style={styles.resultTitle}>AI-guided, calculator-verified</Text>
@@ -530,8 +584,8 @@ export default function NpkToolScreen() {
       <Text style={styles.label}>Target profile</Text>
       <Text style={styles.fieldHint}>
         Optional target N-P-K lets AI and the calculator compare the recipe goal to the
-        actual label math. Use label N-P-K here; elemental P/K conversion stays inside the
-        deterministic tool output.
+        actual label math. Use label N-P2O5-K2O here; elemental P/K conversion stays
+        inside the deterministic tool output.
       </Text>
       <View style={styles.analysisGrid}>
         {[
@@ -741,11 +795,16 @@ export default function NpkToolScreen() {
             ))}
           </View>
           <Text style={styles.fieldHint}>Guaranteed analysis percentages</Text>
+          <Text style={styles.fieldHint}>
+            Label N-P-K uses elemental N, P2O5, and K2O. GrowPath also stores elemental P
+            and K for recipe math using P2O5 x 0.4364 and K2O x 0.8301.
+          </Text>
           <View style={styles.analysisGrid}>
             {(["N", "P", "K", "Ca", "Mg", "S"] as const).map((key) => (
               <View key={key} style={styles.analysisField}>
-                <Text style={styles.analysisLabel}>{key}%</Text>
+                <Text style={styles.analysisLabel}>{guaranteedAnalysisLabels[key]}%</Text>
                 <TextInput
+                  accessibilityLabel={`NPK ingredient ${index + 1} ${guaranteedAnalysisLabels[key]} percent`}
                   style={styles.analysisInput}
                   value={row[key]}
                   onChangeText={(value) => updateRow(row.id, key, value)}
@@ -757,12 +816,14 @@ export default function NpkToolScreen() {
         </View>
       ))}
 
-      {rows.length < 20 ? (
+      {rows.length < MAX_PRODUCT_ROWS ? (
         <Pressable
           style={styles.secondaryButton}
           onPress={() => setRows((current) => [...current, newRow(current.length)])}
         >
-          <Text style={styles.secondaryButtonText}>Add product ({rows.length}/20)</Text>
+          <Text style={styles.secondaryButtonText}>
+            Add product ({rows.length}/{MAX_PRODUCT_ROWS})
+          </Text>
         </Pressable>
       ) : null}
       <Pressable
