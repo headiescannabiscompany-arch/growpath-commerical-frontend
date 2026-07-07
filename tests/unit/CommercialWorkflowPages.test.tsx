@@ -8,6 +8,7 @@ import CommercialCommunityRoute from "@/app/home/commercial/community";
 import CommercialCoursesRoute from "@/app/home/commercial/courses";
 import CommercialCourseDetailRoute from "@/app/home/commercial/courses/[courseId]";
 import CommercialMarketingRoute from "@/app/home/commercial/marketing";
+import CommercialOrdersRoute from "@/app/home/commercial/orders";
 import CommercialProductLinesRoute from "@/app/home/commercial/product-lines";
 import CommercialProductLineDetailRoute from "@/app/home/commercial/product-lines/[lineId]";
 import CommercialProductsRoute from "@/app/home/commercial/products";
@@ -185,6 +186,27 @@ describe("commercial workflow pages", () => {
       }
       if (path === "/api/commercial/products" && options?.method === "POST") {
         return Promise.resolve({ product: { id: "product-new", ...options.body } });
+      }
+      if (
+        path === "/api/commercial/orders" &&
+        (!options || options?.method === "GET")
+      ) {
+        return Promise.resolve({
+          orders: [
+            {
+              id: "order-1",
+              productName: "Living Soil Base",
+              customerName: "Casey Grower",
+              customerEmail: "casey@example.com",
+              quantity: 2,
+              amountCents: 8400,
+              currency: "usd",
+              status: "paid",
+              fulfillmentStatus: "unfulfilled",
+              createdAt: "2026-07-01T12:00:00.000Z"
+            }
+          ]
+        });
       }
       if (path === "/api/tasks" && options?.method === "POST") {
         return Promise.resolve({ task: { id: "task-new", ...options.body } });
@@ -2012,6 +2034,20 @@ describe("commercial workflow pages", () => {
     expect(screen.getByText("Orders / External Tracking")).toBeTruthy();
     expect(screen.getByText("Product Trials")).toBeTruthy();
     await waitFor(() => expect(screen.getAllByText("42").length).toBeGreaterThan(0));
+  });
+
+  it("loads commercial orders from the commercial workspace route", async () => {
+    const screen = render(<CommercialOrdersRoute />);
+
+    expect(screen.getAllByText("Orders").length).toBeGreaterThan(0);
+    await waitFor(() =>
+      expect(mockApiRequest).toHaveBeenCalledWith("/api/commercial/orders", {
+        method: "GET"
+      })
+    );
+    expect(screen.getByText("Living Soil Base")).toBeTruthy();
+    expect(screen.getByText("Casey Grower | casey@example.com")).toBeTruthy();
+    expect(screen.getAllByText("$84.00").length).toBeGreaterThan(0);
   });
 
   it("loads commercial analytics overview including ad clicks", async () => {

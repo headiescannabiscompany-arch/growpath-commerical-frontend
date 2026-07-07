@@ -83,7 +83,7 @@ const QUICK_ACTIONS: Action[] = [
   { label: "Create Course", href: "/home/commercial/courses" },
   { label: "Schedule Live", href: "/home/commercial/lives" },
   { label: "Create Feed Campaign", href: "/home/commercial/feed" },
-  { label: "View Orders", href: "/orders" },
+  { label: "View Orders", href: "/home/commercial/orders" },
   { label: "View Analytics", href: "/home/commercial/analytics" }
 ];
 

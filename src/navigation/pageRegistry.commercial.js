@@ -102,7 +102,7 @@ export const PAGE_REGISTRY_COMMERCIAL = [
     icon: "cart-outline",
     capabilityKey: "commercial.orders",
     primary: true,
-    component: require("../screens/CommercialOrdersScreen").default
+    component: require("../app/home/commercial/orders").default
   },
   {
     name: "CommercialInventory",

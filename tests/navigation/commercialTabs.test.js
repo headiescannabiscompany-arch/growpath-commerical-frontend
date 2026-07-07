@@ -14,6 +14,7 @@ describe("CommercialTabs", () => {
     const coursesIndex = source.indexOf('name="CommercialCourses"');
     const livesIndex = source.indexOf('name="CommercialLives"');
     const feedIndex = source.indexOf('name="CommercialFeed"');
+    const ordersIndex = source.indexOf('name="CommercialOrders"');
     const profileIndex = source.indexOf('name="CommercialProfile"');
 
     expect(dashboardIndex).toBeGreaterThanOrEqual(0);
@@ -22,11 +23,13 @@ describe("CommercialTabs", () => {
     expect(coursesIndex).toBeGreaterThan(productsIndex);
     expect(livesIndex).toBeGreaterThan(coursesIndex);
     expect(feedIndex).toBeGreaterThan(livesIndex);
-    expect(profileIndex).toBeGreaterThan(feedIndex);
+    expect(ordersIndex).toBeGreaterThan(feedIndex);
+    expect(profileIndex).toBeGreaterThan(ordersIndex);
     expect(source).toContain('options={{ title: "Storefront" }}');
     expect(source).toContain('options={{ title: "Courses" }}');
     expect(source).toContain('options={{ title: "Lives" }}');
     expect(source).toContain('options={{ title: "Feed / Campaigns" }}');
+    expect(source).toContain('options={{ title: "Orders" }}');
     expect(source).not.toContain('name="CommercialGrows"');
     expect(source).not.toContain('options={{ title: "Evidence & Trials" }}');
   });

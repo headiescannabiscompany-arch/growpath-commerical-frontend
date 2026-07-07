@@ -46,6 +46,7 @@ const COMMERCIAL_ONLY_ROUTES = [
   "/home/commercial/courses",
   "/home/commercial/courses/course-1",
   "/home/commercial/marketing",
+  "/home/commercial/orders",
   "/home/commercial/analytics",
   "/home/commercial/profile",
   "/home/commercial/inventory",
