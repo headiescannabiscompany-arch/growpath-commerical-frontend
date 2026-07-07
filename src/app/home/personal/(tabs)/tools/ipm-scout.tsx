@@ -3,6 +3,7 @@ import React from "react";
 import BackendCalculatorToolScreen, {
   tomorrow
 } from "@/features/personal/tools/BackendCalculatorToolScreen";
+import { saveToolRunAndCreateTasks } from "@/features/personal/tools/saveToolRunAndOpenJournal";
 
 function firstText(...values: unknown[]) {
   for (const value of values) {
@@ -33,6 +34,74 @@ function growPathAnswer(outputs: any) {
     outputs.summary,
     outputs.suspectedIssue
   );
+}
+
+function normalizePriority(
+  value: unknown,
+  fallback: "low" | "medium" | "high" = "medium"
+) {
+  return value === "low" || value === "medium" || value === "high" ? value : fallback;
+}
+
+function ipmTaskPlan(outputs: Record<string, any>) {
+  const planned = Array.isArray(outputs.taskSuggestions) ? outputs.taskSuggestions : [];
+  if (planned.length > 1) {
+    return planned.slice(0, 8).map((task: any, index: number) => ({
+      title: String(task?.title || `IPM follow-up ${index + 1}`),
+      priority: normalizePriority(task?.priority),
+      dueDate: tomorrow(Number(task?.dueInDays || index + 1)),
+      description:
+        task?.description ||
+        "Follow up on IPM scout evidence, verification context, inspection steps, and treatment outcome."
+    }));
+  }
+
+  const highSeverity = ["high", "urgent", "critical"].includes(
+    String(outputs.severity || "").toLowerCase()
+  );
+  const verification = verificationAnswer(outputs.gptVerification);
+  const growPath = growPathAnswer(outputs);
+  const issue = outputs.suspectedIssue || "IPM issue";
+  const organism =
+    outputs.suspectedOrganism || outputs.suspectedPest || "unknown organism";
+
+  return [
+    {
+      title: outputs.taskSuggestions?.[0]?.title || "Repeat IPM scout",
+      priority: normalizePriority(
+        outputs.taskSuggestions?.[0]?.priority,
+        highSeverity ? "high" : "medium"
+      ),
+      dueDate: tomorrow(outputs.taskSuggestions?.[0]?.dueInDays || 3),
+      description: [
+        `Suspected issue: ${issue}.`,
+        `Suspected organism: ${organism}.`,
+        growPath ? `GrowPath AI: ${growPath}` : "",
+        verification
+          ? `GPT verification: ${verification}`
+          : outputs.gptVerification?.status
+            ? `GPT verification status: ${outputs.gptVerification.status}.`
+            : "",
+        "Repeat underside inspection, trap count, and photo evidence before treatment decisions."
+      ]
+        .filter(Boolean)
+        .join(" ")
+    },
+    {
+      title: "Document IPM evidence and treatment decision",
+      priority: highSeverity ? "high" : ("medium" as const),
+      dueDate: tomorrow(4),
+      description:
+        "Save leaf top/bottom photos, trap counts, affected plant locations, treatment decision, product/rate if used, and safety notes."
+    },
+    {
+      title: "Review IPM outcome",
+      priority: "medium" as const,
+      dueDate: tomorrow(7),
+      description:
+        "Record whether the response worked, whether pest pressure changed, and whether another scout or escalation is needed."
+    }
+  ];
 }
 
 export default function IpmScoutToolRoute() {
@@ -142,6 +211,28 @@ export default function IpmScoutToolRoute() {
           .filter(Boolean)
           .join(" ")
       })}
+      buildActions={({ outputs, payload, toolRun, growId, plantContext }) => [
+        {
+          key: "create-ipm-task-plan",
+          label: "Create IPM Task Plan",
+          variant: "secondary",
+          pendingLabel: "Creating...",
+          disabled: !growId,
+          successMessage: "Created IPM tasks.",
+          onPress: async () => {
+            const result = await saveToolRunAndCreateTasks({
+              growId,
+              ...plantContext.toolRunContext,
+              toolKey: "ipm-scout",
+              toolRunId: toolRun?.id || toolRun?._id,
+              input: payload,
+              output: outputs,
+              tasks: ipmTaskPlan(outputs)
+            });
+            if (!result.ok) throw new Error(result.error);
+          }
+        }
+      ]}
     />
   );
 }

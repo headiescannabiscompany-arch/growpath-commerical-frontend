@@ -6,6 +6,7 @@ import IpmScoutToolRoute from "@/app/home/personal/(tabs)/tools/ipm-scout";
 const mockRunCalculator = jest.fn();
 const mockCreateGrowpathModuleRecord = jest.fn();
 const mockSaveToolRunAndCreateTask = jest.fn();
+const mockSaveToolRunAndCreateTasks = jest.fn();
 
 jest.mock("expo-router", () => ({
   useLocalSearchParams: () => ({ growId: "grow-1" }),
@@ -56,7 +57,8 @@ jest.mock("@/api/growpathModules", () => ({
 
 jest.mock("@/features/personal/tools/saveToolRunAndOpenJournal", () => ({
   saveToolRunAndCreateLog: jest.fn(),
-  saveToolRunAndCreateTask: (...args: any[]) => mockSaveToolRunAndCreateTask(...args)
+  saveToolRunAndCreateTask: (...args: any[]) => mockSaveToolRunAndCreateTask(...args),
+  saveToolRunAndCreateTasks: (...args: any[]) => mockSaveToolRunAndCreateTasks(...args)
 }));
 
 describe("IpmScoutToolRoute", () => {
@@ -86,6 +88,11 @@ describe("IpmScoutToolRoute", () => {
       ok: true,
       toolRunId: "toolrun-1",
       taskId: "task-1"
+    });
+    mockSaveToolRunAndCreateTasks.mockResolvedValue({
+      ok: true,
+      toolRunId: "toolrun-1",
+      taskIds: ["task-1", "task-2", "task-3"]
     });
   });
 
@@ -161,6 +168,48 @@ describe("IpmScoutToolRoute", () => {
       expect.objectContaining({
         description: expect.stringContaining("Record whether the response worked")
       })
+    );
+  });
+
+  it("creates an IPM task plan with verification and outcome tracking", async () => {
+    const screen = render(<IpmScoutToolRoute />);
+
+    fireEvent.changeText(
+      screen.getByLabelText("IPM Scout Pest or organism seen"),
+      "mites"
+    );
+    fireEvent.press(screen.getByLabelText("Run IPM Scout"));
+
+    await waitFor(() => expect(screen.getByText("IPM Scout result")).toBeTruthy());
+
+    fireEvent.press(screen.getByText("Create IPM Task Plan"));
+
+    await waitFor(() =>
+      expect(mockSaveToolRunAndCreateTasks).toHaveBeenCalledWith(
+        expect.objectContaining({
+          growId: "grow-1",
+          toolKey: "ipm-scout",
+          toolRunId: "toolrun-1",
+          output: expect.objectContaining({
+            suspectedIssue: "Possible spider mite pressure",
+            gptVerification: expect.objectContaining({ status: "completed" })
+          }),
+          tasks: [
+            expect.objectContaining({
+              title: "Repeat IPM scout",
+              description: expect.stringContaining("GPT verification")
+            }),
+            expect.objectContaining({
+              title: "Document IPM evidence and treatment decision",
+              description: expect.stringContaining("trap counts")
+            }),
+            expect.objectContaining({
+              title: "Review IPM outcome",
+              description: expect.stringContaining("whether the response worked")
+            })
+          ]
+        })
+      )
     );
   });
 });
