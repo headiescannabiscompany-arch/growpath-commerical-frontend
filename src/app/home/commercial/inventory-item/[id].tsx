@@ -13,6 +13,7 @@ import { useLocalSearchParams, useRouter } from "expo-router";
 
 import { ScreenBoundary } from "@/components/ScreenBoundary";
 import { InlineError } from "@/components/InlineError";
+import BackButton from "@/components/nav/BackButton";
 import { apiRequest } from "@/api/apiRequest";
 import { endpoints } from "@/api/endpoints";
 import { useApiErrorHandler } from "@/hooks/useApiErrorHandler";
@@ -214,6 +215,7 @@ export default function CommercialInventoryItemDetailRoute() {
           />
         }
       >
+        <BackButton fallbackHref="/home/commercial/inventory" />
         {error ? <InlineError error={error} /> : null}
 
         <View style={styles.headerRow}>
@@ -512,10 +514,6 @@ export default function CommercialInventoryItemDetailRoute() {
             <View style={styles.kvWrap}>{keys.map((k) => renderKV(item, k))}</View>
           </View>
         ) : null}
-
-        <TouchableOpacity onPress={() => router.back()}>
-          <Text style={styles.backLink}>{"< Back"}</Text>
-        </TouchableOpacity>
       </ScrollView>
     </ScreenBoundary>
   );
@@ -600,7 +598,5 @@ const styles = StyleSheet.create({
     paddingVertical: 8,
     backgroundColor: "#f8fafc"
   },
-  actionText: { color: "#0f172a", fontSize: 12, fontWeight: "900" },
-
-  backLink: { fontWeight: "800", marginTop: 6 }
+  actionText: { color: "#0f172a", fontSize: 12, fontWeight: "900" }
 });

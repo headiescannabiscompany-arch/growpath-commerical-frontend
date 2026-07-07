@@ -1456,6 +1456,7 @@ describe("commercial workflow pages", () => {
     const screen = render(<CommercialInventoryItemDetailRoute />);
 
     await waitFor(() => expect(screen.getByText("Kelp Meal")).toBeTruthy());
+    expect(screen.getByLabelText("Back")).toBeTruthy();
     expect(screen.getByText("Connected Workflows")).toBeTruthy();
     expect(screen.getByText("Linked Product")).toBeTruthy();
     expect(screen.getByText("Linked Evidence Run")).toBeTruthy();
