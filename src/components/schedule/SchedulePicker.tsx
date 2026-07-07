@@ -9,6 +9,12 @@ type SchedulePickerProps = {
   onReminderChange: (value: string) => void;
   onRecurrenceChange: (value: string) => void;
   accessibilityPrefix?: string;
+  dueDateAccessibilityLabel?: string;
+  reminderAccessibilityLabel?: string;
+  recurrenceAccessibilityLabel?: string;
+  dueDatePlaceholder?: string;
+  reminderPlaceholder?: string;
+  recurrencePlaceholder?: string;
 };
 
 function dateKey(daysFromToday = 0) {
@@ -24,7 +30,13 @@ export default function SchedulePicker({
   onDueDateChange,
   onReminderChange,
   onRecurrenceChange,
-  accessibilityPrefix = "Schedule"
+  accessibilityPrefix = "Schedule",
+  dueDateAccessibilityLabel,
+  reminderAccessibilityLabel,
+  recurrenceAccessibilityLabel,
+  dueDatePlaceholder = "YYYY-MM-DD or ISO date",
+  reminderPlaceholder = "Reminder, e.g. 24 hours before",
+  recurrencePlaceholder = "Recurrence, e.g. every 7 days"
 }: SchedulePickerProps) {
   const quickDates = [
     ["Today", dateKey(0)],
@@ -52,18 +64,22 @@ export default function SchedulePicker({
       <View style={styles.row}>
         <TextInput
           style={styles.flexInput}
-          placeholder="YYYY-MM-DD or ISO date"
+          placeholder={dueDatePlaceholder}
           value={dueDate}
           onChangeText={onDueDateChange}
-          accessibilityLabel={`${accessibilityPrefix} due date`}
+          accessibilityLabel={
+            dueDateAccessibilityLabel || `${accessibilityPrefix} due date`
+          }
           autoCapitalize="none"
         />
         <TextInput
           style={styles.flexInput}
-          placeholder="Reminder, e.g. 24 hours before"
+          placeholder={reminderPlaceholder}
           value={reminder}
           onChangeText={onReminderChange}
-          accessibilityLabel={`${accessibilityPrefix} reminder`}
+          accessibilityLabel={
+            reminderAccessibilityLabel || `${accessibilityPrefix} reminder`
+          }
         />
       </View>
 
@@ -103,10 +119,12 @@ export default function SchedulePicker({
       <View style={styles.row}>
         <TextInput
           style={styles.flexInput}
-          placeholder="Recurrence, e.g. every 7 days"
+          placeholder={recurrencePlaceholder}
           value={recurrence}
           onChangeText={onRecurrenceChange}
-          accessibilityLabel={`${accessibilityPrefix} recurrence`}
+          accessibilityLabel={
+            recurrenceAccessibilityLabel || `${accessibilityPrefix} recurrence`
+          }
         />
       </View>
       <View style={styles.chipRow}>

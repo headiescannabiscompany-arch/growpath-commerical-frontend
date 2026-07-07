@@ -18,6 +18,7 @@ import {
   updatePersonalTask,
   type PersonalTask
 } from "@/api/tasks";
+import SchedulePicker from "@/components/schedule/SchedulePicker";
 import GrowWorkspaceNav from "@/components/personal/GrowWorkspaceNav";
 import { coerceParam, fmtDate, getRowId } from "@/features/grows/routeUtils";
 import PersonalFeedPlacement from "@/components/feed/PersonalFeedPlacement";
@@ -291,12 +292,19 @@ export default function GrowTasksScreen() {
             accessibilityLabel="Task description"
           />
           <Text style={styles.label}>Due date</Text>
-          <TextInput
-            style={styles.input}
-            placeholder="YYYY-MM-DD or ISO date"
-            value={newDueDate}
-            onChangeText={setNewDueDate}
-            accessibilityLabel="Task due date"
+          <SchedulePicker
+            dueDate={newDueDate}
+            reminder={newReminderNote}
+            recurrence={newRecurrenceRule}
+            onDueDateChange={setNewDueDate}
+            onReminderChange={setNewReminderNote}
+            onRecurrenceChange={setNewRecurrenceRule}
+            accessibilityPrefix="Grow task"
+            dueDateAccessibilityLabel="Task due date"
+            reminderAccessibilityLabel="Task reminder note"
+            recurrenceAccessibilityLabel="Task recurrence rule"
+            reminderPlaceholder="Reminder note, e.g. 24 hours before"
+            recurrencePlaceholder="Repeat rule, e.g. every 7 days"
           />
           <Text style={styles.label}>Priority</Text>
           <View style={styles.row}>
@@ -366,23 +374,6 @@ export default function GrowTasksScreen() {
               value={newLinkedLogId}
               onChangeText={setNewLinkedLogId}
               accessibilityLabel="Task linked log"
-            />
-          </View>
-          <Text style={styles.label}>Reminder / recurrence</Text>
-          <View style={styles.row}>
-            <TextInput
-              style={styles.input}
-              placeholder="Reminder note, e.g. 24 hours before"
-              value={newReminderNote}
-              onChangeText={setNewReminderNote}
-              accessibilityLabel="Task reminder note"
-            />
-            <TextInput
-              style={styles.input}
-              placeholder="Repeat rule, e.g. every 7 days"
-              value={newRecurrenceRule}
-              onChangeText={setNewRecurrenceRule}
-              accessibilityLabel="Task recurrence rule"
             />
           </View>
           <Pressable
