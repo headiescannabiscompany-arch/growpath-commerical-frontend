@@ -70,12 +70,16 @@ const publicPayload = {
       usageInstructions: "Topdress during veg and water in.",
       externalPurchaseUrl: "https://example.com/veg-mix",
       specs: {
+        sourceTool: "dry-amendment-mix",
         npk: "3-1-1",
         guaranteedAnalysis: "N 3 / P2O5 1 / K2O 1",
+        guaranteedAnalysisEstimate: { N: 3, P2O5: 1, K2O: 1 },
+        elementalEstimate: { N: 3, P: 0.4364, K: 0.8301 },
         ingredients: ["Alfalfa meal", "Fish bone meal"],
         directions: "Topdress and water in.",
         applicationRate: "1 cup per cubic foot",
-        releaseCurve: { summary: "fast nitrogen with slower phosphorus" }
+        releaseCurve: { summary: "fast nitrogen with slower phosphorus" },
+        warnings: ["Estimated analysis; confirm final label and batch lot."]
       }
     },
     {
@@ -207,12 +211,19 @@ describe("public commercial routes", () => {
     expect(screen.getByText("Living Soil Labs")).toBeTruthy();
     expect(screen.getByText("Topdress during veg and water in.")).toBeTruthy();
     expect(screen.getByText("Label / Use Information")).toBeTruthy();
+    expect(screen.getByText("dry-amendment-mix")).toBeTruthy();
     expect(screen.getByText("5 lb bag")).toBeTruthy();
     expect(screen.getByText("3-1-1")).toBeTruthy();
     expect(screen.getByText("N 3 / P2O5 1 / K2O 1")).toBeTruthy();
+    expect(screen.getByText("N: 3, P2O5: 1, K2O: 1")).toBeTruthy();
+    expect(screen.getByText("N: 3, P: 0.4364, K: 0.8301")).toBeTruthy();
     expect(screen.getByText("Alfalfa meal, Fish bone meal")).toBeTruthy();
     expect(screen.getAllByText("Topdress and water in.").length).toBeGreaterThan(0);
     expect(screen.getByText("1 cup per cubic foot")).toBeTruthy();
+    expect(screen.getByText("fast nitrogen with slower phosphorus")).toBeTruthy();
+    expect(
+      screen.getByText("Estimated analysis; confirm final label and batch lot.")
+    ).toBeTruthy();
     expect(screen.getByText("Related Courses")).toBeTruthy();
     expect(screen.getByText("Using Veg Mix")).toBeTruthy();
     expect(screen.getByText("Open Course")).toBeTruthy();

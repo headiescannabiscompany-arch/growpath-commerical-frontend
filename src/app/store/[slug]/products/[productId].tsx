@@ -53,7 +53,19 @@ function itemLinksProduct(item: any, id: string) {
 
 function formatSpecValue(value: unknown) {
   if (Array.isArray(value)) return value.filter(Boolean).join(", ");
-  if (value && typeof value === "object") return JSON.stringify(value);
+  if (value && typeof value === "object") {
+    const record = value as Record<string, any>;
+    if (record.summary) return String(record.summary);
+    if (record.explanation) return String(record.explanation);
+    return Object.entries(record)
+      .filter(([, entry]) => entry !== null && entry !== undefined && entry !== "")
+      .map(([key, entry]) => {
+        if (Array.isArray(entry)) return `${key}: ${entry.filter(Boolean).join(", ")}`;
+        if (entry && typeof entry === "object") return `${key}: ${JSON.stringify(entry)}`;
+        return `${key}: ${entry}`;
+      })
+      .join(", ");
+  }
   return String(value || "").trim();
 }
 
@@ -365,6 +377,7 @@ export default function PublicProductRoute() {
           <AppCard>
             <Text style={styles.cardTitle}>Label / Use Information</Text>
             <View style={styles.specGrid}>
+              <SpecRow label="Source tool" value={specs.sourceTool || specs.source} />
               <SpecRow
                 label="Size / weight"
                 value={product?.unitSize || specs.unitSize}
@@ -374,6 +387,11 @@ export default function PublicProductRoute() {
                 label="Guaranteed analysis"
                 value={product?.guaranteedAnalysis || specs.guaranteedAnalysis}
               />
+              <SpecRow
+                label="Guaranteed analysis estimate"
+                value={specs.guaranteedAnalysisEstimate}
+              />
+              <SpecRow label="Elemental estimate" value={specs.elementalEstimate} />
               <SpecRow
                 label="Ingredients"
                 value={product?.ingredients || specs.ingredients}
@@ -390,6 +408,7 @@ export default function PublicProductRoute() {
                 label="Release timing"
                 value={specs.releaseCurve || specs.releaseTimeline}
               />
+              <SpecRow label="Warnings" value={specs.warnings} />
             </View>
           </AppCard>
 
