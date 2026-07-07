@@ -5,6 +5,7 @@ import SoilBuilderToolScreen from "@/app/home/personal/(tabs)/tools/soil-builder
 
 const mockRunCalculator = jest.fn();
 const mockCreateGrowpathModuleRecord = jest.fn();
+const mockCreateProduct = jest.fn();
 
 jest.mock("expo-router", () => ({
   useLocalSearchParams: () => ({ growId: "grow-1" }),
@@ -53,6 +54,10 @@ jest.mock("@/api/growpathModules", () => ({
   createGrowpathModuleRecord: (...args: any[]) => mockCreateGrowpathModuleRecord(...args)
 }));
 
+jest.mock("@/api/products", () => ({
+  createProduct: (...args: any[]) => mockCreateProduct(...args)
+}));
+
 jest.mock("@/features/personal/tools/saveToolRunAndOpenJournal", () => ({
   saveToolRunAndCreateLog: jest.fn(),
   saveToolRunAndCreateTask: jest.fn()
@@ -75,6 +80,7 @@ describe("SoilBuilderToolScreen", () => {
       toolRun: { id: "toolrun-1", _id: "toolrun-1" }
     });
     mockCreateGrowpathModuleRecord.mockResolvedValue({ id: "module-record-1" });
+    mockCreateProduct.mockResolvedValue({ id: "product-1", status: "draft" });
   });
 
   it("sends target profile, release timing, and rest/cook assumptions to the soil calculator", async () => {
@@ -127,5 +133,31 @@ describe("SoilBuilderToolScreen", () => {
         "Soil nutrient availability is an estimate until lab-tested; compost/castings add uncertainty."
       )
     ).toBeTruthy();
+
+    fireEvent.press(screen.getByText("Convert to Product Draft"));
+
+    await waitFor(() =>
+      expect(mockCreateProduct).toHaveBeenCalledWith(
+        expect.objectContaining({
+          name: "Living soil mix",
+          category: "soil_mix",
+          status: "draft",
+          linkedToolRunId: "toolrun-1",
+          growInterests: ["living soil", "soil builder", "dry amendments"],
+          specs: expect.objectContaining({
+            sourceTool: "soil-builder",
+            recipe: { recipeType: "soil" },
+            targetNpk: "3-1-1",
+            releaseCurve: { summary: "fast N plus slow P base" },
+            restCookDays: 21,
+            compostUncertainty: "high - compost only estimated",
+            ingredients: expect.arrayContaining([
+              expect.objectContaining({ name: "Alfalfa meal" }),
+              expect.objectContaining({ name: "Fish bone meal" })
+            ])
+          })
+        })
+      )
+    );
   });
 });

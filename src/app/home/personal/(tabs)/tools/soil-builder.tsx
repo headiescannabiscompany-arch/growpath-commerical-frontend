@@ -3,6 +3,7 @@ import React from "react";
 import BackendCalculatorToolScreen, {
   tomorrow
 } from "@/features/personal/tools/BackendCalculatorToolScreen";
+import { createProduct } from "@/api/products";
 
 function n(value: string, fallback?: number) {
   const parsed = Number(value);
@@ -272,6 +273,72 @@ export default function SoilBuilderToolScreen() {
         priority: "medium",
         dueDate: tomorrow(1)
       })}
+      buildActions={({ outputs, payload, toolRun }) => [
+        {
+          key: "convert-product-draft",
+          label: "Convert to Product Draft",
+          variant: "secondary",
+          pendingLabel: "Creating...",
+          successMessage: "Created commercial product draft.",
+          onPress: async () => {
+            await createProduct({
+              name: outputs.mixName || payload.mixName || "Soil recipe product",
+              category: "soil_mix",
+              shortDescription:
+                outputs.purposeFit ||
+                payload.goal ||
+                "Soil recipe created from Soil Builder.",
+              fullDescription: Array.isArray(outputs.mixingInstructions)
+                ? outputs.mixingInstructions.join("\n")
+                : payload.safetyNotes ||
+                  "Draft product created from a saved soil recipe.",
+              status: "draft",
+              linkedToolRunId: toolRun?.id || toolRun?._id || null,
+              growInterests: ["living soil", "soil builder", "dry amendments"],
+              specs: {
+                sourceTool: "soil-builder",
+                recipe: outputs.recipe || null,
+                targetNpk: payload.targetNpk,
+                estimatedNpk: outputs.estimatedNpk || outputs.guaranteedAnalysis || null,
+                guaranteedAnalysisEstimate:
+                  outputs.guaranteedAnalysis ||
+                  outputs.guaranteedAnalysisEstimate ||
+                  null,
+                ingredients: payload.amendments,
+                baseMix: {
+                  baseMedia: payload.baseMedia,
+                  basePercent: payload.basePercent,
+                  compostPercent: payload.compostPercent,
+                  aerationPercent: payload.aerationPercent,
+                  biocharPercent: payload.biocharPercent
+                },
+                directions: Array.isArray(outputs.mixingInstructions)
+                  ? outputs.mixingInstructions
+                  : [],
+                applicationRate: outputs.applicationRate || null,
+                releaseCurve: outputs.releaseCurve || outputs.deliveryCurve || null,
+                restCookDays: outputs.restCookDays ?? payload.restCookDays,
+                readyDate: outputs.readyDate || null,
+                compostUncertainty: payload.compostUncertainty,
+                mineralSupport: payload.mineralSupport,
+                biologySupport: payload.biologySupport,
+                warnings: [
+                  payload.safetyNotes,
+                  ...(Array.isArray(outputs.stageTimingWarnings)
+                    ? outputs.stageTimingWarnings
+                    : []),
+                  ...(Array.isArray(outputs.sourceConfidenceWarnings)
+                    ? outputs.sourceConfidenceWarnings
+                    : []),
+                  ...(Array.isArray(outputs.compatibilityWarnings)
+                    ? outputs.compatibilityWarnings
+                    : [])
+                ].filter(Boolean)
+              }
+            });
+          }
+        }
+      ]}
     />
   );
 }

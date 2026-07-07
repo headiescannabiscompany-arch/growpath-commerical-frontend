@@ -59,6 +59,13 @@ type BackendCalculatorToolScreenProps = {
         dueDate?: string;
       }
     | undefined;
+  buildActions?: (context: {
+    outputs: Record<string, any>;
+    payload: Record<string, any>;
+    toolRun: ToolRun | null;
+    growId: string;
+    plantContext: ReturnType<typeof useToolPlantContext>;
+  }) => ToolResultAction[];
 };
 
 function coerceParam(value?: string | string[]) {
@@ -122,7 +129,8 @@ export default function BackendCalculatorToolScreen({
   buildMetrics = defaultMetrics,
   buildNotices = defaultNotices,
   defaultLogTitle,
-  defaultTask
+  defaultTask,
+  buildActions
 }: BackendCalculatorToolScreenProps) {
   const params = useLocalSearchParams<{
     growId?: string | string[];
@@ -216,7 +224,6 @@ export default function BackendCalculatorToolScreen({
       setRunning(false);
     }
   }
-
   const actions: ToolResultAction[] = [];
   if (outputs && growId) {
     actions.push({
@@ -263,6 +270,27 @@ export default function BackendCalculatorToolScreen({
           });
           if (!result.ok) throw new Error(result.error);
         }
+      });
+    }
+  }
+  if (outputs && buildActions) {
+    try {
+      actions.push(
+        ...buildActions({
+          outputs,
+          payload,
+          toolRun,
+          growId,
+          plantContext
+        })
+      );
+    } catch (_error: any) {
+      actions.push({
+        key: "custom-action-error",
+        label: "Action unavailable",
+        variant: "secondary",
+        disabled: true,
+        onPress: () => {}
       });
     }
   }
