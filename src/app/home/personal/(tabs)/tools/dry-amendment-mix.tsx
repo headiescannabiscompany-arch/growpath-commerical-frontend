@@ -20,7 +20,16 @@ function ingredient(
   const [N = 0, P2O5 = 0, K2O = 0] = analysis
     .split("-")
     .map((part) => Number(part.trim()));
-  return { name, amount: n(amount, 0), amountUnit: "grams", N, P2O5, K2O, releaseClass };
+  return {
+    name,
+    amount: n(amount, 0),
+    amountUnit: "grams",
+    N,
+    P2O5,
+    K2O,
+    releaseClass,
+    analysisBasis: "label_guaranteed_analysis_n_p2o5_k2o"
+  };
 }
 
 function dryBlendTasks(outputs: Record<string, any>, payload: Record<string, any>) {
@@ -85,7 +94,11 @@ export default function DryAmendmentMixToolScreen() {
           defaultValue: "500",
           keyboardType: "numeric"
         },
-        { key: "analysisA", label: "Ingredient A N-P-K", defaultValue: "3-1-2" },
+        {
+          key: "analysisA",
+          label: "Ingredient A guaranteed analysis N-P2O5-K2O",
+          defaultValue: "3-1-2"
+        },
         { key: "releaseA", label: "Ingredient A release", defaultValue: "medium" },
         { key: "ingredientB", label: "Ingredient B", defaultValue: "Bone meal" },
         {
@@ -94,7 +107,11 @@ export default function DryAmendmentMixToolScreen() {
           defaultValue: "500",
           keyboardType: "numeric"
         },
-        { key: "analysisB", label: "Ingredient B N-P-K", defaultValue: "3-15-0" },
+        {
+          key: "analysisB",
+          label: "Ingredient B guaranteed analysis N-P2O5-K2O",
+          defaultValue: "3-15-0"
+        },
         { key: "releaseB", label: "Ingredient B release", defaultValue: "slow" },
         {
           key: "dosePerGallonSoil",
@@ -237,6 +254,7 @@ export default function DryAmendmentMixToolScreen() {
                 recipeType: "dry_amendment_blend",
                 targetStage: payload.desiredStage,
                 ingredients,
+                analysisBasis: "label_guaranteed_analysis_n_p2o5_k2o",
                 guaranteedAnalysisEstimate: outputs.totalAnalysis || null,
                 achievedRatio: outputs.achievedRatio || null,
                 batchWeightGrams: outputs.batchWeight || null,

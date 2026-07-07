@@ -107,8 +107,16 @@ describe("DryAmendmentMixToolScreen", () => {
           growId: "grow-1",
           recipeName: "Veg topdress blend",
           ingredients: expect.arrayContaining([
-            expect.objectContaining({ name: "Alfalfa meal", releaseClass: "medium" }),
-            expect.objectContaining({ name: "Bone meal", releaseClass: "slow" })
+            expect.objectContaining({
+              name: "Alfalfa meal",
+              releaseClass: "medium",
+              analysisBasis: "label_guaranteed_analysis_n_p2o5_k2o"
+            }),
+            expect.objectContaining({
+              name: "Bone meal",
+              releaseClass: "slow",
+              analysisBasis: "label_guaranteed_analysis_n_p2o5_k2o"
+            })
           ])
         })
       )
@@ -173,9 +181,18 @@ describe("DryAmendmentMixToolScreen", () => {
             sourceTool: "dry-amendment-mix",
             recipeType: "dry_amendment_blend",
             targetStage: "veg",
+            analysisBasis: "label_guaranteed_analysis_n_p2o5_k2o",
             ingredients: expect.arrayContaining([
-              expect.objectContaining({ name: "Alfalfa meal", amount: 500 }),
-              expect.objectContaining({ name: "Bone meal", releaseClass: "slow" })
+              expect.objectContaining({
+                name: "Alfalfa meal",
+                amount: 500,
+                analysisBasis: "label_guaranteed_analysis_n_p2o5_k2o"
+              }),
+              expect.objectContaining({
+                name: "Bone meal",
+                releaseClass: "slow",
+                analysisBasis: "label_guaranteed_analysis_n_p2o5_k2o"
+              })
             ]),
             guaranteedAnalysisEstimate: { N: 3, P2O5: 8, K2O: 1 },
             achievedRatio: { N: 3, P: 8, K: 1 },
