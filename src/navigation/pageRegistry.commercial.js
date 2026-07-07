@@ -155,6 +155,14 @@ export const PAGE_REGISTRY_COMMERCIAL = [
     component: require("../app/home/commercial/analytics").default
   },
   {
+    name: "CommercialSchedule",
+    label: "Schedule / Agenda",
+    icon: "calendar-outline",
+    capabilityKey: "commercial.tasks",
+    primary: true,
+    component: require("../app/home/schedule").default
+  },
+  {
     name: "Tasks",
     label: "Tasks",
     icon: "checkbox-outline",

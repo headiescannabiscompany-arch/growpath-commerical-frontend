@@ -31,6 +31,13 @@ export const PAGE_REGISTRY_FACILITY = [
     component: require("../screens/FacilityTasksScreen").default
   },
   {
+    name: "FacilitySchedule",
+    label: "Schedule / Agenda",
+    icon: "calendar-outline",
+    capabilityKey: "facility.tasks",
+    component: require("../app/home/schedule").default
+  },
+  {
     name: "FacilityInventory",
     label: "Inventory",
     icon: "cube-outline",

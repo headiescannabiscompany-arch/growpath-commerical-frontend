@@ -32,10 +32,10 @@ export const PAGE_REGISTRY_PERSONAL = [
   },
   {
     name: "Calendar",
-    label: "Calendar",
+    label: "Schedule / Agenda",
     icon: "calendar-outline",
     capabilityKey: "personal.calendar",
-    component: require("../screens/CalendarScreen").default
+    component: require("../app/home/schedule").default
   },
   {
     name: "Tools",

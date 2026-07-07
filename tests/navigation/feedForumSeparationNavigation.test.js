@@ -22,6 +22,20 @@ describe("feed/forum navigation separation", () => {
     expect(feed.component?.name).toBe("CommercialFeedRoute");
   });
 
+  it("uses the shared Schedule / Agenda route across personal and facility registries", () => {
+    const personalSchedule = byName(PAGE_REGISTRY_PERSONAL, "Calendar");
+    const facilitySchedule = byName(PAGE_REGISTRY_FACILITY, "FacilitySchedule");
+
+    expect(personalSchedule).toMatchObject({
+      label: "Schedule / Agenda"
+    });
+    expect(personalSchedule.component?.name).toBe("HomeScheduleRoute");
+    expect(facilitySchedule).toMatchObject({
+      label: "Schedule / Agenda"
+    });
+    expect(facilitySchedule.component?.name).toBe("HomeScheduleRoute");
+  });
+
   it("keeps shared tab and capability menus off the legacy discussion feed", () => {
     const feedTab = TAB_CONFIG.find((item) => item.key === "FeedTab");
     const menuItems = getMenuItems({
