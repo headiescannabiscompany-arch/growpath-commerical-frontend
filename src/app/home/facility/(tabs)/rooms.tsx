@@ -60,6 +60,63 @@ function isActiveCycle(cycle: BatchCycle) {
   return status !== "complete" && status !== "cancelled";
 }
 
+function inferRoomType(name: string) {
+  const lower = name.toLowerCase();
+  if (lower.includes("flower")) return "flower";
+  if (lower.includes("veg")) return "veg";
+  if (lower.includes("clone")) return "clone";
+  if (lower.includes("mother")) return "mother";
+  if (lower.includes("dry")) return "dry";
+  if (lower.includes("cure")) return "cure";
+  if (lower.includes("seed")) return "seedling";
+  if (lower.includes("greenhouse")) return "greenhouse";
+  return "other";
+}
+
+function inferRoomName(raw: string) {
+  return raw
+    .replace(/\b(temp|temperature|rh|humidity|co2|vpd|sensor|probe)\b/gi, "")
+    .replace(/\b(controller|module|device|channel|monitor|light|fan|exhaust)\b/gi, "")
+    .replace(/\s+/g, " ")
+    .replace(/[-_:|]+$/g, "")
+    .trim();
+}
+
+function buildRoomImportPreview(rawText: string) {
+  const rooms = new Map<
+    string,
+    { name: string; roomType: string; devices: string[]; metrics: string[] }
+  >();
+
+  rawText
+    .split(/\r?\n/)
+    .map((line) => line.trim())
+    .filter(Boolean)
+    .forEach((line) => {
+      const name = inferRoomName(line) || line;
+      const key = name.toLowerCase();
+      const existing = rooms.get(key) || {
+        name,
+        roomType: inferRoomType(name),
+        devices: [],
+        metrics: []
+      };
+      existing.devices = Array.from(new Set([...existing.devices, line]));
+      const lower = line.toLowerCase();
+      const metrics = [
+        lower.includes("temp") && "air_temperature",
+        (lower.includes("rh") || lower.includes("humidity")) && "relative_humidity",
+        lower.includes("co2") && "co2",
+        lower.includes("vpd") && "vpd",
+        lower.includes("light") && "light_status"
+      ].filter(Boolean) as string[];
+      existing.metrics = Array.from(new Set([...existing.metrics, ...metrics]));
+      rooms.set(key, existing);
+    });
+
+  return Array.from(rooms.values());
+}
+
 export default function FacilityRoomsTab() {
   const router = useRouter();
   const ent = useEntitlements();
@@ -106,6 +163,8 @@ export default function FacilityRoomsTab() {
   const [cycleStage, setCycleStage] = useState("flower");
   const [cycleStatus, setCycleStatus] = useState("active");
   const [estimatedPlantCount, setEstimatedPlantCount] = useState("");
+  const [importProvider, setImportProvider] = useState("TrolMaster / Pulse");
+  const [importDeviceText, setImportDeviceText] = useState("");
 
   const roomAccess = getFacilityRoomAccess({
     can: ent?.can,
@@ -129,6 +188,10 @@ export default function FacilityRoomsTab() {
   const estimatedPlants = roomCycles.reduce(
     (sum, cycle) => sum + Number(cycle.estimatedPlantCount || 0),
     0
+  );
+  const roomImportPreview = useMemo(
+    () => buildRoomImportPreview(importDeviceText),
+    [importDeviceText]
   );
 
   const load = useCallback(
@@ -194,6 +257,42 @@ export default function FacilityRoomsTab() {
       });
       setRoomName("");
       setFeedback("Room created.");
+      await load({ refresh: true });
+    } catch (e) {
+      handleApiError(e);
+    } finally {
+      setSaving(false);
+    }
+  }
+
+  async function createImportedRooms() {
+    if (!facilityId || !canEditRooms || !roomImportPreview.length) return;
+    setSaving(true);
+    setFeedback("");
+    clearError();
+    try {
+      const existingNames = new Set(
+        rooms.map((room) =>
+          String(room.name || "")
+            .trim()
+            .toLowerCase()
+        )
+      );
+      const toCreate = roomImportPreview.filter(
+        (room) => !existingNames.has(room.name.trim().toLowerCase())
+      );
+      for (const room of toCreate) {
+        await createRoom(facilityId, {
+          name: room.name,
+          roomType: room.roomType,
+          trackingMode: "batch"
+        });
+      }
+      setFeedback(
+        toCreate.length
+          ? `Created ${toCreate.length} room${toCreate.length === 1 ? "" : "s"} from ${importProvider}.`
+          : "All imported rooms already exist."
+      );
       await load({ refresh: true });
     } catch (e) {
       handleApiError(e);
@@ -330,6 +429,63 @@ export default function FacilityRoomsTab() {
             </Text>
           </View>
           {loading ? <ActivityIndicator /> : null}
+        </View>
+
+        <View style={styles.card}>
+          <Text style={styles.cardTitle}>Controller Room Import Preview</Text>
+          <Text style={styles.muted}>
+            Paste detected controller, hub, module, or sensor names from Pulse,
+            TrolMaster, Growlink, AROYA, SensorPush, or similar providers. GrowPath
+            suggests rooms first so the facility can start from imported structure instead
+            of a blank setup.
+          </Text>
+          <TextInput
+            value={importProvider}
+            onChangeText={setImportProvider}
+            style={styles.input}
+            accessibilityLabel="Facility import provider"
+            placeholder="Provider, e.g. TrolMaster, Pulse, Growlink"
+          />
+          <TextInput
+            value={importDeviceText}
+            onChangeText={setImportDeviceText}
+            style={[styles.input, styles.textArea]}
+            accessibilityLabel="Facility import device list"
+            multiline
+            placeholder={"Flower Room 1 Temp/RH\nFlower Room 1 CO2\nVeg Room Temp/RH"}
+          />
+          {roomImportPreview.length ? (
+            <View style={styles.importPreviewList}>
+              {roomImportPreview.map((room) => (
+                <View key={room.name} style={styles.importPreviewRow}>
+                  <Text style={styles.rowTitle}>{room.name}</Text>
+                  <Text style={styles.rowMeta}>
+                    {room.roomType} | {room.devices.length} device
+                    {room.devices.length === 1 ? "" : "s"}
+                  </Text>
+                  {room.metrics.length ? (
+                    <Text style={styles.rowMeta}>Metrics: {room.metrics.join(", ")}</Text>
+                  ) : (
+                    <Text style={styles.rowMeta}>Metrics need manual mapping</Text>
+                  )}
+                </View>
+              ))}
+            </View>
+          ) : null}
+          <Pressable
+            onPress={createImportedRooms}
+            disabled={saving || !canEditRooms || !roomImportPreview.length}
+            accessibilityRole="button"
+            accessibilityLabel="Create imported facility rooms"
+            style={[
+              styles.primaryBtn,
+              (saving || !canEditRooms || !roomImportPreview.length) && styles.disabled
+            ]}
+          >
+            <Text style={styles.primaryText}>
+              {saving ? "Creating..." : "Create Previewed Rooms"}
+            </Text>
+          </Pressable>
         </View>
 
         <View style={styles.card}>
@@ -703,6 +859,15 @@ const styles = StyleSheet.create({
     borderRadius: 10,
     padding: 10,
     backgroundColor: "white"
+  },
+  textArea: { minHeight: 118, textAlignVertical: "top" },
+  importPreviewList: { gap: 8, marginTop: 2 },
+  importPreviewRow: {
+    backgroundColor: "#F8FAFC",
+    borderColor: "#E2E8F0",
+    borderRadius: 10,
+    borderWidth: 1,
+    padding: 10
   },
   primaryBtn: {
     alignSelf: "flex-start",
