@@ -77,7 +77,31 @@ function apiResponseFor(path: string, options?: any) {
     });
   }
   if (path === "/api/commercial/products" && !options) {
-    return Promise.resolve({ products: [] });
+    return Promise.resolve({
+      products: [
+        {
+          id: "product-1",
+          name: "Living Soil Base",
+          status: "draft",
+          imageUrl: "https://example.com/soil.jpg",
+          shortDescription: "Base soil blend for veg.",
+          price: 29,
+          category: "soil_mix",
+          linkedRecipeId: "recipe-1"
+        },
+        {
+          id: "product-2",
+          name: "Published Bloom Topdress",
+          status: "published",
+          imageUrl: "https://example.com/bloom.jpg",
+          shortDescription: "Ready storefront product card.",
+          price: 39,
+          category: "dry_amendment",
+          stripePriceId: "price_123",
+          inventoryItem: { name: "Bloom batch 001" }
+        }
+      ]
+    });
   }
   if (path === "/api/commercial/courses" && !options) {
     return Promise.resolve({
@@ -140,7 +164,7 @@ function apiResponseFor(path: string, options?: any) {
     return Promise.resolve({ storefront: { id: "store-1", ...options.body } });
   }
   if (path === "/api/commercial/products" && options?.method === "POST") {
-    return Promise.resolve({ product: { id: "product-1", ...options.body } });
+    return Promise.resolve({ product: { id: "product-new", ...options.body } });
   }
   return Promise.resolve({});
 }
@@ -188,6 +212,14 @@ describe("Storefront route", () => {
     expect(screen.getByText("New Veg Mix Launch")).toBeTruthy();
     expect(screen.getByText(/Advertising \/ outreach/)).toBeTruthy();
     expect(screen.getByText(/Live live-1/)).toBeTruthy();
+    expect(screen.getByText("Living Soil Base")).toBeTruthy();
+    expect(screen.getByText("Published Bloom Topdress")).toBeTruthy();
+    expect(screen.getByText("Missing checkout link")).toBeTruthy();
+    expect(screen.getByText("Missing published status")).toBeTruthy();
+    expect(screen.getByText("Checkout path added")).toBeTruthy();
+    expect(screen.getByText("Storefront card ready")).toBeTruthy();
+    expect(screen.getByText("Linked evidence: recipe")).toBeTruthy();
+    expect(screen.getByText("Linked inventory: Bloom batch 001")).toBeTruthy();
 
     fireEvent.press(screen.getByLabelText("Upload storefront logo"));
     await waitFor(() =>
