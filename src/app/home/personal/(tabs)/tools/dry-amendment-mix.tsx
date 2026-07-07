@@ -77,6 +77,35 @@ function dryBlendTasks(outputs: Record<string, any>, payload: Record<string, any
   ];
 }
 
+function buildDryBlendAssistantBrief(payload: Record<string, any>) {
+  const ingredients = Array.isArray(payload.ingredients) ? payload.ingredients : [];
+  const ingredientLines = ingredients.length
+    ? ingredients
+        .map(
+          (row: any, index: number) =>
+            `${index + 1}. ${row.name || "Unnamed"}: ${row.amount || 0} ${
+              row.amountUnit || "g"
+            }, label ${row.N ?? 0}-${row.P2O5 ?? 0}-${row.K2O ?? 0}, release ${
+              row.releaseClass || "unknown"
+            }`
+        )
+        .join("\n")
+    : "No ingredient rows entered yet.";
+
+  return [
+    "AI Dry Amendment Mix brief",
+    "",
+    "Role: help the user shape a dry amendment blend conversationally, but call the Dry Amendment Mix Builder for final guaranteed-analysis math, release grouping, warnings, ToolRun saving, batch tasks, and product draft conversion.",
+    `Recipe: ${payload.recipeName || "not set"}`,
+    `Target stage: ${payload.desiredStage || "not set"}`,
+    `Application target: ${payload.dosePerGallonSoil || "-"} g per gallon soil`,
+    "Ingredients:",
+    ingredientLines,
+    "",
+    "Explain which ingredient is driving N, P2O5, and K2O, whether the blend is front-loaded or slow-release, what label/package data is still missing, and whether the output should become grow tasks, a facility production batch, or a commercial product draft after user approval."
+  ].join("\n");
+}
+
 export default function DryAmendmentMixToolScreen() {
   return (
     <BackendCalculatorToolScreen
@@ -198,6 +227,15 @@ export default function DryAmendmentMixToolScreen() {
         priority: "medium",
         dueDate: tomorrow(1)
       })}
+      assistantBrief={{
+        title: "AI-guided, calculator-verified",
+        description:
+          "Ask AI to help balance the blend, explain which ingredients drive the label analysis, and identify product-label gaps. The Dry Amendment Mix Builder remains the source of truth for NPK math, release timing, batch tasks, and product drafts.",
+        buttonLabel: "Ask AI to Build Dry Blend",
+        accessibilityLabel: "Ask AI to build dry amendment blend",
+        briefTitle: "AI dry amendment brief",
+        buildBrief: ({ payload }) => buildDryBlendAssistantBrief(payload)
+      }}
       buildActions={({ outputs, payload, toolRun }) => [
         {
           key: "create-dry-blend-checklist",

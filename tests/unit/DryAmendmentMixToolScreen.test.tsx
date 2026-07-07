@@ -216,4 +216,39 @@ describe("DryAmendmentMixToolScreen", () => {
       )
     );
   });
+
+  it("builds an AI dry amendment brief without replacing calculator math", () => {
+    const screen = render(<DryAmendmentMixToolScreen />);
+
+    fireEvent.changeText(
+      screen.getByLabelText("Dry Amendment Mix Builder Recipe name"),
+      "Veg topdress blend"
+    );
+    fireEvent.changeText(
+      screen.getByLabelText("Dry Amendment Mix Builder Desired stage"),
+      "veg"
+    );
+    fireEvent.changeText(
+      screen.getByLabelText(
+        "Dry Amendment Mix Builder Ingredient A guaranteed analysis N-P2O5-K2O"
+      ),
+      "3-1-2"
+    );
+    fireEvent.changeText(
+      screen.getByLabelText("Dry Amendment Mix Builder Ingredient B release"),
+      "slow"
+    );
+
+    fireEvent.press(screen.getByLabelText("Ask AI to build dry amendment blend"));
+
+    expect(screen.getByText("AI dry amendment brief")).toBeTruthy();
+    expect(screen.getByText(/Recipe: Veg topdress blend/)).toBeTruthy();
+    expect(screen.getByText(/Target stage: veg/)).toBeTruthy();
+    expect(screen.getByText(/Alfalfa meal: 500 grams, label 3-1-2/)).toBeTruthy();
+    expect(
+      screen.getByText(
+        /call the Dry Amendment Mix Builder for final guaranteed-analysis math/
+      )
+    ).toBeTruthy();
+  });
 });
