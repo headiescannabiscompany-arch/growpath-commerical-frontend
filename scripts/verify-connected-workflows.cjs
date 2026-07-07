@@ -33,6 +33,7 @@ const checks = [
       "tests/unit/CommercialFeedRoute.test.tsx",
       "tests/unit/integrations_growlink.test.tsx",
       "tests/unit/SoilBuilderToolScreen.test.tsx",
+      "tests/unit/PersonalTaskCenterRoute.test.tsx",
       "tests/unit/GrowTasksScreen.test.tsx"
     ]
   },

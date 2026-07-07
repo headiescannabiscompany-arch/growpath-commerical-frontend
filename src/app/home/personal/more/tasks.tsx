@@ -1,2 +1,1 @@
-import TasksScreen from "@/screens/TasksScreen";
-export default TasksScreen;
+export { default } from "@/app/home/personal/(tabs)/tasks";
