@@ -20,6 +20,24 @@ import { CAPABILITY_KEYS, useEntitlements } from "@/entitlements";
 
 type AnyRec = Record<string, any>;
 
+const sourceTypes = [
+  "manual",
+  "room",
+  "facility_run",
+  "sop",
+  "sensor_alert",
+  "alert",
+  "course",
+  "lesson",
+  "live",
+  "toolrun",
+  "recipe",
+  "product",
+  "product_batch",
+  "product_trial",
+  "forum"
+] as const;
+
 function pickTitle(x: AnyRec): string {
   return String(x?.title ?? x?.name ?? x?.label ?? x?.type ?? "Task Detail");
 }
@@ -41,6 +59,14 @@ function isComplete(item: AnyRec | null) {
 
 function dateOnly(value: unknown) {
   return typeof value === "string" ? value.slice(0, 10) : "";
+}
+
+function sourceObjectLabel(sourceType: unknown) {
+  const source = String(sourceType || "")
+    .replace(/_/g, " ")
+    .trim();
+  if (!source) return "Source";
+  return source.replace(/\b\w/g, (char) => char.toUpperCase());
 }
 
 function canManageRole(role: unknown) {
@@ -85,7 +111,12 @@ export default function FacilityTaskDetail() {
     title: "",
     notes: "",
     dueDate: "",
-    assignedTo: ""
+    assignedTo: "",
+    sourceType: "manual",
+    sourceObjectId: "",
+    roomId: "",
+    requiresProof: false,
+    requiresApproval: false
   });
 
   const canWrite = !!ent?.can?.(CAPABILITY_KEYS.TASKS_WRITE);
@@ -120,7 +151,12 @@ export default function FacilityTaskDetail() {
       title: String(item.title ?? item.name ?? ""),
       notes: String(item.notes ?? item.description ?? ""),
       dueDate: dateOnly(item.dueDate ?? item.dueAt ?? item.due),
-      assignedTo: pickId(item.assignedTo ?? item.assignee)
+      assignedTo: pickId(item.assignedTo ?? item.assignee),
+      sourceType: String(item.sourceType ?? "manual"),
+      sourceObjectId: String(item.sourceObjectId ?? item.sourceId ?? ""),
+      roomId: String(item.roomId ?? item.linkedRoomId ?? ""),
+      requiresProof: Boolean(item.requiresProof),
+      requiresApproval: Boolean(item.requiresApproval)
     });
   }, [item]);
 
@@ -160,6 +196,19 @@ export default function FacilityTaskDetail() {
     await update(
       { assignedTo: form.assignedTo.trim() || null },
       form.assignedTo.trim() ? "Task assigned." : "Assignment cleared."
+    );
+  }
+
+  async function saveWorkflowContext() {
+    await update(
+      {
+        sourceType: form.sourceType,
+        sourceObjectId: form.sourceObjectId.trim() || undefined,
+        roomId: form.roomId.trim() || undefined,
+        requiresProof: form.requiresProof,
+        requiresApproval: form.requiresApproval
+      },
+      "Task workflow context saved."
     );
   }
 
@@ -262,6 +311,19 @@ export default function FacilityTaskDetail() {
           <>
             <View style={styles.card}>
               <Text style={styles.sectionTitle}>Task Workflow</Text>
+              <Text style={styles.summaryLine}>
+                {sourceObjectLabel(item.sourceType)}{" "}
+                {item.sourceObjectId || item.sourceId
+                  ? String(item.sourceObjectId ?? item.sourceId)
+                  : "source not linked"}
+                {item.roomId || item.linkedRoomId
+                  ? ` | Room: ${String(item.roomId ?? item.linkedRoomId)}`
+                  : ""}
+              </Text>
+              <Text style={styles.summaryLine}>
+                {item.requiresProof ? "Proof required" : "Proof optional"} |{" "}
+                {item.requiresApproval ? "Approval required" : "Approval optional"}
+              </Text>
               {!canWrite ? (
                 <Text style={styles.muted}>
                   You do not have permission to update tasks.
@@ -347,6 +409,114 @@ export default function FacilityTaskDetail() {
                     </Text>
                   )}
 
+                  <View style={styles.formGroup}>
+                    <Text style={styles.label}>Source</Text>
+                    <View style={styles.chipRow}>
+                      {sourceTypes.map((sourceType) => (
+                        <TouchableOpacity
+                          key={sourceType}
+                          accessibilityRole="button"
+                          accessibilityLabel={`Set task detail source ${sourceType}`}
+                          onPress={() =>
+                            setForm((current) => ({ ...current, sourceType }))
+                          }
+                          style={[
+                            styles.chip,
+                            form.sourceType === sourceType && styles.chipSelected
+                          ]}
+                        >
+                          <Text
+                            style={[
+                              styles.chipText,
+                              form.sourceType === sourceType && styles.chipTextSelected
+                            ]}
+                          >
+                            {sourceType.replace(/_/g, " ")}
+                          </Text>
+                        </TouchableOpacity>
+                      ))}
+                    </View>
+                  </View>
+
+                  <View style={styles.formGroup}>
+                    <Text style={styles.label}>Linked source / room</Text>
+                    <View style={styles.inlineInputs}>
+                      <TextInput
+                        accessibilityLabel="Task detail source object"
+                        value={form.sourceObjectId}
+                        onChangeText={(sourceObjectId) =>
+                          setForm((current) => ({ ...current, sourceObjectId }))
+                        }
+                        style={[styles.input, styles.inlineInput]}
+                        placeholder="source object id"
+                      />
+                      <TextInput
+                        accessibilityLabel="Task detail room"
+                        value={form.roomId}
+                        onChangeText={(roomId) =>
+                          setForm((current) => ({ ...current, roomId }))
+                        }
+                        style={[styles.input, styles.inlineInput]}
+                        placeholder="room id"
+                      />
+                    </View>
+                  </View>
+
+                  <View style={styles.chipRow}>
+                    <TouchableOpacity
+                      accessibilityRole="button"
+                      accessibilityLabel="Toggle task detail proof required"
+                      onPress={() =>
+                        setForm((current) => ({
+                          ...current,
+                          requiresProof: !current.requiresProof
+                        }))
+                      }
+                      style={[styles.chip, form.requiresProof && styles.chipSelected]}
+                    >
+                      <Text
+                        style={[
+                          styles.chipText,
+                          form.requiresProof && styles.chipTextSelected
+                        ]}
+                      >
+                        Proof required
+                      </Text>
+                    </TouchableOpacity>
+                    <TouchableOpacity
+                      accessibilityRole="button"
+                      accessibilityLabel="Toggle task detail approval required"
+                      onPress={() =>
+                        setForm((current) => ({
+                          ...current,
+                          requiresApproval: !current.requiresApproval
+                        }))
+                      }
+                      style={[styles.chip, form.requiresApproval && styles.chipSelected]}
+                    >
+                      <Text
+                        style={[
+                          styles.chipText,
+                          form.requiresApproval && styles.chipTextSelected
+                        ]}
+                      >
+                        Approval required
+                      </Text>
+                    </TouchableOpacity>
+                  </View>
+
+                  <TouchableOpacity
+                    accessibilityRole="button"
+                    accessibilityLabel="Save task workflow context"
+                    onPress={saveWorkflowContext}
+                    disabled={saving}
+                    style={[styles.secondaryBtn, saving && styles.primaryBtnDisabled]}
+                  >
+                    <Text style={styles.secondaryBtnText}>
+                      {saving ? "Saving..." : "Save Workflow Context"}
+                    </Text>
+                  </TouchableOpacity>
+
                   <View style={styles.statusRow}>
                     <TouchableOpacity
                       accessibilityRole="button"
@@ -406,6 +576,21 @@ const styles = StyleSheet.create({
   form: { gap: 12 },
   formGroup: { gap: 8 },
   label: { fontSize: 12, opacity: 0.7 },
+  summaryLine: { color: "#334155", fontWeight: "700" },
+  chipRow: { flexDirection: "row", flexWrap: "wrap", gap: 8 },
+  chip: {
+    borderWidth: 1,
+    borderColor: "rgba(0,0,0,0.18)",
+    borderRadius: 999,
+    paddingHorizontal: 10,
+    paddingVertical: 7,
+    backgroundColor: "white"
+  },
+  chipSelected: { backgroundColor: "#0f172a", borderColor: "#0f172a" },
+  chipText: { color: "#0f172a", fontSize: 12, fontWeight: "800" },
+  chipTextSelected: { color: "white" },
+  inlineInputs: { flexDirection: "row", flexWrap: "wrap", gap: 8 },
+  inlineInput: { minWidth: 160, flexGrow: 1 },
   input: {
     borderWidth: 1,
     borderColor: "rgba(0,0,0,0.12)",
