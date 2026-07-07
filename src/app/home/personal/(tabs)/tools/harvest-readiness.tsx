@@ -3,6 +3,77 @@ import React from "react";
 import BackendCalculatorToolScreen, {
   tomorrow
 } from "@/features/personal/tools/BackendCalculatorToolScreen";
+import { saveToolRunAndCreateTasks } from "@/features/personal/tools/saveToolRunAndOpenJournal";
+
+function numberOrFallback(value: unknown, fallback: number) {
+  const number = Number(value);
+  return Number.isFinite(number) ? number : fallback;
+}
+
+function readinessTaskPlan(outputs: Record<string, any>, payload: Record<string, any>) {
+  const flowerDay = numberOrFallback(payload.flowerDay, 0);
+  const startDay = numberOrFallback(outputs.estimatedWindow?.startDay, flowerDay + 3);
+  const targetDay = numberOrFallback(
+    outputs.estimatedWindow?.targetDay,
+    outputs.harvestTask?.dueInDays
+      ? flowerDay + Number(outputs.harvestTask.dueInDays)
+      : flowerDay + 7
+  );
+  const recheckDueInDays = numberOrFallback(outputs.harvestTask?.dueInDays, 3);
+  const windowStartDueInDays = Math.max(1, Math.round(startDay - flowerDay));
+  const targetDueInDays = Math.max(
+    windowStartDueInDays,
+    Math.round(targetDay - flowerDay)
+  );
+  const readiness = String(outputs.readinessStatus || "harvest readiness").replaceAll(
+    "_",
+    " "
+  );
+  const warningText =
+    Array.isArray(outputs.warnings) && outputs.warnings.length
+      ? `\nWarnings: ${outputs.warnings.join("; ")}`
+      : "";
+
+  return [
+    {
+      title: outputs.harvestTask?.title || "Recheck harvest readiness",
+      priority: outputs.harvestTask?.priority || "medium",
+      dueDate: tomorrow(recheckDueInDays),
+      description: [
+        `Current readiness: ${readiness}.`,
+        "Recheck trichomes, pistils, aroma, bud swell, and whole-plant maturity.",
+        `Sample location: ${payload.sampleLocation || "mixed bud sites"}.`,
+        warningText.trim()
+      ]
+        .filter(Boolean)
+        .join("\n")
+    },
+    {
+      title: "Capture top and lower trichome photos",
+      priority: "medium" as const,
+      dueDate: tomorrow(recheckDueInDays),
+      description:
+        "Take clear photos from top and lower buds so harvest timing is not based on one sample site."
+    },
+    {
+      title: "Make harvest window decision",
+      priority: "high" as const,
+      dueDate: tomorrow(windowStartDueInDays),
+      description: [
+        `Estimated window starts around flower day ${startDay}.`,
+        `Target day is ${targetDay} for goal: ${payload.userGoal || "balanced"}.`,
+        "Decide whether to harvest all at once, delay, or partial harvest tops before lowers."
+      ].join("\n")
+    },
+    {
+      title: "Prepare dry/cure setup",
+      priority: "high" as const,
+      dueDate: tomorrow(Math.max(1, targetDueInDays - 1)),
+      description:
+        "Prepare dry space targets, jars/bags, labels, and post-harvest notes before cutting plants."
+    }
+  ];
+}
 
 export default function HarvestReadinessToolRoute() {
   return (
@@ -96,6 +167,28 @@ export default function HarvestReadinessToolRoute() {
         description:
           "Recheck trichomes, pistils, aroma, bud swell, and whole-plant maturity."
       })}
+      buildActions={({ outputs, payload, toolRun, growId, plantContext }) => [
+        {
+          key: "create-harvest-readiness-task-plan",
+          label: "Create Harvest Decision Tasks",
+          variant: "secondary",
+          pendingLabel: "Creating...",
+          disabled: !growId,
+          successMessage: "Created harvest decision tasks.",
+          onPress: async () => {
+            const result = await saveToolRunAndCreateTasks({
+              growId,
+              ...plantContext.toolRunContext,
+              toolKey: "harvest-readiness",
+              toolRunId: toolRun?.id || toolRun?._id,
+              input: payload,
+              output: outputs,
+              tasks: readinessTaskPlan(outputs, payload)
+            });
+            if (!result.ok) throw new Error(result.error);
+          }
+        }
+      ]}
     />
   );
 }
