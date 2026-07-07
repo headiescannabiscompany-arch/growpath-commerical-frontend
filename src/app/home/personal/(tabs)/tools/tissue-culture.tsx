@@ -3,6 +3,70 @@ import React from "react";
 import BackendCalculatorToolScreen, {
   tomorrow
 } from "@/features/personal/tools/BackendCalculatorToolScreen";
+import { saveToolRunAndCreateTasks } from "@/features/personal/tools/saveToolRunAndOpenJournal";
+
+function numberOrFallback(value: unknown, fallback: number) {
+  const number = Number(value);
+  return Number.isFinite(number) ? number : fallback;
+}
+
+function tissueCultureTaskPlan(
+  outputs: Record<string, any>,
+  payload: Record<string, any>
+) {
+  const projectName = String(outputs.projectName || payload.projectName || "TC Project");
+  const batchNumber = String(payload.batchNumber || "TC batch");
+  const stage = String(payload.stage || "initiation");
+  const transferDueDays = numberOrFallback(
+    outputs.nextTransferTasks?.[0]?.dueInDays,
+    numberOrFallback(payload.transfersDueDays, 14)
+  );
+  const failureModes = outputs.diagnosisRecord?.likelyFailureModes;
+  const failureSummary =
+    Array.isArray(failureModes) && failureModes.length
+      ? `Likely failure modes: ${failureModes.map((item: any) => item?.issue || item).join("; ")}`
+      : "";
+
+  return [
+    {
+      title: `Review contamination and browning: ${batchNumber}`,
+      priority: outputs.contaminationRate > 10 ? ("high" as const) : ("medium" as const),
+      dueDate: tomorrow(1),
+      description: [
+        `${projectName} is in ${stage}.`,
+        `Contaminated vessels: ${payload.contaminatedVessels || 0}; browning vessels: ${payload.browningVessels || 0}.`,
+        failureSummary,
+        "Cull or isolate contaminated vessels and note whether the issue is media, explant prep, or handling."
+      ]
+        .filter(Boolean)
+        .join("\n")
+    },
+    {
+      title: outputs.nextTransferTasks?.[0]?.title || `Transfer review: ${batchNumber}`,
+      priority: outputs.nextTransferTasks?.[0]?.priority || "medium",
+      dueDate: tomorrow(transferDueDays),
+      description:
+        "Review vessel IDs, media recipe, multiplication/rooting readiness, contamination, and transfer notes before moving cultures."
+    },
+    {
+      title: `Record rooting and acclimation counts: ${batchNumber}`,
+      priority: "medium" as const,
+      dueDate: tomorrow(Math.max(1, Math.min(transferDueDays, 7))),
+      description:
+        "Update rooted vessels, acclimated plants, stalled vessels, and survival rate so the protocol can be compared over time."
+    },
+    {
+      title: `Update TC SOP notes: ${batchNumber}`,
+      priority: "medium" as const,
+      dueDate: tomorrow(Math.max(1, transferDueDays + 1)),
+      description: [
+        `SOP version: ${payload.SOPVersion || "not set"}.`,
+        `Media recipe: ${payload.mediaRecipe || "not set"}.`,
+        "Capture what changed, what worked, and what should be adjusted before the next batch."
+      ].join("\n")
+    }
+  ];
+}
 
 export default function TissueCultureToolRoute() {
   return (
@@ -134,6 +198,28 @@ export default function TissueCultureToolRoute() {
         description:
           "Review vessel IDs, contamination, rooting status, media, and transfer notes."
       })}
+      buildActions={({ outputs, payload, toolRun, growId, plantContext }) => [
+        {
+          key: "create-tissue-culture-workflow-tasks",
+          label: "Create TC Workflow Tasks",
+          variant: "secondary",
+          pendingLabel: "Creating...",
+          disabled: !growId,
+          successMessage: "Created tissue culture workflow tasks.",
+          onPress: async () => {
+            const result = await saveToolRunAndCreateTasks({
+              growId,
+              ...plantContext.toolRunContext,
+              toolKey: "tissue-culture",
+              toolRunId: toolRun?.id || toolRun?._id,
+              input: payload,
+              output: outputs,
+              tasks: tissueCultureTaskPlan(outputs, payload)
+            });
+            if (!result.ok) throw new Error(result.error);
+          }
+        }
+      ]}
     />
   );
 }
