@@ -3,6 +3,64 @@ import React from "react";
 import BackendCalculatorToolScreen, {
   tomorrow
 } from "@/features/personal/tools/BackendCalculatorToolScreen";
+import { saveToolRunAndCreateTasks } from "@/features/personal/tools/saveToolRunAndOpenJournal";
+
+function numberOrFallback(value: unknown, fallback: number) {
+  const number = Number(value);
+  return Number.isFinite(number) ? number : fallback;
+}
+
+function cloneRootingTaskPlan(
+  outputs: Record<string, any>,
+  payload: Record<string, any>
+) {
+  const cloneCount = numberOrFallback(payload.cloneCount, 0);
+  const rootedCount = numberOrFallback(payload.rootedCount, 0);
+  const daysSinceCut = numberOrFallback(payload.daysSinceCut, 0);
+  const followUpDueDays = numberOrFallback(outputs.followUpTask?.dueInDays, 2);
+  const bottlenecks = Array.isArray(outputs.likelyBottlenecks)
+    ? outputs.likelyBottlenecks
+        .slice(0, 3)
+        .map((item: any) => item?.issue || item)
+        .join("; ")
+    : "";
+
+  return [
+    {
+      title: outputs.followUpTask?.title || "Check clone rooting tray",
+      priority: outputs.followUpTask?.priority || "medium",
+      dueDate: tomorrow(followUpDueDays),
+      description: [
+        `Day ${daysSinceCut} after cut; ${rootedCount}/${cloneCount} rooted.`,
+        "Inspect dome humidity, medium moisture, leaf turgor, stem base, callus, and visible roots.",
+        bottlenecks ? `Likely bottlenecks: ${bottlenecks}` : ""
+      ]
+        .filter(Boolean)
+        .join("\n")
+    },
+    {
+      title: "Photograph clone tray and weak cuts",
+      priority: "medium" as const,
+      dueDate: tomorrow(followUpDueDays),
+      description:
+        "Take tray-wide and close-up photos of weak, wilted, stalled, or rooted cuts for comparison."
+    },
+    {
+      title: "Adjust clone environment if needed",
+      priority: outputs.riskLevel === "high" ? ("high" as const) : ("medium" as const),
+      dueDate: tomorrow(1),
+      description:
+        "Review humidity, temperature, light intensity, airflow, and medium moisture before changing the whole tray."
+    },
+    {
+      title: "Update clone survival and transplant decision",
+      priority: "medium" as const,
+      dueDate: tomorrow(Math.max(3, followUpDueDays + 3)),
+      description:
+        "Update rooted, failed, and stalled counts; decide which clones are ready to pot, hold, or cull."
+    }
+  ];
+}
 
 export default function CloneRootingToolRoute() {
   return (
@@ -124,6 +182,28 @@ export default function CloneRootingToolRoute() {
         description:
           "Inspect dome humidity, leaf turgor, stem base, and callus/root progress."
       })}
+      buildActions={({ outputs, payload, toolRun, growId, plantContext }) => [
+        {
+          key: "create-clone-rooting-tasks",
+          label: "Create Clone Follow-up Tasks",
+          variant: "secondary",
+          pendingLabel: "Creating...",
+          disabled: !growId,
+          successMessage: "Created clone follow-up tasks.",
+          onPress: async () => {
+            const result = await saveToolRunAndCreateTasks({
+              growId,
+              ...plantContext.toolRunContext,
+              toolKey: "clone-rooting",
+              toolRunId: toolRun?.id || toolRun?._id,
+              input: payload,
+              output: outputs,
+              tasks: cloneRootingTaskPlan(outputs, payload)
+            });
+            if (!result.ok) throw new Error(result.error);
+          }
+        }
+      ]}
     />
   );
 }
