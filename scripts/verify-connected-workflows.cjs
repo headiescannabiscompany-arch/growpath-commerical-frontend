@@ -32,6 +32,7 @@ const checks = [
       "tests/unit/StorefrontRoute.test.tsx",
       "tests/unit/CommercialFeedRoute.test.tsx",
       "tests/unit/CommercialLivesRoute.test.tsx",
+      "tests/unit/FacilityRoomsRoute.test.tsx",
       "tests/unit/integrations_growlink.test.tsx",
       "tests/unit/SoilBuilderToolScreen.test.tsx",
       "tests/unit/PersonalTaskCenterRoute.test.tsx",
