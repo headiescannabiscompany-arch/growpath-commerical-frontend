@@ -99,6 +99,31 @@ export default function AlertCenterRoute() {
     () => alerts.filter((alert) => filterAlert(alert, filter)),
     [alerts, filter]
   );
+  const alertStats = useMemo(
+    () => [
+      {
+        label: "Active",
+        value: alerts.filter((alert) => filterAlert(alert, "active")).length,
+        tone: "blue" as const
+      },
+      {
+        label: "Today",
+        value: alerts.filter((alert) => filterAlert(alert, "today")).length,
+        tone: "green" as const
+      },
+      {
+        label: "Critical",
+        value: alerts.filter((alert) => filterAlert(alert, "critical")).length,
+        tone: "red" as const
+      },
+      {
+        label: "Resolved",
+        value: alerts.filter((alert) => filterAlert(alert, "resolved")).length,
+        tone: "slate" as const
+      }
+    ],
+    [alerts]
+  );
 
   async function patchAlert(
     alert: AlertRow,
@@ -230,6 +255,23 @@ export default function AlertCenterRoute() {
         Resolve, snooze, or turn alerts into source-linked tasks across storefront,
         product, course, live, grow, sensor, and facility workflows.
       </Text>
+      <View style={styles.metricGrid}>
+        {alertStats.map((item) => (
+          <View
+            key={item.label}
+            style={[
+              styles.metricCard,
+              item.tone === "red" && styles.redMetric,
+              item.tone === "green" && styles.greenMetric,
+              item.tone === "blue" && styles.blueMetric,
+              item.tone === "slate" && styles.slateMetric
+            ]}
+          >
+            <Text style={styles.metricValue}>{item.value}</Text>
+            <Text style={styles.metricLabel}>{item.label}</Text>
+          </View>
+        ))}
+      </View>
 
       <View style={styles.panel}>
         <Text style={styles.formTitle}>Alert Schedule Actions</Text>
@@ -288,6 +330,21 @@ const styles = StyleSheet.create({
   },
   title: { color: "#0F172A", fontSize: 26, fontWeight: "900" },
   subtitle: { color: "#475569", fontWeight: "700", lineHeight: 20 },
+  metricGrid: { flexDirection: "row", flexWrap: "wrap", gap: 8 },
+  metricCard: {
+    borderRadius: 8,
+    borderWidth: 1,
+    flexGrow: 1,
+    minWidth: 120,
+    paddingHorizontal: 12,
+    paddingVertical: 10
+  },
+  redMetric: { backgroundColor: "#FEF2F2", borderColor: "#FECACA" },
+  greenMetric: { backgroundColor: "#ECFDF5", borderColor: "#A7F3D0" },
+  blueMetric: { backgroundColor: "#EFF6FF", borderColor: "#BFDBFE" },
+  slateMetric: { backgroundColor: "#F8FAFC", borderColor: "#E2E8F0" },
+  metricValue: { color: "#0F172A", fontSize: 20, fontWeight: "900" },
+  metricLabel: { color: "#475569", fontSize: 11, fontWeight: "900" },
   panel: {
     backgroundColor: "#FFFFFF",
     borderColor: "#CBD5E1",
