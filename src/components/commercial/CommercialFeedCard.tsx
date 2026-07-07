@@ -1,7 +1,6 @@
-import React, { useState } from "react";
-import { View, Text, Pressable, ActivityIndicator } from "react-native";
+import React from "react";
+import { View, Text, Pressable } from "react-native";
 import { useAuth } from "../../auth/AuthContext";
-import { api } from "../../api/client"; // your universal API client
 
 type Author = {
   id: string;
@@ -21,7 +20,11 @@ type CommercialPost = {
   tags?: string[];
   location?: string;
   likeCount: number;
-  commentCount: number;
+  linkedProductId?: string;
+  linkedCourseId?: string;
+  linkedLiveId?: string;
+  linkedForumThreadId?: string;
+  storefrontSlug?: string;
   createdAt: string;
 };
 
@@ -31,47 +34,18 @@ type Props = {
 
 export default function CommercialFeedCard({ post }: Props) {
   const { user } = useAuth();
-
-  const [likeCount, setLikeCount] = useState(post.likeCount || 0);
-  const [liked, setLiked] = useState(false); // backend doesn't return "liked yet"
-  const [loading, setLoading] = useState(false);
-  const [error, setError] = useState<string | null>(null);
-
   const isOwnPost = user?.id === post.author?.id;
-
-  async function handleLikeToggle() {
-    if (loading) return;
-
-    setLoading(true);
-    setError(null);
-
-    // optimistic update
-    const prevLiked = liked;
-    const prevCount = likeCount;
-
-    if (liked) {
-      setLiked(false);
-      setLikeCount((c) => Math.max(c - 1, 0));
-    } else {
-      setLiked(true);
-      setLikeCount((c) => c + 1);
-    }
-
-    try {
-      if (prevLiked) {
-        await api.post(`/api/commercial/unlike/${post.id}`);
-      } else {
-        await api.post(`/api/commercial/like/${post.id}`);
-      }
-    } catch {
-      // rollback on error
-      setLiked(prevLiked);
-      setLikeCount(prevCount);
-      setError("Could not update like");
-    } finally {
-      setLoading(false);
-    }
-  }
+  const destinationLabel = post.linkedProductId
+    ? "View Product"
+    : post.linkedCourseId
+      ? "View Course"
+      : post.linkedLiveId
+        ? "View Live"
+        : post.storefrontSlug
+          ? "Visit Storefront"
+          : post.linkedForumThreadId
+            ? "Open Forum Q&A"
+            : "Learn More";
 
   return (
     <View
@@ -100,37 +74,26 @@ export default function CommercialFeedCard({ post }: Props) {
 
       <Text style={{ fontSize: 15, marginBottom: 8 }}>{post.body}</Text>
 
-      {/* Meta */}
-      <View style={{ flexDirection: "row", alignItems: "center" }}>
+      <View style={{ flexDirection: "row", alignItems: "center", flexWrap: "wrap" }}>
         <Pressable
-          onPress={handleLikeToggle}
           style={{
             paddingVertical: 6,
             paddingHorizontal: 10,
             borderRadius: 8,
             borderWidth: 1,
-            marginRight: 12,
-            opacity: loading ? 0.6 : 1
+            marginRight: 12
           }}
         >
-          {loading ? (
-            <ActivityIndicator size="small" />
-          ) : (
-            <Text>{liked ? "Liked" : "Like"}</Text>
-          )}
+          <Text>{destinationLabel}</Text>
         </Pressable>
 
         <Text style={{ opacity: 0.7 }}>
-          {likeCount} likes - {post.commentCount || 0} comments
+          {Number(post.likeCount || 0)} campaign engagements
         </Text>
       </View>
 
-      {error ? (
-        <Text style={{ marginTop: 6, color: "red", fontSize: 12 }}>{error}</Text>
-      ) : null}
-
       {isOwnPost ? (
-        <Text style={{ marginTop: 6, fontSize: 11, opacity: 0.5 }}>Your post</Text>
+        <Text style={{ marginTop: 6, fontSize: 11, opacity: 0.5 }}>Your campaign</Text>
       ) : null}
     </View>
   );
