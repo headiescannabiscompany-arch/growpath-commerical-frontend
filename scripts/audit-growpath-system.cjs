@@ -331,6 +331,16 @@ function routeIsRedirectOnly(routes, route, target) {
   );
 }
 
+function routeUsesTaskCenter(routes, route) {
+  const source = routeSource(routes, route);
+  if (!source) return false;
+  return (
+    /Task Center \/ Schedule|PersonalTaskCenterRoute/.test(source) &&
+    /\blistPersonalTasks\b/.test(source) &&
+    /\bSchedulePicker\b/.test(source)
+  );
+}
+
 function keywordHits(searchable, keywords) {
   const hits = [];
   for (const keyword of keywords) {
@@ -419,6 +429,10 @@ function main() {
     "/home/personal/tasks",
     "/home/personal/grows"
   );
+  const topLevelTasksTaskCenter = routeUsesTaskCenter(
+    files.routes,
+    "/home/personal/tasks"
+  );
 
   const decisionChecks = {
     topLevelLogsRouteExists,
@@ -426,7 +440,9 @@ function main() {
     topLevelLogsVisibleModule: topLevelLogsRouteExists && !topLevelLogsRedirectOnly,
     topLevelTasksRouteExists,
     topLevelTasksRedirectOnly,
-    topLevelTasksVisibleModule: topLevelTasksRouteExists && !topLevelTasksRedirectOnly,
+    topLevelTasksTaskCenter,
+    topLevelTasksVisibleModule:
+      topLevelTasksRouteExists && !topLevelTasksRedirectOnly && topLevelTasksTaskCenter,
     facilityInsightsRouteExists:
       [...routeSet].some((route) => /facility.*insights/i.test(route)) ||
       files.searchable.some((file) => file.rel === "backend/routes/facility.insights.js"),
@@ -482,7 +498,7 @@ function main() {
     `- Top-level Logs visible module: ${decisionChecks.topLevelLogsVisibleModule}`,
     `- Top-level Logs redirect-only stale-link guard: ${decisionChecks.topLevelLogsRedirectOnly}`,
     `- Top-level Tasks visible module: ${decisionChecks.topLevelTasksVisibleModule}`,
-    `- Top-level Tasks redirect-only stale-link guard: ${decisionChecks.topLevelTasksRedirectOnly}`,
+    `- Top-level Tasks uses shared Task Center/Schedule: ${decisionChecks.topLevelTasksTaskCenter}`,
     `- Facility Insights route exists: ${decisionChecks.facilityInsightsRouteExists}`,
     `- Commercial AI/business-helper copy hits outside build docs: ${decisionChecks.commercialAiCopyHits.length}`,
     "",
