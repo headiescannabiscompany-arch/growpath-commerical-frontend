@@ -110,8 +110,11 @@ describe("NpkToolScreen", () => {
       outputs: {
         formula: "Kelp meal recipe",
         totals: { Nppm: 20, Pppm: 4.36, Kppm: 8.3 },
-        warnings: [],
-        releaseTimeline: {}
+        warnings: ["Verify source labels before publishing."],
+        releaseTimeline: {
+          days_7_21: [{ name: "Kelp meal", form: "meal", confidence: "medium" }]
+        },
+        sourceConfidence: { overall: "medium", counts: { high: 0, medium: 1, low: 0 } }
       },
       toolRun: {
         id: "toolrun-1",
@@ -222,6 +225,68 @@ describe("NpkToolScreen", () => {
             expect.objectContaining({ title: "Check response to Kelp veg feed" }),
             expect.objectContaining({ title: "Review next adjustment for Kelp veg feed" })
           ])
+        })
+      )
+    );
+  });
+
+  it("converts calculated recipes into commercial-ready product draft fields", async () => {
+    const screen = render(<NpkToolScreen />);
+
+    fireEvent.changeText(screen.getByPlaceholderText("e.g. Veg base"), "Kelp veg feed");
+    fireEvent.changeText(screen.getByPlaceholderText("Product name"), "Kelp meal");
+    fireEvent.changeText(screen.getByPlaceholderText("Amount"), "100");
+    fireEvent.changeText(screen.getByLabelText("NPK ingredient 1 N percent"), "3");
+    fireEvent.changeText(screen.getByLabelText("NPK ingredient 1 P2O5 percent"), "1");
+    fireEvent.changeText(screen.getByLabelText("NPK ingredient 1 K2O percent"), "2");
+
+    fireEvent.press(screen.getByText("Calculate recipe"));
+
+    await waitFor(() => expect(screen.getByText("NPK recipe result")).toBeTruthy());
+
+    fireEvent.press(screen.getByText("Convert to Product Draft"));
+
+    await waitFor(() =>
+      expect(mockCreateProduct).toHaveBeenCalledWith(
+        expect.objectContaining({
+          name: "Kelp veg feed",
+          category: "nutrient_recipe",
+          status: "draft",
+          linkedToolRunId: "toolrun-1",
+          fullDescription: expect.stringContaining("Target N-P-K"),
+          specs: expect.objectContaining({
+            source: "npk_feed_recipe_builder",
+            targetNpk: { N: undefined, P: undefined, K: undefined },
+            ingredients: expect.arrayContaining([
+              expect.objectContaining({
+                name: "Kelp meal",
+                guaranteedAnalysis: expect.objectContaining({
+                  N: 3,
+                  P2O5: 1,
+                  K2O: 2
+                }),
+                elementalAnalysis: expect.objectContaining({
+                  P: 0.4364,
+                  K: 1.6602
+                })
+              })
+            ]),
+            guaranteedAnalysisEstimate: { Nppm: 20, Pppm: 4.36, Kppm: 8.3 },
+            elementalEstimate: { Nppm: 20, Pppm: 4.36, Kppm: 8.3 },
+            directions: expect.arrayContaining([
+              "Kelp meal recipe",
+              expect.stringContaining("Verify guaranteed analysis")
+            ]),
+            applicationRate: { batchVolume: 5, batchUnit: "gal" },
+            releaseCurve: {
+              days_7_21: [{ name: "Kelp meal", form: "meal", confidence: "medium" }]
+            },
+            warnings: expect.arrayContaining([
+              "Verify source labels before publishing.",
+              expect.stringContaining("Draft product created")
+            ])
+          }),
+          growInterests: expect.arrayContaining(["soil", "NPK", "recipe building"])
         })
       )
     );

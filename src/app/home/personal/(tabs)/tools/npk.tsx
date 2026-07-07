@@ -457,6 +457,19 @@ export default function NpkToolScreen() {
     const payload = recipePayload();
     const linkedRecipeId = selectedRecipeId || toolRun?.linkedRecipeId || null;
     const linkedToolRunId = toolRun?._id || toolRun?.id || null;
+    const normalizedProducts = payload.products || [];
+    const primaryFormula = result?.formula || "";
+    const warnings = [
+      ...(Array.isArray(result?.warnings) ? result.warnings : []),
+      result?.releaseDisclaimer,
+      "Draft product created from calculator output. Review label, batch, image, price, Stripe, stock, and compliance fields before publishing."
+    ].filter(Boolean);
+    const directions = [
+      primaryFormula,
+      "Verify guaranteed analysis, source water, final EC/pH, and stage fit before use.",
+      "Keep release timing visible on the product page when this draft is used for a soil or dry amendment product."
+    ].filter(Boolean);
+
     return {
       name: recipeName.trim() || "NPK feed recipe draft",
       category:
@@ -467,7 +480,7 @@ export default function NpkToolScreen() {
             : "nutrient_recipe",
       shortDescription:
         "Draft created from GrowPath NPK / Feed Recipe Builder. Review label, batch, image, price, Stripe, and stock before publishing.",
-      description: [
+      fullDescription: [
         `Mode: ${recipeMode.replaceAll("_", " ")}`,
         `Stage: ${stage}`,
         `Medium: ${medium}`,
@@ -489,11 +502,21 @@ export default function NpkToolScreen() {
         batchUnit: payload.batchUnit,
         stage,
         medium,
-        products: payload.products,
+        products: normalizedProducts,
+        ingredients: normalizedProducts,
+        guaranteedAnalysisEstimate:
+          result?.guaranteedAnalysisEstimate || result?.totals || null,
+        elementalEstimate: result?.elementalEstimate || result?.totals || null,
+        directions,
+        applicationRate: result?.applicationRate || {
+          batchVolume: payload.batchVolume,
+          batchUnit: payload.batchUnit
+        },
+        releaseCurve: result?.releaseCurve || result?.releaseTimeline || null,
+        releaseTimeline: result?.releaseTimeline,
         calculatedTotals: result?.totals,
         availabilityEstimate: result?.availabilityEstimate,
-        releaseTimeline: result?.releaseTimeline,
-        warnings: result?.warnings,
+        warnings,
         sourceConfidence: result?.sourceConfidence
       },
       growInterests: [
