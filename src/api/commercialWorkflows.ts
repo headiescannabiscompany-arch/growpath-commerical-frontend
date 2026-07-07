@@ -130,6 +130,8 @@ export type CommercialLiveEvent = {
   timezone?: string;
   twitchChannelName?: string;
   twitchChannelId?: string;
+  twitchEmbedUrl?: string;
+  eventSubStatus?: string;
   relatedCourseId?: string;
   relatedProductId?: string;
   relatedFeedPostId?: string;

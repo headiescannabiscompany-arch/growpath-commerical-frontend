@@ -19,6 +19,9 @@ type LiveForm = {
   scheduledEnd: string;
   timezone: string;
   twitchChannelName: string;
+  twitchChannelId: string;
+  twitchEmbedUrl: string;
+  eventSubStatus: string;
   relatedCourseId: string;
   relatedProductId: string;
   relatedFeedPostId: string;
@@ -35,6 +38,9 @@ const EMPTY_FORM: LiveForm = {
   scheduledEnd: "",
   timezone: "America/New_York",
   twitchChannelName: "",
+  twitchChannelId: "",
+  twitchEmbedUrl: "",
+  eventSubStatus: "not_connected",
   relatedCourseId: "",
   relatedProductId: "",
   relatedFeedPostId: "",
@@ -117,6 +123,9 @@ export default function CommercialLivesRoute() {
         scheduledEnd: form.scheduledEnd.trim() || undefined,
         timezone: form.timezone.trim() || "America/New_York",
         twitchChannelName: form.twitchChannelName.trim() || undefined,
+        twitchChannelId: form.twitchChannelId.trim() || undefined,
+        twitchEmbedUrl: form.twitchEmbedUrl.trim() || undefined,
+        eventSubStatus: form.eventSubStatus.trim() || "not_connected",
         relatedCourseId: form.relatedCourseId.trim() || undefined,
         relatedProductId: form.relatedProductId.trim() || undefined,
         relatedFeedPostId: form.relatedFeedPostId.trim() || undefined,
@@ -226,6 +235,36 @@ export default function CommercialLivesRoute() {
             accessibilityLabel="Commercial live Twitch channel"
             placeholder="Twitch channel"
             style={styles.input}
+          />
+          <TextInput
+            value={form.twitchChannelId}
+            onChangeText={(twitchChannelId) =>
+              setForm((prev) => ({ ...prev, twitchChannelId }))
+            }
+            accessibilityLabel="Commercial live Twitch channel ID"
+            placeholder="Twitch channel ID"
+            style={styles.input}
+            autoCapitalize="none"
+          />
+          <TextInput
+            value={form.twitchEmbedUrl}
+            onChangeText={(twitchEmbedUrl) =>
+              setForm((prev) => ({ ...prev, twitchEmbedUrl }))
+            }
+            accessibilityLabel="Commercial live Twitch embed URL"
+            placeholder="Twitch embed URL"
+            style={styles.input}
+            autoCapitalize="none"
+          />
+          <TextInput
+            value={form.eventSubStatus}
+            onChangeText={(eventSubStatus) =>
+              setForm((prev) => ({ ...prev, eventSubStatus }))
+            }
+            accessibilityLabel="Commercial live Twitch EventSub status"
+            placeholder="EventSub status"
+            style={styles.input}
+            autoCapitalize="none"
           />
           <TextInput
             value={form.scheduledStart}
@@ -353,7 +392,9 @@ export default function CommercialLivesRoute() {
                     live.status || "scheduled",
                     live.visibility || "public",
                     live.scheduledStart,
-                    live.twitchChannelName && `Twitch: ${live.twitchChannelName}`
+                    live.twitchChannelName && `Twitch: ${live.twitchChannelName}`,
+                    live.twitchChannelId && `Channel ID ${live.twitchChannelId}`,
+                    live.eventSubStatus && `EventSub ${live.eventSubStatus}`
                   ]
                     .filter(Boolean)
                     .join(" | ")}
@@ -367,6 +408,7 @@ export default function CommercialLivesRoute() {
                     live.relatedCourseId && `Course ${live.relatedCourseId}`,
                     live.relatedFeedPostId && `Feed ${live.relatedFeedPostId}`,
                     live.forumThreadId && `Forum/Q&A ${live.forumThreadId}`,
+                    live.twitchEmbedUrl && `Embed ${live.twitchEmbedUrl}`,
                     live.replayUrl && `Replay ${live.replayUrl}`
                   ]
                     .filter(Boolean)

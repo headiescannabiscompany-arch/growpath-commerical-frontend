@@ -47,6 +47,9 @@ describe("CommercialLivesRoute", () => {
               visibility: "public",
               scheduledStart: "2026-07-10T20:00:00Z",
               twitchChannelName: "growpath",
+              twitchChannelId: "12345",
+              twitchEmbedUrl: "https://player.twitch.tv/?channel=growpath",
+              eventSubStatus: "connected",
               relatedProductId: "product-1",
               relatedCourseId: "course-1",
               relatedFeedPostId: "campaign-1",
@@ -73,6 +76,11 @@ describe("CommercialLivesRoute", () => {
     expect(screen.getByText(/Course course-1/)).toBeTruthy();
     expect(screen.getByText(/Feed campaign-1/)).toBeTruthy();
     expect(screen.getByText(/Forum\/Q&A thread-1/)).toBeTruthy();
+    expect(screen.getByText(/Channel ID 12345/)).toBeTruthy();
+    expect(screen.getByText(/EventSub connected/)).toBeTruthy();
+    expect(
+      screen.getByText(/Embed https:\/\/player.twitch.tv\/\?channel=growpath/)
+    ).toBeTruthy();
     expect(screen.getByText(/Replay https:\/\/twitch.tv\/videos\/1/)).toBeTruthy();
 
     fireEvent.changeText(
@@ -86,6 +94,18 @@ describe("CommercialLivesRoute", () => {
     fireEvent.changeText(
       screen.getByLabelText("Commercial live Twitch channel"),
       "livingsoillabs"
+    );
+    fireEvent.changeText(
+      screen.getByLabelText("Commercial live Twitch channel ID"),
+      "67890"
+    );
+    fireEvent.changeText(
+      screen.getByLabelText("Commercial live Twitch embed URL"),
+      "https://player.twitch.tv/?channel=livingsoillabs"
+    );
+    fireEvent.changeText(
+      screen.getByLabelText("Commercial live Twitch EventSub status"),
+      "pending"
     );
     fireEvent.changeText(
       screen.getByLabelText("Commercial live scheduled start"),
@@ -123,6 +143,9 @@ describe("CommercialLivesRoute", () => {
           scheduledStart: "2026-07-17T21:00:00Z",
           timezone: "America/New_York",
           twitchChannelName: "livingsoillabs",
+          twitchChannelId: "67890",
+          twitchEmbedUrl: "https://player.twitch.tv/?channel=livingsoillabs",
+          eventSubStatus: "pending",
           relatedCourseId: "course-veg",
           relatedProductId: "product-veg",
           relatedFeedPostId: "campaign-veg",
