@@ -263,4 +263,40 @@ describe("FacilityRoomsTab", () => {
       expect(screen.getByText("Created 2 rooms and 7 devices from Pulse.")).toBeTruthy()
     );
   });
+
+  it("cleans provider/controller prefixes when suggesting imported facility rooms", async () => {
+    mockFetchRooms.mockResolvedValue([]);
+    mockListEquipment.mockResolvedValue([]);
+
+    const screen = render(<FacilityRoomsTab />);
+
+    await waitFor(() =>
+      expect(screen.getByText("Controller Room Import Preview")).toBeTruthy()
+    );
+
+    fireEvent.changeText(screen.getByLabelText("Facility import provider"), "TrolMaster");
+    fireEvent.changeText(
+      screen.getByLabelText("Facility import device list"),
+      "TrolMaster Hydro-X Pro Flower Room 2 Temp/RH\nPulse Veg Room CO2"
+    );
+
+    expect(screen.getByText("Flower Room 2")).toBeTruthy();
+    expect(screen.getByText("Veg Room")).toBeTruthy();
+    expect(screen.queryByText("TrolMaster Hydro-X Pro Flower Room 2")).toBeNull();
+
+    fireEvent.press(screen.getByLabelText("Create imported facility rooms"));
+
+    await waitFor(() =>
+      expect(mockCreateRoom).toHaveBeenCalledWith("facility-1", {
+        name: "Flower Room 2",
+        roomType: "flower",
+        trackingMode: "batch"
+      })
+    );
+    expect(mockCreateRoom).toHaveBeenCalledWith("facility-1", {
+      name: "Veg Room",
+      roomType: "veg",
+      trackingMode: "batch"
+    });
+  });
 });

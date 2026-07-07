@@ -75,6 +75,10 @@ function inferRoomType(name: string) {
 
 function inferRoomName(raw: string) {
   return raw
+    .replace(
+      /\b(pulse|trolmaster|hydro\s*[- ]?\s*x\s*pro|hydro\s*[- ]?\s*x|growlink|aroya|sensorpush|ubibot|aranet|meter|zentra|hobolink|hobo|monnit)\b/gi,
+      ""
+    )
     .replace(/\b(temp|temperature|rh|humidity|co2|vpd|sensor|probe)\b/gi, "")
     .replace(
       /\b(dew|point|ppfd|dli|substrate|soil|media|root|moisture|ec|ph|irrigation|watering|alarm|alert|pump|valve|reservoir|offline|fault)\b/gi,

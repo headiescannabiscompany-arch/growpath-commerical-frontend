@@ -77,6 +77,10 @@ const metricPatterns: Array<[RegExp, string]> = [
 
 function cleanRoomName(value: string) {
   const clean = value
+    .replace(
+      /\b(pulse|trolmaster|hydro\s*[- ]?\s*x\s*pro|hydro\s*[- ]?\s*x|growlink|aroya|sensorpush|ubibot|aranet|meter|zentra|hobolink|hobo|monnit)\b/gi,
+      ""
+    )
     .replace(/\b(temp|temperature|rh|humidity|vpd|co2|light|ppfd|par)\b/gi, "")
     .replace(/\b(sensor|probe|module|controller|device|channel|monitor)\b/gi, "")
     .replace(/\s*[-_/]\s*/g, " ")

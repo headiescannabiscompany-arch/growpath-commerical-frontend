@@ -224,4 +224,35 @@ describe("Data Integrations Growlink flow", () => {
 
     expect(mockCreateTelemetrySource).not.toHaveBeenCalled();
   });
+
+  it("removes provider/controller prefixes from suggested room names", async () => {
+    mockListTelemetrySources.mockResolvedValue([]);
+    mockListGrowlinkControllers.mockResolvedValue([
+      {
+        id: "controller-prefixed",
+        name: "Hydro-X Pro",
+        serialNumber: "TM-001",
+        timeZoneId: "America/New_York",
+        modules: [
+          { id: "module-prefixed", name: "TrolMaster Hydro-X Pro Flower Room 2 CO2" }
+        ]
+      }
+    ]);
+
+    const screen = render(<DataIntegrationsScreen />);
+
+    await waitFor(() =>
+      expect(screen.getByText("Growlink read-only telemetry")).toBeTruthy()
+    );
+
+    fireEvent.changeText(
+      screen.getByPlaceholderText("Growlink email"),
+      "grower@example.com"
+    );
+    fireEvent.changeText(screen.getByPlaceholderText("Growlink password"), "secret");
+    fireEvent.press(screen.getByText("Verify + load controllers"));
+
+    await waitFor(() => expect(screen.getByText("Suggested room: Flower Room 2")).toBeTruthy());
+    expect(screen.queryByText("Suggested room: TrolMaster Hydro-X Pro Flower Room 2")).toBeNull();
+  });
 });
