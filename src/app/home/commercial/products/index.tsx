@@ -565,7 +565,7 @@ export default function CommercialProductsRoute() {
           records
         </Text>
         <View style={styles.actions}>
-          <ActionLink href="/home/commercial/inventory" label="Inventory" />
+          <ActionLink href="/home/commercial/inventory" label="Inventory Support" />
           <ActionLink href="/home/commercial/courses" label="Courses" />
         </View>
       </AppCard>
@@ -577,7 +577,7 @@ export default function CommercialProductsRoute() {
           should feature Products and Product Lines, not raw inventory rows.
         </Text>
         <View style={styles.actions}>
-          <ActionLink href="/home/commercial/inventory" label="Open Inventory" />
+          <ActionLink href="/home/commercial/inventory" label="Open Inventory Support" />
         </View>
       </AppCard>
     </AppPage>

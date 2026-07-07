@@ -72,12 +72,12 @@ export default function CommercialInventoryCreateRoute() {
 
   return (
     <View style={styles.container}>
-      <Text style={styles.h1}>Create Inventory Item</Text>
+      <Text style={styles.h1}>Create Inventory Support Item</Text>
       <Text style={styles.helpText}>
-        Commercial inventory supports stock for products, plants, ingredients, packaging,
-        genetics, equipment, courses, services, and retail items. Product records still
-        explain and sell the item; inventory tracks quantity, cost, supplier, and
-        location.
+        Commercial inventory support tracks stock behind products, batches/lots, plants,
+        ingredients, packaging, genetics, equipment, courses, services, and retail items.
+        Product records still explain and sell the item; inventory support tracks
+        quantity, cost, supplier, and location.
       </Text>
       <TextInput
         value={name}
@@ -172,8 +172,8 @@ export default function CommercialInventoryCreateRoute() {
       <TextInput
         value={linkedGrowId}
         onChangeText={setLinkedGrowId}
-        accessibilityLabel="Commercial inventory linked grow"
-        placeholder="Linked grow ID"
+        accessibilityLabel="Commercial inventory linked product trial grow"
+        placeholder="Linked product trial grow ID"
         autoCapitalize="none"
         style={styles.input}
       />
@@ -192,7 +192,9 @@ export default function CommercialInventoryCreateRoute() {
         accessibilityLabel="Create commercial inventory item"
         style={[styles.button, !canSave && styles.disabled]}
       >
-        <Text style={styles.buttonText}>{saving ? "Saving..." : "Create Item"}</Text>
+        <Text style={styles.buttonText}>
+          {saving ? "Saving..." : "Create Support Item"}
+        </Text>
       </Pressable>
     </View>
   );

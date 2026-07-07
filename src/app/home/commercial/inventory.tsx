@@ -35,7 +35,7 @@ function pickId(x: AnyRec): string {
 }
 
 function pickTitle(x: AnyRec): string {
-  return String(x?.name ?? x?.title ?? x?.label ?? x?.sku ?? "Inventory Item");
+  return String(x?.name ?? x?.title ?? x?.label ?? x?.sku ?? "Inventory Support Item");
 }
 
 function pickSubtitle(x: AnyRec): string {
@@ -145,12 +145,12 @@ export default function CommercialInventoryRoute() {
   if (ent.mode !== "commercial") return null;
 
   return (
-    <ScreenBoundary title="Inventory">
+    <ScreenBoundary title="Inventory Support">
       <View style={styles.container}>
         {resolved.error ? <InlineError error={resolved.error} /> : null}
 
         <View style={styles.headerRow}>
-          <Text style={styles.h1}>Commercial Inventory</Text>
+          <Text style={styles.h1}>Commercial Inventory Support</Text>
           <View style={styles.headerActions}>
             <Text style={styles.muted}>{items.length} items</Text>
             {canCreate ? (
@@ -167,7 +167,7 @@ export default function CommercialInventoryRoute() {
         {loading ? (
           <View style={styles.loading}>
             <ActivityIndicator />
-            <Text style={styles.muted}>Loading inventory...</Text>
+            <Text style={styles.muted}>Loading inventory support...</Text>
           </View>
         ) : null}
 
@@ -191,11 +191,11 @@ export default function CommercialInventoryRoute() {
         </View>
 
         <View style={styles.guideCard}>
-          <Text style={styles.guideTitle}>Commercial inventory scope</Text>
+          <Text style={styles.guideTitle}>Inventory support scope</Text>
           <Text style={styles.guideText}>
-            Track stock for products, ingredients, packaging, plants, genetics, equipment,
-            courses, services, and retail items. Product records still hold public copy,
-            photos, use instructions, links, and trial evidence.
+            Track stock behind products, batches/lots, ingredients, packaging, genetics,
+            equipment, courses, services, and retail items. Product records still hold
+            public copy, photos, use instructions, links, and trial evidence.
           </Text>
         </View>
 
@@ -212,9 +212,9 @@ export default function CommercialInventoryRoute() {
           ListEmptyComponent={
             !loading ? (
               <View style={styles.empty}>
-                <Text style={styles.emptyTitle}>No inventory yet</Text>
+                <Text style={styles.emptyTitle}>No inventory support items yet</Text>
                 <Text style={styles.muted}>
-                  When inventory exists on the backend, it will show here.
+                  When stock support records exist on the backend, they will show here.
                 </Text>
               </View>
             ) : null

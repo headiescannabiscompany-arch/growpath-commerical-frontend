@@ -1441,7 +1441,7 @@ describe("commercial workflow pages", () => {
     await waitFor(() => expect(screen.getByText("Kelp Meal")).toBeTruthy());
     expect(screen.getByText("Connected Workflows")).toBeTruthy();
     expect(screen.getByText("Linked Product")).toBeTruthy();
-    expect(screen.getByText("Linked Grow")).toBeTruthy();
+    expect(screen.getByText("Linked Trial Grow")).toBeTruthy();
     expect(screen.getByText("Batch Planner")).toBeTruthy();
     expect(screen.getByText("Product Trials")).toBeTruthy();
     expect(screen.getByText("Storefront")).toBeTruthy();

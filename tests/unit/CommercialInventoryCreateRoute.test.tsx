@@ -33,7 +33,7 @@ describe("CommercialInventoryCreateRoute", () => {
   it("creates commercial inventory with item type, location, and linked records", async () => {
     const screen = render(<CommercialInventoryCreateRoute />);
 
-    expect(screen.getByText(/Commercial inventory supports stock/)).toBeTruthy();
+    expect(screen.getByText(/Commercial inventory support tracks stock/)).toBeTruthy();
 
     fireEvent.changeText(
       screen.getByLabelText("Commercial inventory item name"),
@@ -81,7 +81,7 @@ describe("CommercialInventoryCreateRoute", () => {
       "genetics-1"
     );
     fireEvent.changeText(
-      screen.getByLabelText("Commercial inventory linked grow"),
+      screen.getByLabelText("Commercial inventory linked product trial grow"),
       "grow-1"
     );
 

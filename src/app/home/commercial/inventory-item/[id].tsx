@@ -204,7 +204,7 @@ export default function CommercialInventoryItemDetailRoute() {
         : "stock ok";
 
   return (
-    <ScreenBoundary title="Inventory Item">
+    <ScreenBoundary title="Inventory Support Item">
       <ScrollView
         contentContainerStyle={styles.container}
         refreshControl={
@@ -217,7 +217,7 @@ export default function CommercialInventoryItemDetailRoute() {
         {error ? <InlineError error={error} /> : null}
 
         <View style={styles.headerRow}>
-          <Text style={styles.h1}>Inventory Item</Text>
+          <Text style={styles.h1}>Inventory Support Item</Text>
           <Text style={styles.muted}>id: {id || "(missing)"}</Text>
         </View>
 
@@ -264,8 +264,9 @@ export default function CommercialInventoryItemDetailRoute() {
           <View style={styles.card}>
             <Text style={styles.sectionTitle}>Connected Workflows</Text>
             <Text style={styles.workflowText}>
-              Use inventory as the stock record behind products, trial grows, batches,
-              packaging, plant material, and garden-center catalog items.
+              Use inventory support as the stock record behind products, product trial
+              grows, batches/lots, packaging, plant material, and garden-center catalog
+              items.
             </Text>
             <View style={styles.actionGrid}>
               {item.linkedProductId ? (
@@ -286,7 +287,7 @@ export default function CommercialInventoryItemDetailRoute() {
               {item.linkedGrowId ? (
                 <TouchableOpacity
                   accessibilityRole="button"
-                  accessibilityLabel="Open linked commercial grow"
+                  accessibilityLabel="Open linked commercial product trial grow"
                   onPress={() =>
                     router.push({
                       pathname: "/home/commercial/grows/[growId]",
@@ -295,7 +296,7 @@ export default function CommercialInventoryItemDetailRoute() {
                   }
                   style={styles.actionBtn}
                 >
-                  <Text style={styles.actionText}>Linked Grow</Text>
+                  <Text style={styles.actionText}>Linked Trial Grow</Text>
                 </TouchableOpacity>
               ) : null}
               <TouchableOpacity
@@ -458,9 +459,9 @@ export default function CommercialInventoryItemDetailRoute() {
                     value={draft.linkedGrowId}
                     onChangeText={(v) => setDraft((d) => ({ ...d, linkedGrowId: v }))}
                     style={styles.input}
-                    placeholder="Linked grow ID"
+                    placeholder="Linked product trial grow ID"
                     autoCapitalize="none"
-                    accessibilityLabel="Commercial detail linked grow"
+                    accessibilityLabel="Commercial detail linked product trial grow"
                   />
 
                   <Text style={styles.label}>Status</Text>
