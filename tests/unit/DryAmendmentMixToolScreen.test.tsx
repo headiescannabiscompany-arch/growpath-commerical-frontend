@@ -1,0 +1,138 @@
+import React from "react";
+import { fireEvent, render, waitFor } from "@testing-library/react-native";
+
+import DryAmendmentMixToolScreen from "@/app/home/personal/(tabs)/tools/dry-amendment-mix";
+
+const mockRunCalculator = jest.fn();
+const mockCreateGrowpathModuleRecord = jest.fn();
+const mockSaveToolRunAndCreateTasks = jest.fn();
+
+jest.mock("expo-router", () => ({
+  useLocalSearchParams: () => ({ growId: "grow-1" }),
+  useRouter: () => ({
+    back: jest.fn(),
+    canGoBack: jest.fn(() => true),
+    push: jest.fn(),
+    replace: jest.fn()
+  })
+}));
+
+jest.mock("@/entitlements", () => ({
+  useEntitlements: () => ({
+    plan: "pro",
+    mode: "personal",
+    can: () => true
+  })
+}));
+
+jest.mock("@/components/feed/FeedBanner", () => {
+  const React = require("react");
+  const { View } = require("react-native");
+  return () => React.createElement(View, { testID: "feed-banner" });
+});
+
+jest.mock("@/features/personal/tools/ToolPlantContextPicker", () => {
+  const React = require("react");
+  const { View } = require("react-native");
+  return {
+    ToolPlantContextPicker: () => React.createElement(View, { testID: "plant-picker" }),
+    useToolPlantContext: () => ({
+      plants: [],
+      plantId: "",
+      selectedPlant: null,
+      setPlantId: jest.fn(),
+      toolRunContext: { selectedPlantContext: null }
+    })
+  };
+});
+
+jest.mock("@/api/toolRuns", () => ({
+  runCalculator: (...args: any[]) => mockRunCalculator(...args)
+}));
+
+jest.mock("@/api/growpathModules", () => ({
+  createGrowpathModuleRecord: (...args: any[]) => mockCreateGrowpathModuleRecord(...args)
+}));
+
+jest.mock("@/features/personal/tools/saveToolRunAndOpenJournal", () => ({
+  saveToolRunAndCreateLog: jest.fn(),
+  saveToolRunAndCreateTask: jest.fn(),
+  saveToolRunAndCreateTasks: (...args: any[]) => mockSaveToolRunAndCreateTasks(...args)
+}));
+
+describe("DryAmendmentMixToolScreen", () => {
+  beforeEach(() => {
+    jest.resetAllMocks();
+    mockRunCalculator.mockResolvedValue({
+      outputs: {
+        recipeName: "Veg topdress blend",
+        totalAnalysis: { N: 3, P2O5: 8, K2O: 1 },
+        achievedRatio: { N: 3, P: 8, K: 1 },
+        batchWeight: 1000,
+        dosePerCubicFoot: 75,
+        stageFit: "veg"
+      },
+      toolRun: { id: "toolrun-1", _id: "toolrun-1" }
+    });
+    mockCreateGrowpathModuleRecord.mockResolvedValue({ id: "module-record-1" });
+    mockSaveToolRunAndCreateTasks.mockResolvedValue({
+      ok: true,
+      toolRunId: "toolrun-1",
+      taskIds: ["task-1", "task-2", "task-3", "task-4"]
+    });
+  });
+
+  it("creates source-linked dry amendment batch tasks from the saved ToolRun", async () => {
+    const screen = render(<DryAmendmentMixToolScreen />);
+
+    fireEvent.changeText(
+      screen.getByLabelText("Dry Amendment Mix Builder Recipe name"),
+      "Veg topdress blend"
+    );
+    fireEvent.press(screen.getByLabelText("Run Dry Amendment Mix Builder"));
+
+    await waitFor(() =>
+      expect(mockRunCalculator).toHaveBeenCalledWith(
+        "dry-amendment-mix",
+        expect.objectContaining({
+          growId: "grow-1",
+          recipeName: "Veg topdress blend",
+          ingredients: expect.arrayContaining([
+            expect.objectContaining({ name: "Alfalfa meal", releaseClass: "medium" }),
+            expect.objectContaining({ name: "Bone meal", releaseClass: "slow" })
+          ])
+        })
+      )
+    );
+    await waitFor(() =>
+      expect(screen.getByText("Dry Amendment Mix Builder result")).toBeTruthy()
+    );
+
+    fireEvent.press(screen.getByText("Create Blend Batch Tasks"));
+
+    await waitFor(() =>
+      expect(mockSaveToolRunAndCreateTasks).toHaveBeenCalledWith(
+        expect.objectContaining({
+          growId: "grow-1",
+          toolKey: "dry-amendment-mix",
+          toolRunId: "toolrun-1",
+          input: expect.objectContaining({ recipeName: "Veg topdress blend" }),
+          output: expect.objectContaining({ dosePerCubicFoot: 75 }),
+          tasks: expect.arrayContaining([
+            expect.objectContaining({
+              title: "Source ingredients for Veg topdress blend"
+            }),
+            expect.objectContaining({
+              title: "Weigh and mix Veg topdress blend",
+              priority: "high"
+            }),
+            expect.objectContaining({ title: "Label Veg topdress blend batch" }),
+            expect.objectContaining({
+              title: "Review Veg topdress blend application result"
+            })
+          ])
+        })
+      )
+    );
+  });
+});
