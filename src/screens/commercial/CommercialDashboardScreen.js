@@ -227,13 +227,13 @@ export default function CommercialDashboardScreen() {
                 </Pressable>
                 <Pressable
                   style={styles.secondaryButton}
-                  onPress={() => navigation.navigate("CommercialProducts")}
+                  onPress={() => navigation.navigate("NewCommercialProduct")}
                 >
                   <Text style={styles.secondaryButtonText}>Add Product</Text>
                 </Pressable>
                 <Pressable
                   style={styles.secondaryButton}
-                  onPress={() => navigation.navigate("CreateCourse")}
+                  onPress={() => navigation.navigate("Courses")}
                 >
                   <Text style={styles.secondaryButtonText}>Create Course</Text>
                 </Pressable>
