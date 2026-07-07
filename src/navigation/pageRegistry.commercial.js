@@ -163,6 +163,14 @@ export const PAGE_REGISTRY_COMMERCIAL = [
     component: require("../app/home/schedule").default
   },
   {
+    name: "CommercialAlerts",
+    label: "Alerts",
+    icon: "alert-circle-outline",
+    capabilityKey: "commercial.tasks",
+    primary: true,
+    component: require("../app/home/alerts").default
+  },
+  {
     name: "Tasks",
     label: "Tasks",
     icon: "checkbox-outline",

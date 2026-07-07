@@ -38,6 +38,13 @@ export const PAGE_REGISTRY_PERSONAL = [
     component: require("../app/home/schedule").default
   },
   {
+    name: "Alerts",
+    label: "Alerts",
+    icon: "alert-circle-outline",
+    capabilityKey: "personal.tasks",
+    component: require("../app/home/alerts").default
+  },
+  {
     name: "Tools",
     label: "Tools",
     icon: "construct-outline",

@@ -38,6 +38,13 @@ export const PAGE_REGISTRY_FACILITY = [
     component: require("../app/home/schedule").default
   },
   {
+    name: "FacilityAlerts",
+    label: "Alerts",
+    icon: "alert-circle-outline",
+    capabilityKey: "facility.tasks",
+    component: require("../app/home/alerts").default
+  },
+  {
     name: "FacilityInventory",
     label: "Inventory",
     icon: "cube-outline",
