@@ -40,6 +40,7 @@ const checks = [
       "tests/unit/SoilBuilderToolScreen.test.tsx",
       "tests/unit/DryAmendmentMixToolScreen.test.tsx",
       "tests/unit/TopdressToolScreen.test.tsx",
+      "tests/unit/SoilNutrientBatchToolScreen.test.tsx",
       "tests/unit/HomeScheduleRoute.test.tsx",
       "tests/unit/AlertCenterRoute.test.tsx",
       "tests/unit/PersonalTaskCenterRoute.test.tsx",
@@ -83,7 +84,7 @@ const manualChecks = [
     area: "Tools to work",
     checks: [
       "Run NPK / Feed Recipe Builder with label N-P2O5-K2O values and verify elemental P/K, density assumptions, release timing, the AI recipe brief, ToolRun tasks, and product draft conversion.",
-      "Run Soil Builder, Dry Amendment Mix Builder, and Topdress Planner and verify AI recipe/plan briefs, release timing, task plans, and product-draft conversion where available.",
+      "Run Soil Builder, Dry Amendment Mix Builder, Topdress Planner, and Soil & Nutrient Batch Planner and verify AI recipe/plan briefs, release timing, task plans, and product-draft/commercial/facility handoff language where available.",
       "Run IPM Scout and verify GrowPath AI and GPT verification are shown and saved together."
     ]
   },
