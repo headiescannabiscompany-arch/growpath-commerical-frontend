@@ -3,6 +3,51 @@ import React from "react";
 import BackendCalculatorToolScreen, {
   tomorrow
 } from "@/features/personal/tools/BackendCalculatorToolScreen";
+import { saveToolRunAndCreateTasks } from "@/features/personal/tools/saveToolRunAndOpenJournal";
+
+function normalizePriority(value: unknown): "low" | "medium" | "high" {
+  return value === "low" || value === "medium" || value === "high" ? value : "medium";
+}
+
+function cropSteeringTaskPlan(outputs: Record<string, any>) {
+  const planned = Array.isArray(outputs.tasksToCreate) ? outputs.tasksToCreate : [];
+  if (planned.length) {
+    return planned.slice(0, 8).map((item: any, index: number) => ({
+      title: String(item?.title || `Crop steering follow-up ${index + 1}`),
+      priority: normalizePriority(item?.priority),
+      dueDate: tomorrow(Number(item?.dueInDays || index + 1)),
+      description:
+        item?.description ||
+        "Follow up on crop steering response with dryback, EC, pH, environment, and plant response notes."
+    }));
+  }
+
+  return [
+    {
+      title: "Log crop steering response",
+      priority: normalizePriority(outputs.pressureLevel === "high" ? "high" : "medium"),
+      dueDate: tomorrow(1),
+      description:
+        "Record plant response, dryback, EC, runoff, root-zone behavior, and comparison notes."
+    },
+    {
+      title: "Review crop steering target fit",
+      priority: "medium" as const,
+      dueDate: tomorrow(2),
+      description:
+        "Compare steering intent, phase, DLI, VPD, EC, pH, and recovery before increasing pressure."
+    },
+    {
+      title: "Update pheno response notes",
+      priority: "medium" as const,
+      dueDate: tomorrow(3),
+      description:
+        outputs.phenoImpact ||
+        outputs.notesForPhenoScore ||
+        "Record whether this plant handled the steering strategy well enough to affect keeper decisions."
+    }
+  ];
+}
 
 export default function CropSteeringProjectToolRoute() {
   return (
@@ -120,6 +165,28 @@ export default function CropSteeringProjectToolRoute() {
         dueDate: tomorrow(outputs.tasksToCreate?.[0]?.dueInDays || 1),
         description: "Record plant response, dryback, EC, runoff, and comparison notes."
       })}
+      buildActions={({ outputs, payload, toolRun, growId, plantContext }) => [
+        {
+          key: "create-crop-steering-tasks",
+          label: "Create Steering Task Plan",
+          variant: "secondary",
+          pendingLabel: "Creating...",
+          disabled: !growId,
+          successMessage: "Created crop steering tasks.",
+          onPress: async () => {
+            const result = await saveToolRunAndCreateTasks({
+              growId,
+              ...plantContext.toolRunContext,
+              toolKey: "crop-steering-project",
+              toolRunId: toolRun?.id || toolRun?._id,
+              input: payload,
+              output: outputs,
+              tasks: cropSteeringTaskPlan(outputs)
+            });
+            if (!result.ok) throw new Error(result.error);
+          }
+        }
+      ]}
     />
   );
 }
