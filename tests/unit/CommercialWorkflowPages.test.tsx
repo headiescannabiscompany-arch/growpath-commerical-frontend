@@ -423,6 +423,7 @@ describe("commercial workflow pages", () => {
             title: "Living Soil Product Use",
             description: "How to use the seedling soil line",
             thumbnailUrl: "https://example.com/course-thumb.jpg",
+            bannerUrl: "https://example.com/course-banner.jpg",
             category: "product_education",
             access: "free",
             price: 49,
@@ -985,6 +986,7 @@ describe("commercial workflow pages", () => {
     expect(screen.getByText("Application rate")).toBeTruthy();
     expect(screen.getByText("prod_course_existing")).toBeTruthy();
     expect(screen.getByText("price_course_existing")).toBeTruthy();
+    expect(screen.getByText("https://example.com/course-banner.jpg")).toBeTruthy();
 
     fireEvent.changeText(
       screen.getByLabelText("Commercial course detail status"),
@@ -993,6 +995,22 @@ describe("commercial workflow pages", () => {
     fireEvent.changeText(
       screen.getByLabelText("Commercial course detail access"),
       "paid"
+    );
+    fireEvent.changeText(
+      screen.getByLabelText("Commercial course detail category"),
+      "product_training"
+    );
+    fireEvent.changeText(
+      screen.getByLabelText("Commercial course detail grow interests"),
+      "living soil, dry amendments"
+    );
+    fireEvent.changeText(
+      screen.getByLabelText("Commercial course detail thumbnail URL"),
+      "https://example.com/course-updated-thumb.jpg"
+    );
+    fireEvent.changeText(
+      screen.getByLabelText("Commercial course detail banner URL"),
+      "https://example.com/course-updated-banner.jpg"
     );
     fireEvent.changeText(
       screen.getByLabelText("Commercial course detail description"),
@@ -1034,6 +1052,10 @@ describe("commercial workflow pages", () => {
             status: "draft",
             access: "paid",
             price: 59,
+            category: "product_training",
+            growInterests: ["living soil", "dry amendments"],
+            thumbnailUrl: "https://example.com/course-updated-thumb.jpg",
+            bannerUrl: "https://example.com/course-updated-banner.jpg",
             description: "Updated product course description.",
             stripeProductId: "prod_course_updated",
             stripePriceId: "price_course_updated",

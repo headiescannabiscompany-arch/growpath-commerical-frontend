@@ -31,6 +31,7 @@ function courseTitle(course: CommercialCourse | null) {
 function courseSetupWarnings(course: Partial<CommercialCourse>) {
   const warnings: string[] = [];
   if (!course.thumbnailUrl?.trim()) warnings.push("add thumbnail");
+  if (!course.category?.trim()) warnings.push("add category");
   if (!course.description?.trim()) warnings.push("add description");
   if (!course.growInterests?.length) warnings.push("add grow interests");
   if (!course.lessons?.length) warnings.push("add lesson");
@@ -86,6 +87,10 @@ export default function CommercialCourseDetailRoute({ route }: { route?: any } =
   const [status, setStatus] = useState("");
   const [access, setAccess] = useState("");
   const [price, setPrice] = useState("");
+  const [thumbnailUrl, setThumbnailUrl] = useState("");
+  const [bannerUrl, setBannerUrl] = useState("");
+  const [category, setCategory] = useState("");
+  const [growInterests, setGrowInterests] = useState("");
   const [description, setDescription] = useState("");
   const [stripeProductId, setStripeProductId] = useState("");
   const [stripePriceId, setStripePriceId] = useState("");
@@ -113,6 +118,10 @@ export default function CommercialCourseDetailRoute({ route }: { route?: any } =
     setStatus(next?.status || "draft");
     setAccess(next?.access || "free");
     setPrice(next?.price ? String(next.price) : "");
+    setThumbnailUrl(next?.thumbnailUrl || "");
+    setBannerUrl(next?.bannerUrl || "");
+    setCategory(next?.category || "");
+    setGrowInterests((next?.growInterests || []).join(", "));
     setDescription(next?.description || "");
     setStripeProductId(next?.stripeProductId || "");
     setStripePriceId(next?.stripePriceId || "");
@@ -149,6 +158,10 @@ export default function CommercialCourseDetailRoute({ route }: { route?: any } =
         status: (status.trim() || "draft") as CommercialCourse["status"],
         access: (access.trim() || "free") as CommercialCourse["access"],
         price: Number(price) || 0,
+        thumbnailUrl: thumbnailUrl.trim() || undefined,
+        bannerUrl: bannerUrl.trim() || undefined,
+        category: category.trim() || undefined,
+        growInterests: splitIds(growInterests),
         description: description.trim(),
         stripeProductId: stripeProductId.trim() || undefined,
         stripePriceId: stripePriceId.trim() || undefined,
@@ -227,6 +240,10 @@ export default function CommercialCourseDetailRoute({ route }: { route?: any } =
     status: (status.trim() || course?.status || "draft") as CommercialCourse["status"],
     access: (access.trim() || course?.access || "free") as CommercialCourse["access"],
     price: Number(price) || 0,
+    thumbnailUrl,
+    bannerUrl,
+    category,
+    growInterests: splitIds(growInterests),
     description,
     stripeProductId,
     stripePriceId,
@@ -271,6 +288,9 @@ export default function CommercialCourseDetailRoute({ route }: { route?: any } =
         </Text>
         <View style={styles.detailGrid}>
           <DetailRow label="Category" value={course?.category} />
+          <DetailRow label="Grow interests" value={course?.growInterests} />
+          <DetailRow label="Thumbnail" value={course?.thumbnailUrl} />
+          <DetailRow label="Banner" value={course?.bannerUrl} />
           <DetailRow label="Access" value={course?.access} />
           <DetailRow label="Status" value={course?.status} />
           <DetailRow label="Price" value={course?.price ? `$${course.price}` : ""} />
@@ -306,6 +326,38 @@ export default function CommercialCourseDetailRoute({ route }: { route?: any } =
             placeholder="free, paid, followers, customers, private"
             style={styles.input}
             value={access}
+          />
+          <TextInput
+            accessibilityLabel="Commercial course detail category"
+            onChangeText={setCategory}
+            placeholder="product_education, live_workshop, facility_training"
+            style={styles.input}
+            value={category}
+          />
+          <TextInput
+            accessibilityLabel="Commercial course detail grow interests"
+            onChangeText={setGrowInterests}
+            placeholder="Grow interests for discovery and campaigns"
+            style={styles.input}
+            value={growInterests}
+          />
+        </View>
+        <View style={styles.formGrid}>
+          <TextInput
+            accessibilityLabel="Commercial course detail thumbnail URL"
+            autoCapitalize="none"
+            onChangeText={setThumbnailUrl}
+            placeholder="Thumbnail URL for storefront cards"
+            style={styles.input}
+            value={thumbnailUrl}
+          />
+          <TextInput
+            accessibilityLabel="Commercial course detail banner URL"
+            autoCapitalize="none"
+            onChangeText={setBannerUrl}
+            placeholder="Banner URL for public course page"
+            style={styles.input}
+            value={bannerUrl}
           />
         </View>
         <TextInput
