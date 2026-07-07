@@ -58,6 +58,7 @@ const checks = [
       "tests/unit/TissueCultureToolScreen.test.tsx",
       "tests/unit/CloneRootingToolScreen.test.tsx",
       "tests/unit/AutoGrowCalendarToolScreen.test.tsx",
+      "tests/unit/PhenoHuntToolScreen.test.tsx",
       "tests/unit/PersonalTaskCenterRoute.test.tsx",
       "tests/unit/GrowTasksScreen.test.tsx"
     ]
