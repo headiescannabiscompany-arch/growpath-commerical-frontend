@@ -126,8 +126,21 @@ export default function IpmScoutToolRoute() {
         title: outputs.taskSuggestions?.[0]?.title || "Repeat IPM scout",
         priority: outputs.taskSuggestions?.[0]?.priority || "medium",
         dueDate: tomorrow(outputs.taskSuggestions?.[0]?.dueInDays || 3),
-        description:
-          "Repeat inspection, trap count, and photo evidence before treatment decisions."
+        description: [
+          `Suspected issue: ${outputs.suspectedIssue || "unknown"}.`,
+          outputs.suspectedOrganism
+            ? `Suspected organism: ${outputs.suspectedOrganism}.`
+            : "",
+          growPathAnswer(outputs) ? `GrowPath AI: ${growPathAnswer(outputs)}` : "",
+          verificationAnswer(outputs.gptVerification)
+            ? `GPT verification: ${verificationAnswer(outputs.gptVerification)}`
+            : outputs.gptVerification?.status
+              ? `GPT verification status: ${outputs.gptVerification.status}.`
+              : "",
+          "Repeat underside inspection, trap count, and photo evidence before treatment decisions. Record whether the response worked after the follow-up."
+        ]
+          .filter(Boolean)
+          .join(" ")
       })}
     />
   );

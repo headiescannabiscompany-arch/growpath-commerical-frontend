@@ -5,6 +5,7 @@ import IpmScoutToolRoute from "@/app/home/personal/(tabs)/tools/ipm-scout";
 
 const mockRunCalculator = jest.fn();
 const mockCreateGrowpathModuleRecord = jest.fn();
+const mockSaveToolRunAndCreateTask = jest.fn();
 
 jest.mock("expo-router", () => ({
   useLocalSearchParams: () => ({ growId: "grow-1" }),
@@ -55,7 +56,7 @@ jest.mock("@/api/growpathModules", () => ({
 
 jest.mock("@/features/personal/tools/saveToolRunAndOpenJournal", () => ({
   saveToolRunAndCreateLog: jest.fn(),
-  saveToolRunAndCreateTask: jest.fn()
+  saveToolRunAndCreateTask: (...args: any[]) => mockSaveToolRunAndCreateTask(...args)
 }));
 
 describe("IpmScoutToolRoute", () => {
@@ -81,6 +82,11 @@ describe("IpmScoutToolRoute", () => {
       toolRun: { id: "toolrun-1", _id: "toolrun-1" }
     });
     mockCreateGrowpathModuleRecord.mockResolvedValue({ id: "module-record-1" });
+    mockSaveToolRunAndCreateTask.mockResolvedValue({
+      ok: true,
+      toolRunId: "toolrun-1",
+      taskId: "task-1"
+    });
   });
 
   it("shows GrowPath AI and GPT verification answers from the IPM ToolRun", async () => {
@@ -123,5 +129,38 @@ describe("IpmScoutToolRoute", () => {
     expect(
       screen.getByText(/Save this ToolRun so the GrowPath AI scout answer and GPT review/)
     ).toBeTruthy();
+  });
+
+  it("creates an IPM follow-up task with GrowPath and GPT verification context", async () => {
+    const screen = render(<IpmScoutToolRoute />);
+
+    fireEvent.changeText(
+      screen.getByLabelText("IPM Scout Pest or organism seen"),
+      "mites"
+    );
+    fireEvent.press(screen.getByLabelText("Run IPM Scout"));
+
+    await waitFor(() => expect(screen.getByText("IPM Scout result")).toBeTruthy());
+
+    fireEvent.press(screen.getByText("Create Follow-up Task"));
+
+    await waitFor(() =>
+      expect(mockSaveToolRunAndCreateTask).toHaveBeenCalledWith(
+        expect.objectContaining({
+          growId: "grow-1",
+          toolKey: "ipm-scout",
+          toolRunId: "toolrun-1",
+          title: "Repeat IPM scout",
+          description: expect.stringContaining(
+            "GPT verification: GPT verification agrees mites are plausible"
+          )
+        })
+      )
+    );
+    expect(mockSaveToolRunAndCreateTask).toHaveBeenCalledWith(
+      expect.objectContaining({
+        description: expect.stringContaining("Record whether the response worked")
+      })
+    );
   });
 });
