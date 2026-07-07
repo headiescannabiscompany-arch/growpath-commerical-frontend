@@ -1,6 +1,49 @@
 import React from "react";
 
-import BackendCalculatorToolScreen from "@/features/personal/tools/BackendCalculatorToolScreen";
+import BackendCalculatorToolScreen, {
+  tomorrow
+} from "@/features/personal/tools/BackendCalculatorToolScreen";
+import { saveToolRunAndCreateTasks } from "@/features/personal/tools/saveToolRunAndOpenJournal";
+
+function geneticsTaskPlan(outputs: Record<string, any>) {
+  const cultivar = String(outputs.cultivar || "cultivar");
+  const recommendations = Array.isArray(outputs.preservationRecommendations)
+    ? outputs.preservationRecommendations
+    : [];
+  const keeperSignals = Array.isArray(outputs.keeperSignals)
+    ? outputs.keeperSignals.join(", ")
+    : "";
+
+  return [
+    {
+      title: `Verify genetics record for ${cultivar}`,
+      priority: "medium" as const,
+      dueDate: tomorrow(1),
+      description:
+        "Confirm breeder/source, parentage, material type, flower timing, and any missing provenance before relying on this record."
+    },
+    {
+      title: `Plan preservation for ${cultivar}`,
+      priority: recommendations.length ? ("high" as const) : ("medium" as const),
+      dueDate: tomorrow(3),
+      description: [
+        recommendations.length
+          ? `Preservation notes: ${recommendations.slice(0, 3).join("; ")}`
+          : "Decide whether this genetics record needs clone, mother, seed, tissue culture, or archive follow-up.",
+        keeperSignals ? `Keeper signals: ${keeperSignals}` : ""
+      ]
+        .filter(Boolean)
+        .join("\n")
+    },
+    {
+      title: `Link ${cultivar} to grow, pheno, or clone records`,
+      priority: "medium" as const,
+      dueDate: tomorrow(7),
+      description:
+        "Attach this genetics record to active plants, clone rooting notes, pheno hunt scores, mother stock, or tissue culture records."
+    }
+  ];
+}
 
 export default function GeneticsInventoryToolRoute() {
   return (
@@ -72,6 +115,28 @@ export default function GeneticsInventoryToolRoute() {
           : [])
       ]}
       defaultLogTitle={(outputs) => `Genetics record: ${outputs.cultivar || "cultivar"}`}
+      buildActions={({ outputs, payload, toolRun, growId, plantContext }) => [
+        {
+          key: "create-genetics-follow-up-tasks",
+          label: "Create Genetics Follow-up Tasks",
+          variant: "secondary",
+          pendingLabel: "Creating...",
+          disabled: !growId,
+          successMessage: "Created genetics follow-up tasks.",
+          onPress: async () => {
+            const result = await saveToolRunAndCreateTasks({
+              growId,
+              ...plantContext.toolRunContext,
+              toolKey: "genetics-inventory",
+              toolRunId: toolRun?.id || toolRun?._id,
+              input: payload,
+              output: outputs,
+              tasks: geneticsTaskPlan(outputs)
+            });
+            if (!result.ok) throw new Error(result.error);
+          }
+        }
+      ]}
     />
   );
 }
