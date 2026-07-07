@@ -121,6 +121,7 @@ describe("Data Integrations Growlink flow", () => {
     await waitFor(() => expect(screen.getByText("Flower A")).toBeTruthy());
     expect(screen.getByText("Room import preview")).toBeTruthy();
     expect(screen.getByText("Suggested room: Flower A")).toBeTruthy();
+    expect(screen.getByText(/Permission: read-only \/ Detected rooms: 1/)).toBeTruthy();
     expect(screen.getByText(/air_temperature, relative_humidity/)).toBeTruthy();
 
     fireEvent.press(screen.getByText("Create source"));

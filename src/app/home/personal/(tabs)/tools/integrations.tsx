@@ -219,6 +219,20 @@ export default function DataIntegrationsScreen() {
     () => buildGrowlinkImportPreview(growlinkControllers),
     [growlinkControllers]
   );
+  const growlinkPreviewTotals = useMemo(
+    () => ({
+      rooms: growlinkImportPreview.length,
+      devices: growlinkImportPreview.reduce(
+        (total, room) => total + room.devices.length,
+        0
+      ),
+      streams: growlinkImportPreview.reduce(
+        (total, room) => total + room.metrics.length,
+        0
+      )
+    }),
+    [growlinkImportPreview]
+  );
 
   const loadGrowlinkSources = useCallback(
     async (nextGrowId = growId.trim(), showError = true) => {
@@ -552,6 +566,11 @@ export default function DataIntegrationsScreen() {
               rooms/devices/streams for personal grows or facility onboarding when the
               import endpoint is enabled. Read-only data sync stays separate from
               write/control actions.
+            </Text>
+            <Text style={styles.meta}>
+              Permission: read-only / Detected rooms: {growlinkPreviewTotals.rooms} /
+              Detected devices: {growlinkPreviewTotals.devices} / Detected streams:{" "}
+              {growlinkPreviewTotals.streams || "manual mapping needed"}
             </Text>
             {growlinkImportPreview.map((room) => (
               <View
