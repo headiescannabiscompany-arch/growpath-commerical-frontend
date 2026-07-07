@@ -67,4 +67,38 @@ describe("LoginScreen email verification", () => {
 
     expect(mockReplace).not.toHaveBeenCalled();
   });
+
+  it("normalizes email and routes to the app after a successful login", async () => {
+    mockLogin.mockResolvedValueOnce({ ok: true });
+
+    const screen = render(<LoginScreen />);
+
+    fireEvent.changeText(screen.getByPlaceholderText("Email"), " Grower@Example.com ");
+    fireEvent.changeText(screen.getByPlaceholderText("Password"), "password123");
+    fireEvent.press(screen.getByLabelText("Sign in"));
+
+    await waitFor(() => {
+      expect(mockLogin).toHaveBeenCalledWith("grower@example.com", "password123");
+      expect(mockReplace).toHaveBeenCalledWith("/");
+    });
+  });
+
+  it("shows an actionable failed-login message without navigating", async () => {
+    mockLogin.mockRejectedValueOnce(
+      new ApiError("BAD_LOGIN", 401, {
+        message: "Invalid email or password."
+      })
+    );
+
+    const screen = render(<LoginScreen />);
+
+    fireEvent.changeText(screen.getByPlaceholderText("Email"), "grower@example.com");
+    fireEvent.changeText(screen.getByPlaceholderText("Password"), "wrong-password");
+    fireEvent.press(screen.getByLabelText("Sign in"));
+
+    await waitFor(() => {
+      expect(screen.getByText("Invalid email or password.")).toBeTruthy();
+      expect(mockReplace).not.toHaveBeenCalled();
+    });
+  });
 });
