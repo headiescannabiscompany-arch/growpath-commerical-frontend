@@ -256,7 +256,7 @@ describe("Storefront route", () => {
     fireEvent.changeText(screen.getByLabelText("Product line id"), "line-1");
     fireEvent.changeText(screen.getByLabelText("Linked recipe id"), "recipe-1");
     fireEvent.changeText(screen.getByLabelText("Linked batch id"), "batch-1");
-    fireEvent.changeText(screen.getByLabelText("Linked grow trial id"), "trial-1");
+    fireEvent.changeText(screen.getByLabelText("Linked evidence run id"), "trial-1");
     fireEvent.changeText(screen.getByLabelText("Linked course id"), "course-1");
     fireEvent.press(screen.getByLabelText("Create storefront product"));
 

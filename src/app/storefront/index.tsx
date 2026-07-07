@@ -1080,8 +1080,8 @@ export default function Storefront() {
               onChangeText={(linkedGrowTrialId) =>
                 setProductDraft((draft) => ({ ...draft, linkedGrowTrialId }))
               }
-              accessibilityLabel="Linked grow trial id"
-              placeholder="Linked grow/trial id"
+              accessibilityLabel="Linked evidence run id"
+              placeholder="Linked evidence run id"
               autoCapitalize="none"
               style={[styles.input, styles.linkInput]}
             />
@@ -1267,7 +1267,7 @@ export default function Storefront() {
                           {[
                             product.linkedRecipeId && "recipe",
                             product.linkedBatchId && "batch",
-                            product.linkedGrowTrialId && "trial",
+                            product.linkedGrowTrialId && "evidence run",
                             product.linkedCourseId && "course"
                           ]
                             .filter(Boolean)
