@@ -80,6 +80,7 @@ describe("PersonalTaskCenterRoute", () => {
     expect(screen.getByText(/Mixed soil/)).toBeTruthy();
     expect(screen.getAllByText("sensor alert").length).toBeGreaterThan(0);
     expect(screen.getAllByText("recipe").length).toBeGreaterThan(0);
+    expect(screen.getByText("product batch")).toBeTruthy();
 
     fireEvent.changeText(screen.getByLabelText("Task center grow ID"), "grow-2");
     fireEvent.changeText(
@@ -87,8 +88,8 @@ describe("PersonalTaskCenterRoute", () => {
       "Topdress follow-up"
     );
     fireEvent.press(screen.getByLabelText("Task center quick date In 21 days"));
-    fireEvent.press(screen.getByLabelText("Task center source recipe"));
-    fireEvent.changeText(screen.getByLabelText("Task center source object"), "recipe-1");
+    fireEvent.press(screen.getByLabelText("Task center source product_batch"));
+    fireEvent.changeText(screen.getByLabelText("Task center source object"), "batch-1");
     fireEvent.changeText(screen.getByLabelText("Task center ToolRun"), "run-2");
     fireEvent.press(screen.getByLabelText("Task center reminder preset 24 hours before"));
     fireEvent.press(screen.getByLabelText("Task center recurrence preset every 21 days"));
@@ -100,8 +101,8 @@ describe("PersonalTaskCenterRoute", () => {
           growId: "grow-2",
           title: "Topdress follow-up",
           dueDate: addDaysKey(21),
-          sourceType: "recipe",
-          sourceObjectId: "recipe-1",
+          sourceType: "product_batch",
+          sourceObjectId: "batch-1",
           sourceToolRunId: "run-2",
           reminderPlan: { label: "24 hours before", channels: ["in_app"] },
           recurrence: { rule: "every 21 days" }

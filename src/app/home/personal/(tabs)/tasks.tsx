@@ -26,11 +26,21 @@ const sourceTypes = [
   "plant",
   "tool_run",
   "recipe",
+  "product",
+  "product_batch",
+  "product_trial",
+  "storefront",
+  "order",
   "course",
   "lesson",
   "live",
+  "live_replay",
   "alert",
   "sensor_alert",
+  "facility",
+  "room",
+  "facility_run",
+  "sop",
   "forum"
 ] as const;
 
@@ -248,7 +258,7 @@ export default function PersonalTaskCenterRoute() {
       <Text style={styles.title}>Task Center / Schedule</Text>
       <Text style={styles.subtitle}>
         One action layer for grow work, ToolRuns, recipes, course assignments, lives,
-        alerts, and sensor follow-ups.
+        products, storefront setup, facility SOPs, alerts, and sensor follow-ups.
       </Text>
       <PersonalFeedPlacement
         placement="top"
