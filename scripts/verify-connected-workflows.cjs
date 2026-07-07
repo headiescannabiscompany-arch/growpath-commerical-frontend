@@ -38,6 +38,7 @@ const checks = [
       "tests/unit/PersonalFeedPlacement.test.tsx",
       "tests/unit/ForumFeedSeparationRoutes.test.tsx",
       "tests/unit/CommercialLivesRoute.test.tsx",
+      "tests/unit/pricingConstants.test.js",
       "tests/unit/AppPageBackBehavior.test.tsx",
       "tests/unit/FacilityRoomsRoute.test.tsx",
       "tests/unit/FacilityInventoryRoute.test.tsx",

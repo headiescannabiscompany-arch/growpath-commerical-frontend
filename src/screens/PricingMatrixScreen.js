@@ -34,9 +34,9 @@ const plans = [
     name: "Commercial",
     price: COMMERCIAL_PLAN_PRICE_DISPLAY,
     features: [
-      "Commercial grow workspace",
-      "Crop and batch tracking",
-      "Business profile and advertising",
+      "Brand storefront workspace",
+      "Product, batch, and trial evidence tracking",
+      "Feed campaigns and advertising",
       "Course and educational content tools",
       "Expanded AI workflows"
     ]

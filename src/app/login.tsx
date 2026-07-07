@@ -102,7 +102,7 @@ export default function LoginScreen() {
               />
             </View>
             <Text style={styles.brand}>GrowPath</Text>
-            <Text style={styles.tagline}>Commercial growing intelligence</Text>
+            <Text style={styles.tagline}>Grow, brand, and facility intelligence</Text>
           </View>
 
           <Text style={styles.title}>Sign in</Text>
