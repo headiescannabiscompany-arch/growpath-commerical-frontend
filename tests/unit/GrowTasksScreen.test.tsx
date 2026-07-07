@@ -118,6 +118,13 @@ describe("GrowTasksScreen", () => {
     fireEvent.changeText(screen.getByLabelText("Task description"), "Before watering.");
     fireEvent.changeText(screen.getByLabelText("Task due date"), "2026-07-03");
     fireEvent.press(screen.getByLabelText("Set task priority high"));
+    fireEvent.press(screen.getByLabelText("Set task source tool_run"));
+    fireEvent.changeText(screen.getByLabelText("Task source object"), "recipe-1");
+    fireEvent.changeText(screen.getByLabelText("Task ToolRun"), "toolrun-1");
+    fireEvent.changeText(screen.getByLabelText("Task diagnosis"), "diag-2");
+    fireEvent.changeText(screen.getByLabelText("Task linked log"), "log-3");
+    fireEvent.changeText(screen.getByLabelText("Task reminder note"), "24 hours before");
+    fireEvent.changeText(screen.getByLabelText("Task recurrence rule"), "every 7 days");
     fireEvent.press(screen.getByLabelText("Add task"));
 
     await waitFor(() =>
@@ -126,7 +133,14 @@ describe("GrowTasksScreen", () => {
         title: "Check soil moisture",
         description: "Before watering.",
         dueDate: "2026-07-03",
-        priority: "high"
+        priority: "high",
+        sourceType: "tool_run",
+        sourceObjectId: "recipe-1",
+        sourceToolRunId: "toolrun-1",
+        sourceDiagnosisId: "diag-2",
+        linkedLogId: "log-3",
+        reminderPlan: { label: "24 hours before", channels: ["in_app"] },
+        recurrence: { rule: "every 7 days" }
       })
     );
   });

@@ -125,6 +125,7 @@ export interface PersonalTask {
   sourceDiagnosisId?: string | null;
   linkedLogId?: string | null;
   recurrence?: Record<string, any> | null;
+  reminderPlan?: Record<string, any> | null;
   createdAt: string;
 }
 
@@ -172,6 +173,8 @@ export async function createPersonalTask(data: {
   sourceToolRunId?: string | null;
   sourceDiagnosisId?: string | null;
   linkedLogId?: string | null;
+  recurrence?: Record<string, any> | null;
+  reminderPlan?: Record<string, any> | null;
 }): Promise<PersonalTask | null> {
   try {
     const res: any = await apiRequest("/api/personal/tasks", {
@@ -201,6 +204,7 @@ export async function updatePersonalTask(
       | "sourceDiagnosisId"
       | "linkedLogId"
       | "recurrence"
+      | "reminderPlan"
     >
   >
 ): Promise<PersonalTask | null> {

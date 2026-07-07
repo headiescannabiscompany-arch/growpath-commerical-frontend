@@ -24,6 +24,16 @@ import PersonalFeedPlacement from "@/components/feed/PersonalFeedPlacement";
 import { CAPABILITY_KEYS, useEntitlements } from "@/entitlements";
 
 const priorities = ["low", "medium", "high"] as const;
+const sourceTypes = [
+  "manual",
+  "tool_run",
+  "ai_diagnosis",
+  "recipe",
+  "course",
+  "live",
+  "alert",
+  "sensor_alert"
+] as const;
 
 function taskSource(task: PersonalTask) {
   if (task.sourceType) return task.sourceType.replace(/_/g, " ");
@@ -31,6 +41,33 @@ function taskSource(task: PersonalTask) {
   if (task.sourceDiagnosisId) return "AI diagnosis";
   if (task.linkedLogId) return "journal";
   return "";
+}
+
+function taskLinks(task: PersonalTask) {
+  return [
+    task.sourceObjectId && `Source object: ${task.sourceObjectId}`,
+    task.sourceToolRunId && `ToolRun: ${task.sourceToolRunId}`,
+    task.sourceDiagnosisId && `Diagnosis: ${task.sourceDiagnosisId}`,
+    task.linkedLogId && `Log: ${task.linkedLogId}`
+  ]
+    .filter(Boolean)
+    .join(" | ");
+}
+
+function scheduleSummary(task: PersonalTask) {
+  const parts = [
+    `Due: ${fmtDate(task?.dueDate)}`,
+    `Priority: ${task.priority || "medium"}`
+  ];
+  const reminderLabel =
+    typeof task.reminderPlan?.label === "string"
+      ? task.reminderPlan.label
+      : typeof task.reminderPlan?.summary === "string"
+        ? task.reminderPlan.summary
+        : "";
+  if (reminderLabel) parts.push(`Reminder: ${reminderLabel}`);
+  if (task.recurrence?.rule) parts.push(`Repeats: ${task.recurrence.rule}`);
+  return parts.join(" | ");
 }
 
 const styles = StyleSheet.create({
@@ -123,6 +160,14 @@ export default function GrowTasksScreen() {
   const [newDescription, setNewDescription] = useState("");
   const [newDueDate, setNewDueDate] = useState("");
   const [newPriority, setNewPriority] = useState<(typeof priorities)[number]>("medium");
+  const [newSourceType, setNewSourceType] =
+    useState<(typeof sourceTypes)[number]>("manual");
+  const [newSourceObjectId, setNewSourceObjectId] = useState("");
+  const [newToolRunId, setNewToolRunId] = useState("");
+  const [newDiagnosisId, setNewDiagnosisId] = useState("");
+  const [newLinkedLogId, setNewLinkedLogId] = useState("");
+  const [newReminderNote, setNewReminderNote] = useState("");
+  const [newRecurrenceRule, setNewRecurrenceRule] = useState("");
   const [feedback, setFeedback] = useState("");
 
   const load = useCallback(async () => {
@@ -158,13 +203,31 @@ export default function GrowTasksScreen() {
         title: newTitle.trim(),
         description: newDescription.trim(),
         dueDate: newDueDate.trim() || undefined,
-        priority: newPriority
+        priority: newPriority,
+        sourceType: newSourceType,
+        sourceObjectId: newSourceObjectId.trim() || undefined,
+        sourceToolRunId: newToolRunId.trim() || undefined,
+        sourceDiagnosisId: newDiagnosisId.trim() || undefined,
+        linkedLogId: newLinkedLogId.trim() || undefined,
+        reminderPlan: newReminderNote.trim()
+          ? { label: newReminderNote.trim(), channels: ["in_app"] }
+          : undefined,
+        recurrence: newRecurrenceRule.trim()
+          ? { rule: newRecurrenceRule.trim() }
+          : undefined
       });
       if (created) {
         setNewTitle("");
         setNewDescription("");
         setNewDueDate("");
         setNewPriority("medium");
+        setNewSourceType("manual");
+        setNewSourceObjectId("");
+        setNewToolRunId("");
+        setNewDiagnosisId("");
+        setNewLinkedLogId("");
+        setNewReminderNote("");
+        setNewRecurrenceRule("");
         setFeedback("Task created.");
         await load();
       } else {
@@ -230,6 +293,75 @@ export default function GrowTasksScreen() {
               </Pressable>
             ))}
           </View>
+          <Text style={styles.label}>Source</Text>
+          <View style={styles.row}>
+            {sourceTypes.map((sourceType) => (
+              <Pressable
+                key={sourceType}
+                style={[styles.chip, newSourceType === sourceType && styles.chipOn]}
+                onPress={() => setNewSourceType(sourceType)}
+                accessibilityRole="button"
+                accessibilityLabel={`Set task source ${sourceType}`}
+              >
+                <Text
+                  style={[
+                    styles.chipText,
+                    newSourceType === sourceType && styles.chipTextOn
+                  ]}
+                >
+                  {sourceType.replace(/_/g, " ")}
+                </Text>
+              </Pressable>
+            ))}
+          </View>
+          <Text style={styles.label}>Linked records</Text>
+          <View style={styles.row}>
+            <TextInput
+              style={styles.input}
+              placeholder="Source object ID"
+              value={newSourceObjectId}
+              onChangeText={setNewSourceObjectId}
+              accessibilityLabel="Task source object"
+            />
+            <TextInput
+              style={styles.input}
+              placeholder="ToolRun ID"
+              value={newToolRunId}
+              onChangeText={setNewToolRunId}
+              accessibilityLabel="Task ToolRun"
+            />
+            <TextInput
+              style={styles.input}
+              placeholder="Diagnosis ID"
+              value={newDiagnosisId}
+              onChangeText={setNewDiagnosisId}
+              accessibilityLabel="Task diagnosis"
+            />
+            <TextInput
+              style={styles.input}
+              placeholder="Linked grow log ID"
+              value={newLinkedLogId}
+              onChangeText={setNewLinkedLogId}
+              accessibilityLabel="Task linked log"
+            />
+          </View>
+          <Text style={styles.label}>Reminder / recurrence</Text>
+          <View style={styles.row}>
+            <TextInput
+              style={styles.input}
+              placeholder="Reminder note, e.g. 24 hours before"
+              value={newReminderNote}
+              onChangeText={setNewReminderNote}
+              accessibilityLabel="Task reminder note"
+            />
+            <TextInput
+              style={styles.input}
+              placeholder="Repeat rule, e.g. every 7 days"
+              value={newRecurrenceRule}
+              onChangeText={setNewRecurrenceRule}
+              accessibilityLabel="Task recurrence rule"
+            />
+          </View>
           <Pressable
             style={[styles.addBtn, (!newTitle.trim() || creating) && { opacity: 0.55 }]}
             disabled={!newTitle.trim() || creating}
@@ -270,6 +402,7 @@ export default function GrowTasksScreen() {
           const id = getRowId(task);
           const done = Boolean(task?.completed);
           const source = taskSource(task);
+          const links = taskLinks(task);
           return (
             <View key={id || `${task.title}-${task.dueDate}`} style={styles.card}>
               <Text style={styles.taskTitle}>
@@ -279,15 +412,14 @@ export default function GrowTasksScreen() {
               {task.description ? (
                 <Text style={styles.taskMeta}>{task.description}</Text>
               ) : null}
-              <Text style={styles.taskMeta}>
-                Due: {fmtDate(task?.dueDate)} | Priority: {task.priority || "medium"}
-              </Text>
+              <Text style={styles.taskMeta}>{scheduleSummary(task)}</Text>
               {task.snoozeUntil ? (
                 <Text style={styles.taskMeta}>
                   Snoozed until: {fmtDate(task.snoozeUntil)}
                 </Text>
               ) : null}
               {source ? <Text style={styles.taskMeta}>Source: {source}</Text> : null}
+              {links ? <Text style={styles.taskMeta}>{links}</Text> : null}
               {task.recurrence ? (
                 <Text style={styles.taskMeta}>Recurring task</Text>
               ) : null}
