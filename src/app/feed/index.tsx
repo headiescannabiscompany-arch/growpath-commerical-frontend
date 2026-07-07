@@ -36,6 +36,87 @@ const COMMERCIAL_TYPES: CommercialFeedPostType[] = [
   "education"
 ];
 const FACILITY_TYPES: CommercialFeedPostType[] = ["education"];
+type CampaignKind =
+  | "product_ad"
+  | "course_ad"
+  | "live_ad"
+  | "storefront_ad"
+  | "facility_outreach"
+  | "general_campaign";
+
+const COMMERCIAL_CAMPAIGN_KINDS: CampaignKind[] = [
+  "product_ad",
+  "course_ad",
+  "live_ad",
+  "storefront_ad",
+  "general_campaign"
+];
+const FACILITY_CAMPAIGN_KINDS: CampaignKind[] = ["facility_outreach"];
+
+const campaignKindLabels: Record<CampaignKind, string> = {
+  product_ad: "Product ad",
+  course_ad: "Course ad",
+  live_ad: "Live event ad",
+  storefront_ad: "Storefront ad",
+  facility_outreach: "Facility outreach",
+  general_campaign: "General campaign"
+};
+
+function backendTypeForCampaignKind(kind: CampaignKind): CommercialFeedPostType {
+  if (kind === "product_ad") return "listing";
+  if (kind === "course_ad") return "education";
+  if (kind === "live_ad") return "drop";
+  if (kind === "facility_outreach") return "education";
+  return "update";
+}
+
+function campaignReadinessWarnings({
+  campaignKind,
+  linkedProductId,
+  linkedCourseId,
+  linkedLiveId,
+  storefrontSlug,
+  linkedForumThreadId,
+  externalLinkUrl,
+  imageUrl
+}: {
+  campaignKind: CampaignKind;
+  linkedProductId: string;
+  linkedCourseId: string;
+  linkedLiveId: string;
+  storefrontSlug: string;
+  linkedForumThreadId: string;
+  externalLinkUrl: string;
+  imageUrl: string;
+}) {
+  const warnings: string[] = [];
+  const hasDestination =
+    linkedProductId.trim() ||
+    linkedCourseId.trim() ||
+    linkedLiveId.trim() ||
+    storefrontSlug.trim() ||
+    linkedForumThreadId.trim() ||
+    externalLinkUrl.trim();
+  if (campaignKind === "product_ad" && !linkedProductId.trim()) {
+    warnings.push("Product ad should link to a product.");
+  }
+  if (campaignKind === "course_ad" && !linkedCourseId.trim()) {
+    warnings.push("Course ad should link to a course.");
+  }
+  if (campaignKind === "live_ad" && !linkedLiveId.trim()) {
+    warnings.push("Live event ad should link to a live.");
+  }
+  if (campaignKind === "storefront_ad" && !storefrontSlug.trim()) {
+    warnings.push("Storefront ad should link to a storefront.");
+  }
+  if (!hasDestination) {
+    warnings.push("Add at least one destination before promoting broadly.");
+  }
+  if (!imageUrl.trim()) {
+    warnings.push("Add an image or creative before publishing a polished campaign.");
+  }
+  return warnings;
+}
 
 function authorLabel(post: CommercialFeedPost) {
   return post.author?.displayName || post.author?.email || "GrowPath member";
@@ -64,9 +145,13 @@ export default function CommercialFeedRoute() {
   const isFacility = ent.mode === "facility";
   const isCommercial = ent.mode === "commercial";
   const allowedTypes = isFacility ? FACILITY_TYPES : COMMERCIAL_TYPES;
+  const allowedCampaignKinds = isFacility
+    ? FACILITY_CAMPAIGN_KINDS
+    : COMMERCIAL_CAMPAIGN_KINDS;
 
   const [items, setItems] = useState<CommercialFeedPost[]>([]);
   const [type, setType] = useState<CommercialFeedPostType>(allowedTypes[0]);
+  const [campaignKind, setCampaignKind] = useState<CampaignKind>(allowedCampaignKinds[0]);
   const [filterType, setFilterType] = useState<string>("all");
   const [q, setQ] = useState("");
   const [title, setTitle] = useState("");
@@ -75,7 +160,9 @@ export default function CommercialFeedRoute() {
   const [location, setLocation] = useState("");
   const [linkedProductId, setLinkedProductId] = useState("");
   const [linkedCourseId, setLinkedCourseId] = useState("");
+  const [linkedLiveId, setLinkedLiveId] = useState("");
   const [linkedGrowId, setLinkedGrowId] = useState("");
+  const [linkedForumThreadId, setLinkedForumThreadId] = useState("");
   const [storefrontSlug, setStorefrontSlug] = useState("");
   const [imageUrl, setImageUrl] = useState("");
   const [externalLinkUrl, setExternalLinkUrl] = useState("");
@@ -90,8 +177,25 @@ export default function CommercialFeedRoute() {
     if (!allowedTypes.includes(type)) setType(allowedTypes[0]);
   }, [allowedTypes, type]);
 
+  useEffect(() => {
+    if (!allowedCampaignKinds.includes(campaignKind)) {
+      setCampaignKind(allowedCampaignKinds[0]);
+    }
+    setType(backendTypeForCampaignKind(campaignKind));
+  }, [allowedCampaignKinds, campaignKind]);
+
   const canAccess = ent.ready && (isCommercial || isFacility);
   const canCreate = body.trim().length > 0 && !creating;
+  const readinessWarnings = campaignReadinessWarnings({
+    campaignKind,
+    linkedProductId,
+    linkedCourseId,
+    linkedLiveId,
+    storefrontSlug,
+    linkedForumThreadId,
+    externalLinkUrl,
+    imageUrl
+  });
 
   const helper = useMemo(
     () =>
@@ -146,14 +250,16 @@ export default function CommercialFeedRoute() {
     }
     try {
       await createCommercialFeedPost({
-        type: isFacility ? "education" : type,
+        type: isFacility ? "education" : backendTypeForCampaignKind(campaignKind),
         title: cleanTitle,
         body: cleanBody,
         tags: cleanTags,
         location: cleanLocation,
         linkedProductId: linkedProductId.trim() || undefined,
         linkedCourseId: linkedCourseId.trim() || undefined,
+        linkedLiveId: linkedLiveId.trim() || undefined,
         linkedGrowId: linkedGrowId.trim() || undefined,
+        linkedForumThreadId: linkedForumThreadId.trim() || undefined,
         storefrontSlug: storefrontSlug.trim() || undefined,
         imageUrl: imageUrl.trim() || undefined,
         externalLinks: cleanExternalUrl
@@ -166,7 +272,9 @@ export default function CommercialFeedRoute() {
       setLocation("");
       setLinkedProductId("");
       setLinkedCourseId("");
+      setLinkedLiveId("");
       setLinkedGrowId("");
+      setLinkedForumThreadId("");
       setStorefrontSlug("");
       setImageUrl("");
       setExternalLinkUrl("");
@@ -228,15 +336,20 @@ export default function CommercialFeedRoute() {
           storefront, or support Q&A thread. Keep threaded conversation in Forum/Q&A.
         </Text>
         <View style={styles.chipRow}>
-          {allowedTypes.map((option) => (
+          {allowedCampaignKinds.map((option) => (
             <Pressable
               key={option}
-              onPress={() => setType(option)}
-              accessibilityLabel={`Select ${option} campaign type`}
-              style={[styles.chip, type === option && styles.chipSelected]}
+              onPress={() => setCampaignKind(option)}
+              accessibilityLabel={`Select ${campaignKindLabels[option]} campaign type`}
+              style={[styles.chip, campaignKind === option && styles.chipSelected]}
             >
-              <Text style={[styles.chipText, type === option && styles.chipTextSelected]}>
-                {option}
+              <Text
+                style={[
+                  styles.chipText,
+                  campaignKind === option && styles.chipTextSelected
+                ]}
+              >
+                {campaignKindLabels[option]}
               </Text>
             </Pressable>
           ))}
@@ -278,8 +391,9 @@ export default function CommercialFeedRoute() {
           <View style={styles.linkBox}>
             <Text style={styles.linkBoxTitle}>Optional commercial links</Text>
             <Text style={styles.linkBoxText}>
-              Attach product, course, grow/trial, storefront, or external purchase context
-              so users can move from the feed into the right public surface.
+              Attach product, course, live, grow/trial, storefront, external purchase
+              context, or a Forum/Q&A thread so users can move from the ad into the right
+              public surface.
             </Text>
             <TextInput
               value={linkedProductId}
@@ -298,12 +412,28 @@ export default function CommercialFeedRoute() {
               accessibilityLabel="Linked course"
             />
             <TextInput
+              value={linkedLiveId}
+              onChangeText={setLinkedLiveId}
+              style={styles.input}
+              placeholder="Linked live ID or slug"
+              autoCapitalize="none"
+              accessibilityLabel="Linked live"
+            />
+            <TextInput
               value={linkedGrowId}
               onChangeText={setLinkedGrowId}
               style={styles.input}
               placeholder="Linked grow or trial ID"
               autoCapitalize="none"
               accessibilityLabel="Linked grow or trial"
+            />
+            <TextInput
+              value={linkedForumThreadId}
+              onChangeText={setLinkedForumThreadId}
+              style={styles.input}
+              placeholder="Linked Forum/Q&A thread ID"
+              autoCapitalize="none"
+              accessibilityLabel="Linked forum thread"
             />
             <TextInput
               value={storefrontSlug}
@@ -351,6 +481,17 @@ export default function CommercialFeedRoute() {
                 accessibilityLabel="Commercial feed campaign image preview"
               />
             ) : null}
+            {readinessWarnings.length ? (
+              <View style={styles.warningBox}>
+                {readinessWarnings.map((warning) => (
+                  <Text key={warning} style={styles.warningText}>
+                    {warning}
+                  </Text>
+                ))}
+              </View>
+            ) : (
+              <Text style={styles.readyText}>Campaign has destination and creative.</Text>
+            )}
             <View style={styles.twoColumn}>
               <TextInput
                 value={externalLinkLabel}
@@ -459,7 +600,9 @@ export default function CommercialFeedRoute() {
           ) : null}
           {post.linkedProductId ||
           post.linkedCourseId ||
+          post.linkedLiveId ||
           post.linkedGrowId ||
+          post.linkedForumThreadId ||
           post.storefrontSlug ||
           post.externalLinks?.length ? (
             <View style={styles.linkMetaRow}>
@@ -469,8 +612,14 @@ export default function CommercialFeedRoute() {
               {post.linkedCourseId ? (
                 <Text style={styles.linkMeta}>Course: {post.linkedCourseId}</Text>
               ) : null}
+              {post.linkedLiveId ? (
+                <Text style={styles.linkMeta}>Live: {post.linkedLiveId}</Text>
+              ) : null}
               {post.linkedGrowId ? (
                 <Text style={styles.linkMeta}>Grow/trial: {post.linkedGrowId}</Text>
+              ) : null}
+              {post.linkedForumThreadId ? (
+                <Text style={styles.linkMeta}>Forum/Q&A: {post.linkedForumThreadId}</Text>
               ) : null}
               {post.storefrontSlug ? (
                 <Text style={styles.linkMeta}>Store: {post.storefrontSlug}</Text>
@@ -547,6 +696,9 @@ const styles = StyleSheet.create({
     borderRadius: 8,
     backgroundColor: "#E2E8F0"
   },
+  warningBox: { gap: 4 },
+  warningText: { color: "#92400E", fontSize: 12, fontWeight: "800" },
+  readyText: { color: "#166534", fontSize: 12, fontWeight: "900" },
   twoColumn: { flexDirection: "row", flexWrap: "wrap", gap: 8 },
   columnInput: { flex: 1, minWidth: 180 },
   chipRow: { flexDirection: "row", flexWrap: "wrap", gap: 8 },

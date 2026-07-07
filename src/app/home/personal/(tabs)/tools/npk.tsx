@@ -333,10 +333,10 @@ export default function NpkToolScreen() {
       <View style={styles.guidanceCard}>
         <Text style={styles.resultTitle}>AI-guided, calculator-verified</Text>
         <Text style={styles.fieldHint}>
-          Use the target profile and ingredient rows for "help me build a recipe"
-          conversations. GrowPath AI should collect missing inputs and explain tradeoffs,
-          while this deterministic tool preserves label N-P-K, converts P2O5/K2O for
-          elemental math, tracks release timing, and saves the ToolRun for review.
+          Use the target profile and ingredient rows for recipe-building conversations.
+          GrowPath AI should collect missing inputs and explain tradeoffs, while this
+          deterministic tool preserves label N-P-K, converts P2O5/K2O for elemental math,
+          tracks release timing, and saves the ToolRun for review.
         </Text>
       </View>
       <PersonalFeedPlacement placement="top" routeKey="personal_tools_npk" longContent />

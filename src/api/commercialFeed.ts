@@ -19,6 +19,7 @@ export type CommercialFeedPost = {
   linkedProductId?: string;
   linkedProductLineId?: string;
   linkedCourseId?: string;
+  linkedLiveId?: string;
   linkedGrowId?: string;
   linkedForumThreadId?: string;
   storefrontSlug?: string;
@@ -82,6 +83,7 @@ export async function createCommercialFeedPost(input: {
   linkedProductId?: string;
   linkedProductLineId?: string;
   linkedCourseId?: string;
+  linkedLiveId?: string;
   linkedGrowId?: string;
   linkedForumThreadId?: string;
   storefrontSlug?: string;
