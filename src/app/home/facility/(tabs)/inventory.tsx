@@ -184,14 +184,18 @@ export default function FacilityInventoryTab() {
             >
               <Text style={styles.ghostText}>Reload</Text>
             </Pressable>
-            <Pressable
-              accessibilityRole="button"
-              accessibilityLabel="Open inventory AI risk"
-              onPress={() => router.push("/home/facility/ai-ask?preset=inventory" as any)}
-              style={styles.ghostButton}
-            >
-              <Text style={styles.ghostText}>AI risk</Text>
-            </Pressable>
+            {items.length ? (
+              <Pressable
+                accessibilityRole="button"
+                accessibilityLabel="Open inventory AI review"
+                onPress={() =>
+                  router.push("/home/facility/ai-ask?preset=inventory" as any)
+                }
+                style={styles.ghostButton}
+              >
+                <Text style={styles.ghostText}>AI review</Text>
+              </Pressable>
+            ) : null}
           </View>
         </View>
 
@@ -232,7 +236,13 @@ export default function FacilityInventoryTab() {
         )}
 
         {sorted.length === 0 ? (
-          <Text style={styles.empty}>No inventory items yet.</Text>
+          <View style={styles.emptyCard}>
+            <Text style={styles.emptyTitle}>No inventory items yet.</Text>
+            <Text style={styles.empty}>
+              Add real inputs, products, packaging, tools, or facility supplies before
+              running AI reorder or stock-risk review.
+            </Text>
+          </View>
         ) : (
           <FlatList
             data={sorted}
@@ -334,6 +344,19 @@ const styles = StyleSheet.create({
   warnText: { color: "#b45309" },
   dangerText: { color: "#991b1b" },
   lockedText: { color: "#92400e", fontWeight: "800", marginBottom: 12 },
+  emptyCard: {
+    backgroundColor: "#F8FAFC",
+    borderColor: "#CBD5E1",
+    borderRadius: 12,
+    borderWidth: 1,
+    padding: 14
+  },
+  emptyTitle: {
+    color: "#0F172A",
+    fontSize: 15,
+    fontWeight: "900",
+    marginBottom: 4
+  },
   primaryButton: {
     alignSelf: "flex-start",
     backgroundColor: "#0f172a",
