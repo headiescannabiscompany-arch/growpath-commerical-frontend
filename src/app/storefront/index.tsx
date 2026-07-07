@@ -567,7 +567,9 @@ export default function Storefront() {
                 key={item.label}
                 style={[styles.checkItem, item.complete && styles.checkItemComplete]}
               >
-                <Text style={styles.checkIcon}>{item.complete ? "OK" : "TODO"}</Text>
+                <Text style={styles.checkIcon}>
+                  {item.complete ? "Ready" : "Needs work"}
+                </Text>
                 <View style={styles.checkCopy}>
                   <Text style={styles.checkLabel}>{item.label}</Text>
                   <Text style={styles.checkHelper}>{item.helper}</Text>

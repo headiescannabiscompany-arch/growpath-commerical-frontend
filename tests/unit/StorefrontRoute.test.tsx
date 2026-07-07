@@ -178,6 +178,8 @@ describe("Storefront route", () => {
       expect(mockApiRequest).toHaveBeenCalledWith("/api/commercial/courses")
     );
     expect(screen.getByText("Featured Courses")).toBeTruthy();
+    expect(screen.getAllByText("Needs work").length).toBeGreaterThan(0);
+    expect(screen.queryByText("TODO")).toBeNull();
     expect(screen.getByText("Living Soil Basics")).toBeTruthy();
     expect(screen.getByText(/Interests living soil, dry amendments/)).toBeTruthy();
     expect(screen.getByText("Live Soil Mixing Demo")).toBeTruthy();
