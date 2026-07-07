@@ -17,7 +17,6 @@ import EditLessonScreen from "../screens/EditLessonScreen";
 import LinksScreen from "../screens/LinksScreen";
 import CampaignsScreen from "../screens/CampaignsScreen";
 import CommercialOrdersScreen from "../screens/CommercialOrdersScreen";
-import StorefrontScreen from "../screens/StorefrontScreen";
 import EarningsScreen from "../screens/EarningsScreen";
 import CreatorPayoutScreen from "../screens/CreatorPayoutScreen";
 import AdminPayoutsScreen from "../screens/AdminPayoutsScreen";
@@ -29,6 +28,7 @@ import MarketplaceDetailScreen from "../screens/MarketplaceDetailScreen";
 import MarketplaceIntegrationScreen from "../screens/commercial/MarketplaceIntegrationScreen";
 import CommercialFeedRoute from "../app/feed";
 import CommercialCommunityRoute from "../app/home/commercial/community";
+import CommercialStorefrontRoute from "../app/home/commercial/storefront";
 import CommercialCoursesRoute from "../app/home/commercial/courses";
 import CommercialCourseDetailRoute from "../app/home/commercial/courses/[courseId]";
 import CommercialLivesRoute from "../app/home/commercial/lives";
@@ -97,7 +97,7 @@ export default function CommercialStack() {
         name="CommercialProductLineDetail"
         component={CommercialProductLineDetailRoute}
       />
-      <Stack.Screen name="Storefront" component={StorefrontScreen} />
+      <Stack.Screen name="Storefront" component={CommercialStorefrontRoute} />
       <Stack.Screen
         name="CommercialBatchPlanner"
         component={CommercialBatchPlannerRoute}

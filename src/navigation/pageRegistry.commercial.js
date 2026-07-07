@@ -44,7 +44,7 @@ export const PAGE_REGISTRY_COMMERCIAL = [
     icon: "storefront-outline",
     capabilityKey: "commercial.storefront",
     primary: true,
-    component: require("../screens/StorefrontScreen").default
+    component: require("../app/home/commercial/storefront").default
   },
   {
     name: "CommercialBatchPlanner",

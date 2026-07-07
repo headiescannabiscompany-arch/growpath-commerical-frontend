@@ -72,6 +72,7 @@ describe("commercial page registry", () => {
       "CommercialBatchPlannerRoute"
     );
     expect(byName.CommercialProductTrials.component?.name).toBe("CommercialTrialsRoute");
+    expect(byName.Storefront.component?.name).toBe("CommercialStorefrontRoute");
     expect(byName.MarketingPlanner.component?.name).toBe("CommercialMarketingRoute");
     expect(byName.CommercialInventory.component?.name).toBe("CommercialInventoryRoute");
     expect(byName.Courses.component?.name).toBe("CommercialCoursesRoute");

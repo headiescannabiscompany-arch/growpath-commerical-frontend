@@ -7,7 +7,7 @@ import CommercialLivesRoute from "../app/home/commercial/lives";
 import CommercialProductsRoute from "../app/home/commercial/products";
 import CommercialFeedRoute from "../app/feed";
 import CommercialProfileRoute from "../app/home/commercial/profile";
-import StorefrontScreen from "../screens/StorefrontScreen";
+import CommercialStorefrontRoute from "../app/home/commercial/storefront";
 
 const Tab = createBottomTabNavigator();
 
@@ -21,7 +21,7 @@ export default function CommercialTabs() {
       />
       <Tab.Screen
         name="Storefront"
-        component={StorefrontScreen}
+        component={CommercialStorefrontRoute}
         options={{ title: "Storefront" }}
       />
       <Tab.Screen
