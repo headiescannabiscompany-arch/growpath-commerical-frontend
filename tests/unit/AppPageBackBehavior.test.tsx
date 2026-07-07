@@ -57,6 +57,17 @@ describe("AppPage back behavior", () => {
     expect(screen.getByText("Commercial dashboard")).toBeTruthy();
   });
 
+  it("hides the shared back button on commercial orders root page", () => {
+    const screen = render(
+      <AppPage routeKey="orders">
+        <Text>Orders root</Text>
+      </AppPage>
+    );
+
+    expect(screen.queryByText("Shared Back")).toBeNull();
+    expect(screen.getByText("Orders root")).toBeTruthy();
+  });
+
   it("shows the shared back button on nested pages by default", () => {
     const screen = render(
       <AppPage routeKey="commercial-product-detail">

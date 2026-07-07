@@ -40,6 +40,7 @@ const NO_BACK_ROUTE_KEYS = new Set([
   "commercial-profile",
   "commercial-trials",
   "facility_dashboard",
+  "orders",
   "store",
   "store-public",
   "storefront"
