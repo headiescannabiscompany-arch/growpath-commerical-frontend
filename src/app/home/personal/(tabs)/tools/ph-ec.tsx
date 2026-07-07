@@ -3,10 +3,67 @@ import React from "react";
 import BackendCalculatorToolScreen, {
   tomorrow
 } from "@/features/personal/tools/BackendCalculatorToolScreen";
+import { saveToolRunAndCreateTasks } from "@/features/personal/tools/saveToolRunAndOpenJournal";
 
 function n(value: string, fallback?: number) {
   const parsed = Number(value);
   return Number.isFinite(parsed) ? parsed : fallback;
+}
+
+function normalizePriority(
+  value: unknown,
+  fallback: "low" | "medium" | "high" = "medium"
+) {
+  return value === "low" || value === "medium" || value === "high" ? value : fallback;
+}
+
+function phEcTaskPlan(outputs: Record<string, any>) {
+  const planned = Array.isArray(outputs.tasksToCreate) ? outputs.tasksToCreate : [];
+  if (planned.length) {
+    return planned.slice(0, 8).map((task: any, index: number) => ({
+      title: String(task?.title || `pH / EC follow-up ${index + 1}`),
+      priority: normalizePriority(task?.priority),
+      dueDate: tomorrow(Number(task?.dueInDays || index + 1)),
+      description:
+        task?.description ||
+        "Follow up on pH/EC readings with fresh measurements, plant response, and watering/feed notes."
+    }));
+  }
+
+  const warnings = Array.isArray(outputs.warnings) ? outputs.warnings : [];
+  const risks = Array.isArray(outputs.possibleRisks) ? outputs.possibleRisks : [];
+  const highPriority =
+    warnings.length > 0 ||
+    risks.length > 0 ||
+    ["high", "out_of_range"].includes(String(outputs.riskLevel || outputs.ecStatus));
+
+  return [
+    {
+      title: outputs.retestTaskSuggestion?.title || "Retest pH / EC",
+      priority: normalizePriority(
+        outputs.retestTaskSuggestion?.priority,
+        highPriority ? "high" : "medium"
+      ),
+      dueDate: tomorrow(outputs.retestTaskSuggestion?.dueInDays || 1),
+      description:
+        warnings.join(" ") ||
+        "Retest input and runoff pH/EC before changing feed strength or pH adjustment."
+    },
+    {
+      title: "Log plant response to pH / EC trend",
+      priority: highPriority ? "high" : ("medium" as const),
+      dueDate: tomorrow(2),
+      description:
+        "Record leaf posture, color, tip burn, clawing, deficiency signs, watering volume, runoff amount, and photos."
+    },
+    {
+      title: "Review source water and feed assumptions",
+      priority: "medium" as const,
+      dueDate: tomorrow(3),
+      description:
+        "Check water source, alkalinity/minerals if known, meter calibration, input recipe, EC unit, and whether runoff drift is repeating."
+    }
+  ];
 }
 
 export default function PhEcToolScreen() {
@@ -79,6 +136,28 @@ export default function PhEcToolScreen() {
         priority: outputs.retestTaskSuggestion?.priority || "medium",
         dueDate: tomorrow(outputs.retestTaskSuggestion?.dueInDays || 1)
       })}
+      buildActions={({ outputs, payload, toolRun, growId, plantContext }) => [
+        {
+          key: "create-ph-ec-tasks",
+          label: "Create pH / EC Task Plan",
+          variant: "secondary",
+          pendingLabel: "Creating...",
+          disabled: !growId,
+          successMessage: "Created pH / EC tasks.",
+          onPress: async () => {
+            const result = await saveToolRunAndCreateTasks({
+              growId,
+              ...plantContext.toolRunContext,
+              toolKey: "ph-ec-check",
+              toolRunId: toolRun?.id || toolRun?._id,
+              input: payload,
+              output: outputs,
+              tasks: phEcTaskPlan(outputs)
+            });
+            if (!result.ok) throw new Error(result.error);
+          }
+        }
+      ]}
     />
   );
 }
