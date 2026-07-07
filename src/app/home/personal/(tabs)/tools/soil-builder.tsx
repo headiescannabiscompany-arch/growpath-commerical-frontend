@@ -9,15 +9,45 @@ function n(value: string, fallback?: number) {
   return Number.isFinite(parsed) ? parsed : fallback;
 }
 
+function amendment(
+  name: string,
+  dose: string,
+  doseUnit: string,
+  releaseClass: string,
+  analysis: string
+) {
+  const [N = 0, P2O5 = 0, K2O = 0] = analysis
+    .split("-")
+    .map((part) => Number(part.trim()));
+  return {
+    name,
+    doseRate: n(dose, 0),
+    doseUnit,
+    releaseClass,
+    guaranteedAnalysis: { N, P2O5, K2O }
+  };
+}
+
 export default function SoilBuilderToolScreen() {
   return (
     <BackendCalculatorToolScreen
       tool="soil-builder"
       toolKey="soil-builder"
       title="Soil Builder"
-      subtitle="Build base, compost, aeration, amendment, and mineral amounts from total soil volume."
+      subtitle="Build full soil recipes with base media, compost uncertainty, amendments, release timing, and rest/cook planning."
       fields={[
         { key: "mixName", label: "Mix name", defaultValue: "Living soil mix" },
+        { key: "goal", label: "Goal", defaultValue: "medium veg soil" },
+        {
+          key: "targetNpk",
+          label: "Target N-P-K",
+          defaultValue: "3-1-1"
+        },
+        {
+          key: "targetReleaseCurve",
+          label: "Target release curve",
+          defaultValue: "1-1-1 slow base plus faster nitrogen"
+        },
         { key: "intendedUse", label: "Intended use", defaultValue: "veg" },
         { key: "stage", label: "Stage", defaultValue: "veg" },
         {
@@ -27,6 +57,7 @@ export default function SoilBuilderToolScreen() {
           keyboardType: "numeric"
         },
         { key: "volumeUnit", label: "Volume unit", defaultValue: "gallons" },
+        { key: "baseMedia", label: "Base media", defaultValue: "peat/coco blend" },
         {
           key: "basePercent",
           label: "Base %",
@@ -45,36 +76,124 @@ export default function SoilBuilderToolScreen() {
           defaultValue: "34",
           keyboardType: "numeric"
         },
-        { key: "amendmentName", label: "Amendment", defaultValue: "Kelp meal" },
+        {
+          key: "biocharPercent",
+          label: "Biochar %",
+          defaultValue: "0",
+          keyboardType: "numeric"
+        },
+        {
+          key: "compostUncertainty",
+          label: "Compost uncertainty",
+          defaultValue: "medium - no lab test"
+        },
+        { key: "amendmentName", label: "Fast amendment", defaultValue: "Alfalfa meal" },
         {
           key: "amendmentDose",
-          label: "Amendment dose",
+          label: "Fast amendment dose",
           defaultValue: "0.5",
           keyboardType: "numeric"
         },
         {
           key: "amendmentUnit",
-          label: "Amendment dose unit",
+          label: "Fast amendment dose unit",
           defaultValue: "cups_per_cubic_foot"
+        },
+        {
+          key: "amendmentAnalysis",
+          label: "Fast amendment N-P-K",
+          defaultValue: "3-1-2"
+        },
+        {
+          key: "amendmentRelease",
+          label: "Fast amendment release",
+          defaultValue: "fast"
+        },
+        {
+          key: "amendmentNameB",
+          label: "Slow base amendment",
+          defaultValue: "Fish bone meal"
+        },
+        {
+          key: "amendmentDoseB",
+          label: "Slow base dose",
+          defaultValue: "0.5",
+          keyboardType: "numeric"
+        },
+        {
+          key: "amendmentUnitB",
+          label: "Slow base dose unit",
+          defaultValue: "cups_per_cubic_foot"
+        },
+        {
+          key: "amendmentAnalysisB",
+          label: "Slow base N-P-K",
+          defaultValue: "3-16-0"
+        },
+        {
+          key: "amendmentReleaseB",
+          label: "Slow base release",
+          defaultValue: "slow"
+        },
+        {
+          key: "mineralSupport",
+          label: "Mineral support",
+          defaultValue: "gypsum, basalt, oyster shell"
+        },
+        {
+          key: "biologySupport",
+          label: "Biology / activation",
+          defaultValue: "worm castings, microbial inoculant, moisture activation"
+        },
+        {
+          key: "restCookDays",
+          label: "Rest/cook days",
+          defaultValue: "21",
+          keyboardType: "numeric"
+        },
+        {
+          key: "safetyNotes",
+          label: "Assumptions and cautions",
+          defaultValue:
+            "Compost and castings are estimates unless lab-tested. Avoid hot mixes for seedlings.",
+          multiline: true
         }
       ]}
       buildPayload={(values, { growId, plantContext }) => ({
         growId: growId || undefined,
         ...plantContext.toolRunContext,
         mixName: values.mixName,
+        goal: values.goal,
+        targetNpk: values.targetNpk,
+        targetReleaseCurve: values.targetReleaseCurve,
         totalVolume: n(values.totalVolume),
         volumeUnit: values.volumeUnit,
+        baseMedia: values.baseMedia,
         basePercent: n(values.basePercent),
         compostPercent: n(values.compostPercent),
         aerationPercent: n(values.aerationPercent),
+        biocharPercent: n(values.biocharPercent, 0),
+        compostUncertainty: values.compostUncertainty,
         amendments: [
-          {
-            name: values.amendmentName,
-            doseRate: n(values.amendmentDose),
-            doseUnit: values.amendmentUnit,
-            releaseClass: "medium"
-          }
-        ],
+          amendment(
+            values.amendmentName,
+            values.amendmentDose,
+            values.amendmentUnit,
+            values.amendmentRelease,
+            values.amendmentAnalysis
+          ),
+          amendment(
+            values.amendmentNameB,
+            values.amendmentDoseB,
+            values.amendmentUnitB,
+            values.amendmentReleaseB,
+            values.amendmentAnalysisB
+          )
+        ].filter((row) => row.name.trim() && row.doseRate > 0),
+        mineralSupport: values.mineralSupport,
+        biologySupport: values.biologySupport,
+        restCookDays: n(values.restCookDays, 21),
+        safetyNotes: values.safetyNotes,
         intendedUse: values.intendedUse,
         stage: values.stage
       })}
@@ -99,9 +218,29 @@ export default function SoilBuilderToolScreen() {
           label: "Purpose fit",
           value: outputs.purposeFit || "-"
         },
-        { key: "recipe", label: "Recipe type", value: outputs.recipe?.recipeType || "-" }
+        { key: "recipe", label: "Recipe type", value: outputs.recipe?.recipeType || "-" },
+        {
+          key: "release",
+          label: "Release profile",
+          value:
+            outputs.releaseCurve?.summary ||
+            outputs.deliveryCurve?.explanation ||
+            outputs.targetReleaseCurve ||
+            "-"
+        },
+        {
+          key: "ready",
+          label: "Ready / cook time",
+          value: outputs.readyDate || `${outputs.restCookDays ?? "-"} days`
+        }
       ]}
       buildNotices={(outputs) => [
+        {
+          key: "soil-estimate",
+          severity: "info" as const,
+          message:
+            "Soil nutrient availability is an estimate until lab-tested; compost/castings add uncertainty."
+        },
         ...(Array.isArray(outputs.stageTimingWarnings)
           ? outputs.stageTimingWarnings.map((message: string, index: number) => ({
               key: `stage-${index}`,
@@ -129,7 +268,7 @@ export default function SoilBuilderToolScreen() {
         title: `Mix ${outputs.mixName || "soil"}`,
         description: Array.isArray(outputs.mixingInstructions)
           ? outputs.mixingInstructions.join(" ")
-          : "Mix soil recipe.",
+          : `Mix soil recipe, moisten, activate biology, and rest/cook for ${outputs.restCookDays ?? 21} days before use when appropriate.`,
         priority: "medium",
         dueDate: tomorrow(1)
       })}
