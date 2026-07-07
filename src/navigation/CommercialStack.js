@@ -16,7 +16,6 @@ import AddLessonScreen from "../screens/AddLessonScreen";
 import EditLessonScreen from "../screens/EditLessonScreen";
 import LinksScreen from "../screens/LinksScreen";
 import CampaignsScreen from "../screens/CampaignsScreen";
-import CommercialOrdersScreen from "../screens/CommercialOrdersScreen";
 import EarningsScreen from "../screens/EarningsScreen";
 import CreatorPayoutScreen from "../screens/CreatorPayoutScreen";
 import AdminPayoutsScreen from "../screens/AdminPayoutsScreen";
@@ -46,6 +45,7 @@ import CommercialTrialDetailRoute from "../app/home/commercial/trials/[trialId]"
 import NewCommercialGrowRoute from "../app/home/commercial/grows/new";
 import CommercialMarketingRoute from "../app/home/commercial/marketing";
 import CommercialAnalyticsRoute from "../app/home/commercial/analytics";
+import CommercialOrdersRoute from "../app/home/commercial/orders";
 import CommercialTasksRoute from "../app/home/commercial/tasks";
 import CommercialInventoryRoute from "../app/home/commercial/inventory";
 import CommercialInventoryCreateRoute from "../app/home/commercial/inventory-create";
@@ -117,7 +117,7 @@ export default function CommercialStack() {
       <Stack.Screen name="Links" component={LinksScreen} />
       <Stack.Screen name="MarketingPlanner" component={CommercialMarketingRoute} />
       <Stack.Screen name="Campaigns" component={CampaignsScreen} />
-      <Stack.Screen name="CommercialOrders" component={CommercialOrdersScreen} />
+      <Stack.Screen name="CommercialOrders" component={CommercialOrdersRoute} />
       <Stack.Screen name="CommercialInventory" component={CommercialInventoryRoute} />
       <Stack.Screen
         name="CommercialInventoryCreate"
