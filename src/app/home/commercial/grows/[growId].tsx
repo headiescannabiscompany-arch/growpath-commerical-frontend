@@ -172,7 +172,7 @@ export default function CommercialGrowDetailRoute({ route }: { route?: any } = {
               label="Open Batch"
             />
           ) : null}
-          <ActionLink href="/home/commercial/feed" label="Create Feed Update" />
+          <ActionLink href="/home/commercial/feed" label="Create Feed Campaign" />
           <ActionLink href="/home/commercial/analytics" label="Analytics" />
         </View>
       </AppCard>

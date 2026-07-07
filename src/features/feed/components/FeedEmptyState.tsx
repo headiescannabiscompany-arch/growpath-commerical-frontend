@@ -2,7 +2,7 @@
 import React from "react";
 import { View, Text } from "react-native";
 
-export function FeedEmptyState({ message = "No feed items found." }) {
+export function FeedEmptyState({ message = "No activity items found." }) {
   return (
     <View
       style={{ flex: 1, alignItems: "center", justifyContent: "center", padding: 32 }}

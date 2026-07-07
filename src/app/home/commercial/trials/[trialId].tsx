@@ -184,7 +184,7 @@ export default function CommercialTrialDetailRoute({ route }: { route?: any } = 
         <Text style={styles.cardTitle}>Trial Record</Text>
         <Text style={styles.body}>
           This is the private evidence record behind product claims, storefront proof,
-          feed updates, courses, and forum support answers.
+          feed campaigns, courses, and Forum/Q&A support answers.
         </Text>
         <View style={styles.detailGrid}>
           <DetailRow label="Purpose" value={trial?.purpose} />

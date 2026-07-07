@@ -1,6 +1,6 @@
 // src/features/feed/hooks/useCommercialFeed.ts
 import { useInfiniteQuery, useQueryClient } from "@tanstack/react-query";
-import { fetchUnifiedFeed } from "../api/feedAdapter";
+import { fetchUnifiedActivity } from "../api/feedAdapter";
 import { FeedItem, FeedFilters, FeedPage } from "../types/feed";
 
 export interface UseCommercialFeedOptions {
@@ -29,7 +29,7 @@ export function useCommercialFeed({
   } = useInfiniteQuery<FeedPage, Error>({
     queryKey,
     queryFn: ({ pageParam }) =>
-      fetchUnifiedFeed({
+      fetchUnifiedActivity({
         facilityId: String(facilityId),
         filters,
         cursor: pageParam as string | undefined,

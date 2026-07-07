@@ -539,7 +539,7 @@ export default function CommercialProductsRoute() {
           dry/cure, aroma/flavor
         </Text>
         <Text style={styles.bullet}>
-          Publish only supported claims as product proof, courses, or feed updates
+          Publish only supported claims as product proof, courses, or feed campaigns
         </Text>
         <View style={styles.actions}>
           <ActionLink href="/home/commercial/batch-planner" label="Batch Planner" />
@@ -561,7 +561,8 @@ export default function CommercialProductsRoute() {
           Attach care instructions, course links, photos, and external purchase URLs
         </Text>
         <Text style={styles.bullet}>
-          Publish seasonal feed campaigns and support answers from product records
+          Publish seasonal feed campaigns and Forum/Q&A support answers from product
+          records
         </Text>
         <View style={styles.actions}>
           <ActionLink href="/home/commercial/inventory" label="Inventory" />

@@ -1674,7 +1674,7 @@ describe("commercial workflow pages", () => {
     expect(screen.getByLabelText("Commercial grow crop summary").props.value).toBe(
       "Bloom formula trial finished with strong aroma and no major burn."
     );
-    expect(screen.getByText("Create Feed Update")).toBeTruthy();
+    expect(screen.getByText("Create Feed Campaign")).toBeTruthy();
 
     fireEvent.changeText(
       screen.getByLabelText("Commercial grow detail status"),

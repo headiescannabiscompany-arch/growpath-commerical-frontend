@@ -55,7 +55,7 @@ export function FeedFiltersBar({
         ))}
       </View>
       <View style={styles.myPostsRow}>
-        <Text style={styles.myPostsLabel}>My Posts</Text>
+        <Text style={styles.myPostsLabel}>Assigned to me</Text>
         <Switch value={myPosts} onValueChange={onToggleMyPosts} />
       </View>
     </View>

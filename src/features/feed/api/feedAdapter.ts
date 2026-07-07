@@ -2,7 +2,7 @@
 import { getTasks, getAlerts, getGrowLogs } from "./feedApi";
 import type { FeedItem } from "../types/feed";
 
-export async function fetchUnifiedFeed(params: {
+export async function fetchUnifiedActivity(params: {
   facilityId: string;
   types?: string;
   status?: string;
@@ -12,7 +12,7 @@ export async function fetchUnifiedFeed(params: {
   filters?: Record<string, any>;
 }) {
   const mergedParams = { ...params, ...(params.filters || {}) };
-  // Fetch all in parallel
+  // Fetch operational activity in parallel. This is not the ad/outreach Feed.
   const [tasksRes, alertsRes, logsRes] = await Promise.all([
     getTasks(mergedParams),
     getAlerts(mergedParams),

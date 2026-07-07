@@ -325,8 +325,8 @@ export default function CommercialTrialsRoute() {
       <AppCard>
         <Text style={styles.cardTitle}>Publishable result</Text>
         <Text style={styles.body}>
-          When a trial has enough evidence, create a feed update, storefront proof point,
-          course lesson, or support post from the trial summary.
+          When a trial has enough evidence, create a feed campaign, storefront proof
+          point, course lesson, or Forum/Q&A support answer from the trial summary.
         </Text>
         <View style={styles.headerActions}>
           <Link href="/home/commercial/feed" asChild>
