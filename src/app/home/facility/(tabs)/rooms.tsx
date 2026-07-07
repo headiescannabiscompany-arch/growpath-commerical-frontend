@@ -77,8 +77,8 @@ function inferRoomName(raw: string) {
   return raw
     .replace(/\b(temp|temperature|rh|humidity|co2|vpd|sensor|probe)\b/gi, "")
     .replace(/\b(controller|module|device|channel|monitor|light|fan|exhaust)\b/gi, "")
+    .replace(/[-_:/|]+/g, " ")
     .replace(/\s+/g, " ")
-    .replace(/[-_:|]+$/g, "")
     .trim();
 }
 
