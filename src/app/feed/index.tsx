@@ -13,6 +13,7 @@ import {
 } from "react-native";
 import { Redirect, useRouter } from "expo-router";
 
+import { apiRequest } from "@/api/apiRequest";
 import { InlineError } from "@/components/InlineError";
 import {
   createCommercialFeedPost,
@@ -235,6 +236,7 @@ export default function CommercialFeedRoute() {
   const [loading, setLoading] = useState(false);
   const [refreshing, setRefreshing] = useState(false);
   const [creating, setCreating] = useState(false);
+  const [creatingSetupTask, setCreatingSetupTask] = useState(false);
   const [error, setError] = useState<any>(null);
   const [feedback, setFeedback] = useState("");
 
@@ -357,6 +359,47 @@ export default function CommercialFeedRoute() {
       setError(e);
     } finally {
       setCreating(false);
+    }
+  }
+
+  async function createCampaignSetupTask() {
+    if (!readinessWarnings.length || creatingSetupTask || !title.trim()) return;
+    setCreatingSetupTask(true);
+    setError(null);
+    setFeedback("");
+    try {
+      await apiRequest("/api/tasks", {
+        method: "POST",
+        body: {
+          workspaceType: "commercial",
+          title: `Complete feed campaign setup: ${title.trim()}`,
+          description: [
+            `Campaign type: ${campaignKindLabels[campaignKind]}.`,
+            `Missing setup: ${readinessWarnings.join(", ")}.`
+          ].join(" "),
+          sourceType: "feed_campaign",
+          sourceId: title.trim(),
+          linkedProductId: linkedProductId.trim() || undefined,
+          linkedCourseId: linkedCourseId.trim() || undefined,
+          linkedLiveId: linkedLiveId.trim() || undefined,
+          linkedForumThreadId: linkedForumThreadId.trim() || undefined,
+          linkedStorefrontSlug: storefrontSlug.trim() || undefined,
+          priority: readinessWarnings.some(
+            (warning) =>
+              warning.includes("destination") || warning.includes("should link")
+          )
+            ? "high"
+            : "normal",
+          status: "open",
+          dueAt: new Date().toISOString().slice(0, 10),
+          reminderPlan: { label: "24 hours before", channels: ["in_app"] }
+        }
+      });
+      setFeedback(`Created campaign setup task for ${title.trim()}.`);
+    } catch (e) {
+      setError(e);
+    } finally {
+      setCreatingSetupTask(false);
     }
   }
 
@@ -575,6 +618,20 @@ export default function CommercialFeedRoute() {
                       {warning}
                     </Text>
                   ))}
+                  <Pressable
+                    accessibilityRole="button"
+                    accessibilityLabel="Create feed campaign setup task"
+                    disabled={creatingSetupTask || !title.trim()}
+                    onPress={createCampaignSetupTask}
+                    style={[
+                      styles.secondaryButton,
+                      creatingSetupTask || !title.trim() ? styles.disabled : null
+                    ]}
+                  >
+                    <Text style={styles.secondaryButtonText}>
+                      {creatingSetupTask ? "Creating..." : "Create Task"}
+                    </Text>
+                  </Pressable>
                 </View>
               ) : (
                 <Text style={styles.readyText}>

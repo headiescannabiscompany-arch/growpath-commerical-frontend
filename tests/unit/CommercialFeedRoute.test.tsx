@@ -70,6 +70,9 @@ describe("CommercialFeedRoute", () => {
       if (path === "/api/commercial/posts" && options?.method === "POST") {
         return Promise.resolve({ post: { id: "campaign-new", ...options.body } });
       }
+      if (path === "/api/tasks" && options?.method === "POST") {
+        return Promise.resolve({ task: { id: "task-new", ...options.body } });
+      }
       return Promise.resolve({});
     });
   });
@@ -104,6 +107,28 @@ describe("CommercialFeedRoute", () => {
     expect(
       screen.getByLabelText("Publish feed campaign").props.accessibilityState?.disabled
     ).toBe(true);
+    fireEvent.press(screen.getByLabelText("Create feed campaign setup task"));
+
+    await waitFor(() =>
+      expect(mockApiRequest).toHaveBeenCalledWith(
+        "/api/tasks",
+        expect.objectContaining({
+          method: "POST",
+          body: expect.objectContaining({
+            workspaceType: "commercial",
+            title: "Complete feed campaign setup: Friday mix demo",
+            sourceType: "feed_campaign",
+            sourceId: "Friday mix demo",
+            priority: "high",
+            status: "open",
+            reminderPlan: { label: "24 hours before", channels: ["in_app"] }
+          })
+        })
+      )
+    );
+    expect(
+      screen.getByText("Created campaign setup task for Friday mix demo.")
+    ).toBeTruthy();
     fireEvent.changeText(screen.getByLabelText("Feed campaign tags"), "dry amendments");
     fireEvent.changeText(screen.getByLabelText("Linked live"), "live-demo-1");
     fireEvent.changeText(screen.getByLabelText("Linked forum thread"), "thread-q-and-a");
