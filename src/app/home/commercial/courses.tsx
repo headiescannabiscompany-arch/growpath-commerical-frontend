@@ -84,6 +84,21 @@ function outlineItems(value: string, type: "module" | "lesson" | "task") {
   }));
 }
 
+function courseSetupWarnings(course: Partial<CommercialCourse>) {
+  const warnings: string[] = [];
+  if (!course.thumbnailUrl?.trim()) warnings.push("add thumbnail");
+  if (!course.description?.trim()) warnings.push("add description");
+  if (!course.growInterests?.length) warnings.push("add grow interests");
+  if (!course.modules?.length) warnings.push("add module");
+  if (!course.lessons?.length) warnings.push("add lesson");
+  if (course.access === "paid") {
+    if (!Number(course.price)) warnings.push("add paid price");
+    if (!course.stripeProductId?.trim()) warnings.push("connect Stripe product");
+    if (!course.stripePriceId?.trim()) warnings.push("connect Stripe price");
+  }
+  return warnings;
+}
+
 function ActionLink({ href, label }: { href: string; label: string }) {
   return (
     <Link href={href as any} asChild>
@@ -109,6 +124,18 @@ export default function CommercialCoursesRoute() {
     () => courses.filter((course) => course.access === "paid").length,
     [courses]
   );
+  const formWarnings = courseSetupWarnings({
+    title: form.title,
+    description: form.description,
+    thumbnailUrl: form.thumbnailUrl,
+    growInterests: splitList(form.growInterests),
+    access: form.access,
+    price: Number(form.price) || 0,
+    stripeProductId: form.stripeProductId,
+    stripePriceId: form.stripePriceId,
+    modules: outlineItems(form.moduleOutline, "module"),
+    lessons: outlineItems(form.lessonOutline, "lesson")
+  });
 
   async function loadCourses() {
     setLoading(true);
@@ -415,6 +442,12 @@ export default function CommercialCoursesRoute() {
             </Pressable>
           ))}
         </View>
+        {formWarnings.length ? (
+          <View style={styles.warningBox}>
+            <Text style={styles.warningTitle}>Course setup checklist</Text>
+            <Text style={styles.warningText}>{formWarnings.join(" | ")}</Text>
+          </View>
+        ) : null}
         <Pressable
           accessibilityRole="button"
           accessibilityLabel="Create commercial course"
@@ -435,58 +468,73 @@ export default function CommercialCoursesRoute() {
         <Text style={styles.cardTitle}>Current commercial courses</Text>
         {courses.length ? (
           <View style={styles.list}>
-            {courses.map((course) => (
-              <View key={courseId(course)} style={styles.courseRow}>
-                {course.thumbnailUrl ? (
-                  <Image
-                    accessibilityLabel={`${course.title || "Course"} thumbnail`}
-                    source={{ uri: course.thumbnailUrl }}
-                    style={styles.courseThumbnail}
-                  />
-                ) : null}
-                <Text style={styles.courseTitle}>
-                  {course.title || "Untitled course"}
-                </Text>
-                <Text style={styles.courseMeta}>
-                  {[
-                    course.category,
-                    course.skillLevel,
-                    course.access || "free",
-                    course.status || "draft",
-                    course.growInterests?.length
-                      ? `Interests ${course.growInterests.join(", ")}`
-                      : null,
-                    course.linkedLiveIds?.length
-                      ? `Lives ${course.linkedLiveIds.join(", ")}`
-                      : null
-                  ]
-                    .filter(Boolean)
-                    .join(" | ")}
-                </Text>
-                {course.modules?.length ||
-                course.lessons?.length ||
-                course.tasks?.length ? (
-                  <Text style={styles.courseMeta}>
-                    {[
-                      course.modules?.length ? `${course.modules.length} modules` : null,
-                      course.lessons?.length ? `${course.lessons.length} lessons` : null,
-                      course.tasks?.length ? `${course.tasks.length} tasks` : null
-                    ]
-                      .filter(Boolean)
-                      .join(" | ")}
-                  </Text>
-                ) : null}
-                {course.description ? (
-                  <Text style={styles.courseBody}>{course.description}</Text>
-                ) : null}
-                <View style={styles.actions}>
-                  <ActionLink
-                    href={`/home/commercial/courses/${encodeURIComponent(courseId(course))}`}
-                    label="Open Detail"
-                  />
-                </View>
-              </View>
-            ))}
+            {courses.map((course) =>
+              (() => {
+                const warnings = courseSetupWarnings(course);
+                return (
+                  <View key={courseId(course)} style={styles.courseRow}>
+                    {course.thumbnailUrl ? (
+                      <Image
+                        accessibilityLabel={`${course.title || "Course"} thumbnail`}
+                        source={{ uri: course.thumbnailUrl }}
+                        style={styles.courseThumbnail}
+                      />
+                    ) : null}
+                    <Text style={styles.courseTitle}>
+                      {course.title || "Untitled course"}
+                    </Text>
+                    <Text style={styles.courseMeta}>
+                      {[
+                        course.category,
+                        course.skillLevel,
+                        course.access || "free",
+                        course.status || "draft",
+                        course.growInterests?.length
+                          ? `Interests ${course.growInterests.join(", ")}`
+                          : null,
+                        course.linkedLiveIds?.length
+                          ? `Lives ${course.linkedLiveIds.join(", ")}`
+                          : null
+                      ]
+                        .filter(Boolean)
+                        .join(" | ")}
+                    </Text>
+                    {course.modules?.length ||
+                    course.lessons?.length ||
+                    course.tasks?.length ? (
+                      <Text style={styles.courseMeta}>
+                        {[
+                          course.modules?.length
+                            ? `${course.modules.length} modules`
+                            : null,
+                          course.lessons?.length
+                            ? `${course.lessons.length} lessons`
+                            : null,
+                          course.tasks?.length ? `${course.tasks.length} tasks` : null
+                        ]
+                          .filter(Boolean)
+                          .join(" | ")}
+                      </Text>
+                    ) : null}
+                    {course.description ? (
+                      <Text style={styles.courseBody}>{course.description}</Text>
+                    ) : null}
+                    {warnings.length ? (
+                      <View style={styles.warningBox}>
+                        <Text style={styles.warningTitle}>Missing course setup</Text>
+                        <Text style={styles.warningText}>{warnings.join(" | ")}</Text>
+                      </View>
+                    ) : null}
+                    <View style={styles.actions}>
+                      <ActionLink
+                        href={`/home/commercial/courses/${encodeURIComponent(courseId(course))}`}
+                        label="Open Detail"
+                      />
+                    </View>
+                  </View>
+                );
+              })()
+            )}
           </View>
         ) : (
           <Text style={styles.muted}>No commercial courses yet.</Text>
@@ -664,6 +712,26 @@ const styles = StyleSheet.create({
   },
   actionTextSelected: {
     color: "#FFFFFF"
+  },
+  warningBox: {
+    backgroundColor: "#FFF7ED",
+    borderColor: "#FDBA74",
+    borderRadius: 8,
+    borderWidth: 1,
+    marginTop: 10,
+    padding: 10
+  },
+  warningTitle: {
+    color: "#9A3412",
+    fontSize: 12,
+    fontWeight: "900",
+    textTransform: "uppercase"
+  },
+  warningText: {
+    color: "#9A3412",
+    fontSize: 12,
+    fontWeight: "800",
+    marginTop: 4
   },
   primaryAction: {
     alignSelf: "flex-start",

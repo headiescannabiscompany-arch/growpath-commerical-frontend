@@ -730,6 +730,8 @@ describe("commercial workflow pages", () => {
     expect(screen.getByText("Free and paid courses")).toBeTruthy();
     expect(screen.getAllByText("Create Course").length).toBeGreaterThan(0);
     expect(screen.getByText("Product Trials")).toBeTruthy();
+    expect(screen.getByText("Course setup checklist")).toBeTruthy();
+    expect(screen.getByText(/add thumbnail/)).toBeTruthy();
     await waitFor(() => expect(screen.getByText("Living Soil Product Use")).toBeTruthy());
     expect(screen.getByText("Open Detail")).toBeTruthy();
 
@@ -798,6 +800,8 @@ describe("commercial workflow pages", () => {
       "Watch lesson\nComplete product checklist"
     );
     fireEvent.press(screen.getByLabelText("Set commercial course access paid"));
+    expect(screen.getByText(/connect Stripe product/)).toBeTruthy();
+    expect(screen.getByText(/connect Stripe price/)).toBeTruthy();
     fireEvent.changeText(screen.getByLabelText("Commercial course price"), "49");
     fireEvent.changeText(
       screen.getByLabelText("Commercial course Stripe product ID"),
