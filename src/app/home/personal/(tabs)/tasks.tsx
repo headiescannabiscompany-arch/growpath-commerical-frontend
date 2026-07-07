@@ -157,6 +157,15 @@ export default function PersonalTaskCenterRoute() {
     tasks.forEach((task) => grouped[sectionForTask(task)].push(task));
     return grouped;
   }, [tasks]);
+  const taskStats = useMemo(
+    () => [
+      { label: "Overdue", value: sections.overdue.length, tone: "red" as const },
+      { label: "Today", value: sections.today.length, tone: "green" as const },
+      { label: "Upcoming", value: sections.upcoming.length, tone: "blue" as const },
+      { label: "Completed", value: sections.completed.length, tone: "slate" as const }
+    ],
+    [sections]
+  );
 
   async function createTask() {
     if (!canWriteTasks || creating || !growId.trim() || !title.trim()) return;
@@ -263,6 +272,23 @@ export default function PersonalTaskCenterRoute() {
         One action layer for grow work, ToolRuns, recipes, course assignments, lives,
         products, storefront setup, facility SOPs, alerts, and sensor follow-ups.
       </Text>
+      <View style={styles.metricGrid}>
+        {taskStats.map((item) => (
+          <View
+            key={item.label}
+            style={[
+              styles.metricCard,
+              item.tone === "red" && styles.redMetric,
+              item.tone === "green" && styles.greenMetric,
+              item.tone === "blue" && styles.blueMetric,
+              item.tone === "slate" && styles.slateMetric
+            ]}
+          >
+            <Text style={styles.metricValue}>{item.value}</Text>
+            <Text style={styles.metricLabel}>{item.label}</Text>
+          </View>
+        ))}
+      </View>
       <PersonalFeedPlacement
         placement="top"
         routeKey="personal_task_center"
@@ -415,6 +441,21 @@ const styles = StyleSheet.create({
   content: { gap: 12, padding: 20, paddingBottom: 40 },
   title: { color: "#0F172A", fontSize: 24, fontWeight: "900" },
   subtitle: { color: "#475569", fontWeight: "700", lineHeight: 20 },
+  metricGrid: { flexDirection: "row", flexWrap: "wrap", gap: 8 },
+  metricCard: {
+    borderRadius: 8,
+    borderWidth: 1,
+    flexGrow: 1,
+    minWidth: 120,
+    paddingHorizontal: 12,
+    paddingVertical: 10
+  },
+  redMetric: { backgroundColor: "#FEF2F2", borderColor: "#FECACA" },
+  greenMetric: { backgroundColor: "#ECFDF5", borderColor: "#A7F3D0" },
+  blueMetric: { backgroundColor: "#EFF6FF", borderColor: "#BFDBFE" },
+  slateMetric: { backgroundColor: "#F8FAFC", borderColor: "#E2E8F0" },
+  metricValue: { color: "#0F172A", fontSize: 20, fontWeight: "900" },
+  metricLabel: { color: "#475569", fontSize: 11, fontWeight: "900" },
   form: {
     backgroundColor: "#F8FAFC",
     borderColor: "#E2E8F0",
