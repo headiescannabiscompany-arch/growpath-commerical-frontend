@@ -113,6 +113,11 @@ export default function NpkToolScreen() {
   const [batchUnit, setBatchUnit] = useState<"gal" | "L">("gal");
   const [stage, setStage] = useState("veg");
   const [medium, setMedium] = useState("soil");
+  const [recipeMode, setRecipeMode] = useState("dose_existing_products");
+  const [targetN, setTargetN] = useState("");
+  const [targetP, setTargetP] = useState("");
+  const [targetK, setTargetK] = useState("");
+  const [desiredReleaseProfile, setDesiredReleaseProfile] = useState("blended");
   const [recipeName, setRecipeName] = useState("");
   const [savedRecipes, setSavedRecipes] = useState<NutrientRecipe[]>([]);
   const [selectedRecipeId, setSelectedRecipeId] = useState("");
@@ -159,6 +164,13 @@ export default function NpkToolScreen() {
       batchUnit,
       stage,
       medium,
+      recipeMode,
+      targetNpk: {
+        N: targetN ? Number(targetN) : undefined,
+        P: targetP ? Number(targetP) : undefined,
+        K: targetK ? Number(targetK) : undefined
+      },
+      desiredReleaseProfile,
       daysUntilHarvest: daysUntilHarvest ? Number(daysUntilHarvest) : undefined,
       isConcentrate,
       measuredEC: measuredEC ? Number(measuredEC) : undefined,
@@ -195,6 +207,11 @@ export default function NpkToolScreen() {
     setBatchUnit(recipe.batchUnit);
     setStage(recipe.stage || "veg");
     setMedium(recipe.medium || "soil");
+    setRecipeMode((recipe as any).recipeMode || "dose_existing_products");
+    setTargetN(String((recipe as any).targetNpk?.N ?? ""));
+    setTargetP(String((recipe as any).targetNpk?.P ?? ""));
+    setTargetK(String((recipe as any).targetNpk?.K ?? ""));
+    setDesiredReleaseProfile((recipe as any).desiredReleaseProfile || "blended");
     setSourceEC(String(recipe.waterBaseline?.sourceEC ?? ""));
     setSourcePH(String(recipe.waterBaseline?.sourcePH ?? ""));
     setAlkalinityPpm(String(recipe.waterBaseline?.alkalinityPpm ?? ""));
@@ -313,6 +330,15 @@ export default function NpkToolScreen() {
         Build up to 20 product rows. Fertilizer label P and K are converted from P2O5 and
         K2O to elemental ppm.
       </Text>
+      <View style={styles.guidanceCard}>
+        <Text style={styles.resultTitle}>AI-guided, calculator-verified</Text>
+        <Text style={styles.fieldHint}>
+          Use the target profile and ingredient rows for "help me build a recipe"
+          conversations. GrowPath AI should collect missing inputs and explain tradeoffs,
+          while this deterministic tool preserves label N-P-K, converts P2O5/K2O for
+          elemental math, tracks release timing, and saves the ToolRun for review.
+        </Text>
+      </View>
       <PersonalFeedPlacement placement="top" routeKey="personal_tools_npk" longContent />
       {growContext ? (
         <Text style={styles.context}>Grow context: {growContext}</Text>
@@ -389,6 +415,18 @@ export default function NpkToolScreen() {
       <Text style={styles.label}>Recipe context</Text>
       <View style={styles.row}>
         <View style={styles.selectWrap}>
+          <Picker
+            selectedValue={recipeMode}
+            onValueChange={setRecipeMode}
+            style={styles.picker}
+          >
+            <Picker.Item label="Dose existing products" value="dose_existing_products" />
+            <Picker.Item label="Hit target profile" value="hit_target_profile" />
+            <Picker.Item label="Build dry blend" value="build_dry_blend" />
+            <Picker.Item label="Build soil amendment plan" value="soil_amendment_plan" />
+          </Picker>
+        </View>
+        <View style={styles.selectWrap}>
           <Picker selectedValue={stage} onValueChange={setStage} style={styles.picker}>
             {[
               "seedling",
@@ -423,6 +461,40 @@ export default function NpkToolScreen() {
           keyboardType="numeric"
           placeholder="Soil temp C"
         />
+      </View>
+      <Text style={styles.label}>Target profile</Text>
+      <Text style={styles.fieldHint}>
+        Optional target N-P-K lets AI and the calculator compare the recipe goal to the
+        actual label math. Use label N-P-K here; elemental P/K conversion stays inside the
+        deterministic tool output.
+      </Text>
+      <View style={styles.analysisGrid}>
+        {[
+          ["Target N", targetN, setTargetN],
+          ["Target P", targetP, setTargetP],
+          ["Target K", targetK, setTargetK]
+        ].map(([label, value, setter]: any) => (
+          <View key={label} style={styles.analysisField}>
+            <Text style={styles.analysisLabel}>{label}</Text>
+            <TextInput
+              style={styles.analysisInput}
+              value={value}
+              onChangeText={setter}
+              keyboardType="numeric"
+            />
+          </View>
+        ))}
+        <View style={styles.selectWrapFull}>
+          <Picker
+            selectedValue={desiredReleaseProfile}
+            onValueChange={setDesiredReleaseProfile}
+            style={styles.picker}
+          >
+            {["fast", "medium", "slow", "blended"].map((value) => (
+              <Picker.Item key={value} label={`${value} release`} value={value} />
+            ))}
+          </Picker>
+        </View>
       </View>
       <View style={styles.row}>
         {["dry", "even", "waterlogged"].map((value) => (
@@ -874,6 +946,14 @@ const styles = StyleSheet.create({
   context: { color: "#166534", fontWeight: "700" },
   label: { fontWeight: "700", marginTop: 4 },
   row: { flexDirection: "row", alignItems: "center", gap: 8, flexWrap: "wrap" },
+  guidanceCard: {
+    backgroundColor: "#F8FAFC",
+    borderColor: "#E2E8F0",
+    borderRadius: 8,
+    borderWidth: 1,
+    gap: 6,
+    padding: 12
+  },
   volumeInput: {
     minWidth: 130,
     borderWidth: 1,
