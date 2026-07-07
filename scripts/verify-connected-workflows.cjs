@@ -38,6 +38,9 @@ const checks = [
       "tests/unit/FacilityRoomsRoute.test.tsx",
       "tests/unit/FacilityInventoryRoute.test.tsx",
       "tests/unit/integrations_growlink.test.tsx",
+      "tests/unit/ForgotPasswordScreen.test.tsx",
+      "tests/unit/ResetPasswordScreen.test.tsx",
+      "src/api/__tests__/auth.emailVerification.test.ts",
       "tests/unit/SoilBuilderToolScreen.test.tsx",
       "tests/unit/PersonalTaskCenterRoute.test.tsx",
       "tests/unit/GrowTasksScreen.test.tsx"

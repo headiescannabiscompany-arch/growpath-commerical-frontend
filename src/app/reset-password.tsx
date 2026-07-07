@@ -32,13 +32,8 @@ export default function ResetPasswordScreen() {
   const [error, setError] = useState<string | null>(null);
 
   const canSubmit = useMemo(() => {
-    return (
-      token.length > 0 &&
-      password.length >= 8 &&
-      password === confirmPassword &&
-      !submitting
-    );
-  }, [confirmPassword, password, submitting, token]);
+    return !submitting;
+  }, [submitting]);
 
   async function onSubmit() {
     setMessage(null);
