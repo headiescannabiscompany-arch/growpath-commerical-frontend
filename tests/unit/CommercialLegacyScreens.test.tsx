@@ -60,7 +60,7 @@ describe("commercial legacy screens", () => {
 
     fireEvent.changeText(screen.getByPlaceholderText("Plan name"), "Spring soil drop");
     fireEvent.changeText(
-      screen.getByPlaceholderText("Linked product, course, grow, or store URL"),
+      screen.getByPlaceholderText("Linked product, course, evidence run, or store URL"),
       "product-1"
     );
     fireEvent.changeText(screen.getByPlaceholderText("Launch date or window"), "April");

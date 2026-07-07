@@ -47,6 +47,33 @@ function Invoke-Step {
   }
 }
 
+function Assert-NoMatches {
+  param(
+    [string]$Name,
+    [string]$Pattern,
+    [string[]]$Paths
+  )
+
+  Write-Host ""
+  Write-Host "==> $Name"
+
+  $output = & rg $Pattern @Paths -n 2>&1
+  $exitCode = $LASTEXITCODE
+
+  if ($exitCode -eq 1) {
+    Write-Host "No matches found."
+    return
+  }
+
+  if ($exitCode -eq 0) {
+    $output | ForEach-Object { Write-Host $_ }
+    throw "$Name found disallowed matches"
+  }
+
+  $output | ForEach-Object { Write-Host $_ }
+  throw "$Name scan failed with exit code $exitCode"
+}
+
 Write-Host "GrowPath pre-manual validation"
 Write-Host "Frontend: $frontendRoot"
 Write-Host "Backend:  $backendRoot"
@@ -92,6 +119,33 @@ Invoke-Step `
   -WorkingDirectory $frontendRoot `
   -Command "node" `
   -Arguments @("scripts\verify-delivery.mjs")
+
+Assert-NoMatches `
+  -Name "Commercial terminology guard" `
+  -Pattern "trial grow|Trial Grow|Commercial Grow|Commercial Post|Store in Trials|grow/trial" `
+  -Paths @(
+    "src\app\home\commercial",
+    "src\app\store",
+    "src\screens",
+    "tests\unit"
+  )
+
+Invoke-Step `
+  -Name "Commercial storefront and inventory regressions" `
+  -WorkingDirectory $frontendRoot `
+  -Command "node" `
+  -Arguments @(
+    $frontendJest,
+    "--runInBand",
+    "--runTestsByPath",
+    "tests\unit\CommercialInventoryCreateRoute.test.tsx",
+    "tests\unit\CommercialLegacyScreens.test.tsx",
+    "tests\unit\CommercialProfileRoute.test.tsx",
+    "tests\unit\CommercialReportsScreen.test.tsx",
+    "tests\unit\CommercialToolsScreen.test.tsx",
+    "tests\unit\StorefrontScreen.test.tsx",
+    "tests\unit\StoreIndex.test.tsx"
+  )
 
 Invoke-Step `
   -Name "Connected workflow guard" `
