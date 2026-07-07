@@ -374,6 +374,18 @@ describe("commercial workflow pages", () => {
               lessons: [{ title: "Application rate" }],
               tasks: [{ title: "Watch lesson" }],
               status: "draft"
+            },
+            {
+              id: "course-2",
+              title: "Bloom Topdress Workshop",
+              description: "",
+              category: "product_education",
+              growInterests: [],
+              access: "paid",
+              price: 0,
+              modules: [],
+              lessons: [],
+              status: "draft"
             }
           ]
         });
@@ -746,7 +758,34 @@ describe("commercial workflow pages", () => {
     expect(screen.getByText("Course setup checklist")).toBeTruthy();
     expect(screen.getByText(/add thumbnail/)).toBeTruthy();
     await waitFor(() => expect(screen.getByText("Living Soil Product Use")).toBeTruthy());
-    expect(screen.getByText("Open Detail")).toBeTruthy();
+    expect(screen.getByText("Bloom Topdress Workshop")).toBeTruthy();
+    expect(screen.getAllByText("Open Detail").length).toBeGreaterThan(0);
+
+    fireEvent.press(
+      screen.getByLabelText("Create setup task for Bloom Topdress Workshop")
+    );
+
+    await waitFor(() =>
+      expect(mockApiRequest).toHaveBeenCalledWith(
+        "/api/tasks",
+        expect.objectContaining({
+          method: "POST",
+          body: expect.objectContaining({
+            workspaceType: "commercial",
+            title: "Complete course setup: Bloom Topdress Workshop",
+            sourceType: "course",
+            sourceId: "course-2",
+            linkedCourseId: "course-2",
+            priority: "high",
+            status: "open",
+            reminderPlan: { label: "24 hours before", channels: ["in_app"] }
+          })
+        })
+      )
+    );
+    expect(
+      screen.getByText("Created setup task for Bloom Topdress Workshop.")
+    ).toBeTruthy();
 
     fireEvent.changeText(
       screen.getByLabelText("Commercial course title"),
@@ -813,8 +852,8 @@ describe("commercial workflow pages", () => {
       "Watch lesson\nComplete product checklist"
     );
     fireEvent.press(screen.getByLabelText("Set commercial course access paid"));
-    expect(screen.getByText(/connect Stripe product/)).toBeTruthy();
-    expect(screen.getByText(/connect Stripe price/)).toBeTruthy();
+    expect(screen.getAllByText(/connect Stripe product/).length).toBeGreaterThan(0);
+    expect(screen.getAllByText(/connect Stripe price/).length).toBeGreaterThan(0);
     fireEvent.changeText(screen.getByLabelText("Commercial course price"), "49");
     fireEvent.changeText(
       screen.getByLabelText("Commercial course Stripe product ID"),

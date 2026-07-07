@@ -2,6 +2,7 @@ import { Link } from "expo-router";
 import React, { useEffect, useMemo, useState } from "react";
 import { Image, Pressable, StyleSheet, Text, TextInput, View } from "react-native";
 
+import { apiRequest } from "@/api/apiRequest";
 import {
   CommercialCourse,
   createCommercialCourse,
@@ -114,6 +115,8 @@ export default function CommercialCoursesRoute() {
   const [form, setForm] = useState<CourseForm>(EMPTY_FORM);
   const [loading, setLoading] = useState(false);
   const [saving, setSaving] = useState(false);
+  const [creatingTaskForCourseId, setCreatingTaskForCourseId] = useState("");
+  const [feedback, setFeedback] = useState("");
   const [error, setError] = useState<any>(null);
 
   const publishedCount = useMemo(
@@ -190,6 +193,45 @@ export default function CommercialCoursesRoute() {
     }
   }
 
+  async function createCourseSetupTask(course: CommercialCourse, warnings: string[]) {
+    const id = courseId(course);
+    if (!id || !warnings.length || creatingTaskForCourseId) return;
+    setCreatingTaskForCourseId(String(id));
+    setFeedback("");
+    setError(null);
+    try {
+      await apiRequest("/api/tasks", {
+        method: "POST",
+        body: {
+          workspaceType: "commercial",
+          title: `Complete course setup: ${course.title || "Course"}`,
+          description: `Missing setup: ${warnings.join(", ")}.`,
+          sourceType: "course",
+          sourceId: String(id),
+          linkedCourseId: String(id),
+          priority: warnings.some((warning) =>
+            [
+              "add lesson",
+              "add module",
+              "add paid price",
+              "connect Stripe price"
+            ].includes(warning)
+          )
+            ? "high"
+            : "normal",
+          status: "open",
+          dueAt: new Date().toISOString().slice(0, 10),
+          reminderPlan: { label: "24 hours before", channels: ["in_app"] }
+        }
+      });
+      setFeedback(`Created setup task for ${course.title || "course"}.`);
+    } catch (err) {
+      setError(err);
+    } finally {
+      setCreatingTaskForCourseId("");
+    }
+  }
+
   return (
     <AppPage
       routeKey="commercial-courses"
@@ -236,6 +278,7 @@ export default function CommercialCoursesRoute() {
           </View>
         </View>
         {loading ? <Text style={styles.muted}>Loading commercial courses...</Text> : null}
+        {feedback ? <Text style={styles.successText}>{feedback}</Text> : null}
         {error ? <InlineError error={error} /> : null}
       </AppCard>
 
@@ -523,6 +566,24 @@ export default function CommercialCoursesRoute() {
                       <View style={styles.warningBox}>
                         <Text style={styles.warningTitle}>Missing course setup</Text>
                         <Text style={styles.warningText}>{warnings.join(" | ")}</Text>
+                        <Pressable
+                          accessibilityRole="button"
+                          accessibilityLabel={`Create setup task for ${course.title || "course"}`}
+                          disabled={creatingTaskForCourseId === String(courseId(course))}
+                          onPress={() => createCourseSetupTask(course, warnings)}
+                          style={[
+                            styles.action,
+                            creatingTaskForCourseId === String(courseId(course))
+                              ? styles.disabled
+                              : null
+                          ]}
+                        >
+                          <Text style={styles.actionText}>
+                            {creatingTaskForCourseId === String(courseId(course))
+                              ? "Creating..."
+                              : "Create Task"}
+                          </Text>
+                        </Pressable>
                       </View>
                     ) : null}
                     <View style={styles.actions}>
@@ -732,6 +793,12 @@ const styles = StyleSheet.create({
     fontSize: 12,
     fontWeight: "800",
     marginTop: 4
+  },
+  successText: {
+    color: "#166534",
+    fontSize: 13,
+    fontWeight: "800",
+    marginTop: 8
   },
   primaryAction: {
     alignSelf: "flex-start",
