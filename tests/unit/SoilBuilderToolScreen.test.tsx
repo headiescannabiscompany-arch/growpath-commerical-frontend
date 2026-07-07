@@ -6,6 +6,7 @@ import SoilBuilderToolScreen from "@/app/home/personal/(tabs)/tools/soil-builder
 const mockRunCalculator = jest.fn();
 const mockCreateGrowpathModuleRecord = jest.fn();
 const mockCreateProduct = jest.fn();
+const mockSaveToolRunAndCreateTasks = jest.fn();
 
 jest.mock("expo-router", () => ({
   useLocalSearchParams: () => ({ growId: "grow-1" }),
@@ -60,7 +61,8 @@ jest.mock("@/api/products", () => ({
 
 jest.mock("@/features/personal/tools/saveToolRunAndOpenJournal", () => ({
   saveToolRunAndCreateLog: jest.fn(),
-  saveToolRunAndCreateTask: jest.fn()
+  saveToolRunAndCreateTask: jest.fn(),
+  saveToolRunAndCreateTasks: (...args: any[]) => mockSaveToolRunAndCreateTasks(...args)
 }));
 
 describe("SoilBuilderToolScreen", () => {
@@ -81,6 +83,11 @@ describe("SoilBuilderToolScreen", () => {
     });
     mockCreateGrowpathModuleRecord.mockResolvedValue({ id: "module-record-1" });
     mockCreateProduct.mockResolvedValue({ id: "product-1", status: "draft" });
+    mockSaveToolRunAndCreateTasks.mockResolvedValue({
+      ok: true,
+      toolRunId: "toolrun-1",
+      taskIds: ["task-1", "task-2", "task-3", "task-4"]
+    });
   });
 
   it("sends target profile, release timing, and rest/cook assumptions to the soil calculator", async () => {
@@ -156,6 +163,45 @@ describe("SoilBuilderToolScreen", () => {
               expect.objectContaining({ name: "Fish bone meal" })
             ])
           })
+        })
+      )
+    );
+  });
+
+  it("creates a soil recipe task timeline from the saved ToolRun", async () => {
+    const screen = render(<SoilBuilderToolScreen />);
+
+    fireEvent.changeText(screen.getByLabelText("Soil Builder Target N-P-K"), "3-1-1");
+    fireEvent.changeText(screen.getByLabelText("Soil Builder Rest/cook days"), "28");
+    fireEvent.press(screen.getByLabelText("Run Soil Builder"));
+
+    await waitFor(() => expect(screen.getByText("Soil Builder result")).toBeTruthy());
+
+    fireEvent.press(screen.getByText("Create Recipe Timeline Tasks"));
+
+    await waitFor(() =>
+      expect(mockSaveToolRunAndCreateTasks).toHaveBeenCalledWith(
+        expect.objectContaining({
+          growId: "grow-1",
+          toolKey: "soil-builder",
+          toolRunId: "toolrun-1",
+          input: expect.objectContaining({
+            mixName: "Living soil mix",
+            targetNpk: "3-1-1",
+            restCookDays: 28
+          }),
+          output: expect.objectContaining({
+            releaseCurve: { summary: "fast N plus slow P base" }
+          }),
+          tasks: expect.arrayContaining([
+            expect.objectContaining({ title: "Mix Living soil mix" }),
+            expect.objectContaining({ title: "Moisten and activate Living soil mix" }),
+            expect.objectContaining({ title: "Check soil cook for Living soil mix" }),
+            expect.objectContaining({
+              title: "Living soil mix ready/transplant review",
+              priority: "high"
+            })
+          ])
         })
       )
     );

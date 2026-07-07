@@ -4,6 +4,7 @@ import BackendCalculatorToolScreen, {
   tomorrow
 } from "@/features/personal/tools/BackendCalculatorToolScreen";
 import { createProduct } from "@/api/products";
+import { saveToolRunAndCreateTasks } from "@/features/personal/tools/saveToolRunAndOpenJournal";
 
 function n(value: string, fallback?: number) {
   const parsed = Number(value);
@@ -27,6 +28,46 @@ function amendment(
     releaseClass,
     guaranteedAnalysis: { N, P2O5, K2O }
   };
+}
+
+function soilTimelineTasks(outputs: Record<string, any>, payload: Record<string, any>) {
+  const mixName = String(outputs.mixName || payload.mixName || "soil recipe");
+  const restCookDays = Number(outputs.restCookDays ?? payload.restCookDays ?? 21);
+  const cookCheckDay = Math.max(7, Math.floor(restCookDays / 2));
+  const readyDay = Math.max(1, restCookDays);
+
+  return [
+    {
+      title: `Mix ${mixName}`,
+      description:
+        Array.isArray(outputs.mixingInstructions) && outputs.mixingInstructions.length
+          ? outputs.mixingInstructions.join(" ")
+          : "Blend base media, compost/castings, aeration, minerals, and amendments.",
+      priority: "medium" as const,
+      dueDate: tomorrow(0)
+    },
+    {
+      title: `Moisten and activate ${mixName}`,
+      description:
+        "Moisten evenly, add planned biology/inoculant support, and label the mix date.",
+      priority: "medium" as const,
+      dueDate: tomorrow(1)
+    },
+    {
+      title: `Check soil cook for ${mixName}`,
+      description:
+        "Check moisture, temperature, odor, and whether fast nitrogen sources are still too active.",
+      priority: "medium" as const,
+      dueDate: tomorrow(cookCheckDay)
+    },
+    {
+      title: `${mixName} ready/transplant review`,
+      description:
+        "Review rest/cook readiness before transplant or product batching. Compost/casting values remain estimates unless lab-tested.",
+      priority: "high" as const,
+      dueDate: tomorrow(readyDay)
+    }
+  ];
 }
 
 export default function SoilBuilderToolScreen() {
@@ -274,6 +315,25 @@ export default function SoilBuilderToolScreen() {
         dueDate: tomorrow(1)
       })}
       buildActions={({ outputs, payload, toolRun }) => [
+        {
+          key: "create-recipe-timeline",
+          label: "Create Recipe Timeline Tasks",
+          variant: "secondary",
+          pendingLabel: "Creating...",
+          successMessage: "Created soil recipe timeline tasks.",
+          disabled: !payload.growId,
+          onPress: async () => {
+            const result = await saveToolRunAndCreateTasks({
+              growId: payload.growId,
+              toolKey: "soil-builder",
+              toolRunId: toolRun?.id || toolRun?._id,
+              input: payload,
+              output: outputs,
+              tasks: soilTimelineTasks(outputs, payload)
+            });
+            if (!result.ok) throw new Error(result.error);
+          }
+        },
         {
           key: "convert-product-draft",
           label: "Convert to Product Draft",
