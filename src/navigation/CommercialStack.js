@@ -26,7 +26,7 @@ import SocialToolsScreen from "../screens/SocialToolsScreen";
 import MarketplaceScreen from "../screens/MarketplaceScreen";
 import MarketplaceDetailScreen from "../screens/MarketplaceDetailScreen";
 import MarketplaceIntegrationScreen from "../screens/commercial/MarketplaceIntegrationScreen";
-import CommercialFeedRoute from "../app/feed";
+import CommercialFeedRoute from "../app/home/commercial/feed";
 import CommercialCommunityRoute from "../app/home/commercial/community";
 import CommercialStorefrontRoute from "../app/home/commercial/storefront";
 import CommercialCoursesRoute from "../app/home/commercial/courses";

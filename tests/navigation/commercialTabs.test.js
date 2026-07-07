@@ -30,6 +30,8 @@ describe("CommercialTabs", () => {
     expect(source).toContain('options={{ title: "Lives" }}');
     expect(source).toContain('options={{ title: "Feed / Campaigns" }}');
     expect(source).toContain('options={{ title: "Orders" }}');
+    expect(source).toContain('../app/home/commercial/feed');
+    expect(source).not.toContain('../app/feed');
     expect(source).not.toContain('name="CommercialGrows"');
     expect(source).not.toContain('options={{ title: "Evidence & Trials" }}');
   });

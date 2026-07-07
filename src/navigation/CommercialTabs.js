@@ -6,7 +6,7 @@ import CommercialCoursesRoute from "../app/home/commercial/courses";
 import CommercialLivesRoute from "../app/home/commercial/lives";
 import CommercialOrdersRoute from "../app/home/commercial/orders";
 import CommercialProductsRoute from "../app/home/commercial/products";
-import CommercialFeedRoute from "../app/feed";
+import CommercialFeedRoute from "../app/home/commercial/feed";
 import CommercialProfileRoute from "../app/home/commercial/profile";
 import CommercialStorefrontRoute from "../app/home/commercial/storefront";
 

@@ -144,7 +144,7 @@ export const PAGE_REGISTRY_COMMERCIAL = [
     icon: "megaphone-outline",
     capabilityKey: "view.community.feed",
     primary: true,
-    component: require("../app/feed").default
+    component: require("../app/home/commercial/feed").default
   },
   {
     name: "CommercialAnalytics",
