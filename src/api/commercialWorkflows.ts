@@ -105,6 +105,29 @@ export type CommercialCourse = {
   updatedAt?: string;
 };
 
+export type CommercialLiveEvent = {
+  id?: string;
+  _id?: string;
+  title?: string;
+  description?: string;
+  thumbnailUrl?: string;
+  scheduledStart?: string;
+  scheduledEnd?: string;
+  timezone?: string;
+  twitchChannelName?: string;
+  twitchChannelId?: string;
+  relatedCourseId?: string;
+  relatedProductId?: string;
+  relatedFeedPostId?: string;
+  forumThreadId?: string;
+  visibility?: "public" | "followers" | "enrolled" | "paid" | "private" | "unlisted";
+  status?: "draft" | "scheduled" | "live" | "ended" | "cancelled" | "replay_available";
+  replayUrl?: string;
+  notificationPlan?: string[];
+  createdAt?: string;
+  updatedAt?: string;
+};
+
 function listFromEnvelope(value: any, keys: string[]) {
   if (Array.isArray(value)) return value;
   for (const key of keys) {
@@ -298,4 +321,28 @@ export async function publishCommercialCourse(id: string) {
     }
   );
   return res?.course ?? res?.commercialCourse ?? res?.updated ?? res;
+}
+
+export async function fetchCommercialLives(): Promise<CommercialLiveEvent[]> {
+  const res = await apiRequest("/api/commercial/lives");
+  return listFromEnvelope(res, ["lives", "liveEvents", "commercialLives"]);
+}
+
+export async function createCommercialLive(data: Partial<CommercialLiveEvent>) {
+  const res = await apiRequest("/api/commercial/lives", {
+    method: "POST",
+    body: data
+  });
+  return res?.live ?? res?.liveEvent ?? res?.commercialLive ?? res?.created ?? res;
+}
+
+export async function updateCommercialLive(
+  id: string,
+  data: Partial<CommercialLiveEvent>
+) {
+  const res = await apiRequest(`/api/commercial/lives/${encodeURIComponent(id)}`, {
+    method: "PATCH",
+    body: data
+  });
+  return res?.live ?? res?.liveEvent ?? res?.commercialLive ?? res?.updated ?? res;
 }

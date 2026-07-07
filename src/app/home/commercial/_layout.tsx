@@ -57,6 +57,7 @@ export default function CommercialTabsLayout() {
       <Tabs.Screen name="storefront" options={{ title: "Storefront" }} />
       <Tabs.Screen name="products" options={{ title: "Products" }} />
       <Tabs.Screen name="courses" options={{ title: "Courses" }} />
+      <Tabs.Screen name="lives" options={{ title: "Lives" }} />
       <Tabs.Screen name="feed" options={{ title: "Feed / Campaigns" }} />
       <Tabs.Screen name="inventory" options={{ title: "Inventory", href: null }} />
       <Tabs.Screen

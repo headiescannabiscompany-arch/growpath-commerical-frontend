@@ -76,6 +76,7 @@ const QUICK_ACTIONS: Action[] = [
   { label: "Edit Storefront", href: "/home/commercial/storefront" },
   { label: "Add Product", href: "/home/commercial/products/new" },
   { label: "Create Course", href: "/home/commercial/courses" },
+  { label: "Schedule Live", href: "/home/commercial/lives" },
   { label: "Create Feed Campaign", href: "/home/commercial/feed" },
   { label: "View Orders", href: "/orders" },
   { label: "View Analytics", href: "/home/commercial/analytics" }
@@ -164,6 +165,7 @@ const DASHBOARD_SECTIONS: DashboardSection[] = [
       { label: "Feed Campaigns", href: "/home/commercial/feed" },
       { label: "Forum / Q&A", href: "/home/commercial/community" },
       { label: "Courses", href: "/home/commercial/courses" },
+      { label: "Lives", href: "/home/commercial/lives" },
       { label: "Marketing Planner", href: "/home/commercial/marketing" }
     ]
   },
