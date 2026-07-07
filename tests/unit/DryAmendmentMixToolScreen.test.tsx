@@ -6,6 +6,7 @@ import DryAmendmentMixToolScreen from "@/app/home/personal/(tabs)/tools/dry-amen
 const mockRunCalculator = jest.fn();
 const mockCreateGrowpathModuleRecord = jest.fn();
 const mockSaveToolRunAndCreateTasks = jest.fn();
+const mockCreateProduct = jest.fn();
 
 jest.mock("expo-router", () => ({
   useLocalSearchParams: () => ({ growId: "grow-1" }),
@@ -60,6 +61,10 @@ jest.mock("@/features/personal/tools/saveToolRunAndOpenJournal", () => ({
   saveToolRunAndCreateTasks: (...args: any[]) => mockSaveToolRunAndCreateTasks(...args)
 }));
 
+jest.mock("@/api/products", () => ({
+  createProduct: (...args: any[]) => mockCreateProduct(...args)
+}));
+
 describe("DryAmendmentMixToolScreen", () => {
   beforeEach(() => {
     jest.resetAllMocks();
@@ -70,11 +75,15 @@ describe("DryAmendmentMixToolScreen", () => {
         achievedRatio: { N: 3, P: 8, K: 1 },
         batchWeight: 1000,
         dosePerCubicFoot: 75,
-        stageFit: "veg"
+        stageFit: "veg",
+        deliveryCurve: { explanation: "medium N with slow phosphorus tail" },
+        stageTimingWarnings: ["Too strong for seedlings."],
+        compatibilityWarnings: ["Confirm Ca/P balance before label use."]
       },
       toolRun: { id: "toolrun-1", _id: "toolrun-1" }
     });
     mockCreateGrowpathModuleRecord.mockResolvedValue({ id: "module-record-1" });
+    mockCreateProduct.mockResolvedValue({ id: "product-1", status: "draft" });
     mockSaveToolRunAndCreateTasks.mockResolvedValue({
       ok: true,
       toolRunId: "toolrun-1",
@@ -131,6 +140,61 @@ describe("DryAmendmentMixToolScreen", () => {
               title: "Review Veg topdress blend application result"
             })
           ])
+        })
+      )
+    );
+  });
+
+  it("converts dry amendment blends into commercial product drafts", async () => {
+    const screen = render(<DryAmendmentMixToolScreen />);
+
+    fireEvent.changeText(
+      screen.getByLabelText("Dry Amendment Mix Builder Recipe name"),
+      "Veg topdress blend"
+    );
+    fireEvent.press(screen.getByLabelText("Run Dry Amendment Mix Builder"));
+
+    await waitFor(() =>
+      expect(screen.getByText("Dry Amendment Mix Builder result")).toBeTruthy()
+    );
+
+    fireEvent.press(screen.getByText("Convert to Product Draft"));
+
+    await waitFor(() =>
+      expect(mockCreateProduct).toHaveBeenCalledWith(
+        expect.objectContaining({
+          name: "Veg topdress blend",
+          category: "dry_amendment",
+          status: "draft",
+          linkedToolRunId: "toolrun-1",
+          growInterests: ["dry amendments", "living soil", "recipe building"],
+          fullDescription: expect.stringContaining("Suggested rate: 75 g per cubic foot"),
+          specs: expect.objectContaining({
+            sourceTool: "dry-amendment-mix",
+            recipeType: "dry_amendment_blend",
+            targetStage: "veg",
+            ingredients: expect.arrayContaining([
+              expect.objectContaining({ name: "Alfalfa meal", amount: 500 }),
+              expect.objectContaining({ name: "Bone meal", releaseClass: "slow" })
+            ]),
+            guaranteedAnalysisEstimate: { N: 3, P2O5: 8, K2O: 1 },
+            achievedRatio: { N: 3, P: 8, K: 1 },
+            batchWeightGrams: 1000,
+            applicationRate: {
+              dosePerCubicFoot: 75,
+              dosePerGallonSoil: 10
+            },
+            releaseCurve: { explanation: "medium N with slow phosphorus tail" },
+            directions: expect.arrayContaining([
+              expect.stringContaining("Confirm each ingredient label"),
+              expect.stringContaining("Apply around 75 g per cubic foot")
+            ]),
+            warnings: expect.arrayContaining([
+              "Too strong for seedlings.",
+              "Confirm Ca/P balance before label use.",
+              expect.stringContaining("Draft product requires image")
+            ])
+          })
         })
       )
     );

@@ -3,6 +3,7 @@ import React from "react";
 import BackendCalculatorToolScreen, {
   tomorrow
 } from "@/features/personal/tools/BackendCalculatorToolScreen";
+import { createProduct } from "@/api/products";
 import { saveToolRunAndCreateTasks } from "@/features/personal/tools/saveToolRunAndOpenJournal";
 
 function n(value: string, fallback?: number) {
@@ -198,6 +199,70 @@ export default function DryAmendmentMixToolScreen() {
               tasks: dryBlendTasks(outputs, payload)
             });
             if (!result.ok) throw new Error(result.error);
+          }
+        },
+        {
+          key: "convert-product-draft",
+          label: "Convert to Product Draft",
+          variant: "secondary",
+          pendingLabel: "Creating...",
+          successMessage: "Created dry amendment product draft.",
+          onPress: async () => {
+            const ingredients = Array.isArray(payload.ingredients)
+              ? payload.ingredients
+              : [];
+            await createProduct({
+              name:
+                outputs.recipeName || payload.recipeName || "Dry amendment blend product",
+              category: "dry_amendment",
+              shortDescription:
+                outputs.stageFit ||
+                `Dry amendment blend for ${payload.desiredStage || "target stage"}.`,
+              fullDescription: [
+                outputs.logSummary || "Draft created from Dry Amendment Mix Builder.",
+                outputs.dosePerCubicFoot
+                  ? `Suggested rate: ${outputs.dosePerCubicFoot} g per cubic foot.`
+                  : payload.dosePerGallonSoil
+                    ? `Input rate: ${payload.dosePerGallonSoil} g per gallon soil.`
+                    : "",
+                outputs.deliveryCurve?.explanation || ""
+              ]
+                .filter(Boolean)
+                .join("\n"),
+              status: "draft",
+              linkedToolRunId: toolRun?.id || toolRun?._id || null,
+              growInterests: ["dry amendments", "living soil", "recipe building"],
+              specs: {
+                sourceTool: "dry-amendment-mix",
+                recipeType: "dry_amendment_blend",
+                targetStage: payload.desiredStage,
+                ingredients,
+                guaranteedAnalysisEstimate: outputs.totalAnalysis || null,
+                achievedRatio: outputs.achievedRatio || null,
+                batchWeightGrams: outputs.batchWeight || null,
+                applicationRate: {
+                  dosePerCubicFoot: outputs.dosePerCubicFoot || null,
+                  dosePerGallonSoil: payload.dosePerGallonSoil || null
+                },
+                releaseCurve: outputs.deliveryCurve || outputs.releaseCurve || null,
+                directions: [
+                  "Confirm each ingredient label and guaranteed analysis before commercial use.",
+                  "Mix dry ingredients evenly, label the batch, and record batch/lot details before publishing.",
+                  outputs.dosePerCubicFoot
+                    ? `Apply around ${outputs.dosePerCubicFoot} g per cubic foot unless the final label directs otherwise.`
+                    : ""
+                ].filter(Boolean),
+                warnings: [
+                  ...(Array.isArray(outputs.stageTimingWarnings)
+                    ? outputs.stageTimingWarnings
+                    : []),
+                  ...(Array.isArray(outputs.compatibilityWarnings)
+                    ? outputs.compatibilityWarnings
+                    : []),
+                  "Draft product requires image, package size, price, Stripe, stock, label directions, and batch/lot review before publishing."
+                ]
+              }
+            });
           }
         }
       ]}
