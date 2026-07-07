@@ -33,6 +33,21 @@ describe("PersonalFeedPlacement", () => {
     expect(screen.getAllByText("Promoted campaign").length).toBeGreaterThanOrEqual(3);
   });
 
+  it("renders top and bottom placements for short free personal pages", () => {
+    render(
+      <>
+        <PersonalFeedPlacement placement="top" routeKey="personal_profile" />
+        <PersonalFeedPlacement placement="middle" routeKey="personal_profile" />
+        <PersonalFeedPlacement placement="bottom" routeKey="personal_profile" />
+      </>
+    );
+
+    expect(screen.getByLabelText("Promoted campaigns placement")).toBeTruthy();
+    expect(screen.queryByLabelText("More promoted campaigns placement")).toBeNull();
+    expect(screen.getByLabelText("Recommended campaigns placement")).toBeTruthy();
+    expect(screen.getAllByText("Promoted campaign").length).toBeGreaterThanOrEqual(2);
+  });
+
   it("keeps paid personal pages to the top placement only", () => {
     mockEntitlements.plan = "pro";
 
