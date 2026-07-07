@@ -27,9 +27,9 @@ describe("PersonalFeedPlacement", () => {
       </>
     );
 
-    expect(screen.getByLabelText("GrowPath feed placement")).toBeTruthy();
-    expect(screen.getByLabelText("More from the feed placement")).toBeTruthy();
-    expect(screen.getByLabelText("From the feed placement")).toBeTruthy();
+    expect(screen.getByLabelText("Promoted campaigns placement")).toBeTruthy();
+    expect(screen.getByLabelText("More promoted campaigns placement")).toBeTruthy();
+    expect(screen.getByLabelText("Recommended campaigns placement")).toBeTruthy();
   });
 
   it("keeps paid personal pages to the top placement only", () => {
@@ -51,12 +51,12 @@ describe("PersonalFeedPlacement", () => {
       </>
     );
 
-    expect(screen.getByLabelText("GrowPath feed placement")).toBeTruthy();
-    expect(screen.queryByLabelText("More from the feed placement")).toBeNull();
-    expect(screen.queryByLabelText("From the feed placement")).toBeNull();
+    expect(screen.getByLabelText("Promoted campaigns placement")).toBeTruthy();
+    expect(screen.queryByLabelText("More promoted campaigns placement")).toBeNull();
+    expect(screen.queryByLabelText("Recommended campaigns placement")).toBeNull();
   });
 
-  it("does not render banners for the main personal landing page", () => {
+  it("renders promo campaign placements for the main personal landing page", () => {
     render(
       <>
         <PersonalFeedPlacement placement="top" routeKey="home" longContent />
@@ -65,8 +65,8 @@ describe("PersonalFeedPlacement", () => {
       </>
     );
 
-    expect(screen.queryByLabelText("GrowPath feed placement")).toBeNull();
-    expect(screen.queryByLabelText("More from the feed placement")).toBeNull();
-    expect(screen.queryByLabelText("From the feed placement")).toBeNull();
+    expect(screen.getByLabelText("Promoted campaigns placement")).toBeTruthy();
+    expect(screen.getByLabelText("More promoted campaigns placement")).toBeTruthy();
+    expect(screen.getByLabelText("Recommended campaigns placement")).toBeTruthy();
   });
 });
