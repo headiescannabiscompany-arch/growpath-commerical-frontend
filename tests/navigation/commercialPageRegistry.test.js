@@ -19,6 +19,7 @@ describe("commercial page registry", () => {
         "Analytics",
         "Schedule / Agenda",
         "Alerts",
+        "Notifications",
         "Tasks",
         "Profile"
       ])
@@ -82,6 +83,9 @@ describe("commercial page registry", () => {
     expect(byName.CommercialAnalytics.component?.name).toBe("CommercialAnalyticsRoute");
     expect(byName.CommercialSchedule.component?.name).toBe("HomeScheduleRoute");
     expect(byName.CommercialAlerts.component?.name).toBe("AlertCenterRoute");
+    expect(byName.CommercialNotifications.component?.name).toBe(
+      "NotificationCenterRoute"
+    );
     expect(byName.Tasks.component?.name).toBe("CommercialTasksRoute");
     expect(byName.Profile.component?.name).toBe("CommercialProfileRoute");
   });

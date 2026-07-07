@@ -45,6 +45,13 @@ export const PAGE_REGISTRY_PERSONAL = [
     component: require("../app/home/alerts").default
   },
   {
+    name: "Notifications",
+    label: "Notifications",
+    icon: "notifications-outline",
+    capabilityKey: "personal.tasks",
+    component: require("../app/home/notifications").default
+  },
+  {
     name: "Tools",
     label: "Tools",
     icon: "construct-outline",

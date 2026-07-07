@@ -41,6 +41,7 @@ const checks = [
       "tests/unit/CommercialTasksRoute.test.tsx",
       "tests/unit/HomeScheduleRoute.test.tsx",
       "tests/unit/AlertCenterRoute.test.tsx",
+      "tests/unit/NotificationCenterRoute.test.tsx",
       "tests/unit/pricingConstants.test.js",
       "tests/unit/AppPageBackBehavior.test.tsx",
       "tests/navigation/commercialPageRegistry.test.js",

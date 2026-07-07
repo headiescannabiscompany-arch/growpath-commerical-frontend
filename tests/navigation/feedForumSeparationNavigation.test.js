@@ -22,11 +22,13 @@ describe("feed/forum navigation separation", () => {
     expect(feed.component?.name).toBe("CommercialFeedRoute");
   });
 
-  it("uses shared Schedule and Alert Center routes across personal and facility registries", () => {
+  it("uses shared Schedule, Alert Center, and Notification Center routes across personal and facility registries", () => {
     const personalSchedule = byName(PAGE_REGISTRY_PERSONAL, "Calendar");
     const personalAlerts = byName(PAGE_REGISTRY_PERSONAL, "Alerts");
+    const personalNotifications = byName(PAGE_REGISTRY_PERSONAL, "Notifications");
     const facilitySchedule = byName(PAGE_REGISTRY_FACILITY, "FacilitySchedule");
     const facilityAlerts = byName(PAGE_REGISTRY_FACILITY, "FacilityAlerts");
+    const facilityNotifications = byName(PAGE_REGISTRY_FACILITY, "FacilityNotifications");
 
     expect(personalSchedule).toMatchObject({
       label: "Schedule / Agenda"
@@ -44,6 +46,14 @@ describe("feed/forum navigation separation", () => {
       label: "Alerts"
     });
     expect(facilityAlerts.component?.name).toBe("AlertCenterRoute");
+    expect(personalNotifications).toMatchObject({
+      label: "Notifications"
+    });
+    expect(personalNotifications.component?.name).toBe("NotificationCenterRoute");
+    expect(facilityNotifications).toMatchObject({
+      label: "Notifications"
+    });
+    expect(facilityNotifications.component?.name).toBe("NotificationCenterRoute");
   });
 
   it("keeps shared tab and capability menus off the legacy discussion feed", () => {

@@ -45,6 +45,13 @@ export const PAGE_REGISTRY_FACILITY = [
     component: require("../app/home/alerts").default
   },
   {
+    name: "FacilityNotifications",
+    label: "Notifications",
+    icon: "notifications-outline",
+    capabilityKey: "facility.tasks",
+    component: require("../app/home/notifications").default
+  },
+  {
     name: "FacilityInventory",
     label: "Inventory",
     icon: "cube-outline",

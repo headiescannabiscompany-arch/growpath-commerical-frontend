@@ -171,6 +171,14 @@ export const PAGE_REGISTRY_COMMERCIAL = [
     component: require("../app/home/alerts").default
   },
   {
+    name: "CommercialNotifications",
+    label: "Notifications",
+    icon: "notifications-outline",
+    capabilityKey: "commercial.tasks",
+    primary: true,
+    component: require("../app/home/notifications").default
+  },
+  {
     name: "Tasks",
     label: "Tasks",
     icon: "checkbox-outline",
