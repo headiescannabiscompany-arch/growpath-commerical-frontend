@@ -120,7 +120,7 @@ describe("CommercialProfileRoute", () => {
     );
     fireEvent.changeText(
       screen.getByLabelText("Commercial public bio"),
-      "Seed line and grow trial support"
+      "Seed line and evidence run support"
     );
     fireEvent.press(screen.getByLabelText("Save commercial business profile"));
 
@@ -134,7 +134,7 @@ describe("CommercialProfileRoute", () => {
             businessName: "Triple Bag Genetics",
             slug: "triple-bag",
             accountType: "breeder",
-            bio: "Seed line and grow trial support",
+            bio: "Seed line and evidence run support",
             websiteUrl: "https://triple.example",
             supportEmail: "help@triple.example",
             forumDisplayName: "Triple Bag Support",

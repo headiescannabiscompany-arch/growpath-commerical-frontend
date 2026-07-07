@@ -135,7 +135,10 @@ describe("StorefrontScreen", () => {
     fireEvent.changeText(screen.getByPlaceholderText("Product line id"), "line-1");
     fireEvent.changeText(screen.getByPlaceholderText("Linked recipe id"), "recipe-1");
     fireEvent.changeText(screen.getByPlaceholderText("Linked batch id"), "batch-1");
-    fireEvent.changeText(screen.getByPlaceholderText("Linked grow/trial id"), "trial-1");
+    fireEvent.changeText(
+      screen.getByPlaceholderText("Linked evidence run id"),
+      "trial-1"
+    );
     fireEvent.changeText(screen.getByPlaceholderText("Linked course id"), "course-1");
     fireEvent.press(screen.getByText("Save"));
 

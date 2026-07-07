@@ -61,9 +61,9 @@ export default function CampaignsScreen() {
     <View style={styles.container}>
       <Text style={styles.title}>Marketing Planner</Text>
       <Text style={styles.subtitle}>
-        Plan product drops, course announcements, grow trial updates, feed posts, and
-        external links. Track clicks for ads/marketing links here; this does not execute
-        ad spend or platform campaigns.
+        Plan product drops, course announcements, product trial evidence updates, feed
+        posts, and external links. Track clicks for ads/marketing links here; this does
+        not execute ad spend or platform campaigns.
       </Text>
       {error ? <Text style={styles.error}>Failed to load campaigns.</Text> : null}
 
@@ -77,7 +77,7 @@ export default function CampaignsScreen() {
         <TextInput
           value={linkedTarget}
           onChangeText={setLinkedTarget}
-          placeholder="Linked product, course, grow, or store URL"
+          placeholder="Linked product, course, evidence run, or store URL"
           autoCapitalize="none"
           style={styles.input}
         />

@@ -138,8 +138,8 @@ export default function CommercialCommunityRoute() {
         <Text style={styles.cardTitle}>Brand forum identity</Text>
         <Text style={styles.body}>
           Commercial accounts should post and reply as the brand, answer product
-          questions, link products/courses/grow trials, and track mentions through forum,
-          Q&A, and campaign workflows.
+          questions, link products/courses/product trial evidence runs, and track mentions
+          through forum, Q&A, and campaign workflows.
         </Text>
         <View style={styles.metricGrid}>
           <View style={styles.metric}>
@@ -162,8 +162,8 @@ export default function CommercialCommunityRoute() {
       <AppCard>
         <Text style={styles.cardTitle}>Create brand support post</Text>
         <Text style={styles.body}>
-          Use this for product help, support answers, grow trial clarifications, and
-          course follow-up. It publishes as linked commercial content.
+          Use this for product help, support answers, product trial evidence
+          clarifications, and course follow-up. It publishes as linked commercial content.
         </Text>
         <TextInput
           value={form.title}
@@ -277,7 +277,7 @@ export default function CommercialCommunityRoute() {
                     {[
                       post.linkedProductId && `product ${post.linkedProductId}`,
                       post.linkedCourseId && `course ${post.linkedCourseId}`,
-                      post.linkedGrowId && `grow ${post.linkedGrowId}`,
+                      post.linkedGrowId && `evidence run ${post.linkedGrowId}`,
                       post.storefrontSlug && `store ${post.storefrontSlug}`
                     ]
                       .filter(Boolean)
@@ -302,7 +302,7 @@ export default function CommercialCommunityRoute() {
         <Text style={styles.bullet}>Start from a product question or brand mention</Text>
         <Text style={styles.bullet}>Answer as the business identity</Text>
         <Text style={styles.bullet}>
-          Attach product, course, grow trial, storefront, or external support URL
+          Attach product, course, evidence run, storefront, or external support URL
         </Text>
         <Text style={styles.bullet}>
           Optionally turn strong answers into feed campaigns or course lessons

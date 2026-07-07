@@ -363,8 +363,8 @@ export default function PublicProductRoute() {
             <Text style={styles.cardTitle}>Product Context</Text>
             <Text style={styles.meta}>
               Use this page for product photos, use instructions, related courses,
-              promotional campaigns, grow trials, formula notes, and Forum/Q&A support
-              links as the public product record grows.
+              promotional campaigns, product trial evidence runs, formula notes, and
+              Forum/Q&A support links as the public product record grows.
             </Text>
             {product?.usageInstructions ? (
               <Text style={styles.bodyText}>{product.usageInstructions}</Text>

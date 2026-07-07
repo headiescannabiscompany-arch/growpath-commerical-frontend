@@ -222,7 +222,7 @@ export default function CommercialProductsRoute({
             <Text style={styles.title}>Products</Text>
             <Text style={styles.subtitle}>
               Commercial products need images, descriptions, links, use instructions,
-              related trials, related courses, and storefront visibility.
+              related evidence runs, related courses, and storefront visibility.
             </Text>
             <Text style={styles.accountLine}>
               {[auth.user?.email, `${ent.plan || "commercial"} plan`]
@@ -242,8 +242,8 @@ export default function CommercialProductsRoute({
         <Text style={styles.cardTitle}>Product catalog</Text>
         <Text style={styles.body}>
           Products are business-facing records, not generic inventory rows. They can link
-          to inventory, recipes, batches, grow trials, courses, feed campaigns, and
-          external purchase URLs.
+          to inventory, recipes, batches, product trial evidence runs, courses, feed
+          campaigns, and external purchase URLs.
         </Text>
         <View style={styles.metricGrid}>
           <View style={styles.metric}>

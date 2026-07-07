@@ -498,7 +498,7 @@ export default function StorefrontScreen() {
                     {[
                       item.linkedRecipeId && "recipe",
                       item.linkedBatchId && "batch",
-                      item.linkedGrowTrialId && "trial",
+                      item.linkedGrowTrialId && "evidence run",
                       item.linkedCourseId && "course"
                     ]
                       .filter(Boolean)
@@ -621,7 +621,7 @@ export default function StorefrontScreen() {
               <TextInput
                 value={linkedGrowTrialId}
                 onChangeText={setLinkedGrowTrialId}
-                placeholder="Linked grow/trial id"
+                placeholder="Linked evidence run id"
                 placeholderTextColor="#94A3B8"
                 autoCapitalize="none"
                 style={[styles.input, styles.linkInput]}
