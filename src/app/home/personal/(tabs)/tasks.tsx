@@ -47,6 +47,12 @@ function todayKey() {
   return new Date().toISOString().slice(0, 10);
 }
 
+function addDaysKey(days: number) {
+  const date = new Date();
+  date.setDate(date.getDate() + days);
+  return date.toISOString().slice(0, 10);
+}
+
 function sectionForTask(task: PersonalTask, today = todayKey()): SectionKey {
   if (task.completed) return "completed";
   const due = dateKey(task.dueDate);
@@ -293,6 +299,47 @@ export default function PersonalTaskCenterRoute() {
               accessibilityLabel="Task center reminder"
             />
           </View>
+          <Text style={styles.label}>Quick schedule</Text>
+          <View style={styles.chipRow}>
+            {[
+              ["Today", todayKey()],
+              ["Tomorrow", addDaysKey(1)],
+              ["In 7 days", addDaysKey(7)],
+              ["In 14 days", addDaysKey(14)],
+              ["In 21 days", addDaysKey(21)]
+            ].map(([label, value]) => (
+              <Pressable
+                key={label}
+                style={[styles.chip, dueDate === value && styles.chipSelected]}
+                accessibilityRole="button"
+                accessibilityLabel={`Task center quick date ${label}`}
+                onPress={() => setDueDate(value)}
+              >
+                <Text style={[styles.chipText, dueDate === value && styles.chipTextOn]}>
+                  {label}
+                </Text>
+              </Pressable>
+            ))}
+          </View>
+          <View style={styles.chipRow}>
+            {["at due time", "15 minutes before", "1 hour before", "24 hours before"].map(
+              (label) => (
+                <Pressable
+                  key={label}
+                  style={[styles.chip, reminderNote === label && styles.chipSelected]}
+                  accessibilityRole="button"
+                  accessibilityLabel={`Task center reminder preset ${label}`}
+                  onPress={() => setReminderNote(label)}
+                >
+                  <Text
+                    style={[styles.chipText, reminderNote === label && styles.chipTextOn]}
+                  >
+                    {label}
+                  </Text>
+                </Pressable>
+              )
+            )}
+          </View>
           <Text style={styles.label}>Priority</Text>
           <View style={styles.chipRow}>
             {priorities.map((option) => (
@@ -351,6 +398,37 @@ export default function PersonalTaskCenterRoute() {
               onChangeText={setRecurrenceRule}
               accessibilityLabel="Task center recurrence"
             />
+          </View>
+          <View style={styles.chipRow}>
+            {["does not repeat", "daily", "weekly", "every 14 days", "every 21 days"].map(
+              (label) => (
+                <Pressable
+                  key={label}
+                  style={[
+                    styles.chip,
+                    (label === "does not repeat"
+                      ? !recurrenceRule
+                      : recurrenceRule === label) && styles.chipSelected
+                  ]}
+                  accessibilityRole="button"
+                  accessibilityLabel={`Task center recurrence preset ${label}`}
+                  onPress={() =>
+                    setRecurrenceRule(label === "does not repeat" ? "" : label)
+                  }
+                >
+                  <Text
+                    style={[
+                      styles.chipText,
+                      (label === "does not repeat"
+                        ? !recurrenceRule
+                        : recurrenceRule === label) && styles.chipTextOn
+                    ]}
+                  >
+                    {label}
+                  </Text>
+                </Pressable>
+              )
+            )}
           </View>
           <Pressable
             style={[

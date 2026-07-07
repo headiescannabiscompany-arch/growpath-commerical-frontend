@@ -7,6 +7,12 @@ const mockListPersonalTasks = jest.fn();
 const mockCreatePersonalTask = jest.fn();
 const mockUpdatePersonalTask = jest.fn();
 
+function addDaysKey(days: number) {
+  const date = new Date();
+  date.setDate(date.getDate() + days);
+  return date.toISOString().slice(0, 10);
+}
+
 jest.mock("@/api/tasks", () => ({
   listPersonalTasks: (...args: any[]) => mockListPersonalTasks(...args),
   createPersonalTask: (...args: any[]) => mockCreatePersonalTask(...args),
@@ -80,18 +86,12 @@ describe("PersonalTaskCenterRoute", () => {
       screen.getByLabelText("Task center title"),
       "Topdress follow-up"
     );
-    fireEvent.changeText(screen.getByLabelText("Task center due date"), "2026-07-28");
+    fireEvent.press(screen.getByLabelText("Task center quick date In 21 days"));
     fireEvent.press(screen.getByLabelText("Task center source recipe"));
     fireEvent.changeText(screen.getByLabelText("Task center source object"), "recipe-1");
     fireEvent.changeText(screen.getByLabelText("Task center ToolRun"), "run-2");
-    fireEvent.changeText(
-      screen.getByLabelText("Task center reminder"),
-      "24 hours before"
-    );
-    fireEvent.changeText(
-      screen.getByLabelText("Task center recurrence"),
-      "every 21 days"
-    );
+    fireEvent.press(screen.getByLabelText("Task center reminder preset 24 hours before"));
+    fireEvent.press(screen.getByLabelText("Task center recurrence preset every 21 days"));
     fireEvent.press(screen.getByLabelText("Create task center task"));
 
     await waitFor(() =>
@@ -99,7 +99,7 @@ describe("PersonalTaskCenterRoute", () => {
         expect.objectContaining({
           growId: "grow-2",
           title: "Topdress follow-up",
-          dueDate: "2026-07-28",
+          dueDate: addDaysKey(21),
           sourceType: "recipe",
           sourceObjectId: "recipe-1",
           sourceToolRunId: "run-2",
