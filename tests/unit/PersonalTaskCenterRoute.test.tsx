@@ -80,6 +80,7 @@ describe("PersonalTaskCenterRoute", () => {
     expect(screen.getByText(/Mixed soil/)).toBeTruthy();
     expect(screen.getAllByText("sensor alert").length).toBeGreaterThan(0);
     expect(screen.getAllByText("recipe").length).toBeGreaterThan(0);
+    expect(screen.getByText(/Sensor Alert: alert-1/)).toBeTruthy();
     expect(screen.getByText("product batch")).toBeTruthy();
 
     fireEvent.changeText(screen.getByLabelText("Task center grow ID"), "grow-2");
@@ -109,6 +110,7 @@ describe("PersonalTaskCenterRoute", () => {
         })
       )
     );
+    await waitFor(() => expect(screen.getByText("Task created.")).toBeTruthy());
 
     fireEvent.press(screen.getAllByLabelText("Complete task")[0]);
     await waitFor(() =>

@@ -79,11 +79,19 @@ function taskSource(task: PersonalTask) {
   return "manual";
 }
 
+function sourceObjectLabel(task: PersonalTask) {
+  const source = String(task.sourceType || "")
+    .replace(/_/g, " ")
+    .trim();
+  if (!source) return "Source";
+  return source.replace(/\b\w/g, (char) => char.toUpperCase());
+}
+
 function taskLinks(task: PersonalTask) {
   return [
     task.growId && `Grow: ${task.growId}`,
     task.plantId && `Plant: ${task.plantId}`,
-    task.sourceObjectId && `Source: ${task.sourceObjectId}`,
+    task.sourceObjectId && `${sourceObjectLabel(task)}: ${task.sourceObjectId}`,
     task.sourceToolRunId && `ToolRun: ${task.sourceToolRunId}`,
     task.sourceDiagnosisId && `Diagnosis: ${task.sourceDiagnosisId}`,
     task.linkedLogId && `Log: ${task.linkedLogId}`
