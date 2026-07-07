@@ -95,6 +95,10 @@ describe("CommercialLivesRoute", () => {
       "Build a 3-1-1 veg mix with live questions."
     );
     fireEvent.changeText(
+      screen.getByLabelText("Commercial live thumbnail"),
+      "https://example.com/friday-live.jpg"
+    );
+    fireEvent.changeText(
       screen.getByLabelText("Commercial live Twitch channel"),
       "livingsoillabs"
     );
@@ -108,7 +112,7 @@ describe("CommercialLivesRoute", () => {
     );
     fireEvent.changeText(
       screen.getByLabelText("Commercial live Twitch EventSub status"),
-      "pending"
+      "connected"
     );
     fireEvent.changeText(
       screen.getByLabelText("Commercial live scheduled start"),
@@ -143,12 +147,13 @@ describe("CommercialLivesRoute", () => {
         body: expect.objectContaining({
           title: "Friday mix demo",
           description: "Build a 3-1-1 veg mix with live questions.",
+          thumbnailUrl: "https://example.com/friday-live.jpg",
           scheduledStart: "2026-07-17T21:00:00Z",
           timezone: "America/New_York",
           twitchChannelName: "livingsoillabs",
           twitchChannelId: "67890",
           twitchEmbedUrl: "https://player.twitch.tv/?channel=livingsoillabs",
-          eventSubStatus: "pending",
+          eventSubStatus: "connected",
           relatedCourseId: "course-veg",
           relatedProductId: "product-veg",
           relatedFeedPostId: "campaign-veg",
@@ -165,6 +170,30 @@ describe("CommercialLivesRoute", () => {
           ])
         })
       })
+    );
+  });
+
+  it("blocks scheduled commercial lives until setup is complete", async () => {
+    const screen = render(<CommercialLivesRoute />);
+
+    await waitFor(() => expect(screen.getByText("Lives / Twitch")).toBeTruthy());
+
+    fireEvent.changeText(
+      screen.getByLabelText("Commercial live title"),
+      "Incomplete scheduled live"
+    );
+    fireEvent.changeText(
+      screen.getByLabelText("Commercial live scheduled start"),
+      "2026-07-20T18:00:00Z"
+    );
+
+    expect(
+      screen.getByLabelText("Schedule commercial live").props.accessibilityState
+        ?.disabled
+    ).toBe(true);
+    expect(mockApiRequest).not.toHaveBeenCalledWith(
+      "/api/commercial/lives",
+      expect.objectContaining({ method: "POST" })
     );
   });
 });

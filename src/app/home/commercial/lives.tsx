@@ -109,6 +109,7 @@ export default function CommercialLivesRoute() {
 
   const counts = useMemo(() => splitStatus(lives), [lives]);
   const formWarnings = liveSetupWarnings({ ...form, notificationPlan });
+  const scheduleBlocked = Boolean(form.scheduledStart.trim() && formWarnings.length);
 
   async function loadLives() {
     setLoading(true);
@@ -128,6 +129,10 @@ export default function CommercialLivesRoute() {
 
   async function scheduleLive() {
     if (!form.title.trim()) return;
+    if (scheduleBlocked) {
+      setMessage(`Live schedule blocked: ${formWarnings.join(", ")}.`);
+      return;
+    }
     setSaving(true);
     setError(null);
     setMessage("");
@@ -390,11 +395,11 @@ export default function CommercialLivesRoute() {
         <Pressable
           accessibilityRole="button"
           accessibilityLabel="Schedule commercial live"
-          disabled={saving || !form.title.trim()}
+          disabled={saving || !form.title.trim() || scheduleBlocked}
           onPress={scheduleLive}
           style={[
             styles.primaryAction,
-            saving || !form.title.trim() ? styles.disabled : null
+            saving || !form.title.trim() || scheduleBlocked ? styles.disabled : null
           ]}
         >
           <Text style={styles.primaryActionText}>
