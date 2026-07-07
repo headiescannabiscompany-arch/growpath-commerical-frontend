@@ -1,0 +1,143 @@
+import React from "react";
+import { fireEvent, render, waitFor } from "@testing-library/react-native";
+
+import DryCureGuardToolScreen from "@/app/home/personal/(tabs)/tools/dry-cure-guard";
+
+const mockRunCalculator = jest.fn();
+const mockCreateGrowpathModuleRecord = jest.fn();
+const mockSaveToolRunAndCreateTasks = jest.fn();
+
+jest.mock("expo-router", () => ({
+  useLocalSearchParams: () => ({ growId: "grow-1" }),
+  useRouter: () => ({
+    back: jest.fn(),
+    canGoBack: jest.fn(() => true),
+    push: jest.fn(),
+    replace: jest.fn()
+  })
+}));
+
+jest.mock("@/entitlements", () => ({
+  useEntitlements: () => ({
+    plan: "pro",
+    mode: "personal",
+    can: () => true
+  })
+}));
+
+jest.mock("@/components/feed/FeedBanner", () => {
+  const React = require("react");
+  const { View } = require("react-native");
+  return () => React.createElement(View, { testID: "feed-banner" });
+});
+
+jest.mock("@/features/personal/tools/ToolPlantContextPicker", () => {
+  const React = require("react");
+  const { View } = require("react-native");
+  return {
+    ToolPlantContextPicker: () => React.createElement(View, { testID: "plant-picker" }),
+    useToolPlantContext: () => ({
+      plants: [],
+      plantId: "",
+      selectedPlant: null,
+      setPlantId: jest.fn(),
+      toolRunContext: { selectedPlantContext: null }
+    })
+  };
+});
+
+jest.mock("@/api/toolRuns", () => ({
+  runCalculator: (...args: any[]) => mockRunCalculator(...args)
+}));
+
+jest.mock("@/api/growpathModules", () => ({
+  createGrowpathModuleRecord: (...args: any[]) => mockCreateGrowpathModuleRecord(...args)
+}));
+
+jest.mock("@/features/personal/tools/saveToolRunAndOpenJournal", () => ({
+  saveToolRunAndCreateLog: jest.fn(),
+  saveToolRunAndCreateTask: jest.fn(),
+  saveToolRunAndCreateTasks: (...args: any[]) => mockSaveToolRunAndCreateTasks(...args)
+}));
+
+describe("DryCureGuardToolScreen", () => {
+  beforeEach(() => {
+    jest.resetAllMocks();
+    mockRunCalculator.mockResolvedValue({
+      outputs: {
+        moldRisk: "medium",
+        overdryRisk: "low",
+        dewPointF: 53.2,
+        dewPointSpreadC: 6.1,
+        nextAction: "Keep airflow gentle and verify jar RH before sealing.",
+        taskSuggestions: [{ title: "Check dry room tomorrow", priority: "high" }]
+      },
+      toolRun: { id: "toolrun-1", _id: "toolrun-1" }
+    });
+    mockCreateGrowpathModuleRecord.mockResolvedValue({ id: "module-record-1" });
+    mockSaveToolRunAndCreateTasks.mockResolvedValue({
+      ok: true,
+      toolRunId: "toolrun-1",
+      taskIds: ["task-1", "task-2", "task-3", "task-4"]
+    });
+  });
+
+  it("creates dry/cure monitoring tasks from the saved ToolRun", async () => {
+    const screen = render(<DryCureGuardToolScreen />);
+
+    fireEvent.changeText(screen.getByLabelText("Dry / Cure Guard Mode"), "curing");
+    fireEvent.changeText(
+      screen.getByLabelText("Dry / Cure Guard Jar RH (optional)"),
+      "63"
+    );
+    fireEvent.press(screen.getByLabelText("Run Dry / Cure Guard"));
+
+    await waitFor(() =>
+      expect(mockRunCalculator).toHaveBeenCalledWith(
+        "dry-cure-guard",
+        expect.objectContaining({
+          growId: "grow-1",
+          mode: "curing",
+          jarRH: 63
+        })
+      )
+    );
+    await waitFor(() => expect(screen.getByText("Dry / Cure Guard result")).toBeTruthy());
+
+    fireEvent.press(screen.getByText("Create Dry/Cure Monitoring Tasks"));
+
+    await waitFor(() =>
+      expect(mockSaveToolRunAndCreateTasks).toHaveBeenCalledWith(
+        expect.objectContaining({
+          growId: "grow-1",
+          toolKey: "dry-cure-guard",
+          toolRunId: "toolrun-1",
+          input: expect.objectContaining({
+            mode: "curing",
+            jarRH: 63
+          }),
+          output: expect.objectContaining({
+            moldRisk: "medium",
+            nextAction: "Keep airflow gentle and verify jar RH before sealing."
+          }),
+          tasks: [
+            expect.objectContaining({
+              title: "Check dry room tomorrow",
+              priority: "high",
+              description: expect.stringContaining("Mold risk: medium")
+            }),
+            expect.objectContaining({
+              title: "Inspect buds for dry/cure quality"
+            }),
+            expect.objectContaining({
+              title: "Check jar RH and burp response"
+            }),
+            expect.objectContaining({
+              title: "Record dry/cure outcome notes"
+            })
+          ]
+        })
+      )
+    );
+  });
+});

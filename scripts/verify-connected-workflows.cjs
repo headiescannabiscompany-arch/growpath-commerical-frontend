@@ -54,6 +54,7 @@ const checks = [
       "tests/unit/PhenoMatrixToolScreen.test.tsx",
       "tests/unit/IpmScoutToolScreen.test.tsx",
       "tests/unit/HarvestReadinessToolScreen.test.tsx",
+      "tests/unit/DryCureGuardToolScreen.test.tsx",
       "tests/unit/PersonalTaskCenterRoute.test.tsx",
       "tests/unit/GrowTasksScreen.test.tsx"
     ]

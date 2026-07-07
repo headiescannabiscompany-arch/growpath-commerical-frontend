@@ -3,10 +3,59 @@ import React from "react";
 import BackendCalculatorToolScreen, {
   tomorrow
 } from "@/features/personal/tools/BackendCalculatorToolScreen";
+import { saveToolRunAndCreateTasks } from "@/features/personal/tools/saveToolRunAndOpenJournal";
 
 function n(value: string, fallback?: number) {
   const parsed = Number(value);
   return Number.isFinite(parsed) ? parsed : fallback;
+}
+
+function dryCureTaskPlan(outputs: Record<string, any>, payload: Record<string, any>) {
+  const mode = String(payload.mode || "drying").toLowerCase();
+  const firstSuggestion = Array.isArray(outputs.taskSuggestions)
+    ? outputs.taskSuggestions[0]
+    : null;
+  const riskSummary = [
+    outputs.moldRisk ? `Mold risk: ${outputs.moldRisk}` : "",
+    outputs.overdryRisk ? `Overdry risk: ${outputs.overdryRisk}` : "",
+    outputs.dewPointF != null ? `Dew point: ${outputs.dewPointF} F` : "",
+    outputs.nextAction ? `Next action: ${outputs.nextAction}` : ""
+  ]
+    .filter(Boolean)
+    .join("\n");
+
+  return [
+    {
+      title: firstSuggestion?.title || "Check dry/cure conditions",
+      priority: firstSuggestion?.priority || "medium",
+      dueDate: tomorrow(1),
+      description:
+        riskSummary ||
+        "Check dry-room temp/RH, airflow, bud density risk, and jar RH if curing."
+    },
+    {
+      title: "Inspect buds for dry/cure quality",
+      priority: mode === "drying" ? ("high" as const) : ("medium" as const),
+      dueDate: tomorrow(mode === "drying" ? 2 : 1),
+      description:
+        "Check stem flex/snap, exterior crispness, interior moisture, aroma, and any ammonia or hay notes."
+    },
+    {
+      title:
+        mode === "curing" ? "Check jar RH and burp response" : "Prepare jar RH check",
+      priority: "medium" as const,
+      dueDate: tomorrow(mode === "curing" ? 1 : 5),
+      description:
+        "Record jar or bag RH, burp timing, aroma trend, texture, and whether material is stabilizing or over-drying."
+    },
+    {
+      title: "Record dry/cure outcome notes",
+      priority: "medium" as const,
+      dueDate: tomorrow(mode === "curing" ? 3 : 7),
+      description:
+        "Save smell, texture, moisture, trim readiness, and cure quality notes back to the grow timeline."
+    }
+  ];
 }
 
 export default function DryCureGuardToolScreen() {
@@ -69,6 +118,28 @@ export default function DryCureGuardToolScreen() {
         priority: outputs.taskSuggestions?.[0]?.priority || "medium",
         dueDate: tomorrow(1)
       })}
+      buildActions={({ outputs, payload, toolRun, growId, plantContext }) => [
+        {
+          key: "create-dry-cure-monitoring-tasks",
+          label: "Create Dry/Cure Monitoring Tasks",
+          variant: "secondary",
+          pendingLabel: "Creating...",
+          disabled: !growId,
+          successMessage: "Created dry/cure monitoring tasks.",
+          onPress: async () => {
+            const result = await saveToolRunAndCreateTasks({
+              growId,
+              ...plantContext.toolRunContext,
+              toolKey: "dry-cure-guard",
+              toolRunId: toolRun?.id || toolRun?._id,
+              input: payload,
+              output: outputs,
+              tasks: dryCureTaskPlan(outputs, payload)
+            });
+            if (!result.ok) throw new Error(result.error);
+          }
+        }
+      ]}
     />
   );
 }
