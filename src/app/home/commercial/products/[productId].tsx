@@ -49,6 +49,10 @@ function productMissingSetup(product: Product | null) {
   return missing;
 }
 
+function publicFieldMissingSetup(missing: string[]) {
+  return missing.filter((item) => item !== "published status");
+}
+
 function formatDetailValue(value: unknown) {
   if (Array.isArray(value)) return value.filter(Boolean).join(", ");
   if (value && typeof value === "object") {
@@ -135,12 +139,29 @@ export default function CommercialProductDetailRoute({ route }: { route?: any } 
 
   async function saveChanges() {
     if (!productId) return;
+    const nextStatus = (status.trim() || "draft") as Product["status"];
+    const nextProduct = {
+      ...(product || {}),
+      status: nextStatus,
+      shortDescription: shortDescription.trim(),
+      description: shortDescription.trim(),
+      externalPurchaseUrl: externalPurchaseUrl.trim()
+    } as Product;
+    const publishMissing = publicFieldMissingSetup(productMissingSetup(nextProduct));
+    if (
+      nextStatus === "published" &&
+      product?.status !== "published" &&
+      publishMissing.length
+    ) {
+      setMessage(`Product publish blocked: missing ${publishMissing.join(", ")}.`);
+      return;
+    }
     setSaving(true);
     setMessage("");
     setError(null);
     try {
       const res = await updateProduct(productId, {
-        status: (status.trim() || "draft") as Product["status"],
+        status: nextStatus,
         shortDescription: shortDescription.trim(),
         description: shortDescription.trim(),
         externalPurchaseUrl: externalPurchaseUrl.trim()

@@ -1288,6 +1288,47 @@ describe("commercial workflow pages", () => {
     );
   });
 
+  it("blocks incomplete commercial product detail publish transitions", async () => {
+    mockApiRequest.mockImplementation((path: string, options?: any) => {
+      if (path === "/api/commercial/products/product-1" && !options) {
+        return Promise.resolve({
+          product: {
+            id: "product-1",
+            name: "Incomplete Product",
+            status: "draft",
+            shortDescription: "Needs public storefront setup"
+          }
+        });
+      }
+      if (path === "/api/commercial/products/product-1/effectiveness") {
+        return Promise.resolve({ summary: {}, linked: {} });
+      }
+      if (path === "/api/commercial/products/product-1" && options?.method === "PATCH") {
+        return Promise.resolve({ product: { id: "product-1", ...options.body } });
+      }
+      return Promise.resolve({});
+    });
+    const screen = render(<CommercialProductDetailRoute />);
+
+    await waitFor(() => expect(screen.getByText("Incomplete Product")).toBeTruthy());
+
+    fireEvent.changeText(
+      screen.getByLabelText("Commercial product detail status"),
+      "published"
+    );
+    fireEvent.press(screen.getByLabelText("Save commercial product detail"));
+
+    await waitFor(() =>
+      expect(screen.getByText(/Product publish blocked: missing/)).toBeTruthy()
+    );
+    expect(
+      mockApiRequest.mock.calls.some(
+        ([path, options]) =>
+          path === "/api/commercial/products/product-1" && options?.method === "PATCH"
+      )
+    ).toBe(false);
+  });
+
   it("routes create-product to the real product form", async () => {
     const screen = render(<NewCommercialProductRoute />);
 
