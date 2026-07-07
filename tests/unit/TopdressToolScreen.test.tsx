@@ -160,4 +160,32 @@ describe("TopdressToolScreen", () => {
       )
     );
   });
+
+  it("builds an AI topdress brief without replacing rate and task math", () => {
+    const screen = render(<TopdressToolScreen />);
+
+    fireEvent.changeText(
+      screen.getByLabelText("Topdress Planner Product or recipe name"),
+      "Bloom topdress"
+    );
+    fireEvent.changeText(screen.getByLabelText("Topdress Planner Stage"), "flower");
+    fireEvent.changeText(
+      screen.getByLabelText("Topdress Planner Days until harvest"),
+      "42"
+    );
+    fireEvent.changeText(
+      screen.getByLabelText("Topdress Planner Planned apply date"),
+      "2026-07-10"
+    );
+
+    fireEvent.press(screen.getByLabelText("Ask AI to build topdress plan"));
+
+    expect(screen.getByText("AI topdress plan brief")).toBeTruthy();
+    expect(screen.getByText(/Product\/recipe: Bloom topdress/)).toBeTruthy();
+    expect(screen.getByText(/Stage: flower/)).toBeTruthy();
+    expect(screen.getByText(/Days until harvest: 42/)).toBeTruthy();
+    expect(
+      screen.getByText(/call the Topdress Planner for final rate, total amount/)
+    ).toBeTruthy();
+  });
 });

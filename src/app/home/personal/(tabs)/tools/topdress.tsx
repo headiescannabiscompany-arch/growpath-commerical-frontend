@@ -78,6 +78,26 @@ function topdressTasks(outputs: Record<string, any>, payload: Record<string, any
   ];
 }
 
+function buildTopdressAssistantBrief(payload: Record<string, any>) {
+  return [
+    "AI Topdress Planner brief",
+    "",
+    "Role: help the user decide whether this topdress plan fits the current grow context, but call the Topdress Planner for final rate, total amount, release window, warnings, ToolRun saving, and follow-up task schedule.",
+    `Product/recipe: ${payload.productName || "not set"}`,
+    `Stage: ${payload.stage || "not set"}`,
+    `Plants: ${payload.plantCount || "-"} plants`,
+    `Soil volume: ${payload.soilVolumePerPlant || "-"} ${
+      payload.soilVolumeUnit || "units"
+    } per plant`,
+    `Dose: ${payload.doseRate || "-"} ${payload.doseUnit || "dose units"}`,
+    `Release class: ${payload.releaseClass || "unknown"}`,
+    `Days until harvest: ${payload.daysUntilHarvest ?? "unknown"}`,
+    `Planned apply date: ${payload.plannedApplyDate || "not set"}`,
+    "",
+    "Explain whether this is too hot, too late, or too slow for the stage, what to watch after watering in, and whether the follow-up tasks should include 3-day, 7-day, and 21-day checks."
+  ].join("\n");
+}
+
 export default function TopdressToolScreen() {
   return (
     <BackendCalculatorToolScreen
@@ -190,6 +210,15 @@ export default function TopdressToolScreen() {
         priority: outputs.taskToCreate?.priority || "medium",
         dueDate: String(outputs.plannedApplyDate || tomorrow(1)).slice(0, 10)
       })}
+      assistantBrief={{
+        title: "AI-guided, calculator-verified",
+        description:
+          "Ask AI to help reason through the stage fit, release timing, harvest window, and follow-up checks. The Topdress Planner remains the source of truth for rate math and task dates.",
+        buttonLabel: "Ask AI to Build Topdress Plan",
+        accessibilityLabel: "Ask AI to build topdress plan",
+        briefTitle: "AI topdress plan brief",
+        buildBrief: ({ payload }) => buildTopdressAssistantBrief(payload)
+      }}
       buildActions={({ outputs, payload, toolRun, plantContext }) => [
         {
           key: "create-topdress-plan-tasks",
