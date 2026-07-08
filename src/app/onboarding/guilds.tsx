@@ -13,6 +13,7 @@ import { useLocalSearchParams, useRouter } from "expo-router";
 import { joinGuild, listGuilds, type Guild } from "@/api/communitySocial";
 import { updateGrowInterests } from "@/api/users";
 import { INTEREST_TIERS } from "@/config/interests";
+import { radius } from "@/theme/theme";
 
 type InterestMap = Record<string, string[]>;
 
@@ -272,7 +273,7 @@ const styles = StyleSheet.create({
   panel: {
     backgroundColor: "#ffffff",
     borderColor: "#d7ddd2",
-    borderRadius: 8,
+    borderRadius: radius.card,
     borderWidth: 1,
     marginBottom: 12,
     padding: 14
@@ -283,7 +284,7 @@ const styles = StyleSheet.create({
   chip: {
     backgroundColor: "#f8fafc",
     borderColor: "#cbd5e1",
-    borderRadius: 8,
+    borderRadius: radius.pill,
     borderWidth: 1,
     paddingHorizontal: 11,
     paddingVertical: 8
@@ -295,7 +296,7 @@ const styles = StyleSheet.create({
   muted: { color: "#64748b", fontWeight: "700" },
   guildRow: {
     borderColor: "#e2e8f0",
-    borderRadius: 8,
+    borderRadius: radius.card,
     borderWidth: 1,
     marginBottom: 8,
     padding: 10
@@ -307,7 +308,7 @@ const styles = StyleSheet.create({
   button: {
     alignItems: "center",
     backgroundColor: "#166534",
-    borderRadius: 8,
+    borderRadius: radius.card,
     paddingVertical: 12
   },
   buttonDisabled: { opacity: 0.5 },

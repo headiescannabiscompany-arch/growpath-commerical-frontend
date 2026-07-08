@@ -13,6 +13,7 @@ import { useAuth } from "@/auth/AuthContext";
 import AppCard from "@/components/layout/AppCard";
 import AppPage from "@/components/layout/AppPage";
 import { useCreateFacility } from "@/hooks/useCreateFacility";
+import { radius } from "@/theme/theme";
 
 export default function CreateFacilityScreen() {
   const [name, setName] = useState("");
@@ -156,7 +157,7 @@ const styles = StyleSheet.create({
   input: {
     backgroundColor: "#ffffff",
     borderColor: "#cbd5e1",
-    borderRadius: 8,
+    borderRadius: radius.card,
     borderWidth: 1,
     color: "#111827",
     fontSize: 16,
@@ -168,7 +169,7 @@ const styles = StyleSheet.create({
   primaryButton: {
     alignItems: "center",
     backgroundColor: "#166534",
-    borderRadius: 8,
+    borderRadius: radius.card,
     paddingVertical: 12
   },
   disabledButton: { opacity: 0.55 },
@@ -177,7 +178,7 @@ const styles = StyleSheet.create({
     alignItems: "center",
     backgroundColor: "#ffffff",
     borderColor: "#cbd5e1",
-    borderRadius: 8,
+    borderRadius: radius.card,
     borderWidth: 1,
     paddingVertical: 12
   },

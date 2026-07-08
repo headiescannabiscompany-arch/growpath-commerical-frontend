@@ -716,6 +716,7 @@ Completed and pushed:
 440. Login, Register, Forgot Password, Reset Password, and Verify Email panels, media frames, inputs, verification notices, CTAs, and account-choice controls now consume shared radius tokens while preserving radio/pill semantics, extending Facility-style polish to every auth entry point.
 441. Shared SchedulePicker clear action and schedule inputs now consume the shared 8px card radius token while preserving quick-date, reminder, recurrence, lights-cycle, and all-day chips as pills across task/calendar workflows.
 442. Public Brand Profile feedback and Store/Profile/Campaign/Forum action controls now consume the shared 8px card radius token while preserving trial/status pills, keeping storefront-facing brand discovery aligned with the public storefront polish.
+443. Onboarding walkthroughs, forum-group selection, facility creation, invite joining, and facility picking now consume shared radius tokens for panels, cards, inputs, and actions while preserving grow-interest chips as pills across Personal, Commercial, and Facility setup paths.
 
 ## Working Rule For Codex
 

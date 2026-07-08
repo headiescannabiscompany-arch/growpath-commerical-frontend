@@ -13,6 +13,7 @@ import { Redirect, useRouter } from "expo-router";
 import { useAuth } from "@/auth/AuthContext";
 import { useFacility } from "@/facility/FacilityProvider";
 import { useFacilities } from "@/hooks/useFacilities";
+import { radius } from "@/theme/theme";
 
 export default function PickFacilityScreen() {
   const auth = useAuth();
@@ -138,7 +139,7 @@ const styles = StyleSheet.create({
   card: {
     borderWidth: 1,
     borderColor: "#d1d5db",
-    borderRadius: 12,
+    borderRadius: radius.card,
     padding: 14,
     backgroundColor: "#f9fafb",
     gap: 4
@@ -151,7 +152,7 @@ const styles = StyleSheet.create({
     borderWidth: 1,
     borderColor: "#fecaca",
     backgroundColor: "#fef2f2",
-    borderRadius: 12,
+    borderRadius: radius.card,
     padding: 12,
     gap: 10
   },
@@ -159,19 +160,19 @@ const styles = StyleSheet.create({
   emptyBox: {
     borderWidth: 1,
     borderColor: "#e5e7eb",
-    borderRadius: 12,
+    borderRadius: radius.card,
     padding: 12,
     gap: 10
   },
   primaryButton: {
-    borderRadius: 10,
+    borderRadius: radius.card,
     backgroundColor: "#111827",
     paddingVertical: 11,
     alignItems: "center"
   },
   primaryButtonText: { color: "#fff", fontWeight: "700" },
   secondaryButton: {
-    borderRadius: 10,
+    borderRadius: radius.card,
     borderWidth: 1,
     borderColor: "#d1d5db",
     paddingVertical: 10,

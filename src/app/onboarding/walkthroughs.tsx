@@ -9,6 +9,8 @@ import {
 } from "react-native";
 import { useLocalSearchParams, useRouter } from "expo-router";
 
+import { radius } from "@/theme/theme";
+
 type PlanKey = "pro" | "commercial" | "facility";
 
 type Walkthrough = {
@@ -157,7 +159,7 @@ const styles = StyleSheet.create({
   main: {
     backgroundColor: "#ffffff",
     borderColor: "#dbe3ea",
-    borderRadius: 8,
+    borderRadius: radius.card,
     borderWidth: 1,
     flex: 1,
     gap: 14,
@@ -165,7 +167,7 @@ const styles = StyleSheet.create({
   },
   side: {
     backgroundColor: "#0f172a",
-    borderRadius: 8,
+    borderRadius: radius.card,
     gap: 12,
     padding: 22
   },
@@ -180,7 +182,7 @@ const styles = StyleSheet.create({
   steps: { gap: 12, marginTop: 6 },
   step: {
     borderColor: "#e2e8f0",
-    borderRadius: 8,
+    borderRadius: radius.card,
     borderWidth: 1,
     flexDirection: "row",
     gap: 12,
@@ -203,7 +205,7 @@ const styles = StyleSheet.create({
   button: {
     alignItems: "center",
     backgroundColor: "#22c55e",
-    borderRadius: 8,
+    borderRadius: radius.card,
     marginTop: 8,
     paddingVertical: 12
   },

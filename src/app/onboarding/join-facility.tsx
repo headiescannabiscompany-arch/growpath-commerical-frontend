@@ -14,6 +14,7 @@ import { Redirect, useRouter } from "expo-router";
 import { useAuth } from "@/auth/AuthContext";
 import { useFacility } from "@/facility/FacilityProvider";
 import { apiRequest } from "@/api/apiRequest";
+import { radius } from "@/theme/theme";
 
 type InvitePreview = {
   facilityId?: string;
@@ -208,7 +209,7 @@ const styles = StyleSheet.create({
   input: {
     borderWidth: 1,
     borderColor: "#d1d5db",
-    borderRadius: 10,
+    borderRadius: radius.card,
     paddingHorizontal: 12,
     paddingVertical: 11,
     fontSize: 15,
@@ -217,7 +218,7 @@ const styles = StyleSheet.create({
   card: {
     borderWidth: 1,
     borderColor: "#e5e7eb",
-    borderRadius: 12,
+    borderRadius: radius.card,
     padding: 12,
     gap: 8,
     backgroundColor: "#f9fafb"
@@ -225,14 +226,14 @@ const styles = StyleSheet.create({
   cardTitle: { fontSize: 17, fontWeight: "700" },
   meta: { fontSize: 13, color: "#4b5563" },
   primaryButton: {
-    borderRadius: 10,
+    borderRadius: radius.card,
     backgroundColor: "#111827",
     paddingVertical: 11,
     alignItems: "center"
   },
   primaryButtonText: { color: "#fff", fontWeight: "700" },
   secondaryButton: {
-    borderRadius: 10,
+    borderRadius: radius.card,
     borderWidth: 1,
     borderColor: "#d1d5db",
     paddingVertical: 10,
