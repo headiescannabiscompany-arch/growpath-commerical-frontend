@@ -4,7 +4,13 @@ jest.mock("@/api/apiRequest", () => ({
   apiRequest: (...args: any[]) => mockApiRequest(...args)
 }));
 
-const { createToolRun, getToolRun, runCalculator } = require("@/api/toolRuns");
+const {
+  createTaskFromToolRun,
+  createToolRun,
+  getToolRun,
+  runCalculator,
+  saveToolRunToLog
+} = require("@/api/toolRuns");
 
 describe("toolRuns API", () => {
   beforeEach(() => {
@@ -121,5 +127,45 @@ describe("toolRuns API", () => {
     expect(run?.outputs).toEqual({ risk: "high" });
     expect(run?.schemaVersion).toBe(2);
     expect(run?.calculatorVersion).toBe("guard-v2");
+  });
+
+  it("preserves tool run links when saving a run to the grow log", async () => {
+    await saveToolRunToLog("run-log-1", {
+      title: "Saved VPD result",
+      growId: "grow-1",
+      linkedGrowId: "grow-1"
+    });
+
+    expect(mockApiRequest).toHaveBeenCalledWith("/api/tools/runs/run-log-1/save-log", {
+      method: "POST",
+      body: expect.objectContaining({
+        title: "Saved VPD result",
+        toolRunId: "run-log-1",
+        linkedToolRunId: "run-log-1",
+        growId: "grow-1",
+        linkedGrowId: "grow-1"
+      })
+    });
+  });
+
+  it("preserves tool run source links when creating a task from a run", async () => {
+    await createTaskFromToolRun("run-task-1", {
+      title: "Recheck environment",
+      growId: "grow-1",
+      linkedGrowId: "grow-1"
+    });
+
+    expect(mockApiRequest).toHaveBeenCalledWith("/api/tools/runs/run-task-1/create-task", {
+      method: "POST",
+      body: expect.objectContaining({
+        title: "Recheck environment",
+        sourceType: "tool_run",
+        sourceObjectId: "run-task-1",
+        sourceToolRunId: "run-task-1",
+        linkedToolRunId: "run-task-1",
+        growId: "grow-1",
+        linkedGrowId: "grow-1"
+      })
+    });
   });
 });

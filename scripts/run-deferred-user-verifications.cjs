@@ -63,6 +63,7 @@ const checks = [
       "tests/unit/ForumFeedSeparationRoutes.test.tsx",
       "tests/unit/ResetPasswordScreen.test.tsx",
       "tests/unit/ForgotPasswordScreen.test.tsx",
+      "tests/unit/toolRuns-api.test.ts",
       "src/api/__tests__/auth.emailVerification.test.ts",
       "src/features/personal/tools/__tests__/moduleRecordPersistence.test.ts",
       "src/features/personal/tools/__tests__/saveToolRunAndOpenJournal.test.ts"

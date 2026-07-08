@@ -158,11 +158,23 @@ export async function runCalculator<TOutput extends Record<string, any>>(
 
 export async function saveToolRunToLog(
   toolRunId: string,
-  payload: { title?: string; notes?: string } = {}
+  payload: {
+    title?: string;
+    notes?: string;
+    growId?: string;
+    plantId?: string | null;
+    linkedGrowId?: string;
+    linkedPlantId?: string | null;
+    linkedToolRunId?: string;
+  } = {}
 ) {
   return apiRequest(`/api/tools/runs/${encodeURIComponent(toolRunId)}/save-log`, {
     method: "POST",
-    body: payload
+    body: {
+      toolRunId,
+      linkedToolRunId: toolRunId,
+      ...payload
+    }
   });
 }
 
@@ -173,11 +185,25 @@ export async function createTaskFromToolRun(
     description?: string;
     priority?: "low" | "medium" | "high";
     dueDate?: string;
+    growId?: string;
+    plantId?: string | null;
+    linkedGrowId?: string;
+    linkedPlantId?: string | null;
+    linkedToolRunId?: string;
+    sourceType?: string;
+    sourceObjectId?: string;
+    sourceToolRunId?: string;
   } = {}
 ) {
   return apiRequest(`/api/tools/runs/${encodeURIComponent(toolRunId)}/create-task`, {
     method: "POST",
-    body: payload
+    body: {
+      sourceType: "tool_run",
+      sourceObjectId: toolRunId,
+      sourceToolRunId: toolRunId,
+      linkedToolRunId: toolRunId,
+      ...payload
+    }
   });
 }
 
