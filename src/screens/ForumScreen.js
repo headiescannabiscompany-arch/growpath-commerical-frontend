@@ -31,6 +31,7 @@ import {
   normalizeInterestList
 } from "../utils/growInterests.js";
 import { shouldAutoFetchMore } from "../utils/forumFeed.js";
+import { radius } from "../theme/theme";
 
 export default function ForumScreen() {
   const { user } = useAuth();
@@ -261,7 +262,7 @@ export default function ForumScreen() {
               <View
                 style={{
                   backgroundColor: "#F0FDF4",
-                  borderRadius: 8,
+                  borderRadius: radius.card,
                   padding: 12,
                   marginBottom: 12
                 }}
@@ -392,14 +393,14 @@ const styles = StyleSheet.create({
     flexDirection: "row",
     marginBottom: 10,
     backgroundColor: "#eee",
-    borderRadius: 8,
+    borderRadius: radius.card,
     padding: 4
   },
   createBtn: {
     backgroundColor: "#27ae60",
     paddingHorizontal: 16,
     paddingVertical: 8,
-    borderRadius: 8,
+    borderRadius: radius.card,
     alignItems: "center"
   },
   createBtnText: {
@@ -438,7 +439,7 @@ const styles = StyleSheet.create({
     backgroundColor: "#27ae60",
     paddingHorizontal: 12,
     paddingVertical: 8,
-    borderRadius: 6
+    borderRadius: radius.card
   },
   codeButtonText: {
     color: "#fff",
@@ -447,7 +448,7 @@ const styles = StyleSheet.create({
   },
   card: {
     backgroundColor: "#fff",
-    borderRadius: 12,
+    borderRadius: radius.card,
     padding: 16,
     marginVertical: 8,
     marginHorizontal: 12,
@@ -469,7 +470,7 @@ const styles = StyleSheet.create({
   avatar: {
     width: 48,
     height: 48,
-    borderRadius: 24,
+    borderRadius: radius.pill,
     marginRight: 12
   },
   avatarFallback: {
@@ -499,7 +500,7 @@ const styles = StyleSheet.create({
   },
   workspacePill: {
     backgroundColor: "#f9e0b7",
-    borderRadius: 12,
+    borderRadius: radius.pill,
     paddingHorizontal: 8,
     paddingVertical: 2,
     marginRight: 6
@@ -523,7 +524,7 @@ const styles = StyleSheet.create({
   postImage: {
     width: "100%",
     height: 180,
-    borderRadius: 10,
+    borderRadius: radius.card,
     marginVertical: 8
   },
   tagsRow: {
@@ -533,7 +534,7 @@ const styles = StyleSheet.create({
   },
   tag: {
     backgroundColor: "#e0f7fa",
-    borderRadius: 8,
+    borderRadius: radius.pill,
     paddingHorizontal: 8,
     paddingVertical: 2,
     marginRight: 6,
@@ -558,7 +559,7 @@ const styles = StyleSheet.create({
     flex: 1,
     paddingVertical: 10,
     alignItems: "center",
-    borderRadius: 6,
+    borderRadius: radius.card,
     backgroundColor: "transparent"
   },
   tabActive: {
@@ -584,12 +585,16 @@ const styles = StyleSheet.create({
     marginTop: 4
   },
   identityPill: {
-    backgroundColor: "#e0f7fa"
+    backgroundColor: "#e0f7fa",
+    borderRadius: radius.pill,
+    paddingHorizontal: 8,
+    paddingVertical: 2,
+    marginRight: 6
   },
   filterToggle: {
     padding: 8,
     backgroundColor: "#e0f7fa",
-    borderRadius: 8
+    borderRadius: radius.card
   },
   filterToggleText: {
     color: "#00796b",

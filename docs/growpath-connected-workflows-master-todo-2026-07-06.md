@@ -737,6 +737,7 @@ Completed and pushed:
 461. Legacy diagnosis, diagnosis history, and diagnosis result inputs, result panels, media previews, action controls, feedback cards, and tag chips now consume shared radius tokens while preserving diagnostic and feedback persistence behavior.
 462. Shared inventory rows, room cards, grow/plant selectors, stage slider notches, and AI token balance widgets now consume shared radius tokens, carrying the Facility visual polish into cross-mode components used by Personal, Commercial, and Facility workflows.
 463. Facility task management, team invitation/member rows, settings forms, and automation policy cards/actions now consume shared radius tokens, extending the same Facility visual appeal across operational setup, staff, SOP, and alert automation workflows.
+464. Legacy Forum root discussion notice, tabs, post cards, avatars, media, identity badges, tags, and filter/create actions now consume shared radius tokens while preserving the explicit Forum/Q&A versus Feed/Campaigns separation copy.
 
 ## Working Rule For Codex
 
