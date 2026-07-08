@@ -614,6 +614,7 @@ Completed and pushed:
 338. Facility Task Detail now preserves alert/source routing while adding View Linked Object for product, product-batch, trial, SOP/course, lesson, live, feed-campaign, and Forum context, keeping facility users inside facility inventory/runs/SOP surfaces instead of commercial admin routes.
 339. Commercial Alert Detail now opens the affected product, batch, trial, course, live, storefront, feed campaign, order, or Forum source directly with View Linked Object while still creating alert-backed follow-up tasks with the original alert trail.
 340. Notification-created follow-up tasks now preserve specific lesson and course-assignment IDs instead of flattening them into generic course links, keeping course workflow reminders connected to the exact lesson or assignment that generated the notification.
+341. Alert-created follow-up tasks now preserve parent course, exact lesson, and course-assignment IDs so instructor/student alert workflows stay connected to the specific course child record that needs action.
 
 ## Working Rule For Codex
 

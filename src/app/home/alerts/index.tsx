@@ -150,9 +150,16 @@ function linkedFieldsForAlertSource(alert: AlertRow) {
     case "product_trial":
       return { linkedProductTrialId: sourceId, linkedTrialId: sourceId };
     case "lesson":
-      return { linkedLessonId: sourceId };
+      return {
+        linkedCourseId: alert.linkedCourseId || alert.courseId || undefined,
+        linkedLessonId: sourceId
+      };
     case "course_assignment":
-      return { linkedCourseAssignmentId: sourceId };
+      return {
+        linkedCourseId: alert.linkedCourseId || alert.courseId || undefined,
+        linkedLessonId: alert.linkedLessonId || undefined,
+        linkedCourseAssignmentId: sourceId
+      };
     case "feed_campaign":
       return { linkedFeedCampaignId: sourceId };
     case "order":

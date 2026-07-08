@@ -209,6 +209,31 @@ describe("AlertCenterRoute", () => {
               sourceType: "product_trial",
               linkedTrialId: "trial-linked-1",
               createdAt: new Date().toISOString()
+            },
+            {
+              id: "alert-18",
+              title: "Lesson question unanswered",
+              message: "A lesson discussion needs instructor follow-up.",
+              severity: "warning",
+              status: "active",
+              workspaceType: "personal",
+              sourceType: "lesson",
+              sourceId: "lesson-2",
+              linkedCourseId: "course-2",
+              createdAt: new Date().toISOString()
+            },
+            {
+              id: "alert-19",
+              title: "Course assignment overdue",
+              message: "A student assignment needs follow-up.",
+              severity: "urgent",
+              status: "active",
+              workspaceType: "personal",
+              sourceType: "course_assignment",
+              sourceId: "assignment-1",
+              linkedCourseId: "course-3",
+              linkedLessonId: "lesson-3",
+              createdAt: new Date().toISOString()
             }
           ]
         });
@@ -323,7 +348,7 @@ describe("AlertCenterRoute", () => {
     expect(screen.getByText("Task created from alert.")).toBeTruthy();
 
     const createButtons = screen.getAllByLabelText("Create task from alert");
-    expect(createButtons).toHaveLength(16);
+    expect(createButtons).toHaveLength(18);
     fireEvent.press(createButtons[5]);
     await waitFor(() =>
       expect(mockApiRequest).toHaveBeenLastCalledWith(
@@ -399,6 +424,51 @@ describe("AlertCenterRoute", () => {
             linkedProductTrialId: "trial-linked-1",
             linkedTrialId: "trial-linked-1",
             priority: "normal",
+            status: "open"
+          })
+        })
+      )
+    );
+    fireEvent.press(createButtons[16]);
+    await waitFor(() =>
+      expect(mockApiRequest).toHaveBeenLastCalledWith(
+        "/api/tasks",
+        expect.objectContaining({
+          method: "POST",
+          body: expect.objectContaining({
+            workspaceType: "personal",
+            title: "Follow up: Lesson question unanswered",
+            sourceType: "alert",
+            sourceId: "alert-18",
+            linkedAlertId: "alert-18",
+            alertSourceType: "lesson",
+            alertSourceId: "lesson-2",
+            linkedCourseId: "course-2",
+            linkedLessonId: "lesson-2",
+            priority: "normal",
+            status: "open"
+          })
+        })
+      )
+    );
+    fireEvent.press(createButtons[17]);
+    await waitFor(() =>
+      expect(mockApiRequest).toHaveBeenLastCalledWith(
+        "/api/tasks",
+        expect.objectContaining({
+          method: "POST",
+          body: expect.objectContaining({
+            workspaceType: "personal",
+            title: "Follow up: Course assignment overdue",
+            sourceType: "alert",
+            sourceId: "alert-19",
+            linkedAlertId: "alert-19",
+            alertSourceType: "course_assignment",
+            alertSourceId: "assignment-1",
+            linkedCourseId: "course-3",
+            linkedLessonId: "lesson-3",
+            linkedCourseAssignmentId: "assignment-1",
+            priority: "critical",
             status: "open"
           })
         })
