@@ -20,8 +20,8 @@ import ErrorState from "../../components/ErrorState.js";
 import ErrorBoundary from "../../components/ErrorBoundary.js";
 
 /**
- * Communities Screen
- * Browse, join, and manage user communities and guilds
+ * Forum/Q&A groups compatibility screen.
+ * Browse, join, and manage discussion groups without confusing them with Feed/Campaigns.
  */
 
 const CommunitiesScreen = ({ navigation }) => {
@@ -36,7 +36,7 @@ const CommunitiesScreen = ({ navigation }) => {
   const [joinedGuilds, setJoinedGuilds] = useState([]);
   const [availableGuilds, setAvailableGuilds] = useState([]);
 
-  // Load communities on mount
+  // Load forum groups on mount
   useEffect(() => {
     loadCommunitiesData();
   }, []);
@@ -49,8 +49,8 @@ const CommunitiesScreen = ({ navigation }) => {
       setJoinedGuilds(myGuilds?.data || []);
       setAvailableGuilds(browse?.data || []);
     } catch (err) {
-      console.error("Failed to load communities:", err);
-      setError(err.message || "Failed to load communities");
+      console.error("Failed to load forum groups:", err);
+      setError(err.message || "Failed to load forum groups");
     } finally {
       setIsLoading(false);
     }
@@ -58,7 +58,7 @@ const CommunitiesScreen = ({ navigation }) => {
 
   const handleCreateGuild = async () => {
     if (!guildName.trim()) {
-      Alert.alert("Error", "Guild name is required");
+      Alert.alert("Error", "Forum group name is required");
       return;
     }
     try {
@@ -69,10 +69,10 @@ const CommunitiesScreen = ({ navigation }) => {
         setGuildName("");
         setGuildDescription("");
         setShowCreateGuildModal(false);
-        Alert.alert("Success", "Guild created successfully");
+        Alert.alert("Success", "Forum group created successfully");
       }
     } catch (error) {
-      Alert.alert("Error", `Failed to create guild: ${error.message}`);
+      Alert.alert("Error", `Failed to create forum group: ${error.message}`);
     } finally {
       setIsLoading(false);
     }
@@ -147,7 +147,7 @@ const CommunitiesScreen = ({ navigation }) => {
             <Text
               style={[styles.tabLabel, activeTab === "joined" && styles.tabLabelActive]}
             >
-              My Guilds ({joinedGuilds.length})
+              My Groups ({joinedGuilds.length})
             </Text>
           </TouchableOpacity>
 
@@ -172,7 +172,7 @@ const CommunitiesScreen = ({ navigation }) => {
           {/* Error State */}
           {error && (
             <ErrorState
-              title="Failed to load communities"
+              title="Failed to load forum groups"
               message={error}
               icon="alert-circle"
               onRetry={loadCommunitiesData}
@@ -184,9 +184,9 @@ const CommunitiesScreen = ({ navigation }) => {
           {activeTab === "browse" && (
             <>
               <View style={styles.browseHeader}>
-                <Text style={styles.pageTitle}>Discover Communities</Text>
+                <Text style={styles.pageTitle}>Discover Forum Groups</Text>
                 <Text style={styles.pageSubtitle}>
-                  Join guilds to connect with fellow growers
+                  Join Forum/Q&A groups to connect with fellow growers
                 </Text>
               </View>
 
@@ -199,7 +199,7 @@ const CommunitiesScreen = ({ navigation }) => {
                 />
                 <TextInput
                   style={styles.searchInput}
-                  placeholder="Search communities..."
+                  placeholder="Search forum groups..."
                   value={searchQuery}
                   onChangeText={setSearchQuery}
                 />
@@ -207,8 +207,8 @@ const CommunitiesScreen = ({ navigation }) => {
 
               {/* Featured Badge */}
               <View style={styles.featuredSection}>
-                <Text style={styles.featuredLabel}>✨ Featured Communities</Text>
-                {browseGuilds
+                <Text style={styles.featuredLabel}>Featured Forum Groups</Text>
+                {availableGuilds
                   .filter((g) => g.featured)
                   .map((guild) => (
                     <Card
@@ -222,7 +222,7 @@ const CommunitiesScreen = ({ navigation }) => {
                         <View style={styles.guildInfo}>
                           <Text style={styles.guildName}>{guild.name}</Text>
                           <Text style={styles.guildMembers}>
-                            👥 {guild.members.toLocaleString()} members
+                            {guild.members.toLocaleString()} members
                           </Text>
                         </View>
                         <TouchableOpacity
@@ -238,9 +238,9 @@ const CommunitiesScreen = ({ navigation }) => {
                   ))}
               </View>
 
-              {/* All Communities */}
+              {/* All Forum Groups */}
               <View style={styles.allSection}>
-                <Text style={styles.sectionTitle}>All Communities</Text>
+                <Text style={styles.sectionTitle}>All Forum Groups</Text>
                 {availableGuilds.map((guild) => (
                   <Card key={guild.id} style={styles.communityRow}>
                     <View style={styles.communityHeader}>
@@ -248,7 +248,7 @@ const CommunitiesScreen = ({ navigation }) => {
                       <View style={styles.communityInfo}>
                         <Text style={styles.communityName}>{guild.name}</Text>
                         <Text style={styles.communityMeta}>
-                          {guild.members?.toLocaleString() || 0} members •{" "}
+                          {guild.members?.toLocaleString() || 0} members -{" "}
                           {guild.description}
                         </Text>
                       </View>
@@ -269,13 +269,13 @@ const CommunitiesScreen = ({ navigation }) => {
           {activeTab === "joined" && (
             <>
               <View style={styles.browseHeader}>
-                <Text style={styles.pageTitle}>My Communities</Text>
+                <Text style={styles.pageTitle}>My Forum Groups</Text>
                 <TouchableOpacity
                   style={styles.createBtn}
                   onPress={() => setShowCreateGuildModal(true)}
                 >
                   <MaterialCommunityIcons name="plus" size={20} color="#FFF" />
-                  <Text style={styles.createBtnText}>Create Guild</Text>
+                  <Text style={styles.createBtnText}>Create Group</Text>
                 </TouchableOpacity>
               </View>
 
@@ -345,7 +345,7 @@ const CommunitiesScreen = ({ navigation }) => {
               <View style={styles.browseHeader}>
                 <Text style={styles.pageTitle}>Recent Discussions</Text>
                 <Text style={styles.pageSubtitle}>
-                  Browse conversations across all communities
+                  Browse conversations across all Forum/Q&A groups
                 </Text>
               </View>
 
@@ -404,7 +404,7 @@ const CommunitiesScreen = ({ navigation }) => {
                 />
                 <Text style={styles.ctaTitle}>Start a Discussion</Text>
                 <Text style={styles.ctaText}>
-                  Share your question or topic with the community
+                  Share your question or topic with Forum/Q&A
                 </Text>
                 <TouchableOpacity style={styles.ctaBtn}>
                   <Text style={styles.ctaBtnText}>New Discussion</Text>
@@ -416,19 +416,19 @@ const CommunitiesScreen = ({ navigation }) => {
           <View style={styles.spacer} />
         </ScrollView>
 
-        {/* Create Guild Modal */}
+        {/* Create Forum Group Modal */}
         <Modal visible={showCreateGuildModal} animationType="slide">
           <View style={styles.modalContainer}>
             <View style={styles.modalHeader}>
               <TouchableOpacity onPress={() => setShowCreateGuildModal(false)}>
                 <MaterialCommunityIcons name="close" size={28} color={Colors.text} />
               </TouchableOpacity>
-              <Text style={styles.modalTitle}>Create Community</Text>
+              <Text style={styles.modalTitle}>Create Forum Group</Text>
               <View style={{ width: 28 }} />
             </View>
 
             <ScrollView style={styles.modalContent}>
-              <Text style={styles.inputLabel}>Community Name</Text>
+              <Text style={styles.inputLabel}>Forum Group Name</Text>
               <TextInput
                 style={styles.modalInput}
                 placeholder="e.g., Hydroponics Masters"
@@ -439,7 +439,7 @@ const CommunitiesScreen = ({ navigation }) => {
               <Text style={styles.inputLabel}>Description</Text>
               <TextInput
                 style={[styles.modalInput, { minHeight: 100 }]}
-                placeholder="What's your community about?"
+                placeholder="What is this Forum/Q&A group about?"
                 value={guildDescription}
                 onChangeText={setGuildDescription}
                 multiline
@@ -480,7 +480,7 @@ const CommunitiesScreen = ({ navigation }) => {
               </TouchableOpacity>
 
               <TouchableOpacity style={styles.createGuildBtn} onPress={handleCreateGuild}>
-                <Text style={styles.createGuildBtnText}>Create Community</Text>
+                <Text style={styles.createGuildBtnText}>Create Forum Group</Text>
               </TouchableOpacity>
             </ScrollView>
           </View>
