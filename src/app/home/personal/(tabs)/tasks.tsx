@@ -80,12 +80,32 @@ function sourceObjectLabel(task: PersonalTask) {
   return source.replace(/\b\w/g, (char) => char.toUpperCase());
 }
 
+function sourceReference(task: PersonalTask) {
+  const value =
+    task.sourceObjectId ||
+    task.linkedProductId ||
+    task.linkedProductBatchId ||
+    task.linkedProductTrialId ||
+    task.linkedStorefrontId ||
+    task.linkedCourseId ||
+    task.linkedLessonId ||
+    task.linkedLiveId ||
+    task.linkedAlertId ||
+    task.linkedForumThreadId ||
+    task.linkedRoomId ||
+    task.linkedFacilityRunId ||
+    task.linkedSopId;
+  return value ? String(value) : "";
+}
+
 function taskLinks(task: PersonalTask) {
+  const linkedSource = sourceReference(task);
   return [
     task.growId && `Grow: ${task.growId}`,
     task.plantId && `Plant: ${task.plantId}`,
-    task.sourceObjectId && `${sourceObjectLabel(task)}: ${task.sourceObjectId}`,
+    linkedSource && `${sourceObjectLabel(task)}: ${linkedSource}`,
     task.sourceToolRunId && `ToolRun: ${task.sourceToolRunId}`,
+    !task.sourceToolRunId && task.linkedToolRunId && `ToolRun: ${task.linkedToolRunId}`,
     task.sourceDiagnosisId && `Diagnosis: ${task.sourceDiagnosisId}`,
     task.linkedLogId && `Log: ${task.linkedLogId}`
   ]

@@ -123,6 +123,19 @@ describe("PersonalTaskCenterRoute", () => {
         sourceType: "live_replay",
         sourceObjectId: "live-1",
         createdAt: "2026-07-07T00:00:00Z"
+      },
+      {
+        id: "task-linked-batch",
+        growId: "grow-1",
+        title: "Review linked batch",
+        description: "Linked-only product batch should still show context.",
+        dueDate: "2026-07-12",
+        completed: false,
+        priority: "medium",
+        sourceType: "product_batch",
+        linkedProductBatchId: "batch-linked-1",
+        linkedToolRunId: "run-linked-1",
+        createdAt: "2026-07-07T00:00:00Z"
       }
     ]);
     mockCreatePersonalTask.mockResolvedValue({
@@ -144,8 +157,11 @@ describe("PersonalTaskCenterRoute", () => {
     expect(screen.getAllByText("recipe").length).toBeGreaterThan(0);
     expect(screen.getByText(/Sensor Alert: alert-1/)).toBeTruthy();
     expect(screen.getByText(/AI Diagnosis: diag-1/)).toBeTruthy();
-    expect(screen.getByText("product batch")).toBeTruthy();
-    expect(screen.getAllByLabelText("View personal task source").length).toBe(6);
+    expect(screen.getByText("Review linked batch")).toBeTruthy();
+    expect(screen.getByText(/Product Batch: batch-linked-1/)).toBeTruthy();
+    expect(screen.getByText(/ToolRun: run-linked-1/)).toBeTruthy();
+    expect(screen.getAllByText("product batch").length).toBeGreaterThan(0);
+    expect(screen.getAllByLabelText("View personal task source").length).toBe(7);
     expect(
       screen.getByLabelText("Personal task link /home/personal/diagnose?growId=grow-1")
     ).toBeTruthy();
