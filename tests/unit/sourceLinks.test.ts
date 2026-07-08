@@ -130,6 +130,30 @@ describe("sourceObjectHref", () => {
 
     expect(
       sourceObjectHref({
+        sourceType: "storefront",
+        storefrontSlug: "living-soil-labs",
+        workspaceType: "personal"
+      })
+    ).toBe("/store/living-soil-labs");
+
+    expect(
+      sourceObjectHref({
+        sourceType: "storefront",
+        sourceId: "living soil labs",
+        workspaceType: "personal"
+      })
+    ).toBe("/store/living%20soil%20labs");
+
+    expect(
+      sourceObjectHref({
+        sourceType: "storefront",
+        sourceId: "storefront-1",
+        workspaceType: "commercial"
+      })
+    ).toBe("/home/commercial/storefront");
+
+    expect(
+      sourceObjectHref({
         sourceType: "order",
         sourceId: "order-1",
         workspaceType: "commercial"

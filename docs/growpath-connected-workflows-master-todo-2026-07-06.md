@@ -383,6 +383,7 @@ Completed and pushed:
 107. Personal course, lesson, and course-release source links now preserve ids in `/home/personal/courses?courseId=...`, and the personal Courses screen opens the linked course detail when that query is present so course tasks, alerts, notifications, and schedule items do not lose context.
 108. Feed live reminder links now preserve live ids in `/feed?liveId=...`, and the shared Feed/Campaigns screen highlights the matching live campaign card so live reminders and promotional CTAs return to the relevant outreach item without turning Feed into discussion.
 109. Personal/viewer feed campaign source links now preserve campaign ids in `/feed?campaignId=...`, so feed campaign alerts, notifications, and schedule items can reopen the exact promotional card instead of dropping users on the generic Feed root.
+110. Public storefront source links now preserve storefront slugs in `/store/:slug`, while commercial owner storefront links stay in `/home/commercial/storefront`, so storefront alerts, campaign CTAs, and schedule items can reopen the actual brand page without leaking owners into the public route.
 
 ## Working Rule For Codex
 

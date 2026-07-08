@@ -33,6 +33,12 @@ export function sourceObjectHref(source: SourceLike) {
   const courseId = firstText(source?.linkedCourseId, source?.courseId, sourceId);
   const roomId = firstText(source?.linkedRoomId, source?.roomId, sourceId);
   const sopId = firstText(sourceId, source?.linkedSopId, source?.sopId);
+  const storefrontSlug = firstText(
+    source?.storefrontSlug,
+    source?.linkedStorefrontSlug,
+    source?.linkedStorefrontId,
+    sourceId
+  );
 
   if (sourceType === "task") {
     if (!sourceId) return "/home/schedule";
@@ -155,7 +161,8 @@ export function sourceObjectHref(source: SourceLike) {
   }
 
   if (sourceType === "storefront") {
-    return workspace === "commercial" ? "/home/commercial/storefront" : "/store";
+    if (workspace === "commercial") return "/home/commercial/storefront";
+    return storefrontSlug ? `/store/${encoded(storefrontSlug)}` : "/store";
   }
 
   if (sourceType === "order") {
