@@ -10,7 +10,7 @@ export function getPost(id) {
 }
 
 export function getLatestPosts(page = 1, tier1 = [], tags = []) {
-  return apiRequest(apiRoutes.FORUM.FEED_LATEST, {
+  return apiRequest(apiRoutes.FORUM.LATEST, {
     params: {
       page,
       tier1: tier1 && tier1.length ? tier1.join(",") : undefined,
@@ -20,7 +20,7 @@ export function getLatestPosts(page = 1, tier1 = [], tags = []) {
 }
 
 export function getTrendingPosts(page = 1, tier1 = [], tags = []) {
-  return apiRequest(apiRoutes.FORUM.FEED_TRENDING, {
+  return apiRequest(apiRoutes.FORUM.TRENDING, {
     params: {
       page,
       tier1: tier1 && tier1.length ? tier1.join(",") : undefined,
@@ -30,7 +30,7 @@ export function getTrendingPosts(page = 1, tier1 = [], tags = []) {
 }
 
 export function getFollowingPosts(page = 1, tier1 = [], tags = []) {
-  return apiRequest(apiRoutes.FORUM.FEED_FOLLOWING, {
+  return apiRequest(apiRoutes.FORUM.FOLLOWING, {
     params: {
       page,
       tier1: tier1 && tier1.length ? tier1.join(",") : undefined,

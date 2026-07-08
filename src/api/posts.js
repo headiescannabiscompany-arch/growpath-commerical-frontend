@@ -12,7 +12,7 @@ export function getFeed(page = 1, options) {
     ({ tier1 = [], tags = [], token } = options);
   }
 
-  return apiRequest(apiRoutes.FORUM.FEED_LATEST, {
+  return apiRequest(apiRoutes.FORUM.LATEST, {
     auth: token ? true : false,
     params: {
       page,
@@ -23,7 +23,7 @@ export function getFeed(page = 1, options) {
 }
 
 export function getTrending(token) {
-  return apiRequest(apiRoutes.FORUM.FEED_TRENDING, { auth: token ? true : false });
+  return apiRequest(apiRoutes.FORUM.TRENDING, { auth: token ? true : false });
 }
 
 export function createPost(formData, token) {

@@ -56,7 +56,7 @@ export function postId(row: any) {
 }
 
 export async function listForumPosts(page = 1): Promise<SocialPost[]> {
-  const response = await apiRequest(apiRoutes.FORUM.FEED_LATEST, {
+  const response = await apiRequest(apiRoutes.FORUM.LATEST, {
     method: "GET",
     params: { page }
   });

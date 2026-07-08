@@ -67,6 +67,9 @@ export const ROUTES = {
   FORUM: {
     LIST: `${PREFIX}/forum`,
     DETAIL: (id) => `${PREFIX}/forum/${id}`,
+    LATEST: `${PREFIX}/forum/feed/latest`,
+    TRENDING: `${PREFIX}/forum/feed/trending`,
+    FOLLOWING: `${PREFIX}/forum/feed/following`,
     FEED_LATEST: `${PREFIX}/forum/feed/latest`,
     FEED_TRENDING: `${PREFIX}/forum/feed/trending`,
     FEED_FOLLOWING: `${PREFIX}/forum/feed/following`,
