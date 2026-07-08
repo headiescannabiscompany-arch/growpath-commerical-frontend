@@ -17,9 +17,9 @@ import NewCommercialProductRoute from "@/app/home/commercial/products/new";
 import CommercialBatchPlannerRoute from "@/app/home/commercial/batch-planner";
 import CommercialBatchDetailRoute from "@/app/home/commercial/batch-planner/[batchId]";
 import CommercialAnalyticsRoute from "@/app/home/commercial/analytics";
-import CommercialGrowsRoute from "@/app/home/commercial/evidence-runs";
-import CommercialGrowDetailRoute from "@/app/home/commercial/evidence-runs/[id]";
-import NewCommercialGrowRoute from "@/app/home/commercial/evidence-runs/new";
+import CommercialEvidenceRunsRoute from "@/app/home/commercial/evidence-runs";
+import CommercialEvidenceRunDetailRoute from "@/app/home/commercial/evidence-runs/[id]";
+import NewCommercialEvidenceRunRoute from "@/app/home/commercial/evidence-runs/new";
 import CommercialTrialsRoute from "@/app/home/commercial/trials";
 import CommercialTrialDetailRoute from "@/app/home/commercial/trials/[trialId]";
 import CommercialInventoryItemDetailRoute from "@/app/home/commercial/inventory-item/[id]";
@@ -2093,7 +2093,7 @@ describe("commercial workflow pages", () => {
   });
 
   it("manages product trial evidence runs as private evidence source for public claims", async () => {
-    const screen = render(<CommercialGrowsRoute />);
+    const screen = render(<CommercialEvidenceRunsRoute />);
 
     expect(screen.getByText("Product Trial Evidence Runs")).toBeTruthy();
     expect(screen.getAllByText("Product trial evidence layer").length).toBeGreaterThan(0);
@@ -2101,8 +2101,7 @@ describe("commercial workflow pages", () => {
     expect(screen.getAllByText("Batch Planner").length).toBeGreaterThan(0);
     expect(screen.getAllByText("Create Evidence Run").length).toBeGreaterThan(0);
     expect(
-      screen.UNSAFE_getAllByProps({ href: "/home/commercial/evidence-runs/new" })
-        .length
+      screen.UNSAFE_getAllByProps({ href: "/home/commercial/evidence-runs/new" }).length
     ).toBeGreaterThan(0);
     expect(screen.queryByText("Open Grow Workspace")).toBeNull();
     expect(screen.queryByText("Open grow list")).toBeNull();
@@ -2180,7 +2179,7 @@ describe("commercial workflow pages", () => {
   });
 
   it("opens and updates product trial evidence run detail as evidence workspace", async () => {
-    const screen = render(<CommercialGrowDetailRoute />);
+    const screen = render(<CommercialEvidenceRunDetailRoute />);
 
     await waitFor(() =>
       expect(mockApiRequest).toHaveBeenCalledWith("/api/commercial/grows/grow-1")
@@ -2250,7 +2249,7 @@ describe("commercial workflow pages", () => {
   });
 
   it("routes product trial evidence run creation to the real evidence form", async () => {
-    const screen = render(<NewCommercialGrowRoute />);
+    const screen = render(<NewCommercialEvidenceRunRoute />);
 
     expect(
       screen.getAllByText("Create Product Trial Evidence Run").length

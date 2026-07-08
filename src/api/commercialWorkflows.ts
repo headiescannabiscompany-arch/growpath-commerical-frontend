@@ -39,7 +39,7 @@ export type ProductTrial = {
   updatedAt?: string;
 };
 
-export type CommercialGrow = {
+export type ProductTrialEvidenceRun = {
   id?: string;
   _id?: string;
   name?: string;
@@ -62,6 +62,8 @@ export type CommercialGrow = {
   createdAt?: string;
   updatedAt?: string;
 };
+
+export type CommercialGrow = ProductTrialEvidenceRun;
 
 export type SoilNutrientBatch = {
   id?: string;
@@ -234,19 +236,23 @@ export async function saveProductTrialAIReview(
   return res?.trial ?? res?.productTrial ?? res?.updated ?? res;
 }
 
-export async function fetchProductTrialEvidenceRuns(): Promise<CommercialGrow[]> {
+export async function fetchProductTrialEvidenceRuns(): Promise<
+  ProductTrialEvidenceRun[]
+> {
   const res = await apiRequest("/api/commercial/grows");
   return listFromEnvelope(res, ["grows", "commercialGrows"]);
 }
 
 export async function fetchProductTrialEvidenceRun(
   id: string
-): Promise<CommercialGrow | null> {
+): Promise<ProductTrialEvidenceRun | null> {
   const res = await apiRequest(`/api/commercial/grows/${encodeURIComponent(id)}`);
   return res?.grow ?? res?.commercialGrow ?? res?.data?.grow ?? res?.data ?? res ?? null;
 }
 
-export async function createProductTrialEvidenceRun(data: Partial<CommercialGrow>) {
+export async function createProductTrialEvidenceRun(
+  data: Partial<ProductTrialEvidenceRun>
+) {
   const res = await apiRequest("/api/commercial/grows", {
     method: "POST",
     body: data
@@ -256,7 +262,7 @@ export async function createProductTrialEvidenceRun(data: Partial<CommercialGrow
 
 export async function updateProductTrialEvidenceRun(
   id: string,
-  data: Partial<CommercialGrow>
+  data: Partial<ProductTrialEvidenceRun>
 ) {
   const res = await apiRequest(`/api/commercial/grows/${encodeURIComponent(id)}`, {
     method: "PATCH",

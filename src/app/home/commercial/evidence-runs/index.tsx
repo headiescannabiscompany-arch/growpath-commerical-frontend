@@ -1,5 +1,5 @@
-import CommercialGrowsRoute from "@/app/home/commercial/grows";
+import CommercialEvidenceRunsCompatibilityRoute from "@/app/home/commercial/grows";
 
 export default function CommercialEvidenceRunsRoute() {
-  return <CommercialGrowsRoute />;
+  return <CommercialEvidenceRunsCompatibilityRoute />;
 }
