@@ -10,6 +10,7 @@ import {
 import AppCard from "@/components/layout/AppCard";
 import AppPage from "@/components/layout/AppPage";
 import { InlineError } from "@/components/InlineError";
+import { radius } from "@/theme/theme";
 
 function valueOf(metrics: CommercialAnalyticsOverview, keys: string[]) {
   for (const key of keys) {
@@ -370,7 +371,7 @@ const styles = StyleSheet.create({
   metricCard: {
     backgroundColor: "#F8FAFC",
     borderColor: "rgba(15,23,42,0.12)",
-    borderRadius: 10,
+    borderRadius: radius.card,
     borderWidth: 1,
     flexBasis: "23%",
     flexGrow: 1,
@@ -384,7 +385,7 @@ const styles = StyleSheet.create({
   breakdownBox: {
     backgroundColor: "#FFFFFF",
     borderColor: "rgba(15,23,42,0.12)",
-    borderRadius: 10,
+    borderRadius: radius.card,
     borderWidth: 1,
     flexBasis: "48%",
     flexGrow: 1,
