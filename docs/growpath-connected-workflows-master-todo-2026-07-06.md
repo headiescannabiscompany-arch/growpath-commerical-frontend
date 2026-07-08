@@ -569,6 +569,7 @@ Completed and pushed:
 293. Onboarding guild-selection and walkthrough copy now presents Forum/Q&A groups and Feed campaign targeting explicitly, so new users learn the discussion-versus-outreach split before checkout.
 294. Register-account E2E expectations now look for Forum group onboarding labels instead of stale guild-selection copy, keeping browser coverage aligned with the visible onboarding flow.
 295. Legacy commercial community compatibility screen now presents Forum/Q&A groups, avoids corrupted member glyphs, and renders featured groups from loaded data instead of the imported API function.
+296. Personal Forum/Q&A membership fallbacks now say forum groups instead of guilds, preserving the user-facing discussion vocabulary while leaving backend guild API contracts untouched.
 
 ## Working Rule For Codex
 

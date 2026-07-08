@@ -96,10 +96,10 @@ export default function CommunityTab() {
     try {
       if (guild.joined || guild.isMember) {
         await leaveGuild(id);
-        setFeedback("Left guild.");
+        setFeedback("Left forum group.");
       } else {
         await joinGuild(id);
-        setFeedback("Joined guild.");
+        setFeedback("Joined forum group.");
       }
       await load({ refresh: true });
     } catch (error: any) {
@@ -226,7 +226,7 @@ export default function CommunityTab() {
               const joined = Boolean(guild.joined || guild.isMember);
               return (
                 <View key={rowId(guild) || guild.name} style={styles.row}>
-                  <Text style={styles.rowTitle}>{guild.name || "Guild"}</Text>
+                  <Text style={styles.rowTitle}>{guild.name || "Forum group"}</Text>
                   <Text style={styles.rowMeta}>
                     {guild.description || "No description"} | {guild.memberCount || 0}{" "}
                     members
@@ -242,7 +242,7 @@ export default function CommunityTab() {
               );
             })}
             {!guilds.length ? (
-              <Text style={styles.cardText}>No guilds returned.</Text>
+              <Text style={styles.cardText}>No forum groups returned.</Text>
             ) : null}
           </View>
 

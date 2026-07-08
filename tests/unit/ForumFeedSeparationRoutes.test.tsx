@@ -204,4 +204,12 @@ describe("Forum and feed separation copy", () => {
       expect(screen.getByTestId("link-/forum/post/thread-community-help")).toBeTruthy()
     );
   });
+
+  it("uses forum group wording for personal membership fallbacks", async () => {
+    const screen = render(<CommunityTab />);
+
+    await waitFor(() => expect(mockListGuilds).toHaveBeenCalled());
+    expect(screen.getByText("No forum groups returned.")).toBeTruthy();
+    expect(screen.queryByText("No guilds returned.")).toBeNull();
+  });
 });
