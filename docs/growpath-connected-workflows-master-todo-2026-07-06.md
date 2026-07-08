@@ -339,6 +339,7 @@ Completed and pushed:
 63. Commercial marketplace integrations now use External Channels language and explicitly distinguish off-platform channels from GrowPath Feed/Campaigns and Forum/Q&A.
 64. Commercial Profile & Billing now uses brand/storefront identity language in the dashboard, profile form, and product catalog copy while preserving existing backend `businessName` fields.
 65. The root Account Profile commercial card now uses brand identity, Feed/Campaigns, Forum/Q&A, and workspace-tool language instead of business/social wording.
+66. Facility now has an Integrations entry point that surfaces read-only sensor/controller providers and routes users to the existing room import preview for auto-building rooms/devices/streams.
 
 ## Working Rule For Codex
 
