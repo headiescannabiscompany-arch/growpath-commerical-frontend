@@ -341,6 +341,18 @@ function routeUsesTaskCenter(routes, route) {
   );
 }
 
+function routeIsWorkspacePostRedirect(routes, route) {
+  const source = routeSource(routes, route);
+  if (!source) return false;
+  return (
+    /\bRedirect\b/.test(source) &&
+    source.includes('href="/home/personal/forum/new-post"') &&
+    source.includes('href="/home/commercial/feed"') &&
+    source.includes('href="/feed"') &&
+    !/\bCreatePostScreen\b|\bcreateFeedPost\b|\buseCreatePost\b/.test(source)
+  );
+}
+
 function keywordHits(searchable, keywords) {
   const hits = [];
   for (const keyword of keywords) {
@@ -423,6 +435,7 @@ function main() {
   const legacyGlobalOrdersRouteExists = routeSet.has("/orders");
   const legacyGlobalCampaignsRouteExists = routeSet.has("/campaigns");
   const legacyGlobalStorefrontRouteExists = routeSet.has("/storefront");
+  const legacyCreatePostRouteExists = routeSet.has("/create-post");
   const topLevelLogsRedirectOnly = routeIsRedirectOnly(
     files.routes,
     "/home/personal/logs",
@@ -457,6 +470,10 @@ function main() {
     files.routes,
     "/home/personal/tasks"
   );
+  const legacyCreatePostWorkspaceRedirect = routeIsWorkspacePostRedirect(
+    files.routes,
+    "/create-post"
+  );
 
   const decisionChecks = {
     topLevelLogsRouteExists,
@@ -478,6 +495,10 @@ function main() {
     legacyGlobalStorefrontRedirectOnly,
     legacyGlobalStorefrontVisibleModule:
       legacyGlobalStorefrontRouteExists && !legacyGlobalStorefrontRedirectOnly,
+    legacyCreatePostRouteExists,
+    legacyCreatePostWorkspaceRedirect,
+    legacyCreatePostVisibleComposer:
+      legacyCreatePostRouteExists && !legacyCreatePostWorkspaceRedirect,
     topLevelTasksRouteExists,
     topLevelTasksRedirectOnly,
     topLevelTasksTaskCenter,
@@ -545,6 +566,8 @@ function main() {
     `- Legacy /campaigns redirect-only stale-link guard: ${decisionChecks.legacyGlobalCampaignsRedirectOnly}`,
     `- Legacy /storefront visible module: ${decisionChecks.legacyGlobalStorefrontVisibleModule}`,
     `- Legacy /storefront redirect-only stale-link guard: ${decisionChecks.legacyGlobalStorefrontRedirectOnly}`,
+    `- Legacy /create-post visible composer: ${decisionChecks.legacyCreatePostVisibleComposer}`,
+    `- Legacy /create-post workspace redirect guard: ${decisionChecks.legacyCreatePostWorkspaceRedirect}`,
     `- Top-level Tasks visible module: ${decisionChecks.topLevelTasksVisibleModule}`,
     `- Top-level Tasks uses shared Task Center/Schedule: ${decisionChecks.topLevelTasksTaskCenter}`,
     `- Facility Insights route exists: ${decisionChecks.facilityInsightsRouteExists}`,
