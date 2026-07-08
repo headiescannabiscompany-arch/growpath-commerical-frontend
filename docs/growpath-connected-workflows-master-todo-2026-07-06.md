@@ -352,6 +352,7 @@ Completed and pushed:
 76. The legacy `createFeedPost` API wrapper no longer posts to `/api/posts`; it now preserves photo uploads while creating Forum/Q&A discussions through the canonical forum endpoint so old callers cannot revive a social-feed composer.
 77. The legacy `api/posts.js` compatibility client now maps feed, trending, create, like, unlike, and comment calls onto Forum/Q&A endpoints, with regression coverage preventing old `/api/posts/*` discussion contracts from returning.
 78. Registration, plan walkthroughs, the first-run intro, and the facility picker now use Personal / Commercial / Facility workspace language instead of vague business surfaces/models or facility-as-business copy.
+79. Commercial evidence-run creation copy now says brand/product context and uses `demo_trial` language, avoiding the old implication that Commercial is an operational grow workspace.
 
 ## Working Rule For Codex
 
