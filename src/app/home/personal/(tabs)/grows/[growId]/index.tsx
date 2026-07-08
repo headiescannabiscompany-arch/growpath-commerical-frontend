@@ -22,6 +22,7 @@ import { listToolRuns } from "@/api/toolRuns";
 import PersonalFeedPlacement from "@/components/feed/PersonalFeedPlacement";
 import GrowWorkspaceNav from "@/components/personal/GrowWorkspaceNav";
 import { coerceParam, findGrowById, fmtDate } from "@/features/grows/routeUtils";
+import { radius } from "@/theme/theme";
 import { sourceObjectHref } from "@/utils/sourceLinks";
 
 const styles = StyleSheet.create({
@@ -33,7 +34,7 @@ const styles = StyleSheet.create({
     padding: 14,
     borderWidth: 1,
     borderColor: "#E2E8F0",
-    borderRadius: 8,
+    borderRadius: radius.card,
     backgroundColor: "#F8FAFC"
   },
   stats: { flexDirection: "row", gap: 10, marginTop: 12, flexWrap: "wrap" },
@@ -42,7 +43,7 @@ const styles = StyleSheet.create({
     padding: 10,
     borderWidth: 1,
     borderColor: "#E2E8F0",
-    borderRadius: 8,
+    borderRadius: radius.card,
     backgroundColor: "#FFFFFF"
   },
   statLabel: { color: "#64748B", fontSize: 12 },
@@ -51,7 +52,7 @@ const styles = StyleSheet.create({
   action: {
     borderWidth: 1,
     borderColor: "#CBD5E1",
-    borderRadius: 8,
+    borderRadius: radius.card,
     paddingVertical: 8,
     paddingHorizontal: 10,
     backgroundColor: "#FFFFFF"
