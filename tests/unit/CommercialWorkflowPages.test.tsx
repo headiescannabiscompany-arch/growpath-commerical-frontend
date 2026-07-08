@@ -2140,6 +2140,13 @@ describe("commercial workflow pages", () => {
     ).toBeGreaterThan(0);
     expect(screen.queryByText("Open Grow Workspace")).toBeNull();
     expect(screen.queryByText("Open grow list")).toBeNull();
+    await waitFor(() =>
+      expect(mockApiRequest).toHaveBeenCalledWith("/api/commercial/product-lines")
+    );
+    expect(screen.getByText("Choose Product Line")).toBeTruthy();
+    expect(
+      screen.getByLabelText("Use evidence run product line Living Soil Line")
+    ).toBeTruthy();
     await waitFor(() => expect(screen.getByText("Bloom Formula Trial")).toBeTruthy());
     expect(screen.getByText("Open Detail")).toBeTruthy();
 
@@ -2171,9 +2178,8 @@ describe("commercial workflow pages", () => {
       screen.getByLabelText("Product trial evidence run product id"),
       "product-2"
     );
-    fireEvent.changeText(
-      screen.getByLabelText("Product trial evidence run product line id"),
-      "line-1"
+    fireEvent.press(
+      screen.getByLabelText("Use evidence run product line Living Soil Line")
     );
     fireEvent.changeText(
       screen.getByLabelText("Product trial evidence run batch id"),

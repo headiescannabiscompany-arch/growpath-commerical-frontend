@@ -5,7 +5,9 @@ import { Pressable, StyleSheet, Text, TextInput, View } from "react-native";
 import {
   CommercialGrow,
   createCommercialGrow,
-  fetchCommercialGrows
+  fetchCommercialGrows,
+  fetchProductLines,
+  ProductLine
 } from "@/api/commercialWorkflows";
 import { InlineError } from "@/components/InlineError";
 import AppCard from "@/components/layout/AppCard";
@@ -49,6 +51,10 @@ function growId(grow: CommercialGrow) {
   return grow.id || grow._id || grow.name || grow.growName || "grow";
 }
 
+function productLineId(line: ProductLine) {
+  return String(line.id || line._id || line.name || "").trim();
+}
+
 function parseCount(value: string) {
   const parsed = Number(value);
   return Number.isFinite(parsed) && parsed > 0 ? parsed : undefined;
@@ -72,6 +78,7 @@ export default function CommercialGrowsRoute({
   const auth = useAuth();
   const ent = useEntitlements();
   const [grows, setGrows] = useState<CommercialGrow[]>([]);
+  const [productLines, setProductLines] = useState<ProductLine[]>([]);
   const [form, setForm] = useState<GrowForm>(EMPTY_FORM);
   const [loading, setLoading] = useState(false);
   const [saving, setSaving] = useState(false);
@@ -90,7 +97,12 @@ export default function CommercialGrowsRoute({
     setLoading(true);
     setError(null);
     try {
-      setGrows(await fetchCommercialGrows());
+      const [nextGrows, nextLines] = await Promise.all([
+        fetchCommercialGrows(),
+        fetchProductLines()
+      ]);
+      setGrows(nextGrows);
+      setProductLines(nextLines);
     } catch (err) {
       setError(err);
     } finally {
@@ -259,9 +271,34 @@ export default function CommercialGrowsRoute({
               setForm((prev) => ({ ...prev, productLineId }))
             }
             accessibilityLabel="Product trial evidence run product line id"
-            placeholder="Linked product line ID"
+            placeholder="Linked product line ID, or choose below"
             style={styles.input}
           />
+          {productLines.length ? (
+            <View style={styles.lineSelector}>
+              <Text style={styles.selectorLabel}>Choose Product Line</Text>
+              <View style={styles.selectorActions}>
+                {productLines.slice(0, 4).map((line) => {
+                  const id = productLineId(line);
+                  const name = line.name || "Product line";
+                  return (
+                    <Pressable
+                      key={`evidence-line-${id || name}`}
+                      accessibilityRole="button"
+                      accessibilityLabel={`Use evidence run product line ${name}`}
+                      onPress={() => setForm((prev) => ({ ...prev, productLineId: id }))}
+                      style={[
+                        styles.action,
+                        form.productLineId === id && styles.selectedAction
+                      ]}
+                    >
+                      <Text style={styles.actionText}>{name}</Text>
+                    </Pressable>
+                  );
+                })}
+              </View>
+            </View>
+          ) : null}
           <TextInput
             value={form.batchId}
             onChangeText={(batchId) => setForm((prev) => ({ ...prev, batchId }))}
@@ -550,11 +587,27 @@ const styles = StyleSheet.create({
     paddingHorizontal: 11,
     paddingVertical: 8
   },
+  selectedAction: { backgroundColor: "#DCFCE7", borderColor: "#22C55E" },
   actionText: {
     color: "#166534",
     fontSize: 13,
     fontWeight: "900"
   },
+  lineSelector: {
+    borderColor: "#BBF7D0",
+    borderRadius: 8,
+    borderWidth: 1,
+    flexGrow: 1,
+    minWidth: 220,
+    padding: 9
+  },
+  selectorLabel: {
+    color: "#166534",
+    fontSize: 11,
+    fontWeight: "900",
+    textTransform: "uppercase"
+  },
+  selectorActions: { flexDirection: "row", flexWrap: "wrap", gap: 8, marginTop: 8 },
   primaryAction: {
     backgroundColor: "#166534",
     borderRadius: 8,
