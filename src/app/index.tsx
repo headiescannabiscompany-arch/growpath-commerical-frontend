@@ -150,15 +150,15 @@ export default function Index() {
       }
 
       if (!facility?.selectedId) {
-        console.log("[INDEX] No facility selected -> /facilities");
-        return { kind: "nav" as const, href: "/facilities" };
+        console.log("[INDEX] No facility selected -> /home/facility/select");
+        return { kind: "nav" as const, href: "/home/facility/select" };
       }
 
       if (ent.mode === "facility") {
-        console.log("[INDEX] Facility mode -> facility dashboard");
+        console.log("[INDEX] Facility mode -> /home/facility");
         return {
           kind: "nav" as const,
-          href: `/facilities/${facility.selectedId}/dashboard`
+          href: "/home/facility"
         };
       }
     }

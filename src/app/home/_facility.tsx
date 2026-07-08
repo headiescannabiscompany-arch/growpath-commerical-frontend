@@ -53,13 +53,13 @@ const styles = StyleSheet.create({
  * Shows facility dashboard, rooms, tasks, compliance, team management.
  *
  * Users navigate from here to:
- * - /facilities → Facility picker (if no facility selected)
- * - /dashboard → Facility dashboard
- * - /rooms → Rooms management
- * - /tasks → Task management
- * - /team → Team & roles
- * - /compliance → Compliance tracking
- * - /profile → Account settings
+ * - /home/facility/select -> Facility picker (if no facility selected)
+ * - /home/facility -> Facility dashboard
+ * - /home/facility/rooms -> Rooms management
+ * - /home/facility/tasks -> Task management
+ * - /home/facility/team -> Team and roles
+ * - /home/facility/compliance -> Compliance tracking
+ * - /home/facility/profile -> Account settings
  */
 export default function FacilityHome() {
   const auth = useAuth();
@@ -94,7 +94,7 @@ export default function FacilityHome() {
               management.
             </Text>
 
-            <Link href="/facilities" asChild>
+            <Link href="/home/facility/select" asChild>
               <Text style={styles.link}>Select Facility →</Text>
             </Link>
           </AppCard>
@@ -112,7 +112,7 @@ export default function FacilityHome() {
                 Overview, metrics, alerts, and quick actions
               </Text>
 
-              <Link href={`/facilities/${facility.selectedId}/dashboard`} asChild>
+              <Link href="/home/facility" asChild>
                 <Text style={styles.link}>Open Dashboard →</Text>
               </Link>
             </AppCard>
@@ -123,7 +123,7 @@ export default function FacilityHome() {
                 Manage grow rooms, zones, and environmental controls
               </Text>
 
-              <Link href={`/facilities/${facility.selectedId}/rooms`} asChild>
+              <Link href="/home/facility/rooms" asChild>
                 <Text style={styles.link}>Manage Rooms →</Text>
               </Link>
             </AppCard>
@@ -134,7 +134,7 @@ export default function FacilityHome() {
                 Daily tasks, assignments, verification, and SOPs
               </Text>
 
-              <Link href={`/facilities/${facility.selectedId}/tasks`} asChild>
+              <Link href="/home/facility/tasks" asChild>
                 <Text style={styles.link}>View Tasks →</Text>
               </Link>
             </AppCard>
@@ -145,7 +145,7 @@ export default function FacilityHome() {
                 Track inventory, supplies, and stock levels
               </Text>
 
-              <Link href={`/facilities/${facility.selectedId}/inventory`} asChild>
+              <Link href="/home/facility/inventory" asChild>
                 <Text style={styles.link}>Manage Inventory →</Text>
               </Link>
             </AppCard>
@@ -160,7 +160,7 @@ export default function FacilityHome() {
                 Manage team members, roles, and permissions
               </Text>
 
-              <Link href={`/facilities/${facility.selectedId}/team`} asChild>
+              <Link href="/home/facility/team" asChild>
                 <Text style={styles.link}>Manage Team →</Text>
               </Link>
             </AppCard>
@@ -171,7 +171,7 @@ export default function FacilityHome() {
                 Compliance tracking, audit logs, and reports
               </Text>
 
-              <Link href={`/facilities/${facility.selectedId}/compliance`} asChild>
+              <Link href="/home/facility/compliance" asChild>
                 <Text style={styles.link}>View Compliance →</Text>
               </Link>
             </AppCard>
@@ -182,7 +182,7 @@ export default function FacilityHome() {
                 Standard operating procedures and protocols
               </Text>
 
-              <Link href={`/facilities/${facility.selectedId}/sops`} asChild>
+              <Link href="/home/facility/sop-runs" asChild>
                 <Text style={styles.link}>Manage SOPs →</Text>
               </Link>
             </AppCard>
@@ -199,7 +199,7 @@ export default function FacilityHome() {
               You have access to {facility.facilities.length} facilities
             </Text>
 
-            <Link href="/facilities" asChild>
+            <Link href="/home/facility/select" asChild>
               <Text style={styles.link}>Switch Facility →</Text>
             </Link>
           </AppCard>
@@ -214,7 +214,7 @@ export default function FacilityHome() {
             Account settings, preferences, notifications
           </Text>
 
-          <Link href="/profile" asChild>
+          <Link href="/home/facility/profile" asChild>
             <Text style={styles.link}>Open Profile →</Text>
           </Link>
         </AppCard>

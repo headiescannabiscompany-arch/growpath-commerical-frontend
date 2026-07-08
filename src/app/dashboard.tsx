@@ -6,8 +6,8 @@ export default function DashboardShim() {
   const facility = useFacility();
 
   if (!facility?.selectedId) {
-    return <Redirect href="/facilities" />;
+    return <Redirect href="/home/facility/select" />;
   }
 
-  return <Redirect href={`/facilities/${facility.selectedId}/dashboard`} />;
+  return <Redirect href="/home/facility" />;
 }

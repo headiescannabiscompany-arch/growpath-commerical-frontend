@@ -41,7 +41,7 @@ export default function PickFacilityScreen() {
     try {
       setSelectingId(id);
       await facilityStore.selectFacility({ id, name });
-      router.replace(`/facilities/${id}/dashboard` as any);
+      router.replace("/home/facility" as any);
     } catch (err: any) {
       Alert.alert(
         "Unable to switch facility",

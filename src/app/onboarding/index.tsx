@@ -58,9 +58,9 @@ function OnboardingRouterAuthed() {
       onboardingRouter.replace("/onboarding/start-grow" as any);
     else if (state === "dashboard") {
       if (facility?.selectedId) {
-        onboardingRouter.replace(`/facilities/${facility.selectedId}/dashboard` as any);
+        onboardingRouter.replace("/home/facility" as any);
       } else {
-        onboardingRouter.replace("/facilities" as any);
+        onboardingRouter.replace("/home/facility/select" as any);
       }
     }
   }, [state, facility?.selectedId, onboardingRouter]);

@@ -101,9 +101,9 @@ export default function JoinFacilityScreen() {
 
       if (facilityId) {
         await facilityStore.selectFacility({ id: facilityId, name: facilityName });
-        router.replace(`/facilities/${facilityId}/dashboard` as any);
+        router.replace("/home/facility" as any);
       } else {
-        router.replace("/facilities" as any);
+        router.replace("/home/facility/select" as any);
       }
     } catch (err: any) {
       setError(String(err?.message || "Unable to accept invite."));

@@ -117,9 +117,9 @@ export default function FacilitiesScreen() {
       setSelectedForAction(facilityId);
       await facility.selectFacility(facilityId);
 
-      // Auto-navigate after successful selection
+      // Auto-navigate after successful selection.
       setTimeout(() => {
-        router.push(`/facilities/${facilityId}/dashboard`);
+        router.push("/home/facility");
       }, 500);
     } catch (err: any) {
       Alert.alert("Error", err?.message || "Failed to select facility");

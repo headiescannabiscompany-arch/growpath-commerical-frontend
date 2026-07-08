@@ -107,7 +107,7 @@ export default function CreateFacilityScreen() {
           </Pressable>
 
           <Pressable
-            onPress={() => router.replace("/facilities")}
+            onPress={() => router.replace("/home/facility/select")}
             accessibilityRole="button"
             accessibilityLabel="Back to facilities"
             style={styles.secondaryButton}
