@@ -479,6 +479,7 @@ Completed and pushed:
 203. GrowPath system audit now recognizes the canonical Personal tool routes for Nutrient Source Comparison, Soil Builder, Dry Amendment Mix Builder, Topdress Planner, pH / EC Range Check, and Dry / Cure Guard, reducing false partials and proving those connected calculator-backed tools as present-foundation modules.
 204. GrowPath system audit now recognizes Soil & Nutrient Batch Planner evidence from its canonical tool route, backend calculator, focused test, and production-task language, and recognizes Facility Insights Summary from the facility dashboard route that consumes the read-only insights summary, moving the audit to 21 present-foundation modules.
 205. GrowPath system audit now recognizes the Nutrient Chemistry route as the visible Compatibility Checker surface and Personal Diagnose as the ETGU Diagnosis Rules surface, with diagnosis route coverage asserting the ETGU symptom-pattern explanation remains visible after a result.
+206. GrowPath system audit now treats route-less foundation contracts as route-optional evidence modules, anchors Product / Ingredient Library to its visible Personal tool route, and recognizes Organism Library as a crop-knowledge/IPM support library, bringing the audit to 32 present-foundation modules with no partials.
 
 ## Working Rule For Codex
 

@@ -28,48 +28,61 @@ const MODULES = [
   {
     phase: "Foundation",
     name: "ToolRun canonical contract",
+    routeOptional: true,
     keywords: ["toolrun", "toolRuns", "ToolRun"],
     required: ["model-or-api", "save-reload", "ownership-tests"]
   },
   {
     phase: "Foundation",
     name: "SourceRecord / provenance",
+    routeOptional: true,
     keywords: ["sourceRecord", "provenance", "sourceRecords", "sourceConfidence"],
     required: ["model", "source-confidence", "tests"]
   },
   {
     phase: "Foundation",
     name: "Product / Ingredient Library",
-    keywords: ["products", "ProductIngredient", "ingredient", "guaranteed analysis"],
+    route: "/home/personal/tools/ingredient-library",
+    keywords: [
+      "Product / Ingredient Library",
+      "listProductIngredients",
+      "ProductIngredient",
+      "guaranteed analysis"
+    ],
     required: ["model", "api", "ui", "tests"]
   },
   {
     phase: "Foundation",
     name: "Recipe model",
+    routeOptional: true,
     keywords: ["recipe", "nutrientRecipes", "Recipe"],
     required: ["model", "api", "ui", "tests"]
   },
   {
     phase: "Foundation",
     name: "Timeline event schema",
+    routeOptional: true,
     keywords: ["timeline", "TimelineEvent", "events"],
     required: ["model", "api", "grow-links", "tests"]
   },
   {
     phase: "Foundation",
     name: "Task source-object links",
+    routeOptional: true,
     keywords: ["sourceObject", "sourceType", "linkedTask", "tasks"],
     required: ["model", "api", "ownership-tests"]
   },
   {
     phase: "Foundation",
     name: "Photo / media metadata",
+    routeOptional: true,
     keywords: ["photos", "media", "uploads", "image"],
     required: ["metadata", "ownership", "retention"]
   },
   {
     phase: "Foundation",
     name: "Crop profile / taxon base model",
+    routeOptional: true,
     keywords: ["cropProfile", "taxon", "species", "cropKnowledge"],
     required: ["model", "api", "diagnosis-links"]
   },
@@ -173,6 +186,7 @@ const MODULES = [
   {
     phase: "Diagnosis / IPM / Crop ID",
     name: "Organism Library",
+    routeOptional: true,
     keywords: ["OrganismProfile", "organism", "beneficialOrPest"],
     required: ["model", "sources", "ui"]
   },
@@ -596,6 +610,7 @@ function parseFeatureStatus() {
 
 function statusFor(module, hits, routeExists) {
   if (routeExists && hits.length >= 6) return "present-foundation";
+  if (module.routeOptional && hits.length >= 6) return "present-foundation";
   if (routeExists || hits.length >= 6) return "partial";
   if (hits.length > 0) return "trace-only";
   return "missing";
