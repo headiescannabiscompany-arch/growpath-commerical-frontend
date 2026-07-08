@@ -4,6 +4,7 @@ import { fireEvent, render, waitFor } from "@testing-library/react-native";
 import CommercialTaskDetailRoute from "@/app/(commercial)/tasks/[id]";
 
 const mockBack = jest.fn();
+const mockPush = jest.fn();
 const mockApiRequest = jest.fn();
 const mockApiErrorHandler = Object.assign(jest.fn(() => null), {
   toInlineError: jest.fn(() => null)
@@ -11,7 +12,7 @@ const mockApiErrorHandler = Object.assign(jest.fn(() => null), {
 
 jest.mock("expo-router", () => ({
   useLocalSearchParams: () => ({ id: "task-1" }),
-  useRouter: () => ({ back: mockBack })
+  useRouter: () => ({ back: mockBack, push: mockPush })
 }));
 
 jest.mock("@/api/apiRequest", () => ({
@@ -75,5 +76,17 @@ describe("CommercialTaskDetailRoute", () => {
       )
     );
     expect(screen.getByText("Task marked complete.")).toBeTruthy();
+  });
+
+  it("opens the linked source object from the task detail", async () => {
+    const screen = render(<CommercialTaskDetailRoute />);
+
+    await waitFor(() =>
+      expect(screen.getAllByText("Connect Stripe price").length).toBeGreaterThan(0)
+    );
+
+    fireEvent.press(screen.getByLabelText("View commercial task source"));
+
+    expect(mockPush).toHaveBeenCalledWith("/home/commercial/products/product-1");
   });
 });

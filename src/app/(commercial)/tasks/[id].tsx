@@ -39,6 +39,38 @@ function renderKV(obj: AnyRec | null, key: string) {
   );
 }
 
+function taskSourceId(task: AnyRec | null): string {
+  if (!task) return "";
+  return String(
+    task.sourceId ||
+      task.sourceObjectId ||
+      task.linkedProductId ||
+      task.linkedCourseId ||
+      task.linkedLiveId ||
+      task.linkedOrderId ||
+      task.linkedAlertId ||
+      task.linkedStorefrontId ||
+      ""
+  );
+}
+
+function taskSourcePath(task: AnyRec | null): string {
+  const sourceType = String(task?.sourceType || "");
+  const sourceId = taskSourceId(task);
+  if (sourceType === "storefront") return "/home/commercial/storefront";
+  if (sourceType === "product" && sourceId)
+    return `/home/commercial/products/${sourceId}`;
+  if (sourceType === "product_batch") return "/home/commercial/batch-planner";
+  if (sourceType === "product_trial")
+    return sourceId ? `/home/commercial/trials/${sourceId}` : "/home/commercial/trials";
+  if (sourceType === "course" && sourceId) return `/home/commercial/courses/${sourceId}`;
+  if (sourceType === "live") return "/home/commercial/lives";
+  if (sourceType === "feed_campaign") return "/home/commercial/feed";
+  if (sourceType === "order") return "/home/commercial/orders";
+  if (sourceType === "alert" && sourceId) return `/(commercial)/alerts/${sourceId}`;
+  return "";
+}
+
 export default function CommercialTaskDetailRoute() {
   const router = useRouter();
   const params = useLocalSearchParams();
@@ -97,6 +129,7 @@ export default function CommercialTaskDetailRoute() {
   const description = String(item?.description || item?.notes || item?.message || "");
   const status = String(item?.status || (item?.completed ? "complete" : "open"));
   const priority = String(item?.priority || "normal");
+  const sourcePath = taskSourcePath(item);
 
   async function completeTask() {
     if (!id || !item) return;
@@ -177,6 +210,16 @@ export default function CommercialTaskDetailRoute() {
                 {saving ? "Saving..." : "Mark Complete"}
               </Text>
             </Pressable>
+            {sourcePath ? (
+              <Pressable
+                onPress={() => router.push(sourcePath as any)}
+                accessibilityRole="link"
+                accessibilityLabel="View commercial task source"
+                style={styles.secondaryBtn}
+              >
+                <Text style={styles.secondaryText}>View Source</Text>
+              </Pressable>
+            ) : null}
           </View>
         ) : null}
 
@@ -189,10 +232,6 @@ export default function CommercialTaskDetailRoute() {
             </Text>
           )}
         </View>
-
-        <Text onPress={() => router.back()} style={styles.backLink}>
-          ‹ Back
-        </Text>
       </ScrollView>
     </ScreenBoundary>
   );
@@ -252,10 +291,19 @@ const styles = StyleSheet.create({
     paddingVertical: 10
   },
   primaryText: { color: "white", fontWeight: "900" },
+  secondaryBtn: {
+    alignItems: "center",
+    borderColor: "#CBD5E1",
+    borderRadius: 10,
+    borderWidth: 1,
+    marginTop: 8,
+    paddingHorizontal: 12,
+    paddingVertical: 10
+  },
+  secondaryText: { color: "#0F172A", fontWeight: "900" },
   disabled: { opacity: 0.55 },
   kvWrap: { marginTop: 6 },
   kv: { gap: 4, marginBottom: 10 },
   k: { fontSize: 12, opacity: 0.7 },
-  v: { fontSize: 14 },
-  backLink: { fontWeight: "800", marginTop: 6 }
+  v: { fontSize: 14 }
 });
