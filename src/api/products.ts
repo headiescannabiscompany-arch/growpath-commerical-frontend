@@ -14,6 +14,8 @@ export type Product = {
   category?: string;
   shortDescription?: string;
   fullDescription?: string;
+  productLineId?: string;
+  linkedProductLineId?: string;
   linkedRecipeId?: string | null;
   linkedToolRunId?: string | null;
   specs?: Record<string, any>;

@@ -248,6 +248,7 @@ describe("commercial workflow pages", () => {
             shortDescription: "Seedling-safe base soil",
             externalPurchaseUrl: "https://example.com/base",
             unitSize: "1 cu ft bag",
+            productLineId: "line-1",
             growInterests: ["living soil", "seedlings"],
             specs: {
               sourceTool: "soil-builder",
@@ -1556,6 +1557,9 @@ describe("commercial workflow pages", () => {
     await waitFor(() =>
       expect(mockApiRequest).toHaveBeenCalledWith("/api/commercial/products/product-1")
     );
+    await waitFor(() =>
+      expect(mockApiRequest).toHaveBeenCalledWith("/api/commercial/product-lines")
+    );
     expect(screen.getByText("Commercial product workspace")).toBeTruthy();
     expect(screen.getAllByText("Living Soil Base").length).toBeGreaterThan(0);
     expect(screen.getByText("Effectiveness Snapshot")).toBeTruthy();
@@ -1585,6 +1589,9 @@ describe("commercial workflow pages", () => {
     expect(
       screen.getByText("Public proof ready from linked batch and completed trial.")
     ).toBeTruthy();
+    expect(
+      screen.getByLabelText("Use product detail product line Living Soil Line")
+    ).toBeTruthy();
 
     fireEvent.changeText(
       screen.getByLabelText("Commercial product detail status"),
@@ -1593,6 +1600,13 @@ describe("commercial workflow pages", () => {
     fireEvent.changeText(
       screen.getByLabelText("Commercial product detail image URL"),
       "https://example.com/base-updated.jpg"
+    );
+    fireEvent.changeText(
+      screen.getByLabelText("Commercial product detail product line"),
+      ""
+    );
+    fireEvent.press(
+      screen.getByLabelText("Use product detail product line Living Soil Line")
     );
     fireEvent.changeText(screen.getByLabelText("Commercial product detail price"), "39");
     fireEvent.changeText(
@@ -1625,6 +1639,7 @@ describe("commercial workflow pages", () => {
           body: expect.objectContaining({
             status: "draft",
             imageUrl: "https://example.com/base-updated.jpg",
+            productLineId: "line-1",
             price: 39,
             unitSize: "2 cu ft bag",
             growInterests: ["living soil", "dry amendments"],

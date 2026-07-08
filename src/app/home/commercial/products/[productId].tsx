@@ -8,6 +8,7 @@ import {
   Product,
   updateProduct
 } from "@/api/products";
+import { fetchProductLines, ProductLine } from "@/api/commercialWorkflows";
 import { InlineError } from "@/components/InlineError";
 import AppCard from "@/components/layout/AppCard";
 import AppPage from "@/components/layout/AppPage";
@@ -62,6 +63,10 @@ function splitList(value: string) {
     .split(/[\n,]+/)
     .map((item) => item.trim())
     .filter(Boolean);
+}
+
+function productLineRecordId(line: ProductLine) {
+  return String(line.id || line._id || "").trim();
 }
 
 function productMissingSetup(product: Product | null) {
@@ -138,6 +143,8 @@ export default function CommercialProductDetailRoute({ route }: { route?: any } 
   const [effectiveness, setEffectiveness] = useState<any>(null);
   const [status, setStatus] = useState("");
   const [imageUrl, setImageUrl] = useState("");
+  const [productLineId, setProductLineId] = useState("");
+  const [productLines, setProductLines] = useState<ProductLine[]>([]);
   const [price, setPrice] = useState("");
   const [unitSize, setUnitSize] = useState("");
   const [growInterests, setGrowInterests] = useState("");
@@ -153,6 +160,7 @@ export default function CommercialProductDetailRoute({ route }: { route?: any } 
     setProduct(next);
     setStatus(next?.status || "draft");
     setImageUrl(productImage(next));
+    setProductLineId(next?.productLineId || next?.linkedProductLineId || "");
     setPrice(priceInputValue(next));
     setUnitSize(next?.unitSize || next?.specs?.unitSize || "");
     setGrowInterests(next?.growInterests?.join(", ") || "");
@@ -166,12 +174,14 @@ export default function CommercialProductDetailRoute({ route }: { route?: any } 
     setLoading(true);
     setError(null);
     try {
-      const [productResult, effectivenessResult] = await Promise.all([
+      const [productResult, effectivenessResult, productLineResult] = await Promise.all([
         fetchProduct(productId),
-        fetchProductEffectiveness(productId).catch(() => null)
+        fetchProductEffectiveness(productId).catch(() => null),
+        fetchProductLines().catch(() => [])
       ]);
       hydrate(productResult);
       setEffectiveness(effectivenessResult || null);
+      setProductLines(Array.isArray(productLineResult) ? productLineResult : []);
     } catch (err) {
       setError(err);
     } finally {
@@ -190,6 +200,7 @@ export default function CommercialProductDetailRoute({ route }: { route?: any } 
       ...(product || {}),
       status: nextStatus,
       imageUrl: imageUrl.trim(),
+      productLineId: productLineId.trim(),
       price: parsePrice(price),
       unitSize: unitSize.trim(),
       growInterests: splitList(growInterests),
@@ -218,6 +229,7 @@ export default function CommercialProductDetailRoute({ route }: { route?: any } 
       const res = await updateProduct(productId, {
         status: nextStatus,
         imageUrl: imageUrl.trim() || undefined,
+        productLineId: productLineId.trim() || undefined,
         price: parsePrice(price),
         unitSize: unitSize.trim() || undefined,
         growInterests: splitList(growInterests),
@@ -278,6 +290,10 @@ export default function CommercialProductDetailRoute({ route }: { route?: any } 
           <DetailRow label="Category" value={(product as any)?.category} />
           <DetailRow label="SKU" value={product?.sku} />
           <DetailRow label="Status" value={product?.status} />
+          <DetailRow
+            label="Product line"
+            value={product?.productLineId || product?.linkedProductLineId}
+          />
           <DetailRow label="Currency" value={product?.currency} />
           <DetailRow label="Image" value={productImage(product)} />
           <DetailRow label="Price" value={product?.price ? `$${product.price}` : ""} />
@@ -447,6 +463,40 @@ export default function CommercialProductDetailRoute({ route }: { route?: any } 
             value={imageUrl}
           />
           <TextInput
+            accessibilityLabel="Commercial product detail product line"
+            autoCapitalize="none"
+            onChangeText={setProductLineId}
+            placeholder="Product line id, or choose below"
+            style={styles.input}
+            value={productLineId}
+          />
+          {productLines.length ? (
+            <View style={styles.selectorRow}>
+              {productLines.map((line) => {
+                const id = productLineRecordId(line);
+                if (!id) return null;
+                const name = line.name || "Product line";
+                return (
+                  <Pressable
+                    accessibilityLabel={`Use product detail product line ${name}`}
+                    accessibilityRole="button"
+                    key={id}
+                    onPress={() => setProductLineId(id)}
+                    style={[
+                      styles.selectorButton,
+                      productLineId === id && styles.selectedSelectorButton
+                    ]}
+                  >
+                    <Text style={styles.selectorButtonText}>
+                      {productLineId === id ? "Selected " : "Use "}
+                      {name}
+                    </Text>
+                  </Pressable>
+                );
+              })}
+            </View>
+          ) : null}
+          <TextInput
             accessibilityLabel="Commercial product detail price"
             keyboardType="decimal-pad"
             onChangeText={setPrice}
@@ -589,6 +639,16 @@ const styles = StyleSheet.create({
   },
   readyPill: { backgroundColor: "#DCFCE7", color: "#166534" },
   formGrid: { flexDirection: "row", flexWrap: "wrap", gap: 8, marginTop: 12 },
+  selectorRow: { flexDirection: "row", flexWrap: "wrap", gap: 8, width: "100%" },
+  selectorButton: {
+    borderColor: "#CBD5E1",
+    borderRadius: 8,
+    borderWidth: 1,
+    paddingHorizontal: 10,
+    paddingVertical: 8
+  },
+  selectedSelectorButton: { backgroundColor: "#DCFCE7", borderColor: "#166534" },
+  selectorButtonText: { color: "#166534", fontSize: 12, fontWeight: "900" },
   input: {
     borderColor: "#CBD5E1",
     borderRadius: 8,
