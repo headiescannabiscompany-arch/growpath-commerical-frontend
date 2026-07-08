@@ -29,34 +29,34 @@ export function sourceObjectHref(source: SourceLike) {
   const growId = firstText(source?.linkedGrowId, source?.growId);
   const plantId = firstText(source?.linkedPlantId, source?.plantId);
   const productId = firstText(source?.linkedProductId, source?.productId, sourceId);
-  const productTrialId = firstText(sourceId, source?.linkedProductTrialId);
-  const forumId = firstText(sourceId, source?.linkedForumThreadId);
+  const productTrialId = firstText(source?.linkedProductTrialId, sourceId);
+  const forumId = firstText(source?.linkedForumThreadId, source?.forumThreadId, sourceId);
   const courseId = firstText(source?.linkedCourseId, source?.courseId, sourceId);
-  const liveId = firstText(sourceId, source?.linkedLiveId, source?.liveId);
+  const liveId = firstText(source?.linkedLiveId, source?.liveId, sourceId);
   const campaignId = firstText(
-    sourceId,
     source?.linkedFeedCampaignId,
     source?.feedCampaignId,
     source?.campaignId,
-    source?.linkedFeedPostId
+    source?.linkedFeedPostId,
+    sourceId
   );
-  const orderId = firstText(sourceId, source?.linkedOrderId, source?.orderId);
-  const alertId = firstText(sourceId, source?.linkedAlertId, source?.alertId);
+  const orderId = firstText(source?.linkedOrderId, source?.orderId, sourceId);
+  const alertId = firstText(source?.linkedAlertId, source?.alertId, sourceId);
   const notificationId = firstText(
-    sourceId,
     source?.linkedNotificationId,
-    source?.notificationId
+    source?.notificationId,
+    sourceId
   );
   const toolRunId = firstText(
-    sourceId,
     source?.linkedToolRunId,
     source?.toolRunId,
     source?.sourceToolRunId,
     source?.linkedRecipeId,
-    source?.recipeId
+    source?.recipeId,
+    sourceId
   );
   const roomId = firstText(source?.linkedRoomId, source?.roomId, sourceId);
-  const sopId = firstText(sourceId, source?.linkedSopId, source?.sopId);
+  const sopId = firstText(source?.linkedSopId, source?.sopId, sourceId);
   const storefrontSlug = firstText(
     source?.storefrontSlug,
     source?.linkedStorefrontSlug,

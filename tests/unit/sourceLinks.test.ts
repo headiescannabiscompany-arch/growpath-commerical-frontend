@@ -233,6 +233,7 @@ describe("sourceObjectHref", () => {
     expect(
       sourceObjectHref({
         sourceType: "alert",
+        sourceId: "grow-fallback-1",
         linkedAlertId: "alert-linked-1",
         workspaceType: "personal"
       })
@@ -291,6 +292,7 @@ describe("sourceObjectHref", () => {
     expect(
       sourceObjectHref({
         sourceType: "live",
+        sourceId: "grow-fallback-1",
         linkedLiveId: "live-linked-1",
         workspaceType: "commercial"
       })
@@ -307,6 +309,7 @@ describe("sourceObjectHref", () => {
     expect(
       sourceObjectHref({
         sourceType: "scheduled_feed_post",
+        sourceId: "grow-fallback-1",
         linkedFeedPostId: "campaign-linked-1",
         workspaceType: "facility"
       })
@@ -363,6 +366,7 @@ describe("sourceObjectHref", () => {
     expect(
       sourceObjectHref({
         sourceType: "tool_run",
+        sourceId: "grow-fallback-1",
         linkedToolRunId: "run-linked-1",
         workspaceType: "facility"
       })
@@ -379,9 +383,19 @@ describe("sourceObjectHref", () => {
     expect(
       sourceObjectHref({
         sourceType: "order",
+        sourceId: "grow-fallback-1",
         linkedOrderId: "order-linked-1",
         workspaceType: "commercial"
       })
     ).toBe("/home/commercial/orders?orderId=order-linked-1");
+
+    expect(
+      sourceObjectHref({
+        sourceType: "forum",
+        sourceId: "grow-fallback-1",
+        linkedForumThreadId: "thread-linked-1",
+        workspaceType: "personal"
+      })
+    ).toBe("/forum/post/thread-linked-1");
   });
 });
