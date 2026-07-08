@@ -2,8 +2,8 @@ import React, { useMemo, useState } from "react";
 import { useLocalSearchParams } from "expo-router";
 import { Pressable, ScrollView, StyleSheet, Text, TextInput, View } from "react-native";
 
-import BackButton from "@/components/nav/BackButton";
 import FeedBanner from "@/components/feed/FeedBanner";
+import { ScreenBoundary } from "@/components/ScreenBoundary";
 import {
   createGrowpathModuleRecord,
   type GrowpathModuleRecord
@@ -313,8 +313,40 @@ export default function BackendCalculatorToolScreen({
 
   if (locked) {
     return (
+      <ScreenBoundary title={title} showBack backFallbackHref="/home/personal/tools">
+        <ScrollView style={styles.screen} contentContainerStyle={styles.content}>
+          <Text style={styles.title}>{title}</Text>
+          <Text style={styles.subtitle}>{subtitle}</Text>
+          {bannerPolicy.top ? (
+            <FeedBanner
+              placement="top"
+              slots={bannerPolicy.slotsByPlacement.top}
+              mode={entitlements.mode}
+              plan={plan}
+              railMode={bannerPolicy.railMode}
+            />
+          ) : null}
+          <LockedScreen
+            title={`${title} is a Pro tool`}
+            message="Free accounts can use core tools and browse the app. Upgrade to run this tool and save its results to grow history."
+          />
+          {bannerPolicy.bottom ? (
+            <FeedBanner
+              placement="bottom"
+              slots={bannerPolicy.slotsByPlacement.bottom}
+              mode={entitlements.mode}
+              plan={plan}
+              railMode={bannerPolicy.railMode}
+            />
+          ) : null}
+        </ScrollView>
+      </ScreenBoundary>
+    );
+  }
+
+  return (
+    <ScreenBoundary title={title} showBack backFallbackHref="/home/personal/tools">
       <ScrollView style={styles.screen} contentContainerStyle={styles.content}>
-        <BackButton />
         <Text style={styles.title}>{title}</Text>
         <Text style={styles.subtitle}>{subtitle}</Text>
         {bannerPolicy.top ? (
@@ -326,10 +358,109 @@ export default function BackendCalculatorToolScreen({
             railMode={bannerPolicy.railMode}
           />
         ) : null}
-        <LockedScreen
-          title={`${title} is a Pro tool`}
-          message="Free accounts can use core tools and browse the app. Upgrade to run this tool and save its results to grow history."
+        {growId ? <Text style={styles.context}>Grow context: {growId}</Text> : null}
+        <ToolPlantContextPicker
+          plants={plantContext.plants}
+          plantId={plantContext.plantId}
+          selectedPlant={plantContext.selectedPlant}
+          onSelect={plantContext.setPlantId}
         />
+
+        {assistantBrief ? (
+          <View style={styles.guidanceCard}>
+            <Text style={styles.resultTitle}>{assistantBrief.title}</Text>
+            <Text style={styles.guidanceText}>{assistantBrief.description}</Text>
+            <Pressable
+              accessibilityRole="button"
+              accessibilityLabel={assistantBrief.accessibilityLabel}
+              style={styles.secondaryButton}
+              onPress={() =>
+                setAssistantBriefText(
+                  assistantBrief.buildBrief({ values, payload, growId, plantContext })
+                )
+              }
+            >
+              <Text style={styles.secondaryButtonText}>{assistantBrief.buttonLabel}</Text>
+            </Pressable>
+            {assistantBriefText ? (
+              <View style={styles.briefBox}>
+                <Text style={styles.resultTitle}>{assistantBrief.briefTitle}</Text>
+                <Text selectable style={styles.briefText}>
+                  {assistantBriefText}
+                </Text>
+              </View>
+            ) : null}
+          </View>
+        ) : null}
+
+        <View style={styles.form}>
+          {fields.map((field) => (
+            <View key={field.key} style={styles.field}>
+              <Text style={styles.label}>{field.label}</Text>
+              <TextInput
+                accessibilityLabel={`${title} ${field.label}`}
+                style={[styles.input, field.multiline && styles.textArea]}
+                value={values[field.key] ?? ""}
+                onChangeText={(value) => updateValue(field.key, value)}
+                keyboardType={field.keyboardType || "default"}
+                multiline={field.multiline}
+              />
+            </View>
+          ))}
+        </View>
+
+        <Pressable
+          accessibilityRole="button"
+          accessibilityLabel={`Run ${title}`}
+          disabled={running}
+          onPress={calculate}
+          style={[styles.button, running && styles.disabled]}
+        >
+          <Text style={styles.buttonText}>
+            {running ? "Calculating..." : "Calculate"}
+          </Text>
+        </Pressable>
+
+        {bannerPolicy.middle ? (
+          <FeedBanner
+            placement="middle"
+            slots={bannerPolicy.slotsByPlacement.middle}
+            mode={entitlements.mode}
+            plan={plan}
+            railMode={bannerPolicy.railMode}
+          />
+        ) : null}
+
+        {outputs ? (
+          <ToolResultSurface
+            title={`${title} result`}
+            status={status}
+            metrics={buildMetrics(outputs)}
+            inputs={payload}
+            outputs={outputs}
+            notices={buildNotices(outputs)}
+            recommendations={
+              Array.isArray(outputs.recommendations) ? outputs.recommendations : []
+            }
+            formulas={[
+              outputs.formulaExplanation,
+              outputs.formula,
+              outputs.releaseDisclaimer,
+              outputs.realisticNotes
+            ].filter(Boolean)}
+            actions={actions}
+            feedback={feedback}
+            contextMessage={
+              growId ? undefined : "Select a grow to enable log and task actions."
+            }
+            copyPayload={{ tool, input: payload, output: outputs }}
+            footerMessage={
+              moduleRecord?.id ? `Module record saved: ${moduleRecord.id}` : undefined
+            }
+          />
+        ) : feedback ? (
+          <Text style={styles.feedback}>{feedback}</Text>
+        ) : null}
         {bannerPolicy.bottom ? (
           <FeedBanner
             placement="bottom"
@@ -340,134 +471,7 @@ export default function BackendCalculatorToolScreen({
           />
         ) : null}
       </ScrollView>
-    );
-  }
-
-  return (
-    <ScrollView style={styles.screen} contentContainerStyle={styles.content}>
-      <BackButton />
-      <Text style={styles.title}>{title}</Text>
-      <Text style={styles.subtitle}>{subtitle}</Text>
-      {bannerPolicy.top ? (
-        <FeedBanner
-          placement="top"
-          slots={bannerPolicy.slotsByPlacement.top}
-          mode={entitlements.mode}
-          plan={plan}
-          railMode={bannerPolicy.railMode}
-        />
-      ) : null}
-      {growId ? <Text style={styles.context}>Grow context: {growId}</Text> : null}
-      <ToolPlantContextPicker
-        plants={plantContext.plants}
-        plantId={plantContext.plantId}
-        selectedPlant={plantContext.selectedPlant}
-        onSelect={plantContext.setPlantId}
-      />
-
-      {assistantBrief ? (
-        <View style={styles.guidanceCard}>
-          <Text style={styles.resultTitle}>{assistantBrief.title}</Text>
-          <Text style={styles.guidanceText}>{assistantBrief.description}</Text>
-          <Pressable
-            accessibilityRole="button"
-            accessibilityLabel={assistantBrief.accessibilityLabel}
-            style={styles.secondaryButton}
-            onPress={() =>
-              setAssistantBriefText(
-                assistantBrief.buildBrief({ values, payload, growId, plantContext })
-              )
-            }
-          >
-            <Text style={styles.secondaryButtonText}>{assistantBrief.buttonLabel}</Text>
-          </Pressable>
-          {assistantBriefText ? (
-            <View style={styles.briefBox}>
-              <Text style={styles.resultTitle}>{assistantBrief.briefTitle}</Text>
-              <Text selectable style={styles.briefText}>
-                {assistantBriefText}
-              </Text>
-            </View>
-          ) : null}
-        </View>
-      ) : null}
-
-      <View style={styles.form}>
-        {fields.map((field) => (
-          <View key={field.key} style={styles.field}>
-            <Text style={styles.label}>{field.label}</Text>
-            <TextInput
-              accessibilityLabel={`${title} ${field.label}`}
-              style={[styles.input, field.multiline && styles.textArea]}
-              value={values[field.key] ?? ""}
-              onChangeText={(value) => updateValue(field.key, value)}
-              keyboardType={field.keyboardType || "default"}
-              multiline={field.multiline}
-            />
-          </View>
-        ))}
-      </View>
-
-      <Pressable
-        accessibilityRole="button"
-        accessibilityLabel={`Run ${title}`}
-        disabled={running}
-        onPress={calculate}
-        style={[styles.button, running && styles.disabled]}
-      >
-        <Text style={styles.buttonText}>{running ? "Calculating..." : "Calculate"}</Text>
-      </Pressable>
-
-      {bannerPolicy.middle ? (
-        <FeedBanner
-          placement="middle"
-          slots={bannerPolicy.slotsByPlacement.middle}
-          mode={entitlements.mode}
-          plan={plan}
-          railMode={bannerPolicy.railMode}
-        />
-      ) : null}
-
-      {outputs ? (
-        <ToolResultSurface
-          title={`${title} result`}
-          status={status}
-          metrics={buildMetrics(outputs)}
-          inputs={payload}
-          outputs={outputs}
-          notices={buildNotices(outputs)}
-          recommendations={
-            Array.isArray(outputs.recommendations) ? outputs.recommendations : []
-          }
-          formulas={[
-            outputs.formulaExplanation,
-            outputs.formula,
-            outputs.releaseDisclaimer,
-            outputs.realisticNotes
-          ].filter(Boolean)}
-          actions={actions}
-          feedback={feedback}
-          contextMessage={
-            growId ? undefined : "Select a grow to enable log and task actions."
-          }
-          copyPayload={{ tool, input: payload, output: outputs }}
-          footerMessage={
-            moduleRecord?.id ? `Module record saved: ${moduleRecord.id}` : undefined
-          }
-        />
-      ) : feedback ? (
-        <Text style={styles.feedback}>{feedback}</Text>
-      ) : null}
-      {bannerPolicy.bottom ? (
-        <FeedBanner
-          placement="bottom"
-          slots={bannerPolicy.slotsByPlacement.bottom}
-          mode={entitlements.mode}
-          plan={plan}
-          railMode={bannerPolicy.railMode}
-        />
-      ) : null}
-    </ScrollView>
+    </ScreenBoundary>
   );
 }
 

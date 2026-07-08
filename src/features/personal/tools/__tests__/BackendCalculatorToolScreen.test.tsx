@@ -44,11 +44,15 @@ jest.mock("@/components/feed/FeedBanner", () => ({
   }
 }));
 
-jest.mock("@/components/nav/BackButton", () => ({
-  __esModule: true,
-  default: () => {
-    const { Text } = require("react-native");
-    return <Text>Back</Text>;
+jest.mock("@/components/ScreenBoundary", () => ({
+  ScreenBoundary: ({ children, showBack, backFallbackHref }: any) => {
+    const { Text, View } = require("react-native");
+    return (
+      <View>
+        {showBack ? <Text>{`Shared Back ${backFallbackHref}`}</Text> : null}
+        {children}
+      </View>
+    );
   }
 }));
 
@@ -115,6 +119,7 @@ describe("BackendCalculatorToolScreen beta access", () => {
 
     renderCloneRootingTool();
 
+    expect(screen.getByText("Shared Back /home/personal/tools")).toBeTruthy();
     expect(screen.getByText("Clone Rooting Troubleshooter is a Pro tool")).toBeTruthy();
     expect(screen.queryByText("Calculate")).toBeNull();
     expect(mockRunCalculator).not.toHaveBeenCalled();
@@ -129,6 +134,7 @@ describe("BackendCalculatorToolScreen beta access", () => {
 
     renderCloneRootingTool();
 
+    expect(screen.getByText("Shared Back /home/personal/tools")).toBeTruthy();
     fireEvent.press(screen.getByText("Calculate"));
 
     await waitFor(() => expect(mockRunCalculator).toHaveBeenCalled());
