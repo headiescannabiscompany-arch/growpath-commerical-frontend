@@ -104,6 +104,7 @@ describe("AlertCenterRoute", () => {
               workspaceType: "personal",
               sourceType: "product",
               sourceId: "veg-mix-1",
+              storefrontSlug: "living-soil-labs",
               createdAt: new Date().toISOString()
             },
             {
@@ -239,7 +240,9 @@ describe("AlertCenterRoute", () => {
     expect(
       screen.getByLabelText("Alert link /home/facility/sop-runs/sop-1")
     ).toBeTruthy();
-    expect(screen.getByLabelText("Alert link /store?q=veg-mix-1")).toBeTruthy();
+    expect(
+      screen.getByLabelText("Alert link /store/living-soil-labs/products/veg-mix-1")
+    ).toBeTruthy();
     expect(
       screen.getByLabelText("Alert link /home/personal/courses?courseId=course-1")
     ).toBeTruthy();
@@ -321,6 +324,22 @@ describe("AlertCenterRoute", () => {
 
     const createButtons = screen.getAllByLabelText("Create task from alert");
     expect(createButtons).toHaveLength(16);
+    fireEvent.press(createButtons[5]);
+    await waitFor(() =>
+      expect(mockApiRequest).toHaveBeenLastCalledWith(
+        "/api/tasks",
+        expect.objectContaining({
+          method: "POST",
+          body: expect.objectContaining({
+            workspaceType: "personal",
+            title: "Follow up: Product reply from followed brand",
+            linkedProductId: "veg-mix-1",
+            storefrontSlug: "living-soil-labs",
+            linkedStorefrontSlug: "living-soil-labs"
+          })
+        })
+      )
+    );
     fireEvent.press(createButtons[13]);
     await waitFor(() =>
       expect(mockApiRequest).toHaveBeenLastCalledWith(

@@ -82,6 +82,17 @@ function sourceReference(row: NotificationRow) {
   return value ? String(value) : "";
 }
 
+function storefrontMetadata(row: NotificationRow) {
+  const slug =
+    row.storefrontSlug || row.linkedStorefrontSlug || row.brandSlug || row.publicSlug;
+  return slug
+    ? {
+        storefrontSlug: String(slug),
+        linkedStorefrontSlug: String(slug)
+      }
+    : {};
+}
+
 function linkedFieldsForNotificationSource(row: NotificationRow) {
   const sourceType = String(row.sourceType || "");
   const sourceId = sourceReference(row);
@@ -257,6 +268,7 @@ export default function NotificationCenterRoute() {
           notificationSourceType: row.sourceType || undefined,
           notificationSourceId: sourceReference(row) || undefined,
           ...linkedFieldsForNotificationSource(row),
+          ...storefrontMetadata(row),
           priority: ["alert", "task"].includes(String(row.sourceType || ""))
             ? "high"
             : "normal",

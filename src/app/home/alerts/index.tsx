@@ -101,6 +101,17 @@ function sourceReference(alert: AlertRow) {
   return value ? String(value) : "";
 }
 
+function storefrontMetadata(row: AlertRow) {
+  const slug =
+    row.storefrontSlug || row.linkedStorefrontSlug || row.brandSlug || row.publicSlug;
+  return slug
+    ? {
+        storefrontSlug: String(slug),
+        linkedStorefrontSlug: String(slug)
+      }
+    : {};
+}
+
 function linkedFieldsForAlertSource(alert: AlertRow) {
   const sourceType = String(alert.sourceType || "");
   const sourceId = sourceReference(alert);
@@ -263,6 +274,7 @@ export default function AlertCenterRoute() {
           alertSourceType: alert.sourceType || undefined,
           alertSourceId: sourceReference(alert) || undefined,
           ...linkedFieldsForAlertSource(alert),
+          ...storefrontMetadata(alert),
           assignedToUserId: assignee.trim() || undefined,
           status: "open",
           reminderPlan: reminder.trim()

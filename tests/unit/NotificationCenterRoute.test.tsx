@@ -101,6 +101,7 @@ describe("NotificationCenterRoute", () => {
               sourceType: "product",
               sourceId: "veg-mix-1",
               workspaceType: "personal",
+              storefrontSlug: "living-soil-labs",
               readAt: "2026-07-07T12:00:00.000Z"
             },
             {
@@ -246,7 +247,9 @@ describe("NotificationCenterRoute", () => {
     expect(
       screen.getByLabelText("Notification link /home/facility/sop-runs/sop-1")
     ).toBeTruthy();
-    expect(screen.getByLabelText("Notification link /store?q=veg-mix-1")).toBeTruthy();
+    expect(
+      screen.getByLabelText("Notification link /store/living-soil-labs/products/veg-mix-1")
+    ).toBeTruthy();
     expect(
       screen.getByLabelText("Notification link /home/facility/inventory/input-1")
     ).toBeTruthy();
@@ -309,6 +312,23 @@ describe("NotificationCenterRoute", () => {
 
     const createButtons = screen.getAllByLabelText("Create task from notification");
     expect(createButtons).toHaveLength(18);
+    await waitFor(() => expect(createButtons[7].props.disabled).toBeFalsy());
+    fireEvent.press(createButtons[7]);
+    await waitFor(() =>
+      expect(mockApiRequest).toHaveBeenLastCalledWith(
+        "/api/tasks",
+        expect.objectContaining({
+          method: "POST",
+          body: expect.objectContaining({
+            workspaceType: "personal",
+            title: "Follow up: Public product update",
+            linkedProductId: "veg-mix-1",
+            storefrontSlug: "living-soil-labs",
+            linkedStorefrontSlug: "living-soil-labs"
+          })
+        })
+      )
+    );
     await waitFor(() => expect(createButtons[15].props.disabled).toBeFalsy());
     fireEvent.press(createButtons[15]);
     await waitFor(() =>

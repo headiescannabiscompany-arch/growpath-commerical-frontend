@@ -603,6 +603,7 @@ Completed and pushed:
 327. Commercial external-channel and influencer CTA copy now uses External Channel Integrations and Creator Content language instead of marketplace wording, and the creator CTA uses ASCII-clean text.
 328. Forum post detail anonymous author fallbacks now say Forum member instead of Community member, keeping discussion labels aligned without changing legacy route/API compatibility names.
 329. Schedule/Agenda now forwards full live, course, and feed campaign records into the shared source-link resolver, so viewer course releases with storefront slugs open public storefront course pages instead of losing brand context.
+330. Alert Center and Notification Center now preserve storefront slug aliases when creating follow-up tasks from source-linked product/course/live/storefront records, so task source links can keep exact public storefront routes after alert/notification conversion.
 
 ## Working Rule For Codex
 
