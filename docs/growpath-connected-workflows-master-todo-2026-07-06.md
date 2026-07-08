@@ -301,6 +301,7 @@ Completed and pushed:
 25. Commercial dashboard now includes a GrowPath AI business-helper surface that routes owners toward task, campaign, and analytics workflows while keeping records as the source of truth.
 26. Facility task detail now exposes canonical source navigation for alert-backed and forum-backed tasks, while keeping facility tool/recipe tasks inside facility routes.
 27. Commercial alert and log detail pages now rely on the shared `ScreenBoundary` back control instead of duplicate hand-coded back links.
+28. `/home/commercial/tasks/:id` now resolves to the commercial task detail screen so feed, alert, notification, and schedule links can open commercial tasks directly.
 
 ## Working Rule For Codex
 
