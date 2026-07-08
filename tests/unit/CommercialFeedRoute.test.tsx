@@ -134,6 +134,20 @@ describe("CommercialFeedRoute", () => {
       screen.getByLabelText("Feed campaign body"),
       "RSVP for the live dry amendment recipe build."
     );
+    fireEvent.changeText(
+      screen.getByLabelText("Feed campaign grow interests"),
+      "living soil, recipe building"
+    );
+    fireEvent.changeText(
+      screen.getByLabelText("Feed campaign schedule start"),
+      "2026-07-17T21:00:00Z"
+    );
+    fireEvent.changeText(
+      screen.getByLabelText("Feed campaign schedule end"),
+      "2026-07-24T21:00:00Z"
+    );
+    fireEvent.changeText(screen.getByLabelText("Feed campaign reminder"), "1 hour before");
+    fireEvent.changeText(screen.getByLabelText("Feed campaign recurrence"), "weekly");
     expect(
       screen.getByLabelText("Publish feed campaign").props.accessibilityState?.disabled
     ).toBe(true);
@@ -149,9 +163,14 @@ describe("CommercialFeedRoute", () => {
             title: "Complete feed campaign setup: Friday mix demo",
             sourceType: "feed_campaign",
             sourceId: "Friday mix demo",
+            growInterests: ["living soil", "recipe building"],
+            campaignStartsAt: "2026-07-17T21:00:00Z",
+            campaignEndsAt: "2026-07-24T21:00:00Z",
+            recurrenceRule: "weekly",
+            dueAt: "2026-07-17",
             priority: "high",
             status: "open",
-            reminderPlan: { label: "24 hours before", channels: ["in_app"] }
+            reminderPlan: { label: "1 hour before", channels: ["in_app"] }
           })
         })
       )
@@ -170,17 +189,6 @@ describe("CommercialFeedRoute", () => {
       screen.getByLabelText("Commercial feed campaign image URL"),
       "https://example.com/demo.jpg"
     );
-    fireEvent.changeText(
-      screen.getByLabelText("Feed campaign schedule start"),
-      "2026-07-17T21:00:00Z"
-    );
-    fireEvent.changeText(
-      screen.getByLabelText("Feed campaign schedule end"),
-      "2026-07-24T21:00:00Z"
-    );
-    fireEvent.changeText(screen.getByLabelText("Feed campaign reminder"), "1 hour before");
-    fireEvent.changeText(screen.getByLabelText("Feed campaign recurrence"), "weekly");
-
     await waitFor(() =>
       expect(screen.getByText("Campaign has destination and creative.")).toBeTruthy()
     );
