@@ -130,6 +130,25 @@ describe("FacilityTaskDetail", () => {
     expect(mockPush).toHaveBeenCalledWith("/home/alerts?alertId=alert-1");
   });
 
+  it("opens linked-only sensor alert facility task sources in the shared alert center", async () => {
+    taskOverrides = {
+      sourceType: "sensor_alert",
+      sourceObjectId: "",
+      sourceId: "",
+      linkedSensorAlertId: "sensor-alert-linked-1"
+    };
+    const screen = render(<FacilityTaskDetail />);
+
+    await waitFor(() => expect(screen.getByText("IPM scout")).toBeTruthy());
+    expect(screen.getByText(/Sensor Alert sensor-alert-linked-1/)).toBeTruthy();
+
+    fireEvent.press(screen.getByLabelText("View facility task source"));
+
+    expect(mockPush).toHaveBeenCalledWith(
+      "/home/alerts?alertId=sensor-alert-linked-1"
+    );
+  });
+
   it("opens forum-backed facility task sources in the shared forum route", async () => {
     taskOverrides = {
       sourceType: "forum",
@@ -153,6 +172,7 @@ describe("FacilityTaskDetail", () => {
     ["lesson", "lesson-1", "/home/facility/sop-runs/lesson-1"],
     ["sop", "sop-7", "/home/facility/sop-runs/sop-7"],
     ["live", "live-1", "/feed?liveId=live-1"],
+    ["feed_campaign", "campaign-1", "/home/facility/feed?campaignId=campaign-1"],
     ["product", "input-1", "/home/facility/InventoryItemDetailScreen?id=input-1"],
     ["product_batch", "batch-1", "/home/facility/InventoryItemDetailScreen?id=batch-1"],
     ["product_trial", "run-1", "/home/facility/grows/run-1"]
@@ -172,4 +192,29 @@ describe("FacilityTaskDetail", () => {
       );
     }
   );
+
+  it("saves facility task workflow context with feed campaign links", async () => {
+    const screen = render(<FacilityTaskDetail />);
+
+    await waitFor(() => expect(screen.getByText("IPM scout")).toBeTruthy());
+
+    fireEvent.press(screen.getByLabelText("Set task detail source feed_campaign"));
+    fireEvent.changeText(screen.getByLabelText("Task detail source object"), "campaign-7");
+    fireEvent.changeText(screen.getByLabelText("Task detail room"), "media-room");
+    fireEvent.press(screen.getByLabelText("Save task workflow context"));
+
+    await waitFor(() =>
+      expect(mockUpdateTask).toHaveBeenCalledWith(
+        "facility-1",
+        "task-1",
+        expect.objectContaining({
+          sourceType: "feed_campaign",
+          sourceObjectId: "campaign-7",
+          roomId: "media-room",
+          linkedFeedCampaignId: "campaign-7",
+          linkedRoomId: "media-room"
+        })
+      )
+    );
+  });
 });
