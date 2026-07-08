@@ -412,6 +412,13 @@ Completed and pushed:
 136. Shared source links now recognize `linkedTaskId` as a task alias and infer `task` when `sourceType` is missing, so task reminders from notifications, alerts, and schedule items route to commercial/facility task detail or the correct personal task workspace.
 137. Shared source links now infer alert and feed campaign routes from `linkedSensorAlertId`, `linkedFeedCampaignId`, and `linkedFeedPostId`, so linked-only sensor alerts and promotional campaign records reopen the Alert Center or commercial/facility Feed Campaigns area without needing a generic `sourceId`.
 138. Personal grow timeline source buttons now try the shared source-link resolver before falling back to legacy `sourceModel` rules, so linked-only product batch, product, course, live, alert, forum, recipe, ToolRun, and other source-linked events can reopen their real workflow from the grow timeline.
+139. Personal grow overview timeline previews now open explicit linked source records through the shared resolver, so recent product batch, task, feed campaign, and other linked timeline events stay connected before the user opens the full timeline.
+140. Schedule / Agenda now infers source types from linked-only sensor alert and feed campaign fields, so calendar filtering and Open Source actions keep alert and outreach records connected even without a generic `sourceType`/`sourceId` pair.
+141. Facility task creation and task subtitles now preserve `linkedSensorAlertId` and `linkedFeedCampaignId`, so sensor-driven operational jobs and facility outreach campaign tasks do not collapse into generic alerts or legacy feed-post ids.
+142. Alert Center and Notification Center task creation now preserve canonical feed campaign ids and sensor alert ids, so follow-up tasks created from outreach, reminders, and controller warnings remain source-linked across Personal, Commercial, and Facility workspaces.
+143. Commercial Task Center, commercial task detail, and commercial alert detail now create, display, and route canonical feed campaign ids while still reading legacy feed-post fields, keeping Feed as the outreach/campaign system instead of a discussion post source.
+144. Personal Task Center and grow-specific personal tasks now preserve linked sensor alert ids separately from generic alert ids, so sensor/controller warnings can become personal follow-up tasks without losing their alert-center source route.
+145. Deferred/manual verification scripts now include the latest connected source-routing tests for grow overview/timeline, personal tasks, commercial tasks, commercial alert detail, facility tasks, Schedule, Alert Center, Notification Center, and the shared source-link resolver.
 
 ## Working Rule For Codex
 

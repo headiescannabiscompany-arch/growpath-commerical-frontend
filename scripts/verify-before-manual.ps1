@@ -151,9 +151,17 @@ Invoke-Step `
     "tests\unit\CommercialToolsScreen.test.tsx",
     "tests\unit\CommercialWorkflowPages.test.tsx",
     "tests\unit\CommercialTaskDetailRoute.test.tsx",
+    "tests\unit\CommercialAlertDetailRoute.test.tsx",
+    "tests\unit\CommercialTasksRoute.test.tsx",
     "tests\unit\HomeScheduleRoute.test.tsx",
     "tests\unit\AlertCenterRoute.test.tsx",
+    "tests\unit\NotificationCenterRoute.test.tsx",
     "tests\unit\sourceLinks.test.ts",
+    "tests\unit\PersonalTaskCenterRoute.test.tsx",
+    "tests\unit\GrowTasksScreen.test.tsx",
+    "tests\unit\GrowOverviewScreen.test.tsx",
+    "tests\unit\GrowTimelineScreen.test.tsx",
+    "tests\unit\FacilityTasksRoute.test.tsx",
     "tests\unit\StorefrontScreen.test.tsx",
     "tests\unit\StoreIndex.test.tsx"
   )
