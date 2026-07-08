@@ -35,8 +35,10 @@ const checks = [
       "tests/navigation/routeAccess.test.ts",
       "tests/unit/CommercialWorkflowPages.test.tsx",
       "tests/unit/CommercialFeedRoute.test.tsx",
+      "tests/unit/commercial-feed-api.test.ts",
       "tests/unit/CommercialLivesRoute.test.tsx",
       "tests/unit/StorefrontRoute.test.tsx",
+      "tests/unit/PublicCommercialRoutes.test.tsx",
       "tests/unit/NpkToolScreen.test.tsx",
       "tests/unit/SoilBuilderToolScreen.test.tsx",
       "tests/unit/DryAmendmentMixToolScreen.test.tsx",
@@ -89,6 +91,7 @@ const manualChecks = [
     checks: [
       "Confirm Feed cards read as commercial/facility outreach with CTA buttons, not discussion threads.",
       "Confirm Forum pages still present discussion/Q&A/thread behavior and can link to product/course/live context.",
+      "Create a commercial feed campaign with grow interests, schedule start/end, reminder, recurrence, product/live/course/storefront destination, and Forum/Q&A link; confirm those fields show on the campaign card and Schedule page.",
       "On a free account, confirm top and bottom feed placements render, and long pages include one middle placement."
     ]
   },
@@ -97,6 +100,7 @@ const manualChecks = [
     checks: [
       "Open Commercial > Storefront and verify Storefront is a top-level destination with View as User and setup status.",
       "From Commercial > Storefront, verify product, course, live, campaign, and Q&A cards link back to their owner workspaces.",
+      "Open the public brand profile, public storefront, and public product detail and confirm product/course/campaign grow interests display and still route to Store, Feed Campaigns, and Forum/Q&A correctly.",
       "Open Commercial > Orders from the commercial tab/dashboard and verify it stays inside /home/commercial/orders with no root-page back arrow.",
       "Open Commercial > Products and verify product cards feed the public storefront and batches/trials/inventory are product support surfaces.",
       "Open Commercial > Courses and a course detail; verify thumbnail, banner, category, grow interests, setup warnings, and paid Stripe readiness before publish.",
@@ -124,6 +128,7 @@ const manualChecks = [
     area: "Tasks and schedule",
     checks: [
       "Create a manual task from Task Center using the shared schedule picker quick dates: This evening, In 3 days, In 21 days, and Next week.",
+      "Schedule a commercial live and a feed campaign with the shared SchedulePicker and confirm start/end, reminders, and recurrence appear in /home/schedule.",
       "Confirm the same SchedulePicker behavior is available from Personal, Commercial, Facility, and Alert Center task/snooze flows.",
       "Create tasks from a ToolRun and confirm they link back to the grow/tool result.",
       "Convert an alert to a task and confirm the source link remains visible."
