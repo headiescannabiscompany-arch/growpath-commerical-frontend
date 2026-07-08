@@ -481,6 +481,7 @@ Completed and pushed:
 205. GrowPath system audit now recognizes the Nutrient Chemistry route as the visible Compatibility Checker surface and Personal Diagnose as the ETGU Diagnosis Rules surface, with diagnosis route coverage asserting the ETGU symptom-pattern explanation remains visible after a result.
 206. GrowPath system audit now treats route-less foundation contracts as route-optional evidence modules, anchors Product / Ingredient Library to its visible Personal tool route, and recognizes Organism Library as a crop-knowledge/IPM support library, bringing the audit to 32 present-foundation modules with no partials.
 207. Commercial Storefront now has real nested edit and preview routes under `/home/commercial/storefront`, the dashboard Edit Storefront action opens the edit route, nested routes hide the tab bar, and focused coverage proves both routes use the shared back fallback to the Storefront root.
+208. Legacy billing Upgrade Plan now uses the shared Pro, Commercial, and Facility pricing constants, shows monthly and annual options with annual billed-once/yearly equivalent copy, and sends the selected interval to checkout with focused regression coverage.
 
 ## Working Rule For Codex
 
