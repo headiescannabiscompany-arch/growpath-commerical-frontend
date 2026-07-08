@@ -1,4 +1,5 @@
 import { Text, Pressable } from "react-native";
+import { radius } from "../theme/theme";
 
 export default function TaskRow({ task, onPress }) {
   return (
@@ -6,7 +7,7 @@ export default function TaskRow({ task, onPress }) {
       onPress={onPress}
       style={({ pressed }) => ({
         padding: 12,
-        borderRadius: 8,
+        borderRadius: radius.card,
         backgroundColor: "#fff",
         marginBottom: 6,
         borderWidth: 1,

@@ -1,5 +1,6 @@
 import React from "react";
 import { Modal, View, Text, TouchableOpacity, StyleSheet } from "react-native";
+import { radius } from "../theme/theme";
 
 export default function TaskCompleteModal({ visible, onClose }) {
   return (
@@ -33,7 +34,7 @@ const styles = StyleSheet.create({
   },
   modalBox: {
     backgroundColor: "white",
-    borderRadius: 12,
+    borderRadius: radius.card,
     padding: 24,
     maxWidth: 320,
     alignItems: "center"
@@ -51,7 +52,7 @@ const styles = StyleSheet.create({
   },
   button: {
     backgroundColor: "#2ecc71",
-    borderRadius: 8,
+    borderRadius: radius.card,
     paddingVertical: 8,
     paddingHorizontal: 24
   },

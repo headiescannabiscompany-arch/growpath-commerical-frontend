@@ -6,6 +6,7 @@ import { listGrows } from "../api/grows.js";
 import { CAPABILITY_KEYS, useEntitlements } from "@/entitlements";
 import { useNavigation } from "@react-navigation/native";
 import GrowPlantSelector from "../components/GrowPlantSelector.js";
+import { radius } from "../theme/theme";
 
 export default function CreateTaskScreen({ route }) {
   const [grows, setGrows] = useState([]);
@@ -100,7 +101,7 @@ export default function CreateTaskScreen({ route }) {
           style={{
             marginTop: 10,
             backgroundColor: "#FEF3C7",
-            borderRadius: 8,
+            borderRadius: radius.card,
             padding: 10
           }}
         >
@@ -112,7 +113,7 @@ export default function CreateTaskScreen({ route }) {
               marginTop: 8,
               backgroundColor: "#10B981",
               padding: 8,
-              borderRadius: 8
+              borderRadius: radius.card
             }}
             onPress={() => navigation.navigate("Subscription")}
           >
@@ -137,9 +138,24 @@ export default function CreateTaskScreen({ route }) {
 
 const styles = StyleSheet.create({
   header: { fontSize: 26, fontWeight: "700", marginBottom: 12 },
-  input: { backgroundColor: "#eee", padding: 10, borderRadius: 8, marginBottom: 12 },
+  input: {
+    backgroundColor: "#eee",
+    padding: 10,
+    borderRadius: radius.card,
+    marginBottom: 12
+  },
   sub: { marginTop: 10, marginBottom: 6, fontWeight: "700" },
-  plant: { padding: 10, backgroundColor: "white", borderRadius: 8, marginBottom: 6 },
-  saveBtn: { backgroundColor: "#2ecc71", padding: 12, borderRadius: 10, marginTop: 20 },
+  plant: {
+    padding: 10,
+    backgroundColor: "white",
+    borderRadius: radius.card,
+    marginBottom: 6
+  },
+  saveBtn: {
+    backgroundColor: "#2ecc71",
+    padding: 12,
+    borderRadius: radius.card,
+    marginTop: 20
+  },
   saveText: { color: "white", fontWeight: "700", textAlign: "center" }
 });

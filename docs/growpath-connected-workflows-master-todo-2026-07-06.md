@@ -725,6 +725,7 @@ Completed and pushed:
 449. AI result cards and AI context selectors now consume the shared 8px card radius token, keeping evidence, grow/room/photo context, notes, and persisted ToolRun-style outputs visually aligned across user modes.
 450. Permission inspector, locked entitlement screens, and route access guard actions now consume the shared 8px card radius token, keeping mode/plan guardrails visually aligned while preserving support and dashboard recovery paths.
 451. Grow interest picker/editor containers, save actions, badges, and interest chips now consume shared radius tokens, preserving pill semantics while keeping discovery, targeting, recommendations, and course/product/feed tagging visually aligned.
+452. Legacy task rows, task completion modal, task creation inputs, entitlement warning, and create-task actions now consume the shared 8px card radius token, keeping older task entry points aligned with the shared action-layer polish.
 
 ## Working Rule For Codex
 
