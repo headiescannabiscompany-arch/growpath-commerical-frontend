@@ -1,5 +1,5 @@
 import React from "react";
-import { render, waitFor } from "@testing-library/react-native";
+import { fireEvent, render, waitFor } from "@testing-library/react-native";
 
 import FacilityInventoryTab from "@/app/home/facility/(tabs)/inventory";
 
@@ -90,6 +90,12 @@ describe("FacilityInventoryTab", () => {
       expect(screen.getByText("Kelp Meal")).toBeTruthy();
       expect(screen.getByLabelText("Open inventory AI review")).toBeTruthy();
       expect(screen.getAllByText("low stock").length).toBeGreaterThan(0);
+    });
+
+    fireEvent.press(screen.getByLabelText("Open inventory item Kelp Meal"));
+    expect(mockPush).toHaveBeenCalledWith({
+      pathname: "/home/facility/InventoryItemDetailScreen",
+      params: { id: "item-1" }
     });
   });
 });

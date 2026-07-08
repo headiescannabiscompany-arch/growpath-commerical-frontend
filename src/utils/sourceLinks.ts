@@ -79,12 +79,18 @@ export function sourceObjectHref(source: SourceLike) {
   ) {
     if (workspace === "commercial" && productId)
       return `/home/commercial/products/${productId}`;
-    if (workspace === "facility") return "/home/facility/inventory";
+    if (workspace === "facility")
+      return productId
+        ? `/home/facility/InventoryItemDetailScreen?id=${encoded(productId)}`
+        : "/home/facility/inventory";
     return productId ? `/store?q=${encoded(productId)}` : "/store";
   }
 
   if (sourceType === "product_batch") {
-    if (workspace === "facility") return "/home/facility/inventory";
+    if (workspace === "facility")
+      return sourceId
+        ? `/home/facility/InventoryItemDetailScreen?id=${encoded(sourceId)}`
+        : "/home/facility/inventory";
     if (workspace === "commercial")
       return sourceId
         ? `/home/commercial/batch-planner/${encoded(sourceId)}`
@@ -150,7 +156,10 @@ export function sourceObjectHref(source: SourceLike) {
   if (sourceType === "order") {
     if (workspace === "commercial")
       return `/home/commercial/orders${sourceId ? `?orderId=${encoded(sourceId)}` : ""}`;
-    if (workspace === "facility") return "/home/facility/inventory";
+    if (workspace === "facility")
+      return sourceId
+        ? `/home/facility/InventoryItemDetailScreen?id=${encoded(sourceId)}`
+        : "/home/facility/inventory";
     return "/home/personal/profile";
   }
   if (sourceType === "inventory") {
@@ -158,7 +167,10 @@ export function sourceObjectHref(source: SourceLike) {
       return sourceId
         ? `/home/commercial/inventory-item/${encoded(sourceId)}`
         : "/home/commercial/inventory";
-    if (workspace === "facility") return "/home/facility/inventory";
+    if (workspace === "facility")
+      return sourceId
+        ? `/home/facility/InventoryItemDetailScreen?id=${encoded(sourceId)}`
+        : "/home/facility/inventory";
     return "/home/personal/profile";
   }
   if (sourceType === "room" || sourceType === "room_task")

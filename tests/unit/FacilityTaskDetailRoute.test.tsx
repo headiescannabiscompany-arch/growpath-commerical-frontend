@@ -152,8 +152,8 @@ describe("FacilityTaskDetail", () => {
     ["lesson", "lesson-1", "/home/facility/sop-runs"],
     ["sop", "sop-7", "/home/facility/sop-runs/sop-7"],
     ["live", "live-1", "/feed?liveId=live-1"],
-    ["product", "input-1", "/home/facility/inventory"],
-    ["product_batch", "batch-1", "/home/facility/inventory"],
+    ["product", "input-1", "/home/facility/InventoryItemDetailScreen?id=input-1"],
+    ["product_batch", "batch-1", "/home/facility/InventoryItemDetailScreen?id=batch-1"],
     ["product_trial", "run-1", "/home/facility/grows/run-1"]
   ])(
     "keeps %s-backed facility task sources out of commercial admin routes",

@@ -376,6 +376,7 @@ Completed and pushed:
 100. Feed campaign source links now preserve campaign ids in `/home/commercial/feed?campaignId=...` and `/home/facility/feed?campaignId=...`, and the shared Feed/Campaigns screen highlights the selected campaign so alerts, notifications, tasks, and schedule items return to the right outreach card.
 101. Commercial order source links now preserve order ids in `/home/commercial/orders?orderId=...`, and the Orders workspace highlights the selected order so fulfillment alerts, notifications, and schedule tasks land on the relevant order instead of the root list only.
 102. Personal ToolRun and recipe source links now preserve saved run ids in `/home/personal/tools/saved-runs?toolRunId=...`, and the Saved Tool Runs workspace auto-selects the requested run so grow tasks, timelines, alerts, notifications, and schedule items reopen the exact saved tool output.
+103. Facility product, product-batch, order, and inventory source links now preserve ids in `/home/facility/InventoryItemDetailScreen?id=...`, so stock alerts, notifications, tasks, and operational references can open the exact inventory item instead of the facility inventory root.
 
 ## Working Rule For Codex
 
