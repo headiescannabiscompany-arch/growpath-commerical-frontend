@@ -51,12 +51,17 @@ function isToday(alert: AlertRow) {
 function sourceHref(alert: AlertRow) {
   const sourceType = String(alert.sourceType || "");
   const sourceId = String(alert.sourceId || "");
+  const workspace = String(alert.workspaceType || "");
   if (sourceType === "product" && sourceId)
     return `/home/commercial/products/${sourceId}`;
   if (sourceType === "course" && sourceId) return `/home/commercial/courses/${sourceId}`;
   if (sourceType === "live") return "/home/commercial/lives";
   if (sourceType === "storefront") return "/home/commercial/storefront";
-  if (sourceType === "task" && sourceId) return `/tasks/${sourceId}`;
+  if (sourceType === "task" && sourceId) {
+    if (workspace === "commercial") return `/home/commercial/tasks/${sourceId}`;
+    if (workspace === "facility") return `/home/facility/tasks/${sourceId}`;
+    return "/home/personal/tasks";
+  }
   if (sourceType === "room") return "/home/facility/rooms";
   return "";
 }

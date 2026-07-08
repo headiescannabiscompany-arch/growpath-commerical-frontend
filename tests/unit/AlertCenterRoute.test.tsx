@@ -17,8 +17,15 @@ jest.mock("@/api/apiRequest", () => ({
 
 jest.mock("expo-router", () => {
   const React = require("react");
+  const { Text } = require("react-native");
   return {
-    Link: ({ children }: any) => React.createElement(React.Fragment, null, children)
+    Link: ({ children, href }: any) =>
+      React.createElement(
+        React.Fragment,
+        null,
+        children,
+        React.createElement(Text, { accessibilityLabel: `Alert link ${href}` })
+      )
   };
 });
 
@@ -42,6 +49,16 @@ describe("AlertCenterRoute", () => {
             },
             {
               id: "alert-2",
+              title: "Facility task overdue",
+              severity: "urgent",
+              status: "active",
+              workspaceType: "facility",
+              sourceType: "task",
+              sourceId: "task-1",
+              createdAt: new Date().toISOString()
+            },
+            {
+              id: "alert-3",
               title: "Replay available",
               severity: "info",
               status: "resolved",
@@ -68,12 +85,16 @@ describe("AlertCenterRoute", () => {
     expect(screen.getByText("Paid product missing Stripe price")).toBeTruthy();
     expect(screen.getByText(/Publish is blocked/)).toBeTruthy();
     expect(screen.getByText(/Source product/)).toBeTruthy();
+    expect(
+      screen.getByLabelText("Alert link /home/commercial/products/product-1")
+    ).toBeTruthy();
+    expect(screen.getByLabelText("Alert link /home/facility/tasks/task-1")).toBeTruthy();
 
     fireEvent.press(screen.getByLabelText("Alert center quick date In 7 days"));
     fireEvent.press(
       screen.getByLabelText("Alert center reminder preset 24 hours before")
     );
-    fireEvent.press(screen.getByLabelText("Create task from alert"));
+    fireEvent.press(screen.getAllByLabelText("Create task from alert")[0]);
 
     await waitFor(() =>
       expect(mockApiRequest).toHaveBeenCalledWith(
@@ -98,7 +119,7 @@ describe("AlertCenterRoute", () => {
     );
     expect(screen.getByText("Task created from alert.")).toBeTruthy();
 
-    fireEvent.press(screen.getByLabelText("Resolve alert"));
+    fireEvent.press(screen.getAllByLabelText("Resolve alert")[0]);
     await waitFor(() =>
       expect(mockApiRequest).toHaveBeenCalledWith(
         "/api/alerts/alert-1",
@@ -109,7 +130,7 @@ describe("AlertCenterRoute", () => {
       )
     );
 
-    fireEvent.press(screen.getByLabelText("Snooze alert"));
+    fireEvent.press(screen.getAllByLabelText("Snooze alert")[0]);
     await waitFor(() =>
       expect(mockApiRequest).toHaveBeenCalledWith(
         "/api/alerts/alert-1",

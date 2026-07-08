@@ -95,6 +95,10 @@ describe("NotificationCenterRoute", () => {
     expect(screen.getByText("Task overdue")).toBeTruthy();
 
     fireEvent.press(screen.getByLabelText("Notification filter all"));
+    expect(screen.getByLabelText("Notification link /home/commercial/lives")).toBeTruthy();
+    expect(
+      screen.getByLabelText("Notification link /home/facility/tasks/task-1")
+    ).toBeTruthy();
     expect(screen.getByLabelText("Notification link /home/personal/courses")).toBeTruthy();
     expect(screen.getByLabelText("Notification link /home/facility/rooms")).toBeTruthy();
 

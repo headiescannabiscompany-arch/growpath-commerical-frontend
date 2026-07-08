@@ -49,13 +49,17 @@ function rowId(row: NotificationRow) {
 function sourceHref(row: NotificationRow) {
   if (row.actionUrl) return row.actionUrl;
   const id = row.sourceId;
+  const workspace = String(row.workspaceType || "");
   switch (row.sourceType) {
     case "task":
-      return id ? `/home/tasks/${id}` : "/home/schedule";
+      if (!id) return "/home/schedule";
+      if (workspace === "commercial") return `/home/commercial/tasks/${id}`;
+      if (workspace === "facility") return `/home/facility/tasks/${id}`;
+      return "/home/personal/tasks";
     case "alert":
       return "/home/alerts";
     case "live":
-      return id ? `/home/commercial/lives/${id}` : "/home/commercial/lives";
+      return "/home/commercial/lives";
     case "course":
       return id ? `/home/commercial/courses/${id}` : "/home/personal/courses";
     case "product":
