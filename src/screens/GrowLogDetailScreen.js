@@ -11,6 +11,7 @@ import {
 import ScreenContainer from "../components/ScreenContainer";
 import { getEntry, deleteEntry } from "../api/growlog";
 import { listGrows } from "../api/grows";
+import { radius } from "../theme/theme";
 
 export default function GrowLogDetailScreen({ route, navigation }) {
   const entryId = route.params?.id;
@@ -286,7 +287,7 @@ const styles = StyleSheet.create({
   actionButton: {
     paddingHorizontal: 10,
     paddingVertical: 6,
-    borderRadius: 8,
+    borderRadius: radius.card,
     backgroundColor: "#eeeeee",
     marginLeft: 6
   },
@@ -298,7 +299,7 @@ const styles = StyleSheet.create({
   photo: {
     width: 260,
     height: 260,
-    borderRadius: 14,
+    borderRadius: radius.card,
     marginRight: 10
   },
   infoRow: {
@@ -308,7 +309,7 @@ const styles = StyleSheet.create({
   infoChip: {
     paddingHorizontal: 10,
     paddingVertical: 6,
-    borderRadius: 8,
+    borderRadius: radius.card,
     backgroundColor: "#f3f3f3",
     marginRight: 8
   },
@@ -333,7 +334,7 @@ const styles = StyleSheet.create({
     backgroundColor: "#ddd",
     paddingHorizontal: 10,
     paddingVertical: 4,
-    borderRadius: 8,
+    borderRadius: radius.pill,
     marginRight: 8,
     marginBottom: 8
   },
@@ -356,7 +357,7 @@ const styles = StyleSheet.create({
   actionLargeButton: {
     flex: 1,
     paddingVertical: 12,
-    borderRadius: 8,
+    borderRadius: radius.card,
     justifyContent: "center",
     alignItems: "center"
   },

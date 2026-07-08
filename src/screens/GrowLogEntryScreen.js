@@ -25,6 +25,7 @@ import {
   flattenTierSelections,
   groupTagsByTier
 } from "../utils/growInterests";
+import { radius } from "../theme/theme";
 
 const stageMap = {
   seedling: "Seedling",
@@ -976,18 +977,18 @@ const styles = {
   input: {
     backgroundColor: "#f0f0f0",
     padding: 10,
-    borderRadius: 8
+    borderRadius: radius.card
   },
   photo: {
     width: 90,
     height: 90,
-    borderRadius: 10,
+    borderRadius: radius.card,
     marginRight: 10
   },
   addPhotoBox: {
     width: 90,
     height: 90,
-    borderRadius: 10,
+    borderRadius: radius.card,
     backgroundColor: "#eaeaea",
     justifyContent: "center",
     alignItems: "center"
@@ -998,7 +999,7 @@ const styles = {
     backgroundColor: "#ddd",
     paddingHorizontal: 10,
     paddingVertical: 4,
-    borderRadius: 8,
+    borderRadius: radius.pill,
     marginRight: 8,
     marginBottom: 8
   },
@@ -1009,7 +1010,7 @@ const styles = {
     marginTop: 20,
     padding: 12,
     backgroundColor: "#f7f7f7",
-    borderRadius: 12
+    borderRadius: radius.card
   },
   helperText: {
     color: "#666",
@@ -1029,7 +1030,7 @@ const styles = {
   selectorPill: {
     paddingHorizontal: 12,
     paddingVertical: 6,
-    borderRadius: 20,
+    borderRadius: radius.pill,
     borderWidth: 1,
     borderColor: "#ccc",
     backgroundColor: "#fff",
@@ -1056,7 +1057,7 @@ const styles = {
   },
   modalContent: {
     backgroundColor: "#fff",
-    borderRadius: 16,
+    borderRadius: radius.card,
     padding: 20,
     width: "100%"
   },
@@ -1078,7 +1079,7 @@ const styles = {
   modalButton: {
     paddingVertical: 10,
     paddingHorizontal: 16,
-    borderRadius: 8
+    borderRadius: radius.card
   },
   modalButtonSecondary: {
     backgroundColor: "#e5e7eb"
@@ -1098,7 +1099,7 @@ const styles = {
     marginTop: 10,
     backgroundColor: "#3498db",
     paddingVertical: 10,
-    borderRadius: 8,
+    borderRadius: radius.card,
     alignItems: "center"
   },
   aiButtonText: {
@@ -1109,7 +1110,7 @@ const styles = {
     marginTop: 30,
     backgroundColor: "#27ae60",
     paddingVertical: 14,
-    borderRadius: 10,
+    borderRadius: radius.card,
     alignItems: "center"
   },
   saveButtonText: {
@@ -1127,7 +1128,7 @@ const styles = {
   geneticsSection: {
     backgroundColor: "#F9FAFB",
     padding: 16,
-    borderRadius: 8,
+    borderRadius: radius.card,
     marginTop: 16,
     marginBottom: 16,
     borderLeftWidth: 4,
@@ -1136,7 +1137,7 @@ const styles = {
   advancedToggle: {
     backgroundColor: "#F3F4F6",
     padding: 16,
-    borderRadius: 8,
+    borderRadius: radius.card,
     marginTop: 16,
     marginBottom: 8
   },
@@ -1148,7 +1149,7 @@ const styles = {
   advancedSection: {
     backgroundColor: "#F9FAFB",
     padding: 16,
-    borderRadius: 8,
+    borderRadius: radius.card,
     marginBottom: 16
   },
   envSection: {
@@ -1166,7 +1167,7 @@ const styles = {
   infoBox: {
     backgroundColor: "#DBEAFE",
     padding: 12,
-    borderRadius: 8,
+    borderRadius: radius.card,
     marginBottom: 12,
     borderLeftWidth: 4,
     borderLeftColor: "#3B82F6"
@@ -1192,7 +1193,7 @@ const styles = {
   optionButton: {
     paddingHorizontal: 16,
     paddingVertical: 10,
-    borderRadius: 8,
+    borderRadius: radius.card,
     backgroundColor: "#FFFFFF",
     borderWidth: 1,
     borderColor: "#D1D5DB"

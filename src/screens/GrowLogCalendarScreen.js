@@ -1,5 +1,6 @@
 import React, { useState } from "react";
 import { View, Text, TouchableOpacity, StyleSheet } from "react-native";
+import { radius } from "../theme/theme";
 
 export default function GrowLogCalendarScreen() {
   const [selectedDate, setSelectedDate] = useState(null);
@@ -43,7 +44,7 @@ const styles = StyleSheet.create({
     justifyContent: "center",
     alignItems: "center",
     backgroundColor: "#eaeaea",
-    borderRadius: 8
+    borderRadius: radius.card
   },
   selectedCell: {
     backgroundColor: "#2ecc71"
@@ -53,7 +54,7 @@ const styles = StyleSheet.create({
     marginTop: 24,
     padding: 16,
     backgroundColor: "#f9f9f9",
-    borderRadius: 8,
+    borderRadius: radius.card,
     alignItems: "center"
   }
 });

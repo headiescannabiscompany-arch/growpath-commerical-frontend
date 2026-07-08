@@ -738,6 +738,7 @@ Completed and pushed:
 462. Shared inventory rows, room cards, grow/plant selectors, stage slider notches, and AI token balance widgets now consume shared radius tokens, carrying the Facility visual polish into cross-mode components used by Personal, Commercial, and Facility workflows.
 463. Facility task management, team invitation/member rows, settings forms, and automation policy cards/actions now consume shared radius tokens, extending the same Facility visual appeal across operational setup, staff, SOP, and alert automation workflows.
 464. Legacy Forum root discussion notice, tabs, post cards, avatars, media, identity badges, tags, and filter/create actions now consume shared radius tokens while preserving the explicit Forum/Q&A versus Feed/Campaigns separation copy.
+465. Personal grow log calendar cells, selected-day panels, detail actions/photos/chips/tags, and entry form inputs/photos/tags/environment sections now consume shared radius tokens while preserving grow-log, stage-sync, and forum-share behavior.
 
 ## Working Rule For Codex
 
