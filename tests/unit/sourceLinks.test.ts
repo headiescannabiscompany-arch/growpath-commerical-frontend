@@ -20,6 +20,14 @@ describe("sourceObjectHref", () => {
 
     expect(
       sourceObjectHref({
+        sourceType: "course",
+        sourceId: "sop-run-1",
+        workspaceType: "facility"
+      })
+    ).toBe("/home/facility/sop-runs/sop-run-1");
+
+    expect(
+      sourceObjectHref({
         sourceType: "product_trial",
         sourceId: "trial-run-1",
         workspaceType: "facility"

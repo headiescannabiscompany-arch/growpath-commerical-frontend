@@ -379,6 +379,7 @@ Completed and pushed:
 103. Facility product, product-batch, order, and inventory source links now preserve ids in `/home/facility/InventoryItemDetailScreen?id=...`, so stock alerts, notifications, tasks, and operational references can open the exact inventory item instead of the facility inventory root.
 104. Commercial recipe and ToolRun source links now preserve ids in `/home/commercial/batch-planner/:id`, while facility recipe and ToolRun links preserve ids in `/home/facility/ai-tools?toolRunId=...` and the facility AI Tools surface displays the linked context instead of dropping operators on an unscoped tool root.
 105. Alert and notification source links now preserve item ids in `/home/alerts?alertId=...` and `/home/notifications?notificationId=...`, with both centers highlighting the linked row so reminders, snoozes, and follow-up tasks reopen the relevant item instead of only the root inbox.
+106. Facility course, lesson, and course-assignment source links now preserve ids in `/home/facility/sop-runs/:id`, so facility training tasks can reopen the relevant SOP/training run instead of the SOP run root list.
 
 ## Working Rule For Codex
 

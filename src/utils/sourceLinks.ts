@@ -119,7 +119,10 @@ export function sourceObjectHref(source: SourceLike) {
   ) {
     if (workspace === "commercial" && courseId)
       return `/home/commercial/courses/${courseId}`;
-    if (workspace === "facility") return "/home/facility/sop-runs";
+    if (workspace === "facility")
+      return courseId
+        ? `/home/facility/sop-runs/${encoded(courseId)}`
+        : "/home/facility/sop-runs";
     return "/home/personal/courses";
   }
 
