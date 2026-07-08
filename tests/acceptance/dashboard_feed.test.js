@@ -7,11 +7,23 @@ jest.mock("../../src/api/client", () => {
   const canned = {
     get: async (path) => {
       record("GET", path);
-      if (path.includes("/posts/feed"))
-        return [
-          { _id: "p1", text: "Dashboard post 1", user: { username: "user1" } },
-          { _id: "p2", text: "Dashboard post 2", user: { username: "user2" } }
-        ];
+      if (path.includes("/commercial/feed"))
+        return {
+          items: [
+            {
+              id: "campaign-1",
+              title: "Dashboard campaign 1",
+              body: "Commercial outreach campaign",
+              authorType: "commercial"
+            },
+            {
+              id: "campaign-2",
+              title: "Dashboard campaign 2",
+              body: "Facility outreach campaign",
+              authorType: "facility"
+            }
+          ]
+        };
       if (path.includes("/auth/login")) {
         const user = { plan: "free", subscriptionStatus: "free", guilds: ["guild1"] };
         global.user = user;
@@ -66,17 +78,17 @@ jest.mock("../../src/api/apiRequest", () => ({
   apiRequest: (...args) => mockApiRequest(...args)
 }));
 import { describe, it, beforeAll, beforeEach } from "@jest/globals";
-let authApi, postsApi;
+let authApi, commercialFeedApi;
 global.API_URL_OVERRIDE = process.env.EXPO_PUBLIC_API_URL || "http://127.0.0.1:5001";
 global.authToken = "test-token";
 const isLiveBackend = process.env.USE_LIVE_BACKEND === "true";
 
-describe("Acceptance: Dashboard Feed", () => {
+describe("Acceptance: Dashboard Campaign Placements", () => {
   const fetchCalls = () => global.__FETCH_CALLS__ || [];
 
   beforeAll(() => {
     authApi = require("../../src/api/auth.js");
-    postsApi = require("../../src/api/posts.js");
+    commercialFeedApi = require("../../src/api/commercialFeed.ts");
   });
 
   beforeEach(() => {
@@ -125,24 +137,30 @@ describe("Acceptance: Dashboard Feed", () => {
     });
 
     globalThis.__MOCK_RESPONDER__ = async (url) => {
-      if (url.includes("/api/posts/feed")) {
+      if (url.includes("/api/commercial/feed")) {
         return {
-          json: [
-            {
-              _id: "p1",
-              text: "Dashboard post 1",
-              createdAt: new Date().toISOString(),
-              user: { username: "user1" },
-              token: "mock-token"
-            },
-            {
-              _id: "p2",
-              text: "Dashboard post 2",
-              createdAt: new Date().toISOString(),
-              user: { username: "user2" },
-              token: "mock-token"
-            }
-          ]
+          json: {
+            items: [
+              {
+                id: "campaign-1",
+                type: "listing",
+                campaignKind: "product_ad",
+                title: "Dashboard campaign 1",
+                body: "Commercial outreach campaign",
+                authorType: "commercial",
+                createdAt: new Date().toISOString()
+              },
+              {
+                id: "campaign-2",
+                type: "education",
+                campaignKind: "facility_outreach",
+                title: "Dashboard campaign 2",
+                body: "Facility outreach campaign",
+                authorType: "facility",
+                createdAt: new Date().toISOString()
+              }
+            ]
+          }
         };
       }
       // Always return a valid token for any /api endpoint
@@ -151,17 +169,17 @@ describe("Acceptance: Dashboard Feed", () => {
     };
   });
 
-  it("should fetch feed posts when loading dashboard data", async () => {
+  it("should fetch campaign feed placements when loading dashboard data", async () => {
     if (isLiveBackend) {
       return;
     }
-    // Simulate what DashboardScreen does
-    await postsApi.getFeed(1, global.authToken);
-    expect(fetchCalls().some((c) => c.url.includes("/api/posts/feed"))).toBe(true);
+    await commercialFeedApi.listCommercialFeedPosts({ limit: 6, sort: "new" });
+    expect(fetchCalls().some((c) => c.url.includes("/api/commercial/feed"))).toBe(true);
+    expect(fetchCalls().every((c) => !c.url.includes("/api/posts/"))).toBe(true);
   });
 
   if (isLiveBackend) {
-    it("should return valid posts from live feed", async () => {
+    it("should return valid campaigns from live feed", async () => {
       const email = `test-feed-${Date.now()}@example.com`;
       const password = "password123";
 
@@ -170,12 +188,11 @@ describe("Acceptance: Dashboard Feed", () => {
       } catch (e) {}
 
       await authApi.login(email, password);
-      const posts = await postsApi.getFeed(1);
+      const campaigns = await commercialFeedApi.listCommercialFeedPosts({ limit: 6 });
 
-      expect(Array.isArray(posts)).toBe(true);
-      // If there are posts, they should have expected fields
-      if (posts.length > 0) {
-        expect(posts[0].text || posts[0].content).toBeTruthy();
+      expect(Array.isArray(campaigns.items)).toBe(true);
+      if (campaigns.items.length > 0) {
+        expect(campaigns.items[0].title || campaigns.items[0].body).toBeTruthy();
       }
     });
   }

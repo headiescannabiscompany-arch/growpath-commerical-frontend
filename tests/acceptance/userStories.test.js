@@ -8,11 +8,23 @@ jest.mock("../../src/api/client", () => {
   const canned = {
     get: async (path) => {
       record("GET", path);
-      if (path.includes("/posts/feed"))
-        return [
-          { _id: "p1", text: "Dashboard post 1", user: { username: "user1" } },
-          { _id: "p2", text: "Dashboard post 2", user: { username: "user2" } }
-        ];
+      if (path.includes("/commercial/feed"))
+        return {
+          items: [
+            {
+              id: "campaign-1",
+              title: "Dashboard campaign 1",
+              body: "Commercial outreach campaign",
+              authorType: "commercial"
+            },
+            {
+              id: "campaign-2",
+              title: "Dashboard campaign 2",
+              body: "Facility outreach campaign",
+              authorType: "facility"
+            }
+          ]
+        };
       if (path.includes("/auth/login")) {
         const user = { subscriptionStatus: "free", guilds: ["guild1"], role: "free" };
         global.user = user;
@@ -166,24 +178,30 @@ describe("Acceptance: User Stories", () => {
     // Set up mock responder for non-live mode
     // Set up universal mock responder for any /api/ endpoint
     globalThis.__MOCK_RESPONDER__ = async (url, options) => {
-      if (url.includes("/api/posts/feed")) {
+      if (url.includes("/api/commercial/feed")) {
         return {
-          json: [
-            {
-              _id: "p1",
-              text: "Dashboard post 1",
-              createdAt: new Date().toISOString(),
-              user: { username: "user1" },
-              token: "mock-token"
-            },
-            {
-              _id: "p2",
-              text: "Dashboard post 2",
-              createdAt: new Date().toISOString(),
-              user: { username: "user2" },
-              token: "mock-token"
-            }
-          ]
+          json: {
+            items: [
+              {
+                id: "campaign-1",
+                type: "listing",
+                campaignKind: "product_ad",
+                title: "Dashboard campaign 1",
+                body: "Commercial outreach campaign",
+                authorType: "commercial",
+                createdAt: new Date().toISOString()
+              },
+              {
+                id: "campaign-2",
+                type: "education",
+                campaignKind: "facility_outreach",
+                title: "Dashboard campaign 2",
+                body: "Facility outreach campaign",
+                authorType: "facility",
+                createdAt: new Date().toISOString()
+              }
+            ]
+          }
         };
       }
       if (url.includes("/api/auth/login")) {
