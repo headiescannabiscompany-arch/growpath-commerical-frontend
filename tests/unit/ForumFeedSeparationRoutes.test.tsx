@@ -1,5 +1,5 @@
 import React from "react";
-import { render, waitFor } from "@testing-library/react-native";
+import { fireEvent, render, waitFor } from "@testing-library/react-native";
 
 import CommunityTab from "@/app/home/personal/(tabs)/community";
 import ForumRoute from "@/app/home/personal/(tabs)/forum";
@@ -9,6 +9,8 @@ import ForumNewPostRoute from "@/app/home/personal/(tabs)/forum/new-post";
 const mockListForumPosts = jest.fn();
 const mockListGuilds = jest.fn();
 const mockListNotifications = jest.fn();
+const mockCreateForumPost = jest.fn();
+const mockReplace = jest.fn();
 
 jest.mock("expo-router", () => {
   const React = require("react");
@@ -22,7 +24,7 @@ jest.mock("expo-router", () => {
       ),
     useRouter: () => ({
       back: jest.fn(),
-      replace: jest.fn()
+      replace: mockReplace
     })
   };
 });
@@ -41,8 +43,12 @@ jest.mock("@/api/communitySocial", () => ({
   markNotificationRead: jest.fn(),
   joinGuild: jest.fn(),
   leaveGuild: jest.fn(),
-  createForumPost: jest.fn(),
+  createForumPost: (...args: any[]) => mockCreateForumPost(...args),
   postId: (post: any) => post.id || post._id || post.title
+}));
+
+jest.mock("@/auth/AuthContext", () => ({
+  useAuth: () => ({ user: { id: "user-1", email: "grower@growpathai.com" } })
 }));
 
 jest.mock("@/components/feed/PersonalFeedPlacement", () => {
@@ -77,6 +83,7 @@ jest.mock("@/entitlements", () => ({
     FORUM_POST: "forum_post"
   },
   useEntitlements: () => ({
+    mode: "personal",
     can: () => true
   })
 }));
@@ -87,6 +94,7 @@ describe("Forum and feed separation copy", () => {
     mockListForumPosts.mockResolvedValue([]);
     mockListGuilds.mockResolvedValue([]);
     mockListNotifications.mockResolvedValue([]);
+    mockCreateForumPost.mockResolvedValue({ id: "thread-new" });
   });
 
   it("frames the forum as discussion while feed placements stay campaigns", async () => {
@@ -103,11 +111,36 @@ describe("Forum and feed separation copy", () => {
 
     expect(screen.getByText("Shared Back /home/personal/forum")).toBeTruthy();
     expect(screen.getByText("New Discussion")).toBeTruthy();
+    expect(screen.getByText("Posting as User")).toBeTruthy();
+    expect(screen.getByText("Workspace: personal")).toBeTruthy();
     expect(screen.getByText(/Create a forum discussion or Q&A post/)).toBeTruthy();
     expect(screen.getByText(/promotions belong in Feed \/ Campaigns/)).toBeTruthy();
     expect(
       screen.getByPlaceholderText("Write your question or discussion...")
     ).toBeTruthy();
+  });
+
+  it("stores personal forum posts with user author identity", async () => {
+    const screen = render(<ForumNewPostRoute />);
+
+    fireEvent.changeText(screen.getByLabelText("Forum post title"), "Leaf edges");
+    fireEvent.changeText(
+      screen.getByLabelText("Forum post body"),
+      "What changed before this issue?"
+    );
+    fireEvent.press(screen.getByLabelText("Publish forum post"));
+
+    await waitFor(() =>
+      expect(mockCreateForumPost).toHaveBeenCalledWith({
+        title: "Leaf edges",
+        body: "What changed before this issue?",
+        authorType: "user",
+        authorId: "user-1",
+        workspaceContext: "personal",
+        photos: []
+      })
+    );
+    expect(mockReplace).toHaveBeenCalledWith("/home/personal/forum");
   });
 
   it("keeps forum guidelines as a nested forum page with shared back behavior", () => {

@@ -67,6 +67,9 @@ export async function createForumPost(data: {
   title: string;
   body: string;
   photos?: string[];
+  authorType?: "user" | "commercial" | "facility" | "moderator";
+  authorId?: string | null;
+  workspaceContext?: "personal" | "commercial" | "facility" | string;
 }): Promise<SocialPost> {
   const photos = await persistImageUris(data.photos || []);
   const response = await apiRequest(apiRoutes.FORUM.CREATE, {

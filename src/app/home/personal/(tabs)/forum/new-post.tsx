@@ -13,6 +13,7 @@ import {
 import { useRouter } from "expo-router";
 
 import { createForumPost } from "@/api/communitySocial";
+import { useAuth } from "@/auth/AuthContext";
 import { ScreenBoundary } from "@/components/ScreenBoundary";
 import { CAPABILITY_KEYS, useEntitlements } from "@/entitlements";
 import PersonalFeedPlacement from "@/components/feed/PersonalFeedPlacement";
@@ -27,8 +28,22 @@ type SelectedPhoto = {
 
 export default function ForumNewPostRoute() {
   const router = useRouter();
+  const auth = useAuth();
   const entitlements = useEntitlements();
   const canPost = entitlements.can(CAPABILITY_KEYS.FORUM_POST);
+  const workspaceContext = entitlements.mode || "personal";
+  const authorType =
+    workspaceContext === "commercial"
+      ? "commercial"
+      : workspaceContext === "facility"
+        ? "facility"
+        : "user";
+  const identityLabel =
+    authorType === "commercial"
+      ? "Brand"
+      : authorType === "facility"
+        ? "Facility"
+        : "User";
 
   const [title, setTitle] = useState("");
   const [body, setBody] = useState("");
@@ -75,6 +90,9 @@ export default function ForumNewPostRoute() {
       await createForumPost({
         title: nextTitle,
         body: nextBody,
+        authorType,
+        authorId: auth.user?._id || auth.user?.id || null,
+        workspaceContext,
         photos: photos.map((photo) => photo.uri)
       });
       router.replace("/home/personal/forum");
@@ -83,7 +101,17 @@ export default function ForumNewPostRoute() {
     } finally {
       setSubmitting(false);
     }
-  }, [body, canPost, photos, router, title]);
+  }, [
+    auth.user?._id,
+    auth.user?.id,
+    authorType,
+    body,
+    canPost,
+    photos,
+    router,
+    title,
+    workspaceContext
+  ]);
 
   const disabled = !title.trim() || !body.trim() || submitting || !canPost;
 
@@ -113,6 +141,15 @@ export default function ForumNewPostRoute() {
             <Text style={styles.cardText}>This account does not have `FORUM_POST`.</Text>
           </View>
         ) : null}
+
+        <View style={styles.identityCard}>
+          <Text style={styles.identityTitle}>Posting as {identityLabel}</Text>
+          <Text style={styles.identityText}>Workspace: {workspaceContext}</Text>
+          <Text style={styles.identityText}>
+            Forum is discussion and Q&A. Feed / Campaigns is commercial and facility
+            outreach.
+          </Text>
+        </View>
 
         {feedback ? <Text style={styles.feedback}>{feedback}</Text> : null}
 
@@ -246,6 +283,15 @@ const styles = StyleSheet.create({
   },
   cardTitle: { fontSize: 16, fontWeight: "800", color: "#0F172A" },
   cardText: { color: "#475569", lineHeight: 20 },
+  identityCard: {
+    backgroundColor: "#F8FAFC",
+    borderColor: "#CBD5E1",
+    borderRadius: 10,
+    borderWidth: 1,
+    padding: 12
+  },
+  identityTitle: { color: "#0F172A", fontSize: 15, fontWeight: "900" },
+  identityText: { color: "#475569", fontSize: 13, fontWeight: "700", marginTop: 4 },
   primaryBtn: {
     alignItems: "center",
     backgroundColor: "#166534",

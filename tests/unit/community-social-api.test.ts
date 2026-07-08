@@ -32,6 +32,9 @@ describe("community social API", () => {
     const result = await createForumPost({
       title: "Show roots",
       body: "Attached photos",
+      authorType: "user",
+      authorId: "user-1",
+      workspaceContext: "personal",
       photos: ["file:///tmp/forum-a.jpg", "/uploads/forum-b.jpg"]
     });
 
@@ -44,6 +47,9 @@ describe("community social API", () => {
       body: {
         title: "Show roots",
         body: "Attached photos",
+        authorType: "user",
+        authorId: "user-1",
+        workspaceContext: "personal",
         photos: ["/uploads/forum-a.jpg", "/uploads/forum-b.jpg"]
       }
     });
