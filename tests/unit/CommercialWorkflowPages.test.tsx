@@ -730,6 +730,9 @@ describe("commercial workflow pages", () => {
             title: "Resolve dashboard action: Bloom Topdress",
             sourceType: "product",
             sourceId: "product-1",
+            sourceObjectId: "product-1",
+            actionItemType: "product_missing_batch",
+            actionItemTitle: "Bloom Topdress",
             linkedProductId: "product-1",
             priority: "medium",
             reminderPlan: { label: "24 hours before", channels: ["in_app"] }
