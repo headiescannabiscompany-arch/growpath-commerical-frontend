@@ -12,6 +12,7 @@ import {
 } from "@/api/toolRuns";
 import GrowWorkspaceNav from "@/components/personal/GrowWorkspaceNav";
 import { coerceParam } from "@/features/grows/routeUtils";
+import { radius } from "@/theme/theme";
 import ToolResultSurface, {
   type ToolResultAction,
   type ToolResultMetric,
@@ -27,7 +28,7 @@ const styles = StyleSheet.create({
   card: {
     borderWidth: 1,
     borderColor: "#E2E8F0",
-    borderRadius: 10,
+    borderRadius: radius.card,
     backgroundColor: "#F8FAFC",
     padding: 12,
     marginTop: 10
@@ -39,7 +40,7 @@ const styles = StyleSheet.create({
     alignSelf: "flex-start",
     borderWidth: 1,
     borderColor: "#CBD5E1",
-    borderRadius: 8,
+    borderRadius: radius.card,
     backgroundColor: "#FFFFFF",
     paddingVertical: 7,
     paddingHorizontal: 10
@@ -50,7 +51,7 @@ const styles = StyleSheet.create({
     alignSelf: "flex-start",
     borderWidth: 1,
     borderColor: "#CBD5E1",
-    borderRadius: 8,
+    borderRadius: radius.card,
     backgroundColor: "#FFFFFF",
     paddingVertical: 7,
     paddingHorizontal: 10

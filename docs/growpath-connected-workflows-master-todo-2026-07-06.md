@@ -653,6 +653,7 @@ Completed and pushed:
 377. Personal Grows list panels, grow cards, grow-linked actions, and create-grow CTAs now consume the shared 8px card radius token, carrying the Facility-style visual polish into the core personal grow workspace.
 378. Create Grow inputs, error panel, photo tools, advanced-field toggle, attached-photo cards, URL action, and submit CTA now consume the shared 8px card radius token while preserving pill selectors, extending Facility-style visual polish to the personal grow creation flow.
 379. Personal Grow overview panels, stat cards, and grow action buttons now consume the shared 8px card radius token, centralizing the Facility-style visual polish on the core grow workspace landing page.
+380. Personal Grow Tools hub cards, saved-run actions, and inline result controls now consume the shared 8px card radius token, keeping grow-linked ToolRun workflows visually aligned with the Facility-style app polish.
 
 ## Working Rule For Codex
 
