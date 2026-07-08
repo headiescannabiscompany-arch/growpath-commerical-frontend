@@ -140,6 +140,18 @@ describe("commercial workflow pages", () => {
                 title: "Fix launch campaign CTA",
                 priority: "high",
                 feedCampaignId: "campaign-1"
+              },
+              {
+                type: "order_fulfillment_due",
+                title: "Fulfill wholesale order",
+                priority: "medium",
+                orderId: "order-1"
+              },
+              {
+                type: "storefront_setup_alert",
+                title: "Resolve storefront setup alert",
+                priority: "critical",
+                alertId: "alert-1"
               }
             ],
             guidance: [
@@ -840,6 +852,48 @@ describe("commercial workflow pages", () => {
             linkedFeedCampaignId: "campaign-1",
             linkedFeedPostId: "campaign-1",
             priority: "high"
+          })
+        })
+      )
+    );
+
+    await waitFor(() => expect(screen.queryByText("Creating...")).toBeNull());
+
+    fireEvent.press(
+      screen.getByLabelText("Create task for dashboard action Fulfill wholesale order")
+    );
+    await waitFor(() =>
+      expect(mockApiRequest).toHaveBeenCalledWith(
+        "/api/tasks",
+        expect.objectContaining({
+          method: "POST",
+          body: expect.objectContaining({
+            title: "Resolve dashboard action: Fulfill wholesale order",
+            sourceType: "order",
+            sourceId: "order-1",
+            linkedOrderId: "order-1",
+            priority: "medium"
+          })
+        })
+      )
+    );
+
+    await waitFor(() => expect(screen.queryByText("Creating...")).toBeNull());
+
+    fireEvent.press(
+      screen.getByLabelText("Create task for dashboard action Resolve storefront setup alert")
+    );
+    await waitFor(() =>
+      expect(mockApiRequest).toHaveBeenCalledWith(
+        "/api/tasks",
+        expect.objectContaining({
+          method: "POST",
+          body: expect.objectContaining({
+            title: "Resolve dashboard action: Resolve storefront setup alert",
+            sourceType: "alert",
+            sourceId: "alert-1",
+            linkedAlertId: "alert-1",
+            priority: "critical"
           })
         })
       )

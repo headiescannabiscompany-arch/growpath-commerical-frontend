@@ -554,6 +554,7 @@ Completed and pushed:
 278. Legacy CommercialStack Campaigns/Advertising screen copy now frames the page as a marketing planner that hands off real outreach to Feed / Campaigns, removing old feed-post/platform-campaign ambiguity from compatibility navigation.
 279. Active QA login defaults and the test-user account guide now use `@growpathai.com` addresses instead of stale `@growpath.com` accounts, reducing live smoke-test confusion while leaving historical release evidence unchanged.
 280. Native Commercial dashboard inventory labels now say Inventory Support and describe stock as supporting products, batches, orders, and storefront availability instead of implying a separate commercial inventory universe.
+281. Commercial dashboard task source classification now preserves order and alert action IDs in addition to product, inventory, product-trial evidence, and feed-campaign tasks; alert setup items are no longer misclassified as storefront sources just because their type includes `storefront`.
 
 ## Working Rule For Codex
 

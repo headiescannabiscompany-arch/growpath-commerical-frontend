@@ -249,14 +249,14 @@ function actionItemSource(item: NonNullable<DashboardModel["actionItems"]>[numbe
       sourceId: item.feedCampaignId || item.sourceId
     };
   }
+  if (item.alertId || type.includes("alert")) {
+    return { sourceType: "alert", sourceId: item.alertId || item.sourceId };
+  }
   if (item.storefrontId || type.includes("storefront")) {
     return { sourceType: "storefront", sourceId: item.storefrontId || item.sourceId };
   }
   if (item.orderId || type.includes("order")) {
     return { sourceType: "order", sourceId: item.orderId || item.sourceId };
-  }
-  if (item.alertId || type.includes("alert")) {
-    return { sourceType: "alert", sourceId: item.alertId || item.sourceId };
   }
   if (item.inventoryId || type.includes("inventory") || type.includes("stock")) {
     return {
