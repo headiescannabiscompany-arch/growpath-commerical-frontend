@@ -60,6 +60,56 @@ describe("FeedItemCard route helper", () => {
     ).toBe("/brands/living-soil-labs");
   });
 
+  it("routes product and course metadata to exact storefront destinations", () => {
+    expect(
+      getRouteForItem(
+        item({
+          id: "campaign-product",
+          type: "alert",
+          metadata: {
+            storefrontSlug: "living-soil-labs",
+            linkedProductId: "veg-mix-1"
+          }
+        })
+      )
+    ).toBe("/store/living-soil-labs/products/veg-mix-1");
+
+    expect(
+      getRouteForItem(
+        item({
+          id: "campaign-course",
+          type: "alert",
+          metadata: {
+            storefrontSlug: "living-soil-labs",
+            linkedCourseId: "course-1"
+          }
+        })
+      )
+    ).toBe("/store/living-soil-labs/courses/course-1");
+  });
+
+  it("falls back to public discovery when product or course metadata lacks a storefront", () => {
+    expect(
+      getRouteForItem(
+        item({
+          id: "campaign-product",
+          type: "alert",
+          metadata: { productId: "veg-mix-1" }
+        })
+      )
+    ).toBe("/store?q=veg-mix-1");
+
+    expect(
+      getRouteForItem(
+        item({
+          id: "campaign-course",
+          type: "alert",
+          metadata: { courseId: "course-1" }
+        })
+      )
+    ).toBe("/courses?courseId=course-1");
+  });
+
   it("preserves plant ids for facility source cards", () => {
     expect(
       getRouteForItem(

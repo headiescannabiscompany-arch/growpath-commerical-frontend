@@ -15,6 +15,26 @@ try {
 
 export function getRouteForItem(item: FeedItem): string {
   const storefrontSlug = item.metadata?.storefrontSlug;
+  const linkedProductId =
+    item.metadata?.linkedProductId ||
+    item.metadata?.productId ||
+    item.metadata?.relatedProductId;
+  const linkedCourseId =
+    item.metadata?.linkedCourseId ||
+    item.metadata?.courseId ||
+    item.metadata?.relatedCourseId;
+  if (linkedProductId) {
+    const productId = encodeURIComponent(String(linkedProductId));
+    return storefrontSlug
+      ? `/store/${encodeURIComponent(String(storefrontSlug))}/products/${productId}`
+      : `/store?q=${productId}`;
+  }
+  if (linkedCourseId) {
+    const courseId = encodeURIComponent(String(linkedCourseId));
+    return storefrontSlug
+      ? `/store/${encodeURIComponent(String(storefrontSlug))}/courses/${courseId}`
+      : `/courses?courseId=${courseId}`;
+  }
   if (storefrontSlug) return `/store/${encodeURIComponent(String(storefrontSlug))}`;
 
   const brandSlug =
