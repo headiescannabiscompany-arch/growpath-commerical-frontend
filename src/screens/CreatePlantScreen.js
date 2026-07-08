@@ -16,6 +16,7 @@ import PrimaryButton from "../components/PrimaryButton";
 import { createPlant } from "../api/plants";
 import { maybePromptAttachPhotosToGrow } from "@/utils/growPhotoAttachment";
 import { persistImageUris } from "@/utils/photoUploads";
+import { radius } from "../theme/theme";
 
 export default function CreatePlantScreen({ navigation }) {
   const [name, setName] = useState("");
@@ -256,7 +257,7 @@ const styles = StyleSheet.create({
   },
   input: {
     backgroundColor: "#FFF",
-    borderRadius: 8,
+    borderRadius: radius.card,
     padding: 12,
     fontSize: 16,
     borderWidth: 1,
@@ -273,7 +274,7 @@ const styles = StyleSheet.create({
   mediumOption: {
     paddingVertical: 10,
     paddingHorizontal: 16,
-    borderRadius: 20,
+    borderRadius: radius.pill,
     backgroundColor: "#F0F0F0",
     borderWidth: 2,
     borderColor: "#F0F0F0"
@@ -293,7 +294,7 @@ const styles = StyleSheet.create({
   uploadButton: {
     backgroundColor: "#007AFF",
     padding: 14,
-    borderRadius: 8,
+    borderRadius: radius.card,
     alignItems: "center"
   },
   uploadButtonContent: {
@@ -316,7 +317,7 @@ const styles = StyleSheet.create({
   photoThumb: {
     width: 80,
     height: 80,
-    borderRadius: 8
+    borderRadius: radius.card
   },
   videoInfo: {
     marginTop: 8,
