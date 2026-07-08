@@ -129,7 +129,7 @@ export function sourceObjectHref(source: SourceLike) {
   if (sourceType === "facility_run") {
     return sourceId ? `/home/facility/grows/${sourceId}` : "/home/facility/grows";
   }
-  if (sourceType === "automation") {
+  if (sourceType === "automation" || sourceType === "automation_policy") {
     return growId
       ? `/home/personal/grows/${encoded(growId)}/automation`
       : "/home/personal/grows";

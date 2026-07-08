@@ -151,17 +151,17 @@ describe("buildPersonalHomeModel", () => {
       expect.objectContaining({
         id: "task-1",
         sourceLabel: "tool run",
-        sourceHref: "/home/personal/grows/active/tools"
+        sourceHref: "/home/personal/tools/saved-runs"
       }),
       expect.objectContaining({
         id: "task-4",
         sourceLabel: "ai diagnosis",
-        sourceHref: "/home/personal/grows/active/timeline"
+        sourceHref: "/home/personal/diagnose?growId=active"
       }),
       expect.objectContaining({
         id: "task-5",
         sourceLabel: "automation policy",
-        sourceHref: "/home/personal/grows/active/tasks"
+        sourceHref: "/home/personal/grows/active/automation"
       }),
       expect.objectContaining({
         id: "task-6",

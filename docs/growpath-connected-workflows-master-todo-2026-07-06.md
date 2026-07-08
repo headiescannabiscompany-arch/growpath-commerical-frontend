@@ -358,6 +358,7 @@ Completed and pushed:
 82. Facility task detail now uses the shared source-link resolver, and the resolver recognizes `tool_run`, `live_replay`, and `ai_diagnosis` aliases so task, alert, schedule, and notification links stay connected across Personal, Facility, Feed, Forum/Q&A, and AI/tool workflows.
 83. Personal Task Center now uses the shared source-link resolver too, opening product, product-batch, storefront, course, live replay, alert, Forum/Q&A, AI diagnosis, and ToolRun sources through user-facing paths instead of suppressing valid outreach/learning links or leaking into commercial admin routes.
 84. Personal grow timeline source actions now use the shared resolver for journal entries, ToolRuns, tasks, AI diagnoses, automation, plants, and grow milestones, with journal events opening their actual log detail and automation events returning to the grow automation workflow.
+85. Personal dashboard task source links now share the same resolver as Task Center and Timeline, so ToolRun, AI diagnosis, automation policy, Forum/Q&A, journal, and manual task links open the connected workflow instead of local one-off fallbacks.
 
 ## Working Rule For Codex
 

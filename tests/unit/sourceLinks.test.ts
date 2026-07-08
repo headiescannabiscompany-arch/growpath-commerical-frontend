@@ -78,5 +78,14 @@ describe("sourceObjectHref", () => {
         workspaceType: "personal"
       })
     ).toBe("/home/personal/grows/grow-1/automation");
+
+    expect(
+      sourceObjectHref({
+        sourceType: "automation_policy",
+        sourceId: "automation-policy-1",
+        growId: "grow-1",
+        workspaceType: "personal"
+      })
+    ).toBe("/home/personal/grows/grow-1/automation");
   });
 });

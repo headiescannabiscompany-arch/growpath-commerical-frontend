@@ -4,6 +4,7 @@ import type { PersonalPlant } from "@/api/plants";
 import type { PersonalTask } from "@/api/tasks";
 import type { ToolRun } from "@/api/toolRuns";
 import type { TelemetrySource } from "@/types/telemetry";
+import { sourceObjectHref } from "@/utils/sourceLinks";
 
 type PersonalDiagnosis = {
   id?: string;
@@ -63,20 +64,34 @@ function taskSourceHref(task: PersonalTask, activeGrowId: string) {
   const growPath = activeGrowId
     ? `/home/personal/grows/${encodeURIComponent(activeGrowId)}`
     : "/home/personal/grows";
-  if (task.linkedLogId) {
-    return `/home/personal/logs/${encodeURIComponent(task.linkedLogId)}`;
-  }
-  if (task.sourceToolRunId || task.linkedToolRunId || task.sourceType === "tool_run") {
-    return `${growPath}/tools`;
-  }
-  if (task.linkedForumThreadId || task.sourceType === "forum") {
-    const threadId = task.linkedForumThreadId || task.sourceObjectId;
-    return threadId ? `/forum/post/${encodeURIComponent(String(threadId))}` : "/forum";
-  }
-  if (task.sourceDiagnosisId || task.sourceType === "ai_diagnosis") {
-    return `${growPath}/timeline`;
-  }
-  return `${growPath}/tasks`;
+  let sourceType = String(task.sourceType || "");
+  if (!sourceType && task.linkedLogId) sourceType = "grow_log";
+  else if (!sourceType && (task.sourceToolRunId || task.linkedToolRunId)) {
+    sourceType = "tool_run";
+  } else if (!sourceType && task.sourceDiagnosisId) sourceType = "ai_diagnosis";
+  else if (!sourceType && task.linkedForumThreadId) sourceType = "forum";
+
+  if (!sourceType || sourceType === "manual") return `${growPath}/tasks`;
+
+  const sourceId = String(
+    task.sourceObjectId ||
+      task.linkedForumThreadId ||
+      task.linkedLogId ||
+      task.sourceToolRunId ||
+      task.linkedToolRunId ||
+      task.sourceDiagnosisId ||
+      activeGrowId ||
+      ""
+  );
+  return (
+    sourceObjectHref({
+      ...task,
+      sourceType,
+      sourceId,
+      growId: activeGrowId,
+      workspaceType: "personal"
+    }) || `${growPath}/tasks`
+  );
 }
 
 function summarizeTask(task: PersonalTask, activeGrowId: string) {
