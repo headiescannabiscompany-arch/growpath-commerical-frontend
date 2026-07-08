@@ -331,6 +331,7 @@ Completed and pushed:
 55. The legacy native Forum screen now frames itself as Forum/Q&A, uses `New Discussion` language, and labels commercial/facility authors as Brand or Facility instead of generic business/social-feed copy.
 56. The legacy native Forum composer no longer offers commercial `offer` posts; commercial/facility users can create education, discussion, course, product Q&A, or live Q&A forum posts while promotional offers remain in Feed/Campaigns.
 57. Personal `/home/personal/more/social-tools` now redirects to Forum/Q&A, while commercial Social Tools have been renamed/framed as External Channels for off-platform scheduling, separate from in-app Feed/Campaigns.
+58. The legacy native `CreatePostScreen` no longer owns a separate `/api/posts` social-feed composer; compatibility paths now reuse the Forum/Q&A composer.
 
 ## Working Rule For Codex
 
