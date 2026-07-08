@@ -641,6 +641,7 @@ Completed and pushed:
 365. Public Offers pricing copy now describes the Commercial plan as Brand-focused and says brand operations instead of business operations, keeping upgrade language aligned with storefront-first commercial accounts.
 366. Shared capability menus now label discussion as Forum / Q&A and commercial metrics as Commercial Analytics, removing another generic Business Metrics label from user-facing navigation.
 367. Legacy marketplace compatibility API fallbacks now say Storefront offer/customer and storefront offer browse/load errors, preventing old Marketplace wording from leaking into Storefront Offers analytics or fallback UI.
+368. Personal Forum route and stack title now use Forum / Q&A, and the route consumes the shared 8px card radius token so the Personal discussion surface matches the Facility-style visual polish.
 
 ## Working Rule For Codex
 

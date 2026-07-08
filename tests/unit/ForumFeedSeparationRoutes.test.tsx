@@ -108,7 +108,7 @@ describe("Forum and feed separation copy", () => {
     const screen = render(<ForumRoute />);
 
     await waitFor(() => expect(mockListForumPosts).toHaveBeenCalled());
-    expect(screen.getByText("Forum")).toBeTruthy();
+    expect(screen.getByText("Forum / Q&A")).toBeTruthy();
     expect(screen.getByText(/Discussion, Q&A, grow help/)).toBeTruthy();
     expect(screen.getByText(/campaign ads, not forum threads/)).toBeTruthy();
   });
