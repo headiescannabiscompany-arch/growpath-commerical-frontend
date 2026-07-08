@@ -65,7 +65,7 @@ describe("commercial page registry", () => {
       PAGE_REGISTRY_COMMERCIAL.map((entry) => [entry.name, entry])
     );
 
-    expect(byName.CommercialGrows.component?.name).toBe("CommercialGrowsRoute");
+    expect(byName.CommercialGrows.component?.name).toBe("CommercialEvidenceRunsRoute");
     expect(byName.CommercialLives.component?.name).toBe("CommercialLivesRoute");
     expect(byName.CommercialProducts.component?.name).toBe("CommercialProductsRoute");
     expect(byName.CommercialProductLines.component?.name).toBe(

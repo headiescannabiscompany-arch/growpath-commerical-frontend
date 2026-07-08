@@ -18,7 +18,7 @@ export const PAGE_REGISTRY_COMMERCIAL = [
     primary: false,
     group: "products",
     supportSurface: true,
-    component: require("../app/home/commercial/grows").default
+    component: require("../app/home/commercial/evidence-runs").default
   },
   {
     name: "CommercialProducts",

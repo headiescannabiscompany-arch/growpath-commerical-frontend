@@ -1,3 +1,5 @@
 import NewCommercialGrowRoute from "@/app/home/commercial/grows/new";
 
-export default NewCommercialGrowRoute;
+export default function NewCommercialEvidenceRunRoute() {
+  return <NewCommercialGrowRoute />;
+}

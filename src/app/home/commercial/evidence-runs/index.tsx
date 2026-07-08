@@ -1,3 +1,5 @@
 import CommercialGrowsRoute from "@/app/home/commercial/grows";
 
-export default CommercialGrowsRoute;
+export default function CommercialEvidenceRunsRoute() {
+  return <CommercialGrowsRoute />;
+}
