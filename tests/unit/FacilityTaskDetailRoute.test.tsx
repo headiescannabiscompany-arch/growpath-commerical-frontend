@@ -8,11 +8,21 @@ const mockDeleteTask = jest.fn();
 const mockGetTask = jest.fn();
 const mockUpdateTask = jest.fn();
 const mockBack = jest.fn();
+const mockPush = jest.fn();
 const mockReplace = jest.fn();
+const mockRouter = { back: mockBack, push: mockPush, replace: mockReplace };
+const mockClearError = jest.fn();
+const mockHandleApiError = jest.fn();
+const mockEntitlements = {
+  facilityRole: "OWNER",
+  can: () => true
+};
+const mockFacilityState = { selectedId: "facility-1" };
+let taskOverrides: Record<string, any> = {};
 
 jest.mock("expo-router", () => ({
   useLocalSearchParams: () => ({ id: "task-1" }),
-  useRouter: () => ({ back: mockBack, replace: mockReplace })
+  useRouter: () => mockRouter
 }));
 
 jest.mock("@/api/tasks", () => ({
@@ -36,39 +46,40 @@ jest.mock("@/components/ScreenBoundary", () => {
 
 jest.mock("@/entitlements", () => ({
   CAPABILITY_KEYS: { TASKS_WRITE: "tasks_write" },
-  useEntitlements: () => ({
-    facilityRole: "OWNER",
-    can: () => true
-  })
+  useEntitlements: () => mockEntitlements
 }));
 
 jest.mock("@/hooks/useApiErrorHandler", () => ({
   useApiErrorHandler: () => ({
     error: null,
-    clearError: jest.fn(),
-    handleApiError: jest.fn()
+    clearError: mockClearError,
+    handleApiError: mockHandleApiError
   })
 }));
 
 jest.mock("@/state/useFacility", () => ({
-  useFacility: () => ({ selectedId: "facility-1" })
+  useFacility: () => mockFacilityState
 }));
 
 describe("FacilityTaskDetail", () => {
   beforeEach(() => {
     jest.resetAllMocks();
-    mockGetTask.mockResolvedValue({
-      id: "task-1",
-      title: "IPM scout",
-      notes: "Check leaf undersides.",
-      dueDate: "2026-07-09",
-      sourceType: "sensor_alert",
-      sourceObjectId: "alert-1",
-      roomId: "flower-1",
-      requiresProof: true,
-      requiresApproval: true,
-      assignedTo: "user-1"
-    });
+    taskOverrides = {};
+    mockGetTask.mockImplementation(() =>
+      Promise.resolve({
+        id: "task-1",
+        title: "IPM scout",
+        notes: "Check leaf undersides.",
+        dueDate: "2026-07-09",
+        sourceType: "sensor_alert",
+        sourceObjectId: "alert-1",
+        roomId: "flower-1",
+        requiresProof: true,
+        requiresApproval: true,
+        assignedTo: "user-1",
+        ...taskOverrides
+      })
+    );
     mockUpdateTask.mockResolvedValue({
       id: "task-1",
       title: "IPM scout",
@@ -107,5 +118,31 @@ describe("FacilityTaskDetail", () => {
         requiresApproval: false
       })
     );
+  });
+
+  it("opens alert-backed facility task sources in the shared alert center", async () => {
+    const screen = render(<FacilityTaskDetail />);
+
+    await waitFor(() => expect(screen.getByText("IPM scout")).toBeTruthy());
+
+    fireEvent.press(screen.getByLabelText("View facility task source"));
+
+    expect(mockPush).toHaveBeenCalledWith("/home/alerts");
+  });
+
+  it("opens forum-backed facility task sources in the shared forum route", async () => {
+    taskOverrides = {
+      sourceType: "forum",
+      sourceObjectId: "",
+      sourceId: "",
+      linkedForumThreadId: "thread-facility"
+    };
+    const screen = render(<FacilityTaskDetail />);
+
+    await waitFor(() => expect(screen.getByText("IPM scout")).toBeTruthy());
+
+    fireEvent.press(screen.getByLabelText("View facility task source"));
+
+    expect(mockPush).toHaveBeenCalledWith("/forum/post/thread-facility");
   });
 });

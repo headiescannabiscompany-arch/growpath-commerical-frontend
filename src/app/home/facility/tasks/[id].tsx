@@ -69,6 +69,65 @@ function sourceObjectLabel(sourceType: unknown) {
   return source.replace(/\b\w/g, (char) => char.toUpperCase());
 }
 
+function firstSourceValue(...values: unknown[]) {
+  return values.find((value) => value !== undefined && value !== null && value !== "");
+}
+
+function taskSourceId(item: AnyRec | null): string {
+  if (!item) return "";
+  const sourceType = String(item.sourceType || "");
+  if (sourceType === "forum") {
+    return String(
+      firstSourceValue(item.sourceObjectId, item.sourceId, item.linkedForumThreadId) || ""
+    );
+  }
+  return String(
+    firstSourceValue(
+      item.sourceObjectId,
+      item.sourceId,
+      item.linkedRoomId,
+      item.linkedFacilityRunId,
+      item.linkedSopId,
+      item.linkedAlertId,
+      item.linkedCourseId,
+      item.linkedLessonId,
+      item.linkedLiveId,
+      item.linkedToolRunId,
+      item.linkedRecipeId,
+      item.linkedProductId,
+      item.linkedProductBatchId,
+      item.linkedProductTrialId,
+      item.linkedForumThreadId
+    ) || ""
+  );
+}
+
+function taskSourcePath(item: AnyRec | null): string {
+  const sourceType = String(item?.sourceType || "");
+  const sourceId = taskSourceId(item);
+  if (sourceType === "room") return "/home/facility/rooms";
+  if (sourceType === "facility_run") {
+    return sourceId ? `/home/facility/grows/${sourceId}` : "/home/facility/grows";
+  }
+  if (sourceType === "sop") return "/home/facility/sop-runs";
+  if (sourceType === "sensor_alert" || sourceType === "alert") return "/home/alerts";
+  if (sourceType === "course" || sourceType === "lesson") {
+    return "/home/commercial/courses";
+  }
+  if (sourceType === "live") return "/home/commercial/lives";
+  if (sourceType === "toolrun" || sourceType === "recipe") {
+    return "/home/facility/ai-tools";
+  }
+  if (sourceType === "product" && sourceId) {
+    return `/home/commercial/products/${sourceId}`;
+  }
+  if (sourceType === "product_batch") return "/home/commercial/batch-planner";
+  if (sourceType === "product_trial")
+    return sourceId ? `/home/commercial/trials/${sourceId}` : "/home/commercial/trials";
+  if (sourceType === "forum" && sourceId) return `/forum/post/${sourceId}`;
+  return "";
+}
+
 function canManageRole(role: unknown) {
   return role === "OWNER" || role === "MANAGER";
 }
@@ -300,6 +359,7 @@ export default function FacilityTaskDetail() {
 
   const title = useMemo(() => (item ? pickTitle(item) : "Task Detail"), [item]);
   const complete = isComplete(item);
+  const sourcePath = taskSourcePath(item);
 
   const keys = useMemo(() => {
     if (!item) return [];
@@ -366,6 +426,16 @@ export default function FacilityTaskDetail() {
                 {item.requiresProof ? "Proof required" : "Proof optional"} |{" "}
                 {item.requiresApproval ? "Approval required" : "Approval optional"}
               </Text>
+              {sourcePath ? (
+                <TouchableOpacity
+                  accessibilityRole="link"
+                  accessibilityLabel="View facility task source"
+                  onPress={() => router.push(sourcePath as any)}
+                  style={styles.secondaryBtn}
+                >
+                  <Text style={styles.secondaryBtnText}>View Source</Text>
+                </TouchableOpacity>
+              ) : null}
               {!canWrite ? (
                 <Text style={styles.muted}>
                   You do not have permission to update tasks.
