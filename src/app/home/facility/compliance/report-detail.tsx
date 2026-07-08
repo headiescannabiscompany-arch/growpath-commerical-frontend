@@ -2,6 +2,7 @@ import React, { useMemo } from "react";
 import { useLocalSearchParams } from "expo-router";
 import { StyleSheet, Text, View } from "react-native";
 
+import { ScreenBoundary } from "@/components/ScreenBoundary";
 import { useFacilityReport } from "@/hooks/useFacilityReport";
 
 export default function FacilityComplianceReportDetailRoute() {
@@ -11,20 +12,30 @@ export default function FacilityComplianceReportDetailRoute() {
 
   const payload = useMemo(() => data ?? null, [data]);
 
+  const renderBoundary = (children: React.ReactNode) => (
+    <ScreenBoundary
+      title="Compliance Report Detail"
+      showBack
+      backFallbackHref="/home/facility/compliance"
+    >
+      {children}
+    </ScreenBoundary>
+  );
+
   if (isLoading)
-    return (
+    return renderBoundary(
       <View style={styles.container}>
         <Text>Loading report...</Text>
       </View>
     );
   if (error)
-    return (
+    return renderBoundary(
       <View style={styles.container}>
         <Text>Failed to load report.</Text>
       </View>
     );
 
-  return (
+  return renderBoundary(
     <View style={styles.container}>
       <Text style={styles.h1}>Compliance Report Detail</Text>
       <Text style={styles.sub}>reportId: {String(id || "latest")}</Text>

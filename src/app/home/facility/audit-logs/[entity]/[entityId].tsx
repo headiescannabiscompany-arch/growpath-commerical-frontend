@@ -3,6 +3,7 @@ import { Link, useLocalSearchParams } from "expo-router";
 import { FlatList, StyleSheet, Text, View } from "react-native";
 
 import { normalizeApiError } from "@/api/errors";
+import { ScreenBoundary } from "@/components/ScreenBoundary";
 import { useAuditLogs } from "@/hooks/useAuditLogs";
 import { useFacility } from "@/state/useFacility";
 import type { AuditLog } from "@/types/contracts";
@@ -53,32 +54,42 @@ export default function FacilityAuditLogEntityRoute() {
     });
   }, [logs, entity, entityId]);
 
+  const renderBoundary = (children: React.ReactNode) => (
+    <ScreenBoundary
+      title="Audit Logs for Entity"
+      showBack
+      backFallbackHref="/home/facility/audit-logs"
+    >
+      {children}
+    </ScreenBoundary>
+  );
+
   if (isLoading)
-    return (
+    return renderBoundary(
       <View style={styles.container}>
         <Text>Loading audit logs...</Text>
       </View>
     );
   if (!selectedId)
-    return (
+    return renderBoundary(
       <View style={styles.container}>
         <Text>Select a facility first.</Text>
       </View>
     );
   if (!entity || !entityId)
-    return (
+    return renderBoundary(
       <View style={styles.container}>
         <Text>Missing entity route params.</Text>
       </View>
     );
   if (error)
-    return (
+    return renderBoundary(
       <View style={styles.container}>
         <Text>{getErrorMessage(error, "Failed to load audit logs.")}</Text>
       </View>
     );
 
-  return (
+  return renderBoundary(
     <FlatList
       style={styles.list}
       data={filtered}

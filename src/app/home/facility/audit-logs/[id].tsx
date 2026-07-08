@@ -3,6 +3,7 @@ import { Link, useLocalSearchParams } from "expo-router";
 import { StyleSheet, Text, View } from "react-native";
 
 import { normalizeApiError } from "@/api/errors";
+import { ScreenBoundary } from "@/components/ScreenBoundary";
 import { useAuditLogs } from "@/hooks/useAuditLogs";
 import { useFacility } from "@/state/useFacility";
 import type { AuditLog } from "@/types/contracts";
@@ -41,38 +42,48 @@ export default function FacilityAuditLogDetailRoute() {
   const entity = String(item?.entity ?? item?.entityType ?? "");
   const entityId = String(item?.entityId ?? item?.targetId ?? "");
 
+  const renderBoundary = (children: React.ReactNode) => (
+    <ScreenBoundary
+      title="Audit Log Detail"
+      showBack
+      backFallbackHref="/home/facility/audit-logs"
+    >
+      {children}
+    </ScreenBoundary>
+  );
+
   if (isLoading)
-    return (
+    return renderBoundary(
       <View style={styles.container}>
         <Text>Loading audit log...</Text>
       </View>
     );
   if (!selectedId)
-    return (
+    return renderBoundary(
       <View style={styles.container}>
         <Text>Select a facility first.</Text>
       </View>
     );
   if (!id)
-    return (
+    return renderBoundary(
       <View style={styles.container}>
         <Text>Missing audit log id.</Text>
       </View>
     );
   if (error)
-    return (
+    return renderBoundary(
       <View style={styles.container}>
         <Text>{getErrorMessage(error, "Failed to load audit log detail.")}</Text>
       </View>
     );
   if (!item)
-    return (
+    return renderBoundary(
       <View style={styles.container}>
         <Text>Audit log not found.</Text>
       </View>
     );
 
-  return (
+  return renderBoundary(
     <View style={styles.container}>
       <Text style={styles.h1}>Audit Log Detail</Text>
       <Text style={styles.sub}>id: {String(id || "")}</Text>
