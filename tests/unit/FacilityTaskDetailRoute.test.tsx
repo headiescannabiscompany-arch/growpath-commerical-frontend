@@ -101,6 +101,8 @@ describe("FacilityTaskDetail", () => {
         sourceType: "sop",
         sourceObjectId: "sop-7",
         roomId: "veg-1",
+        linkedSopId: "sop-7",
+        linkedRoomId: "veg-1",
         requiresProof: false,
         requiresApproval: false
       })

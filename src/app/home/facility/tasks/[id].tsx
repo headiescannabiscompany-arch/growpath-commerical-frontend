@@ -84,6 +84,45 @@ function renderKV(obj: AnyRec, key: string) {
   );
 }
 
+function linkedFieldsForSource(
+  sourceType: string,
+  sourceObjectId: string,
+  roomId: string
+) {
+  const roomLink = roomId ? { linkedRoomId: roomId } : {};
+  switch (sourceType) {
+    case "room":
+      return { ...roomLink, linkedRoomId: sourceObjectId || roomId || undefined };
+    case "facility_run":
+      return { ...roomLink, linkedFacilityRunId: sourceObjectId || undefined };
+    case "sop":
+      return { ...roomLink, linkedSopId: sourceObjectId || undefined };
+    case "sensor_alert":
+    case "alert":
+      return { ...roomLink, linkedAlertId: sourceObjectId || undefined };
+    case "course":
+      return { ...roomLink, linkedCourseId: sourceObjectId || undefined };
+    case "lesson":
+      return { ...roomLink, linkedLessonId: sourceObjectId || undefined };
+    case "live":
+      return { ...roomLink, linkedLiveId: sourceObjectId || undefined };
+    case "toolrun":
+      return { ...roomLink, linkedToolRunId: sourceObjectId || undefined };
+    case "recipe":
+      return { ...roomLink, linkedRecipeId: sourceObjectId || undefined };
+    case "product":
+      return { ...roomLink, linkedProductId: sourceObjectId || undefined };
+    case "product_batch":
+      return { ...roomLink, linkedProductBatchId: sourceObjectId || undefined };
+    case "product_trial":
+      return { ...roomLink, linkedProductTrialId: sourceObjectId || undefined };
+    case "forum":
+      return { ...roomLink, linkedForumThreadId: sourceObjectId || undefined };
+    default:
+      return roomLink;
+  }
+}
+
 export default function FacilityTaskDetail() {
   const router = useRouter();
   const ent = useEntitlements();
@@ -200,11 +239,14 @@ export default function FacilityTaskDetail() {
   }
 
   async function saveWorkflowContext() {
+    const cleanSourceObjectId = form.sourceObjectId.trim();
+    const cleanRoomId = form.roomId.trim();
     await update(
       {
         sourceType: form.sourceType,
-        sourceObjectId: form.sourceObjectId.trim() || undefined,
-        roomId: form.roomId.trim() || undefined,
+        sourceObjectId: cleanSourceObjectId || undefined,
+        roomId: cleanRoomId || undefined,
+        ...linkedFieldsForSource(form.sourceType, cleanSourceObjectId, cleanRoomId),
         requiresProof: form.requiresProof,
         requiresApproval: form.requiresApproval
       },
