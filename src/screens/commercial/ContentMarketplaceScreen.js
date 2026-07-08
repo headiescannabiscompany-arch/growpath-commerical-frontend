@@ -29,7 +29,7 @@ import * as ImagePicker from "expo-image-picker";
 
 const tabs = [
   { id: "browse", label: "Browse", icon: "magnify" },
-  { id: "uploads", label: "My Uploads", icon: "cloud-upload" },
+  { id: "uploads", label: "My Offers", icon: "cloud-upload" },
   { id: "sales", label: "Sales", icon: "cash-multiple" },
   { id: "analytics", label: "Analytics", icon: "chart-line" }
 ];
@@ -47,7 +47,7 @@ function rowId(row) {
 }
 
 function titleOf(row) {
-  return row?.title || row?.name || "Creator content";
+  return row?.title || row?.name || "Storefront offer";
 }
 
 function creatorOf(row) {
@@ -56,7 +56,7 @@ function creatorOf(row) {
     row?.userId?.name ||
     row?.creator ||
     row?.author ||
-    "GrowPath creator"
+    "GrowPath storefront"
   );
 }
 
@@ -124,9 +124,9 @@ export default function ContentMarketplaceScreen() {
       setUploads(uploadsRes?.data || uploadsRes?.uploads || []);
       setSalesData(salesRes?.data || null);
     } catch (err) {
-      const message = err?.message || "Failed to load creator content data.";
+      const message = err?.message || "Failed to load storefront offer data.";
       setError(message);
-      Alert.alert("Creator content unavailable", message);
+      Alert.alert("Storefront offers unavailable", message);
     } finally {
       setLoading(false);
     }
@@ -183,7 +183,7 @@ export default function ContentMarketplaceScreen() {
         setField("fileUrl", "");
       }
     } catch (err) {
-      setUploadError(err?.message || "Failed to pick content file.");
+      setUploadError(err?.message || "Failed to pick offer file.");
     }
   }
 
@@ -239,9 +239,9 @@ export default function ContentMarketplaceScreen() {
       resetForm();
       setShowUploadModal(false);
       await loadMarketplaceData();
-      Alert.alert("Content saved", "Your upload was saved as a draft.");
+      Alert.alert("Offer saved", "Your storefront offer was saved as a draft.");
     } catch (err) {
-      setUploadError(err?.message || "Failed to save upload.");
+      setUploadError(err?.message || "Failed to save storefront offer.");
     } finally {
       setUploading(false);
     }
@@ -278,9 +278,9 @@ export default function ContentMarketplaceScreen() {
       return (
         <EmptyState
           icon="cloud-upload-outline"
-          title="No uploads yet"
-          subtitle="Share your content and start earning"
-          actionLabel="Upload Content"
+          title="No offers yet"
+          subtitle="Create a storefront offer, course resource, or downloadable guide draft."
+          actionLabel="Create Offer"
           onAction={() => setShowUploadModal(true)}
         />
       );
@@ -293,7 +293,7 @@ export default function ContentMarketplaceScreen() {
           </View>
           <View style={styles.cardBody}>
             <Text style={styles.cardTitle}>{titleOf(item)}</Text>
-            <Text style={styles.muted}>Uploaded {dateLabel(item?.createdAt)}</Text>
+            <Text style={styles.muted}>Created {dateLabel(item?.createdAt)}</Text>
           </View>
         </View>
         <View style={styles.metricsRow}>
@@ -332,7 +332,7 @@ export default function ContentMarketplaceScreen() {
         <ScrollView style={styles.content} contentContainerStyle={styles.contentInner}>
           {error ? (
             <ErrorState
-              title="Failed to load creator content"
+              title="Failed to load storefront offers"
               message={error}
               icon="alert-circle"
               onRetry={loadMarketplaceData}
@@ -345,7 +345,7 @@ export default function ContentMarketplaceScreen() {
             <>
               <TextInput
                 style={styles.input}
-                placeholder="Search creator content..."
+                placeholder="Search storefront offers..."
                 value={searchQuery}
                 onChangeText={setSearchQuery}
               />
@@ -372,7 +372,7 @@ export default function ContentMarketplaceScreen() {
               ) : (
                 <EmptyState
                   icon="inbox-multiple"
-                  title="No content found"
+                  title="No offers found"
                   subtitle="Try a different category"
                 />
               )}
@@ -382,13 +382,13 @@ export default function ContentMarketplaceScreen() {
           {activeTab === "uploads" ? (
             <>
               <View style={styles.headerRow}>
-                <Text style={styles.sectionTitle}>My Uploaded Content</Text>
+                <Text style={styles.sectionTitle}>My Storefront Offers</Text>
                 <TouchableOpacity
                   style={styles.primaryBtn}
                   onPress={() => setShowUploadModal(true)}
                 >
                   <MaterialCommunityIcons name="plus" size={18} color="#FFF" />
-                  <Text style={styles.primaryBtnText}>Upload</Text>
+                  <Text style={styles.primaryBtnText}>Create Offer</Text>
                 </TouchableOpacity>
               </View>
               {renderUploads()}
@@ -431,7 +431,7 @@ export default function ContentMarketplaceScreen() {
                     <View style={styles.cardBody}>
                       <Text style={styles.cardTitle}>{sale.title}</Text>
                       <Text style={styles.muted}>
-                        {sale.buyer || "Creator content customer"} - {dateLabel(sale.date)}
+                        {sale.buyer || "Storefront customer"} - {dateLabel(sale.date)}
                       </Text>
                     </View>
                     <Text style={styles.price}>{money(sale.amount)}</Text>
@@ -463,7 +463,7 @@ export default function ContentMarketplaceScreen() {
                   </View>
                 ))
               ) : (
-                <Text style={styles.muted}>Upload content to build analytics.</Text>
+                <Text style={styles.muted}>Create offers to build analytics.</Text>
               )}
             </Card>
           ) : null}
@@ -519,7 +519,7 @@ function UploadModal({
           <TouchableOpacity onPress={onClose}>
             <MaterialCommunityIcons name="close" size={28} color={Colors.text} />
           </TouchableOpacity>
-          <Text style={styles.modalTitle}>Upload Content</Text>
+          <Text style={styles.modalTitle}>Create Storefront Offer</Text>
           <View style={{ width: 28 }} />
         </View>
         <ScrollView style={styles.modalContent}>
@@ -559,7 +559,7 @@ function UploadModal({
           >
             <MaterialCommunityIcons name="file-upload-outline" size={18} color="#FFF" />
             <Text style={styles.mediaPickText}>
-              {selectedFile?.name || selectedFile?.fileName || "Select Content File"}
+              {selectedFile?.name || selectedFile?.fileName || "Select Offer File"}
             </Text>
           </TouchableOpacity>
           <LabelInput

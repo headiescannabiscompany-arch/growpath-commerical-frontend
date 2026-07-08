@@ -39,7 +39,7 @@ jest.mock("expo-image-picker", () => ({
   launchImageLibraryAsync: (...args: any[]) => mockLaunchImageLibrary(...args)
 }));
 
-describe("ContentMarketplaceScreen uploads", () => {
+describe("ContentMarketplaceScreen storefront offers", () => {
   beforeEach(() => {
     jest.resetAllMocks();
     mockBrowseMarketplace.mockResolvedValue({ data: [] });
@@ -68,24 +68,24 @@ describe("ContentMarketplaceScreen uploads", () => {
     });
   });
 
-  it("uploads selected content and thumbnail before saving a creator content draft", async () => {
+  it("uploads selected offer content and thumbnail before saving a storefront offer draft", async () => {
     const ContentMarketplaceScreen =
       require("@/screens/commercial/ContentMarketplaceScreen").default;
     const screen = render(<ContentMarketplaceScreen />);
 
     await waitFor(() =>
-      expect(screen.getByPlaceholderText("Search creator content...")).toBeTruthy()
+      expect(screen.getByPlaceholderText("Search storefront offers...")).toBeTruthy()
     );
     expect(screen.queryByPlaceholderText("Search marketplace...")).toBeNull();
 
-    fireEvent.press(screen.getByText("My Uploads"));
-    await waitFor(() => expect(screen.getByText("Upload Content")).toBeTruthy());
-    fireEvent.press(screen.getByText("Upload Content"));
+    fireEvent.press(screen.getByText("My Offers"));
+    await waitFor(() => expect(screen.getAllByText("Create Offer").length).toBeGreaterThan(0));
+    fireEvent.press(screen.getAllByText("Create Offer")[0]);
 
     fireEvent.changeText(screen.getByPlaceholderText("Title"), "IPM Guide");
     fireEvent.changeText(screen.getByPlaceholderText("Description"), "A useful guide");
     fireEvent.changeText(screen.getByPlaceholderText("Price"), "12");
-    fireEvent.press(screen.getByText("Select Content File"));
+    fireEvent.press(screen.getByText("Select Offer File"));
     await waitFor(() => expect(mockGetDocumentAsync).toHaveBeenCalled());
     fireEvent.press(screen.getByText("Select Thumbnail Image"));
     await waitFor(() => expect(mockLaunchImageLibrary).toHaveBeenCalled());
