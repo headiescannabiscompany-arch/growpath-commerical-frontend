@@ -82,7 +82,15 @@ function taskContextRows(task: AnyRec | null) {
     ["Published products", task.linkedPublishedProductIds],
     ["Courses", firstLinkedValue(task.linkedCourseIds, task.linkedCourseId)],
     ["Lives", firstLinkedValue(task.linkedLiveIds, task.linkedLiveId)],
-    ["Feed campaigns", firstLinkedValue(task.linkedFeedPostIds, task.linkedFeedPostId)],
+    [
+      "Feed campaigns",
+      firstLinkedValue(
+        task.linkedFeedCampaignIds,
+        task.linkedFeedCampaignId,
+        task.linkedFeedPostIds,
+        task.linkedFeedPostId
+      )
+    ],
     ["Forum/Q&A", task.linkedForumThreadId],
     ["Grow evidence", firstLinkedValue(task.linkedGrowIds, task.linkedGrowId)],
     ["Facility", task.linkedFacilityId],
@@ -118,7 +126,14 @@ function taskSourceId(task: AnyRec | null): string {
     return String(task.linkedLiveId || "");
   }
   if (sourceType === "feed_campaign" || sourceType === "feed_post") {
-    return String(firstLinkedValue(task.linkedFeedPostIds, task.linkedFeedPostId) || "");
+    return String(
+      firstLinkedValue(
+        task.linkedFeedCampaignIds,
+        task.linkedFeedCampaignId,
+        task.linkedFeedPostIds,
+        task.linkedFeedPostId
+      ) || ""
+    );
   }
   return String(
     task.linkedAlertId ||

@@ -61,7 +61,7 @@ describe("CommercialTaskDetailRoute", () => {
           linkedLiveIds: [],
           linkedLiveId: "live-1",
           linkedFeedPostIds: [],
-          linkedFeedPostId: "campaign-1",
+          linkedFeedCampaignId: "campaign-1",
           linkedForumThreadId: "thread-product",
           linkedGrowIds: [],
           linkedGrowId: "grow-1",
@@ -221,7 +221,7 @@ describe("CommercialTaskDetailRoute", () => {
       sourceType: "feed_campaign",
       sourceId: "",
       sourceObjectId: "",
-      linkedFeedPostId: "campaign-1"
+      linkedFeedCampaignId: "campaign-1"
     };
     const screen = render(<CommercialTaskDetailRoute />);
 
