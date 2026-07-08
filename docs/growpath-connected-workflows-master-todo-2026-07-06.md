@@ -334,6 +334,7 @@ Completed and pushed:
 58. The legacy native `CreatePostScreen` no longer owns a separate `/api/posts` social-feed composer; compatibility paths now reuse the Forum/Q&A composer.
 59. Commercial external-channel integration now uses external-channel language, keeps off-platform scheduling distinct from GrowPath Feed/Campaigns, and removes the old social-media/corrupted status copy.
 60. The GrowPath system audit now checks the legacy Personal `more/social-tools` route as a redirect-only guard to Forum/Q&A.
+61. Commercial Community now behaves as Brand Forum/Q&A support, reads/writes through the shared forum API, and the audit flags it if support posts move back onto Feed/Campaigns.
 
 ## Working Rule For Codex
 
