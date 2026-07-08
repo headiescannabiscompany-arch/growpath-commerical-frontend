@@ -426,6 +426,7 @@ Completed and pushed:
 150. Commercial dashboard action-item tasks now emit canonical feed campaign ids while preserving legacy feed-post compatibility, so owner command-center campaign fixes route back to Feed/Campaigns outreach.
 151. Commercial Feed campaign creation now uses `/api/commercial/feed` instead of the legacy `/api/commercial/posts` endpoint, with audit coverage to keep in-app outreach on the Feed/Campaigns contract.
 152. Feed campaign cards and placement rails now use canonical engagement-count naming while preserving legacy like-count fallback, keeping Feed as advertising/outreach instead of social discussion.
+153. Active Feed/Campaigns UI now uses canonical campaign API types and functions, leaving old feed-post names only as compatibility aliases for legacy callers.
 
 ## Working Rule For Codex
 

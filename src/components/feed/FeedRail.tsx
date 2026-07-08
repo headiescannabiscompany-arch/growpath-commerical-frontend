@@ -2,7 +2,10 @@ import React, { useEffect, useState } from "react";
 import { StyleSheet, View } from "react-native";
 import EducationPostCard from "@/components/feed/EducationPostCard";
 import AdCard from "@/components/feed/AdCard";
-import { listCommercialFeedPosts, type CommercialFeedPost } from "@/api/commercialFeed";
+import {
+  listCommercialFeedCampaigns,
+  type CommercialFeedCampaign
+} from "@/api/commercialFeed";
 
 type FeedRailProps = {
   slots: number;
@@ -25,7 +28,7 @@ type AdItem = {
   imageUrl: string;
 };
 
-function campaignDestination(post: CommercialFeedPost) {
+function campaignDestination(post: CommercialFeedCampaign) {
   if (post.linkedProductId) {
     const productId = encodeURIComponent(String(post.linkedProductId));
     if (post.storefrontSlug) {
@@ -67,11 +70,11 @@ function campaignDestination(post: CommercialFeedPost) {
   return { cta: "Learn More", href: "/feed" };
 }
 
-function campaignImage(post: CommercialFeedPost) {
+function campaignImage(post: CommercialFeedCampaign) {
   return post.imageUrl || post.creativeImageUrl || post.bannerImageUrl || "";
 }
 
-function mapCampaignToAd(post: CommercialFeedPost): AdItem {
+function mapCampaignToAd(post: CommercialFeedCampaign): AdItem {
   const destination = campaignDestination(post);
   const owner =
     post.author?.displayName ||
@@ -264,7 +267,7 @@ export default function FeedRail({
 
   useEffect(() => {
     let cancelled = false;
-    listCommercialFeedPosts({ limit: Math.max(slots * 3, 6), sort: "new" })
+    listCommercialFeedCampaigns({ limit: Math.max(slots * 3, 6), sort: "new" })
       .then((res) => {
         if (cancelled) return;
         const nextAds = res.items.map(mapCampaignToAd).filter((item) => item.title);

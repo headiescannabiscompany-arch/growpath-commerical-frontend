@@ -17,10 +17,10 @@ import { apiRequest } from "@/api/apiRequest";
 import { recordCommercialAnalyticsEvent } from "@/api/commercialAnalytics";
 import { InlineError } from "@/components/InlineError";
 import {
-  createCommercialFeedPost,
-  listCommercialFeedPosts,
-  type CommercialFeedPost,
-  type CommercialFeedPostType
+  createCommercialFeedCampaign,
+  listCommercialFeedCampaigns,
+  type CommercialFeedCampaign,
+  type CommercialFeedCampaignType
 } from "@/api/commercialFeed";
 import { useEntitlements } from "@/entitlements";
 import SchedulePicker from "@/components/schedule/SchedulePicker";
@@ -30,13 +30,13 @@ import {
 } from "@/utils/commercialFeedPolicy";
 import { resolveImageUri } from "@/utils/photoUploads";
 
-const COMMERCIAL_TYPES: CommercialFeedPostType[] = [
+const COMMERCIAL_TYPES: CommercialFeedCampaignType[] = [
   "update",
   "listing",
   "drop",
   "education"
 ];
-const FACILITY_TYPES: CommercialFeedPostType[] = ["education"];
+const FACILITY_TYPES: CommercialFeedCampaignType[] = ["education"];
 type CampaignKind =
   | "product_ad"
   | "course_ad"
@@ -63,7 +63,7 @@ const campaignKindLabels: Record<CampaignKind, string> = {
   general_campaign: "General campaign"
 };
 
-function backendTypeForCampaignKind(kind: CampaignKind): CommercialFeedPostType {
+function backendTypeForCampaignKind(kind: CampaignKind): CommercialFeedCampaignType {
   if (kind === "product_ad") return "listing";
   if (kind === "course_ad") return "education";
   if (kind === "live_ad") return "drop";
@@ -119,7 +119,7 @@ function campaignReadinessWarnings({
   return warnings;
 }
 
-function authorLabel(post: CommercialFeedPost) {
+function authorLabel(post: CommercialFeedCampaign) {
   if (post.author?.displayName || post.author?.email) {
     return post.author.displayName || post.author.email || "";
   }
@@ -129,18 +129,18 @@ function authorLabel(post: CommercialFeedPost) {
   return "Commercial account";
 }
 
-function campaignMeta(post: CommercialFeedPost) {
+function campaignMeta(post: CommercialFeedCampaign) {
   const created = post.createdAt ? new Date(post.createdAt).toLocaleString() : "";
   return [authorLabel(post), created, post.location].filter(Boolean).join(" - ");
 }
 
-function campaignImage(post: CommercialFeedPost) {
+function campaignImage(post: CommercialFeedCampaign) {
   return resolveImageUri(
     post.imageUrl || post.creativeImageUrl || post.bannerImageUrl || ""
   );
 }
 
-function visibleCampaignType(post: CommercialFeedPost) {
+function visibleCampaignType(post: CommercialFeedCampaign) {
   if (post.campaignKind && campaignKindLabels[post.campaignKind as CampaignKind]) {
     return campaignKindLabels[post.campaignKind as CampaignKind];
   }
@@ -154,7 +154,7 @@ function visibleCampaignType(post: CommercialFeedPost) {
   return campaignKindLabels.general_campaign;
 }
 
-function campaignEngagementCount(post: CommercialFeedPost) {
+function campaignEngagementCount(post: CommercialFeedCampaign) {
   return Number(post.engagementCount ?? post.likeCount ?? 0);
 }
 
@@ -165,7 +165,7 @@ function splitTags(value: string) {
     .filter(Boolean);
 }
 
-function campaignDestination(post: CommercialFeedPost) {
+function campaignDestination(post: CommercialFeedCampaign) {
   if (post.linkedProductId) {
     const productId = encodeURIComponent(String(post.linkedProductId));
     if (post.storefrontSlug) {
@@ -233,8 +233,8 @@ export default function CommercialFeedRoute() {
     ? FACILITY_CAMPAIGN_KINDS
     : COMMERCIAL_CAMPAIGN_KINDS;
 
-  const [items, setItems] = useState<CommercialFeedPost[]>([]);
-  const [type, setType] = useState<CommercialFeedPostType>(allowedTypes[0]);
+  const [items, setItems] = useState<CommercialFeedCampaign[]>([]);
+  const [type, setType] = useState<CommercialFeedCampaignType>(allowedTypes[0]);
   const [campaignKind, setCampaignKind] = useState<CampaignKind>(allowedCampaignKinds[0]);
   const [filterType, setFilterType] = useState<string>("all");
   const [q, setQ] = useState("");
@@ -306,7 +306,7 @@ export default function CommercialFeedRoute() {
       else setLoading(true);
       setError(null);
       try {
-        const res = await listCommercialFeedPosts({
+        const res = await listCommercialFeedCampaigns({
           type: filterType,
           q: q.trim(),
           limit: 30
@@ -344,7 +344,7 @@ export default function CommercialFeedRoute() {
       return;
     }
     try {
-      await createCommercialFeedPost({
+      await createCommercialFeedCampaign({
         type: isFacility ? "education" : backendTypeForCampaignKind(campaignKind),
         campaignKind,
         title: cleanTitle,
@@ -469,7 +469,7 @@ export default function CommercialFeedRoute() {
   }
 
   function openCampaignDestination(
-    post: CommercialFeedPost,
+    post: CommercialFeedCampaign,
     destination: { label: string; href: string }
   ) {
     void recordCommercialAnalyticsEvent({

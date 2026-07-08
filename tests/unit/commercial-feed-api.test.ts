@@ -35,9 +35,9 @@ describe("commercial feed API", () => {
   });
 
   it("sends commercial object links when creating feed campaigns", async () => {
-    const { createCommercialFeedPost } = require("@/api/commercialFeed");
+    const { createCommercialFeedCampaign } = require("@/api/commercialFeed");
 
-    const result = await createCommercialFeedPost({
+    const result = await createCommercialFeedCampaign({
       type: "update",
       title: "Veg mix trial",
       body: "Trial update",

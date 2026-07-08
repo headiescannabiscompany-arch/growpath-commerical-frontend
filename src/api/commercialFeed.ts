@@ -1,15 +1,11 @@
 import { apiRequest } from "./apiRequest";
 import { persistImageUri } from "@/utils/photoUploads";
 
-export type CommercialFeedPostType =
-  | "listing"
-  | "iso"
-  | "drop"
-  | "update"
-  | "question"
-  | "education";
+export type CommercialFeedCampaignType = "listing" | "drop" | "update" | "education";
 
-export type CommercialFeedPost = {
+export type CommercialFeedPostType = CommercialFeedCampaignType | "iso" | "question";
+
+export type CommercialFeedCampaign = {
   id: string;
   type: CommercialFeedPostType;
   campaignKind?: string;
@@ -46,7 +42,9 @@ export type CommercialFeedPost = {
   } | null;
 };
 
-function normalizePost(row: any): CommercialFeedPost {
+export type CommercialFeedPost = CommercialFeedCampaign;
+
+function normalizeCampaign(row: any): CommercialFeedCampaign {
   return {
     ...row,
     id: String(row?.id || row?._id || ""),
@@ -59,7 +57,7 @@ function normalizePost(row: any): CommercialFeedPost {
   };
 }
 
-export async function listCommercialFeedPosts(
+export async function listCommercialFeedCampaigns(
   params: {
     type?: string;
     tag?: string;
@@ -79,15 +77,15 @@ export async function listCommercialFeedPosts(
       ...(params.limit ? { limit: params.limit } : {})
     }
   });
-  const items = Array.isArray(res?.items) ? res.items.map(normalizePost) : [];
+  const items = Array.isArray(res?.items) ? res.items.map(normalizeCampaign) : [];
   return {
     items,
     nextCursor: res?.nextCursor ? String(res.nextCursor) : null
   };
 }
 
-export async function createCommercialFeedPost(input: {
-  type: CommercialFeedPostType;
+export async function createCommercialFeedCampaign(input: {
+  type: CommercialFeedCampaignType;
   campaignKind?: string;
   title?: string;
   body: string;
@@ -117,5 +115,8 @@ export async function createCommercialFeedPost(input: {
       creativeImageUrl: imageUrl || undefined
     }
   });
-  return normalizePost(res?.item ?? res?.post ?? res);
+  return normalizeCampaign(res?.item ?? res?.post ?? res);
 }
+
+export const listCommercialFeedPosts = listCommercialFeedCampaigns;
+export const createCommercialFeedPost = createCommercialFeedCampaign;

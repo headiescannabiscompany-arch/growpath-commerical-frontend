@@ -4,10 +4,11 @@ import { fireEvent, render, waitFor } from "@testing-library/react-native";
 import FeedRail from "@/components/feed/FeedRail";
 import { recordCommercialAnalyticsEvent } from "@/api/commercialAnalytics";
 
-const mockListCommercialFeedPosts = jest.fn();
+const mockListCommercialFeedCampaigns = jest.fn();
 
 jest.mock("@/api/commercialFeed", () => ({
-  listCommercialFeedPosts: (...args: any[]) => mockListCommercialFeedPosts(...args)
+  listCommercialFeedCampaigns: (...args: any[]) =>
+    mockListCommercialFeedCampaigns(...args)
 }));
 
 jest.mock("@/api/commercialAnalytics", () => ({
@@ -26,7 +27,7 @@ jest.mock("@/components/layout/AppCard", () => {
 
 describe("FeedRail", () => {
   beforeEach(() => {
-    mockListCommercialFeedPosts.mockReset();
+    mockListCommercialFeedCampaigns.mockReset();
     jest
       .mocked(recordCommercialAnalyticsEvent)
       .mockReset()
@@ -34,7 +35,7 @@ describe("FeedRail", () => {
   });
 
   it("uses real feed campaigns when available and keeps Q&A links shared", async () => {
-    mockListCommercialFeedPosts.mockResolvedValue({
+    mockListCommercialFeedCampaigns.mockResolvedValue({
       items: [
         {
           id: "campaign-qna",
@@ -57,7 +58,7 @@ describe("FeedRail", () => {
     await waitFor(() => expect(screen.getByText("NPK workshop Q&A")).toBeTruthy());
     fireEvent.press(screen.getByLabelText("Open Forum Q&A for NPK workshop Q&A"));
 
-    expect(mockListCommercialFeedPosts).toHaveBeenCalledWith({
+    expect(mockListCommercialFeedCampaigns).toHaveBeenCalledWith({
       limit: 6,
       sort: "new"
     });
@@ -76,7 +77,7 @@ describe("FeedRail", () => {
   });
 
   it("keeps product campaign fallbacks on public discovery routes", async () => {
-    mockListCommercialFeedPosts.mockResolvedValue({
+    mockListCommercialFeedCampaigns.mockResolvedValue({
       items: [
         {
           id: "campaign-product",
