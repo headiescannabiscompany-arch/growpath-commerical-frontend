@@ -241,6 +241,7 @@ export default function CommercialProductsRoute({
           description: `Missing setup: ${missing.join(", ")}.`,
           sourceType: "product",
           sourceId: String(id),
+          sourceObjectId: String(id),
           linkedProductId: String(id),
           growInterests: (product as any).growInterests || [],
           linkedProductLineId: (product as any).productLineId,

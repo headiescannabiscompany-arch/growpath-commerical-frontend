@@ -182,6 +182,7 @@ export default function CommercialTrialDetailRoute({ route }: { route?: any } = 
           description: `Missing claim-readiness evidence: ${warnings.join(", ")}.`,
           sourceType: "product_trial",
           sourceId: trialId,
+          sourceObjectId: trialId,
           linkedProductTrialId: trialId,
           linkedProductId: trial.productId,
           linkedProductBatchId: trial.batchId,

@@ -105,6 +105,7 @@ describe("CommercialLivesRoute", () => {
             title: "Complete live setup: Soil Mix Demo",
             sourceType: "live",
             sourceId: "live-1",
+            sourceObjectId: "live-1",
             linkedLiveId: "live-1",
             linkedCourseId: "course-1",
             linkedProductId: "product-1",

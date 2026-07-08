@@ -204,6 +204,7 @@ export default function CommercialLivesRoute() {
           description: `Missing setup: ${warnings.join(", ")}.`,
           sourceType: "live",
           sourceId: String(id),
+          sourceObjectId: String(id),
           linkedLiveId: String(id),
           linkedCourseId: live.relatedCourseId,
           linkedProductId: live.relatedProductId,

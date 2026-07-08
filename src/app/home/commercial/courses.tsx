@@ -210,6 +210,7 @@ export default function CommercialCoursesRoute() {
           description: `Missing setup: ${warnings.join(", ")}.`,
           sourceType: "course",
           sourceId: String(id),
+          sourceObjectId: String(id),
           linkedCourseId: String(id),
           growInterests: course.growInterests || [],
           linkedProductIds: course.linkedProductIds || [],
