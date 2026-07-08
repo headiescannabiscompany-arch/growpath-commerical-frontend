@@ -131,7 +131,10 @@ export async function saveToolRunAndCreateTask(
     dueDate: args.dueDate,
     sourceType: "tool_run",
     sourceObjectId: ensured.toolRunId,
-    sourceToolRunId: ensured.toolRunId
+    sourceToolRunId: ensured.toolRunId,
+    linkedGrowId: growId,
+    linkedPlantId: args.plantId,
+    linkedToolRunId: ensured.toolRunId
   });
   const taskId = String((task as any)?._id || task?.id || "").trim();
   if (!taskId) return { ok: false, error: "Unable to create task from tool run." };
@@ -158,7 +161,10 @@ export async function saveToolRunAndCreateTasks(
       dueDate: draft.dueDate,
       sourceType: "tool_run",
       sourceObjectId: ensured.toolRunId,
-      sourceToolRunId: ensured.toolRunId
+      sourceToolRunId: ensured.toolRunId,
+      linkedGrowId: growId,
+      linkedPlantId: args.plantId,
+      linkedToolRunId: ensured.toolRunId
     });
     const taskId = String((task as any)?._id || task?.id || "").trim();
     if (!taskId) return { ok: false, error: "Unable to create task from tool run." };

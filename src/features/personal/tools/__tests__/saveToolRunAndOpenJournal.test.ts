@@ -178,7 +178,10 @@ describe("saveToolRunAndOpenJournal", () => {
       dueDate: "2026-07-01",
       sourceType: "tool_run",
       sourceObjectId: "run-1",
-      sourceToolRunId: "run-1"
+      sourceToolRunId: "run-1",
+      linkedGrowId: "grow-1",
+      linkedPlantId: "plant-1",
+      linkedToolRunId: "run-1"
     });
   });
 
@@ -213,7 +216,9 @@ describe("saveToolRunAndOpenJournal", () => {
         title: "Review nutrients",
         sourceType: "tool_run",
         sourceObjectId: "created-run",
-        sourceToolRunId: "created-run"
+        sourceToolRunId: "created-run",
+        linkedGrowId: "grow-2",
+        linkedToolRunId: "created-run"
       })
     );
     expect(mockedCreateToolRun).toHaveBeenCalledWith(
@@ -339,7 +344,9 @@ describe("saveToolRunAndOpenJournal", () => {
         title: "Flip to flower",
         sourceType: "tool_run",
         sourceObjectId: "timeline-run-1",
-        sourceToolRunId: "timeline-run-1"
+        sourceToolRunId: "timeline-run-1",
+        linkedGrowId: "grow-timeline",
+        linkedToolRunId: "timeline-run-1"
       })
     );
     expect(mockedCreatePersonalTask).toHaveBeenNthCalledWith(
@@ -350,7 +357,9 @@ describe("saveToolRunAndOpenJournal", () => {
         priority: "high",
         sourceType: "tool_run",
         sourceObjectId: "timeline-run-1",
-        sourceToolRunId: "timeline-run-1"
+        sourceToolRunId: "timeline-run-1",
+        linkedGrowId: "grow-timeline",
+        linkedToolRunId: "timeline-run-1"
       })
     );
   });
