@@ -10,7 +10,7 @@ import {
 } from "react-native";
 import AppShell from "../components/AppShell.js";
 import Card from "../components/Card.js";
-import { colors, spacing } from "../theme/theme.js";
+import { colors, radius, spacing } from "../theme/theme.js";
 import { saveToolUsage } from "../../toolUsageApi.js";
 
 const EXAMPLES = [
@@ -96,14 +96,14 @@ const styles = StyleSheet.create({
   input: {
     borderWidth: 1,
     borderColor: colors.border,
-    borderRadius: 8,
+    borderRadius: radius.card,
     padding: spacing(1),
     fontSize: 16,
     marginTop: spacing(0.5)
   },
   button: {
     backgroundColor: colors.primary,
-    borderRadius: 8,
+    borderRadius: radius.card,
     padding: spacing(2),
     marginTop: spacing(3),
     alignItems: "center"
@@ -117,7 +117,7 @@ const styles = StyleSheet.create({
     marginTop: spacing(2),
     padding: spacing(1),
     backgroundColor: colors.surface,
-    borderRadius: 6,
+    borderRadius: radius.card,
     borderColor: colors.border,
     borderWidth: 1
   },
