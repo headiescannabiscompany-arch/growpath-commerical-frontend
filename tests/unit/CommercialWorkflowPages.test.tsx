@@ -1162,13 +1162,19 @@ describe("commercial workflow pages", () => {
     expect(
       screen.getByLabelText("Commercial course detail linked evidence runs").props.value
     ).toBe("trial-1");
+    await waitFor(() =>
+      expect(mockApiRequest).toHaveBeenCalledWith("/api/commercial/product-lines")
+    );
+    expect(screen.getByText("Choose Product Line")).toBeTruthy();
+    expect(
+      screen.getByLabelText("Use course detail product line Living Soil Line")
+    ).toBeTruthy();
     fireEvent.changeText(
       screen.getByLabelText("Commercial course detail linked products"),
       "product-1, product-2"
     );
-    fireEvent.changeText(
-      screen.getByLabelText("Commercial course detail linked product lines"),
-      "line-1"
+    fireEvent.press(
+      screen.getByLabelText("Use course detail product line Living Soil Line")
     );
     fireEvent.changeText(
       screen.getByLabelText("Commercial course detail linked evidence runs"),

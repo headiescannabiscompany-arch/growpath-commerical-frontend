@@ -6,7 +6,9 @@ import {
   addCommercialCourseLesson,
   CommercialCourse,
   fetchCommercialCourse,
+  fetchProductLines,
   publishCommercialCourse,
+  ProductLine,
   updateCommercialCourse
 } from "@/api/commercialWorkflows";
 import { InlineError } from "@/components/InlineError";
@@ -22,6 +24,16 @@ function splitIds(value: string) {
     .split(",")
     .map((part) => part.trim())
     .filter(Boolean);
+}
+
+function productLineId(line: ProductLine) {
+  return String(line.id || line._id || line.name || "").trim();
+}
+
+function appendIdList(value: string, id: string) {
+  if (!id) return value;
+  const ids = splitIds(value);
+  return ids.includes(id) ? ids.join(", ") : [...ids, id].join(", ");
 }
 
 function courseTitle(course: CommercialCourse | null) {
@@ -85,6 +97,7 @@ export default function CommercialCourseDetailRoute({ route }: { route?: any } =
     [params.courseId, route?.params?.courseId, route?.params?.id]
   );
   const [course, setCourse] = useState<CommercialCourse | null>(null);
+  const [productLines, setProductLines] = useState<ProductLine[]>([]);
   const [status, setStatus] = useState("");
   const [access, setAccess] = useState("");
   const [price, setPrice] = useState("");
@@ -139,7 +152,12 @@ export default function CommercialCourseDetailRoute({ route }: { route?: any } =
     setLoading(true);
     setError(null);
     try {
-      hydrate(await fetchCommercialCourse(courseId));
+      const [nextCourse, nextLines] = await Promise.all([
+        fetchCommercialCourse(courseId),
+        fetchProductLines()
+      ]);
+      hydrate(nextCourse);
+      setProductLines(nextLines);
     } catch (err) {
       setError(err);
     } finally {
@@ -426,10 +444,35 @@ export default function CommercialCourseDetailRoute({ route }: { route?: any } =
         <TextInput
           accessibilityLabel="Commercial course detail linked product lines"
           onChangeText={setLinkedProductLineIds}
-          placeholder="Linked product line IDs"
+          placeholder="Linked product line IDs, or choose below"
           style={styles.input}
           value={linkedProductLineIds}
         />
+        {productLines.length ? (
+          <View style={styles.lineSelector}>
+            <Text style={styles.selectorLabel}>Choose Product Line</Text>
+            <View style={styles.selectorActions}>
+              {productLines.slice(0, 4).map((line) => {
+                const id = productLineId(line);
+                const name = line.name || "Product line";
+                const selected = splitIds(linkedProductLineIds).includes(id);
+                return (
+                  <Pressable
+                    key={`course-detail-line-${id || name}`}
+                    accessibilityRole="button"
+                    accessibilityLabel={`Use course detail product line ${name}`}
+                    onPress={() =>
+                      setLinkedProductLineIds((current) => appendIdList(current, id))
+                    }
+                    style={[styles.action, selected && styles.actionSelected]}
+                  >
+                    <Text style={styles.actionText}>{name}</Text>
+                  </Pressable>
+                );
+              })}
+            </View>
+          </View>
+        ) : null}
         <TextInput
           accessibilityLabel="Commercial course detail linked evidence runs"
           onChangeText={setLinkedGrowIds}
@@ -687,7 +730,22 @@ const styles = StyleSheet.create({
     paddingHorizontal: 11,
     paddingVertical: 8
   },
+  actionSelected: { backgroundColor: "#DCFCE7", borderColor: "#22C55E" },
   actionText: { color: "#166534", fontSize: 13, fontWeight: "900" },
+  lineSelector: {
+    borderColor: "#BBF7D0",
+    borderRadius: 8,
+    borderWidth: 1,
+    marginTop: 10,
+    padding: 9
+  },
+  selectorLabel: {
+    color: "#166534",
+    fontSize: 11,
+    fontWeight: "900",
+    textTransform: "uppercase"
+  },
+  selectorActions: { flexDirection: "row", flexWrap: "wrap", gap: 8, marginTop: 8 },
   primaryAction: {
     alignSelf: "flex-start",
     backgroundColor: "#166534",

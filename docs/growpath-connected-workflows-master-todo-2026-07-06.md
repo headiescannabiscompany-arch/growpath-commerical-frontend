@@ -533,6 +533,7 @@ Completed and pushed:
 257. Commercial Marketing Planner now loads existing Product Lines, counts line-linked campaigns as connected plans, and offers quick-select buttons for product-family campaigns instead of making owners type raw line IDs.
 258. Canonical Product Trial Evidence Run creation now loads existing Product Lines and offers quick-select buttons so private evidence records can attach to storefront product families without raw ID lookup.
 259. Commercial Course creation now loads existing Product Lines and offers quick-select buttons for product-family course links, making product education easier to connect to storefront families without manual ID entry.
+260. Commercial Course detail/edit now loads existing Product Lines and offers quick-select buttons for linked product-family metadata, so owners can repair course-to-product-line connections after creation without raw ID lookup.
 
 ## Working Rule For Codex
 
