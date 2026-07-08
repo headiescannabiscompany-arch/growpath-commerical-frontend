@@ -584,6 +584,7 @@ Completed and pushed:
 308. Public Store discovery now presents Storefront offers and routes to `/offers` instead of sending users into `/marketplace`, and the Commercial plan offer copy now starts with storefront/products/campaigns rather than marketplace language.
 309. Paywall, global Search, Commercial Tools, and shared capability menus now use Storefront Offers, Creator Content, and External Channel Integrations labels while preserving legacy Marketplace route names only as compatibility targets.
 310. Storefront owner quick product creation now accepts and posts a Stripe price ID alongside external purchase URL, so product checkout readiness can be completed from the storefront workflow instead of forcing owners to leave the brand setup surface.
+311. Commercial Products create flow now accepts Stripe price IDs, posts them to the product API, and allows publish setup with either Stripe price or external purchase URL, matching the product readiness rules already used by storefront cards and product detail.
 
 ## Working Rule For Codex
 

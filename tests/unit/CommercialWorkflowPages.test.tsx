@@ -1565,6 +1565,10 @@ describe("commercial workflow pages", () => {
       "https://example.com/bloom"
     );
     fireEvent.changeText(
+      screen.getByLabelText("Commercial product Stripe price ID"),
+      "price_bloom_mix"
+    );
+    fireEvent.changeText(
       screen.getByLabelText("Commercial product guaranteed analysis"),
       "N 3\nP2O5 1\nK2O 1"
     );
@@ -1601,6 +1605,7 @@ describe("commercial workflow pages", () => {
             unitSize: "5 lb bag",
             growInterests: ["living soil", "dry amendments"],
             externalPurchaseUrl: "https://example.com/bloom",
+            stripePriceId: "price_bloom_mix",
             shortDescription: "Flower topdress blend",
             specs: expect.objectContaining({
               unitSize: "5 lb bag",
@@ -1610,6 +1615,58 @@ describe("commercial workflow pages", () => {
               directions: "Topdress and water in.",
               applicationRate: "1 cup per cubic foot"
             }),
+            status: "published"
+          })
+        })
+      )
+    );
+  });
+
+  it("allows commercial product publish setup with Stripe price instead of external URL", async () => {
+    const screen = render(<CommercialProductsRoute />);
+
+    await waitFor(() => expect(screen.getByText("Living Soil Base")).toBeTruthy());
+
+    fireEvent.changeText(screen.getByLabelText("Commercial product name"), "Stripe Mix");
+    fireEvent.changeText(
+      screen.getByLabelText("Commercial product image URL"),
+      "https://example.com/stripe-mix.jpg"
+    );
+    fireEvent.changeText(screen.getByLabelText("Commercial product price"), "34");
+    fireEvent.changeText(
+      screen.getByLabelText("Commercial product size or weight"),
+      "2 lb bag"
+    );
+    fireEvent.changeText(
+      screen.getByLabelText("Commercial product grow interests"),
+      "living soil"
+    );
+    fireEvent.changeText(
+      screen.getByLabelText("Commercial product short description"),
+      "Checkout-ready product"
+    );
+    fireEvent.changeText(
+      screen.getByLabelText("Commercial product Stripe price ID"),
+      "price_only_checkout"
+    );
+
+    expect(
+      screen.getByLabelText("Toggle commercial product publish status").props
+        .accessibilityState?.disabled
+    ).toBe(false);
+
+    fireEvent.press(screen.getByLabelText("Toggle commercial product publish status"));
+    fireEvent.press(screen.getByLabelText("Create commercial product"));
+
+    await waitFor(() =>
+      expect(mockApiRequest).toHaveBeenCalledWith(
+        "/api/commercial/products",
+        expect.objectContaining({
+          method: "POST",
+          body: expect.objectContaining({
+            name: "Stripe Mix",
+            externalPurchaseUrl: "",
+            stripePriceId: "price_only_checkout",
             status: "published"
           })
         })

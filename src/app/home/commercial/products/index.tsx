@@ -26,6 +26,7 @@ type ProductForm = {
   directions: string;
   applicationRate: string;
   externalPurchaseUrl: string;
+  stripePriceId: string;
   status: "draft" | "published";
 };
 
@@ -45,6 +46,7 @@ const EMPTY_FORM: ProductForm = {
   directions: "",
   applicationRate: "",
   externalPurchaseUrl: "",
+  stripePriceId: "",
   status: "draft"
 };
 
@@ -127,7 +129,9 @@ function formPublishBlockers(form: ProductForm) {
   if (!Number(form.price)) blockers.push("add price");
   if (!hasText(form.unitSize)) blockers.push("add size/weight");
   if (!splitList(form.growInterests).length) blockers.push("add grow interests");
-  if (!hasText(form.externalPurchaseUrl)) blockers.push("add checkout link");
+  if (!hasText(form.externalPurchaseUrl) && !hasText(form.stripePriceId)) {
+    blockers.push("add checkout link or Stripe price");
+  }
   return blockers;
 }
 
@@ -211,6 +215,7 @@ export default function CommercialProductsRoute({
         unitSize: form.unitSize.trim() || undefined,
         growInterests: splitList(form.growInterests),
         externalPurchaseUrl: form.externalPurchaseUrl.trim(),
+        stripePriceId: form.stripePriceId.trim() || undefined,
         specs: hasProductSpecs(form)
           ? {
               unitSize: form.unitSize.trim() || undefined,
@@ -428,6 +433,15 @@ export default function CommercialProductsRoute({
             }
             accessibilityLabel="Commercial product external purchase URL"
             placeholder="External purchase URL"
+            style={styles.input}
+          />
+          <TextInput
+            value={form.stripePriceId}
+            onChangeText={(stripePriceId) =>
+              setForm((prev) => ({ ...prev, stripePriceId }))
+            }
+            accessibilityLabel="Commercial product Stripe price ID"
+            placeholder="Stripe price ID"
             style={styles.input}
           />
         </View>
