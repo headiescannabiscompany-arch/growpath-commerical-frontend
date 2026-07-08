@@ -80,18 +80,31 @@ function currentOrigin() {
   return typeof location?.origin === "string" ? location.origin : "";
 }
 
-export async function checkoutProduct(productId: string) {
+function checkoutReturnUrl(
+  origin: string,
+  returnPath: string,
+  status: string,
+  productId: string
+) {
+  const path = returnPath.startsWith("/") ? returnPath : `/${returnPath}`;
+  const separator = path.includes("?") ? "&" : "?";
+  return `${origin}${path}${separator}checkout=${status}&product=${encodeURIComponent(
+    productId
+  )}`;
+}
+
+export async function checkoutProduct(
+  productId: string,
+  options?: { returnPath?: string }
+) {
   const origin = currentOrigin();
+  const returnPath = options?.returnPath || "/store";
   return apiRequest(`${PRODUCTS_BASE}/${encodeURIComponent(productId)}/checkout`, {
     method: "POST",
     body: origin
       ? {
-          successUrl: `${origin}/storefront?checkout=success&product=${encodeURIComponent(
-            productId
-          )}`,
-          cancelUrl: `${origin}/storefront?checkout=canceled&product=${encodeURIComponent(
-            productId
-          )}`
+          successUrl: checkoutReturnUrl(origin, returnPath, "success", productId),
+          cancelUrl: checkoutReturnUrl(origin, returnPath, "canceled", productId)
         }
       : {}
   });

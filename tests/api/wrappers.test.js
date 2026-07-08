@@ -127,6 +127,27 @@ describe("API Wrappers Unit Tests", () => {
     ).toBe(true);
   });
 
+  it("Commercial API: checkoutProduct can return to a public product page", async () => {
+    const previousWindow = global.window;
+    global.window = { location: { origin: "https://app.example" } };
+
+    try {
+      await productsApi.checkoutProduct("product 1", {
+        returnPath: "/store/living-soil/products/product%201"
+      });
+    } finally {
+      global.window = previousWindow;
+    }
+
+    const body = JSON.parse(fetchCalls[0].options.body);
+    expect(body.successUrl).toBe(
+      "https://app.example/store/living-soil/products/product%201?checkout=success&product=product%201"
+    );
+    expect(body.cancelUrl).toBe(
+      "https://app.example/store/living-soil/products/product%201?checkout=canceled&product=product%201"
+    );
+  });
+
   it("Subscription API: verifyIapReceipt posts platform receipt to backend", async () => {
     await subscriptionApi.verifyIapReceipt({
       receipt: "receipt-1",

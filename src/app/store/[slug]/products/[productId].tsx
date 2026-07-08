@@ -250,7 +250,9 @@ export default function PublicProductRoute() {
       metadata: { growInterests: publicGrowInterests(product) }
     });
     try {
-      const checkout: any = await checkoutProduct(id);
+      const checkout: any = await checkoutProduct(id, {
+        returnPath: publicProductUrl(slug, product)
+      });
       const url = checkout?.url || checkout?.checkoutUrl || checkout?.data?.url;
       if (!url) {
         setFeedback("Checkout unavailable. The backend did not return a checkout URL.");
