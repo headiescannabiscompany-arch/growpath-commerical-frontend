@@ -1,15 +1,24 @@
 import React from "react";
 import { render, waitFor } from "@testing-library/react-native";
 
+import CommunityTab from "@/app/home/personal/(tabs)/community";
 import ForumRoute from "@/app/home/personal/(tabs)/forum";
 import ForumNewPostRoute from "@/app/home/personal/(tabs)/forum/new-post";
 
 const mockListForumPosts = jest.fn();
+const mockListGuilds = jest.fn();
+const mockListNotifications = jest.fn();
 
 jest.mock("expo-router", () => {
   const React = require("react");
+  const { Text } = require("react-native");
   return {
-    Link: ({ children }: { children: React.ReactNode }) => children,
+    Link: ({ children, href }: { children: React.ReactNode; href: string }) =>
+      React.createElement(
+        Text,
+        { testID: `link-${href}`, accessibilityLabel: `link-${href}` },
+        children
+      ),
     useRouter: () => ({
       back: jest.fn(),
       replace: jest.fn()
@@ -25,6 +34,12 @@ jest.mock("expo-image-picker", () => ({
 
 jest.mock("@/api/communitySocial", () => ({
   listForumPosts: (...args: any[]) => mockListForumPosts(...args),
+  listGuilds: (...args: any[]) => mockListGuilds(...args),
+  listNotifications: (...args: any[]) => mockListNotifications(...args),
+  markAllNotificationsRead: jest.fn(),
+  markNotificationRead: jest.fn(),
+  joinGuild: jest.fn(),
+  leaveGuild: jest.fn(),
   createForumPost: jest.fn(),
   postId: (post: any) => post.id || post._id || post.title
 }));
@@ -49,6 +64,8 @@ describe("Forum and feed separation copy", () => {
   beforeEach(() => {
     jest.resetAllMocks();
     mockListForumPosts.mockResolvedValue([]);
+    mockListGuilds.mockResolvedValue([]);
+    mockListNotifications.mockResolvedValue([]);
   });
 
   it("frames the forum as discussion while feed placements stay campaigns", async () => {
@@ -69,5 +86,29 @@ describe("Forum and feed separation copy", () => {
     expect(
       screen.getByPlaceholderText("Write your question or discussion...")
     ).toBeTruthy();
+  });
+
+  it("opens personal forum list posts through the shared forum detail route", async () => {
+    mockListForumPosts.mockResolvedValue([
+      { id: "thread-grow-help", title: "Leaf help", body: "What changed?" }
+    ]);
+
+    const screen = render(<ForumRoute />);
+
+    await waitFor(() =>
+      expect(screen.getByTestId("link-/forum/post/thread-grow-help")).toBeTruthy()
+    );
+  });
+
+  it("opens community forum previews through the shared forum detail route", async () => {
+    mockListForumPosts.mockResolvedValue([
+      { id: "thread-community-help", title: "Community help", body: "Need advice" }
+    ]);
+
+    const screen = render(<CommunityTab />);
+
+    await waitFor(() =>
+      expect(screen.getByTestId("link-/forum/post/thread-community-help")).toBeTruthy()
+    );
   });
 });

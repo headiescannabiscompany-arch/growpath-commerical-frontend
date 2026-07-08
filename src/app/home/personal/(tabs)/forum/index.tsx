@@ -130,7 +130,7 @@ export default function ForumRoute() {
         return (
           <Link
             key={id || titleOf(post)}
-            href={`/home/personal/forum/post/${encodeURIComponent(id)}`}
+            href={`/forum/post/${encodeURIComponent(id)}`}
             asChild
           >
             <Pressable
