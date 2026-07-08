@@ -40,15 +40,22 @@ function campaignDestination(post: CommercialFeedCampaign) {
     return { cta: "View Product", href: `/store?q=${productId}` };
   }
   if (post.linkedCourseId) {
+    const courseId = encodeURIComponent(String(post.linkedCourseId));
+    if (post.storefrontSlug) {
+      return {
+        cta: "View Course",
+        href: `/store/${encodeURIComponent(String(post.storefrontSlug))}/courses/${courseId}`
+      };
+    }
     return {
       cta: "View Course",
-      href: `/courses?courseId=${encodeURIComponent(String(post.linkedCourseId))}`
+      href: `/courses?courseId=${courseId}`
     };
   }
   if (post.linkedLiveId) {
     return {
       cta: "View Live",
-      href: `/feed?liveId=${encodeURIComponent(String(post.linkedLiveId))}`
+      href: `/live-session?sessionId=${encodeURIComponent(String(post.linkedLiveId))}`
     };
   }
   if (post.linkedProductLineId) {

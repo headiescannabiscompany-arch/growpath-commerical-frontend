@@ -157,4 +157,56 @@ describe("FeedRail", () => {
       })
     );
   });
+
+  it("routes course and live campaigns to public destination surfaces", async () => {
+    mockListCommercialFeedCampaigns.mockResolvedValue({
+      items: [
+        {
+          id: "campaign-course",
+          type: "education",
+          title: "Soil Builder Masterclass",
+          body: "Learn the full recipe workflow from a brand storefront.",
+          linkedCourseId: "course-soil-1",
+          storefrontSlug: "living-soil-labs",
+          createdAt: "2026-07-07T12:00:00Z",
+          engagementCount: 5,
+          author: { displayName: "Living Soil Labs" },
+          tags: [],
+          growInterests: ["living soil"]
+        },
+        {
+          id: "campaign-live",
+          type: "drop",
+          title: "Live Soil Mixing Demo",
+          body: "RSVP to the public event.",
+          linkedLiveId: "live-1",
+          createdAt: "2026-07-07T13:00:00Z",
+          engagementCount: 3,
+          author: { displayName: "Living Soil Labs" },
+          tags: [],
+          growInterests: ["living soil"]
+        }
+      ],
+      nextCursor: null
+    });
+
+    const screen = render(<FeedRail slots={2} railMode="promo-only" placement="top" />);
+
+    await waitFor(() => expect(screen.getByText("Soil Builder Masterclass")).toBeTruthy());
+    fireEvent.press(screen.getByLabelText("View Course for Soil Builder Masterclass"));
+    fireEvent.press(screen.getByLabelText("View Live for Live Soil Mixing Demo"));
+
+    expect(recordCommercialAnalyticsEvent).toHaveBeenCalledWith(
+      expect.objectContaining({
+        targetUrl: "/store/living-soil-labs/courses/course-soil-1",
+        metadata: expect.objectContaining({ cta: "View Course" })
+      })
+    );
+    expect(recordCommercialAnalyticsEvent).toHaveBeenCalledWith(
+      expect.objectContaining({
+        targetUrl: "/live-session?sessionId=live-1",
+        metadata: expect.objectContaining({ cta: "View Live" })
+      })
+    );
+  });
 });

@@ -193,9 +193,17 @@ function campaignDestination(post: CommercialFeedCampaign) {
     };
   }
   if (post.linkedCourseId) {
+    const courseId = encodeURIComponent(String(post.linkedCourseId));
+    if (post.storefrontSlug) {
+      const slug = encodeURIComponent(String(post.storefrontSlug));
+      return {
+        label: "View Course",
+        href: `/store/${slug}/courses/${courseId}`
+      };
+    }
     return {
       label: "View Course",
-      href: `/courses?courseId=${encodeURIComponent(String(post.linkedCourseId))}`
+      href: `/courses?courseId=${courseId}`
     };
   }
   if (post.linkedLiveId) {

@@ -450,6 +450,17 @@ describe("CommercialFeedRoute", () => {
               linkedCourseId: "course-npk-1",
               author: { displayName: "Living Soil Labs" },
               createdAt: "2026-07-07T13:00:00Z"
+            },
+            {
+              id: "campaign-storefront-course",
+              type: "education",
+              campaignKind: "course_ad",
+              title: "Soil Builder Masterclass",
+              body: "A course ad with a storefront slug opens the brand course page.",
+              linkedCourseId: "course-soil-1",
+              storefrontSlug: "living-soil-labs",
+              author: { displayName: "Living Soil Labs" },
+              createdAt: "2026-07-07T14:00:00Z"
             }
           ]
         });
@@ -463,9 +474,13 @@ describe("CommercialFeedRoute", () => {
 
     fireEvent.press(screen.getByLabelText("View Product for 3-1-1 Veg Mix"));
     fireEvent.press(screen.getByLabelText("View Course for NPK Recipe Builder"));
+    fireEvent.press(screen.getByLabelText("View Course for Soil Builder Masterclass"));
 
     expect(mockPush).toHaveBeenCalledWith("/store?q=veg-mix-1");
     expect(mockPush).toHaveBeenCalledWith("/courses?courseId=course-npk-1");
+    expect(mockPush).toHaveBeenCalledWith(
+      "/store/living-soil-labs/courses/course-soil-1"
+    );
     expect(mockPush).not.toHaveBeenCalledWith("/home/commercial/products/veg-mix-1");
     expect(mockPush).not.toHaveBeenCalledWith("/home/commercial/courses/course-npk-1");
   });
