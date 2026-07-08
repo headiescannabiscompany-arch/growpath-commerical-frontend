@@ -13,6 +13,7 @@ import {
 import ToolResultSurface from "@/features/personal/tools/ToolResultSurface";
 import { saveToolRunAndCreateTasks } from "@/features/personal/tools/saveToolRunAndOpenJournal";
 import PersonalFeedPlacement from "@/components/feed/PersonalFeedPlacement";
+import { radius } from "@/theme/theme";
 
 function coerceParam(value?: string | string[]) {
   if (typeof value === "string") return value;
@@ -230,12 +231,12 @@ const styles = StyleSheet.create({
   subtitle: { color: "#64748B", lineHeight: 20 },
   context: { color: "#166534", fontWeight: "800" },
   label: { color: "#334155", fontWeight: "800", marginTop: 4 },
-  input: { borderWidth: 1, borderColor: "#CBD5E1", borderRadius: 8, padding: 10 },
+  input: { borderWidth: 1, borderColor: "#CBD5E1", borderRadius: radius.card, padding: 10 },
   milestones: { gap: 8 },
   milestone: {
     borderWidth: 1,
     borderColor: "#E2E8F0",
-    borderRadius: 8,
+    borderRadius: radius.card,
     padding: 10,
     backgroundColor: "#FFFFFF"
   },

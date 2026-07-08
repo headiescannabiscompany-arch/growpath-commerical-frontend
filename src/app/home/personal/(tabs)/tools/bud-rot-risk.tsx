@@ -14,6 +14,7 @@ import {
   saveToolRunAndOpenJournal
 } from "@/features/personal/tools/saveToolRunAndOpenJournal";
 import PersonalFeedPlacement from "@/components/feed/PersonalFeedPlacement";
+import { radius } from "@/theme/theme";
 
 function coerceParam(value?: string | string[]) {
   if (typeof value === "string") return value;
@@ -261,7 +262,7 @@ const styles = StyleSheet.create({
   input: {
     borderWidth: 1,
     borderColor: "#E2E8F0",
-    borderRadius: 10,
+    borderRadius: radius.card,
     padding: 12,
     backgroundColor: "#FFFFFF"
   },
@@ -269,7 +270,7 @@ const styles = StyleSheet.create({
   lockedCard: {
     borderWidth: 1,
     borderColor: "#E2E8F0",
-    borderRadius: 10,
+    borderRadius: radius.card,
     padding: 12,
     backgroundColor: "#F8FAFC"
   },

@@ -13,6 +13,7 @@ import LockedToolCard from "@/features/personal/tools/LockedToolCard";
 import ToolResultSurface from "@/features/personal/tools/ToolResultSurface";
 import { exportToCsv } from "@/utils/exportToCsv";
 import PersonalFeedPlacement from "@/components/feed/PersonalFeedPlacement";
+import { radius } from "@/theme/theme";
 
 function coerceParam(value?: string | string[]) {
   if (typeof value === "string") return value;
@@ -164,7 +165,7 @@ const styles = StyleSheet.create({
   previewRow: {
     borderWidth: 1,
     borderColor: "#E2E8F0",
-    borderRadius: 8,
+    borderRadius: radius.card,
     padding: 10,
     backgroundColor: "#FFFFFF"
   },

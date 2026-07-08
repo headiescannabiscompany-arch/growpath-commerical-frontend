@@ -17,6 +17,7 @@ import {
 } from "@/features/personal/tools/saveToolRunAndOpenJournal";
 import { reviewFeedingSchedule } from "@/features/personal/tools/feedingScheduleReview";
 import PersonalFeedPlacement from "@/components/feed/PersonalFeedPlacement";
+import { radius } from "@/theme/theme";
 
 function coerceParam(value?: string | string[]) {
   if (typeof value === "string") return value;
@@ -426,11 +427,11 @@ const styles = StyleSheet.create({
   subtitle: { color: "#64748B", lineHeight: 20 },
   context: { color: "#166534", fontWeight: "800" },
   label: { color: "#334155", fontWeight: "800", marginTop: 4 },
-  input: { borderWidth: 1, borderColor: "#CBD5E1", borderRadius: 9, padding: 10 },
+  input: { borderWidth: 1, borderColor: "#CBD5E1", borderRadius: radius.card, padding: 10 },
   button: {
     alignSelf: "flex-start",
     backgroundColor: "#166534",
-    borderRadius: 9,
+    borderRadius: radius.card,
     paddingHorizontal: 12,
     paddingVertical: 9
   },
