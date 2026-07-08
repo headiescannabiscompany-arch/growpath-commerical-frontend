@@ -905,8 +905,12 @@ describe("commercial workflow pages", () => {
 
     expect(screen.getByText("Brand Forum / Q&A")).toBeTruthy();
     expect(
+      screen.getByText(/Brand Forum \/ Q&A is discussion and support activity/)
+    ).toBeTruthy();
+    expect(
       screen.getByText(/Feed \/ Campaigns stays advertising and outreach/)
     ).toBeTruthy();
+    expect(screen.queryByText(/Commercial community/)).toBeNull();
     expect(screen.getByText("Support thread workflow")).toBeTruthy();
     expect(screen.getByText("Forum / Q&A discovery")).toBeTruthy();
     expect(screen.getByText("Create linked campaign")).toBeTruthy();

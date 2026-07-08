@@ -146,7 +146,7 @@ export default function CommercialCommunityRoute() {
             <Text style={styles.kicker}>Commercial workspace</Text>
             <Text style={styles.title}>Brand Forum / Q&A</Text>
             <Text style={styles.subtitle}>
-              Commercial community is discussion and support activity for a brand. Feed /
+              Brand Forum / Q&A is discussion and support activity for a brand. Feed /
               Campaigns stays advertising and outreach.
             </Text>
           </View>
