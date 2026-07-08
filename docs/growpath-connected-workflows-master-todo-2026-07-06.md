@@ -644,6 +644,7 @@ Completed and pushed:
 368. Personal Forum route and stack title now use Forum / Q&A, and the route consumes the shared 8px card radius token so the Personal discussion surface matches the Facility-style visual polish.
 369. Commercial Inventory create now says Inventory Support Record/Create Inventory Record instead of ambiguous Support Item copy, and its inputs/actions use the shared 8px radius token.
 370. Commercial Inventory list/detail/dashboard/navigation now refer to individual stock rows as Inventory Records instead of Support Items, and the detail cards/actions use the shared 8px radius token.
+371. Legacy central page registry now labels the Forum route as Forum / Q&A while preserving the route name for compatibility, with navigation coverage guarding the corrected discussion label.
 
 ## Working Rule For Codex
 

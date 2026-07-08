@@ -1,5 +1,6 @@
 import { CAPABILITIES } from "../../src/capabilities/keys";
 import { PLANS } from "../../src/capabilities/plans";
+import { PAGE_REGISTRY } from "../../src/navigation/pageRegistry";
 import { TAB_CONFIG, canAccess } from "../../src/navigation/tabConfig";
 
 describe("legacy tab configuration", () => {
@@ -18,5 +19,14 @@ describe("legacy tab configuration", () => {
     expect(canAccess([CAPABILITIES.SEARCH], personalCaps)).toBe(true);
     expect(canAccess([CAPABILITIES.VIEW_FEED], personalCaps)).toBe(true);
     expect(canAccess([CAPABILITIES.DEBUG], personalCaps)).toBe(false);
+  });
+
+  it("keeps the legacy forum registry label aligned with Forum / Q&A copy", () => {
+    const forumPage = PAGE_REGISTRY.find((page) => page.name === "Forum");
+
+    expect(forumPage).toMatchObject({
+      label: "Forum / Q&A",
+      capability: CAPABILITIES.VIEW_FORUM
+    });
   });
 });

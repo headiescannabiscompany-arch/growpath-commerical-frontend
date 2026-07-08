@@ -30,7 +30,7 @@ export const PAGE_REGISTRY = [
     component: require("../screens/ForumScreen").default,
     icon: "chatbubble-ellipses-outline",
     capability: CAPABILITIES.VIEW_FORUM,
-    label: "Forum"
+    label: "Forum / Q&A"
   }
   // ...add more screens as needed, with capability and config
 ];
