@@ -545,6 +545,7 @@ Completed and pushed:
 269. The root Create Post action now sends Facility users to `/home/facility/feed` for facility outreach campaign creation instead of the shared `/feed` viewer, keeping facility author identity and workspace routing intact.
 270. Deferred user verification now includes the canonical Commercial inventory create/detail regression, the canonical route-matrix guard, and the root Create Post facility-outreach regression, with browser checklist items for `/home/commercial/inventory/new`, `/home/commercial/inventory/:id`, and `/home/facility/feed`.
 271. Feed placement rails now route product-line campaigns to filtered public storefront discovery (`/store/:slug?line=:lineId` or `/store?line=:lineId`), matching the main Feed/Campaigns destination behavior so top/middle/bottom ads keep product-family CTAs connected.
+272. Storefront owner Active Feed Campaigns now shows linked product-line context and a Browse Line action back to the filtered public storefront, so owners can see which storefront family each campaign promotes without treating the ad as discussion.
 
 ## Working Rule For Codex
 

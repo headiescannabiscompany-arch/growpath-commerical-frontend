@@ -175,6 +175,15 @@ function campaignImage(campaign: AnyRec) {
   );
 }
 
+function campaignProductLineId(campaign: AnyRec) {
+  return String(
+    campaign.linkedProductLineId ??
+      campaign.productLineId ??
+      campaign.linkedProductLineIds?.[0] ??
+      ""
+  );
+}
+
 function campaignIsActive(campaign: AnyRec) {
   const status = String(campaign.status || "active").toLowerCase();
   return ["active", "published", "scheduled", "live"].includes(status);
@@ -1242,6 +1251,8 @@ export default function Storefront({
                           campaign.type || campaign.campaignType || "campaign",
                           campaign.linkedProductId &&
                             `Product ${campaign.linkedProductId}`,
+                          campaignProductLineId(campaign) &&
+                            `Product line ${campaignProductLineId(campaign)}`,
                           campaign.linkedCourseId && `Course ${campaign.linkedCourseId}`,
                           campaign.linkedLiveId && `Live ${campaign.linkedLiveId}`,
                           campaign.linkedStorefrontId &&
@@ -1260,6 +1271,12 @@ export default function Storefront({
                           href="/home/commercial/feed"
                           label="Open Campaigns"
                         />
+                        {campaignProductLineId(campaign) ? (
+                          <ObjectActionLink
+                            href={`${publicStorePath}?line=${encodeURIComponent(campaignProductLineId(campaign))}`}
+                            label="Browse Line"
+                          />
+                        ) : null}
                         {campaign.linkedForumThreadId ? (
                           <ObjectActionLink
                             href={`/forum/post/${encodeURIComponent(String(campaign.linkedForumThreadId))}`}

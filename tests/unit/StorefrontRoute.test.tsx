@@ -193,6 +193,7 @@ function apiResponseFor(path: string, options?: any) {
           imageUrl: "https://example.com/campaign.jpg",
           growInterests: ["living soil", "recipe building"],
           linkedProductId: "product-1",
+          linkedProductLineId: "line-1",
           linkedCourseId: "course-1",
           linkedLiveId: "live-1",
           linkedForumThreadId: "thread-1"
@@ -265,7 +266,9 @@ describe("Storefront route", () => {
     expect(screen.getByText("Open Line")).toBeTruthy();
     expect(screen.getAllByText("View as User").length).toBeGreaterThan(0);
     expect(screen.getByTestId("link-/home/commercial/product-lines/line-1")).toBeTruthy();
-    expect(screen.getByTestId("link-/store/grow-shop?line=line-1")).toBeTruthy();
+    expect(
+      screen.getAllByTestId("link-/store/grow-shop?line=line-1").length
+    ).toBeGreaterThan(0);
     expect(screen.getByText("Living Soil Basics")).toBeTruthy();
     expect(screen.getAllByText(/Interests living soil, dry amendments/).length).toBeGreaterThan(0);
     expect(screen.getAllByText("Open Course").length).toBeGreaterThan(0);
@@ -279,8 +282,13 @@ describe("Storefront route", () => {
     expect(screen.getByText("New Veg Mix Launch")).toBeTruthy();
     expect(screen.getByText("Open Campaigns")).toBeTruthy();
     expect(screen.getByText(/Advertising \/ outreach/)).toBeTruthy();
+    expect(screen.getByText(/Product line line-1/)).toBeTruthy();
+    expect(screen.getAllByText("Browse Line").length).toBeGreaterThan(0);
     expect(screen.getByText(/Live live-1/)).toBeTruthy();
     expect(screen.getByText(/Interests living soil, recipe building/)).toBeTruthy();
+    expect(
+      screen.getAllByTestId("link-/store/grow-shop?line=line-1").length
+    ).toBeGreaterThan(0);
     expect(screen.getByText("Living Soil Base")).toBeTruthy();
     expect(screen.getAllByText("Open Product").length).toBeGreaterThan(0);
     expect(screen.getByText("Published Bloom Topdress")).toBeTruthy();
