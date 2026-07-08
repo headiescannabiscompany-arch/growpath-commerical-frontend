@@ -40,6 +40,7 @@ const checks = [
       "tests/navigation/routeAccess.test.ts",
       "tests/unit/CommercialWorkflowPages.test.tsx",
       "tests/unit/CommercialFeedRoute.test.tsx",
+      "tests/unit/FacilityFeedRoute.test.tsx",
       "tests/unit/commercial-feed-api.test.ts",
       "tests/unit/CommercialLivesRoute.test.tsx",
       "tests/unit/StorefrontRoute.test.tsx",

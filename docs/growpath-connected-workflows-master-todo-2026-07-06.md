@@ -493,6 +493,7 @@ Completed and pushed:
 217. Commercial Profile & Billing now exposes the shared workspace switcher beside Account Profile, giving brand owners a direct path back to Personal/Commercial/Facility identity selection while keeping brand settings separate from account controls.
 218. Deferred user verification now runs the workspace switcher/profile and live support-alias regressions and asks the human/browser pass to confirm `/account/mode` is reachable from Personal, Commercial, and Facility profiles plus all live @growpathai.com support aliases.
 219. The canonical route matrix now explicitly marks older generated `/feed`, `/storefront`, and `/dashboard` rows as historical when they conflict with current `/home/commercial`, `/home/commercial/storefront`, `/home/commercial/feed`, `/home/facility/select`, and `/home/facility` routing, with a doc regression guard.
+220. Facility Feed/Campaigns now has a real `/home/facility/feed` route that reuses the shared campaign screen in facility-outreach mode, so facility tasks, alerts, notifications, and schedule source links to outreach campaigns no longer point at a missing route.
 
 ## Working Rule For Codex
 
