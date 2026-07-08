@@ -197,13 +197,14 @@ export default function StoreIndex() {
       </AppCard>
 
       <AppCard>
-        <Text style={styles.cardTitle}>Marketplace</Text>
+        <Text style={styles.cardTitle}>Storefront offers</Text>
         <Text style={styles.cardText}>
-          Browse creator content, templates, courses, and resources.
+          Compare GrowPath plans and storefront-ready commercial or facility offers
+          without leaving the connected storefront workflow.
         </Text>
-        <Link href="/marketplace" asChild>
+        <Link href="/offers" asChild>
           <Pressable style={styles.secondaryButton}>
-            <Text style={styles.secondaryButtonText}>Open Marketplace</Text>
+            <Text style={styles.secondaryButtonText}>View Offers</Text>
           </Pressable>
         </Link>
       </AppCard>

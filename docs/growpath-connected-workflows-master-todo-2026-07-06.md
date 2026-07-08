@@ -581,6 +581,7 @@ Completed and pushed:
 305. Commercial Product Detail now reads `batchId` route context, shows the focused product batch in Linked Evidence, and links directly to the focused Batch Planner detail so product-batch tasks/alerts/schedule items keep batches/lots inside the product workspace while preserving full production-detail access.
 306. Deferred user verification now checks not only product-linked batch routing but also the Product Detail focused-batch context and Open Focused Batch action, so the browser pass verifies batches/lots stay attached to products while still exposing production records.
 307. Personal feature metadata now titles the legacy `personal.community` route as Forum / Q&A and the shared menu comment names Forum/Q&A as the separate discussion surface, keeping compatibility keys while removing visible Feed-vs-Forum ambiguity.
+308. Public Store discovery now presents Storefront offers and routes to `/offers` instead of sending users into `/marketplace`, and the Commercial plan offer copy now starts with storefront/products/campaigns rather than marketplace language.
 
 ## Working Rule For Codex
 

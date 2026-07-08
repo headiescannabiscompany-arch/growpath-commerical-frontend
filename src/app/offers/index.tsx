@@ -43,7 +43,7 @@ const PLANS: Plan[] = [
     key: "commercial",
     title: PLAN_PRICING.commercial.title,
     eyebrow: PLAN_PRICING.commercial.eyebrow,
-    description: "Marketplace, storefront, campaigns, and business operations.",
+    description: "Storefront, products, campaigns, and business operations.",
     bullets: ["Storefront and products", "Campaign tools", "Commercial inventory"]
   },
   {

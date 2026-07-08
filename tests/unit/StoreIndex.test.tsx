@@ -101,4 +101,15 @@ describe("StoreIndex", () => {
     expect(mockLinkHrefs).toContain("/home/commercial/storefront");
     expect(mockLinkHrefs).not.toContain("/storefront");
   });
+
+  it("routes public discovery offers through offers instead of marketplace", () => {
+    const screen = render(<StoreIndex />);
+
+    expect(screen.getByText("Storefront offers")).toBeTruthy();
+    expect(screen.getByText("View Offers")).toBeTruthy();
+    expect(mockLinkHrefs).toContain("/offers");
+    expect(mockLinkHrefs).not.toContain("/marketplace");
+    expect(screen.queryByText("Marketplace")).toBeNull();
+    expect(screen.queryByText("Open Marketplace")).toBeNull();
+  });
 });
