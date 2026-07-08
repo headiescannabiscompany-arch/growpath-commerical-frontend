@@ -509,7 +509,9 @@ export default function DataIntegrationsScreen() {
     <ScrollView contentContainerStyle={styles.container}>
       <Text style={styles.title}>Data Integrations</Text>
       <Text style={styles.subtitle}>
-        Connect grow sensors, controllers, irrigation, and environmental data.
+        Connect grow sensors, controllers, irrigation, and environmental data. Imported
+        account structure can suggest tents, rooms, devices, and streams before any data
+        is saved.
       </Text>
       <PersonalFeedPlacement
         placement="top"
@@ -564,7 +566,7 @@ export default function DataIntegrationsScreen() {
             disabled={growlinkBusy}
           >
             <Text style={styles.buttonText}>
-              {growlinkBusy ? "Working..." : "Verify + load controllers"}
+              {growlinkBusy ? "Working..." : "Verify + preview controllers"}
             </Text>
           </Pressable>
           <Pressable
@@ -572,7 +574,7 @@ export default function DataIntegrationsScreen() {
             onPress={createGrowlinkSource}
             disabled={growlinkBusy}
           >
-            <Text style={styles.primaryText}>Create source</Text>
+            <Text style={styles.primaryText}>Create read-only source</Text>
           </Pressable>
         </View>
 
@@ -605,10 +607,9 @@ export default function DataIntegrationsScreen() {
           <View style={styles.importPreview}>
             <Text style={styles.sourceListTitle}>Room import preview</Text>
             <Text style={styles.meta}>
-              Review this mapping before saving. GrowPath can use it to create
-              rooms/devices/streams for personal grows or facility onboarding when the
-              import endpoint is enabled. Read-only data sync stays separate from
-              write/control actions.
+              Review this mapping before saving. GrowPath can use it to suggest personal
+              grow spaces now and facility rooms/devices/streams during onboarding.
+              Read-only data sync stays separate from write/control actions.
             </Text>
             <Text style={styles.meta}>
               Permission: read-only / Detected rooms: {growlinkPreviewTotals.rooms} /

@@ -110,7 +110,7 @@ describe("Data Integrations Growlink flow", () => {
     );
     fireEvent.changeText(screen.getByPlaceholderText("Growlink password"), "secret");
 
-    fireEvent.press(screen.getByText("Verify + load controllers"));
+    fireEvent.press(screen.getByText("Verify + preview controllers"));
 
     await waitFor(() =>
       expect(mockVerifyGrowlinkCredentials).toHaveBeenCalledWith({
@@ -124,7 +124,7 @@ describe("Data Integrations Growlink flow", () => {
     expect(screen.getByText(/Permission: read-only \/ Detected rooms: 1/)).toBeTruthy();
     expect(screen.getByText(/air_temperature, relative_humidity/)).toBeTruthy();
 
-    fireEvent.press(screen.getByText("Create source"));
+    fireEvent.press(screen.getByText("Create read-only source"));
 
     await waitFor(() =>
       expect(mockCreateTelemetrySource).toHaveBeenCalledWith({
@@ -214,7 +214,7 @@ describe("Data Integrations Growlink flow", () => {
       "grower@example.com"
     );
     fireEvent.changeText(screen.getByPlaceholderText("Growlink password"), "secret");
-    fireEvent.press(screen.getByText("Verify + load controllers"));
+    fireEvent.press(screen.getByText("Verify + preview controllers"));
 
     await waitFor(() =>
       expect(
@@ -250,7 +250,7 @@ describe("Data Integrations Growlink flow", () => {
       "grower@example.com"
     );
     fireEvent.changeText(screen.getByPlaceholderText("Growlink password"), "secret");
-    fireEvent.press(screen.getByText("Verify + load controllers"));
+    fireEvent.press(screen.getByText("Verify + preview controllers"));
 
     await waitFor(() => expect(screen.getByText("Suggested room: Flower Room 2")).toBeTruthy());
     expect(screen.queryByText("Suggested room: TrolMaster Hydro-X Pro Flower Room 2")).toBeNull();
