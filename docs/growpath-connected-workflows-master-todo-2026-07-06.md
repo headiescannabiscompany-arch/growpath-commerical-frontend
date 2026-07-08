@@ -756,6 +756,7 @@ Completed and pushed:
 480. Facility AI tools home and Nutrient Tools dashboard cards, stat boxes, select-grow action, tool tiles, and badges now consume shared radius tokens while preserving AI feature matrix routing and nutrient tool navigation.
 481. Legacy profile, global search, and profile certificate cards, inputs, locked notices, earned badges, and certificate actions now consume shared radius tokens while preserving auth mode display, entitlement-gated search, and certificate navigation behavior.
 482. Admin reports, payout requests, and course review cards, rows, filters, thumbnails, status badges, feedback panels, and actions now consume shared radius tokens while preserving report resolution, payout marking, and course approval/rejection behavior.
+483. Legacy commercial Forum/Q&A groups search, create actions, forum-group cards, avatars, join controls, role/unread badges, modal inputs, topic chips, privacy rows, and create-group CTA now consume shared radius tokens while preserving Forum/Q&A copy separation from Feed campaigns.
 
 ## Working Rule For Codex
 

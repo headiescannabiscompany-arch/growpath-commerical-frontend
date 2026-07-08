@@ -12,7 +12,7 @@ import {
 } from "react-native";
 import { MaterialCommunityIcons } from "@expo/vector-icons";
 import Card from "../../components/Card.js";
-import { Colors, Typography, Spacing } from "../../theme/theme.js";
+import { Colors, Typography, Spacing, radius } from "../../theme/theme.js";
 import { browseGuilds, getMyGuilds, createGuild } from "../../api/community.js";
 import SkeletonLoader, { GuildCardSkeleton } from "../../components/SkeletonLoader.js";
 import EmptyState from "../../components/EmptyState.js";
@@ -548,7 +548,7 @@ const styles = StyleSheet.create({
     backgroundColor: Colors.primary,
     paddingHorizontal: Spacing.md,
     paddingVertical: Spacing.sm,
-    borderRadius: 8
+    borderRadius: radius.card
   },
   createBtnText: {
     color: "#FFF",
@@ -559,7 +559,7 @@ const styles = StyleSheet.create({
     flexDirection: "row",
     alignItems: "center",
     backgroundColor: Colors.surface,
-    borderRadius: 8,
+    borderRadius: radius.card,
     paddingHorizontal: Spacing.md,
     marginBottom: Spacing.lg
   },
@@ -581,7 +581,7 @@ const styles = StyleSheet.create({
   guildCard: {
     marginBottom: Spacing.md,
     padding: Spacing.md,
-    borderRadius: 12
+    borderRadius: radius.card
   },
   guildHeader: {
     flexDirection: "row",
@@ -591,7 +591,7 @@ const styles = StyleSheet.create({
   guildIcon: {
     width: 50,
     height: 50,
-    borderRadius: 25,
+    borderRadius: radius.pill,
     backgroundColor: "rgba(255,255,255,0.5)",
     justifyContent: "center",
     alignItems: "center",
@@ -619,7 +619,7 @@ const styles = StyleSheet.create({
     backgroundColor: Colors.primary,
     paddingHorizontal: Spacing.md,
     paddingVertical: Spacing.sm,
-    borderRadius: 6
+    borderRadius: radius.card
   },
   joinBtnText: {
     color: "#FFF",
@@ -668,7 +668,7 @@ const styles = StyleSheet.create({
   joinBtnSmall: {
     paddingHorizontal: Spacing.md,
     paddingVertical: Spacing.sm,
-    borderRadius: 6,
+    borderRadius: radius.card,
     borderWidth: 1,
     borderColor: Colors.primary
   },
@@ -680,7 +680,7 @@ const styles = StyleSheet.create({
   myGuildCard: {
     marginBottom: Spacing.md,
     padding: Spacing.md,
-    borderRadius: 12
+    borderRadius: radius.card
   },
   myGuildHeader: {
     flexDirection: "row",
@@ -714,7 +714,7 @@ const styles = StyleSheet.create({
     backgroundColor: Colors.primary,
     paddingHorizontal: Spacing.sm,
     paddingVertical: 2,
-    borderRadius: 4,
+    borderRadius: radius.pill,
     marginLeft: Spacing.sm
   },
   roleBadgeText: {
@@ -730,7 +730,7 @@ const styles = StyleSheet.create({
     backgroundColor: "#FF6B6B",
     width: 28,
     height: 28,
-    borderRadius: 14,
+    borderRadius: radius.pill,
     justifyContent: "center",
     alignItems: "center"
   },
@@ -843,7 +843,7 @@ const styles = StyleSheet.create({
     paddingHorizontal: Spacing.lg,
     paddingVertical: Spacing.md,
     backgroundColor: Colors.primary,
-    borderRadius: 8
+    borderRadius: radius.card
   },
   ctaBtnText: {
     color: "#FFF",
@@ -881,7 +881,7 @@ const styles = StyleSheet.create({
   modalInput: {
     borderWidth: 1,
     borderColor: "#e5e7eb",
-    borderRadius: 8,
+    borderRadius: radius.card,
     paddingHorizontal: Spacing.md,
     paddingVertical: Spacing.sm,
     fontSize: Typography.size.body,
@@ -898,7 +898,7 @@ const styles = StyleSheet.create({
     paddingVertical: Spacing.sm,
     borderWidth: 1,
     borderColor: Colors.primary,
-    borderRadius: 20
+    borderRadius: radius.pill
   },
   topicText: {
     color: Colors.primary,
@@ -912,7 +912,7 @@ const styles = StyleSheet.create({
     paddingHorizontal: Spacing.md,
     borderWidth: 1,
     borderColor: "#e5e7eb",
-    borderRadius: 8,
+    borderRadius: radius.card,
     marginBottom: Spacing.sm
   },
   privacyLabel: {
@@ -923,7 +923,7 @@ const styles = StyleSheet.create({
   createGuildBtn: {
     backgroundColor: Colors.primary,
     paddingVertical: Spacing.lg,
-    borderRadius: 8,
+    borderRadius: radius.card,
     alignItems: "center",
     marginTop: Spacing.lg,
     marginBottom: Spacing.lg
