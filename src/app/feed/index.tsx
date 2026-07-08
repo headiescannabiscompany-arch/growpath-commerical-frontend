@@ -212,10 +212,14 @@ function campaignDestination(post: CommercialFeedPost) {
 
 export default function CommercialFeedRoute() {
   const router = useRouter();
-  const params = useLocalSearchParams<{ campaignId?: string | string[] }>();
+  const params = useLocalSearchParams<{
+    campaignId?: string | string[];
+    liveId?: string | string[];
+  }>();
   const focusedCampaignId = Array.isArray(params.campaignId)
     ? params.campaignId[0]
     : params.campaignId;
+  const focusedLiveId = Array.isArray(params.liveId) ? params.liveId[0] : params.liveId;
   const ent = useEntitlements();
   const isFacility = ent.mode === "facility";
   const isCommercial = ent.mode === "commercial";
@@ -862,12 +866,22 @@ export default function CommercialFeedRoute() {
 
       {items.map((post) => {
         const destination = campaignDestination(post);
-        const isFocused = Boolean(focusedCampaignId && focusedCampaignId === post.id);
+        const isCampaignFocused = Boolean(
+          focusedCampaignId && focusedCampaignId === post.id
+        );
+        const isLiveFocused = Boolean(
+          focusedLiveId && focusedLiveId === String(post.linkedLiveId || "")
+        );
+        const isFocused = isCampaignFocused || isLiveFocused;
         return (
           <View
             key={post.id}
             accessibilityLabel={
-              isFocused ? `Selected feed campaign ${post.id}` : undefined
+              isCampaignFocused
+                ? `Selected feed campaign ${post.id}`
+                : isLiveFocused
+                  ? `Selected feed live ${focusedLiveId}`
+                  : undefined
             }
             style={[styles.post, isFocused ? styles.postFocused : null]}
           >

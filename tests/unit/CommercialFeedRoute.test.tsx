@@ -7,10 +7,11 @@ const mockApiRequest = jest.fn();
 const mockPersistImageUri = jest.fn();
 const mockPush = jest.fn();
 let mockMode = "commercial";
+let mockRouteParams: Record<string, string> = { campaignId: "campaign-1" };
 
 jest.mock("expo-router", () => ({
   Redirect: () => null,
-  useLocalSearchParams: () => ({ campaignId: "campaign-1" }),
+  useLocalSearchParams: () => mockRouteParams,
   useRouter: () => ({ push: mockPush })
 }));
 
@@ -45,6 +46,7 @@ jest.mock("expo-image-picker", () => ({
 describe("CommercialFeedRoute", () => {
   beforeEach(() => {
     mockMode = "commercial";
+    mockRouteParams = { campaignId: "campaign-1" };
     mockApiRequest.mockReset();
     mockPersistImageUri.mockReset();
     mockPush.mockReset();
@@ -224,6 +226,16 @@ describe("CommercialFeedRoute", () => {
         })
       })
     );
+  });
+
+  it("focuses a linked live campaign from live reminder route params", async () => {
+    mockRouteParams = { liveId: "live-1" };
+
+    const screen = render(<CommercialFeedRoute />);
+
+    await waitFor(() => expect(screen.getByText("Live soil demo")).toBeTruthy());
+
+    expect(screen.getByLabelText("Selected feed live live-1")).toBeTruthy();
   });
 
   it("limits facility feed creation to facility outreach", async () => {
