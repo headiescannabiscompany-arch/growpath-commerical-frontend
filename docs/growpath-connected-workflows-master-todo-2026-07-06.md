@@ -553,6 +553,7 @@ Completed and pushed:
 277. Support aliases are confirmed live for `support`, `billing`, `privacy`, `legal`, `security`, `commercial`, and `facility` @growpathai.com, matching the shared support-contact config and deferred browser verification checklist.
 278. Legacy CommercialStack Campaigns/Advertising screen copy now frames the page as a marketing planner that hands off real outreach to Feed / Campaigns, removing old feed-post/platform-campaign ambiguity from compatibility navigation.
 279. Active QA login defaults and the test-user account guide now use `@growpathai.com` addresses instead of stale `@growpath.com` accounts, reducing live smoke-test confusion while leaving historical release evidence unchanged.
+280. Native Commercial dashboard inventory labels now say Inventory Support and describe stock as supporting products, batches, orders, and storefront availability instead of implying a separate commercial inventory universe.
 
 ## Working Rule For Codex
 

@@ -290,7 +290,7 @@ export default function CommercialDashboardScreen() {
                 navigation={navigation}
               />
               <StatCard
-                label="Inventory"
+                label="Inventory Support"
                 value={model.inventory.length}
                 detail={`${summary.lowStock} low stock`}
                 route="CommercialInventory"
@@ -358,8 +358,8 @@ export default function CommercialDashboardScreen() {
                 navigation={navigation}
               />
               <ActionRow
-                title="Inventory and catalog"
-                subtitle="Track products, plants, ingredients, packaging, genetics, and retail stock."
+                title="Inventory support"
+                subtitle="Track stock, ingredients, packaging, genetics, and retail counts that support products, batches, orders, and storefront availability."
                 route="CommercialInventory"
                 navigation={navigation}
               />
