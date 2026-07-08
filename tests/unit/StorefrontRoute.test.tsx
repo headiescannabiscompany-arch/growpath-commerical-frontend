@@ -1,7 +1,8 @@
 import React from "react";
 import { fireEvent, render, waitFor } from "@testing-library/react-native";
 
-import Storefront from "@/app/storefront";
+import Storefront from "@/app/home/commercial/storefront";
+import LegacyStorefrontRoute from "@/app/storefront";
 
 const mockApiRequest = jest.fn();
 const mockPersistImageUri = jest.fn();
@@ -65,12 +66,15 @@ jest.mock("expo-image-picker", () => ({
 
 jest.mock("expo-router", () => {
   const React = require("react");
+  const { Text } = require("react-native");
   return {
     Link: ({ href, children }: any) =>
       React.cloneElement(React.Children.only(children), {
         href,
         testID: `link-${href}`
-      })
+      }),
+    Redirect: ({ href }: any) =>
+      React.createElement(Text, { accessibilityLabel: `Redirect ${href}` }, href)
   };
 });
 
@@ -410,5 +414,13 @@ describe("Storefront route", () => {
         })
       )
     );
+  });
+
+  it("redirects the legacy root storefront route to the commercial workspace", () => {
+    const screen = render(<LegacyStorefrontRoute />);
+
+    expect(
+      screen.getByLabelText("Redirect /home/commercial/storefront")
+    ).toBeTruthy();
   });
 });

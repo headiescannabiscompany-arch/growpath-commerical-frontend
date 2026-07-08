@@ -1,5 +1,5 @@
-import Storefront from "@/app/storefront";
+import StorefrontOwnerScreen from "@/screens/commercial/StorefrontOwnerScreen";
 
 export default function CommercialStorefrontRoute() {
-  return <Storefront />;
+  return <StorefrontOwnerScreen />;
 }
