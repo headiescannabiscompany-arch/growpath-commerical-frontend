@@ -63,7 +63,7 @@ describe("buildPersonalHomeModel", () => {
           completed: false,
           priority: "high",
           sourceType: "tool_run",
-          sourceToolRunId: "run-1"
+          linkedToolRunId: "run-1"
         },
         {
           id: "task-3",
@@ -89,6 +89,15 @@ describe("buildPersonalHomeModel", () => {
           completed: false,
           sourceType: "automation_policy",
           sourceObjectId: "automation-event-1"
+        },
+        {
+          id: "task-6",
+          growId: "active",
+          title: "Forum follow-up",
+          dueDate: "2026-06-21T12:30:00.000Z",
+          completed: false,
+          sourceType: "forum",
+          linkedForumThreadId: "thread-1"
         }
       ] as any,
       toolRuns: [
@@ -153,9 +162,14 @@ describe("buildPersonalHomeModel", () => {
         id: "task-5",
         sourceLabel: "automation policy",
         sourceHref: "/home/personal/grows/active/tasks"
+      }),
+      expect.objectContaining({
+        id: "task-6",
+        sourceLabel: "forum",
+        sourceHref: "/home/personal/forum/post/thread-1"
       })
     ]);
-    expect(model.openTaskCount).toBe(5);
+    expect(model.openTaskCount).toBe(6);
     expect(model.latestToolRun?.toolType).toBe("vpd");
     expect(model.latestDiagnosis?.id).toBe("diagnosis-1");
     expect(model.alerts).toEqual([
@@ -193,8 +207,8 @@ describe("buildPersonalHomeModel", () => {
       activeGrowCount: 2,
       plantCount: 2,
       logCount: 1,
-      taskCount: 6,
-      openTaskCount: 5,
+      taskCount: 7,
+      openTaskCount: 6,
       completedTaskCount: 1,
       toolRunCount: 1,
       diagnosisCount: 1,

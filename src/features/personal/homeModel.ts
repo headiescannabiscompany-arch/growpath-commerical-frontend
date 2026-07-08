@@ -66,8 +66,14 @@ function taskSourceHref(task: PersonalTask, activeGrowId: string) {
   if (task.linkedLogId) {
     return `/home/personal/logs/${encodeURIComponent(task.linkedLogId)}`;
   }
-  if (task.sourceToolRunId || task.sourceType === "tool_run") {
+  if (task.sourceToolRunId || task.linkedToolRunId || task.sourceType === "tool_run") {
     return `${growPath}/tools`;
+  }
+  if (task.linkedForumThreadId || task.sourceType === "forum") {
+    const threadId = task.linkedForumThreadId || task.sourceObjectId;
+    return threadId
+      ? `/home/personal/forum/post/${encodeURIComponent(String(threadId))}`
+      : "/home/personal/forum";
   }
   if (task.sourceDiagnosisId || task.sourceType === "ai_diagnosis") {
     return `${growPath}/timeline`;
