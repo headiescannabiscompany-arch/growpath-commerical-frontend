@@ -105,19 +105,32 @@ function taskContextRows(task: AnyRec | null) {
 function taskSourceId(task: AnyRec | null): string {
   if (!task) return "";
   const sourceType = String(task.sourceType || "");
-  if (sourceType === "forum") {
-    return String(task.sourceId || task.sourceObjectId || task.linkedForumThreadId || "");
+  const directSource = firstLinkedValue(task.sourceId, task.sourceObjectId);
+  if (directSource) return String(directSource);
+  if (sourceType === "storefront") return String(task.linkedStorefrontId || "");
+  if (sourceType === "product") return String(task.linkedProductId || "");
+  if (sourceType === "product_batch") return String(task.linkedProductBatchId || "");
+  if (sourceType === "product_trial") return String(task.linkedProductTrialId || "");
+  if (sourceType === "course" || sourceType === "lesson") {
+    return String(task.linkedCourseId || task.linkedLessonId || "");
+  }
+  if (sourceType === "live" || sourceType === "live_replay") {
+    return String(task.linkedLiveId || "");
+  }
+  if (sourceType === "feed_campaign" || sourceType === "feed_post") {
+    return String(firstLinkedValue(task.linkedFeedPostIds, task.linkedFeedPostId) || "");
   }
   return String(
-    task.sourceId ||
-      task.sourceObjectId ||
+    task.linkedAlertId ||
+      task.linkedOrderId ||
+      task.linkedForumThreadId ||
+      task.linkedRecipeId ||
+      task.linkedProductBatchId ||
+      task.linkedProductTrialId ||
       task.linkedProductId ||
       task.linkedCourseId ||
       task.linkedLiveId ||
-      task.linkedOrderId ||
-      task.linkedAlertId ||
       task.linkedStorefrontId ||
-      task.linkedForumThreadId ||
       ""
   );
 }

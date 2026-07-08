@@ -215,4 +215,41 @@ describe("CommercialTaskDetailRoute", () => {
 
     expect(mockPush).toHaveBeenCalledWith("/home/commercial/courses/course-1");
   });
+
+  it("opens linked-only feed campaign task sources in the commercial feed workflow", async () => {
+    taskOverrides = {
+      sourceType: "feed_campaign",
+      sourceId: "",
+      sourceObjectId: "",
+      linkedFeedPostId: "campaign-1"
+    };
+    const screen = render(<CommercialTaskDetailRoute />);
+
+    await waitFor(() =>
+      expect(screen.getAllByText("Connect Stripe price").length).toBeGreaterThan(0)
+    );
+
+    fireEvent.press(screen.getByLabelText("View commercial task source"));
+
+    expect(mockPush).toHaveBeenCalledWith("/home/commercial/feed?campaignId=campaign-1");
+  });
+
+  it("opens linked-only product batch task sources in the batch workflow", async () => {
+    taskOverrides = {
+      sourceType: "product_batch",
+      sourceId: "",
+      sourceObjectId: "",
+      linkedProductId: "product-1",
+      linkedProductBatchId: "batch-1"
+    };
+    const screen = render(<CommercialTaskDetailRoute />);
+
+    await waitFor(() =>
+      expect(screen.getAllByText("Connect Stripe price").length).toBeGreaterThan(0)
+    );
+
+    fireEvent.press(screen.getByLabelText("View commercial task source"));
+
+    expect(mockPush).toHaveBeenCalledWith("/home/commercial/batch-planner/batch-1");
+  });
 });
