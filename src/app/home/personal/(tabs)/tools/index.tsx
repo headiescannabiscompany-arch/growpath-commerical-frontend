@@ -9,6 +9,7 @@ import {
   getNavigablePersonalTools
 } from "@/config/featureStatus";
 import { useEntitlements } from "@/entitlements";
+import { radius } from "@/theme/theme";
 import { getFeedBannerPolicy } from "@/utils/feedPolicy";
 
 const styles = StyleSheet.create({
@@ -20,7 +21,7 @@ const styles = StyleSheet.create({
   context: {
     borderWidth: 1,
     borderColor: "#DCFCE7",
-    borderRadius: 8,
+    borderRadius: radius.card,
     backgroundColor: "#F0FDF4",
     padding: 10,
     marginTop: 12
@@ -38,7 +39,7 @@ const styles = StyleSheet.create({
     padding: 16,
     borderWidth: 1,
     borderColor: "#E2E8F0",
-    borderRadius: 8,
+    borderRadius: radius.card,
     backgroundColor: "#F8FAFC"
   },
   cardLocked: { opacity: 0.65 },
@@ -57,7 +58,7 @@ const styles = StyleSheet.create({
   utilityButton: {
     borderWidth: 1,
     borderColor: "#166534",
-    borderRadius: 8,
+    borderRadius: radius.card,
     backgroundColor: "#FFFFFF",
     paddingHorizontal: 12,
     paddingVertical: 9

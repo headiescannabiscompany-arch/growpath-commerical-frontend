@@ -663,6 +663,7 @@ Completed and pushed:
 387. Personal home/dashboard pulse cards, metrics, alert rows, task rows, command actions, and inline actions now consume the shared 8px card radius token, carrying Facility-style polish onto the main grower command center.
 388. Personal Task Center metric cards, create-task form, inputs, source/priority chips, task cards, and task actions now consume the shared 8px card radius token while preserving count/source pills, aligning the global personal action layer with Facility-style polish.
 389. Personal Forum/Q&A guidelines card now consumes the shared 8px card radius token, removing the last non-token card radius from the personal forum route family while keeping Feed/Campaign placements separate from discussion.
+390. Personal Tools hub context banner, tool cards, and saved-runs/recipe/ingredient utility actions now consume the shared 8px card radius token, extending Facility-style polish to the main AI/tool discovery surface.
 
 ## Working Rule For Codex
 
