@@ -57,13 +57,13 @@ function sourceHref(row: NotificationRow) {
     case "live":
       return id ? `/home/commercial/lives/${id}` : "/home/commercial/lives";
     case "course":
-      return id ? `/home/commercial/courses/${id}` : "/home/personal/(tabs)/courses";
+      return id ? `/home/commercial/courses/${id}` : "/home/personal/courses";
     case "product":
       return id ? `/home/commercial/products/${id}` : "/home/commercial/products";
     case "storefront":
       return "/home/commercial/storefront";
     case "room":
-      return "/home/facility/(tabs)/rooms";
+      return "/home/facility/rooms";
     default:
       return "/home/schedule";
   }

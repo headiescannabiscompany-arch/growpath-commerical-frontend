@@ -11,8 +11,15 @@ jest.mock("@/api/apiRequest", () => ({
 
 jest.mock("expo-router", () => {
   const React = require("react");
+  const { Text } = require("react-native");
   return {
-    Link: ({ children }: any) => React.createElement(React.Fragment, null, children)
+    Link: ({ children, href }: any) =>
+      React.createElement(
+        React.Fragment,
+        null,
+        children,
+        React.createElement(Text, { accessibilityLabel: `Notification link ${href}` })
+      )
   };
 });
 
@@ -39,6 +46,22 @@ describe("NotificationCenterRoute", () => {
               message: "Check Flower Room 1.",
               sourceType: "task",
               sourceId: "task-1",
+              workspaceType: "facility",
+              readAt: "2026-07-07T12:00:00.000Z"
+            },
+            {
+              id: "notification-3",
+              title: "Course update",
+              message: "A new lesson is ready.",
+              sourceType: "course",
+              workspaceType: "personal",
+              readAt: "2026-07-07T12:00:00.000Z"
+            },
+            {
+              id: "notification-4",
+              title: "Room alert resolved",
+              message: "Flower Room 1 is back in range.",
+              sourceType: "room",
               workspaceType: "facility",
               readAt: "2026-07-07T12:00:00.000Z"
             }
@@ -70,6 +93,10 @@ describe("NotificationCenterRoute", () => {
 
     fireEvent.press(screen.getByLabelText("Notification filter tasks"));
     expect(screen.getByText("Task overdue")).toBeTruthy();
+
+    fireEvent.press(screen.getByLabelText("Notification filter all"));
+    expect(screen.getByLabelText("Notification link /home/personal/courses")).toBeTruthy();
+    expect(screen.getByLabelText("Notification link /home/facility/rooms")).toBeTruthy();
 
     fireEvent.press(screen.getByLabelText("Notification filter unread"));
     fireEvent.press(screen.getByLabelText("Mark notification read"));

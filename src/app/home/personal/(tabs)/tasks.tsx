@@ -99,7 +99,7 @@ function taskSourcePath(task: PersonalTask) {
     return "/home/personal/tools/saved-runs";
   }
   if (sourceType === "course" || sourceType === "lesson") {
-    return "/home/personal/(tabs)/courses";
+    return "/home/personal/courses";
   }
   if (
     sourceType === "live" ||

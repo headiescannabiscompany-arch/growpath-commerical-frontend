@@ -30,8 +30,15 @@ jest.mock("@/entitlements", () => ({
 
 jest.mock("expo-router", () => {
   const React = require("react");
+  const { Text } = require("react-native");
   return {
-    Link: ({ children }: any) => React.createElement(React.Fragment, null, children)
+    Link: ({ children, href }: any) =>
+      React.createElement(
+        React.Fragment,
+        null,
+        children,
+        React.createElement(Text, { accessibilityLabel: `Personal task link ${href}` })
+      )
   };
 });
 
@@ -80,6 +87,18 @@ describe("PersonalTaskCenterRoute", () => {
         sourceType: "storefront",
         sourceObjectId: "store-1",
         createdAt: "2026-07-07T00:00:00Z"
+      },
+      {
+        id: "task-course",
+        growId: "grow-1",
+        title: "Watch course lesson",
+        description: "Continue the living soil course.",
+        dueDate: "2026-07-10",
+        completed: false,
+        priority: "medium",
+        sourceType: "course",
+        sourceObjectId: "course-1",
+        createdAt: "2026-07-07T00:00:00Z"
       }
     ]);
     mockCreatePersonalTask.mockResolvedValue({
@@ -101,7 +120,8 @@ describe("PersonalTaskCenterRoute", () => {
     expect(screen.getAllByText("recipe").length).toBeGreaterThan(0);
     expect(screen.getByText(/Sensor Alert: alert-1/)).toBeTruthy();
     expect(screen.getByText("product batch")).toBeTruthy();
-    expect(screen.getAllByLabelText("View personal task source").length).toBe(2);
+    expect(screen.getAllByLabelText("View personal task source").length).toBe(3);
+    expect(screen.getByLabelText("Personal task link /home/personal/courses")).toBeTruthy();
     expect(screen.queryByLabelText("Task center source product_trial")).toBeNull();
     expect(screen.queryByLabelText("Task center source storefront")).toBeNull();
     expect(screen.queryByLabelText("Task center source order")).toBeNull();
