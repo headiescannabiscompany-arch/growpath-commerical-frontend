@@ -730,6 +730,7 @@ Completed and pushed:
 454. Legacy lesson add/edit inputs, upload actions, thumbnails, locked-authoring panels, and save controls now consume the shared 8px card radius token, keeping course authoring aligned with storefront/course workflow polish.
 455. Legacy course browse/detail locked cards, search/invite inputs, feedback panels, detail cards, and checkout/enrollment/report actions now consume the shared 8px card radius token, keeping course discovery and course-detail workflows visually aligned.
 456. Legacy personal plant creation inputs, media upload controls, photo thumbnails, and grow-medium selection chips now consume shared radius tokens, keeping the personal grow setup path visually aligned while preserving chip semantics.
+457. Legacy personal environment, VPD, and schedule calculator inputs, action buttons, result cards, and recommendation cards now consume the shared 8px card radius token while preserving existing tool-calculation and ToolUsage save behavior.
 
 ## Working Rule For Codex
 

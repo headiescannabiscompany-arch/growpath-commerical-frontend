@@ -5,6 +5,7 @@ import { analyzeEnvironment } from "../api/environment";
 import { useAuth } from "@/auth/AuthContext";
 import { CAPABILITY_KEYS, useEntitlements } from "@/entitlements";
 import { requireCapabilityAccess, handleApiError } from "../utils/proHelper";
+import { radius } from "../theme/theme";
 
 export default function EnvironmentAssistantScreen({ navigation }) {
   const { token } = useAuth();
@@ -53,7 +54,7 @@ export default function EnvironmentAssistantScreen({ navigation }) {
       <View
         style={{
           backgroundColor: "#F0FDF4",
-          borderRadius: 8,
+          borderRadius: radius.card,
           padding: 12,
           marginBottom: 12
         }}
@@ -199,12 +200,32 @@ const styles = StyleSheet.create({
   header: { fontSize: 26, fontWeight: "700" },
   sub: { color: "#777", marginBottom: 16 },
   label: { marginTop: 12, fontWeight: "700" },
-  input: { backgroundColor: "#eee", padding: 10, borderRadius: 8, marginTop: 4 },
-  btn: { backgroundColor: "#2ecc71", padding: 14, borderRadius: 8, marginTop: 20 },
+  input: {
+    backgroundColor: "#eee",
+    padding: 10,
+    borderRadius: radius.card,
+    marginTop: 4
+  },
+  btn: {
+    backgroundColor: "#2ecc71",
+    padding: 14,
+    borderRadius: radius.card,
+    marginTop: 20
+  },
   btnText: { color: "white", fontWeight: "700", textAlign: "center" },
-  resultCard: { backgroundColor: "white", padding: 14, borderRadius: 10, marginTop: 20 },
+  resultCard: {
+    backgroundColor: "white",
+    padding: 14,
+    borderRadius: radius.card,
+    marginTop: 20
+  },
   section: { fontSize: 18, fontWeight: "700", marginTop: 10, marginBottom: 4 },
-  actionCard: { backgroundColor: "#f3f3f3", padding: 10, borderRadius: 8, marginTop: 6 },
+  actionCard: {
+    backgroundColor: "#f3f3f3",
+    padding: 10,
+    borderRadius: radius.card,
+    marginTop: 6
+  },
   actionTitle: { fontWeight: "700" },
   actionPriority: { fontSize: 12, color: "#555", marginTop: 2 }
 });
