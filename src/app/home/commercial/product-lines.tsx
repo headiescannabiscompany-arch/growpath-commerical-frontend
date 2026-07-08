@@ -18,6 +18,7 @@ import {
 import AppCard from "@/components/layout/AppCard";
 import AppPage from "@/components/layout/AppPage";
 import { InlineError } from "@/components/InlineError";
+import { radius } from "@/theme/theme";
 
 type AnyRec = Record<string, any>;
 
@@ -293,7 +294,7 @@ const styles = StyleSheet.create({
   headerActions: { flexDirection: "row", flexWrap: "wrap", gap: 8, marginTop: 6 },
   outlineButton: {
     borderColor: "#166534",
-    borderRadius: 8,
+    borderRadius: radius.card,
     borderWidth: 1,
     paddingHorizontal: 11,
     paddingVertical: 8
@@ -304,7 +305,7 @@ const styles = StyleSheet.create({
   input: {
     backgroundColor: "#FFFFFF",
     borderColor: "rgba(15,23,42,0.14)",
-    borderRadius: 10,
+    borderRadius: radius.card,
     borderWidth: 1,
     marginTop: 10,
     paddingHorizontal: 12,
@@ -314,7 +315,7 @@ const styles = StyleSheet.create({
   primaryButton: {
     alignItems: "center",
     backgroundColor: "#166534",
-    borderRadius: 10,
+    borderRadius: radius.card,
     marginTop: 12,
     paddingVertical: 12
   },
@@ -326,7 +327,7 @@ const styles = StyleSheet.create({
   list: { gap: 10, marginTop: 10 },
   lineRow: {
     borderColor: "rgba(15,23,42,0.12)",
-    borderRadius: 10,
+    borderRadius: radius.card,
     borderWidth: 1,
     padding: 12
   },
@@ -335,7 +336,7 @@ const styles = StyleSheet.create({
   bullet: { color: "#334155", fontSize: 13, fontWeight: "700", lineHeight: 19 },
   feedback: {
     backgroundColor: "#DCFCE7",
-    borderRadius: 8,
+    borderRadius: radius.card,
     color: "#166534",
     fontWeight: "900",
     padding: 10

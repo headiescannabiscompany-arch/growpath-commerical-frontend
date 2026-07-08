@@ -12,6 +12,7 @@ import {
 import { InlineError } from "@/components/InlineError";
 import AppCard from "@/components/layout/AppCard";
 import AppPage from "@/components/layout/AppPage";
+import { radius } from "@/theme/theme";
 
 function cleanId(value: unknown) {
   return String(Array.isArray(value) ? value[0] : value || "").trim();
@@ -329,7 +330,7 @@ const styles = StyleSheet.create({
   detailGrid: { flexDirection: "row", flexWrap: "wrap", gap: 8, marginTop: 12 },
   detailRow: {
     borderColor: "#E2E8F0",
-    borderRadius: 8,
+    borderRadius: radius.card,
     borderWidth: 1,
     minWidth: 170,
     padding: 10
@@ -345,7 +346,7 @@ const styles = StyleSheet.create({
   action: {
     backgroundColor: "#FFFFFF",
     borderColor: "#166534",
-    borderRadius: 8,
+    borderRadius: radius.card,
     borderWidth: 1,
     paddingHorizontal: 11,
     paddingVertical: 8
@@ -356,7 +357,7 @@ const styles = StyleSheet.create({
     alignItems: "center",
     backgroundColor: "#F8FAFC",
     borderColor: "#E2E8F0",
-    borderRadius: 10,
+    borderRadius: radius.card,
     borderWidth: 1,
     flexDirection: "row",
     flexWrap: "wrap",
@@ -368,7 +369,7 @@ const styles = StyleSheet.create({
   productTitle: { color: "#0F172A", fontSize: 15, fontWeight: "900" },
   input: {
     borderColor: "#CBD5E1",
-    borderRadius: 8,
+    borderRadius: radius.card,
     borderWidth: 1,
     color: "#0F172A",
     fontSize: 14,
@@ -380,7 +381,7 @@ const styles = StyleSheet.create({
   primaryAction: {
     alignSelf: "flex-start",
     backgroundColor: "#166534",
-    borderRadius: 8,
+    borderRadius: radius.card,
     marginTop: 12,
     paddingHorizontal: 12,
     paddingVertical: 9
