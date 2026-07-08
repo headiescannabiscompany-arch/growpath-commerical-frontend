@@ -14,6 +14,7 @@ import { getPersonalGrowTimeline, type PersonalGrowTimelineEvent } from "@/api/g
 import GrowWorkspaceNav from "@/components/personal/GrowWorkspaceNav";
 import { coerceParam, fmtDate } from "@/features/grows/routeUtils";
 import PersonalFeedPlacement from "@/components/feed/PersonalFeedPlacement";
+import { radius } from "@/theme/theme";
 import { sourceObjectHref } from "@/utils/sourceLinks";
 
 const FILTERS = [
@@ -40,7 +41,7 @@ const styles = StyleSheet.create({
   filter: {
     borderWidth: 1,
     borderColor: "#CBD5E1",
-    borderRadius: 8,
+    borderRadius: radius.card,
     paddingVertical: 7,
     paddingHorizontal: 10,
     backgroundColor: "#FFFFFF"
@@ -53,7 +54,7 @@ const styles = StyleSheet.create({
     padding: 14,
     borderWidth: 1,
     borderColor: "#E2E8F0",
-    borderRadius: 8,
+    borderRadius: radius.card,
     backgroundColor: "#F8FAFC"
   },
   eventTitle: { fontSize: 15, fontWeight: "800", color: "#0F172A" },
@@ -70,7 +71,7 @@ const styles = StyleSheet.create({
     alignSelf: "flex-start",
     borderWidth: 1,
     borderColor: "#CBD5E1",
-    borderRadius: 8,
+    borderRadius: radius.card,
     paddingHorizontal: 10,
     paddingVertical: 7,
     backgroundColor: "#FFFFFF"
@@ -78,7 +79,7 @@ const styles = StyleSheet.create({
   sourceActionText: { color: "#0F172A", fontSize: 12, fontWeight: "800" },
   tags: { flexDirection: "row", flexWrap: "wrap", gap: 6, marginTop: 10 },
   tag: {
-    borderRadius: 8,
+    borderRadius: radius.card,
     backgroundColor: "#E2E8F0",
     paddingVertical: 4,
     paddingHorizontal: 7
@@ -89,7 +90,7 @@ const styles = StyleSheet.create({
     padding: 14,
     borderWidth: 1,
     borderColor: "#E2E8F0",
-    borderRadius: 8,
+    borderRadius: radius.card,
     color: "#64748B",
     backgroundColor: "#F8FAFC"
   },
