@@ -1,5 +1,6 @@
 import React from "react";
 import { View, Text, TouchableOpacity } from "react-native";
+import { radius } from "@/theme/theme";
 import type { Plant } from "../types";
 
 type PlantCardProps = {
@@ -21,7 +22,7 @@ export default function PlantCard({
         padding: 16,
         margin: 8,
         backgroundColor: "#fff",
-        borderRadius: 8,
+        borderRadius: radius.card,
         elevation: 2
       }}
     >
@@ -35,7 +36,7 @@ export default function PlantCard({
             marginRight: 12,
             backgroundColor: "#e0f7fa",
             padding: 8,
-            borderRadius: 6
+            borderRadius: radius.card
           }}
         >
           <Text>Change Stage</Text>
@@ -46,14 +47,18 @@ export default function PlantCard({
             marginRight: 12,
             backgroundColor: "#ffe0b2",
             padding: 8,
-            borderRadius: 6
+            borderRadius: radius.card
           }}
         >
           <Text>Move Room</Text>
         </TouchableOpacity>
         <TouchableOpacity
           onPress={onAddTask}
-          style={{ backgroundColor: "#c8e6c9", padding: 8, borderRadius: 6 }}
+          style={{
+            backgroundColor: "#c8e6c9",
+            padding: 8,
+            borderRadius: radius.card
+          }}
         >
           <Text>Add Task</Text>
         </TouchableOpacity>

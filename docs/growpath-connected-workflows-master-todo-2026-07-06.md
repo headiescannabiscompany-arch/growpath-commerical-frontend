@@ -720,6 +720,7 @@ Completed and pushed:
 444. Public Offers plan billing selector, feedback panel, and checkout CTAs now consume the shared 8px card radius token while leaving the shared Pro, Commercial, and Facility pricing constants untouched.
 445. Shared Feed banners, ad images, education cards, operational feed cards, commercial campaign cards, and feed filter/status chips now consume shared radius tokens, keeping promotional outreach cards visually consistent and distinct from Forum/Q&A discussion surfaces.
 446. Shared primitives for AppCard, InlineError, BackButton, ErrorState, ErrorBoundary, and rectangular SkeletonLoader placeholders now consume the shared 8px card radius token, carrying the Facility-style visual treatment into common app infrastructure.
+447. Room setup, grow-start, plant assignment, and plant action cards now consume the shared 8px card radius token, applying the Facility-style polish to the setup path that creates rooms, batches, plants, tasks, logs, and AI context.
 
 ## Working Rule For Codex
 

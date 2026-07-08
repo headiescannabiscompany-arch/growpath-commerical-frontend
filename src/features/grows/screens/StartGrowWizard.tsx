@@ -10,6 +10,7 @@ import {
 } from "react-native";
 import { useRouter } from "expo-router";
 
+import { radius } from "@/theme/theme";
 import { useRooms } from "../../rooms/hooks";
 import { useCreateGrow } from "../hooks";
 
@@ -208,7 +209,7 @@ const styles = StyleSheet.create({
   card: {
     backgroundColor: "#ffffff",
     borderColor: "#d7ddd2",
-    borderRadius: 8,
+    borderRadius: radius.card,
     borderWidth: 1,
     gap: 12,
     padding: 16
@@ -222,7 +223,7 @@ const styles = StyleSheet.create({
   input: {
     backgroundColor: "#ffffff",
     borderColor: "#cbd5e1",
-    borderRadius: 8,
+    borderRadius: radius.card,
     borderWidth: 1,
     color: "#111827",
     fontSize: 15,
@@ -240,7 +241,7 @@ const styles = StyleSheet.create({
   roomChip: {
     backgroundColor: "#f8fafc",
     borderColor: "#cbd5e1",
-    borderRadius: 8,
+    borderRadius: radius.card,
     borderWidth: 1,
     paddingHorizontal: 12,
     paddingVertical: 10
@@ -252,7 +253,7 @@ const styles = StyleSheet.create({
   primaryButton: {
     alignItems: "center",
     backgroundColor: "#166534",
-    borderRadius: 8,
+    borderRadius: radius.card,
     flexGrow: 1,
     paddingHorizontal: 14,
     paddingVertical: 12
@@ -262,7 +263,7 @@ const styles = StyleSheet.create({
     alignItems: "center",
     backgroundColor: "#ffffff",
     borderColor: "#cbd5e1",
-    borderRadius: 8,
+    borderRadius: radius.card,
     borderWidth: 1,
     flexGrow: 1,
     paddingHorizontal: 14,
