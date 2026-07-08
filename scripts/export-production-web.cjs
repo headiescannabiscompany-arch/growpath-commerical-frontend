@@ -220,7 +220,7 @@ const routeSeo = new Map(
       {
         title: "GrowPathAI Feed",
         description:
-          "Explore GrowPathAI updates from growers, educators, brands, commercial profiles, and cultivation communities."
+          "Explore commercial and facility outreach campaigns for products, courses, lives, storefronts, and professional cultivation services."
       }
     ],
     [
