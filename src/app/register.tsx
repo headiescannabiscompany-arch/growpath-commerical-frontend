@@ -31,7 +31,7 @@ const ACCOUNT_CHOICES: AccountChoice[] = [
     mode: "personal",
     title: "Free grower",
     label: "Free",
-    description: "Start with personal grow tracking, community, and basic tools.",
+    description: "Start with personal grow tracking, Forum/Q&A, and basic tools.",
     afterSignup: "/home/personal"
   },
   {

@@ -33,5 +33,7 @@ describe("SubscribeScreen pricing", () => {
     });
 
     expect(screen.queryByText("$9.99 / month")).toBeNull();
+    expect(screen.getByText("Growers Forum/Q&A access")).toBeTruthy();
+    expect(screen.queryByText("Growers Forum access and community")).toBeNull();
   });
 });

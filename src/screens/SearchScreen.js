@@ -25,7 +25,7 @@ const SEARCH_SURFACES = [
   {
     key: "forum",
     title: "Forum",
-    subtitle: "Questions, answers, and community threads",
+    subtitle: "Questions, answers, and Forum/Q&A threads",
     route: "Forum"
   },
   {
@@ -110,7 +110,7 @@ export default function SearchScreen({ navigation }) {
       <View style={styles.container}>
         <Text style={styles.title}>Search</Text>
         <Text style={styles.subtitle}>
-          Find tools, courses, community, and grow records.
+          Find tools, courses, Forum/Q&A, and grow records.
         </Text>
         <TextInput
           value={query}

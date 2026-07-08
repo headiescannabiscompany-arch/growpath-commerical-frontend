@@ -93,8 +93,8 @@ export default function SubscriptionScreen({ navigation }) {
           />
           <Feature
             label="Chat"
-            title="Community Access"
-            description="Post, comment, and connect with growers"
+            title="Forum/Q&A Access"
+            description="Post questions, comment, and connect with growers"
           />
           <Feature
             label="Stats"

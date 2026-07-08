@@ -26,6 +26,8 @@ describe("SubscriptionScreen pricing", () => {
     const screen = render(<SubscriptionScreen navigation={navigation} />);
 
     expect(screen.getByText(PRO_PLAN_PRICE_DISPLAY)).toBeTruthy();
+    expect(screen.getByText("Forum/Q&A Access")).toBeTruthy();
+    expect(screen.queryByText("Community Access")).toBeNull();
     expect(screen.queryByText(/auto-renew monthly/i)).toBeNull();
     expect(screen.getByText(/auto-renew based on the billing interval/i)).toBeTruthy();
   });

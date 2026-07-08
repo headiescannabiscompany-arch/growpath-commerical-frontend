@@ -107,7 +107,7 @@ export default function SubscribeScreen({ navigation }) {
 
         <Text style={styles.item}>Full AI Diagnose with Vision</Text>
         <Text style={styles.item}>Unlimited plants and photo uploads</Text>
-        <Text style={styles.item}>Growers Forum access and community</Text>
+        <Text style={styles.item}>Growers Forum/Q&A access</Text>
         <Text style={styles.item}>Create and sell courses</Text>
         <Text style={styles.item}>Advanced grow analytics</Text>
 
