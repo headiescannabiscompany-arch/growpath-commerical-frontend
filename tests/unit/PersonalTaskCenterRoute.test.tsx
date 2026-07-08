@@ -136,6 +136,18 @@ describe("PersonalTaskCenterRoute", () => {
         linkedProductBatchId: "batch-linked-1",
         linkedToolRunId: "run-linked-1",
         createdAt: "2026-07-07T00:00:00Z"
+      },
+      {
+        id: "task-linked-sensor-alert",
+        growId: "grow-1",
+        title: "Inspect linked sensor alert",
+        description: "Linked-only sensor alert should still route.",
+        dueDate: "2026-07-13",
+        completed: false,
+        priority: "high",
+        sourceType: "sensor_alert",
+        linkedSensorAlertId: "sensor-alert-linked-1",
+        createdAt: "2026-07-07T00:00:00Z"
       }
     ]);
     mockCreatePersonalTask.mockResolvedValue({
@@ -159,9 +171,11 @@ describe("PersonalTaskCenterRoute", () => {
     expect(screen.getByText(/AI Diagnosis: diag-1/)).toBeTruthy();
     expect(screen.getByText("Review linked batch")).toBeTruthy();
     expect(screen.getByText(/Product Batch: batch-linked-1/)).toBeTruthy();
+    expect(screen.getByText("Inspect linked sensor alert")).toBeTruthy();
+    expect(screen.getByText(/Sensor Alert: sensor-alert-linked-1/)).toBeTruthy();
     expect(screen.getByText(/ToolRun: run-linked-1/)).toBeTruthy();
     expect(screen.getAllByText("product batch").length).toBeGreaterThan(0);
-    expect(screen.getAllByLabelText("View personal task source").length).toBe(7);
+    expect(screen.getAllByLabelText("View personal task source").length).toBe(8);
     expect(
       screen.getByLabelText("Personal task link /home/personal/diagnose?growId=grow-1")
     ).toBeTruthy();
@@ -170,6 +184,9 @@ describe("PersonalTaskCenterRoute", () => {
     ).toBeTruthy();
     expect(screen.getByLabelText("Personal task link /feed?liveId=live-1")).toBeTruthy();
     expect(screen.getByLabelText("Personal task link /store?q=batch-linked-1")).toBeTruthy();
+    expect(
+      screen.getByLabelText("Personal task link /home/alerts?alertId=sensor-alert-linked-1")
+    ).toBeTruthy();
     expect(screen.getByLabelText("Personal task link /store/store-1")).toBeTruthy();
     expect(screen.queryByLabelText(/Personal task link .*home\/commercial/)).toBeNull();
     expect(screen.queryByLabelText("Task center source product_trial")).toBeNull();
@@ -223,6 +240,28 @@ describe("PersonalTaskCenterRoute", () => {
           sourceType: "ai_diagnosis",
           sourceObjectId: "diag-2",
           linkedDiagnosisId: "diag-2"
+        })
+      )
+    );
+
+    fireEvent.changeText(screen.getByLabelText("Task center grow ID"), "grow-2");
+    fireEvent.changeText(
+      screen.getByLabelText("Task center title"),
+      "Inspect sensor alert"
+    );
+    fireEvent.press(screen.getByLabelText("Task center source sensor_alert"));
+    fireEvent.changeText(
+      screen.getByLabelText("Task center source object"),
+      "sensor-alert-2"
+    );
+    fireEvent.press(screen.getByLabelText("Create task center task"));
+
+    await waitFor(() =>
+      expect(mockCreatePersonalTask).toHaveBeenLastCalledWith(
+        expect.objectContaining({
+          sourceType: "sensor_alert",
+          sourceObjectId: "sensor-alert-2",
+          linkedSensorAlertId: "sensor-alert-2"
         })
       )
     );

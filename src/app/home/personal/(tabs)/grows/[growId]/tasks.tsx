@@ -96,8 +96,10 @@ function linkedFieldsForSource(
       links.linkedLiveId = source;
       break;
     case "alert":
-    case "sensor_alert":
       links.linkedAlertId = source;
+      break;
+    case "sensor_alert":
+      links.linkedSensorAlertId = source;
       break;
     case "facility":
       links.linkedFacilityId = source;
@@ -151,6 +153,7 @@ function sourceReference(task: PersonalTask) {
     task.linkedLessonId ||
     task.linkedLiveId ||
     task.linkedAlertId ||
+    task.linkedSensorAlertId ||
     task.linkedForumThreadId ||
     task.linkedFacilityId ||
     task.linkedRoomId ||

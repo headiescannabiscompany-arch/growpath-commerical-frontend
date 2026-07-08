@@ -95,6 +95,18 @@ describe("GrowTasksScreen", () => {
         linkedProductBatchId: "batch-linked-1",
         linkedToolRunId: "run-linked-1",
         createdAt: "2026-07-01T08:00:00.000Z"
+      },
+      {
+        id: "task-linked-sensor-alert",
+        growId: "grow-task-1",
+        title: "Inspect linked sensor alert",
+        description: "Linked-only sensor alert context.",
+        dueDate: "2026-07-05T08:00:00.000Z",
+        completed: false,
+        priority: "high",
+        sourceType: "sensor_alert",
+        linkedSensorAlertId: "sensor-alert-linked-1",
+        createdAt: "2026-07-01T08:00:00.000Z"
       }
     ]);
     mockUpdatePersonalTask.mockResolvedValue({ id: "task-open-1" });
@@ -113,8 +125,10 @@ describe("GrowTasksScreen", () => {
     expect(screen.getByText("Source: tool run")).toBeTruthy();
     expect(screen.getByText("Review linked batch")).toBeTruthy();
     expect(screen.getByText(/Product Batch: batch-linked-1/)).toBeTruthy();
+    expect(screen.getByText("Inspect linked sensor alert")).toBeTruthy();
+    expect(screen.getByText(/Sensor Alert: sensor-alert-linked-1/)).toBeTruthy();
     expect(screen.getByText(/ToolRun: run-linked-1/)).toBeTruthy();
-    expect(screen.getAllByLabelText("View grow task source")).toHaveLength(3);
+    expect(screen.getAllByLabelText("View grow task source")).toHaveLength(4);
     expect(
       screen.getByLabelText("Grow task link /home/personal/diagnose?growId=grow-task-1")
     ).toBeTruthy();
@@ -122,6 +136,9 @@ describe("GrowTasksScreen", () => {
       screen.getByLabelText("Grow task link /home/personal/tools/saved-runs?toolRunId=run-1")
     ).toBeTruthy();
     expect(screen.getByLabelText("Grow task link /store?q=batch-linked-1")).toBeTruthy();
+    expect(
+      screen.getByLabelText("Grow task link /home/alerts?alertId=sensor-alert-linked-1")
+    ).toBeTruthy();
 
     fireEvent.press(screen.getAllByLabelText("Complete task")[0]);
     await waitFor(() =>
@@ -142,6 +159,29 @@ describe("GrowTasksScreen", () => {
       expect(mockUpdatePersonalTask).toHaveBeenCalledWith(
         "task-open-1",
         expect.objectContaining({ snoozeUntil: expect.any(String) })
+      )
+    );
+  });
+
+  it("creates grow tasks linked to sensor alerts with sensor alert ids", async () => {
+    const screen = render(<GrowTasksScreen />);
+
+    await waitFor(() => expect(screen.getByText("Tasks")).toBeTruthy());
+    fireEvent.changeText(screen.getByLabelText("Task title"), "Inspect sensor alert");
+    fireEvent.press(screen.getByLabelText("Set task source sensor_alert"));
+    fireEvent.changeText(screen.getByLabelText("Task source object"), "sensor-alert-2");
+    fireEvent.press(screen.getByLabelText("Add task"));
+
+    await waitFor(() =>
+      expect(mockCreatePersonalTask).toHaveBeenCalledWith(
+        expect.objectContaining({
+          growId: "grow-task-1",
+          linkedGrowId: "grow-task-1",
+          title: "Inspect sensor alert",
+          sourceType: "sensor_alert",
+          sourceObjectId: "sensor-alert-2",
+          linkedSensorAlertId: "sensor-alert-2"
+        })
       )
     );
   });

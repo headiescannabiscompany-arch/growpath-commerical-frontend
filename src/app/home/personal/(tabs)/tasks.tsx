@@ -94,6 +94,7 @@ function sourceReference(task: PersonalTask) {
     task.linkedLessonId ||
     task.linkedLiveId ||
     task.linkedAlertId ||
+    task.linkedSensorAlertId ||
     task.linkedForumThreadId ||
     task.linkedFacilityId ||
     task.linkedRoomId ||
@@ -197,8 +198,9 @@ function linkedFieldsForSource(
     case "live_replay":
       return { ...toolRunLink, linkedLiveId: sourceObjectId || undefined };
     case "alert":
-    case "sensor_alert":
       return { ...toolRunLink, linkedAlertId: sourceObjectId || undefined };
+    case "sensor_alert":
+      return { ...toolRunLink, linkedSensorAlertId: sourceObjectId || undefined };
     case "facility":
       return { ...toolRunLink, linkedFacilityId: sourceObjectId || undefined };
     case "room":
