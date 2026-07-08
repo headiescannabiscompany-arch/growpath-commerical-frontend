@@ -33,7 +33,9 @@ function inferSourceType(source: SourceLike) {
   if (firstText(source?.linkedCourseId, source?.courseId)) return "course";
   if (firstText(source?.linkedProductBatchId, source?.productBatchId))
     return "product_batch";
-  if (firstText(source?.linkedProductTrialId, source?.productTrialId))
+  if (
+    firstText(source?.linkedProductTrialId, source?.linkedTrialId, source?.productTrialId)
+  )
     return "product_trial";
   if (firstText(source?.linkedProductId, source?.productId)) return "product";
   if (
@@ -89,7 +91,12 @@ export function sourceObjectHref(source: SourceLike) {
     source?.productBatchId,
     sourceId
   );
-  const productTrialId = firstText(source?.linkedProductTrialId, sourceId);
+  const productTrialId = firstText(
+    source?.linkedProductTrialId,
+    source?.linkedTrialId,
+    source?.productTrialId,
+    sourceId
+  );
   const forumId = firstText(source?.linkedForumThreadId, source?.forumThreadId, sourceId);
   const courseId = firstText(source?.linkedCourseId, source?.courseId, sourceId);
   const liveId = firstText(source?.linkedLiveId, source?.liveId, sourceId);

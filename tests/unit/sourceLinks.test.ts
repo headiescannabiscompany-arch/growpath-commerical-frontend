@@ -36,6 +36,14 @@ describe("sourceObjectHref", () => {
 
     expect(
       sourceObjectHref({
+        sourceType: "product_trial",
+        linkedTrialId: "trial-linked-1",
+        workspaceType: "commercial"
+      })
+    ).toBe("/home/commercial/trials/trial-linked-1");
+
+    expect(
+      sourceObjectHref({
         sourceType: "room",
         sourceId: "flower-1",
         workspaceType: "facility"
@@ -475,6 +483,13 @@ describe("sourceObjectHref", () => {
         workspaceType: "facility"
       })
     ).toBe("/home/facility/feed?campaignId=campaign-post-1");
+
+    expect(
+      sourceObjectHref({
+        linkedTrialId: "trial-linked-1",
+        workspaceType: "commercial"
+      })
+    ).toBe("/home/commercial/trials/trial-linked-1");
 
     expect(
       sourceObjectHref({
