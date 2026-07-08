@@ -63,6 +63,17 @@ jest.mock("expo-image-picker", () => ({
   launchImageLibraryAsync: (...args: any[]) => mockLaunchLibrary(...args)
 }));
 
+jest.mock("expo-router", () => {
+  const React = require("react");
+  return {
+    Link: ({ href, children }: any) =>
+      React.cloneElement(React.Children.only(children), {
+        href,
+        testID: `link-${href}`
+      })
+  };
+});
+
 function apiResponseFor(path: string, options?: any) {
   if (path === "/api/commercial/storefront" && !options) {
     return Promise.resolve({
@@ -208,14 +219,18 @@ describe("Storefront route", () => {
     expect(screen.getByText("Featured Courses")).toBeTruthy();
     expect(screen.getByText("View as User: Store Page")).toBeTruthy();
     expect(screen.getByText("View as User: Brand Profile")).toBeTruthy();
+    expect(screen.getByTestId("link-/store/grow-shop")).toBeTruthy();
+    expect(screen.getByTestId("link-/brands/grow-shop")).toBeTruthy();
     expect(screen.getAllByText("Needs work").length).toBeGreaterThan(0);
     expect(screen.queryByText("TODO")).toBeNull();
     expect(screen.getByText("Living Soil Basics")).toBeTruthy();
     expect(screen.getByText(/Interests living soil, dry amendments/)).toBeTruthy();
     expect(screen.getAllByText("Open Course").length).toBeGreaterThan(0);
     expect(screen.getAllByText("Open Q&A").length).toBeGreaterThan(0);
+    expect(screen.getByTestId("link-/forum/post/thread-course")).toBeTruthy();
     expect(screen.getByText("Live Soil Mixing Demo")).toBeTruthy();
     expect(screen.getByText("Open Live")).toBeTruthy();
+    expect(screen.getAllByTestId("link-/forum/post/thread-1").length).toBeGreaterThan(0);
     expect(screen.getAllByText(/Product product-1/).length).toBeGreaterThan(0);
     expect(screen.getAllByText(/Forum\/Q&A thread-1/).length).toBeGreaterThan(0);
     expect(screen.getByText("New Veg Mix Launch")).toBeTruthy();
