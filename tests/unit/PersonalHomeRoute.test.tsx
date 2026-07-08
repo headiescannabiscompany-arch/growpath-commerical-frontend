@@ -162,5 +162,7 @@ describe("PersonalHomeRoute", () => {
     expect(screen.getByText("Check VPD after lights on")).toBeTruthy();
     expect(screen.getByText("Run Tool")).toBeTruthy();
     expect(screen.getByText("Diagnose")).toBeTruthy();
+    expect(screen.getByText("Forum / Q&A")).toBeTruthy();
+    expect(screen.queryByText("Community")).toBeNull();
   });
 });

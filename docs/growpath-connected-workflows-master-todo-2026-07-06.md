@@ -564,6 +564,7 @@ Completed and pushed:
 288. Commercial action E2E coverage now creates Product Trial Evidence Runs and Feed campaigns through the canonical labels and `/api/commercial/feed` endpoint instead of stale commercial-grow and feed-post wording.
 289. GrowPath system audit output now says Commercial Forum/Q&A instead of commercial community, so internal audit reports preserve the Feed-versus-Forum distinction.
 290. The legacy `/communities` directory now presents itself as a Forum Directory with discussion-group copy, keeping the route useful for Q&A discovery without blurring into Feed/Campaigns outreach.
+291. Personal home Explore now links to `Forum / Q&A` instead of `Community`, matching the Personal tab label and keeping discussion language separate from Feed/Campaigns.
 
 ## Working Rule For Codex
 

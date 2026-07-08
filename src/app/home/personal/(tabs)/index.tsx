@@ -364,7 +364,7 @@ export default function PersonalHomeTab() {
       <View style={styles.section}>
         <Text style={styles.sectionTitle}>Explore</Text>
         <View style={styles.actions}>
-          <ActionLink href="/home/personal/community" label="Community" />
+          <ActionLink href="/home/personal/community" label="Forum / Q&A" />
           <ActionLink href="/home/personal/profile" label="Profile" />
         </View>
       </View>
