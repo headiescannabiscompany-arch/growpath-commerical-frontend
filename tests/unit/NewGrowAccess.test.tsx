@@ -49,6 +49,22 @@ jest.mock("@/entitlements", () => ({
   })
 }));
 
+jest.mock("@/components/ScreenBoundary", () => {
+  const React = require("react");
+  const { Text, View } = require("react-native");
+  return {
+    ScreenBoundary: ({ children, showBack, backFallbackHref }: any) =>
+      React.createElement(
+        View,
+        null,
+        showBack
+          ? React.createElement(Text, null, `Shared Back ${backFallbackHref}`)
+          : null,
+        children
+      )
+  };
+});
+
 describe("NewGrowScreen access", () => {
   beforeEach(() => {
     jest.clearAllMocks();
@@ -69,6 +85,7 @@ describe("NewGrowScreen access", () => {
     render(<NewGrowScreen />);
 
     await waitFor(() => expect(screen.getByText("Create grows with Pro")).toBeTruthy());
+    expect(screen.getByText("Shared Back /home/personal/grows")).toBeTruthy();
     expect(
       screen.getByText(
         "Free accounts can create one grow. Upgrade to create more grows and save unlimited grow history."
@@ -89,6 +106,7 @@ describe("NewGrowScreen access", () => {
     render(<NewGrowScreen />);
 
     await waitFor(() => expect(screen.getByLabelText("Grow name")).toBeTruthy());
+    expect(screen.getByText("Shared Back /home/personal/grows")).toBeTruthy();
     fireEvent.changeText(screen.getByLabelText("Grow name"), "First Free Grow");
     fireEvent.changeText(screen.getByLabelText("Anchor date"), "2026-01-01");
     fireEvent.press(screen.getByLabelText("Create grow"));
@@ -109,6 +127,7 @@ describe("NewGrowScreen access", () => {
   it("lets pro personal users create a grow record", async () => {
     render(<NewGrowScreen />);
 
+    expect(screen.getByText("Shared Back /home/personal/grows")).toBeTruthy();
     fireEvent.changeText(screen.getByLabelText("Grow name"), "Bruce Banner Auto");
     fireEvent.changeText(screen.getByLabelText("Anchor date"), "2026-01-01");
     fireEvent.press(screen.getByLabelText("Create grow"));

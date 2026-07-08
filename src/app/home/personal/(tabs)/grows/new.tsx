@@ -13,6 +13,7 @@ import { useRouter } from "expo-router";
 import { apiRequest } from "@/api/apiRequest";
 import { appendGrowPhotos, listPersonalGrows } from "@/api/grows";
 import PersonalFeedPlacement from "@/components/feed/PersonalFeedPlacement";
+import { ScreenBoundary } from "@/components/ScreenBoundary";
 import { LockedScreen } from "@/entitlements/LockedScreen";
 import { CAPABILITY_KEYS, useEntitlements } from "@/entitlements";
 import { isPersistedImageUri, persistImageUris } from "@/utils/photoUploads";
@@ -203,226 +204,65 @@ export default function NewGrowScreen() {
 
   if (checkingLimit && !hasCreateCapability) {
     return (
-      <ScrollView
-        style={{ flex: 1, backgroundColor: "#FFFFFF" }}
-        contentContainerStyle={{ padding: 16, gap: 10, paddingBottom: 32 }}
-      >
-        <Text style={{ fontSize: 22, fontWeight: "700" }}>New Grow</Text>
-        <ActivityIndicator />
-        <Text style={{ color: "#475569" }}>Checking free grow limit...</Text>
-      </ScrollView>
+      <ScreenBoundary title="New Grow" showBack backFallbackHref="/home/personal/grows">
+        <ScrollView
+          style={{ flex: 1, backgroundColor: "#FFFFFF" }}
+          contentContainerStyle={{ padding: 16, gap: 10, paddingBottom: 32 }}
+        >
+          <Text style={{ fontSize: 22, fontWeight: "700" }}>New Grow</Text>
+          <ActivityIndicator />
+          <Text style={{ color: "#475569" }}>Checking free grow limit...</Text>
+        </ScrollView>
+      </ScreenBoundary>
     );
   }
 
   if (!canCreateGrow) {
     return (
-      <LockedScreen
-        title="Create grows with Pro"
-        message="Free accounts can create one grow. Upgrade to create more grows and save unlimited grow history."
-        actionLabel="Back to grows"
-        onAction={() => router.replace("/home/personal/grows" as any)}
-      />
+      <ScreenBoundary title="New Grow" showBack backFallbackHref="/home/personal/grows">
+        <LockedScreen
+          title="Create grows with Pro"
+          message="Free accounts can create one grow. Upgrade to create more grows and save unlimited grow history."
+          actionLabel="Back to grows"
+          onAction={() => router.replace("/home/personal/grows" as any)}
+        />
+      </ScreenBoundary>
     );
   }
 
   return (
-    <ScrollView
-      style={{ flex: 1, backgroundColor: "#FFFFFF" }}
-      contentContainerStyle={{ padding: 16, gap: 10, paddingBottom: 32 }}
-    >
-      <Text style={{ fontSize: 22, fontWeight: "700" }}>New Grow</Text>
-      <Text style={{ color: "#475569" }}>
-        Set required anchors so logs, tools, and tasks can map to this grow correctly.
-      </Text>
-      <PersonalFeedPlacement placement="top" routeKey="personal_new_grow" longContent />
+    <ScreenBoundary title="New Grow" showBack backFallbackHref="/home/personal/grows">
+      <ScrollView
+        style={{ flex: 1, backgroundColor: "#FFFFFF" }}
+        contentContainerStyle={{ padding: 16, gap: 10, paddingBottom: 32 }}
+      >
+        <Text style={{ fontSize: 22, fontWeight: "700" }}>New Grow</Text>
+        <Text style={{ color: "#475569" }}>
+          Set required anchors so logs, tools, and tasks can map to this grow correctly.
+        </Text>
+        <PersonalFeedPlacement placement="top" routeKey="personal_new_grow" longContent />
 
-      {error ? (
-        <View
-          style={{
-            borderWidth: 1,
-            borderColor: "#FCA5A5",
-            borderRadius: 10,
-            padding: 10,
-            backgroundColor: "#FEF2F2"
-          }}
-        >
-          <Text style={{ color: "#7F1D1D", fontWeight: "700" }}>{error}</Text>
-        </View>
-      ) : null}
-
-      <Text style={{ fontWeight: "700" }}>Grow name</Text>
-      <TextInput
-        testID="input-grow-name"
-        value={name}
-        onChangeText={setName}
-        placeholder="Blueberry Muffin Run 3"
-        accessibilityLabel="Grow name"
-        style={{
-          borderWidth: 1,
-          borderColor: "#E2E8F0",
-          borderRadius: 10,
-          paddingHorizontal: 12,
-          paddingVertical: 10
-        }}
-      />
-
-      <Text style={{ fontWeight: "700" }}>System preset</Text>
-      <View style={{ flexDirection: "row", gap: 8 }}>
-        {(["soil", "coco", "hydro"] as SystemPreset[]).map((preset) => (
-          <Pressable
-            key={preset}
-            onPress={() => setSystemPreset(preset)}
-            accessibilityRole="button"
-            accessibilityLabel={`System preset ${preset}`}
-            style={{
-              paddingVertical: 8,
-              paddingHorizontal: 12,
-              borderRadius: 999,
-              borderWidth: 1,
-              borderColor: systemPreset === preset ? "#166534" : "#CBD5E1",
-              backgroundColor: systemPreset === preset ? "#166534" : "#FFFFFF"
-            }}
-          >
-            <Text style={{ color: systemPreset === preset ? "#FFFFFF" : "#0F172A" }}>
-              {preset}
-            </Text>
-          </Pressable>
-        ))}
-      </View>
-
-      <Text style={{ fontWeight: "700" }}>Anchor type</Text>
-      <View style={{ flexDirection: "row", gap: 8 }}>
-        {(
-          [
-            { key: "vegStart", label: "Veg start" },
-            { key: "flowerDay1", label: "Flower day 1" }
-          ] as { key: AnchorType; label: string }[]
-        ).map((opt) => (
-          <Pressable
-            key={opt.key}
-            onPress={() => setAnchorDateType(opt.key)}
-            accessibilityRole="button"
-            accessibilityLabel={`Anchor type ${opt.label}`}
-            style={{
-              paddingVertical: 8,
-              paddingHorizontal: 12,
-              borderRadius: 999,
-              borderWidth: 1,
-              borderColor: anchorDateType === opt.key ? "#166534" : "#CBD5E1",
-              backgroundColor: anchorDateType === opt.key ? "#166534" : "#FFFFFF"
-            }}
-          >
-            <Text style={{ color: anchorDateType === opt.key ? "#FFFFFF" : "#0F172A" }}>
-              {opt.label}
-            </Text>
-          </Pressable>
-        ))}
-      </View>
-
-      <Text style={{ fontWeight: "700" }}>Anchor date (YYYY-MM-DD)</Text>
-      <TextInput
-        testID="input-grow-anchor-date"
-        value={anchorDate}
-        onChangeText={setAnchorDate}
-        placeholder="2026-02-27"
-        accessibilityLabel="Anchor date"
-        style={{
-          borderWidth: 1,
-          borderColor: "#E2E8F0",
-          borderRadius: 10,
-          paddingHorizontal: 12,
-          paddingVertical: 10
-        }}
-      />
-
-      <Text style={{ fontWeight: "700" }}>Timezone</Text>
-      <TextInput
-        value={timeZone}
-        onChangeText={setTimeZone}
-        placeholder="America/New_York"
-        accessibilityLabel="Timezone"
-        style={{
-          borderWidth: 1,
-          borderColor: "#E2E8F0",
-          borderRadius: 10,
-          paddingHorizontal: 12,
-          paddingVertical: 10
-        }}
-      />
-
-      <View style={{ gap: 8, marginTop: 6 }}>
-        <View
-          style={{
-            flexDirection: "row",
-            justifyContent: "space-between",
-            alignItems: "center",
-            gap: 10
-          }}
-        >
-          <Text style={{ fontWeight: "700" }}>Grow photos</Text>
-          <Pressable
-            onPress={pickPhotos}
-            accessibilityRole="button"
-            accessibilityLabel="Attach grow photos"
+        {error ? (
+          <View
             style={{
               borderWidth: 1,
-              borderColor: "#166534",
+              borderColor: "#FCA5A5",
               borderRadius: 10,
-              paddingHorizontal: 12,
-              paddingVertical: 8,
-              backgroundColor: "#F0FDF4"
+              padding: 10,
+              backgroundColor: "#FEF2F2"
             }}
           >
-            <Text style={{ color: "#166534", fontWeight: "800" }}>
-              {photos.length ? "Add More Photos" : "Attach Photos"}
-            </Text>
-          </Pressable>
-        </View>
-        {photos.length ? (
-          <View style={{ flexDirection: "row", flexWrap: "wrap", gap: 8 }}>
-            {photos.map((photo, index) => (
-              <View
-                key={`${photo.uri}-${index}`}
-                style={{
-                  width: 92,
-                  borderWidth: 1,
-                  borderColor: "#E2E8F0",
-                  borderRadius: 10,
-                  overflow: "hidden",
-                  backgroundColor: "#F8FAFC"
-                }}
-              >
-                <Image
-                  source={{ uri: photo.uri }}
-                  accessibilityLabel={`Attached grow photo ${index + 1}`}
-                  style={{ width: "100%", height: 72, backgroundColor: "#E2E8F0" }}
-                />
-                <Pressable
-                  onPress={() =>
-                    setPhotos((current) => current.filter((_, i) => i !== index))
-                  }
-                  accessibilityRole="button"
-                  accessibilityLabel={`Remove attached grow photo ${index + 1}`}
-                  style={{ padding: 6, alignItems: "center" }}
-                >
-                  <Text style={{ color: "#991B1B", fontSize: 12, fontWeight: "800" }}>
-                    Remove
-                  </Text>
-                </Pressable>
-              </View>
-            ))}
+            <Text style={{ color: "#7F1D1D", fontWeight: "700" }}>{error}</Text>
           </View>
-        ) : (
-          <Text style={{ color: "#64748B" }}>
-            Attach setup photos now so the grow starts with visual history.
-          </Text>
-        )}
+        ) : null}
+
+        <Text style={{ fontWeight: "700" }}>Grow name</Text>
         <TextInput
-          value={photoUrl}
-          onChangeText={setPhotoUrl}
-          placeholder="/uploads/grow-photo.jpg or https://..."
-          accessibilityLabel="Grow photo URL"
-          autoCapitalize="none"
+          testID="input-grow-name"
+          value={name}
+          onChangeText={setName}
+          placeholder="Blueberry Muffin Run 3"
+          accessibilityLabel="Grow name"
           style={{
             borderWidth: 1,
             borderColor: "#E2E8F0",
@@ -431,175 +271,342 @@ export default function NewGrowScreen() {
             paddingVertical: 10
           }}
         />
-        <Pressable
-          onPress={addPhotoUrl}
-          disabled={!photoUrl.trim()}
-          accessibilityRole="button"
-          accessibilityLabel="Add grow photo URL"
+
+        <Text style={{ fontWeight: "700" }}>System preset</Text>
+        <View style={{ flexDirection: "row", gap: 8 }}>
+          {(["soil", "coco", "hydro"] as SystemPreset[]).map((preset) => (
+            <Pressable
+              key={preset}
+              onPress={() => setSystemPreset(preset)}
+              accessibilityRole="button"
+              accessibilityLabel={`System preset ${preset}`}
+              style={{
+                paddingVertical: 8,
+                paddingHorizontal: 12,
+                borderRadius: 999,
+                borderWidth: 1,
+                borderColor: systemPreset === preset ? "#166534" : "#CBD5E1",
+                backgroundColor: systemPreset === preset ? "#166534" : "#FFFFFF"
+              }}
+            >
+              <Text style={{ color: systemPreset === preset ? "#FFFFFF" : "#0F172A" }}>
+                {preset}
+              </Text>
+            </Pressable>
+          ))}
+        </View>
+
+        <Text style={{ fontWeight: "700" }}>Anchor type</Text>
+        <View style={{ flexDirection: "row", gap: 8 }}>
+          {(
+            [
+              { key: "vegStart", label: "Veg start" },
+              { key: "flowerDay1", label: "Flower day 1" }
+            ] as { key: AnchorType; label: string }[]
+          ).map((opt) => (
+            <Pressable
+              key={opt.key}
+              onPress={() => setAnchorDateType(opt.key)}
+              accessibilityRole="button"
+              accessibilityLabel={`Anchor type ${opt.label}`}
+              style={{
+                paddingVertical: 8,
+                paddingHorizontal: 12,
+                borderRadius: 999,
+                borderWidth: 1,
+                borderColor: anchorDateType === opt.key ? "#166534" : "#CBD5E1",
+                backgroundColor: anchorDateType === opt.key ? "#166534" : "#FFFFFF"
+              }}
+            >
+              <Text style={{ color: anchorDateType === opt.key ? "#FFFFFF" : "#0F172A" }}>
+                {opt.label}
+              </Text>
+            </Pressable>
+          ))}
+        </View>
+
+        <Text style={{ fontWeight: "700" }}>Anchor date (YYYY-MM-DD)</Text>
+        <TextInput
+          testID="input-grow-anchor-date"
+          value={anchorDate}
+          onChangeText={setAnchorDate}
+          placeholder="2026-02-27"
+          accessibilityLabel="Anchor date"
           style={{
             borderWidth: 1,
-            borderColor: "#CBD5E1",
+            borderColor: "#E2E8F0",
             borderRadius: 10,
-            padding: 10,
-            alignSelf: "flex-start",
-            opacity: photoUrl.trim() ? 1 : 0.5
+            paddingHorizontal: 12,
+            paddingVertical: 10
+          }}
+        />
+
+        <Text style={{ fontWeight: "700" }}>Timezone</Text>
+        <TextInput
+          value={timeZone}
+          onChangeText={setTimeZone}
+          placeholder="America/New_York"
+          accessibilityLabel="Timezone"
+          style={{
+            borderWidth: 1,
+            borderColor: "#E2E8F0",
+            borderRadius: 10,
+            paddingHorizontal: 12,
+            paddingVertical: 10
+          }}
+        />
+
+        <View style={{ gap: 8, marginTop: 6 }}>
+          <View
+            style={{
+              flexDirection: "row",
+              justifyContent: "space-between",
+              alignItems: "center",
+              gap: 10
+            }}
+          >
+            <Text style={{ fontWeight: "700" }}>Grow photos</Text>
+            <Pressable
+              onPress={pickPhotos}
+              accessibilityRole="button"
+              accessibilityLabel="Attach grow photos"
+              style={{
+                borderWidth: 1,
+                borderColor: "#166534",
+                borderRadius: 10,
+                paddingHorizontal: 12,
+                paddingVertical: 8,
+                backgroundColor: "#F0FDF4"
+              }}
+            >
+              <Text style={{ color: "#166534", fontWeight: "800" }}>
+                {photos.length ? "Add More Photos" : "Attach Photos"}
+              </Text>
+            </Pressable>
+          </View>
+          {photos.length ? (
+            <View style={{ flexDirection: "row", flexWrap: "wrap", gap: 8 }}>
+              {photos.map((photo, index) => (
+                <View
+                  key={`${photo.uri}-${index}`}
+                  style={{
+                    width: 92,
+                    borderWidth: 1,
+                    borderColor: "#E2E8F0",
+                    borderRadius: 10,
+                    overflow: "hidden",
+                    backgroundColor: "#F8FAFC"
+                  }}
+                >
+                  <Image
+                    source={{ uri: photo.uri }}
+                    accessibilityLabel={`Attached grow photo ${index + 1}`}
+                    style={{ width: "100%", height: 72, backgroundColor: "#E2E8F0" }}
+                  />
+                  <Pressable
+                    onPress={() =>
+                      setPhotos((current) => current.filter((_, i) => i !== index))
+                    }
+                    accessibilityRole="button"
+                    accessibilityLabel={`Remove attached grow photo ${index + 1}`}
+                    style={{ padding: 6, alignItems: "center" }}
+                  >
+                    <Text style={{ color: "#991B1B", fontSize: 12, fontWeight: "800" }}>
+                      Remove
+                    </Text>
+                  </Pressable>
+                </View>
+              ))}
+            </View>
+          ) : (
+            <Text style={{ color: "#64748B" }}>
+              Attach setup photos now so the grow starts with visual history.
+            </Text>
+          )}
+          <TextInput
+            value={photoUrl}
+            onChangeText={setPhotoUrl}
+            placeholder="/uploads/grow-photo.jpg or https://..."
+            accessibilityLabel="Grow photo URL"
+            autoCapitalize="none"
+            style={{
+              borderWidth: 1,
+              borderColor: "#E2E8F0",
+              borderRadius: 10,
+              paddingHorizontal: 12,
+              paddingVertical: 10
+            }}
+          />
+          <Pressable
+            onPress={addPhotoUrl}
+            disabled={!photoUrl.trim()}
+            accessibilityRole="button"
+            accessibilityLabel="Add grow photo URL"
+            style={{
+              borderWidth: 1,
+              borderColor: "#CBD5E1",
+              borderRadius: 10,
+              padding: 10,
+              alignSelf: "flex-start",
+              opacity: photoUrl.trim() ? 1 : 0.5
+            }}
+          >
+            <Text style={{ fontWeight: "700" }}>Add photo URL</Text>
+          </Pressable>
+        </View>
+
+        <Pressable
+          onPress={() => setShowAdvanced((prev) => !prev)}
+          accessibilityRole="button"
+          accessibilityLabel={
+            showAdvanced ? "Hide advanced fields" : "Show advanced fields"
+          }
+          style={{
+            marginTop: 8,
+            borderWidth: 1,
+            borderColor: "#E2E8F0",
+            borderRadius: 10,
+            padding: 10
           }}
         >
-          <Text style={{ fontWeight: "700" }}>Add photo URL</Text>
+          <Text style={{ fontWeight: "700" }}>
+            {showAdvanced ? "Hide advanced fields" : "Show advanced fields"}
+          </Text>
         </Pressable>
-      </View>
+        <PersonalFeedPlacement
+          placement="middle"
+          routeKey="personal_new_grow"
+          longContent
+        />
 
-      <Pressable
-        onPress={() => setShowAdvanced((prev) => !prev)}
-        accessibilityRole="button"
-        accessibilityLabel={
-          showAdvanced ? "Hide advanced fields" : "Show advanced fields"
-        }
-        style={{
-          marginTop: 8,
-          borderWidth: 1,
-          borderColor: "#E2E8F0",
-          borderRadius: 10,
-          padding: 10
-        }}
-      >
-        <Text style={{ fontWeight: "700" }}>
-          {showAdvanced ? "Hide advanced fields" : "Show advanced fields"}
-        </Text>
-      </Pressable>
-      <PersonalFeedPlacement
-        placement="middle"
-        routeKey="personal_new_grow"
-        longContent
-      />
+        {showAdvanced ? (
+          <View style={{ gap: 10 }}>
+            <Text style={{ fontWeight: "700" }}>Flip date (optional)</Text>
+            <TextInput
+              value={flipDate}
+              onChangeText={setFlipDate}
+              placeholder="YYYY-MM-DD"
+              accessibilityLabel="Flip date"
+              style={{
+                borderWidth: 1,
+                borderColor: "#E2E8F0",
+                borderRadius: 10,
+                paddingHorizontal: 12,
+                paddingVertical: 10
+              }}
+            />
 
-      {showAdvanced ? (
-        <View style={{ gap: 10 }}>
-          <Text style={{ fontWeight: "700" }}>Flip date (optional)</Text>
-          <TextInput
-            value={flipDate}
-            onChangeText={setFlipDate}
-            placeholder="YYYY-MM-DD"
-            accessibilityLabel="Flip date"
-            style={{
-              borderWidth: 1,
-              borderColor: "#E2E8F0",
-              borderRadius: 10,
-              paddingHorizontal: 12,
-              paddingVertical: 10
-            }}
-          />
+            <Text style={{ fontWeight: "700" }}>Pot size (optional)</Text>
+            <TextInput
+              value={potSize}
+              onChangeText={setPotSize}
+              placeholder="5 gal"
+              accessibilityLabel="Pot size"
+              style={{
+                borderWidth: 1,
+                borderColor: "#E2E8F0",
+                borderRadius: 10,
+                paddingHorizontal: 12,
+                paddingVertical: 10
+              }}
+            />
 
-          <Text style={{ fontWeight: "700" }}>Pot size (optional)</Text>
-          <TextInput
-            value={potSize}
-            onChangeText={setPotSize}
-            placeholder="5 gal"
-            accessibilityLabel="Pot size"
-            style={{
-              borderWidth: 1,
-              borderColor: "#E2E8F0",
-              borderRadius: 10,
-              paddingHorizontal: 12,
-              paddingVertical: 10
-            }}
-          />
+            <Text style={{ fontWeight: "700" }}>Pot count (optional)</Text>
+            <TextInput
+              value={potCount}
+              onChangeText={setPotCount}
+              placeholder="4"
+              keyboardType="numeric"
+              accessibilityLabel="Pot count"
+              style={{
+                borderWidth: 1,
+                borderColor: "#E2E8F0",
+                borderRadius: 10,
+                paddingHorizontal: 12,
+                paddingVertical: 10
+              }}
+            />
 
-          <Text style={{ fontWeight: "700" }}>Pot count (optional)</Text>
-          <TextInput
-            value={potCount}
-            onChangeText={setPotCount}
-            placeholder="4"
-            keyboardType="numeric"
-            accessibilityLabel="Pot count"
-            style={{
-              borderWidth: 1,
-              borderColor: "#E2E8F0",
-              borderRadius: 10,
-              paddingHorizontal: 12,
-              paddingVertical: 10
-            }}
-          />
+            <Text style={{ fontWeight: "700" }}>Cultivar (optional)</Text>
+            <TextInput
+              value={cultivar}
+              onChangeText={setCultivar}
+              placeholder="Blue Dream"
+              accessibilityLabel="Cultivar"
+              style={{
+                borderWidth: 1,
+                borderColor: "#E2E8F0",
+                borderRadius: 10,
+                paddingHorizontal: 12,
+                paddingVertical: 10
+              }}
+            />
 
-          <Text style={{ fontWeight: "700" }}>Cultivar (optional)</Text>
-          <TextInput
-            value={cultivar}
-            onChangeText={setCultivar}
-            placeholder="Blue Dream"
-            accessibilityLabel="Cultivar"
-            style={{
-              borderWidth: 1,
-              borderColor: "#E2E8F0",
-              borderRadius: 10,
-              paddingHorizontal: 12,
-              paddingVertical: 10
-            }}
-          />
+            <Text style={{ fontWeight: "700" }}>Target VPD band (optional)</Text>
+            <TextInput
+              value={targetVpdBand}
+              onChangeText={setTargetVpdBand}
+              placeholder="0.9-1.2 kPa"
+              accessibilityLabel="Target VPD band"
+              style={{
+                borderWidth: 1,
+                borderColor: "#E2E8F0",
+                borderRadius: 10,
+                paddingHorizontal: 12,
+                paddingVertical: 10
+              }}
+            />
 
-          <Text style={{ fontWeight: "700" }}>Target VPD band (optional)</Text>
-          <TextInput
-            value={targetVpdBand}
-            onChangeText={setTargetVpdBand}
-            placeholder="0.9-1.2 kPa"
-            accessibilityLabel="Target VPD band"
-            style={{
-              borderWidth: 1,
-              borderColor: "#E2E8F0",
-              borderRadius: 10,
-              paddingHorizontal: 12,
-              paddingVertical: 10
-            }}
-          />
+            <Text style={{ fontWeight: "700" }}>Notes (optional)</Text>
+            <TextInput
+              value={notes}
+              onChangeText={setNotes}
+              placeholder="Any setup notes"
+              multiline
+              accessibilityLabel="Grow notes"
+              style={{
+                borderWidth: 1,
+                borderColor: "#E2E8F0",
+                borderRadius: 10,
+                paddingHorizontal: 12,
+                paddingVertical: 10,
+                minHeight: 80,
+                textAlignVertical: "top"
+              }}
+            />
+          </View>
+        ) : null}
 
-          <Text style={{ fontWeight: "700" }}>Notes (optional)</Text>
-          <TextInput
-            value={notes}
-            onChangeText={setNotes}
-            placeholder="Any setup notes"
-            multiline
-            accessibilityLabel="Grow notes"
-            style={{
-              borderWidth: 1,
-              borderColor: "#E2E8F0",
-              borderRadius: 10,
-              paddingHorizontal: 12,
-              paddingVertical: 10,
-              minHeight: 80,
-              textAlignVertical: "top"
-            }}
-          />
-        </View>
-      ) : null}
-
-      <Pressable
-        testID="btn-save-grow"
-        onPress={onCreate}
-        disabled={saving || !isValid}
-        accessibilityRole="button"
-        accessibilityLabel="Create grow"
-        style={{
-          marginTop: 16,
-          paddingVertical: 12,
-          paddingHorizontal: 14,
-          borderWidth: 1,
-          borderColor: "#166534",
-          borderRadius: 10,
-          backgroundColor: "#166534",
-          opacity: saving || !isValid ? 0.6 : 1,
-          alignSelf: "flex-start"
-        }}
-      >
-        {saving ? (
-          <ActivityIndicator color="#FFFFFF" />
-        ) : (
-          <Text style={{ color: "#FFFFFF", fontWeight: "700" }}>Create grow</Text>
-        )}
-      </Pressable>
-      <PersonalFeedPlacement
-        placement="bottom"
-        routeKey="personal_new_grow"
-        longContent
-      />
-    </ScrollView>
+        <Pressable
+          testID="btn-save-grow"
+          onPress={onCreate}
+          disabled={saving || !isValid}
+          accessibilityRole="button"
+          accessibilityLabel="Create grow"
+          style={{
+            marginTop: 16,
+            paddingVertical: 12,
+            paddingHorizontal: 14,
+            borderWidth: 1,
+            borderColor: "#166534",
+            borderRadius: 10,
+            backgroundColor: "#166534",
+            opacity: saving || !isValid ? 0.6 : 1,
+            alignSelf: "flex-start"
+          }}
+        >
+          {saving ? (
+            <ActivityIndicator color="#FFFFFF" />
+          ) : (
+            <Text style={{ color: "#FFFFFF", fontWeight: "700" }}>Create grow</Text>
+          )}
+        </Pressable>
+        <PersonalFeedPlacement
+          placement="bottom"
+          routeKey="personal_new_grow"
+          longContent
+        />
+      </ScrollView>
+    </ScreenBoundary>
   );
 }

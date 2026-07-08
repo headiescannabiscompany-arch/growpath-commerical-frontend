@@ -462,6 +462,7 @@ Completed and pushed:
 186. Facility audit log detail, audit entity detail, and compliance report detail now use shared back controls with audit/compliance fallbacks in all loading, error, and content states, with focused coverage for the nested compliance/audit back-arrow rule.
 187. Commercial inventory create now uses the shared commercial AppPage shell with a `/home/commercial/inventory` fallback, keeping support-item creation visually aligned with the commercial workspace and covered by the existing create-route regression.
 188. Personal journal create and detail pages now use shared back controls that return to the selected/linked grow journal, including locked-state creation coverage and loaded log-detail coverage, so grow logging follows the nested page navigation rule.
+189. Personal Create Grow now uses the shared back control with `/home/personal/grows` fallback across limit-checking, locked, and create-form states, with access-route coverage proving the nested create flow returns to My Grows.
 
 ## Working Rule For Codex
 
