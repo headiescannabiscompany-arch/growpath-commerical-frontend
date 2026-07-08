@@ -18,6 +18,7 @@ import PersonalFeedPlacement from "@/components/feed/PersonalFeedPlacement";
 import { useEntitlements } from "@/entitlements";
 import { getLearningAccess } from "@/features/learning/learningAccess";
 import { persistImageUris } from "@/utils/photoUploads";
+import { radius } from "../theme/theme";
 import { buildEmptyTierSelection, flattenTierSelections } from "../utils/growInterests";
 
 function firstDocumentAsset(result) {
@@ -275,7 +276,7 @@ const styles = StyleSheet.create({
   input: {
     backgroundColor: "#eee",
     padding: 10,
-    borderRadius: 8,
+    borderRadius: radius.card,
     marginBottom: 8
   },
   textBox: {
@@ -285,7 +286,7 @@ const styles = StyleSheet.create({
   uploadBtn: {
     backgroundColor: "#007AFF",
     padding: 12,
-    borderRadius: 8,
+    borderRadius: radius.card,
     marginBottom: 8,
     alignItems: "center"
   },
@@ -298,7 +299,7 @@ const styles = StyleSheet.create({
     marginTop: 16,
     backgroundColor: "#2ecc71",
     paddingVertical: 12,
-    borderRadius: 8
+    borderRadius: radius.card
   },
   btnText: {
     textAlign: "center",
@@ -315,7 +316,7 @@ const styles = StyleSheet.create({
   imageThumb: {
     width: 80,
     height: 80,
-    borderRadius: 8
+    borderRadius: radius.card
   },
   helpText: {
     fontSize: 13,
@@ -327,7 +328,7 @@ const styles = StyleSheet.create({
   lockedCard: {
     borderWidth: 1,
     borderColor: "#ddd",
-    borderRadius: 8,
+    borderRadius: radius.card,
     padding: 12,
     marginBottom: 10,
     backgroundColor: "#f8fafc"

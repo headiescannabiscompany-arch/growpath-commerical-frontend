@@ -727,6 +727,7 @@ Completed and pushed:
 451. Grow interest picker/editor containers, save actions, badges, and interest chips now consume shared radius tokens, preserving pill semantics while keeping discovery, targeting, recommendations, and course/product/feed tagging visually aligned.
 452. Legacy task rows, task completion modal, task creation inputs, entitlement warning, and create-task actions now consume the shared 8px card radius token, keeping older task entry points aligned with the shared action-layer polish.
 453. Shared context bar actions, automation rows, and legacy screen scaffold sections/cards/debug panels now consume shared radius tokens while preserving badge/pill semantics across older commercial and facility surfaces.
+454. Legacy lesson add/edit inputs, upload actions, thumbnails, locked-authoring panels, and save controls now consume the shared 8px card radius token, keeping course authoring aligned with storefront/course workflow polish.
 
 ## Working Rule For Codex
 

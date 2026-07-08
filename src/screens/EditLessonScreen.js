@@ -6,6 +6,7 @@ import { updateLesson } from "../api/courses";
 import PersonalFeedPlacement from "@/components/feed/PersonalFeedPlacement";
 import { useEntitlements } from "@/entitlements";
 import { getLearningAccess } from "@/features/learning/learningAccess";
+import { radius } from "../theme/theme";
 import {
   buildEmptyTierSelection,
   flattenTierSelections,
@@ -151,7 +152,7 @@ const styles = StyleSheet.create({
   input: {
     backgroundColor: "#eee",
     padding: 10,
-    borderRadius: 8,
+    borderRadius: radius.card,
     marginBottom: 8
   },
   textBox: {
@@ -162,7 +163,7 @@ const styles = StyleSheet.create({
     marginTop: 16,
     backgroundColor: "#2ecc71",
     paddingVertical: 12,
-    borderRadius: 8
+    borderRadius: radius.card
   },
   btnText: {
     textAlign: "center",
