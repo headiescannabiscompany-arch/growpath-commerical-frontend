@@ -55,6 +55,11 @@ const COMMERCIAL_RULES: RouteRule[] = [
     capabilities: []
   },
   {
+    matches: (pathname: string) => pathname.startsWith("/storefront/"),
+    mode: ["personal", "commercial", "facility"],
+    capabilities: []
+  },
+  {
     matches: startsWith("/alerts"),
     mode: "commercial",
     capabilities: [CAPABILITY_KEYS.COMMERCIAL_ALERTS_VIEW]
@@ -65,7 +70,7 @@ const COMMERCIAL_RULES: RouteRule[] = [
     capabilities: [CAPABILITY_KEYS.COMMERCIAL_TASKS_VIEW]
   },
   {
-    matches: startsWith("/storefront"),
+    matches: (pathname: string) => pathname === "/storefront",
     mode: "commercial",
     capabilities: [CAPABILITY_KEYS.STORE_FRONT_VIEW]
   },

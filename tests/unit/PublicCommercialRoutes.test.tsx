@@ -3,6 +3,7 @@ import { render, waitFor } from "@testing-library/react-native";
 
 import PublicBrandProfileRoute from "@/app/brands/[slug]";
 import PublicStorefrontRoute from "@/app/store/[slug]";
+import PublicStorefrontAliasRoute from "@/app/storefront/[slug]";
 import PublicProductRoute from "@/app/store/[slug]/products/[productId]";
 
 const mockFetchPublicStorefront = jest.fn();
@@ -217,6 +218,18 @@ describe("public commercial routes", () => {
         })
       )
     );
+  });
+
+  it("loads the /storefront/:slug public alias through the same storefront route", async () => {
+    const screen = render(<PublicStorefrontAliasRoute />);
+
+    await waitFor(() =>
+      expect(mockFetchPublicStorefront).toHaveBeenCalledWith("living-soil-labs")
+    );
+    expect(screen.getByText("Living Soil Labs")).toBeTruthy();
+    expect(screen.getByText("View Brand Profile")).toBeTruthy();
+    expect(screen.getByText("Promoted Campaigns")).toBeTruthy();
+    expect(screen.getByText("Forum / Q&A")).toBeTruthy();
   });
 
   it("loads a public product detail page with storefront navigation", async () => {

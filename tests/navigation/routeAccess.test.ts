@@ -134,6 +134,17 @@ describe("route access policy", () => {
     });
   });
 
+  it("allows public storefront slug aliases while keeping the owner redirect gated", () => {
+    expect(canAccessRoute("/storefront/living-soil-labs", personal())).toBe(true);
+    expect(canAccessRoute("/storefront/living-soil-labs", commercial({}))).toBe(true);
+    expect(canAccessRoute("/storefront/living-soil-labs", facility({}))).toBe(true);
+    expect(getRoutePolicy("/storefront/living-soil-labs")).toMatchObject({
+      mode: ["personal", "commercial", "facility"],
+      capabilities: []
+    });
+    expect(canAccessRoute("/storefront", commercial({}))).toBe(false);
+  });
+
   it("blocks direct entry when the required capability is absent", () => {
     expect(canAccessRoute("/storefront", commercial({}))).toBe(false);
   });
