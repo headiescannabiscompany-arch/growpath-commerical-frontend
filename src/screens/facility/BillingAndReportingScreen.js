@@ -20,6 +20,7 @@ import {
   FACILITY_PLAN_PRICE_DISPLAY,
   formatPlanBillingNote
 } from "../../constants/pricing";
+import { radius } from "../../theme/theme";
 
 async function openCheckoutUrl(url) {
   if (Platform.OS === "web" && typeof window !== "undefined" && window.location) {
@@ -348,7 +349,7 @@ const styles = StyleSheet.create({
   },
   card: {
     backgroundColor: "#fff",
-    borderRadius: 12,
+    borderRadius: radius.card,
     padding: 20,
     marginBottom: 16,
     borderWidth: 1,
@@ -375,7 +376,7 @@ const styles = StyleSheet.create({
   statusBadge: {
     paddingVertical: 6,
     paddingHorizontal: 12,
-    borderRadius: 20,
+    borderRadius: radius.pill,
     minWidth: 80,
     alignItems: "center"
   },
@@ -414,7 +415,7 @@ const styles = StyleSheet.create({
   button: {
     paddingVertical: 14,
     paddingHorizontal: 16,
-    borderRadius: 8,
+    borderRadius: radius.card,
     alignItems: "center"
   },
   subscribeButton: {
@@ -455,7 +456,7 @@ const styles = StyleSheet.create({
     flex: 1,
     backgroundColor: "#f9fafb",
     padding: 12,
-    borderRadius: 8,
+    borderRadius: radius.card,
     alignItems: "center"
   },
   usageValue: {

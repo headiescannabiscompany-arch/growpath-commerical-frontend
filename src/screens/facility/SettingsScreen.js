@@ -1,5 +1,6 @@
 import React, { useMemo } from "react";
 import { View, Text, TouchableOpacity, StyleSheet, Alert } from "react-native";
+import { radius } from "../../theme/theme";
 import { useFacility } from "../../facility/FacilityProvider";
 import { can } from "../../facility/roleGates";
 import { handleApiError } from "../../ui/handleApiError";
@@ -173,7 +174,7 @@ const styles = StyleSheet.create({
   container: { flex: 1, backgroundColor: "#f9fafb", padding: 16 },
   card: {
     backgroundColor: "#fff",
-    borderRadius: 8,
+    borderRadius: radius.card,
     padding: 16,
     marginBottom: 16,
     boxShadow: "0px 2px 4px rgba(0,0,0,0.1)",
@@ -191,7 +192,7 @@ const styles = StyleSheet.create({
   value: { fontSize: 14, color: "#1f2937", fontWeight: "600" },
   button: {
     backgroundColor: "#0ea5e9",
-    borderRadius: 8,
+    borderRadius: radius.card,
     paddingVertical: 12,
     paddingHorizontal: 16,
     marginBottom: 12,

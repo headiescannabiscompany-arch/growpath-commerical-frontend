@@ -760,6 +760,7 @@ Completed and pushed:
 484. Creator analytics, payout history, signature upload, and earnings cards, rows, preview frames, feedback panels, and payout/signature actions now consume shared radius tokens while preserving creator course analytics, payout requests, signature upload, and earnings API behavior.
 485. Creator dashboard and vendor guide authoring/list cards, chart frames, selector cards, lesson rows, stat badges, inputs, locked notices, and save actions now consume shared radius tokens while preserving creator analytics, vendor-guide draft creation, and vendor guide listing behavior.
 486. Commercial course creation, social channel management, and external channel integration inputs, locked cards, platform cards, status cards, and action buttons now consume shared radius tokens while preserving course draft creation, Feed/Campaign placement, and external-channel guidance behavior.
+487. Facility billing/reporting, deviation handling, green waste, and settings cards, status badges, list rows, inputs, method chips, usage tiles, and actions now consume shared radius tokens while preserving billing checkout, report generation, deviation logging, waste logging, and workspace settings behavior.
 
 ## Working Rule For Codex
 
