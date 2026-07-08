@@ -379,6 +379,21 @@ function facilityFeedCompatibilityUsesCampaignRoute() {
   );
 }
 
+function facilityIntegrationsUsesRoomImport(routes) {
+  const source = routeSource(routes, "/home/facility/integrations");
+  if (!source) return false;
+  return (
+    /Sensor Integrations/.test(source) &&
+    /Build rooms from controller data/.test(source) &&
+    source.includes('href="/home/facility/rooms"') &&
+    /Read-only sync comes first/.test(source) &&
+    /Write\/control endpoints stay disabled/.test(source) &&
+    /Imported data should power rooms, alerts, VPD\/dew point review, AI summaries,\s+and tasks/.test(
+      source
+    )
+  );
+}
+
 function keywordHits(searchable, keywords) {
   const hits = [];
   for (const keyword of keywords) {
@@ -511,6 +526,9 @@ function main() {
   const commercialCommunityForumOnly = commercialCommunityUsesForum(files.routes);
   const facilityFeedCompatibilityCampaignOnly =
     facilityFeedCompatibilityUsesCampaignRoute();
+  const facilityIntegrationsRoomImport = facilityIntegrationsUsesRoomImport(
+    files.routes
+  );
 
   const decisionChecks = {
     topLevelLogsRouteExists,
@@ -542,6 +560,7 @@ function main() {
       legacyPersonalSocialToolsRouteExists && !legacyPersonalSocialToolsRedirectOnly,
     commercialCommunityForumOnly,
     facilityFeedCompatibilityCampaignOnly,
+    facilityIntegrationsRoomImport,
     topLevelTasksRouteExists,
     topLevelTasksRedirectOnly,
     topLevelTasksTaskCenter,
@@ -615,6 +634,7 @@ function main() {
     `- Legacy personal social-tools redirect-only guard: ${decisionChecks.legacyPersonalSocialToolsRedirectOnly}`,
     `- Commercial community uses Forum/Q&A API, not Feed/Campaigns: ${decisionChecks.commercialCommunityForumOnly}`,
     `- Facility feed compatibility screen uses campaign route, not legacy posts feed: ${decisionChecks.facilityFeedCompatibilityCampaignOnly}`,
+    `- Facility integrations entry uses read-only room import preview: ${decisionChecks.facilityIntegrationsRoomImport}`,
     `- Top-level Tasks visible module: ${decisionChecks.topLevelTasksVisibleModule}`,
     `- Top-level Tasks uses shared Task Center/Schedule: ${decisionChecks.topLevelTasksTaskCenter}`,
     `- Facility Insights route exists: ${decisionChecks.facilityInsightsRouteExists}`,
