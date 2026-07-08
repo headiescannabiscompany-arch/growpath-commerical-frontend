@@ -1366,7 +1366,7 @@ describe("commercial workflow pages", () => {
     );
     fireEvent.changeText(
       screen.getByLabelText("Marketing plan platform notes"),
-      "Post to feed and email list"
+      "Campaign placement and email list"
     );
     fireEvent.press(screen.getByLabelText("Create marketing plan"));
 
@@ -1390,7 +1390,7 @@ describe("commercial workflow pages", () => {
             storefrontSlug: "living-soil-labs",
             targetUrl: "https://example.com/veg",
             externalUrl: "https://example.com/veg",
-            platformNotes: "Post to feed and email list",
+            platformNotes: "Campaign placement and email list",
             budget: { totalBudget: 150 }
           })
         })

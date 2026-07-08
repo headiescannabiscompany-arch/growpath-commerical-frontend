@@ -547,6 +547,7 @@ Completed and pushed:
 271. Feed placement rails now route product-line campaigns to filtered public storefront discovery (`/store/:slug?line=:lineId` or `/store?line=:lineId`), matching the main Feed/Campaigns destination behavior so top/middle/bottom ads keep product-family CTAs connected.
 272. Storefront owner Active Feed Campaigns now shows linked product-line context and a Browse Line action back to the filtered public storefront, so owners can see which storefront family each campaign promotes without treating the ad as discussion.
 273. Commercial Marketing Planner rows now display linked product-line context for existing launch plans, matching the linked-plan metrics and keeping product-family campaigns visible instead of only showing product/course/evidence-run IDs.
+274. Commercial workflow regression fixtures now use campaign-placement language instead of "post to feed" copy, keeping tests aligned with Feed as advertising/outreach and Forum as discussion.
 
 ## Working Rule For Codex
 
