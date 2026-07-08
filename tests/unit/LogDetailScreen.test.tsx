@@ -1,5 +1,4 @@
 import React from "react";
-import { Image } from "react-native";
 import { fireEvent, render, waitFor } from "@testing-library/react-native";
 
 import LogDetailScreen from "@/app/home/personal/(tabs)/logs/[logId]";
@@ -67,7 +66,7 @@ describe("LogDetailScreen", () => {
     expect(screen.getByText("Leaf photo")).toBeTruthy();
     expect(screen.getByText("image/jpeg | 1600x1200")).toBeTruthy();
 
-    const image = screen.UNSAFE_getAllByType(Image)[0];
+    const image = screen.getByLabelText("Journal photo 1");
     expect(image.props.source).toEqual({
       uri: `${API_URL}/uploads/log-photo.jpg`
     });

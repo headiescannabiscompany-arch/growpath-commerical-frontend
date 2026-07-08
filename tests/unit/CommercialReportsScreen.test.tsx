@@ -12,7 +12,7 @@ describe("CommercialReportsScreen", () => {
     expect(screen.getByText("Product trial outcomes")).toBeTruthy();
     expect(screen.getByText("Storefront and product activity")).toBeTruthy();
     expect(screen.getByText("Feed, course, and forum outcomes")).toBeTruthy();
-    expect(screen.getByText("Orders / external tracking")).toBeTruthy();
+    expect(screen.getByText("Orders")).toBeTruthy();
     expect(screen.queryByText("Vendor Analytics")).toBeNull();
     expect(screen.queryByText("Recent Orders")).toBeNull();
 

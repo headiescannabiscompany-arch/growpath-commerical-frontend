@@ -25,7 +25,8 @@ jest.mock("@/features/learning/learningAccess", () => ({
 }));
 
 jest.mock("@/utils/photoUploads", () => ({
-  persistImageUris: (...args: any[]) => mockPersistImageUris(...args)
+  persistImageUris: (...args: any[]) => mockPersistImageUris(...args),
+  resolveImageUri: (uri: string) => uri
 }));
 
 jest.mock("@/utils/growPhotoAttachment", () => ({

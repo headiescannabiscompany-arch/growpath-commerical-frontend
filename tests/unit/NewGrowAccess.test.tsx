@@ -35,7 +35,8 @@ jest.mock("@/api/grows", () => ({
 
 jest.mock("@/utils/photoUploads", () => ({
   isPersistedImageUri: (uri: string) => /^https?:\/\//.test(uri) || uri.startsWith("/"),
-  persistImageUris: (...args: any[]) => mockPersistImageUris(...args)
+  persistImageUris: (...args: any[]) => mockPersistImageUris(...args),
+  resolveImageUri: (uri: string) => uri
 }));
 
 jest.mock("@/entitlements", () => ({
