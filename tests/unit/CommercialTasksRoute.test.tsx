@@ -107,6 +107,7 @@ describe("CommercialTasksRoute", () => {
             priority: "normal",
             sourceType: "live",
             sourceId: "live-1",
+            linkedLiveId: "live-1",
             assignedToUserId: "user-1",
             reminderPlan: { label: "24 hours before", channels: ["in_app"] }
           })

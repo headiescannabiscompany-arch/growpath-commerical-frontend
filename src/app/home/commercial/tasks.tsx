@@ -102,6 +102,36 @@ function sourcePath(task: CommercialTask) {
   return "";
 }
 
+function linkedFieldsForSource(sourceType: string, sourceId: string) {
+  if (!sourceId) return {};
+  switch (sourceType) {
+    case "storefront":
+      return { linkedStorefrontId: sourceId };
+    case "product":
+      return { linkedProductId: sourceId };
+    case "product_batch":
+      return { linkedProductBatchId: sourceId };
+    case "product_trial":
+      return { linkedProductTrialId: sourceId };
+    case "course":
+      return { linkedCourseId: sourceId };
+    case "lesson":
+      return { linkedLessonId: sourceId };
+    case "live":
+      return { linkedLiveId: sourceId };
+    case "feed_campaign":
+      return { linkedFeedPostId: sourceId };
+    case "order":
+      return { linkedOrderId: sourceId };
+    case "alert":
+      return { linkedAlertId: sourceId };
+    case "forum":
+      return { linkedForumThreadId: sourceId };
+    default:
+      return {};
+  }
+}
+
 function scheduleSummary(task: CommercialTask) {
   const reminder =
     typeof task.reminderPlan?.label === "string"
@@ -180,6 +210,7 @@ export default function CommercialTasksRoute() {
     if (!title.trim() || creating) return;
     setCreating(true);
     setFeedback("");
+    const cleanSourceId = sourceId.trim();
     try {
       await apiRequest(endpoints.tasksGlobal, {
         method: "POST",
@@ -190,7 +221,8 @@ export default function CommercialTasksRoute() {
           dueAt: dueDate.trim() || undefined,
           priority,
           sourceType,
-          sourceId: sourceId.trim() || undefined,
+          sourceId: cleanSourceId || undefined,
+          ...linkedFieldsForSource(sourceType, cleanSourceId),
           assignedToUserId: assignee.trim() || undefined,
           status: "open",
           reminderPlan: reminder.trim()
