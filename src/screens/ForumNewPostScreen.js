@@ -43,6 +43,7 @@ export default function ForumNewPostScreen({ route, navigation }) {
   const initialPostType = route.params?.postType || "education";
   const workspaceContext = route.params?.workspace || mode || "personal";
   const isCommercial = workspaceContext === "commercial";
+  const isFacility = workspaceContext === "facility";
   const growLogId = route.params?.growLogId || route.params?.fromGrowLogId || null;
   const growId = route.params?.growId || null;
   const defaultPickerExpansion = Boolean(route.params?.expandInterestPicker);
@@ -54,7 +55,7 @@ export default function ForumNewPostScreen({ route, navigation }) {
     initialGrowTags.length ? groupTagsByTier(initialGrowTags) : buildEmptyTierSelection()
   );
 
-  const allowedPostTypes = ["education", "offer", "discussion", "course"];
+  const allowedPostTypes = ["education", "discussion", "course", "product_qna", "live_qna"];
   const safeInitialType = useMemo(
     () => (allowedPostTypes.includes(initialPostType) ? initialPostType : "education"),
     [initialPostType]
@@ -91,20 +92,12 @@ export default function ForumNewPostScreen({ route, navigation }) {
   async function handleSubmit() {
     const finalTags = flattenTierSelections(growInterestSelections);
 
-    if (isCommercial && !allowedPostTypes.includes(postType)) {
-      Alert.alert("Choose a post type", "Pick education, offer, discussion, or course.");
+    if ((isCommercial || isFacility) && !allowedPostTypes.includes(postType)) {
+      Alert.alert(
+        "Choose a forum type",
+        "Pick education, discussion, course, product Q&A, or live Q&A."
+      );
       return;
-    }
-
-    if (isCommercial && postType === "offer") {
-      const lower = content.toLowerCase();
-      if (content.includes("$") || lower.includes("http")) {
-        Alert.alert(
-          "Remove prices/links",
-          "Commercial offers cannot include prices or checkout links."
-        );
-        return;
-      }
     }
 
     if (!content.trim() && photos.length === 0) {
@@ -123,10 +116,12 @@ export default function ForumNewPostScreen({ route, navigation }) {
         strain,
         category,
         growLogId,
-        postType: isCommercial ? postType : "discussion",
-        authorType: isCommercial ? "business" : "user",
+        postType: isCommercial || isFacility ? postType : "discussion",
+        authorType: isCommercial ? "commercial" : isFacility ? "facility" : "user",
         authorId: isCommercial
           ? user?.business?.id || user?.business?._id || user?._id || null
+          : isFacility
+            ? user?.facility?.id || user?.facility?._id || user?._id || null
           : user?._id || null,
         workspaceContext: workspaceContext
       };
@@ -154,9 +149,13 @@ export default function ForumNewPostScreen({ route, navigation }) {
 
       <View style={styles.identityBox}>
         <Text style={styles.identityTitle}>
-          Posting as {isCommercial ? "Business" : "User"}
+          Posting as {isCommercial ? "Brand" : isFacility ? "Facility" : "User"}
         </Text>
         <Text style={styles.identitySub}>Workspace: {workspaceContext}</Text>
+        <Text style={styles.identitySub}>
+          Forum is discussion and Q&A. Promotions, offers, storefront outreach, and ads
+          belong in Feed / Campaigns.
+        </Text>
       </View>
 
       {/* TEXT INPUT */}
@@ -196,9 +195,9 @@ export default function ForumNewPostScreen({ route, navigation }) {
         ))}
       </ScrollView>
 
-      {isCommercial && (
+      {(isCommercial || isFacility) && (
         <View style={{ marginBottom: 12 }}>
-          <Text style={styles.label}>Post type (commercial)</Text>
+          <Text style={styles.label}>Forum type</Text>
           <ScrollView horizontal showsHorizontalScrollIndicator={false}>
             {allowedPostTypes.map((type) => (
               <TouchableOpacity
@@ -214,15 +213,17 @@ export default function ForumNewPostScreen({ route, navigation }) {
                     postType === type ? styles.categoryTextActive : styles.categoryText
                   }
                 >
-                  {type}
+                  {type.replace(/_/g, " ")}
                 </Text>
                 <Text style={styles.categoryDesc}>
                   {type === "education"
-                    ? "Teach something before you pitch"
-                    : type === "offer"
-                      ? "No price/checkout links allowed"
+                    ? "Teach or explain"
+                    : type === "product_qna"
+                      ? "Product support question"
+                      : type === "live_qna"
+                        ? "Live event question"
                       : type === "course"
-                        ? "Announce or link to a course"
+                        ? "Course discussion"
                         : "Start a discussion"}
                 </Text>
               </TouchableOpacity>
