@@ -218,7 +218,21 @@ function ObjectActionLink({ href, label }: { href: string; label: string }) {
   );
 }
 
-export default function Storefront() {
+type StorefrontOwnerScreenProps = {
+  routeKey?: string;
+  title?: string;
+  subtitle?: string;
+  showBack?: boolean;
+  backFallbackHref?: string;
+};
+
+export default function Storefront({
+  routeKey = "storefront",
+  title = "Storefront",
+  subtitle = "Public brand profile, product cards, courses, lives, campaigns, and user preview links.",
+  showBack,
+  backFallbackHref
+}: StorefrontOwnerScreenProps = {}) {
   const ent = useEntitlements();
   const canEdit = Boolean(ent?.can?.(CAPABILITY_KEYS.STORE_FRONT_VIEW));
   const apiErr: any = useApiErrorHandler();
@@ -645,14 +659,13 @@ export default function Storefront() {
 
   return (
     <AppPage
-      routeKey="storefront"
+      routeKey={routeKey}
+      showBack={showBack}
+      backFallbackHref={backFallbackHref}
       header={
         <View>
-          <Text style={styles.headerTitle}>Storefront</Text>
-          <Text style={styles.headerSubtitle}>
-            Public brand profile, product cards, courses, lives, campaigns, and user
-            preview links.
-          </Text>
+          <Text style={styles.headerTitle}>{title}</Text>
+          <Text style={styles.headerSubtitle}>{subtitle}</Text>
         </View>
       }
     >

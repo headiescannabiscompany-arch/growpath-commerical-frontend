@@ -12,6 +12,7 @@ export default function CommercialTabsLayout() {
   const hideTabBar =
     pathname.includes("/inventory-create") ||
     pathname.includes("/inventory-item/") ||
+    pathname.includes("/storefront/") ||
     pathname.includes("/products/new") ||
     pathname.includes("/products/") ||
     pathname.includes("/grows/new") ||
@@ -58,6 +59,14 @@ export default function CommercialTabsLayout() {
         options={{ title: "Product Trial Evidence Runs", href: null }}
       />
       <Tabs.Screen name="storefront" options={{ title: "Storefront" }} />
+      <Tabs.Screen
+        name="storefront/edit"
+        options={{ href: null, title: "Edit Storefront" }}
+      />
+      <Tabs.Screen
+        name="storefront/preview"
+        options={{ href: null, title: "Storefront Preview" }}
+      />
       <Tabs.Screen name="products" options={{ title: "Products" }} />
       <Tabs.Screen name="courses" options={{ title: "Courses" }} />
       <Tabs.Screen name="lives" options={{ title: "Lives" }} />

@@ -82,7 +82,7 @@ async function loadCommercialDashboard() {
 
 const QUICK_ACTIONS: Action[] = [
   { label: "View Storefront", href: "/home/commercial/storefront" },
-  { label: "Edit Storefront", href: "/home/commercial/storefront" },
+  { label: "Edit Storefront", href: "/home/commercial/storefront/edit" },
   { label: "Add Product", href: "/home/commercial/products/new" },
   { label: "Create Course", href: "/home/commercial/courses" },
   { label: "Schedule Live", href: "/home/commercial/lives" },

@@ -2,6 +2,8 @@ import React from "react";
 import { fireEvent, render, waitFor } from "@testing-library/react-native";
 
 import Storefront from "@/app/home/commercial/storefront";
+import StorefrontEdit from "@/app/home/commercial/storefront/edit";
+import StorefrontPreview from "@/app/home/commercial/storefront/preview";
 import LegacyStorefrontRoute from "@/app/storefront";
 
 const mockApiRequest = jest.fn();
@@ -19,8 +21,15 @@ const mockApiErrorState = {
 
 jest.mock("@/components/layout/AppPage", () => {
   const React = require("react");
-  const { View } = require("react-native");
-  return ({ children, header }: any) => React.createElement(View, null, header, children);
+  const { Text, View } = require("react-native");
+  return ({ children, header, showBack, backFallbackHref }: any) =>
+    React.createElement(
+      View,
+      null,
+      showBack ? React.createElement(Text, null, `Shared Back ${backFallbackHref}`) : null,
+      header,
+      children
+    );
 });
 
 jest.mock("@/components/layout/AppCard", () => {
@@ -423,6 +432,31 @@ describe("Storefront route", () => {
 
     expect(
       screen.getByLabelText("Redirect /home/commercial/storefront")
+    ).toBeTruthy();
+  });
+
+  it("gives nested edit and preview routes shared back behavior", async () => {
+    const editScreen = render(<StorefrontEdit />);
+
+    await waitFor(() =>
+      expect(editScreen.getByText("Edit Storefront")).toBeTruthy()
+    );
+    await waitFor(() => expect(editScreen.getByDisplayValue("Grow Shop")).toBeTruthy());
+    expect(
+      editScreen.getByText("Shared Back /home/commercial/storefront")
+    ).toBeTruthy();
+    editScreen.unmount();
+
+    const previewScreen = render(<StorefrontPreview />);
+
+    await waitFor(() =>
+      expect(previewScreen.getByText("Storefront Preview")).toBeTruthy()
+    );
+    await waitFor(() =>
+      expect(previewScreen.getByDisplayValue("Grow Shop")).toBeTruthy()
+    );
+    expect(
+      previewScreen.getByText("Shared Back /home/commercial/storefront")
     ).toBeTruthy();
   });
 });
