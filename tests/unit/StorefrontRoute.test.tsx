@@ -253,6 +253,16 @@ describe("Storefront route", () => {
             sourceType: "storefront",
             sourceId: "store-1",
             linkedStorefrontId: "store-1",
+            linkedStorefrontSlug: "grow-shop",
+            storefrontName: "Grow Shop",
+            setupItemLabel: "Logo",
+            setupItemHelper: "Brand identity appears on cards and public pages.",
+            growInterests: [],
+            linkedProductIds: ["product-1", "product-2"],
+            linkedPublishedProductIds: ["product-2"],
+            linkedCourseIds: ["course-1"],
+            linkedLiveIds: ["live-1"],
+            linkedFeedPostIds: ["campaign-1"],
             priority: "high",
             reminderPlan: { label: "24 hours before", channels: ["in_app"] }
           })
@@ -268,6 +278,11 @@ describe("Storefront route", () => {
           sourceType: "storefront",
           sourceId: "store-1",
           linkedStorefrontId: "store-1",
+          linkedStorefrontSlug: "grow-shop",
+          linkedProductIds: ["product-1", "product-2"],
+          linkedCourseIds: ["course-1"],
+          linkedLiveIds: ["live-1"],
+          linkedFeedPostIds: ["campaign-1"],
           priority: "high"
         })
       })

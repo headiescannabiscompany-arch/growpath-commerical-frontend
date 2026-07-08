@@ -480,6 +480,11 @@ export default function Storefront() {
       clearError();
       const sourceId = String(storefront?.id ?? storefront?._id ?? storeDraft.slug ?? "");
       const today = new Date().toISOString().slice(0, 10);
+      const linkedProductIds = products.map(productId).filter(Boolean);
+      const linkedPublishedProductIds = publishedProducts.map(productId).filter(Boolean);
+      const linkedCourseIds = storefrontCourses.map(courseId).filter(Boolean);
+      const linkedLiveIds = storefrontLives.map(liveId).filter(Boolean);
+      const linkedFeedPostIds = storefrontCampaigns.map(campaignId).filter(Boolean);
       await Promise.all(
         incompleteSetup.map((item) =>
           apiRequest("/api/tasks", {
@@ -491,6 +496,16 @@ export default function Storefront() {
               sourceType: "storefront",
               sourceId,
               linkedStorefrontId: sourceId,
+              linkedStorefrontSlug: publicSlug,
+              storefrontName: storeDraft.name.trim() || undefined,
+              setupItemLabel: item.label,
+              setupItemHelper: item.helper,
+              growInterests: splitTextList(storeDraft.growInterestsText),
+              linkedProductIds,
+              linkedPublishedProductIds,
+              linkedCourseIds,
+              linkedLiveIds,
+              linkedFeedPostIds,
               priority: publishBlockers.some((blocker) =>
                 blocker.includes(item.label.toLowerCase())
               )
