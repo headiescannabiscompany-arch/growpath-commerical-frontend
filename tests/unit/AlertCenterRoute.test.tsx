@@ -25,7 +25,8 @@ jest.mock("expo-router", () => {
         null,
         children,
         React.createElement(Text, { accessibilityLabel: `Alert link ${href}` })
-      )
+      ),
+    useLocalSearchParams: () => ({ alertId: "alert-1" })
   };
 });
 
@@ -194,6 +195,7 @@ describe("AlertCenterRoute", () => {
     await waitFor(() => expect(screen.getByText("Alert Center")).toBeTruthy());
     expect(screen.getByText("Paid product missing Stripe price")).toBeTruthy();
     expect(screen.getByText(/Publish is blocked/)).toBeTruthy();
+    expect(screen.getByLabelText("Focused alert alert-1")).toBeTruthy();
     expect(screen.getAllByText(/Source product/).length).toBeGreaterThan(0);
     expect(
       screen.getByLabelText("Alert link /home/commercial/products/product-1")
@@ -207,10 +209,14 @@ describe("AlertCenterRoute", () => {
     expect(screen.getByLabelText("Alert link /store?q=veg-mix-1")).toBeTruthy();
     expect(screen.getByLabelText("Alert link /home/personal/courses")).toBeTruthy();
     expect(
-      screen.getByLabelText("Alert link /home/facility/InventoryItemDetailScreen?id=input-1")
+      screen.getByLabelText(
+        "Alert link /home/facility/InventoryItemDetailScreen?id=input-1"
+      )
     ).toBeTruthy();
     expect(
-      screen.getByLabelText("Alert link /home/personal/tools/saved-runs?toolRunId=recipe-1")
+      screen.getByLabelText(
+        "Alert link /home/personal/tools/saved-runs?toolRunId=recipe-1"
+      )
     ).toBeTruthy();
     expect(
       screen.getByLabelText("Alert link /home/commercial/feed?campaignId=campaign-1")
@@ -221,7 +227,9 @@ describe("AlertCenterRoute", () => {
     expect(
       screen.getByLabelText("Alert link /home/commercial/orders?orderId=order-1")
     ).toBeTruthy();
-    expect(screen.getByLabelText("Alert link /home/alerts")).toBeTruthy();
+    expect(
+      screen.getByLabelText("Alert link /home/alerts?alertId=sensor-alert-1")
+    ).toBeTruthy();
     expect(
       screen.getByLabelText(
         "Alert link /home/commercial?ai=alerts&alertId=alert-1&sourceType=product"

@@ -8,7 +8,7 @@ import {
   TextInput,
   View
 } from "react-native";
-import { Link } from "expo-router";
+import { Link, useLocalSearchParams } from "expo-router";
 
 import { apiRequest } from "@/api/apiRequest";
 import { endpoints } from "@/api/endpoints";
@@ -128,6 +128,10 @@ function filterAlert(alert: AlertRow, filter: FilterKey) {
 }
 
 export default function AlertCenterRoute() {
+  const params = useLocalSearchParams<{ alertId?: string | string[] }>();
+  const focusedAlertId = Array.isArray(params.alertId)
+    ? params.alertId[0]
+    : params.alertId;
   const [alerts, setAlerts] = useState<AlertRow[]>([]);
   const [loading, setLoading] = useState(true);
   const [feedback, setFeedback] = useState("");
@@ -241,8 +245,16 @@ export default function AlertCenterRoute() {
   function renderAlert(alert: AlertRow) {
     const href = sourceHref(alert);
     const aiHref = askAiHref(alert);
+    const isFocused = Boolean(
+      focusedAlertId &&
+      (focusedAlertId === idOf(alert) || focusedAlertId === String(alert.sourceId || ""))
+    );
     return (
-      <View key={idOf(alert) || alert.title} style={styles.card}>
+      <View
+        key={idOf(alert) || alert.title}
+        accessibilityLabel={isFocused ? `Focused alert ${focusedAlertId}` : undefined}
+        style={[styles.card, isFocused && styles.focusedCard]}
+      >
         <View style={styles.cardHeader}>
           <Text style={styles.cardTitle}>{alert.title || "Alert"}</Text>
           <Text style={[styles.badge, isCritical(alert) && styles.badgeCritical]}>
@@ -461,6 +473,10 @@ const styles = StyleSheet.create({
     borderWidth: 1,
     gap: 8,
     padding: 14
+  },
+  focusedCard: {
+    borderColor: "#166534",
+    borderWidth: 2
   },
   cardHeader: {
     alignItems: "center",

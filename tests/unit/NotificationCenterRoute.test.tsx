@@ -19,7 +19,8 @@ jest.mock("expo-router", () => {
         null,
         children,
         React.createElement(Text, { accessibilityLabel: `Notification link ${href}` })
-      )
+      ),
+    useLocalSearchParams: () => ({ notificationId: "notification-1" })
   };
 });
 
@@ -190,6 +191,7 @@ describe("NotificationCenterRoute", () => {
       expect(screen.getByText("Live starts in 15 minutes")).toBeTruthy()
     );
     expect(screen.getByText(/Join the soil mixing demo/)).toBeTruthy();
+    expect(screen.getByLabelText("Focused notification notification-1")).toBeTruthy();
     expect(screen.getByText(/Source live/)).toBeTruthy();
     expect(screen.queryByText("Task overdue")).toBeNull();
 

@@ -158,7 +158,7 @@ describe("sourceObjectHref", () => {
         sourceId: "notification-1",
         workspaceType: "personal"
       })
-    ).toBe("/home/notifications");
+    ).toBe("/home/notifications?notificationId=notification-1");
   });
 
   it("recognizes schedule and calendar item aliases across workspaces", () => {
@@ -224,7 +224,7 @@ describe("sourceObjectHref", () => {
         sourceId: "alert-1",
         workspaceType: "commercial"
       })
-    ).toBe("/home/alerts");
+    ).toBe("/home/alerts?alertId=alert-1");
 
     expect(
       sourceObjectHref({

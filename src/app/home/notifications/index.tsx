@@ -7,7 +7,7 @@ import {
   Text,
   View
 } from "react-native";
-import { Link } from "expo-router";
+import { Link, useLocalSearchParams } from "expo-router";
 
 import { apiRequest } from "@/api/apiRequest";
 import { sourceObjectHref } from "@/utils/sourceLinks";
@@ -114,6 +114,10 @@ function isUnread(row: NotificationRow) {
 }
 
 export default function NotificationCenterRoute() {
+  const params = useLocalSearchParams<{ notificationId?: string | string[] }>();
+  const focusedNotificationId = Array.isArray(params.notificationId)
+    ? params.notificationId[0]
+    : params.notificationId;
   const [notifications, setNotifications] = useState<NotificationRow[]>([]);
   const [loading, setLoading] = useState(true);
   const [saving, setSaving] = useState(false);
@@ -297,8 +301,19 @@ export default function NotificationCenterRoute() {
       {filtered.map((row) => {
         const id = rowId(row);
         const unread = isUnread(row);
+        const isFocused = Boolean(focusedNotificationId && focusedNotificationId === id);
         return (
-          <View key={id || row.title} style={[styles.card, unread && styles.unreadCard]}>
+          <View
+            key={id || row.title}
+            accessibilityLabel={
+              isFocused ? `Focused notification ${focusedNotificationId}` : undefined
+            }
+            style={[
+              styles.card,
+              unread && styles.unreadCard,
+              isFocused && styles.focusedCard
+            ]}
+          >
             <View style={styles.cardHeader}>
               <Text style={styles.cardTitle}>{row.title || "Notification"}</Text>
               <Text style={[styles.badge, unread && styles.unreadBadge]}>
@@ -394,6 +409,10 @@ const styles = StyleSheet.create({
     gap: 8
   },
   unreadCard: { borderColor: "#86efac", backgroundColor: "#f0fdf4" },
+  focusedCard: {
+    borderColor: "#166534",
+    borderWidth: 2
+  },
   cardHeader: {
     flexDirection: "row",
     justifyContent: "space-between",

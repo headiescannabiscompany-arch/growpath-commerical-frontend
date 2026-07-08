@@ -127,7 +127,7 @@ describe("FacilityTaskDetail", () => {
 
     fireEvent.press(screen.getByLabelText("View facility task source"));
 
-    expect(mockPush).toHaveBeenCalledWith("/home/alerts");
+    expect(mockPush).toHaveBeenCalledWith("/home/alerts?alertId=alert-1");
   });
 
   it("opens forum-backed facility task sources in the shared forum route", async () => {

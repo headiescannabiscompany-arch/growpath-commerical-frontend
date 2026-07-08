@@ -106,7 +106,9 @@ describe("CommercialTasksRoute", () => {
     expect(screen.getByText("Answer product Q&A")).toBeTruthy();
     expect(screen.getByText("Add lesson worksheet")).toBeTruthy();
     expect(screen.getByText(/Source ID: product-1/)).toBeTruthy();
-    expect(screen.getByLabelText("Commercial task link /home/alerts")).toBeTruthy();
+    expect(
+      screen.getByLabelText("Commercial task link /home/alerts?alertId=alert-1")
+    ).toBeTruthy();
     expect(
       screen.getByLabelText("Commercial task link /forum/post/thread-product")
     ).toBeTruthy();
