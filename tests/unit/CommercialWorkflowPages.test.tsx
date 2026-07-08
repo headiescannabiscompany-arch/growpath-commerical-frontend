@@ -259,6 +259,7 @@ describe("commercial workflow pages", () => {
             sku: "LSL-BASE",
             shortDescription: "Seedling-safe base soil",
             externalPurchaseUrl: "https://example.com/base",
+            stripeProductId: "prod_product_existing",
             unitSize: "1 cu ft bag",
             productLineId: "line-1",
             growInterests: ["living soil", "seedlings"],
@@ -1569,6 +1570,10 @@ describe("commercial workflow pages", () => {
       "price_bloom_mix"
     );
     fireEvent.changeText(
+      screen.getByLabelText("Commercial product Stripe product ID"),
+      "prod_bloom_mix"
+    );
+    fireEvent.changeText(
       screen.getByLabelText("Commercial product guaranteed analysis"),
       "N 3\nP2O5 1\nK2O 1"
     );
@@ -1605,6 +1610,7 @@ describe("commercial workflow pages", () => {
             unitSize: "5 lb bag",
             growInterests: ["living soil", "dry amendments"],
             externalPurchaseUrl: "https://example.com/bloom",
+            stripeProductId: "prod_bloom_mix",
             stripePriceId: "price_bloom_mix",
             shortDescription: "Flower topdress blend",
             specs: expect.objectContaining({
@@ -1649,6 +1655,10 @@ describe("commercial workflow pages", () => {
       screen.getByLabelText("Commercial product Stripe price ID"),
       "price_only_checkout"
     );
+    fireEvent.changeText(
+      screen.getByLabelText("Commercial product Stripe product ID"),
+      "prod_only_checkout"
+    );
 
     expect(
       screen.getByLabelText("Toggle commercial product publish status").props
@@ -1666,6 +1676,7 @@ describe("commercial workflow pages", () => {
           body: expect.objectContaining({
             name: "Stripe Mix",
             externalPurchaseUrl: "",
+            stripeProductId: "prod_only_checkout",
             stripePriceId: "price_only_checkout",
             status: "published"
           })
@@ -1702,6 +1713,7 @@ describe("commercial workflow pages", () => {
     expect(screen.getByText("Compost, Aeration, Dry amendments")).toBeTruthy();
     expect(screen.getByText("Mix, moisten, and rest before transplant.")).toBeTruthy();
     expect(screen.getByText("fast nitrogen plus slow background")).toBeTruthy();
+    expect(screen.getByText("prod_product_existing")).toBeTruthy();
     expect(
       screen.getByText("Compost values are estimates unless lab-tested.")
     ).toBeTruthy();
@@ -1755,6 +1767,10 @@ describe("commercial workflow pages", () => {
       "price_product_updated"
     );
     fireEvent.changeText(
+      screen.getByLabelText("Commercial product detail Stripe product ID"),
+      "prod_product_updated"
+    );
+    fireEvent.changeText(
       screen.getByLabelText("Commercial product detail short description"),
       "Updated product copy."
     );
@@ -1773,6 +1789,7 @@ describe("commercial workflow pages", () => {
             unitSize: "2 cu ft bag",
             growInterests: ["living soil", "dry amendments"],
             externalPurchaseUrl: "https://example.com/new-base",
+            stripeProductId: "prod_product_updated",
             stripePriceId: "price_product_updated",
             shortDescription: "Updated product copy.",
             description: "Updated product copy.",

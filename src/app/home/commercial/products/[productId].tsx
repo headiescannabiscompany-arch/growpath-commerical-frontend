@@ -154,6 +154,7 @@ export default function CommercialProductDetailRoute({ route }: { route?: any } 
   const [growInterests, setGrowInterests] = useState("");
   const [shortDescription, setShortDescription] = useState("");
   const [externalPurchaseUrl, setExternalPurchaseUrl] = useState("");
+  const [stripeProductId, setStripeProductId] = useState("");
   const [stripePriceId, setStripePriceId] = useState("");
   const [loading, setLoading] = useState(false);
   const [saving, setSaving] = useState(false);
@@ -170,6 +171,7 @@ export default function CommercialProductDetailRoute({ route }: { route?: any } 
     setGrowInterests(next?.growInterests?.join(", ") || "");
     setShortDescription((next as any)?.shortDescription || next?.description || "");
     setExternalPurchaseUrl(next?.externalPurchaseUrl || "");
+    setStripeProductId(next?.stripeProductId || "");
     setStripePriceId(next?.stripePriceId || "");
   }, []);
 
@@ -211,6 +213,7 @@ export default function CommercialProductDetailRoute({ route }: { route?: any } 
       shortDescription: shortDescription.trim(),
       description: shortDescription.trim(),
       externalPurchaseUrl: externalPurchaseUrl.trim(),
+      stripeProductId: stripeProductId.trim(),
       stripePriceId: stripePriceId.trim(),
       specs: {
         ...(product?.specs || {}),
@@ -240,6 +243,7 @@ export default function CommercialProductDetailRoute({ route }: { route?: any } 
         shortDescription: shortDescription.trim(),
         description: shortDescription.trim(),
         externalPurchaseUrl: externalPurchaseUrl.trim(),
+        stripeProductId: stripeProductId.trim() || undefined,
         stripePriceId: stripePriceId.trim() || undefined,
         specs: {
           ...(product?.specs || {}),
@@ -307,6 +311,7 @@ export default function CommercialProductDetailRoute({ route }: { route?: any } 
           />
           <DetailRow label="Grow interests" value={product?.growInterests} />
           <DetailRow label="External URL" value={product?.externalPurchaseUrl} />
+          <DetailRow label="Stripe product" value={product?.stripeProductId} />
           <DetailRow label="Stripe price" value={product?.stripePriceId} />
         </View>
       </AppCard>
@@ -546,6 +551,14 @@ export default function CommercialProductDetailRoute({ route }: { route?: any } 
             placeholder="External purchase URL"
             style={styles.input}
             value={externalPurchaseUrl}
+          />
+          <TextInput
+            accessibilityLabel="Commercial product detail Stripe product ID"
+            autoCapitalize="none"
+            onChangeText={setStripeProductId}
+            placeholder="Stripe product ID"
+            style={styles.input}
+            value={stripeProductId}
           />
           <TextInput
             accessibilityLabel="Commercial product detail Stripe price ID"

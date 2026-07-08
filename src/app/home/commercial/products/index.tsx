@@ -26,6 +26,7 @@ type ProductForm = {
   directions: string;
   applicationRate: string;
   externalPurchaseUrl: string;
+  stripeProductId: string;
   stripePriceId: string;
   status: "draft" | "published";
 };
@@ -46,6 +47,7 @@ const EMPTY_FORM: ProductForm = {
   directions: "",
   applicationRate: "",
   externalPurchaseUrl: "",
+  stripeProductId: "",
   stripePriceId: "",
   status: "draft"
 };
@@ -215,6 +217,7 @@ export default function CommercialProductsRoute({
         unitSize: form.unitSize.trim() || undefined,
         growInterests: splitList(form.growInterests),
         externalPurchaseUrl: form.externalPurchaseUrl.trim(),
+        stripeProductId: form.stripeProductId.trim() || undefined,
         stripePriceId: form.stripePriceId.trim() || undefined,
         specs: hasProductSpecs(form)
           ? {
@@ -433,6 +436,15 @@ export default function CommercialProductsRoute({
             }
             accessibilityLabel="Commercial product external purchase URL"
             placeholder="External purchase URL"
+            style={styles.input}
+          />
+          <TextInput
+            value={form.stripeProductId}
+            onChangeText={(stripeProductId) =>
+              setForm((prev) => ({ ...prev, stripeProductId }))
+            }
+            accessibilityLabel="Commercial product Stripe product ID"
+            placeholder="Stripe product ID"
             style={styles.input}
           />
           <TextInput

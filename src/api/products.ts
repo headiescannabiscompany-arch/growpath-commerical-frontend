@@ -34,6 +34,7 @@ export type Product = {
   } | null;
   currency?: string;
   externalPurchaseUrl?: string;
+  stripeProductId?: string;
   stripePriceId?: string;
   status?: "draft" | "published";
   createdAt?: string;
