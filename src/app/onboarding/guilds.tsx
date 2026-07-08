@@ -123,11 +123,11 @@ export default function GuildOnboardingScreen() {
     <ScrollView style={styles.root} contentContainerStyle={styles.content}>
       <View style={[styles.shell, isWide ? styles.shellWide : null]}>
         <View style={styles.main}>
-          <Text style={styles.kicker}>Community routing</Text>
-          <Text style={styles.title}>Select your guilds</Text>
+          <Text style={styles.kicker}>Forum/Q&A routing</Text>
+          <Text style={styles.title}>Select your forum groups</Text>
           <Text style={styles.subtitle}>
             Choose what you grow first. This keeps cannabis facility content, fruit-tree
-            gardening, houseplants, and other communities separated.
+            gardening, houseplants, and other discussion spaces separated.
           </Text>
 
           {cropTier ? (
@@ -185,7 +185,7 @@ export default function GuildOnboardingScreen() {
 
         <View style={[styles.side, isWide ? styles.sideWide : null]}>
           <View style={styles.panel}>
-            <Text style={styles.panelTitle}>Recommended guilds</Text>
+            <Text style={styles.panelTitle}>Recommended forum groups</Text>
             <Text style={styles.panelCopy}>
               Optional memberships based on your crop selections.
             </Text>
@@ -193,12 +193,12 @@ export default function GuildOnboardingScreen() {
             {loadingGuilds ? (
               <View style={styles.loading}>
                 <ActivityIndicator />
-                <Text style={styles.muted}>Loading guilds...</Text>
+                <Text style={styles.muted}>Loading forum groups...</Text>
               </View>
             ) : null}
 
             {!loadingGuilds && !recommendedGuilds.length ? (
-              <Text style={styles.muted}>No matching guilds yet.</Text>
+              <Text style={styles.muted}>No matching forum groups yet.</Text>
             ) : null}
 
             {recommendedGuilds.slice(0, 8).map((guild) => {
@@ -210,7 +210,7 @@ export default function GuildOnboardingScreen() {
                   onPress={() => id && toggleGuild(id)}
                   accessibilityRole="button"
                   accessibilityLabel={`${active ? "Leave" : "Join"} ${
-                    guild.name || "guild"
+                    guild.name || "forum group"
                   }`}
                   style={[styles.guildRow, active && styles.guildRowActive]}
                 >
@@ -230,7 +230,7 @@ export default function GuildOnboardingScreen() {
             onPress={save}
             disabled={!canContinue}
             accessibilityRole="button"
-            accessibilityLabel="Continue after selecting guilds"
+            accessibilityLabel="Continue after selecting forum groups"
             style={[styles.button, !canContinue && styles.buttonDisabled]}
           >
             {saving ? (

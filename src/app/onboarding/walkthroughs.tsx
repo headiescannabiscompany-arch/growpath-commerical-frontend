@@ -32,8 +32,8 @@ const WALKTHROUGHS: Record<PlanKey, Walkthrough> = {
         body: "Plan timelines, run VPD and nutrition tools, export grow records, and use AI guidance."
       },
       {
-        title: "Keep community separated",
-        body: "Your guild selections shape feed, courses, and recommendations before paid tools unlock."
+        title: "Keep Forum/Q&A separated",
+        body: "Your forum-group selections shape Feed campaigns, courses, and recommendations before paid tools unlock."
       }
     ],
     preview: ["AI diagnosis", "Timeline planner", "PDF exports"]
@@ -48,7 +48,7 @@ const WALKTHROUGHS: Record<PlanKey, Walkthrough> = {
       },
       {
         title: "Route the right audience",
-        body: "Guild selections keep commercial content aligned with the crops and customers you serve."
+        body: "Forum-group selections keep commercial content aligned with the crops and customers you serve."
       },
       {
         title: "Keep paid access gated",
