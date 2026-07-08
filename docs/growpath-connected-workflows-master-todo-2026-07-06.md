@@ -560,6 +560,7 @@ Completed and pushed:
 284. Commercial Forum/Q&A owner copy now says Brand Forum / Q&A instead of commercial community, keeping discussion/support language separate from Feed / Campaigns outreach.
 285. Commercial course and analytics copy now labels support discussion as Forum/Q&A instead of community, so creator education loops and forum-reply metrics do not blur into Feed/Campaigns.
 286. Commercial Brand Forum/Q&A now labels the legacy community directory handoff as Open Forum Directory, keeping owner navigation discussion-oriented without exposing community/feed ambiguity.
+287. Public Support page intro now names account, billing, technical, privacy, legal, security, commercial, and facility support so every live alias category is discoverable before users read the routing cards.
 
 ## Working Rule For Codex
 

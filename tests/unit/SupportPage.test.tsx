@@ -8,6 +8,11 @@ describe("SupportPage", () => {
     const screen = render(<SupportPage />);
 
     expect(screen.getByText("Support")).toBeTruthy();
+    expect(
+      screen.getByText(
+        /account, billing, technical, privacy, legal, security, commercial, and facility support/
+      )
+    ).toBeTruthy();
     expect(screen.getAllByText(/support@growpathai\.com/).length).toBeGreaterThanOrEqual(
       2
     );
