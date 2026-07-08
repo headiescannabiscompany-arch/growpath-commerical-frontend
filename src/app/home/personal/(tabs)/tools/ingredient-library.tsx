@@ -19,6 +19,7 @@ import {
 } from "@/api/productIngredients";
 import { ScreenBoundary } from "@/components/ScreenBoundary";
 import PersonalFeedPlacement from "@/components/feed/PersonalFeedPlacement";
+import { radius } from "@/theme/theme";
 
 type Draft = {
   name: string;
@@ -644,7 +645,7 @@ const styles = StyleSheet.create({
   card: {
     borderWidth: 1,
     borderColor: "#E2E8F0",
-    borderRadius: 8,
+    borderRadius: radius.card,
     backgroundColor: "#F8FAFC",
     padding: 12,
     gap: 4
@@ -659,7 +660,7 @@ const styles = StyleSheet.create({
   input: {
     borderWidth: 1,
     borderColor: "#CBD5E1",
-    borderRadius: 8,
+    borderRadius: radius.card,
     backgroundColor: "#FFFFFF",
     paddingHorizontal: 10,
     paddingVertical: 9
@@ -667,7 +668,7 @@ const styles = StyleSheet.create({
   row: { flexDirection: "row", gap: 8 },
   actions: { flexDirection: "row", flexWrap: "wrap", gap: 8 },
   primary: {
-    borderRadius: 8,
+    borderRadius: radius.card,
     backgroundColor: "#166534",
     paddingHorizontal: 12,
     paddingVertical: 9
@@ -676,7 +677,7 @@ const styles = StyleSheet.create({
   secondary: {
     borderWidth: 1,
     borderColor: "#166534",
-    borderRadius: 8,
+    borderRadius: radius.card,
     backgroundColor: "#FFFFFF",
     paddingHorizontal: 12,
     paddingVertical: 9
