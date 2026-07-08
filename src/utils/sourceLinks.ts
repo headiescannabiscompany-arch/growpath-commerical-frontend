@@ -18,7 +18,8 @@ function encoded(value: string) {
 
 function inferSourceType(source: SourceLike) {
   if (firstText(source?.linkedTaskId, source?.taskId)) return "task";
-  if (firstText(source?.linkedAlertId, source?.alertId)) return "alert";
+  if (firstText(source?.linkedAlertId, source?.linkedSensorAlertId, source?.alertId))
+    return "alert";
   if (firstText(source?.linkedNotificationId, source?.notificationId))
     return "notification";
   if (firstText(source?.linkedForumThreadId, source?.forumThreadId)) return "forum";
@@ -43,6 +44,15 @@ function inferSourceType(source: SourceLike) {
     )
   )
     return "storefront";
+  if (
+    firstText(
+      source?.linkedFeedCampaignId,
+      source?.feedCampaignId,
+      source?.campaignId,
+      source?.linkedFeedPostId
+    )
+  )
+    return "feed_campaign";
   if (firstText(source?.linkedOrderId, source?.orderId)) return "order";
   if (firstText(source?.linkedRoomId, source?.roomId)) return "room";
   if (firstText(source?.linkedSopId, source?.sopId)) return "sop";
@@ -91,7 +101,12 @@ export function sourceObjectHref(source: SourceLike) {
     sourceId
   );
   const orderId = firstText(source?.linkedOrderId, source?.orderId, sourceId);
-  const alertId = firstText(source?.linkedAlertId, source?.alertId, sourceId);
+  const alertId = firstText(
+    source?.linkedAlertId,
+    source?.linkedSensorAlertId,
+    source?.alertId,
+    sourceId
+  );
   const notificationId = firstText(
     source?.linkedNotificationId,
     source?.notificationId,

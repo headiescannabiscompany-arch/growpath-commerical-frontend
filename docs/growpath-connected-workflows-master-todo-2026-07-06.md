@@ -410,6 +410,7 @@ Completed and pushed:
 134. Commercial Task Center source labels now prefer linked ids that match the task `sourceType`, so linked-only product batch and feed campaign cards show the batch/campaign id and route to the matching workflow instead of displaying a broader product id.
 135. Shared source links now recognize `linkedGrowLogId` as a grow-log alias alongside `linkedLogId`, so alert-created grow-log tasks and legacy alert records reopen the exact personal log detail.
 136. Shared source links now recognize `linkedTaskId` as a task alias and infer `task` when `sourceType` is missing, so task reminders from notifications, alerts, and schedule items route to commercial/facility task detail or the correct personal task workspace.
+137. Shared source links now infer alert and feed campaign routes from `linkedSensorAlertId`, `linkedFeedCampaignId`, and `linkedFeedPostId`, so linked-only sensor alerts and promotional campaign records reopen the Alert Center or commercial/facility Feed Campaigns area without needing a generic `sourceId`.
 
 ## Working Rule For Codex
 

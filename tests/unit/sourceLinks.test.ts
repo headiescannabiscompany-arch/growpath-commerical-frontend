@@ -457,6 +457,27 @@ describe("sourceObjectHref", () => {
 
     expect(
       sourceObjectHref({
+        linkedSensorAlertId: "sensor-alert-1",
+        workspaceType: "facility"
+      })
+    ).toBe("/home/alerts?alertId=sensor-alert-1");
+
+    expect(
+      sourceObjectHref({
+        linkedFeedCampaignId: "campaign-linked-1",
+        workspaceType: "commercial"
+      })
+    ).toBe("/home/commercial/feed?campaignId=campaign-linked-1");
+
+    expect(
+      sourceObjectHref({
+        linkedFeedPostId: "campaign-post-1",
+        workspaceType: "facility"
+      })
+    ).toBe("/home/facility/feed?campaignId=campaign-post-1");
+
+    expect(
+      sourceObjectHref({
         linkedForumThreadId: "thread-1",
         workspaceType: "personal"
       })
