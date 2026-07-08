@@ -59,6 +59,14 @@ describe("HomeScheduleRoute", () => {
               reminderPreference: "1 hour before",
               recurrenceRule: "monthly",
               status: "scheduled"
+            },
+            {
+              id: "live-public-1",
+              title: "Public Harvest Q&A",
+              scheduledStart: "2099-07-21T20:00:00Z",
+              scheduledEnd: "2099-07-21T21:00:00Z",
+              status: "scheduled",
+              workspaceType: "personal"
             }
           ]
         });
@@ -71,6 +79,13 @@ describe("HomeScheduleRoute", () => {
               title: "Living Soil Basics",
               publishedAt: "2099-07-18T12:00:00Z",
               status: "published"
+            },
+            {
+              id: "course-personal-1",
+              title: "Personal IPM Lesson",
+              publishedAt: "2099-07-22T12:00:00Z",
+              status: "published",
+              workspaceType: "personal"
             }
           ]
         });
@@ -115,7 +130,9 @@ describe("HomeScheduleRoute", () => {
     expect(screen.getByText("Connect Stripe price")).toBeTruthy();
     expect(screen.getByText("Review personal grow task")).toBeTruthy();
     expect(screen.getByText("Live Soil Demo")).toBeTruthy();
+    expect(screen.getByText("Public Harvest Q&A")).toBeTruthy();
     expect(screen.getByText("Living Soil Basics")).toBeTruthy();
+    expect(screen.getByText("Personal IPM Lesson")).toBeTruthy();
     expect(screen.getByText("Veg Mix Launch")).toBeTruthy();
     expect(screen.getByText("Facility IPM Training")).toBeTruthy();
     expect(screen.getAllByText("feed campaign").length).toBeGreaterThan(0);
@@ -127,6 +144,10 @@ describe("HomeScheduleRoute", () => {
     expect(screen.getAllByText(/Repeats weekly/).length).toBeGreaterThan(0);
     expect(screen.getAllByText("Open Source").length).toBeGreaterThan(0);
     expect(screen.getByTestId("link-/home/commercial/tasks/task-1")).toBeTruthy();
+    expect(screen.getByTestId("link-/home/commercial/lives")).toBeTruthy();
+    expect(screen.getByTestId("link-/feed?liveId=live-public-1")).toBeTruthy();
+    expect(screen.getByTestId("link-/home/commercial/courses/course-1")).toBeTruthy();
+    expect(screen.getByTestId("link-/home/personal/courses")).toBeTruthy();
     expect(screen.getByTestId("link-/home/personal/tasks")).toBeTruthy();
     expect(screen.getByTestId("link-/home/facility/feed")).toBeTruthy();
   });

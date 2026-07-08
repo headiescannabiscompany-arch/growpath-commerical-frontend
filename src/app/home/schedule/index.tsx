@@ -126,6 +126,9 @@ function taskToItem(task: any): CalendarItem {
 
 function liveToItem(live: any): CalendarItem {
   const id = String(live?.id || live?._id || live?.title || "live");
+  const workspaceType = String(
+    live?.workspaceType || live?.ownerType || "commercial"
+  ).toLowerCase();
   return {
     id,
     itemType: "live",
@@ -133,12 +136,15 @@ function liveToItem(live: any): CalendarItem {
     startAt: String(live?.scheduledStart || ""),
     endAt: String(live?.scheduledEnd || ""),
     status: String(live?.status || "scheduled"),
-    workspaceType: "commercial",
+    workspaceType,
     sourceType: "live",
     sourceId: id,
     reminder: String(live?.reminderPreference || ""),
     recurrence: String(live?.recurrenceRule || ""),
-    href: "/home/commercial/lives"
+    href:
+      workspaceType === "commercial"
+        ? "/home/commercial/lives"
+        : `/feed?liveId=${encodeURIComponent(id)}`
   };
 }
 
@@ -149,16 +155,24 @@ function courseToItem(course: any): CalendarItem {
   const date = String(
     course?.releaseAt || course?.publishedAt || course?.updatedAt || ""
   );
+  const workspaceType = String(
+    course?.workspaceType || course?.ownerType || "commercial"
+  ).toLowerCase();
   return {
     id,
     itemType: "course_release",
     title: String(course?.title || "Course"),
     startAt: date,
     status: String(course?.status || "draft"),
-    workspaceType: "commercial",
+    workspaceType,
     sourceType: "course",
     sourceId: id,
-    href: `/home/commercial/courses/${id}`
+    href:
+      workspaceType === "commercial"
+        ? `/home/commercial/courses/${id}`
+        : workspaceType === "facility"
+          ? "/home/facility/sop-runs"
+          : "/home/personal/courses"
   };
 }
 
