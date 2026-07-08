@@ -336,6 +336,7 @@ export default function CommercialProfileRoute() {
           <Text style={styles.muted}>Brand profile record: {storefront.id}</Text>
         ) : null}
         <View style={styles.actions}>
+          <ActionLink href="/account/mode" label="Switch Workspace" />
           <ActionLink href="/profile" label="Open Account Profile" />
         </View>
       </AppCard>

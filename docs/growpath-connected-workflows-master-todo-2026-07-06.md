@@ -490,6 +490,7 @@ Completed and pushed:
 214. Feed/Campaigns creation now sends explicit commercial or facility `authorType` alongside `workspaceType`, so outreach campaigns store the acting brand/facility identity instead of relying only on mode inference.
 215. Personal Profile now opens the shared `/account/mode` workspace switcher from the visible Mode card and explains that Personal grow records/Forum, Commercial storefront outreach, and Facility operational rooms stay separate.
 216. Facility Profile now shows a facility-workspace identity card with Switch Workspace and Account Profile actions, keeping operational rooms/runs/tasks/sensors/compliance visibly separate from Personal grow records and Commercial storefront outreach.
+217. Commercial Profile & Billing now exposes the shared workspace switcher beside Account Profile, giving brand owners a direct path back to Personal/Commercial/Facility identity selection while keeping brand settings separate from account controls.
 
 ## Working Rule For Codex
 
