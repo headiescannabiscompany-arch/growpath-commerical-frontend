@@ -39,6 +39,43 @@ function renderKV(obj: AnyRec | null, key: string) {
   );
 }
 
+function readableValue(value: any) {
+  if (value === undefined || value === null || value === "") return "";
+  if (Array.isArray(value)) return value.filter(Boolean).join(", ");
+  if (typeof value === "object") {
+    if (value.label) return String(value.label);
+    return JSON.stringify(value);
+  }
+  return String(value);
+}
+
+function taskContextRows(task: AnyRec | null) {
+  if (!task) return [];
+  const rows = [
+    ["Source", [task.sourceType, task.sourceId].filter(Boolean).join(": ")],
+    ["Storefront", task.linkedStorefrontSlug || task.linkedStorefrontId],
+    ["Setup item", task.setupItemLabel],
+    ["Setup reason", task.setupItemHelper],
+    ["Grow interests", task.growInterests],
+    ["Products", task.linkedProductIds || task.linkedProductId],
+    ["Published products", task.linkedPublishedProductIds],
+    ["Courses", task.linkedCourseIds || task.linkedCourseId],
+    ["Lives", task.linkedLiveIds || task.linkedLiveId],
+    ["Feed campaigns", task.linkedFeedPostIds || task.linkedFeedPostId],
+    ["Forum/Q&A", task.linkedForumThreadId],
+    ["Campaign starts", task.campaignStartsAt],
+    ["Campaign ends", task.campaignEndsAt],
+    ["Live starts", task.liveStartsAt],
+    ["Live ends", task.liveEndsAt],
+    ["Due", task.dueAt],
+    ["Recurrence", task.recurrenceRule],
+    ["Reminder", task.reminderPlan]
+  ];
+  return rows
+    .map(([label, value]) => ({ label: String(label), value: readableValue(value) }))
+    .filter((row) => row.value);
+}
+
 function taskSourceId(task: AnyRec | null): string {
   if (!task) return "";
   return String(
@@ -130,6 +167,7 @@ export default function CommercialTaskDetailRoute() {
   const status = String(item?.status || (item?.completed ? "complete" : "open"));
   const priority = String(item?.priority || "normal");
   const sourcePath = taskSourcePath(item);
+  const contextRows = useMemo(() => taskContextRows(item), [item]);
 
   async function completeTask() {
     if (!id || !item) return;
@@ -220,6 +258,22 @@ export default function CommercialTaskDetailRoute() {
                 <Text style={styles.secondaryText}>View Source</Text>
               </Pressable>
             ) : null}
+          </View>
+        ) : null}
+
+        {contextRows.length ? (
+          <View style={styles.card}>
+            <Text style={styles.cardTitle}>Task context</Text>
+            <View style={styles.kvWrap}>
+              {contextRows.map((row) => (
+                <View key={row.label} style={styles.kv}>
+                  <Text style={styles.k}>{row.label}</Text>
+                  <Text style={styles.v} selectable>
+                    {row.value}
+                  </Text>
+                </View>
+              ))}
+            </View>
           </View>
         ) : null}
 

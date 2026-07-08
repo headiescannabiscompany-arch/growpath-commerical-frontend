@@ -35,7 +35,20 @@ describe("CommercialTaskDetailRoute", () => {
           priority: "high",
           status: "open",
           sourceType: "product",
-          sourceId: "product-1"
+          sourceId: "product-1",
+          linkedStorefrontSlug: "grow-shop",
+          setupItemLabel: "Stripe price",
+          setupItemHelper: "Paid storefront products need checkout before publishing.",
+          growInterests: ["living soil", "dry amendments"],
+          linkedProductIds: ["product-1"],
+          linkedCourseIds: ["course-1"],
+          linkedLiveIds: ["live-1"],
+          linkedFeedPostIds: ["campaign-1"],
+          linkedForumThreadId: "thread-product",
+          campaignStartsAt: "2026-07-17T21:00:00Z",
+          campaignEndsAt: "2026-07-24T21:00:00Z",
+          recurrenceRule: "weekly",
+          reminderPlan: { label: "1 hour before", channels: ["in_app"] }
         });
       }
       if (url === "/api/tasks/task-1" && options?.method === "PATCH") {
@@ -84,6 +97,20 @@ describe("CommercialTaskDetailRoute", () => {
     await waitFor(() =>
       expect(screen.getAllByText("Connect Stripe price").length).toBeGreaterThan(0)
     );
+    expect(screen.getByText("Task context")).toBeTruthy();
+    expect(screen.getByText("living soil, dry amendments")).toBeTruthy();
+    expect(screen.getAllByText("grow-shop").length).toBeGreaterThan(0);
+    expect(
+      screen.getAllByText("Paid storefront products need checkout before publishing.").length
+    ).toBeGreaterThan(0);
+    expect(screen.getAllByText("product-1").length).toBeGreaterThan(0);
+    expect(screen.getAllByText("course-1").length).toBeGreaterThan(0);
+    expect(screen.getAllByText("live-1").length).toBeGreaterThan(0);
+    expect(screen.getAllByText("campaign-1").length).toBeGreaterThan(0);
+    expect(screen.getAllByText("thread-product").length).toBeGreaterThan(0);
+    expect(screen.getAllByText("2026-07-17T21:00:00Z").length).toBeGreaterThan(0);
+    expect(screen.getAllByText("weekly").length).toBeGreaterThan(0);
+    expect(screen.getByText("1 hour before")).toBeTruthy();
 
     fireEvent.press(screen.getByLabelText("View commercial task source"));
 
