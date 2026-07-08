@@ -327,11 +327,11 @@ const InfluencerDashboardScreen = ({ navigation }) => {
           />
           <Text style={styles.ctaTitle}>Ready to Grow Your Influence?</Text>
           <Text style={styles.ctaText}>
-            Use our content marketplace to sell guides and exclusive content to your
+            Use Creator Content to sell guides and exclusive content to your
             followers.
           </Text>
           <TouchableOpacity style={styles.ctaBtn}>
-            <Text style={styles.ctaBtnText}>Upload Content →</Text>
+            <Text style={styles.ctaBtnText}>Upload Content -></Text>
           </TouchableOpacity>
         </Card>
 

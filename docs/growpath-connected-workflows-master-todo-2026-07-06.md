@@ -600,6 +600,7 @@ Completed and pushed:
 324. App intro copy now introduces connected Personal, Commercial/storefront, and Facility workspaces while explicitly separating promotional Feed/Campaigns from Forum/Q&A discussion/support before users enter onboarding.
 325. The legacy commercial creator-content screen no longer exposes Marketplace wording in visible titles, errors, search placeholders, fallback item labels, or customer labels; old marketplace API names remain only as compatibility plumbing.
 326. The legacy public Marketplace compatibility screens now present themselves as Storefront Offers in visible headers, search, loading/error/empty states, back links, fallback item labels, and checkout accessibility labels while retaining old marketplace route/API names only as compatibility internals.
+327. Commercial external-channel and influencer CTA copy now uses External Channel Integrations and Creator Content language instead of marketplace wording, and the creator CTA uses ASCII-clean text.
 
 ## Working Rule For Codex
 

@@ -4,17 +4,17 @@ import { View, Text, StyleSheet } from "react-native";
 export default function MarketplaceIntegrationScreen() {
   return (
     <View style={styles.container}>
-      <Text style={styles.header}>Marketplace & External Channels</Text>
+      <Text style={styles.header}>External Channel Integrations</Text>
       <Text style={styles.info}>
-        Connect vendor accounts to external marketplaces and off-platform channels.
-        GrowPath Feed / Campaigns remains the in-app outreach system, and Forum / Q&A
-        remains the discussion system.
+        Connect vendor accounts to off-platform sales and media channels. GrowPath Feed /
+        Campaigns remains the in-app outreach system, and Forum / Q&A remains the
+        discussion system.
       </Text>
       <View style={styles.statusCard}>
         <Text style={styles.statusTitle}>Available now</Text>
         <Text style={styles.statusText}>
-          Use GrowPath marketplace, storefront, products, links, campaigns, orders, and
-          inventory tools to manage commercial sales from the app.
+          Use GrowPath storefront, products, creator content, links, campaigns, orders,
+          and inventory tools to manage commercial sales from the app.
         </Text>
       </View>
       <View style={styles.statusCard}>
