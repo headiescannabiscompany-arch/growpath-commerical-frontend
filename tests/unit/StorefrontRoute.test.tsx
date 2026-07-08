@@ -283,6 +283,7 @@ describe("Storefront route", () => {
             linkedPublishedProductIds: ["product-2"],
             linkedCourseIds: ["course-1"],
             linkedLiveIds: ["live-1"],
+            linkedFeedCampaignIds: ["campaign-1"],
             linkedFeedPostIds: ["campaign-1"],
             priority: "high",
             reminderPlan: { label: "24 hours before", channels: ["in_app"] }
@@ -303,6 +304,7 @@ describe("Storefront route", () => {
           linkedProductIds: ["product-1", "product-2"],
           linkedCourseIds: ["course-1"],
           linkedLiveIds: ["live-1"],
+          linkedFeedCampaignIds: ["campaign-1"],
           linkedFeedPostIds: ["campaign-1"],
           priority: "high"
         })

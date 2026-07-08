@@ -484,7 +484,7 @@ export default function Storefront() {
       const linkedPublishedProductIds = publishedProducts.map(productId).filter(Boolean);
       const linkedCourseIds = storefrontCourses.map(courseId).filter(Boolean);
       const linkedLiveIds = storefrontLives.map(liveId).filter(Boolean);
-      const linkedFeedPostIds = storefrontCampaigns.map(campaignId).filter(Boolean);
+      const linkedFeedCampaignIds = storefrontCampaigns.map(campaignId).filter(Boolean);
       await Promise.all(
         incompleteSetup.map((item) =>
           apiRequest("/api/tasks", {
@@ -505,7 +505,8 @@ export default function Storefront() {
               linkedPublishedProductIds,
               linkedCourseIds,
               linkedLiveIds,
-              linkedFeedPostIds,
+              linkedFeedCampaignIds,
+              linkedFeedPostIds: linkedFeedCampaignIds,
               priority: publishBlockers.some((blocker) =>
                 blocker.includes(item.label.toLowerCase())
               )
