@@ -10,6 +10,7 @@ import {
 import { useFocusEffect } from "@react-navigation/native";
 import { INTEREST_TIERS } from "../config/interests";
 import { updateGrowInterests } from "../api/users";
+import { radius } from "../theme/theme";
 export default function GrowInterestsEditor({ initialInterests = {}, onSave }) {
   const [interests, setInterests] = useState(initialInterests);
   const [expanded, setExpanded] = useState(false);
@@ -130,7 +131,7 @@ const styles = StyleSheet.create({
   expandButton: {
     backgroundColor: "#F0FDF4",
     padding: 16,
-    borderRadius: 12,
+    borderRadius: radius.card,
     alignItems: "center",
     marginBottom: 20,
     borderWidth: 1,
@@ -144,7 +145,7 @@ const styles = StyleSheet.create({
   container: {
     backgroundColor: "#fff",
     padding: 16,
-    borderRadius: 12,
+    borderRadius: radius.card,
     marginBottom: 20,
     borderWidth: 1,
     borderColor: "#eee"
@@ -189,7 +190,7 @@ const styles = StyleSheet.create({
   },
   tierBadge: {
     backgroundColor: "#eee",
-    borderRadius: 12,
+    borderRadius: radius.pill,
     paddingHorizontal: 8,
     paddingVertical: 2
   },
@@ -208,7 +209,7 @@ const styles = StyleSheet.create({
   pill: {
     paddingHorizontal: 12,
     paddingVertical: 6,
-    borderRadius: 16,
+    borderRadius: radius.pill,
     backgroundColor: "#f5f5f5",
     borderWidth: 1,
     borderColor: "#eee"
@@ -228,7 +229,7 @@ const styles = StyleSheet.create({
   saveButton: {
     backgroundColor: "#10B981",
     padding: 14,
-    borderRadius: 8,
+    borderRadius: radius.card,
     alignItems: "center",
     marginTop: 16
   },

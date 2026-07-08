@@ -7,6 +7,7 @@ import {
   normalizeInterestList
 } from "../utils/growInterests";
 import { useAuth } from "@/auth/AuthContext";
+import { radius } from "../theme/theme";
 
 function resolveVisibleTiers(enabledTierIds) {
   if (!Array.isArray(enabledTierIds) || enabledTierIds.length === 0) {
@@ -128,7 +129,7 @@ const styles = StyleSheet.create({
   container: {
     borderWidth: 1,
     borderColor: "#E5E7EB",
-    borderRadius: 12,
+    borderRadius: radius.card,
     padding: 16,
     backgroundColor: "#FFFFFF",
     marginBottom: 24
@@ -184,7 +185,7 @@ const styles = StyleSheet.create({
   chip: {
     borderWidth: 1,
     borderColor: "#D1D5DB",
-    borderRadius: 20,
+    borderRadius: radius.pill,
     paddingHorizontal: 12,
     paddingVertical: 6,
     backgroundColor: "#F9FAFB",

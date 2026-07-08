@@ -724,6 +724,7 @@ Completed and pushed:
 448. Root bootstrap recovery actions and the legacy facility selection surface now consume shared radius tokens for buttons, cards, feedback panels, and status badges, keeping app entry and facility selection aligned with the shared visual system.
 449. AI result cards and AI context selectors now consume the shared 8px card radius token, keeping evidence, grow/room/photo context, notes, and persisted ToolRun-style outputs visually aligned across user modes.
 450. Permission inspector, locked entitlement screens, and route access guard actions now consume the shared 8px card radius token, keeping mode/plan guardrails visually aligned while preserving support and dashboard recovery paths.
+451. Grow interest picker/editor containers, save actions, badges, and interest chips now consume shared radius tokens, preserving pill semantics while keeping discovery, targeting, recommendations, and course/product/feed tagging visually aligned.
 
 ## Working Rule For Codex
 
