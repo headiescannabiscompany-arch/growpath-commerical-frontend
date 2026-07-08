@@ -692,6 +692,7 @@ Completed and pushed:
 416. Commercial Product Trials root/detail forms, product-line selectors, trial rows, feedback, evidence fields, claim-readiness task actions, and save controls now consume the shared 8px card radius token while preserving 999 claim-status pills.
 417. Shared Schedule / Agenda metric cards, refresh action, filters, feedback, agenda cards, and source links now consume the shared 8px card radius token while preserving count/type pills, extending Facility-style visual polish across personal, commercial, and facility timing workflows.
 418. Shared Notification Center header panel, filters, mark-read actions, notification cards, read badges, source links, and create-task controls now consume the shared 8px card radius token, aligning cross-workspace reminders with the Facility-style treatment.
+419. Shared Alert Center metric cards, schedule/action panel, filters, feedback, alert cards, create/resolve/snooze/source/AI actions, and assignee input now consume the shared 8px card radius token while preserving severity pills.
 
 ## Working Rule For Codex
 
