@@ -1,13 +1,18 @@
 import React from "react";
 import { View, StyleSheet } from "react-native";
-import { Colors, Spacing } from "../theme/theme.js";
+import { Colors, Spacing, radius } from "../theme/theme.js";
 
 /**
  * SkeletonLoader Component
  * Displays animated placeholder while content is loading
  */
 
-const SkeletonLoader = ({ width = "100%", height = 50, borderRadius = 8, style }) => {
+const SkeletonLoader = ({
+  width = "100%",
+  height = 50,
+  borderRadius = radius.card,
+  style
+}) => {
   return (
     <View
       style={[
@@ -88,7 +93,7 @@ export const CampaignCardSkeleton = () => (
 const styles = StyleSheet.create({
   skeleton: {
     backgroundColor: "#e5e7eb",
-    borderRadius: 8,
+    borderRadius: radius.card,
     overflow: "hidden",
     marginBottom: Spacing.sm
   },
@@ -97,7 +102,7 @@ const styles = StyleSheet.create({
     marginBottom: Spacing.md,
     padding: Spacing.md,
     backgroundColor: Colors.surface,
-    borderRadius: 8
+    borderRadius: radius.card
   },
   thumbnail: {
     marginBottom: Spacing.sm
@@ -117,7 +122,7 @@ const styles = StyleSheet.create({
     marginBottom: Spacing.md,
     padding: Spacing.md,
     backgroundColor: Colors.surface,
-    borderRadius: 8
+    borderRadius: radius.card
   },
   uploadHeader: {
     flexDirection: "row",
@@ -131,7 +136,7 @@ const styles = StyleSheet.create({
     marginBottom: Spacing.md,
     padding: Spacing.md,
     backgroundColor: Colors.surface,
-    borderRadius: 8
+    borderRadius: radius.card
   },
   guildHeader: {
     flexDirection: "row",
@@ -145,7 +150,7 @@ const styles = StyleSheet.create({
     marginBottom: Spacing.md,
     padding: Spacing.md,
     backgroundColor: Colors.surface,
-    borderRadius: 8
+    borderRadius: radius.card
   },
   campaignHeader: {
     marginBottom: Spacing.sm

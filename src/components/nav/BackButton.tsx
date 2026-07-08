@@ -2,11 +2,13 @@ import React from "react";
 import { Pressable, StyleSheet, Text } from "react-native";
 import { useRouter } from "expo-router";
 
+import { radius } from "@/theme/theme";
+
 const styles = StyleSheet.create({
   btn: {
     alignSelf: "flex-start",
     borderColor: "#E2E8F0",
-    borderRadius: 8,
+    borderRadius: radius.card,
     borderWidth: 1,
     paddingHorizontal: 10,
     paddingVertical: 8

@@ -1,7 +1,7 @@
 import React from "react";
 import { View, Text, StyleSheet, TouchableOpacity } from "react-native";
 import { MaterialCommunityIcons } from "@expo/vector-icons";
-import { Colors, Typography, Spacing } from "../theme/theme.js";
+import { Colors, Typography, Spacing, radius } from "../theme/theme.js";
 import { captureException } from "../utils/monitoring";
 
 /**
@@ -92,7 +92,7 @@ const styles = StyleSheet.create({
     paddingHorizontal: Spacing.lg,
     paddingVertical: Spacing.md,
     backgroundColor: "#EF4444",
-    borderRadius: 8,
+    borderRadius: radius.card,
     marginTop: Spacing.lg
   },
   resetText: {

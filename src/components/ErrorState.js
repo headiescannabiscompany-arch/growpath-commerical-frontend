@@ -1,7 +1,7 @@
 import React from "react";
 import { View, Text, StyleSheet, TouchableOpacity } from "react-native";
 import { MaterialCommunityIcons } from "@expo/vector-icons";
-import { Typography, Spacing } from "../theme/theme.js";
+import { Typography, Spacing, radius } from "../theme/theme.js";
 
 /**
  * ErrorState Component
@@ -53,7 +53,7 @@ const styles = StyleSheet.create({
     paddingVertical: Spacing.lg * 3,
     paddingHorizontal: Spacing.md,
     backgroundColor: "#FEF2F2",
-    borderRadius: 12,
+    borderRadius: radius.card,
     marginVertical: Spacing.md
   },
   title: {
@@ -76,7 +76,7 @@ const styles = StyleSheet.create({
     paddingHorizontal: Spacing.lg,
     paddingVertical: Spacing.md,
     backgroundColor: "#EF4444",
-    borderRadius: 8
+    borderRadius: radius.card
   },
   retryIcon: {
     marginRight: Spacing.xs

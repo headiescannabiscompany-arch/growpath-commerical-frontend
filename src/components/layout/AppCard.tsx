@@ -1,6 +1,7 @@
 import React from "react";
 import { View, Text, StyleSheet, TouchableOpacity } from "react-native";
 
+import { radius } from "@/theme/theme";
 import { sanitizeViewChildren } from "./sanitizeViewChildren";
 export type AppCardProps = {
   style?: any;
@@ -43,7 +44,7 @@ const styles = StyleSheet.create({
   card: {
     backgroundColor: "#FFFFFF",
     borderColor: "#E2E8F0",
-    borderRadius: 8,
+    borderRadius: radius.card,
     borderWidth: 1,
     padding: 16,
     shadowColor: "#0F172A",

@@ -1,6 +1,8 @@
 import React from "react";
 import { Pressable, StyleSheet, Text, View } from "react-native";
 
+import { radius } from "@/theme/theme";
+
 export type InlineErrorProps = {
   // Newer pattern
   error?: any;
@@ -77,7 +79,7 @@ export default InlineError;
 const styles = StyleSheet.create({
   box: {
     padding: 12,
-    borderRadius: 12,
+    borderRadius: radius.card,
     borderWidth: 1,
     borderColor: "rgba(200,0,0,0.25)",
     backgroundColor: "rgba(255,0,0,0.06)"
@@ -90,7 +92,7 @@ const styles = StyleSheet.create({
     alignSelf: "flex-start",
     paddingVertical: 6,
     paddingHorizontal: 10,
-    borderRadius: 10,
+    borderRadius: radius.card,
     borderWidth: 1,
     borderColor: "rgba(0,0,0,0.15)"
   },
