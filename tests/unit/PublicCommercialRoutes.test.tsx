@@ -264,6 +264,10 @@ describe("public commercial routes", () => {
     expect(screen.getByText("Using Veg Mix")).toBeTruthy();
     expect(screen.getByText("Interests: living soil, product education")).toBeTruthy();
     expect(mockLinkHrefs).toContain("/store/living-soil-labs/courses/course-1");
+    expect(screen.getByText("Upcoming Lives")).toBeTruthy();
+    expect(screen.getByText("Veg Mix Live Demo")).toBeTruthy();
+    expect(screen.getByText("Open Live")).toBeTruthy();
+    expect(mockLinkHrefs).toContain("/live-session?sessionId=live-1");
     expect(screen.getByText("Promoted Campaigns")).toBeTruthy();
     expect(screen.getByText("Trial update")).toBeTruthy();
     expect(screen.getByText("Interests: living soil, product trials")).toBeTruthy();
@@ -295,6 +299,7 @@ describe("public commercial routes", () => {
     expect(screen.getByText("Living Soil Labs")).toBeTruthy();
     expect(screen.getByText("View Brand Profile")).toBeTruthy();
     expect(screen.getByText("Promoted Campaigns")).toBeTruthy();
+    expect(screen.getByText("Upcoming Lives")).toBeTruthy();
     expect(screen.getByText("Forum / Q&A")).toBeTruthy();
   });
 

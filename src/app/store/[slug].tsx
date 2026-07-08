@@ -61,6 +61,7 @@ export default function PublicStorefrontRoute() {
   const [products, setProducts] = useState<any[]>([]);
   const [productLines, setProductLines] = useState<any[]>([]);
   const [courses, setCourses] = useState<any[]>([]);
+  const [lives, setLives] = useState<any[]>([]);
   const [feedPosts, setFeedPosts] = useState<any[]>([]);
   const [trials, setTrials] = useState<any[]>([]);
   const [forumThreads, setForumThreads] = useState<any[]>([]);
@@ -78,6 +79,7 @@ export default function PublicStorefrontRoute() {
       setProducts(payload.products);
       setProductLines(payload.productLines);
       setCourses(payload.courses);
+      setLives((payload as any).lives || []);
       setFeedPosts(payload.feedPosts);
       setTrials(payload.trials);
       setForumThreads(payload.forumThreads);
@@ -387,6 +389,48 @@ export default function PublicStorefrontRoute() {
                     >
                       <Pressable style={styles.secondaryButton}>
                         <Text style={styles.secondaryButtonText}>Open Course</Text>
+                      </Pressable>
+                    </Link>
+                  </View>
+                );
+              })}
+            </View>
+          ) : null}
+
+          {lives.length ? (
+            <View style={styles.profilePanel}>
+              <Text style={styles.profileTitle}>Upcoming Lives</Text>
+              <Text style={styles.meta}>
+                RSVP, watch, or open replays from the public live-session surface.
+              </Text>
+              {lives.slice(0, 3).map((live) => {
+                const id = publicItemId(live);
+                return (
+                  <View key={id || publicItemTitle(live, "Live")} style={styles.linkRow}>
+                    <View style={styles.productBody}>
+                      <Text style={styles.productName}>
+                        {publicItemTitle(live, "Live")}
+                      </Text>
+                      {publicItemSummary(live) ? (
+                        <Text style={styles.meta}>{publicItemSummary(live)}</Text>
+                      ) : null}
+                      {live?.scheduledStart ? (
+                        <Text style={styles.meta}>
+                          Starts: {String(live.scheduledStart)}
+                        </Text>
+                      ) : null}
+                      {publicGrowInterests(live).length ? (
+                        <Text style={styles.interests}>
+                          Interests: {publicGrowInterests(live).join(", ")}
+                        </Text>
+                      ) : null}
+                    </View>
+                    <Link
+                      href={`/live-session?sessionId=${encodeURIComponent(id)}` as any}
+                      asChild
+                    >
+                      <Pressable style={styles.secondaryButton}>
+                        <Text style={styles.secondaryButtonText}>Open Live</Text>
                       </Pressable>
                     </Link>
                   </View>
