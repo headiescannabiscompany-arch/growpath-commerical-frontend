@@ -1,7 +1,8 @@
-import React from "react";
+import React, { useEffect, useState } from "react";
 import { StyleSheet, View } from "react-native";
 import EducationPostCard from "@/components/feed/EducationPostCard";
 import AdCard from "@/components/feed/AdCard";
+import { listCommercialFeedPosts, type CommercialFeedPost } from "@/api/commercialFeed";
 
 type FeedRailProps = {
   slots: number;
@@ -23,6 +24,73 @@ type AdItem = {
   promotionCount: number;
   imageUrl: string;
 };
+
+function campaignDestination(post: CommercialFeedPost) {
+  if (post.linkedProductId) {
+    const productId = encodeURIComponent(String(post.linkedProductId));
+    if (post.storefrontSlug) {
+      return {
+        cta: "View Product",
+        href: `/store/${encodeURIComponent(String(post.storefrontSlug))}/products/${productId}`
+      };
+    }
+    return { cta: "View Product", href: `/home/commercial/products/${productId}` };
+  }
+  if (post.linkedCourseId) {
+    return {
+      cta: "View Course",
+      href: `/home/commercial/courses/${encodeURIComponent(String(post.linkedCourseId))}`
+    };
+  }
+  if (post.linkedLiveId) {
+    return {
+      cta: "View Live",
+      href: `/home/commercial/lives?liveId=${encodeURIComponent(String(post.linkedLiveId))}`
+    };
+  }
+  if (post.storefrontSlug) {
+    return {
+      cta: "Visit Storefront",
+      href: `/store/${encodeURIComponent(String(post.storefrontSlug))}`
+    };
+  }
+  if (post.linkedForumThreadId) {
+    return {
+      cta: "Open Forum Q&A",
+      href: `/forum/post/${encodeURIComponent(String(post.linkedForumThreadId))}`
+    };
+  }
+  const externalLink = post.externalLinks?.find((link) => String(link?.url || "").trim());
+  if (externalLink) {
+    return { cta: externalLink.label || "Learn More", href: String(externalLink.url) };
+  }
+  return { cta: "Learn More", href: "/feed" };
+}
+
+function campaignImage(post: CommercialFeedPost) {
+  return post.imageUrl || post.creativeImageUrl || post.bannerImageUrl || "";
+}
+
+function mapCampaignToAd(post: CommercialFeedPost): AdItem {
+  const destination = campaignDestination(post);
+  const owner =
+    post.author?.displayName ||
+    (post.authorType === "facility" || post.workspaceType === "facility"
+      ? "Facility outreach"
+      : "Commercial campaign");
+  return {
+    title: post.title || owner,
+    body: post.body || "Promoted outreach from a GrowPath account.",
+    cta: destination.cta,
+    href: destination.href,
+    storefrontSlug: String(post.storefrontSlug || ""),
+    createdAt: post.createdAt || new Date(0).toISOString(),
+    likeCount: Number(post.likeCount || 0),
+    clickCount: Number((post as any).clickCount || 0),
+    promotionCount: Number((post as any).promotionCount || 0),
+    imageUrl: campaignImage(post)
+  };
+}
 
 const EDUCATION_ITEMS = [
   {
@@ -192,9 +260,27 @@ export default function FeedRail({
   railMode = "standard",
   placement = "top"
 }: FeedRailProps) {
+  const [campaignAds, setCampaignAds] = useState<AdItem[]>([]);
+
+  useEffect(() => {
+    let cancelled = false;
+    listCommercialFeedPosts({ limit: Math.max(slots * 3, 6), sort: "new" })
+      .then((res) => {
+        if (cancelled) return;
+        const nextAds = res.items.map(mapCampaignToAd).filter((item) => item.title);
+        if (nextAds.length) setCampaignAds(nextAds);
+      })
+      .catch(() => undefined);
+    return () => {
+      cancelled = true;
+    };
+  }, [slots]);
+
   if (!slots || slots <= 0) return null;
 
-  const ads = mode === "facility" || mode === "commercial" ? FACILITY_AD_ITEMS : AD_ITEMS;
+  const fallbackAds =
+    mode === "facility" || mode === "commercial" ? FACILITY_AD_ITEMS : AD_ITEMS;
+  const ads = campaignAds.length ? campaignAds : fallbackAds;
   const adSlotCount =
     railMode === "promo-only"
       ? slots
