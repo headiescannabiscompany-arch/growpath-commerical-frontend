@@ -18,8 +18,8 @@ const SEARCH_SURFACES = [
   },
   {
     key: "feed",
-    title: "Feed",
-    subtitle: "Commercial and facility education posts",
+    title: "Feed / Campaigns",
+    subtitle: "Commercial and facility outreach, ads, and announcements",
     route: "Feed"
   },
   {

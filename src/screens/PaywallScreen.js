@@ -70,7 +70,9 @@ export default function PaywallScreen({ navigation }) {
         <View style={styles.benefitsSection}>
           <Text style={styles.subtitle}>Unlock Premium Features:</Text>
           <Text style={styles.benefit}>Unlimited Plants and Grows</Text>
-          <Text style={styles.benefit}>Social Feed: post, like, and comment</Text>
+          <Text style={styles.benefit}>
+            Forum/Q&A discussions and relevant Feed campaign discovery
+          </Text>
           <Text style={styles.benefit}>Task Management and reminders</Text>
           <Text style={styles.benefit}>AI Plant Diagnosis</Text>
           <Text style={styles.benefit}>AI Feeding Assistant</Text>
