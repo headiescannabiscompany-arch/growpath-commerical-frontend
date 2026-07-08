@@ -13,18 +13,18 @@ describe("PaymentHelpDialog", () => {
     jest.restoreAllMocks();
   });
 
-  it("uses the GrowPath AI support address for payment help", () => {
+  it("uses the GrowPath AI billing alias for payment help", () => {
     const onClose = jest.fn();
     const screen = render(<PaymentHelpDialog onClose={onClose} />);
 
     expect(screen.getByText("Payment Issues Help")).toBeTruthy();
-    expect(screen.getByText("support@growpathai.com")).toBeTruthy();
+    expect(screen.getByText("billing@growpathai.com")).toBeTruthy();
     expect(screen.queryByText("admin@growpath.ai")).toBeNull();
 
     fireEvent.press(screen.getByText("Email Support"));
 
     expect(Linking.openURL).toHaveBeenCalledWith(
-      "mailto:support@growpathai.com?subject=Payment%20Issue"
+      "mailto:billing@growpathai.com?subject=Payment%20Issue"
     );
 
     fireEvent.press(screen.getByText("Close"));

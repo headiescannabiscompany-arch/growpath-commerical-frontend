@@ -8,7 +8,9 @@ import {
   Linking
 } from "react-native";
 
-const SUPPORT_EMAIL = "support@growpathai.com";
+import { SUPPORT_CONTACTS } from "@/config/supportContacts";
+
+const SUPPORT_EMAIL = SUPPORT_CONTACTS.billing;
 
 export default function PaymentHelpDialog({ onClose }) {
   const openEmail = () => {
