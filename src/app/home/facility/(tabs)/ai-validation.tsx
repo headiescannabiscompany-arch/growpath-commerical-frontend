@@ -3,6 +3,7 @@ import { Pressable, ScrollView, StyleSheet, Text, TextInput, View } from "react-
 
 import { aiCompare, aiFeedback, aiTrainingExport, aiVerify } from "@/api/aiValidation";
 import { buildFeedbackPayload, parseJsonObject } from "@/utils/aiValidationLab";
+import { radius } from "@/theme/theme";
 
 export default function FacilityAiValidationRoute() {
   const [predictionJson, setPredictionJson] = useState(
@@ -210,7 +211,7 @@ const styles = StyleSheet.create({
   input: {
     borderWidth: 1,
     borderColor: "#d1d5db",
-    borderRadius: 10,
+    borderRadius: radius.card,
     paddingHorizontal: 12,
     paddingVertical: 10
   },
@@ -219,7 +220,7 @@ const styles = StyleSheet.create({
   choice: {
     paddingHorizontal: 12,
     paddingVertical: 8,
-    borderRadius: 8,
+    borderRadius: radius.card,
     borderWidth: 1,
     borderColor: "#d1d5db"
   },
@@ -227,7 +228,7 @@ const styles = StyleSheet.create({
   choiceText: { color: "#111827", textTransform: "capitalize" },
   choiceTextActive: { color: "#1e3a8a", fontWeight: "700", textTransform: "capitalize" },
   buttonGrid: { marginTop: 4, gap: 8 },
-  button: { borderRadius: 10, paddingVertical: 12, alignItems: "center" },
+  button: { borderRadius: radius.card, paddingVertical: 12, alignItems: "center" },
   buttonPrimary: { backgroundColor: "#111827" },
   buttonSecondary: { backgroundColor: "#1f2937" },
   disabled: { opacity: 0.55 },
@@ -236,7 +237,7 @@ const styles = StyleSheet.create({
   card: {
     borderWidth: 1,
     borderColor: "#e5e7eb",
-    borderRadius: 12,
+    borderRadius: radius.card,
     padding: 10,
     backgroundColor: "#fff",
     marginTop: 8

@@ -13,6 +13,7 @@ import { useLocalSearchParams } from "expo-router";
 import { getFacilityComplianceExport } from "@/api/complianceExport";
 import { useFacility } from "@/state/useFacility";
 import { AICallBody, useAICall } from "@/hooks/useAICall";
+import { radius } from "@/theme/theme";
 
 type Preset = {
   key: string;
@@ -648,7 +649,7 @@ const styles = StyleSheet.create({
   container: { padding: 16, paddingBottom: 32 },
   header: {
     backgroundColor: "#111827",
-    borderRadius: 8,
+    borderRadius: radius.card,
     marginBottom: 14,
     padding: 18
   },
@@ -676,7 +677,7 @@ const styles = StyleSheet.create({
   preset: {
     backgroundColor: "white",
     borderColor: "#d7ddd2",
-    borderRadius: 8,
+    borderRadius: radius.card,
     borderWidth: 1,
     minHeight: 132,
     padding: 14
@@ -694,7 +695,7 @@ const styles = StyleSheet.create({
   panel: {
     backgroundColor: "white",
     borderColor: "#d7ddd2",
-    borderRadius: 8,
+    borderRadius: radius.card,
     borderWidth: 1,
     gap: 10,
     padding: 14
@@ -703,7 +704,7 @@ const styles = StyleSheet.create({
   cardDesc: { color: "#64748b", fontWeight: "700", lineHeight: 20 },
   input: {
     borderColor: "#cbd5e1",
-    borderRadius: 8,
+    borderRadius: radius.card,
     borderWidth: 1,
     color: "#111827",
     paddingHorizontal: 12,
@@ -713,14 +714,14 @@ const styles = StyleSheet.create({
   button: {
     alignItems: "center",
     backgroundColor: "#166534",
-    borderRadius: 8,
+    borderRadius: radius.card,
     paddingVertical: 12
   },
   buttonText: { color: "white", fontWeight: "900" },
   secondaryButton: {
     alignItems: "center",
     backgroundColor: "#111827",
-    borderRadius: 8,
+    borderRadius: radius.card,
     paddingVertical: 11
   },
   secondaryButtonText: { color: "white", fontWeight: "900" },
@@ -730,14 +731,14 @@ const styles = StyleSheet.create({
   errorBox: {
     backgroundColor: "#fef2f2",
     borderColor: "#fecaca",
-    borderRadius: 8,
+    borderRadius: radius.card,
     borderWidth: 1,
     padding: 12
   },
   errorText: { color: "#991b1b", fontWeight: "800" },
   resultPanel: {
     backgroundColor: "#0f172a",
-    borderRadius: 8,
+    borderRadius: radius.card,
     padding: 12
   },
   resultTitle: {
@@ -749,7 +750,7 @@ const styles = StyleSheet.create({
   },
   readinessCard: {
     backgroundColor: "#f8fafc",
-    borderRadius: 8,
+    borderRadius: radius.card,
     gap: 10,
     marginBottom: 10,
     padding: 10
@@ -766,7 +767,7 @@ const styles = StyleSheet.create({
   evidenceGrid: { flexDirection: "row", flexWrap: "wrap", gap: 8 },
   evidenceText: {
     backgroundColor: "#e0f2fe",
-    borderRadius: 6,
+    borderRadius: radius.card,
     color: "#075985",
     fontSize: 12,
     fontWeight: "900",

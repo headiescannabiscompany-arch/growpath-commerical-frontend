@@ -1,6 +1,7 @@
 import React from "react";
 import { Link } from "expo-router";
 import { StyleSheet, Text, View } from "react-native";
+import { radius } from "@/theme/theme";
 
 const TEMPLATES = [
   {
@@ -62,7 +63,7 @@ const styles = StyleSheet.create({
   card: {
     borderWidth: 1,
     borderColor: "rgba(0,0,0,0.15)",
-    borderRadius: 12,
+    borderRadius: radius.card,
     padding: 12,
     gap: 6,
     backgroundColor: "#fff"
