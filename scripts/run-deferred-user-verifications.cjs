@@ -39,6 +39,7 @@ const checks = [
       "tests/navigation/feedForumSeparationNavigation.test.js",
       "tests/navigation/routeAccess.test.ts",
       "tests/unit/CommercialWorkflowPages.test.tsx",
+      "tests/unit/CommercialInventoryCreateRoute.test.tsx",
       "tests/unit/CommercialFeedRoute.test.tsx",
       "tests/unit/FacilityFeedRoute.test.tsx",
       "tests/unit/commercial-feed-api.test.ts",
@@ -88,6 +89,8 @@ const checks = [
       "tests/unit/CommercialFeedCard.test.tsx",
       "tests/unit/PersonalFeedPlacement.test.tsx",
       "tests/unit/ForumFeedSeparationRoutes.test.tsx",
+      "tests/unit/CreatePostRootRoute.test.tsx",
+      "tests/unit/canonical-route-matrix-doc.test.js",
       "tests/unit/ResetPasswordScreen.test.tsx",
       "tests/unit/ForgotPasswordScreen.test.tsx",
       "tests/unit/toolRuns-api.test.ts",
@@ -132,6 +135,7 @@ const manualChecks = [
       "Confirm Feed cards read as commercial/facility outreach with CTA buttons, not discussion threads.",
       "Confirm Forum pages still present discussion/Q&A/thread behavior and can link to product/course/live context.",
       "Create a commercial feed campaign with grow interests, schedule start/end, reminder, recurrence, product/live/course/storefront destination, and Forum/Q&A link; confirm those fields show on the campaign card and Schedule page.",
+      "From the root Create Post action as a selected Facility user, confirm it opens /home/facility/feed for facility outreach creation instead of the shared /feed viewer.",
       "On a free account, confirm top and bottom feed placements render, and long pages include one middle placement."
     ]
   },
@@ -144,6 +148,7 @@ const manualChecks = [
       "Open the same public storefront and product detail through /storefront/:slug and /storefront/:slug/products/:productId and confirm they match the /store URL family.",
       "Open Commercial > Orders from the commercial tab/dashboard and verify it stays inside /home/commercial/orders with no root-page back arrow.",
       "Open Commercial > Products and verify product cards feed the public storefront and batches/trials/inventory are product support surfaces.",
+      "Open Commercial > Inventory, create an item, and open its detail; confirm visible routes use /home/commercial/inventory/new and /home/commercial/inventory/:id while legacy inventory-create/inventory-item URLs are only compatibility aliases.",
       "Open Commercial > Storefront and verify Product Lines appear as storefront sections with grow interests, owner detail links, and View-as-User line-filter links.",
       "Open a public brand profile and public storefront and confirm Product Lines appear with grow interests and Browse Line actions.",
       "Open a Product Line Browse Line link and confirm /store/:slug?line=:lineId filters product cards and offers View All Products.",

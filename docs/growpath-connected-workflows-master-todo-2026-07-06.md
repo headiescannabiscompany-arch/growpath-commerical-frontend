@@ -543,6 +543,7 @@ Completed and pushed:
 267. Commercial workflow regression coverage now imports canonical inventory detail through `/home/commercial/inventory/:id`, so tests exercise the current route family instead of the legacy compatibility file.
 268. The canonical route matrix Commercial section now lists `/home/commercial` as the landing route, documents the current owner/storefront/feed/inventory route family, and marks old `/campaigns`, `/orders`, `/inventory-create`, `/inventory-item/:id`, and `/grows` paths as compatibility guards.
 269. The root Create Post action now sends Facility users to `/home/facility/feed` for facility outreach campaign creation instead of the shared `/feed` viewer, keeping facility author identity and workspace routing intact.
+270. Deferred user verification now includes the canonical Commercial inventory create/detail regression, the canonical route-matrix guard, and the root Create Post facility-outreach regression, with browser checklist items for `/home/commercial/inventory/new`, `/home/commercial/inventory/:id`, and `/home/facility/feed`.
 
 ## Working Rule For Codex
 
