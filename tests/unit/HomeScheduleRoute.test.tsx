@@ -127,7 +127,7 @@ describe("HomeScheduleRoute", () => {
     expect(screen.getAllByText(/Repeats weekly/).length).toBeGreaterThan(0);
     expect(screen.getAllByText("Open Source").length).toBeGreaterThan(0);
     expect(screen.getByTestId("link-/home/commercial/tasks/task-1")).toBeTruthy();
-    expect(screen.getByTestId("link-/home/personal/more/tasks")).toBeTruthy();
+    expect(screen.getByTestId("link-/home/personal/tasks")).toBeTruthy();
     expect(screen.getByTestId("link-/home/facility/feed")).toBeTruthy();
   });
 });

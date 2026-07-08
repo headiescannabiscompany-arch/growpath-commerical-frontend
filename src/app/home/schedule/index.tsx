@@ -98,10 +98,10 @@ function taskHref(task: any, id: string) {
   if (workspace === "facility") return `/home/facility/tasks/${id}`;
   if (workspace === "personal") {
     const growId = String(task?.linkedGrowId || task?.growId || "");
-    return growId ? `/home/personal/grows/${growId}/tasks` : "/home/personal/more/tasks";
+    return growId ? `/home/personal/grows/${growId}/tasks` : "/home/personal/tasks";
   }
   if (workspace === "commercial") return `/home/commercial/tasks/${id}`;
-  return "/home/personal/more/tasks";
+  return "/home/personal/tasks";
 }
 
 function taskToItem(task: any): CalendarItem {
