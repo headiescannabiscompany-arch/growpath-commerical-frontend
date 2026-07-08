@@ -1,18 +1,22 @@
 import React from "react";
-import { render, waitFor } from "@testing-library/react-native";
+import { fireEvent, render, waitFor } from "@testing-library/react-native";
 
 import PublicBrandProfileRoute from "@/app/brands/[slug]";
 import PublicStorefrontRoute from "@/app/store/[slug]";
 import PublicStorefrontAliasRoute from "@/app/storefront/[slug]";
 import PublicProductRoute from "@/app/store/[slug]/products/[productId]";
 import PublicStorefrontProductAliasRoute from "@/app/storefront/[slug]/products/[productId]";
+import PublicStorefrontCourseRoute from "@/app/store/[slug]/courses/[courseId]";
+import PublicStorefrontCourseAliasRoute from "@/app/storefront/[slug]/courses/[courseId]";
 
 const mockFetchPublicStorefront = jest.fn();
 const mockRecordCommercialAnalyticsEvent = jest.fn();
+const mockStartCourseCheckout = jest.fn();
 const mockLinkHrefs: string[] = [];
 let mockRouteParams: Record<string, string> = {
   slug: "living-soil-labs",
-  productId: "product-1"
+  productId: "product-1",
+  courseId: "course-1"
 };
 
 jest.mock("expo-router", () => {
@@ -44,6 +48,10 @@ jest.mock("@/api/storefront", () => ({
 
 jest.mock("@/api/products", () => ({
   checkoutProduct: jest.fn()
+}));
+
+jest.mock("@/api/coursePayments", () => ({
+  startCourseCheckout: (...args: any[]) => mockStartCourseCheckout(...args)
 }));
 
 jest.mock("@/api/commercialAnalytics", () => ({
@@ -113,7 +121,33 @@ const publicPayload = {
       title: "Using Veg Mix",
       summary: "A short setup course for the veg blend.",
       growInterests: ["living soil", "product education"],
-      linkedProductIds: ["product-1"]
+      linkedProductIds: ["product-1"],
+      access: "paid",
+      price: 29,
+      stripePriceId: "price_course_1",
+      skillLevel: "Beginner",
+      moduleCount: 2,
+      lessonCount: 5,
+      documentCount: 1,
+      videoCount: 3
+    }
+  ],
+  lives: [
+    {
+      id: "live-1",
+      title: "Veg Mix Live Demo",
+      description: "Walk through the course recipe and product application.",
+      relatedCourseId: "course-1",
+      scheduledStart: "2026-08-01T18:00:00.000Z"
+    }
+  ],
+  liveEvents: [
+    {
+      id: "live-1",
+      title: "Veg Mix Live Demo",
+      description: "Walk through the course recipe and product application.",
+      relatedCourseId: "course-1",
+      scheduledStart: "2026-08-01T18:00:00.000Z"
     }
   ],
   feedPosts: [
@@ -122,7 +156,8 @@ const publicPayload = {
       title: "Trial update",
       summary: "Week three plants are pushing clean growth.",
       growInterests: ["living soil", "product trials"],
-      linkedProductId: "product-1"
+      linkedProductId: "product-1",
+      linkedCourseId: "course-1"
     }
   ],
   trials: [
@@ -138,7 +173,8 @@ const publicPayload = {
       id: "thread-1",
       title: "Veg Mix Support",
       summary: "Ask use-rate and topdress questions.",
-      linkedProductId: "product-1"
+      linkedProductId: "product-1",
+      linkedCourseId: "course-1"
     }
   ]
 };
@@ -147,9 +183,15 @@ describe("public commercial routes", () => {
   beforeEach(() => {
     mockFetchPublicStorefront.mockReset();
     mockRecordCommercialAnalyticsEvent.mockReset();
+    mockStartCourseCheckout.mockReset();
     mockLinkHrefs.length = 0;
-    mockRouteParams = { slug: "living-soil-labs", productId: "product-1" };
+    mockRouteParams = {
+      slug: "living-soil-labs",
+      productId: "product-1",
+      courseId: "course-1"
+    };
     mockRecordCommercialAnalyticsEvent.mockResolvedValue({ success: true });
+    mockStartCourseCheckout.mockResolvedValue({});
     mockFetchPublicStorefront.mockResolvedValue(publicPayload);
   });
 
@@ -221,6 +263,7 @@ describe("public commercial routes", () => {
     expect(screen.getAllByText("Details").length).toBeGreaterThan(0);
     expect(screen.getByText("Using Veg Mix")).toBeTruthy();
     expect(screen.getByText("Interests: living soil, product education")).toBeTruthy();
+    expect(mockLinkHrefs).toContain("/store/living-soil-labs/courses/course-1");
     expect(screen.getByText("Promoted Campaigns")).toBeTruthy();
     expect(screen.getByText("Trial update")).toBeTruthy();
     expect(screen.getByText("Interests: living soil, product trials")).toBeTruthy();
@@ -293,7 +336,9 @@ describe("public commercial routes", () => {
     expect(screen.getByText("Product Line")).toBeTruthy();
     expect(screen.getByText("Living Soil Line")).toBeTruthy();
     expect(screen.getByText("Base soils and dry amendments by stage.")).toBeTruthy();
-    expect(screen.getAllByText("Interests: living soil, dry amendments").length).toBeGreaterThan(0);
+    expect(
+      screen.getAllByText("Interests: living soil, dry amendments").length
+    ).toBeGreaterThan(0);
     expect(screen.getByText("Browse Line")).toBeTruthy();
     expect(mockLinkHrefs).toContain("/store/living-soil-labs?line=line-1");
     expect(screen.getByText("1 cup per cubic foot")).toBeTruthy();
@@ -305,6 +350,7 @@ describe("public commercial routes", () => {
     expect(screen.getByText("Using Veg Mix")).toBeTruthy();
     expect(screen.getByText("Interests: living soil, product education")).toBeTruthy();
     expect(screen.getByText("Open Course")).toBeTruthy();
+    expect(mockLinkHrefs).toContain("/store/living-soil-labs/courses/course-1");
     expect(screen.getByText("Promoted Product Campaigns")).toBeTruthy();
     expect(screen.getByText("Trial update")).toBeTruthy();
     expect(screen.getByText("Interests: living soil, product trials")).toBeTruthy();
@@ -348,5 +394,78 @@ describe("public commercial routes", () => {
     expect(screen.getByText("Label / Use Information")).toBeTruthy();
     expect(screen.getByText("Product Forum / Q&A")).toBeTruthy();
     expect(screen.getByText("Buy")).toBeTruthy();
+  });
+
+  it("loads a public storefront course detail with checkout and connected context", async () => {
+    const screen = render(<PublicStorefrontCourseRoute />);
+
+    await waitFor(() =>
+      expect(mockFetchPublicStorefront).toHaveBeenCalledWith("living-soil-labs")
+    );
+    expect(screen.getAllByText("Using Veg Mix").length).toBeGreaterThan(0);
+    expect(screen.getByText("Living Soil Labs")).toBeTruthy();
+    expect(screen.getByText("A short setup course for the veg blend.")).toBeTruthy();
+    expect(screen.getByText("Interests: living soil, product education")).toBeTruthy();
+    expect(screen.getByText("$29.00")).toBeTruthy();
+    expect(screen.getByText("Beginner")).toBeTruthy();
+    expect(screen.getByText("Paid course")).toBeTruthy();
+    expect(screen.getByText("Course Includes")).toBeTruthy();
+    expect(screen.getByText("Modules")).toBeTruthy();
+    expect(screen.getByText("Lessons")).toBeTruthy();
+    expect(screen.getByText("Related Products")).toBeTruthy();
+    expect(screen.getByText("Veg Mix")).toBeTruthy();
+    expect(screen.getByText("View Product")).toBeTruthy();
+    expect(screen.getByText("Related Lives")).toBeTruthy();
+    expect(screen.getByText("Veg Mix Live Demo")).toBeTruthy();
+    expect(screen.getByText("Open Live")).toBeTruthy();
+    expect(mockLinkHrefs).toContain("/live-session?sessionId=live-1");
+    expect(screen.getByText("Promoted Course Campaigns")).toBeTruthy();
+    expect(screen.getAllByText("Trial update").length).toBeGreaterThan(0);
+    expect(screen.getByText("Open Campaign")).toBeTruthy();
+    expect(screen.getByText("Course Forum / Q&A")).toBeTruthy();
+    expect(screen.getByText("Veg Mix Support")).toBeTruthy();
+    expect(screen.getByText("Open Q&A")).toBeTruthy();
+    expect(mockLinkHrefs).toContain("/forum/post/thread-1");
+    expect(screen.getByText("Back to Store")).toBeTruthy();
+    expect(screen.getByText("Brand Profile")).toBeTruthy();
+    expect(screen.getByText("Course Directory")).toBeTruthy();
+
+    fireEvent.press(screen.getByLabelText("Buy storefront course"));
+
+    await waitFor(() =>
+      expect(mockStartCourseCheckout).toHaveBeenCalledWith("course-1", {
+        returnPath: "/store/living-soil-labs/courses/course-1"
+      })
+    );
+    await waitFor(() =>
+      expect(mockRecordCommercialAnalyticsEvent).toHaveBeenCalledWith(
+        expect.objectContaining({
+          eventType: "course_view",
+          courseId: "course-1",
+          storefrontSlug: "living-soil-labs",
+          source: "public_storefront_course"
+        })
+      )
+    );
+    expect(mockRecordCommercialAnalyticsEvent).toHaveBeenCalledWith(
+      expect.objectContaining({
+        eventType: "course_checkout_click",
+        courseId: "course-1",
+        storefrontSlug: "living-soil-labs",
+        source: "public_storefront_course"
+      })
+    );
+  });
+
+  it("loads the /storefront/:slug/courses/:courseId alias through the same course route", async () => {
+    const screen = render(<PublicStorefrontCourseAliasRoute />);
+
+    await waitFor(() =>
+      expect(mockFetchPublicStorefront).toHaveBeenCalledWith("living-soil-labs")
+    );
+    expect(screen.getAllByText("Using Veg Mix").length).toBeGreaterThan(0);
+    expect(screen.getByText("Buy Course")).toBeTruthy();
+    expect(screen.getByText("Related Products")).toBeTruthy();
+    expect(screen.getByText("Course Forum / Q&A")).toBeTruthy();
   });
 });

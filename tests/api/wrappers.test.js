@@ -111,6 +111,27 @@ describe("API Wrappers Unit Tests", () => {
     expect(fetchCalls[0].url.endsWith(ROUTES.PAYMENTS.CHECKOUT("course 1"))).toBe(true);
   });
 
+  it("Course payments API: startCourseCheckout can return to a public storefront course page", async () => {
+    const previousWindow = global.window;
+    global.window = { location: { origin: "https://app.example" } };
+
+    try {
+      await coursePaymentsApi.startCourseCheckout("course 1", {
+        returnPath: "/store/living-soil/courses/course%201"
+      });
+    } finally {
+      global.window = previousWindow;
+    }
+
+    const body = JSON.parse(fetchCalls[0].options.body);
+    expect(body.successUrl).toBe(
+      "https://app.example/store/living-soil/courses/course%201?checkout=success&course=course%201"
+    );
+    expect(body.cancelUrl).toBe(
+      "https://app.example/store/living-soil/courses/course%201?checkout=canceled&course=course%201"
+    );
+  });
+
   it("Marketplace API: purchaseContent starts marketplace checkout", async () => {
     await marketplaceApi.purchaseContent("content 1");
     expect(fetchCalls[0].options.method).toBe("POST");

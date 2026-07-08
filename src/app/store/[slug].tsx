@@ -379,12 +379,14 @@ export default function PublicStorefrontRoute() {
                     </View>
                     <Link
                       href={
-                        `/courses${id ? `?courseId=${encodeURIComponent(id)}` : ""}` as any
+                        `/store/${encodeURIComponent(slug)}/courses/${encodeURIComponent(
+                          id || publicItemTitle(course, "course")
+                        )}` as any
                       }
                       asChild
                     >
                       <Pressable style={styles.secondaryButton}>
-                        <Text style={styles.secondaryButtonText}>Open</Text>
+                        <Text style={styles.secondaryButtonText}>Open Course</Text>
                       </Pressable>
                     </Link>
                   </View>

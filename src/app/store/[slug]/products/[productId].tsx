@@ -495,9 +495,15 @@ export default function PublicProductRoute() {
                   </View>
                   <Link
                     href={
-                      `/courses${
-                        course?.id ? `?courseId=${encodeURIComponent(course.id)}` : ""
-                      }` as any
+                      `/store/${encodeURIComponent(slug)}/courses/${encodeURIComponent(
+                        String(
+                          course?.id ||
+                            course?._id ||
+                            course?.courseId ||
+                            course?.slug ||
+                            "course"
+                        )
+                      )}` as any
                     }
                     asChild
                   >

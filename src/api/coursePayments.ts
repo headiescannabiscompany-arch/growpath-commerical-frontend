@@ -16,19 +16,40 @@ function idempotencyKey(prefix: string, courseId: string) {
   return `${prefix}:${courseId}:${Date.now()}`;
 }
 
+export type CourseCheckoutOptions = {
+  returnPath?: string;
+};
+
 function currentOrigin() {
   const location = (globalThis as any)?.window?.location;
   return typeof location?.origin === "string" ? location.origin : "";
 }
 
-export async function startCourseCheckout(courseId: string) {
+function checkoutReturnUrl(
+  origin: string,
+  returnPath: string,
+  status: "success" | "canceled",
+  courseId: string
+) {
+  const path = returnPath || "/courses";
+  const separator = path.includes("?") ? "&" : "?";
+  return `${origin}${path}${separator}checkout=${status}&course=${encodeURIComponent(
+    courseId
+  )}`;
+}
+
+export async function startCourseCheckout(
+  courseId: string,
+  options: CourseCheckoutOptions = {}
+) {
   const origin = currentOrigin();
+  const returnPath = options.returnPath || "/courses";
   return apiRequest(apiRoutes.PAYMENTS.CHECKOUT(courseId), {
     method: "POST",
     body: origin
       ? {
-          successUrl: `${origin}/courses?checkout=success`,
-          cancelUrl: `${origin}/courses?checkout=canceled`
+          successUrl: checkoutReturnUrl(origin, returnPath, "success", courseId),
+          cancelUrl: checkoutReturnUrl(origin, returnPath, "canceled", courseId)
         }
       : {}
   });

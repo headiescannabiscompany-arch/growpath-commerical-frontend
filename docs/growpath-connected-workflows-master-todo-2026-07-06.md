@@ -588,6 +588,7 @@ Completed and pushed:
 312. Commercial product records now support Stripe product IDs as well as Stripe price IDs across the shared Product type, Storefront quick-create, Commercial Products create, and Product Detail edit/update flows, aligning product checkout setup with the existing course Stripe Product/Price model.
 313. Deferred user verification now includes Stripe product and price ID checks for Storefront quick product creation, Commercial Products publish readiness, and Product Detail edits so checkout setup can be browser-verified in one batched pass.
 314. The shared support-contact config now includes the full live GrowPath alias set, exposes public routing for support, billing, orders, sales, commercial, courses, live events, facility, partners, contact, privacy, legal, and security, and keeps noreply/notifications as sender-only aliases.
+315. Public storefront course detail routes now exist at `/store/:slug/courses/:courseId` and `/storefront/:slug/courses/:courseId`, showing course price, grow interests, related products, related lives, Feed campaign CTAs, Forum/Q&A links, analytics tracking, and paid Stripe checkout return routing.
 
 ## Working Rule For Codex
 
