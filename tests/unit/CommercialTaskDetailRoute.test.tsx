@@ -7,9 +7,12 @@ const mockBack = jest.fn();
 const mockPush = jest.fn();
 const mockApiRequest = jest.fn();
 let taskOverrides: Record<string, any> = {};
-const mockApiErrorHandler = Object.assign(jest.fn(() => null), {
-  toInlineError: jest.fn(() => null)
-});
+const mockApiErrorHandler = Object.assign(
+  jest.fn(() => null),
+  {
+    toInlineError: jest.fn(() => null)
+  }
+);
 
 jest.mock("expo-router", () => ({
   useLocalSearchParams: () => ({ id: "task-1" }),
@@ -131,7 +134,8 @@ describe("CommercialTaskDetailRoute", () => {
     expect(screen.getByText("Alert source type")).toBeTruthy();
     expect(screen.getByText("Alert source ID")).toBeTruthy();
     expect(
-      screen.getAllByText("Paid storefront products need checkout before publishing.").length
+      screen.getAllByText("Paid storefront products need checkout before publishing.")
+        .length
     ).toBeGreaterThan(0);
     expect(screen.getByText("Products")).toBeTruthy();
     expect(screen.getByText("Courses")).toBeTruthy();
@@ -192,5 +196,23 @@ describe("CommercialTaskDetailRoute", () => {
     fireEvent.press(screen.getByLabelText("View commercial task source"));
 
     expect(mockPush).toHaveBeenCalledWith("/forum/post/thread-product");
+  });
+
+  it("opens lesson-backed task sources in the commercial course workflow", async () => {
+    taskOverrides = {
+      sourceType: "lesson",
+      sourceId: "lesson-1",
+      linkedCourseId: "course-1",
+      linkedLessonId: "lesson-1"
+    };
+    const screen = render(<CommercialTaskDetailRoute />);
+
+    await waitFor(() =>
+      expect(screen.getAllByText("Connect Stripe price").length).toBeGreaterThan(0)
+    );
+
+    fireEvent.press(screen.getByLabelText("View commercial task source"));
+
+    expect(mockPush).toHaveBeenCalledWith("/home/commercial/courses/course-1");
   });
 });

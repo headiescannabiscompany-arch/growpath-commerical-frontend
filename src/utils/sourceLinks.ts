@@ -27,6 +27,9 @@ export function sourceObjectHref(source: SourceLike) {
     source?.linkedObjectId
   );
   const growId = firstText(source?.linkedGrowId, source?.growId);
+  const productId = firstText(sourceId, source?.linkedProductId);
+  const productTrialId = firstText(sourceId, source?.linkedProductTrialId);
+  const forumId = firstText(sourceId, source?.linkedForumThreadId);
   const courseId = firstText(source?.linkedCourseId, source?.courseId, sourceId);
   const roomId = firstText(source?.linkedRoomId, source?.roomId, sourceId);
 
@@ -62,10 +65,10 @@ export function sourceObjectHref(source: SourceLike) {
   }
 
   if (sourceType === "product") {
-    if (workspace === "commercial" && sourceId)
-      return `/home/commercial/products/${sourceId}`;
+    if (workspace === "commercial" && productId)
+      return `/home/commercial/products/${productId}`;
     if (workspace === "facility") return "/home/facility/inventory";
-    return sourceId ? `/store?q=${encoded(sourceId)}` : "/store";
+    return productId ? `/store?q=${encoded(productId)}` : "/store";
   }
 
   if (sourceType === "product_batch") {
@@ -76,9 +79,13 @@ export function sourceObjectHref(source: SourceLike) {
 
   if (sourceType === "product_trial") {
     if (workspace === "commercial")
-      return sourceId ? `/home/commercial/trials/${sourceId}` : "/home/commercial/trials";
+      return productTrialId
+        ? `/home/commercial/trials/${productTrialId}`
+        : "/home/commercial/trials";
     if (workspace === "facility")
-      return sourceId ? `/home/facility/grows/${sourceId}` : "/home/facility/grows";
+      return productTrialId
+        ? `/home/facility/grows/${productTrialId}`
+        : "/home/facility/grows";
     return "/home/personal/tools/saved-runs";
   }
 
@@ -123,7 +130,7 @@ export function sourceObjectHref(source: SourceLike) {
     if (workspace === "facility") return "/home/facility/ai-tools";
     return "/home/personal/tools/saved-runs";
   }
-  if (sourceType === "forum") return sourceId ? `/forum/post/${sourceId}` : "/forum";
+  if (sourceType === "forum") return forumId ? `/forum/post/${forumId}` : "/forum";
 
   return "";
 }

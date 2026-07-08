@@ -68,6 +68,14 @@ describe("CommercialTasksRoute", () => {
               status: "open",
               sourceType: "forum",
               sourceId: "thread-product"
+            },
+            {
+              id: "task-5",
+              title: "Add lesson worksheet",
+              status: "open",
+              sourceType: "lesson",
+              sourceId: "lesson-1",
+              linkedCourseId: "course-1"
             }
           ]
         });
@@ -96,10 +104,14 @@ describe("CommercialTasksRoute", () => {
     expect(screen.getByText("Publish storefront")).toBeTruthy();
     expect(screen.getByText("Review launch alert")).toBeTruthy();
     expect(screen.getByText("Answer product Q&A")).toBeTruthy();
+    expect(screen.getByText("Add lesson worksheet")).toBeTruthy();
     expect(screen.getByText(/Source ID: product-1/)).toBeTruthy();
     expect(screen.getByLabelText("Commercial task link /home/alerts")).toBeTruthy();
     expect(
       screen.getByLabelText("Commercial task link /forum/post/thread-product")
+    ).toBeTruthy();
+    expect(
+      screen.getByLabelText("Commercial task link /home/commercial/courses/course-1")
     ).toBeTruthy();
     expect(screen.getByText(/Reminder: 24 hours before/)).toBeTruthy();
     expect(screen.getByText("feed campaign")).toBeTruthy();

@@ -15,6 +15,7 @@ import { InlineError } from "@/components/InlineError";
 import { apiRequest } from "@/api/apiRequest";
 import { endpoints } from "@/api/endpoints";
 import { useApiErrorHandler, type UiErrorState } from "@/hooks/useApiErrorHandler";
+import { sourceObjectHref } from "@/utils/sourceLinks";
 
 type AnyRec = Record<string, any>;
 
@@ -122,21 +123,11 @@ function taskSourceId(task: AnyRec | null): string {
 }
 
 function taskSourcePath(task: AnyRec | null): string {
-  const sourceType = String(task?.sourceType || "");
-  const sourceId = taskSourceId(task);
-  if (sourceType === "storefront") return "/home/commercial/storefront";
-  if (sourceType === "product" && sourceId)
-    return `/home/commercial/products/${sourceId}`;
-  if (sourceType === "product_batch") return "/home/commercial/batch-planner";
-  if (sourceType === "product_trial")
-    return sourceId ? `/home/commercial/trials/${sourceId}` : "/home/commercial/trials";
-  if (sourceType === "course" && sourceId) return `/home/commercial/courses/${sourceId}`;
-  if (sourceType === "live") return "/home/commercial/lives";
-  if (sourceType === "feed_campaign") return "/home/commercial/feed";
-  if (sourceType === "order") return "/home/commercial/orders";
-  if (sourceType === "alert") return "/home/alerts";
-  if (sourceType === "forum" && sourceId) return `/forum/post/${sourceId}`;
-  return "";
+  return sourceObjectHref({
+    ...task,
+    sourceId: taskSourceId(task),
+    workspaceType: "commercial"
+  });
 }
 
 export default function CommercialTaskDetailRoute() {
