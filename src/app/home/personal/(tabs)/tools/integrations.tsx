@@ -30,6 +30,7 @@ import {
 } from "@/api/telemetry";
 import type { GrowlinkController, TelemetrySource } from "@/types/telemetry";
 import PersonalFeedPlacement from "@/components/feed/PersonalFeedPlacement";
+import { radius } from "@/theme/theme";
 
 function message(error: any) {
   return String(error?.message || error?.error?.message || "Request failed");
@@ -798,7 +799,7 @@ const styles = StyleSheet.create({
   provider: {
     borderWidth: 1,
     borderColor: "#E2E8F0",
-    borderRadius: 8,
+    borderRadius: radius.card,
     padding: 14,
     marginBottom: 10
   },
@@ -811,7 +812,7 @@ const styles = StyleSheet.create({
   growlinkPanel: {
     borderWidth: 1,
     borderColor: "#C7D2FE",
-    borderRadius: 8,
+    borderRadius: radius.card,
     padding: 14,
     marginBottom: 16,
     backgroundColor: "#F8FAFC"
@@ -830,7 +831,7 @@ const styles = StyleSheet.create({
   button: {
     borderWidth: 1,
     borderColor: "#CBD5E1",
-    borderRadius: 6,
+    borderRadius: radius.card,
     paddingHorizontal: 12,
     paddingVertical: 8
   },
@@ -839,7 +840,7 @@ const styles = StyleSheet.create({
   notice: {
     backgroundColor: "#ECFDF5",
     borderColor: "#BBF7D0",
-    borderRadius: 6,
+    borderRadius: radius.card,
     borderWidth: 1,
     color: "#166534",
     marginTop: 12,
@@ -849,7 +850,7 @@ const styles = StyleSheet.create({
   controllerOption: {
     borderWidth: 1,
     borderColor: "#CBD5E1",
-    borderRadius: 6,
+    borderRadius: radius.card,
     padding: 10,
     backgroundColor: "#FFFFFF"
   },
@@ -865,7 +866,7 @@ const styles = StyleSheet.create({
   importPreview: {
     backgroundColor: "#EFF6FF",
     borderColor: "#BFDBFE",
-    borderRadius: 8,
+    borderRadius: radius.card,
     borderWidth: 1,
     gap: 8,
     marginTop: 10,
@@ -874,7 +875,7 @@ const styles = StyleSheet.create({
   previewRoom: {
     backgroundColor: "#FFFFFF",
     borderColor: "#DBEAFE",
-    borderRadius: 8,
+    borderRadius: radius.card,
     borderWidth: 1,
     padding: 10
   },
@@ -894,13 +895,13 @@ const styles = StyleSheet.create({
   input: {
     borderWidth: 1,
     borderColor: "#CBD5E1",
-    borderRadius: 6,
+    borderRadius: radius.card,
     padding: 12,
     marginBottom: 10
   },
   primaryButton: {
     backgroundColor: "#166534",
-    borderRadius: 6,
+    borderRadius: radius.card,
     padding: 12,
     alignItems: "center"
   },
