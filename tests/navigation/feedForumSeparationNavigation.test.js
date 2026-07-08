@@ -69,10 +69,11 @@ describe("feed/forum navigation separation", () => {
   it("keeps shared tab and capability menus off the legacy discussion feed", () => {
     const feedTab = TAB_CONFIG.find((item) => item.key === "FeedTab");
     const menuItems = getMenuItems({
-      capabilities: { canUseFeed: true },
+      capabilities: { canUseFeed: true, canUseCommercial: true, canUseMarketplace: true },
       mode: "personal"
     });
     const feedMenu = menuItems.find((item) => item.key === "feed");
+    const contentMenu = menuItems.find((item) => item.key === "marketplace");
 
     expect(feedTab).toMatchObject({
       label: "Campaigns",
@@ -82,5 +83,10 @@ describe("feed/forum navigation separation", () => {
       label: "Campaigns",
       route: "CommercialFeedRoute"
     });
+    expect(contentMenu).toMatchObject({
+      label: "Creator Content",
+      route: "MarketplaceScreen"
+    });
+    expect(menuItems.map((item) => item.label)).not.toContain("Marketplace");
   });
 });

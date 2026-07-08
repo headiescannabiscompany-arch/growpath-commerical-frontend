@@ -28,13 +28,13 @@ export default function CommercialToolsScreen({ navigation }) {
           onPress={() => navigation.navigate("SocialTools")}
         />
         <ToolCard
-          title="Marketplace"
-          subtitle="Browse and purchase creator content."
+          title="Creator Content"
+          subtitle="Browse and purchase creator guides, uploads, and resources."
           onPress={() => navigation.navigate("Marketplace")}
         />
         <ToolCard
-          title="Marketplace Integrations"
-          subtitle="Connect channels and sync your listings."
+          title="External Channel Integrations"
+          subtitle="Connect off-platform channels and sync compatible listings."
           onPress={() => navigation.navigate("MarketplaceIntegration")}
         />
         <ToolCard

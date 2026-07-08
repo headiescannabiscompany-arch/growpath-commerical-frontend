@@ -77,7 +77,7 @@ export default function PaywallScreen({ navigation }) {
           <Text style={styles.benefit}>AI Plant Diagnosis</Text>
           <Text style={styles.benefit}>AI Feeding Assistant</Text>
           <Text style={styles.benefit}>Environment Optimizer</Text>
-          <Text style={styles.benefit}>Grow Templates and Marketplace</Text>
+          <Text style={styles.benefit}>Grow Templates and Storefront Offers</Text>
           <Text style={styles.benefit}>Advanced Training Guides</Text>
         </View>
 

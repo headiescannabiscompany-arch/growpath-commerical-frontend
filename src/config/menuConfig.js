@@ -164,7 +164,7 @@ export function getMenuItems({ capabilities, mode }) {
     if (capabilities.canUseMarketplace) {
       items.push({
         key: "marketplace",
-        label: "Marketplace",
+        label: "Creator Content",
         icon: "shopping-cart",
         route: "MarketplaceScreen"
       });

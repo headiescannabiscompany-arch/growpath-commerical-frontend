@@ -9,7 +9,11 @@ describe("CommercialToolsScreen", () => {
     const screen = render(<CommercialToolsScreen navigation={{ navigate }} />);
 
     expect(screen.getByText("Marketing Planner")).toBeTruthy();
+    expect(screen.getByText("Creator Content")).toBeTruthy();
+    expect(screen.getByText("External Channel Integrations")).toBeTruthy();
     expect(screen.queryByText("Advertising")).toBeNull();
+    expect(screen.queryByText("Marketplace")).toBeNull();
+    expect(screen.queryByText("Marketplace Integrations")).toBeNull();
 
     fireEvent.press(screen.getByText("Marketing Planner"));
 

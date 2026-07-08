@@ -582,6 +582,7 @@ Completed and pushed:
 306. Deferred user verification now checks not only product-linked batch routing but also the Product Detail focused-batch context and Open Focused Batch action, so the browser pass verifies batches/lots stay attached to products while still exposing production records.
 307. Personal feature metadata now titles the legacy `personal.community` route as Forum / Q&A and the shared menu comment names Forum/Q&A as the separate discussion surface, keeping compatibility keys while removing visible Feed-vs-Forum ambiguity.
 308. Public Store discovery now presents Storefront offers and routes to `/offers` instead of sending users into `/marketplace`, and the Commercial plan offer copy now starts with storefront/products/campaigns rather than marketplace language.
+309. Paywall, global Search, Commercial Tools, and shared capability menus now use Storefront Offers, Creator Content, and External Channel Integrations labels while preserving legacy Marketplace route names only as compatibility targets.
 
 ## Working Rule For Codex
 

@@ -11,10 +11,10 @@ const SEARCH_SURFACES = [
     route: "Courses"
   },
   {
-    key: "marketplace",
-    title: "Marketplace",
-    subtitle: "Tools, uploads, and grower resources",
-    route: "Marketplace"
+    key: "offers",
+    title: "Storefront Offers",
+    subtitle: "Plans, storefront access, and commercial/facility offers",
+    route: "PricingMatrix"
   },
   {
     key: "feed",
