@@ -46,6 +46,7 @@ const checks = [
       "tests/unit/AlertCenterRoute.test.tsx",
       "tests/unit/PersonalTaskCenterRoute.test.tsx",
       "tests/unit/CommercialTasksRoute.test.tsx",
+      "tests/unit/CommercialTaskDetailRoute.test.tsx",
       "tests/unit/FacilityRoomsRoute.test.tsx",
       "src/config/__tests__/featureStatus.test.ts",
       "tests/unit/SchedulePicker.test.tsx",
