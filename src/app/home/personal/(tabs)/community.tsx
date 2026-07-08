@@ -25,6 +25,7 @@ import {
 } from "@/api/communitySocial";
 import PersonalFeedPlacement from "@/components/feed/PersonalFeedPlacement";
 import { CAPABILITY_KEYS, useEntitlements } from "@/entitlements";
+import { radius } from "@/theme/theme";
 
 function rowId(row: any) {
   return String(row?._id || row?.id || "");
@@ -297,7 +298,7 @@ const styles = StyleSheet.create({
     padding: 16,
     borderWidth: 1,
     borderColor: "#E2E8F0",
-    borderRadius: 12,
+    borderRadius: radius.card,
     backgroundColor: "#F8FAFC",
     gap: 10
   },
@@ -315,7 +316,7 @@ const styles = StyleSheet.create({
   primaryBtn: {
     alignSelf: "flex-start",
     backgroundColor: "#166534",
-    borderRadius: 9,
+    borderRadius: radius.card,
     paddingHorizontal: 12,
     paddingVertical: 9
   },
@@ -324,7 +325,7 @@ const styles = StyleSheet.create({
     alignSelf: "flex-start",
     borderWidth: 1,
     borderColor: "#CBD5E1",
-    borderRadius: 9,
+    borderRadius: radius.card,
     paddingHorizontal: 10,
     paddingVertical: 7,
     backgroundColor: "#FFFFFF"
@@ -334,7 +335,7 @@ const styles = StyleSheet.create({
   feedback: {
     color: "#334155",
     backgroundColor: "#F1F5F9",
-    borderRadius: 9,
+    borderRadius: radius.card,
     padding: 9,
     fontWeight: "700"
   }
