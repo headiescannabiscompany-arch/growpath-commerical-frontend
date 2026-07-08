@@ -16,6 +16,7 @@ import AppPage from "@/components/layout/AppPage";
 import { CAPABILITY_KEYS, useEntitlements } from "@/entitlements";
 import { fmtDate } from "@/features/grows/routeUtils";
 import { buildPersonalHomeModel } from "@/features/personal/homeModel";
+import { radius } from "@/theme/theme";
 
 type HomeModel = ReturnType<typeof buildPersonalHomeModel>;
 type HomeAlert = HomeModel["alerts"][number];
@@ -416,7 +417,7 @@ const styles = StyleSheet.create({
     minWidth: 92,
     borderWidth: 1,
     borderColor: "#86EFAC",
-    borderRadius: 8,
+    borderRadius: radius.card,
     paddingHorizontal: 10,
     paddingVertical: 8,
     backgroundColor: "#FFFFFF"
@@ -431,7 +432,7 @@ const styles = StyleSheet.create({
     padding: 9,
     borderWidth: 1,
     borderColor: "#E2E8F0",
-    borderRadius: 9
+    borderRadius: radius.card
   },
   metricValue: { fontSize: 17, fontWeight: "800", color: "#0F172A" },
   metricLabel: { color: "#64748B", fontSize: 12 },
@@ -440,7 +441,7 @@ const styles = StyleSheet.create({
   alertList: { gap: 10 },
   alertRow: {
     borderWidth: 1,
-    borderRadius: 8,
+    borderRadius: radius.card,
     flexDirection: "row",
     gap: 10,
     justifyContent: "space-between",
@@ -455,7 +456,7 @@ const styles = StyleSheet.create({
   taskRow: {
     borderWidth: 1,
     borderColor: "#E2E8F0",
-    borderRadius: 8,
+    borderRadius: radius.card,
     padding: 10,
     backgroundColor: "#F8FAFC"
   },
@@ -464,7 +465,7 @@ const styles = StyleSheet.create({
   action: {
     borderWidth: 1,
     borderColor: "#166534",
-    borderRadius: 9,
+    borderRadius: radius.card,
     paddingHorizontal: 11,
     paddingVertical: 8,
     backgroundColor: "#FFFFFF"
@@ -475,7 +476,7 @@ const styles = StyleSheet.create({
     alignSelf: "flex-start",
     borderWidth: 1,
     borderColor: "#CBD5E1",
-    borderRadius: 8,
+    borderRadius: radius.card,
     paddingHorizontal: 9,
     paddingVertical: 6,
     backgroundColor: "#FFFFFF"
