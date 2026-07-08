@@ -504,6 +504,7 @@ Completed and pushed:
 228. Facility tabs now hide the bottom tab bar for canonical nested inventory create/detail routes (`/home/facility/inventory/new` and `/home/facility/inventory/:id`) while keeping the inventory root tabbed and preserving legacy filename-route compatibility.
 229. Legacy commercial stack and page registry entries now resolve product-trial evidence screens through the canonical `/home/commercial/evidence-runs` wrappers while preserving old stack screen names only for compatibility.
 230. Public storefront slugs now have a `/storefront/:slug` alias that renders the same public storefront as `/store/:slug`, while exact `/storefront` remains the commercial owner redirect/gated route.
+231. Public storefront product detail slugs now have a `/storefront/:slug/products/:productId` alias that renders the same product page as `/store/:slug/products/:productId`, keeping public storefront URL families consistent.
 
 ## Working Rule For Codex
 

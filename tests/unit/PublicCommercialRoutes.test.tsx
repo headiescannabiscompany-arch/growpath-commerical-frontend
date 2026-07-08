@@ -5,6 +5,7 @@ import PublicBrandProfileRoute from "@/app/brands/[slug]";
 import PublicStorefrontRoute from "@/app/store/[slug]";
 import PublicStorefrontAliasRoute from "@/app/storefront/[slug]";
 import PublicProductRoute from "@/app/store/[slug]/products/[productId]";
+import PublicStorefrontProductAliasRoute from "@/app/storefront/[slug]/products/[productId]";
 
 const mockFetchPublicStorefront = jest.fn();
 const mockRecordCommercialAnalyticsEvent = jest.fn();
@@ -291,5 +292,17 @@ describe("public commercial routes", () => {
         })
       )
     );
+  });
+
+  it("loads the /storefront/:slug/products/:productId alias through the same product route", async () => {
+    const screen = render(<PublicStorefrontProductAliasRoute />);
+
+    await waitFor(() =>
+      expect(mockFetchPublicStorefront).toHaveBeenCalledWith("living-soil-labs")
+    );
+    expect(screen.getAllByText("Veg Mix").length).toBeGreaterThan(0);
+    expect(screen.getByText("Label / Use Information")).toBeTruthy();
+    expect(screen.getByText("Product Forum / Q&A")).toBeTruthy();
+    expect(screen.getByText("Buy")).toBeTruthy();
   });
 });
