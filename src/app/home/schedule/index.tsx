@@ -107,10 +107,40 @@ function taskHref(task: any, id: string) {
   return "/home/personal/tasks";
 }
 
+function sourceReference(row: any) {
+  const values = [
+    row?.sourceId ?? row?.sourceObjectId,
+    row?.linkedAlertId,
+    row?.linkedNotificationId,
+    row?.linkedForumThreadId,
+    row?.linkedLogId,
+    row?.linkedToolRunId,
+    row?.linkedRecipeId,
+    row?.linkedLiveId,
+    row?.linkedLessonId,
+    row?.linkedCourseId,
+    row?.linkedProductBatchId,
+    row?.linkedProductTrialId,
+    row?.linkedProductId,
+    row?.linkedStorefrontId,
+    row?.linkedFeedPostId,
+    row?.linkedOrderId,
+    row?.linkedRoomId,
+    row?.linkedSopId,
+    row?.linkedFacilityRunId,
+    row?.linkedPlantId,
+    row?.linkedGrowId
+  ];
+  const value = values.find(
+    (item) => item !== undefined && item !== null && String(item)
+  );
+  return value ? String(value) : "";
+}
+
 function taskToItem(task: any): CalendarItem {
   const id = taskId(task);
-  const sourceType = String(task?.sourceType || "task");
-  const rawSourceId = task?.sourceId || task?.sourceObjectId;
+  const rawSourceId = sourceReference(task);
+  const sourceType = String(task?.sourceType || (rawSourceId ? "" : "task"));
   const sourceHref =
     sourceType !== "task" || rawSourceId
       ? sourceObjectHref({
@@ -130,7 +160,7 @@ function taskToItem(task: any): CalendarItem {
     priority: String(task?.priority || ""),
     workspaceType: String(task?.workspaceType || "personal"),
     sourceType,
-    sourceId: String(task?.sourceId || task?.sourceObjectId || ""),
+    sourceId: rawSourceId,
     reminder: reminderLabel(task),
     recurrence: recurrenceLabel(task),
     href: sourceHref || taskHref(task, id)

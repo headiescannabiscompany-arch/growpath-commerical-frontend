@@ -402,6 +402,7 @@ Completed and pushed:
 126. Grow-specific personal task cards now display linked-only source ids and linked ToolRuns, so grow-local product batch, recipe, product, course, live, alert, forum, facility/SOP, and ToolRun-backed tasks show the same connected context as the global Personal Task Center.
 127. Facility Task Center cards now display linked-only source ids in the task subtitle, so room, SOP, run, alert, course, live, ToolRun, recipe, product/batch/trial, and forum-backed work stays identifiable before opening task detail.
 128. Personal Task Center source routing now prefers linked-only source ids such as recipe, product/batch/trial, order, course, live, alert, forum, facility/room/run/SOP, plant, and grow before ToolRun fallback, so linked batch cards open the batch/product context instead of accidentally routing from the ToolRun id.
+129. Schedule/Agenda task items now prefer linked-only source ids and allow source-link inference, so calendar tasks backed by product batches, recipes, ToolRuns, alerts, courses, lives, feed campaigns, orders, rooms/SOPs/runs, plants, or grows click back to the real workflow instead of generic task pages.
 
 ## Working Rule For Codex
 
