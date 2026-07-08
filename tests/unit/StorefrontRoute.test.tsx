@@ -149,6 +149,7 @@ function apiResponseFor(path: string, options?: any) {
           type: "product_ad",
           status: "active",
           imageUrl: "https://example.com/campaign.jpg",
+          growInterests: ["living soil", "recipe building"],
           linkedProductId: "product-1",
           linkedCourseId: "course-1",
           linkedLiveId: "live-1",
@@ -219,6 +220,7 @@ describe("Storefront route", () => {
     expect(screen.getByText("Open Campaigns")).toBeTruthy();
     expect(screen.getByText(/Advertising \/ outreach/)).toBeTruthy();
     expect(screen.getByText(/Live live-1/)).toBeTruthy();
+    expect(screen.getByText(/Interests living soil, recipe building/)).toBeTruthy();
     expect(screen.getByText("Living Soil Base")).toBeTruthy();
     expect(screen.getAllByText("Open Product").length).toBeGreaterThan(0);
     expect(screen.getByText("Published Bloom Topdress")).toBeTruthy();

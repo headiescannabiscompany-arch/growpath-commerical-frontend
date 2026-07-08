@@ -1113,6 +1113,9 @@ export default function Storefront() {
                           campaign.linkedLiveId && `Live ${campaign.linkedLiveId}`,
                           campaign.linkedStorefrontId &&
                             `Storefront ${campaign.linkedStorefrontId}`,
+                          Array.isArray(campaign.growInterests) &&
+                            campaign.growInterests.length &&
+                            `Interests ${campaign.growInterests.join(", ")}`,
                           campaign.linkedForumThreadId &&
                             `Forum/Q&A ${campaign.linkedForumThreadId}`
                         ]
