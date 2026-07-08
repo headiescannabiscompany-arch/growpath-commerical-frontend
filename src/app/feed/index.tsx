@@ -29,6 +29,7 @@ import {
   hasFacilitySalesLanguage
 } from "@/utils/commercialFeedPolicy";
 import { resolveImageUri } from "@/utils/photoUploads";
+import { radius } from "@/theme/theme";
 
 const COMMERCIAL_TYPES: CommercialFeedCampaignType[] = [
   "update",
@@ -1051,7 +1052,7 @@ const styles = StyleSheet.create({
   card: {
     backgroundColor: "white",
     borderColor: "#CBD5E1",
-    borderRadius: 8,
+    borderRadius: radius.card,
     borderWidth: 1,
     gap: 10,
     padding: 14
@@ -1060,7 +1061,7 @@ const styles = StyleSheet.create({
   input: {
     backgroundColor: "white",
     borderColor: "#CBD5E1",
-    borderRadius: 8,
+    borderRadius: radius.card,
     borderWidth: 1,
     color: "#0F172A",
     paddingHorizontal: 12,
@@ -1070,7 +1071,7 @@ const styles = StyleSheet.create({
   linkBox: {
     backgroundColor: "#F8FAFC",
     borderColor: "#E2E8F0",
-    borderRadius: 8,
+    borderRadius: radius.card,
     borderWidth: 1,
     gap: 8,
     padding: 10
@@ -1081,7 +1082,7 @@ const styles = StyleSheet.create({
   secondaryButton: {
     alignItems: "center",
     borderColor: "#CBD5E1",
-    borderRadius: 8,
+    borderRadius: radius.card,
     borderWidth: 1,
     minHeight: 40,
     justifyContent: "center",
@@ -1093,7 +1094,7 @@ const styles = StyleSheet.create({
     width: "100%",
     maxWidth: 520,
     aspectRatio: 16 / 7,
-    borderRadius: 8,
+    borderRadius: radius.card,
     backgroundColor: "#E2E8F0"
   },
   warningBox: { gap: 4 },
@@ -1116,7 +1117,7 @@ const styles = StyleSheet.create({
   primaryButton: {
     alignItems: "center",
     backgroundColor: "#166534",
-    borderRadius: 8,
+    borderRadius: radius.card,
     paddingVertical: 12
   },
   primaryButtonText: { color: "white", fontWeight: "900" },
@@ -1125,7 +1126,7 @@ const styles = StyleSheet.create({
   filters: {
     backgroundColor: "white",
     borderColor: "#CBD5E1",
-    borderRadius: 8,
+    borderRadius: radius.card,
     borderWidth: 1,
     gap: 9,
     padding: 12
@@ -1141,7 +1142,7 @@ const styles = StyleSheet.create({
   post: {
     backgroundColor: "white",
     borderColor: "#CBD5E1",
-    borderRadius: 8,
+    borderRadius: radius.card,
     borderWidth: 1,
     gap: 7,
     padding: 14
@@ -1169,7 +1170,7 @@ const styles = StyleSheet.create({
     width: "100%",
     maxWidth: 640,
     aspectRatio: 16 / 7,
-    borderRadius: 8,
+    borderRadius: radius.card,
     backgroundColor: "#E2E8F0"
   },
   postBody: { color: "#334155", fontWeight: "600", lineHeight: 21 },
@@ -1190,7 +1191,7 @@ const styles = StyleSheet.create({
     alignItems: "center",
     alignSelf: "flex-start",
     backgroundColor: "#0F766E",
-    borderRadius: 8,
+    borderRadius: radius.card,
     minHeight: 40,
     justifyContent: "center",
     paddingHorizontal: 14,
