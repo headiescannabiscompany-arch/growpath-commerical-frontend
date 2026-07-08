@@ -58,7 +58,7 @@ function linkedFieldsForAlertSource(item: AnyRec | null) {
     case "storefront":
       return { linkedStorefrontId: sourceId };
     case "feed_campaign":
-      return { linkedFeedPostId: sourceId };
+      return { linkedFeedCampaignId: sourceId };
     case "order":
       return { linkedOrderId: sourceId };
     case "room":
@@ -87,6 +87,7 @@ function alertSourceReference(item: AnyRec | null) {
     item.linkedCourseId,
     item.linkedLiveId,
     item.linkedStorefrontId,
+    item.linkedFeedCampaignId,
     item.linkedFeedPostId,
     item.linkedOrderId,
     item.linkedRoomId,

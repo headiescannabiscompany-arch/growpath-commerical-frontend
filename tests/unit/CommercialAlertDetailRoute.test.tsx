@@ -118,4 +118,45 @@ describe("CommercialAlertDetailRoute", () => {
       )
     );
   });
+
+  it("creates a task from a linked-only feed campaign alert source", async () => {
+    alertPayload = {
+      id: "alert-1",
+      title: "Campaign destination review",
+      message: "Fix the campaign destination before publishing.",
+      severity: "warning",
+      sourceType: "feed_campaign",
+      linkedFeedCampaignId: "campaign-linked-1"
+    };
+
+    const screen = render(<CommercialAlertDetailRoute />);
+
+    await waitFor(() =>
+      expect(screen.getAllByText("Campaign destination review").length).toBeGreaterThan(0)
+    );
+
+    fireEvent.press(screen.getByLabelText("Create task from alert"));
+
+    await waitFor(() =>
+      expect(mockApiRequest).toHaveBeenCalledWith(
+        "/api/tasks",
+        expect.objectContaining({
+          method: "POST",
+          body: expect.objectContaining({
+            title: "Campaign destination review",
+            description: "Fix the campaign destination before publishing.",
+            priority: "medium",
+            sourceType: "alert",
+            sourceId: "alert-1",
+            sourceObjectId: "alert-1",
+            linkedAlertId: "alert-1",
+            alertSourceType: "feed_campaign",
+            alertSourceId: "campaign-linked-1",
+            linkedFeedCampaignId: "campaign-linked-1",
+            status: "open"
+          })
+        })
+      )
+    );
+  });
 });

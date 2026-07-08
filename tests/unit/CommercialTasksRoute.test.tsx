@@ -216,4 +216,38 @@ describe("CommercialTasksRoute", () => {
       )
     );
   });
+
+  it("creates feed-campaign linked commercial tasks with campaign ids", async () => {
+    const screen = render(<CommercialTasksRoute />);
+
+    await waitFor(() => expect(screen.getByText("Commercial Task Center")).toBeTruthy());
+
+    fireEvent.changeText(
+      screen.getByLabelText("Commercial task title"),
+      "Review campaign analytics"
+    );
+    fireEvent.press(screen.getByLabelText("Commercial task source feed_campaign"));
+    fireEvent.changeText(
+      screen.getByLabelText("Commercial task source ID"),
+      "campaign-7"
+    );
+    fireEvent.press(screen.getByLabelText("Create commercial task"));
+
+    await waitFor(() =>
+      expect(mockApiRequest).toHaveBeenCalledWith(
+        "/api/tasks",
+        expect.objectContaining({
+          method: "POST",
+          body: expect.objectContaining({
+            workspaceType: "commercial",
+            title: "Review campaign analytics",
+            sourceType: "feed_campaign",
+            sourceId: "campaign-7",
+            linkedFeedCampaignId: "campaign-7",
+            status: "open"
+          })
+        })
+      )
+    );
+  });
 });

@@ -148,7 +148,7 @@ function linkedFieldsForSource(sourceType: string, sourceId: string) {
     case "live":
       return { linkedLiveId: sourceId };
     case "feed_campaign":
-      return { linkedFeedPostId: sourceId };
+      return { linkedFeedCampaignId: sourceId };
     case "order":
       return { linkedOrderId: sourceId };
     case "alert":
