@@ -15,6 +15,7 @@ import { suggestLogInsights } from "@/api/logInsights";
 import { createPersonalLog } from "@/api/logs";
 import { listToolRuns } from "@/api/toolRuns";
 import PersonalFeedPlacement from "@/components/feed/PersonalFeedPlacement";
+import { ScreenBoundary } from "@/components/ScreenBoundary";
 import { LockedScreen } from "@/entitlements/LockedScreen";
 import { CAPABILITY_KEYS, useEntitlements } from "@/entitlements";
 import {
@@ -259,264 +260,295 @@ export default function NewLogScreen() {
 
   if (!canCreateLog) {
     return (
-      <LockedScreen
-        title="Create journal entries with Pro"
-        message="Free accounts can browse grow history and use free tools. Upgrade to save journal entries, photos, and AI-assisted log notes."
-        actionLabel="Back"
-        onAction={() => router.back()}
-      />
+      <ScreenBoundary
+        title="New Journal Entry"
+        showBack
+        backFallbackHref={
+          growId
+            ? `/home/personal/grows/${encodeURIComponent(growId)}/journal`
+            : "/home/personal/grows"
+        }
+      >
+        <LockedScreen
+          title="Create journal entries with Pro"
+          message="Free accounts can browse grow history and use free tools. Upgrade to save journal entries, photos, and AI-assisted log notes."
+          actionLabel="Back"
+          onAction={() => router.back()}
+        />
+      </ScreenBoundary>
     );
   }
 
   return (
-    <ScrollView style={styles.container} contentContainerStyle={styles.content}>
-      <Text style={styles.title}>New Journal Entry</Text>
-      <Text style={styles.subtitle}>
-        {growId ? `Grow context: ${growId}` : "No grow selected"}
-      </Text>
-      <PersonalFeedPlacement placement="top" routeKey="personal_new_log" longContent />
-      {error ? <Text style={styles.error}>{error}</Text> : null}
+    <ScreenBoundary
+      title="New Journal Entry"
+      showBack
+      backFallbackHref={
+        growId
+          ? `/home/personal/grows/${encodeURIComponent(growId)}/journal`
+          : "/home/personal/grows"
+      }
+    >
+      <ScrollView style={styles.container} contentContainerStyle={styles.content}>
+        <Text style={styles.title}>New Journal Entry</Text>
+        <Text style={styles.subtitle}>
+          {growId ? `Grow context: ${growId}` : "No grow selected"}
+        </Text>
+        <PersonalFeedPlacement placement="top" routeKey="personal_new_log" longContent />
+        {error ? <Text style={styles.error}>{error}</Text> : null}
 
-      <ToolPlantContextPicker
-        plants={plants}
-        plantId={plantId}
-        selectedPlant={selectedPlant}
-        onSelect={setPlantId}
-        description="Journal entries and attached photos save the selected plant, crop, cultivar, size, pheno, and timing context when available."
-      />
+        <ToolPlantContextPicker
+          plants={plants}
+          plantId={plantId}
+          selectedPlant={selectedPlant}
+          onSelect={setPlantId}
+          description="Journal entries and attached photos save the selected plant, crop, cultivar, size, pheno, and timing context when available."
+        />
 
-      <Text style={styles.label}>Title</Text>
-      <TextInput
-        style={styles.input}
-        value={title}
-        onChangeText={(value) => {
-          setTitle(value);
-          invalidateSuggestions();
-        }}
-        placeholder="Day 12 - Defoliation"
-        accessibilityLabel="Log title"
-      />
-      <Text style={styles.label}>Date</Text>
-      <TextInput
-        style={styles.input}
-        value={date}
-        onChangeText={setDate}
-        placeholder="YYYY-MM-DD"
-        accessibilityLabel="Log date"
-      />
-      <Text style={styles.label}>Type</Text>
-      <View style={styles.row}>
-        {logTypes.map((type) => (
-          <Pressable
-            key={type}
-            onPress={() => {
-              setLogType(type);
-              invalidateSuggestions();
-            }}
-            accessibilityRole="button"
-            accessibilityLabel={`Log type ${type}`}
-            style={[styles.chip, logType === type && styles.chipOn]}
-          >
-            <Text style={[styles.chipText, logType === type && styles.chipTextOn]}>
-              {type}
-            </Text>
-          </Pressable>
-        ))}
-      </View>
-      <Text style={styles.label}>Notes</Text>
-      <TextInput
-        style={styles.notes}
-        value={notes}
-        onChangeText={(value) => {
-          setNotes(value);
-          invalidateSuggestions();
-        }}
-        multiline
-        placeholder="What changed today?"
-        accessibilityLabel="Log notes"
-      />
-
-      <View style={styles.photoHeader}>
-        <Text style={styles.label}>Photos</Text>
-        <Pressable
-          style={styles.secondaryButton}
-          onPress={pickPhotos}
-          accessibilityRole="button"
-          accessibilityLabel="Attach log photos"
-        >
-          <Text style={styles.secondaryButtonText}>
-            {photos.length ? "Add More Photos" : "Attach Photos"}
-          </Text>
-        </Pressable>
-      </View>
-      {photos.length ? (
-        <View style={styles.photoGrid}>
-          {photos.map((photo, index) => (
-            <View key={`${photo.uri}-${index}`} style={styles.photoTile}>
-              <Image source={{ uri: photo.uri }} style={styles.photoThumb} />
-              <Pressable
-                style={styles.removePhoto}
-                onPress={() =>
-                  setPhotos((current) =>
-                    current.filter((_, itemIndex) => itemIndex !== index)
-                  )
-                }
-                accessibilityRole="button"
-                accessibilityLabel={`Remove attached photo ${index + 1}`}
-              >
-                <Text style={styles.removePhotoText}>Remove</Text>
-              </Pressable>
-            </View>
+        <Text style={styles.label}>Title</Text>
+        <TextInput
+          style={styles.input}
+          value={title}
+          onChangeText={(value) => {
+            setTitle(value);
+            invalidateSuggestions();
+          }}
+          placeholder="Day 12 - Defoliation"
+          accessibilityLabel="Log title"
+        />
+        <Text style={styles.label}>Date</Text>
+        <TextInput
+          style={styles.input}
+          value={date}
+          onChangeText={setDate}
+          placeholder="YYYY-MM-DD"
+          accessibilityLabel="Log date"
+        />
+        <Text style={styles.label}>Type</Text>
+        <View style={styles.row}>
+          {logTypes.map((type) => (
+            <Pressable
+              key={type}
+              onPress={() => {
+                setLogType(type);
+                invalidateSuggestions();
+              }}
+              accessibilityRole="button"
+              accessibilityLabel={`Log type ${type}`}
+              style={[styles.chip, logType === type && styles.chipOn]}
+            >
+              <Text style={[styles.chipText, logType === type && styles.chipTextOn]}>
+                {type}
+              </Text>
+            </Pressable>
           ))}
         </View>
-      ) : null}
-      <View style={styles.urlRow}>
+        <Text style={styles.label}>Notes</Text>
         <TextInput
-          style={styles.urlInput}
-          value={photoUrl}
-          onChangeText={setPhotoUrl}
-          placeholder="/uploads/grow-photo.jpg or https://..."
-          accessibilityLabel="Photo URL"
+          style={styles.notes}
+          value={notes}
+          onChangeText={(value) => {
+            setNotes(value);
+            invalidateSuggestions();
+          }}
+          multiline
+          placeholder="What changed today?"
+          accessibilityLabel="Log notes"
         />
-        <Pressable
-          style={[styles.secondaryButton, !photoUrl.trim() && styles.disabled]}
-          disabled={!photoUrl.trim()}
-          onPress={addPhotoUrl}
-          accessibilityRole="button"
-          accessibilityLabel="Add photo URL"
-        >
-          <Text style={styles.secondaryButtonText}>Add URL</Text>
-        </Pressable>
-      </View>
 
-      <Pressable
-        style={[styles.secondaryButton, (!notes.trim() || analyzing) && styles.disabled]}
-        disabled={
-          !notes.trim() || analyzing || !entitlements.can(CAPABILITY_KEYS.DIAGNOSE_AI)
-        }
-        onPress={analyzeDraft}
-        accessibilityRole="button"
-        accessibilityLabel="Suggest tags and summary"
-      >
-        <Text style={styles.secondaryButtonText}>
-          {analyzing ? "Analyzing..." : "Suggest Tags and Summary"}
-        </Text>
-      </Pressable>
-      <PersonalFeedPlacement placement="middle" routeKey="personal_new_log" longContent />
-      {!entitlements.can(CAPABILITY_KEYS.DIAGNOSE_AI) ? (
-        <Text style={styles.helper}>AI suggestions are unavailable for this plan.</Text>
-      ) : null}
-
-      {suggestions ? (
-        <View style={styles.insightCard}>
-          <Text style={styles.insightTitle}>Suggestions | {suggestions.source}</Text>
-          {suggestions.source === "unverified" ? (
-            <Text style={styles.warning}>
-              Provider provenance is missing. Review carefully.
+        <View style={styles.photoHeader}>
+          <Text style={styles.label}>Photos</Text>
+          <Pressable
+            style={styles.secondaryButton}
+            onPress={pickPhotos}
+            accessibilityRole="button"
+            accessibilityLabel="Attach log photos"
+          >
+            <Text style={styles.secondaryButtonText}>
+              {photos.length ? "Add More Photos" : "Attach Photos"}
             </Text>
-          ) : null}
-          {suggestions.summary ? (
-            <Text style={styles.helper}>{suggestions.summary}</Text>
-          ) : null}
-          <View style={styles.row}>
-            {suggestions.tags.map((tag) => (
-              <View key={tag} style={styles.tagReview}>
-                <Text style={styles.tagName}>{tag}</Text>
+          </Pressable>
+        </View>
+        {photos.length ? (
+          <View style={styles.photoGrid}>
+            {photos.map((photo, index) => (
+              <View key={`${photo.uri}-${index}`} style={styles.photoTile}>
+                <Image source={{ uri: photo.uri }} style={styles.photoThumb} />
                 <Pressable
-                  style={[
-                    styles.reviewButton,
-                    acceptedTags.includes(tag) && styles.accepted
-                  ]}
-                  onPress={() => reviewTag(tag, "accept")}
+                  style={styles.removePhoto}
+                  onPress={() =>
+                    setPhotos((current) =>
+                      current.filter((_, itemIndex) => itemIndex !== index)
+                    )
+                  }
                   accessibilityRole="button"
-                  accessibilityLabel={`Accept tag ${tag}`}
+                  accessibilityLabel={`Remove attached photo ${index + 1}`}
                 >
-                  <Text style={styles.reviewText}>Accept</Text>
-                </Pressable>
-                <Pressable
-                  style={[
-                    styles.reviewButton,
-                    rejectedTags.includes(tag) && styles.rejected
-                  ]}
-                  onPress={() => reviewTag(tag, "reject")}
-                  accessibilityRole="button"
-                  accessibilityLabel={`Reject tag ${tag}`}
-                >
-                  <Text style={styles.reviewText}>Reject</Text>
+                  <Text style={styles.removePhotoText}>Remove</Text>
                 </Pressable>
               </View>
             ))}
           </View>
-          {suggestions.missingData.map((item) => (
-            <Text key={item} style={styles.helper}>
-              Missing context: {item}
-            </Text>
-          ))}
+        ) : null}
+        <View style={styles.urlRow}>
+          <TextInput
+            style={styles.urlInput}
+            value={photoUrl}
+            onChangeText={setPhotoUrl}
+            placeholder="/uploads/grow-photo.jpg or https://..."
+            accessibilityLabel="Photo URL"
+          />
+          <Pressable
+            style={[styles.secondaryButton, !photoUrl.trim() && styles.disabled]}
+            disabled={!photoUrl.trim()}
+            onPress={addPhotoUrl}
+            accessibilityRole="button"
+            accessibilityLabel="Add photo URL"
+          >
+            <Text style={styles.secondaryButtonText}>Add URL</Text>
+          </Pressable>
         </View>
-      ) : null}
 
-      {toolRuns.length ? (
-        <>
-          <Text style={styles.label}>Attach recent tool result</Text>
-          <View style={styles.row}>
-            <Pressable
-              onPress={() => setSelectedToolRunId("")}
-              accessibilityRole="button"
-              accessibilityLabel="Attach no tool result"
-              style={[styles.chip, !selectedToolRunId && styles.chipOn]}
-            >
-              <Text style={[styles.chipText, !selectedToolRunId && styles.chipTextOn]}>
-                none
+        <Pressable
+          style={[
+            styles.secondaryButton,
+            (!notes.trim() || analyzing) && styles.disabled
+          ]}
+          disabled={
+            !notes.trim() || analyzing || !entitlements.can(CAPABILITY_KEYS.DIAGNOSE_AI)
+          }
+          onPress={analyzeDraft}
+          accessibilityRole="button"
+          accessibilityLabel="Suggest tags and summary"
+        >
+          <Text style={styles.secondaryButtonText}>
+            {analyzing ? "Analyzing..." : "Suggest Tags and Summary"}
+          </Text>
+        </Pressable>
+        <PersonalFeedPlacement
+          placement="middle"
+          routeKey="personal_new_log"
+          longContent
+        />
+        {!entitlements.can(CAPABILITY_KEYS.DIAGNOSE_AI) ? (
+          <Text style={styles.helper}>AI suggestions are unavailable for this plan.</Text>
+        ) : null}
+
+        {suggestions ? (
+          <View style={styles.insightCard}>
+            <Text style={styles.insightTitle}>Suggestions | {suggestions.source}</Text>
+            {suggestions.source === "unverified" ? (
+              <Text style={styles.warning}>
+                Provider provenance is missing. Review carefully.
               </Text>
-            </Pressable>
-            {toolRuns.map((run, index) => {
-              const id = String(run?._id || run?.id || `run-${index}`);
-              return (
-                <Pressable
-                  key={id}
-                  onPress={() => setSelectedToolRunId(id)}
-                  accessibilityRole="button"
-                  accessibilityLabel={`Attach tool result ${run?.toolType || run?.toolName || "tool"}`}
-                  style={[styles.chip, selectedToolRunId === id && styles.chipOn]}
-                >
-                  <Text
+            ) : null}
+            {suggestions.summary ? (
+              <Text style={styles.helper}>{suggestions.summary}</Text>
+            ) : null}
+            <View style={styles.row}>
+              {suggestions.tags.map((tag) => (
+                <View key={tag} style={styles.tagReview}>
+                  <Text style={styles.tagName}>{tag}</Text>
+                  <Pressable
                     style={[
-                      styles.chipText,
-                      selectedToolRunId === id && styles.chipTextOn
+                      styles.reviewButton,
+                      acceptedTags.includes(tag) && styles.accepted
                     ]}
+                    onPress={() => reviewTag(tag, "accept")}
+                    accessibilityRole="button"
+                    accessibilityLabel={`Accept tag ${tag}`}
                   >
-                    {run?.toolType || run?.toolName || "tool"}
-                  </Text>
-                  {run?.plantId ? (
+                    <Text style={styles.reviewText}>Accept</Text>
+                  </Pressable>
+                  <Pressable
+                    style={[
+                      styles.reviewButton,
+                      rejectedTags.includes(tag) && styles.rejected
+                    ]}
+                    onPress={() => reviewTag(tag, "reject")}
+                    accessibilityRole="button"
+                    accessibilityLabel={`Reject tag ${tag}`}
+                  >
+                    <Text style={styles.reviewText}>Reject</Text>
+                  </Pressable>
+                </View>
+              ))}
+            </View>
+            {suggestions.missingData.map((item) => (
+              <Text key={item} style={styles.helper}>
+                Missing context: {item}
+              </Text>
+            ))}
+          </View>
+        ) : null}
+
+        {toolRuns.length ? (
+          <>
+            <Text style={styles.label}>Attach recent tool result</Text>
+            <View style={styles.row}>
+              <Pressable
+                onPress={() => setSelectedToolRunId("")}
+                accessibilityRole="button"
+                accessibilityLabel="Attach no tool result"
+                style={[styles.chip, !selectedToolRunId && styles.chipOn]}
+              >
+                <Text style={[styles.chipText, !selectedToolRunId && styles.chipTextOn]}>
+                  none
+                </Text>
+              </Pressable>
+              {toolRuns.map((run, index) => {
+                const id = String(run?._id || run?.id || `run-${index}`);
+                return (
+                  <Pressable
+                    key={id}
+                    onPress={() => setSelectedToolRunId(id)}
+                    accessibilityRole="button"
+                    accessibilityLabel={`Attach tool result ${run?.toolType || run?.toolName || "tool"}`}
+                    style={[styles.chip, selectedToolRunId === id && styles.chipOn]}
+                  >
                     <Text
                       style={[
-                        styles.chipSubtext,
+                        styles.chipText,
                         selectedToolRunId === id && styles.chipTextOn
                       ]}
                     >
-                      plant linked
+                      {run?.toolType || run?.toolName || "tool"}
                     </Text>
-                  ) : null}
-                </Pressable>
-              );
-            })}
-          </View>
-        </>
-      ) : null}
+                    {run?.plantId ? (
+                      <Text
+                        style={[
+                          styles.chipSubtext,
+                          selectedToolRunId === id && styles.chipTextOn
+                        ]}
+                      >
+                        plant linked
+                      </Text>
+                    ) : null}
+                  </Pressable>
+                );
+              })}
+            </View>
+          </>
+        ) : null}
 
-      <Pressable
-        style={[styles.primaryButton, (!canSave || saving) && styles.disabled]}
-        disabled={!canSave || saving}
-        onPress={save}
-        accessibilityRole="button"
-        accessibilityLabel="Create log"
-      >
-        <Text style={styles.primaryButtonText}>
-          {saving ? "Saving..." : "Create Log"}
-        </Text>
-      </Pressable>
-      <PersonalFeedPlacement placement="bottom" routeKey="personal_new_log" longContent />
-    </ScrollView>
+        <Pressable
+          style={[styles.primaryButton, (!canSave || saving) && styles.disabled]}
+          disabled={!canSave || saving}
+          onPress={save}
+          accessibilityRole="button"
+          accessibilityLabel="Create log"
+        >
+          <Text style={styles.primaryButtonText}>
+            {saving ? "Saving..." : "Create Log"}
+          </Text>
+        </Pressable>
+        <PersonalFeedPlacement
+          placement="bottom"
+          routeKey="personal_new_log"
+          longContent
+        />
+      </ScrollView>
+    </ScreenBoundary>
   );
 }
 

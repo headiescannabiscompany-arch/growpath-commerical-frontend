@@ -19,7 +19,7 @@ import {
   updatePersonalLog,
   type PersonalLog
 } from "@/api/logs";
-import BackButton from "@/components/nav/BackButton";
+import { ScreenBoundary } from "@/components/ScreenBoundary";
 import { fmtDate } from "@/features/grows/routeUtils";
 import { resolveImageUri } from "@/utils/photoUploads";
 import PersonalFeedPlacement from "@/components/feed/PersonalFeedPlacement";
@@ -140,225 +140,246 @@ export default function LogDetailScreen() {
 
   if (loading) {
     return (
-      <View style={styles.center}>
-        <ActivityIndicator />
-      </View>
+      <ScreenBoundary
+        title="Journal Entry"
+        showBack
+        backFallbackHref="/home/personal/grows"
+      >
+        <View style={styles.center}>
+          <ActivityIndicator />
+        </View>
+      </ScreenBoundary>
     );
   }
 
   return (
-    <ScrollView style={styles.container} contentContainerStyle={styles.content}>
-      <BackButton />
-      <Text style={styles.title}>{log?.title || "Journal Entry"}</Text>
-      <PersonalFeedPlacement placement="top" routeKey="personal_logs_logid" longContent />
-      <Text style={styles.meta}>
-        {log?.type || "other"} | {fmtDate(log?.date || log?.createdAt)}
-      </Text>
-      {feedback ? <Text style={styles.feedback}>{feedback}</Text> : null}
+    <ScreenBoundary
+      title={log?.title || "Journal Entry"}
+      showBack
+      backFallbackHref={
+        log?.growId
+          ? `/home/personal/grows/${encodeURIComponent(log.growId)}/journal`
+          : "/home/personal/grows"
+      }
+    >
+      <ScrollView style={styles.container} contentContainerStyle={styles.content}>
+        <Text style={styles.title}>{log?.title || "Journal Entry"}</Text>
+        <PersonalFeedPlacement
+          placement="top"
+          routeKey="personal_logs_logid"
+          longContent
+        />
+        <Text style={styles.meta}>
+          {log?.type || "other"} | {fmtDate(log?.date || log?.createdAt)}
+        </Text>
+        {feedback ? <Text style={styles.feedback}>{feedback}</Text> : null}
 
-      {!log ? null : editing ? (
-        <View style={styles.card}>
-          <Text style={styles.label}>Title</Text>
-          <TextInput
-            style={styles.input}
-            value={form.title}
-            onChangeText={(title) => setForm((current) => ({ ...current, title }))}
-            accessibilityLabel="Edit log title"
-          />
-          <Text style={styles.label}>Date</Text>
-          <TextInput
-            style={styles.input}
-            value={form.date}
-            onChangeText={(date) => setForm((current) => ({ ...current, date }))}
-            placeholder="YYYY-MM-DD"
-            accessibilityLabel="Edit log date"
-          />
-          <Text style={styles.label}>Type</Text>
-          <TextInput
-            style={styles.input}
-            value={form.type}
-            onChangeText={(type) => setForm((current) => ({ ...current, type }))}
-            accessibilityLabel="Edit log type"
-          />
-          <Text style={styles.label}>Notes</Text>
-          <TextInput
-            style={styles.notesInput}
-            value={form.notes}
-            onChangeText={(notes) => setForm((current) => ({ ...current, notes }))}
-            multiline
-            accessibilityLabel="Edit log notes"
-          />
-          <Text style={styles.label}>Tags</Text>
-          <TextInput
-            style={styles.input}
-            value={form.tags}
-            onChangeText={(tags) => setForm((current) => ({ ...current, tags }))}
-            placeholder="watering, deficiency, follow-up"
-            accessibilityLabel="Edit log tags"
-          />
-          <View style={styles.row}>
-            <Pressable
-              style={[styles.primaryButton, saving && styles.disabled]}
-              disabled={saving}
-              onPress={save}
-              accessibilityRole="button"
-              accessibilityLabel="Save log changes"
-            >
-              <Text style={styles.primaryButtonText}>
-                {saving ? "Saving..." : "Save Changes"}
-              </Text>
-            </Pressable>
-            <Pressable
-              style={styles.secondaryButton}
-              onPress={() => setEditing(false)}
-              accessibilityRole="button"
-              accessibilityLabel="Cancel log editing"
-            >
-              <Text style={styles.secondaryButtonText}>Cancel</Text>
-            </Pressable>
-          </View>
-        </View>
-      ) : (
-        <>
+        {!log ? null : editing ? (
           <View style={styles.card}>
-            <Text style={styles.cardTitle}>Entry</Text>
-            <Text style={styles.notes}>{log.notes || "No notes recorded."}</Text>
-            {log.tags?.length ? (
-              <View style={styles.tags}>
-                {log.tags.map((tag) => (
-                  <Text key={tag} style={styles.tag}>
-                    {tag}
-                  </Text>
-                ))}
-              </View>
-            ) : null}
-            {log.rejectedTags?.length ? (
-              <View style={styles.tags}>
-                {log.rejectedTags.map((tag) => (
-                  <Text key={tag} style={styles.rejectedTag}>
-                    Rejected: {tag}
-                  </Text>
-                ))}
-              </View>
-            ) : null}
-            {log.photos?.length ? (
-              <View style={styles.photoGrid}>
-                {log.photos.map((uri, index) => {
-                  const meta = log.photoMetadata?.[index];
-                  const photoKey = `${uri}-${index}`;
-                  const resolvedUri = resolveImageUri(uri);
-                  const broken = brokenPhotos[photoKey];
-                  return (
-                    <View key={photoKey} style={styles.photoTile}>
-                      {broken ? (
-                        <View style={[styles.photoFallback, { width: photoTileWidth }]}>
-                          <Text style={styles.photoFallbackTitle}>Photo unavailable</Text>
-                          <Text style={styles.photoFallbackText} numberOfLines={2}>
-                            {uri}
-                          </Text>
-                        </View>
-                      ) : (
-                        <Image
-                          source={{ uri: resolvedUri }}
-                          style={[styles.photoThumb, { width: photoTileWidth }]}
-                          resizeMode="cover"
-                          accessibilityLabel={`Journal photo ${index + 1}`}
-                          onError={() =>
-                            setBrokenPhotos((current) => ({
-                              ...current,
-                              [photoKey]: true
-                            }))
-                          }
-                        />
-                      )}
-                      <Text style={styles.photoMeta}>
-                        {meta?.mimeType || "image"}
-                        {meta?.width && meta?.height
-                          ? ` | ${meta.width}x${meta.height}`
-                          : ""}
-                      </Text>
-                    </View>
-                  );
-                })}
-              </View>
-            ) : null}
+            <Text style={styles.label}>Title</Text>
+            <TextInput
+              style={styles.input}
+              value={form.title}
+              onChangeText={(title) => setForm((current) => ({ ...current, title }))}
+              accessibilityLabel="Edit log title"
+            />
+            <Text style={styles.label}>Date</Text>
+            <TextInput
+              style={styles.input}
+              value={form.date}
+              onChangeText={(date) => setForm((current) => ({ ...current, date }))}
+              placeholder="YYYY-MM-DD"
+              accessibilityLabel="Edit log date"
+            />
+            <Text style={styles.label}>Type</Text>
+            <TextInput
+              style={styles.input}
+              value={form.type}
+              onChangeText={(type) => setForm((current) => ({ ...current, type }))}
+              accessibilityLabel="Edit log type"
+            />
+            <Text style={styles.label}>Notes</Text>
+            <TextInput
+              style={styles.notesInput}
+              value={form.notes}
+              onChangeText={(notes) => setForm((current) => ({ ...current, notes }))}
+              multiline
+              accessibilityLabel="Edit log notes"
+            />
+            <Text style={styles.label}>Tags</Text>
+            <TextInput
+              style={styles.input}
+              value={form.tags}
+              onChangeText={(tags) => setForm((current) => ({ ...current, tags }))}
+              placeholder="watering, deficiency, follow-up"
+              accessibilityLabel="Edit log tags"
+            />
+            <View style={styles.row}>
+              <Pressable
+                style={[styles.primaryButton, saving && styles.disabled]}
+                disabled={saving}
+                onPress={save}
+                accessibilityRole="button"
+                accessibilityLabel="Save log changes"
+              >
+                <Text style={styles.primaryButtonText}>
+                  {saving ? "Saving..." : "Save Changes"}
+                </Text>
+              </Pressable>
+              <Pressable
+                style={styles.secondaryButton}
+                onPress={() => setEditing(false)}
+                accessibilityRole="button"
+                accessibilityLabel="Cancel log editing"
+              >
+                <Text style={styles.secondaryButtonText}>Cancel</Text>
+              </Pressable>
+            </View>
           </View>
-
-          <View style={styles.card}>
-            <Text style={styles.cardTitle}>History Links</Text>
-            <Text style={styles.linkMeta}>Grow: {log.growId || "Unlinked"}</Text>
-            <Text style={styles.linkMeta}>Plant: {log.plantId || "Whole grow"}</Text>
-            <Text style={styles.linkMeta}>
-              Diagnosis:{" "}
-              {log.diagnosisId ||
-                (log.type === "diagnosis" ? "Saved diagnosis log" : "None")}
-            </Text>
-            <Text style={styles.linkMeta}>Tool result: {log.toolRunId || "None"}</Text>
-          </View>
-
-          {log.aiInsight ? (
+        ) : (
+          <>
             <View style={styles.card}>
-              <Text style={styles.cardTitle}>AI Log Suggestions</Text>
-              {log.aiInsight.summary ? (
-                <Text style={styles.notes}>{log.aiInsight.summary}</Text>
+              <Text style={styles.cardTitle}>Entry</Text>
+              <Text style={styles.notes}>{log.notes || "No notes recorded."}</Text>
+              {log.tags?.length ? (
+                <View style={styles.tags}>
+                  {log.tags.map((tag) => (
+                    <Text key={tag} style={styles.tag}>
+                      {tag}
+                    </Text>
+                  ))}
+                </View>
               ) : null}
-              <Text style={styles.linkMeta}>
-                Source: {log.aiInsight.source || "unknown"}
-              </Text>
-              {log.aiInsight.missingData?.map((item) => (
-                <Text key={item} style={styles.linkMeta}>
-                  Missing context: {item}
-                </Text>
-              ))}
-              {log.aiInsight.acceptedTags?.length ? (
-                <Text style={styles.linkMeta}>
-                  Accepted tags: {log.aiInsight.acceptedTags.join(", ")}
-                </Text>
+              {log.rejectedTags?.length ? (
+                <View style={styles.tags}>
+                  {log.rejectedTags.map((tag) => (
+                    <Text key={tag} style={styles.rejectedTag}>
+                      Rejected: {tag}
+                    </Text>
+                  ))}
+                </View>
               ) : null}
-              {log.aiInsight.rejectedTags?.length ? (
-                <Text style={styles.linkMeta}>
-                  Rejected tags: {log.aiInsight.rejectedTags.join(", ")}
-                </Text>
+              {log.photos?.length ? (
+                <View style={styles.photoGrid}>
+                  {log.photos.map((uri, index) => {
+                    const meta = log.photoMetadata?.[index];
+                    const photoKey = `${uri}-${index}`;
+                    const resolvedUri = resolveImageUri(uri);
+                    const broken = brokenPhotos[photoKey];
+                    return (
+                      <View key={photoKey} style={styles.photoTile}>
+                        {broken ? (
+                          <View style={[styles.photoFallback, { width: photoTileWidth }]}>
+                            <Text style={styles.photoFallbackTitle}>
+                              Photo unavailable
+                            </Text>
+                            <Text style={styles.photoFallbackText} numberOfLines={2}>
+                              {uri}
+                            </Text>
+                          </View>
+                        ) : (
+                          <Image
+                            source={{ uri: resolvedUri }}
+                            style={[styles.photoThumb, { width: photoTileWidth }]}
+                            resizeMode="cover"
+                            accessibilityLabel={`Journal photo ${index + 1}`}
+                            onError={() =>
+                              setBrokenPhotos((current) => ({
+                                ...current,
+                                [photoKey]: true
+                              }))
+                            }
+                          />
+                        )}
+                        <Text style={styles.photoMeta}>
+                          {meta?.mimeType || "image"}
+                          {meta?.width && meta?.height
+                            ? ` | ${meta.width}x${meta.height}`
+                            : ""}
+                        </Text>
+                      </View>
+                    );
+                  })}
+                </View>
               ) : null}
             </View>
-          ) : null}
 
-          <PersonalFeedPlacement
-            placement="middle"
-            routeKey="personal_logs_logid"
-            longContent
-          />
-
-          <View style={styles.row}>
-            <Pressable
-              style={styles.primaryButton}
-              onPress={() => setEditing(true)}
-              accessibilityRole="button"
-              accessibilityLabel="Edit log entry"
-            >
-              <Text style={styles.primaryButtonText}>Edit Entry</Text>
-            </Pressable>
-            <Pressable
-              style={[styles.dangerButton, deleting && styles.disabled]}
-              disabled={deleting}
-              onPress={remove}
-              accessibilityRole="button"
-              accessibilityLabel="Delete log entry"
-            >
-              <Text style={styles.dangerButtonText}>
-                {deleting ? "Deleting..." : "Delete"}
+            <View style={styles.card}>
+              <Text style={styles.cardTitle}>History Links</Text>
+              <Text style={styles.linkMeta}>Grow: {log.growId || "Unlinked"}</Text>
+              <Text style={styles.linkMeta}>Plant: {log.plantId || "Whole grow"}</Text>
+              <Text style={styles.linkMeta}>
+                Diagnosis:{" "}
+                {log.diagnosisId ||
+                  (log.type === "diagnosis" ? "Saved diagnosis log" : "None")}
               </Text>
-            </Pressable>
-          </View>
-        </>
-      )}
+              <Text style={styles.linkMeta}>Tool result: {log.toolRunId || "None"}</Text>
+            </View>
 
-      <PersonalFeedPlacement
-        placement="bottom"
-        routeKey="personal_logs_logid"
-        longContent
-      />
-    </ScrollView>
+            {log.aiInsight ? (
+              <View style={styles.card}>
+                <Text style={styles.cardTitle}>AI Log Suggestions</Text>
+                {log.aiInsight.summary ? (
+                  <Text style={styles.notes}>{log.aiInsight.summary}</Text>
+                ) : null}
+                <Text style={styles.linkMeta}>
+                  Source: {log.aiInsight.source || "unknown"}
+                </Text>
+                {log.aiInsight.missingData?.map((item) => (
+                  <Text key={item} style={styles.linkMeta}>
+                    Missing context: {item}
+                  </Text>
+                ))}
+                {log.aiInsight.acceptedTags?.length ? (
+                  <Text style={styles.linkMeta}>
+                    Accepted tags: {log.aiInsight.acceptedTags.join(", ")}
+                  </Text>
+                ) : null}
+                {log.aiInsight.rejectedTags?.length ? (
+                  <Text style={styles.linkMeta}>
+                    Rejected tags: {log.aiInsight.rejectedTags.join(", ")}
+                  </Text>
+                ) : null}
+              </View>
+            ) : null}
+
+            <PersonalFeedPlacement
+              placement="middle"
+              routeKey="personal_logs_logid"
+              longContent
+            />
+
+            <View style={styles.row}>
+              <Pressable
+                style={styles.primaryButton}
+                onPress={() => setEditing(true)}
+                accessibilityRole="button"
+                accessibilityLabel="Edit log entry"
+              >
+                <Text style={styles.primaryButtonText}>Edit Entry</Text>
+              </Pressable>
+              <Pressable
+                style={[styles.dangerButton, deleting && styles.disabled]}
+                disabled={deleting}
+                onPress={remove}
+                accessibilityRole="button"
+                accessibilityLabel="Delete log entry"
+              >
+                <Text style={styles.dangerButtonText}>
+                  {deleting ? "Deleting..." : "Delete"}
+                </Text>
+              </Pressable>
+            </View>
+          </>
+        )}
+
+        <PersonalFeedPlacement
+          placement="bottom"
+          routeKey="personal_logs_logid"
+          longContent
+        />
+      </ScrollView>
+    </ScreenBoundary>
   );
 }
 

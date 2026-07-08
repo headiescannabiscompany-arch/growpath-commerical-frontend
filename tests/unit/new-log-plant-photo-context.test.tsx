@@ -63,6 +63,22 @@ jest.mock("@/api/logInsights", () => ({
   suggestLogInsights: jest.fn()
 }));
 
+jest.mock("@/components/ScreenBoundary", () => {
+  const React = require("react");
+  const { Text, View } = require("react-native");
+  return {
+    ScreenBoundary: ({ children, showBack, backFallbackHref }: any) =>
+      React.createElement(
+        View,
+        null,
+        showBack
+          ? React.createElement(Text, null, `Shared Back ${backFallbackHref}`)
+          : null,
+        children
+      )
+  };
+});
+
 describe("NewLogScreen plant/photo context", () => {
   beforeEach(() => {
     jest.clearAllMocks();
@@ -119,6 +135,7 @@ describe("NewLogScreen plant/photo context", () => {
 
     const { getByText } = render(<NewLogScreen />);
 
+    expect(getByText("Shared Back /home/personal/grows/grow-1/journal")).toBeTruthy();
     expect(getByText("Create journal entries with Pro")).toBeTruthy();
     expect(
       getByText(
@@ -136,6 +153,7 @@ describe("NewLogScreen plant/photo context", () => {
   it("creates logs and photo metadata with selected plant context", async () => {
     const { getByLabelText, getByText } = render(<NewLogScreen />);
 
+    expect(getByText("Shared Back /home/personal/grows/grow-1/journal")).toBeTruthy();
     await waitFor(() =>
       expect(mockListPersonalPlants).toHaveBeenCalledWith({ growId: "grow-1" })
     );
