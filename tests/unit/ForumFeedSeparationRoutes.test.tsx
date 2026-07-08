@@ -1,6 +1,7 @@
 import React from "react";
 import { fireEvent, render, waitFor } from "@testing-library/react-native";
 
+import CommunitiesDirectoryRoute from "@/app/communities";
 import CommunityTab from "@/app/home/personal/(tabs)/community";
 import ForumRoute from "@/app/home/personal/(tabs)/forum";
 import ForumCodeRoute from "@/app/home/personal/(tabs)/forum/code";
@@ -77,6 +78,12 @@ jest.mock("@/components/ScreenBoundary", () => {
   };
 });
 
+jest.mock("@/components/layout/AppPage", () => {
+  const React = require("react");
+  const { View } = require("react-native");
+  return ({ children, header }: any) => React.createElement(View, null, header, children);
+});
+
 jest.mock("@/entitlements", () => ({
   CAPABILITY_KEYS: {
     FORUM_VIEW: "forum_view",
@@ -148,6 +155,30 @@ describe("Forum and feed separation copy", () => {
 
     expect(screen.getByText("Shared Back /home/personal/forum")).toBeTruthy();
     expect(screen.getByText("Forum Guidelines")).toBeTruthy();
+  });
+
+  it("labels the legacy communities route as a Forum/Q&A directory", async () => {
+    mockListGuilds.mockResolvedValue([
+      {
+        id: "soil-group",
+        name: "Living Soil Q&A",
+        description: "Discussion for soil recipes and amendment timing.",
+        memberCount: 8
+      }
+    ]);
+
+    const screen = render(<CommunitiesDirectoryRoute />);
+
+    await waitFor(() => expect(mockListGuilds).toHaveBeenCalled());
+    expect(screen.getByText("Forum Directory")).toBeTruthy();
+    expect(
+      screen.getByText(/Browse discussion groups by crop and workflow/)
+    ).toBeTruthy();
+    expect(screen.getByLabelText("Search forum groups")).toBeTruthy();
+    expect(screen.getByText("Groups")).toBeTruthy();
+    expect(screen.getByText("Join Group")).toBeTruthy();
+    expect(screen.queryByText("Communities")).toBeNull();
+    expect(screen.queryByText("Search communities")).toBeNull();
   });
 
   it("opens personal forum list posts through the shared forum detail route", async () => {

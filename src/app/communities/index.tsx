@@ -110,11 +110,11 @@ export default function Communities() {
       if (joined) {
         await leaveGuild(id);
         await load({ refresh: true });
-        setFeedback(`Left ${guild.name || "guild"}.`);
+        setFeedback(`Left ${guild.name || "forum group"}.`);
       } else {
         await joinGuild(id);
         await load({ refresh: true });
-        setFeedback(`Joined ${guild.name || "guild"}.`);
+        setFeedback(`Joined ${guild.name || "forum group"}.`);
       }
     } catch (e) {
       setError(mapApiError.toInlineError(e));
@@ -128,10 +128,10 @@ export default function Communities() {
       routeKey="communities"
       header={
         <View>
-          <Text style={styles.headerTitle}>Communities</Text>
+          <Text style={styles.headerTitle}>Forum Directory</Text>
           <Text style={styles.headerSubtitle}>
-            Browse guilds by crop and workflow so forum recommendations, courses, tools,
-            and campaign placement targeting stay relevant.
+            Browse discussion groups by crop and workflow so Forum/Q&A recommendations,
+            courses, tools, and campaign placement targeting stay relevant.
           </Text>
         </View>
       }
@@ -151,7 +151,7 @@ export default function Communities() {
         <View style={styles.summaryGrid}>
           <View style={styles.summaryCard}>
             <Text style={styles.summaryValue}>{summary.total}</Text>
-            <Text style={styles.summaryLabel}>Guilds</Text>
+            <Text style={styles.summaryLabel}>Groups</Text>
           </View>
           <View style={styles.summaryCard}>
             <Text style={styles.summaryValue}>{summary.joined}</Text>
@@ -170,7 +170,7 @@ export default function Communities() {
         <TextInput
           value={query}
           onChangeText={setQuery}
-          accessibilityLabel="Search communities"
+          accessibilityLabel="Search forum groups"
           placeholder="Search by crop, category, or workflow"
           style={styles.input}
         />
@@ -178,16 +178,16 @@ export default function Communities() {
         {loading ? (
           <View style={styles.loading}>
             <ActivityIndicator />
-            <Text style={styles.muted}>Loading communities...</Text>
+            <Text style={styles.muted}>Loading forum groups...</Text>
           </View>
         ) : null}
 
         {!loading && filtered.length === 0 ? (
           <AppCard style={styles.emptyCard}>
-            <Text style={styles.cardTitle}>No Matching Communities</Text>
+            <Text style={styles.cardTitle}>No matching forum groups</Text>
             <Text style={styles.cardDesc}>
-              Try another crop, method, or category. Guilds can still be selected during
-              onboarding.
+              Try another crop, method, or category. Forum groups can still be selected
+              during onboarding.
             </Text>
           </AppCard>
         ) : null}
@@ -216,7 +216,7 @@ export default function Communities() {
               <Pressable
                 accessibilityRole="button"
                 accessibilityLabel={`${joined ? "Leave" : "Join"} ${
-                  guild.name || "guild"
+                  guild.name || "forum group"
                 }`}
                 disabled={saving}
                 onPress={() => void toggleGuild(guild)}
@@ -227,7 +227,7 @@ export default function Communities() {
                 ]}
               >
                 <Text style={styles.actionText}>
-                  {saving ? "Saving..." : joined ? "Leave Guild" : "Join Guild"}
+                  {saving ? "Saving..." : joined ? "Leave Group" : "Join Group"}
                 </Text>
               </Pressable>
             </AppCard>
