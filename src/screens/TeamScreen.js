@@ -19,6 +19,7 @@ import {
   removeTeamMember
 } from "../api/team.js";
 import { useAuth } from "@/auth/AuthContext";
+import { radius } from "../theme/theme";
 
 export default function TeamScreen() {
   const { token } = useAuth();
@@ -205,7 +206,7 @@ const styles = StyleSheet.create({
   },
   modalContent: {
     backgroundColor: "#fff",
-    borderRadius: 10,
+    borderRadius: radius.card,
     padding: 24,
     width: 300,
     alignItems: "center",
@@ -224,21 +225,21 @@ const styles = StyleSheet.create({
     width: "100%",
     borderWidth: 1,
     borderColor: "#ddd",
-    borderRadius: 6,
+    borderRadius: radius.card,
     padding: 10,
     marginBottom: 12,
     fontSize: 16
   },
   saveBtn: {
     backgroundColor: "#10B981",
-    borderRadius: 6,
+    borderRadius: radius.card,
     paddingHorizontal: 18,
     paddingVertical: 10
   },
   saveBtnText: { color: "white", fontWeight: "bold", fontSize: 15 },
   cancelBtn: {
     backgroundColor: "#ddd",
-    borderRadius: 6,
+    borderRadius: radius.card,
     paddingHorizontal: 18,
     paddingVertical: 10
   },

@@ -11,6 +11,7 @@ import {
 } from "react-native";
 import { useVendorSignup } from "@/hooks/useVendorSignup";
 import { handleApiError } from "@/ui/handleApiError";
+import { radius } from "@/theme/theme";
 
 const VENDOR_TYPES = [
   { label: "Select vendor type...", value: "" },
@@ -186,7 +187,7 @@ const styles = {
   },
   form: {
     backgroundColor: "#fff",
-    borderRadius: 8,
+    borderRadius: radius.card,
     padding: 16,
     boxShadow: "0 1px 3px rgba(0, 0, 0, 0.1)",
     elevation: 2
@@ -201,7 +202,7 @@ const styles = {
   input: {
     borderWidth: 1,
     borderColor: "#e5e7eb",
-    borderRadius: 6,
+    borderRadius: radius.card,
     paddingHorizontal: 12,
     paddingVertical: 10,
     fontSize: 14,
@@ -216,7 +217,7 @@ const styles = {
   pickerContainer: {
     borderWidth: 1,
     borderColor: "#e5e7eb",
-    borderRadius: 6,
+    borderRadius: radius.card,
     backgroundColor: "#f9fafb",
     overflow: "hidden"
   },
@@ -232,7 +233,7 @@ const styles = {
   },
   button: {
     backgroundColor: "#0ea5e9",
-    borderRadius: 6,
+    borderRadius: radius.card,
     paddingVertical: 12,
     marginTop: 20,
     alignItems: "center"

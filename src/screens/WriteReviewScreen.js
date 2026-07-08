@@ -2,6 +2,7 @@ import React, { useState } from "react";
 import { View, Text, TextInput, TouchableOpacity, Alert } from "react-native";
 import ScreenContainer from "../components/ScreenContainer";
 import { addReview } from "../api/courses";
+import { radius } from "../theme/theme";
 
 export default function WriteReviewScreen({ route, navigation }) {
   const { courseId } = route.params;
@@ -58,7 +59,7 @@ const styles = {
   starsRow: { flexDirection: "row", marginBottom: 10 },
   star: { fontSize: 32, color: "#ccc", marginRight: 6 },
   starActive: { color: "#f1c40f" },
-  input: { backgroundColor: "#eee", padding: 12, borderRadius: 8, height: 140, textAlignVertical: "top" },
-  btn: { backgroundColor: "#2ecc71", padding: 12, borderRadius: 8, marginTop: 20 },
+  input: { backgroundColor: "#eee", padding: 12, borderRadius: radius.card, height: 140, textAlignVertical: "top" },
+  btn: { backgroundColor: "#2ecc71", padding: 12, borderRadius: radius.card, marginTop: 20 },
   btnText: { color: "white", fontWeight: "700", textAlign: "center", fontSize: 16 },
 };

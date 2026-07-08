@@ -2,6 +2,7 @@ import React, { useEffect, useState } from "react";
 import { View, Text, ActivityIndicator } from "react-native";
 import ScreenContainer from "../components/ScreenContainer";
 import { verifyCertificate } from "../api/certificates";
+import { radius } from "../theme/theme";
 
 export default function VerifyCertificateScreen({ route }) {
   const { certificateId } = route.params;
@@ -135,7 +136,7 @@ const styles = {
   },
   card: {
     backgroundColor: "#fff",
-    borderRadius: 10,
+    borderRadius: radius.card,
     overflow: "hidden",
     marginBottom: 20,
     boxShadow: "0px 2px 4px rgba(0,0,0,0.1)",
@@ -172,7 +173,7 @@ const styles = {
   },
   validationBadge: {
     backgroundColor: "#d5f4e6",
-    borderRadius: 10,
+    borderRadius: radius.card,
     paddingVertical: 16,
     paddingHorizontal: 12,
     alignItems: "center",
