@@ -238,7 +238,7 @@ describe("sourceObjectHref", () => {
         sourceId: "order-1",
         workspaceType: "facility"
       })
-    ).toBe("/home/facility/InventoryItemDetailScreen?id=order-1");
+    ).toBe("/home/facility/inventory/order-1");
 
     expect(
       sourceObjectHref({
@@ -254,7 +254,7 @@ describe("sourceObjectHref", () => {
         sourceId: "inventory-1",
         workspaceType: "facility"
       })
-    ).toBe("/home/facility/InventoryItemDetailScreen?id=inventory-1");
+    ).toBe("/home/facility/inventory/inventory-1");
 
     expect(
       sourceObjectHref({

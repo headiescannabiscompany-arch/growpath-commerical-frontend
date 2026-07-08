@@ -173,8 +173,8 @@ describe("FacilityTaskDetail", () => {
     ["sop", "sop-7", "/home/facility/sop-runs/sop-7"],
     ["live", "live-1", "/feed?liveId=live-1"],
     ["feed_campaign", "campaign-1", "/home/facility/feed?campaignId=campaign-1"],
-    ["product", "input-1", "/home/facility/InventoryItemDetailScreen?id=input-1"],
-    ["product_batch", "batch-1", "/home/facility/InventoryItemDetailScreen?id=batch-1"],
+    ["product", "input-1", "/home/facility/inventory/input-1"],
+    ["product_batch", "batch-1", "/home/facility/inventory/batch-1"],
     ["product_trial", "run-1", "/home/facility/grows/run-1"]
   ])(
     "keeps %s-backed facility task sources out of commercial admin routes",

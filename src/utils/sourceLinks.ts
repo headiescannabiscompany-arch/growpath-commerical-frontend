@@ -193,7 +193,7 @@ export function sourceObjectHref(source: SourceLike) {
       return `/home/commercial/products/${productId}`;
     if (workspace === "facility")
       return productId
-        ? `/home/facility/InventoryItemDetailScreen?id=${encoded(productId)}`
+        ? `/home/facility/inventory/${encoded(productId)}`
         : "/home/facility/inventory";
     return publicProductHref(productId);
   }
@@ -201,7 +201,7 @@ export function sourceObjectHref(source: SourceLike) {
   if (sourceType === "product_batch") {
     if (workspace === "facility")
       return productBatchId
-        ? `/home/facility/InventoryItemDetailScreen?id=${encoded(productBatchId)}`
+        ? `/home/facility/inventory/${encoded(productBatchId)}`
         : "/home/facility/inventory";
     if (workspace === "commercial")
       return productBatchId
@@ -277,7 +277,7 @@ export function sourceObjectHref(source: SourceLike) {
       return `/home/commercial/orders${orderId ? `?orderId=${encoded(orderId)}` : ""}`;
     if (workspace === "facility")
       return orderId
-        ? `/home/facility/InventoryItemDetailScreen?id=${encoded(orderId)}`
+        ? `/home/facility/inventory/${encoded(orderId)}`
         : "/home/facility/inventory";
     return "/home/personal/profile";
   }
@@ -288,7 +288,7 @@ export function sourceObjectHref(source: SourceLike) {
         : "/home/commercial/inventory";
     if (workspace === "facility")
       return sourceId
-        ? `/home/facility/InventoryItemDetailScreen?id=${encoded(sourceId)}`
+        ? `/home/facility/inventory/${encoded(sourceId)}`
         : "/home/facility/inventory";
     return "/home/personal/profile";
   }

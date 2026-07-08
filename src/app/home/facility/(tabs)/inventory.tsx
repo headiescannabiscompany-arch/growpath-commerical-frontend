@@ -265,7 +265,7 @@ export default function FacilityInventoryTab() {
                   onPress={() => {
                     if (!id) return;
                     router.push({
-                      pathname: "/home/facility/InventoryItemDetailScreen",
+                      pathname: "/home/facility/inventory/[id]",
                       params: { id }
                     });
                   }}

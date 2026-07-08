@@ -1,7 +1,7 @@
 import React from "react";
 import { render, waitFor } from "@testing-library/react-native";
 
-import InventoryItemDetailScreen from "@/app/home/facility/(tabs)/InventoryItemDetailScreen";
+import InventoryItemDetailScreen from "@/app/home/facility/inventory/[id]";
 
 const mockApiRequest = jest.fn();
 const mockReplace = jest.fn();

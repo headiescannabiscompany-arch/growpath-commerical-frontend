@@ -244,9 +244,7 @@ describe("AlertCenterRoute", () => {
       screen.getByLabelText("Alert link /home/personal/courses?courseId=course-1")
     ).toBeTruthy();
     expect(
-      screen.getByLabelText(
-        "Alert link /home/facility/InventoryItemDetailScreen?id=input-1"
-      )
+      screen.getByLabelText("Alert link /home/facility/inventory/input-1")
     ).toBeTruthy();
     expect(
       screen.getByLabelText(

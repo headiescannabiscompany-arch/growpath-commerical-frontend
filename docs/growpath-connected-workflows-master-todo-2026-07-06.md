@@ -496,6 +496,7 @@ Completed and pushed:
 220. Facility Feed/Campaigns now has a real `/home/facility/feed` route that reuses the shared campaign screen in facility-outreach mode, so facility tasks, alerts, notifications, and schedule source links to outreach campaigns no longer point at a missing route.
 221. Support/ops handoff is now marked live: `support`, `billing`, `privacy`, `legal`, `security`, `commercial`, and `facility` @growpathai.com aliases are documented as production contacts, and config coverage locks the shared alias map plus routed support topics.
 222. Facility Feed/Campaigns route access is now guarded as a selected-facility workspace route, with regression coverage proving unselected facility users stay on setup while selected facility users can open `/home/facility/feed`.
+223. Facility inventory source links now use the canonical `/home/facility/inventory/:id` route, with a wrapper route and focused coverage across inventory cards, source links, facility task detail, alerts, and notifications replacing the old screen-filename URL.
 
 ## Working Rule For Codex
 

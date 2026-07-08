@@ -94,7 +94,7 @@ describe("FacilityInventoryTab", () => {
 
     fireEvent.press(screen.getByLabelText("Open inventory item Kelp Meal"));
     expect(mockPush).toHaveBeenCalledWith({
-      pathname: "/home/facility/InventoryItemDetailScreen",
+      pathname: "/home/facility/inventory/[id]",
       params: { id: "item-1" }
     });
   });
