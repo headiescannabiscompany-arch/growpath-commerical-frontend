@@ -376,7 +376,7 @@ plannedFeatureCoverage: Harvest report, Yield report, Smoke report, Share card
 
 Use for:
 
-- Commercial crop mode
+- Commercial product-trial mode
 - Non-cannabis crop workflow
 - Crop batch creation
 - Cultivar comparison
@@ -404,12 +404,12 @@ Known setup values from the user prompt:
 cropType: tomato
 cultivars: Sunviva, Primabella
 environment: outdoor
-workflow: commercial crop / cultivar comparison
+workflow: product trial evidence run / cultivar comparison
 ```
 
 This pack should exercise:
 
-- Commercial grow workspace
+- Commercial product trial evidence workspace
 - Non-cannabis crop records
 - Crop batch creation
 - Cultivar comparison
@@ -433,7 +433,7 @@ photoPolicy: external_link_only
 photoCount: 1
 photos: one external-only photoSourceLink record
 realGrowDataStatus: user_confirmed_germination
-plannedFeatureCoverage: Crop start, Commercial germination record, Cultivar comparison, Germination rate, Source-backed weekly log
+plannedFeatureCoverage: Crop start, Product trial germination record, Cultivar comparison, Germination rate, Source-backed weekly log
 ```
 
 Commercial Tomato Week 1 is marked as user-confirmed Seedling, with detailed
@@ -455,7 +455,7 @@ photoPolicy: external_link_only
 photoCount: 6
 photos: six external-only photoSourceLink records
 realGrowDataStatus: user_confirmed_seedling_environment
-plannedFeatureCoverage: Propagation dashboard, Commercial seedling record, Seedling propagation, VPD tracking, Seedling photo log, PPFD tracking, CO2 tracking, Cultivar comparison, Source-backed weekly log
+plannedFeatureCoverage: Propagation dashboard, Product trial seedling record, Seedling propagation, VPD tracking, Seedling photo log, PPFD tracking, CO2 tracking, Cultivar comparison, Source-backed weekly log
 ```
 
 Commercial Tomato Week 2 is marked as user-confirmed Veg, with detailed source
@@ -475,7 +475,7 @@ photoPolicy: external_link_only
 photoCount: 4
 photos: four external-only photoSourceLink records
 realGrowDataStatus: user_confirmed_veg_growth
-plannedFeatureCoverage: Commercial veg record, Nutrient log, Growth rate, Input tracking, PPFD tracking, Cultivar comparison, Cultivar notes, Commercial crop growth tracking, Source-backed weekly log
+plannedFeatureCoverage: Product trial veg record, Nutrient log, Growth rate, Input tracking, PPFD tracking, Cultivar comparison, Cultivar notes, Product trial crop growth tracking, Source-backed weekly log
 ```
 
 Commercial Tomato Week 3 is marked as user-confirmed Veg / Selection, with
@@ -495,7 +495,7 @@ photoPolicy: external_link_only
 photoCount: 4
 photos: four external-only photoSourceLink records
 realGrowDataStatus: user_confirmed_selection
-plannedFeatureCoverage: Commercial veg record, Selection workflow, Plant selection, Plant count tracking, AI stress diagnosis, Stress correction, Fan task, Cultivar comparison, Source-backed weekly log
+plannedFeatureCoverage: Product trial veg record, Selection workflow, Plant selection, Plant count tracking, AI stress diagnosis, Stress correction, Fan task, Cultivar comparison, Source-backed weekly log
 ```
 
 Commercial Tomato Week 4 is marked as user-confirmed Veg / Pruning, with
@@ -514,7 +514,7 @@ photoPolicy: external_link_only
 photoCount: 4
 photos: four external-only photoSourceLink records
 realGrowDataStatus: stage_only_pending_details
-plannedFeatureCoverage: Commercial veg record, Pruning log, Pruning/suckering task, Side shoot removal, Cultivar height comparison, Cultivar morphology, Watering log, pH log, Input tracking, Cultivar comparison, Source-backed weekly log
+plannedFeatureCoverage: Product trial veg record, Pruning log, Pruning/suckering task, Side shoot removal, Cultivar height comparison, Cultivar morphology, Watering log, pH log, Input tracking, Cultivar comparison, Source-backed weekly log
 ```
 
 Commercial Tomato Week 5 is marked as user-confirmed Transplant / Preflower,
@@ -533,7 +533,7 @@ photoPolicy: external_link_only
 photoCount: 8
 photos: eight external-only photoSourceLink records
 realGrowDataStatus: stage_only_pending_details
-plannedFeatureCoverage: Commercial transplant record, Transplant log, Preflower transition, Rootbound note, Rootbound alert, Pot size change, Cultivar morphology, Outdoor 30 L trial, Hardening trial, Outdoor hardening log, Cultivar comparison, Source-backed weekly log
+plannedFeatureCoverage: Product trial transplant record, Transplant log, Preflower transition, Rootbound note, Rootbound alert, Pot size change, Cultivar morphology, Outdoor 30 L trial, Hardening trial, Outdoor hardening log, Cultivar comparison, Source-backed weekly log
 ```
 
 Commercial Tomato Week 6 is marked as user-confirmed Veg / Flowering Start,
@@ -550,7 +550,7 @@ photoPolicy: external_link_only
 photoCount: 3
 photos: three external-only photoSourceLink records
 realGrowDataStatus: stage_only_pending_details
-plannedFeatureCoverage: Commercial veg record, Flowering start log, Stage change, Cultivar height comparison, Both-variety flowering log, Sunny-day outdoor hardening, Outdoor acclimation, Preflower tracking, Cultivar comparison, Source-backed weekly log
+plannedFeatureCoverage: Product trial veg record, Flowering start log, Stage change, Cultivar height comparison, Both-variety flowering log, Sunny-day outdoor hardening, Outdoor acclimation, Preflower tracking, Cultivar comparison, Source-backed weekly log
 ```
 
 Commercial Tomato Week 7 is marked as user-confirmed Flower / First Fruit, with
@@ -570,7 +570,7 @@ photoPolicy: external_link_only
 photoCount: 4
 photos: four external-only photoSourceLink records
 realGrowDataStatus: stage_only_pending_details
-plannedFeatureCoverage: Commercial flower record, First fruit log, Fruit set tracking, Fruit-set log, Input tracking, Pot limitation warning, Root-zone warning, Transplant reminder, Environment log, Cultivar comparison, Source-backed weekly log
+plannedFeatureCoverage: Product trial flower record, First fruit log, Fruit set tracking, Fruit-set log, Input tracking, Pot limitation warning, Root-zone warning, Transplant reminder, Environment log, Cultivar comparison, Source-backed weekly log
 ```
 
 Commercial Tomato Week 8 is marked as user-confirmed Flower / Fruiting, with
@@ -591,7 +591,7 @@ photoPolicy: external_link_only
 photoCount: 6
 photos: six external-only photoSourceLink records
 realGrowDataStatus: stage_only_pending_details
-plannedFeatureCoverage: Commercial flower record, Fruiting log, Fruit development tracking, Fruit tracking, First green tomato log, Watering log, Input tracking, 30 L transplant reminder, Transplant scheduling, Environment log, Cultivar comparison, Source-backed weekly log
+plannedFeatureCoverage: Product trial flower record, Fruiting log, Fruit development tracking, Fruit tracking, First green tomato log, Watering log, Input tracking, 30 L transplant reminder, Transplant scheduling, Environment log, Cultivar comparison, Source-backed weekly log
 ```
 
 Commercial Tomato Week 9 is marked as user-confirmed Outdoor Transition, with
@@ -644,7 +644,7 @@ photoPolicy: external_link_only
 photoCount: 6
 photos: six external-only photoSourceLink records
 realGrowDataStatus: stage_only_pending_details
-plannedFeatureCoverage: First harvest log, Harvest log, Harvest count, Cultivar harvest record, Ripe tomato harvest, Soil performance comparison, Soil comparison, Sonnerde vs Neudorff comparison, Cultivar performance, Cultivar comparison, Commercial crop summary, Source-backed weekly log
+plannedFeatureCoverage: First harvest log, Harvest log, Harvest count, Cultivar harvest record, Ripe tomato harvest, Soil performance comparison, Soil comparison, Sonnerde vs Neudorff comparison, Cultivar performance, Cultivar comparison, Product trial crop summary, Source-backed weekly log
 ```
 
 Commercial Tomato Week 12 is marked as user-confirmed Soil Issue, with detailed
@@ -1107,7 +1107,7 @@ The workflow readiness test verifies:
 
 - the personal pack can drive free/pro grow-flow checks
 - the commercial pack can drive a non-cannabis crop trial, crop summary, cultivar comparison, soil/input issue, recovery, and harvest workflow
-- the facility pack can drive room, batch, reservoir, runoff, harvest crew, dry/cure, room reset, commercial crop summary, and harvest quality-note checks
+- the facility pack can drive room, batch, reservoir, runoff, harvest crew, dry/cure, room reset, product trial crop summary, and harvest quality-note checks
 
 These tests prove the packs are ready to use as workflow fixtures. They do not
 mark app features as live-verified yet. Keep `featureTestCount` at `0` and

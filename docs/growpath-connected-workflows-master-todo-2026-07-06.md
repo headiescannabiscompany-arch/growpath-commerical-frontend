@@ -436,6 +436,7 @@ Completed and pushed:
 160. Deferred verification scripts now include the personal Growlink import regression and manual checks for suggested personal grow spaces plus facility imported alert/task rule metadata.
 161. Deferred verification now runs the IPM Scout regression that proves GrowPath AI and GPT verification answers are displayed, saved, and carried into follow-up task plans.
 162. Production export SEO copy and live-test fixture labels now avoid "commercial grow" wording, using commercial storefront and product-trial evidence language instead.
+163. App-store draft copy, product-trial evidence-run placeholders, and commercial fixture assertions now use storefront/product-trial language instead of commercial grow/crop wording.
 
 ## Working Rule For Codex
 

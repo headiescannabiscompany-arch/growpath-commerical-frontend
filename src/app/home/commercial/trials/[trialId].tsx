@@ -363,7 +363,7 @@ export default function CommercialTrialDetailRoute({ route }: { route?: any } = 
           accessibilityLabel="Commercial trial crop summary"
           multiline
           onChangeText={setCommercialCropSummary}
-          placeholder="Commercial crop summary: product used, outcome, final quality, limitations, next-run changes..."
+          placeholder="Product trial crop summary: product used, outcome, final quality, limitations, next-run changes..."
           style={[styles.input, styles.textArea]}
           value={commercialCropSummary}
         />

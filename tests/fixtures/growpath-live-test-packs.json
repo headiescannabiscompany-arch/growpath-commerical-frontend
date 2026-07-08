@@ -1578,7 +1578,7 @@
             "PPFD",
             "cultivar comparison",
             "cultivar notes",
-            "commercial crop growth"
+            "product trial crop growth"
           ],
           "plannedFeatureCoverage": [
             "Commercial veg record",
@@ -1588,7 +1588,7 @@
             "PPFD tracking",
             "Cultivar comparison",
             "Cultivar notes",
-            "Commercial crop growth tracking",
+            "Product trial crop growth tracking",
             "Source-backed weekly log"
           ]
         },
@@ -1647,7 +1647,7 @@
             "AI stress diagnosis",
             "fan task",
             "cultivar comparison",
-            "commercial crop growth"
+            "product trial crop growth"
           ],
           "plannedFeatureCoverage": [
             "Commercial veg record",
@@ -2353,7 +2353,7 @@
             "Sonnerde vs Neudorff",
             "cultivar performance",
             "cultivar comparison",
-            "commercial crop summary",
+            "product trial crop summary",
             "external source placeholder"
           ],
           "plannedFeatureCoverage": [
@@ -2367,7 +2367,7 @@
             "Sonnerde vs Neudorff comparison",
             "Cultivar performance",
             "Cultivar comparison",
-            "Commercial crop summary",
+            "Product trial crop summary",
             "Source-backed weekly log"
           ]
         },

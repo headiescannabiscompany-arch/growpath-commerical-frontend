@@ -6,7 +6,7 @@ GrowPath: Effortless plant tracking, advanced grow logs, and community support f
 
 ## Long Description
 
-GrowPath is the all-in-one app for plant enthusiasts, hobbyists, and commercial growers. Effortlessly track your plant's journey from seed to harvest with detailed grow logs, photo uploads, and advanced environment tracking. Unlock premium features for multi-grow management, advanced analytics, and commercial facility tools. Join a thriving community, get expert advice, and maximize your plant's potential, no matter your experience level.
+GrowPath is the all-in-one app for plant enthusiasts, hobbyists, commercial brands, and facility teams. Effortlessly track your plant's journey from seed to harvest with detailed grow logs, photo uploads, and advanced environment tracking. Unlock premium features for multi-grow management, advanced analytics, storefront workflows, and facility tools. Join a thriving community, get expert advice, and maximize your plant's potential, no matter your experience level.
 
 - Create and manage unlimited grow logs (with upgrade options)
 - Upload photos, track genetics, and monitor every stage
@@ -26,4 +26,4 @@ For support, questions, or feedback, visit: https://www.growpathai.com/support o
 
 ## App Store Optimization Keywords
 
-plant tracker, grow log, gardening, hydroponics, cannabis, commercial grow, plant care, grow journal, cultivation, facility management, plant analytics, community, grower tools
+plant tracker, grow log, gardening, hydroponics, cannabis, commercial storefront, plant care, grow journal, cultivation, facility management, plant analytics, community, grower tools

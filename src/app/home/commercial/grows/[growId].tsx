@@ -206,16 +206,16 @@ export default function CommercialGrowDetailRoute({ route }: { route?: any } = {
       </AppCard>
 
       <AppCard>
-        <Text style={styles.cardTitle}>Commercial Crop Summary</Text>
+        <Text style={styles.cardTitle}>Product Trial Crop Summary</Text>
         <Text style={styles.body}>
-          Use this as the report-ready summary for the crop run. Keep it evidence-backed
-          and cautious enough for storefront, feed, trial, or course use.
+          Use this as the report-ready summary for the product trial evidence run. Keep it
+          evidence-backed and cautious enough for storefront, feed, trial, or course use.
         </Text>
         <TextInput
           accessibilityLabel="Product trial evidence run crop summary"
           multiline
           onChangeText={setCommercialCropSummary}
-          placeholder="Commercial summary: product/batch used, crop outcome, quality result, limitations, next run changes..."
+          placeholder="Product trial summary: product/batch used, crop outcome, quality result, limitations, next run changes..."
           style={[styles.input, styles.textArea]}
           value={commercialCropSummary}
         />
@@ -243,7 +243,7 @@ export default function CommercialGrowDetailRoute({ route }: { route?: any } = {
           accessibilityLabel="Product trial evidence run detail notes"
           multiline
           onChangeText={setNotes}
-          placeholder="Commercial notes, publishability, evidence gaps, or next checks"
+          placeholder="Evidence notes, publishability, gaps, or next checks"
           style={[styles.input, styles.textArea]}
           value={notes}
         />

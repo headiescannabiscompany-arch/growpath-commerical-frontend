@@ -281,7 +281,7 @@ describe("commercial workflow pages", () => {
             commercialCropSummaryCount: 1,
             latestHarvestQualityNotes: "Dense flower with strong citrus aroma.",
             latestCommercialCropSummary:
-              "Commercial crop finished with strong quality and clear limitations.",
+              "Product trial crop finished with strong quality and clear limitations.",
             publicProofReady: true,
             claimGuard:
               "Use linked batches, grow logs, pH/EC checks, harvest, dry/cure, and trial outcomes before making public product claims.",
@@ -1532,7 +1532,7 @@ describe("commercial workflow pages", () => {
     ).toBeTruthy();
     expect(
       screen.getByText(
-        "Latest crop summary: Commercial crop finished with strong quality and clear limitations."
+        "Latest crop summary: Product trial crop finished with strong quality and clear limitations."
       )
     ).toBeTruthy();
     expect(
@@ -2148,7 +2148,7 @@ describe("commercial workflow pages", () => {
     expect(screen.getByText("Linked Evidence")).toBeTruthy();
     expect(screen.getByText("Measurement Plan")).toBeTruthy();
     expect(screen.getByText("Harvest Quality Notes")).toBeTruthy();
-    expect(screen.getByText("Commercial Crop Summary")).toBeTruthy();
+    expect(screen.getByText("Product Trial Crop Summary")).toBeTruthy();
     expect(screen.queryByText("Pro Grow Workspace")).toBeNull();
     expect(screen.UNSAFE_getByProps({ href: "/home/commercial/products" })).toBeTruthy();
     expect(
@@ -2184,7 +2184,7 @@ describe("commercial workflow pages", () => {
     );
     fireEvent.changeText(
       screen.getByLabelText("Product trial evidence run crop summary"),
-      "Commercial crop finished with strong quality and clear next-run notes."
+      "Product trial crop finished with strong quality and clear next-run notes."
     );
     fireEvent.press(screen.getByLabelText("Save product trial evidence run detail"));
 
@@ -2198,7 +2198,7 @@ describe("commercial workflow pages", () => {
             publicShareStatus: "public_ready",
             harvestQualityNotes: "High aroma, clean burn, dense flower.",
             commercialCropSummary:
-              "Commercial crop finished with strong quality and clear next-run notes.",
+              "Product trial crop finished with strong quality and clear next-run notes.",
             notes: "Ready for public trial summary."
           })
         })

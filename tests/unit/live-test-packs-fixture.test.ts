@@ -357,7 +357,7 @@ describe("growpath live test packs fixture", () => {
         "PPFD",
         "cultivar comparison",
         "cultivar notes",
-        "commercial crop growth"
+        "product trial crop growth"
       ],
       plannedFeatureCoverage: [
         "Commercial veg record",
@@ -367,7 +367,7 @@ describe("growpath live test packs fixture", () => {
         "PPFD tracking",
         "Cultivar comparison",
         "Cultivar notes",
-        "Commercial crop growth tracking",
+        "Product trial crop growth tracking",
         "Source-backed weekly log"
       ]
     });
@@ -421,7 +421,7 @@ describe("growpath live test packs fixture", () => {
         "AI stress diagnosis",
         "fan task",
         "cultivar comparison",
-        "commercial crop growth"
+        "product trial crop growth"
       ],
       plannedFeatureCoverage: [
         "Commercial veg record",
@@ -1022,7 +1022,7 @@ describe("growpath live test packs fixture", () => {
         "Sonnerde vs Neudorff",
         "cultivar performance",
         "cultivar comparison",
-        "commercial crop summary",
+        "product trial crop summary",
         "external source placeholder"
       ],
       plannedFeatureCoverage: [
@@ -1036,7 +1036,7 @@ describe("growpath live test packs fixture", () => {
         "Sonnerde vs Neudorff comparison",
         "Cultivar performance",
         "Cultivar comparison",
-        "Commercial crop summary",
+        "Product trial crop summary",
         "Source-backed weekly log"
       ]
     });
