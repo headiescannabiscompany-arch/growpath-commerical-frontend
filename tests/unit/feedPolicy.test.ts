@@ -11,7 +11,6 @@ describe("feedPolicy", () => {
     });
 
     expect(rail.slots).toBe(2);
-    expect(rail.includeForumHighlights).toBe(false);
     expect(rail.railMode).toBe("promo-only");
     expect(banner.top).toBe(true);
     expect(banner.middle).toBe(true);

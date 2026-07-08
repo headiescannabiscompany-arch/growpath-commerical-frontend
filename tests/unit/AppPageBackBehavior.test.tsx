@@ -14,7 +14,6 @@ jest.mock("@/components/nav/BackButton", () => {
 
 jest.mock("@/components/feed/FeedBanner", () => () => null);
 jest.mock("@/components/feed/FeedRail", () => () => null);
-jest.mock("@/components/feed/ForumHighlights", () => () => null);
 
 jest.mock("@/entitlements", () => ({
   useEntitlements: () => ({
@@ -24,7 +23,7 @@ jest.mock("@/entitlements", () => ({
 }));
 
 jest.mock("@/utils/feedPolicy", () => ({
-  getFeedPolicy: () => ({ includeForumHighlights: false, slots: 0 }),
+  getFeedPolicy: () => ({ slots: 0 }),
   getFeedBannerPolicy: () => ({
     top: false,
     middle: false,

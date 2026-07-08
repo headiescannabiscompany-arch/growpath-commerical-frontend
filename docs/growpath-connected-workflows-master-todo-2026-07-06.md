@@ -513,6 +513,7 @@ Completed and pushed:
 237. Commercial workflow API now exposes canonical product-trial evidence-run function names and the commercial dashboard loads evidence through those aliases while preserving old commercial-grow function exports for compatibility.
 238. Commercial dashboard and page registry now use canonical `CommercialEvidenceRuns` route names for product-trial proof records, while native stack legacy `CommercialGrows` names remain only as compatibility aliases.
 239. Commercial product-trial evidence-run wrappers, workflow tests, and API return types now use canonical evidence-run naming internally while leaving legacy commercial-grow endpoints and exports only as compatibility shims.
+240. Shared feed placement policy no longer exposes a forum-highlight switch, and the dead feed-folder forum highlight components were removed so Feed rails can only render campaign/ad placements while Forum remains the discussion surface.
 
 ## Working Rule For Codex
 

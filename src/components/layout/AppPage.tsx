@@ -10,7 +10,6 @@ import { sanitizeViewChildren } from "@/components/layout/sanitizeViewChildren";
 import { useEntitlements } from "@/entitlements";
 import FeedBanner from "@/components/feed/FeedBanner";
 import FeedRail from "@/components/feed/FeedRail";
-import ForumHighlights from "@/components/feed/ForumHighlights";
 import BackButton from "@/components/nav/BackButton";
 import { getFeedBannerPolicy, getFeedPolicy } from "@/utils/feedPolicy";
 
@@ -69,17 +68,14 @@ export default function AppPage({
   });
 
   const computedRail =
-    policy.includeForumHighlights || policy.slots > 0 ? (
+    policy.slots > 0 ? (
       <View style={styles.railStack}>
-        {policy.includeForumHighlights ? <ForumHighlights /> : null}
-        {policy.slots > 0 ? (
-          <FeedRail
-            slots={policy.slots}
-            mode={ent.mode}
-            plan={plan}
-            railMode={policy.railMode}
-          />
-        ) : null}
+        <FeedRail
+          slots={policy.slots}
+          mode={ent.mode}
+          plan={plan}
+          railMode={policy.railMode}
+        />
       </View>
     ) : null;
 

@@ -2,7 +2,6 @@ export type FeedRailMode = "standard" | "education-only" | "promo-only";
 
 export type FeedPolicy = {
   slots: number;
-  includeForumHighlights: boolean;
   railMode: FeedRailMode;
   cadence: "always" | "everyOther";
 };
@@ -63,7 +62,6 @@ export function getFeedPolicy({
   if (isHome) {
     return {
       slots: 2,
-      includeForumHighlights: false,
       railMode: "promo-only",
       cadence: "always"
     };
@@ -72,7 +70,6 @@ export function getFeedPolicy({
   if (isFacilityHome) {
     return {
       slots: 1,
-      includeForumHighlights: false,
       railMode: "education-only",
       cadence: "always"
     };
@@ -81,7 +78,6 @@ export function getFeedPolicy({
   if (isFacilityOps) {
     return {
       slots: 1,
-      includeForumHighlights: false,
       railMode: "education-only",
       cadence: "always"
     };
@@ -90,7 +86,6 @@ export function getFeedPolicy({
   if (isFree) {
     return {
       slots: 0,
-      includeForumHighlights: false,
       railMode: "standard",
       cadence: "always"
     };
@@ -101,7 +96,6 @@ export function getFeedPolicy({
 
   return {
     slots: allowSlot ? 1 : 0,
-    includeForumHighlights: false,
     railMode: mode === "facility" ? "education-only" : "standard",
     cadence
   };
