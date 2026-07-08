@@ -2,6 +2,7 @@ import React from "react";
 import { ScrollView, Text, View } from "react-native";
 import { ScreenBoundary } from "@/components/ScreenBoundary";
 import PersonalFeedPlacement from "@/components/feed/PersonalFeedPlacement";
+import { radius } from "@/theme/theme";
 
 export default function ForumCodeRoute() {
   return (
@@ -18,7 +19,7 @@ export default function ForumCodeRoute() {
         />
         <Text style={{ fontSize: 20, fontWeight: "900" }}>Forum Guidelines</Text>
 
-        <View style={{ borderWidth: 1, borderRadius: 12, padding: 12, gap: 10 }}>
+        <View style={{ borderWidth: 1, borderRadius: radius.card, padding: 12, gap: 10 }}>
           <Text style={{ opacity: 0.9 }}>
             Keep it respectful, stay on topic, and avoid doxxing or harassment.
           </Text>
