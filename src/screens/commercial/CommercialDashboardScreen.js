@@ -18,7 +18,7 @@ import { fetchOrders } from "../../api/orders";
 import { fetchProducts } from "../../api/products";
 import { fetchStorefront } from "../../api/storefront";
 import {
-  fetchCommercialGrows,
+  fetchProductTrialEvidenceRuns,
   fetchCommercialLives
 } from "../../api/commercialWorkflows";
 import ScreenContainer from "../../components/ScreenContainer";
@@ -117,7 +117,7 @@ export default function CommercialDashboardScreen() {
         fetchLinks(),
         fetchCampaigns(),
         fetchOrders(),
-        fetchCommercialGrows().catch(() => []),
+        fetchProductTrialEvidenceRuns().catch(() => []),
         fetchCommercialLives().catch(() => []),
         fetchInventory()
       ]);
@@ -191,7 +191,7 @@ export default function CommercialDashboardScreen() {
             <Text style={styles.eyebrow}>Commercial</Text>
             <Text style={styles.header}>Dashboard</Text>
             <Text style={styles.subtitle}>
-      Storefront, products, product trial evidence, feed campaigns, courses,
+              Storefront, products, product trial evidence, feed campaigns, courses,
               lives, inventory, analytics, and external tracking.
             </Text>
           </View>

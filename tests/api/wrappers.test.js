@@ -282,12 +282,12 @@ describe("API Wrappers Unit Tests", () => {
     await commercialWorkflowsApi.updateProductTrial("trial 1", {
       status: "active"
     });
-    await commercialWorkflowsApi.fetchCommercialGrows();
-    await commercialWorkflowsApi.createCommercialGrow({
+    await commercialWorkflowsApi.fetchProductTrialEvidenceRuns();
+    await commercialWorkflowsApi.createProductTrialEvidenceRun({
       name: "Bloom Trial",
       status: "active"
     });
-    await commercialWorkflowsApi.updateCommercialGrow("grow 1", {
+    await commercialWorkflowsApi.updateProductTrialEvidenceRun("grow 1", {
       publicShareStatus: "public_ready"
     });
     await commercialWorkflowsApi.fetchSoilNutrientBatches();

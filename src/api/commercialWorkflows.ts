@@ -234,17 +234,19 @@ export async function saveProductTrialAIReview(
   return res?.trial ?? res?.productTrial ?? res?.updated ?? res;
 }
 
-export async function fetchCommercialGrows(): Promise<CommercialGrow[]> {
+export async function fetchProductTrialEvidenceRuns(): Promise<CommercialGrow[]> {
   const res = await apiRequest("/api/commercial/grows");
   return listFromEnvelope(res, ["grows", "commercialGrows"]);
 }
 
-export async function fetchCommercialGrow(id: string): Promise<CommercialGrow | null> {
+export async function fetchProductTrialEvidenceRun(
+  id: string
+): Promise<CommercialGrow | null> {
   const res = await apiRequest(`/api/commercial/grows/${encodeURIComponent(id)}`);
   return res?.grow ?? res?.commercialGrow ?? res?.data?.grow ?? res?.data ?? res ?? null;
 }
 
-export async function createCommercialGrow(data: Partial<CommercialGrow>) {
+export async function createProductTrialEvidenceRun(data: Partial<CommercialGrow>) {
   const res = await apiRequest("/api/commercial/grows", {
     method: "POST",
     body: data
@@ -252,13 +254,21 @@ export async function createCommercialGrow(data: Partial<CommercialGrow>) {
   return res?.grow ?? res?.commercialGrow ?? res?.created ?? res;
 }
 
-export async function updateCommercialGrow(id: string, data: Partial<CommercialGrow>) {
+export async function updateProductTrialEvidenceRun(
+  id: string,
+  data: Partial<CommercialGrow>
+) {
   const res = await apiRequest(`/api/commercial/grows/${encodeURIComponent(id)}`, {
     method: "PATCH",
     body: data
   });
   return res?.grow ?? res?.commercialGrow ?? res?.updated ?? res;
 }
+
+export const fetchCommercialGrows = fetchProductTrialEvidenceRuns;
+export const fetchCommercialGrow = fetchProductTrialEvidenceRun;
+export const createCommercialGrow = createProductTrialEvidenceRun;
+export const updateCommercialGrow = updateProductTrialEvidenceRun;
 
 export async function fetchSoilNutrientBatches(): Promise<SoilNutrientBatch[]> {
   const res = await apiRequest("/api/commercial/batches");
