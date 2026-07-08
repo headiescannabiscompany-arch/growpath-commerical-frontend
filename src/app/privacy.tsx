@@ -1,6 +1,7 @@
 import React from "react";
 
 import PublicInfoPage from "@/components/PublicInfoPage";
+import { SUPPORT_CONTACTS } from "@/config/supportContacts";
 
 export default function PrivacyPage() {
   return (
@@ -27,7 +28,7 @@ export default function PrivacyPage() {
         },
         {
           title: "Contact",
-          body: "For privacy questions, contact GrowPath support through the support page or your account support channel."
+          body: `For privacy questions or data-rights requests, contact ${SUPPORT_CONTACTS.privacy}. For legal notices, use ${SUPPORT_CONTACTS.legal}. For security reports, use ${SUPPORT_CONTACTS.security}.`
         }
       ]}
     />

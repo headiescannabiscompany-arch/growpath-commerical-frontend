@@ -1,6 +1,7 @@
 import React from "react";
 
 import PublicInfoPage from "@/components/PublicInfoPage";
+import { SUPPORT_CONTACTS } from "@/config/supportContacts";
 
 export default function TermsPage() {
   return (
@@ -28,6 +29,10 @@ export default function TermsPage() {
         {
           title: "Service Changes",
           body: "GrowPath may update features, policies, pricing, or these terms. Continued use after changes means you accept the updated terms."
+        },
+        {
+          title: "Contact",
+          body: `For terms, legal, or account notices, contact ${SUPPORT_CONTACTS.legal}. For general account support, use ${SUPPORT_CONTACTS.general}.`
         }
       ]}
     />
