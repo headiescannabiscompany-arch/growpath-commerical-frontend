@@ -99,8 +99,9 @@ export default function GuildCodeScreen() {
         <View style={styles.rule}>
           <Text style={styles.ruleNumber}>5. No spam, no selling, no DMs</Text>
           <Text style={styles.ruleBody}>
-            The Forum is not a marketplace.{"\n\n"}
-            No promotions, solicitations, or private outreach.
+            The Forum is not a Storefront, Feed campaign, or checkout surface.{"\n\n"}
+            No promotions, solicitations, or private outreach. Product and course sales
+            belong in approved Storefront and Stripe flows.
           </Text>
         </View>
 

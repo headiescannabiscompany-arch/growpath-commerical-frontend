@@ -604,6 +604,7 @@ Completed and pushed:
 328. Forum post detail anonymous author fallbacks now say Forum member instead of Community member, keeping discussion labels aligned without changing legacy route/API compatibility names.
 329. Schedule/Agenda now forwards full live, course, and feed campaign records into the shared source-link resolver, so viewer course releases with storefront slugs open public storefront course pages instead of losing brand context.
 330. Alert Center and Notification Center now preserve storefront slug aliases when creating follow-up tasks from source-linked product/course/live/storefront records, so task source links can keep exact public storefront routes after alert/notification conversion.
+331. Growers Forum code-of-conduct copy now says the Forum is not a Storefront, Feed campaign, or checkout surface, and points sales/promotions to approved Storefront and Stripe flows instead of legacy marketplace language.
 
 ## Working Rule For Codex
 
