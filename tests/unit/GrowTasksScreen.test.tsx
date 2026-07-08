@@ -139,6 +139,9 @@ describe("GrowTasksScreen", () => {
         sourceObjectId: "batch-1",
         sourceToolRunId: "toolrun-1",
         sourceDiagnosisId: "diag-2",
+        linkedGrowId: "grow-task-1",
+        linkedProductBatchId: "batch-1",
+        linkedToolRunId: "toolrun-1",
         linkedLogId: "log-3",
         reminderPlan: { label: "24 hours before", channels: ["in_app"] },
         recurrence: { rule: "every 7 days" }

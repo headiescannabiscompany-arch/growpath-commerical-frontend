@@ -50,6 +50,82 @@ const sourceTypes = [
   "forum"
 ] as const;
 
+function linkedFieldsForSource(
+  sourceType: string,
+  sourceObjectId: string,
+  growId: string,
+  toolRunId: string
+) {
+  const source = sourceObjectId.trim();
+  const runId = toolRunId.trim();
+  const links: Record<string, string> = {
+    linkedGrowId: growId
+  };
+  if (runId) links.linkedToolRunId = runId;
+  if (!source) return links;
+  switch (sourceType) {
+    case "grow":
+      links.linkedGrowId = source;
+      break;
+    case "plant":
+      links.linkedPlantId = source;
+      break;
+    case "tool_run":
+      links.linkedToolRunId = source;
+      break;
+    case "recipe":
+      links.linkedRecipeId = source;
+      break;
+    case "product":
+      links.linkedProductId = source;
+      break;
+    case "product_batch":
+      links.linkedProductBatchId = source;
+      break;
+    case "product_trial":
+      links.linkedProductTrialId = source;
+      break;
+    case "storefront":
+      links.linkedStorefrontId = source;
+      break;
+    case "order":
+      links.linkedOrderId = source;
+      break;
+    case "course":
+      links.linkedCourseId = source;
+      break;
+    case "lesson":
+      links.linkedLessonId = source;
+      break;
+    case "live":
+    case "live_replay":
+      links.linkedLiveId = source;
+      break;
+    case "alert":
+    case "sensor_alert":
+      links.linkedAlertId = source;
+      break;
+    case "facility":
+      links.linkedFacilityId = source;
+      break;
+    case "room":
+      links.linkedRoomId = source;
+      break;
+    case "facility_run":
+      links.linkedFacilityRunId = source;
+      break;
+    case "sop":
+      links.linkedSopId = source;
+      break;
+    case "forum":
+      links.linkedForumThreadId = source;
+      break;
+    default:
+      break;
+  }
+  return links;
+}
+
 function taskSource(task: PersonalTask) {
   if (task.sourceType) return task.sourceType.replace(/_/g, " ");
   if (task.sourceToolRunId) return "tool run";
@@ -224,6 +300,7 @@ export default function GrowTasksScreen() {
     try {
       const created = await createPersonalTask({
         growId,
+        linkedGrowId: growId,
         title: newTitle.trim(),
         description: newDescription.trim(),
         dueDate: newDueDate.trim() || undefined,
@@ -233,6 +310,7 @@ export default function GrowTasksScreen() {
         sourceToolRunId: newToolRunId.trim() || undefined,
         sourceDiagnosisId: newDiagnosisId.trim() || undefined,
         linkedLogId: newLinkedLogId.trim() || undefined,
+        ...linkedFieldsForSource(newSourceType, newSourceObjectId, growId, newToolRunId),
         reminderPlan: newReminderNote.trim()
           ? { label: newReminderNote.trim(), channels: ["in_app"] }
           : undefined,
