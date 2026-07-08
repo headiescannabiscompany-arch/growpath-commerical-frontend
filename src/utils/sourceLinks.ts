@@ -151,7 +151,7 @@ export function sourceObjectHref(source: SourceLike) {
       return `/home/facility/feed${sourceId ? `?campaignId=${encoded(sourceId)}` : ""}`;
     if (workspace === "commercial")
       return `/home/commercial/feed${sourceId ? `?campaignId=${encoded(sourceId)}` : ""}`;
-    return "/feed";
+    return `/feed${sourceId ? `?campaignId=${encoded(sourceId)}` : ""}`;
   }
 
   if (sourceType === "storefront") {

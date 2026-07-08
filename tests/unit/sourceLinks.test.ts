@@ -228,6 +228,14 @@ describe("sourceObjectHref", () => {
 
     expect(
       sourceObjectHref({
+        sourceType: "feed_campaign",
+        sourceId: "campaign-1",
+        workspaceType: "personal"
+      })
+    ).toBe("/feed?campaignId=campaign-1");
+
+    expect(
+      sourceObjectHref({
         sourceType: "alert_snooze",
         sourceId: "alert-1",
         workspaceType: "commercial"
