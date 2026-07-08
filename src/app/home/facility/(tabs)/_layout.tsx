@@ -5,17 +5,24 @@ import { ActivityIndicator, useWindowDimensions, View } from "react-native";
 import { useEntitlements } from "@/entitlements";
 import { useFacility } from "@/state/useFacility";
 
+export function shouldHideFacilityTabBar(pathname = "") {
+  return (
+    pathname.includes("/ai-diagnosis-photo") ||
+    pathname.includes("/ai-template") ||
+    pathname.includes("/inventory/new") ||
+    pathname.includes("/inventory/") ||
+    pathname.includes("/CreateInventoryItemScreen") ||
+    pathname.includes("/InventoryItemDetailScreen")
+  );
+}
+
 export default function FacilityTabsLayout() {
   const ent = useEntitlements();
   const { selectedId } = useFacility();
   const pathname = usePathname();
   const { width } = useWindowDimensions();
   const compactTabs = width < 700;
-  const hideTabBar =
-    pathname.includes("/ai-diagnosis-photo") ||
-    pathname.includes("/ai-template") ||
-    pathname.includes("/CreateInventoryItemScreen") ||
-    pathname.includes("/InventoryItemDetailScreen");
+  const hideTabBar = shouldHideFacilityTabBar(pathname);
   const tabBarStyle = hideTabBar
     ? { display: "none" as const }
     : compactTabs

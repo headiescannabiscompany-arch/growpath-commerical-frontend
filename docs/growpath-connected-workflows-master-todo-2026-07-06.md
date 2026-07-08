@@ -501,6 +501,7 @@ Completed and pushed:
 225. Deferred user verification now includes Facility inventory list, create, and detail route regressions, keeping the batched script aligned with canonical inventory routes and the nested back-control rule.
 226. Commercial product-trial evidence runs now have canonical `/home/commercial/evidence-runs`, `/new`, and `/:id` wrapper routes; owner-facing product, batch, trial, inventory, marketing, and source-link paths now route there while legacy `/home/commercial/grows` remains only as compatibility implementation.
 227. Deferred user verification now explicitly asks the browser pass to confirm Commercial Product Trials open private evidence-run list, create, and detail actions through `/home/commercial/evidence-runs` routes instead of exposing a commercial grow workspace.
+228. Facility tabs now hide the bottom tab bar for canonical nested inventory create/detail routes (`/home/facility/inventory/new` and `/home/facility/inventory/:id`) while keeping the inventory root tabbed and preserving legacy filename-route compatibility.
 
 ## Working Rule For Codex
 
