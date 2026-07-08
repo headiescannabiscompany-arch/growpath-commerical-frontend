@@ -6,6 +6,7 @@ import { apiRequest } from "@/api/apiRequest";
 import { endpoints } from "@/api/endpoints";
 import { useFacility } from "@/state/useFacility";
 import { CAPABILITY_KEYS, useEntitlements } from "@/entitlements";
+import { ScreenBoundary } from "@/components/ScreenBoundary";
 
 export default function FacilityCreateInventoryItemScreen() {
   const router = useRouter();
@@ -51,60 +52,66 @@ export default function FacilityCreateInventoryItemScreen() {
   };
 
   return (
-    <View style={styles.container}>
-      <Text style={styles.h1}>Create Inventory Item</Text>
-      {!canWriteInventory ? (
-        <Text style={styles.lockedText}>
-          Inventory changes unlock after facility checkout is active.
-        </Text>
-      ) : null}
-      <TextInput
-        value={name}
-        onChangeText={setName}
-        accessibilityLabel="Inventory item name"
-        placeholder="Name"
-        style={styles.input}
-      />
-      <TextInput
-        value={sku}
-        onChangeText={setSku}
-        accessibilityLabel="Inventory item SKU"
-        placeholder="SKU (optional)"
-        style={styles.input}
-      />
-      <TextInput
-        value={quantity}
-        onChangeText={setQuantity}
-        accessibilityLabel="Inventory item quantity"
-        placeholder="Quantity"
-        keyboardType="numeric"
-        style={styles.input}
-      />
-      <TextInput
-        value={unit}
-        onChangeText={setUnit}
-        accessibilityLabel="Inventory item unit"
-        placeholder="Unit (bags, bottles, grams)"
-        style={styles.input}
-      />
-      <TextInput
-        value={reorderPoint}
-        onChangeText={setReorderPoint}
-        accessibilityLabel="Inventory item reorder point"
-        placeholder="Reorder point"
-        keyboardType="numeric"
-        style={styles.input}
-      />
-      <Pressable
-        onPress={createItem}
-        disabled={!canSave}
-        accessibilityRole="button"
-        accessibilityLabel="Create inventory item"
-        style={[styles.button, !canSave && styles.disabled]}
-      >
-        <Text style={styles.buttonText}>{saving ? "Saving..." : "Create Item"}</Text>
-      </Pressable>
-    </View>
+    <ScreenBoundary
+      title="Create Inventory Item"
+      showBack
+      backFallbackHref="/home/facility/inventory"
+    >
+      <View style={styles.container}>
+        <Text style={styles.h1}>Create Inventory Item</Text>
+        {!canWriteInventory ? (
+          <Text style={styles.lockedText}>
+            Inventory changes unlock after facility checkout is active.
+          </Text>
+        ) : null}
+        <TextInput
+          value={name}
+          onChangeText={setName}
+          accessibilityLabel="Inventory item name"
+          placeholder="Name"
+          style={styles.input}
+        />
+        <TextInput
+          value={sku}
+          onChangeText={setSku}
+          accessibilityLabel="Inventory item SKU"
+          placeholder="SKU (optional)"
+          style={styles.input}
+        />
+        <TextInput
+          value={quantity}
+          onChangeText={setQuantity}
+          accessibilityLabel="Inventory item quantity"
+          placeholder="Quantity"
+          keyboardType="numeric"
+          style={styles.input}
+        />
+        <TextInput
+          value={unit}
+          onChangeText={setUnit}
+          accessibilityLabel="Inventory item unit"
+          placeholder="Unit (bags, bottles, grams)"
+          style={styles.input}
+        />
+        <TextInput
+          value={reorderPoint}
+          onChangeText={setReorderPoint}
+          accessibilityLabel="Inventory item reorder point"
+          placeholder="Reorder point"
+          keyboardType="numeric"
+          style={styles.input}
+        />
+        <Pressable
+          onPress={createItem}
+          disabled={!canSave}
+          accessibilityRole="button"
+          accessibilityLabel="Create inventory item"
+          style={[styles.button, !canSave && styles.disabled]}
+        >
+          <Text style={styles.buttonText}>{saving ? "Saving..." : "Create Item"}</Text>
+        </Pressable>
+      </View>
+    </ScreenBoundary>
   );
 }
 

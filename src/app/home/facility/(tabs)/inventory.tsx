@@ -228,7 +228,7 @@ export default function FacilityInventoryTab() {
           <Pressable
             accessibilityRole="button"
             accessibilityLabel="Create inventory item"
-            onPress={() => router.push("/home/facility/CreateInventoryItemScreen")}
+            onPress={() => router.push("/home/facility/inventory/new")}
             style={styles.primaryButton}
           >
             <Text style={styles.primaryText}>Create Item</Text>

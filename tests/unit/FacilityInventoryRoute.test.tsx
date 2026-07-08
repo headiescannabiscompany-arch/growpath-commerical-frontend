@@ -70,7 +70,7 @@ describe("FacilityInventoryTab", () => {
     expect(screen.queryByLabelText("Open inventory AI review")).toBeNull();
   });
 
-  it("shows AI inventory review once inventory data exists", async () => {
+  it("uses canonical facility inventory routes for create and detail", async () => {
     mockApiRequest.mockResolvedValue({
       items: [
         {
@@ -88,9 +88,13 @@ describe("FacilityInventoryTab", () => {
 
     await waitFor(() => {
       expect(screen.getByText("Kelp Meal")).toBeTruthy();
+      expect(screen.getByLabelText("Create inventory item")).toBeTruthy();
       expect(screen.getByLabelText("Open inventory AI review")).toBeTruthy();
       expect(screen.getAllByText("low stock").length).toBeGreaterThan(0);
     });
+
+    fireEvent.press(screen.getByLabelText("Create inventory item"));
+    expect(mockPush).toHaveBeenCalledWith("/home/facility/inventory/new");
 
     fireEvent.press(screen.getByLabelText("Open inventory item Kelp Meal"));
     expect(mockPush).toHaveBeenCalledWith({

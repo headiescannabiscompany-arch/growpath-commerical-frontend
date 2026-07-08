@@ -497,6 +497,7 @@ Completed and pushed:
 221. Support/ops handoff is now marked live: `support`, `billing`, `privacy`, `legal`, `security`, `commercial`, and `facility` @growpathai.com aliases are documented as production contacts, and config coverage locks the shared alias map plus routed support topics.
 222. Facility Feed/Campaigns route access is now guarded as a selected-facility workspace route, with regression coverage proving unselected facility users stay on setup while selected facility users can open `/home/facility/feed`.
 223. Facility inventory source links now use the canonical `/home/facility/inventory/:id` route, with a wrapper route and focused coverage across inventory cards, source links, facility task detail, alerts, and notifications replacing the old screen-filename URL.
+224. Facility inventory creation now uses the canonical `/home/facility/inventory/new` route and the shared back-control shell with `/home/facility/inventory` fallback, so nested inventory setup no longer exposes the old component filename URL.
 
 ## Working Rule For Codex
 
