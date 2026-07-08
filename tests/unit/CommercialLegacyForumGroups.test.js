@@ -20,11 +20,13 @@ describe("legacy commercial Forum/Q&A groups screen", () => {
     expect(source).toContain("All Forum Groups");
     expect(source).toContain("Create Forum Group");
     expect(source).toContain("Share your question or topic with Forum/Q&A");
+    expect(source).toContain("Commercial Ops");
     expect(source).not.toContain("Discover Communities");
     expect(source).not.toContain("Featured Communities");
     expect(source).not.toContain("Create Community");
     expect(source).not.toContain("Search communities");
     expect(source).not.toContain("Share your question or topic with the community");
+    expect(source).not.toContain('"Business"');
   });
 
   it("renders featured groups from loaded data and avoids corrupted glyphs", () => {

@@ -452,7 +452,7 @@ const CommunitiesScreen = ({ navigation }) => {
                   "Equipment",
                   "Nutrients",
                   "Genetics",
-                  "Business",
+                  "Commercial Ops",
                   "Compliance"
                 ].map((topic) => (
                   <TouchableOpacity key={topic} style={styles.topicChip}>

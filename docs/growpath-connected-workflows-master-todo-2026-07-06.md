@@ -633,6 +633,7 @@ Completed and pushed:
 357. Deferred user verification now includes the new Commercial Log Detail, Commercial Profile compatibility, Personal AI, and support/profile visual-token coverage plus a manual cross-workspace visual-polish check.
 358. Connected workflow verification now passes after cleaning the Personal Forum post detail formatting drift that was blocking lint; the gate completed lint, focused connected tests, and production web export successfully.
 359. Legacy Commercial Profile compatibility copy now uses Commercial Brand Profile and Brand labels instead of Business, keeping fallback profile surfaces aligned with the storefront-first commercial workspace language.
+360. Legacy Commercial Forum/Q&A group topics now use Commercial Ops instead of Business, keeping commercial discussion vocabulary aligned with brand/storefront operations rather than generic business labels.
 
 ## Working Rule For Codex
 
