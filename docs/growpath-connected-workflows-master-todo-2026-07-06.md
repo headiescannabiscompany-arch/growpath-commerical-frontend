@@ -350,6 +350,7 @@ Completed and pushed:
 74. Visible discussion navigation now uses Forum/Q&A language across Personal, Commercial, Facility, profile, dashboard, and marketing surfaces while preserving existing route names for compatibility.
 75. Schedule, Alert Center, and Notification Center now share source-aware routing for tasks, products, courses, lives, feed campaigns, recipes/tool runs, product trials, orders, grow records, facility records, sensor alerts, and Forum/Q&A threads so reminders and alerts return users to the workflow that created them.
 76. The legacy `createFeedPost` API wrapper no longer posts to `/api/posts`; it now preserves photo uploads while creating Forum/Q&A discussions through the canonical forum endpoint so old callers cannot revive a social-feed composer.
+77. The legacy `api/posts.js` compatibility client now maps feed, trending, create, like, unlike, and comment calls onto Forum/Q&A endpoints, with regression coverage preventing old `/api/posts/*` discussion contracts from returning.
 
 ## Working Rule For Codex
 
