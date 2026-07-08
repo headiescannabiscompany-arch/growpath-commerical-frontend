@@ -6,6 +6,7 @@ import TaskRow from "../components/TaskRow";
 import { getTasks, completeTask } from "../api/tasks";
 import ScreenContainer from "../components/ScreenContainer";
 import { CAPABILITY_KEYS, useEntitlements } from "@/entitlements";
+import { radius } from "../theme/theme";
 
 export default function ScheduleScreen() {
   const [groups, setGroups] = useState(null);
@@ -96,7 +97,7 @@ export default function ScheduleScreen() {
         <View
           style={{
             backgroundColor: "#FEF2F2",
-            borderRadius: 8,
+            borderRadius: radius.card,
             padding: 12,
             marginBottom: 12,
             borderWidth: 1,
@@ -116,7 +117,7 @@ export default function ScheduleScreen() {
         style={{
           marginBottom: 18,
           backgroundColor: "#F0FDF4",
-          borderRadius: 8,
+          borderRadius: radius.card,
           padding: 12
         }}
       >
@@ -224,7 +225,7 @@ const styles = {
     backgroundColor: "white",
     width: "100%",
     maxWidth: 340,
-    borderRadius: 12,
+    borderRadius: radius.card,
     padding: 20,
     boxShadow: "0px 2px 4px rgba(0,0,0,0.25)",
     elevation: 5
@@ -259,7 +260,7 @@ const styles = {
   completeBtn: {
     backgroundColor: "#10B981",
     paddingVertical: 12,
-    borderRadius: 8,
+    borderRadius: radius.card,
     marginTop: 10,
     alignItems: "center"
   },
@@ -272,7 +273,7 @@ const styles = {
     marginTop: 10,
     backgroundColor: "#E5E7EB",
     paddingVertical: 10,
-    borderRadius: 8,
+    borderRadius: radius.card,
     alignItems: "center"
   },
   closeBtnText: {

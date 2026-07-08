@@ -2,6 +2,7 @@ import React, { useMemo } from "react";
 import { View, Text, StyleSheet, ScrollView, Platform } from "react-native";
 import { personalToolFeatures } from "../config/featureStatus";
 import { useEntitlements } from "../entitlements";
+import { radius } from "../theme/theme";
 
 export default function QAScreen() {
   const entitlements = useEntitlements();
@@ -97,7 +98,7 @@ const styles = StyleSheet.create({
   },
   section: {
     backgroundColor: "#fff",
-    borderRadius: 8,
+    borderRadius: radius.card,
     padding: 16,
     marginBottom: 16,
     ...shadow

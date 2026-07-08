@@ -747,6 +747,7 @@ Completed and pushed:
 471. Payments, Paywall, Subscription Status, Subscription upgrade, and Pricing Matrix cards/badges/actions now consume shared radius tokens while preserving live pricing constants, checkout handoff, backend-confirmed unlocks, and support fallback behavior.
 472. Facility harvest window, Harvest AI MVP, and trichome analysis cards/inputs/photo previews/actions now consume shared radius tokens while preserving canonical harvest AI function names, photo upload, and calendar writeback behavior.
 473. Facility audit logs, SOP templates, and legacy team invitation/member surfaces now consume shared radius tokens while preserving facility access checks, audit log creation, SOP CRUD, and team invite workflow behavior.
+474. Legacy task modal, schedule warning/intent panels, schedule detail modal actions, and QA diagnostic sections now consume shared radius tokens while preserving task CRUD, task completion gating, and runtime diagnostic behavior.
 
 ## Working Rule For Codex
 
