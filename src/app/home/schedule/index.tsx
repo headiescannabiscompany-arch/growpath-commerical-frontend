@@ -11,6 +11,7 @@ import { Link } from "expo-router";
 
 import { apiRequest } from "@/api/apiRequest";
 import { endpoints } from "@/api/endpoints";
+import { radius } from "@/theme/theme";
 import { sourceObjectHref } from "@/utils/sourceLinks";
 
 type CalendarItem = {
@@ -521,7 +522,7 @@ const styles = StyleSheet.create({
   subtitle: { color: "#475569", fontWeight: "700", lineHeight: 20 },
   metricGrid: { flexDirection: "row", flexWrap: "wrap", gap: 8 },
   metricCard: {
-    borderRadius: 8,
+    borderRadius: radius.card,
     borderWidth: 1,
     flexGrow: 1,
     minWidth: 120,
@@ -536,7 +537,7 @@ const styles = StyleSheet.create({
   metricLabel: { color: "#475569", fontSize: 11, fontWeight: "900" },
   refreshButton: {
     backgroundColor: "#166534",
-    borderRadius: 8,
+    borderRadius: radius.card,
     paddingHorizontal: 12,
     paddingVertical: 10
   },
@@ -544,7 +545,7 @@ const styles = StyleSheet.create({
   filterPanel: {
     backgroundColor: "#FFFFFF",
     borderColor: "#CBD5E1",
-    borderRadius: 8,
+    borderRadius: radius.card,
     borderWidth: 1,
     gap: 8,
     padding: 12
@@ -554,7 +555,7 @@ const styles = StyleSheet.create({
   filterChip: {
     backgroundColor: "#F8FAFC",
     borderColor: "#CBD5E1",
-    borderRadius: 8,
+    borderRadius: radius.card,
     borderWidth: 1,
     paddingHorizontal: 10,
     paddingVertical: 7
@@ -565,7 +566,7 @@ const styles = StyleSheet.create({
   feedback: {
     backgroundColor: "#FEF2F2",
     borderColor: "#FECACA",
-    borderRadius: 8,
+    borderRadius: radius.card,
     borderWidth: 1,
     color: "#B91C1C",
     fontWeight: "800",
@@ -589,7 +590,7 @@ const styles = StyleSheet.create({
   card: {
     backgroundColor: "#FFFFFF",
     borderColor: "#E2E8F0",
-    borderRadius: 8,
+    borderRadius: radius.card,
     borderWidth: 1,
     gap: 8,
     padding: 14
@@ -615,7 +616,7 @@ const styles = StyleSheet.create({
   linkButton: {
     alignSelf: "flex-start",
     backgroundColor: "#0F172A",
-    borderRadius: 8,
+    borderRadius: radius.card,
     paddingHorizontal: 12,
     paddingVertical: 9
   },
