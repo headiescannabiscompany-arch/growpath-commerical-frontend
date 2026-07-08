@@ -1,4 +1,4 @@
-import { Link } from "expo-router";
+import { Link, useLocalSearchParams } from "expo-router";
 import React, { useEffect, useMemo, useState } from "react";
 import { Pressable, StyleSheet, Text, TextInput, View } from "react-native";
 
@@ -117,6 +117,8 @@ function ActionLink({ href, label }: { href: string; label: string }) {
 }
 
 export default function CommercialLivesRoute() {
+  const params = useLocalSearchParams<{ liveId?: string | string[] }>();
+  const focusedLiveId = Array.isArray(params.liveId) ? params.liveId[0] : params.liveId;
   const [lives, setLives] = useState<CommercialLiveEvent[]>([]);
   const [form, setForm] = useState<LiveForm>(EMPTY_FORM);
   const [loading, setLoading] = useState(false);
@@ -511,9 +513,17 @@ export default function CommercialLivesRoute() {
           <View style={styles.list}>
             {lives.map((live) =>
               (() => {
+                const id = String(liveId(live));
                 const warnings = liveSetupWarnings(live);
+                const isFocused = Boolean(focusedLiveId && focusedLiveId === id);
                 return (
-                  <View key={liveId(live)} style={styles.liveRow}>
+                  <View
+                    key={id}
+                    accessibilityLabel={
+                      isFocused ? `Selected commercial live ${id}` : undefined
+                    }
+                    style={[styles.liveRow, isFocused ? styles.liveRowFocused : null]}
+                  >
                     <Text style={styles.liveTitle}>{live.title || "Untitled live"}</Text>
                     <Text style={styles.liveMeta}>
                       {[
@@ -676,6 +686,11 @@ const styles = StyleSheet.create({
     borderRadius: 8,
     borderWidth: 1,
     padding: 12
+  },
+  liveRowFocused: {
+    backgroundColor: "#ECFDF5",
+    borderColor: "#16A34A",
+    borderWidth: 2
   },
   liveTitle: { color: "#0F172A", fontWeight: "900" },
   liveMeta: { color: "#64748B", fontSize: 12, fontWeight: "700", marginTop: 5 }

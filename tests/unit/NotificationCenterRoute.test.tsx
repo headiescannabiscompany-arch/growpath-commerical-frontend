@@ -198,7 +198,7 @@ describe("NotificationCenterRoute", () => {
 
     fireEvent.press(screen.getByLabelText("Notification filter all"));
     expect(
-      screen.getByLabelText("Notification link /home/commercial/lives")
+      screen.getByLabelText("Notification link /home/commercial/lives?liveId=live-1")
     ).toBeTruthy();
     expect(
       screen.getByLabelText("Notification link /home/facility/tasks/task-1")

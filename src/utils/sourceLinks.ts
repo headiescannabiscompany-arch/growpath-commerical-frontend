@@ -126,7 +126,7 @@ export function sourceObjectHref(source: SourceLike) {
     sourceType === "live_rsvp"
   ) {
     return workspace === "commercial"
-      ? "/home/commercial/lives"
+      ? `/home/commercial/lives${sourceId ? `?liveId=${encoded(sourceId)}` : ""}`
       : `/feed${sourceId ? `?liveId=${encoded(sourceId)}` : ""}`;
   }
 

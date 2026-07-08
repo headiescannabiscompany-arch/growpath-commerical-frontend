@@ -12,7 +12,8 @@ jest.mock("@/api/apiRequest", () => ({
 jest.mock("expo-router", () => {
   const React = require("react");
   return {
-    Link: ({ children }: any) => React.createElement(React.Fragment, null, children)
+    Link: ({ children }: any) => React.createElement(React.Fragment, null, children),
+    useLocalSearchParams: () => ({ liveId: "live-1" })
   };
 });
 
@@ -79,6 +80,7 @@ describe("CommercialLivesRoute", () => {
     await waitFor(() => expect(screen.getByText("Lives / Twitch")).toBeTruthy());
 
     expect(screen.getByText("Soil Mix Demo")).toBeTruthy();
+    expect(screen.getByLabelText("Selected commercial live live-1")).toBeTruthy();
     expect(screen.getByText(/Product product-1/)).toBeTruthy();
     expect(screen.getByText(/Course course-1/)).toBeTruthy();
     expect(screen.getByText(/Feed campaign-1/)).toBeTruthy();
