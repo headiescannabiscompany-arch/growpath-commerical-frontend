@@ -24,6 +24,7 @@ import {
   publicLinks
 } from "@/utils/publicCommerce";
 import { sharePublicLink } from "@/utils/publicLinks";
+import { radius } from "@/theme/theme";
 
 function money(product: any) {
   const cents = Number(product?.priceCents || 0);
@@ -592,7 +593,7 @@ const styles = StyleSheet.create({
   },
   feedback: {
     backgroundColor: "#F1F5F9",
-    borderRadius: 8,
+    borderRadius: radius.card,
     color: "#334155",
     marginBottom: 10,
     padding: 8
@@ -603,7 +604,7 @@ const styles = StyleSheet.create({
     alignItems: "center",
     backgroundColor: "#FFFFFF",
     borderColor: "#E2E8F0",
-    borderRadius: 8,
+    borderRadius: radius.card,
     borderWidth: 1,
     flexDirection: "row",
     gap: 12,
@@ -630,7 +631,7 @@ const styles = StyleSheet.create({
   profilePanel: {
     backgroundColor: "#F8FAFC",
     borderColor: "#E2E8F0",
-    borderRadius: 8,
+    borderRadius: radius.card,
     borderWidth: 1,
     gap: 8,
     marginBottom: 12,
@@ -642,7 +643,7 @@ const styles = StyleSheet.create({
     alignSelf: "flex-start",
     backgroundColor: "#F1F5F9",
     borderColor: "#CBD5E1",
-    borderRadius: 8,
+    borderRadius: radius.card,
     borderWidth: 1,
     paddingHorizontal: 14,
     paddingVertical: 10
@@ -661,7 +662,7 @@ const styles = StyleSheet.create({
   },
   button: {
     backgroundColor: "#166534",
-    borderRadius: 8,
+    borderRadius: radius.card,
     paddingHorizontal: 16,
     paddingVertical: 10
   },

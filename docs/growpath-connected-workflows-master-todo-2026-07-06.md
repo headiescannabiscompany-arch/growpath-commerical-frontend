@@ -708,6 +708,7 @@ Completed and pushed:
 432. Facility Compliance root tiles, cards, create/resolve/approve/reject actions, SOP/deviation inputs, and feedback panel now consume the shared 8px card radius token, keeping compliance operations aligned with audit detail polish.
 433. Facility cultivation record surfaces for grows, logs, and plants now use the shared 8px card radius token on list rows, detail cards, plant summaries, forms, feedback, and create actions while preserving room/batch/status pills.
 434. Facility Reports export actions, readiness panels, secondary actions, report cards, and metric tiles now consume the shared 8px card radius token, completing the non-pill Facility tab radius pass.
+435. Public storefront discovery, storefront home, product detail, and course detail inputs, feedback panels, product/spec cards, profile panels, CTAs, linked rows, and line panels now consume the shared 8px card radius token while preserving storefront/course status pills.
 
 ## Working Rule For Codex
 

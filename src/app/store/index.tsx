@@ -5,6 +5,7 @@ import { Pressable, StyleSheet, Text, TextInput, View } from "react-native";
 import { searchPublicStorefronts } from "@/api/storefront";
 import AppCard from "@/components/layout/AppCard";
 import AppPage from "@/components/layout/AppPage";
+import { radius } from "@/theme/theme";
 
 function asArray(payload: any) {
   if (Array.isArray(payload)) return payload;
@@ -263,7 +264,7 @@ const styles = StyleSheet.create({
   },
   input: {
     borderColor: "#CBD5E1",
-    borderRadius: 8,
+    borderRadius: radius.card,
     borderWidth: 1,
     color: "#111827",
     marginBottom: 10,
@@ -273,7 +274,7 @@ const styles = StyleSheet.create({
   primaryButton: {
     alignItems: "center",
     backgroundColor: "#166534",
-    borderRadius: 8,
+    borderRadius: radius.card,
     paddingHorizontal: 14,
     paddingVertical: 11
   },
@@ -285,7 +286,7 @@ const styles = StyleSheet.create({
     alignItems: "center",
     backgroundColor: "#F1F5F9",
     borderColor: "#CBD5E1",
-    borderRadius: 8,
+    borderRadius: radius.card,
     borderWidth: 1,
     paddingHorizontal: 14,
     paddingVertical: 11

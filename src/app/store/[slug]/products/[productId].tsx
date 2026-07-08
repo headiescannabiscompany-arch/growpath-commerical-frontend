@@ -18,6 +18,7 @@ import AppCard from "@/components/layout/AppCard";
 import AppPage from "@/components/layout/AppPage";
 import { publicGrowInterests } from "@/utils/publicCommerce";
 import { sharePublicLink } from "@/utils/publicLinks";
+import { radius } from "@/theme/theme";
 
 function asArray(value: any) {
   return Array.isArray(value) ? value : [];
@@ -739,7 +740,7 @@ const styles = StyleSheet.create({
   error: { color: "#B91C1C", fontWeight: "800" },
   feedback: {
     backgroundColor: "#F1F5F9",
-    borderRadius: 8,
+    borderRadius: radius.card,
     color: "#334155",
     marginBottom: 10,
     padding: 8
@@ -753,7 +754,7 @@ const styles = StyleSheet.create({
   specGrid: { gap: 8 },
   specRow: {
     borderColor: "#E2E8F0",
-    borderRadius: 8,
+    borderRadius: radius.card,
     borderWidth: 1,
     padding: 10
   },
@@ -773,7 +774,7 @@ const styles = StyleSheet.create({
   primaryButton: {
     alignItems: "center",
     backgroundColor: "#166534",
-    borderRadius: 8,
+    borderRadius: radius.card,
     paddingHorizontal: 16,
     paddingVertical: 10
   },
@@ -782,7 +783,7 @@ const styles = StyleSheet.create({
     alignItems: "center",
     backgroundColor: "#F1F5F9",
     borderColor: "#CBD5E1",
-    borderRadius: 8,
+    borderRadius: radius.card,
     borderWidth: 1,
     paddingHorizontal: 14,
     paddingVertical: 10
@@ -807,7 +808,7 @@ const styles = StyleSheet.create({
   linkedCopy: { flex: 1, gap: 4 },
   linePanel: {
     borderColor: "#BBF7D0",
-    borderRadius: 8,
+    borderRadius: radius.card,
     borderWidth: 1,
     gap: 6,
     marginTop: 10,
