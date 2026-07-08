@@ -1,5 +1,6 @@
 import React from "react";
 import { View, Text, TouchableOpacity, StyleSheet } from "react-native";
+import { radius } from "../theme/theme";
 
 export default function ForumFilters({
   visible,
@@ -46,7 +47,7 @@ const styles = StyleSheet.create({
   filterDrawer: {
     backgroundColor: "#f9f9f9",
     padding: 12,
-    borderRadius: 8,
+    borderRadius: radius.card,
     marginBottom: 12,
     borderWidth: 1,
     borderColor: "#eee"
@@ -74,7 +75,7 @@ const styles = StyleSheet.create({
   filterChip: {
     paddingHorizontal: 12,
     paddingVertical: 6,
-    borderRadius: 16,
+    borderRadius: radius.pill,
     backgroundColor: "#fff",
     borderWidth: 1,
     borderColor: "#ddd"

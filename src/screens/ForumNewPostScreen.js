@@ -24,6 +24,7 @@ import {
 import { useAuth } from "@/auth/AuthContext";
 import { maybePromptAttachPhotosToGrow } from "@/utils/growPhotoAttachment";
 import { persistImageUris } from "@/utils/photoUploads";
+import { radius } from "../theme/theme";
 
 const categoryOptions = [
   { key: "general", label: "General", desc: "Updates, questions, daily logs" },
@@ -284,7 +285,7 @@ const styles = StyleSheet.create({
   },
   input: {
     backgroundColor: "#f3f3f3",
-    borderRadius: 10,
+    borderRadius: radius.card,
     padding: 10,
     marginBottom: 15
   },
@@ -300,7 +301,7 @@ const styles = StyleSheet.create({
     backgroundColor: "#F3F4F6",
     paddingHorizontal: 16,
     paddingVertical: 12,
-    borderRadius: 12,
+    borderRadius: radius.card,
     marginRight: 12,
     minWidth: 140,
     borderWidth: 2,
@@ -313,7 +314,7 @@ const styles = StyleSheet.create({
   identityBox: {
     backgroundColor: "#F3F4F6",
     padding: 12,
-    borderRadius: 10,
+    borderRadius: radius.card,
     marginBottom: 10
   },
   identityTitle: {
@@ -343,14 +344,14 @@ const styles = StyleSheet.create({
   photo: {
     width: 90,
     height: 90,
-    borderRadius: 10,
+    borderRadius: radius.card,
     marginRight: 10
   },
   addPhotoBox: {
     width: 90,
     height: 90,
     backgroundColor: "#eaeaea",
-    borderRadius: 10,
+    borderRadius: radius.card,
     alignItems: "center",
     justifyContent: "center"
   },

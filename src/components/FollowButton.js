@@ -1,6 +1,7 @@
 import React, { useEffect, useState } from "react";
 import { TouchableOpacity, Text } from "react-native";
 import { followUser, unfollowUser, isFollowing } from "../api/users";
+import { radius } from "../theme/theme";
 
 export default function FollowButton({ userId }) {
   const [following, setFollowing] = useState(false);
@@ -41,7 +42,7 @@ export default function FollowButton({ userId }) {
       style={{
         paddingHorizontal: 12,
         paddingVertical: 6,
-        borderRadius: 8,
+        borderRadius: radius.card,
         backgroundColor: following ? "#ddd" : "#2ecc71"
       }}
     >

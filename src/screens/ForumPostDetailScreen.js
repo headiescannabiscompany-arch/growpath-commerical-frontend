@@ -28,6 +28,7 @@ import {
 import { applyLikeMetadata, userHasLiked } from "../utils/posts.js";
 import { useAuth } from "@/auth/AuthContext";
 import { resolveImageUrl } from "../utils/images.js";
+import { radius } from "../theme/theme";
 
 export function ForumPostDetailScreen({ route, navigation }) {
   const { id } = route.params;
@@ -341,7 +342,7 @@ const styles = StyleSheet.create({
   photo: {
     width: "100%",
     height: 260,
-    borderRadius: 10,
+    borderRadius: radius.card,
     marginBottom: 10
   },
   tagsRow: {
@@ -354,7 +355,7 @@ const styles = StyleSheet.create({
     color: "#2e7d32",
     paddingHorizontal: 8,
     paddingVertical: 4,
-    borderRadius: 12,
+    borderRadius: radius.pill,
     fontSize: 12,
     marginRight: 6,
     marginBottom: 4,
@@ -431,7 +432,7 @@ const styles = StyleSheet.create({
   commentInput: {
     flex: 1,
     backgroundColor: "#eee",
-    borderRadius: 6,
+    borderRadius: radius.card,
     padding: 10,
     maxHeight: 80
   },

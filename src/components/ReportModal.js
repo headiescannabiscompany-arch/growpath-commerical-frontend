@@ -1,6 +1,7 @@
 import React, { useState } from "react";
 import { Modal, View, Text, TextInput, Button, StyleSheet } from "react-native";
 import { submitReport } from "../api/reports";
+import { radius } from "../theme/theme";
 
 const ReportModal = ({ visible, onClose, contentType, contentId, token, onSuccess }) => {
   const [reason, setReason] = useState("");
@@ -64,7 +65,7 @@ const styles = StyleSheet.create({
   },
   container: {
     backgroundColor: "#fff",
-    borderRadius: 10,
+    borderRadius: radius.card,
     padding: 20,
     width: "85%",
     maxWidth: 400
@@ -77,7 +78,7 @@ const styles = StyleSheet.create({
   input: {
     borderWidth: 1,
     borderColor: "#ccc",
-    borderRadius: 5,
+    borderRadius: radius.card,
     padding: 10,
     minHeight: 60,
     marginBottom: 10,
