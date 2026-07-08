@@ -125,10 +125,10 @@ const manualChecks = [
     ]
   },
   {
-    area: "Live support aliases",
+    area: "Support alias UI smoke check",
     checks: [
-      "Open Support and confirm general, billing, orders, sales, commercial, courses, live, facility, partners, contact, privacy, legal, and security requests show the live @growpathai.com aliases.",
-      "Confirm sender-only aliases noreply@growpathai.com and notifications@growpathai.com are configured for system email use but are not displayed as public support destinations.",
+      "Owner confirmed support is live with all aliases; open Support and verify general, billing, orders, sales, commercial, courses, live, facility, partners, contact, privacy, legal, and security requests still display the routed @growpathai.com aliases.",
+      "Verify sender-only aliases noreply@growpathai.com and notifications@growpathai.com remain configured for system email use but are not displayed as public support destinations.",
       "Open Privacy, Terms, and payment help surfaces and confirm they route privacy/legal/security/billing copy to the live aliases instead of placeholders."
     ]
   },
@@ -253,6 +253,7 @@ function renderChecklist() {
     "## Notes",
     "",
     "- Facility visual quality should be applied across Personal/Pro and Commercial UI, not kept only in Facility.",
+    "- Owner confirmed support is live with all aliases; keep future checks focused on UI routing and sender-only visibility.",
     "- Known non-blocking current test noise: some facility and NPK tests may emit React act(...) warnings while still passing.",
     ""
   );

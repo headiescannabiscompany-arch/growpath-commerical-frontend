@@ -618,6 +618,7 @@ Completed and pushed:
 342. Schedule/Agenda and the shared source-link resolver now infer `linkedCourseAssignmentId` as course-assignment context, so assignment calendar items reopen the course workflow instead of falling back to generic task pages when `sourceType` is missing.
 343. Shared course source links now carry exact `lessonId` and `assignmentId` query context on commercial, personal/public storefront, and facility course/SOP routes, so task and schedule links can open the parent course while preserving the exact child record that caused the action.
 344. Personal Task Center, grow-specific Tasks, Commercial Task Center/detail, and Facility Tasks/detail now all recognize `course_assignment` sources and preserve `linkedCourseAssignmentId` so course/SOP assignment tasks create, display, and reopen the exact assignment context consistently across workspace modes.
+345. Deferred user verification now records that the owner confirmed support is live with all aliases, shifting the remaining support check to UI routing and sender-only visibility instead of treating alias creation as an open blocker.
 
 ## Working Rule For Codex
 
