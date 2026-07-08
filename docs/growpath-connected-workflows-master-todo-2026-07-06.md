@@ -567,6 +567,7 @@ Completed and pushed:
 291. Personal home Explore now links to `Forum / Q&A` instead of `Community`, matching the Personal tab label and keeping discussion language separate from Feed/Campaigns.
 292. Registration, search, and subscription feature copy now refer to Forum/Q&A where they mean the discussion feature, while Feed/Campaigns remains the outreach/ad surface.
 293. Onboarding guild-selection and walkthrough copy now presents Forum/Q&A groups and Feed campaign targeting explicitly, so new users learn the discussion-versus-outreach split before checkout.
+294. Register-account E2E expectations now look for Forum group onboarding labels instead of stale guild-selection copy, keeping browser coverage aligned with the visible onboarding flow.
 
 ## Working Rule For Codex
 

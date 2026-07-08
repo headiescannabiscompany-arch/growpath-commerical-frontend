@@ -107,17 +107,19 @@ async function registerAs(page: any, label: string, email: string) {
   await page.getByLabel("Register email").fill(email);
   await page.getByLabel("Register password").fill("Password123!");
   await page.getByRole("button", { name: `Create ${label} account` }).click();
-  await expect(page.getByText("Select your guilds")).toBeVisible({ timeout: 30000 });
+  await expect(page.getByText("Select your forum groups")).toBeVisible({
+    timeout: 30000
+  });
 }
 
-test.describe("register account types and guild routing", () => {
+test.describe("register account types and forum group routing", () => {
   for (const row of [
     { label: "Free", plan: "free", mode: "personal" },
     { label: "Pro", plan: "pro", mode: "personal" },
     { label: "Commercial", plan: "commercial", mode: "commercial" },
     { label: "Facility", plan: "facility", mode: "facility" }
   ]) {
-    test(`${row.label} signup sends ${row.plan}/${row.mode} and enters guild selection`, async ({
+    test(`${row.label} signup sends ${row.plan}/${row.mode} and enters forum group selection`, async ({
       page
     }) => {
       const payloads: any[] = [];
@@ -131,7 +133,7 @@ test.describe("register account types and guild routing", () => {
         email: `${row.plan}@example.test`
       });
       await expect(
-        page.getByRole("button", { name: "Continue after selecting guilds" })
+        page.getByRole("button", { name: "Continue after selecting forum groups" })
       ).toBeDisabled();
     });
   }
@@ -146,7 +148,7 @@ test.describe("register account types and guild routing", () => {
     await expect(page.getByText("Fruit Tree Gardeners")).toBeVisible();
     await expect(page.getByText("Cannabis Facility Operators")).toHaveCount(0);
     await expect(
-      page.getByRole("button", { name: "Continue after selecting guilds" })
+      page.getByRole("button", { name: "Continue after selecting forum groups" })
     ).toBeEnabled();
   });
 });

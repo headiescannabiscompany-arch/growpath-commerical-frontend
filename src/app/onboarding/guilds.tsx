@@ -113,7 +113,7 @@ export default function GuildOnboardingScreen() {
         router.replace(next as any);
       }
     } catch (e: any) {
-      setError(e?.message || "Unable to save guild selections.");
+      setError(e?.message || "Unable to save forum group selections.");
     } finally {
       setSaving(false);
     }
