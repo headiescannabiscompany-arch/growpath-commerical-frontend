@@ -722,6 +722,7 @@ Completed and pushed:
 446. Shared primitives for AppCard, InlineError, BackButton, ErrorState, ErrorBoundary, and rectangular SkeletonLoader placeholders now consume the shared 8px card radius token, carrying the Facility-style visual treatment into common app infrastructure.
 447. Room setup, grow-start, plant assignment, and plant action cards now consume the shared 8px card radius token, applying the Facility-style polish to the setup path that creates rooms, batches, plants, tasks, logs, and AI context.
 448. Root bootstrap recovery actions and the legacy facility selection surface now consume shared radius tokens for buttons, cards, feedback panels, and status badges, keeping app entry and facility selection aligned with the shared visual system.
+449. AI result cards and AI context selectors now consume the shared 8px card radius token, keeping evidence, grow/room/photo context, notes, and persisted ToolRun-style outputs visually aligned across user modes.
 
 ## Working Rule For Codex
 

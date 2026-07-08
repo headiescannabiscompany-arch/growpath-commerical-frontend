@@ -1,6 +1,7 @@
 ﻿import React from "react";
 import { Text, TextInput, TouchableOpacity, View } from "react-native";
 import { InlineError } from "@/components/InlineError";
+import { radius } from "@/theme/theme";
 
 type Props = {
   growId: string | null;
@@ -30,7 +31,7 @@ export function AiContextBlock(props: Props) {
   } = props;
 
   return (
-    <View style={{ borderWidth: 1, borderRadius: 12, padding: 12, gap: 10 }}>
+    <View style={{ borderWidth: 1, borderRadius: radius.card, padding: 12, gap: 10 }}>
       <Text style={{ fontSize: 16, fontWeight: "900" }}>Context</Text>
 
       {error ? (
@@ -45,7 +46,7 @@ export function AiContextBlock(props: Props) {
         <Text style={{ fontWeight: "800" }}>Grow</Text>
         <TouchableOpacity
           onPress={() => onChangeGrowId(growId ? null : "GROW_LOCAL")}
-          style={{ borderWidth: 1, borderRadius: 10, padding: 10 }}
+          style={{ borderWidth: 1, borderRadius: radius.card, padding: 10 }}
         >
           <Text style={{ fontWeight: "900" }}>
             {growId ? `Selected: ${growId}` : "Select grow"}
@@ -60,7 +61,7 @@ export function AiContextBlock(props: Props) {
         <Text style={{ fontWeight: "800" }}>Room</Text>
         <TouchableOpacity
           onPress={() => onChangeRoomId(roomId ? null : "ROOM_LOCAL")}
-          style={{ borderWidth: 1, borderRadius: 10, padding: 10 }}
+          style={{ borderWidth: 1, borderRadius: radius.card, padding: 10 }}
         >
           <Text style={{ fontWeight: "900" }}>
             {roomId ? `Selected: ${roomId}` : "Select room"}
@@ -75,7 +76,7 @@ export function AiContextBlock(props: Props) {
         <Text style={{ fontWeight: "800" }}>Photo</Text>
         <TouchableOpacity
           onPress={onPickPhoto}
-          style={{ borderWidth: 1, borderRadius: 10, padding: 10 }}
+          style={{ borderWidth: 1, borderRadius: radius.card, padding: 10 }}
         >
           <Text style={{ fontWeight: "900" }}>
             {mediaLabel ? `Attached: ${mediaLabel}` : "Upload photo"}
@@ -95,7 +96,7 @@ export function AiContextBlock(props: Props) {
           multiline
           style={{
             borderWidth: 1,
-            borderRadius: 10,
+            borderRadius: radius.card,
             padding: 10,
             minHeight: 80,
             textAlignVertical: "top"
@@ -105,5 +106,3 @@ export function AiContextBlock(props: Props) {
     </View>
   );
 }
-
-

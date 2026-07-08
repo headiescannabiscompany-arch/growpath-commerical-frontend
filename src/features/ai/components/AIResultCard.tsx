@@ -7,6 +7,7 @@
 
 import React from "react";
 import { StyleSheet, Text, View } from "react-native";
+import { radius } from "@/theme/theme";
 
 type WriteRef = { type: string; id: string };
 
@@ -87,7 +88,7 @@ const styles = StyleSheet.create({
     borderWidth: 1,
     borderColor: "#E5E7EB",
     backgroundColor: "#fff",
-    borderRadius: 12,
+    borderRadius: radius.card,
     padding: 14
   },
   h2: { fontSize: 16, fontWeight: "800", marginBottom: 6 },
