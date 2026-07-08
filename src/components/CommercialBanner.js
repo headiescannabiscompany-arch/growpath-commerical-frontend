@@ -8,18 +8,18 @@ const defaultCapabilities = {
   canUseTimelinePlanner: false,
   canExportPdf: false
 };
+
 export default function CommercialBanner({
   mode,
   capabilities = defaultCapabilities,
   contextBarProps
 }) {
-  let bannerText = "🌱 Featured: Try GrowPath Pro for advanced tools & community!";
-  if (mode === "facility")
-    bannerText = "🏭 Facility: Access your team tools and analytics!";
+  let bannerText = "Featured: Try GrowPath Pro for advanced tools & Forum/Q&A!";
+  if (mode === "facility") bannerText = "Facility: Access your team tools and analytics!";
   else if (mode === "commercial")
-    bannerText = "💼 Commercial: Manage your marketplace and vendor tools!";
+    bannerText = "Commercial: Manage your storefront and vendor tools!";
 
-  // Show upgrade CTA if something is locked (example: Pro tools)
+  // Show upgrade CTA if something is locked (example: Pro tools).
   let showUpgrade = false;
   if (!capabilities.canUseTimelinePlanner || !capabilities.canExportPdf) {
     showUpgrade = true;
@@ -27,7 +27,6 @@ export default function CommercialBanner({
 
   return (
     <View>
-      {/* ContextBar for commercial/facility users */}
       {(mode === "facility" || mode === "commercial") && (
         <ContextBar {...contextBarProps} />
       )}

@@ -575,6 +575,7 @@ Completed and pushed:
 299. Feed live campaign CTAs and shared non-commercial live source links now open the public Live Session surface instead of looping back into Feed, keeping Feed promotional and giving live reminders, schedule items, and tasks a real event destination.
 300. Public Live Session now renders the Twitch embed surface, replay action, scheduled/status metadata, and linked product/course/Forum Q&A context, so campaign and reminder traffic lands on a real event page instead of a thin external-link card.
 301. Shared commercial product-batch source links now prefer the linked Product detail workspace when a product id is present, while preserving Batch Planner as the fallback for batch-only records, keeping batches/lots attached to products instead of acting like a separate app.
+302. Shared CommercialBanner copy is now ASCII-clean and uses Pro Forum/Q&A plus Commercial storefront language instead of stale community/marketplace wording, with regression coverage to keep global promo copy aligned.
 
 ## Working Rule For Codex
 
