@@ -705,6 +705,7 @@ Completed and pushed:
 429. Facility Team invite card, email input, invite action, and member rows now consume the shared 8px card radius token, keeping facility role and staff-management setup aligned with the shared visual polish.
 430. Facility Select onboarding rows plus create/request/switch/support/logout actions now consume the shared 8px card radius token, keeping the first facility workspace choice aligned with the shared Facility visual treatment.
 431. Facility AI Ask, AI Templates, and AI Validation Lab headers, preset/tool cards, inputs, choices, actions, result panels, readiness/evidence cards, and response envelopes now consume the shared 8px card radius token, keeping AI-over-tools workflows aligned with the shared Facility visual system.
+432. Facility Compliance root tiles, cards, create/resolve/approve/reject actions, SOP/deviation inputs, and feedback panel now consume the shared 8px card radius token, keeping compliance operations aligned with audit detail polish.
 
 ## Working Rule For Codex
 
