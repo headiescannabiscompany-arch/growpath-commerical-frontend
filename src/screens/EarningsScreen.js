@@ -13,7 +13,7 @@ import {
 import { CAPABILITY_KEYS, useEntitlements } from "@/entitlements";
 import { getEarningsByCourse, getMyEarnings, requestPayout } from "../api/earnings";
 import ScreenContainer from "../components/ScreenContainer";
-import { spacing } from "../theme/theme";
+import { radius, spacing } from "../theme/theme";
 
 function normalize(payload) {
   const data = payload?.data ?? payload ?? {};
@@ -246,7 +246,7 @@ const styles = StyleSheet.create({
     backgroundColor: "#FFFFFF",
     borderWidth: 1,
     borderColor: "#E5E7EB",
-    borderRadius: 12,
+    borderRadius: radius.card,
     padding: spacing(3),
     alignItems: "center"
   },
@@ -256,7 +256,7 @@ const styles = StyleSheet.create({
   statLabel: { fontSize: 12, color: "#6B7280", fontWeight: "600" },
   payoutBtn: {
     backgroundColor: "#10B981",
-    borderRadius: 12,
+    borderRadius: radius.card,
     paddingVertical: 16,
     alignItems: "center",
     marginVertical: 16
@@ -268,7 +268,7 @@ const styles = StyleSheet.create({
     backgroundColor: "#FFFFFF",
     borderWidth: 1,
     borderColor: "#E5E7EB",
-    borderRadius: 12,
+    borderRadius: radius.card,
     padding: spacing(3),
     marginBottom: 12
   },
@@ -291,13 +291,13 @@ const styles = StyleSheet.create({
     backgroundColor: "#10B981",
     paddingHorizontal: 24,
     paddingVertical: 12,
-    borderRadius: 8
+    borderRadius: radius.card
   },
   createCourseBtnText: { color: "#FFFFFF", fontSize: 15, fontWeight: "700" },
   feedback: {
     color: "#334155",
     backgroundColor: "#F1F5F9",
-    borderRadius: 8,
+    borderRadius: radius.card,
     padding: 8,
     marginBottom: 10
   }

@@ -3,6 +3,7 @@ import { View, Text, FlatList, StyleSheet, ActivityIndicator } from "react-nativ
 import ScreenContainer from "../components/ScreenContainer.js";
 import FeatureGate from "../components/FeatureGate.js";
 import { getCreatorCourses, getCourseAnalytics } from "../api/creator.js";
+import { radius } from "../theme/theme.js";
 
 export default function CreatorAnalyticsScreen({ navigation }) {
   const [courses, setCourses] = useState([]);
@@ -97,7 +98,7 @@ const styles = StyleSheet.create({
     fontSize: 16,
     padding: 12,
     backgroundColor: "#f3f4f6",
-    borderRadius: 8,
+    borderRadius: radius.card,
     marginBottom: 8,
     color: "#111827"
   },
@@ -108,7 +109,7 @@ const styles = StyleSheet.create({
   },
   analyticsCard: {
     backgroundColor: "#fff",
-    borderRadius: 10,
+    borderRadius: radius.card,
     padding: 16,
     marginTop: 24,
     elevation: 2

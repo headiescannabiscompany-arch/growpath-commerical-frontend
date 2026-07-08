@@ -3,6 +3,7 @@ import { View, Text, TouchableOpacity, Image, StyleSheet, Alert } from "react-na
 import * as ImagePicker from "expo-image-picker";
 import ScreenContainer from "../components/ScreenContainer";
 import { uploadSignature } from "../api/creator";
+import { radius } from "../theme/theme";
 
 export default function CreatorSignatureUpload({ navigation }) {
   const [image, setImage] = useState(null);
@@ -106,7 +107,7 @@ const styles = StyleSheet.create({
     backgroundColor: "#3498db",
     paddingVertical: 14,
     paddingHorizontal: 16,
-    borderRadius: 10,
+    borderRadius: radius.card,
     alignItems: "center"
   },
   pickBtnText: {
@@ -127,7 +128,7 @@ const styles = StyleSheet.create({
   preview: {
     width: "100%",
     height: 120,
-    borderRadius: 8,
+    borderRadius: radius.card,
     backgroundColor: "#f0f0f0",
     marginBottom: 12,
     resizeMode: "contain"
@@ -153,7 +154,7 @@ const styles = StyleSheet.create({
     backgroundColor: "#27ae60",
     paddingVertical: 14,
     paddingHorizontal: 16,
-    borderRadius: 10,
+    borderRadius: radius.card,
     alignItems: "center",
     marginBottom: 20
   },

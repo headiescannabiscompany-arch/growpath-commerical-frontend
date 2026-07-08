@@ -12,6 +12,7 @@ import {
 import { CAPABILITY_KEYS, useEntitlements } from "@/entitlements";
 import { getPayoutHistory, getPayoutSummary, requestPayout } from "../api/creator.js";
 import ScreenContainer from "../components/ScreenContainer.js";
+import { radius } from "../theme/theme.js";
 
 function rows(payload) {
   if (Array.isArray(payload)) return payload;
@@ -183,7 +184,7 @@ const styles = StyleSheet.create({
   card: {
     backgroundColor: "#d5f4e6",
     padding: 16,
-    borderRadius: 10,
+    borderRadius: radius.card,
     marginBottom: 12,
     borderLeftWidth: 4,
     borderLeftColor: "#27ae60"
@@ -197,7 +198,7 @@ const styles = StyleSheet.create({
     padding: 12,
     borderWidth: 1,
     borderColor: "#e5e7eb",
-    borderRadius: 8,
+    borderRadius: radius.card,
     marginBottom: 8,
     backgroundColor: "#fff"
   },
@@ -208,7 +209,7 @@ const styles = StyleSheet.create({
   requestBtn: {
     backgroundColor: "#e67e22",
     paddingVertical: 12,
-    borderRadius: 8,
+    borderRadius: radius.card,
     alignItems: "center",
     marginTop: 16
   },
@@ -217,7 +218,7 @@ const styles = StyleSheet.create({
   feedback: {
     color: "#334155",
     backgroundColor: "#F1F5F9",
-    borderRadius: 8,
+    borderRadius: radius.card,
     padding: 8,
     marginBottom: 10
   },
