@@ -392,6 +392,20 @@ function legacyFeedScreenUsesCampaignRoute() {
   );
 }
 
+function legacyPostsApiUsesForumEndpoints() {
+  const file = path.join(SRC, "api", "posts.js");
+  if (!fs.existsSync(file)) return false;
+  const source = read(file);
+  return (
+    /apiRoutes\.FORUM\.FEED_LATEST/.test(source) &&
+    /apiRoutes\.FORUM\.FEED_TRENDING/.test(source) &&
+    /apiRoutes\.FORUM\.CREATE/.test(source) &&
+    /apiRoutes\.FORUM\.LIKE/.test(source) &&
+    /apiRoutes\.FORUM\.COMMENT/.test(source) &&
+    !/apiRoutes\.POSTS|\/api\/posts/.test(source)
+  );
+}
+
 function legacyToolsScreenUsesPersonalToolsHub() {
   const file = path.join(SRC, "screens", "ToolsScreen.js");
   if (!fs.existsSync(file)) return false;
@@ -567,6 +581,7 @@ function main() {
   const facilityFeedCompatibilityCampaignOnly =
     facilityFeedCompatibilityUsesCampaignRoute();
   const legacyFeedScreenCampaignOnly = legacyFeedScreenUsesCampaignRoute();
+  const legacyPostsApiForumOnly = legacyPostsApiUsesForumEndpoints();
   const legacyToolsScreenPersonalHub = legacyToolsScreenUsesPersonalToolsHub();
   const legacyStorefrontScreenCommercialOwner =
     legacyStorefrontScreenUsesCommercialOwnerScreen();
@@ -605,6 +620,7 @@ function main() {
     commercialCommunityForumOnly,
     facilityFeedCompatibilityCampaignOnly,
     legacyFeedScreenCampaignOnly,
+    legacyPostsApiForumOnly,
     legacyToolsScreenPersonalHub,
     legacyStorefrontScreenCommercialOwner,
     facilityIntegrationsRoomImport,
@@ -682,6 +698,7 @@ function main() {
     `- Commercial community uses Forum/Q&A API, not Feed/Campaigns: ${decisionChecks.commercialCommunityForumOnly}`,
     `- Facility feed compatibility screen uses campaign route, not legacy posts feed: ${decisionChecks.facilityFeedCompatibilityCampaignOnly}`,
     `- Legacy native Feed screen uses campaign route, not social posts feed: ${decisionChecks.legacyFeedScreenCampaignOnly}`,
+    `- Legacy api/posts client uses Forum/Q&A endpoints, not /api/posts: ${decisionChecks.legacyPostsApiForumOnly}`,
     `- Legacy native Tools screen uses connected Personal Tools / AI hub: ${decisionChecks.legacyToolsScreenPersonalHub}`,
     `- Legacy native Storefront screen uses canonical commercial storefront owner workspace: ${decisionChecks.legacyStorefrontScreenCommercialOwner}`,
     `- Facility integrations entry uses read-only room import preview: ${decisionChecks.facilityIntegrationsRoomImport}`,
