@@ -93,6 +93,14 @@ const publicPayload = {
       priceCents: 3200
     }
   ],
+  productLines: [
+    {
+      id: "line-1",
+      name: "Living Soil Line",
+      publicSummary: "Base soils and dry amendments by stage.",
+      growInterests: ["living soil", "dry amendments"]
+    }
+  ],
   courses: [
     {
       id: "course-1",
@@ -156,6 +164,10 @@ describe("public commercial routes", () => {
     expect(screen.getByText("Website")).toBeTruthy();
     expect(screen.getByText("Support Email")).toBeTruthy();
     expect(screen.getByText("Instagram")).toBeTruthy();
+    expect(screen.getByText("Product Lines")).toBeTruthy();
+    expect(screen.getByText("Living Soil Line")).toBeTruthy();
+    expect(screen.getByText("Interests: living soil, dry amendments")).toBeTruthy();
+    expect(screen.getByText("Browse Line")).toBeTruthy();
     expect(screen.getAllByText("Veg Mix").length).toBeGreaterThan(0);
     expect(screen.getByText("Interests: living soil, veg")).toBeTruthy();
     expect(screen.getAllByText("Details").length).toBeGreaterThan(0);
@@ -193,6 +205,9 @@ describe("public commercial routes", () => {
     expect(screen.getByText("Website")).toBeTruthy();
     expect(screen.getByText("Support Email")).toBeTruthy();
     expect(screen.getByText("Instagram")).toBeTruthy();
+    expect(screen.getByText("Product Lines")).toBeTruthy();
+    expect(screen.getByText("Living Soil Line")).toBeTruthy();
+    expect(screen.getByText("Browse Line")).toBeTruthy();
     expect(screen.getAllByText("Veg Mix").length).toBeGreaterThan(0);
     expect(screen.getByText("Interests: living soil, veg")).toBeTruthy();
     expect(screen.getByText("$25.00")).toBeTruthy();

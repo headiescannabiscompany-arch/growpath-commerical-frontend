@@ -45,6 +45,7 @@ export default function PublicBrandProfileRoute() {
   const [loading, setLoading] = useState(true);
   const [storefront, setStorefront] = useState<any>(null);
   const [products, setProducts] = useState<any[]>([]);
+  const [productLines, setProductLines] = useState<any[]>([]);
   const [courses, setCourses] = useState<any[]>([]);
   const [feedPosts, setFeedPosts] = useState<any[]>([]);
   const [trials, setTrials] = useState<any[]>([]);
@@ -61,6 +62,7 @@ export default function PublicBrandProfileRoute() {
       const payload = extractPublicCommercialPayload(res);
       setStorefront(payload.storefront);
       setProducts(payload.products);
+      setProductLines(payload.productLines);
       setCourses(payload.courses);
       setFeedPosts(payload.feedPosts);
       setTrials(payload.trials);
@@ -178,6 +180,51 @@ export default function PublicBrandProfileRoute() {
                   </Pressable>
                 ))}
               </View>
+            </AppCard>
+          ) : null}
+
+          {productLines.length ? (
+            <AppCard>
+              <Text style={styles.cardTitle}>Product Lines</Text>
+              <Text style={styles.cardText}>
+                Product families organize the storefront by use case, category, and grow
+                interest.
+              </Text>
+              {productLines.slice(0, 4).map((line) => {
+                const id = publicItemId(line);
+                return (
+                  <View
+                    key={id || publicItemTitle(line, "Product line")}
+                    style={styles.listRow}
+                  >
+                    <View style={styles.productCopy}>
+                      <Text style={styles.productName}>
+                        {publicItemTitle(line, "Product line")}
+                      </Text>
+                      {publicItemSummary(line) ? (
+                        <Text style={styles.meta}>{publicItemSummary(line)}</Text>
+                      ) : null}
+                      {publicGrowInterests(line).length ? (
+                        <Text style={styles.interests}>
+                          Interests: {publicGrowInterests(line).join(", ")}
+                        </Text>
+                      ) : null}
+                    </View>
+                    <Link
+                      href={
+                        `/store/${encodeURIComponent(slug)}${
+                          id ? `?line=${encodeURIComponent(id)}` : ""
+                        }` as any
+                      }
+                      asChild
+                    >
+                      <Pressable style={styles.secondaryButton}>
+                        <Text style={styles.secondaryButtonText}>Browse Line</Text>
+                      </Pressable>
+                    </Link>
+                  </View>
+                );
+              })}
             </AppCard>
           ) : null}
 

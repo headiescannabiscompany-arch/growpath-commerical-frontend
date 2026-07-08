@@ -58,6 +58,7 @@ export default function PublicStorefrontRoute() {
   const [busyId, setBusyId] = useState("");
   const [storefront, setStorefront] = useState<any>(null);
   const [products, setProducts] = useState<any[]>([]);
+  const [productLines, setProductLines] = useState<any[]>([]);
   const [courses, setCourses] = useState<any[]>([]);
   const [feedPosts, setFeedPosts] = useState<any[]>([]);
   const [trials, setTrials] = useState<any[]>([]);
@@ -74,6 +75,7 @@ export default function PublicStorefrontRoute() {
       const payload = extractPublicCommercialPayload(res);
       setStorefront(payload.storefront);
       setProducts(payload.products);
+      setProductLines(payload.productLines);
       setCourses(payload.courses);
       setFeedPosts(payload.feedPosts);
       setTrials(payload.trials);
@@ -228,6 +230,49 @@ export default function PublicStorefrontRoute() {
             </View>
           ) : null}
           {feedback ? <Text style={styles.feedback}>{feedback}</Text> : null}
+          {productLines.length ? (
+            <View style={styles.profilePanel}>
+              <Text style={styles.profileTitle}>Product Lines</Text>
+              <Text style={styles.meta}>
+                Browse product families by use case, release timing, and grow interest.
+              </Text>
+              {productLines.slice(0, 4).map((line) => {
+                const id = publicItemId(line);
+                return (
+                  <View
+                    key={id || publicItemTitle(line, "Product line")}
+                    style={styles.linkRow}
+                  >
+                    <View style={styles.productBody}>
+                      <Text style={styles.productName}>
+                        {publicItemTitle(line, "Product line")}
+                      </Text>
+                      {publicItemSummary(line) ? (
+                        <Text style={styles.meta}>{publicItemSummary(line)}</Text>
+                      ) : null}
+                      {publicGrowInterests(line).length ? (
+                        <Text style={styles.interests}>
+                          Interests: {publicGrowInterests(line).join(", ")}
+                        </Text>
+                      ) : null}
+                    </View>
+                    <Link
+                      href={
+                        `/store/${encodeURIComponent(slug)}${
+                          id ? `?line=${encodeURIComponent(id)}` : ""
+                        }` as any
+                      }
+                      asChild
+                    >
+                      <Pressable style={styles.secondaryButton}>
+                        <Text style={styles.secondaryButtonText}>Browse Line</Text>
+                      </Pressable>
+                    </Link>
+                  </View>
+                );
+              })}
+            </View>
+          ) : null}
           {products.length ? (
             products.map((product) => {
               const id = productId(product);

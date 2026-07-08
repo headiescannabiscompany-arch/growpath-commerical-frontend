@@ -522,6 +522,7 @@ Completed and pushed:
 246. Commercial Product Detail now exposes editable grow interests, includes them in publish readiness, and saves them with product updates so owners can fix targeting/discovery blockers without leaving the detail workspace.
 247. Commercial Product Lines now carry grow interests through API typing, root creation, list display, detail editing, and save payloads so product families can drive storefront discovery and feed targeting instead of acting as internal-only labels.
 248. Feed/Campaigns now exposes linked Product Line context in the campaign builder, readiness checks, card metadata, CTA routing, setup tasks, create payloads, and click analytics so product-family ads connect to storefront discovery without becoming forum discussion.
+249. Public brand profiles and storefronts now extract and render Product Lines with grow interests and line-filter links so commercial product families are visible to users instead of only existing in owner/admin workflows.
 
 ## Working Rule For Codex
 

@@ -31,6 +31,14 @@ export function extractPublicCommercialPayload(res: any) {
   return {
     storefront: res?.storefront || data?.storefront || null,
     products: asArray(res?.products || data?.products),
+    productLines: asArray(
+      res?.productLines ||
+        data?.productLines ||
+        res?.lines ||
+        data?.lines ||
+        res?.featuredProductLines ||
+        data?.featuredProductLines
+    ),
     courses: asArray(
       res?.courses || data?.courses || res?.featuredCourses || data?.featuredCourses
     ),
