@@ -11,7 +11,7 @@ import {
   TextInput,
   View
 } from "react-native";
-import { Redirect, useRouter } from "expo-router";
+import { Redirect, useLocalSearchParams, useRouter } from "expo-router";
 
 import { apiRequest } from "@/api/apiRequest";
 import { recordCommercialAnalyticsEvent } from "@/api/commercialAnalytics";
@@ -212,6 +212,10 @@ function campaignDestination(post: CommercialFeedPost) {
 
 export default function CommercialFeedRoute() {
   const router = useRouter();
+  const params = useLocalSearchParams<{ campaignId?: string | string[] }>();
+  const focusedCampaignId = Array.isArray(params.campaignId)
+    ? params.campaignId[0]
+    : params.campaignId;
   const ent = useEntitlements();
   const isFacility = ent.mode === "facility";
   const isCommercial = ent.mode === "commercial";
@@ -858,8 +862,15 @@ export default function CommercialFeedRoute() {
 
       {items.map((post) => {
         const destination = campaignDestination(post);
+        const isFocused = Boolean(focusedCampaignId && focusedCampaignId === post.id);
         return (
-          <View key={post.id} style={styles.post}>
+          <View
+            key={post.id}
+            accessibilityLabel={
+              isFocused ? `Selected feed campaign ${post.id}` : undefined
+            }
+            style={[styles.post, isFocused ? styles.postFocused : null]}
+          >
             <View style={styles.postHeader}>
               <Text style={styles.typePill}>{visibleCampaignType(post)}</Text>
               <Text style={styles.likes}>
@@ -1054,6 +1065,11 @@ const styles = StyleSheet.create({
     borderWidth: 1,
     gap: 7,
     padding: 14
+  },
+  postFocused: {
+    backgroundColor: "#ECFDF5",
+    borderColor: "#16A34A",
+    borderWidth: 2
   },
   postHeader: {
     alignItems: "center",

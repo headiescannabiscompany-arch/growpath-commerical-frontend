@@ -373,6 +373,7 @@ Completed and pushed:
 97. Facility room-backed source links now preserve the room id in `/home/facility/rooms?roomId=...`, and the Facility Rooms workspace reads that route parameter so task, alert, schedule, and notification links can land on the intended room context.
 98. Facility SOP-backed source links now preserve SOP run ids in `/home/facility/sop-runs/:id`, so task, alert, notification, and schedule source actions can open the exact SOP/training run instead of dropping users at the SOP run list.
 99. Commercial live source links now preserve live ids in `/home/commercial/lives?liveId=...`, and the Commercial Lives workspace highlights the selected live so reminders, tasks, notifications, and schedule items land on the relevant live event context.
+100. Feed campaign source links now preserve campaign ids in `/home/commercial/feed?campaignId=...` and `/home/facility/feed?campaignId=...`, and the shared Feed/Campaigns screen highlights the selected campaign so alerts, notifications, tasks, and schedule items return to the right outreach card.
 
 ## Working Rule For Codex
 

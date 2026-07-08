@@ -210,7 +210,9 @@ describe("AlertCenterRoute", () => {
     expect(
       screen.getByLabelText("Alert link /home/personal/tools/saved-runs")
     ).toBeTruthy();
-    expect(screen.getByLabelText("Alert link /home/commercial/feed")).toBeTruthy();
+    expect(
+      screen.getByLabelText("Alert link /home/commercial/feed?campaignId=campaign-1")
+    ).toBeTruthy();
     expect(
       screen.getByLabelText("Alert link /home/commercial/trials/trial-1")
     ).toBeTruthy();

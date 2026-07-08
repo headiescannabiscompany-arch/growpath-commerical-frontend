@@ -136,8 +136,10 @@ export function sourceObjectHref(source: SourceLike) {
     sourceType === "feed_post" ||
     sourceType === "scheduled_feed_post"
   ) {
-    if (workspace === "facility") return "/home/facility/feed";
-    if (workspace === "commercial") return "/home/commercial/feed";
+    if (workspace === "facility")
+      return `/home/facility/feed${sourceId ? `?campaignId=${encoded(sourceId)}` : ""}`;
+    if (workspace === "commercial")
+      return `/home/commercial/feed${sourceId ? `?campaignId=${encoded(sourceId)}` : ""}`;
     return "/feed";
   }
 

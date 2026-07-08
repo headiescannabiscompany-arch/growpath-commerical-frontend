@@ -10,6 +10,7 @@ let mockMode = "commercial";
 
 jest.mock("expo-router", () => ({
   Redirect: () => null,
+  useLocalSearchParams: () => ({ campaignId: "campaign-1" }),
   useRouter: () => ({ push: mockPush })
 }));
 
@@ -90,6 +91,7 @@ describe("CommercialFeedRoute", () => {
     expect(screen.queryByText("question")).toBeNull();
     expect(screen.queryByText("iso")).toBeNull();
     expect(screen.getByText("0 campaign engagements")).toBeTruthy();
+    expect(screen.getByLabelText("Selected feed campaign campaign-1")).toBeTruthy();
     expect(screen.getByText("Interests: living soil, dry amendments")).toBeTruthy();
     expect(screen.queryByText("0 likes")).toBeNull();
     expect(screen.getByText("Live: live-1")).toBeTruthy();

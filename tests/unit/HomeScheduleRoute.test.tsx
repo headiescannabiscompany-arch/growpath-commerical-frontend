@@ -193,7 +193,12 @@ describe("HomeScheduleRoute", () => {
     expect(screen.getByTestId("link-/home/commercial/courses/course-1")).toBeTruthy();
     expect(screen.getByTestId("link-/home/personal/courses")).toBeTruthy();
     expect(screen.getByTestId("link-/home/personal/tasks")).toBeTruthy();
-    expect(screen.getByTestId("link-/home/facility/feed")).toBeTruthy();
+    expect(
+      screen.getByTestId("link-/home/commercial/feed?campaignId=campaign-1")
+    ).toBeTruthy();
+    expect(
+      screen.getByTestId("link-/home/facility/feed?campaignId=facility-campaign-1")
+    ).toBeTruthy();
 
     fireEvent.press(screen.getByLabelText("Schedule workspace filter commercial"));
     expect(screen.getByText("Connect Stripe price")).toBeTruthy();

@@ -226,7 +226,11 @@ describe("NotificationCenterRoute", () => {
     expect(
       screen.getByLabelText("Notification link /home/personal/tools/saved-runs")
     ).toBeTruthy();
-    expect(screen.getByLabelText("Notification link /home/commercial/feed")).toBeTruthy();
+    expect(
+      screen.getByLabelText(
+        "Notification link /home/commercial/feed?campaignId=campaign-1"
+      )
+    ).toBeTruthy();
     expect(
       screen.getByLabelText("Notification link /home/commercial/trials/trial-1")
     ).toBeTruthy();

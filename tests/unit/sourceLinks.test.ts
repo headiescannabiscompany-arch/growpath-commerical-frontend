@@ -200,7 +200,15 @@ describe("sourceObjectHref", () => {
         sourceId: "campaign-1",
         workspaceType: "facility"
       })
-    ).toBe("/home/facility/feed");
+    ).toBe("/home/facility/feed?campaignId=campaign-1");
+
+    expect(
+      sourceObjectHref({
+        sourceType: "feed_campaign",
+        sourceId: "campaign-1",
+        workspaceType: "commercial"
+      })
+    ).toBe("/home/commercial/feed?campaignId=campaign-1");
 
     expect(
       sourceObjectHref({
