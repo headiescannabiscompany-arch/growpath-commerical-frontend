@@ -16,6 +16,7 @@ import { InlineError } from "@/components/InlineError";
 import AppCard from "@/components/layout/AppCard";
 import AppPage from "@/components/layout/AppPage";
 import { useApiErrorHandler, type UiErrorState } from "@/hooks/useApiErrorHandler";
+import { radius } from "@/theme/theme";
 
 type GuildRow = Guild & {
   members?: string[];
@@ -257,7 +258,7 @@ const styles = StyleSheet.create({
   feedback: {
     backgroundColor: "#DCFCE7",
     borderColor: "#86EFAC",
-    borderRadius: 8,
+    borderRadius: radius.card,
     borderWidth: 1,
     color: "#166534",
     fontSize: 13,
@@ -273,7 +274,7 @@ const styles = StyleSheet.create({
   summaryCard: {
     backgroundColor: "#F8FAFC",
     borderColor: "#E2E8F0",
-    borderRadius: 8,
+    borderRadius: radius.card,
     borderWidth: 1,
     minWidth: 148,
     padding: 12
@@ -293,7 +294,7 @@ const styles = StyleSheet.create({
   input: {
     backgroundColor: "#FFFFFF",
     borderColor: "#CBD5E1",
-    borderRadius: 8,
+    borderRadius: radius.card,
     borderWidth: 1,
     color: "#0F172A",
     fontSize: 14,
@@ -355,7 +356,7 @@ const styles = StyleSheet.create({
   },
   metaPill: {
     backgroundColor: "#F1F5F9",
-    borderRadius: 8,
+    borderRadius: 999,
     color: "#334155",
     fontSize: 12,
     fontWeight: "800",
@@ -367,7 +368,7 @@ const styles = StyleSheet.create({
     alignItems: "center",
     alignSelf: "flex-start",
     backgroundColor: "#2563EB",
-    borderRadius: 8,
+    borderRadius: radius.card,
     minHeight: 40,
     justifyContent: "center",
     marginTop: 14,

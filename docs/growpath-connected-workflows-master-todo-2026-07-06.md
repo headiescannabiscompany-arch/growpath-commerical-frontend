@@ -710,6 +710,7 @@ Completed and pushed:
 434. Facility Reports export actions, readiness panels, secondary actions, report cards, and metric tiles now consume the shared 8px card radius token, completing the non-pill Facility tab radius pass.
 435. Public storefront discovery, storefront home, product detail, and course detail inputs, feedback panels, product/spec cards, profile panels, CTAs, linked rows, and line panels now consume the shared 8px card radius token while preserving storefront/course status pills.
 436. Feed / Campaigns promotional composer, destination link boxes, creative previews, filters, campaign cards, feed images, CTAs, and secondary actions now consume the shared 8px card radius token while preserving campaign chips/link metadata pills and keeping Feed visually distinct from Forum.
+437. Forum Directory feedback, summary cards, search input, metadata labels, and join actions now consume the shared visual radius treatment while preserving discussion-group pills, keeping Forum/Q&A visually polished without turning it into Feed advertising.
 
 ## Working Rule For Codex
 
