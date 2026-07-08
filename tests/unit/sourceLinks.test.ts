@@ -52,5 +52,13 @@ describe("sourceObjectHref", () => {
         workspaceType: "personal"
       })
     ).toBe("/feed?liveId=live-1");
+
+    expect(
+      sourceObjectHref({
+        sourceType: "product_batch",
+        sourceId: "batch-1",
+        workspaceType: "personal"
+      })
+    ).toBe("/store?q=batch-1");
   });
 });

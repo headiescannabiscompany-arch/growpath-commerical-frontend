@@ -111,6 +111,18 @@ describe("PersonalTaskCenterRoute", () => {
         sourceType: "course",
         sourceObjectId: "course-1",
         createdAt: "2026-07-07T00:00:00Z"
+      },
+      {
+        id: "task-live",
+        growId: "grow-1",
+        title: "Watch live replay",
+        description: "Review the grow workshop replay.",
+        dueDate: "2026-07-11",
+        completed: false,
+        priority: "medium",
+        sourceType: "live_replay",
+        sourceObjectId: "live-1",
+        createdAt: "2026-07-07T00:00:00Z"
       }
     ]);
     mockCreatePersonalTask.mockResolvedValue({
@@ -133,13 +145,16 @@ describe("PersonalTaskCenterRoute", () => {
     expect(screen.getByText(/Sensor Alert: alert-1/)).toBeTruthy();
     expect(screen.getByText(/AI Diagnosis: diag-1/)).toBeTruthy();
     expect(screen.getByText("product batch")).toBeTruthy();
-    expect(screen.getAllByLabelText("View personal task source").length).toBe(4);
+    expect(screen.getAllByLabelText("View personal task source").length).toBe(6);
     expect(
       screen.getByLabelText("Personal task link /home/personal/diagnose?growId=grow-1")
     ).toBeTruthy();
     expect(
       screen.getByLabelText("Personal task link /home/personal/courses")
     ).toBeTruthy();
+    expect(screen.getByLabelText("Personal task link /feed?liveId=live-1")).toBeTruthy();
+    expect(screen.getByLabelText("Personal task link /store")).toBeTruthy();
+    expect(screen.queryByLabelText(/Personal task link .*home\/commercial/)).toBeNull();
     expect(screen.queryByLabelText("Task center source product_trial")).toBeNull();
     expect(screen.queryByLabelText("Task center source storefront")).toBeNull();
     expect(screen.queryByLabelText("Task center source order")).toBeNull();

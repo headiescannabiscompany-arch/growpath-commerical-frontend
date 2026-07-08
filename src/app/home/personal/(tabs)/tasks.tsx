@@ -20,6 +20,7 @@ import PersonalFeedPlacement from "@/components/feed/PersonalFeedPlacement";
 import SchedulePicker from "@/components/schedule/SchedulePicker";
 import { CAPABILITY_KEYS, useEntitlements } from "@/entitlements";
 import { fmtDate, getRowId } from "@/features/grows/routeUtils";
+import { sourceObjectHref } from "@/utils/sourceLinks";
 
 const priorities = ["low", "medium", "high"] as const;
 const sourceTypes = [
@@ -93,43 +94,33 @@ function taskLinks(task: PersonalTask) {
 }
 
 function taskSourcePath(task: PersonalTask) {
-  const sourceType = String(task.sourceType || "");
-  const sourceId = String(task.sourceObjectId || "");
+  let sourceType = String(task.sourceType || "");
+  const sourceId = String(
+    task.sourceObjectId ||
+      task.sourceToolRunId ||
+      task.linkedToolRunId ||
+      task.sourceDiagnosisId ||
+      task.linkedLogId ||
+      task.growId ||
+      ""
+  );
   const growId = String(task.growId || "");
-  if (sourceType === "grow" && (growId || sourceId)) {
-    return `/home/personal/grows/${growId || sourceId}`;
+  if (!sourceType && (task.sourceToolRunId || task.linkedToolRunId)) {
+    sourceType = "tool_run";
+  } else if (!sourceType && task.sourceDiagnosisId) {
+    sourceType = "ai_diagnosis";
+  } else if (!sourceType && task.linkedLogId) {
+    sourceType = "grow_log";
+  } else if (!sourceType && growId) {
+    sourceType = "grow";
   }
-  if (sourceType === "plant" && task.growId)
-    return `/home/personal/grows/${task.growId}/plants`;
-  if (sourceType === "ai_diagnosis") {
-    return growId
-      ? `/home/personal/diagnose?growId=${encodeURIComponent(growId)}`
-      : "/home/personal/diagnose";
-  }
-  if (sourceType === "tool_run" || sourceType === "recipe" || task.sourceToolRunId) {
-    return "/home/personal/tools/saved-runs";
-  }
-  if (sourceType === "course" || sourceType === "lesson") {
-    return "/home/personal/courses";
-  }
-  if (
-    sourceType === "live" ||
-    sourceType === "live_replay" ||
-    sourceType === "product" ||
-    sourceType === "product_batch" ||
-    sourceType === "product_trial" ||
-    sourceType === "storefront" ||
-    sourceType === "order" ||
-    sourceType === "facility" ||
-    sourceType === "room" ||
-    sourceType === "facility_run" ||
-    sourceType === "sop"
-  ) {
-    return "";
-  }
-  if (sourceType === "alert" || sourceType === "sensor_alert") return "/home/alerts";
-  if (sourceType === "forum" && sourceId) return `/forum/post/${sourceId}`;
-  return task.growId ? `/home/personal/grows/${task.growId}` : "";
+  if (!sourceType || sourceType === "manual") return "";
+  return sourceObjectHref({
+    ...task,
+    sourceType,
+    sourceId,
+    workspaceType: "personal"
+  });
 }
 
 function linkedFieldsForSource(
