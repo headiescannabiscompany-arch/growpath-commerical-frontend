@@ -10,6 +10,7 @@ import {
 } from "react-native";
 
 import { useOrders, useUpdateOrderFulfillment } from "@/hooks/useOrders";
+import { radius } from "@/theme/theme";
 
 function orderId(item, idx) {
   return String(item?.id || item?._id || `order-${idx}`);
@@ -117,7 +118,7 @@ const styles = StyleSheet.create({
   card: {
     borderWidth: 1,
     borderColor: "#e5e7eb",
-    borderRadius: 12,
+    borderRadius: radius.card,
     padding: 12,
     marginBottom: 10,
     backgroundColor: "#fff"
@@ -127,7 +128,7 @@ const styles = StyleSheet.create({
   button: {
     alignSelf: "flex-start",
     backgroundColor: "#166534",
-    borderRadius: 8,
+    borderRadius: radius.card,
     marginTop: 8,
     paddingHorizontal: 12,
     paddingVertical: 8

@@ -22,6 +22,7 @@ import {
   fetchCommercialLives
 } from "../../api/commercialWorkflows";
 import ScreenContainer from "../../components/ScreenContainer";
+import { radius } from "../../theme/theme";
 
 function rows(payload, key) {
   if (Array.isArray(payload)) return payload;
@@ -395,14 +396,14 @@ const styles = StyleSheet.create({
   subtitle: { color: "#64748B", marginTop: 4, maxWidth: 620 },
   refreshButton: {
     backgroundColor: "#F1F5F9",
-    borderRadius: 8,
+    borderRadius: radius.card,
     paddingHorizontal: 12,
     paddingVertical: 10
   },
   refreshText: { color: "#334155", fontWeight: "800" },
   error: {
     backgroundColor: "#FEE2E2",
-    borderRadius: 8,
+    borderRadius: radius.card,
     color: "#991B1B",
     marginBottom: 10,
     padding: 10
@@ -411,7 +412,7 @@ const styles = StyleSheet.create({
   hero: {
     backgroundColor: "#FFFFFF",
     borderColor: "#E2E8F0",
-    borderRadius: 8,
+    borderRadius: radius.card,
     borderWidth: 1,
     marginBottom: 14,
     padding: 16
@@ -420,14 +421,14 @@ const styles = StyleSheet.create({
   heroActions: { flexDirection: "row", flexWrap: "wrap", gap: 10, marginTop: 14 },
   primaryButton: {
     backgroundColor: "#166534",
-    borderRadius: 8,
+    borderRadius: radius.card,
     paddingHorizontal: 14,
     paddingVertical: 10
   },
   primaryButtonText: { color: "#FFFFFF", fontWeight: "800" },
   secondaryButton: {
     backgroundColor: "#F1F5F9",
-    borderRadius: 8,
+    borderRadius: radius.card,
     paddingHorizontal: 14,
     paddingVertical: 10
   },
@@ -436,7 +437,7 @@ const styles = StyleSheet.create({
   statCard: {
     backgroundColor: "#FFFFFF",
     borderColor: "#E2E8F0",
-    borderRadius: 8,
+    borderRadius: radius.card,
     borderWidth: 1,
     flexBasis: "31%",
     flexGrow: 1,
@@ -449,7 +450,7 @@ const styles = StyleSheet.create({
   panel: {
     backgroundColor: "#FFFFFF",
     borderColor: "#E2E8F0",
-    borderRadius: 8,
+    borderRadius: radius.card,
     borderWidth: 1,
     marginBottom: 14,
     padding: 14

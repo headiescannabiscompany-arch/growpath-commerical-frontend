@@ -12,6 +12,7 @@ import {
 } from "react-native";
 
 import { apiRequest } from "@/api/apiRequest";
+import { radius } from "@/theme/theme";
 
 /**
  * CommercialInventoryScreen
@@ -139,21 +140,21 @@ const styles = StyleSheet.create({
   btn: {
     paddingHorizontal: 12,
     paddingVertical: 10,
-    borderRadius: 12,
+    borderRadius: radius.card,
     backgroundColor: "#111827"
   },
   btnText: { color: "#fff", fontWeight: "900" },
   card: {
     marginTop: 12,
     padding: 12,
-    borderRadius: 16,
+    borderRadius: radius.card,
     borderWidth: 1,
     borderColor: "#E5E7EB",
     backgroundColor: "#fff"
   },
   input: {
     height: 44,
-    borderRadius: 12,
+    borderRadius: radius.card,
     borderWidth: 1,
     borderColor: "#E5E7EB",
     paddingHorizontal: 12
@@ -163,7 +164,7 @@ const styles = StyleSheet.create({
   item: {
     marginTop: 12,
     padding: 12,
-    borderRadius: 16,
+    borderRadius: radius.card,
     borderWidth: 1,
     borderColor: "#E5E7EB",
     backgroundColor: "#fff"
