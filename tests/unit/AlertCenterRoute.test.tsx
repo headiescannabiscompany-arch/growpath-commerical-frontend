@@ -197,6 +197,17 @@ describe("AlertCenterRoute", () => {
               sourceType: "feed_campaign",
               linkedFeedCampaignId: "campaign-linked-1",
               createdAt: new Date().toISOString()
+            },
+            {
+              id: "alert-17",
+              title: "Linked trial alert",
+              message: "A product trial evidence run needs follow-up.",
+              severity: "warning",
+              status: "active",
+              workspaceType: "commercial",
+              sourceType: "product_trial",
+              linkedTrialId: "trial-linked-1",
+              createdAt: new Date().toISOString()
             }
           ]
         });
@@ -254,6 +265,9 @@ describe("AlertCenterRoute", () => {
       screen.getByLabelText("Alert link /home/commercial/trials/trial-1")
     ).toBeTruthy();
     expect(
+      screen.getByLabelText("Alert link /home/commercial/trials/trial-linked-1")
+    ).toBeTruthy();
+    expect(
       screen.getByLabelText("Alert link /home/commercial/orders?orderId=order-1")
     ).toBeTruthy();
     expect(
@@ -308,7 +322,7 @@ describe("AlertCenterRoute", () => {
     expect(screen.getByText("Task created from alert.")).toBeTruthy();
 
     const createButtons = screen.getAllByLabelText("Create task from alert");
-    expect(createButtons).toHaveLength(15);
+    expect(createButtons).toHaveLength(16);
     fireEvent.press(createButtons[13]);
     await waitFor(() =>
       expect(mockApiRequest).toHaveBeenLastCalledWith(
@@ -345,6 +359,28 @@ describe("AlertCenterRoute", () => {
             alertSourceType: "feed_campaign",
             alertSourceId: "campaign-linked-1",
             linkedFeedCampaignId: "campaign-linked-1",
+            priority: "normal",
+            status: "open"
+          })
+        })
+      )
+    );
+    fireEvent.press(createButtons[15]);
+    await waitFor(() =>
+      expect(mockApiRequest).toHaveBeenLastCalledWith(
+        "/api/tasks",
+        expect.objectContaining({
+          method: "POST",
+          body: expect.objectContaining({
+            workspaceType: "commercial",
+            title: "Follow up: Linked trial alert",
+            sourceType: "alert",
+            sourceId: "alert-17",
+            linkedAlertId: "alert-17",
+            alertSourceType: "product_trial",
+            alertSourceId: "trial-linked-1",
+            linkedProductTrialId: "trial-linked-1",
+            linkedTrialId: "trial-linked-1",
             priority: "normal",
             status: "open"
           })

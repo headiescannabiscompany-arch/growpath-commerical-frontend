@@ -122,6 +122,7 @@ function sourceReference(row: any) {
     row?.linkedCourseId,
     row?.linkedProductBatchId,
     row?.linkedProductTrialId,
+    row?.linkedTrialId,
     row?.linkedProductId,
     row?.linkedStorefrontId,
     row?.linkedFeedCampaignId,
@@ -151,7 +152,7 @@ function linkedSourceType(row: any) {
   if (row?.linkedLessonId) return "lesson";
   if (row?.linkedCourseId) return "course";
   if (row?.linkedProductBatchId) return "product_batch";
-  if (row?.linkedProductTrialId) return "product_trial";
+  if (row?.linkedProductTrialId || row?.linkedTrialId) return "product_trial";
   if (row?.linkedProductId) return "product";
   if (row?.linkedStorefrontId) return "storefront";
   if (row?.linkedOrderId) return "order";

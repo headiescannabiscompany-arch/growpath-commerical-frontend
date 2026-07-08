@@ -105,6 +105,14 @@ describe("HomeScheduleRoute", () => {
               status: "open",
               workspaceType: "commercial",
               linkedFeedCampaignId: "campaign-linked-1"
+            },
+            {
+              id: "task-10",
+              title: "Review linked trial evidence",
+              dueAt: "2099-07-16T18:00:00Z",
+              status: "open",
+              workspaceType: "commercial",
+              linkedTrialId: "trial-linked-1"
             }
           ]
         });
@@ -197,6 +205,7 @@ describe("HomeScheduleRoute", () => {
     expect(screen.getByText("Review linked product batch")).toBeTruthy();
     expect(screen.getByText("Investigate linked sensor alert")).toBeTruthy();
     expect(screen.getByText("Launch linked campaign follow-up")).toBeTruthy();
+    expect(screen.getByText("Review linked trial evidence")).toBeTruthy();
     expect(screen.getByText("Live Soil Demo")).toBeTruthy();
     expect(screen.getByText("Public Harvest Q&A")).toBeTruthy();
     expect(screen.getByText("Living Soil Basics")).toBeTruthy();
@@ -226,6 +235,9 @@ describe("HomeScheduleRoute", () => {
     ).toBeTruthy();
     expect(
       screen.getByTestId("link-/home/commercial/feed?campaignId=campaign-linked-1")
+    ).toBeTruthy();
+    expect(
+      screen.getByTestId("link-/home/commercial/trials/trial-linked-1")
     ).toBeTruthy();
     expect(screen.getByTestId("link-/home/commercial/lives?liveId=live-1")).toBeTruthy();
     expect(screen.getByTestId("link-/feed?liveId=live-public-1")).toBeTruthy();

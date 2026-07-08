@@ -86,6 +86,7 @@ function sourceReference(alert: AlertRow) {
     alert.linkedRecipeId,
     alert.linkedProductBatchId,
     alert.linkedProductTrialId,
+    alert.linkedTrialId,
     alert.linkedLessonId,
     alert.linkedCourseAssignmentId,
     alert.linkedFeedCampaignId,
@@ -136,7 +137,7 @@ function linkedFieldsForAlertSource(alert: AlertRow) {
     case "product_batch":
       return { linkedProductBatchId: sourceId };
     case "product_trial":
-      return { linkedProductTrialId: sourceId };
+      return { linkedProductTrialId: sourceId, linkedTrialId: sourceId };
     case "lesson":
       return { linkedLessonId: sourceId };
     case "course_assignment":

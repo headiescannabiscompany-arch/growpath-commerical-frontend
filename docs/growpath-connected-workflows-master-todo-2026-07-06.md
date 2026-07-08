@@ -443,6 +443,7 @@ Completed and pushed:
 167. Commercial Marketing Planner now accepts and displays a `linkedTrialId` evidence-run alias while still writing legacy `linkedGrowId`, reducing commercial-grow naming confusion without breaking existing campaign integrations.
 168. Feed/Campaigns now accepts, displays, tracks, and task-links `linkedTrialId` evidence-run aliases while preserving legacy `linkedGrowId`, keeping outreach campaigns tied to product-trial evidence without reviving commercial-grow language.
 169. Shared source-link routing now recognizes `linkedTrialId` as a product-trial alias, so campaign, task, alert, schedule, and notification records with the clearer evidence-run field can reopen commercial trial detail pages.
+170. Alert Center, Notification Center, and Schedule/Agenda now preserve and infer `linkedTrialId` product-trial aliases when creating follow-up tasks or opening agenda sources, so the clearer evidence-run field stays connected beyond Feed/Campaigns.
 
 ## Working Rule For Codex
 

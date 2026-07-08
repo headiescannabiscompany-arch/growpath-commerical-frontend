@@ -183,6 +183,15 @@ describe("NotificationCenterRoute", () => {
               linkedFeedCampaignId: "campaign-linked-1",
               workspaceType: "commercial",
               readAt: "2026-07-07T12:00:00.000Z"
+            },
+            {
+              id: "notification-18",
+              title: "Linked trial notification",
+              message: "A product trial evidence run needs review.",
+              sourceType: "product_trial",
+              linkedTrialId: "trial-linked-1",
+              workspaceType: "commercial",
+              readAt: "2026-07-07T12:00:00.000Z"
             }
           ]
         });
@@ -260,6 +269,9 @@ describe("NotificationCenterRoute", () => {
       screen.getByLabelText("Notification link /home/commercial/trials/trial-1")
     ).toBeTruthy();
     expect(
+      screen.getByLabelText("Notification link /home/commercial/trials/trial-linked-1")
+    ).toBeTruthy();
+    expect(
       screen.getByLabelText("Notification link /home/commercial/orders?orderId=order-1")
     ).toBeTruthy();
     expect(
@@ -298,7 +310,7 @@ describe("NotificationCenterRoute", () => {
     expect(screen.getByText("Task created from notification.")).toBeTruthy();
 
     const createButtons = screen.getAllByLabelText("Create task from notification");
-    expect(createButtons).toHaveLength(17);
+    expect(createButtons).toHaveLength(18);
     await waitFor(() => expect(createButtons[15].props.disabled).toBeFalsy());
     fireEvent.press(createButtons[15]);
     await waitFor(() =>
@@ -340,6 +352,32 @@ describe("NotificationCenterRoute", () => {
             notificationSourceType: "feed_campaign",
             notificationSourceId: "campaign-linked-1",
             linkedFeedCampaignId: "campaign-linked-1",
+            priority: "normal",
+            status: "open"
+          })
+        })
+      )
+    );
+    await waitFor(() =>
+      expect(screen.getAllByLabelText("Create task from notification")[17].props.disabled)
+        .toBeFalsy()
+    );
+    fireEvent.press(screen.getAllByLabelText("Create task from notification")[17]);
+    await waitFor(() =>
+      expect(mockApiRequest).toHaveBeenLastCalledWith(
+        "/api/tasks",
+        expect.objectContaining({
+          method: "POST",
+          body: expect.objectContaining({
+            workspaceType: "commercial",
+            title: "Follow up: Linked trial notification",
+            sourceType: "notification",
+            sourceId: "notification-18",
+            linkedNotificationId: "notification-18",
+            notificationSourceType: "product_trial",
+            notificationSourceId: "trial-linked-1",
+            linkedProductTrialId: "trial-linked-1",
+            linkedTrialId: "trial-linked-1",
             priority: "normal",
             status: "open"
           })
