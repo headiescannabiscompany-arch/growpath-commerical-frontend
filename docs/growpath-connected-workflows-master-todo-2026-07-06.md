@@ -495,6 +495,7 @@ Completed and pushed:
 219. The canonical route matrix now explicitly marks older generated `/feed`, `/storefront`, and `/dashboard` rows as historical when they conflict with current `/home/commercial`, `/home/commercial/storefront`, `/home/commercial/feed`, `/home/facility/select`, and `/home/facility` routing, with a doc regression guard.
 220. Facility Feed/Campaigns now has a real `/home/facility/feed` route that reuses the shared campaign screen in facility-outreach mode, so facility tasks, alerts, notifications, and schedule source links to outreach campaigns no longer point at a missing route.
 221. Support/ops handoff is now marked live: `support`, `billing`, `privacy`, `legal`, `security`, `commercial`, and `facility` @growpathai.com aliases are documented as production contacts, and config coverage locks the shared alias map plus routed support topics.
+222. Facility Feed/Campaigns route access is now guarded as a selected-facility workspace route, with regression coverage proving unselected facility users stay on setup while selected facility users can open `/home/facility/feed`.
 
 ## Working Rule For Codex
 

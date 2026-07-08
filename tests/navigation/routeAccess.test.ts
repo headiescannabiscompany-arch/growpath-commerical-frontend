@@ -113,9 +113,12 @@ describe("route access policy", () => {
     };
 
     expect(requiresFacility("/home/facility/dashboard")).toBe(true);
+    expect(requiresFacility("/home/facility/feed")).toBe(true);
     expect(canAccessRoute("/home/facility/select", unselectedFacility)).toBe(true);
     expect(canAccessRoute("/home/facility/dashboard", unselectedFacility)).toBe(false);
+    expect(canAccessRoute("/home/facility/feed", unselectedFacility)).toBe(false);
     expect(canAccessRoute("/home/facility/dashboard", facility({}))).toBe(true);
+    expect(canAccessRoute("/home/facility/feed", facility({}))).toBe(true);
   });
 
   it("allows every account mode to view shared campaign feed placements", () => {
