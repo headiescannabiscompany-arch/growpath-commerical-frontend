@@ -186,6 +186,17 @@ describe("AlertCenterRoute", () => {
               sourceType: "product_batch",
               linkedProductBatchId: "batch-linked-1",
               createdAt: new Date().toISOString()
+            },
+            {
+              id: "alert-16",
+              title: "Linked campaign alert",
+              message: "A feed campaign needs follow-up.",
+              severity: "warning",
+              status: "active",
+              workspaceType: "commercial",
+              sourceType: "feed_campaign",
+              linkedFeedCampaignId: "campaign-linked-1",
+              createdAt: new Date().toISOString()
             }
           ]
         });
@@ -233,6 +244,11 @@ describe("AlertCenterRoute", () => {
     ).toBeTruthy();
     expect(
       screen.getByLabelText("Alert link /home/commercial/feed?campaignId=campaign-1")
+    ).toBeTruthy();
+    expect(
+      screen.getByLabelText(
+        "Alert link /home/commercial/feed?campaignId=campaign-linked-1"
+      )
     ).toBeTruthy();
     expect(
       screen.getByLabelText("Alert link /home/commercial/trials/trial-1")
@@ -292,7 +308,7 @@ describe("AlertCenterRoute", () => {
     expect(screen.getByText("Task created from alert.")).toBeTruthy();
 
     const createButtons = screen.getAllByLabelText("Create task from alert");
-    expect(createButtons).toHaveLength(14);
+    expect(createButtons).toHaveLength(15);
     fireEvent.press(createButtons[13]);
     await waitFor(() =>
       expect(mockApiRequest).toHaveBeenLastCalledWith(
@@ -308,6 +324,27 @@ describe("AlertCenterRoute", () => {
             alertSourceType: "product_batch",
             alertSourceId: "batch-linked-1",
             linkedProductBatchId: "batch-linked-1",
+            priority: "normal",
+            status: "open"
+          })
+        })
+      )
+    );
+    fireEvent.press(createButtons[14]);
+    await waitFor(() =>
+      expect(mockApiRequest).toHaveBeenLastCalledWith(
+        "/api/tasks",
+        expect.objectContaining({
+          method: "POST",
+          body: expect.objectContaining({
+            workspaceType: "commercial",
+            title: "Follow up: Linked campaign alert",
+            sourceType: "alert",
+            sourceId: "alert-16",
+            linkedAlertId: "alert-16",
+            alertSourceType: "feed_campaign",
+            alertSourceId: "campaign-linked-1",
+            linkedFeedCampaignId: "campaign-linked-1",
             priority: "normal",
             status: "open"
           })

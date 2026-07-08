@@ -61,9 +61,11 @@ function sourceReference(row: NotificationRow) {
     row.linkedCourseId,
     row.linkedLessonId,
     row.linkedLiveId,
+    row.linkedSensorAlertId,
     row.linkedProductBatchId,
     row.linkedProductTrialId,
     row.linkedProductId,
+    row.linkedFeedCampaignId,
     row.linkedFeedPostId,
     row.linkedOrderId,
     row.linkedForumThreadId,
@@ -103,7 +105,9 @@ function linkedFieldsForNotificationSource(row: NotificationRow) {
     case "product_trial":
       return { linkedProductTrialId: sourceId };
     case "feed_campaign":
-      return { linkedFeedPostId: sourceId };
+      return { linkedFeedCampaignId: sourceId };
+    case "sensor_alert":
+      return { linkedSensorAlertId: sourceId };
     case "order":
       return { linkedOrderId: sourceId };
     case "forum":

@@ -88,6 +88,7 @@ function sourceReference(alert: AlertRow) {
     alert.linkedProductTrialId,
     alert.linkedLessonId,
     alert.linkedCourseAssignmentId,
+    alert.linkedFeedCampaignId,
     alert.linkedFeedPostId,
     alert.linkedOrderId,
     alert.linkedSensorAlertId,
@@ -141,7 +142,7 @@ function linkedFieldsForAlertSource(alert: AlertRow) {
     case "course_assignment":
       return { linkedCourseAssignmentId: sourceId };
     case "feed_campaign":
-      return { linkedFeedPostId: sourceId };
+      return { linkedFeedCampaignId: sourceId };
     case "order":
       return { linkedOrderId: sourceId };
     case "sensor_alert":
