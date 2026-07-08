@@ -514,7 +514,7 @@ function sharedSourceResolverCoversWorkflowLinks() {
     /sourceType === "inventory"/.test(resolver) &&
     /sourceType === "notification"/.test(resolver) &&
     /\/home\/facility\/rooms\?roomId=/.test(resolver) &&
-    /\/home\/personal\/logs\/\$\{encoded\(sourceId\)\}/.test(resolver) &&
+    /\/home\/personal\/logs\/\$\{encoded\(logId\)\}/.test(resolver) &&
     personalTasks.includes('from "@/utils/sourceLinks"') &&
     growTimeline.includes('from "@/utils/sourceLinks"') &&
     personalHomeModel.includes('from "@/utils/sourceLinks"') &&
