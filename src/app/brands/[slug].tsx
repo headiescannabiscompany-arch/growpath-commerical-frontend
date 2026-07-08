@@ -14,6 +14,7 @@ import { fetchPublicStorefront } from "@/api/storefront";
 import { recordCommercialAnalyticsEvent } from "@/api/commercialAnalytics";
 import AppCard from "@/components/layout/AppCard";
 import AppPage from "@/components/layout/AppPage";
+import { radius } from "@/theme/theme";
 import {
   extractPublicCommercialPayload,
   publicGrowInterests,
@@ -408,7 +409,7 @@ const styles = StyleSheet.create({
   error: { color: "#B91C1C", fontWeight: "800" },
   feedback: {
     backgroundColor: "#F1F5F9",
-    borderRadius: 8,
+    borderRadius: radius.card,
     color: "#334155",
     marginBottom: 10,
     padding: 8
@@ -426,7 +427,7 @@ const styles = StyleSheet.create({
   primaryButton: {
     alignItems: "center",
     backgroundColor: "#166534",
-    borderRadius: 8,
+    borderRadius: radius.card,
     paddingHorizontal: 14,
     paddingVertical: 11
   },
@@ -435,7 +436,7 @@ const styles = StyleSheet.create({
     alignItems: "center",
     backgroundColor: "#F1F5F9",
     borderColor: "#CBD5E1",
-    borderRadius: 8,
+    borderRadius: radius.card,
     borderWidth: 1,
     paddingHorizontal: 14,
     paddingVertical: 10
