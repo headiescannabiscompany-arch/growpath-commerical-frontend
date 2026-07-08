@@ -460,6 +460,7 @@ Completed and pushed:
 184. Facility inventory item detail now uses the shared back control with `/home/facility/inventory` as its fallback, with focused route coverage, so nested inventory records obey the workspace back-arrow rule.
 185. Personal Forum new-post and guidelines pages now use the shared back control with `/home/personal/forum` fallbacks, with route coverage proving nested Forum pages return to the Forum root while Feed placements remain campaign/ad surfaces.
 186. Facility audit log detail, audit entity detail, and compliance report detail now use shared back controls with audit/compliance fallbacks in all loading, error, and content states, with focused coverage for the nested compliance/audit back-arrow rule.
+187. Commercial inventory create now uses the shared commercial AppPage shell with a `/home/commercial/inventory` fallback, keeping support-item creation visually aligned with the commercial workspace and covered by the existing create-route regression.
 
 ## Working Rule For Codex
 

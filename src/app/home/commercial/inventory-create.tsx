@@ -4,6 +4,8 @@ import { useRouter } from "expo-router";
 
 import { apiRequest } from "@/api/apiRequest";
 import { endpoints } from "@/api/endpoints";
+import AppCard from "@/components/layout/AppCard";
+import AppPage from "@/components/layout/AppPage";
 
 export default function CommercialInventoryCreateRoute() {
   const router = useRouter();
@@ -72,137 +74,156 @@ export default function CommercialInventoryCreateRoute() {
   };
 
   return (
-    <View style={styles.container}>
-      <Text style={styles.h1}>Create Inventory Support Item</Text>
-      <Text style={styles.helpText}>
-        Commercial inventory support tracks stock behind products, batches/lots, plants,
-        ingredients, packaging, genetics, equipment, courses, services, and retail items.
-        Product records still explain and sell the item; inventory support tracks
-        quantity, cost, supplier, and location.
-      </Text>
-      <TextInput
-        value={name}
-        onChangeText={setName}
-        accessibilityLabel="Commercial inventory item name"
-        placeholder="Name"
-        style={styles.input}
-      />
-      <TextInput
-        value={sku}
-        onChangeText={setSku}
-        accessibilityLabel="Commercial inventory item SKU"
-        placeholder="SKU (optional)"
-        style={styles.input}
-      />
-      <TextInput
-        value={qty}
-        onChangeText={setQty}
-        accessibilityLabel="Commercial inventory item quantity"
-        placeholder="Quantity"
-        keyboardType="numeric"
-        style={styles.input}
-      />
-      <TextInput
-        value={unit}
-        onChangeText={setUnit}
-        accessibilityLabel="Commercial inventory item unit"
-        placeholder="Unit"
-        style={styles.input}
-      />
-      <TextInput
-        value={reorderPoint}
-        onChangeText={setReorderPoint}
-        accessibilityLabel="Commercial inventory item reorder point"
-        placeholder="Reorder point"
-        keyboardType="numeric"
-        style={styles.input}
-      />
-      <TextInput
-        value={vendor}
-        onChangeText={setVendor}
-        accessibilityLabel="Commercial inventory item vendor"
-        placeholder="Vendor"
-        style={styles.input}
-      />
-      <TextInput
-        value={category}
-        onChangeText={setCategory}
-        accessibilityLabel="Commercial inventory item category"
-        placeholder="Category"
-        style={styles.input}
-      />
-      <TextInput
-        value={itemType}
-        onChangeText={setItemType}
-        accessibilityLabel="Commercial inventory item type"
-        placeholder="Item type: product, ingredient, packaging, plant, genetics, equipment..."
-        style={styles.input}
-      />
-      <TextInput
-        value={location}
-        onChangeText={setLocation}
-        accessibilityLabel="Commercial inventory item location"
-        placeholder="Storage location"
-        style={styles.input}
-      />
-      <Text style={styles.sectionLabel}>Optional links</Text>
-      <TextInput
-        value={linkedProductId}
-        onChangeText={setLinkedProductId}
-        accessibilityLabel="Commercial inventory linked product"
-        placeholder="Linked product ID"
-        autoCapitalize="none"
-        style={styles.input}
-      />
-      <TextInput
-        value={linkedIngredientId}
-        onChangeText={setLinkedIngredientId}
-        accessibilityLabel="Commercial inventory linked ingredient"
-        placeholder="Linked ingredient ID"
-        autoCapitalize="none"
-        style={styles.input}
-      />
-      <TextInput
-        value={linkedGeneticsId}
-        onChangeText={setLinkedGeneticsId}
-        accessibilityLabel="Commercial inventory linked genetics"
-        placeholder="Linked genetics ID"
-        autoCapitalize="none"
-        style={styles.input}
-      />
-      <TextInput
-        value={linkedGrowId}
-        onChangeText={setLinkedGrowId}
-        accessibilityLabel="Commercial inventory linked product trial evidence run"
-        placeholder="Linked product trial evidence run ID"
-        autoCapitalize="none"
-        style={styles.input}
-      />
-      <TextInput
-        value={notes}
-        onChangeText={setNotes}
-        accessibilityLabel="Commercial inventory item notes"
-        placeholder="Notes"
-        multiline
-        style={[styles.input, styles.notesInput]}
-      />
-      <Pressable
-        onPress={create}
-        disabled={!canSave}
-        accessibilityRole="button"
-        accessibilityLabel="Create commercial inventory item"
-        style={[styles.button, !canSave && styles.disabled]}
-      >
-        <Text style={styles.buttonText}>
-          {saving ? "Saving..." : "Create Support Item"}
-        </Text>
-      </Pressable>
-    </View>
+    <AppPage
+      routeKey="commercial-inventory-create"
+      backFallbackHref="/home/commercial/inventory"
+      longContent
+      header={
+        <View style={styles.header}>
+          <Text style={styles.kicker}>Commercial workspace</Text>
+          <Text style={styles.h1}>Create Inventory Support Item</Text>
+          <Text style={styles.helpText}>
+            Commercial inventory support tracks stock behind products, batches/lots,
+            plants, ingredients, packaging, genetics, equipment, courses, services, and
+            retail items. Product records still explain and sell the item; inventory
+            support tracks quantity, cost, supplier, and location.
+          </Text>
+        </View>
+      }
+    >
+      <AppCard>
+        <TextInput
+          value={name}
+          onChangeText={setName}
+          accessibilityLabel="Commercial inventory item name"
+          placeholder="Name"
+          style={styles.input}
+        />
+        <TextInput
+          value={sku}
+          onChangeText={setSku}
+          accessibilityLabel="Commercial inventory item SKU"
+          placeholder="SKU (optional)"
+          style={styles.input}
+        />
+        <TextInput
+          value={qty}
+          onChangeText={setQty}
+          accessibilityLabel="Commercial inventory item quantity"
+          placeholder="Quantity"
+          keyboardType="numeric"
+          style={styles.input}
+        />
+        <TextInput
+          value={unit}
+          onChangeText={setUnit}
+          accessibilityLabel="Commercial inventory item unit"
+          placeholder="Unit"
+          style={styles.input}
+        />
+        <TextInput
+          value={reorderPoint}
+          onChangeText={setReorderPoint}
+          accessibilityLabel="Commercial inventory item reorder point"
+          placeholder="Reorder point"
+          keyboardType="numeric"
+          style={styles.input}
+        />
+        <TextInput
+          value={vendor}
+          onChangeText={setVendor}
+          accessibilityLabel="Commercial inventory item vendor"
+          placeholder="Vendor"
+          style={styles.input}
+        />
+        <TextInput
+          value={category}
+          onChangeText={setCategory}
+          accessibilityLabel="Commercial inventory item category"
+          placeholder="Category"
+          style={styles.input}
+        />
+        <TextInput
+          value={itemType}
+          onChangeText={setItemType}
+          accessibilityLabel="Commercial inventory item type"
+          placeholder="Item type: product, ingredient, packaging, plant, genetics, equipment..."
+          style={styles.input}
+        />
+        <TextInput
+          value={location}
+          onChangeText={setLocation}
+          accessibilityLabel="Commercial inventory item location"
+          placeholder="Storage location"
+          style={styles.input}
+        />
+        <Text style={styles.sectionLabel}>Optional links</Text>
+        <TextInput
+          value={linkedProductId}
+          onChangeText={setLinkedProductId}
+          accessibilityLabel="Commercial inventory linked product"
+          placeholder="Linked product ID"
+          autoCapitalize="none"
+          style={styles.input}
+        />
+        <TextInput
+          value={linkedIngredientId}
+          onChangeText={setLinkedIngredientId}
+          accessibilityLabel="Commercial inventory linked ingredient"
+          placeholder="Linked ingredient ID"
+          autoCapitalize="none"
+          style={styles.input}
+        />
+        <TextInput
+          value={linkedGeneticsId}
+          onChangeText={setLinkedGeneticsId}
+          accessibilityLabel="Commercial inventory linked genetics"
+          placeholder="Linked genetics ID"
+          autoCapitalize="none"
+          style={styles.input}
+        />
+        <TextInput
+          value={linkedGrowId}
+          onChangeText={setLinkedGrowId}
+          accessibilityLabel="Commercial inventory linked product trial evidence run"
+          placeholder="Linked product trial evidence run ID"
+          autoCapitalize="none"
+          style={styles.input}
+        />
+        <TextInput
+          value={notes}
+          onChangeText={setNotes}
+          accessibilityLabel="Commercial inventory item notes"
+          placeholder="Notes"
+          multiline
+          style={[styles.input, styles.notesInput]}
+        />
+        <Pressable
+          onPress={create}
+          disabled={!canSave}
+          accessibilityRole="button"
+          accessibilityLabel="Create commercial inventory item"
+          style={[styles.button, !canSave && styles.disabled]}
+        >
+          <Text style={styles.buttonText}>
+            {saving ? "Saving..." : "Create Support Item"}
+          </Text>
+        </Pressable>
+      </AppCard>
+    </AppPage>
   );
 }
 
 const styles = StyleSheet.create({
   container: { flex: 1, padding: 16, gap: 10 },
+  header: { gap: 8 },
+  kicker: {
+    color: "#64748B",
+    fontSize: 12,
+    fontWeight: "900",
+    letterSpacing: 0,
+    textTransform: "uppercase"
+  },
   h1: { fontSize: 22, fontWeight: "900", marginBottom: 4 },
   helpText: { color: "#475569", fontSize: 13, fontWeight: "700", lineHeight: 19 },
   sectionLabel: {

@@ -24,6 +24,25 @@ jest.mock("expo-router", () => ({
   })
 }));
 
+jest.mock("@/components/layout/AppPage", () => {
+  const React = require("react");
+  const { Text, View } = require("react-native");
+  return ({ children, header, backFallbackHref, routeKey }: any) =>
+    React.createElement(
+      View,
+      { accessibilityLabel: `app-page-${routeKey}` },
+      React.createElement(Text, null, `Shared Back ${backFallbackHref}`),
+      header,
+      children
+    );
+});
+
+jest.mock("@/components/layout/AppCard", () => {
+  const React = require("react");
+  const { View } = require("react-native");
+  return ({ children }: any) => React.createElement(View, null, children);
+});
+
 describe("CommercialInventoryCreateRoute", () => {
   beforeEach(() => {
     jest.resetAllMocks();
@@ -33,6 +52,7 @@ describe("CommercialInventoryCreateRoute", () => {
   it("creates commercial inventory with item type, location, and linked records", async () => {
     const screen = render(<CommercialInventoryCreateRoute />);
 
+    expect(screen.getByText("Shared Back /home/commercial/inventory")).toBeTruthy();
     expect(screen.getByText(/Commercial inventory support tracks stock/)).toBeTruthy();
 
     fireEvent.changeText(
