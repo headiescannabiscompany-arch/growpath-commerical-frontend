@@ -353,6 +353,7 @@ Completed and pushed:
 77. The legacy `api/posts.js` compatibility client now maps feed, trending, create, like, unlike, and comment calls onto Forum/Q&A endpoints, with regression coverage preventing old `/api/posts/*` discussion contracts from returning.
 78. Registration, plan walkthroughs, the first-run intro, and the facility picker now use Personal / Commercial / Facility workspace language instead of vague business surfaces/models or facility-as-business copy.
 79. Commercial evidence-run creation copy now says brand/product context and uses `demo_trial` language, avoiding the old implication that Commercial is an operational grow workspace.
+80. Commercial Task Center and commercial task detail now use the shared source-link resolver, including lesson-backed tasks that open the commercial course workflow instead of dropping the user at an unlinked task.
 
 ## Working Rule For Codex
 
