@@ -81,20 +81,31 @@ function sourceObjectLabel(task: PersonalTask) {
 }
 
 function sourceReference(task: PersonalTask) {
-  const value =
+  const sourceType = String(task.sourceType || "");
+  const linkedSource =
     task.sourceObjectId ||
+    task.linkedRecipeId ||
     task.linkedProductId ||
     task.linkedProductBatchId ||
     task.linkedProductTrialId ||
     task.linkedStorefrontId ||
+    task.linkedOrderId ||
     task.linkedCourseId ||
     task.linkedLessonId ||
     task.linkedLiveId ||
     task.linkedAlertId ||
     task.linkedForumThreadId ||
+    task.linkedFacilityId ||
     task.linkedRoomId ||
     task.linkedFacilityRunId ||
     task.linkedSopId;
+  const contextualSource =
+    sourceType === "plant"
+      ? task.linkedPlantId
+      : sourceType === "grow"
+        ? task.linkedGrowId
+        : "";
+  const value = linkedSource || contextualSource;
   return value ? String(value) : "";
 }
 
@@ -115,8 +126,10 @@ function taskLinks(task: PersonalTask) {
 
 function taskSourcePath(task: PersonalTask) {
   let sourceType = String(task.sourceType || "");
+  const linkedSource = sourceReference(task);
   const sourceId = String(
-    task.sourceObjectId ||
+    linkedSource ||
+      task.sourceObjectId ||
       task.sourceToolRunId ||
       task.linkedToolRunId ||
       task.sourceDiagnosisId ||
