@@ -1177,6 +1177,9 @@ describe("commercial workflow pages", () => {
     expect(screen.getByText("Course Record")).toBeTruthy();
     expect(screen.getAllByText("Lessons").length).toBeGreaterThan(0);
     expect(screen.getByText("Commercial Course Loop")).toBeTruthy();
+    expect(
+      screen.getByText("Answer course/product questions in Forum/Q&A support threads.")
+    ).toBeTruthy();
     expect(screen.getByText("Application rate")).toBeTruthy();
     expect(screen.getByText("prod_course_existing")).toBeTruthy();
     expect(screen.getByText("price_course_existing")).toBeTruthy();
@@ -2414,6 +2417,7 @@ describe("commercial workflow pages", () => {
     expect(screen.getByText("Ad and marketing click counts")).toBeTruthy();
     expect(screen.getByText("External checkout reality")).toBeTruthy();
     expect(screen.getByText("Trial and content outcomes")).toBeTruthy();
+    expect(screen.getByText("Brand Forum/Q&A support replies")).toBeTruthy();
     expect(screen.getAllByText("Forum / Q&A").length).toBeGreaterThan(0);
     expect(screen.queryByText("Community")).toBeNull();
     expect(screen.getAllByText("Orders").length).toBeGreaterThan(0);

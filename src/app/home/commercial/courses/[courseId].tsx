@@ -666,7 +666,7 @@ export default function CommercialCourseDetailRoute({ route }: { route?: any } =
           Announce published courses in feed and link them from storefront/profile.
         </Text>
         <Text style={styles.bullet}>
-          Answer course/product questions in community support threads.
+          Answer course/product questions in Forum/Q&A support threads.
         </Text>
         <View style={styles.actions}>
           <ActionLink href="/home/commercial/products" label="Products" />

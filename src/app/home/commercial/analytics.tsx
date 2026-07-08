@@ -202,7 +202,7 @@ export default function CommercialAnalyticsRoute() {
           <MetricCard
             label="Forum replies"
             value={normalized.forumReplies}
-            helper="Brand/community support replies"
+            helper="Brand Forum/Q&A support replies"
           />
           <MetricCard
             label="Active trials"
