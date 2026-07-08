@@ -64,7 +64,8 @@ const checks = [
       "tests/unit/ResetPasswordScreen.test.tsx",
       "tests/unit/ForgotPasswordScreen.test.tsx",
       "src/api/__tests__/auth.emailVerification.test.ts",
-      "src/features/personal/tools/__tests__/moduleRecordPersistence.test.ts"
+      "src/features/personal/tools/__tests__/moduleRecordPersistence.test.ts",
+      "src/features/personal/tools/__tests__/saveToolRunAndOpenJournal.test.ts"
     ]
   },
   {
