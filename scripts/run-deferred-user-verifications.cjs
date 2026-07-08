@@ -63,6 +63,7 @@ const checks = [
       "tests/unit/FacilityTasksRoute.test.tsx",
       "tests/unit/FacilityTaskDetailRoute.test.tsx",
       "tests/unit/FacilityRoomsRoute.test.tsx",
+      "tests/unit/integrations_growlink.test.tsx",
       "src/config/__tests__/featureStatus.test.ts",
       "tests/unit/SchedulePicker.test.tsx",
       "tests/unit/AppPageBackBehavior.test.tsx",
@@ -138,7 +139,9 @@ const manualChecks = [
     area: "Sensor import onboarding",
     checks: [
       "In Personal integrations, verify Growlink import preview creates detected rooms/devices/normalized streams before creating the source.",
+      "Confirm Personal Growlink source saves suggested grow spaces with read-only devices, normalized metrics, and sensor streams for later tent/room setup.",
       "In Facility rooms/import, verify detected devices create room mappings with sensorStreams preserved for dashboards/tools/AI.",
+      "Confirm Facility room import stores suggested alert/task rules for imported alarm metrics without exposing write/control actions.",
       "Confirm read-only sync language is visible and no write/control action is exposed."
     ]
   },

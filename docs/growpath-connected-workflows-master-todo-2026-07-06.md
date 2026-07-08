@@ -433,6 +433,7 @@ Completed and pushed:
 157. Commercial product/course setup regression coverage now uses canonical-only feed campaign fixtures and verifies legacy alias task fields are still populated, preventing old feed-post data assumptions from hiding drift.
 158. Personal Growlink import now saves suggested grow-space metadata alongside detected rooms, devices, normalized metrics, and read-only sensor streams, so controller imports can seed personal tents/rooms later instead of storing only telemetry numbers.
 159. Facility controller room import now attaches suggested alert/task rules for imported alarm metrics while preserving read-only mappings, helping facilities start with actionable room monitoring after import.
+160. Deferred verification scripts now include the personal Growlink import regression and manual checks for suggested personal grow spaces plus facility imported alert/task rule metadata.
 
 ## Working Rule For Codex
 
