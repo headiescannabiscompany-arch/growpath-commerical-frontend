@@ -122,7 +122,7 @@ export default function CommercialGrowDetailRoute({ route }: { route?: any } = {
           </Text>
           <View style={styles.actions}>
             <ActionLink href="/home/commercial/grows" label="All Evidence Runs" />
-            <ActionLink href="/home/personal/grows" label="Pro Grow Workspace" />
+            <ActionLink href="/home/commercial/products" label="Products" />
             <ActionLink href="/home/commercial/trials" label="Product Trials" />
           </View>
         </View>

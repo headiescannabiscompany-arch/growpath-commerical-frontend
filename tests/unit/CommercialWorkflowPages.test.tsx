@@ -2034,6 +2034,8 @@ describe("commercial workflow pages", () => {
     expect(screen.getByText("Measurement Plan")).toBeTruthy();
     expect(screen.getByText("Harvest Quality Notes")).toBeTruthy();
     expect(screen.getByText("Commercial Crop Summary")).toBeTruthy();
+    expect(screen.queryByText("Pro Grow Workspace")).toBeNull();
+    expect(screen.UNSAFE_getByProps({ href: "/home/commercial/products" })).toBeTruthy();
     expect(
       screen.getByLabelText("Product trial evidence run harvest quality notes").props
         .value
