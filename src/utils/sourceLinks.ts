@@ -59,6 +59,7 @@ export function sourceObjectHref(source: SourceLike) {
   }
 
   if (sourceType === "grow_log") {
+    if (sourceId) return `/home/personal/logs/${encoded(sourceId)}`;
     return growId
       ? `/home/personal/grows/${encoded(growId)}/journal`
       : "/home/personal/grows";
@@ -127,6 +128,11 @@ export function sourceObjectHref(source: SourceLike) {
   if (sourceType === "facility") return "/home/facility";
   if (sourceType === "facility_run") {
     return sourceId ? `/home/facility/grows/${sourceId}` : "/home/facility/grows";
+  }
+  if (sourceType === "automation") {
+    return growId
+      ? `/home/personal/grows/${encoded(growId)}/automation`
+      : "/home/personal/grows";
   }
   if (sourceType === "sop") return "/home/facility/sop-runs";
   if (sourceType === "sensor_alert" || sourceType === "alert") return "/home/alerts";

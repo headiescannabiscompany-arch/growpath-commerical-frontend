@@ -60,5 +60,23 @@ describe("sourceObjectHref", () => {
         workspaceType: "personal"
       })
     ).toBe("/store?q=batch-1");
+
+    expect(
+      sourceObjectHref({
+        sourceType: "grow_log",
+        sourceId: "log-1",
+        growId: "grow-1",
+        workspaceType: "personal"
+      })
+    ).toBe("/home/personal/logs/log-1");
+
+    expect(
+      sourceObjectHref({
+        sourceType: "automation",
+        sourceId: "automation-1",
+        growId: "grow-1",
+        workspaceType: "personal"
+      })
+    ).toBe("/home/personal/grows/grow-1/automation");
   });
 });

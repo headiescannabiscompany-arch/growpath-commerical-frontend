@@ -9,10 +9,20 @@ jest.mock("@/api/grows", () => ({
   getPersonalGrowTimeline: (...args: any[]) => mockGetPersonalGrowTimeline(...args)
 }));
 
-jest.mock("expo-router", () => ({
-  useLocalSearchParams: () => ({ growId: "grow-1" }),
-  Link: ({ children }: any) => children
-}));
+jest.mock("expo-router", () => {
+  const React = require("react");
+  const { Text } = require("react-native");
+  return {
+    useLocalSearchParams: () => ({ growId: "grow-1" }),
+    Link: ({ children, href }: any) =>
+      React.createElement(
+        React.Fragment,
+        null,
+        children,
+        React.createElement(Text, { accessibilityLabel: `Timeline source link ${href}` })
+      )
+  };
+});
 
 jest.mock("@react-navigation/native", () => {
   const React = require("react");
@@ -103,6 +113,16 @@ describe("GrowTimelineScreen", () => {
         summary: "Tool-created task.",
         timestamp: "2026-06-30T15:00:00.000Z",
         tags: ["task"]
+      },
+      {
+        id: "Automation:automation-1",
+        type: "automation_triggered",
+        sourceModel: "AutomationPolicy",
+        sourceId: "automation-1",
+        title: "Humidity alert automation",
+        summary: "Created a humidity follow-up.",
+        timestamp: "2026-06-30T16:00:00.000Z",
+        tags: ["automation"]
       }
     ]);
   });
@@ -127,6 +147,26 @@ describe("GrowTimelineScreen", () => {
     expect(screen.getAllByText("Open Diagnosis Source")).toHaveLength(2);
     expect(screen.getByText("Open Tool Source")).toBeTruthy();
     expect(screen.getByText("Open Task Source")).toBeTruthy();
+    expect(screen.getByText("Open Automation Source")).toBeTruthy();
+    expect(
+      screen.getAllByLabelText("Timeline source link /home/personal/logs/log-1")
+    ).toHaveLength(2);
+    expect(
+      screen.getAllByLabelText(
+        "Timeline source link /home/personal/diagnose?growId=grow-1"
+      )
+    ).toHaveLength(2);
+    expect(
+      screen.getByLabelText("Timeline source link /home/personal/tools/saved-runs")
+    ).toBeTruthy();
+    expect(
+      screen.getByLabelText("Timeline source link /home/personal/grows/grow-1/tasks")
+    ).toBeTruthy();
+    expect(
+      screen.getByLabelText(
+        "Timeline source link /home/personal/grows/grow-1/automation"
+      )
+    ).toBeTruthy();
   });
 
   it("filters timeline events by canonical event group", async () => {

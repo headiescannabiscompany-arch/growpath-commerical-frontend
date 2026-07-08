@@ -14,6 +14,7 @@ import { getPersonalGrowTimeline, type PersonalGrowTimelineEvent } from "@/api/g
 import GrowWorkspaceNav from "@/components/personal/GrowWorkspaceNav";
 import { coerceParam, fmtDate } from "@/features/grows/routeUtils";
 import PersonalFeedPlacement from "@/components/feed/PersonalFeedPlacement";
+import { sourceObjectHref } from "@/utils/sourceLinks";
 
 const FILTERS = [
   { key: "all", label: "All" },
@@ -154,25 +155,67 @@ function sourceHref(event: PersonalGrowTimelineEvent, growId: string) {
   const sourceId = String(event.sourceId || "");
   const model = String(event.sourceModel || "").toLowerCase();
   const type = String(event.type || "").toLowerCase();
-  const growPath = `/home/personal/grows/${encodeURIComponent(growId)}`;
 
   if (!growId) return "";
   if (
     sourceId &&
     (model.includes("growlog") || type.includes("log") || type.includes("photo"))
   ) {
-    return `/home/personal/logs/${encodeURIComponent(sourceId)}`;
+    return sourceObjectHref({
+      sourceType: "grow_log",
+      sourceId,
+      growId,
+      workspaceType: "personal"
+    });
   }
-  if (model.includes("toolrun") || type.includes("tool")) return `${growPath}/tools`;
-  if (model.includes("task") || type.includes("task")) return `${growPath}/tasks`;
+  if (model.includes("toolrun") || type.includes("tool")) {
+    return sourceObjectHref({
+      sourceType: "tool_run",
+      sourceId,
+      growId,
+      workspaceType: "personal"
+    });
+  }
+  if (model.includes("task") || type.includes("task")) {
+    return sourceObjectHref({
+      sourceType: "task",
+      sourceId,
+      growId,
+      workspaceType: "personal"
+    });
+  }
   if (model.includes("automation") || type.includes("automation")) {
-    return `${growPath}/automation`;
+    return sourceObjectHref({
+      sourceType: "automation",
+      sourceId,
+      growId,
+      workspaceType: "personal"
+    });
   }
-  if (model.includes("plant") || type.includes("plant")) return `${growPath}/plants`;
+  if (model.includes("plant") || type.includes("plant")) {
+    return sourceObjectHref({
+      sourceType: "plant",
+      sourceId,
+      growId,
+      workspaceType: "personal"
+    });
+  }
   if (model.includes("diagnosis") || type.includes("diagnosis")) {
-    return `/home/personal/diagnose?growId=${encodeURIComponent(growId)}`;
+    return sourceObjectHref({
+      sourceType: "ai_diagnosis",
+      sourceId,
+      growId,
+      workspaceType: "personal"
+    });
   }
-  if (model.includes("grow") || type.includes("grow")) return growPath;
+  if (model.includes("grow") || type.includes("grow")) {
+    return sourceObjectHref({
+      sourceType: "grow",
+      sourceId: growId,
+      growId,
+      workspaceType: "personal"
+    });
+  }
   return "";
 }
 
