@@ -9,6 +9,7 @@ import AppCard from "@/components/layout/AppCard";
 import AppPage from "@/components/layout/AppPage";
 import { useAuth } from "@/auth/AuthContext";
 import { useEntitlements } from "@/entitlements";
+import { radius } from "@/theme/theme";
 
 type ProductForm = {
   name: string;
@@ -764,7 +765,7 @@ const styles = StyleSheet.create({
   },
   metric: {
     borderColor: "#E2E8F0",
-    borderRadius: 8,
+    borderRadius: radius.card,
     borderWidth: 1,
     minWidth: 120,
     padding: 9
@@ -787,7 +788,7 @@ const styles = StyleSheet.create({
   },
   input: {
     borderColor: "#CBD5E1",
-    borderRadius: 8,
+    borderRadius: radius.card,
     borderWidth: 1,
     color: "#0F172A",
     flexGrow: 1,
@@ -810,7 +811,7 @@ const styles = StyleSheet.create({
   action: {
     backgroundColor: "#FFFFFF",
     borderColor: "#166534",
-    borderRadius: 8,
+    borderRadius: radius.card,
     borderWidth: 1,
     paddingHorizontal: 11,
     paddingVertical: 8
@@ -822,7 +823,7 @@ const styles = StyleSheet.create({
   },
   primaryAction: {
     backgroundColor: "#166534",
-    borderRadius: 8,
+    borderRadius: radius.card,
     paddingHorizontal: 12,
     paddingVertical: 9
   },
@@ -840,7 +841,7 @@ const styles = StyleSheet.create({
   },
   productRow: {
     borderColor: "#E2E8F0",
-    borderRadius: 8,
+    borderRadius: radius.card,
     borderWidth: 1,
     flexDirection: "row",
     flexWrap: "wrap",
@@ -850,7 +851,7 @@ const styles = StyleSheet.create({
   },
   productThumb: {
     backgroundColor: "#E2E8F0",
-    borderRadius: 8,
+    borderRadius: radius.card,
     height: 82,
     width: 112
   },
@@ -879,7 +880,7 @@ const styles = StyleSheet.create({
   warningBox: {
     backgroundColor: "#FFF7ED",
     borderColor: "#FDBA74",
-    borderRadius: 8,
+    borderRadius: radius.card,
     borderWidth: 1,
     marginTop: 10,
     padding: 10
