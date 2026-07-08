@@ -420,6 +420,16 @@ export default function DataIntegrationsScreen() {
         permissionLevel: "read-only",
         provider: "growlink"
       }));
+      const suggestedGrowSpaces = importPreview.map((room) => ({
+        name: room.name,
+        type: room.type,
+        source: "growlink_account_structure",
+        provider: "growlink",
+        permissionLevel: "read-only",
+        devices: room.devices,
+        normalizedMetrics: room.metrics,
+        sensorStreams: room.sensorStreams
+      }));
       const created = await createTelemetrySource({
         growId: nextGrowId,
         type: "growlink",
@@ -436,6 +446,7 @@ export default function DataIntegrationsScreen() {
               detectedRooms: growlinkPreviewTotals.rooms,
               detectedDevices: growlinkPreviewTotals.devices,
               detectedStreams: growlinkPreviewTotals.streams,
+              suggestedGrowSpaces,
               rooms: importPreview
             }
           }

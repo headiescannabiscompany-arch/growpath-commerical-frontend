@@ -143,6 +143,31 @@ describe("Data Integrations Growlink flow", () => {
               detectedRooms: 1,
               detectedDevices: 1,
               detectedStreams: 2,
+              suggestedGrowSpaces: [
+                expect.objectContaining({
+                  name: "Flower A",
+                  type: "flower",
+                  source: "growlink_account_structure",
+                  provider: "growlink",
+                  permissionLevel: "read-only",
+                  devices: ["Flower A Temp/RH"],
+                  normalizedMetrics: ["air_temperature", "relative_humidity"],
+                  sensorStreams: [
+                    expect.objectContaining({
+                      providerMetricKey: "air_temperature",
+                      normalizedMetric: "air_temperature",
+                      suggestedRoomName: "Flower A",
+                      suggestedDeviceName: "Flower A Temp/RH"
+                    }),
+                    expect.objectContaining({
+                      providerMetricKey: "relative_humidity",
+                      normalizedMetric: "relative_humidity",
+                      suggestedRoomName: "Flower A",
+                      suggestedDeviceName: "Flower A Temp/RH"
+                    })
+                  ]
+                })
+              ],
               rooms: [
                 expect.objectContaining({
                   name: "Flower A",

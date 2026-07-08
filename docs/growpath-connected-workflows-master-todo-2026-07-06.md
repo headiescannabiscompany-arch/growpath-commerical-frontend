@@ -431,6 +431,7 @@ Completed and pushed:
 155. Commercial live scheduling now uses canonical related feed campaign form state while still writing the legacy feed-post alias for backend compatibility, keeping live outreach tied to Feed/Campaigns language.
 156. Commercial product and course setup tasks now mirror canonical feed campaign ids into legacy feed-post compatibility arrays, so older source-link consumers stay connected while the active workflow uses Feed/Campaigns language.
 157. Commercial product/course setup regression coverage now uses canonical-only feed campaign fixtures and verifies legacy alias task fields are still populated, preventing old feed-post data assumptions from hiding drift.
+158. Personal Growlink import now saves suggested grow-space metadata alongside detected rooms, devices, normalized metrics, and read-only sensor streams, so controller imports can seed personal tents/rooms later instead of storing only telemetry numbers.
 
 ## Working Rule For Codex
 
