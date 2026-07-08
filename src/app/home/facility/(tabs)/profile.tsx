@@ -41,6 +41,27 @@ function renderKV(obj: AnyRec | null, key: string) {
   );
 }
 
+function ProfileAction({
+  label,
+  onPress,
+  accessibilityLabel
+}: {
+  label: string;
+  onPress: () => void;
+  accessibilityLabel: string;
+}) {
+  return (
+    <Pressable
+      accessibilityRole="button"
+      accessibilityLabel={accessibilityLabel}
+      onPress={onPress}
+      style={styles.actionButton}
+    >
+      <Text style={styles.actionText}>{label}</Text>
+    </Pressable>
+  );
+}
+
 export default function FacilityProfileRoute() {
   const router = useRouter();
   const auth = useAuth();
@@ -162,6 +183,28 @@ export default function FacilityProfileRoute() {
           </View>
         ) : null}
 
+        <View style={[styles.card, styles.workspaceCard]}>
+          <Text style={styles.kicker}>Facility workspace</Text>
+          <Text style={styles.workspaceTitle}>Operational facility identity</Text>
+          <Text style={styles.workspaceText}>
+            Facility is for rooms, operational runs, team tasks, sensor streams,
+            compliance, and audit history. Commercial storefront outreach and Personal
+            grow records stay in their own workspaces.
+          </Text>
+          <View style={styles.actionRow}>
+            <ProfileAction
+              label="Switch workspace"
+              accessibilityLabel="Switch workspace mode"
+              onPress={() => router.push("/account/mode" as any)}
+            />
+            <ProfileAction
+              label="Account profile"
+              accessibilityLabel="Open account profile"
+              onPress={() => router.push("/profile" as any)}
+            />
+          </View>
+        </View>
+
         <View style={styles.card}>
           <Text style={styles.h1}>Selected Facility</Text>
           <Text style={styles.muted}>
@@ -216,7 +259,44 @@ const styles = StyleSheet.create({
     backgroundColor: "white",
     marginBottom: 12
   },
+  workspaceCard: {
+    backgroundColor: "#172317",
+    borderColor: "#2f402f"
+  },
+  kicker: {
+    color: "#BFD6C0",
+    fontSize: 12,
+    fontWeight: "800",
+    letterSpacing: 0,
+    marginBottom: 6,
+    textTransform: "uppercase"
+  },
   h1: { fontSize: 18, fontWeight: "900", marginBottom: 6 },
+  workspaceTitle: {
+    color: "#FFFFFF",
+    fontSize: 18,
+    fontWeight: "900",
+    marginBottom: 6
+  },
+  workspaceText: { color: "#E8F1E7", fontSize: 14, lineHeight: 21 },
+  actionRow: {
+    flexDirection: "row",
+    flexWrap: "wrap",
+    gap: 10,
+    marginTop: 12
+  },
+  actionButton: {
+    alignItems: "center",
+    backgroundColor: "#EEF7EE",
+    borderColor: "#BFD6C0",
+    borderRadius: 8,
+    borderWidth: 1,
+    minHeight: 40,
+    justifyContent: "center",
+    paddingHorizontal: 14,
+    paddingVertical: 10
+  },
+  actionText: { color: "#172317", fontWeight: "900" },
 
   kvWrap: { marginTop: 8 },
   kv: { marginBottom: 10 },

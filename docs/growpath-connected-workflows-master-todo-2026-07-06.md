@@ -489,6 +489,7 @@ Completed and pushed:
 213. The active Personal Forum/Q&A composer now displays the posting identity, stores `authorType: "user"` plus workspace context through the shared forum API, and keeps the copy clear that Feed / Campaigns is outreach rather than discussion.
 214. Feed/Campaigns creation now sends explicit commercial or facility `authorType` alongside `workspaceType`, so outreach campaigns store the acting brand/facility identity instead of relying only on mode inference.
 215. Personal Profile now opens the shared `/account/mode` workspace switcher from the visible Mode card and explains that Personal grow records/Forum, Commercial storefront outreach, and Facility operational rooms stay separate.
+216. Facility Profile now shows a facility-workspace identity card with Switch Workspace and Account Profile actions, keeping operational rooms/runs/tasks/sensors/compliance visibly separate from Personal grow records and Commercial storefront outreach.
 
 ## Working Rule For Codex
 
