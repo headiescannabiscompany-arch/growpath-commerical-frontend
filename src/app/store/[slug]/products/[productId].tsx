@@ -27,6 +27,10 @@ function productKey(product: any) {
   return String(product?.id || product?._id || product?.productId || product?.slug || "");
 }
 
+function lineKey(line: any) {
+  return String(line?.id || line?._id || line?.lineId || line?.slug || "");
+}
+
 function money(product: any) {
   const cents = Number(product?.priceCents || 0);
   if (cents > 0) return `$${(cents / 100).toFixed(2)}`;
@@ -142,6 +146,7 @@ export default function PublicProductRoute() {
   const [busy, setBusy] = useState(false);
   const [storefront, setStorefront] = useState<any>(null);
   const [products, setProducts] = useState<any[]>([]);
+  const [productLines, setProductLines] = useState<any[]>([]);
   const [courses, setCourses] = useState<any[]>([]);
   const [feedPosts, setFeedPosts] = useState<any[]>([]);
   const [forumThreads, setForumThreads] = useState<any[]>([]);
@@ -157,6 +162,7 @@ export default function PublicProductRoute() {
       const data = res?.data || {};
       setStorefront(res?.storefront || data?.storefront || null);
       setProducts(asArray(res?.products || data?.products));
+      setProductLines(asArray(res?.productLines || data?.productLines));
       setCourses(
         asArray(
           res?.courses || data?.courses || res?.featuredCourses || data?.featuredCourses
@@ -211,6 +217,15 @@ export default function PublicProductRoute() {
     .filter((item) => productKey(item) !== productKey(product))
     .slice(0, 3);
   const productId = productKey(product);
+  const productLineIds = [
+    product?.productLineId,
+    product?.linkedProductLineId,
+    ...(Array.isArray(product?.productLineIds) ? product.productLineIds : []),
+    ...(Array.isArray(product?.linkedProductLineIds) ? product.linkedProductLineIds : [])
+  ]
+    .map((id) => String(id || ""))
+    .filter(Boolean);
+  const productLine = productLines.find((line) => productLineIds.includes(lineKey(line)));
   const relatedCourses = courses
     .filter((course) => itemLinksProduct(course, productId))
     .slice(0, 3);
@@ -387,6 +402,36 @@ export default function PublicProductRoute() {
             ) : null}
             {product?.warnings ? (
               <Text style={styles.warning}>{product.warnings}</Text>
+            ) : null}
+            {productLine ? (
+              <View style={styles.linePanel}>
+                <Text style={styles.specLabel}>Product Line</Text>
+                <Text style={styles.relatedName}>
+                  {productLine?.name || productLine?.title || "Product Line"}
+                </Text>
+                {productLine?.publicSummary || productLine?.description ? (
+                  <Text style={styles.meta}>
+                    {productLine.publicSummary || productLine.description}
+                  </Text>
+                ) : null}
+                {publicGrowInterests(productLine).length ? (
+                  <Text style={styles.interests}>
+                    Interests: {publicGrowInterests(productLine).join(", ")}
+                  </Text>
+                ) : null}
+                <Link
+                  href={
+                    `/store/${encodeURIComponent(slug)}?line=${encodeURIComponent(
+                      lineKey(productLine)
+                    )}` as any
+                  }
+                  asChild
+                >
+                  <Pressable style={styles.secondaryButton}>
+                    <Text style={styles.secondaryButtonText}>Browse Line</Text>
+                  </Pressable>
+                </Link>
+              </View>
             ) : null}
           </AppCard>
 
@@ -683,5 +728,13 @@ const styles = StyleSheet.create({
     paddingVertical: 10
   },
   linkedCopy: { flex: 1, gap: 4 },
+  linePanel: {
+    borderColor: "#BBF7D0",
+    borderRadius: 8,
+    borderWidth: 1,
+    gap: 6,
+    marginTop: 10,
+    padding: 10
+  },
   relatedName: { color: "#111827", fontWeight: "800" }
 });

@@ -290,6 +290,12 @@ describe("public commercial routes", () => {
     expect(screen.getByText("N: 3, P: 0.4364, K: 0.8301")).toBeTruthy();
     expect(screen.getByText("Alfalfa meal, Fish bone meal")).toBeTruthy();
     expect(screen.getAllByText("Topdress and water in.").length).toBeGreaterThan(0);
+    expect(screen.getByText("Product Line")).toBeTruthy();
+    expect(screen.getByText("Living Soil Line")).toBeTruthy();
+    expect(screen.getByText("Base soils and dry amendments by stage.")).toBeTruthy();
+    expect(screen.getAllByText("Interests: living soil, dry amendments").length).toBeGreaterThan(0);
+    expect(screen.getByText("Browse Line")).toBeTruthy();
+    expect(mockLinkHrefs).toContain("/store/living-soil-labs?line=line-1");
     expect(screen.getByText("1 cup per cubic foot")).toBeTruthy();
     expect(screen.getByText("fast nitrogen with slower phosphorus")).toBeTruthy();
     expect(

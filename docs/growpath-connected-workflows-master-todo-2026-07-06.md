@@ -526,6 +526,7 @@ Completed and pushed:
 250. Public storefront Product Line links now filter product cards by linked product-line IDs and provide a visible return-to-all-products action, making product-family storefront navigation functional instead of a decorative query link.
 251. Storefront owner home now loads Product Lines, shows their grow-interest context, and links each line to owner detail plus the filtered public storefront so the commercial brand hub matches what users can browse publicly.
 252. Deferred user verification now includes Product Line checks across Storefront owner home, public brand/storefront pages, and `/store/:slug?line=:lineId` filtered product-card behavior.
+253. Public product detail pages now preserve Product Line context with line summary, grow interests, and Browse Line routing back to the filtered storefront, so buyers do not lose product-family navigation after opening a product.
 
 ## Working Rule For Codex
 
