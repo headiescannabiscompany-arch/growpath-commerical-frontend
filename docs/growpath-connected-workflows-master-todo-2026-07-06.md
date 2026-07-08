@@ -474,6 +474,7 @@ Completed and pushed:
 198. Personal Pheno Matrix and NPK / Feed Recipe Builder now use the shared back-control boundary with `/home/personal/tools` fallbacks, including the NPK locked-Pro state, while existing task-plan and product-draft tests assert the shared fallback.
 199. Personal Plant Issue Diagnosis now uses the shared back-control boundary with a `/home/personal` fallback, its workflow regression asserts the shared fallback, and a source scan confirms Personal, Commercial, and Facility home routes no longer hand-code `BackButton`.
 200. The shared backend-calculator Personal tool engine now uses the shared back-control boundary with `/home/personal/tools` fallbacks across locked and enabled states, so calculator-backed tools such as Soil Builder, Dry Amendment Mix, Topdress, IPM Scout, Harvest Readiness, and Dry/Cure Guard inherit consistent nested tool navigation.
+201. Public support routing now uses the live GrowPath alias set for general, billing, commercial/storefront, facility, privacy, legal, and security requests, and account recovery/deletion fallback copy points users to the canonical support inbox with focused regression coverage.
 
 ## Working Rule For Codex
 

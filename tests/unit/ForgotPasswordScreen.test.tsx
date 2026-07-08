@@ -40,7 +40,7 @@ describe("ForgotPasswordScreen", () => {
       expect(mockForgotPassword).toHaveBeenCalledWith("free@growpathai.com");
       expect(
         screen.getByText(
-          "Password reset email is not available right now. Contact support to reset this account."
+          "Password reset email is not available right now. Email support@growpathai.com to reset this account."
         )
       ).toBeTruthy();
     });

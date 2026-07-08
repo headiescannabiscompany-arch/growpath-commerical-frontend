@@ -12,6 +12,7 @@ import { useRouter } from "expo-router";
 import { ApiError } from "@/api/apiRequest";
 import { forgotPassword } from "@/api/auth";
 import BackButton from "@/components/nav/BackButton";
+import { SUPPORT_CONTACTS } from "@/config/supportContacts";
 
 export default function ForgotPasswordScreen() {
   const router = useRouter();
@@ -35,7 +36,7 @@ export default function ForgotPasswordScreen() {
       const response = await forgotPassword(normalizedEmail);
       if (response.emailSent === false) {
         setError(
-          "Password reset email is not available right now. Contact support to reset this account."
+          `Password reset email is not available right now. Email ${SUPPORT_CONTACTS.general} to reset this account.`
         );
         return;
       }

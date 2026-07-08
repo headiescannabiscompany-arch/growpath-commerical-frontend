@@ -1,6 +1,7 @@
 import React from "react";
 
 import PublicInfoPage from "@/components/PublicInfoPage";
+import { SUPPORT_CONTACTS } from "@/config/supportContacts";
 
 export default function DeleteAccountPage() {
   return (
@@ -14,7 +15,7 @@ export default function DeleteAccountPage() {
         },
         {
           title: "If You Cannot Sign In",
-          body: "Email support@growpathai.com from the email address on the account and request account deletion. We may need to verify ownership before processing the request."
+          body: `Email ${SUPPORT_CONTACTS.general} from the email address on the account and request account deletion. We may need to verify ownership before processing the request.`
         },
         {
           title: "Data Export",
