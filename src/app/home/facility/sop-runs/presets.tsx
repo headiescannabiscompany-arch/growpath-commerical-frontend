@@ -7,6 +7,7 @@ import { normalizeApiError } from "@/api/errors";
 import { useSopTemplates } from "@/hooks/useSopTemplates";
 import { useFacility } from "@/state/useFacility";
 import type { SOPTemplate } from "@/api/sop";
+import { radius } from "@/theme/theme";
 
 function pickId(x: SOPTemplate, idx: number) {
   return String(x?.id ?? x?._id ?? `template-${idx}`);
@@ -113,14 +114,14 @@ const styles = StyleSheet.create({
   input: {
     borderWidth: 1,
     borderColor: "#e5e7eb",
-    borderRadius: 10,
+    borderRadius: radius.card,
     padding: 10,
     backgroundColor: "#fff"
   },
   notes: { minHeight: 80, textAlignVertical: "top" },
   btn: {
     backgroundColor: "#16a34a",
-    borderRadius: 10,
+    borderRadius: radius.card,
     padding: 10,
     alignItems: "center"
   },
@@ -129,7 +130,7 @@ const styles = StyleSheet.create({
   card: {
     borderWidth: 1,
     borderColor: "#e5e7eb",
-    borderRadius: 10,
+    borderRadius: radius.card,
     padding: 10,
     backgroundColor: "#fff",
     marginTop: 10

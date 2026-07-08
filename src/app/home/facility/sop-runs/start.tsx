@@ -9,6 +9,7 @@ import { ScreenBoundary } from "@/components/ScreenBoundary";
 import type { SOPTemplate } from "@/api/sop";
 import { useSopTemplates } from "@/hooks/useSopTemplates";
 import { useFacility } from "@/state/useFacility";
+import { radius } from "@/theme/theme";
 
 type CreatedRun = { id?: string; _id?: string; runId?: string };
 type CreateResponse = { created?: CreatedRun; run?: CreatedRun } & CreatedRun;
@@ -181,14 +182,14 @@ const styles = StyleSheet.create({
   input: {
     borderWidth: 1,
     borderColor: "#e5e7eb",
-    borderRadius: 10,
+    borderRadius: radius.card,
     padding: 10,
     backgroundColor: "#fff"
   },
   templatePanel: {
     borderWidth: 1,
     borderColor: "#e5e7eb",
-    borderRadius: 10,
+    borderRadius: radius.card,
     padding: 10,
     gap: 8,
     backgroundColor: "#f8fafc"
@@ -199,7 +200,7 @@ const styles = StyleSheet.create({
   templateCard: {
     borderWidth: 1,
     borderColor: "#d1d5db",
-    borderRadius: 8,
+    borderRadius: radius.card,
     padding: 10,
     backgroundColor: "#fff"
   },
@@ -211,7 +212,7 @@ const styles = StyleSheet.create({
     alignSelf: "flex-start",
     borderWidth: 1,
     borderColor: "#d1d5db",
-    borderRadius: 8,
+    borderRadius: radius.card,
     paddingHorizontal: 10,
     paddingVertical: 8,
     backgroundColor: "#fff"
@@ -220,7 +221,7 @@ const styles = StyleSheet.create({
   notes: { minHeight: 90, textAlignVertical: "top" },
   btn: {
     backgroundColor: "#16a34a",
-    borderRadius: 10,
+    borderRadius: radius.card,
     padding: 12,
     alignItems: "center"
   },

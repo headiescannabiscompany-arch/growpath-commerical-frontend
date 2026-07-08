@@ -13,6 +13,7 @@ import { apiRequest } from "@/api/apiRequest";
 import { normalizeApiError } from "@/api/errors";
 import { endpoints } from "@/api/endpoints";
 import { useFacility } from "@/state/useFacility";
+import { radius } from "@/theme/theme";
 
 type SopRunListItem = {
   id?: string;
@@ -246,7 +247,7 @@ const styles = StyleSheet.create({
   summaryCard: {
     borderWidth: 1,
     borderColor: "#dbeafe",
-    borderRadius: 12,
+    borderRadius: radius.card,
     padding: 12,
     backgroundColor: "#eff6ff",
     flexDirection: "row",
@@ -259,7 +260,7 @@ const styles = StyleSheet.create({
   alertCard: {
     borderWidth: 1,
     borderColor: "#fca5a5",
-    borderRadius: 12,
+    borderRadius: radius.card,
     padding: 12,
     backgroundColor: "#fef2f2"
   },
@@ -268,7 +269,7 @@ const styles = StyleSheet.create({
   card: {
     borderWidth: 1,
     borderColor: "#e5e7eb",
-    borderRadius: 12,
+    borderRadius: radius.card,
     padding: 12,
     backgroundColor: "#fff",
     marginBottom: 10

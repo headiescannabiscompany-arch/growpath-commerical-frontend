@@ -7,6 +7,7 @@ import { normalizeApiError } from "@/api/errors";
 import { endpoints } from "@/api/endpoints";
 import { ScreenBoundary } from "@/components/ScreenBoundary";
 import { useFacility } from "@/state/useFacility";
+import { radius } from "@/theme/theme";
 
 type SopRunDetail = {
   status?: string;
@@ -106,7 +107,7 @@ const styles = StyleSheet.create({
   card: {
     borderWidth: 1,
     borderColor: "#e5e7eb",
-    borderRadius: 10,
+    borderRadius: radius.card,
     padding: 10,
     backgroundColor: "#fff"
   },

@@ -7,6 +7,7 @@ import { normalizeApiError } from "@/api/errors";
 import { endpoints } from "@/api/endpoints";
 import { ScreenBoundary } from "@/components/ScreenBoundary";
 import { useFacility } from "@/state/useFacility";
+import { radius } from "@/theme/theme";
 
 type SopRunListItem = {
   id?: string;
@@ -132,13 +133,13 @@ const styles = StyleSheet.create({
   input: {
     borderWidth: 1,
     borderColor: "#e5e7eb",
-    borderRadius: 10,
+    borderRadius: radius.card,
     padding: 10,
     backgroundColor: "#fff"
   },
   btn: {
     backgroundColor: "#2563eb",
-    borderRadius: 10,
+    borderRadius: radius.card,
     padding: 10,
     alignItems: "center"
   },
@@ -146,7 +147,7 @@ const styles = StyleSheet.create({
   card: {
     borderWidth: 1,
     borderColor: "#e5e7eb",
-    borderRadius: 10,
+    borderRadius: radius.card,
     padding: 10,
     marginTop: 10,
     backgroundColor: "#fff"

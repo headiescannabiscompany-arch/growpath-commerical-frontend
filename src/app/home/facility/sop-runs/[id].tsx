@@ -7,6 +7,7 @@ import { normalizeApiError } from "@/api/errors";
 import { endpoints } from "@/api/endpoints";
 import { ScreenBoundary } from "@/components/ScreenBoundary";
 import { useFacility } from "@/state/useFacility";
+import { radius } from "@/theme/theme";
 
 type SopRunDetail = {
   status?: string;
@@ -291,7 +292,7 @@ const styles = StyleSheet.create({
   progressCard: {
     borderWidth: 1,
     borderColor: "#d1fae5",
-    borderRadius: 12,
+    borderRadius: radius.card,
     padding: 12,
     backgroundColor: "#ecfdf5"
   },
@@ -299,7 +300,7 @@ const styles = StyleSheet.create({
   progressLabel: { color: "#047857", fontWeight: "800" },
   btn: {
     backgroundColor: "#2563eb",
-    borderRadius: 10,
+    borderRadius: radius.card,
     padding: 10,
     alignItems: "center"
   },
@@ -309,7 +310,7 @@ const styles = StyleSheet.create({
   card: {
     borderWidth: 1,
     borderColor: "#e5e7eb",
-    borderRadius: 12,
+    borderRadius: radius.card,
     padding: 10,
     backgroundColor: "#fff",
     gap: 8
@@ -318,7 +319,7 @@ const styles = StyleSheet.create({
   stepCard: {
     borderWidth: 1,
     borderColor: "#e5e7eb",
-    borderRadius: 10,
+    borderRadius: radius.card,
     padding: 10,
     gap: 8,
     backgroundColor: "#f8fafc"
@@ -340,7 +341,7 @@ const styles = StyleSheet.create({
   status_skipped: { color: "#475569", backgroundColor: "#e2e8f0" },
   stepNote: { color: "#475569", fontSize: 12, fontWeight: "700" },
   stepActions: { flexDirection: "row", flexWrap: "wrap", gap: 8 },
-  stepBtn: { borderRadius: 8, paddingHorizontal: 10, paddingVertical: 8 },
+  stepBtn: { borderRadius: radius.card, paddingHorizontal: 10, paddingVertical: 8 },
   doneBtn: { backgroundColor: "#16a34a" },
   pendingBtn: { backgroundColor: "#ca8a04" },
   skipBtn: { backgroundColor: "#64748b" },
@@ -348,14 +349,14 @@ const styles = StyleSheet.create({
   input: {
     borderWidth: 1,
     borderColor: "#e5e7eb",
-    borderRadius: 10,
+    borderRadius: radius.card,
     padding: 10,
     backgroundColor: "#fff"
   },
   noteInput: { minHeight: 72, textAlignVertical: "top" },
   addBtn: {
     backgroundColor: "#16a34a",
-    borderRadius: 10,
+    borderRadius: radius.card,
     padding: 10,
     alignItems: "center"
   },

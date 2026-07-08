@@ -700,6 +700,7 @@ Completed and pushed:
 424. Facility Profile workspace identity cards, workspace/account actions, and logout control now consume the shared 8px card radius token while preserving the Facility palette, keeping account identity and support setup visually aligned with the shared polish pass.
 425. Facility AI Tools linked ToolRun/recipe context panel and tool-entry cards now consume the shared 8px card radius token, keeping AI-over-tools entry points visually aligned with the shared facility polish.
 426. Facility Inventory root/create/detail summary panels, empty states, list rows, create inputs, adjustment inputs, and inventory actions now consume the shared 8px card radius token while preserving stock-status pills, keeping operational inventory visually aligned with the shared facility polish.
+427. Facility SOP Runs list/detail/start/presets/compare screens now use the shared 8px card radius token for summary panels, alert cards, run cards, checklist steps, inputs, and SOP actions while preserving status pills, keeping SOP execution visually aligned with the facility task layer.
 
 ## Working Rule For Codex
 
