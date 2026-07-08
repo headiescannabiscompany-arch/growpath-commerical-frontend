@@ -695,6 +695,7 @@ Completed and pushed:
 419. Shared Alert Center metric cards, schedule/action panel, filters, feedback, alert cards, create/resolve/snooze/source/AI actions, and assignee input now consume the shared 8px card radius token while preserving severity pills.
 420. Facility Dashboard hero, compliance/task pulse cards, refresh action, priority/action panels, and operational tiles now consume the shared 8px card radius token, keeping the original Facility visual language aligned with the cross-user polish pass.
 421. Facility Sensor Integrations provider guidance cards and room-import CTA now consume the shared 8px card radius token while preserving provider pills, keeping controller/Pulse/TrolMaster onboarding aligned with the shared polish pass.
+422. Facility Rooms controller import preview, room forms, preview rows, create/delete actions, batch-cycle summary, and feedback now consume the shared 8px card radius token while preserving room/status pills, keeping auto-built rooms visually aligned with the shared polish pass.
 
 ## Working Rule For Codex
 

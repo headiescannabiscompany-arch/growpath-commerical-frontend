@@ -27,6 +27,7 @@ import { useEntitlements } from "@/entitlements";
 import { getFacilityRoomAccess } from "@/features/facility/roomAccess";
 import { useApiErrorHandler, type UiErrorState } from "@/hooks/useApiErrorHandler";
 import { useFacility } from "@/state/useFacility";
+import { radius } from "@/theme/theme";
 
 function rowId(row: any) {
   return String(row?._id || row?.id || "");
@@ -1055,7 +1056,7 @@ const styles = StyleSheet.create({
   card: {
     borderWidth: 1,
     borderColor: "rgba(0,0,0,0.12)",
-    borderRadius: 14,
+    borderRadius: radius.card,
     padding: 14,
     backgroundColor: "white",
     gap: 10
@@ -1065,7 +1066,7 @@ const styles = StyleSheet.create({
   input: {
     borderWidth: 1,
     borderColor: "rgba(0,0,0,0.12)",
-    borderRadius: 10,
+    borderRadius: radius.card,
     padding: 10,
     backgroundColor: "white"
   },
@@ -1074,14 +1075,14 @@ const styles = StyleSheet.create({
   importPreviewRow: {
     backgroundColor: "#F8FAFC",
     borderColor: "#E2E8F0",
-    borderRadius: 10,
+    borderRadius: radius.card,
     borderWidth: 1,
     padding: 10
   },
   primaryBtn: {
     alignSelf: "flex-start",
     backgroundColor: "#0f172a",
-    borderRadius: 10,
+    borderRadius: radius.card,
     paddingHorizontal: 14,
     paddingVertical: 10
   },
@@ -1090,7 +1091,7 @@ const styles = StyleSheet.create({
     alignSelf: "flex-start",
     borderWidth: 1,
     borderColor: "#B91C1C",
-    borderRadius: 10,
+    borderRadius: radius.card,
     paddingHorizontal: 12,
     paddingVertical: 9
   },
@@ -1122,7 +1123,7 @@ const styles = StyleSheet.create({
   summaryCard: {
     borderWidth: 1,
     borderColor: "#d1fae5",
-    borderRadius: 12,
+    borderRadius: radius.card,
     padding: 12,
     backgroundColor: "#ecfdf5",
     flexDirection: "row",
@@ -1145,7 +1146,7 @@ const styles = StyleSheet.create({
   feedback: {
     color: "#334155",
     backgroundColor: "#F1F5F9",
-    borderRadius: 9,
+    borderRadius: radius.card,
     padding: 9,
     fontWeight: "700"
   }
