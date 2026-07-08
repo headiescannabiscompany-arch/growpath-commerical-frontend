@@ -10,7 +10,7 @@ import {
   TextInput,
   View
 } from "react-native";
-import { useLocalSearchParams, useRouter } from "expo-router";
+import { useLocalSearchParams } from "expo-router";
 
 import {
   addForumComment,
@@ -93,7 +93,6 @@ function likeTotal(post: SocialPost | null) {
 }
 
 export default function ForumPostDetailRoute() {
-  const router = useRouter();
   const params = useLocalSearchParams();
   const id = getId(params as any);
   const growId = param((params as any).growId);
@@ -263,7 +262,11 @@ export default function ForumPostDetailRoute() {
   }
 
   return (
-    <ScreenBoundary name="personal.forum.postDetail">
+    <ScreenBoundary
+      name="personal.forum.postDetail"
+      showBack
+      backFallbackHref="/home/personal/forum"
+    >
       <ScrollView
         style={styles.container}
         contentContainerStyle={styles.content}
@@ -274,14 +277,6 @@ export default function ForumPostDetailRoute() {
           />
         }
       >
-        <Pressable
-          onPress={() => router.back()}
-          accessibilityRole="button"
-          accessibilityLabel="Back to forum"
-        >
-          <Text style={styles.backLink}>Back</Text>
-        </Pressable>
-
         {!canView ? (
           <View style={styles.card}>
             <Text style={styles.cardTitle}>Forum unavailable</Text>
@@ -523,7 +518,6 @@ const styles = StyleSheet.create({
   },
   dangerText: { color: "#991B1B", fontWeight: "800" },
   disabled: { opacity: 0.5 },
-  backLink: { color: "#166534", fontWeight: "800" },
   feedback: {
     color: "#334155",
     backgroundColor: "#F1F5F9",

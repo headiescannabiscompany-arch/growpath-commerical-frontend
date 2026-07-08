@@ -11,18 +11,26 @@ const mockUnlikeForumPost = jest.fn();
 const mockReportForumPost = jest.fn();
 const mockSaveForumPostToGrowLog = jest.fn();
 const mockCreatePersonalTask = jest.fn();
-const mockBack = jest.fn();
 
 jest.mock("expo-router", () => ({
-  useLocalSearchParams: () => ({ id: "post-1", growId: "grow-1" }),
-  useRouter: () => ({ back: mockBack })
+  useLocalSearchParams: () => ({ id: "post-1", growId: "grow-1" })
 }));
 
 jest.mock("@/components/ScreenBoundary", () => {
   const React = require("react");
-  const { View } = require("react-native");
+  const { Text, View } = require("react-native");
   return {
-    ScreenBoundary: ({ children }: any) => React.createElement(View, null, children)
+    ScreenBoundary: ({ children, showBack, backFallbackHref }: any) =>
+      React.createElement(
+        View,
+        null,
+        showBack
+          ? React.createElement(Text, {
+              accessibilityLabel: `Shared back ${backFallbackHref}`
+            })
+          : null,
+        children
+      )
   };
 });
 
@@ -86,6 +94,9 @@ describe("ForumPostDetailRoute", () => {
     const screen = render(<ForumPostDetailRoute />);
 
     await waitFor(() => expect(screen.getByText("Leaf spot follow-up")).toBeTruthy());
+    expect(
+      screen.getByLabelText("Shared back /home/personal/forum")
+    ).toBeTruthy();
 
     fireEvent.press(screen.getByLabelText("Create forum follow-up task"));
 
