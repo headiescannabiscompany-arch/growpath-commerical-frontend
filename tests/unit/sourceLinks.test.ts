@@ -40,7 +40,7 @@ describe("sourceObjectHref", () => {
         linkedTrialId: "trial-linked-1",
         workspaceType: "commercial"
       })
-    ).toBe("/home/commercial/trials/trial-linked-1");
+    ).toBe("/home/commercial/evidence-runs/trial-linked-1");
 
     expect(
       sourceObjectHref({
@@ -497,7 +497,7 @@ describe("sourceObjectHref", () => {
         linkedTrialId: "trial-linked-1",
         workspaceType: "commercial"
       })
-    ).toBe("/home/commercial/trials/trial-linked-1");
+    ).toBe("/home/commercial/evidence-runs/trial-linked-1");
 
     expect(
       sourceObjectHref({

@@ -224,7 +224,9 @@ describe("HomeScheduleRoute", () => {
     expect(
       screen.getByTestId("link-/home/personal/tools/saved-runs?toolRunId=recipe-1")
     ).toBeTruthy();
-    expect(screen.getByTestId("link-/home/commercial/trials/trial-1")).toBeTruthy();
+    expect(
+      screen.getByTestId("link-/home/commercial/evidence-runs/trial-1")
+    ).toBeTruthy();
     expect(
       screen.getByTestId("link-/home/commercial/orders?orderId=order-1")
     ).toBeTruthy();
@@ -237,7 +239,7 @@ describe("HomeScheduleRoute", () => {
       screen.getByTestId("link-/home/commercial/feed?campaignId=campaign-linked-1")
     ).toBeTruthy();
     expect(
-      screen.getByTestId("link-/home/commercial/trials/trial-linked-1")
+      screen.getByTestId("link-/home/commercial/evidence-runs/trial-linked-1")
     ).toBeTruthy();
     expect(screen.getByTestId("link-/home/commercial/lives?liveId=live-1")).toBeTruthy();
     expect(screen.getByTestId("link-/feed?liveId=live-public-1")).toBeTruthy();

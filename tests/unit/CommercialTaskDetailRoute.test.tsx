@@ -272,7 +272,7 @@ describe("CommercialTaskDetailRoute", () => {
     fireEvent.press(screen.getByLabelText("View commercial task source"));
 
     expect(mockPush).toHaveBeenCalledWith(
-      "/home/commercial/trials/trial-linked-1"
+      "/home/commercial/evidence-runs/trial-linked-1"
     );
   });
 });

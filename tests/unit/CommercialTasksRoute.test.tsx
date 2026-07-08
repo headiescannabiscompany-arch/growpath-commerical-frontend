@@ -169,7 +169,7 @@ describe("CommercialTasksRoute", () => {
     ).toBeTruthy();
     expect(
       screen.getByLabelText(
-        "Commercial task link /home/commercial/trials/trial-linked-1"
+        "Commercial task link /home/commercial/evidence-runs/trial-linked-1"
       )
     ).toBeTruthy();
     expect(screen.getByText(/Reminder: 24 hours before/)).toBeTruthy();

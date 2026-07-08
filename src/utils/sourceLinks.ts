@@ -215,8 +215,8 @@ export function sourceObjectHref(source: SourceLike) {
   if (sourceType === "product_trial") {
     if (workspace === "commercial")
       return productTrialId
-        ? `/home/commercial/trials/${productTrialId}`
-        : "/home/commercial/trials";
+        ? `/home/commercial/evidence-runs/${productTrialId}`
+        : "/home/commercial/evidence-runs";
     if (workspace === "facility")
       return productTrialId
         ? `/home/facility/grows/${productTrialId}`
