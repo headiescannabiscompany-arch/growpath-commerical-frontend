@@ -754,6 +754,7 @@ Completed and pushed:
 478. Commercial content marketplace inputs, filter chips, create-offer actions, thumbnails, badges, media upload controls, and publish CTA now consume shared radius tokens while preserving storefront-offer upload, thumbnail upload, sales data, and draft-save behavior.
 479. Legacy personal nutrient calculator, pH/EC calculator, and pest/disease identifier inputs, actions, and result cards now consume shared radius tokens while preserving deterministic calculations and ToolUsage save behavior.
 480. Facility AI tools home and Nutrient Tools dashboard cards, stat boxes, select-grow action, tool tiles, and badges now consume shared radius tokens while preserving AI feature matrix routing and nutrient tool navigation.
+481. Legacy profile, global search, and profile certificate cards, inputs, locked notices, earned badges, and certificate actions now consume shared radius tokens while preserving auth mode display, entitlement-gated search, and certificate navigation behavior.
 
 ## Working Rule For Codex
 

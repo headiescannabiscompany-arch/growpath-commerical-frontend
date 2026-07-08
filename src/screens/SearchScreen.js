@@ -2,6 +2,7 @@ import React, { useMemo, useState } from "react";
 import { FlatList, Pressable, StyleSheet, Text, TextInput, View } from "react-native";
 import AppShell from "../components/AppShell.js";
 import { useEntitlements, CAPABILITY_KEYS } from "@/entitlements";
+import { radius } from "@/theme/theme";
 
 const SEARCH_SURFACES = [
   {
@@ -55,7 +56,7 @@ const styles = StyleSheet.create({
   input: {
     backgroundColor: "#FFFFFF",
     borderColor: "#CBD5E1",
-    borderRadius: 8,
+    borderRadius: radius.card,
     borderWidth: 1,
     paddingHorizontal: 12,
     paddingVertical: 10
@@ -63,7 +64,7 @@ const styles = StyleSheet.create({
   row: {
     backgroundColor: "#FFFFFF",
     borderColor: "#E2E8F0",
-    borderRadius: 8,
+    borderRadius: radius.card,
     borderWidth: 1,
     flexDirection: "row",
     gap: 10,
@@ -76,7 +77,7 @@ const styles = StyleSheet.create({
   locked: {
     backgroundColor: "#FFF7ED",
     borderColor: "#FED7AA",
-    borderRadius: 8,
+    borderRadius: radius.card,
     borderWidth: 1,
     marginTop: 14,
     padding: 12

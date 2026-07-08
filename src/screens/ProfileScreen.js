@@ -1,6 +1,7 @@
 import React from "react";
 import { StyleSheet, Text, View } from "react-native";
 import { useAuth } from "@/auth/AuthContext";
+import { radius } from "@/theme/theme";
 
 export default function ProfileScreen() {
   const { user, mode } = useAuth();
@@ -25,7 +26,7 @@ const styles = StyleSheet.create({
   card: {
     borderWidth: 1,
     borderColor: "#e5e7eb",
-    borderRadius: 12,
+    borderRadius: radius.card,
     padding: 12,
     backgroundColor: "#fff",
     gap: 6

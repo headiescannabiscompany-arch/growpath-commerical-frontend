@@ -5,6 +5,7 @@ import { getMyCertificates } from "../api/certificates";
 import ScreenContainer from "../components/ScreenContainer";
 import { useEntitlements } from "@/entitlements";
 import { getLearningAccess } from "@/features/learning/learningAccess";
+import { radius } from "../theme/theme";
 
 function normalizeCertificates(response) {
   if (Array.isArray(response)) return response;
@@ -151,7 +152,7 @@ const styles = {
     backgroundColor: "#fff",
     padding: 16,
     marginBottom: 14,
-    borderRadius: 10,
+    borderRadius: radius.card,
     boxShadow: "0px 1px 3px rgba(0,0,0,0.08)",
     elevation: 2,
     borderLeftWidth: 4,
@@ -177,7 +178,7 @@ const styles = {
     backgroundColor: "#d5f4e6",
     paddingHorizontal: 10,
     paddingVertical: 6,
-    borderRadius: 6
+    borderRadius: radius.pill
   },
   badgeText: {
     fontSize: 11,
@@ -192,7 +193,7 @@ const styles = {
     flex: 1,
     backgroundColor: "#3498db",
     padding: 11,
-    borderRadius: 8,
+    borderRadius: radius.card,
     alignItems: "center"
   },
   btnText: {
@@ -205,7 +206,7 @@ const styles = {
     flex: 1,
     backgroundColor: "#27ae60",
     padding: 11,
-    borderRadius: 8,
+    borderRadius: radius.card,
     alignItems: "center"
   },
   verifyText: {
