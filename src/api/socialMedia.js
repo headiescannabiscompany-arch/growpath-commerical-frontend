@@ -1,6 +1,6 @@
 /**
- * Social Media API Client
- * Handles social platform connections and metrics
+ * External channel API client.
+ * Handles off-platform channel connections, metrics, sync, and scheduling.
  */
 
 import apiClient from "./apiClient.js";
@@ -45,7 +45,7 @@ export const getSocialAccounts = async () => {
     const accountsRes = await apiClient.get(SOCIAL_ROUTES.GET_ACCOUNTS);
     return accountsRes.data;
   } catch (error) {
-    throw new Error(`Failed to fetch social accounts: ${error.message}`);
+    throw new Error(`Failed to fetch external channel accounts: ${error.message}`);
   }
 };
 
@@ -76,6 +76,6 @@ export const schedulePost = async (platforms, content, scheduledTime) => {
     });
     return scheduleRes.data;
   } catch (error) {
-    throw new Error(`Failed to schedule post: ${error.message}`);
+    throw new Error(`Failed to schedule external channel post: ${error.message}`);
   }
 };

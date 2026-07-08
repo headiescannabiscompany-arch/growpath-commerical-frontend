@@ -1,319 +1,236 @@
-import React, { useState, useEffect } from "react";
+import React, { useEffect, useState } from "react";
 import {
-  View,
-  Text,
-  StyleSheet,
-  ScrollView,
-  TouchableOpacity,
-  TextInput,
   Alert,
-  Switch
+  ScrollView,
+  StyleSheet,
+  Switch,
+  Text,
+  TextInput,
+  TouchableOpacity,
+  View
 } from "react-native";
 import { MaterialCommunityIcons } from "@expo/vector-icons";
+
+import ErrorBoundary from "../../components/ErrorBoundary.js";
+import ErrorState from "../../components/ErrorState.js";
+import SkeletonLoader from "../../components/SkeletonLoader.js";
 import Card from "../../components/Card.js";
-import { Colors, Typography, Spacing } from "../../theme/theme.js";
 import {
-  getSocialAccounts,
   connectSocialAccount,
   disconnectSocialAccount,
-  syncSocialData,
-  schedulePost
+  getSocialAccounts,
+  schedulePost,
+  syncSocialData
 } from "../../api/socialMedia.js";
-import SkeletonLoader from "../../components/SkeletonLoader.js";
-import EmptyState from "../../components/EmptyState.js";
-import ErrorState from "../../components/ErrorState.js";
-import ErrorBoundary from "../../components/ErrorBoundary.js";
+import { Colors, Spacing, Typography } from "../../theme/theme.js";
 
-/**
- * Social Media Integration Screen
- * Connect and manage social media platforms for influencer marketing
- * Supports: Instagram, TikTok, Twitter, YouTube
- */
+const CHANNELS = [
+  { id: "instagram", name: "Instagram", icon: "instagram", color: "#E4405F" },
+  { id: "tiktok", name: "TikTok", icon: "music-note", color: "#111827" },
+  { id: "twitter", name: "Twitter/X", icon: "twitter", color: "#1DA1F2" },
+  { id: "youtube", name: "YouTube", icon: "youtube", color: "#FF0000" }
+];
 
-const SocialMediaScreen = ({ navigation }) => {
-  const [platforms, setPlatforms] = useState([
-    {
-      id: "instagram",
-      name: "Instagram",
-      icon: "instagram",
-      color: "#E4405F",
-      connected: false,
-      apiKey: "",
-      accessToken: "",
-      username: "",
-      followers: 0,
-      engagementRate: 0
-    },
-    {
-      id: "tiktok",
-      name: "TikTok",
-      icon: "tiktok",
-      color: "#000000",
-      connected: false,
-      apiKey: "",
-      accessToken: "",
-      username: "",
-      followers: 0,
-      engagementRate: 0
-    },
-    {
-      id: "twitter",
-      name: "Twitter/X",
-      icon: "twitter",
-      color: "#1DA1F2",
-      connected: false,
-      apiKey: "",
-      accessToken: "",
-      username: "",
-      followers: 0,
-      engagementRate: 0
-    },
-    {
-      id: "youtube",
-      name: "YouTube",
-      icon: "youtube",
-      color: "#FF0000",
-      connected: false,
-      apiKey: "",
-      accessToken: "",
-      username: "",
-      followers: 0,
-      engagementRate: 0
-    }
-  ]);
+function mergeAccounts(accounts) {
+  return CHANNELS.map((channel) => {
+    const connected = accounts.find((account) => account.platform === channel.id);
+    return {
+      ...channel,
+      connected: Boolean(connected),
+      apiKey: connected?.apiKey || "",
+      accessToken: connected?.accessToken || "",
+      username: connected?.username || "",
+      followers: Number(connected?.followers || 0),
+      engagementRate: Number(connected?.engagementRate || 0),
+      autoPost: Boolean(connected?.autoPost)
+    };
+  });
+}
 
-  const [expandedPlatform, setExpandedPlatform] = useState(null);
+export default function SocialMediaScreen() {
+  const [channels, setChannels] = useState(() => mergeAccounts([]));
+  const [expandedChannel, setExpandedChannel] = useState(null);
   const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState(null);
 
-  // Load social accounts on mount
-  useEffect(() => {
-    loadSocialAccounts();
-  }, []);
-
-  const loadSocialAccounts = async () => {
+  async function loadAccounts() {
     setIsLoading(true);
     setError(null);
     try {
-      const accountsData = await getSocialAccounts();
-      if (accountsData?.data) {
-        const updatedPlatforms = platforms.map((platform) => {
-          const connectedAccount = accountsData.data.find(
-            (acc) => acc.platform === platform.id
-          );
-          return connectedAccount
-            ? { ...platform, ...connectedAccount, connected: true }
-            : platform;
-        });
-        setPlatforms(updatedPlatforms);
-      }
+      const payload = await getSocialAccounts();
+      const accounts = Array.isArray(payload?.data)
+        ? payload.data
+        : Array.isArray(payload)
+          ? payload
+          : payload?.accounts || [];
+      setChannels(mergeAccounts(accounts));
     } catch (err) {
-      console.error("Failed to load social accounts:", err);
-      setError(err.message || "Failed to load social accounts");
+      setError(err.message || "Failed to load external channel accounts");
     } finally {
       setIsLoading(false);
     }
-  };
+  }
 
-  const handleConnect = async (platformId) => {
-    const platform = platforms.find((p) => p.id === platformId);
-    Alert.prompt(`Connect ${platform.name}`, "Enter your API Key:", [
-      { text: "Cancel", onPress: () => {}, style: "cancel" },
-      {
-        text: "Connect",
-        onPress: async (apiKey) => {
-          if (!apiKey) {
-            Alert.alert("Error", "API Key is required");
-            return;
-          }
-          try {
-            setIsLoading(true);
-            const result = await connectSocialAccount(platformId, "", apiKey);
-            if (result?.data) {
-              setPlatforms(
-                platforms.map((p) =>
-                  p.id === platformId ? { ...p, connected: true, ...result.data } : p
-                )
-              );
-              Alert.alert("Success", `${platform.name} connected successfully`);
-            }
-          } catch (error) {
-            Alert.alert("Error", `Failed to connect ${platform.name}: ${error.message}`);
-          } finally {
-            setIsLoading(false);
-          }
-        }
-      }
-    ]);
-  };
+  useEffect(() => {
+    loadAccounts();
+  }, []);
 
-  const handleDisconnect = async (platformId) => {
-    const platform = platforms.find((p) => p.id === platformId);
-    Alert.alert("Disconnect", `Remove ${platform.name} connection?`, [
-      { text: "Cancel", onPress: () => {}, style: "cancel" },
-      {
-        text: "Disconnect",
-        onPress: async () => {
-          try {
-            setIsLoading(true);
-            await disconnectSocialAccount(platformId);
-            setPlatforms(
-              platforms.map((p) =>
-                p.id === platformId
-                  ? {
-                      ...p,
-                      connected: false,
-                      username: "",
-                      followers: 0,
-                      engagementRate: 0
-                    }
-                  : p
-              )
-            );
-            Alert.alert("Success", `${platform.name} disconnected`);
-          } catch (error) {
-            Alert.alert("Error", `Failed to disconnect: ${error.message}`);
-          } finally {
-            setIsLoading(false);
-          }
-        }
-      }
-    ]);
-  };
-
-  const updatePlatform = (platformId, field, value) => {
-    setPlatforms(
-      platforms.map((p) => (p.id === platformId ? { ...p, [field]: value } : p))
+  function updateChannel(channelId, field, value) {
+    setChannels((current) =>
+      current.map((channel) =>
+        channel.id === channelId ? { ...channel, [field]: value } : channel
+      )
     );
-  };
+  }
 
-  const handleCreatePostSchedule = async () => {
-    const connected = platforms.filter((p) => p.connected).map((p) => p.id);
+  async function handleConnect(channelId) {
+    const channel = channels.find((item) => item.id === channelId);
+    if (!channel?.apiKey) {
+      Alert.alert("API key required", "Enter an API key before connecting.");
+      return;
+    }
+
+    try {
+      setIsLoading(true);
+      await connectSocialAccount(channelId, channel.accessToken || "", channel.apiKey);
+      await loadAccounts();
+      Alert.alert("Connected", `${channel.name} is connected as an external channel.`);
+    } catch (err) {
+      Alert.alert("Connection failed", err.message || `Failed to connect ${channel.name}.`);
+    } finally {
+      setIsLoading(false);
+    }
+  }
+
+  async function handleDisconnect(channelId) {
+    const channel = channels.find((item) => item.id === channelId);
+    try {
+      setIsLoading(true);
+      await disconnectSocialAccount(channelId);
+      await loadAccounts();
+      Alert.alert("Disconnected", `${channel?.name || "Channel"} was disconnected.`);
+    } catch (err) {
+      Alert.alert("Disconnect failed", err.message || "Failed to disconnect channel.");
+    } finally {
+      setIsLoading(false);
+    }
+  }
+
+  async function handleCreateExternalSchedule() {
+    const connected = channels.filter((channel) => channel.connected).map((channel) => channel.id);
     if (!connected.length) {
-      Alert.alert("No connected platforms", "Connect at least one platform first.");
+      Alert.alert("No connected channels", "Connect at least one external channel first.");
       return;
     }
 
     try {
       setIsLoading(true);
       const scheduledTime = new Date(Date.now() + 60 * 60 * 1000).toISOString();
-      await schedulePost(connected, "Scheduled post from Growpath", scheduledTime);
-      Alert.alert("Scheduled", "Your post schedule was created successfully.");
-    } catch (e) {
-      Alert.alert("Schedule failed", e?.message || "Failed to create schedule.");
+      await schedulePost(
+        connected,
+        "Scheduled external channel post from GrowPath",
+        scheduledTime
+      );
+      Alert.alert("Scheduled", "External channel post schedule was created.");
+    } catch (err) {
+      Alert.alert("Schedule failed", err.message || "Failed to create external schedule.");
     } finally {
       setIsLoading(false);
     }
-  };
+  }
 
-  const handleViewDetailedAnalytics = async () => {
-    const connected = platforms.filter((p) => p.connected).map((p) => p.id);
+  async function handleRefreshAnalytics() {
+    const connected = channels.filter((channel) => channel.connected).map((channel) => channel.id);
     if (!connected.length) {
-      Alert.alert("No connected platforms", "Connect at least one platform first.");
+      Alert.alert("No connected channels", "Connect at least one external channel first.");
       return;
     }
 
     try {
       setIsLoading(true);
-      await Promise.all(connected.map((platformId) => syncSocialData(platformId)));
-      await loadSocialAccounts();
-      Alert.alert("Analytics updated", "Latest social analytics have been synced.");
-    } catch (e) {
-      Alert.alert("Sync failed", e?.message || "Failed to refresh analytics.");
+      await Promise.all(connected.map((channelId) => syncSocialData(channelId)));
+      await loadAccounts();
+      Alert.alert("Analytics updated", "Latest external channel analytics have been synced.");
+    } catch (err) {
+      Alert.alert("Sync failed", err.message || "Failed to refresh channel analytics.");
     } finally {
       setIsLoading(false);
     }
-  };
+  }
+
+  const connectedCount = channels.filter((channel) => channel.connected).length;
+  const totalFollowers = channels.reduce((sum, channel) => sum + channel.followers, 0);
+  const avgEngagement =
+    channels.reduce((sum, channel) => sum + channel.engagementRate, 0) /
+    (connectedCount || 1);
 
   return (
     <ErrorBoundary>
       <ScrollView style={styles.container} showsVerticalScrollIndicator={false}>
-        {/* Header */}
         <View style={styles.header}>
           <MaterialCommunityIcons name="share-variant" size={40} color={Colors.primary} />
-          <Text style={styles.title}>Social Media Integration</Text>
+          <Text style={styles.title}>External Channel Integration</Text>
           <Text style={styles.subtitle}>
-            Connect your social platforms to track reach and engagement
+            Connect off-platform channels to track reach and engagement. Use Feed /
+            Campaigns for in-app ads and outreach, and Forum/Q&A for discussion.
           </Text>
         </View>
 
-        {/* Error State */}
-        {error && (
+        {error ? (
           <ErrorState
-            title="Failed to load accounts"
+            title="Failed to load channels"
             message={error}
             icon="alert-circle"
-            onRetry={loadSocialAccounts}
+            onRetry={loadAccounts}
             retryLabel="Try Again"
           />
-        )}
+        ) : null}
 
-        {/* Connection Summary */}
         <Card style={styles.summaryCard}>
           <View style={styles.summaryRow}>
             <View style={styles.summaryItem}>
               <Text style={styles.summaryValue}>
-                {platforms.filter((p) => p.connected).length}/{platforms.length}
+                {connectedCount}/{channels.length}
               </Text>
-              <Text style={styles.summaryLabel}>Platforms Connected</Text>
+              <Text style={styles.summaryLabel}>Channels Connected</Text>
             </View>
             <View style={styles.summaryItem}>
-              <Text style={styles.summaryValue}>
-                {platforms.reduce((sum, p) => sum + p.followers, 0).toLocaleString()}
-              </Text>
+              <Text style={styles.summaryValue}>{totalFollowers.toLocaleString()}</Text>
               <Text style={styles.summaryLabel}>Total Followers</Text>
             </View>
             <View style={styles.summaryItem}>
-              <Text style={styles.summaryValue}>
-                {(
-                  platforms.reduce((sum, p) => sum + p.engagementRate, 0) /
-                    platforms.filter((p) => p.connected).length || 0
-                ).toFixed(1)}
-                %
-              </Text>
+              <Text style={styles.summaryValue}>{avgEngagement.toFixed(1)}%</Text>
               <Text style={styles.summaryLabel}>Avg Engagement</Text>
             </View>
           </View>
         </Card>
 
-        {/* Platforms List */}
+        {isLoading ? <SkeletonLoader type="campaign" count={2} /> : null}
+
         <View style={styles.platformsContainer}>
-          {platforms.map((platform) => (
-            <View key={platform.id}>
+          {channels.map((channel) => {
+            const expanded = expandedChannel === channel.id;
+            return (
               <TouchableOpacity
+                key={channel.id}
                 style={[
                   styles.platformCard,
-                  { borderLeftColor: platform.color, borderLeftWidth: 4 }
+                  { borderLeftColor: channel.color, borderLeftWidth: 4 }
                 ]}
-                onPress={() =>
-                  setExpandedPlatform(
-                    expandedPlatform === platform.id ? null : platform.id
-                  )
-                }
+                onPress={() => setExpandedChannel(expanded ? null : channel.id)}
               >
                 <View style={styles.platformHeader}>
                   <View style={styles.platformInfo}>
                     <MaterialCommunityIcons
-                      // @ts-ignore: allow tiktok icon name for web
-                      name={
-                        platform.id === "instagram"
-                          ? "instagram"
-                          : platform.id === "tiktok"
-                            ? "tiktok"
-                            : platform.id === "twitter"
-                              ? "twitter"
-                              : platform.id === "youtube"
-                                ? "youtube"
-                                : "account"
-                      }
+                      name={channel.icon}
                       size={28}
-                      color={platform.color}
+                      color={channel.color}
                     />
                     <View style={styles.platformDetails}>
-                      <Text style={styles.platformName}>{platform.name}</Text>
-                      {platform.connected ? (
+                      <Text style={styles.platformName}>{channel.name}</Text>
+                      {channel.connected ? (
                         <Text style={styles.statusConnected}>
-                          ✓ Connected • @{platform.username || "username"}
+                          Connected - @{channel.username || "username"}
                         </Text>
                       ) : (
                         <Text style={styles.statusDisconnected}>Not connected</Text>
@@ -321,51 +238,51 @@ const SocialMediaScreen = ({ navigation }) => {
                     </View>
                   </View>
                   <MaterialCommunityIcons
-                    name={
-                      expandedPlatform === platform.id ? "chevron-up" : "chevron-down"
-                    }
+                    name={expanded ? "chevron-up" : "chevron-down"}
                     size={24}
                     color={Colors.textSecondary}
                   />
                 </View>
 
-                {expandedPlatform === platform.id && (
+                {expanded ? (
                   <View style={styles.platformExpanded}>
-                    {platform.connected ? (
+                    {channel.connected ? (
                       <>
                         <View style={styles.statsGrid}>
                           <View style={styles.statItem}>
                             <Text style={styles.statValue}>
-                              {platform.followers.toLocaleString()}
+                              {channel.followers.toLocaleString()}
                             </Text>
                             <Text style={styles.statLabel}>Followers</Text>
                           </View>
                           <View style={styles.statItem}>
                             <Text style={styles.statValue}>
-                              {platform.engagementRate}%
+                              {channel.engagementRate}%
                             </Text>
                             <Text style={styles.statLabel}>Engagement</Text>
                           </View>
                         </View>
+                        <View style={styles.switchRow}>
+                          <Text style={styles.switchLabel}>Allow external auto-posting</Text>
+                          <Switch
+                            value={channel.autoPost}
+                            onValueChange={(value) =>
+                              updateChannel(channel.id, "autoPost", value)
+                            }
+                            trackColor={{ false: "#E5E7EB", true: Colors.primary }}
+                          />
+                        </View>
                         <TouchableOpacity
                           style={[styles.btn, styles.btnSecondary]}
-                          onPress={() => handleDisconnect(platform.id)}
+                          onPress={() => handleDisconnect(channel.id)}
                         >
-                          <MaterialCommunityIcons
-                            name="link"
-                            size={18}
-                            color={Colors.primary}
-                          />
                           <Text style={styles.btnTextSecondary}>Disconnect Account</Text>
                         </TouchableOpacity>
                         <TouchableOpacity
                           style={[styles.btn, styles.btnPrimary]}
-                          onPress={() =>
-                            Alert.alert("Syncing...", `Refreshing ${platform.name} data`)
-                          }
+                          onPress={() => syncSocialData(channel.id)}
                         >
-                          <MaterialCommunityIcons name="refresh" size={18} color="#FFF" />
-                          <Text style={styles.btnTextPrimary}>Sync Data</Text>
+                          <Text style={styles.btnTextPrimary}>Sync Channel Data</Text>
                         </TouchableOpacity>
                       </>
                     ) : (
@@ -374,74 +291,54 @@ const SocialMediaScreen = ({ navigation }) => {
                         <TextInput
                           style={styles.input}
                           placeholder="API Key"
-                          value={platform.apiKey}
-                          onChangeText={(val) =>
-                            updatePlatform(platform.id, "apiKey", val)
-                          }
+                          value={channel.apiKey}
+                          onChangeText={(value) => updateChannel(channel.id, "apiKey", value)}
                         />
                         <TextInput
                           style={styles.input}
                           placeholder="Access Token"
-                          value={platform.accessToken}
-                          onChangeText={(val) =>
-                            updatePlatform(platform.id, "accessToken", val)
+                          value={channel.accessToken}
+                          onChangeText={(value) =>
+                            updateChannel(channel.id, "accessToken", value)
                           }
                           secureTextEntry
                         />
                         <TouchableOpacity
                           style={[styles.btn, styles.btnPrimary]}
-                          onPress={() => handleConnect(platform.id)}
+                          onPress={() => handleConnect(channel.id)}
                         >
-                          <MaterialCommunityIcons name="link" size={18} color="#FFF" />
-                          <Text style={styles.btnTextPrimary}>Connect with OAuth</Text>
+                          <Text style={styles.btnTextPrimary}>Connect Channel</Text>
                         </TouchableOpacity>
                       </>
                     )}
                   </View>
-                )}
+                ) : null}
               </TouchableOpacity>
-            </View>
-          ))}
+            );
+          })}
         </View>
 
-        {/* Auto-posting Section */}
-        <Card style={styles.autoPostCard}>
-          <View style={styles.autoPostHeader}>
-            <MaterialCommunityIcons
-              name="calendar-clock"
-              size={24}
-              color={Colors.primary}
-            />
-            <Text style={styles.autoPostTitle}>Auto-Posting</Text>
-          </View>
-          <Text style={styles.autoPostDescription}>
-            Schedule posts across all connected platforms
+        <Card style={styles.actionCard}>
+          <Text style={styles.actionTitle}>External Posting</Text>
+          <Text style={styles.actionDescription}>
+            Schedule posts across connected external channels. This does not create a
+            GrowPath Feed campaign.
           </Text>
           <TouchableOpacity
             style={[styles.btn, styles.btnPrimary]}
-            onPress={handleCreatePostSchedule}
+            onPress={handleCreateExternalSchedule}
           >
-            <MaterialCommunityIcons name="plus" size={18} color="#FFF" />
-            <Text style={styles.btnTextPrimary}>Create Post Schedule</Text>
+            <Text style={styles.btnTextPrimary}>Create External Schedule</Text>
           </TouchableOpacity>
         </Card>
 
-        {/* Analytics Section */}
-        <Card style={styles.analyticsCard}>
-          <View style={styles.analyticsHeader}>
-            <MaterialCommunityIcons name="chart-line" size={24} color={Colors.primary} />
-            <Text style={styles.analyticsTitle}>Social Analytics</Text>
-          </View>
+        <Card style={styles.actionCard}>
+          <Text style={styles.actionTitle}>External Channel Analytics</Text>
           <TouchableOpacity
             style={[styles.btn, styles.btnSecondary]}
-            onPress={handleViewDetailedAnalytics}
+            onPress={handleRefreshAnalytics}
           >
-            <MaterialCommunityIcons
-              name="database-search"
-              size={18}
-              color={Colors.primary}
-            />
-            <Text style={styles.btnTextSecondary}>View Detailed Analytics</Text>
+            <Text style={styles.btnTextSecondary}>Refresh Channel Analytics</Text>
           </TouchableOpacity>
         </Card>
 
@@ -449,13 +346,10 @@ const SocialMediaScreen = ({ navigation }) => {
       </ScrollView>
     </ErrorBoundary>
   );
-};
+}
 
 const styles = StyleSheet.create({
-  container: {
-    flex: 1,
-    backgroundColor: Colors.background
-  },
+  container: { flex: 1, backgroundColor: Colors.background },
   header: {
     alignItems: "center",
     paddingVertical: Spacing.lg,
@@ -463,189 +357,102 @@ const styles = StyleSheet.create({
     marginTop: Spacing.md
   },
   title: {
+    color: Colors.text,
     fontSize: Typography.size.h1,
     fontWeight: "bold",
-    color: Colors.text,
-    marginTop: Spacing.sm
+    marginTop: Spacing.sm,
+    textAlign: "center"
   },
   subtitle: {
-    fontSize: Typography.size.body,
     color: Colors.textSecondary,
+    fontSize: Typography.size.body,
+    marginTop: Spacing.xs,
+    maxWidth: 720,
+    textAlign: "center"
+  },
+  summaryCard: { marginHorizontal: Spacing.md, marginVertical: Spacing.md, padding: Spacing.md },
+  summaryRow: { flexDirection: "row", justifyContent: "space-around" },
+  summaryItem: { alignItems: "center", flex: 1 },
+  summaryValue: { color: Colors.primary, fontSize: Typography.size.h2, fontWeight: "bold" },
+  summaryLabel: {
+    color: Colors.textSecondary,
+    fontSize: Typography.size.caption,
     marginTop: Spacing.xs,
     textAlign: "center"
   },
-  summaryCard: {
-    marginHorizontal: Spacing.md,
-    marginVertical: Spacing.md,
-    padding: Spacing.md
-  },
-  summaryRow: {
-    flexDirection: "row",
-    justifyContent: "space-around"
-  },
-  summaryItem: {
-    alignItems: "center"
-  },
-  summaryValue: {
-    fontSize: Typography.size.h2,
-    fontWeight: "bold",
-    color: Colors.primary
-  },
-  summaryLabel: {
-    fontSize: Typography.size.caption,
-    color: Colors.textSecondary,
-    marginTop: Spacing.xs
-  },
-  platformsContainer: {
-    paddingHorizontal: Spacing.md
-  },
+  platformsContainer: { paddingHorizontal: Spacing.md },
   platformCard: {
     backgroundColor: Colors.surface,
-    borderRadius: 12,
+    borderRadius: 8,
     marginBottom: Spacing.md,
-    overflow: "hidden",
-    boxShadow: "0px 2px 8px rgba(0,0,0,0.1)",
-    elevation: 3
-  },
-  platformHeader: {
-    flexDirection: "row",
-    justifyContent: "space-between",
-    alignItems: "center",
     padding: Spacing.md
   },
-  platformInfo: {
-    flexDirection: "row",
+  platformHeader: {
     alignItems: "center",
-    flex: 1
+    flexDirection: "row",
+    justifyContent: "space-between"
   },
-  platformDetails: {
-    marginLeft: Spacing.md,
-    flex: 1
-  },
-  platformName: {
-    fontSize: Typography.size.subtitle,
-    fontWeight: "bold",
-    color: Colors.text
-  },
-  statusConnected: {
-    fontSize: Typography.size.caption,
-    color: "#10b981",
-    marginTop: Spacing.xs
-  },
-  statusDisconnected: {
-    fontSize: Typography.size.caption,
-    color: Colors.textSecondary,
-    marginTop: Spacing.xs
-  },
+  platformInfo: { alignItems: "center", flex: 1, flexDirection: "row" },
+  platformDetails: { flex: 1, marginLeft: Spacing.sm },
+  platformName: { color: Colors.text, fontSize: Typography.size.body, fontWeight: "bold" },
+  statusConnected: { color: Colors.success || Colors.primary, fontSize: Typography.size.caption },
+  statusDisconnected: { color: Colors.textSecondary, fontSize: Typography.size.caption },
   platformExpanded: {
-    paddingHorizontal: Spacing.md,
-    paddingBottom: Spacing.md,
+    borderTopColor: Colors.border,
     borderTopWidth: 1,
-    borderTopColor: "#f0f0f0"
-  },
-  expandedLabel: {
-    fontSize: Typography.size.caption,
-    fontWeight: "600",
-    color: Colors.text,
     marginTop: Spacing.md,
-    marginBottom: Spacing.xs
+    paddingTop: Spacing.md
   },
-  input: {
-    borderWidth: 1,
-    borderColor: "#e5e7eb",
-    borderRadius: 8,
-    paddingHorizontal: Spacing.md,
-    paddingVertical: Spacing.sm,
+  statsGrid: { flexDirection: "row", justifyContent: "space-around", marginBottom: Spacing.md },
+  statItem: { alignItems: "center" },
+  statValue: { color: Colors.primary, fontSize: Typography.size.h3, fontWeight: "bold" },
+  statLabel: { color: Colors.textSecondary, fontSize: Typography.size.caption },
+  switchRow: {
+    alignItems: "center",
+    flexDirection: "row",
+    justifyContent: "space-between",
+    marginBottom: Spacing.md
+  },
+  switchLabel: { color: Colors.text, flex: 1, fontSize: Typography.size.body },
+  expandedLabel: {
+    color: Colors.text,
     fontSize: Typography.size.body,
+    fontWeight: "bold",
     marginBottom: Spacing.sm
   },
-  statsGrid: {
-    flexDirection: "row",
-    justifyContent: "space-around",
-    marginBottom: Spacing.md,
-    paddingVertical: Spacing.md,
-    backgroundColor: "#f9fafb",
-    borderRadius: 8
+  input: {
+    backgroundColor: Colors.background,
+    borderColor: Colors.border,
+    borderRadius: 8,
+    borderWidth: 1,
+    fontSize: Typography.size.body,
+    marginBottom: Spacing.sm,
+    padding: Spacing.sm
   },
-  statItem: {
-    alignItems: "center"
-  },
-  statValue: {
-    fontSize: Typography.size.h3,
-    fontWeight: "bold",
-    color: Colors.primary
-  },
-  statLabel: {
-    fontSize: Typography.size.caption,
+  actionCard: { marginHorizontal: Spacing.md, marginTop: Spacing.md, padding: Spacing.md },
+  actionTitle: { color: Colors.text, fontSize: Typography.size.h3, fontWeight: "bold" },
+  actionDescription: {
     color: Colors.textSecondary,
+    fontSize: Typography.size.body,
+    marginBottom: Spacing.md,
     marginTop: Spacing.xs
   },
   btn: {
-    flexDirection: "row",
     alignItems: "center",
-    justifyContent: "center",
-    paddingVertical: Spacing.md,
     borderRadius: 8,
-    marginBottom: Spacing.sm
+    flexDirection: "row",
+    justifyContent: "center",
+    marginTop: Spacing.sm,
+    paddingHorizontal: Spacing.md,
+    paddingVertical: Spacing.sm
   },
-  btnPrimary: {
-    backgroundColor: Colors.primary
-  },
+  btnPrimary: { backgroundColor: Colors.primary },
   btnSecondary: {
-    borderWidth: 1,
+    backgroundColor: Colors.surface,
     borderColor: Colors.primary,
-    backgroundColor: "transparent"
+    borderWidth: 1
   },
-  btnTextPrimary: {
-    color: "#FFF",
-    fontWeight: "600",
-    marginLeft: Spacing.xs
-  },
-  btnTextSecondary: {
-    color: Colors.primary,
-    fontWeight: "600",
-    marginLeft: Spacing.xs
-  },
-  autoPostCard: {
-    marginHorizontal: Spacing.md,
-    marginVertical: Spacing.md,
-    padding: Spacing.md
-  },
-  autoPostHeader: {
-    flexDirection: "row",
-    alignItems: "center",
-    marginBottom: Spacing.sm
-  },
-  autoPostTitle: {
-    fontSize: Typography.size.subtitle,
-    fontWeight: "bold",
-    color: Colors.text,
-    marginLeft: Spacing.sm
-  },
-  autoPostDescription: {
-    fontSize: Typography.size.caption,
-    color: Colors.textSecondary,
-    marginBottom: Spacing.md
-  },
-  analyticsCard: {
-    marginHorizontal: Spacing.md,
-    marginVertical: Spacing.md,
-    padding: Spacing.md
-  },
-  analyticsHeader: {
-    flexDirection: "row",
-    alignItems: "center",
-    marginBottom: Spacing.sm
-  },
-  analyticsTitle: {
-    fontSize: Typography.size.subtitle,
-    fontWeight: "bold",
-    color: Colors.text,
-    marginLeft: Spacing.sm
-  },
-  spacer: {
-    height: Spacing.lg * 2
-  }
+  btnTextPrimary: { color: "#FFF", fontSize: Typography.size.body, fontWeight: "bold" },
+  btnTextSecondary: { color: Colors.primary, fontSize: Typography.size.body, fontWeight: "bold" },
+  spacer: { height: Spacing.xl }
 });
-
-export default SocialMediaScreen;
