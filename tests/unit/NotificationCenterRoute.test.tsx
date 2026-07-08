@@ -64,6 +64,33 @@ describe("NotificationCenterRoute", () => {
               sourceType: "room",
               workspaceType: "facility",
               readAt: "2026-07-07T12:00:00.000Z"
+            },
+            {
+              id: "notification-5",
+              title: "Forum reply",
+              message: "Someone answered your product question.",
+              sourceType: "forum",
+              sourceId: "thread-product",
+              workspaceType: "personal",
+              readAt: "2026-07-07T12:00:00.000Z"
+            },
+            {
+              id: "notification-6",
+              title: "Facility run review",
+              message: "Batch review is ready.",
+              sourceType: "facility_run",
+              sourceId: "run-1",
+              workspaceType: "facility",
+              readAt: "2026-07-07T12:00:00.000Z"
+            },
+            {
+              id: "notification-7",
+              title: "SOP task",
+              message: "Review retraining.",
+              sourceType: "sop",
+              sourceId: "sop-1",
+              workspaceType: "facility",
+              readAt: "2026-07-07T12:00:00.000Z"
             }
           ]
         });
@@ -101,6 +128,11 @@ describe("NotificationCenterRoute", () => {
     ).toBeTruthy();
     expect(screen.getByLabelText("Notification link /home/personal/courses")).toBeTruthy();
     expect(screen.getByLabelText("Notification link /home/facility/rooms")).toBeTruthy();
+    expect(screen.getByLabelText("Notification link /forum/post/thread-product")).toBeTruthy();
+    expect(
+      screen.getByLabelText("Notification link /home/facility/grows/run-1")
+    ).toBeTruthy();
+    expect(screen.getByLabelText("Notification link /home/facility/sop-runs")).toBeTruthy();
 
     fireEvent.press(screen.getByLabelText("Notification filter unread"));
     fireEvent.press(screen.getByLabelText("Mark notification read"));

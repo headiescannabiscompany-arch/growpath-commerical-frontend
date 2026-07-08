@@ -63,6 +63,10 @@ function sourceHref(alert: AlertRow) {
     return "/home/personal/tasks";
   }
   if (sourceType === "room") return "/home/facility/rooms";
+  if (sourceType === "facility_run")
+    return sourceId ? `/home/facility/grows/${sourceId}` : "/home/facility/grows";
+  if (sourceType === "sop") return "/home/facility/sop-runs";
+  if (sourceType === "forum" && sourceId) return `/forum/post/${sourceId}`;
   return "";
 }
 

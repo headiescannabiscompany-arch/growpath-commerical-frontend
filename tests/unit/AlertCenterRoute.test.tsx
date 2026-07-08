@@ -64,6 +64,36 @@ describe("AlertCenterRoute", () => {
               status: "resolved",
               sourceType: "live",
               sourceId: "live-1"
+            },
+            {
+              id: "alert-4",
+              title: "Facility SOP question needs response",
+              severity: "warning",
+              status: "active",
+              workspaceType: "facility",
+              sourceType: "forum",
+              sourceId: "thread-sop",
+              createdAt: new Date().toISOString()
+            },
+            {
+              id: "alert-5",
+              title: "Facility run needs review",
+              severity: "warning",
+              status: "active",
+              workspaceType: "facility",
+              sourceType: "facility_run",
+              sourceId: "run-1",
+              createdAt: new Date().toISOString()
+            },
+            {
+              id: "alert-6",
+              title: "SOP retraining due",
+              severity: "warning",
+              status: "active",
+              workspaceType: "facility",
+              sourceType: "sop",
+              sourceId: "sop-1",
+              createdAt: new Date().toISOString()
             }
           ]
         });
@@ -89,6 +119,9 @@ describe("AlertCenterRoute", () => {
       screen.getByLabelText("Alert link /home/commercial/products/product-1")
     ).toBeTruthy();
     expect(screen.getByLabelText("Alert link /home/facility/tasks/task-1")).toBeTruthy();
+    expect(screen.getByLabelText("Alert link /forum/post/thread-sop")).toBeTruthy();
+    expect(screen.getByLabelText("Alert link /home/facility/grows/run-1")).toBeTruthy();
+    expect(screen.getByLabelText("Alert link /home/facility/sop-runs")).toBeTruthy();
 
     fireEvent.press(screen.getByLabelText("Alert center quick date In 7 days"));
     fireEvent.press(

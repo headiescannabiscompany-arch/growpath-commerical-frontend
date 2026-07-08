@@ -68,6 +68,12 @@ function sourceHref(row: NotificationRow) {
       return "/home/commercial/storefront";
     case "room":
       return "/home/facility/rooms";
+    case "facility_run":
+      return id ? `/home/facility/grows/${id}` : "/home/facility/grows";
+    case "sop":
+      return "/home/facility/sop-runs";
+    case "forum":
+      return id ? `/forum/post/${id}` : "/forum";
     default:
       return "/home/schedule";
   }
