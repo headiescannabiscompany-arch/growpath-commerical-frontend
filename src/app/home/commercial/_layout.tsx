@@ -98,11 +98,11 @@ export default function CommercialTabsLayout() {
       <Tabs.Screen name="marketing" options={{ href: null, title: "Marketing" }} />
       <Tabs.Screen
         name="inventory-create"
-        options={{ href: null, title: "Add Inventory Support Item" }}
+        options={{ href: null, title: "Add Inventory Support Record" }}
       />
       <Tabs.Screen
         name="inventory/new"
-        options={{ href: null, title: "Add Inventory Support Item" }}
+        options={{ href: null, title: "Add Inventory Support Record" }}
       />
       <Tabs.Screen name="inventory-item/[id]" options={{ href: null }} />
       <Tabs.Screen name="inventory/[id]" options={{ href: null }} />

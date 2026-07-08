@@ -17,6 +17,7 @@ import { apiRequest } from "@/api/apiRequest";
 import { endpoints } from "@/api/endpoints";
 import { useApiErrorHandler } from "@/hooks/useApiErrorHandler";
 import { CAPABILITY_KEYS, useEntitlements } from "@/entitlements";
+import { radius } from "@/theme/theme";
 
 type AnyRec = Record<string, any>;
 
@@ -206,7 +207,7 @@ export default function CommercialInventoryItemDetailRoute() {
 
   return (
     <ScreenBoundary
-      title="Inventory Support Item"
+      title="Inventory Support Record"
       showBack
       backFallbackHref="/home/commercial/inventory"
     >
@@ -222,7 +223,7 @@ export default function CommercialInventoryItemDetailRoute() {
         {error ? <InlineError error={error} /> : null}
 
         <View style={styles.headerRow}>
-          <Text style={styles.h1}>Inventory Support Item</Text>
+          <Text style={styles.h1}>Inventory Support Record</Text>
           <Text style={styles.muted}>id: {id || "(missing)"}</Text>
         </View>
 
@@ -505,8 +506,8 @@ export default function CommercialInventoryItemDetailRoute() {
           ) : (
             <Text style={styles.muted}>
               {id
-                ? "No inventory item returned."
-                : "Missing inventory item id in route params."}
+                ? "No inventory record returned."
+                : "Missing inventory record id in route params."}
             </Text>
           )}
         </View>
@@ -534,14 +535,14 @@ const styles = StyleSheet.create({
   card: {
     borderWidth: 1,
     borderColor: "rgba(0,0,0,0.12)",
-    borderRadius: 14,
+    borderRadius: radius.card,
     padding: 14,
     backgroundColor: "white"
   },
   summaryCard: {
     borderWidth: 1,
     borderColor: "rgba(0,0,0,0.12)",
-    borderRadius: 14,
+    borderRadius: radius.card,
     padding: 14,
     backgroundColor: "white",
     gap: 8
@@ -578,7 +579,7 @@ const styles = StyleSheet.create({
   input: {
     borderWidth: 1,
     borderColor: "rgba(0,0,0,0.12)",
-    borderRadius: 10,
+    borderRadius: radius.card,
     padding: 10,
     backgroundColor: "white"
   },
@@ -586,7 +587,7 @@ const styles = StyleSheet.create({
   primaryBtn: {
     marginTop: 8,
     backgroundColor: "#0f172a",
-    borderRadius: 10,
+    borderRadius: radius.card,
     paddingVertical: 12,
     alignItems: "center"
   },
@@ -596,7 +597,7 @@ const styles = StyleSheet.create({
   actionBtn: {
     borderWidth: 1,
     borderColor: "#cbd5e1",
-    borderRadius: 10,
+    borderRadius: radius.card,
     paddingHorizontal: 10,
     paddingVertical: 8,
     backgroundColor: "#f8fafc"

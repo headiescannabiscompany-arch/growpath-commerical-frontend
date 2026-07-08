@@ -2148,11 +2148,12 @@ describe("commercial workflow pages", () => {
     );
   });
 
-  it("opens commercial inventory detail and keeps it connected to business workflows", async () => {
+  it("opens commercial inventory detail and keeps it connected to commercial workflows", async () => {
     const screen = render(<CommercialInventoryItemDetailRoute />);
 
     await waitFor(() => expect(screen.getByText("Kelp Meal")).toBeTruthy());
     expect(screen.getByLabelText("Back")).toBeTruthy();
+    expect(screen.getByText("Inventory Support Record")).toBeTruthy();
     expect(screen.getByText("Connected Workflows")).toBeTruthy();
     expect(screen.getByText("Linked Product")).toBeTruthy();
     expect(screen.getByText("Linked Evidence Run")).toBeTruthy();
@@ -2162,6 +2163,7 @@ describe("commercial workflow pages", () => {
     expect(screen.getByLabelText("Commercial detail item type").props.value).toBe(
       "ingredient"
     );
+    expect(screen.queryByText("Inventory Support Item")).toBeNull();
 
     expect(
       screen.getByLabelText("Commercial detail linked product trial evidence run").props

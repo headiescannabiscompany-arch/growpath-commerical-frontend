@@ -35,7 +35,7 @@ function pickId(x: AnyRec): string {
 }
 
 function pickTitle(x: AnyRec): string {
-  return String(x?.name ?? x?.title ?? x?.label ?? x?.sku ?? "Inventory Support Item");
+  return String(x?.name ?? x?.title ?? x?.label ?? x?.sku ?? "Inventory Record");
 }
 
 function pickSubtitle(x: AnyRec): string {
@@ -212,7 +212,7 @@ export default function CommercialInventoryRoute() {
           ListEmptyComponent={
             !loading ? (
               <View style={styles.empty}>
-                <Text style={styles.emptyTitle}>No inventory support items yet</Text>
+                <Text style={styles.emptyTitle}>No inventory support records yet</Text>
                 <Text style={styles.muted}>
                   When stock support records exist on the backend, they will show here.
                 </Text>
@@ -228,7 +228,7 @@ export default function CommercialInventoryRoute() {
             return (
               <Pressable
                 accessibilityRole="button"
-                accessibilityLabel={`Open commercial inventory item ${title}`}
+                accessibilityLabel={`Open commercial inventory record ${title}`}
                 onPress={() => {
                   if (!id) return;
                   router.push({
