@@ -53,9 +53,7 @@ function param(value: unknown): string {
 
 function authorName(row: any) {
   const author = row?.author || row?.user;
-  return String(
-    author?.name || author?.username || row?.authorName || "Forum member"
-  );
+  return String(author?.name || author?.username || row?.authorName || "Forum member");
 }
 
 function bodyOf(row: any) {
