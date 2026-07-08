@@ -2,6 +2,7 @@ import React, { useEffect, useState } from "react";
 import { View, Text, TouchableOpacity, FlatList } from "react-native";
 import ScreenContainer from "../components/ScreenContainer";
 import { getDiagnosisHistory } from "../api/diagnose";
+import { radius } from "../theme/theme";
 
 export default function DiagnosisHistoryScreen({ navigation }) {
   const [items, setItems] = useState([]);
@@ -137,7 +138,7 @@ const styles = {
     backgroundColor: "#fff",
     borderWidth: 1,
     borderColor: "#E2E8F0",
-    borderRadius: 10,
+    borderRadius: radius.card,
     padding: 12,
     marginBottom: 10
   },
@@ -167,7 +168,7 @@ const styles = {
   empty: {
     borderWidth: 1,
     borderColor: "#E2E8F0",
-    borderRadius: 10,
+    borderRadius: radius.card,
     padding: 14,
     backgroundColor: "#F8FAFC"
   },
@@ -175,7 +176,7 @@ const styles = {
     color: "#9A3412",
     backgroundColor: "#FFF7ED",
     padding: 10,
-    borderRadius: 8,
+    borderRadius: radius.card,
     marginBottom: 10
   }
 };

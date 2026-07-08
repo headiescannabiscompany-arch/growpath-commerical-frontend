@@ -1,6 +1,7 @@
 import React from "react";
 import { Text, FlatList, StyleSheet, Image, View } from "react-native";
 import ScreenContainer from "../components/ScreenContainer";
+import { radius } from "../theme/theme";
 
 export default function DiagnoseResultScreen({ route }) {
   const { diagnostics, photo } = route.params;
@@ -46,11 +47,16 @@ export default function DiagnoseResultScreen({ route }) {
 
 const styles = StyleSheet.create({
   header: { fontSize: 26, fontWeight: "700", marginBottom: 8 },
-  img: { width: "100%", height: 240, borderRadius: 10, marginBottom: 20 },
+  img: { width: "100%", height: 240, borderRadius: radius.card, marginBottom: 20 },
   health: { fontSize: 18, marginBottom: 16 },
   section: { fontSize: 20, fontWeight: "700", marginBottom: 10 },
   none: { color: "#2ecc71", fontSize: 18 },
-  card: { backgroundColor: "white", padding: 14, borderRadius: 10, marginBottom: 14 },
+  card: {
+    backgroundColor: "white",
+    padding: 14,
+    borderRadius: radius.card,
+    marginBottom: 14
+  },
   issueName: { fontSize: 16, fontWeight: "700" },
   issueMeta: { fontSize: 12, color: "#777", marginBottom: 6 },
   label: { fontWeight: "700", marginTop: 6 },

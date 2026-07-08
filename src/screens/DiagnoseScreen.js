@@ -19,6 +19,7 @@ import TokenBalanceWidget from "../components/TokenBalanceWidget.js";
 import { useDiagnose } from "../hooks/useDiagnose";
 import { useEntitlements, CAPABILITY_KEYS } from "@/entitlements";
 import { sanitizeViewChildren } from "@/components/layout/sanitizeViewChildren";
+import { radius } from "../theme/theme";
 
 // Move DiagnoseScreen function here, after styles
 
@@ -158,7 +159,7 @@ export default function DiagnoseScreen({ route, navigation }) {
                     key={prompt}
                     style={{
                       backgroundColor: "#334155",
-                      borderRadius: 16,
+                      borderRadius: radius.pill,
                       paddingHorizontal: 12,
                       paddingVertical: 6,
                       marginRight: 8,
@@ -198,7 +199,7 @@ export default function DiagnoseScreen({ route, navigation }) {
                     style={{
                       alignSelf: msg.sender === "user" ? "flex-end" : "flex-start",
                       backgroundColor: msg.sender === "user" ? "#22c55e" : "#334155",
-                      borderRadius: 14,
+                      borderRadius: radius.card,
                       padding: 10,
                       marginBottom: 6,
                       maxWidth: "80%"
@@ -686,7 +687,7 @@ export default function DiagnoseScreen({ route, navigation }) {
 const styles = StyleSheet.create({
   input: {
     backgroundColor: "#1e293b",
-    borderRadius: 8,
+    borderRadius: radius.card,
     padding: 10,
     color: "#e5e7eb",
     marginBottom: 10
@@ -708,7 +709,7 @@ const styles = StyleSheet.create({
   resultBox: {
     marginTop: 18,
     padding: 14,
-    borderRadius: 12,
+    borderRadius: radius.card,
     backgroundColor: "#020617",
     borderWidth: 1,
     borderColor: "#22c55e"
@@ -716,7 +717,7 @@ const styles = StyleSheet.create({
   resultCard: {
     marginTop: 18,
     padding: 16,
-    borderRadius: 12,
+    borderRadius: radius.card,
     backgroundColor: "#1e293b",
     borderWidth: 1,
     borderColor: "#22c55e"
@@ -741,7 +742,7 @@ const styles = StyleSheet.create({
     backgroundColor: "#334155",
     paddingHorizontal: 8,
     paddingVertical: 4,
-    borderRadius: 8,
+    borderRadius: radius.pill,
     marginRight: 6,
     marginBottom: 6
   },
@@ -787,7 +788,7 @@ const styles = StyleSheet.create({
   button: {
     paddingVertical: 12,
     paddingHorizontal: 14,
-    borderRadius: 10,
+    borderRadius: radius.card,
     backgroundColor: "#22c55e",
     alignItems: "center",
     marginTop: 12
@@ -806,7 +807,7 @@ const styles = StyleSheet.create({
   advancedSection: {
     marginTop: 12,
     padding: 12,
-    borderRadius: 10,
+    borderRadius: radius.card,
     backgroundColor: "#020617",
     borderWidth: 1,
     borderColor: "#1e293b"
@@ -814,7 +815,7 @@ const styles = StyleSheet.create({
   advancedToggle: {
     backgroundColor: "#1e293b",
     padding: 10,
-    borderRadius: 8,
+    borderRadius: radius.card,
     marginTop: 10,
     marginBottom: 10
   },
@@ -826,7 +827,7 @@ const styles = StyleSheet.create({
   envSection: {
     marginBottom: 18,
     padding: 12,
-    borderRadius: 10,
+    borderRadius: radius.card,
     backgroundColor: "#0f172a",
     borderWidth: 1,
     borderColor: "#1e293b"
@@ -840,7 +841,7 @@ const styles = StyleSheet.create({
   infoBox: {
     backgroundColor: "#1e293b",
     padding: 10,
-    borderRadius: 8,
+    borderRadius: radius.card,
     marginBottom: 10
   },
   infoBoxTitle: {
@@ -866,7 +867,7 @@ const styles = StyleSheet.create({
   optionButton: {
     paddingHorizontal: 16,
     paddingVertical: 10,
-    borderRadius: 8,
+    borderRadius: radius.card,
     backgroundColor: "#1e293b",
     borderWidth: 1,
     borderColor: "#22c55e",
