@@ -9,6 +9,7 @@ import {
   ActivityIndicator
 } from "react-native";
 import ScreenContainer from "../components/ScreenContainer";
+import { radius } from "../theme/theme";
 import {
   getEarnings,
   getCreatorCourses,
@@ -296,7 +297,7 @@ const styles = StyleSheet.create({
   earningsCard: {
     backgroundColor: "#d5f4e6",
     padding: 20,
-    borderRadius: 12,
+    borderRadius: radius.card,
     marginBottom: 24,
     borderLeftWidth: 5,
     borderLeftColor: "#27ae60"
@@ -322,7 +323,7 @@ const styles = StyleSheet.create({
     paddingVertical: 12,
     paddingHorizontal: 16,
     backgroundColor: "#27ae60",
-    borderRadius: 8,
+    borderRadius: radius.card,
     alignItems: "center"
   },
   payoutButtonText: {
@@ -332,7 +333,7 @@ const styles = StyleSheet.create({
   },
   chartCard: {
     backgroundColor: "#fff",
-    borderRadius: 12,
+    borderRadius: radius.card,
     padding: 16,
     marginBottom: 20,
     borderWidth: 1,
@@ -347,7 +348,7 @@ const styles = StyleSheet.create({
     color: "#2c3e50"
   },
   chart: {
-    borderRadius: 8
+    borderRadius: radius.card
   },
   courseSelectorContainer: {
     marginBottom: 20
@@ -366,7 +367,7 @@ const styles = StyleSheet.create({
     backgroundColor: "#f0f0f0",
     paddingHorizontal: 16,
     paddingVertical: 12,
-    borderRadius: 8,
+    borderRadius: radius.card,
     marginRight: 12,
     minWidth: 140,
     justifyContent: "center",
@@ -390,7 +391,7 @@ const styles = StyleSheet.create({
   },
   detailsCard: {
     backgroundColor: "#fff",
-    borderRadius: 12,
+    borderRadius: radius.card,
     padding: 16,
     marginBottom: 20,
     borderWidth: 1,
@@ -411,7 +412,7 @@ const styles = StyleSheet.create({
     paddingVertical: 12,
     paddingHorizontal: 12,
     backgroundColor: "#f9f9f9",
-    borderRadius: 8,
+    borderRadius: radius.card,
     marginBottom: 8,
     borderLeftWidth: 3,
     borderLeftColor: "#3498db"
@@ -440,7 +441,7 @@ const styles = StyleSheet.create({
     paddingHorizontal: 10,
     paddingVertical: 4,
     backgroundColor: "#d5f4e6",
-    borderRadius: 12
+    borderRadius: radius.pill
   },
   emptyState: {
     alignItems: "center",

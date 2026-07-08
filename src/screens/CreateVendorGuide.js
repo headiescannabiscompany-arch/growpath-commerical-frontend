@@ -4,6 +4,7 @@ import { Alert, Pressable, StyleSheet, Text, TextInput, View } from "react-nativ
 import { createCourse } from "@/api/courses";
 import { useEntitlements } from "@/entitlements";
 import { getLearningAccess } from "@/features/learning/learningAccess";
+import { radius } from "@/theme/theme";
 
 function priceToCents(value) {
   const trimmed = String(value || "").trim();
@@ -138,7 +139,7 @@ const styles = StyleSheet.create({
   label: { color: "#334155", fontSize: 13, fontWeight: "800" },
   input: {
     borderColor: "#d1d5db",
-    borderRadius: 10,
+    borderRadius: radius.card,
     borderWidth: 1,
     paddingHorizontal: 12,
     paddingVertical: 10
@@ -147,7 +148,7 @@ const styles = StyleSheet.create({
   button: {
     alignItems: "center",
     backgroundColor: "#15803d",
-    borderRadius: 10,
+    borderRadius: radius.card,
     marginTop: 8,
     paddingVertical: 12
   },
@@ -157,7 +158,7 @@ const styles = StyleSheet.create({
   locked: {
     backgroundColor: "#f8fafc",
     borderColor: "#d1d5db",
-    borderRadius: 10,
+    borderRadius: radius.card,
     borderWidth: 1,
     padding: 12
   },

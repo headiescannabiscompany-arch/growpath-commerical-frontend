@@ -9,6 +9,7 @@ import {
 } from "react-native";
 
 import { apiRequest } from "@/api/apiRequest";
+import { radius } from "@/theme/theme";
 
 function normalizeGuidesResponse(res) {
   if (!res) return { guides: [], vendorCount: 0 };
@@ -214,7 +215,7 @@ const styles = {
   },
   guideCard: {
     backgroundColor: "#fff",
-    borderRadius: 8,
+    borderRadius: radius.card,
     padding: 12,
     marginBottom: 12,
     boxShadow: "0 1px 3px rgba(0, 0, 0, 0.1)",
