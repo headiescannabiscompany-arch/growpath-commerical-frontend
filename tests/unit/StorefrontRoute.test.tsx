@@ -123,6 +123,8 @@ function apiResponseFor(path: string, options?: any) {
           shortDescription: "Ready storefront product card.",
           price: 39,
           category: "dry_amendment",
+          unitSize: "2 lb bag",
+          growInterests: ["living soil", "flower"],
           stripePriceId: "price_123",
           inventoryItem: { name: "Bloom batch 001" }
         }
@@ -258,6 +260,8 @@ describe("Storefront route", () => {
     expect(screen.getByText("Living Soil Base")).toBeTruthy();
     expect(screen.getAllByText("Open Product").length).toBeGreaterThan(0);
     expect(screen.getByText("Published Bloom Topdress")).toBeTruthy();
+    expect(screen.getByText("Missing grow interests")).toBeTruthy();
+    expect(screen.getByText("Missing size/weight")).toBeTruthy();
     expect(screen.getByText("Missing checkout link")).toBeTruthy();
     expect(screen.getByText("Missing published status")).toBeTruthy();
     expect(screen.getByText("Checkout path added")).toBeTruthy();

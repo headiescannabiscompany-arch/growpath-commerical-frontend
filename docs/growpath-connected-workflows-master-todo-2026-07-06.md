@@ -517,6 +517,7 @@ Completed and pushed:
 241. Forum API route constants now expose canonical `LATEST`, `TRENDING`, and `FOLLOWING` names for discussion thread lists, with legacy `FEED_*` constants retained only as aliases so old callers cannot confuse Forum/Q&A lists with Feed campaigns.
 242. Canonical commercial evidence-run wrappers now pass `commercial-evidence-runs`, create, and detail route keys into the shared AppPage shell, preserving root/no-back and nested/back behavior without exposing old commercial-grow route-key names.
 243. Facility manual room creation now captures optional zone/area and stage context, stores those fields through the room API, and displays them on the selected room workspace so Rooms/Zones setup is not limited to imported controller data.
+244. Storefront product setup warnings now require grow interests and size/weight in addition to image, description, price, checkout, and published status, so product cards are ready for discovery, targeting, and buyer context before owners treat them as complete.
 
 ## Working Rule For Codex
 

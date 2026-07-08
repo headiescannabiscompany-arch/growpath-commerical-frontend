@@ -112,6 +112,12 @@ function productMissingSetup(product: AnyRec) {
   if (!hasText(product.shortDescription) && !hasText(product.description)) {
     missing.push("description");
   }
+  if (!Array.isArray(product.growInterests) || !product.growInterests.length) {
+    missing.push("grow interests");
+  }
+  if (!hasText(product.unitSize) && !hasText(product.specs?.unitSize)) {
+    missing.push("size/weight");
+  }
   if (productPrice(product) <= 0) missing.push("price");
   if (!productCheckoutReady(product)) missing.push("checkout link");
   if (!productIsPublished(product)) missing.push("published status");
