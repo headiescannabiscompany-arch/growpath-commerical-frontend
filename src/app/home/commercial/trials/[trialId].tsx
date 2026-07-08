@@ -186,6 +186,7 @@ export default function CommercialTrialDetailRoute({ route }: { route?: any } = 
           linkedProductTrialId: trialId,
           linkedProductId: trial.productId,
           linkedProductBatchId: trial.batchId,
+          linkedTrialId: trial.growId,
           linkedGrowId: trial.growId,
           priority:
             warnings.includes("complete trial") ||

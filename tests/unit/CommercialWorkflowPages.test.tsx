@@ -1828,6 +1828,7 @@ describe("commercial workflow pages", () => {
             linkedProductTrialId: "trial-1",
             linkedProductId: "product-1",
             linkedProductBatchId: "batch-1",
+            linkedTrialId: "grow-1",
             linkedGrowId: "grow-1",
             priority: "high",
             status: "open",
