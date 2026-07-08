@@ -120,7 +120,13 @@ function campaignReadinessWarnings({
 }
 
 function authorLabel(post: CommercialFeedPost) {
-  return post.author?.displayName || post.author?.email || "GrowPath member";
+  if (post.author?.displayName || post.author?.email) {
+    return post.author.displayName || post.author.email || "";
+  }
+  if (post.authorType === "facility" || post.workspaceType === "facility") {
+    return "Facility account";
+  }
+  return "Commercial account";
 }
 
 function campaignMeta(post: CommercialFeedPost) {

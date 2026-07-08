@@ -252,6 +252,49 @@ describe("CommercialFeedRoute", () => {
     expect(screen.queryByLabelText("Publish feed campaign")).toBeNull();
   });
 
+  it("uses commercial or facility account labels when campaign author data is missing", async () => {
+    mockMode = "personal";
+    mockApiRequest.mockImplementation((path: string) => {
+      if (path === "/api/commercial/feed") {
+        return Promise.resolve({
+          items: [
+            {
+              id: "facility-outreach",
+              type: "education",
+              campaignKind: "facility_outreach",
+              title: "Facility IPM training",
+              body: "Public training session for IPM scouting.",
+              tags: ["IPM"],
+              authorType: "facility",
+              workspaceType: "facility",
+              createdAt: "2026-07-07T12:00:00Z"
+            },
+            {
+              id: "storefront-campaign",
+              type: "update",
+              campaignKind: "storefront_ad",
+              title: "Storefront launch",
+              body: "New storefront is live.",
+              tags: ["storefront"],
+              authorType: "commercial",
+              workspaceType: "commercial",
+              createdAt: "2026-07-07T13:00:00Z"
+            }
+          ]
+        });
+      }
+      return Promise.resolve({});
+    });
+
+    const screen = render(<CommercialFeedRoute />);
+
+    await waitFor(() => expect(screen.getByText("Facility IPM training")).toBeTruthy());
+
+    expect(screen.getByText(/Facility account/)).toBeTruthy();
+    expect(screen.getByText(/Commercial account/)).toBeTruthy();
+    expect(screen.queryByText(/GrowPath member/)).toBeNull();
+  });
+
   it("renders a CTA for external-link-only campaigns", async () => {
     mockApiRequest.mockImplementation((path: string) => {
       if (path === "/api/commercial/feed") {
