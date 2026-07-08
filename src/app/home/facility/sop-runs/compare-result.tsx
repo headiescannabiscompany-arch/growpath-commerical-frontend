@@ -5,6 +5,7 @@ import { StyleSheet, Text, View } from "react-native";
 import { apiRequest } from "@/api/apiRequest";
 import { normalizeApiError } from "@/api/errors";
 import { endpoints } from "@/api/endpoints";
+import { ScreenBoundary } from "@/components/ScreenBoundary";
 import { useFacility } from "@/state/useFacility";
 
 type SopRunDetail = {
@@ -64,30 +65,36 @@ export default function FacilitySopRunsCompareResultRoute() {
   }, [left, right]);
 
   return (
-    <View style={styles.container}>
-      <Text style={styles.h1}>SOP Compare Result</Text>
-      <Text style={styles.sub}>left: {String(leftId || "")}</Text>
-      <Text style={styles.sub}>right: {String(rightId || "")}</Text>
-      {error ? <Text style={styles.err}>{error}</Text> : null}
+    <ScreenBoundary
+      title="SOP Compare Result"
+      showBack
+      backFallbackHref="/home/facility/sop-runs/compare"
+    >
+      <View style={styles.container}>
+        <Text style={styles.h1}>SOP Compare Result</Text>
+        <Text style={styles.sub}>left: {String(leftId || "")}</Text>
+        <Text style={styles.sub}>right: {String(rightId || "")}</Text>
+        {error ? <Text style={styles.err}>{error}</Text> : null}
 
-      <View style={styles.card}>
-        <Text selectable style={styles.json}>
-          {JSON.stringify(summary, null, 2)}
-        </Text>
+        <View style={styles.card}>
+          <Text selectable style={styles.json}>
+            {JSON.stringify(summary, null, 2)}
+          </Text>
+        </View>
+        <View style={styles.card}>
+          <Text style={styles.title}>Left run</Text>
+          <Text selectable style={styles.json}>
+            {JSON.stringify(left, null, 2)}
+          </Text>
+        </View>
+        <View style={styles.card}>
+          <Text style={styles.title}>Right run</Text>
+          <Text selectable style={styles.json}>
+            {JSON.stringify(right, null, 2)}
+          </Text>
+        </View>
       </View>
-      <View style={styles.card}>
-        <Text style={styles.title}>Left run</Text>
-        <Text selectable style={styles.json}>
-          {JSON.stringify(left, null, 2)}
-        </Text>
-      </View>
-      <View style={styles.card}>
-        <Text style={styles.title}>Right run</Text>
-        <Text selectable style={styles.json}>
-          {JSON.stringify(right, null, 2)}
-        </Text>
-      </View>
-    </View>
+    </ScreenBoundary>
   );
 }
 

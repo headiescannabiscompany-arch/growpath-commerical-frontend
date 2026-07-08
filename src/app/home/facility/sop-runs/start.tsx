@@ -5,6 +5,7 @@ import { Pressable, ScrollView, StyleSheet, Text, TextInput, View } from "react-
 import { apiRequest } from "@/api/apiRequest";
 import { normalizeApiError } from "@/api/errors";
 import { endpoints } from "@/api/endpoints";
+import { ScreenBoundary } from "@/components/ScreenBoundary";
 import type { SOPTemplate } from "@/api/sop";
 import { useSopTemplates } from "@/hooks/useSopTemplates";
 import { useFacility } from "@/state/useFacility";
@@ -82,88 +83,94 @@ export default function FacilitySopRunsStartRoute() {
   };
 
   return (
-    <ScrollView contentContainerStyle={styles.container}>
-      <Text style={styles.h1}>Start SOP Run</Text>
-      <Text style={styles.sub}>
-        Choose a preset or start a one-off run. Completed SOP runs become inspection
-        evidence in facility exports.
-      </Text>
-      <TextInput
-        accessibilityLabel="SOP run title"
-        style={styles.input}
-        placeholder="Run title"
-        value={title}
-        onChangeText={setTitle}
-      />
-      <View style={styles.templatePanel}>
-        <View style={styles.panelHeader}>
-          <Text style={styles.panelTitle}>Template</Text>
-          <Text style={styles.panelMeta}>
-            {selectedTemplate?.title
-              ? `Selected: ${selectedTemplate.title}`
-              : templateId
-                ? `Selected ID: ${templateId}`
-                : "Optional"}
-          </Text>
+    <ScreenBoundary
+      title="Start SOP Run"
+      showBack
+      backFallbackHref="/home/facility/sop-runs"
+    >
+      <ScrollView contentContainerStyle={styles.container}>
+        <Text style={styles.h1}>Start SOP Run</Text>
+        <Text style={styles.sub}>
+          Choose a preset or start a one-off run. Completed SOP runs become inspection
+          evidence in facility exports.
+        </Text>
+        <TextInput
+          accessibilityLabel="SOP run title"
+          style={styles.input}
+          placeholder="Run title"
+          value={title}
+          onChangeText={setTitle}
+        />
+        <View style={styles.templatePanel}>
+          <View style={styles.panelHeader}>
+            <Text style={styles.panelTitle}>Template</Text>
+            <Text style={styles.panelMeta}>
+              {selectedTemplate?.title
+                ? `Selected: ${selectedTemplate.title}`
+                : templateId
+                  ? `Selected ID: ${templateId}`
+                  : "Optional"}
+            </Text>
+          </View>
+          {isLoading ? <Text style={styles.muted}>Loading templates...</Text> : null}
+          {templates.length ? (
+            templates.map((template, idx) => {
+              const id = pickTemplateId(template, idx);
+              const active = id === templateId;
+              return (
+                <Pressable
+                  key={id}
+                  accessibilityRole="button"
+                  accessibilityLabel={`Select SOP template ${String(template.title || id)}`}
+                  onPress={() => selectTemplate(template, idx)}
+                  style={[styles.templateCard, active && styles.templateCardActive]}
+                >
+                  <Text style={styles.templateTitle}>
+                    {String(template.title || "Untitled Template")}
+                  </Text>
+                  <Text style={styles.templateBody} numberOfLines={3}>
+                    {String(
+                      template.content || template.description || "No procedure text yet."
+                    )}
+                  </Text>
+                </Pressable>
+              );
+            })
+          ) : !isLoading ? (
+            <Text style={styles.muted}>
+              No SOP templates yet. You can still start a run.
+            </Text>
+          ) : null}
+          {templateId ? (
+            <Pressable
+              accessibilityRole="button"
+              accessibilityLabel="Clear SOP template selection"
+              onPress={() => setTemplateId("")}
+              style={styles.clearBtn}
+            >
+              <Text style={styles.clearBtnText}>Clear template</Text>
+            </Pressable>
+          ) : null}
         </View>
-        {isLoading ? <Text style={styles.muted}>Loading templates...</Text> : null}
-        {templates.length ? (
-          templates.map((template, idx) => {
-            const id = pickTemplateId(template, idx);
-            const active = id === templateId;
-            return (
-              <Pressable
-                key={id}
-                accessibilityRole="button"
-                accessibilityLabel={`Select SOP template ${String(template.title || id)}`}
-                onPress={() => selectTemplate(template, idx)}
-                style={[styles.templateCard, active && styles.templateCardActive]}
-              >
-                <Text style={styles.templateTitle}>
-                  {String(template.title || "Untitled Template")}
-                </Text>
-                <Text style={styles.templateBody} numberOfLines={3}>
-                  {String(
-                    template.content || template.description || "No procedure text yet."
-                  )}
-                </Text>
-              </Pressable>
-            );
-          })
-        ) : !isLoading ? (
-          <Text style={styles.muted}>
-            No SOP templates yet. You can still start a run.
-          </Text>
-        ) : null}
-        {templateId ? (
-          <Pressable
-            accessibilityRole="button"
-            accessibilityLabel="Clear SOP template selection"
-            onPress={() => setTemplateId("")}
-            style={styles.clearBtn}
-          >
-            <Text style={styles.clearBtnText}>Clear template</Text>
-          </Pressable>
-        ) : null}
-      </View>
-      <TextInput
-        accessibilityLabel="SOP run notes"
-        style={[styles.input, styles.notes]}
-        placeholder="Notes"
-        value={notes}
-        onChangeText={setNotes}
-        multiline
-      />
-      <Pressable
-        accessibilityRole="button"
-        accessibilityLabel="Start SOP run"
-        onPress={submit}
-        style={styles.btn}
-      >
-        <Text style={styles.btnText}>{saving ? "Starting..." : "Start Run"}</Text>
-      </Pressable>
-      {msg ? <Text style={styles.msg}>{msg}</Text> : null}
-    </ScrollView>
+        <TextInput
+          accessibilityLabel="SOP run notes"
+          style={[styles.input, styles.notes]}
+          placeholder="Notes"
+          value={notes}
+          onChangeText={setNotes}
+          multiline
+        />
+        <Pressable
+          accessibilityRole="button"
+          accessibilityLabel="Start SOP run"
+          onPress={submit}
+          style={styles.btn}
+        >
+          <Text style={styles.btnText}>{saving ? "Starting..." : "Start Run"}</Text>
+        </Pressable>
+        {msg ? <Text style={styles.msg}>{msg}</Text> : null}
+      </ScrollView>
+    </ScreenBoundary>
   );
 }
 

@@ -5,6 +5,7 @@ import { Pressable, ScrollView, StyleSheet, Text, TextInput, View } from "react-
 import { apiRequest } from "@/api/apiRequest";
 import { normalizeApiError } from "@/api/errors";
 import { endpoints } from "@/api/endpoints";
+import { ScreenBoundary } from "@/components/ScreenBoundary";
 import { useFacility } from "@/state/useFacility";
 
 type SopRunDetail = {
@@ -52,6 +53,16 @@ export default function FacilitySopRunDetailRoute() {
   const reviewedSteps = steps.filter(
     (step) => step.status === "done" || step.status === "skipped"
   ).length;
+
+  const renderBoundary = (children: React.ReactNode) => (
+    <ScreenBoundary
+      title="SOP Run Detail"
+      showBack
+      backFallbackHref="/home/facility/sop-runs"
+    >
+      {children}
+    </ScreenBoundary>
+  );
 
   const load = useCallback(async () => {
     if (!id) {
@@ -140,19 +151,19 @@ export default function FacilitySopRunDetailRoute() {
   };
 
   if (!id)
-    return (
+    return renderBoundary(
       <ScrollView contentContainerStyle={styles.container}>
         <Text>Missing run id.</Text>
       </ScrollView>
     );
   if (loading)
-    return (
+    return renderBoundary(
       <ScrollView contentContainerStyle={styles.container}>
         <Text>Loading...</Text>
       </ScrollView>
     );
 
-  return (
+  return renderBoundary(
     <ScrollView contentContainerStyle={styles.container}>
       <Text style={styles.h1}>SOP Run Detail</Text>
       <Text style={styles.sub}>runId: {String(id)}</Text>

@@ -463,6 +463,7 @@ Completed and pushed:
 187. Commercial inventory create now uses the shared commercial AppPage shell with a `/home/commercial/inventory` fallback, keeping support-item creation visually aligned with the commercial workspace and covered by the existing create-route regression.
 188. Personal journal create and detail pages now use shared back controls that return to the selected/linked grow journal, including locked-state creation coverage and loaded log-detail coverage, so grow logging follows the nested page navigation rule.
 189. Personal Create Grow now uses the shared back control with `/home/personal/grows` fallback across limit-checking, locked, and create-form states, with access-route coverage proving the nested create flow returns to My Grows.
+190. Facility SOP run start, presets, compare, compare-result, and run detail pages now use shared back controls with SOP-root/compare fallbacks, with focused coverage for the nested SOP workflow navigation rule.
 
 ## Working Rule For Codex
 

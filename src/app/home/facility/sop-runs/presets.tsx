@@ -2,6 +2,7 @@ import React, { useState } from "react";
 import { Link } from "expo-router";
 import { FlatList, Pressable, StyleSheet, Text, TextInput, View } from "react-native";
 
+import { ScreenBoundary } from "@/components/ScreenBoundary";
 import { normalizeApiError } from "@/api/errors";
 import { useSopTemplates } from "@/hooks/useSopTemplates";
 import { useFacility } from "@/state/useFacility";
@@ -44,59 +45,65 @@ export default function FacilitySopRunsPresetsRoute() {
   };
 
   return (
-    <View style={styles.container}>
-      <Text style={styles.h1}>SOP Presets</Text>
-      <TextInput
-        accessibilityLabel="SOP preset title"
-        style={styles.input}
-        placeholder="Template title"
-        value={title}
-        onChangeText={setTitle}
-      />
-      <TextInput
-        accessibilityLabel="SOP preset content"
-        style={[styles.input, styles.notes]}
-        placeholder="Template content"
-        value={content}
-        onChangeText={setContent}
-        multiline
-      />
-      <Pressable
-        accessibilityRole="button"
-        accessibilityLabel="Create SOP preset"
-        onPress={create}
-        style={styles.btn}
-      >
-        <Text style={styles.btnText}>{creating ? "Saving..." : "Create Preset"}</Text>
-      </Pressable>
-      {msg ? <Text style={styles.msg}>{msg}</Text> : null}
-      {isLoading ? <Text>Loading presets...</Text> : null}
-      <FlatList
-        data={templates}
-        keyExtractor={pickId}
-        renderItem={({ item, index }) => {
-          const id = pickId(item, index);
-          const titleText = String(item?.title || "Untitled Template");
-          return (
-            <View style={styles.card}>
-              <Text style={styles.title}>{titleText}</Text>
-              <Text style={styles.sub}>{String(item?.content || "")}</Text>
-              <Link
-                accessibilityRole="button"
-                accessibilityLabel={`Start run from SOP preset ${titleText}`}
-                href={{
-                  pathname: "/home/facility/sop-runs/start",
-                  params: { templateId: id, templateTitle: titleText }
-                }}
-                style={styles.startLink}
-              >
-                Start run from preset
-              </Link>
-            </View>
-          );
-        }}
-      />
-    </View>
+    <ScreenBoundary
+      title="SOP Presets"
+      showBack
+      backFallbackHref="/home/facility/sop-runs"
+    >
+      <View style={styles.container}>
+        <Text style={styles.h1}>SOP Presets</Text>
+        <TextInput
+          accessibilityLabel="SOP preset title"
+          style={styles.input}
+          placeholder="Template title"
+          value={title}
+          onChangeText={setTitle}
+        />
+        <TextInput
+          accessibilityLabel="SOP preset content"
+          style={[styles.input, styles.notes]}
+          placeholder="Template content"
+          value={content}
+          onChangeText={setContent}
+          multiline
+        />
+        <Pressable
+          accessibilityRole="button"
+          accessibilityLabel="Create SOP preset"
+          onPress={create}
+          style={styles.btn}
+        >
+          <Text style={styles.btnText}>{creating ? "Saving..." : "Create Preset"}</Text>
+        </Pressable>
+        {msg ? <Text style={styles.msg}>{msg}</Text> : null}
+        {isLoading ? <Text>Loading presets...</Text> : null}
+        <FlatList
+          data={templates}
+          keyExtractor={pickId}
+          renderItem={({ item, index }) => {
+            const id = pickId(item, index);
+            const titleText = String(item?.title || "Untitled Template");
+            return (
+              <View style={styles.card}>
+                <Text style={styles.title}>{titleText}</Text>
+                <Text style={styles.sub}>{String(item?.content || "")}</Text>
+                <Link
+                  accessibilityRole="button"
+                  accessibilityLabel={`Start run from SOP preset ${titleText}`}
+                  href={{
+                    pathname: "/home/facility/sop-runs/start",
+                    params: { templateId: id, templateTitle: titleText }
+                  }}
+                  style={styles.startLink}
+                >
+                  Start run from preset
+                </Link>
+              </View>
+            );
+          }}
+        />
+      </View>
+    </ScreenBoundary>
   );
 }
 

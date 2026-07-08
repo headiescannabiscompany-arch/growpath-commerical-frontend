@@ -5,6 +5,7 @@ import { FlatList, Pressable, StyleSheet, Text, TextInput, View } from "react-na
 import { apiRequest } from "@/api/apiRequest";
 import { normalizeApiError } from "@/api/errors";
 import { endpoints } from "@/api/endpoints";
+import { ScreenBoundary } from "@/components/ScreenBoundary";
 import { useFacility } from "@/state/useFacility";
 
 type SopRunListItem = {
@@ -73,49 +74,55 @@ export default function FacilitySopRunsCompareRoute() {
   };
 
   return (
-    <View style={styles.container}>
-      <Text style={styles.h1}>Compare SOP Runs</Text>
-      {error ? <Text style={styles.err}>{error}</Text> : null}
-      <TextInput
-        style={styles.input}
-        placeholder="Left run ID"
-        value={leftId}
-        onChangeText={setLeftId}
-      />
-      <TextInput
-        style={styles.input}
-        placeholder="Right run ID"
-        value={rightId}
-        onChangeText={setRightId}
-      />
-      <Pressable onPress={go} style={styles.btn}>
-        <Text style={styles.btnText}>Compare</Text>
-      </Pressable>
+    <ScreenBoundary
+      title="Compare SOP Runs"
+      showBack
+      backFallbackHref="/home/facility/sop-runs"
+    >
+      <View style={styles.container}>
+        <Text style={styles.h1}>Compare SOP Runs</Text>
+        {error ? <Text style={styles.err}>{error}</Text> : null}
+        <TextInput
+          style={styles.input}
+          placeholder="Left run ID"
+          value={leftId}
+          onChangeText={setLeftId}
+        />
+        <TextInput
+          style={styles.input}
+          placeholder="Right run ID"
+          value={rightId}
+          onChangeText={setRightId}
+        />
+        <Pressable onPress={go} style={styles.btn}>
+          <Text style={styles.btnText}>Compare</Text>
+        </Pressable>
 
-      <FlatList
-        data={runs}
-        keyExtractor={pickId}
-        renderItem={({ item, index }) => {
-          const id = pickId(item, index);
-          return (
-            <View style={styles.card}>
-              <Text style={styles.title}>
-                {String(item?.title || item?.name || "SOP Run")}
-              </Text>
-              <Text style={styles.sub}>id: {id}</Text>
-              <View style={styles.row}>
-                <Pressable onPress={() => setLeftId(id)}>
-                  <Text style={styles.link}>Set Left</Text>
-                </Pressable>
-                <Pressable onPress={() => setRightId(id)}>
-                  <Text style={styles.link}>Set Right</Text>
-                </Pressable>
+        <FlatList
+          data={runs}
+          keyExtractor={pickId}
+          renderItem={({ item, index }) => {
+            const id = pickId(item, index);
+            return (
+              <View style={styles.card}>
+                <Text style={styles.title}>
+                  {String(item?.title || item?.name || "SOP Run")}
+                </Text>
+                <Text style={styles.sub}>id: {id}</Text>
+                <View style={styles.row}>
+                  <Pressable onPress={() => setLeftId(id)}>
+                    <Text style={styles.link}>Set Left</Text>
+                  </Pressable>
+                  <Pressable onPress={() => setRightId(id)}>
+                    <Text style={styles.link}>Set Right</Text>
+                  </Pressable>
+                </View>
               </View>
-            </View>
-          );
-        }}
-      />
-    </View>
+            );
+          }}
+        />
+      </View>
+    </ScreenBoundary>
   );
 }
 
