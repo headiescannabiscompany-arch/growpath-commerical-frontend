@@ -188,9 +188,9 @@ const DASHBOARD_SECTIONS: DashboardSection[] = [
     actions: [{ label: "Analytics", href: "/home/commercial/analytics" }]
   },
   {
-    title: "Business Profile & Billing",
+    title: "Brand Profile & Billing",
     description:
-      "Manage business identity, storefront settings, public slug, logo/banner, support email, forum identity, social links, and billing.",
+      "Manage brand identity, storefront settings, public slug, logo/banner, support email, Forum/Q&A identity, external links, and billing.",
     status: "Active",
     metrics: [
       { label: "Storefront status", key: "storefrontConfigured" },

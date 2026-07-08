@@ -150,10 +150,10 @@ export default function CommercialProfileRoute() {
         <View style={styles.header}>
           <View style={styles.headerText}>
             <Text style={styles.kicker}>Commercial workspace</Text>
-            <Text style={styles.title}>Business Profile & Billing</Text>
+            <Text style={styles.title}>Brand Profile & Billing</Text>
             <Text style={styles.subtitle}>
-              Manage the business identity that appears on public profiles, storefronts,
-              courses, feed campaigns, and forum support. Keep destructive account
+              Manage the brand identity that appears on public profiles, storefronts,
+              courses, Feed/Campaigns, and Forum/Q&A support. Keep destructive account
               controls in the account profile.
             </Text>
           </View>
@@ -166,40 +166,40 @@ export default function CommercialProfileRoute() {
       }
     >
       <AppCard>
-        <Text style={styles.cardTitle}>Business identity checklist</Text>
+        <Text style={styles.cardTitle}>Brand identity checklist</Text>
         <Text style={styles.body}>
-          Commercial profile is the business-level identity. The root profile page stays
-          account-level for sign-in, privacy, and billing; storefront and public profile
-          settings define how the brand appears publicly.
+          Commercial profile is the brand-level identity. The root profile page stays
+          account-level for sign-in and privacy; storefront and public profile settings
+          define how the brand appears publicly.
         </Text>
         <View style={styles.metricGrid}>
           <View style={styles.metric}>
             <Text style={styles.metricValue}>{form.businessName || "Not set"}</Text>
-            <Text style={styles.metricLabel}>Business</Text>
+            <Text style={styles.metricLabel}>Brand</Text>
           </View>
           <View style={styles.metric}>
             <Text style={styles.metricValue}>{form.accountType || "brand"}</Text>
-            <Text style={styles.metricLabel}>Business type</Text>
+            <Text style={styles.metricLabel}>Brand type</Text>
           </View>
           <View style={styles.metric}>
             <Text style={styles.metricValue}>{form.storefrontStatus || "draft"}</Text>
             <Text style={styles.metricLabel}>Storefront status</Text>
           </View>
         </View>
-        {loading ? <Text style={styles.muted}>Loading business profile...</Text> : null}
+        {loading ? <Text style={styles.muted}>Loading brand profile...</Text> : null}
         {error ? <InlineError error={error} /> : null}
       </AppCard>
 
       <AppCard>
-        <Text style={styles.cardTitle}>Edit business profile</Text>
+        <Text style={styles.cardTitle}>Edit brand profile</Text>
         <View style={styles.formGrid}>
           <TextInput
             value={form.businessName}
             onChangeText={(businessName) =>
               setForm((prev) => ({ ...prev, businessName }))
             }
-            accessibilityLabel="Commercial business name"
-            placeholder="Business name"
+            accessibilityLabel="Commercial brand name"
+            placeholder="Brand name"
             style={styles.input}
           />
           <TextInput
@@ -213,7 +213,7 @@ export default function CommercialProfileRoute() {
           <TextInput
             value={form.accountType}
             onChangeText={(accountType) => setForm((prev) => ({ ...prev, accountType }))}
-            accessibilityLabel="Commercial business type"
+            accessibilityLabel="Commercial brand type"
             placeholder="soil_nutrient_brand, breeder, retailer"
             style={styles.input}
           />
@@ -256,9 +256,9 @@ export default function CommercialProfileRoute() {
           <TextInput
             value={form.socialLinks}
             onChangeText={(socialLinks) => setForm((prev) => ({ ...prev, socialLinks }))}
-            accessibilityLabel="Commercial social links"
+            accessibilityLabel="Commercial external links"
             autoCapitalize="none"
-            placeholder="Social links, comma separated"
+            placeholder="External links, comma separated"
             style={styles.input}
           />
         </View>
@@ -272,7 +272,7 @@ export default function CommercialProfileRoute() {
         />
         <Pressable
           accessibilityRole="button"
-          accessibilityLabel="Save commercial business profile"
+          accessibilityLabel="Save commercial brand profile"
           disabled={saving || !form.businessName.trim()}
           onPress={submitProfile}
           style={[
@@ -281,7 +281,7 @@ export default function CommercialProfileRoute() {
           ]}
         >
           <Text style={styles.submitText}>
-            {saving ? "Saving..." : "Save business profile"}
+            {saving ? "Saving..." : "Save brand profile"}
           </Text>
         </Pressable>
       </AppCard>
@@ -329,11 +329,11 @@ export default function CommercialProfileRoute() {
           Signed in as {user?.email || "commercial user"}. Plan:{" "}
           {entitlements?.plan || "commercial"}. Mode: {entitlements?.mode || "commercial"}
           . Keep sign-in, email verification, plan status, privacy export, and account
-          deletion in the account profile. Business-facing settings should not be mixed
-          with destructive account controls.
+          deletion in the account profile. Brand-facing settings should not be mixed with
+          destructive account controls.
         </Text>
         {storefront?.id ? (
-          <Text style={styles.muted}>Business profile record: {storefront.id}</Text>
+          <Text style={styles.muted}>Brand profile record: {storefront.id}</Text>
         ) : null}
         <View style={styles.actions}>
           <ActionLink href="/profile" label="Open Account Profile" />

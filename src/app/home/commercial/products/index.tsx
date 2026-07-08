@@ -300,9 +300,9 @@ export default function CommercialProductsRoute({
       <AppCard>
         <Text style={styles.cardTitle}>Product catalog</Text>
         <Text style={styles.body}>
-          Products are business-facing records, not generic inventory rows. They can link
-          to inventory, recipes, batches, product trial evidence runs, courses, feed
-          campaigns, and external purchase URLs.
+          Products are brand and storefront records, not generic inventory rows. They can
+          link to inventory, recipes, batches, product trial evidence runs, courses,
+          Feed/Campaigns, and external purchase URLs.
         </Text>
         <View style={styles.metricGrid}>
           <View style={styles.metric}>

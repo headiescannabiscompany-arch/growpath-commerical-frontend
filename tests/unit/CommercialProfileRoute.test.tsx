@@ -75,11 +75,11 @@ describe("CommercialProfileRoute", () => {
     });
   });
 
-  it("separates business identity from account controls", async () => {
+  it("separates brand identity from account controls", async () => {
     const screen = render(<CommercialProfileRoute />);
 
-    expect(screen.getByText("Business Profile & Billing")).toBeTruthy();
-    expect(screen.getByText("Business identity checklist")).toBeTruthy();
+    expect(screen.getByText("Brand Profile & Billing")).toBeTruthy();
+    expect(screen.getByText("Brand identity checklist")).toBeTruthy();
     expect(screen.getByText("Public profile discovery")).toBeTruthy();
     expect(screen.getByText("Brand support and education")).toBeTruthy();
     expect(screen.getByText("Billing and account controls")).toBeTruthy();
@@ -93,11 +93,11 @@ describe("CommercialProfileRoute", () => {
     expect(screen.getByText("Public storefront: /store/living-soil-labs")).toBeTruthy();
 
     fireEvent.changeText(
-      screen.getByLabelText("Commercial business name"),
+      screen.getByLabelText("Commercial brand name"),
       "Triple Bag Genetics"
     );
     fireEvent.changeText(screen.getByLabelText("Commercial public slug"), "triple-bag");
-    fireEvent.changeText(screen.getByLabelText("Commercial business type"), "breeder");
+    fireEvent.changeText(screen.getByLabelText("Commercial brand type"), "breeder");
     fireEvent.changeText(
       screen.getByLabelText("Commercial storefront visibility"),
       "published"
@@ -115,14 +115,14 @@ describe("CommercialProfileRoute", () => {
       "Triple Bag Support"
     );
     fireEvent.changeText(
-      screen.getByLabelText("Commercial social links"),
+      screen.getByLabelText("Commercial external links"),
       "https://instagram.com/triple, https://youtube.com/triple"
     );
     fireEvent.changeText(
       screen.getByLabelText("Commercial public bio"),
       "Seed line and evidence run support"
     );
-    fireEvent.press(screen.getByLabelText("Save commercial business profile"));
+    fireEvent.press(screen.getByLabelText("Save commercial brand profile"));
 
     await waitFor(() =>
       expect(mockApiRequest).toHaveBeenCalledWith(
