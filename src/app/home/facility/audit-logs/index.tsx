@@ -6,6 +6,7 @@ import { normalizeApiError } from "@/api/errors";
 import { useFacility } from "@/state/useFacility";
 import { useAuditLogs } from "@/hooks/useAuditLogs";
 import type { AuditLog } from "@/types/contracts";
+import { radius } from "@/theme/theme";
 
 type AuditLogListItem = AuditLog & {
   id?: string;
@@ -89,7 +90,7 @@ const styles = StyleSheet.create({
   card: {
     borderWidth: 1,
     borderColor: "#e5e7eb",
-    borderRadius: 12,
+    borderRadius: radius.card,
     padding: 12,
     marginBottom: 10,
     backgroundColor: "#fff",

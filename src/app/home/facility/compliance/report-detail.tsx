@@ -4,6 +4,7 @@ import { StyleSheet, Text, View } from "react-native";
 
 import { ScreenBoundary } from "@/components/ScreenBoundary";
 import { useFacilityReport } from "@/hooks/useFacilityReport";
+import { radius } from "@/theme/theme";
 
 export default function FacilityComplianceReportDetailRoute() {
   const params = useLocalSearchParams<{ id?: string | string[] }>();
@@ -55,7 +56,7 @@ const styles = StyleSheet.create({
   card: {
     borderWidth: 1,
     borderColor: "#e5e7eb",
-    borderRadius: 12,
+    borderRadius: radius.card,
     padding: 10,
     backgroundColor: "#fff"
   },

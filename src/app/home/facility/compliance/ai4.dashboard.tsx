@@ -2,6 +2,7 @@ import React, { useMemo } from "react";
 import { StyleSheet, Text, View } from "react-native";
 
 import { useFacilityReport } from "@/hooks/useFacilityReport";
+import { radius } from "@/theme/theme";
 
 export default function FacilityComplianceAiDashboardRoute() {
   const { data, isLoading, error } = useFacilityReport();
@@ -42,7 +43,7 @@ const styles = StyleSheet.create({
   card: {
     borderWidth: 1,
     borderColor: "#e5e7eb",
-    borderRadius: 12,
+    borderRadius: radius.card,
     padding: 10,
     backgroundColor: "#fff"
   },
