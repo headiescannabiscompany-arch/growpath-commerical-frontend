@@ -18,6 +18,7 @@ import { can } from "@/facility/roleGates";
 import { useFacility } from "@/state/useFacility";
 import { inviteTeamMember, listTeamMembers } from "@/api/team";
 import { useApiErrorHandler } from "@/hooks/useApiErrorHandler";
+import { radius } from "@/theme/theme";
 
 type AnyRec = Record<string, any>;
 
@@ -228,7 +229,7 @@ const styles = StyleSheet.create({
   card: {
     borderWidth: 1,
     borderColor: "rgba(0,0,0,0.12)",
-    borderRadius: 14,
+    borderRadius: radius.card,
     padding: 14,
     backgroundColor: "white",
     marginBottom: 12
@@ -237,14 +238,14 @@ const styles = StyleSheet.create({
   input: {
     borderWidth: 1,
     borderColor: "rgba(0,0,0,0.12)",
-    borderRadius: 12,
+    borderRadius: radius.card,
     paddingHorizontal: 12,
     paddingVertical: 10,
     backgroundColor: "white",
     marginBottom: 10
   },
   btn: {
-    borderRadius: 12,
+    borderRadius: radius.card,
     paddingVertical: 12,
     alignItems: "center",
     borderWidth: 1,
@@ -261,7 +262,7 @@ const styles = StyleSheet.create({
 
   row: {
     padding: 14,
-    borderRadius: 14,
+    borderRadius: radius.card,
     borderWidth: 1,
     borderColor: "rgba(0,0,0,0.12)",
     backgroundColor: "white"
