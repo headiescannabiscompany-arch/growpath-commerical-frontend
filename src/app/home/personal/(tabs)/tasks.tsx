@@ -8,6 +8,7 @@ import {
   TextInput,
   View
 } from "react-native";
+import { Link } from "expo-router";
 
 import {
   createPersonalTask,
@@ -93,6 +94,33 @@ function taskLinks(task: PersonalTask) {
   ]
     .filter(Boolean)
     .join(" | ");
+}
+
+function taskSourcePath(task: PersonalTask) {
+  const sourceType = String(task.sourceType || "");
+  const sourceId = String(task.sourceObjectId || "");
+  if (sourceType === "grow" && task.growId) return `/home/personal/grows/${task.growId}`;
+  if (sourceType === "plant" && task.growId)
+    return `/home/personal/grows/${task.growId}/plants`;
+  if (sourceType === "tool_run" || sourceType === "recipe" || task.sourceToolRunId) {
+    return "/home/personal/tools/saved-runs";
+  }
+  if (sourceType === "course" && sourceId) return `/home/commercial/courses/${sourceId}`;
+  if (sourceType === "lesson" && sourceId) return `/home/commercial/courses/${sourceId}`;
+  if (sourceType === "live") return "/home/commercial/lives";
+  if (sourceType === "product" && sourceId)
+    return `/home/commercial/products/${sourceId}`;
+  if (sourceType === "product_batch") return "/home/commercial/batch-planner";
+  if (sourceType === "product_trial" && sourceId)
+    return `/home/commercial/trials/${sourceId}`;
+  if (sourceType === "storefront") return "/home/commercial/storefront";
+  if (sourceType === "order") return "/home/commercial/orders";
+  if (sourceType === "alert" || sourceType === "sensor_alert") return "/home/alerts";
+  if (sourceType === "forum" && sourceId) return `/home/personal/forum/post/${sourceId}`;
+  if (sourceType === "room") return "/home/facility/rooms";
+  if (sourceType === "facility_run") return "/home/facility/grows";
+  if (sourceType === "sop") return "/home/facility/sop-runs";
+  return task.growId ? `/home/personal/grows/${task.growId}` : "";
 }
 
 function scheduleSummary(task: PersonalTask) {
@@ -218,6 +246,7 @@ export default function PersonalTaskCenterRoute() {
 
   function renderTask(task: PersonalTask) {
     const id = getRowId(task);
+    const sourcePath = taskSourcePath(task);
     return (
       <View
         key={id || `${task.growId}-${task.title}-${task.dueDate}`}
@@ -237,16 +266,29 @@ export default function PersonalTaskCenterRoute() {
           <Text style={styles.meta}>Snoozed until: {fmtDate(task.snoozeUntil)}</Text>
         ) : null}
         {canWriteTasks ? (
-          <Pressable
-            style={styles.secondaryButton}
-            accessibilityRole="button"
-            accessibilityLabel={task.completed ? "Reopen task" : "Complete task"}
-            onPress={() => void toggleTask(task)}
-          >
-            <Text style={styles.secondaryButtonText}>
-              {task.completed ? "Reopen" : "Complete"}
-            </Text>
-          </Pressable>
+          <View style={styles.actionRow}>
+            <Pressable
+              style={styles.secondaryButton}
+              accessibilityRole="button"
+              accessibilityLabel={task.completed ? "Reopen task" : "Complete task"}
+              onPress={() => void toggleTask(task)}
+            >
+              <Text style={styles.secondaryButtonText}>
+                {task.completed ? "Reopen" : "Complete"}
+              </Text>
+            </Pressable>
+            {sourcePath ? (
+              <Link href={sourcePath as any} asChild>
+                <Pressable
+                  style={styles.ghostButton}
+                  accessibilityRole="link"
+                  accessibilityLabel="View personal task source"
+                >
+                  <Text style={styles.ghostButtonText}>View Source</Text>
+                </Pressable>
+              </Link>
+            ) : null}
+          </View>
         ) : null}
       </View>
     );
@@ -557,6 +599,7 @@ const styles = StyleSheet.create({
   },
   meta: { color: "#64748B", fontSize: 12, fontWeight: "700", lineHeight: 18 },
   empty: { color: "#94A3B8", fontSize: 12, fontWeight: "700" },
+  actionRow: { flexDirection: "row", flexWrap: "wrap", gap: 8 },
   secondaryButton: {
     alignSelf: "flex-start",
     borderColor: "#CBD5E1",
@@ -565,5 +608,15 @@ const styles = StyleSheet.create({
     paddingHorizontal: 10,
     paddingVertical: 7
   },
-  secondaryButtonText: { color: "#0F172A", fontWeight: "900" }
+  secondaryButtonText: { color: "#0F172A", fontWeight: "900" },
+  ghostButton: {
+    alignSelf: "flex-start",
+    backgroundColor: "#F1F5F9",
+    borderColor: "#E2E8F0",
+    borderRadius: 8,
+    borderWidth: 1,
+    paddingHorizontal: 10,
+    paddingVertical: 7
+  },
+  ghostButtonText: { color: "#334155", fontWeight: "900" }
 });

@@ -28,6 +28,13 @@ jest.mock("@/entitlements", () => ({
   })
 }));
 
+jest.mock("expo-router", () => {
+  const React = require("react");
+  return {
+    Link: ({ children }: any) => React.createElement(React.Fragment, null, children)
+  };
+});
+
 jest.mock("@/components/feed/PersonalFeedPlacement", () => {
   const React = require("react");
   const { View } = require("react-native");
@@ -82,6 +89,7 @@ describe("PersonalTaskCenterRoute", () => {
     expect(screen.getAllByText("recipe").length).toBeGreaterThan(0);
     expect(screen.getByText(/Sensor Alert: alert-1/)).toBeTruthy();
     expect(screen.getByText("product batch")).toBeTruthy();
+    expect(screen.getAllByLabelText("View personal task source").length).toBe(2);
 
     fireEvent.changeText(screen.getByLabelText("Task center grow ID"), "grow-2");
     fireEvent.changeText(
