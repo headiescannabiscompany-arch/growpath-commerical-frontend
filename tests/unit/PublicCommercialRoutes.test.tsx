@@ -86,6 +86,7 @@ const publicPayload = {
       growInterests: ["living soil", "veg"],
       usageInstructions: "Topdress during veg and water in.",
       externalPurchaseUrl: "https://example.com/veg-mix",
+      stripePriceId: "price_product_1",
       specs: {
         sourceTool: "dry-amendment-mix",
         npk: "3-1-1",
@@ -105,6 +106,14 @@ const publicPayload = {
       description: "Flower support.",
       priceCents: 3200,
       productLineId: "line-2"
+    },
+    {
+      id: "product-3",
+      name: "External Clone Pack",
+      description: "External preorder listing.",
+      priceCents: 4200,
+      productLineId: "line-2",
+      externalPurchaseUrl: "https://example.com/clones"
     }
   ],
   productLines: [
@@ -261,6 +270,11 @@ describe("public commercial routes", () => {
     expect(screen.getByText("Interests: living soil, veg")).toBeTruthy();
     expect(screen.getByText("$25.00")).toBeTruthy();
     expect(screen.getAllByText("Details").length).toBeGreaterThan(0);
+    expect(screen.getByLabelText("Buy Veg Mix")).toBeTruthy();
+    expect(screen.queryByLabelText("Buy Bloom Mix")).toBeNull();
+    expect(
+      screen.getByLabelText("Open external product External Clone Pack")
+    ).toBeTruthy();
     expect(screen.getByText("Using Veg Mix")).toBeTruthy();
     expect(screen.getByText("Interests: living soil, product education")).toBeTruthy();
     expect(mockLinkHrefs).toContain("/store/living-soil-labs/courses/course-1");
@@ -399,6 +413,42 @@ describe("public commercial routes", () => {
     expect(screen.getByText("Label / Use Information")).toBeTruthy();
     expect(screen.getByText("Product Forum / Q&A")).toBeTruthy();
     expect(screen.getByText("Buy")).toBeTruthy();
+  });
+
+  it("does not show a fake product checkout when no Stripe or external link exists", async () => {
+    mockRouteParams = {
+      slug: "living-soil-labs",
+      productId: "product-2",
+      courseId: "course-1"
+    };
+    const screen = render(<PublicProductRoute />);
+
+    await waitFor(() =>
+      expect(mockFetchPublicStorefront).toHaveBeenCalledWith("living-soil-labs")
+    );
+    expect(screen.getAllByText("Bloom Mix").length).toBeGreaterThan(0);
+    expect(screen.queryByLabelText("Buy Bloom Mix")).toBeNull();
+    expect(screen.queryByLabelText("Open external product Bloom Mix")).toBeNull();
+    expect(screen.getByText("Checkout is not available for this product.")).toBeTruthy();
+  });
+
+  it("shows external product CTA instead of Stripe checkout for external-only products", async () => {
+    mockRouteParams = {
+      slug: "living-soil-labs",
+      productId: "product-3",
+      courseId: "course-1"
+    };
+    const screen = render(<PublicProductRoute />);
+
+    await waitFor(() =>
+      expect(mockFetchPublicStorefront).toHaveBeenCalledWith("living-soil-labs")
+    );
+    expect(screen.getAllByText("External Clone Pack").length).toBeGreaterThan(0);
+    expect(screen.queryByLabelText("Buy External Clone Pack")).toBeNull();
+    expect(
+      screen.getByLabelText("Open external product External Clone Pack")
+    ).toBeTruthy();
+    expect(screen.getByText("External Link")).toBeTruthy();
   });
 
   it("loads a public storefront course detail with checkout and connected context", async () => {

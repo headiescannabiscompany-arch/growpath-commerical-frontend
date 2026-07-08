@@ -27,6 +27,12 @@ function productKey(product: any) {
   return String(product?.id || product?._id || product?.productId || product?.slug || "");
 }
 
+function productCanCheckout(product: any) {
+  return Boolean(
+    product?.stripePriceId || product?.checkoutEnabled || product?.checkoutUrl
+  );
+}
+
 function lineKey(line: any) {
   return String(line?.id || line?._id || line?.lineId || line?.slug || "");
 }
@@ -302,6 +308,7 @@ export default function PublicProductRoute() {
 
   const externalUrl =
     product?.externalPurchaseUrl || product?.purchaseUrl || product?.url || product?.link;
+  const canCheckout = productCanCheckout(product);
   const brandName = storefront?.businessName || storefront?.name || "Brand";
   const links = publicLinks(storefront);
   const specs = product?.specs || {};
@@ -355,18 +362,21 @@ export default function PublicProductRoute() {
             <Text style={styles.price}>{money(product)}</Text>
 
             <View style={styles.actionRow}>
-              <Pressable
-                accessibilityLabel={`Buy ${product?.name || "product"}`}
-                style={[styles.primaryButton, busy && styles.disabled]}
-                disabled={busy}
-                onPress={buy}
-              >
-                <Text style={styles.primaryButtonText}>
-                  {busy ? "Opening..." : "Buy"}
-                </Text>
-              </Pressable>
+              {canCheckout ? (
+                <Pressable
+                  accessibilityLabel={`Buy ${product?.name || "product"}`}
+                  style={[styles.primaryButton, busy && styles.disabled]}
+                  disabled={busy}
+                  onPress={buy}
+                >
+                  <Text style={styles.primaryButtonText}>
+                    {busy ? "Opening..." : "Buy"}
+                  </Text>
+                </Pressable>
+              ) : null}
               {externalUrl ? (
                 <Pressable
+                  accessibilityLabel={`Open external product ${product?.name || "product"}`}
                   style={styles.secondaryButton}
                   onPress={() => {
                     trackCommercialClick({
@@ -383,6 +393,11 @@ export default function PublicProductRoute() {
                 >
                   <Text style={styles.secondaryButtonText}>External Link</Text>
                 </Pressable>
+              ) : null}
+              {!canCheckout && !externalUrl ? (
+                <Text style={styles.meta}>
+                  Checkout is not available for this product.
+                </Text>
               ) : null}
               <Pressable style={styles.secondaryButton} onPress={shareProduct}>
                 <Text style={styles.secondaryButtonText}>Share Product</Text>

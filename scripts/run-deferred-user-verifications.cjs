@@ -155,6 +155,7 @@ const manualChecks = [
       "From Commercial > Storefront quick product creation, enter Stripe product and price IDs and confirm both values save with the created product.",
       "From Commercial > Products, create a published product using Stripe product and price IDs without an external purchase URL and confirm setup readiness accepts the Stripe price.",
       "Open Commercial > Product Detail, edit Stripe product and price IDs, save, and confirm both identifiers persist before testing checkout routing.",
+      "Open public product cards/details and confirm Stripe-ready products show Buy, external-only products show External Link, and products without checkout setup do not show a fake Buy CTA.",
       "Open Commercial > Inventory, create an item, and open its detail; confirm visible routes use /home/commercial/inventory/new and /home/commercial/inventory/:id while legacy inventory-create/inventory-item URLs are only compatibility aliases.",
       "Open Commercial > Storefront and verify Product Lines appear as storefront sections with grow interests, owner detail links, and View-as-User line-filter links.",
       "Open a public brand profile and public storefront and confirm Product Lines appear with grow interests and Browse Line actions.",

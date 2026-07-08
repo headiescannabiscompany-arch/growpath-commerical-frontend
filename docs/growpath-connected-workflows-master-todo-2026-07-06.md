@@ -591,6 +591,7 @@ Completed and pushed:
 315. Public storefront course detail routes now exist at `/store/:slug/courses/:courseId` and `/storefront/:slug/courses/:courseId`, showing course price, grow interests, related products, related lives, Feed campaign CTAs, Forum/Q&A links, analytics tracking, and paid Stripe checkout return routing.
 316. Public storefront pages now render Upcoming Lives from the storefront payload and route each live to `/live-session?sessionId=:id`, keeping live cards visible on storefronts while the public Live Session page remains the event detail surface.
 317. Public Live Session pages now turn related product, course, and Forum/Q&A IDs into clickable actions, using storefront-aware product/course routes when a storefront slug is available and preserving Twitch/replay controls.
+318. Public storefront product CTAs now reflect checkout readiness: Stripe-ready products show Buy, external-only products show External Link, and products with no checkout destination do not expose a fake Buy action.
 
 ## Working Rule For Codex
 

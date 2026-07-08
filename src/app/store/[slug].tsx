@@ -36,6 +36,18 @@ function productId(product: any) {
   return String(product?.id || product?._id || product?.productId || "");
 }
 
+function productCanCheckout(product: any) {
+  return Boolean(
+    product?.stripePriceId || product?.checkoutEnabled || product?.checkoutUrl
+  );
+}
+
+function productExternalUrl(product: any) {
+  return (
+    product?.externalPurchaseUrl || product?.purchaseUrl || product?.url || product?.link
+  );
+}
+
 async function openCheckoutUrl(url: string) {
   if (Platform.OS === "web" && typeof window !== "undefined" && window.location) {
     window.location.href = url;
@@ -138,6 +150,23 @@ export default function PublicStorefrontRoute() {
     } finally {
       setBusyId("");
     }
+  }
+
+  async function openExternalProduct(product: any) {
+    const id = productId(product);
+    const url = productExternalUrl(product);
+    if (!url) return;
+    trackCommercialClick({
+      eventType: "product_external_link_click",
+      objectType: "product",
+      objectId: id,
+      productId: id,
+      storefrontSlug: slug,
+      targetUrl: String(url),
+      source: "public_storefront",
+      metadata: { growInterests: publicGrowInterests(product) }
+    });
+    await openCheckoutUrl(String(url));
   }
 
   async function shareStorefront() {
@@ -307,6 +336,8 @@ export default function PublicStorefrontRoute() {
           {visibleProducts.length ? (
             visibleProducts.map((product) => {
               const id = productId(product);
+              const canCheckout = productCanCheckout(product);
+              const externalUrl = productExternalUrl(product);
               return (
                 <View key={id || product?.name} style={styles.product}>
                   <View style={styles.productBody}>
@@ -334,16 +365,28 @@ export default function PublicStorefrontRoute() {
                         <Text style={styles.secondaryButtonText}>Details</Text>
                       </Pressable>
                     </Link>
-                    <Pressable
-                      accessibilityLabel={`Buy ${product?.name || "product"}`}
-                      style={[styles.button, busyId === id && styles.disabled]}
-                      disabled={busyId === id}
-                      onPress={() => buy(product)}
-                    >
-                      <Text style={styles.buttonText}>
-                        {busyId === id ? "Opening..." : "Buy"}
-                      </Text>
-                    </Pressable>
+                    {canCheckout ? (
+                      <Pressable
+                        accessibilityLabel={`Buy ${product?.name || "product"}`}
+                        style={[styles.button, busyId === id && styles.disabled]}
+                        disabled={busyId === id}
+                        onPress={() => buy(product)}
+                      >
+                        <Text style={styles.buttonText}>
+                          {busyId === id ? "Opening..." : "Buy"}
+                        </Text>
+                      </Pressable>
+                    ) : externalUrl ? (
+                      <Pressable
+                        accessibilityLabel={`Open external product ${product?.name || "product"}`}
+                        style={styles.secondaryButton}
+                        onPress={() => {
+                          void openExternalProduct(product);
+                        }}
+                      >
+                        <Text style={styles.secondaryButtonText}>External Link</Text>
+                      </Pressable>
+                    ) : null}
                   </View>
                 </View>
               );
