@@ -40,15 +40,20 @@ describe("CommercialTaskDetailRoute", () => {
           setupItemLabel: "Stripe price",
           setupItemHelper: "Paid storefront products need checkout before publishing.",
           growInterests: ["living soil", "dry amendments"],
-          linkedProductIds: ["product-1"],
+          linkedProductIds: [],
+          linkedProductId: "product-1",
           linkedProductLineId: "line-1",
           linkedRecipeId: "recipe-1",
           linkedProductBatchId: "batch-1",
-          linkedCourseIds: ["course-1"],
-          linkedLiveIds: ["live-1"],
-          linkedFeedPostIds: ["campaign-1"],
+          linkedCourseIds: [],
+          linkedCourseId: "course-1",
+          linkedLiveIds: [],
+          linkedLiveId: "live-1",
+          linkedFeedPostIds: [],
+          linkedFeedPostId: "campaign-1",
           linkedForumThreadId: "thread-product",
-          linkedGrowIds: ["grow-1"],
+          linkedGrowIds: [],
+          linkedGrowId: "grow-1",
           linkedFacilityId: "facility-1",
           linkedRoomId: "room-1",
           linkedOrderId: "order-1",
@@ -111,6 +116,11 @@ describe("CommercialTaskDetailRoute", () => {
     expect(
       screen.getAllByText("Paid storefront products need checkout before publishing.").length
     ).toBeGreaterThan(0);
+    expect(screen.getByText("Products")).toBeTruthy();
+    expect(screen.getByText("Courses")).toBeTruthy();
+    expect(screen.getByText("Lives")).toBeTruthy();
+    expect(screen.getByText("Feed campaigns")).toBeTruthy();
+    expect(screen.getByText("Grow evidence")).toBeTruthy();
     expect(screen.getAllByText("product-1").length).toBeGreaterThan(0);
     expect(screen.getAllByText("line-1").length).toBeGreaterThan(0);
     expect(screen.getAllByText("recipe-1").length).toBeGreaterThan(0);

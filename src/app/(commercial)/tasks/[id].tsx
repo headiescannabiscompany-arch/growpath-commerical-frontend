@@ -49,6 +49,13 @@ function readableValue(value: any) {
   return String(value);
 }
 
+function firstLinkedValue(...values: any[]) {
+  return values.find((value) => {
+    if (Array.isArray(value)) return value.filter(Boolean).length > 0;
+    return value !== undefined && value !== null && value !== "";
+  });
+}
+
 function taskContextRows(task: AnyRec | null) {
   if (!task) return [];
   const rows = [
@@ -57,17 +64,20 @@ function taskContextRows(task: AnyRec | null) {
     ["Setup item", task.setupItemLabel],
     ["Setup reason", task.setupItemHelper],
     ["Grow interests", task.growInterests],
-    ["Products", task.linkedProductIds || task.linkedProductId],
-    ["Product line", task.linkedProductLineIds || task.linkedProductLineId],
+    ["Products", firstLinkedValue(task.linkedProductIds, task.linkedProductId)],
+    [
+      "Product line",
+      firstLinkedValue(task.linkedProductLineIds, task.linkedProductLineId)
+    ],
     ["Recipe", task.linkedRecipeId],
     ["Product batch", task.linkedProductBatchId],
     ["Product trial", task.linkedProductTrialId],
     ["Published products", task.linkedPublishedProductIds],
-    ["Courses", task.linkedCourseIds || task.linkedCourseId],
-    ["Lives", task.linkedLiveIds || task.linkedLiveId],
-    ["Feed campaigns", task.linkedFeedPostIds || task.linkedFeedPostId],
+    ["Courses", firstLinkedValue(task.linkedCourseIds, task.linkedCourseId)],
+    ["Lives", firstLinkedValue(task.linkedLiveIds, task.linkedLiveId)],
+    ["Feed campaigns", firstLinkedValue(task.linkedFeedPostIds, task.linkedFeedPostId)],
     ["Forum/Q&A", task.linkedForumThreadId],
-    ["Grow evidence", task.linkedGrowIds || task.linkedGrowId],
+    ["Grow evidence", firstLinkedValue(task.linkedGrowIds, task.linkedGrowId)],
     ["Facility", task.linkedFacilityId],
     ["Room", task.linkedRoomId],
     ["Order", task.linkedOrderId],
