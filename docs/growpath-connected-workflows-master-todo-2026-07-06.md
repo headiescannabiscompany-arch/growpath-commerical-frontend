@@ -476,6 +476,7 @@ Completed and pushed:
 200. The shared backend-calculator Personal tool engine now uses the shared back-control boundary with `/home/personal/tools` fallbacks across locked and enabled states, so calculator-backed tools such as Soil Builder, Dry Amendment Mix, Topdress, IPM Scout, Harvest Readiness, and Dry/Cure Guard inherit consistent nested tool navigation.
 201. Public support routing now uses the live GrowPath alias set for general, billing, commercial/storefront, facility, privacy, legal, and security requests, and account recovery/deletion fallback copy points users to the canonical support inbox with focused regression coverage.
 202. Payment help now uses the shared support-contact config and routes billing/subscription issues to `billing@growpathai.com`, with regression coverage for the visible alias and `mailto:` destination.
+203. GrowPath system audit now recognizes the canonical Personal tool routes for Nutrient Source Comparison, Soil Builder, Dry Amendment Mix Builder, Topdress Planner, pH / EC Range Check, and Dry / Cure Guard, reducing false partials and proving those connected calculator-backed tools as present-foundation modules.
 
 ## Working Rule For Codex
 

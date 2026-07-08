@@ -96,12 +96,14 @@ const MODULES = [
   {
     phase: "Soil & Nutrients",
     name: "Nutrient Source Comparison",
+    route: "/home/personal/tools/nutrient-source-comparison",
     keywords: ["source comparison", "fastSources", "mediumSources", "slowSources"],
     required: ["library", "intent", "tests"]
   },
   {
     phase: "Soil & Nutrients",
     name: "Soil Builder",
+    route: "/home/personal/tools/soil-builder",
     keywords: [
       "soil builder",
       "soil_mix",
@@ -114,18 +116,21 @@ const MODULES = [
   {
     phase: "Soil & Nutrients",
     name: "Dry Amendment Mix Builder",
+    route: "/home/personal/tools/dry-amendment-mix",
     keywords: ["dry amendment", "dry_amendment", "achievedRatio"],
     required: ["route", "recipe", "ToolRun", "task"]
   },
   {
     phase: "Soil & Nutrients",
     name: "Topdress Planner",
+    route: "/home/personal/tools/topdress",
     keywords: ["topdress", "topdress-plan", "plannedApplyDate"],
     required: ["route", "ToolRun", "log", "task"]
   },
   {
     phase: "Soil & Nutrients",
     name: "pH / EC Range Check",
+    route: "/home/personal/tools/ph-ec",
     keywords: ["ph-ec", "runoffEC", "runoffPH", "ecStatus"],
     required: ["route", "ToolRun", "retest-task", "tests"]
   },
@@ -207,6 +212,7 @@ const MODULES = [
   {
     phase: "Harvest / History",
     name: "Dry / Cure Guard",
+    route: "/home/personal/tools/dry-cure-guard",
     keywords: ["dry cure", "dry-cure", "jarRH", "dewPointSpread"],
     required: ["route", "ToolRun", "harvest-batch", "task"]
   },
