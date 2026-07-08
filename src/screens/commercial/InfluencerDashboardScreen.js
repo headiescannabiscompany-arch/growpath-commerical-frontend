@@ -327,11 +327,11 @@ const InfluencerDashboardScreen = ({ navigation }) => {
           />
           <Text style={styles.ctaTitle}>Ready to Grow Your Influence?</Text>
           <Text style={styles.ctaText}>
-            Use Creator Content to sell guides and exclusive content to your
-            followers.
+            Use courses, lives, and Storefront offers to sell guides and educational
+            content to your followers.
           </Text>
           <TouchableOpacity style={styles.ctaBtn}>
-            <Text style={styles.ctaBtnText}>Upload Content -></Text>
+            <Text style={styles.ctaBtnText}>Create Course -></Text>
           </TouchableOpacity>
         </Card>
 

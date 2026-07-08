@@ -73,7 +73,7 @@ describe("feed/forum navigation separation", () => {
       mode: "personal"
     });
     const feedMenu = menuItems.find((item) => item.key === "feed");
-    const contentMenu = menuItems.find((item) => item.key === "marketplace");
+    const contentMenu = menuItems.find((item) => item.key === "storefrontOffers");
 
     expect(feedTab).toMatchObject({
       label: "Campaigns",
@@ -84,9 +84,10 @@ describe("feed/forum navigation separation", () => {
       route: "CommercialFeedRoute"
     });
     expect(contentMenu).toMatchObject({
-      label: "Creator Content",
-      route: "MarketplaceScreen"
+      label: "Storefront Offers",
+      route: "Storefront"
     });
     expect(menuItems.map((item) => item.label)).not.toContain("Marketplace");
+    expect(menuItems.map((item) => item.route)).not.toContain("MarketplaceScreen");
   });
 });

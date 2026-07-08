@@ -163,10 +163,10 @@ export function getMenuItems({ capabilities, mode }) {
     }
     if (capabilities.canUseMarketplace) {
       items.push({
-        key: "marketplace",
-        label: "Creator Content",
+        key: "storefrontOffers",
+        label: "Storefront Offers",
         icon: "shopping-cart",
-        route: "MarketplaceScreen"
+        route: "Storefront"
       });
     }
   }

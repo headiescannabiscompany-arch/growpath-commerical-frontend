@@ -13,8 +13,8 @@ export default function MarketplaceIntegrationScreen() {
       <View style={styles.statusCard}>
         <Text style={styles.statusTitle}>Available now</Text>
         <Text style={styles.statusText}>
-          Use GrowPath storefront, products, creator content, links, campaigns, orders,
-          and inventory tools to manage commercial sales from the app.
+          Use GrowPath storefront, products, courses, links, campaigns, orders, and
+          inventory tools to manage commercial sales from the app.
         </Text>
       </View>
       <View style={styles.statusCard}>

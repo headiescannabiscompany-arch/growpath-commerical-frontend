@@ -10,19 +10,20 @@ describe("commercial external channel copy", () => {
     const screen = render(<MarketplaceIntegrationScreen />);
 
     expect(screen.getByText("External Channel Integrations")).toBeTruthy();
-    expect(screen.getByText(/GrowPath storefront, products, creator content/i)).toBeTruthy();
+    expect(screen.getByText(/GrowPath storefront, products, courses/i)).toBeTruthy();
     expect(screen.queryByText("Marketplace & External Channels")).toBeNull();
   });
 
-  it("uses Creator Content language in the influencer CTA", () => {
+  it("uses course and storefront language in the influencer CTA", () => {
     const source = fs.readFileSync(
       path.join(process.cwd(), "src/screens/commercial/InfluencerDashboardScreen.js"),
       "utf8"
     );
 
-    expect(source).toContain("Use Creator Content to sell guides");
-    expect(source).toContain("Upload Content ->");
+    expect(source).toContain("Use courses, lives, and Storefront offers");
+    expect(source).toContain("Create Course ->");
     expect(source).not.toContain("content marketplace");
-    expect(source).not.toContain("Upload Content â");
+    expect(source).not.toContain("Use Creator Content");
+    expect(source).not.toMatch(/Upload Content/);
   });
 });
