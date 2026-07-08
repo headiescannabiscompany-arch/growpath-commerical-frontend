@@ -89,6 +89,18 @@ describe("PersonalTaskCenterRoute", () => {
         createdAt: "2026-07-07T00:00:00Z"
       },
       {
+        id: "task-diagnosis",
+        growId: "grow-1",
+        title: "Review AI diagnosis",
+        description: "Check saved diagnosis follow-up.",
+        dueDate: "2026-07-09",
+        completed: false,
+        priority: "high",
+        sourceType: "ai_diagnosis",
+        sourceObjectId: "diag-1",
+        createdAt: "2026-07-07T00:00:00Z"
+      },
+      {
         id: "task-course",
         growId: "grow-1",
         title: "Watch course lesson",
@@ -119,9 +131,15 @@ describe("PersonalTaskCenterRoute", () => {
     expect(screen.getAllByText("sensor alert").length).toBeGreaterThan(0);
     expect(screen.getAllByText("recipe").length).toBeGreaterThan(0);
     expect(screen.getByText(/Sensor Alert: alert-1/)).toBeTruthy();
+    expect(screen.getByText(/AI Diagnosis: diag-1/)).toBeTruthy();
     expect(screen.getByText("product batch")).toBeTruthy();
-    expect(screen.getAllByLabelText("View personal task source").length).toBe(3);
-    expect(screen.getByLabelText("Personal task link /home/personal/courses")).toBeTruthy();
+    expect(screen.getAllByLabelText("View personal task source").length).toBe(4);
+    expect(
+      screen.getByLabelText("Personal task link /home/personal/diagnose?growId=grow-1")
+    ).toBeTruthy();
+    expect(
+      screen.getByLabelText("Personal task link /home/personal/courses")
+    ).toBeTruthy();
     expect(screen.queryByLabelText("Task center source product_trial")).toBeNull();
     expect(screen.queryByLabelText("Task center source storefront")).toBeNull();
     expect(screen.queryByLabelText("Task center source order")).toBeNull();
@@ -160,6 +178,22 @@ describe("PersonalTaskCenterRoute", () => {
       )
     );
     await waitFor(() => expect(screen.getByText("Task created.")).toBeTruthy());
+
+    fireEvent.changeText(screen.getByLabelText("Task center grow ID"), "grow-2");
+    fireEvent.changeText(screen.getByLabelText("Task center title"), "Review diagnosis");
+    fireEvent.press(screen.getByLabelText("Task center source ai_diagnosis"));
+    fireEvent.changeText(screen.getByLabelText("Task center source object"), "diag-2");
+    fireEvent.press(screen.getByLabelText("Create task center task"));
+
+    await waitFor(() =>
+      expect(mockCreatePersonalTask).toHaveBeenLastCalledWith(
+        expect.objectContaining({
+          sourceType: "ai_diagnosis",
+          sourceObjectId: "diag-2",
+          linkedDiagnosisId: "diag-2"
+        })
+      )
+    );
 
     fireEvent.press(screen.getAllByLabelText("Complete task")[0]);
     await waitFor(() =>

@@ -27,6 +27,7 @@ const sourceTypes = [
   "grow",
   "plant",
   "tool_run",
+  "ai_diagnosis",
   "recipe",
   "product",
   "product_batch",
@@ -61,6 +62,7 @@ function sectionForTask(task: PersonalTask, today = todayKey()): SectionKey {
 }
 
 function taskSource(task: PersonalTask) {
+  if (task.sourceType === "ai_diagnosis") return "AI diagnosis";
   if (task.sourceType) return task.sourceType.replace(/_/g, " ");
   if (task.sourceToolRunId) return "tool run";
   if (task.sourceDiagnosisId) return "AI diagnosis";
@@ -69,6 +71,7 @@ function taskSource(task: PersonalTask) {
 }
 
 function sourceObjectLabel(task: PersonalTask) {
+  if (task.sourceType === "ai_diagnosis") return "AI Diagnosis";
   const source = String(task.sourceType || "")
     .replace(/_/g, " ")
     .trim();
@@ -92,9 +95,17 @@ function taskLinks(task: PersonalTask) {
 function taskSourcePath(task: PersonalTask) {
   const sourceType = String(task.sourceType || "");
   const sourceId = String(task.sourceObjectId || "");
-  if (sourceType === "grow" && task.growId) return `/home/personal/grows/${task.growId}`;
+  const growId = String(task.growId || "");
+  if (sourceType === "grow" && (growId || sourceId)) {
+    return `/home/personal/grows/${growId || sourceId}`;
+  }
   if (sourceType === "plant" && task.growId)
     return `/home/personal/grows/${task.growId}/plants`;
+  if (sourceType === "ai_diagnosis") {
+    return growId
+      ? `/home/personal/diagnose?growId=${encodeURIComponent(growId)}`
+      : "/home/personal/diagnose";
+  }
   if (sourceType === "tool_run" || sourceType === "recipe" || task.sourceToolRunId) {
     return "/home/personal/tools/saved-runs";
   }
@@ -140,6 +151,8 @@ function linkedFieldsForSource(
       };
     case "tool_run":
       return toolRunLink;
+    case "ai_diagnosis":
+      return { ...toolRunLink, linkedDiagnosisId: sourceObjectId || undefined };
     case "recipe":
       return { ...toolRunLink, linkedRecipeId: sourceObjectId || undefined };
     case "product":
