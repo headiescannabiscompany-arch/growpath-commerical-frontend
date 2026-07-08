@@ -755,6 +755,7 @@ Completed and pushed:
 479. Legacy personal nutrient calculator, pH/EC calculator, and pest/disease identifier inputs, actions, and result cards now consume shared radius tokens while preserving deterministic calculations and ToolUsage save behavior.
 480. Facility AI tools home and Nutrient Tools dashboard cards, stat boxes, select-grow action, tool tiles, and badges now consume shared radius tokens while preserving AI feature matrix routing and nutrient tool navigation.
 481. Legacy profile, global search, and profile certificate cards, inputs, locked notices, earned badges, and certificate actions now consume shared radius tokens while preserving auth mode display, entitlement-gated search, and certificate navigation behavior.
+482. Admin reports, payout requests, and course review cards, rows, filters, thumbnails, status badges, feedback panels, and actions now consume shared radius tokens while preserving report resolution, payout marking, and course approval/rejection behavior.
 
 ## Working Rule For Codex
 

@@ -12,6 +12,7 @@ import {
 import { CAPABILITY_KEYS, useEntitlements } from "@/entitlements";
 import { getPayoutHistory, markPayoutPaid } from "../api/creator.js";
 import ScreenContainer from "../components/ScreenContainer.js";
+import { radius } from "../theme/theme.js";
 
 function rows(payload) {
   if (Array.isArray(payload)) return payload;
@@ -135,7 +136,7 @@ const styles = StyleSheet.create({
   locked: {
     borderWidth: 1,
     borderColor: "#e5e7eb",
-    borderRadius: 10,
+    borderRadius: radius.card,
     padding: 14,
     backgroundColor: "#f8fafc"
   },
@@ -143,7 +144,7 @@ const styles = StyleSheet.create({
     flexDirection: "row",
     alignItems: "center",
     backgroundColor: "#f9f9f9",
-    borderRadius: 6,
+    borderRadius: radius.card,
     padding: 16,
     marginBottom: 10,
     borderBottomWidth: 1,
@@ -157,7 +158,7 @@ const styles = StyleSheet.create({
     backgroundColor: "#27ae60",
     paddingVertical: 10,
     paddingHorizontal: 16,
-    borderRadius: 8,
+    borderRadius: radius.card,
     marginLeft: 12
   },
   markBtnText: { color: "#fff", fontWeight: "700", fontSize: 15 },
@@ -165,7 +166,7 @@ const styles = StyleSheet.create({
   feedback: {
     color: "#334155",
     backgroundColor: "#F1F5F9",
-    borderRadius: 8,
+    borderRadius: radius.card,
     padding: 8,
     marginBottom: 10
   },

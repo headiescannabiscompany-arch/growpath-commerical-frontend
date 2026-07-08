@@ -10,6 +10,7 @@ import {
 } from "react-native";
 import { getReports, resolveReport } from "../api/adminReports";
 import ScreenContainer from "../components/ScreenContainer";
+import { radius } from "../theme/theme";
 
 export default function AdminReportsScreen() {
   const [reports, setReports] = useState([]);
@@ -107,7 +108,7 @@ const styles = StyleSheet.create({
   },
   card: {
     backgroundColor: "#fff",
-    borderRadius: 8,
+    borderRadius: radius.card,
     padding: 16,
     marginVertical: 8,
     marginHorizontal: 4,

@@ -10,7 +10,7 @@ import {
   TextInput
 } from "react-native";
 import ScreenContainer from "../components/ScreenContainer";
-import { spacing } from "../theme/theme";
+import { radius, spacing } from "../theme/theme";
 import { getPendingCourses, approveCourse, rejectCourse } from "../api/courses";
 import { useEntitlements } from "@/entitlements";
 import { getLearningAccess } from "@/features/learning/learningAccess";
@@ -278,7 +278,7 @@ const styles = StyleSheet.create({
   filterBtn: {
     paddingHorizontal: 16,
     paddingVertical: 8,
-    borderRadius: 20,
+    borderRadius: radius.pill,
     backgroundColor: "#F3F4F6"
   },
   filterBtnActive: {
@@ -300,7 +300,7 @@ const styles = StyleSheet.create({
     backgroundColor: "#FFFFFF",
     borderWidth: 1,
     borderColor: "#E5E7EB",
-    borderRadius: 12,
+    borderRadius: radius.card,
     marginBottom: spacing(3),
     padding: spacing(3)
   },
@@ -311,7 +311,7 @@ const styles = StyleSheet.create({
   thumbnailSmall: {
     width: 80,
     height: 60,
-    borderRadius: 8,
+    borderRadius: radius.card,
     backgroundColor: "#F9FAFB",
     alignItems: "center",
     justifyContent: "center",
@@ -368,7 +368,7 @@ const styles = StyleSheet.create({
     alignSelf: "flex-start",
     paddingHorizontal: 12,
     paddingVertical: 6,
-    borderRadius: 12,
+    borderRadius: radius.pill,
     marginBottom: spacing(2)
   },
   statusText: {
@@ -382,7 +382,7 @@ const styles = StyleSheet.create({
   actionBtn: {
     flex: 1,
     paddingVertical: 10,
-    borderRadius: 8,
+    borderRadius: radius.card,
     alignItems: "center"
   },
   rejectBtn: {
