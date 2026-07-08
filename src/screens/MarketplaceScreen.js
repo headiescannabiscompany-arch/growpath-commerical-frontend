@@ -18,6 +18,7 @@ import {
   searchContent
 } from "../api/marketplace";
 import ScreenContainer from "../components/ScreenContainer";
+import { radius } from "../theme/theme";
 import { getCreatorName } from "../utils/creator";
 
 function rows(payload) {
@@ -297,7 +298,7 @@ const styles = StyleSheet.create({
   search: {
     padding: 12,
     backgroundColor: "#f8fafc",
-    borderRadius: 10,
+    borderRadius: radius.card,
     marginBottom: 12,
     fontSize: 14,
     borderWidth: 1,
@@ -308,7 +309,7 @@ const styles = StyleSheet.create({
     paddingHorizontal: 14,
     paddingVertical: 8,
     backgroundColor: "#F1F5F9",
-    borderRadius: 20,
+    borderRadius: radius.pill,
     marginRight: 10
   },
   filterBtnOn: { backgroundColor: "#166534" },
@@ -318,7 +319,7 @@ const styles = StyleSheet.create({
   card: {
     padding: 14,
     backgroundColor: "#fff",
-    borderRadius: 12,
+    borderRadius: radius.card,
     marginBottom: 12,
     borderWidth: 1,
     borderColor: "#E2E8F0"
@@ -332,7 +333,7 @@ const styles = StyleSheet.create({
     backgroundColor: "#ECFDF5",
     paddingHorizontal: 8,
     paddingVertical: 4,
-    borderRadius: 6,
+    borderRadius: radius.pill,
     color: "#166534",
     fontWeight: "700",
     marginTop: 6
@@ -344,7 +345,7 @@ const styles = StyleSheet.create({
   feedback: {
     color: "#334155",
     backgroundColor: "#F1F5F9",
-    borderRadius: 8,
+    borderRadius: radius.card,
     padding: 8,
     marginBottom: 10
   },
@@ -355,7 +356,7 @@ const styles = StyleSheet.create({
   purchaseButton: {
     alignItems: "center",
     backgroundColor: "#166534",
-    borderRadius: 8,
+    borderRadius: radius.card,
     justifyContent: "center",
     marginTop: 12,
     minHeight: 44,

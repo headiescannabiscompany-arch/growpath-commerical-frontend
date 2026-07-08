@@ -3,6 +3,7 @@ import { ActivityIndicator, Linking, Pressable, StyleSheet, Text, View } from "r
 
 import { getMarketplaceContent, purchaseContent } from "../api/marketplace";
 import ScreenContainer from "../components/ScreenContainer";
+import { radius } from "../theme/theme";
 import { MarketplaceDetailContent } from "./MarketplaceScreen";
 
 function itemId(item, fallback) {
@@ -109,7 +110,7 @@ const styles = StyleSheet.create({
   link: { color: "#166534", fontWeight: "800" },
   button: {
     backgroundColor: "#166534",
-    borderRadius: 8,
+    borderRadius: radius.card,
     paddingHorizontal: 16,
     paddingVertical: 10
   },
@@ -117,7 +118,7 @@ const styles = StyleSheet.create({
   buttonText: { color: "#FFFFFF", fontWeight: "800" },
   feedback: {
     backgroundColor: "#F1F5F9",
-    borderRadius: 8,
+    borderRadius: radius.card,
     color: "#334155",
     marginBottom: 10,
     padding: 8
