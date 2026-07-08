@@ -14,6 +14,7 @@ import {
   type AssistantReference
 } from "@/api/personalAssistant";
 import PersonalFeedPlacement from "@/components/feed/PersonalFeedPlacement";
+import { radius } from "@/theme/theme";
 
 const styles = StyleSheet.create({
   container: { flex: 1, backgroundColor: "#fff" },
@@ -22,7 +23,7 @@ const styles = StyleSheet.create({
     padding: 12,
     borderWidth: 1,
     borderColor: "#E2E8F0",
-    borderRadius: 12,
+    borderRadius: radius.card,
     marginBottom: 10,
     backgroundColor: "#F8FAFC"
   },
@@ -30,7 +31,7 @@ const styles = StyleSheet.create({
     padding: 12,
     borderWidth: 1,
     borderColor: "#BBF7D0",
-    borderRadius: 12,
+    borderRadius: radius.card,
     marginBottom: 10,
     backgroundColor: "#F0FDF4"
   },
@@ -76,18 +77,23 @@ const styles = StyleSheet.create({
     padding: 12,
     borderWidth: 1,
     borderColor: "#E2E8F0",
-    borderRadius: 12,
+    borderRadius: radius.card,
     marginBottom: 10
   },
   msgRole: { fontSize: 12, color: "#64748B", marginBottom: 4, fontWeight: "700" },
   msgText: { fontSize: 14, color: "#0F172A" },
   composer: { padding: 12, borderTopWidth: 1, borderTopColor: "#E2E8F0" },
-  input: { borderWidth: 1, borderColor: "#E2E8F0", borderRadius: 10, padding: 12 },
+  input: {
+    borderWidth: 1,
+    borderColor: "#E2E8F0",
+    borderRadius: radius.card,
+    padding: 12
+  },
   send: {
     marginTop: 10,
     backgroundColor: "#16A34A",
     paddingVertical: 12,
-    borderRadius: 10,
+    borderRadius: radius.card,
     alignItems: "center"
   },
   sendText: { color: "#fff", fontWeight: "800" },

@@ -628,6 +628,7 @@ Completed and pushed:
 352. Commercial Log Detail now uses the shared 8px workspace card radius and has focused route coverage proving the nested log detail loads from the global log endpoint.
 353. Active Commercial Tools cards now consume the shared 8px workspace radius token while preserving Storefront Offers, Feed / Campaigns, and Marketing Planner navigation coverage.
 354. Personal Profile cards and primary account actions now consume the shared 8px workspace radius token, extending the Facility-level visual polish to the Personal account/support surface without changing profile behavior.
+355. Personal AI command-center cards, message panels, prompt input, and send action now consume the shared 8px workspace radius token, extending the polished operational look to the grower AI surface.
 
 ## Working Rule For Codex
 
