@@ -34,10 +34,14 @@ type DashboardModel = {
     sourceId?: string;
     productId?: string;
     productBatchId?: string;
+    productTrialId?: string;
     courseId?: string;
     liveId?: string;
+    feedCampaignId?: string;
     storefrontId?: string;
     inventoryId?: string;
+    orderId?: string;
+    alertId?: string;
   }>;
   guidance?: string[];
 };
@@ -224,6 +228,12 @@ function actionItemSource(item: NonNullable<DashboardModel["actionItems"]>[numbe
       sourceId: item.productBatchId || item.sourceId
     };
   }
+  if (item.productTrialId || type.includes("trial")) {
+    return {
+      sourceType: "product_trial",
+      sourceId: item.productTrialId || item.sourceId
+    };
+  }
   if (item.productId || type.startsWith("product_")) {
     return { sourceType: "product", sourceId: item.productId || item.sourceId };
   }
@@ -233,8 +243,20 @@ function actionItemSource(item: NonNullable<DashboardModel["actionItems"]>[numbe
   if (item.liveId || type.includes("live")) {
     return { sourceType: "live", sourceId: item.liveId || item.sourceId };
   }
+  if (item.feedCampaignId || type.includes("feed") || type.includes("campaign")) {
+    return {
+      sourceType: "feed_campaign",
+      sourceId: item.feedCampaignId || item.sourceId
+    };
+  }
   if (item.storefrontId || type.includes("storefront")) {
     return { sourceType: "storefront", sourceId: item.storefrontId || item.sourceId };
+  }
+  if (item.orderId || type.includes("order")) {
+    return { sourceType: "order", sourceId: item.orderId || item.sourceId };
+  }
+  if (item.alertId || type.includes("alert")) {
+    return { sourceType: "alert", sourceId: item.alertId || item.sourceId };
   }
   if (item.inventoryId || type.includes("inventory") || type.includes("stock")) {
     return {
@@ -350,10 +372,14 @@ export default function CommercialHome() {
           actionItemTitle: item.title || "Commercial dashboard action",
           linkedProductId: item.productId || undefined,
           linkedProductBatchId: item.productBatchId || undefined,
+          linkedProductTrialId: item.productTrialId || undefined,
           linkedCourseId: item.courseId || undefined,
           linkedLiveId: item.liveId || undefined,
+          linkedFeedPostId: item.feedCampaignId || undefined,
           linkedStorefrontId: item.storefrontId || undefined,
           linkedInventoryId: item.inventoryId || undefined,
+          linkedOrderId: item.orderId || undefined,
+          linkedAlertId: item.alertId || undefined,
           priority: item.priority === "critical" ? "critical" : item.priority || "normal",
           status: "open",
           reminderPlan: { label: "24 hours before", channels: ["in_app"] }

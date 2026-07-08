@@ -149,6 +149,14 @@ export function sourceObjectHref(source: SourceLike) {
     if (workspace === "facility") return "/home/facility/inventory";
     return "/home/personal/profile";
   }
+  if (sourceType === "inventory") {
+    if (workspace === "commercial")
+      return sourceId
+        ? `/home/commercial/inventory-item/${encoded(sourceId)}`
+        : "/home/commercial/inventory";
+    if (workspace === "facility") return "/home/facility/inventory";
+    return "/home/personal/profile";
+  }
   if (sourceType === "room" || sourceType === "room_task")
     return roomId ? "/home/facility/rooms" : "/home/facility/rooms";
   if (sourceType === "facility") return "/home/facility";

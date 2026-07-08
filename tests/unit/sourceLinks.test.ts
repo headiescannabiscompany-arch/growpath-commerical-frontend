@@ -119,6 +119,22 @@ describe("sourceObjectHref", () => {
         workspaceType: "facility"
       })
     ).toBe("/home/facility/inventory");
+
+    expect(
+      sourceObjectHref({
+        sourceType: "inventory",
+        sourceId: "inventory-1",
+        workspaceType: "commercial"
+      })
+    ).toBe("/home/commercial/inventory-item/inventory-1");
+
+    expect(
+      sourceObjectHref({
+        sourceType: "inventory",
+        sourceId: "inventory-1",
+        workspaceType: "facility"
+      })
+    ).toBe("/home/facility/inventory");
   });
 
   it("recognizes schedule and calendar item aliases across workspaces", () => {

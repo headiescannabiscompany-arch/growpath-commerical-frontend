@@ -121,6 +121,18 @@ describe("commercial workflow pages", () => {
                 title: "Bloom Topdress",
                 priority: "medium",
                 productId: "product-1"
+              },
+              {
+                type: "inventory_low_stock",
+                title: "Restock base soil bags",
+                priority: "high",
+                inventoryId: "inventory-1"
+              },
+              {
+                type: "product_trial_followup",
+                title: "Review veg trial evidence",
+                priority: "normal",
+                productTrialId: "trial-1"
               }
             ],
             guidance: [
@@ -713,6 +725,8 @@ describe("commercial workflow pages", () => {
     ).toBeTruthy();
     expect(screen.getByText("Action Items")).toBeTruthy();
     expect(screen.getByText("Bloom Topdress")).toBeTruthy();
+    expect(screen.getByText("Restock base soil bags")).toBeTruthy();
+    expect(screen.getByText("Review veg trial evidence")).toBeTruthy();
     expect(screen.getByText("Dashboard Guidance")).toBeTruthy();
     expect(screen.getByText("Commercial launch assistant")).toBeTruthy();
     expect(screen.getByText("Open Commercial Tasks")).toBeTruthy();
@@ -745,13 +759,55 @@ describe("commercial workflow pages", () => {
       )
     );
     expect(screen.getByText("Commercial dashboard task created.")).toBeTruthy();
+    await waitFor(() => expect(screen.queryByText("Creating...")).toBeNull());
+
+    fireEvent.press(
+      screen.getByLabelText("Create task for dashboard action Restock base soil bags")
+    );
+    await waitFor(() =>
+      expect(mockApiRequest).toHaveBeenCalledWith(
+        "/api/tasks",
+        expect.objectContaining({
+          method: "POST",
+          body: expect.objectContaining({
+            title: "Resolve dashboard action: Restock base soil bags",
+            sourceType: "inventory",
+            sourceId: "inventory-1",
+            linkedInventoryId: "inventory-1",
+            priority: "high"
+          })
+        })
+      )
+    );
+    await waitFor(() => expect(screen.queryByText("Creating...")).toBeNull());
+
+    fireEvent.press(
+      screen.getByLabelText("Create task for dashboard action Review veg trial evidence")
+    );
+    await waitFor(() =>
+      expect(mockApiRequest).toHaveBeenCalledWith(
+        "/api/tasks",
+        expect.objectContaining({
+          method: "POST",
+          body: expect.objectContaining({
+            title: "Resolve dashboard action: Review veg trial evidence",
+            sourceType: "product_trial",
+            sourceId: "trial-1",
+            linkedProductTrialId: "trial-1",
+            priority: "normal"
+          })
+        })
+      )
+    );
   });
 
   it("creates brand forum support posts with product links", async () => {
     const screen = render(<CommercialCommunityRoute />);
 
     expect(screen.getByText("Brand Forum / Q&A")).toBeTruthy();
-    expect(screen.getByText(/Feed \/ Campaigns stays advertising and outreach/)).toBeTruthy();
+    expect(
+      screen.getByText(/Feed \/ Campaigns stays advertising and outreach/)
+    ).toBeTruthy();
     expect(screen.getByText("Support thread workflow")).toBeTruthy();
     expect(screen.getByText("Forum / Q&A discovery")).toBeTruthy();
     expect(screen.getByText("Create linked campaign")).toBeTruthy();
@@ -1269,7 +1325,7 @@ describe("commercial workflow pages", () => {
       "utf8"
     );
 
-    expect(routeSource).toContain("<Redirect href=\"/home/commercial/marketing\" />");
+    expect(routeSource).toContain('<Redirect href="/home/commercial/marketing" />');
     expect(routeSource).not.toContain("Marketing Planner");
     expect(routeSource).not.toContain("Create Marketing Plan");
     expect(routeSource).not.toContain('objective: "content_plan"');
@@ -1285,7 +1341,7 @@ describe("commercial workflow pages", () => {
       "utf8"
     );
 
-    expect(routeSource).toContain("<Redirect href=\"/home/commercial/orders\" />");
+    expect(routeSource).toContain('<Redirect href="/home/commercial/orders" />');
     expect(routeSource).not.toContain("apiRequest");
     expect(routeSource).not.toContain("endpoints.commercial.orders");
   });

@@ -486,6 +486,7 @@ function sharedSourceResolverCoversWorkflowLinks() {
     /sourceType === "alert_snooze"/.test(resolver) &&
     /sourceType === "facility_sop"/.test(resolver) &&
     /sourceType === "grow_milestone"/.test(resolver) &&
+    /sourceType === "inventory"/.test(resolver) &&
     /\/home\/personal\/logs\/\$\{encoded\(sourceId\)\}/.test(resolver) &&
     personalTasks.includes('from "@/utils/sourceLinks"') &&
     growTimeline.includes('from "@/utils/sourceLinks"') &&
