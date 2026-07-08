@@ -7,6 +7,7 @@ import { createCourse } from "@/api/courses";
 import PersonalFeedPlacement from "@/components/feed/PersonalFeedPlacement";
 import { useEntitlements } from "@/entitlements";
 import { getLearningAccess } from "@/features/learning/learningAccess";
+import { radius } from "@/theme/theme";
 
 function toPriceCents(input) {
   const n = Number(input);
@@ -135,7 +136,7 @@ const styles = StyleSheet.create({
   input: {
     borderWidth: 1,
     borderColor: "#d1d5db",
-    borderRadius: 10,
+    borderRadius: radius.card,
     paddingHorizontal: 12,
     paddingVertical: 10
   },
@@ -143,7 +144,7 @@ const styles = StyleSheet.create({
   button: {
     marginTop: 8,
     backgroundColor: "#15803d",
-    borderRadius: 10,
+    borderRadius: radius.card,
     paddingVertical: 12,
     alignItems: "center"
   },
@@ -152,7 +153,7 @@ const styles = StyleSheet.create({
   lockedCard: {
     borderWidth: 1,
     borderColor: "#d1d5db",
-    borderRadius: 10,
+    borderRadius: radius.card,
     padding: 12,
     backgroundColor: "#f8fafc"
   },

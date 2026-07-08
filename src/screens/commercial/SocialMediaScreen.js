@@ -22,7 +22,7 @@ import {
   schedulePost,
   syncSocialData
 } from "../../api/socialMedia.js";
-import { Colors, Spacing, Typography } from "../../theme/theme.js";
+import { Colors, Spacing, Typography, radius } from "../../theme/theme.js";
 
 const CHANNELS = [
   { id: "instagram", name: "Instagram", icon: "instagram", color: "#E4405F" },
@@ -383,7 +383,7 @@ const styles = StyleSheet.create({
   platformsContainer: { paddingHorizontal: Spacing.md },
   platformCard: {
     backgroundColor: Colors.surface,
-    borderRadius: 8,
+    borderRadius: radius.card,
     marginBottom: Spacing.md,
     padding: Spacing.md
   },
@@ -423,7 +423,7 @@ const styles = StyleSheet.create({
   input: {
     backgroundColor: Colors.background,
     borderColor: Colors.border,
-    borderRadius: 8,
+    borderRadius: radius.card,
     borderWidth: 1,
     fontSize: Typography.size.body,
     marginBottom: Spacing.sm,
@@ -439,7 +439,7 @@ const styles = StyleSheet.create({
   },
   btn: {
     alignItems: "center",
-    borderRadius: 8,
+    borderRadius: radius.card,
     flexDirection: "row",
     justifyContent: "center",
     marginTop: Spacing.sm,

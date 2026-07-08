@@ -759,6 +759,7 @@ Completed and pushed:
 483. Legacy commercial Forum/Q&A groups search, create actions, forum-group cards, avatars, join controls, role/unread badges, modal inputs, topic chips, privacy rows, and create-group CTA now consume shared radius tokens while preserving Forum/Q&A copy separation from Feed campaigns.
 484. Creator analytics, payout history, signature upload, and earnings cards, rows, preview frames, feedback panels, and payout/signature actions now consume shared radius tokens while preserving creator course analytics, payout requests, signature upload, and earnings API behavior.
 485. Creator dashboard and vendor guide authoring/list cards, chart frames, selector cards, lesson rows, stat badges, inputs, locked notices, and save actions now consume shared radius tokens while preserving creator analytics, vendor-guide draft creation, and vendor guide listing behavior.
+486. Commercial course creation, social channel management, and external channel integration inputs, locked cards, platform cards, status cards, and action buttons now consume shared radius tokens while preserving course draft creation, Feed/Campaign placement, and external-channel guidance behavior.
 
 ## Working Rule For Codex
 

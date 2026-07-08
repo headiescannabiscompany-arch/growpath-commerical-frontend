@@ -1,5 +1,6 @@
 import React from "react";
 import { View, Text, StyleSheet } from "react-native";
+import { radius } from "../../theme/theme";
 
 export default function MarketplaceIntegrationScreen() {
   return (
@@ -35,7 +36,7 @@ const styles = StyleSheet.create({
   statusCard: {
     marginTop: 16,
     padding: 14,
-    borderRadius: 8,
+    borderRadius: radius.card,
     borderWidth: 1,
     borderColor: "#dbeafe",
     backgroundColor: "#eff6ff"
