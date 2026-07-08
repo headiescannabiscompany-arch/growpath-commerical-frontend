@@ -15,6 +15,7 @@ import { ApiError } from "@/api/apiRequest";
 import { SignupBody } from "@/api/auth";
 import { useAuth } from "@/auth/AuthContext";
 import LegalLinks from "@/components/LegalLinks";
+import { radius } from "@/theme/theme";
 
 type AccountChoice = {
   key: "free" | "pro" | "commercial" | "facility";
@@ -271,7 +272,7 @@ const styles = StyleSheet.create({
   choice: {
     backgroundColor: "#ffffff",
     borderColor: "#d7ddd2",
-    borderRadius: 8,
+    borderRadius: radius.card,
     borderWidth: 1,
     minHeight: 142,
     padding: 14,
@@ -292,7 +293,7 @@ const styles = StyleSheet.create({
   },
   radio: {
     borderColor: "#94a3b8",
-    borderRadius: 8,
+    borderRadius: radius.pill,
     borderWidth: 2,
     height: 16,
     width: 16
@@ -308,7 +309,7 @@ const styles = StyleSheet.create({
   formCard: {
     backgroundColor: "#ffffff",
     borderColor: "#d7ddd2",
-    borderRadius: 8,
+    borderRadius: radius.card,
     borderWidth: 1,
     padding: 16,
     width: "100%"
@@ -324,7 +325,7 @@ const styles = StyleSheet.create({
   input: {
     backgroundColor: "#ffffff",
     borderColor: "#cbd5e1",
-    borderRadius: 8,
+    borderRadius: radius.card,
     borderWidth: 1,
     color: "#111827",
     marginBottom: 12,
@@ -336,7 +337,7 @@ const styles = StyleSheet.create({
   button: {
     alignItems: "center",
     backgroundColor: "#166534",
-    borderRadius: 8,
+    borderRadius: radius.card,
     paddingVertical: 12
   },
   buttonDisabled: { opacity: 0.5 },

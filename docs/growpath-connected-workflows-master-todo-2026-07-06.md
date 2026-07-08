@@ -713,6 +713,7 @@ Completed and pushed:
 437. Forum Directory feedback, summary cards, search input, metadata labels, and join actions now consume the shared visual radius treatment while preserving discussion-group pills, keeping Forum/Q&A visually polished without turning it into Feed advertising.
 438. Account Mode Switcher identity panel, workspace selector, segment buttons, workspace cards, and boundary note now consume the shared 8px card radius token while preserving status badges as pills, keeping Personal, Commercial, and Facility mode choice visually aligned.
 439. Account Profile status rows, sign-in email inputs, plan facts, workspace actions, privacy export controls, and danger actions now consume the shared 8px card radius token, keeping live support/account-management surfaces visually aligned with Facility polish.
+440. Login, Register, Forgot Password, Reset Password, and Verify Email panels, media frames, inputs, verification notices, CTAs, and account-choice controls now consume shared radius tokens while preserving radio/pill semantics, extending Facility-style polish to every auth entry point.
 
 ## Working Rule For Codex
 

@@ -12,6 +12,7 @@ import { useLocalSearchParams, useRouter } from "expo-router";
 import { ApiError } from "@/api/apiRequest";
 import { resetPassword } from "@/api/auth";
 import BackButton from "@/components/nav/BackButton";
+import { radius } from "@/theme/theme";
 
 export default function ResetPasswordScreen() {
   const router = useRouter();
@@ -183,7 +184,7 @@ const styles = StyleSheet.create({
   panel: {
     width: "100%",
     maxWidth: 420,
-    borderRadius: 8,
+    borderRadius: radius.card,
     borderWidth: 1,
     borderColor: "#dbe3ea",
     backgroundColor: "#ffffff",
@@ -207,7 +208,7 @@ const styles = StyleSheet.create({
     color: "#111827",
     paddingHorizontal: 12,
     paddingVertical: 12,
-    borderRadius: 8
+    borderRadius: radius.card
   },
   error: {
     color: "#b91c1c",
@@ -224,7 +225,7 @@ const styles = StyleSheet.create({
     alignItems: "center",
     justifyContent: "center",
     minHeight: 44,
-    borderRadius: 8,
+    borderRadius: radius.card,
     backgroundColor: "#166534",
     paddingHorizontal: 16
   },

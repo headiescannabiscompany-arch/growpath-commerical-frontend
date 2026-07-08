@@ -4,6 +4,7 @@ import { useLocalSearchParams, useRouter } from "expo-router";
 
 import { ApiError } from "@/api/apiRequest";
 import { confirmEmailVerification } from "@/api/auth";
+import { radius } from "@/theme/theme";
 
 type VerifyState = "checking" | "success" | "error";
 
@@ -81,7 +82,7 @@ const styles = StyleSheet.create({
   panel: {
     width: "100%",
     maxWidth: 420,
-    borderRadius: 8,
+    borderRadius: radius.card,
     borderWidth: 1,
     borderColor: "#dbe3ea",
     backgroundColor: "#ffffff",
@@ -102,7 +103,7 @@ const styles = StyleSheet.create({
     alignItems: "center",
     justifyContent: "center",
     minHeight: 44,
-    borderRadius: 8,
+    borderRadius: radius.card,
     backgroundColor: "#2563eb",
     paddingHorizontal: 16
   },

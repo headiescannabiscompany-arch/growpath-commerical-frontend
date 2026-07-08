@@ -15,6 +15,7 @@ import { ApiError } from "@/api/apiRequest";
 import { requestEmailVerification } from "@/api/auth";
 import { useAuth } from "@/auth/AuthContext";
 import LegalLinks from "@/components/LegalLinks";
+import { radius } from "@/theme/theme";
 
 export default function LoginScreen() {
   const router = useRouter();
@@ -217,7 +218,7 @@ const styles = StyleSheet.create({
     width: "100%",
     aspectRatio: 1.42,
     alignSelf: "center",
-    borderRadius: 8,
+    borderRadius: radius.card,
     overflow: "hidden",
     backgroundColor: "#eef2f7"
   },
@@ -232,7 +233,7 @@ const styles = StyleSheet.create({
   logoMark: {
     width: 72,
     height: 72,
-    borderRadius: 8,
+    borderRadius: radius.card,
     alignItems: "center",
     justifyContent: "center",
     marginBottom: 10,
@@ -258,7 +259,7 @@ const styles = StyleSheet.create({
   formCard: {
     backgroundColor: "#ffffff",
     borderColor: "#d8ded6",
-    borderRadius: 8,
+    borderRadius: radius.card,
     borderWidth: 1,
     padding: 24,
     maxWidth: 460,
@@ -272,7 +273,7 @@ const styles = StyleSheet.create({
     color: "#111827",
     paddingHorizontal: 12,
     paddingVertical: 12,
-    borderRadius: 8,
+    borderRadius: radius.card,
     marginBottom: 12
   },
   error: { color: "#b91c1c", marginBottom: 12, fontWeight: "600" },
@@ -280,7 +281,7 @@ const styles = StyleSheet.create({
     borderWidth: 1,
     borderColor: "#bfdbfe",
     backgroundColor: "#eff6ff",
-    borderRadius: 8,
+    borderRadius: radius.card,
     padding: 12,
     marginBottom: 12,
     gap: 8
@@ -298,7 +299,7 @@ const styles = StyleSheet.create({
   },
   button: {
     paddingVertical: 12,
-    borderRadius: 8,
+    borderRadius: radius.card,
     alignItems: "center",
     backgroundColor: "#166534"
   },
@@ -308,7 +309,7 @@ const styles = StyleSheet.create({
     alignItems: "center",
     backgroundColor: "#ffffff",
     borderColor: "#93c5fd",
-    borderRadius: 8,
+    borderRadius: radius.card,
     borderWidth: 1,
     minHeight: 40,
     justifyContent: "center",
