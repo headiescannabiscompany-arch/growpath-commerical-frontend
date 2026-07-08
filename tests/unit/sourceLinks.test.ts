@@ -104,6 +104,15 @@ describe("sourceObjectHref", () => {
 
     expect(
       sourceObjectHref({
+        sourceType: "plant",
+        sourceId: "plant-1",
+        growId: "grow-1",
+        workspaceType: "personal"
+      })
+    ).toBe("/home/personal/grows/grow-1/plants?plantId=plant-1");
+
+    expect(
+      sourceObjectHref({
         sourceType: "automation",
         sourceId: "automation-1",
         growId: "grow-1",

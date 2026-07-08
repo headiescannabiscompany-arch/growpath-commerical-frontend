@@ -388,6 +388,7 @@ Completed and pushed:
 112. Legacy feed item routing now treats explicit `storefrontSlug` metadata as a public storefront link to `/store/:slug`, while preserving `brandSlug`/commercial profile metadata for `/brands/:slug`, so promotional cards do not send storefront traffic to the wrong public surface.
 113. Legacy feed item alert routing now preserves alert ids in `/home/alerts?alertId=...`, so feed-derived alert cards reopen the relevant Alert Center row instead of dropping users at the generic alert inbox.
 114. Legacy facility feed item routing now opens exact facility log detail routes and preserves plant ids in `/home/facility/plants/:id`, keeping operational feed cards tied to the source record instead of broad facility lists.
+115. Personal plant source links now preserve plant ids in `/home/personal/grows/:growId/plants?plantId=...`, and the grow plants screen can visually mark the linked plant so plant tasks, alerts, and logs do not collapse to a generic plant list.
 
 ## Working Rule For Codex
 

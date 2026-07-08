@@ -66,9 +66,11 @@ export function sourceObjectHref(source: SourceLike) {
   if (sourceType === "plant") {
     if (workspace === "facility")
       return sourceId ? `/home/facility/plants/${sourceId}` : "/home/facility/plants";
-    return growId
-      ? `/home/personal/grows/${encoded(growId)}/plants`
-      : "/home/personal/grows";
+    if (growId) {
+      const plantQuery = sourceId ? `?plantId=${encoded(sourceId)}` : "";
+      return `/home/personal/grows/${encoded(growId)}/plants${plantQuery}`;
+    }
+    return "/home/personal/grows";
   }
 
   if (sourceType === "grow_log") {

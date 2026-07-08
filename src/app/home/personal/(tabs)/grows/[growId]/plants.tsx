@@ -26,8 +26,12 @@ export default function GrowPlantsScreen() {
   const entitlements = useEntitlements();
   const hasPlantWriteCapability = entitlements.can(CAPABILITY_KEYS.PLANTS_PERSONAL_WRITE);
   const maxPlants = Number(entitlements.limits?.maxPlants ?? 0);
-  const { growId: rawGrowId } = useLocalSearchParams<{ growId?: string | string[] }>();
+  const { growId: rawGrowId, plantId: rawPlantId } = useLocalSearchParams<{
+    growId?: string | string[];
+    plantId?: string | string[];
+  }>();
   const growId = useMemo(() => coerceParam(rawGrowId), [rawGrowId]);
+  const routePlantId = useMemo(() => coerceParam(rawPlantId), [rawPlantId]);
   const [plants, setPlants] = useState<PersonalPlant[]>([]);
   const [loading, setLoading] = useState(true);
   const [creating, setCreating] = useState(false);
@@ -411,76 +415,88 @@ export default function GrowPlantsScreen() {
           />
         </View>
       ) : (
-        plants.map((plant, index) => (
-          <View key={getRowId(plant) || `plant-${index}`} style={styles.card}>
-            <Text style={styles.cardTitle}>{plant.name || "Untitled plant"}</Text>
-            <Text style={styles.subtitle}>
-              {plant.cultivar || plant.strain || "Unknown cultivar"} -{" "}
-              {plant.stage || plant.status || "stage not set"}
-            </Text>
-            <PersonalFeedPlacement
-              placement="top"
-              routeKey="personal_grows_growid_plants"
-              longContent
-            />
-            {plant.medium ? (
-              <Text style={styles.meta}>Medium: {plant.medium}</Text>
-            ) : null}
-            {plant.cropCommonName || plant.scientificName ? (
-              <Text style={styles.meta}>
-                Species: {plant.cropCommonName || "Unknown common name"}
-                {plant.scientificName ? ` (${plant.scientificName})` : ""}
+        plants.map((plant, index) => {
+          const currentPlantId = getRowId(plant);
+          const isSelected = Boolean(routePlantId && routePlantId === currentPlantId);
+          return (
+            <View
+              key={currentPlantId || `plant-${index}`}
+              accessibilityLabel={
+                isSelected ? `Selected plant ${routePlantId}` : undefined
+              }
+              style={[styles.card, isSelected ? styles.cardFocused : null]}
+            >
+              <Text style={styles.cardTitle}>{plant.name || "Untitled plant"}</Text>
+              <Text style={styles.subtitle}>
+                {plant.cultivar || plant.strain || "Unknown cultivar"} -{" "}
+                {plant.stage || plant.status || "stage not set"}
               </Text>
-            ) : null}
-            {plant.cropProfileId ? (
-              <Text style={styles.meta}>Crop profile linked</Text>
-            ) : null}
-            {growthOverlayLine(plant) ? (
-              <Text style={styles.meta}>Growth overlay: {growthOverlayLine(plant)}</Text>
-            ) : null}
-            <View style={styles.actions}>
-              <Link href={withPlant("/home/personal/diagnose", plant)} asChild>
-                <Pressable
-                  style={styles.quickAction}
-                  accessibilityRole="button"
-                  accessibilityLabel={`Diagnose ${plant.name || "plant"}`}
+              <PersonalFeedPlacement
+                placement="top"
+                routeKey="personal_grows_growid_plants"
+                longContent
+              />
+              {plant.medium ? (
+                <Text style={styles.meta}>Medium: {plant.medium}</Text>
+              ) : null}
+              {plant.cropCommonName || plant.scientificName ? (
+                <Text style={styles.meta}>
+                  Species: {plant.cropCommonName || "Unknown common name"}
+                  {plant.scientificName ? ` (${plant.scientificName})` : ""}
+                </Text>
+              ) : null}
+              {plant.cropProfileId ? (
+                <Text style={styles.meta}>Crop profile linked</Text>
+              ) : null}
+              {growthOverlayLine(plant) ? (
+                <Text style={styles.meta}>
+                  Growth overlay: {growthOverlayLine(plant)}
+                </Text>
+              ) : null}
+              <View style={styles.actions}>
+                <Link href={withPlant("/home/personal/diagnose", plant)} asChild>
+                  <Pressable
+                    style={styles.quickAction}
+                    accessibilityRole="button"
+                    accessibilityLabel={`Diagnose ${plant.name || "plant"}`}
+                  >
+                    <Text style={styles.quickActionText}>Diagnose</Text>
+                  </Pressable>
+                </Link>
+                <Link href={withPlant("/home/personal/tools/vpd", plant)} asChild>
+                  <Pressable
+                    style={styles.quickAction}
+                    accessibilityRole="button"
+                    accessibilityLabel={`Run VPD for ${plant.name || "plant"}`}
+                  >
+                    <Text style={styles.quickActionText}>VPD</Text>
+                  </Pressable>
+                </Link>
+                <Link href={withPlant("/home/personal/tools/watering", plant)} asChild>
+                  <Pressable
+                    style={styles.quickAction}
+                    accessibilityRole="button"
+                    accessibilityLabel={`Plan watering for ${plant.name || "plant"}`}
+                  >
+                    <Text style={styles.quickActionText}>Watering</Text>
+                  </Pressable>
+                </Link>
+                <Link
+                  href={withPlant("/home/personal/tools/timeline-planner", plant)}
+                  asChild
                 >
-                  <Text style={styles.quickActionText}>Diagnose</Text>
-                </Pressable>
-              </Link>
-              <Link href={withPlant("/home/personal/tools/vpd", plant)} asChild>
-                <Pressable
-                  style={styles.quickAction}
-                  accessibilityRole="button"
-                  accessibilityLabel={`Run VPD for ${plant.name || "plant"}`}
-                >
-                  <Text style={styles.quickActionText}>VPD</Text>
-                </Pressable>
-              </Link>
-              <Link href={withPlant("/home/personal/tools/watering", plant)} asChild>
-                <Pressable
-                  style={styles.quickAction}
-                  accessibilityRole="button"
-                  accessibilityLabel={`Plan watering for ${plant.name || "plant"}`}
-                >
-                  <Text style={styles.quickActionText}>Watering</Text>
-                </Pressable>
-              </Link>
-              <Link
-                href={withPlant("/home/personal/tools/timeline-planner", plant)}
-                asChild
-              >
-                <Pressable
-                  style={styles.quickAction}
-                  accessibilityRole="button"
-                  accessibilityLabel={`Plan timeline for ${plant.name || "plant"}`}
-                >
-                  <Text style={styles.quickActionText}>Timeline</Text>
-                </Pressable>
-              </Link>
+                  <Pressable
+                    style={styles.quickAction}
+                    accessibilityRole="button"
+                    accessibilityLabel={`Plan timeline for ${plant.name || "plant"}`}
+                  >
+                    <Text style={styles.quickActionText}>Timeline</Text>
+                  </Pressable>
+                </Link>
+              </View>
             </View>
-          </View>
-        ))
+          );
+        })
       )}
 
       <PersonalFeedPlacement
@@ -560,6 +576,13 @@ const styles = StyleSheet.create({
     backgroundColor: "#FFFFFF",
     padding: 12,
     gap: 4
+  },
+  cardFocused: {
+    borderColor: "#0F766E",
+    borderWidth: 2,
+    shadowColor: "#0F766E",
+    shadowOpacity: 0.12,
+    shadowRadius: 8
   },
   cardTitle: { color: "#0F172A", fontSize: 16, fontWeight: "800" },
   meta: { color: "#475569", fontSize: 12 },
