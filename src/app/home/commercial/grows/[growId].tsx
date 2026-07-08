@@ -176,6 +176,12 @@ export default function CommercialGrowDetailRoute({
               label="Open Product"
             />
           ) : null}
+          {grow?.productLineId ? (
+            <ActionLink
+              href={`/home/commercial/product-lines/${encodeURIComponent(grow.productLineId)}`}
+              label="Open Product Line"
+            />
+          ) : null}
           {grow?.batchId ? (
             <ActionLink
               href={`/home/commercial/batch-planner/${encodeURIComponent(grow.batchId)}`}

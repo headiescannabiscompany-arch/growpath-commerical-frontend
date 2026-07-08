@@ -1878,6 +1878,9 @@ describe("commercial workflow pages", () => {
     expect(screen.getByText("Missing add measurement data")).toBeTruthy();
     expect(screen.getByText("Claim-Safe AI Review")).toBeTruthy();
     expect(screen.getByText("Publish Path")).toBeTruthy();
+    expect(
+      screen.UNSAFE_getByProps({ href: "/home/commercial/product-lines/line-1" })
+    ).toBeTruthy();
     fireEvent.press(screen.getByLabelText("Create trial evidence task"));
 
     await waitFor(() =>
@@ -2269,6 +2272,9 @@ describe("commercial workflow pages", () => {
     ).toBeTruthy();
     expect(
       screen.UNSAFE_getByProps({ href: "/home/commercial/batch-planner/batch-1" })
+    ).toBeTruthy();
+    expect(
+      screen.UNSAFE_getByProps({ href: "/home/commercial/product-lines/line-1" })
     ).toBeTruthy();
     expect(
       screen.getByLabelText("Product trial evidence run harvest quality notes").props

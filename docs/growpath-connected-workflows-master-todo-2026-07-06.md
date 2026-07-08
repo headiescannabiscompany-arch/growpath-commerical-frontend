@@ -536,6 +536,7 @@ Completed and pushed:
 260. Commercial Course detail/edit now loads existing Product Lines and offers quick-select buttons for linked product-family metadata, so owners can repair course-to-product-line connections after creation without raw ID lookup.
 261. Commercial Product Trials now load existing Product Lines and offer quick-select buttons on trial creation, keeping compatibility trial records connected to storefront product families while evidence-runs remain canonical.
 262. Commercial Product Detail now loads existing Product Lines, shows current line context, and offers a quick-select repair path that saves `productLineId`, so owners can fix storefront family metadata after product creation without copying raw IDs.
+263. Commercial Product Trial detail and canonical Evidence Run detail now link product-line IDs back to owner Product Line detail pages, matching the batch-detail behavior and keeping evidence records navigable through storefront product families.
 
 ## Working Rule For Codex
 

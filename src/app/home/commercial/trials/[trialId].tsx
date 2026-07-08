@@ -281,6 +281,12 @@ export default function CommercialTrialDetailRoute({ route }: { route?: any } = 
               label="Open Product"
             />
           ) : null}
+          {trial?.productLineId ? (
+            <ActionLink
+              href={`/home/commercial/product-lines/${encodeURIComponent(trial.productLineId)}`}
+              label="Open Product Line"
+            />
+          ) : null}
           {trial?.growId ? (
             <ActionLink
               href={`/home/commercial/evidence-runs/${encodeURIComponent(trial.growId)}`}
