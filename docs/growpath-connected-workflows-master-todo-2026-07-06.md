@@ -360,6 +360,7 @@ Completed and pushed:
 84. Personal grow timeline source actions now use the shared resolver for journal entries, ToolRuns, tasks, AI diagnoses, automation, plants, and grow milestones, with journal events opening their actual log detail and automation events returning to the grow automation workflow.
 85. Personal dashboard task source links now share the same resolver as Task Center and Timeline, so ToolRun, AI diagnosis, automation policy, Forum/Q&A, journal, and manual task links open the connected workflow instead of local one-off fallbacks.
 86. The GrowPath system audit now guards the shared source-link resolver, requiring connected workflow aliases and usage from Personal Task Center, grow timeline, and the personal dashboard model.
+87. Shared order source links now respect workspace: commercial order alerts stay in Commercial Orders, facility order/input references go to Facility Inventory, and personal purchase/order references go to the personal profile area instead of leaking into commercial admin.
 
 ## Working Rule For Codex
 

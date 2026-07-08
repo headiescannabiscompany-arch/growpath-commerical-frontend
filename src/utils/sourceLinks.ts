@@ -122,7 +122,11 @@ export function sourceObjectHref(source: SourceLike) {
     return workspace === "commercial" ? "/home/commercial/storefront" : "/store";
   }
 
-  if (sourceType === "order") return "/home/commercial/orders";
+  if (sourceType === "order") {
+    if (workspace === "commercial") return "/home/commercial/orders";
+    if (workspace === "facility") return "/home/facility/inventory";
+    return "/home/personal/profile";
+  }
   if (sourceType === "room")
     return roomId ? "/home/facility/rooms" : "/home/facility/rooms";
   if (sourceType === "facility") return "/home/facility";

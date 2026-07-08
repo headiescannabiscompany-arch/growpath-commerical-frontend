@@ -87,5 +87,29 @@ describe("sourceObjectHref", () => {
         workspaceType: "personal"
       })
     ).toBe("/home/personal/grows/grow-1/automation");
+
+    expect(
+      sourceObjectHref({
+        sourceType: "order",
+        sourceId: "order-1",
+        workspaceType: "personal"
+      })
+    ).toBe("/home/personal/profile");
+
+    expect(
+      sourceObjectHref({
+        sourceType: "order",
+        sourceId: "order-1",
+        workspaceType: "commercial"
+      })
+    ).toBe("/home/commercial/orders");
+
+    expect(
+      sourceObjectHref({
+        sourceType: "order",
+        sourceId: "order-1",
+        workspaceType: "facility"
+      })
+    ).toBe("/home/facility/inventory");
   });
 });
