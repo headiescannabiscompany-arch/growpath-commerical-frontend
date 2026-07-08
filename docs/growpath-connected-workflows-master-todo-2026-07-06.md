@@ -469,6 +469,7 @@ Completed and pushed:
 193. Legacy Personal AI Feeding Schedule and Watering Planner pages now use the shared back-control boundary with `/home/personal/tools` fallbacks, extending focused coverage across grow-action tools that can create logs and tasks.
 194. Legacy Personal PPFD / DLI Planner and Timeline Planner pages now use the shared back-control boundary with `/home/personal/tools` fallbacks, with focused coverage for light-planning and milestone-planning tool navigation.
 195. Legacy Personal AI Environment Analysis and PDF / Export pages now use the shared back-control boundary with `/home/personal/tools` fallbacks, with focused coverage for environment-review and export-tool navigation.
+196. Personal Ingredient Library and Saved Tool Runs now use the shared back-control boundary with `/home/personal/tools` fallbacks, and their existing workflow tests assert the shared fallback while preserving ingredient-save and ToolRun-reopen behavior.
 
 ## Working Rule For Codex
 

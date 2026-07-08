@@ -28,10 +28,20 @@ jest.mock("@/api/toolRuns", () => ({
   updateToolRun: jest.fn()
 }));
 
-jest.mock("@/components/nav/BackButton", () => {
+jest.mock("@/components/ScreenBoundary", () => {
   const React = require("react");
-  const { Text } = require("react-native");
-  return () => React.createElement(Text, null, "Back");
+  const { Text, View } = require("react-native");
+  return {
+    ScreenBoundary: ({ children, showBack, backFallbackHref }: any) =>
+      React.createElement(
+        View,
+        null,
+        showBack
+          ? React.createElement(Text, null, `Shared Back ${backFallbackHref}`)
+          : null,
+        children
+      )
+  };
 });
 
 jest.mock("@/components/feed/PersonalFeedPlacement", () => {
@@ -86,6 +96,7 @@ describe("SavedToolRunsRoute", () => {
     );
 
     expect(screen.getByLabelText("Selected saved tool run run-1")).toBeTruthy();
+    expect(screen.getByText("Shared Back /home/personal/tools")).toBeTruthy();
     expect(screen.getByText("vpd result: Full VPD result.")).toBeTruthy();
   });
 });

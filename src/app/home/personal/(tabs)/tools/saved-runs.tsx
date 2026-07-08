@@ -20,7 +20,7 @@ import {
   updateToolRun,
   type ToolRun
 } from "@/api/toolRuns";
-import BackButton from "@/components/nav/BackButton";
+import { ScreenBoundary } from "@/components/ScreenBoundary";
 import ToolResultSurface, {
   type ToolResultAction,
   type ToolResultMetric,
@@ -220,133 +220,140 @@ export default function SavedToolRunsScreen() {
     : [];
 
   return (
-    <ScrollView style={styles.screen} contentContainerStyle={styles.content}>
-      <BackButton />
-      <View style={styles.header}>
-        <Text style={styles.title}>Saved Tool Runs</Text>
-        <Text style={styles.subtitle}>
-          Reopen, annotate, archive, and continue from saved GrowPathAI results.
-        </Text>
-        <PersonalFeedPlacement
-          placement="top"
-          routeKey="personal_tools_saved_runs"
-          longContent
-        />
-        {growId ? <Text style={styles.context}>Grow context: {growId}</Text> : null}
-      </View>
-
-      <View style={styles.filters}>
-        {TOOL_FILTERS.map((filter) => {
-          const active = toolType === filter.value;
-          return (
-            <Pressable
-              key={filter.value || "all"}
-              accessibilityRole="button"
-              onPress={() => setToolType(filter.value)}
-              style={[styles.chip, active && styles.chipOn]}
-            >
-              <Text style={[styles.chipText, active && styles.chipTextOn]}>
-                {filter.label}
-              </Text>
-            </Pressable>
-          );
-        })}
-      </View>
-
-      {loading ? (
-        <View style={styles.card}>
-          <ActivityIndicator />
+    <ScreenBoundary
+      title="Saved Tool Runs"
+      showBack
+      backFallbackHref="/home/personal/tools"
+    >
+      <ScrollView style={styles.screen} contentContainerStyle={styles.content}>
+        <View style={styles.header}>
+          <Text style={styles.title}>Saved Tool Runs</Text>
+          <Text style={styles.subtitle}>
+            Reopen, annotate, archive, and continue from saved GrowPathAI results.
+          </Text>
+          <PersonalFeedPlacement
+            placement="top"
+            routeKey="personal_tools_saved_runs"
+            longContent
+          />
+          {growId ? <Text style={styles.context}>Grow context: {growId}</Text> : null}
         </View>
-      ) : runs.length ? (
-        <View style={styles.list}>
-          {runs.map((run) => {
-            const active = selectedRunId && selectedRunId === idFor(run);
+
+        <View style={styles.filters}>
+          {TOOL_FILTERS.map((filter) => {
+            const active = toolType === filter.value;
             return (
               <Pressable
-                key={idFor(run)}
-                accessibilityLabel={
-                  active
-                    ? `Selected saved tool run ${idFor(run)}`
-                    : `Saved tool run ${idFor(run)}`
-                }
+                key={filter.value || "all"}
                 accessibilityRole="button"
-                onPress={() => selectRun(run)}
-                style={[styles.card, active && styles.cardOn]}
+                onPress={() => setToolType(filter.value)}
+                style={[styles.chip, active && styles.chipOn]}
               >
-                <Text style={styles.cardTitle}>{runTitle(run)}</Text>
-                <Text style={styles.meta}>
-                  {formatDate(run.createdAt)} | {run.growId || "No grow"}
-                </Text>
-                <Text style={styles.cardText} numberOfLines={2}>
-                  {run.summary ||
-                    JSON.stringify(run.outputs || run.result || {}).slice(0, 180)}
+                <Text style={[styles.chipText, active && styles.chipTextOn]}>
+                  {filter.label}
                 </Text>
               </Pressable>
             );
           })}
         </View>
-      ) : (
-        <View style={styles.card}>
-          <Text style={styles.cardTitle}>No saved runs</Text>
-          <Text style={styles.cardText}>
-            Run a tool and it will appear here as a saved ToolRun record.
-          </Text>
-        </View>
-      )}
 
-      {selectedRun ? (
-        <View style={styles.editor}>
-          <Text style={styles.label}>Summary / note</Text>
-          <TextInput
-            value={summaryDraft}
-            onChangeText={setSummaryDraft}
-            multiline
-            style={styles.input}
-            placeholder="Add a short note for this saved run"
-          />
-          <Pressable
-            accessibilityRole="button"
-            onPress={saveSummary}
-            style={styles.primary}
-          >
-            <Text style={styles.primaryText}>Save Note</Text>
-          </Pressable>
-        </View>
-      ) : null}
+        {loading ? (
+          <View style={styles.card}>
+            <ActivityIndicator />
+          </View>
+        ) : runs.length ? (
+          <View style={styles.list}>
+            {runs.map((run) => {
+              const active = selectedRunId && selectedRunId === idFor(run);
+              return (
+                <Pressable
+                  key={idFor(run)}
+                  accessibilityLabel={
+                    active
+                      ? `Selected saved tool run ${idFor(run)}`
+                      : `Saved tool run ${idFor(run)}`
+                  }
+                  accessibilityRole="button"
+                  onPress={() => selectRun(run)}
+                  style={[styles.card, active && styles.cardOn]}
+                >
+                  <Text style={styles.cardTitle}>{runTitle(run)}</Text>
+                  <Text style={styles.meta}>
+                    {formatDate(run.createdAt)} | {run.growId || "No grow"}
+                  </Text>
+                  <Text style={styles.cardText} numberOfLines={2}>
+                    {run.summary ||
+                      JSON.stringify(run.outputs || run.result || {}).slice(0, 180)}
+                  </Text>
+                </Pressable>
+              );
+            })}
+          </View>
+        ) : (
+          <View style={styles.card}>
+            <Text style={styles.cardTitle}>No saved runs</Text>
+            <Text style={styles.cardText}>
+              Run a tool and it will appear here as a saved ToolRun record.
+            </Text>
+          </View>
+        )}
 
-      <PersonalFeedPlacement
-        placement="middle"
-        routeKey="personal_tools_saved_runs"
-        longContent
-      />
+        {selectedRun ? (
+          <View style={styles.editor}>
+            <Text style={styles.label}>Summary / note</Text>
+            <TextInput
+              value={summaryDraft}
+              onChangeText={setSummaryDraft}
+              multiline
+              style={styles.input}
+              placeholder="Add a short note for this saved run"
+            />
+            <Pressable
+              accessibilityRole="button"
+              onPress={saveSummary}
+              style={styles.primary}
+            >
+              <Text style={styles.primaryText}>Save Note</Text>
+            </Pressable>
+          </View>
+        ) : null}
 
-      {selectedRun ? (
-        <ToolResultSurface
-          title={`${runTitle(selectedRun)} result`}
-          status={selectedRun.status || "completed"}
-          summary={selectedRun.summary || ""}
-          metrics={metricsFor(selectedRun)}
-          inputs={selectedRun.inputs || selectedRun.input || selectedRun.params || {}}
-          outputs={selectedRun.outputs || selectedRun.output || selectedRun.result || {}}
-          notices={noticesFor(selectedRun)}
-          recommendations={selectedRun.recommendations || []}
-          formulas={selectedRun.formulas || []}
-          uncertainty={selectedRun.uncertainty || null}
-          confidence={selectedRun.confidence || null}
-          actions={actions}
-          feedback={feedback}
-          copyPayload={selectedRun}
+        <PersonalFeedPlacement
+          placement="middle"
+          routeKey="personal_tools_saved_runs"
+          longContent
         />
-      ) : feedback ? (
-        <Text style={styles.feedback}>{feedback}</Text>
-      ) : null}
 
-      <PersonalFeedPlacement
-        placement="bottom"
-        routeKey="personal_tools_saved_runs"
-        longContent
-      />
-    </ScrollView>
+        {selectedRun ? (
+          <ToolResultSurface
+            title={`${runTitle(selectedRun)} result`}
+            status={selectedRun.status || "completed"}
+            summary={selectedRun.summary || ""}
+            metrics={metricsFor(selectedRun)}
+            inputs={selectedRun.inputs || selectedRun.input || selectedRun.params || {}}
+            outputs={
+              selectedRun.outputs || selectedRun.output || selectedRun.result || {}
+            }
+            notices={noticesFor(selectedRun)}
+            recommendations={selectedRun.recommendations || []}
+            formulas={selectedRun.formulas || []}
+            uncertainty={selectedRun.uncertainty || null}
+            confidence={selectedRun.confidence || null}
+            actions={actions}
+            feedback={feedback}
+            copyPayload={selectedRun}
+          />
+        ) : feedback ? (
+          <Text style={styles.feedback}>{feedback}</Text>
+        ) : null}
+
+        <PersonalFeedPlacement
+          placement="bottom"
+          routeKey="personal_tools_saved_runs"
+          longContent
+        />
+      </ScrollView>
+    </ScreenBoundary>
   );
 }
 

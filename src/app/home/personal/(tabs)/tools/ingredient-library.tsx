@@ -17,7 +17,7 @@ import {
   updateProductIngredient,
   type ProductIngredient
 } from "@/api/productIngredients";
-import BackButton from "@/components/nav/BackButton";
+import { ScreenBoundary } from "@/components/ScreenBoundary";
 import PersonalFeedPlacement from "@/components/feed/PersonalFeedPlacement";
 
 type Draft = {
@@ -268,329 +268,344 @@ export default function IngredientLibraryRoute() {
   }
 
   return (
-    <ScrollView style={styles.screen} contentContainerStyle={styles.content}>
-      <BackButton />
-      <View style={styles.header}>
-        <Text style={styles.title}>Product / Ingredient Library</Text>
-        <Text style={styles.subtitle}>
-          Manage user-entered nutrients, amendments, soil inputs, and source confidence.
-        </Text>
+    <ScreenBoundary
+      title="Product / Ingredient Library"
+      showBack
+      backFallbackHref="/home/personal/tools"
+    >
+      <ScrollView style={styles.screen} contentContainerStyle={styles.content}>
+        <View style={styles.header}>
+          <Text style={styles.title}>Product / Ingredient Library</Text>
+          <Text style={styles.subtitle}>
+            Manage user-entered nutrients, amendments, soil inputs, and source confidence.
+          </Text>
+          <PersonalFeedPlacement
+            placement="top"
+            routeKey="personal_tools_ingredient_library"
+            longContent
+          />
+        </View>
+
+        <View style={styles.actions}>
+          <Pressable
+            accessibilityRole="button"
+            onPress={startNew}
+            style={styles.secondary}
+          >
+            <Text style={styles.secondaryText}>New Ingredient</Text>
+          </Pressable>
+          <Pressable
+            accessibilityRole="button"
+            onPress={toggleFavorite}
+            style={styles.secondary}
+          >
+            <Text style={styles.secondaryText}>
+              {draft.favorite ? "Unfavorite" : "Favorite"}
+            </Text>
+          </Pressable>
+        </View>
+
+        {loading ? (
+          <View style={styles.card}>
+            <ActivityIndicator />
+          </View>
+        ) : items.length ? (
+          <View style={styles.list}>
+            {items.map((item) => {
+              const active = idFor(item) === selectedId;
+              return (
+                <Pressable
+                  key={idFor(item)}
+                  accessibilityRole="button"
+                  onPress={() => selectItem(item)}
+                  style={[styles.card, active && styles.cardOn]}
+                >
+                  <Text style={styles.cardTitle}>
+                    {item.favorite ? "* " : ""}
+                    {item.name}
+                  </Text>
+                  <Text style={styles.meta}>
+                    {item.brand || "No brand"} | {item.category || "input"} | NPK{" "}
+                    {item.labelNPK?.N ?? 0}-{item.labelNPK?.P ?? 0}-
+                    {item.labelNPK?.K ?? 0}
+                  </Text>
+                  <Text style={styles.meta}>
+                    {item.sourceType || "user_entered"} | confidence{" "}
+                    {item.confidence || "low"}
+                  </Text>
+                  <Text style={styles.meta}>
+                    Release {item.releaseSpeed || "unknown"} | Window{" "}
+                    {item.releaseWindow || "unknown"} | Density{" "}
+                    {item.densityGml ? `${item.densityGml} g/ml` : "not set"}
+                  </Text>
+                  {item.supplier || item.cost ? (
+                    <Text style={styles.meta}>
+                      Supplier {item.supplier || "not set"} | Cost{" "}
+                      {item.cost ? `$${item.cost}` : "not set"}
+                    </Text>
+                  ) : null}
+                  {item.sourceRecords?.[0]?.sourceName ? (
+                    <Text style={styles.meta}>
+                      Source: {item.sourceRecords[0].sourceName}
+                    </Text>
+                  ) : null}
+                  {item.documentUrl || item.photoUrl ? (
+                    <Text style={styles.meta}>
+                      Docs {item.documentUrl || "not set"} | Label{" "}
+                      {item.photoUrl || "not set"}
+                    </Text>
+                  ) : null}
+                  {item.applicationNotes ? (
+                    <Text style={styles.meta}>Use: {item.applicationNotes}</Text>
+                  ) : null}
+                  {item.micronutrientNotes ? (
+                    <Text style={styles.meta}>Micros: {item.micronutrientNotes}</Text>
+                  ) : null}
+                </Pressable>
+              );
+            })}
+          </View>
+        ) : (
+          <View style={styles.card}>
+            <Text style={styles.cardTitle}>No ingredients yet</Text>
+            <Text style={styles.meta}>
+              Create one to use in recipes and amendment planning.
+            </Text>
+          </View>
+        )}
+
         <PersonalFeedPlacement
-          placement="top"
+          placement="middle"
           routeKey="personal_tools_ingredient_library"
           longContent
         />
-      </View>
 
-      <View style={styles.actions}>
-        <Pressable accessibilityRole="button" onPress={startNew} style={styles.secondary}>
-          <Text style={styles.secondaryText}>New Ingredient</Text>
-        </Pressable>
-        <Pressable
-          accessibilityRole="button"
-          onPress={toggleFavorite}
-          style={styles.secondary}
-        >
-          <Text style={styles.secondaryText}>
-            {draft.favorite ? "Unfavorite" : "Favorite"}
+        <View style={styles.form}>
+          <Text style={styles.sectionTitle}>
+            {selected ? "Edit ingredient" : "Create ingredient"}
           </Text>
-        </Pressable>
-      </View>
 
-      {loading ? (
-        <View style={styles.card}>
-          <ActivityIndicator />
-        </View>
-      ) : items.length ? (
-        <View style={styles.list}>
-          {items.map((item) => {
-            const active = idFor(item) === selectedId;
-            return (
+          <Field
+            label="Name"
+            value={draft.name}
+            onChangeText={(value) => updateDraft("name", value)}
+          />
+          <Field
+            label="Brand"
+            value={draft.brand}
+            onChangeText={(value) => updateDraft("brand", value)}
+          />
+          <Field
+            label="Category"
+            value={draft.category}
+            onChangeText={(value) => updateDraft("category", value)}
+          />
+
+          <View style={styles.row}>
+            <Field
+              label="N"
+              value={draft.n}
+              numeric
+              onChangeText={(value) => updateDraft("n", value)}
+            />
+            <Field
+              label="P"
+              value={draft.p}
+              numeric
+              onChangeText={(value) => updateDraft("p", value)}
+            />
+            <Field
+              label="K"
+              value={draft.k}
+              numeric
+              onChangeText={(value) => updateDraft("k", value)}
+            />
+          </View>
+
+          <View style={styles.row}>
+            <Field
+              label="Density g/ml"
+              value={draft.densityGml}
+              numeric
+              onChangeText={(value) => updateDraft("densityGml", value)}
+            />
+            <Field
+              label="Cost"
+              value={draft.cost}
+              numeric
+              onChangeText={(value) => updateDraft("cost", value)}
+            />
+          </View>
+
+          <Text style={styles.label}>Release speed</Text>
+          <View style={styles.actions}>
+            {(["immediate", "fast", "medium", "slow", "unknown"] as const).map(
+              (value) => (
+                <Pressable
+                  key={value}
+                  accessibilityRole="button"
+                  accessibilityLabel={`Release speed ${value}`}
+                  onPress={() => updateDraft("releaseSpeed", value)}
+                  style={[styles.chip, draft.releaseSpeed === value && styles.chipOn]}
+                >
+                  <Text
+                    style={[
+                      styles.chipText,
+                      draft.releaseSpeed === value && styles.chipTextOn
+                    ]}
+                  >
+                    {value}
+                  </Text>
+                </Pressable>
+              )
+            )}
+          </View>
+          <Field
+            label="Release window"
+            value={draft.releaseWindow}
+            onChangeText={(value) => updateDraft("releaseWindow", value)}
+          />
+          <Field
+            label="Supplier"
+            value={draft.supplier}
+            onChangeText={(value) => updateDraft("supplier", value)}
+          />
+          <Field
+            label="Organic or synthetic"
+            value={draft.organicOrSynthetic}
+            onChangeText={(value) => updateDraft("organicOrSynthetic", value)}
+          />
+          <Field
+            label="Document / COA / SDS URL"
+            value={draft.documentUrl}
+            onChangeText={(value) => updateDraft("documentUrl", value)}
+          />
+          <Field
+            label="Label photo URL"
+            value={draft.photoUrl}
+            onChangeText={(value) => updateDraft("photoUrl", value)}
+          />
+          <Field
+            label="Micronutrient notes"
+            value={draft.micronutrientNotes}
+            onChangeText={(value) => updateDraft("micronutrientNotes", value)}
+          />
+          <Field
+            label="Application notes"
+            value={draft.applicationNotes}
+            onChangeText={(value) => updateDraft("applicationNotes", value)}
+          />
+
+          <Field
+            label="Source type"
+            value={draft.sourceType}
+            onChangeText={(value) => updateDraft("sourceType", value)}
+          />
+          <Text style={styles.label}>Confidence</Text>
+          <View style={styles.actions}>
+            {(["low", "medium", "high"] as const).map((value) => (
               <Pressable
-                key={idFor(item)}
+                key={value}
                 accessibilityRole="button"
-                onPress={() => selectItem(item)}
-                style={[styles.card, active && styles.cardOn]}
+                onPress={() => updateDraft("confidence", value)}
+                style={[styles.chip, draft.confidence === value && styles.chipOn]}
               >
-                <Text style={styles.cardTitle}>
-                  {item.favorite ? "* " : ""}
-                  {item.name}
+                <Text
+                  style={[
+                    styles.chipText,
+                    draft.confidence === value && styles.chipTextOn
+                  ]}
+                >
+                  {value}
                 </Text>
-                <Text style={styles.meta}>
-                  {item.brand || "No brand"} | {item.category || "input"} | NPK{" "}
-                  {item.labelNPK?.N ?? 0}-{item.labelNPK?.P ?? 0}-{item.labelNPK?.K ?? 0}
-                </Text>
-                <Text style={styles.meta}>
-                  {item.sourceType || "user_entered"} | confidence{" "}
-                  {item.confidence || "low"}
-                </Text>
-                <Text style={styles.meta}>
-                  Release {item.releaseSpeed || "unknown"} | Window{" "}
-                  {item.releaseWindow || "unknown"} | Density{" "}
-                  {item.densityGml ? `${item.densityGml} g/ml` : "not set"}
-                </Text>
-                {item.supplier || item.cost ? (
-                  <Text style={styles.meta}>
-                    Supplier {item.supplier || "not set"} | Cost{" "}
-                    {item.cost ? `$${item.cost}` : "not set"}
-                  </Text>
-                ) : null}
-                {item.sourceRecords?.[0]?.sourceName ? (
-                  <Text style={styles.meta}>
-                    Source: {item.sourceRecords[0].sourceName}
-                  </Text>
-                ) : null}
-                {item.documentUrl || item.photoUrl ? (
-                  <Text style={styles.meta}>
-                    Docs {item.documentUrl || "not set"} | Label{" "}
-                    {item.photoUrl || "not set"}
-                  </Text>
-                ) : null}
-                {item.applicationNotes ? (
-                  <Text style={styles.meta}>Use: {item.applicationNotes}</Text>
-                ) : null}
-                {item.micronutrientNotes ? (
-                  <Text style={styles.meta}>Micros: {item.micronutrientNotes}</Text>
-                ) : null}
               </Pressable>
-            );
-          })}
-        </View>
-      ) : (
-        <View style={styles.card}>
-          <Text style={styles.cardTitle}>No ingredients yet</Text>
-          <Text style={styles.meta}>
-            Create one to use in recipes and amendment planning.
-          </Text>
-        </View>
-      )}
-
-      <PersonalFeedPlacement
-        placement="middle"
-        routeKey="personal_tools_ingredient_library"
-        longContent
-      />
-
-      <View style={styles.form}>
-        <Text style={styles.sectionTitle}>
-          {selected ? "Edit ingredient" : "Create ingredient"}
-        </Text>
-
-        <Field
-          label="Name"
-          value={draft.name}
-          onChangeText={(value) => updateDraft("name", value)}
-        />
-        <Field
-          label="Brand"
-          value={draft.brand}
-          onChangeText={(value) => updateDraft("brand", value)}
-        />
-        <Field
-          label="Category"
-          value={draft.category}
-          onChangeText={(value) => updateDraft("category", value)}
-        />
-
-        <View style={styles.row}>
+            ))}
+          </View>
           <Field
-            label="N"
-            value={draft.n}
-            numeric
-            onChangeText={(value) => updateDraft("n", value)}
+            label="Source name"
+            value={draft.sourceName}
+            onChangeText={(value) => updateDraft("sourceName", value)}
           />
           <Field
-            label="P"
-            value={draft.p}
-            numeric
-            onChangeText={(value) => updateDraft("p", value)}
+            label="Source URL"
+            value={draft.sourceUrl}
+            onChangeText={(value) => updateDraft("sourceUrl", value)}
           />
           <Field
-            label="K"
-            value={draft.k}
-            numeric
-            onChangeText={(value) => updateDraft("k", value)}
-          />
-        </View>
-
-        <View style={styles.row}>
-          <Field
-            label="Density g/ml"
-            value={draft.densityGml}
-            numeric
-            onChangeText={(value) => updateDraft("densityGml", value)}
+            label="Citation"
+            value={draft.citation}
+            onChangeText={(value) => updateDraft("citation", value)}
           />
           <Field
-            label="Cost"
-            value={draft.cost}
-            numeric
-            onChangeText={(value) => updateDraft("cost", value)}
+            label="License"
+            value={draft.license}
+            onChangeText={(value) => updateDraft("license", value)}
           />
-        </View>
-
-        <Text style={styles.label}>Release speed</Text>
-        <View style={styles.actions}>
-          {(["immediate", "fast", "medium", "slow", "unknown"] as const).map((value) => (
+          <View style={styles.actions}>
             <Pressable
-              key={value}
               accessibilityRole="button"
-              accessibilityLabel={`Release speed ${value}`}
-              onPress={() => updateDraft("releaseSpeed", value)}
-              style={[styles.chip, draft.releaseSpeed === value && styles.chipOn]}
+              onPress={() =>
+                updateDraft("commercialUseAllowed", !draft.commercialUseAllowed)
+              }
+              style={[styles.chip, draft.commercialUseAllowed && styles.chipOn]}
             >
               <Text
-                style={[
-                  styles.chipText,
-                  draft.releaseSpeed === value && styles.chipTextOn
-                ]}
+                style={[styles.chipText, draft.commercialUseAllowed && styles.chipTextOn]}
               >
-                {value}
+                Commercial use {draft.commercialUseAllowed ? "yes" : "no"}
               </Text>
             </Pressable>
-          ))}
-        </View>
-        <Field
-          label="Release window"
-          value={draft.releaseWindow}
-          onChangeText={(value) => updateDraft("releaseWindow", value)}
-        />
-        <Field
-          label="Supplier"
-          value={draft.supplier}
-          onChangeText={(value) => updateDraft("supplier", value)}
-        />
-        <Field
-          label="Organic or synthetic"
-          value={draft.organicOrSynthetic}
-          onChangeText={(value) => updateDraft("organicOrSynthetic", value)}
-        />
-        <Field
-          label="Document / COA / SDS URL"
-          value={draft.documentUrl}
-          onChangeText={(value) => updateDraft("documentUrl", value)}
-        />
-        <Field
-          label="Label photo URL"
-          value={draft.photoUrl}
-          onChangeText={(value) => updateDraft("photoUrl", value)}
-        />
-        <Field
-          label="Micronutrient notes"
-          value={draft.micronutrientNotes}
-          onChangeText={(value) => updateDraft("micronutrientNotes", value)}
-        />
-        <Field
-          label="Application notes"
-          value={draft.applicationNotes}
-          onChangeText={(value) => updateDraft("applicationNotes", value)}
-        />
-
-        <Field
-          label="Source type"
-          value={draft.sourceType}
-          onChangeText={(value) => updateDraft("sourceType", value)}
-        />
-        <Text style={styles.label}>Confidence</Text>
-        <View style={styles.actions}>
-          {(["low", "medium", "high"] as const).map((value) => (
             <Pressable
-              key={value}
               accessibilityRole="button"
-              onPress={() => updateDraft("confidence", value)}
-              style={[styles.chip, draft.confidence === value && styles.chipOn]}
+              onPress={() => updateDraft("trainingUseAllowed", !draft.trainingUseAllowed)}
+              style={[styles.chip, draft.trainingUseAllowed && styles.chipOn]}
             >
               <Text
-                style={[styles.chipText, draft.confidence === value && styles.chipTextOn]}
+                style={[styles.chipText, draft.trainingUseAllowed && styles.chipTextOn]}
               >
-                {value}
+                Training use {draft.trainingUseAllowed ? "yes" : "no"}
               </Text>
             </Pressable>
-          ))}
-        </View>
-        <Field
-          label="Source name"
-          value={draft.sourceName}
-          onChangeText={(value) => updateDraft("sourceName", value)}
-        />
-        <Field
-          label="Source URL"
-          value={draft.sourceUrl}
-          onChangeText={(value) => updateDraft("sourceUrl", value)}
-        />
-        <Field
-          label="Citation"
-          value={draft.citation}
-          onChangeText={(value) => updateDraft("citation", value)}
-        />
-        <Field
-          label="License"
-          value={draft.license}
-          onChangeText={(value) => updateDraft("license", value)}
-        />
-        <View style={styles.actions}>
-          <Pressable
-            accessibilityRole="button"
-            onPress={() =>
-              updateDraft("commercialUseAllowed", !draft.commercialUseAllowed)
-            }
-            style={[styles.chip, draft.commercialUseAllowed && styles.chipOn]}
-          >
-            <Text
-              style={[styles.chipText, draft.commercialUseAllowed && styles.chipTextOn]}
-            >
-              Commercial use {draft.commercialUseAllowed ? "yes" : "no"}
-            </Text>
-          </Pressable>
-          <Pressable
-            accessibilityRole="button"
-            onPress={() => updateDraft("trainingUseAllowed", !draft.trainingUseAllowed)}
-            style={[styles.chip, draft.trainingUseAllowed && styles.chipOn]}
-          >
-            <Text
-              style={[styles.chipText, draft.trainingUseAllowed && styles.chipTextOn]}
-            >
-              Training use {draft.trainingUseAllowed ? "yes" : "no"}
-            </Text>
-          </Pressable>
-        </View>
-        <Field
-          label="Source notes"
-          value={draft.sourceNotes}
-          onChangeText={(value) => updateDraft("sourceNotes", value)}
-        />
+          </View>
+          <Field
+            label="Source notes"
+            value={draft.sourceNotes}
+            onChangeText={(value) => updateDraft("sourceNotes", value)}
+          />
 
-        <View style={styles.actions}>
-          <Pressable
-            accessibilityRole="button"
-            disabled={saving}
-            onPress={save}
-            style={[styles.primary, saving && styles.disabled]}
-          >
-            <Text style={styles.primaryText}>
-              {saving ? "Saving..." : "Save Ingredient"}
-            </Text>
-          </Pressable>
-          {selectedId ? (
+          <View style={styles.actions}>
             <Pressable
               accessibilityRole="button"
               disabled={saving}
-              onPress={archiveSelected}
-              style={[styles.secondary, saving && styles.disabled]}
+              onPress={save}
+              style={[styles.primary, saving && styles.disabled]}
             >
-              <Text style={styles.secondaryText}>Archive</Text>
+              <Text style={styles.primaryText}>
+                {saving ? "Saving..." : "Save Ingredient"}
+              </Text>
             </Pressable>
-          ) : null}
+            {selectedId ? (
+              <Pressable
+                accessibilityRole="button"
+                disabled={saving}
+                onPress={archiveSelected}
+                style={[styles.secondary, saving && styles.disabled]}
+              >
+                <Text style={styles.secondaryText}>Archive</Text>
+              </Pressable>
+            ) : null}
+          </View>
+
+          {feedback ? <Text style={styles.feedback}>{feedback}</Text> : null}
         </View>
 
-        {feedback ? <Text style={styles.feedback}>{feedback}</Text> : null}
-      </View>
-
-      <PersonalFeedPlacement
-        placement="bottom"
-        routeKey="personal_tools_ingredient_library"
-        longContent
-      />
-    </ScrollView>
+        <PersonalFeedPlacement
+          placement="bottom"
+          routeKey="personal_tools_ingredient_library"
+          longContent
+        />
+      </ScrollView>
+    </ScreenBoundary>
   );
 }
 

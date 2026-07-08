@@ -21,10 +21,20 @@ jest.mock("@/components/feed/PersonalFeedPlacement", () => {
   return () => React.createElement(View, { testID: "personal-feed-placement" });
 });
 
-jest.mock("@/components/nav/BackButton", () => {
+jest.mock("@/components/ScreenBoundary", () => {
   const React = require("react");
-  const { Text } = require("react-native");
-  return () => React.createElement(Text, null, "Back");
+  const { Text, View } = require("react-native");
+  return {
+    ScreenBoundary: ({ children, showBack, backFallbackHref }: any) =>
+      React.createElement(
+        View,
+        null,
+        showBack
+          ? React.createElement(Text, null, `Shared Back ${backFallbackHref}`)
+          : null,
+        children
+      )
+  };
 });
 
 jest.mock("@/api/productIngredients", () => ({
@@ -70,6 +80,7 @@ describe("IngredientLibraryRoute", () => {
     const screen = render(<IngredientLibraryRoute />);
 
     await waitFor(() => expect(screen.getByText("Kelp meal")).toBeTruthy());
+    expect(screen.getByText("Shared Back /home/personal/tools")).toBeTruthy();
     expect(screen.getByText(/Release medium/)).toBeTruthy();
     expect(screen.getByText(/Supplier Local supply/)).toBeTruthy();
     expect(screen.getByText(/Docs https:\/\/example.com\/coa.pdf/)).toBeTruthy();
