@@ -65,6 +65,7 @@ const checks = [
       "tests/unit/ForgotPasswordScreen.test.tsx",
       "tests/unit/toolRuns-api.test.ts",
       "src/api/__tests__/auth.emailVerification.test.ts",
+      "src/features/personal/__tests__/homeModel.test.ts",
       "src/features/personal/tools/__tests__/moduleRecordPersistence.test.ts",
       "src/features/personal/tools/__tests__/saveToolRunAndOpenJournal.test.ts"
     ]
