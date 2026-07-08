@@ -623,6 +623,7 @@ Completed and pushed:
 347. The legacy Content Marketplace compatibility screen now presents visible upload/browse/analytics copy as Storefront Offers and offer drafts, while keeping old marketplace API calls only as compatibility plumbing.
 348. Shared card radius now uses the tighter 8px workspace token, applying more of Facility's operational visual polish to Personal and Commercial components that consume the common theme.
 349. Deferred user verification now includes the Storefront Offers compatibility tests, active Commercial Tools navigation test, Marketplace compatibility copy guard, shared theme-token guard, and a browser checklist item proving active menus no longer expose Marketplace screens.
+350. Commercial Task Detail now consumes the shared 8px card radius token for cards, feedback, and action buttons, keeping commercial source-linked task workflows visually aligned with Facility's tighter operational polish.
 
 ## Working Rule For Codex
 

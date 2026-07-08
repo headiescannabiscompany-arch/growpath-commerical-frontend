@@ -15,6 +15,7 @@ import { InlineError } from "@/components/InlineError";
 import { apiRequest } from "@/api/apiRequest";
 import { endpoints } from "@/api/endpoints";
 import { useApiErrorHandler, type UiErrorState } from "@/hooks/useApiErrorHandler";
+import { radius } from "@/theme/theme";
 import { sourceObjectHref } from "@/utils/sourceLinks";
 
 type AnyRec = Record<string, any>;
@@ -444,7 +445,7 @@ const styles = StyleSheet.create({
   card: {
     borderWidth: 1,
     borderColor: "rgba(0,0,0,0.12)",
-    borderRadius: 14,
+    borderRadius: radius.card,
     padding: 14,
     backgroundColor: "white"
   },
@@ -454,7 +455,7 @@ const styles = StyleSheet.create({
     backgroundColor: "#ECFDF5",
     borderColor: "#A7F3D0",
     borderWidth: 1,
-    borderRadius: 10,
+    borderRadius: radius.card,
     color: "#047857",
     fontWeight: "800",
     padding: 10
@@ -483,7 +484,7 @@ const styles = StyleSheet.create({
   primaryBtn: {
     alignItems: "center",
     backgroundColor: "#0F172A",
-    borderRadius: 10,
+    borderRadius: radius.card,
     marginTop: 12,
     paddingHorizontal: 12,
     paddingVertical: 10
@@ -492,7 +493,7 @@ const styles = StyleSheet.create({
   secondaryBtn: {
     alignItems: "center",
     borderColor: "#CBD5E1",
-    borderRadius: 10,
+    borderRadius: radius.card,
     borderWidth: 1,
     marginTop: 8,
     paddingHorizontal: 12,
