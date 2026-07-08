@@ -1406,10 +1406,34 @@ export default function Storefront({
               setProductDraft((draft) => ({ ...draft, productLineId }))
             }
             accessibilityLabel="Product line id"
-            placeholder="Product line id"
+            placeholder="Product line id, or choose an existing line below"
             autoCapitalize="none"
             style={styles.input}
           />
+          {productLines.length ? (
+            <View style={styles.objectActions}>
+              {productLines.slice(0, 4).map((line) => {
+                const id = String(line.id ?? line._id ?? line.lineId ?? line.name ?? "");
+                const name = String(line.name ?? line.title ?? "Product line");
+                return (
+                  <Pressable
+                    key={`choose-line-${id || name}`}
+                    accessibilityRole="button"
+                    accessibilityLabel={`Use product line ${name}`}
+                    style={[
+                      styles.secondaryButton,
+                      productDraft.productLineId === id && styles.selectedButton
+                    ]}
+                    onPress={() =>
+                      setProductDraft((draft) => ({ ...draft, productLineId: id }))
+                    }
+                  >
+                    <Text style={styles.secondaryText}>{name}</Text>
+                  </Pressable>
+                );
+              })}
+            </View>
+          ) : null}
           <View style={styles.linkGrid}>
             <TextInput
               value={productDraft.linkedRecipeId}
@@ -1832,6 +1856,7 @@ const styles = StyleSheet.create({
     marginTop: 12,
     paddingVertical: 10
   },
+  selectedButton: { backgroundColor: "#DCFCE7", borderColor: "#22C55E" },
   secondaryText: { color: "#0F172A", fontWeight: "900" },
   disabled: { opacity: 0.55 },
   warningBox: {

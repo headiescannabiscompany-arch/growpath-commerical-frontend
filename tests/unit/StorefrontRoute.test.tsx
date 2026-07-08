@@ -260,7 +260,7 @@ describe("Storefront route", () => {
     expect(screen.getAllByText("Needs work").length).toBeGreaterThan(0);
     expect(screen.queryByText("TODO")).toBeNull();
     expect(screen.getAllByText("Product Lines").length).toBeGreaterThan(0);
-    expect(screen.getByText("Living Soil Line")).toBeTruthy();
+    expect(screen.getAllByText("Living Soil Line").length).toBeGreaterThan(0);
     expect(screen.getAllByText(/Interests living soil, dry amendments/).length).toBeGreaterThan(0);
     expect(screen.getByText("Open Line")).toBeTruthy();
     expect(screen.getAllByText("View as User").length).toBeGreaterThan(0);
@@ -427,7 +427,7 @@ describe("Storefront route", () => {
       screen.getByLabelText("Product external purchase URL"),
       "https://shop.example.com/living-soil"
     );
-    fireEvent.changeText(screen.getByLabelText("Product line id"), "line-1");
+    fireEvent.press(screen.getByLabelText("Use product line Living Soil Line"));
     fireEvent.changeText(screen.getByLabelText("Linked recipe id"), "recipe-1");
     fireEvent.changeText(screen.getByLabelText("Linked batch id"), "batch-1");
     fireEvent.changeText(screen.getByLabelText("Linked evidence run id"), "trial-1");
