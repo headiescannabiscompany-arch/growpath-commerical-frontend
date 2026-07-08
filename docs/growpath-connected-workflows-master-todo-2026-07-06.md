@@ -324,6 +324,7 @@ Completed and pushed:
 48. Legacy root `/orders` and `/campaigns` routes now redirect into canonical commercial workspace pages, with the orders workflow moved under the commercial screen module instead of living as a top-level orphan surface.
 49. The legacy root `/diagnose` route now sends Personal users to Personal diagnosis, Facility users to facility diagnosis intake, and Commercial users back to the commercial workspace, while commercial course/support actions stay inside `/home/commercial/courses`.
 50. The storefront owner UI now lives under the canonical commercial workspace route, while legacy root `/storefront` redirects to `/home/commercial/storefront`.
+51. The GrowPath system audit now checks legacy `/storefront` as a redirect-only guard, alongside legacy `/logs`, `/orders`, and `/campaigns`.
 
 ## Working Rule For Codex
 
