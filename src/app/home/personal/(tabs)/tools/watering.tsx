@@ -17,6 +17,7 @@ import {
 } from "@/features/personal/tools/saveToolRunAndOpenJournal";
 import { buildWateringEstimate } from "@/features/personal/tools/wateringEstimate";
 import PersonalFeedPlacement from "@/components/feed/PersonalFeedPlacement";
+import { radius } from "@/theme/theme";
 
 function toNum(value: string, fallback: number) {
   const parsed = Number(value);
@@ -414,7 +415,7 @@ const styles = StyleSheet.create({
   input: {
     borderWidth: 1,
     borderColor: "#E2E8F0",
-    borderRadius: 10,
+    borderRadius: radius.card,
     padding: 12,
     backgroundColor: "#FFFFFF"
   }

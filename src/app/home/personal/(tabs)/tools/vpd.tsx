@@ -21,6 +21,7 @@ import { saveToolRunAndOpenJournal } from "@/features/personal/tools/saveToolRun
 import { buildVpdNotices } from "@/features/personal/tools/vpdNotices";
 import { calcVpdFromTemp, type TempUnit } from "@/tools/vpd";
 import PersonalFeedPlacement from "@/components/feed/PersonalFeedPlacement";
+import { radius } from "@/theme/theme";
 
 type VpdModel =
   | { valid: false; vpd: null; tempC: null }
@@ -340,13 +341,13 @@ const styles = StyleSheet.create({
   input: {
     borderWidth: 1,
     borderColor: "#E2E8F0",
-    borderRadius: 10,
+    borderRadius: radius.card,
     padding: 12
   },
   lockedCard: {
     borderWidth: 1,
     borderColor: "#E2E8F0",
-    borderRadius: 10,
+    borderRadius: radius.card,
     padding: 12,
     backgroundColor: "#F8FAFC"
   },
