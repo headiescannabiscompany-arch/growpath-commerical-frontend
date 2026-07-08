@@ -4,6 +4,7 @@ import ScreenContainer from "../components/ScreenContainer";
 import { convertScheduleToTemplate } from "../api/feeding";
 import { CAPABILITY_KEYS, useEntitlements } from "@/entitlements";
 import { requireCapabilityAccess } from "../utils/proHelper";
+import { radius } from "../theme/theme";
 
 export default function FeedingScheduleResult({ route, navigation }) {
   const { schedule, nutrientData } = route.params;
@@ -53,8 +54,18 @@ export default function FeedingScheduleResult({ route, navigation }) {
 
 const styles = StyleSheet.create({
   header: { fontSize: 26, fontWeight: "700", marginBottom: 10 },
-  card: { backgroundColor: "white", padding: 14, borderRadius: 10, marginBottom: 12 },
+  card: {
+    backgroundColor: "white",
+    padding: 14,
+    borderRadius: radius.card,
+    marginBottom: 12
+  },
   week: { fontWeight: "700", marginBottom: 4 },
-  saveBtn: { backgroundColor: "#2ecc71", padding: 14, borderRadius: 8, marginTop: 20 },
+  saveBtn: {
+    backgroundColor: "#2ecc71",
+    padding: 14,
+    borderRadius: radius.card,
+    marginTop: 20
+  },
   saveText: { color: "white", textAlign: "center", fontWeight: "700" }
 });

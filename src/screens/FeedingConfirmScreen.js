@@ -3,6 +3,7 @@ import { Text, TouchableOpacity, StyleSheet } from "react-native";
 import ScreenContainer from "../components/ScreenContainer";
 import { CAPABILITY_KEYS, useEntitlements } from "@/entitlements";
 import { requireCapabilityAccess } from "../utils/proHelper";
+import { radius } from "../theme/theme";
 
 export default function FeedingConfirmScreen({ route, navigation }) {
   const { nutrientData } = route.params;
@@ -45,6 +46,11 @@ export default function FeedingConfirmScreen({ route, navigation }) {
 const styles = StyleSheet.create({
   header: { fontSize: 24, fontWeight: "700", marginBottom: 10 },
   label: { marginTop: 16, fontWeight: "700" },
-  nextBtn: { backgroundColor: "#2ecc71", padding: 14, marginTop: 20, borderRadius: 8 },
+  nextBtn: {
+    backgroundColor: "#2ecc71",
+    padding: 14,
+    marginTop: 20,
+    borderRadius: radius.card
+  },
   nextText: { color: "white", textAlign: "center", fontWeight: "700" }
 });

@@ -5,6 +5,7 @@ import ScreenContainer from "../components/ScreenContainer";
 import { uploadLabel } from "../api/feeding";
 import { CAPABILITY_KEYS, useEntitlements } from "@/entitlements";
 import { requireCapabilityAccess } from "../utils/proHelper";
+import { radius } from "../theme/theme";
 
 export default function FeedingLabelScreen({ navigation }) {
   const [photo, setPhoto] = useState(null);
@@ -47,7 +48,7 @@ export default function FeedingLabelScreen({ navigation }) {
           marginTop: 16,
           padding: 12,
           backgroundColor: "#3498db",
-          borderRadius: 8
+          borderRadius: radius.card
         }}
         onPress={pick}
       >
@@ -57,7 +58,7 @@ export default function FeedingLabelScreen({ navigation }) {
       {photo && (
         <Image
           source={{ uri: photo }}
-          style={{ width: "100%", height: 260, borderRadius: 12, marginTop: 20 }}
+          style={{ width: "100%", height: 260, borderRadius: radius.card, marginTop: 20 }}
         />
       )}
 
@@ -67,7 +68,7 @@ export default function FeedingLabelScreen({ navigation }) {
             marginTop: 20,
             padding: 12,
             backgroundColor: "#2ecc71",
-            borderRadius: 8
+            borderRadius: radius.card
           }}
           onPress={extract}
         >

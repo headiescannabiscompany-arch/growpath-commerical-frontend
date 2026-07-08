@@ -4,6 +4,7 @@ import ScreenContainer from "../components/ScreenContainer";
 import { generateSchedule } from "../api/feeding";
 import { CAPABILITY_KEYS, useEntitlements } from "@/entitlements";
 import { requireCapabilityAccess } from "../utils/proHelper";
+import { radius } from "../theme/theme";
 
 export default function FeedingScheduleOptions({ navigation, route }) {
   const { nutrientData } = route.params;
@@ -65,7 +66,12 @@ export default function FeedingScheduleOptions({ navigation, route }) {
 const styles = StyleSheet.create({
   header: { fontSize: 26, fontWeight: "700" },
   label: { marginTop: 16, fontWeight: "700" },
-  in: { backgroundColor: "#eee", padding: 10, borderRadius: 8, marginTop: 6 },
-  nextBtn: { backgroundColor: "#2ecc71", padding: 14, marginTop: 20, borderRadius: 8 },
+  in: { backgroundColor: "#eee", padding: 10, borderRadius: radius.card, marginTop: 6 },
+  nextBtn: {
+    backgroundColor: "#2ecc71",
+    padding: 14,
+    marginTop: 20,
+    borderRadius: radius.card
+  },
   nextText: { color: "white", textAlign: "center", fontWeight: "700" }
 });
