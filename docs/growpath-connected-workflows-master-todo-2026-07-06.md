@@ -681,6 +681,7 @@ Completed and pushed:
 405. Commercial Brand Forum / Q&A metrics, support inputs, create action, linked-object actions, and post rows now consume the shared 8px card radius token while keeping Feed/Campaigns visually and behaviorally separate from discussion.
 406. Storefront owner workspace feedback, setup metrics, inputs, checklist rows, public-link previews, preview/object actions, media previews, product cards, campaign rows, and warning panels now consume the shared 8px card radius token while preserving storefront status and tag pills.
 407. Commercial Products catalog metrics, product-create inputs, publish/create actions, product rows, product thumbnails, and warning panels now consume the shared 8px card radius token while preserving missing-setup and task pills.
+408. Commercial Product Detail rows, evidence/action buttons, effectiveness metrics, focused-batch panel, product-line selectors, edit inputs, and save CTA now consume the shared 8px card radius token while preserving readiness and warning pills.
 
 ## Working Rule For Codex
 
