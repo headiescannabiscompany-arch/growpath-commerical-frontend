@@ -13,19 +13,24 @@ try {
   useRouter = require("expo-router").useRouter;
 } catch {}
 
-function getRouteForItem(item: FeedItem): string {
+export function getRouteForItem(item: FeedItem): string {
   const brandSlug =
     item.metadata?.commercialSlug ||
     item.metadata?.storefrontSlug ||
     item.metadata?.brandSlug ||
     item.metadata?.actorSlug;
   if (brandSlug) return `/brands/${encodeURIComponent(String(brandSlug))}`;
-  if (item.type === "task") return `/tasks/${item.id}`;
-  if (item.type === "alert") return `/alerts/${item.id}`;
+  if (item.type === "task") {
+    return item.scope?.facilityId
+      ? `/home/facility/tasks/${encodeURIComponent(item.id)}`
+      : `/home/commercial/tasks/${encodeURIComponent(item.id)}`;
+  }
+  if (item.type === "alert") return "/home/alerts";
   if (item.type === "log") {
-    if (item.entityLinks?.growId) return `/app/grows/${item.entityLinks.growId}`;
-    if (item.entityLinks?.plantId) return `/app/plants/${item.entityLinks.plantId}`;
-    return `/logs/${item.id}`;
+    if (item.entityLinks?.growId)
+      return `/home/facility/grows/${encodeURIComponent(item.entityLinks.growId)}`;
+    if (item.entityLinks?.plantId) return "/home/facility/plants";
+    return "/home/facility/logs";
   }
   return "";
 }
