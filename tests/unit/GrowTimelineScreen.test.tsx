@@ -105,6 +105,18 @@ describe("GrowTimelineScreen", () => {
         tags: ["tool", "vpd"]
       },
       {
+        id: "ProductBatch:batch-linked-1",
+        type: "product_batch",
+        sourceModel: "ProductBatch",
+        sourceId: "",
+        sourceType: "product_batch",
+        linkedProductBatchId: "batch-linked-1",
+        title: "Batch follow-up saved",
+        summary: "Linked product batch timeline event.",
+        timestamp: "2026-06-30T14:30:00.000Z",
+        tags: ["product_batch"]
+      },
+      {
         id: "Task:task-1",
         type: "task_created",
         sourceModel: "Task",
@@ -146,6 +158,7 @@ describe("GrowTimelineScreen", () => {
     expect(screen.getAllByText("Open Journal Source")).toHaveLength(2);
     expect(screen.getAllByText("Open Diagnosis Source")).toHaveLength(2);
     expect(screen.getByText("Open Tool Source")).toBeTruthy();
+    expect(screen.getByText("Batch follow-up saved")).toBeTruthy();
     expect(screen.getByText("Open Task Source")).toBeTruthy();
     expect(screen.getByText("Open Automation Source")).toBeTruthy();
     expect(
@@ -161,6 +174,7 @@ describe("GrowTimelineScreen", () => {
         "Timeline source link /home/personal/tools/saved-runs?toolRunId=run-1"
       )
     ).toBeTruthy();
+    expect(screen.getByLabelText("Timeline source link /store?q=batch-linked-1")).toBeTruthy();
     expect(
       screen.getByLabelText("Timeline source link /home/personal/grows/grow-1/tasks")
     ).toBeTruthy();

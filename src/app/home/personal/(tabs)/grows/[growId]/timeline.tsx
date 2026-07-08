@@ -155,8 +155,20 @@ function sourceHref(event: PersonalGrowTimelineEvent, growId: string) {
   const sourceId = String(event.sourceId || "");
   const model = String(event.sourceModel || "").toLowerCase();
   const type = String(event.type || "").toLowerCase();
+  const sourceCandidate = event as Record<string, any>;
 
   if (!growId) return "";
+  const hasExplicitSharedSource =
+    Boolean(sourceCandidate.sourceType || sourceCandidate.itemType) ||
+    Object.keys(sourceCandidate).some((key) => key.startsWith("linked"));
+  if (hasExplicitSharedSource) {
+    const linkedHref = sourceObjectHref({
+      ...sourceCandidate,
+      growId,
+      workspaceType: "personal"
+    });
+    if (linkedHref) return linkedHref;
+  }
   if (
     sourceId &&
     (model.includes("growlog") || type.includes("log") || type.includes("photo"))
