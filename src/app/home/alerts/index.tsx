@@ -53,6 +53,19 @@ function sourceHref(alert: AlertRow) {
   return sourceObjectHref(alert);
 }
 
+function askAiHref(alert: AlertRow) {
+  const id = encodeURIComponent(idOf(alert));
+  const sourceType = encodeURIComponent(String(alert.sourceType || "alert"));
+  const workspace = String(alert.workspaceType || "personal").toLowerCase();
+  if (workspace === "facility") {
+    return `/home/facility/ai-ask?preset=alerts&alertId=${id}&sourceType=${sourceType}`;
+  }
+  if (workspace === "commercial") {
+    return `/home/commercial?ai=alerts&alertId=${id}&sourceType=${sourceType}`;
+  }
+  return `/home/personal/ai?alertId=${id}&sourceType=${sourceType}`;
+}
+
 function linkedFieldsForAlertSource(alert: AlertRow) {
   const sourceType = String(alert.sourceType || "");
   const sourceId = String(alert.sourceId || "");
@@ -122,6 +135,7 @@ export default function AlertCenterRoute() {
   const [snoozeUntil, setSnoozeUntil] = useState("");
   const [reminder, setReminder] = useState("");
   const [recurrence, setRecurrence] = useState("");
+  const [assignee, setAssignee] = useState("");
 
   async function loadAlerts() {
     setLoading(true);
@@ -210,6 +224,7 @@ export default function AlertCenterRoute() {
           alertSourceType: alert.sourceType || undefined,
           alertSourceId: alert.sourceId || undefined,
           ...linkedFieldsForAlertSource(alert),
+          assignedToUserId: assignee.trim() || undefined,
           status: "open",
           reminderPlan: reminder.trim()
             ? { label: reminder.trim(), channels: ["in_app"] }
@@ -225,6 +240,7 @@ export default function AlertCenterRoute() {
 
   function renderAlert(alert: AlertRow) {
     const href = sourceHref(alert);
+    const aiHref = askAiHref(alert);
     return (
       <View key={idOf(alert) || alert.title} style={styles.card}>
         <View style={styles.cardHeader}>
@@ -292,6 +308,11 @@ export default function AlertCenterRoute() {
               </Pressable>
             </Link>
           ) : null}
+          <Link href={aiHref as any} asChild>
+            <Pressable accessibilityRole="link" style={styles.ghostButton}>
+              <Text style={styles.ghostText}>Ask AI</Text>
+            </Pressable>
+          </Link>
         </View>
       </View>
     );
@@ -334,6 +355,14 @@ export default function AlertCenterRoute() {
           onRecurrenceChange={setRecurrence}
           accessibilityPrefix="Alert center"
           dueDatePlaceholder="Snooze/task due date"
+        />
+        <TextInput
+          style={styles.input}
+          placeholder="Assign task to user id or email"
+          value={assignee}
+          onChangeText={setAssignee}
+          accessibilityLabel="Alert task assignee"
+          autoCapitalize="none"
         />
       </View>
 
@@ -467,6 +496,15 @@ const styles = StyleSheet.create({
     paddingVertical: 9
   },
   secondaryText: { color: "#FFFFFF", fontWeight: "900" },
+  input: {
+    backgroundColor: "#FFFFFF",
+    borderColor: "#CBD5E1",
+    borderRadius: 8,
+    borderWidth: 1,
+    color: "#0F172A",
+    paddingHorizontal: 12,
+    paddingVertical: 10
+  },
   ghostButton: {
     backgroundColor: "#E2E8F0",
     borderRadius: 8,

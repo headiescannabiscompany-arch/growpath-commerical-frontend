@@ -214,11 +214,27 @@ describe("AlertCenterRoute", () => {
     ).toBeTruthy();
     expect(screen.getByLabelText("Alert link /home/commercial/orders")).toBeTruthy();
     expect(screen.getByLabelText("Alert link /home/alerts")).toBeTruthy();
+    expect(
+      screen.getByLabelText(
+        "Alert link /home/commercial?ai=alerts&alertId=alert-1&sourceType=product"
+      )
+    ).toBeTruthy();
+    expect(
+      screen.getByLabelText(
+        "Alert link /home/facility/ai-ask?preset=alerts&alertId=alert-2&sourceType=task"
+      )
+    ).toBeTruthy();
+    expect(
+      screen.getByLabelText(
+        "Alert link /home/personal/ai?alertId=alert-7&sourceType=product"
+      )
+    ).toBeTruthy();
 
     fireEvent.press(screen.getByLabelText("Alert center quick date In 7 days"));
     fireEvent.press(
       screen.getByLabelText("Alert center reminder preset 24 hours before")
     );
+    fireEvent.changeText(screen.getByLabelText("Alert task assignee"), "owner-1");
     fireEvent.press(screen.getAllByLabelText("Create task from alert")[0]);
 
     await waitFor(() =>
@@ -237,6 +253,7 @@ describe("AlertCenterRoute", () => {
             alertSourceType: "product",
             alertSourceId: "product-1",
             linkedProductId: "product-1",
+            assignedToUserId: "owner-1",
             reminderPlan: { label: "24 hours before", channels: ["in_app"] }
           })
         })

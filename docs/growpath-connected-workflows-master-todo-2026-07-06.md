@@ -367,6 +367,7 @@ Completed and pushed:
 91. Shared schedule/source routing now recognizes calendar-specific aliases like lesson releases, course releases, product launches, live reminders, scheduled feed posts, alert snoozes, facility SOPs, and grow milestones so agenda items can open the correct Personal, Commercial, Facility, Feed, Forum/Q&A, or Alert workflow without one-off routing.
 92. Commercial dashboard action-item tasks now preserve inventory, product trial, order, feed campaign, and alert source ids, and inventory-backed tasks open the correct Commercial or Facility inventory workflow instead of becoming generic dashboard todos.
 93. The deferred/manual verification scripts now run the GrowPath connected system audit, include shared source-link routing coverage, and add human checks for source routing across Schedule, Alert Center, Notification Center, commercial dashboard tasks, inventory, trials, orders, feed campaigns, releases, live reminders, alert snoozes, facility SOPs, and grow milestones.
+94. Alert Center now supports assigning alert-created tasks and provides Ask AI links with alert/source/workspace context for Personal AI, Facility AI, and the Commercial launch assistant surface, alongside resolve, snooze, create-task, and view-source actions.
 
 ## Working Rule For Codex
 
