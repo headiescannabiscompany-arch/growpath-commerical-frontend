@@ -8,16 +8,16 @@ import { radius } from "../../theme/theme";
 export default function CommercialProfileScreen({ navigation }) {
   const { user } = useAuth();
   const businessName =
-    user?.business?.name || user?.businessName || user?.companyName || "Commercial account";
+    user?.business?.name || user?.businessName || user?.companyName || "Commercial brand";
   const email = user?.business?.contactEmail || user?.email || "No email";
   const phone = user?.business?.phone || "No phone";
 
   return (
     <ScreenContainer>
       <View style={styles.container}>
-        <Text style={styles.title}>Commercial Profile</Text>
+        <Text style={styles.title}>Commercial Brand Profile</Text>
         <View style={styles.card}>
-          <Text style={styles.label}>Business</Text>
+          <Text style={styles.label}>Brand</Text>
           <Text style={styles.value}>{businessName}</Text>
           <Text style={styles.label}>Email</Text>
           <Text style={styles.value}>{email}</Text>

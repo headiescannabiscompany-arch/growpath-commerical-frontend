@@ -632,6 +632,7 @@ Completed and pushed:
 356. Legacy Commercial Profile compatibility cards and billing actions now consume the shared 8px workspace radius token, with focused coverage for commercial identity rendering and subscription navigation.
 357. Deferred user verification now includes the new Commercial Log Detail, Commercial Profile compatibility, Personal AI, and support/profile visual-token coverage plus a manual cross-workspace visual-polish check.
 358. Connected workflow verification now passes after cleaning the Personal Forum post detail formatting drift that was blocking lint; the gate completed lint, focused connected tests, and production web export successfully.
+359. Legacy Commercial Profile compatibility copy now uses Commercial Brand Profile and Brand labels instead of Business, keeping fallback profile surfaces aligned with the storefront-first commercial workspace language.
 
 ## Working Rule For Codex
 

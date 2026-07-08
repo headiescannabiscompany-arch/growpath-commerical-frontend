@@ -21,7 +21,8 @@ describe("CommercialProfileScreen", () => {
     const navigate = jest.fn();
     const screen = render(<CommercialProfileScreen navigation={{ navigate }} />);
 
-    expect(screen.getByText("Commercial Profile")).toBeTruthy();
+    expect(screen.getByText("Commercial Brand Profile")).toBeTruthy();
+    expect(screen.getByText("Brand")).toBeTruthy();
     expect(screen.getByText("Living Soil Labs")).toBeTruthy();
     expect(screen.getByText("support@growpathai.com")).toBeTruthy();
     expect(screen.getByText("555-0100")).toBeTruthy();
