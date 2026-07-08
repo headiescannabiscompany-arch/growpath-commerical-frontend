@@ -9,6 +9,7 @@ import {
 } from "react-native";
 
 import { SUPPORT_CONTACTS } from "@/config/supportContacts";
+import { radius } from "@/theme/theme";
 
 const SUPPORT_EMAIL = SUPPORT_CONTACTS.billing;
 
@@ -102,7 +103,7 @@ const styles = StyleSheet.create({
   },
   dialog: {
     backgroundColor: "#FFF",
-    borderRadius: 16,
+    borderRadius: radius.card,
     padding: 24,
     maxHeight: "90%",
     width: "100%",
@@ -128,7 +129,7 @@ const styles = StyleSheet.create({
     marginBottom: 16,
     padding: 12,
     backgroundColor: "#F8F9FA",
-    borderRadius: 8
+    borderRadius: radius.card
   },
   problemTitle: {
     fontSize: 16,
@@ -150,7 +151,7 @@ const styles = StyleSheet.create({
   emailButton: {
     backgroundColor: "#007AFF",
     padding: 16,
-    borderRadius: 12,
+    borderRadius: radius.card,
     alignItems: "center",
     marginBottom: 12
   },
@@ -167,7 +168,7 @@ const styles = StyleSheet.create({
   },
   closeButton: {
     padding: 14,
-    borderRadius: 8,
+    borderRadius: radius.card,
     borderWidth: 1,
     borderColor: "#DDD",
     alignItems: "center"

@@ -743,6 +743,7 @@ Completed and pushed:
 467. Personal grow list search/cards, harvest estimator inputs/actions, light calculator panels/results, and legacy lesson viewer locked/video/complete controls now consume shared radius tokens while preserving grow navigation, ToolUsage save, calculator, and lesson completion behavior.
 468. Legacy campaign planner, personal analytics, commercial reports, and vendor metrics forms/cards/actions now consume shared radius tokens while preserving feed/campaign planning, real analytics summaries, report routing, and vendor soil/equipment metric workflows.
 469. Legacy live session list/detail cards, hero, Twitch embed frame, product/course/forum context pills, and replay/moderation CTAs now consume shared radius tokens while preserving live, replay, storefront, course, and Forum/Q&A routing.
+470. Payment help dialog panels and email/close actions now consume shared radius tokens while continuing to route payment issues through the centralized live billing support alias.
 
 ## Working Rule For Codex
 
