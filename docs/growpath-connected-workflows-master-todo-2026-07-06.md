@@ -675,6 +675,7 @@ Completed and pushed:
 399. Nutrient Chemistry context panels, recommendation cards, compatibility warnings, rate/lab inputs, release groups, evidence tags, form cards, and action buttons now consume the shared 8px card radius token while preserving nutrient/compare pills.
 400. Personal Forum/Q&A list photo thumbnails now consume the shared 8px card radius token, leaving the personal route-family radius scan with only intentional pill controls.
 401. Commercial dashboard logout, pulse, action-item, task, feedback, metric, and quick-action surfaces now consume the shared 8px card radius token while preserving status pills, extending the Facility-style visual polish to the storefront-first command center.
+402. Commercial Task Center metric cards, create-task form, schedule-linked inputs, source/priority chips, task cards, feedback, and task actions now consume the shared 8px card radius token while preserving count/source pills, aligning the commercial action layer with Facility-style polish.
 
 ## Working Rule For Codex
 

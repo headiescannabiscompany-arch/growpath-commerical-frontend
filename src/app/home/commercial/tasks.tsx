@@ -13,6 +13,7 @@ import { Link } from "expo-router";
 import { apiRequest } from "@/api/apiRequest";
 import { endpoints } from "@/api/endpoints";
 import SchedulePicker from "@/components/schedule/SchedulePicker";
+import { radius } from "@/theme/theme";
 import { sourceObjectHref } from "@/utils/sourceLinks";
 
 type CommercialTask = Record<string, any>;
@@ -589,7 +590,7 @@ const styles = StyleSheet.create({
   subtitle: { color: "#475569", fontWeight: "700", lineHeight: 20 },
   metricGrid: { flexDirection: "row", flexWrap: "wrap", gap: 8 },
   metricCard: {
-    borderRadius: 8,
+    borderRadius: radius.card,
     borderWidth: 1,
     flexGrow: 1,
     minWidth: 120,
@@ -605,7 +606,7 @@ const styles = StyleSheet.create({
   form: {
     backgroundColor: "#FFFFFF",
     borderColor: "#CBD5E1",
-    borderRadius: 8,
+    borderRadius: radius.card,
     borderWidth: 1,
     gap: 9,
     padding: 14
@@ -615,7 +616,7 @@ const styles = StyleSheet.create({
   input: {
     backgroundColor: "#FFFFFF",
     borderColor: "#CBD5E1",
-    borderRadius: 8,
+    borderRadius: radius.card,
     borderWidth: 1,
     color: "#0F172A",
     paddingHorizontal: 12,
@@ -626,7 +627,7 @@ const styles = StyleSheet.create({
   flexInput: {
     backgroundColor: "#FFFFFF",
     borderColor: "#CBD5E1",
-    borderRadius: 8,
+    borderRadius: radius.card,
     borderWidth: 1,
     color: "#0F172A",
     flex: 1,
@@ -638,7 +639,7 @@ const styles = StyleSheet.create({
   chip: {
     backgroundColor: "#F8FAFC",
     borderColor: "#CBD5E1",
-    borderRadius: 8,
+    borderRadius: radius.card,
     borderWidth: 1,
     paddingHorizontal: 10,
     paddingVertical: 7
@@ -649,7 +650,7 @@ const styles = StyleSheet.create({
   primaryButton: {
     alignItems: "center",
     backgroundColor: "#166534",
-    borderRadius: 8,
+    borderRadius: radius.card,
     paddingHorizontal: 12,
     paddingVertical: 11
   },
@@ -658,7 +659,7 @@ const styles = StyleSheet.create({
   feedback: {
     backgroundColor: "#ECFDF5",
     borderColor: "#A7F3D0",
-    borderRadius: 8,
+    borderRadius: radius.card,
     borderWidth: 1,
     color: "#047857",
     fontWeight: "800",
@@ -682,7 +683,7 @@ const styles = StyleSheet.create({
   taskCard: {
     backgroundColor: "#FFFFFF",
     borderColor: "#E2E8F0",
-    borderRadius: 8,
+    borderRadius: radius.card,
     borderWidth: 1,
     gap: 8,
     padding: 14
@@ -707,14 +708,14 @@ const styles = StyleSheet.create({
   taskActions: { flexDirection: "row", flexWrap: "wrap", gap: 8 },
   secondaryButton: {
     backgroundColor: "#0F172A",
-    borderRadius: 8,
+    borderRadius: radius.card,
     paddingHorizontal: 12,
     paddingVertical: 9
   },
   secondaryButtonText: { color: "#FFFFFF", fontWeight: "900" },
   ghostButton: {
     backgroundColor: "#E2E8F0",
-    borderRadius: 8,
+    borderRadius: radius.card,
     paddingHorizontal: 12,
     paddingVertical: 9
   },
