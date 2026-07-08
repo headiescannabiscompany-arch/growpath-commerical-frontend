@@ -17,6 +17,7 @@ import { apiRequest } from "@/api/apiRequest";
 import { endpoints } from "@/api/endpoints";
 import { useAuth } from "@/auth/AuthContext";
 import { useApiErrorHandler } from "@/hooks/useApiErrorHandler";
+import { radius } from "@/theme/theme";
 
 type AnyRec = Record<string, any>;
 
@@ -254,7 +255,7 @@ const styles = StyleSheet.create({
   card: {
     borderWidth: 1,
     borderColor: "rgba(0,0,0,0.12)",
-    borderRadius: 14,
+    borderRadius: radius.card,
     padding: 14,
     backgroundColor: "white",
     marginBottom: 12
@@ -289,7 +290,7 @@ const styles = StyleSheet.create({
     alignItems: "center",
     backgroundColor: "#EEF7EE",
     borderColor: "#BFD6C0",
-    borderRadius: 8,
+    borderRadius: radius.card,
     borderWidth: 1,
     minHeight: 40,
     justifyContent: "center",
@@ -305,7 +306,7 @@ const styles = StyleSheet.create({
   logoutButton: {
     borderWidth: 1,
     borderColor: "#DC2626",
-    borderRadius: 10,
+    borderRadius: radius.card,
     paddingHorizontal: 14,
     paddingVertical: 12,
     backgroundColor: "#FEF2F2",
