@@ -135,6 +135,8 @@ function liveToItem(live: any): CalendarItem {
     workspaceType: "commercial",
     sourceType: "live",
     sourceId: id,
+    reminder: String(live?.reminderPreference || ""),
+    recurrence: String(live?.recurrenceRule || ""),
     href: "/home/commercial/lives"
   };
 }
@@ -173,6 +175,8 @@ function campaignToItem(campaign: any): CalendarItem {
     workspaceType: String(campaign?.workspaceType || "commercial"),
     sourceType: "feed_campaign",
     sourceId: id,
+    reminder: String(campaign?.reminderPreference || ""),
+    recurrence: String(campaign?.recurrenceRule || ""),
     href: "/home/commercial/feed"
   };
 }
@@ -245,6 +249,7 @@ export default function HomeScheduleRoute() {
         <Text style={styles.meta}>
           {[
             item.startAt && `Starts ${item.startAt.slice(0, 16)}`,
+            item.endAt && `Ends ${item.endAt.slice(0, 16)}`,
             item.status && `Status ${item.status}`,
             item.priority && `Priority ${item.priority}`,
             item.reminder && `Reminder ${item.reminder}`,

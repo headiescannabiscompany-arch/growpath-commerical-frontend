@@ -45,6 +45,9 @@ describe("HomeScheduleRoute", () => {
               id: "live-1",
               title: "Live Soil Demo",
               scheduledStart: "2099-07-17T20:00:00Z",
+              scheduledEnd: "2099-07-17T21:00:00Z",
+              reminderPreference: "1 hour before",
+              recurrenceRule: "monthly",
               status: "scheduled"
             }
           ]
@@ -69,6 +72,9 @@ describe("HomeScheduleRoute", () => {
               id: "campaign-1",
               title: "Veg Mix Launch",
               startsAt: "2099-07-19T12:00:00Z",
+              endsAt: "2099-07-26T12:00:00Z",
+              reminderPreference: "24 hours before",
+              recurrenceRule: "weekly",
               status: "scheduled",
               workspaceType: "commercial"
             }
@@ -93,8 +99,12 @@ describe("HomeScheduleRoute", () => {
     expect(screen.getByText("Living Soil Basics")).toBeTruthy();
     expect(screen.getByText("Veg Mix Launch")).toBeTruthy();
     expect(screen.getByText("feed campaign")).toBeTruthy();
-    expect(screen.getByText(/Reminder 24 hours before/)).toBeTruthy();
-    expect(screen.getByText(/Repeats weekly/)).toBeTruthy();
+    expect(screen.getByText(/Ends 2099-07-17T21:00/)).toBeTruthy();
+    expect(screen.getByText(/Ends 2099-07-26T12:00/)).toBeTruthy();
+    expect(screen.getByText(/Reminder 1 hour before/)).toBeTruthy();
+    expect(screen.getAllByText(/Reminder 24 hours before/).length).toBeGreaterThan(0);
+    expect(screen.getByText(/Repeats monthly/)).toBeTruthy();
+    expect(screen.getAllByText(/Repeats weekly/).length).toBeGreaterThan(0);
     expect(screen.getAllByText("Open Source").length).toBeGreaterThan(0);
   });
 });
