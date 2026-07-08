@@ -118,15 +118,18 @@ describe("route access policy", () => {
     expect(canAccessRoute("/home/facility/dashboard", facility({}))).toBe(true);
   });
 
-  it("allows Facility mode into the education feed", () => {
-    expect(
-      canAccessRoute("/feed", facility({ [CAPABILITY_KEYS.COMMERCIAL_FEED_VIEW]: true }))
-    ).toBe(true);
+  it("allows every account mode to view shared campaign feed placements", () => {
+    expect(canAccessRoute("/feed", personal())).toBe(true);
+    expect(canAccessRoute("/feed", commercial({}))).toBe(true);
+    expect(canAccessRoute("/feed", facility({}))).toBe(true);
+    expect(getRoutePolicy("/feed")).toMatchObject({
+      mode: ["personal", "commercial", "facility"],
+      capabilities: []
+    });
   });
 
   it("blocks direct entry when the required capability is absent", () => {
     expect(canAccessRoute("/storefront", commercial({}))).toBe(false);
-    expect(canAccessRoute("/feed", commercial({}))).toBe(false);
   });
 
   it("allows direct entry when mode and capability match", () => {

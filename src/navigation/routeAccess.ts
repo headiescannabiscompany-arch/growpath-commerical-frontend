@@ -51,8 +51,8 @@ const COMMERCIAL_RULES: RouteRule[] = [
   },
   {
     matches: startsWith("/feed"),
-    mode: ["commercial", "facility"],
-    capabilities: [CAPABILITY_KEYS.COMMERCIAL_FEED_VIEW]
+    mode: ["personal", "commercial", "facility"],
+    capabilities: []
   },
   {
     matches: startsWith("/alerts"),
