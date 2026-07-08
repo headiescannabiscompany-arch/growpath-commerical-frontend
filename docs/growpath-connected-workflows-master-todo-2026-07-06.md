@@ -483,6 +483,7 @@ Completed and pushed:
 207. Commercial Storefront now has real nested edit and preview routes under `/home/commercial/storefront`, the dashboard Edit Storefront action opens the edit route, nested routes hide the tab bar, and focused coverage proves both routes use the shared back fallback to the Storefront root.
 208. Legacy billing Upgrade Plan now uses the shared Pro, Commercial, and Facility pricing constants, shows monthly and annual options with annual billed-once/yearly equivalent copy, and sends the selected interval to checkout with focused regression coverage.
 209. Public Privacy and Terms pages now route contact copy through the live support alias config for privacy, legal, security, and general account support, with regression coverage proving the aliases remain visible.
+210. Release go/no-go support escalation evidence now uses the live `support@growpathai.com` mailbox instead of a placeholder fixture, with the focused release gate test passing.
 
 ## Working Rule For Codex
 

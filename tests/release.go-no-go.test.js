@@ -151,7 +151,7 @@ function writeValidEvidence(tempRoot, overrides = {}) {
         GROWPATH_ROLLBACK_OWNER: "Rollback Owner",
         GROWPATH_HOTFIX_BRANCH: "release/1.0.0-hotfix",
         GROWPATH_ROLLBACK_PLAN: "Withdraw bad build and ship fixed build",
-        GROWPATH_SUPPORT_ESCALATION: "support@example.com"
+        GROWPATH_SUPPORT_ESCALATION: "support@growpathai.com"
       }
     }
   };
