@@ -674,6 +674,7 @@ Completed and pushed:
 398. Saved Tool Runs cards, note editor, save action, and Pheno Matrix candidate cards, score inputs, ranked rows, score badges, and locked state now consume the shared 8px card radius token while preserving saved-run filter pills.
 399. Nutrient Chemistry context panels, recommendation cards, compatibility warnings, rate/lab inputs, release groups, evidence tags, form cards, and action buttons now consume the shared 8px card radius token while preserving nutrient/compare pills.
 400. Personal Forum/Q&A list photo thumbnails now consume the shared 8px card radius token, leaving the personal route-family radius scan with only intentional pill controls.
+401. Commercial dashboard logout, pulse, action-item, task, feedback, metric, and quick-action surfaces now consume the shared 8px card radius token while preserving status pills, extending the Facility-style visual polish to the storefront-first command center.
 
 ## Working Rule For Codex
 

@@ -8,6 +8,7 @@ import AppPage from "@/components/layout/AppPage";
 import { useAuth } from "@/auth/AuthContext";
 import { useEntitlements } from "@/entitlements";
 import { InlineError } from "@/components/InlineError";
+import { radius } from "@/theme/theme";
 
 type Action = {
   label: string;
@@ -596,7 +597,7 @@ const styles = StyleSheet.create({
   logoutButton: {
     backgroundColor: "#FEF2F2",
     borderColor: "#DC2626",
-    borderRadius: 8,
+    borderRadius: radius.card,
     borderWidth: 1,
     paddingHorizontal: 12,
     paddingVertical: 8
@@ -628,7 +629,7 @@ const styles = StyleSheet.create({
   pulse: {
     backgroundColor: "#FFFFFF",
     borderColor: "#BBF7D0",
-    borderRadius: 8,
+    borderRadius: radius.card,
     borderWidth: 1,
     minWidth: 120,
     padding: 10
@@ -680,7 +681,7 @@ const styles = StyleSheet.create({
   actionItem: {
     backgroundColor: "#F8FAFC",
     borderColor: "#E2E8F0",
-    borderRadius: 8,
+    borderRadius: radius.card,
     borderWidth: 1,
     padding: 10
   },
@@ -698,7 +699,7 @@ const styles = StyleSheet.create({
   taskButton: {
     alignSelf: "flex-start",
     backgroundColor: "#166534",
-    borderRadius: 8,
+    borderRadius: radius.card,
     marginTop: 8,
     paddingHorizontal: 10,
     paddingVertical: 7
@@ -711,7 +712,7 @@ const styles = StyleSheet.create({
   feedback: {
     backgroundColor: "#ECFDF5",
     borderColor: "#A7F3D0",
-    borderRadius: 8,
+    borderRadius: radius.card,
     borderWidth: 1,
     color: "#166534",
     fontWeight: "800",
@@ -747,7 +748,7 @@ const styles = StyleSheet.create({
   },
   metric: {
     borderColor: "#E2E8F0",
-    borderRadius: 8,
+    borderRadius: radius.card,
     borderWidth: 1,
     minWidth: 120,
     padding: 9
@@ -771,7 +772,7 @@ const styles = StyleSheet.create({
   action: {
     backgroundColor: "#FFFFFF",
     borderColor: "#166534",
-    borderRadius: 8,
+    borderRadius: radius.card,
     borderWidth: 1,
     paddingHorizontal: 11,
     paddingVertical: 8
