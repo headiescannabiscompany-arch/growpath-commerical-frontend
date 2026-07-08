@@ -68,10 +68,15 @@ describe("ContentMarketplaceScreen uploads", () => {
     });
   });
 
-  it("uploads selected content and thumbnail before saving a marketplace draft", async () => {
+  it("uploads selected content and thumbnail before saving a creator content draft", async () => {
     const ContentMarketplaceScreen =
       require("@/screens/commercial/ContentMarketplaceScreen").default;
     const screen = render(<ContentMarketplaceScreen />);
+
+    await waitFor(() =>
+      expect(screen.getByPlaceholderText("Search creator content...")).toBeTruthy()
+    );
+    expect(screen.queryByPlaceholderText("Search marketplace...")).toBeNull();
 
     fireEvent.press(screen.getByText("My Uploads"));
     await waitFor(() => expect(screen.getByText("Upload Content")).toBeTruthy());

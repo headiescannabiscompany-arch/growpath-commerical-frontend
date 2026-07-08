@@ -47,7 +47,7 @@ function rowId(row) {
 }
 
 function titleOf(row) {
-  return row?.title || row?.name || "Marketplace content";
+  return row?.title || row?.name || "Creator content";
 }
 
 function creatorOf(row) {
@@ -124,9 +124,9 @@ export default function ContentMarketplaceScreen() {
       setUploads(uploadsRes?.data || uploadsRes?.uploads || []);
       setSalesData(salesRes?.data || null);
     } catch (err) {
-      const message = err?.message || "Failed to load marketplace data.";
+      const message = err?.message || "Failed to load creator content data.";
       setError(message);
-      Alert.alert("Marketplace unavailable", message);
+      Alert.alert("Creator content unavailable", message);
     } finally {
       setLoading(false);
     }
@@ -332,7 +332,7 @@ export default function ContentMarketplaceScreen() {
         <ScrollView style={styles.content} contentContainerStyle={styles.contentInner}>
           {error ? (
             <ErrorState
-              title="Failed to load marketplace"
+              title="Failed to load creator content"
               message={error}
               icon="alert-circle"
               onRetry={loadMarketplaceData}
@@ -345,7 +345,7 @@ export default function ContentMarketplaceScreen() {
             <>
               <TextInput
                 style={styles.input}
-                placeholder="Search marketplace..."
+                placeholder="Search creator content..."
                 value={searchQuery}
                 onChangeText={setSearchQuery}
               />
@@ -431,7 +431,7 @@ export default function ContentMarketplaceScreen() {
                     <View style={styles.cardBody}>
                       <Text style={styles.cardTitle}>{sale.title}</Text>
                       <Text style={styles.muted}>
-                        {sale.buyer || "Marketplace customer"} - {dateLabel(sale.date)}
+                        {sale.buyer || "Creator content customer"} - {dateLabel(sale.date)}
                       </Text>
                     </View>
                     <Text style={styles.price}>{money(sale.amount)}</Text>
