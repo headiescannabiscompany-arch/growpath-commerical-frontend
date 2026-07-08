@@ -112,6 +112,8 @@ describe("FacilityTasksRoute", () => {
         sourceType: "sop",
         sourceObjectId: "sop-7",
         roomId: "clone-room",
+        linkedSopId: "sop-7",
+        linkedRoomId: "clone-room",
         reminderPlan: { label: "24 hours before", channels: ["in_app"] },
         recurrence: { rule: "weekly" },
         requiresProof: true,
