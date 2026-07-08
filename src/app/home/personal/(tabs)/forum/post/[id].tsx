@@ -27,6 +27,7 @@ import { createPersonalTask } from "@/api/tasks";
 import { ScreenBoundary } from "@/components/ScreenBoundary";
 import { CAPABILITY_KEYS, useEntitlements } from "@/entitlements";
 import PersonalFeedPlacement from "@/components/feed/PersonalFeedPlacement";
+import { radius } from "@/theme/theme";
 import { resolveImageUri } from "@/utils/photoUploads";
 
 type CommentRow = {
@@ -455,13 +456,13 @@ const styles = StyleSheet.create({
   postPhoto: {
     width: 160,
     height: 120,
-    borderRadius: 8,
+    borderRadius: radius.card,
     backgroundColor: "#E2E8F0"
   },
   card: {
     borderWidth: 1,
     borderColor: "#E2E8F0",
-    borderRadius: 12,
+    borderRadius: radius.card,
     padding: 14,
     backgroundColor: "#F8FAFC",
     gap: 8
@@ -481,7 +482,7 @@ const styles = StyleSheet.create({
   input: {
     borderWidth: 1,
     borderColor: "#CBD5E1",
-    borderRadius: 10,
+    borderRadius: radius.card,
     paddingHorizontal: 12,
     paddingVertical: 10,
     backgroundColor: "#FFFFFF"
@@ -490,7 +491,7 @@ const styles = StyleSheet.create({
   primaryBtn: {
     alignSelf: "flex-start",
     backgroundColor: "#166534",
-    borderRadius: 9,
+    borderRadius: radius.card,
     paddingHorizontal: 12,
     paddingVertical: 9
   },
@@ -499,7 +500,7 @@ const styles = StyleSheet.create({
     alignSelf: "flex-start",
     borderWidth: 1,
     borderColor: "#CBD5E1",
-    borderRadius: 9,
+    borderRadius: radius.card,
     paddingHorizontal: 10,
     paddingVertical: 7,
     backgroundColor: "#FFFFFF"
@@ -509,7 +510,7 @@ const styles = StyleSheet.create({
     alignSelf: "flex-start",
     borderWidth: 1,
     borderColor: "#FCA5A5",
-    borderRadius: 9,
+    borderRadius: radius.card,
     paddingHorizontal: 10,
     paddingVertical: 7,
     backgroundColor: "#FEF2F2"
@@ -519,7 +520,7 @@ const styles = StyleSheet.create({
   feedback: {
     color: "#334155",
     backgroundColor: "#F1F5F9",
-    borderRadius: 9,
+    borderRadius: radius.card,
     padding: 9,
     fontWeight: "700"
   }

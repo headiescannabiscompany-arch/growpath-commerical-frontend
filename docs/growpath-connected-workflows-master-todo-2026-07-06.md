@@ -649,6 +649,7 @@ Completed and pushed:
 373. Commercial Inventory list cards, summary cards, guide cards, and create action now consume the shared 8px card radius token, aligning the full inventory support surface with Facility-style visual polish.
 374. Personal Forum/Q&A compatibility tab cards, membership actions, discussion actions, and feedback now consume the shared 8px card radius token, extending the Facility-style visual polish to the legacy personal discussion surface.
 375. Personal Forum/Q&A new-post inputs, identity/setup cards, photo controls, action buttons, previews, and feedback now consume the shared 8px card radius token, applying the Facility-style visual polish to the user-facing discussion composer.
+376. Personal Forum/Q&A post-detail cards, attached-photo previews, comment composer, moderation/action buttons, and feedback now consume the shared 8px card radius token, keeping nested user discussion pages visually aligned with the Facility-style app polish.
 
 ## Working Rule For Codex
 
