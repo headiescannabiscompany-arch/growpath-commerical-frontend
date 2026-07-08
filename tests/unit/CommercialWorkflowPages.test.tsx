@@ -22,7 +22,7 @@ import CommercialEvidenceRunDetailRoute from "@/app/home/commercial/evidence-run
 import NewCommercialEvidenceRunRoute from "@/app/home/commercial/evidence-runs/new";
 import CommercialTrialsRoute from "@/app/home/commercial/trials";
 import CommercialTrialDetailRoute from "@/app/home/commercial/trials/[trialId]";
-import CommercialInventoryItemDetailRoute from "@/app/home/commercial/inventory-item/[id]";
+import CommercialInventoryItemDetailRoute from "@/app/home/commercial/inventory/[id]";
 
 const mockApiRequest = jest.fn();
 const mockReplace = jest.fn();
