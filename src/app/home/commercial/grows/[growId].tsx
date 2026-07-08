@@ -117,7 +117,7 @@ export default function CommercialGrowDetailRoute({ route }: { route?: any } = {
           <Text style={styles.kicker}>Product trial evidence run</Text>
           <Text style={styles.title}>{titleFor(grow)}</Text>
           <Text style={styles.subtitle}>
-            Keep the grow as the private evidence source, then connect product, batch,
+            Keep this private run as the evidence source, then connect product, batch,
             formula, trial, public-share, feed campaign, and report workflows around it.
           </Text>
           <View style={styles.actions}>
@@ -136,8 +136,8 @@ export default function CommercialGrowDetailRoute({ route }: { route?: any } = {
       <AppCard>
         <Text style={styles.cardTitle}>Commercial Context</Text>
         <Text style={styles.body}>
-          This layer tracks why the grow exists commercially: product trial, soil trial,
-          demo grow, genetics test, plant inventory evidence, or private business proof.
+          This layer tracks why the run exists commercially: product trial, soil trial,
+          demo trial, genetics test, plant inventory evidence, or private brand proof.
         </Text>
         <View style={styles.detailGrid}>
           <DetailRow label="Purpose" value={grow?.purpose} />
@@ -153,8 +153,8 @@ export default function CommercialGrowDetailRoute({ route }: { route?: any } = {
       <AppCard>
         <Text style={styles.cardTitle}>Linked Evidence</Text>
         <Text style={styles.body}>
-          Product claims should be tied back to saved grow evidence, formula versions,
-          batches, measurements, and final outcomes.
+          Product claims should be tied back to saved evidence-run records, formula
+          versions, batches, measurements, and final outcomes.
         </Text>
         <View style={styles.detailGrid}>
           <DetailRow label="Product ID" value={grow?.productId} />
@@ -184,7 +184,7 @@ export default function CommercialGrowDetailRoute({ route }: { route?: any } = {
         <Text style={styles.cardTitle}>Measurement Plan</Text>
         <Text style={styles.body}>
           {grow?.measurementPlan ||
-            "No measurement plan saved yet. Add pH/EC checks, vigor scoring, diagnosis, steering, harvest, dry/cure, and final quality notes before using this grow as public proof."}
+            "No measurement plan saved yet. Add pH/EC checks, vigor scoring, diagnosis, steering, harvest, dry/cure, and final quality notes before using this evidence run as public proof."}
         </Text>
       </AppCard>
 
@@ -264,7 +264,7 @@ export default function CommercialGrowDetailRoute({ route }: { route?: any } = {
       <AppCard>
         <Text style={styles.cardTitle}>Next Commercial Actions</Text>
         <Text style={styles.bullet}>
-          Log grow observations and photos in the Pro grow workspace.
+          Log evidence-run observations and photos in the connected run workspace.
         </Text>
         <Text style={styles.bullet}>
           Attach product, batch, and formula context before publishing claims.

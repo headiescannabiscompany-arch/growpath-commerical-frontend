@@ -390,7 +390,8 @@ export default function CommercialGrowsRoute({
         <Text style={styles.cardTitle}>Product trial evidence layer</Text>
         <Text style={styles.body}>
           Evidence runs add product, batch, formula, and public-report context on top of
-          the normal grow workspace. The private grow record remains the source of truth.
+          the connected run workspace. The private evidence-run record remains the source
+          of truth.
         </Text>
         <Text style={styles.bullet}>
           Link product/product line/batch/formula before the trial starts
@@ -400,8 +401,8 @@ export default function CommercialGrowsRoute({
           records as evidence
         </Text>
         <Text style={styles.bullet}>
-          Create feed campaigns, course lessons, or storefront proof only from saved grow
-          records
+          Create feed campaigns, course lessons, or storefront proof only from saved
+          evidence-run records
         </Text>
         <View style={styles.actions}>
           <ActionLink href="/home/commercial/trials" label="Product Trials" />
