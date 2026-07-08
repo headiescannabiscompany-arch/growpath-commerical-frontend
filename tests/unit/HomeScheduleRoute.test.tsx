@@ -1,5 +1,5 @@
 import React from "react";
-import { render, waitFor } from "@testing-library/react-native";
+import { fireEvent, render, waitFor } from "@testing-library/react-native";
 
 import HomeScheduleRoute from "@/app/home/schedule";
 
@@ -194,5 +194,19 @@ describe("HomeScheduleRoute", () => {
     expect(screen.getByTestId("link-/home/personal/courses")).toBeTruthy();
     expect(screen.getByTestId("link-/home/personal/tasks")).toBeTruthy();
     expect(screen.getByTestId("link-/home/facility/feed")).toBeTruthy();
+
+    fireEvent.press(screen.getByLabelText("Schedule workspace filter commercial"));
+    expect(screen.getByText("Connect Stripe price")).toBeTruthy();
+    expect(screen.getByText("Live Soil Demo")).toBeTruthy();
+    expect(screen.getByText("Veg Mix Launch")).toBeTruthy();
+    expect(screen.queryByText("Personal IPM Lesson")).toBeNull();
+    expect(screen.queryByText("Facility IPM Training")).toBeNull();
+
+    fireEvent.press(screen.getByLabelText("Schedule workspace filter all"));
+    fireEvent.press(screen.getByLabelText("Schedule source filter feed_campaign"));
+    expect(screen.getByText("Veg Mix Launch")).toBeTruthy();
+    expect(screen.getByText("Facility IPM Training")).toBeTruthy();
+    expect(screen.queryByText("Live Soil Demo")).toBeNull();
+    expect(screen.queryByText("Connect Stripe price")).toBeNull();
   });
 });

@@ -30,6 +30,8 @@ type CalendarItem = {
 };
 
 type SectionKey = "overdue" | "today" | "upcoming" | "completed";
+type WorkspaceFilter = "all" | "personal" | "commercial" | "facility";
+type SourceFilter = "all" | "task" | "live" | "course" | "feed_campaign";
 
 function asArray(res: any, key: string) {
   if (Array.isArray(res)) return res;
@@ -204,6 +206,8 @@ export default function HomeScheduleRoute() {
   const [items, setItems] = useState<CalendarItem[]>([]);
   const [loading, setLoading] = useState(true);
   const [feedback, setFeedback] = useState("");
+  const [workspaceFilter, setWorkspaceFilter] = useState<WorkspaceFilter>("all");
+  const [sourceFilter, setSourceFilter] = useState<SourceFilter>("all");
 
   async function loadSchedule() {
     setLoading(true);
@@ -237,6 +241,21 @@ export default function HomeScheduleRoute() {
     void loadSchedule();
   }, []);
 
+  const filteredItems = useMemo(
+    () =>
+      items.filter((item) => {
+        const workspaceMatches =
+          workspaceFilter === "all" || item.workspaceType === workspaceFilter;
+        const sourceMatches =
+          sourceFilter === "all" ||
+          item.itemType === sourceFilter ||
+          item.sourceType === sourceFilter ||
+          (sourceFilter === "course" && item.itemType === "course_release");
+        return workspaceMatches && sourceMatches;
+      }),
+    [items, sourceFilter, workspaceFilter]
+  );
+
   const sections = useMemo(() => {
     const grouped: Record<SectionKey, CalendarItem[]> = {
       overdue: [],
@@ -244,9 +263,9 @@ export default function HomeScheduleRoute() {
       upcoming: [],
       completed: []
     };
-    items.forEach((item) => grouped[sectionForItem(item)].push(item));
+    filteredItems.forEach((item) => grouped[sectionForItem(item)].push(item));
     return grouped;
-  }, [items]);
+  }, [filteredItems]);
   const agendaStats = useMemo(
     () => [
       { label: "Overdue", value: sections.overdue.length, tone: "red" as const },
@@ -339,6 +358,61 @@ export default function HomeScheduleRoute() {
         ))}
       </View>
 
+      <View style={styles.filterPanel}>
+        <Text style={styles.filterLabel}>Workspace</Text>
+        <View style={styles.filterRow}>
+          {(["all", "personal", "commercial", "facility"] as WorkspaceFilter[]).map(
+            (item) => (
+              <Pressable
+                key={`workspace-${item}`}
+                accessibilityRole="button"
+                accessibilityLabel={`Schedule workspace filter ${item}`}
+                style={[
+                  styles.filterChip,
+                  workspaceFilter === item && styles.filterChipActive
+                ]}
+                onPress={() => setWorkspaceFilter(item)}
+              >
+                <Text
+                  style={[
+                    styles.filterText,
+                    workspaceFilter === item && styles.filterTextActive
+                  ]}
+                >
+                  {item}
+                </Text>
+              </Pressable>
+            )
+          )}
+        </View>
+        <Text style={styles.filterLabel}>Source</Text>
+        <View style={styles.filterRow}>
+          {(["all", "task", "live", "course", "feed_campaign"] as SourceFilter[]).map(
+            (item) => (
+              <Pressable
+                key={`source-${item}`}
+                accessibilityRole="button"
+                accessibilityLabel={`Schedule source filter ${item}`}
+                style={[
+                  styles.filterChip,
+                  sourceFilter === item && styles.filterChipActive
+                ]}
+                onPress={() => setSourceFilter(item)}
+              >
+                <Text
+                  style={[
+                    styles.filterText,
+                    sourceFilter === item && styles.filterTextActive
+                  ]}
+                >
+                  {item.replace(/_/g, " ")}
+                </Text>
+              </Pressable>
+            )
+          )}
+        </View>
+      </View>
+
       {feedback ? <Text style={styles.feedback}>{feedback}</Text> : null}
       {loading ? (
         <View style={styles.card}>
@@ -398,6 +472,27 @@ const styles = StyleSheet.create({
     paddingVertical: 10
   },
   refreshText: { color: "#FFFFFF", fontWeight: "900" },
+  filterPanel: {
+    backgroundColor: "#FFFFFF",
+    borderColor: "#CBD5E1",
+    borderRadius: 8,
+    borderWidth: 1,
+    gap: 8,
+    padding: 12
+  },
+  filterLabel: { color: "#0F172A", fontSize: 12, fontWeight: "900" },
+  filterRow: { flexDirection: "row", flexWrap: "wrap", gap: 8 },
+  filterChip: {
+    backgroundColor: "#F8FAFC",
+    borderColor: "#CBD5E1",
+    borderRadius: 8,
+    borderWidth: 1,
+    paddingHorizontal: 10,
+    paddingVertical: 7
+  },
+  filterChipActive: { backgroundColor: "#166534", borderColor: "#166534" },
+  filterText: { color: "#334155", fontSize: 12, fontWeight: "900" },
+  filterTextActive: { color: "#FFFFFF" },
   feedback: {
     backgroundColor: "#FEF2F2",
     borderColor: "#FECACA",
