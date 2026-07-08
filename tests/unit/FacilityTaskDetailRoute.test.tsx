@@ -140,6 +140,7 @@ describe("FacilityTaskDetail", () => {
     const screen = render(<FacilityTaskDetail />);
 
     await waitFor(() => expect(screen.getByText("IPM scout")).toBeTruthy());
+    expect(screen.getByText(/Forum thread-facility/)).toBeTruthy();
 
     fireEvent.press(screen.getByLabelText("View facility task source"));
 

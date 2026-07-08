@@ -103,6 +103,11 @@ function taskSourceId(item: AnyRec | null): string {
   );
 }
 
+function taskSourceReference(item: AnyRec | null): string {
+  if (!item) return "";
+  return taskSourceId(item);
+}
+
 function taskSourcePath(item: AnyRec | null): string {
   if (!item) return "";
   return sourceObjectHref({
@@ -344,6 +349,7 @@ export default function FacilityTaskDetail() {
   const title = useMemo(() => (item ? pickTitle(item) : "Task Detail"), [item]);
   const complete = isComplete(item);
   const sourcePath = taskSourcePath(item);
+  const sourceReference = taskSourceReference(item);
 
   const keys = useMemo(() => {
     if (!item) return [];
@@ -399,9 +405,7 @@ export default function FacilityTaskDetail() {
               <Text style={styles.sectionTitle}>Task Workflow</Text>
               <Text style={styles.summaryLine}>
                 {sourceObjectLabel(item.sourceType)}{" "}
-                {item.sourceObjectId || item.sourceId
-                  ? String(item.sourceObjectId ?? item.sourceId)
-                  : "source not linked"}
+                {sourceReference || "source not linked"}
                 {item.roomId || item.linkedRoomId
                   ? ` | Room: ${String(item.roomId ?? item.linkedRoomId)}`
                   : ""}

@@ -397,6 +397,7 @@ Completed and pushed:
 121. Commercial and facility product-batch source links now recognize `linkedProductBatchId`, so product batch tasks, alerts, and notifications open the batch/inventory detail instead of stopping at the batch planner or inventory root.
 122. Personal grow-log source links now recognize and infer `linkedLogId`, so journal-backed tasks, alerts, notifications, and timeline items open the exact log detail instead of falling back to the grow journal list.
 123. Commercial Task Center cards now display linked-only source ids such as `linkedLiveId`, `linkedFeedPostId`, product/batch/trial ids, orders, alerts, forum threads, and storefront slugs, so owners can see what the task is attached to even when the backend did not send a generic `sourceId`.
+124. Facility task detail now displays the same linked source reference it uses for `View Source`, so forum-, SOP-, room-, run-, product-, alert-, live-, ToolRun-, and recipe-backed tasks no longer look unlinked when the backend only sends linked fields.
 
 ## Working Rule For Codex
 
