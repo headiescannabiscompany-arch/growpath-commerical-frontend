@@ -529,6 +529,7 @@ Completed and pushed:
 253. Public product detail pages now preserve Product Line context with line summary, grow interests, and Browse Line routing back to the filtered storefront, so buyers do not lose product-family navigation after opening a product.
 254. Storefront owner product creation now offers quick-select buttons for existing Product Lines while preserving the product-line ID field, so commercial owners can attach products to storefront families without copying raw IDs.
 255. Commercial Product Line detail now loads attached products, shows their status, grow interests, and descriptions, and links back to owner product detail so Product Lines behave as connected product families instead of standalone labels.
+256. Commercial Soil & Nutrient Batch Planner now loads existing Product Lines and offers quick-select buttons on batch creation, keeping formula/production batches connected to storefront product families without manual ID copying.
 
 ## Working Rule For Codex
 

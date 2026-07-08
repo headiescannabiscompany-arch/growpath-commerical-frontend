@@ -1997,6 +1997,11 @@ describe("commercial workflow pages", () => {
       screen.UNSAFE_getByProps({ href: "/home/commercial/products/new" })
     ).toBeTruthy();
     expect(screen.queryByText("Open Personal Batch Tool")).toBeNull();
+    await waitFor(() =>
+      expect(mockApiRequest).toHaveBeenCalledWith("/api/commercial/product-lines")
+    );
+    expect(screen.getByText("Choose Product Line")).toBeTruthy();
+    expect(screen.getByLabelText("Use batch product line Living Soil Line")).toBeTruthy();
     await waitFor(() => expect(screen.getByText("Seedling Soil Batch")).toBeTruthy());
     expect(screen.getByText(/trial trial-1/)).toBeTruthy();
     expect(screen.getByText("Open Detail")).toBeTruthy();
@@ -2009,10 +2014,7 @@ describe("commercial workflow pages", () => {
       screen.getByLabelText("Commercial batch product id"),
       "product-2"
     );
-    fireEvent.changeText(
-      screen.getByLabelText("Commercial batch product line id"),
-      "line-2"
-    );
+    fireEvent.press(screen.getByLabelText("Use batch product line Living Soil Line"));
     fireEvent.changeText(
       screen.getByLabelText("Commercial batch evidence run id"),
       "grow-2"
@@ -2044,7 +2046,7 @@ describe("commercial workflow pages", () => {
             purpose: "flower",
             formulaVersion: "v3",
             productId: "product-2",
-            productLineId: "line-2",
+            productLineId: "line-1",
             linkedTrialId: "grow-2",
             trialGrowId: "grow-2",
             batchVolume: 40,

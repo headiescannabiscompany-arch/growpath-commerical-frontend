@@ -4,7 +4,9 @@ import { Pressable, StyleSheet, Text, TextInput, View } from "react-native";
 
 import {
   createSoilNutrientBatch,
+  fetchProductLines,
   fetchSoilNutrientBatches,
+  ProductLine,
   SoilNutrientBatch
 } from "@/api/commercialWorkflows";
 import { InlineError } from "@/components/InlineError";
@@ -51,6 +53,10 @@ function batchId(batch: SoilNutrientBatch) {
   return batch.id || batch._id || batch.batchCode || batch.batchName || "batch";
 }
 
+function productLineId(line: ProductLine) {
+  return String(line.id || line._id || line.name || "").trim();
+}
+
 function numberOrUndefined(value: string) {
   const parsed = Number(value);
   return Number.isFinite(parsed) && parsed >= 0 ? parsed : undefined;
@@ -68,6 +74,7 @@ function ActionLink({ href, label }: { href: string; label: string }) {
 
 export default function CommercialBatchPlannerRoute() {
   const [batches, setBatches] = useState<SoilNutrientBatch[]>([]);
+  const [productLines, setProductLines] = useState<ProductLine[]>([]);
   const [form, setForm] = useState<BatchForm>(EMPTY_FORM);
   const [loading, setLoading] = useState(false);
   const [saving, setSaving] = useState(false);
@@ -87,7 +94,12 @@ export default function CommercialBatchPlannerRoute() {
     setLoading(true);
     setError(null);
     try {
-      setBatches(await fetchSoilNutrientBatches());
+      const [nextBatches, nextLines] = await Promise.all([
+        fetchSoilNutrientBatches(),
+        fetchProductLines()
+      ]);
+      setBatches(nextBatches);
+      setProductLines(nextLines);
     } catch (err) {
       setError(err);
     } finally {
@@ -229,9 +241,34 @@ export default function CommercialBatchPlannerRoute() {
               setForm((prev) => ({ ...prev, productLineId }))
             }
             accessibilityLabel="Commercial batch product line id"
-            placeholder="Linked product line ID"
+            placeholder="Linked product line ID, or choose below"
             style={styles.input}
           />
+          {productLines.length ? (
+            <View style={styles.lineSelector}>
+              <Text style={styles.selectorLabel}>Choose Product Line</Text>
+              <View style={styles.selectorActions}>
+                {productLines.slice(0, 4).map((line) => {
+                  const id = productLineId(line);
+                  const name = line.name || "Product line";
+                  return (
+                    <Pressable
+                      key={`batch-line-${id || name}`}
+                      accessibilityRole="button"
+                      accessibilityLabel={`Use batch product line ${name}`}
+                      onPress={() => setForm((prev) => ({ ...prev, productLineId: id }))}
+                      style={[
+                        styles.action,
+                        form.productLineId === id && styles.selectedAction
+                      ]}
+                    >
+                      <Text style={styles.actionText}>{name}</Text>
+                    </Pressable>
+                  );
+                })}
+              </View>
+            </View>
+          ) : null}
           <TextInput
             value={form.trialGrowId}
             onChangeText={(trialGrowId) => setForm((prev) => ({ ...prev, trialGrowId }))}
@@ -589,11 +626,27 @@ const styles = StyleSheet.create({
     paddingHorizontal: 11,
     paddingVertical: 8
   },
+  selectedAction: { backgroundColor: "#DCFCE7", borderColor: "#22C55E" },
   actionText: {
     color: "#166534",
     fontSize: 13,
     fontWeight: "900"
   },
+  lineSelector: {
+    borderColor: "#BBF7D0",
+    borderRadius: 8,
+    borderWidth: 1,
+    flexGrow: 1,
+    minWidth: 220,
+    padding: 9
+  },
+  selectorLabel: {
+    color: "#166534",
+    fontSize: 11,
+    fontWeight: "900",
+    textTransform: "uppercase"
+  },
+  selectorActions: { flexDirection: "row", flexWrap: "wrap", gap: 8, marginTop: 8 },
   bullet: {
     color: "#334155",
     fontSize: 13,
