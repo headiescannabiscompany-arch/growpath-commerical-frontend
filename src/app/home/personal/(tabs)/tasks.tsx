@@ -123,6 +123,62 @@ function taskSourcePath(task: PersonalTask) {
   return task.growId ? `/home/personal/grows/${task.growId}` : "";
 }
 
+function linkedFieldsForSource(
+  sourceType: string,
+  sourceObjectId: string,
+  growId: string,
+  toolRunId: string
+) {
+  const toolRunSourceId = toolRunId || (sourceType === "tool_run" ? sourceObjectId : "");
+  const toolRunLink = toolRunSourceId ? { linkedToolRunId: toolRunSourceId } : {};
+  switch (sourceType) {
+    case "grow":
+      return { ...toolRunLink, linkedGrowId: sourceObjectId || growId };
+    case "plant":
+      return {
+        ...toolRunLink,
+        plantId: sourceObjectId || undefined,
+        linkedPlantId: sourceObjectId
+      };
+    case "tool_run":
+      return toolRunLink;
+    case "recipe":
+      return { ...toolRunLink, linkedRecipeId: sourceObjectId || undefined };
+    case "product":
+      return { ...toolRunLink, linkedProductId: sourceObjectId || undefined };
+    case "product_batch":
+      return { ...toolRunLink, linkedProductBatchId: sourceObjectId || undefined };
+    case "product_trial":
+      return { ...toolRunLink, linkedProductTrialId: sourceObjectId || undefined };
+    case "storefront":
+      return { ...toolRunLink, linkedStorefrontId: sourceObjectId || undefined };
+    case "order":
+      return { ...toolRunLink, linkedOrderId: sourceObjectId || undefined };
+    case "course":
+      return { ...toolRunLink, linkedCourseId: sourceObjectId || undefined };
+    case "lesson":
+      return { ...toolRunLink, linkedLessonId: sourceObjectId || undefined };
+    case "live":
+    case "live_replay":
+      return { ...toolRunLink, linkedLiveId: sourceObjectId || undefined };
+    case "alert":
+    case "sensor_alert":
+      return { ...toolRunLink, linkedAlertId: sourceObjectId || undefined };
+    case "facility":
+      return { ...toolRunLink, linkedFacilityId: sourceObjectId || undefined };
+    case "room":
+      return { ...toolRunLink, linkedRoomId: sourceObjectId || undefined };
+    case "facility_run":
+      return { ...toolRunLink, linkedFacilityRunId: sourceObjectId || undefined };
+    case "sop":
+      return { ...toolRunLink, linkedSopId: sourceObjectId || undefined };
+    case "forum":
+      return { ...toolRunLink, linkedForumThreadId: sourceObjectId || undefined };
+    default:
+      return toolRunLink;
+  }
+}
+
 function scheduleSummary(task: PersonalTask) {
   const reminder =
     typeof task.reminderPlan?.label === "string"
@@ -199,15 +255,24 @@ export default function PersonalTaskCenterRoute() {
     if (!canWriteTasks || creating || !growId.trim() || !title.trim()) return;
     setCreating(true);
     setFeedback("");
+    const cleanGrowId = growId.trim();
+    const cleanSourceObjectId = sourceObjectId.trim();
+    const cleanToolRunId = toolRunId.trim();
     const created = await createPersonalTask({
-      growId: growId.trim(),
+      growId: cleanGrowId,
       title: title.trim(),
       description: description.trim(),
       dueDate: dueDate.trim() || undefined,
       priority,
       sourceType,
-      sourceObjectId: sourceObjectId.trim() || undefined,
-      sourceToolRunId: toolRunId.trim() || undefined,
+      sourceObjectId: cleanSourceObjectId || undefined,
+      sourceToolRunId: cleanToolRunId || undefined,
+      ...linkedFieldsForSource(
+        sourceType,
+        cleanSourceObjectId,
+        cleanGrowId,
+        cleanToolRunId
+      ),
       reminderPlan: reminderNote.trim()
         ? { label: reminderNote.trim(), channels: ["in_app"] }
         : undefined,

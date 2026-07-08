@@ -113,6 +113,8 @@ describe("PersonalTaskCenterRoute", () => {
           sourceType: "product_batch",
           sourceObjectId: "batch-1",
           sourceToolRunId: "run-2",
+          linkedProductBatchId: "batch-1",
+          linkedToolRunId: "run-2",
           reminderPlan: { label: "24 hours before", channels: ["in_app"] },
           recurrence: { rule: "every 21 days" }
         })

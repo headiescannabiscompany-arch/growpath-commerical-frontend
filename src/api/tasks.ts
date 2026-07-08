@@ -126,6 +126,24 @@ export interface PersonalTask {
   linkedLogId?: string | null;
   recurrence?: Record<string, any> | null;
   reminderPlan?: Record<string, any> | null;
+  linkedGrowId?: string | null;
+  linkedPlantId?: string | null;
+  linkedToolRunId?: string | null;
+  linkedRecipeId?: string | null;
+  linkedProductId?: string | null;
+  linkedProductBatchId?: string | null;
+  linkedProductTrialId?: string | null;
+  linkedStorefrontId?: string | null;
+  linkedOrderId?: string | null;
+  linkedCourseId?: string | null;
+  linkedLessonId?: string | null;
+  linkedLiveId?: string | null;
+  linkedAlertId?: string | null;
+  linkedFacilityId?: string | null;
+  linkedRoomId?: string | null;
+  linkedFacilityRunId?: string | null;
+  linkedSopId?: string | null;
+  linkedForumThreadId?: string | null;
   createdAt: string;
 }
 
@@ -175,6 +193,24 @@ export async function createPersonalTask(data: {
   linkedLogId?: string | null;
   recurrence?: Record<string, any> | null;
   reminderPlan?: Record<string, any> | null;
+  linkedGrowId?: string | null;
+  linkedPlantId?: string | null;
+  linkedToolRunId?: string | null;
+  linkedRecipeId?: string | null;
+  linkedProductId?: string | null;
+  linkedProductBatchId?: string | null;
+  linkedProductTrialId?: string | null;
+  linkedStorefrontId?: string | null;
+  linkedOrderId?: string | null;
+  linkedCourseId?: string | null;
+  linkedLessonId?: string | null;
+  linkedLiveId?: string | null;
+  linkedAlertId?: string | null;
+  linkedFacilityId?: string | null;
+  linkedRoomId?: string | null;
+  linkedFacilityRunId?: string | null;
+  linkedSopId?: string | null;
+  linkedForumThreadId?: string | null;
 }): Promise<PersonalTask | null> {
   try {
     const res: any = await apiRequest("/api/personal/tasks", {
