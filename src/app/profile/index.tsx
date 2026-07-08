@@ -19,6 +19,7 @@ import AppCard from "@/components/layout/AppCard";
 import AppPage from "@/components/layout/AppPage";
 import LegalLinks from "@/components/LegalLinks";
 import { useEntitlements } from "@/entitlements";
+import { radius } from "@/theme/theme";
 
 function normalizeStatus(value: unknown) {
   const status = String(value || "inactive").toLowerCase();
@@ -493,7 +494,7 @@ const styles = StyleSheet.create({
   statusRow: {
     alignItems: "center",
     borderColor: "#dbe3ea",
-    borderRadius: 8,
+    borderRadius: radius.card,
     borderWidth: 1,
     flexDirection: "row",
     justifyContent: "space-between",
@@ -515,7 +516,7 @@ const styles = StyleSheet.create({
   input: {
     backgroundColor: "#ffffff",
     borderColor: "#cbd5e1",
-    borderRadius: 8,
+    borderRadius: radius.card,
     borderWidth: 1,
     color: "#111827",
     fontSize: 13,
@@ -532,7 +533,7 @@ const styles = StyleSheet.create({
   fact: {
     backgroundColor: "#f8fafc",
     borderColor: "#e2e8f0",
-    borderRadius: 8,
+    borderRadius: radius.card,
     borderWidth: 1,
     minWidth: 150,
     padding: 10
@@ -558,7 +559,7 @@ const styles = StyleSheet.create({
   primaryButton: {
     alignItems: "center",
     backgroundColor: "#166534",
-    borderRadius: 8,
+    borderRadius: radius.card,
     paddingVertical: 12
   },
   disabledButton: { opacity: 0.55 },
@@ -567,7 +568,7 @@ const styles = StyleSheet.create({
     alignItems: "center",
     backgroundColor: "#ffffff",
     borderColor: "#cbd5e1",
-    borderRadius: 8,
+    borderRadius: radius.card,
     borderWidth: 1,
     flexGrow: 1,
     paddingHorizontal: 12,
@@ -578,7 +579,7 @@ const styles = StyleSheet.create({
     alignItems: "center",
     backgroundColor: "#ffffff",
     borderColor: "#fecaca",
-    borderRadius: 8,
+    borderRadius: radius.card,
     borderWidth: 1,
     paddingVertical: 12
   },

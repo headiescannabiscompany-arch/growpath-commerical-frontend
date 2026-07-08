@@ -712,6 +712,7 @@ Completed and pushed:
 436. Feed / Campaigns promotional composer, destination link boxes, creative previews, filters, campaign cards, feed images, CTAs, and secondary actions now consume the shared 8px card radius token while preserving campaign chips/link metadata pills and keeping Feed visually distinct from Forum.
 437. Forum Directory feedback, summary cards, search input, metadata labels, and join actions now consume the shared visual radius treatment while preserving discussion-group pills, keeping Forum/Q&A visually polished without turning it into Feed advertising.
 438. Account Mode Switcher identity panel, workspace selector, segment buttons, workspace cards, and boundary note now consume the shared 8px card radius token while preserving status badges as pills, keeping Personal, Commercial, and Facility mode choice visually aligned.
+439. Account Profile status rows, sign-in email inputs, plan facts, workspace actions, privacy export controls, and danger actions now consume the shared 8px card radius token, keeping live support/account-management surfaces visually aligned with Facility polish.
 
 ## Working Rule For Codex
 
