@@ -9,6 +9,7 @@ import {
 } from "react-native";
 import { useNavigation } from "@react-navigation/native";
 import { apiRequest } from "../api/apiRequest";
+import { radius } from "../theme/theme";
 
 export default function LiveSessionsListScreen() {
   const [sessions, setSessions] = useState([]);
@@ -80,7 +81,7 @@ const styles = StyleSheet.create({
   sessionCard: {
     backgroundColor: "#222",
     margin: 12,
-    borderRadius: 10,
+    borderRadius: radius.card,
     padding: 16,
     elevation: 2
   },

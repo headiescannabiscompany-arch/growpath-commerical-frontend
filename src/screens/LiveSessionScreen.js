@@ -12,6 +12,7 @@ import { Link, useLocalSearchParams } from "expo-router";
 import { CAPABILITY_KEYS, useEntitlements } from "@/entitlements";
 import { apiRequest } from "../api/apiRequest";
 import LiveSessionTwitchEmbed from "./LiveSessionTwitchEmbed";
+import { radius } from "../theme/theme";
 
 export default function LiveSessionScreen({ route }) {
   const routerParams = (useLocalSearchParams && useLocalSearchParams()) || {};
@@ -229,7 +230,7 @@ const styles = StyleSheet.create({
   container: { flexGrow: 1, padding: 18, backgroundColor: "#F8FAFC" },
   hero: {
     backgroundColor: "#0F172A",
-    borderRadius: 18,
+    borderRadius: radius.card,
     padding: 18,
     marginBottom: 14
   },
@@ -247,7 +248,7 @@ const styles = StyleSheet.create({
   error: { color: "crimson", marginBottom: 10 },
   card: {
     backgroundColor: "#FFFFFF",
-    borderRadius: 14,
+    borderRadius: radius.card,
     padding: 16,
     borderWidth: 1,
     borderColor: "#E2E8F0"
@@ -269,7 +270,7 @@ const styles = StyleSheet.create({
   embedWrap: {
     minHeight: 360,
     overflow: "hidden",
-    borderRadius: 12,
+    borderRadius: radius.card,
     marginTop: 14,
     backgroundColor: "#020617"
   },
@@ -279,7 +280,7 @@ const styles = StyleSheet.create({
     backgroundColor: "#EFF6FF",
     borderColor: "#BFDBFE",
     borderWidth: 1,
-    borderRadius: 10,
+    borderRadius: radius.pill,
     color: "#1D4ED8",
     fontSize: 12,
     fontWeight: "900",
@@ -288,7 +289,7 @@ const styles = StyleSheet.create({
   },
   btn: {
     backgroundColor: "#166534",
-    borderRadius: 10,
+    borderRadius: radius.card,
     alignItems: "center",
     marginTop: 14,
     paddingVertical: 12
@@ -297,7 +298,7 @@ const styles = StyleSheet.create({
   secondaryBtn: {
     borderColor: "#CBD5E1",
     borderWidth: 1,
-    borderRadius: 10,
+    borderRadius: radius.card,
     alignItems: "center",
     marginTop: 10,
     paddingVertical: 11
