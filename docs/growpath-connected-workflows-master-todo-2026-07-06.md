@@ -689,6 +689,7 @@ Completed and pushed:
 413. Commercial Analytics action links now consume the shared 8px card radius token, keeping event-backed storefront, product, course, feed, live, and order metrics visually aligned with the Facility-style page treatment.
 414. Commercial Batch Planner root/detail metrics, formula inputs, product-line selectors, batch rows, evidence fields, and save/actions now consume the shared 8px card radius token so recipe-to-product-to-trial production planning keeps the Facility-style polish.
 415. Commercial Product Trial Evidence Runs root/detail metrics, trial setup inputs, product-line selectors, evidence-run rows, linked evidence fields, and save/actions now consume the shared 8px card radius token while keeping commercial grows framed as product evidence instead of facility operations.
+416. Commercial Product Trials root/detail forms, product-line selectors, trial rows, feedback, evidence fields, claim-readiness task actions, and save controls now consume the shared 8px card radius token while preserving 999 claim-status pills.
 
 ## Working Rule For Codex
 
