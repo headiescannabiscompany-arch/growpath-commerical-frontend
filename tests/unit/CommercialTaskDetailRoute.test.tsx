@@ -234,7 +234,7 @@ describe("CommercialTaskDetailRoute", () => {
     expect(mockPush).toHaveBeenCalledWith("/home/commercial/feed?campaignId=campaign-1");
   });
 
-  it("opens linked-only product batch task sources in the batch workflow", async () => {
+  it("opens product-linked batch task sources in the product workspace", async () => {
     taskOverrides = {
       sourceType: "product_batch",
       sourceId: "",
@@ -250,7 +250,9 @@ describe("CommercialTaskDetailRoute", () => {
 
     fireEvent.press(screen.getByLabelText("View commercial task source"));
 
-    expect(mockPush).toHaveBeenCalledWith("/home/commercial/batch-planner/batch-1");
+    expect(mockPush).toHaveBeenCalledWith(
+      "/home/commercial/products/product-1?batchId=batch-1"
+    );
   });
 
   it("opens linked-only product trial alias task sources in the trial workflow", async () => {

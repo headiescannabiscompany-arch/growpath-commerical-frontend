@@ -85,7 +85,8 @@ export function sourceObjectHref(source: SourceLike) {
   );
   const growId = firstText(source?.linkedGrowId, source?.growId);
   const plantId = firstText(source?.linkedPlantId, source?.plantId);
-  const productId = firstText(source?.linkedProductId, source?.productId, sourceId);
+  const linkedProductId = firstText(source?.linkedProductId, source?.productId);
+  const productId = firstText(linkedProductId, sourceId);
   const productBatchId = firstText(
     source?.linkedProductBatchId,
     source?.productBatchId,
@@ -205,6 +206,10 @@ export function sourceObjectHref(source: SourceLike) {
       return productBatchId
         ? `/home/facility/inventory/${encoded(productBatchId)}`
         : "/home/facility/inventory";
+    if (workspace === "commercial" && linkedProductId) {
+      const batchQuery = productBatchId ? `?batchId=${encoded(productBatchId)}` : "";
+      return `/home/commercial/products/${encoded(linkedProductId)}${batchQuery}`;
+    }
     if (workspace === "commercial")
       return productBatchId
         ? `/home/commercial/batch-planner/${encoded(productBatchId)}`

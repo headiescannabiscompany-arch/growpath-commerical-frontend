@@ -574,6 +574,7 @@ Completed and pushed:
 298. Storefront owner setup now uses the live `support@growpathai.com` alias as its support-email placeholder, matching the already-live support alias map and brand profile guidance.
 299. Feed live campaign CTAs and shared non-commercial live source links now open the public Live Session surface instead of looping back into Feed, keeping Feed promotional and giving live reminders, schedule items, and tasks a real event destination.
 300. Public Live Session now renders the Twitch embed surface, replay action, scheduled/status metadata, and linked product/course/Forum Q&A context, so campaign and reminder traffic lands on a real event page instead of a thin external-link card.
+301. Shared commercial product-batch source links now prefer the linked Product detail workspace when a product id is present, while preserving Batch Planner as the fallback for batch-only records, keeping batches/lots attached to products instead of acting like a separate app.
 
 ## Working Rule For Codex
 

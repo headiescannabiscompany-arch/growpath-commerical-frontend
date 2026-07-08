@@ -159,7 +159,7 @@ describe("CommercialTasksRoute", () => {
     ).toBeTruthy();
     expect(
       screen.getByLabelText(
-        "Commercial task link /home/commercial/batch-planner/batch-linked-1"
+        "Commercial task link /home/commercial/products/product-1?batchId=batch-linked-1"
       )
     ).toBeTruthy();
     expect(
