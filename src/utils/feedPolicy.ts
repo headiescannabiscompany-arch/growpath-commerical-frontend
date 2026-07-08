@@ -118,6 +118,9 @@ export function getFeedBannerPolicy({
   const isFree = normalizedPlan === "free";
   const key = routeKey || routeName || "shared";
   const isHome = key === "home";
+  // longContent means the page has two or more scrolling screens, so free users
+  // receive one middle promotional placement in addition to top and bottom.
+  const hasTwoOrMoreScrollScreens = longContent;
   const railMode = "promo-only";
 
   if (isHome) {
@@ -137,11 +140,11 @@ export function getFeedBannerPolicy({
   if (isFree) {
     return {
       top: true,
-      middle: longContent,
+      middle: hasTwoOrMoreScrollScreens,
       bottom: true,
       slotsByPlacement: {
         top: 1,
-        middle: longContent ? 1 : 0,
+        middle: hasTwoOrMoreScrollScreens ? 1 : 0,
         bottom: 1
       },
       railMode

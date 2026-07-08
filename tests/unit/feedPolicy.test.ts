@@ -47,7 +47,7 @@ describe("feedPolicy", () => {
     expect(banner.slotsByPlacement.top).toBe(1);
   });
 
-  it("adds top, middle, and bottom placements for long free pages", () => {
+  it("adds top, middle, and bottom placements for free pages with two or more scroll screens", () => {
     const banner = getFeedBannerPolicy({
       routeKey: "personal_tools_hub",
       plan: "free",
@@ -63,7 +63,7 @@ describe("feedPolicy", () => {
     expect(banner.railMode).toBe("promo-only");
   });
 
-  it("adds top and bottom placements for short free pages", () => {
+  it("adds only top and bottom placements for free pages under two scroll screens", () => {
     const banner = getFeedBannerPolicy({
       routeKey: "short_page",
       plan: "free",
