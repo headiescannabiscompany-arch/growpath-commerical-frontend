@@ -13,6 +13,8 @@ describe("CommercialDashboardScreen route targets", () => {
     expect(source).toContain('navigation.navigate("Courses")');
     expect(source).toContain('navigation.navigate("CommercialLives")');
     expect(source).toContain('route="Feed"');
+    expect(source).toContain('route="CommercialEvidenceRuns"');
+    expect(source).not.toContain('route="CommercialGrows"');
     expect(source).toContain("fetchProductTrialEvidenceRuns");
     expect(source).not.toContain("fetchCommercialGrows");
     expect(source).not.toContain('navigation.navigate("CreateCourse")');

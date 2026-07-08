@@ -511,6 +511,7 @@ Completed and pushed:
 235. Storefront owner Public Discovery now shows and links a View-as-User `/storefront/:slug` alias alongside the canonical `/store/:slug` and brand profile links, making the public storefront compatibility route directly testable by owners.
 236. Storefront product creation now uses the canonical `linkedTrialId` evidence-run field in owner form state and payloads while still writing legacy `linkedGrowTrialId` for backend compatibility.
 237. Commercial workflow API now exposes canonical product-trial evidence-run function names and the commercial dashboard loads evidence through those aliases while preserving old commercial-grow function exports for compatibility.
+238. Commercial dashboard and page registry now use canonical `CommercialEvidenceRuns` route names for product-trial proof records, while native stack legacy `CommercialGrows` names remain only as compatibility aliases.
 
 ## Working Rule For Codex
 

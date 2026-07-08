@@ -37,7 +37,7 @@ describe("commercial page registry", () => {
     );
 
     [
-      "CommercialGrows",
+      "CommercialEvidenceRuns",
       "CommercialProductLines",
       "CommercialBatchPlanner",
       "CommercialProductTrials",
@@ -65,7 +65,10 @@ describe("commercial page registry", () => {
       PAGE_REGISTRY_COMMERCIAL.map((entry) => [entry.name, entry])
     );
 
-    expect(byName.CommercialGrows.component?.name).toBe("CommercialEvidenceRunsRoute");
+    expect(byName.CommercialEvidenceRuns.component?.name).toBe(
+      "CommercialEvidenceRunsRoute"
+    );
+    expect(byName.CommercialGrows).toBeUndefined();
     expect(byName.CommercialLives.component?.name).toBe("CommercialLivesRoute");
     expect(byName.CommercialProducts.component?.name).toBe("CommercialProductsRoute");
     expect(byName.CommercialProductLines.component?.name).toBe(

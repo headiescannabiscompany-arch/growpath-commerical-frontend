@@ -17,12 +17,21 @@ describe("CommercialStack", () => {
     );
   });
 
-  it("routes legacy evidence stack entries through canonical evidence-run wrappers", () => {
+  it("routes evidence stack entries through canonical wrappers with legacy aliases", () => {
     expect(source).toContain("../app/home/commercial/evidence-runs");
     expect(source).toContain("../app/home/commercial/evidence-runs/[id]");
     expect(source).toContain("../app/home/commercial/evidence-runs/new");
     expect(source).not.toContain('../app/home/commercial/grows"');
     expect(source).not.toContain("../app/home/commercial/grows/[growId]");
+    expect(source).toContain(
+      'name="CommercialEvidenceRuns"\n        component={CommercialEvidenceRunsRoute}'
+    );
+    expect(source).toContain(
+      'name="NewCommercialEvidenceRun"\n        component={NewCommercialEvidenceRunRoute}'
+    );
+    expect(source).toContain(
+      'name="CommercialEvidenceRunDetail"\n        component={CommercialEvidenceRunDetailRoute}'
+    );
     expect(source).toContain(
       '<Stack.Screen name="CommercialGrows" component={CommercialEvidenceRunsRoute} />'
     );

@@ -11,7 +11,7 @@ export const PAGE_REGISTRY_COMMERCIAL = [
     component: require("../screens/commercial/CommercialDashboardScreen.js").default
   },
   {
-    name: "CommercialGrows",
+    name: "CommercialEvidenceRuns",
     label: "Product Evidence & Trials",
     icon: "leaf-outline",
     capabilityKey: "commercial.grows",

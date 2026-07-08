@@ -75,6 +75,18 @@ export default function CommercialStack() {
       <Stack.Screen name="CommercialLives" component={CommercialLivesRoute} />
       <Stack.Screen name="Feed" component={CommercialFeedRoute} />
       <Stack.Screen name="Community" component={CommercialCommunityRoute} />
+      <Stack.Screen
+        name="CommercialEvidenceRuns"
+        component={CommercialEvidenceRunsRoute}
+      />
+      <Stack.Screen
+        name="NewCommercialEvidenceRun"
+        component={NewCommercialEvidenceRunRoute}
+      />
+      <Stack.Screen
+        name="CommercialEvidenceRunDetail"
+        component={CommercialEvidenceRunDetailRoute}
+      />
       <Stack.Screen name="CommercialGrows" component={CommercialEvidenceRunsRoute} />
       <Stack.Screen name="NewCommercialGrow" component={NewCommercialEvidenceRunRoute} />
       <Stack.Screen

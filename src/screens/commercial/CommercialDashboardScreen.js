@@ -272,7 +272,7 @@ export default function CommercialDashboardScreen() {
                 label="Product Evidence"
                 value={model.grows.length}
                 detail="trials and proof records"
-                route="CommercialGrows"
+                route="CommercialEvidenceRuns"
                 navigation={navigation}
               />
               <StatCard
