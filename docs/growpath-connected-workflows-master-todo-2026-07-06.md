@@ -577,6 +577,7 @@ Completed and pushed:
 301. Shared commercial product-batch source links now prefer the linked Product detail workspace when a product id is present, while preserving Batch Planner as the fallback for batch-only records, keeping batches/lots attached to products instead of acting like a separate app.
 302. Shared CommercialBanner copy is now ASCII-clean and uses Pro Forum/Q&A plus Commercial storefront language instead of stale community/marketplace wording, with regression coverage to keep global promo copy aligned.
 303. Deferred user verification now runs the latest CommercialBanner and LiveSession regressions and asks the human/browser pass to confirm product-linked batch routing plus public live-session campaign/task/schedule/notification entry points.
+304. Storefront owner and Commercial Profile support-email placeholders now read from the shared live support-contact config instead of duplicating `support@growpathai.com`, keeping support alias changes centralized.
 
 ## Working Rule For Codex
 

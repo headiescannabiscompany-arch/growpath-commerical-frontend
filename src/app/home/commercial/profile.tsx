@@ -7,6 +7,7 @@ import { useAuth } from "@/auth/AuthContext";
 import { InlineError } from "@/components/InlineError";
 import AppCard from "@/components/layout/AppCard";
 import AppPage from "@/components/layout/AppPage";
+import { SUPPORT_CONTACTS } from "@/config/supportContacts";
 import { useEntitlements } from "@/entitlements";
 
 type ProfileForm = {
@@ -241,7 +242,7 @@ export default function CommercialProfileRoute() {
             }
             accessibilityLabel="Commercial support email"
             autoCapitalize="none"
-            placeholder="support@growpathai.com"
+            placeholder={SUPPORT_CONTACTS.general}
             style={styles.input}
           />
           <TextInput

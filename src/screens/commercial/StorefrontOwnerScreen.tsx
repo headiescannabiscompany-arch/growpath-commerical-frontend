@@ -23,6 +23,7 @@ import { CAPABILITY_KEYS, useEntitlements } from "@/entitlements";
 import { useApiErrorHandler } from "@/hooks/useApiErrorHandler";
 import { persistImageUri } from "@/utils/photoUploads";
 import { currentPublicUrl } from "@/utils/publicLinks";
+import { SUPPORT_CONTACTS } from "@/config/supportContacts";
 
 type AnyRec = Record<string, any>;
 
@@ -988,7 +989,7 @@ export default function Storefront({
               setStoreDraft((draft) => ({ ...draft, supportEmail }))
             }
             accessibilityLabel="Storefront support email"
-            placeholder="support@growpathai.com"
+            placeholder={SUPPORT_CONTACTS.general}
             autoCapitalize="none"
             keyboardType="email-address"
             style={styles.input}
