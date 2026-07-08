@@ -534,6 +534,8 @@ describe("commercial workflow pages", () => {
               tags: ["support"],
               linkedProductId: "product-1",
               linkedCourseId: "course-1",
+              linkedTrialId: "trial-1",
+              linkedGrowId: "grow-1",
               storefrontSlug: "living-soil-labs"
             }
           ]
@@ -843,6 +845,7 @@ describe("commercial workflow pages", () => {
     expect(screen.getByText("Create linked campaign")).toBeTruthy();
     expect(screen.getByText("Public Store Directory")).toBeTruthy();
     await waitFor(() => expect(screen.getByText("How to use Bloom Mix")).toBeTruthy());
+    expect(screen.getByText(/evidence run trial-1/)).toBeTruthy();
 
     fireEvent.changeText(
       screen.getByLabelText("Brand support post title"),
@@ -891,6 +894,7 @@ describe("commercial workflow pages", () => {
             body: "Apply after stretch and water in evenly.",
             linkedProductId: "product-2",
             linkedCourseId: "course-2",
+            linkedTrialId: "grow-2",
             linkedGrowId: "grow-2",
             storefrontSlug: "living-soil-labs",
             tags: ["support", "bloom"],

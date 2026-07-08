@@ -28,6 +28,7 @@ type BrandForumPost = {
   tags?: string[];
   linkedProductId?: string;
   linkedCourseId?: string;
+  linkedTrialId?: string;
   linkedGrowId?: string;
   storefrontSlug?: string;
 };
@@ -60,6 +61,10 @@ function normalizeForumRows(response: any): BrandForumPost[] {
       response?.data?.items ||
       [];
   return Array.isArray(rows) ? rows : [];
+}
+
+function evidenceRunId(post: BrandForumPost) {
+  return post.linkedTrialId || post.linkedGrowId || "";
 }
 
 function ActionLink({ href, label }: { href: string; label: string }) {
@@ -110,6 +115,7 @@ export default function CommercialCommunityRoute() {
         tags: splitTags(form.tags),
         linkedProductId: form.linkedProductId.trim() || undefined,
         linkedCourseId: form.linkedCourseId.trim() || undefined,
+        linkedTrialId: form.linkedGrowId.trim() || undefined,
         linkedGrowId: form.linkedGrowId.trim() || undefined,
         storefrontSlug: form.storefrontSlug.trim() || undefined,
         externalLinks: form.externalLinkUrl.trim()
@@ -289,14 +295,14 @@ export default function CommercialCommunityRoute() {
                 <Text style={styles.postBody}>{post.body || post.content}</Text>
                 {post.linkedProductId ||
                 post.linkedCourseId ||
-                post.linkedGrowId ||
+                evidenceRunId(post) ||
                 post.storefrontSlug ? (
                   <Text style={styles.postMeta}>
                     Links:{" "}
                     {[
                       post.linkedProductId && `product ${post.linkedProductId}`,
                       post.linkedCourseId && `course ${post.linkedCourseId}`,
-                      post.linkedGrowId && `evidence run ${post.linkedGrowId}`,
+                      evidenceRunId(post) && `evidence run ${evidenceRunId(post)}`,
                       post.storefrontSlug && `store ${post.storefrontSlug}`
                     ]
                       .filter(Boolean)
