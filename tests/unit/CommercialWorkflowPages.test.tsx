@@ -1811,6 +1811,11 @@ describe("commercial workflow pages", () => {
     ).toBeTruthy();
     expect(screen.UNSAFE_getByProps({ href: "/home/commercial/products" })).toBeTruthy();
     expect(screen.queryByText("Create Personal Grow")).toBeNull();
+    await waitFor(() =>
+      expect(mockApiRequest).toHaveBeenCalledWith("/api/commercial/product-lines")
+    );
+    expect(screen.getByText("Choose Product Line")).toBeTruthy();
+    expect(screen.getByLabelText("Use trial product line Living Soil Line")).toBeTruthy();
 
     await waitFor(() => expect(screen.getByText("Seedling Safety")).toBeTruthy());
     expect(screen.getByText("Open Detail")).toBeTruthy();
@@ -1821,6 +1826,7 @@ describe("commercial workflow pages", () => {
       "flower_performance"
     );
     fireEvent.changeText(screen.getByLabelText("Trial product id"), "product-2");
+    fireEvent.press(screen.getByLabelText("Use trial product line Living Soil Line"));
     fireEvent.changeText(screen.getByLabelText("Trial batch id"), "batch-1");
     fireEvent.changeText(screen.getByLabelText("Trial evidence run id"), "grow-1");
     fireEvent.changeText(screen.getByLabelText("Trial plant count"), "8");
@@ -1835,6 +1841,7 @@ describe("commercial workflow pages", () => {
             trialName: "Bloom Trial",
             purpose: "flower_performance",
             productId: "product-2",
+            productLineId: "line-1",
             batchId: "batch-1",
             growId: "grow-1",
             plantCount: 8,

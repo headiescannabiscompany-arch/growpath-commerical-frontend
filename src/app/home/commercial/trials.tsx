@@ -12,7 +12,9 @@ import { Link } from "expo-router";
 
 import {
   createProductTrial,
+  fetchProductLines,
   fetchProductTrials,
+  type ProductLine,
   type ProductTrial
 } from "@/api/commercialWorkflows";
 import AppCard from "@/components/layout/AppCard";
@@ -25,8 +27,13 @@ function idOf(item: AnyRec, index: number) {
   return String(item.id ?? item._id ?? `trial-${index}`);
 }
 
+function productLineRecordId(line: ProductLine) {
+  return String(line.id ?? line._id ?? line.name ?? "").trim();
+}
+
 export default function CommercialTrialsRoute() {
   const [trials, setTrials] = useState<ProductTrial[]>([]);
+  const [productLines, setProductLines] = useState<ProductLine[]>([]);
   const [loading, setLoading] = useState(true);
   const [saving, setSaving] = useState(false);
   const [error, setError] = useState<any>(null);
@@ -47,7 +54,12 @@ export default function CommercialTrialsRoute() {
     setLoading(true);
     setError(null);
     try {
-      setTrials(await fetchProductTrials());
+      const [nextTrials, nextLines] = await Promise.all([
+        fetchProductTrials(),
+        fetchProductLines()
+      ]);
+      setTrials(nextTrials);
+      setProductLines(nextLines);
     } catch (err) {
       setError(err);
       setTrials([]);
@@ -167,10 +179,35 @@ export default function CommercialTrialsRoute() {
             value={productLineId}
             onChangeText={setProductLineId}
             accessibilityLabel="Trial product line id"
-            placeholder="Product line id"
+            placeholder="Product line id, or choose below"
             autoCapitalize="none"
             style={[styles.input, styles.gridInput]}
           />
+          {productLines.length ? (
+            <View style={styles.lineSelector}>
+              <Text style={styles.selectorLabel}>Choose Product Line</Text>
+              <View style={styles.selectorActions}>
+                {productLines.slice(0, 4).map((line) => {
+                  const id = productLineRecordId(line);
+                  const name = line.name || "Product line";
+                  return (
+                    <Pressable
+                      key={`trial-line-${id || name}`}
+                      accessibilityRole="button"
+                      accessibilityLabel={`Use trial product line ${name}`}
+                      onPress={() => setProductLineId(id)}
+                      style={[
+                        styles.outlineButton,
+                        productLineId === id && styles.selectedButton
+                      ]}
+                    >
+                      <Text style={styles.outlineText}>{name}</Text>
+                    </Pressable>
+                  );
+                })}
+              </View>
+            </View>
+          ) : null}
           <TextInput
             value={batchId}
             onChangeText={setBatchId}
@@ -365,6 +402,7 @@ const styles = StyleSheet.create({
     paddingHorizontal: 11,
     paddingVertical: 8
   },
+  selectedButton: { backgroundColor: "#DCFCE7", borderColor: "#22C55E" },
   outlineText: { color: "#166534", fontSize: 13, fontWeight: "900" },
   cardTitle: { color: "#0F172A", fontSize: 17, fontWeight: "900" },
   body: { color: "#475569", lineHeight: 20, marginTop: 8 },
@@ -380,6 +418,22 @@ const styles = StyleSheet.create({
   textArea: { minHeight: 86, textAlignVertical: "top" },
   grid: { flexDirection: "row", flexWrap: "wrap", gap: 8 },
   gridInput: { flexBasis: "31%", flexGrow: 1, minWidth: 150 },
+  lineSelector: {
+    borderColor: "#BBF7D0",
+    borderRadius: 10,
+    borderWidth: 1,
+    flexBasis: "31%",
+    flexGrow: 1,
+    minWidth: 180,
+    padding: 10
+  },
+  selectorLabel: {
+    color: "#166534",
+    fontSize: 11,
+    fontWeight: "900",
+    textTransform: "uppercase"
+  },
+  selectorActions: { flexDirection: "row", flexWrap: "wrap", gap: 8, marginTop: 8 },
   primaryButton: {
     alignItems: "center",
     backgroundColor: "#166534",
