@@ -1,7 +1,7 @@
 import { PAGE_REGISTRY_COMMERCIAL } from "../../src/navigation/pageRegistry.commercial";
 
 describe("commercial page registry", () => {
-  it("keeps commercial navigation storefront-centered with evidence and business tools", () => {
+  it("keeps commercial navigation storefront-centered with evidence and brand tools", () => {
     const labels = PAGE_REGISTRY_COMMERCIAL.filter((entry) => entry.primary).map(
       (entry) => entry.label
     );
