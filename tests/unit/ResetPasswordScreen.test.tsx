@@ -43,7 +43,7 @@ describe("ResetPasswordScreen", () => {
     });
   });
 
-  it("accepts resetToken and code aliases from email links", async () => {
+  it("accepts resetToken, code, and token_hash aliases from email links", async () => {
     mockResetPassword.mockResolvedValue({ ok: true });
 
     mockParams = { resetToken: "reset-alias" };
@@ -70,6 +70,48 @@ describe("ResetPasswordScreen", () => {
     await waitFor(() =>
       expect(mockResetPassword).toHaveBeenCalledWith("code-alias", "new-password")
     );
+    codeScreen.unmount();
+
+    mockParams = { token_hash: "token-hash-alias" };
+    const hashScreen = render(<ResetPasswordScreen />);
+    fireEvent.changeText(hashScreen.getByLabelText("New password"), "new-password");
+    fireEvent.changeText(
+      hashScreen.getByLabelText("Confirm new password"),
+      "new-password"
+    );
+    fireEvent.press(hashScreen.getByLabelText("Update password"));
+    await waitFor(() =>
+      expect(mockResetPassword).toHaveBeenCalledWith("token-hash-alias", "new-password")
+    );
+  });
+
+  it("falls back to browser hash tokens from emailed reset links", async () => {
+    mockResetPassword.mockResolvedValueOnce({ ok: true });
+    mockParams = {};
+    const previousWindow = (globalThis as any).window;
+    Object.defineProperty(globalThis, "window", {
+      configurable: true,
+      value: { location: { search: "", hash: "#access_token=browser-token" } }
+    });
+    try {
+      const screen = render(<ResetPasswordScreen />);
+
+      fireEvent.changeText(screen.getByLabelText("New password"), "new-password");
+      fireEvent.changeText(
+        screen.getByLabelText("Confirm new password"),
+        "new-password"
+      );
+      fireEvent.press(screen.getByLabelText("Update password"));
+
+      await waitFor(() =>
+        expect(mockResetPassword).toHaveBeenCalledWith("browser-token", "new-password")
+      );
+    } finally {
+      Object.defineProperty(globalThis, "window", {
+        configurable: true,
+        value: previousWindow
+      });
+    }
   });
 
   it("shows actionable validation errors before calling the API", async () => {

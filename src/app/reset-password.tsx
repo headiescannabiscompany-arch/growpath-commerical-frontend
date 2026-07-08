@@ -19,11 +19,25 @@ export default function ResetPasswordScreen() {
     token?: string | string[];
     resetToken?: string | string[];
     code?: string | string[];
+    token_hash?: string | string[];
+    access_token?: string | string[];
   }>();
   const token = useMemo(() => {
-    const raw = params.token || params.resetToken || params.code;
-    return Array.isArray(raw) ? raw[0] || "" : raw || "";
-  }, [params.code, params.resetToken, params.token]);
+    return firstTokenValue(
+      params.token,
+      params.resetToken,
+      params.code,
+      params.token_hash,
+      params.access_token,
+      browserResetToken()
+    );
+  }, [
+    params.access_token,
+    params.code,
+    params.resetToken,
+    params.token,
+    params.token_hash
+  ]);
 
   const [password, setPassword] = useState("");
   const [confirmPassword, setConfirmPassword] = useState("");
@@ -127,6 +141,35 @@ export default function ResetPasswordScreen() {
       </View>
     </View>
   );
+}
+
+function firstTokenValue(...values: Array<string | string[] | null | undefined>) {
+  for (const value of values) {
+    const candidate = Array.isArray(value) ? value[0] : value;
+    if (typeof candidate === "string" && candidate.trim()) return candidate.trim();
+  }
+  return "";
+}
+
+function browserResetToken() {
+  const location = (globalThis as any)?.window?.location;
+  const rawParts = [location?.search, location?.hash].filter(
+    (value) => typeof value === "string" && value.length
+  );
+  for (const raw of rawParts) {
+    const clean = String(raw).replace(/^[?#]/, "");
+    const queryText = clean.includes("?") ? clean.slice(clean.indexOf("?") + 1) : clean;
+    const searchParams = new URLSearchParams(queryText);
+    const token = firstTokenValue(
+      searchParams.get("token"),
+      searchParams.get("resetToken"),
+      searchParams.get("code"),
+      searchParams.get("token_hash"),
+      searchParams.get("access_token")
+    );
+    if (token) return token;
+  }
+  return "";
 }
 
 const styles = StyleSheet.create({
