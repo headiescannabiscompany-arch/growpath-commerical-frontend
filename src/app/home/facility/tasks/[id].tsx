@@ -283,7 +283,7 @@ export default function FacilityTaskDetail() {
   }, [item]);
 
   return (
-    <ScreenBoundary title={title}>
+    <ScreenBoundary title={title} showBack backFallbackHref="/home/facility/tasks">
       <ScrollView
         contentContainerStyle={styles.container}
         refreshControl={

@@ -130,7 +130,7 @@ export default function CommercialTaskDetailRoute() {
   }
 
   return (
-    <ScreenBoundary title="Task">
+    <ScreenBoundary title="Task" showBack backFallbackHref="/home/commercial/tasks">
       <ScrollView
         contentContainerStyle={styles.container}
         refreshControl={

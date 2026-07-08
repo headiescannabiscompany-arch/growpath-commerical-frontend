@@ -134,7 +134,7 @@ export default function FacilityPlantDetail() {
   }, [item]);
 
   return (
-    <ScreenBoundary title={title}>
+    <ScreenBoundary title={title} showBack backFallbackHref="/home/facility/plants">
       <ScrollView
         contentContainerStyle={styles.container}
         refreshControl={

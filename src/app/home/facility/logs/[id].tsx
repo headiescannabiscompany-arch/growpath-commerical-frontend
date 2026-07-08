@@ -108,7 +108,7 @@ export default function FacilityLogDetail() {
   }, [item]);
 
   return (
-    <ScreenBoundary title={title}>
+    <ScreenBoundary title={title} showBack backFallbackHref="/home/facility/logs">
       <ScrollView
         contentContainerStyle={styles.container}
         refreshControl={

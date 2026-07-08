@@ -1,10 +1,13 @@
 import React from "react";
-import { Text, ScrollView } from "react-native";
+import { Text, ScrollView, View } from "react-native";
+import BackButton from "@/components/nav/BackButton";
 import { captureException } from "@/utils/monitoring";
 
 type Props = {
   name?: string;
   title?: string;
+  showBack?: boolean;
+  backFallbackHref?: string;
   children: React.ReactNode;
 };
 
@@ -25,10 +28,24 @@ export class ScreenBoundary extends React.PureComponent<Props, State> {
   }
 
   render() {
-    if (!this.state.error) return this.props.children;
+    const showBack = Boolean(this.props.showBack);
+    const fallbackHref = this.props.backFallbackHref || "/home";
+
+    if (!this.state.error) {
+      if (!showBack) return this.props.children;
+      return (
+        <View style={{ flex: 1 }}>
+          <View style={{ paddingHorizontal: 16, paddingTop: 16 }}>
+            <BackButton fallbackHref={fallbackHref} />
+          </View>
+          {this.props.children}
+        </View>
+      );
+    }
 
     return (
       <ScrollView contentContainerStyle={{ padding: 16 }}>
+        {showBack ? <BackButton fallbackHref={fallbackHref} /> : null}
         <Text style={{ fontSize: 18, fontWeight: "700", marginBottom: 8 }}>
           Screen crashed: {this.props.name || this.props.title || "UnknownScreen"}
         </Text>

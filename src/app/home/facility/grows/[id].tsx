@@ -121,7 +121,7 @@ export default function FacilityGrowDetail() {
   }, [item]);
 
   return (
-    <ScreenBoundary title={title}>
+    <ScreenBoundary title={title} showBack backFallbackHref="/home/facility/grows">
       <ScrollView
         contentContainerStyle={styles.container}
         refreshControl={

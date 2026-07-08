@@ -132,7 +132,7 @@ export default function CommercialAlertDetailRoute() {
   }
 
   return (
-    <ScreenBoundary title="Alert">
+    <ScreenBoundary title="Alert" showBack backFallbackHref="/home/alerts">
       <ScrollView
         contentContainerStyle={styles.container}
         refreshControl={

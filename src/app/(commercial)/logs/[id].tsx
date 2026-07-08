@@ -84,7 +84,7 @@ export default function CommercialLogDetailRoute() {
   const keys = useMemo(() => (item ? Object.keys(item).sort() : []), [item]);
 
   return (
-    <ScreenBoundary title="Log">
+    <ScreenBoundary title="Log" showBack backFallbackHref="/home/commercial/logs">
       <ScrollView
         contentContainerStyle={styles.container}
         refreshControl={
