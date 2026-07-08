@@ -115,7 +115,7 @@ src/app/
 
 > Current correction: Commercial lands at `/home/commercial`. Storefront owner work lives at `/home/commercial/storefront`; public storefronts live at `/store/:slug`. Feed/Campaigns owner work lives at `/home/commercial/feed`; shared promotional Feed is `/feed`. Forum/Q&A discussion stays in `/forum` and `/forum/post/:id`.
 
-**Landing**: `/feed` or `/facilities` (if no facility selected)
+**Landing**: `/home/commercial`
 
 **Routes**:
 
@@ -131,6 +131,37 @@ src/app/
 - `/social` → SocialMediaScreen
 - `/analytics` → AnalyticsScreen
 - `/profile` → ProfileScreen
+
+Current commercial routes:
+
+- `/home/commercial` - Commercial dashboard / owner command center
+- `/home/commercial/storefront` - Storefront owner home
+- `/home/commercial/products` - Commercial products
+- `/home/commercial/product-lines` - Product Lines support surface
+- `/home/commercial/batch-planner` - Product batches/lots support surface
+- `/home/commercial/evidence-runs` - Product-trial evidence runs
+- `/home/commercial/trials` - Product Trials support surface
+- `/home/commercial/feed` - Feed / Campaigns owner workspace
+- `/feed` - Shared commercial/facility promotional Feed viewer
+- `/forum` and `/forum/post/:id` - Forum/Q&A discussion
+- `/home/commercial/courses` - Commercial courses
+- `/home/commercial/lives` - Commercial lives
+- `/home/commercial/orders` - Orders
+- `/home/commercial/inventory` - Inventory support root
+- `/home/commercial/inventory/new` - Inventory support creation
+- `/home/commercial/inventory/:id` - Inventory support detail
+- `/home/commercial/analytics` - Commercial analytics
+- `/home/commercial/profile` - Profile & Billing
+- `/store/:slug` and `/storefront/:slug` - Public storefronts
+
+Legacy compatibility guards:
+
+- `/campaigns` redirects to `/home/commercial/marketing`.
+- `/orders` redirects to `/home/commercial/orders`.
+- `/storefront` redirects/gates to commercial owner storefront.
+- `/home/commercial/inventory-create` mirrors `/home/commercial/inventory/new`.
+- `/home/commercial/inventory-item/:id` mirrors `/home/commercial/inventory/:id`.
+- `/home/commercial/grows` mirrors `/home/commercial/evidence-runs`.
 
 **Capabilities**:
 

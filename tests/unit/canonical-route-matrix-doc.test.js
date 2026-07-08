@@ -19,6 +19,22 @@ describe("canonical route matrix current corrections", () => {
     );
     expect(doc).toContain("Commercial Feed / Campaigns owner route: `/home/commercial/feed`");
     expect(doc).toContain("Shared Feed viewer route: `/feed`");
+    expect(doc).toContain("**Landing**: `/home/commercial`");
+    expect(doc).toContain("Current commercial routes:");
+    expect(doc).toContain(
+      "`/home/commercial/inventory/new` - Inventory support creation"
+    );
+    expect(doc).toContain(
+      "`/home/commercial/inventory/:id` - Inventory support detail"
+    );
+    expect(doc).toContain("Legacy compatibility guards:");
+    expect(doc).toContain(
+      "`/home/commercial/inventory-create` mirrors `/home/commercial/inventory/new`"
+    );
+    expect(doc).toContain(
+      "`/home/commercial/inventory-item/:id` mirrors `/home/commercial/inventory/:id`"
+    );
+    expect(doc).not.toContain("**Landing**: `/feed` or `/facilities`");
     expect(doc).toContain("Feed is commercial/facility advertising and outreach, not discussion.");
     expect(doc).toContain("Forum/Q&A discussion routes are `/forum` and `/forum/post/:id`.");
     expect(doc).toContain(

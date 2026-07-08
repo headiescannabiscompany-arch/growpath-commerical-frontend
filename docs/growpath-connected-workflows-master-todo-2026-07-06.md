@@ -541,6 +541,7 @@ Completed and pushed:
 265. Commercial inventory detail now has a canonical `/home/commercial/inventory/:id` wrapper, inventory rows and source links route there, and legacy `/home/commercial/inventory-item/:id` remains only as compatibility.
 266. Legacy CommercialStack screen names for inventory create/detail now import the canonical `/home/commercial/inventory/new` and `/home/commercial/inventory/:id` wrappers, keeping old navigation names compatible without exposing stale route files as the implementation source.
 267. Commercial workflow regression coverage now imports canonical inventory detail through `/home/commercial/inventory/:id`, so tests exercise the current route family instead of the legacy compatibility file.
+268. The canonical route matrix Commercial section now lists `/home/commercial` as the landing route, documents the current owner/storefront/feed/inventory route family, and marks old `/campaigns`, `/orders`, `/inventory-create`, `/inventory-item/:id`, and `/grows` paths as compatibility guards.
 
 ## Working Rule For Codex
 
