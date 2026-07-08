@@ -148,7 +148,7 @@ function apiResponseFor(path: string, options?: any) {
           twitchChannelName: "growpath",
           relatedProductId: "product-1",
           relatedCourseId: "course-1",
-          relatedFeedPostId: "campaign-1",
+          relatedFeedCampaignId: "campaign-1",
           forumThreadId: "thread-1"
         }
       ]

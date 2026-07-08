@@ -107,6 +107,7 @@ export type CommercialCourse = {
   linkedProductLineIds?: string[];
   linkedGrowIds?: string[];
   linkedLiveIds?: string[];
+  linkedFeedCampaignIds?: string[];
   linkedFeedPostIds?: string[];
   linkedVideoUrls?: string[];
   documentUrls?: string[];
@@ -137,6 +138,8 @@ export type CommercialLiveEvent = {
   eventSubStatus?: string;
   relatedCourseId?: string;
   relatedProductId?: string;
+  relatedFeedCampaignId?: string;
+  linkedFeedCampaignId?: string;
   relatedFeedPostId?: string;
   forumThreadId?: string;
   growInterests?: string[];

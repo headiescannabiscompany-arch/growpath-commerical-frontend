@@ -422,6 +422,7 @@ Completed and pushed:
 146. Facility task detail now preserves linked sensor alert and feed campaign ids while editing workflow context, so operators can reopen controller alerts and facility outreach campaigns from detail pages without falling back to generic alert or legacy feed-post links.
 147. Commercial product, course, and live setup tasks now emit canonical feed campaign ids while still reading legacy feed-post fields, so storefront readiness work stays tied to Feed/Campaigns outreach instead of discussion posts.
 148. Commercial storefront setup tasks now emit canonical feed campaign ids for active campaigns while preserving legacy feed-post compatibility fields, so storefront launch checklists remain tied to Feed/Campaigns outreach.
+149. Commercial live scheduling and storefront live cards now accept and display canonical feed campaign ids while preserving legacy feed-post compatibility, so live outreach stays connected to Feed/Campaigns instead of being treated as discussion.
 
 ## Working Rule For Codex
 

@@ -162,6 +162,7 @@ export default function CommercialLivesRoute() {
       setMessage(`Live schedule blocked: ${formWarnings.join(", ")}.`);
       return;
     }
+    const relatedFeedCampaignId = form.relatedFeedPostId.trim() || undefined;
     setSaving(true);
     setError(null);
     setMessage("");
@@ -182,7 +183,8 @@ export default function CommercialLivesRoute() {
         eventSubStatus: form.eventSubStatus.trim() || "not_connected",
         relatedCourseId: form.relatedCourseId.trim() || undefined,
         relatedProductId: form.relatedProductId.trim() || undefined,
-        relatedFeedPostId: form.relatedFeedPostId.trim() || undefined,
+        relatedFeedCampaignId,
+        relatedFeedPostId: relatedFeedCampaignId,
         forumThreadId: form.forumThreadId.trim() || undefined,
         growInterests: splitList(form.growInterests),
         visibility: form.visibility,
@@ -220,7 +222,7 @@ export default function CommercialLivesRoute() {
           linkedCourseId: live.relatedCourseId,
           linkedProductId: live.relatedProductId,
           linkedFeedCampaignId: liveFeedCampaignId(live) || undefined,
-          linkedFeedPostId: live.relatedFeedPostId,
+          linkedFeedPostId: liveFeedCampaignId(live) || undefined,
           linkedForumThreadId: live.forumThreadId,
           growInterests: live.growInterests,
           liveStartsAt: live.scheduledStart,
@@ -554,7 +556,8 @@ export default function CommercialLivesRoute() {
                       {[
                         live.relatedProductId && `Product ${live.relatedProductId}`,
                         live.relatedCourseId && `Course ${live.relatedCourseId}`,
-                        live.relatedFeedPostId && `Feed ${live.relatedFeedPostId}`,
+                        liveFeedCampaignId(live) &&
+                          `Feed Campaign ${liveFeedCampaignId(live)}`,
                         live.forumThreadId && `Forum/Q&A ${live.forumThreadId}`,
                         live.growInterests?.length &&
                           `Interests ${live.growInterests.join(", ")}`,

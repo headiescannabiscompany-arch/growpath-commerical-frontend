@@ -122,6 +122,15 @@ function liveId(live: AnyRec) {
   return String(live.id ?? live._id ?? live.title ?? "");
 }
 
+function liveCampaignId(live: AnyRec) {
+  return String(
+    live.relatedFeedCampaignId ??
+      live.linkedFeedCampaignId ??
+      live.relatedFeedPostId ??
+      ""
+  );
+}
+
 function courseId(course: AnyRec) {
   return String(course.id ?? course._id ?? course.slug ?? course.title ?? "");
 }
@@ -1069,7 +1078,7 @@ export default function Storefront() {
                     {[
                       live.relatedProductId && `Product ${live.relatedProductId}`,
                       live.relatedCourseId && `Course ${live.relatedCourseId}`,
-                      live.relatedFeedPostId && `Campaign ${live.relatedFeedPostId}`,
+                      liveCampaignId(live) && `Campaign ${liveCampaignId(live)}`,
                       live.forumThreadId && `Forum/Q&A ${live.forumThreadId}`,
                       live.replayUrl && "Replay available"
                     ]

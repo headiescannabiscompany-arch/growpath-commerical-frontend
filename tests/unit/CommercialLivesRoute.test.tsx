@@ -56,7 +56,7 @@ describe("CommercialLivesRoute", () => {
               eventSubStatus: "connected",
               relatedProductId: "product-1",
               relatedCourseId: "course-1",
-              relatedFeedPostId: "campaign-1",
+              relatedFeedCampaignId: "campaign-1",
               forumThreadId: "thread-1",
               growInterests: ["living soil", "dry amendments"],
               replayUrl: "https://twitch.tv/videos/1"
@@ -83,7 +83,7 @@ describe("CommercialLivesRoute", () => {
     expect(screen.getByLabelText("Selected commercial live live-1")).toBeTruthy();
     expect(screen.getByText(/Product product-1/)).toBeTruthy();
     expect(screen.getByText(/Course course-1/)).toBeTruthy();
-    expect(screen.getByText(/Feed campaign-1/)).toBeTruthy();
+    expect(screen.getByText(/Feed Campaign campaign-1/)).toBeTruthy();
     expect(screen.getByText(/Forum\/Q&A thread-1/)).toBeTruthy();
     expect(screen.getByText(/Interests living soil, dry amendments/)).toBeTruthy();
     expect(screen.getByText(/Channel ID 12345/)).toBeTruthy();
@@ -211,6 +211,7 @@ describe("CommercialLivesRoute", () => {
           eventSubStatus: "connected",
           relatedCourseId: "course-veg",
           relatedProductId: "product-veg",
+          relatedFeedCampaignId: "campaign-veg",
           relatedFeedPostId: "campaign-veg",
           forumThreadId: "thread-veg",
           growInterests: ["living soil", "dry amendments"],
