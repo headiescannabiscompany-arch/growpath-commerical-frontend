@@ -599,6 +599,7 @@ Completed and pushed:
 323. Public Live Session product links now use the same `/store?q=:productId` discovery fallback as Feed/Campaigns when a storefront slug is missing, while still using exact `/store/:slug/products/:productId` routes when brand context exists.
 324. App intro copy now introduces connected Personal, Commercial/storefront, and Facility workspaces while explicitly separating promotional Feed/Campaigns from Forum/Q&A discussion/support before users enter onboarding.
 325. The legacy commercial creator-content screen no longer exposes Marketplace wording in visible titles, errors, search placeholders, fallback item labels, or customer labels; old marketplace API names remain only as compatibility plumbing.
+326. The legacy public Marketplace compatibility screens now present themselves as Storefront Offers in visible headers, search, loading/error/empty states, back links, fallback item labels, and checkout accessibility labels while retaining old marketplace route/API names only as compatibility internals.
 
 ## Working Rule For Codex
 

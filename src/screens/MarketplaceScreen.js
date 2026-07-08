@@ -74,7 +74,7 @@ export default function MarketplaceScreen({ navigation }) {
         setMore(!query.trim() && hasMore(response, nextRows.length));
         setPage(nextPage);
       } catch (error) {
-        setFeedback(error?.message || "Unable to load marketplace.");
+        setFeedback(error?.message || "Unable to load storefront offers.");
         if (nextPage === 1) setItems([]);
       } finally {
         setLoading(false);
@@ -99,7 +99,7 @@ export default function MarketplaceScreen({ navigation }) {
     try {
       setSelected(id ? await getMarketplaceContent(id) : item);
     } catch (error) {
-      setFeedback(error?.message || "Unable to load marketplace detail.");
+      setFeedback(error?.message || "Unable to load storefront offer detail.");
       setSelected(item);
     } finally {
       setLoading(false);
@@ -110,7 +110,7 @@ export default function MarketplaceScreen({ navigation }) {
     return (
       <ScreenContainer scroll>
         <Pressable onPress={() => setSelected(null)}>
-          <Text style={styles.link}>Back to marketplace</Text>
+          <Text style={styles.link}>Back to offers</Text>
         </Pressable>
         {feedback ? <Text style={styles.feedback}>{feedback}</Text> : null}
         <MarketplaceDetailContent
@@ -154,16 +154,16 @@ export default function MarketplaceScreen({ navigation }) {
     <ScreenContainer scroll={false}>
       <View style={styles.headerRow}>
         <View>
-          <Text style={styles.header}>Marketplace</Text>
+          <Text style={styles.header}>Storefront Offers</Text>
           <Text style={styles.subtitle}>
-            Browse creator content from marketplace endpoints.
+            Browse creator content and storefront offers from compatibility offer endpoints.
           </Text>
         </View>
       </View>
 
       <TextInput
         style={styles.search}
-        placeholder="Search marketplace..."
+        placeholder="Search storefront offers..."
         placeholderTextColor="#999"
         value={query}
         onChangeText={setQuery}
@@ -194,13 +194,13 @@ export default function MarketplaceScreen({ navigation }) {
       {loading && !refreshing ? (
         <View style={styles.emptyState}>
           <ActivityIndicator />
-          <Text style={styles.emptyText}>Loading marketplace...</Text>
+          <Text style={styles.emptyText}>Loading storefront offers...</Text>
         </View>
       ) : null}
 
       {!loading && items.length === 0 ? (
         <View style={styles.emptyState}>
-          <Text style={styles.emptyText}>No marketplace content found.</Text>
+          <Text style={styles.emptyText}>No storefront offers found.</Text>
         </View>
       ) : (
         <FlatList
@@ -210,7 +210,7 @@ export default function MarketplaceScreen({ navigation }) {
             <Pressable style={styles.card} onPress={() => openItem(item)}>
               <View style={styles.cardHeader}>
                 <Text style={styles.title} numberOfLines={2}>
-                  {item.title || item.name || "Marketplace item"}
+                  {item.title || item.name || "Storefront offer"}
                 </Text>
                 <Text style={styles.price}>{priceLabel(item)}</Text>
               </View>
@@ -249,7 +249,7 @@ export function MarketplaceDetailContent({ item, onPurchase, purchasing }) {
   const paid = Number(item?.priceCents || 0) > 0 || Number(item?.price || 0) > 0;
   return (
     <View style={styles.detail}>
-      <Text style={styles.header}>{item?.title || item?.name || "Marketplace item"}</Text>
+      <Text style={styles.header}>{item?.title || item?.name || "Storefront offer"}</Text>
       <Text style={styles.creator}>
         By {getCreatorName(item?.creator || item?.author)}
       </Text>
@@ -270,7 +270,7 @@ export function MarketplaceDetailContent({ item, onPurchase, purchasing }) {
         <Pressable
           accessibilityRole="button"
           accessibilityLabel={
-            paid ? "Start marketplace checkout" : "Get marketplace item"
+            paid ? "Start storefront offer checkout" : "Get storefront offer"
           }
           disabled={purchasing}
           onPress={onPurchase}

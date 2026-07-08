@@ -31,7 +31,7 @@ export default function MarketplaceDetailScreen({ route, navigation }) {
     try {
       setItem(await getMarketplaceContent(id));
     } catch (error) {
-      setFeedback(error?.message || "Unable to load marketplace content.");
+      setFeedback(error?.message || "Unable to load storefront offer content.");
     } finally {
       setLoading(false);
     }
@@ -43,7 +43,7 @@ export default function MarketplaceDetailScreen({ route, navigation }) {
 
   async function handlePurchase() {
     if (!id) {
-      setFeedback("This marketplace item is missing an id.");
+      setFeedback("This storefront offer is missing an id.");
       return;
     }
     setBusy(true);
@@ -54,11 +54,11 @@ export default function MarketplaceDetailScreen({ route, navigation }) {
         await Linking.openURL(purchase.url);
         setFeedback("Checkout opened. Complete payment to unlock this item.");
       } else {
-        setFeedback(purchase?.message || "Marketplace item added.");
+        setFeedback(purchase?.message || "Storefront offer added.");
       }
       await load();
     } catch (error) {
-      setFeedback(error?.message || "Unable to purchase this marketplace item.");
+      setFeedback(error?.message || "Unable to purchase this storefront offer.");
     } finally {
       setBusy(false);
     }
@@ -69,7 +69,7 @@ export default function MarketplaceDetailScreen({ route, navigation }) {
       <View style={styles.actions}>
         {navigation?.goBack ? (
           <Pressable onPress={() => navigation.goBack()}>
-            <Text style={styles.link}>Back to marketplace</Text>
+            <Text style={styles.link}>Back to offers</Text>
           </Pressable>
         ) : null}
         <Pressable
@@ -86,13 +86,13 @@ export default function MarketplaceDetailScreen({ route, navigation }) {
       {loading ? (
         <View style={styles.emptyState}>
           <ActivityIndicator />
-          <Text style={styles.emptyText}>Loading marketplace detail...</Text>
+          <Text style={styles.emptyText}>Loading storefront offer detail...</Text>
         </View>
       ) : item ? (
         <MarketplaceDetailContent item={item} />
       ) : (
         <View style={styles.emptyState}>
-          <Text style={styles.emptyText}>Marketplace item not found.</Text>
+          <Text style={styles.emptyText}>Storefront offer not found.</Text>
         </View>
       )}
     </ScreenContainer>
