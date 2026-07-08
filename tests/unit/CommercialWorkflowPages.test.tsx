@@ -563,6 +563,7 @@ describe("commercial workflow pages", () => {
               objective: "traffic",
               status: "scheduled",
               linkedProductId: "product-1",
+              linkedProductLineId: "line-1",
               linkedCourseId: "course-1",
               linkedTrialId: "trial-1",
               linkedGrowId: "grow-1",
@@ -1325,6 +1326,7 @@ describe("commercial workflow pages", () => {
     expect(screen.getByText("Ad clicks tracked")).toBeTruthy();
     expect(screen.getAllByText("42").length).toBeGreaterThan(0);
     expect(screen.getByText(/Evidence run trial-1/)).toBeTruthy();
+    expect(screen.getByText(/Product line line-1/)).toBeTruthy();
 
     fireEvent.changeText(screen.getByLabelText("Marketing plan name"), "Veg Mix Drop");
     fireEvent.changeText(

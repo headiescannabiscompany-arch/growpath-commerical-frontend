@@ -90,6 +90,15 @@ function campaignEvidenceRunId(campaign: Campaign) {
   return campaign.linkedTrialId || campaign.linkedGrowId || "";
 }
 
+function campaignProductLineId(campaign: Campaign) {
+  return String(
+    (campaign as any).linkedProductLineId ||
+      (campaign as any).productLineId ||
+      (campaign as any).linkedProductLineIds?.[0] ||
+      ""
+  );
+}
+
 function productLineId(line: ProductLine) {
   return String(line.id || line._id || line.name || "").trim();
 }
@@ -525,6 +534,9 @@ export default function CommercialMarketingRoute() {
                     Product {campaign.linkedProductId || "none"} / Course{" "}
                     {campaign.linkedCourseId || "none"} / Evidence run{" "}
                     {campaignEvidenceRunId(campaign) || "none"}
+                  </Text>
+                  <Text style={styles.rowMeta}>
+                    Product line {campaignProductLineId(campaign) || "none"}
                   </Text>
                   {campaign.targetUrl || campaign.externalUrl ? (
                     <Text style={styles.rowMeta}>
