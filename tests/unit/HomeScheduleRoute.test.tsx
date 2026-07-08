@@ -184,7 +184,9 @@ describe("HomeScheduleRoute", () => {
     expect(screen.getAllByText(/Repeats weekly/).length).toBeGreaterThan(0);
     expect(screen.getAllByText("Open Source").length).toBeGreaterThan(0);
     expect(screen.getByTestId("link-/home/commercial/products/product-1")).toBeTruthy();
-    expect(screen.getByTestId("link-/home/personal/tools/saved-runs")).toBeTruthy();
+    expect(
+      screen.getByTestId("link-/home/personal/tools/saved-runs?toolRunId=recipe-1")
+    ).toBeTruthy();
     expect(screen.getByTestId("link-/home/commercial/trials/trial-1")).toBeTruthy();
     expect(
       screen.getByTestId("link-/home/commercial/orders?orderId=order-1")

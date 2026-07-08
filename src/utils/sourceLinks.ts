@@ -194,7 +194,9 @@ export function sourceObjectHref(source: SourceLike) {
   if (sourceType === "toolrun" || sourceType === "tool_run" || sourceType === "recipe") {
     if (workspace === "commercial") return "/home/commercial/batch-planner";
     if (workspace === "facility") return "/home/facility/ai-tools";
-    return "/home/personal/tools/saved-runs";
+    return `/home/personal/tools/saved-runs${
+      sourceId ? `?toolRunId=${encoded(sourceId)}` : ""
+    }`;
   }
   if (sourceType === "forum") return forumId ? `/forum/post/${forumId}` : "/forum";
 

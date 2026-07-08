@@ -42,7 +42,7 @@ describe("sourceObjectHref", () => {
         sourceId: "run-1",
         workspaceType: "personal"
       })
-    ).toBe("/home/personal/tools/saved-runs");
+    ).toBe("/home/personal/tools/saved-runs?toolRunId=run-1");
 
     expect(
       sourceObjectHref({

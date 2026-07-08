@@ -224,7 +224,9 @@ describe("NotificationCenterRoute", () => {
       screen.getByLabelText("Notification link /feed?liveId=live-public-1")
     ).toBeTruthy();
     expect(
-      screen.getByLabelText("Notification link /home/personal/tools/saved-runs")
+      screen.getByLabelText(
+        "Notification link /home/personal/tools/saved-runs?toolRunId=recipe-1"
+      )
     ).toBeTruthy();
     expect(
       screen.getByLabelText(

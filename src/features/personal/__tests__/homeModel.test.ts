@@ -151,7 +151,7 @@ describe("buildPersonalHomeModel", () => {
       expect.objectContaining({
         id: "task-1",
         sourceLabel: "tool run",
-        sourceHref: "/home/personal/tools/saved-runs"
+        sourceHref: "/home/personal/tools/saved-runs?toolRunId=run-1"
       }),
       expect.objectContaining({
         id: "task-4",

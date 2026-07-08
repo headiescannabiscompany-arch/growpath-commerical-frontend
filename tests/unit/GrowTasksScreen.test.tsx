@@ -103,7 +103,7 @@ describe("GrowTasksScreen", () => {
       screen.getByLabelText("Grow task link /home/personal/diagnose?growId=grow-task-1")
     ).toBeTruthy();
     expect(
-      screen.getByLabelText("Grow task link /home/personal/tools/saved-runs")
+      screen.getByLabelText("Grow task link /home/personal/tools/saved-runs?toolRunId=run-1")
     ).toBeTruthy();
 
     fireEvent.press(screen.getByLabelText("Complete task"));

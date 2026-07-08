@@ -1,4 +1,4 @@
-import React, { useCallback, useMemo, useState } from "react";
+import React, { useCallback, useEffect, useMemo, useState } from "react";
 import { useFocusEffect } from "@react-navigation/native";
 import { useLocalSearchParams } from "expo-router";
 import {
@@ -96,10 +96,16 @@ function runTitle(run: ToolRun | null) {
 export default function SavedToolRunsScreen() {
   const params = useLocalSearchParams<{
     growId?: string | string[];
+    runId?: string | string[];
     toolType?: string | string[];
+    toolRunId?: string | string[];
   }>();
   const growId = useMemo(() => coerceParam(params.growId), [params.growId]);
   const initialToolType = useMemo(() => coerceParam(params.toolType), [params.toolType]);
+  const targetToolRunId = useMemo(
+    () => coerceParam(params.toolRunId) || coerceParam(params.runId),
+    [params.runId, params.toolRunId]
+  );
   const [toolType, setToolType] = useState(initialToolType);
   const [runs, setRuns] = useState<ToolRun[]>([]);
   const [selectedRun, setSelectedRun] = useState<ToolRun | null>(null);
@@ -124,7 +130,7 @@ export default function SavedToolRunsScreen() {
     }, [load])
   );
 
-  async function selectRun(run: ToolRun) {
+  const selectRun = useCallback(async (run: ToolRun) => {
     const id = idFor(run);
     if (!id) return;
     setFeedback("");
@@ -133,7 +139,27 @@ export default function SavedToolRunsScreen() {
     setSelectedRun(nextRun);
     setSummaryDraft(nextRun.summary || "");
     if (!full) setFeedback("Unable to reload this run; showing cached list data.");
-  }
+  }, []);
+
+  useEffect(() => {
+    if (!targetToolRunId || loading) return;
+    if (selectedRun && idFor(selectedRun) === targetToolRunId) return;
+    const matchingRun = runs.find((run) => idFor(run) === targetToolRunId);
+    if (matchingRun) {
+      void selectRun(matchingRun);
+      return;
+    }
+    void (async () => {
+      setFeedback("");
+      const full = await getToolRun(targetToolRunId);
+      if (!full) {
+        setFeedback("Unable to find the requested saved run.");
+        return;
+      }
+      setSelectedRun(full);
+      setSummaryDraft(full.summary || "");
+    })();
+  }, [loading, runs, selectedRun, selectRun, targetToolRunId]);
 
   async function saveSummary() {
     const id = selectedRun ? idFor(selectedRun) : "";
@@ -238,6 +264,11 @@ export default function SavedToolRunsScreen() {
             return (
               <Pressable
                 key={idFor(run)}
+                accessibilityLabel={
+                  active
+                    ? `Selected saved tool run ${idFor(run)}`
+                    : `Saved tool run ${idFor(run)}`
+                }
                 accessibilityRole="button"
                 onPress={() => selectRun(run)}
                 style={[styles.card, active && styles.cardOn]}
