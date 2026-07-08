@@ -1,3 +1,17 @@
-import CreatePostScreen from "@/screens/CreatePostScreen";
+import { Redirect } from "expo-router";
 
-export default CreatePostScreen;
+import { useEntitlements } from "@/entitlements";
+
+export default function CreatePostRoute() {
+  const entitlements = useEntitlements();
+
+  if (entitlements.mode === "commercial") {
+    return <Redirect href="/home/commercial/feed" />;
+  }
+
+  if (entitlements.mode === "facility") {
+    return <Redirect href="/feed" />;
+  }
+
+  return <Redirect href="/home/personal/forum/new-post" />;
+}
