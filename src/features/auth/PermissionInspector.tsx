@@ -1,5 +1,6 @@
 import React from "react";
 import { View, Text } from "react-native";
+import { radius } from "@/theme/theme";
 
 type PermissionInspectorProps = {
   requiredRole?: string;
@@ -16,7 +17,12 @@ export default function PermissionInspector({
 }: PermissionInspectorProps) {
   return (
     <View
-      style={{ padding: 16, backgroundColor: "#fff3e0", borderRadius: 8, margin: 12 }}
+      style={{
+        padding: 16,
+        backgroundColor: "#fff3e0",
+        borderRadius: radius.card,
+        margin: 12
+      }}
     >
       <Text style={{ fontWeight: "bold", color: "#e65100" }}>Access Restricted</Text>
       {requiredRole && <Text>Required role: {requiredRole}</Text>}

@@ -1,5 +1,6 @@
 import React from "react";
 import { Pressable, Text, View } from "react-native";
+import { radius } from "@/theme/theme";
 
 export function LockedScreen({
   title = "Access restricted",
@@ -21,7 +22,7 @@ export function LockedScreen({
           onPress={onAction}
           style={{
             alignSelf: "flex-start",
-            borderRadius: 8,
+            borderRadius: radius.card,
             borderWidth: 1,
             paddingHorizontal: 16,
             paddingVertical: 12

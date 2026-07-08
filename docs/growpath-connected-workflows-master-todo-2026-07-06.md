@@ -723,6 +723,7 @@ Completed and pushed:
 447. Room setup, grow-start, plant assignment, and plant action cards now consume the shared 8px card radius token, applying the Facility-style polish to the setup path that creates rooms, batches, plants, tasks, logs, and AI context.
 448. Root bootstrap recovery actions and the legacy facility selection surface now consume shared radius tokens for buttons, cards, feedback panels, and status badges, keeping app entry and facility selection aligned with the shared visual system.
 449. AI result cards and AI context selectors now consume the shared 8px card radius token, keeping evidence, grow/room/photo context, notes, and persisted ToolRun-style outputs visually aligned across user modes.
+450. Permission inspector, locked entitlement screens, and route access guard actions now consume the shared 8px card radius token, keeping mode/plan guardrails visually aligned while preserving support and dashboard recovery paths.
 
 ## Working Rule For Codex
 

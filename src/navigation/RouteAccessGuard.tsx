@@ -2,6 +2,7 @@ import React from "react";
 import { ActivityIndicator, Pressable, StyleSheet, Text, View } from "react-native";
 import { usePathname, useRouter } from "expo-router";
 import { useAuth } from "@/auth/AuthContext";
+import { radius } from "@/theme/theme";
 import { useEntitlements } from "../entitlements";
 import { canAccessRoute, getHomeForUser, getRoutePolicy } from "./routeAccess";
 
@@ -114,7 +115,7 @@ const styles = StyleSheet.create({
   },
   primaryButton: {
     backgroundColor: "#166534",
-    borderRadius: 8,
+    borderRadius: radius.card,
     paddingHorizontal: 14,
     paddingVertical: 10
   },
@@ -122,7 +123,7 @@ const styles = StyleSheet.create({
   secondaryButton: {
     backgroundColor: "#FFFFFF",
     borderColor: "#CBD5E1",
-    borderRadius: 8,
+    borderRadius: radius.card,
     borderWidth: 1,
     paddingHorizontal: 14,
     paddingVertical: 10
