@@ -156,7 +156,7 @@ export default function CommercialGrowsRoute({
             </Text>
           </View>
           <View style={styles.headerActions}>
-            <ActionLink href="/home/personal/grows" label="Open Grow Workspace" />
+            <ActionLink href="/home/commercial/grows/new" label="Create Evidence Run" />
             <ActionLink href="/home/commercial/trials" label="Product Trials" />
             <ActionLink href="/home/commercial/batch-planner" label="Batch Planner" />
           </View>
@@ -382,7 +382,7 @@ export default function CommercialGrowsRoute({
           when commercial proof is needed.
         </Text>
         <View style={styles.actions}>
-          <ActionLink href="/home/personal/grows" label="Open grow list" />
+          <ActionLink href="/home/commercial/trials" label="Open Product Trials" />
         </View>
       </AppCard>
 

@@ -112,12 +112,12 @@ export default function CommercialTrialsRoute() {
             and product trial evidence runs.
           </Text>
           <View style={styles.headerActions}>
-            <Link href="/home/personal/grows/new" asChild>
+            <Link href="/home/commercial/grows/new" asChild>
               <Pressable style={styles.outlineButton}>
-                <Text style={styles.outlineText}>Create Personal Grow</Text>
+                <Text style={styles.outlineText}>Create Evidence Run</Text>
               </Pressable>
             </Link>
-            <Link href="/storefront" asChild>
+            <Link href="/home/commercial/products" asChild>
               <Pressable style={styles.outlineButton}>
                 <Text style={styles.outlineText}>Products</Text>
               </Pressable>

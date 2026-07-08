@@ -33,7 +33,8 @@ jest.mock("expo-router", () => {
   const React = require("react");
   const mockRouter = { replace: mockReplace, push: mockPush, back: mockBack };
   return {
-    Link: ({ children }: any) => React.createElement(React.Fragment, null, children),
+    Link: ({ children, href }: any) =>
+      React.cloneElement(React.Children.only(children), { href }),
     Redirect: ({ href }: any) => React.createElement("Redirect", { href }),
     useLocalSearchParams: () => ({
       growId: "grow-1",
@@ -1626,6 +1627,10 @@ describe("commercial workflow pages", () => {
     expect(screen.getByText("Claim guard")).toBeTruthy();
     expect(screen.getByText("Publishable result")).toBeTruthy();
     expect(screen.getByText(/Run Comparison when/)).toBeTruthy();
+    expect(screen.getByText("Create Evidence Run")).toBeTruthy();
+    expect(screen.UNSAFE_getByProps({ href: "/home/commercial/grows/new" })).toBeTruthy();
+    expect(screen.UNSAFE_getByProps({ href: "/home/commercial/products" })).toBeTruthy();
+    expect(screen.queryByText("Create Personal Grow")).toBeNull();
 
     await waitFor(() => expect(screen.getByText("Seedling Safety")).toBeTruthy());
     expect(screen.getByText("Open Detail")).toBeTruthy();
@@ -1939,6 +1944,10 @@ describe("commercial workflow pages", () => {
     expect(screen.getAllByText("Product trial evidence layer").length).toBeGreaterThan(0);
     expect(screen.getAllByText("Product Trials").length).toBeGreaterThan(0);
     expect(screen.getAllByText("Batch Planner").length).toBeGreaterThan(0);
+    expect(screen.getAllByText("Create Evidence Run").length).toBeGreaterThan(0);
+    expect(screen.UNSAFE_getAllByProps({ href: "/home/commercial/grows/new" }).length).toBeGreaterThan(0);
+    expect(screen.queryByText("Open Grow Workspace")).toBeNull();
+    expect(screen.queryByText("Open grow list")).toBeNull();
     await waitFor(() => expect(screen.getByText("Bloom Formula Trial")).toBeTruthy());
     expect(screen.getByText("Open Detail")).toBeTruthy();
 
