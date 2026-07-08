@@ -1,6 +1,8 @@
 import React from "react";
 import { Pressable, StyleSheet, Text, TextInput, View } from "react-native";
 
+import { radius } from "@/theme/theme";
+
 type SchedulePickerProps = {
   dueDate: string;
   reminder: string;
@@ -258,7 +260,7 @@ const styles = StyleSheet.create({
   clearButton: {
     backgroundColor: "#FFFFFF",
     borderColor: "#CBD5E1",
-    borderRadius: 8,
+    borderRadius: radius.card,
     borderWidth: 1,
     paddingHorizontal: 10,
     paddingVertical: 6
@@ -267,7 +269,7 @@ const styles = StyleSheet.create({
   row: { flexDirection: "row", flexWrap: "wrap", gap: 10 },
   flexInput: {
     borderColor: "#CBD5E1",
-    borderRadius: 8,
+    borderRadius: radius.card,
     borderWidth: 1,
     flex: 1,
     minWidth: 180,

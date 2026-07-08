@@ -714,6 +714,7 @@ Completed and pushed:
 438. Account Mode Switcher identity panel, workspace selector, segment buttons, workspace cards, and boundary note now consume the shared 8px card radius token while preserving status badges as pills, keeping Personal, Commercial, and Facility mode choice visually aligned.
 439. Account Profile status rows, sign-in email inputs, plan facts, workspace actions, privacy export controls, and danger actions now consume the shared 8px card radius token, keeping live support/account-management surfaces visually aligned with Facility polish.
 440. Login, Register, Forgot Password, Reset Password, and Verify Email panels, media frames, inputs, verification notices, CTAs, and account-choice controls now consume shared radius tokens while preserving radio/pill semantics, extending Facility-style polish to every auth entry point.
+441. Shared SchedulePicker clear action and schedule inputs now consume the shared 8px card radius token while preserving quick-date, reminder, recurrence, lights-cycle, and all-day chips as pills across task/calendar workflows.
 
 ## Working Rule For Codex
 
