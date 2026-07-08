@@ -37,8 +37,14 @@ describe("CommercialTaskDetailRoute", () => {
           sourceType: "product",
           sourceId: "product-1",
           linkedStorefrontSlug: "grow-shop",
+          actionItemType: "product_missing_batch",
+          actionItemTitle: "Bloom Topdress",
           setupItemLabel: "Stripe price",
           setupItemHelper: "Paid storefront products need checkout before publishing.",
+          campaignKind: "live_ad",
+          campaignTitle: "Friday mix demo",
+          alertSourceType: "product",
+          alertSourceId: "product-1",
           growInterests: ["living soil", "dry amendments"],
           linkedProductIds: [],
           linkedProductId: "product-1",
@@ -113,6 +119,14 @@ describe("CommercialTaskDetailRoute", () => {
     expect(screen.getByText("Task context")).toBeTruthy();
     expect(screen.getByText("living soil, dry amendments")).toBeTruthy();
     expect(screen.getAllByText("grow-shop").length).toBeGreaterThan(0);
+    expect(screen.getByText("Action item type")).toBeTruthy();
+    expect(screen.getAllByText("product_missing_batch").length).toBeGreaterThan(0);
+    expect(screen.getAllByText("Bloom Topdress").length).toBeGreaterThan(0);
+    expect(screen.getByText("Campaign type")).toBeTruthy();
+    expect(screen.getAllByText("live_ad").length).toBeGreaterThan(0);
+    expect(screen.getAllByText("Friday mix demo").length).toBeGreaterThan(0);
+    expect(screen.getByText("Alert source type")).toBeTruthy();
+    expect(screen.getByText("Alert source ID")).toBeTruthy();
     expect(
       screen.getAllByText("Paid storefront products need checkout before publishing.").length
     ).toBeGreaterThan(0);

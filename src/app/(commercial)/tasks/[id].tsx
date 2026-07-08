@@ -61,8 +61,14 @@ function taskContextRows(task: AnyRec | null) {
   const rows = [
     ["Source", [task.sourceType, task.sourceId].filter(Boolean).join(": ")],
     ["Storefront", task.linkedStorefrontSlug || task.linkedStorefrontId],
+    ["Action item type", task.actionItemType],
+    ["Action item", task.actionItemTitle],
     ["Setup item", task.setupItemLabel],
     ["Setup reason", task.setupItemHelper],
+    ["Campaign type", task.campaignKind],
+    ["Campaign title", task.campaignTitle],
+    ["Alert source type", task.alertSourceType],
+    ["Alert source ID", task.alertSourceId],
     ["Grow interests", task.growInterests],
     ["Products", firstLinkedValue(task.linkedProductIds, task.linkedProductId)],
     [
