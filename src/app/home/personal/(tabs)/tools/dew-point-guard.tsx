@@ -35,6 +35,7 @@ import {
   parseCsvText
 } from "@/features/personal/tools/dewPointGuard/engine";
 import PersonalFeedPlacement from "@/components/feed/PersonalFeedPlacement";
+import { radius } from "@/theme/theme";
 
 function asString(v: string | string[] | undefined) {
   return Array.isArray(v) ? v[0] : v;
@@ -103,7 +104,7 @@ function Field(props: {
         style={{
           borderWidth: 1,
           borderColor: "#ddd",
-          borderRadius: 10,
+          borderRadius: radius.card,
           paddingHorizontal: 12,
           paddingVertical: 10
         }}
@@ -1135,7 +1136,7 @@ export default function DewPointGuardTool() {
             padding: 12,
             borderWidth: 1,
             borderColor: "#eee",
-            borderRadius: 12
+            borderRadius: radius.card
           }}
         >
           <Text style={{ fontWeight: "800", marginBottom: 8 }}>Telemetry source</Text>
@@ -1148,7 +1149,7 @@ export default function DewPointGuardTool() {
                 opacity: loadingSources ? 0.6 : 1,
                 borderWidth: 1,
                 borderColor: "#ddd",
-                borderRadius: 10,
+                borderRadius: radius.card,
                 paddingVertical: 10,
                 paddingHorizontal: 12,
                 marginRight: 8,
@@ -1166,7 +1167,7 @@ export default function DewPointGuardTool() {
                 opacity: creatingSource ? 0.6 : 1,
                 borderWidth: 1,
                 borderColor: "#ddd",
-                borderRadius: 10,
+                borderRadius: radius.card,
                 paddingVertical: 10,
                 paddingHorizontal: 12,
                 marginRight: 8,
@@ -1184,7 +1185,7 @@ export default function DewPointGuardTool() {
                 opacity: creatingSource ? 0.6 : 1,
                 borderWidth: 1,
                 borderColor: "#ddd",
-                borderRadius: 10,
+                borderRadius: radius.card,
                 paddingVertical: 10,
                 paddingHorizontal: 12,
                 marginRight: 8,
@@ -1212,7 +1213,7 @@ export default function DewPointGuardTool() {
                     : 1,
                 borderWidth: 1,
                 borderColor: "#ddd",
-                borderRadius: 10,
+                borderRadius: radius.card,
                 paddingVertical: 10,
                 paddingHorizontal: 12,
                 marginBottom: 8
@@ -1240,7 +1241,7 @@ export default function DewPointGuardTool() {
                 opacity: verifyingPulse || loadingPulseDevices ? 0.6 : 1,
                 borderWidth: 1,
                 borderColor: "#ddd",
-                borderRadius: 10,
+                borderRadius: radius.card,
                 paddingVertical: 10,
                 paddingHorizontal: 12,
                 marginBottom: 8,
@@ -1263,7 +1264,7 @@ export default function DewPointGuardTool() {
                     onPress={() => setSelectedPulseDeviceId(String(d.id))}
                     style={{
                       padding: 10,
-                      borderRadius: 10,
+                      borderRadius: radius.card,
                       borderWidth: 1,
                       borderColor:
                         String(d.id) === selectedPulseDeviceId ? "#111" : "#ddd",
@@ -1287,7 +1288,7 @@ export default function DewPointGuardTool() {
                 onPress={() => setSelectedSourceId(s.id)}
                 style={{
                   padding: 10,
-                  borderRadius: 10,
+                  borderRadius: radius.card,
                   borderWidth: 1,
                   borderColor: s.id === selectedSourceId ? "#111" : "#ddd",
                   marginBottom: 8
@@ -1325,7 +1326,7 @@ export default function DewPointGuardTool() {
                   opacity: parsingCsv ? 0.6 : 1,
                   borderWidth: 1,
                   borderColor: "#ddd",
-                  borderRadius: 10,
+                  borderRadius: radius.card,
                   paddingVertical: 10,
                   paddingHorizontal: 12,
                   marginRight: 8,
@@ -1342,7 +1343,7 @@ export default function DewPointGuardTool() {
                 style={{
                   borderWidth: 1,
                   borderColor: "#ddd",
-                  borderRadius: 10,
+                  borderRadius: radius.card,
                   paddingVertical: 10,
                   paddingHorizontal: 12,
                   marginBottom: 8
@@ -1360,7 +1361,7 @@ export default function DewPointGuardTool() {
               style={{
                 borderWidth: 1,
                 borderColor: "#ddd",
-                borderRadius: 10,
+                borderRadius: radius.card,
                 paddingHorizontal: 12,
                 paddingVertical: 10,
                 minHeight: 90,
@@ -1490,7 +1491,7 @@ export default function DewPointGuardTool() {
                   style={{
                     opacity: ingesting || !csvRows.length ? 0.6 : 1,
                     backgroundColor: "#111",
-                    borderRadius: 12,
+                    borderRadius: radius.card,
                     paddingVertical: 12,
                     alignItems: "center"
                   }}
@@ -1514,7 +1515,7 @@ export default function DewPointGuardTool() {
                 style={{
                   borderWidth: 1,
                   borderColor: "#ddd",
-                  borderRadius: 10,
+                  borderRadius: radius.card,
                   paddingVertical: 10,
                   paddingHorizontal: 12,
                   marginRight: 8,
@@ -1527,7 +1528,7 @@ export default function DewPointGuardTool() {
                 onPress={addReadingToQueue}
                 style={{
                   backgroundColor: "#111",
-                  borderRadius: 10,
+                  borderRadius: radius.card,
                   paddingVertical: 10,
                   paddingHorizontal: 12,
                   marginBottom: 8
@@ -1583,7 +1584,7 @@ export default function DewPointGuardTool() {
               style={{
                 opacity: ingesting || !pendingReadings.length ? 0.6 : 1,
                 backgroundColor: "#111",
-                borderRadius: 12,
+                borderRadius: radius.card,
                 paddingVertical: 12,
                 alignItems: "center"
               }}
@@ -1644,7 +1645,7 @@ export default function DewPointGuardTool() {
             style={{
               opacity: fetchingPoints || !selectedSourceId ? 0.6 : 1,
               backgroundColor: "#111",
-              borderRadius: 12,
+              borderRadius: radius.card,
               paddingVertical: 12,
               alignItems: "center",
               marginBottom: selectedSource?.type === "pulse" ? 8 : 0
@@ -1662,7 +1663,7 @@ export default function DewPointGuardTool() {
                 opacity: fetchingPoints || !selectedSourceId ? 0.6 : 1,
                 borderWidth: 1,
                 borderColor: "#ddd",
-                borderRadius: 12,
+                borderRadius: radius.card,
                 paddingVertical: 12,
                 alignItems: "center"
               }}
@@ -1691,7 +1692,7 @@ export default function DewPointGuardTool() {
           padding: 12,
           borderWidth: 1,
           borderColor: "#eee",
-          borderRadius: 12
+          borderRadius: radius.card
         }}
       >
         <Text style={{ fontWeight: "700", marginBottom: 6 }}>
@@ -1746,7 +1747,7 @@ export default function DewPointGuardTool() {
           padding: 12,
           borderWidth: 1,
           borderColor: "#eee",
-          borderRadius: 12
+          borderRadius: radius.card
         }}
       >
         <Text style={{ fontWeight: "700", marginBottom: 6 }}>Estimated Output</Text>

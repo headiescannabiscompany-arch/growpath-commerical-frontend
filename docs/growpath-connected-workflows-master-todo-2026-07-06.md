@@ -668,6 +668,7 @@ Completed and pushed:
 392. Personal NPK / Feed Recipe Builder guidance, AI brief, batch inputs, ingredient rows, analysis fields, selectors, action buttons, result cards, saved recipes, and locked panel now consume the shared 8px card radius token, applying Facility-style polish to the core recipe-calculation workflow.
 393. Personal Ingredient Library ingredient cards, label-analysis inputs, and create/update/archive actions now consume the shared 8px card radius token while preserving favorite/filter pills, aligning reusable guaranteed-analysis data entry with Facility-style polish.
 394. Personal Integrations provider panels, Growlink setup panel, controller options, import-preview room cards, inputs, notices, and connect/sync actions now consume the shared 8px card radius token while preserving read-only status pills, aligning sensor/controller onboarding with Facility-style polish.
+395. Dew Point Guard telemetry/source panels, CSV ingest actions, manual-reading controls, event flag/output cards, Pulse controls, and fetch actions now consume the shared 8px card radius token while preserving mode chips, aligning dew-point and sensor-risk workflows with Facility-style polish.
 
 ## Working Rule For Codex
 
