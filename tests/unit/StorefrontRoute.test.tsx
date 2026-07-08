@@ -326,6 +326,10 @@ describe("Storefront route", () => {
     fireEvent.changeText(screen.getByLabelText("Product name"), "Living Soil");
     fireEvent.changeText(screen.getByLabelText("Product category"), "soil mix");
     fireEvent.changeText(
+      screen.getByLabelText("Product grow interests"),
+      "living soil, seedlings"
+    );
+    fireEvent.changeText(
       screen.getByLabelText("Product short description"),
       "Seedling-safe living soil"
     );
@@ -356,6 +360,7 @@ describe("Storefront route", () => {
           body: expect.objectContaining({
             imageUrl: "/uploads/product.jpg",
             category: "soil mix",
+            growInterests: ["living soil", "seedlings"],
             shortDescription: "Seedling-safe living soil",
             usageInstructions: "Use 1 gallon per small container.",
             warnings: "Do not use as fast calcium rescue.",

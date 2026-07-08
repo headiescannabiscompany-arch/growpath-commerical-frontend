@@ -253,6 +253,7 @@ export default function Storefront() {
     name: "",
     sku: "",
     category: "",
+    growInterestsText: "",
     shortDescription: "",
     description: "",
     price: "",
@@ -563,6 +564,7 @@ export default function Storefront() {
           name: productDraft.name.trim(),
           sku: productDraft.sku.trim() || undefined,
           category: productDraft.category.trim() || undefined,
+          growInterests: splitTextList(productDraft.growInterestsText),
           shortDescription: productDraft.shortDescription.trim() || undefined,
           description: productDraft.description.trim() || undefined,
           price: Number.isFinite(priceNumber) ? priceNumber : 0,
@@ -586,6 +588,7 @@ export default function Storefront() {
         name: "",
         sku: "",
         category: "",
+        growInterestsText: "",
         shortDescription: "",
         description: "",
         price: "",
@@ -1161,6 +1164,15 @@ export default function Storefront() {
             }
             accessibilityLabel="Product category"
             placeholder="Category, e.g. soil mix, dry amendment, houseplant"
+            style={styles.input}
+          />
+          <TextInput
+            value={productDraft.growInterestsText}
+            onChangeText={(growInterestsText) =>
+              setProductDraft((draft) => ({ ...draft, growInterestsText }))
+            }
+            accessibilityLabel="Product grow interests"
+            placeholder="Product grow interests, comma separated"
             style={styles.input}
           />
           <TextInput
