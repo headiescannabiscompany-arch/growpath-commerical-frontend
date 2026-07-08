@@ -3,6 +3,7 @@ import React from "react";
 import { Pressable, ScrollView, StyleSheet, Text, View } from "react-native";
 
 import { ScreenBoundary } from "@/components/ScreenBoundary";
+import { radius } from "@/theme/theme";
 
 const PROVIDERS = [
   "Pulse",
@@ -109,7 +110,7 @@ const styles = StyleSheet.create({
   card: {
     backgroundColor: "#fffdf7",
     borderColor: "#dde6d5",
-    borderRadius: 8,
+    borderRadius: radius.card,
     borderWidth: 1,
     gap: 10,
     padding: 14
@@ -143,7 +144,7 @@ const styles = StyleSheet.create({
   primaryAction: {
     alignSelf: "flex-start",
     backgroundColor: "#2f5d3a",
-    borderRadius: 8,
+    borderRadius: radius.card,
     paddingHorizontal: 14,
     paddingVertical: 10
   },
