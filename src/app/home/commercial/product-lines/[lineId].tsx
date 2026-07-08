@@ -156,7 +156,7 @@ export default function CommercialProductLineDetailRoute({
           <ActionLink href="/home/commercial/trials" label="Product Trials" />
           <ActionLink href="/home/commercial/courses" label="Courses" />
           <ActionLink href="/home/commercial/feed" label="Feed" />
-          <ActionLink href="/home/commercial/community" label="Community" />
+          <ActionLink href="/home/commercial/community" label="Forum / Q&A" />
         </View>
       </AppCard>
 

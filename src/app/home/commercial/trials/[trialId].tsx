@@ -451,7 +451,7 @@ export default function CommercialTrialDetailRoute({ route }: { route?: any } = 
           <ActionLink href="/home/commercial/feed" label="Create Feed Campaign" />
           <ActionLink href="/home/commercial/storefront" label="Storefront" />
           <ActionLink href="/home/commercial/courses" label="Courses" />
-          <ActionLink href="/home/commercial/community" label="Community" />
+          <ActionLink href="/home/commercial/community" label="Forum / Q&A" />
         </View>
       </AppCard>
     </AppPage>

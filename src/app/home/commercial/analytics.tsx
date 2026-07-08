@@ -333,7 +333,7 @@ export default function CommercialAnalyticsRoute() {
         <View style={styles.actions}>
           <ActionLink href="/home/commercial/trials" label="Product Trials" />
           <ActionLink href="/home/commercial/courses" label="Courses" />
-          <ActionLink href="/home/commercial/community" label="Community" />
+          <ActionLink href="/home/commercial/community" label="Forum / Q&A" />
         </View>
       </AppCard>
     </AppPage>

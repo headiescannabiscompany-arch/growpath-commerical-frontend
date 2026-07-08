@@ -317,7 +317,7 @@ export default function CommercialProfileRoute() {
           product/course/trial is connected.
         </Text>
         <View style={styles.actions}>
-          <ActionLink href="/home/commercial/community" label="Community" />
+          <ActionLink href="/home/commercial/community" label="Forum / Q&A" />
           <ActionLink href="/home/commercial/courses" label="Courses" />
           <ActionLink href="/home/commercial/trials" label="Product Trials" />
         </View>

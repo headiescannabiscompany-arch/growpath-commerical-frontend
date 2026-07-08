@@ -624,7 +624,7 @@ export default function CommercialCourseDetailRoute({ route }: { route?: any } =
           <ActionLink href="/home/commercial/products" label="Products" />
           <ActionLink href="/home/commercial/trials" label="Product Trials" />
           <ActionLink href="/home/commercial/storefront" label="Storefront" />
-          <ActionLink href="/home/commercial/community" label="Community" />
+          <ActionLink href="/home/commercial/community" label="Forum / Q&A" />
         </View>
       </AppCard>
     </AppPage>
