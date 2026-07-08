@@ -656,6 +656,7 @@ Completed and pushed:
 380. Personal Grow Tools hub cards, saved-run actions, and inline result controls now consume the shared 8px card radius token, keeping grow-linked ToolRun workflows visually aligned with the Facility-style app polish.
 381. Personal Grow Journal, Compare, and Automation subpages now consume the shared 8px card radius token for CTAs, cards, code/output blocks, automation actions, and empty states while preserving pill filters, extending Facility-style polish across more nested grow workflows.
 382. Personal Grow Timeline filters, event cards, source-link actions, tags, and empty states now consume the shared 8px card radius token, keeping the source-linked grow history view aligned with the Facility-style visual system.
+383. Personal grow-specific Tasks form, inputs, add button, task cards, source actions, danger actions, and source/priority chips now consume the shared 8px card radius token, keeping grow task workflows aligned with the Facility-style polish while preserving source-link behavior.
 
 ## Working Rule For Codex
 

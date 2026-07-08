@@ -23,6 +23,7 @@ import GrowWorkspaceNav from "@/components/personal/GrowWorkspaceNav";
 import { coerceParam, fmtDate, getRowId } from "@/features/grows/routeUtils";
 import PersonalFeedPlacement from "@/components/feed/PersonalFeedPlacement";
 import { CAPABILITY_KEYS, useEntitlements } from "@/entitlements";
+import { radius } from "@/theme/theme";
 import { sourceObjectHref } from "@/utils/sourceLinks";
 
 const priorities = ["low", "medium", "high"] as const;
@@ -325,7 +326,7 @@ const styles = StyleSheet.create({
   form: {
     borderWidth: 1,
     borderColor: "#E2E8F0",
-    borderRadius: 8,
+    borderRadius: radius.card,
     backgroundColor: "#F8FAFC",
     padding: 12,
     gap: 8,
@@ -337,7 +338,7 @@ const styles = StyleSheet.create({
     flexGrow: 1,
     borderWidth: 1,
     borderColor: "#E2E8F0",
-    borderRadius: 8,
+    borderRadius: radius.card,
     paddingHorizontal: 12,
     paddingVertical: 10,
     backgroundColor: "#FFFFFF"
@@ -347,7 +348,7 @@ const styles = StyleSheet.create({
     alignSelf: "flex-start",
     paddingHorizontal: 12,
     justifyContent: "center",
-    borderRadius: 8,
+    borderRadius: radius.card,
     backgroundColor: "#166534"
   },
   addBtnText: { color: "#FFFFFF", fontWeight: "700" },
@@ -355,7 +356,7 @@ const styles = StyleSheet.create({
     marginTop: 10,
     borderWidth: 1,
     borderColor: "#E2E8F0",
-    borderRadius: 8,
+    borderRadius: radius.card,
     padding: 12,
     backgroundColor: "#F8FAFC"
   },
@@ -365,7 +366,7 @@ const styles = StyleSheet.create({
   actionBtn: {
     borderWidth: 1,
     borderColor: "#CBD5E1",
-    borderRadius: 8,
+    borderRadius: radius.card,
     paddingVertical: 6,
     paddingHorizontal: 10,
     backgroundColor: "#FFFFFF"
@@ -373,7 +374,7 @@ const styles = StyleSheet.create({
   dangerBtn: {
     borderWidth: 1,
     borderColor: "#B91C1C",
-    borderRadius: 8,
+    borderRadius: radius.card,
     paddingVertical: 6,
     paddingHorizontal: 10,
     backgroundColor: "#FFFFFF"
@@ -383,7 +384,7 @@ const styles = StyleSheet.create({
   chip: {
     borderWidth: 1,
     borderColor: "#CBD5E1",
-    borderRadius: 8,
+    borderRadius: radius.card,
     paddingHorizontal: 9,
     paddingVertical: 6,
     backgroundColor: "#FFFFFF"
