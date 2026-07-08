@@ -21,7 +21,7 @@ import { createPersonalLog } from "@/api/logs";
 import { listPersonalPlants, type PersonalPlant } from "@/api/plants";
 import { createPersonalTask } from "@/api/tasks";
 import PersonalFeedPlacement from "@/components/feed/PersonalFeedPlacement";
-import BackButton from "@/components/nav/BackButton";
+import { ScreenBoundary } from "@/components/ScreenBoundary";
 import ToolResultSurface from "@/features/personal/tools/ToolResultSurface";
 import { diagnosisCropContextState } from "@/features/personal/diagnosis/diagnosisCropContext";
 import {
@@ -397,587 +397,597 @@ export default function DiagnoseRoute() {
   }
 
   return (
-    <ScrollView contentContainerStyle={styles.container}>
-      <BackButton />
-      <Text style={styles.title}>Plant Issue Diagnosis</Text>
-      <Text style={styles.subtitle}>
-        Cautious triage based on the context you provide. Results are possibilities, not
-        certainty.
-      </Text>
-      <PersonalFeedPlacement placement="top" routeKey="personal_diagnose" longContent />
-      {growId ? <Text style={styles.context}>Grow context: {growId}</Text> : null}
-
-      {plants.length ? (
-        <View style={styles.section}>
-          <Text style={styles.label}>Plant</Text>
-          <View style={styles.row}>
-            <Pressable
-              style={[styles.pill, !plantId && styles.pillOn]}
-              onPress={() => setPlantId("")}
-              accessibilityRole="button"
-              accessibilityLabel="Diagnose whole grow"
-            >
-              <Text style={[styles.pillText, !plantId && styles.pillTextOn]}>
-                Whole grow
-              </Text>
-            </Pressable>
-            {plants.map((plant, index) => {
-              const id = String(plant.id || (plant as any)._id || `plant-${index}`);
-              return (
-                <Pressable
-                  key={id}
-                  style={[styles.pill, plantId === id && styles.pillOn]}
-                  onPress={() => setPlantId(id)}
-                  accessibilityRole="button"
-                  accessibilityLabel={`Diagnose plant ${plant.name || `Plant ${index + 1}`}`}
-                >
-                  <Text style={[styles.pillText, plantId === id && styles.pillTextOn]}>
-                    {plant.name || `Plant ${index + 1}`}
-                  </Text>
-                </Pressable>
-              );
-            })}
-          </View>
-        </View>
-      ) : null}
-      <PersonalFeedPlacement
-        placement="middle"
-        routeKey="personal_diagnose"
-        longContent
-      />
-
-      <View style={styles.section}>
-        <Text style={styles.label}>Crop identity</Text>
+    <ScreenBoundary
+      title="Plant Issue Diagnosis"
+      showBack
+      backFallbackHref="/home/personal"
+    >
+      <ScrollView contentContainerStyle={styles.container}>
+        <Text style={styles.title}>Plant Issue Diagnosis</Text>
         <Text style={styles.subtitle}>
-          Species/crop and cultivar are separate. Example: blueberry bush is not the same
-          as Blueberry Muffin HSC.
+          Cautious triage based on the context you provide. Results are possibilities, not
+          certainty.
         </Text>
-        <View style={styles.grid}>
-          <TextInput
-            style={styles.gridInput}
-            value={cropCommonName}
-            onChangeText={setCropCommonName}
-            placeholder="Crop: Cannabis, blueberry, olive..."
-            accessibilityLabel="Diagnosis crop common name"
-          />
-          <TextInput
-            style={styles.gridInput}
-            value={scientificName}
-            onChangeText={setScientificName}
-            placeholder="Scientific name optional"
-            accessibilityLabel="Diagnosis scientific name"
-          />
-          <TextInput
-            style={styles.gridInput}
-            value={cultivarOrStrain}
-            onChangeText={setCultivarOrStrain}
-            placeholder="Cultivar / strain"
-            accessibilityLabel="Diagnosis cultivar or strain"
-          />
-        </View>
-        <View
-          style={[
-            styles.cropContextPanel,
-            diagnosisCropContext.status === "confirmed"
-              ? styles.cropContextReady
-              : styles.cropContextNeedsReview
-          ]}
-        >
-          <Text style={styles.cropContextTitle}>{diagnosisCropContext.title}</Text>
-          <Text style={styles.cropContextText}>{diagnosisCropContext.message}</Text>
-          {diagnosisCropContext.details.map((detail) => (
-            <Text key={detail} style={styles.cropContextText}>
-              - {detail}
-            </Text>
-          ))}
-        </View>
-      </View>
+        <PersonalFeedPlacement placement="top" routeKey="personal_diagnose" longContent />
+        {growId ? <Text style={styles.context}>Grow context: {growId}</Text> : null}
 
-      <Text style={styles.label}>Stage</Text>
-      <View style={styles.row}>
-        {["seedling", "veg", "flower", "late_flower"].map((value) => (
-          <Pressable
-            key={value}
-            style={[styles.pill, stage === value && styles.pillOn]}
-            onPress={() => setStage(value)}
-            accessibilityRole="button"
-            accessibilityLabel={`Diagnosis stage ${value.replace("_", " ")}`}
-          >
-            <Text style={[styles.pillText, stage === value && styles.pillTextOn]}>
-              {value.replace("_", " ")}
-            </Text>
-          </Pressable>
-        ))}
-      </View>
-
-      <Text style={styles.label}>What are you observing?</Text>
-      <TextInput
-        style={styles.notes}
-        value={notes}
-        onChangeText={setNotes}
-        multiline
-        placeholder="Describe location, spread, recent watering/feed, pH/EC, and environmental changes."
-        accessibilityLabel="Diagnosis notes"
-      />
-
-      <View style={styles.section}>
-        <Text style={styles.label}>Pattern location</Text>
-        <View style={styles.row}>
-          {[
-            "lower old leaves",
-            "upper new growth",
-            "middle",
-            "whole plant",
-            "random damage"
-          ].map((value) => (
-            <Pressable
-              key={value}
-              style={[styles.pill, patternLocation === value && styles.pillOn]}
-              onPress={() => setPatternLocation(value)}
-              accessibilityRole="button"
-              accessibilityLabel={`Diagnosis pattern ${value}`}
-            >
-              <Text
-                style={[styles.pillText, patternLocation === value && styles.pillTextOn]}
-              >
-                {value}
-              </Text>
-            </Pressable>
-          ))}
-        </View>
-      </View>
-
-      <View style={styles.section}>
-        <Text style={styles.label}>Root zone</Text>
-        <View style={styles.row}>
-          {["unknown", "too wet", "too dry", "compacted", "cold roots"].map((value) => (
-            <Pressable
-              key={value}
-              style={[styles.pill, rootMoisture === value && styles.pillOn]}
-              onPress={() => setRootMoisture(value)}
-              accessibilityRole="button"
-              accessibilityLabel={`Diagnosis root zone ${value}`}
-            >
-              <Text
-                style={[styles.pillText, rootMoisture === value && styles.pillTextOn]}
-              >
-                {value}
-              </Text>
-            </Pressable>
-          ))}
-        </View>
-        <TextInput
-          style={styles.input}
-          value={rootConcern}
-          onChangeText={setRootConcern}
-          placeholder="Root-zone notes: drainage, crust, smell, root temp, dryback."
-          accessibilityLabel="Diagnosis root-zone notes"
-        />
-      </View>
-
-      <View style={styles.section}>
-        <Text style={styles.label}>Environment</Text>
-        <View style={styles.grid}>
-          <TextInput
-            style={styles.gridInput}
-            value={temp}
-            onChangeText={setTemp}
-            keyboardType="numeric"
-            placeholder="Temp"
-            accessibilityLabel="Diagnosis temperature"
-          />
-          <TextInput
-            style={styles.gridInput}
-            value={rh}
-            onChangeText={setRh}
-            keyboardType="numeric"
-            placeholder="RH"
-            accessibilityLabel="Diagnosis RH"
-          />
-          <TextInput
-            style={styles.gridInput}
-            value={vpd}
-            onChangeText={setVpd}
-            keyboardType="numeric"
-            placeholder="VPD"
-            accessibilityLabel="Diagnosis VPD"
-          />
-        </View>
-      </View>
-
-      <View style={styles.section}>
-        <Text style={styles.label}>Measured numbers</Text>
-        <View style={styles.grid}>
-          <TextInput
-            style={styles.gridInput}
-            value={feedEC}
-            onChangeText={setFeedEC}
-            keyboardType="numeric"
-            placeholder="Feed EC"
-            accessibilityLabel="Diagnosis feed EC"
-          />
-          <TextInput
-            style={styles.gridInput}
-            value={runoffEC}
-            onChangeText={setRunoffEC}
-            keyboardType="numeric"
-            placeholder="Runoff EC"
-            accessibilityLabel="Diagnosis runoff EC"
-          />
-          <TextInput
-            style={styles.gridInput}
-            value={feedPH}
-            onChangeText={setFeedPH}
-            keyboardType="numeric"
-            placeholder="Feed pH"
-            accessibilityLabel="Diagnosis feed pH"
-          />
-          <TextInput
-            style={styles.gridInput}
-            value={runoffPH}
-            onChangeText={setRunoffPH}
-            keyboardType="numeric"
-            placeholder="Runoff pH"
-            accessibilityLabel="Diagnosis runoff pH"
-          />
-        </View>
-      </View>
-
-      <View style={styles.row}>
-        <Pressable
-          style={styles.secondaryButton}
-          onPress={choosePhoto}
-          accessibilityRole="button"
-          accessibilityLabel={photoUri ? "Change diagnosis photo" : "Add diagnosis photo"}
-        >
-          <Text style={styles.secondaryButtonText}>
-            {photoUri ? "Change Photo" : "Add Photo"}
-          </Text>
-        </Pressable>
-        {photoUri ? (
-          <Pressable
-            style={styles.secondaryButton}
-            onPress={() => setPhotoUri("")}
-            accessibilityRole="button"
-            accessibilityLabel="Remove diagnosis photo"
-          >
-            <Text style={styles.secondaryButtonText}>Remove Photo</Text>
-          </Pressable>
-        ) : null}
-      </View>
-      <Text style={styles.photoPolicy}>
-        Photos are used for this diagnosis request. They are not used to train GrowPathAI
-        models unless you explicitly opt in.
-      </Text>
-      {photoUri ? <Image source={{ uri: photoUri }} style={styles.photo} /> : null}
-
-      {!enabled ? (
-        <Text style={styles.locked}>
-          Diagnosis is unavailable for the current plan or capability set.
-        </Text>
-      ) : null}
-      {enabled ? (
-        <View
-          style={[
-            styles.readinessPanel,
-            providerStatus?.configured ? styles.readinessReady : styles.readinessMissing
-          ]}
-        >
-          <Text style={styles.readinessTitle}>
-            {providerStatus?.configured
-              ? "Production AI provider ready"
-              : "Production AI provider needs verification"}
-          </Text>
-          <Text style={styles.readinessText}>
-            {providerStatus
-              ? `${providerStatus.providerName || "provider"} / ${
-                  providerStatus.providerModel || "model unknown"
-                } / ${providerStatus.imageSupport ? "image input supported" : "text only"}`
-              : providerStatusError || "Checking backend provider configuration..."}
-          </Text>
-          {!providerStatus?.configured ? (
-            <Text style={styles.readinessText}>
-              Server credentials are not exposed here. Release still needs a live backend
-              check with configured AI image credentials.
-            </Text>
-          ) : null}
-        </View>
-      ) : null}
-      <Pressable
-        disabled={!enabled || running || (!notes.trim() && !photoUri)}
-        style={[
-          styles.primaryButton,
-          (!enabled || running || (!notes.trim() && !photoUri)) && styles.disabled
-        ]}
-        onPress={runDiagnosis}
-        accessibilityRole="button"
-        accessibilityLabel="Run diagnosis"
-      >
-        <Text style={styles.primaryButtonText}>
-          {running ? "Analyzing..." : "Run Diagnosis"}
-        </Text>
-      </Pressable>
-
-      {result ? (
-        <>
-          <ToolResultSurface
-            title={result.issueSummary}
-            status={result.source === "unverified" ? "UNVERIFIED SOURCE" : "ANALYSIS"}
-            summary={result.explanation}
-            metrics={[
-              {
-                key: "confidence",
-                label: "Confidence",
-                value: result.confidence.toUpperCase()
-              },
-              {
-                key: "severity",
-                label: "Severity",
-                value: result.severity.toUpperCase()
-              },
-              { key: "source", label: "Source", value: result.source },
-              ...(result.providerModel
-                ? [
-                    {
-                      key: "provider-model",
-                      label: "Model",
-                      value: result.providerModel
-                    }
-                  ]
-                : [])
-            ]}
-            inputs={{
-              stage,
-              patternLocation,
-              rootMoisture,
-              temp,
-              rh,
-              vpd,
-              feedEC,
-              runoffEC,
-              feedPH,
-              runoffPH,
-              cropCommonName,
-              scientificName,
-              cultivarOrStrain
-            }}
-            outputs={{
-              diagnosisClass: result.diagnosisClass,
-              urgency: result.urgency,
-              cropIdentity: result.cropIdentity,
-              cropProfile: result.cropProfileSnapshot
-                ? {
-                    name: result.cropProfileSnapshot.displayName,
-                    scientificName: result.cropProfileSnapshot.scientificName,
-                    category: result.cropProfileSnapshot.cropCategory,
-                    review: result.cropProfileSnapshot.curationStatus
-                  }
-                : "not matched",
-              pattern: result.patternSummary,
-              rootZone: result.rootZoneSummary,
-              environment: result.environmentSummary,
-              numbers: result.numberSummary,
-              provider: result.providerName || result.source,
-              providerResult: result.providerResult ? "stored" : "not supplied"
-            }}
-            notices={[
-              ...(cropProfileNotice ? [cropProfileNotice] : []),
-              ...(result.source === "unverified"
-                ? [
-                    {
-                      key: "source",
-                      severity: "high" as const,
-                      message:
-                        "The response did not include analysis-provider provenance.",
-                      remediation:
-                        "Do not treat this result as confirmed; verify inputs and provider configuration."
-                    }
-                  ]
-                : []),
-              ...result.missingData.map((item, index) => ({
-                key: `missing-${index}`,
-                severity: "info" as const,
-                message: `Missing context: ${item}`
-              }))
-            ]}
-            recommendations={result.actions}
-            assumptions={[
-              ...result.evidence.map((item) => `Observed evidence: ${item}`),
-              ...result.counterEvidence.map((item) => `Counter-evidence: ${item}`)
-            ]}
-            details={
-              <View style={styles.providerPanel}>
-                <Text style={styles.providerTitle}>Provider output</Text>
-                <Text style={styles.providerMeta}>
-                  {result.providerName || result.source || "unverified provider"}
-                  {result.providerModel ? ` | ${result.providerModel}` : ""}
-                </Text>
-                {providerResultSummary(result.providerResult).length ? (
-                  providerResultSummary(result.providerResult).map((line) => (
-                    <Text key={line} style={styles.providerLine}>
-                      - {line}
-                    </Text>
-                  ))
-                ) : (
-                  <Text style={styles.providerLine}>
-                    Provider output was not supplied as a separate structured payload.
-                  </Text>
-                )}
-                <Text style={styles.providerTitle}>GrowPathAI reasoning</Text>
-                {result.growPathReasoning.length ? (
-                  result.growPathReasoning.map((line) => (
-                    <Text key={line} style={styles.providerLine}>
-                      - {line}
-                    </Text>
-                  ))
-                ) : (
-                  <Text style={styles.providerLine}>
-                    No additional GrowPathAI reasoning was returned with this result.
-                  </Text>
-                )}
-                <Text style={styles.providerMeta}>
-                  GrowPathAI improves diagnosis quality from reviewed provider output,
-                  crop/profile context, and user-confirmed outcomes. Training use remains
-                  opt-in.
-                </Text>
-              </View>
-            }
-            formulas={[
-              ...result.growPathReasoning,
-              "ETGU checks symptom pattern, root-zone context, environment, and measured numbers before suggesting follow-up actions."
-            ]}
-            uncertainty={[
-              "Plant-health triage is not a guaranteed lab diagnosis. Confirm with environment, medium, water, and testing when possible.",
-              result.improvementNotice
-            ]
-              .filter(Boolean)
-              .join("\n")}
-            actions={
-              growId
-                ? [
-                    { key: "save-log", label: "Save to Grow Log", onPress: saveLog },
-                    {
-                      key: "create-task",
-                      label: "Create Follow-up Task",
-                      variant: "secondary",
-                      onPress: createTask
-                    }
-                  ]
-                : []
-            }
-            feedback={feedback}
-            contextMessage={
-              !growId ? "Select a grow to enable log and task actions." : undefined
-            }
-          />
-          {result.tags.length ? (
-            <View style={styles.followUpCard}>
-              <Text style={styles.label}>Accepted tags</Text>
-              <Text style={styles.subtitle}>
-                Choose which diagnosis tags should be saved to the grow journal.
-              </Text>
-              <View style={styles.row}>
-                {result.tags.map((tag) => {
-                  const accepted = acceptedTags.includes(tag);
-                  return (
-                    <Pressable
-                      key={tag}
-                      style={[styles.pill, accepted && styles.pillOn]}
-                      onPress={() => toggleAcceptedTag(tag)}
-                      accessibilityRole="button"
-                      accessibilityLabel={`Diagnosis tag ${tag}`}
-                    >
-                      <Text style={[styles.pillText, accepted && styles.pillTextOn]}>
-                        {tag}
-                      </Text>
-                    </Pressable>
-                  );
-                })}
-              </View>
-            </View>
-          ) : null}
-          <View style={styles.followUpCard}>
-            <Text style={styles.label}>Improve this diagnosis</Text>
-            <Text style={styles.subtitle}>
-              Tell GrowPathAI whether this result matched what you saw. Feedback is linked
-              to this diagnosis and is not used for model training unless you explicitly
-              consent.
-            </Text>
-            <TextInput
-              style={styles.input}
-              value={outcomeNotes}
-              onChangeText={setOutcomeNotes}
-              placeholder="Optional outcome notes, checks, or what changed later."
-              accessibilityLabel="Diagnosis outcome feedback notes"
-            />
+        {plants.length ? (
+          <View style={styles.section}>
+            <Text style={styles.label}>Plant</Text>
             <View style={styles.row}>
               <Pressable
-                disabled={outcomeSaving}
-                style={[styles.secondaryButton, outcomeSaving && styles.disabled]}
-                onPress={() => submitOutcomeFeedback("helpful")}
+                style={[styles.pill, !plantId && styles.pillOn]}
+                onPress={() => setPlantId("")}
                 accessibilityRole="button"
-                accessibilityLabel="Mark diagnosis helpful"
+                accessibilityLabel="Diagnose whole grow"
               >
-                <Text style={styles.secondaryButtonText}>Helpful</Text>
-              </Pressable>
-              <Pressable
-                disabled={outcomeSaving}
-                style={[styles.secondaryButton, outcomeSaving && styles.disabled]}
-                onPress={() => submitOutcomeFeedback("not_accurate")}
-                accessibilityRole="button"
-                accessibilityLabel="Mark diagnosis not accurate"
-              >
-                <Text style={styles.secondaryButtonText}>Not Accurate</Text>
-              </Pressable>
-              <Pressable
-                disabled={outcomeSaving}
-                style={[styles.secondaryButton, outcomeSaving && styles.disabled]}
-                onPress={() => submitOutcomeFeedback("unsure")}
-                accessibilityRole="button"
-                accessibilityLabel="Mark diagnosis unsure"
-              >
-                <Text style={styles.secondaryButtonText}>Unsure</Text>
-              </Pressable>
-            </View>
-          </View>
-          {result.followUp ? (
-            <View style={styles.followUpCard}>
-              <Text style={styles.label}>Provider follow-up</Text>
-              <Text style={styles.subtitle}>{result.followUp}</Text>
-              <TextInput
-                style={styles.notes}
-                value={followUpAnswer}
-                onChangeText={setFollowUpAnswer}
-                multiline
-                placeholder="Add the requested observation or measurement."
-                accessibilityLabel="Diagnosis follow-up answer"
-              />
-              <Pressable
-                disabled={!followUpAnswer.trim() || running}
-                style={[
-                  styles.primaryButton,
-                  (!followUpAnswer.trim() || running) && styles.disabled
-                ]}
-                onPress={submitFollowUp}
-                accessibilityRole="button"
-                accessibilityLabel="Refine diagnosis"
-              >
-                <Text style={styles.primaryButtonText}>
-                  {running ? "Submitting..." : "Refine Diagnosis"}
+                <Text style={[styles.pillText, !plantId && styles.pillTextOn]}>
+                  Whole grow
                 </Text>
               </Pressable>
+              {plants.map((plant, index) => {
+                const id = String(plant.id || (plant as any)._id || `plant-${index}`);
+                return (
+                  <Pressable
+                    key={id}
+                    style={[styles.pill, plantId === id && styles.pillOn]}
+                    onPress={() => setPlantId(id)}
+                    accessibilityRole="button"
+                    accessibilityLabel={`Diagnose plant ${plant.name || `Plant ${index + 1}`}`}
+                  >
+                    <Text style={[styles.pillText, plantId === id && styles.pillTextOn]}>
+                      {plant.name || `Plant ${index + 1}`}
+                    </Text>
+                  </Pressable>
+                );
+              })}
             </View>
+          </View>
+        ) : null}
+        <PersonalFeedPlacement
+          placement="middle"
+          routeKey="personal_diagnose"
+          longContent
+        />
+
+        <View style={styles.section}>
+          <Text style={styles.label}>Crop identity</Text>
+          <Text style={styles.subtitle}>
+            Species/crop and cultivar are separate. Example: blueberry bush is not the
+            same as Blueberry Muffin HSC.
+          </Text>
+          <View style={styles.grid}>
+            <TextInput
+              style={styles.gridInput}
+              value={cropCommonName}
+              onChangeText={setCropCommonName}
+              placeholder="Crop: Cannabis, blueberry, olive..."
+              accessibilityLabel="Diagnosis crop common name"
+            />
+            <TextInput
+              style={styles.gridInput}
+              value={scientificName}
+              onChangeText={setScientificName}
+              placeholder="Scientific name optional"
+              accessibilityLabel="Diagnosis scientific name"
+            />
+            <TextInput
+              style={styles.gridInput}
+              value={cultivarOrStrain}
+              onChangeText={setCultivarOrStrain}
+              placeholder="Cultivar / strain"
+              accessibilityLabel="Diagnosis cultivar or strain"
+            />
+          </View>
+          <View
+            style={[
+              styles.cropContextPanel,
+              diagnosisCropContext.status === "confirmed"
+                ? styles.cropContextReady
+                : styles.cropContextNeedsReview
+            ]}
+          >
+            <Text style={styles.cropContextTitle}>{diagnosisCropContext.title}</Text>
+            <Text style={styles.cropContextText}>{diagnosisCropContext.message}</Text>
+            {diagnosisCropContext.details.map((detail) => (
+              <Text key={detail} style={styles.cropContextText}>
+                - {detail}
+              </Text>
+            ))}
+          </View>
+        </View>
+
+        <Text style={styles.label}>Stage</Text>
+        <View style={styles.row}>
+          {["seedling", "veg", "flower", "late_flower"].map((value) => (
+            <Pressable
+              key={value}
+              style={[styles.pill, stage === value && styles.pillOn]}
+              onPress={() => setStage(value)}
+              accessibilityRole="button"
+              accessibilityLabel={`Diagnosis stage ${value.replace("_", " ")}`}
+            >
+              <Text style={[styles.pillText, stage === value && styles.pillTextOn]}>
+                {value.replace("_", " ")}
+              </Text>
+            </Pressable>
+          ))}
+        </View>
+
+        <Text style={styles.label}>What are you observing?</Text>
+        <TextInput
+          style={styles.notes}
+          value={notes}
+          onChangeText={setNotes}
+          multiline
+          placeholder="Describe location, spread, recent watering/feed, pH/EC, and environmental changes."
+          accessibilityLabel="Diagnosis notes"
+        />
+
+        <View style={styles.section}>
+          <Text style={styles.label}>Pattern location</Text>
+          <View style={styles.row}>
+            {[
+              "lower old leaves",
+              "upper new growth",
+              "middle",
+              "whole plant",
+              "random damage"
+            ].map((value) => (
+              <Pressable
+                key={value}
+                style={[styles.pill, patternLocation === value && styles.pillOn]}
+                onPress={() => setPatternLocation(value)}
+                accessibilityRole="button"
+                accessibilityLabel={`Diagnosis pattern ${value}`}
+              >
+                <Text
+                  style={[
+                    styles.pillText,
+                    patternLocation === value && styles.pillTextOn
+                  ]}
+                >
+                  {value}
+                </Text>
+              </Pressable>
+            ))}
+          </View>
+        </View>
+
+        <View style={styles.section}>
+          <Text style={styles.label}>Root zone</Text>
+          <View style={styles.row}>
+            {["unknown", "too wet", "too dry", "compacted", "cold roots"].map((value) => (
+              <Pressable
+                key={value}
+                style={[styles.pill, rootMoisture === value && styles.pillOn]}
+                onPress={() => setRootMoisture(value)}
+                accessibilityRole="button"
+                accessibilityLabel={`Diagnosis root zone ${value}`}
+              >
+                <Text
+                  style={[styles.pillText, rootMoisture === value && styles.pillTextOn]}
+                >
+                  {value}
+                </Text>
+              </Pressable>
+            ))}
+          </View>
+          <TextInput
+            style={styles.input}
+            value={rootConcern}
+            onChangeText={setRootConcern}
+            placeholder="Root-zone notes: drainage, crust, smell, root temp, dryback."
+            accessibilityLabel="Diagnosis root-zone notes"
+          />
+        </View>
+
+        <View style={styles.section}>
+          <Text style={styles.label}>Environment</Text>
+          <View style={styles.grid}>
+            <TextInput
+              style={styles.gridInput}
+              value={temp}
+              onChangeText={setTemp}
+              keyboardType="numeric"
+              placeholder="Temp"
+              accessibilityLabel="Diagnosis temperature"
+            />
+            <TextInput
+              style={styles.gridInput}
+              value={rh}
+              onChangeText={setRh}
+              keyboardType="numeric"
+              placeholder="RH"
+              accessibilityLabel="Diagnosis RH"
+            />
+            <TextInput
+              style={styles.gridInput}
+              value={vpd}
+              onChangeText={setVpd}
+              keyboardType="numeric"
+              placeholder="VPD"
+              accessibilityLabel="Diagnosis VPD"
+            />
+          </View>
+        </View>
+
+        <View style={styles.section}>
+          <Text style={styles.label}>Measured numbers</Text>
+          <View style={styles.grid}>
+            <TextInput
+              style={styles.gridInput}
+              value={feedEC}
+              onChangeText={setFeedEC}
+              keyboardType="numeric"
+              placeholder="Feed EC"
+              accessibilityLabel="Diagnosis feed EC"
+            />
+            <TextInput
+              style={styles.gridInput}
+              value={runoffEC}
+              onChangeText={setRunoffEC}
+              keyboardType="numeric"
+              placeholder="Runoff EC"
+              accessibilityLabel="Diagnosis runoff EC"
+            />
+            <TextInput
+              style={styles.gridInput}
+              value={feedPH}
+              onChangeText={setFeedPH}
+              keyboardType="numeric"
+              placeholder="Feed pH"
+              accessibilityLabel="Diagnosis feed pH"
+            />
+            <TextInput
+              style={styles.gridInput}
+              value={runoffPH}
+              onChangeText={setRunoffPH}
+              keyboardType="numeric"
+              placeholder="Runoff pH"
+              accessibilityLabel="Diagnosis runoff pH"
+            />
+          </View>
+        </View>
+
+        <View style={styles.row}>
+          <Pressable
+            style={styles.secondaryButton}
+            onPress={choosePhoto}
+            accessibilityRole="button"
+            accessibilityLabel={
+              photoUri ? "Change diagnosis photo" : "Add diagnosis photo"
+            }
+          >
+            <Text style={styles.secondaryButtonText}>
+              {photoUri ? "Change Photo" : "Add Photo"}
+            </Text>
+          </Pressable>
+          {photoUri ? (
+            <Pressable
+              style={styles.secondaryButton}
+              onPress={() => setPhotoUri("")}
+              accessibilityRole="button"
+              accessibilityLabel="Remove diagnosis photo"
+            >
+              <Text style={styles.secondaryButtonText}>Remove Photo</Text>
+            </Pressable>
           ) : null}
-        </>
-      ) : feedback ? (
-        <Text style={styles.feedback}>{feedback}</Text>
-      ) : null}
-      <PersonalFeedPlacement
-        placement="bottom"
-        routeKey="personal_diagnose"
-        longContent
-      />
-    </ScrollView>
+        </View>
+        <Text style={styles.photoPolicy}>
+          Photos are used for this diagnosis request. They are not used to train
+          GrowPathAI models unless you explicitly opt in.
+        </Text>
+        {photoUri ? <Image source={{ uri: photoUri }} style={styles.photo} /> : null}
+
+        {!enabled ? (
+          <Text style={styles.locked}>
+            Diagnosis is unavailable for the current plan or capability set.
+          </Text>
+        ) : null}
+        {enabled ? (
+          <View
+            style={[
+              styles.readinessPanel,
+              providerStatus?.configured ? styles.readinessReady : styles.readinessMissing
+            ]}
+          >
+            <Text style={styles.readinessTitle}>
+              {providerStatus?.configured
+                ? "Production AI provider ready"
+                : "Production AI provider needs verification"}
+            </Text>
+            <Text style={styles.readinessText}>
+              {providerStatus
+                ? `${providerStatus.providerName || "provider"} / ${
+                    providerStatus.providerModel || "model unknown"
+                  } / ${providerStatus.imageSupport ? "image input supported" : "text only"}`
+                : providerStatusError || "Checking backend provider configuration..."}
+            </Text>
+            {!providerStatus?.configured ? (
+              <Text style={styles.readinessText}>
+                Server credentials are not exposed here. Release still needs a live
+                backend check with configured AI image credentials.
+              </Text>
+            ) : null}
+          </View>
+        ) : null}
+        <Pressable
+          disabled={!enabled || running || (!notes.trim() && !photoUri)}
+          style={[
+            styles.primaryButton,
+            (!enabled || running || (!notes.trim() && !photoUri)) && styles.disabled
+          ]}
+          onPress={runDiagnosis}
+          accessibilityRole="button"
+          accessibilityLabel="Run diagnosis"
+        >
+          <Text style={styles.primaryButtonText}>
+            {running ? "Analyzing..." : "Run Diagnosis"}
+          </Text>
+        </Pressable>
+
+        {result ? (
+          <>
+            <ToolResultSurface
+              title={result.issueSummary}
+              status={result.source === "unverified" ? "UNVERIFIED SOURCE" : "ANALYSIS"}
+              summary={result.explanation}
+              metrics={[
+                {
+                  key: "confidence",
+                  label: "Confidence",
+                  value: result.confidence.toUpperCase()
+                },
+                {
+                  key: "severity",
+                  label: "Severity",
+                  value: result.severity.toUpperCase()
+                },
+                { key: "source", label: "Source", value: result.source },
+                ...(result.providerModel
+                  ? [
+                      {
+                        key: "provider-model",
+                        label: "Model",
+                        value: result.providerModel
+                      }
+                    ]
+                  : [])
+              ]}
+              inputs={{
+                stage,
+                patternLocation,
+                rootMoisture,
+                temp,
+                rh,
+                vpd,
+                feedEC,
+                runoffEC,
+                feedPH,
+                runoffPH,
+                cropCommonName,
+                scientificName,
+                cultivarOrStrain
+              }}
+              outputs={{
+                diagnosisClass: result.diagnosisClass,
+                urgency: result.urgency,
+                cropIdentity: result.cropIdentity,
+                cropProfile: result.cropProfileSnapshot
+                  ? {
+                      name: result.cropProfileSnapshot.displayName,
+                      scientificName: result.cropProfileSnapshot.scientificName,
+                      category: result.cropProfileSnapshot.cropCategory,
+                      review: result.cropProfileSnapshot.curationStatus
+                    }
+                  : "not matched",
+                pattern: result.patternSummary,
+                rootZone: result.rootZoneSummary,
+                environment: result.environmentSummary,
+                numbers: result.numberSummary,
+                provider: result.providerName || result.source,
+                providerResult: result.providerResult ? "stored" : "not supplied"
+              }}
+              notices={[
+                ...(cropProfileNotice ? [cropProfileNotice] : []),
+                ...(result.source === "unverified"
+                  ? [
+                      {
+                        key: "source",
+                        severity: "high" as const,
+                        message:
+                          "The response did not include analysis-provider provenance.",
+                        remediation:
+                          "Do not treat this result as confirmed; verify inputs and provider configuration."
+                      }
+                    ]
+                  : []),
+                ...result.missingData.map((item, index) => ({
+                  key: `missing-${index}`,
+                  severity: "info" as const,
+                  message: `Missing context: ${item}`
+                }))
+              ]}
+              recommendations={result.actions}
+              assumptions={[
+                ...result.evidence.map((item) => `Observed evidence: ${item}`),
+                ...result.counterEvidence.map((item) => `Counter-evidence: ${item}`)
+              ]}
+              details={
+                <View style={styles.providerPanel}>
+                  <Text style={styles.providerTitle}>Provider output</Text>
+                  <Text style={styles.providerMeta}>
+                    {result.providerName || result.source || "unverified provider"}
+                    {result.providerModel ? ` | ${result.providerModel}` : ""}
+                  </Text>
+                  {providerResultSummary(result.providerResult).length ? (
+                    providerResultSummary(result.providerResult).map((line) => (
+                      <Text key={line} style={styles.providerLine}>
+                        - {line}
+                      </Text>
+                    ))
+                  ) : (
+                    <Text style={styles.providerLine}>
+                      Provider output was not supplied as a separate structured payload.
+                    </Text>
+                  )}
+                  <Text style={styles.providerTitle}>GrowPathAI reasoning</Text>
+                  {result.growPathReasoning.length ? (
+                    result.growPathReasoning.map((line) => (
+                      <Text key={line} style={styles.providerLine}>
+                        - {line}
+                      </Text>
+                    ))
+                  ) : (
+                    <Text style={styles.providerLine}>
+                      No additional GrowPathAI reasoning was returned with this result.
+                    </Text>
+                  )}
+                  <Text style={styles.providerMeta}>
+                    GrowPathAI improves diagnosis quality from reviewed provider output,
+                    crop/profile context, and user-confirmed outcomes. Training use
+                    remains opt-in.
+                  </Text>
+                </View>
+              }
+              formulas={[
+                ...result.growPathReasoning,
+                "ETGU checks symptom pattern, root-zone context, environment, and measured numbers before suggesting follow-up actions."
+              ]}
+              uncertainty={[
+                "Plant-health triage is not a guaranteed lab diagnosis. Confirm with environment, medium, water, and testing when possible.",
+                result.improvementNotice
+              ]
+                .filter(Boolean)
+                .join("\n")}
+              actions={
+                growId
+                  ? [
+                      { key: "save-log", label: "Save to Grow Log", onPress: saveLog },
+                      {
+                        key: "create-task",
+                        label: "Create Follow-up Task",
+                        variant: "secondary",
+                        onPress: createTask
+                      }
+                    ]
+                  : []
+              }
+              feedback={feedback}
+              contextMessage={
+                !growId ? "Select a grow to enable log and task actions." : undefined
+              }
+            />
+            {result.tags.length ? (
+              <View style={styles.followUpCard}>
+                <Text style={styles.label}>Accepted tags</Text>
+                <Text style={styles.subtitle}>
+                  Choose which diagnosis tags should be saved to the grow journal.
+                </Text>
+                <View style={styles.row}>
+                  {result.tags.map((tag) => {
+                    const accepted = acceptedTags.includes(tag);
+                    return (
+                      <Pressable
+                        key={tag}
+                        style={[styles.pill, accepted && styles.pillOn]}
+                        onPress={() => toggleAcceptedTag(tag)}
+                        accessibilityRole="button"
+                        accessibilityLabel={`Diagnosis tag ${tag}`}
+                      >
+                        <Text style={[styles.pillText, accepted && styles.pillTextOn]}>
+                          {tag}
+                        </Text>
+                      </Pressable>
+                    );
+                  })}
+                </View>
+              </View>
+            ) : null}
+            <View style={styles.followUpCard}>
+              <Text style={styles.label}>Improve this diagnosis</Text>
+              <Text style={styles.subtitle}>
+                Tell GrowPathAI whether this result matched what you saw. Feedback is
+                linked to this diagnosis and is not used for model training unless you
+                explicitly consent.
+              </Text>
+              <TextInput
+                style={styles.input}
+                value={outcomeNotes}
+                onChangeText={setOutcomeNotes}
+                placeholder="Optional outcome notes, checks, or what changed later."
+                accessibilityLabel="Diagnosis outcome feedback notes"
+              />
+              <View style={styles.row}>
+                <Pressable
+                  disabled={outcomeSaving}
+                  style={[styles.secondaryButton, outcomeSaving && styles.disabled]}
+                  onPress={() => submitOutcomeFeedback("helpful")}
+                  accessibilityRole="button"
+                  accessibilityLabel="Mark diagnosis helpful"
+                >
+                  <Text style={styles.secondaryButtonText}>Helpful</Text>
+                </Pressable>
+                <Pressable
+                  disabled={outcomeSaving}
+                  style={[styles.secondaryButton, outcomeSaving && styles.disabled]}
+                  onPress={() => submitOutcomeFeedback("not_accurate")}
+                  accessibilityRole="button"
+                  accessibilityLabel="Mark diagnosis not accurate"
+                >
+                  <Text style={styles.secondaryButtonText}>Not Accurate</Text>
+                </Pressable>
+                <Pressable
+                  disabled={outcomeSaving}
+                  style={[styles.secondaryButton, outcomeSaving && styles.disabled]}
+                  onPress={() => submitOutcomeFeedback("unsure")}
+                  accessibilityRole="button"
+                  accessibilityLabel="Mark diagnosis unsure"
+                >
+                  <Text style={styles.secondaryButtonText}>Unsure</Text>
+                </Pressable>
+              </View>
+            </View>
+            {result.followUp ? (
+              <View style={styles.followUpCard}>
+                <Text style={styles.label}>Provider follow-up</Text>
+                <Text style={styles.subtitle}>{result.followUp}</Text>
+                <TextInput
+                  style={styles.notes}
+                  value={followUpAnswer}
+                  onChangeText={setFollowUpAnswer}
+                  multiline
+                  placeholder="Add the requested observation or measurement."
+                  accessibilityLabel="Diagnosis follow-up answer"
+                />
+                <Pressable
+                  disabled={!followUpAnswer.trim() || running}
+                  style={[
+                    styles.primaryButton,
+                    (!followUpAnswer.trim() || running) && styles.disabled
+                  ]}
+                  onPress={submitFollowUp}
+                  accessibilityRole="button"
+                  accessibilityLabel="Refine diagnosis"
+                >
+                  <Text style={styles.primaryButtonText}>
+                    {running ? "Submitting..." : "Refine Diagnosis"}
+                  </Text>
+                </Pressable>
+              </View>
+            ) : null}
+          </>
+        ) : feedback ? (
+          <Text style={styles.feedback}>{feedback}</Text>
+        ) : null}
+        <PersonalFeedPlacement
+          placement="bottom"
+          routeKey="personal_diagnose"
+          longContent
+        />
+      </ScrollView>
+    </ScreenBoundary>
   );
 }
 

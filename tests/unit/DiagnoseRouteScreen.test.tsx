@@ -40,6 +40,22 @@ jest.mock("expo-router", () => ({
   useRouter: () => ({ back: jest.fn() })
 }));
 
+jest.mock("@/components/ScreenBoundary", () => {
+  const React = require("react");
+  const { Text, View } = require("react-native");
+  return {
+    ScreenBoundary: ({ children, showBack, backFallbackHref }: any) =>
+      React.createElement(
+        View,
+        null,
+        showBack
+          ? React.createElement(Text, null, `Shared Back ${backFallbackHref}`)
+          : null,
+        children
+      )
+  };
+});
+
 jest.mock("expo-image-picker", () => ({
   requestMediaLibraryPermissionsAsync: jest.fn(),
   launchImageLibraryAsync: jest.fn(),
@@ -82,6 +98,7 @@ describe("DiagnoseRoute", () => {
     await waitFor(() =>
       expect(screen.getByText("Production AI provider needs verification")).toBeTruthy()
     );
+    expect(screen.getByText("Shared Back /home/personal")).toBeTruthy();
     expect(mockGetDiagnosisProviderStatus).toHaveBeenCalled();
     expect(screen.getByText(/Photos are used for this diagnosis request/i)).toBeTruthy();
 

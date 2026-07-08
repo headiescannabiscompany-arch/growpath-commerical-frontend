@@ -472,6 +472,7 @@ Completed and pushed:
 196. Personal Ingredient Library and Saved Tool Runs now use the shared back-control boundary with `/home/personal/tools` fallbacks, and their existing workflow tests assert the shared fallback while preserving ingredient-save and ToolRun-reopen behavior.
 197. Personal VPD Calculator and Nutrient Chemistry now use the shared back-control boundary with `/home/personal/tools` fallbacks across locked and enabled states, with focused coverage for climate and nutrient-support tool navigation.
 198. Personal Pheno Matrix and NPK / Feed Recipe Builder now use the shared back-control boundary with `/home/personal/tools` fallbacks, including the NPK locked-Pro state, while existing task-plan and product-draft tests assert the shared fallback.
+199. Personal Plant Issue Diagnosis now uses the shared back-control boundary with a `/home/personal` fallback, its workflow regression asserts the shared fallback, and a source scan confirms Personal, Commercial, and Facility home routes no longer hand-code `BackButton`.
 
 ## Working Rule For Codex
 
