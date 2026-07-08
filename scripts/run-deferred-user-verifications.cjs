@@ -65,6 +65,8 @@ const checks = [
       "tests/unit/CommercialTasksRoute.test.tsx",
       "tests/unit/CommercialTaskDetailRoute.test.tsx",
       "tests/unit/CommercialAlertDetailRoute.test.tsx",
+      "tests/unit/CommercialLogDetailRoute.test.tsx",
+      "tests/unit/CommercialProfileScreen.test.tsx",
       "tests/unit/FacilityTasksRoute.test.tsx",
       "tests/unit/FacilityTaskDetailRoute.test.tsx",
       "tests/unit/FacilityRoomsRoute.test.tsx",
@@ -82,6 +84,8 @@ const checks = [
       "tests/unit/ProfilePrivacyControls.test.tsx",
       "tests/unit/CommercialProfileRoute.test.tsx",
       "tests/unit/FacilityProfileRoute.test.tsx",
+      "tests/unit/aiFeatureMatrix.test.ts",
+      "tests/unit/ai-call-normalize.test.ts",
       "tests/unit/pricingConstants.test.js",
       "tests/unit/SubscribeScreenPricing.test.js",
       "tests/unit/SubscriptionScreenPricing.test.js",
@@ -127,6 +131,13 @@ const manualChecks = [
       "Switch Personal, Commercial, and Facility identities and confirm each dashboard names the current mode.",
       "Open Personal Profile, Commercial Profile & Billing, and Facility Profile and confirm each has a visible Switch Workspace action that opens /account/mode.",
       "Confirm commercial pages do not create personal grows and facility pages create rooms/runs/tasks instead of storefront products."
+    ]
+  },
+  {
+    area: "Cross-workspace visual polish",
+    checks: [
+      "Compare Facility, Commercial, and Personal profile/task/AI surfaces and confirm Personal and Commercial now carry the tighter Facility-style card radius, density, and operational tone without losing their own workflow purpose.",
+      "Open Personal AI, Personal Profile, Commercial Tools, Commercial Profile, Commercial Task Detail, Commercial Alert Detail, and Commercial Log Detail and confirm cards/actions feel consistent, readable, and not oversized or overly rounded."
     ]
   },
   {

@@ -630,6 +630,7 @@ Completed and pushed:
 354. Personal Profile cards and primary account actions now consume the shared 8px workspace radius token, extending the Facility-level visual polish to the Personal account/support surface without changing profile behavior.
 355. Personal AI command-center cards, message panels, prompt input, and send action now consume the shared 8px workspace radius token, extending the polished operational look to the grower AI surface.
 356. Legacy Commercial Profile compatibility cards and billing actions now consume the shared 8px workspace radius token, with focused coverage for commercial identity rendering and subscription navigation.
+357. Deferred user verification now includes the new Commercial Log Detail, Commercial Profile compatibility, Personal AI, and support/profile visual-token coverage plus a manual cross-workspace visual-polish check.
 
 ## Working Rule For Codex
 
