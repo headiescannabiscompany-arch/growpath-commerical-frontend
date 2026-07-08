@@ -354,6 +354,7 @@ Completed and pushed:
 78. Registration, plan walkthroughs, the first-run intro, and the facility picker now use Personal / Commercial / Facility workspace language instead of vague business surfaces/models or facility-as-business copy.
 79. Commercial evidence-run creation copy now says brand/product context and uses `demo_trial` language, avoiding the old implication that Commercial is an operational grow workspace.
 80. Commercial Task Center and commercial task detail now use the shared source-link resolver, including lesson-backed tasks that open the commercial course workflow instead of dropping the user at an unlinked task.
+81. The GrowPath system audit now guards the legacy `api/posts.js` compatibility client, requiring it to use Forum/Q&A endpoints and flagging any drift back to `/api/posts` discussion contracts.
 
 ## Working Rule For Codex
 
