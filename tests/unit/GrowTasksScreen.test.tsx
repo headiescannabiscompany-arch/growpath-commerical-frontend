@@ -107,6 +107,20 @@ describe("GrowTasksScreen", () => {
         sourceType: "sensor_alert",
         linkedSensorAlertId: "sensor-alert-linked-1",
         createdAt: "2026-07-01T08:00:00.000Z"
+      },
+      {
+        id: "task-alert-linked-product",
+        growId: "grow-task-1",
+        title: "Review alert-linked product",
+        description: "Alert-generated grow task should open the exact product.",
+        dueDate: "2026-07-06T08:00:00.000Z",
+        completed: false,
+        priority: "medium",
+        sourceType: "alert",
+        sourceObjectId: "alert-product-1",
+        linkedProductId: "veg-mix-1",
+        linkedStorefrontSlug: "living-soil-labs",
+        createdAt: "2026-07-01T08:00:00.000Z"
       }
     ]);
     mockUpdatePersonalTask.mockResolvedValue({ id: "task-open-1" });
@@ -128,17 +142,28 @@ describe("GrowTasksScreen", () => {
     expect(screen.getByText("Inspect linked sensor alert")).toBeTruthy();
     expect(screen.getByText(/Sensor Alert: sensor-alert-linked-1/)).toBeTruthy();
     expect(screen.getByText(/ToolRun: run-linked-1/)).toBeTruthy();
-    expect(screen.getAllByLabelText("View grow task source")).toHaveLength(4);
+    expect(screen.getByText("Review alert-linked product")).toBeTruthy();
+    expect(screen.getByText(/Product: veg-mix-1/)).toBeTruthy();
+    expect(screen.getAllByLabelText("View grow task source")).toHaveLength(5);
     expect(
       screen.getByLabelText("Grow task link /home/personal/diagnose?growId=grow-task-1")
     ).toBeTruthy();
     expect(
-      screen.getByLabelText("Grow task link /home/personal/tools/saved-runs?toolRunId=run-1")
+      screen.getByLabelText(
+        "Grow task link /home/personal/tools/saved-runs?toolRunId=run-1"
+      )
     ).toBeTruthy();
     expect(screen.getByLabelText("Grow task link /store?q=batch-linked-1")).toBeTruthy();
     expect(
       screen.getByLabelText("Grow task link /home/alerts?alertId=sensor-alert-linked-1")
     ).toBeTruthy();
+    expect(
+      screen.getByLabelText("Grow task link /home/alerts?alertId=alert-product-1")
+    ).toBeTruthy();
+    expect(
+      screen.getByLabelText("Grow task link /store/living-soil-labs/products/veg-mix-1")
+    ).toBeTruthy();
+    expect(screen.getAllByLabelText("View grow task linked object")).toHaveLength(1);
 
     fireEvent.press(screen.getAllByLabelText("Complete task")[0]);
     await waitFor(() =>

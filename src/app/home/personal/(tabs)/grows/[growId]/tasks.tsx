@@ -171,8 +171,24 @@ function sourceReference(task: PersonalTask) {
 
 function taskLinks(task: PersonalTask) {
   const linkedSource = sourceReference(task);
+  const linkedObjectDetails = [
+    task.linkedProductId &&
+      linkedSource !== task.linkedProductId &&
+      `Product: ${task.linkedProductId}`,
+    task.linkedCourseId &&
+      linkedSource !== task.linkedCourseId &&
+      `Course: ${task.linkedCourseId}`,
+    task.linkedLiveId &&
+      linkedSource !== task.linkedLiveId &&
+      `Live: ${task.linkedLiveId}`,
+    (task.linkedStorefrontSlug || task.storefrontSlug || task.linkedStorefrontId) &&
+      linkedSource !==
+        (task.linkedStorefrontSlug || task.storefrontSlug || task.linkedStorefrontId) &&
+      `Storefront: ${task.linkedStorefrontSlug || task.storefrontSlug || task.linkedStorefrontId}`
+  ];
   return [
     linkedSource && `${sourceObjectLabel(task)}: ${linkedSource}`,
+    ...linkedObjectDetails,
     task.sourceToolRunId && `ToolRun: ${task.sourceToolRunId}`,
     !task.sourceToolRunId && task.linkedToolRunId && `ToolRun: ${task.linkedToolRunId}`,
     task.sourceDiagnosisId && `Diagnosis: ${task.sourceDiagnosisId}`,
@@ -205,6 +221,65 @@ function taskSourcePath(task: PersonalTask, growId: string) {
     ...task,
     sourceType,
     sourceId,
+    growId,
+    workspaceType: "personal"
+  });
+}
+
+function explicitLinkedObjectPath(task: PersonalTask, growId: string) {
+  const storefrontSlug = task.storefrontSlug || task.linkedStorefrontSlug || "";
+  const sourceByPriority = [
+    task.linkedProductId && {
+      sourceType: "product",
+      sourceId: task.linkedProductId,
+      linkedProductId: task.linkedProductId
+    },
+    task.linkedProductBatchId && {
+      sourceType: "product_batch",
+      sourceId: task.linkedProductBatchId,
+      linkedProductBatchId: task.linkedProductBatchId,
+      linkedProductId: task.linkedProductId || undefined
+    },
+    task.linkedProductTrialId && {
+      sourceType: "product_trial",
+      sourceId: task.linkedProductTrialId,
+      linkedProductTrialId: task.linkedProductTrialId
+    },
+    task.linkedCourseId && {
+      sourceType: "course",
+      sourceId: task.linkedCourseId,
+      linkedCourseId: task.linkedCourseId
+    },
+    task.linkedLessonId && {
+      sourceType: "lesson",
+      sourceId: task.linkedLessonId,
+      linkedLessonId: task.linkedLessonId,
+      linkedCourseId: task.linkedCourseId || undefined
+    },
+    task.linkedLiveId && {
+      sourceType: "live",
+      sourceId: task.linkedLiveId,
+      linkedLiveId: task.linkedLiveId
+    },
+    (task.linkedStorefrontSlug || task.storefrontSlug || task.linkedStorefrontId) && {
+      sourceType: "storefront",
+      sourceId: storefrontSlug || task.linkedStorefrontId || "",
+      linkedStorefrontSlug: storefrontSlug || undefined,
+      linkedStorefrontId: task.linkedStorefrontId || undefined
+    },
+    task.linkedForumThreadId && {
+      sourceType: "forum",
+      sourceId: task.linkedForumThreadId,
+      linkedForumThreadId: task.linkedForumThreadId
+    }
+  ].find(Boolean);
+
+  if (!sourceByPriority) return "";
+
+  return sourceObjectHref({
+    ...task,
+    ...(sourceByPriority as Record<string, string | undefined>),
+    storefrontSlug,
     growId,
     workspaceType: "personal"
   });
@@ -552,6 +627,9 @@ export default function GrowTasksScreen() {
           const source = taskSource(task);
           const links = taskLinks(task);
           const sourcePath = taskSourcePath(task, growId);
+          const linkedObjectPath = explicitLinkedObjectPath(task, growId);
+          const showLinkedObjectPath =
+            linkedObjectPath && (!sourcePath || linkedObjectPath !== sourcePath);
           return (
             <View key={id || `${task.title}-${task.dueDate}`} style={styles.card}>
               <Text style={styles.taskTitle}>
@@ -625,6 +703,17 @@ export default function GrowTasksScreen() {
                             accessibilityLabel="View grow task source"
                           >
                             <Text style={styles.actionText}>View Source</Text>
+                          </Pressable>
+                        </Link>
+                      ) : null}
+                      {showLinkedObjectPath ? (
+                        <Link href={linkedObjectPath as any} asChild>
+                          <Pressable
+                            style={styles.actionBtn}
+                            accessibilityRole="link"
+                            accessibilityLabel="View grow task linked object"
+                          >
+                            <Text style={styles.actionText}>View Linked Object</Text>
                           </Pressable>
                         </Link>
                       ) : null}
