@@ -33,6 +33,7 @@ const sourceTypes = [
   "course",
   "lesson",
   "live",
+  "feed_campaign",
   "toolrun",
   "recipe",
   "product",
@@ -62,9 +63,12 @@ function sourceReference(x: AnyRec): string {
   const values = [
     x?.sourceObjectId ?? x?.sourceId,
     x?.linkedAlertId,
+    x?.linkedSensorAlertId,
     x?.linkedCourseId,
     x?.linkedLessonId,
     x?.linkedLiveId,
+    x?.linkedFeedCampaignId,
+    x?.linkedFeedPostId,
     x?.linkedToolRunId,
     x?.linkedRecipeId,
     x?.linkedProductId,
@@ -117,15 +121,18 @@ function linkedFieldsForSource(
       return { ...roomLink, linkedFacilityRunId: sourceObjectId || undefined };
     case "sop":
       return { ...roomLink, linkedSopId: sourceObjectId || undefined };
-    case "sensor_alert":
     case "alert":
       return { ...roomLink, linkedAlertId: sourceObjectId || undefined };
+    case "sensor_alert":
+      return { ...roomLink, linkedSensorAlertId: sourceObjectId || undefined };
     case "course":
       return { ...roomLink, linkedCourseId: sourceObjectId || undefined };
     case "lesson":
       return { ...roomLink, linkedLessonId: sourceObjectId || undefined };
     case "live":
       return { ...roomLink, linkedLiveId: sourceObjectId || undefined };
+    case "feed_campaign":
+      return { ...roomLink, linkedFeedCampaignId: sourceObjectId || undefined };
     case "toolrun":
       return { ...roomLink, linkedToolRunId: sourceObjectId || undefined };
     case "recipe":

@@ -77,6 +77,23 @@ describe("FacilityTasksRoute", () => {
         sourceType: "product_batch",
         linkedProductBatchId: "batch-linked-1",
         linkedRoomId: "mix-room"
+      },
+      {
+        id: "task-linked-sensor-alert",
+        title: "Inspect linked sensor alert",
+        dueDate: "2026-07-10",
+        status: "OPEN",
+        sourceType: "sensor_alert",
+        linkedSensorAlertId: "sensor-alert-linked-1",
+        linkedRoomId: "flower-2"
+      },
+      {
+        id: "task-linked-campaign",
+        title: "Prepare facility outreach campaign",
+        dueDate: "2026-07-11",
+        status: "OPEN",
+        sourceType: "feed_campaign",
+        linkedFeedCampaignId: "campaign-linked-1"
       }
     ]);
     mockCreateTask.mockResolvedValue({ id: "task-created" });
@@ -91,6 +108,11 @@ describe("FacilityTasksRoute", () => {
     expect(screen.getByText("Review production batch")).toBeTruthy();
     expect(screen.getByText(/Source: product batch batch-linked-1/)).toBeTruthy();
     expect(screen.getByText(/Room: mix-room/)).toBeTruthy();
+    expect(screen.getByText("Inspect linked sensor alert")).toBeTruthy();
+    expect(screen.getByText(/Source: sensor alert sensor-alert-linked-1/)).toBeTruthy();
+    expect(screen.getByText(/Room: flower-2/)).toBeTruthy();
+    expect(screen.getByText("Prepare facility outreach campaign")).toBeTruthy();
+    expect(screen.getByText(/Source: feed campaign campaign-linked-1/)).toBeTruthy();
     expect(screen.getAllByText(/Proof required/).length).toBeGreaterThan(0);
     expect(screen.getAllByText(/Approval required/).length).toBeGreaterThan(0);
 
@@ -132,6 +154,38 @@ describe("FacilityTasksRoute", () => {
         requiresApproval: true,
         scope: "facility"
       })
+    );
+  });
+
+  it("creates facility tasks linked to feed campaigns", async () => {
+    const screen = render(<FacilityTasksRoute />);
+
+    await waitFor(() => expect(screen.getByText("Scout Flower Room")).toBeTruthy());
+
+    fireEvent.changeText(
+      screen.getByLabelText("Facility task title"),
+      "Publish facility outreach"
+    );
+    fireEvent.press(screen.getByLabelText("Set facility task source feed_campaign"));
+    fireEvent.changeText(
+      screen.getByLabelText("Facility task source object"),
+      "campaign-7"
+    );
+    fireEvent.changeText(screen.getByLabelText("Facility task room"), "media-room");
+    fireEvent.press(screen.getByLabelText("Create facility task"));
+
+    await waitFor(() =>
+      expect(mockCreateTask).toHaveBeenCalledWith(
+        "facility-1",
+        expect.objectContaining({
+          title: "Publish facility outreach",
+          sourceType: "feed_campaign",
+          sourceObjectId: "campaign-7",
+          linkedFeedCampaignId: "campaign-7",
+          linkedRoomId: "media-room",
+          scope: "facility"
+        })
+      )
     );
   });
 });
