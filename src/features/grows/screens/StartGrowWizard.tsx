@@ -166,7 +166,7 @@ export default function StartGrowWizard() {
             )}
           </Pressable>
           <Pressable
-            onPress={() => router.replace("/home/facility/(tabs)/dashboard")}
+            onPress={() => router.replace("/home/facility/dashboard")}
             disabled={createGrow.isPending}
             accessibilityRole="button"
             accessibilityLabel="Skip grow setup"

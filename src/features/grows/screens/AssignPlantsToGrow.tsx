@@ -93,7 +93,7 @@ export default function AssignPlantsToGrow() {
 
   function goToGrow() {
     if (!growId) {
-      router.replace("/home/facility/(tabs)/grows");
+      router.replace("/home/facility/grows");
       return;
     }
     router.replace({

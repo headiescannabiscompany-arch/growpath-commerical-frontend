@@ -119,7 +119,7 @@ export default function FirstSetupRooms() {
   }
 
   function skip() {
-    router.replace("/home/facility/(tabs)/rooms");
+    router.replace("/home/facility/rooms");
   }
 
   if (isLoading) {

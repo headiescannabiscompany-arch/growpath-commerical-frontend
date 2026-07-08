@@ -1,5 +1,6 @@
 import { describe, expect, it } from "@jest/globals";
 import { decideLegacyFacilityAccess } from "../../src/features/routing/legacyFacilityAccess";
+import { legacyFacilitySectionToRoute } from "../../src/features/routing/legacyFacilityRedirect";
 
 describe("legacy facility route access", () => {
   it("redirects non-facility users away from legacy facility URLs", () => {
@@ -55,5 +56,15 @@ describe("legacy facility route access", () => {
       redirect: "/home/facility/select",
       reason: "facility_mismatch"
     });
+  });
+
+  it("redirects legacy facility sections to canonical workspace URLs", () => {
+    expect(legacyFacilitySectionToRoute("dashboard")).toBe("/home/facility/dashboard");
+    expect(legacyFacilitySectionToRoute("tasks")).toBe("/home/facility/tasks");
+    expect(legacyFacilitySectionToRoute("inventory")).toBe("/home/facility/inventory");
+    expect(legacyFacilitySectionToRoute("rooms")).toBe("/home/facility/rooms");
+    expect(legacyFacilitySectionToRoute("team")).toBe("/home/facility/team");
+    expect(legacyFacilitySectionToRoute("compliance")).toBe("/home/facility/compliance");
+    expect(legacyFacilitySectionToRoute("sops")).toBe("/home/facility/sop-runs");
   });
 });

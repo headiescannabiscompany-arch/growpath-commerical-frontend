@@ -37,6 +37,13 @@ describe("HomeScheduleRoute", () => {
               sourceId: "product-1",
               reminderPlan: { label: "24 hours before" },
               recurrence: { rule: "weekly" }
+            },
+            {
+              id: "task-2",
+              title: "Review personal grow task",
+              dueAt: "2099-07-16T10:00:00Z",
+              status: "open",
+              priority: "normal"
             }
           ]
         });
@@ -106,6 +113,7 @@ describe("HomeScheduleRoute", () => {
       })
     );
     expect(screen.getByText("Connect Stripe price")).toBeTruthy();
+    expect(screen.getByText("Review personal grow task")).toBeTruthy();
     expect(screen.getByText("Live Soil Demo")).toBeTruthy();
     expect(screen.getByText("Living Soil Basics")).toBeTruthy();
     expect(screen.getByText("Veg Mix Launch")).toBeTruthy();
@@ -119,6 +127,7 @@ describe("HomeScheduleRoute", () => {
     expect(screen.getAllByText(/Repeats weekly/).length).toBeGreaterThan(0);
     expect(screen.getAllByText("Open Source").length).toBeGreaterThan(0);
     expect(screen.getByTestId("link-/home/commercial/tasks/task-1")).toBeTruthy();
+    expect(screen.getByTestId("link-/home/personal/more/tasks")).toBeTruthy();
     expect(screen.getByTestId("link-/home/facility/feed")).toBeTruthy();
   });
 });

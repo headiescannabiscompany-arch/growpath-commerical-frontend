@@ -101,7 +101,7 @@ function taskHref(task: any, id: string) {
     return growId ? `/home/personal/grows/${growId}/tasks` : "/home/personal/more/tasks";
   }
   if (workspace === "commercial") return `/home/commercial/tasks/${id}`;
-  return `/tasks/${id}`;
+  return "/home/personal/more/tasks";
 }
 
 function taskToItem(task: any): CalendarItem {

@@ -10,19 +10,19 @@ export type LegacyFacilitySection =
 export function legacyFacilitySectionToRoute(section: LegacyFacilitySection): string {
   switch (section) {
     case "dashboard":
-      return "/home/facility/(tabs)/dashboard";
+      return "/home/facility/dashboard";
     case "tasks":
-      return "/home/facility/(tabs)/tasks";
+      return "/home/facility/tasks";
     case "inventory":
-      return "/home/facility/(tabs)/inventory";
+      return "/home/facility/inventory";
     case "rooms":
-      return "/home/facility/(tabs)/rooms";
+      return "/home/facility/rooms";
     case "team":
-      return "/home/facility/(tabs)/team";
+      return "/home/facility/team";
     case "compliance":
-      return "/home/facility/(tabs)/compliance";
+      return "/home/facility/compliance";
     case "sops":
-      return "/home/facility/(tabs)/sop-runs";
+      return "/home/facility/sop-runs";
     default:
       return "/home/facility";
   }
