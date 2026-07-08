@@ -597,6 +597,7 @@ Completed and pushed:
 321. Shared source-link routing now opens viewer course sources on `/store/:slug/courses/:courseId` when storefront metadata exists, so course ads, live context, reminders, alerts, and schedule items can land on the public brand course page instead of only the personal course query route.
 322. Feed/Campaigns and top-page FeedRail course ads now use storefront-aware public course routes when campaign metadata includes a storefront slug, and FeedRail live ads open the public Live Session surface instead of looping back into Feed.
 323. Public Live Session product links now use the same `/store?q=:productId` discovery fallback as Feed/Campaigns when a storefront slug is missing, while still using exact `/store/:slug/products/:productId` routes when brand context exists.
+324. App intro copy now introduces connected Personal, Commercial/storefront, and Facility workspaces while explicitly separating promotional Feed/Campaigns from Forum/Q&A discussion/support before users enter onboarding.
 
 ## Working Rule For Codex
 

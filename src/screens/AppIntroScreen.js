@@ -123,12 +123,14 @@ export default function AppIntroScreen({ onDone }) {
       >
         {/* Step 0: Philosophy */}
         <View style={styles.introSection}>
-          <Text style={styles.headline}>Cultivation community, united.</Text>
+          <Text style={styles.headline}>Cultivation workspaces, connected.</Text>
           <Text style={styles.body}>
             GrowPath connects cultivators, nutrient companies, equipment manufacturers,
             and soil suppliers.{"\n\n"}
-            Cultivators manage operations and compliance. Industry partners build
-            credibility and reach customers.
+            Personal growers track their own work and use tools. Commercial brands run
+            storefronts, products, courses, lives, and Feed/Campaigns. Facilities manage
+            rooms, tasks, compliance, sensors, and teams. Forum/Q&A stays focused on
+            discussion and support.
           </Text>
           <Text style={styles.footer}>
             Personal, Commercial, and Facility workspaces.
