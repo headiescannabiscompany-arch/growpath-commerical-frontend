@@ -811,6 +811,7 @@ describe("commercial workflow pages", () => {
             sourceType: "product_trial",
             sourceId: "trial-1",
             linkedProductTrialId: "trial-1",
+            linkedTrialId: "trial-1",
             priority: "normal"
           })
         })

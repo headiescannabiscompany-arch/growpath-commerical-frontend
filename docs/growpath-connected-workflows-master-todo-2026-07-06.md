@@ -451,6 +451,7 @@ Completed and pushed:
 175. Commercial batch planning now preserves `linkedTrialId` evidence-run aliases while still writing legacy `trialGrowId`, so formula batches display and link to product-trial evidence without grow-oriented field names leaking into the workflow.
 176. Product trial detail evidence tasks now preserve `linkedTrialId` alongside legacy `linkedGrowId`, so claim-readiness follow-up tasks keep the product-trial evidence-run alias through the shared task system.
 177. GrowPath system audit now recognizes the current shared source-link resolver contract for personal grow-log routing, so connected task/timeline/dashboard workflow links verify as covered instead of reporting a stale false negative.
+178. Commercial dashboard action tasks now preserve `linkedTrialId` when action items point at product-trial evidence, keeping command-center follow-up work aligned with the clearer evidence-run alias.
 
 ## Working Rule For Codex
 
