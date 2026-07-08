@@ -494,6 +494,33 @@ export default function CommercialHome() {
         </AppCard>
       ) : null}
 
+      <AppCard style={styles.aiHelperCard}>
+        <Text style={styles.cardTitle}>GrowPath AI business helper</Text>
+        <Text style={styles.cardDesc}>
+          Ask AI to turn storefront warnings, product gaps, course launch work, live prep,
+          campaign follow-up, and analytics questions into reviewable tasks. AI explains
+          the workflow and drafts action plans; Stripe, product, course, live, feed, task,
+          and analytics records remain the source of truth.
+        </Text>
+        <View style={styles.actions}>
+          <ActionButton
+            action={{ label: "Open Commercial Tasks", href: "/home/commercial/tasks" }}
+          />
+          <ActionButton
+            action={{
+              label: "Plan Campaign Work",
+              href: "/home/commercial/marketing"
+            }}
+          />
+          <ActionButton
+            action={{
+              label: "Review Analytics",
+              href: "/home/commercial/analytics"
+            }}
+          />
+        </View>
+      </AppCard>
+
       <View style={styles.sectionGrid}>
         {DASHBOARD_SECTIONS.map((section) => (
           <DashboardCard key={section.title} section={section} counts={counts} />
@@ -668,6 +695,10 @@ const styles = StyleSheet.create({
     fontSize: 14,
     lineHeight: 20,
     marginTop: 8
+  },
+  aiHelperCard: {
+    backgroundColor: "#F8FAFC",
+    borderColor: "#CBD5E1"
   },
   statusPill: {
     backgroundColor: "#E0F2FE",

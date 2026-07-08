@@ -714,6 +714,9 @@ describe("commercial workflow pages", () => {
     expect(screen.getByText("Action Items")).toBeTruthy();
     expect(screen.getByText("Bloom Topdress")).toBeTruthy();
     expect(screen.getByText("Dashboard Guidance")).toBeTruthy();
+    expect(screen.getByText("GrowPath AI business helper")).toBeTruthy();
+    expect(screen.getByText("Open Commercial Tasks")).toBeTruthy();
+    expect(screen.getByText("Plan Campaign Work")).toBeTruthy();
     expect(screen.getAllByText("88").length).toBeGreaterThan(0);
     expect(screen.getAllByText("19").length).toBeGreaterThan(0);
 
@@ -1820,7 +1823,9 @@ describe("commercial workflow pages", () => {
     expect(screen.getByText("Naming rule")).toBeTruthy();
     expect(screen.getByText("Product Lines")).toBeTruthy();
     expect(screen.getByText("Create Product Draft")).toBeTruthy();
-    expect(screen.UNSAFE_getByProps({ href: "/home/commercial/products/new" })).toBeTruthy();
+    expect(
+      screen.UNSAFE_getByProps({ href: "/home/commercial/products/new" })
+    ).toBeTruthy();
     expect(screen.queryByText("Open Personal Batch Tool")).toBeNull();
     await waitFor(() => expect(screen.getByText("Seedling Soil Batch")).toBeTruthy());
     expect(screen.getByText("Open Detail")).toBeTruthy();
@@ -1948,7 +1953,9 @@ describe("commercial workflow pages", () => {
     expect(screen.getAllByText("Product Trials").length).toBeGreaterThan(0);
     expect(screen.getAllByText("Batch Planner").length).toBeGreaterThan(0);
     expect(screen.getAllByText("Create Evidence Run").length).toBeGreaterThan(0);
-    expect(screen.UNSAFE_getAllByProps({ href: "/home/commercial/grows/new" }).length).toBeGreaterThan(0);
+    expect(
+      screen.UNSAFE_getAllByProps({ href: "/home/commercial/grows/new" }).length
+    ).toBeGreaterThan(0);
     expect(screen.queryByText("Open Grow Workspace")).toBeNull();
     expect(screen.queryByText("Open grow list")).toBeNull();
     await waitFor(() => expect(screen.getByText("Bloom Formula Trial")).toBeTruthy());
