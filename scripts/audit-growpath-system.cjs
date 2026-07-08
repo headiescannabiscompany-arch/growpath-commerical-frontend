@@ -436,6 +436,9 @@ function main() {
   const legacyGlobalCampaignsRouteExists = routeSet.has("/campaigns");
   const legacyGlobalStorefrontRouteExists = routeSet.has("/storefront");
   const legacyCreatePostRouteExists = routeSet.has("/create-post");
+  const legacyPersonalSocialToolsRouteExists = routeSet.has(
+    "/home/personal/more/social-tools"
+  );
   const topLevelLogsRedirectOnly = routeIsRedirectOnly(
     files.routes,
     "/home/personal/logs",
@@ -474,6 +477,11 @@ function main() {
     files.routes,
     "/create-post"
   );
+  const legacyPersonalSocialToolsRedirectOnly = routeIsRedirectOnly(
+    files.routes,
+    "/home/personal/more/social-tools",
+    "/home/personal/forum"
+  );
 
   const decisionChecks = {
     topLevelLogsRouteExists,
@@ -499,6 +507,10 @@ function main() {
     legacyCreatePostWorkspaceRedirect,
     legacyCreatePostVisibleComposer:
       legacyCreatePostRouteExists && !legacyCreatePostWorkspaceRedirect,
+    legacyPersonalSocialToolsRouteExists,
+    legacyPersonalSocialToolsRedirectOnly,
+    legacyPersonalSocialToolsVisibleModule:
+      legacyPersonalSocialToolsRouteExists && !legacyPersonalSocialToolsRedirectOnly,
     topLevelTasksRouteExists,
     topLevelTasksRedirectOnly,
     topLevelTasksTaskCenter,
@@ -568,6 +580,8 @@ function main() {
     `- Legacy /storefront redirect-only stale-link guard: ${decisionChecks.legacyGlobalStorefrontRedirectOnly}`,
     `- Legacy /create-post visible composer: ${decisionChecks.legacyCreatePostVisibleComposer}`,
     `- Legacy /create-post workspace redirect guard: ${decisionChecks.legacyCreatePostWorkspaceRedirect}`,
+    `- Legacy personal social-tools visible module: ${decisionChecks.legacyPersonalSocialToolsVisibleModule}`,
+    `- Legacy personal social-tools redirect-only guard: ${decisionChecks.legacyPersonalSocialToolsRedirectOnly}`,
     `- Top-level Tasks visible module: ${decisionChecks.topLevelTasksVisibleModule}`,
     `- Top-level Tasks uses shared Task Center/Schedule: ${decisionChecks.topLevelTasksTaskCenter}`,
     `- Facility Insights route exists: ${decisionChecks.facilityInsightsRouteExists}`,
