@@ -89,6 +89,22 @@ describe("HomeScheduleRoute", () => {
               workspaceType: "personal",
               sourceType: "product_batch",
               linkedProductBatchId: "batch-linked-1"
+            },
+            {
+              id: "task-8",
+              title: "Investigate linked sensor alert",
+              dueAt: "2099-07-16T16:00:00Z",
+              status: "open",
+              workspaceType: "facility",
+              linkedSensorAlertId: "sensor-alert-linked-1"
+            },
+            {
+              id: "task-9",
+              title: "Launch linked campaign follow-up",
+              dueAt: "2099-07-16T17:00:00Z",
+              status: "open",
+              workspaceType: "commercial",
+              linkedFeedCampaignId: "campaign-linked-1"
             }
           ]
         });
@@ -179,6 +195,8 @@ describe("HomeScheduleRoute", () => {
     expect(screen.getByText("Fulfill storefront order")).toBeTruthy();
     expect(screen.getByText("Inspect sensor alert")).toBeTruthy();
     expect(screen.getByText("Review linked product batch")).toBeTruthy();
+    expect(screen.getByText("Investigate linked sensor alert")).toBeTruthy();
+    expect(screen.getByText("Launch linked campaign follow-up")).toBeTruthy();
     expect(screen.getByText("Live Soil Demo")).toBeTruthy();
     expect(screen.getByText("Public Harvest Q&A")).toBeTruthy();
     expect(screen.getByText("Living Soil Basics")).toBeTruthy();
@@ -203,6 +221,12 @@ describe("HomeScheduleRoute", () => {
     ).toBeTruthy();
     expect(screen.getByTestId("link-/home/alerts?alertId=sensor-alert-1")).toBeTruthy();
     expect(screen.getByTestId("link-/store?q=batch-linked-1")).toBeTruthy();
+    expect(
+      screen.getByTestId("link-/home/alerts?alertId=sensor-alert-linked-1")
+    ).toBeTruthy();
+    expect(
+      screen.getByTestId("link-/home/commercial/feed?campaignId=campaign-linked-1")
+    ).toBeTruthy();
     expect(screen.getByTestId("link-/home/commercial/lives?liveId=live-1")).toBeTruthy();
     expect(screen.getByTestId("link-/feed?liveId=live-public-1")).toBeTruthy();
     expect(screen.getByTestId("link-/home/commercial/courses/course-1")).toBeTruthy();
@@ -226,6 +250,7 @@ describe("HomeScheduleRoute", () => {
 
     fireEvent.press(screen.getByLabelText("Schedule workspace filter all"));
     fireEvent.press(screen.getByLabelText("Schedule source filter feed_campaign"));
+    expect(screen.getByText("Launch linked campaign follow-up")).toBeTruthy();
     expect(screen.getByText("Veg Mix Launch")).toBeTruthy();
     expect(screen.getByText("Facility IPM Training")).toBeTruthy();
     expect(screen.queryByText("Live Soil Demo")).toBeNull();

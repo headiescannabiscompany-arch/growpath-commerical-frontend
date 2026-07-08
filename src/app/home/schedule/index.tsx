@@ -111,6 +111,7 @@ function sourceReference(row: any) {
   const values = [
     row?.sourceId ?? row?.sourceObjectId,
     row?.linkedAlertId,
+    row?.linkedSensorAlertId,
     row?.linkedNotificationId,
     row?.linkedForumThreadId,
     row?.linkedLogId,
@@ -123,6 +124,7 @@ function sourceReference(row: any) {
     row?.linkedProductTrialId,
     row?.linkedProductId,
     row?.linkedStorefrontId,
+    row?.linkedFeedCampaignId,
     row?.linkedFeedPostId,
     row?.linkedOrderId,
     row?.linkedRoomId,
@@ -137,10 +139,34 @@ function sourceReference(row: any) {
   return value ? String(value) : "";
 }
 
+function linkedSourceType(row: any) {
+  if (row?.linkedSensorAlertId || row?.linkedAlertId) return "alert";
+  if (row?.linkedFeedCampaignId || row?.linkedFeedPostId) return "feed_campaign";
+  if (row?.linkedNotificationId) return "notification";
+  if (row?.linkedForumThreadId) return "forum";
+  if (row?.linkedLogId) return "grow_log";
+  if (row?.linkedToolRunId) return "tool_run";
+  if (row?.linkedRecipeId) return "recipe";
+  if (row?.linkedLiveId) return "live";
+  if (row?.linkedLessonId) return "lesson";
+  if (row?.linkedCourseId) return "course";
+  if (row?.linkedProductBatchId) return "product_batch";
+  if (row?.linkedProductTrialId) return "product_trial";
+  if (row?.linkedProductId) return "product";
+  if (row?.linkedStorefrontId) return "storefront";
+  if (row?.linkedOrderId) return "order";
+  if (row?.linkedRoomId) return "room";
+  if (row?.linkedSopId) return "sop";
+  if (row?.linkedFacilityRunId) return "facility_run";
+  if (row?.linkedPlantId) return "plant";
+  if (row?.linkedGrowId) return "grow";
+  return "";
+}
+
 function taskToItem(task: any): CalendarItem {
   const id = taskId(task);
   const rawSourceId = sourceReference(task);
-  const sourceType = String(task?.sourceType || (rawSourceId ? "" : "task"));
+  const sourceType = String(task?.sourceType || linkedSourceType(task) || "task");
   const sourceHref =
     sourceType !== "task" || rawSourceId
       ? sourceObjectHref({
