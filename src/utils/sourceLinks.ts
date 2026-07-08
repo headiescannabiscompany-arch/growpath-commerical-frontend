@@ -16,10 +16,45 @@ function encoded(value: string) {
   return encodeURIComponent(value);
 }
 
+function inferSourceType(source: SourceLike) {
+  if (firstText(source?.linkedAlertId, source?.alertId)) return "alert";
+  if (firstText(source?.linkedNotificationId, source?.notificationId))
+    return "notification";
+  if (firstText(source?.linkedForumThreadId, source?.forumThreadId)) return "forum";
+  if (firstText(source?.linkedToolRunId, source?.toolRunId, source?.sourceToolRunId))
+    return "tool_run";
+  if (firstText(source?.linkedRecipeId, source?.recipeId)) return "recipe";
+  if (firstText(source?.linkedLiveId, source?.liveId)) return "live";
+  if (firstText(source?.linkedLessonId, source?.lessonId)) return "lesson";
+  if (firstText(source?.linkedCourseId, source?.courseId)) return "course";
+  if (firstText(source?.linkedProductBatchId, source?.productBatchId))
+    return "product_batch";
+  if (firstText(source?.linkedProductTrialId, source?.productTrialId))
+    return "product_trial";
+  if (firstText(source?.linkedProductId, source?.productId)) return "product";
+  if (
+    firstText(
+      source?.storefrontSlug,
+      source?.linkedStorefrontSlug,
+      source?.linkedStorefrontId
+    )
+  )
+    return "storefront";
+  if (firstText(source?.linkedOrderId, source?.orderId)) return "order";
+  if (firstText(source?.linkedRoomId, source?.roomId)) return "room";
+  if (firstText(source?.linkedSopId, source?.sopId)) return "sop";
+  if (firstText(source?.linkedFacilityRunId, source?.facilityRunId))
+    return "facility_run";
+  if (firstText(source?.linkedPlantId, source?.plantId)) return "plant";
+  if (firstText(source?.linkedGrowId, source?.growId)) return "grow";
+  return "";
+}
+
 export function sourceObjectHref(source: SourceLike) {
   if (source?.actionUrl) return String(source.actionUrl);
 
-  const sourceType = text(source?.sourceType || source?.itemType).toLowerCase();
+  const sourceType =
+    text(source?.sourceType || source?.itemType).toLowerCase() || inferSourceType(source);
   const workspace = text(source?.workspaceType || source?.ownerType).toLowerCase();
   const sourceId = firstText(
     source?.sourceId,
@@ -93,10 +128,13 @@ export function sourceObjectHref(source: SourceLike) {
   }
 
   if (sourceType === "plant") {
+    const targetPlantId = firstText(plantId, sourceId);
     if (workspace === "facility")
-      return sourceId ? `/home/facility/plants/${sourceId}` : "/home/facility/plants";
+      return targetPlantId
+        ? `/home/facility/plants/${targetPlantId}`
+        : "/home/facility/plants";
     if (growId) {
-      const plantQuery = sourceId ? `?plantId=${encoded(sourceId)}` : "";
+      const plantQuery = targetPlantId ? `?plantId=${encoded(targetPlantId)}` : "";
       return `/home/personal/grows/${encoded(growId)}/plants${plantQuery}`;
     }
     return "/home/personal/grows";

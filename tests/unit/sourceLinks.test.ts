@@ -398,4 +398,43 @@ describe("sourceObjectHref", () => {
       })
     ).toBe("/forum/post/thread-linked-1");
   });
+
+  it("infers source type from linked fields when sourceType is missing", () => {
+    expect(
+      sourceObjectHref({
+        linkedAlertId: "alert-1",
+        workspaceType: "personal"
+      })
+    ).toBe("/home/alerts?alertId=alert-1");
+
+    expect(
+      sourceObjectHref({
+        linkedForumThreadId: "thread-1",
+        workspaceType: "personal"
+      })
+    ).toBe("/forum/post/thread-1");
+
+    expect(
+      sourceObjectHref({
+        linkedToolRunId: "run-1",
+        workspaceType: "personal"
+      })
+    ).toBe("/home/personal/tools/saved-runs?toolRunId=run-1");
+
+    expect(
+      sourceObjectHref({
+        linkedProductId: "product-1",
+        storefrontSlug: "living-soil-labs",
+        workspaceType: "personal"
+      })
+    ).toBe("/store/living-soil-labs/products/product-1");
+
+    expect(
+      sourceObjectHref({
+        linkedPlantId: "plant-1",
+        linkedGrowId: "grow-1",
+        workspaceType: "personal"
+      })
+    ).toBe("/home/personal/grows/grow-1/plants?plantId=plant-1");
+  });
 });
