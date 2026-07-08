@@ -35,9 +35,19 @@ export const SUPPORT_CONTACT_ROUTING = [
     body: "For facility workflows, include the facility name, role, affected module, and whether the issue blocks compliance, operations, reporting, or team access."
   },
   {
-    title: "Privacy, Legal, or Security",
+    title: "Privacy Requests",
     email: SUPPORT_CONTACTS.privacy,
-    body: "For privacy requests, use privacy@growpathai.com. For legal notices, use legal@growpathai.com. For security reports, use security@growpathai.com."
+    body: "For data-rights requests, account export/deletion questions, privacy questions, or privacy policy issues, include the account email and the request type."
+  },
+  {
+    title: "Legal Notices",
+    email: SUPPORT_CONTACTS.legal,
+    body: "For terms notices, legal notices, compliance notices, or formal business requests, include the relevant account, company, and document context."
+  },
+  {
+    title: "Security Reports",
+    email: SUPPORT_CONTACTS.security,
+    body: "For suspected vulnerabilities, account abuse, or security incidents, include affected URLs, reproduction steps, timing, and impact. Do not send passwords or private API keys."
   }
 ] as const;
 

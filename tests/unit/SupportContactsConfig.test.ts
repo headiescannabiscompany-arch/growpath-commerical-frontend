@@ -25,7 +25,9 @@ describe("support contact alias config", () => {
         SUPPORT_CONTACTS.billing,
         SUPPORT_CONTACTS.commercial,
         SUPPORT_CONTACTS.facility,
-        SUPPORT_CONTACTS.privacy
+        SUPPORT_CONTACTS.privacy,
+        SUPPORT_CONTACTS.legal,
+        SUPPORT_CONTACTS.security
       ])
     );
   });

@@ -556,6 +556,7 @@ Completed and pushed:
 280. Native Commercial dashboard inventory labels now say Inventory Support and describe stock as supporting products, batches, orders, and storefront availability instead of implying a separate commercial inventory universe.
 281. Commercial dashboard task source classification now preserves order and alert action IDs in addition to product, inventory, product-trial evidence, and feed-campaign tasks; alert setup items are no longer misclassified as storefront sources just because their type includes `storefront`.
 282. Shared SchedulePicker coverage now locks the 21-day quick date and `every 21 days` recurrence option used by topdress, re-amend, soil cook, and follow-up workflows.
+283. Public support routing now gives every live alias its own shared support-topic row: support, billing, privacy, legal, security, commercial, and facility @growpathai.com all appear as first-class contact destinations.
 
 ## Working Rule For Codex
 

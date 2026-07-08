@@ -14,8 +14,8 @@ describe("SupportPage", () => {
     expect(screen.getByText(/Email billing@growpathai\.com/)).toBeTruthy();
     expect(screen.getByText(/Email commercial@growpathai\.com/)).toBeTruthy();
     expect(screen.getByText(/Email facility@growpathai\.com/)).toBeTruthy();
-    expect(screen.getByText(/privacy@growpathai\.com/)).toBeTruthy();
-    expect(screen.getByText(/legal@growpathai\.com/)).toBeTruthy();
-    expect(screen.getByText(/security@growpathai\.com/)).toBeTruthy();
+    expect(screen.getByText(/Email privacy@growpathai\.com/)).toBeTruthy();
+    expect(screen.getByText(/Email legal@growpathai\.com/)).toBeTruthy();
+    expect(screen.getByText(/Email security@growpathai\.com/)).toBeTruthy();
   });
 });
