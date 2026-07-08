@@ -160,6 +160,70 @@ function taskSourcePath(task: AnyRec | null): string {
   });
 }
 
+function commercialLinkedObjectPath(task: AnyRec | null): string {
+  if (!task) return "";
+  const sourceByPriority = [
+    task.linkedProductId && {
+      sourceType: "product",
+      sourceId: task.linkedProductId,
+      linkedProductId: task.linkedProductId
+    },
+    task.linkedProductBatchId && {
+      sourceType: "product_batch",
+      sourceId: task.linkedProductBatchId,
+      linkedProductBatchId: task.linkedProductBatchId,
+      linkedProductId: task.linkedProductId || undefined
+    },
+    (task.linkedProductTrialId || task.linkedTrialId) && {
+      sourceType: "product_trial",
+      sourceId: task.linkedProductTrialId || task.linkedTrialId,
+      linkedProductTrialId: task.linkedProductTrialId || task.linkedTrialId
+    },
+    task.linkedCourseId && {
+      sourceType: "course",
+      sourceId: task.linkedCourseId,
+      linkedCourseId: task.linkedCourseId
+    },
+    task.linkedLessonId && {
+      sourceType: "lesson",
+      sourceId: task.linkedLessonId,
+      linkedLessonId: task.linkedLessonId,
+      linkedCourseId: task.linkedCourseId || undefined
+    },
+    task.linkedLiveId && {
+      sourceType: "live",
+      sourceId: task.linkedLiveId,
+      linkedLiveId: task.linkedLiveId
+    },
+    (task.linkedFeedCampaignId || task.feedCampaignId || task.campaignId) && {
+      sourceType: "feed_campaign",
+      sourceId: task.linkedFeedCampaignId || task.feedCampaignId || task.campaignId,
+      linkedFeedCampaignId:
+        task.linkedFeedCampaignId || task.feedCampaignId || task.campaignId
+    },
+    (task.linkedStorefrontSlug || task.storefrontSlug || task.linkedStorefrontId) && {
+      sourceType: "storefront",
+      sourceId:
+        task.linkedStorefrontSlug || task.storefrontSlug || task.linkedStorefrontId,
+      linkedStorefrontSlug: task.linkedStorefrontSlug || task.storefrontSlug || undefined,
+      linkedStorefrontId: task.linkedStorefrontId || undefined
+    },
+    task.linkedForumThreadId && {
+      sourceType: "forum",
+      sourceId: task.linkedForumThreadId,
+      linkedForumThreadId: task.linkedForumThreadId
+    }
+  ].find(Boolean);
+
+  if (!sourceByPriority) return "";
+
+  return sourceObjectHref({
+    ...task,
+    ...(sourceByPriority as Record<string, string | undefined>),
+    workspaceType: "commercial"
+  });
+}
+
 export default function CommercialTaskDetailRoute() {
   const router = useRouter();
   const params = useLocalSearchParams();
@@ -219,6 +283,9 @@ export default function CommercialTaskDetailRoute() {
   const status = String(item?.status || (item?.completed ? "complete" : "open"));
   const priority = String(item?.priority || "normal");
   const sourcePath = taskSourcePath(item);
+  const linkedObjectPath = commercialLinkedObjectPath(item);
+  const showLinkedObjectPath =
+    linkedObjectPath && (!sourcePath || linkedObjectPath !== sourcePath);
   const contextRows = useMemo(() => taskContextRows(item), [item]);
 
   async function completeTask() {
@@ -308,6 +375,16 @@ export default function CommercialTaskDetailRoute() {
                 style={styles.secondaryBtn}
               >
                 <Text style={styles.secondaryText}>View Source</Text>
+              </Pressable>
+            ) : null}
+            {showLinkedObjectPath ? (
+              <Pressable
+                onPress={() => router.push(linkedObjectPath as any)}
+                accessibilityRole="link"
+                accessibilityLabel="View commercial task linked object"
+                style={styles.secondaryBtn}
+              >
+                <Text style={styles.secondaryText}>View Linked Object</Text>
               </Pressable>
             ) : null}
           </View>

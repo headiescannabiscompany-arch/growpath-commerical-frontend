@@ -179,6 +179,20 @@ describe("CommercialTaskDetailRoute", () => {
     fireEvent.press(screen.getByLabelText("View commercial task source"));
 
     expect(mockPush).toHaveBeenCalledWith("/home/alerts?alertId=alert-1");
+
+    fireEvent.press(screen.getByLabelText("View commercial task linked object"));
+
+    expect(mockPush).toHaveBeenCalledWith("/home/commercial/products/product-1");
+  });
+
+  it("does not duplicate linked object action when the source already opens it", async () => {
+    const screen = render(<CommercialTaskDetailRoute />);
+
+    await waitFor(() =>
+      expect(screen.getAllByText("Connect Stripe price").length).toBeGreaterThan(0)
+    );
+
+    expect(screen.queryByLabelText("View commercial task linked object")).toBeNull();
   });
 
   it("opens forum-backed task sources in the shared forum route", async () => {
