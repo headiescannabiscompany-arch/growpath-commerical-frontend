@@ -920,6 +920,22 @@ describe("commercial workflow pages", () => {
     expect(screen.getByText("Public Store Directory")).toBeTruthy();
     await waitFor(() => expect(screen.getByText("How to use Bloom Mix")).toBeTruthy());
     expect(screen.getByText(/evidence run trial-1/)).toBeTruthy();
+    expect(
+      screen.UNSAFE_getByProps({
+        href: "/store/living-soil-labs/products/product-1"
+      })
+    ).toBeTruthy();
+    expect(
+      screen.UNSAFE_getByProps({
+        href: "/store/living-soil-labs/courses/course-1"
+      })
+    ).toBeTruthy();
+    expect(
+      screen.UNSAFE_getByProps({
+        href: "/home/commercial/evidence-runs/trial-1"
+      })
+    ).toBeTruthy();
+    expect(screen.UNSAFE_getByProps({ href: "/store/living-soil-labs" })).toBeTruthy();
 
     fireEvent.changeText(
       screen.getByLabelText("Brand support post title"),

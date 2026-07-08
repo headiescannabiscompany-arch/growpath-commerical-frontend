@@ -77,6 +77,44 @@ function ActionLink({ href, label }: { href: string; label: string }) {
   );
 }
 
+function postActionLinks(post: BrandForumPost) {
+  const links: Array<{ href: string; label: string }> = [];
+  if (post.linkedProductId) {
+    links.push({
+      label: "Open Product",
+      href: post.storefrontSlug
+        ? `/store/${encodeURIComponent(post.storefrontSlug)}/products/${encodeURIComponent(
+            post.linkedProductId
+          )}`
+        : `/home/commercial/products/${encodeURIComponent(post.linkedProductId)}`
+    });
+  }
+  if (post.linkedCourseId) {
+    links.push({
+      label: "Open Course",
+      href: post.storefrontSlug
+        ? `/store/${encodeURIComponent(post.storefrontSlug)}/courses/${encodeURIComponent(
+            post.linkedCourseId
+          )}`
+        : `/home/commercial/courses/${encodeURIComponent(post.linkedCourseId)}`
+    });
+  }
+  const evidenceId = evidenceRunId(post);
+  if (evidenceId) {
+    links.push({
+      label: "Open Evidence",
+      href: `/home/commercial/evidence-runs/${encodeURIComponent(evidenceId)}`
+    });
+  }
+  if (post.storefrontSlug) {
+    links.push({
+      label: "Open Storefront",
+      href: `/store/${encodeURIComponent(post.storefrontSlug)}`
+    });
+  }
+  return links;
+}
+
 export default function CommercialCommunityRoute() {
   const [posts, setPosts] = useState<BrandForumPost[]>([]);
   const [form, setForm] = useState<SupportForm>(EMPTY_FORM);
@@ -289,28 +327,44 @@ export default function CommercialCommunityRoute() {
         <Text style={styles.cardTitle}>Recent brand support activity</Text>
         {posts.length ? (
           <View style={styles.list}>
-            {posts.map((post) => (
-              <View key={post.id} style={styles.postRow}>
-                <Text style={styles.postTitle}>{post.title || "Brand support post"}</Text>
-                <Text style={styles.postBody}>{post.body || post.content}</Text>
-                {post.linkedProductId ||
-                post.linkedCourseId ||
-                evidenceRunId(post) ||
-                post.storefrontSlug ? (
-                  <Text style={styles.postMeta}>
-                    Links:{" "}
-                    {[
-                      post.linkedProductId && `product ${post.linkedProductId}`,
-                      post.linkedCourseId && `course ${post.linkedCourseId}`,
-                      evidenceRunId(post) && `evidence run ${evidenceRunId(post)}`,
-                      post.storefrontSlug && `store ${post.storefrontSlug}`
-                    ]
-                      .filter(Boolean)
-                      .join(", ")}
+            {posts.map((post) => {
+              const actionLinks = postActionLinks(post);
+              return (
+                <View key={post.id} style={styles.postRow}>
+                  <Text style={styles.postTitle}>
+                    {post.title || "Brand support post"}
                   </Text>
-                ) : null}
-              </View>
-            ))}
+                  <Text style={styles.postBody}>{post.body || post.content}</Text>
+                  {post.linkedProductId ||
+                  post.linkedCourseId ||
+                  evidenceRunId(post) ||
+                  post.storefrontSlug ? (
+                    <Text style={styles.postMeta}>
+                      Links:{" "}
+                      {[
+                        post.linkedProductId && `product ${post.linkedProductId}`,
+                        post.linkedCourseId && `course ${post.linkedCourseId}`,
+                        evidenceRunId(post) && `evidence run ${evidenceRunId(post)}`,
+                        post.storefrontSlug && `store ${post.storefrontSlug}`
+                      ]
+                        .filter(Boolean)
+                        .join(", ")}
+                    </Text>
+                  ) : null}
+                  {actionLinks.length ? (
+                    <View style={styles.actions}>
+                      {actionLinks.map((link) => (
+                        <ActionLink
+                          key={`${post.id || post.title}-${link.href}-${link.label}`}
+                          href={link.href}
+                          label={link.label}
+                        />
+                      ))}
+                    </View>
+                  ) : null}
+                </View>
+              );
+            })}
           </View>
         ) : (
           <Text style={styles.muted}>No brand support posts yet.</Text>
