@@ -14,6 +14,7 @@ import { useAICall } from "@/hooks/useAICall";
 import { AIResultCard } from "@/features/ai/components/AIResultCard";
 import { uploadImage } from "@/api/uploads";
 import { maybePromptAttachPhotosToGrow } from "@/utils/growPhotoAttachment";
+import { radius } from "@/theme/theme";
 
 export default function TrichomeAnalysisScreen({
   facilityId,
@@ -217,7 +218,7 @@ const styles = StyleSheet.create({
   card: {
     borderWidth: 1,
     borderColor: "#E5E7EB",
-    borderRadius: 8,
+    borderRadius: radius.card,
     padding: 12,
     gap: 8,
     backgroundColor: "#fff"
@@ -229,14 +230,14 @@ const styles = StyleSheet.create({
   input: {
     borderWidth: 1,
     borderColor: "#E5E7EB",
-    borderRadius: 10,
+    borderRadius: radius.card,
     padding: 10,
     fontSize: 14
   },
   inputSm: {
     borderWidth: 1,
     borderColor: "#E5E7EB",
-    borderRadius: 10,
+    borderRadius: radius.card,
     minWidth: 82,
     padding: 10,
     fontSize: 13
@@ -246,7 +247,7 @@ const styles = StyleSheet.create({
     backgroundColor: "#111827",
     paddingVertical: 12,
     paddingHorizontal: 16,
-    borderRadius: 10,
+    borderRadius: radius.card,
     alignItems: "center"
   },
   ctaDisabled: { opacity: 0.6 },
@@ -254,7 +255,7 @@ const styles = StyleSheet.create({
   secondaryButton: {
     borderWidth: 1,
     borderColor: "#D1D5DB",
-    borderRadius: 8,
+    borderRadius: radius.card,
     paddingVertical: 11,
     paddingHorizontal: 14,
     alignItems: "center",
@@ -264,7 +265,7 @@ const styles = StyleSheet.create({
   preview: {
     width: "100%",
     height: 220,
-    borderRadius: 8,
+    borderRadius: radius.card,
     backgroundColor: "#F3F4F6",
     marginTop: 8
   },

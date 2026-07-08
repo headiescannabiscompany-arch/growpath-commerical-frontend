@@ -745,6 +745,7 @@ Completed and pushed:
 469. Legacy live session list/detail cards, hero, Twitch embed frame, product/course/forum context pills, and replay/moderation CTAs now consume shared radius tokens while preserving live, replay, storefront, course, and Forum/Q&A routing.
 470. Payment help dialog panels and email/close actions now consume shared radius tokens while continuing to route payment issues through the centralized live billing support alias.
 471. Payments, Paywall, Subscription Status, Subscription upgrade, and Pricing Matrix cards/badges/actions now consume shared radius tokens while preserving live pricing constants, checkout handoff, backend-confirmed unlocks, and support fallback behavior.
+472. Facility harvest window, Harvest AI MVP, and trichome analysis cards/inputs/photo previews/actions now consume shared radius tokens while preserving canonical harvest AI function names, photo upload, and calendar writeback behavior.
 
 ## Working Rule For Codex
 

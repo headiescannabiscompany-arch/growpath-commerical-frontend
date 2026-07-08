@@ -10,6 +10,7 @@ import {
 } from "react-native";
 import { useAICall } from "@/hooks/useAICall";
 import { useCalendarEvents } from "@/hooks/useCalendarEvents";
+import { radius } from "@/theme/theme";
 
 /**
  * HarvestAIMvpScreen
@@ -211,7 +212,7 @@ const styles = StyleSheet.create({
   card: {
     borderWidth: 1,
     borderColor: "#E5E7EB",
-    borderRadius: 12,
+    borderRadius: radius.card,
     padding: 12,
     gap: 8,
     backgroundColor: "#fff"
@@ -221,14 +222,14 @@ const styles = StyleSheet.create({
   input: {
     borderWidth: 1,
     borderColor: "#E5E7EB",
-    borderRadius: 10,
+    borderRadius: radius.card,
     padding: 10,
     fontSize: 14
   },
   inputSm: {
     borderWidth: 1,
     borderColor: "#E5E7EB",
-    borderRadius: 10,
+    borderRadius: radius.card,
     padding: 10,
     fontSize: 13,
     minWidth: 80
@@ -249,7 +250,7 @@ const styles = StyleSheet.create({
     marginTop: 10,
     backgroundColor: "#111827",
     padding: 12,
-    borderRadius: 12,
+    borderRadius: radius.card,
     alignItems: "center"
   },
   ctaDisabled: { opacity: 0.6 },
