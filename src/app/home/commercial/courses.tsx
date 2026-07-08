@@ -65,6 +65,10 @@ function splitList(value: string) {
     .filter(Boolean);
 }
 
+function feedCampaignIds(row: any) {
+  return row?.linkedFeedCampaignIds || row?.linkedFeedPostIds || [];
+}
+
 function splitIds(value: string) {
   return splitList(value);
 }
@@ -217,6 +221,7 @@ export default function CommercialCoursesRoute() {
           linkedProductLineIds: course.linkedProductLineIds || [],
           linkedGrowIds: course.linkedGrowIds || [],
           linkedLiveIds: course.linkedLiveIds || [],
+          linkedFeedCampaignIds: feedCampaignIds(course),
           linkedFeedPostIds: course.linkedFeedPostIds || [],
           linkedForumThreadId: course.forumThreadId,
           priority: warnings.some((warning) =>

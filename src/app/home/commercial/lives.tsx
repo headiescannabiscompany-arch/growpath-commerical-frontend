@@ -106,6 +106,15 @@ function splitList(value: string) {
     .filter(Boolean);
 }
 
+function liveFeedCampaignId(live: CommercialLiveEvent) {
+  return String(
+    (live as any).relatedFeedCampaignId ||
+      (live as any).linkedFeedCampaignId ||
+      live.relatedFeedPostId ||
+      ""
+  );
+}
+
 function ActionLink({ href, label }: { href: string; label: string }) {
   return (
     <Link href={href as any} asChild>
@@ -210,6 +219,7 @@ export default function CommercialLivesRoute() {
           linkedLiveId: String(id),
           linkedCourseId: live.relatedCourseId,
           linkedProductId: live.relatedProductId,
+          linkedFeedCampaignId: liveFeedCampaignId(live) || undefined,
           linkedFeedPostId: live.relatedFeedPostId,
           linkedForumThreadId: live.forumThreadId,
           growInterests: live.growInterests,

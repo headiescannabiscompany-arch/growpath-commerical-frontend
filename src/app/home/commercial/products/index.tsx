@@ -89,6 +89,10 @@ function splitList(value: string) {
     .filter(Boolean);
 }
 
+function feedCampaignIds(row: any) {
+  return row?.linkedFeedCampaignIds || row?.linkedFeedPostIds || [];
+}
+
 function hasProductSpecs(form: ProductForm) {
   return [
     form.unitSize,
@@ -248,6 +252,7 @@ export default function CommercialProductsRoute({
           linkedRecipeId: (product as any).linkedRecipeId,
           linkedCourseIds: (product as any).linkedCourseIds || [],
           linkedLiveIds: (product as any).linkedLiveIds || [],
+          linkedFeedCampaignIds: feedCampaignIds(product),
           linkedFeedPostIds: (product as any).linkedFeedPostIds || [],
           linkedForumThreadId: (product as any).forumThreadId,
           priority:
