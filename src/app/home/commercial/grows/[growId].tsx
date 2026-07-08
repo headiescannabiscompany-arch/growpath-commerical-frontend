@@ -165,13 +165,13 @@ export default function CommercialGrowDetailRoute({ route }: { route?: any } = {
         <View style={styles.actions}>
           {grow?.productId ? (
             <ActionLink
-              href={`/home/commercial/products?productId=${encodeURIComponent(grow.productId)}`}
+              href={`/home/commercial/products/${encodeURIComponent(grow.productId)}`}
               label="Open Product"
             />
           ) : null}
           {grow?.batchId ? (
             <ActionLink
-              href={`/home/commercial/batch-planner?batchId=${encodeURIComponent(grow.batchId)}`}
+              href={`/home/commercial/batch-planner/${encodeURIComponent(grow.batchId)}`}
               label="Open Batch"
             />
           ) : null}

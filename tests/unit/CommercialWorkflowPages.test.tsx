@@ -2065,6 +2065,12 @@ describe("commercial workflow pages", () => {
     expect(screen.queryByText("Pro Grow Workspace")).toBeNull();
     expect(screen.UNSAFE_getByProps({ href: "/home/commercial/products" })).toBeTruthy();
     expect(
+      screen.UNSAFE_getByProps({ href: "/home/commercial/products/product-1" })
+    ).toBeTruthy();
+    expect(
+      screen.UNSAFE_getByProps({ href: "/home/commercial/batch-planner/batch-1" })
+    ).toBeTruthy();
+    expect(
       screen.getByLabelText("Product trial evidence run harvest quality notes").props
         .value
     ).toBe("Dense flower, strong citrus fuel aroma, clean dry.");
