@@ -17,6 +17,7 @@ import { useFacility } from "@/state/useFacility";
 import { completeFacilityTask, deleteTask, getTask, updateTask } from "@/api/tasks";
 import { useApiErrorHandler } from "@/hooks/useApiErrorHandler";
 import { CAPABILITY_KEYS, useEntitlements } from "@/entitlements";
+import { sourceObjectHref } from "@/utils/sourceLinks";
 
 type AnyRec = Record<string, any>;
 
@@ -103,28 +104,12 @@ function taskSourceId(item: AnyRec | null): string {
 }
 
 function taskSourcePath(item: AnyRec | null): string {
-  const sourceType = String(item?.sourceType || "");
-  const sourceId = taskSourceId(item);
-  if (sourceType === "room") return "/home/facility/rooms";
-  if (sourceType === "facility_run") {
-    return sourceId ? `/home/facility/grows/${sourceId}` : "/home/facility/grows";
-  }
-  if (sourceType === "sop") return "/home/facility/sop-runs";
-  if (sourceType === "sensor_alert" || sourceType === "alert") return "/home/alerts";
-  if (sourceType === "course" || sourceType === "lesson") {
-    return "/home/facility/sop-runs";
-  }
-  if (sourceType === "live") return sourceId ? `/feed?liveId=${sourceId}` : "/feed";
-  if (sourceType === "toolrun" || sourceType === "recipe") {
-    return "/home/facility/ai-tools";
-  }
-  if (sourceType === "product" || sourceType === "product_batch") {
-    return "/home/facility/inventory";
-  }
-  if (sourceType === "product_trial")
-    return sourceId ? `/home/facility/grows/${sourceId}` : "/home/facility/grows";
-  if (sourceType === "forum" && sourceId) return `/forum/post/${sourceId}`;
-  return "";
+  if (!item) return "";
+  return sourceObjectHref({
+    ...item,
+    sourceId: taskSourceId(item),
+    workspaceType: "facility"
+  });
 }
 
 function canManageRole(role: unknown) {

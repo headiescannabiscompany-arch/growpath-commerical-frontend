@@ -100,7 +100,12 @@ export function sourceObjectHref(source: SourceLike) {
     return "/home/personal/courses";
   }
 
-  if (sourceType === "live" || sourceType === "live_event" || sourceType === "replay") {
+  if (
+    sourceType === "live" ||
+    sourceType === "live_event" ||
+    sourceType === "replay" ||
+    sourceType === "live_replay"
+  ) {
     return workspace === "commercial"
       ? "/home/commercial/lives"
       : `/feed${sourceId ? `?liveId=${encoded(sourceId)}` : ""}`;
@@ -125,7 +130,13 @@ export function sourceObjectHref(source: SourceLike) {
   }
   if (sourceType === "sop") return "/home/facility/sop-runs";
   if (sourceType === "sensor_alert" || sourceType === "alert") return "/home/alerts";
-  if (sourceType === "toolrun" || sourceType === "recipe") {
+  if (sourceType === "ai_diagnosis") {
+    return growId
+      ? `/home/personal/diagnose?growId=${encoded(growId)}`
+      : "/home/personal/diagnose";
+  }
+
+  if (sourceType === "toolrun" || sourceType === "tool_run" || sourceType === "recipe") {
     if (workspace === "commercial") return "/home/commercial/batch-planner";
     if (workspace === "facility") return "/home/facility/ai-tools";
     return "/home/personal/tools/saved-runs";
