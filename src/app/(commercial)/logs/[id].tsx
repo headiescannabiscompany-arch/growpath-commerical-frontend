@@ -7,7 +7,7 @@ import {
   Text,
   View
 } from "react-native";
-import { useLocalSearchParams, useRouter } from "expo-router";
+import { useLocalSearchParams } from "expo-router";
 
 import { ScreenBoundary } from "@/components/ScreenBoundary";
 import { InlineError } from "@/components/InlineError";
@@ -39,7 +39,6 @@ function renderKV(obj: AnyRec | null, key: string) {
 }
 
 export default function CommercialLogDetailRoute() {
-  const router = useRouter();
   const params = useLocalSearchParams();
   const id = getId(params as any);
 
@@ -117,10 +116,6 @@ export default function CommercialLogDetailRoute() {
             </Text>
           )}
         </View>
-
-        <Text onPress={() => router.back()} style={styles.backLink}>
-          ‹ Back
-        </Text>
       </ScrollView>
     </ScreenBoundary>
   );
@@ -142,6 +137,5 @@ const styles = StyleSheet.create({
   kvWrap: { marginTop: 6 },
   kv: { gap: 4, marginBottom: 10 },
   k: { fontSize: 12, opacity: 0.7 },
-  v: { fontSize: 14 },
-  backLink: { fontWeight: "800", marginTop: 6 }
+  v: { fontSize: 14 }
 });
