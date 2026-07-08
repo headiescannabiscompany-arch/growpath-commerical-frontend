@@ -71,9 +71,7 @@ function taskSourceHref(task: PersonalTask, activeGrowId: string) {
   }
   if (task.linkedForumThreadId || task.sourceType === "forum") {
     const threadId = task.linkedForumThreadId || task.sourceObjectId;
-    return threadId
-      ? `/home/personal/forum/post/${encodeURIComponent(String(threadId))}`
-      : "/home/personal/forum";
+    return threadId ? `/forum/post/${encodeURIComponent(String(threadId))}` : "/forum";
   }
   if (task.sourceDiagnosisId || task.sourceType === "ai_diagnosis") {
     return `${growPath}/timeline`;

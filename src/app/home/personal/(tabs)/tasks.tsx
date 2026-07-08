@@ -117,7 +117,7 @@ function taskSourcePath(task: PersonalTask) {
     return "";
   }
   if (sourceType === "alert" || sourceType === "sensor_alert") return "/home/alerts";
-  if (sourceType === "forum" && sourceId) return `/home/personal/forum/post/${sourceId}`;
+  if (sourceType === "forum" && sourceId) return `/forum/post/${sourceId}`;
   return task.growId ? `/home/personal/grows/${task.growId}` : "";
 }
 

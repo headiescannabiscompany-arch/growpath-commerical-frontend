@@ -166,7 +166,7 @@ describe("buildPersonalHomeModel", () => {
       expect.objectContaining({
         id: "task-6",
         sourceLabel: "forum",
-        sourceHref: "/home/personal/forum/post/thread-1"
+        sourceHref: "/forum/post/thread-1"
       })
     ]);
     expect(model.openTaskCount).toBe(6);
