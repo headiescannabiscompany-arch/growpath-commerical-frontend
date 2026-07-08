@@ -20,6 +20,7 @@ export type CommercialFeedCampaign = {
   linkedProductLineId?: string;
   linkedCourseId?: string;
   linkedLiveId?: string;
+  linkedTrialId?: string;
   linkedGrowId?: string;
   linkedForumThreadId?: string;
   storefrontSlug?: string;
@@ -101,6 +102,7 @@ export async function createCommercialFeedCampaign(input: {
   linkedProductLineId?: string;
   linkedCourseId?: string;
   linkedLiveId?: string;
+  linkedTrialId?: string;
   linkedGrowId?: string;
   linkedForumThreadId?: string;
   storefrontSlug?: string;

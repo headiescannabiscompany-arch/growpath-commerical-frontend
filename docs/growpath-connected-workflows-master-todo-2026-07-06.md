@@ -441,6 +441,7 @@ Completed and pushed:
 165. Commercial course lesson task templates now carry shared Task defaults for commercial workspace, open status, normal priority, proof, and approval flags, so saved lesson actions can enter the Task Center with predictable behavior.
 166. Commercial surfaces that route to the discussion workspace now label those actions as Forum / Q&A instead of generic Community, keeping Feed/Campaigns for outreach and Forum/Q&A for support/discussion.
 167. Commercial Marketing Planner now accepts and displays a `linkedTrialId` evidence-run alias while still writing legacy `linkedGrowId`, reducing commercial-grow naming confusion without breaking existing campaign integrations.
+168. Feed/Campaigns now accepts, displays, tracks, and task-links `linkedTrialId` evidence-run aliases while preserving legacy `linkedGrowId`, keeping outreach campaigns tied to product-trial evidence without reviving commercial-grow language.
 
 ## Working Rule For Codex
 

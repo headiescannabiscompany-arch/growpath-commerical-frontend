@@ -158,6 +158,10 @@ function campaignEngagementCount(post: CommercialFeedCampaign) {
   return Number(post.engagementCount ?? post.likeCount ?? 0);
 }
 
+function campaignEvidenceRunId(post: CommercialFeedCampaign) {
+  return post.linkedTrialId || post.linkedGrowId || "";
+}
+
 function splitTags(value: string) {
   return value
     .split(",")
@@ -355,6 +359,7 @@ export default function CommercialFeedRoute() {
         linkedProductId: linkedProductId.trim() || undefined,
         linkedCourseId: linkedCourseId.trim() || undefined,
         linkedLiveId: linkedLiveId.trim() || undefined,
+        linkedTrialId: linkedGrowId.trim() || undefined,
         linkedGrowId: linkedGrowId.trim() || undefined,
         linkedForumThreadId: linkedForumThreadId.trim() || undefined,
         storefrontSlug: storefrontSlug.trim() || undefined,
@@ -419,6 +424,8 @@ export default function CommercialFeedRoute() {
           linkedProductId: linkedProductId.trim() || undefined,
           linkedCourseId: linkedCourseId.trim() || undefined,
           linkedLiveId: linkedLiveId.trim() || undefined,
+          linkedTrialId: linkedGrowId.trim() || undefined,
+          linkedGrowId: linkedGrowId.trim() || undefined,
           linkedForumThreadId: linkedForumThreadId.trim() || undefined,
           linkedStorefrontSlug: storefrontSlug.trim() || undefined,
           growInterests: splitTags(growInterests),
@@ -487,6 +494,7 @@ export default function CommercialFeedRoute() {
         linkedCourseId: post.linkedCourseId,
         linkedLiveId: post.linkedLiveId,
         linkedForumThreadId: post.linkedForumThreadId,
+        linkedTrialId: post.linkedTrialId,
         linkedGrowId: post.linkedGrowId,
         startsAt: post.startsAt,
         endsAt: post.endsAt
@@ -918,7 +926,7 @@ export default function CommercialFeedRoute() {
             {post.linkedProductId ||
             post.linkedCourseId ||
             post.linkedLiveId ||
-            post.linkedGrowId ||
+            campaignEvidenceRunId(post) ||
             post.linkedForumThreadId ||
             post.storefrontSlug ||
             post.startsAt ||
@@ -934,8 +942,10 @@ export default function CommercialFeedRoute() {
                 {post.linkedLiveId ? (
                   <Text style={styles.linkMeta}>Live: {post.linkedLiveId}</Text>
                 ) : null}
-                {post.linkedGrowId ? (
-                  <Text style={styles.linkMeta}>Evidence run: {post.linkedGrowId}</Text>
+                {campaignEvidenceRunId(post) ? (
+                  <Text style={styles.linkMeta}>
+                    Evidence run: {campaignEvidenceRunId(post)}
+                  </Text>
                 ) : null}
                 {post.linkedForumThreadId ? (
                   <Text style={styles.linkMeta}>
