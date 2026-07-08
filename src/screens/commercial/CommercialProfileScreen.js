@@ -3,6 +3,7 @@ import { StyleSheet, Text, TouchableOpacity, View } from "react-native";
 
 import ScreenContainer from "../../components/ScreenContainer";
 import { useAuth } from "@/auth/AuthContext";
+import { radius } from "../../theme/theme";
 
 export default function CommercialProfileScreen({ navigation }) {
   const { user } = useAuth();
@@ -47,7 +48,7 @@ const styles = StyleSheet.create({
   card: {
     borderWidth: 1,
     borderColor: "#e2e8f0",
-    borderRadius: 12,
+    borderRadius: radius.card,
     padding: 12,
     backgroundColor: "#fff",
     gap: 6
@@ -56,7 +57,7 @@ const styles = StyleSheet.create({
   value: { fontSize: 15, fontWeight: "700", color: "#0f172a" },
   button: {
     backgroundColor: "#15803d",
-    borderRadius: 10,
+    borderRadius: radius.card,
     paddingVertical: 12,
     alignItems: "center"
   },
