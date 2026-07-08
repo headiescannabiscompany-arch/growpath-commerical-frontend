@@ -285,6 +285,7 @@ export default function DiagnoseRoute() {
       result.actions[0] || result.followUp || "Recheck plant symptoms and measurements.";
     const created = await createPersonalTask({
       growId,
+      linkedGrowId: growId,
       title: `Follow up: ${result.issueSummary}`,
       description: action,
       sourceType: "ai_diagnosis",

@@ -126,6 +126,7 @@ describe("DiagnoseRoute", () => {
     expect(mockCreatePersonalTask).toHaveBeenCalledWith(
       expect.objectContaining({
         growId: "grow-1",
+        linkedGrowId: "grow-1",
         title: "Follow up: Possible pH issue",
         description: "Check runoff pH before changing feed.",
         sourceType: "ai_diagnosis",

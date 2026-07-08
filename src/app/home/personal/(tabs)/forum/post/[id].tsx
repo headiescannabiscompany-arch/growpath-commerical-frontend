@@ -214,6 +214,7 @@ export default function ForumPostDetailRoute() {
     try {
       const created = await createPersonalTask({
         growId,
+        linkedGrowId: growId,
         title: `Follow up on forum advice: ${titleOf(post)}`,
         description: [
           "Created from a Forum/Q&A discussion so community advice becomes trackable grow work.",
@@ -232,6 +233,7 @@ export default function ForumPostDetailRoute() {
         priority: "medium",
         sourceType: "forum",
         sourceObjectId: targetId,
+        linkedForumThreadId: targetId,
         reminderPlan: { label: "24 hours before", channels: ["in_app"] }
       });
       setFeedback(created ? "Forum follow-up task created." : "Unable to create task.");

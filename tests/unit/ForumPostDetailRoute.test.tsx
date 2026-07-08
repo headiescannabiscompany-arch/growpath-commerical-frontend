@@ -93,11 +93,13 @@ describe("ForumPostDetailRoute", () => {
       expect(mockCreatePersonalTask).toHaveBeenCalledWith(
         expect.objectContaining({
           growId: "grow-1",
+          linkedGrowId: "grow-1",
           title: "Follow up on forum advice: Leaf spot follow-up",
           description: expect.stringContaining("Created from a Forum/Q&A discussion"),
           priority: "medium",
           sourceType: "forum",
           sourceObjectId: "post-1",
+          linkedForumThreadId: "post-1",
           reminderPlan: { label: "24 hours before", channels: ["in_app"] }
         })
       )

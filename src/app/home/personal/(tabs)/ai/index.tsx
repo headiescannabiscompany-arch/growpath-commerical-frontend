@@ -393,6 +393,7 @@ export default function AiScreen() {
     if (write.type === "create_task") {
       const created = await createPersonalTask({
         growId,
+        linkedGrowId: growId,
         title: String(payload.title || "AI suggested task"),
         description: String(payload.description || ""),
         priority: payload.priority || "medium",

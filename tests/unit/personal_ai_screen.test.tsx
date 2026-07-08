@@ -137,6 +137,7 @@ describe("personal AI screen", () => {
     await waitFor(() =>
       expect(mockCreatePersonalTask).toHaveBeenCalledWith({
         growId: "grow-1",
+        linkedGrowId: "grow-1",
         title: "Check humidity pockets after lights out",
         description: "Inspect dense canopy and corners before the next dark cycle.",
         priority: "high",
