@@ -325,4 +325,39 @@ describe("CommercialFeedRoute", () => {
 
     expect(mockPush).toHaveBeenCalledWith("https://example.com/workshop");
   });
+
+  it("routes campaign Q&A CTAs through the shared forum route", async () => {
+    mockApiRequest.mockImplementation((path: string) => {
+      if (path === "/api/commercial/feed") {
+        return Promise.resolve({
+          items: [
+            {
+              id: "campaign-forum",
+              type: "education",
+              campaignKind: "course_ad",
+              title: "NPK recipe workshop Q&A",
+              body: "Ask questions before the recipe workshop.",
+              tags: ["NPK"],
+              linkedForumThreadId: "thread-qna",
+              author: { displayName: "Living Soil Labs" },
+              createdAt: "2026-07-07T12:00:00Z"
+            }
+          ]
+        });
+      }
+      return Promise.resolve({});
+    });
+
+    const screen = render(<CommercialFeedRoute />);
+
+    await waitFor(() =>
+      expect(screen.getByText("NPK recipe workshop Q&A")).toBeTruthy()
+    );
+
+    fireEvent.press(
+      screen.getByLabelText("Open Forum Q&A for NPK recipe workshop Q&A")
+    );
+
+    expect(mockPush).toHaveBeenCalledWith("/forum/post/thread-qna");
+  });
 });
