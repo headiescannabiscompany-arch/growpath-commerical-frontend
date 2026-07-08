@@ -41,10 +41,18 @@ describe("CommercialTaskDetailRoute", () => {
           setupItemHelper: "Paid storefront products need checkout before publishing.",
           growInterests: ["living soil", "dry amendments"],
           linkedProductIds: ["product-1"],
+          linkedProductLineId: "line-1",
+          linkedRecipeId: "recipe-1",
+          linkedProductBatchId: "batch-1",
           linkedCourseIds: ["course-1"],
           linkedLiveIds: ["live-1"],
           linkedFeedPostIds: ["campaign-1"],
           linkedForumThreadId: "thread-product",
+          linkedGrowIds: ["grow-1"],
+          linkedFacilityId: "facility-1",
+          linkedRoomId: "room-1",
+          linkedOrderId: "order-1",
+          linkedAlertId: "alert-1",
           campaignStartsAt: "2026-07-17T21:00:00Z",
           campaignEndsAt: "2026-07-24T21:00:00Z",
           recurrenceRule: "weekly",
@@ -104,10 +112,18 @@ describe("CommercialTaskDetailRoute", () => {
       screen.getAllByText("Paid storefront products need checkout before publishing.").length
     ).toBeGreaterThan(0);
     expect(screen.getAllByText("product-1").length).toBeGreaterThan(0);
+    expect(screen.getAllByText("line-1").length).toBeGreaterThan(0);
+    expect(screen.getAllByText("recipe-1").length).toBeGreaterThan(0);
+    expect(screen.getAllByText("batch-1").length).toBeGreaterThan(0);
     expect(screen.getAllByText("course-1").length).toBeGreaterThan(0);
     expect(screen.getAllByText("live-1").length).toBeGreaterThan(0);
     expect(screen.getAllByText("campaign-1").length).toBeGreaterThan(0);
     expect(screen.getAllByText("thread-product").length).toBeGreaterThan(0);
+    expect(screen.getAllByText("grow-1").length).toBeGreaterThan(0);
+    expect(screen.getAllByText("facility-1").length).toBeGreaterThan(0);
+    expect(screen.getAllByText("room-1").length).toBeGreaterThan(0);
+    expect(screen.getAllByText("order-1").length).toBeGreaterThan(0);
+    expect(screen.getAllByText("alert-1").length).toBeGreaterThan(0);
     expect(screen.getAllByText("2026-07-17T21:00:00Z").length).toBeGreaterThan(0);
     expect(screen.getAllByText("weekly").length).toBeGreaterThan(0);
     expect(screen.getByText("1 hour before")).toBeTruthy();
