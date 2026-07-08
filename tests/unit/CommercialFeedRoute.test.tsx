@@ -112,7 +112,7 @@ describe("CommercialFeedRoute", () => {
 
     fireEvent.press(screen.getByLabelText("View Live for Live soil demo"));
 
-    expect(mockPush).toHaveBeenCalledWith("/feed?liveId=live-1");
+    expect(mockPush).toHaveBeenCalledWith("/live-session?sessionId=live-1");
     await waitFor(() =>
       expect(mockApiRequest).toHaveBeenCalledWith(
         "/api/commercial/analytics/events",
@@ -122,7 +122,7 @@ describe("CommercialFeedRoute", () => {
             eventType: "feed_campaign_click",
             objectType: "feed_campaign",
             objectId: "campaign-1",
-            targetUrl: "/feed?liveId=live-1",
+            targetUrl: "/live-session?sessionId=live-1",
             source: "commercial_feed",
             metadata: expect.objectContaining({
               campaignKind: "Live event ad",

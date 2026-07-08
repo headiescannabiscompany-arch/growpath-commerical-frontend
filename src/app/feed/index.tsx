@@ -201,7 +201,7 @@ function campaignDestination(post: CommercialFeedCampaign) {
   if (post.linkedLiveId) {
     return {
       label: "View Live",
-      href: `/feed?liveId=${encodeURIComponent(String(post.linkedLiveId))}`
+      href: `/live-session?sessionId=${encodeURIComponent(String(post.linkedLiveId))}`
     };
   }
   if (post.linkedProductLineId) {
