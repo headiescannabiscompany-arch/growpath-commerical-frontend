@@ -523,6 +523,7 @@ Completed and pushed:
 247. Commercial Product Lines now carry grow interests through API typing, root creation, list display, detail editing, and save payloads so product families can drive storefront discovery and feed targeting instead of acting as internal-only labels.
 248. Feed/Campaigns now exposes linked Product Line context in the campaign builder, readiness checks, card metadata, CTA routing, setup tasks, create payloads, and click analytics so product-family ads connect to storefront discovery without becoming forum discussion.
 249. Public brand profiles and storefronts now extract and render Product Lines with grow interests and line-filter links so commercial product families are visible to users instead of only existing in owner/admin workflows.
+250. Public storefront Product Line links now filter product cards by linked product-line IDs and provide a visible return-to-all-products action, making product-family storefront navigation functional instead of a decorative query link.
 
 ## Working Rule For Codex
 

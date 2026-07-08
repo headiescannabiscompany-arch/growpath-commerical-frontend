@@ -10,6 +10,10 @@ import PublicStorefrontProductAliasRoute from "@/app/storefront/[slug]/products/
 const mockFetchPublicStorefront = jest.fn();
 const mockRecordCommercialAnalyticsEvent = jest.fn();
 const mockLinkHrefs: string[] = [];
+let mockRouteParams: Record<string, string> = {
+  slug: "living-soil-labs",
+  productId: "product-1"
+};
 
 jest.mock("expo-router", () => {
   const React = require("react");
@@ -18,7 +22,7 @@ jest.mock("expo-router", () => {
       mockLinkHrefs.push(String(href));
       return React.createElement(React.Fragment, null, children);
     },
-    useLocalSearchParams: () => ({ slug: "living-soil-labs", productId: "product-1" })
+    useLocalSearchParams: () => mockRouteParams
   };
 });
 
@@ -69,6 +73,7 @@ const publicPayload = {
       name: "Veg Mix",
       description: "Nitrogen-forward veg support.",
       priceCents: 2500,
+      productLineId: "line-1",
       unitSize: "5 lb bag",
       growInterests: ["living soil", "veg"],
       usageInstructions: "Topdress during veg and water in.",
@@ -90,7 +95,8 @@ const publicPayload = {
       id: "product-2",
       name: "Bloom Mix",
       description: "Flower support.",
-      priceCents: 3200
+      priceCents: 3200,
+      productLineId: "line-2"
     }
   ],
   productLines: [
@@ -142,6 +148,7 @@ describe("public commercial routes", () => {
     mockFetchPublicStorefront.mockReset();
     mockRecordCommercialAnalyticsEvent.mockReset();
     mockLinkHrefs.length = 0;
+    mockRouteParams = { slug: "living-soil-labs", productId: "product-1" };
     mockRecordCommercialAnalyticsEvent.mockResolvedValue({ success: true });
     mockFetchPublicStorefront.mockResolvedValue(publicPayload);
   });
@@ -246,6 +253,22 @@ describe("public commercial routes", () => {
     expect(screen.getByText("View Brand Profile")).toBeTruthy();
     expect(screen.getByText("Promoted Campaigns")).toBeTruthy();
     expect(screen.getByText("Forum / Q&A")).toBeTruthy();
+  });
+
+  it("filters public storefront products by product line query", async () => {
+    mockRouteParams = {
+      slug: "living-soil-labs",
+      productId: "product-1",
+      line: "line-1"
+    };
+    const screen = render(<PublicStorefrontRoute />);
+
+    await waitFor(() => expect(screen.getByText("Filtered Product Line")).toBeTruthy());
+
+    expect(screen.getByText("Showing products linked to line-1.")).toBeTruthy();
+    expect(screen.getByText("View All Products")).toBeTruthy();
+    expect(screen.getAllByText("Veg Mix").length).toBeGreaterThan(0);
+    expect(screen.queryByText("Bloom Mix")).toBeNull();
   });
 
   it("loads a public product detail page with storefront navigation", async () => {

@@ -51,8 +51,9 @@ function trackCommercialClick(payload: Record<string, any>) {
 }
 
 export default function PublicStorefrontRoute() {
-  const params = useLocalSearchParams<{ slug?: string }>();
+  const params = useLocalSearchParams<{ slug?: string; line?: string }>();
   const slug = useMemo(() => String(params.slug || "").trim(), [params.slug]);
+  const selectedLineId = useMemo(() => String(params.line || "").trim(), [params.line]);
   const returnFeedHref = "/feed";
   const [loading, setLoading] = useState(true);
   const [busyId, setBusyId] = useState("");
@@ -154,6 +155,21 @@ export default function PublicStorefrontRoute() {
   }
 
   const links = publicLinks(storefront);
+  const visibleProducts = useMemo(() => {
+    if (!selectedLineId) return products;
+    return products.filter((product) => {
+      const lineIds = [
+        product?.productLineId,
+        product?.linkedProductLineId,
+        ...(Array.isArray(product?.linkedProductLineIds)
+          ? product.linkedProductLineIds
+          : [])
+      ]
+        .filter(Boolean)
+        .map((value) => String(value));
+      return lineIds.includes(selectedLineId);
+    });
+  }, [products, selectedLineId]);
 
   return (
     <AppPage
@@ -230,6 +246,19 @@ export default function PublicStorefrontRoute() {
             </View>
           ) : null}
           {feedback ? <Text style={styles.feedback}>{feedback}</Text> : null}
+          {selectedLineId ? (
+            <View style={styles.profilePanel}>
+              <Text style={styles.profileTitle}>Filtered Product Line</Text>
+              <Text style={styles.meta}>
+                Showing products linked to {selectedLineId}.
+              </Text>
+              <Link href={`/store/${encodeURIComponent(slug)}` as any} asChild>
+                <Pressable style={styles.secondaryButton}>
+                  <Text style={styles.secondaryButtonText}>View All Products</Text>
+                </Pressable>
+              </Link>
+            </View>
+          ) : null}
           {productLines.length ? (
             <View style={styles.profilePanel}>
               <Text style={styles.profileTitle}>Product Lines</Text>
@@ -273,8 +302,8 @@ export default function PublicStorefrontRoute() {
               })}
             </View>
           ) : null}
-          {products.length ? (
-            products.map((product) => {
+          {visibleProducts.length ? (
+            visibleProducts.map((product) => {
               const id = productId(product);
               return (
                 <View key={id || product?.name} style={styles.product}>
@@ -318,7 +347,11 @@ export default function PublicStorefrontRoute() {
               );
             })
           ) : (
-            <Text style={styles.meta}>No published products.</Text>
+            <Text style={styles.meta}>
+              {selectedLineId
+                ? "No published products for this product line."
+                : "No published products."}
+            </Text>
           )}
 
           {courses.length ? (
