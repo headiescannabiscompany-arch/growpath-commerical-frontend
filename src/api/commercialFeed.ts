@@ -42,6 +42,10 @@ export type CommercialFeedCampaign = {
   } | null;
 };
 
+/**
+ * Compatibility alias for older callers. New Feed/Campaigns code should use
+ * CommercialFeedCampaign so Feed remains outreach/campaign language.
+ */
 export type CommercialFeedPost = CommercialFeedCampaign;
 
 function normalizeCampaign(row: any): CommercialFeedCampaign {
@@ -50,6 +54,7 @@ function normalizeCampaign(row: any): CommercialFeedCampaign {
     id: String(row?.id || row?._id || ""),
     type: String(row?.type || "update") as CommercialFeedPostType,
     body: String(row?.body || row?.description || ""),
+    engagementCount: Number(row?.engagementCount ?? row?.likeCount ?? 0),
     tags: Array.isArray(row?.tags) ? row.tags.map((tag: any) => String(tag)) : [],
     growInterests: Array.isArray(row?.growInterests)
       ? row.growInterests.map((interest: any) => String(interest))
@@ -118,5 +123,7 @@ export async function createCommercialFeedCampaign(input: {
   return normalizeCampaign(res?.item ?? res?.post ?? res);
 }
 
+/** @deprecated Use listCommercialFeedCampaigns for new Feed/Campaigns code. */
 export const listCommercialFeedPosts = listCommercialFeedCampaigns;
+/** @deprecated Use createCommercialFeedCampaign for new Feed/Campaigns code. */
 export const createCommercialFeedPost = createCommercialFeedCampaign;

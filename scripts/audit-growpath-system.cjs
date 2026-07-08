@@ -402,6 +402,21 @@ function commercialFeedApiUsesCampaignEndpoint() {
   );
 }
 
+function activeFeedUiUsesCampaignApiNames() {
+  const files = [
+    path.join(SRC, "app", "feed", "index.tsx"),
+    path.join(SRC, "components", "feed", "FeedRail.tsx")
+  ];
+  return files.every((file) => {
+    if (!fs.existsSync(file)) return false;
+    const source = read(file);
+    return (
+      /\blistCommercialFeedCampaigns\b/.test(source) &&
+      !/\blistCommercialFeedPosts\b|\bcreateCommercialFeedPost\b/.test(source)
+    );
+  });
+}
+
 function legacyPostsApiUsesForumEndpoints() {
   const file = path.join(SRC, "api", "posts.js");
   if (!fs.existsSync(file)) return false;
@@ -643,6 +658,7 @@ function main() {
     facilityFeedCompatibilityUsesCampaignRoute();
   const legacyFeedScreenCampaignOnly = legacyFeedScreenUsesCampaignRoute();
   const commercialFeedApiCampaignEndpoint = commercialFeedApiUsesCampaignEndpoint();
+  const activeFeedUiCampaignApiNames = activeFeedUiUsesCampaignApiNames();
   const legacyPostsApiForumOnly = legacyPostsApiUsesForumEndpoints();
   const legacyToolsScreenPersonalHub = legacyToolsScreenUsesPersonalToolsHub();
   const legacyStorefrontScreenCommercialOwner =
@@ -682,6 +698,7 @@ function main() {
     facilityFeedCompatibilityCampaignOnly,
     legacyFeedScreenCampaignOnly,
     commercialFeedApiCampaignEndpoint,
+    activeFeedUiCampaignApiNames,
     legacyPostsApiForumOnly,
     legacyToolsScreenPersonalHub,
     legacyStorefrontScreenCommercialOwner,
@@ -762,6 +779,7 @@ function main() {
     `- Facility feed compatibility screen uses campaign route, not legacy posts feed: ${decisionChecks.facilityFeedCompatibilityCampaignOnly}`,
     `- Legacy native Feed screen uses campaign route, not social posts feed: ${decisionChecks.legacyFeedScreenCampaignOnly}`,
     `- Commercial Feed API creates campaigns through /api/commercial/feed: ${decisionChecks.commercialFeedApiCampaignEndpoint}`,
+    `- Active Feed UI uses campaign API names, not legacy feed-post aliases: ${decisionChecks.activeFeedUiCampaignApiNames}`,
     `- Legacy api/posts client uses Forum/Q&A endpoints, not /api/posts: ${decisionChecks.legacyPostsApiForumOnly}`,
     `- Legacy native Tools screen uses connected Personal Tools / AI hub: ${decisionChecks.legacyToolsScreenPersonalHub}`,
     `- Legacy native Storefront screen uses canonical commercial storefront owner workspace: ${decisionChecks.legacyStorefrontScreenCommercialOwner}`,

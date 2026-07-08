@@ -427,6 +427,7 @@ Completed and pushed:
 151. Commercial Feed campaign creation now uses `/api/commercial/feed` instead of the legacy `/api/commercial/posts` endpoint, with audit coverage to keep in-app outreach on the Feed/Campaigns contract.
 152. Feed campaign cards and placement rails now use canonical engagement-count naming while preserving legacy like-count fallback, keeping Feed as advertising/outreach instead of social discussion.
 153. Active Feed/Campaigns UI now uses canonical campaign API types and functions, leaving old feed-post names only as compatibility aliases for legacy callers.
+154. Active Feed/Campaigns audit coverage now requires campaign API names in the UI, acceptance coverage uses the canonical campaign list API, and legacy like-count data is normalized to campaign engagement counts at the API edge.
 
 ## Working Rule For Codex
 

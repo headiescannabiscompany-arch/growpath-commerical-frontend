@@ -173,7 +173,7 @@ describe("Acceptance: Dashboard Campaign Placements", () => {
     if (isLiveBackend) {
       return;
     }
-    await commercialFeedApi.listCommercialFeedPosts({ limit: 6, sort: "new" });
+    await commercialFeedApi.listCommercialFeedCampaigns({ limit: 6, sort: "new" });
     expect(fetchCalls().some((c) => c.url.includes("/api/commercial/feed"))).toBe(true);
     expect(fetchCalls().every((c) => !c.url.includes("/api/posts/"))).toBe(true);
   });
@@ -188,7 +188,7 @@ describe("Acceptance: Dashboard Campaign Placements", () => {
       } catch (e) {}
 
       await authApi.login(email, password);
-      const campaigns = await commercialFeedApi.listCommercialFeedPosts({ limit: 6 });
+      const campaigns = await commercialFeedApi.listCommercialFeedCampaigns({ limit: 6 });
 
       expect(Array.isArray(campaigns.items)).toBe(true);
       if (campaigns.items.length > 0) {
