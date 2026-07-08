@@ -35,6 +35,7 @@ import { submitReport, exportCourseSales } from "../api/reports";
 import PersonalFeedPlacement from "@/components/feed/PersonalFeedPlacement";
 import { useEntitlements } from "@/entitlements";
 import { getLearningAccess } from "@/features/learning/learningAccess";
+import { radius } from "../theme/theme";
 
 function rowId(row) {
   return String(row?._id || row?.id || "");
@@ -641,12 +642,17 @@ const styles = StyleSheet.create({
   title: { fontSize: 24, fontWeight: "800", color: "#0F172A" },
   body: { color: "#334155", lineHeight: 20 },
   meta: { color: "#64748B", fontSize: 13 },
-  feedback: { color: "#334155", backgroundColor: "#F1F5F9", borderRadius: 8, padding: 8 },
+  feedback: {
+    color: "#334155",
+    backgroundColor: "#F1F5F9",
+    borderRadius: radius.card,
+    padding: 8
+  },
   badge: { alignSelf: "flex-start", color: "#166534", fontWeight: "800" },
   card: {
     borderWidth: 1,
     borderColor: "#E2E8F0",
-    borderRadius: 10,
+    borderRadius: radius.card,
     padding: 12,
     gap: 8,
     backgroundColor: "#F8FAFC"
@@ -659,7 +665,7 @@ const styles = StyleSheet.create({
   input: {
     borderWidth: 1,
     borderColor: "#CBD5E1",
-    borderRadius: 8,
+    borderRadius: radius.card,
     paddingHorizontal: 10,
     paddingVertical: 9,
     backgroundColor: "#FFFFFF"
@@ -667,7 +673,7 @@ const styles = StyleSheet.create({
   primaryBtn: {
     alignSelf: "flex-start",
     backgroundColor: "#166534",
-    borderRadius: 8,
+    borderRadius: radius.card,
     paddingHorizontal: 12,
     paddingVertical: 9
   },
@@ -676,7 +682,7 @@ const styles = StyleSheet.create({
     alignSelf: "flex-start",
     borderWidth: 1,
     borderColor: "#CBD5E1",
-    borderRadius: 8,
+    borderRadius: radius.card,
     paddingHorizontal: 12,
     paddingVertical: 9,
     backgroundColor: "#FFFFFF"

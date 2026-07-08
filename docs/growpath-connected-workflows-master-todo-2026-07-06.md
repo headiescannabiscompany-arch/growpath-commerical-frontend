@@ -728,6 +728,7 @@ Completed and pushed:
 452. Legacy task rows, task completion modal, task creation inputs, entitlement warning, and create-task actions now consume the shared 8px card radius token, keeping older task entry points aligned with the shared action-layer polish.
 453. Shared context bar actions, automation rows, and legacy screen scaffold sections/cards/debug panels now consume shared radius tokens while preserving badge/pill semantics across older commercial and facility surfaces.
 454. Legacy lesson add/edit inputs, upload actions, thumbnails, locked-authoring panels, and save controls now consume the shared 8px card radius token, keeping course authoring aligned with storefront/course workflow polish.
+455. Legacy course browse/detail locked cards, search/invite inputs, feedback panels, detail cards, and checkout/enrollment/report actions now consume the shared 8px card radius token, keeping course discovery and course-detail workflows visually aligned.
 
 ## Working Rule For Codex
 

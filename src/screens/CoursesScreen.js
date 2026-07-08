@@ -13,6 +13,7 @@ import { CAPABILITY_KEYS, useEntitlements } from "@/entitlements";
 import { apiRequest } from "@/api/apiRequest";
 import PersonalFeedPlacement from "@/components/feed/PersonalFeedPlacement";
 import { countPaidCourses, getLearningAccess } from "@/features/learning/learningAccess";
+import { radius } from "../theme/theme";
 import CourseDetailScreen from "./CourseDetailScreen";
 
 function normalizeList(payload) {
@@ -259,7 +260,7 @@ const styles = StyleSheet.create({
     padding: 12,
     borderWidth: 1,
     borderColor: "#ddd",
-    borderRadius: 8,
+    borderRadius: radius.card,
     marginBottom: 10
   },
   smallBtn: { marginTop: 8, paddingVertical: 8 },
@@ -272,6 +273,6 @@ const styles = StyleSheet.create({
     borderColor: "#ccc",
     paddingHorizontal: 10,
     paddingVertical: 8,
-    borderRadius: 6
+    borderRadius: radius.card
   }
 });
