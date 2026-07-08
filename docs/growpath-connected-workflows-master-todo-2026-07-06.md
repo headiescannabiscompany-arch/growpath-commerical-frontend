@@ -613,6 +613,7 @@ Completed and pushed:
 337. Commercial Task Center cards now expose the same source-plus-linked-object split as task detail, so alert-backed setup tasks can keep their Alert Center trail while jumping directly to the product/course/live/storefront/campaign object that needs work.
 338. Facility Task Detail now preserves alert/source routing while adding View Linked Object for product, product-batch, trial, SOP/course, lesson, live, feed-campaign, and Forum context, keeping facility users inside facility inventory/runs/SOP surfaces instead of commercial admin routes.
 339. Commercial Alert Detail now opens the affected product, batch, trial, course, live, storefront, feed campaign, order, or Forum source directly with View Linked Object while still creating alert-backed follow-up tasks with the original alert trail.
+340. Notification-created follow-up tasks now preserve specific lesson and course-assignment IDs instead of flattening them into generic course links, keeping course workflow reminders connected to the exact lesson or assignment that generated the notification.
 
 ## Working Rule For Codex
 

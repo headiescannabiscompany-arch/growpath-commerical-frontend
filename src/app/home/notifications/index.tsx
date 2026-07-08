@@ -103,9 +103,18 @@ function linkedFieldsForNotificationSource(row: NotificationRow) {
     case "alert":
       return { linkedAlertId: sourceId };
     case "course":
-    case "lesson":
-    case "course_assignment":
       return { linkedCourseId: sourceId };
+    case "lesson":
+      return {
+        linkedCourseId: row.linkedCourseId || row.courseId || undefined,
+        linkedLessonId: sourceId
+      };
+    case "course_assignment":
+      return {
+        linkedCourseId: row.linkedCourseId || row.courseId || undefined,
+        linkedLessonId: row.linkedLessonId || undefined,
+        linkedCourseAssignmentId: sourceId
+      };
     case "live":
     case "live_event":
     case "replay":
@@ -269,7 +278,9 @@ export default function NotificationCenterRoute() {
           notificationSourceId: sourceReference(row) || undefined,
           ...linkedFieldsForNotificationSource(row),
           ...storefrontMetadata(row),
-          priority: ["alert", "task"].includes(String(row.sourceType || ""))
+          priority: ["alert", "task", "course_assignment"].includes(
+            String(row.sourceType || "")
+          )
             ? "high"
             : "normal",
           status: "open"

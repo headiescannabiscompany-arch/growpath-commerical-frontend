@@ -193,6 +193,27 @@ describe("NotificationCenterRoute", () => {
               linkedTrialId: "trial-linked-1",
               workspaceType: "commercial",
               readAt: "2026-07-07T12:00:00.000Z"
+            },
+            {
+              id: "notification-19",
+              title: "Lesson assignment reminder",
+              message: "Finish the worksheet for lesson two.",
+              sourceType: "lesson",
+              sourceId: "lesson-2",
+              linkedCourseId: "course-2",
+              workspaceType: "personal",
+              readAt: "2026-07-07T12:00:00.000Z"
+            },
+            {
+              id: "notification-20",
+              title: "Course assignment due",
+              message: "Upload the dry amendment worksheet.",
+              sourceType: "course_assignment",
+              sourceId: "assignment-1",
+              linkedCourseId: "course-3",
+              linkedLessonId: "lesson-3",
+              workspaceType: "personal",
+              readAt: "2026-07-07T12:00:00.000Z"
             }
           ]
         });
@@ -248,7 +269,9 @@ describe("NotificationCenterRoute", () => {
       screen.getByLabelText("Notification link /home/facility/sop-runs/sop-1")
     ).toBeTruthy();
     expect(
-      screen.getByLabelText("Notification link /store/living-soil-labs/products/veg-mix-1")
+      screen.getByLabelText(
+        "Notification link /store/living-soil-labs/products/veg-mix-1"
+      )
     ).toBeTruthy();
     expect(
       screen.getByLabelText("Notification link /home/facility/inventory/input-1")
@@ -270,7 +293,9 @@ describe("NotificationCenterRoute", () => {
       screen.getByLabelText("Notification link /home/commercial/evidence-runs/trial-1")
     ).toBeTruthy();
     expect(
-      screen.getByLabelText("Notification link /home/commercial/evidence-runs/trial-linked-1")
+      screen.getByLabelText(
+        "Notification link /home/commercial/evidence-runs/trial-linked-1"
+      )
     ).toBeTruthy();
     expect(
       screen.getByLabelText("Notification link /home/commercial/orders?orderId=order-1")
@@ -280,7 +305,9 @@ describe("NotificationCenterRoute", () => {
         "Notification link /home/facility/ai-tools?toolRunId=toolrun-1"
       )
     ).toBeTruthy();
-    expect(screen.getByLabelText("Notification link /store?q=batch-linked-1")).toBeTruthy();
+    expect(
+      screen.getByLabelText("Notification link /store?q=batch-linked-1")
+    ).toBeTruthy();
     expect(
       screen.getByLabelText(
         "Notification link /home/commercial/feed?campaignId=campaign-linked-1"
@@ -311,7 +338,7 @@ describe("NotificationCenterRoute", () => {
     expect(screen.getByText("Task created from notification.")).toBeTruthy();
 
     const createButtons = screen.getAllByLabelText("Create task from notification");
-    expect(createButtons).toHaveLength(18);
+    expect(createButtons).toHaveLength(20);
     await waitFor(() => expect(createButtons[7].props.disabled).toBeFalsy());
     fireEvent.press(createButtons[7]);
     await waitFor(() =>
@@ -352,8 +379,9 @@ describe("NotificationCenterRoute", () => {
       )
     );
     await waitFor(() =>
-      expect(screen.getAllByLabelText("Create task from notification")[16].props.disabled)
-        .toBeFalsy()
+      expect(
+        screen.getAllByLabelText("Create task from notification")[16].props.disabled
+      ).toBeFalsy()
     );
     fireEvent.press(screen.getAllByLabelText("Create task from notification")[16]);
     await waitFor(() =>
@@ -377,8 +405,9 @@ describe("NotificationCenterRoute", () => {
       )
     );
     await waitFor(() =>
-      expect(screen.getAllByLabelText("Create task from notification")[17].props.disabled)
-        .toBeFalsy()
+      expect(
+        screen.getAllByLabelText("Create task from notification")[17].props.disabled
+      ).toBeFalsy()
     );
     fireEvent.press(screen.getAllByLabelText("Create task from notification")[17]);
     await waitFor(() =>
@@ -397,6 +426,61 @@ describe("NotificationCenterRoute", () => {
             linkedProductTrialId: "trial-linked-1",
             linkedTrialId: "trial-linked-1",
             priority: "normal",
+            status: "open"
+          })
+        })
+      )
+    );
+    await waitFor(() =>
+      expect(
+        screen.getAllByLabelText("Create task from notification")[18].props.disabled
+      ).toBeFalsy()
+    );
+    fireEvent.press(screen.getAllByLabelText("Create task from notification")[18]);
+    await waitFor(() =>
+      expect(mockApiRequest).toHaveBeenLastCalledWith(
+        "/api/tasks",
+        expect.objectContaining({
+          method: "POST",
+          body: expect.objectContaining({
+            workspaceType: "personal",
+            title: "Follow up: Lesson assignment reminder",
+            sourceType: "notification",
+            sourceId: "notification-19",
+            linkedNotificationId: "notification-19",
+            notificationSourceType: "lesson",
+            notificationSourceId: "lesson-2",
+            linkedCourseId: "course-2",
+            linkedLessonId: "lesson-2",
+            priority: "normal",
+            status: "open"
+          })
+        })
+      )
+    );
+    await waitFor(() =>
+      expect(
+        screen.getAllByLabelText("Create task from notification")[19].props.disabled
+      ).toBeFalsy()
+    );
+    fireEvent.press(screen.getAllByLabelText("Create task from notification")[19]);
+    await waitFor(() =>
+      expect(mockApiRequest).toHaveBeenLastCalledWith(
+        "/api/tasks",
+        expect.objectContaining({
+          method: "POST",
+          body: expect.objectContaining({
+            workspaceType: "personal",
+            title: "Follow up: Course assignment due",
+            sourceType: "notification",
+            sourceId: "notification-20",
+            linkedNotificationId: "notification-20",
+            notificationSourceType: "course_assignment",
+            notificationSourceId: "assignment-1",
+            linkedCourseId: "course-3",
+            linkedLessonId: "lesson-3",
+            linkedCourseAssignmentId: "assignment-1",
+            priority: "high",
             status: "open"
           })
         })
