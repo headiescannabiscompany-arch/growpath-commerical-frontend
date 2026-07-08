@@ -70,8 +70,6 @@ export default function PostDetailScreen({ route, navigation }) {
   async function handleLike() {
     try {
       const res = await likePost(post._id);
-      // api/posts likePost returns { likeCount: number }
-      // api/forum likePost returns { likes: number, likeCount: number }
       setLikes(res.likeCount);
 
       if (typeof refreshFeed === "function") {
@@ -86,14 +84,8 @@ export default function PostDetailScreen({ route, navigation }) {
     if (!commentText.trim()) return;
 
     try {
-      // api/posts addComment returns the comment object
-      // But we need to update the local comments list.
-      // Does it return the full list? No, usually just the new comment.
-      // But we might need to re-fetch comments or append.
-      // Let's check api/posts addComment response.
       const newComment = await addComment(post._id, commentText);
 
-      // Manually populate user for display since backend returns ID only
       const populatedComment = {
         ...newComment,
         user: user || { username: "You" }

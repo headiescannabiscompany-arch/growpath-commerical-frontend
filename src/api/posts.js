@@ -12,7 +12,7 @@ export function getFeed(page = 1, options) {
     ({ tier1 = [], tags = [], token } = options);
   }
 
-  return apiRequest(apiRoutes.POSTS.FEED, {
+  return apiRequest(apiRoutes.FORUM.FEED_LATEST, {
     auth: token ? true : false,
     params: {
       page,
@@ -23,11 +23,11 @@ export function getFeed(page = 1, options) {
 }
 
 export function getTrending(token) {
-  return apiRequest(apiRoutes.POSTS.TRENDING, { auth: token ? true : false });
+  return apiRequest(apiRoutes.FORUM.FEED_TRENDING, { auth: token ? true : false });
 }
 
 export function createPost(formData, token) {
-  return apiRequest(apiRoutes.POSTS.CREATE, {
+  return apiRequest(apiRoutes.FORUM.CREATE, {
     method: "POST",
     auth: token ? true : false,
     body: formData
@@ -35,7 +35,7 @@ export function createPost(formData, token) {
 }
 
 export function likePost(id, token) {
-  return apiRequest(apiRoutes.POSTS.LIKE(id), {
+  return apiRequest(apiRoutes.FORUM.LIKE(id), {
     method: "POST",
     auth: token ? true : false,
     body: {}
@@ -43,7 +43,7 @@ export function likePost(id, token) {
 }
 
 export function unlikePost(id, token) {
-  return apiRequest(apiRoutes.POSTS.UNLIKE(id), {
+  return apiRequest(apiRoutes.FORUM.UNLIKE(id), {
     method: "POST",
     auth: token ? true : false,
     body: {}
@@ -51,11 +51,11 @@ export function unlikePost(id, token) {
 }
 
 export function getComments(id, token) {
-  return apiRequest(apiRoutes.POSTS.COMMENTS(id), { auth: token ? true : false });
+  return apiRequest(apiRoutes.FORUM.COMMENTS(id), { auth: token ? true : false });
 }
 
 export function addComment(id, text, token) {
-  return apiRequest(apiRoutes.POSTS.COMMENT(id), {
+  return apiRequest(apiRoutes.FORUM.COMMENT(id), {
     method: "POST",
     auth: token ? true : false,
     body: { text }
