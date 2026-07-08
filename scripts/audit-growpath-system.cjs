@@ -405,6 +405,20 @@ function legacyToolsScreenUsesPersonalToolsHub() {
   );
 }
 
+function legacyStorefrontScreenUsesCommercialOwnerScreen() {
+  const file = path.join(SRC, "screens", "StorefrontScreen.js");
+  if (!fs.existsSync(file)) return false;
+  const source = read(file);
+  return (
+    source.includes('from "@/screens/commercial/StorefrontOwnerScreen"') &&
+    /\bStorefrontOwnerScreen\b/.test(source) &&
+    !/\bcreateProduct\b|\bfetchProducts\b|\bupdateProduct\b|\bdeleteProduct\b|\bcreateStorefront\b/.test(
+      source
+    ) &&
+    !/External purchase URL|Save storefront|Add Product/.test(source)
+  );
+}
+
 function facilityIntegrationsUsesRoomImport(routes) {
   const source = routeSource(routes, "/home/facility/integrations");
   if (!source) return false;
@@ -554,6 +568,8 @@ function main() {
     facilityFeedCompatibilityUsesCampaignRoute();
   const legacyFeedScreenCampaignOnly = legacyFeedScreenUsesCampaignRoute();
   const legacyToolsScreenPersonalHub = legacyToolsScreenUsesPersonalToolsHub();
+  const legacyStorefrontScreenCommercialOwner =
+    legacyStorefrontScreenUsesCommercialOwnerScreen();
   const facilityIntegrationsRoomImport = facilityIntegrationsUsesRoomImport(
     files.routes
   );
@@ -590,6 +606,7 @@ function main() {
     facilityFeedCompatibilityCampaignOnly,
     legacyFeedScreenCampaignOnly,
     legacyToolsScreenPersonalHub,
+    legacyStorefrontScreenCommercialOwner,
     facilityIntegrationsRoomImport,
     topLevelTasksRouteExists,
     topLevelTasksRedirectOnly,
@@ -666,6 +683,7 @@ function main() {
     `- Facility feed compatibility screen uses campaign route, not legacy posts feed: ${decisionChecks.facilityFeedCompatibilityCampaignOnly}`,
     `- Legacy native Feed screen uses campaign route, not social posts feed: ${decisionChecks.legacyFeedScreenCampaignOnly}`,
     `- Legacy native Tools screen uses connected Personal Tools / AI hub: ${decisionChecks.legacyToolsScreenPersonalHub}`,
+    `- Legacy native Storefront screen uses canonical commercial storefront owner workspace: ${decisionChecks.legacyStorefrontScreenCommercialOwner}`,
     `- Facility integrations entry uses read-only room import preview: ${decisionChecks.facilityIntegrationsRoomImport}`,
     `- Top-level Tasks visible module: ${decisionChecks.topLevelTasksVisibleModule}`,
     `- Top-level Tasks uses shared Task Center/Schedule: ${decisionChecks.topLevelTasksTaskCenter}`,
