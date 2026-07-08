@@ -68,6 +68,18 @@ describe("PersonalTaskCenterRoute", () => {
         sourceType: "recipe",
         sourceToolRunId: "run-1",
         createdAt: "2026-07-07T00:00:00Z"
+      },
+      {
+        id: "task-admin-source",
+        growId: "grow-1",
+        title: "Old storefront setup task",
+        description: "Legacy source should not route personal users into admin pages.",
+        dueDate: "2026-07-09",
+        completed: false,
+        priority: "medium",
+        sourceType: "storefront",
+        sourceObjectId: "store-1",
+        createdAt: "2026-07-07T00:00:00Z"
       }
     ]);
     mockCreatePersonalTask.mockResolvedValue({
@@ -90,6 +102,13 @@ describe("PersonalTaskCenterRoute", () => {
     expect(screen.getByText(/Sensor Alert: alert-1/)).toBeTruthy();
     expect(screen.getByText("product batch")).toBeTruthy();
     expect(screen.getAllByLabelText("View personal task source").length).toBe(2);
+    expect(screen.queryByLabelText("Task center source product_trial")).toBeNull();
+    expect(screen.queryByLabelText("Task center source storefront")).toBeNull();
+    expect(screen.queryByLabelText("Task center source order")).toBeNull();
+    expect(screen.queryByLabelText("Task center source facility")).toBeNull();
+    expect(screen.queryByLabelText("Task center source room")).toBeNull();
+    expect(screen.queryByLabelText("Task center source facility_run")).toBeNull();
+    expect(screen.queryByLabelText("Task center source sop")).toBeNull();
 
     fireEvent.changeText(screen.getByLabelText("Task center grow ID"), "grow-2");
     fireEvent.changeText(

@@ -34,19 +34,12 @@ const sourceTypes = [
   "recipe",
   "product",
   "product_batch",
-  "product_trial",
-  "storefront",
-  "order",
   "course",
   "lesson",
   "live",
   "live_replay",
   "alert",
   "sensor_alert",
-  "facility",
-  "room",
-  "facility_run",
-  "sop",
   "forum"
 ] as const;
 

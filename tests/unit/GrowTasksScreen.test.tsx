@@ -115,6 +115,13 @@ describe("GrowTasksScreen", () => {
     const screen = render(<GrowTasksScreen />);
 
     await waitFor(() => expect(screen.getByText("Tasks")).toBeTruthy());
+    expect(screen.queryByLabelText("Set task source product_trial")).toBeNull();
+    expect(screen.queryByLabelText("Set task source storefront")).toBeNull();
+    expect(screen.queryByLabelText("Set task source order")).toBeNull();
+    expect(screen.queryByLabelText("Set task source facility")).toBeNull();
+    expect(screen.queryByLabelText("Set task source room")).toBeNull();
+    expect(screen.queryByLabelText("Set task source facility_run")).toBeNull();
+    expect(screen.queryByLabelText("Set task source sop")).toBeNull();
     fireEvent.changeText(screen.getByLabelText("Task title"), "Check soil moisture");
     fireEvent.changeText(screen.getByLabelText("Task description"), "Before watering.");
     fireEvent.changeText(screen.getByLabelText("Task due date"), "2026-07-03");

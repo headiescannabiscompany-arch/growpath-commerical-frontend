@@ -30,19 +30,12 @@ const sourceTypes = [
   "recipe",
   "product",
   "product_batch",
-  "product_trial",
-  "storefront",
-  "order",
   "course",
   "lesson",
   "live",
   "live_replay",
   "alert",
   "sensor_alert",
-  "facility",
-  "room",
-  "facility_run",
-  "sop",
   "forum"
 ] as const;
 
@@ -105,21 +98,26 @@ function taskSourcePath(task: PersonalTask) {
   if (sourceType === "tool_run" || sourceType === "recipe" || task.sourceToolRunId) {
     return "/home/personal/tools/saved-runs";
   }
-  if (sourceType === "course" && sourceId) return `/home/commercial/courses/${sourceId}`;
-  if (sourceType === "lesson" && sourceId) return `/home/commercial/courses/${sourceId}`;
-  if (sourceType === "live") return "/home/commercial/lives";
-  if (sourceType === "product" && sourceId)
-    return `/home/commercial/products/${sourceId}`;
-  if (sourceType === "product_batch") return "/home/commercial/batch-planner";
-  if (sourceType === "product_trial" && sourceId)
-    return `/home/commercial/trials/${sourceId}`;
-  if (sourceType === "storefront") return "/home/commercial/storefront";
-  if (sourceType === "order") return "/home/commercial/orders";
+  if (sourceType === "course" || sourceType === "lesson") {
+    return "/home/personal/(tabs)/courses";
+  }
+  if (
+    sourceType === "live" ||
+    sourceType === "live_replay" ||
+    sourceType === "product" ||
+    sourceType === "product_batch" ||
+    sourceType === "product_trial" ||
+    sourceType === "storefront" ||
+    sourceType === "order" ||
+    sourceType === "facility" ||
+    sourceType === "room" ||
+    sourceType === "facility_run" ||
+    sourceType === "sop"
+  ) {
+    return "";
+  }
   if (sourceType === "alert" || sourceType === "sensor_alert") return "/home/alerts";
   if (sourceType === "forum" && sourceId) return `/home/personal/forum/post/${sourceId}`;
-  if (sourceType === "room") return "/home/facility/rooms";
-  if (sourceType === "facility_run") return "/home/facility/grows";
-  if (sourceType === "sop") return "/home/facility/sop-runs";
   return task.growId ? `/home/personal/grows/${task.growId}` : "";
 }
 
@@ -377,7 +375,7 @@ export default function PersonalTaskCenterRoute() {
       <Text style={styles.title}>Task Center / Schedule</Text>
       <Text style={styles.subtitle}>
         One action layer for grow work, ToolRuns, recipes, course assignments, lives,
-        products, storefront setup, facility SOPs, alerts, and sensor follow-ups.
+        product-linked notes, alerts, and sensor follow-ups.
       </Text>
       <View style={styles.metricGrid}>
         {taskStats.map((item) => (
