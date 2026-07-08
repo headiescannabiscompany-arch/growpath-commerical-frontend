@@ -624,6 +624,7 @@ Completed and pushed:
 348. Shared card radius now uses the tighter 8px workspace token, applying more of Facility's operational visual polish to Personal and Commercial components that consume the common theme.
 349. Deferred user verification now includes the Storefront Offers compatibility tests, active Commercial Tools navigation test, Marketplace compatibility copy guard, shared theme-token guard, and a browser checklist item proving active menus no longer expose Marketplace screens.
 350. Commercial Task Detail now consumes the shared 8px card radius token for cards, feedback, and action buttons, keeping commercial source-linked task workflows visually aligned with Facility's tighter operational polish.
+351. Commercial Alert Detail now matches the same shared 8px card radius treatment as Commercial Task Detail, and both routes use ASCII loading copy to avoid visible encoding drift.
 
 ## Working Rule For Codex
 

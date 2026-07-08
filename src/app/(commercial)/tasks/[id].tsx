@@ -357,7 +357,7 @@ export default function CommercialTaskDetailRoute() {
         {loading ? (
           <View style={styles.loading}>
             <ActivityIndicator />
-            <Text style={styles.muted}>Loading task…</Text>
+            <Text style={styles.muted}>Loading task...</Text>
           </View>
         ) : null}
 
