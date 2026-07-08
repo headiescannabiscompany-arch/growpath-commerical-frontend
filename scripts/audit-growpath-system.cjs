@@ -234,12 +234,19 @@ const MODULES = [
     phase: "Business / Production",
     name: "Soil & Nutrient Batch Planner",
     route: "/home/personal/tools/soil-nutrient-batch",
-    keywords: ["batch production", "ingredientPullSheet", "costPerBag"],
+    keywords: [
+      "soil-nutrient-batch",
+      "Soil & Nutrient Batch Planner",
+      "ingredientPullSheet",
+      "costPerBag",
+      "production task plan"
+    ],
     required: ["recipe-links", "inventory", "tasks", "costing"]
   },
   {
     phase: "Facility",
     name: "Facility Insights Summary",
+    route: "/home/facility/dashboard",
     keywords: [
       "facility insights",
       "activeGrowsCount",
