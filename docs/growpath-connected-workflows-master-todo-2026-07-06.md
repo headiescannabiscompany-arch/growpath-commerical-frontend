@@ -342,6 +342,7 @@ Completed and pushed:
 66. Facility now has an Integrations entry point that surfaces read-only sensor/controller providers and routes users to the existing room import preview for auto-building rooms/devices/streams.
 67. Personal Data Integrations now explains imported account structure can suggest grow spaces, uses `Verify + preview controllers`, and creates explicit read-only telemetry sources.
 68. Facility Integrations now has focused route coverage and a GrowPath system audit guard requiring the read-only room import preview handoff, provider visibility, and no write/control drift.
+69. The legacy native `FeedScreen` no longer owns a social/community feed or `/api/posts/feed`; it now delegates to the shared Feed/Campaigns route, and paywall/search copy separates Forum/Q&A discussion from Feed campaign discovery.
 
 ## Working Rule For Codex
 
