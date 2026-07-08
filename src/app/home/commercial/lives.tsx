@@ -29,7 +29,7 @@ type LiveForm = {
   eventSubStatus: string;
   relatedCourseId: string;
   relatedProductId: string;
-  relatedFeedPostId: string;
+  relatedFeedCampaignId: string;
   forumThreadId: string;
   growInterests: string;
   visibility: NonNullable<CommercialLiveEvent["visibility"]>;
@@ -52,7 +52,7 @@ const EMPTY_FORM: LiveForm = {
   eventSubStatus: "not_connected",
   relatedCourseId: "",
   relatedProductId: "",
-  relatedFeedPostId: "",
+  relatedFeedCampaignId: "",
   forumThreadId: "",
   growInterests: "",
   visibility: "public",
@@ -162,7 +162,7 @@ export default function CommercialLivesRoute() {
       setMessage(`Live schedule blocked: ${formWarnings.join(", ")}.`);
       return;
     }
-    const relatedFeedCampaignId = form.relatedFeedPostId.trim() || undefined;
+    const relatedFeedCampaignId = form.relatedFeedCampaignId.trim() || undefined;
     setSaving(true);
     setError(null);
     setMessage("");
@@ -434,9 +434,9 @@ export default function CommercialLivesRoute() {
             style={styles.input}
           />
           <TextInput
-            value={form.relatedFeedPostId}
-            onChangeText={(relatedFeedPostId) =>
-              setForm((prev) => ({ ...prev, relatedFeedPostId }))
+            value={form.relatedFeedCampaignId}
+            onChangeText={(relatedFeedCampaignId) =>
+              setForm((prev) => ({ ...prev, relatedFeedCampaignId }))
             }
             accessibilityLabel="Commercial live related feed campaign"
             placeholder="Related feed campaign ID"
