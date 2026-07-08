@@ -176,6 +176,7 @@ export function sourceObjectHref(source: SourceLike) {
     sourceType === "alert_snooze"
   )
     return "/home/alerts";
+  if (sourceType === "notification") return "/home/notifications";
   if (sourceType === "ai_diagnosis") {
     return growId
       ? `/home/personal/diagnose?growId=${encoded(growId)}`

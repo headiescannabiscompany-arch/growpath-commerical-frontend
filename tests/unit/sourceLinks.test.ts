@@ -135,6 +135,14 @@ describe("sourceObjectHref", () => {
         workspaceType: "facility"
       })
     ).toBe("/home/facility/inventory");
+
+    expect(
+      sourceObjectHref({
+        sourceType: "notification",
+        sourceId: "notification-1",
+        workspaceType: "personal"
+      })
+    ).toBe("/home/notifications");
   });
 
   it("recognizes schedule and calendar item aliases across workspaces", () => {

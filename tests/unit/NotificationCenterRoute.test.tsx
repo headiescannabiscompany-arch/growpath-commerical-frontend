@@ -176,6 +176,9 @@ describe("NotificationCenterRoute", () => {
       if (path === "/api/notifications/read-all" && options?.method === "POST") {
         return Promise.resolve({ ok: true });
       }
+      if (path === "/api/tasks" && options?.method === "POST") {
+        return Promise.resolve({ task: { id: "task-notification", ...options.body } });
+      }
       return Promise.resolve({});
     });
   });
@@ -233,6 +236,29 @@ describe("NotificationCenterRoute", () => {
     expect(
       screen.getByLabelText("Notification link /home/facility/ai-tools")
     ).toBeTruthy();
+
+    fireEvent.press(screen.getAllByLabelText("Create task from notification")[0]);
+    await waitFor(() =>
+      expect(mockApiRequest).toHaveBeenCalledWith(
+        "/api/tasks",
+        expect.objectContaining({
+          method: "POST",
+          body: expect.objectContaining({
+            workspaceType: "commercial",
+            title: "Follow up: Live starts in 15 minutes",
+            sourceType: "notification",
+            sourceId: "notification-1",
+            linkedNotificationId: "notification-1",
+            notificationSourceType: "live",
+            notificationSourceId: "live-1",
+            linkedLiveId: "live-1",
+            priority: "normal",
+            status: "open"
+          })
+        })
+      )
+    );
+    expect(screen.getByText("Task created from notification.")).toBeTruthy();
 
     fireEvent.press(screen.getByLabelText("Notification filter unread"));
     fireEvent.press(screen.getByLabelText("Mark notification read"));

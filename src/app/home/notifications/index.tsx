@@ -51,6 +51,49 @@ function sourceHref(row: NotificationRow) {
   return sourceObjectHref(row) || "/home/schedule";
 }
 
+function linkedFieldsForNotificationSource(row: NotificationRow) {
+  const sourceType = String(row.sourceType || "");
+  const sourceId = String(row.sourceId || "");
+  if (!sourceId) return {};
+  switch (sourceType) {
+    case "task":
+      return { linkedTaskId: sourceId };
+    case "alert":
+      return { linkedAlertId: sourceId };
+    case "course":
+    case "lesson":
+    case "course_assignment":
+      return { linkedCourseId: sourceId };
+    case "live":
+    case "live_event":
+    case "replay":
+      return { linkedLiveId: sourceId };
+    case "product":
+      return { linkedProductId: sourceId };
+    case "product_trial":
+      return { linkedProductTrialId: sourceId };
+    case "feed_campaign":
+      return { linkedFeedPostId: sourceId };
+    case "order":
+      return { linkedOrderId: sourceId };
+    case "forum":
+      return { linkedForumThreadId: sourceId };
+    case "room":
+      return { linkedRoomId: sourceId };
+    case "facility_run":
+      return { linkedFacilityRunId: sourceId };
+    case "sop":
+      return { linkedSopId: sourceId };
+    case "recipe":
+      return { linkedRecipeId: sourceId };
+    case "toolrun":
+    case "tool_run":
+      return { linkedToolRunId: sourceId };
+    default:
+      return {};
+  }
+}
+
 function notificationText(row: NotificationRow) {
   return row.body || row.message || "Open the linked workflow for details.";
 }
@@ -156,6 +199,39 @@ export default function NotificationCenterRoute() {
     }
   }
 
+  async function createTaskFromNotification(row: NotificationRow) {
+    const id = rowId(row);
+    if (!id || saving) return;
+    setSaving(true);
+    setFeedback("");
+    setError("");
+    try {
+      await apiRequest("/api/tasks", {
+        method: "POST",
+        body: {
+          workspaceType: row.workspaceType || "personal",
+          title: `Follow up: ${row.title || "Notification"}`,
+          description: notificationText(row),
+          sourceType: "notification",
+          sourceId: id,
+          linkedNotificationId: id,
+          notificationSourceType: row.sourceType || undefined,
+          notificationSourceId: row.sourceId || undefined,
+          ...linkedFieldsForNotificationSource(row),
+          priority: ["alert", "task"].includes(String(row.sourceType || ""))
+            ? "high"
+            : "normal",
+          status: "open"
+        }
+      });
+      setFeedback("Task created from notification.");
+    } catch (err: any) {
+      setError(err?.message || "Unable to create task from notification.");
+    } finally {
+      setSaving(false);
+    }
+  }
+
   return (
     <ScrollView style={styles.root} contentContainerStyle={styles.content}>
       <View style={styles.header}>
@@ -251,6 +327,15 @@ export default function NotificationCenterRoute() {
                   <Text style={styles.linkButtonText}>View Source</Text>
                 </Pressable>
               </Link>
+              <Pressable
+                accessibilityRole="button"
+                accessibilityLabel="Create task from notification"
+                disabled={saving}
+                onPress={() => createTaskFromNotification(row)}
+                style={styles.linkButton}
+              >
+                <Text style={styles.linkButtonText}>Create Task</Text>
+              </Pressable>
             </View>
           </View>
         );
