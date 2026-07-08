@@ -347,6 +347,18 @@ export default function ProfileScreen() {
       <View style={styles.card}>
         <Text style={styles.rowLabel}>Mode</Text>
         <Text style={styles.rowValue}>{mode}</Text>
+        <Pressable
+          style={styles.accountAction}
+          onPress={() => router.push("/account/mode" as any)}
+          accessibilityRole="button"
+          accessibilityLabel="Switch workspace mode"
+        >
+          <Text style={styles.accountActionText}>Switch workspace</Text>
+        </Pressable>
+        <Text style={styles.mutedText}>
+          Personal is for your grow records and Forum/Q&A. Commercial and Facility
+          workspaces keep storefront outreach and operational rooms separate.
+        </Text>
       </View>
 
       <View style={styles.card}>

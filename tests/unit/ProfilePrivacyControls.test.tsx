@@ -104,4 +104,12 @@ describe("Profile privacy controls", () => {
 
     alertSpy.mockRestore();
   });
+
+  it("opens the workspace mode switcher from the personal profile", () => {
+    const screen = render(<Profile />);
+
+    fireEvent.press(screen.getByLabelText("Switch workspace mode"));
+
+    expect(mockPush).toHaveBeenCalledWith("/account/mode");
+  });
 });

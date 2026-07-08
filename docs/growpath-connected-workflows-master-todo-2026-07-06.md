@@ -488,6 +488,7 @@ Completed and pushed:
 212. Personal and Facility dashboard headers now explicitly label their workspace mode, matching the Commercial workspace label so all three root dashboards show the current mode boundary before users create or manage records.
 213. The active Personal Forum/Q&A composer now displays the posting identity, stores `authorType: "user"` plus workspace context through the shared forum API, and keeps the copy clear that Feed / Campaigns is outreach rather than discussion.
 214. Feed/Campaigns creation now sends explicit commercial or facility `authorType` alongside `workspaceType`, so outreach campaigns store the acting brand/facility identity instead of relying only on mode inference.
+215. Personal Profile now opens the shared `/account/mode` workspace switcher from the visible Mode card and explains that Personal grow records/Forum, Commercial storefront outreach, and Facility operational rooms stay separate.
 
 ## Working Rule For Codex
 
