@@ -168,7 +168,7 @@ const siteUrl = "https://growpathai.com";
 const defaultSeo = {
   title: "GrowPathAI",
   description:
-    "GrowPathAI helps growers plan, track, diagnose, and improve gardens, commercial grows, courses, communities, and facility workflows.",
+    "GrowPathAI helps growers plan, track, diagnose, and improve gardens, commercial storefronts, courses, communities, and facility workflows.",
   index: true
 };
 
