@@ -125,12 +125,14 @@ export default function AppIntroScreen({ onDone }) {
         <View style={styles.introSection}>
           <Text style={styles.headline}>Cultivation community, united.</Text>
           <Text style={styles.body}>
-            GrowPath connects cultivators, nutrient companies, equipment
-            manufacturers, and soil suppliers.{"\n\n"}
+            GrowPath connects cultivators, nutrient companies, equipment manufacturers,
+            and soil suppliers.{"\n\n"}
             Cultivators manage operations and compliance. Industry partners build
             credibility and reach customers.
           </Text>
-          <Text style={styles.footer}>One platform. Multiple business models.</Text>
+          <Text style={styles.footer}>
+            Personal, Commercial, and Facility workspaces.
+          </Text>
 
           <View style={styles.startBlock}>
             <Text style={styles.getStartedLabel}>Get started</Text>

@@ -40,11 +40,11 @@ const WALKTHROUGHS: Record<PlanKey, Walkthrough> = {
   },
   commercial: {
     title: "Commercial walkthrough",
-    subtitle: "Review the business surfaces before checkout.",
+    subtitle: "Review the brand and storefront workspace before checkout.",
     steps: [
       {
         title: "Set up your brand surface",
-        body: "Use storefront, marketplace, campaigns, and business inventory once the plan is active."
+        body: "Use storefront, products, courses, lives, Feed campaigns, orders, and generated inventory once the plan is active."
       },
       {
         title: "Route the right audience",
@@ -52,7 +52,7 @@ const WALKTHROUGHS: Record<PlanKey, Walkthrough> = {
       },
       {
         title: "Keep paid access gated",
-        body: "Until checkout completes, your account keeps the commercial intent but uses free access."
+        body: "Until checkout completes, your account keeps the Commercial intent but uses free access."
       }
     ],
     preview: ["Storefront", "Campaign tools", "Commercial inventory"]

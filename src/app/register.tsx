@@ -47,7 +47,8 @@ const ACCOUNT_CHOICES: AccountChoice[] = [
     mode: "commercial",
     title: "Commercial brand",
     label: "Commercial",
-    description: "Manage storefront, marketplace, creator, and business surfaces.",
+    description:
+      "Manage storefront, products, courses, lives, Feed campaigns, and orders.",
     afterSignup: "/onboarding/walkthroughs"
   },
   {
@@ -55,7 +56,8 @@ const ACCOUNT_CHOICES: AccountChoice[] = [
     mode: "facility",
     title: "Facility operator",
     label: "Facility",
-    description: "Run operations, compliance, team, audit, rooms, SOPs, and AI.",
+    description:
+      "Run rooms, batches, tasks, team training, sensor imports, and audit logs.",
     afterSignup: "/onboarding/walkthroughs"
   }
 ];

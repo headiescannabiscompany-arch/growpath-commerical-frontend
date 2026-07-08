@@ -23,9 +23,9 @@ const FacilityPicker = ({ navigation }) => {
     setLoading(true);
     try {
       const facilityDetails = await Promise.all(
-        facilitiesAccess.map(fa => getFacilityDetail(fa.facilityId.toString()))
+        facilitiesAccess.map((fa) => getFacilityDetail(fa.facilityId.toString()))
       );
-      setFacilities(facilityDetails.filter(r => r.success).map(r => r.data));
+      setFacilities(facilityDetails.filter((r) => r.success).map((r) => r.data));
     } catch (error) {
       console.log("Error loading facilities:", error);
     } finally {
@@ -54,9 +54,9 @@ const FacilityPicker = ({ navigation }) => {
     <View style={styles.container}>
       <View style={styles.header}>
         <Text style={styles.headerTitle}>GrowPath</Text>
-        <Text style={styles.headerSubtitle}>Select your business</Text>
+        <Text style={styles.headerSubtitle}>Select your facility</Text>
       </View>
-      <Text style={styles.title}>Available Businesses</Text>
+      <Text style={styles.title}>Available Facilities</Text>
       <FlatList
         data={facilities}
         keyExtractor={(item) => item._id}
@@ -68,17 +68,21 @@ const FacilityPicker = ({ navigation }) => {
             <View style={styles.facilityHeader}>
               <Text style={styles.facilityName}>{item.name}</Text>
               <Text style={styles.businessType}>
-                {item.businessType ? item.businessType.replace(/_/g, ' ').toUpperCase() : 'CULTIVATOR'}
+                {item.businessType
+                  ? item.businessType.replace(/_/g, " ").toUpperCase()
+                  : "CULTIVATOR"}
               </Text>
             </View>
             <Text style={styles.facilityInfo}>{item.address || "No address"}</Text>
-            {item.licenseNumber && <Text style={styles.facilityInfo}>License: {item.licenseNumber}</Text>}
-            <Text style={styles.planBadge}>{item.planType === 'premium' ? 'Premium' : 'Free'}</Text>
+            {item.licenseNumber && (
+              <Text style={styles.facilityInfo}>License: {item.licenseNumber}</Text>
+            )}
+            <Text style={styles.planBadge}>
+              {item.planType === "premium" ? "Premium" : "Free"}
+            </Text>
           </TouchableOpacity>
         )}
-        ListEmptyComponent={
-          <Text style={styles.empty}>No facilities available</Text>
-        }
+        ListEmptyComponent={<Text style={styles.empty}>No facilities available</Text>}
       />
     </View>
   );
@@ -163,4 +167,3 @@ const styles = StyleSheet.create({
 });
 
 export default FacilityPicker;
-
