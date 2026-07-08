@@ -156,7 +156,7 @@ export default function MarketplaceScreen({ navigation }) {
         <View>
           <Text style={styles.header}>Storefront Offers</Text>
           <Text style={styles.subtitle}>
-            Browse creator content and storefront offers from compatibility offer endpoints.
+            Browse storefront offers from compatibility offer endpoints.
           </Text>
         </View>
       </View>

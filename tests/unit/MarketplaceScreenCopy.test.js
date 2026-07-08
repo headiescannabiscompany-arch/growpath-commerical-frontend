@@ -24,7 +24,9 @@ describe("Marketplace compatibility screen copy", () => {
     await waitFor(() => expect(screen.getByText("Storefront Offers")).toBeTruthy());
 
     expect(screen.getByPlaceholderText("Search storefront offers...")).toBeTruthy();
+    expect(screen.getByText("Browse storefront offers from compatibility offer endpoints.")).toBeTruthy();
     expect(screen.queryByText("Marketplace")).toBeNull();
+    expect(screen.queryByText(/creator content/i)).toBeNull();
     expect(screen.queryByPlaceholderText("Search marketplace...")).toBeNull();
   });
 
