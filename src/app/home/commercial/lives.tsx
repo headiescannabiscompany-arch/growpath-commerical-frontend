@@ -27,6 +27,7 @@ type LiveForm = {
   relatedProductId: string;
   relatedFeedPostId: string;
   forumThreadId: string;
+  growInterests: string;
   visibility: NonNullable<CommercialLiveEvent["visibility"]>;
   replayUrl: string;
 };
@@ -46,6 +47,7 @@ const EMPTY_FORM: LiveForm = {
   relatedProductId: "",
   relatedFeedPostId: "",
   forumThreadId: "",
+  growInterests: "",
   visibility: "public",
   replayUrl: ""
 };
@@ -88,6 +90,13 @@ function liveSetupWarnings(live: Partial<CommercialLiveEvent>) {
   }
   if (!live.notificationPlan?.length) warnings.push("attach reminder plan");
   return warnings;
+}
+
+function splitList(value: string) {
+  return value
+    .split(",")
+    .map((item) => item.trim())
+    .filter(Boolean);
 }
 
 function ActionLink({ href, label }: { href: string; label: string }) {
@@ -154,6 +163,7 @@ export default function CommercialLivesRoute() {
         relatedProductId: form.relatedProductId.trim() || undefined,
         relatedFeedPostId: form.relatedFeedPostId.trim() || undefined,
         forumThreadId: form.forumThreadId.trim() || undefined,
+        growInterests: splitList(form.growInterests),
         visibility: form.visibility,
         replayUrl: form.replayUrl.trim() || undefined,
         notificationPlan,
@@ -189,6 +199,7 @@ export default function CommercialLivesRoute() {
           linkedProductId: live.relatedProductId,
           linkedFeedPostId: live.relatedFeedPostId,
           linkedForumThreadId: live.forumThreadId,
+          growInterests: live.growInterests,
           priority:
             warnings.includes("schedule date/time") ||
             warnings.includes("connect Twitch channel") ||
@@ -391,6 +402,15 @@ export default function CommercialLivesRoute() {
             style={styles.input}
           />
           <TextInput
+            value={form.growInterests}
+            onChangeText={(growInterests) =>
+              setForm((prev) => ({ ...prev, growInterests }))
+            }
+            accessibilityLabel="Commercial live grow interests"
+            placeholder="Grow interests: living soil, IPM, VPD..."
+            style={styles.input}
+          />
+          <TextInput
             value={form.replayUrl}
             onChangeText={(replayUrl) => setForm((prev) => ({ ...prev, replayUrl }))}
             accessibilityLabel="Commercial live replay URL"
@@ -480,6 +500,8 @@ export default function CommercialLivesRoute() {
                         live.relatedCourseId && `Course ${live.relatedCourseId}`,
                         live.relatedFeedPostId && `Feed ${live.relatedFeedPostId}`,
                         live.forumThreadId && `Forum/Q&A ${live.forumThreadId}`,
+                        live.growInterests?.length &&
+                          `Interests ${live.growInterests.join(", ")}`,
                         live.twitchEmbedUrl && `Embed ${live.twitchEmbedUrl}`,
                         live.replayUrl && `Replay ${live.replayUrl}`
                       ]

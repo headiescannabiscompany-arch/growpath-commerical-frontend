@@ -136,6 +136,7 @@ export type CommercialLiveEvent = {
   relatedProductId?: string;
   relatedFeedPostId?: string;
   forumThreadId?: string;
+  growInterests?: string[];
   visibility?: "public" | "followers" | "enrolled" | "paid" | "private" | "unlisted";
   status?: "draft" | "scheduled" | "live" | "ended" | "cancelled" | "replay_available";
   replayUrl?: string;
