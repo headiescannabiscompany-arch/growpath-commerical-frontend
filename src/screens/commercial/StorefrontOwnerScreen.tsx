@@ -988,7 +988,7 @@ export default function Storefront({
               setStoreDraft((draft) => ({ ...draft, supportEmail }))
             }
             accessibilityLabel="Storefront support email"
-            placeholder="Support email"
+            placeholder="support@growpathai.com"
             autoCapitalize="none"
             keyboardType="email-address"
             style={styles.input}

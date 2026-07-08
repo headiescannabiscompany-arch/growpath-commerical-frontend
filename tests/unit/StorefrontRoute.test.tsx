@@ -307,6 +307,7 @@ describe("Storefront route", () => {
     expect(screen.getByText(/add grow interests/)).toBeTruthy();
     expect(screen.getByText("Stripe connection")).toBeTruthy();
     expect(screen.getByText(/Connect Stripe from Profile & Billing/)).toBeTruthy();
+    expect(screen.getByPlaceholderText("support@growpathai.com")).toBeTruthy();
     expect(
       screen.getByLabelText("Publish storefront").props.accessibilityState?.disabled
     ).toBe(true);

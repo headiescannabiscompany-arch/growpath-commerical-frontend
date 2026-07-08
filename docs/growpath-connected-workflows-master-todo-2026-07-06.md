@@ -571,6 +571,7 @@ Completed and pushed:
 295. Legacy commercial community compatibility screen now presents Forum/Q&A groups, avoids corrupted member glyphs, and renders featured groups from loaded data instead of the imported API function.
 296. Personal Forum/Q&A membership fallbacks now say forum groups instead of guilds, preserving the user-facing discussion vocabulary while leaving backend guild API contracts untouched.
 297. Shared Forum Directory and onboarding group picker fallbacks now say Forum group when backend rows are unnamed, so first-run and directory screens no longer surface stale Guild vocabulary.
+298. Storefront owner setup now uses the live `support@growpathai.com` alias as its support-email placeholder, matching the already-live support alias map and brand profile guidance.
 
 ## Working Rule For Codex
 
