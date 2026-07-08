@@ -3,6 +3,8 @@ import { render, waitFor } from "@testing-library/react-native";
 
 import MarketplaceScreen, { MarketplaceDetailContent } from "@/screens/MarketplaceScreen";
 
+const realMarketplaceApi = jest.requireActual("@/api/marketplace");
+
 const mockBrowseMarketplace = jest.fn();
 
 jest.mock("@/api/marketplace", () => ({
@@ -41,5 +43,17 @@ describe("Marketplace compatibility screen copy", () => {
 
     expect(paid.getByLabelText("Start storefront offer checkout")).toBeTruthy();
     expect(paid.queryByLabelText("Start marketplace checkout")).toBeNull();
+  });
+
+  it("keeps compatibility sales summary fallback copy storefront-oriented", () => {
+    const summary = realMarketplaceApi.buildSalesSummary([
+      { id: "offer-1", sales: 1, revenue: 24 }
+    ]);
+
+    expect(summary.recentSales[0]).toMatchObject({
+      title: "Storefront offer",
+      buyer: "Storefront customer"
+    });
+    expect(JSON.stringify(summary)).not.toMatch(/Marketplace/i);
   });
 });

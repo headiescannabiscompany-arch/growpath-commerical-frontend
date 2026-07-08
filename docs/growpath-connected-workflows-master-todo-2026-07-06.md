@@ -640,6 +640,7 @@ Completed and pushed:
 364. Shared tab navigation now labels the discussion destination as Forum / Q&A while keeping FeedTab labeled Campaigns, with regression coverage proving Feed remains the promotional campaign route and Forum remains the discussion route.
 365. Public Offers pricing copy now describes the Commercial plan as Brand-focused and says brand operations instead of business operations, keeping upgrade language aligned with storefront-first commercial accounts.
 366. Shared capability menus now label discussion as Forum / Q&A and commercial metrics as Commercial Analytics, removing another generic Business Metrics label from user-facing navigation.
+367. Legacy marketplace compatibility API fallbacks now say Storefront offer/customer and storefront offer browse/load errors, preventing old Marketplace wording from leaking into Storefront Offers analytics or fallback UI.
 
 ## Working Rule For Codex
 

@@ -1,6 +1,6 @@
 /**
- * Content Marketplace API Client
- * Handles content uploads, sales, and analytics
+ * Storefront offers compatibility API client.
+ * Handles offer uploads, sales, and analytics against legacy marketplace endpoints.
  */
 
 import { apiRequest } from "./apiRequest";
@@ -72,8 +72,8 @@ export function buildSalesSummary(uploads = []) {
       if (sales > 0 || revenue > 0) {
         recentSales.push({
           id: upload?._id || upload?.id || upload?.title,
-          title: upload?.title || "Marketplace upload",
-          buyer: "Marketplace customer",
+          title: upload?.title || "Storefront offer",
+          buyer: "Storefront customer",
           amount: revenue || Number(upload?.price || 0),
           date: upload?.updatedAt || upload?.createdAt || null
         });
@@ -118,7 +118,7 @@ export const browseMarketplace = async (category, page = 1, limit = 20) => {
     });
     return normalizeList(browseRes);
   } catch (error) {
-    throw new Error(`Failed to browse marketplace: ${error.message}`);
+    throw new Error(`Failed to browse storefront offers: ${error.message}`);
   }
 };
 
@@ -141,7 +141,7 @@ export const getMarketplaceContent = async (contentId) => {
     });
     return detailRes?.content ?? detailRes?.data?.content ?? detailRes?.data ?? detailRes;
   } catch (error) {
-    throw new Error(`Failed to load marketplace content: ${error.message}`);
+    throw new Error(`Failed to load storefront offer: ${error.message}`);
   }
 };
 
