@@ -622,6 +622,7 @@ Completed and pushed:
 346. Active commercial menus and Commercial Tools no longer route creator-content/storefront-offer work into legacy Marketplace compatibility screens; owners now go to Storefront, Feed / Campaigns, and Marketing Planner while external-channel and influencer copy points to courses, lives, and storefront offers.
 347. The legacy Content Marketplace compatibility screen now presents visible upload/browse/analytics copy as Storefront Offers and offer drafts, while keeping old marketplace API calls only as compatibility plumbing.
 348. Shared card radius now uses the tighter 8px workspace token, applying more of Facility's operational visual polish to Personal and Commercial components that consume the common theme.
+349. Deferred user verification now includes the Storefront Offers compatibility tests, active Commercial Tools navigation test, Marketplace compatibility copy guard, shared theme-token guard, and a browser checklist item proving active menus no longer expose Marketplace screens.
 
 ## Working Rule For Codex
 
