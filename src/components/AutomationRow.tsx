@@ -1,5 +1,6 @@
 import React from "react";
 import { View, Text, Switch, StyleSheet } from "react-native";
+import { radius } from "@/theme/theme";
 
 export default function AutomationRow({
   policy,
@@ -22,7 +23,7 @@ const styles = StyleSheet.create({
     alignItems: "center",
     justifyContent: "space-between",
     padding: 12,
-    borderRadius: 10,
+    borderRadius: radius.card,
     borderWidth: 1,
     marginBottom: 8
   },

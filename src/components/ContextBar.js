@@ -1,5 +1,6 @@
 import React from "react";
 import { View, Text, StyleSheet, TouchableOpacity } from "react-native";
+import { radius } from "../theme/theme";
 
 // ContextBar for commercial/facility users
 // Displays facility/commercial name, role, and quick actions
@@ -48,7 +49,7 @@ const styles = StyleSheet.create({
   },
   actionBtn: {
     backgroundColor: "#38bdf8",
-    borderRadius: 6,
+    borderRadius: radius.card,
     paddingVertical: 4,
     paddingHorizontal: 10,
     marginLeft: 8

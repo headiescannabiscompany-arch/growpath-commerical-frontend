@@ -1,6 +1,7 @@
 import React from "react";
 import { View, Text, ScrollView, StyleSheet } from "react-native";
 
+import { radius } from "../theme/theme";
 import { sanitizeViewChildren } from "./layout/sanitizeViewChildren";
 export default function ScreenScaffold({
   title,
@@ -102,7 +103,7 @@ const styles = StyleSheet.create({
   title: { color: "#ffffff", fontSize: 26, fontWeight: "700", marginBottom: 6 },
   subtitle: { color: "#a9b4c6", fontSize: 14, lineHeight: 20 },
   badges: { flexDirection: "row", gap: 8, marginTop: 10 },
-  badge: { paddingHorizontal: 10, paddingVertical: 6, borderRadius: 999 },
+  badge: { paddingHorizontal: 10, paddingVertical: 6, borderRadius: radius.pill },
   badgeStub: { backgroundColor: "#2a2f3a" },
   badgeLive: { backgroundColor: "#1d4ed8" },
   badgeText: { color: "#ffffff", fontSize: 12, fontWeight: "700" },
@@ -110,7 +111,7 @@ const styles = StyleSheet.create({
 
   section: {
     backgroundColor: "#111827",
-    borderRadius: 14,
+    borderRadius: radius.card,
     padding: 12,
     borderWidth: 1,
     borderColor: "#1f2937"
@@ -127,7 +128,7 @@ const styles = StyleSheet.create({
 
   card: {
     backgroundColor: "#0f172a",
-    borderRadius: 12,
+    borderRadius: radius.card,
     padding: 12,
     borderWidth: 1,
     borderColor: "#1f2937"
@@ -140,7 +141,7 @@ const styles = StyleSheet.create({
     alignSelf: "flex-start",
     paddingHorizontal: 10,
     paddingVertical: 6,
-    borderRadius: 999,
+    borderRadius: radius.pill,
     backgroundColor: "#243042"
   },
   pillLocked: { backgroundColor: "#3b1d1d" },
@@ -150,7 +151,7 @@ const styles = StyleSheet.create({
   debug: {
     marginTop: 14,
     backgroundColor: "#0f172a",
-    borderRadius: 14,
+    borderRadius: radius.card,
     padding: 12,
     borderWidth: 1,
     borderColor: "#1f2937"
