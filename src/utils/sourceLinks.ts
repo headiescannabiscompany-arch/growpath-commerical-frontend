@@ -32,6 +32,29 @@ export function sourceObjectHref(source: SourceLike) {
   const productTrialId = firstText(sourceId, source?.linkedProductTrialId);
   const forumId = firstText(sourceId, source?.linkedForumThreadId);
   const courseId = firstText(source?.linkedCourseId, source?.courseId, sourceId);
+  const liveId = firstText(sourceId, source?.linkedLiveId, source?.liveId);
+  const campaignId = firstText(
+    sourceId,
+    source?.linkedFeedCampaignId,
+    source?.feedCampaignId,
+    source?.campaignId,
+    source?.linkedFeedPostId
+  );
+  const orderId = firstText(sourceId, source?.linkedOrderId, source?.orderId);
+  const alertId = firstText(sourceId, source?.linkedAlertId, source?.alertId);
+  const notificationId = firstText(
+    sourceId,
+    source?.linkedNotificationId,
+    source?.notificationId
+  );
+  const toolRunId = firstText(
+    sourceId,
+    source?.linkedToolRunId,
+    source?.toolRunId,
+    source?.sourceToolRunId,
+    source?.linkedRecipeId,
+    source?.recipeId
+  );
   const roomId = firstText(source?.linkedRoomId, source?.roomId, sourceId);
   const sopId = firstText(sourceId, source?.linkedSopId, source?.sopId);
   const storefrontSlug = firstText(
@@ -151,8 +174,8 @@ export function sourceObjectHref(source: SourceLike) {
     sourceType === "live_rsvp"
   ) {
     return workspace === "commercial"
-      ? `/home/commercial/lives${sourceId ? `?liveId=${encoded(sourceId)}` : ""}`
-      : `/feed${sourceId ? `?liveId=${encoded(sourceId)}` : ""}`;
+      ? `/home/commercial/lives${liveId ? `?liveId=${encoded(liveId)}` : ""}`
+      : `/feed${liveId ? `?liveId=${encoded(liveId)}` : ""}`;
   }
 
   if (
@@ -162,10 +185,10 @@ export function sourceObjectHref(source: SourceLike) {
     sourceType === "scheduled_feed_post"
   ) {
     if (workspace === "facility")
-      return `/home/facility/feed${sourceId ? `?campaignId=${encoded(sourceId)}` : ""}`;
+      return `/home/facility/feed${campaignId ? `?campaignId=${encoded(campaignId)}` : ""}`;
     if (workspace === "commercial")
-      return `/home/commercial/feed${sourceId ? `?campaignId=${encoded(sourceId)}` : ""}`;
-    return `/feed${sourceId ? `?campaignId=${encoded(sourceId)}` : ""}`;
+      return `/home/commercial/feed${campaignId ? `?campaignId=${encoded(campaignId)}` : ""}`;
+    return `/feed${campaignId ? `?campaignId=${encoded(campaignId)}` : ""}`;
   }
 
   if (sourceType === "storefront") {
@@ -176,10 +199,10 @@ export function sourceObjectHref(source: SourceLike) {
 
   if (sourceType === "order") {
     if (workspace === "commercial")
-      return `/home/commercial/orders${sourceId ? `?orderId=${encoded(sourceId)}` : ""}`;
+      return `/home/commercial/orders${orderId ? `?orderId=${encoded(orderId)}` : ""}`;
     if (workspace === "facility")
-      return sourceId
-        ? `/home/facility/InventoryItemDetailScreen?id=${encoded(sourceId)}`
+      return orderId
+        ? `/home/facility/InventoryItemDetailScreen?id=${encoded(orderId)}`
         : "/home/facility/inventory";
     return "/home/personal/profile";
   }
@@ -216,9 +239,11 @@ export function sourceObjectHref(source: SourceLike) {
     sourceType === "alert" ||
     sourceType === "alert_snooze"
   )
-    return `/home/alerts${sourceId ? `?alertId=${encoded(sourceId)}` : ""}`;
+    return `/home/alerts${alertId ? `?alertId=${encoded(alertId)}` : ""}`;
   if (sourceType === "notification")
-    return `/home/notifications${sourceId ? `?notificationId=${encoded(sourceId)}` : ""}`;
+    return `/home/notifications${
+      notificationId ? `?notificationId=${encoded(notificationId)}` : ""
+    }`;
   if (sourceType === "ai_diagnosis") {
     const params = new URLSearchParams();
     if (growId) params.set("growId", growId);
@@ -229,15 +254,15 @@ export function sourceObjectHref(source: SourceLike) {
 
   if (sourceType === "toolrun" || sourceType === "tool_run" || sourceType === "recipe") {
     if (workspace === "commercial")
-      return sourceId
-        ? `/home/commercial/batch-planner/${encoded(sourceId)}`
+      return toolRunId
+        ? `/home/commercial/batch-planner/${encoded(toolRunId)}`
         : "/home/commercial/batch-planner";
     if (workspace === "facility")
       return `/home/facility/ai-tools${
-        sourceId ? `?toolRunId=${encoded(sourceId)}` : ""
+        toolRunId ? `?toolRunId=${encoded(toolRunId)}` : ""
       }`;
     return `/home/personal/tools/saved-runs${
-      sourceId ? `?toolRunId=${encoded(sourceId)}` : ""
+      toolRunId ? `?toolRunId=${encoded(toolRunId)}` : ""
     }`;
   }
   if (sourceType === "forum") return forumId ? `/forum/post/${forumId}` : "/forum";

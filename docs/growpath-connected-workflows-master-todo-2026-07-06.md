@@ -391,6 +391,7 @@ Completed and pushed:
 115. Personal plant source links now preserve plant ids in `/home/personal/grows/:growId/plants?plantId=...`, and the grow plants screen can visually mark the linked plant so plant tasks, alerts, and logs do not collapse to a generic plant list.
 116. Public product source links now use `/store/:slug/products/:productId` when storefront metadata is available, so product ads, tasks, alerts, and batch references open the actual storefront product page instead of a broad store search.
 117. AI diagnosis source links now preserve plant context in `/home/personal/diagnose?growId=...&plantId=...`, so saved diagnosis tasks, alerts, and timeline entries reopen the same plant context the user diagnosed.
+118. Shared source links now recognize linked-field-only ids for lives, feed campaigns, orders, alerts, notifications, ToolRuns, and recipes, keeping task, alert, schedule, and notification records connected even when they do not carry a generic `sourceId`.
 
 ## Working Rule For Codex
 

@@ -229,6 +229,22 @@ describe("sourceObjectHref", () => {
         workspaceType: "personal"
       })
     ).toBe("/home/notifications?notificationId=notification-1");
+
+    expect(
+      sourceObjectHref({
+        sourceType: "alert",
+        linkedAlertId: "alert-linked-1",
+        workspaceType: "personal"
+      })
+    ).toBe("/home/alerts?alertId=alert-linked-1");
+
+    expect(
+      sourceObjectHref({
+        sourceType: "notification",
+        linkedNotificationId: "notification-linked-1",
+        workspaceType: "personal"
+      })
+    ).toBe("/home/notifications?notificationId=notification-linked-1");
   });
 
   it("recognizes schedule and calendar item aliases across workspaces", () => {
@@ -274,11 +290,27 @@ describe("sourceObjectHref", () => {
 
     expect(
       sourceObjectHref({
+        sourceType: "live",
+        linkedLiveId: "live-linked-1",
+        workspaceType: "commercial"
+      })
+    ).toBe("/home/commercial/lives?liveId=live-linked-1");
+
+    expect(
+      sourceObjectHref({
         sourceType: "scheduled_feed_post",
         sourceId: "campaign-1",
         workspaceType: "facility"
       })
     ).toBe("/home/facility/feed?campaignId=campaign-1");
+
+    expect(
+      sourceObjectHref({
+        sourceType: "scheduled_feed_post",
+        linkedFeedPostId: "campaign-linked-1",
+        workspaceType: "facility"
+      })
+    ).toBe("/home/facility/feed?campaignId=campaign-linked-1");
 
     expect(
       sourceObjectHref({
@@ -327,5 +359,29 @@ describe("sourceObjectHref", () => {
         workspaceType: "personal"
       })
     ).toBe("/home/personal/grows/grow-1");
+
+    expect(
+      sourceObjectHref({
+        sourceType: "tool_run",
+        linkedToolRunId: "run-linked-1",
+        workspaceType: "facility"
+      })
+    ).toBe("/home/facility/ai-tools?toolRunId=run-linked-1");
+
+    expect(
+      sourceObjectHref({
+        sourceType: "recipe",
+        linkedRecipeId: "recipe-linked-1",
+        workspaceType: "personal"
+      })
+    ).toBe("/home/personal/tools/saved-runs?toolRunId=recipe-linked-1");
+
+    expect(
+      sourceObjectHref({
+        sourceType: "order",
+        linkedOrderId: "order-linked-1",
+        workspaceType: "commercial"
+      })
+    ).toBe("/home/commercial/orders?orderId=order-linked-1");
   });
 });
