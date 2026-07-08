@@ -235,7 +235,7 @@ describe("NotificationCenterRoute", () => {
       screen.getByLabelText("Notification link /home/commercial/trials/trial-1")
     ).toBeTruthy();
     expect(
-      screen.getByLabelText("Notification link /home/commercial/orders")
+      screen.getByLabelText("Notification link /home/commercial/orders?orderId=order-1")
     ).toBeTruthy();
     expect(
       screen.getByLabelText("Notification link /home/facility/ai-tools")

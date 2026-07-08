@@ -43,6 +43,7 @@ jest.mock("expo-router", () => {
       lineId: "line-1",
       productId: "product-1",
       trialId: "trial-1",
+      orderId: "order-1",
       id: "inventory-1"
     }),
     useRouter: () => mockRouter
@@ -80,7 +81,7 @@ jest.mock("@/components/layout/AppPage", () => {
 jest.mock("@/components/layout/AppCard", () => {
   const React = require("react");
   const { View } = require("react-native");
-  return ({ children }: any) => React.createElement(View, null, children);
+  return ({ children, ...props }: any) => React.createElement(View, props, children);
 });
 
 describe("commercial workflow pages", () => {
@@ -2214,6 +2215,7 @@ describe("commercial workflow pages", () => {
       })
     );
     expect(screen.getByText("Living Soil Base")).toBeTruthy();
+    expect(screen.getByLabelText("Selected commercial order order-1")).toBeTruthy();
     expect(screen.getByText("Casey Grower | casey@example.com")).toBeTruthy();
     expect(screen.getAllByText("$84.00").length).toBeGreaterThan(0);
   });

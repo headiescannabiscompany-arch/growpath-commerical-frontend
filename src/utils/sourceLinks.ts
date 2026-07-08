@@ -148,7 +148,8 @@ export function sourceObjectHref(source: SourceLike) {
   }
 
   if (sourceType === "order") {
-    if (workspace === "commercial") return "/home/commercial/orders";
+    if (workspace === "commercial")
+      return `/home/commercial/orders${sourceId ? `?orderId=${encoded(sourceId)}` : ""}`;
     if (workspace === "facility") return "/home/facility/inventory";
     return "/home/personal/profile";
   }

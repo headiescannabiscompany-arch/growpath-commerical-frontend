@@ -1,4 +1,4 @@
-import { Redirect } from "expo-router";
+import { Redirect, useLocalSearchParams } from "expo-router";
 import React, { useCallback, useEffect, useMemo, useState } from "react";
 import {
   ActivityIndicator,
@@ -230,10 +230,17 @@ const styles = StyleSheet.create({
   emptyCard: {
     alignItems: "center",
     paddingVertical: 28
+  },
+  focusedOrderCard: {
+    backgroundColor: "#ECFDF5",
+    borderColor: "#16A34A",
+    borderWidth: 2
   }
 });
 
 export default function Orders() {
+  const params = useLocalSearchParams<{ orderId?: string | string[] }>();
+  const focusedOrderId = Array.isArray(params.orderId) ? params.orderId[0] : params.orderId;
   const ent = useEntitlements();
   const mapApiError = useApiErrorHandler();
   const [orders, setOrders] = useState<CommercialOrder[]>([]);
@@ -378,12 +385,19 @@ export default function Orders() {
 
         {orders.map((order) => {
           const id = orderKey(order);
+          const isFocused = Boolean(focusedOrderId && focusedOrderId === id);
           const fulfillmentStatus = String(
             order.fulfillmentStatus || "unfulfilled"
           ) as FulfillmentStatus;
           const saving = savingId === id;
           return (
-            <AppCard key={id || `${order.productName}-${order.createdAt}`}>
+            <AppCard
+              key={id || `${order.productName}-${order.createdAt}`}
+              accessibilityLabel={
+                isFocused ? `Selected commercial order ${id}` : undefined
+              }
+              style={isFocused ? styles.focusedOrderCard : undefined}
+            >
               <View style={styles.cardHeader}>
                 <Text style={styles.cardTitle}>
                   {order.productName || "Storefront product"}
