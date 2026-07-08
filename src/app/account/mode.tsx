@@ -4,6 +4,7 @@ import { StyleSheet, Text, View } from "react-native";
 import RequireAuthGate from "@/auth/RequireAuthGate";
 import { ModeSwitcher } from "@/components/ModeSwitcher";
 import AppPage from "@/components/layout/AppPage";
+import { radius } from "@/theme/theme";
 
 function AccountModePageContent() {
   return (
@@ -66,7 +67,7 @@ const styles = StyleSheet.create({
   noteCard: {
     backgroundColor: "#ffffff",
     borderColor: "#dbe3ea",
-    borderRadius: 8,
+    borderRadius: radius.card,
     borderWidth: 1,
     padding: 16
   },

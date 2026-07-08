@@ -6,6 +6,7 @@ import { CAPABILITY_KEYS, useEntitlements } from "@/entitlements";
 import { useAuth } from "@/auth/AuthContext";
 import type { AccountMode } from "@/state/useAccountMode";
 import { useModeSwitcher } from "@/features/mode/useModeSwitcher";
+import { radius } from "@/theme/theme";
 
 type Props = {
   showFacility?: boolean;
@@ -162,7 +163,7 @@ const styles = StyleSheet.create({
   wrap: { gap: 14 },
   identityPanel: {
     backgroundColor: "#0f172a",
-    borderRadius: 8,
+    borderRadius: radius.card,
     padding: 16
   },
   kicker: {
@@ -185,14 +186,14 @@ const styles = StyleSheet.create({
   },
   selector: {
     backgroundColor: "#e2e8f0",
-    borderRadius: 8,
+    borderRadius: radius.card,
     flexDirection: "row",
     gap: 4,
     padding: 4
   },
   segment: {
     alignItems: "center",
-    borderRadius: 6,
+    borderRadius: radius.card,
     flex: 1,
     paddingVertical: 10
   },
@@ -211,7 +212,7 @@ const styles = StyleSheet.create({
   card: {
     backgroundColor: "#ffffff",
     borderColor: "#dbe3ea",
-    borderRadius: 8,
+    borderRadius: radius.card,
     borderWidth: 1,
     padding: 14
   },
