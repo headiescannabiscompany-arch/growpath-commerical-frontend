@@ -651,6 +651,7 @@ Completed and pushed:
 375. Personal Forum/Q&A new-post inputs, identity/setup cards, photo controls, action buttons, previews, and feedback now consume the shared 8px card radius token, applying the Facility-style visual polish to the user-facing discussion composer.
 376. Personal Forum/Q&A post-detail cards, attached-photo previews, comment composer, moderation/action buttons, and feedback now consume the shared 8px card radius token, keeping nested user discussion pages visually aligned with the Facility-style app polish.
 377. Personal Grows list panels, grow cards, grow-linked actions, and create-grow CTAs now consume the shared 8px card radius token, carrying the Facility-style visual polish into the core personal grow workspace.
+378. Create Grow inputs, error panel, photo tools, advanced-field toggle, attached-photo cards, URL action, and submit CTA now consume the shared 8px card radius token while preserving pill selectors, extending Facility-style visual polish to the personal grow creation flow.
 
 ## Working Rule For Codex
 

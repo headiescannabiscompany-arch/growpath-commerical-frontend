@@ -16,6 +16,7 @@ import PersonalFeedPlacement from "@/components/feed/PersonalFeedPlacement";
 import { ScreenBoundary } from "@/components/ScreenBoundary";
 import { LockedScreen } from "@/entitlements/LockedScreen";
 import { CAPABILITY_KEYS, useEntitlements } from "@/entitlements";
+import { radius } from "@/theme/theme";
 import { isPersistedImageUri, persistImageUris } from "@/utils/photoUploads";
 
 const GROWS_CREATE_PATH = "/api/personal/grows";
@@ -247,7 +248,7 @@ export default function NewGrowScreen() {
             style={{
               borderWidth: 1,
               borderColor: "#FCA5A5",
-              borderRadius: 10,
+              borderRadius: radius.card,
               padding: 10,
               backgroundColor: "#FEF2F2"
             }}
@@ -266,7 +267,7 @@ export default function NewGrowScreen() {
           style={{
             borderWidth: 1,
             borderColor: "#E2E8F0",
-            borderRadius: 10,
+            borderRadius: radius.card,
             paddingHorizontal: 12,
             paddingVertical: 10
           }}
@@ -335,7 +336,7 @@ export default function NewGrowScreen() {
           style={{
             borderWidth: 1,
             borderColor: "#E2E8F0",
-            borderRadius: 10,
+            borderRadius: radius.card,
             paddingHorizontal: 12,
             paddingVertical: 10
           }}
@@ -350,7 +351,7 @@ export default function NewGrowScreen() {
           style={{
             borderWidth: 1,
             borderColor: "#E2E8F0",
-            borderRadius: 10,
+            borderRadius: radius.card,
             paddingHorizontal: 12,
             paddingVertical: 10
           }}
@@ -373,7 +374,7 @@ export default function NewGrowScreen() {
               style={{
                 borderWidth: 1,
                 borderColor: "#166534",
-                borderRadius: 10,
+                borderRadius: radius.card,
                 paddingHorizontal: 12,
                 paddingVertical: 8,
                 backgroundColor: "#F0FDF4"
@@ -393,7 +394,7 @@ export default function NewGrowScreen() {
                     width: 92,
                     borderWidth: 1,
                     borderColor: "#E2E8F0",
-                    borderRadius: 10,
+                    borderRadius: radius.card,
                     overflow: "hidden",
                     backgroundColor: "#F8FAFC"
                   }}
@@ -432,7 +433,7 @@ export default function NewGrowScreen() {
             style={{
               borderWidth: 1,
               borderColor: "#E2E8F0",
-              borderRadius: 10,
+              borderRadius: radius.card,
               paddingHorizontal: 12,
               paddingVertical: 10
             }}
@@ -445,7 +446,7 @@ export default function NewGrowScreen() {
             style={{
               borderWidth: 1,
               borderColor: "#CBD5E1",
-              borderRadius: 10,
+              borderRadius: radius.card,
               padding: 10,
               alignSelf: "flex-start",
               opacity: photoUrl.trim() ? 1 : 0.5
@@ -465,7 +466,7 @@ export default function NewGrowScreen() {
             marginTop: 8,
             borderWidth: 1,
             borderColor: "#E2E8F0",
-            borderRadius: 10,
+            borderRadius: radius.card,
             padding: 10
           }}
         >
@@ -490,7 +491,7 @@ export default function NewGrowScreen() {
               style={{
                 borderWidth: 1,
                 borderColor: "#E2E8F0",
-                borderRadius: 10,
+                borderRadius: radius.card,
                 paddingHorizontal: 12,
                 paddingVertical: 10
               }}
@@ -505,7 +506,7 @@ export default function NewGrowScreen() {
               style={{
                 borderWidth: 1,
                 borderColor: "#E2E8F0",
-                borderRadius: 10,
+                borderRadius: radius.card,
                 paddingHorizontal: 12,
                 paddingVertical: 10
               }}
@@ -521,7 +522,7 @@ export default function NewGrowScreen() {
               style={{
                 borderWidth: 1,
                 borderColor: "#E2E8F0",
-                borderRadius: 10,
+                borderRadius: radius.card,
                 paddingHorizontal: 12,
                 paddingVertical: 10
               }}
@@ -536,7 +537,7 @@ export default function NewGrowScreen() {
               style={{
                 borderWidth: 1,
                 borderColor: "#E2E8F0",
-                borderRadius: 10,
+                borderRadius: radius.card,
                 paddingHorizontal: 12,
                 paddingVertical: 10
               }}
@@ -551,7 +552,7 @@ export default function NewGrowScreen() {
               style={{
                 borderWidth: 1,
                 borderColor: "#E2E8F0",
-                borderRadius: 10,
+                borderRadius: radius.card,
                 paddingHorizontal: 12,
                 paddingVertical: 10
               }}
@@ -567,7 +568,7 @@ export default function NewGrowScreen() {
               style={{
                 borderWidth: 1,
                 borderColor: "#E2E8F0",
-                borderRadius: 10,
+                borderRadius: radius.card,
                 paddingHorizontal: 12,
                 paddingVertical: 10,
                 minHeight: 80,
@@ -589,7 +590,7 @@ export default function NewGrowScreen() {
             paddingHorizontal: 14,
             borderWidth: 1,
             borderColor: "#166534",
-            borderRadius: 10,
+            borderRadius: radius.card,
             backgroundColor: "#166534",
             opacity: saving || !isValid ? 0.6 : 1,
             alignSelf: "flex-start"
