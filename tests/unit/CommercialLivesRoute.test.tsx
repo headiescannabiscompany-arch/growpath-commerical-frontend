@@ -59,6 +59,7 @@ describe("CommercialLivesRoute", () => {
               relatedFeedCampaignId: "campaign-1",
               forumThreadId: "thread-1",
               growInterests: ["living soil", "dry amendments"],
+              notificationPlan: ["24h_before", "1h_before", "15m_before"],
               replayUrl: "https://twitch.tv/videos/1"
             }
           ]
@@ -94,7 +95,6 @@ describe("CommercialLivesRoute", () => {
     expect(screen.getByText(/Replay https:\/\/twitch.tv\/videos\/1/)).toBeTruthy();
     expect(screen.getByText("Missing live setup")).toBeTruthy();
     expect(screen.getAllByText(/add thumbnail/).length).toBeGreaterThan(0);
-    expect(screen.getByText(/attach reminder plan/)).toBeTruthy();
     fireEvent.press(screen.getByLabelText("Create setup task for Soil Mix Demo"));
 
     await waitFor(() =>
@@ -117,8 +117,15 @@ describe("CommercialLivesRoute", () => {
             growInterests: ["living soil", "dry amendments"],
             liveStartsAt: "2026-07-10T20:00:00Z",
             liveEndsAt: "2026-07-10T21:00:00Z",
+            liveVisibility: "public",
+            twitchChannelName: "growpath",
+            twitchChannelId: "12345",
+            twitchEmbedUrl: "https://player.twitch.tv/?channel=growpath",
+            eventSubStatus: "connected",
+            replayUrl: "https://twitch.tv/videos/1",
+            notificationPlan: ["24h_before", "1h_before", "15m_before"],
             recurrenceRule: "monthly",
-            priority: "high",
+            priority: "normal",
             status: "open",
             dueAt: "2026-07-10",
             reminderPlan: { label: "1 hour before", channels: ["in_app"] }

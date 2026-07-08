@@ -227,6 +227,13 @@ export default function CommercialLivesRoute() {
           growInterests: live.growInterests,
           liveStartsAt: live.scheduledStart,
           liveEndsAt: live.scheduledEnd,
+          liveVisibility: live.visibility || "public",
+          twitchChannelName: live.twitchChannelName,
+          twitchChannelId: live.twitchChannelId,
+          twitchEmbedUrl: live.twitchEmbedUrl,
+          eventSubStatus: live.eventSubStatus || "not_connected",
+          replayUrl: live.replayUrl,
+          notificationPlan: live.notificationPlan,
           recurrenceRule: live.recurrenceRule,
           priority:
             warnings.includes("schedule date/time") ||
