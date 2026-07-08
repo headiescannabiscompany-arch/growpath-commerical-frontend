@@ -115,6 +115,7 @@ export default function CommercialBatchDetailRoute({ route }: { route?: any } = 
   return (
     <AppPage
       routeKey="commercial-batch-detail"
+      backFallbackHref="/home/commercial/batch-planner"
       longContent
       header={
         <View style={styles.header}>

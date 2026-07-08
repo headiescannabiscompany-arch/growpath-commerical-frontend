@@ -13,7 +13,6 @@ import { useLocalSearchParams, useRouter } from "expo-router";
 
 import { ScreenBoundary } from "@/components/ScreenBoundary";
 import { InlineError } from "@/components/InlineError";
-import BackButton from "@/components/nav/BackButton";
 import { apiRequest } from "@/api/apiRequest";
 import { endpoints } from "@/api/endpoints";
 import { useApiErrorHandler } from "@/hooks/useApiErrorHandler";
@@ -205,7 +204,11 @@ export default function CommercialInventoryItemDetailRoute() {
         : "stock ok";
 
   return (
-    <ScreenBoundary title="Inventory Support Item">
+    <ScreenBoundary
+      title="Inventory Support Item"
+      showBack
+      backFallbackHref="/home/commercial/inventory"
+    >
       <ScrollView
         contentContainerStyle={styles.container}
         refreshControl={
@@ -215,7 +218,6 @@ export default function CommercialInventoryItemDetailRoute() {
           />
         }
       >
-        <BackButton fallbackHref="/home/commercial/inventory" />
         {error ? <InlineError error={error} /> : null}
 
         <View style={styles.headerRow}>

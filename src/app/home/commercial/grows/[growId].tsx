@@ -110,6 +110,7 @@ export default function CommercialGrowDetailRoute({ route }: { route?: any } = {
   return (
     <AppPage
       routeKey="commercial-grow-detail"
+      backFallbackHref="/home/commercial/grows"
       longContent
       header={
         <View style={styles.header}>

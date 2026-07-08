@@ -262,6 +262,9 @@ export default function CommercialProductsRoute({
   return (
     <AppPage
       routeKey={routeKey}
+      backFallbackHref={
+        routeKey === "commercial-product-create" ? "/home/commercial/products" : undefined
+      }
       longContent
       header={
         <View style={styles.header}>

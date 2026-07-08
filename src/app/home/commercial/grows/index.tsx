@@ -136,6 +136,9 @@ export default function CommercialGrowsRoute({
   return (
     <AppPage
       routeKey={routeKey}
+      backFallbackHref={
+        routeKey === "commercial-grow-create" ? "/home/commercial/grows" : undefined
+      }
       longContent
       header={
         <View style={styles.header}>

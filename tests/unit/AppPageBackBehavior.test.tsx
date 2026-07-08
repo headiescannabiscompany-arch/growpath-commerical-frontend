@@ -7,8 +7,8 @@ import AppPage from "@/components/layout/AppPage";
 jest.mock("@/components/nav/BackButton", () => {
   const React = require("react");
   const { Text } = require("react-native");
-  return function MockBackButton() {
-    return <Text>Shared Back</Text>;
+  return function MockBackButton(props: { fallbackHref?: string }) {
+    return <Text>Shared Back {props.fallbackHref || "default"}</Text>;
   };
 });
 
@@ -75,8 +75,21 @@ describe("AppPage back behavior", () => {
       </AppPage>
     );
 
-    expect(screen.getByText("Shared Back")).toBeTruthy();
+    expect(screen.getByText("Shared Back default")).toBeTruthy();
     expect(screen.getByText("Product detail")).toBeTruthy();
+  });
+
+  it("passes nested fallback destinations into the shared back button", () => {
+    const screen = render(
+      <AppPage
+        routeKey="commercial-product-detail"
+        backFallbackHref="/home/commercial/products"
+      >
+        <Text>Product detail</Text>
+      </AppPage>
+    );
+
+    expect(screen.getByText("Shared Back /home/commercial/products")).toBeTruthy();
   });
 
   it("shows the shared back button on commercial create pages", () => {
@@ -85,13 +98,13 @@ describe("AppPage back behavior", () => {
         <Text>Create product</Text>
       </AppPage>
     );
-    expect(productScreen.getByText("Shared Back")).toBeTruthy();
+    expect(productScreen.getByText("Shared Back default")).toBeTruthy();
 
     const growScreen = render(
       <AppPage routeKey="commercial-grow-create">
         <Text>Create evidence run</Text>
       </AppPage>
     );
-    expect(growScreen.getByText("Shared Back")).toBeTruthy();
+    expect(growScreen.getByText("Shared Back default")).toBeTruthy();
   });
 });

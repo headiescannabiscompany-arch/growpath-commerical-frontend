@@ -222,6 +222,7 @@ export default function CommercialTrialDetailRoute({ route }: { route?: any } = 
   return (
     <AppPage
       routeKey="commercial-trial-detail"
+      backFallbackHref="/home/commercial/trials"
       longContent
       header={
         <View style={styles.header}>

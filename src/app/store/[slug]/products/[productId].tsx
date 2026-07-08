@@ -284,6 +284,7 @@ export default function PublicProductRoute() {
   return (
     <AppPage
       routeKey="public-product"
+      backFallbackHref={`/store/${encodeURIComponent(slug)}`}
       header={
         <View>
           <Text style={styles.title}>{product?.name || "Product"}</Text>

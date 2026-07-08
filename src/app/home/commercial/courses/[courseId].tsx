@@ -259,6 +259,7 @@ export default function CommercialCourseDetailRoute({ route }: { route?: any } =
   return (
     <AppPage
       routeKey="commercial-course-detail"
+      backFallbackHref="/home/commercial/courses"
       longContent
       header={
         <View style={styles.header}>

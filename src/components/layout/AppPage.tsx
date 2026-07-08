@@ -21,6 +21,7 @@ type AppPageProps = {
   railOverride?: React.ReactNode | null;
   longContent?: boolean;
   showBack?: boolean;
+  backFallbackHref?: string;
 };
 
 const NO_BACK_ROUTE_KEYS = new Set([
@@ -52,7 +53,8 @@ export default function AppPage({
   children,
   railOverride,
   longContent = false,
-  showBack
+  showBack,
+  backFallbackHref
 }: AppPageProps) {
   const { width } = useWindowDimensions();
   const isWide = Platform.OS === "web" && width >= 900;
@@ -87,7 +89,7 @@ export default function AppPage({
     <ScrollView style={styles.page} contentContainerStyle={styles.pageContent}>
       {(showBack ?? !NO_BACK_ROUTE_KEYS.has(routeKey)) ? (
         <View style={styles.backRow}>
-          <BackButton />
+          <BackButton fallbackHref={backFallbackHref} />
         </View>
       ) : null}
       {header ? (
