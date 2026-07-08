@@ -1,8 +1,24 @@
 # GrowPath Canonical User/Mode/Route Matrix
 
 > **Status**: CANONICAL TRUTH
-> **Last Updated**: 2026-02-06
+> **Last Updated**: 2026-07-08
 > **Source**: Generated from docs/FRONTEND_SCREEN_MAP.md + backend/entitlements.js + actual routes
+
+---
+
+## 0. Current Corrections
+
+This file has older generated sections below. Use these current route rules first:
+
+- Commercial dashboard: `/home/commercial`
+- Commercial Storefront owner route: `/home/commercial/storefront`
+- Public storefront route: `/store/:slug`
+- Legacy `/storefront` is a redirect-only stale-link guard, not a visible owner module.
+- Commercial Feed / Campaigns owner route: `/home/commercial/feed`
+- Shared Feed viewer route: `/feed`
+- Feed is commercial/facility advertising and outreach, not discussion.
+- Forum/Q&A discussion routes are `/forum` and `/forum/post/:id`.
+- Commercial routes should keep products, product lines, batches/lots, inventory, trials, courses, lives, orders, analytics, and campaigns connected to the commercial workspace.
 
 ---
 
@@ -12,8 +28,8 @@
 
 | Mode         | Valid Plans                   | Shell           | Primary Use Case                      |
 | ------------ | ----------------------------- | --------------- | ------------------------------------- |
-| `personal`   | `free`, `pro`, `creator_plus` | PersonalShell   | Individual growers, learning, courses |
-| `commercial` | `commercial`                  | CommercialShell | Brands, sellers, marketing            |
+| `personal`   | `free`, `pro`                 | PersonalShell   | Individual growers, learning, courses, tools |
+| `commercial` | `commercial`                  | CommercialShell | Brands, storefronts, campaigns, orders |
 | `facility`   | `facility`                    | FacilityShell   | Multi-user operations, compliance     |
 
 **Key Rule**: `mode` determines the navigation shell. `plan` determines capabilities within that shell.
@@ -92,6 +108,8 @@ src/app/
 ---
 
 ### Commercial Mode (`mode: "commercial"`)
+
+> Current correction: Commercial lands at `/home/commercial`. Storefront owner work lives at `/home/commercial/storefront`; public storefronts live at `/store/:slug`. Feed/Campaigns owner work lives at `/home/commercial/feed`; shared promotional Feed is `/feed`. Forum/Q&A discussion stays in `/forum` and `/forum/post/:id`.
 
 **Landing**: `/feed` or `/facilities` (if no facility selected)
 
