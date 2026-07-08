@@ -193,8 +193,8 @@ export default function CommercialGrowsRoute({
       <AppCard>
         <Text style={styles.cardTitle}>Create Product Trial Evidence Run</Text>
         <Text style={styles.body}>
-          Start with trial anchors, then add business context: product line, product,
-          batch, formula version, purpose, and public-share intent.
+          Start with trial anchors, then add brand and product context: product line,
+          product, batch, formula version, purpose, and public-share intent.
         </Text>
         <View style={styles.formGrid}>
           <TextInput
@@ -208,7 +208,7 @@ export default function CommercialGrowsRoute({
             value={form.purpose}
             onChangeText={(purpose) => setForm((prev) => ({ ...prev, purpose }))}
             accessibilityLabel="Product trial evidence run purpose"
-            placeholder="Purpose: product_trial, soil_trial, demo_grow..."
+            placeholder="Purpose: product_trial, soil_trial, demo_trial..."
             style={styles.input}
           />
           <TextInput
