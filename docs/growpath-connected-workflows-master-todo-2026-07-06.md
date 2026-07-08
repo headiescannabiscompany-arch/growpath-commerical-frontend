@@ -732,6 +732,7 @@ Completed and pushed:
 456. Legacy personal plant creation inputs, media upload controls, photo thumbnails, and grow-medium selection chips now consume shared radius tokens, keeping the personal grow setup path visually aligned while preserving chip semantics.
 457. Legacy personal environment, VPD, and schedule calculator inputs, action buttons, result cards, and recommendation cards now consume the shared 8px card radius token while preserving existing tool-calculation and ToolUsage save behavior.
 458. Legacy commercial dashboard, orders, and inventory buttons/cards/inputs/errors now consume the shared 8px card radius token, keeping older commercial storefront, order, and stock surfaces aligned with the newer workspace polish.
+459. Legacy facility VPD, EC recommendation, and compliance log inputs/actions/cards now consume shared radius tokens while preserving compliance type pills and existing AI/compliance submission behavior.
 
 ## Working Rule For Codex
 

@@ -3,6 +3,7 @@ import { Pressable, ScrollView, StyleSheet, Text, TextInput, View } from "react-
 
 import { useAICall } from "@/hooks/useAICall";
 import { AIResultCard } from "@/features/ai/components/AIResultCard";
+import { radius } from "@/theme/theme";
 
 export default function ECRecommendScreen({ facilityId }: { facilityId: string }) {
   const { callAI, loading, error, last } = useAICall(facilityId);
@@ -101,7 +102,7 @@ const styles = StyleSheet.create({
   card: {
     borderWidth: 1,
     borderColor: "#E5E7EB",
-    borderRadius: 12,
+    borderRadius: radius.card,
     padding: 12,
     gap: 8,
     backgroundColor: "#fff",
@@ -111,7 +112,7 @@ const styles = StyleSheet.create({
   input: {
     borderWidth: 1,
     borderColor: "#E5E7EB",
-    borderRadius: 10,
+    borderRadius: radius.card,
     padding: 10,
     fontSize: 14
   },
@@ -120,7 +121,7 @@ const styles = StyleSheet.create({
     backgroundColor: "#111827",
     paddingVertical: 12,
     paddingHorizontal: 16,
-    borderRadius: 10,
+    borderRadius: radius.card,
     alignItems: "center"
   },
   ctaDisabled: { opacity: 0.6 },
@@ -131,7 +132,7 @@ const styles = StyleSheet.create({
     marginTop: 8,
     backgroundColor: "#92400E",
     paddingVertical: 10,
-    borderRadius: 10,
+    borderRadius: radius.card,
     alignItems: "center"
   },
   confirmBtnText: { color: "#fff", fontWeight: "700", fontSize: 13 }

@@ -4,6 +4,7 @@ import { useComplianceLogs } from "../../hooks/useComplianceLogs";
 import EmptyState from "../../components/EmptyState";
 import LoadingSpinner from "../../components/LoadingSpinner";
 import ErrorState from "../../components/ErrorState";
+import { radius } from "@/theme/theme";
 import type { ComplianceLogType } from "../../types/compliance";
 
 const TYPES: { label: string; value: ComplianceLogType }[] = [
@@ -67,7 +68,7 @@ export default function ComplianceLogsScreen() {
               style={{
                 paddingVertical: 8,
                 paddingHorizontal: 10,
-                borderRadius: 999,
+                borderRadius: radius.pill,
                 borderWidth: 1,
                 opacity: active ? 1 : 0.6
               }}
@@ -81,7 +82,12 @@ export default function ComplianceLogsScreen() {
         value={title}
         onChangeText={setTitle}
         placeholder="Log title (required)"
-        style={{ borderWidth: 1, borderRadius: 10, padding: 10, marginBottom: 10 }}
+        style={{
+          borderWidth: 1,
+          borderRadius: radius.card,
+          padding: 10,
+          marginBottom: 10
+        }}
       />
       <TextInput
         value={notes}
@@ -90,7 +96,7 @@ export default function ComplianceLogsScreen() {
         multiline
         style={{
           borderWidth: 1,
-          borderRadius: 10,
+          borderRadius: radius.card,
           padding: 10,
           minHeight: 80,
           marginBottom: 10
@@ -101,7 +107,7 @@ export default function ComplianceLogsScreen() {
         disabled={creating}
         style={{
           padding: 12,
-          borderRadius: 10,
+          borderRadius: radius.card,
           borderWidth: 1,
           alignItems: "center",
           opacity: creating ? 0.6 : 1,
@@ -116,7 +122,12 @@ export default function ComplianceLogsScreen() {
         contentContainerStyle={{ paddingBottom: 24 }}
         renderItem={({ item }) => (
           <View
-            style={{ padding: 12, borderRadius: 12, borderWidth: 1, marginBottom: 10 }}
+            style={{
+              padding: 12,
+              borderRadius: radius.card,
+              borderWidth: 1,
+              marginBottom: 10
+            }}
           >
             <Text style={{ fontWeight: "800" }}>{item.title}</Text>
             <Text style={{ opacity: 0.7, marginTop: 2 }}>

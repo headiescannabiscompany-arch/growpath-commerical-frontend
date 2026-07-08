@@ -9,6 +9,7 @@ import React, { useMemo, useState } from "react";
 import { View, Text, TextInput, Pressable, StyleSheet, ScrollView } from "react-native";
 import { useAICall } from "@/hooks/useAICall";
 import { AIResultCard } from "@/features/ai/components/AIResultCard";
+import { radius } from "@/theme/theme";
 
 export default function ComputeVPDScreen({ facilityId }: { facilityId: string }) {
   const { callAI, loading, error, last } = useAICall(facilityId);
@@ -87,7 +88,7 @@ const styles = StyleSheet.create({
   card: {
     borderWidth: 1,
     borderColor: "#E5E7EB",
-    borderRadius: 12,
+    borderRadius: radius.card,
     padding: 12,
     gap: 8,
     backgroundColor: "#fff",
@@ -97,7 +98,7 @@ const styles = StyleSheet.create({
   input: {
     borderWidth: 1,
     borderColor: "#E5E7EB",
-    borderRadius: 10,
+    borderRadius: radius.card,
     padding: 10,
     fontSize: 14
   },
@@ -106,7 +107,7 @@ const styles = StyleSheet.create({
     backgroundColor: "#111827",
     paddingVertical: 12,
     paddingHorizontal: 16,
-    borderRadius: 10,
+    borderRadius: radius.card,
     alignItems: "center"
   },
   ctaDisabled: { opacity: 0.6 },
