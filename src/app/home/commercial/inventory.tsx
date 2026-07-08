@@ -18,6 +18,7 @@ import { apiRequest } from "@/api/apiRequest";
 import { endpoints } from "@/api/endpoints";
 import { useApiErrorHandler } from "@/hooks/useApiErrorHandler";
 import { CAPABILITY_KEYS, useEntitlements } from "@/entitlements";
+import { radius } from "@/theme/theme";
 
 type AnyRec = Record<string, any>;
 
@@ -289,7 +290,7 @@ const styles = StyleSheet.create({
   createBtn: {
     borderWidth: 1,
     borderColor: "rgba(0,0,0,0.2)",
-    borderRadius: 10,
+    borderRadius: radius.card,
     paddingHorizontal: 10,
     paddingVertical: 6
   },
@@ -300,7 +301,7 @@ const styles = StyleSheet.create({
   summaryCard: {
     borderWidth: 1,
     borderColor: "#dbeafe",
-    borderRadius: 12,
+    borderRadius: radius.card,
     padding: 12,
     backgroundColor: "#eff6ff",
     flexDirection: "row",
@@ -314,7 +315,7 @@ const styles = StyleSheet.create({
   guideCard: {
     backgroundColor: "#F8FAFC",
     borderColor: "#E2E8F0",
-    borderRadius: 12,
+    borderRadius: radius.card,
     borderWidth: 1,
     gap: 4,
     padding: 12
@@ -329,7 +330,7 @@ const styles = StyleSheet.create({
     alignItems: "center",
     gap: 12,
     padding: 14,
-    borderRadius: 14,
+    borderRadius: radius.card,
     borderWidth: 1,
     borderColor: "rgba(0,0,0,0.12)",
     backgroundColor: "white"

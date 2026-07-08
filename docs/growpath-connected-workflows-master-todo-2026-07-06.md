@@ -646,6 +646,7 @@ Completed and pushed:
 370. Commercial Inventory list/detail/dashboard/navigation now refer to individual stock rows as Inventory Records instead of Support Items, and the detail cards/actions use the shared 8px radius token.
 371. Legacy central page registry now labels the Forum route as Forum / Q&A while preserving the route name for compatibility, with navigation coverage guarding the corrected discussion label.
 372. Commercial Analytics metric and breakdown cards now consume the shared 8px card radius token, extending Facility-style visual polish to the event-backed commercial analytics surface.
+373. Commercial Inventory list cards, summary cards, guide cards, and create action now consume the shared 8px card radius token, aligning the full inventory support surface with Facility-style visual polish.
 
 ## Working Rule For Codex
 
