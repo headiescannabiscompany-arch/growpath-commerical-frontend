@@ -504,12 +504,12 @@ describe("commercial workflow pages", () => {
           }
         });
       }
-      if (path === "/api/commercial/feed" && !options?.method) {
+      if (path === "/api/forum/feed/latest" && !options?.method) {
         return Promise.resolve({
-          items: [
+          posts: [
             {
               id: "support-1",
-              type: "question",
+              type: "product_qna",
               title: "How to use Bloom Mix",
               body: "Use it as a measured topdress and water in.",
               tags: ["support"],
@@ -520,7 +520,7 @@ describe("commercial workflow pages", () => {
           ]
         });
       }
-      if (path === "/api/commercial/posts" && options?.method === "POST") {
+      if (path === "/api/forum/create" && options?.method === "POST") {
         return Promise.resolve({ post: { id: "post-new", ...options.body } });
       }
       if (path === "/api/commercial/campaigns" && !options) {
@@ -747,10 +747,11 @@ describe("commercial workflow pages", () => {
     expect(screen.getByText("Commercial dashboard task created.")).toBeTruthy();
   });
 
-  it("creates brand community support posts with product links", async () => {
+  it("creates brand forum support posts with product links", async () => {
     const screen = render(<CommercialCommunityRoute />);
 
-    expect(screen.getByText("Brand Community")).toBeTruthy();
+    expect(screen.getByText("Brand Forum / Q&A")).toBeTruthy();
+    expect(screen.getByText(/Feed \/ Campaigns stays advertising and outreach/)).toBeTruthy();
     expect(screen.getByText("Support thread workflow")).toBeTruthy();
     expect(screen.getByText("Community discovery")).toBeTruthy();
     expect(screen.getByText("Create linked campaign")).toBeTruthy();
@@ -794,11 +795,12 @@ describe("commercial workflow pages", () => {
 
     await waitFor(() =>
       expect(mockApiRequest).toHaveBeenCalledWith(
-        "/api/commercial/posts",
+        "/api/forum/create",
         expect.objectContaining({
           method: "POST",
           body: expect.objectContaining({
-            type: "question",
+            type: "product_qna",
+            authorType: "commercial",
             title: "Bloom Mix support",
             body: "Apply after stretch and water in evenly.",
             linkedProductId: "product-2",

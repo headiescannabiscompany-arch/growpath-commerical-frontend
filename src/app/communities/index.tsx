@@ -130,7 +130,8 @@ export default function Communities() {
         <View>
           <Text style={styles.headerTitle}>Communities</Text>
           <Text style={styles.headerSubtitle}>
-            Browse guilds by crop and workflow so feeds, courses, and tools stay relevant.
+            Browse guilds by crop and workflow so forum recommendations, courses, tools,
+            and campaign placement targeting stay relevant.
           </Text>
         </View>
       }

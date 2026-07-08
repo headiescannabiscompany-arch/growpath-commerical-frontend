@@ -353,6 +353,20 @@ function routeIsWorkspacePostRedirect(routes, route) {
   );
 }
 
+function commercialCommunityUsesForum(routes) {
+  const source = routeSource(routes, "/home/commercial/community");
+  if (!source) return false;
+  return (
+    source.includes('from "@/api/forum"') &&
+    /\bgetLatestPosts\b/.test(source) &&
+    /\bcreatePost\b/.test(source) &&
+    /Brand Forum \/ Q&A/.test(source) &&
+    /Feed \/[\s\n]+Campaigns stays advertising and outreach/.test(source) &&
+    !source.includes('from "@/api/commercialFeed"') &&
+    !/\bcreateCommercialFeedPost\b|\blistCommercialFeedPosts\b/.test(source)
+  );
+}
+
 function keywordHits(searchable, keywords) {
   const hits = [];
   for (const keyword of keywords) {
@@ -482,6 +496,7 @@ function main() {
     "/home/personal/more/social-tools",
     "/home/personal/forum"
   );
+  const commercialCommunityForumOnly = commercialCommunityUsesForum(files.routes);
 
   const decisionChecks = {
     topLevelLogsRouteExists,
@@ -511,6 +526,7 @@ function main() {
     legacyPersonalSocialToolsRedirectOnly,
     legacyPersonalSocialToolsVisibleModule:
       legacyPersonalSocialToolsRouteExists && !legacyPersonalSocialToolsRedirectOnly,
+    commercialCommunityForumOnly,
     topLevelTasksRouteExists,
     topLevelTasksRedirectOnly,
     topLevelTasksTaskCenter,
@@ -582,6 +598,7 @@ function main() {
     `- Legacy /create-post workspace redirect guard: ${decisionChecks.legacyCreatePostWorkspaceRedirect}`,
     `- Legacy personal social-tools visible module: ${decisionChecks.legacyPersonalSocialToolsVisibleModule}`,
     `- Legacy personal social-tools redirect-only guard: ${decisionChecks.legacyPersonalSocialToolsRedirectOnly}`,
+    `- Commercial community uses Forum/Q&A API, not Feed/Campaigns: ${decisionChecks.commercialCommunityForumOnly}`,
     `- Top-level Tasks visible module: ${decisionChecks.topLevelTasksVisibleModule}`,
     `- Top-level Tasks uses shared Task Center/Schedule: ${decisionChecks.topLevelTasksTaskCenter}`,
     `- Facility Insights route exists: ${decisionChecks.facilityInsightsRouteExists}`,

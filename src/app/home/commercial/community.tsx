@@ -2,11 +2,7 @@ import { Link } from "expo-router";
 import React, { useEffect, useState } from "react";
 import { Pressable, StyleSheet, Text, TextInput, View } from "react-native";
 
-import {
-  createCommercialFeedPost,
-  listCommercialFeedPosts,
-  type CommercialFeedPost
-} from "@/api/commercialFeed";
+import { createPost, getLatestPosts } from "@/api/forum";
 import { InlineError } from "@/components/InlineError";
 import AppCard from "@/components/layout/AppCard";
 import AppPage from "@/components/layout/AppPage";
@@ -21,6 +17,19 @@ type SupportForm = {
   externalLinkUrl: string;
   externalLinkLabel: string;
   tags: string;
+};
+
+type BrandForumPost = {
+  id?: string;
+  _id?: string;
+  title?: string;
+  body?: string;
+  content?: string;
+  tags?: string[];
+  linkedProductId?: string;
+  linkedCourseId?: string;
+  linkedGrowId?: string;
+  storefrontSlug?: string;
 };
 
 const EMPTY_FORM: SupportForm = {
@@ -42,6 +51,17 @@ function splitTags(value: string) {
     .filter(Boolean);
 }
 
+function normalizeForumRows(response: any): BrandForumPost[] {
+  const rows = Array.isArray(response)
+    ? response
+    : response?.posts ||
+      response?.items ||
+      response?.data?.posts ||
+      response?.data?.items ||
+      [];
+  return Array.isArray(rows) ? rows : [];
+}
+
 function ActionLink({ href, label }: { href: string; label: string }) {
   return (
     <Link href={href as any} asChild>
@@ -53,7 +73,7 @@ function ActionLink({ href, label }: { href: string; label: string }) {
 }
 
 export default function CommercialCommunityRoute() {
-  const [posts, setPosts] = useState<CommercialFeedPost[]>([]);
+  const [posts, setPosts] = useState<BrandForumPost[]>([]);
   const [form, setForm] = useState<SupportForm>(EMPTY_FORM);
   const [loading, setLoading] = useState(false);
   const [saving, setSaving] = useState(false);
@@ -63,12 +83,8 @@ export default function CommercialCommunityRoute() {
     setLoading(true);
     setError(null);
     try {
-      const res = await listCommercialFeedPosts({
-        type: "question",
-        q: "support",
-        limit: 12
-      });
-      setPosts(res.items);
+      const res = await getLatestPosts(1, [], ["support"]);
+      setPosts(normalizeForumRows(res).slice(0, 12));
     } catch (err) {
       setError(err);
     } finally {
@@ -85,8 +101,10 @@ export default function CommercialCommunityRoute() {
     setSaving(true);
     setError(null);
     try {
-      await createCommercialFeedPost({
-        type: "question",
+      await createPost({
+        type: "product_qna",
+        authorType: "commercial",
+        visibility: "public",
         title: form.title.trim() || "Brand support answer",
         body: form.body.trim(),
         tags: splitTags(form.tags),
@@ -120,10 +138,10 @@ export default function CommercialCommunityRoute() {
         <View style={styles.header}>
           <View style={styles.headerText}>
             <Text style={styles.kicker}>Commercial workspace</Text>
-            <Text style={styles.title}>Brand Community</Text>
+            <Text style={styles.title}>Brand Forum / Q&A</Text>
             <Text style={styles.subtitle}>
-              Commercial community should be forum and support activity for a brand, not
-              only guild selection.
+              Commercial community is discussion and support activity for a brand. Feed /
+              Campaigns stays advertising and outreach.
             </Text>
           </View>
           <View style={styles.headerActions}>
@@ -139,7 +157,7 @@ export default function CommercialCommunityRoute() {
         <Text style={styles.body}>
           Commercial accounts should post and reply as the brand, answer product
           questions, link products/courses/product trial evidence runs, and track mentions
-          through forum, Q&A, and campaign workflows.
+          through forum and Q&A workflows. Strong answers can become campaigns later.
         </Text>
         <View style={styles.metricGrid}>
           <View style={styles.metric}>
@@ -163,7 +181,8 @@ export default function CommercialCommunityRoute() {
         <Text style={styles.cardTitle}>Create brand support post</Text>
         <Text style={styles.body}>
           Use this for product help, support answers, product trial evidence
-          clarifications, and course follow-up. It publishes as linked commercial content.
+          clarifications, and course follow-up. It publishes to Forum / Q&A as linked
+          brand support, not as a Feed campaign.
         </Text>
         <TextInput
           value={form.title}
@@ -177,7 +196,7 @@ export default function CommercialCommunityRoute() {
           onChangeText={(body) => setForm((prev) => ({ ...prev, body }))}
           accessibilityLabel="Brand support post body"
           multiline
-          placeholder="Answer as the business identity"
+          placeholder="Answer as the brand identity"
           style={[styles.input, styles.textArea]}
         />
         <View style={styles.formGrid}>
@@ -267,7 +286,7 @@ export default function CommercialCommunityRoute() {
             {posts.map((post) => (
               <View key={post.id} style={styles.postRow}>
                 <Text style={styles.postTitle}>{post.title || "Brand support post"}</Text>
-                <Text style={styles.postBody}>{post.body}</Text>
+                <Text style={styles.postBody}>{post.body || post.content}</Text>
                 {post.linkedProductId ||
                 post.linkedCourseId ||
                 post.linkedGrowId ||
@@ -300,7 +319,7 @@ export default function CommercialCommunityRoute() {
           question.
         </Text>
         <Text style={styles.bullet}>Start from a product question or brand mention</Text>
-        <Text style={styles.bullet}>Answer as the business identity</Text>
+        <Text style={styles.bullet}>Answer as the brand identity</Text>
         <Text style={styles.bullet}>
           Attach product, course, evidence run, storefront, or external support URL
         </Text>
