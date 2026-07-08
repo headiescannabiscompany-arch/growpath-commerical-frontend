@@ -2,7 +2,7 @@ import { expect, test } from "@playwright/test";
 
 async function loginSeedFacilityUser(page: any) {
   await page.goto("/login", { waitUntil: "domcontentloaded" });
-  await page.getByPlaceholder("Email").fill("facility@growpath.com");
+  await page.getByPlaceholder("Email").fill("facility@growpathai.com");
   await page.getByPlaceholder("Password").fill("Test1234!");
   await page.getByText("Sign in").last().click();
   await page.waitForURL((url: URL) => !url.pathname.endsWith("/login"), {

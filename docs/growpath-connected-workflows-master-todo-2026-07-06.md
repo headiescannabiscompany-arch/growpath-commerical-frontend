@@ -552,6 +552,7 @@ Completed and pushed:
 276. Commercial Product Trials list now exposes a direct `Open Evidence Run` action whenever a trial has linked evidence, preserving the owner trial detail route while making the underlying evidence-run workflow reachable from the list.
 277. Support aliases are confirmed live for `support`, `billing`, `privacy`, `legal`, `security`, `commercial`, and `facility` @growpathai.com, matching the shared support-contact config and deferred browser verification checklist.
 278. Legacy CommercialStack Campaigns/Advertising screen copy now frames the page as a marketing planner that hands off real outreach to Feed / Campaigns, removing old feed-post/platform-campaign ambiguity from compatibility navigation.
+279. Active QA login defaults and the test-user account guide now use `@growpathai.com` addresses instead of stale `@growpath.com` accounts, reducing live smoke-test confusion while leaving historical release evidence unchanged.
 
 ## Working Rule For Codex
 

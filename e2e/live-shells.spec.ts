@@ -8,19 +8,19 @@ type LiveUser = {
 
 const USERS: LiveUser[] = [
   {
-    email: process.env.E2E_PERSONAL_EMAIL || "free@growpath.com",
+    email: process.env.E2E_PERSONAL_EMAIL || "free@growpathai.com",
     password:
       process.env.E2E_PERSONAL_PASSWORD || process.env.E2E_PASSWORD || "Test1234!",
     expectedMode: "personal"
   },
   {
-    email: process.env.E2E_COMMERCIAL_EMAIL || "commercial@growpath.com",
+    email: process.env.E2E_COMMERCIAL_EMAIL || "commercial@growpathai.com",
     password:
       process.env.E2E_COMMERCIAL_PASSWORD || process.env.E2E_PASSWORD || "Test1234!",
     expectedMode: "commercial"
   },
   {
-    email: process.env.E2E_FACILITY_EMAIL || "facility@growpath.com",
+    email: process.env.E2E_FACILITY_EMAIL || "facility@growpathai.com",
     password:
       process.env.E2E_FACILITY_PASSWORD || process.env.E2E_PASSWORD || "Test1234!",
     expectedMode: "facility"

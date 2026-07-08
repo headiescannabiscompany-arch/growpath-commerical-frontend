@@ -40,7 +40,7 @@ async function waitForApiResponse(
 }
 
 async function loginSeedUser(page: any) {
-  const email = process.env.E2E_EMAIL || "free@growpath.com";
+  const email = process.env.E2E_EMAIL || "free@growpathai.com";
   const password = process.env.E2E_PASSWORD || "Test1234!";
 
   await page.goto("/login", { waitUntil: "domcontentloaded" });
