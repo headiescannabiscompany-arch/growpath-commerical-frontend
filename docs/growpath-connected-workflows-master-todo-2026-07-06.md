@@ -509,6 +509,7 @@ Completed and pushed:
 233. The canonical route matrix now documents `/storefront/:slug` and `/storefront/:slug/products/:productId` as public aliases while preserving exact `/storefront` as the commercial owner redirect-only stale-link guard.
 234. Commercial Profile & Billing now shows both canonical `/store` public URLs and the human-readable `/storefront` alias URLs so owners understand either storefront route family reaches the same public brand/product surfaces.
 235. Storefront owner Public Discovery now shows and links a View-as-User `/storefront/:slug` alias alongside the canonical `/store/:slug` and brand profile links, making the public storefront compatibility route directly testable by owners.
+236. Storefront product creation now uses the canonical `linkedTrialId` evidence-run field in owner form state and payloads while still writing legacy `linkedGrowTrialId` for backend compatibility.
 
 ## Working Rule For Codex
 

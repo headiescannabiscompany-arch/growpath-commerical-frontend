@@ -291,7 +291,7 @@ export default function Storefront({
     productLineId: "",
     linkedRecipeId: "",
     linkedBatchId: "",
-    linkedGrowTrialId: "",
+    linkedTrialId: "",
     linkedCourseId: ""
   });
 
@@ -620,7 +620,8 @@ export default function Storefront({
           productLineId: productDraft.productLineId.trim() || undefined,
           linkedRecipeId: productDraft.linkedRecipeId.trim() || undefined,
           linkedBatchId: productDraft.linkedBatchId.trim() || undefined,
-          linkedGrowTrialId: productDraft.linkedGrowTrialId.trim() || undefined,
+          linkedTrialId: productDraft.linkedTrialId.trim() || undefined,
+          linkedGrowTrialId: productDraft.linkedTrialId.trim() || undefined,
           linkedCourseId: productDraft.linkedCourseId.trim() || undefined
         }
       });
@@ -645,7 +646,7 @@ export default function Storefront({
         productLineId: "",
         linkedRecipeId: "",
         linkedBatchId: "",
-        linkedGrowTrialId: "",
+        linkedTrialId: "",
         linkedCourseId: ""
       });
       setFeedback("Product created.");
@@ -1351,9 +1352,9 @@ export default function Storefront({
               style={[styles.input, styles.linkInput]}
             />
             <TextInput
-              value={productDraft.linkedGrowTrialId}
-              onChangeText={(linkedGrowTrialId) =>
-                setProductDraft((draft) => ({ ...draft, linkedGrowTrialId }))
+              value={productDraft.linkedTrialId}
+              onChangeText={(linkedTrialId) =>
+                setProductDraft((draft) => ({ ...draft, linkedTrialId }))
               }
               accessibilityLabel="Linked evidence run id"
               placeholder="Linked evidence run id"
@@ -1535,6 +1536,7 @@ export default function Storefront({
                       ) : null}
                       {product.linkedRecipeId ||
                       product.linkedBatchId ||
+                      product.linkedTrialId ||
                       product.linkedGrowTrialId ||
                       product.linkedCourseId ? (
                         <Text style={styles.muted}>
@@ -1542,7 +1544,8 @@ export default function Storefront({
                           {[
                             product.linkedRecipeId && "recipe",
                             product.linkedBatchId && "batch",
-                            product.linkedGrowTrialId && "evidence run",
+                            (product.linkedTrialId || product.linkedGrowTrialId) &&
+                              "evidence run",
                             product.linkedCourseId && "course"
                           ]
                             .filter(Boolean)

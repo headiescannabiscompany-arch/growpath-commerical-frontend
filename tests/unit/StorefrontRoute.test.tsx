@@ -423,6 +423,7 @@ describe("Storefront route", () => {
             productLineId: "line-1",
             linkedRecipeId: "recipe-1",
             linkedBatchId: "batch-1",
+            linkedTrialId: "trial-1",
             linkedGrowTrialId: "trial-1",
             linkedCourseId: "course-1"
           })
