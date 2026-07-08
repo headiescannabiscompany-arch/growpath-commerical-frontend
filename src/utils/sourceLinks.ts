@@ -21,7 +21,8 @@ function inferSourceType(source: SourceLike) {
   if (firstText(source?.linkedNotificationId, source?.notificationId))
     return "notification";
   if (firstText(source?.linkedForumThreadId, source?.forumThreadId)) return "forum";
-  if (firstText(source?.linkedLogId, source?.logId)) return "grow_log";
+  if (firstText(source?.linkedLogId, source?.linkedGrowLogId, source?.logId))
+    return "grow_log";
   if (firstText(source?.linkedToolRunId, source?.toolRunId, source?.sourceToolRunId))
     return "tool_run";
   if (firstText(source?.linkedRecipeId, source?.recipeId)) return "recipe";
@@ -62,7 +63,12 @@ export function sourceObjectHref(source: SourceLike) {
     source?.sourceObjectId,
     source?.linkedObjectId
   );
-  const logId = firstText(source?.linkedLogId, source?.logId, sourceId);
+  const logId = firstText(
+    source?.linkedLogId,
+    source?.linkedGrowLogId,
+    source?.logId,
+    sourceId
+  );
   const growId = firstText(source?.linkedGrowId, source?.growId);
   const plantId = firstText(source?.linkedPlantId, source?.plantId);
   const productId = firstText(source?.linkedProductId, source?.productId, sourceId);

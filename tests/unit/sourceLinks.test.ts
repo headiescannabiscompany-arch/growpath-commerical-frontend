@@ -131,6 +131,15 @@ describe("sourceObjectHref", () => {
 
     expect(
       sourceObjectHref({
+        sourceType: "grow_log",
+        linkedGrowLogId: "log-grow-linked-1",
+        growId: "grow-1",
+        workspaceType: "personal"
+      })
+    ).toBe("/home/personal/logs/log-grow-linked-1");
+
+    expect(
+      sourceObjectHref({
         sourceType: "plant",
         sourceId: "plant-1",
         growId: "grow-1",
