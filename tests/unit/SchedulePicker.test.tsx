@@ -20,10 +20,12 @@ describe("SchedulePicker", () => {
 
     fireEvent.press(screen.getByLabelText("Task workflow quick date This evening"));
     fireEvent.press(screen.getByLabelText("Task workflow quick date In 3 days"));
+    fireEvent.press(screen.getByLabelText("Task workflow quick date In 21 days"));
     fireEvent.press(screen.getByLabelText("Task workflow quick date Next week"));
 
     expect(onDueDateChange).toHaveBeenCalledWith(expect.stringMatching(/T18:00$/));
-    expect(onDueDateChange).toHaveBeenCalledTimes(3);
+    expect(onDueDateChange.mock.calls[2][0]).toMatch(/^\d{4}-\d{2}-\d{2}$/);
+    expect(onDueDateChange).toHaveBeenCalledTimes(4);
   });
 
   it("supports shared clear, reminder, recurrence, all-day, and lights-cycle controls", () => {
@@ -53,12 +55,14 @@ describe("SchedulePicker", () => {
     fireEvent.press(screen.getByLabelText("Grow task quick date Next lights on"));
     fireEvent.press(screen.getByLabelText("Grow task reminder preset no reminder"));
     fireEvent.press(screen.getByLabelText("Grow task recurrence preset monthly"));
+    fireEvent.press(screen.getByLabelText("Grow task recurrence preset every 21 days"));
     fireEvent.press(screen.getByLabelText("Grow task all day toggle"));
     fireEvent.press(screen.getByLabelText("Grow task clear schedule"));
 
     expect(onDueDateChange).toHaveBeenCalledWith(expect.stringMatching(/T06:00$/));
     expect(onReminderChange).toHaveBeenCalledWith("");
     expect(onRecurrenceChange).toHaveBeenCalledWith("monthly");
+    expect(onRecurrenceChange).toHaveBeenCalledWith("every 21 days");
     expect(onAllDayChange).toHaveBeenCalledWith(true);
     expect(onDueDateChange).toHaveBeenLastCalledWith("");
     expect(onRecurrenceChange).toHaveBeenLastCalledWith("");

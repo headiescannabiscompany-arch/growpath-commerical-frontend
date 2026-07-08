@@ -555,6 +555,7 @@ Completed and pushed:
 279. Active QA login defaults and the test-user account guide now use `@growpathai.com` addresses instead of stale `@growpath.com` accounts, reducing live smoke-test confusion while leaving historical release evidence unchanged.
 280. Native Commercial dashboard inventory labels now say Inventory Support and describe stock as supporting products, batches, orders, and storefront availability instead of implying a separate commercial inventory universe.
 281. Commercial dashboard task source classification now preserves order and alert action IDs in addition to product, inventory, product-trial evidence, and feed-campaign tasks; alert setup items are no longer misclassified as storefront sources just because their type includes `storefront`.
+282. Shared SchedulePicker coverage now locks the 21-day quick date and `every 21 days` recurrence option used by topdress, re-amend, soil cook, and follow-up workflows.
 
 ## Working Rule For Codex
 
