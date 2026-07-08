@@ -819,7 +819,7 @@ function main() {
     `- Legacy /create-post workspace redirect guard: ${decisionChecks.legacyCreatePostWorkspaceRedirect}`,
     `- Legacy personal social-tools visible module: ${decisionChecks.legacyPersonalSocialToolsVisibleModule}`,
     `- Legacy personal social-tools redirect-only guard: ${decisionChecks.legacyPersonalSocialToolsRedirectOnly}`,
-    `- Commercial community uses Forum/Q&A API, not Feed/Campaigns: ${decisionChecks.commercialCommunityForumOnly}`,
+    `- Commercial Forum/Q&A uses Forum/Q&A API, not Feed/Campaigns: ${decisionChecks.commercialCommunityForumOnly}`,
     `- Facility feed compatibility screen uses campaign route, not legacy posts feed: ${decisionChecks.facilityFeedCompatibilityCampaignOnly}`,
     `- Legacy native Feed screen uses campaign route, not social posts feed: ${decisionChecks.legacyFeedScreenCampaignOnly}`,
     `- Commercial Feed API creates campaigns through /api/commercial/feed: ${decisionChecks.commercialFeedApiCampaignEndpoint}`,

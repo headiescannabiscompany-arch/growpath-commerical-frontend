@@ -562,6 +562,7 @@ Completed and pushed:
 286. Commercial Brand Forum/Q&A now labels the legacy community directory handoff as Open Forum Directory, keeping owner navigation discussion-oriented without exposing community/feed ambiguity.
 287. Public Support page intro now names account, billing, technical, privacy, legal, security, commercial, and facility support so every live alias category is discoverable before users read the routing cards.
 288. Commercial action E2E coverage now creates Product Trial Evidence Runs and Feed campaigns through the canonical labels and `/api/commercial/feed` endpoint instead of stale commercial-grow and feed-post wording.
+289. GrowPath system audit output now says Commercial Forum/Q&A instead of commercial community, so internal audit reports preserve the Feed-versus-Forum distinction.
 
 ## Working Rule For Codex
 
