@@ -17,6 +17,13 @@ export const PAGE_REGISTRY_FACILITY = [
     component: require("../screens/FacilityRoomsScreen").default
   },
   {
+    name: "FacilityIntegrations",
+    label: "Integrations",
+    icon: "hardware-chip-outline",
+    capabilityKey: "facility.rooms",
+    component: require("../app/home/facility/(tabs)/integrations").default
+  },
+  {
     name: "FacilityPlants",
     label: "Plants",
     icon: "leaf-outline",

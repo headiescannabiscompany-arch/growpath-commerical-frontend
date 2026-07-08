@@ -22,6 +22,16 @@ describe("feed/forum navigation separation", () => {
     expect(feed.component?.name).toBe("CommercialFeedRoute");
   });
 
+  it("exposes facility integrations as the room import entry point", () => {
+    const integrations = byName(PAGE_REGISTRY_FACILITY, "FacilityIntegrations");
+
+    expect(integrations).toMatchObject({
+      label: "Integrations",
+      capabilityKey: "facility.rooms"
+    });
+    expect(integrations.component?.name).toBe("FacilityIntegrationsRoute");
+  });
+
   it("uses shared Schedule, Alert Center, and Notification Center routes across personal and facility registries", () => {
     const personalSchedule = byName(PAGE_REGISTRY_PERSONAL, "Calendar");
     const personalAlerts = byName(PAGE_REGISTRY_PERSONAL, "Alerts");

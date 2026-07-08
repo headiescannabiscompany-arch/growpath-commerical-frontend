@@ -61,6 +61,10 @@ export default function FacilityTabsLayout() {
         options={{ title: "Plants", href: compactTabs ? null : undefined }}
       />
       <Tabs.Screen name="rooms" options={{ title: "Rooms" }} />
+      <Tabs.Screen
+        name="integrations"
+        options={{ title: "Integrations", href: compactTabs ? null : undefined }}
+      />
       <Tabs.Screen name="tasks" options={{ title: "Tasks" }} />
       <Tabs.Screen
         name="logs"
