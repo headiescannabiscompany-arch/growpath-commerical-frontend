@@ -19,6 +19,7 @@ import {
   PLAN_PRICING
 } from "@/constants/pricing";
 import { useEntitlements } from "@/entitlements";
+import { radius } from "@/theme/theme";
 
 type BillingInterval = "monthly" | "yearly";
 type PlanKey = "pro" | "commercial" | "facility";
@@ -221,20 +222,24 @@ const styles = StyleSheet.create({
   segment: {
     alignSelf: "flex-start",
     backgroundColor: "#e2e8f0",
-    borderRadius: 8,
+    borderRadius: radius.card,
     flexDirection: "row",
     gap: 4,
     marginTop: 8,
     padding: 4
   },
-  segmentButton: { borderRadius: 6, paddingHorizontal: 12, paddingVertical: 8 },
+  segmentButton: {
+    borderRadius: radius.card,
+    paddingHorizontal: 12,
+    paddingVertical: 8
+  },
   segmentButtonActive: { backgroundColor: "#111827" },
   segmentText: { color: "#334155", fontSize: 12, fontWeight: "900" },
   segmentTextActive: { color: "#ffffff" },
   feedback: {
     backgroundColor: "#ecfdf5",
     borderColor: "#86efac",
-    borderRadius: 8,
+    borderRadius: radius.card,
     borderWidth: 1,
     padding: 12
   },
@@ -259,7 +264,7 @@ const styles = StyleSheet.create({
   button: {
     alignItems: "center",
     backgroundColor: "#166534",
-    borderRadius: 8,
+    borderRadius: radius.card,
     marginTop: 4,
     paddingVertical: 12
   },

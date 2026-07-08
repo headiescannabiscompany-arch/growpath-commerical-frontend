@@ -717,6 +717,7 @@ Completed and pushed:
 441. Shared SchedulePicker clear action and schedule inputs now consume the shared 8px card radius token while preserving quick-date, reminder, recurrence, lights-cycle, and all-day chips as pills across task/calendar workflows.
 442. Public Brand Profile feedback and Store/Profile/Campaign/Forum action controls now consume the shared 8px card radius token while preserving trial/status pills, keeping storefront-facing brand discovery aligned with the public storefront polish.
 443. Onboarding walkthroughs, forum-group selection, facility creation, invite joining, and facility picking now consume shared radius tokens for panels, cards, inputs, and actions while preserving grow-interest chips as pills across Personal, Commercial, and Facility setup paths.
+444. Public Offers plan billing selector, feedback panel, and checkout CTAs now consume the shared 8px card radius token while leaving the shared Pro, Commercial, and Facility pricing constants untouched.
 
 ## Working Rule For Codex
 
