@@ -16,6 +16,7 @@ import AppCard from "@/components/layout/AppCard";
 import AppPage from "@/components/layout/AppPage";
 import {
   extractPublicCommercialPayload,
+  publicGrowInterests,
   publicItemId,
   publicItemSummary,
   publicItemTitle,
@@ -193,6 +194,11 @@ export default function PublicBrandProfileRoute() {
                       {product?.description ? (
                         <Text style={styles.meta}>{product.description}</Text>
                       ) : null}
+                      {publicGrowInterests(product).length ? (
+                        <Text style={styles.interests}>
+                          Interests: {publicGrowInterests(product).join(", ")}
+                        </Text>
+                      ) : null}
                     </View>
                     <Link
                       href={
@@ -231,6 +237,11 @@ export default function PublicBrandProfileRoute() {
                       {publicItemSummary(course) ? (
                         <Text style={styles.meta}>{publicItemSummary(course)}</Text>
                       ) : null}
+                      {publicGrowInterests(course).length ? (
+                        <Text style={styles.interests}>
+                          Interests: {publicGrowInterests(course).join(", ")}
+                        </Text>
+                      ) : null}
                     </View>
                     <Link
                       href={
@@ -266,6 +277,11 @@ export default function PublicBrandProfileRoute() {
                     </Text>
                     {publicItemSummary(post) ? (
                       <Text style={styles.meta}>{publicItemSummary(post)}</Text>
+                    ) : null}
+                    {publicGrowInterests(post).length ? (
+                      <Text style={styles.interests}>
+                        Interests: {publicGrowInterests(post).join(", ")}
+                      </Text>
                     ) : null}
                   </View>
                   <Link href={returnFeedHref as any} asChild>
@@ -350,6 +366,7 @@ const styles = StyleSheet.create({
     marginTop: 10
   },
   meta: { color: "#64748B", lineHeight: 19 },
+  interests: { color: "#047857", fontSize: 12, fontWeight: "800" },
   cardTitle: { color: "#111827", fontSize: 18, fontWeight: "800", marginBottom: 8 },
   cardText: { color: "#475569", lineHeight: 20, marginBottom: 14 },
   primaryButton: {

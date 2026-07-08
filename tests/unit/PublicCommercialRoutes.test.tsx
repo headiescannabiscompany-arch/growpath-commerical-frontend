@@ -152,9 +152,12 @@ describe("public commercial routes", () => {
     expect(screen.getByText("Support Email")).toBeTruthy();
     expect(screen.getByText("Instagram")).toBeTruthy();
     expect(screen.getAllByText("Veg Mix").length).toBeGreaterThan(0);
+    expect(screen.getByText("Interests: living soil, veg")).toBeTruthy();
     expect(screen.getAllByText("Details").length).toBeGreaterThan(0);
     expect(screen.getByText("Using Veg Mix")).toBeTruthy();
+    expect(screen.getByText("Interests: living soil, product education")).toBeTruthy();
     expect(screen.getByText("Trial update")).toBeTruthy();
+    expect(screen.getByText("Interests: living soil, product trials")).toBeTruthy();
     expect(screen.getByText("Promoted Campaigns")).toBeTruthy();
     expect(screen.getByText("Open Campaign")).toBeTruthy();
     expect(screen.getByText("Veg Mix Trial")).toBeTruthy();
