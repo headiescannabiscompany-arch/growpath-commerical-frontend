@@ -242,6 +242,13 @@ export default function CommercialProductsRoute({
           sourceType: "product",
           sourceId: String(id),
           linkedProductId: String(id),
+          growInterests: (product as any).growInterests || [],
+          linkedProductLineId: (product as any).productLineId,
+          linkedRecipeId: (product as any).linkedRecipeId,
+          linkedCourseIds: (product as any).linkedCourseIds || [],
+          linkedLiveIds: (product as any).linkedLiveIds || [],
+          linkedFeedPostIds: (product as any).linkedFeedPostIds || [],
+          linkedForumThreadId: (product as any).forumThreadId,
           priority:
             missing.includes("checkout") || missing.includes("published")
               ? "high"

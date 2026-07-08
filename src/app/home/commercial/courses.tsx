@@ -210,6 +210,13 @@ export default function CommercialCoursesRoute() {
           sourceType: "course",
           sourceId: String(id),
           linkedCourseId: String(id),
+          growInterests: course.growInterests || [],
+          linkedProductIds: course.linkedProductIds || [],
+          linkedProductLineIds: course.linkedProductLineIds || [],
+          linkedGrowIds: course.linkedGrowIds || [],
+          linkedLiveIds: course.linkedLiveIds || [],
+          linkedFeedPostIds: course.linkedFeedPostIds || [],
+          linkedForumThreadId: course.forumThreadId,
           priority: warnings.some((warning) =>
             [
               "add lesson",

@@ -179,6 +179,13 @@ describe("commercial workflow pages", () => {
               status: "published",
               sku: "LSL-BASE",
               shortDescription: "Seedling-safe base soil",
+              growInterests: ["living soil", "seedlings"],
+              productLineId: "line-1",
+              linkedRecipeId: "recipe-1",
+              linkedCourseIds: ["course-1"],
+              linkedLiveIds: ["live-1"],
+              linkedFeedPostIds: ["campaign-1"],
+              forumThreadId: "thread-product",
               externalPurchaseUrl: "https://example.com/base"
             }
           ]
@@ -403,6 +410,12 @@ describe("commercial workflow pages", () => {
               growInterests: [],
               access: "paid",
               price: 0,
+              linkedProductIds: ["product-2"],
+              linkedProductLineIds: ["line-1"],
+              linkedGrowIds: ["grow-2"],
+              linkedLiveIds: ["live-2"],
+              linkedFeedPostIds: ["campaign-2"],
+              forumThreadId: "thread-course",
               modules: [],
               lessons: [],
               status: "draft"
@@ -824,6 +837,13 @@ describe("commercial workflow pages", () => {
             sourceType: "course",
             sourceId: "course-2",
             linkedCourseId: "course-2",
+            growInterests: [],
+            linkedProductIds: ["product-2"],
+            linkedProductLineIds: ["line-1"],
+            linkedGrowIds: ["grow-2"],
+            linkedLiveIds: ["live-2"],
+            linkedFeedPostIds: ["campaign-2"],
+            linkedForumThreadId: "thread-course",
             priority: "high",
             status: "open",
             reminderPlan: { label: "24 hours before", channels: ["in_app"] }
@@ -1277,6 +1297,13 @@ describe("commercial workflow pages", () => {
             sourceType: "product",
             sourceId: "product-1",
             linkedProductId: "product-1",
+            growInterests: ["living soil", "seedlings"],
+            linkedProductLineId: "line-1",
+            linkedRecipeId: "recipe-1",
+            linkedCourseIds: ["course-1"],
+            linkedLiveIds: ["live-1"],
+            linkedFeedPostIds: ["campaign-1"],
+            linkedForumThreadId: "thread-product",
             priority: "normal",
             reminderPlan: { label: "24 hours before", channels: ["in_app"] }
           })
