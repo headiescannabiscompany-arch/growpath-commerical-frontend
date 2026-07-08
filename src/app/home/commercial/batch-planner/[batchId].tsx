@@ -165,7 +165,10 @@ export default function CommercialBatchDetailRoute({ route }: { route?: any } = 
         <View style={styles.detailGrid}>
           <DetailRow label="Product ID" value={batch?.productId} />
           <DetailRow label="Product line ID" value={batch?.productLineId} />
-          <DetailRow label="Trial grow ID" value={batch?.trialGrowId} />
+          <DetailRow
+            label="Evidence run ID"
+            value={batch?.linkedTrialId || batch?.trialGrowId}
+          />
         </View>
         <View style={styles.actions}>
           {batch?.productId ? (
@@ -180,9 +183,11 @@ export default function CommercialBatchDetailRoute({ route }: { route?: any } = 
               label="Open Product Line"
             />
           ) : null}
-          {batch?.trialGrowId ? (
+          {batch?.linkedTrialId || batch?.trialGrowId ? (
             <ActionLink
-              href={`/home/commercial/grows/${encodeURIComponent(batch.trialGrowId)}`}
+              href={`/home/commercial/grows/${encodeURIComponent(
+                batch.linkedTrialId || batch.trialGrowId || ""
+              )}`}
               label="Open Evidence Run"
             />
           ) : null}

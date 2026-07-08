@@ -448,6 +448,7 @@ Completed and pushed:
 172. Commercial Task Center and commercial task detail now display, route, and create product-trial tasks with the clearer `linkedTrialId` alias while preserving legacy `linkedProductTrialId`, keeping evidence-run tasks connected to commercial trial detail pages.
 173. Commercial inventory create/detail now preserve `linkedTrialId` product-trial evidence aliases while still writing legacy `linkedGrowId`, so stock support records stay connected to evidence runs without reviving commercial-grow language.
 174. Commercial courses now preserve `linkedTrialIds` evidence-run aliases on create, setup tasks, and detail updates while still writing legacy `linkedGrowIds`, keeping education content tied to product-trial evidence without commercial-grow wording.
+175. Commercial batch planning now preserves `linkedTrialId` evidence-run aliases while still writing legacy `trialGrowId`, so formula batches display and link to product-trial evidence without grow-oriented field names leaking into the workflow.
 
 ## Working Rule For Codex
 

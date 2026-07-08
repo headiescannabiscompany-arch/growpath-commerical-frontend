@@ -361,6 +361,8 @@ describe("commercial workflow pages", () => {
               purpose: "seedling",
               formulaVersion: "v1",
               productId: "product-1",
+              linkedTrialId: "trial-1",
+              trialGrowId: "grow-1",
               releaseTimelineNotes: "Fast nitrogen plus slow background nutrition",
               status: "ready"
             }
@@ -380,6 +382,7 @@ describe("commercial workflow pages", () => {
             formulaVersion: "v1",
             productId: "product-1",
             productLineId: "line-1",
+            linkedTrialId: "trial-1",
             trialGrowId: "grow-1",
             batchVolume: 40,
             batchVolumeUnit: "cu_ft",
@@ -1964,6 +1967,7 @@ describe("commercial workflow pages", () => {
     ).toBeTruthy();
     expect(screen.queryByText("Open Personal Batch Tool")).toBeNull();
     await waitFor(() => expect(screen.getByText("Seedling Soil Batch")).toBeTruthy());
+    expect(screen.getByText(/trial trial-1/)).toBeTruthy();
     expect(screen.getByText("Open Detail")).toBeTruthy();
 
     fireEvent.changeText(screen.getByLabelText("Commercial batch name"), "Bloom Batch");
@@ -2010,6 +2014,7 @@ describe("commercial workflow pages", () => {
             formulaVersion: "v3",
             productId: "product-2",
             productLineId: "line-2",
+            linkedTrialId: "grow-2",
             trialGrowId: "grow-2",
             batchVolume: 40,
             estimatedCost: 250,
@@ -2030,6 +2035,8 @@ describe("commercial workflow pages", () => {
     expect(screen.getByText("Formula Evidence")).toBeTruthy();
     expect(screen.getByText("Linked Commercial Workflow")).toBeTruthy();
     expect(screen.getByText("Commercial Use Rules")).toBeTruthy();
+    expect(screen.getByText("Evidence run ID")).toBeTruthy();
+    expect(screen.getAllByText("trial-1").length).toBeGreaterThan(0);
     expect(
       screen.getByLabelText("Commercial batch detail guaranteed analysis notes").props
         .value

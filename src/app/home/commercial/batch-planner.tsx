@@ -112,6 +112,7 @@ export default function CommercialBatchPlannerRoute() {
         formulaVersion: form.formulaVersion.trim(),
         productId: form.productId.trim(),
         productLineId: form.productLineId.trim(),
+        linkedTrialId: form.trialGrowId.trim(),
         trialGrowId: form.trialGrowId.trim(),
         batchVolume: numberOrUndefined(form.batchVolume),
         batchVolumeUnit: form.batchVolumeUnit.trim() || "cu_ft",
@@ -339,13 +340,17 @@ export default function CommercialBatchPlannerRoute() {
                     .filter(Boolean)
                     .join(" | ")}
                 </Text>
-                {batch.productId || batch.productLineId || batch.trialGrowId ? (
+                {batch.productId ||
+                batch.productLineId ||
+                batch.linkedTrialId ||
+                batch.trialGrowId ? (
                   <Text style={styles.batchMeta}>
                     Links:{" "}
                     {[
                       batch.productId && `product ${batch.productId}`,
                       batch.productLineId && `line ${batch.productLineId}`,
-                      batch.trialGrowId && `trial ${batch.trialGrowId}`
+                      (batch.linkedTrialId || batch.trialGrowId) &&
+                        `trial ${batch.linkedTrialId || batch.trialGrowId}`
                     ]
                       .filter(Boolean)
                       .join(", ")}
