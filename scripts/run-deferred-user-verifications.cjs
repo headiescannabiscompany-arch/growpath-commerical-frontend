@@ -60,6 +60,7 @@ const checks = [
       "tests/unit/SubscribeScreenPricing.test.js",
       "tests/unit/SubscriptionScreenPricing.test.js",
       "tests/unit/CommercialFeedCard.test.tsx",
+      "tests/unit/PersonalFeedPlacement.test.tsx",
       "tests/unit/ForumFeedSeparationRoutes.test.tsx",
       "tests/unit/ResetPasswordScreen.test.tsx",
       "tests/unit/ForgotPasswordScreen.test.tsx",
