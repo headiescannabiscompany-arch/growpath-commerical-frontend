@@ -118,4 +118,43 @@ describe("FeedRail", () => {
       })
     );
   });
+
+  it("routes product-line campaigns to filtered public storefront discovery", async () => {
+    mockListCommercialFeedCampaigns.mockResolvedValue({
+      items: [
+        {
+          id: "campaign-line",
+          type: "listing",
+          title: "Living Soil Line",
+          body: "Browse the full product family.",
+          linkedProductLineId: "line-1",
+          storefrontSlug: "living-soil-labs",
+          createdAt: "2026-07-07T12:00:00Z",
+          engagementCount: 5,
+          author: { displayName: "Living Soil Labs" },
+          tags: [],
+          growInterests: ["living soil"]
+        }
+      ],
+      nextCursor: null
+    });
+
+    const screen = render(<FeedRail slots={1} railMode="promo-only" placement="top" />);
+
+    await waitFor(() => expect(screen.getByText("Living Soil Line")).toBeTruthy());
+    fireEvent.press(screen.getByLabelText("View Product Line for Living Soil Line"));
+
+    expect(recordCommercialAnalyticsEvent).toHaveBeenCalledWith(
+      expect.objectContaining({
+        eventType: "ad_click",
+        objectType: "feed_ad",
+        targetUrl: "/store/living-soil-labs?line=line-1",
+        source: "feed_banner",
+        metadata: expect.objectContaining({
+          title: "Living Soil Line",
+          cta: "View Product Line"
+        })
+      })
+    );
+  });
 });

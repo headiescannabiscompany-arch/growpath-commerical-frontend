@@ -51,6 +51,19 @@ function campaignDestination(post: CommercialFeedCampaign) {
       href: `/feed?liveId=${encodeURIComponent(String(post.linkedLiveId))}`
     };
   }
+  if (post.linkedProductLineId) {
+    const lineId = encodeURIComponent(String(post.linkedProductLineId));
+    if (post.storefrontSlug) {
+      return {
+        cta: "View Product Line",
+        href: `/store/${encodeURIComponent(String(post.storefrontSlug))}?line=${lineId}`
+      };
+    }
+    return {
+      cta: "View Product Line",
+      href: `/store?line=${lineId}`
+    };
+  }
   if (post.storefrontSlug) {
     return {
       cta: "Visit Storefront",

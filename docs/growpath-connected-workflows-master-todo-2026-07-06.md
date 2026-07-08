@@ -544,6 +544,7 @@ Completed and pushed:
 268. The canonical route matrix Commercial section now lists `/home/commercial` as the landing route, documents the current owner/storefront/feed/inventory route family, and marks old `/campaigns`, `/orders`, `/inventory-create`, `/inventory-item/:id`, and `/grows` paths as compatibility guards.
 269. The root Create Post action now sends Facility users to `/home/facility/feed` for facility outreach campaign creation instead of the shared `/feed` viewer, keeping facility author identity and workspace routing intact.
 270. Deferred user verification now includes the canonical Commercial inventory create/detail regression, the canonical route-matrix guard, and the root Create Post facility-outreach regression, with browser checklist items for `/home/commercial/inventory/new`, `/home/commercial/inventory/:id`, and `/home/facility/feed`.
+271. Feed placement rails now route product-line campaigns to filtered public storefront discovery (`/store/:slug?line=:lineId` or `/store?line=:lineId`), matching the main Feed/Campaigns destination behavior so top/middle/bottom ads keep product-family CTAs connected.
 
 ## Working Rule For Codex
 
