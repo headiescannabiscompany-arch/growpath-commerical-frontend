@@ -9,6 +9,7 @@ import {
   Alert
 } from "react-native";
 import { useFacility } from "@/facility/FacilityProvider";
+import { radius } from "@/theme/theme";
 import { useRouter } from "expo-router";
 
 const styles = StyleSheet.create({
@@ -42,7 +43,7 @@ const styles = StyleSheet.create({
     alignItems: "center",
     alignSelf: "center",
     backgroundColor: "#111827",
-    borderRadius: 8,
+    borderRadius: radius.card,
     marginTop: 18,
     paddingHorizontal: 18,
     paddingVertical: 12
@@ -58,7 +59,7 @@ const styles = StyleSheet.create({
   facilityCard: {
     borderWidth: 1,
     borderColor: "#ddd",
-    borderRadius: 8,
+    borderRadius: radius.card,
     padding: 16,
     marginBottom: 12,
     backgroundColor: "#f9f9f9"
@@ -82,7 +83,7 @@ const styles = StyleSheet.create({
     paddingHorizontal: 8,
     paddingVertical: 4,
     backgroundColor: "#4CAF50",
-    borderRadius: 4,
+    borderRadius: radius.pill,
     alignSelf: "flex-start"
   },
   selectedBadgeText: {
@@ -94,7 +95,7 @@ const styles = StyleSheet.create({
     backgroundColor: "#fee",
     borderColor: "#f99",
     borderWidth: 1,
-    borderRadius: 8,
+    borderRadius: radius.card,
     padding: 12,
     marginBottom: 16
   },
