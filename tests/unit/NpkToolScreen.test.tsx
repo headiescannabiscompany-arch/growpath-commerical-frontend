@@ -1,5 +1,5 @@
 import React from "react";
-import { fireEvent, render, waitFor } from "@testing-library/react-native";
+import { act, fireEvent, render, waitFor } from "@testing-library/react-native";
 
 import NpkToolScreen from "@/app/home/personal/(tabs)/tools/npk";
 
@@ -102,6 +102,12 @@ jest.mock("@/api/products", () => ({
   createProduct: (...args: any[]) => mockCreateProduct(...args)
 }));
 
+async function renderNpkToolScreen() {
+  const screen = render(<NpkToolScreen />);
+  await act(async () => {});
+  return screen;
+}
+
 describe("NpkToolScreen", () => {
   beforeEach(() => {
     jest.resetAllMocks();
@@ -142,7 +148,7 @@ describe("NpkToolScreen", () => {
   });
 
   it("sends label P2O5/K2O and elemental P/K values to the NPK calculator", async () => {
-    const screen = render(<NpkToolScreen />);
+    const screen = await renderNpkToolScreen();
 
     expect(screen.getByText(/Build up to 20 product rows/)).toBeTruthy();
     expect(screen.getByText(/Label N-P-K uses elemental N, P2O5, and K2O/)).toBeTruthy();
@@ -197,8 +203,8 @@ describe("NpkToolScreen", () => {
     await waitFor(() => expect(screen.getByText("NPK recipe result")).toBeTruthy());
   });
 
-  it("builds an AI recipe brief from current labels without replacing calculator math", () => {
-    const screen = render(<NpkToolScreen />);
+  it("builds an AI recipe brief from current labels without replacing calculator math", async () => {
+    const screen = await renderNpkToolScreen();
 
     fireEvent.changeText(screen.getByPlaceholderText("e.g. Veg base"), "Kelp veg feed");
     fireEvent.changeText(screen.getByPlaceholderText("Product name"), "Kelp meal");
@@ -217,7 +223,7 @@ describe("NpkToolScreen", () => {
   });
 
   it("creates a source-linked NPK recipe task plan from the saved ToolRun", async () => {
-    const screen = render(<NpkToolScreen />);
+    const screen = await renderNpkToolScreen();
 
     fireEvent.changeText(screen.getByPlaceholderText("e.g. Veg base"), "Kelp veg feed");
     fireEvent.changeText(screen.getByPlaceholderText("Product name"), "Kelp meal");
@@ -257,7 +263,7 @@ describe("NpkToolScreen", () => {
   });
 
   it("converts calculated recipes into commercial-ready product draft fields", async () => {
-    const screen = render(<NpkToolScreen />);
+    const screen = await renderNpkToolScreen();
 
     fireEvent.changeText(screen.getByPlaceholderText("e.g. Veg base"), "Kelp veg feed");
     fireEvent.changeText(screen.getByPlaceholderText("Product name"), "Kelp meal");
