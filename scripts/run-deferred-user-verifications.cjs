@@ -69,9 +69,18 @@ const checks = [
       "tests/unit/SchedulePicker.test.tsx",
       "tests/unit/AppPageBackBehavior.test.tsx",
       "tests/unit/ScreenBoundaryBackBehavior.test.tsx",
+      "tests/unit/AccountModeSwitcher.test.tsx",
+      "tests/unit/switchAccountMode.test.ts",
+      "tests/unit/PersonalHomeRoute.test.tsx",
+      "tests/unit/ProfilePrivacyControls.test.tsx",
+      "tests/unit/CommercialProfileRoute.test.tsx",
+      "tests/unit/FacilityProfileRoute.test.tsx",
       "tests/unit/pricingConstants.test.js",
       "tests/unit/SubscribeScreenPricing.test.js",
       "tests/unit/SubscriptionScreenPricing.test.js",
+      "tests/unit/SupportPage.test.tsx",
+      "tests/unit/PolicyContactAliases.test.tsx",
+      "tests/unit/PaymentHelpDialog.test.js",
       "tests/unit/CommercialFeedCard.test.tsx",
       "tests/unit/PersonalFeedPlacement.test.tsx",
       "tests/unit/ForumFeedSeparationRoutes.test.tsx",
@@ -102,7 +111,15 @@ const manualChecks = [
     area: "Mode separation",
     checks: [
       "Switch Personal, Commercial, and Facility identities and confirm each dashboard names the current mode.",
+      "Open Personal Profile, Commercial Profile & Billing, and Facility Profile and confirm each has a visible Switch Workspace action that opens /account/mode.",
       "Confirm commercial pages do not create personal grows and facility pages create rooms/runs/tasks instead of storefront products."
+    ]
+  },
+  {
+    area: "Live support aliases",
+    checks: [
+      "Open Support and confirm general, billing, commercial, facility, privacy, legal, and security requests show the live @growpathai.com aliases.",
+      "Open Privacy, Terms, and payment help surfaces and confirm they route privacy/legal/security/billing copy to the live aliases instead of placeholders."
     ]
   },
   {
