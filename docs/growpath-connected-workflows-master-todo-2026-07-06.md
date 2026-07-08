@@ -637,6 +637,7 @@ Completed and pushed:
 361. Commercial Course workflow copy now says storefront context instead of business context, keeping commercial courses tied to products, support, onboarding, and storefront education.
 362. Public Marketplace compatibility copy now says Storefront Offers only, removing the remaining visible creator-content wording while keeping old marketplace API names as compatibility plumbing.
 363. Personal Tools now labels the recipe/product handoff area as Products & Production instead of Business & Production, keeping Personal mode focused on tools while still supporting product/facility handoffs.
+364. Shared tab navigation now labels the discussion destination as Forum / Q&A while keeping FeedTab labeled Campaigns, with regression coverage proving Feed remains the promotional campaign route and Forum remains the discussion route.
 
 ## Working Rule For Codex
 

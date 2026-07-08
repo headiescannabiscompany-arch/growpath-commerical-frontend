@@ -43,7 +43,7 @@ export const TAB_CONFIG = [
   },
   {
     key: "ForumTab",
-    label: "Forum",
+    label: "Forum / Q&A",
     icon: "chatbubbles-outline",
     routeName: "ForumTab",
     requiredCaps: [CAPABILITIES.VIEW_FORUM],

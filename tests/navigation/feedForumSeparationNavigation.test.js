@@ -68,6 +68,7 @@ describe("feed/forum navigation separation", () => {
 
   it("keeps shared tab and capability menus off the legacy discussion feed", () => {
     const feedTab = TAB_CONFIG.find((item) => item.key === "FeedTab");
+    const forumTab = TAB_CONFIG.find((item) => item.key === "ForumTab");
     const menuItems = getMenuItems({
       capabilities: { canUseFeed: true, canUseCommercial: true, canUseMarketplace: true },
       mode: "personal"
@@ -78,6 +79,10 @@ describe("feed/forum navigation separation", () => {
     expect(feedTab).toMatchObject({
       label: "Campaigns",
       component: "CommercialFeedRoute"
+    });
+    expect(forumTab).toMatchObject({
+      label: "Forum / Q&A",
+      component: "ForumScreen"
     });
     expect(feedMenu).toMatchObject({
       label: "Campaigns",
