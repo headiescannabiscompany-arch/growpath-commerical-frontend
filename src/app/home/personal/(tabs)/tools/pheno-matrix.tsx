@@ -2,7 +2,7 @@ import React, { useMemo, useState } from "react";
 import { useLocalSearchParams } from "expo-router";
 import { ScrollView, StyleSheet, Text, TextInput, View } from "react-native";
 
-import BackButton from "@/components/nav/BackButton";
+import { ScreenBoundary } from "@/components/ScreenBoundary";
 import { CAPABILITY_KEYS, useEntitlements } from "@/entitlements";
 import {
   DEFAULT_PHENO_WEIGHTS,
@@ -209,214 +209,226 @@ export default function PhenoMatrixScreen() {
 
   if (!enabled) {
     return (
-      <ScrollView style={styles.container} contentContainerStyle={styles.content}>
-        <BackButton />
-        <Text style={styles.title}>Pheno Matrix</Text>
-        <View style={styles.lockedCard}>
-          <Text style={styles.lockedTitle}>Tool unavailable</Text>
-          <Text style={styles.subtitle}>
-            This account does not have `TOOL_PHENO_MATRIX`.
-          </Text>
-          <PersonalFeedPlacement
-            placement="top"
-            routeKey="personal_tools_pheno_matrix"
-            longContent
-          />
-        </View>
-      </ScrollView>
+      <ScreenBoundary
+        title="Pheno Matrix"
+        showBack
+        backFallbackHref="/home/personal/tools"
+      >
+        <ScrollView style={styles.container} contentContainerStyle={styles.content}>
+          <Text style={styles.title}>Pheno Matrix</Text>
+          <View style={styles.lockedCard}>
+            <Text style={styles.lockedTitle}>Tool unavailable</Text>
+            <Text style={styles.subtitle}>
+              This account does not have `TOOL_PHENO_MATRIX`.
+            </Text>
+            <PersonalFeedPlacement
+              placement="top"
+              routeKey="personal_tools_pheno_matrix"
+              longContent
+            />
+          </View>
+        </ScrollView>
+      </ScreenBoundary>
     );
   }
 
   return (
-    <ScrollView style={styles.container} contentContainerStyle={styles.content}>
-      <BackButton />
-      <Text style={styles.title}>Pheno Matrix</Text>
-      <Text style={styles.subtitle}>
-        Score candidate plants from 0 to 10, adjust trait weights, and rank keeper
-        selections.
-      </Text>
-      <PersonalFeedPlacement
-        placement="top"
-        routeKey="personal_tools_pheno_matrix"
-        longContent
-      />
-      {growId ? <Text style={styles.context}>Grow context: {growId}</Text> : null}
+    <ScreenBoundary title="Pheno Matrix" showBack backFallbackHref="/home/personal/tools">
+      <ScrollView style={styles.container} contentContainerStyle={styles.content}>
+        <Text style={styles.title}>Pheno Matrix</Text>
+        <Text style={styles.subtitle}>
+          Score candidate plants from 0 to 10, adjust trait weights, and rank keeper
+          selections.
+        </Text>
+        <PersonalFeedPlacement
+          placement="top"
+          routeKey="personal_tools_pheno_matrix"
+          longContent
+        />
+        {growId ? <Text style={styles.context}>Grow context: {growId}</Text> : null}
 
-      <View style={styles.section}>
-        <Text style={styles.sectionTitle}>Trait weights</Text>
-        <View style={styles.weightGrid}>
-          {PHENO_TRAITS.map((trait) => (
-            <View key={trait.key} style={styles.weightCell}>
-              <Text style={styles.label}>{trait.label}</Text>
+        <View style={styles.section}>
+          <Text style={styles.sectionTitle}>Trait weights</Text>
+          <View style={styles.weightGrid}>
+            {PHENO_TRAITS.map((trait) => (
+              <View key={trait.key} style={styles.weightCell}>
+                <Text style={styles.label}>{trait.label}</Text>
+                <TextInput
+                  style={styles.weightInput}
+                  value={numericText(weights[trait.key])}
+                  onChangeText={(value) => updateWeight(trait.key, value)}
+                  keyboardType="numeric"
+                />
+              </View>
+            ))}
+          </View>
+        </View>
+
+        <View style={styles.section}>
+          <Text style={styles.sectionTitle}>Candidates</Text>
+          {candidates.map((candidate) => (
+            <View key={candidate.id} style={styles.card}>
+              <View style={styles.row}>
+                <View style={styles.flex}>
+                  <Text style={styles.label}>Label</Text>
+                  <TextInput
+                    style={styles.input}
+                    value={candidate.label}
+                    onChangeText={(value) =>
+                      updateCandidate(candidate.id, "label", value)
+                    }
+                  />
+                </View>
+                <View style={styles.smallField}>
+                  <Text style={styles.label}>Generation</Text>
+                  <TextInput
+                    style={styles.input}
+                    value={candidate.generation}
+                    onChangeText={(value) =>
+                      updateCandidate(candidate.id, "generation", value)
+                    }
+                  />
+                </View>
+                <View style={styles.smallField}>
+                  <Text style={styles.label}>Stage</Text>
+                  <TextInput
+                    style={styles.input}
+                    value={candidate.stage}
+                    onChangeText={(value) =>
+                      updateCandidate(candidate.id, "stage", value)
+                    }
+                  />
+                </View>
+              </View>
+
+              <View style={styles.traitGrid}>
+                {PHENO_TRAITS.map((trait) => (
+                  <View key={trait.key} style={styles.traitCell}>
+                    <Text style={styles.label}>{trait.label}</Text>
+                    <TextInput
+                      style={styles.scoreInput}
+                      value={numericText(candidate[trait.key])}
+                      onChangeText={(value) =>
+                        updateCandidate(candidate.id, trait.key, value)
+                      }
+                      keyboardType="numeric"
+                    />
+                  </View>
+                ))}
+              </View>
+
+              <Text style={styles.label}>Notes</Text>
               <TextInput
-                style={styles.weightInput}
-                value={numericText(weights[trait.key])}
-                onChangeText={(value) => updateWeight(trait.key, value)}
-                keyboardType="numeric"
+                style={styles.notesInput}
+                value={candidate.notes || ""}
+                onChangeText={(value) => updateCandidate(candidate.id, "notes", value)}
+                multiline
               />
             </View>
           ))}
         </View>
-      </View>
 
-      <View style={styles.section}>
-        <Text style={styles.sectionTitle}>Candidates</Text>
-        {candidates.map((candidate) => (
-          <View key={candidate.id} style={styles.card}>
-            <View style={styles.row}>
-              <View style={styles.flex}>
-                <Text style={styles.label}>Label</Text>
-                <TextInput
-                  style={styles.input}
-                  value={candidate.label}
-                  onChangeText={(value) => updateCandidate(candidate.id, "label", value)}
-                />
+        <View style={styles.section}>
+          <Text style={styles.sectionTitle}>Ranked selections</Text>
+          {ranked.map((candidate) => (
+            <View key={candidate.id} style={styles.rankRow}>
+              <Text style={styles.rankNumber}>#{candidate.rank}</Text>
+              <View style={styles.rankBody}>
+                <Text style={styles.rankTitle}>{candidate.label}</Text>
+                <Text style={styles.rankMeta}>
+                  {candidate.generation} | {candidate.stage} |{" "}
+                  {candidate.recommendation.toUpperCase()}
+                </Text>
               </View>
-              <View style={styles.smallField}>
-                <Text style={styles.label}>Generation</Text>
-                <TextInput
-                  style={styles.input}
-                  value={candidate.generation}
-                  onChangeText={(value) =>
-                    updateCandidate(candidate.id, "generation", value)
-                  }
-                />
-              </View>
-              <View style={styles.smallField}>
-                <Text style={styles.label}>Stage</Text>
-                <TextInput
-                  style={styles.input}
-                  value={candidate.stage}
-                  onChangeText={(value) => updateCandidate(candidate.id, "stage", value)}
-                />
+              <View style={styles.scoreBadge}>
+                <Text style={styles.scoreText}>
+                  {candidate.normalizedScore.toFixed(2)}
+                </Text>
+                <Text style={styles.scoreLabel}>/ 10</Text>
               </View>
             </View>
+          ))}
+        </View>
 
-            <View style={styles.traitGrid}>
-              {PHENO_TRAITS.map((trait) => (
-                <View key={trait.key} style={styles.traitCell}>
-                  <Text style={styles.label}>{trait.label}</Text>
-                  <TextInput
-                    style={styles.scoreInput}
-                    value={numericText(candidate[trait.key])}
-                    onChangeText={(value) =>
-                      updateCandidate(candidate.id, trait.key, value)
-                    }
-                    keyboardType="numeric"
-                  />
-                </View>
-              ))}
-            </View>
-
-            <Text style={styles.label}>Notes</Text>
-            <TextInput
-              style={styles.notesInput}
-              value={candidate.notes || ""}
-              onChangeText={(value) => updateCandidate(candidate.id, "notes", value)}
-              multiline
-            />
-          </View>
-        ))}
-      </View>
-
-      <View style={styles.section}>
-        <Text style={styles.sectionTitle}>Ranked selections</Text>
-        {ranked.map((candidate) => (
-          <View key={candidate.id} style={styles.rankRow}>
-            <Text style={styles.rankNumber}>#{candidate.rank}</Text>
-            <View style={styles.rankBody}>
-              <Text style={styles.rankTitle}>{candidate.label}</Text>
-              <Text style={styles.rankMeta}>
-                {candidate.generation} | {candidate.stage} |{" "}
-                {candidate.recommendation.toUpperCase()}
-              </Text>
-            </View>
-            <View style={styles.scoreBadge}>
-              <Text style={styles.scoreText}>{candidate.normalizedScore.toFixed(2)}</Text>
-              <Text style={styles.scoreLabel}>/ 10</Text>
-            </View>
-          </View>
-        ))}
-      </View>
-
-      <PersonalFeedPlacement
-        placement="middle"
-        routeKey="personal_tools_pheno_matrix"
-        longContent
-      />
-
-      <View style={styles.section}>
-        <ToolResultSurface
-          title="Pheno matrix result"
-          status={topCandidate ? topCandidate.recommendation.toUpperCase() : "READY"}
-          summary={
-            topCandidate
-              ? `${topCandidate.label} is currently ranked #1 at ${topCandidate.normalizedScore.toFixed(2)}/10. Treat this as a decision aid, not a final keeper call.`
-              : "Score candidates to rank pheno selections."
-          }
-          metrics={[
-            {
-              key: "candidates",
-              label: "Candidates",
-              value: String(candidates.length)
-            },
-            {
-              key: "keepers",
-              label: "Keeper calls",
-              value: String(keepers.length)
-            },
-            {
-              key: "watch",
-              label: "Watch calls",
-              value: String(watches.length)
-            }
-          ]}
-          inputs={matrixInput}
-          outputs={matrixOutput}
-          recommendations={[
-            "Confirm the top rank against photos, clone performance, stress response, and production goals.",
-            "Do not make keeper decisions from weighted scores alone.",
-            "Record rerun/reject reasons before cutting candidates."
-          ]}
-          formulas={[
-            "Each trait is clamped to 0-10 for scoring, multiplied by its weight, then normalized by total positive weight.",
-            "Default calls: keeper >= 8, watch >= 6, otherwise cull."
-          ]}
-          uncertainty="Current v1 matrix does not yet persist full pheno hunt projects, photos, lab/smoke review, clone performance, or stress-test history."
-          confidence="local-weighted-score"
-          actions={[
-            {
-              key: "save-run",
-              label: savedRunId ? "Matrix Saved" : "Save Tool Run",
-              pendingLabel: "Saving...",
-              disabled: !growId || Boolean(savedRunId),
-              onPress: saveMatrixRun
-            },
-            {
-              key: "create-task",
-              label: "Create Pheno Decision Tasks",
-              variant: "secondary",
-              pendingLabel: "Creating...",
-              disabled: !growId,
-              onPress: createDecisionTasks
-            }
-          ]}
-          feedback={feedback}
-          contextMessage={
-            !growId
-              ? "Open this tool from a grow to save pheno matrix runs and create keeper review tasks."
-              : undefined
-          }
-          copyPayload={matrixOutput}
+        <PersonalFeedPlacement
+          placement="middle"
+          routeKey="personal_tools_pheno_matrix"
+          longContent
         />
-      </View>
 
-      <PersonalFeedPlacement
-        placement="bottom"
-        routeKey="personal_tools_pheno_matrix"
-        longContent
-      />
-    </ScrollView>
+        <View style={styles.section}>
+          <ToolResultSurface
+            title="Pheno matrix result"
+            status={topCandidate ? topCandidate.recommendation.toUpperCase() : "READY"}
+            summary={
+              topCandidate
+                ? `${topCandidate.label} is currently ranked #1 at ${topCandidate.normalizedScore.toFixed(2)}/10. Treat this as a decision aid, not a final keeper call.`
+                : "Score candidates to rank pheno selections."
+            }
+            metrics={[
+              {
+                key: "candidates",
+                label: "Candidates",
+                value: String(candidates.length)
+              },
+              {
+                key: "keepers",
+                label: "Keeper calls",
+                value: String(keepers.length)
+              },
+              {
+                key: "watch",
+                label: "Watch calls",
+                value: String(watches.length)
+              }
+            ]}
+            inputs={matrixInput}
+            outputs={matrixOutput}
+            recommendations={[
+              "Confirm the top rank against photos, clone performance, stress response, and production goals.",
+              "Do not make keeper decisions from weighted scores alone.",
+              "Record rerun/reject reasons before cutting candidates."
+            ]}
+            formulas={[
+              "Each trait is clamped to 0-10 for scoring, multiplied by its weight, then normalized by total positive weight.",
+              "Default calls: keeper >= 8, watch >= 6, otherwise cull."
+            ]}
+            uncertainty="Current v1 matrix does not yet persist full pheno hunt projects, photos, lab/smoke review, clone performance, or stress-test history."
+            confidence="local-weighted-score"
+            actions={[
+              {
+                key: "save-run",
+                label: savedRunId ? "Matrix Saved" : "Save Tool Run",
+                pendingLabel: "Saving...",
+                disabled: !growId || Boolean(savedRunId),
+                onPress: saveMatrixRun
+              },
+              {
+                key: "create-task",
+                label: "Create Pheno Decision Tasks",
+                variant: "secondary",
+                pendingLabel: "Creating...",
+                disabled: !growId,
+                onPress: createDecisionTasks
+              }
+            ]}
+            feedback={feedback}
+            contextMessage={
+              !growId
+                ? "Open this tool from a grow to save pheno matrix runs and create keeper review tasks."
+                : undefined
+            }
+            copyPayload={matrixOutput}
+          />
+        </View>
+
+        <PersonalFeedPlacement
+          placement="bottom"
+          routeKey="personal_tools_pheno_matrix"
+          longContent
+        />
+      </ScrollView>
+    </ScreenBoundary>
   );
 }
 

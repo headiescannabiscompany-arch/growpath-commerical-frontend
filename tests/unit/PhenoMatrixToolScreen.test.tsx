@@ -23,10 +23,20 @@ jest.mock("@/entitlements", () => ({
   })
 }));
 
-jest.mock("@/components/nav/BackButton", () => {
+jest.mock("@/components/ScreenBoundary", () => {
   const React = require("react");
-  const { Text } = require("react-native");
-  return () => React.createElement(Text, null, "Back");
+  const { Text, View } = require("react-native");
+  return {
+    ScreenBoundary: ({ children, showBack, backFallbackHref }: any) =>
+      React.createElement(
+        View,
+        null,
+        showBack
+          ? React.createElement(Text, null, `Shared Back ${backFallbackHref}`)
+          : null,
+        children
+      )
+  };
 });
 
 jest.mock("@/components/feed/PersonalFeedPlacement", () => {
@@ -72,6 +82,7 @@ describe("PhenoMatrixScreen", () => {
     const screen = render(<PhenoMatrixScreen />);
 
     expect(screen.getByText("Pheno Matrix")).toBeTruthy();
+    expect(screen.getByText("Shared Back /home/personal/tools")).toBeTruthy();
 
     fireEvent.press(screen.getByText("Create Pheno Decision Tasks"));
 

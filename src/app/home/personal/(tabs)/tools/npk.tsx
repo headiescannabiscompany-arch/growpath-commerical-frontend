@@ -3,7 +3,7 @@ import { useLocalSearchParams } from "expo-router";
 import { Pressable, ScrollView, StyleSheet, Text, TextInput, View } from "react-native";
 import { Picker } from "@react-native-picker/picker";
 
-import BackButton from "@/components/nav/BackButton";
+import { ScreenBoundary } from "@/components/ScreenBoundary";
 import { LockedScreen } from "@/entitlements/LockedScreen";
 import { CAPABILITY_KEYS, useEntitlements } from "@/entitlements";
 import {
@@ -573,747 +573,774 @@ export default function NpkToolScreen() {
 
   if (!enabled) {
     return (
-      <LockedScreen
-        title="NPK / Feed Recipe Builder is a Pro tool"
-        message="Free accounts can use core tools and browse the app. Upgrade to build NPK recipes, model release timing, and save results to grow history."
-      />
+      <ScreenBoundary
+        title="NPK / Feed Recipe Builder"
+        showBack
+        backFallbackHref="/home/personal/tools"
+      >
+        <LockedScreen
+          title="NPK / Feed Recipe Builder is a Pro tool"
+          message="Free accounts can use core tools and browse the app. Upgrade to build NPK recipes, model release timing, and save results to grow history."
+        />
+      </ScreenBoundary>
     );
   }
 
   return (
-    <ScrollView style={styles.container} contentContainerStyle={styles.content}>
-      <BackButton />
-      <Text style={styles.title}>NPK / Feed Recipe Builder</Text>
-      <Text style={styles.subtitle}>
-        Build up to {MAX_PRODUCT_ROWS} product rows from guaranteed analysis, target
-        N-P-K, source water, and release timing. Fertilizer label P and K are entered as
-        P2O5 and K2O, then converted to elemental P/K where appropriate.
-      </Text>
-      <View style={styles.guidanceCard}>
-        <Text style={styles.resultTitle}>AI-guided, calculator-verified</Text>
-        <Text style={styles.fieldHint}>
-          Use the target profile and ingredient rows for recipe-building conversations.
-          GrowPath AI should collect missing inputs and explain tradeoffs, while this
-          deterministic tool preserves label N-P-K, converts P2O5/K2O for elemental math,
-          tracks release timing, and saves the ToolRun for review.
+    <ScreenBoundary
+      title="NPK / Feed Recipe Builder"
+      showBack
+      backFallbackHref="/home/personal/tools"
+    >
+      <ScrollView style={styles.container} contentContainerStyle={styles.content}>
+        <Text style={styles.title}>NPK / Feed Recipe Builder</Text>
+        <Text style={styles.subtitle}>
+          Build up to {MAX_PRODUCT_ROWS} product rows from guaranteed analysis, target
+          N-P-K, source water, and release timing. Fertilizer label P and K are entered as
+          P2O5 and K2O, then converted to elemental P/K where appropriate.
         </Text>
-        <Pressable
-          accessibilityRole="button"
-          accessibilityLabel="Ask AI to build NPK recipe"
-          style={styles.secondaryButton}
-          onPress={() => setAiRecipeBrief(buildAiRecipeBrief(recipePayload()))}
-        >
-          <Text style={styles.secondaryButtonText}>Ask AI to Build Recipe</Text>
-        </Pressable>
-        {aiRecipeBrief ? (
-          <View style={styles.aiBriefBox}>
-            <Text style={styles.resultTitle}>AI recipe brief</Text>
-            <Text selectable style={styles.aiBriefText}>
-              {aiRecipeBrief}
-            </Text>
-          </View>
-        ) : null}
-      </View>
-      <PersonalFeedPlacement placement="top" routeKey="personal_tools_npk" longContent />
-      {growContext ? (
-        <Text style={styles.context}>Grow context: {growContext}</Text>
-      ) : null}
-      <ToolPlantContextPicker
-        plants={plantContext.plants}
-        plantId={plantContext.plantId}
-        selectedPlant={plantContext.selectedPlant}
-        onSelect={plantContext.setPlantId}
-      />
-
-      <Text style={styles.label}>Batch volume</Text>
-      <View style={styles.row}>
-        <TextInput
-          style={styles.volumeInput}
-          value={batchVolume}
-          onChangeText={setBatchVolume}
-          keyboardType="numeric"
-        />
-        {(["gal", "L"] as const).map((unit) => (
+        <View style={styles.guidanceCard}>
+          <Text style={styles.resultTitle}>AI-guided, calculator-verified</Text>
+          <Text style={styles.fieldHint}>
+            Use the target profile and ingredient rows for recipe-building conversations.
+            GrowPath AI should collect missing inputs and explain tradeoffs, while this
+            deterministic tool preserves label N-P-K, converts P2O5/K2O for elemental
+            math, tracks release timing, and saves the ToolRun for review.
+          </Text>
           <Pressable
-            key={unit}
-            style={[styles.pill, batchUnit === unit && styles.pillOn]}
-            onPress={() => setBatchUnit(unit)}
+            accessibilityRole="button"
+            accessibilityLabel="Ask AI to build NPK recipe"
+            style={styles.secondaryButton}
+            onPress={() => setAiRecipeBrief(buildAiRecipeBrief(recipePayload()))}
           >
-            <Text style={[styles.pillText, batchUnit === unit && styles.pillTextOn]}>
-              {unit}
-            </Text>
+            <Text style={styles.secondaryButtonText}>Ask AI to Build Recipe</Text>
           </Pressable>
-        ))}
-      </View>
-
-      <Text style={styles.label}>Recipe name</Text>
-      <TextInput
-        style={styles.fullInput}
-        value={recipeName}
-        onChangeText={setRecipeName}
-        placeholder="e.g. Veg base"
-      />
-
-      {savedRecipes.length ? (
-        <View style={styles.savedSection}>
-          <Text style={styles.label}>Saved recipes</Text>
-          {savedRecipes.map((recipe) => (
-            <Pressable
-              key={recipe._id}
-              style={[
-                styles.savedRecipe,
-                selectedRecipeId === recipe._id && styles.savedRecipeOn
-              ]}
-              onPress={() => loadRecipe(recipe)}
-            >
-              <Text style={styles.productTitle}>
-                {recipe.name} v{recipe.version}
+          {aiRecipeBrief ? (
+            <View style={styles.aiBriefBox}>
+              <Text style={styles.resultTitle}>AI recipe brief</Text>
+              <Text selectable style={styles.aiBriefText}>
+                {aiRecipeBrief}
               </Text>
-              <Text style={styles.fieldHint}>
-                {recipe.stage} | {recipe.medium} | used {recipe.useCount || 0} times
+            </View>
+          ) : null}
+        </View>
+        <PersonalFeedPlacement
+          placement="top"
+          routeKey="personal_tools_npk"
+          longContent
+        />
+        {growContext ? (
+          <Text style={styles.context}>Grow context: {growContext}</Text>
+        ) : null}
+        <ToolPlantContextPicker
+          plants={plantContext.plants}
+          plantId={plantContext.plantId}
+          selectedPlant={plantContext.selectedPlant}
+          onSelect={plantContext.setPlantId}
+        />
+
+        <Text style={styles.label}>Batch volume</Text>
+        <View style={styles.row}>
+          <TextInput
+            style={styles.volumeInput}
+            value={batchVolume}
+            onChangeText={setBatchVolume}
+            keyboardType="numeric"
+          />
+          {(["gal", "L"] as const).map((unit) => (
+            <Pressable
+              key={unit}
+              style={[styles.pill, batchUnit === unit && styles.pillOn]}
+              onPress={() => setBatchUnit(unit)}
+            >
+              <Text style={[styles.pillText, batchUnit === unit && styles.pillTextOn]}>
+                {unit}
               </Text>
             </Pressable>
           ))}
-          {selectedRecipeId ? (
-            <View style={styles.row}>
-              <Pressable style={styles.secondaryButton} onPress={updateSelectedRecipe}>
-                <Text style={styles.secondaryButtonText}>Update Selected Recipe</Text>
-              </Pressable>
-              <Pressable style={styles.secondaryButton} onPress={archiveSelectedRecipe}>
-                <Text style={styles.secondaryButtonText}>Archive Selected Recipe</Text>
-              </Pressable>
-            </View>
-          ) : null}
         </View>
-      ) : null}
 
-      <Text style={styles.label}>Recipe context</Text>
-      <View style={styles.row}>
-        <View style={styles.selectWrap}>
-          <Picker
-            selectedValue={recipeMode}
-            onValueChange={setRecipeMode}
-            style={styles.picker}
-          >
-            <Picker.Item label="Dose existing products" value="dose_existing_products" />
-            <Picker.Item label="Hit target profile" value="hit_target_profile" />
-            <Picker.Item label="Build dry blend" value="build_dry_blend" />
-            <Picker.Item label="Build soil amendment plan" value="soil_amendment_plan" />
-          </Picker>
-        </View>
-        <View style={styles.selectWrap}>
-          <Picker selectedValue={stage} onValueChange={setStage} style={styles.picker}>
-            {[
-              "seedling",
-              "veg",
-              "preflower",
-              "flower",
-              "late_flower",
-              "soil_building"
-            ].map((value) => (
-              <Picker.Item key={value} label={value.replace("_", " ")} value={value} />
-            ))}
-          </Picker>
-        </View>
-        <View style={styles.selectWrap}>
-          <Picker selectedValue={medium} onValueChange={setMedium} style={styles.picker}>
-            {["soil", "living_soil", "coco", "peat", "hydro"].map((value) => (
-              <Picker.Item key={value} label={value.replace("_", " ")} value={value} />
-            ))}
-          </Picker>
-        </View>
+        <Text style={styles.label}>Recipe name</Text>
         <TextInput
-          style={styles.input}
-          value={daysUntilHarvest}
-          onChangeText={setDaysUntilHarvest}
-          keyboardType="numeric"
-          placeholder="Days until harvest"
+          style={styles.fullInput}
+          value={recipeName}
+          onChangeText={setRecipeName}
+          placeholder="e.g. Veg base"
         />
-        <TextInput
-          style={styles.input}
-          value={soilTempC}
-          onChangeText={setSoilTempC}
-          keyboardType="numeric"
-          placeholder="Soil temp C"
-        />
-      </View>
-      <Text style={styles.label}>Target profile</Text>
-      <Text style={styles.fieldHint}>
-        Optional target N-P-K lets AI and the calculator compare the recipe goal to the
-        actual label math. Use label N-P2O5-K2O here; elemental P/K conversion stays
-        inside the deterministic tool output.
-      </Text>
-      <View style={styles.analysisGrid}>
-        {[
-          ["Target N", targetN, setTargetN],
-          ["Target P", targetP, setTargetP],
-          ["Target K", targetK, setTargetK]
-        ].map(([label, value, setter]: any) => (
-          <View key={label} style={styles.analysisField}>
-            <Text style={styles.analysisLabel}>{label}</Text>
-            <TextInput
-              style={styles.analysisInput}
-              value={value}
-              onChangeText={setter}
-              keyboardType="numeric"
-            />
-          </View>
-        ))}
-        <View style={styles.selectWrapFull}>
-          <Picker
-            selectedValue={desiredReleaseProfile}
-            onValueChange={setDesiredReleaseProfile}
-            style={styles.picker}
-          >
-            {["fast", "medium", "slow", "blended"].map((value) => (
-              <Picker.Item key={value} label={`${value} release`} value={value} />
-            ))}
-          </Picker>
-        </View>
-      </View>
-      <View style={styles.row}>
-        {["dry", "even", "waterlogged"].map((value) => (
-          <Pressable
-            key={value}
-            style={[styles.pill, moisture === value && styles.pillOn]}
-            onPress={() => setMoisture(value)}
-          >
-            <Text style={[styles.pillText, moisture === value && styles.pillTextOn]}>
-              {value}
-            </Text>
-          </Pressable>
-        ))}
-        <Pressable
-          style={[styles.pill, livingSoil && styles.pillOn]}
-          onPress={() => setLivingSoil((value) => !value)}
-        >
-          <Text style={[styles.pillText, livingSoil && styles.pillTextOn]}>
-            Living soil
-          </Text>
-        </Pressable>
-        <Pressable
-          style={[styles.pill, isConcentrate && styles.pillOn]}
-          onPress={() => setIsConcentrate((value) => !value)}
-        >
-          <Text style={[styles.pillText, isConcentrate && styles.pillTextOn]}>
-            Concentrated stock
-          </Text>
-        </Pressable>
-      </View>
 
-      <Text style={styles.label}>Water baseline and measured feed</Text>
-      <Text style={styles.fieldHint}>
-        Add source-water minerals and the final mixed EC/pH so recipe history matches what
-        was actually fed.
-      </Text>
-      <View style={styles.analysisGrid}>
-        {[
-          ["Source EC", sourceEC, setSourceEC],
-          ["Source pH", sourcePH, setSourcePH],
-          ["Alkalinity ppm", alkalinityPpm, setAlkalinityPpm],
-          ["Water Ca ppm", waterCa, setWaterCa],
-          ["Water Mg ppm", waterMg, setWaterMg],
-          ["Measured EC", measuredEC, setMeasuredEC],
-          ["Measured pH", measuredPH, setMeasuredPH]
-        ].map(([label, value, setter]: any) => (
-          <View key={label} style={styles.analysisFieldWide}>
-            <Text style={styles.analysisLabel}>{label}</Text>
-            <TextInput
-              style={styles.analysisInput}
-              value={value}
-              onChangeText={setter}
-              keyboardType="numeric"
-            />
-          </View>
-        ))}
-      </View>
-
-      {rows.map((row, index) => (
-        <View key={row.id} style={styles.product}>
-          <View style={styles.productHeader}>
-            <Text style={styles.productTitle}>Product {index + 1}</Text>
-            {rows.length > 1 ? (
+        {savedRecipes.length ? (
+          <View style={styles.savedSection}>
+            <Text style={styles.label}>Saved recipes</Text>
+            {savedRecipes.map((recipe) => (
               <Pressable
-                onPress={() =>
-                  setRows((current) => current.filter((item) => item.id !== row.id))
-                }
+                key={recipe._id}
+                style={[
+                  styles.savedRecipe,
+                  selectedRecipeId === recipe._id && styles.savedRecipeOn
+                ]}
+                onPress={() => loadRecipe(recipe)}
               >
-                <Text style={styles.remove}>Remove</Text>
+                <Text style={styles.productTitle}>
+                  {recipe.name} v{recipe.version}
+                </Text>
+                <Text style={styles.fieldHint}>
+                  {recipe.stage} | {recipe.medium} | used {recipe.useCount || 0} times
+                </Text>
               </Pressable>
+            ))}
+            {selectedRecipeId ? (
+              <View style={styles.row}>
+                <Pressable style={styles.secondaryButton} onPress={updateSelectedRecipe}>
+                  <Text style={styles.secondaryButtonText}>Update Selected Recipe</Text>
+                </Pressable>
+                <Pressable style={styles.secondaryButton} onPress={archiveSelectedRecipe}>
+                  <Text style={styles.secondaryButtonText}>Archive Selected Recipe</Text>
+                </Pressable>
+              </View>
             ) : null}
           </View>
-          <TextInput
-            style={styles.fullInput}
-            value={row.name}
-            onChangeText={(value) => updateRow(row.id, "name", value)}
-            placeholder="Product name"
-          />
-          <Text style={styles.fieldHint}>Chemical form and evidence</Text>
-          <View style={styles.selectWrapFull}>
+        ) : null}
+
+        <Text style={styles.label}>Recipe context</Text>
+        <View style={styles.row}>
+          <View style={styles.selectWrap}>
             <Picker
-              selectedValue={row.chemistryKey}
-              onValueChange={(value) => updateRow(row.id, "chemistryKey", value)}
+              selectedValue={recipeMode}
+              onValueChange={setRecipeMode}
               style={styles.picker}
             >
-              {chemistryOptions.map(([value, label]) => (
-                <Picker.Item key={value} label={label} value={value} />
+              <Picker.Item
+                label="Dose existing products"
+                value="dose_existing_products"
+              />
+              <Picker.Item label="Hit target profile" value="hit_target_profile" />
+              <Picker.Item label="Build dry blend" value="build_dry_blend" />
+              <Picker.Item
+                label="Build soil amendment plan"
+                value="soil_amendment_plan"
+              />
+            </Picker>
+          </View>
+          <View style={styles.selectWrap}>
+            <Picker selectedValue={stage} onValueChange={setStage} style={styles.picker}>
+              {[
+                "seedling",
+                "veg",
+                "preflower",
+                "flower",
+                "late_flower",
+                "soil_building"
+              ].map((value) => (
+                <Picker.Item key={value} label={value.replace("_", " ")} value={value} />
               ))}
             </Picker>
           </View>
-          <View style={styles.selectWrapFull}>
+          <View style={styles.selectWrap}>
             <Picker
-              selectedValue={row.sourceType}
-              onValueChange={(value) => updateRow(row.id, "sourceType", value)}
+              selectedValue={medium}
+              onValueChange={setMedium}
               style={styles.picker}
             >
-              <Picker.Item label="User entered" value="user_entered" />
-              <Picker.Item label="Manufacturer label" value="manufacturer" />
-              <Picker.Item label="Extension reference" value="extension_reference" />
-              <Picker.Item label="Lab tested" value="lab_tested" />
+              {["soil", "living_soil", "coco", "peat", "hydro"].map((value) => (
+                <Picker.Item key={value} label={value.replace("_", " ")} value={value} />
+              ))}
             </Picker>
           </View>
-          <Text style={styles.fieldHint}>Release behavior</Text>
-          <View style={styles.row}>
-            <View style={styles.selectWrap}>
-              <Picker
-                selectedValue={row.releaseSpeed}
-                onValueChange={(value) => updateRow(row.id, "releaseSpeed", value)}
-                style={styles.picker}
-              >
-                <Picker.Item label="Immediate release" value="immediate" />
-                <Picker.Item label="Fast release" value="fast" />
-                <Picker.Item label="Medium release" value="medium" />
-                <Picker.Item label="Slow release" value="slow" />
-                <Picker.Item label="Unknown release" value="unknown" />
-              </Picker>
+          <TextInput
+            style={styles.input}
+            value={daysUntilHarvest}
+            onChangeText={setDaysUntilHarvest}
+            keyboardType="numeric"
+            placeholder="Days until harvest"
+          />
+          <TextInput
+            style={styles.input}
+            value={soilTempC}
+            onChangeText={setSoilTempC}
+            keyboardType="numeric"
+            placeholder="Soil temp C"
+          />
+        </View>
+        <Text style={styles.label}>Target profile</Text>
+        <Text style={styles.fieldHint}>
+          Optional target N-P-K lets AI and the calculator compare the recipe goal to the
+          actual label math. Use label N-P2O5-K2O here; elemental P/K conversion stays
+          inside the deterministic tool output.
+        </Text>
+        <View style={styles.analysisGrid}>
+          {[
+            ["Target N", targetN, setTargetN],
+            ["Target P", targetP, setTargetP],
+            ["Target K", targetK, setTargetK]
+          ].map(([label, value, setter]: any) => (
+            <View key={label} style={styles.analysisField}>
+              <Text style={styles.analysisLabel}>{label}</Text>
+              <TextInput
+                style={styles.analysisInput}
+                value={value}
+                onChangeText={setter}
+                keyboardType="numeric"
+              />
             </View>
-            <View style={styles.selectWrap}>
-              <Picker
-                selectedValue={row.releaseWindow}
-                onValueChange={(value) => updateRow(row.id, "releaseWindow", value)}
-                style={styles.picker}
-              >
-                <Picker.Item label="Day 0-7" value="days_0_7" />
-                <Picker.Item label="Day 7-21" value="days_7_21" />
-                <Picker.Item label="Day 21-45" value="days_21_45" />
-                <Picker.Item label="Day 45-90" value="days_45_90" />
-                <Picker.Item label="90+ days" value="days_90_plus" />
-                <Picker.Item label="Unknown window" value="unknown" />
-              </Picker>
-            </View>
-          </View>
-          <Text style={styles.fieldHint}>
-            Use this when a label or your experience says an input behaves faster or
-            slower than the chemical-form default. Compost and castings should usually
-            stay uncertain unless lab-tested.
-          </Text>
-          <View style={styles.row}>
-            <TextInput
-              style={styles.input}
-              value={row.amount}
-              onChangeText={(value) => updateRow(row.id, "amount", value)}
-              keyboardType="numeric"
-              placeholder="Amount"
-            />
-            {(["g", "ml", "oz", "tsp", "tbsp"] as const).map((unit) => (
-              <Pressable
-                key={unit}
-                style={[styles.pill, row.unit === unit && styles.pillOn]}
-                onPress={() => updateRow(row.id, "unit", unit)}
-              >
-                <Text style={[styles.pillText, row.unit === unit && styles.pillTextOn]}>
-                  {unit}
-                </Text>
-              </Pressable>
-            ))}
-            {["ml", "tsp", "tbsp"].includes(row.unit) ? (
-              <View style={styles.densityField}>
-                <TextInput
-                  style={styles.input}
-                  value={row.densityGml}
-                  onChangeText={(value) => updateRow(row.id, "densityGml", value)}
-                  keyboardType="numeric"
-                  placeholder="g/ml"
-                  accessibilityLabel={`NPK ingredient ${index + 1} density g/ml`}
-                />
-                <Text style={styles.fieldHint}>
-                  Required for liquid volume rows. 1 g/ml is an assumption unless the
-                  label provides density.
-                </Text>
-              </View>
-            ) : null}
-          </View>
-          <Text style={styles.fieldHint}>Micronutrient percentages</Text>
-          <View style={styles.analysisGrid}>
-            {(["Fe", "Mn", "Zn", "Cu", "B", "Mo", "Si"] as const).map((key) => (
-              <View key={key} style={styles.analysisField}>
-                <Text style={styles.analysisLabel}>{key}%</Text>
-                <TextInput
-                  style={styles.analysisInput}
-                  value={row[key]}
-                  onChangeText={(value) => updateRow(row.id, key, value)}
-                  keyboardType="numeric"
-                />
-              </View>
-            ))}
-          </View>
-          <Text style={styles.fieldHint}>Guaranteed analysis percentages</Text>
-          <Text style={styles.fieldHint}>
-            Label N-P-K uses elemental N, P2O5, and K2O. GrowPath also stores elemental P
-            and K for recipe math using P2O5 x 0.4364 and K2O x 0.8301.
-          </Text>
-          <View style={styles.analysisGrid}>
-            {(["N", "P", "K", "Ca", "Mg", "S"] as const).map((key) => (
-              <View key={key} style={styles.analysisField}>
-                <Text style={styles.analysisLabel}>{guaranteedAnalysisLabels[key]}%</Text>
-                <TextInput
-                  accessibilityLabel={`NPK ingredient ${index + 1} ${guaranteedAnalysisLabels[key]} percent`}
-                  style={styles.analysisInput}
-                  value={row[key]}
-                  onChangeText={(value) => updateRow(row.id, key, value)}
-                  keyboardType="numeric"
-                />
-              </View>
-            ))}
+          ))}
+          <View style={styles.selectWrapFull}>
+            <Picker
+              selectedValue={desiredReleaseProfile}
+              onValueChange={setDesiredReleaseProfile}
+              style={styles.picker}
+            >
+              {["fast", "medium", "slow", "blended"].map((value) => (
+                <Picker.Item key={value} label={`${value} release`} value={value} />
+              ))}
+            </Picker>
           </View>
         </View>
-      ))}
-
-      {rows.length < MAX_PRODUCT_ROWS ? (
-        <Pressable
-          style={styles.secondaryButton}
-          onPress={() => setRows((current) => [...current, newRow(current.length)])}
-        >
-          <Text style={styles.secondaryButtonText}>
-            Add product ({rows.length}/{MAX_PRODUCT_ROWS})
-          </Text>
-        </Pressable>
-      ) : null}
-      <Pressable
-        style={[styles.primaryButton, running && styles.disabled]}
-        disabled={running}
-        onPress={calculate}
-      >
-        <Text style={styles.primaryButtonText}>
-          {running ? "Calculating..." : "Calculate recipe"}
-        </Text>
-      </Pressable>
-      {feedback ? <Text style={styles.feedback}>{feedback}</Text> : null}
-
-      {result && recipeName.trim() ? (
         <View style={styles.row}>
+          {["dry", "even", "waterlogged"].map((value) => (
+            <Pressable
+              key={value}
+              style={[styles.pill, moisture === value && styles.pillOn]}
+              onPress={() => setMoisture(value)}
+            >
+              <Text style={[styles.pillText, moisture === value && styles.pillTextOn]}>
+                {value}
+              </Text>
+            </Pressable>
+          ))}
           <Pressable
-            style={styles.secondaryButton}
-            onPress={async () => {
-              try {
-                const saved = selectedRecipeId
-                  ? await reviseNutrientRecipe(selectedRecipeId, recipePayload())
-                  : await createNutrientRecipe(recipePayload());
-                setSelectedRecipeId(saved._id);
-                await reloadRecipes();
-                setFeedback(`Saved ${saved.name} v${saved.version}.`);
-              } catch (error: any) {
-                setFeedback(error?.message || "Unable to save recipe.");
-              }
-            }}
+            style={[styles.pill, livingSoil && styles.pillOn]}
+            onPress={() => setLivingSoil((value) => !value)}
           >
-            <Text style={styles.secondaryButtonText}>
-              {selectedRecipeId ? "Save New Revision" : "Save Recipe"}
+            <Text style={[styles.pillText, livingSoil && styles.pillTextOn]}>
+              Living soil
             </Text>
           </Pressable>
-          {selectedRecipeId ? (
-            <>
-              <Pressable
-                style={styles.secondaryButton}
-                onPress={async () => {
-                  const clone = await cloneNutrientRecipe(
-                    selectedRecipeId,
-                    `${recipeName} copy`
-                  );
-                  await reloadRecipes();
-                  loadRecipe(clone);
-                  setFeedback("Recipe cloned.");
-                }}
-              >
-                <Text style={styles.secondaryButtonText}>Clone Recipe</Text>
-              </Pressable>
-              <Pressable
-                style={styles.primaryButton}
-                onPress={async () => {
-                  await recordNutrientRecipeUse(selectedRecipeId, {
-                    growId: growContext || undefined,
-                    batchVolume: Number(batchVolume),
-                    batchUnit,
-                    measuredEC: measuredEC ? Number(measuredEC) : undefined,
-                    measuredPH: measuredPH ? Number(measuredPH) : undefined,
-                    waterBaseline: recipePayload().waterBaseline,
-                    saveLog: true
-                  });
-                  await reloadRecipes();
-                  setFeedback("Recipe use saved to grow history.");
-                }}
-              >
-                <Text style={styles.primaryButtonText}>Record Feeding</Text>
-              </Pressable>
-            </>
-          ) : null}
+          <Pressable
+            style={[styles.pill, isConcentrate && styles.pillOn]}
+            onPress={() => setIsConcentrate((value) => !value)}
+          >
+            <Text style={[styles.pillText, isConcentrate && styles.pillTextOn]}>
+              Concentrated stock
+            </Text>
+          </Pressable>
         </View>
-      ) : null}
 
-      {result ? (
-        <>
-          <PersonalFeedPlacement
-            placement="middle"
-            routeKey="personal_tools_npk"
-            longContent
-          />
-          <ToolResultSurface
-            title="NPK recipe result"
-            status="CALCULATED"
-            summary={result.formula}
-            metrics={Object.entries(result.totals || {}).map(([key, value]) => ({
-              key,
-              label: key.replace("ppm", ""),
-              value: String(value),
-              detail: "ppm elemental"
-            }))}
-            inputs={toolRun?.inputs || recipePayload()}
-            outputs={toolRun?.outputs || result}
-            notices={[
-              ...buildNutrientContextNotices(plantContext.selectedPlantContext),
-              ...(result.warnings || []).map((warning: string, index: number) => ({
-                key: `warning-${index}`,
-                severity: "medium" as const,
-                message: warning
-              })),
-              ...(result.sourceConfidence && result.sourceConfidence.overall !== "high"
-                ? [
-                    {
-                      key: "source-confidence",
-                      severity: "medium" as const,
-                      message:
-                        "One or more product rows are not high-confidence source data.",
-                      remediation:
-                        "Verify manufacturer labels, density assumptions, source water, and measured EC/pH before applying the recipe."
-                    }
-                  ]
-                : [])
-            ]}
-            recommendations={[
-              ...(result.recommendations || []),
-              "Verify product labels, water baseline, and final mixed EC/pH before applying this recipe."
-            ]}
-            formulas={
-              toolRun?.formulas?.length
-                ? toolRun.formulas
-                : [
-                    result.formula ||
-                      "Fertilizer label P and K are converted from oxide label values to elemental ppm."
-                  ]
-            }
-            uncertainty={
-              toolRun?.uncertainty ||
-              "Ingredient labels, density assumptions, water baseline, and product source confidence affect nutrient totals."
-            }
-            confidence={toolRun?.confidence || "label-math-calculator"}
-            assumptions={[
-              buildNutrientContextAssumption(plantContext.selectedPlantContext),
-              result.releaseDisclaimer,
-              "Raw NPK totals are label math; release timing and availability estimates are not a substitute for substrate tests, water tests, or measured runoff/feed data."
-            ].filter(Boolean)}
-            details={
+        <Text style={styles.label}>Water baseline and measured feed</Text>
+        <Text style={styles.fieldHint}>
+          Add source-water minerals and the final mixed EC/pH so recipe history matches
+          what was actually fed.
+        </Text>
+        <View style={styles.analysisGrid}>
+          {[
+            ["Source EC", sourceEC, setSourceEC],
+            ["Source pH", sourcePH, setSourcePH],
+            ["Alkalinity ppm", alkalinityPpm, setAlkalinityPpm],
+            ["Water Ca ppm", waterCa, setWaterCa],
+            ["Water Mg ppm", waterMg, setWaterMg],
+            ["Measured EC", measuredEC, setMeasuredEC],
+            ["Measured pH", measuredPH, setMeasuredPH]
+          ].map(([label, value, setter]: any) => (
+            <View key={label} style={styles.analysisFieldWide}>
+              <Text style={styles.analysisLabel}>{label}</Text>
+              <TextInput
+                style={styles.analysisInput}
+                value={value}
+                onChangeText={setter}
+                keyboardType="numeric"
+              />
+            </View>
+          ))}
+        </View>
+
+        {rows.map((row, index) => (
+          <View key={row.id} style={styles.product}>
+            <View style={styles.productHeader}>
+              <Text style={styles.productTitle}>Product {index + 1}</Text>
+              {rows.length > 1 ? (
+                <Pressable
+                  onPress={() =>
+                    setRows((current) => current.filter((item) => item.id !== row.id))
+                  }
+                >
+                  <Text style={styles.remove}>Remove</Text>
+                </Pressable>
+              ) : null}
+            </View>
+            <TextInput
+              style={styles.fullInput}
+              value={row.name}
+              onChangeText={(value) => updateRow(row.id, "name", value)}
+              placeholder="Product name"
+            />
+            <Text style={styles.fieldHint}>Chemical form and evidence</Text>
+            <View style={styles.selectWrapFull}>
+              <Picker
+                selectedValue={row.chemistryKey}
+                onValueChange={(value) => updateRow(row.id, "chemistryKey", value)}
+                style={styles.picker}
+              >
+                {chemistryOptions.map(([value, label]) => (
+                  <Picker.Item key={value} label={label} value={value} />
+                ))}
+              </Picker>
+            </View>
+            <View style={styles.selectWrapFull}>
+              <Picker
+                selectedValue={row.sourceType}
+                onValueChange={(value) => updateRow(row.id, "sourceType", value)}
+                style={styles.picker}
+              >
+                <Picker.Item label="User entered" value="user_entered" />
+                <Picker.Item label="Manufacturer label" value="manufacturer" />
+                <Picker.Item label="Extension reference" value="extension_reference" />
+                <Picker.Item label="Lab tested" value="lab_tested" />
+              </Picker>
+            </View>
+            <Text style={styles.fieldHint}>Release behavior</Text>
+            <View style={styles.row}>
+              <View style={styles.selectWrap}>
+                <Picker
+                  selectedValue={row.releaseSpeed}
+                  onValueChange={(value) => updateRow(row.id, "releaseSpeed", value)}
+                  style={styles.picker}
+                >
+                  <Picker.Item label="Immediate release" value="immediate" />
+                  <Picker.Item label="Fast release" value="fast" />
+                  <Picker.Item label="Medium release" value="medium" />
+                  <Picker.Item label="Slow release" value="slow" />
+                  <Picker.Item label="Unknown release" value="unknown" />
+                </Picker>
+              </View>
+              <View style={styles.selectWrap}>
+                <Picker
+                  selectedValue={row.releaseWindow}
+                  onValueChange={(value) => updateRow(row.id, "releaseWindow", value)}
+                  style={styles.picker}
+                >
+                  <Picker.Item label="Day 0-7" value="days_0_7" />
+                  <Picker.Item label="Day 7-21" value="days_7_21" />
+                  <Picker.Item label="Day 21-45" value="days_21_45" />
+                  <Picker.Item label="Day 45-90" value="days_45_90" />
+                  <Picker.Item label="90+ days" value="days_90_plus" />
+                  <Picker.Item label="Unknown window" value="unknown" />
+                </Picker>
+              </View>
+            </View>
+            <Text style={styles.fieldHint}>
+              Use this when a label or your experience says an input behaves faster or
+              slower than the chemical-form default. Compost and castings should usually
+              stay uncertain unless lab-tested.
+            </Text>
+            <View style={styles.row}>
+              <TextInput
+                style={styles.input}
+                value={row.amount}
+                onChangeText={(value) => updateRow(row.id, "amount", value)}
+                keyboardType="numeric"
+                placeholder="Amount"
+              />
+              {(["g", "ml", "oz", "tsp", "tbsp"] as const).map((unit) => (
+                <Pressable
+                  key={unit}
+                  style={[styles.pill, row.unit === unit && styles.pillOn]}
+                  onPress={() => updateRow(row.id, "unit", unit)}
+                >
+                  <Text style={[styles.pillText, row.unit === unit && styles.pillTextOn]}>
+                    {unit}
+                  </Text>
+                </Pressable>
+              ))}
+              {["ml", "tsp", "tbsp"].includes(row.unit) ? (
+                <View style={styles.densityField}>
+                  <TextInput
+                    style={styles.input}
+                    value={row.densityGml}
+                    onChangeText={(value) => updateRow(row.id, "densityGml", value)}
+                    keyboardType="numeric"
+                    placeholder="g/ml"
+                    accessibilityLabel={`NPK ingredient ${index + 1} density g/ml`}
+                  />
+                  <Text style={styles.fieldHint}>
+                    Required for liquid volume rows. 1 g/ml is an assumption unless the
+                    label provides density.
+                  </Text>
+                </View>
+              ) : null}
+            </View>
+            <Text style={styles.fieldHint}>Micronutrient percentages</Text>
+            <View style={styles.analysisGrid}>
+              {(["Fe", "Mn", "Zn", "Cu", "B", "Mo", "Si"] as const).map((key) => (
+                <View key={key} style={styles.analysisField}>
+                  <Text style={styles.analysisLabel}>{key}%</Text>
+                  <TextInput
+                    style={styles.analysisInput}
+                    value={row[key]}
+                    onChangeText={(value) => updateRow(row.id, key, value)}
+                    keyboardType="numeric"
+                  />
+                </View>
+              ))}
+            </View>
+            <Text style={styles.fieldHint}>Guaranteed analysis percentages</Text>
+            <Text style={styles.fieldHint}>
+              Label N-P-K uses elemental N, P2O5, and K2O. GrowPath also stores elemental
+              P and K for recipe math using P2O5 x 0.4364 and K2O x 0.8301.
+            </Text>
+            <View style={styles.analysisGrid}>
+              {(["N", "P", "K", "Ca", "Mg", "S"] as const).map((key) => (
+                <View key={key} style={styles.analysisField}>
+                  <Text style={styles.analysisLabel}>
+                    {guaranteedAnalysisLabels[key]}%
+                  </Text>
+                  <TextInput
+                    accessibilityLabel={`NPK ingredient ${index + 1} ${guaranteedAnalysisLabels[key]} percent`}
+                    style={styles.analysisInput}
+                    value={row[key]}
+                    onChangeText={(value) => updateRow(row.id, key, value)}
+                    keyboardType="numeric"
+                  />
+                </View>
+              ))}
+            </View>
+          </View>
+        ))}
+
+        {rows.length < MAX_PRODUCT_ROWS ? (
+          <Pressable
+            style={styles.secondaryButton}
+            onPress={() => setRows((current) => [...current, newRow(current.length)])}
+          >
+            <Text style={styles.secondaryButtonText}>
+              Add product ({rows.length}/{MAX_PRODUCT_ROWS})
+            </Text>
+          </Pressable>
+        ) : null}
+        <Pressable
+          style={[styles.primaryButton, running && styles.disabled]}
+          disabled={running}
+          onPress={calculate}
+        >
+          <Text style={styles.primaryButtonText}>
+            {running ? "Calculating..." : "Calculate recipe"}
+          </Text>
+        </Pressable>
+        {feedback ? <Text style={styles.feedback}>{feedback}</Text> : null}
+
+        {result && recipeName.trim() ? (
+          <View style={styles.row}>
+            <Pressable
+              style={styles.secondaryButton}
+              onPress={async () => {
+                try {
+                  const saved = selectedRecipeId
+                    ? await reviseNutrientRecipe(selectedRecipeId, recipePayload())
+                    : await createNutrientRecipe(recipePayload());
+                  setSelectedRecipeId(saved._id);
+                  await reloadRecipes();
+                  setFeedback(`Saved ${saved.name} v${saved.version}.`);
+                } catch (error: any) {
+                  setFeedback(error?.message || "Unable to save recipe.");
+                }
+              }}
+            >
+              <Text style={styles.secondaryButtonText}>
+                {selectedRecipeId ? "Save New Revision" : "Save Recipe"}
+              </Text>
+            </Pressable>
+            {selectedRecipeId ? (
               <>
-                {result.sourceConfidence ? (
-                  <>
-                    <Text style={styles.resultTitle}>Source confidence</Text>
-                    <Text style={styles.recommendation}>
-                      Overall: {result.sourceConfidence.overall}. High{" "}
-                      {result.sourceConfidence.counts?.high || 0}, medium{" "}
-                      {result.sourceConfidence.counts?.medium || 0}, low{" "}
-                      {result.sourceConfidence.counts?.low || 0}.
-                    </Text>
-                  </>
-                ) : null}
-                {Array.isArray(result.mixingOrder) && result.mixingOrder.length ? (
-                  <>
-                    <Text style={styles.resultTitle}>Mixing sequence</Text>
-                    {result.mixingOrder.map((step: string, index: number) => (
-                      <Text key={`${step}-${index}`} style={styles.recommendation}>
-                        {index + 1}. {step}
-                      </Text>
-                    ))}
-                  </>
-                ) : null}
-                {result.availabilityEstimate?.windows ? (
-                  <>
-                    <Text style={styles.resultTitle}>Estimated availability</Text>
-                    <Text style={styles.fieldHint}>
-                      Raw ppm is label math. Availability estimates apply release timing
-                      from the product form.
-                    </Text>
-                    {Object.entries(result.availabilityEstimate.windows).map(
-                      ([window, totals]: [string, any]) => {
-                        const primary = ["Nppm", "Pppm", "Kppm", "Cappm", "Mgppm"]
-                          .map(
-                            (key) => `${key.replace("ppm", "")}: ${totals?.[key] || 0}`
-                          )
-                          .join(" / ");
-                        return (
-                          <Text key={window} style={styles.recommendation}>
-                            {window.replaceAll("_", "-")}: {primary}
-                          </Text>
-                        );
-                      }
-                    )}
-                    {result.availabilityEstimate.disclaimer ? (
-                      <Text style={styles.fieldHint}>
-                        {result.availabilityEstimate.disclaimer}
-                      </Text>
-                    ) : null}
-                  </>
-                ) : null}
-                <Text style={styles.resultTitle}>Release timing</Text>
-                {Object.entries(result.releaseTimeline || {}).map(
-                  ([window, entries]: [string, any]) =>
-                    entries.length ? (
-                      <View key={window} style={styles.timelineRow}>
-                        <Text style={styles.timelineLabel}>
-                          {window.replaceAll("_", "-")}
-                        </Text>
-                        <Text style={styles.recommendation}>
-                          {entries
-                            .map(
-                              (entry: any) =>
-                                `${entry.name}: ${entry.form} (${entry.confidence})`
-                            )
-                            .join("; ")}
-                        </Text>
-                      </View>
-                    ) : null
-                )}
+                <Pressable
+                  style={styles.secondaryButton}
+                  onPress={async () => {
+                    const clone = await cloneNutrientRecipe(
+                      selectedRecipeId,
+                      `${recipeName} copy`
+                    );
+                    await reloadRecipes();
+                    loadRecipe(clone);
+                    setFeedback("Recipe cloned.");
+                  }}
+                >
+                  <Text style={styles.secondaryButtonText}>Clone Recipe</Text>
+                </Pressable>
+                <Pressable
+                  style={styles.primaryButton}
+                  onPress={async () => {
+                    await recordNutrientRecipeUse(selectedRecipeId, {
+                      growId: growContext || undefined,
+                      batchVolume: Number(batchVolume),
+                      batchUnit,
+                      measuredEC: measuredEC ? Number(measuredEC) : undefined,
+                      measuredPH: measuredPH ? Number(measuredPH) : undefined,
+                      waterBaseline: recipePayload().waterBaseline,
+                      saveLog: true
+                    });
+                    await reloadRecipes();
+                    setFeedback("Recipe use saved to grow history.");
+                  }}
+                >
+                  <Text style={styles.primaryButtonText}>Record Feeding</Text>
+                </Pressable>
               </>
-            }
-            actions={[
-              ...(toolRun?._id && growContext
-                ? [
-                    {
-                      key: "save-log",
-                      label: "Save to Grow Log",
-                      onPress: async () => {
-                        await saveToolRunToLog(toolRun._id!);
-                        setFeedback("Saved to grow journal.");
-                      }
-                    },
-                    {
-                      key: "create-task",
-                      label: "Create Recipe Review Task",
-                      variant: "secondary" as const,
-                      onPress: async () => {
-                        const taskResult = await saveToolRunAndCreateTask({
-                          growId: growContext,
-                          ...plantContext.toolRunContext,
-                          toolKey: "npk-recipe",
-                          toolRunId: toolRun._id!,
-                          input: toolRun.inputs || recipePayload(),
-                          output: toolRun.outputs || result,
-                          title: "Review NPK recipe before feeding",
-                          description: [
-                            recipeName.trim() ? `Recipe: ${recipeName.trim()}` : "",
-                            result.sourceConfidence
-                              ? `Source confidence: ${result.sourceConfidence.overall}`
-                              : "",
-                            measuredEC ? `Measured EC: ${measuredEC}` : "",
-                            measuredPH ? `Measured pH: ${measuredPH}` : "",
-                            "Verify product labels, water baseline, final EC/pH, and plant stage before application."
-                          ]
-                            .filter(Boolean)
-                            .join("\n"),
-                          priority:
-                            result.sourceConfidence?.overall === "low"
-                              ? "high"
-                              : "medium",
-                          dueDate: new Date(
-                            Date.now() + 24 * 60 * 60 * 1000
-                          ).toISOString()
-                        });
-                        if (!taskResult.ok) throw new Error(taskResult.error);
-                        setFeedback("Recipe review task created.");
-                      }
-                    },
-                    {
-                      key: "create-recipe-task-plan",
-                      label: "Create Recipe Task Plan",
-                      variant: "secondary" as const,
-                      onPress: async () => {
-                        const taskInput =
-                          toolRun.inputs && Object.keys(toolRun.inputs).length
-                            ? toolRun.inputs
-                            : recipePayload();
-                        const taskOutput =
-                          toolRun.outputs && Object.keys(toolRun.outputs).length
-                            ? toolRun.outputs
-                            : result;
-                        const taskResult = await saveToolRunAndCreateTasks({
-                          growId: growContext,
-                          ...plantContext.toolRunContext,
-                          toolKey: "npk-recipe",
-                          toolRunId: toolRun._id!,
-                          input: taskInput,
-                          output: taskOutput,
-                          tasks: npkRecipeTasks({
-                            recipeName,
-                            recipeMode,
-                            stage,
-                            medium,
-                            result,
-                            payload: taskInput
-                          })
-                        });
-                        if (!taskResult.ok) throw new Error(taskResult.error);
-                        setFeedback("Recipe task plan created.");
-                      }
-                    }
-                  ]
-                : []),
-              ...(recipeName.trim()
-                ? [
-                    {
-                      key: "convert-product-draft",
-                      label: "Convert to Product Draft",
-                      variant: "secondary" as const,
-                      pendingLabel: "Creating draft...",
-                      successMessage: "Product draft created.",
-                      onPress: async () => {
-                        const created = await createProduct(
-                          productDraftFromRecipe() as any
-                        );
-                        const productId = created?.product?.id || created?.id;
-                        setFeedback(
-                          productId
-                            ? `Product draft created: ${productId}.`
-                            : "Product draft created."
-                        );
-                      }
-                    }
-                  ]
-                : [])
-            ]}
-            feedback={feedback}
-            contextMessage={
-              !growContext
-                ? "Select a grow to enable journal and task actions."
-                : undefined
-            }
-          />
-        </>
-      ) : null}
+            ) : null}
+          </View>
+        ) : null}
 
-      <PersonalFeedPlacement
-        placement="bottom"
-        routeKey="personal_tools_npk"
-        longContent
-      />
-    </ScrollView>
+        {result ? (
+          <>
+            <PersonalFeedPlacement
+              placement="middle"
+              routeKey="personal_tools_npk"
+              longContent
+            />
+            <ToolResultSurface
+              title="NPK recipe result"
+              status="CALCULATED"
+              summary={result.formula}
+              metrics={Object.entries(result.totals || {}).map(([key, value]) => ({
+                key,
+                label: key.replace("ppm", ""),
+                value: String(value),
+                detail: "ppm elemental"
+              }))}
+              inputs={toolRun?.inputs || recipePayload()}
+              outputs={toolRun?.outputs || result}
+              notices={[
+                ...buildNutrientContextNotices(plantContext.selectedPlantContext),
+                ...(result.warnings || []).map((warning: string, index: number) => ({
+                  key: `warning-${index}`,
+                  severity: "medium" as const,
+                  message: warning
+                })),
+                ...(result.sourceConfidence && result.sourceConfidence.overall !== "high"
+                  ? [
+                      {
+                        key: "source-confidence",
+                        severity: "medium" as const,
+                        message:
+                          "One or more product rows are not high-confidence source data.",
+                        remediation:
+                          "Verify manufacturer labels, density assumptions, source water, and measured EC/pH before applying the recipe."
+                      }
+                    ]
+                  : [])
+              ]}
+              recommendations={[
+                ...(result.recommendations || []),
+                "Verify product labels, water baseline, and final mixed EC/pH before applying this recipe."
+              ]}
+              formulas={
+                toolRun?.formulas?.length
+                  ? toolRun.formulas
+                  : [
+                      result.formula ||
+                        "Fertilizer label P and K are converted from oxide label values to elemental ppm."
+                    ]
+              }
+              uncertainty={
+                toolRun?.uncertainty ||
+                "Ingredient labels, density assumptions, water baseline, and product source confidence affect nutrient totals."
+              }
+              confidence={toolRun?.confidence || "label-math-calculator"}
+              assumptions={[
+                buildNutrientContextAssumption(plantContext.selectedPlantContext),
+                result.releaseDisclaimer,
+                "Raw NPK totals are label math; release timing and availability estimates are not a substitute for substrate tests, water tests, or measured runoff/feed data."
+              ].filter(Boolean)}
+              details={
+                <>
+                  {result.sourceConfidence ? (
+                    <>
+                      <Text style={styles.resultTitle}>Source confidence</Text>
+                      <Text style={styles.recommendation}>
+                        Overall: {result.sourceConfidence.overall}. High{" "}
+                        {result.sourceConfidence.counts?.high || 0}, medium{" "}
+                        {result.sourceConfidence.counts?.medium || 0}, low{" "}
+                        {result.sourceConfidence.counts?.low || 0}.
+                      </Text>
+                    </>
+                  ) : null}
+                  {Array.isArray(result.mixingOrder) && result.mixingOrder.length ? (
+                    <>
+                      <Text style={styles.resultTitle}>Mixing sequence</Text>
+                      {result.mixingOrder.map((step: string, index: number) => (
+                        <Text key={`${step}-${index}`} style={styles.recommendation}>
+                          {index + 1}. {step}
+                        </Text>
+                      ))}
+                    </>
+                  ) : null}
+                  {result.availabilityEstimate?.windows ? (
+                    <>
+                      <Text style={styles.resultTitle}>Estimated availability</Text>
+                      <Text style={styles.fieldHint}>
+                        Raw ppm is label math. Availability estimates apply release timing
+                        from the product form.
+                      </Text>
+                      {Object.entries(result.availabilityEstimate.windows).map(
+                        ([window, totals]: [string, any]) => {
+                          const primary = ["Nppm", "Pppm", "Kppm", "Cappm", "Mgppm"]
+                            .map(
+                              (key) => `${key.replace("ppm", "")}: ${totals?.[key] || 0}`
+                            )
+                            .join(" / ");
+                          return (
+                            <Text key={window} style={styles.recommendation}>
+                              {window.replaceAll("_", "-")}: {primary}
+                            </Text>
+                          );
+                        }
+                      )}
+                      {result.availabilityEstimate.disclaimer ? (
+                        <Text style={styles.fieldHint}>
+                          {result.availabilityEstimate.disclaimer}
+                        </Text>
+                      ) : null}
+                    </>
+                  ) : null}
+                  <Text style={styles.resultTitle}>Release timing</Text>
+                  {Object.entries(result.releaseTimeline || {}).map(
+                    ([window, entries]: [string, any]) =>
+                      entries.length ? (
+                        <View key={window} style={styles.timelineRow}>
+                          <Text style={styles.timelineLabel}>
+                            {window.replaceAll("_", "-")}
+                          </Text>
+                          <Text style={styles.recommendation}>
+                            {entries
+                              .map(
+                                (entry: any) =>
+                                  `${entry.name}: ${entry.form} (${entry.confidence})`
+                              )
+                              .join("; ")}
+                          </Text>
+                        </View>
+                      ) : null
+                  )}
+                </>
+              }
+              actions={[
+                ...(toolRun?._id && growContext
+                  ? [
+                      {
+                        key: "save-log",
+                        label: "Save to Grow Log",
+                        onPress: async () => {
+                          await saveToolRunToLog(toolRun._id!);
+                          setFeedback("Saved to grow journal.");
+                        }
+                      },
+                      {
+                        key: "create-task",
+                        label: "Create Recipe Review Task",
+                        variant: "secondary" as const,
+                        onPress: async () => {
+                          const taskResult = await saveToolRunAndCreateTask({
+                            growId: growContext,
+                            ...plantContext.toolRunContext,
+                            toolKey: "npk-recipe",
+                            toolRunId: toolRun._id!,
+                            input: toolRun.inputs || recipePayload(),
+                            output: toolRun.outputs || result,
+                            title: "Review NPK recipe before feeding",
+                            description: [
+                              recipeName.trim() ? `Recipe: ${recipeName.trim()}` : "",
+                              result.sourceConfidence
+                                ? `Source confidence: ${result.sourceConfidence.overall}`
+                                : "",
+                              measuredEC ? `Measured EC: ${measuredEC}` : "",
+                              measuredPH ? `Measured pH: ${measuredPH}` : "",
+                              "Verify product labels, water baseline, final EC/pH, and plant stage before application."
+                            ]
+                              .filter(Boolean)
+                              .join("\n"),
+                            priority:
+                              result.sourceConfidence?.overall === "low"
+                                ? "high"
+                                : "medium",
+                            dueDate: new Date(
+                              Date.now() + 24 * 60 * 60 * 1000
+                            ).toISOString()
+                          });
+                          if (!taskResult.ok) throw new Error(taskResult.error);
+                          setFeedback("Recipe review task created.");
+                        }
+                      },
+                      {
+                        key: "create-recipe-task-plan",
+                        label: "Create Recipe Task Plan",
+                        variant: "secondary" as const,
+                        onPress: async () => {
+                          const taskInput =
+                            toolRun.inputs && Object.keys(toolRun.inputs).length
+                              ? toolRun.inputs
+                              : recipePayload();
+                          const taskOutput =
+                            toolRun.outputs && Object.keys(toolRun.outputs).length
+                              ? toolRun.outputs
+                              : result;
+                          const taskResult = await saveToolRunAndCreateTasks({
+                            growId: growContext,
+                            ...plantContext.toolRunContext,
+                            toolKey: "npk-recipe",
+                            toolRunId: toolRun._id!,
+                            input: taskInput,
+                            output: taskOutput,
+                            tasks: npkRecipeTasks({
+                              recipeName,
+                              recipeMode,
+                              stage,
+                              medium,
+                              result,
+                              payload: taskInput
+                            })
+                          });
+                          if (!taskResult.ok) throw new Error(taskResult.error);
+                          setFeedback("Recipe task plan created.");
+                        }
+                      }
+                    ]
+                  : []),
+                ...(recipeName.trim()
+                  ? [
+                      {
+                        key: "convert-product-draft",
+                        label: "Convert to Product Draft",
+                        variant: "secondary" as const,
+                        pendingLabel: "Creating draft...",
+                        successMessage: "Product draft created.",
+                        onPress: async () => {
+                          const created = await createProduct(
+                            productDraftFromRecipe() as any
+                          );
+                          const productId = created?.product?.id || created?.id;
+                          setFeedback(
+                            productId
+                              ? `Product draft created: ${productId}.`
+                              : "Product draft created."
+                          );
+                        }
+                      }
+                    ]
+                  : [])
+              ]}
+              feedback={feedback}
+              contextMessage={
+                !growContext
+                  ? "Select a grow to enable journal and task actions."
+                  : undefined
+              }
+            />
+          </>
+        ) : null}
+
+        <PersonalFeedPlacement
+          placement="bottom"
+          routeKey="personal_tools_npk"
+          longContent
+        />
+      </ScrollView>
+    </ScreenBoundary>
   );
 }
 
