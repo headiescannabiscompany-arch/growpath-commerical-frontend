@@ -104,9 +104,7 @@ export function getHomeForUser(
   if (!snapshot || !snapshot.ready) return "/login";
   if (snapshot.mode === "commercial") return "/home/commercial";
   if (snapshot.mode === "facility") {
-    return snapshot.selectedFacilityId
-      ? "/home/facility/dashboard"
-      : "/home/facility/select";
+    return snapshot.selectedFacilityId ? "/home/facility" : "/home/facility/select";
   }
   return "/home/personal";
 }

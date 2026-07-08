@@ -85,7 +85,7 @@ describe("route access policy", () => {
   it("routes users to the correct home for their account type", () => {
     expect(getHomeForUser(personal())).toBe("/home/personal");
     expect(getHomeForUser(commercial({}))).toBe("/home/commercial");
-    expect(getHomeForUser(facility({}))).toBe("/home/facility/dashboard");
+    expect(getHomeForUser(facility({}))).toBe("/home/facility");
     expect(
       getHomeForUser({
         ready: true,
