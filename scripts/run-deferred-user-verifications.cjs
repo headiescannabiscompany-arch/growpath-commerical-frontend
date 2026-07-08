@@ -49,7 +49,17 @@ const checks = [
       "tests/unit/FacilityRoomsRoute.test.tsx",
       "src/config/__tests__/featureStatus.test.ts",
       "tests/unit/SchedulePicker.test.tsx",
-      "tests/unit/AppPageBackBehavior.test.tsx"
+      "tests/unit/AppPageBackBehavior.test.tsx",
+      "tests/unit/ScreenBoundaryBackBehavior.test.tsx",
+      "tests/unit/pricingConstants.test.js",
+      "tests/unit/SubscribeScreenPricing.test.js",
+      "tests/unit/SubscriptionScreenPricing.test.js",
+      "tests/unit/CommercialFeedCard.test.tsx",
+      "tests/unit/ForumFeedSeparationRoutes.test.tsx",
+      "tests/unit/ResetPasswordScreen.test.tsx",
+      "tests/unit/ForgotPasswordScreen.test.tsx",
+      "src/api/__tests__/auth.emailVerification.test.ts",
+      "src/features/personal/tools/__tests__/moduleRecordPersistence.test.ts"
     ]
   },
   {
