@@ -24,6 +24,7 @@ import { useApiErrorHandler } from "@/hooks/useApiErrorHandler";
 import { persistImageUri } from "@/utils/photoUploads";
 import { currentPublicUrl } from "@/utils/publicLinks";
 import { SUPPORT_CONTACTS } from "@/config/supportContacts";
+import { radius } from "@/theme/theme";
 
 type AnyRec = Record<string, any>;
 
@@ -1751,7 +1752,7 @@ const styles = StyleSheet.create({
   muted: { color: "#64748B", fontWeight: "700" },
   feedback: {
     backgroundColor: "#D1FAE5",
-    borderRadius: 8,
+    borderRadius: radius.card,
     color: "#065F46",
     fontWeight: "800",
     padding: 10
@@ -1766,7 +1767,7 @@ const styles = StyleSheet.create({
   metric: {
     backgroundColor: "#F8FAFC",
     borderColor: "rgba(15,23,42,0.1)",
-    borderRadius: 10,
+    borderRadius: radius.card,
     borderWidth: 1,
     flexGrow: 1,
     minWidth: 130,
@@ -1788,7 +1789,7 @@ const styles = StyleSheet.create({
   input: {
     backgroundColor: "white",
     borderColor: "rgba(0,0,0,0.14)",
-    borderRadius: 10,
+    borderRadius: radius.card,
     borderWidth: 1,
     marginTop: 10,
     paddingHorizontal: 12,
@@ -1807,7 +1808,7 @@ const styles = StyleSheet.create({
   checkItem: {
     backgroundColor: "#FFF7ED",
     borderColor: "#FED7AA",
-    borderRadius: 10,
+    borderRadius: radius.card,
     borderWidth: 1,
     flexDirection: "row",
     gap: 10,
@@ -1826,7 +1827,7 @@ const styles = StyleSheet.create({
   publicLinkBox: {
     backgroundColor: "#F8FAFC",
     borderColor: "rgba(15,23,42,0.12)",
-    borderRadius: 10,
+    borderRadius: radius.card,
     borderWidth: 1,
     marginTop: 10,
     padding: 10
@@ -1842,7 +1843,7 @@ const styles = StyleSheet.create({
   previewButton: {
     alignItems: "center",
     backgroundColor: "#0F172A",
-    borderRadius: 10,
+    borderRadius: radius.card,
     minHeight: 42,
     justifyContent: "center",
     paddingHorizontal: 14,
@@ -1854,7 +1855,7 @@ const styles = StyleSheet.create({
     alignItems: "center",
     backgroundColor: "white",
     borderColor: "rgba(15,23,42,0.16)",
-    borderRadius: 8,
+    borderRadius: radius.card,
     borderWidth: 1,
     minHeight: 34,
     justifyContent: "center",
@@ -1869,7 +1870,7 @@ const styles = StyleSheet.create({
   logoPreview: {
     backgroundColor: "#F1F5F9",
     borderColor: "rgba(0,0,0,0.14)",
-    borderRadius: 10,
+    borderRadius: radius.card,
     borderWidth: 1,
     height: 96,
     marginTop: 10,
@@ -1879,7 +1880,7 @@ const styles = StyleSheet.create({
     aspectRatio: 16 / 9,
     backgroundColor: "#F1F5F9",
     borderColor: "rgba(0,0,0,0.14)",
-    borderRadius: 10,
+    borderRadius: radius.card,
     borderWidth: 1,
     marginTop: 10,
     width: "100%"
@@ -1887,7 +1888,7 @@ const styles = StyleSheet.create({
   primaryButton: {
     alignItems: "center",
     backgroundColor: "#0F172A",
-    borderRadius: 10,
+    borderRadius: radius.card,
     marginTop: 12,
     paddingVertical: 12
   },
@@ -1895,7 +1896,7 @@ const styles = StyleSheet.create({
   secondaryButton: {
     alignItems: "center",
     borderColor: "rgba(0,0,0,0.16)",
-    borderRadius: 10,
+    borderRadius: radius.card,
     borderWidth: 1,
     marginTop: 12,
     paddingVertical: 10
@@ -1906,7 +1907,7 @@ const styles = StyleSheet.create({
   warningBox: {
     backgroundColor: "#FFF7ED",
     borderColor: "#FDBA74",
-    borderRadius: 10,
+    borderRadius: radius.card,
     borderWidth: 1,
     marginTop: 10,
     padding: 10
@@ -1933,7 +1934,7 @@ const styles = StyleSheet.create({
   eventRow: {
     backgroundColor: "#F8FAFC",
     borderColor: "rgba(15,23,42,0.12)",
-    borderRadius: 10,
+    borderRadius: radius.card,
     borderWidth: 1,
     padding: 12
   },
@@ -1949,7 +1950,7 @@ const styles = StyleSheet.create({
     alignItems: "flex-start",
     backgroundColor: "#F8FAFC",
     borderColor: "rgba(15,23,42,0.12)",
-    borderRadius: 10,
+    borderRadius: radius.card,
     borderWidth: 1,
     flexDirection: "row",
     gap: 10,
@@ -1957,7 +1958,7 @@ const styles = StyleSheet.create({
   },
   campaignThumb: {
     backgroundColor: "#F1F5F9",
-    borderRadius: 8,
+    borderRadius: radius.card,
     height: 72,
     width: 72
   },
@@ -1965,7 +1966,7 @@ const styles = StyleSheet.create({
   productList: { gap: 10, marginTop: 10 },
   productRow: {
     borderColor: "rgba(0,0,0,0.12)",
-    borderRadius: 10,
+    borderRadius: radius.card,
     borderWidth: 1,
     alignItems: "flex-start",
     flexDirection: "row",
@@ -1974,7 +1975,7 @@ const styles = StyleSheet.create({
   },
   productThumb: {
     backgroundColor: "#F1F5F9",
-    borderRadius: 8,
+    borderRadius: radius.card,
     height: 84,
     width: 84
   },
@@ -1982,7 +1983,7 @@ const styles = StyleSheet.create({
     alignItems: "center",
     backgroundColor: "#F8FAFC",
     borderColor: "rgba(15,23,42,0.12)",
-    borderRadius: 8,
+    borderRadius: radius.card,
     borderWidth: 1,
     height: 84,
     justifyContent: "center",
