@@ -661,6 +661,7 @@ Completed and pushed:
 385. Personal Journal create/detail inputs, note boxes, photo tiles, insight/review cards, warning/feedback panels, and edit/delete/save actions now consume the shared 8px card radius token while preserving tag pills, aligning grow-log workflows with Facility-style polish.
 386. Personal Diagnose inputs, photo preview, action buttons, locked notice, provider/readiness panels, crop-context review, and follow-up cards now consume the shared 8px card radius token while preserving pill selectors, extending Facility-style polish to AI diagnosis/IPM-adjacent grow workflows.
 387. Personal home/dashboard pulse cards, metrics, alert rows, task rows, command actions, and inline actions now consume the shared 8px card radius token, carrying Facility-style polish onto the main grower command center.
+388. Personal Task Center metric cards, create-task form, inputs, source/priority chips, task cards, and task actions now consume the shared 8px card radius token while preserving count/source pills, aligning the global personal action layer with Facility-style polish.
 
 ## Working Rule For Codex
 

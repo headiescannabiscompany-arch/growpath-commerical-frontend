@@ -20,6 +20,7 @@ import PersonalFeedPlacement from "@/components/feed/PersonalFeedPlacement";
 import SchedulePicker from "@/components/schedule/SchedulePicker";
 import { CAPABILITY_KEYS, useEntitlements } from "@/entitlements";
 import { fmtDate, getRowId } from "@/features/grows/routeUtils";
+import { radius } from "@/theme/theme";
 import { sourceObjectHref } from "@/utils/sourceLinks";
 
 const priorities = ["low", "medium", "high"] as const;
@@ -689,7 +690,7 @@ const styles = StyleSheet.create({
   subtitle: { color: "#475569", fontWeight: "700", lineHeight: 20 },
   metricGrid: { flexDirection: "row", flexWrap: "wrap", gap: 8 },
   metricCard: {
-    borderRadius: 8,
+    borderRadius: radius.card,
     borderWidth: 1,
     flexGrow: 1,
     minWidth: 120,
@@ -705,7 +706,7 @@ const styles = StyleSheet.create({
   form: {
     backgroundColor: "#F8FAFC",
     borderColor: "#E2E8F0",
-    borderRadius: 8,
+    borderRadius: radius.card,
     borderWidth: 1,
     gap: 9,
     padding: 12
@@ -715,7 +716,7 @@ const styles = StyleSheet.create({
   input: {
     backgroundColor: "#FFFFFF",
     borderColor: "#CBD5E1",
-    borderRadius: 8,
+    borderRadius: radius.card,
     borderWidth: 1,
     color: "#0F172A",
     paddingHorizontal: 12,
@@ -724,7 +725,7 @@ const styles = StyleSheet.create({
   flexInput: {
     backgroundColor: "#FFFFFF",
     borderColor: "#CBD5E1",
-    borderRadius: 8,
+    borderRadius: radius.card,
     borderWidth: 1,
     color: "#0F172A",
     flex: 1,
@@ -738,7 +739,7 @@ const styles = StyleSheet.create({
   chip: {
     backgroundColor: "#FFFFFF",
     borderColor: "#CBD5E1",
-    borderRadius: 8,
+    borderRadius: radius.card,
     borderWidth: 1,
     paddingHorizontal: 10,
     paddingVertical: 7
@@ -749,7 +750,7 @@ const styles = StyleSheet.create({
   primaryButton: {
     alignItems: "center",
     backgroundColor: "#166534",
-    borderRadius: 8,
+    borderRadius: radius.card,
     minHeight: 42,
     justifyContent: "center",
     paddingHorizontal: 12,
@@ -778,7 +779,7 @@ const styles = StyleSheet.create({
   card: {
     backgroundColor: "#FFFFFF",
     borderColor: "#E2E8F0",
-    borderRadius: 8,
+    borderRadius: radius.card,
     borderWidth: 1,
     gap: 6,
     padding: 12
@@ -807,7 +808,7 @@ const styles = StyleSheet.create({
   secondaryButton: {
     alignSelf: "flex-start",
     borderColor: "#CBD5E1",
-    borderRadius: 8,
+    borderRadius: radius.card,
     borderWidth: 1,
     paddingHorizontal: 10,
     paddingVertical: 7
@@ -817,7 +818,7 @@ const styles = StyleSheet.create({
     alignSelf: "flex-start",
     backgroundColor: "#F1F5F9",
     borderColor: "#E2E8F0",
-    borderRadius: 8,
+    borderRadius: radius.card,
     borderWidth: 1,
     paddingHorizontal: 10,
     paddingVertical: 7
