@@ -337,6 +337,7 @@ Completed and pushed:
 61. Commercial Community now behaves as Brand Forum/Q&A support, reads/writes through the shared forum API, and the audit flags it if support posts move back onto Feed/Campaigns.
 62. The legacy `FacilityFeedScreen` compatibility path now renders the shared campaign Feed route instead of the old `/api/posts/feed` community-feed implementation, with an audit guard to keep it that way.
 63. Commercial marketplace integrations now use External Channels language and explicitly distinguish off-platform channels from GrowPath Feed/Campaigns and Forum/Q&A.
+64. Commercial Profile & Billing now uses brand/storefront identity language in the dashboard, profile form, and product catalog copy while preserving existing backend `businessName` fields.
 
 ## Working Rule For Codex
 
