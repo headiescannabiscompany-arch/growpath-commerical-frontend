@@ -602,6 +602,7 @@ Completed and pushed:
 326. The legacy public Marketplace compatibility screens now present themselves as Storefront Offers in visible headers, search, loading/error/empty states, back links, fallback item labels, and checkout accessibility labels while retaining old marketplace route/API names only as compatibility internals.
 327. Commercial external-channel and influencer CTA copy now uses External Channel Integrations and Creator Content language instead of marketplace wording, and the creator CTA uses ASCII-clean text.
 328. Forum post detail anonymous author fallbacks now say Forum member instead of Community member, keeping discussion labels aligned without changing legacy route/API compatibility names.
+329. Schedule/Agenda now forwards full live, course, and feed campaign records into the shared source-link resolver, so viewer course releases with storefront slugs open public storefront course pages instead of losing brand context.
 
 ## Working Rule For Codex
 

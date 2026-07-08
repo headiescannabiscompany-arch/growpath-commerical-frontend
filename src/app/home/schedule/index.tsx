@@ -211,7 +211,7 @@ function liveToItem(live: any): CalendarItem {
     sourceId: id,
     reminder: String(live?.reminderPreference || ""),
     recurrence: String(live?.recurrenceRule || ""),
-    href: sourceObjectHref({ sourceType: "live", sourceId: id, workspaceType })
+    href: sourceObjectHref({ ...live, sourceType: "live", sourceId: id, workspaceType })
   };
 }
 
@@ -234,7 +234,12 @@ function courseToItem(course: any): CalendarItem {
     workspaceType,
     sourceType: "course",
     sourceId: id,
-    href: sourceObjectHref({ sourceType: "course", sourceId: id, workspaceType })
+    href: sourceObjectHref({
+      ...course,
+      sourceType: "course",
+      sourceId: id,
+      workspaceType
+    })
   };
 }
 
@@ -255,7 +260,12 @@ function campaignToItem(campaign: any): CalendarItem {
     sourceId: id,
     reminder: String(campaign?.reminderPreference || ""),
     recurrence: String(campaign?.recurrenceRule || ""),
-    href: sourceObjectHref({ sourceType: "feed_campaign", sourceId: id, workspaceType })
+    href: sourceObjectHref({
+      ...campaign,
+      sourceType: "feed_campaign",
+      sourceId: id,
+      workspaceType
+    })
   };
 }
 

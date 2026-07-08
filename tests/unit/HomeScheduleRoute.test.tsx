@@ -154,7 +154,8 @@ describe("HomeScheduleRoute", () => {
               title: "Personal IPM Lesson",
               publishedAt: "2099-07-22T12:00:00Z",
               status: "published",
-              workspaceType: "personal"
+              workspaceType: "personal",
+              storefrontSlug: "living-soil-labs"
             }
           ]
         });
@@ -247,7 +248,7 @@ describe("HomeScheduleRoute", () => {
     ).toBeTruthy();
     expect(screen.getByTestId("link-/home/commercial/courses/course-1")).toBeTruthy();
     expect(
-      screen.getByTestId("link-/home/personal/courses?courseId=course-personal-1")
+      screen.getByTestId("link-/store/living-soil-labs/courses/course-personal-1")
     ).toBeTruthy();
     expect(screen.getByTestId("link-/home/personal/tasks")).toBeTruthy();
     expect(
