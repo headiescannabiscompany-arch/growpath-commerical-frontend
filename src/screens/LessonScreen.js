@@ -5,6 +5,7 @@ import { completeLesson } from "../api/courses";
 import ScreenContainer from "../components/ScreenContainer";
 import { useEntitlements } from "@/entitlements";
 import { getLearningAccess } from "@/features/learning/learningAccess";
+import { radius } from "../theme/theme";
 
 export default function LessonScreen({ route, navigation }) {
   const entitlements = useEntitlements();
@@ -82,7 +83,7 @@ const styles = StyleSheet.create({
     alignItems: "center",
     backgroundColor: "#111827",
     padding: 16,
-    borderRadius: 12,
+    borderRadius: radius.card,
     marginBottom: 20
   },
   videoIcon: { color: "#fff", fontWeight: "800", marginRight: 12 },
@@ -93,7 +94,7 @@ const styles = StyleSheet.create({
   completeBtn: {
     backgroundColor: "#2ecc71",
     padding: 12,
-    borderRadius: 8,
+    borderRadius: radius.card,
     marginTop: 20
   },
   completeText: {
@@ -104,7 +105,7 @@ const styles = StyleSheet.create({
   lockedCard: {
     borderWidth: 1,
     borderColor: "#ddd",
-    borderRadius: 8,
+    borderRadius: radius.card,
     padding: 12
   }
 });

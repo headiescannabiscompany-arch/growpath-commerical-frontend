@@ -1,5 +1,6 @@
 import React, { useMemo, useState } from "react";
 import { SafeAreaView, StyleSheet, Text, TextInput, View } from "react-native";
+import { radius } from "../theme/theme";
 
 export default function LightCalculatorScreen() {
   // Simple but legit: DLI ≈ PPFD * photoperiod(hours) * 0.0036
@@ -63,7 +64,7 @@ const styles = StyleSheet.create({
   card: {
     marginTop: 12,
     padding: 12,
-    borderRadius: 16,
+    borderRadius: radius.card,
     borderWidth: 1,
     borderColor: "#E5E7EB",
     backgroundColor: "#fff"
@@ -72,7 +73,7 @@ const styles = StyleSheet.create({
   input: {
     marginTop: 8,
     height: 44,
-    borderRadius: 12,
+    borderRadius: radius.card,
     borderWidth: 1,
     borderColor: "#E5E7EB",
     paddingHorizontal: 12
@@ -80,7 +81,7 @@ const styles = StyleSheet.create({
   result: {
     marginTop: 16,
     padding: 12,
-    borderRadius: 14,
+    borderRadius: radius.card,
     borderWidth: 1,
     borderColor: "#111827"
   },
