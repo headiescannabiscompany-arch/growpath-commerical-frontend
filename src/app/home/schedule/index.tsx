@@ -164,6 +164,7 @@ function courseToItem(course: any): CalendarItem {
 
 function campaignToItem(campaign: any): CalendarItem {
   const id = String(campaign?.id || campaign?._id || campaign?.title || "campaign");
+  const workspaceType = String(campaign?.workspaceType || "commercial");
   return {
     id,
     itemType: "feed_campaign",
@@ -173,12 +174,12 @@ function campaignToItem(campaign: any): CalendarItem {
     ),
     endAt: String(campaign?.endsAt || ""),
     status: String(campaign?.status || "draft"),
-    workspaceType: String(campaign?.workspaceType || "commercial"),
+    workspaceType,
     sourceType: "feed_campaign",
     sourceId: id,
     reminder: String(campaign?.reminderPreference || ""),
     recurrence: String(campaign?.recurrenceRule || ""),
-    href: "/home/commercial/feed"
+    href: workspaceType === "facility" ? "/home/facility/feed" : "/home/commercial/feed"
   };
 }
 

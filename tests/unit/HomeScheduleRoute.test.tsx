@@ -80,6 +80,14 @@ describe("HomeScheduleRoute", () => {
               recurrenceRule: "weekly",
               status: "scheduled",
               workspaceType: "commercial"
+            },
+            {
+              id: "facility-campaign-1",
+              title: "Facility IPM Training",
+              startsAt: "2099-07-20T12:00:00Z",
+              endsAt: "2099-07-20T13:00:00Z",
+              status: "scheduled",
+              workspaceType: "facility"
             }
           ]
         });
@@ -101,7 +109,8 @@ describe("HomeScheduleRoute", () => {
     expect(screen.getByText("Live Soil Demo")).toBeTruthy();
     expect(screen.getByText("Living Soil Basics")).toBeTruthy();
     expect(screen.getByText("Veg Mix Launch")).toBeTruthy();
-    expect(screen.getByText("feed campaign")).toBeTruthy();
+    expect(screen.getByText("Facility IPM Training")).toBeTruthy();
+    expect(screen.getAllByText("feed campaign").length).toBeGreaterThan(0);
     expect(screen.getByText(/Ends 2099-07-17T21:00/)).toBeTruthy();
     expect(screen.getByText(/Ends 2099-07-26T12:00/)).toBeTruthy();
     expect(screen.getByText(/Reminder 1 hour before/)).toBeTruthy();
@@ -110,5 +119,6 @@ describe("HomeScheduleRoute", () => {
     expect(screen.getAllByText(/Repeats weekly/).length).toBeGreaterThan(0);
     expect(screen.getAllByText("Open Source").length).toBeGreaterThan(0);
     expect(screen.getByTestId("link-/home/commercial/tasks/task-1")).toBeTruthy();
+    expect(screen.getByTestId("link-/home/facility/feed")).toBeTruthy();
   });
 });
