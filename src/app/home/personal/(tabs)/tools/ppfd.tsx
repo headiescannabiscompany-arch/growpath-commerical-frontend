@@ -2,7 +2,7 @@ import React, { useMemo, useState } from "react";
 import { useLocalSearchParams, useRouter } from "expo-router";
 import { ScrollView, StyleSheet, Text, TextInput } from "react-native";
 
-import BackButton from "@/components/nav/BackButton";
+import { ScreenBoundary } from "@/components/ScreenBoundary";
 import PersonalFeedPlacement from "@/components/feed/PersonalFeedPlacement";
 import {
   ToolPlantContextPicker,
@@ -98,165 +98,174 @@ export default function PpfdToolScreen() {
   };
 
   return (
-    <ScrollView contentContainerStyle={styles.container}>
-      <BackButton />
-      <Text style={styles.title}>PPFD / DLI Planner</Text>
-      <Text style={styles.subtitle}>
-        Set DLI and photoperiod to estimate required canopy PPFD.
-      </Text>
-      <PersonalFeedPlacement placement="top" routeKey="personal_tools_ppfd" longContent />
-      {growId ? <Text style={styles.context}>Grow context: {growId}</Text> : null}
-      <ToolPlantContextPicker
-        plants={plantContext.plants}
-        plantId={plantContext.plantId}
-        selectedPlant={plantContext.selectedPlant}
-        onSelect={plantContext.setPlantId}
-      />
+    <ScreenBoundary
+      title="PPFD / DLI Planner"
+      showBack
+      backFallbackHref="/home/personal/tools"
+    >
+      <ScrollView contentContainerStyle={styles.container}>
+        <Text style={styles.title}>PPFD / DLI Planner</Text>
+        <Text style={styles.subtitle}>
+          Set DLI and photoperiod to estimate required canopy PPFD.
+        </Text>
+        <PersonalFeedPlacement
+          placement="top"
+          routeKey="personal_tools_ppfd"
+          longContent
+        />
+        {growId ? <Text style={styles.context}>Grow context: {growId}</Text> : null}
+        <ToolPlantContextPicker
+          plants={plantContext.plants}
+          plantId={plantContext.plantId}
+          selectedPlant={plantContext.selectedPlant}
+          onSelect={plantContext.setPlantId}
+        />
 
-      <Text style={styles.label}>Target DLI (mol/m2/day)</Text>
-      <TextInput
-        style={styles.input}
-        value={dliTarget}
-        onChangeText={setDliTarget}
-        keyboardType="numeric"
-        placeholder="35"
-      />
-      <Text style={styles.label}>Photoperiod (hours)</Text>
-      <TextInput
-        style={styles.input}
-        value={photoperiodHours}
-        onChangeText={setPhotoperiodHours}
-        keyboardType="numeric"
-        placeholder="12"
-      />
-      <Text style={styles.label}>Measured PPFD at canopy (optional)</Text>
-      <TextInput
-        style={styles.input}
-        value={ppfdAtCanopy}
-        onChangeText={setPpfdAtCanopy}
-        keyboardType="numeric"
-        placeholder="850"
-      />
-      <Text style={styles.label}>Fixture power (%)</Text>
-      <TextInput
-        style={styles.input}
-        value={fixturePercent}
-        onChangeText={setFixturePercent}
-        keyboardType="numeric"
-        placeholder="100"
-      />
-      <Text style={styles.label}>Stage</Text>
-      <TextInput
-        style={styles.input}
-        value={stage}
-        onChangeText={setStage}
-        placeholder="clone, veg, flower, late_flower"
-      />
-      <Text style={styles.label}>Leaf response</Text>
-      <TextInput
-        style={styles.input}
-        value={leafResponse}
-        onChangeText={setLeafResponse}
-        placeholder="tacoing, bleaching, praying, normal"
-      />
+        <Text style={styles.label}>Target DLI (mol/m2/day)</Text>
+        <TextInput
+          style={styles.input}
+          value={dliTarget}
+          onChangeText={setDliTarget}
+          keyboardType="numeric"
+          placeholder="35"
+        />
+        <Text style={styles.label}>Photoperiod (hours)</Text>
+        <TextInput
+          style={styles.input}
+          value={photoperiodHours}
+          onChangeText={setPhotoperiodHours}
+          keyboardType="numeric"
+          placeholder="12"
+        />
+        <Text style={styles.label}>Measured PPFD at canopy (optional)</Text>
+        <TextInput
+          style={styles.input}
+          value={ppfdAtCanopy}
+          onChangeText={setPpfdAtCanopy}
+          keyboardType="numeric"
+          placeholder="850"
+        />
+        <Text style={styles.label}>Fixture power (%)</Text>
+        <TextInput
+          style={styles.input}
+          value={fixturePercent}
+          onChangeText={setFixturePercent}
+          keyboardType="numeric"
+          placeholder="100"
+        />
+        <Text style={styles.label}>Stage</Text>
+        <TextInput
+          style={styles.input}
+          value={stage}
+          onChangeText={setStage}
+          placeholder="clone, veg, flower, late_flower"
+        />
+        <Text style={styles.label}>Leaf response</Text>
+        <TextInput
+          style={styles.input}
+          value={leafResponse}
+          onChangeText={setLeafResponse}
+          placeholder="tacoing, bleaching, praying, normal"
+        />
 
-      <PersonalFeedPlacement
-        placement="middle"
-        routeKey="personal_tools_ppfd"
-        longContent
-      />
+        <PersonalFeedPlacement
+          placement="middle"
+          routeKey="personal_tools_ppfd"
+          longContent
+        />
 
-      <ToolResultSurface
-        title="PPFD / DLI result"
-        status={computed ? "CALCULATED" : "NEEDS INPUT"}
-        metrics={[
-          {
-            key: "required-ppfd",
-            label: "Required canopy PPFD",
-            value: computed ? `${computed.requiredPpfd} umol/m2/s` : "-",
-            detail: `${photoperiodHours || "-"} hour photoperiod`
-          },
-          {
-            key: "measured-dli",
-            label: "Measured DLI",
-            value:
-              computed?.measuredDli == null ? "Not entered" : `${computed.measuredDli}`
-          },
-          {
-            key: "warnings",
-            label: "Warnings",
-            value: String(computed?.warnings.length || 0),
-            detail: computed?.warnings[0] || "No light-stress warning from entered data"
+        <ToolResultSurface
+          title="PPFD / DLI result"
+          status={computed ? "CALCULATED" : "NEEDS INPUT"}
+          metrics={[
+            {
+              key: "required-ppfd",
+              label: "Required canopy PPFD",
+              value: computed ? `${computed.requiredPpfd} umol/m2/s` : "-",
+              detail: `${photoperiodHours || "-"} hour photoperiod`
+            },
+            {
+              key: "measured-dli",
+              label: "Measured DLI",
+              value:
+                computed?.measuredDli == null ? "Not entered" : `${computed.measuredDli}`
+            },
+            {
+              key: "warnings",
+              label: "Warnings",
+              value: String(computed?.warnings.length || 0),
+              detail: computed?.warnings[0] || "No light-stress warning from entered data"
+            }
+          ]}
+          assumptions={[
+            "This calculation converts target DLI and photoperiod; it does not estimate fixture output from wattage.",
+            ...(computed?.warnings || []),
+            "Use a calibrated PAR meter and canopy sampling for measured PPFD."
+          ]}
+          actions={
+            computed && growId
+              ? [
+                  {
+                    key: "save-journal",
+                    label: "Save and Open Journal",
+                    pendingLabel: "Saving...",
+                    onPress: async () => {
+                      setFeedback("");
+                      const result = await saveToolRunAndOpenJournal({
+                        router,
+                        growId,
+                        ...plantContext.toolRunContext,
+                        toolKey: "ppfd",
+                        input,
+                        output: computed
+                      });
+                      if (!result.ok) throw new Error(result.error);
+                    }
+                  },
+                  {
+                    key: "create-task",
+                    label: "Create Light Check Task",
+                    variant: "secondary",
+                    pendingLabel: "Creating...",
+                    onPress: async () => {
+                      setFeedback("");
+                      const result = await saveToolRunAndCreateTask({
+                        growId,
+                        ...plantContext.toolRunContext,
+                        toolKey: "ppfd",
+                        input,
+                        output: computed,
+                        title: computed.warnings.length
+                          ? "Check light stress response"
+                          : "Check canopy PPFD",
+                        description: [
+                          `Target about ${computed.requiredPpfd} umol/m2/s over ${photoperiodHours || "?"} hours.`,
+                          ...computed.warnings,
+                          "Verify with a meter and adjust fixture height or dimming gradually."
+                        ].join("\n"),
+                        priority: computed.warnings.length ? "high" : "medium",
+                        dueDate: dueTomorrow()
+                      });
+                      if (!result.ok) throw new Error(result.error);
+                      setFeedback("Created light check task.");
+                    }
+                  }
+                ]
+              : []
           }
-        ]}
-        assumptions={[
-          "This calculation converts target DLI and photoperiod; it does not estimate fixture output from wattage.",
-          ...(computed?.warnings || []),
-          "Use a calibrated PAR meter and canopy sampling for measured PPFD."
-        ]}
-        actions={
-          computed && growId
-            ? [
-                {
-                  key: "save-journal",
-                  label: "Save and Open Journal",
-                  pendingLabel: "Saving...",
-                  onPress: async () => {
-                    setFeedback("");
-                    const result = await saveToolRunAndOpenJournal({
-                      router,
-                      growId,
-                      ...plantContext.toolRunContext,
-                      toolKey: "ppfd",
-                      input,
-                      output: computed
-                    });
-                    if (!result.ok) throw new Error(result.error);
-                  }
-                },
-                {
-                  key: "create-task",
-                  label: "Create Light Check Task",
-                  variant: "secondary",
-                  pendingLabel: "Creating...",
-                  onPress: async () => {
-                    setFeedback("");
-                    const result = await saveToolRunAndCreateTask({
-                      growId,
-                      ...plantContext.toolRunContext,
-                      toolKey: "ppfd",
-                      input,
-                      output: computed,
-                      title: computed.warnings.length
-                        ? "Check light stress response"
-                        : "Check canopy PPFD",
-                      description: [
-                        `Target about ${computed.requiredPpfd} umol/m2/s over ${photoperiodHours || "?"} hours.`,
-                        ...computed.warnings,
-                        "Verify with a meter and adjust fixture height or dimming gradually."
-                      ].join("\n"),
-                      priority: computed.warnings.length ? "high" : "medium",
-                      dueDate: dueTomorrow()
-                    });
-                    if (!result.ok) throw new Error(result.error);
-                    setFeedback("Created light check task.");
-                  }
-                }
-              ]
-            : []
-        }
-        feedback={feedback}
-        contextMessage={
-          !growId ? "Select a grow context to save this result." : undefined
-        }
-      />
+          feedback={feedback}
+          contextMessage={
+            !growId ? "Select a grow context to save this result." : undefined
+          }
+        />
 
-      <PersonalFeedPlacement
-        placement="bottom"
-        routeKey="personal_tools_ppfd"
-        longContent
-      />
-    </ScrollView>
+        <PersonalFeedPlacement
+          placement="bottom"
+          routeKey="personal_tools_ppfd"
+          longContent
+        />
+      </ScrollView>
+    </ScreenBoundary>
   );
 }
 

@@ -2,7 +2,7 @@ import React, { useMemo, useState } from "react";
 import { useLocalSearchParams } from "expo-router";
 import { ScrollView, StyleSheet, Text, TextInput, View } from "react-native";
 
-import BackButton from "@/components/nav/BackButton";
+import { ScreenBoundary } from "@/components/ScreenBoundary";
 import { CAPABILITY_KEYS, useEntitlements } from "@/entitlements";
 import { buildTimelinePlan } from "@/features/personal/tools/advancedPlanning";
 import LockedToolCard from "@/features/personal/tools/LockedToolCard";
@@ -95,127 +95,132 @@ export default function TimelinePlannerScreen() {
   }
 
   return (
-    <ScrollView contentContainerStyle={styles.container}>
-      <BackButton />
-      <Text style={styles.title}>Timeline Planner</Text>
-      <Text style={styles.subtitle}>
-        Build a date-based grow plan across veg, flower, dry, and cure milestones.
-      </Text>
-      <PersonalFeedPlacement
-        placement="top"
-        routeKey="personal_tools_timeline_planner"
-        longContent
-      />
-      {growId ? <Text style={styles.context}>Grow context: {growId}</Text> : null}
-      <ToolPlantContextPicker
-        plants={plantContext.plants}
-        plantId={plantContext.plantId}
-        selectedPlant={plantContext.selectedPlant}
-        onSelect={plantContext.setPlantId}
-      />
-
-      {!enabled ? (
-        <LockedToolCard
-          title="Timeline Planner"
-          capability={CAPABILITY_KEYS.TOOL_TIMELINE_PLANNER}
-          description="Enable this capability to plan grow milestones and create follow-up tasks."
+    <ScreenBoundary
+      title="Timeline Planner"
+      showBack
+      backFallbackHref="/home/personal/tools"
+    >
+      <ScrollView contentContainerStyle={styles.container}>
+        <Text style={styles.title}>Timeline Planner</Text>
+        <Text style={styles.subtitle}>
+          Build a date-based grow plan across veg, flower, dry, and cure milestones.
+        </Text>
+        <PersonalFeedPlacement
+          placement="top"
+          routeKey="personal_tools_timeline_planner"
+          longContent
         />
-      ) : (
-        <>
-          <Text style={styles.label}>Start date</Text>
-          <TextInput
-            accessibilityLabel="Timeline start date"
-            style={styles.input}
-            value={startDate}
-            onChangeText={setStartDate}
-          />
-          <Text style={styles.label}>Veg weeks</Text>
-          <TextInput
-            accessibilityLabel="Timeline veg weeks"
-            style={styles.input}
-            value={vegWeeks}
-            onChangeText={setVegWeeks}
-            keyboardType="numeric"
-          />
-          <Text style={styles.label}>Flower weeks</Text>
-          <TextInput
-            accessibilityLabel="Timeline flower weeks"
-            style={styles.input}
-            value={flowerWeeks}
-            onChangeText={setFlowerWeeks}
-            keyboardType="numeric"
-          />
-          <Text style={styles.label}>Dry days</Text>
-          <TextInput
-            accessibilityLabel="Timeline dry days"
-            style={styles.input}
-            value={dryDays}
-            onChangeText={setDryDays}
-            keyboardType="numeric"
-          />
-          <Text style={styles.label}>Cure weeks</Text>
-          <TextInput
-            accessibilityLabel="Timeline cure weeks"
-            style={styles.input}
-            value={cureWeeks}
-            onChangeText={setCureWeeks}
-            keyboardType="numeric"
-          />
+        {growId ? <Text style={styles.context}>Grow context: {growId}</Text> : null}
+        <ToolPlantContextPicker
+          plants={plantContext.plants}
+          plantId={plantContext.plantId}
+          selectedPlant={plantContext.selectedPlant}
+          onSelect={plantContext.setPlantId}
+        />
 
-          <PersonalFeedPlacement
-            placement="middle"
-            routeKey="personal_tools_timeline_planner"
-            longContent
+        {!enabled ? (
+          <LockedToolCard
+            title="Timeline Planner"
+            capability={CAPABILITY_KEYS.TOOL_TIMELINE_PLANNER}
+            description="Enable this capability to plan grow milestones and create follow-up tasks."
           />
+        ) : (
+          <>
+            <Text style={styles.label}>Start date</Text>
+            <TextInput
+              accessibilityLabel="Timeline start date"
+              style={styles.input}
+              value={startDate}
+              onChangeText={setStartDate}
+            />
+            <Text style={styles.label}>Veg weeks</Text>
+            <TextInput
+              accessibilityLabel="Timeline veg weeks"
+              style={styles.input}
+              value={vegWeeks}
+              onChangeText={setVegWeeks}
+              keyboardType="numeric"
+            />
+            <Text style={styles.label}>Flower weeks</Text>
+            <TextInput
+              accessibilityLabel="Timeline flower weeks"
+              style={styles.input}
+              value={flowerWeeks}
+              onChangeText={setFlowerWeeks}
+              keyboardType="numeric"
+            />
+            <Text style={styles.label}>Dry days</Text>
+            <TextInput
+              accessibilityLabel="Timeline dry days"
+              style={styles.input}
+              value={dryDays}
+              onChangeText={setDryDays}
+              keyboardType="numeric"
+            />
+            <Text style={styles.label}>Cure weeks</Text>
+            <TextInput
+              accessibilityLabel="Timeline cure weeks"
+              style={styles.input}
+              value={cureWeeks}
+              onChangeText={setCureWeeks}
+              keyboardType="numeric"
+            />
 
-          <ToolResultSurface
-            title="Planned timeline"
-            status="LOCAL PLAN"
-            summary="Milestones are deterministic from the date and duration inputs."
-            metrics={[
-              { key: "start", label: "Start", value: milestones[0]?.date || startDate },
-              {
-                key: "harvest",
-                label: "Harvest window",
-                value:
-                  milestones.find((item) => item.key === "harvest-window")?.date || ""
-              },
-              { key: "count", label: "Milestones", value: String(milestones.length) }
-            ]}
-            details={
-              <View style={styles.milestones}>
-                {milestones.map((milestone) => (
-                  <View key={milestone.key} style={styles.milestone}>
-                    <Text style={styles.milestoneDate}>{milestone.date}</Text>
-                    <Text style={styles.milestoneTitle}>{milestone.label}</Text>
-                    <Text style={styles.milestoneDetail}>{milestone.detail}</Text>
-                  </View>
-                ))}
-              </View>
-            }
-            actions={[
-              {
-                key: "tasks",
-                label: "Create Tasks",
-                pendingLabel: "Creating...",
-                disabled: !growId,
-                onPress: createTasks
+            <PersonalFeedPlacement
+              placement="middle"
+              routeKey="personal_tools_timeline_planner"
+              longContent
+            />
+
+            <ToolResultSurface
+              title="Planned timeline"
+              status="LOCAL PLAN"
+              summary="Milestones are deterministic from the date and duration inputs."
+              metrics={[
+                { key: "start", label: "Start", value: milestones[0]?.date || startDate },
+                {
+                  key: "harvest",
+                  label: "Harvest window",
+                  value:
+                    milestones.find((item) => item.key === "harvest-window")?.date || ""
+                },
+                { key: "count", label: "Milestones", value: String(milestones.length) }
+              ]}
+              details={
+                <View style={styles.milestones}>
+                  {milestones.map((milestone) => (
+                    <View key={milestone.key} style={styles.milestone}>
+                      <Text style={styles.milestoneDate}>{milestone.date}</Text>
+                      <Text style={styles.milestoneTitle}>{milestone.label}</Text>
+                      <Text style={styles.milestoneDetail}>{milestone.detail}</Text>
+                    </View>
+                  ))}
+                </View>
               }
-            ]}
-            feedback={feedback}
-            contextMessage={
-              !growId ? "Select a grow to create timeline tasks." : undefined
-            }
-          />
-        </>
-      )}
+              actions={[
+                {
+                  key: "tasks",
+                  label: "Create Tasks",
+                  pendingLabel: "Creating...",
+                  disabled: !growId,
+                  onPress: createTasks
+                }
+              ]}
+              feedback={feedback}
+              contextMessage={
+                !growId ? "Select a grow to create timeline tasks." : undefined
+              }
+            />
+          </>
+        )}
 
-      <PersonalFeedPlacement
-        placement="bottom"
-        routeKey="personal_tools_timeline_planner"
-        longContent
-      />
-    </ScrollView>
+        <PersonalFeedPlacement
+          placement="bottom"
+          routeKey="personal_tools_timeline_planner"
+          longContent
+        />
+      </ScrollView>
+    </ScreenBoundary>
   );
 }
 
