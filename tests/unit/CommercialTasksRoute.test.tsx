@@ -17,8 +17,15 @@ jest.mock("@/api/apiRequest", () => ({
 
 jest.mock("expo-router", () => {
   const React = require("react");
+  const { Text } = require("react-native");
   return {
-    Link: ({ children }: any) => React.createElement(React.Fragment, null, children)
+    Link: ({ children, href }: any) =>
+      React.createElement(
+        React.Fragment,
+        null,
+        children,
+        React.createElement(Text, { accessibilityLabel: `Commercial task link ${href}` })
+      )
   };
 });
 
@@ -47,6 +54,13 @@ describe("CommercialTasksRoute", () => {
               status: "complete",
               completed: true,
               sourceType: "storefront"
+            },
+            {
+              id: "task-3",
+              title: "Review launch alert",
+              status: "open",
+              sourceType: "alert",
+              sourceId: "alert-1"
             }
           ]
         });
@@ -73,7 +87,9 @@ describe("CommercialTasksRoute", () => {
     );
     expect(screen.getByText("Connect Stripe price")).toBeTruthy();
     expect(screen.getByText("Publish storefront")).toBeTruthy();
+    expect(screen.getByText("Review launch alert")).toBeTruthy();
     expect(screen.getByText(/Source ID: product-1/)).toBeTruthy();
+    expect(screen.getByLabelText("Commercial task link /home/alerts")).toBeTruthy();
     expect(screen.getByText(/Reminder: 24 hours before/)).toBeTruthy();
     expect(screen.getByText("feed campaign")).toBeTruthy();
 

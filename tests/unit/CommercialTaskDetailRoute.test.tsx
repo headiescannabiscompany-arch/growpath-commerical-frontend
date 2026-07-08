@@ -6,6 +6,7 @@ import CommercialTaskDetailRoute from "@/app/(commercial)/tasks/[id]";
 const mockBack = jest.fn();
 const mockPush = jest.fn();
 const mockApiRequest = jest.fn();
+let taskOverrides: Record<string, any> = {};
 const mockApiErrorHandler = Object.assign(jest.fn(() => null), {
   toInlineError: jest.fn(() => null)
 });
@@ -26,6 +27,7 @@ jest.mock("@/hooks/useApiErrorHandler", () => ({
 describe("CommercialTaskDetailRoute", () => {
   beforeEach(() => {
     jest.resetAllMocks();
+    taskOverrides = {};
     mockApiRequest.mockImplementation((url: string, options?: any) => {
       if (url === "/api/tasks/task-1" && options?.method === "GET") {
         return Promise.resolve({
@@ -67,7 +69,8 @@ describe("CommercialTaskDetailRoute", () => {
           campaignStartsAt: "2026-07-17T21:00:00Z",
           campaignEndsAt: "2026-07-24T21:00:00Z",
           recurrenceRule: "weekly",
-          reminderPlan: { label: "1 hour before", channels: ["in_app"] }
+          reminderPlan: { label: "1 hour before", channels: ["in_app"] },
+          ...taskOverrides
         });
       }
       if (url === "/api/tasks/task-1" && options?.method === "PATCH") {
@@ -155,5 +158,22 @@ describe("CommercialTaskDetailRoute", () => {
     fireEvent.press(screen.getByLabelText("View commercial task source"));
 
     expect(mockPush).toHaveBeenCalledWith("/home/commercial/products/product-1");
+  });
+
+  it("opens alert-backed task sources in the canonical alert center", async () => {
+    taskOverrides = {
+      sourceType: "alert",
+      sourceId: "alert-1",
+      linkedAlertId: "alert-1"
+    };
+    const screen = render(<CommercialTaskDetailRoute />);
+
+    await waitFor(() =>
+      expect(screen.getAllByText("Connect Stripe price").length).toBeGreaterThan(0)
+    );
+
+    fireEvent.press(screen.getByLabelText("View commercial task source"));
+
+    expect(mockPush).toHaveBeenCalledWith("/home/alerts");
   });
 });
