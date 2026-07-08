@@ -1025,8 +1025,11 @@ export default function Storefront() {
             </Text>
           </View>
           <View style={styles.previewActions}>
-            <PublicPreviewLink href={publicStorePath} label="View Store Page" />
-            <PublicPreviewLink href={publicProfilePath} label="View Brand Profile" />
+            <PublicPreviewLink href={publicStorePath} label="View as User: Store Page" />
+            <PublicPreviewLink
+              href={publicProfilePath}
+              label="View as User: Brand Profile"
+            />
           </View>
           <View style={styles.discoveryActions}>
             <Text style={styles.discoveryAction}>View similar brands</Text>
