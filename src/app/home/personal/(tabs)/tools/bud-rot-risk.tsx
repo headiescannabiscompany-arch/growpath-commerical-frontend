@@ -2,7 +2,7 @@ import React, { useMemo, useState } from "react";
 import { useLocalSearchParams, useRouter } from "expo-router";
 import { Pressable, ScrollView, StyleSheet, Text, TextInput, View } from "react-native";
 
-import BackButton from "@/components/nav/BackButton";
+import { ScreenBoundary } from "@/components/ScreenBoundary";
 import { CAPABILITY_KEYS, useEntitlements } from "@/entitlements";
 import {
   ToolPlantContextPicker,
@@ -69,180 +69,186 @@ export default function BudRotRiskToolScreen() {
 
   if (!enabled) {
     return (
-      <ScrollView contentContainerStyle={styles.container}>
-        <BackButton />
-        <Text style={styles.title}>Bud Rot Risk</Text>
-        <View style={styles.lockedCard}>
-          <Text style={styles.lockedTitle}>Tool unavailable</Text>
-          <Text style={styles.subtitle}>
-            This account does not have `DIAGNOSE_ADVANCED`.
-          </Text>
-          <PersonalFeedPlacement
-            placement="top"
-            routeKey="personal_tools_bud_rot_risk"
-            longContent
-          />
-        </View>
-      </ScrollView>
+      <ScreenBoundary
+        title="Bud Rot Risk"
+        showBack
+        backFallbackHref="/home/personal/tools"
+      >
+        <ScrollView contentContainerStyle={styles.container}>
+          <Text style={styles.title}>Bud Rot Risk</Text>
+          <View style={styles.lockedCard}>
+            <Text style={styles.lockedTitle}>Tool unavailable</Text>
+            <Text style={styles.subtitle}>
+              This account does not have `DIAGNOSE_ADVANCED`.
+            </Text>
+            <PersonalFeedPlacement
+              placement="top"
+              routeKey="personal_tools_bud_rot_risk"
+              longContent
+            />
+          </View>
+        </ScrollView>
+      </ScreenBoundary>
     );
   }
 
   return (
-    <ScrollView contentContainerStyle={styles.container}>
-      <BackButton />
-      <Text style={styles.title}>Bud Rot Risk</Text>
-      <Text style={styles.subtitle}>
-        Quick risk snapshot based on RH, airflow, and moisture events.
-      </Text>
-      <PersonalFeedPlacement
-        placement="top"
-        routeKey="personal_tools_bud_rot_risk"
-        longContent
-      />
-      {growId ? <Text style={styles.context}>Grow context: {growId}</Text> : null}
-      <ToolPlantContextPicker
-        plants={plantContext.plants}
-        plantId={plantContext.plantId}
-        selectedPlant={plantContext.selectedPlant}
-        onSelect={plantContext.setPlantId}
-      />
+    <ScreenBoundary title="Bud Rot Risk" showBack backFallbackHref="/home/personal/tools">
+      <ScrollView contentContainerStyle={styles.container}>
+        <Text style={styles.title}>Bud Rot Risk</Text>
+        <Text style={styles.subtitle}>
+          Quick risk snapshot based on RH, airflow, and moisture events.
+        </Text>
+        <PersonalFeedPlacement
+          placement="top"
+          routeKey="personal_tools_bud_rot_risk"
+          longContent
+        />
+        {growId ? <Text style={styles.context}>Grow context: {growId}</Text> : null}
+        <ToolPlantContextPicker
+          plants={plantContext.plants}
+          plantId={plantContext.plantId}
+          selectedPlant={plantContext.selectedPlant}
+          onSelect={plantContext.setPlantId}
+        />
 
-      <Text style={styles.label}>Temperature (degF)</Text>
-      <TextInput
-        style={styles.input}
-        value={tempF}
-        onChangeText={setTempF}
-        keyboardType="numeric"
-        placeholder="75"
-      />
+        <Text style={styles.label}>Temperature (degF)</Text>
+        <TextInput
+          style={styles.input}
+          value={tempF}
+          onChangeText={setTempF}
+          keyboardType="numeric"
+          placeholder="75"
+        />
 
-      <Text style={styles.label}>Relative Humidity (%)</Text>
-      <TextInput
-        style={styles.input}
-        value={rh}
-        onChangeText={setRh}
-        keyboardType="numeric"
-        placeholder="55"
-      />
+        <Text style={styles.label}>Relative Humidity (%)</Text>
+        <TextInput
+          style={styles.input}
+          value={rh}
+          onChangeText={setRh}
+          keyboardType="numeric"
+          placeholder="55"
+        />
 
-      <Text style={styles.label}>Airflow score (1-10)</Text>
-      <TextInput
-        style={styles.input}
-        value={airflowScore}
-        onChangeText={setAirflowScore}
-        keyboardType="numeric"
-        placeholder="7"
-      />
+        <Text style={styles.label}>Airflow score (1-10)</Text>
+        <TextInput
+          style={styles.input}
+          value={airflowScore}
+          onChangeText={setAirflowScore}
+          keyboardType="numeric"
+          placeholder="7"
+        />
 
-      <Text style={styles.label}>Wet events per week</Text>
-      <TextInput
-        style={styles.input}
-        value={wetEventsPerWeek}
-        onChangeText={setWetEventsPerWeek}
-        keyboardType="numeric"
-        placeholder="0"
-      />
+        <Text style={styles.label}>Wet events per week</Text>
+        <TextInput
+          style={styles.input}
+          value={wetEventsPerWeek}
+          onChangeText={setWetEventsPerWeek}
+          keyboardType="numeric"
+          placeholder="0"
+        />
 
-      <PersonalFeedPlacement
-        placement="middle"
-        routeKey="personal_tools_bud_rot_risk"
-        longContent
-      />
+        <PersonalFeedPlacement
+          placement="middle"
+          routeKey="personal_tools_bud_rot_risk"
+          longContent
+        />
 
-      <ToolResultSurface
-        title="Bud-rot risk screen"
-        status={computed ? computed.band.toUpperCase() : "NEEDS INPUT"}
-        metrics={[
-          {
-            key: "risk-score",
-            label: "Screening score",
-            value: computed ? `${computed.score}/100` : "—"
+        <ToolResultSurface
+          title="Bud-rot risk screen"
+          status={computed ? computed.band.toUpperCase() : "NEEDS INPUT"}
+          metrics={[
+            {
+              key: "risk-score",
+              label: "Screening score",
+              value: computed ? `${computed.score}/100` : "—"
+            }
+          ]}
+          notices={
+            computed && computed.band !== "Low"
+              ? [
+                  {
+                    key: "risk-band",
+                    severity: computed.band === "High" ? "high" : "medium",
+                    message: `Current inputs produce a ${computed.band} heuristic risk screen.`,
+                    remediation:
+                      "Inspect dense flowers and canopy moisture, improve airflow where safe, and verify conditions over time."
+                  }
+                ]
+              : []
           }
-        ]}
-        notices={
-          computed && computed.band !== "Low"
-            ? [
-                {
-                  key: "risk-band",
-                  severity: computed.band === "High" ? "high" : "medium",
-                  message: `Current inputs produce a ${computed.band} heuristic risk screen.`,
-                  remediation:
-                    "Inspect dense flowers and canopy moisture, improve airflow where safe, and verify conditions over time."
-                }
-              ]
-            : []
-        }
-        assumptions={[
-          "This is a heuristic screening result, not a disease diagnosis or validated prediction.",
-          "A single reading cannot establish sustained condensation or wet-duration risk."
-        ]}
-        actions={
-          computed && growId
-            ? [
-                {
-                  key: "save-journal",
-                  label: "Save and Open Journal",
-                  pendingLabel: "Saving...",
-                  onPress: async () => {
-                    setFeedback("");
-                    const result = await saveToolRunAndOpenJournal({
-                      router,
-                      growId,
-                      ...plantContext.toolRunContext,
-                      toolKey: "bud-rot-risk",
-                      input: {
-                        tempF: Number(tempF),
-                        rh: Number(rh),
-                        airflowScore: Number(airflowScore),
-                        wetEventsPerWeek: Number(wetEventsPerWeek)
-                      },
-                      output: computed
-                    });
-                    if (!result.ok) throw new Error(result.error);
+          assumptions={[
+            "This is a heuristic screening result, not a disease diagnosis or validated prediction.",
+            "A single reading cannot establish sustained condensation or wet-duration risk."
+          ]}
+          actions={
+            computed && growId
+              ? [
+                  {
+                    key: "save-journal",
+                    label: "Save and Open Journal",
+                    pendingLabel: "Saving...",
+                    onPress: async () => {
+                      setFeedback("");
+                      const result = await saveToolRunAndOpenJournal({
+                        router,
+                        growId,
+                        ...plantContext.toolRunContext,
+                        toolKey: "bud-rot-risk",
+                        input: {
+                          tempF: Number(tempF),
+                          rh: Number(rh),
+                          airflowScore: Number(airflowScore),
+                          wetEventsPerWeek: Number(wetEventsPerWeek)
+                        },
+                        output: computed
+                      });
+                      if (!result.ok) throw new Error(result.error);
+                    }
+                  },
+                  {
+                    key: "create-task",
+                    label: "Create Inspection Task",
+                    variant: "secondary",
+                    pendingLabel: "Creating...",
+                    onPress: async () => {
+                      setFeedback("");
+                      const result = await saveToolRunAndCreateTask({
+                        growId,
+                        ...plantContext.toolRunContext,
+                        toolKey: "bud-rot-risk",
+                        input: {
+                          tempF: Number(tempF),
+                          rh: Number(rh),
+                          airflowScore: Number(airflowScore),
+                          wetEventsPerWeek: Number(wetEventsPerWeek)
+                        },
+                        output: computed,
+                        title: "Inspect canopy for bud rot risk",
+                        description: `Heuristic risk screen is ${computed.band} (${computed.score}/100). Check dense flowers, wet pockets, and airflow before changing controls.`,
+                        priority: computed.band === "High" ? "high" : "medium",
+                        dueDate: dueInHours(computed.band === "High" ? 2 : 24)
+                      });
+                      if (!result.ok) throw new Error(result.error);
+                      setFeedback("Created inspection task.");
+                    }
                   }
-                },
-                {
-                  key: "create-task",
-                  label: "Create Inspection Task",
-                  variant: "secondary",
-                  pendingLabel: "Creating...",
-                  onPress: async () => {
-                    setFeedback("");
-                    const result = await saveToolRunAndCreateTask({
-                      growId,
-                      ...plantContext.toolRunContext,
-                      toolKey: "bud-rot-risk",
-                      input: {
-                        tempF: Number(tempF),
-                        rh: Number(rh),
-                        airflowScore: Number(airflowScore),
-                        wetEventsPerWeek: Number(wetEventsPerWeek)
-                      },
-                      output: computed,
-                      title: "Inspect canopy for bud rot risk",
-                      description: `Heuristic risk screen is ${computed.band} (${computed.score}/100). Check dense flowers, wet pockets, and airflow before changing controls.`,
-                      priority: computed.band === "High" ? "high" : "medium",
-                      dueDate: dueInHours(computed.band === "High" ? 2 : 24)
-                    });
-                    if (!result.ok) throw new Error(result.error);
-                    setFeedback("Created inspection task.");
-                  }
-                }
-              ]
-            : []
-        }
-        feedback={feedback}
-        contextMessage={
-          !growId ? "Select a grow context to save this result." : undefined
-        }
-      />
+                ]
+              : []
+          }
+          feedback={feedback}
+          contextMessage={
+            !growId ? "Select a grow context to save this result." : undefined
+          }
+        />
 
-      <PersonalFeedPlacement
-        placement="bottom"
-        routeKey="personal_tools_bud_rot_risk"
-        longContent
-      />
-    </ScrollView>
+        <PersonalFeedPlacement
+          placement="bottom"
+          routeKey="personal_tools_bud_rot_risk"
+          longContent
+        />
+      </ScrollView>
+    </ScreenBoundary>
   );
 }
 
