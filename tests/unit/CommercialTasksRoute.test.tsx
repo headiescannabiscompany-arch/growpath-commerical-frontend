@@ -107,6 +107,14 @@ describe("CommercialTasksRoute", () => {
               sourceType: "product_trial",
               linkedProductId: "product-1",
               linkedTrialId: "trial-linked-1"
+            },
+            {
+              id: "task-10",
+              title: "Review alert-linked product",
+              status: "open",
+              sourceType: "alert",
+              sourceId: "alert-product-1",
+              linkedProductId: "product-1"
             }
           ]
         });
@@ -140,6 +148,7 @@ describe("CommercialTasksRoute", () => {
     expect(screen.getByText("Review linked batch")).toBeTruthy();
     expect(screen.getByText("Review feed campaign")).toBeTruthy();
     expect(screen.getByText("Review linked trial evidence")).toBeTruthy();
+    expect(screen.getByText("Review alert-linked product")).toBeTruthy();
     expect(screen.getByText(/Source ID: product-1/)).toBeTruthy();
     expect(screen.getByText(/Source ID: live-linked-1/)).toBeTruthy();
     expect(screen.getByText(/Source ID: batch-linked-1/)).toBeTruthy();
@@ -155,7 +164,9 @@ describe("CommercialTasksRoute", () => {
       screen.getByLabelText("Commercial task link /home/commercial/courses/course-1")
     ).toBeTruthy();
     expect(
-      screen.getByLabelText("Commercial task link /home/commercial/lives?liveId=live-linked-1")
+      screen.getByLabelText(
+        "Commercial task link /home/commercial/lives?liveId=live-linked-1"
+      )
     ).toBeTruthy();
     expect(
       screen.getByLabelText(
@@ -172,6 +183,16 @@ describe("CommercialTasksRoute", () => {
         "Commercial task link /home/commercial/evidence-runs/trial-linked-1"
       )
     ).toBeTruthy();
+    expect(
+      screen.getByLabelText("Commercial task link /home/alerts?alertId=alert-product-1")
+    ).toBeTruthy();
+    expect(
+      screen.getAllByLabelText("Commercial task link /home/commercial/products/product-1")
+        .length
+    ).toBeGreaterThan(0);
+    expect(
+      screen.getAllByLabelText("View commercial task linked object").length
+    ).toBeGreaterThan(0);
     expect(screen.getByText(/Reminder: 24 hours before/)).toBeTruthy();
     expect(screen.getByText("feed campaign")).toBeTruthy();
 

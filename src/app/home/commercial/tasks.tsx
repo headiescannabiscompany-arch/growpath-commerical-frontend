@@ -89,6 +89,69 @@ function sourcePath(task: CommercialTask) {
   return sourceObjectHref({ ...task, workspaceType: "commercial" });
 }
 
+function linkedObjectPath(task: CommercialTask) {
+  const sourceByPriority = [
+    task.linkedProductId && {
+      sourceType: "product",
+      sourceId: task.linkedProductId,
+      linkedProductId: task.linkedProductId
+    },
+    task.linkedProductBatchId && {
+      sourceType: "product_batch",
+      sourceId: task.linkedProductBatchId,
+      linkedProductBatchId: task.linkedProductBatchId,
+      linkedProductId: task.linkedProductId || undefined
+    },
+    (task.linkedProductTrialId || task.linkedTrialId) && {
+      sourceType: "product_trial",
+      sourceId: task.linkedProductTrialId || task.linkedTrialId,
+      linkedProductTrialId: task.linkedProductTrialId || task.linkedTrialId
+    },
+    task.linkedCourseId && {
+      sourceType: "course",
+      sourceId: task.linkedCourseId,
+      linkedCourseId: task.linkedCourseId
+    },
+    task.linkedLessonId && {
+      sourceType: "lesson",
+      sourceId: task.linkedLessonId,
+      linkedLessonId: task.linkedLessonId,
+      linkedCourseId: task.linkedCourseId || undefined
+    },
+    task.linkedLiveId && {
+      sourceType: "live",
+      sourceId: task.linkedLiveId,
+      linkedLiveId: task.linkedLiveId
+    },
+    (task.linkedFeedCampaignId || task.feedCampaignId || task.campaignId) && {
+      sourceType: "feed_campaign",
+      sourceId: task.linkedFeedCampaignId || task.feedCampaignId || task.campaignId,
+      linkedFeedCampaignId:
+        task.linkedFeedCampaignId || task.feedCampaignId || task.campaignId
+    },
+    (task.linkedStorefrontSlug || task.storefrontSlug || task.linkedStorefrontId) && {
+      sourceType: "storefront",
+      sourceId:
+        task.linkedStorefrontSlug || task.storefrontSlug || task.linkedStorefrontId,
+      linkedStorefrontSlug: task.linkedStorefrontSlug || task.storefrontSlug || undefined,
+      linkedStorefrontId: task.linkedStorefrontId || undefined
+    },
+    task.linkedForumThreadId && {
+      sourceType: "forum",
+      sourceId: task.linkedForumThreadId,
+      linkedForumThreadId: task.linkedForumThreadId
+    }
+  ].find(Boolean);
+
+  if (!sourceByPriority) return "";
+
+  return sourceObjectHref({
+    ...task,
+    ...(sourceByPriority as Record<string, string | undefined>),
+    workspaceType: "commercial"
+  });
+}
+
 function sourceReference(task: CommercialTask) {
   const sourceType = String(task.sourceType || "");
   const directSource = task.sourceId || task.sourceObjectId;
@@ -302,6 +365,8 @@ export default function CommercialTasksRoute() {
   function renderTask(task: CommercialTask) {
     const source = titleForSource(task.sourceType);
     const path = sourcePath(task);
+    const linkedPath = linkedObjectPath(task);
+    const showLinkedPath = linkedPath && (!path || linkedPath !== path);
     const sourceRef = sourceReference(task);
     return (
       <View key={idOf(task) || task.title} style={styles.taskCard}>
@@ -329,6 +394,17 @@ export default function CommercialTasksRoute() {
             <Link href={path as any} asChild>
               <Pressable accessibilityRole="link" style={styles.ghostButton}>
                 <Text style={styles.ghostButtonText}>View Source</Text>
+              </Pressable>
+            </Link>
+          ) : null}
+          {showLinkedPath ? (
+            <Link href={linkedPath as any} asChild>
+              <Pressable
+                accessibilityRole="link"
+                accessibilityLabel="View commercial task linked object"
+                style={styles.ghostButton}
+              >
+                <Text style={styles.ghostButtonText}>View Linked Object</Text>
               </Pressable>
             </Link>
           ) : null}

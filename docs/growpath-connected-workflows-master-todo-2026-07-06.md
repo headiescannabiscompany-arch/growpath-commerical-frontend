@@ -610,6 +610,7 @@ Completed and pushed:
 334. Personal Task Center now shows a separate View Linked Object action when alert/tool/source-created tasks carry product, course, live, storefront, or Forum context, so users can open the exact public storefront object without losing the original alert/source trail.
 335. Personal grow-specific Tasks tabs now mirror the Task Center source behavior by keeping the original alert/source link while adding View Linked Object for product, course, live, storefront, and Forum context carried on the task.
 336. Commercial Task Detail now keeps alert/source routing intact while adding a separate View Linked Object action for product, product-batch, trial, course, lesson, live, feed-campaign, storefront, and Forum context when it differs from the task source.
+337. Commercial Task Center cards now expose the same source-plus-linked-object split as task detail, so alert-backed setup tasks can keep their Alert Center trail while jumping directly to the product/course/live/storefront/campaign object that needs work.
 
 ## Working Rule For Codex
 
