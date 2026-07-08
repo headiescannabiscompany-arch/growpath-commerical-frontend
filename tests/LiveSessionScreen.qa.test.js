@@ -1,5 +1,5 @@
 import React from "react";
-import { render, waitFor } from "@testing-library/react-native";
+import { fireEvent, render, waitFor } from "@testing-library/react-native";
 import { NavigationContainer } from "@react-navigation/native";
 import { Linking } from "react-native";
 
@@ -67,7 +67,15 @@ describe("LiveSessionScreen QA", () => {
     mockApiRequest.mockResolvedValueOnce({
       twitchChannel: "mychannel",
       twitchModerationUrl: "https://twitch.tv/moderator/mychannel",
-      title: "Session 1"
+      title: "Session 1",
+      description: "Live soil mix walkthrough.",
+      status: "scheduled",
+      visibility: "public",
+      scheduledStart: "2026-07-17T21:00:00Z",
+      relatedProductId: "product-1",
+      relatedCourseId: "course-1",
+      linkedForumThreadId: "thread-1",
+      replayUrl: "https://www.twitch.tv/videos/123"
     });
 
     const { getByText, queryByText } = renderWithNav({ sessionId: "abc123" });
@@ -79,6 +87,14 @@ describe("LiveSessionScreen QA", () => {
       method: "GET"
     });
     expect(getByText(/Watch on Twitch/i)).toBeTruthy();
+    expect(getByText("Live soil mix walkthrough.")).toBeTruthy();
+    expect(getByText("scheduled")).toBeTruthy();
+    expect(getByText("public")).toBeTruthy();
+    expect(getByText("Product product-1")).toBeTruthy();
+    expect(getByText("Course course-1")).toBeTruthy();
+    expect(getByText("Forum/Q&A thread-1")).toBeTruthy();
+    fireEvent.press(getByText("Open Replay"));
+    expect(Linking.openURL).toHaveBeenCalledWith("https://www.twitch.tv/videos/123");
   });
 
   it("hides moderation UI for non-admin", async () => {

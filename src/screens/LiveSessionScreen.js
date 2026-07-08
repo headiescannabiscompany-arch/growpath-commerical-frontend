@@ -3,6 +3,7 @@ import {
   ActivityIndicator,
   Linking,
   Pressable,
+  ScrollView,
   StyleSheet,
   Text,
   View
@@ -10,6 +11,7 @@ import {
 import { useLocalSearchParams } from "expo-router";
 import { CAPABILITY_KEYS, useEntitlements } from "@/entitlements";
 import { apiRequest } from "../api/apiRequest";
+import LiveSessionTwitchEmbed from "./LiveSessionTwitchEmbed";
 
 export default function LiveSessionScreen({ route }) {
   const routerParams = (useLocalSearchParams && useLocalSearchParams()) || {};
@@ -61,10 +63,22 @@ export default function LiveSessionScreen({ route }) {
   const twitchChannel = session?.twitchChannel ? String(session.twitchChannel) : "";
   const watchUrl = twitchChannel ? `https://www.twitch.tv/${twitchChannel}` : "";
   const moderationUrl = session?.twitchModerationUrl || session?.moderationUrl || "";
+  const replayUrl = session?.replayUrl || session?.vodUrl || "";
+  const relatedCourseId = session?.relatedCourseId || session?.courseId || "";
+  const relatedProductId = session?.relatedProductId || session?.productId || "";
+  const forumThreadId = session?.forumThreadId || session?.linkedForumThreadId || "";
+  const startsAt = session?.scheduledStart || session?.startsAt || session?.startTime || "";
 
   return (
-    <View style={styles.container}>
-      <Text style={styles.title}>Live Session</Text>
+    <ScrollView contentContainerStyle={styles.container}>
+      <View style={styles.hero}>
+        <Text style={styles.kicker}>GrowPath live</Text>
+        <Text style={styles.title}>Live Session</Text>
+        <Text style={styles.subtitle}>
+          Watch the stream, open replay links, and keep related product, course, and
+          Forum/Q&A context in one place.
+        </Text>
+      </View>
 
       {loading ? (
         <View style={styles.row}>
@@ -80,9 +94,46 @@ export default function LiveSessionScreen({ route }) {
           <Text style={styles.cardTitle}>
             {String(session.title || "Untitled Session")}
           </Text>
+          {session.description ? (
+            <Text style={styles.description}>{String(session.description)}</Text>
+          ) : null}
+          <View style={styles.badgeRow}>
+            {session.status ? (
+              <Text style={styles.badge}>{String(session.status)}</Text>
+            ) : null}
+            {startsAt ? <Text style={styles.badge}>Starts {String(startsAt)}</Text> : null}
+            {session.visibility ? (
+              <Text style={styles.badge}>{String(session.visibility)}</Text>
+            ) : null}
+          </View>
           {session.twitchChannel ? (
             <Text style={styles.meta}>Channel: {String(session.twitchChannel)}</Text>
           ) : null}
+
+          {twitchChannel ? (
+            <View style={styles.embedWrap}>
+              <LiveSessionTwitchEmbed
+                twitchChannel={twitchChannel}
+                chatEnabled={Boolean(session.chatEnabled)}
+              />
+            </View>
+          ) : (
+            <Text style={styles.meta}>
+              No Twitch channel is attached to this live yet.
+            </Text>
+          )}
+
+          <View style={styles.linkGrid}>
+            {relatedProductId ? (
+              <Text style={styles.contextPill}>Product {String(relatedProductId)}</Text>
+            ) : null}
+            {relatedCourseId ? (
+              <Text style={styles.contextPill}>Course {String(relatedCourseId)}</Text>
+            ) : null}
+            {forumThreadId ? (
+              <Text style={styles.contextPill}>Forum/Q&A {String(forumThreadId)}</Text>
+            ) : null}
+          </View>
 
           {watchUrl ? (
             <Pressable
@@ -96,33 +147,112 @@ export default function LiveSessionScreen({ route }) {
             </Pressable>
           ) : null}
 
+          {replayUrl ? (
+            <Pressable
+              accessibilityRole="button"
+              style={styles.secondaryBtn}
+              onPress={() => {
+                Linking.openURL(String(replayUrl)).catch(() => {});
+              }}
+            >
+              <Text style={styles.secondaryBtnText}>Open Replay</Text>
+            </Pressable>
+          ) : null}
+
           {canModerate && moderationUrl ? (
             <Pressable
               accessibilityRole="button"
-              style={styles.btn}
+              style={styles.secondaryBtn}
               onPress={() => {
                 try {
                   Linking.openURL(moderationUrl);
                 } catch {}
               }}
             >
-              <Text style={styles.btnText}>Open Twitch Moderation</Text>
+              <Text style={styles.secondaryBtnText}>Open Twitch Moderation</Text>
             </Pressable>
           ) : null}
         </View>
       ) : null}
-    </View>
+    </ScrollView>
   );
 }
 
 const styles = StyleSheet.create({
-  container: { flex: 1, padding: 14 },
-  title: { fontSize: 20, fontWeight: "800", marginBottom: 10 },
+  container: { flexGrow: 1, padding: 18, backgroundColor: "#F8FAFC" },
+  hero: {
+    backgroundColor: "#0F172A",
+    borderRadius: 18,
+    padding: 18,
+    marginBottom: 14
+  },
+  kicker: {
+    color: "#86EFAC",
+    fontSize: 12,
+    fontWeight: "900",
+    letterSpacing: 0,
+    textTransform: "uppercase"
+  },
+  title: { color: "#F8FAFC", fontSize: 26, fontWeight: "900", marginTop: 6 },
+  subtitle: { color: "#CBD5E1", fontSize: 14, fontWeight: "700", marginTop: 8 },
   row: { flexDirection: "row", alignItems: "center", gap: 8, marginBottom: 10 },
   meta: { marginTop: 6, fontSize: 13, opacity: 0.8 },
   error: { color: "crimson", marginBottom: 10 },
-  card: { paddingVertical: 10, borderBottomWidth: 1, borderBottomColor: "#ddd" },
-  cardTitle: { fontWeight: "800" },
-  btn: { marginTop: 10, paddingVertical: 10 },
-  btnText: { fontWeight: "900" }
+  card: {
+    backgroundColor: "#FFFFFF",
+    borderRadius: 14,
+    padding: 16,
+    borderWidth: 1,
+    borderColor: "#E2E8F0"
+  },
+  cardTitle: { color: "#0F172A", fontSize: 22, fontWeight: "900" },
+  description: { color: "#334155", fontSize: 14, fontWeight: "600", marginTop: 8 },
+  badgeRow: { flexDirection: "row", flexWrap: "wrap", gap: 8, marginTop: 12 },
+  badge: {
+    backgroundColor: "#ECFDF5",
+    borderColor: "#BBF7D0",
+    borderWidth: 1,
+    borderRadius: 999,
+    color: "#166534",
+    fontSize: 12,
+    fontWeight: "900",
+    paddingHorizontal: 10,
+    paddingVertical: 5
+  },
+  embedWrap: {
+    minHeight: 360,
+    overflow: "hidden",
+    borderRadius: 12,
+    marginTop: 14,
+    backgroundColor: "#020617"
+  },
+  linkGrid: { flexDirection: "row", flexWrap: "wrap", gap: 8, marginTop: 14 },
+  contextPill: {
+    backgroundColor: "#EFF6FF",
+    borderColor: "#BFDBFE",
+    borderWidth: 1,
+    borderRadius: 10,
+    color: "#1D4ED8",
+    fontSize: 12,
+    fontWeight: "900",
+    paddingHorizontal: 10,
+    paddingVertical: 7
+  },
+  btn: {
+    backgroundColor: "#166534",
+    borderRadius: 10,
+    alignItems: "center",
+    marginTop: 14,
+    paddingVertical: 12
+  },
+  btnText: { color: "#FFFFFF", fontWeight: "900" },
+  secondaryBtn: {
+    borderColor: "#CBD5E1",
+    borderWidth: 1,
+    borderRadius: 10,
+    alignItems: "center",
+    marginTop: 10,
+    paddingVertical: 11
+  },
+  secondaryBtnText: { color: "#0F172A", fontWeight: "900" }
 });

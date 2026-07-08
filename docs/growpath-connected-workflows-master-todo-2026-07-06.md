@@ -573,6 +573,7 @@ Completed and pushed:
 297. Shared Forum Directory and onboarding group picker fallbacks now say Forum group when backend rows are unnamed, so first-run and directory screens no longer surface stale Guild vocabulary.
 298. Storefront owner setup now uses the live `support@growpathai.com` alias as its support-email placeholder, matching the already-live support alias map and brand profile guidance.
 299. Feed live campaign CTAs and shared non-commercial live source links now open the public Live Session surface instead of looping back into Feed, keeping Feed promotional and giving live reminders, schedule items, and tasks a real event destination.
+300. Public Live Session now renders the Twitch embed surface, replay action, scheduled/status metadata, and linked product/course/Forum Q&A context, so campaign and reminder traffic lands on a real event page instead of a thin external-link card.
 
 ## Working Rule For Codex
 
