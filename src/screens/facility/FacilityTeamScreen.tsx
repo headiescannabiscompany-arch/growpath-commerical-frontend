@@ -6,6 +6,7 @@ import type { FacilityRole } from "../../api/team";
 import EmptyState from "../../components/EmptyState";
 import LoadingSpinner from "../../components/LoadingSpinner";
 import ErrorState from "../../components/ErrorState";
+import { radius } from "@/theme/theme";
 
 const ROLES = ["OWNER", "ADMIN", "MANAGER", "STAFF", "VIEWER"];
 
@@ -58,7 +59,7 @@ export default function FacilityTeamScreen() {
           value={email}
           onChangeText={setEmail}
           placeholder="Invite email..."
-          style={{ flex: 1, borderWidth: 1, borderRadius: 8, padding: 8 }}
+          style={{ flex: 1, borderWidth: 1, borderRadius: radius.card, padding: 8 }}
         />
         <Picker
           selectedValue={role}
@@ -71,7 +72,7 @@ export default function FacilityTeamScreen() {
         </Picker>
         <Pressable
           onPress={submitInvite}
-          style={{ padding: 10, borderWidth: 1, borderRadius: 8 }}
+          style={{ padding: 10, borderWidth: 1, borderRadius: radius.card }}
         >
           <Text>Invite</Text>
         </Pressable>
@@ -83,7 +84,7 @@ export default function FacilityTeamScreen() {
           <View
             style={{
               padding: 12,
-              borderRadius: 10,
+              borderRadius: radius.card,
               borderWidth: 1,
               marginBottom: 8,
               flexDirection: "row",

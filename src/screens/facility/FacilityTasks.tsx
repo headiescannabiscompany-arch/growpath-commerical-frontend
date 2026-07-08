@@ -17,6 +17,7 @@ import { useFacility } from "../../facility/FacilityProvider";
 import { can, type FacilityRole } from "../../facility/roleGates";
 import { handleApiError } from "../../ui/handleApiError";
 import { useTasks } from "../../hooks/useTasks";
+import { radius } from "@/theme/theme";
 
 // Canonical Tasks screen:
 // - No direct API imports
@@ -328,7 +329,7 @@ const styles = StyleSheet.create({
     marginHorizontal: 16,
     marginVertical: 8,
     paddingVertical: 12,
-    borderRadius: 8,
+    borderRadius: radius.card,
     alignItems: "center"
   },
   createButtonText: {
@@ -355,7 +356,7 @@ const styles = StyleSheet.create({
     backgroundColor: "#fff",
     paddingVertical: 12,
     paddingHorizontal: 12,
-    borderRadius: 8,
+    borderRadius: radius.card,
     marginBottom: 8,
     borderLeftWidth: 3,
     borderLeftColor: "#0ea5e9"
@@ -388,7 +389,7 @@ const styles = StyleSheet.create({
     paddingHorizontal: 10,
     borderWidth: 1,
     borderColor: "#d1d5db",
-    borderRadius: 6,
+    borderRadius: radius.pill,
     alignItems: "center",
     justifyContent: "center"
   },
@@ -420,7 +421,7 @@ const styles = StyleSheet.create({
   warningBanner: {
     marginHorizontal: 16,
     marginBottom: 8,
-    borderRadius: 8,
+    borderRadius: radius.card,
     borderWidth: 1,
     borderColor: "#fecaca",
     backgroundColor: "#fef2f2",
@@ -437,8 +438,8 @@ const styles = StyleSheet.create({
   },
   modalContent: {
     backgroundColor: "#fff",
-    borderTopLeftRadius: 20,
-    borderTopRightRadius: 20,
+    borderTopLeftRadius: radius.card,
+    borderTopRightRadius: radius.card,
     paddingHorizontal: 16,
     paddingVertical: 20,
     paddingBottom: 40
@@ -452,7 +453,7 @@ const styles = StyleSheet.create({
   input: {
     borderWidth: 1,
     borderColor: "#d1d5db",
-    borderRadius: 8,
+    borderRadius: radius.card,
     paddingHorizontal: 12,
     paddingVertical: 10,
     fontSize: 16,
@@ -471,7 +472,7 @@ const styles = StyleSheet.create({
   modalButton: {
     flex: 1,
     paddingVertical: 12,
-    borderRadius: 8,
+    borderRadius: radius.card,
     alignItems: "center"
   },
   cancelButton: {

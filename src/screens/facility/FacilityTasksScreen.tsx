@@ -5,13 +5,14 @@ import { useFacilityTasks } from "../../hooks/useFacilityTasks";
 import EmptyState from "../../components/EmptyState";
 import LoadingSpinner from "../../components/LoadingSpinner";
 import ErrorState from "../../components/ErrorState";
+import { radius } from "@/theme/theme";
 
 function TaskRow({ task, onComplete }: { task: any; onComplete: () => void }) {
   return (
     <View
       style={{
         padding: 12,
-        borderRadius: 10,
+        borderRadius: radius.card,
         borderWidth: 1,
         marginBottom: 8,
         flexDirection: "row",
@@ -26,7 +27,7 @@ function TaskRow({ task, onComplete }: { task: any; onComplete: () => void }) {
       {task.status !== "done" && (
         <Pressable
           onPress={onComplete}
-          style={{ padding: 8, backgroundColor: "#22c55e", borderRadius: 6 }}
+          style={{ padding: 8, backgroundColor: "#22c55e", borderRadius: radius.pill }}
         >
           <Text style={{ color: "#fff" }}>Complete</Text>
         </Pressable>
@@ -83,11 +84,11 @@ export default function FacilityTasksScreen() {
           value={title}
           onChangeText={setTitle}
           placeholder="New task title..."
-          style={{ flex: 1, borderWidth: 1, borderRadius: 8, padding: 8 }}
+          style={{ flex: 1, borderWidth: 1, borderRadius: radius.card, padding: 8 }}
         />
         <Pressable
           onPress={submit}
-          style={{ padding: 10, borderWidth: 1, borderRadius: 8 }}
+          style={{ padding: 10, borderWidth: 1, borderRadius: radius.card }}
         >
           <Text>{creating ? "Adding..." : "Add"}</Text>
         </Pressable>

@@ -2,6 +2,7 @@ import React from "react";
 import { View, Text, FlatList, Pressable, StyleSheet } from "react-native";
 import { useAutomationPolicies } from "@/hooks/useAutomationPolicies";
 import { useEntitlements, CAPABILITY_KEYS } from "@/entitlements";
+import { radius } from "@/theme/theme";
 
 const styles = StyleSheet.create({
   container: { flex: 1, padding: 16, backgroundColor: "#FFFFFF" },
@@ -11,7 +12,7 @@ const styles = StyleSheet.create({
   card: {
     borderWidth: 1,
     borderColor: "#CBD5E1",
-    borderRadius: 8,
+    borderRadius: radius.card,
     padding: 12,
     marginBottom: 10,
     backgroundColor: "#F8FAFC"
@@ -25,7 +26,7 @@ const styles = StyleSheet.create({
     paddingHorizontal: 11,
     borderWidth: 1,
     borderColor: "#166534",
-    borderRadius: 8,
+    borderRadius: radius.card,
     backgroundColor: "#FFFFFF"
   },
   primaryButton: { backgroundColor: "#166534" },
@@ -35,7 +36,7 @@ const styles = StyleSheet.create({
   empty: {
     borderWidth: 1,
     borderColor: "#CBD5E1",
-    borderRadius: 8,
+    borderRadius: radius.card,
     padding: 12,
     color: "#64748B",
     backgroundColor: "#F8FAFC"

@@ -12,6 +12,7 @@ import {
 import { useFacility } from "../../facility/FacilityProvider";
 import { handleApiError } from "../../ui/handleApiError";
 import { useFacilitySettings } from "../../hooks/useFacilitySettings";
+import { radius } from "@/theme/theme";
 
 type Facility = {
   id: string;
@@ -202,7 +203,7 @@ const styles = StyleSheet.create({
   card: {
     marginTop: 12,
     padding: 12,
-    borderRadius: 16,
+    borderRadius: radius.card,
     borderWidth: 1,
     borderColor: "#E5E7EB",
     backgroundColor: "#fff"
@@ -211,7 +212,7 @@ const styles = StyleSheet.create({
   input: {
     marginTop: 8,
     height: 44,
-    borderRadius: 12,
+    borderRadius: radius.card,
     borderWidth: 1,
     borderColor: "#E5E7EB",
     paddingHorizontal: 12,
@@ -221,7 +222,7 @@ const styles = StyleSheet.create({
   chip: {
     paddingVertical: 10,
     paddingHorizontal: 12,
-    borderRadius: 999,
+    borderRadius: radius.pill,
     borderWidth: 1,
     borderColor: "#E5E7EB"
   },
@@ -237,7 +238,7 @@ const styles = StyleSheet.create({
   btn: {
     paddingHorizontal: 14,
     paddingVertical: 10,
-    borderRadius: 12,
+    borderRadius: radius.card,
     backgroundColor: "#111827"
   },
   btnDisabled: { opacity: 0.5 },
