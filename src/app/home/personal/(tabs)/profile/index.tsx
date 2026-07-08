@@ -37,7 +37,7 @@ const styles = StyleSheet.create({
   statusRow: {
     alignItems: "center",
     borderColor: "#E2E8F0",
-    borderRadius: 8,
+    borderRadius: radius.card,
     borderWidth: 1,
     flexDirection: "row",
     justifyContent: "space-between",
@@ -53,7 +53,7 @@ const styles = StyleSheet.create({
     marginTop: 8,
     borderWidth: 1,
     borderColor: "#CBD5E1",
-    borderRadius: 8,
+    borderRadius: radius.card,
     paddingHorizontal: 12,
     paddingVertical: 10,
     fontSize: 15,
@@ -80,7 +80,7 @@ const styles = StyleSheet.create({
   accountAction: {
     marginTop: 10,
     paddingVertical: 10,
-    borderRadius: 8,
+    borderRadius: radius.card,
     borderWidth: 1,
     borderColor: "#E2E8F0",
     alignItems: "center",

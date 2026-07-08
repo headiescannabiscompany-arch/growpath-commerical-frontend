@@ -39,7 +39,7 @@ const styles = StyleSheet.create({
     padding: 12,
     borderWidth: 1,
     borderColor: "#BFDBFE",
-    borderRadius: 8,
+    borderRadius: radius.card,
     marginBottom: 10,
     backgroundColor: "#EFF6FF"
   },
@@ -47,14 +47,14 @@ const styles = StyleSheet.create({
     padding: 12,
     borderWidth: 1,
     borderColor: "#FED7AA",
-    borderRadius: 8,
+    borderRadius: radius.card,
     marginBottom: 10,
     backgroundColor: "#FFF7ED"
   },
   actionButton: {
     alignSelf: "flex-start",
     backgroundColor: "#166534",
-    borderRadius: 8,
+    borderRadius: radius.card,
     marginTop: 6,
     paddingHorizontal: 12,
     paddingVertical: 8
@@ -66,7 +66,7 @@ const styles = StyleSheet.create({
   growChip: {
     borderWidth: 1,
     borderColor: "#CBD5E1",
-    borderRadius: 8,
+    borderRadius: radius.card,
     paddingHorizontal: 10,
     paddingVertical: 7
   },
