@@ -16,6 +16,7 @@ describe("personal feature status manifest", () => {
   });
 
   test("keeps personal community described as forum and grow help, not feed ads", () => {
+    expect(personalFeatures.community.title).toBe("Forum / Q&A");
     expect(personalFeatures.community.description).toMatch(/Forum discussions/);
     expect(personalFeatures.community.description).toMatch(/Q&A/);
     expect(personalFeatures.community.description).not.toMatch(/feed|campaign|ad/i);

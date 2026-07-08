@@ -14,7 +14,7 @@ export function getMenuItems({ capabilities, mode }) {
     });
   }
 
-  // Feed / outreach campaigns. Forum/community discussions are separate.
+  // Feed / outreach campaigns. Forum/Q&A discussions are separate.
   if (capabilities.canUseFeed) {
     items.push({
       key: "feed",
