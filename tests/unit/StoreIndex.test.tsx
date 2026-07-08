@@ -5,12 +5,16 @@ import StoreIndex from "@/app/store";
 
 const mockPush = jest.fn();
 const mockSearchPublicStorefronts = jest.fn();
+const mockLinkHrefs: string[] = [];
 let mockParams: Record<string, string> = {};
 
 jest.mock("expo-router", () => {
   const React = require("react");
   return {
-    Link: ({ children }: any) => React.createElement(React.Fragment, null, children),
+    Link: ({ children, href }: any) => {
+      mockLinkHrefs.push(String(href));
+      return React.createElement(React.Fragment, null, children);
+    },
     useLocalSearchParams: () => mockParams,
     useRouter: () => ({ push: mockPush })
   };
@@ -36,6 +40,7 @@ describe("StoreIndex", () => {
   beforeEach(() => {
     mockPush.mockReset();
     mockSearchPublicStorefronts.mockReset();
+    mockLinkHrefs.length = 0;
     mockSearchPublicStorefronts.mockResolvedValue({
       storefronts: [
         {
@@ -88,5 +93,12 @@ describe("StoreIndex", () => {
       })
     );
     expect(screen.getByText("Living Soil Labs")).toBeTruthy();
+  });
+
+  it("links commercial storefront management to the canonical commercial workspace", () => {
+    render(<StoreIndex />);
+
+    expect(mockLinkHrefs).toContain("/home/commercial/storefront");
+    expect(mockLinkHrefs).not.toContain("/storefront");
   });
 });

@@ -189,7 +189,7 @@ export default function StoreIndex() {
         <Text style={styles.cardText}>
           Storefront setup and product management are available to commercial accounts.
         </Text>
-        <Link href="/storefront" asChild>
+        <Link href="/home/commercial/storefront" asChild>
           <Pressable style={styles.primaryButton}>
             <Text style={styles.primaryButtonText}>Manage Storefront</Text>
           </Pressable>

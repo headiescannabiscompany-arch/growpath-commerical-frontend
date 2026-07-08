@@ -1550,6 +1550,10 @@ describe("commercial workflow pages", () => {
     expect(screen.getByText("Line-level public page context")).toBeTruthy();
     expect(screen.getByText("Brand-type examples")).toBeTruthy();
     expect(screen.getByText("Marketing Planner")).toBeTruthy();
+    expect(
+      screen.UNSAFE_getByProps({ href: "/home/commercial/products/new" })
+    ).toBeTruthy();
+    expect(() => screen.UNSAFE_getByProps({ href: "/storefront" })).toThrow();
 
     await waitFor(() => expect(screen.getByText("Living Soil Line")).toBeTruthy());
     expect(screen.getByText("Open Detail")).toBeTruthy();

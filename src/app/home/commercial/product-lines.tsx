@@ -97,7 +97,7 @@ export default function CommercialProductLinesRoute() {
             plant lines, course lines, equipment lines, and garden-center categories.
           </Text>
           <View style={styles.headerActions}>
-            <Link href="/storefront" asChild>
+            <Link href="/home/commercial/products/new" asChild>
               <Pressable style={styles.outlineButton}>
                 <Text style={styles.outlineText}>Create Product</Text>
               </Pressable>
