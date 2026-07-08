@@ -99,7 +99,8 @@ function sourceReference(task: CommercialTask) {
     );
   if (sourceType === "product") return String(task.linkedProductId || "");
   if (sourceType === "product_batch") return String(task.linkedProductBatchId || "");
-  if (sourceType === "product_trial") return String(task.linkedProductTrialId || "");
+  if (sourceType === "product_trial")
+    return String(task.linkedProductTrialId || task.linkedTrialId || "");
   if (sourceType === "course" || sourceType === "lesson") {
     return String(task.linkedCourseId || task.linkedLessonId || "");
   }
@@ -121,6 +122,7 @@ function sourceReference(task: CommercialTask) {
     task.linkedForumThreadId ||
     task.linkedProductBatchId ||
     task.linkedProductTrialId ||
+    task.linkedTrialId ||
     task.linkedProductId ||
     task.linkedCourseId ||
     task.linkedLiveId ||
@@ -140,7 +142,7 @@ function linkedFieldsForSource(sourceType: string, sourceId: string) {
     case "product_batch":
       return { linkedProductBatchId: sourceId };
     case "product_trial":
-      return { linkedProductTrialId: sourceId };
+      return { linkedProductTrialId: sourceId, linkedTrialId: sourceId };
     case "course":
       return { linkedCourseId: sourceId };
     case "lesson":

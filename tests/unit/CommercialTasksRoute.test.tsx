@@ -99,6 +99,14 @@ describe("CommercialTasksRoute", () => {
               sourceType: "feed_campaign",
               linkedProductId: "product-1",
               linkedFeedPostId: "campaign-linked-1"
+            },
+            {
+              id: "task-9",
+              title: "Review linked trial evidence",
+              status: "open",
+              sourceType: "product_trial",
+              linkedProductId: "product-1",
+              linkedTrialId: "trial-linked-1"
             }
           ]
         });
@@ -131,10 +139,12 @@ describe("CommercialTasksRoute", () => {
     expect(screen.getByText("Prepare live demo")).toBeTruthy();
     expect(screen.getByText("Review linked batch")).toBeTruthy();
     expect(screen.getByText("Review feed campaign")).toBeTruthy();
+    expect(screen.getByText("Review linked trial evidence")).toBeTruthy();
     expect(screen.getByText(/Source ID: product-1/)).toBeTruthy();
     expect(screen.getByText(/Source ID: live-linked-1/)).toBeTruthy();
     expect(screen.getByText(/Source ID: batch-linked-1/)).toBeTruthy();
     expect(screen.getByText(/Source ID: campaign-linked-1/)).toBeTruthy();
+    expect(screen.getByText(/Source ID: trial-linked-1/)).toBeTruthy();
     expect(
       screen.getByLabelText("Commercial task link /home/alerts?alertId=alert-1")
     ).toBeTruthy();
@@ -155,6 +165,11 @@ describe("CommercialTasksRoute", () => {
     expect(
       screen.getByLabelText(
         "Commercial task link /home/commercial/feed?campaignId=campaign-linked-1"
+      )
+    ).toBeTruthy();
+    expect(
+      screen.getByLabelText(
+        "Commercial task link /home/commercial/trials/trial-linked-1"
       )
     ).toBeTruthy();
     expect(screen.getByText(/Reminder: 24 hours before/)).toBeTruthy();
@@ -244,6 +259,38 @@ describe("CommercialTasksRoute", () => {
             sourceType: "feed_campaign",
             sourceId: "campaign-7",
             linkedFeedCampaignId: "campaign-7",
+            status: "open"
+          })
+        })
+      )
+    );
+  });
+
+  it("creates product-trial linked commercial tasks with both trial aliases", async () => {
+    const screen = render(<CommercialTasksRoute />);
+
+    await waitFor(() => expect(screen.getByText("Commercial Task Center")).toBeTruthy());
+
+    fireEvent.changeText(
+      screen.getByLabelText("Commercial task title"),
+      "Review product trial"
+    );
+    fireEvent.press(screen.getByLabelText("Commercial task source product_trial"));
+    fireEvent.changeText(screen.getByLabelText("Commercial task source ID"), "trial-7");
+    fireEvent.press(screen.getByLabelText("Create commercial task"));
+
+    await waitFor(() =>
+      expect(mockApiRequest).toHaveBeenCalledWith(
+        "/api/tasks",
+        expect.objectContaining({
+          method: "POST",
+          body: expect.objectContaining({
+            workspaceType: "commercial",
+            title: "Review product trial",
+            sourceType: "product_trial",
+            sourceId: "trial-7",
+            linkedProductTrialId: "trial-7",
+            linkedTrialId: "trial-7",
             status: "open"
           })
         })

@@ -78,7 +78,7 @@ function taskContextRows(task: AnyRec | null) {
     ],
     ["Recipe", task.linkedRecipeId],
     ["Product batch", task.linkedProductBatchId],
-    ["Product trial", task.linkedProductTrialId],
+    ["Product trial", firstLinkedValue(task.linkedProductTrialId, task.linkedTrialId)],
     ["Published products", task.linkedPublishedProductIds],
     ["Courses", firstLinkedValue(task.linkedCourseIds, task.linkedCourseId)],
     ["Lives", firstLinkedValue(task.linkedLiveIds, task.linkedLiveId)],
@@ -118,7 +118,8 @@ function taskSourceId(task: AnyRec | null): string {
   if (sourceType === "storefront") return String(task.linkedStorefrontId || "");
   if (sourceType === "product") return String(task.linkedProductId || "");
   if (sourceType === "product_batch") return String(task.linkedProductBatchId || "");
-  if (sourceType === "product_trial") return String(task.linkedProductTrialId || "");
+  if (sourceType === "product_trial")
+    return String(task.linkedProductTrialId || task.linkedTrialId || "");
   if (sourceType === "course" || sourceType === "lesson") {
     return String(task.linkedCourseId || task.linkedLessonId || "");
   }
@@ -142,6 +143,7 @@ function taskSourceId(task: AnyRec | null): string {
       task.linkedRecipeId ||
       task.linkedProductBatchId ||
       task.linkedProductTrialId ||
+      task.linkedTrialId ||
       task.linkedProductId ||
       task.linkedCourseId ||
       task.linkedLiveId ||

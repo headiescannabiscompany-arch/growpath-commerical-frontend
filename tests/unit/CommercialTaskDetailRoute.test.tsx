@@ -252,4 +252,27 @@ describe("CommercialTaskDetailRoute", () => {
 
     expect(mockPush).toHaveBeenCalledWith("/home/commercial/batch-planner/batch-1");
   });
+
+  it("opens linked-only product trial alias task sources in the trial workflow", async () => {
+    taskOverrides = {
+      sourceType: "product_trial",
+      sourceId: "",
+      sourceObjectId: "",
+      linkedProductTrialId: "",
+      linkedTrialId: "trial-linked-1"
+    };
+    const screen = render(<CommercialTaskDetailRoute />);
+
+    await waitFor(() =>
+      expect(screen.getAllByText("Connect Stripe price").length).toBeGreaterThan(0)
+    );
+    expect(screen.getByText("Product trial")).toBeTruthy();
+    expect(screen.getAllByText("trial-linked-1").length).toBeGreaterThan(0);
+
+    fireEvent.press(screen.getByLabelText("View commercial task source"));
+
+    expect(mockPush).toHaveBeenCalledWith(
+      "/home/commercial/trials/trial-linked-1"
+    );
+  });
 });
