@@ -9,6 +9,7 @@ import AppCard from "@/components/layout/AppCard";
 import AppPage from "@/components/layout/AppPage";
 import { SUPPORT_CONTACTS } from "@/config/supportContacts";
 import { useEntitlements } from "@/entitlements";
+import { radius } from "@/theme/theme";
 
 type ProfileForm = {
   businessName: string;
@@ -389,7 +390,7 @@ const styles = StyleSheet.create({
   action: {
     alignItems: "center",
     borderColor: "#b9c8b9",
-    borderRadius: 8,
+    borderRadius: radius.card,
     borderWidth: 1,
     minHeight: 40,
     justifyContent: "center",
@@ -420,7 +421,7 @@ const styles = StyleSheet.create({
   },
   metric: {
     borderColor: "#d6e1d5",
-    borderRadius: 8,
+    borderRadius: radius.card,
     borderWidth: 1,
     minWidth: 150,
     padding: 12
@@ -443,7 +444,7 @@ const styles = StyleSheet.create({
   },
   input: {
     borderColor: "#c8d6c7",
-    borderRadius: 8,
+    borderRadius: radius.card,
     borderWidth: 1,
     color: "#172317",
     flexBasis: 240,
@@ -461,7 +462,7 @@ const styles = StyleSheet.create({
   submit: {
     alignItems: "center",
     backgroundColor: "#1f4d2c",
-    borderRadius: 8,
+    borderRadius: radius.card,
     marginTop: 14,
     minHeight: 44,
     justifyContent: "center",
