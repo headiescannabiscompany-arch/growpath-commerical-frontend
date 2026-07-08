@@ -175,6 +175,17 @@ describe("AlertCenterRoute", () => {
               sourceType: "sensor_alert",
               sourceId: "sensor-alert-1",
               createdAt: new Date().toISOString()
+            },
+            {
+              id: "alert-15",
+              title: "Linked batch alert",
+              message: "A product batch needs follow-up.",
+              severity: "warning",
+              status: "active",
+              workspaceType: "personal",
+              sourceType: "product_batch",
+              linkedProductBatchId: "batch-linked-1",
+              createdAt: new Date().toISOString()
             }
           ]
         });
@@ -232,6 +243,7 @@ describe("AlertCenterRoute", () => {
     expect(
       screen.getByLabelText("Alert link /home/alerts?alertId=sensor-alert-1")
     ).toBeTruthy();
+    expect(screen.getByLabelText("Alert link /store?q=batch-linked-1")).toBeTruthy();
     expect(
       screen.getByLabelText(
         "Alert link /home/commercial?ai=alerts&alertId=alert-1&sourceType=product"
@@ -278,6 +290,30 @@ describe("AlertCenterRoute", () => {
       )
     );
     expect(screen.getByText("Task created from alert.")).toBeTruthy();
+
+    const createButtons = screen.getAllByLabelText("Create task from alert");
+    expect(createButtons).toHaveLength(14);
+    fireEvent.press(createButtons[13]);
+    await waitFor(() =>
+      expect(mockApiRequest).toHaveBeenLastCalledWith(
+        "/api/tasks",
+        expect.objectContaining({
+          method: "POST",
+          body: expect.objectContaining({
+            workspaceType: "personal",
+            title: "Follow up: Linked batch alert",
+            sourceType: "alert",
+            sourceId: "alert-15",
+            linkedAlertId: "alert-15",
+            alertSourceType: "product_batch",
+            alertSourceId: "batch-linked-1",
+            linkedProductBatchId: "batch-linked-1",
+            priority: "normal",
+            status: "open"
+          })
+        })
+      )
+    );
 
     fireEvent.press(screen.getAllByLabelText("Resolve alert")[0]);
     await waitFor(() =>

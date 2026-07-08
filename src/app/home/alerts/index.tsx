@@ -66,9 +66,42 @@ function askAiHref(alert: AlertRow) {
   return `/home/personal/ai?alertId=${id}&sourceType=${sourceType}`;
 }
 
+function sourceReference(alert: AlertRow) {
+  const values = [
+    alert.sourceId,
+    alert.sourceObjectId,
+    alert.linkedProductId,
+    alert.linkedCourseId,
+    alert.linkedLiveId,
+    alert.linkedStorefrontId,
+    alert.linkedGrowId,
+    alert.linkedPlantId,
+    alert.linkedGrowLogId,
+    alert.linkedTaskId,
+    alert.linkedRoomId,
+    alert.linkedFacilityId,
+    alert.linkedFacilityRunId,
+    alert.linkedSopId,
+    alert.linkedToolRunId,
+    alert.linkedRecipeId,
+    alert.linkedProductBatchId,
+    alert.linkedProductTrialId,
+    alert.linkedLessonId,
+    alert.linkedCourseAssignmentId,
+    alert.linkedFeedPostId,
+    alert.linkedOrderId,
+    alert.linkedSensorAlertId,
+    alert.linkedForumThreadId
+  ];
+  const value = values.find(
+    (item) => item !== undefined && item !== null && String(item)
+  );
+  return value ? String(value) : "";
+}
+
 function linkedFieldsForAlertSource(alert: AlertRow) {
   const sourceType = String(alert.sourceType || "");
-  const sourceId = String(alert.sourceId || "");
+  const sourceId = sourceReference(alert);
   if (!sourceId) return {};
   switch (sourceType) {
     case "product":
@@ -226,7 +259,7 @@ export default function AlertCenterRoute() {
           sourceId: id,
           linkedAlertId: id,
           alertSourceType: alert.sourceType || undefined,
-          alertSourceId: alert.sourceId || undefined,
+          alertSourceId: sourceReference(alert) || undefined,
           ...linkedFieldsForAlertSource(alert),
           assignedToUserId: assignee.trim() || undefined,
           status: "open",
