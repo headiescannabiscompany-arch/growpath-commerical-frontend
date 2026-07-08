@@ -43,7 +43,7 @@ This guide walks you through every step needed to launch your app to production,
 
 - [ ] Ensure backend/database backups are scheduled and tested
 - [ ] Prepare rollback instructions for critical failures
-- [ ] Document support/escalation contacts
+- [x] Document support/escalation contacts
 
 ## 6. Final Documentation & Handoff
 
@@ -64,4 +64,4 @@ This guide walks you through every step needed to launch your app to production,
 
 Let me know which step you want to start with, or say "next" to proceed step-by-step.
 
-_Last updated: January 18, 2026_
+_Last updated: July 8, 2026_

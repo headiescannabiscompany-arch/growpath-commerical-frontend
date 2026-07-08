@@ -67,7 +67,6 @@ Status policy: each item is `DONE` or `NOT DONE` with owner, next action, and ev
 - Owner: Engineering
 - Evidence: `docs/product/ROUTES.md`, `docs/product/BUTTON_REGISTRY.md`
 
-- NOT DONE: Support/ops handoff packet.
+- DONE: Support/ops handoff packet.
 - Owner: Product + Support
-- Next action: Publish support SOP and escalation contacts.
-- Evidence target: `tmp/spec/support_handoff_2026-02-25.md`
+- Evidence: Live GrowPath support aliases are configured in `src/config/supportContacts.ts` and covered by `tests/unit/SupportPage.test.tsx`, `tests/unit/PolicyContactAliases.test.tsx`, and `tests/unit/SupportContactsConfig.test.ts`.
