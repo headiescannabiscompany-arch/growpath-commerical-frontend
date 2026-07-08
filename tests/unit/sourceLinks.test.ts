@@ -8,7 +8,7 @@ describe("sourceObjectHref", () => {
         sourceId: "recipe-1",
         workspaceType: "facility"
       })
-    ).toBe("/home/facility/ai-tools");
+    ).toBe("/home/facility/ai-tools?toolRunId=recipe-1");
 
     expect(
       sourceObjectHref({
@@ -16,7 +16,7 @@ describe("sourceObjectHref", () => {
         sourceId: "run-1",
         workspaceType: "facility"
       })
-    ).toBe("/home/facility/ai-tools");
+    ).toBe("/home/facility/ai-tools?toolRunId=run-1");
 
     expect(
       sourceObjectHref({
@@ -68,6 +68,14 @@ describe("sourceObjectHref", () => {
         workspaceType: "commercial"
       })
     ).toBe("/home/commercial/batch-planner/batch-1");
+
+    expect(
+      sourceObjectHref({
+        sourceType: "recipe",
+        sourceId: "recipe-1",
+        workspaceType: "commercial"
+      })
+    ).toBe("/home/commercial/batch-planner/recipe-1");
 
     expect(
       sourceObjectHref({

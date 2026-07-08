@@ -204,8 +204,14 @@ export function sourceObjectHref(source: SourceLike) {
   }
 
   if (sourceType === "toolrun" || sourceType === "tool_run" || sourceType === "recipe") {
-    if (workspace === "commercial") return "/home/commercial/batch-planner";
-    if (workspace === "facility") return "/home/facility/ai-tools";
+    if (workspace === "commercial")
+      return sourceId
+        ? `/home/commercial/batch-planner/${encoded(sourceId)}`
+        : "/home/commercial/batch-planner";
+    if (workspace === "facility")
+      return `/home/facility/ai-tools${
+        sourceId ? `?toolRunId=${encoded(sourceId)}` : ""
+      }`;
     return `/home/personal/tools/saved-runs${
       sourceId ? `?toolRunId=${encoded(sourceId)}` : ""
     }`;

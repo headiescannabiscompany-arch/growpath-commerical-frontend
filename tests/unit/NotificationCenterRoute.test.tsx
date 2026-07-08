@@ -242,7 +242,9 @@ describe("NotificationCenterRoute", () => {
       screen.getByLabelText("Notification link /home/commercial/orders?orderId=order-1")
     ).toBeTruthy();
     expect(
-      screen.getByLabelText("Notification link /home/facility/ai-tools")
+      screen.getByLabelText(
+        "Notification link /home/facility/ai-tools?toolRunId=toolrun-1"
+      )
     ).toBeTruthy();
 
     fireEvent.press(screen.getAllByLabelText("Create task from notification")[0]);
