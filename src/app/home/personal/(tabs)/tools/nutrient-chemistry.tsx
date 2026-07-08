@@ -10,7 +10,7 @@ import {
   View
 } from "react-native";
 
-import BackButton from "@/components/nav/BackButton";
+import { ScreenBoundary } from "@/components/ScreenBoundary";
 import { CAPABILITY_KEYS, useEntitlements } from "@/entitlements";
 import {
   ToolPlantContextPicker,
@@ -319,553 +319,579 @@ export default function NutrientChemistryToolScreen() {
 
   if (!enabled) {
     return (
-      <ScrollView style={styles.container} contentContainerStyle={styles.content}>
-        <BackButton />
-        <Text style={styles.title}>Nutrient Chemistry</Text>
-        <View style={styles.panel}>
-          <Text style={styles.sectionTitle}>Tool unavailable</Text>
-          <Text style={styles.helperText}>This account does not have `TOOL_NPK`.</Text>
-        </View>
-      </ScrollView>
+      <ScreenBoundary
+        title="Nutrient Chemistry"
+        showBack
+        backFallbackHref="/home/personal/tools"
+      >
+        <ScrollView style={styles.container} contentContainerStyle={styles.content}>
+          <Text style={styles.title}>Nutrient Chemistry</Text>
+          <View style={styles.panel}>
+            <Text style={styles.sectionTitle}>Tool unavailable</Text>
+            <Text style={styles.helperText}>This account does not have `TOOL_NPK`.</Text>
+          </View>
+        </ScrollView>
+      </ScreenBoundary>
     );
   }
 
   return (
-    <ScrollView style={styles.container} contentContainerStyle={styles.content}>
-      <BackButton />
-      <Text style={styles.title}>Nutrient Chemistry</Text>
-      <Text style={styles.subtitle}>
-        Classify source form, release speed, pH effect, and fast vs slow use case.
-      </Text>
-      <PersonalFeedPlacement
-        placement="top"
-        routeKey="personal_tools_nutrient_chemistry"
-        longContent
-      />
-      {growId ? <Text style={styles.context}>Grow context: {growId}</Text> : null}
-      <ToolPlantContextPicker
-        plants={plantContext.plants}
-        plantId={plantContext.plantId}
-        selectedPlant={plantContext.selectedPlant}
-        onSelect={plantContext.setPlantId}
-      />
-      <View
-        style={[
-          styles.contextPanel,
-          cropContext.state === "confirmed" ? styles.contextPanelOk : null
-        ]}
-      >
-        <Text style={styles.contextPanelTitle}>{cropContext.label}</Text>
-        <Text style={styles.helperText}>{cropContext.message}</Text>
-      </View>
-
-      <View style={styles.panel}>
-        <Text style={styles.sectionTitle}>Nutrient</Text>
-        <View style={styles.wrap}>
-          {nutrientOptions.map((option) => (
-            <Pressable
-              key={option.key}
-              style={pillStyle(nutrient === option.key)}
-              onPress={() => {
-                setNutrient(option.key);
-                setCompareIds([]);
-              }}
-            >
-              <Text
-                style={[
-                  styles.pillText,
-                  nutrient === option.key ? styles.pillTextOn : null
-                ]}
-              >
-                {option.label}
-              </Text>
-            </Pressable>
-          ))}
-        </View>
-
-        <Text style={styles.sectionTitle}>Use case</Text>
-        <View style={styles.wrap}>
-          {intentOptions.map((option) => (
-            <Pressable
-              key={option.key}
-              style={pillStyle(intent === option.key)}
-              onPress={() => {
-                setIntent(option.key);
-                setCompareIds([]);
-              }}
-            >
-              <Text
-                style={[
-                  styles.pillText,
-                  intent === option.key ? styles.pillTextOn : null
-                ]}
-              >
-                {option.label}
-              </Text>
-            </Pressable>
-          ))}
-        </View>
-
-        <Text style={styles.sectionTitle}>Stage</Text>
-        <View style={styles.wrap}>
-          {stageOptions.map((option) => (
-            <Pressable
-              key={option.key}
-              style={pillStyle(stage === option.key)}
-              onPress={() => setStage(option.key)}
-            >
-              <Text
-                style={[styles.pillText, stage === option.key ? styles.pillTextOn : null]}
-              >
-                {option.label}
-              </Text>
-            </Pressable>
-          ))}
-        </View>
-
-        <Text style={styles.sectionTitle}>Environment</Text>
-        <View style={styles.inlineRow}>
-          <View style={styles.flex1}>
-            <Text style={styles.label}>Soil temp (C)</Text>
-            <TextInput
-              style={styles.input}
-              value={soilTempC}
-              onChangeText={setSoilTempC}
-              keyboardType="numeric"
-            />
-          </View>
-          <View style={styles.flex1}>
-            <Text style={styles.label}>pH</Text>
-            <TextInput
-              style={styles.input}
-              value={pH}
-              onChangeText={setPH}
-              keyboardType="numeric"
-            />
-          </View>
-          <View style={styles.flex1}>
-            <Text style={styles.label}>Days until need</Text>
-            <TextInput
-              style={styles.input}
-              value={daysUntilNeed}
-              onChangeText={setDaysUntilNeed}
-              keyboardType="numeric"
-            />
-          </View>
-        </View>
-
-        <View style={styles.inlineRow}>
-          <View style={styles.flex1}>
-            <Text style={styles.label}>Moisture</Text>
-            <View style={styles.wrap}>
-              {moistureOptions.map((option) => (
-                <Pressable
-                  key={option.key}
-                  style={pillStyle(moisture === option.key)}
-                  onPress={() => setMoisture(option.key)}
-                >
-                  <Text
-                    style={[
-                      styles.pillText,
-                      moisture === option.key ? styles.pillTextOn : null
-                    ]}
-                  >
-                    {option.label}
-                  </Text>
-                </Pressable>
-              ))}
-            </View>
-          </View>
-          <View style={styles.flex1}>
-            <Text style={styles.label}>Microbial activity</Text>
-            <View style={styles.wrap}>
-              {microbialOptions.map((option) => (
-                <Pressable
-                  key={option.key}
-                  style={pillStyle(microbialActivity === option.key)}
-                  onPress={() => setMicrobialActivity(option.key)}
-                >
-                  <Text
-                    style={[
-                      styles.pillText,
-                      microbialActivity === option.key ? styles.pillTextOn : null
-                    ]}
-                  >
-                    {option.label}
-                  </Text>
-                </Pressable>
-              ))}
-            </View>
-          </View>
-        </View>
-
-        <View style={styles.toggleRow}>
-          <Pressable
-            style={[styles.toggle, livingSoil ? styles.toggleOn : null]}
-            onPress={() => setLivingSoil((current) => !current)}
-          >
-            <Text style={[styles.toggleText, livingSoil ? styles.toggleTextOn : null]}>
-              Living soil
-            </Text>
-          </Pressable>
-          <Pressable
-            style={[styles.toggle, isConcentrate ? styles.toggleOn : null]}
-            onPress={() => setIsConcentrate((current) => !current)}
-          >
-            <Text style={[styles.toggleText, isConcentrate ? styles.toggleTextOn : null]}>
-              Concentrate mix
-            </Text>
-          </Pressable>
-        </View>
-      </View>
-
-      {activeRecommendation ? (
-        <View style={styles.summaryCard}>
-          <Text style={styles.cardTitle}>Best current fit</Text>
-          <Text style={styles.summaryName}>{activeRecommendation.ingredient.name}</Text>
-          <Text style={styles.summaryMeta}>
-            {activeRecommendation.fitLabel.toUpperCase()} |{" "}
-            {activeRecommendation.releaseSummary}
-          </Text>
-          <Text style={styles.summaryText}>
-            {activeRecommendation.ingredient.bestUseCases.join(" · ")}
-          </Text>
-          {compatibilityWarnings.map((warning) => (
-            <Text key={warning} style={styles.warning}>
-              {warning}
-            </Text>
-          ))}
-        </View>
-      ) : null}
-
-      <PersonalFeedPlacement
-        placement="middle"
-        routeKey="personal_tools_nutrient_chemistry"
-        longContent
-      />
-
-      <View style={styles.panel}>
-        <Text style={styles.sectionTitle}>Recommended sources</Text>
-        {recommendations.slice(0, 6).map((row) => {
-          const selected = compareIds.includes(row.ingredient.id);
-          return (
-            <Pressable
-              key={row.ingredient.id}
-              style={[
-                styles.recommendationCard,
-                selected ? styles.recommendationCardOn : null
-              ]}
-              onPress={() => setCompareIds([row.ingredient.id])}
-            >
-              <View style={styles.recommendationHeader}>
-                <View style={styles.flex1}>
-                  <Text style={styles.recommendationTitle}>{row.ingredient.name}</Text>
-                  <Text style={styles.recommendationMeta}>
-                    {row.fitLabel.toUpperCase()} · {row.releaseSummary}
-                  </Text>
-                </View>
-                <Pressable
-                  style={[styles.compareButton, selected ? styles.compareButtonOn : null]}
-                  onPress={() => toggleCompare(row.ingredient.id)}
-                >
-                  <Text
-                    style={[
-                      styles.compareButtonText,
-                      selected ? styles.compareButtonTextOn : null
-                    ]}
-                  >
-                    {selected ? "Compared" : "+ Compare"}
-                  </Text>
-                </Pressable>
-              </View>
-              <Text style={styles.recommendationBody}>
-                {row.reasons.slice(0, 3).join(" · ")}
-              </Text>
-            </Pressable>
-          );
-        })}
-      </View>
-
-      <View style={styles.panel}>
-        <Text style={styles.sectionTitle}>Release windows</Text>
-        <Text style={styles.helperText}>
-          Fast / medium / slow groupings help separate quick correction from soil-building
-          inputs.
+    <ScreenBoundary
+      title="Nutrient Chemistry"
+      showBack
+      backFallbackHref="/home/personal/tools"
+    >
+      <ScrollView style={styles.container} contentContainerStyle={styles.content}>
+        <Text style={styles.title}>Nutrient Chemistry</Text>
+        <Text style={styles.subtitle}>
+          Classify source form, release speed, pH effect, and fast vs slow use case.
         </Text>
-        <View style={styles.releaseGroup}>
-          <Text style={styles.releaseLabel}>Fast</Text>
-          <Text style={styles.releaseItems}>
-            {compareGroups.fast.map((row) => row.ingredient.name).join(" · ") || "None"}
-          </Text>
+        <PersonalFeedPlacement
+          placement="top"
+          routeKey="personal_tools_nutrient_chemistry"
+          longContent
+        />
+        {growId ? <Text style={styles.context}>Grow context: {growId}</Text> : null}
+        <ToolPlantContextPicker
+          plants={plantContext.plants}
+          plantId={plantContext.plantId}
+          selectedPlant={plantContext.selectedPlant}
+          onSelect={plantContext.setPlantId}
+        />
+        <View
+          style={[
+            styles.contextPanel,
+            cropContext.state === "confirmed" ? styles.contextPanelOk : null
+          ]}
+        >
+          <Text style={styles.contextPanelTitle}>{cropContext.label}</Text>
+          <Text style={styles.helperText}>{cropContext.message}</Text>
         </View>
-        <View style={styles.releaseGroup}>
-          <Text style={styles.releaseLabel}>Medium</Text>
-          <Text style={styles.releaseItems}>
-            {compareGroups.medium.map((row) => row.ingredient.name).join(" · ") || "None"}
-          </Text>
-        </View>
-        <View style={styles.releaseGroup}>
-          <Text style={styles.releaseLabel}>Slow</Text>
-          <Text style={styles.releaseItems}>
-            {compareGroups.slow.map((row) => row.ingredient.name).join(" · ") || "None"}
-          </Text>
-        </View>
-      </View>
 
-      <View style={styles.panel}>
-        <Text style={styles.sectionTitle}>Time-release timeline</Text>
-        <Text style={styles.helperText}>
-          Adjusted for the selected temperature, moisture, biology, and pH. A form appears
-          in each band its estimated range overlaps.
-        </Text>
-        {releaseTimeline.map((window) => (
-          <View key={window.key} style={styles.releaseGroup}>
-            <Text style={styles.releaseLabel}>{window.label}</Text>
-            <Text style={styles.releaseItems}>
-              {window.entries
-                .map((entry) => `${entry.ingredientName}: ${entry.chemicalForm}`)
-                .join(" · ") || "No expected release"}
-            </Text>
-          </View>
-        ))}
-      </View>
-
-      {compareIngredients.length > 0 ? (
         <View style={styles.panel}>
-          <Text style={styles.sectionTitle}>Compatibility check</Text>
-          <Text style={styles.helperText}>
-            Rates are grams of product per liter of final diluted solution. EC values are
-            screening estimates; verify the complete mix with a meter.
-          </Text>
-          {compareIngredients.map((ingredient) => {
-            const guide = ingredient.applicationGuide;
-            return (
-              <View key={ingredient.id} style={styles.rateRow}>
-                <View style={styles.flex1}>
-                  <Text style={styles.compareName}>{ingredient.name}</Text>
-                  <Text style={styles.compareMeta}>
-                    {guide
-                      ? `Starter ${guide.typicalRateGPerL} g/L · screen ceiling ${guide.maxRateGPerL} g/L`
-                      : "No soluble-rate model for this amendment"}
-                  </Text>
-                </View>
-                {guide ? (
-                  <TextInput
-                    accessibilityLabel={`${ingredient.name} rate in grams per liter`}
-                    style={styles.rateInput}
-                    value={rateInputs[ingredient.id] ?? String(guide.typicalRateGPerL)}
-                    onChangeText={(value) =>
-                      setRateInputs((current) => ({ ...current, [ingredient.id]: value }))
-                    }
-                    keyboardType="decimal-pad"
-                  />
-                ) : null}
-                <TextInput
-                  accessibilityLabel={`${ingredient.name} manufacturer or reference URL`}
-                  style={styles.referenceInput}
-                  value={referenceInputs[ingredient.id] || ""}
-                  onChangeText={(value) =>
-                    setReferenceInputs((current) => ({
-                      ...current,
-                      [ingredient.id]: value
-                    }))
-                  }
-                  placeholder="Manufacturer/reference URL"
-                  autoCapitalize="none"
-                  keyboardType="url"
-                />
-                <View style={styles.labRow}>
-                  {Object.keys(ingredient.elemental).map((element) => (
-                    <View key={element} style={styles.labField}>
-                      <Text style={styles.label}>Lab {element} %</Text>
-                      <TextInput
-                        accessibilityLabel={`${ingredient.name} lab ${element} percent`}
-                        style={styles.labInput}
-                        value={labResultInputs[ingredient.id]?.[element] || ""}
-                        onChangeText={(value) =>
-                          setLabResultInputs((current) => ({
-                            ...current,
-                            [ingredient.id]: {
-                              ...current[ingredient.id],
-                              [element]: value
-                            }
-                          }))
-                        }
-                        placeholder={String(
-                          ingredient.elemental[
-                            element as keyof typeof ingredient.elemental
-                          ]
-                        )}
-                        keyboardType="decimal-pad"
-                      />
-                    </View>
-                  ))}
-                </View>
-              </View>
-            );
-          })}
-          {compatibilityAnalysis.estimatedEcContribution != null ? (
-            <Text style={styles.detailMeta}>
-              Estimated product EC contribution:{" "}
-              {compatibilityAnalysis.estimatedEcContribution.toFixed(2)} mS/cm
-            </Text>
-          ) : null}
-          {compatibilityAnalysis.issues.length > 0 ? (
-            compatibilityAnalysis.issues.map((issue) => (
-              <View
-                key={`${issue.code}-${issue.message}`}
-                style={styles.compatibilityIssue}
+          <Text style={styles.sectionTitle}>Nutrient</Text>
+          <View style={styles.wrap}>
+            {nutrientOptions.map((option) => (
+              <Pressable
+                key={option.key}
+                style={pillStyle(nutrient === option.key)}
+                onPress={() => {
+                  setNutrient(option.key);
+                  setCompareIds([]);
+                }}
               >
-                <View style={styles.issueHeader}>
-                  <Text
-                    style={[
-                      styles.severityBadge,
-                      issue.severity === "high"
-                        ? styles.severityHigh
-                        : issue.severity === "medium"
-                          ? styles.severityMedium
-                          : styles.severityLow
-                    ]}
-                  >
-                    {issue.severity.toUpperCase()}
-                  </Text>
-                  <Text style={styles.issueCode}>{issue.code.replaceAll("_", " ")}</Text>
-                </View>
-                <Text style={styles.issueMessage}>{issue.message}</Text>
-                <Text style={styles.issueRemediation}>Action: {issue.remediation}</Text>
-              </View>
-            ))
-          ) : (
-            <Text style={styles.helperText}>
-              No compatibility warning from this starter set.
-            </Text>
-          )}
-        </View>
-      ) : null}
-
-      <View style={styles.panel}>
-        <Text style={styles.sectionTitle}>Ingredient detail</Text>
-        {activeRecommendation ? (
-          <>
-            <Text style={styles.detailName}>{activeRecommendation.ingredient.name}</Text>
-            <Text style={styles.detailMeta}>
-              Category: {activeRecommendation.ingredient.category} · Confidence:{" "}
-              {activeRecommendation.ingredient.confidence}
-            </Text>
-            {activeEvidence ? (
-              <>
-                <Text style={styles.evidenceText}>
-                  Evidence: {activeEvidence.classification.replaceAll("_", " ")} · Source:{" "}
-                  {activeEvidence.sourceName}
+                <Text
+                  style={[
+                    styles.pillText,
+                    nutrient === option.key ? styles.pillTextOn : null
+                  ]}
+                >
+                  {option.label}
                 </Text>
-                {activeEvidence.reference ? (
+              </Pressable>
+            ))}
+          </View>
+
+          <Text style={styles.sectionTitle}>Use case</Text>
+          <View style={styles.wrap}>
+            {intentOptions.map((option) => (
+              <Pressable
+                key={option.key}
+                style={pillStyle(intent === option.key)}
+                onPress={() => {
+                  setIntent(option.key);
+                  setCompareIds([]);
+                }}
+              >
+                <Text
+                  style={[
+                    styles.pillText,
+                    intent === option.key ? styles.pillTextOn : null
+                  ]}
+                >
+                  {option.label}
+                </Text>
+              </Pressable>
+            ))}
+          </View>
+
+          <Text style={styles.sectionTitle}>Stage</Text>
+          <View style={styles.wrap}>
+            {stageOptions.map((option) => (
+              <Pressable
+                key={option.key}
+                style={pillStyle(stage === option.key)}
+                onPress={() => setStage(option.key)}
+              >
+                <Text
+                  style={[
+                    styles.pillText,
+                    stage === option.key ? styles.pillTextOn : null
+                  ]}
+                >
+                  {option.label}
+                </Text>
+              </Pressable>
+            ))}
+          </View>
+
+          <Text style={styles.sectionTitle}>Environment</Text>
+          <View style={styles.inlineRow}>
+            <View style={styles.flex1}>
+              <Text style={styles.label}>Soil temp (C)</Text>
+              <TextInput
+                style={styles.input}
+                value={soilTempC}
+                onChangeText={setSoilTempC}
+                keyboardType="numeric"
+              />
+            </View>
+            <View style={styles.flex1}>
+              <Text style={styles.label}>pH</Text>
+              <TextInput
+                style={styles.input}
+                value={pH}
+                onChangeText={setPH}
+                keyboardType="numeric"
+              />
+            </View>
+            <View style={styles.flex1}>
+              <Text style={styles.label}>Days until need</Text>
+              <TextInput
+                style={styles.input}
+                value={daysUntilNeed}
+                onChangeText={setDaysUntilNeed}
+                keyboardType="numeric"
+              />
+            </View>
+          </View>
+
+          <View style={styles.inlineRow}>
+            <View style={styles.flex1}>
+              <Text style={styles.label}>Moisture</Text>
+              <View style={styles.wrap}>
+                {moistureOptions.map((option) => (
                   <Pressable
-                    onPress={() => Linking.openURL(activeEvidence.reference || "")}
+                    key={option.key}
+                    style={pillStyle(moisture === option.key)}
+                    onPress={() => setMoisture(option.key)}
                   >
-                    <Text style={styles.referenceLink}>
-                      Open manufacturer/reference source
+                    <Text
+                      style={[
+                        styles.pillText,
+                        moisture === option.key ? styles.pillTextOn : null
+                      ]}
+                    >
+                      {option.label}
                     </Text>
                   </Pressable>
-                ) : null}
-              </>
-            ) : null}
-            <Text style={styles.helperText}>
-              {activeRecommendation.ingredient.warnings.join(" ")}
-            </Text>
-            <Text style={styles.detailSubhead}>Forms</Text>
-            {activeRecommendation.timing.map((form) => (
-              <View
-                key={`${form.nutrient}-${form.form}-${form.chemicalName}`}
-                style={styles.formCard}
-              >
-                <Text style={styles.formTitle}>
-                  {form.nutrient.toUpperCase()} · {form.chemicalName}
-                </Text>
-                <Text style={styles.formMeta}>
-                  {form.availabilityClass} → {form.adjustedReleaseDays.min}-
-                  {form.adjustedReleaseDays.max} days
-                </Text>
-                <Text style={styles.formMeta}>
-                  pH: {form.pHEffect} · EC: {form.ecImpact} · Mobility: {form.mobility}
-                </Text>
-                {form.nitrogenForm ? (
-                  <Text style={styles.formMeta}>
-                    Nitrogen form: {form.nitrogenForm.replaceAll("_", " ")}
-                  </Text>
-                ) : null}
-                {form.activeNitrogenRisks.map((risk) => (
-                  <Text key={`${risk.code}-${risk.condition}`} style={styles.warning}>
-                    {risk.severity.toUpperCase()} {risk.code.replaceAll("_", " ")}:{" "}
-                    {risk.summary} {risk.mitigation}
-                  </Text>
                 ))}
-                {form.chelate ? (
-                  <Text style={styles.formMeta}>
-                    Chelate: {form.chelate.agent} · stable through about pH{" "}
-                    {form.chelate.stableThroughPH}
-                  </Text>
-                ) : null}
-                <Text style={styles.formNotes}>{form.notes}</Text>
               </View>
-            ))}
-            <Text style={styles.detailSubhead}>Best use</Text>
-            <Text style={styles.helperText}>
-              {activeRecommendation.ingredient.bestUseCases.join(" · ")}
-            </Text>
-            <Text style={styles.detailSubhead}>Not for</Text>
-            <Text style={styles.helperText}>
-              {activeRecommendation.ingredient.badUseCases.join(" · ")}
-            </Text>
-          </>
-        ) : (
-          <Text style={styles.helperText}>No ingredient selected yet.</Text>
-        )}
-      </View>
+            </View>
+            <View style={styles.flex1}>
+              <Text style={styles.label}>Microbial activity</Text>
+              <View style={styles.wrap}>
+                {microbialOptions.map((option) => (
+                  <Pressable
+                    key={option.key}
+                    style={pillStyle(microbialActivity === option.key)}
+                    onPress={() => setMicrobialActivity(option.key)}
+                  >
+                    <Text
+                      style={[
+                        styles.pillText,
+                        microbialActivity === option.key ? styles.pillTextOn : null
+                      ]}
+                    >
+                      {option.label}
+                    </Text>
+                  </Pressable>
+                ))}
+              </View>
+            </View>
+          </View>
 
-      <View style={styles.panel}>
-        <Text style={styles.sectionTitle}>Save</Text>
-        <Text style={styles.helperText}>
-          Saving records the current chemistry recommendation, timing, and compatibility
-          check into the grow journal.
-        </Text>
-        {growId ? (
-          <View style={styles.actionRow}>
+          <View style={styles.toggleRow}>
             <Pressable
-              style={[styles.primaryButton, saving ? styles.disabled : null]}
-              onPress={save}
-              disabled={saving}
+              style={[styles.toggle, livingSoil ? styles.toggleOn : null]}
+              onPress={() => setLivingSoil((current) => !current)}
             >
-              <Text style={styles.primaryButtonText}>
-                {saving ? "Saving..." : "Save and Open Journal"}
+              <Text style={[styles.toggleText, livingSoil ? styles.toggleTextOn : null]}>
+                Living soil
               </Text>
             </Pressable>
             <Pressable
-              style={[
-                styles.secondaryButton,
-                creatingTask || !activeRecommendation ? styles.disabled : null
-              ]}
-              onPress={createReviewTask}
-              disabled={creatingTask || !activeRecommendation}
+              style={[styles.toggle, isConcentrate ? styles.toggleOn : null]}
+              onPress={() => setIsConcentrate((current) => !current)}
             >
-              <Text style={styles.secondaryButtonText}>
-                {creatingTask ? "Creating..." : "Create Review Task"}
+              <Text
+                style={[styles.toggleText, isConcentrate ? styles.toggleTextOn : null]}
+              >
+                Concentrate mix
               </Text>
             </Pressable>
           </View>
-        ) : (
-          <Text style={styles.helperText}>
-            Add a grow context to save this recommendation.
-          </Text>
-        )}
-        {savedMessage ? <Text style={styles.helperText}>{savedMessage}</Text> : null}
-      </View>
+        </View>
 
-      <PersonalFeedPlacement
-        placement="bottom"
-        routeKey="personal_tools_nutrient_chemistry"
-        longContent
-      />
-    </ScrollView>
+        {activeRecommendation ? (
+          <View style={styles.summaryCard}>
+            <Text style={styles.cardTitle}>Best current fit</Text>
+            <Text style={styles.summaryName}>{activeRecommendation.ingredient.name}</Text>
+            <Text style={styles.summaryMeta}>
+              {activeRecommendation.fitLabel.toUpperCase()} |{" "}
+              {activeRecommendation.releaseSummary}
+            </Text>
+            <Text style={styles.summaryText}>
+              {activeRecommendation.ingredient.bestUseCases.join(" · ")}
+            </Text>
+            {compatibilityWarnings.map((warning) => (
+              <Text key={warning} style={styles.warning}>
+                {warning}
+              </Text>
+            ))}
+          </View>
+        ) : null}
+
+        <PersonalFeedPlacement
+          placement="middle"
+          routeKey="personal_tools_nutrient_chemistry"
+          longContent
+        />
+
+        <View style={styles.panel}>
+          <Text style={styles.sectionTitle}>Recommended sources</Text>
+          {recommendations.slice(0, 6).map((row) => {
+            const selected = compareIds.includes(row.ingredient.id);
+            return (
+              <Pressable
+                key={row.ingredient.id}
+                style={[
+                  styles.recommendationCard,
+                  selected ? styles.recommendationCardOn : null
+                ]}
+                onPress={() => setCompareIds([row.ingredient.id])}
+              >
+                <View style={styles.recommendationHeader}>
+                  <View style={styles.flex1}>
+                    <Text style={styles.recommendationTitle}>{row.ingredient.name}</Text>
+                    <Text style={styles.recommendationMeta}>
+                      {row.fitLabel.toUpperCase()} · {row.releaseSummary}
+                    </Text>
+                  </View>
+                  <Pressable
+                    style={[
+                      styles.compareButton,
+                      selected ? styles.compareButtonOn : null
+                    ]}
+                    onPress={() => toggleCompare(row.ingredient.id)}
+                  >
+                    <Text
+                      style={[
+                        styles.compareButtonText,
+                        selected ? styles.compareButtonTextOn : null
+                      ]}
+                    >
+                      {selected ? "Compared" : "+ Compare"}
+                    </Text>
+                  </Pressable>
+                </View>
+                <Text style={styles.recommendationBody}>
+                  {row.reasons.slice(0, 3).join(" · ")}
+                </Text>
+              </Pressable>
+            );
+          })}
+        </View>
+
+        <View style={styles.panel}>
+          <Text style={styles.sectionTitle}>Release windows</Text>
+          <Text style={styles.helperText}>
+            Fast / medium / slow groupings help separate quick correction from
+            soil-building inputs.
+          </Text>
+          <View style={styles.releaseGroup}>
+            <Text style={styles.releaseLabel}>Fast</Text>
+            <Text style={styles.releaseItems}>
+              {compareGroups.fast.map((row) => row.ingredient.name).join(" · ") || "None"}
+            </Text>
+          </View>
+          <View style={styles.releaseGroup}>
+            <Text style={styles.releaseLabel}>Medium</Text>
+            <Text style={styles.releaseItems}>
+              {compareGroups.medium.map((row) => row.ingredient.name).join(" · ") ||
+                "None"}
+            </Text>
+          </View>
+          <View style={styles.releaseGroup}>
+            <Text style={styles.releaseLabel}>Slow</Text>
+            <Text style={styles.releaseItems}>
+              {compareGroups.slow.map((row) => row.ingredient.name).join(" · ") || "None"}
+            </Text>
+          </View>
+        </View>
+
+        <View style={styles.panel}>
+          <Text style={styles.sectionTitle}>Time-release timeline</Text>
+          <Text style={styles.helperText}>
+            Adjusted for the selected temperature, moisture, biology, and pH. A form
+            appears in each band its estimated range overlaps.
+          </Text>
+          {releaseTimeline.map((window) => (
+            <View key={window.key} style={styles.releaseGroup}>
+              <Text style={styles.releaseLabel}>{window.label}</Text>
+              <Text style={styles.releaseItems}>
+                {window.entries
+                  .map((entry) => `${entry.ingredientName}: ${entry.chemicalForm}`)
+                  .join(" · ") || "No expected release"}
+              </Text>
+            </View>
+          ))}
+        </View>
+
+        {compareIngredients.length > 0 ? (
+          <View style={styles.panel}>
+            <Text style={styles.sectionTitle}>Compatibility check</Text>
+            <Text style={styles.helperText}>
+              Rates are grams of product per liter of final diluted solution. EC values
+              are screening estimates; verify the complete mix with a meter.
+            </Text>
+            {compareIngredients.map((ingredient) => {
+              const guide = ingredient.applicationGuide;
+              return (
+                <View key={ingredient.id} style={styles.rateRow}>
+                  <View style={styles.flex1}>
+                    <Text style={styles.compareName}>{ingredient.name}</Text>
+                    <Text style={styles.compareMeta}>
+                      {guide
+                        ? `Starter ${guide.typicalRateGPerL} g/L · screen ceiling ${guide.maxRateGPerL} g/L`
+                        : "No soluble-rate model for this amendment"}
+                    </Text>
+                  </View>
+                  {guide ? (
+                    <TextInput
+                      accessibilityLabel={`${ingredient.name} rate in grams per liter`}
+                      style={styles.rateInput}
+                      value={rateInputs[ingredient.id] ?? String(guide.typicalRateGPerL)}
+                      onChangeText={(value) =>
+                        setRateInputs((current) => ({
+                          ...current,
+                          [ingredient.id]: value
+                        }))
+                      }
+                      keyboardType="decimal-pad"
+                    />
+                  ) : null}
+                  <TextInput
+                    accessibilityLabel={`${ingredient.name} manufacturer or reference URL`}
+                    style={styles.referenceInput}
+                    value={referenceInputs[ingredient.id] || ""}
+                    onChangeText={(value) =>
+                      setReferenceInputs((current) => ({
+                        ...current,
+                        [ingredient.id]: value
+                      }))
+                    }
+                    placeholder="Manufacturer/reference URL"
+                    autoCapitalize="none"
+                    keyboardType="url"
+                  />
+                  <View style={styles.labRow}>
+                    {Object.keys(ingredient.elemental).map((element) => (
+                      <View key={element} style={styles.labField}>
+                        <Text style={styles.label}>Lab {element} %</Text>
+                        <TextInput
+                          accessibilityLabel={`${ingredient.name} lab ${element} percent`}
+                          style={styles.labInput}
+                          value={labResultInputs[ingredient.id]?.[element] || ""}
+                          onChangeText={(value) =>
+                            setLabResultInputs((current) => ({
+                              ...current,
+                              [ingredient.id]: {
+                                ...current[ingredient.id],
+                                [element]: value
+                              }
+                            }))
+                          }
+                          placeholder={String(
+                            ingredient.elemental[
+                              element as keyof typeof ingredient.elemental
+                            ]
+                          )}
+                          keyboardType="decimal-pad"
+                        />
+                      </View>
+                    ))}
+                  </View>
+                </View>
+              );
+            })}
+            {compatibilityAnalysis.estimatedEcContribution != null ? (
+              <Text style={styles.detailMeta}>
+                Estimated product EC contribution:{" "}
+                {compatibilityAnalysis.estimatedEcContribution.toFixed(2)} mS/cm
+              </Text>
+            ) : null}
+            {compatibilityAnalysis.issues.length > 0 ? (
+              compatibilityAnalysis.issues.map((issue) => (
+                <View
+                  key={`${issue.code}-${issue.message}`}
+                  style={styles.compatibilityIssue}
+                >
+                  <View style={styles.issueHeader}>
+                    <Text
+                      style={[
+                        styles.severityBadge,
+                        issue.severity === "high"
+                          ? styles.severityHigh
+                          : issue.severity === "medium"
+                            ? styles.severityMedium
+                            : styles.severityLow
+                      ]}
+                    >
+                      {issue.severity.toUpperCase()}
+                    </Text>
+                    <Text style={styles.issueCode}>
+                      {issue.code.replaceAll("_", " ")}
+                    </Text>
+                  </View>
+                  <Text style={styles.issueMessage}>{issue.message}</Text>
+                  <Text style={styles.issueRemediation}>Action: {issue.remediation}</Text>
+                </View>
+              ))
+            ) : (
+              <Text style={styles.helperText}>
+                No compatibility warning from this starter set.
+              </Text>
+            )}
+          </View>
+        ) : null}
+
+        <View style={styles.panel}>
+          <Text style={styles.sectionTitle}>Ingredient detail</Text>
+          {activeRecommendation ? (
+            <>
+              <Text style={styles.detailName}>
+                {activeRecommendation.ingredient.name}
+              </Text>
+              <Text style={styles.detailMeta}>
+                Category: {activeRecommendation.ingredient.category} · Confidence:{" "}
+                {activeRecommendation.ingredient.confidence}
+              </Text>
+              {activeEvidence ? (
+                <>
+                  <Text style={styles.evidenceText}>
+                    Evidence: {activeEvidence.classification.replaceAll("_", " ")} ·
+                    Source: {activeEvidence.sourceName}
+                  </Text>
+                  {activeEvidence.reference ? (
+                    <Pressable
+                      onPress={() => Linking.openURL(activeEvidence.reference || "")}
+                    >
+                      <Text style={styles.referenceLink}>
+                        Open manufacturer/reference source
+                      </Text>
+                    </Pressable>
+                  ) : null}
+                </>
+              ) : null}
+              <Text style={styles.helperText}>
+                {activeRecommendation.ingredient.warnings.join(" ")}
+              </Text>
+              <Text style={styles.detailSubhead}>Forms</Text>
+              {activeRecommendation.timing.map((form) => (
+                <View
+                  key={`${form.nutrient}-${form.form}-${form.chemicalName}`}
+                  style={styles.formCard}
+                >
+                  <Text style={styles.formTitle}>
+                    {form.nutrient.toUpperCase()} · {form.chemicalName}
+                  </Text>
+                  <Text style={styles.formMeta}>
+                    {form.availabilityClass} → {form.adjustedReleaseDays.min}-
+                    {form.adjustedReleaseDays.max} days
+                  </Text>
+                  <Text style={styles.formMeta}>
+                    pH: {form.pHEffect} · EC: {form.ecImpact} · Mobility: {form.mobility}
+                  </Text>
+                  {form.nitrogenForm ? (
+                    <Text style={styles.formMeta}>
+                      Nitrogen form: {form.nitrogenForm.replaceAll("_", " ")}
+                    </Text>
+                  ) : null}
+                  {form.activeNitrogenRisks.map((risk) => (
+                    <Text key={`${risk.code}-${risk.condition}`} style={styles.warning}>
+                      {risk.severity.toUpperCase()} {risk.code.replaceAll("_", " ")}:{" "}
+                      {risk.summary} {risk.mitigation}
+                    </Text>
+                  ))}
+                  {form.chelate ? (
+                    <Text style={styles.formMeta}>
+                      Chelate: {form.chelate.agent} · stable through about pH{" "}
+                      {form.chelate.stableThroughPH}
+                    </Text>
+                  ) : null}
+                  <Text style={styles.formNotes}>{form.notes}</Text>
+                </View>
+              ))}
+              <Text style={styles.detailSubhead}>Best use</Text>
+              <Text style={styles.helperText}>
+                {activeRecommendation.ingredient.bestUseCases.join(" · ")}
+              </Text>
+              <Text style={styles.detailSubhead}>Not for</Text>
+              <Text style={styles.helperText}>
+                {activeRecommendation.ingredient.badUseCases.join(" · ")}
+              </Text>
+            </>
+          ) : (
+            <Text style={styles.helperText}>No ingredient selected yet.</Text>
+          )}
+        </View>
+
+        <View style={styles.panel}>
+          <Text style={styles.sectionTitle}>Save</Text>
+          <Text style={styles.helperText}>
+            Saving records the current chemistry recommendation, timing, and compatibility
+            check into the grow journal.
+          </Text>
+          {growId ? (
+            <View style={styles.actionRow}>
+              <Pressable
+                style={[styles.primaryButton, saving ? styles.disabled : null]}
+                onPress={save}
+                disabled={saving}
+              >
+                <Text style={styles.primaryButtonText}>
+                  {saving ? "Saving..." : "Save and Open Journal"}
+                </Text>
+              </Pressable>
+              <Pressable
+                style={[
+                  styles.secondaryButton,
+                  creatingTask || !activeRecommendation ? styles.disabled : null
+                ]}
+                onPress={createReviewTask}
+                disabled={creatingTask || !activeRecommendation}
+              >
+                <Text style={styles.secondaryButtonText}>
+                  {creatingTask ? "Creating..." : "Create Review Task"}
+                </Text>
+              </Pressable>
+            </View>
+          ) : (
+            <Text style={styles.helperText}>
+              Add a grow context to save this recommendation.
+            </Text>
+          )}
+          {savedMessage ? <Text style={styles.helperText}>{savedMessage}</Text> : null}
+        </View>
+
+        <PersonalFeedPlacement
+          placement="bottom"
+          routeKey="personal_tools_nutrient_chemistry"
+          longContent
+        />
+      </ScrollView>
+    </ScreenBoundary>
   );
 }
 

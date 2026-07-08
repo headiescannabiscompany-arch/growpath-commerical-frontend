@@ -8,7 +8,7 @@ import {
   saveToolRunToLog,
   type ToolRun
 } from "@/api/toolRuns";
-import BackButton from "@/components/nav/BackButton";
+import { ScreenBoundary } from "@/components/ScreenBoundary";
 import { CAPABILITY_KEYS, useEntitlements } from "@/entitlements";
 import {
   ToolPlantContextPicker,
@@ -130,178 +130,193 @@ export default function VpdToolScreen() {
 
   if (!enabled) {
     return (
-      <View style={styles.container}>
-        <BackButton />
-        <Text style={styles.title}>VPD Calculator</Text>
-        <View style={styles.lockedCard}>
-          <Text style={styles.lockedTitle}>Tool unavailable</Text>
-          <Text style={styles.subtitle}>This account does not have `TOOLS_VPD`.</Text>
-          <PersonalFeedPlacement
-            placement="top"
-            routeKey="personal_tools_vpd"
-            longContent
-          />
+      <ScreenBoundary
+        title="VPD Calculator"
+        showBack
+        backFallbackHref="/home/personal/tools"
+      >
+        <View style={styles.container}>
+          <Text style={styles.title}>VPD Calculator</Text>
+          <View style={styles.lockedCard}>
+            <Text style={styles.lockedTitle}>Tool unavailable</Text>
+            <Text style={styles.subtitle}>This account does not have `TOOLS_VPD`.</Text>
+            <PersonalFeedPlacement
+              placement="top"
+              routeKey="personal_tools_vpd"
+              longContent
+            />
+          </View>
         </View>
-      </View>
+      </ScreenBoundary>
     );
   }
 
   return (
-    <ScrollView contentContainerStyle={styles.container}>
-      <BackButton />
-      <Text style={styles.title}>VPD Calculator</Text>
-      <Text style={styles.subtitle}>
-        Enter temperature ({unit === "F" ? "°F" : "°C"}) and RH (%).
-      </Text>
-      <PersonalFeedPlacement placement="top" routeKey="personal_tools_vpd" longContent />
-      {growId ? <Text style={styles.context}>Grow context: {growId}</Text> : null}
+    <ScreenBoundary
+      title="VPD Calculator"
+      showBack
+      backFallbackHref="/home/personal/tools"
+    >
+      <ScrollView contentContainerStyle={styles.container}>
+        <Text style={styles.title}>VPD Calculator</Text>
+        <Text style={styles.subtitle}>
+          Enter temperature ({unit === "F" ? "°F" : "°C"}) and RH (%).
+        </Text>
+        <PersonalFeedPlacement
+          placement="top"
+          routeKey="personal_tools_vpd"
+          longContent
+        />
+        {growId ? <Text style={styles.context}>Grow context: {growId}</Text> : null}
 
-      <ToolPlantContextPicker
-        plants={plantContext.plants}
-        plantId={plantContext.plantId}
-        selectedPlant={plantContext.selectedPlant}
-        onSelect={plantContext.setPlantId}
-      />
+        <ToolPlantContextPicker
+          plants={plantContext.plants}
+          plantId={plantContext.plantId}
+          selectedPlant={plantContext.selectedPlant}
+          onSelect={plantContext.setPlantId}
+        />
 
-      <View style={styles.row}>
-        {(["F", "C"] as TempUnit[]).map((value) => (
-          <Pressable
-            key={value}
-            style={[styles.pill, unit === value && styles.pillOn]}
-            onPress={() => setUnit(value)}
-            accessibilityRole="button"
-            accessibilityLabel={`Use ${value} temperature unit`}
-          >
-            <Text style={[styles.pillText, unit === value && styles.pillTextOn]}>
-              °{value}
-            </Text>
-          </Pressable>
-        ))}
-      </View>
+        <View style={styles.row}>
+          {(["F", "C"] as TempUnit[]).map((value) => (
+            <Pressable
+              key={value}
+              style={[styles.pill, unit === value && styles.pillOn]}
+              onPress={() => setUnit(value)}
+              accessibilityRole="button"
+              accessibilityLabel={`Use ${value} temperature unit`}
+            >
+              <Text style={[styles.pillText, unit === value && styles.pillTextOn]}>
+                °{value}
+              </Text>
+            </Pressable>
+          ))}
+        </View>
 
-      <Text style={styles.label}>Temperature (°{unit})</Text>
-      <TextInput
-        accessibilityLabel="VPD temperature"
-        style={styles.input}
-        value={tempText}
-        onChangeText={setTempText}
-        keyboardType="numeric"
-        placeholder={unit === "F" ? "e.g. 77" : "e.g. 25"}
-      />
-      <Text style={styles.label}>Relative humidity (%)</Text>
-      <TextInput
-        accessibilityLabel="VPD relative humidity"
-        style={styles.input}
-        value={rhText}
-        onChangeText={setRhText}
-        keyboardType="numeric"
-        placeholder="e.g. 60"
-      />
-      <Text style={styles.label}>Leaf temperature offset (°C)</Text>
-      <TextInput
-        accessibilityLabel="VPD leaf temperature offset"
-        style={styles.input}
-        value={leafOffsetText}
-        onChangeText={setLeafOffsetText}
-        keyboardType="numeric"
-        placeholder="e.g. -2"
-      />
+        <Text style={styles.label}>Temperature (°{unit})</Text>
+        <TextInput
+          accessibilityLabel="VPD temperature"
+          style={styles.input}
+          value={tempText}
+          onChangeText={setTempText}
+          keyboardType="numeric"
+          placeholder={unit === "F" ? "e.g. 77" : "e.g. 25"}
+        />
+        <Text style={styles.label}>Relative humidity (%)</Text>
+        <TextInput
+          accessibilityLabel="VPD relative humidity"
+          style={styles.input}
+          value={rhText}
+          onChangeText={setRhText}
+          keyboardType="numeric"
+          placeholder="e.g. 60"
+        />
+        <Text style={styles.label}>Leaf temperature offset (°C)</Text>
+        <TextInput
+          accessibilityLabel="VPD leaf temperature offset"
+          style={styles.input}
+          value={leafOffsetText}
+          onChangeText={setLeafOffsetText}
+          keyboardType="numeric"
+          placeholder="e.g. -2"
+        />
 
-      <Text style={styles.label}>Growth stage</Text>
-      <View style={styles.row}>
-        {["seedling", "veg", "flower", "late_flower"].map((value) => (
-          <Pressable
-            key={value}
-            style={[styles.pill, stage === value && styles.pillOn]}
-            onPress={() => setStage(value)}
-            accessibilityRole="button"
-            accessibilityLabel={`Set VPD growth stage to ${value.replace("_", " ")}`}
-          >
-            <Text style={[styles.pillText, stage === value && styles.pillTextOn]}>
-              {value.replace("_", " ")}
-            </Text>
-          </Pressable>
-        ))}
-      </View>
+        <Text style={styles.label}>Growth stage</Text>
+        <View style={styles.row}>
+          {["seedling", "veg", "flower", "late_flower"].map((value) => (
+            <Pressable
+              key={value}
+              style={[styles.pill, stage === value && styles.pillOn]}
+              onPress={() => setStage(value)}
+              accessibilityRole="button"
+              accessibilityLabel={`Set VPD growth stage to ${value.replace("_", " ")}`}
+            >
+              <Text style={[styles.pillText, stage === value && styles.pillTextOn]}>
+                {value.replace("_", " ")}
+              </Text>
+            </Pressable>
+          ))}
+        </View>
 
-      <PersonalFeedPlacement
-        placement="middle"
-        routeKey="personal_tools_vpd"
-        longContent
-      />
+        <PersonalFeedPlacement
+          placement="middle"
+          routeKey="personal_tools_vpd"
+          longContent
+        />
 
-      <ToolResultSurface
-        title="VPD result"
-        status={
-          serverResult?.status?.toUpperCase() ||
-          (model.valid ? "LOCAL PREVIEW" : "NEEDS INPUT")
-        }
-        summary={
-          model.valid
-            ? serverResult
-              ? `Target ${serverResult.target.min}-${serverResult.target.max} kPa at leaf temperature ${serverResult.leafTempC} °C.`
-              : "Run the server calculation to apply the selected stage target and save an immutable result."
-            : "Enter valid temperature and humidity values. RH must be between 0 and 100%."
-        }
-        metrics={[
-          {
-            key: "vpd",
-            label: "VPD",
-            value: model.valid
-              ? `${(serverResult?.vpdKpa ?? model.vpd).toFixed(2)} kPa`
-              : "—"
-          },
-          {
-            key: "air-temperature",
-            label: "Air temperature",
-            value: model.valid ? `${model.tempC.toFixed(1)} °C` : "—"
+        <ToolResultSurface
+          title="VPD result"
+          status={
+            serverResult?.status?.toUpperCase() ||
+            (model.valid ? "LOCAL PREVIEW" : "NEEDS INPUT")
           }
-        ]}
-        inputs={
-          serverRun?.inputs || {
-            airTemp: Number(tempText),
-            tempUnit: unit,
-            rh: Number(rhText),
-            leafTempOffsetC: Number(leafOffsetText),
-            stage
+          summary={
+            model.valid
+              ? serverResult
+                ? `Target ${serverResult.target.min}-${serverResult.target.max} kPa at leaf temperature ${serverResult.leafTempC} °C.`
+                : "Run the server calculation to apply the selected stage target and save an immutable result."
+              : "Enter valid temperature and humidity values. RH must be between 0 and 100%."
           }
-        }
-        outputs={serverRun?.outputs || serverResult || undefined}
-        notices={buildVpdNotices(serverResult)}
-        recommendations={serverResult?.recommendations || []}
-        formulas={
-          serverRun?.formulas?.length
-            ? serverRun.formulas
-            : [
-                "VPD uses saturation vapor pressure, air temperature, relative humidity, and leaf temperature offset."
-              ]
-        }
-        uncertainty={
-          serverRun?.uncertainty ||
-          "Sensor placement, leaf temperature, and stage target ranges can shift the final recommendation."
-        }
-        confidence={
-          serverRun?.confidence || (serverResult ? "server-calculated" : "local-preview")
-        }
-        assumptions={[
-          "The local preview uses air temperature; the server result applies leaf-temperature offset and crop/stage targets.",
-          "Verify sensor placement and calibration before changing environmental controls."
-        ]}
-        actions={actions}
-        feedback={feedback}
-        contextMessage={
-          !growId
-            ? "Select a grow context to enable journal and task actions."
-            : undefined
-        }
-      />
+          metrics={[
+            {
+              key: "vpd",
+              label: "VPD",
+              value: model.valid
+                ? `${(serverResult?.vpdKpa ?? model.vpd).toFixed(2)} kPa`
+                : "—"
+            },
+            {
+              key: "air-temperature",
+              label: "Air temperature",
+              value: model.valid ? `${model.tempC.toFixed(1)} °C` : "—"
+            }
+          ]}
+          inputs={
+            serverRun?.inputs || {
+              airTemp: Number(tempText),
+              tempUnit: unit,
+              rh: Number(rhText),
+              leafTempOffsetC: Number(leafOffsetText),
+              stage
+            }
+          }
+          outputs={serverRun?.outputs || serverResult || undefined}
+          notices={buildVpdNotices(serverResult)}
+          recommendations={serverResult?.recommendations || []}
+          formulas={
+            serverRun?.formulas?.length
+              ? serverRun.formulas
+              : [
+                  "VPD uses saturation vapor pressure, air temperature, relative humidity, and leaf temperature offset."
+                ]
+          }
+          uncertainty={
+            serverRun?.uncertainty ||
+            "Sensor placement, leaf temperature, and stage target ranges can shift the final recommendation."
+          }
+          confidence={
+            serverRun?.confidence ||
+            (serverResult ? "server-calculated" : "local-preview")
+          }
+          assumptions={[
+            "The local preview uses air temperature; the server result applies leaf-temperature offset and crop/stage targets.",
+            "Verify sensor placement and calibration before changing environmental controls."
+          ]}
+          actions={actions}
+          feedback={feedback}
+          contextMessage={
+            !growId
+              ? "Select a grow context to enable journal and task actions."
+              : undefined
+          }
+        />
 
-      <PersonalFeedPlacement
-        placement="bottom"
-        routeKey="personal_tools_vpd"
-        longContent
-      />
-    </ScrollView>
+        <PersonalFeedPlacement
+          placement="bottom"
+          routeKey="personal_tools_vpd"
+          longContent
+        />
+      </ScrollView>
+    </ScreenBoundary>
   );
 }
 

@@ -5,9 +5,11 @@ import BudRotRiskToolScreen from "@/app/home/personal/(tabs)/tools/bud-rot-risk"
 import EnvironmentAnalysisToolScreen from "@/app/home/personal/(tabs)/tools/environment-analysis";
 import FeedingScheduleToolScreen from "@/app/home/personal/(tabs)/tools/feeding-schedule";
 import HarvestEstimatorScreen from "@/app/home/personal/(tabs)/tools/harvest-estimator";
+import NutrientChemistryToolScreen from "@/app/home/personal/(tabs)/tools/nutrient-chemistry";
 import PdfExportScreen from "@/app/home/personal/(tabs)/tools/pdf-export";
 import PpfdToolScreen from "@/app/home/personal/(tabs)/tools/ppfd";
 import TimelinePlannerScreen from "@/app/home/personal/(tabs)/tools/timeline-planner";
+import VpdToolScreen from "@/app/home/personal/(tabs)/tools/vpd";
 import WateringToolScreen from "@/app/home/personal/(tabs)/tools/watering";
 
 const mockCan = jest.fn();
@@ -48,7 +50,9 @@ jest.mock("@/entitlements", () => ({
     DIAGNOSE_ADVANCED: "DIAGNOSE_ADVANCED",
     FEEDING_SCHEDULE: "FEEDING_SCHEDULE",
     TOOL_HARVEST_ESTIMATOR: "TOOL_HARVEST_ESTIMATOR",
+    TOOL_NPK: "TOOL_NPK",
     TOOL_PDF_EXPORT: "TOOL_PDF_EXPORT",
+    TOOLS_VPD: "TOOLS_VPD",
     TOOL_TIMELINE_PLANNER: "TOOL_TIMELINE_PLANNER"
   },
   useEntitlements: () => ({
@@ -163,5 +167,19 @@ describe("legacy personal tool shared back routes", () => {
 
     expect(screen.getByText("Shared Back /home/personal/tools")).toBeTruthy();
     expect(screen.getByText("PDF / Export")).toBeTruthy();
+  });
+
+  it("uses shared back behavior on VPD Calculator", () => {
+    const screen = render(<VpdToolScreen />);
+
+    expect(screen.getByText("Shared Back /home/personal/tools")).toBeTruthy();
+    expect(screen.getByText("VPD Calculator")).toBeTruthy();
+  });
+
+  it("uses shared back behavior on Nutrient Chemistry", () => {
+    const screen = render(<NutrientChemistryToolScreen />);
+
+    expect(screen.getByText("Shared Back /home/personal/tools")).toBeTruthy();
+    expect(screen.getByText("Nutrient Chemistry")).toBeTruthy();
   });
 });
