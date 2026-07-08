@@ -403,6 +403,9 @@ export default function CommercialFeedRoute() {
           linkedForumThreadId: linkedForumThreadId.trim() || undefined,
           linkedStorefrontSlug: storefrontSlug.trim() || undefined,
           growInterests: splitTags(growInterests),
+          campaignStartsAt: campaignStart.trim() || undefined,
+          campaignEndsAt: campaignEnd.trim() || undefined,
+          recurrenceRule: campaignRecurrence.trim() || undefined,
           priority: readinessWarnings.some(
             (warning) =>
               warning.includes("destination") || warning.includes("should link")
@@ -410,8 +413,13 @@ export default function CommercialFeedRoute() {
             ? "high"
             : "normal",
           status: "open",
-          dueAt: new Date().toISOString().slice(0, 10),
-          reminderPlan: { label: "24 hours before", channels: ["in_app"] }
+          dueAt: campaignStart.trim()
+            ? campaignStart.trim().slice(0, 10)
+            : new Date().toISOString().slice(0, 10),
+          reminderPlan: {
+            label: campaignReminder.trim() || "24 hours before",
+            channels: ["in_app"]
+          }
         }
       });
       setFeedback(`Created campaign setup task for ${title.trim()}.`);
