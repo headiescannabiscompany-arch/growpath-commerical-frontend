@@ -232,7 +232,7 @@ export default function CommercialInventoryRoute() {
                 onPress={() => {
                   if (!id) return;
                   router.push({
-                    pathname: "/home/commercial/inventory-item/[id]",
+                    pathname: "/home/commercial/inventory/[id]",
                     params: { id }
                   });
                 }}

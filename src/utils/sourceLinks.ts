@@ -286,7 +286,7 @@ export function sourceObjectHref(source: SourceLike) {
   if (sourceType === "inventory") {
     if (workspace === "commercial")
       return sourceId
-        ? `/home/commercial/inventory-item/${encoded(sourceId)}`
+        ? `/home/commercial/inventory/${encoded(sourceId)}`
         : "/home/commercial/inventory";
     if (workspace === "facility")
       return sourceId

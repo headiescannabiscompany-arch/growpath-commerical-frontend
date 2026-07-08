@@ -254,7 +254,7 @@ describe("sourceObjectHref", () => {
         sourceId: "inventory-1",
         workspaceType: "commercial"
       })
-    ).toBe("/home/commercial/inventory-item/inventory-1");
+    ).toBe("/home/commercial/inventory/inventory-1");
 
     expect(
       sourceObjectHref({

@@ -38,6 +38,13 @@ const COMMERCIAL_RULES: RouteRule[] = [
     ]
   },
   {
+    matches: (pathname: string) =>
+      pathname.startsWith("/home/commercial/inventory/") &&
+      !pathname.startsWith("/home/commercial/inventory/new"),
+    mode: "commercial",
+    capabilities: [CAPABILITY_KEYS.COMMERCIAL_INVENTORY_VIEW]
+  },
+  {
     matches: startsWith("/home/commercial/inventory-item"),
     mode: "commercial",
     capabilities: [CAPABILITY_KEYS.COMMERCIAL_INVENTORY_VIEW]

@@ -12,6 +12,7 @@ export default function CommercialTabsLayout() {
   const hideTabBar =
     pathname.includes("/inventory-create") ||
     pathname.includes("/inventory/new") ||
+    pathname.includes("/inventory/") ||
     pathname.includes("/inventory-item/") ||
     pathname.includes("/storefront/") ||
     pathname.includes("/products/new") ||
@@ -104,6 +105,7 @@ export default function CommercialTabsLayout() {
         options={{ href: null, title: "Add Inventory Support Item" }}
       />
       <Tabs.Screen name="inventory-item/[id]" options={{ href: null }} />
+      <Tabs.Screen name="inventory/[id]" options={{ href: null }} />
       <Tabs.Screen
         name="grows/new"
         options={{ href: null, title: "Create Product Trial Evidence Run" }}

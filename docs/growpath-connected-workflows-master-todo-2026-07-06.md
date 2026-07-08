@@ -538,6 +538,7 @@ Completed and pushed:
 262. Commercial Product Detail now loads existing Product Lines, shows current line context, and offers a quick-select repair path that saves `productLineId`, so owners can fix storefront family metadata after product creation without copying raw IDs.
 263. Commercial Product Trial detail and canonical Evidence Run detail now link product-line IDs back to owner Product Line detail pages, matching the batch-detail behavior and keeping evidence records navigable through storefront product families.
 264. Commercial inventory creation now has a canonical `/home/commercial/inventory/new` wrapper and owner entry points use it, while legacy `/home/commercial/inventory-create` remains only as compatibility.
+265. Commercial inventory detail now has a canonical `/home/commercial/inventory/:id` wrapper, inventory rows and source links route there, and legacy `/home/commercial/inventory-item/:id` remains only as compatibility.
 
 ## Working Rule For Codex
 

@@ -56,6 +56,7 @@ const COMMERCIAL_ONLY_ROUTES = [
   "/home/commercial/profile",
   "/home/commercial/inventory",
   "/home/commercial/inventory/new",
+  "/home/commercial/inventory/item-1",
   "/home/commercial/inventory-create",
   "/home/commercial/inventory-item/item-1",
   "/alerts",
