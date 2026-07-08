@@ -310,19 +310,19 @@ export default function Profile() {
 
         {isCommercial ? (
           <AppCard style={styles.card}>
-            <Text style={styles.cardTitle}>Commercial business identity</Text>
+            <Text style={styles.cardTitle}>Commercial brand identity</Text>
             <Text style={styles.cardText}>
-              Manage the public brand details users see from storefronts, feed campaigns,
-              forum replies, courses, and product pages.
+              Manage the public brand details users see from storefronts, Feed/Campaigns,
+              Forum/Q&A replies, courses, and product pages.
             </Text>
             <View style={styles.factGrid}>
               <View style={styles.fact}>
                 <Text style={styles.factLabel}>Public profile</Text>
-                <Text style={styles.factValue}>Brand-facing</Text>
+                <Text style={styles.factValue}>Brand page</Text>
               </View>
               <View style={styles.fact}>
                 <Text style={styles.factLabel}>Storefront</Text>
-                <Text style={styles.factValue}>Product-facing</Text>
+                <Text style={styles.factValue}>Product cards</Text>
               </View>
               <View style={styles.fact}>
                 <Text style={styles.factLabel}>Community</Text>
@@ -333,10 +333,10 @@ export default function Profile() {
               <Pressable
                 onPress={() => router.push("/home/commercial/profile")}
                 accessibilityRole="button"
-                accessibilityLabel="Manage commercial business profile"
+                accessibilityLabel="Manage commercial brand profile"
                 style={styles.secondaryButton}
               >
-                <Text style={styles.secondaryButtonText}>Business settings</Text>
+                <Text style={styles.secondaryButtonText}>Brand settings</Text>
               </Pressable>
               <Pressable
                 onPress={() => router.push("/home/commercial/storefront")}
@@ -354,7 +354,7 @@ export default function Profile() {
           <Text style={styles.cardTitle}>Account type</Text>
           <Text style={styles.cardText}>
             Free, Pro, Commercial, and Facility accounts keep separate workflows so each
-            account only sees the grow interests and business tools it needs.
+            account only sees the grow interests and workspace tools it needs.
           </Text>
           <View style={styles.actionRow}>
             <Pressable
