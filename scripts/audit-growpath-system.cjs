@@ -448,6 +448,54 @@ function facilityIntegrationsUsesRoomImport(routes) {
   );
 }
 
+function sharedSourceResolverCoversWorkflowLinks() {
+  const resolverFile = path.join(SRC, "utils", "sourceLinks.ts");
+  const personalTasksFile = path.join(
+    APP,
+    "home",
+    "personal",
+    "(tabs)",
+    "tasks.tsx"
+  );
+  const growTimelineFile = path.join(
+    APP,
+    "home",
+    "personal",
+    "(tabs)",
+    "grows",
+    "[growId]",
+    "timeline.tsx"
+  );
+  const personalHomeModelFile = path.join(SRC, "features", "personal", "homeModel.ts");
+  if (
+    !fs.existsSync(resolverFile) ||
+    !fs.existsSync(personalTasksFile) ||
+    !fs.existsSync(growTimelineFile) ||
+    !fs.existsSync(personalHomeModelFile)
+  ) {
+    return false;
+  }
+  const resolver = read(resolverFile);
+  const personalTasks = read(personalTasksFile);
+  const growTimeline = read(growTimelineFile);
+  const personalHomeModel = read(personalHomeModelFile);
+  return (
+    /export function sourceObjectHref/.test(resolver) &&
+    /sourceType === "tool_run"/.test(resolver) &&
+    /sourceType === "live_replay"/.test(resolver) &&
+    /sourceType === "ai_diagnosis"/.test(resolver) &&
+    /sourceType === "automation_policy"/.test(resolver) &&
+    /sourceType === "grow_log"/.test(resolver) &&
+    /\/home\/personal\/logs\/\$\{encoded\(sourceId\)\}/.test(resolver) &&
+    personalTasks.includes('from "@/utils/sourceLinks"') &&
+    growTimeline.includes('from "@/utils/sourceLinks"') &&
+    personalHomeModel.includes('from "@/utils/sourceLinks"') &&
+    /\bsourceObjectHref\b/.test(personalTasks) &&
+    /\bsourceObjectHref\b/.test(growTimeline) &&
+    /\bsourceObjectHref\b/.test(personalHomeModel)
+  );
+}
+
 function keywordHits(searchable, keywords) {
   const hits = [];
   for (const keyword of keywords) {
@@ -588,6 +636,8 @@ function main() {
   const facilityIntegrationsRoomImport = facilityIntegrationsUsesRoomImport(
     files.routes
   );
+  const sharedSourceResolverConnectedWorkflow =
+    sharedSourceResolverCoversWorkflowLinks();
 
   const decisionChecks = {
     topLevelLogsRouteExists,
@@ -624,6 +674,7 @@ function main() {
     legacyToolsScreenPersonalHub,
     legacyStorefrontScreenCommercialOwner,
     facilityIntegrationsRoomImport,
+    sharedSourceResolverConnectedWorkflow,
     topLevelTasksRouteExists,
     topLevelTasksRedirectOnly,
     topLevelTasksTaskCenter,
@@ -702,6 +753,7 @@ function main() {
     `- Legacy native Tools screen uses connected Personal Tools / AI hub: ${decisionChecks.legacyToolsScreenPersonalHub}`,
     `- Legacy native Storefront screen uses canonical commercial storefront owner workspace: ${decisionChecks.legacyStorefrontScreenCommercialOwner}`,
     `- Facility integrations entry uses read-only room import preview: ${decisionChecks.facilityIntegrationsRoomImport}`,
+    `- Shared source-link resolver covers task/timeline/dashboard workflow links: ${decisionChecks.sharedSourceResolverConnectedWorkflow}`,
     `- Top-level Tasks visible module: ${decisionChecks.topLevelTasksVisibleModule}`,
     `- Top-level Tasks uses shared Task Center/Schedule: ${decisionChecks.topLevelTasksTaskCenter}`,
     `- Facility Insights route exists: ${decisionChecks.facilityInsightsRouteExists}`,
