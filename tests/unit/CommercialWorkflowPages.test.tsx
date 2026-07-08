@@ -1418,6 +1418,7 @@ describe("commercial workflow pages", () => {
     expect(screen.getByText("Open Detail")).toBeTruthy();
     expect(screen.getByText("Product publish blocked")).toBeTruthy();
     expect(screen.getByText(/add image/)).toBeTruthy();
+    expect(screen.getByText(/add grow interests/)).toBeTruthy();
     expect(
       screen.getByLabelText("Toggle commercial product publish status").props
         .accessibilityState?.disabled

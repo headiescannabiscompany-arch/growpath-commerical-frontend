@@ -114,6 +114,7 @@ function productMissingSetup(product: Product) {
   if (!hasText((product as any).unitSize) && !hasText(product.specs?.unitSize)) {
     missing.push("size/weight");
   }
+  if (!product.growInterests?.length) missing.push("grow interests");
   if (!productCheckoutReady(product)) missing.push("checkout");
   if (product.status !== "published") missing.push("published");
   return missing;
@@ -125,6 +126,7 @@ function formPublishBlockers(form: ProductForm) {
   if (!hasText(form.shortDescription)) blockers.push("add description");
   if (!Number(form.price)) blockers.push("add price");
   if (!hasText(form.unitSize)) blockers.push("add size/weight");
+  if (!splitList(form.growInterests).length) blockers.push("add grow interests");
   if (!hasText(form.externalPurchaseUrl)) blockers.push("add checkout link");
   return blockers;
 }
