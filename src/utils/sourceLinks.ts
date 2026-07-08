@@ -42,7 +42,13 @@ export function sourceObjectHref(source: SourceLike) {
       : "/home/personal/tasks";
   }
 
-  if (sourceType === "grow") {
+  if (
+    sourceType === "grow" ||
+    sourceType === "grow_milestone" ||
+    sourceType === "harvest_target" ||
+    sourceType === "topdress" ||
+    sourceType === "dry_cure_check"
+  ) {
     if (workspace === "commercial")
       return sourceId ? `/home/commercial/grows/${sourceId}` : "/home/commercial/grows";
     if (workspace === "facility")
@@ -65,7 +71,11 @@ export function sourceObjectHref(source: SourceLike) {
       : "/home/personal/grows";
   }
 
-  if (sourceType === "product") {
+  if (
+    sourceType === "product" ||
+    sourceType === "product_launch" ||
+    sourceType === "product_restock"
+  ) {
     if (workspace === "commercial" && productId)
       return `/home/commercial/products/${productId}`;
     if (workspace === "facility") return "/home/facility/inventory";
@@ -96,7 +106,9 @@ export function sourceObjectHref(source: SourceLike) {
   if (
     sourceType === "course" ||
     sourceType === "lesson" ||
-    sourceType === "course_assignment"
+    sourceType === "course_assignment" ||
+    sourceType === "course_release" ||
+    sourceType === "lesson_release"
   ) {
     if (workspace === "commercial" && courseId)
       return `/home/commercial/courses/${courseId}`;
@@ -108,14 +120,21 @@ export function sourceObjectHref(source: SourceLike) {
     sourceType === "live" ||
     sourceType === "live_event" ||
     sourceType === "replay" ||
-    sourceType === "live_replay"
+    sourceType === "live_replay" ||
+    sourceType === "live_reminder" ||
+    sourceType === "live_rsvp"
   ) {
     return workspace === "commercial"
       ? "/home/commercial/lives"
       : `/feed${sourceId ? `?liveId=${encoded(sourceId)}` : ""}`;
   }
 
-  if (sourceType === "feed_campaign" || sourceType === "campaign") {
+  if (
+    sourceType === "feed_campaign" ||
+    sourceType === "campaign" ||
+    sourceType === "feed_post" ||
+    sourceType === "scheduled_feed_post"
+  ) {
     if (workspace === "facility") return "/home/facility/feed";
     if (workspace === "commercial") return "/home/commercial/feed";
     return "/feed";
@@ -130,7 +149,7 @@ export function sourceObjectHref(source: SourceLike) {
     if (workspace === "facility") return "/home/facility/inventory";
     return "/home/personal/profile";
   }
-  if (sourceType === "room")
+  if (sourceType === "room" || sourceType === "room_task")
     return roomId ? "/home/facility/rooms" : "/home/facility/rooms";
   if (sourceType === "facility") return "/home/facility";
   if (sourceType === "facility_run") {
@@ -141,8 +160,14 @@ export function sourceObjectHref(source: SourceLike) {
       ? `/home/personal/grows/${encoded(growId)}/automation`
       : "/home/personal/grows";
   }
-  if (sourceType === "sop") return "/home/facility/sop-runs";
-  if (sourceType === "sensor_alert" || sourceType === "alert") return "/home/alerts";
+  if (sourceType === "sop" || sourceType === "facility_sop" || sourceType === "sop_task")
+    return "/home/facility/sop-runs";
+  if (
+    sourceType === "sensor_alert" ||
+    sourceType === "alert" ||
+    sourceType === "alert_snooze"
+  )
+    return "/home/alerts";
   if (sourceType === "ai_diagnosis") {
     return growId
       ? `/home/personal/diagnose?growId=${encoded(growId)}`

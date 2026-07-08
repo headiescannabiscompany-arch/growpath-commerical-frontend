@@ -450,13 +450,7 @@ function facilityIntegrationsUsesRoomImport(routes) {
 
 function sharedSourceResolverCoversWorkflowLinks() {
   const resolverFile = path.join(SRC, "utils", "sourceLinks.ts");
-  const personalTasksFile = path.join(
-    APP,
-    "home",
-    "personal",
-    "(tabs)",
-    "tasks.tsx"
-  );
+  const personalTasksFile = path.join(APP, "home", "personal", "(tabs)", "tasks.tsx");
   const growTimelineFile = path.join(
     APP,
     "home",
@@ -486,6 +480,12 @@ function sharedSourceResolverCoversWorkflowLinks() {
     /sourceType === "ai_diagnosis"/.test(resolver) &&
     /sourceType === "automation_policy"/.test(resolver) &&
     /sourceType === "grow_log"/.test(resolver) &&
+    /sourceType === "lesson_release"/.test(resolver) &&
+    /sourceType === "product_launch"/.test(resolver) &&
+    /sourceType === "scheduled_feed_post"/.test(resolver) &&
+    /sourceType === "alert_snooze"/.test(resolver) &&
+    /sourceType === "facility_sop"/.test(resolver) &&
+    /sourceType === "grow_milestone"/.test(resolver) &&
     /\/home\/personal\/logs\/\$\{encoded\(sourceId\)\}/.test(resolver) &&
     personalTasks.includes('from "@/utils/sourceLinks"') &&
     growTimeline.includes('from "@/utils/sourceLinks"') &&
@@ -633,11 +633,8 @@ function main() {
   const legacyToolsScreenPersonalHub = legacyToolsScreenUsesPersonalToolsHub();
   const legacyStorefrontScreenCommercialOwner =
     legacyStorefrontScreenUsesCommercialOwnerScreen();
-  const facilityIntegrationsRoomImport = facilityIntegrationsUsesRoomImport(
-    files.routes
-  );
-  const sharedSourceResolverConnectedWorkflow =
-    sharedSourceResolverCoversWorkflowLinks();
+  const facilityIntegrationsRoomImport = facilityIntegrationsUsesRoomImport(files.routes);
+  const sharedSourceResolverConnectedWorkflow = sharedSourceResolverCoversWorkflowLinks();
 
   const decisionChecks = {
     topLevelLogsRouteExists,

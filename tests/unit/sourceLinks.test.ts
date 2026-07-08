@@ -120,4 +120,70 @@ describe("sourceObjectHref", () => {
       })
     ).toBe("/home/facility/inventory");
   });
+
+  it("recognizes schedule and calendar item aliases across workspaces", () => {
+    expect(
+      sourceObjectHref({
+        itemType: "lesson_release",
+        sourceId: "course-1",
+        workspaceType: "commercial"
+      })
+    ).toBe("/home/commercial/courses/course-1");
+
+    expect(
+      sourceObjectHref({
+        sourceType: "course_release",
+        sourceId: "course-1",
+        workspaceType: "personal"
+      })
+    ).toBe("/home/personal/courses");
+
+    expect(
+      sourceObjectHref({
+        sourceType: "product_launch",
+        sourceId: "product-1",
+        workspaceType: "commercial"
+      })
+    ).toBe("/home/commercial/products/product-1");
+
+    expect(
+      sourceObjectHref({
+        sourceType: "live_reminder",
+        sourceId: "live-1",
+        workspaceType: "personal"
+      })
+    ).toBe("/feed?liveId=live-1");
+
+    expect(
+      sourceObjectHref({
+        sourceType: "scheduled_feed_post",
+        sourceId: "campaign-1",
+        workspaceType: "facility"
+      })
+    ).toBe("/home/facility/feed");
+
+    expect(
+      sourceObjectHref({
+        sourceType: "alert_snooze",
+        sourceId: "alert-1",
+        workspaceType: "commercial"
+      })
+    ).toBe("/home/alerts");
+
+    expect(
+      sourceObjectHref({
+        sourceType: "facility_sop",
+        sourceId: "sop-1",
+        workspaceType: "facility"
+      })
+    ).toBe("/home/facility/sop-runs");
+
+    expect(
+      sourceObjectHref({
+        sourceType: "grow_milestone",
+        sourceId: "grow-1",
+        workspaceType: "personal"
+      })
+    ).toBe("/home/personal/grows/grow-1");
+  });
 });

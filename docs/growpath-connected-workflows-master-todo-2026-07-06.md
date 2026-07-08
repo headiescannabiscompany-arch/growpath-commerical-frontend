@@ -364,6 +364,7 @@ Completed and pushed:
 88. Commercial product-batch source links now open `/home/commercial/batch-planner/:batchId` when a batch id is present instead of stopping at the batch-planner root.
 89. Grow-specific Personal Tasks now show `View Source` actions for linked records, using the shared resolver so AI diagnosis and ToolRun tasks open the diagnosis and saved-run workflows directly from the grow task list.
 90. Commercial product trial evidence-run detail now opens linked product and batch records through their detail routes instead of query-string root list fallbacks.
+91. Shared schedule/source routing now recognizes calendar-specific aliases like lesson releases, course releases, product launches, live reminders, scheduled feed posts, alert snoozes, facility SOPs, and grow milestones so agenda items can open the correct Personal, Commercial, Facility, Feed, Forum/Q&A, or Alert workflow without one-off routing.
 
 ## Working Rule For Codex
 
