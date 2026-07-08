@@ -1,5 +1,6 @@
 import React from "react";
 import { TouchableOpacity, View, Text, StyleSheet } from "react-native";
+import { radius } from "../theme/theme";
 
 export default function RoomCard({
   room,
@@ -21,7 +22,7 @@ const styles = StyleSheet.create({
   card: {
     padding: 16,
     backgroundColor: "#fff",
-    borderRadius: 8,
+    borderRadius: radius.card,
     marginVertical: 8,
     shadowColor: "#000",
     shadowOpacity: 0.05,

@@ -735,6 +735,7 @@ Completed and pushed:
 459. Legacy facility VPD, EC recommendation, and compliance log inputs/actions/cards now consume shared radius tokens while preserving compliance type pills and existing AI/compliance submission behavior.
 460. Forum follow controls, filters, report modal, new-post composer cards/media controls, post media, tags, and comment input now consume shared radius tokens while preserving forum tag/filter pill semantics and keeping discussion visually distinct from Feed ads.
 461. Legacy diagnosis, diagnosis history, and diagnosis result inputs, result panels, media previews, action controls, feedback cards, and tag chips now consume shared radius tokens while preserving diagnostic and feedback persistence behavior.
+462. Shared inventory rows, room cards, grow/plant selectors, stage slider notches, and AI token balance widgets now consume shared radius tokens, carrying the Facility visual polish into cross-mode components used by Personal, Commercial, and Facility workflows.
 
 ## Working Rule For Codex
 

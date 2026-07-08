@@ -1,5 +1,6 @@
 import React from "react";
 import { View, Text, Pressable, StyleSheet } from "react-native";
+import { radius } from "../theme/theme";
 
 export default function InventoryRow({
   item,
@@ -31,7 +32,7 @@ const styles = StyleSheet.create({
     alignItems: "center",
     justifyContent: "space-between",
     padding: 12,
-    borderRadius: 10,
+    borderRadius: radius.card,
     borderWidth: 1,
     marginBottom: 8
   },
@@ -45,7 +46,7 @@ const styles = StyleSheet.create({
   },
   editBtn: {
     backgroundColor: "#2563eb",
-    borderRadius: 6,
+    borderRadius: radius.pill,
     paddingVertical: 6,
     paddingHorizontal: 12
   },

@@ -90,7 +90,7 @@ const styles = StyleSheet.create({
   notchWrap: {
     width: spacing(4),
     height: spacing(4),
-    borderRadius: spacing(2),
+    borderRadius: radius.pill,
     backgroundColor: "rgba(16, 185, 129, 0.1)",
     alignItems: "center",
     justifyContent: "center"
@@ -98,7 +98,7 @@ const styles = StyleSheet.create({
   notch: {
     width: 12,
     height: 12,
-    borderRadius: 6,
+    borderRadius: radius.pill,
     backgroundColor: colors.border
   },
   notchDisabled: {

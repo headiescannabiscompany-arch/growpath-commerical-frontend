@@ -1,6 +1,6 @@
 import React from "react";
 import { View, Text, TouchableOpacity, StyleSheet } from "react-native";
-import { colors } from "../theme/theme";
+import { colors, radius } from "../theme/theme";
 
 export default function GrowPlantSelector({
   grows = [],
@@ -138,7 +138,7 @@ const styles = StyleSheet.create({
     marginTop: 20,
     padding: 12,
     backgroundColor: "#f7f7f7",
-    borderRadius: 12
+    borderRadius: radius.card
   },
   label: {
     fontWeight: "600",
@@ -158,7 +158,7 @@ const styles = StyleSheet.create({
   pill: {
     paddingHorizontal: 12,
     paddingVertical: 6,
-    borderRadius: 20,
+    borderRadius: radius.pill,
     borderWidth: 1,
     borderColor: "#ccc",
     backgroundColor: "#fff",

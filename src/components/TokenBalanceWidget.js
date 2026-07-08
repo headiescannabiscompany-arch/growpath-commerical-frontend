@@ -2,6 +2,7 @@ import React, { useEffect, useState, useMemo } from "react";
 import { View, Text, TouchableOpacity, StyleSheet } from "react-native";
 import { useNavigation } from "@react-navigation/native";
 import { getTokenBalance } from "../api/tokens";
+import { radius } from "../theme/theme";
 
 const clamp = (value, min, max) => Math.max(min, Math.min(max, value));
 
@@ -98,7 +99,7 @@ export default function TokenBalanceWidget({ onPress }) {
 const styles = StyleSheet.create({
   container: {
     backgroundColor: "#f8f9fa",
-    borderRadius: 12,
+    borderRadius: radius.card,
     padding: 16,
     marginVertical: 8,
     borderWidth: 2,
@@ -116,7 +117,7 @@ const styles = StyleSheet.create({
   iconContainer: {
     width: 44,
     height: 44,
-    borderRadius: 22,
+    borderRadius: radius.pill,
     backgroundColor: "#e8f5e9",
     justifyContent: "center",
     alignItems: "center",
@@ -142,14 +143,14 @@ const styles = StyleSheet.create({
     width: 96,
     height: 8,
     backgroundColor: "#e0e0e0",
-    borderRadius: 4,
+    borderRadius: radius.pill,
     overflow: "hidden",
     marginLeft: 12
   },
   bar: {
     height: "100%",
     backgroundColor: "#27ae60",
-    borderRadius: 4
+    borderRadius: radius.pill
   },
   barLow: {
     backgroundColor: "#e74c3c"
