@@ -87,6 +87,10 @@ describe("CommercialProfileRoute", () => {
     expect(
       screen.getByText("Public product detail: /store/:slug/products/:productId")
     ).toBeTruthy();
+    expect(screen.getByText("Public storefront alias: /storefront/:slug")).toBeTruthy();
+    expect(
+      screen.getByText("Public product alias: /storefront/:slug/products/:productId")
+    ).toBeTruthy();
     expect(screen.getByText("Switch Workspace")).toBeTruthy();
     expect(screen.getByText("Open Account Profile")).toBeTruthy();
     await waitFor(() => expect(screen.getByText("Living Soil Labs")).toBeTruthy());

@@ -296,8 +296,12 @@ export default function CommercialProfileRoute() {
         <View style={styles.urlList}>
           <Text style={styles.urlText}>Public profile: {publicProfileUrl}</Text>
           <Text style={styles.urlText}>Public storefront: {publicStoreUrl}</Text>
+          <Text style={styles.urlText}>Public storefront alias: /storefront/:slug</Text>
           <Text style={styles.urlText}>
             Public product detail: /store/:slug/products/:productId
+          </Text>
+          <Text style={styles.urlText}>
+            Public product alias: /storefront/:slug/products/:productId
           </Text>
           <Text style={styles.urlText}>
             Similar brands and return-to-feed actions stay available from public pages.
