@@ -4,15 +4,19 @@ import { fireEvent, render, waitFor } from "@testing-library/react-native";
 import CommercialAlertDetailRoute from "@/app/(commercial)/alerts/[id]";
 
 const mockBack = jest.fn();
+const mockPush = jest.fn();
 const mockApiRequest = jest.fn();
-const mockApiErrorHandler = Object.assign(jest.fn(() => null), {
-  toInlineError: jest.fn(() => null)
-});
+const mockApiErrorHandler = Object.assign(
+  jest.fn(() => null),
+  {
+    toInlineError: jest.fn(() => null)
+  }
+);
 let alertPayload: Record<string, any>;
 
 jest.mock("expo-router", () => ({
   useLocalSearchParams: () => ({ id: "alert-1" }),
-  useRouter: () => ({ back: mockBack })
+  useRouter: () => ({ back: mockBack, push: mockPush })
 }));
 
 jest.mock("@/api/apiRequest", () => ({
@@ -49,7 +53,9 @@ describe("CommercialAlertDetailRoute", () => {
     const screen = render(<CommercialAlertDetailRoute />);
 
     await waitFor(() =>
-      expect(screen.getAllByText("Product missing Stripe price").length).toBeGreaterThan(0)
+      expect(screen.getAllByText("Product missing Stripe price").length).toBeGreaterThan(
+        0
+      )
     );
 
     fireEvent.press(screen.getByLabelText("Create task from alert"));
@@ -76,6 +82,20 @@ describe("CommercialAlertDetailRoute", () => {
       )
     );
     expect(screen.getByText("Task created from this alert.")).toBeTruthy();
+  });
+
+  it("opens the alert-linked commercial source object", async () => {
+    const screen = render(<CommercialAlertDetailRoute />);
+
+    await waitFor(() =>
+      expect(screen.getAllByText("Product missing Stripe price").length).toBeGreaterThan(
+        0
+      )
+    );
+
+    fireEvent.press(screen.getByLabelText("View commercial alert linked object"));
+
+    expect(mockPush).toHaveBeenCalledWith("/home/commercial/products/product-1");
   });
 
   it("creates a task from a linked-only product batch alert source", async () => {
@@ -117,6 +137,12 @@ describe("CommercialAlertDetailRoute", () => {
         })
       )
     );
+
+    fireEvent.press(screen.getByLabelText("View commercial alert linked object"));
+
+    expect(mockPush).toHaveBeenCalledWith(
+      "/home/commercial/batch-planner/batch-linked-1"
+    );
   });
 
   it("creates a task from a linked-only feed campaign alert source", async () => {
@@ -157,6 +183,12 @@ describe("CommercialAlertDetailRoute", () => {
           })
         })
       )
+    );
+
+    fireEvent.press(screen.getByLabelText("View commercial alert linked object"));
+
+    expect(mockPush).toHaveBeenCalledWith(
+      "/home/commercial/feed?campaignId=campaign-linked-1"
     );
   });
 });

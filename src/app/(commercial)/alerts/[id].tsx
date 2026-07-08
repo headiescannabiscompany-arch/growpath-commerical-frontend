@@ -8,13 +8,14 @@ import {
   Text,
   View
 } from "react-native";
-import { useLocalSearchParams } from "expo-router";
+import { useLocalSearchParams, useRouter } from "expo-router";
 
 import { ScreenBoundary } from "@/components/ScreenBoundary";
 import { InlineError } from "@/components/InlineError";
 import { apiRequest } from "@/api/apiRequest";
 import { endpoints } from "@/api/endpoints";
 import { useApiErrorHandler, type UiErrorState } from "@/hooks/useApiErrorHandler";
+import { sourceObjectHref } from "@/utils/sourceLinks";
 
 type AnyRec = Record<string, any>;
 
@@ -102,7 +103,22 @@ function alertSourceReference(item: AnyRec | null) {
   return value ? String(value) : "";
 }
 
+function alertSourcePath(item: AnyRec | null) {
+  if (!item) return "";
+  const sourceType = String(item.sourceType || item.triggerSourceType || "");
+  const sourceId = alertSourceReference(item);
+  if (!sourceType || !sourceId) return "";
+  return sourceObjectHref({
+    ...item,
+    sourceType,
+    sourceId,
+    sourceObjectId: sourceId,
+    workspaceType: "commercial"
+  });
+}
+
 export default function CommercialAlertDetailRoute() {
+  const router = useRouter();
   const params = useLocalSearchParams();
   const id = getId(params as any);
 
@@ -158,6 +174,7 @@ export default function CommercialAlertDetailRoute() {
   const title = String(item?.title || item?.name || item?.message || "Alert follow-up");
   const message = String(item?.message || item?.description || item?.body || "");
   const severity = String(item?.severity || item?.priority || "normal").toLowerCase();
+  const sourcePath = alertSourcePath(item);
 
   async function createTaskFromAlert() {
     if (!id || !item) return;
@@ -242,6 +259,16 @@ export default function CommercialAlertDetailRoute() {
                 {creatingTask ? "Creating..." : "Create Task From Alert"}
               </Text>
             </Pressable>
+            {sourcePath ? (
+              <Pressable
+                onPress={() => router.push(sourcePath as any)}
+                accessibilityRole="link"
+                accessibilityLabel="View commercial alert linked object"
+                style={styles.secondaryBtn}
+              >
+                <Text style={styles.secondaryText}>View Linked Object</Text>
+              </Pressable>
+            ) : null}
           </View>
         ) : null}
 
@@ -303,6 +330,17 @@ const styles = StyleSheet.create({
     paddingVertical: 10
   },
   primaryText: { color: "white", fontWeight: "900" },
+  secondaryBtn: {
+    alignItems: "center",
+    backgroundColor: "#FFFFFF",
+    borderColor: "#CBD5E1",
+    borderRadius: 10,
+    borderWidth: 1,
+    marginTop: 10,
+    paddingHorizontal: 12,
+    paddingVertical: 10
+  },
+  secondaryText: { color: "#0F172A", fontWeight: "900" },
   disabled: { opacity: 0.55 },
   kvWrap: { marginTop: 6 },
   kv: { gap: 4, marginBottom: 10 },
