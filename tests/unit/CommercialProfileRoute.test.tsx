@@ -60,7 +60,7 @@ describe("CommercialProfileRoute", () => {
             accountType: "soil_nutrient_brand",
             bio: "Purpose-built soil and nutrient lines",
             websiteUrl: "https://example.com",
-            supportEmail: "support@example.com",
+            supportEmail: "support@growpathai.com",
             socialLinks: ["https://instagram.com/livingsoil"],
             forumDisplayName: "Living Soil Support",
             storefrontStatus: "published",
@@ -89,6 +89,7 @@ describe("CommercialProfileRoute", () => {
     ).toBeTruthy();
     expect(screen.getByText("Open Account Profile")).toBeTruthy();
     await waitFor(() => expect(screen.getByText("Living Soil Labs")).toBeTruthy());
+    expect(screen.getByDisplayValue("support@growpathai.com")).toBeTruthy();
     expect(screen.getByText("Public profile: /brands/living-soil-labs")).toBeTruthy();
     expect(screen.getByText("Public storefront: /store/living-soil-labs")).toBeTruthy();
 

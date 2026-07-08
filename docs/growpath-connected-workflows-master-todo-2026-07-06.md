@@ -464,6 +464,7 @@ Completed and pushed:
 188. Personal journal create and detail pages now use shared back controls that return to the selected/linked grow journal, including locked-state creation coverage and loaded log-detail coverage, so grow logging follows the nested page navigation rule.
 189. Personal Create Grow now uses the shared back control with `/home/personal/grows` fallback across limit-checking, locked, and create-form states, with access-route coverage proving the nested create flow returns to My Grows.
 190. Facility SOP run start, presets, compare, compare-result, and run detail pages now use shared back controls with SOP-root/compare fallbacks, with focused coverage for the nested SOP workflow navigation rule.
+191. Commercial profile support guidance now uses the live `support@growpathai.com` mailbox instead of a fake example placeholder, with route coverage confirming the brand profile hydrates the real support address while still allowing owners to override it.
 
 ## Working Rule For Codex
 

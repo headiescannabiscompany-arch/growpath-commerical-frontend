@@ -241,7 +241,7 @@ export default function CommercialProfileRoute() {
             }
             accessibilityLabel="Commercial support email"
             autoCapitalize="none"
-            placeholder="support@example.com"
+            placeholder="support@growpathai.com"
             style={styles.input}
           />
           <TextInput
