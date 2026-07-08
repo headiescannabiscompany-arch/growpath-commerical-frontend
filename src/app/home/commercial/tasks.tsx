@@ -89,6 +89,29 @@ function sourcePath(task: CommercialTask) {
   return sourceObjectHref({ ...task, workspaceType: "commercial" });
 }
 
+function sourceReference(task: CommercialTask) {
+  const value =
+    task.sourceId ||
+    task.sourceObjectId ||
+    task.linkedProductId ||
+    task.linkedProductBatchId ||
+    task.linkedProductTrialId ||
+    task.linkedCourseId ||
+    task.linkedLessonId ||
+    task.linkedLiveId ||
+    task.linkedFeedCampaignId ||
+    task.feedCampaignId ||
+    task.campaignId ||
+    task.linkedFeedPostId ||
+    task.linkedOrderId ||
+    task.linkedAlertId ||
+    task.linkedForumThreadId ||
+    task.linkedStorefrontSlug ||
+    task.linkedStorefrontId ||
+    task.storefrontSlug;
+  return value ? String(value) : "";
+}
+
 function linkedFieldsForSource(sourceType: string, sourceId: string) {
   if (!sourceId) return {};
   switch (sourceType) {
@@ -259,6 +282,7 @@ export default function CommercialTasksRoute() {
   function renderTask(task: CommercialTask) {
     const source = titleForSource(task.sourceType);
     const path = sourcePath(task);
+    const sourceRef = sourceReference(task);
     return (
       <View key={idOf(task) || task.title} style={styles.taskCard}>
         <View style={styles.cardHeader}>
@@ -267,11 +291,7 @@ export default function CommercialTasksRoute() {
         </View>
         {task.description ? <Text style={styles.meta}>{task.description}</Text> : null}
         <Text style={styles.meta}>{scheduleSummary(task) || "No schedule set."}</Text>
-        {task.sourceId || task.sourceObjectId ? (
-          <Text style={styles.meta}>
-            Source ID: {String(task.sourceId || task.sourceObjectId)}
-          </Text>
-        ) : null}
+        {sourceRef ? <Text style={styles.meta}>Source ID: {sourceRef}</Text> : null}
         <View style={styles.taskActions}>
           <Pressable
             accessibilityRole="button"

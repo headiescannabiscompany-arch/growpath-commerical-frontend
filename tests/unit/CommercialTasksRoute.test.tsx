@@ -76,6 +76,13 @@ describe("CommercialTasksRoute", () => {
               sourceType: "lesson",
               sourceId: "lesson-1",
               linkedCourseId: "course-1"
+            },
+            {
+              id: "task-6",
+              title: "Prepare live demo",
+              status: "open",
+              sourceType: "live",
+              linkedLiveId: "live-linked-1"
             }
           ]
         });
@@ -105,7 +112,9 @@ describe("CommercialTasksRoute", () => {
     expect(screen.getByText("Review launch alert")).toBeTruthy();
     expect(screen.getByText("Answer product Q&A")).toBeTruthy();
     expect(screen.getByText("Add lesson worksheet")).toBeTruthy();
+    expect(screen.getByText("Prepare live demo")).toBeTruthy();
     expect(screen.getByText(/Source ID: product-1/)).toBeTruthy();
+    expect(screen.getByText(/Source ID: live-linked-1/)).toBeTruthy();
     expect(
       screen.getByLabelText("Commercial task link /home/alerts?alertId=alert-1")
     ).toBeTruthy();
@@ -114,6 +123,9 @@ describe("CommercialTasksRoute", () => {
     ).toBeTruthy();
     expect(
       screen.getByLabelText("Commercial task link /home/commercial/courses/course-1")
+    ).toBeTruthy();
+    expect(
+      screen.getByLabelText("Commercial task link /home/commercial/lives?liveId=live-linked-1")
     ).toBeTruthy();
     expect(screen.getByText(/Reminder: 24 hours before/)).toBeTruthy();
     expect(screen.getByText("feed campaign")).toBeTruthy();
