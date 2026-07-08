@@ -90,7 +90,15 @@ const MODULES = [
   {
     phase: "Soil & Nutrients",
     name: "Compatibility Checker",
-    keywords: ["compatibility", "precipitation", "mixingOrder", "antagonism"],
+    route: "/home/personal/tools/nutrient-chemistry",
+    keywords: [
+      "compatibility",
+      "Compatibility check",
+      "analyzeCompatibility",
+      "precipitation",
+      "mixingOrder",
+      "antagonism"
+    ],
     required: ["rules", "NPK integration", "tests"]
   },
   {
@@ -137,7 +145,15 @@ const MODULES = [
   {
     phase: "Diagnosis / IPM / Crop ID",
     name: "ETGU Diagnosis Rules",
-    keywords: ["ETGU", "diagnosis rules", "symptomLocation", "counterEvidence"],
+    route: "/home/personal/diagnose",
+    keywords: [
+      "ETGU",
+      "symptom pattern",
+      "root-zone context",
+      "measured numbers",
+      "counterEvidence",
+      "GrowPathAI reasoning"
+    ],
     required: ["rules", "intake", "tests"]
   },
   {

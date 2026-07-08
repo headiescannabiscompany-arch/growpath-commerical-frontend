@@ -106,6 +106,7 @@ describe("DiagnoseRoute", () => {
     fireEvent.press(screen.getByLabelText("Run diagnosis"));
 
     await waitFor(() => expect(mockAnalyzeDiagnosis).toHaveBeenCalled());
+    expect(screen.getByText(/ETGU checks symptom pattern/i)).toBeTruthy();
     expect(screen.getByText("Accepted tags")).toBeTruthy();
     expect(screen.getByText("yellowing")).toBeTruthy();
     expect(screen.getByText("ph out of range")).toBeTruthy();
