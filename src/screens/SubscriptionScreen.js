@@ -4,7 +4,7 @@ import { Alert, Linking, ScrollView, Text, TouchableOpacity, View } from "react-
 import { createCheckoutSession } from "../api/subscription";
 import ScreenContainer from "../components/ScreenContainer";
 import { PRO_PLAN_PRICE_DISPLAY, formatPlanBillingNote } from "../constants/pricing";
-import { spacing } from "../theme/theme";
+import { radius, spacing } from "../theme/theme";
 import { openExternalUrl } from "../utils/openExternalUrl";
 
 export default function SubscriptionScreen({ navigation }) {
@@ -177,7 +177,7 @@ const styles = {
     color: "#92400E",
     paddingHorizontal: 16,
     paddingVertical: 8,
-    borderRadius: 20,
+    borderRadius: radius.pill,
     fontSize: 12,
     fontWeight: "700",
     marginBottom: 16
@@ -197,7 +197,7 @@ const styles = {
   },
   pricingCard: {
     backgroundColor: "#FFFFFF",
-    borderRadius: 16,
+    borderRadius: radius.card,
     padding: spacing(6),
     marginBottom: spacing(6),
     alignItems: "center",
@@ -228,7 +228,7 @@ const styles = {
   featureIcon: {
     minWidth: 48,
     height: 40,
-    borderRadius: 20,
+    borderRadius: radius.pill,
     backgroundColor: "#F3F4F6",
     alignItems: "center",
     justifyContent: "center",
@@ -261,7 +261,7 @@ const styles = {
   subscribeBtn: {
     backgroundColor: "#10B981",
     paddingVertical: 18,
-    borderRadius: 12,
+    borderRadius: radius.card,
     alignItems: "center",
     marginBottom: spacing(4)
   },

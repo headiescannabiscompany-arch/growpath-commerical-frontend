@@ -11,6 +11,7 @@ import {
 } from "react-native";
 import { createCheckoutSession, getSubscriptionStatus } from "../api/subscription";
 import { openExternalUrl } from "../utils/openExternalUrl";
+import { radius } from "../theme/theme";
 
 function normalizeSubscription(status) {
   const source = status?.data && typeof status.data === "object" ? status.data : status;
@@ -159,7 +160,7 @@ const styles = StyleSheet.create({
   },
   section: {
     backgroundColor: "#fff",
-    borderRadius: 8,
+    borderRadius: radius.card,
     padding: 16,
     marginBottom: 16,
     boxShadow: "0px 1px 2px rgba(0,0,0,0.03)",
@@ -217,7 +218,7 @@ const styles = StyleSheet.create({
   upgradeBtn: {
     alignItems: "center",
     backgroundColor: "#10B981",
-    borderRadius: 6,
+    borderRadius: radius.card,
     marginTop: 14,
     paddingHorizontal: 16,
     paddingVertical: 12

@@ -5,6 +5,7 @@ import { useFocusEffect } from "@react-navigation/native";
 import { useAuth } from "@/auth/AuthContext";
 import { cancelSubscription, getSubscriptionStatus } from "../api/subscribe";
 import ScreenContainer from "../components/ScreenContainer";
+import { radius } from "../theme/theme";
 
 function subscriptionState(status) {
   return status?.status || status?.subscriptionStatus || "free";
@@ -163,7 +164,7 @@ const styles = {
   statusCard: {
     backgroundColor: "#FFF",
     padding: 20,
-    borderRadius: 12,
+    borderRadius: radius.card,
     marginBottom: 20,
     boxShadow: "0px 2px 4px rgba(0,0,0,0.1)",
     elevation: 3
@@ -189,7 +190,7 @@ const styles = {
   trialNotice: {
     backgroundColor: "#FFF3CD",
     padding: 12,
-    borderRadius: 8,
+    borderRadius: radius.card,
     marginTop: 10
   },
   trialText: {
@@ -206,7 +207,7 @@ const styles = {
   refreshButton: {
     backgroundColor: "#E0E0E0",
     paddingVertical: 10,
-    borderRadius: 8,
+    borderRadius: radius.card,
     alignItems: "center",
     marginBottom: 10
   },
@@ -218,7 +219,7 @@ const styles = {
   cancelButton: {
     backgroundColor: "#DC3545",
     paddingVertical: 14,
-    borderRadius: 10,
+    borderRadius: radius.card,
     alignItems: "center",
     marginBottom: 10
   },
@@ -230,7 +231,7 @@ const styles = {
   upgradeButton: {
     backgroundColor: "#28A745",
     paddingVertical: 14,
-    borderRadius: 10,
+    borderRadius: radius.card,
     alignItems: "center"
   },
   upgradeButtonText: {

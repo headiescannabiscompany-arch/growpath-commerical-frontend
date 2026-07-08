@@ -7,6 +7,7 @@ import { createCheckoutSession } from "../api/subscription";
 import PrimaryButton from "../components/PrimaryButton";
 import ScreenContainer from "../components/ScreenContainer";
 import { PRO_PLAN_PRICE_DISPLAY } from "../constants/pricing";
+import { radius } from "../theme/theme";
 import { openExternalUrl } from "../utils/openExternalUrl";
 
 export default function PaywallScreen({ navigation }) {
@@ -140,7 +141,7 @@ const styles = {
   benefitsSection: {
     backgroundColor: "#FFF",
     padding: 20,
-    borderRadius: 12,
+    borderRadius: radius.card,
     marginBottom: 30,
     boxShadow: "0px 2px 4px rgba(0,0,0,0.1)",
     elevation: 3
@@ -159,7 +160,7 @@ const styles = {
   },
   button: {
     paddingVertical: 16,
-    borderRadius: 10,
+    borderRadius: radius.card,
     marginBottom: 15,
     alignItems: "center"
   },

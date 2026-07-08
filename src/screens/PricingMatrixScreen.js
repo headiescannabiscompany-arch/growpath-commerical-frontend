@@ -5,6 +5,7 @@ import {
   FACILITY_PLAN_PRICE_DISPLAY,
   PRO_PLAN_PRICE_DISPLAY
 } from "../constants/pricing.js";
+import { radius } from "../theme/theme.js";
 
 const plans = [
   {
@@ -100,7 +101,7 @@ const styles = StyleSheet.create({
     margin: 8,
     padding: 16,
     backgroundColor: "#fff",
-    borderRadius: 12,
+    borderRadius: radius.card,
     elevation: 2
   },
   planName: {
