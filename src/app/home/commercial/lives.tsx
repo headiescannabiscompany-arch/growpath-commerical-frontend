@@ -11,6 +11,7 @@ import {
 import { InlineError } from "@/components/InlineError";
 import AppCard from "@/components/layout/AppCard";
 import AppPage from "@/components/layout/AppPage";
+import SchedulePicker from "@/components/schedule/SchedulePicker";
 
 type LiveForm = {
   title: string;
@@ -19,6 +20,9 @@ type LiveForm = {
   scheduledStart: string;
   scheduledEnd: string;
   timezone: string;
+  scheduleReminder: string;
+  scheduleRecurrence: string;
+  allDay: boolean;
   twitchChannelName: string;
   twitchChannelId: string;
   twitchEmbedUrl: string;
@@ -39,6 +43,9 @@ const EMPTY_FORM: LiveForm = {
   scheduledStart: "",
   scheduledEnd: "",
   timezone: "America/New_York",
+  scheduleReminder: "24 hours before",
+  scheduleRecurrence: "",
+  allDay: false,
   twitchChannelName: "",
   twitchChannelId: "",
   twitchEmbedUrl: "",
@@ -155,6 +162,9 @@ export default function CommercialLivesRoute() {
         scheduledStart: form.scheduledStart.trim() || undefined,
         scheduledEnd: form.scheduledEnd.trim() || undefined,
         timezone: form.timezone.trim() || "America/New_York",
+        reminderPreference: form.scheduleReminder.trim() || undefined,
+        recurrenceRule: form.scheduleRecurrence.trim() || undefined,
+        allDay: form.allDay,
         twitchChannelName: form.twitchChannelName.trim() || undefined,
         twitchChannelId: form.twitchChannelId.trim() || undefined,
         twitchEmbedUrl: form.twitchEmbedUrl.trim() || undefined,
@@ -340,15 +350,32 @@ export default function CommercialLivesRoute() {
             style={styles.input}
             autoCapitalize="none"
           />
-          <TextInput
-            value={form.scheduledStart}
-            onChangeText={(scheduledStart) =>
-              setForm((prev) => ({ ...prev, scheduledStart }))
-            }
-            accessibilityLabel="Commercial live scheduled start"
-            placeholder="Start ISO date/time"
-            style={styles.input}
-          />
+          <View style={styles.fullWidth}>
+            <SchedulePicker
+              dueDate={form.scheduledStart}
+              reminder={form.scheduleReminder}
+              recurrence={form.scheduleRecurrence}
+              allDay={form.allDay}
+              timezone={form.timezone}
+              onDueDateChange={(scheduledStart) =>
+                setForm((prev) => ({ ...prev, scheduledStart }))
+              }
+              onReminderChange={(scheduleReminder) =>
+                setForm((prev) => ({ ...prev, scheduleReminder }))
+              }
+              onRecurrenceChange={(scheduleRecurrence) =>
+                setForm((prev) => ({ ...prev, scheduleRecurrence }))
+              }
+              onAllDayChange={(allDay) => setForm((prev) => ({ ...prev, allDay }))}
+              accessibilityPrefix="Commercial live schedule"
+              dueDateAccessibilityLabel="Commercial live scheduled start"
+              reminderAccessibilityLabel="Commercial live reminder"
+              recurrenceAccessibilityLabel="Commercial live recurrence"
+              dueDatePlaceholder="Start ISO date/time"
+              reminderPlaceholder="Reminder plan"
+              recurrencePlaceholder="Recurring live schedule"
+            />
+          </View>
           <TextInput
             value={form.scheduledEnd}
             onChangeText={(scheduledEnd) =>
@@ -593,6 +620,7 @@ const styles = StyleSheet.create({
   },
   textArea: { minHeight: 92, textAlignVertical: "top" },
   formGrid: { flexDirection: "row", flexWrap: "wrap", gap: 8 },
+  fullWidth: { width: "100%" },
   label: { color: "#334155", fontSize: 12, fontWeight: "900", marginTop: 12 },
   actions: { flexDirection: "row", flexWrap: "wrap", gap: 8, marginTop: 12 },
   action: {

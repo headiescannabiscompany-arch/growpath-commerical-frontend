@@ -128,6 +128,9 @@ export type CommercialLiveEvent = {
   scheduledStart?: string;
   scheduledEnd?: string;
   timezone?: string;
+  allDay?: boolean;
+  reminderPreference?: string;
+  recurrenceRule?: string;
   twitchChannelName?: string;
   twitchChannelId?: string;
   twitchEmbedUrl?: string;

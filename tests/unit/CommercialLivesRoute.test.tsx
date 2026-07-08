@@ -150,6 +150,12 @@ describe("CommercialLivesRoute", () => {
       "2026-07-17T21:00:00Z"
     );
     fireEvent.changeText(
+      screen.getByLabelText("Commercial live reminder"),
+      "1 hour before"
+    );
+    fireEvent.changeText(screen.getByLabelText("Commercial live recurrence"), "weekly");
+    fireEvent.press(screen.getByLabelText("Commercial live schedule all day toggle"));
+    fireEvent.changeText(
       screen.getByLabelText("Commercial live related course"),
       "course-veg"
     );
@@ -185,6 +191,9 @@ describe("CommercialLivesRoute", () => {
           thumbnailUrl: "https://example.com/friday-live.jpg",
           scheduledStart: "2026-07-17T21:00:00Z",
           timezone: "America/New_York",
+          reminderPreference: "1 hour before",
+          recurrenceRule: "weekly",
+          allDay: true,
           twitchChannelName: "livingsoillabs",
           twitchChannelId: "67890",
           twitchEmbedUrl: "https://player.twitch.tv/?channel=livingsoillabs",
