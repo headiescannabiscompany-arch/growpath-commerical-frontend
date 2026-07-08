@@ -2687,7 +2687,7 @@
       ],
       "acceptanceChecks": [
         "Commercial user can create a non-cannabis crop batch.",
-        "Commercial grow workspace supports cultivar comparison for Sunviva and Primabella.",
+        "Product trial evidence-run workspace supports cultivar comparison for Sunviva and Primabella.",
         "Germination, propagation, transplanting, hardening, input comparison, supplier notes, harvest count, and recovery tracking are represented.",
         "External photo links remain source metadata and are not copied into GrowPathAI assets."
       ]

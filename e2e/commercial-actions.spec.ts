@@ -339,14 +339,17 @@ async function installCommercialMocks(page: any) {
       });
     }
 
-    if (method === "POST" && path === "/api/commercial/posts") {
+    if (method === "POST" && path === "/api/commercial/feed") {
       return fulfillJson(route, {
-        post: {
+        item: {
           id: "post-created",
           type: body?.type || "update",
           title: body?.title || "",
           body: body?.body || "",
           tags: body?.tags || [],
+          growInterests: body?.growInterests || [],
+          storefrontSlug: body?.storefrontSlug || "",
+          imageUrl: body?.imageUrl || "",
           likeCount: 0,
           createdAt: "2026-03-02T00:00:00.000Z",
           author: { displayName: "Commercial Operator" }
@@ -432,22 +435,22 @@ test.describe("commercial dashboard actions", () => {
     const apiCalls = await installCommercialMocks(page);
     await login(page);
 
-    await expect(page.getByText("Grows & Trials")).toBeVisible();
+    await expect(page.getByText("Product Formulas, Batches & Trials")).toBeVisible();
     await expect(page.getByText("Products & Storefront")).toBeVisible();
     await expect(page.getByText("Analytics Snapshot")).toBeVisible();
     await expect(page.getByText("Ad clicks", { exact: true })).toBeVisible();
-    await expect(page.getByRole("link", { name: "Open Grows" })).toBeVisible();
+    await expect(page.getByRole("link", { name: "Product Batch Planner" })).toBeVisible();
     await expect(page.getByRole("link", { name: "Product Trials" })).toBeVisible();
     await expect(page.getByRole("link", { name: "Storefront" })).toBeVisible();
 
-    await page.getByRole("link", { name: "Open Grows" }).click();
-    await expect(page.getByText("Commercial grow workspace")).toBeVisible();
-    await page.getByLabel("Commercial grow name").fill("Pepper Input Trial");
-    await page.getByLabel("Commercial grow purpose").fill("product_trial");
-    await page.getByLabel("Commercial grow crop type").fill("pepper");
-    await page.getByLabel("Commercial grow cultivar").fill("Lunchbox Red");
-    await page.getByLabel("Commercial grow plant count").fill("12");
-    await page.getByLabel("Create commercial grow").click();
+    await page.goto("/home/commercial/evidence-runs", { waitUntil: "domcontentloaded" });
+    await expect(page.getByText("Product Trial Evidence Runs")).toBeVisible();
+    await page.getByLabel("Product trial evidence run name").fill("Pepper Input Trial");
+    await page.getByLabel("Product trial evidence run purpose").fill("product_trial");
+    await page.getByLabel("Product trial evidence run crop type").fill("pepper");
+    await page.getByLabel("Product trial evidence run cultivar").fill("Lunchbox Red");
+    await page.getByLabel("Product trial evidence run plant count").fill("12");
+    await page.getByLabel("Create product trial evidence run").click();
     await expect
       .poll(() =>
         apiCalls.some(
@@ -563,12 +566,17 @@ test.describe("commercial dashboard actions", () => {
     await expect(page.getByText("Product created.")).toBeVisible();
 
     await backToCommercialHome(page);
-    await page.getByRole("link", { name: "Feed", exact: true }).click();
-    await expect(page.getByText("Commercial Feed")).toBeVisible();
-    await page.getByLabel("Feed post title").fill("Batch note");
-    await page.getByLabel("Feed post body").fill("Educational inventory update.");
-    await page.getByLabel("Publish feed post").click();
-    await expect(page.getByText("Feed post published.")).toBeVisible();
+    await page.getByRole("link", { name: "Create Feed Campaign" }).first().click();
+    await expect(page.getByText("Feed / Campaigns")).toBeVisible();
+    await page.getByLabel("Feed campaign title").fill("Batch note");
+    await page.getByLabel("Feed campaign body").fill("Educational inventory update.");
+    await page.getByLabel("Feed campaign grow interests").fill("living soil");
+    await page.getByLabel("Linked storefront slug").fill("growpath-demo-store");
+    await page
+      .getByLabel("Commercial feed campaign image URL")
+      .fill("https://example.com/feed.jpg");
+    await page.getByLabel("Publish feed campaign").click();
+    await expect(page.getByText("Feed campaign published.")).toBeVisible();
 
     await backToCommercialHome(page);
     await page.getByRole("link", { name: "Create Course" }).click();
@@ -649,7 +657,7 @@ test.describe("commercial dashboard actions", () => {
     ).toBeTruthy();
     expect(
       apiCalls.some(
-        (call) => call.method === "POST" && call.path === "/api/commercial/posts"
+        (call) => call.method === "POST" && call.path === "/api/commercial/feed"
       )
     ).toBeTruthy();
     expect(

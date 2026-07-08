@@ -561,6 +561,7 @@ Completed and pushed:
 285. Commercial course and analytics copy now labels support discussion as Forum/Q&A instead of community, so creator education loops and forum-reply metrics do not blur into Feed/Campaigns.
 286. Commercial Brand Forum/Q&A now labels the legacy community directory handoff as Open Forum Directory, keeping owner navigation discussion-oriented without exposing community/feed ambiguity.
 287. Public Support page intro now names account, billing, technical, privacy, legal, security, commercial, and facility support so every live alias category is discoverable before users read the routing cards.
+288. Commercial action E2E coverage now creates Product Trial Evidence Runs and Feed campaigns through the canonical labels and `/api/commercial/feed` endpoint instead of stale commercial-grow and feed-post wording.
 
 ## Working Rule For Codex
 
