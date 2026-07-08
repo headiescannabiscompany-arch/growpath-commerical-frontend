@@ -2,6 +2,7 @@ import React from "react";
 import { StyleSheet, Text, View } from "react-native";
 
 import FeedRail from "@/components/feed/FeedRail";
+import { radius } from "@/theme/theme";
 import type { FeedBannerPlacement, FeedRailMode } from "@/utils/feedPolicy";
 
 type FeedBannerProps = {
@@ -49,7 +50,7 @@ const styles = StyleSheet.create({
   banner: {
     borderWidth: 1,
     borderColor: "#D9E8D8",
-    borderRadius: 8,
+    borderRadius: radius.card,
     backgroundColor: "#F7FBF5",
     padding: 12,
     gap: 10

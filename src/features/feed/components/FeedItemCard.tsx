@@ -6,6 +6,7 @@ import { CAPABILITY_KEYS } from "@/entitlements";
 import { Pressable, Button, View, Text, StyleSheet, Alert } from "react-native";
 import { useCommercialFeed } from "../hooks/useCommercialFeed";
 import type { FeedItem } from "../types/feed";
+import { radius } from "@/theme/theme";
 // If expo-router is not available, fallback to a no-op router
 let useRouter: any = () => ({ push: () => {} });
 try {
@@ -139,7 +140,7 @@ export const FeedItemCard = React.memo(function FeedItemCard({
 const styles = StyleSheet.create({
   card: {
     backgroundColor: "#fff",
-    borderRadius: 8,
+    borderRadius: radius.card,
     padding: 16,
     marginVertical: 8,
     marginHorizontal: 16,
@@ -159,7 +160,7 @@ const styles = StyleSheet.create({
     fontSize: 16
   },
   statusPill: {
-    borderRadius: 12,
+    borderRadius: radius.pill,
     paddingHorizontal: 8,
     paddingVertical: 2,
     minWidth: 48,

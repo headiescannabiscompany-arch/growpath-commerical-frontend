@@ -3,6 +3,7 @@ import { Image, Pressable, Text, StyleSheet, View } from "react-native";
 import AppCard from "@/components/layout/AppCard";
 import { recordCommercialAnalyticsEvent } from "@/api/commercialAnalytics";
 import { fetchPublicStorefront } from "@/api/storefront";
+import { radius } from "@/theme/theme";
 import { resolveImageUri } from "@/utils/photoUploads";
 
 type AdCardProps = {
@@ -123,7 +124,7 @@ const styles = StyleSheet.create({
   image: {
     width: "100%",
     aspectRatio: 16 / 7,
-    borderRadius: 8,
+    borderRadius: radius.card,
     marginBottom: 10,
     backgroundColor: "#F1F5F9"
   },

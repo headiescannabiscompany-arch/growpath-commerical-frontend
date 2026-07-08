@@ -2,6 +2,8 @@
 import React from "react";
 import { View, Text, TouchableOpacity, StyleSheet, Switch } from "react-native";
 
+import { radius } from "@/theme/theme";
+
 interface FeedFiltersBarProps {
   types?: string[];
   selectedType?: string;
@@ -74,7 +76,7 @@ const styles = StyleSheet.create({
   chip: {
     paddingHorizontal: 12,
     paddingVertical: 6,
-    borderRadius: 16,
+    borderRadius: radius.pill,
     backgroundColor: "#eee",
     marginRight: 8
   },

@@ -1,6 +1,7 @@
 import React from "react";
 import { View, Text, Pressable } from "react-native";
 import { useAuth } from "../../auth/AuthContext";
+import { radius } from "@/theme/theme";
 
 type Author = {
   id: string;
@@ -53,7 +54,7 @@ export default function CommercialFeedCard({ post }: Props) {
     <View
       style={{
         borderWidth: 1,
-        borderRadius: 12,
+        borderRadius: radius.card,
         padding: 12,
         marginHorizontal: 12,
         marginVertical: 6
@@ -81,7 +82,7 @@ export default function CommercialFeedCard({ post }: Props) {
           style={{
             paddingVertical: 6,
             paddingHorizontal: 10,
-            borderRadius: 8,
+            borderRadius: radius.card,
             borderWidth: 1,
             marginRight: 12
           }}

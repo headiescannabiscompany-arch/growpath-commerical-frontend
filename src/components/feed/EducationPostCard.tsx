@@ -1,6 +1,8 @@
 import React from "react";
 import { View, Text, StyleSheet, TouchableOpacity } from "react-native";
 
+import { radius } from "@/theme/theme";
+
 export type EducationPostCardProps = {
   cta?: string;
   title?: string;
@@ -52,7 +54,7 @@ const styles = StyleSheet.create({
   card: {
     padding: 12,
     borderWidth: 1,
-    borderRadius: 12,
+    borderRadius: radius.card,
     borderColor: "rgba(0,0,0,0.15)"
   },
   title: { fontSize: 16, fontWeight: "600", marginBottom: 6 },
