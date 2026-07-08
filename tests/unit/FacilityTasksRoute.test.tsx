@@ -68,6 +68,15 @@ describe("FacilityTasksRoute", () => {
         roomId: "flower-1",
         requiresProof: true,
         requiresApproval: true
+      },
+      {
+        id: "task-linked-batch",
+        title: "Review production batch",
+        dueDate: "2026-07-09",
+        status: "OPEN",
+        sourceType: "product_batch",
+        linkedProductBatchId: "batch-linked-1",
+        linkedRoomId: "mix-room"
       }
     ]);
     mockCreateTask.mockResolvedValue({ id: "task-created" });
@@ -79,6 +88,9 @@ describe("FacilityTasksRoute", () => {
     await waitFor(() => expect(screen.getByText("Scout Flower Room")).toBeTruthy());
     expect(screen.getByText(/Source: sensor alert alert-1/)).toBeTruthy();
     expect(screen.getByText(/Room: flower-1/)).toBeTruthy();
+    expect(screen.getByText("Review production batch")).toBeTruthy();
+    expect(screen.getByText(/Source: product batch batch-linked-1/)).toBeTruthy();
+    expect(screen.getByText(/Room: mix-room/)).toBeTruthy();
     expect(screen.getAllByText(/Proof required/).length).toBeGreaterThan(0);
     expect(screen.getAllByText(/Approval required/).length).toBeGreaterThan(0);
 

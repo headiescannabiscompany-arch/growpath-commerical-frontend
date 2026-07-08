@@ -58,12 +58,35 @@ function pickTitle(x: AnyRec): string {
   return String(x?.title ?? x?.name ?? x?.label ?? x?.type ?? "Task");
 }
 
+function sourceReference(x: AnyRec): string {
+  const values = [
+    x?.sourceObjectId ?? x?.sourceId,
+    x?.linkedAlertId,
+    x?.linkedCourseId,
+    x?.linkedLessonId,
+    x?.linkedLiveId,
+    x?.linkedToolRunId,
+    x?.linkedRecipeId,
+    x?.linkedProductId,
+    x?.linkedProductBatchId,
+    x?.linkedProductTrialId,
+    x?.linkedForumThreadId,
+    x?.linkedFacilityRunId,
+    x?.linkedSopId,
+    x?.sourceType === "room" ? x?.linkedRoomId : undefined
+  ];
+  const value = values.find(
+    (item) => item !== undefined && item !== null && String(item)
+  );
+  return value ? String(value) : "";
+}
+
 function pickSubtitle(x: AnyRec): string {
   const due = x?.dueAt ?? x?.dueDate ?? x?.due;
   const status = x?.status ?? x?.state;
   const assignee = x?.assigneeName ?? x?.assignee ?? x?.assignedTo;
   const sourceType = x?.sourceType;
-  const sourceObjectId = x?.sourceObjectId ?? x?.sourceId;
+  const sourceObjectId = sourceReference(x);
   const roomId = x?.roomId ?? x?.linkedRoomId;
   const proof = x?.requiresProof ? "Proof required" : "";
   const approval = x?.requiresApproval ? "Approval required" : "";
@@ -73,7 +96,9 @@ function pickSubtitle(x: AnyRec): string {
   const c = assignee ? `Assignee: ${String(assignee)}` : "";
   const d = sourceType
     ? `Source: ${String(sourceType).replace(/_/g, " ")}${sourceObjectId ? ` ${String(sourceObjectId)}` : ""}`
-    : "";
+    : sourceObjectId
+      ? `Source: ${sourceObjectId}`
+      : "";
   const e = roomId ? `Room: ${String(roomId)}` : "";
 
   return [a, b, c, d, e, proof, approval].filter(Boolean).join(" -  ");
