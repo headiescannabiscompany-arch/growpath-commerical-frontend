@@ -691,6 +691,7 @@ Completed and pushed:
 415. Commercial Product Trial Evidence Runs root/detail metrics, trial setup inputs, product-line selectors, evidence-run rows, linked evidence fields, and save/actions now consume the shared 8px card radius token while keeping commercial grows framed as product evidence instead of facility operations.
 416. Commercial Product Trials root/detail forms, product-line selectors, trial rows, feedback, evidence fields, claim-readiness task actions, and save controls now consume the shared 8px card radius token while preserving 999 claim-status pills.
 417. Shared Schedule / Agenda metric cards, refresh action, filters, feedback, agenda cards, and source links now consume the shared 8px card radius token while preserving count/type pills, extending Facility-style visual polish across personal, commercial, and facility timing workflows.
+418. Shared Notification Center header panel, filters, mark-read actions, notification cards, read badges, source links, and create-task controls now consume the shared 8px card radius token, aligning cross-workspace reminders with the Facility-style treatment.
 
 ## Working Rule For Codex
 

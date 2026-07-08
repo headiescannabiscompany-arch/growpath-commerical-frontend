@@ -10,6 +10,7 @@ import {
 import { Link, useLocalSearchParams } from "expo-router";
 
 import { apiRequest } from "@/api/apiRequest";
+import { radius } from "@/theme/theme";
 import { sourceObjectHref } from "@/utils/sourceLinks";
 
 type NotificationRow = {
@@ -421,7 +422,7 @@ const styles = StyleSheet.create({
   root: { flex: 1, backgroundColor: "#f4f8f5" },
   content: { padding: 16, gap: 14 },
   header: {
-    borderRadius: 8,
+    borderRadius: radius.card,
     borderWidth: 1,
     borderColor: "#cfe3d5",
     backgroundColor: "#ffffff",
@@ -439,7 +440,7 @@ const styles = StyleSheet.create({
   subtitle: { color: "#374151", fontSize: 14, lineHeight: 20 },
   toolbar: { flexDirection: "row", flexWrap: "wrap", gap: 8 },
   filterButton: {
-    borderRadius: 8,
+    borderRadius: radius.card,
     borderWidth: 1,
     borderColor: "#d1d5db",
     backgroundColor: "#ffffff",
@@ -451,7 +452,7 @@ const styles = StyleSheet.create({
   filterButtonTextActive: { color: "#ffffff" },
   primaryButton: {
     alignItems: "center",
-    borderRadius: 8,
+    borderRadius: radius.card,
     backgroundColor: "#166534",
     paddingHorizontal: 14,
     paddingVertical: 12
@@ -459,7 +460,7 @@ const styles = StyleSheet.create({
   primaryButtonText: { color: "#ffffff", fontSize: 14, fontWeight: "900" },
   disabledButton: { opacity: 0.45 },
   card: {
-    borderRadius: 8,
+    borderRadius: radius.card,
     borderWidth: 1,
     borderColor: "#dbe3ea",
     backgroundColor: "#ffffff",
@@ -482,7 +483,7 @@ const styles = StyleSheet.create({
   metaText: { color: "#64748b", fontSize: 12, fontWeight: "700" },
   badge: {
     overflow: "hidden",
-    borderRadius: 8,
+    borderRadius: radius.card,
     backgroundColor: "#e5e7eb",
     color: "#374151",
     paddingHorizontal: 8,
@@ -494,7 +495,7 @@ const styles = StyleSheet.create({
   unreadBadge: { backgroundColor: "#166534", color: "#ffffff" },
   actions: { flexDirection: "row", flexWrap: "wrap", gap: 8 },
   secondaryButton: {
-    borderRadius: 8,
+    borderRadius: radius.card,
     borderWidth: 1,
     borderColor: "#166534",
     paddingHorizontal: 12,
@@ -502,7 +503,7 @@ const styles = StyleSheet.create({
   },
   secondaryButtonText: { color: "#166534", fontSize: 13, fontWeight: "900" },
   linkButton: {
-    borderRadius: 8,
+    borderRadius: radius.card,
     backgroundColor: "#111827",
     paddingHorizontal: 12,
     paddingVertical: 9
