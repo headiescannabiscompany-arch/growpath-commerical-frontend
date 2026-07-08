@@ -29,6 +29,7 @@ import {
   type NormalizedDiagnosis
 } from "@/features/personal/diagnosis/normalizeDiagnosis";
 import { CAPABILITY_KEYS, useEntitlements } from "@/entitlements";
+import { radius } from "@/theme/theme";
 
 function param(value?: string | string[]) {
   return typeof value === "string" ? value : Array.isArray(value) ? value[0] || "" : "";
@@ -1013,14 +1014,14 @@ const styles = StyleSheet.create({
     minHeight: 110,
     borderWidth: 1,
     borderColor: "#CBD5E1",
-    borderRadius: 10,
+    borderRadius: radius.card,
     padding: 12,
     textAlignVertical: "top"
   },
   input: {
     borderWidth: 1,
     borderColor: "#CBD5E1",
-    borderRadius: 10,
+    borderRadius: radius.card,
     padding: 12
   },
   grid: { flexDirection: "row", flexWrap: "wrap", gap: 8 },
@@ -1029,15 +1030,15 @@ const styles = StyleSheet.create({
     flexGrow: 1,
     borderWidth: 1,
     borderColor: "#CBD5E1",
-    borderRadius: 10,
+    borderRadius: radius.card,
     padding: 12
   },
-  photo: { width: "100%", height: 240, borderRadius: 12, backgroundColor: "#E2E8F0" },
+  photo: { width: "100%", height: 240, borderRadius: radius.card, backgroundColor: "#E2E8F0" },
   photoPolicy: { color: "#475569", fontSize: 12, lineHeight: 18 },
   primaryButton: {
     alignSelf: "flex-start",
     backgroundColor: "#166534",
-    borderRadius: 9,
+    borderRadius: radius.card,
     paddingHorizontal: 14,
     paddingVertical: 10
   },
@@ -1045,17 +1046,17 @@ const styles = StyleSheet.create({
   secondaryButton: {
     borderWidth: 1,
     borderColor: "#166534",
-    borderRadius: 9,
+    borderRadius: radius.card,
     paddingHorizontal: 12,
     paddingVertical: 8
   },
   secondaryButtonText: { color: "#166534", fontWeight: "800" },
   disabled: { opacity: 0.5 },
-  locked: { color: "#9A3412", backgroundColor: "#FFF7ED", padding: 10, borderRadius: 9 },
+  locked: { color: "#9A3412", backgroundColor: "#FFF7ED", padding: 10, borderRadius: radius.card },
   feedback: { color: "#334155", fontWeight: "700" },
   readinessPanel: {
     borderWidth: 1,
-    borderRadius: 8,
+    borderRadius: radius.card,
     padding: 10,
     gap: 4
   },
@@ -1066,7 +1067,7 @@ const styles = StyleSheet.create({
   providerPanel: {
     borderWidth: 1,
     borderColor: "#D9E2EC",
-    borderRadius: 8,
+    borderRadius: radius.card,
     backgroundColor: "#FFFFFF",
     padding: 10,
     gap: 5
@@ -1076,7 +1077,7 @@ const styles = StyleSheet.create({
   providerLine: { color: "#334155", fontSize: 12, lineHeight: 18 },
   cropContextPanel: {
     borderWidth: 1,
-    borderRadius: 8,
+    borderRadius: radius.card,
     padding: 10,
     gap: 4
   },
@@ -1087,7 +1088,7 @@ const styles = StyleSheet.create({
   followUpCard: {
     borderWidth: 1,
     borderColor: "#CBD5E1",
-    borderRadius: 12,
+    borderRadius: radius.card,
     padding: 12,
     gap: 8,
     backgroundColor: "#F8FAFC"
