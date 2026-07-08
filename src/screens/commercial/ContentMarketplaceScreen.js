@@ -23,7 +23,7 @@ import Card from "../../components/Card.js";
 import EmptyState from "../../components/EmptyState.js";
 import ErrorBoundary from "../../components/ErrorBoundary.js";
 import ErrorState from "../../components/ErrorState.js";
-import { Colors, Spacing, Typography } from "../../theme/theme.js";
+import { Colors, Spacing, Typography, radius } from "../../theme/theme.js";
 import * as DocumentPicker from "expo-document-picker";
 import * as ImagePicker from "expo-image-picker";
 
@@ -632,7 +632,7 @@ const styles = StyleSheet.create({
   input: {
     borderWidth: 1,
     borderColor: "#d1d5db",
-    borderRadius: 8,
+    borderRadius: radius.card,
     backgroundColor: "#fff",
     paddingHorizontal: Spacing.md,
     paddingVertical: Spacing.sm,
@@ -642,7 +642,7 @@ const styles = StyleSheet.create({
   chip: {
     borderWidth: 1,
     borderColor: "#d1d5db",
-    borderRadius: 18,
+    borderRadius: radius.pill,
     paddingHorizontal: Spacing.md,
     paddingVertical: Spacing.sm,
     marginRight: Spacing.sm,
@@ -666,7 +666,7 @@ const styles = StyleSheet.create({
     alignItems: "center",
     gap: 6,
     backgroundColor: Colors.primary,
-    borderRadius: 8,
+    borderRadius: radius.card,
     paddingHorizontal: Spacing.md,
     paddingVertical: Spacing.sm
   },
@@ -676,7 +676,7 @@ const styles = StyleSheet.create({
   thumb: {
     width: 54,
     height: 54,
-    borderRadius: 8,
+    borderRadius: radius.card,
     alignItems: "center",
     justifyContent: "center",
     backgroundColor: "#ecfdf5"
@@ -694,7 +694,7 @@ const styles = StyleSheet.create({
   badge: {
     backgroundColor: "#f3f4f6",
     color: Colors.text,
-    borderRadius: 12,
+    borderRadius: radius.pill,
     overflow: "hidden",
     paddingHorizontal: Spacing.sm,
     paddingVertical: 3,
@@ -755,7 +755,7 @@ const styles = StyleSheet.create({
     justifyContent: "center",
     gap: 8,
     backgroundColor: Colors.primary,
-    borderRadius: 8,
+    borderRadius: radius.card,
     paddingVertical: Spacing.md,
     paddingHorizontal: Spacing.md,
     marginBottom: Spacing.md
@@ -764,7 +764,7 @@ const styles = StyleSheet.create({
   publishBtn: {
     alignItems: "center",
     backgroundColor: Colors.primary,
-    borderRadius: 8,
+    borderRadius: radius.card,
     paddingVertical: Spacing.md,
     marginTop: Spacing.sm,
     marginBottom: Spacing.lg

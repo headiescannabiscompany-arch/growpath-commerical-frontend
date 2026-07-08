@@ -751,6 +751,7 @@ Completed and pushed:
 475. Legacy personal/facility plant list and plant detail cards, search input, stage badge, chart frame, photo frames, timeline selectors, log cards, and export action now consume shared radius tokens while preserving plant navigation, chart rendering, and export behavior.
 476. Legacy storefront-offer marketplace search, offer cards, category chips, feedback panels, detail actions, and checkout CTA now consume shared radius tokens while preserving storefront-offer copy, detail navigation, and purchase handoff behavior.
 477. Legacy category and subcategory browser search panels, inputs, category rows, and subcategory cards now consume shared radius tokens while preserving discovery routing into inventory, tools, calendar, courses, certificates, campaigns, live sessions, and category course lists.
+478. Commercial content marketplace inputs, filter chips, create-offer actions, thumbnails, badges, media upload controls, and publish CTA now consume shared radius tokens while preserving storefront-offer upload, thumbnail upload, sales data, and draft-save behavior.
 
 ## Working Rule For Codex
 
