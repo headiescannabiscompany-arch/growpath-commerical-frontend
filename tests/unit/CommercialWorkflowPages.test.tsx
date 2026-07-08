@@ -134,6 +134,12 @@ describe("commercial workflow pages", () => {
                 title: "Review veg trial evidence",
                 priority: "normal",
                 productTrialId: "trial-1"
+              },
+              {
+                type: "feed_campaign_missing_destination",
+                title: "Fix launch campaign CTA",
+                priority: "high",
+                feedCampaignId: "campaign-1"
               }
             ],
             guidance: [
@@ -728,6 +734,7 @@ describe("commercial workflow pages", () => {
     expect(screen.getByText("Bloom Topdress")).toBeTruthy();
     expect(screen.getByText("Restock base soil bags")).toBeTruthy();
     expect(screen.getByText("Review veg trial evidence")).toBeTruthy();
+    expect(screen.getByText("Fix launch campaign CTA")).toBeTruthy();
     expect(screen.getByText("Dashboard Guidance")).toBeTruthy();
     expect(screen.getByText("Commercial launch assistant")).toBeTruthy();
     expect(screen.getByText("Open Commercial Tasks")).toBeTruthy();
@@ -796,6 +803,27 @@ describe("commercial workflow pages", () => {
             sourceId: "trial-1",
             linkedProductTrialId: "trial-1",
             priority: "normal"
+          })
+        })
+      )
+    );
+    await waitFor(() => expect(screen.queryByText("Creating...")).toBeNull());
+
+    fireEvent.press(
+      screen.getByLabelText("Create task for dashboard action Fix launch campaign CTA")
+    );
+    await waitFor(() =>
+      expect(mockApiRequest).toHaveBeenCalledWith(
+        "/api/tasks",
+        expect.objectContaining({
+          method: "POST",
+          body: expect.objectContaining({
+            title: "Resolve dashboard action: Fix launch campaign CTA",
+            sourceType: "feed_campaign",
+            sourceId: "campaign-1",
+            linkedFeedCampaignId: "campaign-1",
+            linkedFeedPostId: "campaign-1",
+            priority: "high"
           })
         })
       )

@@ -375,6 +375,7 @@ export default function CommercialHome() {
           linkedProductTrialId: item.productTrialId || undefined,
           linkedCourseId: item.courseId || undefined,
           linkedLiveId: item.liveId || undefined,
+          linkedFeedCampaignId: item.feedCampaignId || undefined,
           linkedFeedPostId: item.feedCampaignId || undefined,
           linkedStorefrontId: item.storefrontId || undefined,
           linkedInventoryId: item.inventoryId || undefined,
