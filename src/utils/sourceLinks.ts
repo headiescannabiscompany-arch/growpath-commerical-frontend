@@ -123,7 +123,9 @@ export function sourceObjectHref(source: SourceLike) {
       return courseId
         ? `/home/facility/sop-runs/${encoded(courseId)}`
         : "/home/facility/sop-runs";
-    return "/home/personal/courses";
+    return courseId
+      ? `/home/personal/courses?courseId=${encoded(courseId)}`
+      : "/home/personal/courses";
   }
 
   if (

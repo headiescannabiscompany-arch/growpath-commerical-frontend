@@ -1,5 +1,5 @@
 import React, { useEffect, useMemo, useState } from "react";
-import { useRouter } from "expo-router";
+import { useLocalSearchParams, useRouter } from "expo-router";
 import {
   ActivityIndicator,
   Pressable,
@@ -25,6 +25,10 @@ function normalizeList(payload) {
 
 export default function CoursesScreen({ navigation } = {}) {
   const router = useRouter();
+  const params = useLocalSearchParams();
+  const requestedCourseId = Array.isArray(params?.courseId)
+    ? params.courseId[0]
+    : params?.courseId;
   const ent = useEntitlements();
   const access = getLearningAccess(ent);
   const canInvite = !!ent.can?.(CAPABILITY_KEYS.COMMERCIAL_HOME);
@@ -69,6 +73,14 @@ export default function CoursesScreen({ navigation } = {}) {
     };
   }, [access.canSeePaidCourses, access.canViewCourses]);
 
+  useEffect(() => {
+    if (!requestedCourseId || selectedCourse || courses.length === 0) return;
+    const match = courses.find(
+      (course) => String(course?._id || course?.id || "") === String(requestedCourseId)
+    );
+    if (match) setSelectedCourse(match);
+  }, [courses, requestedCourseId, selectedCourse]);
+
   const handleInvite = async () => {
     const name = inviteName.trim();
     setInviteMessage("");
@@ -112,13 +124,17 @@ export default function CoursesScreen({ navigation } = {}) {
   }
 
   if (selectedCourse) {
+    const selectedId = String(selectedCourse?._id || selectedCourse?.id || "");
     return (
-      <View style={styles.container}>
+      <View
+        accessibilityLabel={selectedId ? `Selected course ${selectedId}` : undefined}
+        style={styles.container}
+      >
         <Pressable onPress={() => setSelectedCourse(null)} style={styles.backBtn}>
           <Text style={styles.backText}>Back to courses</Text>
         </Pressable>
         <CourseDetailScreen
-          route={{ params: { course: selectedCourse, id: selectedCourse?._id || selectedCourse?.id } }}
+          route={{ params: { course: selectedCourse, id: selectedId } }}
           navigation={navigation}
         />
       </View>

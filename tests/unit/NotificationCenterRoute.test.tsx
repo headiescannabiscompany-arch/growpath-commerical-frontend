@@ -55,6 +55,7 @@ describe("NotificationCenterRoute", () => {
               title: "Course update",
               message: "A new lesson is ready.",
               sourceType: "course",
+              sourceId: "course-1",
               workspaceType: "personal",
               readAt: "2026-07-07T12:00:00.000Z"
             },
@@ -206,7 +207,7 @@ describe("NotificationCenterRoute", () => {
       screen.getByLabelText("Notification link /home/facility/tasks/task-1")
     ).toBeTruthy();
     expect(
-      screen.getByLabelText("Notification link /home/personal/courses")
+      screen.getByLabelText("Notification link /home/personal/courses?courseId=course-1")
     ).toBeTruthy();
     expect(screen.getByLabelText("Notification link /home/facility/rooms")).toBeTruthy();
     expect(

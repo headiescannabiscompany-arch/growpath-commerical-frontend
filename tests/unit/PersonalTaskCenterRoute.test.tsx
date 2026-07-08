@@ -150,7 +150,7 @@ describe("PersonalTaskCenterRoute", () => {
       screen.getByLabelText("Personal task link /home/personal/diagnose?growId=grow-1")
     ).toBeTruthy();
     expect(
-      screen.getByLabelText("Personal task link /home/personal/courses")
+      screen.getByLabelText("Personal task link /home/personal/courses?courseId=course-1")
     ).toBeTruthy();
     expect(screen.getByLabelText("Personal task link /feed?liveId=live-1")).toBeTruthy();
     expect(screen.getByLabelText("Personal task link /store")).toBeTruthy();
