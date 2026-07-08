@@ -82,6 +82,19 @@ describe("GrowTasksScreen", () => {
         priority: "medium",
         sourceToolRunId: "run-1",
         createdAt: "2026-07-01T08:00:00.000Z"
+      },
+      {
+        id: "task-linked-batch",
+        growId: "grow-task-1",
+        title: "Review linked batch",
+        description: "Linked-only batch context.",
+        dueDate: "2026-07-04T08:00:00.000Z",
+        completed: false,
+        priority: "medium",
+        sourceType: "product_batch",
+        linkedProductBatchId: "batch-linked-1",
+        linkedToolRunId: "run-linked-1",
+        createdAt: "2026-07-01T08:00:00.000Z"
       }
     ]);
     mockUpdatePersonalTask.mockResolvedValue({ id: "task-open-1" });
@@ -98,15 +111,19 @@ describe("GrowTasksScreen", () => {
     expect(screen.getByText("Source: ai diagnosis")).toBeTruthy();
     expect(screen.getByText("AI Diagnosis: diag-1")).toBeTruthy();
     expect(screen.getByText("Source: tool run")).toBeTruthy();
-    expect(screen.getAllByLabelText("View grow task source")).toHaveLength(2);
+    expect(screen.getByText("Review linked batch")).toBeTruthy();
+    expect(screen.getByText(/Product Batch: batch-linked-1/)).toBeTruthy();
+    expect(screen.getByText(/ToolRun: run-linked-1/)).toBeTruthy();
+    expect(screen.getAllByLabelText("View grow task source")).toHaveLength(3);
     expect(
       screen.getByLabelText("Grow task link /home/personal/diagnose?growId=grow-task-1")
     ).toBeTruthy();
     expect(
       screen.getByLabelText("Grow task link /home/personal/tools/saved-runs?toolRunId=run-1")
     ).toBeTruthy();
+    expect(screen.getByLabelText("Grow task link /store?q=batch-linked-1")).toBeTruthy();
 
-    fireEvent.press(screen.getByLabelText("Complete task"));
+    fireEvent.press(screen.getAllByLabelText("Complete task")[0]);
     await waitFor(() =>
       expect(mockUpdatePersonalTask).toHaveBeenCalledWith("task-open-1", {
         completed: true
@@ -120,7 +137,7 @@ describe("GrowTasksScreen", () => {
       })
     );
 
-    fireEvent.press(screen.getByLabelText("Snooze task one day"));
+    fireEvent.press(screen.getAllByLabelText("Snooze task one day")[0]);
     await waitFor(() =>
       expect(mockUpdatePersonalTask).toHaveBeenCalledWith(
         "task-open-1",

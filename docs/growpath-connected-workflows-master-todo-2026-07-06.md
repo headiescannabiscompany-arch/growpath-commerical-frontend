@@ -399,6 +399,7 @@ Completed and pushed:
 123. Commercial Task Center cards now display linked-only source ids such as `linkedLiveId`, `linkedFeedPostId`, product/batch/trial ids, orders, alerts, forum threads, and storefront slugs, so owners can see what the task is attached to even when the backend did not send a generic `sourceId`.
 124. Facility task detail now displays the same linked source reference it uses for `View Source`, so forum-, SOP-, room-, run-, product-, alert-, live-, ToolRun-, and recipe-backed tasks no longer look unlinked when the backend only sends linked fields.
 125. Personal Task Center cards now display linked-only source ids and linked ToolRuns, so product-batch, product, course, live, alert, forum, room/facility/SOP, and ToolRun-backed tasks show their actual context instead of relying only on `sourceObjectId`.
+126. Grow-specific personal task cards now display linked-only source ids and linked ToolRuns, so grow-local product batch, recipe, product, course, live, alert, forum, facility/SOP, and ToolRun-backed tasks show the same connected context as the global Personal Task Center.
 
 ## Working Rule For Codex
 

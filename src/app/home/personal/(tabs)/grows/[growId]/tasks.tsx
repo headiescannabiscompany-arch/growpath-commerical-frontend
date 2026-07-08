@@ -137,10 +137,41 @@ function sourceObjectLabel(task: PersonalTask) {
   return source.replace(/\b\w/g, (char) => char.toUpperCase());
 }
 
+function sourceReference(task: PersonalTask) {
+  const sourceType = String(task.sourceType || "");
+  const linkedSource =
+    task.sourceObjectId ||
+    task.linkedRecipeId ||
+    task.linkedProductId ||
+    task.linkedProductBatchId ||
+    task.linkedProductTrialId ||
+    task.linkedStorefrontId ||
+    task.linkedOrderId ||
+    task.linkedCourseId ||
+    task.linkedLessonId ||
+    task.linkedLiveId ||
+    task.linkedAlertId ||
+    task.linkedForumThreadId ||
+    task.linkedFacilityId ||
+    task.linkedRoomId ||
+    task.linkedFacilityRunId ||
+    task.linkedSopId;
+  const contextualSource =
+    sourceType === "plant"
+      ? task.linkedPlantId
+      : sourceType === "grow"
+        ? task.linkedGrowId
+        : "";
+  const value = linkedSource || contextualSource;
+  return value ? String(value) : "";
+}
+
 function taskLinks(task: PersonalTask) {
+  const linkedSource = sourceReference(task);
   return [
-    task.sourceObjectId && `${sourceObjectLabel(task)}: ${task.sourceObjectId}`,
+    linkedSource && `${sourceObjectLabel(task)}: ${linkedSource}`,
     task.sourceToolRunId && `ToolRun: ${task.sourceToolRunId}`,
+    !task.sourceToolRunId && task.linkedToolRunId && `ToolRun: ${task.linkedToolRunId}`,
     task.sourceDiagnosisId && `Diagnosis: ${task.sourceDiagnosisId}`,
     task.linkedLogId && `Log: ${task.linkedLogId}`
   ]
@@ -159,8 +190,7 @@ function taskSourcePath(task: PersonalTask, growId: string) {
   if (!sourceType || sourceType === "manual") return "";
 
   const sourceId = String(
-    task.sourceObjectId ||
-      task.linkedForumThreadId ||
+    sourceReference(task) ||
       task.linkedLogId ||
       task.sourceToolRunId ||
       task.linkedToolRunId ||
