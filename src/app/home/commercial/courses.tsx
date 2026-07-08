@@ -132,6 +132,7 @@ export default function CommercialCoursesRoute() {
     title: form.title,
     description: form.description,
     thumbnailUrl: form.thumbnailUrl,
+    bannerUrl: form.bannerUrl,
     growInterests: splitList(form.growInterests),
     access: form.access,
     price: Number(form.price) || 0,
