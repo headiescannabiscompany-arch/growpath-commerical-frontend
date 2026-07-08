@@ -27,6 +27,7 @@ import ToolResultSurface, {
   type ToolResultNotice
 } from "@/features/personal/tools/ToolResultSurface";
 import PersonalFeedPlacement from "@/components/feed/PersonalFeedPlacement";
+import { radius } from "@/theme/theme";
 
 const TOOL_FILTERS = [
   { label: "All", value: "" },
@@ -380,7 +381,7 @@ const styles = StyleSheet.create({
   card: {
     borderWidth: 1,
     borderColor: "#E2E8F0",
-    borderRadius: 8,
+    borderRadius: radius.card,
     backgroundColor: "#F8FAFC",
     padding: 12,
     gap: 5
@@ -395,14 +396,14 @@ const styles = StyleSheet.create({
     minHeight: 82,
     borderWidth: 1,
     borderColor: "#CBD5E1",
-    borderRadius: 8,
+    borderRadius: radius.card,
     backgroundColor: "#FFFFFF",
     padding: 10,
     textAlignVertical: "top"
   },
   primary: {
     alignSelf: "flex-start",
-    borderRadius: 8,
+    borderRadius: radius.card,
     backgroundColor: "#166534",
     paddingHorizontal: 12,
     paddingVertical: 9

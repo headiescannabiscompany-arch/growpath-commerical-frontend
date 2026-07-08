@@ -671,6 +671,7 @@ Completed and pushed:
 395. Dew Point Guard telemetry/source panels, CSV ingest actions, manual-reading controls, event flag/output cards, Pulse controls, and fetch actions now consume the shared 8px card radius token while preserving mode chips, aligning dew-point and sensor-risk workflows with Facility-style polish.
 396. VPD Calculator, PPFD / DLI Planner, and Watering Planner inputs and locked states now consume the shared 8px card radius token while preserving VPD selector pills, extending Facility-style polish across core environment and irrigation tools.
 397. Bud Rot Risk, Harvest Estimator, AI Feeding Schedule, AI Environment Analysis, Timeline Planner, and PDF / Export inputs, actions, preview cards, milestone cards, and locked states now consume the shared 8px card radius token across legacy personal planning/export tools.
+398. Saved Tool Runs cards, note editor, save action, and Pheno Matrix candidate cards, score inputs, ranked rows, score badges, and locked state now consume the shared 8px card radius token while preserving saved-run filter pills.
 
 ## Working Rule For Codex
 

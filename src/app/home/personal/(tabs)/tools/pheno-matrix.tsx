@@ -18,6 +18,7 @@ import {
   saveToolRunResult
 } from "@/features/personal/tools/saveToolRunAndOpenJournal";
 import PersonalFeedPlacement from "@/components/feed/PersonalFeedPlacement";
+import { radius } from "@/theme/theme";
 
 const initialCandidates: PhenoCandidateInput[] = [
   {
@@ -452,7 +453,7 @@ const styles = StyleSheet.create({
   input: {
     borderWidth: 1,
     borderColor: "#CBD5E1",
-    borderRadius: 8,
+    borderRadius: radius.card,
     paddingHorizontal: 10,
     paddingVertical: 8,
     fontSize: 14,
@@ -461,7 +462,7 @@ const styles = StyleSheet.create({
   weightInput: {
     borderWidth: 1,
     borderColor: "#CBD5E1",
-    borderRadius: 8,
+    borderRadius: radius.card,
     paddingHorizontal: 10,
     paddingVertical: 8,
     fontSize: 14,
@@ -470,7 +471,7 @@ const styles = StyleSheet.create({
   card: {
     borderWidth: 1,
     borderColor: "#E2E8F0",
-    borderRadius: 8,
+    borderRadius: radius.card,
     padding: 14,
     marginBottom: 12,
     backgroundColor: "#F8FAFC"
@@ -489,7 +490,7 @@ const styles = StyleSheet.create({
   scoreInput: {
     borderWidth: 1,
     borderColor: "#CBD5E1",
-    borderRadius: 8,
+    borderRadius: radius.card,
     paddingHorizontal: 10,
     paddingVertical: 8,
     fontSize: 14,
@@ -499,7 +500,7 @@ const styles = StyleSheet.create({
     minHeight: 66,
     borderWidth: 1,
     borderColor: "#CBD5E1",
-    borderRadius: 8,
+    borderRadius: radius.card,
     paddingHorizontal: 10,
     paddingVertical: 8,
     fontSize: 14,
@@ -512,7 +513,7 @@ const styles = StyleSheet.create({
     gap: 12,
     borderWidth: 1,
     borderColor: "#DCFCE7",
-    borderRadius: 8,
+    borderRadius: radius.card,
     padding: 12,
     marginBottom: 10,
     backgroundColor: "#F0FDF4"
@@ -523,7 +524,7 @@ const styles = StyleSheet.create({
   rankMeta: { marginTop: 2, fontSize: 12, color: "#475569" },
   scoreBadge: {
     width: 72,
-    borderRadius: 8,
+    borderRadius: radius.card,
     paddingVertical: 8,
     alignItems: "center",
     backgroundColor: "#166534"
@@ -534,7 +535,7 @@ const styles = StyleSheet.create({
     marginTop: 16,
     borderWidth: 1,
     borderColor: "#FECACA",
-    borderRadius: 8,
+    borderRadius: radius.card,
     padding: 16,
     backgroundColor: "#FEF2F2"
   },
