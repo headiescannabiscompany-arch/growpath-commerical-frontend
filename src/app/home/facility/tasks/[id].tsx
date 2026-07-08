@@ -112,18 +112,17 @@ function taskSourcePath(item: AnyRec | null): string {
   if (sourceType === "sop") return "/home/facility/sop-runs";
   if (sourceType === "sensor_alert" || sourceType === "alert") return "/home/alerts";
   if (sourceType === "course" || sourceType === "lesson") {
-    return "/home/commercial/courses";
+    return "/home/facility/sop-runs";
   }
-  if (sourceType === "live") return "/home/commercial/lives";
+  if (sourceType === "live") return sourceId ? `/feed?liveId=${sourceId}` : "/feed";
   if (sourceType === "toolrun" || sourceType === "recipe") {
     return "/home/facility/ai-tools";
   }
-  if (sourceType === "product" && sourceId) {
-    return `/home/commercial/products/${sourceId}`;
+  if (sourceType === "product" || sourceType === "product_batch") {
+    return "/home/facility/inventory";
   }
-  if (sourceType === "product_batch") return "/home/commercial/batch-planner";
   if (sourceType === "product_trial")
-    return sourceId ? `/home/commercial/trials/${sourceId}` : "/home/commercial/trials";
+    return sourceId ? `/home/facility/grows/${sourceId}` : "/home/facility/grows";
   if (sourceType === "forum" && sourceId) return `/forum/post/${sourceId}`;
   return "";
 }

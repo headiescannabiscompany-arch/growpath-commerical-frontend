@@ -145,4 +145,28 @@ describe("FacilityTaskDetail", () => {
 
     expect(mockPush).toHaveBeenCalledWith("/forum/post/thread-facility");
   });
+
+  it.each([
+    ["course", "course-1", "/home/facility/sop-runs"],
+    ["lesson", "lesson-1", "/home/facility/sop-runs"],
+    ["live", "live-1", "/feed?liveId=live-1"],
+    ["product", "input-1", "/home/facility/inventory"],
+    ["product_batch", "batch-1", "/home/facility/inventory"],
+    ["product_trial", "run-1", "/home/facility/grows/run-1"]
+  ])(
+    "keeps %s-backed facility task sources out of commercial admin routes",
+    async (sourceType, sourceObjectId, expectedRoute) => {
+      taskOverrides = { sourceType, sourceObjectId };
+      const screen = render(<FacilityTaskDetail />);
+
+      await waitFor(() => expect(screen.getByText("IPM scout")).toBeTruthy());
+
+      fireEvent.press(screen.getByLabelText("View facility task source"));
+
+      expect(mockPush).toHaveBeenCalledWith(expectedRoute);
+      expect(mockPush).not.toHaveBeenCalledWith(
+        expect.stringContaining("/home/commercial")
+      );
+    }
+  );
 });
