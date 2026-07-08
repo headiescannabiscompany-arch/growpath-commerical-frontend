@@ -17,6 +17,7 @@ import { ScreenBoundary } from "@/components/ScreenBoundary";
 import { useApiErrorHandler } from "@/hooks/useApiErrorHandler";
 import { useFacility } from "@/state/useFacility";
 import type { FacilityReport } from "@/types/report";
+import { radius } from "@/theme/theme";
 
 const EXPORT_COUNT_LABELS: Array<[string, string]> = [
   ["facility", "Facility"],
@@ -442,7 +443,7 @@ const styles = StyleSheet.create({
   muted: { opacity: 0.7 },
   button: {
     backgroundColor: "#0f172a",
-    borderRadius: 10,
+    borderRadius: radius.card,
     paddingHorizontal: 12,
     paddingVertical: 10
   },
@@ -464,7 +465,7 @@ const styles = StyleSheet.create({
     fontWeight: "800"
   },
   readinessPanel: {
-    borderRadius: 12,
+    borderRadius: radius.card,
     borderWidth: 1,
     gap: 6,
     marginBottom: 12,
@@ -479,7 +480,7 @@ const styles = StyleSheet.create({
   secondaryButton: {
     backgroundColor: "white",
     borderColor: "rgba(15,23,42,0.18)",
-    borderRadius: 10,
+    borderRadius: radius.card,
     borderWidth: 1,
     paddingHorizontal: 10,
     paddingVertical: 8
@@ -496,7 +497,7 @@ const styles = StyleSheet.create({
   card: {
     backgroundColor: "white",
     borderColor: "rgba(0,0,0,0.12)",
-    borderRadius: 14,
+    borderRadius: radius.card,
     borderWidth: 1,
     marginTop: 12,
     padding: 14
@@ -505,7 +506,7 @@ const styles = StyleSheet.create({
   grid: { flexDirection: "row", flexWrap: "wrap", gap: 10 },
   tile: {
     borderColor: "rgba(0,0,0,0.10)",
-    borderRadius: 12,
+    borderRadius: radius.card,
     borderWidth: 1,
     minWidth: 120,
     padding: 12

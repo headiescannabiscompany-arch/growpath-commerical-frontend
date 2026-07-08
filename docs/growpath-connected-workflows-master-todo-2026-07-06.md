@@ -707,6 +707,7 @@ Completed and pushed:
 431. Facility AI Ask, AI Templates, and AI Validation Lab headers, preset/tool cards, inputs, choices, actions, result panels, readiness/evidence cards, and response envelopes now consume the shared 8px card radius token, keeping AI-over-tools workflows aligned with the shared Facility visual system.
 432. Facility Compliance root tiles, cards, create/resolve/approve/reject actions, SOP/deviation inputs, and feedback panel now consume the shared 8px card radius token, keeping compliance operations aligned with audit detail polish.
 433. Facility cultivation record surfaces for grows, logs, and plants now use the shared 8px card radius token on list rows, detail cards, plant summaries, forms, feedback, and create actions while preserving room/batch/status pills.
+434. Facility Reports export actions, readiness panels, secondary actions, report cards, and metric tiles now consume the shared 8px card radius token, completing the non-pill Facility tab radius pass.
 
 ## Working Rule For Codex
 
