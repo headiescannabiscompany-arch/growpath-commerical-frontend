@@ -329,6 +329,7 @@ describe("Storefront route", () => {
       screen.getByLabelText("Product grow interests"),
       "living soil, seedlings"
     );
+    fireEvent.changeText(screen.getByLabelText("Product size or weight"), "5 lb bag");
     fireEvent.changeText(
       screen.getByLabelText("Product short description"),
       "Seedling-safe living soil"
@@ -361,6 +362,7 @@ describe("Storefront route", () => {
             imageUrl: "/uploads/product.jpg",
             category: "soil mix",
             growInterests: ["living soil", "seedlings"],
+            unitSize: "5 lb bag",
             shortDescription: "Seedling-safe living soil",
             usageInstructions: "Use 1 gallon per small container.",
             warnings: "Do not use as fast calcium rescue.",

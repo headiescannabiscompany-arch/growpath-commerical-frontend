@@ -254,6 +254,7 @@ export default function Storefront() {
     sku: "",
     category: "",
     growInterestsText: "",
+    unitSize: "",
     shortDescription: "",
     description: "",
     price: "",
@@ -565,6 +566,7 @@ export default function Storefront() {
           sku: productDraft.sku.trim() || undefined,
           category: productDraft.category.trim() || undefined,
           growInterests: splitTextList(productDraft.growInterestsText),
+          unitSize: productDraft.unitSize.trim() || undefined,
           shortDescription: productDraft.shortDescription.trim() || undefined,
           description: productDraft.description.trim() || undefined,
           price: Number.isFinite(priceNumber) ? priceNumber : 0,
@@ -589,6 +591,7 @@ export default function Storefront() {
         sku: "",
         category: "",
         growInterestsText: "",
+        unitSize: "",
         shortDescription: "",
         description: "",
         price: "",
@@ -1173,6 +1176,15 @@ export default function Storefront() {
             }
             accessibilityLabel="Product grow interests"
             placeholder="Product grow interests, comma separated"
+            style={styles.input}
+          />
+          <TextInput
+            value={productDraft.unitSize}
+            onChangeText={(unitSize) =>
+              setProductDraft((draft) => ({ ...draft, unitSize }))
+            }
+            accessibilityLabel="Product size or weight"
+            placeholder="Size or weight, e.g. 5 lb bag"
             style={styles.input}
           />
           <TextInput
