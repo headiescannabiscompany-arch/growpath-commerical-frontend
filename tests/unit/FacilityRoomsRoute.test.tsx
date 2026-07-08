@@ -280,6 +280,8 @@ describe("FacilityRoomsTab", () => {
         id: "room-veg",
         name: "Veg Room",
         roomType: "veg",
+        zoneName: "North bench",
+        stage: "veg",
         createdAt: "2026-07-07T00:00:00Z"
       }
     ]);
@@ -288,6 +290,31 @@ describe("FacilityRoomsTab", () => {
     await waitFor(() => expect(screen.getByText("Room Workspace")).toBeTruthy());
     expect(screen.getAllByText("Veg Room").length).toBeGreaterThan(0);
     expect(screen.getByText(/Type: veg/)).toBeTruthy();
+    expect(screen.getByText(/Zone: North bench/)).toBeTruthy();
+    expect(screen.getByText(/Stage: veg/)).toBeTruthy();
+  });
+
+  it("creates manual facility rooms with zone and stage context", async () => {
+    const screen = render(<FacilityRoomsTab />);
+
+    await waitFor(() => expect(screen.getByText("New Room")).toBeTruthy());
+
+    fireEvent.changeText(screen.getByLabelText("New room name"), "Clone Room A");
+    fireEvent.changeText(screen.getByLabelText("New room zone or area"), "North bench");
+    fireEvent.press(screen.getByLabelText("Set new room type to Clone"));
+    fireEvent.press(screen.getByLabelText("Set new room stage to clone"));
+    fireEvent.press(screen.getByLabelText("Set new room tracking mode to individual"));
+    fireEvent.press(screen.getByLabelText("Create Room"));
+
+    await waitFor(() =>
+      expect(mockCreateRoom).toHaveBeenCalledWith("facility-1", {
+        name: "Clone Room A",
+        roomType: "clone",
+        trackingMode: "individual",
+        zoneName: "North bench",
+        stage: "clone"
+      })
+    );
   });
 
   it("cleans provider/controller prefixes when suggesting imported facility rooms", async () => {

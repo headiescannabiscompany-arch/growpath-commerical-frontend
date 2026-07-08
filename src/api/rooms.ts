@@ -7,6 +7,8 @@ export type Room = {
   createdAt: string;
   roomType?: string;
   trackingMode?: string;
+  zoneName?: string;
+  zoneId?: string;
   stage?: string;
   lastActivityAt?: string;
   plantCount?: number;
@@ -45,7 +47,14 @@ export async function fetchRooms(facilityId: string): Promise<Room[]> {
 
 export async function createRoom(
   facilityId: string,
-  data: { name: string; roomType?: string; trackingMode?: string }
+  data: {
+    name: string;
+    roomType?: string;
+    trackingMode?: string;
+    zoneName?: string;
+    zoneId?: string;
+    stage?: string;
+  }
 ) {
   const createRes = await apiRequest(endpoints.rooms(facilityId), {
     method: "POST",

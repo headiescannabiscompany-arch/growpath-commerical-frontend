@@ -259,6 +259,8 @@ export default function FacilityRoomsTab() {
     useState<(typeof ROOM_TYPES)[number]["value"]>("greenhouse");
   const [roomTrackingMode, setRoomTrackingMode] =
     useState<(typeof TRACKING_MODES)[number]>("batch");
+  const [roomZoneName, setRoomZoneName] = useState("");
+  const [roomStage, setRoomStage] = useState("");
 
   const [equipmentName, setEquipmentName] = useState("");
   const [equipmentType, setEquipmentType] = useState("light");
@@ -366,9 +368,13 @@ export default function FacilityRoomsTab() {
       await createRoom(facilityId, {
         name: roomName.trim(),
         roomType: roomType.trim() || undefined,
-        trackingMode: roomTrackingMode
+        trackingMode: roomTrackingMode,
+        zoneName: roomZoneName.trim() || undefined,
+        stage: roomStage.trim() || undefined
       });
       setRoomName("");
+      setRoomZoneName("");
+      setRoomStage("");
       setFeedback("Room created.");
       await load({ refresh: true });
     } catch (e) {
@@ -666,6 +672,13 @@ export default function FacilityRoomsTab() {
                 accessibilityLabel="New room name"
                 placeholder="Room name"
               />
+              <TextInput
+                value={roomZoneName}
+                onChangeText={setRoomZoneName}
+                style={styles.input}
+                accessibilityLabel="New room zone or area"
+                placeholder="Zone or area, optional"
+              />
               <View style={styles.pillRow}>
                 {ROOM_TYPES.map((type) => (
                   <Pressable
@@ -682,6 +695,26 @@ export default function FacilityRoomsTab() {
                       ]}
                     >
                       {type.label}
+                    </Text>
+                  </Pressable>
+                ))}
+              </View>
+              <View style={styles.pillRow}>
+                {CYCLE_STAGES.filter((stage) => stage !== "complete").map((stage) => (
+                  <Pressable
+                    key={stage}
+                    onPress={() => setRoomStage(roomStage === stage ? "" : stage)}
+                    accessibilityRole="button"
+                    accessibilityLabel={`Set new room stage to ${stage}`}
+                    style={[styles.pill, roomStage === stage && styles.pillSelected]}
+                  >
+                    <Text
+                      style={[
+                        styles.pillText,
+                        roomStage === stage && styles.pillTextSelected
+                      ]}
+                    >
+                      {stage}
                     </Text>
                   </Pressable>
                 ))}
@@ -759,6 +792,8 @@ export default function FacilityRoomsTab() {
               <Text style={styles.muted}>
                 Type: {activeRoom.roomType || "n/a"} | Tracking:{" "}
                 {activeRoom.trackingMode || "batch"}
+                {activeRoom.zoneName ? ` | Zone: ${activeRoom.zoneName}` : ""}
+                {activeRoom.stage ? ` | Stage: ${activeRoom.stage}` : ""}
               </Text>
               <View style={styles.pillRow}>
                 {TRACKING_MODES.map((mode) => (

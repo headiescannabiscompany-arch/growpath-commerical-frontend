@@ -516,6 +516,7 @@ Completed and pushed:
 240. Shared feed placement policy no longer exposes a forum-highlight switch, and the dead feed-folder forum highlight components were removed so Feed rails can only render campaign/ad placements while Forum remains the discussion surface.
 241. Forum API route constants now expose canonical `LATEST`, `TRENDING`, and `FOLLOWING` names for discussion thread lists, with legacy `FEED_*` constants retained only as aliases so old callers cannot confuse Forum/Q&A lists with Feed campaigns.
 242. Canonical commercial evidence-run wrappers now pass `commercial-evidence-runs`, create, and detail route keys into the shared AppPage shell, preserving root/no-back and nested/back behavior without exposing old commercial-grow route-key names.
+243. Facility manual room creation now captures optional zone/area and stage context, stores those fields through the room API, and displays them on the selected room workspace so Rooms/Zones setup is not limited to imported controller data.
 
 ## Working Rule For Codex
 
