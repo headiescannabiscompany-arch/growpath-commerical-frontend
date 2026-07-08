@@ -585,7 +585,8 @@ describe("commercial workflow pages", () => {
               trialName: "Seedling Safety",
               purpose: "seedling_safety",
               status: "planned",
-              productId: "product-1"
+              productId: "product-1",
+              growId: "grow-1"
             }
           ]
         });
@@ -1836,6 +1837,10 @@ describe("commercial workflow pages", () => {
 
     await waitFor(() => expect(screen.getByText("Seedling Safety")).toBeTruthy());
     expect(screen.getByText("Open Detail")).toBeTruthy();
+    expect(screen.getByText("Open Evidence Run")).toBeTruthy();
+    expect(
+      screen.UNSAFE_getByProps({ href: "/home/commercial/evidence-runs/grow-1" })
+    ).toBeTruthy();
 
     fireEvent.changeText(screen.getByLabelText("Product trial name"), "Bloom Trial");
     fireEvent.changeText(

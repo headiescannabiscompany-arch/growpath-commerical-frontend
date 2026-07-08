@@ -31,6 +31,10 @@ function productLineRecordId(line: ProductLine) {
   return String(line.id ?? line._id ?? line.name ?? "").trim();
 }
 
+function linkedEvidenceRunId(trial: ProductTrial) {
+  return String(trial.growId ?? "").trim();
+}
+
 export default function CommercialTrialsRoute() {
   const [trials, setTrials] = useState<ProductTrial[]>([]);
   const [productLines, setProductLines] = useState<ProductLine[]>([]);
@@ -279,38 +283,59 @@ export default function CommercialTrialsRoute() {
           </View>
         ) : trials.length ? (
           <View style={styles.list}>
-            {trials.map((trial, index) => (
-              <View key={idOf(trial, index)} style={styles.row}>
-                <Text style={styles.rowTitle}>
-                  {trial.trialName || trial.name || "Untitled trial"}
-                </Text>
-                <Text style={styles.muted}>
-                  {[trial.purpose, trial.status || "planned"].filter(Boolean).join(" | ")}
-                </Text>
-                <Text style={styles.body} numberOfLines={2}>
-                  {[
-                    trial.productId && `Product ${trial.productId}`,
-                    trial.batchId && `Batch ${trial.batchId}`,
-                    trial.growId && `Evidence run ${trial.growId}`,
-                    trial.cultivar
-                  ]
-                    .filter(Boolean)
-                    .join(" | ") || "No linked evidence yet"}
-                </Text>
-                <View style={styles.headerActions}>
-                  <Link
-                    href={
-                      `/home/commercial/trials/${encodeURIComponent(idOf(trial, index))}` as any
-                    }
-                    asChild
-                  >
-                    <Pressable style={styles.outlineButton}>
-                      <Text style={styles.outlineText}>Open Detail</Text>
-                    </Pressable>
-                  </Link>
+            {trials.map((trial, index) => {
+              const evidenceRunId = linkedEvidenceRunId(trial);
+              return (
+                <View key={idOf(trial, index)} style={styles.row}>
+                  <Text style={styles.rowTitle}>
+                    {trial.trialName || trial.name || "Untitled trial"}
+                  </Text>
+                  <Text style={styles.muted}>
+                    {[trial.purpose, trial.status || "planned"]
+                      .filter(Boolean)
+                      .join(" | ")}
+                  </Text>
+                  <Text style={styles.body} numberOfLines={2}>
+                    {[
+                      trial.productId && `Product ${trial.productId}`,
+                      trial.batchId && `Batch ${trial.batchId}`,
+                      evidenceRunId && `Evidence run ${evidenceRunId}`,
+                      trial.cultivar
+                    ]
+                      .filter(Boolean)
+                      .join(" | ") || "No linked evidence yet"}
+                  </Text>
+                  <View style={styles.headerActions}>
+                    <Link
+                      href={
+                        `/home/commercial/trials/${encodeURIComponent(
+                          idOf(trial, index)
+                        )}` as any
+                      }
+                      asChild
+                    >
+                      <Pressable style={styles.outlineButton}>
+                        <Text style={styles.outlineText}>Open Detail</Text>
+                      </Pressable>
+                    </Link>
+                    {evidenceRunId ? (
+                      <Link
+                        href={
+                          `/home/commercial/evidence-runs/${encodeURIComponent(
+                            evidenceRunId
+                          )}` as any
+                        }
+                        asChild
+                      >
+                        <Pressable style={styles.outlineButton}>
+                          <Text style={styles.outlineText}>Open Evidence Run</Text>
+                        </Pressable>
+                      </Link>
+                    ) : null}
+                  </View>
                 </View>
-              </View>
-            ))}
+              );
+            })}
           </View>
         ) : (
           <Text style={styles.muted}>No product trials yet.</Text>
