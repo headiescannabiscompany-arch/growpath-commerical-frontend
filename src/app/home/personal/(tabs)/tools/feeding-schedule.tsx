@@ -3,7 +3,7 @@ import { useLocalSearchParams } from "expo-router";
 import { Pressable, ScrollView, StyleSheet, Text, TextInput, View } from "react-native";
 
 import { generateSchedule } from "@/api/feeding";
-import BackButton from "@/components/nav/BackButton";
+import { ScreenBoundary } from "@/components/ScreenBoundary";
 import { CAPABILITY_KEYS, useEntitlements } from "@/entitlements";
 import LockedToolCard from "@/features/personal/tools/LockedToolCard";
 import {
@@ -185,233 +185,238 @@ export default function FeedingScheduleToolScreen() {
   }
 
   return (
-    <ScrollView contentContainerStyle={styles.container}>
-      <BackButton />
-      <Text style={styles.title}>AI Feeding Schedule</Text>
-      <Text style={styles.subtitle}>
-        Generate a feeding plan from nutrient, medium, strain, and schedule context.
-      </Text>
-      <PersonalFeedPlacement
-        placement="top"
-        routeKey="personal_tools_feeding_schedule"
-        longContent
-      />
-      {growId ? <Text style={styles.context}>Grow context: {growId}</Text> : null}
-      <ToolPlantContextPicker
-        plants={plantContext.plants}
-        plantId={plantContext.plantId}
-        selectedPlant={plantContext.selectedPlant}
-        onSelect={plantContext.setPlantId}
-      />
-
-      <Text style={styles.label}>Product or nutrient line</Text>
-      <TextInput
-        accessibilityLabel="Feeding product or nutrient line"
-        style={styles.input}
-        value={productName}
-        onChangeText={setProductName}
-      />
-      <Text style={styles.label}>Grow medium</Text>
-      <TextInput
-        accessibilityLabel="Feeding grow medium"
-        style={styles.input}
-        value={medium}
-        onChangeText={setMedium}
-      />
-      <Text style={styles.label}>Strain type</Text>
-      <TextInput
-        accessibilityLabel="Feeding strain type"
-        style={styles.input}
-        value={strainType}
-        onChangeText={setStrainType}
-      />
-      <Text style={styles.label}>Current stage</Text>
-      <TextInput
-        accessibilityLabel="Feeding current stage"
-        style={styles.input}
-        value={currentStage}
-        onChangeText={setCurrentStage}
-      />
-      <Text style={styles.label}>Experience</Text>
-      <TextInput
-        accessibilityLabel="Feeding experience"
-        style={styles.input}
-        value={experience}
-        onChangeText={setExperience}
-      />
-      <Text style={styles.label}>Total weeks</Text>
-      <TextInput
-        accessibilityLabel="Feeding total weeks"
-        style={styles.input}
-        value={weeks}
-        onChangeText={setWeeks}
-        keyboardType="numeric"
-      />
-      <Text style={styles.label}>Input EC</Text>
-      <TextInput
-        accessibilityLabel="Feeding input EC"
-        style={styles.input}
-        value={inputEC}
-        onChangeText={setInputEC}
-        keyboardType="numeric"
-      />
-      <Text style={styles.label}>Runoff EC</Text>
-      <TextInput
-        accessibilityLabel="Feeding runoff EC"
-        style={styles.input}
-        value={runoffEC}
-        onChangeText={setRunoffEC}
-        keyboardType="numeric"
-      />
-      <Text style={styles.label}>Input pH</Text>
-      <TextInput
-        accessibilityLabel="Feeding input pH"
-        style={styles.input}
-        value={inputPH}
-        onChangeText={setInputPH}
-        keyboardType="numeric"
-      />
-      <Text style={styles.label}>Runoff pH</Text>
-      <TextInput
-        accessibilityLabel="Feeding runoff pH"
-        style={styles.input}
-        value={runoffPH}
-        onChangeText={setRunoffPH}
-        keyboardType="numeric"
-      />
-      <Text style={styles.label}>Water source</Text>
-      <TextInput
-        accessibilityLabel="Feeding water source"
-        style={styles.input}
-        value={waterSource}
-        onChangeText={setWaterSource}
-        placeholder="RO, city, well, rain"
-      />
-
-      {!enabled ? (
-        <LockedToolCard
-          title="AI Feeding Schedule"
-          capability={CAPABILITY_KEYS.FEEDING_SCHEDULE}
-          description="Generate stage-aware feeding plans after this capability is enabled for the account."
-        />
-      ) : null}
-      <Pressable
-        accessibilityRole="button"
-        accessibilityLabel="Generate feeding schedule"
-        style={[styles.button, (!enabled || running) && styles.disabled]}
-        disabled={!enabled || running}
-        onPress={run}
-      >
-        <Text style={styles.buttonText}>
-          {running ? "Generating..." : "Generate Schedule"}
+    <ScreenBoundary
+      title="AI Feeding Schedule"
+      showBack
+      backFallbackHref="/home/personal/tools"
+    >
+      <ScrollView contentContainerStyle={styles.container}>
+        <Text style={styles.title}>AI Feeding Schedule</Text>
+        <Text style={styles.subtitle}>
+          Generate a feeding plan from nutrient, medium, strain, and schedule context.
         </Text>
-      </Pressable>
+        <PersonalFeedPlacement
+          placement="top"
+          routeKey="personal_tools_feeding_schedule"
+          longContent
+        />
+        {growId ? <Text style={styles.context}>Grow context: {growId}</Text> : null}
+        <ToolPlantContextPicker
+          plants={plantContext.plants}
+          plantId={plantContext.plantId}
+          selectedPlant={plantContext.selectedPlant}
+          onSelect={plantContext.setPlantId}
+        />
 
-      <PersonalFeedPlacement
-        placement="middle"
-        routeKey="personal_tools_feeding_schedule"
-        longContent
-      />
+        <Text style={styles.label}>Product or nutrient line</Text>
+        <TextInput
+          accessibilityLabel="Feeding product or nutrient line"
+          style={styles.input}
+          value={productName}
+          onChangeText={setProductName}
+        />
+        <Text style={styles.label}>Grow medium</Text>
+        <TextInput
+          accessibilityLabel="Feeding grow medium"
+          style={styles.input}
+          value={medium}
+          onChangeText={setMedium}
+        />
+        <Text style={styles.label}>Strain type</Text>
+        <TextInput
+          accessibilityLabel="Feeding strain type"
+          style={styles.input}
+          value={strainType}
+          onChangeText={setStrainType}
+        />
+        <Text style={styles.label}>Current stage</Text>
+        <TextInput
+          accessibilityLabel="Feeding current stage"
+          style={styles.input}
+          value={currentStage}
+          onChangeText={setCurrentStage}
+        />
+        <Text style={styles.label}>Experience</Text>
+        <TextInput
+          accessibilityLabel="Feeding experience"
+          style={styles.input}
+          value={experience}
+          onChangeText={setExperience}
+        />
+        <Text style={styles.label}>Total weeks</Text>
+        <TextInput
+          accessibilityLabel="Feeding total weeks"
+          style={styles.input}
+          value={weeks}
+          onChangeText={setWeeks}
+          keyboardType="numeric"
+        />
+        <Text style={styles.label}>Input EC</Text>
+        <TextInput
+          accessibilityLabel="Feeding input EC"
+          style={styles.input}
+          value={inputEC}
+          onChangeText={setInputEC}
+          keyboardType="numeric"
+        />
+        <Text style={styles.label}>Runoff EC</Text>
+        <TextInput
+          accessibilityLabel="Feeding runoff EC"
+          style={styles.input}
+          value={runoffEC}
+          onChangeText={setRunoffEC}
+          keyboardType="numeric"
+        />
+        <Text style={styles.label}>Input pH</Text>
+        <TextInput
+          accessibilityLabel="Feeding input pH"
+          style={styles.input}
+          value={inputPH}
+          onChangeText={setInputPH}
+          keyboardType="numeric"
+        />
+        <Text style={styles.label}>Runoff pH</Text>
+        <TextInput
+          accessibilityLabel="Feeding runoff pH"
+          style={styles.input}
+          value={runoffPH}
+          onChangeText={setRunoffPH}
+          keyboardType="numeric"
+        />
+        <Text style={styles.label}>Water source</Text>
+        <TextInput
+          accessibilityLabel="Feeding water source"
+          style={styles.input}
+          value={waterSource}
+          onChangeText={setWaterSource}
+          placeholder="RO, city, well, rain"
+        />
 
-      <ToolResultSurface
-        title="Feeding schedule"
-        status={result ? "AI ENDPOINT" : "READY"}
-        summary={notes || "Run the endpoint to generate a schedule."}
-        metrics={[
-          { key: "weeks", label: "Requested weeks", value: weeks || "0" },
-          { key: "rows", label: "Schedule rows", value: String(scheduleRows.length) },
-          { key: "medium", label: "Medium", value: medium || "Unspecified" },
-          { key: "stage", label: "Stage", value: currentStage || "Unspecified" },
-          {
-            key: "risk",
-            label: "Review risk",
-            value: review.riskLevel.toUpperCase(),
-            detail: `${review.warnings.length} warnings`
+        {!enabled ? (
+          <LockedToolCard
+            title="AI Feeding Schedule"
+            capability={CAPABILITY_KEYS.FEEDING_SCHEDULE}
+            description="Generate stage-aware feeding plans after this capability is enabled for the account."
+          />
+        ) : null}
+        <Pressable
+          accessibilityRole="button"
+          accessibilityLabel="Generate feeding schedule"
+          style={[styles.button, (!enabled || running) && styles.disabled]}
+          disabled={!enabled || running}
+          onPress={run}
+        >
+          <Text style={styles.buttonText}>
+            {running ? "Generating..." : "Generate Schedule"}
+          </Text>
+        </Pressable>
+
+        <PersonalFeedPlacement
+          placement="middle"
+          routeKey="personal_tools_feeding_schedule"
+          longContent
+        />
+
+        <ToolResultSurface
+          title="Feeding schedule"
+          status={result ? "AI ENDPOINT" : "READY"}
+          summary={notes || "Run the endpoint to generate a schedule."}
+          metrics={[
+            { key: "weeks", label: "Requested weeks", value: weeks || "0" },
+            { key: "rows", label: "Schedule rows", value: String(scheduleRows.length) },
+            { key: "medium", label: "Medium", value: medium || "Unspecified" },
+            { key: "stage", label: "Stage", value: currentStage || "Unspecified" },
+            {
+              key: "risk",
+              label: "Review risk",
+              value: review.riskLevel.toUpperCase(),
+              detail: `${review.warnings.length} warnings`
+            }
+          ]}
+          details={
+            scheduleRows.length ? (
+              <View style={styles.rows}>
+                {scheduleRows.slice(0, 8).map((row, index) => (
+                  <Text key={`${row.week || index}`} style={styles.rowText}>
+                    Week {row.week ?? index + 1}: {row.stage || "stage"} |{" "}
+                    {row.feed?.amountPerGallon || row.amount || "dose pending"}
+                  </Text>
+                ))}
+              </View>
+            ) : undefined
           }
-        ]}
-        details={
-          scheduleRows.length ? (
-            <View style={styles.rows}>
-              {scheduleRows.slice(0, 8).map((row, index) => (
-                <Text key={`${row.week || index}`} style={styles.rowText}>
-                  Week {row.week ?? index + 1}: {row.stage || "stage"} |{" "}
-                  {row.feed?.amountPerGallon || row.amount || "dose pending"}
-                </Text>
-              ))}
-            </View>
-          ) : undefined
-        }
-        assumptions={[
-          "Backend schedule output is authoritative for entitlement and endpoint behavior.",
-          ...review.warnings,
-          ...review.recommendations,
-          "Confirm product label rates, local regulations, runoff, EC, and plant response before applying."
-        ]}
-        actions={
-          result && growId
-            ? [
-                {
-                  key: "save-log",
-                  label: "Save to Grow Log",
-                  onPress: saveLog,
-                  pendingLabel: "Saving..."
-                },
-                {
-                  key: "create-task",
-                  label: "Create Feeding Review Task",
-                  variant: "secondary",
-                  pendingLabel: "Creating...",
-                  onPress: async () => {
-                    const taskResult = await saveToolRunAndCreateTask({
-                      growId,
-                      ...plantContext.toolRunContext,
-                      toolKey: "feeding-schedule",
-                      input: {
-                        nutrientData: { productName: productName.trim() },
-                        growMedium: medium.trim(),
-                        strainType: strainType.trim(),
-                        experience: experience.trim(),
-                        weeks: Number(weeks),
-                        stage: currentStage.trim(),
-                        inputEC: Number(inputEC),
-                        runoffEC: Number(runoffEC),
-                        inputPH: Number(inputPH),
-                        runoffPH: Number(runoffPH),
-                        waterSource: waterSource.trim()
-                      },
-                      output: result,
-                      title: "Review generated feeding schedule",
-                      description: [
-                        `Product: ${productName.trim() || "Unspecified"}`,
-                        `Medium: ${medium}`,
-                        `Stage: ${currentStage}`,
-                        `Risk: ${review.riskLevel}`,
-                        `Rows: ${scheduleRows.length}`,
-                        ...review.warnings.map((warning) => `Warning: ${warning}`),
-                        notes
-                      ]
-                        .filter(Boolean)
-                        .join("\n"),
-                      priority: "medium",
-                      dueDate: dueTomorrow()
-                    });
-                    if (!taskResult.ok) throw new Error(taskResult.error);
-                    setFeedback("Created feeding review task.");
+          assumptions={[
+            "Backend schedule output is authoritative for entitlement and endpoint behavior.",
+            ...review.warnings,
+            ...review.recommendations,
+            "Confirm product label rates, local regulations, runoff, EC, and plant response before applying."
+          ]}
+          actions={
+            result && growId
+              ? [
+                  {
+                    key: "save-log",
+                    label: "Save to Grow Log",
+                    onPress: saveLog,
+                    pendingLabel: "Saving..."
+                  },
+                  {
+                    key: "create-task",
+                    label: "Create Feeding Review Task",
+                    variant: "secondary",
+                    pendingLabel: "Creating...",
+                    onPress: async () => {
+                      const taskResult = await saveToolRunAndCreateTask({
+                        growId,
+                        ...plantContext.toolRunContext,
+                        toolKey: "feeding-schedule",
+                        input: {
+                          nutrientData: { productName: productName.trim() },
+                          growMedium: medium.trim(),
+                          strainType: strainType.trim(),
+                          experience: experience.trim(),
+                          weeks: Number(weeks),
+                          stage: currentStage.trim(),
+                          inputEC: Number(inputEC),
+                          runoffEC: Number(runoffEC),
+                          inputPH: Number(inputPH),
+                          runoffPH: Number(runoffPH),
+                          waterSource: waterSource.trim()
+                        },
+                        output: result,
+                        title: "Review generated feeding schedule",
+                        description: [
+                          `Product: ${productName.trim() || "Unspecified"}`,
+                          `Medium: ${medium}`,
+                          `Stage: ${currentStage}`,
+                          `Risk: ${review.riskLevel}`,
+                          `Rows: ${scheduleRows.length}`,
+                          ...review.warnings.map((warning) => `Warning: ${warning}`),
+                          notes
+                        ]
+                          .filter(Boolean)
+                          .join("\n"),
+                        priority: "medium",
+                        dueDate: dueTomorrow()
+                      });
+                      if (!taskResult.ok) throw new Error(taskResult.error);
+                      setFeedback("Created feeding review task.");
+                    }
                   }
-                }
-              ]
-            : []
-        }
-        feedback={feedback}
-        contextMessage={!growId ? "Select a grow to save this schedule." : undefined}
-      />
+                ]
+              : []
+          }
+          feedback={feedback}
+          contextMessage={!growId ? "Select a grow to save this schedule." : undefined}
+        />
 
-      <PersonalFeedPlacement
-        placement="bottom"
-        routeKey="personal_tools_feeding_schedule"
-        longContent
-      />
-    </ScrollView>
+        <PersonalFeedPlacement
+          placement="bottom"
+          routeKey="personal_tools_feeding_schedule"
+          longContent
+        />
+      </ScrollView>
+    </ScreenBoundary>
   );
 }
 

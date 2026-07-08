@@ -466,6 +466,7 @@ Completed and pushed:
 190. Facility SOP run start, presets, compare, compare-result, and run detail pages now use shared back controls with SOP-root/compare fallbacks, with focused coverage for the nested SOP workflow navigation rule.
 191. Commercial profile support guidance now uses the live `support@growpathai.com` mailbox instead of a fake example placeholder, with route coverage confirming the brand profile hydrates the real support address while still allowing owners to override it.
 192. Legacy Personal Bud Rot Risk and Harvest Estimator tool pages now use the shared back-control boundary with `/home/personal/tools` fallbacks, with focused coverage proving those nested tools return to the Tools hub instead of hand-coding standalone back buttons.
+193. Legacy Personal AI Feeding Schedule and Watering Planner pages now use the shared back-control boundary with `/home/personal/tools` fallbacks, extending focused coverage across grow-action tools that can create logs and tasks.
 
 ## Working Rule For Codex
 

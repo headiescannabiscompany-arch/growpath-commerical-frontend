@@ -2,7 +2,9 @@ import React from "react";
 import { render } from "@testing-library/react-native";
 
 import BudRotRiskToolScreen from "@/app/home/personal/(tabs)/tools/bud-rot-risk";
+import FeedingScheduleToolScreen from "@/app/home/personal/(tabs)/tools/feeding-schedule";
 import HarvestEstimatorScreen from "@/app/home/personal/(tabs)/tools/harvest-estimator";
+import WateringToolScreen from "@/app/home/personal/(tabs)/tools/watering";
 
 const mockCan = jest.fn();
 
@@ -39,11 +41,16 @@ jest.mock("@/components/feed/PersonalFeedPlacement", () => {
 jest.mock("@/entitlements", () => ({
   CAPABILITY_KEYS: {
     DIAGNOSE_ADVANCED: "DIAGNOSE_ADVANCED",
+    FEEDING_SCHEDULE: "FEEDING_SCHEDULE",
     TOOL_HARVEST_ESTIMATOR: "TOOL_HARVEST_ESTIMATOR"
   },
   useEntitlements: () => ({
     can: mockCan
   })
+}));
+
+jest.mock("@/api/feeding", () => ({
+  generateSchedule: jest.fn()
 }));
 
 jest.mock("@/features/personal/tools/ToolPlantContextPicker", () => {
@@ -87,5 +94,19 @@ describe("legacy personal tool shared back routes", () => {
 
     expect(screen.getByText("Shared Back /home/personal/tools")).toBeTruthy();
     expect(screen.getByText("Harvest Estimator")).toBeTruthy();
+  });
+
+  it("uses shared back behavior on AI Feeding Schedule", () => {
+    const screen = render(<FeedingScheduleToolScreen />);
+
+    expect(screen.getByText("Shared Back /home/personal/tools")).toBeTruthy();
+    expect(screen.getByText("AI Feeding Schedule")).toBeTruthy();
+  });
+
+  it("uses shared back behavior on Watering Planner", () => {
+    const screen = render(<WateringToolScreen />);
+
+    expect(screen.getByText("Shared Back /home/personal/tools")).toBeTruthy();
+    expect(screen.getByText("Watering Planner")).toBeTruthy();
   });
 });
