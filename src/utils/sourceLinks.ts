@@ -74,7 +74,10 @@ export function sourceObjectHref(source: SourceLike) {
 
   if (sourceType === "product_batch") {
     if (workspace === "facility") return "/home/facility/inventory";
-    if (workspace === "commercial") return "/home/commercial/batch-planner";
+    if (workspace === "commercial")
+      return sourceId
+        ? `/home/commercial/batch-planner/${encoded(sourceId)}`
+        : "/home/commercial/batch-planner";
     return productId ? `/store?q=${encoded(productId)}` : "/store";
   }
 
