@@ -155,7 +155,7 @@ const manualChecks = [
       "Open a public brand profile and public storefront and confirm Product Lines appear with grow interests and Browse Line actions.",
       "Open a Product Line Browse Line link and confirm /store/:slug?line=:lineId filters product cards and offers View All Products.",
       "Open Commercial > Product Trials and verify private evidence-run list, create, and detail actions use /home/commercial/evidence-runs, /home/commercial/evidence-runs/new, and /home/commercial/evidence-runs/:id instead of exposing a commercial grow workspace.",
-      "From Commercial tasks, Schedule, Alerts, and Notifications, open a product-batch source that also has a product id and confirm it opens /home/commercial/products/:productId?batchId=:batchId instead of treating the batch as a separate app.",
+      "From Commercial tasks, Schedule, Alerts, and Notifications, open a product-batch source that also has a product id and confirm it opens /home/commercial/products/:productId?batchId=:batchId, shows focused product-batch context in Linked Evidence, and offers an Open Focused Batch action instead of treating the batch as a separate app.",
       "Open Commercial > Courses and a course detail; verify thumbnail, banner, category, grow interests, setup warnings, and paid Stripe readiness before publish.",
       "Create storefront, product, course, live, and feed setup tasks and verify task detail shows source links, related object IDs, grow interests, schedule fields, and reminder context.",
       "Open Commercial > Lives; verify Twitch channel/embed/EventSub warnings and reminder-plan language.",

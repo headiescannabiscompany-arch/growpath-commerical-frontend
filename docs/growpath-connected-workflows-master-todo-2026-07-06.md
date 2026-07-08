@@ -579,6 +579,7 @@ Completed and pushed:
 303. Deferred user verification now runs the latest CommercialBanner and LiveSession regressions and asks the human/browser pass to confirm product-linked batch routing plus public live-session campaign/task/schedule/notification entry points.
 304. Storefront owner and Commercial Profile support-email placeholders now read from the shared live support-contact config instead of duplicating `support@growpathai.com`, keeping support alias changes centralized.
 305. Commercial Product Detail now reads `batchId` route context, shows the focused product batch in Linked Evidence, and links directly to the focused Batch Planner detail so product-batch tasks/alerts/schedule items keep batches/lots inside the product workspace while preserving full production-detail access.
+306. Deferred user verification now checks not only product-linked batch routing but also the Product Detail focused-batch context and Open Focused Batch action, so the browser pass verifies batches/lots stay attached to products while still exposing production records.
 
 ## Working Rule For Codex
 
