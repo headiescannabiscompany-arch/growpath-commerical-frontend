@@ -16,6 +16,7 @@ import { fetchPublicStorefront } from "@/api/storefront";
 import { recordCommercialAnalyticsEvent } from "@/api/commercialAnalytics";
 import AppCard from "@/components/layout/AppCard";
 import AppPage from "@/components/layout/AppPage";
+import { publicGrowInterests } from "@/utils/publicCommerce";
 import { sharePublicLink } from "@/utils/publicLinks";
 
 function asArray(value: any) {
@@ -322,6 +323,11 @@ export default function PublicProductRoute() {
             {product.shortDescription ? (
               <Text style={styles.bodyText}>{product.shortDescription}</Text>
             ) : null}
+            {publicGrowInterests(product).length ? (
+              <Text style={styles.interests}>
+                Interests: {publicGrowInterests(product).join(", ")}
+              </Text>
+            ) : null}
             <Text style={styles.price}>{money(product)}</Text>
 
             <View style={styles.actionRow}>
@@ -427,6 +433,11 @@ export default function PublicProductRoute() {
                         {course.summary || course.description}
                       </Text>
                     ) : null}
+                    {publicGrowInterests(course).length ? (
+                      <Text style={styles.interests}>
+                        Interests: {publicGrowInterests(course).join(", ")}
+                      </Text>
+                    ) : null}
                   </View>
                   <Link
                     href={
@@ -460,6 +471,11 @@ export default function PublicProductRoute() {
                     </Text>
                     {campaign?.summary || campaign?.body ? (
                       <Text style={styles.meta}>{campaign.summary || campaign.body}</Text>
+                    ) : null}
+                    {publicGrowInterests(campaign).length ? (
+                      <Text style={styles.interests}>
+                        Interests: {publicGrowInterests(campaign).join(", ")}
+                      </Text>
                     ) : null}
                   </View>
                   <Link href={returnFeedHref as any} asChild>
@@ -565,6 +581,11 @@ export default function PublicProductRoute() {
                 >
                   <Pressable style={styles.relatedRow}>
                     <Text style={styles.relatedName}>{item?.name || "Product"}</Text>
+                    {publicGrowInterests(item).length ? (
+                      <Text style={styles.interests}>
+                        Interests: {publicGrowInterests(item).join(", ")}
+                      </Text>
+                    ) : null}
                     <Text style={styles.meta}>{money(item)}</Text>
                   </Pressable>
                 </Link>
@@ -592,6 +613,7 @@ const styles = StyleSheet.create({
   cardTitle: { color: "#111827", fontSize: 18, fontWeight: "800", marginBottom: 8 },
   bodyText: { color: "#475569", lineHeight: 20, marginBottom: 10 },
   meta: { color: "#64748B", lineHeight: 19 },
+  interests: { color: "#047857", fontSize: 12, fontWeight: "800" },
   price: { color: "#166534", fontSize: 18, fontWeight: "800", marginTop: 4 },
   warning: { color: "#92400E", fontWeight: "700", lineHeight: 20 },
   specGrid: { gap: 8 },

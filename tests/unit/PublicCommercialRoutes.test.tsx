@@ -219,6 +219,7 @@ describe("public commercial routes", () => {
       expect(mockFetchPublicStorefront).toHaveBeenCalledWith("living-soil-labs")
     );
     expect(screen.getAllByText("Veg Mix").length).toBeGreaterThan(0);
+    expect(screen.getByText("Interests: living soil, veg")).toBeTruthy();
     expect(screen.getByText("Living Soil Labs")).toBeTruthy();
     expect(screen.getByText("Topdress during veg and water in.")).toBeTruthy();
     expect(screen.getByText("Label / Use Information")).toBeTruthy();
@@ -237,9 +238,11 @@ describe("public commercial routes", () => {
     ).toBeTruthy();
     expect(screen.getByText("Related Courses")).toBeTruthy();
     expect(screen.getByText("Using Veg Mix")).toBeTruthy();
+    expect(screen.getByText("Interests: living soil, product education")).toBeTruthy();
     expect(screen.getByText("Open Course")).toBeTruthy();
     expect(screen.getByText("Promoted Product Campaigns")).toBeTruthy();
     expect(screen.getByText("Trial update")).toBeTruthy();
+    expect(screen.getByText("Interests: living soil, product trials")).toBeTruthy();
     expect(screen.getAllByText("Open Campaign").length).toBeGreaterThan(0);
     expect(screen.getByText("Product Forum / Q&A")).toBeTruthy();
     expect(screen.getByText("Veg Mix Support")).toBeTruthy();
