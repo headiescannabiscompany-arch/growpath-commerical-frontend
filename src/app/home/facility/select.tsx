@@ -17,6 +17,7 @@ import { endpoints } from "@/api/endpoints";
 import { useAuth } from "@/auth/AuthContext";
 import { useApiErrorHandler } from "@/hooks/useApiErrorHandler";
 import { useFacility } from "@/state/useFacility";
+import { radius } from "@/theme/theme";
 
 type AnyRec = Record<string, any>;
 
@@ -247,7 +248,7 @@ const styles = StyleSheet.create({
     alignItems: "center",
     gap: 12,
     padding: 14,
-    borderRadius: 14,
+    borderRadius: radius.card,
     borderWidth: 1,
     borderColor: "rgba(0,0,0,0.12)",
     backgroundColor: "white"
@@ -268,7 +269,7 @@ const styles = StyleSheet.create({
   primaryButton: {
     backgroundColor: "#166534",
     borderColor: "#166534",
-    borderRadius: 8,
+    borderRadius: radius.card,
     borderWidth: 1,
     paddingHorizontal: 12,
     paddingVertical: 9
@@ -277,7 +278,7 @@ const styles = StyleSheet.create({
   secondaryButton: {
     backgroundColor: "#FFFFFF",
     borderColor: "#CBD5E1",
-    borderRadius: 8,
+    borderRadius: radius.card,
     borderWidth: 1,
     paddingHorizontal: 12,
     paddingVertical: 9
@@ -286,7 +287,7 @@ const styles = StyleSheet.create({
   logoutButton: {
     borderWidth: 1,
     borderColor: "#DC2626",
-    borderRadius: 8,
+    borderRadius: radius.card,
     paddingHorizontal: 12,
     paddingVertical: 8,
     backgroundColor: "#FEF2F2"

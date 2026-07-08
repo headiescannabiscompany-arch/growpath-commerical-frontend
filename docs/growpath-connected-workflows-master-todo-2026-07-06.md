@@ -703,6 +703,7 @@ Completed and pushed:
 427. Facility SOP Runs list/detail/start/presets/compare screens now use the shared 8px card radius token for summary panels, alert cards, run cards, checklist steps, inputs, and SOP actions while preserving status pills, keeping SOP execution visually aligned with the facility task layer.
 428. Facility Audit Logs and Compliance report/AI detail cards now consume the shared 8px card radius token, keeping audit-trail and compliance drilldowns visually aligned with Facility-style records.
 429. Facility Team invite card, email input, invite action, and member rows now consume the shared 8px card radius token, keeping facility role and staff-management setup aligned with the shared visual polish.
+430. Facility Select onboarding rows plus create/request/switch/support/logout actions now consume the shared 8px card radius token, keeping the first facility workspace choice aligned with the shared Facility visual treatment.
 
 ## Working Rule For Codex
 
