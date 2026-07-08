@@ -698,6 +698,7 @@ Completed and pushed:
 422. Facility Rooms controller import preview, room forms, preview rows, create/delete actions, batch-cycle summary, and feedback now consume the shared 8px card radius token while preserving room/status pills, keeping auto-built rooms visually aligned with the shared polish pass.
 423. Facility Tasks root/detail form cards, schedule-linked inputs, create/complete/proof/approval/source actions, task rows, and feedback now consume the shared 8px card radius token while preserving source/status pills, keeping the facility action layer visually aligned with the shared task/calendar polish.
 424. Facility Profile workspace identity cards, workspace/account actions, and logout control now consume the shared 8px card radius token while preserving the Facility palette, keeping account identity and support setup visually aligned with the shared polish pass.
+425. Facility AI Tools linked ToolRun/recipe context panel and tool-entry cards now consume the shared 8px card radius token, keeping AI-over-tools entry points visually aligned with the shared facility polish.
 
 ## Working Rule For Codex
 

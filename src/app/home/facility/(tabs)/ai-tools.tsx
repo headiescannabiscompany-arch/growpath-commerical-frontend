@@ -1,6 +1,7 @@
 import React from "react";
 import { Link, useLocalSearchParams } from "expo-router";
 import { StyleSheet, Text, View } from "react-native";
+import { radius } from "@/theme/theme";
 
 export default function FacilityAiToolsRoute() {
   const params = useLocalSearchParams<{
@@ -95,7 +96,7 @@ const styles = StyleSheet.create({
   contextCard: {
     backgroundColor: "#ECFDF5",
     borderColor: "#86EFAC",
-    borderRadius: 10,
+    borderRadius: radius.card,
     borderWidth: 1,
     padding: 12
   },
@@ -113,7 +114,7 @@ const styles = StyleSheet.create({
   card: {
     borderWidth: 1,
     borderColor: "rgba(0,0,0,0.15)",
-    borderRadius: 12,
+    borderRadius: radius.card,
     padding: 12,
     backgroundColor: "#fff",
     gap: 6
