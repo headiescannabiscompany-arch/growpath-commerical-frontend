@@ -23,6 +23,7 @@ import { ScreenBoundary } from "@/components/ScreenBoundary";
 import { fmtDate } from "@/features/grows/routeUtils";
 import { resolveImageUri } from "@/utils/photoUploads";
 import PersonalFeedPlacement from "@/components/feed/PersonalFeedPlacement";
+import { radius } from "@/theme/theme";
 
 function param(value?: string | string[]) {
   return typeof value === "string" ? value : Array.isArray(value) ? value[0] || "" : "";
@@ -393,7 +394,7 @@ const styles = StyleSheet.create({
     padding: 14,
     borderWidth: 1,
     borderColor: "#E2E8F0",
-    borderRadius: 10,
+    borderRadius: radius.card,
     backgroundColor: "#F8FAFC",
     gap: 8
   },
@@ -401,12 +402,12 @@ const styles = StyleSheet.create({
   notes: { color: "#334155", lineHeight: 20 },
   linkMeta: { color: "#475569", lineHeight: 19 },
   label: { color: "#334155", fontWeight: "800" },
-  input: { borderWidth: 1, borderColor: "#CBD5E1", borderRadius: 9, padding: 10 },
+  input: { borderWidth: 1, borderColor: "#CBD5E1", borderRadius: radius.card, padding: 10 },
   notesInput: {
     minHeight: 130,
     borderWidth: 1,
     borderColor: "#CBD5E1",
-    borderRadius: 9,
+    borderRadius: radius.card,
     padding: 10,
     textAlignVertical: "top"
   },
@@ -433,7 +434,7 @@ const styles = StyleSheet.create({
   photoTile: {
     borderWidth: 1,
     borderColor: "#CBD5E1",
-    borderRadius: 8,
+    borderRadius: radius.card,
     overflow: "hidden",
     backgroundColor: "#FFFFFF"
   },
@@ -450,7 +451,7 @@ const styles = StyleSheet.create({
   row: { flexDirection: "row", flexWrap: "wrap", gap: 8 },
   primaryButton: {
     backgroundColor: "#166534",
-    borderRadius: 9,
+    borderRadius: radius.card,
     paddingHorizontal: 12,
     paddingVertical: 9
   },
@@ -458,7 +459,7 @@ const styles = StyleSheet.create({
   secondaryButton: {
     borderWidth: 1,
     borderColor: "#CBD5E1",
-    borderRadius: 9,
+    borderRadius: radius.card,
     paddingHorizontal: 12,
     paddingVertical: 9
   },
@@ -466,7 +467,7 @@ const styles = StyleSheet.create({
   dangerButton: {
     borderWidth: 1,
     borderColor: "#B91C1C",
-    borderRadius: 9,
+    borderRadius: radius.card,
     paddingHorizontal: 12,
     paddingVertical: 9
   },
@@ -475,7 +476,7 @@ const styles = StyleSheet.create({
   feedback: {
     color: "#334155",
     backgroundColor: "#F1F5F9",
-    borderRadius: 9,
+    borderRadius: radius.card,
     padding: 9,
     fontWeight: "700"
   }

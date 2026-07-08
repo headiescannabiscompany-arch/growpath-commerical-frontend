@@ -658,6 +658,7 @@ Completed and pushed:
 382. Personal Grow Timeline filters, event cards, source-link actions, tags, and empty states now consume the shared 8px card radius token, keeping the source-linked grow history view aligned with the Facility-style visual system.
 383. Personal grow-specific Tasks form, inputs, add button, task cards, source actions, danger actions, and source/priority chips now consume the shared 8px card radius token, keeping grow task workflows aligned with the Facility-style polish while preserving source-link behavior.
 384. Personal Grow Plants form, species/profile inputs, crop-profile actions, empty state, plant cards, and plant quick actions now consume the shared 8px card radius token, extending Facility-style polish to plant-level tracking inside grows.
+385. Personal Journal create/detail inputs, note boxes, photo tiles, insight/review cards, warning/feedback panels, and edit/delete/save actions now consume the shared 8px card radius token while preserving tag pills, aligning grow-log workflows with Facility-style polish.
 
 ## Working Rule For Codex
 

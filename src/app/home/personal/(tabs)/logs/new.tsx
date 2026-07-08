@@ -26,6 +26,7 @@ import {
   ToolPlantContextPicker,
   useToolPlantContext
 } from "@/features/personal/tools/ToolPlantContextPicker";
+import { radius } from "@/theme/theme";
 import { isPersistedImageUri, persistImageUris } from "@/utils/photoUploads";
 
 type SelectedPhoto = {
@@ -558,12 +559,12 @@ const styles = StyleSheet.create({
   title: { fontSize: 22, fontWeight: "800", color: "#0F172A" },
   subtitle: { color: "#64748B" },
   label: { color: "#334155", fontWeight: "800", marginTop: 4 },
-  input: { borderWidth: 1, borderColor: "#CBD5E1", borderRadius: 9, padding: 10 },
+  input: { borderWidth: 1, borderColor: "#CBD5E1", borderRadius: radius.card, padding: 10 },
   notes: {
     minHeight: 110,
     borderWidth: 1,
     borderColor: "#CBD5E1",
-    borderRadius: 9,
+    borderRadius: radius.card,
     padding: 10,
     textAlignVertical: "top"
   },
@@ -582,14 +583,14 @@ const styles = StyleSheet.create({
     flexGrow: 1,
     borderWidth: 1,
     borderColor: "#CBD5E1",
-    borderRadius: 9,
+    borderRadius: radius.card,
     padding: 10
   },
   photoTile: {
     width: 104,
     borderWidth: 1,
     borderColor: "#CBD5E1",
-    borderRadius: 8,
+    borderRadius: radius.card,
     overflow: "hidden",
     backgroundColor: "#F8FAFC"
   },
@@ -610,7 +611,7 @@ const styles = StyleSheet.create({
   primaryButton: {
     marginTop: 8,
     backgroundColor: "#166534",
-    borderRadius: 9,
+    borderRadius: radius.card,
     padding: 11,
     alignItems: "center"
   },
@@ -619,7 +620,7 @@ const styles = StyleSheet.create({
     alignSelf: "flex-start",
     borderWidth: 1,
     borderColor: "#166534",
-    borderRadius: 9,
+    borderRadius: radius.card,
     paddingHorizontal: 11,
     paddingVertical: 8
   },
@@ -628,16 +629,16 @@ const styles = StyleSheet.create({
   error: {
     color: "#991B1B",
     backgroundColor: "#FEE2E2",
-    borderRadius: 9,
+    borderRadius: radius.card,
     padding: 9,
     fontWeight: "700"
   },
-  warning: { color: "#9A3412", backgroundColor: "#FFEDD5", borderRadius: 8, padding: 8 },
+  warning: { color: "#9A3412", backgroundColor: "#FFEDD5", borderRadius: radius.card, padding: 8 },
   helper: { color: "#64748B", lineHeight: 19 },
   insightCard: {
     borderWidth: 1,
     borderColor: "#CBD5E1",
-    borderRadius: 12,
+    borderRadius: radius.card,
     backgroundColor: "#F8FAFC",
     padding: 11,
     gap: 7
@@ -649,13 +650,13 @@ const styles = StyleSheet.create({
     gap: 4,
     borderWidth: 1,
     borderColor: "#E2E8F0",
-    borderRadius: 9,
+    borderRadius: radius.card,
     padding: 5,
     backgroundColor: "#FFFFFF"
   },
   tagName: { color: "#334155", fontWeight: "700" },
   reviewButton: {
-    borderRadius: 6,
+    borderRadius: radius.card,
     paddingHorizontal: 6,
     paddingVertical: 4,
     backgroundColor: "#E2E8F0"
