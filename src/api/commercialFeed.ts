@@ -35,6 +35,7 @@ export type CommercialFeedPost = {
   reminderPreference?: string;
   recurrenceRule?: string;
   externalLinks?: Array<{ label: string; url: string }>;
+  engagementCount?: number;
   likeCount?: number;
   commentCount?: number;
   createdAt?: string;

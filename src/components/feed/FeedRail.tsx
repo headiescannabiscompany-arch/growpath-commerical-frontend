@@ -19,7 +19,7 @@ type AdItem = {
   href: string;
   storefrontSlug: string;
   createdAt: string;
-  likeCount: number;
+  engagementCount: number;
   clickCount: number;
   promotionCount: number;
   imageUrl: string;
@@ -85,7 +85,7 @@ function mapCampaignToAd(post: CommercialFeedPost): AdItem {
     href: destination.href,
     storefrontSlug: String(post.storefrontSlug || ""),
     createdAt: post.createdAt || new Date(0).toISOString(),
-    likeCount: Number(post.likeCount || 0),
+    engagementCount: Number((post as any).engagementCount ?? post.likeCount ?? 0),
     clickCount: Number((post as any).clickCount || 0),
     promotionCount: Number((post as any).promotionCount || 0),
     imageUrl: campaignImage(post)
@@ -121,7 +121,7 @@ const AD_ITEMS = [
     href: "/brands/living-soil-labs",
     storefrontSlug: "living-soil-labs",
     createdAt: "2026-07-05T10:00:00.000Z",
-    likeCount: 81,
+    engagementCount: 81,
     clickCount: 34,
     promotionCount: 8,
     imageUrl:
@@ -134,7 +134,7 @@ const AD_ITEMS = [
     href: "/store/living-soil-labs",
     storefrontSlug: "living-soil-labs",
     createdAt: "2026-07-03T09:30:00.000Z",
-    likeCount: 132,
+    engagementCount: 132,
     clickCount: 62,
     promotionCount: 13,
     imageUrl:
@@ -147,7 +147,7 @@ const AD_ITEMS = [
     href: "/store/living-soil-labs",
     storefrontSlug: "living-soil-labs",
     createdAt: "2026-06-29T14:15:00.000Z",
-    likeCount: 57,
+    engagementCount: 57,
     clickCount: 11,
     promotionCount: 4,
     imageUrl:
@@ -160,7 +160,7 @@ const AD_ITEMS = [
     href: "/store/living-soil-labs",
     storefrontSlug: "living-soil-labs",
     createdAt: "2026-07-04T16:45:00.000Z",
-    likeCount: 74,
+    engagementCount: 74,
     clickCount: 8,
     promotionCount: 2,
     imageUrl:
@@ -176,7 +176,7 @@ const FACILITY_AD_ITEMS = [
     href: "/brands/living-soil-labs",
     storefrontSlug: "living-soil-labs",
     createdAt: "2026-07-05T12:00:00.000Z",
-    likeCount: 44,
+    engagementCount: 44,
     clickCount: 19,
     promotionCount: 6,
     imageUrl:
@@ -189,7 +189,7 @@ const FACILITY_AD_ITEMS = [
     href: "/store/living-soil-labs",
     storefrontSlug: "living-soil-labs",
     createdAt: "2026-07-01T08:00:00.000Z",
-    likeCount: 67,
+    engagementCount: 67,
     clickCount: 9,
     promotionCount: 3,
     imageUrl:
@@ -202,7 +202,7 @@ const FACILITY_AD_ITEMS = [
     href: "/store/living-soil-labs",
     storefrontSlug: "living-soil-labs",
     createdAt: "2026-07-04T11:00:00.000Z",
-    likeCount: 36,
+    engagementCount: 36,
     clickCount: 5,
     promotionCount: 1,
     imageUrl:
@@ -227,7 +227,7 @@ function selectAds(ads: AdItem[], count: number, placement: FeedRailProps["place
     },
     {
       label: "Popular",
-      rows: [...ads].sort((a, b) => b.likeCount - a.likeCount)
+      rows: [...ads].sort((a, b) => b.engagementCount - a.engagementCount)
     },
     {
       label: "Recommended",

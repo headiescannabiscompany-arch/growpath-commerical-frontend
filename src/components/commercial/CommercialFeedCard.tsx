@@ -19,7 +19,8 @@ type CommercialPost = {
   body: string;
   tags?: string[];
   location?: string;
-  likeCount: number;
+  engagementCount?: number;
+  likeCount?: number;
   linkedProductId?: string;
   linkedCourseId?: string;
   linkedLiveId?: string;
@@ -35,6 +36,7 @@ type Props = {
 export default function CommercialFeedCard({ post }: Props) {
   const { user } = useAuth();
   const isOwnPost = user?.id === post.author?.id;
+  const engagementCount = Number(post.engagementCount ?? post.likeCount ?? 0);
   const destinationLabel = post.linkedProductId
     ? "View Product"
     : post.linkedCourseId
@@ -87,9 +89,7 @@ export default function CommercialFeedCard({ post }: Props) {
           <Text>{destinationLabel}</Text>
         </Pressable>
 
-        <Text style={{ opacity: 0.7 }}>
-          {Number(post.likeCount || 0)} campaign engagements
-        </Text>
+        <Text style={{ opacity: 0.7 }}>{engagementCount} campaign engagements</Text>
       </View>
 
       {isOwnPost ? (

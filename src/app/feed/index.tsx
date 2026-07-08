@@ -154,6 +154,10 @@ function visibleCampaignType(post: CommercialFeedPost) {
   return campaignKindLabels.general_campaign;
 }
 
+function campaignEngagementCount(post: CommercialFeedPost) {
+  return Number(post.engagementCount ?? post.likeCount ?? 0);
+}
+
 function splitTags(value: string) {
   return value
     .split(",")
@@ -887,8 +891,8 @@ export default function CommercialFeedRoute() {
           >
             <View style={styles.postHeader}>
               <Text style={styles.typePill}>{visibleCampaignType(post)}</Text>
-              <Text style={styles.likes}>
-                {Number(post.likeCount || 0)} campaign engagements
+              <Text style={styles.engagements}>
+                {campaignEngagementCount(post)} campaign engagements
               </Text>
             </View>
             <Text style={styles.postTitle}>{post.title || "Feed campaign"}</Text>
@@ -1097,7 +1101,7 @@ const styles = StyleSheet.create({
     fontWeight: "900",
     textTransform: "uppercase"
   },
-  likes: { color: "#64748B", fontSize: 12, fontWeight: "800" },
+  engagements: { color: "#64748B", fontSize: 12, fontWeight: "800" },
   postTitle: { color: "#0F172A", fontSize: 17, fontWeight: "900" },
   feedImage: {
     width: "100%",

@@ -43,7 +43,7 @@ describe("FeedRail", () => {
           body: "Ask questions before the live recipe workshop.",
           linkedForumThreadId: "thread-qna",
           createdAt: "2026-07-07T12:00:00Z",
-          likeCount: 4,
+          engagementCount: 4,
           author: { displayName: "Living Soil Labs" },
           tags: [],
           growInterests: ["living soil"]
@@ -85,7 +85,7 @@ describe("FeedRail", () => {
           body: "Promoted product discovery.",
           linkedProductId: "veg-mix-1",
           createdAt: "2026-07-07T12:00:00Z",
-          likeCount: 4,
+          engagementCount: 4,
           author: { displayName: "Living Soil Labs" },
           tags: [],
           growInterests: ["living soil"]

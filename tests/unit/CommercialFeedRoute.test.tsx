@@ -64,6 +64,7 @@ describe("CommercialFeedRoute", () => {
               growInterests: ["living soil", "dry amendments"],
               linkedLiveId: "live-1",
               linkedForumThreadId: "thread-1",
+              engagementCount: 12,
               startsAt: "2026-07-17T21:00:00Z",
               endsAt: "2026-07-24T21:00:00Z",
               imageUrl: "https://example.com/live.jpg",
@@ -92,7 +93,7 @@ describe("CommercialFeedRoute", () => {
     expect(screen.getAllByText("Live event ad").length).toBeGreaterThan(0);
     expect(screen.queryByText("question")).toBeNull();
     expect(screen.queryByText("iso")).toBeNull();
-    expect(screen.getByText("0 campaign engagements")).toBeTruthy();
+    expect(screen.getByText("12 campaign engagements")).toBeTruthy();
     expect(screen.getByLabelText("Selected feed campaign campaign-1")).toBeTruthy();
     expect(screen.getByText("Interests: living soil, dry amendments")).toBeTruthy();
     expect(screen.queryByText("0 likes")).toBeNull();

@@ -22,7 +22,7 @@ describe("CommercialFeedCard", () => {
     title: "Live soil demo",
     body: "RSVP for the live mixing demo.",
     tags: ["living soil"],
-    likeCount: 12,
+    engagementCount: 12,
     linkedLiveId: "live-1",
     createdAt: "2026-07-07T12:00:00Z"
   };

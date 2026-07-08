@@ -425,6 +425,7 @@ Completed and pushed:
 149. Commercial live scheduling and storefront live cards now accept and display canonical feed campaign ids while preserving legacy feed-post compatibility, so live outreach stays connected to Feed/Campaigns instead of being treated as discussion.
 150. Commercial dashboard action-item tasks now emit canonical feed campaign ids while preserving legacy feed-post compatibility, so owner command-center campaign fixes route back to Feed/Campaigns outreach.
 151. Commercial Feed campaign creation now uses `/api/commercial/feed` instead of the legacy `/api/commercial/posts` endpoint, with audit coverage to keep in-app outreach on the Feed/Campaigns contract.
+152. Feed campaign cards and placement rails now use canonical engagement-count naming while preserving legacy like-count fallback, keeping Feed as advertising/outreach instead of social discussion.
 
 ## Working Rule For Codex
 
