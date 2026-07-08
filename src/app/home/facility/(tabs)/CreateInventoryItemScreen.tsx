@@ -7,6 +7,7 @@ import { endpoints } from "@/api/endpoints";
 import { useFacility } from "@/state/useFacility";
 import { CAPABILITY_KEYS, useEntitlements } from "@/entitlements";
 import { ScreenBoundary } from "@/components/ScreenBoundary";
+import { radius } from "@/theme/theme";
 
 export default function FacilityCreateInventoryItemScreen() {
   const router = useRouter();
@@ -121,14 +122,14 @@ const styles = StyleSheet.create({
   input: {
     borderWidth: 1,
     borderColor: "#d1d5db",
-    borderRadius: 10,
+    borderRadius: radius.card,
     paddingHorizontal: 12,
     paddingVertical: 10
   },
   button: {
     marginTop: 6,
     backgroundColor: "#166534",
-    borderRadius: 10,
+    borderRadius: radius.card,
     paddingVertical: 12,
     alignItems: "center"
   },

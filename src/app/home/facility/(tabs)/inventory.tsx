@@ -18,6 +18,7 @@ import { ScreenBoundary } from "@/components/ScreenBoundary";
 import { CAPABILITY_KEYS, useEntitlements } from "@/entitlements";
 import { useApiErrorHandler } from "@/hooks/useApiErrorHandler";
 import { useFacility } from "@/state/useFacility";
+import { radius } from "@/theme/theme";
 
 type InventoryItem = {
   _id?: string;
@@ -323,7 +324,7 @@ const styles = StyleSheet.create({
   ghostButton: {
     borderWidth: 1,
     borderColor: "rgba(0,0,0,0.14)",
-    borderRadius: 10,
+    borderRadius: radius.card,
     paddingHorizontal: 10,
     paddingVertical: 8
   },
@@ -331,7 +332,7 @@ const styles = StyleSheet.create({
   summaryCard: {
     borderWidth: 1,
     borderColor: "#dbeafe",
-    borderRadius: 12,
+    borderRadius: radius.card,
     padding: 12,
     backgroundColor: "#eff6ff",
     flexDirection: "row",
@@ -347,7 +348,7 @@ const styles = StyleSheet.create({
   emptyCard: {
     backgroundColor: "#F8FAFC",
     borderColor: "#CBD5E1",
-    borderRadius: 12,
+    borderRadius: radius.card,
     borderWidth: 1,
     padding: 14
   },
@@ -360,7 +361,7 @@ const styles = StyleSheet.create({
   primaryButton: {
     alignSelf: "flex-start",
     backgroundColor: "#0f172a",
-    borderRadius: 10,
+    borderRadius: radius.card,
     paddingHorizontal: 14,
     paddingVertical: 10,
     marginBottom: 12
@@ -373,7 +374,7 @@ const styles = StyleSheet.create({
     alignItems: "center",
     borderWidth: 1,
     borderColor: "rgba(0,0,0,0.12)",
-    borderRadius: 14,
+    borderRadius: radius.card,
     padding: 14,
     backgroundColor: "white"
   },
