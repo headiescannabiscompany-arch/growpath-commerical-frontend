@@ -20,6 +20,7 @@ import { useApiErrorHandler } from "@/hooks/useApiErrorHandler";
 import { useEntitlements } from "@/entitlements";
 import { getFacilityTaskAccess } from "@/features/facility/taskAccess";
 import SchedulePicker from "@/components/schedule/SchedulePicker";
+import { radius } from "@/theme/theme";
 
 type AnyRec = Record<string, any>;
 
@@ -511,7 +512,7 @@ const styles = StyleSheet.create({
   card: {
     borderWidth: 1,
     borderColor: "rgba(0,0,0,0.12)",
-    borderRadius: 14,
+    borderRadius: radius.card,
     padding: 14,
     backgroundColor: "white",
     marginBottom: 12
@@ -536,7 +537,7 @@ const styles = StyleSheet.create({
   input: {
     borderWidth: 1,
     borderColor: "rgba(0,0,0,0.12)",
-    borderRadius: 10,
+    borderRadius: radius.card,
     padding: 10,
     backgroundColor: "white"
   },
@@ -544,7 +545,7 @@ const styles = StyleSheet.create({
   primaryBtn: {
     marginTop: 8,
     backgroundColor: "#0f172a",
-    borderRadius: 10,
+    borderRadius: radius.card,
     paddingVertical: 12,
     alignItems: "center"
   },
@@ -559,7 +560,7 @@ const styles = StyleSheet.create({
     flexDirection: "row",
     alignItems: "center",
     padding: 14,
-    borderRadius: 14,
+    borderRadius: radius.card,
     borderWidth: 1,
     borderColor: "rgba(0,0,0,0.12)",
     backgroundColor: "white"

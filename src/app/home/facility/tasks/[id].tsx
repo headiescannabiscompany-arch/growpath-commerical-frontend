@@ -18,6 +18,7 @@ import { completeFacilityTask, deleteTask, getTask, updateTask } from "@/api/tas
 import { useApiErrorHandler } from "@/hooks/useApiErrorHandler";
 import { CAPABILITY_KEYS, useEntitlements } from "@/entitlements";
 import { sourceObjectHref } from "@/utils/sourceLinks";
+import { radius } from "@/theme/theme";
 
 type AnyRec = Record<string, any>;
 
@@ -753,7 +754,7 @@ const styles = StyleSheet.create({
   card: {
     borderWidth: 1,
     borderColor: "rgba(0,0,0,0.12)",
-    borderRadius: 14,
+    borderRadius: radius.card,
     padding: 14,
     backgroundColor: "white",
     gap: 10
@@ -781,7 +782,7 @@ const styles = StyleSheet.create({
   input: {
     borderWidth: 1,
     borderColor: "rgba(0,0,0,0.12)",
-    borderRadius: 10,
+    borderRadius: radius.card,
     padding: 10,
     backgroundColor: "white"
   },
@@ -789,7 +790,7 @@ const styles = StyleSheet.create({
   statusRow: { flexDirection: "row", gap: 10, alignItems: "center", flexWrap: "wrap" },
   primaryBtn: {
     backgroundColor: "#0f172a",
-    borderRadius: 10,
+    borderRadius: radius.card,
     paddingVertical: 12,
     paddingHorizontal: 14,
     alignItems: "center"
@@ -797,7 +798,7 @@ const styles = StyleSheet.create({
   secondaryBtn: {
     borderWidth: 1,
     borderColor: "rgba(0,0,0,0.18)",
-    borderRadius: 10,
+    borderRadius: radius.card,
     paddingVertical: 12,
     paddingHorizontal: 14,
     alignItems: "center"
@@ -805,7 +806,7 @@ const styles = StyleSheet.create({
   dangerBtn: {
     borderWidth: 1,
     borderColor: "#B91C1C",
-    borderRadius: 10,
+    borderRadius: radius.card,
     paddingVertical: 12,
     paddingHorizontal: 14,
     alignItems: "center"
@@ -825,7 +826,7 @@ const styles = StyleSheet.create({
   feedback: {
     color: "#334155",
     backgroundColor: "#F1F5F9",
-    borderRadius: 9,
+    borderRadius: radius.card,
     padding: 9,
     fontWeight: "700"
   }

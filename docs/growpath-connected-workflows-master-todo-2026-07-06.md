@@ -696,6 +696,7 @@ Completed and pushed:
 420. Facility Dashboard hero, compliance/task pulse cards, refresh action, priority/action panels, and operational tiles now consume the shared 8px card radius token, keeping the original Facility visual language aligned with the cross-user polish pass.
 421. Facility Sensor Integrations provider guidance cards and room-import CTA now consume the shared 8px card radius token while preserving provider pills, keeping controller/Pulse/TrolMaster onboarding aligned with the shared polish pass.
 422. Facility Rooms controller import preview, room forms, preview rows, create/delete actions, batch-cycle summary, and feedback now consume the shared 8px card radius token while preserving room/status pills, keeping auto-built rooms visually aligned with the shared polish pass.
+423. Facility Tasks root/detail form cards, schedule-linked inputs, create/complete/proof/approval/source actions, task rows, and feedback now consume the shared 8px card radius token while preserving source/status pills, keeping the facility action layer visually aligned with the shared task/calendar polish.
 
 ## Working Rule For Codex
 
