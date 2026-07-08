@@ -607,6 +607,7 @@ Completed and pushed:
 331. Growers Forum code-of-conduct copy now says the Forum is not a Storefront, Feed campaign, or checkout surface, and points sales/promotions to approved Storefront and Stripe flows instead of legacy marketplace language.
 332. Legacy feed item cards now route product and course campaign metadata to exact public storefront product/course destinations when a storefront slug is present, with discovery fallbacks when only product/course ids exist.
 333. Commercial Brand Forum/Q&A recent support posts now expose direct actions to linked public storefront product/course pages, evidence runs, and storefronts, so support answers connect users back to the real product/course/store surfaces.
+334. Personal Task Center now shows a separate View Linked Object action when alert/tool/source-created tasks carry product, course, live, storefront, or Forum context, so users can open the exact public storefront object without losing the original alert/source trail.
 
 ## Working Rule For Codex
 

@@ -148,6 +148,20 @@ describe("PersonalTaskCenterRoute", () => {
         sourceType: "sensor_alert",
         linkedSensorAlertId: "sensor-alert-linked-1",
         createdAt: "2026-07-07T00:00:00Z"
+      },
+      {
+        id: "task-alert-linked-product",
+        growId: "grow-1",
+        title: "Review alert-linked product",
+        description: "Alert-generated task should still open the exact product.",
+        dueDate: "2026-07-14",
+        completed: false,
+        priority: "medium",
+        sourceType: "alert",
+        sourceObjectId: "alert-product-1",
+        linkedProductId: "veg-mix-1",
+        linkedStorefrontSlug: "living-soil-labs",
+        createdAt: "2026-07-07T00:00:00Z"
       }
     ]);
     mockCreatePersonalTask.mockResolvedValue({
@@ -175,7 +189,9 @@ describe("PersonalTaskCenterRoute", () => {
     expect(screen.getByText(/Sensor Alert: sensor-alert-linked-1/)).toBeTruthy();
     expect(screen.getByText(/ToolRun: run-linked-1/)).toBeTruthy();
     expect(screen.getAllByText("product batch").length).toBeGreaterThan(0);
-    expect(screen.getAllByLabelText("View personal task source").length).toBe(8);
+    expect(screen.getAllByLabelText("View personal task source").length).toBe(9);
+    expect(screen.getByText("Review alert-linked product")).toBeTruthy();
+    expect(screen.getByText(/Product: veg-mix-1/)).toBeTruthy();
     expect(
       screen.getByLabelText("Personal task link /home/personal/diagnose?growId=grow-1")
     ).toBeTruthy();
@@ -185,10 +201,23 @@ describe("PersonalTaskCenterRoute", () => {
     expect(
       screen.getByLabelText("Personal task link /live-session?sessionId=live-1")
     ).toBeTruthy();
-    expect(screen.getByLabelText("Personal task link /store?q=batch-linked-1")).toBeTruthy();
     expect(
-      screen.getByLabelText("Personal task link /home/alerts?alertId=sensor-alert-linked-1")
+      screen.getByLabelText("Personal task link /store?q=batch-linked-1")
     ).toBeTruthy();
+    expect(
+      screen.getByLabelText(
+        "Personal task link /home/alerts?alertId=sensor-alert-linked-1"
+      )
+    ).toBeTruthy();
+    expect(
+      screen.getByLabelText("Personal task link /home/alerts?alertId=alert-product-1")
+    ).toBeTruthy();
+    expect(
+      screen.getByLabelText(
+        "Personal task link /store/living-soil-labs/products/veg-mix-1"
+      )
+    ).toBeTruthy();
+    expect(screen.getAllByLabelText("View personal task linked object").length).toBe(1);
     expect(screen.getByLabelText("Personal task link /store/store-1")).toBeTruthy();
     expect(screen.queryByLabelText(/Personal task link .*home\/commercial/)).toBeNull();
     expect(screen.queryByLabelText("Task center source product_trial")).toBeNull();

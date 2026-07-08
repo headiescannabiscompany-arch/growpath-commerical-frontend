@@ -134,11 +134,14 @@ export interface PersonalTask {
   linkedProductBatchId?: string | null;
   linkedProductTrialId?: string | null;
   linkedStorefrontId?: string | null;
+  linkedStorefrontSlug?: string | null;
+  storefrontSlug?: string | null;
   linkedOrderId?: string | null;
   linkedCourseId?: string | null;
   linkedLessonId?: string | null;
   linkedLiveId?: string | null;
   linkedAlertId?: string | null;
+  linkedSensorAlertId?: string | null;
   linkedFacilityId?: string | null;
   linkedRoomId?: string | null;
   linkedFacilityRunId?: string | null;
