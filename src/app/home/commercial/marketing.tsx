@@ -435,7 +435,7 @@ export default function CommercialMarketingRoute() {
         <View style={styles.actions}>
           <ActionLink href="/home/commercial/feed" label="Create linked campaign" />
           <ActionLink href="/home/commercial/products/new" label="Create Product" />
-          <ActionLink href="/home/commercial/community" label="Community Support" />
+          <ActionLink href="/home/commercial/community" label="Forum / Q&A Support" />
         </View>
       </AppCard>
 

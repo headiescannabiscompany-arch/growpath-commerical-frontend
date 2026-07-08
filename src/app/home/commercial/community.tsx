@@ -333,11 +333,11 @@ export default function CommercialCommunityRoute() {
       </AppCard>
 
       <AppCard>
-        <Text style={styles.cardTitle}>Community discovery</Text>
+        <Text style={styles.cardTitle}>Forum / Q&A discovery</Text>
         <Text style={styles.body}>
           Users should find the brand through public profile links, feed campaigns, store
-          products, courses, and forum answers. Guild/community selection should support
-          discovery, not replace support workflows.
+          products, courses, and forum answers. Forum/Q&A support should aid discovery
+          without replacing storefront, product, or campaign workflows.
         </Text>
         <Text style={styles.bullet}>Public profile is the stable brand destination</Text>
         <Text style={styles.bullet}>Storefront is the stable product destination</Text>

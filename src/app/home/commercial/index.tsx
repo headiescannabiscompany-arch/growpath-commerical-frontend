@@ -156,9 +156,9 @@ const DASHBOARD_SECTIONS: DashboardSection[] = [
     ]
   },
   {
-    title: "Content & Community",
+    title: "Content & Forum / Q&A",
     description:
-      "Create outreach campaigns for products, courses, lives, and storefront visibility. Discussion and Q&A belong in Forum/Community, not inside feed ads.",
+      "Create outreach campaigns for products, courses, lives, and storefront visibility. Discussion and Q&A belong in Forum/Q&A, not inside feed ads.",
     status: "Active",
     metrics: [
       { label: "Draft campaigns", key: "draftPosts" },

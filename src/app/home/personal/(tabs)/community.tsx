@@ -31,7 +31,7 @@ function rowId(row: any) {
 }
 
 function postTitle(post: SocialPost) {
-  return String(post.title || post.text || post.content || post.body || "Community post");
+  return String(post.title || post.text || post.content || post.body || "Forum post");
 }
 
 function postBody(post: SocialPost) {
@@ -75,7 +75,7 @@ export default function CommunityTab() {
         setGuilds(guildRows);
         setNotifications(notificationRows);
       } catch (error: any) {
-        setFeedback(error?.message || "Unable to load community data.");
+        setFeedback(error?.message || "Unable to load Forum/Q&A data.");
       } finally {
         setLoading(false);
         setRefreshing(false);
@@ -148,9 +148,11 @@ export default function CommunityTab() {
         />
       }
     >
-      <Text style={styles.title}>Community</Text>
+      <Text style={styles.title}>Forum / Q&A</Text>
       <Text style={styles.subtitle}>
-        Posts, discussions, memberships, and notifications from live community endpoints.
+        Discussion, grow help, product questions, course Q&A, memberships, and
+        notifications from the shared forum endpoints. Feed placements on this page are
+        commercial/facility outreach, not discussion.
       </Text>
       <PersonalFeedPlacement placement="top" routeKey="personal_community" longContent />
       {feedback ? <Text style={styles.feedback}>{feedback}</Text> : null}
@@ -174,17 +176,17 @@ export default function CommunityTab() {
         <>
           <View style={styles.card}>
             <View style={styles.cardHeader}>
-              <Text style={styles.cardTitle}>Forum Posts</Text>
+              <Text style={styles.cardTitle}>Forum / Q&A Posts</Text>
               <Link href="/home/personal/forum" asChild>
                 <Pressable>
-                  <Text style={styles.cta}>Open forum</Text>
+                  <Text style={styles.cta}>Open Forum / Q&A</Text>
                 </Pressable>
               </Link>
             </View>
             {canPost ? (
               <Link href="/home/personal/forum/new-post" asChild>
                 <Pressable testID="community-new-post" style={styles.primaryBtn}>
-                  <Text style={styles.primaryText}>New Post</Text>
+                  <Text style={styles.primaryText}>New Discussion</Text>
                 </Pressable>
               </Link>
             ) : (

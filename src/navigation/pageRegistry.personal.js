@@ -74,7 +74,7 @@ export const PAGE_REGISTRY_PERSONAL = [
   },
   {
     name: "Community",
-    label: "Community",
+    label: "Forum / Q&A",
     icon: "chatbubbles-outline",
     capabilityKey: "view.community.forum",
     component: require("../screens/ForumScreen").default

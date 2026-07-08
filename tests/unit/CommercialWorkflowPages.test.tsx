@@ -753,7 +753,7 @@ describe("commercial workflow pages", () => {
     expect(screen.getByText("Brand Forum / Q&A")).toBeTruthy();
     expect(screen.getByText(/Feed \/ Campaigns stays advertising and outreach/)).toBeTruthy();
     expect(screen.getByText("Support thread workflow")).toBeTruthy();
-    expect(screen.getByText("Community discovery")).toBeTruthy();
+    expect(screen.getByText("Forum / Q&A discovery")).toBeTruthy();
     expect(screen.getByText("Create linked campaign")).toBeTruthy();
     expect(screen.getByText("Public Store Directory")).toBeTruthy();
     await waitFor(() => expect(screen.getByText("How to use Bloom Mix")).toBeTruthy());

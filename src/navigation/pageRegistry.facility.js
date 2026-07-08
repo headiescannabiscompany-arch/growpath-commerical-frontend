@@ -81,7 +81,7 @@ export const PAGE_REGISTRY_FACILITY = [
   },
   {
     name: "FacilityCommunity",
-    label: "Community",
+    label: "Forum / Q&A",
     icon: "chatbubbles-outline",
     capabilityKey: "facility.community",
     component: require("../screens/FacilityCommunityScreen").default

@@ -325,8 +325,8 @@ export default function Profile() {
                 <Text style={styles.factValue}>Product cards</Text>
               </View>
               <View style={styles.fact}>
-                <Text style={styles.factLabel}>Community</Text>
-                <Text style={styles.factValue}>Brand identity</Text>
+                <Text style={styles.factLabel}>Forum / Q&A</Text>
+                <Text style={styles.factValue}>Brand replies</Text>
               </View>
             </View>
             <View style={styles.actionRow}>
