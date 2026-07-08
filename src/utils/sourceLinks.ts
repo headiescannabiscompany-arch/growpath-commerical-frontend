@@ -64,6 +64,11 @@ export function sourceObjectHref(source: SourceLike) {
   const growId = firstText(source?.linkedGrowId, source?.growId);
   const plantId = firstText(source?.linkedPlantId, source?.plantId);
   const productId = firstText(source?.linkedProductId, source?.productId, sourceId);
+  const productBatchId = firstText(
+    source?.linkedProductBatchId,
+    source?.productBatchId,
+    sourceId
+  );
   const productTrialId = firstText(source?.linkedProductTrialId, sourceId);
   const forumId = firstText(source?.linkedForumThreadId, source?.forumThreadId, sourceId);
   const courseId = firstText(source?.linkedCourseId, source?.courseId, sourceId);
@@ -163,14 +168,14 @@ export function sourceObjectHref(source: SourceLike) {
 
   if (sourceType === "product_batch") {
     if (workspace === "facility")
-      return sourceId
-        ? `/home/facility/InventoryItemDetailScreen?id=${encoded(sourceId)}`
+      return productBatchId
+        ? `/home/facility/InventoryItemDetailScreen?id=${encoded(productBatchId)}`
         : "/home/facility/inventory";
     if (workspace === "commercial")
-      return sourceId
-        ? `/home/commercial/batch-planner/${encoded(sourceId)}`
+      return productBatchId
+        ? `/home/commercial/batch-planner/${encoded(productBatchId)}`
         : "/home/commercial/batch-planner";
-    return publicProductHref(productId);
+    return publicProductHref(productId || productBatchId);
   }
 
   if (sourceType === "product_trial") {

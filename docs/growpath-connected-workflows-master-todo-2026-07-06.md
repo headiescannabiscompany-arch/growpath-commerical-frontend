@@ -394,6 +394,7 @@ Completed and pushed:
 118. Shared source links now recognize linked-field-only ids for lives, feed campaigns, orders, alerts, notifications, ToolRuns, and recipes, keeping task, alert, schedule, and notification records connected even when they do not carry a generic `sourceId`.
 119. Shared source links now prefer exact linked ids over broad fallback `sourceId` values for forum threads, lives, feed campaigns, orders, alerts, notifications, ToolRuns, recipes, product trials, and SOPs, preventing grow/task fallbacks from overriding the real source record.
 120. Shared source links now infer missing source types from linked fields such as alert, forum, ToolRun, product, plant, and grow ids, so older task/notification records with good links but no `sourceType` can still reopen the intended workflow.
+121. Commercial and facility product-batch source links now recognize `linkedProductBatchId`, so product batch tasks, alerts, and notifications open the batch/inventory detail instead of stopping at the batch planner or inventory root.
 
 ## Working Rule For Codex
 

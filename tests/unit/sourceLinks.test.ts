@@ -89,6 +89,14 @@ describe("sourceObjectHref", () => {
 
     expect(
       sourceObjectHref({
+        sourceType: "product_batch",
+        linkedProductBatchId: "batch-linked-1",
+        workspaceType: "commercial"
+      })
+    ).toBe("/home/commercial/batch-planner/batch-linked-1");
+
+    expect(
+      sourceObjectHref({
         sourceType: "recipe",
         sourceId: "recipe-1",
         workspaceType: "commercial"
